@@ -43,21 +43,22 @@ struct TDmxSerialParams {
 	uint8_t nI2cSpeedMode;
 } __attribute__((packed));
 
-enum TDmxSerialParamsMask {
-	DMXSERIAL_PARAMS_MASK_TYPE = (1 << 0),
-	DMXSERIAL_PARAMS_MASK_BAUD = (1 << 1),
-	DMXSERIAL_PARAMS_MASK_BITS = (1 << 2),
-	DMXSERIAL_PARAMS_MASK_PARTITY = (1 << 3),
-	DMXSERIAL_PARAMS_MASK_STOPBITS = (1 << 4),
-	DMXSERIAL_PARAMS_MASK_SPI_SPEED_HZ = (1 << 5),
-	DMXSERIAL_PARAMS_MASK_SPI_MODE = (1 << 6),
-	DMXSERIAL_PARAMS_MASK_I2C_ADDRESS = (1 << 7),
-	DMXSERIAL_PARAMS_MASK_I2C_SPEED_MODE = (1 << 8)
+struct DmxSerialParamsMask {
+	static constexpr auto TYPE = (1U << 0);
+	static constexpr auto BAUD = (1U << 1);
+	static constexpr auto BITS = (1U << 2);
+	static constexpr auto PARTITY = (1U << 3);
+	static constexpr auto STOPBITS = (1U << 4);
+	static constexpr auto SPI_SPEED_HZ = (1U << 5);
+	static constexpr auto SPI_MODE = (1U << 6);
+	static constexpr auto I2C_ADDRESS = (1U << 7);
+	static constexpr auto I2C_SPEED_MODE = (1U << 8);
 };
 
 class DmxSerialParamsStore {
 public:
-	virtual ~DmxSerialParamsStore(void) {}
+	virtual ~DmxSerialParamsStore(void) {
+	}
 
 	virtual void Update(const struct TDmxSerialParams *pDmxSerialParams)=0;
 	virtual void Copy(struct TDmxSerialParams *pDmxSerialParams)=0;
@@ -78,7 +79,6 @@ public:
 
 	void Set(void);
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
@@ -89,7 +89,7 @@ private:
 
 private:
 	DmxSerialParamsStore *m_pDmxSerialParamsStore;
-    struct TDmxSerialParams	m_tDmxSerialParams;
+	TDmxSerialParams m_tDmxSerialParams;
 };
 
 #endif /* INCLUDE_DMXSERIALPARAMS_H_ */

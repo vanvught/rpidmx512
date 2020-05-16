@@ -84,7 +84,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkESP8266 nw;
 	LedBlink lb;
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 
 #if defined (ORANGE_PI)
 	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {

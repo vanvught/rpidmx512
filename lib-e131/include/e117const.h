@@ -32,7 +32,7 @@
 
 class E117Const {
 public:
-	alignas(uint32_t) static const uint8_t ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH];
+	alignas(uintptr_t) static const uint8_t ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH];
 };
 
 #endif /* E131CONST_H_ */

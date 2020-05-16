@@ -27,7 +27,6 @@
 #define PCA9685_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #define PCA9685_I2C_ADDRESS_DEFAULT	0x40
 #define PCA9685_I2C_ADDRESS_FIXED	0x70
@@ -41,9 +40,9 @@
 
 #define PCA9685_PWM_CHANNELS	16
 
-enum TPCA9685FrequencyRange {
-	PCA9685_FREQUENCY_MIN = 24,
-	PCA9685_FREQUENCY_MAX = 1526
+struct TPCA9685FrequencyRange {
+	static constexpr uint32_t MIN = 24;
+	static constexpr uint32_t MAX = 1526;
 };
 
 enum TPCA9685Och {

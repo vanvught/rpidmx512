@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
@@ -31,35 +31,35 @@
 void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
 	assert(pWS28xxDmx != 0);
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LED_TYPE)) {
 		pWS28xxDmx->SetLEDType(m_tWS28xxParams.tLedType);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
+	if (isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
 		pWS28xxDmx->SetRgbMapping(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping));
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
 		pWS28xxDmx->SetLowCode(m_tWS28xxParams.nLowCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
 		pWS28xxDmx->SetHighCode(m_tWS28xxParams.nHighCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LED_COUNT)) {
 		pWS28xxDmx->SetLEDCount(m_tWS28xxParams.nLedCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS)) {
+	if (isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS)) {
 		pWS28xxDmx->SetDmxStartAddress(m_tWS28xxParams.nDmxStartAddress);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED)) {
+	if (isMaskSet(WS28xxDmxParamsMask::SPI_SPEED)) {
 		pWS28xxDmx->SetClockSpeedHz(m_tWS28xxParams.nSpiSpeedHz);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
+	if (isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS)) {
 		pWS28xxDmx->SetGlobalBrightness(m_tWS28xxParams.nGlobalBrightness);
 	}
 }

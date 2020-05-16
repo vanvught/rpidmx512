@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnet4params.h"
 
@@ -50,7 +50,7 @@ void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, char *p
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.AddComment("Art-Net 4");
-	builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0));
+	builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0));
 
 	nSize = builder.GetSize();
 

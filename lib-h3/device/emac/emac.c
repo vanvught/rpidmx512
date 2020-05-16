@@ -45,10 +45,10 @@
 #define BUS_CLK_GATING4_EPHY_GATING	(1 << 0)
 
 #define CTL0_DUPLEX_FULL_DUPLEX		(1 << 0)
-#define CTL0_SPEED_10M				(0b10 << 2)
-#define CTL0_SPEED_100M				(0b11 << 2)
+#define CTL0_SPEED_10M				(2 << 2)
+#define CTL0_SPEED_100M				(3 << 2)
 	#define CTL0_SPEED_SHIFT	2
-	#define CTL0_SPEED_MASK		0b11
+	#define CTL0_SPEED_MASK		3
 
 #define TX_CTL0_TX_EN				(1U << 31)
 #define TX_CTL1_TX_DMA_EN			(1 << 30)
@@ -96,9 +96,9 @@ static struct coherent_region *p_coherent_region = 0;
 #define H3_EPHY_DEFAULT_VALUE	0x00058000
 #define H3_EPHY_DEFAULT_MASK	0xFFFF8000
 #define H3_EPHY_ADDR_SHIFT		20
-#define H3_EPHY_LED_POL			(1 << 17) 	// 1: active low, 0: active high
-#define H3_EPHY_SHUTDOWN		(1 << 16) 	// 1: shutdown, 0: power up
-#define H3_EPHY_SELECT			(1 << 15) 	// 1: internal PHY, 0: external PHY
+#define H3_EPHY_LED_POL			(1U << 17) 	// 1: active low, 0: active high
+#define H3_EPHY_SHUTDOWN		(1U << 16) 	// 1: shutdown, 0: power up
+#define H3_EPHY_SELECT			(1U << 15) 	// 1: internal PHY, 0: external PHY
 
 #define PHY_ADDR		1
 
@@ -114,14 +114,14 @@ void emac_shutdown(void) {
 	H3_EMAC->TX_CTL0 = value;
 
 	value = H3_EMAC->TX_CTL1;
-	value &= ~TX_CTL1_TX_DMA_EN;
+	value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
 	H3_EMAC->TX_CTL1 = value;
 
 	value = H3_EMAC->RX_CTL1;
-	value &= ~RX_CTL1_RX_DMA_EN;
+	value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
 	H3_EMAC->RX_CTL1 = value;
 
-	H3_CCU->BUS_CLK_GATING4 &= ~BUS_CLK_GATING4_EPHY_GATING;
+	H3_CCU->BUS_CLK_GATING4 &= (uint32_t)~BUS_CLK_GATING4_EPHY_GATING;
 
 	H3_SYSTEM->EMAC_CLK |= H3_EPHY_SHUTDOWN;
 
@@ -135,8 +135,8 @@ void emac_shutdown(void) {
 }
 
 void _write_hwaddr(uint8_t *mac_id) {
-	const uint32_t macid_lo = mac_id[0] + (mac_id[1] << 8) + (mac_id[2] << 16) + (mac_id[3] << 24);
-	const uint32_t macid_hi = mac_id[4] + (mac_id[5] << 8);
+	const uint32_t macid_lo = mac_id[0] + ((uint32_t)mac_id[1] << 8) + ((uint32_t)mac_id[2] << 16) + ((uint32_t)mac_id[3] << 24);
+	const uint32_t macid_hi = mac_id[4] + ((uint32_t)mac_id[5] << 8);
 
 	H3_EMAC->ADDR[0].HIGH = macid_hi;
 	H3_EMAC->ADDR[0].LOW = macid_lo;
@@ -163,10 +163,10 @@ void _adjust_link(bool duplex, uint32_t speed) {
 	if (duplex) {
 		value |= CTL0_DUPLEX_FULL_DUPLEX;
 	} else {
-		value &= ~CTL0_DUPLEX_FULL_DUPLEX;
+		value &= (uint32_t)~CTL0_DUPLEX_FULL_DUPLEX;
 	}
 
-	value &= ~(CTL0_SPEED_MASK << CTL0_SPEED_SHIFT);
+	value &= (uint32_t)~(CTL0_SPEED_MASK << CTL0_SPEED_SHIFT);
 
 	switch (speed) {
 	case 1000:
@@ -283,11 +283,11 @@ void emac_eth_send(void *packet, int len) {
 	struct emac_dma_desc *desc_p = &p_coherent_region->tx_chain[desc_num];
 	uintptr_t data_start = (uintptr_t) desc_p->buf_addr;
 
-	desc_p->st = len;
+	desc_p->st = (uint32_t)len;
 	/* Mandatory undocumented bit */
-	desc_p->st |= (1 << 24);
+	desc_p->st |= (1U << 24);
 
-	h3_memcpy((void *) data_start, packet, len);
+	h3_memcpy((void *) data_start, packet, (size_t)len);
 
 	debug_dump( data_start, (uint16_t) len);
 
@@ -333,7 +333,7 @@ void _autonegotiation(void) {
 
 	DEBUG_PRINTF( "PHY status BMCR: %04x, BMSR: %04x", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
 
-	value = phy_read (PHY_ADDR, MII_BMCR);
+	value = (uint32_t)phy_read (PHY_ADDR, MII_BMCR);
 	value |= BMCR_ANRESTART;
 	phy_write(PHY_ADDR, MII_BMCR, value);
 
@@ -352,7 +352,7 @@ void _autonegotiation(void) {
 
 }
 
-void emac_start(bool reset_emac) {
+void emac_start(__attribute__((unused)) bool reset_emac) {
 	uint32_t value;
 #ifndef NDEBUG
 	uint8_t *p = (uint8_t *)H3_EMAC;
@@ -362,7 +362,7 @@ void emac_start(bool reset_emac) {
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING4 &= ~BUS_CLK_GATING4_EPHY_GATING;
+	H3_CCU->BUS_CLK_GATING4 &= (uint32_t)~BUS_CLK_GATING4_EPHY_GATING;
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING4 |= BUS_CLK_GATING4_EPHY_GATING;
 
@@ -400,11 +400,11 @@ void emac_start(bool reset_emac) {
 	H3_EMAC->TX_CTL0 = value;
 
 	value = H3_EMAC->TX_CTL1;
-	value &= ~TX_CTL1_TX_DMA_EN;
+	value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
 	H3_EMAC->TX_CTL1 = value;
 
 	value = H3_EMAC->RX_CTL1;
-	value &= ~RX_CTL1_RX_DMA_EN;
+	value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
 	H3_EMAC->RX_CTL1 = value;
 
 	_rx_descs_init();

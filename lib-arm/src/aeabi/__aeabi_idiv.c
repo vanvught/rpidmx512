@@ -19,10 +19,10 @@ signed int __aeabi_idiv(signed int num, signed int den) {
 		minus ^= 1;
 	}
 
-	v = __aeabi_uidiv((unsigned int) num, (unsigned int) den);
+	v = (signed int)__aeabi_uidiv((unsigned int) num, (unsigned int) den);
 
 	if (minus != 0) {
-		v = -v;
+		return -v;
 	}
 
 	return v;

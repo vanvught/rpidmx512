@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "storeslushdmx.h"
 
@@ -68,13 +68,13 @@ void StoreSlushDmx::Copy(struct TSlushDmxParams *pSlushDmxParams) {
 	DEBUG_EXIT
 }
 
-void StoreSlushDmx::Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams) {
+void StoreSlushDmx::Update(__attribute__((unused)) uint8_t nMotorIndex, __attribute__((unused)) const struct TSlushDmxParams *ptSlushDmxParams) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void StoreSlushDmx::Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams) {
+void StoreSlushDmx::Copy(__attribute__((unused)) uint8_t nMotorIndex, __attribute__((unused)) struct TSlushDmxParams *ptSlushDmxParams) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

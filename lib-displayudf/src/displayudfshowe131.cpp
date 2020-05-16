@@ -28,10 +28,9 @@
 #include "displayudf.h"
 
 #include "e131bridge.h"
+#include "e131.h"
 
 #include "debug.h"
-
-#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
 
 void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 	DEBUG_ENTRY
@@ -48,7 +47,7 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 		uint16_t nUniverse;
 
 		if (pE131Bridge->GetUniverse(i, nUniverse)) {
-			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "Port %c: %d %s", ('A' + i), nUniverse, MERGEMODE2STRING(pE131Bridge->GetMergeMode(i)));
+			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "Port %c: %d %s", ('A' + i), nUniverse, E131::GetMergeMode(pE131Bridge->GetMergeMode(i), true));
 		}
 	}
 

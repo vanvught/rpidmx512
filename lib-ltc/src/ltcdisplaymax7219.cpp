@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplaymax7219.h"
 

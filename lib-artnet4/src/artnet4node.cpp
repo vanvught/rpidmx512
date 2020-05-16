@@ -27,18 +27,16 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnet4node.h"
+#include "artnet.h"
+
 #include "e131bridge.h"
 
 #include "debug.h"
-
-#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
-#define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
 ArtNet4Node::ArtNet4Node(uint8_t nPages):
 	ArtNetNode(4, nPages),
@@ -46,7 +44,7 @@ ArtNet4Node::ArtNet4Node(uint8_t nPages):
 {
 	DEBUG_ENTRY
 
-	assert((ARTNET_MAX_PORTS * nPages) <= E131_MAX_PORTS);
+	assert((TArtnetConst::MAX_PORTS * nPages) <= E131_MAX_PORTS);
 
 	ArtNetNode::SetArtNet4Handler(static_cast<ArtNet4Handler*>(this));
 
@@ -75,7 +73,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	if (isActive) {
 		const TPortProtocol tPortProtocol = GetPortProtocol(nPortId);
 
-		DEBUG_PRINTF("\tProtocol %s", PROTOCOL2STRING(tPortProtocol));
+		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol), true);
 
 		if (tPortProtocol == PORT_ARTNET_SACN) {
 
@@ -99,7 +97,7 @@ void ArtNet4Node::Start(void) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (ARTNET_MAX_PORTS * GetPages()); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < (TArtNetConst::MAX_PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(nPortIndex, nUniverse);
 		
@@ -108,14 +106,12 @@ void ArtNet4Node::Start(void) {
 		if (isActive) {
 			const TPortProtocol tPortProtocol = GetPortProtocol(nPortIndex);
 			
-			DEBUG_PRINTF("\tProtocol %s", PROTOCOL2STRING(tPortProtocol));
+			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol), true);
 			
 			if (tPortProtocol == PORT_ARTNET_SACN) {
-				const TE131Merge tE131Merge = static_cast<TE131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
-				
-				DEBUG_PRINTF("\tMerge mode %s", MERGEMODE2STRING(tE131Merge));
-				
+				const E131Merge tE131Merge = static_cast<E131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
 				m_Bridge.SetMergeMode(nPortIndex, tE131Merge);
+				DEBUG_PRINTF("\tMerge mode %s", E131::GetMergeMode(tE131Merge));
 			}
 		}
 	}
@@ -152,7 +148,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * GetPages()); i++) {
+	for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 
@@ -192,14 +188,14 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	case ARTNET_PC_MERGE_LTP_1:
 	case ARTNET_PC_MERGE_LTP_2:
 	case ARTNET_PC_MERGE_LTP_3:
-		m_Bridge.SetMergeMode(nPort, E131_MERGE_LTP);
+		m_Bridge.SetMergeMode(nPort, E131Merge::LTP);
 		break;
 
 	case ARTNET_PC_MERGE_HTP_0:
 	case ARTNET_PC_MERGE_HTP_1:
 	case ARTNET_PC_MERGE_HTP_2:
 	case ARTNET_PC_MERGE_HTP_3:
-		m_Bridge.SetMergeMode(nPort, E131_MERGE_HTP);
+		m_Bridge.SetMergeMode(nPort, E131Merge::HTP);
 		break;
 
 	case ARTNET_PC_CLR_0:

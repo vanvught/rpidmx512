@@ -27,7 +27,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "dmx.h"
 

@@ -171,7 +171,7 @@ void WidgetParams::Set(void) {
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_REFRESH_RATE)) {
 		if (m_tWidgetParams.nRefreshRate != 0) {
-			period = (1000000 / m_tWidgetParams.nRefreshRate);
+			period = (1000000U / m_tWidgetParams.nRefreshRate);
 		}
 
 		dmx_set_output_period(period);
@@ -193,7 +193,7 @@ void WidgetParams::Set(void) {
 		period = 0;
 
 		if (m_tWidgetParams.nThrottle != 0) {
-			period = (1000000 / m_tWidgetParams.nThrottle);
+			period = (1000000U / m_tWidgetParams.nThrottle);
 		}
 
 		widget_set_received_dmx_packet_period(period);

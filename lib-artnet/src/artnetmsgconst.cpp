@@ -1,8 +1,11 @@
 /**
- * @file oscclientconst.h
+ * @file artnetmsgconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +26,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCCLIENTCONST_H_
-#define OSCCLIENTCONST_H_
+#include "artnetmsgconst.h"
 
-class OscClientConst {
-public:
-	static const char MSG_CLIENT_PARAMS[];
-	static const char MSG_CLIENT_START[];
-	static const char MSG_CLIENT_STARTED[];
-};
+const char ArtNetMsgConst::PARAMS[] = "Setting Node parameters";
+const char ArtNetMsgConst::START[] = "Starting the Node";
+const char ArtNetMsgConst::STARTED[] = "Node started";
+const char ArtNetMsgConst::RDM_RUN[] = "Running RDM Discovery";
 
-#endif /* OSCCLIENTCONST_H_ */
+

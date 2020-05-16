@@ -28,7 +28,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <assert.h>
+#include <cassert>
 
 #include "e131controller.h"
 
@@ -88,7 +88,7 @@ E131Controller::E131Controller(void):
 
 	struct in_addr addr;
 	static_cast<void>(inet_aton("239.255.0.0", &addr));
-	m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & 0xFF) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
+	m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
 
 	// TE131DataPacket
 	m_pE131DataPacket = new struct TE131DataPacket;
@@ -211,15 +211,15 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 	uint32_t nIp;
 
 	// Root Layer (See Section 5)
-	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(1 + nLength)));
+	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(1U + nLength)));
 
 	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(1 + nLength)));
+	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(1U + nLength)));
 	m_pE131DataPacket->FrameLayer.SequenceNumber = GetSequenceNumber(nUniverse, nIp);
 	m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(nUniverse);
 
 	// Data Layer
-	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(1 + nLength)));
+	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(1U + nLength)));
 
 	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
 		memcpy(&m_pE131DataPacket->DMPLayer.PropertyValues[1], pDmxData, nLength);
@@ -233,7 +233,7 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 
 	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(1 + nLength);
 
-	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(1 + nLength), nIp, E131_DEFAULT_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(1U + nLength), nIp, E131_DEFAULT_PORT);
 }
 
 void E131Controller::HandleSync(void) {
@@ -274,7 +274,7 @@ uint32_t E131Controller::UniverseToMulticastIp(uint16_t nUniverse) const {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
 
-	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & 0xFF) << 24) | ((nUniverse &  0xFF00) << 8);
+	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & static_cast<uint32_t>(0xFF)) << 24) | ((nUniverse &  0xFF00) << 8);
 
 	return nMulticastIp;
 }
@@ -371,7 +371,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 
 void E131Controller::Print(void) {
 	printf("sACN E1.31 Controller\n");
-	printf(" Max Universes : %u\n", static_cast<unsigned>((sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]))));
+	printf(" Max Universes : %d\n", static_cast<int>(sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
 	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
 		printf(" Synchronization Universe : %u\n", m_State.SynchronizationPacket.nUniverseNumber);
 	} else {

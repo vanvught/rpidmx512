@@ -36,7 +36,6 @@ public:
 	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams);
 	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams);
 
-public:
 	static StoreLtcDisplay *Get(void) {
 		return s_pThis;
 	}

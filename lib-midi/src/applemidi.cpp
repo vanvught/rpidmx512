@@ -30,7 +30,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -307,7 +307,7 @@ void AppleMidi::Run(void) {
 	MDNS::Run();
 }
 
-void AppleMidi::HandleRtpMidi(const uint8_t *pBuffer) {
+void AppleMidi::HandleRtpMidi(__attribute__((unused)) const uint8_t *pBuffer) {
 	// override
 }
 

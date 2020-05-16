@@ -23,12 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-
 #include "displayset.h"
 
 DisplaySet::~DisplaySet(void) {
 }
 
-void DisplaySet::SetSleep(bool bSleep) {
+void DisplaySet::SetSleep(__attribute__((unused)) bool bSleep) {
 }

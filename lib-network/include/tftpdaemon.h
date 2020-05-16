@@ -2,7 +2,7 @@
  * @file tftpdaemon.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,11 @@
 #ifndef TFTPDAEMON_H_
 #define TFTPDAEMON_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 
-enum TTFTPMode {
-	TFTP_MODE_BINARY,
-	TFTP_MODE_ASCII
+enum class TFTPMode {
+	BINARY,
+	ASCII
 };
 
 class TFTPDaemon {
@@ -41,11 +40,11 @@ public:
 
 	bool Run(void);
 
-	virtual bool FileOpen(const char *pFileName, TTFTPMode tMode)=0;
-	virtual bool FileCreate(const char *pFileName, TTFTPMode tMode)=0;
+	virtual bool FileOpen(const char *pFileName, TFTPMode tMode)=0;
+	virtual bool FileCreate(const char *pFileName, TFTPMode tMode)=0;
 	virtual bool FileClose(void)=0;
-	virtual int FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
-	virtual int FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber)=0;
+	virtual size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
+	virtual size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 
 	virtual void Exit(void)=0;
 
@@ -58,18 +57,25 @@ private:
 	void DoWriteAck(void);
 
 private:
-	int m_nState;
+	enum class TFTPState {
+		INIT,
+		WAITING_RQ,
+		RRQ_SEND_PACKET,
+		RRQ_RECV_ACK,
+		WRQ_SEND_ACK,
+		WRQ_RECV_PACKET
+	};
+	TFTPState m_nState;
 	int m_nIdx;
 	uint8_t m_Buffer[528];
 	uint32_t m_nFromIp;
 	uint16_t m_nFromPort;
-	uint16_t m_nLength;
+	size_t m_nLength;
 	uint16_t m_nBlockNumber;
-	uint16_t m_nDataLength;
+	size_t m_nDataLength;
 	uint16_t m_nPacketLength;
 	bool m_bIsLastBlock;
 
-public:
 	static TFTPDaemon* Get(void) {
 		return s_pThis;
 	}

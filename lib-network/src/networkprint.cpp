@@ -37,13 +37,5 @@ void Network::Print(void) {
 	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
 	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
-	if (IsDhcpKnown()) {
-		printf(" DHCP      : %s\n", m_IsDhcpUsed ? "Yes" : "No");
-	}
-
-#ifndef NDEBUG
-	puts("==");
-	printf(" m_pNetworkDisplay=%p\n", m_pNetworkDisplay);
-	printf(" m_pNetworkStore=%p\n", m_pNetworkStore);
-#endif
+	printf(" DHCP      : %s\n", GetDhcpMode() == TDhcpMode::UNKNOWN ? "Unknown" : (GetDhcpMode() == TDhcpMode::INACTIVE) ? "Inactive" : "Active");
 }

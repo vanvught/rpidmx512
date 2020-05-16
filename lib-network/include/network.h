@@ -27,11 +27,16 @@
 #define NETWORK_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <net/if.h>
 
 #include "networkdisplay.h"
 #include "networkstore.h"
+
+enum class TDhcpMode {
+	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
+	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
+	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
+};
 
 enum TNetwork {
 	NETWORK_IP_SIZE = 4,
@@ -58,11 +63,11 @@ public:
 
 	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
 
-	virtual void JoinGroup(uint32_t nHandle, uint32_t nIp)=0;
-	virtual void LeaveGroup(uint32_t nHandle, uint32_t nIp)=0;
+	virtual void JoinGroup(int32_t nHandle, uint32_t nIp)=0;
+	virtual void LeaveGroup(int32_t nHandle, uint32_t nIp)=0;
 
-	virtual uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort)=0;
-	virtual void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort)=0;
+	virtual uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort)=0;
+	virtual void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort)=0;
 
 	virtual void SetIp(uint32_t nIp)=0;
 	uint32_t GetIp(void) {
@@ -91,7 +96,7 @@ public:
 	}
 
 	uint32_t GetNetmaskCIDR(void) {
-		return __builtin_popcount(m_nNetmask);
+		return static_cast<uint32_t>(__builtin_popcount(m_nNetmask));
 	}
 
 	uint32_t GetBroadcastIp(void) {
@@ -114,6 +119,18 @@ public:
 #else
 		return true;
 #endif
+	}
+
+	TDhcpMode GetDhcpMode(void) {
+		if (IsDhcpKnown()) {
+			if (m_IsDhcpUsed) {
+				return TDhcpMode::ACTIVE;
+			}
+
+			return TDhcpMode::INACTIVE;
+		}
+
+		return TDhcpMode::UNKNOWN;
 	}
 
 	const char* GetIfName(void) {

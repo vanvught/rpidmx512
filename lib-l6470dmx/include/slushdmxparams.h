@@ -32,25 +32,25 @@
 
 struct TSlushDmxParams {
 	uint32_t nSetList;
-	//
 	uint8_t nUseSpiBusy;
 	uint16_t nDmxStartAddressPortA;
 	uint8_t nDmxFootprintPortA;
 	uint16_t nDmxStartAddressPortB;
 	uint8_t nDmxFootprintPortB;
-}__attribute__((packed));
+} __attribute__((packed));
 
-enum TSlushDmxParamsMask {
-	SLUSH_DMX_PARAMS_MASK_USE_SPI_BUSY = (1 << 0),
-	SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_A = (1 << 1),
-	SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A = (1 << 2),
-	SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B = (1 << 3),
-	SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B = (1 << 4)
+struct SlushDmxParamsMask {
+	static constexpr auto USE_SPI_BUSY = (1U << 0);
+	static constexpr auto START_ADDRESS_PORT_A = (1U << 1);
+	static constexpr auto FOOTPRINT_PORT_A = (1U << 2);
+	static constexpr auto START_ADDRESS_PORT_B = (1U << 3);
+	static constexpr auto FOOTPRINT_PORT_B = (1U << 4);
 };
 
 class SlushDmxParamsStore {
 public:
-	virtual ~SlushDmxParamsStore(void) {}
+	virtual ~SlushDmxParamsStore(void) {
+	}
 
 	virtual void Update(const struct TSlushDmxParams *ptSlushDmxParams)=0;
 	virtual void Copy(struct TSlushDmxParams *ptSlushDmxParams)=0;

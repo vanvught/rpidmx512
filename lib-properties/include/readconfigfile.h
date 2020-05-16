@@ -25,8 +25,6 @@
 #ifndef READCONFIGFILE_H_
 #define READCONFIGFILE_H_
 
-#include <stdbool.h>
-
 typedef void (*CallbackFunctionPtr)(void *, const char *);
 
 class ReadConfigFile {

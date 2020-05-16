@@ -84,7 +84,7 @@ void icmp_handle(struct t_icmp *p_icmp) {
 			// ICMP
 			memcpy(s_reply.icmp.parameter, p_icmp->icmp.parameter, sizeof(s_reply.icmp.parameter));
 
-			uint32_t payload_size = __builtin_bswap16(s_reply.ip4.len) + 8; //TODO
+			uint32_t payload_size = (uint32_t)__builtin_bswap16(s_reply.ip4.len) + 8; //TODO
 
 			memcpy(s_reply.icmp.payload, p_icmp->icmp.payload, payload_size);
 
@@ -93,7 +93,7 @@ void icmp_handle(struct t_icmp *p_icmp) {
 
 			debug_dump(&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
 
-			emac_eth_send((void *)&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
+			emac_eth_send((void *)&s_reply, (int) (sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len)));
 		}
 	}
 

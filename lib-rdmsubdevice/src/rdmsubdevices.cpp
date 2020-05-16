@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -66,6 +66,7 @@
 RDMSubDevices *RDMSubDevices::s_pThis = 0;
 
 RDMSubDevices::RDMSubDevices(void) : m_nCount(0) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_pRDMSubDevice = new RDMSubDevice*[RDM_SUBDEVICES_MAX];
@@ -245,20 +246,20 @@ void RDMSubDevices::SetFactoryDefaults(void) {
 	}
 }
 
-void RDMSubDevices::staticCallbackFunction(void* p, const char* s) {
+void RDMSubDevices::staticCallbackFunction(void *p, const char *s) {
 	assert(p != 0);
 	assert(s != 0);
 
 	(static_cast<RDMSubDevices*>(p))->callbackFunction(s);
 }
 
-void RDMSubDevices::callbackFunction(const char* pLine) {
+void RDMSubDevices::callbackFunction(__attribute__((unused)) const char *pLine) {
 #if defined(RDM_SUBDEVICES_ENABLE)
 	assert(pLine != 0);
 	int nReturnCode;
 	char aDeviceName[65];
 	uint8_t nLength = sizeof(aDeviceName) - 1;
-	char nChipSselect = -1;
+	char nChipSselect = static_cast<char>(-1);
 	uint8_t nSlaveAddress = 0;
 	uint16_t nDmxStartAddress = 0;
 	uint32_t nSpiSpeed = 0;
@@ -269,9 +270,9 @@ void RDMSubDevices::callbackFunction(const char* pLine) {
 
 	if ((nReturnCode == SSCAN_OK) && (nLength != 0)) {
 
-		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, static_cast<int>(nLength), static_cast<int>(nChipSselect), static_cast<int>(nSlaveAddress), static_cast<int>(nDmxStartAddress), static_cast<long int>(nSpiSpeed));
+		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, nLength, nChipSselect, nSlaveAddress, nDmxStartAddress, static_cast<long int>(nSpiSpeed));
 
-		if ((nChipSselect < 0) || (nChipSselect > 2) || (nDmxStartAddress == 0) || (nDmxStartAddress > 512) ) {
+		if ((nChipSselect > 2) || (nDmxStartAddress == 0) || (nDmxStartAddress > 512) ) {
 			DEBUG_EXIT
 			return;
 		}

@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmdeviceparams.h"
 #include "rdmdeviceparamsconst.h"
@@ -57,15 +57,14 @@ void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, 
 	char aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	memcpy(aRootLabel, m_tRDMDeviceParams.aDeviceRootLabel, RDM_DEVICE_LABEL_MAX_LENGTH);
 	aRootLabel[m_tRDMDeviceParams.nDeviceRootLabelLength] = '\0';
-	builder.Add(RDMDeviceParamsConst::LABEL, aRootLabel, isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL));
+	builder.Add(RDMDeviceParamsConst::LABEL, aRootLabel, isMaskSet(RDMDeviceParamsMask::LABEL));
 
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory, isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY));
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail, isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory, isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail, isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL));
 
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-
 	DEBUG_EXIT
 }
 

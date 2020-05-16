@@ -41,10 +41,10 @@
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "e131const.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "e131msgconst.h"
 
 // Monitor Output
 #include "dmxmonitor.h"
@@ -75,8 +75,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init();
 	nw.Print();
@@ -85,8 +84,7 @@ void notmain(void) {
 	ntpClient.Init();
 	ntpClient.Print();
 
-	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
-	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
+	display.TextStatus(E131MsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	E131Bridge bridge;
 	E131Params e131params;
@@ -123,13 +121,11 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
-	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
+	display.TextStatus(E131MsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
 
-	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
-	display.TextStatus(E131Const::MSG_BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
+	display.TextStatus(E131MsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

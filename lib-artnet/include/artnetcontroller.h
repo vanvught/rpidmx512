@@ -37,18 +37,15 @@
 
 #include "artnetpolltable.h"
 
+#ifndef DMX_MAX_VALUE
+#define DMX_MAX_VALUE 255
+#endif
+
 struct TArtNetController {
 	uint32_t nIPAddressLocal;
 	uint32_t nIPAddressBroadcast;
 	uint8_t Oem[2];
 };
-
-#if !defined(DMX_MAX_VALUE_DEFINED)
-	#define DMX_MAX_VALUE_DEFINED
-	enum {
-		DMX_MAX_VALUE = 255
-	};
-#endif
 
 class ArtNetController: public ArtNetPollTable {
 public:

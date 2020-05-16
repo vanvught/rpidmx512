@@ -29,6 +29,10 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-arith" 	// FIXME ignored "-Wpointer-arith"
+#pragma GCC diagnostic ignored "-Wpedantic" 		// FIXME ignored "-Wpedantic"
+
 #include <stdint.h>
 #include <stddef.h>
 #include <assert.h>
@@ -61,7 +65,7 @@ struct block_bucket {
 	struct block_header *free_list;
 };
 
-static struct block_bucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40}, {0x400}, {0x1000}, {0x4000}, {0x40000}, {0x80000}, {0}};
+static struct block_bucket s_block_bucket[] __attribute__((aligned(4))) = {{0x40, 0}, {0x400,0}, {0x1000,0}, {0x4000,0}, {0x40000,0}, {0x80000,0}, {0,0}};
 
 size_t get_allocated(void *p) {
 	if (p == 0) {

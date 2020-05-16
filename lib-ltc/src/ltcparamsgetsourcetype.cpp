@@ -25,11 +25,11 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcparams.h"
 
-constexpr char sSource[LTC_READER_SOURCE_UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
+static constexpr char sSource[LTC_READER_SOURCE_UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
 
 const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
 	assert(tSource < LTC_READER_SOURCE_UNDEFINED);

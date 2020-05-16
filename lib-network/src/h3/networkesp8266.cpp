@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "networkesp8266.h"
 
@@ -48,7 +48,7 @@ int32_t NetworkESP8266::Begin(uint16_t nPort) {
 	return 0;
 }
 
-int32_t NetworkESP8266::End(uint16_t nPort) {
+int32_t NetworkESP8266::End(__attribute__((unused)) uint16_t nPort) {
 	return 0;
 }
 
@@ -83,14 +83,14 @@ void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
 	}
 }
 
-void NetworkESP8266::JoinGroup(uint32_t nHandle, uint32_t nIp) {
+void NetworkESP8266::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkESP8266::RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength,	uint32_t *from_ip, uint16_t* from_port) {
+uint16_t NetworkESP8266::RecvFrom(__attribute__((unused)) int32_t nHandle, void *pBuffer, uint16_t nLength,	uint32_t *from_ip, uint16_t* from_port) {
 	return wifi_udp_recvfrom(reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkESP8266::SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void NetworkESP8266::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }

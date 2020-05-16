@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "tcnetparams.h"
 #include "tcnetparamsconst.h"
@@ -53,15 +53,15 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffe
 	}
 
 	char aName[2];
-	aName[0] = TCNet::GetLayerName(static_cast<TTCNetLayers>(m_tTTCNetParams.nLayer));
+	aName[0] = TCNet::GetLayerName(static_cast<TCNetLayer>(m_tTTCNetParams.nLayer));
 	aName[1] = '\0';
 
 	PropertiesBuilder builder(TCNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, isMaskSet(TCNET_PARAMS_MASK_NODE_NAME));
-	builder.Add(TCNetParamsConst::LAYER, aName, isMaskSet(TCNET_PARAMS_MASK_LAYER));
-	builder.Add(TCNetParamsConst::TIMECODE_TYPE, TCNetConst::FPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNET_PARAMS_MASK_TIMECODE_TYPE));
-	builder.Add(TCNetParamsConst::USE_TIMECODE, m_tTTCNetParams.nUseTimeCode, isMaskSet(TCNET_PARAMS_MASK_USE_TIMECODE));
+	builder.Add(TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, isMaskSet(TCNetParamsMask::NODE_NAME));
+	builder.Add(TCNetParamsConst::LAYER, aName, isMaskSet(TCNetParamsMask::LAYER));
+	builder.Add(TCNetParamsConst::TIMECODE_TYPE, TCNetConst::FPS[m_tTTCNetParams.nTimeCodeType], isMaskSet(TCNetParamsMask::TIMECODE_TYPE));
+	builder.Add(TCNetParamsConst::USE_TIMECODE, m_tTTCNetParams.nUseTimeCode, isMaskSet(TCNetParamsMask::USE_TIMECODE));
 
 	nSize = builder.GetSize();
 

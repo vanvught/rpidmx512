@@ -27,7 +27,6 @@
 #define TC1602_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "displayset.h"
 
@@ -54,7 +53,7 @@ public:
 	void SetCursorPos(uint8_t, uint8_t);
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(TCursorMode);
+	void SetCursor(CursorMode);
 #endif
 
 private:

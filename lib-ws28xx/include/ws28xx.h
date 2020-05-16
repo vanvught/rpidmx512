@@ -27,7 +27,6 @@
 #define WS28XX_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "rgbmapping.h"
 

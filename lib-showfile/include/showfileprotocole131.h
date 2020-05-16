@@ -36,7 +36,6 @@
 class ShowFileProtocolE131: public ShowFileProtocolHandler {
 public:
 	ShowFileProtocolE131(void) {
-
 	}
 	~ShowFileProtocolE131(void) {
 		m_E131Controller.Stop();
@@ -70,7 +69,7 @@ public:
 		m_E131Controller.SetMaster(nMaster);
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {}
+	void DoRunCleanupProcess(__attribute__((unused)) bool bDoRun) {}
 
 	void Run(void) {
 		m_E131Controller.Run();

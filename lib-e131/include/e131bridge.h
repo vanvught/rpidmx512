@@ -76,7 +76,7 @@ struct TE131OutputPort {
 	uint8_t data[E131_DMX_LENGTH];
 	uint16_t length;
 	uint16_t nUniverse;
-	TE131Merge mergeMode;
+	E131Merge mergeMode;
 	bool IsDataPending;
 	bool bIsEnabled;
 	bool IsTransmitting;
@@ -108,8 +108,8 @@ public:
 	void SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse);
 	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir = E131_OUTPUT_PORT) const;
 
-	void SetMergeMode(uint8_t nPortIndex, TE131Merge tE131Merge);
-	TE131Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint8_t nPortIndex, E131Merge tE131Merge);
+	E131Merge GetMergeMode(uint8_t nPortIndex) const;
 
 	uint8_t GetActiveOutputPorts(void) {
 		return m_State.nActiveOutputPorts;

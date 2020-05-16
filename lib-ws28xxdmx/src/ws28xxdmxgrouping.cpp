@@ -24,9 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdmxgrouping.h"
 #include "ws28xxdmxparams.h"
@@ -50,14 +49,14 @@ WS28xxDmxGrouping::~WS28xxDmxGrouping(void) {
 	m_pDmxData = 0;
 }
 
-void WS28xxDmxGrouping::Start(uint8_t nPort) {
+void WS28xxDmxGrouping::Start(__attribute__((unused)) uint8_t nPort) {
 	m_pDmxData = new uint8_t[m_nDmxFootprint];
 	assert(m_pDmxData != 0);
 
 	WS28xxDmx::Start();
 }
 
-void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
+void WS28xxDmxGrouping::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
 	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
@@ -68,7 +67,7 @@ void WS28xxDmxGrouping::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nL
 
 	bool bIsChanged = false;
 
-	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nDmxFootprint); i++, j++) {
+	for (uint32_t i = static_cast<uint32_t>(m_nDmxStartAddress - 1), j = 0; (i < nLength) && (j < m_nDmxFootprint); i++, j++) {
 		if (pData[i] != m_pDmxData[j]) {
 			m_pDmxData[j] = pData[i];
 			bIsChanged = true;

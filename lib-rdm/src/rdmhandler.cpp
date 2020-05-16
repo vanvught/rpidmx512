@@ -23,16 +23,12 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include <assert.h>
-
-#ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
+#include <cassert>
 
 #include "rdmhandler.h"
 
@@ -58,7 +54,6 @@ enum TPowerState {
 	POWER_STATE_NORMAL = 0xFF,		///< Normal Operating Mode.
 };
 
-
 RDMHandler::RDMHandler(bool bIsRdm):
 	m_bIsRDM(bIsRdm),
 	m_IsMuted(false),
@@ -76,7 +71,7 @@ void RDMHandler::HandleString(const char *pString, uint32_t nLength) {
 	RdmMessage->param_data_length = nLength;
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		RdmMessage->param_data[i] = pString[i];
+		RdmMessage->param_data[i] = static_cast<uint8_t>(pString[i]);
 	}
 }
 
@@ -203,7 +198,6 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS_SUB_DEVICES[] {
 };
 
 /**
- *
  * @param pRdmDataIn RDM with no Start Code
  * @param pRdmDataOut RDM with the Start Code or it is Discover Message
  */
@@ -424,7 +418,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 	DEBUG1_EXIT
 }
 
-void RDMHandler::GetQueuedMessage(/*@unused@*/uint16_t nSubDevice) {
+void RDMHandler::GetQueuedMessage(__attribute__((unused)) uint16_t nSubDevice) {
 	m_RDMQueuedMessage.Handler(m_pRdmDataOut);
 	RespondMessageAck();
 }
@@ -477,7 +471,7 @@ void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetProductDetailIdList(uint16_t nSubDevice) {
+void RDMHandler::GetProductDetailIdList(__attribute__((unused)) uint16_t nSubDevice) {
 	const uint16_t product_detail = RDMDeviceResponder::Get()->GetProductDetail();
 
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
@@ -489,7 +483,7 @@ void RDMHandler::GetProductDetailIdList(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetDeviceModelDescription(uint16_t nSubDevice) {
+void RDMHandler::GetDeviceModelDescription(__attribute__((unused)) uint16_t nSubDevice) {
 	uint8_t nBoardNameLength;
 	const char *pBoardModel = Hardware::Get()->GetBoardName(nBoardNameLength);
 
@@ -497,7 +491,7 @@ void RDMHandler::GetDeviceModelDescription(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetManufacturerLabel(uint16_t nSubDevice) {
+void RDMHandler::GetManufacturerLabel(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRDMDeviceInfoData label;
 
 	RDMDeviceResponder::Get()->GetManufacturerName(&label);
@@ -534,7 +528,7 @@ void RDMHandler::SetDeviceLabel(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetFactoryDefaults(uint16_t nSubDevice) {
+void RDMHandler::GetFactoryDefaults(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
@@ -543,7 +537,7 @@ void RDMHandler::GetFactoryDefaults(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetFactoryDefaults(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 0) {
@@ -563,14 +557,14 @@ void RDMHandler::SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetLanguage(uint16_t nSubDevice) {
+void RDMHandler::GetLanguage(__attribute__((unused)) uint16_t nSubDevice) {
 	const char *pLanguage = RDMDeviceResponder::Get()->GetLanguage();
 
 	HandleString(pLanguage, RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH);
 	RespondMessageAck();
 }
 
-void RDMHandler::SetLanguage(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetLanguage(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != RDM_DEVICE_SUPPORTED_LANGUAGE_LENGTH) {
@@ -595,7 +589,7 @@ void RDMHandler::SetLanguage(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetSoftwareVersionLabel(uint16_t nSubDevice) {
+void RDMHandler::GetSoftwareVersionLabel(__attribute__((unused)) uint16_t nSubDevice) {
 	const char *software_version = RDMDeviceResponder::Get()->GetSoftwareVersion();
 	const uint8_t software_version_length = RDMDeviceResponder::Get()->GetSoftwareVersionLength();
 
@@ -603,7 +597,7 @@ void RDMHandler::GetSoftwareVersionLabel(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetBootSoftwareVersionId(uint16_t nSubDevice) {
+void RDMHandler::GetBootSoftwareVersionId(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 0) {
@@ -622,14 +616,13 @@ void RDMHandler::GetBootSoftwareVersionId(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[3] = boot_software_version_id;
 
 	RespondMessageAck();
-
 }
 
-void RDMHandler::GetBootSoftwareVersionLabel(uint16_t nSubDevice) {
+void RDMHandler::GetBootSoftwareVersionLabel(__attribute__((unused)) uint16_t nSubDevice) {
 	uint8_t nVersionLength;
 	const char *pVersion = Hardware::Get()->GetSysName(nVersionLength);
 
-	HandleString(pVersion, MIN(RDM_BOOT_SOFTWARE_VERSION_LABEL_MAX_LENGTH, nVersionLength));
+	HandleString(pVersion, std::min(static_cast<uint8_t>(RDM_BOOT_SOFTWARE_VERSION_LABEL_MAX_LENGTH), nVersionLength));
 	RespondMessageAck();
 }
 
@@ -646,7 +639,7 @@ void RDMHandler::GetPersonality(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetPersonality(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetPersonality(__attribute__((unused)) bool IsBroadcast, uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -739,7 +732,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetSensorDefinition(uint16_t nSubDevice) {
+void RDMHandler::GetSensorDefinition(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	const uint8_t nSensorRequested = pRdmDataIn->param_data[0];
@@ -761,20 +754,20 @@ void RDMHandler::GetSensorDefinition(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[1] = sensor_definition->type;
 	pRdmDataOut->param_data[2] = sensor_definition->unit;
 	pRdmDataOut->param_data[3] = sensor_definition->prefix;
-	pRdmDataOut->param_data[4] = (sensor_definition->range_min >> 8);
-	pRdmDataOut->param_data[5] = (sensor_definition->range_min);
-	pRdmDataOut->param_data[6] = (sensor_definition->range_max >> 8);
-	pRdmDataOut->param_data[7] = (sensor_definition->range_max);
-	pRdmDataOut->param_data[8] = (sensor_definition->normal_min >> 8);
+	pRdmDataOut->param_data[4] = static_cast<uint8_t>(sensor_definition->range_min >> 8);
+	pRdmDataOut->param_data[5] = sensor_definition->range_min;
+	pRdmDataOut->param_data[6] = static_cast<uint8_t>(sensor_definition->range_max >> 8);
+	pRdmDataOut->param_data[7] = sensor_definition->range_max;
+	pRdmDataOut->param_data[8] = static_cast<uint8_t>(sensor_definition->normal_min >> 8);
 	pRdmDataOut->param_data[9] = (sensor_definition->normal_min);
-	pRdmDataOut->param_data[10] = (sensor_definition->normal_max >> 8);
-	pRdmDataOut->param_data[11] = (sensor_definition->normal_max);
+	pRdmDataOut->param_data[10] = static_cast<uint8_t>(sensor_definition->normal_max >> 8);
+	pRdmDataOut->param_data[11] = sensor_definition->normal_max;
 	pRdmDataOut->param_data[12] = sensor_definition->recorded_supported;
 
 	int i = 13;
 
 	for (int j = 0; j < sensor_definition->len; j++) {
-		pRdmDataOut->param_data[i++] = sensor_definition->description[j];
+		pRdmDataOut->param_data[i++] = static_cast<uint8_t>(sensor_definition->description[j]);
 	}
 
 	pRdmDataOut->param_data_length = i;
@@ -782,7 +775,7 @@ void RDMHandler::GetSensorDefinition(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetSensorValue(uint16_t nSubDevice) {
+void RDMHandler::GetSensorValue(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -809,20 +802,20 @@ void RDMHandler::GetSensorValue(uint16_t nSubDevice) {
 	pRdmDataOut->param_data_length = 9;
 	pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
 	pRdmDataOut->param_data[0] = sensor_value->sensor_requested;
-	pRdmDataOut->param_data[1] = (sensor_value->present >> 8);
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(sensor_value->present >> 8);
 	pRdmDataOut->param_data[2] = sensor_value->present;
-	pRdmDataOut->param_data[3] = (sensor_value->lowest_detected >> 8);
+	pRdmDataOut->param_data[3] = static_cast<uint8_t>(sensor_value->lowest_detected >> 8);
 	pRdmDataOut->param_data[4] = sensor_value->lowest_detected;
-	pRdmDataOut->param_data[5] = (sensor_value->highest_detected >> 8);
+	pRdmDataOut->param_data[5] = static_cast<uint8_t>(sensor_value->highest_detected >> 8);
 	pRdmDataOut->param_data[6] = sensor_value->highest_detected;
-	pRdmDataOut->param_data[7] = (sensor_value->recorded >> 8);
+	pRdmDataOut->param_data[7] = static_cast<uint8_t>(sensor_value->recorded >> 8);
 	pRdmDataOut->param_data[8] = sensor_value->recorded;
 
 	RespondMessageAck();
 }
 
 
-void RDMHandler::SetSensorValue(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetSensorValue(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -867,19 +860,19 @@ void RDMHandler::SetSensorValue(bool IsBroadcast, uint16_t nSubDevice) {
 	pRdmDataOut->param_data_length = 9;
 	pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
 	pRdmDataOut->param_data[0] = sensor_value->sensor_requested;
-	pRdmDataOut->param_data[1] = (sensor_value->present >> 8);
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(sensor_value->present >> 8);
 	pRdmDataOut->param_data[2] = sensor_value->present;
-	pRdmDataOut->param_data[3] = (sensor_value->lowest_detected >> 8);
+	pRdmDataOut->param_data[3] = static_cast<uint8_t>(sensor_value->lowest_detected >> 8);
 	pRdmDataOut->param_data[4] = sensor_value->lowest_detected;
-	pRdmDataOut->param_data[5] = (sensor_value->highest_detected >> 8);
+	pRdmDataOut->param_data[5] = static_cast<uint8_t>(sensor_value->highest_detected >> 8);
 	pRdmDataOut->param_data[6] = sensor_value->highest_detected;
-	pRdmDataOut->param_data[7] = (sensor_value->recorded >> 8);
+	pRdmDataOut->param_data[7] = static_cast<uint8_t>(sensor_value->recorded >> 8);
 	pRdmDataOut->param_data[8] = sensor_value->recorded;
 
 	RespondMessageAck();
 }
 
-void RDMHandler::SetRecordSensors(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetRecordSensors(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -911,7 +904,7 @@ void RDMHandler::SetRecordSensors(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetDeviceHours(uint16_t nSubDevice) {
+void RDMHandler::GetDeviceHours(__attribute__((unused)) uint16_t nSubDevice) {
 	uint64_t device_hours = Hardware::Get()->GetUpTime() / 3600;
 	// The value for the Device Hours field shall be unsigned and not roll over when maximum value is reached.
 	if (device_hours > UINT32_MAX) {
@@ -929,11 +922,11 @@ void RDMHandler::GetDeviceHours(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetDeviceHours(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetDeviceHours(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageNack(E120_NR_WRITE_PROTECT);
 }
 
-void RDMHandler::GetIdentifyDevice(uint16_t nSubDevice) {
+void RDMHandler::GetIdentifyDevice(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
@@ -944,7 +937,7 @@ void RDMHandler::GetIdentifyDevice(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetIdentifyDevice(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetIdentifyDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -972,7 +965,7 @@ void RDMHandler::SetIdentifyDevice(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetRealTimeClock(uint16_t nSubDevice) {
+void RDMHandler::GetRealTimeClock(__attribute__((unused)) uint16_t nSubDevice) {
 	struct tm local_time;
 	Hardware::Get()->GetTime(&local_time);
 
@@ -993,7 +986,7 @@ void RDMHandler::GetRealTimeClock(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetRealTimeClock(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 7) {
@@ -1024,7 +1017,7 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetResetDevice(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetResetDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	pRdmDataOut->param_data_length = 0;
 
@@ -1037,7 +1030,7 @@ void RDMHandler::SetResetDevice(bool IsBroadcast, uint16_t nSubDevice) {
 	}
 }
 
-void RDMHandler::GetPowerState(uint16_t nSubDevice) {
+void RDMHandler::GetPowerState(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
@@ -1046,7 +1039,7 @@ void RDMHandler::GetPowerState(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetPowerState(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetPowerState(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 1) {
@@ -1136,7 +1129,7 @@ void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[1] = pRdmDataIn->param_data[1];
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		pRdmDataOut->param_data[i + 2] = pText[i];
+		pRdmDataOut->param_data[i + 2] = static_cast<uint8_t>(pText[i]);
 	}
 
 	RespondMessageAck();

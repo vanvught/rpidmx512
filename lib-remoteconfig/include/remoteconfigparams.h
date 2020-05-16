@@ -38,18 +38,20 @@ struct TRemoteConfigParams {
 	bool bEnableUptime;
 	char aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
 };
+// } __attribute__((packed)); TODO Check __attribute__((packed))
 
-enum TRemoteConfigParamsMask {
-	REMOTE_CONFIG_PARAMS_DISABLED = (1 << 0),
-	REMOTE_CONFIG_PARAMS_DISABLE_WRITE = (1 << 1),
-	REMOTE_CONFIG_PARAMS_ENABLE_REBOOT = (1 << 2),
-	REMOTE_CONFIG_PARAMS_ENABLE_UPTIME = (1 << 3),
-	REMOTE_CONFIG_PARAMS_DISPLAY_NAME = (1 << 4)
+struct RemoteConfigParamsMask {
+	static constexpr auto DISABLED = (1U << 0);
+	static constexpr auto DISABLE_WRITE = (1U << 1);
+	static constexpr auto ENABLE_REBOOT = (1U << 2);
+	static constexpr auto ENABLE_UPTIME = (1U << 3);
+	static constexpr auto DISPLAY_NAME = (1U << 4);
 };
 
 class RemoteConfigParamsStore {
 public:
-	virtual ~RemoteConfigParamsStore(void) {}
+	virtual ~RemoteConfigParamsStore(void) {
+	}
 
 	virtual void Update(const struct TRemoteConfigParams *pRemoteConfigParams)=0;
 	virtual void Copy(struct TRemoteConfigParams *pRemoteConfigParams)=0;

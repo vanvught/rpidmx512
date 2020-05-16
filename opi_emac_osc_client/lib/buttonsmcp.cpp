@@ -85,17 +85,13 @@ bool ButtonsMcp::Start(void) {
 	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 	// All input
 	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);		// Pull-up
 	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);	// Interrupt on Change
-	(void) i2c_read_reg_uint8(MCP23X17_INTCAPA);	// Clear interrupt
+	i2c_read_reg_uint8(MCP23X17_INTCAPA);			// Clear interrupt
 	// Led's
 	i2c_write_reg_uint8(MCP23X17_IODIRB, 0x00); 	// All output
 	i2c_write_reg_uint8(MCP23X17_GPIOB, 0);			// All led's Off
 
 	h3_gpio_fsel(GPIO_INTA, GPIO_FSEL_INPUT); 		// PA7
-
-	uint32_t value = H3_PIO_PORTA->PUL0;
-	value &= ~(GPIO_PULL_MASK << 14);
-	value |= (GPIO_PULL_UP << 14);
-	H3_PIO_PORTA->PUL0 = value;
+	h3_gpio_pud(GPIO_INTA, GPIO_PULL_UP);
 
 	m_nButtonsCount = 8;
 
@@ -129,9 +125,9 @@ void ButtonsMcp::Run(void) {
 void ButtonsMcp::SetLed(uint8_t nLed, bool bOn) {
 	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
 
-	m_nPortB &= ~(1 << nLed);
+	m_nPortB &= ~(1U << nLed);
 	if (bOn) {
-		m_nPortB |= (1 << nLed);
+		m_nPortB |= (1U << nLed);
 	}
 
 	i2c_set_address(MCP23017_I2C_ADDRESS);

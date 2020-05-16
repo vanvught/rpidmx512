@@ -52,13 +52,13 @@ void TFTPFileServer::Exit(void) {
 }
 
 
-bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
+bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
+bool TFTPFileServer::FileCreate(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
@@ -70,14 +70,14 @@ bool TFTPFileServer::FileClose(void) {
 	return false;
 }
 
-int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t TFTPFileServer::FileRead(__attribute__((unused)) void* pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
-	return -1;
+	return 0;
 }
 
-int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t TFTPFileServer::FileWrite(__attribute__((unused)) const void *pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
-	return -1;
+	return 0;
 }

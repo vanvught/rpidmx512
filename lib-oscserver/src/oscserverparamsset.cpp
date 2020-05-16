@@ -2,7 +2,7 @@
  * @file oscserverparamsset.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "oscserverparms.h"
 #include "oscserver.h"
@@ -31,31 +31,31 @@
 void OSCServerParams::Set(OscServer *pOscServer) {
 	assert(pOscServer != 0);
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT)) {
+	if (isMaskSet(OSCServerParamsMask::INCOMING_PORT)) {
 		pOscServer->SetPortIncoming(m_tOSCServerParams.nIncomingPort);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT)) {
+	if (isMaskSet(OSCServerParamsMask::OUTGOING_PORT)) {
 		pOscServer->SetPortOutgoing(m_tOSCServerParams.nOutgoingPort);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH)) {
+	if (isMaskSet(OSCServerParamsMask::PATH)) {
 		pOscServer->SetPath(m_tOSCServerParams.aPath);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO)) {
+	if (isMaskSet(OSCServerParamsMask::PATH_INFO)) {
 		pOscServer->SetPathInfo(m_tOSCServerParams.aPathInfo);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT)) {
+	if (isMaskSet(OSCServerParamsMask::PATH_BLACKOUT)) {
 		pOscServer->SetPathBlackOut(m_tOSCServerParams.aPathBlackOut);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION)) {
+	if (isMaskSet(OSCServerParamsMask::TRANSMISSION)) {
 		pOscServer->SetPartialTransmission(m_tOSCServerParams.bPartialTransmission);
 	}
 
-	if(isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+	if(isMaskSet(OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
 		pOscServer->SetEnableNoChangeUpdate(m_tOSCServerParams.bEnableNoChangeUpdate);
 	}
 }

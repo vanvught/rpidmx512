@@ -50,7 +50,7 @@ static const char *WIFI_STARTED ALIGNED = "Wifi started";
 static 	_wifi_mode opmode = WIFI_OFF;
 static const char *ssid = NULL;
 
-const bool wifi(const struct ip_info *info) {
+bool wifi(const struct ip_info *info) {
 	uint8_t mac_address[6] ALIGNED;
 	char *ap_password = NULL;
 	struct ip_info ip_config;

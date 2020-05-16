@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/ltcsender.h"
 #include "ltc.h"
@@ -36,6 +36,7 @@
 LtcSender *LtcSender::s_pThis = 0;
 
 LtcSender::LtcSender(void): m_nTypePrevious(TC_TYPE_INVALID) {
+	assert(s_pThis == 0);
 	s_pThis = this;
 }
 

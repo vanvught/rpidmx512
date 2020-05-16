@@ -83,7 +83,7 @@ void RDMSubDeviceMCP23S08::Data(const uint8_t* pData, uint16_t nLength) {
 	uint8_t nData = 0;
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (1 << j);
 		}

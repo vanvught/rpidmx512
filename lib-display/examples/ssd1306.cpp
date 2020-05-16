@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 
 	bool isDetected = display.isDetected();
 

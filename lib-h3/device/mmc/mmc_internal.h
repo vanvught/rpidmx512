@@ -55,6 +55,9 @@
 
 #include <stdint.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvariadic-macros"	//TODO ignored "-Wvariadic-macros"
+
 #define MAX_MMC_NUM			3
 
 #ifndef NDEBUG

@@ -2,7 +2,7 @@
  * @file bw_i2c_lcd.c
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ void bw_i2c_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 	}
 
 	lcd_i2c_setup(device_info);
-	_i2c_write(data, length + 1);
+	_i2c_write(data, (uint32_t)(length + 1));
 }
 
 void bw_i2c_lcd_text_line_1(const device_info_t *device_info, const char *text, uint8_t length) {
@@ -128,7 +128,7 @@ void bw_i2c_lcd_set_backlight(const device_info_t *device_info, uint8_t value) {
 	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
+void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, __attribute__((unused)) const char *text, uint8_t length) {
 	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {
@@ -139,7 +139,7 @@ void bw_i2c_lcd_set_startup_message_line_1(const device_info_t *device_info, /*@
 	}
 }
 
-void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
+void bw_i2c_lcd_set_startup_message_line_2(const device_info_t *device_info, __attribute__((unused)) const char *text, uint8_t length) {
 	const char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE2, (char) 0xFF };
 
 	if (length == (uint8_t) 0) {

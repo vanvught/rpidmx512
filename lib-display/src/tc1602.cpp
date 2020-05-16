@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 extern "C" {
 #if defined(__linux__)
@@ -221,7 +221,7 @@ void Tc1602::WriteReg(const uint8_t reg) {
 }
 
 #if defined(ENABLE_CURSOR_MODE)
-void Tc1602::SetCursor(TCursorMode tCursorOnOff) {
+void Tc1602::SetCursor(CursorMode tCursorOnOff) {
 	uint8_t mode = TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON;
 
 	if ((tCursorOnOff & SET_CURSOR_ON) == SET_CURSOR_ON ){

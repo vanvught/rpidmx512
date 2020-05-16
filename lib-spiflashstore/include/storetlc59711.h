@@ -41,7 +41,6 @@ public:
 
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
 
-public:
 	static StoreTLC59711 *Get(void) {
 		return s_pThis;
 	}

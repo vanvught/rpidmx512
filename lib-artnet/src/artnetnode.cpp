@@ -26,11 +26,11 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnetnode.h"
 #include "artnetconst.h"
@@ -57,14 +57,6 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef MAX
- #define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
 #define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"
 #define NODE_DEFAULT_NET_SWITCH		0
 #define NODE_DEFAULT_SUBNET_SWITCH	0
@@ -83,7 +75,7 @@ ArtNetNode *ArtNetNode::s_pThis = 0;
 
 ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_nVersion(nVersion),
-	m_nPages(nPages <= ARTNET_MAX_PAGES ? nPages : ARTNET_MAX_PAGES),
+	m_nPages(nPages <= TArtNetConst::MAX_PAGES ? nPages : TArtNetConst::MAX_PAGES),
 	m_nHandle(-1),
 	m_pLightSet(0),
 	m_pArtNetTimeCode(0),
@@ -111,7 +103,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 
 	memset(&m_Node, 0, sizeof (struct TArtNetNode));
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	m_Node.Status2 = STATUS2_PORT_ADDRESS_15BIT | (m_nVersion > 3 ? STATUS2_SACN_ABLE_TO_SWITCH : STATUS2_SACN_NO_SWITCH);
+	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (m_nVersion > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
 
 	memset(&m_State, 0, sizeof (struct TArtNetNodeState));
 	m_State.reportCode = ARTNET_RCPOWEROK;
@@ -169,21 +161,21 @@ void ArtNetNode::Start(void) {
 
 	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
 
-	m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? STATUS2_IP_DHCP : STATUS2_IP_MANUALY);
-	m_Node.Status2 = (m_Node.Status2 & ~(STATUS2_DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? STATUS2_DHCP_CAPABLE : 0);
+	m_Node.Status2 = (m_Node.Status2 & ~(ArtNetStatus2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY);
+	m_Node.Status2 = (m_Node.Status2 & ~(ArtNetStatus2::DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? ArtNetStatus2::DHCP_CAPABLE : 0);
 
 	FillPollReply();
 #if defined ( ENABLE_SENDDIAG )
 	FillDiagData();
 #endif
 
-	m_nHandle = Network::Get()->Begin(ARTNET_UDP_PORT);
+	m_nHandle = Network::Get()->Begin(TArtNetConst::UDP_PORT);
 	assert(m_nHandle != -1);
 
 	m_State.status = ARTNET_ON;
 
 	if (m_pArtNetDmx != 0) {
-		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
 				if (m_InputPorts[i].nDestinationIp == 0) {
 					m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
@@ -200,7 +192,7 @@ void ArtNetNode::Start(void) {
 
 void ArtNetNode::Stop(void) {
 	if (m_pArtNetDmx != 0) {
-		for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
 				m_pArtNetDmx->Stop(i);
 			}
@@ -227,7 +219,7 @@ const uint8_t *ArtNetNode::GetSoftwareVersion(void) {
 }
 
 int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress) {
-	assert(nPortIndex < (ARTNET_MAX_PORTS * m_nPages));
+	assert(nPortIndex < (TArtNetConst::MAX_PORTS * m_nPages));
 	assert(dir <= ARTNET_DISABLE_PORT);
 
 	if (dir == ARTNET_DISABLE_PORT) {
@@ -252,12 +244,12 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 	if ((dir == ARTNET_INPUT_PORT) && (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT)) {
 		if (!m_InputPorts[nPortIndex].bIsEnabled) {
 			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
-			assert(m_State.nActiveInputPorts <= ARTNET_MAX_PORTS);
+			assert(m_State.nActiveInputPorts <= TArtNetConst::MAX_PORTS);
 		}
 
 		m_InputPorts[nPortIndex].bIsEnabled = true;
 		m_InputPorts[nPortIndex].port.nDefaultAddress = nAddress & 0x0F;// Universe : Bits 3-0
-		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress(nAddress, (nPortIndex / ARTNET_MAX_PORTS));
+		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress(nAddress, (nPortIndex / TArtNetConst::MAX_PORTS));
 
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT) {
 			if (m_OutputPorts[nPortIndex].bIsEnabled) {
@@ -270,12 +262,12 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 	if ((dir == ARTNET_OUTPUT_PORT) && (nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT)) {
 		if (!m_OutputPorts[nPortIndex].bIsEnabled) {
 			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
-			assert(m_State.nActiveOutputPorts <= (ARTNET_MAX_PORTS * m_nPages));
+			assert(m_State.nActiveOutputPorts <= (TArtNetConst::MAX_PORTS * m_nPages));
 		}
 
 		m_OutputPorts[nPortIndex].bIsEnabled = true;
 		m_OutputPorts[nPortIndex].port.nDefaultAddress = nAddress & 0x0F;// Universe : Bits 3-0
-		m_OutputPorts[nPortIndex].port.nPortAddress = MakePortAddress(nAddress, (nPortIndex / ARTNET_MAX_PORTS));
+		m_OutputPorts[nPortIndex].port.nPortAddress = MakePortAddress(nAddress, (nPortIndex / TArtNetConst::MAX_PORTS));
 
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			if (m_InputPorts[nPortIndex].bIsEnabled) {
@@ -291,7 +283,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 
 	if (m_State.status == ARTNET_ON) {
 		if (m_pArtNetStore != 0) {
-			if (nPortIndex < ARTNET_MAX_PORTS) {
+			if (nPortIndex < TArtNetConst::MAX_PORTS) {
 				m_pArtNetStore->SaveUniverseSwitch(nPortIndex, nAddress);
 			}
 		}
@@ -322,14 +314,14 @@ bool ArtNetNode::GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress, TArtNe
 }
 
 void ArtNetNode::SetSubnetSwitch(uint8_t nAddress, uint8_t nPage) {
-	assert(nPage < ARTNET_MAX_PAGES);
+	assert(nPage < TArtNetConst::MAX_PAGES);
 
 	m_Node.SubSwitch[nPage] = nAddress;
 
-	const uint32_t nPortIndexStart = nPage * ARTNET_MAX_PORTS;
+	const uint32_t nPortIndexStart = nPage * TArtNetConst::MAX_PORTS;
 
-	for (uint32_t i = nPortIndexStart; i < (nPortIndexStart + ARTNET_MAX_PORTS); i++) {
-		m_OutputPorts[i].port.nPortAddress = MakePortAddress(m_OutputPorts[i].port.nPortAddress, (i / ARTNET_MAX_PORTS));
+	for (uint32_t i = nPortIndexStart; i < (nPortIndexStart + TArtNetConst::MAX_PORTS); i++) {
+		m_OutputPorts[i].port.nPortAddress = MakePortAddress(m_OutputPorts[i].port.nPortAddress, (i / TArtNetConst::MAX_PORTS));
 	}
 
 	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
@@ -340,20 +332,20 @@ void ArtNetNode::SetSubnetSwitch(uint8_t nAddress, uint8_t nPage) {
 }
 
 uint8_t ArtNetNode::GetSubnetSwitch(uint8_t nPage) const {
-	assert(nPage < ARTNET_MAX_PAGES);
+	assert(nPage < TArtNetConst::MAX_PAGES);
 
 	return m_Node.SubSwitch[nPage];
 }
 
 void ArtNetNode::SetNetSwitch(uint8_t nAddress, uint8_t nPage) {
-	assert(nPage < ARTNET_MAX_PAGES);
+	assert(nPage < TArtNetConst::MAX_PAGES);
 
 	m_Node.NetSwitch[nPage] = nAddress;
 
-	const uint32_t nPortIndexStart = nPage * ARTNET_MAX_PORTS;
+	const uint32_t nPortIndexStart = nPage * TArtNetConst::MAX_PORTS;
 
-	for (uint32_t i = nPortIndexStart; i < (nPortIndexStart + ARTNET_MAX_PORTS); i++) {
-		m_OutputPorts[i].port.nPortAddress = MakePortAddress(m_OutputPorts[i].port.nPortAddress, (i / ARTNET_MAX_PORTS));
+	for (uint32_t i = nPortIndexStart; i < (nPortIndexStart + TArtNetConst::MAX_PORTS); i++) {
+		m_OutputPorts[i].port.nPortAddress = MakePortAddress(m_OutputPorts[i].port.nPortAddress, (i / TArtNetConst::MAX_PORTS));
 	}
 
 	if ((m_pArtNetStore != 0) && (m_State.status == ARTNET_ON)) {
@@ -364,7 +356,7 @@ void ArtNetNode::SetNetSwitch(uint8_t nAddress, uint8_t nPage) {
 }
 
 uint8_t ArtNetNode::GetNetSwitch(uint8_t nPage) const {
-	assert(nPage < ARTNET_MAX_PAGES);
+	assert(nPage < TArtNetConst::MAX_PAGES);
 
 	return m_Node.NetSwitch[nPage];
 }
@@ -396,19 +388,19 @@ uint16_t ArtNetNode::MakePortAddress(uint16_t nCurrentAddress, uint8_t nPage) {
 	return newAddress;
 }
 
-void ArtNetNode::SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode) {
-	assert(nPortIndex < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES));
+void ArtNetNode::SetMergeMode(uint8_t nPortIndex, ArtNetMerge tMergeMode) {
+	assert(nPortIndex < (TArtNetConst::MAX_PORTS * TArtNetConst::MAX_PAGES));
 
 	m_OutputPorts[nPortIndex].mergeMode = tMergeMode;
 
-	if (tMergeMode == ARTNET_MERGE_LTP) {
+	if (tMergeMode == ArtNetMerge::LTP) {
 		m_OutputPorts[nPortIndex].port.nStatus |= GO_MERGE_MODE_LTP;
 	} else {
 		m_OutputPorts[nPortIndex].port.nStatus &= (~GO_MERGE_MODE_LTP);
 	}
 
 	if (m_State.status == ARTNET_ON) {
-		if (nPortIndex < ARTNET_MAX_PORTS) {
+		if (nPortIndex < TArtNetConst::MAX_PORTS) {
 			if (m_pArtNetStore != 0) {
 				m_pArtNetStore->SaveMergeMode(nPortIndex, tMergeMode);
 			}
@@ -419,7 +411,7 @@ void ArtNetNode::SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode) {
 	}
 }
 
-TMerge ArtNetNode::GetMergeMode(uint8_t nPortIndex) const {
+ArtNetMerge ArtNetNode::GetMergeMode(uint8_t nPortIndex) const {
 	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
 
 	return m_OutputPorts[nPortIndex].mergeMode;
@@ -438,7 +430,7 @@ void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol
 		}
 
 		if (m_State.status == ARTNET_ON) {
-			if (nPortIndex < ARTNET_MAX_PORTS) {
+			if (nPortIndex < TArtNetConst::MAX_PORTS) {
 				if (m_pArtNetStore != 0) {
 					m_pArtNetStore->SavePortProtocol(nPortIndex, tPortProtocol);
 				}
@@ -509,7 +501,7 @@ void ArtNetNode::FillPollReply(void) {
 	ip.u32 = m_Node.IPAddressLocal;
 	memcpy(m_PollReply.IPAddress, ip.u8, sizeof m_PollReply.IPAddress);
 
-	m_PollReply.Port = ARTNET_UDP_PORT;
+	m_PollReply.Port = TArtNetConst::UDP_PORT;
 
 	m_PollReply.VersInfoH = DEVICE_SOFTWARE_VERSION[0];
 	m_PollReply.VersInfoL = DEVICE_SOFTWARE_VERSION[1];
@@ -526,7 +518,7 @@ void ArtNetNode::FillPollReply(void) {
 	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
 
 	// Disable all input
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
 		m_PollReply.GoodInput[i] = PORT_IN_STATUS_DISABLED_MASK;
 	}
 
@@ -557,11 +549,11 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		m_PollReply.BindIndex = nPage + 1;
 
-		const uint32_t nPortIndexStart = nPage * ARTNET_MAX_PORTS;
+		const uint32_t nPortIndexStart = nPage * TArtNetConst::MAX_PORTS;
 
 		uint32_t NumPortsLo = 0;
 
-		for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ARTNET_MAX_PORTS); nPortIndex++) {
+		for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + TArtNetConst::MAX_PORTS); nPortIndex++) {
 			uint8_t nStatus = m_OutputPorts[nPortIndex].port.nStatus;
 
 			if (m_OutputPorts[nPortIndex].tPortProtocol == PORT_ARTNET_ARTNET) {
@@ -601,7 +593,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;
 			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nDefaultAddress;
 
-			if (nPortIndex < ARTNET_MAX_PORTS) {
+			if (nPortIndex < TArtNetConst::MAX_PORTS) {
 				if (m_InputPorts[nPortIndex].bIsEnabled) {
 					m_PollReply.PortTypes[nPortIndex - nPortIndexStart] |= ARTNET_ENABLE_INPUT | ARTNET_PORT_DMX;
 					NumPortsLo++;
@@ -618,7 +610,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		snprintf(reinterpret_cast<char*>(m_PollReply.NodeReport), ARTNET_REPORT_LENGTH, "%04x [%04d] %s AvV", static_cast<int>(m_State.reportCode), static_cast<int>(m_State.ArtPollReplyCount), m_aSysName);
 
-		Network::Get()->SendTo(m_nHandle, &m_PollReply, sizeof(struct TArtPollReply), m_Node.IPAddressBroadcast, ARTNET_UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_PollReply, sizeof(struct TArtPollReply), m_Node.IPAddressBroadcast, TArtNetConst::UDP_PORT);
 	}
 
 	m_State.IsChanged = false;
@@ -661,19 +653,19 @@ bool ArtNetNode::IsMergedDmxDataChanged(uint8_t nPortId, const uint8_t *pData, u
 	m_OutputPorts[nPortId].port.nStatus |= GO_OUTPUT_IS_MERGING;
 
 
-	if (m_OutputPorts[nPortId].mergeMode == ARTNET_MERGE_HTP) {
+	if (m_OutputPorts[nPortId].mergeMode == ArtNetMerge::HTP) {
 
 		if (nLength != m_OutputPorts[nPortId].nLength) {
 			m_OutputPorts[nPortId].nLength = nLength;
 			for (uint32_t i = 0; i < nLength; i++) {
-				uint8_t data = MAX(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
+				uint8_t data = std::max(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
 				m_OutputPorts[nPortId].data[i] = data;
 			}
 			return true;
 		}
 
 		for (uint32_t i = 0; i < nLength; i++) {
-			uint8_t data = MAX(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
+			uint8_t data = std::max(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
 			if (data != m_OutputPorts[nPortId].data[i]) {
 				m_OutputPorts[nPortId].data[i] = data;
 				isChanged = true;
@@ -703,7 +695,7 @@ void ArtNetNode::CheckMergeTimeouts(uint8_t nPortId) {
 
 	bool bIsMerging = false;
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * m_nPages); i++) {
+	for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * m_nPages); i++) {
 		bIsMerging |= ((m_OutputPorts[i].port.nStatus & GO_OUTPUT_IS_MERGING) != 0);
 	}
 
@@ -719,14 +711,14 @@ void ArtNetNode::CheckMergeTimeouts(uint8_t nPortId) {
 void ArtNetNode::HandlePoll(void) {
 	const struct TArtPoll *pArtPoll = &(m_ArtNetPacket.ArtPacket.ArtPoll);
 
-	if (pArtPoll->TalkToMe & TTM_SEND_ARTP_ON_CHANGE) {
+	if (pArtPoll->TalkToMe & ArtNetTalkToMe::SEND_ARTP_ON_CHANGE) {
 		m_State.SendArtPollReplyOnChange = true;
 	} else {
 		m_State.SendArtPollReplyOnChange = false;
 	}
 
 	// If any controller requests diagnostics, the node will send diagnostics. (ArtPoll->TalkToMe->2).
-	if (pArtPoll->TalkToMe & TTM_SEND_DIAG_MESSAGES) {
+	if (pArtPoll->TalkToMe & ArtNetTalkToMe::SEND_DIAG_MESSAGES) {
 		m_State.SendArtDiagData = true;
 
 		if (m_State.IPAddressArtPoll == 0) {
@@ -739,13 +731,13 @@ void ArtNetNode::HandlePoll(void) {
 
 		if (m_State.IsMultipleControllersReqDiag ) {
 			// The lowest minimum value of Priority shall be used. (Ignore ArtPoll->Priority).
-			m_State.Priority = MIN(m_State.Priority , pArtPoll->Priority);
+			m_State.Priority = std::min(m_State.Priority , pArtPoll->Priority);
 		} else {
 			m_State.Priority = pArtPoll->Priority;
 		}
 
 		// If there are multiple controllers requesting diagnostics, diagnostics shall be broadcast. (Ignore ArtPoll->TalkToMe->3).
-		if (!m_State.IsMultipleControllersReqDiag && (pArtPoll->TalkToMe & TTM_SEND_DIAG_UNICAST)) {
+		if (!m_State.IsMultipleControllersReqDiag && (pArtPoll->TalkToMe & ArtNetTalkToMe::SEND_DIAG_UNICAST)) {
 			m_State.IPAddressDiagSend = m_ArtNetPacket.IPAddressFrom;
 		} else {
 			m_State.IPAddressDiagSend = m_Node.IPAddressBroadcast;
@@ -761,10 +753,10 @@ void ArtNetNode::HandlePoll(void) {
 void ArtNetNode::HandleDmx(void) {
 	const struct TArtDmx *pArtDmx = &(m_ArtNetPacket.ArtPacket.ArtDmx);
 
-	uint32_t data_length = ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length;
-	data_length = MIN(data_length, ARTNET_DMX_LENGTH);
+	uint32_t data_length = (static_cast<uint32_t>(pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length;
+	data_length = std::min(data_length, TArtNetConst::DMX_LENGTH);
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * m_nPages); i++) {
+	for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * m_nPages); i++) {
 
 		if (m_OutputPorts[i].bIsEnabled && (m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) && (pArtDmx->PortAddress == m_OutputPorts[i].port.nPortAddress)) {
 
@@ -883,7 +875,7 @@ void ArtNetNode::HandleSync(void) {
 	m_State.IsSynchronousMode = true;
 	m_State.nArtSyncMillis = Hardware::Get()->Millis();
 
-	for (uint32_t i = 0; i < (m_nPages * ARTNET_MAX_PORTS); i++) {
+	for (uint32_t i = 0; i < (m_nPages * TArtNetConst::MAX_PORTS); i++) {
 		if  ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) &&  ((m_OutputPorts[i].IsDataPending) || (m_OutputPorts[i].bIsEnabled && m_bDirectUpdate) )) {
 #if defined ( ENABLE_SENDDIAG )
 			SendDiag("Send pending data", ARTNET_DP_LOW);
@@ -928,7 +920,7 @@ void ArtNetNode::HandleAddress(void) {
 		SetNetSwitch(pArtAddress->NetSwitch & ~PROGRAM_CHANGE_MASK);
 	}
 
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
 		if (pArtAddress->SwOut[i] == PROGRAM_NO_CHANGE) {
 		} else if (pArtAddress->SwOut[i] == PROGRAM_DEFAULTS) {
 			SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, NODE_DEFAULT_UNIVERSE);
@@ -948,7 +940,7 @@ void ArtNetNode::HandleAddress(void) {
 	case ARTNET_PC_CANCEL:
 		// If Node is currently in merge mode, cancel merge mode upon receipt of next ArtDmx packet.
 		m_State.IsMergeMode = false;
-		for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * m_nPages); i++) {
+		for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * m_nPages); i++) {
 			m_OutputPorts[i].port.nStatus &= (~GO_OUTPUT_IS_MERGING);
 		}
 		break;
@@ -970,14 +962,14 @@ void ArtNetNode::HandleAddress(void) {
 	case ARTNET_PC_MERGE_LTP_1:
 	case ARTNET_PC_MERGE_LTP_2:
 	case ARTNET_PC_MERGE_LTP_3:
-		SetMergeMode(pArtAddress->Command & 0x3, ARTNET_MERGE_LTP);
+		SetMergeMode(pArtAddress->Command & 0x3, ArtNetMerge::LTP);
 		break;
 
 	case ARTNET_PC_MERGE_HTP_0:
 	case ARTNET_PC_MERGE_HTP_1:
 	case ARTNET_PC_MERGE_HTP_2:
 	case ARTNET_PC_MERGE_HTP_3:
-		SetMergeMode(pArtAddress->Command & 0x3, ARTNET_MERGE_HTP);
+		SetMergeMode(pArtAddress->Command & 0x3, ArtNetMerge::HTP);
 		break;
 
 	case ARTNET_PC_ARTNET_SEL0:
@@ -999,10 +991,10 @@ void ArtNetNode::HandleAddress(void) {
 	case ARTNET_PC_CLR_2:
 	case ARTNET_PC_CLR_3:
 		nPort = pArtAddress->Command & 0x3;
-		for (uint32_t i = 0; i < ARTNET_DMX_LENGTH; i++) {
+		for (uint32_t i = 0; i < TArtNetConst::DMX_LENGTH; i++) {
 			m_OutputPorts[nPort].data[i] = 0;
 		}
-		m_OutputPorts[nPort].nLength = ARTNET_DMX_LENGTH;
+		m_OutputPorts[nPort].nLength = TArtNetConst::DMX_LENGTH;
 		if (m_OutputPorts[nPort].tPortProtocol == PORT_ARTNET_ARTNET) {
 			m_pLightSet->SetData(nPort, m_OutputPorts[nPort].data, m_OutputPorts[nPort].nLength);
 		}
@@ -1012,7 +1004,7 @@ void ArtNetNode::HandleAddress(void) {
 		break;
 	}
 
-	if ((nPort < ARTNET_MAX_PORTS) && (m_OutputPorts[nPort].tPortProtocol == PORT_ARTNET_ARTNET) && !m_IsLightSetRunning[nPort]) {
+	if ((nPort < TArtNetConst::MAX_PORTS) && (m_OutputPorts[nPort].tPortProtocol == PORT_ARTNET_ARTNET) && !m_IsLightSetRunning[nPort]) {
 		m_pLightSet->Start(nPort);
 		m_IsLightSetRunning[nPort] = true;
 		m_OutputPorts[nPort].port.nStatus |= GO_DATA_IS_BEING_TRANSMITTED;
@@ -1029,7 +1021,7 @@ void ArtNetNode::SetNetworkDataLossCondition(void) {
 	m_State.IsMergeMode = false;
 	m_State.IsSynchronousMode = false;
 
-	for (uint32_t i = 0; i < (ARTNET_MAX_PORTS * m_nPages); i++) {
+	for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * m_nPages); i++) {
 		if  ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_ARTNET) && (m_IsLightSetRunning[i])) {
 			m_pLightSet->Stop(i);
 			m_IsLightSetRunning[i] = false;
@@ -1050,7 +1042,7 @@ void ArtNetNode::GetType(void) {
 		return;
 	}
 
-	if ((data[10] != 0) || (data[11] != ARTNET_PROTOCOL_REVISION)) {
+	if ((data[10] != 0) || (data[11] != TArtNetConst::PROTOCOL_REVISION)) {
 		m_ArtNetPacket.OpCode = OP_NOT_DEFINED;
 		return;
 	}

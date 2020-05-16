@@ -1,8 +1,10 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 /**
  * @file mmc.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -435,7 +437,7 @@ int mmc_send_ext_csd(struct mmc *mmc, char *ext_csd) {
 	return err;
 }
 
-int mmc_switch(struct mmc *mmc, uint8_t set, uint8_t index, uint8_t value) {
+int mmc_switch(struct mmc *mmc, __attribute__((unused)) uint8_t set, uint8_t index, uint8_t value) {
 	struct mmc_cmd cmd;
 	int timeout = 1000;
 	int ret;

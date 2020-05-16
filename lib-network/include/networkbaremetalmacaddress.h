@@ -39,31 +39,31 @@ public:
 
 	// Dummy methods
 
-	int32_t Begin(uint16_t nPort) {
+	int32_t Begin(__attribute__((unused)) uint16_t nPort) {
 		return 0;
 	}
 
-	int32_t End(uint16_t nPort) {
+	int32_t End(__attribute__((unused)) uint16_t nPort) {
 		return 0;
 	}
 
-	void JoinGroup(uint32_t nHandle, uint32_t nIp) {
+	void JoinGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
 	}
 
-	void LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+	void LeaveGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
 	}
 
-	uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) {
+	uint16_t RecvFrom(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t *pFromIp, __attribute__((unused)) uint16_t *pFromPort) {
 		return 0;
 	}
-	void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) {
+	void SendTo(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) const void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t nToIp, __attribute__((unused)) uint16_t nRemotePort) {
 
 	}
 
-	void SetIp(uint32_t nIp) {
+	void SetIp(__attribute__((unused)) uint32_t nIp) {
 	}
 
-	void SetNetmask(uint32_t nNetmask) {
+	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 
 	}
 };

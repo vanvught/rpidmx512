@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmdeviceresponder.h"
 #include "rdmdevice.h"
@@ -45,21 +45,21 @@
 
 #include "debug.h"
 
-constexpr char LANGUAGE[2] = { 'e', 'n' };
+static constexpr char LANGUAGE[2] = { 'e', 'n' };
 
 #if defined(H3)
  #include "h3_board.h"
- constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Responder";
+ static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Responder";
 #elif defined (RASPPI) || defined (BARE_METAL)
- constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Responder";
+ static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
- constexpr char DEVICE_LABEL[] = "Cygwin RDM Responder";
+ static constexpr char DEVICE_LABEL[] = "Cygwin RDM Responder";
 #elif defined (__linux__)
- constexpr char DEVICE_LABEL[] = "Linux RDM Responder";
+ static constexpr char DEVICE_LABEL[] = "Linux RDM Responder";
 #elif defined (__APPLE__)
- constexpr char DEVICE_LABEL[] = "MacOS RDM Responder";
+ static constexpr char DEVICE_LABEL[] = "MacOS RDM Responder";
 #else
- constexpr char DEVICE_LABEL[] = "RDM Responder";
+ static constexpr char DEVICE_LABEL[] = "RDM Responder";
 #endif
 
 RDMDeviceResponder *RDMDeviceResponder::s_pThis = 0;

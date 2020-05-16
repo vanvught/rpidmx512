@@ -28,8 +28,6 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
@@ -73,8 +71,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	hw.SetRebootHandler(new Reboot);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	DisplayUdfHandler displayUdfHandler;
 
@@ -117,8 +114,7 @@ void notmain(void) {
 
 	display.Write(5, "mDNS enabled");
 
-	console_status(CONSOLE_GREEN, "Device running");
-	display.TextStatus("Device running", DISPLAY_7SEGMENT_MSG_INFO_NONE);
+	display.TextStatus("Device running", DISPLAY_7SEGMENT_MSG_INFO_NONE, CONSOLE_GREEN);
 
 	lb.SetMode(LEDBLINK_MODE_NORMAL);
 

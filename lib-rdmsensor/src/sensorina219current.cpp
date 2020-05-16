@@ -68,10 +68,10 @@ bool SensorINA219Current::Initialize(void) {
 }
 
 int16_t SensorINA219Current::GetValue(void) {
-	const uint16_t nValue = (ina219_get_shunt_current(&sDeviceInfo) * 1000);
+	const int16_t nValue = (ina219_get_shunt_current(&sDeviceInfo) * 1000);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
+	printf("%s\tnValue=%d\n", __FUNCTION__, nValue);
 #endif
 	return nValue;
 }

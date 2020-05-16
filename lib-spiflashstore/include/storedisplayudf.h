@@ -36,7 +36,6 @@ public:
 	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams);
 	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams);
 
-public:
 	static StoreDisplayUdf *Get(void) {
 		return s_pThis;
 	}

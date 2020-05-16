@@ -26,7 +26,6 @@
 #ifndef L6470_H_
 #define L6470_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 
 /**
@@ -172,9 +171,9 @@ public:
 
 	void move(long nStep) {
 		if (nStep >= 0) {
-			move(L6470_DIR_FWD, nStep);
+			move(L6470_DIR_FWD, static_cast<unsigned long>(nStep));
 		} else {
-			move(L6470_DIR_REV, -nStep);
+			move(L6470_DIR_REV, static_cast<unsigned long>(-nStep));
 		}
 	}
 
@@ -189,7 +188,7 @@ public:
 	/**
 	 * Just for administration purposes
 	 */
-	int GetMotorNumber(void) {
+	unsigned GetMotorNumber(void) {
 		return m_nMotorNumber;
 	}
 
@@ -219,7 +218,7 @@ private:
 	float spdParse(unsigned long);
 
 protected:
-	int m_nMotorNumber;	///< Just for administration purposes
+	unsigned m_nMotorNumber;	///< Just for administration purposes
 };
 
 #endif /* L6470_H_ */

@@ -30,7 +30,6 @@
 #define ARTNET4HANDLER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "artnet.h"
 

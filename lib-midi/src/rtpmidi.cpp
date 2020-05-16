@@ -24,7 +24,7 @@
  */
 
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rtpmidi.h"
 #include "applemidi.h"
@@ -106,14 +106,14 @@ void RtpMidi::Run(void) {
 	AppleMidi::Run();
 }
 
-int32_t RtpMidi::DecodeTime(uint32_t nCommandLength, uint32_t nOffset) {
+int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uint32_t nOffset) {
 	DEBUG_ENTRY
 
-	uint32_t nSize = 0;
+	int32_t nSize = 0;
 	unsigned long deltatime = 0;
 
 	for (uint32_t i = 0; i < 4; i++ ) {
-		const uint8_t nOctet = m_pReceiveBuffer[nOffset + nSize];
+		const uint8_t nOctet = m_pReceiveBuffer[nOffset + static_cast<uint32_t>(nSize)];
 		deltatime = ( deltatime << 7 ) | ( nOctet & RTP_MIDI_DELTA_TIME_OCTET_MASK );
 		nSize++;
 
@@ -122,7 +122,7 @@ int32_t RtpMidi::DecodeTime(uint32_t nCommandLength, uint32_t nOffset) {
 		}
 	}
 
-	DEBUG_PRINTF("nSize=%d, deltatime=%x", static_cast<int>(nSize), static_cast<unsigned>(deltatime));
+	DEBUG_PRINTF("nSize=%d, deltatime=%x", nSize, static_cast<unsigned>(deltatime));
 
 	DEBUG_EXIT
 	return nSize;
@@ -209,8 +209,8 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 	const uint8_t nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
 
-	uint32_t nCommandLength = nFlags & RTP_MIDI_CS_MASK_SHORTLEN;
-	uint32_t nOffset;
+	int32_t nCommandLength = nFlags & RTP_MIDI_CS_MASK_SHORTLEN;
+	int32_t nOffset;
 
 	if (nFlags & RTP_MIDI_CS_FLAG_B) {
 		const uint8_t nOctet = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
@@ -220,7 +220,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 		nOffset = RTP_MIDI_COMMAND_OFFSET + 1;
 	}
 
-	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", static_cast<int>(nCommandLength), static_cast<int>(nOffset));
+	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", nCommandLength, nOffset);
 
 	debug_dump(&m_pReceiveBuffer[nOffset], nCommandLength);
 
@@ -229,7 +229,8 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	while (nCommandLength != 0) {
 
 		if ((nCommandCount != 0) || (nFlags & RTP_MIDI_CS_FLAG_Z)) {
-			int32_t nSize = DecodeTime(nCommandLength, nOffset);
+			int32_t nSize = DecodeTime(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
+
 			if (nSize < 0) {
 				return;
 			}
@@ -239,7 +240,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 		}
 
 		if (nCommandLength != 0) {
-			int nSize = DecodeMidi(nCommandLength, nOffset);
+			int32_t nSize = DecodeMidi(static_cast<uint32_t>(nCommandLength), static_cast<uint32_t>(nOffset));
 
 			if (nSize < 0) {
 				return;

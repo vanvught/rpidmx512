@@ -27,7 +27,6 @@
 #define LTCDISPLAYPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayws28xx.h"
@@ -48,21 +47,22 @@ struct TLtcDisplayParams {
 	uint8_t nWS28xxType;
 } __attribute__((packed));
 
-enum TLtcDisplayParamsMask {
-	LTCDISPLAY_PARAMS_MASK_MAX7219_TYPE = (1 << 0),
-	LTCDISPLAY_PARAMS_MASK_MAX7219_INTENSITY = (1 << 1),
-	LTCDISPLAY_PARAMS_MASK_LED_TYPE = (1 << 2),
-	LTCDISPLAY_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 3),
-	LTCDISPLAY_PARAMS_MASK_RGB_MAPPING = (1 << 4),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_INTENSITY = (1 << 5),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_COLON_BLINK_MODE = (1 << 6),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_COLOUR_INDEX = (1 << 7),
-	LTCDISPLAY_PARAMS_MASK_WS28XX_TYPE = (1 << 8)
+struct LtcDisplayParamsMask {
+	static constexpr auto MAX7219_TYPE = (1U << 0);
+	static constexpr auto MAX7219_INTENSITY = (1U << 1);
+	static constexpr auto LED_TYPE = (1U << 2);
+	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 3);
+	static constexpr auto RGB_MAPPING = (1U << 4);
+	static constexpr auto WS28XX_INTENSITY = (1U << 5);
+	static constexpr auto WS28XX_COLON_BLINK_MODE = (1U << 6);
+	static constexpr auto WS28XX_COLOUR_INDEX = (1U << 7);
+	static constexpr auto WS28XX_TYPE = (1U << 8);
 };
 
 class LtcDisplayParamsStore {
 public:
-	virtual ~LtcDisplayParamsStore(void) {}
+	virtual ~LtcDisplayParamsStore(void) {
+	}
 
 	virtual void Update(const struct TLtcDisplayParams *ptLtcDisplayParams)=0;
 	virtual void Copy(struct TLtcDisplayParams *ptLtcDisplayParams)=0;

@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "l6470dmxmode2.h"
 #include "l6470.h"

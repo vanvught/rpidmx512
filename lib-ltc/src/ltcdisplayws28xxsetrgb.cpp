@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplayws28xx.h"
 

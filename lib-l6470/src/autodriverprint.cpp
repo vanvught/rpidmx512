@@ -36,6 +36,5 @@ void AutoDriver::Print(void) {
 			static_cast<int>(getAccKVAL()), static_cast<int>(getDecKVAL()),
 			static_cast<int>(getRunKVAL()), static_cast<int>(getHoldKVAL()));
 	printf(" MicroSteps=%u, SwitchMode=%d\n",
-			static_cast<unsigned>(1) << getStepMode(),
-			static_cast<int>(getSwitchMode()));
+			static_cast<unsigned>(1) << getStepMode(), getSwitchMode());
 }

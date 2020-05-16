@@ -26,8 +26,6 @@
 #ifndef KB_LINUX_H_
 #define KB_LINUX_H_
 
-#include <stdbool.h>
-
 #include "inputset.h"
 
 class KbLinux: public InputSet {

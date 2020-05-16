@@ -59,4 +59,6 @@ void debug_exception(unsigned int type, unsigned int address) {
 
 	for(;;);
 }
+#else
+ typedef int ISO_C_forbids_an_empty_translation_unit;
 #endif

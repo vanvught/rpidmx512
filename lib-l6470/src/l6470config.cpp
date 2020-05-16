@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "l6470.h"
 #include "l6470constants.h"
@@ -61,7 +60,7 @@ void L6470::setMaxSpeed(float stepsPerSecond) {
 }
 
 float L6470::getMaxSpeed(void) {
-	return maxSpdParse(getParam(L6470_PARAM_MAX_SPEED));
+	return maxSpdParse(static_cast<unsigned long>(getParam(L6470_PARAM_MAX_SPEED)));
 }
 
 void L6470::setMinSpeed(float stepsPerSecond) {
@@ -72,7 +71,7 @@ void L6470::setMinSpeed(float stepsPerSecond) {
 }
 
 float L6470::getMinSpeed(void) {
-	return minSpdParse(getParam(L6470_PARAM_MIN_SPEED));
+	return minSpdParse(static_cast<unsigned long>(getParam(L6470_PARAM_MIN_SPEED)));
 }
 
 void L6470::setFullSpeed(float stepsPerSecond) {
@@ -81,7 +80,7 @@ void L6470::setFullSpeed(float stepsPerSecond) {
 }
 
 float L6470::getFullSpeed(void) {
-	return FSParse(getParam(L6470_PARAM_FS_SPD));
+	return FSParse(static_cast<unsigned long>(getParam(L6470_PARAM_FS_SPD)));
 }
 
 void L6470::setAcc(float stepsPerSecondPerSecond) {
@@ -90,7 +89,7 @@ void L6470::setAcc(float stepsPerSecondPerSecond) {
 }
 
 float L6470::getAcc(void) {
-	return accParse(getParam(L6470_PARAM_ACC));
+	return accParse(static_cast<unsigned long>(getParam(L6470_PARAM_ACC)));
 }
 
 void L6470::setDec(float stepsPerSecondPerSecond) {
@@ -99,7 +98,7 @@ void L6470::setDec(float stepsPerSecondPerSecond) {
 }
 
 float L6470::getDec(void) {
-	return accParse(getParam(L6470_PARAM_DECEL));
+	return accParse(static_cast<unsigned long>(getParam(L6470_PARAM_DECEL)));
 }
 
 void L6470::setOCThreshold(uint8_t threshold) {
@@ -111,13 +110,13 @@ uint8_t L6470::getOCThreshold(void) {
 }
 
 void L6470::setPWMFreq(int divisor, int multiplier) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_F_PWM_INT_MASK);
 	configVal &= ~(L6470_CONFIG_F_PWM_DEC_MASK);
 	configVal |= ((L6470_CONFIG_F_PWM_INT_MASK & divisor) | (L6470_CONFIG_F_PWM_DEC_MASK & multiplier));
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getPWMFreqDivisor(void) {
@@ -129,12 +128,12 @@ int L6470::getPWMFreqMultiplier(void) {
 }
 
 void L6470::setSlewRate(int slewRate) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_POW_SR_MASK);
 	configVal |= (L6470_CONFIG_POW_SR_MASK & slewRate);
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getSlewRate(void) {
@@ -142,12 +141,12 @@ int L6470::getSlewRate(void) {
 }
 
 void L6470::setOCShutdown(int OCShutdown) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_OC_SD_MASK);
 	configVal |= (L6470_CONFIG_OC_SD_MASK & OCShutdown);
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getOCShutdown(void) {
@@ -155,12 +154,12 @@ int L6470::getOCShutdown(void) {
 }
 
 void L6470::setVoltageComp(int vsCompMode) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_EN_VSCOMP_MASK);
 	configVal |= (L6470_CONFIG_EN_VSCOMP_MASK & vsCompMode);
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getVoltageComp(void) {
@@ -168,12 +167,12 @@ int L6470::getVoltageComp(void) {
 }
 
 void L6470::setSwitchMode(int switchMode) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_SW_MODE_MASK);
 	configVal |= (L6470_CONFIG_SW_MODE_MASK & switchMode);
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getSwitchMode(void) {
@@ -181,12 +180,12 @@ int L6470::getSwitchMode(void) {
 }
 
 void L6470::setOscMode(int oscillatorMode) {
-	unsigned long configVal = getParam(L6470_PARAM_CONFIG);
+	long configVal = getParam(L6470_PARAM_CONFIG);
 
 	configVal &= ~(L6470_CONFIG_OSC_SEL_MASK);
 	configVal |= (L6470_CONFIG_OSC_SEL_MASK & oscillatorMode);
 
-	setParam(L6470_PARAM_CONFIG, configVal);
+	setParam(L6470_PARAM_CONFIG, static_cast<unsigned long>(configVal));
 }
 
 int L6470::getOscMode(void) {
@@ -226,7 +225,7 @@ uint8_t L6470::getHoldKVAL(void) {
 }
 
 void L6470::setLoSpdOpt(bool enable) {
-	unsigned long temp = getParam(L6470_PARAM_MIN_SPEED);
+	long temp = getParam(L6470_PARAM_MIN_SPEED);
 
 	if (enable) {
 		temp |= L6470_LSPD_OPT;
@@ -234,7 +233,7 @@ void L6470::setLoSpdOpt(bool enable) {
 		temp &= (~L6470_LSPD_OPT);
 	}
 
-	setParam(L6470_PARAM_MIN_SPEED, temp);
+	setParam(L6470_PARAM_MIN_SPEED, static_cast<unsigned long>(temp));
 }
 
 bool L6470::getLoSpdOpt(void) {

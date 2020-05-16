@@ -27,48 +27,48 @@
 #include <string.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "showfile.h"
 #include "showfileconst.h"
 
 #include "debug.h"
 
-TShowFileFormats ShowFile::GetFormat(const char *pString) {
+ShowFileFormats ShowFile::GetFormat(const char *pString) {
 	assert(pString != 0);
 
-	for (uint32_t i = 0; i < SHOWFILE_FORMAT_UNDEFINED; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(ShowFileFormats::UNDEFINED); i++) {
 		if (strcasecmp(pString, ShowFileConst::FORMAT[i]) == 0) {
-			return static_cast<TShowFileFormats>(i);
+			return static_cast<ShowFileFormats>(i);
 		}
 	}
 
-	return SHOWFILE_FORMAT_UNDEFINED;
+	return ShowFileFormats::UNDEFINED;
 }
 
-const char *ShowFile::GetFormat(TShowFileFormats tFormat) {
-	if (tFormat < SHOWFILE_FORMAT_UNDEFINED) {
-		return ShowFileConst::FORMAT[tFormat];
+const char *ShowFile::GetFormat(ShowFileFormats tFormat) {
+	if (tFormat < ShowFileFormats::UNDEFINED) {
+		return ShowFileConst::FORMAT[static_cast<int>(tFormat)];
 	}
 
 	return "Unknown";
 }
 
 bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t nShowFileNumber) {
-	assert(nLength == SHOWFILE_FILE_NAME_LENGTH + 1);
+	assert(nLength == ShowFileFile::NAME_LENGTH + 1);
 
-	if (nShowFileNumber < SHOWFILE_FILE_MAX_NUMBER) {
+	if (nShowFileNumber < ShowFileFile::MAX_NUMBER) {
 		snprintf(pShowFileName, nLength, "show%.2d.txt", nShowFileNumber);
 		return true;
-	} else {
-		return false;
 	}
+
+	return false;
 }
 
 bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNumber) {
 	DEBUG_PRINTF("pShowFileName=[%s]", pShowFileName);
 
-	if ((pShowFileName == 0) || (strlen(pShowFileName) != SHOWFILE_FILE_NAME_LENGTH)) {
+	if ((pShowFileName == 0) || (strlen(pShowFileName) != ShowFileFile::NAME_LENGTH)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -78,7 +78,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNu
 		return false;
 	}
 
-	if (memcmp(&pShowFileName[SHOWFILE_FILE_NAME_LENGTH - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
+	if (memcmp(&pShowFileName[ShowFileFile::NAME_LENGTH - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
 		DEBUG_EXIT
 		return false;
 	}

@@ -29,6 +29,6 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-void monitor_rdm_data(int line, uint16_t data_length, const uint8_t *data, bool is_sent) {
+void monitor_rdm_data(__attribute__((unused)) int line, __attribute__((unused)) uint16_t data_length, __attribute__((unused)) const uint8_t *data, __attribute__((unused)) bool is_sent) {
 
 }

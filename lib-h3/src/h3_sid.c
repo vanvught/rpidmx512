@@ -64,7 +64,7 @@ void h3_sid_get_rootkey(uint8_t *out) {
 	uint32_t tmp;
 
 	for (i = 0; i < ROOT_KEY_SIZE; i++) {
-		prctl_read((i * 4), &tmp);
+		prctl_read((uint32_t)(i * 4), &tmp);
 		be32enc(&out[i * 4], tmp);
 	}
 }

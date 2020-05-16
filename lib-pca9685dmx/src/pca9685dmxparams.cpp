@@ -25,7 +25,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "pca9685dmxparams.h"
 

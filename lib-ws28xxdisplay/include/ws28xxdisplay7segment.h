@@ -28,7 +28,6 @@
 #define WS28XXDISPLAY7SEGMENT_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #if defined(USE_SPI_DMA)
  #include "h3/ws28xxdma.h"
@@ -37,14 +36,17 @@
 
 #include "rgbmapping.h"
 
-#define WS28XX_NUM_OF_DIGITS	8
-#define WS28XX_NUM_OF_COLONS	3
+struct WS28xxDisplay7SegmentConfig {
+	static constexpr uint32_t NUM_OF_DIGITS = 8;
+	static constexpr uint32_t NUM_OF_COLONS = 3;
 
-#define SEGMENTS_PER_DIGIT 		7		///< number of LEDs that make up one digit
-#define LEDS_PER_SEGMENT 		1		///< number of LEDs that make up one segment
-#define LEDS_PER_COLON 			2		///< number of LEDs that make up one colon
+	static constexpr uint32_t SEGMENTS_PER_DIGIT = 7;	///< number of LEDs that make up one digit
+	static constexpr uint32_t LEDS_PER_SEGMENT = 1;		///< number of LEDs that make up one segment
+	static constexpr uint32_t LEDS_PER_COLON = 2;		///< number of LEDs that make up one colon
 
-#define WS28XX_LED_COUNT 		((LEDS_PER_SEGMENT * SEGMENTS_PER_DIGIT * WS28XX_NUM_OF_DIGITS) + (LEDS_PER_COLON * WS28XX_NUM_OF_COLONS))
+	static constexpr uint32_t LED_COUNT = ((WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT * WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS)
+			+ (WS28xxDisplay7SegmentConfig::LEDS_PER_COLON * WS28xxDisplay7SegmentConfig::NUM_OF_COLONS));
+};
 
 class WS28xxDisplay7Segment {
 public:

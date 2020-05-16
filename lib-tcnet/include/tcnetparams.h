@@ -38,12 +38,13 @@ struct TTCNetParams {
 	uint8_t nTimeCodeType;
 	uint8_t nUseTimeCode;
 };
+//} __attribute__((packed));
 
-enum TTCNetParamsMask {
-	TCNET_PARAMS_MASK_NODE_NAME = (1 << 0),
-	TCNET_PARAMS_MASK_LAYER = (1 << 1),
-	TCNET_PARAMS_MASK_TIMECODE_TYPE = (1 << 2),
-	TCNET_PARAMS_MASK_USE_TIMECODE = (1 << 3)
+struct TCNetParamsMask {
+	static constexpr auto NODE_NAME = (1U << 0);
+	static constexpr auto LAYER = (1U << 1);
+	static constexpr auto TIMECODE_TYPE = (1U << 2);
+	static constexpr auto USE_TIMECODE = (1U << 3);
 };
 
 class TCNetParamsStore {
@@ -69,7 +70,6 @@ public:
 
 	void Dump(void);
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
@@ -78,9 +78,8 @@ private:
 		return (m_tTTCNetParams.nSetList & nMask) == nMask;
 	}
 
-private:
 	TCNetParamsStore *m_pTCNetParamsStore;
-    struct TTCNetParams	m_tTTCNetParams;
+    TTCNetParams	m_tTTCNetParams;
 };
 
 #endif /* TCNETPARAMS_H_ */

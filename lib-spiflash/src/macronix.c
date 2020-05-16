@@ -80,7 +80,7 @@ static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode) {
 	const struct macronix_spi_flash_params *params;
 	unsigned int i;
-	uint32_t id = idcode[2] | idcode[1] << 8;
+	uint32_t id = idcode[2] | (uint32_t)idcode[1] << 8;
 
 	for (i = 0; i < ARRAY_SIZE(macronix_spi_flash_table); i++) {
 		params = &macronix_spi_flash_table[i];

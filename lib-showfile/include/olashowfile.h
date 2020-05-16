@@ -30,18 +30,12 @@
 
 #include "showfile.h"
 
-enum TState {
-	STATE_IDLE,
-	STATE_PARSING_DMX,
-	STATE_TIME_WAITING
-};
-
-enum ParseCode {
-	PARSE_FAILED,
-	PARSE_TIME,
-	PARSE_DMX,
-	PARSE_NONE,
-	PARSE_EOF
+enum class OlaParseCode {
+	FAILED,
+	TIME,
+	DMX,
+	NONE,
+	EOFILE
 };
 
 class OlaShowFile: public ShowFile {
@@ -58,19 +52,25 @@ public:
 	}
 
 private:
-	ParseCode GetNextLine(void);
-	ParseCode ParseLine(const char *pLine);
-	ParseCode ParseDmxData(const char *pLine);
+	enum class OlaState {
+		IDLE,
+		PARSING_DMX,
+		TIME_WAITING
+	};
+
+	OlaParseCode GetNextLine(void);
+	OlaParseCode ParseLine(const char *pLine);
+	OlaParseCode ParseDmxData(const char *pLine);
 
 private:
-	ParseCode m_tParseCode;
-	TState m_tState;
+	OlaParseCode m_tParseCode = OlaParseCode::FAILED;
+	OlaState m_tState = OlaState::IDLE;
 	char s_buffer[2048];
-	uint32_t m_nDelayMillis;
-	uint32_t m_nLastMillis;
-	uint32_t m_nUniverse;
+	uint32_t m_nDelayMillis = 0;
+	uint32_t m_nLastMillis = 0;
+	uint32_t m_nUniverse = 0;
 	uint8_t m_DmxData[512];
-	uint32_t m_nDmxDataLength;
+	uint32_t m_nDmxDataLength = 0;
 };
 
 #endif /* OLASHOWFILE_H_ */

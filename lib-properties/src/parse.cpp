@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "parse.h"
 
@@ -43,7 +43,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 			return 0;
 		}
 
-		uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
+		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;
@@ -67,7 +67,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 			return 0;
 		}
 
-		uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
+		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;

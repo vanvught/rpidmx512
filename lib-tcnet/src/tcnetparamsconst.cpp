@@ -26,6 +26,7 @@
 #include "tcnetparamsconst.h"
 
 const char TCNetParamsConst::FILE_NAME[]  = "tcnet.txt";
+
 const char TCNetParamsConst::NODE_NAME[]  = "node_name";
 const char TCNetParamsConst::LAYER[]  = "layer";
 const char TCNetParamsConst::TIMECODE_TYPE[]  = "timecode_type";

@@ -28,8 +28,7 @@
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"
-
-#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "HTP" : "LTP"
+#include "e131.h"
 
 void E131Bridge::Print(void) {
 	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
@@ -46,7 +45,7 @@ void E131Bridge::Print(void) {
 		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
-				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, MERGEMODE2STRING(m_OutputPort[nPortIndex].mergeMode));
+				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, E131::GetMergeMode(m_OutputPort[nPortIndex].mergeMode, true));
 			}
 		}
 	}

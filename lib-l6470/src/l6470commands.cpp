@@ -45,7 +45,7 @@ long L6470::getPos() {
 	//  it's set, set all the bits ABOVE 21 in order for the value to maintain
 	//  its appropriate sign.
 	if (temp & 0x00200000) {
-		temp |= 0xffc00000;
+		temp |= static_cast<long>(0xffc00000);
 	}
 
 	return temp;
@@ -57,7 +57,7 @@ long L6470::getMark() {
 	//  it's set, set all the bits ABOVE 21 in order for the value to maintain
 	//  its appropriate sign.
 	if (temp & 0x00200000) {
-		temp |= 0xffC00000;
+		temp |= static_cast<long>(0xffC00000);
 	}
 
 	return temp;
@@ -146,11 +146,11 @@ void L6470::goMark() {
 }
 
 void L6470::setMark(long newMark) {
-	setParam(L6470_PARAM_MARK, newMark);
+	setParam(L6470_PARAM_MARK, static_cast<unsigned long>(newMark));
 }
 
 void L6470::setPos(long newPos) {
-	setParam(L6470_PARAM_ABS_POS, newPos);
+	setParam(L6470_PARAM_ABS_POS, static_cast<unsigned long>(newPos));
 }
 
 void L6470::resetPos() {

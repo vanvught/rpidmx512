@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmx.h"
 #include "rdm_send.h"
@@ -33,26 +33,26 @@
 
 #include "debug.h"
 
-void Dmx::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection(__attribute__((unused)) uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
 	assert(nPort == 0);
 
 	dmx_set_port_direction(static_cast<_dmx_port_direction>(tPortDirection), bEnableData);
 }
 
-void Dmx::RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(nPort == 0);
 
 	rdm_send_data(pRdmData, nLength);
 }
 
-const uint8_t *Dmx::RdmReceive(uint8_t nPort) {
+const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint8_t nPort) {
 	assert(nPort == 0);
 
 	const uint8_t *p = rdm_get_available();
 	return p;
 }
 
-const uint8_t *Dmx::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+const uint8_t *Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint8_t nPort, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = 0;

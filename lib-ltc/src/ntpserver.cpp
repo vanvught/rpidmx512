@@ -37,7 +37,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ntpserver.h"
 
@@ -92,7 +92,7 @@ void NtpServer::Start(void) {
 
 	m_Reply.Stratum = NTP_STRATUM;
 	m_Reply.Poll = NTP_MINPOLL;
-	m_Reply.Precision = -10;	// -9.9 = LOG2(0.0001) -> milliseconds
+	m_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
 	m_Reply.RootDelay = 0;
 	m_Reply.RootDispersion = 0;
 	m_Reply.ReferenceID = Network::Get()->GetIp();
@@ -115,22 +115,22 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
 
 	if (pLtcTimeCode->nType == TC_TYPE_FILM) {
-		m_nFraction = static_cast<uint32_t>((static_cast<double>((178956970.625)) * pLtcTimeCode->nFrames));
+		m_nFraction = static_cast<uint32_t>((178956970.625 * pLtcTimeCode->nFrames));
 	} else if (pLtcTimeCode->nType == TC_TYPE_EBU) {
-		m_nFraction = static_cast<uint32_t>((static_cast<double>((171798691.8)) * pLtcTimeCode->nFrames));
+		m_nFraction = static_cast<uint32_t>((171798691.8 * pLtcTimeCode->nFrames));
 	} else if ((pLtcTimeCode->nType == TC_TYPE_DF) || (pLtcTimeCode->nType == TC_TYPE_SMPTE)) {
-		m_nFraction = static_cast<uint32_t>((static_cast<double>((143165576.5)) * pLtcTimeCode->nFrames));
+		m_nFraction = static_cast<uint32_t>((143165576.5 * pLtcTimeCode->nFrames));
 	} else {
 		assert(0);
 	}
 
 	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned>(m_tTimeDate), static_cast<long int>(m_tTimeDate));
 
-	m_Reply.ReferenceTimestamp_s = __builtin_bswap32(m_tTimeDate);
+	m_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
 	m_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
-	m_Reply.ReceiveTimestamp_s = __builtin_bswap32(m_tTimeDate);
+	m_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
 	m_Reply.ReceiveTimestamp_f = __builtin_bswap32(m_nFraction);
-	m_Reply.TransmitTimestamp_s = __builtin_bswap32(m_tTimeDate);
+	m_Reply.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
 	m_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
 }
 

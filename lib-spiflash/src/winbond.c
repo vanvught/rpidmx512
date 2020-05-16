@@ -149,7 +149,7 @@ int spi_flash_probe_winbond(struct spi_flash *flash, uint8_t *idcode) {
 	flash->name = params->name;
 	flash->page_size = 256;
 	flash->sector_size = (idcode[1] == 0x20) ? 65536 : 4096;
-	flash->size = 4096 * 16 * params->nr_blocks;
+	flash->size = 4096U * 16U * params->nr_blocks;
 
 	return 0;
 }

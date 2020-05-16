@@ -77,8 +77,8 @@ static volatile uint32_t updates = 0;
 /*
  * IRQ Timer1
  */
-volatile static uint16_t midi_active_sense_timeout = 0;
-volatile static _midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_ENABLED;
+static volatile uint16_t midi_active_sense_timeout = 0;
+static volatile _midi_active_sense_state midi_active_sense_state = MIDI_ACTIVE_SENSE_NOT_ENABLED;
 
 void uart2_send(const uint8_t *data, uint16_t length) ;
 
@@ -237,6 +237,7 @@ static bool parse(void) {
 		case MIDI_TYPES_ACTIVE_SENSING:
 			dmb();
 			midi_active_sense_state = MIDI_ACTIVE_SENSE_ENABLED;
+			 __attribute__ ((fallthrough));
 			/* no break */
 		case MIDI_TYPES_START:
 		case MIDI_TYPES_CONTINUE:
@@ -335,6 +336,7 @@ static bool parse(void) {
 			case MIDI_TYPES_ACTIVE_SENSING:
 				dmb();
 				midi_active_sense_state = MIDI_ACTIVE_SENSE_ENABLED;
+				 __attribute__ ((fallthrough));
 				/* no break */
 			case MIDI_TYPES_CLOCK:
 			case MIDI_TYPES_START:
@@ -563,10 +565,10 @@ void uart2_send(const uint8_t *data, uint16_t length) {
 static void uart2_init(void) {
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	// PA0, TX
-	value &= ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
 	value |= H3_PA0_SELECT_UART2_TX << PA0_SELECT_CFG0_SHIFT;
 	// PA1, RX
-	value &= ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
 	value |= H3_PA1_SELECT_UART2_RX << PA1_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTA->CFG0 = value;
 

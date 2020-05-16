@@ -29,7 +29,7 @@
 
 #include "console.h"
 
-void monitor_line(const int line, const char *fmt, ...) {
+void monitor_line(__attribute__((unused)) int line, __attribute__((unused)) const char *fmt, ...) {
 	// For H3, only enabled when NDEBUG is not defined
 #if !(defined(NDEBUG) && defined(H3))
 	va_list va;

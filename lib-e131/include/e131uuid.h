@@ -26,7 +26,6 @@
 #ifndef E131UUID_H_
 #define E131UUID_H_
 
-#include <stdbool.h>
 #include <uuid/uuid.h>
 
 #define UUID_STRING_LENGTH	36

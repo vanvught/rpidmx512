@@ -1,3 +1,5 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"	//FIXE ignored "-Wsign-conversion"
 /**
  * @file l6470dmxmode3.cpp
  *
@@ -25,7 +27,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "l6470dmxmode3.h"
 #include "l6470.h"

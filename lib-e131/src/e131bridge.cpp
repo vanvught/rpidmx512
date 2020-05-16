@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <assert.h>
+#include <cassert>
 
 #include "e131bridge.h"
 #include "e131uuid.h"
@@ -43,15 +44,7 @@
 
 #include "debug.h"
 
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#ifndef MAX
- #define MAX(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 18 };
+static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 18 };
 
 E131Bridge *E131Bridge::s_pThis = 0;
 
@@ -78,7 +71,7 @@ E131Bridge::E131Bridge(void) :
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(struct TE131OutputPort));
 		m_OutputPort[i].nUniverse = E131_UNIVERSE_DEFAULT;
-		m_OutputPort[i].mergeMode = E131_MERGE_HTP;
+		m_OutputPort[i].mergeMode = E131Merge::HTP;
 	}
 
 	for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
@@ -110,7 +103,7 @@ void E131Bridge::Start(void) {
 		if (m_pE131DataPacket == 0) {
 			struct in_addr addr;
 			static_cast<void>(inet_aton("239.255.0.0", &addr));
-			m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & 0xFF) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
+			m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
 			// TE131DataPacket
 			m_pE131DataPacket = new struct TE131DataPacket;
 			assert(m_pE131DataPacket != 0);
@@ -153,7 +146,7 @@ void E131Bridge::Stop(void) {
 }
 
 const uint8_t *E131Bridge::GetSoftwareVersion(void) {
-	return DEVICE_SOFTWARE_VERSION;
+	return SOFTWARE_VERSION;
 }
 
 void E131Bridge::SetSourceName(const char *pSourceName) {
@@ -167,7 +160,7 @@ uint32_t E131Bridge::UniverseToMulticastIp(uint16_t nUniverse) const {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
 
-	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & 0xFF) << 24) | ((nUniverse & 0xFF00) << 8);
+	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & static_cast<uint32_t>(0xFF)) << 24) | ((nUniverse & 0xFF00) << 8);
 
 	DEBUG_PRINTF(IPSTR, IP2STR(nMulticastIp));
 
@@ -309,13 +302,13 @@ bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortD
 	return m_OutputPort[nPortIndex].bIsEnabled;
 }
 
-void E131Bridge::SetMergeMode(uint8_t nPortIndex, TE131Merge tE131Merge) {
+void E131Bridge::SetMergeMode(uint8_t nPortIndex, E131Merge tE131Merge) {
 	assert(nPortIndex < E131_MAX_PORTS);
 
 	m_OutputPort[nPortIndex].mergeMode = tE131Merge;
 }
 
-TE131Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
+E131Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
 	assert(nPortIndex < E131_MAX_PORTS);
 
 	return m_OutputPort[nPortIndex].mergeMode;
@@ -363,19 +356,19 @@ bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData
 
 	m_OutputPort[nPortIndex].IsMerging = true;
 
-	if (m_OutputPort[nPortIndex].mergeMode == E131_MERGE_HTP) {
+	if (m_OutputPort[nPortIndex].mergeMode == E131Merge::HTP) {
 
 		if (nLength != m_OutputPort[nPortIndex].length) {
 			m_OutputPort[nPortIndex].length = nLength;
 			for (unsigned i = 0; i < nLength; i++) {
-				uint8_t data = MAX(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
+				uint8_t data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
 				m_OutputPort[nPortIndex].data[i] = data;
 			}
 			return true;
 		}
 
 		for (unsigned i = 0; i < nLength; i++) {
-			uint8_t data = MAX(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
+			uint8_t data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
 			if (data != m_OutputPort[nPortIndex].data[i]) {
 				m_OutputPort[nPortIndex].data[i] = data;
 				isChanged = true;

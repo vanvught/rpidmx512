@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "e131params.h"
 #include "e131paramsconst.h"
@@ -40,8 +40,6 @@
 #include "lightsetconst.h"
 
 #include "debug.h"
-
-#define MERGEMODE2STRING(m)		(m == E131_MERGE_HTP) ? "htp" : "ltp"
 
 void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
@@ -54,29 +52,29 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, 
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131_PARAMS_MASK_DIRECTION));
+	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131ParamsMask::DIRECTION));
 
-	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tE131Params.nUniverse, isMaskSet(E131_PARAMS_MASK_UNIVERSE));
+	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tE131Params.nUniverse, isMaskSet(E131ParamsMask::UNIVERSE));
 
 	builder.AddComment("Multi port configuration");
-	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		builder.Add(E131ParamsConst::UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i], isMaskSet(E131_PARAMS_MASK_UNIVERSE_A << i));
+	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
+		builder.Add(E131ParamsConst::UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i], isMaskSet(E131ParamsMask::UNIVERSE_A << i));
 	}
 
 	builder.AddComment("DMX Output");
-	builder.Add(E131ParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tE131Params.nMergeMode), isMaskSet(E131_PARAMS_MASK_MERGE_MODE));
+	builder.Add(E131ParamsConst::MERGE_MODE, E131::GetMergeMode(m_tE131Params.nMergeMode), isMaskSet(E131ParamsMask::MERGE_MODE));
 
-	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
-		builder.Add(E131ParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tE131Params.nMergeModePort[i]), isMaskSet(E131_PARAMS_MASK_MERGE_MODE_A << i));
+	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
+		builder.Add(E131ParamsConst::MERGE_MODE_PORT[i], E131::GetMergeMode(m_tE131Params.nMergeModePort[i]), isMaskSet(E131ParamsMask::MERGE_MODE_A << i));
 	}
 
-	builder.Add(E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131_PARAMS_MASK_NETWORK_TIMEOUT));
-	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, m_tE131Params.bDisableMergeTimeout, isMaskSet(E131_PARAMS_MASK_MERGE_TIMEOUT));
+	builder.Add(E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131ParamsMask::NETWORK_TIMEOUT));
+	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, m_tE131Params.bDisableMergeTimeout, isMaskSet(E131ParamsMask::MERGE_TIMEOUT));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
-	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131_PARAMS_MASK_PRIORITY));
+	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131ParamsMask::PRIORITY));
 
 	nSize = builder.GetSize();
 

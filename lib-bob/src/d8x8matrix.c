@@ -70,7 +70,7 @@ static void write_all(const device_info_t *device_info, const uint8_t reg, const
 	} else {
 		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
-		FUNC_PREFIX(spi_writenb((const char *) spi_data, device_info->internal.count * 2));
+		FUNC_PREFIX(spi_writenb((const char *) spi_data, (uint32_t)(device_info->internal.count * 2)));
 	}
 
 }
@@ -118,7 +118,7 @@ void d8x8matrix_write(const device_info_t *device_info, const char *buf, uint8_t
 		} else {
 			FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 			FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
-			FUNC_PREFIX(spi_writenb((const char *) spi_data, j));
+			FUNC_PREFIX(spi_writenb((const char *) spi_data, (uint32_t)(j)));
 		}
 	}
 }

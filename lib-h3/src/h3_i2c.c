@@ -79,7 +79,7 @@ static inline void _cc_write_reg(uint32_t clk_n, uint32_t clk_m) {
 #ifndef NDEBUG
 	printf("%s: clk_n = %d, clk_m = %d\n", __FUNCTION__, clk_n, clk_m);
 #endif
-	value &= ~(CC_CLK_M | CC_CLK_N);
+	value &= (uint32_t)~(CC_CLK_M | CC_CLK_N);
 	value |= ((clk_n << CLK_N_SHIFT) | (clk_m << CLK_M_SHIFT));
 	EXT_I2C->CC = value;
 }
@@ -175,7 +175,7 @@ static int32_t _sendslaveaddr(uint32_t mode) {
 
 	mode &= 1;
 
-	EXT_I2C->DATA = (s_slave_address  << 1) | mode;
+	EXT_I2C->DATA = (uint32_t)(s_slave_address  << 1) | mode;
 	EXT_I2C->CTL |= (0x01 << 3);
 
 	while ((time--) && (!(EXT_I2C->CTL & 0x08)))
@@ -322,7 +322,7 @@ static int _read(char *buffer, int len) {
 		goto i2c_read_err_occur;
 	}
 
-	ret = _getdata((uint8_t *)buffer, len);
+	ret = _getdata((uint8_t *)buffer, (uint32_t)len);
 
 	if (ret) {
 		goto i2c_read_err_occur;
@@ -349,7 +349,7 @@ static int _write(char *buffer, int len) {
 		goto i2c_write_err_occur;
 	}
 
-	ret = _senddata((uint8_t *)buffer, len);
+	ret = _senddata((uint8_t *)buffer, (uint32_t)len);
 
 	if (ret) {
 		goto i2c_write_err_occur;

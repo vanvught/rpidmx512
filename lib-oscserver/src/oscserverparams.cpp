@@ -23,17 +23,22 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "oscserverparms.h"
 #include "oscserverconst.h"
 #include "osc.h"
-#include "oscconst.h"
+#include "oscparamsconst.h"
 
 #include "lightsetconst.h"
 
@@ -95,49 +100,49 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 	uint16_t nValue16;
 	uint8_t nLength;
 
-	if (Sscan::Uint16(pLine, OscConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nIncomingPort = nValue16;
-			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_INCOMING_PORT;
+			m_tOSCServerParams.nSetList |= OSCServerParamsMask::INCOMING_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nOutgoingPort = nValue16;
-			m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_OUTGOING_PORT;
+			m_tOSCServerParams.nSetList |= OSCServerParamsMask::OUTGOING_PORT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, OSCServerConst::PARAMS_TRANSMISSION, &nValue8) == SSCAN_OK) {
 		m_tOSCServerParams.bPartialTransmission = (nValue8 != 0);
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_TRANSMISSION;
+		m_tOSCServerParams.nSetList |= OSCServerParamsMask::TRANSMISSION;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPath) - 1;
 	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, &nLength) == SSCAN_OK) {
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH;
+		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPathInfo) - 1;
 	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, &nLength) == SSCAN_OK) {
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH_INFO;
+		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH_INFO;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPathBlackOut) - 1;
 	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathBlackOut, &nLength) == SSCAN_OK) {
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_PATH_BLACKOUT;
+		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH_BLACKOUT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &nValue8) == SSCAN_OK) {
 		m_tOSCServerParams.bEnableNoChangeUpdate = (nValue8 != 0);
-		m_tOSCServerParams.nSetList |= OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT;
+		m_tOSCServerParams.nSetList |= OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT;
 		return;
 	}
 }
@@ -146,31 +151,31 @@ void OSCServerParams::Dump(void) {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OSCServerConst::PARAMS_FILE_NAME);
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT)) {
-		printf(" %s=%d\n", OscConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort);
+	if (isMaskSet(OSCServerParamsMask::INCOMING_PORT)) {
+		printf(" %s=%d\n", OscParamsConst::INCOMING_PORT, m_tOSCServerParams.nIncomingPort);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT)) {
-		printf(" %s=%d\n", OscConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort);
+	if (isMaskSet(OSCServerParamsMask::OUTGOING_PORT)) {
+		printf(" %s=%d\n", OscParamsConst::OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH)) {
+	if (isMaskSet(OSCServerParamsMask::PATH)) {
 		printf(" %s=%s\n", OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO)) {
+	if (isMaskSet(OSCServerParamsMask::PATH_INFO)) {
 		printf(" %s=%s\n", OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT)) {
+	if (isMaskSet(OSCServerParamsMask::PATH_BLACKOUT)) {
 		printf(" %s=%s\n", OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut);
 	}
 
-	if (isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION)) {
+	if (isMaskSet(OSCServerParamsMask::TRANSMISSION)) {
 		printf(" %s=%d\n", OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission);
 	}
 
-	if(isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+	if(isMaskSet(OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
 		printf(" %s=%d\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate);
 	}
 #endif

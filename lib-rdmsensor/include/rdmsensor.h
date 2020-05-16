@@ -38,7 +38,7 @@ struct TRDMSensorDefintion {
 	int16_t normal_min;
 	int16_t normal_max;
 	uint8_t recorded_supported;
-	uint8_t description[32];
+	char description[32];
 	uint8_t len;
 };
 
@@ -55,7 +55,7 @@ struct TRDMSensorValues {
 #define RDM_SENSOR_NORMAL_MIN	-32768		///<
 #define RDM_SENSOR_NORMAL_MAX	+32767		///<
 
-#define RDM_SENSOR_TEMPERATURE_ABS_ZERO		-273		///<
+static constexpr int16_t RDM_SENSOR_TEMPERATURE_ABS_ZERO	=	-273;
 
 class RDMSensor {
 public:
@@ -75,19 +75,19 @@ public:
 		m_tRDMSensorDefintion.prefix = nPrefix;
 	}
 
-	void SetRangeMin(uint16_t nRangeMin) {
+	void SetRangeMin(int16_t nRangeMin) {
 		m_tRDMSensorDefintion.range_min = nRangeMin;
 	}
 
-	void SetRangeMax(uint16_t nRangeMax) {
+	void SetRangeMax(int16_t nRangeMax) {
 		m_tRDMSensorDefintion.range_max = nRangeMax;
 	}
 
-	void SetNormalMin(uint16_t nNormalMin) {
+	void SetNormalMin(int16_t nNormalMin) {
 		m_tRDMSensorDefintion.normal_min = nNormalMin;
 	}
 
-	void SetNormalMax(uint16_t nNormalMax) {
+	void SetNormalMax(int16_t nNormalMax) {
 		m_tRDMSensorDefintion.normal_max = nNormalMax;
 	}
 

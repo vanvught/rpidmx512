@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/artnetreader.h"
 #include "ltc.h"
@@ -52,7 +52,7 @@ static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static void irq_timer0_update_handler(uint32_t clo) {
+static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }

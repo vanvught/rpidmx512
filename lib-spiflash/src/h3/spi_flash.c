@@ -48,7 +48,9 @@ struct spi0_status {
 	uint32_t	txcnt;
 	uint32_t	txlen;
 	uint32_t	rxlen;
-} static s_spi0_status;
+};
+
+static struct spi0_status s_spi0_status;
 
 static void spi0_set_chip_select(void) {
 	uint32_t value = H3_SPI0->TC;
@@ -61,8 +63,8 @@ static void spi0_set_chip_select(void) {
 static void spi0_set_data_mode(h3_spi_mode_t mode) {
 	uint32_t value = H3_SPI0->TC;
 
-	value &= ~TC_CPHA;
-	value &= ~TC_CPOL;
+	value &= (uint32_t) ~TC_CPHA;
+	value &= (uint32_t) ~TC_CPOL;
 	value |= (mode & 0x3);
 
 	H3_SPI0->TC = value;
@@ -190,7 +192,7 @@ static void _interrupt_handler(void) {
 static void spi0_writenb(const char *tx_buffer, uint32_t data_length) {
 	assert(tx_buffer != 0);
 
-	H3_SPI0->GC &= ~(GC_TP_EN);	// ignore RXFIFO
+	H3_SPI0->GC &= (uint32_t)~(GC_TP_EN);	// ignore RXFIFO
 
 	_clear_fifos();
 
@@ -282,7 +284,7 @@ static void spi0_setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
 	}
 
 	uint32_t value = H3_SPI0->CC;
-	value &= ~(CC_DRS | (CC_CDR2_MASK << CC_CDR2_SHIFT));
+	value &= (uint32_t)~(CC_DRS | (CC_CDR2_MASK << CC_CDR2_SHIFT));
 	value |=  (CC_DRS | ((cdr & CC_CDR2_MASK) << CC_CDR2_SHIFT));
 	H3_SPI0->CC = value;
 

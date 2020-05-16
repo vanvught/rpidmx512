@@ -25,8 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/ws28xxdma.h"
 #include "ws28xx.h"
@@ -61,7 +60,7 @@ bool WS28xxDMA::Initialize(void) {
 		return false;
 	}
 
-	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & ~3);
+	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
 	if (m_tLEDType == APA102) {
 		memset(m_pBuffer, 0, 4);

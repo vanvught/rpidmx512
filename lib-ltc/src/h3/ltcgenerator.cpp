@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/ltcgenerator.h"
 #include "ltc.h"
@@ -67,27 +67,27 @@
 
 #define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
 
-constexpr char aStart[] = "start";
-#define START_LENGTH		(sizeof(aStart) - 1)
+namespace Cmd {
+	static constexpr char START[] = "start";
+	static constexpr char STOP[] = "stop";
+	static constexpr char RESUME[] = "resume";
+	static constexpr char RATE[] = "rate#";
+	static constexpr char DIRECTION[] = "direction#";
+	static constexpr char PITCH[] = "pitch#";
+}
 
-constexpr char aStop[] = "stop";
-#define STOP_LENGTH			(sizeof(aStop) - 1)
+namespace Length {
+	static constexpr auto START = sizeof(Cmd::START) - 1;
+	static constexpr auto STOP = sizeof(Cmd::STOP) - 1;
+	static constexpr auto RESUME = sizeof(Cmd::RESUME) - 1;
+	static constexpr auto RATE = sizeof(Cmd::RATE) - 1;
+	static constexpr auto DIRECTION = sizeof(Cmd::DIRECTION) - 1;
+	static constexpr auto PITCH = sizeof(Cmd::PITCH) - 1;
+}
 
-constexpr char aResume[] = "resume";
-#define RESUME_LENGTH		(sizeof(aResume) - 1)
-
-constexpr char aRate[] = "rate";
-#define RATE_LENGTH			(sizeof(aRate) - 1)
-
-constexpr char aDirection[] = "direction";
-#define DIRECTION_LENGTH	(sizeof(aDirection) - 1)
-
-constexpr char aPitch[] = "pitch";
-#define PITCH_LENGTH		(sizeof(aPitch) - 1)
-
-enum TUdpPort {
-	UDP_PORT = 0x5443
-};
+namespace UDP {
+	static constexpr auto PORT = 0x5443;
+}
 
 // IRQ Timer0
 static volatile bool bTimeCodeAvailable;
@@ -95,7 +95,7 @@ static struct TLtcDisabledOutputs* s_ptLtcDisabledOutputs;
 
 static struct TLtcTimeCode s_tLtcTimeCode;
 
-static void irq_timer0_handler(uint32_t clo) {
+static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 	if (!s_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode(static_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode), false);
 	}
@@ -181,22 +181,30 @@ void LtcGenerator::Start(void) {
 	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);	// PA3
 	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);	// PA6
 
-	uint32_t value = H3_PIO_PORTA->PUL0;
-	value &= ~((GPIO_PULL_MASK << 4) | (GPIO_PULL_MASK << 6) | (GPIO_PULL_MASK << 12));
-	value |= (GPIO_PULL_UP << 4) | (GPIO_PULL_UP << 6) | (GPIO_PULL_UP << 12);
-	H3_PIO_PORTA->PUL0 = value;
+	h3_gpio_pud(BUTTON0_GPIO, GPIO_PULL_UP);
+	h3_gpio_pud(BUTTON1_GPIO, GPIO_PULL_UP);
+	h3_gpio_pud(BUTTON2_GPIO, GPIO_PULL_UP);
 
-	value = H3_PIO_PA_INT->CFG0;
-	value &= ~((GPIO_INT_CFG_MASK << 8) | (GPIO_INT_CFG_MASK << 12) | (GPIO_INT_CFG_MASK << 24));
-	value |= (GPIO_INT_CFG_NEG_EDGE << 8) | (GPIO_INT_CFG_NEG_EDGE << 12) | (GPIO_INT_CFG_NEG_EDGE << 24);
-	H3_PIO_PA_INT->CFG0 = value;
+//	uint32_t value = H3_PIO_PORTA->PUL0;
+//	value &= (uint32_t)~((GPIO_PULL_MASK << 4) | (GPIO_PULL_MASK << 6) | (GPIO_PULL_MASK << 12));
+//	value |= (GPIO_PULL_UP << 4) | (GPIO_PULL_UP << 6) | (GPIO_PULL_UP << 12);
+//	H3_PIO_PORTA->PUL0 = value;
+
+	h3_gpio_int_cfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE);
+	h3_gpio_int_cfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE);
+	h3_gpio_int_cfg(BUTTON2_GPIO, GPIO_INT_CFG_NEG_EDGE);
+
+//	value = H3_PIO_PA_INT->CFG0;
+//	value &= ~((GPIO_INT_CFG_MASK << 8) | (GPIO_INT_CFG_MASK << 12) | (GPIO_INT_CFG_MASK << 24));
+//	value |= (GPIO_INT_CFG_NEG_EDGE << 8) | (GPIO_INT_CFG_NEG_EDGE << 12) | (GPIO_INT_CFG_NEG_EDGE << 24);
+//	H3_PIO_PA_INT->CFG0 = value;
 
 	H3_PIO_PA_INT->CTL |= BUTTONS_MASK;
 	H3_PIO_PA_INT->STA = BUTTONS_MASK;
 	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
 
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
 
 	// Generator
@@ -234,7 +242,7 @@ void LtcGenerator::Stop(void) {
 	__disable_irq();
 	irq_timer_set(IRQ_TIMER_0, 0);
 
-	m_nHandle = Network::Get()->End(UDP_PORT);
+	m_nHandle = Network::Get()->End(UDP::PORT);
 
 	DEBUG_EXIT
 }
@@ -363,7 +371,7 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 void LtcGenerator::ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_ENTRY
 
-	debug_dump(pTimeCodePitch, nSize);
+	debug_dump(const_cast<char*>(pTimeCodePitch), nSize);
 
 	const float f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
 
@@ -437,45 +445,79 @@ void LtcGenerator::HandleUdpRequest(void) {
 		m_nBytesReceived--;
 	}
 
-	if (memcmp(&m_Buffer[4], aStart, START_LENGTH) == 0) {
-		if (m_nBytesReceived == (4 + START_LENGTH)) {
+	debug_dump(m_Buffer, m_nBytesReceived);
+
+	if (memcmp(&m_Buffer[4], Cmd::START, Length::START) == 0) {
+		if (m_nBytesReceived == (4 + Length::START)) {
 			ActionStart();
-		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '#')){
-			ActionSetStart(&m_Buffer[(4 + START_LENGTH + 1)]);
-		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '!')){
-			ActionSetStart(&m_Buffer[(4 + START_LENGTH + 1)]);
-			ActionStop();
-			ActionStart();
-		} else if ((m_nBytesReceived == (4 + START_LENGTH + 1 + TC_CODE_MAX_LENGTH)) && (m_Buffer[4 + START_LENGTH] == '@')){
-			ActionGoto(&m_Buffer[(4 + START_LENGTH + 1)]);
-		} else {
-			DEBUG_PUTS("Invalid !start command");
+			return;
 		}
-	} else if (memcmp(&m_Buffer[4], aStop, STOP_LENGTH) == 0) {
-		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
-			ActionStop();
-		} else if ((m_nBytesReceived == (4 + STOP_LENGTH + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + STOP_LENGTH] == '#')) {
-			ActionSetStop(&m_Buffer[(4 + STOP_LENGTH + 1)]);
-		} else {
-			DEBUG_PUTS("Invalid !stop command");
+
+		if (m_nBytesReceived == (4 + Length::START + 1 + TC_CODE_MAX_LENGTH)) {
+			if (m_Buffer[4 + Length::START] == '#') {
+				ActionSetStart(&m_Buffer[(4 + Length::START + 1)]);
+				return;
+			}
+
+			if (m_Buffer[4 + Length::START] == '!') {
+				ActionSetStart(&m_Buffer[(4 + Length::START + 1)]);
+				ActionStop();
+				ActionStart();
+				return;
+			}
+
+			if (m_Buffer[4 + Length::START] == '@') {
+				ActionGoto(&m_Buffer[(4 + Length::START + 1)]);
+				return;
+			}
 		}
-	} else if (memcmp(&m_Buffer[4], aResume, RESUME_LENGTH) == 0) {
-		ActionResume();
-	} else if (memcmp(&m_Buffer[4], aRate, RATE_LENGTH) == 0) {
-		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
-		}
-	} else if (memcmp(&m_Buffer[4], aDirection, DIRECTION_LENGTH) == 0) {
-		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + DIRECTION_LENGTH + 1 + 8)) && (m_Buffer[4 + DIRECTION_LENGTH] == '#')) {
-			ActionSetDirection(&m_Buffer[(4 + DIRECTION_LENGTH + 1)]);
-		}
-	} else if (memcmp(&m_Buffer[4], aPitch, PITCH_LENGTH) == 0) {
-		if ((static_cast<uint32_t>(m_nBytesReceived) <= (4 + PITCH_LENGTH + 1 + 4)) && (m_Buffer[4 + PITCH_LENGTH] == '#')) {
-			ActionSetPitch(&m_Buffer[(4 + PITCH_LENGTH + 1)], m_nBytesReceived - (4 + PITCH_LENGTH + 1));
-		}
-	} else {
-		DEBUG_PUTS("Invalid command");
+
+		DEBUG_PUTS("Invalid !start command");
+		return;
 	}
+
+	if (memcmp(&m_Buffer[4], Cmd::STOP, Length::STOP) == 0) {
+		if (m_nBytesReceived == (4 + Length::STOP)) {
+			ActionStop();
+			return;
+		}
+
+		if ((m_nBytesReceived == (4 + Length::STOP + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + Length::STOP] == '#')) {
+			ActionSetStop(&m_Buffer[(4 + Length::STOP + 1)]);
+			return;
+		}
+
+		DEBUG_PUTS("Invalid !stop command");
+		return;
+	}
+
+	if (memcmp(&m_Buffer[4], Cmd::RESUME, Length::RESUME) == 0) {
+		ActionResume();
+		return;
+	}
+
+	if (m_nBytesReceived == (4 + Length::RATE + TC_RATE_MAX_LENGTH)) {
+		if (memcmp(&m_Buffer[4], Cmd::RATE, Length::RATE) == 0) {
+			ActionSetRate(&m_Buffer[(4 + Length::RATE)]);
+			return;
+		}
+	}
+
+	if (m_nBytesReceived <= (4 + Length::DIRECTION + 8)) {
+		if (memcmp(&m_Buffer[4], Cmd::DIRECTION, Length::DIRECTION) == 0) {
+			ActionSetDirection(&m_Buffer[(4 + Length::DIRECTION)]);
+			return;
+		}
+	}
+
+	if (m_nBytesReceived <= (4 + Length::PITCH + 4)) {
+		if (memcmp(&m_Buffer[4], Cmd::PITCH, Length::PITCH) == 0) {
+			ActionSetPitch(&m_Buffer[(4 + Length::PITCH)], m_nBytesReceived - (4 + Length::PITCH));
+			return;
+		}
+	}
+
+	DEBUG_PUTS("Invalid command");
 }
 
 void LtcGenerator::Increment(void) {
@@ -556,11 +598,9 @@ void LtcGenerator::Decrement(void) {
 
 bool LtcGenerator::PitchControl(void) {
 	const uint32_t p = (m_fPitchControl * m_nPitchTicker); // / 100;
-
 	const uint32_t r = (p - m_nPitchPrevious);
 
 	m_nPitchPrevious = p;
-
 	m_nPitchTicker++;
 
 	return (r != 0);

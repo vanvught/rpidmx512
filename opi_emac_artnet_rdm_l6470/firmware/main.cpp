@@ -31,18 +31,18 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "display7segment.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
+#include "artnetmsgconst.h"
+
+#include "ipprog.h"
 
 #include "identify.h"
 
@@ -52,7 +52,6 @@
 
 #include "artnetrdmresponder.h"
 
-#include "ipprog.h"
 #include "displayudfhandler.h"
 
 #include "tlc59711dmxparams.h"
@@ -136,8 +135,7 @@ void notmain(void) {
 	sparkFunStores.pMotorParamsStore = &storeMotors;
 	sparkFunStores.pL6470ParamsStore = &storeMotors;
 
-	console_status(CONSOLE_YELLOW, SparkFunDmxConst::MSG_INIT);
-	display.TextStatus(SparkFunDmxConst::MSG_INIT, DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN);
+	display.TextStatus(SparkFunDmxConst::MSG_INIT, DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN, CONSOLE_YELLOW);
 
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
@@ -186,13 +184,12 @@ void notmain(void) {
 
 	char aDescription[64];
 	if (isLedTypeSet) {
-		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), (int) pwmledparms.GetLedCount());
+		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 	} else {
 		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d]", BOARD_NAME, nMotorsConnected);
 	}
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 #if defined (ORANGE_PI)
 	nw.Init(spiFlashStore.GetStoreNetwork());
@@ -203,8 +200,7 @@ void notmain(void) {
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNet4Node node;
 #if defined (ORANGE_PI)
@@ -291,13 +287,11 @@ void notmain(void) {
 		;
 #endif
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

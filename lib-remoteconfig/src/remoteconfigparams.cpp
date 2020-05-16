@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "remoteconfigparams.h"
 #include "remoteconfig.h"
@@ -44,8 +44,6 @@
 #include "propertiesbuilder.h"
 
 #include "debug.h"
-
-#define BOOL2STRING(b)			(b) ? "Yes" : "No"
 
 RemoteConfigParams::RemoteConfigParams(RemoteConfigParamsStore* pTRemoteConfigParamsStore): m_pRemoteConfigParamsStore(pTRemoteConfigParamsStore) {
 	memset(&m_tRemoteConfigParams, 0, sizeof(struct TRemoteConfigParams));
@@ -95,32 +93,32 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE, &nValue8) == SSCAN_OK) {
 		m_tRemoteConfigParams.bDisabled = (nValue8 != 0);
-		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISABLED;
+		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::DISABLED;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE_WRITE, &nValue8) == SSCAN_OK) {
 		m_tRemoteConfigParams.bDisableWrite = (nValue8 != 0);
-		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISABLE_WRITE;
+		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::DISABLE_WRITE;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_REBOOT, &nValue8) == SSCAN_OK) {
 		m_tRemoteConfigParams.bEnableReboot = (nValue8 != 0);
-		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_ENABLE_REBOOT;
+		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::ENABLE_REBOOT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_UPTIME, &nValue8) == SSCAN_OK) {
 		m_tRemoteConfigParams.bEnableUptime = (nValue8 != 0);
-		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_ENABLE_UPTIME;
+		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::ENABLE_UPTIME;
 		return;
 	}
 
 	nLength = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, &nLength) == SSCAN_OK) {
 		m_tRemoteConfigParams.aDisplayName[nLength] = '\0';
-		m_tRemoteConfigParams.nSetList |= REMOTE_CONFIG_PARAMS_DISPLAY_NAME;
+		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::DISPLAY_NAME;
 		return;
 	}
 }
@@ -138,11 +136,11 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisabled, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED));
-	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE));
-	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT));
-	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME));
-	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisabled, isMaskSet(RemoteConfigParamsMask::DISABLED));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
+	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
 
 	nSize = builder.GetSize();
 
@@ -165,23 +163,23 @@ void RemoteConfigParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) 
 }
 
 void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED)) {
+	if (isMaskSet(RemoteConfigParamsMask::DISABLED)) {
 		pRemoteConfig->SetDisable(m_tRemoteConfigParams.bDisabled);
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE)) {
+	if (isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE)) {
 		pRemoteConfig->SetDisableWrite(m_tRemoteConfigParams.bDisableWrite);
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT)) {
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT)) {
 		pRemoteConfig->SetEnableReboot(m_tRemoteConfigParams.bEnableReboot);
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME)) {
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME)) {
 		pRemoteConfig->SetEnableUptime(m_tRemoteConfigParams.bEnableUptime);
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME)) {
+	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {
 		pRemoteConfig->SetDisplayName(m_tRemoteConfigParams.aDisplayName);
 	}
 }
@@ -194,23 +192,23 @@ void RemoteConfigParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RemoteConfigConst::PARAMS_FILE_NAME);
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISABLED)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE, static_cast<int>(m_tRemoteConfigParams.bDisabled), BOOL2STRING(m_tRemoteConfigParams.bDisabled));
+	if (isMaskSet(RemoteConfigParamsMask::DISABLED)) {
+		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE, static_cast<int>(m_tRemoteConfigParams.bDisabled), BOOL2STRING::Get(m_tRemoteConfigParams.bDisabled));
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISABLE_WRITE)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE_WRITE, static_cast<int>(m_tRemoteConfigParams.bDisableWrite), BOOL2STRING(m_tRemoteConfigParams.bDisableWrite));
+	if (isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE)) {
+		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE_WRITE, static_cast<int>(m_tRemoteConfigParams.bDisableWrite), BOOL2STRING::Get(m_tRemoteConfigParams.bDisableWrite));
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_REBOOT)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_REBOOT, static_cast<int>(m_tRemoteConfigParams.bEnableReboot), BOOL2STRING(m_tRemoteConfigParams.bEnableReboot));
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT)) {
+		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_REBOOT, static_cast<int>(m_tRemoteConfigParams.bEnableReboot), BOOL2STRING::Get(m_tRemoteConfigParams.bEnableReboot));
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_ENABLE_UPTIME)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_UPTIME, static_cast<int>(m_tRemoteConfigParams.bEnableUptime), BOOL2STRING(m_tRemoteConfigParams.bEnableUptime));
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME)) {
+		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_UPTIME, static_cast<int>(m_tRemoteConfigParams.bEnableUptime), BOOL2STRING::Get(m_tRemoteConfigParams.bEnableUptime));
 	}
 
-	if (isMaskSet(REMOTE_CONFIG_PARAMS_DISPLAY_NAME)) {
+	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {
 		printf(" %s=%s\n", RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName);
 	}
 #endif

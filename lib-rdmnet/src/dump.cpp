@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "llrpdevice.h"
 

@@ -37,17 +37,19 @@ struct TTLC59711DmxParams {
 	uint16_t nDmxStartAddress;
     uint32_t nSpiSpeedHz;
 };
+//} __attribute__((packed));
 
-enum TTLC59711DmxParamsMask {
-	TLC59711DMX_PARAMS_MASK_LED_TYPE = (1 << 0),
-	TLC59711DMX_PARAMS_MASK_LED_COUNT = (1 << 1),
-	TLC59711DMX_PARAMS_MASK_START_ADDRESS = (1 << 2),
-	TLC59711DMX_PARAMS_MASK_SPI_SPEED = (1 << 3)
+struct TLC59711DmxParamsMask {
+	static constexpr auto LED_TYPE = (1U << 0);
+	static constexpr auto LED_COUNT = (1U << 1);
+	static constexpr auto START_ADDRESS = (1U << 2);
+	static constexpr auto SPI_SPEED = (1U << 3);
 };
 
 class TLC59711DmxParamsStore {
 public:
-	virtual ~TLC59711DmxParamsStore(void) {}
+	virtual ~TLC59711DmxParamsStore(void) {
+	}
 
 	virtual void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
 	virtual void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
@@ -77,14 +79,13 @@ public:
 	}
 
 	bool IsSetLedType(void) {
-		return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE);
+		return isMaskSet(TLC59711DmxParamsMask::LED_TYPE);
 	}
 
 	bool IsSetLedCount(void) {
-		return isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT);
+		return isMaskSet(TLC59711DmxParamsMask::LED_COUNT);
 	}
 
-public:
 	static const char *GetLedTypeString(TTLC59711Type tTLC59711Type);
 	static TTLC59711Type GetLedTypeString(const char *pValue);
     static void staticCallbackFunction(void *p, const char *s);

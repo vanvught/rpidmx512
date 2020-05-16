@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxmulti.h"
 
@@ -40,7 +40,7 @@
 #define OUT2	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 2)	// Pin 22
 #define OUT3	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 3)	// Pin 15
 
-#define DATA_MASK	((1 << PULSE) | (1 << ENABLE) | (1 << OUT3) | (1 << OUT2) | (1 << OUT1) | (1 << OUT0))
+#define DATA_MASK	((1U << PULSE) | (1U << ENABLE) | (1U << OUT3) | (1U << OUT2) | (1U << OUT1) | (1U << OUT0))
 
 void WS28xxMulti::SetupGPIO(void) {
 	h3_gpio_fsel(OUT0, GPIO_FSEL_OUTPUT);

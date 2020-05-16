@@ -54,19 +54,19 @@ public:
 		Display::Get()->SetCursorPos(0, 6);
 
 		switch (ShowFile::Get()->GetStatus()) {
-			case SHOWFILE_STATUS_IDLE:
+			case ShowFileStatus::IDLE:
 				Display::Get()->PutString("Idle     ");
 				break;
-			case SHOWFILE_STATUS_RUNNING:
+			case ShowFileStatus::RUNNING:
 				Display::Get()->PutString("Running  ");
 				break;
-			case SHOWFILE_STATUS_STOPPED:
+			case ShowFileStatus::STOPPED:
 				Display::Get()->PutString("Stopped  ");
 				break;
-			case SHOWFILE_STATUS_ENDED:
+			case ShowFileStatus::ENDED:
 				Display::Get()->PutString("Ended    ");
 				break;
-			case SHOWFILE_STATUS_UNDEFINED:
+			case ShowFileStatus::UNDEFINED:
 			default:
 				Display::Get()->PutString("No Status");
 				break;

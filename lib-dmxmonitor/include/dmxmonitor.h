@@ -2,7 +2,7 @@
  * @file dmxmonitor.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,10 @@
 #define DMXMONITOR_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "lightset.h"
 
-#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
- #define DMXMONITOR_MAX_PORTS	4
-#endif
-
-enum TDMXMonitorFormat {
+enum class DMXMonitorFormat {
 	DMX_MONITOR_FORMAT_HEX,
 	DMX_MONITOR_FORMAT_PCT,
 	DMX_MONITOR_FORMAT_DEC,
@@ -46,8 +41,10 @@ public:
 	DMXMonitor(void);
 	~DMXMonitor(void);
 
-	void SetFormat(TDMXMonitorFormat tFormat = DMX_MONITOR_FORMAT_HEX);
-	TDMXMonitorFormat GetFormat(void) {
+	void SetFormat(DMXMonitorFormat tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX) {
+		m_tFormat = tFormat;
+	}
+	DMXMonitorFormat GetFormat(void) {
 		return m_tFormat;
 	}
 
@@ -77,14 +74,19 @@ private:
 	void Update(void);
 
 private:
-	TDMXMonitorFormat m_tFormat;
-	uint16_t m_nSlots;
+	DMXMonitorFormat m_tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
+	uint16_t m_nSlots = 0;
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
+	enum {
+		DMX_DEFAULT_MAX_CHANNELS = 32,
+		DMX_DEFAULT_START_ADDRESS = 1
+	};
+	#define DMXMONITOR_MAX_PORTS	4
 	bool m_bIsStarted[DMXMONITOR_MAX_PORTS];
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nMaxChannels;
+	uint16_t m_nDmxStartAddress = DMX_DEFAULT_START_ADDRESS;
+	uint16_t m_nMaxChannels = DMX_DEFAULT_MAX_CHANNELS;
 #else
-	bool m_bIsStarted;
+	bool m_bIsStarted = false;
 	alignas(uint32_t) uint8_t m_Data[512];
 #endif
 };

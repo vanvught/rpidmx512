@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/dmxsendmulti.h"
 #include "h3/dmx_multi.h"

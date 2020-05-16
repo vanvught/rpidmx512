@@ -2,7 +2,7 @@
  * @file oscclientled.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,12 @@
 #ifndef OSCCLIENTLED_H_
 #define OSCCLIENTLED_H_
 
-#include <stdbool.h>
-
 class OscClientLed {
 public:
-	virtual ~OscClientLed(void);
+	virtual ~OscClientLed(void) {
+	}
 
 	virtual void SetLed(uint8_t nLed, bool bOn) = 0;
-
 };
 
 #endif /* OSCCLIENTLED_H_ */

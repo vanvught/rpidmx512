@@ -34,25 +34,25 @@
 #include "lightset.h"
 #include "serial.h"
 
-enum TDmxSerialDefaults {
-	DMXSERIAL_DEFAULT_TYPE = SERIAL_TYPE_UART,
-	DMXSERIAL_DEFAULT_UART_BAUD = 115200,
-	DMXSERIAL_DEFAULT_UART_BITS = 8,
-	DMXSERIAL_DEFAULT_UART_PARITY = SERIAL_UART_PARITY_NONE,
-	DMXSERIAL_DEFAULT_UART_STOPBITS = 1,
-	DMXSERIAL_DEFAULT_SPI_SPEED_HZ = 1000000, ///< 1 MHz
-	DMXSERIAL_DEFAULT_SPI_MODE = 0,
-	DMXSERIAL_DEFAULT_I2C_ADDRESS = 0x30,
-	DMXSERIAL_DEFAULT_I2C_SPEED_MODE = SERIAL_I2C_SPEED_MODE_FAST
+struct DmxSerialDefaults {
+	static constexpr auto TYPE = SERIAL_TYPE_UART;
+	static constexpr auto UART_BAUD = 115200;
+	static constexpr auto UART_BITS = 8;
+	static constexpr auto UART_PARITY = SERIAL_UART_PARITY_NONE;
+	static constexpr auto UART_STOPBITS = 1;
+	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
+	static constexpr auto SPI_MODE = 0;
+	static constexpr auto I2C_ADDRESS = 0x30;
+	static constexpr auto I2C_SPEED_MODE = SERIAL_I2C_SPEED_MODE_FAST;
 };
 
 #define DMXSERIAL_FILE_PREFIX	"chl"
 #define DMXSERIAL_FILE_SUFFIX	".txt"
 
-enum TDmxSerialFiles {
-	DMXSERIAL_FILE_NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1,
-	DMXSERIAL_FILE_MIN_NUMBER = 1,
-	DMXSERIAL_FILE_MAX_NUMBER = DMX_UNIVERSE_SIZE
+struct DmxSerialFile {
+	static constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
+	static constexpr auto MIN_NUMBER = 1;
+	static constexpr auto MAX_NUMBER = DMX_UNIVERSE_SIZE;
 };
 
 class DmxSerial: public LightSet {
@@ -81,11 +81,11 @@ public:
 
 	void EnableTFTP(bool bEnableTFTP);
 
-	bool DeleteFile(uint16_t nFileNumber);
+	bool DeleteFile(int16_t nFileNumber);
 	bool DeleteFile(const char *pFileNumber);
 
-	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, uint16_t nFileNumber);
-	static bool CheckFileName(const char *pFileName, uint16_t &nFileNumber);
+	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileNumber);
+	static bool CheckFileName(const char *pFileName, int16_t &nFileNumber);
 
 	static DmxSerial *Get(void) {
 		return s_pThis;
@@ -97,14 +97,14 @@ private:
 
 private:
 	Serial m_Serial;
-	uint32_t m_nFilesCount;
-	int16_t m_aFileIndex[DMXSERIAL_FILE_MAX_NUMBER];
-	DmxSerialChannelData *m_pDmxSerialChannelData[DMXSERIAL_FILE_MAX_NUMBER];
-	uint16_t m_nDmxLastSlot;
+	uint32_t m_nFilesCount = 0;
+	int16_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
+	int32_t m_nHandle = -1;
+	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
+	uint16_t m_nDmxLastSlot = DMX_UNIVERSE_SIZE;
 	uint8_t m_DmxData[DMX_UNIVERSE_SIZE];
-	bool m_bEnableTFTP;
-	DmxSerialTFTP *m_pDmxSerialTFTP;
-	int m_nHandle;
+	bool m_bEnableTFTP = false;
+	DmxSerialTFTP *m_pDmxSerialTFTP = 0;
 
 	static DmxSerial *s_pThis;
 };

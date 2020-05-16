@@ -30,7 +30,6 @@
 #define ARTNETNODE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 #include "artnet.h"
@@ -51,8 +50,8 @@
 #include "artnet4handler.h"
 
 enum TArtNetNodeMaxPorts {
-	ARTNET_NODE_MAX_PORTS_OUTPUT = ARTNET_MAX_PORTS * ARTNET_MAX_PAGES,
-	ARTNET_NODE_MAX_PORTS_INPUT = ARTNET_MAX_PORTS
+	ARTNET_NODE_MAX_PORTS_OUTPUT = TArtNetConst::MAX_PORTS * TArtNetConst::MAX_PAGES,
+	ARTNET_NODE_MAX_PORTS_INPUT = TArtNetConst::MAX_PORTS
 };
 
 
@@ -113,8 +112,8 @@ struct TArtNetNode {
 	uint32_t IPSubnetMask;							///< The subnet mask
 	uint32_t IPAddressRemote;						///< The remote IP Address
 	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
-	uint8_t NetSwitch[ARTNET_MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch[ARTNET_MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t NetSwitch[TArtNetConst::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[TArtNetConst::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
 	char ShortName[ARTNET_SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
 	char LongName[ARTNET_LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
@@ -130,15 +129,15 @@ struct TGenericPort {
 };
 
 struct TOutputPort {
-	uint8_t data[ARTNET_DMX_LENGTH];	///< Data sent
+	uint8_t data[TArtNetConst::DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
-	uint8_t dataA[ARTNET_DMX_LENGTH];	///< The data received from Port A
+	uint8_t dataA[TArtNetConst::DMX_LENGTH];	///< The data received from Port A
 	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
-	uint8_t dataB[ARTNET_DMX_LENGTH];	///< The data received from Port B
+	uint8_t dataB[TArtNetConst::DMX_LENGTH];	///< The data received from Port B
 	uint32_t nMillisB;					///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
-	TMerge mergeMode;					///< \ref TMerge
+	ArtNetMerge mergeMode;				///< \ref ArtNetMerge
 	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
 	bool bIsEnabled;					///< Is the port enabled ?
 	TGenericPort port;					///< \ref TGenericPort
@@ -215,8 +214,8 @@ public:
 
 	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
 
-	void SetMergeMode(uint8_t nPortIndex, TMerge tMergeMode);
-	TMerge GetMergeMode(uint8_t nPortIndex = 0) const;
+	void SetMergeMode(uint8_t nPortIndex, ArtNetMerge tMergeMode);
+	ArtNetMerge GetMergeMode(uint8_t nPortIndex = 0) const;
 
 	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
 	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;

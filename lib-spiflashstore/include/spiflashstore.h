@@ -27,7 +27,6 @@
 #define SPIFLASHSTORE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <uuid/uuid.h>
 
 #include "storenetwork.h"

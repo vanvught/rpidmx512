@@ -81,7 +81,7 @@ typedef struct _oled_info {
 extern "C" {
 #endif
 
-extern const bool oled_start(oled_info_t *);
+extern bool oled_start(oled_info_t *);
 extern void oled_clear(const oled_info_t *);
 extern void oled_set_cursor(const oled_info_t *, const uint8_t, const uint8_t);
 extern int oled_putc(const oled_info_t *, const int);

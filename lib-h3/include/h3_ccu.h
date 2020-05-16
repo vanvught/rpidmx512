@@ -2,7 +2,7 @@
  * @file h3_ccu.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,35 +38,35 @@ typedef enum H3_CCU_PLL {
 	CCU_PLL_DE
 } ccu_pll_t;
 
-#define CCU_BUS_CLK_GATING0_DMA		(1 << 6)
-#define CCU_BUS_CLK_GATING0_HSTMR	(1 << 19)
-#define CCU_BUS_CLK_GATING0_SPI0	(1 << 20)
-#define CCU_BUS_CLK_GATING0_SPI1	(1 << 21)
+#define CCU_BUS_CLK_GATING0_DMA		(1U << 6)
+#define CCU_BUS_CLK_GATING0_HSTMR	(1U << 19)
+#define CCU_BUS_CLK_GATING0_SPI0	(1U << 20)
+#define CCU_BUS_CLK_GATING0_SPI1	(1U << 21)
 
-#define CCU_BUS_CLK_GATING2_AC_DIG	(1 << 0)
-#define CCU_BUS_CLK_GATING2_THS		(1 << 8)
+#define CCU_BUS_CLK_GATING2_AC_DIG	(1U << 0)
+#define CCU_BUS_CLK_GATING2_THS		(1U << 8)
 
-#define CCU_BUS_CLK_GATING3_TWI0	(1 << 0)
-#define CCU_BUS_CLK_GATING3_TWI1	(1 << 1)
-#define CCU_BUS_CLK_GATING3_UART0	(1 << 16)
-#define CCU_BUS_CLK_GATING3_UART1	(1 << 17)
-#define CCU_BUS_CLK_GATING3_UART2	(1 << 18)
-#define CCU_BUS_CLK_GATING3_UART3	(1 << 19)
+#define CCU_BUS_CLK_GATING3_TWI0	(1U << 0)
+#define CCU_BUS_CLK_GATING3_TWI1	(1U << 1)
+#define CCU_BUS_CLK_GATING3_UART0	(1U << 16)
+#define CCU_BUS_CLK_GATING3_UART1	(1U << 17)
+#define CCU_BUS_CLK_GATING3_UART2	(1U << 18)
+#define CCU_BUS_CLK_GATING3_UART3	(1U << 19)
 
-#define CCU_BUS_SOFT_RESET0_DMA		(1 << 6)
-#define CCU_BUS_SOFT_RESET0_HSTMR	(1 << 19)
-#define CCU_BUS_SOFT_RESET0_SPI0	(1 << 20)
-#define CCU_BUS_SOFT_RESET0_SPI1	(1 << 21)
+#define CCU_BUS_SOFT_RESET0_DMA		(1U << 6)
+#define CCU_BUS_SOFT_RESET0_HSTMR	(1U << 19)
+#define CCU_BUS_SOFT_RESET0_SPI0	(1U << 20)
+#define CCU_BUS_SOFT_RESET0_SPI1	(1U << 21)
 
-#define CCU_BUS_SOFT_RESET3_AC		(1 << 0)
-#define CCU_BUS_SOFT_RESET3_THS		(1 << 8)
+#define CCU_BUS_SOFT_RESET3_AC		(1U << 0)
+#define CCU_BUS_SOFT_RESET3_THS		(1U << 8)
 
-#define CCU_BUS_SOFT_RESET4_TWI0	(1 << 0)
-#define CCU_BUS_SOFT_RESET4_TWI1	(1 << 1)
-#define CCU_BUS_SOFT_RESET4_UART0	(1 << 16)
-#define CCU_BUS_SOFT_RESET4_UART1	(1 << 17)
-#define CCU_BUS_SOFT_RESET4_UART2	(1 << 18)
-#define CCU_BUS_SOFT_RESET4_UART3	(1 << 19)
+#define CCU_BUS_SOFT_RESET4_TWI0	(1U << 0)
+#define CCU_BUS_SOFT_RESET4_TWI1	(1U << 1)
+#define CCU_BUS_SOFT_RESET4_UART0	(1U << 16)
+#define CCU_BUS_SOFT_RESET4_UART1	(1U << 17)
+#define CCU_BUS_SOFT_RESET4_UART2	(1U << 18)
+#define CCU_BUS_SOFT_RESET4_UART3	(1U << 19)
 
 #define CCU_PERIPH0_CLOCK_HZ		600000000		///< 600MHz
 
@@ -78,14 +78,14 @@ typedef enum H3_CCU_PLL {
 
 #define CCU_THS_CLK_SRC_OSC24M		0
 	#define CCU_THS_CLK_SRC_SHIFT		(24)
-	#define CCU_THS_CLK_SRC_MASK		(0xF << 24)
+	#define CCU_THS_CLK_SRC_MASK		(0xFU << 24)
 
-#define CCU_THS_CLK_DIV_RATIO_1		0b00	///< /1
-#define CCU_THS_CLK_DIV_RATIO_2		0b01	///< /2
-#define CCU_THS_CLK_DIV_RATIO_4		0b10	///< /4
-#define CCU_THS_CLK_DIV_RATIO_6		0b11	///< /6
+#define CCU_THS_CLK_DIV_RATIO_1		(0)	///< /1
+#define CCU_THS_CLK_DIV_RATIO_2		(1)	///< /2
+#define CCU_THS_CLK_DIV_RATIO_4		(2)	///< /4
+#define CCU_THS_CLK_DIV_RATIO_6		(3)	///< /6
 	#define CCU_THS_CLK_DIV_RATIO_SHIFT	(0)
-	#define CCU_THS_CLK_DIV_RATIO_MASK	(0xF << 0)
+	#define CCU_THS_CLK_DIV_RATIO_MASK	(0xFU << 0)
 
 #ifdef __cplusplus
 extern "C" {

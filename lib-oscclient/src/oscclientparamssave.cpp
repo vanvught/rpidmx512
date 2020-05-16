@@ -23,14 +23,18 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscclientparams.h"
 #include "oscclientparamsconst.h"
-#include "oscconst.h"
+#include "oscparamsconst.h"
 
 #include "propertiesbuilder.h"
 
@@ -47,22 +51,22 @@ void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 		m_pOscClientParamsStore->Copy(&m_tOscClientParams);
 	}
 
-	PropertiesBuilder builder(OscClientParamsConst::PARAMS_FILE_NAME, pBuffer, nLength);
+	PropertiesBuilder builder(OscClientParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.AddIpAddress(OscClientParamsConst::PARAMS_SERVER_IP, m_tOscClientParams.nServerIp, isMaskSet(OSCCLIENT_PARAMS_MASK_SERVER_IP));
-	builder.Add(OscConst::PARAMS_OUTGOING_PORT, m_tOscClientParams.nOutgoingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT));
-	builder.Add(OscConst::PARAMS_INCOMING_PORT, m_tOscClientParams.nIncomingPort, isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT));
-	builder.Add(OscClientParamsConst::PARAMS_PING_DISABLE, m_tOscClientParams.nPingDisable, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE));
-	builder.Add(OscClientParamsConst::PARAMS_PING_DELAY, m_tOscClientParams.nPingDelay, isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY));
+	builder.AddIpAddress(OscClientParamsConst::SERVER_IP, m_tOscClientParams.nServerIp, isMaskSet(OscClientParamsMask::SERVER_IP));
+	builder.Add(OscParamsConst::OUTGOING_PORT, m_tOscClientParams.nOutgoingPort, isMaskSet(OscClientParamsMask::OUTGOING_PORT));
+	builder.Add(OscParamsConst::INCOMING_PORT, m_tOscClientParams.nIncomingPort, isMaskSet(OscClientParamsMask::INCOMING_PORT));
+	builder.Add(OscClientParamsConst::PING_DISABLE, m_tOscClientParams.nPingDisable, isMaskSet(OscClientParamsMask::PING_DISABLE));
+	builder.Add(OscClientParamsConst::PING_DELAY, m_tOscClientParams.nPingDelay, isMaskSet(OscClientParamsMask::PING_DELAY));
 
-	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
-		m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
+	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
+		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
 		const char *cmd = reinterpret_cast<const char*>(&m_tOscClientParams.aCmd[i]);
 		builder.Add(m_aCmd, cmd, *cmd == '/');
 	}
 
-	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
-		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
+	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
+		m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
 		const char *led = reinterpret_cast<const char*>(&m_tOscClientParams.aLed[i]);
 		builder.Add(m_aLed, led, *led == '/');
 	}

@@ -23,45 +23,41 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
 #include "oscstring.h"
 #include "osc.h"
 
-unsigned OSCString::Validate(void *pData, unsigned nSize) {
-	unsigned i = 0, len = 0;
-	char *pos = reinterpret_cast<char *>(pData);
+/*
+ * OSC-string
+ * A sequence of non-null ASCII characters followed by a null,
+ * followed by 0-3 additional null characters to make the total number of bits a multiple of 32.
+ */
+
+int OSCString::Validate(void *pData, int nSize) {
+	int nLength = 0;
+	char *pSrc = reinterpret_cast<char*>(pData);
+
+	int i = 0;
 
 	for (i = 0; i < nSize; ++i) {
-		if (pos[i] == '\0') {
-			len = 4 * (i / 4 + 1);
+		if (pSrc[i] == '\0') {
+			nLength = 4 * (i / 4 + 1);
 			break;
 		}
 	}
 
-	if (0 == len) {
-		return -OSC_STRING_NOT_TERMINATED;
+	if (0 == nLength) {
+		return -NOT_TERMINATED;
 	}
 
-	if (len > nSize) {
-		return -OSC_STRING_INVALID_SIZE;
+	if (nLength > nSize) {
+		return -INVALID_SIZE;
 	}
 
-	for (; i < len; ++i) {
-		if (pos[i] != '\0') {
-			return -OSC_STRING_NONE_ZERO_IN_PADDING;
+	for (; i < nLength; ++i) {
+		if (pSrc[i] != '\0') {
+			return -NONE_ZERO_IN_PADDING;
 		}
 	}
 
-	return len;
-}
-
-unsigned OSCString::Size(const char *s) {
-	return 4 * (strlen(s) / 4 + 1);
+	return nLength;
 }

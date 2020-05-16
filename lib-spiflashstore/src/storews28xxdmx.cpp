@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "storews28xxdmx.h"
 
@@ -72,7 +72,7 @@ void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
 void StoreWS28xxDmx::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS);
+	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
 
 	DEBUG_EXIT
 }

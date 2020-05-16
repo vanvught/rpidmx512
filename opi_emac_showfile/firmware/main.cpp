@@ -31,8 +31,6 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
@@ -88,8 +86,7 @@ void notmain(void) {
 	hw.SetRebootHandler(new Reboot);
 	hw.SetLed(HARDWARE_LED_ON);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -121,7 +118,7 @@ void notmain(void) {
 	ShowFileProtocolHandler *pShowFileProtocolHandler = 0;
 
 	switch (showFileParams.GetProtocol()) {
-		case SHOWFILE_PROTOCOL_ARTNET:
+		case ShowFileProtocols::ARTNET:
 			pShowFileProtocolHandler = new ShowFileProtocolArtNet;
 			break;
 		default:
@@ -184,8 +181,8 @@ void notmain(void) {
 	}
 
 	// Fixed row 5, 6, 7
-	display.Printf(5, showFileParams.GetProtocol() == SHOWFILE_PROTOCOL_ARTNET ? "Art-Net" : "sACN E1.31");
-	if (showFileParams.GetProtocol() == SHOWFILE_PROTOCOL_ARTNET) {
+	display.Printf(5, showFileParams.GetProtocol() == ShowFileProtocols::ARTNET ? "Art-Net" : "sACN E1.31");
+	if (showFileParams.GetProtocol() == ShowFileProtocols::ARTNET) {
 		if (showFileParams.IsArtNetBroadcast()) {
 			Display::Get()->PutString(" <Broadcast>");
 		}

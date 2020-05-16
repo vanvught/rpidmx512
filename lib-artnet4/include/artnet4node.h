@@ -30,7 +30,6 @@
 #define ARTNET4NODE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "artnetnode.h"
 #include "artnet4handler.h"

@@ -76,7 +76,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
@@ -103,15 +103,15 @@ void notmain(void) {
 
 	struct TSparkFunStores sparkFunStores;
 	sparkFunStores.pSparkFunDmxParamsStore = &storeSparkFunDmx;
-	sparkFunStores.pModeParamsStore = (ModeParamsStore *) &storeMotors;
-	sparkFunStores.pMotorParamsStore = (MotorParamsStore *) &storeMotors;
-	sparkFunStores.pL6470ParamsStore = (L6470ParamsStore *) &storeMotors;
+	sparkFunStores.pModeParamsStore = &storeMotors;
+	sparkFunStores.pMotorParamsStore = &storeMotors;
+	sparkFunStores.pL6470ParamsStore = &storeMotors;
 
 	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != 0);
 
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
-	pSparkFunDmx->SetModeStore((ModeStore *) &storeMotors);
+	pSparkFunDmx->SetModeStore(&storeMotors);
 
 	pBoard = pSparkFunDmx;
 #endif
@@ -172,14 +172,14 @@ void notmain(void) {
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	RDMDevice *pRDMDevice = (RDMDevice *)&dmxrdm;
-	pRDMDevice->SetRDMDeviceStore((RDMDeviceStore *)&storeRdmDevice);
+	RDMDevice *pRDMDevice = &dmxrdm;
+	pRDMDevice->SetRDMDeviceStore(&storeRdmDevice);
 #else
 	RDMDeviceParams rdmDeviceParams;
 #endif
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set((RDMDevice *)&dmxrdm);
+		rdmDeviceParams.Set(&dmxrdm);
 		rdmDeviceParams.Dump();
 	}
 

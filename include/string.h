@@ -46,7 +46,7 @@ inline static int memcmp(const void *s1, const void *s2, size_t n) {
 		u1 = *t1;
 		u2 = *t2;
 		if (u1 != u2) {
-			return (int) (u1 - u2);
+			return (u1 - u2);
 		}
 	}
 
@@ -137,7 +137,7 @@ inline static int strcmp(const char *s1, const char *s2) {
 		}
 	}
 
-	return (int) (*p1 - *p2);
+	return (*p1 - *p2);
 }
 
 inline static int strncmp(const char *s1, const char *s2, size_t n) {
@@ -146,7 +146,7 @@ inline static int strncmp(const char *s1, const char *s2, size_t n) {
 
 	for (; n > 0; p1++, p2++, --n) {
 		if (*p1 != *p2) {
-			return (int) (*p1 - *p2);
+			return (*p1 - *p2);
 		} else if (*p1 == (unsigned char) '\0') {
 			return 0;
 		}
@@ -165,7 +165,7 @@ inline static int strcasecmp(const char *s1, const char *s2) {
 		}
 	}
 
-	return (int) (tolower((int) *p1) - tolower((int) *p2));
+	return (tolower((int) *p1) - tolower((int) *p2));
 }
 
 inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
@@ -174,7 +174,7 @@ inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
 
 	for (; n > 0; p1++, p2++, --n) {
 		if (tolower((int) *p1) != tolower((int) *p2)) {
-			return (int) (tolower((int) *p1) - tolower((int) *p2));
+			return (tolower((int) *p1) - tolower((int) *p2));
 		} else if (*p1 == (unsigned char) '\0') {
 			return 0;
 		}

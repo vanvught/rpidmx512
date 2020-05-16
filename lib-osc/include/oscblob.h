@@ -26,30 +26,42 @@
 #ifndef OSCBLOB_H_
 #define OSCBLOB_H_
 
+#include <stdint.h>
+
+/*
+ * OSC-blob
+ * An int32 size count, followed by that many 8-bit bytes of arbitrary binary data,
+ * followed by 0-3 additional zero bytes to make the total number of bits a multiple of 32.
+ */
+
 typedef struct _osc_blob {
-    uint32_t size;
-    char *data;
+    int32_t nSize;
+    uint8_t *pData;
 } osc_blob;
 
 class OSCBlob {
-
 public:
-	OSCBlob(const char *, int);
+	OSCBlob(const uint8_t *pData, int32_t nSize);
 	~OSCBlob(void);
 
-	int GetDataSize(void) const;
-	const char *GetDataPtr(void);
-	int GetByte(unsigned) const;
+	int32_t GetDataSize(void) {
+		return m_nSize;
+	}
 
-	unsigned GetSize(void) const;
+	const uint8_t *GetDataPtr(void) {
+		return m_pData;
+	}
 
-public:
-	static unsigned Size(const void *);
-	static signed Validate(void *, unsigned);
+	uint8_t GetByte(int32_t nIndex) const;
+
+	int32_t GetSize(void) const;
+
+	static int32_t Size(const void *);
+	static int32_t Validate(void *, int32_t);
 
 private:
-	char *m_pData;
-	unsigned m_nSize;
+	uint8_t *m_pData;
+	int32_t m_nSize;
 };
 
 #endif /* OSCBLOB_H_ */

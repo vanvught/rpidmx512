@@ -26,16 +26,15 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 #include <ctype.h>
 
 #include "dmxserialchanneldata.h"
 
 #include "debug.h"
 
-static char s_buffer[2048];
+static char s_buffer[2048] __attribute__ ((aligned (4)));
 
-DmxSerialChannelData::DmxSerialChannelData(void): m_pFile(0), m_nChannelValue(0) {
+DmxSerialChannelData::DmxSerialChannelData(void) {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < sizeof(m_pChannelData) / sizeof(m_pChannelData[0]); i++) {
@@ -69,12 +68,12 @@ bool DmxSerialChannelData::Parse(const char *pFileName) {
 		return false;
 	}
 
-	ParseCode tParseCode = PARSE_NONE;
+	DmxSerialParseCode tParseCode = DmxSerialParseCode::NONE;
 
-	while (tParseCode != PARSE_EOF) {
+	while (tParseCode != DmxSerialParseCode::EOFILE) {
 		tParseCode = GetNextLine();
 
-		if (tParseCode == PARSE_FAILED) {
+		if (tParseCode == DmxSerialParseCode::FAILED) {
 			break;
 		}
 	}
@@ -111,19 +110,19 @@ void DmxSerialChannelData::Dump(void) {
 #endif
 }
 
-ParseCode DmxSerialChannelData::GetNextLine(void) {
+DmxSerialParseCode DmxSerialChannelData::GetNextLine(void) {
 	if (fgets(s_buffer, static_cast<int>(sizeof(s_buffer) - 1), m_pFile) != s_buffer) {
-		return PARSE_EOF;
+		return DmxSerialParseCode::EOFILE;
 	}
 
 	if (isdigit(static_cast<int>(s_buffer[0]))) {
 		return ParseLine(s_buffer);
 	}
 
-	return PARSE_NONE;
+	return DmxSerialParseCode::NONE;
 }
 
-ParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
+DmxSerialParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
 	char *p = const_cast<char *>(pLine);
 	int32_t k = 0;
 
@@ -133,7 +132,7 @@ ParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
 	}
 
 	if (k > static_cast<int32_t>((static_cast<uint8_t>(~0)))) {
-		return PARSE_FAILED;
+		return DmxSerialParseCode::FAILED;
 	}
 
 	if (*p++ == ' ') {
@@ -142,10 +141,10 @@ ParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
 		return ParseSerialData(p);
 	}
 
-	return PARSE_FAILED;
+	return DmxSerialParseCode::FAILED;
 }
 
-ParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
+DmxSerialParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 	char *p = const_cast<char *>(pLine);
 	int64_t k = 0;
 	uint32_t nLength = 0;
@@ -155,7 +154,7 @@ ParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 
 		if (k > 255) {
 			DEBUG1_EXIT
-			return PARSE_FAILED;
+			return DmxSerialParseCode::FAILED;
 		}
 
 		p++;
@@ -164,7 +163,7 @@ ParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 
 			if (nLength > 512) {
 				DEBUG1_EXIT
-				return PARSE_FAILED;
+				return DmxSerialParseCode::FAILED;
 			}
 
 			m_pChannelData[m_nChannelValue][nLength] = k;
@@ -181,5 +180,5 @@ ParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 
 	m_nChannelDataLength[m_nChannelValue]  = nLength;
 
-	return PARSE_SERIAL;
+	return DmxSerialParseCode::SERIAL;
 }

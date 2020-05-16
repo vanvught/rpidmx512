@@ -27,13 +27,12 @@
 #define DISPLAYSET_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-enum TCursorMode {
-	SET_CURSOR_OFF = 0,
-	SET_CURSOR_ON = (1 << 0),
-	SET_CURSOR_BLINK_OFF = 0,
-	SET_CURSOR_BLINK_ON = (1 << 1)
+struct CursorMode {
+	static constexpr auto OFF = 0;
+	static constexpr auto ON = (1 << 0);
+	static constexpr auto BLINK_OFF = 0;
+	static constexpr auto BLINK_ON = (1 << 1);
 };
 
 class DisplaySet {
@@ -63,7 +62,7 @@ public:
 	virtual void SetSleep(bool bSleep);
 
 #if defined(ENABLE_CURSOR_MODE)
-	virtual void SetCursor(TCursorMode)= 0;
+	virtual void SetCursor(CursorMode)= 0;
 #endif
 
 protected:

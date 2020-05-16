@@ -50,7 +50,7 @@ _wifi_mode wifi_get_opmode(void) {
  * @param macaddr
  * @return
  */
-const bool wifi_get_macaddr(const uint8_t *macaddr) {
+bool wifi_get_macaddr(const uint8_t *macaddr) {
 	if (macaddr == NULL) {
 		return false;
 	}
@@ -67,7 +67,7 @@ const bool wifi_get_macaddr(const uint8_t *macaddr) {
  * @param info
  * @return
  */
-const bool wifi_get_ip_info(const struct ip_info *info) {
+bool wifi_get_ip_info(const struct ip_info *info) {
 	if (info == NULL) {
 		return false;
 	}

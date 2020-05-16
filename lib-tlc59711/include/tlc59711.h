@@ -2,7 +2,7 @@
  * @file tlc59711.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,21 +28,20 @@
 #ifndef TLC59711_H_
 #define TLC59711_H_
 
-#define TLC59711_SPI_SPEED_DEFAULT	5000000
-#define TLC59711_SPI_SPEED_MAX		10000000
+struct TLC59711SpiSpeed {
+	static constexpr uint32_t DEFAULT = 5000000;	// 5 MHz
+	static constexpr uint32_t MAX = 10000000;		// 10 MHz
+};
 
-#define TLC59711_16BIT_CHANNELS	14
-#define TLC59711_OUT_CHANNELS	12
-#define TLC59711_RGB_CHANNELS	4
-
-#define TLC59711_RGB_8BIT_VALUE(x)	((uint8_t)(x))
-#define TLC59711_RGB_16BIT_VALUE(x)	((uint16_t)(x))
-
-#include <stdint.h>
+struct TLC59711Channels {
+	static constexpr uint32_t U16BIT = 14;
+	static constexpr uint32_t OUT = 12;
+	static constexpr uint32_t RGB = 4;
+};
 
 class TLC59711 {
 public:
-	TLC59711(uint8_t nBoards = 1, uint32_t nSpiSpeedHz = TLC59711_SPI_SPEED_DEFAULT);
+	TLC59711(uint8_t nBoards = 1, uint32_t nSpiSpeedHz = TLC59711SpiSpeed::DEFAULT);
 	~TLC59711(void);
 
 	int GetBlank(void) const;

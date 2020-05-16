@@ -66,7 +66,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
-	Display display(DISPLAY_TYPE_UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;

@@ -26,8 +26,6 @@
 #ifndef IPPROG_H_
 #define IPPROG_H_
 
-#include <stdbool.h>
-
 #include "artnetipprog.h"
 
 class IpProg: public ArtNetIpProg {
@@ -35,9 +33,7 @@ public:
 	IpProg(void);
 	~IpProg(void);
 
-	void Handler(const struct TArtNetIpProg *, struct TArtNetIpProgReply *);
-
-private:
+	void Handler(const struct TArtNetIpProg*, struct TArtNetIpProgReply*);
 };
 
 #endif /* IPPROG_H_ */

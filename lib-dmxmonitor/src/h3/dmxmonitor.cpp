@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -44,16 +43,11 @@ enum {
 	DMX_START_ADDRESS = 1
 };
 
-DMXMonitor::DMXMonitor(void) :
-	m_tFormat(DMX_MONITOR_FORMAT_HEX),
-	m_nSlots(0),
-	m_bIsStarted(false)
-{
+DMXMonitor::DMXMonitor(void) {
 	memset(m_Data, 0, sizeof(m_Data) / sizeof(m_Data[0]));
 }
 
 DMXMonitor::~DMXMonitor(void) {
-
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -72,7 +66,7 @@ uint16_t DMXMonitor::GetDmxFootprint(void) {
 	return DMX_FOOTPRINT;
 }
 
-void DMXMonitor::Start(uint8_t nPort) {
+void DMXMonitor::Start(__attribute__((unused)) uint8_t nPort) {
 	if(m_bIsStarted) {
 		return;
 	}
@@ -84,10 +78,10 @@ void DMXMonitor::Start(uint8_t nPort) {
 	console_clear_line(TOP_ROW);
 
 	switch (m_tFormat) {
-		case DMX_MONITOR_FORMAT_PCT:
+		case DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT:
 			console_putc('%');
 			break;
-		case DMX_MONITOR_FORMAT_DEC:
+		case DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC:
 			console_putc('D');
 			break;
 		default:
@@ -95,7 +89,7 @@ void DMXMonitor::Start(uint8_t nPort) {
 			break;
 	}
 
-	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+	if (m_tFormat != DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC) {
 		console_puts("   01 02 03 04 05 06 07 08 09 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32");
 
 		for (uint32_t i = 1; i < (HEX_ROWS * HEX_COLUMNS); i = i + HEX_COLUMNS) {
@@ -114,14 +108,14 @@ void DMXMonitor::Start(uint8_t nPort) {
 	Update();
 }
 
-void DMXMonitor::Stop(uint8_t nPort) {
+void DMXMonitor::Stop(__attribute__((unused)) uint8_t nPort) {
 	if(!m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = false;
 
-	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+	if (m_tFormat != DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC) {
 		for (uint32_t i = (TOP_ROW + 1); i < (TOP_ROW + HEX_ROWS + 1); i++) {
 			console_set_cursor(4, i);
 			console_puts("-- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --");
@@ -144,14 +138,14 @@ void DMXMonitor::Cls(void) {
 		console_clear_line(i);
 	}
 
-	if (m_tFormat == DMX_MONITOR_FORMAT_DEC) {
+	if (m_tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC) {
 		for (; i < (TOP_ROW + DEC_ROWS + 1); i++) {
 			console_clear_line(i);
 		}
 	}
 }
 
-void DMXMonitor::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+void DMXMonitor::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
 	m_nSlots = nLength;
 
 	memcpy(m_Data, pData, nLength);
@@ -165,7 +159,7 @@ void DMXMonitor::Update(void) {
 	uint8_t *p = m_Data;
 	uint16_t slot = 0;
 
-	if (m_tFormat != DMX_MONITOR_FORMAT_DEC) {
+	if (m_tFormat != DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC) {
 		for (i = 0; (i < HEX_ROWS) && (slot < m_nSlots); i++) {
 
 			console_set_cursor(4, ++row);
@@ -176,7 +170,7 @@ void DMXMonitor::Update(void) {
 				if (d == 0) {
 					console_puts(" 0");
 				} else {
-					if (m_tFormat == DMX_MONITOR_FORMAT_HEX) {
+					if (m_tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX) {
 						console_puthex_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d, d, d));
 					} else {
 						console_putpct_fg_bg(

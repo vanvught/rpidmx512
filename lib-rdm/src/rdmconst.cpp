@@ -2,7 +2,7 @@
  * @file rdmconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "rdmconst.h"
 
 /*
@@ -30,4 +32,4 @@
  */
 
 const char RDMConst::MANUFACTURER_NAME[] = "http://www.orangepi-dmx.org";
-const char RDMConst::MANUFACTURER_ID[2] = { 0x50, 0x00 };
+const uint8_t RDMConst::MANUFACTURER_ID[2] = { 0x50, 0x00 };

@@ -31,7 +31,7 @@
 class RDMConst {
 public:
 	static const char MANUFACTURER_NAME[];
-	static const char MANUFACTURER_ID[];
+	static const uint8_t MANUFACTURER_ID[];
 };
 
 #endif /* RDMCONST_H_ */

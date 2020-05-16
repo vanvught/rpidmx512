@@ -33,14 +33,14 @@
 #include <stdio.h>
 
 #include "artnetcontroller.h"
-#include "../../lib-artnet/include/artnettrigger.h"
+#include "artnettrigger.h"
 
 #include "showfileprotocolhandler.h"
 
-class ShowFileProtocolArtNet: public ShowFileProtocolHandler, ArtNetTrigger {
+class ShowFileProtocolArtNet: public ShowFileProtocolHandler, public ArtNetTrigger {
 public:
 	ShowFileProtocolArtNet(void) {
-		m_ArtNetController.SetArtNetTrigger(static_cast<ArtNetTrigger *>(this));
+		m_ArtNetController.SetArtNetTrigger(this);
 	}
 
 	~ShowFileProtocolArtNet(void) {

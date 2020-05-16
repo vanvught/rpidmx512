@@ -1,8 +1,10 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
 /**
  * @file mmc_bsp.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,60 +64,63 @@
 // CCU register
 #define SDMMC_CLK_SCLK_GATING		(1U << 31)	///< 1 = Clock is ON. SCLK = Clock source/Divider N/ Divider M
 
-#define BUS_CLK_GATING0_MMC0_GATE	(1 << 8)
-#define BUS_CLK_GATING0_MMC1_GATE	(1 << 9)
-#define BUS_CLK_GATING0_MMC2_GATE	(1 << 10)
+#define BUS_CLK_GATING0_MMC0_GATE	(1U << 8)
+#define BUS_CLK_GATING0_MMC1_GATE	(1U << 9)
+#define BUS_CLK_GATING0_MMC2_GATE	(1U << 10)
 
 // SD_MMCx register
-#define GCTL_SOFT_RST			(1 << 0)	///< Reset SD/MMC controller
-#define GCTL_FIFO_RST			(1 << 1)	///< Reset FIFO
-#define GCTL_DMA_RST			(1 << 2)	///< DMA Reset
+#define GCTL_SOFT_RST			(1U << 0)	///< Reset SD/MMC controller
+#define GCTL_FIFO_RST			(1U << 1)	///< Reset FIFO
+#define GCTL_DMA_RST			(1U << 2)	///< DMA Reset
 	#define GCTL_RESET	(GCTL_SOFT_RST | GCTL_FIFO_RST | GCTL_DMA_RST)
 #define GCTL_FIFO_AC_MODE_AHB	(1U << 31)	///< FIFO Access Mode AHB bus
 
 	#define CKC_CCLK_DIV_MASK		(0xFF << 0)
-#define CKC_CCLK_ENABLE			(1 << 16)	///< Card Clock on
-#define CKC_CCLK_CTRL			(1 << 17)	///< Turn off card when FSM in IDLE state
+#define CKC_CCLK_ENABLE			(1U << 16)	///< Card Clock on
+#define CKC_CCLK_CTRL			(1U << 17)	///< Turn off card when FSM in IDLE state
 #define CKC_CCLK_MASK_DATA0		(1U << 31)	///< Mask Data0 when update clock
 
-#define BWD_CARD_WID_1BIT		(0b00)
-#define BWD_CARD_WID_4BIT		(0b01)
-#define BWD_CARD_WID_8BIT		(0b10)
+//#define BWD_CARD_WID_1BIT		(0b00)
+//#define BWD_CARD_WID_4BIT		(0b01)
+//#define BWD_CARD_WID_8BIT		(0b10)
+#define BWD_CARD_WID_1BIT		(0)
+#define BWD_CARD_WID_4BIT		(1)
+#define BWD_CARD_WID_8BIT		(2)
 
 #define HWRST_HW_RESET			(0 << 0)
-#define HWRST_HW_ACTIVE			(1 << 0)
+#define HWRST_HW_ACTIVE			(1U << 0)
 
-#define STA_FIFO_EMPTY			(1 << 2)
-#define STA_FIFO_FULL			(1 << 3)
+#define STA_FIFO_EMPTY			(1U << 2)
+#define STA_FIFO_FULL			(1U << 3)
 
 	#define CMD_CMD_IDX_MASK		(0x3F << 0)
-#define CMD_RESP_RCV			(1 << 6)	///< Command with Response
-#define CMD_LONG_RESP			(1 << 7)	///< Long Response (136 bits)
-#define CMD_CHK_RESP_CRC		(1 << 8)	///< Check Response CRC
-#define CMD_DATA_TRANS			(1 << 9)	///< Data Transfer with data transfer
-#define CMD_TRANS_WRITE			(1 << 10)	///< Transfer direction Write operation
-#define CMD_TRANS_MODE_STREAM	(1 << 11)	///< Transfer Mode Stream data transfer command
-#define CMD_STOP_CMD_FLAG		(1 << 12)	///< Send Stop CMD Automatically (CMD12)
-#define CMD_WAIT_PRE_OVER		(1 << 13)	///< Wait for data transfer completion before sending current command
-#define CMD_SEND_INIT_SEQ		(1 << 15)	///< Send initialization sequence before sending this command
-#define CMD_PRG_CLOCK			(1 << 21)	///< Change Card Clock
+#define CMD_RESP_RCV			(1U << 6)	///< Command with Response
+#define CMD_LONG_RESP			(1U << 7)	///< Long Response (136 bits)
+#define CMD_CHK_RESP_CRC		(1U << 8)	///< Check Response CRC
+#define CMD_DATA_TRANS			(1U << 9)	///< Data Transfer with data transfer
+#define CMD_TRANS_WRITE			(1U << 10)	///< Transfer direction Write operation
+#define CMD_TRANS_MODE_STREAM	(1U << 11)	///< Transfer Mode Stream data transfer command
+#define CMD_STOP_CMD_FLAG		(1U << 12)	///< Send Stop CMD Automatically (CMD12)
+#define CMD_WAIT_PRE_OVER		(1U << 13)	///< Wait for data transfer completion before sending current command
+#define CMD_SEND_INIT_SEQ		(1U << 15)	///< Send initialization sequence before sending this command
+#define CMD_PRG_CLOCK			(1U << 21)	///< Change Card Clock
 #define CMD_CMD_LOAD			(1U << 31)	///< Start Command
 
-#define RIS_RESPONSE_ERROR		(1 << 1)	///< Response Error (no response or response CRC error)
-#define RIS_CMD_COMPLETE		(1 << 2)	///< Command Complete
-#define RIS_TRANS_COMPLETE		(1 << 3)	///< Data Transfer Complete
-#define RIS_TRANSMIT_REQ		(1 << 4)	///< Data Transmit Request
-#define RIS_RECEIVE_REQ			(1 << 5)	///< Data Receive Request
-#define RIS_RESP_CRC_ERROR		(1 << 6)	///< Response CRC error
-#define RIS_DATA_CRC_ERROR		(1 << 7)	///< Data CRC error
-#define RIS_RESP_TIMEOUT		(1 << 8)	///< Response timeout/Boot ACK received
-#define RIS_DATA_TIMEOUT		(1 << 9)	///< Data timeout/Boot data start
-#define RIS_DATA_STAR_TIMEOUT	(1 << 10)	///< Data starvation timeout(HTO)/V1.8 Switch Done
-#define RIS_FIFO_UNDERRUN		(1 << 11)	///< FIFO under run/overflow
-#define RIS_CMD_BUSY			(1 << 12)	///< Command Busy and illagal write
-#define RIS_DATA_START_ERROR	(1 << 13)	///< Data Start Error
-#define RIS_AUTO_CMD_DONE		(1 << 14)	///< Auto command done
-#define RIS_DATA_ENDBIT_ERROR	(1 << 15)	///< Data End-bit error
+#define RIS_RESPONSE_ERROR		(1U << 1)	///< Response Error (no response or response CRC error)
+#define RIS_CMD_COMPLETE		(1U << 2)	///< Command Complete
+#define RIS_TRANS_COMPLETE		(1U << 3)	///< Data Transfer Complete
+#define RIS_TRANSMIT_REQ		(1U << 4)	///< Data Transmit Request
+#define RIS_RECEIVE_REQ			(1U << 5)	///< Data Receive Request
+#define RIS_RESP_CRC_ERROR		(1U << 6)	///< Response CRC error
+#define RIS_DATA_CRC_ERROR		(1U << 7)	///< Data CRC error
+#define RIS_RESP_TIMEOUT		(1U << 8)	///< Response timeout/Boot ACK received
+#define RIS_DATA_TIMEOUT		(1U << 9)	///< Data timeout/Boot data start
+#define RIS_DATA_STAR_TIMEOUT	(1U << 10)	///< Data starvation timeout(HTO)/V1.8 Switch Done
+#define RIS_FIFO_UNDERRUN		(1U << 11)	///< FIFO under run/overflow
+#define RIS_CMD_BUSY			(1U << 12)	///< Command Busy and illagal write
+#define RIS_DATA_START_ERROR	(1U << 13)	///< Data Start Error
+#define RIS_AUTO_CMD_DONE		(1U << 14)	///< Auto command done
+#define RIS_DATA_ENDBIT_ERROR	(1U << 15)	///< Data End-bit error
 //0xbbc2 0b1011101111000010
 #define RIS_RAW_ISTA	(RIS_DATA_ENDBIT_ERROR |RIS_DATA_START_ERROR | RIS_CMD_BUSY | RIS_FIFO_UNDERRUN | RIS_DATA_TIMEOUT | RIS_RESP_TIMEOUT | RIS_DATA_CRC_ERROR | RIS_RESP_CRC_ERROR | RIS_RESPONSE_ERROR)
 
@@ -139,8 +144,9 @@ static void dumphex32(const char *reg_name, char *base, uint32_t len) {
 struct sunxi_mmc_host {
 	uint32_t  mclk;
 	uint32_t  fatal_err;
-} static _aw_mmc_host;
+};
 
+static struct sunxi_mmc_host _aw_mmc_host;
 static struct mmc mmc_dev;
 
 static void mmc_ccu_init(void) {
@@ -282,7 +288,7 @@ static int mmc_core_init(void) {
 	return 0;
 }
 
-static int mmc_trans_data_by_cpu(struct mmc *mmc, struct mmc_data *data) {
+static int mmc_trans_data_by_cpu(__attribute__((unused)) struct mmc *mmc, struct mmc_data *data) {
 	uint32_t i;
 	uint32_t byte_cnt = data->blocksize * data->blocks;
 	uint32_t *buff;

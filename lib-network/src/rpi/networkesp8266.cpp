@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "networkesp8266.h"
 
@@ -60,7 +60,7 @@ void NetworkESP8266::Init(void) {
 			;
 	}
 
-	const char *pHostName = (char *)wifi_get_hostname();
+	const char *pHostName = reinterpret_cast<const char*>(wifi_get_hostname());
 	strncpy(m_aHostName, pHostName, sizeof(m_aHostName) - 1);
 
 	(void) wifi_get_macaddr(m_aNetMacaddr);
@@ -77,20 +77,20 @@ void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
-		memcpy((void *)pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
+		memcpy(pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 	} else {
-		bcm2835_vc_get_board_mac_address((uint8_t *) pMacAddress);
+		bcm2835_vc_get_board_mac_address(reinterpret_cast<uint8_t*>(pMacAddress));
 	}
 }
 
-void NetworkESP8266::JoinGroup(uint32_t nHandle, uint32_t nIp) {
+void NetworkESP8266::JoinGroup(int32_t nHandle, uint32_t nIp) {
 	wifi_udp_joingroup(nIp);
 }
 
-uint16_t NetworkESP8266::RecvFrom(uint32_t nHandle, void *packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
+uint16_t NetworkESP8266::RecvFrom(int32_t nHandle, void *packet, uint16_t size,	uint32_t* from_ip, uint16_t* from_port) {
 	return wifi_udp_recvfrom(reinterpret_cast<uint8_t*>(packet), size, from_ip, from_port);
 }
 
-void NetworkESP8266::SendTo(uint32_t nHandle, const void *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
+void NetworkESP8266::SendTo(int32_t nHandle, const void *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
 	wifi_udp_sendto(reinterpret_cast<const uint8_t*>(packet), size, to_ip, remote_port);
 }

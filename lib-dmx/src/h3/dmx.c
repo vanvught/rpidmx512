@@ -123,7 +123,7 @@ static void dmx_set_send_data_length(uint16_t send_data_length) {
 	dmx_set_output_period(dmx_output_period_requested);
 }
 
-volatile uint32_t dmx_get_updates_per_seconde(void) {
+uint32_t dmx_get_updates_per_seconde(void) {
 	dmb();
 	return dmx_updates_per_seconde;
 }
@@ -217,7 +217,7 @@ const uint8_t *dmx_get_current_data(void) {
 	return dmx_data[dmx_data_buffer_index_tail].data;
 }
 
-volatile uint8_t dmx_get_receive_state(void) {
+uint8_t dmx_get_receive_state(void) {
 	dmb();
 	return dmx_receive_state;
 }
@@ -485,7 +485,7 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
  * Timer 1 interrupt DMX Receiver
  * Statistics
  */
-static void irq_timer1_dmx_receive(uint32_t clo) {
+static void irq_timer1_dmx_receive(__attribute__((unused)) uint32_t clo) {
 	dmb();
 	dmx_updates_per_seconde = total_statistics.dmx_packets - dmx_packets_previous;
 	dmx_packets_previous = total_statistics.dmx_packets;
@@ -566,7 +566,7 @@ static void fiq_dmx_out_handler(void) {
 		}
 
 		if (dmx_send_current_slot >= dmx_send_data_length) {
-			EXT_UART->O04.IER &= ~UART_IER_ETBEI; //UART_IER_PTIME;
+			EXT_UART->O04.IER &= (uint32_t) ~UART_IER_ETBEI; //UART_IER_PTIME;
 			dmb();
 			dmx_send_state = DMXINTER;
 		}
@@ -721,10 +721,10 @@ static void uart_init(void) {
 #if (EXT_UART_NUMBER == 1)
 	uint32_t value = H3_PIO_PORTG->CFG0;
 	// PG6, TX
-	value &= ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
 	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
 	// PG7, RX
-	value &= ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
 	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTG->CFG0 = value;
 
@@ -733,10 +733,10 @@ static void uart_init(void) {
 #elif (EXT_UART_NUMBER == 3)
 	uint32_t value = H3_PIO_PORTA->CFG1;
 	// PA13, TX
-	value &= ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
 	value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
 	// PA14, RX
-	value &= ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
 	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
 	H3_PIO_PORTA->CFG1 = value;
 

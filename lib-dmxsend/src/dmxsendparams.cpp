@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "dmxparams.h"
 #include "dmxsendconst.h"
@@ -41,21 +41,23 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#define DMX_PARAMS_MIN_BREAK_TIME		9
-#define DMX_PARAMS_DEFAULT_BREAK_TIME	9
-#define DMX_PARAMS_MAX_BREAK_TIME		127
+struct DMXParamsTime {
+	static constexpr auto MIN_BREAK_TIME = 9;
+	static constexpr auto DEFAULT_BREAK_TIME = 9;
+	static constexpr auto MAX_BREAK_TIME = 127;
 
-#define DMX_PARAMS_MIN_MAB_TIME			1
-#define DMX_PARAMS_DEFAULT_MAB_TIME		1
-#define DMX_PARAMS_MAX_MAB_TIME			127
+	static constexpr auto MIN_MAB_TIME = 1;
+	static constexpr auto DEFAULT_MAB_TIME = 1;
+	static constexpr auto MAX_MAB_TIME = 127;
 
-#define DMX_PARAMS_DEFAULT_REFRESH_RATE	40
+	static constexpr auto DEFAULT_REFRESH_RATE = 40;
+};
 
 DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXParamsStore) {
 	m_tDMXParams.nSetList = 0;
-	m_tDMXParams.nBreakTime = DMX_PARAMS_DEFAULT_BREAK_TIME;
-	m_tDMXParams.nMabTime = DMX_PARAMS_DEFAULT_MAB_TIME;
-	m_tDMXParams.nRefreshRate = DMX_PARAMS_DEFAULT_REFRESH_RATE;
+	m_tDMXParams.nBreakTime = DMXParamsTime::DEFAULT_BREAK_TIME;
+	m_tDMXParams.nMabTime = DMXParamsTime::DEFAULT_MAB_TIME;
+	m_tDMXParams.nRefreshRate = DMXParamsTime::DEFAULT_REFRESH_RATE;
 }
 
 DMXParams::~DMXParams(void) {
@@ -105,18 +107,25 @@ void DMXParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_BREAK_TIME, &nValue8) == SSCAN_OK) {
-		if ((nValue8 >= DMX_PARAMS_MIN_BREAK_TIME) && (nValue8 <= DMX_PARAMS_MAX_BREAK_TIME)) {
+		if ((nValue8 >= DMXParamsTime::MIN_BREAK_TIME) && (nValue8 <= DMXParamsTime::MAX_BREAK_TIME)) {
 			m_tDMXParams.nBreakTime = nValue8;
-			m_tDMXParams.nSetList |= DMX_SEND_PARAMS_MASK_BREAK_TIME;
+			m_tDMXParams.nSetList |= DmxSendParamsMask::BREAK_TIME;
 		}
-	} else if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_MAB_TIME, &nValue8) == SSCAN_OK) {
-		if ((nValue8 >= DMX_PARAMS_MIN_MAB_TIME) && (nValue8 <= DMX_PARAMS_MAX_MAB_TIME)) {
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_MAB_TIME, &nValue8) == SSCAN_OK) {
+		if ((nValue8 >= DMXParamsTime::MIN_MAB_TIME) && (nValue8 <= DMXParamsTime::MAX_MAB_TIME)) {
 			m_tDMXParams.nMabTime = nValue8;
-			m_tDMXParams.nSetList |= DMX_SEND_PARAMS_MASK_MAB_TIME;
+			m_tDMXParams.nSetList |= DmxSendParamsMask::MAB_TIME;
 		}
-	} else if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_REFRESH_RATE, &nValue8) == SSCAN_OK) {
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_REFRESH_RATE, &nValue8) == SSCAN_OK) {
 		m_tDMXParams.nRefreshRate = nValue8;
-		m_tDMXParams.nSetList |= DMX_SEND_PARAMS_MASK_REFRESH_RATE;
+		m_tDMXParams.nSetList |= DmxSendParamsMask::REFRESH_RATE;
+		return;
 	}
 }
 
@@ -128,16 +137,16 @@ void DMXParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXSendConst::PARAMS_FILE_NAME);
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME)) {
-		printf(" %s=%d\n", DMXSendConst::PARAMS_BREAK_TIME, static_cast<int>(m_tDMXParams.nBreakTime));
+	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
+		printf(" %s=%d\n", DMXSendConst::PARAMS_BREAK_TIME, m_tDMXParams.nBreakTime);
 	}
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME)) {
-		printf(" %s=%d\n", DMXSendConst::PARAMS_MAB_TIME, static_cast<int>(m_tDMXParams.nMabTime));
+	if (isMaskSet(DmxSendParamsMask::MAB_TIME)) {
+		printf(" %s=%d\n", DMXSendConst::PARAMS_MAB_TIME, m_tDMXParams.nMabTime);
 	}
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE)) {
-		printf(" %s=%d\n", DMXSendConst::PARAMS_REFRESH_RATE, static_cast<int>(m_tDMXParams.nRefreshRate));
+	if (isMaskSet(DmxSendParamsMask::REFRESH_RATE)) {
+		printf(" %s=%d\n", DMXSendConst::PARAMS_REFRESH_RATE, m_tDMXParams.nRefreshRate);
 	}
 #endif
 }

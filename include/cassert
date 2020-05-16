@@ -1,5 +1,5 @@
 /**
- * @file oscconst.h
+ * @file cassert
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,13 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCCONST_H_
-#define OSCCONST_H_
+#ifndef CASSERT_
+#define CASSERT_
 
-class OscConst {
-public:
-	static const char PARAMS_INCOMING_PORT[];
-	static const char PARAMS_OUTGOING_PORT[];
-};
+#include <assert.h>
 
-#endif /* OSCCONST_H_ */
+#endif /* CASSERT_ */

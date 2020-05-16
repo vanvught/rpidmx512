@@ -27,7 +27,6 @@
 #define LIGHTSETLLRPONLY_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "lightset.h"
 
@@ -38,18 +37,18 @@ public:
 	~LightSetLLRPOnly(void) {
 	}
 
-	void Start(uint8_t nPort) {
+	void Start(__attribute__((unused)) uint8_t nPort) {
 	}
-	void Stop(uint8_t nPort) {
+	void Stop(__attribute__((unused)) uint8_t nPort) {
 	}
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+	void SetData(__attribute__((unused)) uint8_t nPort, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint16_t nLength) {
 	}
 
 	void Print(void) {
 	}
 
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress) {
+	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
 		return false;
 	}
 
@@ -61,8 +60,7 @@ public:
 		return 0;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset,
-			struct TLightSetSlotInfo &tSlotInfo) {
+	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) struct TLightSetSlotInfo &tSlotInfo) {
 		return false;
 	}
 };

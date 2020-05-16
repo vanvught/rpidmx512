@@ -22,19 +22,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-
 #include "ltcparams.h"
 #include "ltc.h"
 
 void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs) {
-	pLtcDisabledOutputs->bDisplay = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_DISPLAY);
-	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MAX7219);
-	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_MIDI);
-	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_ARTNET);
-	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_TCNET);
-	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_LTC);
+	pLtcDisabledOutputs->bDisplay = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
+	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
+	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
+	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
+	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::TCNET);
+	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
 	pLtcDisabledOutputs->bNtp = (m_tLtcParams.nEnableNtp == 0);
-	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LTC_PARAMS_DISABLE_RTPMIDI);
+	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
 	pLtcDisabledOutputs->bWS28xx = (m_tLtcParams.nEnableWS28xx == 0);
 }

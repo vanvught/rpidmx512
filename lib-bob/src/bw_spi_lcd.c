@@ -139,7 +139,7 @@ void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
 		FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
-		spi_write(data, length + 2);
+		spi_write(data, (uint32_t)(length + 2));
 	}
 }
 

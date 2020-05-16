@@ -36,7 +36,6 @@ public:
 	void Update(const struct TRemoteConfigParams *pRemoteConfigParams);
 	void Copy(struct TRemoteConfigParams *pRemoteConfigParams);
 
-public:
 	static StoreRemoteConfig *Get(void) {
 		return s_pThis;
 	}

@@ -31,18 +31,17 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
+#include "artnetmsgconst.h"
+
 #include "ipprog.h"
 
 // Addressable led
@@ -103,16 +102,14 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNet4Node node;
 	artnetparams.Set(&node);
@@ -171,24 +168,24 @@ void notmain(void) {
 			if (pWS28xxDmx->GetLEDType() == SK6812W) {
 				if (nLedCount > 128) {
 					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1U);
 				}
 				if (nLedCount > 256) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2U);
 				}
 				if (nLedCount > 384) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3U);
 				}
 			} else {
 				if (nLedCount > 170) {
 					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
+					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1U);
 				}
 				if (nLedCount > 340) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
+					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2U);
 				}
 				if (nLedCount > 510) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
+					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3U);
 				}
 			}
 		}
@@ -229,13 +226,11 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

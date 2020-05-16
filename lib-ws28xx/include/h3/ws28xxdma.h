@@ -27,7 +27,6 @@
 #define WS28XXDMA_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ws28xx.h"
 

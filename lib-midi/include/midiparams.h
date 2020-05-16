@@ -33,14 +33,15 @@ struct TMidiParams {
 	uint8_t nActiveSense;
 } __attribute__((packed));
 
-enum TMidiParamsMask {
-	MIDIPARAMS_MASK_BAUDRATE = (1 << 0),
-	MIDIPARAMS_MASK_ACTIVE_SENSE = (1 << 1)
+struct MidiParamsMask {
+	static constexpr auto BAUDRATE = (1U << 0);
+	static constexpr auto ACTIVE_SENSE = (1U << 1);
 };
 
 class MidiParamsStore {
 public:
-	virtual ~MidiParamsStore(void) {}
+	virtual ~MidiParamsStore(void) {
+	}
 
 	virtual void Update(const struct TMidiParams *pMidiParams)=0;
 	virtual void Copy(struct TMidiParams *pMidiParams)=0;

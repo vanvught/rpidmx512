@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "tlc59711dmx.h"
 #include "tlc59711.h"
@@ -36,22 +36,22 @@ static unsigned long ceil(float f) {
 	int i = static_cast<int>(f);
 
 	if (f == static_cast<float>(i)) {
-		return i;
+		return static_cast<unsigned long>(i);
 	}
 
-	return i + 1;
+	return static_cast<unsigned long>(i + 1);
 }
 
 TLC59711Dmx::TLC59711Dmx(void):
 	m_nDmxStartAddress(1),
-	m_nDmxFootprint(TLC59711_OUT_CHANNELS),
+	m_nDmxFootprint(TLC59711Channels::OUT),
 	m_nBoardInstances(1),
 	m_bIsStarted(false),
 	m_bBlackout(false),
 	m_pTLC59711(0),
 	m_nSpiSpeedHz(0),
 	m_LEDType(TTLC59711_TYPE_RGB),
-	m_nLEDCount(TLC59711_RGB_CHANNELS),
+	m_nLEDCount(TLC59711Channels::RGB),
 	m_pTLC59711DmxStore(0)
 {
 	UpdateMembers();
@@ -62,7 +62,7 @@ TLC59711Dmx::~TLC59711Dmx(void) {
 	m_pTLC59711 = 0;
 }
 
-void TLC59711Dmx::Start(uint8_t nPort) {
+void TLC59711Dmx::Start(__attribute__((unused)) uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -74,7 +74,7 @@ void TLC59711Dmx::Start(uint8_t nPort) {
 	}
 }
 
-void TLC59711Dmx::Stop(uint8_t nPort) {
+void TLC59711Dmx::Stop(__attribute__((unused)) uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -82,7 +82,7 @@ void TLC59711Dmx::Stop(uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void TLC59711Dmx::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
+void TLC59711Dmx::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
 
@@ -144,7 +144,7 @@ void TLC59711Dmx::UpdateMembers(void) {
 		m_nDmxFootprint = m_nLEDCount * 4;
 	}
 
-	m_nBoardInstances = ceil(static_cast<float>(m_nDmxFootprint) / TLC59711_OUT_CHANNELS);
+	m_nBoardInstances = ceil(static_cast<float>(m_nDmxFootprint) / TLC59711Channels::OUT);
 }
 
 void TLC59711Dmx::Blackout(bool bBlackout) {

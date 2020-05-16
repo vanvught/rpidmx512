@@ -34,8 +34,7 @@
 
 #include "bw_spi_dio.h"
 
-#define DMX_FOOTPRINT	7
-
+static constexpr uint32_t DMX_FOOTPRINT = 7;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
 RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
@@ -80,7 +79,7 @@ void RDMSubDeviceBwDio::Data(const uint8_t* pData, uint16_t nLength) {
 	uint8_t nData = 0;
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (1 << j);
 		}

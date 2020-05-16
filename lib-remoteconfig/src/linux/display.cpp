@@ -28,7 +28,7 @@
 #endif
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "display.h"
 
@@ -36,8 +36,8 @@
 
 Display *Display::s_pThis = 0;
 
-Display::Display(uint32_t nCols, uint32_t nRows):
-	m_tType(DISPLAY_TYPE_UNKNOWN),
+Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused)) uint32_t nRows):
+	m_tType(DisplayType::UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
 	m_bHave7Segment(false),
@@ -54,7 +54,7 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 	DEBUG_EXIT
 }
 
-Display::Display(TDisplayTypes tDisplayType):
+Display::Display(__attribute__((unused)) TDisplayTypes tDisplayType):
 	m_nCols(0),
 	m_nRows(0),
 	m_LcdDisplay(0),
@@ -82,28 +82,28 @@ void Display::Cls(void) {
 	DEBUG_EXIT
 }
 
-void Display::TextStatus(const char *pText, TDisplay7SegmentMessages nStatus) {
+void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) TDisplay7SegmentMessages nStatus) {
 	DEBUG_PUTS(pText);
 }
 
-uint8_t Display::Printf(uint8_t nLine, char const*, ...){
+uint8_t Display::Printf(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) char const*, ...){
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return 0;
 }
 
-uint8_t Display::Write(uint8_t nLine, const char *pText) {
+uint8_t Display::Write(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) const char *pText) {
 	DEBUG_PUTS(pText);
 	return 0;
 }
 
-void Display::ClearLine(unsigned char){
+void Display::ClearLine(__attribute__((unused)) unsigned char){
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
 #if !defined(NO_HAL)
-void Display::SetSleep(bool bSleep) {
+void Display::SetSleep(__attribute__((unused)) bool bSleep) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

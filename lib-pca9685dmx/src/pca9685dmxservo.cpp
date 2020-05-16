@@ -27,7 +27,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "pca9685dmxservo.h"
 
@@ -37,9 +37,9 @@
 static unsigned long ceil(float f) {
 	int i = static_cast<int>(f);
 	if (f == static_cast<float>(i)) {
-		return i;
+		return static_cast<unsigned long>(i);
 	}
-	return i + 1;
+	return static_cast<unsigned long>(i + 1);
 }
 
 PCA9685DmxServo::PCA9685DmxServo(void):
@@ -71,7 +71,7 @@ bool PCA9685DmxServo::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PCA9685DmxServo::Start(uint8_t nPort) {
+void PCA9685DmxServo::Start(__attribute__((unused)) uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -83,7 +83,7 @@ void PCA9685DmxServo::Start(uint8_t nPort) {
 	}
 }
 
-void PCA9685DmxServo::Stop(uint8_t nPort) {
+void PCA9685DmxServo::Stop(__attribute__((unused)) uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -91,7 +91,7 @@ void PCA9685DmxServo::Stop(uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxServo::SetData(uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
+void PCA9685DmxServo::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 

@@ -30,7 +30,7 @@
 #if defined (__linux__)
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "hal_spi.h"
 #include "hal_gpio.h"
@@ -42,7 +42,7 @@
 
 #include "debug.h"
 
-SlushMotor::SlushMotor(int nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsConnected(false) {
+SlushMotor::SlushMotor(unsigned nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsConnected(false) {
 	assert(nMotor <= 3);
 
 	m_nMotorNumber = nMotor;

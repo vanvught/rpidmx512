@@ -61,7 +61,7 @@ static rtc_types_t s_type = RTC_MCP7941X;
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-void inline static _i2c_setup(void) {
+inline static void _i2c_setup(void) {
 	i2c_set_address(s_i2c_address);
 	i2c_set_baudrate(I2C_FULL_SPEED);
 }

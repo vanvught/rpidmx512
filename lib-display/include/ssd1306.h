@@ -65,7 +65,7 @@ public:
 	}
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(TCursorMode);
+	void SetCursor(CursorMode);
 #endif
 
 	static Ssd1306* Get(void) {
@@ -93,7 +93,9 @@ private:
 	uint8_t m_nSlaveAddress;
 	TOledPanel m_OledPanel;
 	uint32_t m_nPages;
-	TCursorMode m_tCursorMode;
+#if defined(ENABLE_CURSOR_MODE)
+	CursorMode m_tCursorMode = CursorMode::OFF;
+#endif
 	alignas(uintptr_t) char *m_pShadowRam;
 	uint16_t m_nShadowRamIndex;
 	uint8_t m_nCursorOnChar;

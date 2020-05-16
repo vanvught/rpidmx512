@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <stdio.h>
-#include <assert.h>
+#include <string.h>
+#include <cassert>
 
 #include "ws28xxmulti.h"
 
@@ -40,7 +40,8 @@
 bool WS28xxMulti::SetupSI5351A(void) {
 	DEBUG_ENTRY
 
-	device_info_t clock_generator = { static_cast<spi_cs_t>(0), };
+	device_info_t clock_generator; // = { static_cast<spi_cs_t>(0), };
+	memset(&clock_generator, 0, sizeof(device_info_t));
 
 	if (!si5351a_start(&clock_generator)) {
 		DEBUG_PUTS("si5351a not connected!");
@@ -65,7 +66,8 @@ bool WS28xxMulti::SetupSI5351A(void) {
 bool WS28xxMulti::IsMCP23017(void) {
 	DEBUG_ENTRY
 
-	device_info_t timing = { static_cast<spi_cs_t>(0), };
+	device_info_t timing;// = { static_cast<spi_cs_t>(0), };
+	memset(&timing, 0, sizeof(device_info_t));
 
 	if (!mcp23017_start(&timing)) {
 		puts("mcp23017 not connected!");
@@ -81,7 +83,8 @@ bool WS28xxMulti::IsMCP23017(void) {
 bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_ENTRY
 
-	device_info_t timing = { static_cast<spi_cs_t>(0), };
+	device_info_t timing;// = { static_cast<spi_cs_t>(0), };
+	memset(&timing, 0, sizeof(device_info_t));
 
 	if (!mcp23017_start(&timing)) {
 		puts("mcp23017 not connected!");
@@ -103,15 +106,15 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	return true;
 }
 
-#define BIT_SET(a,b) 	((a) |= (1<<(b)))
-#define BIT_CLEAR(a,b) 	((a) &= ~(1<<(b)))
+#define BIT_SET(a,b) 	((a) |= (1U<<(b)))
+#define BIT_CLEAR(a,b) 	((a) &= ~(1U<<(b)))
 
 void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 4);
 	assert(nLedIndex < m_nLedCount);
 
 	uint32_t j = 0;
-	uint32_t k = nLedIndex * SINGLE_RGB;
+	uint32_t k = static_cast<uint32_t>(nLedIndex * SINGLE_RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		switch (m_tRGBMapping) {
@@ -246,7 +249,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	assert(m_tWS28xxType == SK6812W);
 
 	uint32_t j = 0;
-	uint32_t k = nLedIndex * SINGLE_RGBW;
+	uint32_t k = static_cast<uint32_t>(nLedIndex * SINGLE_RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

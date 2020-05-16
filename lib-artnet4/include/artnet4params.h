@@ -30,7 +30,6 @@
 #define ARTNET4PARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "artnetparams.h"
 #include "artnet4node.h"
@@ -39,9 +38,10 @@ struct TArtNet4Params {
 	uint32_t nSetList;
 	bool bMapUniverse0;
 };
+// } __attribute__((packed));
 
-enum TArtNet4ParamsMask {
-	ARTNET4_PARAMS_MASK_MAP_UNIVERSE0 = (1 << 0)
+struct ArtNet4ParamsMask {
+	static constexpr auto MAP_UNIVERSE0 = (1U << 0);
 };
 
 class ArtNet4ParamsStore {

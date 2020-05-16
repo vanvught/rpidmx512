@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "lightset.h"
 
@@ -36,6 +35,6 @@ uint16_t LightSet::GetDmxFootprint(void) {
 	return DMX_UNIVERSE_SIZE;
 }
 
-bool LightSet::SetDmxStartAddress(uint16_t nDmxStartAddress) {
+bool LightSet::SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
 	return false;
 }

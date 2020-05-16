@@ -32,9 +32,9 @@
 #include "debug.h"
 
 #if defined (H3)
- constexpr char DEVICE_LABEL[] = "Orange Pi RDM Controller";
+ static constexpr char DEVICE_LABEL[] = "Orange Pi RDM Controller";
 #else
- constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
+ static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
 #endif
 
 RDMDeviceController::RDMDeviceController(void) {

@@ -24,9 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscclient.h"
 #include "oscsend.h"
@@ -50,9 +49,9 @@ void OscClient::SendCmd(uint8_t nCmd) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nCmd=%d", nCmd);
 
-	assert(nCmd < OSCCLIENT_CMD_MAX_COUNT);
+	assert(nCmd < OscClientMax::CMD_COUNT);
 
-	Send(&m_pCmds[nCmd * OSCCLIENT_CMD_MAX_PATH_LENGTH]);
+	Send(&m_pCmds[nCmd * OscClientMax::CMD_PATH_LENGTH]);
 
 	DEBUG_EXIT
 }

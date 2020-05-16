@@ -34,7 +34,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "slushdmxparams.h"
 #include "slushdmxparamsconst.h"
@@ -104,7 +104,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, SlushDmxParamsConst::USE_SPI, &value) == SSCAN_OK) {
 		if (value != 0) {
 			m_tSlushDmxParams.nUseSpiBusy = 1;
-			m_tSlushDmxParams.nSetList |= SLUSH_DMX_PARAMS_MASK_USE_SPI_BUSY;
+			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::USE_SPI_BUSY;
 			return;
 		}
 	}
@@ -112,7 +112,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, &value16) == SSCAN_OK) {
 		if (value16 <= DMX_UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortA = value16;
-			m_tSlushDmxParams.nSetList |= SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_A;
+			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_A;
 		}
 		return;
 	}
@@ -120,7 +120,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, &value16) == SSCAN_OK) {
 		if (value16 <= DMX_UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortB = value16;
-			m_tSlushDmxParams.nSetList |= SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B;
+			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_B;
 		}
 		return;
 	}
@@ -128,7 +128,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, &value16) == SSCAN_OK) {
 		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
 			m_tSlushDmxParams.nDmxFootprintPortA = value16;
-			m_tSlushDmxParams.nSetList |= SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A;
+			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::FOOTPRINT_PORT_A;
 		}
 		return;
 	}
@@ -136,7 +136,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, &value16) == SSCAN_OK) {
 		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
 			m_tSlushDmxParams.nDmxFootprintPortB = value16;
-			m_tSlushDmxParams.nSetList |= SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B;
+			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::FOOTPRINT_PORT_B;
 		}
 		return;
 	}
@@ -145,23 +145,23 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
 	assert(pSlushDmx != 0);
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_USE_SPI_BUSY)) {
+	if (isMaskSet(SlushDmxParamsMask::USE_SPI_BUSY)) {
 		pSlushDmx->SetUseSpiBusy(m_tSlushDmxParams.nUseSpiBusy == 1);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_A)) {
+	if (isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_A)) {
 		pSlushDmx->SetDmxStartAddressPortA(m_tSlushDmxParams.nDmxStartAddressPortA);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A)) {
+	if (isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_A)) {
 		pSlushDmx->SetDmxFootprintPortA(m_tSlushDmxParams.nDmxFootprintPortA);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B)) {
+	if (isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_B)) {
 		pSlushDmx->SetDmxStartAddressPortB(m_tSlushDmxParams.nDmxStartAddressPortB);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B)) {
+	if (isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_B)) {
 		pSlushDmx->SetDmxFootprintPortB(m_tSlushDmxParams.nDmxFootprintPortB);
 	}
 }
@@ -177,13 +177,13 @@ void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, cha
 
 	PropertiesBuilder builder(SlushDmxParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(SlushDmxParamsConst::USE_SPI, m_tSlushDmxParams.nUseSpiBusy, isMaskSet(SLUSH_DMX_PARAMS_MASK_USE_SPI_BUSY));
+	builder.Add(SlushDmxParamsConst::USE_SPI, m_tSlushDmxParams.nUseSpiBusy, isMaskSet(SlushDmxParamsMask::USE_SPI_BUSY));
 
-	builder.Add(SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, m_tSlushDmxParams.nDmxStartAddressPortA, isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_A));
-	builder.Add(SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, m_tSlushDmxParams.nDmxFootprintPortA, isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A));
+	builder.Add(SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, m_tSlushDmxParams.nDmxStartAddressPortA, isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_A));
+	builder.Add(SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, m_tSlushDmxParams.nDmxFootprintPortA, isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_A));
 
-	builder.Add(SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, m_tSlushDmxParams.nDmxStartAddressPortB, isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B));
-	builder.Add(SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, m_tSlushDmxParams.nDmxFootprintPortB, isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B));
+	builder.Add(SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, m_tSlushDmxParams.nDmxStartAddressPortB, isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_B));
+	builder.Add(SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, m_tSlushDmxParams.nDmxFootprintPortB, isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_B));
 
 	nSize = builder.GetSize();
 }
@@ -201,23 +201,23 @@ void SlushDmxParams::Dump(void) {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SlushDmxParamsConst::FILE_NAME);
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_USE_SPI_BUSY)) {
+	if (isMaskSet(SlushDmxParamsMask::USE_SPI_BUSY)) {
 		printf(" %s=%d [%s]\n", SlushDmxParamsConst::USE_SPI, m_tSlushDmxParams.nUseSpiBusy, m_tSlushDmxParams.nUseSpiBusy == 0 ? "No" : "Yes");
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_A)) {
+	if (isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_A)) {
 		printf(" %s=%d\n", SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, m_tSlushDmxParams.nDmxStartAddressPortA);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_A)) {
+	if (isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_A)) {
 		printf(" %s=%d\n", SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, m_tSlushDmxParams.nDmxFootprintPortA);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_START_ADDRESS_PORT_B)) {
+	if (isMaskSet(SlushDmxParamsMask::START_ADDRESS_PORT_B)) {
 		printf(" %s=%d\n", SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, m_tSlushDmxParams.nDmxStartAddressPortB);
 	}
 
-	if (isMaskSet(SLUSH_DMX_PARAMS_MASK_FOOTPRINT_PORT_B)) {
+	if (isMaskSet(SlushDmxParamsMask::FOOTPRINT_PORT_B)) {
 		printf(" %s=%d\n", SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, m_tSlushDmxParams.nDmxFootprintPortB);
 	}
 #endif

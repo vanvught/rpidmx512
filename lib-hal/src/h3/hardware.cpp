@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 
@@ -52,17 +52,25 @@ void _start(void);
  #error Platform not supported
 #endif
 
-constexpr char aSocName[2][4] = { "H2+", "H3\0" };
-constexpr uint8_t s_SocNameLenghth[2] = { 3, 2 };
+namespace SOC {
+	static constexpr char NAME[2][4] = { "H2+", "H3\0" };
+	static constexpr uint8_t NAME_LENGTH[2] = { 3, 2 };
+}
 
-constexpr char aCpuName[] = "Cortex-A7";
-#define CPU_NAME_LENGHTH (sizeof(aCpuName) - 1)
+namespace CPU {
+	static constexpr char NAME[] = "Cortex-A7";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+}
 
-const char aMachine[] = "arm";
-#define MACHINE_LENGTH (sizeof(aMachine) - 1)
+namespace MACHINE {
+	static constexpr char NAME[] = "arm";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+}
 
-const char aSysName[] = "Baremetal";
-#define SYSNAME_LENGTH (sizeof(aSysName) - 1)
+namespace SYSNAME {
+	static constexpr char NAME[] = "Baremetal";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+}
 
 Hardware *Hardware::s_pThis = 0;
 
@@ -75,13 +83,13 @@ Hardware::~Hardware(void) {
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
-	nLength = MACHINE_LENGTH;
-	return aMachine;
+	nLength = MACHINE::NAME_LENGTH;
+	return MACHINE::NAME;
 }
 
 const char *Hardware::GetSysName(uint8_t &nLength) {
-	nLength = SYSNAME_LENGTH;
-	return aSysName;
+	nLength = SYSNAME::NAME_LENGTH;
+	return SYSNAME::NAME;
 }
 
 const char *Hardware::GetBoardName(uint8_t &nLength) {
@@ -90,23 +98,22 @@ const char *Hardware::GetBoardName(uint8_t &nLength) {
 }
 
 const char *Hardware::GetCpuName(uint8_t &nLength) {
-	nLength = CPU_NAME_LENGHTH;
-	return aCpuName;
+	nLength = CPU::NAME_LENGTH;
+	return CPU::NAME;
 }
 
 const char *Hardware::GetSocName(uint8_t &nLength) {
 #if defined(ORANGE_PI)
-	nLength = s_SocNameLenghth[0];
-	return aSocName[0];
+	nLength = SOC::NAME_LENGTH[0];
+	return SOC::NAME[0];
 #else
-	nLength = s_SocNameLenghth[1];
-	return aSocName[1];
+	nLength = SOC::NAME_LENGTH[1];
+	return SOC::NAME[1];
 #endif
 }
 
 bool Hardware::SetTime(const struct tm *pTime) {
 	hardware_rtc_set(pTime);
-
 	return true;
 }
 
@@ -149,7 +156,6 @@ bool Hardware::Reboot(void) {
 	}
 
 	__builtin_unreachable ();
-
 	return true;
 }
 

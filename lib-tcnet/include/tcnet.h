@@ -32,33 +32,16 @@
 
 #include "tcnettimecode.h"
 
-enum TTCNetBroadcastPorts {
-	TCNET_BROADCAST_PORT_0 = 60000,
-	TCNET_BROADCAST_PORT_1 = 60001,
-	TCNET_BROADCAST_PORT_2 = 60002
-};
-
-enum TTCNETUnicastPort {
-	TCNET_UNICAST_PORT = 65023
-};
-
-//#define USE_PORT_UNICAST
-
-enum TTCNetLayers {
-	TCNET_LAYER_1 = 0,
-	TCNET_LAYER_2,
-	TCNET_LAYER_3,
-	TCNET_LAYER_4,
-	TCNET_LAYER_A,
-	TCNET_LAYER_B,
-	TCNET_LAYER_M,
-	TCNET_LAYER_C,
-	TCNET_LAYER_UNDEFINED
-};
-
-struct TTCNetNodeIP {
-	uint32_t nIPAddressLocal;
-	uint32_t nIPAddressBroadcast;
+enum class TCNetLayer {
+	LAYER_1,
+	LAYER_2,
+	LAYER_3,
+	LAYER_4,
+	LAYER_A,
+	LAYER_B,
+	LAYER_M,
+	LAYER_C,
+	LAYER_UNDEFINED
 };
 
 class TCNet {
@@ -82,8 +65,8 @@ public:
 		return reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName);
 	}
 
-	void SetLayer(TTCNetLayers tLayer);
-	TTCNetLayers GetLayer(void) {
+	void SetLayer(TCNetLayer tLayer);
+	TCNetLayer GetLayer(void) {
 		return m_tLayer;
 	}
 
@@ -104,8 +87,8 @@ public:
 	}
 
 public:
-	static char GetLayerName(TTCNetLayers tLayer);
-	static TTCNetLayers GetLayer(uint8_t nChar);
+	static char GetLayerName(TCNetLayer tLayer);
+	static TCNetLayer GetLayer(char nChar);
 
 	static TCNet *Get(void) {
 		return s_pThis;
@@ -122,27 +105,34 @@ private:
 	void DumpOptIn(void);
 
 private:
-	struct TTCNetNodeIP m_tNode;
-	uint32_t m_aHandles[4];
+	struct TCNetBroadcast {
+		static constexpr auto PORT_0 = 60000;
+		static constexpr auto PORT_1 = 60001;
+		static constexpr auto PORT_2 = 60002;
+	};
 
-	struct TTCNetPacketOptIn m_tOptIn;
+	struct TCNETUnicast {
+		static constexpr auto PORT = 65023;
+	};
 
-	struct TTCNet m_TTCNet;
-
-	uint32_t m_nCurrentMillis;
-	uint32_t m_nPreviousMillis;
-
-	TTCNetLayers m_tLayer;
-	uint32_t *m_pLTime;
-	struct TTCNetPacketTimeTimeCode *m_pLTimeCode;
-	bool m_bUseTimeCode;
-
-	TCNetTimeCode *m_pTCNetTimeCode;
-
-	float m_fTypeDivider;
+	struct TTCNetNodeIP {
+		uint32_t nIPAddressLocal;
+		uint32_t nIPAddressBroadcast;
+	};
+	TTCNetNodeIP m_tNode;
+	int32_t m_aHandles[4];
+	TTCNetPacketOptIn m_tOptIn;
+	TTCNet m_TTCNet;
+	uint32_t m_nCurrentMillis = 0;
+	uint32_t m_nPreviousMillis = 0;
+	TCNetLayer m_tLayer = TCNetLayer::LAYER_M;
+	uint32_t *m_pLTime = 0;
+	TTCNetPacketTimeTimeCode *m_pLTimeCode = 0;
+	bool m_bUseTimeCode = false;
+	TCNetTimeCode *m_pTCNetTimeCode = 0;
+	float m_fTypeDivider = 1000.0F / 30;
 	TTCNetTimeCodeType m_tTimeCodeType;
-
-	uint8_t m_nSeqTimeMessage;
+	uint8_t m_nSeqTimeMessage = 0;
 
 	static TCNet *s_pThis;
 };

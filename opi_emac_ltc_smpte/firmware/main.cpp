@@ -32,14 +32,13 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "ltcparams.h"
 #include "ltcdisplayparams.h"
 #include "ltc7segment.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
+#include "artnetmsgconst.h"
 #include "timesync.h"
 
 #include "artnetconst.h"
@@ -126,8 +125,7 @@ void notmain(void) {
 	display.ClearLine(1);
 	display.ClearLine(2);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -209,8 +207,7 @@ void notmain(void) {
 	TimeSync timeSync;
 
 	if (bRunArtNet) {
-		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-		display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+		display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 		ArtNetParams artnetparams(spiFlashStore.GetStoreArtNet());
 
@@ -227,14 +224,12 @@ void notmain(void) {
 			node.SetTimeSyncHandler(&timeSync);
 		}
 
-		console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-		display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+		display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 		node.Start();
 		node.Print();
 
-		console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-		display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+		display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 	}
 
 	/**

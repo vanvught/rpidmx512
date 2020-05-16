@@ -2,7 +2,7 @@
  * @file oscmessage.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,34 +29,44 @@
 #include "osc.h"
 #include "oscblob.h"
 
-typedef enum osc_message_deserialise {
-	OSC_OK = 0,
-	OSC_INVALID__INVALID_SIZE,
-	OSC_MALLOC_ERROR,
-	OSC_INVALID_PATH,
-	OSC_NO_TYPE_TAG,
-	OSC_INVALID_TYPE,
-	OSC_INVALID_TYPE_TAG,
-	OSC_INVALID_ARGUMENT,
-	OSC_INVALID_SIZE,
-	OSC_NONE_ZERO_IN_PADDING,
-	OSC_MESSAGE_NULL,
-	OSC_INTERNAL_ERROR
-} _osc_message_deserialise;
+enum OscMessageDeserialise {
+	OK,
+	INVALID_INVALID_SIZE,
+	MALLOC_ERROR,
+	INVALID_PATH,
+	NO_TYPE_TAG,
+	INVALID_TYPE,
+	INVALID_TYPE_TAG,
+	INVALID_ARGUMENT,
+	INVALID_SIZE,
+	NONE_ZERO_IN_PADDING,
+	MESSAGE_NULL,
+	INTERNAL_ERROR
+};
 
 class OSCMessage {
-
 public:
 	OSCMessage(void);
 	OSCMessage(void *, unsigned);
 	~OSCMessage(void);
 
-	int GetResult(void) const;
-	char *getTypes(void) const;
-	unsigned getDataLength(void) const;
-	int GetArgc(void);
+	OscMessageDeserialise GetResult(void) {
+		return m_Result;
+	}
 
-	osc_type GetType(unsigned);
+	int GetArgc(void) {
+		return static_cast<int>(m_nTypesLength) - 1;
+	}
+
+	char *GetTypes(void) {
+		return m_pTypes;
+	}
+
+	unsigned GetDataLength(void) {
+		return m_nDatalen;
+	}
+
+	char GetType(unsigned);
 
 	float GetFloat(unsigned);
 	int GetInt(unsigned);
@@ -73,28 +83,29 @@ public:
 	void *Serialise(const char *, void *, unsigned *);
 
 private:
-	unsigned ArgSize(osc_type, void *);
-	signed ArgValidate(osc_type, void *, unsigned);
+#define OSC_DEF_TYPE_SIZE 8
+#define OSC_DEF_DATA_SIZE 8
+
+	unsigned ArgSize(char nType, void *);
+	int ArgValidate(char nType, void *, int);
 
 	void ArgvUpdate(void);
 
-	void ArgHostEndian(osc_type, void *);
-	void ArgNetworkEndian(osc_type, void *);
+	void ArgHostEndian(char nType, void *);
+	void ArgNetworkEndian(char nType, void *);
 
 	void *AddData(unsigned);
 	int AddTypeChar(char);
 
 private:
-    char *m_Types;
-    unsigned m_Typelen;
-    unsigned m_Typesize;
-    void *m_Data;
-    unsigned m_Datalen;
-    unsigned m_Datasize;
-    osc_arg **m_Argv;
-    /* timestamp from bundle (OSC_TT_IMMEDIATE for unbundled messages) */
-    //osc_timetag m_Ts;
-	int m_Result;
+    char *m_pTypes;
+    unsigned m_nTypesLength;
+    unsigned m_nTypesRealSize;
+    void *m_pData;
+    unsigned m_nDatalen;
+    unsigned m_nDatasize;
+    osc_arg **m_pArgv;
+    OscMessageDeserialise m_Result;
 };
 
 #endif /* OSCMESSAGE_H_ */

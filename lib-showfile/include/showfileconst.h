@@ -28,15 +28,12 @@
 
 #include "showfile.h"
 
-enum {
-	SHOWFILECONST_FORMAT_NAME_LENGTH = 6	///< Includes '\0'
-};
-
 class ShowFileConst {
 public:
-	static const char FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH];
+	static constexpr auto SHOWFILECONST_FORMAT_NAME_LENGTH = 6;	///< Includes '\0'
+	static const char FORMAT[static_cast<int>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
 
-	static const char STATUS[SHOWFILE_STATUS_UNDEFINED][12];
+	static const char STATUS[static_cast<int>(ShowFileStatus::UNDEFINED)][12];
 };
 
 #endif /* SHOWFILECONST_H_ */

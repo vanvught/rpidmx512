@@ -95,11 +95,11 @@ struct TArtPollReply {
 	uint8_t NodeReport[ARTNET_REPORT_LENGTH];	///< The array is a textual report of the Node’s operating status or operational errors. It is primarily intended for ‘engineering’ data rather than ‘end user’ data.
 	uint8_t NumPortsHi;		///< The high byte of the word describing the number of input or output ports. The high byte is for future expansion and is currently zero.
 	uint8_t NumPortsLo;		///< The low byte of the word describing the number of input or output ports.
-	uint8_t PortTypes[ARTNET_MAX_PORTS];	///< This array defines the operation and protocol of each channel.
-	uint8_t GoodInput[ARTNET_MAX_PORTS];	///< This array defines input status of the node.
-	uint8_t GoodOutput[ARTNET_MAX_PORTS];	///< This array defines output status of the node.
-	uint8_t SwIn[ARTNET_MAX_PORTS];			///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible input ports are encoded into the low nibble.
-	uint8_t SwOut[ARTNET_MAX_PORTS];		///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible output ports are encoded into the low nibble.
+	uint8_t PortTypes[TArtNetConst::MAX_PORTS];	///< This array defines the operation and protocol of each channel.
+	uint8_t GoodInput[TArtNetConst::MAX_PORTS];	///< This array defines input status of the node.
+	uint8_t GoodOutput[TArtNetConst::MAX_PORTS];	///< This array defines output status of the node.
+	uint8_t SwIn[TArtNetConst::MAX_PORTS];			///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible input ports are encoded into the low nibble.
+	uint8_t SwOut[TArtNetConst::MAX_PORTS];		///< Bits 3-0 of the 15 bit Port-Address for each of the 4 possible output ports are encoded into the low nibble.
 	uint8_t SwVideo;		///< The field is now deprecated
 	uint8_t SwMacro;		///< If the Node supports macro key inputs, this byte represents the trigger values.
 	uint8_t SwRemote;		///< If the Node supports remote trigger inputs, this byte represents the trigger values.
@@ -127,7 +127,7 @@ struct TArtDmx {
 	uint16_t PortAddress;	///< The 15 bit Port-Address to which this packet is destined.
 	uint8_t LengthHi;		///< The length of the DMX512 data array. This value should be an even number in the range 2 – 512.
 	uint8_t Length;			///< Low Byte of above.
-	uint8_t Data[ARTNET_DMX_LENGTH];///< A variable length array of DMX512 lighting data.
+	uint8_t Data[TArtNetConst::DMX_LENGTH];///< A variable length array of DMX512 lighting data.
 }PACKED;
 
 /**
@@ -173,8 +173,8 @@ struct TArtAddress {
 	uint8_t BindIndex;		///< The BindIndex defines the bound node which originated this packet and is used to uniquely identify the bound node when identical IP addresses are in use.
 	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];///< The Node will ignore this value if the string is null.
 	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];	///< The Node will ignore this value if the string is null.
-	uint8_t SwIn[ARTNET_MAX_PORTS];	///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
-	uint8_t SwOut[ARTNET_MAX_PORTS];///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
+	uint8_t SwIn[TArtNetConst::MAX_PORTS];	///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
+	uint8_t SwOut[TArtNetConst::MAX_PORTS];///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
 	uint8_t SubSwitch;		///< This value is ignored unless bit 7 is high. Send 0x00 to reset this value to the physical switch setting. Use value 0x7f for no change.
 	uint8_t SwVideo;		///< Reserved
 	uint8_t Command;		///< Node configuration commands \ref TArtnetPortCommand

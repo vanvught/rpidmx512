@@ -24,14 +24,13 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltc.h"
 
-constexpr char aTypes[5][TC_TYPE_MAX_LENGTH + 1] =
+static constexpr char aTypes[5][TC_TYPE_MAX_LENGTH + 1] =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
 
@@ -64,7 +63,7 @@ TTimecodeTypes Ltc::GetType(uint8_t nFps) {
 	return TC_TYPE_UNKNOWN;
 }
 
-static void itoa_base10(uint32_t arg, char *pBuffer) {
+static void itoa_base10(int arg, char *pBuffer) {
 	char *n = pBuffer;
 
 	if (arg == 0) {
@@ -90,7 +89,7 @@ void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
 	itoa_base10(pLocalTime->tm_sec, &pSystemTime[LTC_ST_INDEX_SECONDS]);
 }
 
-#define DIGIT(x)	(static_cast<int32_t>(x) - '0')
+#define DIGIT(x)	((x) - '0')
 #define VALUE(x,y)	(((x) * 10) + (y))
 
 bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
@@ -98,7 +97,7 @@ bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode
 
 	int32_t nTenths;
 	int32_t nDigit;
-	uint32_t nValue;
+	int32_t nValue;
 
 	if ((pTimeCode[LTC_TC_INDEX_COLON_1] != ':') || (pTimeCode[LTC_TC_INDEX_COLON_2] != ':') || (pTimeCode[LTC_TC_INDEX_COLON_3] != '.')) {
 		return false;
@@ -205,7 +204,7 @@ void Ltc::InitSystemTime(char *pSystemTime) {
 bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType) {
 	int32_t nTenths;
 	int32_t nDigit;
-	uint32_t nValue;
+	int32_t nValue;
 
 	nTenths = DIGIT(pTimeCodeRate[0]);
 	if ((nTenths < 0) || (nTenths > 3)) {

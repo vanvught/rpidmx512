@@ -46,11 +46,11 @@ public:
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	void JoinGroup(uint32_t nHandle, uint32_t nIp);
-	void LeaveGroup(uint32_t nHandle, uint32_t nIp);
+	void JoinGroup(int32_t nHandle, uint32_t nIp);
+	void LeaveGroup(int32_t nHandle, uint32_t nIp);
 
-	uint16_t RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
+	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);

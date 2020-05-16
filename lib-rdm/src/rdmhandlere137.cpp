@@ -32,12 +32,6 @@
 
 #include "network.h"
 
-enum TDHCPMode {
-	DHCP_STATUS_INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
-	DHCP_STATUS_ACTIVE = 0x01,		///< The IP address was obtained via DHCP
-	DHCP_STATUS_UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
-};
-
 enum {
 	IPV4_UNCONFIGURED = 0x00000000,
 	NO_DEFAULT_ROUTE = 0x00000000
@@ -47,7 +41,7 @@ enum {
  * ANSI E1.37-1
  */
 
-void RDMHandler::GetIdentifyMode(uint16_t nSubDevice) {
+void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessage *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
@@ -57,7 +51,7 @@ void RDMHandler::GetIdentifyMode(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (rdm_command->param_data_length != 1) {
@@ -86,7 +80,7 @@ void RDMHandler::SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice) {
  * ANSI E1.37-2
  */
 
-bool RDMHandler::CheckInterfaceID(const struct TRdmMessageNoSc *pRdmDataIn) {
+bool RDMHandler::CheckInterfaceID(__attribute__((unused)) const struct TRdmMessageNoSc *pRdmDataIn) {
 #if !defined(DMX_WORKSHOP_DEFECT)
 	const uint32_t nInterfaceID = (pRdmDataIn->param_data[0] << 24)
 			+ (pRdmDataIn->param_data[1] << 16)
@@ -102,7 +96,7 @@ bool RDMHandler::CheckInterfaceID(const struct TRdmMessageNoSc *pRdmDataIn) {
 
 #define CHECK_INTERFACE_ID if(!CheckInterfaceID) { return; }
 
-void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
+void RDMHandler::GetInterfaceList(__attribute__((unused)) uint16_t nSubDevice) {
 	// https://www.iana.org/assignments/arp-parameters/arp-parameters.xhtml
 	const uint16_t nInterfaceHardwareType = 0x6; //	IEEE 802 Networks
 
@@ -122,7 +116,7 @@ void RDMHandler::GetInterfaceList(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
+void RDMHandler::GetInterfaceName(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -139,7 +133,7 @@ void RDMHandler::GetInterfaceName(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
+void RDMHandler::GetHardwareAddress(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -156,7 +150,7 @@ void RDMHandler::GetHardwareAddress(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
+void RDMHandler::GetDHCPMode(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -173,7 +167,7 @@ void RDMHandler::GetDHCPMode(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetDHCPMode(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -187,7 +181,7 @@ void RDMHandler::SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetNameServers(uint16_t nSubDevice) {
+void RDMHandler::GetNameServers(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 	const uint16_t nNameServerIndex = pRdmDataIn->param_data[0];
 
@@ -207,7 +201,7 @@ void RDMHandler::GetNameServers(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetZeroconf(uint16_t nSubDevice) {
+void RDMHandler::GetZeroconf(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -224,11 +218,11 @@ void RDMHandler::GetZeroconf(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetZeroconf(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetZeroconf(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 }
 
-void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
+void RDMHandler::GetAddressNetmask(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -243,14 +237,14 @@ void RDMHandler::GetAddressNetmask(uint16_t nSubDevice) {
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
 	pRdmDataOut->param_data[8] = Network::Get()->GetNetmaskCIDR();
-	pRdmDataOut->param_data[9] = Network::Get()->IsDhcpKnown() ? Network::Get()->IsDhcpUsed() : DHCP_STATUS_UNKNOWN;
+	pRdmDataOut->param_data[9] = static_cast<uint8_t>(Network::Get()->GetDhcpMode());
 
 	pRdmDataOut->param_data_length = 10;
 
 	RespondMessageAck();
 }
 
-void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
+void RDMHandler::GetStaticAddress(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -271,7 +265,7 @@ void RDMHandler::GetStaticAddress(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetStaticAddress(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length != 9) {
@@ -294,7 +288,7 @@ void RDMHandler::SetStaticAddress(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageNack(E120_NR_FORMAT_ERROR);
 }
 
-void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::ApplyConfiguration(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -308,7 +302,7 @@ void RDMHandler::ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageNack(E120_NR_FORMAT_ERROR);
 }
 
-void RDMHandler::GetDefaultRoute(uint16_t nSubDevice) {
+void RDMHandler::GetDefaultRoute(__attribute__((unused)) uint16_t nSubDevice) {
 	const struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (!CheckInterfaceID(pRdmDataIn)) {
@@ -328,18 +322,18 @@ void RDMHandler::GetDefaultRoute(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::SetDefaultRoute(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetDefaultRoute(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 }
 
-void RDMHandler::GetHostName(uint16_t nSubDevice) {
+void RDMHandler::GetHostName(__attribute__((unused)) uint16_t nSubDevice) {
 	const char *pHostName = Network::Get()->GetHostName();
 	HandleString(pHostName, strlen(pHostName));
 
 	RespondMessageAck();
 }
 
-void RDMHandler::SetHostName(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetHostName(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if (pRdmDataIn->param_data_length >= 64) {
@@ -354,13 +348,13 @@ void RDMHandler::SetHostName(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetDomainName(uint16_t nSubDevice) {
+void RDMHandler::GetDomainName(__attribute__((unused)) uint16_t nSubDevice) {
 	const char *pDomainName = Network::Get()->GetDomainName();
 	HandleString(pDomainName, strlen(pDomainName));
 
 	RespondMessageAck();
 }
 
-void RDMHandler::SetDomainName(bool IsBroadcast, uint16_t nSubDevice) {
+void RDMHandler::SetDomainName(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageNack(E137_2_NR_ACTION_NOT_SUPPORTED);
 }

@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xx.h"
 
@@ -53,9 +53,9 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 	assert(m_nLedCount != 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
-		m_nBufSize = m_nLedCount * 4;
+		m_nBufSize = static_cast<uint32_t>(m_nLedCount * 4);
 	} else {
-		m_nBufSize = m_nLedCount * 3;
+		m_nBufSize = static_cast<uint32_t>(m_nLedCount * 3);
 	}
 
 	// TODO Update when new chip is added

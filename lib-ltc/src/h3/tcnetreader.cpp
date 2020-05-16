@@ -25,11 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+#include <cassert>
 
 #include "h3/tcnetreader.h"
 #include "tcnet.h"
@@ -52,25 +48,28 @@
 
 #include "network.h"
 
-constexpr char aLayer[] = "layer#";
-#define LAYER_LENGTH	(sizeof(aLayer) - 1)
+namespace Cmd {
+	static constexpr char LAYER[] = "layer#";
+	static constexpr char TYPE[] = "type#";
+	static constexpr char TIMECODE[] = "timecode#";
+}
 
-constexpr char aType[] = "type#";
-#define TYPE_LENGTH		(sizeof(aType) - 1)
+namespace Length {
+	static constexpr auto LAYER = sizeof(Cmd::LAYER) - 1;
+	static constexpr auto TYPE = sizeof(Cmd::TYPE) - 1;
+	static constexpr auto TIMECODE = sizeof(Cmd::TIMECODE) - 1;
+}
 
-constexpr char aTimeCode[] = "timecode#";
-#define TIMECODE_LENGTH	(sizeof(aTimeCode) - 1)
-
-enum TUdpPort {
-	UDP_PORT = 0x0ACA
-};
+namespace UDP {
+	static constexpr auto PORT = 0x0ACA;
+}
 
 // IRQ Timer0
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static void irq_timer0_update_handler(uint32_t clo) {
+static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
@@ -101,7 +100,7 @@ void TCNetReader::Start(void) {
 	led_set_ticks_per_second(LED_TICKS_NO_DATA);
 
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
 }
 
@@ -112,10 +111,10 @@ void TCNetReader::Stop(void) {
 void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	nUpdates++;
 
-	assert(((uint32_t )pTimeCode & 0x3) == 0); // Check if we can do 4-byte compare
+	assert((reinterpret_cast<uint32_t>(pTimeCode) & 0x3) == 0); // Check if we can do 4-byte compare
 #if __GNUC__ > 8
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Waddress-of-packed-member"	// FIXME
+#pragma GCC diagnostic ignored "-Waddress-of-packed-member"	// FIXME ignored "-Waddress-of-packed-member"
 #endif
 	const uint32_t *p = reinterpret_cast<const uint32_t*>(pTimeCode);
 #if __GNUC__ > 8
@@ -164,21 +163,20 @@ void TCNetReader::HandleUdpRequest(void) {
 
 	debug_dump(m_Buffer, m_nBytesReceived);
 
-	if ((m_nBytesReceived == (6 + LAYER_LENGTH + 1)) && (memcmp(&m_Buffer[6], aLayer, LAYER_LENGTH) == 0)) {
-		const TTCNetLayers tLayer = TCNet::GetLayer(m_Buffer[6 + LAYER_LENGTH]);
+	if ((m_nBytesReceived == (6 + Length::LAYER + 1)) && (memcmp(&m_Buffer[6], Cmd::LAYER, Length::LAYER) == 0)) {
+		const TCNetLayer tLayer = TCNet::GetLayer(m_Buffer[6 + Length::LAYER]);
 
 		TCNet::Get()->SetLayer(tLayer);
 		TCNetDisplay::Show();
 
-		DEBUG_PRINTF("tcnet!layer#%c -> %d", m_pBuffer[6 + LAYER_LENGTH + 1], (int) tLayer);
-
+		DEBUG_PRINTF("tcnet!layer#%c -> %d", m_Buffer[6 + Length::LAYER + 1], tLayer);
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + TYPE_LENGTH + 2)) && (memcmp(&m_Buffer[6], aType, TYPE_LENGTH) == 0)) {
-		if (m_Buffer[6 + TYPE_LENGTH] == '2') {
+	if ((m_nBytesReceived == (6 + Length::TYPE + 2)) && (memcmp(&m_Buffer[6], Cmd::TYPE, Length::TYPE) == 0)) {
+		if (m_Buffer[6 + Length::TYPE] == '2') {
 
-			const uint32_t nValue = 20 + m_Buffer[6 + TYPE_LENGTH + 1] - '0';
+			const uint32_t nValue = 20U + m_Buffer[6 + Length::TYPE + 1] - '0';
 
 			switch (nValue) {
 			case 24:
@@ -198,11 +196,10 @@ void TCNetReader::HandleUdpRequest(void) {
 			}
 
 			DEBUG_PRINTF("tcnet!type#%d", nValue);
-
 			return;
 		}
 
-		if ((m_Buffer[6 + TYPE_LENGTH] == '3') && (m_Buffer[6 + TYPE_LENGTH + 1] == '0')) {
+		if ((m_Buffer[6 + Length::TYPE] == '3') && (m_Buffer[6 + Length::TYPE + 1] == '0')) {
 			TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
 			TCNetDisplay::Show();
 
@@ -211,20 +208,22 @@ void TCNetReader::HandleUdpRequest(void) {
 			return;
 		}
 
+		DEBUG_PUTS("Invalid tcnet!type command");
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + TIMECODE_LENGTH + 1)) && (memcmp(&m_Buffer[6], aTimeCode, TIMECODE_LENGTH) == 0)) {
-		const char nChar = m_Buffer[6 + TIMECODE_LENGTH];
+	if ((m_nBytesReceived == (6 + Length::TIMECODE + 1)) && (memcmp(&m_Buffer[6], Cmd::TIMECODE, Length::TIMECODE) == 0)) {
+		const char nChar = m_Buffer[6 + Length::TIMECODE];
 		const bool bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
 		TCNetDisplay::Show();
 
 		DEBUG_PRINTF("tcnet!timecode#%c -> %d", nChar, static_cast<int>(bUseTimeCode));
-
 		return;
 	}
+
+	DEBUG_PUTS("Invalid command");
 }
 
 void TCNetReader::Run(void) {
@@ -236,7 +235,7 @@ void TCNetReader::Run(void) {
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
 		led_set_ticks_per_second(LED_TICKS_NO_DATA);
-		m_nTimeCodePrevious = ~0;
+		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 	}
 
 	HandleUdpRequest();

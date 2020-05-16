@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "displayset.h"
 #include "display.h"
@@ -42,6 +42,10 @@
  #include "hardware.h"
 #endif
 
+#if defined (BARE_METAL)
+ #include "console.h"
+#endif
+
 #define MCP23017_I2C_ADDRESS	0x20
 #define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
 #define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
@@ -50,7 +54,7 @@
 Display *Display::s_pThis = 0;
 
 Display::Display(uint32_t nCols, uint32_t nRows):
-	m_tType(DISPLAY_TYPE_UNKNOWN),
+	m_tType(DisplayType::UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
 	m_bHave7Segment(false),
@@ -66,7 +70,7 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 	Init7Segment();
 }
 
-Display::Display(TDisplayTypes tDisplayType):
+Display::Display(DisplayType tDisplayType):
 	m_nCols(0),
 	m_nRows(0),
 	m_LcdDisplay(0),
@@ -84,26 +88,26 @@ Display::Display(TDisplayTypes tDisplayType):
 
 	switch (tDisplayType) {
 #if defined(ENABLE_LCDBW)
-		case DISPLAY_BW_UI_1602:
+		case DisplayType::BW_UI_1602:
 			m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, 16, 2);
 			break;
-		case DISPLAY_BW_LCD_1602:
+		case DisplayType::BW_LCD_1602:
 			m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, 16, 2);
 			break;
 #endif
 #if defined(ENABLE_TC1602)
-		case DISPLAY_PCF8574T_1602:
+		case DisplayType::PCF8574T_1602:
 			m_LcdDisplay = new Tc1602(16, 2);
 			break;
-		case DISPLAY_PCF8574T_2004:
+		case DisplayType::PCF8574T_2004:
 			m_LcdDisplay = new Tc1602(20, 4);
 			break;
 #endif
-		case DISPLAY_SSD1306:
+		case DisplayType::SSD1306:
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 			break;
-		case DISPLAY_TYPE_UNKNOWN:
-			m_tType = DISPLAY_TYPE_UNKNOWN;
+		case DisplayType::UNKNOWN:
+			m_tType = DisplayType::UNKNOWN;
 			/* no break */
 		default:
 			break;
@@ -113,7 +117,7 @@ Display::Display(TDisplayTypes tDisplayType):
 		if (!m_LcdDisplay->Start()) {
 			delete m_LcdDisplay;
 			m_LcdDisplay = 0;
-			m_tType = DISPLAY_TYPE_UNKNOWN;
+			m_tType = DisplayType::UNKNOWN;
 		} else {
 			m_LcdDisplay->Cls();
 			m_nCols = m_LcdDisplay->GetColumns();
@@ -132,7 +136,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 	m_LcdDisplay = 0;
-	m_tType = DISPLAY_TYPE_UNKNOWN;
+	m_tType = DisplayType::UNKNOWN;
 
 	if(!i2c_begin()) {
 		return;
@@ -145,7 +149,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 		}
 		if (m_LcdDisplay->Start()) {
-			m_tType = DISPLAY_SSD1306;
+			m_tType = DisplayType::SSD1306;
 			Printf(1, "SSD1306");
 		}
 	}
@@ -153,7 +157,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	else if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
-			m_tType = DISPLAY_PCF8574T_1602;
+			m_tType = DisplayType::PCF8574T_1602;
 			Printf(1, "TC1602_PCF8574T");
 		}
 	}
@@ -162,13 +166,13 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	else if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
-			m_tType = DISPLAY_BW_LCD_1602;
+			m_tType = DisplayType::BW_LCD_1602;
 			Printf(1, "BW_LCD");
 		}
 	} else if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
-			m_tType = DISPLAY_BW_UI_1602;
+			m_tType = DisplayType::BW_UI_1602;
 			Printf(1, "BW_UI");
 		}
 	}
@@ -207,23 +211,7 @@ void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
-void Display::TextStatus(const char *pText) {
-	if (m_LcdDisplay == 0) {
-		return;
-	}
-
-	SetCursorPos(0, m_nRows - 1);
-
-	for (uint32_t i = 0; i < m_nCols - 1; i++) {
-		PutChar(' ');
-	}
-
-	SetCursorPos(0, m_nRows - 1);
-
-	Write(m_nRows, pText);
-}
-
-uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
+int Display::Printf(uint8_t nLine, const char *format, ...) {
 	if (m_LcdDisplay == 0) {
 		return 0;
 	}
@@ -243,22 +231,21 @@ uint8_t Display::Printf(uint8_t nLine, const char *format, ...) {
 	return i;
 }
 
-uint8_t Display::Write(uint8_t nLine, const char *pText) {
+int Display::Write(uint8_t nLine, const char *pText) {
 	if (m_LcdDisplay == 0) {
 		return 0;
 	}
 
 	const char *p = pText;
+	int nCount = 0;
 
-	while (*p != 0) { //FIXME check for max length
+	while ((*p != 0) && (nCount++ < static_cast<int>(m_nCols))) {
 		++p;
 	}
 
-	const uint8_t nLength = static_cast<uint8_t>((p - pText));
+	m_LcdDisplay->TextLine(nLine, pText, static_cast<uint8_t>(nCount));
 
-	m_LcdDisplay->TextLine(nLine, pText, nLength);
-
-	return nLength;
+	return nCount;
 }
 
 void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
@@ -301,74 +288,110 @@ void Display::Init7Segment(void) {
 	}
 }
 
-void Display::Status(TDisplay7SegmentMessages nStatus) {
-	if (m_bHave7Segment) {
-		i2c_set_address(SEGMENT7_I2C_ADDRESS);
-		i2c_write_reg_uint16(MCP23X17_GPIOA, static_cast<uint16_t>(~nStatus));
+#if defined(ENABLE_CURSOR_MODE)
+void Display::SetCursor(CursorMode constEnumTCursorOnOff) {
+	if (m_LcdDisplay == 0) {
+		return;
 	}
+	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
+#endif
 
-void Display::TextStatus(const char *pText, TDisplay7SegmentMessages nStatus) {
-	TextStatus(pText);
-	Status(nStatus);
-}
-
-TDisplay7SegmentCharacters Display::Get7SegmentData(uint8_t nValue) {
+uint16_t Display::Get7SegmentData(uint8_t nValue) {
 
 	switch (nValue) {
 	case 0:
-		return DISPLAY_7SEGMENT_0;
+		return Display7Segment::CHAR_0;
 		break;
 	case 1:
-		return DISPLAY_7SEGMENT_1;
+		return Display7Segment::CHAR_1;
 		break;
 	case 2:
-		return DISPLAY_7SEGMENT_2;
+		return Display7Segment::CHAR_2;
 		break;
 	case 3:
-		return DISPLAY_7SEGMENT_3;
+		return Display7Segment::CHAR_3;
 		break;
 	case 4:
-		return DISPLAY_7SEGMENT_4;
+		return Display7Segment::CHAR_4;
 		break;
 	case 5:
-		return DISPLAY_7SEGMENT_5;
+		return Display7Segment::CHAR_5;
 		break;
 	case 6:
-		return DISPLAY_7SEGMENT_6;
+		return Display7Segment::CHAR_6;
 		break;
 	case 7:
-		return DISPLAY_7SEGMENT_7;
+		return Display7Segment::CHAR_7;
 		break;
 	case 8:
-		return DISPLAY_7SEGMENT_8;
+		return Display7Segment::CHAR_8;
 		break;
 	case 9:
-		return DISPLAY_7SEGMENT_9;
+		return Display7Segment::CHAR_9;
 		break;
 	case 0xa:
-		return DISPLAY_7SEGMENT_A;
+		return Display7Segment::CHAR_A;
 		break;
 	case 0xb:
-		return DISPLAY_7SEGMENT_B;
+		return Display7Segment::CHAR_B;
 		break;
 	case 0xc:
-		return DISPLAY_7SEGMENT_C;
+		return Display7Segment::CHAR_C;
 		break;
 	case 0xd:
-		return DISPLAY_7SEGMENT_D;
+		return Display7Segment::CHAR_D;
 		break;
 	case 0xe:
-		return DISPLAY_7SEGMENT_E;
+		return Display7Segment::CHAR_E;
 		break;
 	case 0xf:
-		return DISPLAY_7SEGMENT_F;
+		return Display7Segment::CHAR_F;
 		break;
 	default:
 		break;
 	}
 
-	return DISPLAY_7SEGMENT_BLANK;
+	return Display7Segment::CHAR_BLANK;
+}
+
+void Display::TextStatus(const char *pText) {
+	if (m_LcdDisplay == 0) {
+		return;
+	}
+
+	SetCursorPos(0, m_nRows - 1);
+
+	for (uint32_t i = 0; i < m_nCols - 1; i++) {
+		PutChar(' ');
+	}
+
+	SetCursorPos(0, m_nRows - 1);
+
+	Write(m_nRows, pText);
+}
+
+void Display::TextStatus(const char *pText, uint16_t n7SegmentData, uint32_t nConsoleColor) {
+	TextStatus(pText);
+	Status(n7SegmentData);
+#if defined (BARE_METAL)
+	if (nConsoleColor == UINT32_MAX) {
+		return;
+	}
+	console_status(nConsoleColor, pText);
+#endif
+}
+
+void Display::TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex) {
+	TextStatus(pText);
+	Status(nValue7Segment, bHex);
+}
+
+void Display::Status(uint16_t n7SegmentData) {
+	if (m_bHave7Segment) {
+		i2c_set_address(SEGMENT7_I2C_ADDRESS);
+		i2c_write_reg_uint16(MCP23X17_GPIOA, ~n7SegmentData);
+	}
 }
 
 void Display::Status(uint8_t nValue, bool bHex) {
@@ -387,20 +410,6 @@ void Display::Status(uint8_t nValue, bool bHex) {
 		i2c_write_reg_uint16(MCP23X17_GPIOA, ~n7SegmentData);
 	}
 }
-
-void Display::TextStatus(const char *pText, uint8_t nValue, bool bHex) {
-	TextStatus(pText);
-	Status(nValue, bHex);
-}
-
-#if defined(ENABLE_CURSOR_MODE)
-void Display::SetCursor(TCursorMode constEnumTCursorOnOff) {
-	if (m_LcdDisplay == 0) {
-		return;
-	}
-	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
-}
-#endif
 
 #if !defined(NO_HAL)
 void Display::SetSleep(bool bSleep) {

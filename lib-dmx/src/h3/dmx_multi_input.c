@@ -244,7 +244,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi_input(void) {
 	dmb();
 }
 
-static void irq_timer1_dmx_receive(uint32_t clo) {
+static void irq_timer1_dmx_receive(__attribute__((unused)) uint32_t clo) {
 	uint32_t i;
 
 	for (i = 0; i < 4; i++) {

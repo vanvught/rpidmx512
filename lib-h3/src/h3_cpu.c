@@ -56,7 +56,7 @@ void h3_cpu_off(h3_cpu_t cpuid) {
 
 	// step1: set up power-off signal
 	uint32_t value = H3_PRCM->CPU_PWROFF;
-	value |= (1 << cpu);
+	value |= (1U << cpu);
 	H3_PRCM->CPU_PWROFF = value;
 
 	udelay(20);
@@ -107,16 +107,16 @@ void h3_cpu_set_clock(uint64_t clock) {
 
 	// Switch to 24MHz clock while changing CCU_PLL_CPUX
 	value = H3_CCU->CPU_AXI_CFG;
-	value &= ~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
+	value &= (uint32_t)~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
 	value |= CPU_CLK_SRC_OSC24M;
 	H3_CCU->CPU_AXI_CFG = value;
 
 	if ((clock < CCU_PLL_CPUX_MIN_CLOCK_HZ) || (clock > CCU_PLL_CPUX_MAX_CLOCK_HZ)) {
 		// Set default
 		value = H3_CCU->PLL_CPUX_CTRL;
-		value &= ~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
-		value &= ~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
-		value &= ~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
+		value &= (uint32_t)~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
+		value &= (uint32_t)~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
+		value &= (uint32_t)~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
 		value |= (0x10 << PLL_FACTOR_N_SHIFT);
 		H3_CCU->PLL_CPUX_CTRL = value;
 	} else {
@@ -128,7 +128,7 @@ void h3_cpu_set_clock(uint64_t clock) {
 	} while (!(value & PLL_LOCK));
 
 	value = H3_CCU->CPU_AXI_CFG;
-	value &= ~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
+	value &= (uint32_t)~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
 	value |= CPU_CLK_SRC_PLL_CPUX;
 	H3_CCU->CPU_AXI_CFG = value;
 }

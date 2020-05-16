@@ -25,9 +25,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdisplay7segment.h"
 #include "ws28xxdisplay7segment_font.h"
@@ -83,9 +82,9 @@ void WS28xxDisplay7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) 
 
 	assert(m_pWS28xx == 0);
 #if defined(USE_SPI_DMA)
-	m_pWS28xx = new WS28xxDMA(tLedType, WS28XX_LED_COUNT, tRGBMapping);
+	m_pWS28xx = new WS28xxDMA(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
 #else
-	m_pWS28xx = new WS28xx(tLedType, WS28XX_LED_COUNT, tRGBMapping);
+	m_pWS28xx = new WS28xx(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
 #endif
 	assert(m_pWS28xx != 0);
 
@@ -99,7 +98,7 @@ void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, ui
 		return;
 	}
 
-	const uint32_t nCurrentDigitBase = nPos * SEGMENTS_PER_DIGIT;
+	const uint32_t nCurrentDigitBase = nPos * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT;
 
 	uint8_t chr;
 
@@ -119,14 +118,14 @@ void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, ui
 }
 
 void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const uint32_t nCurrentDigitBase = (WS28XX_NUM_OF_DIGITS * SEGMENTS_PER_DIGIT) + (nPos * LEDS_PER_COLON);
+	const uint32_t nCurrentDigitBase = (WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) + (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON);
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
 	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 
-	for (uint32_t nIndex = nCurrentDigitBase; nIndex < (nCurrentDigitBase + LEDS_PER_COLON); nIndex++) {
+	for (uint32_t nIndex = nCurrentDigitBase; nIndex < (nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++) {
 		if (OnOff) {
 			m_pWS28xx->SetLED(nIndex, nRed, nGreen, nBlue);
 		} else {
@@ -136,25 +135,25 @@ void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, u
 }
 
 void WS28xxDisplay7Segment::SetColonsOff(void) {
-	for (uint32_t nCount = 0; nCount < WS28XX_NUM_OF_COLONS; nCount++) {
+	for (uint32_t nCount = 0; nCount < WS28xxDisplay7SegmentConfig::NUM_OF_COLONS; nCount++) {
 		WriteColon(' ', nCount, 0x00, 0x00, 0x00);
 	}
 }
 
 void WS28xxDisplay7Segment::WriteAll(const char *pChars, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	for (uint32_t nPos = 0; nPos < WS28XX_NUM_OF_DIGITS; nPos++) {
+	for (uint32_t nPos = 0; nPos < WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS; nPos++) {
 		WriteChar(pChars[nPos], nPos, nRed, nGreen, nBlue);
 	}
 }
 
 void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const uint32_t nCurrentSegmentBase = nCurrentDigitBase + (nCurrentSegment * LEDS_PER_SEGMENT);
+	const uint32_t nCurrentSegmentBase = nCurrentDigitBase + (nCurrentSegment * WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT);
 
 	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 
-	for (uint32_t nIndex = nCurrentSegmentBase; nIndex < (nCurrentSegmentBase + LEDS_PER_SEGMENT); nIndex++) {
+	for (uint32_t nIndex = nCurrentSegmentBase; nIndex < (nCurrentSegmentBase + WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT); nIndex++) {
 		if (bOnOff) {
 			m_pWS28xx->SetLED(nIndex, nRed, nGreen, nBlue); // on
 		} else {

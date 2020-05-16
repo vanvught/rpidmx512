@@ -5,7 +5,7 @@
 /* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * of this software and associated documentation files (the "Software"); to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -27,7 +27,6 @@
 #define WS28XXDMXPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ws28xx.h"
 #include "ws28xxdmx.h"
@@ -51,24 +50,25 @@ struct TWS28xxDmxParams {
 	uint8_t nHighCode;
 };
 
-enum TWS28xxDmxParamsMask {
-	WS28XXDMX_PARAMS_MASK_LED_TYPE = (1 << 0),
-	WS28XXDMX_PARAMS_MASK_LED_COUNT = (1 << 1),
-	WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS = (1 << 2),
-	WS28XXDMX_PARAMS_MASK_LED_GROUPING = (1 << 3),
-	WS28XXDMX_PARAMS_MASK_SPI_SPEED = (1 << 4),
-	WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS = (1 << 5),
-	WS28XXDMX_PARAMS_MASK_ACTIVE_OUT = (1 << 6),
-	WS28XXDMX_PARAMS_MASK_USE_SI5351A = (1 << 7),
-	WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT = (1 << 8),
-	WS28XXDMX_PARAMS_MASK_RGB_MAPPING = (1 << 9),
-	WS28XXDMX_PARAMS_MASK_LOW_CODE = (1 << 10),
-	WS28XXDMX_PARAMS_MASK_HIGH_CODE = (1 << 11)
+struct WS28xxDmxParamsMask {
+	static constexpr auto LED_TYPE = (1U << 0);
+	static constexpr auto LED_COUNT = (1U << 1);
+	static constexpr auto DMX_START_ADDRESS = (1U << 2);
+	static constexpr auto LED_GROUPING = (1U << 3);
+	static constexpr auto SPI_SPEED = (1U << 4);
+	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 5);
+	static constexpr auto ACTIVE_OUT = (1U << 6);
+	static constexpr auto USE_SI5351A = (1U << 7);
+	static constexpr auto LED_GROUP_COUNT = (1U << 8);
+	static constexpr auto RGB_MAPPING = (1U << 9);
+	static constexpr auto LOW_CODE = (1U << 10);
+	static constexpr auto HIGH_CODE = (1U << 11);
 };
 
 class WS28xxDmxParamsStore {
 public:
-	virtual ~WS28xxDmxParamsStore(void) {}
+	virtual ~WS28xxDmxParamsStore(void) {
+	}
 
 	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
 	virtual void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams)=0;

@@ -36,7 +36,6 @@ public:
 	void Update(const struct TOSCServerParams *pOSCServerParams);
 	void Copy(struct TOSCServerParams *pOSCServerParams);
 
-public:
 	static StoreOscServer *Get(void) {
 		return s_pThis;
 	}

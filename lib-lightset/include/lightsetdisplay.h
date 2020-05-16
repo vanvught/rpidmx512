@@ -28,7 +28,8 @@
 
 class LightSetDisplay {
 public:
-	virtual ~LightSetDisplay(void) {}
+	virtual ~LightSetDisplay(void) {
+	}
 
 	virtual void ShowDmxStartAddress(void)=0;
 };

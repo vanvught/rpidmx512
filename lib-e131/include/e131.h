@@ -92,14 +92,6 @@ enum TVectorDMP {
 #define E131_DEFAULT_PORT		5568	///<
 
 /**
- * Merge is implemented in either LTP or HTP mode
- */
-enum TE131Merge {
-	E131_MERGE_HTP,		///< Highest Takes Precedence (HTP)
-	E131_MERGE_LTP		///< Latest Takes Precedence (LTP)
-};
-
-/**
  * 6.4 Priority
  *
  * No priority outside the range of 0 to 200 shall be transmitted on the network.
@@ -148,5 +140,36 @@ enum TUniverse {
 #define E131_CID_LENGTH					16
 #define E131_SOURCE_NAME_LENGTH			64
 #define E131_PACKET_IDENTIFIER_LENGTH	12
+
+/**
+ * Merge is implemented in either LTP or HTP mode
+ */
+enum class E131Merge {
+	HTP,	///< Highest Takes Precedence (HTP)
+	LTP		///< Latest Takes Precedence (LTP)
+};
+
+struct E131 {
+	static E131Merge GetMergeMode(const char *pMergeMode) {
+		if (pMergeMode != 0) {
+			if (((pMergeMode[0] | 0x20) == 'l')
+					&& ((pMergeMode[1] | 0x20) == 't')
+					&& ((pMergeMode[2] | 0x20) == 'p')) {
+				return E131Merge::LTP;
+			}
+		}
+		return E131Merge::HTP;
+	}
+
+	static const char* GetMergeMode(E131Merge m, bool bToUpper = false) {
+		if (bToUpper) {
+			return (m == E131Merge::HTP) ? "HTP" : "LTP";
+		}
+		return (m == E131Merge::HTP) ? "htp" : "ltp";
+	}
+	static const char* GetMergeMode(uint8_t m, bool bToUpper = false) {
+		return GetMergeMode(static_cast<E131Merge>(m), bToUpper);
+	}
+};
 
 #endif /* E131_H_ */

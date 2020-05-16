@@ -28,7 +28,7 @@
 #endif
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxmulti.h"
 
@@ -70,7 +70,7 @@ WS28xxMulti::~WS28xxMulti(void) {
 	}
 }
 
-void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, bool bUseSI5351A) {
+void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, __attribute__((unused)) TRGBMapping tRGBMapping, __attribute__((unused)) uint8_t nT0H, __attribute__((unused)) uint8_t nT1H, bool bUseSI5351A) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
 	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping	, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
@@ -102,11 +102,11 @@ void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMa
 	}
 
 	if (m_tWS28xxType == SK6812W) {
-		m_nLedCount = nLedCount <= LEDCOUNT_RGBW_MAX ? nLedCount : LEDCOUNT_RGBW_MAX;
-		m_nBufSize = nLedCount * SINGLE_RGBW;
+		m_nLedCount = nLedCount <= static_cast<uint16_t>(LEDCOUNT_RGBW_MAX) ? nLedCount : static_cast<uint16_t>(LEDCOUNT_RGBW_MAX);
+		m_nBufSize = static_cast<uint32_t>(nLedCount * SINGLE_RGBW);
 	} else {
-		m_nLedCount = nLedCount <= LEDCOUNT_RGB_MAX ? nLedCount : LEDCOUNT_RGB_MAX;
-		m_nBufSize = nLedCount * SINGLE_RGB;
+		m_nLedCount = nLedCount <= static_cast<uint16_t>(LEDCOUNT_RGB_MAX) ? nLedCount : static_cast<uint16_t>(LEDCOUNT_RGB_MAX);
+		m_nBufSize = static_cast<uint32_t>(nLedCount * SINGLE_RGB);
 	}
 
 	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);

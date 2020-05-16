@@ -26,7 +26,6 @@
 #define LTCENCODER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ltc.h"
 

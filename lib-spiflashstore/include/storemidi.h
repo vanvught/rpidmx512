@@ -36,7 +36,6 @@ public:
 	void Update(const struct TMidiParams *pMidiParams);
 	void Copy(struct TMidiParams *pMidiParams);
 
-public:
 	static StoreMidi *Get(void) {
 		return s_pThis;
 	}

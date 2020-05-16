@@ -41,7 +41,6 @@ public:
 	uint8_t GetDataDirection(bool &bIsSet) const;
 	uint8_t GetDataDirection(bool &bIsSet, uint8_t nUart) const;
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

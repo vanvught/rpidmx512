@@ -107,7 +107,8 @@ static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
 					 | ARM_CONTROL_L1_INSTRUCTION_CACHE	\
 					 | ARM_CONTROL_BRANCH_PREDICTION)
 
-#define SECTION	(0b10 << 0)
+//#define SECTION	(0b10 << 0)
+#define SECTION	(2 << 0)
 #define B_BIT	(1 << 2)
 #define C_BIT	(1 << 3)
 #define XN_BIT	(1 << 4)
@@ -192,7 +193,7 @@ void mmu_enable(void) {
 
 	uint32_t control;
 	asm volatile ("mrc p15, 0, %0, c1, c0,  0" : "=r" (control));
-	control &= ~(0x2);
+	control &= (uint32_t)~(0x2);
 	control |= MMU_MODE;
 	asm volatile ("mcr p15, 0, %0, c1, c0,  0" : : "r" (control) : "memory");
 }

@@ -31,21 +31,22 @@
 #include "dmxmonitor.h"
 
 struct TDMXMonitorParams {
-    uint32_t nSetList;
-    uint16_t nDmxStartAddress;
-    uint16_t nDmxMaxChannels;
-    TDMXMonitorFormat tFormat;
-};
+	uint32_t nSetList;
+	uint16_t nDmxStartAddress;
+	uint16_t nDmxMaxChannels;
+	DMXMonitorFormat tFormat;
+} __attribute__((packed));
 
-enum TDMXMonitorParamsMask {
-	DMX_MONITOR_PARAMS_MASK_START_ADDRESS = (1 << 0),
-	DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS = (1 << 1),
-	DMX_MONITOR_PARAMS_MASK_FORMAT = (1 << 2)
-}__attribute__((packed));
+struct DMXMonitorParamsMask {
+	static constexpr auto START_ADDRESS = (1U << 0);
+	static constexpr auto MAX_CHANNELS = (1U << 1);
+	static constexpr auto FORMAT = (1U << 2);
+};
 
 class DMXMonitorParamsStore {
 public:
-	virtual ~DMXMonitorParamsStore(void) {}
+	virtual ~DMXMonitorParamsStore(void) {
+	}
 
 	virtual void Update(const struct TDMXMonitorParams *pDMXMonitorParams)=0;
 	virtual void Copy(struct TDMXMonitorParams *pDMXMonitorParams)=0;

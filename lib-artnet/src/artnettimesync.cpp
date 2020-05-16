@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "artnettimesync.h"
 
@@ -50,7 +50,7 @@ void ArtNetNode::HandleTimeSync(void) {
 
 	pArtTimeSync->Prog = 0;
 
-	Network::Get()->SendTo(m_nHandle, pArtTimeSync, sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, ARTNET_UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pArtTimeSync, sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, TArtNetConst::UDP_PORT);
 
 	DEBUG_EXIT
 }

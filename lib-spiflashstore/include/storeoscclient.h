@@ -36,7 +36,6 @@ public:
 	void Update(const struct TOscClientParams *pOscClientParams);
 	void Copy(struct TOscClientParams *pOscClientParams);
 
-public:
 	static StoreOscClient *Get(void) {
 		return s_pThis;
 	}

@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "lightsetdebug.h"
 
@@ -75,7 +75,7 @@ bool LightSetDebug::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &
 	return true;
 }
 
-void LightSetDebug::Start(uint8_t nPort) {
+void LightSetDebug::Start(__attribute__((unused)) uint8_t nPort) {
 	printf("%s:%s\n", __FILE__, __FUNCTION__);
 
 	if (m_bIsStarted) {
@@ -85,7 +85,7 @@ void LightSetDebug::Start(uint8_t nPort) {
 	m_bIsStarted = true;
 }
 
-void LightSetDebug::Stop(uint8_t nPort) {
+void LightSetDebug::Stop(__attribute__((unused)) uint8_t nPort) {
 	printf("%s:%s\n", __FILE__, __FUNCTION__);
 
 	if (!m_bIsStarted) {
@@ -102,7 +102,7 @@ void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLengt
 	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__, static_cast<int>(nPort), pData, static_cast<int>(nLength));
 	printf("%d:%d:%d: ", static_cast<int>(nLength), DMX_FOOTPRINT, static_cast<int>(m_nDmxStartAddress));
 
-	for (uint32_t i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = static_cast<uint32_t>(m_nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		printf("%.2x ", pData[i]);
 	}
 

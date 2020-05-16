@@ -42,7 +42,6 @@ public:
 	void SaveHostName(const char *pHostName, uint32_t nLength);
 	void SaveDhcp(bool bIsDhcpUsed);
 
-public:
 	static StoreNetwork *Get(void) {
 		return s_pThis;
 	}

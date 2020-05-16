@@ -68,10 +68,10 @@ bool SensorINA219Power::Initialize(void) {
 }
 
 int16_t SensorINA219Power::GetValue(void) {
-	const uint16_t nValue = ina219_get_bus_power(&sDeviceInfo);
+	const int16_t nValue = ina219_get_bus_power(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
+	printf("%s\tnValue=%d\n", __FUNCTION__, nValue);
 #endif
 	return nValue;
 }

@@ -27,7 +27,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hal_spi.h"
 #include "hal_gpio.h"
@@ -111,7 +111,12 @@ int AutoDriver::busyCheck(void) {
 uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	DEBUG_ENTRY
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+
 	char dataPacket[m_nNumBoards[m_nSpiChipSelect]];
+
+#pragma GCC diagnostic pop
 
 	for (uint32_t i = 0; i < m_nNumBoards[m_nSpiChipSelect]; i++) {
 		dataPacket[i] = 0;

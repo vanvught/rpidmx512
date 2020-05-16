@@ -77,7 +77,7 @@ static FILE *file = NULL;
 
 #define FLASH_FILE_NAME		"spiflash.bin"
 
-int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode) {
+int spi_flash_probe(__attribute__((unused)) unsigned int cs, __attribute__((unused)) unsigned int max_hz, __attribute__((unused)) unsigned int spi_mode) {
 	DEBUG_ENTRY
 
 	if ((file = fopen(FLASH_FILE_NAME, "r+")) == NULL) {
@@ -116,7 +116,7 @@ uint32_t spi_flash_get_size(void) {
 int spi_flash_cmd_erase(uint32_t offset, size_t len) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offset=%d, len=%d", (int) offset, (int) len);
+	DEBUG_PRINTF("offset=%d, len=%d", offset, len);
 
 	if (offset % FLASH_SECTOR_SIZE || len % FLASH_SECTOR_SIZE) {
 		DEBUG_PUTS("Erase offset/length not multiple of erase size");
@@ -130,7 +130,7 @@ int spi_flash_cmd_erase(uint32_t offset, size_t len) {
 		return -1;
 	}
 
-	int i;
+	size_t i;
 	for (i = 0; i < len; i++) {
 		if (fputc(0xFF, file) == EOF) {
 			perror("fputc(0xFF, file)");

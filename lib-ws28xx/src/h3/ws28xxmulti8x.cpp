@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxmulti.h"
 
@@ -54,7 +54,7 @@ void WS28xxMulti::SetupBuffers8x(void) {
 		return;
 	}
 
-	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & ~3);
+	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & static_cast<uint32_t>(~3));
 
 	memset(m_pBuffer8x, 0, m_nBufSize);
 	memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);

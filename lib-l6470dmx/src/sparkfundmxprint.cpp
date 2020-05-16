@@ -24,9 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "sparkfundmx.h"
 

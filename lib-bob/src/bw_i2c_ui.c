@@ -2,7 +2,7 @@
  * @file bw_i2c_ui.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ inline static void ui_i2c_setup(const device_info_t *device_info) {
 	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
-const bool bw_i2c_ui_start(device_info_t *device_info) {
+bool bw_i2c_ui_start(device_info_t *device_info) {
 	char cmd[2];
 
 	i2c_begin();
@@ -111,7 +111,7 @@ void bw_i2c_ui_text(const device_info_t *device_info, const char *text, uint8_t 
 	}
 
 	ui_i2c_setup(device_info);
-	_i2c_write(data, length + 1);
+	_i2c_write(data, (uint32_t)(length + 1));
 }
 
 void bw_i2c_ui_text_line_1(const device_info_t *device_info, const char *text, const uint8_t length) {
@@ -155,7 +155,7 @@ void bw_i2c_ui_set_backlight_temp(const device_info_t *device_info, const uint8_
 	_i2c_write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, __attribute__((unused)) const char *text, uint8_t length) {
 	char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE1, (char) 0xFF };
 
 	if (length == 0) {
@@ -166,7 +166,7 @@ void bw_i2c_ui_set_startup_message_line_1(const device_info_t *device_info, /*@u
 	}
 }
 
-void bw_i2c_ui_set_startup_message_line_2(const device_info_t *device_info, /*@unused@*/const char *text, uint8_t length) {
+void bw_i2c_ui_set_startup_message_line_2(const device_info_t *device_info, __attribute__((unused)) const char *text, uint8_t length) {
 	char cmd[] = { (char) BW_PORT_WRITE_STARTUPMESSAGE_LINE2, (char) 0xFF };
 
 	if (length == 0) {
@@ -205,9 +205,9 @@ void bw_i2c_ui_reinit(const device_info_t *device_info) {
 char bw_i2c_ui_read_button(const device_info_t *device_info, const BwUiButtons button) {
 	char cmd[2];
 
-	if ((button < BW_UI_BUTTON1) | (button > BW_UI_BUTTON6)) {
+/*	if ((button < BW_UI_BUTTON1) | (button > BW_UI_BUTTON6)) {
 		return (char) 0;
-	}
+	}*/
 
 	cmd[0] = (char) BW_PORT_READ_BUTTON_1 + (char) button;
 	cmd[1] = (char) 0xFF;

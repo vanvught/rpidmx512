@@ -31,16 +31,14 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "e131bridge.h"
-#include "e131const.h"
 #include "e131params.h"
 #include "storee131.h"
+#include "e131msgconst.h"
 #include "e131sync.h"
 
 #include "artnetcontroller.h"
@@ -91,8 +89,7 @@ void notmain(void) {
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	DisplayUdfHandler displayUdfHandler;
 
@@ -101,8 +98,7 @@ void notmain(void) {
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_PARAMS);
-	display.TextStatus(E131Const::MSG_BRIDGE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
+	display.TextStatus(E131MsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
@@ -212,15 +208,13 @@ void notmain(void) {
 	device.Init();
 	device.Print();
 
-	console_status(CONSOLE_YELLOW, E131Const::MSG_BRIDGE_START);
-	display.TextStatus(E131Const::MSG_BRIDGE_START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
+	display.TextStatus(E131MsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
 	controller.Start();
 	device.Start();
 
-	console_status(CONSOLE_GREEN, E131Const::MSG_BRIDGE_STARTED);
-	display.TextStatus(E131Const::MSG_BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
+	display.TextStatus(E131MsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

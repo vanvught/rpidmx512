@@ -36,7 +36,6 @@ public:
 	void Update(const struct TE131Params *pE131Params);
 	void Copy(struct TE131Params *pE131Params);
 
-public:
 	static StoreE131 *Get(void) {
 		return s_pThis;
 	}

@@ -28,7 +28,7 @@
 #include "tcnet.h"
 #include "display.h"
 
-constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
+static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
 void TCNetDisplay::Show(void) {
 	Display::Get()->SetCursorPos(6,3);

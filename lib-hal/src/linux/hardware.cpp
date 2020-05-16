@@ -40,7 +40,7 @@
  #include <sys/sysinfo.h>
 #endif
 #include <sys/utsname.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 
@@ -54,14 +54,14 @@ extern "C" {
 }
 
 #if defined (__linux__)
- constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
- constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
- constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
- constexpr char RASPBIAN_LED_HB[] = "echo heartbeat | sudo tee /sys/class/leds/led0/trigger";
- constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
+ static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
+ static constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
+ static constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
+ static constexpr char RASPBIAN_LED_HB[] = "echo heartbeat | sudo tee /sys/class/leds/led0/trigger";
+ static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
 #endif
 
-constexpr char UNKNOWN[] = "Unknown";
+static constexpr char UNKNOWN[] = "Unknown";
 
 Hardware *Hardware::s_pThis = 0;
 
@@ -96,7 +96,7 @@ Hardware::Hardware(char **argv):
 
 	if (fgets(buf, sizeof(buf)-1, fp) != 0) {
 		m_tBoardType = BOARD_TYPE_RASPBIAN;
-		if (system((const char*) RASPBIAN_LED_INIT) == 0) {
+		if (system(RASPBIAN_LED_INIT) == 0) {
 			// Just make the compile happy
 		}
 	}
@@ -182,7 +182,7 @@ uint32_t Hardware::GetReleaseId(void) {
 	for (int i = 0; i < len ; i++) {
 		if (isdigit(m_TOsInfo.release[i])) {
 			rev *= 10;
-			rev += m_TOsInfo.release[i] - '0';
+			rev += static_cast<uint32_t>(m_TOsInfo.release[i] - '0');
 		}
 	}
 
@@ -220,11 +220,11 @@ uint32_t Hardware::GetUpTime(void) {
 #endif
 }
 
-void Hardware::SetSysTime(time_t nTime) {
+void Hardware::SetSysTime(__attribute__((unused)) time_t nTime) {
 	DEBUG_PRINTF("%s", asctime(localtime(&nTime)));
 }
 
-bool Hardware::SetTime(const struct tm *pTime) {
+bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
 	DEBUG_PRINTF("%s", asctime(pTime));
 	return true;
 }
@@ -341,30 +341,30 @@ float Hardware::GetCoreTemperatureMax(void) {
 #endif
 }
 
-void Hardware::SetLed(THardwareLedStatus tLedStatus) {
+void Hardware::SetLed(__attribute__((unused)) THardwareLedStatus tLedStatus) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		char *p = 0;
 
 		switch (tLedStatus) {
-			case HARDWARE_LED_OFF:
-				p = (char *)RASPBIAN_LED_OFF;
-				break;
-			case HARDWARE_LED_ON:
-				p = (char *)RASPBIAN_LED_ON;
-				break;
-			case HARDWARE_LED_HEARTBEAT:
-				p = (char *)RASPBIAN_LED_HB;
-				break;
-			case HARDWARE_LED_FLASH:
-				p = (char *)RASPBIAN_LED_FLASH;
-				break;
-			default:
-				break;
+		case HARDWARE_LED_OFF:
+			p = const_cast<char*>(RASPBIAN_LED_OFF);
+			break;
+		case HARDWARE_LED_ON:
+			p = const_cast<char*>(RASPBIAN_LED_ON);
+			break;
+		case HARDWARE_LED_HEARTBEAT:
+			p = const_cast<char*>(RASPBIAN_LED_HB);
+			break;
+		case HARDWARE_LED_FLASH:
+			p = const_cast<char*>(RASPBIAN_LED_FLASH);
+			break;
+		default:
+			break;
 		}
 
 		if (p != 0) {
-			if (system((const char*) p) == 0) {
+			if (system(p) == 0) {
 				// Just make the compile happy
 			}
 		}

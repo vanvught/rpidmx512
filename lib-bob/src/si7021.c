@@ -36,12 +36,12 @@
 #define SI7021_TEMP		0xF3
 #define	SI7021_HUMID	0xF5
 
-static uint8_t get_id(const device_info_t *device_info) {
+static uint8_t get_id(__attribute__((unused)) const device_info_t *device_info) {
 	/* Page 23 https://www.silabs.com/documents/public/data-sheets/Si7021-A20.pdf */
 	char buffer[6] = { 0xFC, 0xC9 };
 
 	i2c_write_nb(buffer, 2);
-	(void) i2c_read(buffer, 6);
+	i2c_read(buffer, 6);
 
 	return buffer[0];
 }
@@ -92,7 +92,7 @@ bool si7021_start(device_info_t *device_info) {
 	return true;
 }
 
-static const uint16_t get_raw_value(uint8_t cmd) {
+static uint16_t get_raw_value(uint8_t cmd) {
 	char buffer[3];
 
 	i2c_write(cmd);

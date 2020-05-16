@@ -2,7 +2,7 @@
  * @file oscstring.h
  *
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,25 @@
 #ifndef OSCSTRING_H_
 #define OSCSTRING_H_
 
-typedef enum osc_string_validate {
-	OSC_STRING_INVALID_SIZE = 1,
-	OSC_STRING_NOT_TERMINATED,
-	OSC_STRING_NONE_ZERO_IN_PADDING
-} _osc_string_validate;
+#include <string.h>
+
+/*
+ * OSC-string
+ * A sequence of non-null ASCII characters followed by a null,
+ * followed by 0-3 additional null characters to make the total number of bits a multiple of 32.
+ */
 
 class OSCString {
-
 public:
+	static constexpr int INVALID_SIZE = 1;
+	static constexpr int NOT_TERMINATED = 2;
+	static constexpr int NONE_ZERO_IN_PADDING = 3;
 
-public:
+	static int Validate(void *pData, int nSize);
 
-	static unsigned Validate(void *, unsigned);
-	static unsigned Size(const char *);
-
-private:
-
+	static unsigned Size(const char *pString) {
+		return 4 * (strlen(pString) / 4 + 1);
+	}
 };
 
 #endif /* OSCSTRING_H_ */

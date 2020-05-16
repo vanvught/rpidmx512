@@ -30,11 +30,9 @@
 #include <stdio.h>
 
 #include "artnetnode.h"
+#include "artnet.h"
 
 #include "network.h"
-
-#define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "HTP" : "LTP"
-#define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN"
 
 void ArtNetNode::Print(void) {
 	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
@@ -47,15 +45,15 @@ void ArtNetNode::Print(void) {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * ARTNET_MAX_PORTS); nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * TArtNetConst::MAX_PORTS); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress)) {
-				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ARTNET_MAX_PORTS];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ARTNET_MAX_PORTS];
+				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / TArtNetConst::MAX_PORTS];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / TArtNetConst::MAX_PORTS];
 
-				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, MERGEMODE2STRING(m_OutputPorts[nPortIndex].mergeMode));
+				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
 				if (m_nVersion == 4) {
-					printf(" {%s}\n", PROTOCOL2STRING(m_OutputPorts[nPortIndex].tPortProtocol));
+					printf(" {%s}\n", ArtNet::GetProtocolMode(m_OutputPorts[nPortIndex].tPortProtocol, true));
 				} else {
 					printf("\n");
 				}

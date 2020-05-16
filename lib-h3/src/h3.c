@@ -56,7 +56,7 @@ uint32_t h3_get_dram_size(void) {
 
 	dram_size = dram_size - 11;	//(1<<dram_size)MBytes
 
-	return (1 << dram_size);
+	return (1U << dram_size);
 }
 
 // https://github.com/linux-sunxi/sunxi-tools/blob/master/uart0-helloworld-sdboot.c#L458

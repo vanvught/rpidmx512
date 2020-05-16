@@ -26,7 +26,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplayws28xx7segment.h"
 
@@ -121,5 +121,5 @@ void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct TLt
 }
 
 void LtcDisplayWS28xx7Segment::Print(void) {
-	printf(" 7-Segment %d Digit(s), %d Colons, %d LEDs\n", WS28XX_NUM_OF_DIGITS, WS28XX_NUM_OF_COLONS, WS28XX_LED_COUNT);
+	printf(" 7-Segment %d Digit(s), %d Colons, %d LEDs\n", WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS, WS28xxDisplay7SegmentConfig::NUM_OF_COLONS, WS28xxDisplay7SegmentConfig::LED_COUNT);
 }

@@ -70,7 +70,7 @@ void arm_dump_page_table(void) {
 	asm volatile ("mrc p15, 0, %0, c2, c0, 0" : "=r" (page_table));
 	isb();
 
-	page_table = page_table & ~0xFF;
+	page_table = page_table & (uint32_t)(~0xFF);
 	printf("TTBR0 at address: %p\n", page_table);
 
 	_dump_page_table((const uint32_t *) page_table);

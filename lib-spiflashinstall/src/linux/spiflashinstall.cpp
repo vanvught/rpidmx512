@@ -27,7 +27,7 @@
  #pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 #include "spiflashinstall.h"
 
@@ -55,12 +55,12 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 	DEBUG_EXIT
 }
 
-void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
+void SpiFlashInstall::Process(__attribute__((unused)) const char *pFileName, __attribute__((unused)) uint32_t nOffset) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-bool SpiFlashInstall::Open(const char* pFileName) {
+bool SpiFlashInstall::Open(__attribute__((unused)) const char* pFileName) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
@@ -71,24 +71,24 @@ void SpiFlashInstall::Close(void) {
 	DEBUG_EXIT
 }
 
-bool SpiFlashInstall::BuffersCompare(uint32_t nSize) {
+bool SpiFlashInstall::BuffersCompare(__attribute__((unused)) uint32_t nSize) {
 	DEBUG1_ENTRY
 	DEBUG1_EXIT
 	return false;
 }
 
-bool SpiFlashInstall::Diff(uint32_t nOffset) {
+bool SpiFlashInstall::Diff(__attribute__((unused)) uint32_t nOffset) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;
 }
 
-void SpiFlashInstall::Write(uint32_t nOffset) {
+void SpiFlashInstall::Write(__attribute__((unused)) uint32_t nOffset) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
+bool SpiFlashInstall::WriteFirmware(__attribute__((unused)) const uint8_t* pBuffer, __attribute__((unused)) uint32_t nSize) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;

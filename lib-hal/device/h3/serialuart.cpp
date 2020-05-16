@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "serial.h"
 
@@ -45,7 +45,7 @@ void Serial::SetUartBaud(uint32_t nBaud) {
 		return;
 	}
 
-	if (static_cast<uint32_t>((24000000 / 16) / nBaud) > static_cast<uint16_t>(~0)) {
+	if (((24000000 / 16) / nBaud) > static_cast<uint16_t>(~0)) {
 		DEBUG_PUTS("Baud is too low");
 		return;
 	}
@@ -89,10 +89,10 @@ bool Serial::InitUart(void) {
 
 	uint32_t value = H3_PIO_PORTG->CFG0;
 	// PG6, TX
-	value &= ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT));
 	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
 	// PG7, RX
-	value &= ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT));
 	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTG->CFG0 = value;
 

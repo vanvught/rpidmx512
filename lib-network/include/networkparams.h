@@ -26,7 +26,6 @@
 #ifndef NETWORKPARAMS_H_
 #define NETWORKPARAMS_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 
 #include "network.h"
@@ -40,23 +39,24 @@ struct TNetworkParams {
 	bool bIsDhcpUsed;
 	char aHostName[NETWORK_HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
-	float	fNtpUtcOffset;
+	float fNtpUtcOffset;
 };
 
-enum TNetworkParamsMask {
-	NETWORK_PARAMS_MASK_DHCP = (1 << 0),
-	NETWORK_PARAMS_MASK_IP_ADDRESS = (1 << 1),
-	NETWORK_PARAMS_MASK_NET_MASK = (1 << 2),
-	NETWORK_PARAMS_MASK_DEFAULT_GATEWAY = (1 << 3),
-	NETWORK_PARAMS_MASK_NAME_SERVER = (1 << 4),
-	NETWORK_PARAMS_MASK_HOSTNAME = (1 << 5),
-	NETWORK_PARAMS_MASK_NTP_SERVER = (1 << 6),
-	NETWORK_PARAMS_MASK_NTP_UTC_OFFSET = (1 << 7)
+struct NetworkParamsMask {
+	static constexpr auto DHCP = (1U << 0);
+	static constexpr auto IP_ADDRESS = (1U << 1);
+	static constexpr auto NET_MASK = (1U << 2);
+	static constexpr auto DEFAULT_GATEWAY = (1U << 3);
+	static constexpr auto NAME_SERVER = (1U << 4);
+	static constexpr auto HOSTNAME = (1U << 5);
+	static constexpr auto NTP_SERVER = (1U << 6);
+	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
 };
 
 class NetworkParamsStore {
 public:
-	virtual ~NetworkParamsStore(void) {}
+	virtual ~NetworkParamsStore(void) {
+	}
 
 	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
 	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
@@ -100,14 +100,14 @@ public:
 	}
 
 	uint32_t GetNtpServer(void) {
-		if (!isMaskSet(NETWORK_PARAMS_MASK_NTP_SERVER)) {
+		if (!isMaskSet(NetworkParamsMask::NTP_SERVER)) {
 			return 0;
 		}
 		return m_tNetworkParams.nNtpServerIp;
 	}
 
 	float GetNtpUtcOffset(void) {
-		if (!isMaskSet(NETWORK_PARAMS_MASK_NTP_UTC_OFFSET)) {
+		if (!isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
 			return 0;
 		}
 		return m_tNetworkParams.fNtpUtcOffset;

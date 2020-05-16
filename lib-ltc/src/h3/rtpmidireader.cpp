@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/rtpmidireader.h"
 
@@ -51,12 +51,12 @@ static volatile uint32_t nUpdates = 0;
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static void irq_timer0_update_handler(uint32_t clo) {
+static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
 
-inline static void itoa_base10(uint32_t arg, char *buf) {
+inline static void itoa_base10(int arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {
@@ -141,7 +141,7 @@ void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 	m_tLtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
 	m_tLtcTimeCode.nType = m_nTimeCodeType;
 
-	Update(ptMidiMessage);
+	Update();
 }
 
 void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
@@ -173,13 +173,13 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 		m_tLtcTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
 		m_tLtcTimeCode.nType = m_nTimeCodeType;
 
-		Update(ptMidiMessage);
+		Update();
 	}
 
 	m_nPartPrevious = nPart;
 }
 
-void RtpMidiReader::Update(const struct _midi_message *ptMidiMessage) {
+void RtpMidiReader::Update(void) {
 	if (!m_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 	}

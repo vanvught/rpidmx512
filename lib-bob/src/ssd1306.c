@@ -413,7 +413,7 @@ void oled_status(const oled_info_t *oled_info, const char *s) {
 	oled_write(oled_info, s, (SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W));
 }
 
-const bool oled_start(oled_info_t *oled_info) {
+bool oled_start(oled_info_t *oled_info) {
 	int i;
 
 	if (oled_info->protocol == OLED_PROTOCOL_I2C) {

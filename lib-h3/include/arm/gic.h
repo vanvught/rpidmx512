@@ -115,7 +115,7 @@ extern void gic_int_dump(H3_IRQn_TypeDef n);
 
 inline static void gic_unpend(H3_IRQn_TypeDef irq) {
 	uint32_t index = irq / 32;
-	uint32_t mask = 1 << (irq % 32);
+	uint32_t mask = 1U << (irq % 32);
 
 	H3_GIC_DIST->ICPEND[index] = mask;
 }

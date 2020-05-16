@@ -31,27 +31,25 @@
 
 #include "console.h"
 
-#define ROW		1
-#define COLUMN	80
+static char s_aTimecode[] = "--:--:--.-- -----";
+static uint8_t nTypePrevious = 0xFF;	///< Invalid type. Force initial update.
 
-static char timecode[] =  "--:--:--.-- -----";
-#define TIMECODE_LENGTH		(sizeof(timecode) - 1)
+static constexpr auto ROW = 1;
+static constexpr auto COLUMN = 80;
+static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
+static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = { "Film ", "EBU  ", "DF   ", "SMPTE" };
 
-constexpr char types[4][8] = {"Film " , "EBU  " , "DF   " , "SMPTE" };
+inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
+	char *nDst = pBuffer;
 
-static uint8_t prev_type = 0xFF;	///< Invalid type. Force initial update.
-
-static void itoa_base10(int arg, char *pBuffer) {
-	char *n = pBuffer;
-
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
+	if (nArg == 0) {
+		*nDst++ = '0';
+		*nDst = '0';
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*nDst++ = '0' + (nArg / 10);
+	*nDst = '0' + (nArg % 10);
 }
 
 TimeCode::TimeCode(void) {
@@ -64,7 +62,7 @@ void TimeCode::Start(void) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_CYAN);
-	console_puts(timecode);
+	console_puts(s_aTimecode);
 	console_restore_cursor();
 }
 
@@ -74,19 +72,19 @@ void TimeCode::Stop(void) {
 }
 
 void TimeCode::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
-	itoa_base10(ArtNetTimeCode->Hours, &timecode[0]);
-	itoa_base10(ArtNetTimeCode->Minutes, &timecode[3]);
-	itoa_base10(ArtNetTimeCode->Seconds, &timecode[6]);
-	itoa_base10(ArtNetTimeCode->Frames, &timecode[9]);
+	itoa_base10(ArtNetTimeCode->Hours, &s_aTimecode[0]);
+	itoa_base10(ArtNetTimeCode->Minutes, &s_aTimecode[3]);
+	itoa_base10(ArtNetTimeCode->Seconds, &s_aTimecode[6]);
+	itoa_base10(ArtNetTimeCode->Frames, &s_aTimecode[9]);
 
-	if ((prev_type != ArtNetTimeCode->Type) && (ArtNetTimeCode->Type < 4)) {
-		memcpy(&timecode[12], types[ArtNetTimeCode->Type], 5);
-		prev_type = ArtNetTimeCode->Type;
+	if ((nTypePrevious != ArtNetTimeCode->Type) && (ArtNetTimeCode->Type < 4)) {
+		memcpy(&s_aTimecode[12], TC_TYPES[ArtNetTimeCode->Type], 5);
+		nTypePrevious = ArtNetTimeCode->Type;
 	}
 
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_YELLOW);
-	console_write(timecode, TIMECODE_LENGTH);
+	console_write(s_aTimecode, TC_LENGTH);
 	console_restore_cursor();
 }

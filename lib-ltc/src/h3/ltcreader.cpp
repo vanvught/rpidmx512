@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "h3/ltcreader.h"
 #include "ltc.h"
@@ -104,7 +104,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 
 	nFiqUsCurrent = h3_hs_timer_lo_us();
 
-	H3_PIO_PA_INT->STA = ~0x0;
+	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
 
 	nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 
@@ -186,13 +186,13 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
 	dmb();
 }
 
-static void irq_timer0_update_handler(uint32_t clo) {
+static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	dmb();
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
 
-static void irq_timer1_midi_handler(uint32_t clo) {
+static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 

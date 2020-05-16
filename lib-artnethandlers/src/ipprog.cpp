@@ -28,7 +28,7 @@
  #include <stdio.h>
 #endif
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnetipprog.h"
 #include "artnet.h"
@@ -56,8 +56,8 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	ip_union.u32 = Network::Get()->GetNetmask();
 	memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
 	// Port
-	pArtNetIpProgReply->ProgPortHi = (ARTNET_UDP_PORT >> 8);
-	pArtNetIpProgReply->ProgPortLo = ARTNET_UDP_PORT & 0xFF;
+	pArtNetIpProgReply->ProgPortHi = (TArtNetConst::UDP_PORT >> 8);
+	pArtNetIpProgReply->ProgPortLo = TArtNetConst::UDP_PORT & 0xFF;
 	//
 	pArtNetIpProgReply->Filler = 0;
 	// Gateway

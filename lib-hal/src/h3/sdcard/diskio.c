@@ -64,7 +64,7 @@ static inline int sdcard_init(void){
 #ifdef CACHE_ENABLED
 		int i;
 		for (i = 0; i < CACHE_ENTRIES; i++) {
-			cached_blocks[i] = 0xFFFFFFFF;
+			cached_blocks[i] = (uint32_t)~0;
 		}
 #endif
 		return RES_OK;
@@ -81,20 +81,20 @@ static inline int sdcard_read(uint8_t* buf, int sector, int count) {
 		const int index = sector & CACHE_MASK;
 		const void *cache_p = (void *)(cache_buffer + SECTOR_SIZE * index);
 
-		if (cached_blocks[index] != sector) {
+		if (cached_blocks[index] != (uint32_t)sector) {
 			// Store sector in cache
-			if (mmc_read_blocks(mmc, (void *)cache_p, sector, count) != count) {
+			if (mmc_read_blocks(mmc, (void *)cache_p, (unsigned long)sector, (unsigned)count) != count) {
 				return RES_ERROR;
 			}
 
-			cached_blocks[index] = sector;
+			cached_blocks[index] = (uint32_t)sector;
 		}
 
 		memcpy_blk((uint32_t *)buf, (uint32_t *)cache_p, SECTOR_SIZE / 32);
 
 	} else {
 #endif
-		if (mmc_read_blocks(mmc, (void *)buf, sector, count) != count) {
+		if (mmc_read_blocks(mmc, (void *)buf, (unsigned long)sector, (unsigned)count) != count) {
 			return RES_ERROR;
 		}
 #ifdef CACHE_ENABLED
@@ -107,7 +107,7 @@ static inline int sdcard_read(uint8_t* buf, int sector, int count) {
 static inline int sdcard_write(const uint8_t* buf, int sector, int count) {
     struct mmc *mmc = find_mmc_device(0);
 
-    if (mmc_write_blocks(mmc, (unsigned long) sector, count, (const void *)buf) != count) {
+    if (mmc_write_blocks(mmc, (unsigned long) sector, (unsigned int)count, (const void *)buf) != (unsigned)count) {
 		return RES_ERROR;
 	}
 
@@ -115,7 +115,7 @@ static inline int sdcard_write(const uint8_t* buf, int sector, int count) {
     int i;
     for (i = 0; i < count; i++) {
     	const int index = (sector + i) & CACHE_MASK;
-    	cached_blocks[index] = sector + i;
+    	cached_blocks[index] = (unsigned) (sector + i);
     	memcpy_blk((uint32_t *)(cache_buffer + SECTOR_SIZE * index), (uint32_t *)&buf[SECTOR_SIZE * i], SECTOR_SIZE / 32);
     }
 #endif
@@ -143,7 +143,7 @@ DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
 	return sdcard_read((uint8_t *) buf, (int) sector, (int) count);
 }
 
-DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
+DRESULT disk_write(__attribute__((unused)) BYTE drv, __attribute__((unused)) const BYTE *buf, __attribute__((unused)) DWORD sector, __attribute__((unused)) UINT count) {
 #ifdef SD_WRITE_SUPPORT
 	if (drv || !count) {
 		return RES_PARERR;
@@ -153,7 +153,7 @@ DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
 		return RES_NOTRDY;
 	}
 
-	if (sdcard_write(buf, sector, count) == 0) {
+	if (sdcard_write(buf, (int) sector, (int) count) == 0) {
 		return RES_OK;
 	}
 
@@ -170,7 +170,7 @@ DSTATUS disk_status(BYTE drv) {
 	return diskio_status;
 }
 
-DRESULT disk_ioctl(/*@unused@*/BYTE drv, BYTE ctrl, void *buf) {
+DRESULT disk_ioctl(__attribute__((unused)) BYTE drv, BYTE ctrl, void *buf) {
 	switch (ctrl) {
 	case CTRL_SYNC:
 		return RES_OK;

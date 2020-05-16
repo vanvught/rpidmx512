@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdmxmulti.h"
 #include "ws28xxmulti.h"
@@ -85,7 +85,7 @@ void WS28xxDmxMulti::Initialize(void) {
 	m_pLEDStripe->Blackout();
 }
 
-void WS28xxDmxMulti::Start(uint8_t nPort) {
+void WS28xxDmxMulti::Start(__attribute__((unused)) uint8_t nPort) {
 	assert(m_pLEDStripe != 0);
 
 	DEBUG_PRINTF("%d", static_cast<int>(nPort));
@@ -103,7 +103,7 @@ void WS28xxDmxMulti::Start(uint8_t nPort) {
 	m_pLEDStripe->Update();
 }
 
-void WS28xxDmxMulti::Stop(uint8_t nPort) {
+void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
 	assert(m_pLEDStripe != 0);
 
 	DEBUG_PRINTF("%d", static_cast<int>(nPort));

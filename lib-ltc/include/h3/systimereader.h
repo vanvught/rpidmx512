@@ -27,7 +27,6 @@
 #define H3_SYSTIMEREADER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 #include "ltc.h"
@@ -56,12 +55,12 @@ private:
 	void HandleUdpRequest(void);
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
 	time_t m_ntimePrevious;
 	struct _midi_send_tc m_tMidiTimeCode;
-	int m_nHandle;
+	int32_t m_nHandle;
 	alignas(uint32_t) char m_Buffer[64];
 	uint16_t m_nBytesReceived;
 	bool m_bIsStarted;

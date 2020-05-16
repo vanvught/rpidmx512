@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,18 +32,13 @@
 #include "lightset.h"
 #include "dmxslotinfo.h"
 
-#define MODE_PARAMS_MAX_DMX_FOOTPRINT		4
-#define MODE_PARAMS_MASK_SLOT_INFO_SHIFT	28
-#define MODE_PARAMS_MASK_SLOT_INFO_MASK		(0xF << MODE_PARAMS_MASK_SLOT_INFO_SHIFT)
+static constexpr uint16_t MODE_PARAMS_MAX_DMX_FOOTPRINT	=	4;
 
 struct TModeParams {
     uint32_t nSetList;
-    //
     uint8_t nDmxMode;
     uint16_t nDmxStartAddress;
-    //
     uint32_t nMaxSteps;
-    //
     TL6470Action tSwitchAction;
     TL6470Direction tSwitchDir;
     float fSwitchStepsPerSec;
@@ -52,21 +47,24 @@ struct TModeParams {
     alignas(uint32_t) struct TLightSetSlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
 } __attribute__((packed));
 
-enum TModeParamsMask {
-	MODE_PARAMS_MASK_DMX_MODE = (1 << 0),
-	MODE_PARAMS_MASK_DMX_START_ADDRESS = (1 << 1),
+struct ModeParamsMask {
+	static constexpr auto SLOT_INFO_SHIFT = 28;
+	static constexpr auto SLOT_INFO_MASK = (0xF << SLOT_INFO_SHIFT);
+
+	static constexpr auto DMX_MODE = (1U << 0);
+	static constexpr auto DMX_START_ADDRESS = (1U << 1);
 	//
-	MODE_PARAMS_MASK_MAX_STEPS = (1 << 2),
+	static constexpr auto MAX_STEPS = (1U << 2);
 	//
-	MODE_PARAMS_MASK_SWITCH_ACT = (1 << 3),
-	MODE_PARAMS_MASK_SWITCH_DIR = (1 << 4),
-	MODE_PARAMS_MASK_SWITCH_SPS = (1 << 5),
-	MODE_PARAMS_MASK_SWITCH = (1 << 6),
+	static constexpr auto SWITCH_ACT = (1U << 3);
+	static constexpr auto SWITCH_DIR = (1U << 4);
+	static constexpr auto SWITCH_SPS = (1U << 5);
+	static constexpr auto SWITCH = (1U << 6);
 	//
-	MODE_PARAMS_MASK_SLOT_INFO_0 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 0)),
-	MODE_PARAMS_MASK_SLOT_INFO_1 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 1)),
-	MODE_PARAMS_MASK_SLOT_INFO_2 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 2)),
-	MODE_PARAMS_MASK_SLOT_INFO_3 = (1 << (MODE_PARAMS_MASK_SLOT_INFO_SHIFT + 3))
+	static constexpr auto SLOT_INFO_0 = (1U << (SLOT_INFO_SHIFT + 0));
+	static constexpr auto SLOT_INFO_1 = (1U << (SLOT_INFO_SHIFT + 1));
+	static constexpr auto SLOT_INFO_2 = (1U << (SLOT_INFO_SHIFT + 2));
+	static constexpr auto SLOT_INFO_3 = (1U << (SLOT_INFO_SHIFT + 3));
 };
 
 class ModeParamsStore {

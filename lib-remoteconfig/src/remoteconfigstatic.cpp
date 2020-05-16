@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "remoteconfig.h"
 
 #include "debug.h"
-
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
 
 constexpr char sTxtFile[TXT_FILE_LAST][15] = {
 		"rconfig.txt", "network.txt", "artnet.txt", "e131.txt", "osc.txt", "params.txt", "devices.txt",
@@ -79,7 +76,7 @@ uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
 #endif
 
 	for (i = 0; i < TXT_FILE_LAST; i++) {
-		if (memcmp(p, sTxtFile[i], MIN(sTxtFileNameLength[i], nLength)) == 0) {
+		if (memcmp(p, sTxtFile[i], std::min(static_cast<uint32_t>(sTxtFileNameLength[i]), nLength)) == 0) {
 			nLength = sTxtFileNameLength[i];
 			break;
 		}

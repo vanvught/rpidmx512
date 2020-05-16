@@ -69,7 +69,7 @@ void rdm_device_info_init(RDMDevice *pRdmDevice) {
 	memcpy(device_sn, pSN, DEVICE_SN_LENGTH);
 }
 
-void rdm_device_info_get_label(const uint16_t sub_device, struct _rdm_device_info_data *info) {
+void rdm_device_info_get_label(__attribute__((unused))  uint16_t sub_device, struct _rdm_device_info_data *info) {
 	info->data = reinterpret_cast<uint8_t*>(root_device_label);
 	info->length = root_device_label_length;
 }

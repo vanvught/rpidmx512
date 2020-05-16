@@ -33,7 +33,7 @@
 #include <net/if.h>
 #include <ifaddrs.h>
 #include <errno.h>
-#include <assert.h>
+#include <cassert>
 
 #include "networklinux.h"
 
@@ -44,12 +44,14 @@
  */
 #include "networkparams.h"
 
-#define MAX_PORTS_ALLOWED	16
-#define MAX_ENTRIES			(1 << 2) // Must always be a power of 2
-#define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
+namespace max {
+	static constexpr auto PORTS_ALLOWED = 16;
+	static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
+	static constexpr auto ENTRIES_MASK __attribute__((unused)) = (ENTRIES - 1);
+}
 
-static int s_ports_allowed[MAX_PORTS_ALLOWED];
-static int snHandles[MAX_PORTS_ALLOWED];
+static int s_ports_allowed[max::PORTS_ALLOWED];
+static int snHandles[max::PORTS_ALLOWED];
 
 /**
  * END
@@ -68,7 +70,7 @@ int NetworkLinux::Init(const char *s) {
  */
 	uint32_t i;
 
-	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+	for (i = 0; i < max::PORTS_ALLOWED; i++) {
 		s_ports_allowed[i] = 0;
 		snHandles[i] = -1;
 	}
@@ -102,7 +104,7 @@ int NetworkLinux::Init(const char *s) {
 	}
 #endif
 
-	m_nIfIndex = if_nametoindex((const char *)m_aIfName);
+	m_nIfIndex = if_nametoindex(const_cast<char*>(m_aIfName));
 
 #if !defined ( __CYGWIN__ )
 	if (m_nIfIndex == 0) {
@@ -143,14 +145,14 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	int nSocket;
 	struct sockaddr_in si_me;
 	int true_flag = true;
-	uint32_t i;
+	int32_t i;
 
 
 /**
  * BEGIN - needed H3 code compatibility
  */
 
-	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+	for (i = 0; i < max::PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == nPort) {
 			return i;
 		}
@@ -160,8 +162,8 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		}
 	}
 
-	if (i == MAX_PORTS_ALLOWED) {
-		perror("i == MAX_PORTS_ALLOWED");
+	if (i == max::PORTS_ALLOWED) {
+		perror("i == max::PORTS_ALLOWED");
 		exit(EXIT_FAILURE);
 		//return -1;
 	}
@@ -177,7 +179,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		exit(EXIT_FAILURE);
 	}
 
-	if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, (char*) &true_flag, sizeof(int)) == -1) {
+	if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
 		perror("setsockopt(SO_BROADCAST)");
 		exit(EXIT_FAILURE);
 	}
@@ -186,7 +188,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	recv_timeout.tv_sec = 0;
 	recv_timeout.tv_usec = 10;
 
-	if (setsockopt(nSocket,SOL_SOCKET,SO_RCVTIMEO,(void *)&recv_timeout,sizeof(recv_timeout))== -1) {
+	if (setsockopt(nSocket, SOL_SOCKET, SO_RCVTIMEO, static_cast<void*>(&recv_timeout), sizeof(recv_timeout)) == -1) {
 		perror("setsockopt(SO_RCVTIMEO)");
 		exit(EXIT_FAILURE);
 	}
@@ -197,7 +199,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
     si_me.sin_port = htons(nPort);
     si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 
-	if (bind(nSocket, (struct sockaddr*) &si_me, sizeof(si_me)) == -1) {
+	if (bind(nSocket, reinterpret_cast<struct sockaddr*>(&si_me), sizeof(si_me)) == -1) {
 		perror("bind");
 		printf(IPSTR ":%d\n", IP2STR(si_me.sin_addr.s_addr), nPort);
 		exit(EXIT_FAILURE);
@@ -208,7 +210,7 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
  */
 	s_ports_allowed[i] = nPort;
 
-	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
+	for (uint32_t i = 0; i < max::PORTS_ALLOWED; i++) {
 		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
 	}
 /**
@@ -233,13 +235,13 @@ int32_t NetworkLinux::End(uint16_t nPort) {
  * BEGIN - needed H3 code compatibility
  */
 
-	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
+	for (uint32_t i = 0; i < max::PORTS_ALLOWED; i++) {
 		DEBUG_PRINTF("s_ports_allowed[%2u]=%4u", i, s_ports_allowed[i]);
 	}
 
 	uint32_t i;
 
-	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
+	for (i = 0; i < max::PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == nPort) {
 			s_ports_allowed[i] = 0;
 			printf("close");
@@ -260,7 +262,7 @@ int32_t NetworkLinux::End(uint16_t nPort) {
  */
 }
 
-void NetworkLinux::SetIp(uint32_t nIp) {
+void NetworkLinux::SetIp(__attribute__((unused)) uint32_t nIp) {
 #if defined(__linux__)
 	if (nIp == m_nLocalIp) {
 		return;
@@ -306,13 +308,13 @@ void NetworkLinux::SetIp(uint32_t nIp) {
 #endif
 }
 
-void NetworkLinux::SetNetmask(uint32_t nNetmask) {
+void NetworkLinux::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 #if defined(__linux__)
 	m_nNetmask = nNetmask;
 #endif
 }
 
-void NetworkLinux::JoinGroup(uint32_t nHandle, uint32_t ip) {
+void NetworkLinux::JoinGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
 	mreq.imr_multiaddr.s_addr = ip;
@@ -323,7 +325,7 @@ void NetworkLinux::JoinGroup(uint32_t nHandle, uint32_t ip) {
 	}
 }
 
-void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
+void NetworkLinux::LeaveGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
 	mreq.imr_multiaddr.s_addr = ip;
@@ -334,7 +336,7 @@ void NetworkLinux::LeaveGroup(uint32_t nHandle, uint32_t ip) {
 	}
 }
 
-uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
+uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 	assert(pPacket != NULL);
 	assert(pFromIp != NULL);
 	assert(pFromPort != NULL);
@@ -344,7 +346,7 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, void *pPacket, uint16_t nSize,
 	socklen_t slen = sizeof(si_other);
 
 
-	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, (struct sockaddr *) &si_other, &slen)) == -1) {
+	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) == -1) {
 		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
 		}
@@ -357,9 +359,9 @@ uint16_t NetworkLinux::RecvFrom(uint32_t nHandle, void *pPacket, uint16_t nSize,
 	return recv_len;
 }
 
-void NetworkLinux::SendTo(uint32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+void NetworkLinux::SendTo(int32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	struct sockaddr_in si_other;
-	int slen = sizeof(si_other);
+	socklen_t slen = sizeof(si_other);
 
 #ifndef NDEBUG
 	struct in_addr in;
@@ -371,7 +373,7 @@ void NetworkLinux::SendTo(uint32_t nHandle, const void *pPacket, uint16_t nSize,
 	si_other.sin_addr.s_addr = nToIp;
 	si_other.sin_port = htons(nRemotePort);
 
-	if (sendto(nHandle, pPacket, nSize, 0, (struct sockaddr*) &si_other, slen) == -1) {
+	if (sendto(nHandle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), slen) == -1) {
 		perror("sendto");
 	}
 }
@@ -425,7 +427,7 @@ uint32_t NetworkLinux::GetDefaultGateway(void) {
 
 	struct in_addr addr;
 
-	(void) inet_aton(buf, &addr);
+	inet_aton(buf, &addr);
 
 	return addr.s_addr;
 }
@@ -439,8 +441,8 @@ int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 
 	for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
 		if (iap->ifa_addr->sa_family == AF_INET) {
-			sa = (struct sockaddr_in *) (iap->ifa_addr);
-			inet_ntop(iap->ifa_addr->sa_family, (void *) &(sa->sin_addr), buf, sizeof(buf));
+			sa = reinterpret_cast<struct sockaddr_in*>((iap->ifa_addr));
+			inet_ntop(iap->ifa_addr->sa_family,	static_cast<void*>(&(sa->sin_addr)), buf, sizeof(buf));
 			if (!strcmp(pIp, buf)) {
 				strncpy(pName,iap->ifa_name, nLength);
 				freeifaddrs(addrs);
@@ -476,7 +478,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     	return -2;
     }
 
-    m_nLocalIp =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
+	m_nLocalIp = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
 
     if (ioctl(fd, SIOCGIFNETMASK, &ifr) < 0) {
     	perror("ioctl(fd, SIOCGIFNETMASK, &ifr)");
@@ -484,7 +486,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     	return -3;
     }
 
-    m_nNetmask =  ((struct sockaddr_in *)&ifr.ifr_addr )->sin_addr.s_addr;
+	m_nNetmask = (reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr))->sin_addr.s_addr;
 
     m_nGatewayIp =  GetDefaultGateway();
 
@@ -499,7 +501,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     	return -5;
     }
 
-	const uint8_t* mac = (uint8_t*) ifr.ifr_ifru.ifru_hwaddr.sa_data;
+	const uint8_t* mac = reinterpret_cast<uint8_t*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
 	memcpy(m_aNetMacaddr, mac, NETWORK_MAC_SIZE);
 #endif
 

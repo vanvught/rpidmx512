@@ -56,7 +56,9 @@ struct spi_status {
 	uint32_t	txcnt;
 	uint32_t	txlen;
 	uint32_t	rxlen;
-} static s_spi_status;
+};
+
+static struct spi_status s_spi_status;
 
 void h3_spi_set_ws28xx_mode(bool off_on) {
 	s_ws28xx_mode = off_on;
@@ -68,12 +70,12 @@ bool h3_spi_get_ws28xx_mode(void) {
 
 static uint32_t _clock_test_cdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_t *ccr) {
 	uint32_t cur, best = 0;
-	int i, best_div = 0;
+	uint32_t i, best_div = 0;
 
 	const uint32_t max = CC_CDR1_MASK >> CC_CDR1_SHIFT;
 
 	for (i = 0; i < max; i++) {
-		cur = pll_clock / (1 << i);
+		cur = pll_clock / (1U << i);
 
 		const uint32_t d1 = (spi_clock > cur) ? (spi_clock - cur) : (cur - spi_clock);
 		const uint32_t d2 = (spi_clock > best) ? (spi_clock - best) : (best - spi_clock);
@@ -91,7 +93,7 @@ static uint32_t _clock_test_cdr1(uint32_t pll_clock, uint32_t spi_clock, uint32_
 
 static uint32_t _clock_test_cdr2(uint32_t pll_clock, uint32_t spi_clock, uint32_t *ccr) {
 	uint32_t cur, best = 0;
-	int i, best_div = 0;
+	uint32_t i, best_div = 0;
 
 	const uint32_t max = ((CC_CDR2_MASK) >> CC_CDR2_SHIFT);
 
@@ -251,7 +253,7 @@ void h3_spi_begin(void) {
 	H3_CCU->BUS_CLK_GATING0 &= ~CCU_BUS_CLK_GATING0_SPI0;
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_SPI0;
-	H3_CCU->SPI0_CLK = (1 << 31) | (0x01 << 24); // Clock is ON, P0
+	H3_CCU->SPI0_CLK = (1U << 31) | (0x01 << 24); // Clock is ON, P0
 #elif (EXT_SPI_NUMBER == 1)
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_SPI1;
 	udelay(1000); // 1ms
@@ -308,7 +310,7 @@ void h3_spi_end(void) {
 	EXT_SPI->GC = value;
 
 	value = EXT_SPI->GC;
-	value &= ~GC_EN;
+	value &= (uint32_t)~GC_EN;
 	EXT_SPI->GC = value;
 
 #if (EXT_SPI_NUMBER == 0)
@@ -342,7 +344,7 @@ void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order) {
 	if (bit_order == H3_SPI_BIT_ORDER_LSBFIRST) {
 		value |= TC_FBS;
 	} else {
-		value &= ~TC_FBS;
+		value &= (uint32_t)~TC_FBS;
 	}
 
 	EXT_SPI->TC = value;
@@ -350,8 +352,8 @@ void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order) {
 
 void h3_spi_setDataMode(h3_spi_mode_t mode) {
 	uint32_t value = EXT_SPI->TC;
-	value &= ~TC_CPHA;
-	value &= ~TC_CPOL;
+	value &= (uint32_t)~TC_CPHA;
+	value &= (uint32_t)~TC_CPOL;
 	value |= (mode & 0x3);
 	EXT_SPI->TC = value;
 }
@@ -360,9 +362,9 @@ void h3_spi_chipSelect(uint8_t chip_select) {
 	uint32_t value = EXT_SPI->TC;
 
 	if (chip_select < H3_SPI_CS_NONE) {
-		value &= ~TC_SS_OWNER;
-		value &= ~TC_SS_MASK;
-		value |= (chip_select << TC_SS_MASK_SHIFT);
+		value &= (uint32_t)~TC_SS_OWNER;
+		value &= (uint32_t)~TC_SS_MASK;
+		value |= (uint32_t)(chip_select << TC_SS_MASK_SHIFT);
 	} else {
 		value |= TC_SS_OWNER;	// Software controlled
 	}
@@ -370,11 +372,11 @@ void h3_spi_chipSelect(uint8_t chip_select) {
 	EXT_SPI->TC = value;
 }
 
-void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity) {
+void h3_spi_setChipSelectPolarity(__attribute__((unused)) uint8_t chip_select, uint8_t polarity) {
 	uint32_t value = EXT_SPI->TC;
 
 	if (polarity == HIGH) {
-		value &= ~TC_SPOL;
+		value &= (uint32_t)~TC_SPOL;
 	} else {
 		value |= TC_SPOL;
 	}
@@ -417,7 +419,7 @@ void h3_spi_transfern(char *buffer, uint32_t data_length) {
 void h3_spi_writenb(const char *tx_buffer, uint32_t data_length) {
 	assert(tx_buffer != 0);
 
-	EXT_SPI->GC &= ~(GC_TP_EN);	// ignore RXFIFO
+	EXT_SPI->GC &= (uint32_t)~(GC_TP_EN);	// ignore RXFIFO
 
 	_clear_fifos();
 
@@ -474,7 +476,7 @@ void h3_spi_writenb(const char *tx_buffer, uint32_t data_length) {
 }
 
 void h3_spi_write(uint16_t data) {
-	EXT_SPI->GC &= ~(GC_TP_EN);	// ignore RXFIFO
+	EXT_SPI->GC &= (uint32_t)~(GC_TP_EN);	// ignore RXFIFO
 
 	_clear_fifos();
 
@@ -541,7 +543,7 @@ struct dma_spi {
 	uint8_t tx_buffer[SPI_DMA_TX_BUFFER_SIZE] __attribute__ ((aligned (4)));
 };
 
-volatile static struct dma_spi *p_dma_tx = (struct dma_spi *) SPI_DMA_COHERENT_REGION;
+static volatile struct dma_spi *p_dma_tx = (struct dma_spi *) SPI_DMA_COHERENT_REGION;
 static bool is_running = false;
 
 bool h3_spi_dma_tx_is_active(void) {
@@ -589,7 +591,7 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	p_dma_tx->lli.src = (uint32_t) tx_buffer;
 	p_dma_tx->lli.len = data_length;
 
-	EXT_SPI->GC &= ~(1 << 7);
+	EXT_SPI->GC &= (uint32_t)~(1 << 7);
 	EXT_SPI->FC = ((1U << 31) | (1 << 15) );
 
 	EXT_SPI->IS = IE_TC;

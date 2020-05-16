@@ -12,8 +12,8 @@ public:
 	TFTPFileServer (void);
 	~TFTPFileServer (void);
 
-	bool FileOpen (const char *pFileName, TTFTPMode tMode);
-	bool FileCreate (const char *pFileName, TTFTPMode tMode);
+	bool FileOpen (const char *pFileName, TFTPMode tMode);
+	bool FileCreate (const char *pFileName, TFTPMode tMode);
 	bool FileClose (void);
 	int FileRead (void *pBuffer, unsigned nCount);
 	int FileWrite (const void *pBuffer, unsigned nCount);

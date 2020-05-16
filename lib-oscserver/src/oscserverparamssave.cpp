@@ -23,13 +23,18 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscserverparms.h"
 #include "oscserverconst.h"
-#include "oscconst.h"
+#include "oscparamsconst.h"
 
 #include "lightsetconst.h"
 
@@ -50,19 +55,18 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 
 	PropertiesBuilder builder(OSCServerConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	builder.Add(OscConst::PARAMS_INCOMING_PORT, m_tOSCServerParams.nIncomingPort, isMaskSet(OSCSERVER_PARAMS_MASK_INCOMING_PORT));
-	builder.Add(OscConst::PARAMS_OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCSERVER_PARAMS_MASK_OUTGOING_PORT));
-	builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCSERVER_PARAMS_MASK_PATH));
-	builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_INFO));
-	builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCSERVER_PARAMS_MASK_PATH_BLACKOUT));
-	builder.Add(OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCSERVER_PARAMS_MASK_TRANSMISSION));
+	builder.Add(OscParamsConst::INCOMING_PORT, m_tOSCServerParams.nIncomingPort, isMaskSet(OSCServerParamsMask::INCOMING_PORT));
+	builder.Add(OscParamsConst::OUTGOING_PORT, m_tOSCServerParams.nOutgoingPort, isMaskSet(OSCServerParamsMask::OUTGOING_PORT));
+	builder.Add(OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, isMaskSet(OSCServerParamsMask::PATH));
+	builder.Add(OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, isMaskSet(OSCServerParamsMask::PATH_INFO));
+	builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCServerParamsMask::PATH_BLACKOUT));
+	builder.Add(OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCServerParamsMask::TRANSMISSION));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return;
 }
 
 void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
@@ -75,6 +79,4 @@ void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	}
 
 	Builder(0, pBuffer, nLength, nSize);
-
-	return;
 }

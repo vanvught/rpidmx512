@@ -1,8 +1,8 @@
 /**
- * @file e131const.cpp
+ * @file h3_gpio_int_cfg.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,37 @@
  * THE SOFTWARE.
  */
 
-#include "e131const.h"
+#include <stdint.h>
+#ifndef NDEBUG
+ #include <stdio.h>
+#endif
 
-const char E131Const::MSG_BRIDGE_PARAMS[] = "Setting Bridge parameters";
-const char E131Const::MSG_BRIDGE_START[] = "Starting the Bridge";
-const char E131Const::MSG_BRIDGE_STARTED[] = "Bridge started";
+#include "h3_gpio.h"
+#include "h3.h"
+
+void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg) {
+	const uint32_t number = H3_GPIO_TO_NUMBER(gpio);
+	const uint32_t shift = (number & 0x7) * 4;
+	uint32_t value;
+
+	switch (H3_GPIO_TO_PORT(gpio)) {
+	case H3_GPIO_PORTA:
+		value = H3_PIO_PA_INT->CFG0;
+		value &= ~((uint32_t) GPIO_INT_CFG_MASK << shift);
+		value |= ((uint32_t) int_cfg << shift);
+		H3_PIO_PA_INT->CFG0 = value;
+		break;
+	case H3_GPIO_PORTG:
+		value = H3_PIO_PG_INT->CFG0;
+		value &= ~((uint32_t) GPIO_INT_CFG_MASK << shift);
+		value |= ((uint32_t) int_cfg << shift);
+		H3_PIO_PG_INT->CFG0 = value;
+		break;
+	default:
+		break;
+	}
+
+#ifndef NDEBUG
+	printf("%s gpio=%d, int_cfg=%d : port=%d[%c], number=%d, shift=%d\n", __func__, gpio, int_cfg, H3_GPIO_TO_PORT(gpio), 'A' + H3_GPIO_TO_PORT(gpio), number, shift);
+#endif
+}

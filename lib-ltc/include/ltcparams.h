@@ -31,17 +31,6 @@
 
 #include "ltc.h"
 
-enum TLtcParamsMaskDisabledOutputs {
-	LTC_PARAMS_DISABLE_DISPLAY = (1 << 0),
-	LTC_PARAMS_DISABLE_MAX7219 = (1 << 1),
-	LTC_PARAMS_DISABLE_MIDI = (1 << 2),
-	LTC_PARAMS_DISABLE_ARTNET = (1 << 3),
-	LTC_PARAMS_DISABLE_TCNET = (1 << 4),
-	LTC_PARAMS_DISABLE_LTC = (1 << 5),
-	LTC_PARAMS_DISABLE_NTP = (1 << 6),		// Not Used. TODO Subject for removal?
-	LTC_PARAMS_DISABLE_RTPMIDI = (1 << 7)
-};
-
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
@@ -69,32 +58,32 @@ struct TLtcParams {
 	uint8_t nEnableWS28xx;
 }__attribute__((packed));
 
-static_assert(sizeof(struct TLtcParams) <= 32, "TLtcParams is too large");
+static_assert(sizeof(struct TLtcParams) <= 32, "struct TLtcParams is too large");
 
-enum TLtcParamsMask {
-	LTC_PARAMS_MASK_SOURCE = (1 << 0),
-	LTC_PARAMS_MASK_AUTO_START = (1 << 1),
-	LTC_PARAMS_MASK_RESERVED2 = (1 << 2),
-	LTC_PARAMS_MASK_DISABLED_OUTPUTS = (1 << 3),
-	LTC_PARAMS_MASK_SHOW_SYSTIME = (1 << 4),
-	LTC_PARAMS_MASK_DISABLE_TIMESYNC = (1 << 5),
-	LTC_PARAMS_MASK_YEAR = (1 << 6),
-	LTC_PARAMS_MASK_MONTH = (1 << 7),
-	LTC_PARAMS_MASK_DAY = (1 << 8),
-	LTC_PARAMS_MASK_ENABLE_NTP = (1 << 9),
-	LTC_PARAMS_MASK_SET_DATE = (1 << 10),
-	LTC_PARAMS_MASK_FPS = (1 << 11),
-	LTC_PARAMS_MASK_START_FRAME = (1 << 12),
-	LTC_PARAMS_MASK_START_SECOND = (1 << 13),
-	LTC_PARAMS_MASK_START_MINUTE = (1 << 14),
-	LTC_PARAMS_MASK_START_HOUR = (1 << 15),
-	LTC_PARAMS_MASK_STOP_FRAME = (1 << 16),
-	LTC_PARAMS_MASK_STOP_SECOND = (1 << 17),
-	LTC_PARAMS_MASK_STOP_MINUTE = (1 << 18),
-	LTC_PARAMS_MASK_STOP_HOUR = (1 << 19),
-	LTC_PARAMS_MASK_ENABLE_OSC = (1 << 20),
-	LTC_PARAMS_MASK_OSC_PORT = (1 << 21),
-	LTC_PARAMS_MASK_ENABLE_WS28XX = (1 << 22)
+struct LtcParamsMask {
+	static constexpr auto SOURCE = (1U << 0);
+	static constexpr auto AUTO_START = (1U << 1);
+	static constexpr auto RESERVED2 = (1U << 2);
+	static constexpr auto DISABLED_OUTPUTS = (1U << 3);
+	static constexpr auto SHOW_SYSTIME = (1U << 4);
+	static constexpr auto DISABLE_TIMESYNC = (1U << 5);
+	static constexpr auto YEAR = (1U << 6);
+	static constexpr auto MONTH = (1U << 7);
+	static constexpr auto DAY = (1U << 8);
+	static constexpr auto ENABLE_NTP = (1U << 9);
+	static constexpr auto SET_DATE = (1U << 10);
+	static constexpr auto FPS = (1U << 11);
+	static constexpr auto START_FRAME = (1U << 12);
+	static constexpr auto START_SECOND = (1U << 13);
+	static constexpr auto START_MINUTE = (1U << 14);
+	static constexpr auto START_HOUR = (1U << 15);
+	static constexpr auto STOP_FRAME = (1U << 16);
+	static constexpr auto STOP_SECOND = (1U << 17);
+	static constexpr auto STOP_MINUTE = (1U << 18);
+	static constexpr auto STOP_HOUR = (1U << 19);
+	static constexpr auto ENABLE_OSC = (1U << 20);
+	static constexpr auto OSC_PORT = (1U << 21);
+	static constexpr auto ENABLE_WS28XX = (1U << 22);
 };
 
 class LtcParamsStore {
@@ -122,11 +111,11 @@ public:
 		return static_cast<TLtcReaderSource>(m_tLtcParams.tSource);
 	}
 
-	const char *GetSourceType(enum TLtcReaderSource tSource);
-	enum TLtcReaderSource GetSourceType(const char *pType);
+	const char *GetSourceType(TLtcReaderSource tSource);
+	TLtcReaderSource GetSourceType(const char *pType);
 
 	bool IsAutoStart(void) {
-		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LTC_PARAMS_MASK_AUTO_START));
+		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LtcParamsMask::AUTO_START));
 	}
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
@@ -136,7 +125,7 @@ public:
 	}
 
 	bool IsTimeSyncDisabled(void) {
-		return  (m_tLtcParams.nDisableTimeSync == 1);
+		return (m_tLtcParams.nDisableTimeSync == 1);
 	}
 
 	uint8_t GetYear(void) {
@@ -167,8 +156,8 @@ public:
 		return (m_tLtcParams.nEnableOsc == 1);
 	}
 
-	uint16_t GetOscPort(bool& bIsSet) {
-		bIsSet = isMaskSet(LTC_PARAMS_MASK_OSC_PORT);
+	uint16_t GetOscPort(bool &bIsSet) {
+		bIsSet = isMaskSet(LtcParamsMask::OSC_PORT);
 		return m_tLtcParams.nOscPort;
 	}
 
@@ -179,18 +168,29 @@ public:
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
 	void StopTimeCodeCopyTo(TLtcTimeCode *ptStopTimeCode);
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) {
-    	return (m_tLtcParams.nSetList & nMask) == nMask;
-    }
-    bool isDisabledOutputMaskSet(uint8_t nMask) {
-    	return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
-    }
-	void HandleDisabledOutput(const char *pLine, const char *pKeyword, TLtcParamsMaskDisabledOutputs tLtcParamsMaskDisabledOutputs);
+    struct LtcParamsMaskDisabledOutputs {
+    	static constexpr auto DISPLAY = (1U << 0);
+    	static constexpr auto MAX7219 = (1U << 1);
+    	static constexpr auto MIDI = (1U << 2);
+    	static constexpr auto ARTNET = (1U << 3);
+    	static constexpr auto TCNET = (1U << 4);
+    	static constexpr auto LTC = (1U << 5);
+    	static constexpr auto NTP = (1U << 6);	// Not Used. TODO Subject for removal?
+    	static constexpr auto RTPMIDI = (1U << 7);
+    };
+
+	void HandleDisabledOutput(const char *pLine, const char *pKeyword, unsigned nMaskDisabledOutputs);
+
+	void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) {
+		return (m_tLtcParams.nSetList & nMask) == nMask;
+	}
+	bool isDisabledOutputMaskSet(uint8_t nMask) {
+		return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
+	}
 
 private:
     LtcParamsStore 	*m_pLTcParamsStore;

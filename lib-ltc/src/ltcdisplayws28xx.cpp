@@ -1,4 +1,4 @@
-/**
+	/**
  * @file ltcdisplayws28xx.cpp
  */
 /*
@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplayws28xx.h"
 
@@ -43,20 +43,26 @@
 
 #include "debug.h"
 
-constexpr char aRGB[] = "rgb";
-#define RGB_LENGTH			(sizeof(aRGB) - 1)
-#define RGB_SIZE_HEX		7 // 1 byte index followed by 6 bytes hex RGB
+namespace RGB {
+	static constexpr char PATH[] = "rgb";
+	static constexpr auto LENGTH = sizeof(PATH) - 1;
+	static constexpr auto HEX_SIZE = 7; // 1 byte index followed by 6 bytes hex RGB
+}
 
-constexpr char aMaster[] = "master";
-#define MASTER_LENGTH 		(sizeof(aMaster) - 1)
-#define MASTER_SIZE_HEX		2
+namespace MASTER {
+	static constexpr char PATH[] = "master";
+	static constexpr auto LENGTH = sizeof(PATH) - 1;
+	static constexpr auto HEX_SIZE = 2;
+}
 
-constexpr char aDisplayMSG[] = "showmsg";
-#define DMSG_LENGTH 		(sizeof(aDisplayMSG) - 1)
+namespace SHOWMSG {
+	static constexpr char PATH[] = "showmsg";
+	static constexpr auto LENGTH = sizeof(PATH) - 1;
+}
 
-enum TUdpPort {
-	UDP_PORT = 0x2812
-};
+namespace UDP {
+	static constexpr auto PORT = 0x2812;
+}
 
 #define MESSAGE_TIME_MS		3000
 
@@ -99,7 +105,7 @@ LtcDisplayWS28xx::~LtcDisplayWS28xx(void) {
 	DEBUG_EXIT
 }
 
-void LtcDisplayWS28xx::Init(TWS28XXType tLedType, uint8_t nIntensity) {
+void LtcDisplayWS28xx::Init(TWS28XXType tLedType, __attribute__((unused)) uint8_t nIntensity) {
 	DEBUG_ENTRY
 
 	m_tLedType = tLedType;
@@ -117,7 +123,7 @@ void LtcDisplayWS28xx::Init(TWS28XXType tLedType, uint8_t nIntensity) {
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_COLON], LTCDISPLAYWS28XX_COLOUR_INDEX_COLON);
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE], LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE);
 
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
 
 	DEBUG_EXIT
@@ -296,30 +302,40 @@ void LtcDisplayWS28xx::Run(void) {
 		m_nBytesReceived--;
 	}
 
-	if (memcmp(&m_Buffer[5], aDisplayMSG, DMSG_LENGTH) == 0) {
-		const uint32_t nMsgLength = m_nBytesReceived - (5 + DMSG_LENGTH + 1);
-		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + DMSG_LENGTH + 1)]);
+	if (memcmp(&m_Buffer[5], SHOWMSG::PATH, SHOWMSG::LENGTH) == 0) {
+		const uint32_t nMsgLength = m_nBytesReceived - (5 + SHOWMSG::LENGTH + 1);
+		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + SHOWMSG::LENGTH + 1)]);
 
-		if (((nMsgLength > 0) && (nMsgLength <= LTCDISPLAY_MAX_MESSAGE_SIZE)) && (m_Buffer[5 + DMSG_LENGTH] == '#')) {
-			SetMessage(&m_Buffer[(5 + DMSG_LENGTH + 1)], nMsgLength);
-		} else {
-			DEBUG_PUTS("Invalid !showmsg command");
+		if (((nMsgLength > 0) && (nMsgLength <= LTCDISPLAY_MAX_MESSAGE_SIZE)) && (m_Buffer[5 + SHOWMSG::LENGTH] == '#')) {
+			SetMessage(&m_Buffer[(5 + SHOWMSG::LENGTH + 1)], nMsgLength);
+			return;
 		}
-	} else if (memcmp(&m_Buffer[5], aRGB, RGB_LENGTH) == 0) {
-		if ((m_nBytesReceived == (5 + RGB_LENGTH + 1 + RGB_SIZE_HEX)) && (m_Buffer[5 + RGB_LENGTH] == '#')) {
-			SetRGB(&m_Buffer[(5 + RGB_LENGTH + 1)]);
-		} else {
-			DEBUG_PUTS("Invalid !rgb command");
-		}
-	} else if (memcmp(&m_Buffer[5], aMaster, MASTER_LENGTH) == 0) {
-		if ((m_nBytesReceived == (5 + MASTER_LENGTH + 1 + MASTER_SIZE_HEX)) && (m_Buffer[5 + MASTER_LENGTH] == '#')) {
-			m_nMaster = hexadecimalToDecimal(&m_Buffer[(5 + MASTER_LENGTH + 1)], MASTER_SIZE_HEX);
-		} else {
-			DEBUG_PUTS("Invalid !master command");
-		}
-	} else {
-		DEBUG_PUTS("Invalid command");
+
+		DEBUG_PUTS("Invalid !showmsg command");
+		return;
 	}
+
+	if (memcmp(&m_Buffer[5], RGB::PATH, RGB::LENGTH) == 0) {
+		if ((m_nBytesReceived == (5 + RGB::LENGTH + 1 + RGB::HEX_SIZE)) && (m_Buffer[5 + RGB::LENGTH] == '#')) {
+			SetRGB(&m_Buffer[(5 + RGB::LENGTH + 1)]);
+			return;
+		}
+
+		DEBUG_PUTS("Invalid !rgb command");
+		return;
+	}
+
+	if (memcmp(&m_Buffer[5], MASTER::PATH, MASTER::LENGTH) == 0) {
+		if ((m_nBytesReceived == (5 + MASTER::LENGTH + 1 + MASTER::HEX_SIZE)) && (m_Buffer[5 + MASTER::LENGTH] == '#')) {
+			m_nMaster = hexadecimalToDecimal(&m_Buffer[(5 + MASTER::LENGTH + 1)], MASTER::HEX_SIZE);
+			return;
+		}
+
+		DEBUG_PUTS("Invalid !master command");
+		return;
+	}
+
+	DEBUG_PUTS("Invalid command");
 }
 
 void LtcDisplayWS28xx::Print(void) {

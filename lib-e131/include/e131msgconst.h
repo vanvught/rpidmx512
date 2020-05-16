@@ -1,8 +1,8 @@
 /**
- * @file e131const.h
+ * @file e131msgconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef E131CONST_H_
-#define E131CONST_H_
+#ifndef E131MSGCONST_H_
+#define E131MSGCONST_H_
 
-#include <stdint.h>
-
-#include "e131.h"
-
-class E131Const {
+class E131MsgConst {
 public:
-	static const char MSG_BRIDGE_PARAMS[];
-	static const char MSG_BRIDGE_START[];
-	static const char MSG_BRIDGE_STARTED[];
+	static const char PARAMS[];
+	static const char START[];
+	static const char STARTED[];
 };
 
-#endif /* E131CONST_H_ */
+#endif /* E131MSGCONST_H_ */

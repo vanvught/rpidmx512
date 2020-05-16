@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmsubdevice.h"
 
@@ -145,6 +145,6 @@ uint16_t RDMSubDevice::CalculateChecksum(void) {
 	return nChecksum;
 }
 
-void RDMSubDevice::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+void RDMSubDevice::UpdateEvent(__attribute__((unused)) TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	// override
 }

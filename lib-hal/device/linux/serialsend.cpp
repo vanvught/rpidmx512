@@ -24,27 +24,27 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "serial.h"
 
 #include "debug.h"
 
-void Serial::SendUart(const uint8_t *pData, uint32_t nLength) {
+void Serial::SendUart(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 
 	DEBUG_PUTS("SendUart");
 }
 
-void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
+void Serial::SendSpi(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 
 	DEBUG_PUTS("SendSpi");
 }
 
-void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
+void Serial::SendI2c(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 

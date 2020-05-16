@@ -40,7 +40,7 @@
  #define bcm2835_aux_spi_writenb(__p1,__p2)			(void)0
  #define bcm2835_aux_spi_transfern(__p1,__p2)		(void)0
  #define bcm2835_aux_spi_transfernb(__p1,__p2,__p3)	(void)0
- static inline uint32_t bcm2835_aux_spi_CalcClockDivider(uint32_t __p) { return 0;}
+ static inline uint32_t bcm2835_aux_spi_CalcClockDivider(__attribute__((unused)) uint32_t __p) { return 0;}
  //
 #else
  #include "bcm2835.h"

@@ -26,8 +26,6 @@
 #ifndef INPUTSET_H_
 #define INPUTSET_H_
 
-#include <stdbool.h>
-
 class InputSet {
 public:
 	virtual ~InputSet(void);

@@ -36,7 +36,6 @@ public:
 	void Update(const struct TDMXParams *pDMXParams);
 	void Copy(struct TDMXParams *pDMXParams);
 
-public:
 	static StoreDmxSend *Get(void) {
 		return s_pThis;
 	}

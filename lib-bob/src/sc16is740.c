@@ -146,7 +146,7 @@ int sc16is740_write(const device_info_t *device_info, const void *buffer, unsign
 		}
 
 		sc16is740_setup(device_info);
-		FUNC_PREFIX(spi_writenb(buffer_tx, fifo_space + 1));
+		FUNC_PREFIX(spi_writenb(buffer_tx, (uint32_t)(fifo_space + 1)));
 
 		count -= (unsigned) fifo_space;
 
@@ -156,7 +156,7 @@ int sc16is740_write(const device_info_t *device_info, const void *buffer, unsign
 }
 
 void sc16is740_set_baud(const device_info_t *device_info, int baudrate) {
-	unsigned long divisor = (unsigned long) SC16IS7X0_BAUDRATE_DIVISOR(baudrate);
+	unsigned long divisor = (unsigned long) SC16IS7X0_BAUDRATE_DIVISOR((unsigned long)baudrate);
 	uint8_t lcr;
 
 	lcr = sc16is740_reg_read(device_info, SC16IS7X0_LCR);

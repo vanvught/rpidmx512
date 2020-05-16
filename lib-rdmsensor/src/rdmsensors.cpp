@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmsensors.h"
 
@@ -73,6 +73,7 @@ RDMSensors *RDMSensors::s_pThis = 0;
 RDMSensors::RDMSensors(void): m_pRDMSensor(0), m_nCount(0) {
 	DEBUG_ENTRY
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	DEBUG_EXIT
@@ -177,7 +178,7 @@ void RDMSensors::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<RDMSensors *>(p))->callbackFunction(s);
 }
 
-void RDMSensors::callbackFunction(const char *pLine) {
+void RDMSensors::callbackFunction(__attribute__((unused)) const char *pLine) {
 #if defined (RDM_SENSORS_ENABLE)
 	assert(pLine != 0);
 	int nReturnCode;

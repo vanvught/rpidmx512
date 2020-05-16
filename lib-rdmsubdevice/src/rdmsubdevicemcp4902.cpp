@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 /*
  * MCP4902: Dual 8-Bit Voltage Output DAC

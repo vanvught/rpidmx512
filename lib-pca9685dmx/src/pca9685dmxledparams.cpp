@@ -27,7 +27,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__((aligned(4)))
@@ -158,7 +158,7 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_PWM_FREQUENCY, &value16) == SSCAN_OK) {
-		if ((value16 >= PCA9685_FREQUENCY_MIN) && (value16 <= PCA9685_FREQUENCY_MAX)) {
+		if ((value16 >= TPCA9685FrequencyRange::MIN) && (value16 <= TPCA9685FrequencyRange::MAX)) {
 			m_nPwmFrequency = value16;
 			m_bSetList |= SET_PWM_FREQUENCY_MASK;
 		}

@@ -29,19 +29,14 @@
 #ifndef ARTNET_H_
 #define ARTNET_H_
 
-#define ARTNET_PROTOCOL_REVISION	14
-
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 
-/**
- * The maximum ports per node built into the ArtNet protocol.
- */
-enum {
-	ARTNET_MAX_PORTS = 4
-};
-
-enum {
-	ARTNET_MAX_PAGES = 8	///< Art-Net 4
+struct TArtNetConst {
+	static constexpr unsigned PROTOCOL_REVISION	= 14;
+	static constexpr unsigned UDP_PORT = 0x1936;
+	static constexpr unsigned MAX_PORTS = 4;
+	static constexpr unsigned MAX_PAGES = 8;
+	static constexpr unsigned DMX_LENGTH = 512;
 };
 
 /**
@@ -63,13 +58,6 @@ enum {
  */
 enum {
 	ARTNET_REPORT_LENGTH = 64
-};
-
-/**
- * The length of the DMX field. Always 512
- */
-enum {
-	ARTNET_DMX_LENGTH = 512
 };
 
 /**
@@ -98,13 +86,6 @@ enum {
  */
 enum {
 	ARTNET_IP_SIZE = 4
-};
-
-/**
- * The Port is always 0x1936
- */
-enum {
-	ARTNET_UDP_PORT = 0x1936
 };
 
 /**
@@ -154,18 +135,6 @@ enum TArtNetPortDir{
 	ARTNET_DISABLE_PORT
 };
 
-/**
- * Merge is implemented in either LTP or HTP mode as specified by the ArtAddress packet.
- */
-enum TMerge {
-	ARTNET_MERGE_HTP,	///< Highest Takes Precedence (HTP)
-	ARTNET_MERGE_LTP	///< Latest Takes Precedence (LTP)
-};
-
-enum TPortProtocol {
-	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
-	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
-};
 
 /**
  * Node configuration commands
@@ -202,25 +171,25 @@ enum TArtnetPortCommand {
 /**
  *
  */
-enum TTalkToMe {
-	TTM_SEND_ARTP_ON_CHANGE = (1 << 1),	///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
-	TTM_SEND_DIAG_MESSAGES = (1 << 2),	///< Bit 2 set : Send me diagnostics messages.
-	TTM_SEND_DIAG_UNICAST = (1 << 3)	///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).													///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
+struct ArtNetTalkToMe {
+	static constexpr auto SEND_ARTP_ON_CHANGE = (1 << 1);	///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
+	static constexpr auto SEND_DIAG_MESSAGES = (1 << 2);	///< Bit 2 set : Send me diagnostics messages.
+	static constexpr auto SEND_DIAG_UNICAST = (1 << 3);		///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).													///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
 };
 
 /**
  * ArtPollReply packet, Field 40
  */
-enum TStatus2 {
-	STATUS2_WEB_BROWSER_SUPPORT = (1 << 0),		///< Bit 0, Set = Product supports web browser configuration
-	STATUS2_IP_MANUALY = (0 << 1),				///< Bit 1, Clr = Node’s IP is manually configured.
-	STATUS2_IP_DHCP = (1 << 1),					///< Bit 1, Set = Node’s IP is DHCP configured.
-	STATUS2_DHCP_NOT_CAPABLE = (0 << 2),		///< Bit 2, Clr = Node is not DHCP capable.
-	STATUS2_DHCP_CAPABLE = (1 << 2),			///< Bit 2, Set = Node is DHCP capable.
-	STATUS2_PORT_ADDRESS_8BIT = (0 << 3),		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
-	STATUS2_PORT_ADDRESS_15BIT = (1 << 3),		///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
-	STATUS2_SACN_NO_SWITCH = (0 << 4),			///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
-	STATUS2_SACN_ABLE_TO_SWITCH = (1 << 4)		///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+struct ArtNetStatus2 {
+	static constexpr auto WEB_BROWSER_SUPPORT = (1 << 0);	///< Bit 0, Set = Product supports web browser configuration
+	static constexpr auto IP_MANUALY = (0 << 1);			///< Bit 1, Clr = Node’s IP is manually configured.
+	static constexpr auto IP_DHCP = (1 << 1);				///< Bit 1, Set = Node’s IP is DHCP configured.
+	static constexpr auto DHCP_NOT_CAPABLE = (0 << 2);		///< Bit 2, Clr = Node is not DHCP capable.
+	static constexpr auto DHCP_CAPABLE = (1 << 2);			///< Bit 2, Set = Node is DHCP capable.
+	static constexpr auto PORT_ADDRESS_8BIT = (0 << 3);		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
+	static constexpr auto PORT_ADDRESS_15BIT = (1 << 3);	///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
+	static constexpr auto SACN_NO_SWITCH = (0 << 4);		///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
+	static constexpr auto SACN_ABLE_TO_SWITCH = (1 << 4);	///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
 };
 
 enum TGoodOutput {
@@ -236,6 +205,54 @@ enum TGoodOutput {
 
 enum TGoodInput {
 	GI_DATA_RECIEVED  = (1 << 7)				///< Bit 7 Set – Data received.
+};
+
+/**
+ * Merge is implemented in either LTP or HTP mode as specified by the ArtAddress packet.
+ */
+enum class ArtNetMerge {
+	HTP,	///< Highest Takes Precedence (HTP)
+	LTP		///< Latest Takes Precedence (LTP)
+};
+
+enum TPortProtocol {
+	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
+	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
+};
+
+struct ArtNet {
+	static ArtNetMerge GetMergeMode(const char *pMergeMode) {
+		if (pMergeMode != 0) {
+			if (((pMergeMode[0] | 0x20) == 'l')
+					&& ((pMergeMode[1] | 0x20) == 't')
+					&& ((pMergeMode[2] | 0x20) == 'p')) {
+				return ArtNetMerge::LTP;
+			}
+		}
+		return ArtNetMerge::HTP;
+	}
+
+	static const char* GetMergeMode(ArtNetMerge m, bool bToUpper = false) {
+		if (bToUpper) {
+			return (m == ArtNetMerge::HTP) ? "HTP" : "LTP";
+		}
+		return (m == ArtNetMerge::HTP) ? "htp" : "ltp";
+	}
+
+	static const char* GetMergeMode(unsigned m, bool bToUpper = false) {
+		return GetMergeMode(static_cast<ArtNetMerge>(m), bToUpper);
+	}
+
+	static const char* GetProtocolMode(TPortProtocol p, bool bToUpper = false) {
+		if (bToUpper) {
+			return (p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN";
+		}
+		return (p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn";
+	}
+
+	static const char* GetProtocolMode(unsigned p, bool bToUpper = false) {
+		return GetProtocolMode(static_cast<TPortProtocol>(p), bToUpper);
+	}
 };
 
 #endif /* ARTNET_H_ */

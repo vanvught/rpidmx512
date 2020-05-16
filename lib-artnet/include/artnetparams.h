@@ -8,7 +8,7 @@
 /* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
+ * of this software and associated documentation files (the "Software"); to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
@@ -30,7 +30,6 @@
 #define ARTNETPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 #include "artnetnode.h"
@@ -38,77 +37,78 @@
 #include "lightset.h"
 
 struct TArtNetParams {
-	uint32_t nSetList;								///< 4	  4
-	uint8_t nNet;									///< 1	  5
-	uint8_t nSubnet;								///< 1	  6
-	uint8_t nUniverse;								///< 1	  7
-	TLightSetOutputType tOutputType;				///< 1	  8
-	bool bUseTimeCode;								///< 1	  9
-	bool bUseTimeSync;								///< 1	 10
-	bool bEnableRdm;								///< 1	 11
-	bool bRdmDiscovery;								///< 1	 12
-	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];	///< 18	 30
-	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];		///< 64	 94
-	uint16_t nMultiPortOptions;						///< 2	 96
-	uint8_t aOemValue[2];							///< 2	 98
-	time_t nNetworkTimeout;							///< 4	102
-	bool bDisableMergeTimeout;						///< 1	103
-	uint8_t nUniversePort[ARTNET_MAX_PORTS];		///< 4	107
-	uint8_t nMergeMode;								///< 1	108
-	uint8_t nMergeModePort[ARTNET_MAX_PORTS];		///< 4	112
-	uint8_t nProtocol;								///< 1	113
-	uint8_t nProtocolPort[ARTNET_MAX_PORTS];		///< 4	117
-	bool bEnableNoChangeUpdate;						///< 1	118
-	uint8_t nDirection;								///< 1	119
-	uint32_t nDestinationIpPort[ARTNET_MAX_PORTS];	///< 16	135
+	uint32_t nSetList;										///< 4	  4
+	uint8_t nNet;											///< 1	  5
+	uint8_t nSubnet;										///< 1	  6
+	uint8_t nUniverse;										///< 1	  7
+	TLightSetOutputType tOutputType;						///< 1	  8
+	bool bUseTimeCode;										///< 1	  9
+	bool bUseTimeSync;										///< 1	 10
+	bool bEnableRdm;										///< 1	 11
+	bool bRdmDiscovery;										///< 1	 12
+	uint8_t aShortName[ARTNET_SHORT_NAME_LENGTH];			///< 18	 30
+	uint8_t aLongName[ARTNET_LONG_NAME_LENGTH];				///< 64	 94
+	uint16_t nMultiPortOptions;								///< 2	 96
+	uint8_t aOemValue[2];									///< 2	 98
+	time_t nNetworkTimeout;									///< 4	102
+	bool bDisableMergeTimeout;								///< 1	103
+	uint8_t nUniversePort[TArtNetConst::MAX_PORTS];			///< 4	107
+	uint8_t nMergeMode;										///< 1	108
+	uint8_t nMergeModePort[TArtNetConst::MAX_PORTS];		///< 4	112
+	uint8_t nProtocol;										///< 1	113
+	uint8_t nProtocolPort[TArtNetConst::MAX_PORTS];			///< 4	117
+	bool bEnableNoChangeUpdate;								///< 1	118
+	uint8_t nDirection;										///< 1	119
+	uint32_t nDestinationIpPort[TArtNetConst::MAX_PORTS];	///< 16	135
 #if defined (__linux__)
 }__attribute__((packed));
 #else
 };													///< Not packed!
 #endif
 
-enum TArtnetParamsMaskMultiPortOptions {
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A = (1 << 0),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B = (1 << 1),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_B
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C = (1 << 2),///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_C
-	ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D = (1 << 3) ///< ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_D
+struct ArtnetParamsMaskMultiPortOptions {
+	static constexpr auto DESTINATION_IP_A = (1U << 0);
+	static constexpr auto DESTINATION_IP_B = (1U << 1);
+	static constexpr auto DESTINATION_IP_C = (1U << 2);
+	static constexpr auto DESTINATION_IP_D = (1U << 3);
 };
 
-enum TArtnetParamsMask {
-	ARTNET_PARAMS_MASK_LONG_NAME = (1 << 0),
-	ARTNET_PARAMS_MASK_SHORT_NAME = (1 << 1),
-	ARTNET_PARAMS_MASK_NET = (1 << 2),
-	ARTNET_PARAMS_MASK_SUBNET = (1 << 3),
-	ARTNET_PARAMS_MASK_UNIVERSE = (1 << 4),
-	ARTNET_PARAMS_MASK_RDM = (1 << 5),
-	ARTNET_PARAMS_MASK_TIMECODE = (1 << 6),
-	ARTNET_PARAMS_MASK_TIMESYNC = (1 << 7),
-	ARTNET_PARAMS_MASK_OUTPUT = (1 << 8),
-	//ARTNET_PARAMS_MASK_NOT_USED = (1 << 9), // aManufacturerId
-	ARTNET_PARAMS_MASK_OEM_VALUE = (1 << 10),
-	ARTNET_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 11),
-	ARTNET_PARAMS_MASK_MERGE_TIMEOUT = (1 << 12),
-	ARTNET_PARAMS_MASK_UNIVERSE_A = (1 << 13),
-	ARTNET_PARAMS_MASK_UNIVERSE_B = (1 << 14),
-	ARTNET_PARAMS_MASK_UNIVERSE_C = (1 << 15),
-	ARTNET_PARAMS_MASK_UNIVERSE_D = (1 << 16),
-	ARTNET_PARAMS_MASK_MERGE_MODE = (1 << 17),
-	ARTNET_PARAMS_MASK_MERGE_MODE_A = (1 << 18),
-	ARTNET_PARAMS_MASK_MERGE_MODE_B = (1 << 19),
-	ARTNET_PARAMS_MASK_MERGE_MODE_C = (1 << 20),
-	ARTNET_PARAMS_MASK_MERGE_MODE_D = (1 << 21),
-	ARTNET_PARAMS_MASK_PROTOCOL = (1 << 22),
-	ARTNET_PARAMS_MASK_PROTOCOL_A = (1 << 23),
-	ARTNET_PARAMS_MASK_PROTOCOL_B = (1 << 24),
-	ARTNET_PARAMS_MASK_PROTOCOL_C = (1 << 25),
-	ARTNET_PARAMS_MASK_PROTOCOL_D = (1 << 26),
-	ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 27),
-	ARTNET_PARAMS_MASK_DIRECTION = (1 << 28)
+struct ArtnetParamsMask {
+	static constexpr auto LONG_NAME = (1U << 0);
+	static constexpr auto SHORT_NAME = (1U << 1);
+	static constexpr auto NET = (1U << 2);
+	static constexpr auto SUBNET = (1U << 3);
+	static constexpr auto UNIVERSE = (1U << 4);
+	static constexpr auto RDM = (1U << 5);
+	static constexpr auto TIMECODE = (1U << 6);
+	static constexpr auto TIMESYNC = (1U << 7);
+	static constexpr auto OUTPUT = (1U << 8);
+	//static constexpr auto NOT_USED = (1U << 9); // aManufacturerId
+	static constexpr auto OEM_VALUE = (1U << 10);
+	static constexpr auto NETWORK_TIMEOUT = (1U << 11);
+	static constexpr auto MERGE_TIMEOUT = (1U << 12);
+	static constexpr auto UNIVERSE_A = (1U << 13);
+	static constexpr auto UNIVERSE_B = (1U << 14);
+	static constexpr auto UNIVERSE_C = (1U << 15);
+	static constexpr auto UNIVERSE_D = (1U << 16);
+	static constexpr auto MERGE_MODE = (1U << 17);
+	static constexpr auto MERGE_MODE_A = (1U << 18);
+	static constexpr auto MERGE_MODE_B = (1U << 19);
+	static constexpr auto MERGE_MODE_C = (1U << 20);
+	static constexpr auto MERGE_MODE_D = (1U << 21);
+	static constexpr auto PROTOCOL = (1U << 22);
+	static constexpr auto PROTOCOL_A = (1U << 23);
+	static constexpr auto PROTOCOL_B = (1U << 24);
+	static constexpr auto PROTOCOL_C = (1U << 25);
+	static constexpr auto PROTOCOL_D = (1U << 26);
+	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 27);
+	static constexpr auto DIRECTION = (1U << 28);
 };
 
 class ArtNetParamsStore {
 public:
-	virtual ~ArtNetParamsStore(void) {}
+	virtual ~ArtNetParamsStore(void) {
+	}
 
 	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
 	virtual void Copy(struct TArtNetParams *pArtNetParams)=0;

@@ -53,11 +53,11 @@ private:
 public:
 	bool IsConnected(void);
 
-	int getMotorNumber(void) {
+	unsigned getMotorNumber(void) {
 		return m_nMotorNumber;
 	}
 
-	void setMotorNumber(int nMotorNumber) {
+	void setMotorNumber(unsigned nMotorNumber) {
 		m_nMotorNumber = nMotorNumber;
 	}
 

@@ -29,12 +29,12 @@
 #include "h3_ccu.h"
 #include "h3_sid.h"
 
-#define CTRL1_ADC_CALI_EN			(1 << 17)
+#define CTRL1_ADC_CALI_EN			(1U << 17)
 
-#define CTRL2_SENSOR_EN				(1 << 0)
+#define CTRL2_SENSOR_EN				(1U << 0)
 	#define CTRL2_SENSOR_ACQ1_SHIFT		16
 
-#define FILTER_ENABLE				(1 << 2)
+#define FILTER_ENABLE				(1U << 2)
 #define FILTER_TYPE2				(0b00 << 0)
 #define FILTER_TYPE4				(0b01 << 0)
 #define FILTER_TYPE8				(0b10 << 0)
@@ -47,9 +47,9 @@
 	#define SHUTDOWN_CTRL_T_HOT_SHIFT	16
 
 #define INT_CTRL_THERMAL_PER_SHIFT	12
-#define INT_CTRL_DATA_IRQ_EN		(1 << 8)
-#define INT_CTRL_SHUT_IRQ_EN		(1 << 4)
-#define INT_CTRL_ALARM_IRQ_EN		(1 << 0)
+#define INT_CTRL_DATA_IRQ_EN		(1U << 8)
+#define INT_CTRL_SHUT_IRQ_EN		(1U << 4)
+#define INT_CTRL_ALARM_IRQ_EN		(1U << 0)
 
 #define	TEMP_BASE					217
 #define	TEMP_MUL					1000
@@ -67,11 +67,11 @@
 #define	H3_INTC				0x191000	// Other values here -> https://github.com/ayufan-pine64/linux-3.10/blob/master/drivers/thermal/sunxi_thermal/sun50i_ths.h
 
 static int to_temp(uint32_t val) {
-	return (TEMP_BASE - ((val * TEMP_MUL) / TEMP_DIV));
+	return (TEMP_BASE - ((int)(val * TEMP_MUL) / TEMP_DIV));
 }
 
 static uint32_t to_reg(int val) {
-	return ((TEMP_MINUS - (val * TEMP_DIV)) / TEMP_MUL);
+	return (uint32_t)((TEMP_MINUS - (val * TEMP_DIV)) / TEMP_MUL);
 }
 
 int h3_thermal_gettemp(void) {
@@ -87,7 +87,7 @@ int h3_thermal_getshut(void) {
 
 void h3_thermal_setshut(int temp) {
 	uint32_t value = H3_THS->SHUTDOWN_CTRL;
-	value &= ~(SHUTDOWN_CTRL_T_HOT_MASK << SHUTDOWN_CTRL_T_HOT_SHIFT);
+	value &= (uint32_t)~(SHUTDOWN_CTRL_T_HOT_MASK << SHUTDOWN_CTRL_T_HOT_SHIFT);
 	value |= (to_reg(temp) << SHUTDOWN_CTRL_T_HOT_SHIFT);
 	H3_THS->SHUTDOWN_CTRL = value;
 }
@@ -100,7 +100,7 @@ int h3_thermal_getalarm(void) {
 
 void h3_thermal_setalarm(int temp) {
 	uint32_t value = H3_THS->ALARM_CTRL;
-	value &= ~(ALARM_CTRL_T_HOT_MASK << ALARM_CTRL_T_HOT_SHIFT);
+	value &= (uint32_t)~(ALARM_CTRL_T_HOT_MASK << ALARM_CTRL_T_HOT_SHIFT);
 	value |= (to_reg(temp) << ALARM_CTRL_T_HOT_SHIFT);
 	H3_THS->ALARM_CTRL = value;
 }

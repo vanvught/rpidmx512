@@ -31,19 +31,17 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
 
-#include "artnetnode.h"
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
+#include "artnetmsgconst.h"
+
 #include "ipprog.h"
 
 // DMX/RDM Output
@@ -110,16 +108,14 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNet4Node node;
 	ArtNetRdmController discovery;
@@ -168,8 +164,7 @@ void notmain(void) {
 			discovery.Print();
 
 			if (artnetparams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
-				display.TextStatus(ArtNetConst::MSG_RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN);
+				display.TextStatus(ArtNetMsgConst::RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN, CONSOLE_YELLOW);
 				discovery.Full();
 			}
 
@@ -196,7 +191,7 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	const uint32_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
+	const uint8_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, nActivePorts);
 
@@ -211,13 +206,11 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

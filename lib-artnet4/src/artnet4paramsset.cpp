@@ -27,7 +27,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnet4params.h"
 #include "artnetconst.h"
@@ -37,7 +37,7 @@
 void ArtNet4Params::Set(ArtNet4Node *pArtNet4Node) {
 	DEBUG_ENTRY
 
-	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
+	if(isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0)) {
 		pArtNet4Node->SetMapUniverse0(m_tArtNet4Params.bMapUniverse0);
 	}
 

@@ -118,12 +118,12 @@
 #define PLL_FACTOR_P_MASK	0x0F
 #define PLL_FACTOR_P_SHIFT	16
 
-#define PLL_LOCK			(1 << 28)	// Read only, 1 indicates that the PLL has been stable
-#define PLL_SDM_ENABLE		(1 << 24)
+#define PLL_LOCK			(1U << 28)	// Read only, 1 indicates that the PLL has been stable
+#define PLL_SDM_ENABLE		(1U << 24)
 #define PLL_ENABLE			(1U << 31)
 
 #define	CONFIG_BUFSIZE				(8 * 1024)
-#define CONFIG_TX_DESCR_NUM			(1 << 1)		// INFO This cannot be changed without rewriting FIQ handler
+#define CONFIG_TX_DESCR_NUM			(1U << 1)		// INFO This cannot be changed without rewriting FIQ handler
 #define CONFIG_TX_DESCR_NUM_MASK    (CONFIG_TX_DESCR_NUM - 1)
 
 static volatile uint32_t circular_buffer_index_head;
@@ -133,7 +133,7 @@ static uint32_t circular_buffer_size;
  static volatile bool circular_buffer_full;
 #endif
 
-#define CIRCULAR_BUFFER_INDEX_ENTRIES	(1 << 1)
+#define CIRCULAR_BUFFER_INDEX_ENTRIES	(1U << 1)
 #define CIRCULAR_BUFFER_INDEX_MASK 		(CIRCULAR_BUFFER_INDEX_ENTRIES - 1)
 
 static int16_t circular_buffer[CIRCULAR_BUFFER_INDEX_ENTRIES][CONFIG_BUFSIZE] ALIGNED;
@@ -153,11 +153,11 @@ static uint32_t read_prcm_wvalue(uint32_t addr) {
 	H3_PRCM->AUDIO_CFG = reg;
 
 	reg = H3_PRCM->AUDIO_CFG;
-	reg &= ~(0x1 << 24);
+	reg &= ~(0x1U << 24);
 	H3_PRCM->AUDIO_CFG = reg;
 
 	reg = H3_PRCM->AUDIO_CFG;
-	reg &= ~(0x1f << 16);
+	reg &= ~(0x1fU << 16);
 	reg |= (addr << 16);
 	H3_PRCM->AUDIO_CFG = reg;
 
@@ -175,12 +175,12 @@ static void write_prcm_wvalue(uint32_t addr, uint32_t val) {
 	H3_PRCM->AUDIO_CFG = reg;
 
 	reg = H3_PRCM->AUDIO_CFG;
-	reg &= ~(0x1f << 16);
+	reg &= ~(0x1fU << 16);
 	reg |= (addr << 16);
 	H3_PRCM->AUDIO_CFG = reg;
 
 	reg = H3_PRCM->AUDIO_CFG;
-	reg &= ~(0xff << 8);
+	reg &= ~(0xffU << 8);
 	reg |= (val << 8);
 	H3_PRCM->AUDIO_CFG = reg;
 
@@ -189,7 +189,7 @@ static void write_prcm_wvalue(uint32_t addr, uint32_t val) {
 	H3_PRCM->AUDIO_CFG = reg;
 
 	reg = H3_PRCM->AUDIO_CFG;
-	reg &= ~(0x1 << 24);
+	reg &= ~(0x1U << 24);
 	H3_PRCM->AUDIO_CFG = reg;
 }
 

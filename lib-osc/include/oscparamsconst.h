@@ -1,8 +1,8 @@
 /**
- * @file oscclientconst.cpp
+ * @file oscconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include "oscclientconst.h"
+#ifndef OSCPARAMSCONST_H_
+#define OSCPARAMSCONST_H_
 
-const char OscClientConst::MSG_CLIENT_PARAMS[] = "Setting Client parameters";
-const char OscClientConst::MSG_CLIENT_START[] = "Starting the Client";
-const char OscClientConst::MSG_CLIENT_STARTED[] = "Client started";
+class OscParamsConst {
+public:
+	static const char INCOMING_PORT[];
+	static const char OUTGOING_PORT[];
+};
+
+#endif /* OSCPARAMSCONST_H_ */

@@ -27,7 +27,7 @@
 #undef NDEBUG
 #endif
 
-#include <assert.h>
+#include <cassert>
 
 extern "C" void __cxa_pure_virtual(void) {
 	assert(0);

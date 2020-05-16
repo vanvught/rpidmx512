@@ -26,7 +26,6 @@
 #ifndef SPIFLASHINSTALL_H_
 #define SPIFLASHINSTALL_H_
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 

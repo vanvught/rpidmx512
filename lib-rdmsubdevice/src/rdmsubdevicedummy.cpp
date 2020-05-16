@@ -25,16 +25,15 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmsubdevicedummy.h"
 #include "rdmpersonality.h"
 
-#define DMX_FOOTPRINT	4
-
+static constexpr uint32_t DMX_FOOTPRINT = 4;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dummy-H", DMX_FOOTPRINT), new RDMPersonality("Dummy-D", DMX_FOOTPRINT)};
 
-RDMSubDeviceDummy::RDMSubDeviceDummy(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
+RDMSubDeviceDummy::RDMSubDeviceDummy(__attribute__((unused)) uint16_t nDmxStartAddress, __attribute__((unused)) char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
 	RDMSubDevice("SubDevice Dummy", nDmxStartAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);

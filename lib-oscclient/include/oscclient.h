@@ -27,18 +27,22 @@
 #define OSCCLIENT_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 #include "oscclientled.h"
 
-#define OSCCLIENT_DEFAULT_PORT_OUTGOING			8000
-#define OSCCLIENT_DEFAULT_PORT_INCOMING			9000
-#define OSCCLIENT_DEFAULT_PING_DELAY_SECONDS	10
-#define OSCCLIENT_CMD_MAX_COUNT					8
-#define OSCCLIENT_CMD_MAX_PATH_LENGTH			64
-#define OSCCLIENT_LED_MAX_COUNT					8
-#define OSCCLIENT_LED_MAX_PATH_LENGTH			48
+struct OscClientDefault {
+	static constexpr auto PORT_OUTGOING = 8000;
+	static constexpr auto PORT_INCOMING = 9000;
+	static constexpr auto PING_DELAY_SECONDS = 10;
+};
+
+struct OscClientMax {
+	static constexpr uint32_t CMD_COUNT = 8;
+	static constexpr uint32_t CMD_PATH_LENGTH = 64;
+	static constexpr uint32_t LED_COUNT = 8;
+	static constexpr uint32_t LED_PATH_LENGTH = 48;
+};
 
 class OscClient {
 public:
@@ -62,12 +66,12 @@ public:
 		return m_nServerIP;
 	}
 
-	void SetPortOutgoing(uint16_t nPortOutgoing = OSCCLIENT_DEFAULT_PORT_OUTGOING);
+	void SetPortOutgoing(uint16_t nPortOutgoing = OscClientDefault::PORT_OUTGOING);
 	uint16_t GetPortOutgoing(void) {
 		return m_nPortOutgoing;
 	}
 
-	void SetPortIncoming(uint16_t nPortIncoming = OSCCLIENT_DEFAULT_PORT_INCOMING);
+	void SetPortIncoming(uint16_t nPortIncoming = OscClientDefault::PORT_INCOMING);
 	uint16_t GetPortIncoming(void) {
 		return m_nPortIncoming;
 	}
@@ -79,7 +83,7 @@ public:
 		return m_bPingDisable;
 	}
 
-	void SetPingDelay(uint32_t nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY_SECONDS);
+	void SetPingDelay(uint32_t nPingDelay = OscClientDefault::PING_DELAY_SECONDS);
 	uint8_t GetPingDelay(void) {
 		return m_nPingDelayMillis / 1000;
 	}

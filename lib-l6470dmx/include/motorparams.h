@@ -32,7 +32,6 @@
 
 struct TMotorParams {
     uint32_t nSetList;
-    //
 	float fStepAngel;
 	float fVoltage;
 	float fCurrent;
@@ -40,17 +39,18 @@ struct TMotorParams {
 	float fInductance;
 } __attribute__((packed));
 
-enum TMotorParamsMask {
-	MOTOR_PARAMS_MASK_STEP_ANGEL = (1 << 0),
-	MOTOR_PARAMS_MASK_VOLTAGE = (1 << 1),
-	MOTOR_PARAMS_MASK_CURRENT = (1 << 2),
-	MOTOR_PARAMS_MASK_RESISTANCE = (1 << 3),
-	MOTOR_PARAMS_MASK_INDUCTANCE = (1 << 4)
+struct MotorParamsMask {
+	static constexpr auto STEP_ANGEL = (1U << 0);
+	static constexpr auto VOLTAGE = (1U << 1);
+	static constexpr auto CURRENT = (1U << 2);
+	static constexpr auto RESISTANCE = (1U << 3);
+	static constexpr auto INDUCTANCE = (1U << 4);
 };
 
 class MotorParamsStore {
 public:
-	virtual ~MotorParamsStore(void) {}
+	virtual ~MotorParamsStore(void) {
+	}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams)=0;
@@ -100,7 +100,6 @@ private:
 	float calcIntersectSpeed(void);
 	uint32_t calcIntersectSpeedReg(float) const;
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

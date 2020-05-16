@@ -27,7 +27,7 @@
 #if !defined(NDEBUG) || defined(__linux__)
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "hal_i2c.h"
 #include "hal_gpio.h"
@@ -272,7 +272,7 @@ void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
 }
 
 uint8_t PCA9685::CalcPresScale(uint16_t nFreq) {
-	nFreq = (nFreq > PCA9685_FREQUENCY_MAX ? PCA9685_FREQUENCY_MAX : (nFreq < PCA9685_FREQUENCY_MIN ? PCA9685_FREQUENCY_MIN : nFreq));
+	nFreq = (nFreq > TPCA9685FrequencyRange::MAX ? TPCA9685FrequencyRange::MAX : (nFreq < TPCA9685FrequencyRange::MIN ? TPCA9685FrequencyRange::MIN : nFreq));
 
 	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
 
@@ -287,13 +287,13 @@ uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
 	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
 	const uint16_t Data = DIV_ROUND_UP(f, (static_cast<uint16_t>(nPreScale) + 1));
 
-	for (f_min = Data; f_min > PCA9685_FREQUENCY_MIN; f_min--) {
+	for (f_min = Data; f_min > TPCA9685FrequencyRange::MIN; f_min--) {
 		if (CalcPresScale(f_min) != nPreScale) {
 			break;
 		}
 	}
 
-	for (f_max = Data; f_max < PCA9685_FREQUENCY_MAX; f_max++) {
+	for (f_max = Data; f_max < TPCA9685FrequencyRange::MAX; f_max++) {
 		if (CalcPresScale(f_max) != nPreScale) {
 			break;
 		}

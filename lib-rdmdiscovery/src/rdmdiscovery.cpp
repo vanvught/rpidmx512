@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #ifndef NDEBUG
 #include <stdio.h>
@@ -182,13 +181,13 @@ uint64_t RDMDiscovery::ConvertUid(const uint8_t *uid) {
 	return __builtin_bswap64(uuid_cast.uint << 16);
 }
 
-void RDMDiscovery::PrintUid(uint64_t uid) {
+void RDMDiscovery::PrintUid(__attribute__((unused)) uint64_t uid) {
 #ifndef NDEBUG
 	PrintUid(ConvertUid(uid));
 #endif
 }
 
-void RDMDiscovery::PrintUid(const uint8_t *uid) {
+void RDMDiscovery::PrintUid(__attribute__((unused)) const uint8_t *uid) {
 #ifndef NDEBUG
 	printf("%.2x%.2x:%.2x%.2x%.2x%.2x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
 #endif

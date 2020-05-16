@@ -46,8 +46,8 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	uint32_t uint32;
 	char tmp[16];
 	const char SPI[] = "SPI";
-	uint8_t nibble_high;
-	uint8_t nibble_low;
+	char nibble_high;
+	char nibble_low;
 
 	for (i = 0; (buf[i] != (char) 0) && (buf[i] != (char) ',') ; i++) {
 		if ((i < 3) && (buf[i] != SPI[i]))  {
@@ -100,10 +100,10 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 	if (k == 2) {
 		nibble_low = tmp[1] > '9' ? (tmp[1] | 0x20) - 'a' + 10 : tmp[1] - '0';
 		nibble_high = (tmp[0] > '9' ? (tmp[0] | 0x20) - 'a' + 10 : tmp[0] - '0') << 4;
-		*address = nibble_high | nibble_low;
+		*address = (uint8_t) (nibble_high | nibble_low);
 	} else {
 		nibble_low = tmp[0] > '9' ? (tmp[0] | 0x20) - 'a' + 10 : tmp[0] - '0';
-		*address = nibble_low;
+		*address = (uint8_t) nibble_low;
 	}
 
 	k = 0;
@@ -133,7 +133,7 @@ int sscan_spi(const char *buf, char *spi, char *name, uint8_t *len, uint8_t *add
 		if (!isdigit((int)buf[i])) {
 			return SSCAN_VALUE_ERROR;
 		}
-		uint32 = uint32 * (uint32_t)10 + (uint32_t)buf[i] - (uint32_t) '0';
+		uint32 = uint32 * (uint32_t) (10 + buf[i] - '0');
 		k++;
 		i++;
 	}

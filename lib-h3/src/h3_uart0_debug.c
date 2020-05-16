@@ -2,7 +2,7 @@
  * @file h3_uart0_debug.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,21 +31,21 @@
 
 #include "uart.h"
 
-#define BUS_CLK_GATING3_UART0	(1 << 16)
-#define BUS_SOFT_RESET4_UART0	(1 << 16)
+#define BUS_CLK_GATING3_UART0	(1U << 16)
+#define BUS_SOFT_RESET4_UART0	(1U << 16)
 
 static void uart_gpio_init(void) {
 	uint32_t value = H3_PIO_PORTA->CFG0;
 	// PA4, TX
-	value &= ~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
+	value &= (uint32_t)~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
 	value |= H3_PA4_SELECT_UART0_TX << PA4_SELECT_CFG0_SHIFT;
 	// PA5, RX
-	value &= ~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
+	value &= (uint32_t)~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
 	value |= H3_PA5_SELECT_UART0_RX << PA5_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTA->CFG0 = value;
 	// Pin 5, RX, Pull-up
 	value = H3_PIO_PORTA->PUL0;
-	value &= ~(GPIO_PULL_MASK << H3_PA5_PULL0_SHIFT);
+	value &= (uint32_t)~(GPIO_PULL_MASK << H3_PA5_PULL0_SHIFT);
 	value |= GPIO_PULL_UP << H3_PA5_PULL0_SHIFT;
 	H3_PIO_PORTA->PUL0 = value;
 }

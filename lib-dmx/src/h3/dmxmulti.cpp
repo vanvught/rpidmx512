@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "h3.h"
 #include "h3_hs_timer.h"

@@ -69,23 +69,23 @@
 #define MCP23X17_GPIOB			0x13	///< PORT (GPIOB) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
 
 #define BUTTON(x)				((nButtonsChanged >> x) & 0x01)
-#define BUTTON_STATE(x)			((nButtonsChanged & (1 << x)) == (1 << x))
+#define BUTTON_STATE(x)			((nButtonsChanged & (1U << x)) == (1U << x))
 
 #define GPIO_INTA				GPIO_EXT_12 // PA7
 
-static const TDisplay7SegmentMessages s_7Segment[8] = {
+static constexpr TDisplay7SegmentMessages s_7Segment[8] = {
 		DISPLAY_7SEGMENT_MSG_GENERIC_1, DISPLAY_7SEGMENT_MSG_GENERIC_2,
 		DISPLAY_7SEGMENT_MSG_GENERIC_3, DISPLAY_7SEGMENT_MSG_GENERIC_4,
 		DISPLAY_7SEGMENT_MSG_GENERIC_5, DISPLAY_7SEGMENT_MSG_GENERIC_6,
 		DISPLAY_7SEGMENT_MSG_GENERIC_7, DISPLAY_7SEGMENT_MSG_GENERIC_8 };
 
-enum TButtons {
-	BUTTON_SELECT = 2,
-	BUTTON_LEFT = 3,
-	BUTTON_RIGHT = 4,
-	BUTTON_START = 5,
-	BUTTON_STOP = 6,
-	BUTTON_RESUME = 7
+struct Button {
+	static constexpr auto SELECT = 2;
+	static constexpr auto LEFT = 3;
+	static constexpr auto RIGHT = 4;
+	static constexpr auto START = 5;
+	static constexpr auto STOP = 6;
+	static constexpr auto RESUME = 7;
 };
 
 SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutput):
@@ -175,10 +175,10 @@ bool SourceSelect::Check(void) {
 	i2c_set_address(MCP23017_I2C_ADDRESS);
 
 	// Rotary and switches
-	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 			// All input
-	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);				// Pull-up
-	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);			// Interrupt on Change
-	static_cast<void>(i2c_read_reg_uint8(MCP23X17_INTCAPA));// Clear interrupts
+	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 	// All input
+	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);		// Pull-up
+	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);	// Interrupt on Change
+	i2c_read_reg_uint8(MCP23X17_INTCAPA);			// Clear interrupts
 	// Led's
 	i2c_write_reg_uint8(MCP23X17_IODIRB, 0x00); 	// All output
 	i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << m_tLtcReaderSource);
@@ -186,11 +186,7 @@ bool SourceSelect::Check(void) {
 	UpdateDisaplays(m_tLtcReaderSource);
 
 	h3_gpio_fsel(GPIO_INTA, GPIO_FSEL_INPUT); // PA7
-
-	uint32_t value = H3_PIO_PORTA->PUL0;
-	value &= ~(GPIO_PULL_MASK << 14);
-	value |= (GPIO_PULL_UP << 14);
-	H3_PIO_PORTA->PUL0 = value;
+	h3_gpio_pud(GPIO_INTA, GPIO_PULL_UP);
 
 	DEBUG_EXIT
 	return true;
@@ -219,11 +215,11 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 		 * 1 1	0 1	0
 		 */
 
-		if (BUTTON_STATE(BUTTON_LEFT)) {
+		if (BUTTON_STATE(Button::LEFT)) {
 			HandleActionLeft(tLtcReaderSource);
-		} else if (BUTTON_STATE(BUTTON_RIGHT)) {
+		} else if (BUTTON_STATE(Button::RIGHT)) {
 			HandleActionRight(tLtcReaderSource);
-		} else if (BUTTON_STATE(BUTTON_SELECT)) {
+		} else if (BUTTON_STATE(Button::SELECT)) {
 			m_tLtcReaderSource = tLtcReaderSource;
 
 			i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << tLtcReaderSource);
@@ -308,19 +304,19 @@ void SourceSelect::Run(void) {
 
 		const uint8_t nButtonsChanged = (m_nPortA ^ m_nPortAPrevious) & m_nPortA;
 
-		if (BUTTON_STATE(BUTTON_START)) {
+		if (BUTTON_STATE(Button::START)) {
 			LtcGenerator::Get()->ActionStart();
-		} else if (BUTTON_STATE(BUTTON_STOP)) {
+		} else if (BUTTON_STATE(Button::STOP)) {
 			LtcGenerator::Get()->ActionStop();
-		} else if (BUTTON_STATE(BUTTON_RESUME)) {
+		} else if (BUTTON_STATE(Button::RESUME)) {
 			LtcGenerator::Get()->ActionResume();
-		} else if (BUTTON_STATE(BUTTON_SELECT)) {
+		} else if (BUTTON_STATE(Button::SELECT)) {
 			HandleActionSelect();
-		} else if (BUTTON_STATE(BUTTON_LEFT)) {
+		} else if (BUTTON_STATE(Button::LEFT)) {
 			if (m_tRunStatus == RUN_STATUS_REBOOT) {
 				SetRunState(RUN_STATUS_CONTINUE);
 			}
-		} else if (BUTTON_STATE(BUTTON_RIGHT)) {
+		} else if (BUTTON_STATE(Button::RIGHT)) {
 			if (m_tRunStatus == RUN_STATUS_CONTINUE) {
 				SetRunState(RUN_STATUS_REBOOT);
 			}

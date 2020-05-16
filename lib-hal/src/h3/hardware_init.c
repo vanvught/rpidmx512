@@ -164,7 +164,7 @@ void hardware_init(void) {
 	#define PRCM_APB0_RESET_PIO (0x1 << 0)
 	H3_PRCM->APB0_RESET |= PRCM_APB0_RESET_PIO;
 	uint32_t value = H3_PIO_PORTL->CFG1;
-	value &= ~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT);
+	value &= (uint32_t)~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PL10_SELECT_CFG1_SHIFT);
 	H3_PIO_PORTL->CFG1 = value;
 	// Set on
@@ -173,7 +173,7 @@ void hardware_init(void) {
 #if defined (ORANGE_PI_ONE)
 	// PWR-KEY
 	value = H3_PIO_PORTL->CFG0;
-	value &= ~(GPIO_SELECT_MASK << PL3_SELECT_CFG0_SHIFT);
+	value &= (uint32_t)~(GPIO_SELECT_MASK << PL3_SELECT_CFG0_SHIFT);
 	value |= (GPIO_FSEL_INPUT << PL3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTL->CFG0 = value;
 	s_is_pwr_button_pressed = (H3_PIO_PORTL->DAT & (1 << 3)) == 0;

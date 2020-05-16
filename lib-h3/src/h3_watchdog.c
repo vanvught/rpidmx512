@@ -2,7 +2,7 @@
  * @file h3_watchdog.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,8 @@
 
 #include "h3.h"
 
-#define CFG_WHOLE_SYSTEM	(0b01 << 0)
-#define CFG_ONLY_INT		(0b10 << 0)
+#define CFG_WHOLE_SYSTEM	(1 << 0)
+#define CFG_ONLY_INT		(2 << 0)
 
 #define MODE_ENABLE			(1 << 0)
 

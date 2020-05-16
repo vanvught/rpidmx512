@@ -26,7 +26,6 @@
 #ifndef IR_LINUX_H_
 #define IR_LINUX_H_
 
-#include <stdbool.h>
 #include <sys/un.h>
 
 #include "inputset.h"

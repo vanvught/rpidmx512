@@ -56,9 +56,9 @@ private:
 	void DumpRdmMessageInNoSc(void);
 
 private:
-	int32_t m_nHandleLLRP;
-	uint32_t m_nIpAddresLLRPRequest;
-	uint32_t m_nIpAddressLLRPResponse;
+	int32_t m_nHandleLLRP = -1;
+	uint32_t m_nIpAddresLLRPRequest = 0;
+	uint32_t m_nIpAddressLLRPResponse = 0;
 
 	struct TLLRP m_tLLRP;
 };

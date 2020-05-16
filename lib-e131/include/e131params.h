@@ -27,52 +27,55 @@
 #define E131PARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"
 
 #include "lightset.h"
 
-#define E131_PARAMS_MAX_PORTS	4
+namespace E131_PARAMS {
+	constexpr auto MAX_PORTS = 4;
+}
 
 struct TE131Params {
     uint32_t nSetList;
     TLightSetOutputType tOutputType;
     uint16_t nUniverse;
-    uint16_t nUniversePort[E131_PARAMS_MAX_PORTS];
+    uint16_t nUniversePort[E131_PARAMS::MAX_PORTS];
 	uint8_t nMergeMode;
-	uint8_t nMergeModePort[E131_PARAMS_MAX_PORTS];
+	uint8_t nMergeModePort[E131_PARAMS::MAX_PORTS];
 	float nNetworkTimeout;
 	bool bDisableMergeTimeout;
 	bool bEnableNoChangeUpdate;
 	uint8_t nDirection;
 	uint8_t nPriority;
 };
+//} __attribute__((packed));
 
-enum TE131ParamsMask {
-	E131_PARAMS_MASK_UNIVERSE = (1 << 0),
-	E131_PARAMS_MASK_MERGE_MODE = (1 << 1),
-	E131_PARAMS_MASK_OUTPUT = (1 << 2),
-	E131_PARAMS_MASK_CID = (1 << 3),
-	E131_PARAMS_MASK_UNIVERSE_A = (1 << 4),
-	E131_PARAMS_MASK_UNIVERSE_B = (1 << 5),
-	E131_PARAMS_MASK_UNIVERSE_C = (1 << 6),
-	E131_PARAMS_MASK_UNIVERSE_D = (1 << 7),
-	E131_PARAMS_MASK_MERGE_MODE_A = (1 << 8),
-	E131_PARAMS_MASK_MERGE_MODE_B = (1 << 9),
-	E131_PARAMS_MASK_MERGE_MODE_C = (1 << 10),
-	E131_PARAMS_MASK_MERGE_MODE_D = (1 << 11),
-	E131_PARAMS_MASK_NETWORK_TIMEOUT = (1 << 12),
-	E131_PARAMS_MASK_MERGE_TIMEOUT = (1 << 13),
-	E131_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 14),
-	E131_PARAMS_MASK_DIRECTION = (1 << 15),
-	E131_PARAMS_MASK_PRIORITY = (1 << 16)
+struct E131ParamsMask {
+	static constexpr auto UNIVERSE = (1U << 0);
+	static constexpr auto MERGE_MODE = (1U << 1);
+	static constexpr auto OUTPUT = (1U << 2);
+	static constexpr auto CID = (1U << 3);
+	static constexpr auto UNIVERSE_A = (1U << 4);
+	static constexpr auto UNIVERSE_B = (1U << 5);
+	static constexpr auto UNIVERSE_C = (1U << 6);
+	static constexpr auto UNIVERSE_D = (1U << 7);
+	static constexpr auto MERGE_MODE_A = (1U << 8);
+	static constexpr auto MERGE_MODE_B = (1U << 9);
+	static constexpr auto MERGE_MODE_C = (1U << 10);
+	static constexpr auto MERGE_MODE_D = (1U << 11);
+	static constexpr auto NETWORK_TIMEOUT = (1U << 12);
+	static constexpr auto MERGE_TIMEOUT = (1U << 13);
+	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 14);
+	static constexpr auto DIRECTION = (1U << 15);
+	static constexpr auto PRIORITY = (1U << 16);
 };
 
 class E131ParamsStore {
 public:
-	virtual ~E131ParamsStore(void) {}
+	virtual ~E131ParamsStore(void) {
+	}
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
 	virtual void Copy(struct TE131Params *pE131Params)=0;
@@ -101,8 +104,8 @@ public:
 		return m_tE131Params.nUniverse;
 	}
 
-	TE131Merge GetMergeMode(void) {
-		return static_cast<TE131Merge>(m_tE131Params.nMergeMode);
+	E131Merge GetMergeMode(void) {
+		return static_cast<E131Merge>(m_tE131Params.nMergeMode);
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
@@ -115,7 +118,6 @@ public:
 		return static_cast<TE131PortDir>(m_tE131Params.nDirection);
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

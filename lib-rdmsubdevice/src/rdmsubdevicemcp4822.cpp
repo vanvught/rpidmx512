@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 /*
  * MCP4822: Dual 12-Bit Voltage Output DAC

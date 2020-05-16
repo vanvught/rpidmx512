@@ -22,9 +22,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdisplaymatrix.h"
 

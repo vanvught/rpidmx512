@@ -70,7 +70,7 @@ inline static void i2c_set_baudrate(uint32_t baudrate) {
 }
 
 inline static uint8_t i2c_read(char *buf, uint32_t len) {
-	return FUNC_PREFIX(i2c_read((char *) buf, len));
+	return FUNC_PREFIX(i2c_read(buf, len));
 }
 
 extern uint8_t i2c_read_uint8(void);

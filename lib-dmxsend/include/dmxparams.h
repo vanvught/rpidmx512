@@ -40,15 +40,16 @@ struct TDMXParams {
 	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
 }__attribute__((packed));
 
-enum TDmxSendParamsMask {
-	DMX_SEND_PARAMS_MASK_BREAK_TIME = (1 << 0),
-	DMX_SEND_PARAMS_MASK_MAB_TIME = (1 << 1),
-	DMX_SEND_PARAMS_MASK_REFRESH_RATE = (1 << 2)
+struct DmxSendParamsMask {
+	static constexpr auto BREAK_TIME = (1U << 0);
+	static constexpr auto MAB_TIME = (1U << 1);
+	static constexpr auto REFRESH_RATE = (1U << 2);
 };
 
 class DMXParamsStore {
 public:
-	virtual ~DMXParamsStore(void) {}
+	virtual ~DMXParamsStore(void) {
+	}
 
 	virtual void Update(const struct TDMXParams *pDmxParams)=0;
 	virtual void Copy(struct TDMXParams *pDmxParams)=0;
@@ -84,7 +85,6 @@ public:
 		return m_tDMXParams.nRefreshRate;
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

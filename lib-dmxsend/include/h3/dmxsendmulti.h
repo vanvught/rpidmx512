@@ -27,7 +27,6 @@
 #define DMXSENDMULTI_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "h3/dmxmulti.h"
 

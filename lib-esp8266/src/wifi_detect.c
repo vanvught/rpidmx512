@@ -32,6 +32,6 @@
  *
  * @return
  */
-const bool wifi_detect(void) {
+bool wifi_detect(void) {
 	return esp8266_detect();
 }

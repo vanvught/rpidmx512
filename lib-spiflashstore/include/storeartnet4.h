@@ -35,6 +35,13 @@ public:
 
 	void Update(const struct TArtNet4Params *pArtNet4Params);
 	void Copy(struct TArtNet4Params *pArtNet4Params);
+
+	static StoreArtNet4 *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreArtNet4 *s_pThis;
 };
 
 #endif /* STOREARTNET4_H_ */

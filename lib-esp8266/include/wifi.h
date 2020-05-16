@@ -74,13 +74,13 @@ extern /*@shared@*/const char *system_get_sdk_version(void);
  * Wifi functions
  */
 
-extern const bool wifi(const struct ip_info *);
+extern bool wifi(const struct ip_info *);
 
-extern const bool wifi_get_macaddr(/*@out@*/const uint8_t *);
-extern const bool wifi_get_ip_info(/*@out@*/const struct ip_info *);
+extern bool wifi_get_macaddr(/*@out@*/const uint8_t *);
+extern bool wifi_get_ip_info(/*@out@*/const struct ip_info *);
 extern _wifi_mode wifi_get_opmode(void);
 extern /*@shared@*/const char *wifi_get_hostname(void);
-extern const bool wifi_detect(void);
+extern bool wifi_detect(void);
 extern /*@shared@*/const char *wifi_get_firmware_version(void);
 
 /*
@@ -88,7 +88,7 @@ extern /*@shared@*/const char *wifi_get_firmware_version(void);
  */
 
 extern void wifi_ap_init(const char *);
-extern const bool wifi_ap_is_open(void);
+extern bool wifi_ap_is_open(void);
 
 /*
  * Wifi Station functions
@@ -97,8 +97,8 @@ extern const bool wifi_ap_is_open(void);
 extern void wifi_station(const char *, const char *);
 extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
 extern /*@observer@*/const char *wifi_station_status(_wifi_station_status);
-extern const bool wifi_station_is_dhcp_used(void);
-extern const _wifi_station_status wifi_station_get_connect_status(void);
+extern bool wifi_station_is_dhcp_used(void);
+extern _wifi_station_status wifi_station_get_connect_status(void);
 extern /*@observer@*//*@null@*/const char *wifi_get_ssid(void);
 
 #ifdef __cplusplus

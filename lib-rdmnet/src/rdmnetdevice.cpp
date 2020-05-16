@@ -27,7 +27,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <uuid/uuid.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmnetdevice.h"
 
@@ -39,10 +39,6 @@
 #include "e131uuid.h"
 
 #include "debug.h"
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #define UUID_STRING_LENGTH	36
 

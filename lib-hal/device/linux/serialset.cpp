@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "serial.h"
 
@@ -40,17 +40,17 @@ void Serial::SetUartBaud(uint32_t nBaud) {
 	m_UartConfiguration.nBaud = nBaud;
 }
 
-void Serial::SetUartBits(uint8_t nBits) {
+void Serial::SetUartBits(__attribute__((unused)) uint8_t nBits) {
 	DEBUG_PRINTF("nBits=%d", nBits);
 
 }
 
-void Serial::SetUartParity(TSerialUartParity tParity) {
+void Serial::SetUartParity(__attribute__((unused)) TSerialUartParity tParity) {
 	DEBUG_PRINTF("tParity=%d", tParity);
 
 }
 
-void Serial::SetUartStopBits(uint8_t nStopBits) {
+void Serial::SetUartStopBits(__attribute__((unused)) uint8_t nStopBits) {
 	DEBUG_PRINTF("nStopBits=%d", nStopBits);
 
 }
@@ -58,22 +58,22 @@ void Serial::SetUartStopBits(uint8_t nStopBits) {
 /*
  * SPI
  */
-void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
+void Serial::SetSpiSpeedHz(__attribute__((unused)) uint32_t nSpeedHz) {
 	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 }
 
-void Serial::SetSpiMode(TSerialSpiModes tMode) {
+void Serial::SetSpiMode(__attribute__((unused)) TSerialSpiModes tMode) {
 	DEBUG_PRINTF("tMode=%d", tMode);
 }
 
 /*
  * I2C
  */
-void Serial::SetI2cAddress(uint8_t nAddress) {
+void Serial::SetI2cAddress(__attribute__((unused)) uint8_t nAddress) {
 	DEBUG_PRINTF("nAddress=%.x", nAddress);
 }
 
-void Serial::SetI2cSpeedMode(TSerialI2cSpeedModes tSpeedMode) {
+void Serial::SetI2cSpeedMode(__attribute__((unused)) TSerialI2cSpeedModes tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 }
 

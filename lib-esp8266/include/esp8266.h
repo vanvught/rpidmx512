@@ -35,7 +35,7 @@ extern "C" {
 
 extern void esp8266_init(void);
 
-extern const bool esp8266_detect(void);
+extern bool esp8266_detect(void);
 
 extern void esp8266_write_4bits(const uint8_t);
 extern void esp8266_write_byte(const uint8_t);

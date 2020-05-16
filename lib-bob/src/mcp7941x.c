@@ -2,7 +2,7 @@
  * @file mcp7941x.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ static uint8_t i2c_mcp7941x_slave_address __attribute__((aligned(4))) = (uint8_t
 #define BCD2DEC(val)	( ((val) & 0x0f) + ((val) >> 4) * 10 )
 #define DEC2BCD(val)	( (((val) / 10) << 4) + (val) % 10 )
 
-void inline static mcp7941x_setup(void) {
+inline static void mcp7941x_setup(void) {
 	i2c_set_address(i2c_mcp7941x_slave_address);
 	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }

@@ -27,6 +27,9 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpointer-arith" // FIXME ignored "-Wpointer-arith"
+
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -267,7 +270,7 @@ int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
 	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
 
 	while (len) {
-		remain_len = (SPI_FLASH_16MB_BOUN * (bank_sel + 1) - offset);
+		remain_len = (SPI_FLASH_16MB_BOUN * (uint32_t)(bank_sel + 1) - offset);
 
 		if (len < remain_len) {
 			read_len = len;
@@ -354,8 +357,9 @@ int spi_flash_cmd_write_status(uint8_t sr) {
 	return 0;
 }
 
-int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode) {
-	int shift, i;
+int spi_flash_probe(__attribute__((unused)) unsigned int cs, __attribute__((unused)) unsigned int max_hz, __attribute__((unused)) unsigned int spi_mode) {
+	int shift;
+	unsigned i;
 	uint8_t idcode[IDCODE_LEN] = {0, };
 	uint8_t *idp;
 
@@ -391,4 +395,6 @@ int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode)
 
 	return 0;
 }
+#else
+ typedef int ISO_C_forbids_an_empty_translation_unit;
 #endif

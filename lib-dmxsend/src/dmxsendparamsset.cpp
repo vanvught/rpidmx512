@@ -24,25 +24,25 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxparams.h"
 
 void DMXParams::Set(DMXSend *pDMXSend) {
 	assert(pDMXSend != 0);
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME)) {
+	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
 		pDMXSend->SetDmxBreakTime(m_tDMXParams.nBreakTime);
 	}
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME)) {
+	if (isMaskSet(DmxSendParamsMask::MAB_TIME)) {
 		pDMXSend->SetDmxMabTime(m_tDMXParams.nMabTime);
 	}
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE)) {
+	if (isMaskSet(DmxSendParamsMask::REFRESH_RATE)) {
 		uint32_t period = 0;
 		if (m_tDMXParams.nRefreshRate != 0) {
-			period = (1000000 / m_tDMXParams.nRefreshRate);
+			period = static_cast<uint32_t>(1000000 / m_tDMXParams.nRefreshRate);
 		}
 		pDMXSend->SetDmxPeriodTime(period);
 	}
@@ -52,11 +52,11 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
 	assert(pDMXSendMulti != 0);
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME)) {
+	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
 		pDMXSendMulti->SetDmxBreakTime(m_tDMXParams.nBreakTime);
 	}
 
-	if (isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME)) {
+	if (isMaskSet(DmxSendParamsMask::MAB_TIME)) {
 		pDMXSendMulti->SetDmxMabTime(m_tDMXParams.nMabTime);
 	}
 }

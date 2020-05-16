@@ -27,7 +27,6 @@
 #define RDMDISCOVERY_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "rdm.h"
 

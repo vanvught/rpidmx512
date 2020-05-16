@@ -292,7 +292,7 @@ private:
 	TFTPFileServer* m_pTFTPFileServer;
 	uint8_t *m_pTFTPBuffer;
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
-	uint32_t m_nIdLength;
+	int32_t m_nIdLength;
 	struct TRemoteConfigListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle;
 	char *m_pUdpBuffer;

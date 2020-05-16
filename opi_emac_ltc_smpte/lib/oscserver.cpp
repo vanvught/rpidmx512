@@ -44,90 +44,91 @@
 
 #include "debug.h"
 
-enum TOscServerPort {
-	OSCSERVER_PORT_DEFAULT_INCOMING = 8000
-};
+namespace UDP {
+	static constexpr auto PORT_DEFAULT = 8000;
+	static constexpr auto MAX_BUFFER = 1024;
+}
 
-#define OSCSERVER_MAX_BUFFER 		1024
+namespace Cmd {
+	static constexpr char START[] = "start";
+	static constexpr char STOP[] = "stop";
+	static constexpr char RESUME[] = "resume";
+	static constexpr char RATE[] = "rate";
+	static constexpr char SET[] = "/set/";
+	static constexpr char GOTO[] = "goto";
+	static constexpr char DIRECTION[] = "direction";
+	static constexpr char PITCH[] = "pitch";
+}
 
-// Internal
+namespace Length {
+	static constexpr auto START = sizeof(Cmd::START) - 1;
+	static constexpr auto STOP = sizeof(Cmd::STOP) - 1;
+	static constexpr auto RESUME = sizeof(Cmd::RESUME) - 1;
+	static constexpr auto RATE = sizeof(Cmd::RATE) - 1;
+	static constexpr auto SET = sizeof(Cmd::SET) - 1;
+	static constexpr auto GOTO = sizeof(Cmd::GOTO) - 1;
+	static constexpr auto DIRECTION = sizeof(Cmd::DIRECTION) - 1;
+	static constexpr auto PITCH = sizeof(Cmd::PITCH) - 1;
 
-constexpr char aStart[] = "start";
-#define START_LENGTH 			(sizeof(aStart) - 1)
+}
 
-constexpr char aStop[] = "stop";
-#define STOP_LENGTH 			(sizeof(aStop) - 1)
+namespace TCNET {
+	namespace Cmd {
+		static constexpr char PATH[] = "tcnet/";
+		static constexpr char LAYER[] = "layer/";
+		static constexpr char TYPE[] = "type";
+		static constexpr char TIMECODE[] = "timecode";
+	}
+	namespace Length {
+		static constexpr auto PATH = sizeof(Cmd::PATH) - 1;
+		static constexpr auto LAYER = sizeof(Cmd::LAYER) - 1;
+		static constexpr auto TYPE = sizeof(Cmd::TYPE) - 1;
+		static constexpr auto TIMECODE = sizeof(Cmd::TIMECODE) - 1;
+	}
+}
 
-constexpr char aResume[] = "resume";
-#define RESUME_LENGTH 			(sizeof(aResume) - 1)
-
-constexpr char aRate[] = "rate";
-#define RATE_LENGTH 			(sizeof(aRate) - 1)
-
-constexpr char aSet[] = "/set/";
-#define SET_LENGTH 				(sizeof(aSet) - 1)
-
-constexpr char aGoto[] = "goto";
-#define GOTO_LENGTH 			(sizeof(aGoto) - 1)
-
-constexpr char aDirection[] = "direction";
-#define DIRECTION_LENGTH 		(sizeof(aDirection) - 1)
-
-constexpr char aPitch[] = "pitch";
-#define PITCH_LENGTH 			(sizeof(aPitch) - 1)
-
-// TCNet
-
-constexpr char aTCNet[] = "tcnet/";
-#define TCNET_LENGTH 			(sizeof(aTCNet) - 1)
-
-constexpr char aTCNetLayer[] = "layer/";
-#define TCNETLAYER_LENGTH 		(sizeof(aTCNetLayer) - 1)
-
-constexpr char aTCNetType[] = "type";
-#define TCNETTYPE_LENGTH 		(sizeof(aTCNetType) - 1)
-
-constexpr char aTCNetTimeCode[] = "timecode";
-#define TCNETTIMECODE_LENGTH 	(sizeof(aTCNetTimeCode) - 1)
-
-// WS28xx Display
-
-constexpr char aWS28xx[] = "ws28xx/";
-#define WS28XX_LENGTH 			(sizeof(aWS28xx) - 1)
-
-constexpr char aWS28xxMaster[] = "master";
-#define WS28XXMASTER_LENGTH 	(sizeof(aWS28xxMaster) - 1)
-
-constexpr char aWS28xxMessage[] = "message";
-#define WS28XXMESSAGE_LENGTH 	(sizeof(aWS28xxMessage) - 1)
-
-constexpr char aWS28xxRgb[] = "rgb/";
-#define WS28XXRGB_LENGTH 		(sizeof(aWS28xxRgb) - 1)
-
-constexpr char aWS28xxRgbTime[] = "time";
-#define WS28XXTIME_LENGTH 		(sizeof(aWS28xxRgbTime) - 1)
-
-constexpr char aWS28xxRgbColon[] = "colon";
-#define WS28XXCOLON_LENGTH 		(sizeof(aWS28xxRgbColon) - 1)
-
-constexpr char aWS28xxRgbMessage[] = "message";
-#define WS28XXRGBMESSAGE_LENGTH (sizeof(aWS28xxRgbMessage) - 1)
+namespace WS28XX {
+	namespace Cmd {
+		static constexpr char PATH[] = "ws28xx/";
+		static constexpr char MASTER[] = "master";
+		static constexpr char MESSAGE[] = "message";
+	}
+	namespace Length {
+		static constexpr auto PATH = sizeof(Cmd::PATH) - 1;
+		static constexpr auto MASTER = sizeof(Cmd::MASTER) - 1;
+		static constexpr auto MESSAGE = sizeof(Cmd::MESSAGE) - 1;
+	}
+	namespace RGB {
+		namespace Cmd {
+			static constexpr char PATH[] = "rgb/";
+			static constexpr char TIME[] = "time";
+			static constexpr char COLON[] = "colon";
+			static constexpr char MESSAGE[] = "message";
+		}
+		namespace Length {
+			static constexpr auto PATH = sizeof(Cmd::PATH) - 1;
+			static constexpr auto TIME = sizeof(Cmd::TIME) - 1;
+			static constexpr auto COLON = sizeof(Cmd::COLON) - 1;
+			static constexpr auto MESSAGE = sizeof(Cmd::MESSAGE) - 1;
+		}
+	}
+}
 
 // "hh/mm/ss/ff" -> length = 11
-#define VALUE_LENGTH		11
-#define RATE_VALUE_LENGTH	2
+static constexpr auto VALUE_LENGTH = 11;
+static constexpr auto RATE_VALUE_LENGTH = 2;
 
 OSCServer::OSCServer(void):
-	m_nPortIncoming(OSCSERVER_PORT_DEFAULT_INCOMING),
+	m_nPortIncoming(UDP::PORT_DEFAULT),
 	m_nHandle(-1),
 	m_nRemoteIp(0),
 	m_nRemotePort(0),
 	m_nPathLength(0)
 {
-	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
+	m_pBuffer = new char[UDP::MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
-	m_nPathLength = snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1;
+	m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
 
 	DEBUG_PRINTF("%d [%s]", m_nPathLength, m_aPath);
 }
@@ -146,7 +147,7 @@ void OSCServer::Stop(void) {
 }
 
 void OSCServer::Run(void) {
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, UDP::MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= 4), 1)) {
 		return;
@@ -159,7 +160,7 @@ void OSCServer::Run(void) {
 		DEBUG_PRINTF("%d,%d %s", static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
 
 		// */pitch f
-		if (memcmp(&m_pBuffer[m_nPathLength], aPitch, PITCH_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], Cmd::PITCH, Length::PITCH) == 0) {
 			OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 			const float fValue = Msg.GetFloat(0);
@@ -173,16 +174,16 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */start*
-		if (memcmp(&m_pBuffer[m_nPathLength], aStart, START_LENGTH) == 0) {
-			if ((nCommandLength == (m_nPathLength + START_LENGTH)) ) {
+		if (memcmp(&m_pBuffer[m_nPathLength], Cmd::START, Length::START) == 0) {
+			if ((nCommandLength == (m_nPathLength + Length::START)) ) {
 
 				LtcGenerator::Get()->ActionStart();
 				SystimeReader::Get()->ActionStart();
 
 				DEBUG_PUTS("ActionStart");
-			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + 1 + VALUE_LENGTH))) {
-				if (m_pBuffer[m_nPathLength + START_LENGTH] == '/') {
-					const uint32_t nOffset = m_nPathLength + START_LENGTH + 1;
+			} else if ((nCommandLength == (m_nPathLength + Length::START + 1 + VALUE_LENGTH))) {
+				if (m_pBuffer[m_nPathLength + Length::START] == '/') {
+					const uint32_t nOffset = m_nPathLength + Length::START + 1;
 					m_pBuffer[nOffset + 2] = ':';
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
@@ -193,9 +194,9 @@ void OSCServer::Run(void) {
 
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
-			} else if ((nCommandLength == (m_nPathLength + START_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				if (memcmp(&m_pBuffer[m_nPathLength + START_LENGTH], aSet, SET_LENGTH) == 0) {
-					const uint32_t nOffset = m_nPathLength + START_LENGTH + SET_LENGTH;
+			} else if ((nCommandLength == (m_nPathLength + Length::START + Length::SET + VALUE_LENGTH))) {
+				if (memcmp(&m_pBuffer[m_nPathLength + Length::START], Cmd::SET, Length::SET) == 0) {
+					const uint32_t nOffset = m_nPathLength + Length::START + Length::SET;
 					m_pBuffer[nOffset + 2] = ':';
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
@@ -209,16 +210,16 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */stop*
-		if (memcmp(&m_pBuffer[m_nPathLength], aStop, STOP_LENGTH) == 0) {
-			if ((nCommandLength == (m_nPathLength + STOP_LENGTH))) {
+		if (memcmp(&m_pBuffer[m_nPathLength], Cmd::STOP, Length::STOP) == 0) {
+			if ((nCommandLength == (m_nPathLength + Length::STOP))) {
 
 				LtcGenerator::Get()->ActionStop();
 				SystimeReader::Get()->ActionStop();
 
 				DEBUG_PUTS("ActionStop");
-			} else if ((nCommandLength == (m_nPathLength + STOP_LENGTH + SET_LENGTH + VALUE_LENGTH))) {
-				if (memcmp(&m_pBuffer[m_nPathLength + STOP_LENGTH], aSet, SET_LENGTH) == 0) {
-					const uint32_t nOffset = m_nPathLength + STOP_LENGTH + SET_LENGTH;
+			} else if ((nCommandLength == (m_nPathLength + Length::STOP + Length::SET + VALUE_LENGTH))) {
+				if (memcmp(&m_pBuffer[m_nPathLength + Length::STOP], Cmd::SET, Length::SET) == 0) {
+					const uint32_t nOffset = m_nPathLength + Length::STOP + Length::SET;
 					m_pBuffer[nOffset + 2] = ':';
 					m_pBuffer[nOffset + 5] = ':';
 					m_pBuffer[nOffset + 8] = '.';
@@ -232,9 +233,9 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */set/*
-		if ((nCommandLength == (m_nPathLength + RATE_LENGTH + SET_LENGTH + RATE_VALUE_LENGTH))) {
-			if (memcmp(&m_pBuffer[m_nPathLength + RATE_LENGTH], aSet, SET_LENGTH) == 0) {
-				const uint32_t nOffset = m_nPathLength + RATE_LENGTH + SET_LENGTH;
+		if ((nCommandLength == (m_nPathLength + Length::RATE + Length::SET + RATE_VALUE_LENGTH))) {
+			if (memcmp(&m_pBuffer[m_nPathLength + Length::RATE], Cmd::SET, Length::SET) == 0) {
+				const uint32_t nOffset = m_nPathLength + Length::RATE + Length::SET;
 
 				LtcGenerator::Get()->ActionSetRate(&m_pBuffer[nOffset]);
 
@@ -244,7 +245,7 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */resume
-		if ( (nCommandLength == (m_nPathLength + RESUME_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], aResume, RESUME_LENGTH) == 0)) {
+		if ( (nCommandLength == (m_nPathLength + Length::RESUME)) && (memcmp(&m_pBuffer[m_nPathLength], Cmd::RESUME, Length::RESUME) == 0)) {
 			LtcGenerator::Get()->ActionResume();
 
 			DEBUG_PUTS("ActionResume");
@@ -252,9 +253,9 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */goto/*
-		if ((nCommandLength == (m_nPathLength + GOTO_LENGTH + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], aGoto, GOTO_LENGTH) == 0)) {
-			if (m_pBuffer[m_nPathLength + GOTO_LENGTH] == '/') {
-				const uint32_t nOffset = m_nPathLength + GOTO_LENGTH + 1;
+		if ((nCommandLength == (m_nPathLength + Length::GOTO + 1 + VALUE_LENGTH)) && (memcmp(&m_pBuffer[m_nPathLength], Cmd::GOTO, Length::GOTO) == 0)) {
+			if (m_pBuffer[m_nPathLength + Length::GOTO] == '/') {
+				const uint32_t nOffset = m_nPathLength + Length::GOTO + 1;
 				m_pBuffer[nOffset + 2] = ':';
 				m_pBuffer[nOffset + 5] = ':';
 				m_pBuffer[nOffset + 8] = '.';
@@ -267,9 +268,9 @@ void OSCServer::Run(void) {
 			return;
 		}
 		// */direction/*
-		if ((nCommandLength <= (m_nPathLength + DIRECTION_LENGTH + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], aDirection, DIRECTION_LENGTH) == 0)) {
-			if (m_pBuffer[m_nPathLength + DIRECTION_LENGTH] == '/') {
-				const uint32_t nOffset = m_nPathLength + DIRECTION_LENGTH + 1;
+		if ((nCommandLength <= (m_nPathLength + Length::DIRECTION + 1 + 8)) && (memcmp(&m_pBuffer[m_nPathLength], Cmd::DIRECTION, Length::DIRECTION) == 0)) {
+			if (m_pBuffer[m_nPathLength + Length::DIRECTION] == '/') {
+				const uint32_t nOffset = m_nPathLength + Length::DIRECTION + 1;
 				LtcGenerator::Get()->ActionSetDirection(&m_pBuffer[nOffset]);
 
 				DEBUG_PUTS(&m_pBuffer[nOffset]);
@@ -279,12 +280,12 @@ void OSCServer::Run(void) {
 		}
 
 		// */tcnet/
-		if (memcmp(&m_pBuffer[m_nPathLength], aTCNet, TCNET_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], TCNET::Cmd::PATH, TCNET::Length::PATH) == 0) {
 			// layer/?
-			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH + 1)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetLayer, TCNETLAYER_LENGTH) == 0) {
-					const uint32_t nOffset = m_nPathLength + TCNET_LENGTH + TCNETLAYER_LENGTH;
-					const TTCNetLayers tLayer = TCNet::GetLayer(m_pBuffer[nOffset]);
+			if (nCommandLength == (m_nPathLength + TCNET::Length::PATH + TCNET::Length::LAYER + 1)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET::Length::PATH], TCNET::Cmd::LAYER, TCNET::Length::LAYER) == 0) {
+					const uint32_t nOffset = m_nPathLength + TCNET::Length::PATH + TCNET::Length::LAYER;
+					const TCNetLayer tLayer = TCNet::GetLayer(m_pBuffer[nOffset]);
 
 					TCNet::Get()->SetLayer(tLayer);
 					TCNetDisplay::Show();
@@ -295,8 +296,8 @@ void OSCServer::Run(void) {
 				return;
 			}
 			// type i
-			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETTYPE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetType, TCNETTYPE_LENGTH) == 0) {
+			if (nCommandLength == (m_nPathLength + TCNET::Length::PATH + TCNET::Length::TYPE)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET::Length::PATH], TCNET::Cmd::TYPE, TCNET::Length::TYPE) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -328,8 +329,8 @@ void OSCServer::Run(void) {
 				return;
 			}
 			// timecode i
-			if (nCommandLength == (m_nPathLength + TCNET_LENGTH + TCNETTIMECODE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + TCNET_LENGTH], aTCNetType, TCNETTIMECODE_LENGTH) == 0) {
+			if (nCommandLength == (m_nPathLength + TCNET::Length::PATH + TCNET::Length::TIMECODE)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + TCNET::Length::PATH], TCNET::Cmd::TYPE, TCNET::Length::TIMECODE) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -348,10 +349,10 @@ void OSCServer::Run(void) {
 		}
 
 		// */ws28xx/
-		if (memcmp(&m_pBuffer[m_nPathLength], aWS28xx, WS28XX_LENGTH) == 0) {
+		if (memcmp(&m_pBuffer[m_nPathLength], WS28XX::Cmd::PATH, WS28XX::Length::PATH) == 0) {
 			// ws28xx/master i
-			if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXMASTER_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxMaster, WS28XXMASTER_LENGTH) == 0) {
+			if (nCommandLength == (m_nPathLength + WS28XX::Length::PATH + WS28XX::Length::MASTER)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH], WS28XX::Cmd::MASTER, WS28XX::Length::MASTER) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					const int nValue = Msg.GetInt(0);
@@ -364,8 +365,8 @@ void OSCServer::Run(void) {
 				return;
 			}
 			// ws28xx/message string
-			if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXMESSAGE_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxMessage, WS28XXMESSAGE_LENGTH) == 0) {
+			if (nCommandLength == (m_nPathLength + WS28XX::Length::PATH + WS28XX::Length::MESSAGE)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH], WS28XX::Cmd::MESSAGE, WS28XX::Length::MESSAGE) == 0) {
 					OSCMessage Msg(m_pBuffer, nBytesReceived);
 
 					char *pString = Msg.GetString(0);
@@ -379,27 +380,27 @@ void OSCServer::Run(void) {
 				return;
 			}
 			// ws28xx/rgb/*
-			if (nCommandLength > (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH)) {
-				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH], aWS28xxRgb, WS28XXRGB_LENGTH) == 0) {
+			if (nCommandLength > (m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH)) {
+				if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH], WS28XX::RGB::Cmd::PATH, WS28XX::RGB::Length::PATH) == 0) {
 					// ws28xx/rgb/time iii
-					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXTIME_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbTime, WS28XXTIME_LENGTH) == 0) {
+					if (nCommandLength == (m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH + WS28XX::RGB::Length::TIME)) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH], WS28XX::RGB::Cmd::TIME, WS28XX::RGB::Length::TIME) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT);
 						}
 
 						return;
 					}
 					// ws28xx/rgb/colon iii
-					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXCOLON_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbColon, WS28XXCOLON_LENGTH) == 0) {
+					if (nCommandLength == (m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH + WS28XX::RGB::Length::COLON)) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH], WS28XX::RGB::Cmd::COLON, WS28XX::RGB::Length::COLON) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_COLON);
 						}
 
 						return;
 					}
 					// ws28xx/rgb/message iii
-					if (nCommandLength == (m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH + WS28XXRGBMESSAGE_LENGTH)) {
-						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX_LENGTH + WS28XXRGB_LENGTH], aWS28xxRgbMessage, WS28XXRGBMESSAGE_LENGTH) == 0) {
+					if (nCommandLength == (m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH + WS28XX::RGB::Length::MESSAGE)) {
+						if (memcmp(&m_pBuffer[m_nPathLength + WS28XX::Length::PATH + WS28XX::RGB::Length::PATH], WS28XX::RGB::Cmd::MESSAGE, WS28XX::RGB::Length::MESSAGE) == 0) {
 							SetWS28xxRGB(nBytesReceived, LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE);
 						}
 

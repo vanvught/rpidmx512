@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "tlc59711dmxparams.h"
 
@@ -49,21 +49,14 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE,
-			static_cast<const char*>(GetLedTypeString(static_cast<TTLC59711Type>(m_tTLC59711Params.LedType))),
-			isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE));
-	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount,
-			isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT));
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS,
-			m_tTLC59711Params.nDmxStartAddress,
-			isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS));
-	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz,
-			isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED));
+	builder.Add(DevicesParamsConst::LED_TYPE, GetLedTypeString(m_tTLC59711Params.LedType), isMaskSet(TLC59711DmxParamsMask::LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DmxParamsMask::LED_COUNT));
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DmxParamsMask::START_ADDRESS));
+	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DmxParamsMask::SPI_SPEED));
 
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-
 	DEBUG_EXIT
 }
 

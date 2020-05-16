@@ -76,7 +76,7 @@ void wifi_station_ip(const char *ssid, const char *password, const struct ip_inf
 /*
  *
  */
-const _wifi_station_status wifi_station_get_connect_status(void) {
+_wifi_station_status wifi_station_get_connect_status(void) {
 	esp8266_write_4bits((uint8_t) CMD_WIFI_MODE_STA_STATUS);
 	return esp8266_read_byte();
 }
@@ -118,7 +118,7 @@ const char *wifi_station_status(_wifi_station_status status) {
  *
  * @return
  */
-const bool wifi_station_is_dhcp_used(void) {
+bool wifi_station_is_dhcp_used(void) {
 	return is_dhcp_used;
 }
 

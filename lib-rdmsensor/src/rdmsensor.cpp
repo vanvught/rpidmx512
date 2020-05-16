@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmsensor.h"
 
 #include <debug.h>
-
-#ifndef MAX
-#  define MAX(a,b)		(((a) > (b)) ? (a) : (b))
-#  define MIN(a,b)		(((a) < (b)) ? (a) : (b))
-#endif
 
 #define RDM_SENSOR_RECORDED_SUPPORTED		(1 << 0)	///<
 #define RDM_SENSOR_LOW_HIGH_DETECT			(1 << 1)	///<
@@ -71,11 +67,11 @@ void RDMSensor::SetDescription(const char *pDescription) {
 const struct TRDMSensorValues* RDMSensor::GetValues(void) {
 	DEBUG1_ENTRY
 
-	const uint16_t value = this->GetValue();
+	const int16_t value = this->GetValue();
 
 	m_tRDMSensorValues.present = value;
-	m_tRDMSensorValues.lowest_detected = MIN(m_tRDMSensorValues.lowest_detected, value);
-	m_tRDMSensorValues.highest_detected = MAX(m_tRDMSensorValues.highest_detected, value);
+	m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, value);
+	m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, value);
 
 	DEBUG1_EXIT
 
@@ -85,7 +81,7 @@ const struct TRDMSensorValues* RDMSensor::GetValues(void) {
 void RDMSensor::SetValues(void) {
 	DEBUG1_ENTRY
 
-	const uint16_t value = this->GetValue();
+	const int16_t value = this->GetValue();
 
 	m_tRDMSensorValues.present = value;
 	m_tRDMSensorValues.lowest_detected = value;
@@ -98,12 +94,12 @@ void RDMSensor::SetValues(void) {
 void RDMSensor::Record(void) {
 	DEBUG1_ENTRY
 
-	const uint16_t value = this->GetValue();
+	const int16_t value = this->GetValue();
 
 	m_tRDMSensorValues.present = value;
 	m_tRDMSensorValues.recorded = value;
-	m_tRDMSensorValues.lowest_detected = MIN(m_tRDMSensorValues.lowest_detected, value);
-	m_tRDMSensorValues.highest_detected = MAX(m_tRDMSensorValues.highest_detected, value);
+	m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, value);
+	m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, value);
 
 	DEBUG1_EXIT
 }

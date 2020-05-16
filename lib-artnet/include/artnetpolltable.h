@@ -30,7 +30,6 @@
 #define ARTNETPOLLTABLE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "packets.h"
 

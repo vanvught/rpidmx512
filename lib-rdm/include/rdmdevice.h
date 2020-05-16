@@ -27,7 +27,6 @@
 #define RDMDEVICE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "rdmdevicestore.h"
 

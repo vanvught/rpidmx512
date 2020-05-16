@@ -42,8 +42,15 @@ public:
 	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress);
 	void SaveNetSwitch(uint8_t nAddress);
 	void SaveSubnetSwitch(uint8_t nAddress);
-	void SaveMergeMode(uint8_t nPortIndex, TMerge tMerge);
+	void SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge);
 	void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
+
+	static StoreArtNet *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static StoreArtNet *s_pThis;
 };
 
 #endif /* STOREARTNET_H_ */

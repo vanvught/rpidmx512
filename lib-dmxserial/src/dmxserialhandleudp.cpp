@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxserial.h"
 #include "dmxserial_internal.h"
@@ -36,84 +36,84 @@
 
 #include "debug.h"
 
-constexpr char aRequestFiles[] = "?files#";
-#define REQUEST_FILES_LENGTH 	(sizeof(aRequestFiles) - 1)
+namespace Cmd {
+	static constexpr char REQUEST_FILES[] = "?files#";
+	static constexpr char GET_TFTP[] = "?tftp#";
+	static constexpr char SET_TFTP[] = "!tftp#";
+	static constexpr char REQUEST_RELOAD[] = "?reload##";
+	static constexpr char REQUEST_DELETE[] = "!delete#";
+}
 
-constexpr char aGetTFTP[] = "?tftp#";
-#define GET_TFTP_LENGTH 		(sizeof(aGetTFTP) - 1)
+namespace Length {
+	static constexpr auto REQUEST_FILES = sizeof(Cmd::REQUEST_FILES) - 1;
+	static constexpr auto GET_TFTP = sizeof(Cmd::GET_TFTP) - 1;
+	static constexpr auto SET_TFTP = sizeof(Cmd::SET_TFTP) - 1;
+	static constexpr auto REQUEST_RELOAD = sizeof(Cmd::REQUEST_RELOAD) - 1;
+	static constexpr auto REQUEST_DELETE = sizeof(Cmd::REQUEST_DELETE) - 1;
+}
 
-constexpr char aSetTFTP[] = "!tftp#";
-#define SET_TFTP_LENGTH 		(sizeof(aSetTFTP) - 1)
-
-constexpr char aReload[] = "?reload##";
-#define REQUEST_RELOAD_LENGTH 	(sizeof(aReload)- 1)
-
-constexpr char aDelete[] = "!delete#";
-#define REQUEST_DELETE_LENGTH 	(sizeof(aDelete) - 1)
-
-enum {
-	UDP_BUFFER_SIZE = 32
-};
-
-static char s_UdpBuffer[UDP_BUFFER_SIZE] __attribute__ ((aligned (4)));
+static char s_UdpBuffer[UDP::BUFFER_SIZE] __attribute__ ((aligned (4)));
 
 void DmxSerial::HandleUdp(void) {
 	uint16_t nForeignPort;
 	uint32_t nIPAddressFrom;
 
-	uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, s_UdpBuffer, UDP_BUFFER_SIZE, &nIPAddressFrom, &nForeignPort);
+	uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, s_UdpBuffer, UDP::BUFFER_SIZE, &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((nBytesReceived < 6), 1)) {
 		return;
+	}
+
+	if (s_UdpBuffer[nBytesReceived - 1] == '\n') {
+		nBytesReceived--;
 	}
 
 #ifndef NDEBUG
 	debug_dump(s_UdpBuffer, nBytesReceived);
 #endif
 
-	if (s_UdpBuffer[nBytesReceived - 1] == '\n') {
-		nBytesReceived--;
-	}
-
-	if (memcmp(s_UdpBuffer, aRequestFiles, REQUEST_FILES_LENGTH) == 0) {
+	if (memcmp(s_UdpBuffer, Cmd::REQUEST_FILES, Length::REQUEST_FILES) == 0) {
 		for (uint32_t i = 0; i < m_nFilesCount; i++) {
-			uint32_t nLength = snprintf(s_UdpBuffer, sizeof(s_UdpBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP_PORT);
+			int nLength = snprintf(s_UdpBuffer, sizeof(s_UdpBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}
 
-	if ((nBytesReceived >= GET_TFTP_LENGTH) && (memcmp(s_UdpBuffer, aGetTFTP, GET_TFTP_LENGTH) == 0)) {
-		if (nBytesReceived == GET_TFTP_LENGTH) {
-			const uint32_t nLength = snprintf(s_UdpBuffer, UDP_BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP_PORT);
-		} else if (nBytesReceived == GET_TFTP_LENGTH + 3) {
-			if (memcmp(&s_UdpBuffer[GET_TFTP_LENGTH], "bin", 3) == 0) {
-				Network::Get()->SendTo(m_nHandle, &m_bEnableTFTP, sizeof(bool) , nIPAddressFrom, UDP_PORT);
+	if ((nBytesReceived >= Length::GET_TFTP) && (memcmp(s_UdpBuffer, Cmd::GET_TFTP, Length::GET_TFTP) == 0)) {
+		if (nBytesReceived == Length::GET_TFTP) {
+			const int nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
+			return;
+		}
+
+		if (nBytesReceived == Length::GET_TFTP + 3) {
+			if (memcmp(&s_UdpBuffer[Length::GET_TFTP], "bin", 3) == 0) {
+				Network::Get()->SendTo(m_nHandle, &m_bEnableTFTP, sizeof(bool) , nIPAddressFrom, UDP::PORT);
+				return;
 			}
 		}
+	}
+
+	if ((nBytesReceived == Length::SET_TFTP + 1) && (memcmp(s_UdpBuffer, Cmd::SET_TFTP, Length::SET_TFTP) == 0)) {
+		EnableTFTP(s_UdpBuffer[Length::SET_TFTP] != '0');
 		return;
 	}
 
-	if ((nBytesReceived == SET_TFTP_LENGTH + 1) && (memcmp(s_UdpBuffer, aSetTFTP, SET_TFTP_LENGTH) == 0)) {
-		EnableTFTP(s_UdpBuffer[GET_TFTP_LENGTH] != '0');
-		return;
-	}
-
-	if (memcmp(s_UdpBuffer, aReload, REQUEST_RELOAD_LENGTH) == 0) {
+	if (memcmp(s_UdpBuffer, Cmd::REQUEST_RELOAD, Length::REQUEST_RELOAD) == 0) {
 		Hardware::Get()->SoftReset();
 		return;
 	}
 
-	if ((nBytesReceived == REQUEST_DELETE_LENGTH + 3) && (memcmp(s_UdpBuffer, aDelete, REQUEST_DELETE_LENGTH) == 0)) {
-		s_UdpBuffer[REQUEST_DELETE_LENGTH + 3] = '\0';
+	if ((nBytesReceived == Length::REQUEST_DELETE + 3) && (memcmp(s_UdpBuffer, Cmd::REQUEST_DELETE, Length::REQUEST_DELETE) == 0)) {
+		s_UdpBuffer[Length::REQUEST_DELETE + 3] = '\0';
 
-		if (DmxSerial::Get()->DeleteFile(&s_UdpBuffer[REQUEST_DELETE_LENGTH])) {
-			Network::Get()->SendTo(m_nHandle, "Success\n",  8, nIPAddressFrom, UDP_PORT);
+		if (DmxSerial::Get()->DeleteFile(&s_UdpBuffer[Length::REQUEST_DELETE])) {
+			Network::Get()->SendTo(m_nHandle, "Success\n",  8, nIPAddressFrom, UDP::PORT);
 		} else {
 			const char *pError = strerror(errno);
-			const uint32_t nLength = snprintf(s_UdpBuffer, UDP_BUFFER_SIZE - 1, "%s\n", pError);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer,  nLength, nIPAddressFrom, UDP_PORT);
+			const int nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "%s\n", pError);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer,  nLength, nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}

@@ -25,7 +25,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmdeviceresponder.h"
 #include "dmxreceiver.h"
@@ -67,7 +67,7 @@ void RDMResponder::Init(void) {
 }
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
-	uint16_t nLength = RDM_RESPONDER_INVALID_RESPONSE;
+	int nLength = RDM_RESPONDER_INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
 		const struct TRdmMessage *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
@@ -97,14 +97,14 @@ int RDMResponder::Run(void) {
 			m_IsSubDeviceActive = false;
 		}
 	} else if (pDmxDataIn != 0) {
-		RDMSubDevices::Get()->SetData(pDmxDataIn, nLength);
+		RDMSubDevices::Get()->SetData(pDmxDataIn, static_cast<uint16_t>(nLength));
 		if (!m_IsSubDeviceActive) {
 			RDMSubDevices::Get()->Start();
 			m_IsSubDeviceActive = true;
 		}
 	}
 
-	const uint8_t *pRdmDataIn = reinterpret_cast<const uint8_t*>(Rdm::Receive(0));
+	const uint8_t *pRdmDataIn = Rdm::Receive(0);
 
 	if (pRdmDataIn == 0) {
 		return RDM_RESPONDER_NO_DATA;

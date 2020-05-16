@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "dmxmonitorparams.h"
 #include "dmxmonitorparamsconst.h"
@@ -52,7 +52,7 @@ DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore
 	m_tDMXMonitorParams.nSetList = 0;
 	m_tDMXMonitorParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
 	m_tDMXMonitorParams.nDmxMaxChannels = DMX_UNIVERSE_SIZE;
-	m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_HEX;
+	m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
 }
 
 DMXMonitorParams::~DMXMonitorParams(void) {
@@ -107,11 +107,11 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 
 	PropertiesBuilder builder(DMXMonitorParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DMXMonitorParamsConst::FORMAT, m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"), isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT));
+	builder.Add(DMXMonitorParamsConst::FORMAT, m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"), isMaskSet(DMXMonitorParamsMask::FORMAT));
 
 	builder.AddComment("DMX");
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tDMXMonitorParams.nDmxStartAddress, isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS));
-	builder.Add(DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_tDMXMonitorParams.nDmxMaxChannels, isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS));
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tDMXMonitorParams.nDmxStartAddress, isMaskSet(DMXMonitorParamsMask::START_ADDRESS));
+	builder.Add(DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_tDMXMonitorParams.nDmxMaxChannels, isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS));
 
 	nSize = builder.GetSize();
 	DEBUG_EXIT
@@ -134,17 +134,17 @@ void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
 	assert(pDMXMonitor != 0);
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS)) {
+	if (isMaskSet(DMXMonitorParamsMask::START_ADDRESS)) {
 		pDMXMonitor->SetDmxStartAddress(m_tDMXMonitorParams.nDmxStartAddress);
 	}
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS)) {
+	if (isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS)) {
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 		pDMXMonitor->SetMaxDmxChannels(m_tDMXMonitorParams.nDmxMaxChannels);
 #endif
 	}
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT)) {
+	if (isMaskSet(DMXMonitorParamsMask::FORMAT)) {
 		pDMXMonitor->SetFormat(m_tDMXMonitorParams.tFormat);
 	}
 }
@@ -159,7 +159,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxStartAddress = value16;
-			m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_START_ADDRESS;
+			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::START_ADDRESS;
 		}
 		return;
 	}
@@ -167,7 +167,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint16(pLine, DMXMonitorParamsConst::DMX_MAX_CHANNELS, &value16) == SSCAN_OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxMaxChannels = value16;
-			m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS;
+			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::MAX_CHANNELS;
 		}
 		return;
 	}
@@ -175,13 +175,15 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	len = 3;
 	if (Sscan::Char(pLine, DMXMonitorParamsConst::FORMAT, value, &len) == SSCAN_OK) {
 		if (memcmp(value, "pct", 3) == 0) {
-			m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_PCT;
+			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT;
+			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::FORMAT;
 		} else if (memcmp(value, "dec", 3) == 0) {
-			m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_DEC;
+			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC;
+			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::FORMAT;
 		} else {
-			m_tDMXMonitorParams.tFormat = DMX_MONITOR_FORMAT_HEX;
+			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
+			m_tDMXMonitorParams.nSetList &= ~DMXMonitorParamsMask::FORMAT;
 		}
-		m_tDMXMonitorParams.nSetList |= DMX_MONITOR_PARAMS_MASK_FORMAT;
 		return;
 	}
 }
@@ -194,18 +196,16 @@ void DMXMonitorParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DMXMonitorParamsConst::FILE_NAME);
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, static_cast<int>(m_tDMXMonitorParams.nDmxStartAddress));
+	if (isMaskSet(DMXMonitorParamsMask::START_ADDRESS)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tDMXMonitorParams.nDmxStartAddress);
 	}
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_MAX_CHANNELS)) {
-		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, static_cast<int>(m_tDMXMonitorParams.nDmxMaxChannels));
+	if (isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS)) {
+		printf(" %s=%d\n", DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_tDMXMonitorParams.nDmxMaxChannels);
 	}
 
-	if (isMaskSet(DMX_MONITOR_PARAMS_MASK_FORMAT)) {
-		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT,
-				static_cast<int>(m_tDMXMonitorParams.tFormat),
-				m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
+	if (isMaskSet(DMXMonitorParamsMask::FORMAT)) {
+		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_tDMXMonitorParams.tFormat), m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
 	}
 #endif
 }

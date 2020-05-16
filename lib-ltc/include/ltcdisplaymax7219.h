@@ -26,7 +26,6 @@
 #define LTCDISPLAYMAX7219_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "ltcdisplaymax7219set.h"
 

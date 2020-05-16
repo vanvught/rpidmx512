@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscserver.h"
 #include "osc.h"
@@ -50,21 +50,7 @@
 
 #define SOFTWARE_VERSION "1.0"
 
-enum {
-	DMX_UNIVERSE = 512,
-	DMX_MAX_VALUE = 255
-};
-
-OscServer::OscServer(void):
-	m_nPortIncoming(OSCSERVER_DEFAULT_PORT_INCOMING),
-	m_nPortOutgoing(OSCSERVER_DEFAULT_PORT_OUTGOING),
-	m_nHandle(-1),
-	m_bPartialTransmission(false),
-	m_bEnableNoChangeUpdate(false),
-	m_nLastChannel(0),
-	m_pOscServerHandler(0),
-	m_pLightSet(0)
-{
+OscServer::OscServer(void) {
 	memset(m_aPath, 0, sizeof(m_aPath));
 	strcpy(m_aPath, OSCSERVER_DEFAULT_PATH_PRIMARY);
 
@@ -80,14 +66,14 @@ OscServer::OscServer(void):
 	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != 0);
 
-	m_pData  = new uint8_t[DMX_UNIVERSE];
+	m_pData  = new uint8_t[DMX_UNIVERSE_SIZE];
 	assert(m_pData != 0);
 
-	for (unsigned i = 0; i < DMX_UNIVERSE; i++) {
+	for (unsigned i = 0; i < DMX_UNIVERSE_SIZE; i++) {
 		m_pData[i] = 0;
 	}
 
-	m_pOsc  = new uint8_t[DMX_UNIVERSE];
+	m_pOsc  = new uint8_t[DMX_UNIVERSE_SIZE];
 	assert(m_pOsc != 0);
 
 	snprintf(m_Os, sizeof(m_Os), "[V%s] %s", SOFTWARE_VERSION, __DATE__);
@@ -248,7 +234,7 @@ int OscServer::GetChannel(const char* p) {
 		s++;
 	}
 
-	if (nChannel > DMX_UNIVERSE) {
+	if (nChannel > DMX_UNIVERSE_SIZE) {
 		return -1;
 	}
 
@@ -257,7 +243,7 @@ int OscServer::GetChannel(const char* p) {
 
 bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
 	assert(pData != 0);
-	assert(nLength <= DMX_UNIVERSE);
+	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	bool isChanged = false;
 
@@ -266,7 +252,7 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 
 	uint16_t nEnd = nStartChannel + nLength;
 
-	assert(nEnd <= DMX_UNIVERSE);
+	assert(nEnd <= DMX_UNIVERSE_SIZE);
 
 	for (uint32_t i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
@@ -284,7 +270,7 @@ int OscServer::Run(void) {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
 
 	if (nBytesReceived == 0) {
 		return 0;
@@ -328,20 +314,20 @@ int OscServer::Run(void) {
 		if (OSC::isMatch(m_pBuffer, m_aPath)) {
 			const int nArgc = Msg.GetArgc();
 
-			if ((nArgc == 1) && (Msg.GetType(0) == OSC_BLOB)) {
+			if ((nArgc == 1) && (Msg.GetType(0) == OscType::BLOB)) {
 				DEBUG_PUTS("Blob received");
 
 				OSCBlob blob = Msg.GetBlob(0);
 				const int size = blob.GetDataSize();
 
-				if (size <= DMX_UNIVERSE) {
-					const uint8_t *ptr = reinterpret_cast<const uint8_t*>(blob.GetDataPtr());
+				if (size <= DMX_UNIVERSE_SIZE) {
+					const uint8_t *ptr = blob.GetDataPtr();
 
 					bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
 
 					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
-						if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE)) {
-							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+						if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE_SIZE)) {
+							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
 						} else {
 							m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
 							m_pLightSet->SetData(0, m_pData, m_nLastChannel);
@@ -351,20 +337,20 @@ int OscServer::Run(void) {
 					DEBUG_PUTS("Too many channels");
 					return -1;
 				}
-			} else if ((nArgc == 2) && (Msg.GetType(0) == OSC_INT32)) {
+			} else if ((nArgc == 2) && (Msg.GetType(0) == OscType::INT32)) {
 				uint16_t nChannel = (1 + Msg.GetInt(0));
 
-				if ((nChannel < 1) || (nChannel > DMX_UNIVERSE)) {
+				if ((nChannel < 1) || (nChannel > DMX_UNIVERSE_SIZE)) {
 					DEBUG_PRINTF("Invalid channel [%d]", nChannel);
 					return -1;
 				}
 
 				uint8_t nData;
 
-				if (Msg.GetType(1) == OSC_INT32) {
+				if (Msg.GetType(1) == OscType::INT32) {
 					DEBUG_PUTS("ii received");
 					nData = Msg.GetInt(1);
-				} else if (Msg.GetType(1) == OSC_FLOAT) {
+				} else if (Msg.GetType(1) == OscType::FLOAT) {
 					DEBUG_PUTS("if received");
 					nData = (Msg.GetFloat(1) * DMX_MAX_VALUE);
 				} else {
@@ -377,7 +363,7 @@ int OscServer::Run(void) {
 
 				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 					if (!m_bPartialTransmission) {
-						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
 					} else {
 						m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
@@ -390,13 +376,13 @@ int OscServer::Run(void) {
 			if (nArgc == 1) { // /path/N 'i' or 'f'
 				const uint16_t nChannel = GetChannel(m_pBuffer);
 
-				if (nChannel >= 1 && nChannel <= DMX_UNIVERSE) {
+				if (nChannel >= 1 && nChannel <= DMX_UNIVERSE_SIZE) {
 					uint8_t nData;
 
-					if (Msg.GetType(0) == OSC_INT32) {
+					if (Msg.GetType(0) == OscType::INT32) {
 						DEBUG_PUTS("i received");
 						nData = Msg.GetInt(0);
-					} else if (Msg.GetType(0) == OSC_FLOAT) {
+					} else if (Msg.GetType(0) == OscType::FLOAT) {
 						DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
 						nData = (Msg.GetFloat(0) * DMX_MAX_VALUE);
 					} else {
@@ -409,7 +395,7 @@ int OscServer::Run(void) {
 
 					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 						if (!m_bPartialTransmission) {
-							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE);
+							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
 						} else {
 							m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 							m_pLightSet->SetData(0, m_pData, m_nLastChannel);

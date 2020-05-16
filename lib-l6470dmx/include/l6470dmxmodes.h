@@ -27,7 +27,6 @@
 #define L6470DMXMODES_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "l6470.h"
 #include "l6470dmxmode.h"
@@ -60,7 +59,7 @@ public:
 	}
 
 public: // RDM
-	uint8_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress(void) {
 		return m_nDmxStartAddress;
 	}
 
@@ -68,12 +67,12 @@ public: // RDM
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
 
-	uint8_t GetDmxFootPrint(void) {
+	uint16_t GetDmxFootPrint(void) {
 		return m_DmxFootPrint;
 	}
 
 public:
-	static uint8_t GetDmxFootPrintMode(uint8_t);
+	static uint16_t GetDmxFootPrintMode(uint8_t);
 
 private:
 	bool IsDmxDataChanged(const uint8_t *);
@@ -86,7 +85,7 @@ private:
 	TL6470DmxModes m_nMode;
 	uint16_t m_nDmxStartAddress;
 	L6470DmxMode *m_pDmxMode;
-	uint8_t m_DmxFootPrint;
+	uint16_t m_DmxFootPrint;
 	uint8_t *m_pDmxData;
 };
 

@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "storemotors.h"
 
@@ -180,7 +180,7 @@ void StoreMotors::SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAdd
 
 	DEBUG_PRINTF("nOffsetModeParms=%d", nOffsetModeParms);
 
-	SpiFlashStore::Get()->Update(STORE_MOTORS, nOffsetModeParms + __builtin_offsetof(struct TModeParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), MODE_PARAMS_MASK_DMX_START_ADDRESS, nOffsetModeParms);
+	SpiFlashStore::Get()->Update(STORE_MOTORS, nOffsetModeParms + __builtin_offsetof(struct TModeParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), ModeParamsMask::DMX_START_ADDRESS, nOffsetModeParms);
 
 	DEBUG_EXIT
 }

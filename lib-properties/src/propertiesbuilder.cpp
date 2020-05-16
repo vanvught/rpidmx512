@@ -25,7 +25,7 @@
 
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "propertiesbuilder.h"
 
@@ -74,7 +74,7 @@ bool PropertiesBuilder::Add(const char *pProperty, uint32_t nValue, bool bIsSet)
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -101,7 +101,7 @@ bool PropertiesBuilder::Add(const char* pProperty, float fValue, bool bIsSet, ui
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -128,7 +128,7 @@ bool PropertiesBuilder::Add(const char *pProperty, const char *pValue, bool bIsS
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -155,7 +155,7 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -182,7 +182,7 @@ bool PropertiesBuilder::AddHex8(const char *pProperty, uint8_t nValue, bool bIsS
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -209,7 +209,7 @@ bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2],
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -236,7 +236,7 @@ bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, b
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 
@@ -257,7 +257,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 		return false;
 	}
 
-	m_nSize += i;
+	m_nSize += static_cast<uint32_t>(i);
 
 	DEBUG_PRINTF("pComment=%s, m_nLength=%d, m_nSize=%d", pComment, static_cast<int>(m_nLength), static_cast<int>(m_nSize));
 

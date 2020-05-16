@@ -109,7 +109,7 @@ int fgetc(FILE *stream) {
 	return (EOF);
 }
 
-size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t fread(void *ptr, size_t size, size_t nmemb, __attribute__((unused)) FILE *stream) {
 	UINT bytes_read;
 
 	s_fresult = f_read(&file_object, ptr, (UINT) (size * nmemb), &bytes_read);
@@ -122,7 +122,7 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 	return 0;
 }
 
-int fseek(FILE *stream, long offset, int whence) {
+int fseek(__attribute__((unused)) FILE *stream, long offset, int whence) {
 	if (whence == SEEK_SET) {
 		s_fresult = f_lseek(&file_object, (FSIZE_t) offset);
 	} else if (whence == SEEK_END) {
@@ -138,7 +138,7 @@ int fseek(FILE *stream, long offset, int whence) {
 	return -1;
 }
 
-long ftell(FILE *stream) {
+long ftell(__attribute__((unused)) FILE *stream) {
 	return (long) f_tell(&file_object);
 }
 
@@ -160,11 +160,11 @@ char *fgets(char *s, int size, FILE *stream) {
 	return s;
 }
 
-void clearerr(FILE *stream) {
+void clearerr(__attribute__((unused)) FILE *stream) {
 	s_fresult = 0;
 }
 
-int ferror(FILE *stream) {
+int ferror(__attribute__((unused)) FILE *stream) {
 	return s_fresult == FR_OK ? 0 : EOF;
 }
 
@@ -219,7 +219,7 @@ static int fatfs_to_errno(FRESULT fresult) {
  *  The following API´s are implemented when SD_WRITE_SUPPORT is defined
  */
 
-int fputs(const char *s, FILE *stream) {
+int fputs(__attribute__((unused)) const char *s, __attribute__((unused)) FILE *stream) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
 	return -1;
@@ -235,10 +235,10 @@ int fputs(const char *s, FILE *stream) {
 #endif
 }
 
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
+size_t fwrite(__attribute__((unused)) const void *ptr, __attribute__((unused)) size_t size, __attribute__((unused)) size_t nmemb, __attribute__((unused)) FILE *stream) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
-	return -1;
+	return 0;
 #else
 	UINT bytes_write;
 
@@ -249,11 +249,11 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream) {
 		return (size_t) bytes_write;
 	}
 
-	return -1;
+	return 0;
 #endif
 }
 
-int unlink(const char *pathname) {
+int unlink(__attribute__((unused)) const char *pathname) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
 	return -1;
@@ -275,7 +275,7 @@ static DIR s_dir;
 static dirent_t s_dirent;
 #endif
 
-DIR *opendir(const char *dirname) {
+DIR *opendir(__attribute__((unused)) const char *dirname) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
 	return 0;
@@ -306,7 +306,7 @@ DIR *opendir(const char *dirname) {
  * If an error occurs, NULL is returned and errno is set appropriately.
  */
 
-struct dirent *readdir(DIR *dirp) {
+struct dirent *readdir(__attribute__((unused)) DIR *dirp) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
 	return 0;
@@ -340,7 +340,7 @@ struct dirent *readdir(DIR *dirp) {
 #endif
 }
 
-int closedir(DIR *dirp) {
+int closedir(__attribute__((unused)) DIR *dirp) {
 #if !defined (SD_WRITE_SUPPORT)
 	errno = ENOSYS;
 	return -1;

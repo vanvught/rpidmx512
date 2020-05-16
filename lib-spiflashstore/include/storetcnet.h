@@ -36,7 +36,6 @@ public:
 	void Update(const struct TTCNetParams *pTCNetParams);
 	void Copy(struct TTCNetParams *pTCNetParams);
 
-public:
 	static StoreTCNet *Get(void) {
 		return s_pThis;
 	}

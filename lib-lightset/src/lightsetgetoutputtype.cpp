@@ -24,11 +24,11 @@
  */
 
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "lightset.h"
 
-constexpr char sOutput[LIGHTSET_OUTPUT_TYPE_UNDEFINED][4] = {"dmx", "spi", "mon"};
+static constexpr char sOutput[LIGHTSET_OUTPUT_TYPE_UNDEFINED][4] = {"dmx", "spi", "mon"};
 
 const char *LightSet::GetOutputType(enum TLightSetOutputType type) {
 	assert(type < LIGHTSET_OUTPUT_TYPE_UNDEFINED);

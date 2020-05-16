@@ -57,7 +57,7 @@ void wifi_ap_init(const char *password) {
  *
  * @return
  */
-const bool wifi_ap_is_open(void) {
+bool wifi_ap_is_open(void) {
 	return is_ap_open;
 }
 

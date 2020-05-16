@@ -2,7 +2,7 @@
  * @file oscserverhandler.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,14 @@
 
 class OscServerHandler {
 public:
-	virtual ~OscServerHandler(void);
+	virtual ~OscServerHandler(void) {
+
+	}
 
 	virtual void Blackout(void)=0;
 	virtual void Update(void)=0;
 
 	virtual void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing)=0;
-
-private:
 };
-
-
 
 #endif /* OSCSERVERHANDLER_H_ */

@@ -28,15 +28,14 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "lightset.h"
 
-enum ParseCode {
-	PARSE_FAILED,
-	PARSE_SERIAL,
-	PARSE_NONE,
-	PARSE_EOF
+enum class DmxSerialParseCode {
+	FAILED,
+	SERIAL,
+	NONE,
+	EOFILE
 };
 
 class DmxSerialChannelData {
@@ -51,13 +50,13 @@ public:
 	void Dump(void);
 
 private:
-	ParseCode GetNextLine(void);
-	ParseCode ParseLine(const char *pLine);
-	ParseCode ParseSerialData(const char *pLine);
+	DmxSerialParseCode GetNextLine(void);
+	DmxSerialParseCode ParseLine(const char *pLine);
+	DmxSerialParseCode ParseSerialData(const char *pLine);
 
 private:
-	FILE *m_pFile;
-	uint8_t m_nChannelValue;
+	FILE *m_pFile = 0;
+	uint8_t m_nChannelValue = 0;
 	uint8_t m_nChannelDataLength[DMX_UNIVERSE_SIZE];
 	uint8_t *m_pChannelData[DMX_UNIVERSE_SIZE];
 };

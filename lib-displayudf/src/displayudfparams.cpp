@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "displayudfparams.h"
 #include "displayudfparamsconst.h"
@@ -132,15 +132,20 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	uint8_t value8;
 
 	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &value8) == SSCAN_OK) {
-		m_tDisplayUdfParams.nSleepTimeout = value8;
-		m_tDisplayUdfParams.nSetList |= DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT;
+		if (value8 != DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
+			m_tDisplayUdfParams.nSleepTimeout = value8;
+			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::SLEEP_TIMEOUT;
+		} else {
+			m_tDisplayUdfParams.nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT;
+			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::SLEEP_TIMEOUT;
+		}
 		return;
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 		if (Sscan::Uint8(pLine, pArray[i], &value8) == SSCAN_OK) {
 			m_tDisplayUdfParams.nLabelIndex[i] = value8;
-			m_tDisplayUdfParams.nSetList |= (1 << i);
+			m_tDisplayUdfParams.nSetList |= (1U << i);
 			return;
 		}
 	}
@@ -159,13 +164,13 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 
 	PropertiesBuilder builder(DisplayUdfParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT));
+	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT));
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (!isMaskSet(1 << i)) {
+		if (!isMaskSet(1U << i)) {
 			m_tDisplayUdfParams.nLabelIndex[i] = DisplayUdf::Get()->GetLabel(i);
 		}
-		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1 << i));
+		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1U << i));
 	}
 
 	nSize = builder.GetSize();
@@ -186,12 +191,12 @@ void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
-	if (isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT)) {
+	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
 		Display::Get()->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (isMaskSet(1 << i)) {
+		if (isMaskSet(1U << i)) {
 			pDisplayUdf->Set(m_tDisplayUdfParams.nLabelIndex[i], static_cast<enum TDisplayUdfLabels>(i));
 		}
 	}
@@ -205,12 +210,12 @@ void DisplayUdfParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DisplayUdfParamsConst::FILE_NAME);
 
-	if (isMaskSet(DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT)) {
+	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
 		printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout);
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (isMaskSet(1 << i)) {
+		if (isMaskSet(1U << i)) {
 			printf(" %s=%d\n", pArray[i], m_tDisplayUdfParams.nLabelIndex[i]);
 		}
 	}

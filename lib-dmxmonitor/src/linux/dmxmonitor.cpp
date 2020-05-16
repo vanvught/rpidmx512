@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,20 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxmonitor.h"
 
-enum {
-	DMX_DEFAULT_MAX_CHANNELS = 32,
-	DMX_DEFAULT_START_ADDRESS = 1
-};
-
-DMXMonitor::DMXMonitor(void) :
-		m_tFormat(DMX_MONITOR_FORMAT_HEX),
-		m_nSlots(0),
-		m_nDmxStartAddress(DMX_DEFAULT_START_ADDRESS),
-		m_nMaxChannels(DMX_DEFAULT_MAX_CHANNELS)
-
-{
+DMXMonitor::DMXMonitor(void) {
 	for (uint32_t i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
 		m_bIsStarted[i] = false;
 	}
 }
 
 DMXMonitor::~DMXMonitor(void) {
-
 }
 
 void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
@@ -124,12 +111,12 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 			static_cast<int>(m_nMaxChannels),
 			static_cast<int>(m_nDmxStartAddress));
 
-	for (i = m_nDmxStartAddress - 1, j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
+	for (i = static_cast<uint32_t>(m_nDmxStartAddress - 1), j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		switch (m_tFormat) {
-		case DMX_MONITOR_FORMAT_PCT:
+		case DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT:
 			printf("%3d ", ((pData[i] * 100)) / 255);
 			break;
-		case DMX_MONITOR_FORMAT_DEC:
+		case DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC:
 			printf("%3d ", pData[i]);
 			break;
 		default:

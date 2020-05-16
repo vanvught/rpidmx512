@@ -28,39 +28,42 @@
  #include <stdio.h>
 #endif
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "tlc59711.h"
 
 #include "hal_spi.h"
 
-#define TLC59711_COMMAND			0x25
-	#define TLC59711_COMMAND_SHIFT	26
+#define TLC59711_RGB_8BIT_VALUE(x)	((uint8_t)(x))
+#define TLC59711_RGB_16BIT_VALUE(x)	((uint16_t)(x))
 
-#define TLC59711_OUTTMG_DEFAULT		0
-	#define TLC59711_OUTTMG_SHIFT	25
+#define TLC59711_COMMAND			0x25U
+	#define TLC59711_COMMAND_SHIFT	26U
 
-#define TLC59711_EXTGCK_DEFAULT		0
-	#define TLC59711_EXTGCK_SHIFT	24
+#define TLC59711_OUTTMG_DEFAULT		0U
+	#define TLC59711_OUTTMG_SHIFT	25U
 
-#define TLC59711_TMGRST_DEFAULT		1
-	#define TLC59711_TMGRST_SHIFT	23
+#define TLC59711_EXTGCK_DEFAULT		0U
+	#define TLC59711_EXTGCK_SHIFT	24U
 
-#define TLC59711_DSPRPT_DEFAULT		1
-	#define TLC59711_DSPRPT_SHIFT	22
+#define TLC59711_TMGRST_DEFAULT		1U
+	#define TLC59711_TMGRST_SHIFT	23U
 
-#define TLC59711_BLANK_DEFAULT		0
-	#define TLC59711_BLANK_SHIFT	21
+#define TLC59711_DSPRPT_DEFAULT		1U
+	#define TLC59711_DSPRPT_SHIFT	22U
 
-#define TLC59711_GS_DEFAULT			0x7F
-	#define TLC59711_GS_MASK		0x7F
-	#define TLC59711_GS_RED_SHIFT	0
-	#define TLC59711_GS_GREEN_SHIFT	7
-	#define TLC59711_GS_BLUE_SHIFT	14
+#define TLC59711_BLANK_DEFAULT		0U
+	#define TLC59711_BLANK_SHIFT	21U
+
+#define TLC59711_GS_DEFAULT			0x7FU
+	#define TLC59711_GS_MASK		0x7FU
+	#define TLC59711_GS_RED_SHIFT	0U
+	#define TLC59711_GS_GREEN_SHIFT	7U
+	#define TLC59711_GS_BLUE_SHIFT	14U
 
 TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_nBoards(nBoards),
-	m_nSpiSpeedHz(nSpiSpeedHz == 0 ? TLC59711_SPI_SPEED_DEFAULT : nSpiSpeedHz),
+	m_nSpiSpeedHz(nSpiSpeedHz == 0 ? TLC59711SpiSpeed::DEFAULT : nSpiSpeedHz),
 	m_nFirst32(0),
 	m_pBuffer(0),
 	m_pBufferBlackout(0),
@@ -68,15 +71,15 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 {
 	FUNC_PREFIX(spi_begin());
 
-	if (m_nSpiSpeedHz > TLC59711_SPI_SPEED_MAX) {
-		m_nSpiSpeedHz = TLC59711_SPI_SPEED_MAX;
+	if (m_nSpiSpeedHz > TLC59711SpiSpeed::MAX) {
+		m_nSpiSpeedHz = TLC59711SpiSpeed::MAX;
 	}
 
 	if (nBoards == 0) {
 		nBoards = 1;
 	}
 
-	m_nBufSize = nBoards * TLC59711_16BIT_CHANNELS;
+	m_nBufSize = nBoards * TLC59711Channels::U16BIT;
 
 	m_pBuffer = new uint16_t[m_nBufSize];
 	assert(m_pBuffer != 0);
@@ -108,10 +111,10 @@ TLC59711::~TLC59711(void) {
 }
 
 bool TLC59711::Get(uint8_t nChannel, uint16_t &nValue) {
-	const uint8_t nBoardIndex = nChannel / TLC59711_OUT_CHANNELS;
+	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
-		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + ((12 * nBoardIndex) + 11 - nChannel);
+		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + ((12 * nBoardIndex) + 11 - nChannel);
 		nValue =  __builtin_bswap16(m_pBuffer[nIndex]);
 		return true;
 	}
@@ -120,10 +123,10 @@ bool TLC59711::Get(uint8_t nChannel, uint16_t &nValue) {
 }
 
 void TLC59711::Set(uint8_t nChannel, uint16_t nValue) {
-	const uint8_t nBoardIndex = nChannel / TLC59711_OUT_CHANNELS;
+	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
-		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + ((12 * nBoardIndex) + 11 - nChannel);
+		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + ((12 * nBoardIndex) + 11 - nChannel);
 		m_pBuffer[nIndex] = __builtin_bswap16(nValue);
 	}
 #ifndef NDEBUG
@@ -136,10 +139,10 @@ void TLC59711::Set(uint8_t nChannel, uint16_t nValue) {
 }
 
 bool TLC59711::GetRgb(uint8_t nOut, uint16_t& nRed, uint16_t& nGreen, uint16_t& nBlue) {
-	const uint8_t nBoardIndex = nOut / 4;
+	const uint32_t nBoardIndex = nOut / 4;
 
 	if (nBoardIndex < m_nBoards) {
-		uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + (((4 * nBoardIndex) + 3 - nOut) * 3);
+		uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + (((4 * nBoardIndex) + 3 - nOut) * 3);
 		nBlue = __builtin_bswap16(m_pBuffer[nIndex++]);
 		nGreen = __builtin_bswap16(m_pBuffer[nIndex++]);
 		nRed = __builtin_bswap16(m_pBuffer[nIndex]);
@@ -150,10 +153,10 @@ bool TLC59711::GetRgb(uint8_t nOut, uint16_t& nRed, uint16_t& nGreen, uint16_t& 
 }
 
 void TLC59711::Set(uint8_t nChannel, uint8_t nValue) {
-	const uint8_t nBoardIndex = nChannel / TLC59711_OUT_CHANNELS;
+	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
-		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + ((12 * nBoardIndex) + 11 - nChannel);
+		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + ((12 * nBoardIndex) + 11 - nChannel);
 		m_pBuffer[nIndex] = static_cast<uint16_t>(nValue) << 8 | static_cast<uint16_t>(nValue);
 	}
 #ifndef NDEBUG
@@ -166,10 +169,10 @@ void TLC59711::Set(uint8_t nChannel, uint8_t nValue) {
 }
 
 void TLC59711::SetRgb(uint8_t nOut, uint16_t nRed, uint16_t nGreen, uint16_t nBlue) {
-	const uint8_t nBoardIndex = nOut / 4;
+	const uint32_t nBoardIndex = nOut / 4;
 
 	if (nBoardIndex < m_nBoards) {
-		uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + (((4 * nBoardIndex) +3 - nOut) * 3);
+		uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + (((4 * nBoardIndex) +3 - nOut) * 3);
 		m_pBuffer[nIndex++] = __builtin_bswap16(nBlue);
 		m_pBuffer[nIndex++] = __builtin_bswap16(nGreen);
 		m_pBuffer[nIndex] = __builtin_bswap16(nRed);
@@ -184,10 +187,10 @@ void TLC59711::SetRgb(uint8_t nOut, uint16_t nRed, uint16_t nGreen, uint16_t nBl
 }
 
 void TLC59711::SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const uint8_t nBoardIndex = nOut / 4;
+	const uint32_t nBoardIndex = nOut / 4;
 
 	if (nBoardIndex < m_nBoards) {
-		uint32_t nIndex = 2 + (nBoardIndex * TLC59711_16BIT_CHANNELS) + (((4 * nBoardIndex) + 3 - nOut) * 3);
+		uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + (((4 * nBoardIndex) + 3 - nOut) * 3);
 		m_pBuffer[nIndex++] = static_cast<uint16_t>(nBlue) << 8 | static_cast<uint16_t>(nBlue);
 		m_pBuffer[nIndex++] = static_cast<uint16_t>(nGreen) << 8 | static_cast<uint16_t>(nGreen);
 		m_pBuffer[nIndex] = static_cast<uint16_t>(nRed) << 8 | static_cast<uint16_t>(nRed);
@@ -202,70 +205,70 @@ void TLC59711::SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue)
 }
 
 int TLC59711::GetBlank(void) const {
-	return (m_nFirst32 & (1 << TLC59711_BLANK_SHIFT)) == (1 << TLC59711_BLANK_SHIFT);
+	return (m_nFirst32 & (1U << TLC59711_BLANK_SHIFT)) == (1U << TLC59711_BLANK_SHIFT);
 }
 
 void TLC59711::SetBlank(bool pBlank) {
-	m_nFirst32 &= ~(1 << TLC59711_BLANK_SHIFT);
+	m_nFirst32 &= ~(1U << TLC59711_BLANK_SHIFT);
 
 	if (pBlank) {
-		m_nFirst32 |= (1 << TLC59711_BLANK_SHIFT);
+		m_nFirst32 |= (1U << TLC59711_BLANK_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetDisplayRepeat(void) const {
-	return (m_nFirst32 & (1 << TLC59711_DSPRPT_SHIFT)) == (1 << TLC59711_DSPRPT_SHIFT);
+	return (m_nFirst32 & (1U << TLC59711_DSPRPT_SHIFT)) == (1U << TLC59711_DSPRPT_SHIFT);
 }
 
 void TLC59711::SetDisplayRepeat(bool pDisplayRepeat) {
-	m_nFirst32 &= ~(1 << TLC59711_DSPRPT_SHIFT);
+	m_nFirst32 &= ~(1U << TLC59711_DSPRPT_SHIFT);
 
 	if (pDisplayRepeat) {
-		m_nFirst32 |= (1 << TLC59711_DSPRPT_SHIFT);
+		m_nFirst32 |= (1U << TLC59711_DSPRPT_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetDisplayTimingReset(void) const {
-	return (m_nFirst32 & (1 << TLC59711_TMGRST_SHIFT)) == (1 << TLC59711_TMGRST_SHIFT);
+	return (m_nFirst32 & (1U << TLC59711_TMGRST_SHIFT)) == (1U << TLC59711_TMGRST_SHIFT);
 }
 
 void TLC59711::SetDisplayTimingReset(bool pDisplayTimingReset) {
-	m_nFirst32 &= ~(1 << TLC59711_TMGRST_SHIFT);
+	m_nFirst32 &= ~(1U << TLC59711_TMGRST_SHIFT);
 
 	if (pDisplayTimingReset) {
-		m_nFirst32 |= (1 << TLC59711_TMGRST_SHIFT);
+		m_nFirst32 |= (1U << TLC59711_TMGRST_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetExternalClock(void) const {
-	return (m_nFirst32 & (1 << TLC59711_EXTGCK_SHIFT)) == (1 << TLC59711_EXTGCK_SHIFT);
+	return (m_nFirst32 & (1U << TLC59711_EXTGCK_SHIFT)) == (1U << TLC59711_EXTGCK_SHIFT);
 }
 
 void TLC59711::SetExternalClock(bool pExternalClock) {
-	m_nFirst32 &= ~(1 << TLC59711_EXTGCK_SHIFT);
+	m_nFirst32 &= ~(1U << TLC59711_EXTGCK_SHIFT);
 
 	if (pExternalClock) {
-		m_nFirst32 |= (1 << TLC59711_EXTGCK_SHIFT);
+		m_nFirst32 |= (1U << TLC59711_EXTGCK_SHIFT);
 	}
 
 	UpdateFirst32();
 }
 
 int TLC59711::GetOnOffTiming(void) const {
-	return (m_nFirst32 & (1 << TLC59711_OUTTMG_SHIFT)) == (1 << TLC59711_OUTTMG_SHIFT);
+	return (m_nFirst32 & (1U << TLC59711_OUTTMG_SHIFT)) == (1U << TLC59711_OUTTMG_SHIFT);
 }
 
 void TLC59711::SetOnOffTiming(bool pOnOffTiming) {
-	m_nFirst32 &= ~(1 << TLC59711_OUTTMG_SHIFT);
+	m_nFirst32 &= ~(1U << TLC59711_OUTTMG_SHIFT);
 
 	if (pOnOffTiming) {
-		m_nFirst32 |= (1 << TLC59711_OUTTMG_SHIFT);
+		m_nFirst32 |= (1U << TLC59711_OUTTMG_SHIFT);
 	}
 
 	UpdateFirst32();
@@ -306,7 +309,7 @@ void TLC59711::SetGbcBlue(uint8_t nValue) {
 
 void TLC59711::UpdateFirst32(void) {
 	for (uint32_t i = 0; i < m_nBoards; i++) {
-		const uint32_t nIndex = TLC59711_16BIT_CHANNELS * i;
+		const uint32_t nIndex = TLC59711Channels::U16BIT * i;
 		m_pBuffer[nIndex] = __builtin_bswap16(static_cast<uint16_t>((m_nFirst32 >> 16)));
 		m_pBuffer[nIndex + 1] = __builtin_bswap16(static_cast<uint16_t>(m_nFirst32));
 	}
@@ -340,7 +343,7 @@ void TLC59711::Dump(void) {
 
 	printf("\n");
 
-	for (uint32_t i = 0; i < m_nBoards * TLC59711_OUT_CHANNELS; i++) {
+	for (uint32_t i = 0; i < m_nBoards * TLC59711Channels::OUT; i++) {
 		uint16_t nValue = 0;
 		if (Get(i, nValue)) {
 			printf("\tChannel:%-3d, Value=0x%.4X\n", static_cast<int>(i), nValue);

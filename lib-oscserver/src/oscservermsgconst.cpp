@@ -1,5 +1,5 @@
 /**
- * @file oscclientled.cpp
+ * @file oscclientconst.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include "oscclient.h"
+#include "oscservermsgconst.h"
 
-OscClientLed::~OscClientLed(void) {
-
-}
+const char OscServerMsgConst::PARAMS[] = "Setting OSC Server parameters";
+const char OscServerMsgConst::START[] = "Starting the OSC Server";
+const char OscServerMsgConst::STARTED[] = "OSC Server started";

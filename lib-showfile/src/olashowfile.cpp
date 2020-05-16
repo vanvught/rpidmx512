@@ -26,7 +26,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "olashowfile.h"
 #include "showfile.h"
@@ -35,14 +35,7 @@
 
 #include "debug.h"
 
-OlaShowFile::OlaShowFile(void) :
-	m_tParseCode(PARSE_FAILED),
-	m_tState(STATE_IDLE),
-	m_nDelayMillis(0),
-	m_nLastMillis(0),
-	m_nUniverse(0),
-	m_nDmxDataLength(0)
-{
+OlaShowFile::OlaShowFile(void) {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
@@ -60,9 +53,9 @@ void OlaShowFile::ShowFileStart(void) {
 	m_nDelayMillis = 0;
 	m_nLastMillis = 0;
 
-	static_cast<void>(fseek(m_pShowFile, 0L, SEEK_SET));
+	fseek(m_pShowFile, 0L, SEEK_SET);
 
-	m_tState = STATE_IDLE;
+	m_tState = OlaState::IDLE;
 
 	DEBUG1_EXIT
 }
@@ -83,25 +76,25 @@ void OlaShowFile::ShowFileResume(void) {
 }
 
 void OlaShowFile::ShowFileRun(void) {
-	if (m_tState != STATE_TIME_WAITING) {
+	if (m_tState != OlaState::TIME_WAITING) {
 		m_tParseCode = GetNextLine();
 
-		if (m_tParseCode == PARSE_DMX) {
+		if (m_tParseCode == OlaParseCode::DMX) {
 			if (m_nDmxDataLength != 0) {
 				m_pShowFileProtocolHandler->DmxOut(m_nUniverse, m_DmxData, m_nDmxDataLength);
 			}
-		} else if (m_tParseCode == PARSE_TIME) {
+		} else if (m_tParseCode == OlaParseCode::TIME) {
 			if (m_nDelayMillis != 0) {
 				if (m_nDmxDataLength != 0) {
 					m_pShowFileProtocolHandler->DmxSync();
 				}
 			}
-			m_tState = STATE_TIME_WAITING;
-		} else if (m_tParseCode == PARSE_EOF) {
+			m_tState = OlaState::TIME_WAITING;
+		} else if (m_tParseCode == OlaParseCode::EOFILE) {
 			if (m_bDoLoop) {
-				static_cast<void>(fseek(m_pShowFile, 0L, SEEK_SET));
+				fseek(m_pShowFile, 0L, SEEK_SET);
 			} else {
-				SetShowFileStatus(SHOWFILE_STATUS_ENDED);
+				SetShowFileStatus(ShowFileStatus::ENDED);
 			}
 		}
 	}
@@ -110,11 +103,11 @@ void OlaShowFile::ShowFileRun(void) {
 
 	if ((nMillis - m_nLastMillis) >= m_nDelayMillis) {
 		m_nLastMillis = nMillis;
-		m_tState = STATE_PARSING_DMX;
+		m_tState = OlaState::PARSING_DMX;
 	}
 }
 
-ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
+OlaParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 	char *p = const_cast<char *>(pLine);
 	int64_t k = 0;
 	uint32_t nLength = 0;
@@ -124,7 +117,7 @@ ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 
 		if (k > 255) {
 			DEBUG1_EXIT
-			return PARSE_FAILED;
+			return OlaParseCode::FAILED;
 		}
 
 		p++;
@@ -133,7 +126,7 @@ ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 
 			if (nLength > 512) {
 				DEBUG1_EXIT
-				return PARSE_FAILED;
+				return OlaParseCode::FAILED;
 			}
 
 			m_DmxData[nLength] = k;
@@ -146,11 +139,11 @@ ParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 
 	m_nDmxDataLength  = nLength;
 
-	return PARSE_DMX;
+	return OlaParseCode::DMX;
 }
 
-enum ParseCode OlaShowFile::ParseLine(const char *pLine) {
-	char *p = const_cast<char *>(pLine);
+OlaParseCode OlaShowFile::ParseLine(const char *pLine) {
+	char *p = const_cast<char*>(pLine);
 	int32_t k = 0;
 
 	while (isdigit(*p) == 1) {
@@ -159,24 +152,24 @@ enum ParseCode OlaShowFile::ParseLine(const char *pLine) {
 	}
 
 	if (k > static_cast<int32_t>((static_cast<uint16_t>(~0)))) {
-		return PARSE_FAILED;
+		return OlaParseCode::FAILED;
 	}
 
 	if (*p++ == ' ') {
 		m_nDelayMillis = 0;
-		m_nUniverse = k;
+		m_nUniverse = static_cast<uint32_t>(k);
 		return ParseDmxData(p);
 	}
 
-	m_nDelayMillis = k;
+	m_nDelayMillis = static_cast<uint32_t>(k);
 
-	return PARSE_TIME;
+	return OlaParseCode::TIME;
 }
 
-ParseCode OlaShowFile::GetNextLine(void) {
+OlaParseCode OlaShowFile::GetNextLine(void) {
 	if (m_pShowFile != NULL) {
 		if (fgets(s_buffer, (sizeof(s_buffer) - 1), m_pShowFile) != s_buffer) {
-			return PARSE_EOF;
+			return OlaParseCode::EOFILE;
 		}
 
 		if (isdigit(s_buffer[0])) {
@@ -184,5 +177,5 @@ ParseCode OlaShowFile::GetNextLine(void) {
 		}
 	}
 
-	return PARSE_FAILED;
+	return  OlaParseCode::FAILED;
 }

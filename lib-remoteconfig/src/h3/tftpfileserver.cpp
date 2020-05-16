@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "tftpfileserver.h"
 #include "ubootheader.h"
@@ -40,12 +40,12 @@
 #include "debug.h"
 
 #if defined(ORANGE_PI)
- constexpr char sFileName[] = "orangepi_zero.uImage";
- #define FILE_NAME_LENGTH	(sizeof(sFileName) - 1)
+ static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
 #else
- constexpr char sFileName[] = "orangepi_one.uImage";
- #define FILE_NAME_LENGTH	(sizeof(sFileName) - 1)
+ static constexpr char FILE_NAME[] = "orangepi_one.uImage";
 #endif
+
+static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
 
 TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 		m_pBuffer(pBuffer),
@@ -78,24 +78,24 @@ void TFTPFileServer::Exit(void) {
 }
 
 
-bool TFTPFileServer::FileOpen(const char* pFileName, TTFTPMode tMode) {
+bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 	return (false);
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName, TTFTPMode tMode) {
+bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
 	DEBUG_ENTRY
 
 	assert(pFileName != 0);
 
-	if (tMode != TFTP_MODE_BINARY) {
+	if (tMode != TFTPMode::BINARY) {
 		DEBUG_EXIT
 		return false;
 	}
 
-	if (strncmp(sFileName, pFileName, FILE_NAME_LENGTH) != 0) {
+	if (strncmp(FILE_NAME, pFileName, FILE_NAME_LENGTH) != 0) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -119,19 +119,19 @@ bool TFTPFileServer::FileClose(void) {
 	return true;
 }
 
-int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t TFTPFileServer::FileRead(__attribute__((unused)) void* pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
-	return -1;
+	return 0;
 }
 
-int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) {
 	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
 
 	if (nBlockNumber > (m_nSize / 512)) {
 		m_nFileSize = 0;
-		return -1;
+		return 0;
 	}
 
 	assert(nBlockNumber != 0);
@@ -140,12 +140,12 @@ int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBl
 		UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
 		if (!uImage.IsValid()) {
 			DEBUG_PUTS("uImage is not valid");
-			return -1;
+			return 0;
 		}
 		// Temporarily code BEGIN
 		if (!m_bIsCompressedSupported && uImage.IsCompressed()) {
 			printf("Compressed uImage is not supported -> upgrade UBoot SPI");
-			return -1;
+			return 0;
 		}
 		// Temporarily code END
 	}

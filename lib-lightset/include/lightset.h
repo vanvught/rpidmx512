@@ -40,7 +40,8 @@ struct TLightSetSlotInfo {
 enum TLightSetDmx {
 	DMX_ADDRESS_INVALID = 0xFFFF,
 	DMX_START_ADDRESS_DEFAULT = 1,
-	DMX_UNIVERSE_SIZE = 512
+	DMX_UNIVERSE_SIZE = 512,
+	DMX_MAX_VALUE = 255
 };
 
 enum TLightSetOutputType {
@@ -68,25 +69,22 @@ public:
 		DEBUG_EXIT
 	}
 
-public: // RDM Optional
+	// RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 	virtual uint16_t GetDmxStartAddress(void);
-
 	virtual uint16_t GetDmxFootprint(void);
-
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
-public: // WiFi solutions only
+	// WiFi solutions only
 	static const char *GetOutputType(TLightSetOutputType type);
 	static TLightSetOutputType GetOutputType(const char *sType);
 
-protected:
-	LightSetDisplay *m_pLightSetDisplay;
-
-public:
 	static LightSet *Get(void) {
 		return s_pThis;
 	}
+
+protected:
+	LightSetDisplay *m_pLightSetDisplay;
 
 private:
 	static LightSet *s_pThis;

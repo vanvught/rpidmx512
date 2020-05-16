@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxparams.h"
 #include "dmxsendconst.h"
@@ -47,9 +47,9 @@ bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uin
 
 	PropertiesBuilder builder(DMXSendConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	bool isAdded = builder.Add(DMXSendConst::PARAMS_BREAK_TIME, m_tDMXParams.nBreakTime, isMaskSet(DMX_SEND_PARAMS_MASK_BREAK_TIME));
-	isAdded &= builder.Add(DMXSendConst::PARAMS_MAB_TIME, m_tDMXParams.nMabTime, isMaskSet(DMX_SEND_PARAMS_MASK_MAB_TIME));
-	isAdded &= builder.Add(DMXSendConst::PARAMS_REFRESH_RATE, m_tDMXParams.nRefreshRate, isMaskSet(DMX_SEND_PARAMS_MASK_REFRESH_RATE));
+	bool isAdded = builder.Add(DMXSendConst::PARAMS_BREAK_TIME, m_tDMXParams.nBreakTime, isMaskSet(DmxSendParamsMask::BREAK_TIME));
+	isAdded &= builder.Add(DMXSendConst::PARAMS_MAB_TIME, m_tDMXParams.nMabTime, isMaskSet(DmxSendParamsMask::MAB_TIME));
+	isAdded &= builder.Add(DMXSendConst::PARAMS_REFRESH_RATE, m_tDMXParams.nRefreshRate, isMaskSet(DmxSendParamsMask::REFRESH_RATE));
 
 	nSize = builder.GetSize();
 

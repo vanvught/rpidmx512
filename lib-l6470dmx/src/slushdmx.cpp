@@ -24,9 +24,10 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "slushdmx.h"
 #include "slushboard.h"
@@ -46,11 +47,6 @@
 #include "parse.h"
 
 #include "debug.h"
-
-#ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
 
 #define IO_PINS_IOPORT				8
 #define DMX_MAX_CHANNELS			512
@@ -259,7 +255,7 @@ SlushDmx::~SlushDmx(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Start(uint8_t nPort) {
+void SlushDmx::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -271,7 +267,7 @@ void SlushDmx::Start(uint8_t nPort) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Stop(uint8_t nPort) {
+void SlushDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -339,10 +335,10 @@ void SlushDmx::ReadConfigFiles(void) {
 				m_nDmxFootprint = m_nDmxFootprintPortB;
 			} else {
 				const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
-				m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_nDmxStartAddressPortB);
+				m_nDmxStartAddress = std::min(m_nDmxStartAddress, m_nDmxStartAddressPortB);
 
 				const uint16_t nDmxChannelLastNew = m_nDmxStartAddressPortB + m_nDmxFootprintPortB;
-				m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
+				m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 			}
 
 			m_pSlotInfoPortB = new struct TLightSetSlotInfo[m_nDmxFootprintPortB];
@@ -421,10 +417,10 @@ void SlushDmx::ReadConfigFiles(void) {
 								m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 							} else {
 								const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
-								m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
+								m_nDmxStartAddress = std::min(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
 
 								const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
-								m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
+								m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 							}
 
 							m_pSlotInfo[i] = new struct TLightSetSlotInfo[m_pL6470DmxModes[i]->GetDmxFootPrint()];
@@ -494,7 +490,7 @@ void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void SlushDmx::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);

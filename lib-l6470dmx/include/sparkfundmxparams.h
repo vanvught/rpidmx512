@@ -31,24 +31,24 @@
 #include "sparkfundmx.h"
 
 struct TSparkFunDmxParams {
-    uint32_t nSetList;
-    //
-    uint8_t nPosition;
+	uint32_t nSetList;
+	uint8_t nPosition;
 	uint8_t nSpiCs;
 	uint8_t nResetPin;
 	uint8_t nBusyPin;
 } __attribute__((packed));
 
-enum TSparkFunDmxParamsMask {
-	SPARKFUN_DMX_PARAMS_MASK_POSITION = (1 << 0),
-	SPARKFUN_DMX_PARAMS_MASK_SPI_CS = (1 << 1),
-	SPARKFUN_DMX_PARAMS_MASK_RESET_PIN = (1 << 2),
-	SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN = (1 << 3)
+struct SparkFunDmxParamsMask {
+	static constexpr auto POSITION = (1U << 0);
+	static constexpr auto SPI_CS = (1U << 1);
+	static constexpr auto RESET_PIN = (1U << 2);
+	static constexpr auto BUSY_PIN = (1U << 3);
 };
 
 class SparkFunDmxParamsStore {
 public:
-	virtual ~SparkFunDmxParamsStore(void) {}
+	virtual ~SparkFunDmxParamsStore(void) {
+	}
 
 	virtual void Update(const struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
 	virtual void Copy(struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;

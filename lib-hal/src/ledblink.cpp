@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "ledblink.h"
 #include "hardware.h"

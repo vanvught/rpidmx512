@@ -27,7 +27,6 @@
 #define LTC_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 #if  ! defined (PACKED)

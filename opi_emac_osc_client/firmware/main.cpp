@@ -31,7 +31,6 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
 #include "display.h"
 
 #include "networkconst.h"
@@ -40,8 +39,8 @@
 #include "mdnsservices.h"
 
 #include "oscclient.h"
-#include "oscclientconst.h"
 #include "oscclientparams.h"
+#include "oscclientmsgconst.h"
 #include "oscclientled.h"
 
 #include "buttonsset.h"
@@ -66,7 +65,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
 	LedBlink lb;
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -87,8 +86,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -101,8 +99,7 @@ void notmain(void) {
 	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
 	mDns.Print();
 
-	console_status(CONSOLE_YELLOW, OscClientConst::MSG_CLIENT_PARAMS);
-	display.TextStatus(OscClientConst::MSG_CLIENT_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS);
+	display.TextStatus(OscClientMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
 
 	client.Print();
 
@@ -150,13 +147,11 @@ void notmain(void) {
 	display.Printf(5, "O : %d", client.GetPortOutgoing());
 	display.Printf(6, "I : %d", client.GetPortIncoming());
 
-	console_status(CONSOLE_YELLOW, OscClientConst::MSG_CLIENT_START);
-	display.TextStatus(OscClientConst::MSG_CLIENT_START, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_START);
+	display.TextStatus(OscClientMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_START, CONSOLE_YELLOW);
 
 	client.Start();
 
-	console_status(CONSOLE_GREEN, OscClientConst::MSG_CLIENT_STARTED);
-	display.TextStatus(OscClientConst::MSG_CLIENT_STARTED, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED);
+	display.TextStatus(OscClientMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
 
 	lb.SetMode(LEDBLINK_MODE_NORMAL);
 

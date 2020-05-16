@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "sparkfundmxparams.h"
 #include "sparkfundmxparamsconst.h"
@@ -170,7 +170,7 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, SparkFunDmxParamsConst::POSITION, &value8) == SSCAN_OK) {
 		if (value8 < SPARKFUN_DMX_MAX_MOTORS) {
 			m_tSparkFunDmxParams.nPosition = value8;
-			m_tSparkFunDmxParams.nSetList |= SPARKFUN_DMX_PARAMS_MASK_POSITION;
+			m_tSparkFunDmxParams.nSetList |= SparkFunDmxParamsMask::POSITION;
 		}
 		return;
 	}
@@ -178,20 +178,20 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 #if !defined (H3)
 	if (Sscan::Uint8(pLine, SparkFunDmxParamsConst::SPI_CS, &value8) == SSCAN_OK) {
 		m_tSparkFunDmxParams.nSpiCs = value8;
-		m_tSparkFunDmxParams.nSetList |= SPARKFUN_DMX_PARAMS_MASK_SPI_CS;
+		m_tSparkFunDmxParams.nSetList |= SparkFunDmxParamsMask::SPI_CS;
 		return;
 	}
 #endif
 
 	if (Sscan::Uint8(pLine, SparkFunDmxParamsConst::RESET_PIN, &value8) == SSCAN_OK) {
 		m_tSparkFunDmxParams.nResetPin = value8;
-		m_tSparkFunDmxParams.nSetList |= SPARKFUN_DMX_PARAMS_MASK_RESET_PIN;
+		m_tSparkFunDmxParams.nSetList |= SparkFunDmxParamsMask::RESET_PIN;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, SparkFunDmxParamsConst::BUSY_PIN, &value8) == SSCAN_OK) {
 		m_tSparkFunDmxParams.nBusyPin = value8;
-		m_tSparkFunDmxParams.nSetList |= SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN;
+		m_tSparkFunDmxParams.nSetList |= SparkFunDmxParamsMask::BUSY_PIN;
 		return;
 	}
 }
@@ -217,14 +217,14 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 	PropertiesBuilder builder(pFileName, pBuffer, nLength);
 
 	if (nMotorIndex < SPARKFUN_DMX_MAX_MOTORS) {
-		builder.Add(SparkFunDmxParamsConst::POSITION, m_tSparkFunDmxParams.nPosition, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_POSITION));
+		builder.Add(SparkFunDmxParamsConst::POSITION, m_tSparkFunDmxParams.nPosition, isMaskSet(SparkFunDmxParamsMask::POSITION));
 	}
 
-	builder.Add(SparkFunDmxParamsConst::RESET_PIN, m_tSparkFunDmxParams.nResetPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN));
-	builder.Add(SparkFunDmxParamsConst::BUSY_PIN, m_tSparkFunDmxParams.nBusyPin, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN));
+	builder.Add(SparkFunDmxParamsConst::RESET_PIN, m_tSparkFunDmxParams.nResetPin, isMaskSet(SparkFunDmxParamsMask::RESET_PIN));
+	builder.Add(SparkFunDmxParamsConst::BUSY_PIN, m_tSparkFunDmxParams.nBusyPin, isMaskSet(SparkFunDmxParamsMask::BUSY_PIN));
 
 #if !defined (H3)
-	builder.Add(SparkFunDmxParamsConst::SPI_CS, m_tSparkFunDmxParams.nSpiCs, isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS));
+	builder.Add(SparkFunDmxParamsConst::SPI_CS, m_tSparkFunDmxParams.nSpiCs, isMaskSet(SparkFunDmxParamsMask::SPI_CS));
 #endif
 
 	nSize = builder.GetSize();
@@ -249,16 +249,16 @@ void SparkFunDmxParams::SetGlobal(SparkFunDmx *pSparkFunDmx) {
 	assert(pSparkFunDmx != 0);
 
 #if !defined (H3)
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS)) {
+	if (isMaskSet(SparkFunDmxParamsMask::SPI_CS)) {
 		pSparkFunDmx->SetGlobalSpiCs(m_tSparkFunDmxParams.nSpiCs);
 	}
 #endif
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::RESET_PIN)) {
 		pSparkFunDmx->SetGlobalResetPin(m_tSparkFunDmxParams.nResetPin);
 	}
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::BUSY_PIN)) {
 		pSparkFunDmx->SetGlobalBusyPin(m_tSparkFunDmxParams.nBusyPin);
 	}
 }
@@ -266,26 +266,26 @@ void SparkFunDmxParams::SetGlobal(SparkFunDmx *pSparkFunDmx) {
 void SparkFunDmxParams::SetLocal(SparkFunDmx *pSparkFunDmx) {
 	assert(pSparkFunDmx != 0);
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_POSITION)) {
+	if (isMaskSet(SparkFunDmxParamsMask::POSITION)) {
 		pSparkFunDmx->SetLocalPosition(m_tSparkFunDmxParams.nPosition);
 	}
 
 #if !defined (H3)
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS)) {
+	if (isMaskSet(SparkFunDmxParamsMask::SPI_CS)) {
 		pSparkFunDmx->SetLocalSpiCs(m_tSparkFunDmxParams.nSpiCs);
 	}
 #endif
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::RESET_PIN)) {
 		pSparkFunDmx->SetLocalResetPin(m_tSparkFunDmxParams.nResetPin);
 	}
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::BUSY_PIN)) {
 		pSparkFunDmx->SetLocalBusyPin(m_tSparkFunDmxParams.nBusyPin);
 	}
 }
 
-void SparkFunDmxParams::Dump(uint8_t nMotorIndex) {
+void SparkFunDmxParams::Dump(__attribute__((unused)) uint8_t nMotorIndex) {
 #ifndef NDEBUG
 	assert(SPARKFUN_DMX_MAX_MOTORS <= 9);
 
@@ -300,20 +300,20 @@ void SparkFunDmxParams::Dump(uint8_t nMotorIndex) {
 		printf("%s::%s \'%s\' :\n", __FILE__, __FUNCTION__, m_aFileName);
 	}
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_POSITION)) {
+	if (isMaskSet(SparkFunDmxParamsMask::POSITION)) {
 		printf(" %s=%d\n", SparkFunDmxParamsConst::POSITION, m_tSparkFunDmxParams.nPosition);
 	}
 
 #if !defined (H3)
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_SPI_CS)) {
+	if (isMaskSet(SparkFunDmxParamsMask::SPI_CS)) {
 		printf(" %s=%d\n", SparkFunDmxParamsConst::SPI_CS, m_tSparkFunDmxParams.nSpiCs);
 	}
 #endif
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_RESET_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::RESET_PIN)) {
 		printf(" %s=%d\n", SparkFunDmxParamsConst::RESET_PIN, m_tSparkFunDmxParams.nResetPin);
 	}
 
-	if (isMaskSet(SPARKFUN_DMX_PARAMS_MASK_BUSY_PIN)) {
+	if (isMaskSet(SparkFunDmxParamsMask::BUSY_PIN)) {
 		printf(" %s=%d\n", SparkFunDmxParamsConst::BUSY_PIN, m_tSparkFunDmxParams.nBusyPin);
 	}
 #endif

@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmnetllrponly.h"
 
@@ -37,13 +37,12 @@
 
 #include "debug.h"
 
-#define DESCRIPTION		"RDMNet LLRP Only"
-#define LABEL			DESCRIPTION
-#define LABEL_LENGTH	(sizeof(LABEL) - 1)
+static constexpr char LABEL[] = "RDMNet LLRP Only";
+static constexpr auto LABEL_LENGTH = sizeof(LABEL) - 1;
 
 RDMNetLLRPOnly::RDMNetLLRPOnly(const char *pLabel):
 	m_pLabel(const_cast<char*>(pLabel)),
-	m_RDMNetDevice(new RDMPersonality(DESCRIPTION, LightSet::Get()->GetDmxFootprint())) {
+	m_RDMNetDevice(new RDMPersonality(LABEL, LightSet::Get()->GetDmxFootprint())) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -84,7 +83,7 @@ void RDMNetLLRPOnly::Stop(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetLLRPOnly::SetMode(TRdmIdentifyMode nMode) {
+void RDMNetLLRPOnly::SetMode(__attribute__((unused)) TRdmIdentifyMode nMode) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

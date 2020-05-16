@@ -36,7 +36,6 @@ public:
 	void Update(const struct TLtcParams *pLtcParams);
 	void Copy(struct TLtcParams *pLtcParams);
 
-public:
 	static StoreLtc *Get(void) {
 		return s_pThis;
 	}

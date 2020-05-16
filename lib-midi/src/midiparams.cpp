@@ -25,7 +25,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "midiparams.h"
 #include "midiparamsconst.h"
@@ -36,7 +36,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-#define BOOL2STRING(b)	(b) ? "Yes" : "No"
+#include "debug.h"
 
 MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pMidiParamsStore) {
 	memset(&m_tMidiParams, 0, sizeof(struct TMidiParams));
@@ -93,10 +93,10 @@ void MidiParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, &nValue32) == SSCAN_OK) {
 		if ((nValue32 != MIDI_BAUDRATE_DEFAULT) && (nValue32 >= 9600) && (nValue32 <= 115200)) {
 			m_tMidiParams.nBaudrate = nValue32;
-			m_tMidiParams.nSetList |= MIDIPARAMS_MASK_BAUDRATE;
+			m_tMidiParams.nSetList |= MidiParamsMask::BAUDRATE;
 		} else {
 			m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
-			m_tMidiParams.nSetList &= ~MIDIPARAMS_MASK_BAUDRATE;
+			m_tMidiParams.nSetList &= ~MidiParamsMask::BAUDRATE;
 		}
 		return;
 	}
@@ -104,10 +104,10 @@ void MidiParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint8(pLine, MidiParamsConst::ACTIVE_SENSE, &nValue8) == SSCAN_OK) {
 		if (nValue8 == 0) {
 			m_tMidiParams.nActiveSense = 0;
-			m_tMidiParams.nSetList |= MIDIPARAMS_MASK_ACTIVE_SENSE;
+			m_tMidiParams.nSetList |= MidiParamsMask::ACTIVE_SENSE;
 		} else {
 			m_tMidiParams.nActiveSense = 1;
-			m_tMidiParams.nSetList &= ~MIDIPARAMS_MASK_ACTIVE_SENSE;
+			m_tMidiParams.nSetList &= ~MidiParamsMask::ACTIVE_SENSE;
 		}
 		return;
 	}
@@ -118,11 +118,11 @@ void MidiParams::Set(void) {
 		return;
 	}
 
-	if (isMaskSet(MIDIPARAMS_MASK_BAUDRATE)) {
+	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
 		Midi::Get()->SetBaudrate(m_tMidiParams.nBaudrate);
 	}
 
-	if (isMaskSet(MIDIPARAMS_MASK_ACTIVE_SENSE)) {
+	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
 		Midi::Get()->SetActiveSense(m_tMidiParams.nActiveSense != 0);
 	}
 }
@@ -135,12 +135,12 @@ void MidiParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, MidiParamsConst::FILE_NAME);
 
-	if (isMaskSet(MIDIPARAMS_MASK_BAUDRATE)) {
+	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
 		printf(" %s=%d\n", MidiParamsConst::BAUDRATE, m_tMidiParams.nBaudrate);
 	}
 
-	if (isMaskSet(MIDIPARAMS_MASK_ACTIVE_SENSE)) {
-		printf(" %s=%d [%s]\n", MidiParamsConst::ACTIVE_SENSE, m_tMidiParams.nActiveSense, BOOL2STRING(m_tMidiParams.nActiveSense));
+	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
+		printf(" %s=%d [%s]\n", MidiParamsConst::ACTIVE_SENSE, m_tMidiParams.nActiveSense, BOOL2STRING::Get(m_tMidiParams.nActiveSense));
 	}
 
 #endif

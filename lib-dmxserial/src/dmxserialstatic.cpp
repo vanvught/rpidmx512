@@ -26,16 +26,16 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxserial.h"
 
 #include "debug.h"
 
-bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, uint16_t nFileNumber) {
-	assert(nLength == DMXSERIAL_FILE_NAME_LENGTH + 1);
+bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileNumber) {
+	assert(nLength == DmxSerialFile::NAME_LENGTH + 1);
 
-	if ((nFileNumber >= DMXSERIAL_FILE_MIN_NUMBER) && (nFileNumber <= DMXSERIAL_FILE_MAX_NUMBER)) {
+	if ((nFileNumber >= DmxSerialFile::MIN_NUMBER) && (nFileNumber <= DmxSerialFile::MAX_NUMBER)) {
 		snprintf(pFileName, nLength, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, nFileNumber);
 		return true;
 	}
@@ -43,10 +43,10 @@ bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, uint16_t nFile
 	return false;
 }
 
-bool DmxSerial::CheckFileName(const char *pFileName, uint16_t &nFileNumber) {
+bool DmxSerial::CheckFileName(const char *pFileName, int16_t &nFileNumber) {
 	DEBUG_PRINTF("pFileName=[%s]", pFileName);
 
-	if ((pFileName == 0) || (strlen(pFileName) != DMXSERIAL_FILE_NAME_LENGTH)) {
+	if ((pFileName == 0) || (strlen(pFileName) != DmxSerialFile::NAME_LENGTH)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -56,7 +56,7 @@ bool DmxSerial::CheckFileName(const char *pFileName, uint16_t &nFileNumber) {
 		return false;
 	}
 
-	if (memcmp(&pFileName[DMXSERIAL_FILE_NAME_LENGTH - sizeof(DMXSERIAL_FILE_SUFFIX) + 1], DMXSERIAL_FILE_SUFFIX, sizeof(DMXSERIAL_FILE_SUFFIX) - 1) != 0) {
+	if (memcmp(&pFileName[DmxSerialFile::NAME_LENGTH - sizeof(DMXSERIAL_FILE_SUFFIX) + 1], DMXSERIAL_FILE_SUFFIX, sizeof(DMXSERIAL_FILE_SUFFIX) - 1) != 0) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -70,7 +70,7 @@ bool DmxSerial::CheckFileName(const char *pFileName, uint16_t &nFileNumber) {
 
 	nFileNumber = 100 * (cDigit - '0');
 
-	if (nFileNumber > DMXSERIAL_FILE_MAX_NUMBER) {
+	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -93,7 +93,7 @@ bool DmxSerial::CheckFileName(const char *pFileName, uint16_t &nFileNumber) {
 
 	nFileNumber += (cDigit - '0');
 
-	if (nFileNumber > DMXSERIAL_FILE_MAX_NUMBER) {
+	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
 		DEBUG_EXIT
 		return false;
 	}

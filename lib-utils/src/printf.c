@@ -65,7 +65,7 @@ inline static void _xputch(/*@out@*/struct context *ctx, int c) {
 	(void) console_putc(c);
 }
 
-static const int _pow10(int n) {
+static int _pow10(int n) {
 	int r = 10;
 	n--;
 
@@ -444,7 +444,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			_format_string(&ctx, s);
 			break;
 		case 'u':
-			l = va_arg(va, unsigned int);
+			l = (long int) va_arg(va, unsigned int);
 			_format_int(&ctx, (unsigned int) l);
 			break;
 		case 'X':

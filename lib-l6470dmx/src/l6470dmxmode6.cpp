@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "l6470.h"
 #include "l6470dmxmode6.h"
@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
+L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, __attribute__((unused)) ModeParams *pModeParams) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != 0);
@@ -64,7 +64,7 @@ void L6470DmxMode6::Stop(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode6::Data(const uint8_t *pDmxData) {
+void L6470DmxMode6::Data(__attribute__((unused)) const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

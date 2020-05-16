@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxslotinfo.h"
 
@@ -85,7 +85,7 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 		if (isSet) {
 			m_ptLightSetSlotInfo[i].nType = tLightSetSlotInfo.nType;
 			m_ptLightSetSlotInfo[i].nCategory = tLightSetSlotInfo.nCategory;
-			nMask |= (1 << i);
+			nMask |= (1U << i);
 		}
 	}
 

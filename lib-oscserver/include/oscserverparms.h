@@ -33,26 +33,26 @@
 #include "lightset.h"
 
 struct TOSCServerParams {
-    uint32_t nSetList;
+	uint32_t nSetList;
 	uint16_t nIncomingPort;
 	uint16_t nOutgoingPort;
 	TLightSetOutputType tOutputType;
 	bool bPartialTransmission;
-	char aPath[OSCSERVER_PATH_LENGTH_MAX];
-	char aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
-	char aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
+	char aPath[OscServerMax::PATH_LENGTH];
+	char aPathInfo[OscServerMax::PATH_LENGTH];
+	char aPathBlackOut[OscServerMax::PATH_LENGTH];
 	bool bEnableNoChangeUpdate;
-};
+} __attribute__((packed));
 
-enum TOSCServerParamsMask {
-	OSCSERVER_PARAMS_MASK_INCOMING_PORT = (1 << 0),
-	OSCSERVER_PARAMS_MASK_OUTGOING_PORT = (1 << 1),
-	OSCSERVER_PARAMS_MASK_PATH = (1 << 2),
-	OSCSERVER_PARAMS_MASK_TRANSMISSION = (1 << 3),
-	OSCSERVER_PARAMS_MASK_OUTPUT = (1 << 4),
-	OSCSERVER_PARAMS_MASK_PATH_INFO = (1 << 5),
-	OSCSERVER_PARAMS_MASK_PATH_BLACKOUT = (1 << 6),
-	OSCSERVER_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT = (1 << 7)
+struct OSCServerParamsMask {
+	static constexpr auto INCOMING_PORT = (1U << 0);
+	static constexpr auto OUTGOING_PORT = (1U << 1);
+	static constexpr auto PATH = (1U << 2);
+	static constexpr auto TRANSMISSION = (1U << 3);
+	static constexpr auto OUTPUT = (1U << 4);
+	static constexpr auto PATH_INFO = (1U << 5);
+	static constexpr auto PATH_BLACKOUT = (1U << 6);
+	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 7);
 };
 
 class OSCServerParamsStore {

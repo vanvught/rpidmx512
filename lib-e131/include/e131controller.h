@@ -27,7 +27,6 @@
 #define E131CONTROLLER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "e131.h"
 #include "e131packets.h"
@@ -36,11 +35,8 @@ enum {
 	DEFAULT_SYNCHRONIZATION_ADDRESS = 5000
 };
 
-#if !defined(DMX_MAX_VALUE_DEFINED)
-	#define DMX_MAX_VALUE_DEFINED
-	enum {
-		DMX_MAX_VALUE = 255
-	};
+#ifndef DMX_MAX_VALUE
+#define DMX_MAX_VALUE 255
 #endif
 
 struct TE131ControllerState {

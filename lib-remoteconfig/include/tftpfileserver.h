@@ -2,7 +2,7 @@
  * @file tftpfileserver.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #ifndef TFTPFILESERVER_H_
 #define TFTPFILESERVER_H_
 
+#include <cstddef>
 #include <stdint.h>
 
 #include "tftpdaemon.h"
@@ -35,11 +36,11 @@ public:
 	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
 	~TFTPFileServer (void);
 
-	bool FileOpen (const char *pFileName, TTFTPMode tMode);
-	bool FileCreate (const char *pFileName, TTFTPMode tMode);
+	bool FileOpen (const char *pFileName, TFTPMode tMode);
+	bool FileCreate (const char *pFileName, TFTPMode tMode);
 	bool FileClose (void);
-	int FileRead (void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-	int FileWrite (const void *pBuffer, unsigned nCount, unsigned nBlockNumber);
+	size_t FileRead (void *pBuffer, size_t nCount, unsigned nBlockNumber);
+	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber);
 	void Exit(void);
 
 	uint32_t GetFileSize(void) {

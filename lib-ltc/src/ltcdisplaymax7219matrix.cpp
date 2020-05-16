@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplaymax7219matrix.h"
 
@@ -75,7 +75,7 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	d8x8matrix_write(&m_DeviceInfo, m_aBuffer, SEGMENTS);
 }
 
-void LtcDisplayMax7219Matrix::WriteChar(uint8_t nChar, uint8_t nPos) {
+void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {
 	// TODO Max7219Matrix::WriteChar
 }
 

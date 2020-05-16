@@ -1,8 +1,8 @@
 /**
- * @file oscserverhandler.cpp
+ * @file device_software_version.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include "oscserverhandler.h"
+#ifndef DEVICE_SOFTWARE_VERSION_H_
+#define DEVICE_SOFTWARE_VERSION_H_
 
-OscServerHandler::~OscServerHandler(void) {
-}
+#ifndef ALIGNED
+ #define ALIGNED __attribute__ ((aligned (4)))
+#endif
+
+static const char DEVICE_SOFTWARE_VERSION[] ALIGNED = "2.3";
+
+#endif /* DEVICE_SOFTWARE_VERSION_H_ */

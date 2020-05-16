@@ -25,24 +25,23 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 #include "networkh3emac.h"
 #include "ledblink.h"
-
-#include "console.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "artnetreboot.h"
+#include "artnetmsgconst.h"
+
 #include "ipprog.h"
 
 #include "ws28xxdmxparams.h"
@@ -89,16 +88,14 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_ARTNET);
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -162,7 +159,7 @@ void notmain(void) {
 			}
 		}
 
-		if (nPage < ARTNET_MAX_PAGES) {
+		if (nPage < TArtNetConst::MAX_PAGES) {
 			uint8_t nSubnetSwitch = node.GetSubnetSwitch(nPage - 1);
 			nSubnetSwitch = (nSubnetSwitch + 1) & 0x0F;
 			node.SetSubnetSwitch(nSubnetSwitch, nPage);
@@ -175,7 +172,7 @@ void notmain(void) {
 			nPage++;
 		}
 
-		nPortIndex += ARTNET_MAX_PORTS;
+		nPortIndex += TArtNetConst::MAX_PORTS;
 	}
 
 	node.Print();
@@ -212,13 +209,11 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

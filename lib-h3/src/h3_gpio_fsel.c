@@ -2,7 +2,7 @@
  * @file h3_gpio_fsel.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,33 +36,33 @@ void h3_gpio_fsel(uint32_t gpio, gpio_fsel_t fsel) {
 	const uint32_t reg = number / 8;
 	const uint32_t shift = (number & 0x7) * 4;
 	const uint32_t base_pointer = (uint32_t) (H3_PIO_BASE + (H3_GPIO_TO_PORT(gpio) * 0x24));
-	H3_PIO_TypeDef *pio = (H3_PIO_TypeDef *) base_pointer;
+	H3_PIO_TypeDef *pio = (H3_PIO_TypeDef*) base_pointer;
 	uint32_t value;
 
 #ifndef NDEBUG
-	printf("%s gpio=%d, fsel=%d : port=%d[%c], number=%d, reg=%d, shift=%d, pio=%p\n", __FUNCTION__, gpio, fsel, H3_GPIO_TO_PORT(gpio), 'A' + H3_GPIO_TO_PORT(gpio), number, reg, shift, (void *) pio);
+	printf("%s gpio=%d, fsel=%d : port=%d[%c], number=%d, reg=%d, shift=%d, pio=%p\n", __func__, gpio, fsel, H3_GPIO_TO_PORT(gpio), 'A' + H3_GPIO_TO_PORT(gpio), number, reg, shift, (void *) pio);
 #endif
 
 	switch (reg) {
-		case 0:
-			value = pio->CFG0;
-			value &= ~(GPIO_SELECT_MASK << shift);
-			value |= (fsel << shift);
-			pio->CFG0 = value;
-			break;
-		case 1:
-			value = pio->CFG1;
-			value &= ~(GPIO_SELECT_MASK << shift);
-			value |= (fsel << shift);
-			pio->CFG1 = value;
-			break;
-		case 2:
-			value = pio->CFG2;
-			value &= ~(GPIO_SELECT_MASK << shift);
-			value |= (fsel << shift);
-			pio->CFG2 = value;
-			break;
-		default:
-			break;
+	case 0:
+		value = pio->CFG0;
+		value &= ~((uint32_t) GPIO_SELECT_MASK << shift);
+		value |= ((uint32_t) fsel << shift);
+		pio->CFG0 = value;
+		break;
+	case 1:
+		value = pio->CFG1;
+		value &= ~((uint32_t) GPIO_SELECT_MASK << shift);
+		value |= ((uint32_t) fsel << shift);
+		pio->CFG1 = value;
+		break;
+	case 2:
+		value = pio->CFG2;
+		value &= ~((uint32_t) GPIO_SELECT_MASK << shift);
+		value |= ((uint32_t) fsel << shift);
+		pio->CFG2 = value;
+		break;
+	default:
+		break;
 	}
 }

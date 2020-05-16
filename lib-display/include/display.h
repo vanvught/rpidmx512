@@ -26,7 +26,6 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include <stdbool.h>
 #include <stdarg.h>
 #include <stdint.h>
 
@@ -34,21 +33,25 @@
 
 #include "display7segment.h"
 
-#define DISPLAY_SLEEP_TIMEOUT_DEFAULT	5
+#if defined (BARE_METAL)
+# include "console.h"
+#endif
 
-enum TDisplayTypes {
-	DISPLAY_BW_UI_1602,
-	DISPLAY_BW_LCD_1602,
-	DISPLAY_PCF8574T_1602,
-	DISPLAY_PCF8574T_2004,
-	DISPLAY_SSD1306,
-	DISPLAY_TYPE_UNKNOWN = -1
+static constexpr uint32_t DISPLAY_SLEEP_TIMEOUT_DEFAULT	= 5;
+
+enum class DisplayType {
+	BW_UI_1602,
+	BW_LCD_1602,
+	PCF8574T_1602,
+	PCF8574T_2004,
+	SSD1306,
+	UNKNOWN
 };
 
 class Display {
 public:
 	Display(uint32_t nCols, uint32_t nRows);
-	Display(TDisplayTypes tDisplayType = DISPLAY_SSD1306);
+	Display(DisplayType tDisplayType = DisplayType::SSD1306);
 	~Display(void);
 
 #if !defined(NO_HAL)
@@ -66,29 +69,35 @@ public:
 	void PutChar(int c);
 	void PutString(const char *pText);
 
+	int Write(uint8_t, const char *);
+	int Printf(uint8_t, const char *, ...);
+
 	void TextLine(uint8_t, const char *, uint8_t);
 
-	void Status(TDisplay7SegmentMessages nStatus);
-
 	void TextStatus(const char *pText);
-	void TextStatus(const char *pText, TDisplay7SegmentMessages nStatus);
+	void TextStatus(const char *pText, uint16_t n7SegmentData, uint32_t nConsoleColor = UINT32_MAX);
+	void TextStatus(const char *pText, TDisplay7SegmentMessages msg, uint32_t nConsoleColor = UINT32_MAX) {	// TODO Subject for removal
+		TextStatus(pText, static_cast<uint16_t>(msg), nConsoleColor);
+	}
+	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false);
 
-	void Status(uint8_t nValue, bool bHex = false);
-	void TextStatus(const char *pText, uint8_t nValue, bool bHex = false);
 
-	uint8_t Write(uint8_t, const char *);
-	uint8_t Printf(uint8_t, const char *, ...);
+	void Status(uint16_t n7SegmentData);
+	void Status(TDisplay7SegmentMessages msg) {	// TODO Subject for removal
+		Status(static_cast<uint16_t>(msg));
+	}
+	void Status(uint8_t nValue7Segment, bool bHex = false);
 
 	bool isDetected(void) {
 		return m_LcdDisplay == 0 ? false : true;
 	}
 
-	TDisplayTypes GetDetectedType(void) {
+	DisplayType GetDetectedType(void) {
 		return m_tType;
 	}
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(TCursorMode EnumTCursorOnOff);
+	void SetCursor(CursorMode EnumTCursorOnOff);
 #endif
 
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
@@ -96,15 +105,15 @@ public:
 	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
 	}
-	uint8_t GetSleepTimeout(void) {
+	uint32_t GetSleepTimeout(void) {
 		return m_nSleepTimeout / 1000 / 60;
 	}
 
-	uint8_t getCols(void) {
+	uint32_t getCols(void) {
 		return m_nCols;
 	}
 
-	uint8_t getRows(void) {
+	uint32_t getRows(void) {
 		return m_nRows;
 	}
 
@@ -119,12 +128,12 @@ public:
 private:
 	void Detect(uint32_t nCols, uint32_t nRows);
 	void Init7Segment(void);
-	TDisplay7SegmentCharacters Get7SegmentData(uint8_t nValue);
+	uint16_t Get7SegmentData(uint8_t nValue);
 
 private:
 	uint32_t m_nCols;
 	uint32_t m_nRows;
-	TDisplayTypes m_tType;
+	DisplayType m_tType;
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
 	bool m_bHave7Segment;

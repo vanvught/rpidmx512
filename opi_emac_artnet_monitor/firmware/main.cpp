@@ -25,13 +25,11 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <assert.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
 #include "h3/showsystime.h"
 
 #include "ntpclient.h"
@@ -40,10 +38,10 @@
 #include "displayudfparams.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "artnetmsgconst.h"
 
 #include "ipprog.h"
 #include "timecode.h"
@@ -80,8 +78,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init();
 	nw.SetNetworkDisplay(&displayUdfHandler);
@@ -91,8 +88,7 @@ void notmain(void) {
 	ntpClient.Init();
 	ntpClient.Print();
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNet4Node node;
 	ArtNet4Params artnetparams;
@@ -143,13 +139,11 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

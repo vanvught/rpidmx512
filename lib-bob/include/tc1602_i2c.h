@@ -33,7 +33,7 @@
 
 #include "device_info.h"
 
-extern const bool tc1602_i2c_start(device_info_t *);
+extern bool tc1602_i2c_start(device_info_t *);
 
 extern void tc1602_i2c_cls(const device_info_t *);
 

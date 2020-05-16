@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "storerdmdevice.h"
 
@@ -71,8 +71,8 @@ void StoreRDMDevice::Copy(struct TRDMDeviceParams *pRDMDeviceParams) {
 void StoreRDMDevice::SaveLabel(const char *pLabel, uint8_t nLength) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDEVICE_PARAMS_MASK_LABEL);
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDEVICE_PARAMS_MASK_LABEL);
+	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDeviceParamsMask::LABEL);
+	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDeviceParamsMask::LABEL);
 
 	DEBUG_EXIT
 }

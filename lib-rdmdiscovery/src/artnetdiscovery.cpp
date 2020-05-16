@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 
@@ -116,7 +116,7 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 	const TRdmMessageNoSc *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
 	uint8_t *pRdmCommand = reinterpret_cast<uint8_t*>(m_pRdmCommand);
 
-	memcpy(&pRdmCommand[1], pRdmData, pRdmMessageNoSc->message_length + 2);
+	memcpy(&pRdmCommand[1], pRdmData, static_cast<size_t>(pRdmMessageNoSc->message_length + 2));
 
 #ifndef NDEBUG
 	RDMMessage::Print(pRdmCommand);

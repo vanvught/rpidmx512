@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))

@@ -30,7 +30,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnetparams.h"
 #include "artnetparamsconst.h"
@@ -41,10 +41,6 @@
 #include "lightsetconst.h"
 
 #include "debug.h"
-
-#define BOOL2STRING(b)			(b) ? "Yes" : "No"
-#define MERGEMODE2STRING(m)		(m == ARTNET_MERGE_HTP) ? "htp" : "ltp"
-#define PROTOCOL2STRING(p)		(p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn"
 
 void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
@@ -59,49 +55,49 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ARTNET_PARAMS_MASK_DIRECTION));
+	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ArtnetParamsMask::DIRECTION));
 
-	builder.Add(ArtNetParamsConst::NET, m_tArtNetParams.nNet, isMaskSet(ARTNET_PARAMS_MASK_NET));
-	builder.Add(ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet, isMaskSet(ARTNET_PARAMS_MASK_SUBNET));
-	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tArtNetParams.nUniverse, isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE));
+	builder.Add(ArtNetParamsConst::NET, m_tArtNetParams.nNet, isMaskSet(ArtnetParamsMask::NET));
+	builder.Add(ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet, isMaskSet(ArtnetParamsMask::SUBNET));
+	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tArtNetParams.nUniverse, isMaskSet(ArtnetParamsMask::UNIVERSE));
 
 	builder.AddComment("Multi port configuration");
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-		builder.Add(ArtNetParamsConst::UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i], isMaskSet(ARTNET_PARAMS_MASK_UNIVERSE_A << i));
+	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+		builder.Add(ArtNetParamsConst::UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i], isMaskSet(ArtnetParamsMask::UNIVERSE_A << i));
 	}
 
 	builder.AddComment("Node");
-	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aLongName), isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME));
-	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aShortName), isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME));
+	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aLongName), isMaskSet(ArtnetParamsMask::LONG_NAME));
+	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aShortName), isMaskSet(ArtnetParamsMask::SHORT_NAME));
 
-	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE));
+	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ArtnetParamsMask::OEM_VALUE));
 
 	builder.AddComment("Time");
-	builder.Add(ArtNetParamsConst::TIMECODE, m_tArtNetParams.bUseTimeCode, isMaskSet(ARTNET_PARAMS_MASK_TIMECODE));
-	builder.Add(ArtNetParamsConst::TIMESYNC, m_tArtNetParams.bUseTimeSync, isMaskSet(ARTNET_PARAMS_MASK_TIMESYNC));
+	builder.Add(ArtNetParamsConst::TIMECODE, m_tArtNetParams.bUseTimeCode, isMaskSet(ArtnetParamsMask::TIMECODE));
+	builder.Add(ArtNetParamsConst::TIMESYNC, m_tArtNetParams.bUseTimeSync, isMaskSet(ArtnetParamsMask::TIMESYNC));
 
 	builder.AddComment("DMX/RDM Output");
-	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ARTNET_PARAMS_MASK_RDM));
+	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ArtnetParamsMask::RDM));
 
-	builder.Add(ArtNetParamsConst::MERGE_MODE, MERGEMODE2STRING(m_tArtNetParams.nMergeMode), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE));
-	builder.Add(ArtNetParamsConst::PROTOCOL, PROTOCOL2STRING(m_tArtNetParams.nProtocol), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL));
+	builder.Add(ArtNetParamsConst::MERGE_MODE, ArtNet::GetMergeMode(m_tArtNetParams.nMergeMode), isMaskSet(ArtnetParamsMask::MERGE_MODE));
+	builder.Add(ArtNetParamsConst::PROTOCOL, ArtNet::GetProtocolMode(m_tArtNetParams.nProtocol), isMaskSet(ArtnetParamsMask::PROTOCOL));
 
-	for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
-		builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], MERGEMODE2STRING(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i));
-		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], PROTOCOL2STRING(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i));
+	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+		builder.Add(ArtNetParamsConst::MERGE_MODE_PORT[i], ArtNet::GetMergeMode(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i));
+		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], ArtNet::GetProtocolMode(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ArtnetParamsMask::PROTOCOL_A << i));
 	}
 
-	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT));
-	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT));
+	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ArtnetParamsMask::NETWORK_TIMEOUT));
+	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ArtnetParamsMask::MERGE_TIMEOUT));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
 	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
-		if (!isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i)) {
+		if (!isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			m_tArtNetParams.nDestinationIpPort[i] = ArtNetNode::Get()->GetDestinationIp(i);
 		}
-		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_tArtNetParams.nDestinationIpPort[i], isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i));
+		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_tArtNetParams.nDestinationIpPort[i], isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i));
 	}
 
 	nSize = builder.GetSize();

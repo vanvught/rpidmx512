@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
@@ -63,7 +62,7 @@ bool RDMTod::Exist(const uint8_t *pUid) {
 	return false;
 }
 
-void RDMTod::Dump(uint8_t nCount) {
+void RDMTod::Dump(__attribute__((unused)) uint8_t nCount) {
 #ifndef NDEBUG
 	if (nCount > TOD_TABLE_SIZE) {
 		nCount = TOD_TABLE_SIZE;

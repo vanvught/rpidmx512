@@ -164,7 +164,7 @@ void udp_handle(struct t_udp *p_udp) {
 int udp_bind(uint16_t local_port) {
 	DEBUG_PRINTF("local_port=%u", local_port);
 
-	uint32_t i;
+	int i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == local_port) {
@@ -272,7 +272,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	// debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
-	emac_eth_send((void *) &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	emac_eth_send((void *) &s_send_packet, (int) (size + UDP_PACKET_HEADERS_SIZE));
 
 	s_id++;
 

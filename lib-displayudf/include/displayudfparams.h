@@ -27,7 +27,6 @@
 #define DISPLAYUDFPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "displayudf.h"
 
@@ -39,8 +38,8 @@ struct TDisplayUdfParams {
     uint8_t nSleepTimeout;
 }__attribute__((packed));
 
-enum TDisplayUdfParamsMask {
-	DISPLAY_UDF_PARAMS_MASK_SLEEP_TIMEOUT = (1 << 28)
+struct DisplayUdfParamsMask {
+	static constexpr auto SLEEP_TIMEOUT = (1U << 28);
 };
 
 class DisplayUdfParamsStore {

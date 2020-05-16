@@ -46,10 +46,10 @@ void dmx_multi_uart_init(uint8_t uart) {
 
 		uint32_t value = H3_PIO_PORTG->CFG0;
 		// PG6, TX
-		value &= ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
 		value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
 		// PG7, RX
-		value &= ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
 		value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
 		H3_PIO_PORTG->CFG0 = value;
 
@@ -60,10 +60,10 @@ void dmx_multi_uart_init(uint8_t uart) {
 
 		uint32_t value = H3_PIO_PORTA->CFG0;
 		// PA0, TX
-		value &= ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
 		value |= H3_PA0_SELECT_UART2_TX << PA0_SELECT_CFG0_SHIFT;
 		// PA1, RX
-		value &= ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
 		value |= H3_PA1_SELECT_UART2_RX << PA1_SELECT_CFG0_SHIFT;
 		H3_PIO_PORTA->CFG0 = value;
 
@@ -74,10 +74,10 @@ void dmx_multi_uart_init(uint8_t uart) {
 
 		uint32_t value = H3_PIO_PORTA->CFG1;
 		// PA13, TX
-		value &= ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
 		value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
 		// PA14, RX
-		value &= ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
 		value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
 		H3_PIO_PORTA->CFG1 = value;
 
@@ -88,10 +88,10 @@ void dmx_multi_uart_init(uint8_t uart) {
 
 		uint32_t value = H3_PIO_PORTA->CFG0;
 		// PA4, TX
-		value &= ~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
 		value |= H3_PA4_SELECT_UART0_TX << PA4_SELECT_CFG0_SHIFT;
 		// PA5, RX
-		value &= ~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
+		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
 		value |= H3_PA5_SELECT_UART0_RX << PA5_SELECT_CFG0_SHIFT;
 		H3_PIO_PORTA->CFG0 = value;
 

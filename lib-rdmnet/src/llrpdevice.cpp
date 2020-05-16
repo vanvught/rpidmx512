@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <assert.h>
+#include <cassert>
 
 #include "llrpdevice.h"
 
@@ -49,11 +49,7 @@
  #define SHOW_RDM_MESSAGE
 #endif
 
-LLRPDevice::LLRPDevice(void):
-	m_nHandleLLRP(-1),
-	m_nIpAddresLLRPRequest(0),
-	m_nIpAddressLLRPResponse(0)
-{
+LLRPDevice::LLRPDevice(void) {
 	DEBUG_ENTRY
 
 	struct in_addr addr;
@@ -64,7 +60,7 @@ LLRPDevice::LLRPDevice(void):
 	static_cast<void>(inet_aton(LLRP_MULTICAST_IPV4_ADDRESS_RESPONSE, &addr));
 	m_nIpAddressLLRPResponse = addr.s_addr;
 
-	DEBUG_PRINTF("sizeof(m_tLLRP.LLRPPacket)=%d", (int) sizeof(m_tLLRP.LLRPPacket));
+	DEBUG_PRINTF("sizeof(m_tLLRP.LLRPPacket)=%d", sizeof(m_tLLRP.LLRPPacket));
 	DEBUG_EXIT
 }
 
@@ -132,13 +128,13 @@ void LLRPDevice::HandleRdmCommand(void) {
 	struct LTRDMCommandPDUPacket *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
 
 #ifdef SHOW_RDM_MESSAGE
-	const uint8_t *pRdmDataInNoSc = (const uint8_t *)pRDMCommand->RDMCommandPDU.RDMData;
+	const uint8_t *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData)	;
 	RDMMessage::PrintNoSc(pRdmDataInNoSc);
 #endif
 
 	const uint8_t *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
 
-	if (*pReply != E120_SC_RDM) {
+	if ((pReply == 0) || (*pReply != E120_SC_RDM)) {
 		DEBUG_EXIT
 		return;
 	}
@@ -164,7 +160,7 @@ void LLRPDevice::HandleRdmCommand(void) {
 	Network::Get()->SendTo(m_nHandleLLRP, pRDMCommand, nLength	, m_nIpAddressLLRPResponse, LLRP_PORT);
 
 #ifdef SHOW_RDM_MESSAGE
-	RDMMessage::Print((uint8_t *)pReply);
+	RDMMessage::Print(pReply);
 #endif
 
 #ifndef NDEBUG
@@ -223,15 +219,15 @@ void LLRPDevice::Print(void) {
 	printf(" Multicast Response     : " IPSTR "\n", IP2STR(m_nIpAddressLLRPResponse));
 }
 
-void LLRPDevice::CopyUID(uint8_t *pUID) {
+void LLRPDevice::CopyUID(__attribute__((unused)) uint8_t *pUID) {
 	// Override
 }
 
-void LLRPDevice::CopyCID(uint8_t *pCID) {
+void LLRPDevice::CopyCID(__attribute__((unused)) uint8_t *pCID) {
 	// Override
 }
 
-uint8_t *LLRPDevice::LLRPHandleRdmCommand(const uint8_t *pRDMCommand) {
+uint8_t *LLRPDevice::LLRPHandleRdmCommand(__attribute__((unused)) const uint8_t *pRDMCommand) {
 	// Override
 	return 0;
 }

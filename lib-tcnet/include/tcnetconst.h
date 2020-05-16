@@ -33,6 +33,4 @@ public:
 	static const uint8_t FPS[4];
 };
 
-
-
 #endif /* TCNETCONST_H_ */

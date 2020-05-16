@@ -44,16 +44,16 @@ struct TL6470Params {
     uint8_t nMicroSteps;
 } __attribute__((packed));
 
-enum TL6470ParamsMask {
-	L6470_PARAMS_MASK_MIN_SPEED   = (1 << 0),
-	L6470_PARAMS_MASK_MAX_SPEED   = (1 << 1),
-	L6470_PARAMS_MASK_ACC         = (1 << 2),
-	L6470_PARAMS_MASK_DEC         = (1 << 3),
-	L6470_PARAMS_MASK_KVAL_HOLD   = (1 << 4),
-	L6470_PARAMS_MASK_KVAL_RUN    = (1 << 5),
-	L6470_PARAMS_MASK_KVAL_ACC    = (1 << 6),
-	L6470_PARAMS_MASK_KVAL_DEC    = (1 << 7),
-	L6470_PARAMS_MASK_MICRO_STEPS = (1 << 8)
+struct L6470ParamsMask {
+	static constexpr auto MIN_SPEED   = (1U << 0);
+	static constexpr auto MAX_SPEED   = (1U << 1);
+	static constexpr auto ACC         = (1U << 2);
+	static constexpr auto DEC         = (1U << 3);
+	static constexpr auto KVAL_HOLD   = (1U << 4);
+	static constexpr auto KVAL_RUN    = (1U << 5);
+	static constexpr auto KVAL_ACC    = (1U << 6);
+	static constexpr auto KVAL_DEC    = (1U << 7);
+	static constexpr auto MICRO_STEPS = (1U << 8);
 };
 
 class L6470ParamsStore {

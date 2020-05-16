@@ -97,7 +97,7 @@ int main(int argc, char **argv) {
 	bool bIsSetIndividual = false;
 	bool bIsSet;
 
-	for (uint32_t i = 0; i < E131_PARAMS_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
 		nUniverse = e131Params.GetUniverse(i, bIsSet);
 
 		if (bIsSet) {
@@ -117,9 +117,7 @@ int main(int argc, char **argv) {
 	bridge.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_MONITOR, bridge.GetActiveOutputPorts());
-
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);

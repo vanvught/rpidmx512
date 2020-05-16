@@ -39,7 +39,6 @@ public:
 	void Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams);
 	void Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams);
 
-public:
 	static StoreSparkFunDmx *Get(void) {
 		return s_pThis;
 	}

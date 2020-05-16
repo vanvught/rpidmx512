@@ -54,13 +54,13 @@ typedef enum H3_GPIO_FSEL {
 	GPIO_FSEL_DISABLE = 7
 } gpio_fsel_t;
 
-enum H3_GPIO_INT_CFG {		///< PA and PG only
+typedef enum H3_GPIO_INT_CFG {		///< PA and PG only
 	GPIO_INT_CFG_POS_EDGE = 0x0,
 	GPIO_INT_CFG_NEG_EDGE = 0x1,
 	GPIO_INT_CFG_HIGH_LEV = 0x2,
 	GPIO_INT_CFG_LOW_LEV = 0x3,
 	GPIO_INT_CFG_DOUBLE_EDGE = 0x4
-};
+} gpio_int_cfg_t;
 
 enum H3_PA_SELECT_SHIFT {
 	PA0_SELECT_CFG0_SHIFT = 0,
@@ -156,27 +156,29 @@ enum H3_PG_SELECT {
 extern "C" {
 #endif
 
-extern void h3_gpio_fsel(uint32_t pin, gpio_fsel_t fsel);
+extern void h3_gpio_fsel(uint32_t gpio, gpio_fsel_t fsel);
+extern void h3_gpio_pud(uint32_t gpio, gpio_pull_t pull);
+extern void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg);
 
 inline static void h3_gpio_clr(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
-			H3_PIO_PORTA->DAT &= ~(1 << pin);
+			H3_PIO_PORTA->DAT &= ~(1U << pin);
 			break;
 		case H3_GPIO_PORTC:
-			H3_PIO_PORTC->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTC->DAT &= ~(1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTD:
-			H3_PIO_PORTD->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTD->DAT &= ~(1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTE:
-			H3_PIO_PORTE->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTE->DAT &= ~(1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTF:
-			H3_PIO_PORTF->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTF->DAT &= ~(1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTG:
-			H3_PIO_PORTG->DAT &= ~(1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTG->DAT &= ~(1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		default:
 			break;
@@ -186,22 +188,22 @@ inline static void h3_gpio_clr(uint32_t pin) {
 inline static void h3_gpio_set(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
-			H3_PIO_PORTA->DAT |= (1 << pin);
+			H3_PIO_PORTA->DAT |= (1U << pin);
 			break;
 		case H3_GPIO_PORTC:
-			H3_PIO_PORTC->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTC->DAT |= (1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTD:
-			H3_PIO_PORTD->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTD->DAT |= (1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTE:
-			H3_PIO_PORTE->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTE->DAT |= (1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTF:
-			H3_PIO_PORTF->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTF->DAT |= (1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		case H3_GPIO_PORTG:
-			H3_PIO_PORTG->DAT |= (1 << H3_GPIO_TO_NUMBER(pin));
+			H3_PIO_PORTG->DAT |= (1U << H3_GPIO_TO_NUMBER(pin));
 			break;
 		default:
 			break;
@@ -234,7 +236,7 @@ inline static uint8_t h3_gpio_lev(uint32_t pin) {
 			break;
 	}
 
-	return (value & (1 << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
+	return (value & (1U << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
 #ifdef __cplusplus

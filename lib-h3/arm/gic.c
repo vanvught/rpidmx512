@@ -96,7 +96,7 @@ void gic_init(void) {
 	H3_GIC_CPUIF->CTL = GICC_CTL_ENABLE_GRP0 | GICC_CTL_ENABLE_GRP1 | GICC_CTL_ENABLE_FIQ;
 }
 
-static void int_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDef group) {
+static void int_config(H3_IRQn_TypeDef n, __attribute__((unused)) GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDef group) {
 #ifndef NDEBUG
 	printf("int_config(H3_IRQn_TypeDef %d,cpu %d, GIC_GROUP_TypeDef %d)\n", n, cpu, group);
 #endif
@@ -105,7 +105,7 @@ static void int_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDe
 	dmb();
 
 	const uint32_t index = n / 32;
-	uint32_t mask = 1 << (n % 32);
+	uint32_t mask = 1U << (n % 32);
 
 	H3_GIC_DIST->ISENABLE[index] = mask;
 
@@ -113,7 +113,7 @@ static void int_config(H3_IRQn_TypeDef n, GIC_CORE_TypeDef cpu, GIC_GROUP_TypeDe
 	printf("H3_GIC_DIST->ISENABLE[%d] = %p [%p]\n", index, mask, H3_GIC_DIST->ISENABLE[index]);
 #endif
 
-	mask = group << (n % 32);
+	mask = (uint32_t)group << (n % 32);
 
 	H3_GIC_DIST->IGROUP[index] |= mask;
 
@@ -169,7 +169,7 @@ void gic_init_dump(void) {
 #endif	
 }
 
-void gic_int_dump(H3_IRQn_TypeDef n) {
+void gic_int_dump(__attribute__((unused)) H3_IRQn_TypeDef n) {
 #ifndef NDEBUG
 	uint32_t index = n / 32;
 	uint32_t mask = 1 << (n % 32);

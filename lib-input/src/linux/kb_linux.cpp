@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <stddef.h>
 #include <termios.h>
 #include <stdio.h>

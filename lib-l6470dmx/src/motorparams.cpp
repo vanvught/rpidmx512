@@ -33,7 +33,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "motorparams.h"
 #include "motorparamsconst.h"
@@ -117,11 +117,11 @@ void MotorParams::Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMoto
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	builder.Add(MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel, isMaskSet(MOTOR_PARAMS_MASK_STEP_ANGEL));
-	builder.Add(MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage, isMaskSet(MOTOR_PARAMS_MASK_VOLTAGE));
-	builder.Add(MotorParamsConst::CURRENT, m_tMotorParams.fCurrent, isMaskSet(MOTOR_PARAMS_MASK_CURRENT));
-	builder.Add(MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance, isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE));
-	builder.Add(MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance, isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE));
+	builder.Add(MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel, isMaskSet(MotorParamsMask::STEP_ANGEL));
+	builder.Add(MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage, isMaskSet(MotorParamsMask::VOLTAGE));
+	builder.Add(MotorParamsConst::CURRENT, m_tMotorParams.fCurrent, isMaskSet(MotorParamsMask::CURRENT));
+	builder.Add(MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance, isMaskSet(MotorParamsMask::RESISTANCE));
+	builder.Add(MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance, isMaskSet(MotorParamsMask::INDUCTANCE));
 
 	nSize = builder.GetSize();
 
@@ -145,32 +145,32 @@ void MotorParams::callbackFunction(const char *pLine) {
 	if (Sscan::Float(pLine, MotorParamsConst::STEP_ANGEL, &f) == SSCAN_OK) {
 		if (f != 0) {
 			m_tMotorParams.fStepAngel = f;
-			m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_STEP_ANGEL;
+			m_tMotorParams.nSetList |= MotorParamsMask::STEP_ANGEL;
 		}
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::VOLTAGE, &f) == SSCAN_OK) {
 		m_tMotorParams.fVoltage = f;
-		m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_VOLTAGE;
+		m_tMotorParams.nSetList |= MotorParamsMask::VOLTAGE;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::CURRENT, &f) == SSCAN_OK) {
 		m_tMotorParams.fCurrent = f;
-		m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_CURRENT;
+		m_tMotorParams.nSetList |= MotorParamsMask::CURRENT;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::RESISTANCE, &f) == SSCAN_OK) {
 		m_tMotorParams.fResistance = f;
-		m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_RESISTANCE;
+		m_tMotorParams.nSetList |= MotorParamsMask::RESISTANCE;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::INDUCTANCE, &f) == SSCAN_OK) {
 		m_tMotorParams.fInductance = f;
-		m_tMotorParams.nSetList |= MOTOR_PARAMS_MASK_INDUCTANCE;
+		m_tMotorParams.nSetList |= MotorParamsMask::INDUCTANCE;
 		return;
 	}
 }
@@ -193,23 +193,23 @@ void MotorParams::Dump(void) {
 		return;
 	}
 
-	if(isMaskSet(MOTOR_PARAMS_MASK_STEP_ANGEL)) {
+	if(isMaskSet(MotorParamsMask::STEP_ANGEL)) {
 		printf(" %s=%.1f degree\n", MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel);
 	}
 
-	if(isMaskSet(MOTOR_PARAMS_MASK_VOLTAGE)) {
+	if(isMaskSet(MotorParamsMask::VOLTAGE)) {
 		printf(" %s=%.2f V\n", MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage);
 	}
 
-	if(isMaskSet(MOTOR_PARAMS_MASK_CURRENT)) {
+	if(isMaskSet(MotorParamsMask::CURRENT)) {
 		printf(" %s=%.1f A/phase\n", MotorParamsConst::CURRENT, m_tMotorParams.fCurrent);
 	}
 
-	if(isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE)) {
+	if(isMaskSet(MotorParamsMask::RESISTANCE)) {
 		printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance);
 	}
 
-	if(isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE)) {
+	if(isMaskSet(MotorParamsMask::INDUCTANCE)) {
 		printf(" %s=%.1f mH/phase\n", MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance);
 	}
 
@@ -220,7 +220,7 @@ void MotorParams::Dump(void) {
 }
 
 float MotorParams::calcIntersectSpeed(void) {
-	if (isMaskSet(MOTOR_PARAMS_MASK_RESISTANCE) && isMaskSet(MOTOR_PARAMS_MASK_INDUCTANCE)) {
+	if (isMaskSet(MotorParamsMask::RESISTANCE) && isMaskSet(MotorParamsMask::INDUCTANCE)) {
 		return (4 * m_tMotorParams.fResistance) / (2 * M_PI * m_tMotorParams.fInductance * 0.001);
 	}
 

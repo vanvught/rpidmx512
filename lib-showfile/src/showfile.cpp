@@ -23,10 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <assert.h>
+#include <cassert>
 
 #include "showfile.h"
 #include "showfiletftp.h"
@@ -37,16 +36,7 @@
 
 ShowFile *ShowFile::s_pThis = 0;
 
-ShowFile::ShowFile(void) :
-	m_nShowFileNumber(255),
-	m_pShowFile(0),
-	m_pShowFileProtocolHandler(0),
-	m_bDoLoop(false),
-	m_pShowFileDisplay(0),
-	m_tShowFileStatus(SHOWFILE_STATUS_IDLE),
-	m_bEnableTFTP(false),
-	m_pShowFileTFTP(0)
-{
+ShowFile::ShowFile(void) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -61,7 +51,7 @@ void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
-	if (nShowFileNumber <= SHOWFILE_FILE_MAX_NUMBER) {
+	if (nShowFileNumber <= ShowFileFile::MAX_NUMBER) {
 		ShowFileStop();
 
 		if (m_pShowFile != 0) {
@@ -103,7 +93,7 @@ void ShowFile::BlackOut(void) {
 bool ShowFile::DeleteShowFile(uint8_t nShowFileNumber) {
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
-	char aFileName[SHOWFILE_FILE_NAME_LENGTH + 1];
+	char aFileName[ShowFileFile::NAME_LENGTH + 1];
 
 	if (ShowFileNameCopyTo(aFileName, sizeof(aFileName), nShowFileNumber)) {
 		const int nResult = unlink(aFileName);
@@ -147,7 +137,7 @@ void ShowFile::EnableTFTP(bool bEnableTFTP) {
 		m_pShowFileTFTP = 0;
 
 		SetShowFile(m_nShowFileNumber);
-		SetShowFileStatus(SHOWFILE_STATUS_IDLE);
+		SetShowFileStatus(ShowFileStatus::IDLE);
 	}
 
 	UpdateDisplayStatus();
@@ -162,9 +152,9 @@ void ShowFile::Start(void) {
 
 	if (m_pShowFile != 0) {
 		ShowFileStart();
-		SetShowFileStatus(SHOWFILE_STATUS_RUNNING);
+		SetShowFileStatus(ShowFileStatus::RUNNING);
 	} else {
-		SetShowFileStatus(SHOWFILE_STATUS_STOPPED);
+		SetShowFileStatus(ShowFileStatus::STOPPED);
 	}
 
 	DEBUG_EXIT
@@ -175,7 +165,7 @@ void ShowFile::Stop(void) {
 
 	if (m_pShowFile != 0) {
 		ShowFileStop();
-		SetShowFileStatus(SHOWFILE_STATUS_STOPPED);
+		SetShowFileStatus(ShowFileStatus::STOPPED);
 	}
 
 	DEBUG_EXIT
@@ -186,13 +176,13 @@ void ShowFile::Resume(void) {
 
 	if (m_pShowFile != 0) {
 		ShowFileResume();
-		SetShowFileStatus(SHOWFILE_STATUS_RUNNING);
+		SetShowFileStatus(ShowFileStatus::RUNNING);
 	}
 
 	DEBUG_EXIT
 }
 
-void ShowFile::SetShowFileStatus(TShowFileStatus tShowFileStatus) {
+void ShowFile::SetShowFileStatus(ShowFileStatus tShowFileStatus) {
 	DEBUG_ENTRY
 
 	if (tShowFileStatus == m_tShowFileStatus) {
@@ -203,16 +193,16 @@ void ShowFile::SetShowFileStatus(TShowFileStatus tShowFileStatus) {
 	m_tShowFileStatus = tShowFileStatus;
 
 	switch (m_tShowFileStatus) {
-		case SHOWFILE_STATUS_IDLE:
+		case ShowFileStatus::IDLE:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 			break;
-		case SHOWFILE_STATUS_RUNNING:
+		case ShowFileStatus::RUNNING:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
 			break;
-		case SHOWFILE_STATUS_STOPPED:
-		case SHOWFILE_STATUS_ENDED:
+		case ShowFileStatus::STOPPED:
+		case ShowFileStatus::ENDED:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
 			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 			break;
@@ -226,7 +216,7 @@ void ShowFile::SetShowFileStatus(TShowFileStatus tShowFileStatus) {
 }
 
 void ShowFile::Run(void) {
-	if (m_tShowFileStatus == SHOWFILE_STATUS_RUNNING) {
+	if (m_tShowFileStatus == ShowFileStatus::RUNNING) {
 		ShowFileRun();
 		return;
 	}

@@ -214,7 +214,7 @@ int console_error(const char *s) {
 	return i;
 }
 
-int console_status(uint16_t color, const char *s) {
+int console_status(uint32_t color, const char *s) {
 	char c;
 	int i = 0;
 

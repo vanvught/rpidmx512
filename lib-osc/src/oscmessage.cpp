@@ -2,7 +2,7 @@
  * @file oscmessage.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,650 +23,240 @@
  * THE SOFTWARE.
  */
 
-//#ifndef OSC_MESSAGE_STRING_ONLY
-//#define OSC_MESSAGE_STRING_ONLY
-//#endif
-
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscmessage.h"
 #include "oscstring.h"
 #include "oscblob.h"
 #include "osc.h"
 
-extern "C" {
-int lo_pattern_match(const char *, const char *);
-}
-
-#define OSC_DEF_TYPE_SIZE 8
-#define OSC_DEF_DATA_SIZE 8
-
-static unsigned next_pow2(unsigned x)
-{
-	x -= 1;
-	x |= (x >> 1);
-	x |= (x >> 2);
-	x |= (x >> 4);
-	x |= (x >> 8);
-	x |= (x >> 16);
-
-	return x + 1;
-}
-
-typedef union pcast32 {
-	int32_t i;
-	float f;
-	char c;
-	uint32_t nl;
-	uint8_t b[4];
-} osc_pcast32;
-
-typedef union pcast64 {
-	int64_t i;
-	double f;
-	uint64_t nl;
-} osc_pcast64;
+#include "debug.h"
 
 OSCMessage::OSCMessage(void) :
-	m_Types(0),
-	m_Typelen(1),
-	m_Typesize(OSC_DEF_TYPE_SIZE),
-	m_Data(0),
-	m_Datalen(0),
-	m_Datasize(0),
-	m_Argv(0),
-	m_Result(OSC_MESSAGE_NULL)
+	m_pTypes(0),
+	m_nTypesLength(1),
+	m_nTypesRealSize(OSC_DEF_TYPE_SIZE),
+	m_pData(0),
+	m_nDatalen(0),
+	m_nDatasize(0),
+	m_pArgv(0),
+	m_Result(OscMessageDeserialise::MESSAGE_NULL)
 {
-	m_Types = reinterpret_cast<char*>(calloc(OSC_DEF_TYPE_SIZE, sizeof(char)));
-	m_Types[0] = ',';
-	m_Types[1] = '\0';
+	m_pTypes = reinterpret_cast<char*>(calloc(OSC_DEF_TYPE_SIZE, sizeof(char)));
+	m_pTypes[0] = ',';
+	m_pTypes[1] = '\0';
 }
 
-OSCMessage::OSCMessage(void *nData, unsigned nLen) :
-	m_Types(0),
-	m_Typelen(0),
-	m_Typesize(0),
-	m_Data(0),
-	m_Datalen(0),
-	m_Datasize(0),
-	m_Argv(0),
-	m_Result(OSC_INTERNAL_ERROR)
+OSCMessage::OSCMessage(void *nData, unsigned nMessageLength) :
+	m_pTypes(0),
+	m_nTypesLength(0),
+	m_nTypesRealSize(0),
+	m_pData(0),
+	m_nDatalen(0),
+	m_nDatasize(0),
+	m_pArgv(0),
+	m_Result(OscMessageDeserialise::INTERNAL_ERROR)
 {
-	char *types = 0, *ptr = 0;
-	int i, argc = 0, remain = nLen, len;
-
-	if (nLen <= 0) {
-		m_Result = OSC_INVALID__INVALID_SIZE;
-		goto fail;
+	if (nMessageLength == 0) {
+		m_Result = OscMessageDeserialise::INVALID_INVALID_SIZE;
+		return;
 	}
 
-	m_Types = 0;
-	m_Typelen = 0;
-	m_Typesize = 0;
-	m_Data = 0;
-	m_Datalen = 0;
-	m_Datasize = 0;
-	m_Argv = 0;
+	int nRemain = static_cast<int>(nMessageLength);
+	int nValidateLength = OSCString::Validate(nData, nRemain);
 
-	len = OSCString::Validate(nData, remain);
-
-    if (len < 0) {
-    	m_Result = OSC_INVALID_PATH;
-        goto fail;
+    if (nValidateLength < 0) {
+    	m_Result = OscMessageDeserialise::INVALID_PATH;
+    	return;
     }
 
-    remain -= len;
+    nRemain -= nValidateLength;
 
-    if (remain <= 0) {
-    	m_Result = OSC_NO_TYPE_TAG;
-		goto fail;
+    if (nRemain <= 0) {
+    	m_Result = OscMessageDeserialise::NO_TYPE_TAG;
+    	return;
 	}
 
-	types = reinterpret_cast<char*>(nData) + len;
+	char *pTypes = reinterpret_cast<char*>(nData) + nValidateLength;
+    nValidateLength = OSCString::Validate(pTypes, nRemain);
 
-    len = OSCString::Validate(types, remain);
-
-    if (len < 0) {
-    	m_Result = OSC_INVALID_TYPE;
-		goto fail;
+    if (nValidateLength < 0) {
+    	m_Result = OscMessageDeserialise::INVALID_TYPE;
+      	return;
 	}
 
-	if (types[0] != ',') {
-		m_Result = OSC_INVALID_TYPE_TAG;
-		goto fail;
+	if (pTypes[0] != ',') {
+		m_Result = OscMessageDeserialise::INVALID_TYPE_TAG;
+		return;
 	}
 
-	remain -= len;
+	nRemain -= nValidateLength;
 
-	m_Typelen = strlen(types);
-	m_Typesize = len;
-	m_Types = reinterpret_cast<char*>(malloc(m_Typesize));
+	m_nTypesLength = strlen(pTypes);
+	m_nTypesRealSize = static_cast<unsigned>(nValidateLength);
+	m_pTypes = reinterpret_cast<char*>(malloc(m_nTypesRealSize));
 
-    if (0 == m_Types) {
-		m_Result = OSC_MALLOC_ERROR;
-		goto fail;
+    if (0 == m_pTypes) {
+		m_Result = OscMessageDeserialise::MALLOC_ERROR;
+		return;
 	}
 
-	memcpy(m_Types, types, m_Typelen);
+	memcpy(m_pTypes, pTypes, m_nTypesLength);
 
-	m_Data = malloc(remain);
+	m_pData = malloc(static_cast<size_t>(nRemain));
 
-	if (0 == m_Data) {
-		m_Result = OSC_MALLOC_ERROR;
-		goto fail;
+	if (0 == m_pData) {
+		m_Result = OscMessageDeserialise::MALLOC_ERROR;
+		free(m_pTypes);
+		m_pTypes = 0;
+		return;
 	}
 
-	memcpy(m_Data, types + len, remain);
-	m_Datalen = m_Datasize = remain;
-	ptr = reinterpret_cast<char*>(m_Data);
+	memcpy(m_pData, pTypes + nValidateLength, static_cast<size_t>(nRemain));
+	m_nDatalen = m_nDatasize = static_cast<unsigned>(nRemain);
+	char *pData = reinterpret_cast<char*>(m_pData);
 
-	++types;
-	argc = m_Typelen - 1;
+	++pTypes;											// Skip the ','
+	int nArgc = static_cast<int>(m_nTypesLength) - 1;	// Skip the ','
 
-	if (argc) {
-		m_Argv = reinterpret_cast<osc_arg**>(calloc(argc, sizeof(osc_arg*)));
+	if (nArgc) {
+		m_pArgv = reinterpret_cast<osc_arg**>(calloc(static_cast<size_t>(nArgc), sizeof(osc_arg*)));
 
-		if (0 == m_Argv) {
-			m_Result = OSC_MALLOC_ERROR;
-			goto fail;
+		if (0 == m_pArgv) {
+			m_Result = OscMessageDeserialise::MALLOC_ERROR;
+
+			free(m_pTypes);
+			m_pTypes = 0;
+
+			free(m_pData);
+			m_pData = 0;
+			return;
 		}
 	}
 
-	for (i = 0; remain >= 0 && i < argc; ++i) {
-		len = ArgValidate(static_cast<osc_type>(types[i]), ptr, remain);
+	int i = 0;
 
-		if (len < 0) {
-			m_Result = OSC_INVALID_ARGUMENT;
-			goto fail;
+	for (i = 0; nRemain >= 0 && i < nArgc; ++i) {
+		nValidateLength = ArgValidate(pTypes[i], pData, nRemain);
+
+		if (nValidateLength < 0) {
+			m_Result = OscMessageDeserialise::INVALID_ARGUMENT;
+
+			free(m_pTypes);
+			m_pTypes = 0;
+
+			free(m_pData);
+			m_pData = 0;
+
+			free(m_pArgv);
+			m_pArgv = 0;
+			return;
 		}
 
-		ArgHostEndian(static_cast<osc_type>(types[i]), ptr);
+		ArgHostEndian(pTypes[i], pData);
 
-		m_Argv[i] = len ? reinterpret_cast<osc_arg*>(ptr) : 0;
+		m_pArgv[i] = nValidateLength ? reinterpret_cast<osc_arg*>(pData) : 0;
 
-		remain -= len;
-		ptr += len;
+		nRemain -= nValidateLength;
+		pData += nValidateLength;
 	}
 
-	if (0 != remain || i != argc) {
-		m_Result = OSC_INVALID_SIZE;
-		goto fail;
+	if (0 != nRemain || i != nArgc) {
+		m_Result = OscMessageDeserialise::INVALID_SIZE;
+
+		free(m_pTypes);
+		m_pTypes = 0;
+
+		free(m_pData);
+		m_pData = 0;
+
+		free(m_pArgv);
+		m_pArgv = 0;
+
+		return;
 	}
 
-	m_Result = OSC_OK;
+	m_Result = OscMessageDeserialise::OK;
+
 	return;
-
-	fail: if (m_Types) {
-		free(m_Types);
-		m_Types = 0;
-	}
-
-	if (m_Data) {
-		free(m_Data);
-		m_Data = 0;
-	}
-
-	if (m_Argv) {
-		free(m_Argv);
-		m_Argv = 0;
-	}
 }
 
 OSCMessage::~OSCMessage(void) {
-	if (m_Types) {
-		free(m_Types);
-		m_Types = 0;
+	if (m_pTypes) {
+		free(m_pTypes);
+		m_pTypes = 0;
 	}
 
-	if (m_Data) {
-		free(m_Data);
-		m_Data = 0;
+	if (m_pData) {
+		free(m_pData);
+		m_pData = 0;
 	}
 
-	if (m_Argv) {
-		free(m_Argv);
-		m_Argv = 0;
+	if (m_pArgv) {
+		free(m_pArgv);
+		m_pArgv = 0;
 	}
 }
 
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-int OSCMessage::AddFloat(float a) {
-	osc_pcast32 b;
-	int32_t *nptr = reinterpret_cast<int32_t*>(AddData(sizeof(a)));
-
-	if (!nptr) {
-		return -1;
-	}
-
-	b.f = a;
-
-	if (AddTypeChar(OSC_FLOAT)) {
-		return -1;
-	}
-
-	*nptr = b.nl;
-
-	return 0;
-}
-
-int OSCMessage::AddInt32(int32_t a) {
-	osc_pcast32 b;
-	int32_t *nptr = reinterpret_cast<int32_t*>(AddData(sizeof(a)));
-
-	if (!nptr) {
-		return -1;
-	}
-
-	b.i = a;
-
-	if (AddTypeChar(OSC_INT32)) {
-		return -1;
-	}
-
-	*nptr = b.nl;
-
-	return 0;
-}
-#endif
-
-int OSCMessage::AddString(const char *a) {
-	const unsigned size = OSCString::Size(a);
-	char *nptr = reinterpret_cast<char*>(AddData(size));
-
-	if (!nptr) {
-		return -1;
-	}
-
-	if (AddTypeChar(OSC_STRING)) {
-		return -1;
-	}
-
-	strncpy(nptr, a, size);
-
-	return 0;
-}
-
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-int OSCMessage::AddBlob(OSCBlob *pBlob) {
-	const unsigned size = pBlob->GetSize();
-	const unsigned dsize = pBlob->GetDataSize();
-
-	char *nptr = reinterpret_cast<char*>(AddData(size));
-
-	if (!nptr) {
-		return -1;
-	}
-
-	if (AddTypeChar(OSC_BLOB)) {
-		return -1;
-	}
-
-	memset(nptr + size - 4, 0, 4);
-
-	memcpy(nptr, &dsize, sizeof(dsize));
-	memcpy(nptr + sizeof(uint32_t), pBlob->GetDataPtr(), dsize);
-
-	return 0;
-}
-#endif
-
-int OSCMessage::GetResult(void) const {
-	return m_Result;
-}
-
-int OSCMessage::GetArgc(void) {
-	return m_Typelen - 1;
-}
-
-osc_type OSCMessage::GetType(unsigned argc) {
-	if (argc > m_Typelen - 1) {
-		m_Result = OSC_INVALID_ARGUMENT;
-		return OSC_UNKNOWN;
-	}
-
-	return static_cast<osc_type>(m_Types[argc + 1]);
-}
-
-char *OSCMessage::getTypes(void) const {
-	return m_Types;
-}
-
-unsigned OSCMessage::getDataLength(void) const {
-	return m_Datalen;
-}
-
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-float OSCMessage::GetFloat(unsigned argc) {
-	if (argc > m_Typelen) {
-		m_Result = OSC_INVALID_ARGUMENT;
+int OSCMessage::ArgValidate(char nType, void *data, int size) {
+	switch (nType) {
+	case OscType::TRUE:
+	case OscType::FALSE:
+	case OscType::NIL:
+	case OscType::INFINITUM:
 		return 0;
-	}
-
-	if (m_Argv == 0) {
-		ArgvUpdate();
-	}
-
-	osc_pcast32 val32;
-	val32.nl = *reinterpret_cast<int32_t*>(m_Argv[argc]);
-
-	return val32.f;
-}
-
-int OSCMessage::GetInt(unsigned argc) {
-	if (argc > m_Typelen) {
-		m_Result = OSC_INVALID_ARGUMENT;
-		return 0;
-	}
-
-	if (m_Argv == 0) {
-		ArgvUpdate();
-	}
-
-	osc_pcast32 val32;
-	val32.nl = *reinterpret_cast<int32_t*>(m_Argv[argc]);
-
-	return val32.nl;
-}
-#endif
-
-char * OSCMessage::GetString(unsigned argc) {
-	if (argc > m_Typelen) {
-		m_Result = OSC_INVALID_ARGUMENT;
-		return 0;
-	}
-
-	if (m_Argv == 0) {
-		ArgvUpdate();
-	}
-
-	return reinterpret_cast<char*>(m_Argv[argc]);
-}
-
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-OSCBlob OSCMessage::GetBlob(unsigned argc) {
-	void *data;
-	unsigned int size = 0;
-	const char *p;
-	osc_pcast32 val32;
-
-	if (argc > m_Typelen) {
-		m_Result = OSC_INVALID_ARGUMENT;
-		return OSCBlob(0, 0);
-	}
-
-	if (m_Argv == 0) {
-		ArgvUpdate();
-	}
-
-	data = m_Argv[argc];
-	val32.nl = *reinterpret_cast<int32_t*>(data);
-	size = val32.i;
-	p = reinterpret_cast<const char*>(data) + 4;
-
-	return OSCBlob(p, size);
-}
-#endif
-
-void *OSCMessage::Serialise(const char *path, void *to, unsigned * size) {
-	int i, argc;
-	char *types, *ptr;
-	unsigned s = OSCString::Size(path) + OSCString::Size(m_Types) + m_Datalen;
-
-    if (size) {
-        *size = s;
-    }
-
-    if (!to) {
-        to = calloc(1, s);
-    }
-
-	memset(reinterpret_cast<char*>(to) + OSCString::Size(path) - 4, 0, 4);
-
-	strcpy(reinterpret_cast<char*>(to), path);
-
-	memset(reinterpret_cast<char*>(to) + OSCString::Size(path) + OSCString::Size(m_Types) - 4, 0, 4);
-
-	strcpy(reinterpret_cast<char*>(to) + OSCString::Size(path), m_Types);
-
-    types = m_Types + 1;
-	ptr = reinterpret_cast<char*>(to) + OSCString::Size(path) + OSCString::Size(m_Types);
-
-    memcpy(ptr, m_Data, m_Datalen);
-
-    argc = m_Typelen - 1;
-
-    for (i = 0; i < argc; ++i) {
-		size_t len = ArgSize(static_cast<osc_type>(types[i]), ptr);
-		ArgNetworkEndian(static_cast<osc_type>(types[i]), ptr);
-        ptr += len;
-    }
-
-    return to;
-}
-
-signed OSCMessage::ArgValidate(osc_type type, void *data, unsigned size) {
-
-	switch (type) {
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-	case OSC_TRUE:
-	case OSC_FALSE:
-	case OSC_NIL:
-	case OSC_INFINITUM:
-		return 0;
-	case OSC_INT32:
-	case OSC_FLOAT:
-	case OSC_MIDI:
-	case OSC_CHAR:
-		return size >= 4 ? 4 : -OSC_INVALID_SIZE;
-	case OSC_INT64:
-	case OSC_TIMETAG:
-	case OSC_DOUBLE:
-		return size >= 8 ? 8 : -OSC_INVALID_SIZE;
-#endif
-	case OSC_STRING:
-	case OSC_SYMBOL:
+	case OscType::INT32:
+	case OscType::FLOAT:
+	case OscType::MIDI:
+	case OscType::CHAR:
+		return size >= 4 ? 4 : -OscMessageDeserialise::INVALID_SIZE;
+	case OscType::INT64:
+	case OscType::TIMETAG:
+	case OscType::DOUBLE:
+		return size >= 8 ? 8 : -OscMessageDeserialise::INVALID_SIZE;
+	case OscType::STRING:
+	case OscType::SYMBOL:
 		return OSCString::Validate(data, size);
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-	case OSC_BLOB:
+	case OscType::BLOB:
 		return OSCBlob::Validate(data, size);
-#endif
 	default:
-		return -OSC_INVALID_TYPE;
+		return -OscMessageDeserialise::INVALID_TYPE;
 	}
 
-	return -OSC_INTERNAL_ERROR;
+	return -OscMessageDeserialise::INTERNAL_ERROR;
 }
 
-void OSCMessage::ArgNetworkEndian(osc_type type, void *data)
-{
-	switch (type) {
-	case OSC_INT32:
-	case OSC_FLOAT:
-	case OSC_BLOB:
-	case OSC_CHAR:
-		*reinterpret_cast<int32_t*>(data) = __builtin_bswap32(*reinterpret_cast<int32_t*>(data));
-		break;
-	case OSC_TIMETAG:
-		*reinterpret_cast<uint32_t*>(data) = __builtin_bswap32(*reinterpret_cast<uint32_t*>(data));
-		data = (reinterpret_cast<uint32_t*>(data)) + 1;
-		*reinterpret_cast<uint32_t*>(data) = __builtin_bswap32(*reinterpret_cast<uint32_t*>(data));
-		break;
-	case OSC_INT64:
-	case OSC_DOUBLE:
-		*reinterpret_cast<int64_t*>(data) = __builtin_bswap64(*reinterpret_cast<int64_t*>(data));
-		break;
-	case OSC_STRING:
-	case OSC_SYMBOL:
-	case OSC_MIDI:
-	case OSC_TRUE:
-	case OSC_FALSE:
-	case OSC_NIL:
-	case OSC_INFINITUM:
-		/* these are fine */
-		break;
-
-	default:
-		break;
-	}
-}
-
-void OSCMessage::ArgHostEndian(osc_type type, void *data)
-{
-    switch (type) {
-    case OSC_INT32:
-    case OSC_FLOAT:
-    case OSC_BLOB:
-    case OSC_CHAR:
-		*reinterpret_cast<int32_t*>(data) = __builtin_bswap32(
-				*reinterpret_cast<int32_t*>(data));
+void OSCMessage::ArgHostEndian(char nType, void *data) {
+    switch (nType) {
+    case OscType::INT32:
+    case OscType::FLOAT:
+    case OscType::BLOB:
+    case OscType::CHAR:
+		*reinterpret_cast<int32_t*>(data) = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(*reinterpret_cast<int32_t*>(data))));
         break;
-    case OSC_TIMETAG:
-		*reinterpret_cast<int32_t*>(data) = __builtin_bswap32(*reinterpret_cast<int32_t*>(data));
+    case OscType::TIMETAG:
+		*reinterpret_cast<int32_t*>(data) = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(*reinterpret_cast<int32_t*>(data))));
 		data = (reinterpret_cast<int32_t*>(data)) + 1;
-		*reinterpret_cast<int32_t*>(data) = __builtin_bswap32(*reinterpret_cast<int32_t*>(data));
+		*reinterpret_cast<int32_t*>(data) = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(*reinterpret_cast<int32_t*>(data))));
         break;
-    case OSC_INT64:
-    case OSC_DOUBLE:
-		*reinterpret_cast<int64_t*>(data) = __builtin_bswap64(*reinterpret_cast<int64_t*>(data));
+    case OscType::INT64:
+    case OscType::DOUBLE:
+		*reinterpret_cast<int64_t*>(data) = static_cast<int64_t>(__builtin_bswap64(static_cast<uint64_t>(*reinterpret_cast<int64_t*>(data))));
         break;
-    case OSC_STRING:
-    case OSC_SYMBOL:
-    case OSC_MIDI:
-    case OSC_TRUE:
-    case OSC_FALSE:
-    case OSC_NIL:
-    case OSC_INFINITUM:
+    case OscType::STRING:
+    case OscType::SYMBOL:
+    case OscType::MIDI:
+    case OscType::TRUE:
+    case OscType::FALSE:
+    case OscType::NIL:
+    case OscType::INFINITUM:
         /* these are fine */
         break;
     default:
         /* Unknown type */
         break;
     }
-}
-
-void *OSCMessage::AddData(unsigned s) {
-    uint32_t old_dlen = m_Datalen;
-
-    int new_datasize = m_Datasize;
-    int new_datalen = m_Datalen + s;
-
-    void *new_data = 0;
-
-    if (!new_datasize) {
-        new_datasize = OSC_DEF_DATA_SIZE;
-    }
-
-	if (new_datalen > new_datasize) {
-		new_datasize  = next_pow2(new_datalen);
-	}
-
-    new_data = realloc(m_Data, new_datasize);
-
-    if (!new_data) {
-        return 0;
-    }
-
-    m_Datalen = new_datalen;
-    m_Datasize = new_datasize;
-    m_Data = new_data;
-
-    if (m_Argv) {
-        free(m_Argv);
-        m_Argv = 0;
-    }
-
-	return (reinterpret_cast<char*>(m_Data) + old_dlen);
-}
-
-int OSCMessage::AddTypeChar(char t) {
-	if (m_Typelen + 1 >= m_Typesize) {
-		int new_typesize = m_Typesize * 2;
-		char *new_types = 0;
-
-		if (!new_typesize) {
-			new_typesize = OSC_DEF_TYPE_SIZE;
-		}
-
-		new_types = reinterpret_cast<char*>(realloc(m_Types, new_typesize));
-
-		if (!new_types)
-			return -1;
-
-		m_Types = new_types;
-		m_Typesize = new_typesize;
-	}
-
-	m_Types[m_Typelen] = t;
-	m_Typelen++;
-	m_Types[m_Typelen] = '\0';
-
-	if (m_Argv) {
-		free(m_Argv);
-		m_Argv = 0;
-	}
-
-	return 0;
-}
-
-unsigned OSCMessage::ArgSize(osc_type type, void *data)
-{
-    switch (type) {
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-    case OSC_TRUE:
-    case OSC_FALSE:
-    case OSC_NIL:
-    case OSC_INFINITUM:
-        return 0;
-
-    case OSC_INT32:
-    case OSC_FLOAT:
-    case OSC_MIDI:
-    case OSC_CHAR:
-        return 4;
-
-    case OSC_INT64:
-    case OSC_TIMETAG:
-    case OSC_DOUBLE:
-        return 8;
-#endif
-    case OSC_STRING:
-    case OSC_SYMBOL:
-		return OSCString::Size(reinterpret_cast<char*>(data));
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-    case OSC_BLOB:
-        return OSCBlob::Size(data);
-#endif
-    default:
-    	// Unknown
-        return 0;
-    }
-
-    return 0;
-}
-
-void OSCMessage::ArgvUpdate(void) {
-    int i, argc;
-    char *types, *ptr;
-    osc_arg **argv;
-
-    if (0 != m_Argv) {
-        return;
-    }
-
-    argc = m_Typelen - 1;
-    types = m_Types + 1;
-	ptr = reinterpret_cast<char*>(m_Data);
-
-	argv = reinterpret_cast<osc_arg**>(calloc(argc, sizeof(osc_arg*)));
-
-    for (i = 0; i < argc; ++i) {
-		unsigned len = ArgSize(static_cast<osc_type>(types[i]), ptr);
-		argv[i] = len ? reinterpret_cast<osc_arg*>(ptr) : 0;
-        ptr += len;
-    }
-
-    m_Argv = argv;
 }

@@ -24,7 +24,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "ltcdisplayws28xxmatrix.h"
 

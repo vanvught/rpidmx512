@@ -24,6 +24,7 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
@@ -40,16 +41,10 @@
  #define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 #endif
 
-#ifndef MIN
- #define MIN(a,b)		(((a) < (b)) ? (a) : (b))
-#endif
-
 #include "bw_spi_lcd.h"
 
-#define DMX_FOOTPRINT	4
-
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("LCD 4-slots H", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots D", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots \%", DMX_FOOTPRINT)};
-
+static constexpr uint32_t DMX_FOOTPRINT = 4;
+static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("LCD 4-slots H", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots D", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots %%", DMX_FOOTPRINT)};
 const char s_aLine[BW_LCD_MAX_CHARACTERS + 1] ALIGNED = "--- --- --- --- ";
 
 RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed):
@@ -126,8 +121,8 @@ void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint16_t nLength) {
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 	bool IsDataChanged = false;
 
-	nLength = MIN(nLength, DMX_FOOTPRINT);
-	nLength = MIN(nLength, 513 - nDmxStartAddress);
+	nLength = std::min(nLength, static_cast<uint16_t>(DMX_FOOTPRINT));
+	nLength = std::min(nLength, static_cast<uint16_t>(513 - nDmxStartAddress));
 
 	const uint8_t* p = &pData[nDmxStartAddress-1];
 

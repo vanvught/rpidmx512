@@ -31,7 +31,7 @@
 
 #include "debug.h"
 
-ShowFileTFTP::ShowFileTFTP(void): m_pFile(0) {
+ShowFileTFTP::ShowFileTFTP(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -51,8 +51,8 @@ void ShowFileTFTP::Exit(void) {
 	DEBUG_EXIT
 }
 
-bool ShowFileTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, tMode);
+bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
 	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
@@ -64,8 +64,8 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
 	return (m_pFile != 0);
 }
 
-bool ShowFileTFTP::FileCreate(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, tMode);
+bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
 	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
@@ -89,10 +89,10 @@ bool ShowFileTFTP::FileClose(void) {
 	return true;
 }
 
-int ShowFileTFTP::FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t ShowFileTFTP::FileRead(void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	return fread(pBuffer, 1, nCount, m_pFile);
 }
 
-int ShowFileTFTP::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t ShowFileTFTP::FileWrite(const void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	return fwrite(pBuffer, 1, nCount, m_pFile);
 }

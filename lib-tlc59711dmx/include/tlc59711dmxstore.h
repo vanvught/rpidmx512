@@ -30,7 +30,8 @@
 
 class TLC59711DmxStore {
 public:
-	virtual ~TLC59711DmxStore(void) {}
+	virtual ~TLC59711DmxStore(void) {
+	}
 
 	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
 };

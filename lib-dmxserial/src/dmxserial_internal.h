@@ -26,8 +26,9 @@
 #ifndef DMXSERIAL_INTERNAL_H_
 #define DMXSERIAL_INTERNAL_H_
 
-enum tUdpPort {
-	UDP_PORT = 0x4156	//16726
+struct UDP {
+	static constexpr auto PORT = 0x4156;	//16726
+	static constexpr auto BUFFER_SIZE = 32;
 };
 
 #endif /* DMXSERIAL_INTERNAL_H_ */

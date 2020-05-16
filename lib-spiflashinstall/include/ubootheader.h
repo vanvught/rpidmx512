@@ -27,7 +27,6 @@
 #define UBOOTHEADER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 class UBootHeader {
 public:

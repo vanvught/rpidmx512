@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
@@ -31,31 +31,31 @@
 void WS28xxDmxParams::Set(WS28xxDmxMulti *pWS28xxDmxMulti) {
 	assert(pWS28xxDmxMulti != 0);
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
-		pWS28xxDmxMulti->SetLEDType(static_cast<TWS28XXType>(m_tWS28xxParams.tLedType));
+	if (isMaskSet(WS28xxDmxParamsMask::LED_TYPE)) {
+		pWS28xxDmxMulti->SetLEDType(m_tWS28xxParams.tLedType);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
+	if (isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
 		pWS28xxDmxMulti->SetRgbMapping(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping));
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
 		pWS28xxDmxMulti->SetLowCode(m_tWS28xxParams.nLowCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
 		pWS28xxDmxMulti->SetHighCode(m_tWS28xxParams.nHighCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LED_COUNT)) {
 		pWS28xxDmxMulti->SetLEDCount(m_tWS28xxParams.nLedCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT)) {
+	if (isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT)) {
 		pWS28xxDmxMulti->SetActivePorts(m_tWS28xxParams.nActiveOutputs);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_USE_SI5351A)) {
+	if (isMaskSet(WS28xxDmxParamsMask::USE_SI5351A)) {
 		pWS28xxDmxMulti->SetUseSI5351A(m_tWS28xxParams.bUseSI5351A);
 	}
 }

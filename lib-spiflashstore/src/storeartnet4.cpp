@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "spiflashstore.h"
 
@@ -32,11 +32,14 @@
 
 #include "debug.h"
 
+StoreArtNet4 *StoreArtNet4::s_pThis = 0;
+
 StoreArtNet4::StoreArtNet4(void) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("%p", this);
+	s_pThis = this;
 
+	DEBUG_PRINTF("%p", this);
 	DEBUG_EXIT
 }
 

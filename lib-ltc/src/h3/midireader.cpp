@@ -24,9 +24,8 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/midireader.h"
 #include "ltc.h"
@@ -49,13 +48,9 @@
 //
 #include "h3/ltcoutputs.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
-static uint8_t qf[8] ALIGNED = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
-
-inline static void itoa_base10(uint32_t arg, char *buf) {
+inline static void itoa_base10(int arg, char *buf) {
 	char *n = buf;
 
 	if (arg == 0) {

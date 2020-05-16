@@ -25,7 +25,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "storedmxsend.h"
 #include "dmxparams.h"

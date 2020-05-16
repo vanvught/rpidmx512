@@ -23,18 +23,15 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "spiflashstore.h"
 
 #include "networkparams.h"
 
 #include "debug.h"
-
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
 
 StoreNetwork *StoreNetwork::s_pThis = 0;
 
@@ -44,7 +41,6 @@ StoreNetwork::StoreNetwork(void) {
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", s_pThis);
-
 	DEBUG_EXIT
 }
 
@@ -75,7 +71,7 @@ void StoreNetwork::SaveIp(uint32_t nIp) {
 
 	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nLocalIp));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NETWORK_PARAMS_MASK_IP_ADDRESS);
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NetworkParamsMask::IP_ADDRESS);
 
 	DEBUG_EXIT
 }
@@ -85,7 +81,7 @@ void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
 
 	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nNetmask));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NETWORK_PARAMS_MASK_NET_MASK);
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
 
 	DEBUG_EXIT
 }
@@ -95,9 +91,9 @@ void StoreNetwork::SaveHostName(const char *pHostName, uint32_t nLength) {
 
 	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, aHostName));
 
-	nLength = MIN(nLength, NETWORK_HOSTNAME_SIZE);
+	nLength = std::min(nLength,static_cast<uint32_t>(NETWORK_HOSTNAME_SIZE));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NETWORK_PARAMS_MASK_HOSTNAME);
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NetworkParamsMask::HOSTNAME);
 
 	DEBUG_EXIT
 }
@@ -107,7 +103,7 @@ void StoreNetwork::SaveDhcp(bool bIsDhcpUsed) {
 
 	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed));
 
-	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NETWORK_PARAMS_MASK_DHCP);
+	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NetworkParamsMask::DHCP);
 
 	DEBUG_EXIT
 }

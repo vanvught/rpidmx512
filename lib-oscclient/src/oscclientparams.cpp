@@ -23,16 +23,21 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+ #pragma GCC push_options
+ #pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "oscclientparams.h"
 #include "oscclientparamsconst.h"
-#include "oscconst.h"
+#include "oscparamsconst.h"
 
 #include "network.h"
 
@@ -42,15 +47,15 @@
 
 OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m_pOscClientParamsStore(pOscClientParamsStore) {
 	memset(&m_tOscClientParams, 0, sizeof(struct TOscClientParams));
-	m_tOscClientParams.nOutgoingPort = OSCCLIENT_DEFAULT_PORT_OUTGOING;
-	m_tOscClientParams.nIncomingPort = OSCCLIENT_DEFAULT_PORT_INCOMING;
-	m_tOscClientParams.nPingDelay = OSCCLIENT_DEFAULT_PING_DELAY_SECONDS;
+	m_tOscClientParams.nOutgoingPort = OscClientDefault::PORT_OUTGOING;
+	m_tOscClientParams.nIncomingPort = OscClientDefault::PORT_INCOMING;
+	m_tOscClientParams.nPingDelay = OscClientDefault::PING_DELAY_SECONDS;
 
-	assert(sizeof(m_aCmd) > strlen(OscClientParamsConst::PARAMS_CMD));
-	strncpy(m_aCmd, OscClientParamsConst::PARAMS_CMD, sizeof(m_aCmd));
+	assert(sizeof(m_aCmd) > strlen(OscClientParamsConst::CMD));
+	strncpy(m_aCmd, OscClientParamsConst::CMD, sizeof(m_aCmd));
 
-	assert(sizeof(m_aLed) > strlen(OscClientParamsConst::PARAMS_LED));
-	strncpy(m_aLed, OscClientParamsConst::PARAMS_LED, sizeof(m_aLed));
+	assert(sizeof(m_aLed) > strlen(OscClientParamsConst::LED));
+	strncpy(m_aLed, OscClientParamsConst::LED, sizeof(m_aLed));
 }
 
 OscClientParams::~OscClientParams(void) {
@@ -62,7 +67,7 @@ bool OscClientParams::Load(void) {
 
 	ReadConfigFile configfile(OscClientParams::staticCallbackFunction, this);
 
-	if (configfile.Read(OscClientParamsConst::PARAMS_FILE_NAME)) {
+	if (configfile.Read(OscClientParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pOscClientParamsStore != 0) {
 			m_pOscClientParamsStore->Update(&m_tOscClientParams);
@@ -101,66 +106,66 @@ void OscClientParams::callbackFunction(const char *pLine) {
 	uint16_t nValue16;
 	uint32_t nValue32;
 
-	if (Sscan::IpAddress(pLine, OscClientParamsConst::PARAMS_SERVER_IP, &nValue32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, OscClientParamsConst::SERVER_IP, &nValue32) == SSCAN_OK) {
 		m_tOscClientParams.nServerIp = nValue32;
-		m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_SERVER_IP;
+		m_tOscClientParams.nSetList |= OscClientParamsMask::SERVER_IP;
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscConst::PARAMS_OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nOutgoingPort = nValue16;
-			m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_OUTGOING_PORT;
+			m_tOscClientParams.nSetList |= OscClientParamsMask::OUTGOING_PORT;
 		} else {
-			m_tOscClientParams.nSetList &= ~OSCCLIENT_PARAMS_MASK_OUTGOING_PORT;
+			m_tOscClientParams.nSetList &= ~OscClientParamsMask::OUTGOING_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscConst::PARAMS_INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nIncomingPort = nValue16;
-			m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_INCOMING_PORT;
+			m_tOscClientParams.nSetList |= OscClientParamsMask::INCOMING_PORT;
 		} else {
-			m_tOscClientParams.nSetList &= ~OSCCLIENT_PARAMS_MASK_INCOMING_PORT;
+			m_tOscClientParams.nSetList &= ~OscClientParamsMask::INCOMING_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OscClientParamsConst::PARAMS_PING_DISABLE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DISABLE, &nValue8) == SSCAN_OK) {
 		m_tOscClientParams.nPingDisable = (nValue8 != 0);
-		m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_PING_DISABLE;
+		m_tOscClientParams.nSetList |= OscClientParamsMask::PING_DISABLE;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OscClientParamsConst::PARAMS_PING_DELAY, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DELAY, &nValue8) == SSCAN_OK) {
 		if ((nValue8 >= 2) && (nValue8 <= 60)) {
 			m_tOscClientParams.nPingDelay = nValue8;
-			m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_PING_DELAY;
+			m_tOscClientParams.nSetList |= OscClientParamsMask::PING_DELAY;
 		} else {
-			m_tOscClientParams.nSetList &= ~OSCCLIENT_PARAMS_MASK_PING_DELAY;
+			m_tOscClientParams.nSetList &= ~OscClientParamsMask::PING_DELAY;
 		}
 		return;
 	}
 
-	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
-		m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
-		nValue8 = OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH;
+	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
+		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
+		nValue8 = OscClientParamsMax::CMD_PATH_LENGTH;
 		if (Sscan::Char(pLine, m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]), &nValue8) == SSCAN_OK) {
 			if (m_tOscClientParams.aCmd[i][0] == '/') {
-				m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_CMD;
+				m_tOscClientParams.nSetList |= OscClientParamsMask::CMD;
 			} else {
 				m_tOscClientParams.aCmd[i][0] = '\0';
 			}
 		}
 	}
 
-	for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
-		m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
-		nValue8 = OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH;
+	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
+		m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
+		nValue8 = OscClientParamsMax::LED_PATH_LENGTH;
 		if (Sscan::Char(pLine, m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]), &nValue8) == SSCAN_OK) {
 			if (m_tOscClientParams.aLed[i][0] == '/') {
-				m_tOscClientParams.nSetList |= OSCCLIENT_PARAMS_MASK_LED;
+				m_tOscClientParams.nSetList |= OscClientParamsMask::LED;
 			} else {
 				m_tOscClientParams.aLed[i][0] = '\0';
 			}
@@ -171,32 +176,32 @@ void OscClientParams::callbackFunction(const char *pLine) {
 void OscClientParams::Set(OscClient* pOscClient) {
 	assert(pOscClient != 0);
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_SERVER_IP)) {
+	if (isMaskSet(OscClientParamsMask::SERVER_IP)) {
 		pOscClient->SetServerIP(m_tOscClientParams.nServerIp);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT)) {
+	if (isMaskSet(OscClientParamsMask::OUTGOING_PORT)) {
 		pOscClient->SetPortOutgoing(m_tOscClientParams.nOutgoingPort);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT)) {
+	if (isMaskSet(OscClientParamsMask::INCOMING_PORT)) {
 		pOscClient->SetPortIncoming(m_tOscClientParams.nIncomingPort);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE)) {
+	if (isMaskSet(OscClientParamsMask::PING_DISABLE)) {
 		pOscClient->SetPingDisable(m_tOscClientParams.nPingDisable);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY)) {
+	if (isMaskSet(OscClientParamsMask::PING_DELAY)) {
 		pOscClient->SetPingDelay(m_tOscClientParams.nPingDelay);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_CMD)) {
-		pOscClient->CopyCmds(reinterpret_cast<const char*>(&m_tOscClientParams.aCmd), OSCCLIENT_PARAMS_CMD_MAX_COUNT, OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH);
+	if (isMaskSet(OscClientParamsMask::CMD)) {
+		pOscClient->CopyCmds(reinterpret_cast<const char*>(&m_tOscClientParams.aCmd), OscClientParamsMax::CMD_COUNT, OscClientParamsMax::CMD_PATH_LENGTH);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_LED)) {
-		pOscClient->CopyLeds(reinterpret_cast<const char*>(&m_tOscClientParams.aLed), OSCCLIENT_PARAMS_LED_MAX_COUNT, OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH);
+	if (isMaskSet(OscClientParamsMask::LED)) {
+		pOscClient->CopyLeds(reinterpret_cast<const char*>(&m_tOscClientParams.aLed), OscClientParamsMax::LED_COUNT, OscClientParamsMax::LED_PATH_LENGTH);
 	}
 }
 
@@ -206,38 +211,38 @@ void OscClientParams::Dump(void) {
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OscClientParamsConst::PARAMS_FILE_NAME);
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OscClientParamsConst::FILE_NAME);
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_SERVER_IP)) {
-		printf(" %s=" IPSTR "\n", OscClientParamsConst::PARAMS_SERVER_IP, IP2STR(m_tOscClientParams.nServerIp));
+	if (isMaskSet(OscClientParamsMask::SERVER_IP)) {
+		printf(" %s=" IPSTR "\n", OscClientParamsConst::SERVER_IP, IP2STR(m_tOscClientParams.nServerIp));
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_OUTGOING_PORT)) {
-		printf(" %s=%d\n", OscConst::PARAMS_OUTGOING_PORT, m_tOscClientParams.nOutgoingPort);
+	if (isMaskSet(OscClientParamsMask::OUTGOING_PORT)) {
+		printf(" %s=%d\n", OscParamsConst::OUTGOING_PORT, m_tOscClientParams.nOutgoingPort);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_INCOMING_PORT)) {
-		printf(" %s=%d\n", OscConst::PARAMS_INCOMING_PORT, m_tOscClientParams.nIncomingPort);
+	if (isMaskSet(OscClientParamsMask::INCOMING_PORT)) {
+		printf(" %s=%d\n", OscParamsConst::INCOMING_PORT, m_tOscClientParams.nIncomingPort);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DISABLE)) {
-		printf(" %s=%d [%s]\n", OscClientParamsConst::PARAMS_PING_DISABLE, m_tOscClientParams.nPingDisable, m_tOscClientParams.nPingDisable == 0 ? "No" : "Yes");
+	if (isMaskSet(OscClientParamsMask::PING_DISABLE)) {
+		printf(" %s=%d [%s]\n", OscClientParamsConst::PING_DISABLE, m_tOscClientParams.nPingDisable, m_tOscClientParams.nPingDisable == 0 ? "No" : "Yes");
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_PING_DELAY)) {
-		printf(" %s=%ds\n", OscClientParamsConst::PARAMS_PING_DELAY, m_tOscClientParams.nPingDelay);
+	if (isMaskSet(OscClientParamsMask::PING_DELAY)) {
+		printf(" %s=%ds\n", OscClientParamsConst::PING_DELAY, m_tOscClientParams.nPingDelay);
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_CMD)) {
-		for (uint32_t i = 0; i < OSCCLIENT_PARAMS_CMD_MAX_COUNT; i++) {
-			m_aCmd[strlen(OscClientParamsConst::PARAMS_CMD) - 1] = i + '0';
+	if (isMaskSet(OscClientParamsMask::CMD)) {
+		for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
+			m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
 			printf(" %s=[%s]\n", m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]));
 		}
 	}
 
-	if (isMaskSet(OSCCLIENT_PARAMS_MASK_LED)) {
-		for (uint32_t i = 0; i < OSCCLIENT_PARAMS_LED_MAX_COUNT; i++) {
-			m_aLed[strlen(OscClientParamsConst::PARAMS_LED) - 1] = i + '0';
+	if (isMaskSet(OscClientParamsMask::LED)) {
+		for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
+			m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
 			printf(" %s=[%s]\n", m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]));
 		}
 	}

@@ -2,7 +2,7 @@
  * @file spiflashinstallparams.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 #define SPIFLASHINSTALLPARAMS_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 class SpiFlashInstallParams {
 public:
@@ -45,7 +44,6 @@ public:
 		return m_bInstalluImage;
 	}
 
-public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
@@ -55,9 +53,9 @@ private:
 	}
 
 private:
-	uint32_t m_nSetList;
-	bool m_bInstalluboot;
-	bool m_bInstalluImage;
+	uint32_t m_nSetList = 0;
+	bool m_bInstalluboot = false;
+	bool m_bInstalluImage = false;
 };
 
 #endif /* SPIFLASHINSTALLPARAMS_H_ */

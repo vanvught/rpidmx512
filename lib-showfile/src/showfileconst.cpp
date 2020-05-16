@@ -24,6 +24,7 @@
  */
 
 #include "showfileconst.h"
+#include "showfile.h"
 
-const char ShowFileConst::FORMAT[SHOWFILE_FORMAT_UNDEFINED][SHOWFILECONST_FORMAT_NAME_LENGTH] = { "OLA", "dummy" };
-const char ShowFileConst::STATUS[SHOWFILE_STATUS_UNDEFINED][12] = { "Idle", "Running", "Stopped", "Ended" };
+const char ShowFileConst::FORMAT[static_cast<int>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH] = { "OLA", "dummy" };
+const char ShowFileConst::STATUS[static_cast<int>(ShowFileStatus::UNDEFINED)][12] = { "Idle", "Running", "Stopped", "Ended" };

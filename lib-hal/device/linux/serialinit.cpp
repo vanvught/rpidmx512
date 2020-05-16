@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-
 #include "serial.h"
 
 #include "debug.h"

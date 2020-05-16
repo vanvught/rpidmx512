@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 
@@ -38,18 +38,22 @@
 
 #include "arm/synchronize.h"
 
-constexpr char aSocName[4][8] = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
-constexpr char aCpuName[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
-constexpr uint8_t aCpuNameLength[4] = {12, 9, 18, 8};
+static constexpr char aSocName[4][8] = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 
-constexpr char aMachine[] = "arm";
-#define MACHINE_LENGTH (sizeof(aMachine) - 1)
+namespace CPU {
+	static constexpr char NAME[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
+	static constexpr uint8_t NAME_LENGTH[4] = {12, 9, 18, 8};
+}
 
-constexpr char aSysName[] = "Baremetal";
-#define SYSNAME_LENGTH (sizeof(aSysName) - 1)
+namespace MACHINE {
+	static constexpr char NAME[] = "arm";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+}
 
-constexpr char s_Version[] = __DATE__ "" "" __TIME__;
-#define VERSION_LENGTH (sizeof(aVersion) - 1)
+namespace SYSNAME {
+	static constexpr char NAME[] = "Baremetal";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+}
 
 Hardware *Hardware::s_pThis = 0;
 
@@ -76,13 +80,13 @@ Hardware::~Hardware(void) {
 }
 
 const char *Hardware::GetMachine(uint8_t& nLength) {
-	nLength = MACHINE_LENGTH;
-	return aMachine;
+	nLength = MACHINE::NAME_LENGTH;
+	return MACHINE::NAME;
 }
 
 const char *Hardware::GetSysName(uint8_t& nLength) {
-	nLength = SYSNAME_LENGTH;
-	return aSysName;
+	nLength = SYSNAME::NAME_LENGTH;
+	return SYSNAME::NAME;
 }
 
 const char *Hardware::GetBoardName(uint8_t& nLength) {
@@ -91,8 +95,8 @@ const char *Hardware::GetBoardName(uint8_t& nLength) {
 }
 
 const char *Hardware::GetCpuName(uint8_t& nLength) {
-	nLength = aCpuNameLength[m_tSocType];
-	return aCpuName[m_tSocType];
+	nLength = CPU::NAME_LENGTH[m_tSocType];
+	return CPU::NAME[m_tSocType];
 }
 
 const char *Hardware::GetSocName(uint8_t& nLength) {
@@ -102,7 +106,6 @@ const char *Hardware::GetSocName(uint8_t& nLength) {
 
 bool Hardware::SetTime(const struct tm *pTime) {
 	hardware_rtc_set(pTime);
-
 	return true;
 }
 

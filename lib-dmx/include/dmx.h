@@ -95,7 +95,7 @@ extern uint32_t dmx_get_output_mab_time(void);
 extern void dmx_set_output_mab_time(uint32_t);
 extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) __attribute__((assume_aligned(4)));
-extern volatile uint32_t dmx_get_updates_per_seconde(void);
+extern uint32_t dmx_get_updates_per_seconde(void);
 extern uint16_t dmx_get_send_data_length(void);
 extern uint32_t dmx_get_output_period(void);
 extern void dmx_set_output_period(uint32_t);

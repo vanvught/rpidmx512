@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <unistd.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxserial.h"
 #include "dmxserial_internal.h"
@@ -42,11 +42,11 @@
 
 DmxSerial *DmxSerial::s_pThis = 0;
 
-DmxSerial::DmxSerial(void): m_nFilesCount(0), m_nDmxLastSlot(DMX_UNIVERSE_SIZE), m_bEnableTFTP(false), m_pDmxSerialTFTP(0), m_nHandle(-1) {
+DmxSerial::DmxSerial(void) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
-	for (uint32_t i = 0; i < DMXSERIAL_FILE_MAX_NUMBER; i++) {
+	for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
 		m_aFileIndex[i] = -1;
 		m_pDmxSerialChannelData[i] = 0;
 	}
@@ -61,32 +61,32 @@ DmxSerial::~DmxSerial(void) {
 		}
 	}
 
-	Network::Get()->End(UDP_PORT);
+	Network::Get()->End(UDP::PORT);
 
 	s_pThis = 0;
 }
 
 void DmxSerial::Init(void) {
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
 
 	ScanDirectory();
 	m_Serial.Init();
 }
 
-void DmxSerial::Start(uint8_t nPort) {
+void DmxSerial::Start(__attribute__((unused)) uint8_t nPort) {
 	// No actions here
 }
 
-void DmxSerial::Stop(uint8_t nPort) {
+void DmxSerial::Stop(__attribute__((unused)) uint8_t nPort) {
 	// No actions here
 }
 
-void DmxSerial::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+void DmxSerial::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pData, __attribute__((unused)) uint16_t nLength) {
 
 	for (uint32_t nIndex = 0; nIndex < m_nFilesCount; nIndex++) {
-		const uint32_t nOffset = m_aFileIndex[nIndex] - 1;
+		const int32_t nOffset = m_aFileIndex[nIndex] - 1;
 
 		if (m_DmxData[nOffset] != pData[nOffset]) {
 			m_DmxData[nOffset] = pData[nOffset];
@@ -127,7 +127,7 @@ void DmxSerial::ScanDirectory(void) {
     if ((dirp = opendir(".")) == NULL) {
 		perror("couldn't open '.'");
 
-		for (uint32_t i = 0; i < DMXSERIAL_FILE_MAX_NUMBER; i++) {
+		for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
 			m_aFileIndex[i] = -1;
 		}
 
@@ -140,7 +140,7 @@ void DmxSerial::ScanDirectory(void) {
         		continue;
         	}
 
-          	uint16_t nFileNumber;
+          	int16_t nFileNumber;
         	if (!CheckFileName(dp->d_name, nFileNumber)) {
                 continue;
             }
@@ -151,7 +151,7 @@ void DmxSerial::ScanDirectory(void) {
 
             m_nFilesCount++;
 
-            if (m_nFilesCount == DMXSERIAL_FILE_MAX_NUMBER) {
+            if (m_nFilesCount == DmxSerialFile::MAX_NUMBER) {
             	break;
             }
         }
@@ -168,9 +168,9 @@ void DmxSerial::ScanDirectory(void) {
 		}
 	}
 
-	m_nDmxLastSlot = m_aFileIndex[m_nFilesCount - 1];
+	m_nDmxLastSlot = static_cast<uint16_t>(m_aFileIndex[m_nFilesCount - 1]);
 
-	for (uint32_t i = m_nFilesCount; i < DMXSERIAL_FILE_MAX_NUMBER; i++) {
+	for (uint32_t i = m_nFilesCount; i < DmxSerialFile::MAX_NUMBER; i++) {
 		m_aFileIndex[i] = -1;
 	}
 
@@ -248,10 +248,10 @@ void DmxSerial::Run(void) {
 	m_pDmxSerialTFTP->Run();
 }
 
-bool DmxSerial::DeleteFile(uint16_t nFileNumber) {
+bool DmxSerial::DeleteFile(int16_t nFileNumber) {
 	DEBUG_PRINTF("nFileNumber=%u", nFileNumber);
 
-	char aFileName[DMXSERIAL_FILE_NAME_LENGTH + 1];
+	char aFileName[DmxSerialFile::NAME_LENGTH + 1];
 
 	if (FileNameCopyTo(aFileName, sizeof(aFileName), nFileNumber)) {
 		const int nResult = unlink(aFileName);
@@ -271,11 +271,11 @@ bool DmxSerial::DeleteFile(const char *pFileNumber) {
 		return false;
 	}
 
-	uint16_t nFileNumber = (pFileNumber[0] - '0') * 100;
+	int16_t nFileNumber = (pFileNumber[0] - '0') * 100;
 	nFileNumber += (pFileNumber[1] - '0') * 10;
 	nFileNumber += (pFileNumber[2] - '0');
 
-	if (nFileNumber > DMXSERIAL_FILE_MAX_NUMBER) {
+	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
 		return false;
 	}
 

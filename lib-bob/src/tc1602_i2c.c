@@ -65,7 +65,7 @@ static void write_reg(const device_info_t *device_info, const uint8_t reg) {
 	udelay(EXEC_TIME_REG);
 }
 
-const bool tc1602_i2c_start(device_info_t *device_info) {
+bool tc1602_i2c_start(device_info_t *device_info) {
 
 	i2c_begin();
 

@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "ssd1306.h"
 
@@ -336,7 +336,7 @@ void Ssd1306::Cls(void) {
 	SendCommand(SSD1306_CMD_SET_STARTPAGE);
 
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', m_nCols * m_nRows);
+	memset(m_pShadowRam, ' ', static_cast<size_t>(m_nCols * m_nRows));
 }
 
 void Ssd1306::PutChar(int c) {
@@ -435,8 +435,6 @@ void Ssd1306::Setup(void) {
 }
 
 void Ssd1306::InitMembers(void) {
-	m_tCursorMode = SET_CURSOR_OFF;
-
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:
 		m_nCols = OLED_FONT8x6_COLS;
@@ -458,7 +456,7 @@ void Ssd1306::InitMembers(void) {
 
 	m_pShadowRam = new char[OLED_FONT8x6_COLS * m_nRows];
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', OLED_FONT8x6_COLS * m_nRows);
+	memset(m_pShadowRam, ' ', static_cast<size_t>(OLED_FONT8x6_COLS * m_nRows));
 }
 
 void Ssd1306::SendCommand(uint8_t cmd) {
@@ -481,7 +479,7 @@ void Ssd1306::DumpShadowRam(void) {
 
 //TODO Below is not compatible with SH1106
 #if defined(ENABLE_CURSOR_MODE)
-void Ssd1306::SetCursor(TCursorMode tCursorMode) {
+void Ssd1306::SetCursor(CursorMode tCursorMode) {
 	if (tCursorMode == m_tCursorMode) {
 		return;
 	}

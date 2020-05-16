@@ -31,39 +31,40 @@
 #include "showfile.h"
 
 struct TShowFileParams {
-    uint32_t nSetList;
-    uint8_t nFormat;
-    uint8_t nShow;
-    uint16_t nOptions;
-    uint16_t nOscPortIncoming;
-    uint16_t nOscPortOutgoing;
-    uint8_t nProtocol;
-    uint16_t nUniverse;
-    uint8_t nDisableUnicast;
-    uint8_t nDmxMaster;
-}__attribute__((packed));
+	uint32_t nSetList;
+	uint8_t nFormat;
+	uint8_t nShow;
+	uint16_t nOptions;
+	uint16_t nOscPortIncoming;
+	uint16_t nOscPortOutgoing;
+	uint8_t nProtocol;
+	uint16_t nUniverse;
+	uint8_t nDisableUnicast;
+	uint8_t nDmxMaster;
+} __attribute__((packed));
 
-enum TShowFileOptions {
-	SHOWFILE_OPTION_AUTO_START = (1 << 0),
-	SHOWFILE_OPTION_LOOP = (1 << 1),
-	SHOWFILE_OPTION_DISABLE_SYNC = (1 << 2)
+struct ShowFileOptions {
+	static constexpr auto AUTO_START = (1U << 0);
+	static constexpr auto LOOP = (1U << 1);
+	static constexpr auto DISABLE_SYNC = (1U << 2);
 };
 
-enum TShowFileParamsMask {
-	SHOWFILE_PARAMS_MASK_FORMAT = (1 << 0),
-	SHOWFILE_PARAMS_MASK_SHOW = (1 << 1),
-	SHOWFILE_PARAMS_MASK_OPTIONS = (1 << 2),
-	SHOWFILE_PARAMS_MASK_OSC_PORT_INCOMING = (1 << 3),
-	SHOWFILE_PARAMS_MASK_OSC_PORT_OUTGOING = (1 << 4),
-	SHOWFILE_PARAMS_MASK_PROTOCOL = (1 << 5),
-	SHOWFILE_PARAMS_MASK_SACN_UNIVERSE = (1 << 6),
-	SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED = (1 << 7),
-	SHOWFILE_PARAMS_MASK_DMX_MASTER = (1 << 8)
+struct ShowFileParamsMask {
+	static constexpr auto FORMAT = (1U << 0);
+	static constexpr auto SHOW = (1U << 1);
+	static constexpr auto OPTIONS = (1U << 2);
+	static constexpr auto OSC_PORT_INCOMING = (1U << 3);
+	static constexpr auto OSC_PORT_OUTGOING = (1U << 4);
+	static constexpr auto PROTOCOL = (1U << 5);
+	static constexpr auto SACN_UNIVERSE = (1U << 6);
+	static constexpr auto ARTNET_UNICAST_DISABLED = (1U << 7);
+	static constexpr auto DMX_MASTER = (1U << 8);
 };
 
 class ShowFileParamsStore {
 public:
-	virtual ~ShowFileParamsStore(void) {}
+	virtual ~ShowFileParamsStore(void) {
+	}
 
 	virtual void Update(const struct TShowFileParams *pShowFileParams)=0;
 	virtual void Copy(struct TShowFileParams *pShowFileParams)=0;
@@ -84,12 +85,12 @@ public:
 
 	void Dump(void);
 
-	TShowFileFormats GetFormat(void) {
-		return static_cast<TShowFileFormats>(m_tShowFileParams.nFormat);
+	ShowFileFormats GetFormat(void) {
+		return static_cast<ShowFileFormats>(m_tShowFileParams.nFormat);
 	}
 
-	TShowFileProtocols GetProtocol(void) {
-		return static_cast<TShowFileProtocols>(m_tShowFileParams.nProtocol);
+	ShowFileProtocols GetProtocol(void) {
+		return static_cast<ShowFileProtocols>(m_tShowFileParams.nProtocol);
 	}
 
 	uint8_t GetShow(void) {
@@ -97,18 +98,17 @@ public:
 	}
 
 	bool IsAutoStart(void) {
-		return isOptionSet(SHOWFILE_OPTION_AUTO_START);
+		return isOptionSet(ShowFileOptions::AUTO_START);
 	}
 
 	bool IsArtNetBroadcast(void) {
-		return isMaskSet(SHOWFILE_PARAMS_MASK_ARTNET_UNICAST_DISABLED);
+		return isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED);
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void HandleOptions(const char *pLine, const char *pKeyword, TShowFileOptions tShowFileOptions);
+    void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) {
     	return (m_tShowFileParams.nSetList & nMask) == nMask;
@@ -119,7 +119,7 @@ private:
 
 private:
     ShowFileParamsStore *m_pShowFileParamsStore;
-    struct TShowFileParams m_tShowFileParams;
+    TShowFileParams m_tShowFileParams;
 };
 
 #endif /* SHOWFILEPARAMS_H_ */

@@ -45,7 +45,7 @@ public:
 		return L6470DMXMODE1;
 	}
 
-	static uint8_t GetDmxFootPrint(void) {
+	static uint16_t GetDmxFootPrint(void) {
 		return 2;
 	}
 

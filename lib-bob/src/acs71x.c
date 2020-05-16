@@ -54,7 +54,7 @@ enum adc_vref_mv {
 /*
  * Wrapper
  */
-static uint16_t uint16_bw_i2c_ui_read_adc(const device_info_t *device_info, /*@unused@*/uint8_t channel) {
+static uint16_t uint16_bw_i2c_ui_read_adc(const device_info_t *device_info, __attribute__((unused)) uint8_t channel) {
 	return (uint16_t) bw_i2c_ui_read_adc(device_info);
 }
 
@@ -72,7 +72,9 @@ struct _adc_device {
 	const uint16_t vref;
 	const acs71x_adc_ch_t max_ch;
 	const char name[16];
-} static const _adc_device_f[] = {
+};
+
+static const struct _adc_device  adc_device_f[] = {
 		{ pcf8591_start, uint16_pcf8591_adc_read, ADC_RANGE_8BIT, ADC_VREF_5V_MV, ACS71X_ADC_CH3, "PCF8591"},			//  8-bit ADC
 		{ bw_i2c_ui_start, uint16_bw_i2c_ui_read_adc, ADC_RANGE_10BIT, ADC_VREF_4V9_MV, ACS71X_ADC_CH0, "BW_UI_ADC"},	// 10-bit ADC
 		{ ads1115_start, ads1115_read,  ADC_RANGE_15BIT, ADC_VREF_6V1_MV, ACS71X_ADC_CH3, "ADS1115"}					// 16-bit ADC
@@ -87,25 +89,29 @@ bool acs71x_start(acs71x_info_t *acs71x_info) {
 		return false;
 	}
 
-	if ((acs71x_info->type < ACS712_05B) || (acs71x_info->type > ACS711_31)) {
+/*	if ((acs71x_info->type < ACS712_05B) || (acs71x_info->type > ACS711_31)) {
+		return false;
+	}*/
+
+	if (acs71x_info->adc >= (sizeof(adc_device_f) / sizeof(adc_device_f[0]))) {
 		return false;
 	}
 
-	if (acs71x_info->adc >= (sizeof(_adc_device_f) / sizeof(_adc_device_f[0]))) {
+/*	if ((acs71x_info->channel < ACS71X_ADC_CH0) || (acs71x_info->channel > _adc_device_f[acs71x_info->adc].max_ch)) {
 		return false;
+	}*/
+
+	if (acs71x_info->channel > adc_device_f[acs71x_info->adc].max_ch) {
+			return false;
 	}
 
-	if ((acs71x_info->channel < ACS71X_ADC_CH0) || (acs71x_info->channel > _adc_device_f[acs71x_info->adc].max_ch)) {
-		return false;
-	}
-
-	if (_adc_device_f[acs71x_info->adc].start != NULL) {
-		if (_adc_device_f[acs71x_info->adc].start(acs71x_info->device_info)) {
+	if (adc_device_f[acs71x_info->adc].start != NULL) {
+		if (adc_device_f[acs71x_info->adc].start(acs71x_info->device_info)) {
 			if (acs71x_info->calibrate) {
 				acs71x_info->zero = acs71x_calibrate(acs71x_info);
 			} else {
-				acs71x_info->zero = (uint16_t) (((int32_t) 2500 * (int32_t) _adc_device_f[acs71x_info->adc].scale)
-						/ ((int32_t) _adc_device_f[acs71x_info->adc].vref));
+				acs71x_info->zero = (uint16_t) (((int32_t) 2500 * (int32_t) adc_device_f[acs71x_info->adc].scale)
+						/ ((int32_t) adc_device_f[acs71x_info->adc].vref));
 			}
 		} else {
 			return false;
@@ -126,11 +132,11 @@ const char *acs71x_get_chip_name(const acs71x_info_t *acs71x_info) {
 }
 
 const char *acs71x_get_adc_name(const acs71x_info_t *acs71x_info) {
-	if (acs71x_info->adc >= (sizeof(_adc_device_f) / sizeof(_adc_device_f[0]))) {
+	if (acs71x_info->adc >= (sizeof(adc_device_f) / sizeof(adc_device_f[0]))) {
 		return NULL;
 	}
 
-	return _adc_device_f[acs71x_info->adc].name;
+	return adc_device_f[acs71x_info->adc].name;
 }
 
 uint8_t acs71x_get_range(const acs71x_info_t *acs71x_info) {
@@ -146,7 +152,7 @@ uint16_t acs71x_calibrate(const acs71x_info_t *acs71x_info) {
 	uint32_t c = 0;
 
 	for (i = 0; i < 8; i++) {
-		c += (uint32_t) _adc_device_f[acs71x_info->adc].read(acs71x_info->device_info, acs71x_info->channel);
+		c += (uint32_t) adc_device_f[acs71x_info->adc].read(acs71x_info->device_info, acs71x_info->channel);
 	}
 
 	c /= 8;
@@ -161,15 +167,15 @@ int16_t acs71x_get_current_dc(const acs71x_info_t *acs71x_info) {
 	int32_t denominator;
 
 	for (i = 0; i < 8; i++) {
-		c += (int32_t)((int16_t)_adc_device_f[acs71x_info->adc].read(acs71x_info->device_info, acs71x_info->channel) - (int16_t)acs71x_info->zero);
+		c += (int32_t)((int16_t)adc_device_f[acs71x_info->adc].read(acs71x_info->device_info, acs71x_info->channel) - (int16_t)acs71x_info->zero);
 	}
 
 	c /= 8;
 
-	numerator = c * (int32_t) _adc_device_f[acs71x_info->adc].vref;
-	denominator = (int32_t) (_adc_device_f[acs71x_info->adc].scale * acs71x_sensitivity_mv[acs71x_info->type]);
+	numerator = c * (int32_t) adc_device_f[acs71x_info->adc].vref;
+	denominator = (int32_t) (adc_device_f[acs71x_info->adc].scale * acs71x_sensitivity_mv[acs71x_info->type]);
 
-	if (_adc_device_f[acs71x_info->adc].scale < ADC_RANGE_12BIT) {
+	if (adc_device_f[acs71x_info->adc].scale < ADC_RANGE_12BIT) {
 		numerator *= 1000;
 	} else {
 		denominator /= 1000;

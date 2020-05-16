@@ -27,7 +27,7 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <assert.h>
+#include <cassert>
 
 #include "mdns.h"
 
@@ -167,7 +167,7 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	memcpy(pData, &m_tAnswerLocalIp.aBuffer[sizeof (struct TmDNSHeader)], m_tAnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 	pData += (m_tAnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 
-	m_aServiceRecordsData[nIndex].nSize = pData - reinterpret_cast<uint8_t*>(pHeader);
+	m_aServiceRecordsData[nIndex].nSize =  static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
 
 	debug_dump(&m_aServiceRecordsData[nIndex].aBuffer, m_aServiceRecordsData[nIndex].nSize);
 
@@ -194,7 +194,7 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 			}
 
 			isCompressed = true;
-			const uint32_t nCompressedOffset = ((nLenght & ~(0xC0)) << 8) | ((*pSrc & 0xFF));
+			const uint32_t nCompressedOffset = ((nLenght & static_cast<uint32_t>(~(0xC0))) << 8) | ((*pSrc & 0xFF));
 			nLenght =  m_pBuffer[nCompressedOffset];
 
 //			DEBUG_PRINTF("--> nCompressedOffset=%.4x", (int) nCompressedOffset);
@@ -328,7 +328,7 @@ uint32_t MDNS::WriteDnsName(const char *pSource, char *pDestination, bool bNullT
 		pSrc++;
 	}
 
-	return (pDst - pDestination);
+	return static_cast<uint32_t>(pDst - pDestination);
 }
 
 void MDNS::CreateAnswerLocalIpAddress(void) {
@@ -357,7 +357,7 @@ void MDNS::CreateAnswerLocalIpAddress(void) {
 	*reinterpret_cast<uint32_t*>(pData) = Network::Get()->GetIp();
 	pData += 4;
 
-	m_tAnswerLocalIp.nSize = pData - reinterpret_cast<uint8_t*>(pHeader);
+	m_tAnswerLocalIp.nSize = static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
 
 	DEBUG1_EXIT
 }
@@ -385,7 +385,7 @@ uint32_t MDNS::CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination) {
 	pDst += WriteDnsName(m_pName, reinterpret_cast<char*>(pDst));
 
 	DEBUG_EXIT
-	return (pDst - pDestination);
+	return static_cast<uint32_t>(pDst - pDestination);
 }
 
 uint32_t MDNS::CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination) {
@@ -419,7 +419,7 @@ uint32_t MDNS::CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination) {
 	}
 
 	DEBUG_EXIT
-	return (pDst - pDestination);
+	return static_cast<uint32_t>(pDst - pDestination);
 }
 
 uint32_t MDNS::CreateAnswerServicePtr(uint32_t nIndex, uint8_t *pDestination) {
@@ -441,7 +441,7 @@ uint32_t MDNS::CreateAnswerServicePtr(uint32_t nIndex, uint8_t *pDestination) {
 	pDst += WriteDnsName("_udp" MDNS_TLD, reinterpret_cast<char*>(pDst));
 
 	DEBUG_EXIT
-	return (pDst - pDestination);
+	return static_cast<uint32_t>(pDst - pDestination);
 }
 
 uint32_t MDNS::CreateAnswerServiceDnsSd(uint32_t nIndex, uint8_t *pDestination) {
@@ -462,7 +462,7 @@ uint32_t MDNS::CreateAnswerServiceDnsSd(uint32_t nIndex, uint8_t *pDestination) 
 	pDst += WriteDnsName(m_aServiceRecords[nIndex].pServName, reinterpret_cast<char*>(pDst));
 
 	DEBUG_EXIT
-	return (pDst - pDestination);
+	return static_cast<uint32_t>(pDst - pDestination);
 }
 
 void MDNS::HandleRequest(uint16_t nQuestions) {

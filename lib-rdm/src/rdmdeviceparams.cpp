@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "rdmdeviceparams.h"
 #include "rdmdeviceparamsconst.h"
@@ -118,19 +118,19 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 	len = RDM_DEVICE_LABEL_MAX_LENGTH;
 	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, &len) == SSCAN_OK) {
 		m_tRDMDeviceParams.nDeviceRootLabelLength = len;
-		m_tRDMDeviceParams.nSetList |= RDMDEVICE_PARAMS_MASK_LABEL;
+		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::LABEL;
 		return;
 	}
 
 	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_CATEGORY, &uint16) == SSCAN_OK) {
 		m_tRDMDeviceParams.nProductCategory = uint16;
-		m_tRDMDeviceParams.nSetList |= RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY;
+		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_CATEGORY;
 		return;
 	}
 
 	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_DETAIL, &uint16) == SSCAN_OK) {
 		m_tRDMDeviceParams.nProductDetail = uint16;
-		m_tRDMDeviceParams.nSetList |= RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL;
+		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_DETAIL;
 	}
 }
 
@@ -139,17 +139,17 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 
 	struct TRDMDeviceInfoData Info;
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL)) {
+	if (isMaskSet(RDMDeviceParamsMask::LABEL)) {
 		Info.data = m_tRDMDeviceParams.aDeviceRootLabel;
 		Info.length = m_tRDMDeviceParams.nDeviceRootLabelLength;
 		pRDMDevice->SetLabel(&Info);
 	}
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY)) {
+	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY)) {
 		pRDMDevice->SetProductCategory(m_tRDMDeviceParams.nProductCategory);
 	}
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL)) {
+	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL)) {
 		pRDMDevice->SetProductDetail(m_tRDMDeviceParams.nProductDetail);
 	}
 }
@@ -158,15 +158,15 @@ void RDMDeviceParams::Dump(void) {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMDeviceParamsConst::FILE_NAME);
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_LABEL)) {
+	if (isMaskSet(RDMDeviceParamsMask::LABEL)) {
 		printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.nDeviceRootLabelLength, m_tRDMDeviceParams.aDeviceRootLabel);
 	}
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY)) {
+	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY)) {
 		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory);
 	}
 
-	if (isMaskSet(RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL)) {
+	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL)) {
 		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail);
 	}
 #endif

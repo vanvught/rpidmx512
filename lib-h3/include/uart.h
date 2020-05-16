@@ -56,11 +56,11 @@
 #define UART_IER_ETBEI		(1 << 1)	///< Enable Transmit Holding Register Empty Interrupt
 #define UART_IER_PTIME		(1 << 7)	///< Programmable THRE Interrupt Mode Enable
 
-#define UART_IIR_IID_NO			(0b0001 << 0)	///< No Interrupt pending
-#define UART_IIR_IID_THRE		(0b0010 << 0)	///< THR empty
-#define UART_IIR_IID_RD			(0b0100 << 0)	///< Received data
-#define UART_IIR_IID_RCVR_LINE	(0b0110 << 0)	///< Receiver line status
-#define UART_IIR_IID_TIME_OUT	(0b1100 << 0)	///< Character time-out
+#define UART_IIR_IID_NO			(1 << 0)		///< No Interrupt pending
+#define UART_IIR_IID_THRE		(2 << 0)		///< THR empty
+#define UART_IIR_IID_RD			(4 << 0)		///< Received data
+#define UART_IIR_IID_RCVR_LINE	(6 << 0)		///< Receiver line status
+#define UART_IIR_IID_TIME_OUT	(12 << 0)		///< Character time-out
 
 #define UART_FCR_EFIFO	0x01	///< Enable in and out hardware FIFOs
 #define UART_FCR_RRESET 0x02	///< Reset receiver FIFO

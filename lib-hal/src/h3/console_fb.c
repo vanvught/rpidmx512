@@ -1,13 +1,9 @@
-#if 0
-#define CONSOLE_FB
-#define ORANGE_PI_ONE
-#endif
 #if defined (CONSOLE_FB) && defined (ORANGE_PI_ONE)
 /**
  * @file console_fb.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +35,8 @@
 
 extern unsigned char FONT[] __attribute__((aligned(4)));
 
-#define FB_CHAR_W	8
-#define FB_CHAR_H	16
+static const uint32_t FB_CHAR_W = 8;
+static const uint32_t FB_CHAR_H	= 16;
 
 static uint16_t current_x = 0;
 static uint16_t current_y = 0;
@@ -403,4 +399,6 @@ void console_clear_top_row(void) {
 	current_x = 0;
 	current_y = top_row;
 }
+#else
+ typedef int ISO_C_forbids_an_empty_translation_unit;
 #endif

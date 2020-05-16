@@ -23,9 +23,10 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "rdmdevice.h"
 
@@ -38,24 +39,19 @@
 
 #include "debug.h"
 
-#ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
-
 #if defined(H3)
  #include "h3_board.h"
- constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
+ static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
 #elif defined (RASPPI) || defined (BARE_METAL)
- constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
+ static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
 #elif defined (__CYGWIN__)
- constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
+ static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
 #elif defined (__linux__)
- constexpr char DEVICE_LABEL[] = "Linux RDM Device";
+ static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
 #elif defined (__APPLE__)
- constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
+ static constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
 #else
- constexpr char DEVICE_LABEL[] = "RDM Device";
+ static constexpr char DEVICE_LABEL[] = "RDM Device";
 #endif
 
 RDMDevice::RDMDevice(void):
@@ -66,7 +62,7 @@ RDMDevice::RDMDevice(void):
 {
 	DEBUG_ENTRY
 
-	const uint8_t nLength = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(RDMConst::MANUFACTURER_NAME));
+	const uint8_t nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
 	m_tRDMDevice.nDdeviceManufacturerNameLength = nLength;
 
@@ -87,7 +83,7 @@ RDMDevice::RDMDevice(void):
 	m_tRDMDevice.aDeviceSN[3] = m_tRDMDevice.aDeviceUID[2];
 
 	const char* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	const uint8_t length = MIN(RDM_MANUFACTURER_LABEL_MAX_LENGTH, strlen(WebsiteUrl));
+	const uint8_t length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, WebsiteUrl, length);
 	m_tRDMDevice.nDdeviceManufacturerNameLength = length;
 
@@ -148,7 +144,7 @@ bool RDMDevice::GetFactoryDefaults(void) {
 }
 
 void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *pInfo) {
-	const uint8_t nLength = MIN(RDM_DEVICE_LABEL_MAX_LENGTH, pInfo->length);
+	const uint8_t nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
 
 	if (m_IsInit) {
 		memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
@@ -169,8 +165,8 @@ void RDMDevice::GetLabel(struct TRDMDeviceInfoData *pInfo) {
 }
 
 void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
-	pInfo->data[0] = RDMConst::MANUFACTURER_ID[1];
-	pInfo->data[1] = RDMConst::MANUFACTURER_ID[0];
+	pInfo->data[0] = static_cast<char>(RDMConst::MANUFACTURER_ID[1]);
+	pInfo->data[1] = static_cast<char>(RDMConst::MANUFACTURER_ID[0]);
 	pInfo->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 }
 

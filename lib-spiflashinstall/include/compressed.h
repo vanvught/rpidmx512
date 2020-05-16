@@ -31,7 +31,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 
 enum TCheckCodes {
 	CHECK_CODE_OK = 0,

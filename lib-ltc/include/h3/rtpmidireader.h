@@ -46,7 +46,7 @@ public:
 private:
 	void HandleMtc(const struct _midi_message *ptMidiMessage);
 	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
-	void Update(const struct _midi_message *ptMidiMessage);
+	void Update(void);
 
 private:
 	alignas(uint32_t)  struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

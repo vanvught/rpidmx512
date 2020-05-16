@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <algorithm>
 
 #include "hardware.h"
 #include "ledblink.h"
@@ -38,12 +39,7 @@
 
 #include "software_version.h"
 
-#ifndef MAX
- #define MAX(a,b)	(((a) > (b)) ? (a) : (b))
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
-
-#define TOP_ROW_STATS	26
+static constexpr auto TOP_ROW_STATS = 26;
 
 extern "C" {
 
@@ -93,7 +89,7 @@ void notmain(void) {
 	for(;;) {
 		hw.WatchdogFeed();
 
-		static_cast<void>(dmxreceiver.Run(nLength));
+		dmxreceiver.Run(nLength);
 
 		const uint32_t nMicrosNow = hw.Micros();
 
@@ -115,38 +111,26 @@ void notmain(void) {
 				const uint8_t *dmx_data = dmxreceiver.GetDmxCurrentData();
 				const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(dmx_data);
 
-				nUpdatesPerSecondeMin = MIN(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
-				nUpdatesPerSecondeMax = MAX(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
+				nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
+				nUpdatesPerSecondeMax = std::max(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
 
-				nSlotsInPacketMin = MIN(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
-				nSlotsInPacketMax = MAX(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMax);
+				nSlotsInPacketMin = std::min(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
+				nSlotsInPacketMax = std::max(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMax);
 
-				nSotToSlotMin = MIN(dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin);
-				nSlotToSlotMax = MAX(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
+				nSotToSlotMin = std::min(dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin);
+				nSlotToSlotMax = std::max(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
 
-				nBreakToBreakMin = MIN(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
-				nBreakToBreakMax = MAX(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
+				nBreakToBreakMin = std::min(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
+				nBreakToBreakMax = std::max(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
 
 				console_set_cursor(20, TOP_ROW_STATS);
-				printf("%3d     %3d / %d",
-						static_cast<int>(dmx_updates_per_seconde),
-						static_cast<int>(nUpdatesPerSecondeMin),
-						static_cast<int>(nUpdatesPerSecondeMax));
+				printf("%3d     %3d / %d", dmx_updates_per_seconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
 				console_set_cursor(20, TOP_ROW_STATS + 1);
-				printf("%3d     %3d / %d",
-						static_cast<int>(dmx_statistics->Statistics.SlotsInPacket),
-						static_cast<int>(nSlotsInPacketMin),
-						static_cast<int>(nSlotsInPacketMax));
+				printf("%3d     %3d / %d", dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
 				console_set_cursor(20, TOP_ROW_STATS + 2);
-				printf("%3d     %3d / %d",
-						static_cast<int>(dmx_statistics->Statistics.SlotToSlot),
-						static_cast<int>(nSotToSlotMin),
-						static_cast<int>(nSlotToSlotMax));
+				printf("%3d     %3d / %d", dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin, nSlotToSlotMax);
 				console_set_cursor(17, TOP_ROW_STATS + 3);
-				printf("%6d  %6d / %d",
-						static_cast<int>(dmx_statistics->Statistics.BreakToBreak),
-						static_cast<int>(nBreakToBreakMin),
-						static_cast<int>(nBreakToBreakMax));
+				printf("%6d  %6d / %d", dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin, nBreakToBreakMax);
 			}
 
 			console_restore_cursor();

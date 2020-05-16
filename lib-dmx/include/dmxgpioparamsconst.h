@@ -28,17 +28,14 @@
 
 #include "dmx.h"
 
-enum {
-	DMXGPIOPARAMS_DATA_DIRECTION_OUT_MAX_LENGTH = 21
-};
-
 class DmxGpioParamsConst {
 public:
+	static constexpr auto DATA_DIRECTION_OUT_MAX_LENGTH = 21;
 
 	static const char FILE_NAME[];
 
 	static const char DATA_DIRECTION[];
-	static const char DATA_DIRECTION_OUT[DMX_MAX_OUT][DMXGPIOPARAMS_DATA_DIRECTION_OUT_MAX_LENGTH];
+	static const char DATA_DIRECTION_OUT[DMX_MAX_OUT][DATA_DIRECTION_OUT_MAX_LENGTH];
 };
 
 #endif /* DMXGPIOPARAMSCONST_H_ */

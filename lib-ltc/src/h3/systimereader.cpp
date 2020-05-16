@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/systimereader.h"
 
@@ -55,23 +55,26 @@
 
 #include "debug.h"
 
-constexpr char aStart[] = "start";
-#define START_LENGTH	(sizeof(aStart) - 1)
+namespace Cmd {
+	static constexpr char aStart[] = "start";
+	static constexpr char aStop[] = "stop";
+	static constexpr char aRate[] = "rate#";
+}
 
-constexpr char aStop[] = "stop";
-#define STOP_LENGTH		(sizeof(aStop) - 1)
+namespace Length {
+	static constexpr auto START = sizeof(Cmd::aStart) - 1;
+	static constexpr auto STOP = sizeof(Cmd::aStop) - 1;
+	static constexpr auto RATE = sizeof(Cmd::aRate) - 1;
+}
 
-constexpr char aRate[] = "rate";
-#define RATE_LENGTH		(sizeof(aRate) - 1)
-
-enum tUdpPort {
-	UDP_PORT = 0x5443
-};
+namespace UDP {
+	static constexpr auto PORT = 0x5443;
+}
 
 // IRQ Timer0
 static volatile bool bTimeCodeAvailable;
 
-static void irq_timer0_handler(uint32_t clo) {
+static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 	bTimeCodeAvailable = true;
 }
 
@@ -87,6 +90,7 @@ SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ui
 {
 	assert(m_ptLtcDisabledOutputs != 0);
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[Ltc::GetType(nFps)];
@@ -98,7 +102,7 @@ SystimeReader::~SystimeReader(void) {
 
 void SystimeReader::Start(bool bAutoStart) {
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP_PORT);
+	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
 
 	// System Time
@@ -197,7 +201,7 @@ void SystimeReader::HandleUdpRequest(void) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("ltc", m_Buffer, 3) != 0), 0)) {
+	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
 		return;
 	}
 
@@ -206,30 +210,34 @@ void SystimeReader::HandleUdpRequest(void) {
 		m_nBytesReceived--;
 	}
 
-	if (m_Buffer[3] != '!') {
-		DEBUG_PUTS("Invalid command");
-		return;
+	debug_dump(m_Buffer, m_nBytesReceived);
+
+	if (m_nBytesReceived == (4 + Length::START)) {
+		if (memcmp(&m_Buffer[4], Cmd::aStart, Length::START) == 0) {
+			ActionStart();
+			return;
+		}
+
+		DEBUG_PUTS("Invalid !start command");
 	}
 
-	if (memcmp(&m_Buffer[4], aStart, START_LENGTH) == 0) {
-		if (m_nBytesReceived == (4 + START_LENGTH)) {
-			ActionStart();
-		} else {
-			DEBUG_PUTS("Invalid !start command");
-		}
-	} else if (memcmp(&m_Buffer[4], aStop, STOP_LENGTH) == 0) {
-		if (m_nBytesReceived == (4 + STOP_LENGTH)) {
+	if (m_nBytesReceived == (4 + Length::STOP)) {
+		if (memcmp(&m_Buffer[4], Cmd::aStop, Length::STOP) == 0) {
 			ActionStop();
-		} else {
-			DEBUG_PUTS("Invalid !stop command");
+			return;
 		}
-	} else if (memcmp(&m_Buffer[4], aRate, RATE_LENGTH) == 0) {
-		if ((m_nBytesReceived == (4 + RATE_LENGTH + 1 + TC_RATE_MAX_LENGTH)) && (m_Buffer[4 + RATE_LENGTH] == '#')) {
-			ActionSetRate(&m_Buffer[(4 + RATE_LENGTH + 1)]);
-		}
-	} else {
-		DEBUG_PUTS("Invalid command");
+
+		DEBUG_PUTS("Invalid !stop command");
 	}
+
+	if (m_nBytesReceived == (4 + Length::RATE  + TC_RATE_MAX_LENGTH)) {
+		if (memcmp(&m_Buffer[4], Cmd::aRate, Length::RATE) == 0) {
+			ActionSetRate(&m_Buffer[(4 + Length::RATE)]);
+			return;
+		}
+	}
+
+	DEBUG_PUTS("Invalid command");
 }
 
 void SystimeReader::Run(void) {

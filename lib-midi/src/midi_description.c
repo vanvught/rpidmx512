@@ -33,7 +33,9 @@ static char key_name[8] __attribute__((aligned(4)));
 struct _drum_kits {			// Channel 10
 	const uint8_t program;
 	const char name[16];	// Including '\0' byte
-}static const drum_kits[8] __attribute__((aligned(4))) =  {
+};
+
+static const struct _drum_kits drum_kits[8] __attribute__((aligned(4))) =  {
 	{  1, "Standaard Kit"  },
 	{  9, "Room Kit"       },
 	{ 17, "Rock Kit"       },

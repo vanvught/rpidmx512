@@ -30,6 +30,6 @@
 const char DmxGpioParamsConst::FILE_NAME[] = "gpio.txt";
 
 const char DmxGpioParamsConst::DATA_DIRECTION[] = "data_direction";
-const char DmxGpioParamsConst::DATA_DIRECTION_OUT[DMX_MAX_OUT][DMXGPIOPARAMS_DATA_DIRECTION_OUT_MAX_LENGTH] =
+const char DmxGpioParamsConst::DATA_DIRECTION_OUT[DMX_MAX_OUT][DATA_DIRECTION_OUT_MAX_LENGTH] =
 		{ "data_direction_out_a", "data_direction_out_b", "data_direction_out_c", "data_direction_out_d" };
 

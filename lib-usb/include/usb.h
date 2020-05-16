@@ -38,7 +38,7 @@ extern "C" {
 extern uint8_t usb_read_byte(void);
 extern void usb_send_byte(uint8_t);
 
-inline static const bool usb_read_is_byte_available(void) {
+inline static bool usb_read_is_byte_available(void) {
 	return FT245RL_data_available();
 }
 
@@ -46,7 +46,7 @@ inline static void usb_init(void) {
 	FT245RL_init();
 }
 
-inline static const bool usb_can_write(void) {
+inline static bool usb_can_write(void) {
 	return FT245RL_can_write();
 }
 

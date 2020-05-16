@@ -52,7 +52,7 @@ public:
 	void Text(const char *, uint8_t);
 
 	void SetCursorPos(uint8_t, uint8_t);
-	void SetCursor( TCursorMode);
+	void SetCursor( CursorMode);
 
 private:
 	void Setup(void);

@@ -30,13 +30,15 @@
 
 #include "showfiledisplay.h"
 
-enum TOscServerPort {
-	OSCSERVER_PORT_DEFAULT_INCOMING = 8000,
-	OSCSERVER_PORT_DEFAULT_OUTGOING = 9000
+struct ShowFileOSCPortDefault {
+	static constexpr auto INCOMING = 8000;
+	static constexpr auto OUTGOING = 9000;
 };
 
-#define OSCSERVER_PATH_LENGTH_MAX	128
-#define OSCSERVER_FILES_ENTRIES_MAX	20
+struct ShowFileOSCMax {
+	static constexpr auto CMD_LENGTH = 128;
+	static constexpr auto FILES_ENTRIES = 20;
+};
 
 class ShowFileOSC {
 public:
@@ -63,25 +65,23 @@ public:
 		return m_nPortOutgoing;
 	}
 
-private:
-	void SendStatus(void);
-	void Reload(void);
-
-private:
-	uint16_t m_nPortIncoming;
-	uint16_t m_nPortOutgoing;
-	int32_t m_nHandle;
-	uint32_t m_nRemoteIp;
-	uint16_t m_nRemotePort;
-	char *m_pBuffer;
-	int32_t m_aFileIndex[OSCSERVER_FILES_ENTRIES_MAX];
-
-public:
 	static ShowFileOSC *Get(void) {
 		return s_pThis;
 	}
 
 private:
+	void SendStatus(void);
+	void Reload(void);
+
+private:
+	uint16_t m_nPortIncoming = ShowFileOSCPortDefault::INCOMING;
+	uint16_t m_nPortOutgoing = ShowFileOSCPortDefault::OUTGOING;
+	int32_t m_nHandle = -1;
+	uint32_t m_nRemoteIp = 0;
+	uint16_t m_nRemotePort = 0;
+	char *m_pBuffer = 0;
+	int32_t m_aFileIndex[ShowFileOSCMax::FILES_ENTRIES];
+
 	static ShowFileOSC *s_pThis;
 };
 

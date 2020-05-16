@@ -68,10 +68,10 @@ bool SensorMCP9808::Initialize(void) {
 }
 
 int16_t SensorMCP9808::GetValue(void) {
-	const uint16_t nValue = mcp9808_get_temperature(&sDeviceInfo);
+	const int16_t nValue = mcp9808_get_temperature(&sDeviceInfo);
 
 #ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
+	printf("%s\tnValue=%d\n", __FUNCTION__, nValue);
 #endif
 	return nValue;
 }

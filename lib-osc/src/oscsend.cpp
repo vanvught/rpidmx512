@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdarg.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscsend.h"
 #include "oscstring.h"
@@ -45,7 +45,7 @@
  * @param types The types of the data items in the message, types are defined in \ref osc_type
  * @param ... The data values to be transmitted. The types of the arguments passed here must agree with the types specified in the type parameter.
  */
-OSCSend::OSCSend(unsigned nHandle, int address, int port, const char *path, const char *types, ...) :
+OSCSend::OSCSend(int32_t nHandle, uint32_t address, uint16_t port, const char *path, const char *types, ...) :
 		m_nHandle(nHandle),
 		m_Address(address),
 		m_Port(port),
@@ -76,30 +76,26 @@ void OSCSend::AddVarArgs(va_list ap) {
 
 	while (m_Types && *m_Types) {
 		switch (*m_Types++) {
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-		case OSC_INT32: {
+		case OscType::INT32: {
 			int32_t i = va_arg(ap, int32_t);
 			m_Result = m_Msg->AddInt32(i);
 			break;
 		}
-		case OSC_FLOAT: {
+		case OscType::FLOAT: {
 			float f = static_cast<float>(va_arg(ap, double));
 			m_Result = m_Msg->AddFloat(f);
 			break;
 		}
-#endif
-		case OSC_STRING: {
+		case OscType::STRING: {
 			char *s = va_arg(ap, char *);
 			m_Result = m_Msg->AddString(s);
 			break;
 		}
-#if !defined(OSC_MESSAGE_STRING_ONLY)
-		case OSC_BLOB: {
+		case OscType::BLOB: {
 			OSCBlob *b = va_arg(ap, OSCBlob *);
 			m_Result = m_Msg->AddBlob(b);
 			break;
 		}
-#endif
 		default:
 			break;
 		}
@@ -111,7 +107,7 @@ void OSCSend::AddVarArgs(va_list ap) {
 }
 
 void OSCSend::Send(void) {
-	const uint16_t nDataLength = OSCString::Size(m_Path) + OSCString::Size(m_Msg->getTypes()) + m_Msg->getDataLength();
+	const uint16_t nDataLength = OSCString::Size(m_Path) + OSCString::Size(m_Msg->GetTypes()) + m_Msg->GetDataLength();
 	void *pData = m_Msg->Serialise(m_Path, 0, 0);
 
 	Network::Get()->SendTo(m_nHandle, pData, nDataLength, m_Address, m_Port);

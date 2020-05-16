@@ -38,7 +38,7 @@ DMXSend::DMXSend(void) : m_bIsStarted(false) {
 DMXSend::~DMXSend(void) {
 }
 
-void DMXSend::Start(uint8_t nPort) {
+void DMXSend::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -52,7 +52,7 @@ void DMXSend::Start(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(uint8_t nPort) {
+void DMXSend::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -66,7 +66,7 @@ void DMXSend::Stop(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void DMXSend::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY
 
 	if (__builtin_expect((nLength == 0), 0)) {

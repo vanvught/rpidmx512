@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
@@ -31,19 +31,19 @@
 void TLC59711DmxParams::Set(TLC59711Dmx* pTLC59711Dmx) {
 	assert(pTLC59711Dmx != 0);
 
-	if(isMaskSet(TLC59711DMX_PARAMS_MASK_LED_TYPE)) {
+	if(isMaskSet(TLC59711DmxParamsMask::LED_TYPE)) {
 		pTLC59711Dmx->SetLEDType(m_tTLC59711Params.LedType);
 	}
 
-	if(isMaskSet(TLC59711DMX_PARAMS_MASK_LED_COUNT)) {
+	if(isMaskSet(TLC59711DmxParamsMask::LED_COUNT)) {
 		pTLC59711Dmx->SetLEDCount(m_tTLC59711Params.nLedCount);
 	}
 
-	if(isMaskSet(TLC59711DMX_PARAMS_MASK_START_ADDRESS)) {
+	if(isMaskSet(TLC59711DmxParamsMask::START_ADDRESS)) {
 		pTLC59711Dmx->SetDmxStartAddress(m_tTLC59711Params.nDmxStartAddress);
 	}
 
-	if(isMaskSet(TLC59711DMX_PARAMS_MASK_SPI_SPEED)) {
+	if(isMaskSet(TLC59711DmxParamsMask::SPI_SPEED)) {
 		pTLC59711Dmx->SetSpiSpeedHz(m_tTLC59711Params.nSpiSpeedHz);
 	}
 }

@@ -26,9 +26,9 @@
 #include <stddef.h>
 #include <time.h>
 
-static const unsigned days_of_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+static const int days_of_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-static int isleapyear(const unsigned year) {
+static int isleapyear(int year) {
 	if (year % 100 == 0) {
 		return year % 400 == 0;
 	}
@@ -36,7 +36,7 @@ static int isleapyear(const unsigned year) {
 	return year % 4 == 0;
 }
 
-static unsigned getdaysofmonth(const unsigned month, const unsigned year) {
+static int getdaysofmonth(int month, int year) {
 	if ((month == 1) && isleapyear(year)) {
 		return 29;
 	}
@@ -47,8 +47,8 @@ static unsigned getdaysofmonth(const unsigned month, const unsigned year) {
 static struct tm Tm;
 
 struct tm *localtime(const time_t *pTime) {
-	unsigned nYear;
-	unsigned nMonth;
+	int nYear;
+	int nMonth;
 
 	if (pTime == 0) {
 		return NULL;
@@ -67,7 +67,7 @@ struct tm *localtime(const time_t *pTime) {
 
 	nYear = 1970;
 	while (1) {
-		unsigned nDaysOfYear = isleapyear(nYear) ? 366 : 365;
+		int nDaysOfYear = isleapyear(nYear) ? 366 : 365;
 		if (Time < nDaysOfYear) {
 			break;
 		}
@@ -81,7 +81,7 @@ struct tm *localtime(const time_t *pTime) {
 
 	nMonth = 0;
 	while (1) {
-		unsigned nDaysOfMonth = getdaysofmonth(nMonth, nYear);
+		int nDaysOfMonth = getdaysofmonth(nMonth, nYear);
 		if (Time < nDaysOfMonth) {
 			break;
 		}
@@ -97,7 +97,7 @@ struct tm *localtime(const time_t *pTime) {
 }
 
 time_t mktime(struct tm *pTm) {
-	unsigned year, month;
+	int year, month;
 	time_t result = 0;
 
 	if (pTm == NULL) {
@@ -117,10 +117,10 @@ time_t mktime(struct tm *pTm) {
 	}
 
 	for (month = 0; month < pTm->tm_mon; month++) {
-		result += getdaysofmonth(month, (unsigned) pTm->tm_year);
+		result += getdaysofmonth(month, pTm->tm_year);
 	}
 
-	if (pTm->tm_mday < 1 || pTm->tm_mday > getdaysofmonth((unsigned) pTm->tm_mon, (unsigned) pTm->tm_year)) {
+	if (pTm->tm_mday < 1 || pTm->tm_mday > getdaysofmonth(pTm->tm_mon, pTm->tm_year)) {
 		return (time_t) -1;
 	}
 

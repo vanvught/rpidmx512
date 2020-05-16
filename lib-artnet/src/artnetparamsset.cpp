@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <assert.h>
+#include <cassert>
 
 #include "artnetparams.h"
 #include "artnetnode.h"
@@ -38,60 +38,60 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		return;
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_SHORT_NAME)) {
+	if (isMaskSet(ArtnetParamsMask::SHORT_NAME)) {
 		pArtNetNode->SetShortName(reinterpret_cast<const char*>(m_tArtNetParams.aShortName));
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_LONG_NAME)) {
+	if (isMaskSet(ArtnetParamsMask::LONG_NAME)) {
 		pArtNetNode->SetLongName(reinterpret_cast<const char*>(m_tArtNetParams.aLongName));
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_NET)) {
+	if (isMaskSet(ArtnetParamsMask::NET)) {
 		pArtNetNode->SetNetSwitch(m_tArtNetParams.nNet);
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_SUBNET)) {
+	if (isMaskSet(ArtnetParamsMask::SUBNET)) {
 		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet);
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_OEM_VALUE)) {
+	if (isMaskSet(ArtnetParamsMask::OEM_VALUE)) {
 		pArtNetNode->SetOemValue(m_tArtNetParams.aOemValue);
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_NETWORK_TIMEOUT)) {
-		pArtNetNode->SetNetworkTimeout(m_tArtNetParams.nNetworkTimeout);
+	if (isMaskSet(ArtnetParamsMask::NETWORK_TIMEOUT)) {
+		pArtNetNode->SetNetworkTimeout(static_cast<uint32_t>(m_tArtNetParams.nNetworkTimeout));
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_MERGE_TIMEOUT)) {
+	if (isMaskSet(ArtnetParamsMask::MERGE_TIMEOUT)) {
 		pArtNetNode->SetDisableMergeTimeout(m_tArtNetParams.bDisableMergeTimeout);
 	}
 
 	unsigned i;
 
-	for (i = 0; i < ARTNET_MAX_PORTS; i++) {
-		if (isMaskSet(ARTNET_PARAMS_MASK_MERGE_MODE_A << i)) {
-			pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeModePort[i]));
+	for (i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
+			pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeModePort[i]));
 		} else {
-			pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeMode));
+			pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeMode));
 		}
 
-		if (isMaskSet(ARTNET_PARAMS_MASK_PROTOCOL_A << i)) {
+		if (isMaskSet(ArtnetParamsMask::PROTOCOL_A << i)) {
 			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocolPort[i]));
 		} else {
 			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
 		}
 
-		if (isMaskMultiPortOptionsSet(ARTNET_PARAMS_MASK_MULTI_PORT_DESTINATION_IP_A << i)) {
+		if (isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			pArtNetNode->SetDestinationIp(i, m_tArtNetParams.nDestinationIpPort[i]);
 		}
 	}
 
-	for (;i < (ARTNET_MAX_PORTS * ARTNET_MAX_PAGES); i++) {
-		pArtNetNode->SetMergeMode(i, static_cast<TMerge>(m_tArtNetParams.nMergeMode));
+	for (;i < (TArtNetConst::MAX_PORTS * TArtNetConst::MAX_PAGES); i++) {
+		pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeMode));
 		pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
 	}
 
-	if (isMaskSet(ARTNET_PARAMS_MASK_ENABLE_NO_CHANGE_OUTPUT)) {
+	if (isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
 		pArtNetNode->SetDirectUpdate(m_tArtNetParams.bEnableNoChangeUpdate);
 	}
 }

@@ -35,7 +35,7 @@ public:
 	TimeSync(void);
 	~TimeSync(void);
 
-	void Handler(const struct TArtNetTimeSync *);
+	void Handler(const struct TArtNetTimeSync*);
 };
 
 #endif /* TIMESYNC_H_ */

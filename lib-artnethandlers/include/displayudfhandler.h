@@ -31,6 +31,7 @@
 #include "displayudf.h"
 
 #include "artnetnode.h"
+#include "artnet.h"
 
 #include "artnetdisplay.h"
 #include "lightsetdisplay.h"
@@ -38,32 +39,36 @@
 
 class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay {
 public:
-	DisplayUdfHandler(void) {}
-	~DisplayUdfHandler(void) {}
+	DisplayUdfHandler(void) {
+	}
+	~DisplayUdfHandler(void) {
+	}
 
-	void ShowShortName(const char *pShortName) {
+	void ShowShortName(__attribute__((unused)) const char *pShortName) {
 		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
 	}
 
-	void ShowLongName(const char *pLongName) {}
+	void ShowLongName(__attribute__((unused)) const char *pLongName) {
+	}
 
-	void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
+	void ShowUniverseSwitch(__attribute__((unused))  uint8_t nPortIndex,
+			__attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowNetSwitch(uint8_t nAddress) {
+	void ShowNetSwitch(__attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowSubnetSwitch(uint8_t nAddress) {
+	void ShowSubnetSwitch(__attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(uint8_t nPortIndex, TMerge tMerge) {
+	void ShowMergeMode(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  ArtNetMerge tMerge) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
+	void ShowPortProtocol(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  TPortProtocol tPortProtocol) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 

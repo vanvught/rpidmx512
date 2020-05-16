@@ -2,7 +2,7 @@
  * @file h_timer.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,26 +27,26 @@
 #define H3_TIMER_H_
 
 // Timer IRQ Enable Register
-#define TIMER_IRQ_EN_TMR0			(1 << 0)
-#define TIMER_IRQ_EN_TMR1			(1 << 1)
+#define TIMER_IRQ_EN_TMR0			(1U << 0)
+#define TIMER_IRQ_EN_TMR1			(1U << 1)
 
 // Timer IRQ Status Register
-#define TIMER_IRQ_PEND_TMR0			(1 << 0)	///< Set will clear
-#define TIMER_IRQ_PEND_TMR1			(1 << 1)	///< Set will clear
+#define TIMER_IRQ_PEND_TMR0			(1U << 0)	///< Set will clear
+#define TIMER_IRQ_PEND_TMR1			(1U << 1)	///< Set will clear
 
 // Timer Control Register
-#define TIMER_CTRL_EN_START			(1 << 0)	///< 0:Stop/Pause 1:Start
-#define TIMER_CTRL_RELOAD			(1 << 1)
-#define TIMER_CTRL_CLK_SRC_OSC24M	(1 << 2)	///< Bit 3:2
-#define TIMER_CTRL_CLK_PRES_1		(0 << 4)	///< Bit 6:4
-#define TIMER_CTRL_CLK_PRES_2		(1 << 4)
-#define TIMER_CTRL_CLK_PRES_4		(2 << 4)
-#define TIMER_CTRL_CLK_PRES_8		(3 << 4)
-#define TIMER_CTRL_CLK_PRES_16		(4 << 4)
-#define TIMER_CTRL_CLK_PRES_32		(5 << 4)
-#define TIMER_CTRL_CLK_PRES_64		(6 << 4)
-#define TIMER_CTRL_CLK_PRES_128		(7 << 4)
-#define TIMER_CTRL_SINGLE_MODE		(1 << 7)	///< When interval reached , the timer will disable automatically
+#define TIMER_CTRL_EN_START			(1U << 0)	///< 0:Stop/Pause 1:Start
+#define TIMER_CTRL_RELOAD			(1U << 1)
+#define TIMER_CTRL_CLK_SRC_OSC24M	(1U << 2)	///< Bit 3:2
+#define TIMER_CTRL_CLK_PRES_1		(0U << 4)	///< Bit 6:4
+#define TIMER_CTRL_CLK_PRES_2		(1U << 4)
+#define TIMER_CTRL_CLK_PRES_4		(2U << 4)
+#define TIMER_CTRL_CLK_PRES_8		(3U << 4)
+#define TIMER_CTRL_CLK_PRES_16		(4U << 4)
+#define TIMER_CTRL_CLK_PRES_32		(5U << 4)
+#define TIMER_CTRL_CLK_PRES_64		(6U << 4)
+#define TIMER_CTRL_CLK_PRES_128		(7U << 4)
+#define TIMER_CTRL_SINGLE_MODE		(1U << 7)	///< When interval reached , the timer will disable automatically
 
 #ifdef __cplusplus
 extern "C" {

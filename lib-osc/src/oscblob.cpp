@@ -29,7 +29,15 @@
 #include "oscmessage.h"
 #include "oscblob.h"
 
-OSCBlob::OSCBlob(const char *nData, int nSize) : m_pData(const_cast<char*>(nData)), m_nSize(nSize) {
+/*
+ * OSC-blob
+ * An int32 size count, followed by that many 8-bit bytes of arbitrary binary data,
+ * followed by 0-3 additional zero bytes to make the total number of bits a multiple of 32.
+ */
+
+OSCBlob::OSCBlob(const uint8_t *pData, int32_t nSize) :
+	m_pData(const_cast<uint8_t *>(pData)),
+	m_nSize(nSize) {
 
 }
 
@@ -38,65 +46,46 @@ OSCBlob::~OSCBlob(void) {
 	m_nSize = 0;
 }
 
-int OSCBlob::GetDataSize(void) const{
-	return m_nSize;
+int32_t OSCBlob::GetSize(void) const {
+	const int32_t nBlobSize = static_cast<int32_t>(sizeof(int32_t)) + m_nSize;
+	return (4 * ((nBlobSize + 3) / 4));
 }
 
-const char *OSCBlob::GetDataPtr(void) {
-	return m_pData;
-}
-
-unsigned OSCBlob::GetSize(void) const {
-	const unsigned len = sizeof(uint32_t) + m_nSize;
-
-	return (4 * ((len + 3) / 4));
-}
-
-int OSCBlob::GetByte(unsigned i) const {
-	if (i < m_nSize) {
-		return m_pData[i];
+uint8_t OSCBlob::GetByte(int32_t nIndex) const {
+	if (nIndex < m_nSize) {
+		return m_pData[nIndex];
 	}
 
-	return -1;
+	return 0;
 }
 
-/**
- * @brief A function to calculate the amount of OSC message space required by a \ref osc_blob object.
- *
- * @param p
- * @return Returns the storage size in bytes, which will always be a multiple of four.
- */
-unsigned OSCBlob::Size(const void *p) {
-	osc_blob *b = reinterpret_cast<osc_blob*>(const_cast<void*>(p));
-	const uint32_t len = sizeof(uint32_t) + b->size;
+int32_t OSCBlob::Size(const void *p) {
+	osc_blob *pOscBlob = reinterpret_cast<osc_blob*>(const_cast<void*>(p));
+	const int32_t nLength = static_cast<int32_t>(sizeof(int32_t)) + pOscBlob->nSize;
 
-	return (4 * ((len + 3) / 4));
+	return (4 * ((nLength + 3) / 4));
 }
 
-signed OSCBlob::Validate(void *data, unsigned size) {
-	unsigned i, end, len;
-	unsigned dsize;
+int32_t OSCBlob::Validate(void *pData, int32_t nSize) {
+	char *pSrc = reinterpret_cast<char*>(pData);
+	const int32_t nDataSize = static_cast<int32_t>(__builtin_bswap32(static_cast<uint32_t>(*reinterpret_cast<int32_t*>(pData))));
 
-	char *pos = reinterpret_cast<char*>(data);
-
-	dsize = __builtin_bswap32(*reinterpret_cast<unsigned*>(data));
-
-	if (dsize > OSC_MAX_MSG_SIZE) {
-		return -OSC_INVALID_SIZE;
+	if (nDataSize > OSC_MAX_MSG_SIZE) {
+		return -OscMessageDeserialise::INVALID_SIZE;
 	}
 
-	end = sizeof(unsigned) + dsize;
-	len = 4 * ((end + 3) / 4);
+	int32_t nBlobSize = static_cast<int>(sizeof(int32_t)) + nDataSize;
+	int32_t nLength = 4 * ((nBlobSize + 3) / 4);
 
-	if (len > size) {
-		return -OSC_INVALID_SIZE;
+	if (nLength > nSize) {
+		return -OscMessageDeserialise::INVALID_SIZE;
 	}
 
-	for (i = end; i < len; ++i) {
-		if (pos[i] != '\0') {
-			return -OSC_NONE_ZERO_IN_PADDING;
+	for (int i = nBlobSize; i < nLength; ++i) {
+		if (pSrc[i] != '\0') {
+			return -OscMessageDeserialise::NONE_ZERO_IN_PADDING;
 		}
 	}
 
-	return len;
+	return nLength;
 }

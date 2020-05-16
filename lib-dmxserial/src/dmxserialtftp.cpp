@@ -25,14 +25,14 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxserialtftp.h"
 #include "dmxserial.h"
 
 #include "debug.h"
 
-DmxSerialTFTP::DmxSerialTFTP(void): m_pFile(0) {
+DmxSerialTFTP::DmxSerialTFTP(void) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -52,10 +52,10 @@ void DmxSerialTFTP::Exit(void) {
 	DEBUG_EXIT
 }
 
-bool DmxSerialTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, tMode);
+bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	uint16_t nFileNumber;
+	int16_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
 		DEBUG_EXIT
 		return false;
@@ -65,10 +65,10 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, TTFTPMode tMode) {
 	return (m_pFile != 0);
 }
 
-bool DmxSerialTFTP::FileCreate(const char *pFileName, TTFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, tMode);
+bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	uint16_t nFileNumber;
+	int16_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
 		DEBUG_EXIT
 		return false;
@@ -90,10 +90,10 @@ bool DmxSerialTFTP::FileClose(void) {
 	return true;
 }
 
-int DmxSerialTFTP::FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t DmxSerialTFTP::FileRead(void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
 	return fread(pBuffer, 1, nCount, m_pFile);
 }
 
-int DmxSerialTFTP::FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber) {
+size_t DmxSerialTFTP::FileWrite(const void *pBuffer, size_t nCount, __attribute__((unused))unsigned nBlockNumber) {
 	return fwrite(pBuffer, 1, nCount, m_pFile);
 }

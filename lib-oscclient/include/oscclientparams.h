@@ -30,10 +30,12 @@
 
 #include "oscclient.h"
 
-#define OSCCLIENT_PARAMS_CMD_MAX_COUNT				8
-#define OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH		64
-#define OSCCLIENT_PARAMS_LED_MAX_COUNT				8
-#define OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH		48
+struct OscClientParamsMax {
+	static constexpr auto CMD_COUNT = 8;
+	static constexpr auto CMD_PATH_LENGTH = 64;
+	static constexpr auto LED_COUNT = 8;
+	static constexpr auto LED_PATH_LENGTH = 48;
+};
 
 struct TOscClientParams {
     uint32_t nSetList;
@@ -42,18 +44,18 @@ struct TOscClientParams {
 	uint16_t nIncomingPort;
 	uint8_t nPingDisable;
 	uint8_t nPingDelay;
-	char aCmd[OSCCLIENT_PARAMS_CMD_MAX_COUNT][OSCCLIENT_PARAMS_CMD_MAX_PATH_LENGTH];
-	char aLed[OSCCLIENT_PARAMS_LED_MAX_COUNT][OSCCLIENT_PARAMS_LED_MAX_PATH_LENGTH];
+	char aCmd[OscClientParamsMax::CMD_COUNT][OscClientParamsMax::CMD_PATH_LENGTH];
+	char aLed[OscClientParamsMax::LED_COUNT][OscClientParamsMax::LED_PATH_LENGTH];
 } __attribute__((packed));
 
-enum TOscClientParamsMask {
-	OSCCLIENT_PARAMS_MASK_SERVER_IP = (1 << 0),
-	OSCCLIENT_PARAMS_MASK_OUTGOING_PORT = (1 << 1),
-	OSCCLIENT_PARAMS_MASK_INCOMING_PORT = (1 << 2),
-	OSCCLIENT_PARAMS_MASK_PING_DISABLE = (1 << 3),
-	OSCCLIENT_PARAMS_MASK_PING_DELAY = (1 << 4),
-	OSCCLIENT_PARAMS_MASK_CMD = (1 << 5),
-	OSCCLIENT_PARAMS_MASK_LED = (1 << 6)
+struct OscClientParamsMask {
+	static constexpr auto SERVER_IP = (1U << 0);
+	static constexpr auto OUTGOING_PORT = (1U << 1);
+	static constexpr auto INCOMING_PORT = (1U << 2);
+	static constexpr auto PING_DISABLE = (1U << 3);
+	static constexpr auto PING_DELAY = (1U << 4);
+	static constexpr auto CMD = (1U << 5);
+	static constexpr auto LED = (1U << 6);
 };
 
 class OscClientParamsStore {

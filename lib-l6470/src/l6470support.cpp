@@ -27,7 +27,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif
@@ -37,9 +36,9 @@
 static unsigned long ceil(float f) {
 	int i = static_cast<int>(f);
 	if (f == static_cast<float>(i)) {
-		return i;
+		return static_cast<unsigned long>(i);
 	}
-	return i + 1;
+	return static_cast<unsigned long>(i + 1);
 }
 
 // Contains utility functions for converting real-world
@@ -361,5 +360,5 @@ long L6470::xferParam(unsigned long nValue, uint8_t nBitLength) {
 		out.a[byteLen - i - 1] = SPIXfer(in.a[byteLen - i - 1]);
 	}
 
-	return out.ul;
+	return static_cast<long>(out.ul);
 }

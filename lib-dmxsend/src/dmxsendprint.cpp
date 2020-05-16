@@ -29,7 +29,7 @@
 
 void DMXSend::Print(void) {
 	printf("DMX Send\n");
-	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
-	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));
+	printf(" Break time   : %d\n", GetDmxBreakTime());
+	printf(" MAB time     : %d\n", GetDmxMabTime());
 	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / GetDmxPeriodTime()));
 }

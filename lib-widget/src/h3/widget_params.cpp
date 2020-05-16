@@ -93,7 +93,7 @@ void widget_params_set(const struct _widget_params *widget_params) {
 
 	if (widget_params->refresh_rate != dmx_usb_pro_params.refresh_rate) {
 		dmx_usb_pro_params.refresh_rate = widget_params->refresh_rate;
-		dmx_set_output_period(widget_params->refresh_rate == 0 ? 0 : (1000000 / widget_params->refresh_rate));
+		dmx_set_output_period(widget_params->refresh_rate == 0 ? 0 : (1000000U / widget_params->refresh_rate));
 
 		spWidgetStore->UpdateRefreshRate(widget_params->refresh_rate);
 	}

@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
-#include <stdbool.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
 #include <net/if.h>
@@ -40,7 +39,7 @@ bool NetworkLinux::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
 	size_t len;
 	char *buf;
 
-	if ((mib[5] = if_nametoindex(pIfName)) == 0) {
+	if ((mib[5] = static_cast<int>(if_nametoindex(pIfName))) == 0) {
 		perror("if_nametoindex error");
 		return false;
 	}

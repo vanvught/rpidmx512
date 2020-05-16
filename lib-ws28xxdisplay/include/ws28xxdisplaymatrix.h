@@ -25,7 +25,6 @@
 #define WS28XXDISPLAYMATRIX_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #if defined(USE_SPI_DMA)
  #include "h3/ws28xxdma.h"

@@ -44,13 +44,13 @@ public:
 	static const char NODE_OEM_VALUE[];
 	static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
 	static const char NODE_DISABLE_MERGE_TIMEOUT[];
-	static const char UNIVERSE_PORT[ARTNET_MAX_PORTS][16];
+	static const char UNIVERSE_PORT[TArtNetConst::MAX_PORTS][16];
 	static const char MERGE_MODE[];
-	static const char MERGE_MODE_PORT[ARTNET_MAX_PORTS][18];
+	static const char MERGE_MODE_PORT[TArtNetConst::MAX_PORTS][18];
 	static const char PROTOCOL[];
-	static const char PROTOCOL_PORT[ARTNET_MAX_PORTS][16];
+	static const char PROTOCOL_PORT[TArtNetConst::MAX_PORTS][16];
 	static const char DIRECTION[];
-	static const char DESTINATION_IP_PORT[ARTNET_MAX_PORTS][24];
+	static const char DESTINATION_IP_PORT[TArtNetConst::MAX_PORTS][24];
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

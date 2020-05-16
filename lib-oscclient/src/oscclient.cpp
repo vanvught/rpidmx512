@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "oscclient.h"
 #include "oscsend.h"
@@ -43,21 +43,19 @@
 
 #include "debug.h"
 
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
-
-#define OSCCLIENT_BUFFER_SIZE 		(32 + OSCCLIENT_LED_MAX_PATH_LENGTH)
-#define OSCCLIENT_CMD_BUFFER_SIZE 	(OSCCLIENT_CMD_MAX_COUNT * OSCCLIENT_CMD_MAX_PATH_LENGTH * sizeof(uint8_t))
-#define OSCCLIENT_LED_BUFFER_SIZE 	(OSCCLIENT_LED_MAX_COUNT * OSCCLIENT_LED_MAX_PATH_LENGTH * sizeof(uint8_t))
+namespace BUFFER_SIZE {
+	static constexpr auto PATH = 32 + OscClientMax::LED_PATH_LENGTH;
+	static constexpr auto CMD = OscClientMax::CMD_COUNT * OscClientMax::CMD_PATH_LENGTH * sizeof(uint8_t);
+	static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LENGTH * sizeof(uint8_t);
+}
 
 OscClient::OscClient(void):
 	m_nServerIP(0),
-	m_nPortOutgoing(OSCCLIENT_DEFAULT_PORT_OUTGOING),
-	m_nPortIncoming(OSCCLIENT_DEFAULT_PORT_INCOMING),
+	m_nPortOutgoing(OscClientDefault::PORT_OUTGOING),
+	m_nPortIncoming(OscClientDefault::PORT_INCOMING),
 	m_nHandle(-1),
 	m_bPingDisable(false),
-	m_nPingDelayMillis(OSCCLIENT_DEFAULT_PING_DELAY_SECONDS * 1000),
+	m_nPingDelayMillis(OscClientDefault::PING_DELAY_SECONDS * 1000),
 	m_bPingSent(false),
 	m_bPongReceived(false),
 	m_nBytesReceived(0),
@@ -66,18 +64,16 @@ OscClient::OscClient(void):
 	m_nPingTimeMillis(0),
 	m_pOscClientLed(0)
 {
-	m_pBuffer = new char[OSCCLIENT_BUFFER_SIZE];
+	m_pBuffer = new char[BUFFER_SIZE::PATH];
 	assert(m_pBuffer != 0);
 
-	m_pCmds = new char[OSCCLIENT_CMD_BUFFER_SIZE];
+	m_pCmds = new char[BUFFER_SIZE::CMD];
 	assert(m_pCmds != 0);
+	memset(m_pCmds, 0, BUFFER_SIZE::CMD);
 
-	memset(m_pCmds, 0, OSCCLIENT_CMD_BUFFER_SIZE);
-
-	m_pLeds = new char[OSCCLIENT_LED_BUFFER_SIZE];
+	m_pLeds = new char[BUFFER_SIZE::LED];
 	assert(m_pLeds != 0);
-
-	memset(m_pLeds, 0, OSCCLIENT_LED_BUFFER_SIZE);
+	memset(m_pLeds, 0, BUFFER_SIZE::LED);
 }
 
 OscClient::~OscClient(void) {
@@ -110,7 +106,7 @@ int OscClient::Run(void) {
 
 		uint32_t nRemoteIp;
 		uint16_t nRemotePort;
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCCLIENT_BUFFER_SIZE, &nRemoteIp, &nRemotePort);
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, BUFFER_SIZE::PATH, &nRemoteIp, &nRemotePort);
 
 		if (__builtin_expect((m_nBytesReceived == 0), 1)) {
 			if (m_bPingSent && ((m_nCurrenMillis - m_nPingTimeMillis) >= 1000)) {
@@ -164,15 +160,15 @@ void OscClient::Print(void) {
 		printf(" Ping delay        : %ds\n", m_nPingDelayMillis / 1000);
 	}
 
-	for (uint32_t i = 0; i < OSCCLIENT_CMD_MAX_COUNT; i++) {
-		const char *p = &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
+	for (uint32_t i = 0; i < OscClientMax::CMD_COUNT; i++) {
+		const char *p = &m_pCmds[i * OscClientMax::CMD_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  cmd%c             : [%s]\n", i + '0', p);
 		}
 	}
 
-	for (uint32_t i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
-		const char *p = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+	for (uint32_t i = 0; i < OscClientMax::LED_COUNT; i++) {
+		const char *p = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  led%c             : [%s]\n", i + '0', p);
 		}
@@ -195,23 +191,23 @@ void OscClient::SetPingDelay(uint32_t nPingDelay) {
 	}
 }
 
-void OscClient::CopyCmds(const char* pCmds, uint32_t nCount, uint32_t nLength) {
+void OscClient::CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength) {
 	assert(pCmds != 0);
 
-	for (uint32_t i = 0; i < MIN(nCount, OSCCLIENT_CMD_MAX_COUNT); i++) {
-		char *dst = &m_pCmds[i * OSCCLIENT_CMD_MAX_PATH_LENGTH];
-		strncpy(dst, &pCmds[i * nLength], OSCCLIENT_CMD_MAX_PATH_LENGTH - 1);
-		dst[OSCCLIENT_CMD_MAX_PATH_LENGTH - 1] = '\0';
+	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::CMD_COUNT); i++) {
+		char *dst = &m_pCmds[i * OscClientMax::CMD_PATH_LENGTH];
+		strncpy(dst, &pCmds[i * nLength], OscClientMax::CMD_PATH_LENGTH - 1);
+		dst[OscClientMax::CMD_PATH_LENGTH - 1] = '\0';
 	}
 }
 
-void OscClient::CopyLeds(const char *pLeds, uint32_t nCount,	uint32_t nLength) {
+void OscClient::CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength) {
 	assert(pLeds != 0);
 
-	for (uint32_t i = 0; i < MIN(nCount, OSCCLIENT_LED_MAX_COUNT); i++) {
-		char *dst = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
-		strncpy(dst, &pLeds[i * nLength], OSCCLIENT_LED_MAX_PATH_LENGTH - 1);
-		dst[OSCCLIENT_LED_MAX_PATH_LENGTH - 1] = '\0';
+	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::LED_COUNT); i++) {
+		char *dst = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
+		strncpy(dst, &pLeds[i * nLength], OscClientMax::LED_PATH_LENGTH - 1);
+		dst[OscClientMax::LED_PATH_LENGTH - 1] = '\0';
 	}
 }
 
@@ -226,15 +222,15 @@ bool OscClient::HandleLedMessage(void) {
 
 	uint32_t i;
 
-	for (i = 0; i < OSCCLIENT_LED_MAX_COUNT; i++) {
-		const char *src = &m_pLeds[i * OSCCLIENT_LED_MAX_PATH_LENGTH];
+	for (i = 0; i < OscClientMax::LED_COUNT; i++) {
+		const char *src = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
 		if (OSC::isMatch(m_pBuffer, src)) {
 			DEBUG_PUTS("");
 			break;
 		}
 	}
 
-	if (i == OSCCLIENT_LED_MAX_COUNT) {
+	if (i == OscClientMax::LED_COUNT) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -248,17 +244,16 @@ bool OscClient::HandleLedMessage(void) {
 		return false;
 	}
 
-	if (Msg.GetType(0) == OSC_INT32) {
+	if (Msg.GetType(0) == OscType::INT32) {
 		m_pOscClientLed->SetLed(i, Msg.GetInt(0) != 0);
 		DEBUG_PRINTF("%d", Msg.GetInt(0));
-	} else if (Msg.GetType(0) == OSC_FLOAT) {
+	} else if (Msg.GetType(0) == OscType::FLOAT) {
 		m_pOscClientLed->SetLed(i, Msg.GetFloat(0) != 0);
 		DEBUG_PRINTF("%f", Msg.GetFloat(0));
 	} else {
 		return false;
 	}
 
-	return true;
-
 	DEBUG_EXIT
+	return true;
 }

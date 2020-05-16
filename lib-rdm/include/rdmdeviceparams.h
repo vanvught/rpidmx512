@@ -29,7 +29,6 @@
 #include <stdint.h>
 
 #include "rdmdevice.h"
-
 #include "rdm.h"
 
 struct TRDMDeviceParams {
@@ -38,17 +37,18 @@ struct TRDMDeviceParams {
 	uint8_t nDeviceRootLabelLength;
 	uint16_t nProductCategory;
 	uint16_t nProductDetail;
-};
+} __attribute__((packed));
 
-enum TRDMDeviceParamsMask {
-	RDMDEVICE_PARAMS_MASK_LABEL = (1 << 0),
-	RDMDEVICE_PARAMS_MASK_PRODUCT_CATEGORY = (1 << 1),
-	RDMDEVICE_PARAMS_MASK_PRODUCT_DETAIL = (1 << 2)
+struct RDMDeviceParamsMask {
+	static constexpr auto LABEL = (1U << 0);
+	static constexpr auto PRODUCT_CATEGORY = (1U << 1);
+	static constexpr auto PRODUCT_DETAIL = (1U << 2);
 };
 
 class RDMDeviceParamsStore {
 public:
-	virtual ~RDMDeviceParamsStore(void) {}
+	virtual ~RDMDeviceParamsStore(void) {
+	}
 
 	virtual void Update(const struct TRDMDeviceParams *pRDMDeviceParams)=0;
 	virtual void Copy(struct TRDMDeviceParams *pRDMDeviceParams)=0;

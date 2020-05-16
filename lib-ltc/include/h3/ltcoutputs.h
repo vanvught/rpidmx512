@@ -26,8 +26,6 @@
 #ifndef H3_LTCOUTPUTS_H_
 #define H3_LTCOUTPUTS_H_
 
-#include <stdbool.h>
-
 #include "ltc.h"
 
 class LtcOutputs {

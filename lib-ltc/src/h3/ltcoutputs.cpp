@@ -24,11 +24,10 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
-#include <assert.h>
+#include <cassert>
 
 #include "h3/ltcoutputs.h"
 #include "ltc.h"
@@ -52,7 +51,7 @@
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
 
-static void irq_timer1_midi_handler(uint32_t clo) {
+static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
@@ -66,6 +65,7 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TL
 {
 	assert(pLtcDisabledOutputs != 0);
 
+	assert(s_pThis == 0);
 	s_pThis = this;
 
 	memcpy(&m_tLtcDisabledOutputs, pLtcDisabledOutputs, sizeof(struct TLtcDisabledOutputs));
@@ -97,7 +97,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	assert(ptLtcTimeCode != 0);
 
 	if (!m_tLtcDisabledOutputs.bNtp) {
-		NtpServer::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(ptLtcTimeCode));
+		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
 	}
 
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_tTimeCodeTypePrevious)) {
@@ -119,7 +119,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 		Ltc7segment::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
 	}
 
-	Ltc::ItoaBase10(reinterpret_cast<const struct TLtcTimeCode*>(ptLtcTimeCode), m_aTimeCode);
+	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
 		Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);

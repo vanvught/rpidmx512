@@ -2,7 +2,7 @@
  * @file oscserver.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,14 @@
 #include "oscserverhandler.h"
 #include "lightset.h"
 
-#define OSCSERVER_DEFAULT_PORT_INCOMING	8000
-#define OSCSERVER_DEFAULT_PORT_OUTGOING	9000
+struct OscServerDefaultPort {
+	static constexpr auto INCOMING = 8000;
+	static constexpr auto OUTGOING = 9000;
+};
 
-#define OSCSERVER_PATH_LENGTH_MAX	128
+struct OscServerMax {
+	static constexpr auto PATH_LENGTH = 128;
+};
 
 class OscServer {
 public:
@@ -44,10 +48,10 @@ public:
 	void SetOscServerHandler(OscServerHandler *pOscServerHandler);
 	void SetOutput(LightSet *pLightSet);
 
-	void SetPortIncoming(uint16_t nPortIncoming = OSCSERVER_DEFAULT_PORT_INCOMING);
+	void SetPortIncoming(uint16_t nPortIncoming = OscServerDefaultPort::INCOMING);
 	uint16_t GetPortIncoming(void) const;
 
-	void SetPortOutgoing(uint16_t nPortOutgoing = OSCSERVER_DEFAULT_PORT_OUTGOING);
+	void SetPortOutgoing(uint16_t nPortOutgoing = OscServerDefaultPort::OUTGOING);
 	uint16_t GetPortOutgoing(void) const;
 
 	void SetPath(const char *pPath);
@@ -81,21 +85,21 @@ private:
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint16_t nLength);
 
 private:
-	uint16_t m_nPortIncoming;
-	uint16_t m_nPortOutgoing;
-	int32_t m_nHandle;
-	bool m_bPartialTransmission;
-	bool m_bEnableNoChangeUpdate;
+	uint16_t m_nPortIncoming = OscServerDefaultPort::INCOMING;
+	uint16_t m_nPortOutgoing = OscServerDefaultPort::OUTGOING;
+	int32_t m_nHandle = -1;
+	bool m_bPartialTransmission = false;
+	bool m_bEnableNoChangeUpdate = false;
 	uint16_t m_nLastChannel;
-	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
-	char m_aPathSecond[OSCSERVER_PATH_LENGTH_MAX];
-	char m_aPathInfo[OSCSERVER_PATH_LENGTH_MAX];
-	char m_aPathBlackOut[OSCSERVER_PATH_LENGTH_MAX];
-	OscServerHandler *m_pOscServerHandler;
-	LightSet *m_pLightSet;
-	char *m_pBuffer;
-	uint8_t *m_pData;
-	uint8_t *m_pOsc;
+	char m_aPath[OscServerMax::PATH_LENGTH];
+	char m_aPathSecond[OscServerMax::PATH_LENGTH];
+	char m_aPathInfo[OscServerMax::PATH_LENGTH];
+	char m_aPathBlackOut[OscServerMax::PATH_LENGTH];
+	OscServerHandler *m_pOscServerHandler = 0;
+	LightSet *m_pLightSet = 0;
+	char *m_pBuffer = 0;
+	uint8_t *m_pData = 0;
+	uint8_t *m_pOsc = 0;
 	char m_Os[32];
 	const char *m_pModel;
 	const char *m_pSoC;

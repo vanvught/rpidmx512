@@ -26,9 +26,7 @@
 #ifndef SHOWFILETFTP_H_
 #define SHOWFILETFTP_H_
 
-#include <stdint.h>
 #include <stdio.h>
-#include <stdbool.h>
 
 #include "tftpdaemon.h"
 
@@ -37,16 +35,16 @@ public:
 	ShowFileTFTP(void);
 	~ShowFileTFTP(void);
 
-	bool FileOpen(const char *pFileName, TTFTPMode tMode);
-	bool FileCreate(const char *pFileName, TTFTPMode tMode);
+	bool FileOpen(const char *pFileName, TFTPMode tMode);
+	bool FileCreate(const char *pFileName, TFTPMode tMode);
 	bool FileClose(void);
-	int FileRead(void *pBuffer, unsigned nCount, unsigned nBlockNumber);
-	int FileWrite(const void *pBuffer, unsigned nCount, unsigned nBlockNumber);
+	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber);
+	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber);
 
 	void Exit(void);
 
 private:
-	FILE *m_pFile;
+	FILE *m_pFile = 0;
 };
 
 #endif /* SHOWFILETFTP_H_ */

@@ -27,7 +27,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "pca9685dmxled.h"
 
@@ -39,9 +39,9 @@
 static unsigned long ceil(float f) {
 	int i = static_cast<int>(f);
 	if (f == static_cast<float>(i)) {
-		return i;
+		return static_cast<unsigned long>(i);
 	}
-	return i + 1;
+	return static_cast<unsigned long>(i + 1);
 }
 
 PCA9685DmxLed::PCA9685DmxLed(void):
@@ -76,7 +76,7 @@ PCA9685DmxLed::~PCA9685DmxLed(void) {
 	m_pSlotInfo = 0;
 }
 
-void PCA9685DmxLed::Start(uint8_t nPort) {
+void PCA9685DmxLed::Start(__attribute__((unused)) uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -88,7 +88,7 @@ void PCA9685DmxLed::Start(uint8_t nPort) {
 	}
 }
 
-void PCA9685DmxLed::Stop(uint8_t nPort) {
+void PCA9685DmxLed::Stop(__attribute__((unused)) uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -96,7 +96,7 @@ void PCA9685DmxLed::Stop(uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxLed::SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
+void PCA9685DmxLed::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
 	assert(pDmxData != 0);
 	assert(nLength <= DMX_MAX_CHANNELS);
 

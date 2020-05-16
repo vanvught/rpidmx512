@@ -39,7 +39,6 @@ public:
 	void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams);
 	void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams);
 
-public:
 	static StoreSlushDmx *Get(void) {
 		return s_pThis;
 	}

@@ -28,7 +28,7 @@
 
 #include "arm/synchronize.h"
 
-const bool arm_install_handler(unsigned routine, unsigned *vector) {
+bool arm_install_handler(unsigned routine, unsigned *vector) {
 	unsigned vector_table;
 	asm volatile ("mrc p15, 0, %0, c12, c0, 0" : "=r" (vector_table));
 

@@ -41,7 +41,6 @@ public:
 	void UpdateMabTime(uint8_t nMabTime);
 	void UpdateRefreshRate(uint8_t nRefreshRate);
 
-public:
 	static StoreWidget* Get(void) {
 		return s_pThis;
 	}

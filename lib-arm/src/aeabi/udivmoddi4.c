@@ -9,7 +9,7 @@ uint64_t udivmoddi4(uint64_t num, uint64_t den, uint64_t *rem_p) {
 		return 0;
 	}
 
-	shift = __builtin_clzll(den);
+	shift = (unsigned int)__builtin_clzll(den);
 
 	den <<= shift;
 	qbit <<= shift;

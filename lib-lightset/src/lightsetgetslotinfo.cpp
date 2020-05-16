@@ -23,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-
 #include "lightset.h"
 
-bool LightSet::GetSlotInfo(uint16_t nSlot, struct TLightSetSlotInfo &tSlotInfo) {
+bool LightSet::GetSlotInfo(__attribute__((unused)) uint16_t nSlot, struct TLightSetSlotInfo &tSlotInfo) {
 	tSlotInfo.nType = 0x00; // ST_PRIMARY
 	tSlotInfo.nCategory = 0x0001; // SD_INTENSITY
 	return true;

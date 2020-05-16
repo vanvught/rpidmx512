@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmxreceiver.h"
 #include "dmx.h"
@@ -130,11 +130,11 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 			const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
 			nLength = dmx_statistics->Statistics.SlotsInPacket;
 
-			if (IsDmxDataChanged(++pDmx, nLength)) {  // Skip DMX START CODE
+			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE
 
 				DEBUG_PRINTF("\tDMX Data Changed", __FILE__, __FUNCTION__, __LINE__);
 
-				m_pLightSet->SetData(0, pDmx, nLength);
+				m_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
 				p = const_cast<uint8_t*>(pDmx);
 			}
 

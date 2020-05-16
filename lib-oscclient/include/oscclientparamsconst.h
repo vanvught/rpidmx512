@@ -30,15 +30,15 @@
 
 class OscClientParamsConst {
 public:
-	static const char PARAMS_FILE_NAME[];
+	static const char FILE_NAME[];
 
-	static const char PARAMS_SERVER_IP[];
+	static const char SERVER_IP[];
 
-	static const char PARAMS_PING_DISABLE[];
-	static const char PARAMS_PING_DELAY[];
+	static const char PING_DISABLE[];
+	static const char PING_DELAY[];
 
-	static const char PARAMS_CMD[];
-	static const char PARAMS_LED[];
+	static const char CMD[];
+	static const char LED[];
 };
 
 #endif /* OSCCLIENTPARAMSCONST_H_ */

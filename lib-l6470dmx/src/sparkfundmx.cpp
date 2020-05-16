@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "sparkfundmx.h"
 #include "sparkfundmx_internal.h"
@@ -51,13 +51,6 @@
 #include "hardware.h"
 
 #include "debug.h"
-
-#ifndef MAX
- #define MAX(a,b)       (((a) > (b)) ? (a) : (b))
-#endif
-#ifndef MIN
- #define MIN(a,b)	(((a) < (b)) ? (a) : (b))
-#endif
 
 SparkFunDmx::SparkFunDmx(void):
 	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
@@ -131,7 +124,7 @@ SparkFunDmx::~SparkFunDmx(void) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Start(uint8_t nPort) {
+void SparkFunDmx::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -143,7 +136,7 @@ void SparkFunDmx::Start(uint8_t nPort) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Stop(uint8_t nPort) {
+void SparkFunDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -279,16 +272,16 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 							m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 						} else {
 							const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
-							m_nDmxStartAddress = MIN(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
+							m_nDmxStartAddress = std::min(m_nDmxStartAddress, m_pL6470DmxModes[i]->GetDmxStartAddress());
 
 							const uint16_t nDmxChannelLastNew = m_nDmxStartAddressMode + m_pL6470DmxModes[i]->GetDmxFootPrint();
-							m_nDmxFootprint = MAX(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
+							m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 						}
 #ifndef NDEBUG
 						printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
 						printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
-						const uint32_t nMaxSlots = MIN(MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
+						const uint32_t nMaxSlots = std::min(MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
 #ifndef NDEBUG
 						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
 #endif
@@ -352,7 +345,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void SparkFunDmx::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);

@@ -27,7 +27,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "l6470.h"
 
@@ -135,7 +135,7 @@ void L6470DmxModes::InitPos(void) {
 	DEBUG1_EXIT
 }
 
-uint8_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
+uint16_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
 	switch (tMode) {
 		case L6470DMXMODE0:
 			return L6470DmxMode0::GetDmxFootPrint();

@@ -33,13 +33,11 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
-
-#define BOOL2STRING(b)			(b) ? "Yes" : "No"
 
 #include "ws28xxdmxparams.h"
 
@@ -135,7 +133,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		}
 
 		m_tWS28xxParams.tLedType = static_cast<TWS28XXType>(i);
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_TYPE;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_TYPE;
 
 		return;
 	}
@@ -143,7 +141,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_COUNT, &nValue16) == SSCAN_OK) {
 		if (nValue16 != 0 && nValue16 <= (4 * 170)) {
 			m_tWS28xxParams.nLedCount = nValue16;
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_COUNT;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_COUNT;
 		}
 		return;
 	}
@@ -154,9 +152,9 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		enum TRGBMapping tMapping;
 
 		if ((tMapping = RGBMapping::FromString(cBuffer)) != RGB_MAPPING_UNDEFINED) {
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_RGB_MAPPING;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::RGB_MAPPING;
 		} else {
-			m_tWS28xxParams.nSetList &= ~WS28XXDMX_PARAMS_MASK_RGB_MAPPING;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::RGB_MAPPING;
 		}
 
 		m_tWS28xxParams.nRgbMapping = tMapping;
@@ -166,9 +164,9 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, DevicesParamsConst::LED_T0H, &fValue) == SSCAN_OK) {
 		if ((nValue8 = WS28xx::ConvertTxH(fValue)) != 0) {
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LOW_CODE;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LOW_CODE;
 		} else {
-			m_tWS28xxParams.nSetList &= ~WS28XXDMX_PARAMS_MASK_LOW_CODE;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::LOW_CODE;
 		}
 
 		m_tWS28xxParams.nLowCode = nValue8;
@@ -178,9 +176,9 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, DevicesParamsConst::LED_T1H, &fValue) == SSCAN_OK) {
 		if ((nValue8 = WS28xx::ConvertTxH(fValue)) != 0) {
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_HIGH_CODE;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::HIGH_CODE;
 		} else {
-			m_tWS28xxParams.nSetList &= ~WS28XXDMX_PARAMS_MASK_HIGH_CODE;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::HIGH_CODE;
 		}
 
 		m_tWS28xxParams.nHighCode = nValue8;
@@ -190,46 +188,46 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, &nValue8) == SSCAN_OK) {
 		m_tWS28xxParams.nActiveOutputs = nValue8;
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_ACTIVE_OUT;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::ACTIVE_OUT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::USE_SI5351A, &nValue8) == SSCAN_OK) {
 		m_tWS28xxParams.bUseSI5351A = (nValue8 != 0);
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_USE_SI5351A;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::USE_SI5351A;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_GROUPING, &nValue8) == SSCAN_OK) {
 		m_tWS28xxParams.bLedGrouping = (nValue8 != 0);
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_GROUPING;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_GROUPING;
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_GROUP_COUNT, &nValue16) == SSCAN_OK) {
 		if (nValue16 != 0 && nValue16 <= (4 * 170)) {
 			m_tWS28xxParams.nLedGroupCount = nValue16;
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_GROUP_COUNT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint32(pLine, DevicesParamsConst::SPI_SPEED_HZ, &nValue32) == SSCAN_OK) {
 		m_tWS28xxParams.nSpiSpeedHz = nValue32;
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_SPI_SPEED;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::SPI_SPEED;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &nValue8) == SSCAN_OK) {
 		m_tWS28xxParams.nGlobalBrightness = nValue8;
-		m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS;
+		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS;
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &nValue16) == SSCAN_OK) {
 		if (nValue16 != 0 && nValue16 <= DMX_UNIVERSE_SIZE) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
-			m_tWS28xxParams.nSetList |= WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
 		}
 		return;
 	}
@@ -243,48 +241,48 @@ void WS28xxDmxParams::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, DevicesParamsConst::FILE_NAME);
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_TYPE)) {
+	if (isMaskSet(WS28xxDmxParamsMask::LED_TYPE)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(m_tWS28xxParams.tLedType), static_cast<int>(m_tWS28xxParams.tLedType));
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_RGB_MAPPING)) {
+	if (isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
 		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)), static_cast<int>(m_tWS28xxParams.nRgbMapping));
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LOW_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), static_cast<int>(m_tWS28xxParams.nLowCode));
+	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
+		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), m_tWS28xxParams.nLowCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_HIGH_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), static_cast<int>(m_tWS28xxParams.nHighCode));
+	if (isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
+		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), m_tWS28xxParams.nHighCode);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, static_cast<int>(m_tWS28xxParams.nLedCount));
+	if (isMaskSet(WS28xxDmxParamsMask::LED_COUNT)) {
+		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_ACTIVE_OUT)) {
-		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, static_cast<int>(m_tWS28xxParams.nActiveOutputs));
+	if (isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT)) {
+		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs);
 	}
 
-	if(isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUPING)) {
-		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_GROUPING, static_cast<int>(m_tWS28xxParams.bLedGrouping), BOOL2STRING(m_tWS28xxParams.bLedGrouping));
+	if(isMaskSet(WS28xxDmxParamsMask::LED_GROUPING)) {
+		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_GROUPING, static_cast<int>(m_tWS28xxParams.bLedGrouping), BOOL2STRING::Get(m_tWS28xxParams.bLedGrouping));
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_LED_GROUP_COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::LED_GROUP_COUNT, static_cast<int>(m_tWS28xxParams.nLedGroupCount));
+	if (isMaskSet(WS28xxDmxParamsMask::LED_GROUP_COUNT)) {
+		printf(" %s=%d\n", DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_SPI_SPEED)) {
-		printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, static_cast<int>(m_tWS28xxParams.nSpiSpeedHz));
+	if (isMaskSet(WS28xxDmxParamsMask::SPI_SPEED)) {
+		printf(" %s=%d\n", DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_GLOBAL_BRIGHTNESS)) {
-		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, static_cast<int>(m_tWS28xxParams.nGlobalBrightness));
+	if (isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS)) {
+		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tWS28xxParams.nGlobalBrightness);
 	}
 
-	if (isMaskSet(WS28XXDMX_PARAMS_MASK_DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, static_cast<int>(m_tWS28xxParams.nDmxStartAddress));
+	if (isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress);
 	}
 #endif
 }

@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <cassert>
 
 #include "spiflashinstall.h"
 #include "spiflashinstallparams.h"

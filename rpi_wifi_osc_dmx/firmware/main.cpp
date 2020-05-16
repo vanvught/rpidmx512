@@ -80,7 +80,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkESP8266 nw;
 	LedBlink lb;
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 
 #ifndef H3
 	DMXMonitor monitor;

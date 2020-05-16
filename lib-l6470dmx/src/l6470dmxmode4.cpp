@@ -1,3 +1,5 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"	//FIXE ignored "-Wsign-conversion"
 /**
  * @file l6470dmxmode4.cpp
  *
@@ -27,7 +29,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "l6470dmxmode4.h"
 #include "l6470.h"
@@ -36,7 +38,7 @@
 
 #include "debug.h"
 
-L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0), m_bWasBusy(false) {
+L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != 0);

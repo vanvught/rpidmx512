@@ -126,7 +126,7 @@ void LcdBw::PutChar(int c) {
 }
 
 void LcdBw::PutString(const char *s) {
-	int i;
+	uint32_t i;
 	char data[(4 * 20)];
 	const char *p = s;
 
@@ -156,7 +156,7 @@ void LcdBw::Text(const char *pText, uint8_t nLength) {
 	}
 
 	Setup();
-	Write(data, nLength + 1);
+	Write(data, static_cast<uint32_t>(nLength + 1));
 }
 
 void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
@@ -168,7 +168,7 @@ void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::ClearLine(uint8_t nLine) {
+void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 	char data[32];
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
@@ -178,7 +178,7 @@ void LcdBw::ClearLine(uint8_t nLine) {
 	}
 
 	Setup();
-	Write(data, m_nCols + 1);
+	Write(data, static_cast<uint32_t>(m_nCols + 1));
 }
 
 void LcdBw::Setup(void) {
@@ -186,7 +186,7 @@ void LcdBw::Setup(void) {
 	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
-void LcdBw::SetCursor(const TCursorMode constEnumTCursorOnOff) {
+void LcdBw::SetCursor(__attribute__((unused))const CursorMode constEnumTCursorOnOff) {
 }
 
 void LcdBw::Write(const char *buffer, uint32_t size) {

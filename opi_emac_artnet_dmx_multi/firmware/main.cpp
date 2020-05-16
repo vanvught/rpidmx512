@@ -31,14 +31,12 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "artnetconst.h"
+#include "artnetmsgconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -117,8 +115,7 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -127,8 +124,7 @@ void notmain(void) {
 
 	ArtNet4Node node;
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_PARAMS);
-	display.TextStatus(ArtNetConst::MSG_NODE_PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS);
+	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	artnetParams.Set(&node);
 
@@ -220,10 +216,9 @@ void notmain(void) {
 			pDiscovery->Print();
 
 			if (artnetParams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, ArtNetConst::MSG_RDM_RUN);
-				display.TextStatus(ArtNetConst::MSG_RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN);
+				display.TextStatus(ArtNetMsgConst::RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN, CONSOLE_YELLOW);
 
-				for (uint32_t i = 0; i < ARTNET_MAX_PORTS; i++) {
+				for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
 					uint8_t nAddress;
 					if (node.GetUniverseSwitch(i, nAddress)) {
 						pDiscovery->Full(i);
@@ -275,13 +270,11 @@ void notmain(void) {
 		printf("Remote configuration is disabled\n");
 	}
 
-	console_status(CONSOLE_YELLOW, ArtNetConst::MSG_NODE_START);
-	display.TextStatus(ArtNetConst::MSG_NODE_START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START);
+	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	console_status(CONSOLE_GREEN, ArtNetConst::MSG_NODE_STARTED);
-	display.TextStatus(ArtNetConst::MSG_NODE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED);
+	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

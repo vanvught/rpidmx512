@@ -2,12 +2,7 @@
  * @file ina219.c
  *
  */
-/* This code is inspired by:
- *
- * https://github.com/jarzebski/Arduino-INA219
- *
- */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +38,9 @@ struct _ina219_info {
 	float v_shunt_max;
 	float v_bus_max;
 	float r_shunt;
-} static ina219_info[0x10] __attribute__((aligned(4)));
+};
+
+static struct _ina219_info ina219_info[0x10] __attribute__((aligned(4)));
 
 #define INA219_REG_CONFIG			0x00	///<
 #define INA219_REG_SHUNTVOLTAGE		0x01	///<

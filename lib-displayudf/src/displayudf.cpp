@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "displayudf.h"
 #include "display.h"
@@ -39,7 +39,7 @@
 
 DisplayUdf *DisplayUdf::s_pThis = 0;
 
-DisplayUdf::DisplayUdf(void): Display(DISPLAY_SSD1306) {
+DisplayUdf::DisplayUdf(void): Display(DisplayType::SSD1306) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -59,7 +59,7 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	va_list arp;
 	va_start(arp, format);
 
-	const uint32_t i = vsnprintf(m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
+	const int i = vsnprintf(m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
 
 	va_end(arp);
 

@@ -29,7 +29,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hal_gpio.h"
 #include "hal_spi.h"

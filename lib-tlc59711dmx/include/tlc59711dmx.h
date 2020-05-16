@@ -27,7 +27,6 @@
 #define TLC59711DMX_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "lightset.h"
 

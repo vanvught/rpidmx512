@@ -27,7 +27,6 @@
 #define PROPERTIESBUILDER_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <time.h>
 
 class PropertiesBuilder {

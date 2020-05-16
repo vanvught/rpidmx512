@@ -96,11 +96,11 @@ void L6470::Dump(void) {
 	printf("0C:KVAL_Dec   - Deceleration starting KVAL: %d\n", static_cast<int>(getDecKVAL()));
 	printf("0D:INT_SPEED  - Intersect speed: 0x%.4X (raw)\n", static_cast<unsigned int>(getParam(L6470_PARAM_INT_SPD)));
 	reg = getParam(L6470_PARAM_ST_SLP);
-	printf("0E:ST_SLP     - Start slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
+	printf("0E:ST_SLP     - Start slope: %.3f%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_FN_SLP_ACC);
-	printf("0F:FN_SLP_ACC - Acceleration final slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
+	printf("0F:FN_SLP_ACC - Acceleration final slope: %.3f%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_FN_SLP_DEC);
-	printf("10:FN_SLP_DEC - Deceleration final slope: %.3f\%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
+	printf("10:FN_SLP_DEC - Deceleration final slope: %.3f%% s/step (0x%.2X)\n", SlpCalcValueReg(reg) * 100, reg);
 	reg = getParam(L6470_PARAM_K_THERM);
 	printf("11:K_THERM    - Thermal compensation factor: %.3f (0x%.2X)\n", KThermCalcValueReg(reg), reg);
 	reg = getParam(L6470_PARAM_ADC_OUT);

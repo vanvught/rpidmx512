@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <uuid/uuid.h>
@@ -35,8 +34,8 @@
 
 #include "debug.h"
 
-constexpr char EXT_UID[] = ".uid";
-constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
+static constexpr char EXT_UID[] = ".uid";
+static constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
 
 E131Uuid::E131Uuid(void) {
 	DEBUG_ENTRY

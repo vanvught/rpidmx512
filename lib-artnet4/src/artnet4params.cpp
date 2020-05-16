@@ -31,7 +31,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "debug.h"
 
@@ -43,8 +43,6 @@
 #include "sscan.h"
 
 #include "spiflashstore.h"
-
-#define BOOL2STRING(b)				(b) ? "Yes" : "No"
 
 ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
 	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : SpiFlashStore::Get()->GetStoreArtNet()),
@@ -112,8 +110,13 @@ void ArtNet4Params::callbackFunction(const char* pLine) {
 	uint8_t value8;
 
 	if (Sscan::Uint8(pLine, ArtNet4ParamsConst::MAP_UNIVERSE0, &value8) == SSCAN_OK) {
-		m_tArtNet4Params.bMapUniverse0 = (value8 != 0);
-		m_tArtNet4Params.nSetList |= ARTNET4_PARAMS_MASK_MAP_UNIVERSE0;
+		if (value8 != 0) {
+			m_tArtNet4Params.bMapUniverse0 = 1;
+			m_tArtNet4Params.nSetList |= ArtNet4ParamsMask::MAP_UNIVERSE0;
+		} else {
+			m_tArtNet4Params.bMapUniverse0 = 0;
+			m_tArtNet4Params.nSetList &= ~ArtNet4ParamsMask::MAP_UNIVERSE0;
+		}
 		return;
 	}
 }
@@ -124,8 +127,8 @@ void ArtNet4Params::Dump(void) {
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
-	if(isMaskSet(ARTNET4_PARAMS_MASK_MAP_UNIVERSE0)) {
-		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, BOOL2STRING(m_tArtNet4Params.bMapUniverse0));
+	if(isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0)) {
+		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, BOOL2STRING::Get(m_tArtNet4Params.bMapUniverse0));
 	}
 #endif
 }

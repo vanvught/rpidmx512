@@ -2,7 +2,7 @@
  * @file ili9340.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,7 +64,9 @@ struct char_info {
 	int ch;
 	uint16_t fore;
 	uint16_t back;
-} static shadow_ram[(ILI9340_HEIGHT / FONT_CHAR_H) * (ILI9340_WIDTH / FONT_CHAR_W)] __attribute__((aligned(4)));
+};
+
+static struct char_info shadow_ram[(ILI9340_HEIGHT / FONT_CHAR_H) * (ILI9340_WIDTH / FONT_CHAR_W)] __attribute__((aligned(4)));
 
 inline static void write_command(uint8_t c) {
 	FUNC_PREFIX(gpio_clr(D_C));
@@ -166,7 +168,7 @@ static void _setup(void) {
 }
 
 int ili9340_init(void) {
-	int i;
+	unsigned i;
 
 	FUNC_PREFIX(spi_begin());;
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
@@ -180,7 +182,7 @@ int ili9340_init(void) {
 	uint32_t *p = (uint32_t *)buffer;
 
 	for (i = 0; i < sizeof(buffer) / sizeof(buffer[0] / 2); i++) {
-		*p++ = cur_back << 16 | cur_back;
+		*p++ = (uint32_t)(cur_back << 16 | cur_back);
 	}
 
 	ili9340_clear();
@@ -239,23 +241,23 @@ inline static void _draw_char(int c, uint32_t x, uint32_t y, uint16_t fore, uint
 }
 
 static void draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t back) {
-	_draw_char(ch, x * FONT_CHAR_W, y * FONT_CHAR_H, fore, back);
+	_draw_char(ch, (uint32_t)(x * FONT_CHAR_W), (uint32_t)(y * FONT_CHAR_H), fore, back);
 
-	const uint32_t index = y + x * 40;
+	const uint32_t index = (uint32_t)(y + x * 40);
 	shadow_ram[index].ch = ch;
 	shadow_ram[index].fore = fore;
 	shadow_ram[index].back = back;
 }
 
 static void scroll(void) {
-	int i;
+	uint32_t i;
 
 	for (i = 0; i < (40 * 29); i++) {
 		const int ch = (int) shadow_ram[i + 40].ch;
 		const uint16_t fore = shadow_ram[i + 40].fore;
 		const uint16_t back = shadow_ram[i + 40].back;
-		const uint32_t x = i / 40;
-		const uint32_t y = i - 40 * x;
+		const uint32_t x = (i / 40);
+		const uint32_t y = (i - 40 * x);
 
 		draw_char(ch, x, y, fore, back);
 	}
@@ -460,14 +462,14 @@ void ili9340_set_fg_color(uint16_t fore) {
 }
 
 void ili9340_set_bg_color(uint16_t back) {
-	int i;
+	unsigned i;
 
 	cur_back = back;
 
 	uint32_t *p = (uint32_t *)buffer;
 
 	for (i = 0; i < sizeof(buffer) / sizeof(buffer[0] / 2); i++) {
-		*p++ = (back << 16) | back;
+		*p++ = (uint32_t)((back << 16) | back);
 	}
 }
 

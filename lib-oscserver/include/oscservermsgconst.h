@@ -1,5 +1,5 @@
 /**
- * @file oscconst.cpp
+ * @file oscservermsgconst.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,7 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include "oscconst.h"
+#ifndef OSCSERVERMSGCONST_H_
+#define OSCSERVERMSGCONST_H_
 
-const char OscConst::PARAMS_INCOMING_PORT[] = "incoming_port";
-const char OscConst::PARAMS_OUTGOING_PORT[] = "outgoing_port";
+class OscServerMsgConst {
+public:
+	static const char PARAMS[];
+	static const char START[];
+	static const char STARTED[];
+};
+
+#endif /* OSCSERVERMSGCONST_H_ */

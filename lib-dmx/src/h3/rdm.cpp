@@ -24,7 +24,7 @@
  */
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "dmx.h"
 
@@ -88,7 +88,7 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 
 	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
 
-	DmxSet::Get()->RdmSendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmData), nLength);
+	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 

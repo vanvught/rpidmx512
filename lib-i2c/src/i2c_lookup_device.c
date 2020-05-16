@@ -2,7 +2,7 @@
  * @file i2c_lookup_device.c
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 struct device_details {
 	const uint8_t slave_address;
 	const char *name;
-} static const devices[] __attribute__((aligned(4))) = {
+};
+
+static const struct device_details devices[] __attribute__((aligned(4))) = {
 		{ 0x18, "MCP9808 {Temperature Sensor}" },
 		{ 0x20, "MCP23017 {16-bit I/O port}"},
 		{ 0x23, "BH1750FVI {Ambient Light Sensor}" },

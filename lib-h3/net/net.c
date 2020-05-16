@@ -49,7 +49,7 @@ extern int dhcp_client(const uint8_t *, struct ip_info *, const uint8_t *);
 
 static struct ip_info s_ip_info;
 static uint8_t s_mac_address[ETH_ADDR_LEN] __attribute__ ((aligned (4)));
-static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* including a terminating null byte. */;
+static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* including a terminating null byte. */
 
 static uint8_t *s_p;
 

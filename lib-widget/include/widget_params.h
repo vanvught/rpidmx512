@@ -74,7 +74,7 @@ extern void widget_params_init(void);
 extern void widget_params_get(/*@out@*/struct _widget_params *);
 extern void widget_params_set(/*@out@*/const struct _widget_params *);
 extern void widget_params_get_type_id(struct _widget_params_data *);
-extern const uint8_t widget_params_get_throttle(void);
+extern uint8_t widget_params_get_throttle(void);
 extern void widget_params_set_throttle(const uint8_t);
 
 #ifdef __cplusplus

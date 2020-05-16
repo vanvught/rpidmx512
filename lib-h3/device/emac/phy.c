@@ -43,13 +43,13 @@
 
 static int _phy_read(int addr, int reg) {
 	uint32_t miiaddr = 0;
-	int timeout = CONFIG_MDIO_TIMEOUT;
+	uint32_t timeout = CONFIG_MDIO_TIMEOUT;
 
-	miiaddr &= ~MDIO_CMD_MII_WRITE;
-	miiaddr &= ~MDIO_CMD_MII_PHY_REG_ADDR_MASK;
+	miiaddr &= (uint32_t) ~MDIO_CMD_MII_WRITE;
+	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_REG_ADDR_MASK;
 	miiaddr |= (reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
 
-	miiaddr &= ~MDIO_CMD_MII_PHY_ADDR_MASK;
+	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_ADDR_MASK;
 	miiaddr |= (addr << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK;
 
 	miiaddr |= MDIO_CMD_MII_BUSY;
@@ -59,7 +59,7 @@ static int _phy_read(int addr, int reg) {
 	uint32_t start = h3_hs_timer_lo_us();
 	while (h3_hs_timer_lo_us() - start < timeout) {
 		if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY)) {
-			return H3_EMAC->MII_DATA;
+			return (int) H3_EMAC->MII_DATA;
 		}
 		udelay(10);
 	};
@@ -74,12 +74,12 @@ int phy_read(int addr, int reg) {
 
 int phy_write(int addr, int reg, uint16_t val) {
 	uint32_t miiaddr = 0;
-	int timeout = CONFIG_MDIO_TIMEOUT;
+	uint32_t timeout = CONFIG_MDIO_TIMEOUT;
 
-	miiaddr &= ~MDIO_CMD_MII_PHY_REG_ADDR_MASK;
+	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_REG_ADDR_MASK;
 	miiaddr |= (reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
 
-	miiaddr &= ~MDIO_CMD_MII_PHY_ADDR_MASK;
+	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_ADDR_MASK;
 	miiaddr |= (addr << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK;
 
 	miiaddr |= MDIO_CMD_MII_WRITE;
@@ -109,7 +109,7 @@ uint32_t phy_get_id(int addr) {
 		return 0;
 	}
 
-	phy_id = (phy_reg & 0xffff) << 16;
+	phy_id = (uint32_t)((phy_reg & 0xffff) << 16);
 
 	phy_reg = phy_read(addr, MII_PHYSID2);
 

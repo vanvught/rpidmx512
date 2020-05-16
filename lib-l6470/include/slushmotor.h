@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,12 @@
 #define SLUSHMOTOR_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #include "l6470.h"
 
 class SlushMotor: public L6470 {
 public:
-	SlushMotor(int, bool bUseSPI = true);
+	SlushMotor(unsigned, bool bUseSPI = true);
 	~SlushMotor(void);
 
 	int busyCheck(void);
@@ -63,8 +62,8 @@ private:
 	uint8_t SPIXfer(uint8_t);
 
 private:
-	int m_nSpiChipSelect;
-	int m_nBusyPin;
+	unsigned m_nSpiChipSelect;
+	unsigned m_nBusyPin;
 	bool m_bUseSpiBusy;
 	bool m_bIsBusy;
 	bool m_bIsConnected;

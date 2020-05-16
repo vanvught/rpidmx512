@@ -49,7 +49,6 @@ public:
 
 	void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress);
 
-public:
 	static StoreMotors *Get(void) {
 		return s_pThis;
 	}

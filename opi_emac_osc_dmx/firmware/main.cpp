@@ -31,7 +31,6 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "console.h"
 #include "display.h"
 
 #include "networkconst.h"
@@ -41,6 +40,7 @@
 
 #include "oscserver.h"
 #include "oscserverparms.h"
+#include "oscservermsgconst.h"
 
 // DMX Out
 #include "dmxparams.h"
@@ -59,17 +59,13 @@
 
 #include "displayhandler.h"
 
-constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
-constexpr char START_BRIDGE[] = "Starting the Bridge ...";
-constexpr char BRIDGE_STARTED[] = "Bridge started";
-
 extern "C" {
 
 void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
 	LedBlink lb;
-	Display display(DISPLAY_SSD1306);
+	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -91,8 +87,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	console_status(CONSOLE_YELLOW, NetworkConst::MSG_NETWORK_INIT);
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -105,8 +100,7 @@ void notmain(void) {
 	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
 	mDns.Print();
 
-	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
-	display.TextStatus(BRIDGE_PARMAS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS);
+	display.TextStatus(OscServerMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	DMXSend dmx;
 	DMXParams dmxparams(&storeDmxSend);
@@ -143,15 +137,13 @@ void notmain(void) {
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
-	console_status(CONSOLE_YELLOW, START_BRIDGE);
-	display.TextStatus(START_BRIDGE, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START);
+	display.TextStatus(OscServerMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	server.Start();
 
 	hw.SetLed(HARDWARE_LED_FLASH);
 
-	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
-	display.TextStatus(BRIDGE_STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED);
+	display.TextStatus(OscServerMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	while (spiFlashStore.Flash())
 		;

@@ -24,10 +24,9 @@
  */
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <string.h>
 #include <netinet/in.h>
-#include <assert.h>
+#include <cassert>
 
 #include "debug.h"
 
@@ -151,7 +150,7 @@ void NetworkH3emac::MacAddressCopyTo(uint8_t *pMacAddress) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::JoinGroup(uint32_t nHandle, uint32_t nIp) {
+void NetworkH3emac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_join(nIp);
@@ -159,7 +158,7 @@ void NetworkH3emac::JoinGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::LeaveGroup(uint32_t nHandle, uint32_t nIp) {
+void NetworkH3emac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_leave(nIp);
@@ -167,11 +166,11 @@ void NetworkH3emac::LeaveGroup(uint32_t nHandle, uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-uint16_t NetworkH3emac::RecvFrom(uint32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+uint16_t NetworkH3emac::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
 	return udp_recv(nHandle, reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkH3emac::SendTo(uint32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void NetworkH3emac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(nHandle, reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 

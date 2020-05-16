@@ -30,17 +30,13 @@
 
 void OSCMessage::Dump(void) {
 #ifndef NDEBUG
-	printf("types %s\n", m_Types);
-	printf("typelen %u\n", m_Typelen);
-	printf("typesize %u\n", m_Typesize);
-	printf("datalen %u\n", m_Datalen);
-	printf("datasize %u\n", m_Datasize);
+	printf("m_Types [%.*s], m_Typelen=%u, m_Typesize=%u\n", m_nTypesLength, m_pTypes, m_nTypesLength, m_nTypesRealSize);
+	printf("m_Datalen=%u, m_Datasize=%u\n", m_nDatalen, m_nDatasize);
 
-	printf("data : ");
-	if (m_Data != 0) {
-		char *p = reinterpret_cast<char*>(m_Data);
-		for (unsigned i = 0; i < m_Datasize; i++) {
-			printf("%x ", p[i]);
+	if (m_pData != 0) {
+		char *p = reinterpret_cast<char*>(m_pData);
+		for (unsigned i = 0; i < m_nDatasize; i++) {
+			printf("%2x ", p[i] & 0xFF);
 		}
 		printf("\n");
 	} else {

@@ -44,7 +44,7 @@ DmxInput::~DmxInput(void) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(uint8_t nPort) {
+void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -58,7 +58,7 @@ void DmxInput::Start(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(uint8_t nPort) {
+void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -72,14 +72,14 @@ void DmxInput::Stop(uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
 	const uint8_t *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != 0) {
 		const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-		nLength = dmx_statistics->Statistics.SlotsInPacket;
+		nLength = static_cast<uint16_t>(dmx_statistics->Statistics.SlotsInPacket);
 		return (pDmx + 1);
 	}
 

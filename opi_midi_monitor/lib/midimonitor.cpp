@@ -22,6 +22,7 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -36,19 +37,13 @@
 
 #include "h3_hs_timer.h"
 
-#ifndef MIN
- #define MIN(a,b)               (((a) < (b)) ? (a) : (b))
-#endif
-
+static char s_aTimecode[] __attribute__ ((aligned (4))) =  "--:--:--;-- -----";
 static uint8_t s_Qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static char s_aTimecode[] __attribute__ ((aligned (4))) =  "--:--:--;-- -----";
-#define TIMECODE_LENGTH	(sizeof(s_aTimecode) - 1)
-
-constexpr char aTypes[4][8] = {"Film " , "EBU  " , "DF   " , "SMPTE" };
-
-#define ROW				1
-#define COLUMN			80
+static constexpr auto ROW = 1;
+static constexpr auto COLUMN = 80;
+static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
+static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
 	char *p = pBuffer;
@@ -77,9 +72,9 @@ MidiMonitor::~MidiMonitor(void) {
 }
 
 void MidiMonitor::Init(void) {
-	//                                   1         2         3         4
-	//                          1234567890123456789012345678901234567890
-	const char aHeaderLine[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
+	//                                       1         2         3         4
+	//                              1234567890123456789012345678901234567890
+	constexpr char aHeaderLine[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
 
 	console_set_fg_bg_color(CONSOLE_BLACK,CONSOLE_WHITE);
 	console_set_cursor(0, 3);
@@ -99,12 +94,12 @@ void MidiMonitor::Update(uint8_t nType) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_CYAN);
-	console_write(s_aTimecode, TIMECODE_LENGTH);
+	console_write(s_aTimecode, TC_LENGTH);
 	console_restore_cursor();
 
 	if (nType != m_nTypePrevious) {
 		m_nTypePrevious = nType;
-		memcpy(&s_aTimecode[12], aTypes[nType], 5);
+		memcpy(&s_aTimecode[12], TC_TYPES[nType], 5);
 	}
 }
 
@@ -280,7 +275,7 @@ void MidiMonitor::HandleMessage(void) {
 				printf(", [%d] ", m_pMidiMessage->bytes_count);
 				{
 					uint8_t c;
-					for (c = 0; c < MIN(m_pMidiMessage->bytes_count, 16); c++) {
+					for (c = 0; c < std::min(m_pMidiMessage->bytes_count, static_cast<uint8_t>(16)); c++) {
 						console_puthex(m_pMidiMessage->system_exclusive[c]);
 						console_putc(' ');
 					}

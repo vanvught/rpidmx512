@@ -248,7 +248,7 @@ void igmp_timer(void) {
 // --> Public
 
 int igmp_join(uint32_t group_address) {
-	uint32_t i;
+	int i;
 
 	if ((group_address& 0xE0) != 0xE0) {
 		return -1;
@@ -258,13 +258,13 @@ int igmp_join(uint32_t group_address) {
 		return -2;
 	}
 
-	for (i = 0; i < s_joins_allowed_index; i++) {
+	for (i = 0; i < (int) s_joins_allowed_index; i++) {
 		if (s_groups[i].group_address == group_address) {
 			return i;
 		}
 	}
 
-	const int current_index = s_joins_allowed_index;
+	const int current_index = (int) s_joins_allowed_index;
 
 	s_groups[s_joins_allowed_index].group_address = group_address;
 	s_groups[s_joins_allowed_index].state = DELAYING_MEMBER;

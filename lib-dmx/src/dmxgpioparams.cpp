@@ -28,7 +28,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "dmxgpioparams.h"
 #include "dmxgpioparamsconst.h"
@@ -38,15 +38,11 @@
 
 #include "gpio.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-#define DATA_DIRECTION_MASK			(1 << 0)
-#define DATA_DIRECTION_OUT_A_MASK	(1 << 1)
-#define DATA_DIRECTION_OUT_B_MASK	(1 << 2)
-#define DATA_DIRECTION_OUT_C_MASK	(1 << 3)
-#define DATA_DIRECTION_OUT_D_MASK	(1 << 4)
+#define DATA_DIRECTION_MASK			(1U << 0)
+#define DATA_DIRECTION_OUT_A_MASK	(1U << 1)
+#define DATA_DIRECTION_OUT_B_MASK	(1U << 2)
+#define DATA_DIRECTION_OUT_C_MASK	(1U << 3)
+#define DATA_DIRECTION_OUT_D_MASK	(1U << 4)
 
 DmxGpioParams::DmxGpioParams(void):
 		m_nSetList(0),

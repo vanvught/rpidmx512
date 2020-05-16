@@ -29,7 +29,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
+#include <cassert>
 
 #include "artnetpolltable.h"
 
@@ -148,7 +148,7 @@ void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
 	uint32_t *p32 = pTableUniverses->pIpAddresses;
 	int32_t i;
 
-	for (i = nIpAddressIndex; i < static_cast<int32_t>(pTableUniverses->nCount) - 1; i++) {
+	for (i = static_cast<int32_t>(nIpAddressIndex); i < static_cast<int32_t>(pTableUniverses->nCount) - 1; i++) {
 		p32[i] = p32[i + 1];
 	}
 
@@ -161,7 +161,7 @@ void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
 
 		TArtNetPollTableUniverses *p = m_pTableUniverses;
 
-		for (i = nEntry; i < static_cast<int32_t>(m_nTableUniversesEntries) - 1; i++) {
+		for (i = static_cast<int32_t>(nEntry); i < static_cast<int32_t>(m_nTableUniversesEntries) - 1; i++) {
 			p[i].nUniverse = p[i + 1].nUniverse;
 			p[i].nCount = p[i + 1].nCount;
 			p[i].pIpAddresses = p[i + 1].pIpAddresses;
@@ -241,10 +241,10 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 	const uint32_t nIpSwap = __builtin_bswap32(ip.u32);
 
-	uint32_t i;
+	int32_t i;
 	int32_t nLow = 0;
 	int32_t nMid;
-	int32_t nHigh = m_nPollTableEntries;
+	int32_t nHigh = static_cast<int32_t>(m_nPollTableEntries);
 
 	while (nLow <= nHigh) {
 		nMid = nLow + ((nHigh - nLow) / 2);
@@ -286,7 +286,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 			i = nLow;
 		} else {
-			i = m_nPollTableEntries;
+			i = static_cast<int32_t>(m_nPollTableEntries);
 			DEBUG_PRINTF("Add -> i=%d", i);
 		}
 
@@ -306,7 +306,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
 
-	for (uint32_t nIndex = 0; nIndex < ARTNET_MAX_PORTS; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < TArtNetConst::MAX_PORTS; nIndex++) {
 		const uint8_t nPortAddress = ptArtPollReply->SwOut[nIndex];
 
 		if (ptArtPollReply->PortTypes[nIndex] == ARTNET_ENABLE_OUTPUT) {

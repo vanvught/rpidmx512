@@ -42,7 +42,6 @@ public:
 
 	void SaveLabel(const char *pLabel, uint8_t nLength);
 
-public:
 	static StoreRDMDevice *Get(void) {
 		return s_pThis;
 	}

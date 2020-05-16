@@ -30,7 +30,8 @@
 
 class ShowFileProtocolHandler {
 public:
-	virtual ~ShowFileProtocolHandler(void) {}
+	virtual ~ShowFileProtocolHandler(void) {
+	}
 
 	virtual void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength)=0;
 	virtual void DmxSync(void)=0;
