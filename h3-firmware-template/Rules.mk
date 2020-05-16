@@ -114,8 +114,11 @@ LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float  -fno-unwind-tables -fprefetch-loop-arrays
-COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard
+COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
+COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
+COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  #-Wconversion
+
+CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
@@ -127,7 +130,7 @@ OBJECTS:=$(ASM_OBJECTS) $(C_OBJECTS)
 
 define compile-objects
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -Wold-style-cast $(COPS) -c $$< -o $$@	
+	$(CPP) $(COPS) $(CPPOPS) -c $$< -o $$@	
 
 $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
@@ -145,6 +148,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
 ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor

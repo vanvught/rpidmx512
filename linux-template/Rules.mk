@@ -2,7 +2,7 @@ PREFIX ?=
 DEF ?= 
 
 CC	= $(PREFIX)gcc
-CPP?=$(PREFIX)g++
+CPP =$(PREFIX)g++
 AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
@@ -16,6 +16,11 @@ else
 endif
 
 DEFINES:=$(addprefix -D,$(DEFINES))
+
+detected_OS := $(shell uname 2>/dev/null || echo Unknown)
+detected_OS := $(patsubst CYGWIN%,Cygwin,$(detected_OS))
+
+$(info $$detected_OS [${detected_OS}])
 
 ifeq ($(detected_OS),Darwin) 
 endif
@@ -72,7 +77,19 @@ LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=$(DEFINES) #-DNDEBUG
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-Wall -Werror -O2
+COPS+=-O2 -Wall -Werror -Wextra -pedantic -Wunused -Wsign-conversion #-Wconversion
+
+CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
+ifeq ($(detected_OS),Darwin) 
+else
+CCPOPS+=-Wuseless-cast -Wold-style-cast
+endif
+
+ifeq ($(detected_OS),Cygwin)
+	CCPOPS+=-std=gnu++11
+else
+	CCPOPS+=-std=c++11
+endif
 
 SOURCE = ./
 
@@ -94,7 +111,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -Wold-style-cast -c $$< -o $$@	
+	$(CPP) $(COPS) $(CCPOPS) -c $$< -o $$@	
 endef
 
 THISDIR = $(CURDIR)
@@ -105,6 +122,7 @@ all : clearlibs builddirs prerequisites $(TARGET)
 
 clearlibs:
 	$(MAKE) -f Makefile.Linux clean --directory=../lib-remoteconfig
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-spiflashstore
 ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
 	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdm
 	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdmsensor

@@ -1,10 +1,10 @@
 PREFIX ?=
 
-CC?=$(PREFIX)gcc
-CPP?=$(PREFIX)g++
-AS?=$(CC)
-LD?=$(PREFIX)ld
-AR?=$(PREFIX)ar
+CC=$(PREFIX)gcc
+CPP=$(PREFIX)g++
+AS=$(CC)
+LD=$(PREFIX)ld
+AR=$(PREFIX)ar
 
 $(info [${CURDIR}])
 
@@ -49,13 +49,12 @@ $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
  
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-O2 -Wall -Werror -Wunused #-Wpedantic -Wextra  #-Wconversion
+COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion #-Wconversion
 
-# -Wold-style-cast 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
 ifeq ($(detected_OS),Darwin) 
 else
-CCPOPS+=-Wuseless-cast
+CCPOPS+=-Wuseless-cast -Wold-style-cast
 endif
 
 ifeq ($(detected_OS),Cygwin)

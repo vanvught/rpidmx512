@@ -18,7 +18,7 @@ endif
 
 SRCDIR = src src/h3 $(EXTRA_SRCDIR)
 
-INCLUDES:= -I./include -I../include -I../lib-ledblink/include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
@@ -48,9 +48,11 @@ $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 COPS=-DBARE_METAL -DH3 $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mhard-float -mfloat-abi=hard
-COPS+=-O2 -Wall -Werror -Wunused #-Wpedantic #-Wextra  #-Wconversion #-Wcast-align
-COPS+= -nostartfiles -ffreestanding -nostdinc -nostdlib -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays
+COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
+COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
+COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion #-Wconversion 
+
+CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
@@ -70,14 +72,12 @@ $(info $$TARGET [${TARGET}])
 
 LIST = lib.list
 
-#-Wuseless-cast
-
 define compile-objects
 $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -std=c++11 -fno-rtti -Wold-style-cast -Wnon-virtual-dtor -c $$< -o $$@
+	$(CPP) $(COPS) $(CPPOPS)  -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
