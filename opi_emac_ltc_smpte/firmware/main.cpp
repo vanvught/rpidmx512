@@ -85,6 +85,14 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
+// LLRP Only Device
+#include "rdmnetllrponly.h"
+#include "rdm_e120.h"
+
+// LLRP Handler
+#include "factorydefaults.h"
+
+// Reboot handler
 #include "reboot.h"
 
 #include "firmwareversion.h"
@@ -127,9 +135,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(new NetworkHandlerOled);
+	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -165,8 +173,7 @@ void notmain(void) {
 		ltcDisplayWS28xx.Print();
 	}
 
-	display.ClearLine(3);
-	display.Printf(3, IPSTR "/%d %c", IP2STR(nw.GetIp()), static_cast<int>(nw.GetNetmaskCIDR()), nw.IsDhcpKnown() ? (nw.IsDhcpUsed() ? 'D' : 'S') : ' ');
+	NetworkHandlerOled::Get()->ShowIp();
 
 	TLtcReaderSource source = ltcParams.GetSource();
 
@@ -363,10 +370,17 @@ void notmain(void) {
 		break;
 	}
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
+	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+//	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	rdmNetLLRPOnly.Init();
+	rdmNetLLRPOnly.Print();
+	rdmNetLLRPOnly.Start();
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
@@ -457,7 +471,8 @@ void notmain(void) {
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
-
+		//
+		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

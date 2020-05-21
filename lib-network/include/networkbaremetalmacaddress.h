@@ -2,7 +2,7 @@
  * @file networkbaremetalmacaddress.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@ public:
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	// Dummy methods
+	// Dummy methods - not implemented virtual
 
 	int32_t Begin(__attribute__((unused)) uint16_t nPort) {
 		return 0;
@@ -57,14 +57,20 @@ public:
 		return 0;
 	}
 	void SendTo(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) const void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t nToIp, __attribute__((unused)) uint16_t nRemotePort) {
-
 	}
 
 	void SetIp(__attribute__((unused)) uint32_t nIp) {
 	}
 
 	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+	}
 
+	bool SetZeroconf(void) {
+		return false;
+	}
+
+	bool EnableDhcp(void) {
+		return false;
 	}
 };
 

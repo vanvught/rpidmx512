@@ -1,5 +1,5 @@
 /**
- * @file displayudfhandler.h
+ * @file factorydefaults.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,35 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYUDFHANDLER_H_
-#define DISPLAYUDFHANDLER_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-#include "displayudf.h"
+#include "rdmfactorydefaults.h"
 
-#include "networkdisplay.h"
+#include "remoteconfig.h"
+#include "spiflashstore.h"
 
-#include "dhcpclient.h"
+#include "debug.h"
 
-class DisplayUdfHandler: public NetworkDisplay {
+class FactoryDefaults: public RDMFactoryDefaults {
 public:
-	DisplayUdfHandler(void) {}
-	~DisplayUdfHandler(void) {}
-
-	void ShowIp(void) {
-		DisplayUdf::Get()->ShowIpAddress();
+	FactoryDefaults(void) {
+	}
+	~FactoryDefaults(void) {
 	}
 
-	void ShowNetMask(void) {
-		DisplayUdf::Get()->ShowNetmask();
-	}
+	void Set(void) {
+		DEBUG_ENTRY
 
-	void ShowHostName(void) {
-		DisplayUdf::Get()->ShowHostName();
-	}
+		RemoteConfig::Get()->SetDisable(false);
+		SpiFlashStore::Get()->ResetSetList(STORE_RDMDEVICE);
+		SpiFlashStore::Get()->GetStoreNetwork()->SaveDhcp(true);
 
-	void ShowDhcpStatus(DhcpClientStatus nStatus) {
-		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
+		DEBUG_EXIT
 	}
 };
 
-#endif /* DISPLAYUDFHANDLER_H_ */
+#endif /* FACTORYDEFAULTS_H_ */

@@ -36,6 +36,8 @@
 #include "networkdisplay.h"
 #include "networkstore.h"
 
+#include "dhcpclient.h"
+
 #include "hardware.h"
 
 #include "./../lib-h3/include/net/net.h"
@@ -101,7 +103,23 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_aHostName[sizeof(m_aHostName) - 1] = '\0';
 	}
 
-	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed);
+	if (!m_IsDhcpUsed && (tIpInfo.ip.addr == 0)) {
+		SetDefaultIp();
+
+		tIpInfo.ip.addr = m_nLocalIp;
+		tIpInfo.netmask.addr = m_nNetmask;
+		tIpInfo.gw.addr = m_nLocalIp;
+	}
+
+	if ((m_pNetworkDisplay != 0) && m_IsDhcpUsed) {
+		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+	}
+
+	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
+
+	if ((m_pNetworkDisplay != 0) && m_IsZeroconfUsed) {
+		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
+	}
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;
@@ -174,6 +192,19 @@ void NetworkH3emac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLengt
 	udp_send(nHandle, reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
+void NetworkH3emac::SetDefaultIp(void) {
+	DEBUG_ENTRY
+
+	m_nLocalIp = 2
+			+ ((static_cast<uint32_t>(m_aNetMacaddr[3])) << 8)
+			+ ((static_cast<uint32_t>(m_aNetMacaddr[4])) << 16)
+			+ ((static_cast<uint32_t>(m_aNetMacaddr[5])) << 24);
+	m_nNetmask = 255;
+	m_nGatewayIp = m_nLocalIp;
+
+	DEBUG_EXIT
+}
+
 void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
@@ -182,22 +213,23 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 	}
 
 	if (nIp == 0) {
-		struct ip_info tIpInfo;
-		net_set_default_ip(&tIpInfo);
-
-		m_nLocalIp = tIpInfo.ip.addr;
-		m_nNetmask = tIpInfo.netmask.addr;
-		m_nGatewayIp = tIpInfo.ip.addr; //tIpInfo.gw.addr; There is no gateway support
+		SetDefaultIp();
+		net_set_ip(m_nLocalIp);
+		// We do not store
 	} else {
 		net_set_ip(nIp);
+
 		m_nLocalIp = nIp;
-		m_IsDhcpUsed = false;
+		m_nGatewayIp = m_nLocalIp;
 
 		if (m_pNetworkStore != 0) {
 			m_pNetworkStore->SaveIp(nIp);
 			m_pNetworkStore->SaveDhcp(false);
 		}
 	}
+
+	m_IsDhcpUsed = false;
+	m_IsZeroconfUsed = false;
 
 	if (m_pNetworkDisplay != 0) {
 		m_pNetworkDisplay->ShowIp();
@@ -210,6 +242,7 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_ENTRY
 
 	if (m_nNetmask == nNetmask) {
+		DEBUG_EXIT
 		return;
 	}
 
@@ -236,24 +269,64 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 	}
 }
 
+bool NetworkH3emac::SetZeroconf(void) {
+	struct ip_info tIpInfo;
+
+	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
+
+	if (m_IsZeroconfUsed) {
+		m_nLocalIp = tIpInfo.ip.addr;
+		m_nNetmask = tIpInfo.netmask.addr;
+		m_nGatewayIp = tIpInfo.gw.addr;
+
+		m_IsDhcpUsed = false;
+
+		if (m_pNetworkStore != 0) {
+			m_pNetworkStore->SaveDhcp(true);	// Zeroconf is enabled only when use_dhcp=1
+		}
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowIp();
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowNetMask();
+	}
+
+	return m_IsZeroconfUsed;
+}
+
 bool NetworkH3emac::EnableDhcp(void) {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
 
-	bool bWatchdog = Hardware::Get()->IsWatchdog();
+	const bool bWatchdog = Hardware::Get()->IsWatchdog();
 
 	if (bWatchdog) {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	m_IsDhcpUsed =  net_set_dhcp(&tIpInfo);
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+	}
+
+	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
+
+	if (m_pNetworkDisplay != 0) {
+		if (m_IsZeroconfUsed) {
+			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
+		} else {
+			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::GOT_IP);
+		}
+	}
+
+	DEBUG_PRINTF("m_IsDhcpUsed=%d, m_IsZeroconfUsed=%d", m_IsDhcpUsed, m_IsZeroconfUsed);
 
 	if (bWatchdog) {
 		Hardware::Get()->WatchdogInit();
 	}
-
-	DEBUG_PRINTF("m_IsDhcpUsed=%d", m_IsDhcpUsed);
 
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;

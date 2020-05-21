@@ -38,4 +38,5 @@ void Network::Print(void) {
 	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	printf(" DHCP      : %s\n", GetDhcpMode() == TDhcpMode::UNKNOWN ? "Unknown" : (GetDhcpMode() == TDhcpMode::INACTIVE) ? "Inactive" : "Active");
+	printf(" Zeroconf  : %c\n", m_IsZeroconfUsed ? 'Y' : 'N');
 }

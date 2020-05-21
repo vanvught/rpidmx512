@@ -55,12 +55,16 @@ public:
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);
 	void SetHostName(const char *pHostName);
+	bool SetZeroconf(void);
 
 	bool EnableDhcp(void);
 
 	void Run(void) {
 		net_handle();
 	}
+
+private:
+	void SetDefaultIp(void);
 };
 
 #endif /* NETWORKH3EMAC_H_ */

@@ -178,6 +178,7 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E137_2_IPV4_DHCP_MODE,				&RDMHandler::GetDHCPMode,					&RDMHandler::SetDHCPMode,			4, false, false, true },
 	{E137_2_IPV4_ZEROCONF_MODE,			&RDMHandler::GetZeroconf,					&RDMHandler::SetZeroconf,			4, false, false, true },
 	{E137_2_IPV4_CURRENT_ADDRESS,		&RDMHandler::GetAddressNetmask,				0,									4, false, false, true },
+	{E137_2_INTERFACE_RENEW_DHCP, 		0,											&RDMHandler::RenewDhcp,				4, false, false, true },
 	{E137_2_IPV4_STATIC_ADDRESS,		&RDMHandler::GetStaticAddress,				&RDMHandler::SetStaticAddress,		4, false, false, true },
 	{E137_2_INTERFACE_APPLY_CONFIGURATION,0,										&RDMHandler::ApplyConfiguration,	4, false, false, true },
 	{E137_2_DNS_IPV4_NAME_SERVER,		&RDMHandler::GetNameServers,				0,									1, false, false, true },

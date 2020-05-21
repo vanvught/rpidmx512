@@ -98,9 +98,10 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmVersion;
 	private JMenuItem mntmLtcGenerator;
 	private JMenuItem mntmWsxxDisplay;
-	private JMenu mnNewMenu;
+	private JMenu mnLTC;
 	private JMenuItem mntmSytemTime;
 	private JMenuItem mntmNewMenuItem;
+	private JMenuItem mntmBroadcast;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -362,6 +363,14 @@ public class RemoteConfig extends JFrame {
 			}
 		});
 		
+		
+		mntmBroadcast.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BroadcastSelect broadcastSelect = new BroadcastSelect(localAddress, socketReceive);
+				broadcastSelect.Show();
+			}
+		});
+		
 		mntmLtcGenerator.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -514,24 +523,27 @@ public class RemoteConfig extends JFrame {
 		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
 		mnRun.add(mntmTftpClient);
 		
-		mnNewMenu = new JMenu("LTC");
-		mnRun.add(mnNewMenu);
+		mnLTC = new JMenu("LTC");
+		mnRun.add(mnLTC);
 		
 		mntmLtcGenerator = new JMenuItem("Generator");
-		mnNewMenu.add(mntmLtcGenerator);
+		mnLTC.add(mntmLtcGenerator);
 		mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
 		
 		mntmSytemTime = new JMenuItem("System time");
 		mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
-		mnNewMenu.add(mntmSytemTime);
+		mnLTC.add(mntmSytemTime);
 		
 		mntmNewMenuItem = new JMenuItem("TCNet");
 		mntmNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
-		mnNewMenu.add(mntmNewMenuItem);
+		mnLTC.add(mntmNewMenuItem);
 		
 		mntmWsxxDisplay = new JMenuItem("WS28xx Display");
 		mntmWsxxDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, InputEvent.ALT_MASK));
-		mnNewMenu.add(mntmWsxxDisplay);
+		mnLTC.add(mntmWsxxDisplay);
+		
+		mntmBroadcast = new JMenuItem("Broadcast");
+		mnRun.add(mntmBroadcast);
 		
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
@@ -757,6 +769,7 @@ public class RemoteConfig extends JFrame {
 					}
 				}
 			} catch (SocketTimeoutException e) {
+//				 Toolkit.getDefaultToolkit().beep();
 				System.out.println("No more messages.");
 			} catch (IOException e) {
 				e.printStackTrace();

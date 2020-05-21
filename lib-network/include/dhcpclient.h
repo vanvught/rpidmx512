@@ -1,5 +1,5 @@
 /**
- * @file displayudfhandler.h
+ * @file dhcpclient.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,35 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYUDFHANDLER_H_
-#define DISPLAYUDFHANDLER_H_
+#ifndef DHCPCLIENT_H_
+#define DHCPCLIENT_H_
 
-#include "displayudf.h"
-
-#include "networkdisplay.h"
-
-#include "dhcpclient.h"
-
-class DisplayUdfHandler: public NetworkDisplay {
-public:
-	DisplayUdfHandler(void) {}
-	~DisplayUdfHandler(void) {}
-
-	void ShowIp(void) {
-		DisplayUdf::Get()->ShowIpAddress();
-	}
-
-	void ShowNetMask(void) {
-		DisplayUdf::Get()->ShowNetmask();
-	}
-
-	void ShowHostName(void) {
-		DisplayUdf::Get()->ShowHostName();
-	}
-
-	void ShowDhcpStatus(DhcpClientStatus nStatus) {
-		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
-	}
+enum class DhcpClientStatus {
+	IDLE,
+	RENEW,
+	GOT_IP,
+	FAILED
 };
 
-#endif /* DISPLAYUDFHANDLER_H_ */
+
+#endif /* DHCPCLIENT_H_ */

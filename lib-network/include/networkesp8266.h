@@ -2,7 +2,7 @@
  * @file networkesp8266.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,12 +50,22 @@ public:
 	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
-	 void SetIp(__attribute__((unused)) uint32_t nIp) {
+	void SetIp(__attribute__((unused))  uint32_t nIp) {
 		// Not supported
 	}
 
-	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+	void SetNetmask(__attribute__((unused))  uint32_t nNetmask) {
 		// Not supported
+	}
+
+	bool SetZeroconf(void) {
+		// Not supported
+		return false;
+	}
+
+	bool EnableDhcp(void) {
+		// Not supported
+		return false;
 	}
 
 private:

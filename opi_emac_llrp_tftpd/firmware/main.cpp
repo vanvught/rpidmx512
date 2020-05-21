@@ -75,9 +75,9 @@ void notmain(void) {
 
 	DisplayUdfHandler displayUdfHandler;
 
-	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	MDNS mDns;

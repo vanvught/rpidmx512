@@ -60,6 +60,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "displayudfhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
@@ -90,8 +91,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkDisplay(new DisplayUdfHandler);
+	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);

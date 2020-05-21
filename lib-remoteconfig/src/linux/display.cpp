@@ -54,7 +54,7 @@ Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused))
 	DEBUG_EXIT
 }
 
-Display::Display(__attribute__((unused)) TDisplayTypes tDisplayType):
+Display::Display(__attribute__((unused)) DisplayType tDisplayType):
 	m_nCols(0),
 	m_nRows(0),
 	m_LcdDisplay(0),
@@ -82,17 +82,32 @@ void Display::Cls(void) {
 	DEBUG_EXIT
 }
 
-void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) TDisplay7SegmentMessages nStatus) {
+void Display::TextStatus(__attribute__((unused)) const char *pText) {
+	DEBUG_PUTS(pText);
+}
+void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) uint16_t n7SegmentData, __attribute__((unused)) uint32_t nConsoleColor) {
+	DEBUG_PUTS(pText);
+}
+void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) uint8_t nValue7Segment, __attribute__((unused)) bool bHex) {
 	DEBUG_PUTS(pText);
 }
 
-uint8_t Display::Printf(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) char const*, ...){
+void Display::Status(__attribute__((unused)) uint16_t n7SegmentData) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+void Display::Status(__attribute__((unused)) uint8_t nValue7Segment, __attribute__((unused)) bool bHex) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+int Display::Printf(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) char const*, ...){
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return 0;
 }
 
-uint8_t Display::Write(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) const char *pText) {
+int Display::Write(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) const char *pText) {
 	DEBUG_PUTS(pText);
 	return 0;
 }

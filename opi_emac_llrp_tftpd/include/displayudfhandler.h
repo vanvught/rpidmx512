@@ -48,6 +48,10 @@ public:
 	void ShowHostName(void) {
 		DisplayUdf::Get()->ShowHostName();
 	}
+
+	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
+	}
 };
 
 #endif /* DISPLAYUDFHANDLER_H_ */

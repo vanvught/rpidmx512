@@ -37,8 +37,8 @@ struct TRemoteConfigParams {
 	bool bEnableReboot;
 	bool bEnableUptime;
 	char aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
-};
-// } __attribute__((packed)); TODO Check __attribute__((packed))
+	bool bDisableRdmNetLlrpOnly;
+} __attribute__((packed));
 
 struct RemoteConfigParamsMask {
 	static constexpr auto DISABLED = (1U << 0);
@@ -46,6 +46,7 @@ struct RemoteConfigParamsMask {
 	static constexpr auto ENABLE_REBOOT = (1U << 2);
 	static constexpr auto ENABLE_UPTIME = (1U << 3);
 	static constexpr auto DISPLAY_NAME = (1U << 4);
+	static constexpr auto DISABLE_RDMNET_LLRP_ONY = (1U << 5);
 };
 
 class RemoteConfigParamsStore {
@@ -72,6 +73,10 @@ public:
 
 	void Dump(void);
 
+	bool IsDisableRdmNetLlrpOnly(void) {
+		return m_tRemoteConfigParams.bDisableRdmNetLlrpOnly;
+	}
+
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
@@ -83,7 +88,7 @@ private:
 
 private:
 	RemoteConfigParamsStore *m_pRemoteConfigParamsStore;
-    struct TRemoteConfigParams m_tRemoteConfigParams;
+    TRemoteConfigParams m_tRemoteConfigParams;
 };
 
 #endif /* REMOTECONFIGPARAMS_H_ */

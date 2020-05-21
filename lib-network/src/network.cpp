@@ -39,13 +39,13 @@ Network::Network(void) :
 	m_nNetmask(0),
 	m_IsDhcpCapable(true),
 	m_IsDhcpUsed(false),
+	m_IsZeroconfCapable(true),
+	m_IsZeroconfUsed(false),
 	m_nIfIndex(1),
 	m_nNtpServerIp(0),
 	m_fNtpUtcOffset(0),
 	m_pNetworkDisplay(0),
-	m_pNetworkStore(0),
-	m_nQueuedLocalIp(0),
-	m_nQueuedNetmask(0)
+	m_pNetworkStore(0)
 {
 	assert(s_pThis == 0);
 	s_pThis = this;
@@ -60,27 +60,73 @@ Network::~Network(void) {
 	s_pThis = 0;
 }
 
-bool Network::SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask) {
-	DEBUG_PRINTF("bQueueing=%d, nLocalIp=" IPSTR ", nNetmask=" IPSTR, static_cast<int>(bQueueing), IP2STR(nLocalIp), IP2STR(nNetmask));
+void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nLocalIp), IP2STR(nNetmask));
 
-	if (bQueueing) {
-		m_nQueuedLocalIp = nLocalIp;
-		m_nQueuedNetmask = nNetmask;
-		return true;
+	if (nLocalIp != 0) {
+		m_QueuedConfig.nLocalIp = nLocalIp;
 	}
 
-	if (m_nQueuedLocalIp != 0) {
-
-		SetIp(m_nQueuedLocalIp);
-		SetNetmask(m_nQueuedNetmask);
-
-		m_nQueuedLocalIp = 0;
-		m_nQueuedNetmask = 0;
-
-		return true;
+	if (nNetmask != 0) {
+		m_QueuedConfig.nNetmask = nNetmask;
 	}
 
-	return false;
+	m_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
+	m_QueuedConfig.nMask |= QueuedConfig::NET_MASK;
+
+	DEBUG_EXIT
+}
+
+void Network::SetQueuedDhcp(void) {
+	DEBUG_ENTRY
+
+	m_QueuedConfig.nMask |= QueuedConfig::DHCP;
+
+	DEBUG_EXIT
+}
+
+void Network::SetQueuedZeroconf(void) {
+	DEBUG_ENTRY
+
+	m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
+
+	DEBUG_EXIT
+}
+
+bool Network::ApplyQueuedConfig(void) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("m_QueuedConfig.nMask=%x", m_QueuedConfig.nMask);
+
+	if (m_QueuedConfig.nMask == QueuedConfig::NONE) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if ((isQueuedMaskSet(QueuedConfig::STATIC_IP)) || (isQueuedMaskSet(QueuedConfig::NET_MASK))) {
+		if (isQueuedMaskSet(QueuedConfig::NET_MASK)) {
+			SetNetmask(m_nNetmask);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::NET_MASK);
+		}
+
+		if (isQueuedMaskSet(QueuedConfig::STATIC_IP)) {
+			SetIp(m_QueuedConfig.nLocalIp);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::STATIC_IP);
+		}
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::DHCP)) {
+		EnableDhcp();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::DHCP);
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::ZEROCONF)) {
+		SetZeroconf();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::ZEROCONF);
+	}
+
+	DEBUG_EXIT
+	return true;
 }
 
 uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
@@ -111,9 +157,4 @@ void Network::SetDomainName(const char *pDomainName) {
 
 	DEBUG_PUTS(m_aDomainName);
 	DEBUG_EXIT
-}
-
-bool Network::EnableDhcp(void) {
-	DEBUG_PUTS("false");
-	return false;
 }

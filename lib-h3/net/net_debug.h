@@ -31,7 +31,7 @@
 #ifndef NDEBUG
  #include <stdio.h>
  #ifndef IP2STR
-  #define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
+  #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
  #define IPSTR "%d.%d.%d.%d"
  #endif
  #ifndef MAC2STR

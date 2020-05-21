@@ -26,6 +26,8 @@
 #ifndef NETWORKDISPLAY_H_
 #define NETWORKDISPLAY_H_
 
+#include "dhcpclient.h"
+
 class NetworkDisplay {
 public:
 	virtual ~NetworkDisplay(void) {}
@@ -33,6 +35,7 @@ public:
 	virtual void ShowIp(void)=0;
 	virtual void ShowNetMask(void)=0;
 	virtual void ShowHostName(void)=0;
+	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
 };
 
 #endif /* INETWORKDISPLAY_H_ */

@@ -2,7 +2,7 @@
  * @file net.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,14 +48,15 @@ struct ip_info {
 extern "C" {
 #endif
 
-extern void net_init(const uint8_t *, struct ip_info *, const uint8_t *, bool *);
+extern void net_init(const uint8_t *, struct ip_info *, const uint8_t *, bool *, bool *);
 extern void net_handle(void);
 //
 extern void net_set_hostname(const char *name);
 //
 extern void net_set_ip(uint32_t);
-extern void net_set_default_ip(struct ip_info *);
-extern bool net_set_dhcp(struct ip_info *);
+extern bool net_set_dhcp(struct ip_info *, bool *);
+//
+extern bool net_set_zeroconf(struct ip_info *);
 //
 extern int udp_bind(uint16_t);
 extern int udp_unbind(uint16_t);

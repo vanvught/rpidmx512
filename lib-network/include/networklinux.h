@@ -45,6 +45,9 @@ public:
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);
+	bool SetZeroconf(void) {
+		return false;
+	}
 	void SetHostName(const char *pHostName);
 
 	void JoinGroup(int32_t nHandle, uint32_t nIp);

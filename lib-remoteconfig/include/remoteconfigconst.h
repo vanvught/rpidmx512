@@ -31,10 +31,14 @@ public:
 	static const char PARAMS_FILE_NAME[];
 
 	static const char PARAMS_DISABLE[];
+
 	static const char PARAMS_DISABLE_WRITE[];
 	static const char PARAMS_ENABLE_REBOOT[];
 	static const char PARAMS_ENABLE_UPTIME[];
+
 	static const char PARAMS_DISPLAY_NAME[];
+
+	static const char PARAMS_DISABLE_RDMNET_LLRP_ONY[];
 };
 
 #endif /* REMOTECONFIGCONST_H_ */

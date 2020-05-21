@@ -34,6 +34,8 @@
 #include "artnetnode.h"
 #include "e131bridge.h"
 
+#include "dhcpclient.h"
+
 enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_TITLE,
 	DISPLAY_UDF_LABEL_BOARDNAME,
@@ -81,6 +83,7 @@ public:
 	void ShowIpAddress(void);
 	void ShowNetmask(void);
 	void ShowHostName(void);
+	void ShowDhcpStatus(DhcpClientStatus nStatus);
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 

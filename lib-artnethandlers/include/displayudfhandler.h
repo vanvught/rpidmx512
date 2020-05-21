@@ -37,6 +37,8 @@
 #include "lightsetdisplay.h"
 #include "networkdisplay.h"
 
+#include "dhcpclient.h"
+
 class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay {
 public:
 	DisplayUdfHandler(void) {
@@ -51,8 +53,7 @@ public:
 	void ShowLongName(__attribute__((unused)) const char *pLongName) {
 	}
 
-	void ShowUniverseSwitch(__attribute__((unused))  uint8_t nPortIndex,
-			__attribute__((unused))  uint8_t nAddress) {
+	void ShowUniverseSwitch(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
@@ -86,6 +87,10 @@ public:
 
 	void ShowHostName(void) {
 		DisplayUdf::Get()->ShowHostName();
+	}
+
+	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 };
 

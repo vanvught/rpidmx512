@@ -160,7 +160,7 @@ public:
 		return m_bIsReboot;
 	}
 
-	int Run(void);
+	void Run(void);
 
 	void TftpExit(void);
 
@@ -289,7 +289,7 @@ private:
 	bool m_bEnableReboot;
 	bool m_bEnableUptime;
 	bool m_bEnableTFTP;
-	TFTPFileServer* m_pTFTPFileServer;
+	TFTPFileServer *m_pTFTPFileServer;
 	uint8_t *m_pTFTPBuffer;
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
 	int32_t m_nIdLength;

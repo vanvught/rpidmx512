@@ -301,58 +301,58 @@ uint16_t Display::Get7SegmentData(uint8_t nValue) {
 
 	switch (nValue) {
 	case 0:
-		return Display7Segment::CHAR_0;
+		return Display7Segment::CH_0;
 		break;
 	case 1:
-		return Display7Segment::CHAR_1;
+		return Display7Segment::CH_1;
 		break;
 	case 2:
-		return Display7Segment::CHAR_2;
+		return Display7Segment::CH_2;
 		break;
 	case 3:
-		return Display7Segment::CHAR_3;
+		return Display7Segment::CH_3;
 		break;
 	case 4:
-		return Display7Segment::CHAR_4;
+		return Display7Segment::CH_4;
 		break;
 	case 5:
-		return Display7Segment::CHAR_5;
+		return Display7Segment::CH_5;
 		break;
 	case 6:
-		return Display7Segment::CHAR_6;
+		return Display7Segment::CH_6;
 		break;
 	case 7:
-		return Display7Segment::CHAR_7;
+		return Display7Segment::CH_7;
 		break;
 	case 8:
-		return Display7Segment::CHAR_8;
+		return Display7Segment::CH_8;
 		break;
 	case 9:
-		return Display7Segment::CHAR_9;
+		return Display7Segment::CH_9;
 		break;
 	case 0xa:
-		return Display7Segment::CHAR_A;
+		return Display7Segment::CH_A;
 		break;
 	case 0xb:
-		return Display7Segment::CHAR_B;
+		return Display7Segment::CH_B;
 		break;
 	case 0xc:
-		return Display7Segment::CHAR_C;
+		return Display7Segment::CH_C;
 		break;
 	case 0xd:
-		return Display7Segment::CHAR_D;
+		return Display7Segment::CH_D;
 		break;
 	case 0xe:
-		return Display7Segment::CHAR_E;
+		return Display7Segment::CH_E;
 		break;
 	case 0xf:
-		return Display7Segment::CHAR_F;
+		return Display7Segment::CH_F;
 		break;
 	default:
 		break;
 	}
 
-	return Display7Segment::CHAR_BLANK;
+	return Display7Segment::CH_BLANK;
 }
 
 void Display::TextStatus(const char *pText) {

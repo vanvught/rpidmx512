@@ -32,6 +32,8 @@
 
 #include "networkdisplay.h"
 
+#include "dhcpclient.h"
+
 class DisplayUdfHandler: public NetworkDisplay {
 public:
 	DisplayUdfHandler(void) {}
@@ -47,6 +49,10 @@ public:
 
 	void ShowHostName(void) {
 		DisplayUdf::Get()->ShowHostName();
+	}
+
+	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 };
 

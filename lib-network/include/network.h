@@ -70,27 +70,34 @@ public:
 	virtual void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort)=0;
 
 	virtual void SetIp(uint32_t nIp)=0;
+	virtual void SetNetmask(uint32_t nNetmask)=0;
+	virtual bool SetZeroconf(void)=0;
+	virtual bool EnableDhcp(void)=0;
+
+	virtual void SetHostName(const char *pHostName);
+	virtual void SetDomainName(const char *pDomainName);
+
 	uint32_t GetIp(void) {
 		return m_nLocalIp;
 	}
 
-	virtual void SetHostName(const char *pHostName);
 	const char *GetHostName(void) {
 		return m_aHostName;
 	}
 
-	virtual void SetDomainName(const char *pDomainName);
 	const char *GetDomainName(void) {
 		return m_aDomainName;
 	}
 
-	bool SetStaticIp(bool bQueueing, uint32_t nLocalIp, uint32_t nNetmask = 0);
+	void SetQueuedStaticIp(uint32_t nLocalIp = 0, uint32_t nNetmask = 0);
+	void SetQueuedDhcp(void);
+	void SetQueuedZeroconf(void);
+	bool ApplyQueuedConfig(void);
 
 	uint32_t GetGatewayIp(void) {
 		return m_nGatewayIp;
 	}
 
-	virtual void SetNetmask(uint32_t nNetmask)=0;
 	uint32_t GetNetmask(void) {
 		return m_nNetmask;
 	}
@@ -103,14 +110,34 @@ public:
 		return m_nLocalIp | ~m_nNetmask;
 	}
 
-	virtual bool EnableDhcp(void);
-
 	bool IsDhcpCapable(void) {
 		return m_IsDhcpCapable;
 	}
 
 	bool IsDhcpUsed(void) {
 		return m_IsDhcpUsed;
+	}
+
+	bool IsZeroconfCapable(void) {
+		return m_IsZeroconfCapable;
+	}
+
+	bool IsZeroconfUsed(void) {
+		return m_IsZeroconfUsed;
+	}
+
+	char GetAddressingMode(void) {
+		if (Network::Get()->IsZeroconfUsed()) {
+			return  'Z';
+		} else if (Network::Get()->IsDhcpKnown()) {
+			if (Network::Get()->IsDhcpUsed()) {
+				return 'D';
+			} else {
+				return 'S';
+			}
+		}
+
+		return 'U';
 	}
 
 	 bool IsDhcpKnown(void) {
@@ -133,7 +160,7 @@ public:
 		return TDhcpMode::UNKNOWN;
 	}
 
-	const char* GetIfName(void) {
+	const char *GetIfName(void) {
 		return m_aIfName;
 	}
 
@@ -157,7 +184,6 @@ public:
 		m_pNetworkStore = pNetworkStore;
 	}
 
-public:
 	static Network *Get(void) {
 		return s_pThis;
 	}
@@ -171,6 +197,8 @@ protected:
 	uint32_t m_nNetmask;
 	bool m_IsDhcpCapable;
 	bool m_IsDhcpUsed;
+	bool m_IsZeroconfCapable;
+	bool m_IsZeroconfUsed;
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
@@ -182,8 +210,22 @@ protected:
 	NetworkStore *m_pNetworkStore;
 
 private:
-	uint32_t m_nQueuedLocalIp;
-	uint32_t m_nQueuedNetmask;
+	struct QueuedConfig {
+		static constexpr uint32_t NONE = 0;
+		static constexpr uint32_t STATIC_IP = (1U << 0);
+		static constexpr uint32_t NET_MASK = (1U << 1);
+		static constexpr uint32_t DHCP = (1U << 2);
+		static constexpr uint32_t ZEROCONF = (1U << 3);
+		uint32_t nMask = QueuedConfig::NONE;
+		uint32_t nLocalIp = 0;
+		uint32_t nNetmask = 0;
+	};
+
+	QueuedConfig m_QueuedConfig;
+
+    bool isQueuedMaskSet(uint32_t nMask) {
+    	return (m_QueuedConfig.nMask & nMask) == nMask;
+    }
 
 	static Network *s_pThis;
 };

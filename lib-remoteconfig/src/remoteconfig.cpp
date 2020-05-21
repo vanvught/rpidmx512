@@ -259,11 +259,11 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_EXIT
 }
 
-int RemoteConfig::Run(void) {
+void RemoteConfig::Run(void) {
 	uint16_t nForeignPort;
 
 	if (__builtin_expect((m_bDisable), 1)) {
-		return 0;
+		return;
 	}
 
 	if (__builtin_expect((m_pTFTPFileServer != 0), 0)) {
@@ -273,7 +273,7 @@ int RemoteConfig::Run(void) {
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pUdpBuffer, UDP::BUFFER_SIZE, &m_nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((m_nBytesReceived < 4), 1)) {
-		return 0;
+		return;
 	}
 
 #ifndef NDEBUG
@@ -329,14 +329,9 @@ int RemoteConfig::Run(void) {
 #ifndef NDEBUG
 				Network::Get()->SendTo(m_nHandle, "!#ERROR#\n", 9, m_nIPAddressFrom, UDP::PORT);
 #endif
-				return 0;
 			}
 		}
-	} else {
-		return 0;
 	}
-
-	return m_nBytesReceived;
 }
 
 void RemoteConfig::HandleUptime() {

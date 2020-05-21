@@ -204,9 +204,9 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 	struct t_dhcp_message response;
 	uint16_t size = 0;
 
-	const uint32_t micros_timeout = H3_TIMER->AVS_CNT1 + (5 * 1000 * 1000); // 3 seconds
+	const uint32_t micros_stamp = H3_TIMER->AVS_CNT1;
 
-	while (H3_TIMER->AVS_CNT1 < micros_timeout) {
+	do {
 		net_handle();
 
 		uint32_t from_ip;
@@ -219,9 +219,9 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 				break;
 			}
 		}
-	}
+	} while ((H3_TIMER->AVS_CNT1 - micros_stamp) < (3 * 1000 * 1000)); // 3 seconds
 
-	DEBUG_PRINTF("micros_timeout - H3_TIMER->AVS_CNT1=%d", micros_timeout - H3_TIMER->AVS_CNT1);
+	DEBUG_PRINTF("timeout %u", H3_TIMER->AVS_CNT1 - micros_stamp);
 
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
@@ -355,6 +355,3 @@ int dhcp_client(const uint8_t *mac_address, struct ip_info  *p_ip_info, const ui
 	DEBUG_EXIT
 	return have_ip ? 0 : -2;
 }
-
-
-

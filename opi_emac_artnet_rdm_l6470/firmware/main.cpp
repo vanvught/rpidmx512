@@ -191,13 +191,13 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
+	nw.SetNetworkDisplay(&displayUdfHandler);
 #if defined (ORANGE_PI)
-	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.Init(spiFlashStore.GetStoreNetwork());
 #else
 	nw.Init();
 #endif
-	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);

@@ -33,24 +33,57 @@
 #include "networkdisplay.h"
 #include "network.h"
 
+#include "dhcpclient.h"
+
 class NetworkHandlerOled: public NetworkDisplay {
 public:
-	NetworkHandlerOled(void) {}
-	~NetworkHandlerOled(void) {}
+	NetworkHandlerOled(void) {
+		s_pThis = this;
+	}
+
+	~NetworkHandlerOled(void) {
+	}
 
 	void ShowIp(void) {
 		Display::Get()->ClearLine(3);
-		Display::Get()->Printf(3, IPSTR "/%d %c",
-				IP2STR(Network::Get()->GetIp()),
-				static_cast<int>(Network::Get()->GetNetmaskCIDR()),
-				Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+		Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());
 	}
 
 	void ShowNetMask(void) {
 		ShowIp();
 	}
 
-	void ShowHostName(void) {};
+	void ShowHostName(void) {
+	}
+
+	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+		switch (nStatus) {
+		case DhcpClientStatus::IDLE:
+			break;
+		case DhcpClientStatus::RENEW:
+			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_DHCP);
+			Display::Get()->ClearLine(3);
+			Display::Get()->Printf(3, "DHCP renewing");
+			break;
+		case DhcpClientStatus::GOT_IP:
+			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+			break;
+		case DhcpClientStatus::FAILED:
+			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_ERROR_DHCP);
+			break;
+		default:
+			break;
+		}
+	}
+
+	static NetworkHandlerOled *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static NetworkHandlerOled *s_pThis;
 };
+
+NetworkHandlerOled *NetworkHandlerOled::s_pThis = 0;
 
 #endif /* NETWORKHANDLEROLED_H_ */

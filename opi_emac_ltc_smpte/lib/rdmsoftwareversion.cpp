@@ -1,5 +1,5 @@
 /**
- * @file displayudfhandler.h
+ * @file rdmsoftwareversion.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,35 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYUDFHANDLER_H_
-#define DISPLAYUDFHANDLER_H_
+#include <stdint.h>
 
-#include "displayudf.h"
+#include "rdmsoftwareversion.h"
 
-#include "networkdisplay.h"
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-#include "dhcpclient.h"
+const char *RDMSoftwareVersion::GetVersion(void) {
+	return SOFTWARE_VERSION;
+}
 
-class DisplayUdfHandler: public NetworkDisplay {
-public:
-	DisplayUdfHandler(void) {}
-	~DisplayUdfHandler(void) {}
+uint32_t RDMSoftwareVersion::GetVersionLength(void) {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-	void ShowIp(void) {
-		DisplayUdf::Get()->ShowIpAddress();
-	}
-
-	void ShowNetMask(void) {
-		DisplayUdf::Get()->ShowNetmask();
-	}
-
-	void ShowHostName(void) {
-		DisplayUdf::Get()->ShowHostName();
-	}
-
-	void ShowDhcpStatus(DhcpClientStatus nStatus) {
-		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
-	}
-};
-
-#endif /* DISPLAYUDFHANDLER_H_ */
+uint32_t RDMSoftwareVersion::GetVersionId(void) {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

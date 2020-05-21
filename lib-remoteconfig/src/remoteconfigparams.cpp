@@ -142,6 +142,9 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
 	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
 
+//	builder.AddComment("RDMNet LLRP Only (not used, yet)");
+//	builder.Add(RemoteConfigConst::PARAMS_DISABLE_RDMNET_LLRP_ONY, m_tRemoteConfigParams.bDisableRdmNetLlrpOnly, isMaskSet(RemoteConfigParamsMask::DISABLE_RDMNET_LLRP_ONY));
+
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT

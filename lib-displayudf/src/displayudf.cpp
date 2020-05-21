@@ -32,6 +32,8 @@
 #include "display.h"
 
 #include "network.h"
+#include "dhcpclient.h"
+
 #include "hardware.h"
 #include "firmwareversion.h"
 
@@ -115,7 +117,7 @@ void DisplayUdf::ShowDmxStartAddress(void) {
 
 void DisplayUdf::ShowIpAddress(void) {
 	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->IsDhcpKnown() ? (Network::Get()->IsDhcpUsed() ? 'D' : 'S') : ' ');
+	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }
 
 void DisplayUdf::ShowNetmask(void) {
@@ -127,6 +129,26 @@ void DisplayUdf::ShowNetmask(void) {
 void DisplayUdf::ShowHostName(void) {
 	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME]);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
+}
+
+void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
+	switch (nStatus) {
+	case DhcpClientStatus::IDLE:
+		break;
+	case DhcpClientStatus::RENEW:
+		Status(DISPLAY_7SEGMENT_MSG_INFO_DHCP);
+		ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "DHCP renewing");
+		break;
+	case DhcpClientStatus::GOT_IP:
+		Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+		break;
+	case DhcpClientStatus::FAILED:
+		Status(DISPLAY_7SEGMENT_MSG_ERROR_DHCP);
+		break;
+	default:
+		break;
+	}
 }
 
 void DisplayUdf::Set(uint8_t nLine, enum TDisplayUdfLabels tLabel) {

@@ -28,7 +28,12 @@
 const char RemoteConfigConst::PARAMS_FILE_NAME[] = "rconfig.txt";
 
 const char RemoteConfigConst::PARAMS_DISABLE[] = "disable";
+
 const char RemoteConfigConst::PARAMS_DISABLE_WRITE[] = "disable_write";
 const char RemoteConfigConst::PARAMS_ENABLE_REBOOT[] = "enable_reboot";
 const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
+
 const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";
+
+const char RemoteConfigConst::PARAMS_DISABLE_RDMNET_LLRP_ONY[] = "disable_rdmnet_llrp_only";
+
