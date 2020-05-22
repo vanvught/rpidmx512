@@ -39,7 +39,9 @@ public:
 	NetworkH3emac(void);
 	~NetworkH3emac(void);
 
-	int Init(NetworkParamsStore *pNetworkParamsStore = 0);
+	void Init(NetworkParamsStore *pNetworkParamsStore = 0);
+
+	void Shutdown(void);
 
 	int32_t Begin(uint16_t nPort);
 	int32_t End(uint16_t nPort);

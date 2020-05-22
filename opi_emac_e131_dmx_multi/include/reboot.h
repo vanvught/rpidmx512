@@ -32,8 +32,10 @@
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(void) {}
-	~Reboot(void) {}
+	Reboot(void) {
+	}
+	~Reboot(void) {
+	}
 
 	void Run(void) {
 		E131Bridge::Get()->Stop();

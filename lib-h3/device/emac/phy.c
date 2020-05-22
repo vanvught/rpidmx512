@@ -27,6 +27,7 @@
 
 #include "h3.h"
 #include "h3_hs_timer.h"
+#include "h3_timer.h"
 
 #include "mii.h"
 
@@ -41,35 +42,20 @@
 #define MDIO_CMD_MII_PHY_ADDR_MASK	0x0001f000
 #define MDIO_CMD_MII_PHY_ADDR_SHIFT	12
 
-static int _phy_read(int addr, int reg) {
-	uint32_t miiaddr = 0;
-	uint32_t timeout = CONFIG_MDIO_TIMEOUT;
-
-	miiaddr &= (uint32_t) ~MDIO_CMD_MII_WRITE;
-	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_REG_ADDR_MASK;
-	miiaddr |= (reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & MDIO_CMD_MII_PHY_REG_ADDR_MASK;
-
-	miiaddr &= (uint32_t) ~MDIO_CMD_MII_PHY_ADDR_MASK;
-	miiaddr |= (addr << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK;
-
-	miiaddr |= MDIO_CMD_MII_BUSY;
-
-	H3_EMAC->MII_CMD = miiaddr;
-
-	uint32_t start = h3_hs_timer_lo_us();
-	while (h3_hs_timer_lo_us() - start < timeout) {
-		if (!(H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY)) {
-			return (int) H3_EMAC->MII_DATA;
-		}
-		udelay(10);
-	};
-
-	return -1;
-}
-
 int phy_read(int addr, int reg) {
-	(void) _phy_read(addr, reg);
-	return _phy_read(addr, reg);
+	uint32_t cmd = 0;
+	cmd |= ((0x03 & 0x07) << 20);
+	cmd |= ((addr << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK);
+	cmd |= ((reg << MDIO_CMD_MII_PHY_REG_ADDR_SHIFT) & 0x000007F0);
+	cmd |= MDIO_CMD_MII_BUSY;
+
+	while ((H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY) == MDIO_CMD_MII_BUSY);
+
+	H3_EMAC->MII_CMD = cmd;
+
+	while ((H3_EMAC->MII_CMD & MDIO_CMD_MII_BUSY) == MDIO_CMD_MII_BUSY);
+
+	return (int) H3_EMAC->MII_DATA;
 }
 
 int phy_write(int addr, int reg, uint16_t val) {

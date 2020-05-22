@@ -46,7 +46,7 @@
 #include "mdnsservices.h"
 
 // Handlers
-#include "displayudfhandler.h"
+#include "displayudfnetworkhandler.h"
 #include "factorydefaults.h"
 #include "reboot.h"
 
@@ -73,10 +73,8 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	DisplayUdfHandler displayUdfHandler;
-
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 

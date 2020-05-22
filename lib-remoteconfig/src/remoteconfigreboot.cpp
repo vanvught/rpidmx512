@@ -29,6 +29,7 @@
 #include "remoteconfig.h"
 
 #include "hardware.h"
+#include "network.h"
 #include "display.h"
 
 #include "spiflashstore.h"
@@ -44,6 +45,8 @@ void RemoteConfig::HandleReboot(void) {
 
 	while (SpiFlashStore::Get()->Flash())
 		;
+
+	Network::Get()->Shutdown();
 
 	printf("Rebooting ...\n");
 

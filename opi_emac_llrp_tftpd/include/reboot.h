@@ -31,12 +31,16 @@
 #include "remoteconfig.h"
 #include "display.h"
 
+#include "network.h"
+
 #include "debug.h"
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(void) {}
-	~Reboot(void) {}
+	Reboot(void) {
+	}
+	~Reboot(void) {
+	}
 
 	void Run(void) {
 		DEBUG_ENTRY
@@ -48,6 +52,8 @@ public:
 
 			while (SpiFlashStore::Get()->Flash())
 				;
+
+			Network::Get()->Shutdown();
 
 			printf("Rebooting ...\n");
 

@@ -58,6 +58,8 @@ public:
 
 	void Print(void);
 
+	virtual void Shutdown(void);
+
 	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual int32_t End(uint16_t nPort)=0;
 

@@ -36,6 +36,7 @@ public:
 	virtual void ShowNetMask(void)=0;
 	virtual void ShowHostName(void)=0;
 	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
+	virtual void ShowShutdown(void)=0;
 };
 
 #endif /* INETWORKDISPLAY_H_ */

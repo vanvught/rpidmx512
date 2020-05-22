@@ -48,6 +48,10 @@ public:
 	bool SetZeroconf(void) {
 		return false;
 	}
+	bool EnableDhcp(void) {
+		return false;
+	}
+
 	void SetHostName(const char *pHostName);
 
 	void JoinGroup(int32_t nHandle, uint32_t nIp);

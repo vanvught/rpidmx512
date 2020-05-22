@@ -34,17 +34,20 @@
  extern uint16_t net_chksum(void *, uint32_t);
 #endif
 
- extern void udp_init(const uint8_t *, const struct ip_info  *);
+extern void udp_init(const uint8_t *, const struct ip_info  *);
 extern void udp_set_ip(const struct ip_info  *);
 extern void udp_handle(struct t_udp *);
+extern void udp_shutdown(void);
 
 extern void igmp_init(const uint8_t *, const struct ip_info  *);
 extern void igmp_set_ip(const struct ip_info  *);
 extern void igmp_handle(struct t_igmp *);
+extern void igmp_shutdown(void);
 
 extern void icmp_init(const uint8_t *, const struct ip_info  *);
 extern void icmp_set_ip(const struct ip_info  *);
 extern void icmp_handle(struct t_icmp *);
+extern void icmp_shutdown(void);
 
 void ip_set_ip(const struct ip_info *p_ip_info) {
 	udp_set_ip(p_ip_info);
@@ -56,6 +59,12 @@ void ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
 	udp_init(mac_address, p_ip_info);
 	igmp_init(mac_address, p_ip_info);
 	icmp_init(mac_address, p_ip_info);
+}
+
+void ip_shutdown(void) {
+	icmp_shutdown();
+	igmp_shutdown();
+	udp_shutdown();
 }
 
 void ip_handle(struct t_ip4 *p_ip4) {

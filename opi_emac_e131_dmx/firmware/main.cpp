@@ -62,7 +62,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
@@ -105,7 +105,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay(new DisplayUdfHandler);
+	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 

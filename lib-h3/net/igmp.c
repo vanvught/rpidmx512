@@ -133,6 +133,25 @@ void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_leave.igmp.report.igmp.max_resp_time = 0;
 }
 
+void igmp_shutdown(void) {
+	DEBUG1_ENTRY
+
+	uint32_t i;
+
+	for (i = 0; i < MAX_JOINS_ALLOWED; i++) {
+		if (s_groups[i].group_address != 0) {
+			DEBUG_PRINTF(IPSTR, IP2STR(s_groups[i].group_address));
+
+			igmp_leave(s_groups[i].group_address);
+			s_groups[i].group_address = 0;
+			s_groups[i].state = NON_MEMBER;
+			s_groups[i].timer = 0;
+		}
+	}
+
+	DEBUG1_EXIT
+}
+
 static void _send_report(uint32_t group_address) {
 	DEBUG2_ENTRY
 	_pcast32 multicast_ip;

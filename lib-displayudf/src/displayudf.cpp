@@ -151,6 +151,10 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 	}
 }
 
+void DisplayUdf::ShowShutdown(void) {
+	Display::Get()->TextStatus("Network shutdown", DISPLAY_7SEGMENT_MSG_INFO_NETWORK_SHUTDOWN);
+}
+
 void DisplayUdf::Set(uint8_t nLine, enum TDisplayUdfLabels tLabel) {
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 		if (m_aLabels[i] == nLine) {

@@ -2,7 +2,7 @@
  * @file dhcp.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,7 +111,6 @@ static void _message_init(const uint8_t *mac_address) {
 
 	s_dhcp_message.options[4] = OPTIONS_MESSAGE_TYPE;
 	s_dhcp_message.options[5] = 0x01;
-	//s_dhcp_message.options[6] = DCHP_TYPE_DISCOVER;
 }
 
 static void _send_discover(int idx, const uint8_t *mac_address) {
@@ -219,7 +218,7 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 				break;
 			}
 		}
-	} while ((H3_TIMER->AVS_CNT1 - micros_stamp) < (3 * 1000 * 1000)); // 3 seconds
+	} while ((H3_TIMER->AVS_CNT1 - micros_stamp) < (500 * 1000));
 
 	DEBUG_PRINTF("timeout %u", H3_TIMER->AVS_CNT1 - micros_stamp);
 
@@ -294,7 +293,7 @@ int dhcp_client(const uint8_t *mac_address, struct ip_info  *p_ip_info, const ui
 	DEBUG_ENTRY
 
 	bool have_ip = false;
-	int8_t retries = 3;
+	int32_t retries = 20;
 
 	_message_init(mac_address);
 
@@ -337,7 +336,7 @@ int dhcp_client(const uint8_t *mac_address, struct ip_info  *p_ip_info, const ui
 		}
 	}
 
-	(void) udp_unbind(DHCP_PORT_CLIENT);
+	udp_unbind(DHCP_PORT_CLIENT);
 
 	if (have_ip) {
 		_pcast32 ip;
@@ -354,4 +353,29 @@ int dhcp_client(const uint8_t *mac_address, struct ip_info  *p_ip_info, const ui
 
 	DEBUG_EXIT
 	return have_ip ? 0 : -2;
+}
+
+void dhcp_client_release(void) {
+	DEBUG_ENTRY
+
+	int idx = udp_bind(DHCP_PORT_CLIENT);
+
+	uint32_t k = 6;
+
+	s_dhcp_message.options[k++] = DCHP_TYPE_RELEASE;
+
+	s_dhcp_message.options[k++] = OPTIONS_SERVER_IDENTIFIER;
+	s_dhcp_message.options[k++] = 0x04;
+	s_dhcp_message.options[k++] = s_dhcp_server_ip[0];
+	s_dhcp_message.options[k++] = s_dhcp_server_ip[1];
+	s_dhcp_message.options[k++] = s_dhcp_server_ip[2];
+	s_dhcp_message.options[k++] = s_dhcp_server_ip[3];
+
+	s_dhcp_message.options[k++] = OPTIONS_END_OPTION;
+
+	udp_send(idx, (uint8_t *)&s_dhcp_message, k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE, IP_BROADCAST, DHCP_PORT_SERVER);
+
+	udp_unbind(DHCP_PORT_CLIENT);
+
+	DEBUG_EXIT
 }

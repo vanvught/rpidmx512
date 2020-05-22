@@ -60,6 +60,12 @@ Network::~Network(void) {
 	s_pThis = 0;
 }
 
+void Network::Shutdown(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nLocalIp), IP2STR(nNetmask));

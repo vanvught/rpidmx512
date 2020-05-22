@@ -34,17 +34,21 @@
 #include "remoteconfig.h"
 #include "display.h"
 
+#include "network.h"
+
 #include "debug.h"
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(void) {}
-	~Reboot(void) {}
+	Reboot(void) {
+	}
+	~Reboot(void) {
+	}
 
 	void Run(void) {
 		DEBUG_ENTRY
 
-		E131Bridge::Get()->Stop();
+		E131Bridge::Get() -> Stop();
 		ArtNetController::Get()->Stop();
 
 		if (!RemoteConfig::Get()->IsReboot()) {
@@ -55,10 +59,12 @@ public:
 			while (SpiFlashStore::Get()->Flash())
 				;
 
+			Network::Get()->Shutdown();
+
 			printf("Rebooting ...\n");
 
 			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+			Display::Get()->TextStatus("Rebooting ...",	DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 		}
 
 		DEBUG_EXIT

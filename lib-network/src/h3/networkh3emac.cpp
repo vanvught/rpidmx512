@@ -53,13 +53,20 @@ int emac_start(bool reset_emac);
 }
 
 NetworkH3emac::NetworkH3emac(void) {
+	DEBUG_ENTRY
+
 	strcpy(m_aIfName, "eth0");
+
+	DEBUG_EXIT
 }
 
 NetworkH3emac::~NetworkH3emac(void) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
-int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
+void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
@@ -130,8 +137,18 @@ int NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	}
 
 	DEBUG_EXIT
+}
 
-	return 0;
+void NetworkH3emac::Shutdown(void) {
+	DEBUG_ENTRY
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowShutdown();
+	}
+
+	net_shutdown();
+
+	DEBUG_EXIT
 }
 
 int32_t NetworkH3emac::Begin(uint16_t nPort) {

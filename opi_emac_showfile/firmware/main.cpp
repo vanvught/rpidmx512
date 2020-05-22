@@ -55,7 +55,7 @@
 
 // LLRP Handlers
 #include "factorydefaults.h"
-#include "displayudfhandler.h"
+#include "displayudfnetworkhandler.h"
 
 // Reboot handler
 #include "reboot.h"
@@ -78,6 +78,7 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -89,7 +90,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay(new DisplayUdfHandler);
+	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 

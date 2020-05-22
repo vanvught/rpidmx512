@@ -44,8 +44,10 @@ extern void arp_handle(struct t_arp *);
 extern void ip_init(const uint8_t *, const struct ip_info  *);
 extern void ip_set_ip(const struct ip_info  *);
 extern void ip_handle(struct t_ip4 *);
+extern void ip_shutdown(void);
 
 extern int dhcp_client(const uint8_t *, struct ip_info *, const uint8_t *);
+extern void dhcp_client_release(void);
 
 extern void rfc3927_init(const uint8_t *mac_address);
 extern bool rfc3927(struct ip_info *p_ip_info);
@@ -54,6 +56,7 @@ static struct ip_info s_ip_info  __attribute__ ((aligned (4)));
 static uint8_t s_mac_address[ETH_ADDR_LEN] __attribute__ ((aligned (4)));
 static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* including a terminating null byte. */
 static uint8_t *s_p __attribute__ ((aligned (4)));
+static bool s_is_dhcp = false;
 
 void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
 	uint32_t i;
@@ -85,6 +88,16 @@ void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8
 
 	for (i = 0; i < sizeof(struct ip_info); i++) {
 		*dst++ = *src++;
+	}
+
+	s_is_dhcp = *use_dhcp;
+}
+
+void net_shutdown(void) {
+	ip_shutdown();
+
+	if (s_is_dhcp) {
+		dhcp_client_release();
 	}
 }
 
@@ -122,6 +135,7 @@ bool net_set_dhcp(struct ip_info *p_ip_info, bool *is_zeroconf_used) {
 		*dst++ = *src++;
 	}
 
+	s_is_dhcp = is_dhcp;
 	return is_dhcp;
 }
 
@@ -140,6 +154,7 @@ bool net_set_zeroconf(struct ip_info *p_ip_info) {
 			*dst++ = *src++;
 		}
 
+		s_is_dhcp = false;
 		return true;
 	}
 

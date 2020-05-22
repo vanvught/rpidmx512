@@ -92,6 +92,10 @@ public:
 	void ShowDhcpStatus(DhcpClientStatus nStatus) {
 		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
+
+	void ShowShutdown(void) {
+		DisplayUdf::Get()->ShowShutdown();
+	}
 };
 
 #endif /* DISPLAYUDFHANDLER_H_ */

@@ -68,6 +68,12 @@ void icmp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_reply.icmp.code = ICMP_CODE_ECHO;
 }
 
+void icmp_shutdown(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
 void icmp_handle(struct t_icmp *p_icmp) {
 	DEBUG2_ENTRY
 

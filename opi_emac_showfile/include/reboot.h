@@ -34,6 +34,8 @@
 #include "remoteconfig.h"
 #include "display.h"
 
+#include "network.h"
+
 #include "debug.h"
 
 class Reboot: public RebootHandler {
@@ -45,7 +47,6 @@ public:
 		DEBUG_ENTRY
 
 		ShowFile::Get()->Stop();
-
 		ShowFile::Get()->GetProtocolHandler()->Stop();
 
 		if (!RemoteConfig::Get()->IsReboot()) {
@@ -55,6 +56,8 @@ public:
 
 			while (SpiFlashStore::Get()->Flash())
 				;
+
+			Network::Get()->Shutdown();
 
 			printf("Rebooting ...\n");
 

@@ -28,21 +28,50 @@
 
 #include "reboothandler.h"
 
+#include "remoteconfig.h"
+#include "display.h"
+
+#include "network.h"
+
 #include "tcnet.h"
+
+#include "debug.h"
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(TLtcReaderSource tSource): m_tSource(tSource) {}
-	~Reboot(void) {}
+	Reboot(TLtcReaderSource tSource) :m_tSource(tSource) {
+	}
+	~Reboot(void) {
+	}
 
 	void Run(void) {
+		DEBUG_ENTRY
+
 		switch (m_tSource) {
-			case LTC_READER_SOURCE_TCNET:
-				TCNet::Get()->Stop();
-				break;
-			default:
-				break;
+		case LTC_READER_SOURCE_TCNET:
+			TCNet::Get()->Stop();
+			break;
+		default:
+			break;
 		}
+
+		if (!RemoteConfig::Get()->IsReboot()) {
+			DEBUG_PUTS("");
+
+			Display::Get()->SetSleep(false);
+
+			while (SpiFlashStore::Get()->Flash())
+				;
+
+			Network::Get()->Shutdown();
+
+			printf("Rebooting ...\n");
+
+			Display::Get()->Cls();
+			Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		}
+
+		DEBUG_ENTRY
 	}
 
 private:

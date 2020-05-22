@@ -84,6 +84,7 @@ public:
 	void ShowNetmask(void);
 	void ShowHostName(void);
 	void ShowDhcpStatus(DhcpClientStatus nStatus);
+	void ShowShutdown(void);
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 

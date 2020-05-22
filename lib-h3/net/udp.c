@@ -114,6 +114,12 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_send_packet.udp.checksum = 0;
 }
 
+void udp_shutdown(void) {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
 void udp_handle(struct t_udp *p_udp) {
 	uint32_t port_index;
 	_pcast32 src;

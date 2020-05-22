@@ -49,6 +49,7 @@ extern "C" {
 #endif
 
 extern void net_init(const uint8_t *, struct ip_info *, const uint8_t *, bool *, bool *);
+extern void net_shutdown(void);
 extern void net_handle(void);
 //
 extern void net_set_hostname(const char *name);

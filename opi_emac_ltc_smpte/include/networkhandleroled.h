@@ -76,6 +76,10 @@ public:
 		}
 	}
 
+	void ShowShutdown(void) {
+
+	}
+
 	static NetworkHandlerOled *Get(void) {
 		return s_pThis;
 	}

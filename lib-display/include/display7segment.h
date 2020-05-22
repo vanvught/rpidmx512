@@ -75,6 +75,8 @@ enum TDisplay7SegmentMessages {
 	DISPLAY_7SEGMENT_MSG_INFO_NTP = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
 	DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_5),
 	//
+	DISPLAY_7SEGMENT_MSG_INFO_NETWORK_SHUTDOWN = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_9),
+	//
 	DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
 	DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
 	DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),

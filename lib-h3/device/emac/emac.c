@@ -267,9 +267,9 @@ int emac_eth_recv(uint8_t **packetp) {
 			}
 
 			*packetp = (uint8_t*) (uint32_t) desc_p->buf_addr;
-
+#ifdef DEBUG_DUMP
 			debug_dump((void*) *packetp, (uint16_t) length);
-
+#endif
 			return length;
 		}
 	}
@@ -288,9 +288,9 @@ void emac_eth_send(void *packet, int len) {
 	desc_p->st |= (1U << 24);
 
 	h3_memcpy((void *) data_start, packet, (size_t)len);
-
+#ifdef DEBUG_DUMP
 	debug_dump( data_start, (uint16_t) len);
-
+#endif
 	/* frame end */
 	desc_p->st |= (1 << 30);
 	desc_p->st |= (1U << 31);
@@ -331,13 +331,13 @@ void emac_free_pkt(void) {
 void _autonegotiation(void) {
 	uint32_t value;
 
-	DEBUG_PRINTF( "PHY status BMCR: %04x, BMSR: %04x", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
+	DEBUG_PRINTF( "PHY status BMCR: %04X, BMSR: %04X, ADVERTISE: %04X", phy_read(PHY_ADDR, MII_BMCR), phy_read(PHY_ADDR, MII_BMSR), phy_read(PHY_ADDR, MII_ADVERTISE));
+
+	phy_write(PHY_ADDR, MII_ADVERTISE, ADVERTISE_FULL | ADVERTISE_RFAULT);
 
 	value = (uint32_t)phy_read (PHY_ADDR, MII_BMCR);
 	value |= BMCR_ANRESTART;
 	phy_write(PHY_ADDR, MII_BMCR, value);
-
-	DEBUG_PRINTF( "PHY status BMCR: %04x, BMSR: %04x", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
 
 	const uint32_t micros_timeout = H3_TIMER->AVS_CNT1 + (5 * 1000 * 1000);
 
@@ -354,11 +354,6 @@ void _autonegotiation(void) {
 
 void emac_start(__attribute__((unused)) bool reset_emac) {
 	uint32_t value;
-#ifndef NDEBUG
-	uint8_t *p = (uint8_t *)H3_EMAC;
-
-	debug_dump(p, 212);
-#endif
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
 	udelay(1000); // 1ms
@@ -366,25 +361,18 @@ void emac_start(__attribute__((unused)) bool reset_emac) {
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING4 |= BUS_CLK_GATING4_EPHY_GATING;
 
-#ifndef NDEBUG
-	printf("H3_SYSTEM->EMAC_CLK=%p ", H3_SYSTEM->EMAC_CLK);
-	debug_print_bits(H3_SYSTEM->EMAC_CLK);
-#endif
-
 	_set_syscon_ephy();
 	_autonegotiation();
-	_adjust_link(false, 100);
+	_adjust_link(true, 100);
 
 #ifndef NDEBUG
-	debug_dump(p, 212);
-
 	printf("H3_SYSTEM->EMAC_CLK=%p ", H3_SYSTEM->EMAC_CLK);
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 	printf("H3_EMAC->CTL0=%p ", H3_EMAC->CTL0);
 	debug_print_bits(H3_EMAC->CTL0);
 	printf( "PHY status BMCR: %04x, BMSR: %04x\n", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
-	debug_print_bits(phy_read (PHY_ADDR, MII_BMCR));
-	debug_print_bits(phy_read (PHY_ADDR, MII_BMSR));
+	debug_print_bits((uint32_t) phy_read (PHY_ADDR, MII_BMCR));
+	debug_print_bits((uint32_t) phy_read (PHY_ADDR, MII_BMSR));
 #endif
 
 	assert(p_coherent_region == 0);
@@ -400,11 +388,11 @@ void emac_start(__attribute__((unused)) bool reset_emac) {
 	H3_EMAC->TX_CTL0 = value;
 
 	value = H3_EMAC->TX_CTL1;
-	value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
+	value &= (uint32_t) ~TX_CTL1_TX_DMA_EN;
 	H3_EMAC->TX_CTL1 = value;
 
 	value = H3_EMAC->RX_CTL1;
-	value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
+	value &= (uint32_t) ~RX_CTL1_RX_DMA_EN;
 	H3_EMAC->RX_CTL1 = value;
 
 	_rx_descs_init();
@@ -436,23 +424,21 @@ void emac_start(__attribute__((unused)) bool reset_emac) {
 	debug_print_bits(H3_EMAC->RX_CTL1);
 	printf("H3_EMAC->RX_FRM_FLT=%p ", H3_EMAC->RX_FRM_FLT);
 	debug_print_bits(H3_EMAC->RX_FRM_FLT);
-
+	puts("");
 	printf("H3_EMAC->TX_CTL0=%p ", H3_EMAC->TX_CTL0);
 	debug_print_bits(H3_EMAC->TX_CTL0);
 	printf("H3_EMAC->TX_CTL1=%p ", H3_EMAC->TX_CTL1);
 	debug_print_bits(H3_EMAC->TX_CTL1);
-
+	puts("");
 	printf("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x\n", H3_EMAC->ADDR[0].LOW, H3_EMAC->ADDR[0].HIGH);
-
+	puts("");
 	printf("H3_EMAC->TX_DMA_STA=%p\n", H3_EMAC->TX_DMA_STA);
 	printf("H3_EMAC->TX_CUR_DESC=%p\n", H3_EMAC->TX_CUR_DESC);
 	printf("H3_EMAC->TX_CUR_BUF=%p\n", H3_EMAC->TX_CUR_BUF);
-
+	puts("");
 	printf("H3_EMAC->RX_DMA_STA=%p\n", H3_EMAC->RX_DMA_STA);
-	printf("H3_EMAC->RX_FRM_FLT=%p\n", H3_EMAC->RX_FRM_FLT);
 	printf("H3_EMAC->RX_CUR_DESC=%p\n", H3_EMAC->RX_CUR_DESC);
 	printf("H3_EMAC->RX_CUR_BUF=%p\n", H3_EMAC->RX_CUR_BUF);
-	printf("H3_EMAC->RX_FRM_FLT=%p\n", H3_EMAC->RX_FRM_FLT);
 	printf("================\n");
 #endif
 }
