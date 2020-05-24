@@ -13,15 +13,6 @@
 	int snprintf(char *str, size_t size, const char *fmt, ...)
 	int vsnprintf(char *str, size_t size, const char *fmt, va_list ap)
 
-The file functions are implemented on top of the **FatFs - FAT file system module** ([https://github.com/vanvught/rpidmx512/tree/master/lib-ff11](https://github.com/vanvught/rpidmx512/tree/master/lib-ff11 "lib-ff11"))
-
-	FILE *fopen(const char *path, const char *mode)
-	int fclose(FILE *fp)
-	char *fgets(char *s, int size, FILE *stream)
-	int fputs(const char *s, FILE *stream)
-
-
-
 *stdlib.h* functions :
 
 	void *malloc(size_t size)
@@ -29,10 +20,16 @@ The file functions are implemented on top of the **FatFs - FAT file system modul
 	void *calloc(size_t n, size_t size)
 	void *realloc(void *ptr, size_t size)
 
+*time.h* functions :
+
+	time_t time(time_t *t);
+	time_t mktime(struct tm *tm);
+	struct tm *localtime(const time_t *timep);
+	char *asctime(const struct tm *tm);
+
 *math.h* functions :
 
     float log2f(float)
     float logf(float)
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
-

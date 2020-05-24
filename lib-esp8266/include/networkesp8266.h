@@ -50,22 +50,8 @@ public:
 	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
-	void SetIp(__attribute__((unused))  uint32_t nIp) {
-		// Not supported
-	}
+	void Print(void) {
 
-	void SetNetmask(__attribute__((unused))  uint32_t nNetmask) {
-		// Not supported
-	}
-
-	bool SetZeroconf(void) {
-		// Not supported
-		return false;
-	}
-
-	bool EnableDhcp(void) {
-		// Not supported
-		return false;
 	}
 
 private:

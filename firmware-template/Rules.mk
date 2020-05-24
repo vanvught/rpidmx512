@@ -26,7 +26,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS += properties hal c++ debug bob i2c utils bcm2835 arm
+LIBS += properties hal c++ debug bob i2c c bcm2835 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -64,7 +64,7 @@ COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS+=-DRPI1
 COPS+=$(COPS_COMMON)
 
-COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7 #-fopt-info-vec-optimized
+COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS7+=-DRPI2
 COPS7+=$(COPS_COMMON)
 

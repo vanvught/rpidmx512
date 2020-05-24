@@ -1,8 +1,8 @@
 /**
- * @file networkprint.c
+ * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <assert.h>
 
 #include "network.h"
 
-void Network::Print(void) {
-	printf("Network\n");
-	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" Domain    : %s\n", m_aDomainName);
-	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
-	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
-	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
-	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
-	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
-	printf(" Mode      : %c\n", GetAddressingMode());
+Network *Network::s_pThis = 0;
+
+Network::Network(void) {
+	s_pThis = this;
 }

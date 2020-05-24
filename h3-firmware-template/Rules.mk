@@ -13,6 +13,8 @@ CONSOLE?=
 SUFFIX=orangepi_zero
 BUILD_TXT=0
 
+$(info [${CURDIR}])
+
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 	SUFFIX=orangepi_one
 	BUILD_TXT=1
@@ -62,10 +64,11 @@ ifdef COND
 	LIBS+=spiflashinstall spiflashstore spiflash
 endif
 
-LIBS+=network
-
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 	LIBS+=esp8266
+	INCDIRS=../lib-network/include
+else
+	LIBS+=network
 endif
 
 ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
@@ -83,7 +86,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display c++ hal utils bob i2c h3 debug arm
+LIBS+=lightset properties display c++ hal c bob i2c h3 debug  arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -92,12 +95,14 @@ ifneq ($(CONSOLE),)
 endif
 
 # The variable for the firmware include directories
-INCDIRS=../include $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
+$(info $$INCDIRS [${INCDIRS}])
+
 # The variable for the libraries include directory
-LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
-LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
+LIBINCDIRS:=$(addprefix -I../lib-,$(LIBS))
+LIBINCDIRS+=$(addsuffix /include, $(LIBINCDIRS))
 
 # The variables for the ld -L flag
 LIBH3=$(addprefix -L../lib-,$(LIBS))
@@ -119,6 +124,11 @@ COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  #-Wconversion
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
+
+# Why does gcc not automatically select the correct path based on -m options?
+PLATFORM_LIBGCC := -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4 -lgcc
+
+$(info $$PLATFORM_LIBGCC [${PLATFORM_LIBGCC}])
 
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
@@ -191,7 +201,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS)
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) # $(PLATFORM_LIBGCC)
 	$(PREFIX)objdump -d $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 

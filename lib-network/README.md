@@ -1,12 +1,12 @@
 # Library Network
-## Network Abstraction Layer (UDP/IP) implementation ##
+## Network Abstraction Layer (UDP/IP) implementation
 
 Included is also a mDNS implementation.
 
 Supported platforms:
 
 - Orange Pi Zero/One (baremetal)
-- Raspberry Pi (baremetal, Circle)
+- Raspberry Pi (baremetal / Raspbian)
 - Linux
 - Cygwin
 - Mac OS X
