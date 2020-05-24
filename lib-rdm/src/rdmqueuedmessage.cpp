@@ -35,24 +35,24 @@
 
 
 RDMQueuedMessage::RDMQueuedMessage(void): m_nMessageCount(0), m_IsNeverQueued(true) {
-	m_pQueue = new TRdmQueuedMessage[255];
+	m_pQueue = new TRdmQueuedMessage[RDM_MESSAGE_COUNT_MAX];
 	assert(m_pQueue != 0);
 }
 
 RDMQueuedMessage::~RDMQueuedMessage(void) {
+	assert(m_pQueue == 0);
+	delete[] m_pQueue;
 }
 
-void RDMQueuedMessage::Copy(struct TRdmMessage *pRdmMessage, uint8_t nIndex) {
-	assert(nIndex < 255);
-
-	uint8_t i;
+void RDMQueuedMessage::Copy(struct TRdmMessage *pRdmMessage, uint32_t nIndex) {
+	assert(nIndex < RDM_MESSAGE_COUNT_MAX);
 
 	pRdmMessage->command_class = m_pQueue[nIndex].command_class;
 	pRdmMessage->param_id[0] = m_pQueue[nIndex].param_id[0];
 	pRdmMessage->param_id[1] = m_pQueue[nIndex].param_id[1];
 	pRdmMessage->param_data_length = m_pQueue[nIndex].param_data_length;
 
-	for (i = 0; i < pRdmMessage->param_data_length; i++) {
+	for (uint32_t i = 0; i < pRdmMessage->param_data_length; i++) {
 		pRdmMessage->param_data[i] = m_pQueue[nIndex].param_data[i];
 	}
 
@@ -62,7 +62,7 @@ uint8_t RDMQueuedMessage::GetMessageCount(void) const {
 	return m_nMessageCount;
 }
 
-void RDMQueuedMessage::Handler(uint8_t* pRdmData) {
+void RDMQueuedMessage::Handler(uint8_t *pRdmData) {
 	struct TRdmMessage *rdm_response = reinterpret_cast<struct TRdmMessage*>(pRdmData);
 
 	if (m_IsNeverQueued) {
@@ -81,9 +81,7 @@ void RDMQueuedMessage::Handler(uint8_t* pRdmData) {
 	}
 }
 
-bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage* msg) {
-	uint8_t i;
-
+bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage *msg) {
 	m_IsNeverQueued = false;
 
 	if (m_nMessageCount != RDM_MESSAGE_COUNT_MAX) {
@@ -93,7 +91,7 @@ bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage* msg) {
 		m_pQueue[m_nMessageCount].param_id[1] = msg->param_id[1];
 		m_pQueue[m_nMessageCount].param_data_length = msg->param_data_length;
 
-		for (i = 0; i < msg->param_data_length; i++) {
+		for (uint32_t i = 0; i < msg->param_data_length; i++) {
 			m_pQueue[m_nMessageCount].param_data[i] = msg->param_data[i];
 		}
 

@@ -1,8 +1,8 @@
 /**
- * @file rdmqueuedmessage.h
+ * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMQUEUEDMESSAGE_H_
-#define RDMQUEUEDMESSAGE_H_
+#ifndef LINUX_HAL_I2C_H_
+#define LINUX_HAL_I2C_H_
 
-#include <stdint.h>
+#include "bcm2835.h"
 
-#include "rdmmessage.h"
+inline static void bcm2835_i2c_set_address(uint8_t address) {
+	bcm2835_i2c_setSlaveAddress(address);
+}
 
-struct TRdmQueuedMessage {
-	uint8_t command_class;					///< 21
-	uint8_t param_id[2];					///< 22, 23
-	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
-	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
-};
-
-class RDMQueuedMessage {
-public:
-	RDMQueuedMessage(void);
-	~RDMQueuedMessage(void);
-
-	uint8_t GetMessageCount(void) const;
-
-	void Handler(uint8_t *pRdmData);
-
-	bool Add(const struct TRdmQueuedMessage *msg);
-
-private:
-	void Copy(struct TRdmMessage *pRdmMessage, uint32_t nIndex);
-
-private:
-	uint8_t m_nMessageCount;
-	bool m_IsNeverQueued;
-
-	struct TRdmQueuedMessage *m_pQueue;
-};
-
-#endif /* RDMQUEUEDMESSAGE_H_ */
+#endif /* LINUX_HAL_I2C_H_ */

@@ -229,6 +229,13 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 		return;
 	}
 
+	if (m_IsDhcpUsed) {
+		m_IsDhcpUsed = false;
+		net_dhcp_release();
+	}
+
+	m_IsZeroconfUsed = false;
+
 	if (nIp == 0) {
 		SetDefaultIp();
 		net_set_ip(m_nLocalIp);
@@ -245,11 +252,12 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 		}
 	}
 
-	m_IsDhcpUsed = false;
-	m_IsZeroconfUsed = false;
-
 	if (m_pNetworkDisplay != 0) {
 		m_pNetworkDisplay->ShowIp();
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowNetMask();
 	}
 
 	DEBUG_EXIT

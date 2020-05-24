@@ -830,7 +830,7 @@ bool E131Bridge::IsValidDataPacket(void) {
 void E131Bridge::Run(void) {
 	uint16_t nForeignPort;
 
-	const int nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_E131.E131Packet, sizeof(m_E131.E131Packet), &m_E131.IPAddressFrom, &nForeignPort) ;
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_E131.E131Packet, sizeof(m_E131.E131Packet), &m_E131.IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 

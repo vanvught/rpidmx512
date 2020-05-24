@@ -53,11 +53,11 @@ extern void net_shutdown(void);
 extern void net_handle(void);
 //
 extern void net_set_hostname(const char *name);
-//
 extern void net_set_ip(uint32_t);
 extern bool net_set_dhcp(struct ip_info *, bool *);
-//
 extern bool net_set_zeroconf(struct ip_info *);
+//
+extern void net_dhcp_release(void);
 //
 extern int udp_bind(uint16_t);
 extern int udp_unbind(uint16_t);

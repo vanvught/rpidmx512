@@ -139,6 +139,11 @@ bool net_set_dhcp(struct ip_info *p_ip_info, bool *is_zeroconf_used) {
 	return is_dhcp;
 }
 
+void net_dhcp_release(void) {
+	dhcp_client_release();
+	s_is_dhcp = false;
+}
+
 bool net_set_zeroconf(struct ip_info *p_ip_info) {
 	const bool b = rfc3927(&s_ip_info);
 

@@ -33,5 +33,4 @@ enum class DhcpClientStatus {
 	FAILED
 };
 
-
 #endif /* DHCPCLIENT_H_ */

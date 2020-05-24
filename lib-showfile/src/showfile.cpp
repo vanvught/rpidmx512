@@ -91,7 +91,12 @@ void ShowFile::BlackOut(void) {
 }
 
 bool ShowFile::DeleteShowFile(uint8_t nShowFileNumber) {
-	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
+	DEBUG_PRINTF("nShowFileNumber=%u, m_bEnableTFTP=%d", nShowFileNumber, m_bEnableTFTP);
+
+	if (!m_bEnableTFTP) {
+		DEBUG_EXIT
+		return false;
+	}
 
 	char aFileName[ShowFileFile::NAME_LENGTH + 1];
 
