@@ -92,6 +92,8 @@ public:
 
 	virtual void Update(const struct TLtcParams *pTLtcParams)=0;
 	virtual void Copy(struct TLtcParams *pTLtcParams)=0;
+
+	virtual void SaveSource(uint8_t nSource)=0;
 };
 
 class LtcParams {

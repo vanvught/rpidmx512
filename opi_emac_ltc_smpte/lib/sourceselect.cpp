@@ -52,6 +52,7 @@
 #include "h3_gpio.h"
 
 #include "spiflashstore.h"
+#include "storeltc.h"
 
 #include "debug.h"
 
@@ -73,11 +74,16 @@
 
 #define GPIO_INTA				GPIO_EXT_12 // PA7
 
-static constexpr TDisplay7SegmentMessages s_7Segment[8] = {
-		DISPLAY_7SEGMENT_MSG_GENERIC_1, DISPLAY_7SEGMENT_MSG_GENERIC_2,
-		DISPLAY_7SEGMENT_MSG_GENERIC_3, DISPLAY_7SEGMENT_MSG_GENERIC_4,
-		DISPLAY_7SEGMENT_MSG_GENERIC_5, DISPLAY_7SEGMENT_MSG_GENERIC_6,
-		DISPLAY_7SEGMENT_MSG_GENERIC_7, DISPLAY_7SEGMENT_MSG_GENERIC_8 };
+static constexpr TDisplay7SegmentMessages s_7Segment[] = {
+		DISPLAY_7SEGMENT_MSG_GENERIC_1,
+		DISPLAY_7SEGMENT_MSG_GENERIC_2,
+		DISPLAY_7SEGMENT_MSG_GENERIC_3,
+		DISPLAY_7SEGMENT_MSG_GENERIC_4,
+		DISPLAY_7SEGMENT_MSG_GENERIC_5,
+		DISPLAY_7SEGMENT_MSG_GENERIC_6,
+		DISPLAY_7SEGMENT_MSG_GENERIC_7,
+		DISPLAY_7SEGMENT_MSG_GENERIC_8
+};
 
 struct Button {
 	static constexpr auto SELECT = 2;
@@ -96,7 +102,7 @@ SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisable
 	m_nPortAPrevious(0),
 	m_nPortB(0),
 	m_nMillisPrevious(0),
-	m_tRotaryDirection(ROTARY_DIRECTION_NONE),
+	m_tRotaryDirection(RotaryEncoder::NONE),
 	m_tRunStatus(RUN_STATUS_IDLE),
 	m_nSelectMillis(0)
 {
@@ -141,9 +147,9 @@ void SourceSelect::HandleActionRight(TLtcReaderSource &tLtcReaderSource) {
 void SourceSelect::HandleRotary(uint8_t nInputAB, TLtcReaderSource &tLtcReaderSource) {
 	m_tRotaryDirection = m_RotaryEncoder.Process(nInputAB);
 
-	if (m_tRotaryDirection == ROTARY_DIRECTION_CW) {
+	if (m_tRotaryDirection == RotaryEncoder::CW) {
 		HandleActionRight(tLtcReaderSource);
-	} else if (m_tRotaryDirection == ROTARY_DIRECTION_CCW) {
+	} else if (m_tRotaryDirection == RotaryEncoder::CCW) {
 		HandleActionLeft(tLtcReaderSource);
 	}
 }
@@ -276,6 +282,8 @@ void SourceSelect::HandleActionSelect(void) {
 	} else if (m_tRunStatus == RUN_STATUS_CONTINUE) {
 		SetRunState(RUN_STATUS_IDLE);
 	} else if (m_tRunStatus == RUN_STATUS_REBOOT) {
+		StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
+
 		while (SpiFlashStore::Get()->Flash())
 			;
 
@@ -286,8 +294,10 @@ void SourceSelect::HandleActionSelect(void) {
 
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("SoftReset ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		//Display::Get()->TextStatus("Reboot ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 
 		Hardware::Get()->SoftReset();
+		//Hardware::Get()->Reboot();
 	}
 }
 
@@ -323,11 +333,11 @@ void SourceSelect::Run(void) {
 		} else {
 			if ((m_tRunStatus == RUN_STATUS_CONTINUE) || (m_tRunStatus == RUN_STATUS_REBOOT)) {
 				m_tRotaryDirection = m_RotaryEncoder.Process(m_nPortA);
-				if (m_tRotaryDirection == ROTARY_DIRECTION_CCW) {
+				if (m_tRotaryDirection == RotaryEncoder::CCW) {
 					if (m_tRunStatus == RUN_STATUS_REBOOT) {
 						SetRunState(RUN_STATUS_CONTINUE);
 					}
-				} else if (m_tRotaryDirection == ROTARY_DIRECTION_CW) {
+				} else if (m_tRotaryDirection == RotaryEncoder::CW) {
 					if (m_tRunStatus == RUN_STATUS_CONTINUE) {
 						SetRunState(RUN_STATUS_REBOOT);
 					}

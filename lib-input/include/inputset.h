@@ -2,7 +2,7 @@
  * @file inputset.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,14 +28,14 @@
 
 class InputSet {
 public:
-	virtual ~InputSet(void);
+	virtual ~InputSet(void) {
+
+	}
 
 	virtual bool Start(void)= 0;
 
 	virtual bool IsAvailable(void)= 0;
 	virtual int GetChar(void)= 0;
-
-private:
 };
 
 #endif /* INPUTSET_H_ */

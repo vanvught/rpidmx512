@@ -68,4 +68,10 @@ void StoreLtc::Copy(struct TLtcParams* pLtcParams) {
 	DEBUG_EXIT
 }
 
+void StoreLtc::SaveSource(uint8_t nSource) {
+	DEBUG_ENTRY
 
+	SpiFlashStore::Get()->Update(STORE_LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
+
+	DEBUG_EXIT
+}

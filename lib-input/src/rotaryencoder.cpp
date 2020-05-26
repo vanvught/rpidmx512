@@ -32,42 +32,42 @@
 
 #include "debug.h"
 
-enum TState {
-	STATE_START = 0x0,
-	STATE_CW_FINAL = 0x1,
-	STATE_CW_BEGIN = 0x2,
-	STATE_CW_NEXT = 0x3,
-	STATE_CCW_BEGIN = 0x4,
-	STATE_CCW_FINAL = 0x5,
-	STATE_CCW_NEXT = 0x6
+struct State {
+	static constexpr uint8_t START = 0x0;
+	static constexpr uint8_t CW_FINAL = 0x1;
+	static constexpr uint8_t CW_BEGIN = 0x2;
+	static constexpr uint8_t CW_NEXT = 0x3;
+	static constexpr uint8_t CCW_BEGIN = 0x4;
+	static constexpr uint8_t CCW_FINAL = 0x5;
+	static constexpr uint8_t CCW_NEXT = 0x6;
 };
 
-static const unsigned char s_StateTable[7][4] = {
+static constexpr uint8_t s_StateTable[][4] = {
   // R_START
-  {STATE_START,    STATE_CW_BEGIN,  STATE_CCW_BEGIN, STATE_START},
+  {State::START,	State::CW_BEGIN,  State::CCW_BEGIN, State::START},
   // R_CW_FINAL
-  {STATE_CW_NEXT,  STATE_START,     STATE_CW_FINAL,  STATE_START | ROTARY_DIRECTION_CW},
+  {State::CW_NEXT,  State::START,     State::CW_FINAL,  State::START | RotaryEncoder::CW},
   // R_CW_BEGIN
-  {STATE_CW_NEXT,  STATE_CW_BEGIN,  STATE_START,     STATE_START},
+  {State::CW_NEXT,  State::CW_BEGIN,  State::START,     State::START},
   // R_CW_NEXT
-  {STATE_CW_NEXT,  STATE_CW_BEGIN,  STATE_CW_FINAL,  STATE_START},
+  {State::CW_NEXT,  State::CW_BEGIN,  State::CW_FINAL,  State::START},
   // R_CCW_BEGIN
-  {STATE_CCW_NEXT, STATE_START,     STATE_CCW_BEGIN, STATE_START},
+  {State::CCW_NEXT, State::START,     State::CCW_BEGIN, State::START},
   // R_CCW_FINAL
-  {STATE_CCW_NEXT, STATE_CCW_FINAL, STATE_START,     STATE_START | ROTARY_DIRECTION_CCW},
+  {State::CCW_NEXT, State::CCW_FINAL, State::START,     State::START | RotaryEncoder::CCW},
   // R_CCW_NEXT
-  {STATE_CCW_NEXT, STATE_CCW_FINAL, STATE_CCW_BEGIN, STATE_START},
+  {State::CCW_NEXT, State::CCW_FINAL, State::CCW_BEGIN, State::START},
 };
 
-RotaryEncoder::RotaryEncoder(void) : m_nState(STATE_START) {
+RotaryEncoder::RotaryEncoder(void) : m_nState(State::START) {
 }
 
-RotaryEncoder::~RotaryEncoder(void) {
-}
+uint8_t RotaryEncoder::Process(uint8_t nInputAB) {
+	DEBUG_PRINTF("%x:%x", m_nState & 0x0F, nInputAB & 0x03);
 
-TRotaryDirection RotaryEncoder::Process(uint8_t nInputAB) {
-	DEBUG_PRINTF("%x:%x", static_cast<int>(m_nState & 0x0F), static_cast<int>(nInputAB & 0x03));
 	m_nState = s_StateTable[m_nState & 0x0F][nInputAB & 0x03];
-	DEBUG_PRINTF("%x", static_cast<int>(m_nState & 0x30));
-	return static_cast<TRotaryDirection>((m_nState & 0x30));
+
+	DEBUG_PRINTF("%x", m_nState & 0x30);
+
+	return m_nState & 0x30;
 }

@@ -2,7 +2,7 @@
  * @file rotaryencoder.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,21 +28,21 @@
 
 #include <stdint.h>
 
-enum TRotaryDirection {
-	ROTARY_DIRECTION_NONE = 0x00,
-	ROTARY_DIRECTION_CW = 0x10,
-	ROTARY_DIRECTION_CCW = 0x20
-};
-
 class RotaryEncoder {
 public:
-	RotaryEncoder(void);
-	~RotaryEncoder(void);
+	static constexpr uint8_t NONE = 0x00;
+	static constexpr uint8_t CW = 0x10;
+	static constexpr uint8_t CCW = 0x20;
 
-	TRotaryDirection Process(uint8_t nInputAB);
+	RotaryEncoder(void);
+	~RotaryEncoder(void) {
+
+	}
+
+	uint8_t Process(uint8_t nInputAB);
 
 private:
 	uint8_t m_nState;
 };
 
-#endif /* INCLUDE_ROTARYENCODER_H_ */
+#endif /* ROTARYENCODER_H_ */
