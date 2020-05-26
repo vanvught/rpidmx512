@@ -151,9 +151,16 @@ const uint8_t *E131Bridge::GetSoftwareVersion(void) {
 
 void E131Bridge::SetSourceName(const char *pSourceName) {
 	assert(pSourceName != 0);
-
+	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
+#if (__GNUC__ > 8)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
 	strncpy(m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH - 1);
 	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
+#if (__GNUC__ > 8)
+# pragma GCC diagnostic pop
+#endif
 }
 
 uint32_t E131Bridge::UniverseToMulticastIp(uint16_t nUniverse) const {

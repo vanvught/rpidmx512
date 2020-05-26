@@ -286,8 +286,16 @@ const uint8_t *E131Controller::GetSoftwareVersion(void) {
 void E131Controller::SetSourceName(const char *pSourceName) {
 	assert(pSourceName != 0);
 
+	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
+#if (__GNUC__ > 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
 	strncpy(m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH - 1);
 	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
+#if (__GNUC__ > 8)
+#pragma GCC diagnostic pop
+#endif
 }
 
 void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority

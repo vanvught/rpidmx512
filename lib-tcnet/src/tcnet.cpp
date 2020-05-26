@@ -243,8 +243,15 @@ void TCNet::SetLayer(TCNetLayer tLayer) {
 }
 
 void TCNet::SetNodeName(const char *pNodeName) {
+#if (__GNUC__ > 8)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
 	strncpy(reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName), pNodeName, sizeof m_tOptIn.ManagementHeader.NodeName - 1);
 	m_tOptIn.ManagementHeader.NodeName[sizeof m_tOptIn.ManagementHeader.NodeName - 1] = '\0';
+#if (__GNUC__ > 8)
+#pragma GCC diagnostic pop
+#endif
 }
 
 char TCNet::GetLayerName(TCNetLayer tLayer) {
