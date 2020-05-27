@@ -70,8 +70,6 @@
 #include "identify.h"
 #include "factorydefaults.h"
 
-#include "softreset.h"
-
 extern "C" {
 
 void notmain(void) {
@@ -95,7 +93,6 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 	hw.SetRebootHandler(new ArtNetReboot);
-	hw.SetSoftResetHandler(new SoftReset);
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 

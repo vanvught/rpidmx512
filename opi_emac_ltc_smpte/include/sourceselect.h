@@ -26,11 +26,13 @@
 #ifndef SOURCESELECT_H_
 #define SOURCESELECT_H_
 
-#include <stdbool.h>
+#include <stdint.h>
 
 #include "ltcparams.h"
 
 #include "rotaryencoder.h"
+
+#include "hal_i2c.h"
 
 enum TRunStatus {
 	RUN_STATUS_IDLE,
@@ -62,6 +64,7 @@ private:
 	void SetRunState(TRunStatus tRunState);
 
 private:
+	HAL_I2C m_I2C;
 	TLtcReaderSource m_tLtcReaderSource;
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bIsConnected;
@@ -70,7 +73,7 @@ private:
 	uint8_t m_nPortB;
 	uint32_t m_nMillisPrevious;
 	RotaryEncoder m_RotaryEncoder;
-	TRotaryDirection m_tRotaryDirection;
+	uint8_t m_tRotaryDirection;
 	TRunStatus m_tRunStatus;
 	uint32_t m_nSelectMillis;
 };

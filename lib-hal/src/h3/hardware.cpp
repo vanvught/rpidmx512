@@ -74,7 +74,7 @@ namespace SYSNAME {
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void) : m_pRebootHandler(0), m_pSoftResetHandler(0), m_bIsWatchdog(false) {
+Hardware::Hardware(void) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 }
@@ -158,25 +158,3 @@ bool Hardware::Reboot(void) {
 	__builtin_unreachable ();
 	return true;
 }
-
-void Hardware::SoftReset(void) {
-	__disable_irq();
-	__disable_fiq();
-	dmb();
-
-	if (m_pSoftResetHandler != 0) {
-		h3_watchdog_disable();
-		m_pSoftResetHandler->Run();
-	}
-
-	invalidate_instruction_cache();
-	flush_branch_target_cache();
-	flush_prefetch_buffer();
-	clean_data_cache();
-	invalidate_data_cache();
-
-	_start();
-
-	__builtin_unreachable();
-}
-

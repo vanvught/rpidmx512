@@ -45,7 +45,6 @@
 #include "hardware.h"
 
 #include "reboothandler.h"
-#include "softresethandler.h"
 
 #include "debug.h"
 
@@ -66,9 +65,6 @@ static constexpr char UNKNOWN[] = "Unknown";
 Hardware *Hardware::s_pThis = 0;
 
 Hardware::Hardware(char **argv):
-	m_argv(argv),
-	m_pRebootHandler(0),
-	m_pSoftResetHandler(0),
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
@@ -152,7 +148,6 @@ Hardware::Hardware(char **argv):
 }
 
 Hardware::~Hardware(void) {
-	m_tBoardType = BOARD_TYPE_UNKNOWN;
 }
 
 const char* Hardware::GetMachine(uint8_t &nLength) {
@@ -267,19 +262,19 @@ bool Hardware::Reboot(void) {
 	return false;
 }
 
-void Hardware::SoftReset(void) {
-	if (m_argv != 0) {
-		sync();
-
-		if (m_pSoftResetHandler != 0) {
-			m_pSoftResetHandler->Run();
-		}
-
-		if (execve(m_argv[0], m_argv, NULL) == -1) {
-			perror("call to execve failed.\n");
-		}
-	}
-}
+//void Hardware::SoftReset(void) {
+//	if (m_argv != 0) {
+//		sync();
+//
+//		if (m_pSoftResetHandler != 0) {
+//			m_pSoftResetHandler->Run();
+//		}
+//
+//		if (execve(m_argv[0], m_argv, NULL) == -1) {
+//			perror("call to execve failed.\n");
+//		}
+//	}
+//}
 
 bool Hardware::PowerOff(void) {
 #if defined (__CYGWIN__) || defined (__APPLE__)

@@ -33,7 +33,6 @@
 #include "hardware.h"
 
 #include "reboothandler.h"
-#include "softresethandler.h"
 
 class Hardware {
 public:
@@ -58,6 +57,11 @@ public:
 	void SetLed(THardwareLedStatus tLedStatus);
 
 	bool Reboot(void);
+
+	void SetRebootHandler(RebootHandler *pRebootHandler) {
+		m_pRebootHandler = pRebootHandler;
+	}
+
 	bool PowerOff(void);
 
 	uint32_t GetUpTime(void);
@@ -91,16 +95,6 @@ public:
 #endif
 	}
 
-	void SoftReset(void);
-
-	void SetRebootHandler(RebootHandler *pRebootHandler) {
-		m_pRebootHandler = pRebootHandler;
-	}
-
-	void SetSoftResetHandler(SoftResetHandler *pSoftResetHandler) {
-		m_pSoftResetHandler = pSoftResetHandler;
-	}
-
 	 static Hardware *Get(void) {
 		return s_pThis;
 	}
@@ -109,9 +103,7 @@ private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 
 private:
-	char **m_argv;
-	RebootHandler *m_pRebootHandler;
-	SoftResetHandler *m_pSoftResetHandler;
+	RebootHandler *m_pRebootHandler = 0;
 	enum TBoardType {
 		BOARD_TYPE_LINUX,
 		BOARD_TYPE_CYGWIN,

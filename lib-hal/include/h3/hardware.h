@@ -39,7 +39,6 @@
 #include "h3_thermal.h"
 
 #include "reboothandler.h"
-#include "softresethandler.h"
 
 enum TSocType {
 	SOC_TYPE_H2_PLUS,
@@ -89,6 +88,10 @@ public:
 	}
 
 	bool Reboot(void);
+
+	void SetRebootHandler(RebootHandler *pRebootHandler) {
+		m_pRebootHandler = pRebootHandler;
+	}
 
 	bool PowerOff(void) {
 		return false;
@@ -143,24 +146,13 @@ public:
 		return "www.orangepi-dmx.org";
 	}
 
-	void SoftReset(void);
-
-	void SetRebootHandler(RebootHandler *pRebootHandler) {
-		m_pRebootHandler = pRebootHandler;
-	}
-
-	void SetSoftResetHandler(SoftResetHandler *pSoftResetHandler) {
-		m_pSoftResetHandler = pSoftResetHandler;
-	}
-
 	static Hardware *Get(void) {
 		return s_pThis;
 	}
 
 private:
-	RebootHandler *m_pRebootHandler;
-	SoftResetHandler *m_pSoftResetHandler;
-	bool m_bIsWatchdog;
+	RebootHandler *m_pRebootHandler = 0;
+	bool m_bIsWatchdog = false;
 
 	static Hardware *s_pThis;
 };

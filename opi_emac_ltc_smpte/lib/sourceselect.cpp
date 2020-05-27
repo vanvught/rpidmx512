@@ -29,6 +29,8 @@
 #include <assert.h>
 
 #include "hardware.h"
+#include "network.h"
+
 #include "arm/synchronize.h"
 
 #include "sourceselect.h"
@@ -43,7 +45,8 @@
 
 #include "rotaryencoder.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
+#include "serial/mcp23x17.h"
 
 #include "h3/ltcgenerator.h"
 
@@ -56,24 +59,6 @@
 
 #include "debug.h"
 
-#define MCP23017_I2C_ADDRESS	0x20
-
-#define MCP23X17_IOCON			0x0A
-
-#define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23X17_GPINTENA		0x04	///< INTERRUPT-ON-CHANGE CONTROL (GPINTENA) REGISTER, 0 = No Interrupt on Change (default), 1 = Interrupt on Change
-#define MCP23X17_GPPUA			0x0C	///< PULL-UP RESISTOR CONFIGURATION (GPPUA) REGISTER, INPUT ONLY: 0 = No Internal 100k Pull-Up (default) 1 = Internal 100k Pull-Up
-#define MCP23X17_INTCAPA		0x10	///< INTERRUPT CAPTURE (INTCAPA) REGISTER, READ ONLY: State of the Pin at the Time the Interrupt Occurred
-#define MCP23X17_GPIOA			0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-
-#define MCP23X17_IODIRB			0x01	///< I/O DIRECTION (IODIRB) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23X17_GPIOB			0x13	///< PORT (GPIOB) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-
-#define BUTTON(x)				((nButtonsChanged >> x) & 0x01)
-#define BUTTON_STATE(x)			((nButtonsChanged & (1U << x)) == (1U << x))
-
-#define GPIO_INTA				GPIO_EXT_12 // PA7
-
 static constexpr TDisplay7SegmentMessages s_7Segment[] = {
 		DISPLAY_7SEGMENT_MSG_GENERIC_1,
 		DISPLAY_7SEGMENT_MSG_GENERIC_2,
@@ -85,16 +70,28 @@ static constexpr TDisplay7SegmentMessages s_7Segment[] = {
 		DISPLAY_7SEGMENT_MSG_GENERIC_8
 };
 
-struct Button {
-	static constexpr auto SELECT = 2;
-	static constexpr auto LEFT = 3;
-	static constexpr auto RIGHT = 4;
-	static constexpr auto START = 5;
-	static constexpr auto STOP = 6;
-	static constexpr auto RESUME = 7;
-};
+namespace mcp23017 {
+static constexpr auto I2C_ADDRESS = 0x20;
+}
+
+namespace gpio {
+static constexpr auto INTA = GPIO_EXT_12; // PA7
+}
+
+namespace button {
+static constexpr auto SELECT = 2;
+static constexpr auto LEFT = 3;
+static constexpr auto RIGHT = 4;
+static constexpr auto START = 5;
+static constexpr auto STOP = 6;
+static constexpr auto RESUME = 7;
+}
+
+#define BUTTON(x)			((nButtonsChanged >> x) & 0x01)
+#define BUTTON_STATE(x)		((nButtonsChanged & (1U << x)) == (1U << x))
 
 SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutput):
+	m_I2C(mcp23017::I2C_ADDRESS),
 	m_tLtcReaderSource(tLtcReaderSource),
 	m_ptLtcDisabledOutputs(ptLtcDisabledOutput),
 	m_bIsConnected(false),
@@ -106,26 +103,21 @@ SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisable
 	m_tRunStatus(RUN_STATUS_IDLE),
 	m_nSelectMillis(0)
 {
-
 }
 
 SourceSelect::~SourceSelect(void) {
-
 }
 
 void SourceSelect::LedBlink(uint8_t nPortB) {
 	const uint32_t nMillisNow = Hardware::Get()->Millis();
 
-	if ((nMillisNow - m_nMillisPrevious) < 500) {
+	if (__builtin_expect(((nMillisNow - m_nMillisPrevious) < 500), 1)) {
 		return;
 	}
 
 	m_nMillisPrevious = nMillisNow;
-
 	m_nPortB ^= nPortB;
-
-	i2c_set_address(MCP23017_I2C_ADDRESS);
-	i2c_write_reg_uint8(MCP23X17_GPIOB, m_nPortB);
+	m_I2C.WriteRegister(mcp23x17::GPIOB, m_nPortB);
 }
 
 void SourceSelect::HandleActionLeft(TLtcReaderSource &tLtcReaderSource) {
@@ -169,30 +161,26 @@ void SourceSelect::UpdateDisaplays(TLtcReaderSource tLtcReaderSource) {
 bool SourceSelect::Check(void) {
 	DEBUG_ENTRY
 
-	i2c_set_baudrate(I2C_FULL_SPEED);
-
-	m_bIsConnected = i2c_is_connected(MCP23017_I2C_ADDRESS);
+	m_bIsConnected = m_I2C.IsConnected();
 
 	if (!m_bIsConnected) {
 		DEBUG_EXIT
 		return false;
 	}
 
-	i2c_set_address(MCP23017_I2C_ADDRESS);
-
 	// Rotary and switches
-	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 	// All input
-	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);		// Pull-up
-	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);	// Interrupt on Change
-	i2c_read_reg_uint8(MCP23X17_INTCAPA);			// Clear interrupts
+	m_I2C.WriteRegister(mcp23x17::IODIRA, 0xFF); 	// All input
+	m_I2C.WriteRegister(mcp23x17::GPPUA, 0xFF);		// Pull-up
+	m_I2C.WriteRegister(mcp23x17::GPINTENA, 0xFF);	// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::INTCAPA);			// Clear interrupts
 	// Led's
-	i2c_write_reg_uint8(MCP23X17_IODIRB, 0x00); 	// All output
-	i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << m_tLtcReaderSource);
+	m_I2C.WriteRegister(mcp23x17::IODIRB, 0x00); 	// All output
+	m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << m_tLtcReaderSource);
 
 	UpdateDisaplays(m_tLtcReaderSource);
 
-	h3_gpio_fsel(GPIO_INTA, GPIO_FSEL_INPUT); // PA7
-	h3_gpio_pud(GPIO_INTA, GPIO_PULL_UP);
+	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); // PA7
+	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
 
 	DEBUG_EXIT
 	return true;
@@ -201,11 +189,10 @@ bool SourceSelect::Check(void) {
 bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 	LedBlink(1 << tLtcReaderSource);
 
-	if (h3_gpio_lev(GPIO_INTA) == LOW) {
+	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		i2c_set_address(MCP23017_I2C_ADDRESS);
 		m_nPortAPrevious = m_nPortA;
-		m_nPortA = ~i2c_read_reg_uint8(MCP23X17_GPIOA);
+		m_nPortA = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
 
 		const uint8_t nButtonsChanged = (m_nPortA ^ m_nPortAPrevious) & m_nPortA;
 
@@ -221,16 +208,18 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 		 * 1 1	0 1	0
 		 */
 
-		if (BUTTON_STATE(Button::LEFT)) {
+		if (BUTTON_STATE(button::LEFT)) {
 			HandleActionLeft(tLtcReaderSource);
-		} else if (BUTTON_STATE(Button::RIGHT)) {
+		} else if (BUTTON_STATE(button::RIGHT)) {
 			HandleActionRight(tLtcReaderSource);
-		} else if (BUTTON_STATE(Button::SELECT)) {
-			m_tLtcReaderSource = tLtcReaderSource;
+		} else if (BUTTON_STATE(button::SELECT)) {
+			if (m_tLtcReaderSource != tLtcReaderSource) {
+				m_tLtcReaderSource = tLtcReaderSource;
+				StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
+			}
 
-			i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << tLtcReaderSource);
-			static_cast<void>(i2c_read_reg_uint8(MCP23X17_INTCAPA));// Clear interrupts
-
+			m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << tLtcReaderSource);
+			m_I2C.ReadRegister(mcp23x17::INTCAPA);	// Clear interrupts
 			return false;
 		} else {
 			HandleRotary(m_nPortA, tLtcReaderSource);
@@ -249,18 +238,15 @@ void SourceSelect::SetRunState(TRunStatus tRunState) {
 
 	switch (tRunState) {
 	case RUN_STATUS_IDLE:
-		i2c_set_address(MCP23017_I2C_ADDRESS);
-		i2c_write_reg_uint8(MCP23X17_GPIOB, 1 << m_tLtcReaderSource);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << m_tLtcReaderSource);
 		Display::Get()->TextStatus(SourceSelectConst::SOURCE[m_tLtcReaderSource]);
 		break;
 	case RUN_STATUS_CONTINUE:
-		i2c_set_address(MCP23017_I2C_ADDRESS);
-		i2c_write_reg_uint8(MCP23X17_GPIOB, 0x0F);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, 0x0F);
 		Display::Get()->TextStatus(">CONTINUE?<");
 		break;
 	case RUN_STATUS_REBOOT:
-		i2c_set_address(MCP23017_I2C_ADDRESS);
-		i2c_write_reg_uint8(MCP23X17_GPIOB, 0xF0);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, 0xF0);
 		Display::Get()->TextStatus(">REBOOT?  <");
 		break;
 	default:
@@ -282,22 +268,19 @@ void SourceSelect::HandleActionSelect(void) {
 	} else if (m_tRunStatus == RUN_STATUS_CONTINUE) {
 		SetRunState(RUN_STATUS_IDLE);
 	} else if (m_tRunStatus == RUN_STATUS_REBOOT) {
-		StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
 
 		while (SpiFlashStore::Get()->Flash())
 			;
 
-		printf("SoftReset ...\n");
+		printf("Reboot ...\n");
 
-		i2c_set_address(MCP23017_I2C_ADDRESS);
-		i2c_write_reg_uint8(MCP23X17_GPIOB, 0xFF);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, 0xFF);
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("SoftReset ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
-		//Display::Get()->TextStatus("Reboot ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		Display::Get()->TextStatus("Reboot ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
 
-		Hardware::Get()->SoftReset();
-		//Hardware::Get()->Reboot();
+		Network::Get()->Shutdown();
+		Hardware::Get()->Reboot();
 	}
 }
 
@@ -306,27 +289,26 @@ void SourceSelect::Run(void) {
 		return;
 	}
 
-	if (__builtin_expect(h3_gpio_lev(GPIO_INTA) == LOW, 0)) {
+	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		i2c_set_address(MCP23017_I2C_ADDRESS);
 		m_nPortAPrevious = m_nPortA;
-		m_nPortA = ~i2c_read_reg_uint8(MCP23X17_GPIOA);
+		m_nPortA = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
 
 		const uint8_t nButtonsChanged = (m_nPortA ^ m_nPortAPrevious) & m_nPortA;
 
-		if (BUTTON_STATE(Button::START)) {
+		if (BUTTON_STATE(button::START)) {
 			LtcGenerator::Get()->ActionStart();
-		} else if (BUTTON_STATE(Button::STOP)) {
+		} else if (BUTTON_STATE(button::STOP)) {
 			LtcGenerator::Get()->ActionStop();
-		} else if (BUTTON_STATE(Button::RESUME)) {
+		} else if (BUTTON_STATE(button::RESUME)) {
 			LtcGenerator::Get()->ActionResume();
-		} else if (BUTTON_STATE(Button::SELECT)) {
+		} else if (BUTTON_STATE(button::SELECT)) {
 			HandleActionSelect();
-		} else if (BUTTON_STATE(Button::LEFT)) {
+		} else if (BUTTON_STATE(button::LEFT)) {
 			if (m_tRunStatus == RUN_STATUS_REBOOT) {
 				SetRunState(RUN_STATUS_CONTINUE);
 			}
-		} else if (BUTTON_STATE(Button::RIGHT)) {
+		} else if (BUTTON_STATE(button::RIGHT)) {
 			if (m_tRunStatus == RUN_STATUS_CONTINUE) {
 				SetRunState(RUN_STATUS_REBOOT);
 			}
