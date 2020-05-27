@@ -124,22 +124,20 @@
 //0xbbc2 0b1011101111000010
 #define RIS_RAW_ISTA	(RIS_DATA_ENDBIT_ERROR |RIS_DATA_START_ERROR | RIS_CMD_BUSY | RIS_FIFO_UNDERRUN | RIS_DATA_TIMEOUT | RIS_RESP_TIMEOUT | RIS_DATA_CRC_ERROR | RIS_RESP_CRC_ERROR | RIS_RESPONSE_ERROR)
 
+static void dumphex32(__attribute__((unused)) const char *reg_name, __attribute__((unused)) char *base, __attribute__((unused)) uint32_t len) {
 #ifndef NDEBUG
-static void dumphex32(const char *reg_name, char *base, uint32_t len) {
 	uint32_t i;
 
-	mmcmsg("Dump %s registers:", reg_name);
+	printf("Dump %s registers:", reg_name);
 
 	for (i = 0; i < len; i += 4) {
-		mmcmsg("\n%p : ", base + i);
-		mmcmsg("%p ", *(volatile uint32_t *)(base + i));
+		printf("\n%p : ", base + i);
+		printf("%p ", *(volatile uint32_t *)(base + i));
 	}
 
-	mmcmsg("\n");
-}
-#else
- #define  dumphex32(fmt...)
+	printf("");
 #endif
+}
 
 struct sunxi_mmc_host {
 	uint32_t  mclk;
@@ -177,7 +175,7 @@ static int mmc_update_clk(void) {
 		;
 
 	if (timeout < 0) {
-		mmcinfo("update clk failed\n");
+		DEBUG_PUTS("update clk failed");
 		dumphex32("MMC0_BASE", (char *) H3_SD_MMC0_BASE, 0x100);
 		DEBUG_EXIT
 		return -1;
@@ -192,22 +190,21 @@ static int mmc_update_clk(void) {
 
 static int mmc_config_clock(unsigned clk) {
 	DEBUG_ENTRY
-
-	mmcdbg("clk %d\n",clk);
+	DEBUG_PRINTF("clk %u",clk);
 
 	uint32_t value = H3_SD_MMC0->CKC;
 	value &= ~CKC_CCLK_ENABLE;
 	H3_SD_MMC0->CKC = value;
 
 	if (mmc_update_clk()) {
-		mmcinfo("disable clock failed\n");
+		DEBUG_PUTS("disable clock failed");
 		DEBUG_EXIT
 		return -1;
 	}
 
 	H3_CCU->SDMMC0_CLK = 0;
 
-	mmcdbg("H3_CCU->SDMMC0_CLK %x\n",H3_CCU->SDMMC0_CLK);
+	DEBUG_PRINTF("H3_CCU->SDMMC0_CLK %x",H3_CCU->SDMMC0_CLK);
 
 	// SCLK = OSC24M / N / M
 	if (clk <= 400000) {
@@ -218,17 +215,17 @@ static int mmc_config_clock(unsigned clk) {
 		H3_CCU->SDMMC0_CLK = 0x00000001; // N = 1, M = 2
 	}
 
-	mmcdbg("H3_CCU->SDMMC0_CLK %x\n",H3_CCU->SDMMC0_CLK);
+	DEBUG_PRINTF("H3_CCU->SDMMC0_CLK %x",H3_CCU->SDMMC0_CLK);
 
 	H3_CCU->SDMMC0_CLK |= SDMMC_CLK_SCLK_GATING;
 
-	mmcdbg("H3_CCU->SDMMC0_CLK %x\n",H3_CCU->SDMMC0_CLK);
+	DEBUG_PRINTF("H3_CCU->SDMMC0_CLK %x",H3_CCU->SDMMC0_CLK);
 
 	value &= ~CKC_CCLK_DIV_MASK;
 	H3_SD_MMC0->CKC = value;
 
 	if (mmc_update_clk()) {
-		mmcinfo("Change Divider Factor failed\n");
+		DEBUG_PUTS("Change Divider Factor failed");
 		DEBUG_EXIT
 		return -1;
 	}
@@ -236,7 +233,7 @@ static int mmc_config_clock(unsigned clk) {
 	H3_SD_MMC0->CKC |= (CKC_CCLK_ENABLE | CKC_CCLK_CTRL);
 
 	if (mmc_update_clk()) {
-		mmcinfo("Re-enable clock failed\n");
+		DEBUG_PUTS("Re-enable clock failed");
 		DEBUG_EXIT
 		return -1;
 	}
@@ -248,12 +245,11 @@ static int mmc_config_clock(unsigned clk) {
 // Called by mmc.c
 static void mmc_set_ios(struct mmc *mmc) {
 	DEBUG_ENTRY
-
-	mmcdbg("ios: bus_width: %d, clock: %d\n", mmc->bus_width, mmc->clock);
+	DEBUG_PRINTF("ios: bus_width: %d, clock: %d", mmc->bus_width, mmc->clock);
 
 	if (mmc->clock && mmc_config_clock(mmc->clock)) {
-		msg("[mmc]: " "*** update clock failed\n");
 		_aw_mmc_host.fatal_err = 1;
+		DEBUG_PUTS("*** update clock failed");
 		DEBUG_EXIT
 		return;
 	}
@@ -302,7 +298,7 @@ static int mmc_trans_data_by_cpu(__attribute__((unused)) struct mmc *mmc, struct
 				;
 
 			if (timeout <= 0) {
-				mmcinfo("read transfer by cpu failed\n");
+				DEBUG_PUTS("read transfer by cpu failed");
 				return -1;
 			}
 
@@ -317,7 +313,7 @@ static int mmc_trans_data_by_cpu(__attribute__((unused)) struct mmc *mmc, struct
 				;
 
 			if (timeout <= 0) {
-				mmcinfo("write transfer by cpu failed\n");
+				DEBUG_PUTS("write transfer by cpu failed");
 				return -1;
 			}
 
@@ -337,12 +333,12 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 	int32_t error = 0;
 
 	if (_aw_mmc_host.fatal_err){
-		mmcinfo("Found fatal err,so no send cmd\n");
+		DEBUG_PUTS("Found fatal err,so no send cmd");
 		return -1;
 	}
 
 	if (cmd->resp_type & MMC_RSP_BUSY) {
-		mmcdbg("cmd %d check rsp busy\n", cmd->cmdidx);
+		DEBUG_PRINTF("cmd %d check rsp busy", cmd->cmdidx);
 	}
 
 	if (cmd->cmdidx == 12) { // TODO What is this 12? MMC_CMD_STOP_TRANSMISSION ?
@@ -367,7 +363,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 
 	if (data) {
 		if ((uint32_t) data->b.dest & 0x3) {
-			mmcinfo("dest is not 4 byte align\n");
+			DEBUG_PUTS("dest is not 4 byte align");
 			error = -1;
 			goto out;
 		}
@@ -387,7 +383,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 
 	}
 
-	mmcdbg("cmd %d(0x%x), arg 0x%x\n", cmd->cmdidx, cmdval|cmd->cmdidx, cmd->cmdarg);
+	DEBUG_PRINTF("cmd %d(0x%x), arg 0x%x", cmd->cmdidx, cmdval|cmd->cmdidx, cmd->cmdarg);
 	H3_SD_MMC0->ARG = cmd->cmdarg;
 
 	if (!data) {
@@ -396,7 +392,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 
 	if (data) {
 		int ret = 0;
-		mmcdbg("trans data %d bytes\n", data->blocksize * data->blocks);
+		DEBUG_PRINTF("trans data %d bytes", data->blocksize * data->blocks);
 
 		H3_SD_MMC0->GCTL |= GCTL_FIFO_AC_MODE_AHB;
 		H3_SD_MMC0->CMD = cmdval | (cmd->cmdidx & CMD_CMD_IDX_MASK);
@@ -404,7 +400,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 		ret = mmc_trans_data_by_cpu(mmc, data);
 
 		if (ret) {
-			mmcinfo("Transfer failed\n");
+			DEBUG_PUTS("Transfer failed");
 
 			error = H3_SD_MMC0->RIS & RIS_RAW_ISTA;
 
@@ -428,7 +424,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 				error = 0xffffffff;
 			}
 
-			mmcinfo("cmd %d timeout, err %x\n", cmd->cmdidx, error);
+			DEBUG_PRINTF("cmd %d timeout, err %x", cmd->cmdidx, error);
 
 			goto out;
 		}
@@ -448,7 +444,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 					error = 0xffffffff;
 				}
 
-				mmcinfo("data timeout, err %x\n", error);
+				DEBUG_PRINTF("data timeout, err %x", error);
 
 				goto out;
 			}
@@ -469,7 +465,7 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 
 			if (!timeout--) {
 				error = -1;
-				mmcinfo("busy timeout\n");
+				DEBUG_PUTS("busy timeout");
 				goto out;
 			}
 		} while (status & RIS_DATA_TIMEOUT);
@@ -480,10 +476,10 @@ static int mmc_send_cmd(struct mmc *mmc, struct mmc_cmd *cmd, struct mmc_data *d
 		cmd->response[1] = H3_SD_MMC0->RESP2;
 		cmd->response[2] = H3_SD_MMC0->RESP1;
 		cmd->response[3] = H3_SD_MMC0->RESP0;
-		mmcdbg("resp 0x%x 0x%x 0x%x 0x%x\n", cmd->response[3], cmd->response[2], cmd->response[1], cmd->response[0]);
+		DEBUG_PRINTF("resp 0x%x 0x%x 0x%x 0x%x", cmd->response[3], cmd->response[2], cmd->response[1], cmd->response[0]);
 	} else {
 		cmd->response[0] = H3_SD_MMC0->RESP0;
-		mmcdbg("resp 0x%x\n", cmd->response[0]);
+		DEBUG_PRINTF("resp 0x%x", cmd->response[0]);
 	}
 
 out:
@@ -496,7 +492,7 @@ out:
 			;
 
 		mmc_update_clk();
-		mmcinfo("cmd %d err %x\n", cmd->cmdidx, error);
+		DEBUG_PRINTF("cmd %d err %x", cmd->cmdidx, error);
 	}
 
 	H3_SD_MMC0->RIS = 0xffffffff;
@@ -510,8 +506,7 @@ out:
 
 int sunxi_mmc_init(void) {
 	DEBUG_ENTRY
-
-	mmcinfo("mmc driver ver %s\n",__DATE__ " " __TIME__);
+	DEBUG_PRINTF("mmc driver ver %s",__DATE__ " " __TIME__);
 
 	memset(&mmc_dev, 0, sizeof(struct mmc));
 	memset(&_aw_mmc_host, 0, sizeof(struct sunxi_mmc_host));
@@ -524,8 +519,7 @@ int sunxi_mmc_init(void) {
 	mmc_dev.set_ios = mmc_set_ios;
 	mmc_dev.init = mmc_core_init;
 
-	mmc_dev.voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32
-			| MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
+	mmc_dev.voltages = MMC_VDD_29_30 | MMC_VDD_30_31 | MMC_VDD_31_32 | MMC_VDD_32_33 | MMC_VDD_33_34 | MMC_VDD_34_35 | MMC_VDD_35_36;
 	mmc_dev.host_caps = MMC_MODE_HS_52MHz | MMC_MODE_HS | MMC_MODE_HC;
 	mmc_dev.host_caps |= MMC_MODE_4BIT;
 	mmc_dev.f_min = 400000;
@@ -537,7 +531,7 @@ int sunxi_mmc_init(void) {
 	int ret = mmc_register(0, &mmc_dev);
 
 	if (ret < 0) {
-		mmcinfo("register failed\n",0);
+		DEBUG_PUTS("register failed");
 		DEBUG_EXIT
 		return -1;
 	}

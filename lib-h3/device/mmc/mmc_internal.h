@@ -1,8 +1,8 @@
 /**
- * @file mmc.h
+ * @file mmc_internal.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,29 +49,15 @@
  * MA 02111-1307 USA
  */
 
-
 #ifndef _MMC_H_
 #define _MMC_H_
 
 #include <stdint.h>
 
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvariadic-macros"	//TODO ignored "-Wvariadic-macros"
+#pragma GCC diagnostic ignored "-Wpedantic"
 
-#define MAX_MMC_NUM			3
-
-#ifndef NDEBUG
- #include <stdio.h>
- #define msg(fmt,args...)	printf(fmt ,##args)
- #define mmcinfo(fmt...)	msg("[mmc] "fmt)
- #define mmcdbg(fmt...)	msg("[mmc] "fmt)
- #define mmcmsg(fmt...)	msg(fmt)
-#else
- #define msg(fmt,args...)
- #define mmcinfo(fmt...)	msg("[mmc] "fmt)
- #define mmcdbg(fmt...)
- #define mmcmsg(fmt...)
-#endif
+#define MAX_MMC_NUM	3
 
 #define SD_VERSION_SD	0x20000
 #define SD_VERSION_2	(SD_VERSION_SD | 0x20)
