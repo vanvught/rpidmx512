@@ -33,11 +33,6 @@
 #include "networkh3emac.h"
 #include "networkparams.h"
 
-#include "networkdisplay.h"
-#include "networkstore.h"
-
-#include "dhcpclient.h"
-
 #include "hardware.h"
 
 #include "./../lib-h3/include/net/net.h"

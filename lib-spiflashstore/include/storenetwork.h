@@ -27,7 +27,7 @@
 #define STORENETWORK_H_
 
 #include "networkparams.h"
-#include "networkstore.h"
+#include "network.h"
 
 class StoreNetwork: public NetworkParamsStore, public NetworkStore {
 public:

@@ -2,7 +2,7 @@
  * networkh3emac.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,9 @@
 
 #include "networkparams.h"
 
-#include "./../lib-h3/include/net/net.h"
+extern "C" {
+	void net_handle(void);
+}
 
 class NetworkH3emac: public Network {
 public:

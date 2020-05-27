@@ -32,7 +32,6 @@
 #include "display.h"
 
 #include "network.h"
-#include "dhcpclient.h"
 
 #include "hardware.h"
 #include "firmwareversion.h"

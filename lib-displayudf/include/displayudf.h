@@ -34,7 +34,7 @@
 #include "artnetnode.h"
 #include "e131bridge.h"
 
-#include "dhcpclient.h"
+#include "network.h"
 
 enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_TITLE,

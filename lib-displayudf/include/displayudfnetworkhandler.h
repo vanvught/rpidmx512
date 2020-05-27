@@ -28,11 +28,10 @@
 
 #include "displayudf.h"
 
-#include "networkdisplay.h"
+#include "network.h"
+#include "ntpclient.h"
 
-#include "dhcpclient.h"
-
-class DisplayUdfNetworkHandler: public NetworkDisplay {
+class DisplayUdfNetworkHandler: public NetworkDisplay, public NtpClientDisplay {
 public:
 	DisplayUdfNetworkHandler(void) {
 	}
@@ -51,12 +50,26 @@ public:
 		DisplayUdf::Get()->ShowHostName();
 	}
 
+	void ShowShutdown(void) {
+		DisplayUdf::Get()->ShowShutdown();
+	}
+
+	// DHCP Client
 	void ShowDhcpStatus(DhcpClientStatus nStatus) {
 		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 
-	void ShowShutdown(void) {
-		DisplayUdf::Get()->ShowShutdown();
+	// NTP Client
+	void ShowNtpClientStatus(NtpClientStatus nStatus) {
+		if (nStatus == NtpClientStatus::INIT) {
+			Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+			return;
+		}
+
+		if (nStatus == NtpClientStatus::STOPPED) {
+			Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+			return;
+		}
 	}
 };
 

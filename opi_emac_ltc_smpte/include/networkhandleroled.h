@@ -26,16 +26,12 @@
 #ifndef NETWORKHANDLEROLED_H_
 #define NETWORKHANDLEROLED_H_
 
-#include "networkdisplay.h"
-
 #include "display.h"
 
-#include "networkdisplay.h"
 #include "network.h"
+#include "ntpclient.h"
 
-#include "dhcpclient.h"
-
-class NetworkHandlerOled: public NetworkDisplay {
+class NetworkHandlerOled: public NetworkDisplay, public NtpClientDisplay {
 public:
 	NetworkHandlerOled(void) {
 		s_pThis = this;
@@ -56,6 +52,11 @@ public:
 	void ShowHostName(void) {
 	}
 
+	void ShowShutdown(void) {
+
+	}
+
+	// DHCP Client
 	void ShowDhcpStatus(DhcpClientStatus nStatus) {
 		switch (nStatus) {
 		case DhcpClientStatus::IDLE:
@@ -76,8 +77,17 @@ public:
 		}
 	}
 
-	void ShowShutdown(void) {
+	// NTP Client
+	void ShowNtpClientStatus(NtpClientStatus nStatus) {
+		if (nStatus == NtpClientStatus::INIT) {
+			Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+			return;
+		}
 
+		if (nStatus == NtpClientStatus::STOPPED) {
+			Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+			return;
+		}
 	}
 
 	static NetworkHandlerOled *Get(void) {

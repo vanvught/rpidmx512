@@ -37,9 +37,9 @@
 #include "hardware.h"
 
 #if defined (H3)
- #include "./../lib-h3/include/net/net.h"
- #include "display.h"
- #include "display7segment.h"
+extern "C" {
+ void net_handle(void);
+}
 #endif
 
 #include "debug.h"
@@ -48,12 +48,10 @@
 #define TIMEOUT_MILLIS	3000 	// 3 seconds
 #define POLL_SECONDS	1024	// 2ˆ10
 
-NtpClient *NtpClient::s_pThis = 0;
-
 NtpClient::NtpClient(uint32_t nServerIp):
 	m_nServerIp(nServerIp),
 	m_nHandle(-1),
-	m_tStatus(NTP_CLIENT_STATUS_STOPPED),
+	m_tStatus(NtpClientStatus::STOPPED),
 	m_InitTime(0),
 	m_MillisRequest(0),
 	m_MillisLastPoll(0)
@@ -95,9 +93,9 @@ void NtpClient::Init(void) {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-#if defined (H3)
-	Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
-#endif
+	if (m_pNtpClientDisplay != 0) {
+		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::INIT);
+	}
 
 	const uint32_t nNow = Hardware::Get()->Millis();
 	uint32_t nRetries;
@@ -136,7 +134,7 @@ void NtpClient::Init(void) {
 
 				if (Hardware::Get()->SetTime(pLocalTime)) {
 					m_MillisLastPoll = Hardware::Get()->Millis();
-					m_tStatus = NTP_CLIENT_STATUS_IDLE;
+					m_tStatus = NtpClientStatus::IDLE;
 				}
 			} else {
 				DEBUG_PUTS("!>> Invalid reply <<!");
@@ -145,10 +143,10 @@ void NtpClient::Init(void) {
 		}
 	}
 
-	if (m_tStatus == NTP_CLIENT_STATUS_STOPPED) {
-#if defined (H3)
-		Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
-#endif
+	if (m_tStatus == NtpClientStatus::STOPPED) {
+		if (m_pNtpClientDisplay != 0) {
+			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+		}
 	}
 
 	DEBUG_PRINTF("nBytesReceived=%d, nRetries=%d, m_tStatus=%d", nBytesReceived, nRetries, static_cast<int>(m_tStatus));
@@ -156,32 +154,34 @@ void NtpClient::Init(void) {
 }
 
 void NtpClient::Run(void) {
-	if (m_tStatus == NTP_CLIENT_STATUS_STOPPED) {
+	if (m_tStatus == NtpClientStatus::STOPPED) {
 		return;
 	}
 
-	if (m_tStatus == NTP_CLIENT_STATUS_IDLE) {
+	if (m_tStatus == NtpClientStatus::IDLE) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
 			Network::Get()->SendTo(m_nHandle, &m_Request, sizeof m_Request, m_nServerIp, NTP_UDP_PORT);
 			m_MillisRequest = Hardware::Get()->Millis();
-			m_tStatus = NTP_CLIENT_STATUS_WAITING;
-			DEBUG_PUTS("NTP_CLIENT_STATUS_WAITING");
+			m_tStatus = NtpClientStatus::WAITING;
+			DEBUG_PUTS("NtpClientStatus::WAITING");
 		}
 
 		return;
 	}
 
-	if (m_tStatus == NTP_CLIENT_STATUS_WAITING) {
+	if (m_tStatus == NtpClientStatus::WAITING) {
 		uint32_t nFromIp;
 		uint16_t nFromPort;
 
 		if ((Network::Get()->RecvFrom(m_nHandle, &m_Reply, sizeof m_Reply, &nFromIp, &nFromPort)) != sizeof m_Reply) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
-				m_tStatus = NTP_CLIENT_STATUS_STOPPED;
-				DEBUG_PUTS("NTP_CLIENT_STATUS_STOPPED");
-#if defined (H3)
-				Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
-#endif
+				m_tStatus = NtpClientStatus::STOPPED;
+				if (m_tStatus == NtpClientStatus::STOPPED) {
+					if (m_pNtpClientDisplay != 0) {
+						m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+					}
+				}
+				DEBUG_PUTS("NtpClientStatus::STOPPED");
 			}
 			return;
 		}
@@ -207,8 +207,8 @@ void NtpClient::Run(void) {
 			DEBUG_PUTS("!>> Invalid reply <<!");
 		}
 
-		m_tStatus = NTP_CLIENT_STATUS_IDLE;
-		DEBUG_PUTS("NTP_CLIENT_STATUS_IDLE");
+		m_tStatus = NtpClientStatus::IDLE;
+		DEBUG_PUTS("NtpClientStatus::IDLE");
 	}
 }
 
@@ -220,7 +220,7 @@ void NtpClient::Print(void) {
 	}
 	printf(" Server : " IPSTR "\n", IP2STR(m_nServerIp));
 	printf(" Port : %d\n", NTP_UDP_PORT);
-	printf(" Status : %d%c\n", static_cast<int>(m_tStatus), m_tStatus == NTP_CLIENT_STATUS_STOPPED ? '!' : ' ');
+	printf(" Status : %d%c\n", static_cast<int>(m_tStatus), m_tStatus == NtpClientStatus::STOPPED ? '!' : ' ');
 	printf(" Time : %s", asctime(localtime(&m_InitTime)));
 	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 }

@@ -26,6 +26,10 @@
 #ifndef NETWORK_H_
 #define NETWORK_H_
 
+#if !defined(ESP8266)
+# error ESP8266 must be defined
+#endif
+
 #include <stdint.h>
 #include <net/if.h>
 
@@ -41,6 +45,16 @@ enum TNetwork {
 
 #define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+
+class NetworkStore {
+public:
+	virtual ~NetworkStore(void) {}
+
+	virtual void SaveIp(uint32_t nIp)=0;
+	virtual void SaveNetMask(uint32_t nNetMask)=0;
+	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
+	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
+};
 
 class Network {
 public:

@@ -29,8 +29,11 @@
 #include <stdint.h>
 #include <net/if.h>
 
-#include "networkdisplay.h"
-#include "networkstore.h"
+#define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+#define IPSTR "%d.%d.%d.%d"
+
+#define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
+#define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
 enum class TDhcpMode {
 	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
@@ -45,11 +48,36 @@ enum TNetwork {
 	NETWORK_DOMAINNAME_SIZE = 64	/* including a terminating null byte. */
 };
 
-#define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
+enum class DhcpClientStatus {
+	IDLE,
+	RENEW,
+	GOT_IP,
+	FAILED
+};
 
-#define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
-#define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+class NetworkDisplay {
+public:
+	virtual ~NetworkDisplay(void) {
+	}
+
+	virtual void ShowIp(void)=0;
+	virtual void ShowNetMask(void)=0;
+	virtual void ShowHostName(void)=0;
+
+	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
+
+	virtual void ShowShutdown(void)=0;
+};
+
+class NetworkStore {
+public:
+	virtual ~NetworkStore(void) {}
+
+	virtual void SaveIp(uint32_t nIp)=0;
+	virtual void SaveNetMask(uint32_t nNetMask)=0;
+	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
+	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
+};
 
 class Network {
 public:
@@ -208,8 +236,8 @@ protected:
 	uint32_t m_nNtpServerIp;
 	float m_fNtpUtcOffset;
 
-	NetworkDisplay *m_pNetworkDisplay;
-	NetworkStore *m_pNetworkStore;
+	NetworkDisplay *m_pNetworkDisplay = 0;
+	NetworkStore *m_pNetworkStore = 0;
 
 private:
 	struct QueuedConfig {

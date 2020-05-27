@@ -135,12 +135,15 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
+	NetworkHandlerOled networkHandlerOled;
+
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkDisplay(new NetworkHandlerOled);
+	nw.SetNetworkDisplay(&networkHandlerOled);
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
 	ntpClient.Init();
 	ntpClient.Print();
 
@@ -321,7 +324,7 @@ void notmain(void) {
 	 * NTP Server is running when the NTP Client is not running (stopped)
 	 */
 
-	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NTP_CLIENT_STATUS_STOPPED);
+	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NtpClientStatus::STOPPED);
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 

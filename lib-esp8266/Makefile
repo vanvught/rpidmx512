@@ -1,5 +1,5 @@
 #
-DEFINES = NDEBUG
+DEFINES = ESP8266 NDEBUG
 #
 EXTRA_INCLUDES = ../lib-bob/include ../lib-console/include ../lib-hal/include ../lib-properties/include
 #

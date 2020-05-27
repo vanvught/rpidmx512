@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,10 +31,19 @@
 
 #include "ntp.h"
 
-enum TNtpClientStatus {
-	NTP_CLIENT_STATUS_STOPPED,
-	NTP_CLIENT_STATUS_IDLE,
-	NTP_CLIENT_STATUS_WAITING
+enum class NtpClientStatus {
+	INIT,
+	IDLE,
+	STOPPED,
+	WAITING
+};
+
+class NtpClientDisplay {
+public:
+	virtual ~NtpClientDisplay(void) {
+	}
+
+	virtual void ShowNtpClientStatus(NtpClientStatus nStatus)=0;
 };
 
 class NtpClient {
@@ -47,30 +56,29 @@ public:
 
 	void Print(void);
 
-	TNtpClientStatus GetStatus(void) {
+	NtpClientStatus GetStatus(void) {
 		return m_tStatus;
 	}
 
-	static NtpClient *Get(void) {
-		return s_pThis;
+	void SetNtpClientDisplay(NtpClientDisplay *pNtpClientDisplay) {
+		m_pNtpClientDisplay = pNtpClientDisplay;
 	}
 
 private:
 	void SetUtcOffset(float fUtcOffset);
 
 private:
-	static NtpClient *s_pThis;
-
-private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
 	int32_t m_nHandle;
-	TNtpClientStatus m_tStatus;
+	NtpClientStatus m_tStatus;
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
 	time_t m_InitTime;
 	uint32_t m_MillisRequest;
 	uint32_t m_MillisLastPoll;
+
+	NtpClientDisplay *m_pNtpClientDisplay = 0;
 };
 
 #endif /* NTPCLIENT_H_ */
