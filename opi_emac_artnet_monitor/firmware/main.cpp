@@ -85,6 +85,7 @@ void notmain(void) {
 	nw.Print();
 
 	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
 	ntpClient.Init();
 	ntpClient.Print();
 

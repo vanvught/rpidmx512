@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if (__GNUC__ > 8) || defined(__clang__)
+#if defined(__clang__)
  #pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 

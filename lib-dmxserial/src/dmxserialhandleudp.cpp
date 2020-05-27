@@ -101,7 +101,7 @@ void DmxSerial::HandleUdp(void) {
 	}
 
 	if (memcmp(s_UdpBuffer, Cmd::REQUEST_RELOAD, Length::REQUEST_RELOAD) == 0) {
-		Hardware::Get()->SoftReset();
+		Hardware::Get()->Reboot();
 		return;
 	}
 

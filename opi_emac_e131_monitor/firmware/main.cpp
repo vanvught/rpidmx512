@@ -78,11 +78,14 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	DisplayUdfNetworkHandler displayUdfNetworkHandler;
+
+	nw.SetNetworkDisplay(&displayUdfNetworkHandler);
 	nw.Init();
 	nw.Print();
 
 	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&displayUdfNetworkHandler);
 	ntpClient.Init();
 	ntpClient.Print();
 

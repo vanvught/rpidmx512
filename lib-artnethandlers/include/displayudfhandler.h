@@ -35,11 +35,11 @@
 
 #include "artnetdisplay.h"
 #include "lightsetdisplay.h"
-#include "networkdisplay.h"
 
-#include "dhcpclient.h"
+#include "network.h"
+#include "ntpclient.h"
 
-class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay {
+class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay, public NtpClientDisplay {
 public:
 	DisplayUdfHandler(void) {
 	}
@@ -89,12 +89,26 @@ public:
 		DisplayUdf::Get()->ShowHostName();
 	}
 
+	void ShowShutdown(void) {
+		DisplayUdf::Get()->ShowShutdown();
+	}
+
+	// DHCP Client
 	void ShowDhcpStatus(DhcpClientStatus nStatus) {
 		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 
-	void ShowShutdown(void) {
-		DisplayUdf::Get()->ShowShutdown();
+	// NTP Client
+	void ShowNtpClientStatus(NtpClientStatus nStatus) {
+		if (nStatus == NtpClientStatus::INIT) {
+			Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+			return;
+		}
+
+		if (nStatus == NtpClientStatus::STOPPED) {
+			Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+			return;
+		}
 	}
 };
 

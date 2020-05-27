@@ -43,7 +43,7 @@ extern void __assert_func(const char *file, int line, const char *func, const ch
 #ifdef NDEBUG           /* required by ANSI standard */
 # define assert(__e) (__ASSERT_VOID_CAST(0))
 #else
-# define assert(__e) (__builtin_expect((__e),1) ? __ASSERT_VOID_CAST(0) : __assert_func (__FILE__, __LINE__, __FUNCTION__, #__e))
+# define assert(__e) (__builtin_expect((__e),1) ? __ASSERT_VOID_CAST(0) : __assert_func (__FILE__, __LINE__, __func__, #__e))
 #endif /* !NDEBUG */
 
 #ifdef __cplusplus

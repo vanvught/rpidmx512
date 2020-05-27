@@ -25,6 +25,6 @@
 
 #include "e131msgconst.h"
 
-const char E131MsgConst::PARAMS[] = "Setting Bridge parameters";
-const char E131MsgConst::START[] = "Starting the Bridge";
-const char E131MsgConst::STARTED[] = "Bridge started";
+const char E131MsgConst::PARAMS[] = "Configuring sACN E1.31";
+const char E131MsgConst::START[] = "Starting sACN E1.31";
+const char E131MsgConst::STARTED[] = "sACN E1.31 started";

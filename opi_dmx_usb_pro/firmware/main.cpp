@@ -81,8 +81,10 @@ void notmain(void) {
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreWidget storeWidget;
 	StoreRDMDevice storeRDMDevice;
 

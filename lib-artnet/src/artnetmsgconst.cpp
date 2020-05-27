@@ -28,9 +28,9 @@
 
 #include "artnetmsgconst.h"
 
-const char ArtNetMsgConst::PARAMS[] = "Setting Node parameters";
-const char ArtNetMsgConst::START[] = "Starting the Node";
-const char ArtNetMsgConst::STARTED[] = "Node started";
+const char ArtNetMsgConst::PARAMS[] = "Configuring Art-Net";
+const char ArtNetMsgConst::START[] = "Starting Art-Net";
+const char ArtNetMsgConst::STARTED[] = "Art-Net started";
 const char ArtNetMsgConst::RDM_RUN[] = "Running RDM Discovery";
 
 

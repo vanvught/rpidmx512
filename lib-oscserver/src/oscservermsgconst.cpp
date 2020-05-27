@@ -25,6 +25,6 @@
 
 #include "oscservermsgconst.h"
 
-const char OscServerMsgConst::PARAMS[] = "Setting OSC Server parameters";
+const char OscServerMsgConst::PARAMS[] = "Configuring OSC Server";
 const char OscServerMsgConst::START[] = "Starting the OSC Server";
 const char OscServerMsgConst::STARTED[] = "OSC Server started";

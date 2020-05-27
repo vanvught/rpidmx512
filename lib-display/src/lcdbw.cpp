@@ -132,7 +132,7 @@ void LcdBw::PutString(const char *s) {
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
-	for (i = 1; (i < m_nCols * m_nRows) && (*p != '\0'); i++) {
+	for (i = 1; (i < static_cast<uint32_t>(m_nCols * m_nRows)) && (*p != '\0'); i++) {
 		data[i] = *p;
 		p++;
 	}
