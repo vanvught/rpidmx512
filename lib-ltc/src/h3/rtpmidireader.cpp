@@ -98,7 +98,7 @@ void RtpMidiReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 }
 
 void RtpMidiReader::Stop(void) {
@@ -196,9 +196,9 @@ void RtpMidiReader::Run(void) {
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		led_set_ticks_per_second(LED_TICKS_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 	}
 }

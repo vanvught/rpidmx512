@@ -97,7 +97,7 @@ void TCNetReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 
 	// UDP Request
 	m_nHandle = Network::Get()->Begin(UDP::PORT);
@@ -231,10 +231,10 @@ void TCNetReader::Run(void) {
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		led_set_ticks_per_second(LED_TICKS_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 	}
 

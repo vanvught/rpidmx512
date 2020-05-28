@@ -61,10 +61,10 @@ enum TTimecodeTypes {
 	TC_TYPE_INVALID = 255
 };
 
-enum TLedTicks {
-	LED_TICKS_NO_DATA = 1000000 / 1,
-	LED_TICKS_DATA = 1000000 / 3
-};
+namespace LedFrequency {
+	static constexpr uint32_t NO_DATA = 1;
+	static constexpr uint32_t DATA = 3;
+}
 
 struct TLtcDisabledOutputs {
 	bool bDisplay;

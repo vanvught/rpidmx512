@@ -29,22 +29,12 @@
 #include <cassert>
 
 #include "hardware.h"
+#include "ledblink.h"
 
-#include "c/hardware.h"
-#include "c/sys_time.h"
-#include "c/led.h"
-
-#include "h3.h"
-#include "h3_timer.h"
 #include "h3_watchdog.h"
 #include "h3_board.h"
 
-#include "arm/arm.h"
 #include "arm/synchronize.h"
-
-extern "C" {
-void _start(void);
-}
 
 #if defined(ORANGE_PI)
 #elif defined(ORANGE_PI_ONE)
@@ -52,22 +42,22 @@ void _start(void);
  #error Platform not supported
 #endif
 
-namespace SOC {
+namespace soc {
 	static constexpr char NAME[2][4] = { "H2+", "H3\0" };
 	static constexpr uint8_t NAME_LENGTH[2] = { 3, 2 };
 }
 
-namespace CPU {
+namespace cpu {
 	static constexpr char NAME[] = "Cortex-A7";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-namespace MACHINE {
+namespace machine {
 	static constexpr char NAME[] = "arm";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-namespace SYSNAME {
+namespace sysname {
 	static constexpr char NAME[] = "Baremetal";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
@@ -83,13 +73,13 @@ Hardware::~Hardware(void) {
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
-	nLength = MACHINE::NAME_LENGTH;
-	return MACHINE::NAME;
+	nLength = machine::NAME_LENGTH;
+	return machine::NAME;
 }
 
 const char *Hardware::GetSysName(uint8_t &nLength) {
-	nLength = SYSNAME::NAME_LENGTH;
-	return SYSNAME::NAME;
+	nLength = sysname::NAME_LENGTH;
+	return sysname::NAME;
 }
 
 const char *Hardware::GetBoardName(uint8_t &nLength) {
@@ -98,17 +88,17 @@ const char *Hardware::GetBoardName(uint8_t &nLength) {
 }
 
 const char *Hardware::GetCpuName(uint8_t &nLength) {
-	nLength = CPU::NAME_LENGTH;
-	return CPU::NAME;
+	nLength = cpu::NAME_LENGTH;
+	return cpu::NAME;
 }
 
 const char *Hardware::GetSocName(uint8_t &nLength) {
 #if defined(ORANGE_PI)
-	nLength = SOC::NAME_LENGTH[0];
-	return SOC::NAME[0];
+	nLength = soc::NAME_LENGTH[0];
+	return soc::NAME[0];
 #else
-	nLength = SOC::NAME_LENGTH[1];
-	return SOC::NAME[1];
+	nLength = soc::NAME_LENGTH[1];
+	return soc::NAME[1];
 #endif
 }
 
@@ -134,7 +124,7 @@ void Hardware::GetTime(struct tm *pTime) {
 }
 
 bool Hardware::Reboot(void) {
-	hardware_led_set(1);
+	LedBlink::Get()->SetFrequency(8);
 
 	if (m_pRebootHandler != 0) {
 		h3_watchdog_disable();
@@ -143,18 +133,13 @@ bool Hardware::Reboot(void) {
 
 	h3_watchdog_enable();
 
-	invalidate_instruction_cache();
-	flush_branch_target_cache();
-	flush_prefetch_buffer();
 	clean_data_cache();
 	invalidate_data_cache();
 
-	led_set_ticks_per_second(1000000 / 8);
-
 	for (;;) {
-		led_blink();
+		LedBlink::Get()->Run();
 	}
 
-	__builtin_unreachable ();
+	__builtin_unreachable();
 	return true;
 }

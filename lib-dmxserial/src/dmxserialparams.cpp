@@ -40,7 +40,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "debug.h"
 
@@ -50,7 +50,7 @@ DmxSerialParams::DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore):  
 	DEBUG_PRINTF("sizeof(struct TDmxSerialParams) = %d", static_cast<int>(sizeof(struct TDmxSerialParams)));
 
 	m_tDmxSerialParams.nSetList = 0;
-	m_tDmxSerialParams.nType = DmxSerialDefaults::TYPE;
+	m_tDmxSerialParams.nType = static_cast<uint8_t>(DmxSerialDefaults::TYPE);
 	m_tDmxSerialParams.nBaud = DmxSerialDefaults::UART_BAUD;
 	m_tDmxSerialParams.nBits = DmxSerialDefaults::UART_BITS;
 	m_tDmxSerialParams.nParity = DmxSerialDefaults::UART_PARITY;
@@ -58,7 +58,7 @@ DmxSerialParams::DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore):  
 	m_tDmxSerialParams.nSpiSpeedHz = DmxSerialDefaults::SPI_SPEED_HZ;
 	m_tDmxSerialParams.nSpiMode = DmxSerialDefaults::SPI_MODE;
 	m_tDmxSerialParams.nI2cAddress = DmxSerialDefaults::I2C_ADDRESS;
-	m_tDmxSerialParams.nI2cSpeedMode = DmxSerialDefaults::I2C_SPEED_MODE;
+	m_tDmxSerialParams.nI2cSpeedMode = static_cast<uint8_t>(DmxSerialDefaults::I2C_SPEED_MODE);
 
 	DEBUG_EXIT
 }
@@ -117,9 +117,9 @@ void DmxSerialParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, DmxSerialParamsConst::TYPE, aChar, &nLength) == SSCAN_OK) {
 		aChar[nLength] = '\0';
-		m_tDmxSerialParams.nType = Serial::GetType(aChar);
+		m_tDmxSerialParams.nType = static_cast<uint8_t>(Serial::GetType(aChar));
 
-		if (m_tDmxSerialParams.nType != DmxSerialDefaults::TYPE) {
+		if (m_tDmxSerialParams.nType != static_cast<uint8_t>(DmxSerialDefaults::TYPE)) {
 			m_tDmxSerialParams.nSetList |= DmxSerialParamsMask::TYPE;
 		} else {
 			m_tDmxSerialParams.nSetList &= ~DmxSerialParamsMask::TYPE;
@@ -223,9 +223,9 @@ void DmxSerialParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, DmxSerialParamsConst::I2C_SPEED_MODE, aChar, &nLength) == SSCAN_OK) {
 		aChar[nLength] = '\0';
-		m_tDmxSerialParams.nI2cSpeedMode = Serial::GetI2cSpeed(aChar);
+		m_tDmxSerialParams.nI2cSpeedMode = static_cast<uint8_t>(Serial::GetI2cSpeed(aChar));
 
-		if (m_tDmxSerialParams.nI2cSpeedMode != DmxSerialDefaults::I2C_SPEED_MODE) {
+		if (m_tDmxSerialParams.nI2cSpeedMode != static_cast<uint8_t>(DmxSerialDefaults::I2C_SPEED_MODE)) {
 			m_tDmxSerialParams.nSetList |= DmxSerialParamsMask::I2C_SPEED_MODE;
 		} else {
 			m_tDmxSerialParams.nSetList &= ~DmxSerialParamsMask::I2C_SPEED_MODE;
@@ -245,7 +245,7 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 
 	PropertiesBuilder builder(DmxSerialParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DmxSerialParamsConst::TYPE, Serial::GetType(static_cast<TSerialTypes>(m_tDmxSerialParams.nType)), isMaskSet(DmxSerialParamsMask::TYPE));
+	builder.Add(DmxSerialParamsConst::TYPE, Serial::GetType(static_cast<SerialType>(m_tDmxSerialParams.nType)), isMaskSet(DmxSerialParamsMask::TYPE));
 
 	builder.AddComment("UART");
 	builder.Add(DmxSerialParamsConst::UART_BAUD, m_tDmxSerialParams.nBaud, isMaskSet(DmxSerialParamsMask::BAUD));
@@ -259,7 +259,7 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 
 	builder.AddComment("I2C");
 	builder.AddHex8(DmxSerialParamsConst::I2C_ADDRESS, m_tDmxSerialParams.nI2cAddress, isMaskSet(DmxSerialParamsMask::I2C_ADDRESS));
-	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeed(static_cast<TSerialI2cSpeedModes>(m_tDmxSerialParams.nI2cSpeedMode)), isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE));
+	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeed(static_cast<SerialI2cSpeedMode>(m_tDmxSerialParams.nI2cSpeedMode)), isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE));
 
 	nSize = builder.GetSize();
 
@@ -284,7 +284,7 @@ void DmxSerialParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 void DmxSerialParams::Set(void) {
 
 	if (isMaskSet(DmxSerialParamsMask::TYPE)) {
-		Serial::Get()->SetType(static_cast<TSerialTypes>(m_tDmxSerialParams.nType));
+		Serial::Get()->SetType(static_cast<SerialType>(m_tDmxSerialParams.nType));
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::BAUD)) {
@@ -317,7 +317,7 @@ void DmxSerialParams::Set(void) {
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE)) {
-		Serial::Get()->SetI2cSpeedMode(static_cast<TSerialI2cSpeedModes>(m_tDmxSerialParams.nI2cSpeedMode));
+		Serial::Get()->SetI2cSpeedMode(static_cast<SerialI2cSpeedMode>(m_tDmxSerialParams.nI2cSpeedMode));
 	}
 }
 
@@ -326,7 +326,7 @@ void DmxSerialParams::Dump(void) {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxSerialParamsConst::FILE_NAME);
 
 	if (isMaskSet(DmxSerialParamsMask::TYPE)) {
-		printf(" %s=%d [%s]\n", DmxSerialParamsConst::TYPE, m_tDmxSerialParams.nType, Serial::GetType(static_cast<TSerialTypes>(m_tDmxSerialParams.nType)));
+		printf(" %s=%d [%s]\n", DmxSerialParamsConst::TYPE, m_tDmxSerialParams.nType, Serial::GetType(static_cast<SerialType>(m_tDmxSerialParams.nType)));
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::BAUD)) {
@@ -358,7 +358,7 @@ void DmxSerialParams::Dump(void) {
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE)) {
-		printf(" %s=%s [%d]\n", DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeed(static_cast<TSerialI2cSpeedModes>(m_tDmxSerialParams.nI2cSpeedMode)), m_tDmxSerialParams.nI2cSpeedMode);
+		printf(" %s=%s [%d]\n", DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeed(static_cast<SerialI2cSpeedMode>(m_tDmxSerialParams.nI2cSpeedMode)), m_tDmxSerialParams.nI2cSpeedMode);
 	}
 #endif
 }

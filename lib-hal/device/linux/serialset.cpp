@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "debug.h"
 
@@ -73,7 +73,7 @@ void Serial::SetI2cAddress(__attribute__((unused)) uint8_t nAddress) {
 	DEBUG_PRINTF("nAddress=%.x", nAddress);
 }
 
-void Serial::SetI2cSpeedMode(__attribute__((unused)) TSerialI2cSpeedModes tSpeedMode) {
+void Serial::SetI2cSpeedMode(__attribute__((unused)) SerialI2cSpeedMode tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 }
 

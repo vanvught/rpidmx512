@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "serial.h"
+#include "device/serial.h"
 
-#include "h3_i2c.h"
+#include "h3_i2c.h"	// TODO Replace with hal_i2c.h ?
 
 #include "debug.h"
 
@@ -39,10 +39,10 @@ void Serial::SetI2cAddress(uint8_t nAddress) {
 	m_I2cConfiguration.nAddress = nAddress;
 }
 
-void Serial::SetI2cSpeedMode(TSerialI2cSpeedModes tSpeedMode) {
+void Serial::SetI2cSpeedMode(SerialI2cSpeedMode tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 
-	if (tSpeedMode >= SERIAL_I2C_SPEED_MODE_UNDEFINED) {
+	if (tSpeedMode >= SerialI2cSpeedMode::UNDEFINED) {
 		return;
 	}
 
@@ -53,7 +53,7 @@ bool Serial::InitI2c(void) {
 	DEBUG_ENTRY
 
 	h3_i2c_begin();
-	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SERIAL_I2C_SPEED_MODE_NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
+	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SerialI2cSpeedMode::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
 
 	DEBUG_EXIT
 	return true;

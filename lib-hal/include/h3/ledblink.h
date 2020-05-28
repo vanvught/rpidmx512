@@ -28,14 +28,44 @@
 
 #include <stdint.h>
 
-#include "c/led.h"
+#include "h3.h"
+
+extern "C" {
+void hardware_led_set(const int);
+}
 
 class LedBlink {
 public:
 	LedBlink(void);
 	~LedBlink(void);
 
-	void SetFrequency(uint32_t nFreqHz);
+	void SetFrequency(uint32_t nFreqHz) {
+		m_nFreqHz = nFreqHz;
+
+		switch (nFreqHz) {
+		case 0:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(0);
+			break;
+		case 1:
+			m_nTicksPerSecond = (1000000 / 1);
+			break;
+		case 3:
+			m_nTicksPerSecond = (1000000 / 3);
+			break;
+		case 5:
+			m_nTicksPerSecond = (1000000 / 5);
+			break;
+		case 255:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(1);
+			break;
+		default:
+			m_nTicksPerSecond = (1000000 / nFreqHz);
+			break;
+		}
+	}
+
 	uint32_t GetFrequency(void) {
 		return m_nFreqHz;
 	}
@@ -46,7 +76,20 @@ public:
 	}
 
 	void Run(void) {
-		led_blink();
+		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
+			return;
+		}
+
+		const uint32_t nMicros = H3_TIMER->AVS_CNT1;
+
+		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+			return;
+		}
+
+		m_nMicrosPrevious = nMicros;
+
+		m_nToggleLed ^= 0x1;
+		hardware_led_set(m_nToggleLed);
 	}
 
 	void SetLedBlinkDisplay(LedBlinkDisplay *pLedBlinkDisplay) {
@@ -62,6 +105,10 @@ private:
 	uint32_t m_nFreqHz;
 	tLedBlinkMode m_tMode;
 	LedBlinkDisplay *m_pLedBlinkDisplay;
+	//
+	uint32_t m_nTicksPerSecond = 1000000 / 2;
+	int32_t m_nToggleLed = 0;
+	uint32_t m_nMicrosPrevious = 0;
 
 	static LedBlink *s_pThis;
 };

@@ -40,17 +40,17 @@
 
 static constexpr char aSocName[4][8] = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 
-namespace CPU {
+namespace cpu {
 	static constexpr char NAME[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
 	static constexpr uint8_t NAME_LENGTH[4] = {12, 9, 18, 8};
 }
 
-namespace MACHINE {
+namespace machine {
 	static constexpr char NAME[] = "arm";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-namespace SYSNAME {
+namespace sysname {
 	static constexpr char NAME[] = "Baremetal";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
@@ -80,13 +80,13 @@ Hardware::~Hardware(void) {
 }
 
 const char *Hardware::GetMachine(uint8_t& nLength) {
-	nLength = MACHINE::NAME_LENGTH;
-	return MACHINE::NAME;
+	nLength = machine::NAME_LENGTH;
+	return machine::NAME;
 }
 
 const char *Hardware::GetSysName(uint8_t& nLength) {
-	nLength = SYSNAME::NAME_LENGTH;
-	return SYSNAME::NAME;
+	nLength = sysname::NAME_LENGTH;
+	return sysname::NAME;
 }
 
 const char *Hardware::GetBoardName(uint8_t& nLength) {
@@ -95,8 +95,8 @@ const char *Hardware::GetBoardName(uint8_t& nLength) {
 }
 
 const char *Hardware::GetCpuName(uint8_t& nLength) {
-	nLength = CPU::NAME_LENGTH[m_tSocType];
-	return CPU::NAME[m_tSocType];
+	nLength = cpu::NAME_LENGTH[m_tSocType];
+	return cpu::NAME[m_tSocType];
 }
 
 const char *Hardware::GetSocName(uint8_t& nLength) {

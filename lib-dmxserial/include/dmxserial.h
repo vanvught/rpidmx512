@@ -32,10 +32,10 @@
 #include "dmxserialtftp.h"
 
 #include "lightset.h"
-#include "serial.h"
+#include "device/serial.h"
 
-struct DmxSerialDefaults {
-	static constexpr auto TYPE = SERIAL_TYPE_UART;
+namespace DmxSerialDefaults {
+	static constexpr auto TYPE = SerialType::UART;
 	static constexpr auto UART_BAUD = 115200;
 	static constexpr auto UART_BITS = 8;
 	static constexpr auto UART_PARITY = SERIAL_UART_PARITY_NONE;
@@ -43,17 +43,17 @@ struct DmxSerialDefaults {
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;
 	static constexpr auto I2C_ADDRESS = 0x30;
-	static constexpr auto I2C_SPEED_MODE = SERIAL_I2C_SPEED_MODE_FAST;
-};
+	static constexpr auto I2C_SPEED_MODE = SerialI2cSpeedMode::FAST;
+}
 
 #define DMXSERIAL_FILE_PREFIX	"chl"
 #define DMXSERIAL_FILE_SUFFIX	".txt"
 
-struct DmxSerialFile {
+namespace DmxSerialFile {
 	static constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
 	static constexpr auto MIN_NUMBER = 1;
 	static constexpr auto MAX_NUMBER = DMX_UNIVERSE_SIZE;
-};
+}
 
 class DmxSerial: public LightSet {
 public:

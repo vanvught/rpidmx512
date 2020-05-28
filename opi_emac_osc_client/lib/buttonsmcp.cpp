@@ -30,68 +30,56 @@
 #include "oscclient.h"
 
 #include "board/h3_opi_zero.h"
-#include "h3_gpio.h"
+#include "h3_gpio.h"		//TODO Remove H3 dependency
 
-#include "i2c.h"
+#include "hal_i2c.h"
+#include "device/mcp23x17.h"
 
 #include "debug.h"
 
-#define MCP23017_I2C_ADDRESS	0x20
+namespace mcp23017 {
+static constexpr auto I2C_ADDRESS = 0x20;
+}
 
-#define MCP23X17_IOCON			0x0A
-
-#define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23X17_GPINTENA		0x04	///< INTERRUPT-ON-CHANGE CONTROL (GPINTENA) REGISTER, 0 = No Interrupt on Change (default), 1 = Interrupt on Change
-#define MCP23X17_GPPUA			0x0C	///< PULL-UP RESISTOR CONFIGURATION (GPPUA) REGISTER, INPUT ONLY: 0 = No Internal 100k Pull-Up (default) 1 = Internal 100k Pull-Up
-#define MCP23X17_INTCAPA		0x10	///< INTERRUPT CAPTURE (INTCAPA) REGISTER, READ ONLY: State of the Pin at the Time the Interrupt Occurred
-#define MCP23X17_GPIOA			0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-
-#define MCP23X17_IODIRB			0x01	///< I/O DIRECTION (IODIRB) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23X17_GPIOB			0x13	///< PORT (GPIOB) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-
-#define GPIO_INTA				GPIO_EXT_12 // PA7
+namespace gpio {
+static constexpr auto INTA = GPIO_EXT_12; // PA7
+}
 
 ButtonsMcp::ButtonsMcp(OscClient *pOscClient):
+	m_I2C(mcp23017::I2C_ADDRESS),
 	m_pOscClient(pOscClient),
 	m_bIsConnected(false),
-	m_nButtons(0x00),
-	m_nButtonsPrevious(0x00),
-	m_nPortB(0x00)
+	m_nButtons(0),
+	m_nButtonsPrevious(0),
+	m_nPortB(0)
 {
 	assert(m_pOscClient != 0);
 }
 
 ButtonsMcp::~ButtonsMcp(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
 }
 
 bool ButtonsMcp::Start(void) {
 	DEBUG_ENTRY
 
-	i2c_set_baudrate(I2C_FULL_SPEED);
-
-	m_bIsConnected = i2c_is_connected(MCP23017_I2C_ADDRESS);
+	m_bIsConnected = m_I2C.IsConnected();
 
 	if (!m_bIsConnected) {
 		DEBUG_EXIT
 		return false;
 	}
 
-	i2c_set_address(MCP23017_I2C_ADDRESS);
-
 	// Switches
-	i2c_write_reg_uint8(MCP23X17_IODIRA, 0xFF); 	// All input
-	i2c_write_reg_uint8(MCP23X17_GPPUA, 0xFF);		// Pull-up
-	i2c_write_reg_uint8(MCP23X17_GPINTENA, 0xFF);	// Interrupt on Change
-	i2c_read_reg_uint8(MCP23X17_INTCAPA);			// Clear interrupt
+	m_I2C.WriteRegister(mcp23x17::IODIRA, 0xFF); 	// All input
+	m_I2C.WriteRegister(mcp23x17::GPPUA, 0xFF);		// Pull-up
+	m_I2C.WriteRegister(mcp23x17::GPINTENA, 0xFF);	// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::INTCAPA);			// Clear interrupt
 	// Led's
-	i2c_write_reg_uint8(MCP23X17_IODIRB, 0x00); 	// All output
-	i2c_write_reg_uint8(MCP23X17_GPIOB, 0);			// All led's Off
+	m_I2C.WriteRegister(mcp23x17::IODIRB, 0x00); 	// All output
+	m_I2C.WriteRegister(mcp23x17::GPIOB, 0);		// All led's Off
 
-	h3_gpio_fsel(GPIO_INTA, GPIO_FSEL_INPUT); 		// PA7
-	h3_gpio_pud(GPIO_INTA, GPIO_PULL_UP);
+	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); 		// PA7
+	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
 
 	m_nButtonsCount = 8;
 
@@ -100,22 +88,32 @@ bool ButtonsMcp::Start(void) {
 }
 
 void ButtonsMcp::Stop(void) {
-	h3_gpio_fsel(GPIO_INTA, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_DISABLE);
 }
 
 void ButtonsMcp::Run(void) {
-	if (h3_gpio_lev(GPIO_INTA) == LOW) {
-
-		i2c_set_address(MCP23017_I2C_ADDRESS);
+	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 		m_nButtonsPrevious = m_nButtons;
-		m_nButtons = ~i2c_read_reg_uint8(MCP23X17_GPIOA);
+		m_nButtons = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
 
 		const uint8_t nButtonsChanged = (m_nButtons ^ m_nButtonsPrevious) & m_nButtons;
+
+		/* P = m_nButtonsPrevious
+		 * N = m_nButtons
+		 * X = m_nButtons ^ m_nButtonsPrevious
+		 * C = nButtonsChanged
+		 *
+		 * P N	X N	C
+		 * 0 0	0 0	0
+		 * 0 1	1 1	1
+		 * 1 0	1 0	0
+		 * 1 1	0 1	0
+		 */
 
 		DEBUG_PRINTF("%.2x", nButtonsChanged);
 
 		for (uint32_t i = 0; i < 8; i++) {
-			if ((nButtonsChanged & (1 << i)) == ((1 << i))) {
+			if ((nButtonsChanged & (1U << i)) == ((1U << i))) {
 				m_pOscClient->SendCmd(i);
 			}
 		}
@@ -126,12 +124,12 @@ void ButtonsMcp::SetLed(uint8_t nLed, bool bOn) {
 	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
 
 	m_nPortB &= ~(1U << nLed);
+
 	if (bOn) {
 		m_nPortB |= (1U << nLed);
 	}
 
-	i2c_set_address(MCP23017_I2C_ADDRESS);
-	i2c_write_reg_uint8(MCP23X17_GPIOB, m_nPortB);
+	m_I2C.WriteRegister(mcp23x17::GPIOB, m_nPortB);
 
 	DEBUG_PRINTF("%.2x", m_nPortB);
 }

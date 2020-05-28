@@ -23,22 +23,22 @@
  * THE SOFTWARE.
  */
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "debug.h"
 
 bool Serial::Init(void) {
 	DEBUG_ENTRY
 
-	if (m_tType == SERIAL_TYPE_UART) {
+	if (m_tType == SerialType::UART) {
 		return InitUart();
 	}
 
-	if (m_tType == SERIAL_TYPE_SPI) {
+	if (m_tType == SerialType::SPI) {
 		return InitSpi();
 	}
 
-	if (m_tType == SERIAL_TYPE_I2C) {
+	if (m_tType == SerialType::I2C) {
 		return InitI2c();
 	}
 

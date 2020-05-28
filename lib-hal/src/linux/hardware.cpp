@@ -48,8 +48,38 @@
 
 #include "debug.h"
 
-extern "C" {
- char *str_find_replace(char *str, const char *find, const char *replace);
+static char *str_find_replace(char *str, const char *find, const char *replace) {
+	assert(strlen(replace) <= strlen(find));
+
+	unsigned i, j, k, n, m;
+
+	 i = j = m = n = 0;
+
+	while (str[i] != '\0') {
+		if (str[m] == find[n]) {
+			m++;
+			n++;
+			if (find[n] == '\0') {
+				for (k = 0; replace[k] != '\0'; k++, j++) {
+					str[j] = replace[k];
+				}
+				n = 0;
+				i = m;
+			}
+		} else {
+			str[j] = str[i];
+			j++;
+			i++;
+			m = i;
+			n = 0;
+		}
+	}
+
+	for (; j < i; j++) {
+		str[j] = '\0';
+	}
+
+	return str;
 }
 
 #if defined (__linux__)
@@ -64,7 +94,7 @@ static constexpr char UNKNOWN[] = "Unknown";
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(char **argv):
+Hardware::Hardware(void):
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)

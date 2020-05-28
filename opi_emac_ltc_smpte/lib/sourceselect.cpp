@@ -46,13 +46,13 @@
 #include "rotaryencoder.h"
 
 #include "hal_i2c.h"
-#include "serial/mcp23x17.h"
+#include "device/mcp23x17.h"
 
 #include "h3/ltcgenerator.h"
 
 // Interrupt
-#include "h3_board.h"
-#include "h3_gpio.h"
+#include "board/h3_opi_zero.h"
+#include "h3_gpio.h"	//TODO Remove H3 dependency
 
 #include "spiflashstore.h"
 #include "storeltc.h"

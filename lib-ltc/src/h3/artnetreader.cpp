@@ -27,6 +27,8 @@
 #include <string.h>
 #include <cassert>
 
+#include "ledblink.h"
+
 #include "h3/artnetreader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
@@ -77,7 +79,7 @@ void ArtNetReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 }
 
 void ArtNetReader::Stop(void) {
@@ -97,8 +99,7 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 
 	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof (struct _midi_send_tc ));
 
-	LtcOutputs::Get()->Update(
-			reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
+	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 }
 
 void ArtNetReader::Run(void) {
@@ -106,9 +107,9 @@ void ArtNetReader::Run(void) {
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		led_set_ticks_per_second(LED_TICKS_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 	}
 }

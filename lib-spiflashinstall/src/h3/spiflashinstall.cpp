@@ -132,9 +132,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 						Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
 						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 						for (;;) {
-#if defined (BARE_METAL)
-							led_blink();
-#endif
+							LedBlink::Get()->Run();
 						}
 					}
 
@@ -144,18 +142,14 @@ SpiFlashInstall::SpiFlashInstall(void):
 						const uint32_t now = Hardware::Get()->Millis();
 
 						while ((Hardware::Get()->Millis() - now) < 3000) {
-#if defined (BARE_METAL)
-							led_blink();
-#endif
+							LedBlink::Get()->Run();
 						}
 
 						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
 							Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
 							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 							for (;;) {
-#if defined (BARE_METAL)
-								led_blink();
-#endif
+								LedBlink::Get()->Run();
 							}
 						}
 

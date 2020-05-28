@@ -231,7 +231,7 @@ void LtcGenerator::Start(void) {
 
 	LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 
 	DEBUG_EXIT
 }
@@ -673,8 +673,8 @@ void LtcGenerator::Run(void) {
 	HandleUdpRequest();
 
 	if (m_bIsStarted) {
-		led_set_ticks_per_second(LED_TICKS_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 	} else {
-		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 	}
 }

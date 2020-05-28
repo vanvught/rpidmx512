@@ -36,7 +36,7 @@
 
 class Hardware {
 public:
-	Hardware(char **argv = 0);
+	Hardware(void);
 	~Hardware(void);
 
 	const char *GetMachine(uint8_t &nLength);

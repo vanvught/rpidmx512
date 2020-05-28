@@ -26,30 +26,30 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "debug.h"
 
-constexpr char aType[SERIAL_TYPE_UNDEFINED][5] = { "uart", "spi", "i2c" };
+constexpr char aType[static_cast<int>(SerialType::UNDEFINED)][5] = { "uart", "spi", "i2c" };
 constexpr char aUartParity[SERIAL_UART_PARITY_UNDEFINED][5] = { "none", "odd", "even" };
-constexpr char aI2cSpeed[SERIAL_I2C_SPEED_MODE_UNDEFINED][9] = { "standard", "fast" };
+constexpr char aI2cSpeed[static_cast<int>(SerialI2cSpeedMode::UNDEFINED)][9] = { "standard", "fast" };
 
-const char *Serial::GetType(enum TSerialTypes tType) {
-	if (tType < SERIAL_TYPE_UNDEFINED) {
-		return aType[tType];
+const char *Serial::GetType(SerialType tType) {
+	if (tType < SerialType::UNDEFINED) {
+		return aType[static_cast<int>(tType)];
 	}
 
 	return "Undefined";
 }
 
-enum TSerialTypes Serial::GetType(const char *pType) {
+SerialType Serial::GetType(const char *pType) {
 	for (uint32_t i = 0; i < sizeof(aType) / sizeof(aType[0]); i++) {
 		if (strcasecmp(aType[i], pType) == 0) {
-			return static_cast<TSerialTypes>(i);
+			return static_cast<SerialType>(i);
 		}
 	}
 
-	return SERIAL_TYPE_UART;
+	return SerialType::UART;
 }
 
 const char *Serial::GetUartParity(enum TSerialUartParity tParity) {
@@ -70,20 +70,21 @@ enum TSerialUartParity Serial::GetUartParity(const char *pParity) {
 	return SERIAL_UART_PARITY_NONE;
 }
 
-const char *Serial::GetI2cSpeed(enum TSerialI2cSpeedModes tSpeed) {
-	if (tSpeed < SERIAL_I2C_SPEED_MODE_UNDEFINED) {
-		return aI2cSpeed[tSpeed];
+const char *Serial::GetI2cSpeed(SerialI2cSpeedMode tSpeed) {
+	if (tSpeed < SerialI2cSpeedMode::UNDEFINED) {
+		return aI2cSpeed[static_cast<int>(tSpeed)];
 	}
 
 	return "Undefined";
 
 }
-enum TSerialI2cSpeedModes Serial::GetI2cSpeed(const char *pSpeed) {
+
+SerialI2cSpeedMode Serial::GetI2cSpeed(const char *pSpeed) {
 	for (uint32_t i = 0; i < sizeof(aI2cSpeed) / sizeof(aI2cSpeed[0]); i++) {
 		if (strcasecmp(aI2cSpeed[i], pSpeed) == 0) {
-			return static_cast<TSerialI2cSpeedModes>(i);
+			return static_cast<SerialI2cSpeedMode>(i);
 		}
 	}
 
-	return SERIAL_I2C_SPEED_MODE_FAST;
+	return SerialI2cSpeedMode::FAST;
 }

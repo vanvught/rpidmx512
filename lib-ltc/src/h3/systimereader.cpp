@@ -114,7 +114,7 @@ void SystimeReader::Start(bool bAutoStart) {
 
 	LtcOutputs::Get()->Init();
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 
 	if (bAutoStart) {
 		ActionStart();
@@ -136,7 +136,7 @@ void SystimeReader::ActionStart(void) {
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-	led_set_ticks_per_second(LED_TICKS_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 
 	DEBUG_EXIT
 }
@@ -146,7 +146,7 @@ void SystimeReader::ActionStop(void) {
 
 	m_bIsStarted = false;
 
-	led_set_ticks_per_second(LED_TICKS_NO_DATA);
+	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 
 	DEBUG_EXIT
 }

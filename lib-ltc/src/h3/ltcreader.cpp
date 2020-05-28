@@ -331,8 +331,8 @@ void LtcReader::Run(void) {
 			IsMidiQuarterFrameMessage = false;
 			Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
 		}
-		led_set_ticks_per_second(LED_TICKS_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
 	} else {
-		led_set_ticks_per_second(LED_TICKS_NO_DATA);
+		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
 	}
 }

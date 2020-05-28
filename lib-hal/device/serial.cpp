@@ -27,13 +27,13 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "debug.h"
 
 Serial *Serial::s_pThis = 0;
 
-Serial::Serial(void) : m_tType(SERIAL_TYPE_UART) {
+Serial::Serial(void) : m_tType(SerialType::UART) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -48,7 +48,7 @@ Serial::Serial(void) : m_tType(SERIAL_TYPE_UART) {
 	m_SpiConfiguration.nMode = 0;
 
 	m_I2cConfiguration.nAddress = 0x30;
-	m_I2cConfiguration.tMode = SERIAL_I2C_SPEED_MODE_FAST;
+	m_I2cConfiguration.tMode = SerialI2cSpeedMode::FAST;
 
 	DEBUG_EXIT
 }
@@ -65,15 +65,15 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 	debug_dump(const_cast<uint8_t *>(pData), nLength);
 
-	if (m_tType == SERIAL_TYPE_UART) {
+	if (m_tType == SerialType::UART) {
 		SendUart(pData, nLength);
 	}
 
-	if (m_tType == SERIAL_TYPE_SPI) {
+	if (m_tType == SerialType::SPI) {
 		SendSpi(pData, nLength);
 	}
 
-	if (m_tType == SERIAL_TYPE_I2C) {
+	if (m_tType == SerialType::I2C) {
 		SendI2c(pData, nLength);
 	}
 
@@ -83,7 +83,7 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 void Serial::Print(void) {
 	printf("Serial [%s]\n", GetType(m_tType));
 
-	if (m_tType == SERIAL_TYPE_UART) {
+	if (m_tType == SerialType::UART) {
 		printf(" Baud     : %d\n", m_UartConfiguration.nBaud);
 		printf(" Bits     : %d\n", m_UartConfiguration.nBits);
 		printf(" Parity   : %s\n", GetUartParity(m_UartConfiguration.tParity));
@@ -91,13 +91,13 @@ void Serial::Print(void) {
 		return;
 	}
 
-	if (m_tType == SERIAL_TYPE_SPI) {
+	if (m_tType == SerialType::SPI) {
 		printf(" Speed : %d Hz\n", m_SpiConfiguration.nSpeed);
 		printf(" Mode  : %d\n", m_SpiConfiguration.nMode);
 		return;
 	}
 
-	if (m_tType == SERIAL_TYPE_I2C) {
+	if (m_tType == SerialType::I2C) {
 		printf(" Address    : %.2x\n", m_I2cConfiguration.nAddress);
 		printf(" Speed mode : %s\n", GetI2cSpeed(m_I2cConfiguration.tMode));
 		return;

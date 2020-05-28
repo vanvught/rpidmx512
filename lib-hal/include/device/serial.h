@@ -28,11 +28,11 @@
 
 #include <stdint.h>
 
-enum TSerialTypes {
-	SERIAL_TYPE_UART,
-	SERIAL_TYPE_SPI,
-	SERIAL_TYPE_I2C,
-	SERIAL_TYPE_UNDEFINED
+enum class SerialType {
+	UART,
+	SPI,
+	I2C,
+	UNDEFINED
 };
 
 enum TSerialUartParity {
@@ -49,10 +49,10 @@ enum TSerialSpiModes {
 	SERIAL_SPI_MODE3
 };
 
-enum TSerialI2cSpeedModes {
-	SERIAL_I2C_SPEED_MODE_NORMAL,
-	SERIAL_I2C_SPEED_MODE_FAST,
-	SERIAL_I2C_SPEED_MODE_UNDEFINED
+enum class SerialI2cSpeedMode {
+	NORMAL,
+	FAST,
+	UNDEFINED
 };
 
 class Serial {
@@ -60,12 +60,12 @@ public:
 	Serial(void);
 	~Serial(void);
 
-	void SetType(TSerialTypes tType = SERIAL_TYPE_UART) {
-		if (tType < SERIAL_TYPE_UNDEFINED) {
-			m_tType = SERIAL_TYPE_UART;
+	void SetType(SerialType tType = SerialType::UART) {
+		if (tType < SerialType::UNDEFINED) {
+			m_tType = SerialType::UART;
 		}
 	}
-	TSerialTypes GetType(void) {
+	SerialType GetType(void) {
 		return m_tType;
 	}
 
@@ -87,7 +87,7 @@ public:
 	 * I2C
 	 */
 	void SetI2cAddress(uint8_t nAddress);
-	void SetI2cSpeedMode(TSerialI2cSpeedModes tSpeedMode = SERIAL_I2C_SPEED_MODE_FAST);
+	void SetI2cSpeedMode(SerialI2cSpeedMode tSpeedMode = SerialI2cSpeedMode::FAST);
 
 	bool Init(void);
 
@@ -98,14 +98,14 @@ public:
 	 */
 	void Send(const uint8_t *pData, uint32_t nLength);
 
-	static const char *GetType(TSerialTypes tType);
-	static enum TSerialTypes GetType(const char *pType);
+	static const char *GetType(SerialType tType);
+	static SerialType GetType(const char *pType);
 
 	static const char *GetUartParity(TSerialUartParity tParity);
 	static enum TSerialUartParity GetUartParity(const char *pParity);
 
-	static const char *GetI2cSpeed(TSerialI2cSpeedModes tSpeed);
-	static enum TSerialI2cSpeedModes GetI2cSpeed(const char *pSpeed);
+	static const char *GetI2cSpeed(SerialI2cSpeedMode tSpeed);
+	static SerialI2cSpeedMode GetI2cSpeed(const char *pSpeed);
 
 	static Serial *Get(void) {
 		return s_pThis;
@@ -122,7 +122,7 @@ private:
 	void SendI2c(const uint8_t *pData, uint32_t nLength);
 
 private:
-	enum TSerialTypes m_tType;
+	SerialType m_tType;
 	struct {
 		uint32_t nBaud;
 		uint8_t nBits;
@@ -135,7 +135,7 @@ private:
 	} m_SpiConfiguration;
 	struct {
 		uint8_t nAddress;
-		TSerialI2cSpeedModes tMode;
+		SerialI2cSpeedMode tMode;
 	} m_I2cConfiguration;
 
 	static Serial *s_pThis;

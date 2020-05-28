@@ -27,9 +27,9 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "serial.h"
+#include "device/serial.h"
 
-#include "h3_spi.h"
+#include "h3_spi.h"	// TODO Replace with hal_spi.h ?
 
 #include "debug.h"
 

@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "serial.h"
+#include "device/serial.h"
 
 #include "h3.h"
 #include "h3_gpio.h"

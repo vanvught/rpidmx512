@@ -70,8 +70,6 @@ void NetworkESP8266::Init(void) {
 
 	m_IsDhcpUsed = wifi_station_is_dhcp_used();
 
-	m_IsZeroconfCapable = false;
-
 	m_IsInitDone = true;
 }
 
