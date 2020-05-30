@@ -49,6 +49,10 @@ public:
 	HAL_I2C(uint8_t nAddress, uint32_t nBaudrate = I2C_FULL_SPEED) : m_nAddress(nAddress), m_nBaudrate(nBaudrate) {
 	}
 
+	uint8_t GetAddress(void) {
+		return m_nAddress;
+	}
+
 	bool IsConnected(void) {
 		Setup();
 

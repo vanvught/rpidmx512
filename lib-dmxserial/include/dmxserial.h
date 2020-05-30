@@ -38,7 +38,7 @@ namespace DmxSerialDefaults {
 	static constexpr auto TYPE = SerialType::UART;
 	static constexpr auto UART_BAUD = 115200;
 	static constexpr auto UART_BITS = 8;
-	static constexpr auto UART_PARITY = SERIAL_UART_PARITY_NONE;
+	static constexpr auto UART_PARITY = SerialUartParity::NONE;
 	static constexpr auto UART_STOPBITS = 1;
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;

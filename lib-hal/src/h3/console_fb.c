@@ -156,7 +156,7 @@ int console_draw_char(int ch, uint16_t x, uint16_t y, uint32_t fore, uint32_t ba
 	return (int)ch;
 }
 
-int console_putc(int ch) {
+void console_putc(int ch) {
 	if (ch == (int)'\n') {
 		newline();
 	} else if (ch == (int)'\r') {
@@ -170,20 +170,13 @@ int console_putc(int ch) {
 			newline();
 		}
 	}
-
-	return ch;
 }
 
-int console_puts(const char *s) {
+void console_puts(const char *s) {
 	char c;
-	int i = 0;;
-
 	while ((c = *s++) != (char) 0) {
-		i++;
-		(void) console_putc((int) c);
+		console_putc((int) c);
 	}
-
-	return i;
 }
 
 void console_write(const char *s, unsigned int n) {
@@ -194,35 +187,22 @@ void console_write(const char *s, unsigned int n) {
 	}
 }
 
-int console_error(const char *s) {
-	char c;
-	int i = 0;
-
+void console_error(const char *s) {
 	uint16_t fore_current = cur_fore;
 	uint16_t back_current = cur_back;
 
 	cur_fore = CONSOLE_RED;
 	cur_back = CONSOLE_BLACK;
 
-	(void) console_puts("Error <");
-
-	while ((c = *s++) != (char) 0) {
-		i++;
-		(void) console_putc((int) c);
-	}
-
-	(void) console_puts(">\n");
+	console_puts("Error <");
+	console_puts((char *) s);
+	console_puts(">\n");
 
 	cur_fore = fore_current;
 	cur_back = back_current;
-
-	return i;
 }
 
-int console_status(uint32_t color, const char *s) {
-	char c;
-	int i = 0;
-
+void console_status(uint32_t color, const char *s) {
 	const uint16_t fore_current = cur_fore;
 	const uint16_t back_current = cur_back;
 
@@ -234,18 +214,13 @@ int console_status(uint32_t color, const char *s) {
 	cur_fore = color;
 	cur_back = CONSOLE_BLACK;
 
-	while ((c = *s++) != (char) 0) {
-		i++;
-		(void) console_putc((int) c);
-	}
+	console_puts((char *)s);
 
 	current_y = s_y;
 	current_x = s_x;
 
 	cur_fore = fore_current;
 	cur_back = back_current;
-
-	return i;
 }
 
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)

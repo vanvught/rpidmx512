@@ -41,7 +41,7 @@ Serial::Serial(void) : m_tType(SerialType::UART) {
 
 	m_UartConfiguration.nBaud = 115200;
 	m_UartConfiguration.nBits = 8;
-	m_UartConfiguration.tParity = SERIAL_UART_PARITY_NONE;
+	m_UartConfiguration.tParity = SerialUartParity::NONE;
 	m_UartConfiguration.nStopBits = 1;
 
 	m_SpiConfiguration.nSpeed = 1000000; // 1MHz

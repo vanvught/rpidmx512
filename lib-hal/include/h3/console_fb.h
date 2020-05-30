@@ -55,7 +55,7 @@ extern void console_puthex_fg_bg(uint8_t, uint32_t, uint32_t);
 extern void console_putpct_fg_bg(uint8_t, uint32_t, uint32_t);
 extern void console_put3dec_fg_bg(uint8_t, uint32_t, uint32_t);
 
-extern int console_status(uint32_t, const char *);
+extern void console_status(uint32_t, const char *);
 
 extern void console_clear_top_row(void);
 

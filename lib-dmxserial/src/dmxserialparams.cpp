@@ -46,14 +46,13 @@
 
 DmxSerialParams::DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore):  m_pDmxSerialParamsStore(pDmxSerialParamsStore) {
 	DEBUG_ENTRY
-
 	DEBUG_PRINTF("sizeof(struct TDmxSerialParams) = %d", static_cast<int>(sizeof(struct TDmxSerialParams)));
 
 	m_tDmxSerialParams.nSetList = 0;
 	m_tDmxSerialParams.nType = static_cast<uint8_t>(DmxSerialDefaults::TYPE);
 	m_tDmxSerialParams.nBaud = DmxSerialDefaults::UART_BAUD;
 	m_tDmxSerialParams.nBits = DmxSerialDefaults::UART_BITS;
-	m_tDmxSerialParams.nParity = DmxSerialDefaults::UART_PARITY;
+	m_tDmxSerialParams.nParity = static_cast<uint8_t>(DmxSerialDefaults::UART_PARITY);
 	m_tDmxSerialParams.nStopBits = DmxSerialDefaults::UART_STOPBITS;
 	m_tDmxSerialParams.nSpiSpeedHz = DmxSerialDefaults::SPI_SPEED_HZ;
 	m_tDmxSerialParams.nSpiMode = DmxSerialDefaults::SPI_MODE;
@@ -157,9 +156,9 @@ void DmxSerialParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, DmxSerialParamsConst::UART_PARITY, aChar, &nLength) == SSCAN_OK) {
 		aChar[nLength] = '\0';
-		m_tDmxSerialParams.nType = Serial::GetUartParity(aChar);
+		m_tDmxSerialParams.nParity = static_cast<uint8_t>(Serial::GetUartParity(aChar));
 
-		if (m_tDmxSerialParams.nParity != DmxSerialDefaults::UART_PARITY) {
+		if (m_tDmxSerialParams.nParity != static_cast<uint8_t>(DmxSerialDefaults::UART_PARITY)) {
 			m_tDmxSerialParams.nSetList |= DmxSerialParamsMask::PARTITY;
 		} else {
 			m_tDmxSerialParams.nSetList &= ~DmxSerialParamsMask::PARTITY;
@@ -250,7 +249,7 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 	builder.AddComment("UART");
 	builder.Add(DmxSerialParamsConst::UART_BAUD, m_tDmxSerialParams.nBaud, isMaskSet(DmxSerialParamsMask::BAUD));
 	builder.Add(DmxSerialParamsConst::UART_BITS, m_tDmxSerialParams.nBits, isMaskSet(DmxSerialParamsMask::BITS));
-	builder.Add(DmxSerialParamsConst::UART_PARITY, Serial::GetUartParity(static_cast<TSerialUartParity>(m_tDmxSerialParams.nParity)), isMaskSet(DmxSerialParamsMask::PARTITY));
+	builder.Add(DmxSerialParamsConst::UART_PARITY, Serial::GetUartParity(static_cast<SerialUartParity>(m_tDmxSerialParams.nParity)), isMaskSet(DmxSerialParamsMask::PARTITY));
 	builder.Add(DmxSerialParamsConst::UART_STOPBITS, m_tDmxSerialParams.nStopBits, isMaskSet(DmxSerialParamsMask::STOPBITS));
 
 	builder.AddComment("SPI");
@@ -296,7 +295,7 @@ void DmxSerialParams::Set(void) {
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::PARTITY)) {
-		Serial::Get()->SetUartParity(static_cast<TSerialUartParity>(m_tDmxSerialParams.nParity));
+		Serial::Get()->SetUartParity(static_cast<SerialUartParity>(m_tDmxSerialParams.nParity));
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::STOPBITS)) {
@@ -308,7 +307,7 @@ void DmxSerialParams::Set(void) {
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::SPI_MODE)) {
-		Serial::Get()->SetSpiMode(static_cast<TSerialSpiModes>(m_tDmxSerialParams.nSpiMode));
+		Serial::Get()->SetSpiMode(static_cast<SerialSpiMode>(m_tDmxSerialParams.nSpiMode));
 
 	}
 

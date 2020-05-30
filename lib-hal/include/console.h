@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,10 +55,10 @@ extern void console_clear(void);
 
 extern void console_set_top_row(uint16_t);
 
-extern int console_putc(int);
-extern int console_puts(const char*);
+extern void console_putc(int);
+extern void console_puts(const char*);
 
-extern int console_error(const char*);
+extern void console_error(const char*);
 
 extern void console_puthex(uint8_t);
 

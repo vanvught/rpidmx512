@@ -44,14 +44,14 @@ void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
 	m_SpiConfiguration.nSpeed = nSpeedHz;
 }
 
-void Serial::SetSpiMode(TSerialSpiModes tMode) {
+void Serial::SetSpiMode(SerialSpiMode tMode) {
 	DEBUG_PRINTF("tMode=%d", tMode);
 
-	if (tMode > 3) {
+	if (static_cast<int>(tMode) > 3) {
 		return;
 	}
 
-	m_SpiConfiguration.nMode = tMode;
+	m_SpiConfiguration.nMode = static_cast<uint8_t>(tMode);
 }
 
 bool Serial::InitSpi(void) {

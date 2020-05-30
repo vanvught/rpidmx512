@@ -29,6 +29,8 @@
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 
+#include "arm/synchronize.h"
+
 #include "uart.h"
 
 #define BUS_CLK_GATING3_UART0	(1U << 16)
@@ -66,6 +68,14 @@ void uart0_init(void) {
 	H3_UART0->O00.DLL = BAUD_115200_L;
 	H3_UART0->O04.DLH = BAUD_115200_H;
 	H3_UART0->LCR = UART_LCR_8_N_1;
+	H3_UART0->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
+	H3_UART0->O04.IER = 0;
+
+	dmb();
+
+	while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY) {
+		(void) H3_UART0->O00.RBR;
+	}
 }
 
 void uart0_putc(char c) {

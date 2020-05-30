@@ -31,7 +31,7 @@
 #include "debug.h"
 
 constexpr char aType[static_cast<int>(SerialType::UNDEFINED)][5] = { "uart", "spi", "i2c" };
-constexpr char aUartParity[SERIAL_UART_PARITY_UNDEFINED][5] = { "none", "odd", "even" };
+constexpr char aUartParity[static_cast<int>(SerialUartParity::UNDEFINED)][5] = { "none", "odd", "even" };
 constexpr char aI2cSpeed[static_cast<int>(SerialI2cSpeedMode::UNDEFINED)][9] = { "standard", "fast" };
 
 const char *Serial::GetType(SerialType tType) {
@@ -52,22 +52,22 @@ SerialType Serial::GetType(const char *pType) {
 	return SerialType::UART;
 }
 
-const char *Serial::GetUartParity(enum TSerialUartParity tParity) {
-	if (tParity < SERIAL_UART_PARITY_UNDEFINED) {
-		return aUartParity[tParity];
+const char *Serial::GetUartParity(SerialUartParity tParity) {
+	if (tParity < SerialUartParity::UNDEFINED) {
+		return aUartParity[static_cast<int>(tParity)];
 	}
 
 	return "Undefined";
 }
 
-enum TSerialUartParity Serial::GetUartParity(const char *pParity) {
+SerialUartParity Serial::GetUartParity(const char *pParity) {
 	for (uint32_t i = 0; i < sizeof(aUartParity) / sizeof(aUartParity[0]); i++) {
 		if (strcasecmp(aUartParity[i], pParity) == 0) {
-			return static_cast<TSerialUartParity>(i);
+			return static_cast<SerialUartParity>(i);
 		}
 	}
 
-	return SERIAL_UART_PARITY_NONE;
+	return SerialUartParity::NONE;
 }
 
 const char *Serial::GetI2cSpeed(SerialI2cSpeedMode tSpeed) {

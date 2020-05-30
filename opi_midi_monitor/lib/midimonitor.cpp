@@ -140,7 +140,7 @@ void MidiMonitor::HandleQf(void) {
 }
 
 void MidiMonitor::HandleMessage(void) {
-	int i;
+	size_t i;
 
 	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
 
@@ -188,7 +188,8 @@ void MidiMonitor::HandleMessage(void) {
 			// Channel messages
 			printf("%2d  ", m_pMidiMessage->channel);
 			if (m_pMidiMessage->type == MIDI_TYPES_NOTE_OFF || m_pMidiMessage->type == MIDI_TYPES_NOTE_ON) {
-				i = console_puts(midi_description_get_key_name(m_pMidiMessage->data1));
+				console_puts(midi_description_get_key_name(m_pMidiMessage->data1));
+				i = strlen(midi_description_get_key_name(m_pMidiMessage->data1));
 				while ((5 - i++) > 0) {
 					console_putc(' ');
 				}

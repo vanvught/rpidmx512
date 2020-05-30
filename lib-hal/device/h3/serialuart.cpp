@@ -66,10 +66,10 @@ void Serial::SetUartBits(uint8_t nBits) {
 	}
 }
 
-void Serial::SetUartParity(TSerialUartParity tParity) {
+void Serial::SetUartParity(SerialUartParity tParity) {
 	DEBUG_PRINTF("tParity=%d", tParity);
 
-	if (tParity >= SERIAL_UART_PARITY_UNDEFINED ) {
+	if (tParity >= SerialUartParity::UNDEFINED ) {
 		return;
 	}
 
@@ -121,12 +121,12 @@ bool Serial::InitUart(void) {
 		nRegisterLCR |= UART_LCR_DLS_8BITS;
 	}
 
-	if (m_UartConfiguration.tParity != SERIAL_UART_PARITY_NONE) {
+	if (m_UartConfiguration.tParity != SerialUartParity::NONE) {
 		nRegisterLCR |= UART_LCR_PEN;
 
-		if (m_UartConfiguration.tParity == SERIAL_UART_PARITY_ODD) {
+		if (m_UartConfiguration.tParity == SerialUartParity::ODD) {
 			nRegisterLCR |= UART_LCR_EPS_ODD;
-		} else if (m_UartConfiguration.tParity == SERIAL_UART_PARITY_EVEN) {
+		} else if (m_UartConfiguration.tParity == SerialUartParity::EVEN) {
 			nRegisterLCR |= UART_LCR_EPS_EVEN;
 		}
 	}

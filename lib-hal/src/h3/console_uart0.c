@@ -41,24 +41,15 @@ int console_init(void) {
 	return CONSOLE_OK;
 }
 
-int console_putc(int c) {
+void console_putc(int c) {
 	if (c == '\n') {
 		uart0_putc('\r');
 	}
 	uart0_putc(c);
-	return c;
 }
 
-int console_puts(const char *s) {
-	char c;
-	int i = 0;;
-
-	while ((c = *s++) != (char) 0) {
-		i++;
-		console_putc((int) c);
-	}
-
-	return i;
+void console_puts(const char *s) {
+	uart0_puts((char *)s);
 }
 
 void console_newline(void) {
@@ -68,22 +59,22 @@ void console_newline(void) {
 void console_set_fg_color(uint16_t fg) {
 	switch (fg) {
 	case CONSOLE_BLACK:
-		console_puts("\x1b[30m");
+		uart0_puts("\x1b[30m");
 		break;
 	case CONSOLE_RED:
-		console_puts("\x1b[31m");
+		uart0_puts("\x1b[31m");
 		break;
 	case CONSOLE_GREEN:
-		console_puts("\x1b[32m");
+		uart0_puts("\x1b[32m");
 		break;
 	case CONSOLE_YELLOW:
-		console_puts("\x1b[33m");
+		uart0_puts("\x1b[33m");
 		break;
 	case CONSOLE_WHITE:
-		console_puts("\x1b[37m");
+		uart0_puts("\x1b[37m");
 		break;
 	default:
-		console_puts("\x1b[39m");
+		uart0_puts("\x1b[39m");
 		break;
 	}
 
@@ -93,16 +84,16 @@ void console_set_fg_color(uint16_t fg) {
 void console_set_bg_color(uint16_t bg) {
 	switch (bg) {
 	case CONSOLE_BLACK:
-		console_puts("\x1b[40m");
+		uart0_puts("\x1b[40m");
 		break;
 	case CONSOLE_RED:
-		console_puts("\x1b[41m");
+		uart0_puts("\x1b[41m");
 		break;
 	case CONSOLE_WHITE:
-		console_puts("\x1b[47m");
+		uart0_puts("\x1b[47m");
 		break;
 	default:
-		console_puts("\x1b[49m");
+		uart0_puts("\x1b[49m");
 		break;
 	}
 
@@ -117,32 +108,22 @@ void console_write(const char *s, unsigned int n) {
 	}
 }
 
-int console_error(const char *s) {
-	console_puts("\x1b[31m");
-	const int i = console_puts(s);
-	console_puts("\x1b[37m");
-
-	return i;
+void console_error(const char *s) {
+	uart0_puts("\x1b[31m");
+	uart0_puts((char *)s);
+	uart0_puts("\x1b[37m");
 }
 
-int console_status(uint32_t color, const char *s) {
-	char c;
-	int i = 0;
-
+void console_status(uint32_t color, const char *s) {
 	console_set_fg_color(color);
 	console_set_bg_color(CONSOLE_BLACK);
 
-	while ((c = *s++) != (char) 0) {
-		i++;
-		console_putc((int) c);
-	}
+	uart0_puts((char *)s);
 
 	console_putc('\n');
 
 	console_set_fg_color(CONSOLE_WHITE);
 //	console_set_bg_color(cur_back);
-
-	return i;
 }
 
 
@@ -175,7 +156,7 @@ void console_putpct_fg_bg(uint8_t data, uint16_t fore, uint16_t back) {
 		console_putc('0' + (data / 10));
 		console_putc('0' + (data % 10));
 	} else {
-		console_puts("%%");
+		uart0_puts("%%");
 	}
 
 	cur_fore = fore_current;

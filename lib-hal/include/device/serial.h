@@ -35,18 +35,18 @@ enum class SerialType {
 	UNDEFINED
 };
 
-enum TSerialUartParity {
-	SERIAL_UART_PARITY_NONE,
-	SERIAL_UART_PARITY_ODD,
-	SERIAL_UART_PARITY_EVEN,
-	SERIAL_UART_PARITY_UNDEFINED
+enum class SerialUartParity {
+	NONE,
+	ODD,
+	EVEN,
+	UNDEFINED
 };
 
-enum TSerialSpiModes {
-	SERIAL_SPI_MODE0,
-	SERIAL_SPI_MODE1,
-	SERIAL_SPI_MODE2,
-	SERIAL_SPI_MODE3
+enum class SerialSpiMode {
+	MODE0,
+	MODE1,
+	MODE2,
+	MODE3
 };
 
 enum class SerialI2cSpeedMode {
@@ -74,14 +74,14 @@ public:
 	 */
 	void SetUartBaud(uint32_t nBaud);
 	void SetUartBits(uint8_t nBits = 8);
-	void SetUartParity(TSerialUartParity tParity = SERIAL_UART_PARITY_NONE);
+	void SetUartParity(SerialUartParity tParity = SerialUartParity::NONE);
 	void SetUartStopBits(uint8_t nStopBits = 1);
 
 	/*
 	 * SPI
 	 */
 	void SetSpiSpeedHz(uint32_t nSpeedHz);
-	void SetSpiMode(TSerialSpiModes tMode);
+	void SetSpiMode(SerialSpiMode tMode);
 
 	/*
 	 * I2C
@@ -101,8 +101,8 @@ public:
 	static const char *GetType(SerialType tType);
 	static SerialType GetType(const char *pType);
 
-	static const char *GetUartParity(TSerialUartParity tParity);
-	static enum TSerialUartParity GetUartParity(const char *pParity);
+	static const char *GetUartParity(SerialUartParity tParity);
+	static enum SerialUartParity GetUartParity(const char *pParity);
 
 	static const char *GetI2cSpeed(SerialI2cSpeedMode tSpeed);
 	static SerialI2cSpeedMode GetI2cSpeed(const char *pSpeed);
@@ -126,7 +126,7 @@ private:
 	struct {
 		uint32_t nBaud;
 		uint8_t nBits;
-		TSerialUartParity tParity;
+		SerialUartParity tParity;
 		uint8_t nStopBits;
 	} m_UartConfiguration;
 	struct {
