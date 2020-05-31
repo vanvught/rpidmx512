@@ -30,7 +30,8 @@
 #include <cassert>
 
 #include "oscclient.h"
-#include "oscsend.h"
+#include "oscsimplesend.h"
+#include "oscsimplemessage.h"
 #include "osc.h"
 
 #include "hardware.h"
@@ -43,11 +44,13 @@
 
 #include "debug.h"
 
-namespace BUFFER_SIZE {
-	static constexpr auto PATH = 32 + OscClientMax::LED_PATH_LENGTH;
-	static constexpr auto CMD = OscClientMax::CMD_COUNT * OscClientMax::CMD_PATH_LENGTH * sizeof(uint8_t);
-	static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LENGTH * sizeof(uint8_t);
-}
+namespace buffer {
+namespace size {
+static constexpr auto PATH = 32 + OscClientMax::LED_PATH_LENGTH;
+static constexpr auto CMD = OscClientMax::CMD_COUNT * OscClientMax::CMD_PATH_LENGTH * sizeof(uint8_t);
+static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LENGTH * sizeof(uint8_t);
+}  // namespace size
+}  // namespace buffer
 
 OscClient::OscClient(void):
 	m_nServerIP(0),
@@ -64,16 +67,16 @@ OscClient::OscClient(void):
 	m_nPingTimeMillis(0),
 	m_pOscClientLed(0)
 {
-	m_pBuffer = new char[BUFFER_SIZE::PATH];
+	m_pBuffer = new char[buffer::size::PATH];
 	assert(m_pBuffer != 0);
 
-	m_pCmds = new char[BUFFER_SIZE::CMD];
+	m_pCmds = new char[buffer::size::CMD];
 	assert(m_pCmds != 0);
-	memset(m_pCmds, 0, BUFFER_SIZE::CMD);
+	memset(m_pCmds, 0, buffer::size::CMD);
 
-	m_pLeds = new char[BUFFER_SIZE::LED];
+	m_pLeds = new char[buffer::size::LED];
 	assert(m_pLeds != 0);
-	memset(m_pLeds, 0, BUFFER_SIZE::LED);
+	memset(m_pLeds, 0, buffer::size::LED);
 }
 
 OscClient::~OscClient(void) {
@@ -98,7 +101,7 @@ int OscClient::Run(void) {
 		m_nCurrenMillis = Hardware::Get()->Millis();
 
 		if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
-			OSCSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", 0);
+			OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", 0);
 			m_bPingSent = true;
 			m_nPreviousMillis = m_nCurrenMillis;
 			m_nPingTimeMillis = m_nCurrenMillis;
@@ -106,7 +109,7 @@ int OscClient::Run(void) {
 
 		uint32_t nRemoteIp;
 		uint16_t nRemotePort;
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, BUFFER_SIZE::PATH, &nRemoteIp, &nRemotePort);
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, buffer::size::PATH, &nRemoteIp, &nRemotePort);
 
 		if (__builtin_expect((m_nBytesReceived == 0), 1)) {
 			if (m_bPingSent && ((m_nCurrenMillis - m_nPingTimeMillis) >= 1000)) {
@@ -235,7 +238,7 @@ bool OscClient::HandleLedMessage(void) {
 		return false;
 	}
 
-	OSCMessage Msg(m_pBuffer, m_nBytesReceived);
+	OscSimpleMessage Msg(m_pBuffer, m_nBytesReceived);
 
 	const int nArgc = Msg.GetArgc();
 
@@ -244,10 +247,10 @@ bool OscClient::HandleLedMessage(void) {
 		return false;
 	}
 
-	if (Msg.GetType(0) == OscType::INT32) {
+	if (Msg.GetType(0) == osc::type::INT32) {
 		m_pOscClientLed->SetLed(i, Msg.GetInt(0) != 0);
 		DEBUG_PRINTF("%d", Msg.GetInt(0));
-	} else if (Msg.GetType(0) == OscType::FLOAT) {
+	} else if (Msg.GetType(0) == osc::type::FLOAT) {
 		m_pOscClientLed->SetLed(i, Msg.GetFloat(0) != 0);
 		DEBUG_PRINTF("%f", Msg.GetFloat(0));
 	} else {

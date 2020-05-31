@@ -28,7 +28,7 @@
 #include <cassert>
 
 #include "oscclient.h"
-#include "oscsend.h"
+#include "oscsimplesend.h"
 #include "osc.h"
 
 #include "debug.h"
@@ -39,7 +39,7 @@ void OscClient::Send(const char *pPath) {
 	assert(pPath != 0);
 
 	if (*pPath != 0) {
-		OSCSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, pPath, 0);
+		OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, pPath, 0);
 	}
 
 	DEBUG_EXIT

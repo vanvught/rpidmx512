@@ -78,7 +78,7 @@ public:
 	void Start(void);
 	void Stop(void);
 
-	int Run(void);
+	void Run(void);
 
 private:
 	int GetChannel(const char *p);

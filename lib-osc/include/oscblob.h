@@ -34,34 +34,37 @@
  * followed by 0-3 additional zero bytes to make the total number of bits a multiple of 32.
  */
 
-typedef struct _osc_blob {
-    int32_t nSize;
-    uint8_t *pData;
-} osc_blob;
-
 class OSCBlob {
 public:
-	OSCBlob(const uint8_t *pData, int32_t nSize);
-	~OSCBlob(void);
+	OSCBlob(const uint8_t *pData, uint32_t nSize) :
+			m_pData(const_cast<uint8_t*>(pData)), m_nSize(nSize) {
+	}
+	~OSCBlob(void) {
+	}
 
-	int32_t GetDataSize(void) {
+	uint32_t GetDataSize(void) {
 		return m_nSize;
 	}
 
-	const uint8_t *GetDataPtr(void) {
+	const uint8_t* GetDataPtr(void) {
 		return m_pData;
 	}
 
-	uint8_t GetByte(int32_t nIndex) const;
+	uint32_t GetSize(void) {
+		const uint32_t nBlobSize = sizeof(int32_t) + m_nSize;
+		return (4 * ((nBlobSize + 3) / 4));
+	}
 
-	int32_t GetSize(void) const;
-
-	static int32_t Size(const void *);
-	static int32_t Validate(void *, int32_t);
+	uint8_t GetByte(uint32_t nIndex) {
+		if (nIndex < m_nSize) {
+			return m_pData[nIndex];
+		}
+		return 0;
+	}
 
 private:
 	uint8_t *m_pData;
-	int32_t m_nSize;
+	uint32_t m_nSize;
 };
 
 #endif /* OSCBLOB_H_ */

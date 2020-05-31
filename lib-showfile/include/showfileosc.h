@@ -30,10 +30,7 @@
 
 #include "showfiledisplay.h"
 
-struct ShowFileOSCPortDefault {
-	static constexpr auto INCOMING = 8000;
-	static constexpr auto OUTGOING = 9000;
-};
+#include "osc.h"
 
 struct ShowFileOSCMax {
 	static constexpr auto CMD_LENGTH = 128;
@@ -74,8 +71,8 @@ private:
 	void Reload(void);
 
 private:
-	uint16_t m_nPortIncoming = ShowFileOSCPortDefault::INCOMING;
-	uint16_t m_nPortOutgoing = ShowFileOSCPortDefault::OUTGOING;
+	uint16_t m_nPortIncoming = osc::port::DEFAULT_INCOMING;
+	uint16_t m_nPortOutgoing = osc::port::DEFAULT_OUTGOING;
 	int32_t m_nHandle = -1;
 	uint32_t m_nRemoteIp = 0;
 	uint16_t m_nRemotePort = 0;

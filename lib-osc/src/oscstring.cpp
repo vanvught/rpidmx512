@@ -32,11 +32,11 @@
  * followed by 0-3 additional null characters to make the total number of bits a multiple of 32.
  */
 
-int OSCString::Validate(void *pData, int nSize) {
-	int nLength = 0;
+int OSCString::Validate(void *pData, unsigned nSize) {
+	unsigned nLength = 0;
 	char *pSrc = reinterpret_cast<char*>(pData);
 
-	int i = 0;
+	unsigned i = 0;
 
 	for (i = 0; i < nSize; ++i) {
 		if (pSrc[i] == '\0') {
@@ -46,18 +46,18 @@ int OSCString::Validate(void *pData, int nSize) {
 	}
 
 	if (0 == nLength) {
-		return -NOT_TERMINATED;
+		return -osc::validate::NOT_TERMINATED;
 	}
 
 	if (nLength > nSize) {
-		return -INVALID_SIZE;
+		return -osc::validate::INVALID_SIZE;
 	}
 
 	for (; i < nLength; ++i) {
 		if (pSrc[i] != '\0') {
-			return -NONE_ZERO_IN_PADDING;
+			return -osc::validate::NONE_ZERO_IN_PADDING;
 		}
 	}
 
-	return nLength;
+	return static_cast<int>(nLength);
 }

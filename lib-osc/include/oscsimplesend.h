@@ -1,8 +1,8 @@
 /**
- * @file oscsend.h
+ * @file oscsimplesend.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCSEND_H_
-#define OSCSEND_H_
+#ifndef OSCSIMPLESEND_H_
+#define OSCSIMPLESEND_H_
 
 #include <stdint.h>
-#include <stdarg.h>
 
-#include "oscmessage.h"
-
-class OSCSend {
+class OscSimpleSend {
 public:
-	OSCSend(int32_t nHandle, uint32_t address, uint16_t port, const char *, const char *, ...);
-	~OSCSend(void);
+	// Support for path only
+	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType);
+	// Support for 's'
+	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, const char *pString);
+	// Support for type 'i'
+	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, int nValue);
+	// Support for type 'f'
+	OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, float fValue);
 
 private:
-	void AddVarArgs(va_list);
-	void Send(void);
+	void UpdateMessage(const char *pPath, uint32_t nPathLength, char cType);
+	void Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort);
 
 private:
-	int32_t m_nHandle;
-	uint32_t m_Address;
-	uint16_t m_Port;
-	const char *m_Path;
-	const char *m_Types;
-	OSCMessage *m_Msg;
-	int m_Result;
+	char m_Message[1024];
 };
 
-#endif /* OSCSEND_H_ */
+#endif /* OSCSIMPLESEND_H_ */

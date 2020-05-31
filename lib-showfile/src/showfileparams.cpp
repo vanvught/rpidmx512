@@ -66,8 +66,8 @@ ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pSh
 	m_tShowFileParams.nFormat = static_cast<uint8_t>(ShowFileFormats::OLA);
 	m_tShowFileParams.nShow = 0;
 	m_tShowFileParams.nOptions = 0;
-	m_tShowFileParams.nOscPortIncoming = ShowFileOSCPortDefault::INCOMING;
-	m_tShowFileParams.nOscPortOutgoing = ShowFileOSCPortDefault::OUTGOING;
+	m_tShowFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
+	m_tShowFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
 	m_tShowFileParams.nProtocol = static_cast<uint8_t>(ShowFileProtocols::SACN);
 	m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
 	m_tShowFileParams.nDisableUnicast = 0;
@@ -162,22 +162,22 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
-		if ((nValue16 != ShowFileOSCPortDefault::INCOMING) && (nValue16 > 1023)) {
+		if ((nValue16 != osc::port::DEFAULT_INCOMING) && (nValue16 > 1023)) {
 			m_tShowFileParams.nOscPortIncoming = nValue16;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_INCOMING;
 		} else {
-			m_tShowFileParams.nOscPortIncoming = ShowFileOSCPortDefault::INCOMING;
+			m_tShowFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
 			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::OSC_PORT_INCOMING;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
-		if ((nValue16 != ShowFileOSCPortDefault::OUTGOING) && (nValue16 > 1023)) {
+		if ((nValue16 != osc::port::DEFAULT_OUTGOING) && (nValue16 > 1023)) {
 			m_tShowFileParams.nOscPortOutgoing = nValue16;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_OUTGOING;
 		} else {
-			m_tShowFileParams.nOscPortOutgoing = ShowFileOSCPortDefault::OUTGOING;
+			m_tShowFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
 			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::OSC_PORT_OUTGOING;
 		}
 		return;

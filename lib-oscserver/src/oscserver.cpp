@@ -30,8 +30,8 @@
 
 #include "oscserver.h"
 #include "osc.h"
-#include "oscmessage.h"
-#include "oscsend.h"
+#include "oscsimplemessage.h"
+#include "oscsimplesend.h"
 #include "oscblob.h"
 
 #include "lightset.h"
@@ -106,7 +106,7 @@ void OscServer::Start(void) {
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
 
-	OSCSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
+	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
 
 	if (m_pLightSet != 0) {
 		m_pLightSet->Start(0);
@@ -266,95 +266,104 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 	return isChanged;
 }
 
-int OscServer::Run(void) {
+void OscServer::Run(void) {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, OSCSERVER_MAX_BUFFER, &nRemoteIp, &nRemotePort);
 
 	if (nBytesReceived == 0) {
-		return 0;
+		return;
 	}
 
-	if (OSC::isMatch(m_pBuffer, "/ping")) {
-		DEBUG_PUTS("ping received");
-		OSCSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", 0);
-	} else if (OSC::isMatch(m_pBuffer, m_aPathInfo)) {
-		OSCSend MsgSendInfo(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/os", "s", m_Os);
-		OSCSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
-		OSCSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
+	bool bIsDmxDataChanged = false;
 
-		if (m_pOscServerHandler != 0) {
-			m_pOscServerHandler->Info(m_nHandle, nRemoteIp, m_nPortOutgoing);
-		}
-	} else if (OSC::isMatch(m_pBuffer, m_aPathBlackOut)) {
-		OSCMessage Msg(m_pBuffer, nBytesReceived);
-		const bool bBlackout = (Msg.GetFloat(0) != 0);
+	OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-		if (bBlackout) {
-			if (m_pOscServerHandler != 0) {
-				m_pOscServerHandler->Blackout();
-			}
-			DEBUG_PUTS("Blackout");
-		} else {
-			if (m_pOscServerHandler != 0) {
-				m_pOscServerHandler->Update();
-			}
-			DEBUG_PUTS("Update");
-		}
-	} else {
-		bool bIsDmxDataChanged = false;
+	debug_dump(m_pBuffer, nBytesReceived);
 
-		OSCMessage Msg(m_pBuffer, nBytesReceived);
+	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath(m_pBuffer, nBytesReceived));
 
-		debug_dump(m_pBuffer, nBytesReceived);
+	if (OSC::isMatch(m_pBuffer, m_aPath)) {
+		const int nArgc = Msg.GetArgc();
 
-		DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath(m_pBuffer, nBytesReceived));
+		if ((nArgc == 1) && (Msg.GetType(0) == osc::type::BLOB)) {
+			DEBUG_PUTS("Blob received");
 
-		if (OSC::isMatch(m_pBuffer, m_aPath)) {
-			const int nArgc = Msg.GetArgc();
+			OSCBlob blob = Msg.GetBlob(0);
+			const uint32_t size = blob.GetDataSize();
 
-			if ((nArgc == 1) && (Msg.GetType(0) == OscType::BLOB)) {
-				DEBUG_PUTS("Blob received");
+			if (size <= DMX_UNIVERSE_SIZE) {
+				const uint8_t *ptr = blob.GetDataPtr();
 
-				OSCBlob blob = Msg.GetBlob(0);
-				const int size = blob.GetDataSize();
+				bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
 
-				if (size <= DMX_UNIVERSE_SIZE) {
-					const uint8_t *ptr = blob.GetDataPtr();
-
-					bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
-
-					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
-						if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE_SIZE)) {
-							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
-						} else {
-							m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
-							m_pLightSet->SetData(0, m_pData, m_nLastChannel);
-						}
+				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
+					if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE_SIZE)) {
+						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
+					} else {
+						m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
+						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
 					}
+				}
+			} else {
+				DEBUG_PUTS("Too many channels");
+				return;
+			}
+		} else if ((nArgc == 2) && (Msg.GetType(0) == osc::type::INT32)) {
+			uint16_t nChannel = (1 + Msg.GetInt(0));
+
+			if ((nChannel < 1) || (nChannel > DMX_UNIVERSE_SIZE)) {
+				DEBUG_PRINTF("Invalid channel [%d]", nChannel);
+				return;
+			}
+
+			uint8_t nData;
+
+			if (Msg.GetType(1) == osc::type::INT32) {
+				DEBUG_PUTS("ii received");
+				nData = Msg.GetInt(1);
+			} else if (Msg.GetType(1) == osc::type::FLOAT) {
+				DEBUG_PUTS("if received");
+				nData = (Msg.GetFloat(1) * DMX_MAX_VALUE);
+			} else {
+				return;
+			}
+
+			DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
+
+			bIsDmxDataChanged = IsDmxDataChanged(&nData, nChannel, 1);
+
+			if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
+				if (!m_bPartialTransmission) {
+					m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
 				} else {
-					DEBUG_PUTS("Too many channels");
-					return -1;
+					m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
+					m_pLightSet->SetData(0, m_pData, m_nLastChannel);
 				}
-			} else if ((nArgc == 2) && (Msg.GetType(0) == OscType::INT32)) {
-				uint16_t nChannel = (1 + Msg.GetInt(0));
+			}
+		}
 
-				if ((nChannel < 1) || (nChannel > DMX_UNIVERSE_SIZE)) {
-					DEBUG_PRINTF("Invalid channel [%d]", nChannel);
-					return -1;
-				}
+		return;
+	}
 
+	if (OSC::isMatch(m_pBuffer, m_aPathSecond)) {
+		const int nArgc = Msg.GetArgc();
+
+		if (nArgc == 1) { // /path/N 'i' or 'f'
+			const uint16_t nChannel = GetChannel(m_pBuffer);
+
+			if (nChannel >= 1 && nChannel <= DMX_UNIVERSE_SIZE) {
 				uint8_t nData;
 
-				if (Msg.GetType(1) == OscType::INT32) {
-					DEBUG_PUTS("ii received");
-					nData = Msg.GetInt(1);
-				} else if (Msg.GetType(1) == OscType::FLOAT) {
-					DEBUG_PUTS("if received");
-					nData = (Msg.GetFloat(1) * DMX_MAX_VALUE);
+				if (Msg.GetType(0) == osc::type::INT32) {
+					DEBUG_PUTS("i received");
+					nData = Msg.GetInt(0);
+				} else if (Msg.GetType(0) == osc::type::FLOAT) {
+					DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
+					nData = (Msg.GetFloat(0) * DMX_MAX_VALUE);
 				} else {
-					return -1;
+					return;
 				}
 
 				DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
@@ -370,45 +379,45 @@ int OscServer::Run(void) {
 					}
 				}
 			}
-		} else if (OSC::isMatch(m_pBuffer, m_aPathSecond)) {
-			const int nArgc = Msg.GetArgc();
-
-			if (nArgc == 1) { // /path/N 'i' or 'f'
-				const uint16_t nChannel = GetChannel(m_pBuffer);
-
-				if (nChannel >= 1 && nChannel <= DMX_UNIVERSE_SIZE) {
-					uint8_t nData;
-
-					if (Msg.GetType(0) == OscType::INT32) {
-						DEBUG_PUTS("i received");
-						nData = Msg.GetInt(0);
-					} else if (Msg.GetType(0) == OscType::FLOAT) {
-						DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
-						nData = (Msg.GetFloat(0) * DMX_MAX_VALUE);
-					} else {
-						return -1;
-					}
-
-					DEBUG_PRINTF("Channel = %d, Data = %.2x", nChannel, nData);
-
-					bIsDmxDataChanged = IsDmxDataChanged(&nData, nChannel, 1);
-
-					if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
-						if (!m_bPartialTransmission) {
-							m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
-						} else {
-							m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
-							m_pLightSet->SetData(0, m_pData, m_nLastChannel);
-						}
-					}
-				} else {
-					return -1;
-				}
-			} else {
-				return -1;
-			}
 		}
+
+		return;
 	}
 
-	return nBytesReceived;
+	if ((m_pOscServerHandler != 0) && (OSC::isMatch(m_pBuffer, m_aPathBlackOut))) {
+		OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
+
+		if (Msg.GetType(0) != osc::type::FLOAT) {
+			return;
+		}
+
+		if (Msg.GetFloat(0) != 0) {
+			m_pOscServerHandler->Blackout();
+			DEBUG_PUTS("Blackout");
+		} else {
+			m_pOscServerHandler->Update();
+			DEBUG_PUTS("Update");
+		}
+
+		return;
+	}
+
+	if (OSC::isMatch(m_pBuffer, "/ping")) {
+		DEBUG_PUTS("ping received");
+		OscSimpleSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", 0);
+
+		return;
+	}
+
+	if (OSC::isMatch(m_pBuffer, m_aPathInfo)) {
+		OscSimpleSend MsgSendInfo(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/os", "s", m_Os);
+		OscSimpleSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
+		OscSimpleSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
+
+		if (m_pOscServerHandler != 0) {
+			m_pOscServerHandler->Info(m_nHandle, nRemoteIp, m_nPortOutgoing);
+		}
+
+		return;
+	}
 }

@@ -31,7 +31,7 @@
 #include "tlc59711dmx.h"
 #include "tlc59711dmxparams.h"
 
-#include "oscsend.h"
+#include "oscsimplesend.h"
 
 #include "debug.h"
 
@@ -70,8 +70,8 @@ void HandlerTLC59711::Update(void) {
 void HandlerTLC59711::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
 	DEBUG_ENTRY
 
-	OSCSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
-	OSCSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
+	OscSimpleSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
+	OscSimpleSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
 
 	DEBUG_EXIT
 }

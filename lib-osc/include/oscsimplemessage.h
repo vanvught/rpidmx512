@@ -1,8 +1,8 @@
 /**
- * @file oscmessage.cpp
+ * @file oscsimplemessage.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,51 @@
  * THE SOFTWARE.
  */
 
+#ifndef OSCSIMPLEMESSAGE_H_
+#define OSCSIMPLEMESSAGE_H_
+
 #include <stdint.h>
-#include <stdio.h>
 
-#include "oscmessage.h"
+#include "osc.h"
+#include "oscblob.h"
 
-void OSCMessage::Dump(void) {
-#ifndef NDEBUG
-	printf("m_Types [%.*s], m_Typelen=%u, m_Typesize=%u\n", m_nTypesLength, m_pTypes, m_nTypesLength, m_nTypesRealSize);
-	printf("m_Datalen=%u, m_Datasize=%u\n", m_nDatalen, m_nDatasize);
+class OscSimpleMessage {
+public:
+	OscSimpleMessage(void *pData, unsigned nLength);
 
-	if (m_pData != 0) {
-		char *p = reinterpret_cast<char*>(m_pData);
-		for (unsigned i = 0; i < m_nDatasize; i++) {
-			printf("%2x ", p[i] & 0xFF);
-		}
-		printf("\n");
-	} else {
-		printf("m_Data = 0\n");
+	bool IsValid(void) {
+		return m_bIsValid;
 	}
-#endif
-}
+
+	int GetArgc(void) {
+		if (m_bIsValid) {
+			return static_cast<int>(m_nArgc);
+		}
+
+		return -1;
+	}
+
+	char GetType(unsigned argc) {
+		if (argc < m_nArgc) {
+			return static_cast<char>(m_pArg[argc]);
+		}
+
+		return osc::type::UNKNOWN;
+	}
+
+	float GetFloat(unsigned argc);
+	int GetInt(unsigned argc);
+	char* GetString(unsigned argc);
+	OSCBlob GetBlob(unsigned argc);
+
+private:
+	uint8_t *m_pOscMessage;
+	uint32_t m_nLength;
+	bool m_bIsValid = false;
+	uint8_t *m_pArg;
+	uint32_t m_nArgc = 0;
+	uint8_t *m_pOscMessageData = 0;
+	uint32_t m_nOscMessageDataLength = 0;
+};
+
+#endif /* OSCSIMPLEMESSAGE_H_ */

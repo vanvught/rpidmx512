@@ -2,7 +2,7 @@
  * @file oscserverparams.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,8 +48,8 @@
 
 OSCServerParams::OSCServerParams(OSCServerParamsStore *pOSCServerParamsStore): m_pOSCServerParamsStore(pOSCServerParamsStore) {
 	memset(&m_tOSCServerParams, 0, sizeof(struct TOSCServerParams));
-	m_tOSCServerParams.nIncomingPort = OSC_DEFAULT_INCOMING_PORT;
-	m_tOSCServerParams.nOutgoingPort = OSC_DEFAULT_OUTGOING_PORT;
+	m_tOSCServerParams.nIncomingPort = osc::port::DEFAULT_INCOMING;
+	m_tOSCServerParams.nOutgoingPort = osc::port::DEFAULT_OUTGOING;
 }
 
 OSCServerParams::~OSCServerParams(void) {

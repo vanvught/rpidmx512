@@ -34,6 +34,8 @@
 
 #include "oscclient.h"
 
+#include "hal_i2c.h"
+
 class ButtonsMcp: public ButtonsSet, public OscClientLed {
 public:
 	ButtonsMcp(OscClient *pOscClient);
@@ -47,6 +49,7 @@ public:
 	void SetLed(uint8_t nLed, bool bOn);
 
 private:
+	HAL_I2C m_I2C;
 	OscClient *m_pOscClient;
 	bool m_bIsConnected;
 	uint8_t m_nButtons;

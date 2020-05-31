@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "handler.h"
 
@@ -44,11 +45,15 @@ Handler::~Handler(void) {
 void Handler::Blackout(void) {
 	DEBUG_ENTRY
 
+	puts(">Blackout<");
+
 	DEBUG_EXIT
 }
 
 void Handler::Update(void) {
 	DEBUG_ENTRY
+
+	puts(">Update<");
 
 	DEBUG_EXIT
 }

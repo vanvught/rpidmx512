@@ -36,11 +36,7 @@
 
 class OSCString {
 public:
-	static constexpr int INVALID_SIZE = 1;
-	static constexpr int NOT_TERMINATED = 2;
-	static constexpr int NONE_ZERO_IN_PADDING = 3;
-
-	static int Validate(void *pData, int nSize);
+	static int Validate(void *pData, unsigned nSize);
 
 	static unsigned Size(const char *pString) {
 		return 4 * (strlen(pString) / 4 + 1);

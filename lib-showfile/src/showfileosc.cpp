@@ -33,8 +33,8 @@
 #include "showfileconst.h"
 #include "showfile.h"
 
-#include "oscmessage.h"
-#include "oscsend.h"
+#include "oscsimplemessage.h"
+#include "oscsimplesend.h"
 
 #include "network.h"
 
@@ -44,7 +44,7 @@
 
 static constexpr auto MAX_BUFFER_SIZE = ShowFileOSCMax::CMD_LENGTH;
 
-namespace Cmd {
+namespace cmd {
 	static constexpr char PATH[] = "/showfile/";
 	static constexpr char START[] = "start";
 	static constexpr char STOP[] = "stop";
@@ -60,20 +60,20 @@ namespace Cmd {
 	static constexpr char INDEX[] = "index";
 }
 
-namespace Length {
-	static constexpr auto PATH = sizeof(Cmd::PATH) - 1;
-	static constexpr auto START = sizeof(Cmd::START) - 1;
-	static constexpr auto STOP = sizeof(Cmd::STOP) - 1;
-	static constexpr auto RESUME = sizeof(Cmd::RESUME) - 1;
-	static constexpr auto SHOW = sizeof(Cmd::SHOW) - 1;
-	static constexpr auto LOOP = sizeof(Cmd::LOOP) - 1;
-	static constexpr auto BO = sizeof(Cmd::BO) - 1;
-	static constexpr auto MASTER = sizeof(Cmd::MASTER) - 1;
-	static constexpr auto TFTP = sizeof(Cmd::TFTP) - 1;
-	static constexpr auto DELETE = sizeof(Cmd::DELETE) - 1;
+namespace length {
+	static constexpr auto PATH = sizeof(cmd::PATH) - 1;
+	static constexpr auto START = sizeof(cmd::START) - 1;
+	static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+	static constexpr auto RESUME = sizeof(cmd::RESUME) - 1;
+	static constexpr auto SHOW = sizeof(cmd::SHOW) - 1;
+	static constexpr auto LOOP = sizeof(cmd::LOOP) - 1;
+	static constexpr auto BO = sizeof(cmd::BO) - 1;
+	static constexpr auto MASTER = sizeof(cmd::MASTER) - 1;
+	static constexpr auto TFTP = sizeof(cmd::TFTP) - 1;
+	static constexpr auto DELETE = sizeof(cmd::DELETE) - 1;
 	// TouchOSC specific
-	static constexpr auto RELOAD = sizeof(Cmd::RELOAD) - 1;
-	static constexpr auto INDEX = sizeof(Cmd::INDEX) - 1;
+	static constexpr auto RELOAD = sizeof(cmd::RELOAD) - 1;
+	static constexpr auto INDEX = sizeof(cmd::INDEX) - 1;
 }
 
 ShowFileOSC *ShowFileOSC::s_pThis = 0;
@@ -119,36 +119,36 @@ void ShowFileOSC::Stop(void) {
 void ShowFileOSC::Run(void) {
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, MAX_BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
-	if (__builtin_expect((nBytesReceived <= Length::PATH), 1)) {
+	if (__builtin_expect((nBytesReceived <= length::PATH), 1)) {
 		return;
 	}
 
-	if (memcmp(m_pBuffer, Cmd::PATH, Length::PATH) == 0) {
-		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(Length::PATH), &m_pBuffer[Length::PATH]);
+	if (memcmp(m_pBuffer, cmd::PATH, length::PATH) == 0) {
+		DEBUG_PRINTF("[%s] %d,%d %s", m_pBuffer, static_cast<int>(strlen(m_pBuffer)), static_cast<int>(length::PATH), &m_pBuffer[length::PATH]);
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::START, Length::START) == 0) {
+		if (memcmp(&m_pBuffer[length::PATH], cmd::START, length::START) == 0) {
 			ShowFile::Get()->Start();
 			SendStatus();
 			DEBUG_PUTS("ActionStart");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::STOP, Length::STOP) == 0){
+		if (memcmp(&m_pBuffer[length::PATH], cmd::STOP, length::STOP) == 0){
 			ShowFile::Get()->Stop();
 			SendStatus();
 			DEBUG_PUTS("ActionStop");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::RESUME, Length::RESUME) == 0) {
+		if (memcmp(&m_pBuffer[length::PATH], cmd::RESUME, length::RESUME) == 0) {
 			ShowFile::Get()->Resume();
 			SendStatus();
 			DEBUG_PUTS("ActionResume");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::SHOW, Length::SHOW) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::SHOW, length::SHOW) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
 			const int nValue = Msg.GetInt(0);
 
@@ -161,10 +161,18 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::LOOP, Length::LOOP) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::LOOP, length::LOOP) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-			const int nValue = Msg.GetInt(0);
+			int nValue;
+
+			if (Msg.GetType(0) == osc::type::INT32) {
+				nValue = Msg.GetInt(0);
+			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
+				nValue = Msg.GetFloat(0);
+			} else {
+				return;
+			}
 
 			ShowFile::Get()->DoLoop(nValue != 0);
 			SendStatus();
@@ -174,21 +182,21 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::BO, Length::BO) == 0) {
+		if (memcmp(&m_pBuffer[length::PATH], cmd::BO, length::BO) == 0) {
 			ShowFile::Get()->BlackOut();
 			SendStatus();
 			DEBUG_PUTS("Blackout");
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::MASTER, Length::MASTER) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::MASTER, length::MASTER) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
 			int nValue;
 
-			if (Msg.GetType(0) == OscType::INT32) {
+			if (Msg.GetType(0) == osc::type::INT32) {
 				nValue = Msg.GetInt(0);
-			} else if (Msg.GetType(0) == OscType::FLOAT) { // TouchOSC
+			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
 				nValue = Msg.GetFloat(0);
 			} else {
 				return;
@@ -202,10 +210,18 @@ void ShowFileOSC::Run(void) {
 			return;
 		}
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::TFTP, Length::TFTP) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::TFTP, length::TFTP) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-			const int nValue = Msg.GetInt(0);
+			int nValue;
+
+			if (Msg.GetType(0) == osc::type::INT32) {
+				nValue = Msg.GetInt(0);
+			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
+				nValue = Msg.GetFloat(0);
+			} else {
+				return;
+			}
 
 			ShowFile::Get()->EnableTFTP(nValue != 0);
 			SendStatus();
@@ -215,12 +231,12 @@ void ShowFileOSC::Run(void) {
 		}
 
 
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::DELETE, Length::DELETE) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::DELETE, length::DELETE) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
 			int nValue = 255;
 
-			if (Msg.GetType(0) == OscType::INT32){
+			if (Msg.GetType(0) == osc::type::INT32){
 				nValue = Msg.GetInt(0);
 			} else {
 				return;
@@ -233,12 +249,12 @@ void ShowFileOSC::Run(void) {
 
 				ShowFile::ShowFileNameCopyTo(aShowFileName, sizeof(aShowFileName), nValue);
 
-				OSCSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", aShowFileName);
+				OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", aShowFileName);
 
 				if (ShowFile::Get()->DeleteShowFile(nValue)) {
-					OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Deleted");
+					OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Deleted");
 				} else {
-					OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Not deleted");
+					OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", "Not deleted");
 				}
 			}
 
@@ -247,7 +263,7 @@ void ShowFileOSC::Run(void) {
 		}
 
 		// TouchOSC
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::RELOAD, Length::RELOAD) == 0) {
+		if (memcmp(&m_pBuffer[length::PATH], cmd::RELOAD, length::RELOAD) == 0) {
 
 			Reload();
 
@@ -256,10 +272,10 @@ void ShowFileOSC::Run(void) {
 		}
 
 		// TouchOSC
-		if (memcmp(&m_pBuffer[Length::PATH], Cmd::INDEX, Length::INDEX) == 0) {
-			OSCMessage Msg(m_pBuffer, nBytesReceived);
+		if (memcmp(&m_pBuffer[length::PATH], cmd::INDEX, length::INDEX) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-			if (Msg.GetType(0) != OscType::FLOAT){
+			if (Msg.GetType(0) != osc::type::FLOAT){
 				return;
 			}
 
@@ -290,12 +306,12 @@ void ShowFileOSC::Run(void) {
 
 // TouchOSC
 void ShowFileOSC::SendStatus(void) {
-	OSCSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
+	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
 
 	const ShowFileStatus tStatus = ShowFile::Get()->GetStatus();
 	assert(tStatus != ShowFileStatus::UNDEFINED);
 
-	OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", ShowFileConst::STATUS[static_cast<int>(tStatus)]);
+	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", ShowFileConst::STATUS[static_cast<int>(tStatus)]);
 }
 
 // TouchOSC
@@ -357,13 +373,13 @@ void ShowFileOSC::Reload(void) {
     	snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
     	snprintf(aValue, sizeof(aValue) - 1, "%.2d", m_aFileIndex[i]);
 
-    	OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
+    	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", aValue);
     	DEBUG_PRINTF("%s s %s", aPath, aValue);
     }
 
 	for (; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
 		snprintf(aPath, sizeof(aPath) - 1, "/showfile/%d/show", i);
-		OSCSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
+		OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, aPath, "s", "  ");
 		m_aFileIndex[i] = -1;
 	}
 
@@ -374,7 +390,7 @@ void ShowFileOSC::Reload(void) {
 
 void ShowFileOSC::Print(void) {
 	printf("OSC Server\n");
-	printf(" Path : [%s]\n", Cmd::PATH);
+	printf(" Path : [%s]\n", cmd::PATH);
 	printf(" Incoming port : %u\n", m_nPortIncoming);
 	printf(" Outgoing port : %u\n", m_nPortOutgoing);
 }

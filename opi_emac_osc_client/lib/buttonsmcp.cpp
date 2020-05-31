@@ -38,15 +38,15 @@
 #include "debug.h"
 
 namespace mcp23017 {
-static constexpr auto I2C_ADDRESS = 0x20;
+static constexpr auto address = 0x20;
 }
 
 namespace gpio {
-static constexpr auto INTA = GPIO_EXT_12; // PA7
+static constexpr auto interrupt = GPIO_EXT_12; // PA7
 }
 
 ButtonsMcp::ButtonsMcp(OscClient *pOscClient):
-	m_I2C(mcp23017::I2C_ADDRESS),
+	m_I2C(mcp23017::address),
 	m_pOscClient(pOscClient),
 	m_bIsConnected(false),
 	m_nButtons(0),
@@ -78,8 +78,8 @@ bool ButtonsMcp::Start(void) {
 	m_I2C.WriteRegister(mcp23x17::IODIRB, 0x00); 	// All output
 	m_I2C.WriteRegister(mcp23x17::GPIOB, 0);		// All led's Off
 
-	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); 		// PA7
-	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
+	h3_gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT); // PA7
+	h3_gpio_pud(gpio::interrupt, GPIO_PULL_UP);
 
 	m_nButtonsCount = 8;
 
@@ -88,11 +88,11 @@ bool ButtonsMcp::Start(void) {
 }
 
 void ButtonsMcp::Stop(void) {
-	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(gpio::interrupt, GPIO_FSEL_DISABLE);
 }
 
 void ButtonsMcp::Run(void) {
-	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
+	if (__builtin_expect(h3_gpio_lev(gpio::interrupt) == LOW, 0)) {
 		m_nButtonsPrevious = m_nButtons;
 		m_nButtons = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
 
