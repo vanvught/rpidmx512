@@ -1,7 +1,10 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-i2c/include
+
+EXTRA_SRCDIR = src/i2c src/i2c/h3
+#
+EXTRA_INCLUDES= 
 #
 include ../h3-firmware-template/lib/Rules.mk
 	

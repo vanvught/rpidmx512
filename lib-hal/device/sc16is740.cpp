@@ -27,13 +27,12 @@
 #include <cassert>
 
 #include "./device/sc16is740.h"
-
-#include "sc16is7x0.h"
+#include "../lib-hal/device/sc16is7x0.h"
 
 #include "debug.h"
 
 SC16IS740::SC16IS740(uint8_t nAddress, uint32_t nOnBoardCrystal) :
-		HAL_I2C(nAddress, I2C_FULL_SPEED), m_nOnBoardCrystal(nOnBoardCrystal) {
+		HAL_I2C(nAddress, hal::i2c::FULL_SPEED), m_nOnBoardCrystal(nOnBoardCrystal) {
 }
 
 SC16IS740::~SC16IS740(void) {
@@ -56,21 +55,21 @@ bool SC16IS740::Init(void) {
 	}
 
 	//
-	uint32_t nRegisterMCR = ReadRegister(SC16IS7X0_MCR);
+	auto nRegisterMCR = ReadRegister(SC16IS7X0_MCR);
 	nRegisterMCR |= MCR_ENABLE_TCR_TLR;
 	WriteRegister(SC16IS7X0_MCR, nRegisterMCR);
 
-	uint32_t nRegisterEFR = ReadRegister(SC16IS7X0_EFR);
-	WriteRegister(SC16IS7X0_EFR, nRegisterEFR | EFR_ENABLE_ENHANCED_FUNCTIONS);
+	auto nRegisterEFR = ReadRegister(SC16IS7X0_EFR);
+	WriteRegister(SC16IS7X0_EFR, static_cast<uint8_t>(nRegisterEFR | EFR_ENABLE_ENHANCED_FUNCTIONS));
 
-	WriteRegister(SC16IS7X0_TLR, 0x10);
+	WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10));
 
 	WriteRegister(SC16IS7X0_EFR, nRegisterEFR);
 	//
 
-	WriteRegister(SC16IS7X0_FCR, (FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
+	WriteRegister(SC16IS7X0_FCR, static_cast<uint8_t>(FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
 	WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
-	WriteRegister(SC16IS7X0_IER, IER_ELSI | IER_ERHRI);
+	WriteRegister(SC16IS7X0_IER, static_cast<uint8_t>(IER_ELSI | IER_ERHRI));
 
 	DEBUG_PRINTF("TLR=%.2x", ReadRegister(SC16IS7X0_TLR));
 	debug_print_bits(ReadRegister(SC16IS7X0_TLR));
@@ -148,11 +147,11 @@ void SC16IS740::SetBaud(uint32_t nBaud) {
 	}
 
 	const uint32_t nDivisor = ((m_nOnBoardCrystal / nPrescaler) / (nBaud * 16));
-	const uint8_t nRegisterLCR = ReadRegister(SC16IS7X0_LCR);
+	const auto nRegisterLCR = ReadRegister(SC16IS7X0_LCR);
 
-	WriteRegister(SC16IS7X0_LCR, nRegisterLCR | LCR_ENABLE_DIV);
-	WriteRegister(SC16IS7X0_DLL, (nDivisor & 0xFF));
-	WriteRegister(SC16IS7X0_DLH, ((nDivisor >> 8) & 0xFF));
+	WriteRegister(SC16IS7X0_LCR, static_cast<uint8_t>(nRegisterLCR | LCR_ENABLE_DIV));
+	WriteRegister(SC16IS7X0_DLL, static_cast<uint8_t>(nDivisor & 0xFF));
+	WriteRegister(SC16IS7X0_DLH, static_cast<uint8_t>((nDivisor >> 8) & 0xFF));
 	WriteRegister(SC16IS7X0_LCR, nRegisterLCR);
 
 	DEBUG_PRINTF("nPrescaler=%u", nPrescaler);

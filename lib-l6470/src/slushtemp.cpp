@@ -45,7 +45,7 @@ uint16_t SlushBoard::getTempRaw(void) {
 	char buf[2] = { 0, 0 };
 
 	FUNC_PREFIX(i2c_set_address(MAX1164_I2C_ADDRESS));
-	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
+	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));
 	FUNC_PREFIX(i2c_read(buf, 2));
 
 	return (static_cast<uint16_t>(buf[0]) << 8 | buf[1]);

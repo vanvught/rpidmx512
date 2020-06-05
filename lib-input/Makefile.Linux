@@ -1,6 +1,6 @@
 #
 DEFINES = RASPPI #NDEBUG
 #
-EXTRA_INCLUDES = ../lib-i2c/include
+EXTRA_INCLUDES = ../lib-hal/include
 #
 include ../linux-template/lib/Rules.mk

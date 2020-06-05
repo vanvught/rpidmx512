@@ -1,7 +1,9 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-i2c/include
+EXTRA_SRCDIR = src/i2c src/i2c/rpi
+#
+EXTRA_INCLUDES=
 #
 include ../firmware-template/lib/Rules.mk
 	

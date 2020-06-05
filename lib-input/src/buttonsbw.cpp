@@ -1,6 +1,6 @@
 #if !defined (__CYGWIN__)
 /**
- * @file bwui.cpp
+ * @file buttonsbw.cpp
  *
  */
 /* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -31,7 +31,7 @@
 
 #include "buttonsbw.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
 
 extern "C" {
 extern uint32_t micros(void);
@@ -54,25 +54,24 @@ extern void udelay(uint32_t);
 #define BW_PORT_READ_BUTTON_5			0x44
 #define BW_PORT_READ_BUTTON_6			0x45
 
-ButtonsBw::ButtonsBw(void): m_nSlaveAddress(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
+ButtonsBw::ButtonsBw(void): m_I2C(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
 }
 
 ButtonsBw::~ButtonsBw(void) {
 }
 
 bool ButtonsBw::Start(void) {
-	i2c_begin();
-
-	return true;
+	return m_I2C.IsConnected();
 }
 
 bool ButtonsBw::IsAvailable(void) {
 	const char cmd[] = { BW_PORT_READ_BUTTON_SINCE_LAST, 0xFF };
 
-	Setup();
+
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 	udelay(BW_UI_I2C_DELAY_WRITE_READ_US);
-	m_nButtons = i2c_read_uint8();
+
+	m_nButtons = m_I2C.Read();
 
 	return m_nButtons == 0 ? false : true;
 }
@@ -104,11 +103,6 @@ int ButtonsBw::GetChar(void) {
 	return INPUT_KEY_NOT_DEFINED;
 }
 
-void ButtonsBw::Setup(void) {
-	i2c_set_address(m_nSlaveAddress >> 1);
-	i2c_set_baudrate(I2C_NORMAL_SPEED);
-}
-
 void ButtonsBw::Write(const char *buffer, uint32_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;
 
@@ -116,7 +110,7 @@ void ButtonsBw::Write(const char *buffer, uint32_t size) {
 		udelay(BW_UI_I2C_BYTE_WAIT_US - elapsed);
 	}
 
-	i2c_write_nb(buffer, size);
+	m_I2C.Write(buffer, size);
 
 	m_nWriteMicros = micros();
 }

@@ -26,10 +26,7 @@
 #ifndef HAL_I2C_H_
 #define HAL_I2C_H_
 
-enum {
-	I2C_NORMAL_SPEED = 100000,
-	I2C_FULL_SPEED = 400000
-};
+#include <stdint.h>
 
 #if defined(__linux__)
 # include "linux/hal_i2c.h"
@@ -42,11 +39,16 @@ enum {
 # include "rpi/hal_api.h"
 #endif
 
-#include <stdint.h>
+namespace hal {
+namespace i2c {
+static constexpr uint32_t NORMAL_SPEED = 100000;
+static constexpr uint32_t FULL_SPEED = 400000;
+}  // namespace i2c
+}  // namespace hal
 
 class HAL_I2C {
 public:
-	HAL_I2C(uint8_t nAddress, uint32_t nBaudrate = I2C_FULL_SPEED) : m_nAddress(nAddress), m_nBaudrate(nBaudrate) {
+	HAL_I2C(uint8_t nAddress, uint32_t nBaudrate = hal::i2c::FULL_SPEED) : m_nAddress(nAddress), m_nBaudrate(nBaudrate) {
 	}
 
 	uint8_t GetAddress(void) {
@@ -56,14 +58,21 @@ public:
 	bool IsConnected(void) {
 		Setup();
 
-		char buf;
+		return IsConnected_(m_nAddress);
+	}
 
-		if ((m_nAddress >= 0x30 && m_nAddress <= 0x37) || (m_nAddress >= 0x50 && m_nAddress <= 0x5F)) {
-			return FUNC_PREFIX(i2c_read(&buf, 1)) == 0;
-		}
+	static bool IsConnected(const uint8_t nAddress) {
+		return IsConnected_(nAddress);
+	}
 
-		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		return FUNC_PREFIX(i2c_write(0, 0)) == 0;
+	void Write(char pData) {
+		Setup();
+		FUNC_PREFIX(i2c_write(&pData, 1));
+	}
+
+	void Write(const char *pData, uint32_t nLength) {
+		Setup();
+		FUNC_PREFIX(i2c_write(pData, nLength));
 	}
 
 	void WriteRegister(uint8_t nRegister, uint8_t nValue) {
@@ -76,6 +85,17 @@ public:
 		FUNC_PREFIX(i2c_write(buffer, 2));
 	}
 
+	void WriteRegister(uint8_t nRegister, uint16_t nValue) {
+		char buffer[3];
+
+		buffer[0] = nRegister;
+		buffer[1] = static_cast<char>(nValue >> 8);
+		buffer[2] = static_cast<char>(nValue & 0xFF);
+
+		Setup();
+		FUNC_PREFIX(i2c_write(buffer, 3));
+	}
+
 	uint8_t Read(void) {
 		char buf[1];
 
@@ -83,6 +103,10 @@ public:
 		FUNC_PREFIX(i2c_read(buf, 1));
 
 		return buf[0];
+	}
+
+	uint8_t Read(char *pBuffer, uint32_t nLength) {
+		return FUNC_PREFIX(i2c_read(pBuffer, nLength));
 	}
 
 	uint8_t ReadRegister(uint8_t nRegister) {
@@ -101,6 +125,17 @@ private:
 	void Setup(void) {
 		FUNC_PREFIX(i2c_set_address(m_nAddress));
 		FUNC_PREFIX(i2c_set_baudrate(m_nBaudrate));
+	}
+
+	static bool IsConnected_(const uint8_t nAddress) {
+		char buf;
+
+		if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
+			return FUNC_PREFIX(i2c_read(&buf, 1)) == 0;
+		}
+
+		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
+		return FUNC_PREFIX(i2c_write(0, 0)) == 0;
 	}
 
 	uint8_t m_nAddress;

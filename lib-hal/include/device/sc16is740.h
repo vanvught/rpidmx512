@@ -31,7 +31,7 @@
 #include "hal_i2c.h"
 #include "hardware.h"
 
-#include "sc16is7x0.h"
+#include "../lib-hal/device/sc16is7x0.h"
 
 namespace sc16is740 {
 static constexpr uint8_t I2C_ADDRESS = 0x4D;
@@ -99,7 +99,7 @@ public:
 		while (!IsWritable()) {
 		}
 
-		WriteRegister(SC16IS7X0_THR, nValue);
+		WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(nValue));
 
 		return nValue;
 	}

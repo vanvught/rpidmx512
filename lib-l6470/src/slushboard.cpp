@@ -133,7 +133,7 @@ void SlushBoard::InitI2c(void) {
 
 void SlushBoard::I2cSetup(uint8_t address) {
 	FUNC_PREFIX(i2c_set_address(address));
-	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
+	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));
 }
 
 uint8_t SlushBoard::Mcp23017ReadReg(uint8_t reg) {

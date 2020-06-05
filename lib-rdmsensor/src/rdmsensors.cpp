@@ -52,7 +52,6 @@
 #endif
 
 #if defined (RDM_SENSORS_ENABLE)
- #include "i2c.h"
  #include "sensorbh1750.h"
  #include "sensormcp9808.h"
  #include "sensorhtu21dhumidity.h"
@@ -105,10 +104,8 @@ void RDMSensors::Init(void) {
 #endif
 
 #if defined (RDM_SENSORS_ENABLE)
-	if(i2c_begin()) {	// We have I2C sensors only
-		ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);
-		static_cast<void>(configfile.Read(SENSORS_PARAMS_FILE_NAME));
-	}
+	ReadConfigFile configfile(RDMSensors::staticCallbackFunction, this);
+	configfile.Read(SENSORS_PARAMS_FILE_NAME);
 #endif
 
 	DEBUG_PRINTF("Sensors added: %d", static_cast<int>(m_nCount));

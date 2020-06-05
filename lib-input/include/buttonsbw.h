@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "inputset.h"
+#include "hal_i2c.h"
 
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
 
@@ -43,11 +44,10 @@ public:
 	int GetChar(void);
 
 private:
-	void Setup(void);
 	void Write(const char *, uint32_t);
 
 private:
-	uint8_t m_nSlaveAddress;
+	HAL_I2C m_I2C;
 	uint32_t m_nWriteMicros;
 	uint8_t m_nButtons;
 };

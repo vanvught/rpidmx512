@@ -86,7 +86,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display c++ hal c bob i2c h3 debug  arm
+LIBS+=lightset properties display c++ hal c bob h3 debug  arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -121,6 +121,7 @@ COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
+#COPS+=-fstack-usage
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  #-Wconversion
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
@@ -202,7 +203,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) # $(PLATFORM_LIBGCC)
-	$(PREFIX)objdump -d $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
+	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 
 $(TARGET) : $(BUILD)main.elf 
