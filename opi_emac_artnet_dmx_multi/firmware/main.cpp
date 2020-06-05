@@ -71,8 +71,8 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
 	LedBlink lb;
+	NetworkH3emac nw;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -115,7 +115,7 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
@@ -124,7 +124,7 @@ void notmain(void) {
 
 	ArtNet4Node node;
 
-	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	artnetParams.Set(&node);
 
@@ -216,9 +216,9 @@ void notmain(void) {
 			pDiscovery->Print();
 
 			if (artnetParams.IsRdmDiscovery()) {
-				display.TextStatus(ArtNetMsgConst::RDM_RUN, DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN, CONSOLE_YELLOW);
+				display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-				for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+				for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
 					uint8_t nAddress;
 					if (node.GetUniverseSwitch(i, nAddress)) {
 						pDiscovery->Full(i);
@@ -270,11 +270,11 @@ void notmain(void) {
 		printf("Remote configuration is disabled\n");
 	}
 
-	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
+	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

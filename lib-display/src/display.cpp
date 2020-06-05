@@ -36,7 +36,7 @@
 
 #include "display7segment.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
 
 #if !defined(NO_HAL)
  #include "hardware.h"
@@ -46,10 +46,7 @@
  #include "console.h"
 #endif
 
-#define MCP23017_I2C_ADDRESS	0x20
-#define SEGMENT7_I2C_ADDRESS	(MCP23017_I2C_ADDRESS + 1)	///< It must be different from base address
-#define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23X17_GPIOA			0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
+#include "debug.h"
 
 Display *Display::s_pThis = 0;
 
@@ -57,7 +54,6 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 	m_tType(DisplayType::UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false),
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
@@ -67,7 +63,6 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 	s_pThis = this;
 
 	Detect(nCols, nRows);
-	Init7Segment();
 }
 
 Display::Display(DisplayType tDisplayType):
@@ -75,7 +70,6 @@ Display::Display(DisplayType tDisplayType):
 	m_nRows(0),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false),
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
@@ -128,8 +122,6 @@ Display::Display(DisplayType tDisplayType):
 	if (m_LcdDisplay == 0){
 		m_nSleepTimeout = 0;
 	}
-
-	Init7Segment();
 }
 
 void Display::Detect(uint32_t nCols, uint32_t nRows) {
@@ -138,11 +130,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	m_LcdDisplay = 0;
 	m_tType = DisplayType::UNKNOWN;
 
-	if(!i2c_begin()) {
-		return;
-	}
-
-	if (i2c_is_connected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
+	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_4ROWS);
 		} else {
@@ -154,7 +142,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 		}
 	}
 #if defined(ENABLE_TC1602)
-	else if (i2c_is_connected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
+	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::PCF8574T_1602;
@@ -163,13 +151,13 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	}
 #endif
 #if defined(ENABLE_LCDBW)
-	else if (i2c_is_connected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
+	else if (HAL_I2C::IsConnected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::BW_LCD_1602;
 			Printf(1, "BW_LCD");
 		}
-	} else if (i2c_is_connected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
+	} else if (HAL_I2C::IsConnected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::BW_UI_1602;
@@ -276,18 +264,6 @@ void Display::ClearLine(uint8_t nLine) {
 	m_LcdDisplay->ClearLine(nLine);
 }
 
-// Support for 2 digits 7-segment based on MCP23017
-
-void Display::Init7Segment(void) {
-	m_bHave7Segment = i2c_is_connected(SEGMENT7_I2C_ADDRESS);
-
-	if (m_bHave7Segment) {
-		i2c_set_address(SEGMENT7_I2C_ADDRESS);
-		i2c_write_reg_uint16(MCP23X17_IODIRA, 0x0000); // All output
-		Status(DISPLAY_7SEGMENT_MSG_INFO_STARTUP);
-	}
-}
-
 #if defined(ENABLE_CURSOR_MODE)
 void Display::SetCursor(CursorMode constEnumTCursorOnOff) {
 	if (m_LcdDisplay == 0) {
@@ -296,64 +272,6 @@ void Display::SetCursor(CursorMode constEnumTCursorOnOff) {
 	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
 }
 #endif
-
-uint16_t Display::Get7SegmentData(uint8_t nValue) {
-
-	switch (nValue) {
-	case 0:
-		return Display7Segment::CH_0;
-		break;
-	case 1:
-		return Display7Segment::CH_1;
-		break;
-	case 2:
-		return Display7Segment::CH_2;
-		break;
-	case 3:
-		return Display7Segment::CH_3;
-		break;
-	case 4:
-		return Display7Segment::CH_4;
-		break;
-	case 5:
-		return Display7Segment::CH_5;
-		break;
-	case 6:
-		return Display7Segment::CH_6;
-		break;
-	case 7:
-		return Display7Segment::CH_7;
-		break;
-	case 8:
-		return Display7Segment::CH_8;
-		break;
-	case 9:
-		return Display7Segment::CH_9;
-		break;
-	case 0xa:
-		return Display7Segment::CH_A;
-		break;
-	case 0xb:
-		return Display7Segment::CH_B;
-		break;
-	case 0xc:
-		return Display7Segment::CH_C;
-		break;
-	case 0xd:
-		return Display7Segment::CH_D;
-		break;
-	case 0xe:
-		return Display7Segment::CH_E;
-		break;
-	case 0xf:
-		return Display7Segment::CH_F;
-		break;
-	default:
-		break;
-	}
-
-	return Display7Segment::CH_BLANK;
-}
 
 void Display::TextStatus(const char *pText) {
 	if (m_LcdDisplay == 0) {
@@ -371,9 +289,9 @@ void Display::TextStatus(const char *pText) {
 	Write(m_nRows, pText);
 }
 
-void Display::TextStatus(const char *pText, uint16_t n7SegmentData, uint32_t nConsoleColor) {
+void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData, uint32_t nConsoleColor) {
 	TextStatus(pText);
-	Status(n7SegmentData);
+	m_Display7Segment.Status(n7SegmentData);
 #if defined (BARE_METAL)
 	if (nConsoleColor == UINT32_MAX) {
 		return;
@@ -384,31 +302,7 @@ void Display::TextStatus(const char *pText, uint16_t n7SegmentData, uint32_t nCo
 
 void Display::TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex) {
 	TextStatus(pText);
-	Status(nValue7Segment, bHex);
-}
-
-void Display::Status(uint16_t n7SegmentData) {
-	if (m_bHave7Segment) {
-		i2c_set_address(SEGMENT7_I2C_ADDRESS);
-		i2c_write_reg_uint16(MCP23X17_GPIOA, ~n7SegmentData);
-	}
-}
-
-void Display::Status(uint8_t nValue, bool bHex) {
-	if (m_bHave7Segment) {
-		uint16_t n7SegmentData;
-
-		if (!bHex) {
-			n7SegmentData = Get7SegmentData(nValue / 10);
-			n7SegmentData |= Get7SegmentData(nValue % 10) << 8;
-		} else {
-			n7SegmentData = Get7SegmentData(nValue & 0x0F);
-			n7SegmentData |= Get7SegmentData((nValue >> 4) & 0x0F) << 8;
-		}
-
-		i2c_set_address(SEGMENT7_I2C_ADDRESS);
-		i2c_write_reg_uint16(MCP23X17_GPIOA, ~n7SegmentData);
-	}
+	m_Display7Segment.Status(nValue7Segment, bHex);
 }
 
 #if !defined(NO_HAL)

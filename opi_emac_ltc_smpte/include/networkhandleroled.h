@@ -27,6 +27,7 @@
 #define NETWORKHANDLEROLED_H_
 
 #include "display.h"
+#include "display7segment.h"
 
 #include "network.h"
 #include "ntpclient.h"
@@ -62,15 +63,15 @@ public:
 		case DhcpClientStatus::IDLE:
 			break;
 		case DhcpClientStatus::RENEW:
-			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_DHCP);
+			Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 			Display::Get()->ClearLine(3);
 			Display::Get()->Printf(3, "DHCP renewing");
 			break;
 		case DhcpClientStatus::GOT_IP:
-			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+			Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 			break;
 		case DhcpClientStatus::FAILED:
-			Display::Get()->Status(DISPLAY_7SEGMENT_MSG_ERROR_DHCP);
+			Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 			break;
 		default:
 			break;
@@ -80,12 +81,12 @@ public:
 	// NTP Client
 	void ShowNtpClientStatus(NtpClientStatus nStatus) {
 		if (nStatus == NtpClientStatus::INIT) {
-			Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+			Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
 			return;
 		}
 
 		if (nStatus == NtpClientStatus::STOPPED) {
-			Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+			Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
 			return;
 		}
 	}

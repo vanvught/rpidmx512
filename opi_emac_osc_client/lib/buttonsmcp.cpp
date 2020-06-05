@@ -70,13 +70,13 @@ bool ButtonsMcp::Start(void) {
 	}
 
 	// Switches
-	m_I2C.WriteRegister(mcp23x17::IODIRA, 0xFF); 	// All input
-	m_I2C.WriteRegister(mcp23x17::GPPUA, 0xFF);		// Pull-up
-	m_I2C.WriteRegister(mcp23x17::GPINTENA, 0xFF);	// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::INTCAPA);			// Clear interrupt
+	m_I2C.WriteRegister(mcp23x17::IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
+	m_I2C.WriteRegister(mcp23x17::GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
+	m_I2C.WriteRegister(mcp23x17::GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::INTCAPA);								// Clear interrupt
 	// Led's
-	m_I2C.WriteRegister(mcp23x17::IODIRB, 0x00); 	// All output
-	m_I2C.WriteRegister(mcp23x17::GPIOB, 0);		// All led's Off
+	m_I2C.WriteRegister(mcp23x17::IODIRB, static_cast<uint8_t>(0x00)); 	// All output
+	m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0));		// All led's Off
 
 	h3_gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT); // PA7
 	h3_gpio_pud(gpio::interrupt, GPIO_PULL_UP);

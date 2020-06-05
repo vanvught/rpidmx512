@@ -59,15 +59,15 @@
 
 #include "debug.h"
 
-static constexpr TDisplay7SegmentMessages s_7Segment[] = {
-		DISPLAY_7SEGMENT_MSG_GENERIC_1,
-		DISPLAY_7SEGMENT_MSG_GENERIC_2,
-		DISPLAY_7SEGMENT_MSG_GENERIC_3,
-		DISPLAY_7SEGMENT_MSG_GENERIC_4,
-		DISPLAY_7SEGMENT_MSG_GENERIC_5,
-		DISPLAY_7SEGMENT_MSG_GENERIC_6,
-		DISPLAY_7SEGMENT_MSG_GENERIC_7,
-		DISPLAY_7SEGMENT_MSG_GENERIC_8
+static constexpr Display7SegmentMessage s_7Segment[] = {
+		Display7SegmentMessage::GENERIC_1,
+		Display7SegmentMessage::GENERIC_2,
+		Display7SegmentMessage::GENERIC_3,
+		Display7SegmentMessage::GENERIC_4,
+		Display7SegmentMessage::GENERIC_5,
+		Display7SegmentMessage::GENERIC_6,
+		Display7SegmentMessage::GENERIC_7,
+		Display7SegmentMessage::GENERIC_8
 };
 
 namespace mcp23017 {
@@ -169,13 +169,13 @@ bool SourceSelect::Check(void) {
 	}
 
 	// Rotary and switches
-	m_I2C.WriteRegister(mcp23x17::IODIRA, 0xFF); 	// All input
-	m_I2C.WriteRegister(mcp23x17::GPPUA, 0xFF);		// Pull-up
-	m_I2C.WriteRegister(mcp23x17::GPINTENA, 0xFF);	// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::INTCAPA);			// Clear interrupts
+	m_I2C.WriteRegister(mcp23x17::IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
+	m_I2C.WriteRegister(mcp23x17::GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
+	m_I2C.WriteRegister(mcp23x17::GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::INTCAPA);								// Clear interrupts
 	// Led's
-	m_I2C.WriteRegister(mcp23x17::IODIRB, 0x00); 	// All output
-	m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << m_tLtcReaderSource);
+	m_I2C.WriteRegister(mcp23x17::IODIRB, static_cast<uint8_t>(0x00)); 	// All output
+	m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
 
 	UpdateDisaplays(m_tLtcReaderSource);
 
@@ -218,7 +218,7 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 				StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
 			}
 
-			m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << tLtcReaderSource);
+			m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << tLtcReaderSource));
 			m_I2C.ReadRegister(mcp23x17::INTCAPA);	// Clear interrupts
 			return false;
 		} else {
@@ -238,15 +238,15 @@ void SourceSelect::SetRunState(TRunStatus tRunState) {
 
 	switch (tRunState) {
 	case RUN_STATUS_IDLE:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, 1 << m_tLtcReaderSource);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
 		Display::Get()->TextStatus(SourceSelectConst::SOURCE[m_tLtcReaderSource]);
 		break;
 	case RUN_STATUS_CONTINUE:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, 0x0F);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0x0F));
 		Display::Get()->TextStatus(">CONTINUE?<");
 		break;
 	case RUN_STATUS_REBOOT:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, 0xF0);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0xF0));
 		Display::Get()->TextStatus(">REBOOT?  <");
 		break;
 	default:
@@ -274,10 +274,10 @@ void SourceSelect::HandleActionSelect(void) {
 
 		printf("Reboot ...\n");
 
-		m_I2C.WriteRegister(mcp23x17::GPIOB, 0xFF);
+		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0xFF));
 
 		Display::Get()->Cls();
-		Display::Get()->TextStatus("Reboot ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+		Display::Get()->TextStatus("Reboot ...", Display7SegmentMessage::INFO_REBOOTING);
 
 		Network::Get()->Shutdown();
 		Hardware::Get()->Reboot();

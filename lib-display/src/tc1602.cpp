@@ -37,7 +37,7 @@ extern void udelay(uint32_t);
 
 #include "tc1602.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
 
 #define MIN_COLS	16
 #define MIN_ROWS	2
@@ -85,26 +85,17 @@ extern void udelay(uint32_t);
 
 #define LCD_SETDDRAMADDR 0x80
 
-static void lcd_toggle_enable(const uint8_t data) {
-	i2c_write(data | TC1602_EN | TC1602_BACKLIGHT);
-	i2c_write((data & ~TC1602_EN) | TC1602_BACKLIGHT);
-}
-
-Tc1602::Tc1602(void): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
+Tc1602::Tc1602(void): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
 	m_nCols = 16;
 	m_nRows = 2;
 }
 
-Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
+Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
-Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_nSlaveAddress(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
-	if (nSlaveAddress == 0) {
-		m_nSlaveAddress = TC1602_I2C_DEFAULT_SLAVE_ADDRESS;
-	}
-
+Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_I2C(nSlaveAddress == 0 ? TC1602_I2C_DEFAULT_SLAVE_ADDRESS : nSlaveAddress), bFastMode(true) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
@@ -113,11 +104,7 @@ Tc1602::~Tc1602(void) {
 }
 
 bool Tc1602::Start(void) {
-	i2c_begin();
-
-	Setup();
-
-	if (!i2c_is_connected(m_nSlaveAddress)) {
+	if (!m_I2C.IsConnected()) {
 		return false;
 	}
 
@@ -192,20 +179,10 @@ void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
 	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
 }
 
-void Tc1602::Setup(void) {
-	i2c_set_address(m_nSlaveAddress);
-
-	if (bFastMode) {
-		i2c_set_baudrate(I2C_FULL_SPEED);
-	} else {
-		i2c_set_baudrate(I2C_NORMAL_SPEED);
-	}
-}
-
 void Tc1602::Write4bits(uint8_t data) {
-	Setup();
-	i2c_write(data);
-	lcd_toggle_enable(data);
+	m_I2C.Write(data);
+	m_I2C.Write(data | TC1602_EN | TC1602_BACKLIGHT);
+	m_I2C.Write((data & ~TC1602_EN) | TC1602_BACKLIGHT);
 }
 
 void Tc1602::WriteCmd(uint8_t cmd) {

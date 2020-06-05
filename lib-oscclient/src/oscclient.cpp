@@ -116,7 +116,7 @@ int OscClient::Run(void) {
 				if (m_bPongReceived) {
 					m_bPongReceived = false;
 #if defined(BARE_METAL) || defined (RASPPI)
-					Display::Get()->TextStatus("No /Pong", DISPLAY_7SEGMENT_MSG_ERROR_OSCCLIENT_PING_PONG);
+					Display::Get()->TextStatus("No /Pong", Display7SegmentMessage::ERROR_OSCCLIENT_PING_PONG);
 #endif
 					DEBUG_PUTS("No /Pong");
 				}
@@ -138,7 +138,7 @@ int OscClient::Run(void) {
 
 		if (!m_bPongReceived) {
 #if defined(BARE_METAL) || defined (RASPPI)
-			Display::Get()->TextStatus("Ping-Pong", DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PING_PONG);
+			Display::Get()->TextStatus("Ping-Pong", Display7SegmentMessage::INFO_OSCCLIENT_PING_PONG);
 #endif
 			DEBUG_PUTS("Ping-Pong");
 		}

@@ -89,14 +89,14 @@ void notmain(void) {
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
-	display.TextStatus(E131MsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
@@ -206,13 +206,13 @@ void notmain(void) {
 	device.Init();
 	device.Print();
 
-	display.TextStatus(E131MsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START, CONSOLE_YELLOW);
+	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
 	controller.Start();
 	device.Start();
 
-	display.TextStatus(E131MsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED, CONSOLE_GREEN);
+	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

@@ -2,7 +2,7 @@
  * @file lcdbw.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 
 #include "displayset.h"
 
+#include "hal_i2c.h"
+
 #define BW_LCD_DEFAULT_SLAVE_ADDRESS	0x82
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
 
@@ -55,11 +57,10 @@ public:
 	void SetCursor( CursorMode);
 
 private:
-	void Setup(void);
 	void Write(const char *, uint32_t);
 
 private:
-	uint8_t m_nSlaveAddress;
+	HAL_I2C m_I2C;
 	uint32_t m_nWriteMicros;
 };
 

@@ -88,14 +88,14 @@ void notmain(void) {
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
-	display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_ARTNET);
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -159,7 +159,7 @@ void notmain(void) {
 			}
 		}
 
-		if (nPage < TArtNetConst::MAX_PAGES) {
+		if (nPage < artnet::MAX_PAGES) {
 			uint8_t nSubnetSwitch = node.GetSubnetSwitch(nPage - 1);
 			nSubnetSwitch = (nSubnetSwitch + 1) & 0x0F;
 			node.SetSubnetSwitch(nSubnetSwitch, nPage);
@@ -172,7 +172,7 @@ void notmain(void) {
 			nPage++;
 		}
 
-		nPortIndex += TArtNetConst::MAX_PORTS;
+		nPortIndex += artnet::MAX_PORTS;
 	}
 
 	node.Print();
@@ -209,11 +209,11 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
+	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
 
-	display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
+	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 

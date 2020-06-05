@@ -46,7 +46,7 @@ public:
 		if (pFileName[0] != 0) {
 			Display::Get()->TextStatus(pFileName, nShow);
 		} else {
-			Display::Get()->TextStatus("No showfile", DISPLAY_7SEGMENT_MSG_ERROR_PLAYER);
+			Display::Get()->TextStatus("No showfile", Display7SegmentMessage::ERROR_PLAYER);
 		}
 	}
 

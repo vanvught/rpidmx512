@@ -32,7 +32,7 @@
 
 #include "ssd1306.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
 
 #define SSD1306_LCD_WIDTH				128
 
@@ -67,7 +67,7 @@
 #define OLED_FONT8x6_CHAR_W				6
 #define OLED_FONT8x6_COLS				(SSD1306_LCD_WIDTH / OLED_FONT8x6_CHAR_W)
 
-static uint8_t _OledFont8x6[] __attribute__((aligned(4))) = {
+static const uint8_t _OledFont8x6[] __attribute__((aligned(4))) = {
 	0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 	0x40, 0x00, 0x00, 0x5F, 0x00, 0x00, 0x00,
 	0x40, 0x00, 0x07, 0x00, 0x07, 0x00, 0x00,
@@ -204,27 +204,26 @@ static uint8_t _ClearBuffer[133 + 1] __attribute__((aligned(4)));
 
 Ssd1306 *Ssd1306::s_pThis = 0;
 
-Ssd1306::Ssd1306(void) : m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(OLED_PANEL_128x64_8ROWS), m_bHaveSH1106(false) {
+Ssd1306::Ssd1306(void) :
+		m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(OLED_PANEL_128x64_8ROWS), m_bHaveSH1106(false) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
 	InitMembers();
 }
 
-Ssd1306::Ssd1306(TOledPanel tOledPanel) : m_nSlaveAddress(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
+Ssd1306::Ssd1306(TOledPanel tOledPanel) :
+		m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
 	InitMembers();
 }
 
-Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) : m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
+Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) :
+		m_I2C(nSlaveAddress == 0 ? OLED_I2C_SLAVE_ADDRESS_DEFAULT : nSlaveAddress), m_OledPanel(tOledPanel), m_bHaveSH1106(false) {
 	assert(s_pThis == 0);
 	s_pThis = this;
-
-	if (nSlaveAddress == 0) {
-		m_nSlaveAddress = OLED_I2C_SLAVE_ADDRESS_DEFAULT;
-	}
 
 	InitMembers();
 }
@@ -250,8 +249,8 @@ void Ssd1306::CheckSH1106(void) {
 
 	char aResultBytes[5];
 
-	i2c_write(0x40);
-	i2c_read(aResultBytes, sizeof(aResultBytes));
+	m_I2C.Write(0x40);
+	m_I2C.Read(aResultBytes, sizeof(aResultBytes));
 
 #ifndef NDEBUG
 	printf("%.2x %.2x %.2x %.2x %.2x\n", aResultBytes[0], aResultBytes[1], aResultBytes[2], aResultBytes[3], aResultBytes[4]);
@@ -265,11 +264,7 @@ void Ssd1306::CheckSH1106(void) {
 }
 
 bool Ssd1306::Start(void) {
-	i2c_begin();
-
-	Setup();
-
-	if (!i2c_is_connected(m_nSlaveAddress)) {
+	if (!m_I2C.IsConnected()) {
 		return false;
 	}
 
@@ -429,11 +424,6 @@ void Ssd1306::SetSleep(bool bSleep) {
 	}
 }
 
-void Ssd1306::Setup(void) {
-	i2c_set_address(m_nSlaveAddress);
-	i2c_set_baudrate(I2C_FULL_SPEED);
-}
-
 void Ssd1306::InitMembers(void) {
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:
@@ -460,13 +450,11 @@ void Ssd1306::InitMembers(void) {
 }
 
 void Ssd1306::SendCommand(uint8_t cmd) {
-	Setup();
-	i2c_write_reg_uint8(SSD1306_COMMAND_MODE, cmd);
+	m_I2C.WriteRegister(SSD1306_COMMAND_MODE, cmd);
 }
 
 void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
-	Setup();
-	i2c_write_nb(reinterpret_cast<const char*>(pData), nLength);
+	m_I2C.Write(reinterpret_cast<const char*>(pData), nLength);
 }
 
 #ifndef NDEBUG

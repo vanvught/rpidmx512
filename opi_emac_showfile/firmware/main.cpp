@@ -87,7 +87,7 @@ void notmain(void) {
 	hw.SetRebootHandler(new Reboot);
 	hw.SetLed(HARDWARE_LED_ON);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);

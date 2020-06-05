@@ -60,7 +60,7 @@ namespace SHOWMSG {
 	static constexpr auto LENGTH = sizeof(PATH) - 1;
 }
 
-namespace UDP {
+namespace udp {
 	static constexpr auto PORT = 0x2812;
 }
 
@@ -123,7 +123,7 @@ void LtcDisplayWS28xx::Init(TWS28XXType tLedType, __attribute__((unused)) uint8_
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_COLON], LTCDISPLAYWS28XX_COLOUR_INDEX_COLON);
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE], LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE);
 
-	m_nHandle = Network::Get()->Begin(UDP::PORT);
+	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 
 	DEBUG_EXIT

@@ -133,7 +133,7 @@ void notmain(void) {
 	display.ClearLine(1);
 	display.ClearLine(2);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	NetworkHandlerOled networkHandlerOled;
 
@@ -202,7 +202,7 @@ void notmain(void) {
 	Reboot reboot(source);
 	hw.SetRebootHandler(&reboot);
 
-	display.Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
 
@@ -217,7 +217,7 @@ void notmain(void) {
 	TimeSync timeSync;
 
 	if (bRunArtNet) {
-		display.TextStatus(ArtNetMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS, CONSOLE_YELLOW);
+		display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 		ArtNetParams artnetparams(spiFlashStore.GetStoreArtNet());
 
@@ -234,12 +234,12 @@ void notmain(void) {
 			node.SetTimeSyncHandler(&timeSync);
 		}
 
-		display.TextStatus(ArtNetMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_NODE_START, CONSOLE_YELLOW);
+		display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 		node.Start();
 		node.Print();
 
-		display.TextStatus(ArtNetMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED, CONSOLE_GREEN);
+		display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 	}
 
 	/**

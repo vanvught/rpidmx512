@@ -2,7 +2,7 @@
  * @file ltc7segment.cpp.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,15 @@
 #include "ltc.h"
 
 #include "display.h"
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+#include "display7segment.h"
 
 Ltc7segment *Ltc7segment::s_pThis = 0;
 
-const TDisplay7SegmentMessages msg[4] ALIGNED = {
-		DISPLAY_7SEGMENT_MSG_LTC_FILM,
-		DISPLAY_7SEGMENT_MSG_LTC_EBU,
-		DISPLAY_7SEGMENT_MSG_LTC_DF,
-		DISPLAY_7SEGMENT_MSG_LTC_SMPTE };
+static constexpr Display7SegmentMessage msg[4]  = {
+		Display7SegmentMessage::LTC_FILM,
+		Display7SegmentMessage::LTC_EBU,
+		Display7SegmentMessage::LTC_DF,
+		Display7SegmentMessage::LTC_SMPTE };
 
 Ltc7segment::Ltc7segment(void) {
 	assert(s_pThis == 0);
@@ -53,9 +50,9 @@ Ltc7segment::~Ltc7segment(void) {
 
 void Ltc7segment::Show(TTimecodeTypes tTimecodeType) {
 	if (tTimecodeType < TC_TYPE_UNKNOWN) {
-		Display::Get()->Status(msg[tTimecodeType]);
+		Display7Segment::Get()->Status(msg[tTimecodeType]);
 	} else {
-		Display::Get()->Status(DISPLAY_7SEGMENT_MSG_LTC_WAITING);
+		Display7Segment::Get()->Status(Display7SegmentMessage::LTC_WAITING);
 	}
 }
 

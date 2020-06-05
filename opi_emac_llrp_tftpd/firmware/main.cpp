@@ -71,7 +71,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	hw.SetRebootHandler(new Reboot);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
@@ -112,7 +112,7 @@ void notmain(void) {
 
 	display.Write(5, "mDNS enabled");
 
-	display.TextStatus("Device running", DISPLAY_7SEGMENT_MSG_INFO_NONE, CONSOLE_GREEN);
+	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
 	lb.SetMode(LEDBLINK_MODE_NORMAL);
 

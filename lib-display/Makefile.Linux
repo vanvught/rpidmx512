@@ -1,6 +1,6 @@
 #
 DEFINES = RASPPI ENABLE_TC1602 ENABLE_LCDBW ENABLE_CURSOR_MODE NDEBUG
 #
-EXTRA_INCLUDES = ../lib-i2c/include ../lib-hal/include
+EXTRA_INCLUDES = ../lib-hal/include
 #
 include ../linux-template/lib/Rules.mk

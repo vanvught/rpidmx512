@@ -58,7 +58,7 @@ public:
 			printf("Rebooting ...\n");
 
 			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", DISPLAY_7SEGMENT_MSG_INFO_REBOOTING);
+			Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
 		}
 
 		DEBUG_EXIT

@@ -37,7 +37,7 @@ extern void udelay(uint32_t);
 
 #include "lcdbw.h"
 
-#include "i2c.h"
+#include "hal_i2c.h"
 
 #define BW_PORT_WRITE_DISPLAY_DATA			0x00	///< display data
 #define BW_PORT_WRITE_COMMAND				0x01	///< write data as command
@@ -55,21 +55,15 @@ extern void udelay(uint32_t);
 
 #define BW_LCD_I2C_BYTE_WAIT_US	37
 
-LcdBw::LcdBw(void): m_nSlaveAddress(BW_LCD_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0) {
+LcdBw::LcdBw(void): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
 }
 
-LcdBw::LcdBw(uint8_t nCols, uint8_t nRows): m_nSlaveAddress(BW_LCD_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0) {
+LcdBw::LcdBw(uint8_t nCols, uint8_t nRows): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 }
 
-LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_nWriteMicros(0) {
-	if (nSlaveAddress == 0) {
-		m_nSlaveAddress = BW_LCD_DEFAULT_SLAVE_ADDRESS;
-	} else {
-		m_nSlaveAddress = nSlaveAddress;
-	}
-
+LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_I2C((nSlaveAddress == 0 ? BW_LCD_DEFAULT_SLAVE_ADDRESS : nSlaveAddress >> 1), hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 }
@@ -78,11 +72,7 @@ LcdBw::~LcdBw(void) {
 }
 
 bool LcdBw::Start(void) {
-	i2c_begin();
-
-	Setup();
-
-	if (!i2c_is_connected(m_nSlaveAddress >> 1)) {
+	if (!m_I2C.IsConnected()) {
 		return false;
 	}
 
@@ -91,8 +81,6 @@ bool LcdBw::Start(void) {
 
 void LcdBw::Cls(void) {
 	char cmd[] = { BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
-
-	Setup();
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
@@ -121,7 +109,6 @@ void LcdBw::PutChar(int c) {
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 	data[1] = c;
 
-	Setup();
 	Write(data, 2);
 }
 
@@ -137,7 +124,6 @@ void LcdBw::PutString(const char *s) {
 		p++;
 	}
 
-	Setup();
 	Write(data, i + 1);
 }
 
@@ -155,7 +141,6 @@ void LcdBw::Text(const char *pText, uint8_t nLength) {
 		data[i + 1] = pText[i];
 	}
 
-	Setup();
 	Write(data, static_cast<uint32_t>(nLength + 1));
 }
 
@@ -164,7 +149,6 @@ void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
 
 	cmd[1] = ((line & 0x03) << 5) | (col & 0x1f);
 
-	Setup();
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
@@ -177,13 +161,7 @@ void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 		data[i] = ' ';
 	}
 
-	Setup();
 	Write(data, static_cast<uint32_t>(m_nCols + 1));
-}
-
-void LcdBw::Setup(void) {
-	i2c_set_address(m_nSlaveAddress >> 1);
-	i2c_set_baudrate(I2C_NORMAL_SPEED);
 }
 
 void LcdBw::SetCursor(__attribute__((unused))const CursorMode constEnumTCursorOnOff) {
@@ -196,7 +174,7 @@ void LcdBw::Write(const char *buffer, uint32_t size) {
 		udelay(BW_LCD_I2C_BYTE_WAIT_US - elapsed);
 	}
 
-	i2c_write_nb(buffer, size);
+	m_I2C.Write(buffer, size);
 
 	m_nWriteMicros = micros();
 }

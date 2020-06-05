@@ -86,7 +86,7 @@ void notmain(void) {
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
@@ -99,7 +99,7 @@ void notmain(void) {
 	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
 	mDns.Print();
 
-	display.TextStatus(OscClientMsgConst::PARAMS, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
+	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
 
 	client.Print();
 
@@ -147,11 +147,11 @@ void notmain(void) {
 	display.Printf(5, "O : %d", client.GetPortOutgoing());
 	display.Printf(6, "I : %d", client.GetPortIncoming());
 
-	display.TextStatus(OscClientMsgConst::START, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_START, CONSOLE_YELLOW);
+	display.TextStatus(OscClientMsgConst::START, Display7SegmentMessage::INFO_OSCCLIENT_START, CONSOLE_YELLOW);
 
 	client.Start();
 
-	display.TextStatus(OscClientMsgConst::STARTED, DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
+	display.TextStatus(OscClientMsgConst::STARTED, Display7SegmentMessage::INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
 
 	lb.SetMode(LEDBLINK_MODE_NORMAL);
 

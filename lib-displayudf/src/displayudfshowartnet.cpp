@@ -59,7 +59,7 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(), pArtNetNode->GetSubnetSwitch(), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(), true), pArtNetNode->GetPortProtocol() == PORT_ARTNET_ARTNET ? "    " : "sACN");
 	}
 
-	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
 		if (pArtNetNode->GetUniverseSwitch(i, nAddress)) {
 			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(i), true), pArtNetNode->GetPortProtocol(i) == PORT_ARTNET_ARTNET ? "    " : "sACN");
 		}

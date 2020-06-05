@@ -75,18 +75,8 @@ public:
 	void TextLine(uint8_t, const char *, uint8_t);
 
 	void TextStatus(const char *pText);
-	void TextStatus(const char *pText, uint16_t n7SegmentData, uint32_t nConsoleColor = UINT32_MAX);
-	void TextStatus(const char *pText, TDisplay7SegmentMessages msg, uint32_t nConsoleColor = UINT32_MAX) {	// TODO Subject for removal
-		TextStatus(pText, static_cast<uint16_t>(msg), nConsoleColor);
-	}
+	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
 	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false);
-
-
-	void Status(uint16_t n7SegmentData);
-	void Status(TDisplay7SegmentMessages msg) {	// TODO Subject for removal
-		Status(static_cast<uint16_t>(msg));
-	}
-	void Status(uint8_t nValue7Segment, bool bHex = false);
 
 	bool isDetected(void) {
 		return m_LcdDisplay == 0 ? false : true;
@@ -117,18 +107,12 @@ public:
 		return m_nRows;
 	}
 
-	bool isHave7Segment(void) {
-		return m_bHave7Segment;
-	}
-
 	static Display* Get(void) {
 		return s_pThis;
 	}
 
 private:
 	void Detect(uint32_t nCols, uint32_t nRows);
-	void Init7Segment(void);
-	uint16_t Get7SegmentData(uint8_t nValue);
 
 private:
 	uint32_t m_nCols;
@@ -136,11 +120,12 @@ private:
 	DisplayType m_tType;
 	DisplaySet *m_LcdDisplay;
 	bool m_bIsSleep;
-	bool m_bHave7Segment;
 #if !defined(NO_HAL)
 	uint32_t m_nMillis;
 #endif
 	uint32_t m_nSleepTimeout;
+
+	Display7Segment m_Display7Segment;
 
 	static Display *s_pThis;
 };

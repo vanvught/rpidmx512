@@ -29,7 +29,9 @@
 #include <cassert>
 
 #include "displayudf.h"
+
 #include "display.h"
+#include "display7segment.h"
 
 #include "network.h"
 
@@ -135,15 +137,15 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 	case DhcpClientStatus::IDLE:
 		break;
 	case DhcpClientStatus::RENEW:
-		Status(DISPLAY_7SEGMENT_MSG_INFO_DHCP);
+		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
 		Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "DHCP renewing");
 		break;
 	case DhcpClientStatus::GOT_IP:
-		Status(DISPLAY_7SEGMENT_MSG_INFO_NONE);
+		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
 	case DhcpClientStatus::FAILED:
-		Status(DISPLAY_7SEGMENT_MSG_ERROR_DHCP);
+		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 		break;
 	default:
 		break;
@@ -151,7 +153,7 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 }
 
 void DisplayUdf::ShowShutdown(void) {
-	Display::Get()->TextStatus("Network shutdown", DISPLAY_7SEGMENT_MSG_INFO_NETWORK_SHUTDOWN);
+	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
 void DisplayUdf::Set(uint8_t nLine, enum TDisplayUdfLabels tLabel) {

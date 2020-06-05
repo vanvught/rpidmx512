@@ -30,6 +30,8 @@
 
 #include "displayset.h"
 
+#include "hal_i2c.h"
+
 #define TC1602_I2C_DEFAULT_SLAVE_ADDRESS	0x27
 
 class Tc1602: public DisplaySet {
@@ -57,13 +59,12 @@ public:
 #endif
 
 private:
-	void Setup(void);
 	void Write4bits(uint8_t);
 	void WriteCmd(uint8_t);
 	void WriteReg(uint8_t);
 
 private:
-	uint8_t m_nSlaveAddress;
+	HAL_I2C m_I2C;
 	bool bFastMode;
 };
 

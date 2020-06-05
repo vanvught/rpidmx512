@@ -30,6 +30,8 @@
 
 #include "displayset.h"
 
+#include "hal_i2c.h"
+
 #define OLED_I2C_SLAVE_ADDRESS_DEFAULT	0x3C
 
 enum TOledPanel {
@@ -73,7 +75,6 @@ public:
 	}
 
 private:
-	void Setup(void);
 	void CheckSH1106(void);
 	void InitMembers(void);
 	void SendCommand(uint8_t);
@@ -90,7 +91,7 @@ private:
 #endif
 
 private:
-	uint8_t m_nSlaveAddress;
+	HAL_I2C m_I2C;
 	TOledPanel m_OledPanel;
 	uint32_t m_nPages;
 #if defined(ENABLE_CURSOR_MODE)

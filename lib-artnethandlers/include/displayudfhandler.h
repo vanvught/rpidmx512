@@ -101,12 +101,12 @@ public:
 	// NTP Client
 	void ShowNtpClientStatus(NtpClientStatus nStatus) {
 		if (nStatus == NtpClientStatus::INIT) {
-			Display::Get()->TextStatus("NTP Client", DISPLAY_7SEGMENT_MSG_INFO_NTP);
+			Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
 			return;
 		}
 
 		if (nStatus == NtpClientStatus::STOPPED) {
-			Display::Get()->TextStatus("Error: NTP", DISPLAY_7SEGMENT_MSG_ERROR_NTP);
+			Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
 			return;
 		}
 	}

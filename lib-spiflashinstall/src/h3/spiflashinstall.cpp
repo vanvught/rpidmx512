@@ -75,7 +75,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 	Display::Get()->Cls();
 
 	if (spi_flash_probe(0, 0, 0) < 0) {
-		Display::Get()->TextStatus("No SPI flash", DISPLAY_7SEGMENT_MSG_INFO_SPI_NONE);
+		Display::Get()->TextStatus("No SPI flash", Display7SegmentMessage::INFO_SPI_NONE);
 		DEBUG_PUTS("No SPI flash chip");
 	} else {
 		m_nFlashSize = spi_flash_get_size();
@@ -129,7 +129,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 					if ((code & CHECK_CODE_UIMAGE_TOO_BIG) == CHECK_CODE_UIMAGE_TOO_BIG) {
 						puts("uImage too big");
 						Display::Get()->Write(2, "uImage too big");
-						Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
+						Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
 						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 						for (;;) {
 							LedBlink::Get()->Run();
@@ -137,7 +137,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 					}
 
 					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
-						Display::Get()->TextStatus("Update UBoot SPI", DISPLAY_7SEGMENT_MSG_INFO_SPI_UPDATE);
+						Display::Get()->TextStatus("Update UBoot SPI", Display7SegmentMessage::INFO_SPI_UPDATE);
 						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 						const uint32_t now = Hardware::Get()->Millis();
 
@@ -146,7 +146,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 						}
 
 						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
-							Display::Get()->TextStatus("Halted!", DISPLAY_7SEGMENT_MSG_ERROR_SPI);
+							Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
 							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 							for (;;) {
 								LedBlink::Get()->Run();
@@ -182,15 +182,15 @@ SpiFlashInstall::~SpiFlashInstall(void) {
 
 void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
 	if (Open(pFileName)) {
-		Display::Get()->TextStatus(aCheckDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_CHECK);
+		Display::Get()->TextStatus(aCheckDifference, Display7SegmentMessage::INFO_SPI_CHECK);
 		puts(aCheckDifference);
 
 		if (Diff(nOffset)) {
-			Display::Get()->TextStatus(aWriting, DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
+			Display::Get()->TextStatus(aWriting, Display7SegmentMessage::INFO_SPI_WRITING);
 			puts(aWriting);
 			Write(nOffset);
 		} else {
-			Display::Get()->TextStatus(aNoDifference, DISPLAY_7SEGMENT_MSG_INFO_SPI_NODIFF);
+			Display::Get()->TextStatus(aNoDifference, Display7SegmentMessage::INFO_SPI_NODIFF);
 			puts(aNoDifference);
 		}
 		Close();
@@ -225,7 +225,7 @@ void SpiFlashInstall::Close(void) {
 	static_cast<void>(fclose(m_pFile));
 	m_pFile = 0;
 
-	Display::Get()->TextStatus(aDone, DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
+	Display::Get()->TextStatus(aDone, Display7SegmentMessage::INFO_SPI_DONE);
 	puts(aDone);
 
 	DEBUG_EXIT
@@ -384,14 +384,14 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_ERASE);
+	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_ERASE);
 
 	if (spi_flash_cmd_erase(OFFSET_UIMAGE, nEraseSize) < 0) {
 		puts("error: flash erase");
 		return false;
 	}
 
-	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING);
+	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_WRITING);
 
 	if (spi_flash_cmd_write_multi(OFFSET_UIMAGE, nSize, pBuffer) < 0) {
 		puts("error: flash write");
@@ -402,7 +402,7 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		Hardware::Get()->WatchdogInit();
 	}
 
-	Display::Get()->Status(DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE);
+	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_DONE);
 
 	return true;
 

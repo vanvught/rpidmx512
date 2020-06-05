@@ -28,113 +28,195 @@
 
 #include <stdint.h>
 
-struct Display7Segment {
-  	static constexpr uint8_t CH_0 = 0x3F;		// 0b00111111
-  	static constexpr uint8_t CH_1 = 0x06;		// 0b00000110
-  	static constexpr uint8_t CH_2 = 0x5B;		// 0b01011011
-  	static constexpr uint8_t CH_3 = 0x4F;		// 0b01001111
-  	static constexpr uint8_t CH_4 = 0x66;		// 0b01100110
-  	static constexpr uint8_t CH_5 = 0x6D;		// 0b01101101
-  	static constexpr uint8_t CH_6 = 0x7D;		// 0b01111101
-  	static constexpr uint8_t CH_7 = 0x07;		// 0b00000111
-  	static constexpr uint8_t CH_8 = 0x7F;		// 0b01111111
-  	static constexpr uint8_t CH_9 = 0x6F;		// 0b01101111
-  	static constexpr uint8_t CH_A = 0x77;		// 0b01110111
-  	static constexpr uint8_t CH_B = 0x7C;		// 0b01111100
-  	static constexpr uint8_t CH_C = 0x39;		// 0b00111001
-  	static constexpr uint8_t CH_D = 0x5E;		// 0b01011110
-  	static constexpr uint8_t CH_E = 0x79;		// 0b01111001
-  	static constexpr uint8_t CH_F = 0x71;		// 0b01110001
-  	static constexpr uint8_t CH_P = 0x73;		// 0b01110011
-  	static constexpr uint8_t CH_MIN = 0x40;		// 0b01000000
-  	static constexpr uint8_t CH_DP = 0x80;		// 0b10000000
-  	static constexpr uint8_t CH_BLANK = 0x00;	// 0b00000000
+#include "hal_i2c.h"
 
-  	static constexpr uint16_t Msg(uint8_t nDigitRight, uint8_t nDigitLeft) {
-  		return (nDigitLeft << 8) | nDigitRight;
-  	}
-};
+namespace display7segment {
+static constexpr uint8_t CH_0 = 0x3F;		// 0b00111111
+static constexpr uint8_t CH_1 = 0x06;		// 0b00000110
+static constexpr uint8_t CH_2 = 0x5B;		// 0b01011011
+static constexpr uint8_t CH_3 = 0x4F;		// 0b01001111
+static constexpr uint8_t CH_4 = 0x66;		// 0b01100110
+static constexpr uint8_t CH_5 = 0x6D;		// 0b01101101
+static constexpr uint8_t CH_6 = 0x7D;		// 0b01111101
+static constexpr uint8_t CH_7 = 0x07;		// 0b00000111
+static constexpr uint8_t CH_8 = 0x7F;		// 0b01111111
+static constexpr uint8_t CH_9 = 0x6F;		// 0b01101111
+static constexpr uint8_t CH_A = 0x77;		// 0b01110111
+static constexpr uint8_t CH_B = 0x7C;		// 0b01111100
+static constexpr uint8_t CH_C = 0x39;		// 0b00111001
+static constexpr uint8_t CH_D = 0x5E;		// 0b01011110
+static constexpr uint8_t CH_E = 0x79;		// 0b01111001
+static constexpr uint8_t CH_F = 0x71;		// 0b01110001
+static constexpr uint8_t CH_P = 0x73;		// 0b01110011
+static constexpr uint8_t CH_MIN = 0x40;		// 0b01000000
+static constexpr uint8_t CH_DP = 0x80;		// 0b10000000
+static constexpr uint8_t CH_BLANK = 0x00;	// 0b00000000
 
-enum TDisplay7SegmentMessages {
+static constexpr uint16_t Msg(uint8_t nDigitRight, uint8_t nDigitLeft) {
+	return (nDigitLeft << 8) | nDigitRight;
+}
+}  // namespace display7segment
+
+enum class Display7SegmentMessage {
 	// Generic Digits
-	DISPLAY_7SEGMENT_MSG_GENERIC_0 = Display7Segment::Msg(Display7Segment::CH_0, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_1 = Display7Segment::Msg(Display7Segment::CH_1, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_2 = Display7Segment::Msg(Display7Segment::CH_2, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_3 = Display7Segment::Msg(Display7Segment::CH_3, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_4 = Display7Segment::Msg(Display7Segment::CH_4, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_5 = Display7Segment::Msg(Display7Segment::CH_5, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_6 = Display7Segment::Msg(Display7Segment::CH_6, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_7 = Display7Segment::Msg(Display7Segment::CH_7, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_8 = Display7Segment::Msg(Display7Segment::CH_8, Display7Segment::CH_BLANK),
-	DISPLAY_7SEGMENT_MSG_GENERIC_9 = Display7Segment::Msg(Display7Segment::CH_9, Display7Segment::CH_BLANK),
+	GENERIC_0 = display7segment::Msg(display7segment::CH_0, display7segment::CH_BLANK),
+	GENERIC_1 = display7segment::Msg(display7segment::CH_1, display7segment::CH_BLANK),
+	GENERIC_2 = display7segment::Msg(display7segment::CH_2, display7segment::CH_BLANK),
+	GENERIC_3 = display7segment::Msg(display7segment::CH_3, display7segment::CH_BLANK),
+	GENERIC_4 = display7segment::Msg(display7segment::CH_4, display7segment::CH_BLANK),
+	GENERIC_5 = display7segment::Msg(display7segment::CH_5, display7segment::CH_BLANK),
+	GENERIC_6 = display7segment::Msg(display7segment::CH_6, display7segment::CH_BLANK),
+	GENERIC_7 = display7segment::Msg(display7segment::CH_7, display7segment::CH_BLANK),
+	GENERIC_8 = display7segment::Msg(display7segment::CH_8, display7segment::CH_BLANK),
+	GENERIC_9 = display7segment::Msg(display7segment::CH_9, display7segment::CH_BLANK),
 	// Startup messages
-	DISPLAY_7SEGMENT_MSG_INFO_STARTUP = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_0),
-	DISPLAY_7SEGMENT_MSG_INFO_NETWORK_INIT = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_1),
-	DISPLAY_7SEGMENT_MSG_INFO_DHCP = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_2),
-	DISPLAY_7SEGMENT_MSG_INFO_IP = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_3),
-	DISPLAY_7SEGMENT_MSG_INFO_NTP = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_INFO_SPARKFUN = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_5),
+	INFO_STARTUP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_0),
+	INFO_NETWORK_INIT = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_1),
+	INFO_DHCP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_2),
+	INFO_IP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_3),
+	INFO_NTP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
+	INFO_SPARKFUN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_5),
 	//
-	DISPLAY_7SEGMENT_MSG_INFO_NETWORK_SHUTDOWN = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_9),
+	INFO_NETWORK_SHUTDOWN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_9),
 	//
-	DISPLAY_7SEGMENT_MSG_INFO_NODE_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PARMAMS = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_4),
+	INFO_NODE_PARMAMS = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
+	INFO_BRIDGE_PARMAMS = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
+	INFO_OSCCLIENT_PARMAMS = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
 	//
-	DISPLAY_7SEGMENT_MSG_INFO_RDM_RUN = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_5),
-	DISPLAY_7SEGMENT_MSG_INFO_NODE_START = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_6),
-	DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_START = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_6),
-	DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_START = Display7Segment::Msg(Display7Segment::CH_BLANK, Display7Segment::CH_6),
+	INFO_RDM_RUN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_5),
+	INFO_NODE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_BRIDGE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_OSCCLIENT_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	//
-	DISPLAY_7SEGMENT_MSG_INFO_NONE = Display7Segment::Msg(Display7Segment::CH_DP, Display7Segment::CH_DP),
-	DISPLAY_7SEGMENT_MSG_INFO_NODE_STARTED = Display7Segment::Msg(Display7Segment::CH_DP, Display7Segment::CH_DP),
-	DISPLAY_7SEGMENT_MSG_INFO_BRIDGE_STARTED = Display7Segment::Msg(Display7Segment::CH_DP, Display7Segment::CH_DP),
-	DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_STARTED = Display7Segment::Msg(Display7Segment::CH_DP, Display7Segment::CH_DP),
+	INFO_NONE = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	INFO_NODE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	INFO_BRIDGE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	INFO_OSCCLIENT_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	// SPI Flash messages
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_NONE = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_MIN),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_CHECK = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_0),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_ERASE = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_1),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_WRITING = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_2),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_NODIFF = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_3),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_DONE = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_C),
-	DISPLAY_7SEGMENT_MSG_INFO_SPI_UPDATE = Display7Segment::Msg(Display7Segment::CH_C, Display7Segment::CH_F),
+	INFO_SPI_NONE = display7segment::Msg(display7segment::CH_C, display7segment::CH_MIN),
+	INFO_SPI_CHECK = display7segment::Msg(display7segment::CH_C, display7segment::CH_0),
+	INFO_SPI_ERASE = display7segment::Msg(display7segment::CH_C, display7segment::CH_1),
+	INFO_SPI_WRITING = display7segment::Msg(display7segment::CH_C, display7segment::CH_2),
+	INFO_SPI_NODIFF = display7segment::Msg(display7segment::CH_C, display7segment::CH_3),
+	INFO_SPI_DONE = display7segment::Msg(display7segment::CH_C, display7segment::CH_C),
+	INFO_SPI_UPDATE = display7segment::Msg(display7segment::CH_C, display7segment::CH_F),
 	// Firmware TFTP messages
-	DISPLAY_7SEGMENT_MSG_INFO_TFTP_ON = Display7Segment::Msg(Display7Segment::CH_F, Display7Segment::CH_MIN),
-	DISPLAY_7SEGMENT_MSG_INFO_TFTP_STARTED = Display7Segment::Msg(Display7Segment::CH_F, Display7Segment::CH_1),
-	DISPLAY_7SEGMENT_MSG_INFO_TFTP_ENDED = Display7Segment::Msg(Display7Segment::CH_F, Display7Segment::CH_2),
-	DISPLAY_7SEGMENT_MSG_INFO_TFTP_OFF = Display7Segment::Msg(Display7Segment::CH_F, Display7Segment::CH_DP),
+	INFO_TFTP_ON = display7segment::Msg(display7segment::CH_F, display7segment::CH_MIN),
+	INFO_TFTP_STARTED = display7segment::Msg(display7segment::CH_F, display7segment::CH_1),
+	INFO_TFTP_ENDED = display7segment::Msg(display7segment::CH_F, display7segment::CH_2),
+	INFO_TFTP_OFF = display7segment::Msg(display7segment::CH_F, display7segment::CH_DP),
 	// Informational / Warning messages
-	DISPLAY_7SEGMENT_MSG_INFO_REBOOTING = Display7Segment::Msg(Display7Segment::CH_MIN, Display7Segment::CH_MIN),
-	DISPLAY_7SEGMENT_MSG_INFO_DATALOSS =  Display7Segment::Msg(Display7Segment::CH_D, Display7Segment::CH_MIN),
+	INFO_REBOOTING = display7segment::Msg(display7segment::CH_MIN, display7segment::CH_MIN),
+	INFO_DATALOSS =  display7segment::Msg(display7segment::CH_D, display7segment::CH_MIN),
 	// Error messages
-	DISPLAY_7SEGMENT_MSG_ERROR_DHCP = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_2),
-	DISPLAY_7SEGMENT_MSG_ERROR_NTP = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_ERROR_SPARKFUN = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_5),
-	DISPLAY_7SEGMENT_MSG_ERROR_MCP23S017 = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_8),
-	DISPLAY_7SEGMENT_MSG_ERROR_SI5351A = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_9),
-	DISPLAY_7SEGMENT_MSG_ERROR_NEXTION = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_A),
-	DISPLAY_7SEGMENT_MSG_ERROR_SPI = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_C),
-	DISPLAY_7SEGMENT_MSG_ERROR_FATAL = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_E),
-	DISPLAY_7SEGMENT_MSG_ERROR_TFTP = Display7Segment::Msg(Display7Segment::CH_E, Display7Segment::CH_F),
+	ERROR_DHCP = display7segment::Msg(display7segment::CH_E, display7segment::CH_2),
+	ERROR_NTP = display7segment::Msg(display7segment::CH_E, display7segment::CH_4),
+	ERROR_SPARKFUN = display7segment::Msg(display7segment::CH_E, display7segment::CH_5),
+	ERROR_MCP23S017 = display7segment::Msg(display7segment::CH_E, display7segment::CH_8),
+	ERROR_SI5351A = display7segment::Msg(display7segment::CH_E, display7segment::CH_9),
+	ERROR_NEXTION = display7segment::Msg(display7segment::CH_E, display7segment::CH_A),
+	ERROR_SPI = display7segment::Msg(display7segment::CH_E, display7segment::CH_C),
+	ERROR_FATAL = display7segment::Msg(display7segment::CH_E, display7segment::CH_E),
+	ERROR_TFTP = display7segment::Msg(display7segment::CH_E, display7segment::CH_F),
 	// LTC messages
-	DISPLAY_7SEGMENT_MSG_LTC_WAITING = Display7Segment::Msg(Display7Segment::CH_DP, Display7Segment::CH_DP),
-	DISPLAY_7SEGMENT_MSG_LTC_FILM = Display7Segment::Msg(Display7Segment::CH_2, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_LTC_EBU = Display7Segment::Msg(Display7Segment::CH_2, Display7Segment::CH_5),
-	DISPLAY_7SEGMENT_MSG_LTC_DF = Display7Segment::Msg(Display7Segment::CH_2, Display7Segment::CH_9),
-	DISPLAY_7SEGMENT_MSG_LTC_SMPTE = Display7Segment::Msg(Display7Segment::CH_3, Display7Segment::CH_0),
+	LTC_WAITING = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	LTC_FILM = display7segment::Msg(display7segment::CH_2, display7segment::CH_4),
+	LTC_EBU = display7segment::Msg(display7segment::CH_2, display7segment::CH_5),
+	LTC_DF = display7segment::Msg(display7segment::CH_2, display7segment::CH_9),
+	LTC_SMPTE = display7segment::Msg(display7segment::CH_3, display7segment::CH_0),
 	// OSC Client messages
-	DISPLAY_7SEGMENT_MSG_INFO_OSCCLIENT_PING_PONG = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_P),
-	DISPLAY_7SEGMENT_MSG_ERROR_OSCCLIENT_PING_PONG = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_E),
+	INFO_OSCCLIENT_PING_PONG = display7segment::Msg(display7segment::CH_P, display7segment::CH_P),
+	ERROR_OSCCLIENT_PING_PONG = display7segment::Msg(display7segment::CH_P, display7segment::CH_E),
 	// Apple MIDI - rtpMIDI messages
 	// TODO Apple MIDI - rtpMIDI messages
 	// Show File player
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_IDLE = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_0),
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_RUNNING = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_1),
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_RUNNING_LOOP = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_2),
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_STOPPED = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_3),
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_STOPPED_LOOP = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_4),
-	DISPLAY_7SEGMENT_MSG_INFO_PLAYER_ENDED = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_9),
-	DISPLAY_7SEGMENT_MSG_ERROR_PLAYER = Display7Segment::Msg(Display7Segment::CH_P, Display7Segment::CH_E)
+	INFO_PLAYER_IDLE = display7segment::Msg(display7segment::CH_P, display7segment::CH_0),
+	INFO_PLAYER_RUNNING = display7segment::Msg(display7segment::CH_P, display7segment::CH_1),
+	INFO_PLAYER_RUNNING_LOOP = display7segment::Msg(display7segment::CH_P, display7segment::CH_2),
+	INFO_PLAYER_STOPPED = display7segment::Msg(display7segment::CH_P, display7segment::CH_3),
+	INFO_PLAYER_STOPPED_LOOP = display7segment::Msg(display7segment::CH_P, display7segment::CH_4),
+	INFO_PLAYER_ENDED = display7segment::Msg(display7segment::CH_P, display7segment::CH_9),
+	ERROR_PLAYER = display7segment::Msg(display7segment::CH_P, display7segment::CH_E)
+};
+
+class Display7Segment {
+public:
+	Display7Segment(void);
+
+	bool Have7Segment(void) {
+		return m_bHave7Segment;
+	}
+
+	void Status(Display7SegmentMessage msg);
+	void Status(uint8_t nValue, bool bHex);
+
+	uint16_t GetData(uint8_t nHexValue) {
+
+		switch (nHexValue) {
+		case 0:
+			return display7segment::CH_0;
+			break;
+		case 1:
+			return display7segment::CH_1;
+			break;
+		case 2:
+			return display7segment::CH_2;
+			break;
+		case 3:
+			return display7segment::CH_3;
+			break;
+		case 4:
+			return display7segment::CH_4;
+			break;
+		case 5:
+			return display7segment::CH_5;
+			break;
+		case 6:
+			return display7segment::CH_6;
+			break;
+		case 7:
+			return display7segment::CH_7;
+			break;
+		case 8:
+			return display7segment::CH_8;
+			break;
+		case 9:
+			return display7segment::CH_9;
+			break;
+		case 0xa:
+			return display7segment::CH_A;
+			break;
+		case 0xb:
+			return display7segment::CH_B;
+			break;
+		case 0xc:
+			return display7segment::CH_C;
+			break;
+		case 0xd:
+			return display7segment::CH_D;
+			break;
+		case 0xe:
+			return display7segment::CH_E;
+			break;
+		case 0xf:
+			return display7segment::CH_F;
+			break;
+		default:
+			break;
+		}
+
+		return display7segment::CH_BLANK;
+	}
+
+	static Display7Segment* Get(void) {
+		return s_pThis;
+	}
+
+private:
+	HAL_I2C m_I2C;
+	bool m_bHave7Segment = false;
+
+	static Display7Segment *s_pThis;
 };
 
 #endif /* DISPLAY7SEGMENT_H_ */
