@@ -26,10 +26,6 @@
 #ifndef H3_H_
 #define H3_H_
 
-//#ifdef __cplusplus
-//# pragma GCC diagnostic ignored "-Wold-style-cast"
-//#endif
-
 #define MEGABYTE				0x100000
 
 #define H3_F_24M				24000000
@@ -693,7 +689,7 @@ typedef enum H3_BOOT_DEVICE {
 extern uint32_t h3_get_dram_size(void);
 extern h3_boot_device_t h3_get_boot_device(void);
 
-extern void h3_dump_memory_map(void);
+extern void h3_dump_memory_mapping(void);
 
 #ifdef __cplusplus
 }

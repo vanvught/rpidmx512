@@ -1,8 +1,8 @@
 /**
- * @file h3_dump.c
+ * @file h3_dump_memory_mapping.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,48 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include "h3.h"
 
-/* Defined by the linker */
-extern uint32_t __ram_start;
-extern uint32_t __ram_end;
-extern uint32_t __data_start;
-extern uint32_t __data_end;
-extern uint32_t __bss_start;
-extern uint32_t __bss_end;
-extern uint32_t __stack_start;
-extern uint32_t __heap_start;
-extern uint32_t heap_low;
-extern uint32_t heap_top;
-extern uint32_t __und_stack_top;
-extern uint32_t __abt_stack_top;
-extern uint32_t __fiq_stack_top;
-extern uint32_t __irq_stack_top;
-extern uint32_t __svc_stack_top;
-extern uint32_t __sys_stack_top;
-
-void h3_dump_memory_map(void) {
-	printf("memmap\n");
-	printf("__ram_start = %p\n", &__ram_start);
-	printf("  __data_start = %p\n", &__data_start);
-	printf("   __data_end = %p\n", &__data_end);
-	printf("  __bss_start = %p\n", &__bss_start);
-	printf("   __bss_end = %p\n", &__bss_end);
-	printf("  __stack_start = %p\n", &__stack_start);
-	printf("    __und_stack_top = %p\n", &__und_stack_top);
-	printf("    __abt_stack_top = %p\n", &__abt_stack_top);
-	printf("    __fiq_stack_top = %p\n", &__fiq_stack_top);
-	printf("    __irq_stack_top = %p\n", &__irq_stack_top);
-	printf("    __svc_stack_top = %p\n", &__svc_stack_top);
-	printf("    __sys_stack_top = %p\n", &__sys_stack_top);
-	printf("  __heap_start = %p\n", &__heap_start);
-	printf("    heap_low = %p\n", &heap_low);
-	printf("    heap_top = %p\n", &heap_top);
-	printf("__ram_end = %p\n", &__ram_end);
-	//
+void h3_dump_memory_mapping(void) {
 	printf("4.1 Memory Mapping\n");
 	printf("DMA       %p\n", (void *)H3_DMA_BASE);
 	printf("SD/MMC0   %p\n", (void *)H3_SD_MMC0_BASE);
