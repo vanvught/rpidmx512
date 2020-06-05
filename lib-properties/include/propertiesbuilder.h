@@ -27,34 +27,40 @@
 #define PROPERTIESBUILDER_H_
 
 #include <stdint.h>
-#include <time.h>
+#include <stdio.h>
 
 class PropertiesBuilder {
 public:
 	PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength);
 	~PropertiesBuilder(void);
 
-	bool Add(const char *pProperty, uint32_t nValue, bool bIsSet = true);
+	template<typename T>
+	bool Add(const char *pProperty, const T x, bool bIsSet = true, uint32_t nPrecision = 1) {
+		if (m_nSize >= m_nLength) {
+			return false;
+		}
 
-	bool Add(const char *pProperty, uint16_t nValue, bool bIsSet = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
+		char *p = &m_pBuffer[m_nSize];
+		const uint32_t nSize = m_nLength - m_nSize;
+
+		int i = add_part(p, nSize, pProperty, x, bIsSet, nPrecision);
+
+		if (i > static_cast<int>(nSize)) {
+			return false;
+		}
+
+		m_nSize += static_cast<uint32_t>(i);
+
+		return true;
 	}
 
-	bool Add(const char *pProperty, uint8_t nValue, bool bIsSet = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
+	template<typename T> int inline add_part(char *p, uint32_t nSize, const char *pProperty, const T x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
+		if (bIsSet) {
+			return snprintf(p, nSize, "%s=%d\n", pProperty, static_cast<int>(x));
+		}
+
+		return snprintf(p, nSize, "#%s=%d\n", pProperty, static_cast<int>(x));
 	}
-
-	bool Add(const char *pProperty, time_t nValue, bool bIsSet = true) {
-		return Add(pProperty, static_cast<uint32_t>(nValue), bIsSet);
-	}
-
-	bool Add(const char *pProperty, bool bValue, bool bIsSet = true) {
-		return Add(pProperty, static_cast<uint32_t>(bValue), bIsSet);
-	}
-
-	bool Add(const char *pProperty, float fValue, bool bIsSet = true, uint32_t nPrecision = 1);
-
-	bool Add(const char *pProperty, const char *pValue, bool bIsSet = true);
 
 	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet = true);
 
@@ -80,5 +86,25 @@ private:
 	uint32_t m_nLength;
 	uint32_t m_nSize;
 };
+
+template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, uint32_t nPrecision) {
+	if (bIsSet) {
+		return snprintf(p, nSize, "%s=%.*f\n", pProperty, nPrecision, x);
+	}
+
+	return snprintf(p, nSize, "#%s=%.*f\n", pProperty, nPrecision, x);
+}
+
+template<> int inline PropertiesBuilder::add_part<char*>(char *p, uint32_t nSize, const char *pProperty, char* x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
+	if (bIsSet) {
+		return snprintf(p, nSize, "%s=%s\n", pProperty, x);
+	}
+
+	return snprintf(p, nSize, "#%s=%s\n", pProperty, x);
+}
+
+template<> int inline PropertiesBuilder::add_part<const char*>(char *p, uint32_t nSize, const char *pProperty, const char* x, bool bIsSet, uint32_t nPrecision) {
+	return PropertiesBuilder::add_part(p, nSize, pProperty, const_cast<char *>(x), bIsSet, nPrecision);
+}
 
 #endif /* PROPERTIESBUILDER_H_ */
