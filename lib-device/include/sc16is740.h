@@ -31,7 +31,7 @@
 #include "hal_i2c.h"
 #include "hardware.h"
 
-#include "../lib-hal/device/sc16is7x0.h"
+#include "sc16is7x0.h"
 
 namespace sc16is740 {
 static constexpr uint8_t I2C_ADDRESS = 0x4D;

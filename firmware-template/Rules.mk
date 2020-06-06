@@ -26,7 +26,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS += properties hal c++ debug bob c bcm2835 arm
+LIBS += properties device hal c++ debug bob c bcm2835 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 

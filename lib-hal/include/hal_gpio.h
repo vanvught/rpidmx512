@@ -27,13 +27,14 @@
 #define HAL_GPIO_H_
 
 #if defined(__linux__)
- #include "bcm2835.h"
- #define udelay bcm2835_delayMicroseconds
+# include "linux/hal_gpio.h"
+# include "linux/hal_api.h"
 #elif defined(H3)
- #include "h3_gpio.h"
- #include "h3_board.h"
+# include "h3/hal_gpio.h"
+# include "h3/hal_api.h"
 #else
- #include "bcm2835_gpio.h"
+# include "rpi/hal_gpio.h"
+# include "rpi/hal_api.h"
 #endif
 
 #if !defined (H3)
@@ -59,12 +60,6 @@
 
  #define GPIO_FSEL_INPUT	BCM2835_GPIO_FSEL_INPT
  #define GPIO_FSEL_OUTPUT	BCM2835_GPIO_FSEL_OUTP
-#endif
-
-#if defined (H3)
- #define FUNC_PREFIX(x) h3_##x
-#else
- #define FUNC_PREFIX(x) bcm2835_##x
 #endif
 
 #endif /* HAL_GPIO_H_ */

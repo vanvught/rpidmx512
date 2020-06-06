@@ -29,57 +29,50 @@
 
 #include "ltcdisplaymax72197segment.h"
 
-#include "d8x7segment.h"
-
-#include "max7219.h"
-#include "max7219_spi.h"
+#include "max72197segment.h"
 
 LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = 0;
 
 LtcDisplayMax72197Segment::LtcDisplayMax72197Segment(void) {
 	assert(s_pThis == 0);
 	s_pThis = this;
-
-	m_DeviceInfo.chip_select = SPI_CS0;
-	m_DeviceInfo.speed_hz = 0;
 }
 
 LtcDisplayMax72197Segment::~LtcDisplayMax72197Segment(void) {
 }
 
 void LtcDisplayMax72197Segment::Init(uint8_t nIntensity) {
-	d8x7segment_init(&m_DeviceInfo, nIntensity);
-	d8x7segment_cls(&m_DeviceInfo);
+	Max72197Segment::Init(nIntensity);
 
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, 0x80);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, 0x80);
+	WriteRegister(max7219::reg::DIGIT6, 0x80);
+	WriteRegister(max7219::reg::DIGIT4, 0x80);
+	WriteRegister(max7219::reg::DIGIT2, 0x80);
 }
 
 void LtcDisplayMax72197Segment::Show(const char *pTimecode) {
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, static_cast<uint32_t>(pTimecode[0] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, static_cast<uint32_t>((pTimecode[1] - '0') | 0x80));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, static_cast<uint32_t>(pTimecode[3] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, static_cast<uint32_t>((pTimecode[4] - '0') | 0x80));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, static_cast<uint32_t>(pTimecode[6] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, static_cast<uint32_t>((pTimecode[7] - '0') | 0x80));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, static_cast<uint32_t>(pTimecode[9] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, static_cast<uint32_t>(pTimecode[10] - '0'));
+	WriteRegister(max7219::reg::DIGIT7, static_cast<uint32_t>(pTimecode[0] - '0'));
+	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>((pTimecode[1] - '0') | 0x80));
+	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>(pTimecode[3] - '0'));
+	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>((pTimecode[4] - '0') | 0x80));
+	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>(pTimecode[6] - '0'));
+	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>((pTimecode[7] - '0') | 0x80));
+	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pTimecode[9] - '0'));
+	WriteRegister(max7219::reg::DIGIT0, static_cast<uint32_t>(pTimecode[10] - '0'));
 }
 
 void LtcDisplayMax72197Segment::ShowSysTime(const char *pSystemTime) {
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT7, MAX7219_CHAR_BLANK);
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT6, static_cast<uint32_t>(pSystemTime[0] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT5, static_cast<uint32_t>((pSystemTime[1] - '0') | 0x80));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT4, static_cast<uint32_t>(pSystemTime[3] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT3, static_cast<uint32_t>((pSystemTime[4] - '0') | 0x80));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT2, static_cast<uint32_t>(pSystemTime[6] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT1, static_cast<uint32_t>(pSystemTime[7] - '0'));
-	max7219_spi_write_reg(&m_DeviceInfo, MAX7219_REG_DIGIT0, MAX7219_CHAR_BLANK);
+	WriteRegister(max7219::reg::DIGIT7, max7219::digit::BLANK);
+	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>(pSystemTime[0] - '0'));
+	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>((pSystemTime[1] - '0') | 0x80));
+	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>(pSystemTime[3] - '0'));
+	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>((pSystemTime[4] - '0') | 0x80));
+	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>(pSystemTime[6] - '0'));
+	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pSystemTime[7] - '0'));
+	WriteRegister(max7219::reg::DIGIT0, max7219::digit::BLANK);
 }
 
 void LtcDisplayMax72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {
 	if (nPos < 8) {
-		max7219_spi_write_reg(&m_DeviceInfo, static_cast<uint32_t>(MAX7219_REG_DIGIT0 + nPos), nChar);
+		WriteRegister(static_cast<uint32_t>(max7219::reg::DIGIT0 + nPos), nChar);
 	}
 }

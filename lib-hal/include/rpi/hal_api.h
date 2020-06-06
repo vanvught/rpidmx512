@@ -28,4 +28,14 @@
 
 #define FUNC_PREFIX(x) bcm2835_##x
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void udelay(uint32_t);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* RPI_HAL_API_H_ */

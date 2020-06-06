@@ -1,5 +1,5 @@
 /**
- * @file reboot.h
+ * @file serialspi.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,70 +23,53 @@
  * THE SOFTWARE.
  */
 
-#ifndef REBOOT_H_
-#define REBOOT_H_
+#include <stdint.h>
+#include <stdio.h>
+#include <cassert>
 
-#include "reboothandler.h"
+#include "../src/serial/serial.h"
 
-#include "remoteconfig.h"
-#include "display.h"
-
-#include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
-#include "network.h"
-
-#include "tcnet.h"
+#include "h3_spi.h"	// TODO Replace with hal_spi.h ?
 
 #include "debug.h"
 
-class Reboot: public RebootHandler {
-public:
-	Reboot(TLtcReaderSource tSource) :m_tSource(tSource) {
-	}
-	~Reboot(void) {
-	}
+void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
+	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 
-	void Run(void) {
-		DEBUG_ENTRY
+	if (nSpeedHz == 0) {
+		return;
 
-		switch (m_tSource) {
-		case LTC_READER_SOURCE_TCNET:
-			TCNet::Get()->Stop();
-			break;
-		default:
-			break;
-		}
-
-		if (LtcOutputs::Get()->IsActiveMax7219()) {
-			LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
-		}
-
-		if (LtcOutputs::Get()->IsActiveWS28xx()) {
-			LtcDisplayWS28xx::Get()->WriteChar('-');
-		}
-
-		if (!RemoteConfig::Get()->IsReboot()) {
-			DEBUG_PUTS("");
-
-			Display::Get()->SetSleep(false);
-
-			while (SpiFlashStore::Get()->Flash())
-				;
-
-			Network::Get()->Shutdown();
-
-			printf("Rebooting ...\n");
-
-			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
-		}
-
-		DEBUG_ENTRY
 	}
 
-private:
-	TLtcReaderSource m_tSource;
-};
+	m_SpiConfiguration.nSpeed = nSpeedHz;
+}
 
-#endif /* REBOOT_H_ */
+void Serial::SetSpiMode(SerialSpiMode tMode) {
+	DEBUG_PRINTF("tMode=%d", tMode);
+
+	if (static_cast<int>(tMode) > 3) {
+		return;
+	}
+
+	m_SpiConfiguration.nMode = static_cast<uint8_t>(tMode);
+}
+
+bool Serial::InitSpi(void) {
+	DEBUG_ENTRY
+
+	h3_spi_begin();
+	h3_spi_set_speed_hz(m_SpiConfiguration.nSpeed);
+	h3_spi_chipSelect(H3_SPI_CS0);
+	h3_spi_setDataMode(static_cast<h3_spi_mode_t>(m_SpiConfiguration.nMode));
+
+	DEBUG_EXIT
+	return true;
+}
+
+void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	h3_spi_writenb(reinterpret_cast<const char *>(pData), nLength);
+
+	DEBUG_EXIT
+}

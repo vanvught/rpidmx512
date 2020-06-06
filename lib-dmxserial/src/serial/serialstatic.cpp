@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "device/serial.h"
+#include "serial.h"
 
 #include "debug.h"
 

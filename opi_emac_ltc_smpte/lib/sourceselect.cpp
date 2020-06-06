@@ -46,7 +46,7 @@
 #include "rotaryencoder.h"
 
 #include "hal_i2c.h"
-#include "device/mcp23x17.h"
+#include "mcp23x17.h"
 
 #include "h3/ltcgenerator.h"
 

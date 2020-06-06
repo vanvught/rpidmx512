@@ -28,4 +28,17 @@
 
 #define FUNC_PREFIX(x) bcm2835_##x
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern uint32_t micros(void);
+
+extern void bcm2835_delayMicroseconds (const uint64_t);
+#define udelay bcm2835_delayMicroseconds
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif /* LINUX_HAL_API_H_ */

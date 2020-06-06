@@ -1,5 +1,5 @@
 /**
- * @file serialinit.cpp
+ * @file hal_gpio.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,26 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include "device/serial.h"
+#ifndef RPI_HAL_GPIO_H_
+#define RPI_HAL_GPIO_H_
 
-#include "debug.h"
 
-bool Serial::Init(void) {
-	DEBUG_ENTRY
 
-	if (m_tType == SerialType::UART) {
-		return InitUart();
-	}
 
-	if (m_tType == SerialType::SPI) {
-		return InitSpi();
-	}
 
-	if (m_tType == SerialType::I2C) {
-		return InitI2c();
-	}
-
-	return false;
-
-	DEBUG_EXIT
-}
+#endif /* RPI_HAL_GPIO_H_ */

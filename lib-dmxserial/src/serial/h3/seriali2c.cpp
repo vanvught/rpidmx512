@@ -1,5 +1,5 @@
 /**
- * @file reboot.h
+ * @file seriali2c.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,70 +23,47 @@
  * THE SOFTWARE.
  */
 
-#ifndef REBOOT_H_
-#define REBOOT_H_
+#include <stdint.h>
+#include <stdio.h>
+#include <cassert>
 
-#include "reboothandler.h"
+#include "../src/serial/serial.h"
 
-#include "remoteconfig.h"
-#include "display.h"
-
-#include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
-#include "network.h"
-
-#include "tcnet.h"
+#include "h3_i2c.h"	// TODO Replace with hal_i2c.h ?
 
 #include "debug.h"
 
-class Reboot: public RebootHandler {
-public:
-	Reboot(TLtcReaderSource tSource) :m_tSource(tSource) {
-	}
-	~Reboot(void) {
-	}
+void Serial::SetI2cAddress(uint8_t nAddress) {
+	DEBUG_PRINTF("nAddress=%.x", nAddress);
 
-	void Run(void) {
-		DEBUG_ENTRY
+	m_I2cConfiguration.nAddress = nAddress;
+}
 
-		switch (m_tSource) {
-		case LTC_READER_SOURCE_TCNET:
-			TCNet::Get()->Stop();
-			break;
-		default:
-			break;
-		}
+void Serial::SetI2cSpeedMode(SerialI2cSpeedMode tSpeedMode) {
+	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 
-		if (LtcOutputs::Get()->IsActiveMax7219()) {
-			LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
-		}
-
-		if (LtcOutputs::Get()->IsActiveWS28xx()) {
-			LtcDisplayWS28xx::Get()->WriteChar('-');
-		}
-
-		if (!RemoteConfig::Get()->IsReboot()) {
-			DEBUG_PUTS("");
-
-			Display::Get()->SetSleep(false);
-
-			while (SpiFlashStore::Get()->Flash())
-				;
-
-			Network::Get()->Shutdown();
-
-			printf("Rebooting ...\n");
-
-			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
-		}
-
-		DEBUG_ENTRY
+	if (tSpeedMode >= SerialI2cSpeedMode::UNDEFINED) {
+		return;
 	}
 
-private:
-	TLtcReaderSource m_tSource;
-};
+	m_I2cConfiguration.tMode = tSpeedMode;
+}
 
-#endif /* REBOOT_H_ */
+bool Serial::InitI2c(void) {
+	DEBUG_ENTRY
+
+	h3_i2c_begin();
+	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SerialI2cSpeedMode::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
+
+	DEBUG_EXIT
+	return true;
+}
+
+void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	h3_i2c_set_slave_address(m_I2cConfiguration.nAddress);
+	h3_i2c_write(reinterpret_cast<const char*>(pData), nLength);
+
+	DEBUG_EXIT
+}

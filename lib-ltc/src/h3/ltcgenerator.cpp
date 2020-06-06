@@ -67,7 +67,7 @@
 
 #define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
 
-namespace Cmd {
+namespace cmd {
 	static constexpr char START[] = "start";
 	static constexpr char STOP[] = "stop";
 	static constexpr char RESUME[] = "resume";
@@ -76,16 +76,16 @@ namespace Cmd {
 	static constexpr char PITCH[] = "pitch#";
 }
 
-namespace Length {
-	static constexpr auto START = sizeof(Cmd::START) - 1;
-	static constexpr auto STOP = sizeof(Cmd::STOP) - 1;
-	static constexpr auto RESUME = sizeof(Cmd::RESUME) - 1;
-	static constexpr auto RATE = sizeof(Cmd::RATE) - 1;
-	static constexpr auto DIRECTION = sizeof(Cmd::DIRECTION) - 1;
-	static constexpr auto PITCH = sizeof(Cmd::PITCH) - 1;
+namespace length {
+	static constexpr auto START = sizeof(cmd::START) - 1;
+	static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+	static constexpr auto RESUME = sizeof(cmd::RESUME) - 1;
+	static constexpr auto RATE = sizeof(cmd::RATE) - 1;
+	static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
+	static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
 }
 
-namespace UDP {
+namespace udp {
 	static constexpr auto PORT = 0x5443;
 }
 
@@ -204,7 +204,7 @@ void LtcGenerator::Start(void) {
 	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
 
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP::PORT);
+	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 
 	// Generator
@@ -242,7 +242,7 @@ void LtcGenerator::Stop(void) {
 	__disable_irq();
 	irq_timer_set(IRQ_TIMER_0, 0);
 
-	m_nHandle = Network::Get()->End(UDP::PORT);
+	m_nHandle = Network::Get()->End(udp::PORT);
 
 	DEBUG_EXIT
 }
@@ -447,27 +447,27 @@ void LtcGenerator::HandleUdpRequest(void) {
 
 	debug_dump(m_Buffer, m_nBytesReceived);
 
-	if (memcmp(&m_Buffer[4], Cmd::START, Length::START) == 0) {
-		if (m_nBytesReceived == (4 + Length::START)) {
+	if (memcmp(&m_Buffer[4], cmd::START, length::START) == 0) {
+		if (m_nBytesReceived == (4 + length::START)) {
 			ActionStart();
 			return;
 		}
 
-		if (m_nBytesReceived == (4 + Length::START + 1 + TC_CODE_MAX_LENGTH)) {
-			if (m_Buffer[4 + Length::START] == '#') {
-				ActionSetStart(&m_Buffer[(4 + Length::START + 1)]);
+		if (m_nBytesReceived == (4 + length::START + 1 + TC_CODE_MAX_LENGTH)) {
+			if (m_Buffer[4 + length::START] == '#') {
+				ActionSetStart(&m_Buffer[(4 + length::START + 1)]);
 				return;
 			}
 
-			if (m_Buffer[4 + Length::START] == '!') {
-				ActionSetStart(&m_Buffer[(4 + Length::START + 1)]);
+			if (m_Buffer[4 + length::START] == '!') {
+				ActionSetStart(&m_Buffer[(4 + length::START + 1)]);
 				ActionStop();
 				ActionStart();
 				return;
 			}
 
-			if (m_Buffer[4 + Length::START] == '@') {
-				ActionGoto(&m_Buffer[(4 + Length::START + 1)]);
+			if (m_Buffer[4 + length::START] == '@') {
+				ActionGoto(&m_Buffer[(4 + length::START + 1)]);
 				return;
 			}
 		}
@@ -476,14 +476,14 @@ void LtcGenerator::HandleUdpRequest(void) {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[4], Cmd::STOP, Length::STOP) == 0) {
-		if (m_nBytesReceived == (4 + Length::STOP)) {
+	if (memcmp(&m_Buffer[4], cmd::STOP, length::STOP) == 0) {
+		if (m_nBytesReceived == (4 + length::STOP)) {
 			ActionStop();
 			return;
 		}
 
-		if ((m_nBytesReceived == (4 + Length::STOP + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + Length::STOP] == '#')) {
-			ActionSetStop(&m_Buffer[(4 + Length::STOP + 1)]);
+		if ((m_nBytesReceived == (4 + length::STOP + 1 + TC_CODE_MAX_LENGTH))  && (m_Buffer[4 + length::STOP] == '#')) {
+			ActionSetStop(&m_Buffer[(4 + length::STOP + 1)]);
 			return;
 		}
 
@@ -491,28 +491,28 @@ void LtcGenerator::HandleUdpRequest(void) {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[4], Cmd::RESUME, Length::RESUME) == 0) {
+	if (memcmp(&m_Buffer[4], cmd::RESUME, length::RESUME) == 0) {
 		ActionResume();
 		return;
 	}
 
-	if (m_nBytesReceived == (4 + Length::RATE + TC_RATE_MAX_LENGTH)) {
-		if (memcmp(&m_Buffer[4], Cmd::RATE, Length::RATE) == 0) {
-			ActionSetRate(&m_Buffer[(4 + Length::RATE)]);
+	if (m_nBytesReceived == (4 + length::RATE + TC_RATE_MAX_LENGTH)) {
+		if (memcmp(&m_Buffer[4], cmd::RATE, length::RATE) == 0) {
+			ActionSetRate(&m_Buffer[(4 + length::RATE)]);
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + Length::DIRECTION + 8)) {
-		if (memcmp(&m_Buffer[4], Cmd::DIRECTION, Length::DIRECTION) == 0) {
-			ActionSetDirection(&m_Buffer[(4 + Length::DIRECTION)]);
+	if (m_nBytesReceived <= (4 + length::DIRECTION + 8)) {
+		if (memcmp(&m_Buffer[4], cmd::DIRECTION, length::DIRECTION) == 0) {
+			ActionSetDirection(&m_Buffer[(4 + length::DIRECTION)]);
 			return;
 		}
 	}
 
-	if (m_nBytesReceived <= (4 + Length::PITCH + 4)) {
-		if (memcmp(&m_Buffer[4], Cmd::PITCH, Length::PITCH) == 0) {
-			ActionSetPitch(&m_Buffer[(4 + Length::PITCH)], m_nBytesReceived - (4 + Length::PITCH));
+	if (m_nBytesReceived <= (4 + length::PITCH + 4)) {
+		if (memcmp(&m_Buffer[4], cmd::PITCH, length::PITCH) == 0) {
+			ActionSetPitch(&m_Buffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
 			return;
 		}
 	}

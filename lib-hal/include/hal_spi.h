@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 
 #ifndef HAL_SPI_H_
 #define HAL_SPI_H_
+
+#include <stdint.h>
 
 #if defined(__linux__)
  #include "bcm2835.h"
@@ -53,5 +55,28 @@
 #else
  #define FUNC_PREFIX(x) bcm2835_##x
 #endif
+
+class HAL_SPI {
+public:
+	HAL_SPI(uint8_t nChipSelect, uint32_t nSpeedHz) :
+			m_nChipSelect(nChipSelect), m_nSpeedHz(nSpeedHz) {
+	}
+
+	void Write(const char *pData, uint32_t nLength) {
+		FUNC_PREFIX(spi_chipSelect(m_nChipSelect));
+		FUNC_PREFIX(spi_set_speed_hz(m_nSpeedHz));
+		FUNC_PREFIX(spi_writenb(pData, nLength));
+	}
+
+	void Write(uint16_t nData) {
+		FUNC_PREFIX(spi_chipSelect(m_nChipSelect));
+		FUNC_PREFIX(spi_set_speed_hz(m_nSpeedHz));
+		FUNC_PREFIX(spi_write(nData));
+	}
+
+private:
+	uint8_t m_nChipSelect;
+	uint32_t m_nSpeedHz;
+};
 
 #endif /* HAL_SPI_H_ */

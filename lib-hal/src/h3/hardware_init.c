@@ -33,6 +33,8 @@
 #include "h3.h"
 #include "h3_cpu.h"
 #include "h3_watchdog.h"
+#include "h3_i2c.h"
+#include "h3_spi.h"
 
 #include "arm/gic.h"
 #include "arm/synchronize.h"
@@ -138,6 +140,8 @@ void hardware_init(void) {
 	gic_init();
 	h3_thermal_init();
 	emac_init();
+	h3_i2c_begin();
+	h3_spi_begin();
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
 

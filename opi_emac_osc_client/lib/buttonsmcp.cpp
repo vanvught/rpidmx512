@@ -33,7 +33,7 @@
 #include "h3_gpio.h"		//TODO Remove H3 dependency
 
 #include "hal_i2c.h"
-#include "device/mcp23x17.h"
+#include "mcp23x17.h"
 
 #include "debug.h"
 

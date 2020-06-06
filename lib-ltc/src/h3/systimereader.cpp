@@ -55,19 +55,19 @@
 
 #include "debug.h"
 
-namespace Cmd {
+namespace cmd {
 	static constexpr char aStart[] = "start";
 	static constexpr char aStop[] = "stop";
 	static constexpr char aRate[] = "rate#";
 }
 
-namespace Length {
-	static constexpr auto START = sizeof(Cmd::aStart) - 1;
-	static constexpr auto STOP = sizeof(Cmd::aStop) - 1;
-	static constexpr auto RATE = sizeof(Cmd::aRate) - 1;
+namespace length {
+	static constexpr auto START = sizeof(cmd::aStart) - 1;
+	static constexpr auto STOP = sizeof(cmd::aStop) - 1;
+	static constexpr auto RATE = sizeof(cmd::aRate) - 1;
 }
 
-namespace UDP {
+namespace udp {
 	static constexpr auto PORT = 0x5443;
 }
 
@@ -102,7 +102,7 @@ SystimeReader::~SystimeReader(void) {
 
 void SystimeReader::Start(bool bAutoStart) {
 	// UDP Request
-	m_nHandle = Network::Get()->Begin(UDP::PORT);
+	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 
 	// System Time
@@ -212,8 +212,8 @@ void SystimeReader::HandleUdpRequest(void) {
 
 	debug_dump(m_Buffer, m_nBytesReceived);
 
-	if (m_nBytesReceived == (4 + Length::START)) {
-		if (memcmp(&m_Buffer[4], Cmd::aStart, Length::START) == 0) {
+	if (m_nBytesReceived == (4 + length::START)) {
+		if (memcmp(&m_Buffer[4], cmd::aStart, length::START) == 0) {
 			ActionStart();
 			return;
 		}
@@ -221,8 +221,8 @@ void SystimeReader::HandleUdpRequest(void) {
 		DEBUG_PUTS("Invalid !start command");
 	}
 
-	if (m_nBytesReceived == (4 + Length::STOP)) {
-		if (memcmp(&m_Buffer[4], Cmd::aStop, Length::STOP) == 0) {
+	if (m_nBytesReceived == (4 + length::STOP)) {
+		if (memcmp(&m_Buffer[4], cmd::aStop, length::STOP) == 0) {
 			ActionStop();
 			return;
 		}
@@ -230,9 +230,9 @@ void SystimeReader::HandleUdpRequest(void) {
 		DEBUG_PUTS("Invalid !stop command");
 	}
 
-	if (m_nBytesReceived == (4 + Length::RATE  + TC_RATE_MAX_LENGTH)) {
-		if (memcmp(&m_Buffer[4], Cmd::aRate, Length::RATE) == 0) {
-			ActionSetRate(&m_Buffer[(4 + Length::RATE)]);
+	if (m_nBytesReceived == (4 + length::RATE  + TC_RATE_MAX_LENGTH)) {
+		if (memcmp(&m_Buffer[4], cmd::aRate, length::RATE) == 0) {
+			ActionSetRate(&m_Buffer[(4 + length::RATE)]);
 			return;
 		}
 	}

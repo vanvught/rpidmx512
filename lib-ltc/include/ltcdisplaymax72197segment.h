@@ -30,9 +30,9 @@
 
 #include "ltcdisplaymax7219set.h"
 
-#include "device_info.h"
+#include "max72197segment.h"
 
-class LtcDisplayMax72197Segment: public LtcDisplayMax7219Set {
+class LtcDisplayMax72197Segment: public LtcDisplayMax7219Set, public Max72197Segment {
 public:
 	LtcDisplayMax72197Segment(void);
 	~LtcDisplayMax72197Segment(void);
@@ -49,8 +49,6 @@ public:
 	}
 
 private:
-	device_info_t m_DeviceInfo;
-
 	static LtcDisplayMax72197Segment *s_pThis;
 };
 

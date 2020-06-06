@@ -1,5 +1,5 @@
 #
-EXTRA_INCLUDES = ../lib-hal/include ../lib-bcm2835/include
+EXTRA_INCLUDES = ../lib-hal/include
 #
 include ../firmware-template/lib/Rules.mk
 	

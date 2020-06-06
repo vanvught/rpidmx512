@@ -43,6 +43,14 @@ public:
 		m_tTimeCodeTypePrevious = TC_TYPE_INVALID;
 	}
 
+	bool IsActiveMax7219(void) {
+		return !m_tLtcDisabledOutputs.bMax7219;
+	}
+
+	bool IsActiveWS28xx(void) {
+		return !m_tLtcDisabledOutputs.bWS28xx;
+	}
+
 	void Print(void);
 
 	static LtcOutputs* Get(void) {
@@ -53,12 +61,12 @@ private:
 	void PrintDisabled(bool IsDisabled, const char *p);
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
+	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
 	bool m_bShowSysTime;
 	TTimecodeTypes m_tTimeCodeTypePrevious;
 	uint32_t m_nMidiQuarterFramePiece;
-	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	alignas(uint32_t) char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
 	int32_t m_nSecondsPrevious;
 
 	static LtcOutputs *s_pThis;

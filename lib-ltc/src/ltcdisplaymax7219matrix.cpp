@@ -30,25 +30,21 @@
 
 #include "ltcdisplaymax7219matrix.h"
 
-#include "d8x8matrix.h"
+#include "max7219matrix.h"
 
 LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = 0;
 
 LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
 	assert(s_pThis == 0);
 	s_pThis = this;
-
-	m_DeviceInfo.chip_select = SPI_CS0;
-	m_DeviceInfo.speed_hz = 0;
 }
 
 LtcDisplayMax7219Matrix::~LtcDisplayMax7219Matrix(void) {
 }
 
 void LtcDisplayMax7219Matrix::Init(uint8_t nIntensity) {
-	d8x8matrix_init(&m_DeviceInfo, SEGMENTS, nIntensity);
-	d8x8matrix_cls(&m_DeviceInfo);
-	d8x8matrix_write(&m_DeviceInfo, "Waiting", 7);
+	Max7219Matrix::Init(SEGMENTS, nIntensity);
+	Write("Waiting", 7);
 }
 
 void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
@@ -61,7 +57,7 @@ void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
 	m_aBuffer[6] = pTimecode[9];
 	m_aBuffer[7] = pTimecode[10];
 
-	d8x8matrix_write(&m_DeviceInfo, m_aBuffer, SEGMENTS);
+	Write(m_aBuffer, SEGMENTS);
 }
 
 void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
@@ -72,7 +68,7 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	m_aBuffer[4] = pSystemTime[6];
 	m_aBuffer[5] = pSystemTime[7];
 
-	d8x8matrix_write(&m_DeviceInfo, m_aBuffer, SEGMENTS);
+	Write(m_aBuffer, SEGMENTS);
 }
 
 void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {

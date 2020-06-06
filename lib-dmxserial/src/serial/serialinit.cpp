@@ -1,5 +1,5 @@
 /**
- * @file seriali2c.cpp
+ * @file serialinit.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,47 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <cassert>
-
-#include "device/serial.h"
-
-#include "h3_i2c.h"	// TODO Replace with hal_i2c.h ?
+#include "serial.h"
 
 #include "debug.h"
 
-void Serial::SetI2cAddress(uint8_t nAddress) {
-	DEBUG_PRINTF("nAddress=%.x", nAddress);
+bool Serial::Init(void) {
+	DEBUG_ENTRY
 
-	m_I2cConfiguration.nAddress = nAddress;
-}
-
-void Serial::SetI2cSpeedMode(SerialI2cSpeedMode tSpeedMode) {
-	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
-
-	if (tSpeedMode >= SerialI2cSpeedMode::UNDEFINED) {
-		return;
+	if (m_tType == SerialType::UART) {
+		return InitUart();
 	}
 
-	m_I2cConfiguration.tMode = tSpeedMode;
-}
+	if (m_tType == SerialType::SPI) {
+		return InitSpi();
+	}
 
-bool Serial::InitI2c(void) {
-	DEBUG_ENTRY
+	if (m_tType == SerialType::I2C) {
+		return InitI2c();
+	}
 
-	h3_i2c_begin();
-	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SerialI2cSpeedMode::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
-
-	DEBUG_EXIT
-	return true;
-}
-
-void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
-
-	h3_i2c_set_slave_address(m_I2cConfiguration.nAddress);
-	h3_i2c_write(reinterpret_cast<const char*>(pData), nLength);
+	return false;
 
 	DEBUG_EXIT
 }

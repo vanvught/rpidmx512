@@ -30,11 +30,11 @@
 
 #include "ltcdisplaymax7219set.h"
 
-#include "device_info.h"
+#include "max7219matrix.h"
 
 #define SEGMENTS	8
 
-class LtcDisplayMax7219Matrix: public LtcDisplayMax7219Set {
+class LtcDisplayMax7219Matrix: public LtcDisplayMax7219Set, public Max7219Matrix {
 public:
 	LtcDisplayMax7219Matrix(void);
 	~LtcDisplayMax7219Matrix(void);
@@ -51,7 +51,6 @@ public:
 	}
 
 private:
-	device_info_t m_DeviceInfo;
 	char m_aBuffer[SEGMENTS];
 
 	static LtcDisplayMax7219Matrix *s_pThis;

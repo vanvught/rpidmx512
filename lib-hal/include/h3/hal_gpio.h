@@ -1,5 +1,5 @@
 /**
- * @file reboot.h
+ * @file hal_gpio.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,70 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef REBOOT_H_
-#define REBOOT_H_
+#ifndef H3_HAL_GPIO_H_
+#define H3_HAL_GPIO_H_
 
-#include "reboothandler.h"
+#include "h3_gpio.h"
+#include "h3_board.h"
 
-#include "remoteconfig.h"
-#include "display.h"
-
-#include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
-#include "network.h"
-
-#include "tcnet.h"
-
-#include "debug.h"
-
-class Reboot: public RebootHandler {
-public:
-	Reboot(TLtcReaderSource tSource) :m_tSource(tSource) {
-	}
-	~Reboot(void) {
-	}
-
-	void Run(void) {
-		DEBUG_ENTRY
-
-		switch (m_tSource) {
-		case LTC_READER_SOURCE_TCNET:
-			TCNet::Get()->Stop();
-			break;
-		default:
-			break;
-		}
-
-		if (LtcOutputs::Get()->IsActiveMax7219()) {
-			LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
-		}
-
-		if (LtcOutputs::Get()->IsActiveWS28xx()) {
-			LtcDisplayWS28xx::Get()->WriteChar('-');
-		}
-
-		if (!RemoteConfig::Get()->IsReboot()) {
-			DEBUG_PUTS("");
-
-			Display::Get()->SetSleep(false);
-
-			while (SpiFlashStore::Get()->Flash())
-				;
-
-			Network::Get()->Shutdown();
-
-			printf("Rebooting ...\n");
-
-			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
-		}
-
-		DEBUG_ENTRY
-	}
-
-private:
-	TLtcReaderSource m_tSource;
-};
-
-#endif /* REBOOT_H_ */
+#endif /* H3_HAL_GPIO_H_ */

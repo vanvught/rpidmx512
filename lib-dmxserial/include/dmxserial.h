@@ -32,7 +32,7 @@
 #include "dmxserialtftp.h"
 
 #include "lightset.h"
-#include "device/serial.h"
+#include "../src/serial/serial.h"
 
 namespace DmxSerialDefaults {
 	static constexpr auto TYPE = SerialType::UART;

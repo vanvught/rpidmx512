@@ -26,8 +26,8 @@
 #include <stdint.h>
 #include <cassert>
 
-#include "./device/sc16is740.h"
-#include "../lib-hal/device/sc16is7x0.h"
+#include "sc16is740.h"
+#include "sc16is7x0.h"
 
 #include "debug.h"
 

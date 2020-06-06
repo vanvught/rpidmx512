@@ -185,11 +185,6 @@ void DmxSerial::ScanDirectory(void) {
 		printf("\tnIndex=%d -> %d\n", nIndex, m_aFileIndex[nIndex]);
 #endif
 
-//		if (m_pDmxSerialChannelData[nIndex] != 0) {
-//			delete m_pDmxSerialChannelData[nIndex];
-//			m_pDmxSerialChannelData[nIndex] = 0;
-//		}
-
 		m_pDmxSerialChannelData[nIndex] = new DmxSerialChannelData;
 		assert(m_pDmxSerialChannelData[nIndex] != 0);
 
@@ -197,12 +192,6 @@ void DmxSerial::ScanDirectory(void) {
 		snprintf(pBuffer, sizeof(pBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, m_aFileIndex[nIndex]);
 		DEBUG_PUTS(pBuffer);
 		m_pDmxSerialChannelData[nIndex]->Parse(pBuffer);
-
-//		if (!m_pDmxSerialChannelData[nIndex]->Parse(pBuffer)) {
-//			DEBUG_PUTS("Parse error");
-//			delete m_pDmxSerialChannelData[nIndex];
-//			m_pDmxSerialChannelData[nIndex] = 0;
-//		}
 	}
 
 #ifndef NDEBUG

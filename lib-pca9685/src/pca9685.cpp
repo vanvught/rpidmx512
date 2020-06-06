@@ -362,7 +362,7 @@ void PCA9685::AutoIncrement(bool bMode) {
 
 void PCA9685::I2cSetup(void) {
 	FUNC_PREFIX(i2c_set_address(m_nAddress));
-	FUNC_PREFIX(i2c_set_baudrate(I2C_FULL_SPEED));
+	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint8_t data) {

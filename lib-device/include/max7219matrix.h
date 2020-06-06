@@ -1,5 +1,5 @@
 /**
- * @file serialspi.cpp
+ * @file max7219matrix.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,53 +23,31 @@
  * THE SOFTWARE.
  */
 
+#ifndef DEVICE_MAX7219MATRIX_H_
+#define DEVICE_MAX7219MATRIX_H_
+
 #include <stdint.h>
-#include <stdio.h>
-#include <cassert>
 
-#include "device/serial.h"
+#include "max7219.h"
 
-#include "h3_spi.h"	// TODO Replace with hal_spi.h ?
-
-#include "debug.h"
-
-void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
-	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
-
-	if (nSpeedHz == 0) {
-		return;
+class Max7219Matrix: public MAX7219{
+public:
+	Max7219Matrix(void) {
 
 	}
 
-	m_SpiConfiguration.nSpeed = nSpeedHz;
-}
+	void Init(uint32_t nCount, uint8_t nIntensity);
 
-void Serial::SetSpiMode(SerialSpiMode tMode) {
-	DEBUG_PRINTF("tMode=%d", tMode);
+	void Cls(void);
 
-	if (static_cast<int>(tMode) > 3) {
-		return;
-	}
+	void Write(const char *pBuffer, uint8_t nByte);
 
-	m_SpiConfiguration.nMode = static_cast<uint8_t>(tMode);
-}
+private:
+	uint8_t Rotate(uint8_t r, uint8_t x);
+	void WriteAll(uint8_t nRegister, uint8_t nData);
 
-bool Serial::InitSpi(void) {
-	DEBUG_ENTRY
+private:
+	uint32_t m_nCount = 4;
+};
 
-	h3_spi_begin();
-	h3_spi_set_speed_hz(m_SpiConfiguration.nSpeed);
-	h3_spi_chipSelect(H3_SPI_CS0);
-	h3_spi_setDataMode(static_cast<h3_spi_mode_t>(m_SpiConfiguration.nMode));
-
-	DEBUG_EXIT
-	return true;
-}
-
-void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
-
-	h3_spi_writenb(reinterpret_cast<const char *>(pData), nLength);
-
-	DEBUG_EXIT
-}
+#endif /* DEVICE_MAX7219MATRIX_H_ */
