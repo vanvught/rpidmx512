@@ -30,10 +30,16 @@
 
 #include "../../lib-bob/include/font_cp437.h"
 
+#include "debug.h"
+
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
 void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
+	DEBUG_ENTRY
+
 	m_nCount = std::min(nCount, sizeof(spi_data) / 2);
+
+	DEBUG_PRINTF("m_nCount=%d", m_nCount);
 
 	WriteAll(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
 	WriteAll(max7219::reg::DISPLAY_TEST, 0);
@@ -42,10 +48,15 @@ void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
 
 	WriteAll(max7219::reg::INTENSITY, nIntensity & 0x0F);
 
-	Cls();
+	Max7219Matrix::Cls();
+
+	DEBUG_EXIT
 }
 
 void Max7219Matrix::Cls(void) {
+	DEBUG_ENTRY
+
+
 	WriteAll(max7219::reg::DIGIT0, 0);
 	WriteAll(max7219::reg::DIGIT1, 0);
 	WriteAll(max7219::reg::DIGIT2, 0);
@@ -54,19 +65,23 @@ void Max7219Matrix::Cls(void) {
 	WriteAll(max7219::reg::DIGIT5, 0);
 	WriteAll(max7219::reg::DIGIT6, 0);
 	WriteAll(max7219::reg::DIGIT7, 0);
+
+	DEBUG_EXIT
 }
 
-void Max7219Matrix::Write(const char *pBuffer, uint8_t nByte) {
+void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
+	DEBUG_PRINTF("nByte=%d", nCount);
+
 	int32_t j, k;
 
-	if (nByte > m_nCount) {
-		nByte = m_nCount;
+	if (nCount > m_nCount) {
+		nCount = m_nCount;
 	}
 
 	for (uint32_t i = 1; i < 9; i++) {
-		k = nByte;
+		k = nCount;
 
-		for (j = 0; j < static_cast<int32_t>(m_nCount * 2) - (nByte * 2); j = j + 2) {
+		for (j = 0; j < static_cast<int32_t>(m_nCount * 2) - (nCount * 2); j = j + 2) {
 			spi_data[j] = max7219::reg::NOOP;
 			spi_data[j + 1] = 0;
 		}
@@ -81,11 +96,13 @@ void Max7219Matrix::Write(const char *pBuffer, uint8_t nByte) {
 		}
 
 
-		Write(reinterpret_cast<const char *>(spi_data), static_cast<uint32_t>(j));
+		HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), static_cast<uint32_t>(j));
 	}
 }
 
 void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
+	DEBUG_ENTRY
+
 	if ((m_nCount * 2) > sizeof(spi_data)) {
 		return;
 	}
@@ -95,7 +112,9 @@ void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 		spi_data[i+1] = nData;
 	}
 
-	Write(reinterpret_cast<const char *>(spi_data), m_nCount * 2);
+	HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), m_nCount * 2);
+
+	DEBUG_EXIT
 }
 
 uint8_t Max7219Matrix::Rotate(uint8_t r, uint8_t x) {

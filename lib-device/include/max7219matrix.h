@@ -30,7 +30,7 @@
 
 #include "max7219.h"
 
-class Max7219Matrix: public MAX7219{
+class Max7219Matrix: public MAX7219 {
 public:
 	Max7219Matrix(void) {
 
@@ -40,7 +40,7 @@ public:
 
 	void Cls(void);
 
-	void Write(const char *pBuffer, uint8_t nByte);
+	void Write(const char *pBuffer, uint8_t nLength);
 
 private:
 	uint8_t Rotate(uint8_t r, uint8_t x);

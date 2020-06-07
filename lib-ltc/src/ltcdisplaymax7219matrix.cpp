@@ -32,19 +32,29 @@
 
 #include "max7219matrix.h"
 
+#include "debug.h"
+
 LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = 0;
 
 LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
+	DEBUG_ENTRY
+
 	assert(s_pThis == 0);
 	s_pThis = this;
+
+	DEBUG_EXIT
 }
 
 LtcDisplayMax7219Matrix::~LtcDisplayMax7219Matrix(void) {
 }
 
 void LtcDisplayMax7219Matrix::Init(uint8_t nIntensity) {
+	DEBUG_ENTRY
+
 	Max7219Matrix::Init(SEGMENTS, nIntensity);
-	Write("Waiting", 7);
+	Max7219Matrix::Write("Waiting", 7);
+
+	DEBUG_EXIT
 }
 
 void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
@@ -57,7 +67,7 @@ void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
 	m_aBuffer[6] = pTimecode[9];
 	m_aBuffer[7] = pTimecode[10];
 
-	Write(m_aBuffer, SEGMENTS);
+	Max7219Matrix::Write(m_aBuffer, SEGMENTS);
 }
 
 void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
@@ -68,7 +78,7 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	m_aBuffer[4] = pSystemTime[6];
 	m_aBuffer[5] = pSystemTime[7];
 
-	Write(m_aBuffer, SEGMENTS);
+	Max7219Matrix::Write(m_aBuffer, SEGMENTS);
 }
 
 void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {
