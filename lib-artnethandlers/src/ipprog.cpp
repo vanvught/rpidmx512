@@ -56,8 +56,8 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	ip_union.u32 = Network::Get()->GetNetmask();
 	memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
 	// Port
-	pArtNetIpProgReply->ProgPortHi = (TArtNetConst::UDP_PORT >> 8);
-	pArtNetIpProgReply->ProgPortLo = TArtNetConst::UDP_PORT & 0xFF;
+	pArtNetIpProgReply->ProgPortHi = (artnet::UDP_PORT >> 8);
+	pArtNetIpProgReply->ProgPortLo = artnet::UDP_PORT & 0xFF;
 	//
 	pArtNetIpProgReply->Filler = 0;
 	// Gateway

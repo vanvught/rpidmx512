@@ -26,6 +26,13 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# if __GNUC__ < 9
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wuseless-cast"	//FIXME GCC 8.0.3 Raspbian GNU/Linux 10 (buster)
+# endif
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -62,8 +69,8 @@ ArtNetPollTable::ArtNetPollTable(void) :
 		assert(m_pTableUniverses[nIndex].pIpAddresses != 0);
 	}
 
-	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, static_cast<unsigned>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), static_cast<unsigned>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
-	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), static_cast<unsigned>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
+	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, static_cast<unsigned int>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), static_cast<unsigned int>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
+	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned int>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), static_cast<unsigned int>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
 
 	m_tTableClean.nTableIndex = 0;
 	m_tTableClean.nUniverseIndex = 0;
@@ -300,13 +307,13 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 		const uint8_t *pSrc = ptArtPollReply->ShortName;
 		uint8_t *pDst = m_pPollTable[i].ShortName;
-		memcpy(pDst, pSrc, ARTNET_SHORT_NAME_LENGTH + ARTNET_LONG_NAME_LENGTH);
+		memcpy(pDst, pSrc, artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
 	}
 #endif
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
 
-	for (uint32_t nIndex = 0; nIndex < TArtNetConst::MAX_PORTS; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < artnet::MAX_PORTS; nIndex++) {
 		const uint8_t nPortAddress = ptArtPollReply->SwOut[nIndex];
 
 		if (ptArtPollReply->PortTypes[nIndex] == ARTNET_ENABLE_OUTPUT) {
@@ -384,7 +391,7 @@ void ArtNetPollTable::Clean(void) {
 			pDst->nUniversesCount = 0;
 			memset(pDst->Universe, 0, sizeof(struct TArtNetNodeEntryUniverse[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES]));
 #ifndef NDEBUG
-			memset(pDst->Mac, 0, ARTNET_MAC_SIZE + ARTNET_SHORT_NAME_LENGTH + ARTNET_LONG_NAME_LENGTH);
+			memset(pDst->Mac, 0, ARTNET_MAC_SIZE + artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
 #endif
 		}
 

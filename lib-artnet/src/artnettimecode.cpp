@@ -50,7 +50,7 @@ void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
 		memcpy(m_pTimeCodeData->Id, NODE_ID, sizeof m_pTimeCodeData->Id );
 		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = TArtNetConst::PROTOCOL_REVISION;
+		m_pTimeCodeData->ProtVerLo = artnet::PROTOCOL_REVISION;
 	}
 }
 
@@ -74,11 +74,11 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
 		memcpy(m_pTimeCodeData->Id, NODE_ID, sizeof m_pTimeCodeData->Id );
 		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = TArtNetConst::PROTOCOL_REVISION;
+		m_pTimeCodeData->ProtVerLo = artnet::PROTOCOL_REVISION;
 	}
 
 	memcpy(&m_pTimeCodeData->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, TArtNetConst::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, artnet::UDP_PORT);
 }
 

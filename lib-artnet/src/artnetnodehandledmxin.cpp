@@ -52,9 +52,9 @@ void ArtNetNode::HandleDmxIn(void) {
 	memcpy(tArtDmx.Id, NODE_ID, sizeof m_PollReply.Id);
 	tArtDmx.OpCode = OP_DMX;
 	tArtDmx.ProtVerHi = 0;
-	tArtDmx.ProtVerLo = TArtNetConst::PROTOCOL_REVISION;
+	tArtDmx.ProtVerLo = artnet::PROTOCOL_REVISION;
 
-	for (uint32_t i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPorts[i].bIsEnabled){
@@ -72,7 +72,7 @@ void ArtNetNode::HandleDmxIn(void) {
 
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 
-				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, TArtNetConst::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, artnet::UDP_PORT);
 
 				m_State.bIsReceivingDmx = true;
 			} else {

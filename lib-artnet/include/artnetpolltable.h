@@ -52,8 +52,8 @@ struct TArtNetNodeEntryUniverse {
 struct TArtNetNodeEntry {
 	uint32_t IPAddress;
 	uint8_t Mac[ARTNET_MAC_SIZE];
-	uint8_t ShortName[ARTNET_SHORT_NAME_LENGTH];
-	uint8_t LongName[ARTNET_LONG_NAME_LENGTH];
+	uint8_t ShortName[artnet::SHORT_NAME_LENGTH];
+	uint8_t LongName[artnet::LONG_NAME_LENGTH];
 	uint32_t nUniversesCount;
 	struct TArtNetNodeEntryUniverse Universe[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES];
 };

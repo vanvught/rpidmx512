@@ -29,7 +29,9 @@
 #include <cassert>
 
 #include "artnetparams.h"
+
 #include "artnetnode.h"
+#include "artnet.h"
 
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	assert(pArtNetNode != 0);
@@ -68,7 +70,7 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 
 	unsigned i;
 
-	for (i = 0; i < TArtNetConst::MAX_PORTS; i++) {
+	for (i = 0; i < artnet::MAX_PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
 			pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeModePort[i]));
 		} else {
@@ -86,7 +88,7 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		}
 	}
 
-	for (;i < (TArtNetConst::MAX_PORTS * TArtNetConst::MAX_PAGES); i++) {
+	for (;i < (artnet::MAX_PORTS * artnet::MAX_PAGES); i++) {
 		pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeMode));
 		pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
 	}

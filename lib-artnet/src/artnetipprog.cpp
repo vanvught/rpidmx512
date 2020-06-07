@@ -53,7 +53,7 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 
 			memcpy(m_pIpProgReply->Id, NODE_ID, sizeof(m_pIpProgReply->Id));
 			m_pIpProgReply->OpCode = OP_IPPROGREPLY;
-			m_pIpProgReply->ProtVerLo = TArtNetConst::PROTOCOL_REVISION;
+			m_pIpProgReply->ProtVerLo = artnet::PROTOCOL_REVISION;
 		} else {
 			m_pArtNetIpProg = 0;
 		}
@@ -65,7 +65,7 @@ void ArtNetNode::HandleIpProg(void) {
 
 	m_pArtNetIpProg->Handler(reinterpret_cast<const TArtNetIpProg*>(&packet->Command), reinterpret_cast<TArtNetIpProgReply*>(&m_pIpProgReply->ProgIpHi));
 
-	Network::Get()->SendTo(m_nHandle, m_pIpProgReply, sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, TArtNetConst::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pIpProgReply, sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
 
 	memcpy(ip.u8, &m_pIpProgReply->ProgIpHi, ARTNET_IP_SIZE);
 

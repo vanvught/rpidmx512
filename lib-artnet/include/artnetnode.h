@@ -50,8 +50,8 @@
 #include "artnet4handler.h"
 
 enum TArtNetNodeMaxPorts {
-	ARTNET_NODE_MAX_PORTS_OUTPUT = TArtNetConst::MAX_PORTS * TArtNetConst::MAX_PAGES,
-	ARTNET_NODE_MAX_PORTS_INPUT = TArtNetConst::MAX_PORTS
+	ARTNET_NODE_MAX_PORTS_OUTPUT = artnet::MAX_PORTS * artnet::MAX_PAGES,
+	ARTNET_NODE_MAX_PORTS_INPUT = artnet::MAX_PORTS
 };
 
 
@@ -112,11 +112,11 @@ struct TArtNetNode {
 	uint32_t IPSubnetMask;							///< The subnet mask
 	uint32_t IPAddressRemote;						///< The remote IP Address
 	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
-	uint8_t NetSwitch[TArtNetConst::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch[TArtNetConst::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t NetSwitch[artnet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[artnet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
-	char ShortName[ARTNET_SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
-	char LongName[ARTNET_LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
+	char ShortName[artnet::SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
+	char LongName[artnet::LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;								///< General Status register
 	uint8_t Status2;
@@ -129,12 +129,12 @@ struct TGenericPort {
 };
 
 struct TOutputPort {
-	uint8_t data[TArtNetConst::DMX_LENGTH];	///< Data sent
+	uint8_t data[artnet::DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
-	uint8_t dataA[TArtNetConst::DMX_LENGTH];	///< The data received from Port A
+	uint8_t dataA[artnet::DMX_LENGTH];	///< The data received from Port A
 	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
-	uint8_t dataB[TArtNetConst::DMX_LENGTH];	///< The data received from Port B
+	uint8_t dataB[artnet::DMX_LENGTH];	///< The data received from Port B
 	uint32_t nMillisB;					///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
 	ArtNetMerge mergeMode;				///< \ref ArtNetMerge
@@ -356,7 +356,7 @@ private:
 	bool m_IsRdmResponder;
 
 	alignas(uint32_t) char m_aSysName[16];
-	alignas(uint32_t) char m_aDefaultNodeLongName[ARTNET_LONG_NAME_LENGTH];
+	alignas(uint32_t) char m_aDefaultNodeLongName[artnet::LONG_NAME_LENGTH];
 
 public:
 	static ArtNetNode* Get(void) {

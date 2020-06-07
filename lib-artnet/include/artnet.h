@@ -29,29 +29,19 @@
 #ifndef ARTNET_H_
 #define ARTNET_H_
 
+#include <stdint.h>
+
 #define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 
-struct TArtNetConst {
-	static constexpr unsigned PROTOCOL_REVISION	= 14;
-	static constexpr unsigned UDP_PORT = 0x1936;
-	static constexpr unsigned MAX_PORTS = 4;
-	static constexpr unsigned MAX_PAGES = 8;
-	static constexpr unsigned DMX_LENGTH = 512;
-};
-
-/**
- * The length of the short name field. Always 18
- */
-enum {
-	ARTNET_SHORT_NAME_LENGTH = 18
-};
-
-/**
- * The length of the long name field. Always 64
- */
-enum {
-	ARTNET_LONG_NAME_LENGTH = 64
-};
+namespace artnet {
+static constexpr uint8_t PROTOCOL_REVISION = 14;
+static constexpr uint16_t UDP_PORT = 0x1936;
+static constexpr uint32_t MAX_PORTS = 4;
+static constexpr uint32_t MAX_PAGES = 8;
+static constexpr uint32_t DMX_LENGTH = 512;
+static constexpr uint32_t SHORT_NAME_LENGTH = 18;
+static constexpr uint32_t LONG_NAME_LENGTH = 64;
+}  // namespace artnet
 
 /**
  * The length of the report field. Always 64

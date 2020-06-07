@@ -97,7 +97,7 @@ void ArtNet4Node::Start(void) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (TArtNetConst::MAX_PORTS * GetPages()); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < (artnet::MAX_PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(nPortIndex, nUniverse);
 		
@@ -148,7 +148,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (TArtNetConst::MAX_PORTS * GetPages()); i++) {
+	for (uint32_t i = 0; i < (artnet::MAX_PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 
