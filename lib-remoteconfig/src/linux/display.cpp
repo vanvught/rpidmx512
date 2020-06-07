@@ -40,7 +40,6 @@ Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused))
 	m_tType(DisplayType::UNKNOWN),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false),
 #if !defined(NO_HAL)
 	m_nMillis(0),
 #endif
@@ -59,7 +58,6 @@ Display::Display(__attribute__((unused)) DisplayType tDisplayType):
 	m_nRows(0),
 	m_LcdDisplay(0),
 	m_bIsSleep(false),
-	m_bHave7Segment(false),
 #if !defined(NO_HAL)
 	m_nMillis(0),
 #endif
@@ -85,20 +83,12 @@ void Display::Cls(void) {
 void Display::TextStatus(__attribute__((unused)) const char *pText) {
 	DEBUG_PUTS(pText);
 }
-void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) uint16_t n7SegmentData, __attribute__((unused)) uint32_t nConsoleColor) {
+
+void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) Display7SegmentMessage msg, __attribute__((unused)) uint32_t nConsoleColor) {
 	DEBUG_PUTS(pText);
 }
 void Display::TextStatus(__attribute__((unused)) const char *pText, __attribute__((unused)) uint8_t nValue7Segment, __attribute__((unused)) bool bHex) {
 	DEBUG_PUTS(pText);
-}
-
-void Display::Status(__attribute__((unused)) uint16_t n7SegmentData) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-void Display::Status(__attribute__((unused)) uint8_t nValue7Segment, __attribute__((unused)) bool bHex) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
 }
 
 int Display::Printf(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) char const*, ...){

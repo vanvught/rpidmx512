@@ -239,7 +239,7 @@ void Ssd1306::CheckSH1106(void) {
 	SendCommand(SSD1306_CMD_SET_HIGHCOLUMN | (128));
 	SendCommand(SSD1306_CMD_SET_STARTPAGE);
 
-	const uint8_t aTestBytes[5] = { 0x40, 0xAA, 0xEE, 0xAA, 0xEE };
+	constexpr uint8_t aTestBytes[5] = { 0x40, 0xAA, 0xEE, 0xAA, 0xEE };
 	SendData(aTestBytes, sizeof(aTestBytes));
 
 	// Check for columns 128-133
@@ -293,7 +293,7 @@ bool Ssd1306::Start(void) {
 
 	CheckSH1106();
 
-	Cls();
+	Ssd1306::Cls();
 
 	SendCommand(SSD1306_CMD_DISPLAY_ON);
 
@@ -354,7 +354,7 @@ void Ssd1306::PutString(const char *pString) {
 	const char *p = pString;
 
 	for (uint32_t i = 0; *p != '\0'; i++) {
-		PutChar(static_cast<int>(*p));
+		Ssd1306::PutChar(static_cast<int>(*p));
 		p++;
 	}
 }
@@ -364,9 +364,9 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, nLine - 1);
 	SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), SSD1306_LCD_WIDTH + 1);
-	SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, nLine - 1);
 }
 
 void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
@@ -374,7 +374,7 @@ void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, nLine - 1);
 	Text(pData, nLength);
 }
 
@@ -384,7 +384,7 @@ void Ssd1306::Text(const char *data, uint8_t nLength) {
 	}
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		PutChar(data[i]);
+		Ssd1306::PutChar(data[i]);
 	}
 }
 

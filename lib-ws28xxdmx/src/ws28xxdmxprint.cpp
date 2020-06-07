@@ -26,7 +26,6 @@
 #include <stdio.h>
 
 #include "ws28xxdmx.h"
-#include "ws28xxdmxparams.h"
 
 #include "ws28xx.h"
 
@@ -37,9 +36,9 @@ void WS28xxDmx::Print(void) {
 
 	if ((m_tLedType == WS2801) || (m_tLedType == APA102) || (m_tLedType == P9813)) {
 		if (m_tLedType == P9813) {
-			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), P9813_SPI_SPEED_DEFAULT_HZ, P9813_SPI_SPEED_MAX_HZ);
+			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::p9813::default_hz, spi::speed::p9813::max_hz);
 		} else {
-			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), WS2801_SPI_SPEED_DEFAULT_HZ, WS2801_SPI_SPEED_MAX_HZ);
+			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::ws2801::default_hz, spi::speed::ws2801::max_hz);
 		}
 		if (m_tLedType == APA102) {
 			printf(" GlbBr : %d\n", m_nGlobalBrightness);

@@ -208,7 +208,7 @@ bool si5351a_csv(const device_info_t *device_info, const char *file_name) {
 	pre_regs();
 
 	while (fgets(str, MAXCHAR, fp) != NULL) {
-		if (sscanf(str, "%x,%x", &reg, &value) == 2) {
+		if (sscanf(str, "%x,%x", (unsigned int *)&reg, (unsigned int *)&value) == 2) {
 			printf("%.4X:%.2X\n", reg, value);
 			i2c_write_reg_uint8(reg, value);
 		} else {

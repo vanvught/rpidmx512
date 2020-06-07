@@ -27,11 +27,6 @@ endif
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-		ifeq ($(findstring lib-bob,$(INCLUDES)),lib-bob)
-			ifneq ($(findstring lib-i2c,$(INCLUDES)),lib-i2c)
-				INCLUDES +=-I../lib-i2c/include
-			endif
-		endif
 	
 		BCM2835 = ./../lib-bcm2835_raspbian
 	

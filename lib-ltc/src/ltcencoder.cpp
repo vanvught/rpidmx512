@@ -59,7 +59,7 @@ struct TTable {
 	uint32_t nSize;
 	uint32_t nFPS;
 	int16_t Samples[4][26];
-} static sTables[4] = {
+} static constexpr sTables[4] = {
 	{ 25, 24, {
 		{ S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX, S_MAX },
 		{ S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN, S_MIN },
@@ -109,7 +109,7 @@ LtcEncoder::LtcEncoder(void):
 	m_pBuffer = new int16_t[m_nBufferSize];
 	assert(m_pBuffer != 0);
 
-	DEBUG_PRINTF("m_pBuffer=%p", m_pBuffer);
+	DEBUG_PRINTF("m_pBuffer=%p", reinterpret_cast<void *>(m_pBuffer));
 
 	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 

@@ -1,8 +1,8 @@
 /**
- * @file ws28xxdma.h
+ * @file ws28xxmulti8x.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMA_H_
-#define WS28XXDMA_H_
-
 #include <stdint.h>
+#include <string.h>
+#include <cassert>
 
-#include "ws28xx.h"
+#include "ws28xxmulti.h"
 
-#include "h3_spi.h"
+#include "debug.h"
 
-class WS28xxDMA: public WS28xx {
-public:
-	WS28xxDMA(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
-	~WS28xxDMA(void);
+void WS28xxMulti::SetupBuffers8x(void) {
+	DEBUG_ENTRY
 
-	bool Initialize (void);
+	constexpr uint32_t nSize = 32 * 1024;
 
-	void Update(void);
-	void Blackout(void);
+	m_pBuffer8x = new uint8_t[nSize];
+	assert(m_pBuffer8x != 0);
 
-	bool IsUpdating (void) { // returns TRUE while DMA operation is active
-		return h3_spi_dma_tx_is_active();
+	const uint32_t nSizeHalf = nSize / 2;
+	assert(m_nBufSize <= nSizeHalf);
+
+	if (m_nBufSize > nSizeHalf) {
+		// FIXME Handle internal error
+		return;
 	}
-};
 
-#endif /* WS28XXDMA_H_ */
+	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & static_cast<uint32_t>(~3));
+
+	memset(m_pBuffer8x, 0, m_nBufSize);
+	memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);
+
+	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer8x, m_pBlackoutBuffer8x);
+	DEBUG_EXIT
+}

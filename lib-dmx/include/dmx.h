@@ -171,8 +171,8 @@ public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
 	~Dmx(void);
 
-	inline void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) {
-		dmx_set_port_direction((_dmx_port_direction)tPortDirection, bEnableData);
+	inline void SetPortDirection(__attribute__((unused)) uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) {
+		dmx_set_port_direction(static_cast<_dmx_port_direction>(tPortDirection), bEnableData);
 	}
 #endif
 public: // DMX

@@ -111,15 +111,15 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 	} else {
 		if (m_tLEDType == P9813) {
 			if (nClockSpeed == 0) {
-				m_nClockSpeedHz = P9813_SPI_SPEED_DEFAULT_HZ;
-			} else if (nClockSpeed > P9813_SPI_SPEED_MAX_HZ) {
-				m_nClockSpeedHz = P9813_SPI_SPEED_MAX_HZ;
+				m_nClockSpeedHz = spi::speed::p9813::default_hz;
+			} else if (nClockSpeed > spi::speed::p9813::max_hz) {
+				m_nClockSpeedHz = spi::speed::p9813::max_hz;
 			}
 		} else {
 			if (nClockSpeed == 0) {
-				m_nClockSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
-			} else if (nClockSpeed > WS2801_SPI_SPEED_MAX_HZ) {
-				m_nClockSpeedHz = WS2801_SPI_SPEED_MAX_HZ;
+				m_nClockSpeedHz = spi::speed::ws2801::default_hz;
+			} else if (nClockSpeed > spi::speed::ws2801::max_hz) {
+				m_nClockSpeedHz = spi::speed::ws2801::max_hz;
 			}
 		}
 	}

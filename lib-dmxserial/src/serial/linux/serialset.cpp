@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <cassert>
 
-#include "device/serial.h"
+#include "../src/serial/serial.h"
 
 #include "debug.h"
 
@@ -45,8 +45,8 @@ void Serial::SetUartBits(__attribute__((unused)) uint8_t nBits) {
 
 }
 
-void Serial::SetUartParity(__attribute__((unused)) TSerialUartParity tParity) {
-	DEBUG_PRINTF("tParity=%d", tParity);
+void Serial::SetUartParity(__attribute__((unused)) SerialUartParity tParity) {
+	DEBUG_PRINTF("tParity=%d", static_cast<int>(tParity));
 
 }
 
@@ -62,8 +62,8 @@ void Serial::SetSpiSpeedHz(__attribute__((unused)) uint32_t nSpeedHz) {
 	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 }
 
-void Serial::SetSpiMode(__attribute__((unused)) TSerialSpiModes tMode) {
-	DEBUG_PRINTF("tMode=%d", tMode);
+void Serial::SetSpiMode(__attribute__((unused)) SerialSpiMode tMode) {
+	DEBUG_PRINTF("tMode=%d", static_cast<int>(tMode));
 }
 
 /*
@@ -74,7 +74,7 @@ void Serial::SetI2cAddress(__attribute__((unused)) uint8_t nAddress) {
 }
 
 void Serial::SetI2cSpeedMode(__attribute__((unused)) SerialI2cSpeedMode tSpeedMode) {
-	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
+	DEBUG_PRINTF("tSpeedMode=%.x", static_cast<int>(tSpeedMode));
 }
 
 

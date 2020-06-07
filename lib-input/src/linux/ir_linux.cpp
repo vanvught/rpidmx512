@@ -74,7 +74,7 @@ bool IrLinux::Start(void) {
 
 	m_Addr.sun_family=AF_UNIX;
 
-	if (connect(m_nFd, static_cast<struct sockaddr*>(&m_Addr), sizeof(m_Addr)) == -1) {
+	if (connect(m_nFd, reinterpret_cast<struct sockaddr*>(&m_Addr), sizeof(m_Addr)) == -1) {
 		perror("connect");
 		return false;
 	}
@@ -89,7 +89,7 @@ bool IrLinux::IsAvailable(void) {
 		int sequence;
 		char prefix[32];
 
-		if (sscanf(m_Buffer, "%s %x %s", prefix, &sequence, m_Code) != 3) {
+		if (sscanf(m_Buffer, "%s %x %s", prefix, reinterpret_cast<unsigned int*>(&sequence), m_Code) != 3) {
 			return false;
 		}
 

@@ -28,7 +28,7 @@
 
 #include "max7219matrix.h"
 
-#include "../lib-bob/include/font_cp437.h"
+#include "../../lib-bob/include/font_cp437.h"
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 

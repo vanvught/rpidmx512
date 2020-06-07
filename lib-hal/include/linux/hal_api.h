@@ -26,7 +26,10 @@
 #ifndef LINUX_HAL_API_H_
 #define LINUX_HAL_API_H_
 
-#define FUNC_PREFIX(x) bcm2835_##x
+#if defined (RASPPI)
+# define FUNC_PREFIX(x) bcm2835_##x
+# include "bcm2835.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

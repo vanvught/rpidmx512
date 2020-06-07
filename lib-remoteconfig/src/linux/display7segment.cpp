@@ -1,8 +1,8 @@
 /**
- * @file ws28xxdma.h
+ * @file display7segment.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMA_H_
-#define WS28XXDMA_H_
+#include "assert.h"
 
-#include <stdint.h>
+#include "display7segment.h"
 
-#include "ws28xx.h"
+#include "debug.h"
 
-#include "h3_spi.h"
+Display7Segment *Display7Segment::s_pThis = 0;
 
-class WS28xxDMA: public WS28xx {
-public:
-	WS28xxDMA(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
-	~WS28xxDMA(void);
+Display7Segment::Display7Segment(void): m_I2C(0,0) {
+	DEBUG_ENTRY
 
-	bool Initialize (void);
+	assert(s_pThis == 0);
+	s_pThis = this;
 
-	void Update(void);
-	void Blackout(void);
+	DEBUG_EXIT
+}
 
-	bool IsUpdating (void) { // returns TRUE while DMA operation is active
-		return h3_spi_dma_tx_is_active();
-	}
-};
+void Display7Segment::Status(__attribute__((unused)) Display7SegmentMessage msg) {
+	DEBUG_ENTRY
 
-#endif /* WS28XXDMA_H_ */
+	DEBUG_EXIT
+}
+
+void Display7Segment::Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

@@ -55,15 +55,22 @@ enum {
 	SINGLE_RGB = 24, SINGLE_RGBW = 32
 };
 
-#define WS2801_SPI_SPEED_MAX_HZ		25000000	///< 25 MHz
-#define WS2801_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
-
-#define P9813_SPI_SPEED_MAX_HZ		15000000	///< 15 MHz
-#define P9813_SPI_SPEED_DEFAULT_HZ	4000000		///< 4 MHz
+namespace spi {
+namespace speed {
+namespace ws2801 {
+static constexpr uint32_t max_hz = 25000000;	///< 25 MHz
+static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
+}  // namespace ws2801
+namespace p9813 {
+static constexpr uint32_t max_hz = 15000000;	///< 15 MHz
+static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
+}  // namespace p9813
+}  // namespace speed
+}  // namespace spi
 
 class WS28xx {
 public:
-	WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = WS2801_SPI_SPEED_DEFAULT_HZ);
+	WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
 	~WS28xx(void);
 
 	bool Initialize (void);

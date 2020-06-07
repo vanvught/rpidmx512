@@ -116,7 +116,7 @@ uint32_t spi_flash_get_size(void) {
 int spi_flash_cmd_erase(uint32_t offset, size_t len) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offset=%d, len=%d", offset, len);
+	DEBUG_PRINTF("offset=%d, len=%d", offset, (int) len);
 
 	if (offset % FLASH_SECTOR_SIZE || len % FLASH_SECTOR_SIZE) {
 		DEBUG_PUTS("Erase offset/length not multiple of erase size");

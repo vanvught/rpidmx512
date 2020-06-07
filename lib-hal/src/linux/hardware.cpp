@@ -48,12 +48,12 @@
 
 #include "debug.h"
 
-static char *str_find_replace(char *str, const char *find, const char *replace) {
+static char* str_find_replace(char *str, const char *find, const char *replace) {
 	assert(strlen(replace) <= strlen(find));
 
 	unsigned i, j, k, n, m;
 
-	 i = j = m = n = 0;
+	i = j = m = n = 0;
 
 	while (str[i] != '\0') {
 		if (str[m] == find[n]) {
@@ -83,11 +83,18 @@ static char *str_find_replace(char *str, const char *find, const char *replace) 
 }
 
 #if defined (__linux__)
- static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
- static constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
- static constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
- static constexpr char RASPBIAN_LED_HB[] = "echo heartbeat | sudo tee /sys/class/leds/led0/trigger";
- static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
+# if defined (RASPPI)
+ extern "C" {
+  int bcm2835_init(void);
+  int bcm2835_i2c_begin(void);
+  int bcm2835_spi_begin(void);
+ }
+# endif
+static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
+static constexpr char RASPBIAN_LED_OFF[] = "echo 0 | sudo tee /sys/class/leds/led0/brightness";
+static constexpr char RASPBIAN_LED_ON[] = "echo 1 | sudo tee /sys/class/leds/led0/brightness";
+static constexpr char RASPBIAN_LED_HB[] = "echo heartbeat | sudo tee /sys/class/leds/led0/trigger";
+static constexpr char RASPBIAN_LED_FLASH[] = "echo timer | sudo tee /sys/class/leds/led0/trigger";
 #endif
 
 static constexpr char UNKNOWN[] = "Unknown";
@@ -115,7 +122,7 @@ Hardware::Hardware(void):
 	m_aSocName[0] = '\0';
 
 #if defined (__linux__)
-	const char cmd[] = "which /opt/vc/bin/vcgencmd";
+	constexpr char cmd[] = "which /opt/vc/bin/vcgencmd";
 	char buf[16];
 
 	FILE *fp = popen(cmd, "r");
@@ -143,12 +150,12 @@ Hardware::Hardware(void):
 
 	{ // Board Name
 #if defined (__APPLE__)
-		const char cat[] = "sysctl -n hw.model";
+		constexpr char cat[] = "sysctl -n hw.model";
 		ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
 #elif defined (__linux__)
-		const char cat[] = "cat /sys/firmware/devicetree/base/model";
+		constexpr char cat[] = "cat /sys/firmware/devicetree/base/model";
 		if (!ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName))) {
-			const char cat[] = "cat /sys/class/dmi/id/board_name";
+			constexpr char cat[] = "cat /sys/class/dmi/id/board_name";
 			ExecCmd(cat, m_aBoardName, sizeof(m_aBoardName));
 		}
 #endif
@@ -157,23 +164,36 @@ Hardware::Hardware(void):
 
 	{ // CPU Name
 #if defined (__APPLE__)
-		const char cmd[] = "sysctl -n machdep.cpu.brand_string";
+		constexpr char cmd[] = "sysctl -n machdep.cpu.brand_string";
 #else
-		const char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
+		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'model name' | head -n 1 | sed 's/^[^:]*://g' |  sed 's/^[^ ]* //g'";
 #endif
 		ExecCmd(cmd, m_aCpuName, sizeof(m_aCpuName));
 	}
 
 	{ // SoC Name
-		const char cmd[] = "cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}'";
+		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Hardware' | awk '{print $3}'";
 		ExecCmd(cmd, m_aSocName, sizeof(m_aSocName));
 	}
 
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		char aResult[16];
-		const char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
+		constexpr char cmd[] = "cat /proc/cpuinfo | grep 'Revision' | awk '{print $3}'";
 		ExecCmd(cmd, aResult, sizeof(aResult));
-		m_nBoardId = strtol(aResult, NULL, 16);
+		m_nBoardId = static_cast<uint32_t>(strtol(aResult, NULL, 16));
+#if defined (RASPPI)
+		if (getuid() == 0) {
+			if (bcm2835_init() == 0) {
+				fprintf(stderr, "bcm2835_init() failed\n");
+			}
+			if (bcm2835_i2c_begin() == 0) {
+				fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+			}
+			if (bcm2835_spi_begin() == 0) {
+				fprintf(stderr, "bcm2835_spi_begin() failed\n");
+			}
+		}
+#endif
 	}
 }
 
@@ -201,10 +221,10 @@ const char* Hardware::GetSocName(uint8_t& nLength) {
 }
 
 uint32_t Hardware::GetReleaseId(void) {
-	int len = strlen(m_TOsInfo.release);
+	const size_t len = strlen(m_TOsInfo.release);
 	uint32_t rev = 0;
 
-	for (int i = 0; i < len ; i++) {
+	for (size_t i = 0; i < len ; i++) {
 		if (isdigit(m_TOsInfo.release[i])) {
 			rev *= 10;
 			rev += static_cast<uint32_t>(m_TOsInfo.release[i] - '0');
@@ -241,7 +261,7 @@ uint32_t Hardware::GetUpTime(void) {
 		printf("code error = %d\n", error);
 	}
 
-	return s_info.uptime;
+	return static_cast<uint32_t>(s_info.uptime);
 #endif
 }
 
@@ -417,7 +437,7 @@ bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
 uint32_t Hardware::Micros(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000000) + tv.tv_usec;
+	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
 uint32_t Hardware::Millis(void) {
@@ -427,6 +447,6 @@ uint32_t Hardware::Millis(void) {
 #if defined (__APPLE__)
 	return (tv.tv_sec * static_cast<__darwin_time_t>(1000) + (tv.tv_usec / static_cast<__darwin_time_t>(1000)));
 #else
-	return (tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
+	return static_cast<uint32_t>(tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
 #endif
 }

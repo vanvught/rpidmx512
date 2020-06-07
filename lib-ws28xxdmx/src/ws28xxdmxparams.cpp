@@ -61,7 +61,7 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nLedCount = 170;
 	m_tWS28xxParams.nDmxStartAddress = 1;
 	m_tWS28xxParams.bLedGrouping = false;
-	m_tWS28xxParams.nSpiSpeedHz = WS2801_SPI_SPEED_DEFAULT_HZ;
+	m_tWS28xxParams.nSpiSpeedHz = spi::speed::ws2801::default_hz;
 	m_tWS28xxParams.nGlobalBrightness = 0xFF;
 	m_tWS28xxParams.nActiveOutputs = 1;
 	m_tWS28xxParams.bUseSI5351A = false;
@@ -246,15 +246,15 @@ void WS28xxDmxParams::Dump(void) {
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
-		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)), static_cast<int>(m_tWS28xxParams.nRgbMapping));
+		printf(" %s=%d [%s]\n", DevicesParamsConst::LED_RGB_MAPPING, static_cast<int>(m_tWS28xxParams.nRgbMapping), RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)));
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), m_tWS28xxParams.nLowCode);
+		printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T0H, WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), m_tWS28xxParams.nLowCode);
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
-		printf(" %s=%.2f [0x%X]\n", WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), m_tWS28xxParams.nHighCode);
+		printf(" %s=%.2f [0x%X]\n", DevicesParamsConst::LED_T1H, WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), m_tWS28xxParams.nHighCode);
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::LED_COUNT)) {

@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <cassert>
 
-#include "device/serial.h"
+#include "../src/serial/serial.h"
 
 #include "debug.h"
 

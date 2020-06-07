@@ -24,8 +24,12 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# if __GNUC__ < 9
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wuseless-cast"	//FIXME GCC 8.0.3 Raspbian GNU/Linux 10 (buster)
+# endif
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>

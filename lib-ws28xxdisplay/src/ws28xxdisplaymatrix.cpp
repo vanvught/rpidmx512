@@ -33,7 +33,7 @@
  #include "ws28xx.h"
 #endif
 
-#include "../lib-bob/include/font_cp437.h"
+#include "../../lib-bob/include/font_cp437.h"
 
 #include "debug.h"
 
@@ -257,9 +257,15 @@ void WS28xxDisplayMatrix::SetColonsOff(void) {
 }
 
 uint8_t WS28xxDisplayMatrix::ReverseBits(uint8_t nBits) {
+#if defined (H3)
 	const uint32_t input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
 	return static_cast<uint8_t>((output >> 24));
+#else
+	// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64Bits
+	const uint8_t nResult = ((nBits * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
+	return nResult;
+#endif
 }
 

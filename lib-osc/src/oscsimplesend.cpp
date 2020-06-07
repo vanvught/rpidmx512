@@ -39,7 +39,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4;
 
-		assert(nMessageLength > sizeof(m_Message));
+		assert(nMessageLength < sizeof(m_Message));
 
 		UpdateMessage(pPath, nPathLength, 0);
 		Send(nMessageLength, nHandle, nIpAddress, nPort);
@@ -52,7 +52,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + OSCString::Size(pString);
 
-		assert(nMessageLength > sizeof(m_Message));
+		assert(nMessageLength < sizeof(m_Message));
 
 		UpdateMessage(pPath, nPathLength, 's');
 
@@ -69,7 +69,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + 4;
 
-		assert(nMessageLength > sizeof(m_Message));
+		assert(nMessageLength < sizeof(m_Message));
 
 		UpdateMessage(pPath, nPathLength, 'i');
 
@@ -85,7 +85,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + 4;
 
-		assert(nMessageLength > sizeof(m_Message));
+		assert(nMessageLength < sizeof(m_Message));
 
 		UpdateMessage(pPath, nPathLength, 'f');
 

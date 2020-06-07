@@ -2,7 +2,7 @@
  * @file micros.c
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,5 +30,5 @@
 uint32_t micros(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000000) + tv.tv_usec;
+	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
 }

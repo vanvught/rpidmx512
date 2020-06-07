@@ -289,7 +289,7 @@ void Display::TextStatus(const char *pText) {
 	Write(m_nRows, pText);
 }
 
-void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData, uint32_t nConsoleColor) {
+void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData, __attribute__((unused)) uint32_t nConsoleColor) {
 	TextStatus(pText);
 	m_Display7Segment.Status(n7SegmentData);
 #if defined (BARE_METAL)

@@ -28,15 +28,15 @@
 
 #include <stdint.h>
 
-#if defined(__linux__)
-# include "linux/hal_i2c.h"
+#if defined(__linux__) || defined (__APPLE__)
 # include "linux/hal_api.h"
+# include "linux/hal_i2c.h"
 #elif defined(H3)
-# include "h3/hal_i2c.h"
 # include "h3/hal_api.h"
+# include "h3/hal_i2c.h"
 #else
-# include "rpi/hal_i2c.h"
 # include "rpi/hal_api.h"
+# include "rpi/hal_i2c.h"
 #endif
 
 namespace hal {
@@ -78,8 +78,8 @@ public:
 	void WriteRegister(uint8_t nRegister, uint8_t nValue) {
 		char buffer[2];
 
-		buffer[0] = nRegister;
-		buffer[1] = nValue;
+		buffer[0] = static_cast<char>(nRegister);
+		buffer[1] = static_cast<char>(nValue);
 
 		Setup();
 		FUNC_PREFIX(i2c_write(buffer, 2));
@@ -88,7 +88,7 @@ public:
 	void WriteRegister(uint8_t nRegister, uint16_t nValue) {
 		char buffer[3];
 
-		buffer[0] = nRegister;
+		buffer[0] = static_cast<char>(nRegister);
 		buffer[1] = static_cast<char>(nValue >> 8);
 		buffer[2] = static_cast<char>(nValue & 0xFF);
 
@@ -102,7 +102,7 @@ public:
 		Setup();
 		FUNC_PREFIX(i2c_read(buf, 1));
 
-		return buf[0];
+		return static_cast<uint8_t>(buf[0]);
 	}
 
 	uint8_t Read(char *pBuffer, uint32_t nLength) {
@@ -112,7 +112,7 @@ public:
 	uint8_t ReadRegister(uint8_t nRegister) {
 		char buf[2];
 
-		buf[0] = nRegister;
+		buf[0] = static_cast<char>(nRegister);
 		buf[1] = 0;
 
 		Setup();

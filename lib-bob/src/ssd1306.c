@@ -223,7 +223,7 @@ static void i2c_setup(const oled_info_t *oled_info) {
 
 static void _send_command(const oled_info_t *oled_info, uint8_t cmd) {
 #if !defined(H3)
-	char spi_data[0];
+	char spi_data[1];
 
 
 	if (oled_info->protocol == OLED_PROTOCOL_SPI) {

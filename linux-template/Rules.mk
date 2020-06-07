@@ -25,9 +25,13 @@ $(info $$detected_OS [${detected_OS}])
 ifeq ($(detected_OS),Darwin) 
 endif
 
+ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
+	LIBS+=spiflashstore spiflashinstall spiflash
+endif
+
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-		LIBS+= bob i2c
+		LIBS+=bob
 		BCM2835 = ./../lib-bcm2835_raspbian
 		ifneq "$(wildcard $(BCM2835) )" ""
 			LIBS+=bcm2835_raspbian
@@ -36,10 +40,6 @@ ifeq ($(detected_OS),Linux)
 		endif
 		DEFINES+=-DRASPPI
 	endif
-endif
-
-ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	LIBS+=spiflashstore spiflashinstall spiflash
 endif
 
 LIBS+=network properties hal debug

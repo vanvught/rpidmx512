@@ -29,9 +29,8 @@
 #include "ws28xx.h"
 #include "rgbmapping.h"
 
-void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(!m_bUpdating);
 
+void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(m_pBuffer != 0);
 	assert(nLEDIndex < m_nLedCount);
 
@@ -119,8 +118,6 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 }
 
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(!m_bUpdating);
-
 	assert(m_pBuffer != 0);
 	assert(nLEDIndex < m_nLedCount);
 	assert(m_tLEDType == SK6812W);

@@ -65,7 +65,7 @@ void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct TLtcDisplayRgb
 	uint8_t nBlue = tColours.nBlue;
 
 	const char aChars[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
-	assert(sizeof(aChars) <= WS28XX_NUM_OF_DIGITS);
+	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
 
@@ -86,7 +86,7 @@ void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct TLtcD
 	uint8_t nBlue = tColours.nBlue;
 
 	const char aChars[] = { ' ', ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7]};
-	assert(sizeof(aChars) <= WS28XX_NUM_OF_DIGITS);
+	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
 
@@ -102,7 +102,7 @@ void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct TLtcD
 }
 
 void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours) {
-	assert(WS28XX_NUM_OF_DIGITS == LTCDISPLAY_MAX_MESSAGE_SIZE);
+	assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == LTCDISPLAY_MAX_MESSAGE_SIZE);
 
 	const uint8_t nRed = tColours.nRed;
 	const uint8_t nGreen = tColours.nGreen;

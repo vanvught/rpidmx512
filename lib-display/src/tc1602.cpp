@@ -26,15 +26,6 @@
 #include <stdint.h>
 #include <cassert>
 
-extern "C" {
-#if defined(__linux__)
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
-#else
-extern void udelay(uint32_t);
-#endif
-}
-
 #include "tc1602.h"
 
 #include "hal_i2c.h"
@@ -133,7 +124,7 @@ void Tc1602::PutString(const char *pString) {
 	const char *p = pString;
 
 	for (uint32_t i = 0; *p != '\0'; i++) {
-		PutChar(static_cast<int>(*p));
+		Tc1602::PutChar(static_cast<int>(*p));
 		p++;
 	}
 }
@@ -153,8 +144,8 @@ void Tc1602::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
-	Text(data, nLength);
+	Tc1602::SetCursorPos(0, nLine - 1);
+	Tc1602::Text(data, nLength);
 }
 
 void Tc1602::ClearLine(uint8_t nLine) {
@@ -162,19 +153,19 @@ void Tc1602::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
+	Tc1602::SetCursorPos(0, nLine - 1);
 
 	for (uint32_t i = 0; i < m_nCols; i++) {
 		WriteReg(' ');
 	}
 
-	SetCursorPos(0, nLine - 1);
+	Tc1602::SetCursorPos(0, nLine - 1);
 }
 
 void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
 	assert(row <= 3);
 
-	const uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
+	constexpr uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
 
 	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
 }

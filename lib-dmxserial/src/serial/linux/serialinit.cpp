@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "device/serial.h"
+#include "../src/serial/serial.h"
 
 #include "debug.h"
 

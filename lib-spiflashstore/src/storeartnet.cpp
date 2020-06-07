@@ -72,7 +72,7 @@ void StoreArtNet::Copy(struct TArtNetParams* pArtNetParams) {
 void StoreArtNet::SaveShortName(const char* pShortName) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aShortName), pShortName, ARTNET_SHORT_NAME_LENGTH, ArtnetParamsMask::SHORT_NAME);
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aShortName), pShortName, artnet::SHORT_NAME_LENGTH, ArtnetParamsMask::SHORT_NAME);
 
 	DEBUG_EXIT
 }
@@ -80,7 +80,7 @@ void StoreArtNet::SaveShortName(const char* pShortName) {
 void StoreArtNet::SaveLongName(const char* pLongName) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aLongName), pLongName, ARTNET_LONG_NAME_LENGTH, ArtnetParamsMask::LONG_NAME);
+	SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, aLongName), pLongName, artnet::LONG_NAME_LENGTH, ArtnetParamsMask::LONG_NAME);
 
 	DEBUG_EXIT
 }

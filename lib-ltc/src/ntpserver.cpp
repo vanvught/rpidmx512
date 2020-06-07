@@ -70,11 +70,11 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
 	m_tDate = mktime(&timeDate);
 	assert(m_tDate != -1);
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), static_cast<long int>(m_tDate));
+	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 
 	m_tDate += NTP_TIMESTAMP_DELTA;
 
-	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), static_cast<long int>(m_tDate));
+	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 	DEBUG_EXIT
 }
 
@@ -124,7 +124,7 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 		assert(0);
 	}
 
-	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned>(m_tTimeDate), static_cast<long int>(m_tTimeDate));
+	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned int>(m_tTimeDate), m_tTimeDate);
 
 	m_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
 	m_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);

@@ -235,7 +235,7 @@ void LtcReader::Run(void) {
 	uint8_t TimeCodeType;
 #ifndef NDEBUG
 	char aLimitWarning[16] ALIGNED;
-	uint32_t nLimitUs;
+	uint32_t nLimitUs = 0;
 	uint32_t nNowUs =  0;
 #endif
 

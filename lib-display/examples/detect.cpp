@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
 	if (isDetected) {
 		printf("Display type : %d\n", static_cast<int>(display.GetDetectedType()));
-		display.Printf(2, "Line 2");
+		display.Printf(2, "OK!");
 	}
 
 	return 0;

@@ -53,7 +53,7 @@ bool WS28xxMulti::SetupSI5351A(void) {
 			DEBUG_EXIT
 			return true;
 		} else {
-			Display::Get()->TextStatus("E: SI5351A", DISPLAY_7SEGMENT_MSG_ERROR_SI5351A);
+			Display::Get()->TextStatus("E: SI5351A", Display7SegmentMessage::ERROR_SI5351A);
 			DEBUG_PUTS("si5351a error");
 			DEBUG_EXIT
 			return false;

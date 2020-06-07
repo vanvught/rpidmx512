@@ -26,10 +26,25 @@
 #ifndef LINUX_HAL_I2C_H_
 #define LINUX_HAL_I2C_H_
 
-#include "bcm2835.h"
+#if defined (RASPPI)
 
-inline static void bcm2835_i2c_set_address(uint8_t address) {
-	bcm2835_i2c_setSlaveAddress(address);
+#define bcm2835_i2c_set_address bcm2835_i2c_setSlaveAddress
+
+#else
+
+# define FUNC_PREFIX(x) x
+# include <stdint.h>
+# ifdef __cplusplus
+extern "C" {
+# endif
+  inline static void i2c_set_baudrate(__attribute__((unused)) uint32_t _q) {}
+  inline static void i2c_set_address(__attribute__((unused)) uint32_t _q) {}
+  inline static uint8_t i2c_write(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
+  inline static uint8_t i2c_read(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
+# ifdef __cplusplus
 }
+# endif
+
+#endif
 
 #endif /* LINUX_HAL_I2C_H_ */

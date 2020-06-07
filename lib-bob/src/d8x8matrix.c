@@ -66,7 +66,7 @@ static void write_all(const device_info_t *device_info, const uint8_t reg, const
 
 	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
-		bcm2835_aux_spi_writenb((const char *) spi_data, device_info->internal.count * 2);
+		bcm2835_aux_spi_writenb((const char *) spi_data, (uint32_t)(device_info->internal.count * 2));
 	} else {
 		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));

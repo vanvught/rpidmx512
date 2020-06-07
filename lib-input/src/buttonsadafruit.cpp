@@ -45,7 +45,7 @@
 #define PIN_A RPI_V2_GPIO_P1_29	///< BCM 5
 #define PIN_B RPI_V2_GPIO_P1_31 ///< BCM 6
 
-#define MASK_GPLEV0  (uint32_t)((1 << PIN_L) | (1 << PIN_R)  | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
+#define MASK_GPLEV0  static_cast<uint32_t>((1 << PIN_L) | (1 << PIN_R)  | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
 
 ButtonsAdafruit::ButtonsAdafruit(void): m_rMaskedBits(0), m_PrevChar(INPUT_KEY_NOT_DEFINED) {
 }

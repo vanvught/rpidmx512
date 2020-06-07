@@ -49,6 +49,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "debug.h"
+
 int main(int argc, char **argv) {
 	Hardware hw;
 	NetworkLinux nw;

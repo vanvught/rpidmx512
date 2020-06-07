@@ -134,7 +134,7 @@ void bw_spi_lcd_text(const device_info_t *device_info, const char *text, uint8_t
 
 	if (device_info->chip_select == SPI_CS2) {
 		bcm2835_aux_spi_setClockDivider(device_info->internal.clk_div);
-		bcm2835_aux_spi_writenb(data, length + 2);
+		bcm2835_aux_spi_writenb(data, (uint32_t) (length + 2));
 	} else {
 		FUNC_PREFIX(spi_set_speed_hz(device_info->speed_hz));
 		FUNC_PREFIX(spi_chipSelect(device_info->chip_select));
