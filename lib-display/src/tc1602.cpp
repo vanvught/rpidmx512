@@ -91,9 +91,6 @@ Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t n
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
-Tc1602::~Tc1602(void) {
-}
-
 bool Tc1602::Start(void) {
 	if (!m_I2C.IsConnected()) {
 		return false;
@@ -189,14 +186,14 @@ void Tc1602::WriteReg(const uint8_t reg) {
 }
 
 #if defined(ENABLE_CURSOR_MODE)
-void Tc1602::SetCursor(CursorMode tCursorOnOff) {
+void Tc1602::SetCursor(uint32_t nMode) {
 	uint8_t mode = TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON;
 
-	if ((tCursorOnOff & SET_CURSOR_ON) == SET_CURSOR_ON ){
+	if ((nMode & display::cursor::ON) == display::cursor::ON ){
 		mode |= TC1602_IC_DISPLAY_CURSOR_ON;
 	}
 
-	if ((tCursorOnOff & SET_CURSOR_BLINK_ON) == SET_CURSOR_BLINK_ON ){
+	if ((nMode & display::cursor::BLINK_ON) == display::cursor::BLINK_ON ){
 		mode |= TC1602_IC_DISPLAY_BLINK_ON;
 	}
 

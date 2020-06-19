@@ -106,7 +106,17 @@ public:
 	}
 
 	uint8_t Read(char *pBuffer, uint32_t nLength) {
+		Setup();
 		return FUNC_PREFIX(i2c_read(pBuffer, nLength));
+	}
+
+	uint16_t Read16(void) {
+		char buf[2];
+
+		Setup();
+		FUNC_PREFIX(i2c_read(buf, 2));
+
+		return static_cast<uint16_t>(static_cast<uint16_t>(buf[0]) << 8 | static_cast<uint16_t>(buf[1]));
 	}
 
 	uint8_t ReadRegister(uint8_t nRegister) {
@@ -119,6 +129,34 @@ public:
 		FUNC_PREFIX(i2c_write(&buf[0], 1));
 
 		return Read();
+	}
+
+	uint16_t ReadRegister16(uint8_t nRegister) {
+		char buf[2];
+
+		buf[0] = static_cast<char>(nRegister);
+		buf[1] = 0;
+		buf[1] = 1;
+
+		Setup();
+		FUNC_PREFIX(i2c_write(&buf[0], 1));
+
+		return Read16();
+	}
+
+	uint16_t ReadRegister16DelayUs(uint8_t nRegister, uint32_t nDelayUs) {
+		char buf[2];
+
+		buf[0] = static_cast<char>(nRegister);
+
+		Setup();
+		FUNC_PREFIX(i2c_write(&buf[0], 1));
+
+		udelay(nDelayUs);
+
+		FUNC_PREFIX(i2c_read(buf, 2));
+
+		return static_cast<uint16_t>(static_cast<uint16_t>(buf[0]) << 8 | static_cast<uint16_t>(buf[1]));
 	}
 
 private:

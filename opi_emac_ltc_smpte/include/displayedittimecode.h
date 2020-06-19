@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file displayedittimecode.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef DISPLAYEDITTIMECODE_H_
+#define DISPLAYEDITTIMECODE_H_
 
-constexpr char SOFTWARE_VERSION[] = "2.7";
+#include <stdint.h>
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "ltc.h"
+
+class DisplayEditTimeCode {
+public:
+	void HandleKey(int nKey, TLtcTimeCode& timecode, char m_aTimeCode[TC_CODE_MAX_LENGTH]);
+
+private:
+	void KeyUp(TLtcTimeCode& timecode);
+	void KeyDown(TLtcTimeCode& timecode);
+	void KeyLeft(void);
+	void KeyRight(void);
+
+private:
+	uint8_t m_nFrames = 0;
+	enum State {
+		IDLE,
+		EDIT
+	} m_State = IDLE;
+	uint32_t m_nCursorPositionIndex = 0;
+	bool m_bCursorOn = false;
+};
+
+#endif /* DISPLAYEDITTIMECODE_H_ */

@@ -48,6 +48,10 @@
 #include "hal_i2c.h"
 #include "mcp23x17.h"
 
+#include "displayedittimecode.h"
+#include "displayeditfps.h"
+#include "input.h"
+
 #include "h3/ltcgenerator.h"
 
 // Interrupt
@@ -95,7 +99,6 @@ SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisable
 	m_tLtcReaderSource(tLtcReaderSource),
 	m_ptLtcDisabledOutputs(ptLtcDisabledOutput),
 	m_bIsConnected(false),
-	m_nPortA(0),
 	m_nPortAPrevious(0),
 	m_nPortB(0),
 	m_nMillisPrevious(0),
@@ -103,9 +106,7 @@ SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisable
 	m_tRunStatus(RUN_STATUS_IDLE),
 	m_nSelectMillis(0)
 {
-}
-
-SourceSelect::~SourceSelect(void) {
+	Ltc::InitTimeCode(m_aTimeCode);
 }
 
 void SourceSelect::LedBlink(uint8_t nPortB) {
@@ -117,43 +118,79 @@ void SourceSelect::LedBlink(uint8_t nPortB) {
 
 	m_nMillisPrevious = nMillisNow;
 	m_nPortB ^= nPortB;
-	m_I2C.WriteRegister(mcp23x17::GPIOB, m_nPortB);
+	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, m_nPortB);
 }
 
 void SourceSelect::HandleActionLeft(TLtcReaderSource &tLtcReaderSource) {
-	if (tLtcReaderSource == 0) {
-		tLtcReaderSource = static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1));
-	} else {
-		tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource - 1));
+	if (m_State == SOURCE_SELECT) {
+		if (tLtcReaderSource == 0) {
+			tLtcReaderSource = static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1));
+		} else {
+			tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource - 1));
+		}
+		UpdateDisplays(tLtcReaderSource);
+		return;
 	}
+
+	m_nKey = INPUT_KEY_LEFT;
 }
 
 void SourceSelect::HandleActionRight(TLtcReaderSource &tLtcReaderSource) {
-	if (tLtcReaderSource == static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1))) {
-		tLtcReaderSource = static_cast<TLtcReaderSource>(0);
-	} else {
-		tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource + 1));
+	if (m_State == SOURCE_SELECT) {
+		if (tLtcReaderSource == static_cast<TLtcReaderSource>((LTC_READER_SOURCE_UNDEFINED - 1))) {
+			tLtcReaderSource = static_cast<TLtcReaderSource>(0);
+		} else {
+			tLtcReaderSource = static_cast<TLtcReaderSource>((tLtcReaderSource + 1));
+		}
+		UpdateDisplays(tLtcReaderSource);
+		return;
 	}
+
+	m_nKey = INPUT_KEY_RIGHT;
+}
+
+void SourceSelect::HandleActionSelect(const TLtcReaderSource& tLtcReaderSource) {
+	if (m_tLtcReaderSource != tLtcReaderSource) {
+		m_tLtcReaderSource = tLtcReaderSource;
+		StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
+	}
+
+	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1u << tLtcReaderSource));
+	m_I2C.ReadRegister(mcp23x17::reg::INTCAPA);	// Clear interrupts
+
+	Display::Get()->SetCursor(display::cursor::OFF);
+	Display::Get()->SetCursorPos(0, 0);
+	Display::Get()->ClearLine(1);
+	Display::Get()->ClearLine(2);
 }
 
 void SourceSelect::HandleRotary(uint8_t nInputAB, TLtcReaderSource &tLtcReaderSource) {
 	m_tRotaryDirection = m_RotaryEncoder.Process(nInputAB);
 
+	if (m_State == SOURCE_SELECT) {
+		if (m_tRotaryDirection == RotaryEncoder::CW) {
+			HandleActionRight(tLtcReaderSource);
+		} else if (m_tRotaryDirection == RotaryEncoder::CCW) {
+			HandleActionLeft(tLtcReaderSource);
+		}
+		return;
+	}
+
 	if (m_tRotaryDirection == RotaryEncoder::CW) {
-		HandleActionRight(tLtcReaderSource);
+		m_nKey = INPUT_KEY_DOWN;
 	} else if (m_tRotaryDirection == RotaryEncoder::CCW) {
-		HandleActionLeft(tLtcReaderSource);
+		m_nKey = INPUT_KEY_UP;
 	}
 }
 
-void SourceSelect::UpdateDisaplays(TLtcReaderSource tLtcReaderSource) {
+void SourceSelect::UpdateDisplays(const TLtcReaderSource& tLtcReaderSource) {
 	Display::Get()->TextStatus(SourceSelectConst::SOURCE[tLtcReaderSource], s_7Segment[tLtcReaderSource]);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->WriteChar(tLtcReaderSource);
 	}
 
-	if(!m_ptLtcDisabledOutputs->bWS28xx) {
+	if (!m_ptLtcDisabledOutputs->bWS28xx) {
 		LtcDisplayWS28xx::Get()->WriteChar(tLtcReaderSource);
 	}
 }
@@ -168,16 +205,18 @@ bool SourceSelect::Check(void) {
 		return false;
 	}
 
-	// Rotary and switches
-	m_I2C.WriteRegister(mcp23x17::IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
-	m_I2C.WriteRegister(mcp23x17::GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
-	m_I2C.WriteRegister(mcp23x17::GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::INTCAPA);								// Clear interrupts
+	// Rotary and buttons
+	m_I2C.WriteRegister(mcp23x17::reg::IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
+	m_I2C.WriteRegister(mcp23x17::reg::GPPUA, static_cast<uint8_t>(0xFF));		// Pull-up
+	m_I2C.WriteRegister(mcp23x17::reg::IPOLA, static_cast<uint8_t>(0xFF));		// Invert read
+	m_I2C.WriteRegister(mcp23x17::reg::INTCONA, static_cast<uint8_t>(0x00));
+	m_I2C.WriteRegister(mcp23x17::reg::GPINTENA, static_cast<uint8_t>(0xFF));	// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::reg::INTCAPA);									// Clear interrupts
 	// Led's
-	m_I2C.WriteRegister(mcp23x17::IODIRB, static_cast<uint8_t>(0x00)); 	// All output
-	m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
+	m_I2C.WriteRegister(mcp23x17::reg::IODIRB, static_cast<uint8_t>(0x00)); 	// All output
+	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
 
-	UpdateDisaplays(m_tLtcReaderSource);
+	UpdateDisplays(m_tLtcReaderSource);
 
 	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); // PA7
 	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
@@ -186,15 +225,17 @@ bool SourceSelect::Check(void) {
 	return true;
 }
 
-bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
+bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode) {
 	LedBlink(1 << tLtcReaderSource);
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		m_nPortAPrevious = m_nPortA;
-		m_nPortA = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
+		const uint8_t nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
-		const uint8_t nButtonsChanged = (m_nPortA ^ m_nPortAPrevious) & m_nPortA;
+		m_nPortAPrevious = nPortA;
+
+		DEBUG_PRINTF("%.2x %.2x", nPortA, nButtonsChanged);
 
 		/* P = m_nPortAPrevious
 		 * N = m_nPortA
@@ -208,45 +249,95 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource) {
 		 * 1 1	0 1	0
 		 */
 
+		m_nKey = INPUT_KEY_NOT_DEFINED;
+
 		if (BUTTON_STATE(button::LEFT)) {
 			HandleActionLeft(tLtcReaderSource);
 		} else if (BUTTON_STATE(button::RIGHT)) {
 			HandleActionRight(tLtcReaderSource);
 		} else if (BUTTON_STATE(button::SELECT)) {
-			if (m_tLtcReaderSource != tLtcReaderSource) {
-				m_tLtcReaderSource = tLtcReaderSource;
-				StoreLtc::Get()->SaveSource(m_tLtcReaderSource);
-			}
-
-			m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << tLtcReaderSource));
-			m_I2C.ReadRegister(mcp23x17::INTCAPA);	// Clear interrupts
+			HandleActionSelect(tLtcReaderSource);
 			return false;
+		} else if (BUTTON_STATE(button::START)) {
+			if (tLtcReaderSource == LTC_READER_SOURCE_INTERNAL) {
+				if (m_State != EDIT_TIMECODE_START) {
+					Display::Get()->SetCursorPos(14,0);
+					Display::Get()->PutString("[Start]");
+				}
+
+				m_nKey = INPUT_KEY_ENTER;
+
+				switch (m_State) {
+					case SOURCE_SELECT:
+						m_State = EDIT_TIMECODE_START;
+						break;
+					case EDIT_TIMECODE_START:
+						m_State = EDIT_FPS;
+						break;
+					case EDIT_TIMECODE_STOP:
+					case EDIT_FPS:
+						m_State = EDIT_TIMECODE_START;
+						break;
+					default:
+						break;
+				}
+			}
+		} else if (BUTTON_STATE(button::STOP)) {
+			if (tLtcReaderSource == LTC_READER_SOURCE_INTERNAL) {
+				if (m_State != EDIT_TIMECODE_STOP) {
+					Display::Get()->SetCursorPos(14,0);
+					Display::Get()->PutString("[Stop] ");
+				}
+				m_nKey = INPUT_KEY_ENTER;
+				m_State = EDIT_TIMECODE_STOP;
+
+			}
+		} else if (BUTTON_STATE(button::RESUME)) {
+			if (tLtcReaderSource == LTC_READER_SOURCE_INTERNAL) {
+				m_nKey = INPUT_KEY_ESC;
+			}
 		} else {
-			HandleRotary(m_nPortA, tLtcReaderSource);
+			HandleRotary(nPortA, tLtcReaderSource);
+		}
+
+		switch (m_State) {
+			case EDIT_TIMECODE_START:
+				HandleInternalTimeCodeStart(StartTimeCode);
+				break;
+			case EDIT_TIMECODE_STOP:
+				HandleInternalTimeCodeStop(StopTimeCode);
+				break;
+			case EDIT_FPS:
+				HandleInternalTimeCodeFps(StartTimeCode);
+				break;
+			default:
+				break;
 		}
 
 		m_nPortB = 0;
-
-		UpdateDisaplays(tLtcReaderSource);
 	}
 
 	return true;
 }
+
+/*
+ * Run state
+ */
 
 void SourceSelect::SetRunState(TRunStatus tRunState) {
 	m_tRunStatus = tRunState;
 
 	switch (tRunState) {
 	case RUN_STATUS_IDLE:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
 		Display::Get()->TextStatus(SourceSelectConst::SOURCE[m_tLtcReaderSource]);
 		break;
 	case RUN_STATUS_CONTINUE:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0x0F));
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0x0F));
 		Display::Get()->TextStatus(">CONTINUE?<");
 		break;
 	case RUN_STATUS_REBOOT:
-		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0xF0));
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xF0));
 		Display::Get()->TextStatus(">REBOOT?  <");
 		break;
 	default:
@@ -254,7 +345,7 @@ void SourceSelect::SetRunState(TRunStatus tRunState) {
 	}
 }
 
-void SourceSelect::HandleActionSelect(void) {
+void SourceSelect::HandleRunActionSelect(void) {
 	const uint32_t nMillisNow = Hardware::Get()->Millis();
 
 	if ((nMillisNow - m_nSelectMillis) < 300) {
@@ -274,7 +365,7 @@ void SourceSelect::HandleActionSelect(void) {
 
 		printf("Reboot ...\n");
 
-		m_I2C.WriteRegister(mcp23x17::GPIOB, static_cast<uint8_t>(0xFF));
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xFF));
 
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...", Display7SegmentMessage::INFO_REBOOTING);
@@ -291,10 +382,10 @@ void SourceSelect::Run(void) {
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		m_nPortAPrevious = m_nPortA;
-		m_nPortA = ~m_I2C.ReadRegister(mcp23x17::GPIOA);
+		const uint8_t nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
-		const uint8_t nButtonsChanged = (m_nPortA ^ m_nPortAPrevious) & m_nPortA;
+		m_nPortAPrevious = nPortA;
 
 		if (BUTTON_STATE(button::START)) {
 			LtcGenerator::Get()->ActionStart();
@@ -303,7 +394,7 @@ void SourceSelect::Run(void) {
 		} else if (BUTTON_STATE(button::RESUME)) {
 			LtcGenerator::Get()->ActionResume();
 		} else if (BUTTON_STATE(button::SELECT)) {
-			HandleActionSelect();
+			HandleRunActionSelect();
 		} else if (BUTTON_STATE(button::LEFT)) {
 			if (m_tRunStatus == RUN_STATUS_REBOOT) {
 				SetRunState(RUN_STATUS_CONTINUE);
@@ -314,7 +405,7 @@ void SourceSelect::Run(void) {
 			}
 		} else {
 			if ((m_tRunStatus == RUN_STATUS_CONTINUE) || (m_tRunStatus == RUN_STATUS_REBOOT)) {
-				m_tRotaryDirection = m_RotaryEncoder.Process(m_nPortA);
+				m_tRotaryDirection = m_RotaryEncoder.Process(nPortA);
 				if (m_tRotaryDirection == RotaryEncoder::CCW) {
 					if (m_tRunStatus == RUN_STATUS_REBOOT) {
 						SetRunState(RUN_STATUS_CONTINUE);
@@ -329,4 +420,3 @@ void SourceSelect::Run(void) {
 
 	}
 }
-

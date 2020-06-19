@@ -28,16 +28,19 @@
 
 #include <stdint.h>
 
-struct CursorMode {
-	static constexpr auto OFF = 0;
-	static constexpr auto ON = (1 << 0);
-	static constexpr auto BLINK_OFF = 0;
-	static constexpr auto BLINK_ON = (1 << 1);
-};
+namespace display {
+namespace cursor {
+static constexpr auto OFF = 0;
+static constexpr auto ON = (1 << 0);
+static constexpr auto BLINK_OFF = 0;
+static constexpr auto BLINK_ON = (1 << 1);
+}  // namespace cursor_mode
+}  // namespace display
 
 class DisplaySet {
 public:
-	virtual ~DisplaySet(void);
+	virtual ~DisplaySet(void) {
+	}
 
 	uint8_t GetColumns(void) {
 		return m_nCols;
@@ -59,10 +62,11 @@ public:
 
 	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 
-	virtual void SetSleep(bool bSleep);
+	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
+	}
 
 #if defined(ENABLE_CURSOR_MODE)
-	virtual void SetCursor(CursorMode)= 0;
+	virtual void SetCursor(uint32_t)= 0;
 #endif
 
 protected:

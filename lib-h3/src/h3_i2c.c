@@ -201,22 +201,22 @@ static int32_t _sendslaveaddr(uint32_t mode) {
 }
 
 static int32_t _getdata(uint8_t *data_addr, uint32_t data_count) {
-	int32_t time = TIMEOUT;
+	int32_t time_out = TIMEOUT;
 	uint32_t tmp_val;
 	uint32_t i;
 
 	if (data_count == 1) {
 		EXT_I2C->CTL |= (0x01 << 3);
 
-		while ((time--) && (!(EXT_I2C->CTL & 0x08)))
+		while ((time_out--) && (!(EXT_I2C->CTL & 0x08)))
 			;
 
-		if (time <= 0) {
+		if (time_out <= 0) {
 			return -H3_I2C_NOK_TOUT;
 		}
 
-		for (time = 0; time < 100; time++)
-			;
+//		for (time_out = 0; time_out < 100; time_out++)
+//			;
 
 		*data_addr = EXT_I2C->DATA;;
 
@@ -227,54 +227,54 @@ static int32_t _getdata(uint8_t *data_addr, uint32_t data_count) {
 		}
 	} else {
 		for (i = 0; i < data_count - 1; i++) {
-			time = TIMEOUT;
+			time_out = TIMEOUT;
 			tmp_val = EXT_I2C->CTL | (0x01 << 2);
 			tmp_val = EXT_I2C->CTL | (0x01 << 3);
 			tmp_val |= 0x04;
 			EXT_I2C->CTL = tmp_val;
 
-			while ((time--) && (!(EXT_I2C->CTL & 0x08)))
+			while ((time_out--) && (!(EXT_I2C->CTL & 0x08)))
 				;
 
-			if (time <= 0) {
+			if (time_out <= 0) {
 				return -H3_I2C_NOK_TOUT;
 			}
+//
+//			for (time_out = 0; time_out < 100; time_out++)
+//				;
 
-			for (time = 0; time < 100; time++)
-				;
-
-			time = TIMEOUT;
+			time_out = TIMEOUT;
 
 			data_addr[i] = EXT_I2C->DATA;
 
-			while ((time--) && (EXT_I2C->STAT != STAT_DATAREAD_ACK))
+			while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_ACK))
 				;
 
-			if (time <= 0) {
+			if (time_out <= 0) {
 				return -H3_I2C_NOK_TOUT;
 			}
 		}
 
-		time = 0xffff;
+		time_out = 0xffff;
 		EXT_I2C->CTL &= 0xFb;
 		EXT_I2C->CTL |= (0x01 << 3);
 
-		while ((time--) && (!(EXT_I2C->CTL & 0x08)))
+		while ((time_out--) && (!(EXT_I2C->CTL & 0x08)))
 			;
 
-		if (time <= 0) {
+		if (time_out <= 0) {
 			return -H3_I2C_NOK_TOUT;
 		}
 
-		for (time = 0; time < 100; time++)
-			;
+//		for (time_out = 0; time_out < 100; time_out++)
+//			;
 
 		data_addr[data_count - 1] = EXT_I2C->DATA;
 
-		while ((time--) && (EXT_I2C->STAT != STAT_DATAREAD_NACK))
+		while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_NACK))
 			;
 
-		if (time <= 0) {
+		if (time_out <= 0) {
 			return -H3_I2C_NOK_TOUT;
 		}
 	}

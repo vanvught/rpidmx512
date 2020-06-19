@@ -87,7 +87,7 @@ public:
 	}
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(CursorMode EnumTCursorOnOff);
+	void SetCursor(uint32_t nMode);
 #endif
 
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);

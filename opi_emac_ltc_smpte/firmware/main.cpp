@@ -113,9 +113,9 @@ void notmain(void) {
 	StoreLtc storeLtc;
 	LtcParams ltcParams(&storeLtc);
 
-	struct TLtcDisabledOutputs tLtcDisabledOutputs;
-	struct TLtcTimeCode tStartTimeCode;
-	struct TLtcTimeCode tStopTimeCode;
+	TLtcDisabledOutputs tLtcDisabledOutputs;
+	TLtcTimeCode tStartTimeCode;
+	TLtcTimeCode tStopTimeCode;
 
 	if (ltcParams.Load()) {
 		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
@@ -189,7 +189,7 @@ void notmain(void) {
 	SourceSelect sourceSelect(source, &tLtcDisabledOutputs);
 
 	if (sourceSelect.Check() && !IsAutoStart) {
-		while (sourceSelect.Wait(source)) {
+		while (sourceSelect.Wait(source, tStartTimeCode, tStopTimeCode)) {
 			nw.Run();
 			lb.Run();
 		}

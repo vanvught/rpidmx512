@@ -229,8 +229,10 @@ Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) :
 }
 
 Ssd1306::~Ssd1306(void) {
+#if defined(ENABLE_CURSOR_MODE)
 	delete[] m_pShadowRam;
 	m_pShadowRam = 0;
+#endif
 }
 
 void Ssd1306::CheckSH1106(void) {
@@ -330,8 +332,10 @@ void Ssd1306::Cls(void) {
 	SendCommand(SSD1306_CMD_SET_HIGHCOLUMN | (nColumnAdd));
 	SendCommand(SSD1306_CMD_SET_STARTPAGE);
 
+#if defined(ENABLE_CURSOR_MODE)
 	m_nShadowRamIndex = 0;
 	memset(m_pShadowRam, ' ', static_cast<size_t>(m_nCols * m_nRows));
+#endif
 }
 
 void Ssd1306::PutChar(int c) {
@@ -344,8 +348,9 @@ void Ssd1306::PutChar(int c) {
 		i = (c - 32);
 	}
 
+#if defined(ENABLE_CURSOR_MODE)
 	m_pShadowRam[m_nShadowRamIndex++] = c;
-
+#endif
 	const uint8_t *base = _OledFont8x6 + (OLED_FONT8x6_CHAR_W + 1) * i;
 	SendData(base, OLED_FONT8x6_CHAR_W + 1);
 }
@@ -403,13 +408,13 @@ void Ssd1306::SetCursorPos(uint8_t col, uint8_t row) {
 	SendCommand(SSD1306_CMD_SET_HIGHCOLUMN | (col >> 4));
 	SendCommand(SSD1306_CMD_SET_STARTPAGE | row);
 
+#if defined(ENABLE_CURSOR_MODE)
 	m_nShadowRamIndex = (row * OLED_FONT8x6_COLS) + (col / OLED_FONT8x6_CHAR_W);
 
-#if defined(ENABLE_CURSOR_MODE)
-	if (m_tCursorMode == SET_CURSOR_ON) {
+	if (m_tCursorMode == display::cursor::ON) {
 		SetCursorOff();
 		SetCursorOn();
-	} else if (static_cast<uint32_t>(m_tCursorMode) == static_cast<uint32_t>((SET_CURSOR_ON | SET_CURSOR_BLINK_ON))) {
+	} else if (m_tCursorMode == static_cast<uint32_t>((display::cursor::ON | display::cursor::BLINK_ON))) {
 		SetCursorOff();
 		SetCursorBlinkOn();
 	}
@@ -444,9 +449,11 @@ void Ssd1306::InitMembers(void) {
 
 	m_nPages = (m_OledPanel == OLED_PANEL_128x64_8ROWS ? 8 : 4);
 
+#if defined(ENABLE_CURSOR_MODE)
 	m_pShadowRam = new char[OLED_FONT8x6_COLS * m_nRows];
 	m_nShadowRamIndex = 0;
 	memset(m_pShadowRam, ' ', static_cast<size_t>(OLED_FONT8x6_COLS * m_nRows));
+#endif
 }
 
 void Ssd1306::SendCommand(uint8_t cmd) {
@@ -457,6 +464,7 @@ void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
 	m_I2C.Write(reinterpret_cast<const char*>(pData), nLength);
 }
 
+#if defined(ENABLE_CURSOR_MODE)
 #ifndef NDEBUG
 void Ssd1306::DumpShadowRam(void) {
 	for (int i = 0; i < m_nRows; i++) {
@@ -464,10 +472,11 @@ void Ssd1306::DumpShadowRam(void) {
 	}
 }
 #endif
+#endif
 
 //TODO Below is not compatible with SH1106
 #if defined(ENABLE_CURSOR_MODE)
-void Ssd1306::SetCursor(CursorMode tCursorMode) {
+void Ssd1306::SetCursor(uint32_t tCursorMode) {
 	if (tCursorMode == m_tCursorMode) {
 		return;
 	}
@@ -475,13 +484,13 @@ void Ssd1306::SetCursor(CursorMode tCursorMode) {
 	m_tCursorMode = tCursorMode;
 
 	switch (static_cast<int>(tCursorMode)) {
-	case SET_CURSOR_OFF:
+	case display::cursor::OFF:
 		SetCursorOff();
 		break;
-	case SET_CURSOR_ON:
+	case display::cursor::ON:
 		SetCursorOn();
 		break;
-	case SET_CURSOR_ON | SET_CURSOR_BLINK_ON:
+	case display::cursor::ON | display::cursor::BLINK_ON:
 		SetCursorBlinkOn();
 		break;
 	default:
@@ -496,7 +505,7 @@ void Ssd1306::SetCursorOn(void) {
 	m_nCursorOnRow =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
 
-	uint8_t *base = _OledFont8x6 + 1 + (OLED_FONT8x6_CHAR_W + 1) * m_nCursorOnChar;
+	uint8_t *base = const_cast<uint8_t *>(_OledFont8x6) + 1 + (OLED_FONT8x6_CHAR_W + 1) * m_nCursorOnChar;
 
 	data[0] = 0x40;
 
@@ -519,7 +528,7 @@ void Ssd1306::SetCursorBlinkOn(void) {
 	m_nCursorOnRow =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
 
-	uint8_t *base = _OledFont8x6 + 1 + (OLED_FONT8x6_CHAR_W + 1) * m_nCursorOnChar;
+	uint8_t *base = const_cast<uint8_t *>(_OledFont8x6) + 1 + (OLED_FONT8x6_CHAR_W + 1) * m_nCursorOnChar;
 
 	data[0] = 0x40;
 

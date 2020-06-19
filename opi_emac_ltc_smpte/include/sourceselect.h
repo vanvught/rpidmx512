@@ -32,6 +32,10 @@
 
 #include "rotaryencoder.h"
 
+#include "displayedittimecode.h"
+#include "displayeditfps.h"
+#include "input.h"
+
 #include "hal_i2c.h"
 
 enum TRunStatus {
@@ -42,11 +46,10 @@ enum TRunStatus {
 
 class SourceSelect {
 public:
-	SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutputs);
-	~SourceSelect(void);
+	SourceSelect(TLtcReaderSource tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs);
 
 	bool Check(void);
-	bool Wait(TLtcReaderSource& tLtcReaderSource);
+	bool Wait(TLtcReaderSource& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
 
 	bool IsConnected(void) {
 		return m_bIsConnected;
@@ -58,17 +61,31 @@ private:
 	void LedBlink(uint8_t nPortB);
 	void HandleActionLeft(TLtcReaderSource& tLtcReaderSource);
 	void HandleActionRight(TLtcReaderSource& tLtcReaderSource);
+	void HandleActionSelect(const TLtcReaderSource& tLtcReaderSource);
 	void HandleRotary(uint8_t nInputAB, TLtcReaderSource& tLtcReaderSource);
-	void UpdateDisaplays(TLtcReaderSource tLtcReaderSource);
-	void HandleActionSelect(void);
+	void UpdateDisplays(const TLtcReaderSource& tLtcReaderSource);
+	// Running mode
+	void HandleRunActionSelect(void);
 	void SetRunState(TRunStatus tRunState);
+	// Internal
+	void HandleInternalTimeCodeStart(TLtcTimeCode &timecode);
+	void HandleInternalTimeCodeStop(TLtcTimeCode &timecode);
+	void HandleInternalTimeCodeFps(TLtcTimeCode &timecode);
+	void HandleInternalKeyEsc(void);
 
 private:
 	HAL_I2C m_I2C;
+	DisplayEditTimeCode displayEditTimeCode;
+	DisplayEditFps displayEditFps;
+	enum {
+		SOURCE_SELECT,
+		EDIT_TIMECODE_START,
+		EDIT_TIMECODE_STOP,
+		EDIT_FPS
+	} m_State = SOURCE_SELECT;
 	TLtcReaderSource m_tLtcReaderSource;
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bIsConnected;
-	uint8_t m_nPortA;
 	uint8_t m_nPortAPrevious;
 	uint8_t m_nPortB;
 	uint32_t m_nMillisPrevious;
@@ -76,6 +93,8 @@ private:
 	uint8_t m_tRotaryDirection;
 	TRunStatus m_tRunStatus;
 	uint32_t m_nSelectMillis;
+	int m_nKey = INPUT_KEY_NOT_DEFINED;
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 
 #endif /* SOURCESELECT_H_ */

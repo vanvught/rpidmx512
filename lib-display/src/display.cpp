@@ -265,11 +265,11 @@ void Display::ClearLine(uint8_t nLine) {
 }
 
 #if defined(ENABLE_CURSOR_MODE)
-void Display::SetCursor(CursorMode constEnumTCursorOnOff) {
+void Display::SetCursor(uint32_t nMode) {
 	if (m_LcdDisplay == 0) {
 		return;
 	}
-	m_LcdDisplay->SetCursor(constEnumTCursorOnOff);
+	m_LcdDisplay->SetCursor(nMode);
 }
 #endif
 

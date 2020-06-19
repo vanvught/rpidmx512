@@ -39,7 +39,6 @@ public:
 	Tc1602 (void);
 	Tc1602 (uint8_t, uint8_t);
 	Tc1602 (uint8_t, uint8_t, uint8_t);
-	~Tc1602 (void);
 
 	bool Start(void);
 
@@ -55,7 +54,7 @@ public:
 	void SetCursorPos(uint8_t, uint8_t);
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(CursorMode);
+	void SetCursor(uint32_t);
 #endif
 
 private:

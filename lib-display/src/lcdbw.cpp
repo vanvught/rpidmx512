@@ -68,9 +68,6 @@ LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_I2C((nSlave
 	m_nRows = nRows;
 }
 
-LcdBw::~LcdBw(void) {
-}
-
 bool LcdBw::Start(void) {
 	if (!m_I2C.IsConnected()) {
 		return false;
@@ -164,7 +161,7 @@ void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 	Write(data, static_cast<uint32_t>(m_nCols + 1));
 }
 
-void LcdBw::SetCursor(__attribute__((unused))const CursorMode constEnumTCursorOnOff) {
+void LcdBw::SetCursor(__attribute__((unused))const uint32_t constEnumTCursorOnOff) {
 }
 
 void LcdBw::Write(const char *buffer, uint32_t size) {

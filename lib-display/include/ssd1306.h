@@ -67,7 +67,7 @@ public:
 	}
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(CursorMode);
+	void SetCursor(uint32_t);
 #endif
 
 	static Ssd1306* Get(void) {
@@ -84,10 +84,10 @@ private:
 	void SetCursorOn(void);
 	void SetCursorOff(void);
 	void SetCursorBlinkOn(void);
-#endif
 
 #ifndef NDEBUG
 	void DumpShadowRam(void);
+#endif
 #endif
 
 private:
@@ -95,13 +95,13 @@ private:
 	TOledPanel m_OledPanel;
 	uint32_t m_nPages;
 #if defined(ENABLE_CURSOR_MODE)
-	CursorMode m_tCursorMode = CursorMode::OFF;
-#endif
+	uint32_t m_tCursorMode = display::cursor::OFF;
 	alignas(uintptr_t) char *m_pShadowRam;
 	uint16_t m_nShadowRamIndex;
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
+#endif
 	bool m_bHaveSH1106;
 
 	static Ssd1306 *s_pThis;

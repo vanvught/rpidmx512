@@ -1,8 +1,8 @@
 /**
- * @file dislpayset.cpp
+ * @file displayeditfps.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,25 @@
  * THE SOFTWARE.
  */
 
-#include "displayset.h"
+#ifndef DISPLAYEDITFPS_H_
+#define DISPLAYEDITFPS_H_
 
-DisplaySet::~DisplaySet(void) {
-}
+#include <stdint.h>
 
-void DisplaySet::SetSleep(__attribute__((unused)) bool bSleep) {
-}
+class DisplayEditFps {
+public:
+	void HandleKey(int nKey, uint8_t& nFps);
+
+private:
+	void KeyLeft(uint8_t& nFps);
+	void KeyRight(uint8_t& nFps);
+
+private:
+	enum State {
+		IDLE,
+		EDIT
+	} m_State = IDLE;
+	bool m_bCursorOn = false;
+};
+
+#endif /* DISPLAYEDITFPS_H_ */

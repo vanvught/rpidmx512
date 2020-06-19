@@ -40,7 +40,6 @@ public:
 	LcdBw (void);
 	LcdBw (uint8_t, uint8_t);
 	LcdBw (uint8_t, uint8_t, uint8_t);
-	~LcdBw (void);
 
 	bool Start(void);
 
@@ -54,7 +53,7 @@ public:
 	void Text(const char *, uint8_t);
 
 	void SetCursorPos(uint8_t, uint8_t);
-	void SetCursor( CursorMode);
+	void SetCursor(uint32_t);
 
 private:
 	void Write(const char *, uint32_t);
