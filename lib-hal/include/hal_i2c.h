@@ -55,14 +55,16 @@ public:
 		return m_nAddress;
 	}
 
-	bool IsConnected(void) {
-		Setup();
-
-		return IsConnected_(m_nAddress);
+	uint32_t GetBaudrate(void) {
+		return m_nBaudrate;
 	}
 
-	static bool IsConnected(const uint8_t nAddress) {
-		return IsConnected_(nAddress);
+	bool IsConnected(void) {
+		return IsConnected_(m_nAddress, m_nBaudrate);
+	}
+
+	static bool IsConnected(const uint8_t nAddress, uint32_t nBaudrate = hal::i2c::NORMAL_SPEED) {
+		return IsConnected_(nAddress, nBaudrate);
 	}
 
 	void Write(char pData) {
@@ -165,8 +167,11 @@ private:
 		FUNC_PREFIX(i2c_set_baudrate(m_nBaudrate));
 	}
 
-	static bool IsConnected_(const uint8_t nAddress) {
+	static bool IsConnected_(const uint8_t nAddress, uint32_t nBaudrate) {
 		char buf;
+
+		FUNC_PREFIX(i2c_set_address(nAddress));
+		FUNC_PREFIX(i2c_set_baudrate(nBaudrate));
 
 		if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
 			return FUNC_PREFIX(i2c_read(&buf, 1)) == 0;

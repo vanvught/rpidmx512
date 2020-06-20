@@ -126,6 +126,8 @@ void notmain(void) {
 
 	Ltc7segment leds;
 
+	display.PrintInfo();
+
 	fw.Print("LTC SMPTE");
 
 	hw.SetLed(HARDWARE_LED_ON);
@@ -405,8 +407,6 @@ void notmain(void) {
 	}
 
 	ltcOutputs.Print();
-
-	printf("Display : %d (%d,%d)\n", display.GetDetectedType(), display.getCols(), display.getRows());
 
 	hw.WatchdogInit();
 

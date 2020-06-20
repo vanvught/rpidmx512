@@ -107,6 +107,8 @@ public:
 		return m_nRows;
 	}
 
+	void PrintInfo(void);
+
 	static Display* Get(void) {
 		return s_pThis;
 	}

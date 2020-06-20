@@ -62,12 +62,13 @@ public:
 
 	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 
-	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
-	}
+	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
 
 #if defined(ENABLE_CURSOR_MODE)
 	virtual void SetCursor(uint32_t)= 0;
 #endif
+
+	virtual void PrintInfo(void) {}
 
 protected:
 	uint8_t m_nCols;

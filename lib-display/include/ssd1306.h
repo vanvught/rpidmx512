@@ -70,6 +70,8 @@ public:
 	void SetCursor(uint32_t);
 #endif
 
+	void PrintInfo(void);
+
 	static Ssd1306* Get(void) {
 		return s_pThis;
 	}
@@ -84,7 +86,7 @@ private:
 	void SetCursorOn(void);
 	void SetCursorOff(void);
 	void SetCursorBlinkOn(void);
-
+	void SetColumnRow(uint8_t nColumn, uint8_t nRow);
 #ifndef NDEBUG
 	void DumpShadowRam(void);
 #endif
@@ -92,7 +94,8 @@ private:
 
 private:
 	HAL_I2C m_I2C;
-	TOledPanel m_OledPanel;
+	TOledPanel m_OledPanel = OLED_PANEL_128x64_8ROWS;
+	bool m_bHaveSH1106 = false;
 	uint32_t m_nPages;
 #if defined(ENABLE_CURSOR_MODE)
 	uint32_t m_tCursorMode = display::cursor::OFF;
@@ -102,7 +105,6 @@ private:
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
 #endif
-	bool m_bHaveSH1106;
 
 	static Ssd1306 *s_pThis;
 };

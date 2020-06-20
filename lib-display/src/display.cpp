@@ -46,8 +46,6 @@
  #include "console.h"
 #endif
 
-#include "debug.h"
-
 Display *Display::s_pThis = 0;
 
 Display::Display(uint32_t nCols, uint32_t nRows):
@@ -136,6 +134,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 		} else {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
 		}
+
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::SSD1306;
 			Printf(1, "SSD1306");
@@ -332,3 +331,11 @@ void Display::Run(void) {
 	}
 }
 #endif
+
+void Display::PrintInfo(void) {
+	if (m_LcdDisplay == 0) {
+		puts("No display found");
+		return;
+	}
+	m_LcdDisplay->PrintInfo();
+}
