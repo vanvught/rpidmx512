@@ -150,7 +150,7 @@ static void data_gpio_fsel_input(void) {
 	dmb();
 }
 
-void esp8266_init(void) {
+void __attribute__((cold)) esp8266_init(void) {
 	h3_gpio_fsel(GPIO_EXT_13, GPIO_FSEL_INPUT);
 	h3_gpio_fsel(GPIO_EXT_11, GPIO_FSEL_OUTPUT);
 

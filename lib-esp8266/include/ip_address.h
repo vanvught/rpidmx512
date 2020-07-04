@@ -45,14 +45,20 @@ struct ip_info {
 /** 0.0.0.0 */
 #define IPADDR_ANY          ((uint32_t)0x00000000UL)
 
-#ifndef IP2STR
-#define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
-#define IPSTR "%d.%d.%d.%d"
-#endif
-
-#ifndef MAC2STR
-#define MAC2STR(mac) (uint8_t)mac[0], (uint8_t)mac[1], (uint8_t)mac[2], (uint8_t)mac[3], (uint8_t)mac[4], (uint8_t)mac[5]
-#define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+#if defined __cplusplus
+# define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+# define IPSTR "%d.%d.%d.%d"
+# define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
+# define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+#else
+# ifndef IP2STR
+#  define IP2STR(addr) (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), (uint8_t)((addr >> 16) & 0xFF), (uint8_t)((addr >> 24) & 0xFF)
+#  define IPSTR "%d.%d.%d.%d"
+# endif
+# ifndef MAC2STR
+#  define MAC2STR(mac) (uint8_t)mac[0], (uint8_t)mac[1], (uint8_t)mac[2], (uint8_t)mac[3], (uint8_t)mac[4], (uint8_t)mac[5]
+#  define MACSTR "%02x:%02x:%02x:%02x:%02x:%02x"
+# endif
 #endif
 
 #endif /* IP_ADDRESS_H_ */

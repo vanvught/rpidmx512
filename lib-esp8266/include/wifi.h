@@ -74,7 +74,7 @@ extern /*@shared@*/const char *system_get_sdk_version(void);
  * Wifi functions
  */
 
-extern bool wifi(const struct ip_info *);
+extern bool wifi(struct ip_info *);
 
 extern bool wifi_get_macaddr(/*@out@*/const uint8_t *);
 extern bool wifi_get_ip_info(/*@out@*/const struct ip_info *);

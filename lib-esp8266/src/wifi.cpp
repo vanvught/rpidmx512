@@ -29,47 +29,31 @@
 
 #include "wifi.h"
 
-#include "console.h"
-
 #include "ap_params.h"
 #include "network_params.h"
 #include "fota.h"
 #include "fota_params.h"
 
-#include "oled.h"
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-static const char *WIFI_NOT_CONNECTED ALIGNED = "Wifi not connected";
-static const char *STARTING_WIFI ALIGNED = "Starting Wifi ...";
-static const char *CHANGING_TO_STATION_MODE ALIGNED = "Changing to Station mode ...";
-static const char *WIFI_STARTED ALIGNED = "Wifi started";
+#include "display.h"
+#include "wificonst.h"
 
 static 	_wifi_mode opmode = WIFI_OFF;
 static const char *ssid = NULL;
 
-bool wifi(const struct ip_info *info) {
-	uint8_t mac_address[6] ALIGNED;
-	char *ap_password = NULL;
+bool wifi(struct ip_info *info) {
+	uint8_t mac_address[6];
 	struct ip_info ip_config;
 
-	oled_info_t oled_info = { OLED_128x64_I2C_DEFAULT };
-	const bool oled_connected =  oled_start(&oled_info);
-
-
 	if (!wifi_detect()){
-		(void) console_status(CONSOLE_YELLOW, WIFI_NOT_CONNECTED);
-		OLED_CONNECTED(oled_connected, oled_puts(&oled_info, WIFI_NOT_CONNECTED));
+		Display::Get()->TextStatus(WifiConst::MSG_ERROR_BOARD_NOT_CONNECTED);
 		return false;
 	}
 
-	(void) ap_params_init();
-	ap_password = (char *) ap_params_get_password();
+	ap_params_init();
 
-	(void) console_status(CONSOLE_YELLOW, STARTING_WIFI);
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, STARTING_WIFI));
+	const char *ap_password = ap_params_get_password();
+
+	Display::Get()->TextStatus(WifiConst::MSG_STARTING);
 
 	wifi_ap_init(ap_password);
 
@@ -78,8 +62,7 @@ bool wifi(const struct ip_info *info) {
 	printf(" Firmware : %s\n", wifi_get_firmware_version());
 
 	if (network_params_init()) {
-		(void) console_status(CONSOLE_YELLOW, CHANGING_TO_STATION_MODE);
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, CHANGING_TO_STATION_MODE));
+		Display::Get()->TextStatus(WifiConst::MSG_CHANGING_TO_STATION_MODE);
 
 		ssid = network_params_get_ssid();
 		if (network_params_is_use_dhcp()) {
@@ -95,16 +78,16 @@ bool wifi(const struct ip_info *info) {
 	opmode = wifi_get_opmode();
 
 	if (opmode == WIFI_STA) {
+		Display::Get()->Printf(1, "SSID : %s", network_params_get_ssid());
 		printf("WiFi mode : Station (AP: %s)\n", network_params_get_ssid());
 	} else {
 		printf("WiFi mode : Access Point (authenticate mode: %s)\n", *ap_password == '\0' ? "Open" : "WPA_WPA2_PSK");
 	}
 
 	if (wifi_get_macaddr(mac_address)) {
-		printf(" MAC address : "MACSTR "\n", MAC2STR(mac_address));
+		printf(" MAC address : " MACSTR "\n", MAC2STR(mac_address));
 	} else {
-		(void) console_error("wifi_get_macaddr");
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_macaddr"));
+		Display::Get()->TextStatus(WifiConst::MSG_ERROR_GET_MAC);
 	}
 
 	printf(" Hostname    : %s\n", wifi_get_hostname());
@@ -116,40 +99,29 @@ bool wifi(const struct ip_info *info) {
 
 		if (opmode == WIFI_STA) {
 			const _wifi_station_status status = wifi_station_get_connect_status();
-			printf("      Status : %s\n", wifi_station_status(status));
+			printf(" Status : %s\n", wifi_station_status(status));
 
 			if (status != WIFI_STATION_GOT_IP) {
-				(void) console_error("Not connected!");
-
-				if (oled_connected) {
-					oled_set_cursor(&oled_info, 2, 0);
-					(void) oled_puts(&oled_info, wifi_station_status(status));
-					oled_set_cursor(&oled_info, 5, 0);
-					(void) oled_printf(&oled_info, "SSID : %s\n", network_params_get_ssid());
-					oled_status(&oled_info, "E: Not connected!");
-				}
-
+				Display::Get()->TextStatus(WifiConst::MSG_ERROR_WIFI_NOT_CONNECTED);
 				for (;;)
 					;
 			}
 		}
 	} else {
-		(void) console_error("wifi_get_ip_info");
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "E: wifi_get_ip_info"));
+		Display::Get()->TextStatus(WifiConst::MSG_ERROR_GET_IP);
 	}
 
 	if (fota_params_init()) {
-		OLED_CONNECTED(oled_connected, oled_status(&oled_info, "FOTA mode"));
+		Display::Get()->TextStatus(WifiConst::MSG_FOTA_MODE);
 		console_newline();
 		fota(fota_params_get_server());
 		for (;;)
 			;
 	}
 
-	(void) console_status(CONSOLE_GREEN, WIFI_STARTED);
-	OLED_CONNECTED(oled_connected, oled_status(&oled_info, WIFI_STARTED));
+	Display::Get()->TextStatus(WifiConst::MSG_STARTED);
 
-	memcpy((void *)info, (const void *)&ip_config, sizeof(struct ip_info));
+	memcpy(info, &ip_config, sizeof(struct ip_info));
 
 	return true;
 }

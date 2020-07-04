@@ -1,6 +1,6 @@
 #
 DEFINES = ESP8266 NDEBUG
 #
-EXTRA_INCLUDES = ../lib-bob/include ../lib-console/include ../lib-hal/include ../lib-properties/include
+EXTRA_INCLUDES = ../lib-display/include ../lib-hal/include ../lib-properties/include
 #
 include ../h3-firmware-template/lib/Rules.mk
