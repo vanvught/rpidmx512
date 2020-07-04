@@ -30,8 +30,7 @@
 
 class StoreSparkFunDmx: public SparkFunDmxParamsStore {
 public:
-	StoreSparkFunDmx(void);
-	~StoreSparkFunDmx(void);
+	StoreSparkFunDmx();
 
 	void Update(const struct TSparkFunDmxParams *pSparkFunDmxParams);
 	void Copy(struct TSparkFunDmxParams *pSparkFunDmxParams);
@@ -39,7 +38,7 @@ public:
 	void Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams);
 	void Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams);
 
-	static StoreSparkFunDmx *Get(void) {
+	static StoreSparkFunDmx *Get() {
 		return s_pThis;
 	}
 

@@ -36,19 +36,12 @@
 
 StoreLtcDisplay *StoreLtcDisplay::s_pThis = 0;
 
-StoreLtcDisplay::StoreLtcDisplay(void) {
+StoreLtcDisplay::StoreLtcDisplay() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreLtcDisplay::~StoreLtcDisplay(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

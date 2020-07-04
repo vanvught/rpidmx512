@@ -28,15 +28,21 @@
 
 #include "remoteconfigparams.h"
 
+#include "spiflashstore.h"
+
 class StoreRemoteConfig: public RemoteConfigParamsStore {
 public:
-	StoreRemoteConfig(void);
-	~StoreRemoteConfig(void);
+	StoreRemoteConfig();
 
-	void Update(const struct TRemoteConfigParams *pRemoteConfigParams);
-	void Copy(struct TRemoteConfigParams *pRemoteConfigParams);
+	void Update(const struct TRemoteConfigParams *pRemoteConfigParams) {
+		SpiFlashStore::Get()->Update(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
+	}
 
-	static StoreRemoteConfig *Get(void) {
+	void Copy(struct TRemoteConfigParams *pRemoteConfigParams) {
+		SpiFlashStore::Get()->Copy(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
+	}
+
+	static StoreRemoteConfig *Get() {
 		return s_pThis;
 	}
 

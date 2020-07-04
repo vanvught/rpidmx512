@@ -23,56 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <cassert>
-
 #include "storews28xxdmx.h"
-
-#include "ws28xxdmxparams.h"
-#include "ws28xxdmxstore.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = 0;
 
-StoreWS28xxDmx::StoreWS28xxDmx(void) {
+StoreWS28xxDmx::StoreWS28xxDmx() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreWS28xxDmx::~StoreWS28xxDmx(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreWS28xxDmx::Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
-
-	DEBUG_EXIT
-}
-
-void StoreWS28xxDmx::Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
-
-	DEBUG_EXIT
-}
-
-void StoreWS28xxDmx::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

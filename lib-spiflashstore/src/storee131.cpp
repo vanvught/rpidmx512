@@ -23,47 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <cassert>
-
 #include "storee131.h"
-
-#include "spiflashstore.h"
-
-#include "e131params.h"
 
 #include "debug.h"
 
 StoreE131 *StoreE131::s_pThis = 0;
 
-StoreE131::StoreE131(void) {
+StoreE131::StoreE131() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", this);
-
-	DEBUG_EXIT
-}
-
-StoreE131::~StoreE131(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreE131::Update(const struct TE131Params* pE131Params) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_E131, pE131Params, sizeof(struct TE131Params));
-
-	DEBUG_EXIT
-}
-
-void StoreE131::Copy(struct TE131Params* pE131Params) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_E131, pE131Params, sizeof(struct TE131Params));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

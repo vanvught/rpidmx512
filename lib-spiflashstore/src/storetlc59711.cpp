@@ -23,55 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <cassert>
-
 #include "storetlc59711.h"
-
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmxstore.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreTLC59711 *StoreTLC59711::s_pThis = 0;
 
-StoreTLC59711::StoreTLC59711(void) {
+StoreTLC59711::StoreTLC59711() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-	DEBUG_EXIT
-}
-
-StoreTLC59711::~StoreTLC59711(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreTLC59711::Update(const struct TTLC59711DmxParams *pTLC59711DmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
-
-	DEBUG_EXIT
-}
-
-void StoreTLC59711::Copy(struct TTLC59711DmxParams *pTLC59711DmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
-
-	DEBUG_EXIT
-}
-
-void StoreTLC59711::SaveDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DmxParamsMask::START_ADDRESS);
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

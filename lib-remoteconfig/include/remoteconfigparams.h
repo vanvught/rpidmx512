@@ -32,7 +32,7 @@
 
 struct TRemoteConfigParams {
     uint32_t nSetList;
-	bool bDisabled;
+	bool bDisable;
 	bool bDisableWrite;
 	bool bEnableReboot;
 	bool bEnableUptime;
@@ -41,7 +41,7 @@ struct TRemoteConfigParams {
 } __attribute__((packed));
 
 struct RemoteConfigParamsMask {
-	static constexpr auto DISABLED = (1U << 0);
+	static constexpr auto DISABLE = (1U << 0);
 	static constexpr auto DISABLE_WRITE = (1U << 1);
 	static constexpr auto ENABLE_REBOOT = (1U << 2);
 	static constexpr auto ENABLE_UPTIME = (1U << 3);
@@ -51,7 +51,7 @@ struct RemoteConfigParamsMask {
 
 class RemoteConfigParamsStore {
 public:
-	virtual ~RemoteConfigParamsStore(void) {
+	virtual ~RemoteConfigParamsStore() {
 	}
 
 	virtual void Update(const struct TRemoteConfigParams *pRemoteConfigParams)=0;
@@ -60,10 +60,9 @@ public:
 
 class RemoteConfigParams {
 public:
-	RemoteConfigParams(RemoteConfigParamsStore *pRemoteConfigParamsStore = 0);
-	~RemoteConfigParams(void);
+	RemoteConfigParams(RemoteConfigParamsStore *pRemoteConfigParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -71,17 +70,17 @@ public:
 
 	void Set(RemoteConfig *);
 
-	void Dump(void);
+	void Dump();
 
-	bool IsDisableRdmNetLlrpOnly(void) {
+	bool IsDisableRdmNetLlrpOnly() {
 		return m_tRemoteConfigParams.bDisableRdmNetLlrpOnly;
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+    void SetBool(const uint8_t nValue, bool& nProperty, const uint32_t nMask);
     bool isMaskSet(uint32_t nMask) {
     	return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
     }

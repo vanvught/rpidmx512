@@ -23,46 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-
 #include "storemidi.h"
-
-#include "midiparams.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreMidi *StoreMidi::s_pThis = 0;
 
-StoreMidi::StoreMidi(void) {
+StoreMidi::StoreMidi() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreMidi::~StoreMidi(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreMidi::Update(const struct TMidiParams* pMidiParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
-	DEBUG_EXIT
-}
-
-void StoreMidi::Copy(struct TMidiParams* pMidiParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

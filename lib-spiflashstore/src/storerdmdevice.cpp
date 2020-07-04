@@ -36,19 +36,12 @@
 
 StoreRDMDevice *StoreRDMDevice::s_pThis = 0;
 
-StoreRDMDevice::StoreRDMDevice(void) {
+StoreRDMDevice::StoreRDMDevice() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreRDMDevice::~StoreRDMDevice(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

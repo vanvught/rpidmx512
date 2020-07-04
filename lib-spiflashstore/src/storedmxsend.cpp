@@ -35,19 +35,12 @@
 
 StoreDmxSend *StoreDmxSend::s_pThis = 0;
 
-StoreDmxSend::StoreDmxSend(void) {
+StoreDmxSend::StoreDmxSend() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSend::~StoreDmxSend(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

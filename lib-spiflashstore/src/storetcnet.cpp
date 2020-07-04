@@ -23,47 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <cassert>
-
 #include "storetcnet.h"
-
-#include "tcnetparams.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreTCNet *StoreTCNet::s_pThis = 0;
 
-StoreTCNet::StoreTCNet(void) {
+StoreTCNet::StoreTCNet() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreTCNet::~StoreTCNet(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreTCNet::Update(const struct TTCNetParams* pTCNetParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
-
-	DEBUG_EXIT
-}
-
-void StoreTCNet::Copy(struct TTCNetParams* pTCNetParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

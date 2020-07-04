@@ -30,13 +30,12 @@
 
 class StoreDisplayUdf: public DisplayUdfParamsStore {
 public:
-	StoreDisplayUdf(void);
-	~StoreDisplayUdf(void);
+	StoreDisplayUdf();
 
 	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams);
 	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams);
 
-	static StoreDisplayUdf *Get(void) {
+	static StoreDisplayUdf *Get() {
 		return s_pThis;
 	}
 

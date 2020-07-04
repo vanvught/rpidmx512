@@ -34,18 +34,12 @@
 
 StoreArtNet4 *StoreArtNet4::s_pThis = 0;
 
-StoreArtNet4::StoreArtNet4(void) {
+StoreArtNet4::StoreArtNet4() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", this);
-	DEBUG_EXIT
-}
-
-StoreArtNet4::~StoreArtNet4(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

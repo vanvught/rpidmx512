@@ -36,19 +36,12 @@
 
 StoreOscClient *StoreOscClient::s_pThis = 0;
 
-StoreOscClient::StoreOscClient(void) {
+StoreOscClient::StoreOscClient() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreOscClient::~StoreOscClient(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

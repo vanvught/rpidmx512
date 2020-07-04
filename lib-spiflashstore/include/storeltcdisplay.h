@@ -30,13 +30,12 @@
 
 class StoreLtcDisplay: public LtcDisplayParamsStore {
 public:
-	StoreLtcDisplay(void);
-	~StoreLtcDisplay(void);
+	StoreLtcDisplay();
 
 	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams);
 	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams);
 
-	static StoreLtcDisplay *Get(void) {
+	static StoreLtcDisplay *Get() {
 		return s_pThis;
 	}
 

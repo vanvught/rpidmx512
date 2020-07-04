@@ -28,15 +28,21 @@
 
 #include "tcnetparams.h"
 
+#include "spiflashstore.h"
+
 class StoreTCNet: public TCNetParamsStore {
 public:
-	StoreTCNet(void);
-	~StoreTCNet(void);
+	StoreTCNet();
 
-	void Update(const struct TTCNetParams *pTCNetParams);
-	void Copy(struct TTCNetParams *pTCNetParams);
+	void Update(const struct TTCNetParams *pTCNetParams) {
+		SpiFlashStore::Get()->Update(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
+	}
 
-	static StoreTCNet *Get(void) {
+	void Copy(struct TTCNetParams *pTCNetParams) {
+		SpiFlashStore::Get()->Copy(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
+	}
+
+	static StoreTCNet *Get() {
 		return s_pThis;
 	}
 

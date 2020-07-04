@@ -1,5 +1,5 @@
 /**
- * @file dmxinput.cpp
+ * @file storerdmsubdevices.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,60 +23,31 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
+#ifndef STORERDMSUBDEVICES_H_
+#define STORERDMSUBDEVICES_H_
 
-#include "dmxinput.h"
-#include "dmx.h"
+#include "rdmsubdevicesparams.h"
 
-#include "debug.h"
+#include "spiflashstore.h"
 
-DmxInput::DmxInput(void): m_bIsStarted(false) {
-	DEBUG_ENTRY
+class StoreRDMSubDevices final: public RDMSubDevicesParamsStore {
+public:
+	StoreRDMSubDevices();
 
-	DEBUG_EXIT
-}
-
-void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+	void Update(const struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
+		SpiFlashStore::Get()->Update(STORE_RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
 	}
 
-	m_bIsStarted = true;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
-	DEBUG_EXIT
-}
-
-void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
-	DEBUG_ENTRY
-
-	if (!m_bIsStarted) {
-		DEBUG_EXIT
-		return;
+	void Copy(struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
+		SpiFlashStore::Get()->Copy(STORE_RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
 	}
 
-	m_bIsStarted = false;
-
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
-	DEBUG_EXIT
-}
-
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const uint8_t *pDmx = GetDmxAvailable();
-
-	nUpdatesPerSecond = GetUpdatesPerSecond();
-
-	if (pDmx != 0) {
-		const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-		nLength = static_cast<uint16_t>(dmx_statistics->Statistics.SlotsInPacket);
-		return (pDmx + 1);
+	static StoreRDMSubDevices *Get() {
+		return s_pThis;
 	}
 
-	nLength = 0;
-	return 0;
-}
+private:
+	static StoreRDMSubDevices *s_pThis;
+};
+
+#endif /* STORERDMSUBDEVICES_H_ */

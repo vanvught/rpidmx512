@@ -27,7 +27,6 @@
 #define SPIFLASHSTORE_H_
 
 #include <stdint.h>
-#include <uuid/uuid.h>
 
 #include "storenetwork.h"
 #include "storeartnet.h"
@@ -59,6 +58,8 @@ enum TStore {
 	STORE_MOTORS,
 	STORE_SHOW,
 	STORE_SERIAL,
+	STORE_RDMSENSORS,
+	STORE_RDMSUBDEVICES,
 	STORE_LAST
 };
 
@@ -70,41 +71,33 @@ enum TStoreState {
 
 class SpiFlashStore {
 public:
-	SpiFlashStore(void);
-	~SpiFlashStore(void);
+	SpiFlashStore();
+	~SpiFlashStore();
 
-	 bool HaveFlashChip(void) {
+	 bool HaveFlashChip() {
 		return m_bHaveFlashChip;
 	}
 
-	void Update(enum TStore tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
-	void Update(enum TStore tStore, const void *pData, uint32_t nDataLength) {
+	void Update(TStore tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
+	void Update(TStore tStore, const void *pData, uint32_t nDataLength) {
 		Update(tStore, 0, pData, nDataLength);
 	}
-	void Copy(enum TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
-	void CopyTo(enum TStore tStore, void *pData, uint32_t &nDataLength);
+	void Copy(TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
+	void CopyTo(TStore tStore, void *pData, uint32_t &nDataLength);
 
-	void ResetSetList(enum TStore tStore);
+	void ResetSetList(TStore tStore);
 
-	bool Flash(void);
+	bool Flash();
 
-	void Dump(void);
+	void Dump();
 
-	StoreNetwork *GetStoreNetwork(void);
-	StoreArtNet *GetStoreArtNet(void);
-	StoreArtNet4 *GetStoreArtNet4(void);
-
-private:
-	bool Init(void);
-	uint32_t GetStoreOffset(enum TStore tStore);
-
-public:
-	static SpiFlashStore *Get(void) {
+	static SpiFlashStore *Get() {
 		return s_pThis;
 	}
 
 private:
-	static SpiFlashStore *s_pThis;
+	bool Init();
+	uint32_t GetStoreOffset(TStore tStore);
 
 private:
 	bool m_bHaveFlashChip;
@@ -118,6 +111,8 @@ private:
 	StoreNetwork m_StoreNetwork;
 	StoreArtNet m_StoreArtNet;
 	StoreArtNet4 m_StoreArtNet4;
+
+	static SpiFlashStore *s_pThis;
 };
 
 #endif /* SPIFLASHSTORE_H_ */

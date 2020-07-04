@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -90,8 +91,8 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.Init(StoreNetwork::Get());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
@@ -110,7 +111,7 @@ void notmain(void) {
 	const uint8_t nActivePorts = ws28xxDmxMulti.GetActivePorts();
 
 	ArtNet4Node node(nActivePorts);
-	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(StoreArtNet4::Get());
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
@@ -119,7 +120,7 @@ void notmain(void) {
 
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
+	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetDirectUpdate(true);
 	node.SetOutput(&ws28xxDmxMulti);
 

@@ -28,50 +28,15 @@
 
 #include "storeltc.h"
 
-#include "ltcparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
 StoreLtc *StoreLtc::s_pThis = 0;
 
-StoreLtc::StoreLtc(void) {
+StoreLtc::StoreLtc() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreLtc::~StoreLtc(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreLtc::Update(const struct TLtcParams* pLtcParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
-
-	DEBUG_EXIT
-}
-
-void StoreLtc::Copy(struct TLtcParams* pLtcParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
-
-	DEBUG_EXIT
-}
-
-void StoreLtc::SaveSource(uint8_t nSource) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

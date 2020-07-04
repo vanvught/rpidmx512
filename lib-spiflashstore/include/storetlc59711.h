@@ -31,17 +31,25 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmxstore.h"
 
+#include "spiflashstore.h"
+
 class StoreTLC59711: public TLC59711DmxParamsStore, public TLC59711DmxStore {
 public:
-	StoreTLC59711(void);
-	~StoreTLC59711(void);
+	StoreTLC59711();
 
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams);
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams);
+	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams){
+		SpiFlashStore::Get()->Update(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	}
 
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
+	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams){
+		SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	}
 
-	static StoreTLC59711 *Get(void) {
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+		SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DmxParamsMask::START_ADDRESS);
+	}
+
+	static StoreTLC59711 *Get() {
 		return s_pThis;
 	}
 

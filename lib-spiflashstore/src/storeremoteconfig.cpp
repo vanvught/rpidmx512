@@ -23,46 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
-
 #include "storeremoteconfig.h"
-
-#include "remoteconfigparams.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreRemoteConfig *StoreRemoteConfig::s_pThis = 0;
 
-StoreRemoteConfig::StoreRemoteConfig(void) {
+StoreRemoteConfig::StoreRemoteConfig() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreRemoteConfig::~StoreRemoteConfig(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreRemoteConfig::Update(const struct TRemoteConfigParams* pRemoteConfigParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
-
-	DEBUG_EXIT
-}
-
-void StoreRemoteConfig::Copy(struct TRemoteConfigParams* pRemoteConfigParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

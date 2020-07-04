@@ -35,7 +35,6 @@
 class DmxInput: public Dmx, public ArtNetDmx {
 public:
 	DmxInput(void);
-	~DmxInput(void);
 
 	void Start(uint8_t nPort);
 	void Stop(uint8_t nPort);

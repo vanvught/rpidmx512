@@ -31,8 +31,7 @@
 
 class StoreWidget: public WidgetParamsStore, public WidgetStore {
 public:
-	StoreWidget(void);
-	~StoreWidget(void);
+	StoreWidget();
 
 	void Update(const struct TWidgetParams *pWidgetParams);
 	void Copy(struct TWidgetParams *pWidgetParams);
@@ -41,7 +40,7 @@ public:
 	void UpdateMabTime(uint8_t nMabTime);
 	void UpdateRefreshRate(uint8_t nRefreshRate);
 
-	static StoreWidget* Get(void) {
+	static StoreWidget* Get() {
 		return s_pThis;
 	}
 

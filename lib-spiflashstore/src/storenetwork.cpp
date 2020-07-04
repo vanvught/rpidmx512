@@ -35,18 +35,12 @@
 
 StoreNetwork *StoreNetwork::s_pThis = 0;
 
-StoreNetwork::StoreNetwork(void) {
+StoreNetwork::StoreNetwork() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-	DEBUG_EXIT
-}
-
-StoreNetwork::~StoreNetwork(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 
@@ -69,7 +63,7 @@ void StoreNetwork::Copy(struct TNetworkParams *pNetworkParams) {
 void StoreNetwork::SaveIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nLocalIp));
+//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nLocalIp));
 
 	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NetworkParamsMask::IP_ADDRESS);
 
@@ -79,7 +73,7 @@ void StoreNetwork::SaveIp(uint32_t nIp) {
 void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nNetmask));
+//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, nNetmask));
 
 	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
 
@@ -89,7 +83,7 @@ void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
 void StoreNetwork::SaveHostName(const char *pHostName, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, aHostName));
+//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, aHostName));
 
 	nLength = std::min(nLength,static_cast<uint32_t>(NETWORK_HOSTNAME_SIZE));
 
@@ -101,7 +95,7 @@ void StoreNetwork::SaveHostName(const char *pHostName, uint32_t nLength) {
 void StoreNetwork::SaveDhcp(bool bIsDhcpUsed) {
 	DEBUG_ENTRY
 
-	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed));
+//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed));
 
 	SpiFlashStore::Get()->Update(STORE_NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NetworkParamsMask::DHCP);
 

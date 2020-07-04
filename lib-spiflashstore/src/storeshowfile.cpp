@@ -25,42 +25,15 @@
 
 #include "storeshowfile.h"
 
-#include "showfileparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
 StoreShowFile *StoreShowFile::s_pThis = 0;
 
-StoreShowFile::StoreShowFile(void) {
+StoreShowFile::StoreShowFile() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreShowFile::~StoreShowFile(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreShowFile::Update(const struct TShowFileParams *ptShowFileParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
-
-	DEBUG_EXIT
-}
-
-void StoreShowFile::Copy(struct TShowFileParams *ptShowFileParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

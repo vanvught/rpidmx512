@@ -55,9 +55,6 @@ inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
 TimeCode::TimeCode(void) {
 }
 
-TimeCode::~TimeCode(void) {
-}
-
 void TimeCode::Start(void) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);

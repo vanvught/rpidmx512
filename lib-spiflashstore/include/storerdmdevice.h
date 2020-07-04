@@ -32,17 +32,16 @@
 
 #include "rdmdevicestore.h"
 
-class StoreRDMDevice: public RDMDeviceParamsStore, public RDMDeviceStore {
+class StoreRDMDevice final: public RDMDeviceParamsStore, public RDMDeviceStore {
 public:
-	StoreRDMDevice(void);
-	~StoreRDMDevice(void);
+	StoreRDMDevice();
 
-	void Update(const struct TRDMDeviceParams *pRDMDeviceParams);
-	void Copy(struct TRDMDeviceParams *pRDMDeviceParams);
+	void Update(const struct TRDMDeviceParams *pRDMDeviceParams) override;
+	void Copy(struct TRDMDeviceParams *pRDMDeviceParams) override;
 
-	void SaveLabel(const char *pLabel, uint8_t nLength);
+	void SaveLabel(const char *pLabel, uint8_t nLength) override;
 
-	static StoreRDMDevice *Get(void) {
+	static StoreRDMDevice *Get() {
 		return s_pThis;
 	}
 

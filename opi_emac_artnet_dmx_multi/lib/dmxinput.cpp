@@ -46,12 +46,6 @@ DmxInput::DmxInput(void) {
 	DEBUG_EXIT
 }
 
-DmxInput::~DmxInput(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 void DmxInput::Start(uint8_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));

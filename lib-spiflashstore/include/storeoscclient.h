@@ -30,13 +30,12 @@
 
 class StoreOscClient: public OscClientParamsStore {
 public:
-	StoreOscClient(void);
-	~StoreOscClient(void);
+	StoreOscClient();
 
 	void Update(const struct TOscClientParams *pOscClientParams);
 	void Copy(struct TOscClientParams *pOscClientParams);
 
-	static StoreOscClient *Get(void) {
+	static StoreOscClient *Get() {
 		return s_pThis;
 	}
 

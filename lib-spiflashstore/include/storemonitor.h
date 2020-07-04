@@ -28,15 +28,21 @@
 
 #include "dmxmonitorparams.h"
 
-class StoreMonitor: public DMXMonitorParamsStore {
+#include "spiflashstore.h"
+
+class StoreMonitor final: public DMXMonitorParamsStore {
 public:
-	StoreMonitor(void);
-	~StoreMonitor(void);
+	StoreMonitor();
 
-	void Update(const struct TDMXMonitorParams *pDMXMonitorParams);
-	void Copy(struct TDMXMonitorParams *pDMXMonitorParams);
+	void Update(const struct TDMXMonitorParams *pDMXMonitorParams) override {
+		SpiFlashStore::Get()->Update(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+	}
 
-	static StoreMonitor* Get(void) {
+	void Copy(struct TDMXMonitorParams *pDMXMonitorParams) override {
+		SpiFlashStore::Get()->Copy(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+	}
+
+	static StoreMonitor* Get() {
 		return s_pThis;
 	}
 

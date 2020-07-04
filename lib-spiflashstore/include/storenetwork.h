@@ -29,20 +29,19 @@
 #include "networkparams.h"
 #include "network.h"
 
-class StoreNetwork: public NetworkParamsStore, public NetworkStore {
+class StoreNetwork final: public NetworkParamsStore, public NetworkStore {
 public:
-	StoreNetwork(void);
-	~StoreNetwork(void);
+	StoreNetwork();
 
-	void Update(const struct TNetworkParams *pNetworkParams);
-	void Copy(struct TNetworkParams *pNetworkParams);
+	void Update(const struct TNetworkParams *pNetworkParams) override;
+	void Copy(struct TNetworkParams *pNetworkParams) override;
 
-	void SaveIp(uint32_t nIp);
-	void SaveNetMask(uint32_t nNetMask);
-	void SaveHostName(const char *pHostName, uint32_t nLength);
-	void SaveDhcp(bool bIsDhcpUsed);
+	void SaveIp(uint32_t nIp) override;
+	void SaveNetMask(uint32_t nNetMask) override;
+	void SaveHostName(const char *pHostName, uint32_t nLength) override;
+	void SaveDhcp(bool bIsDhcpUsed) override;
 
-	static StoreNetwork *Get(void) {
+	static StoreNetwork *Get() {
 		return s_pThis;
 	}
 

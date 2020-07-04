@@ -34,20 +34,20 @@
 class TFTPFileServer: public TFTPDaemon {
 public:
 	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer (void);
+	~TFTPFileServer ();
 
 	bool FileOpen (const char *pFileName, TFTPMode tMode);
 	bool FileCreate (const char *pFileName, TFTPMode tMode);
-	bool FileClose (void);
+	bool FileClose ();
 	size_t FileRead (void *pBuffer, size_t nCount, unsigned nBlockNumber);
 	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber);
-	void Exit(void);
+	void Exit();
 
-	uint32_t GetFileSize(void) {
+	uint32_t GetFileSize() {
 		return m_nFileSize;
 	}
 
-	bool isDone(void)  {
+	bool isDone()  {
 		return m_bDone;
 	}
 

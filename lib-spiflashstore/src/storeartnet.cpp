@@ -33,23 +33,18 @@
 
 #include "artnetstore.h"
 #include "artnetparams.h"
+#include "artnet.h"
 
 #include "debug.h"
 
 StoreArtNet *StoreArtNet::s_pThis = 0;
 
-StoreArtNet::StoreArtNet(void) {
+StoreArtNet::StoreArtNet() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", this);
-	DEBUG_EXIT
-}
-
-StoreArtNet::~StoreArtNet(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 
@@ -87,7 +82,7 @@ void StoreArtNet::SaveLongName(const char* pLongName) {
 
 void StoreArtNet::SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
 	DEBUG_ENTRY
-	assert(nPortIndex < ARTNET_MAX_PORTS);
+	assert(nPortIndex < artnet::MAX_PORTS);
 
 	if (nPortIndex == 0) {
 		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nUniverse), &nAddress, sizeof(uint8_t), ArtnetParamsMask::UNIVERSE);
@@ -116,7 +111,7 @@ void StoreArtNet::SaveSubnetSwitch(uint8_t nAddress) {
 
 void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge) {
 	DEBUG_ENTRY
-	assert(nPortIndex < ARTNET_MAX_PORTS);
+	assert(nPortIndex < artnet::MAX_PORTS);
 
 	if (nPortIndex == 0) {
 		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nMergeMode), &tMerge, sizeof(ArtNetMerge), ArtnetParamsMask::MERGE_MODE);
@@ -129,7 +124,7 @@ void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge) {
 
 void StoreArtNet::SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
 	DEBUG_ENTRY
-	assert(nPortIndex < ARTNET_MAX_PORTS);
+	assert(nPortIndex < artnet::MAX_PORTS);
 
 	if (nPortIndex == 0) {
 		SpiFlashStore::Get()->Update(STORE_ARTNET, __builtin_offsetof(struct TArtNetParams, nProtocol), &tPortProtocol, sizeof(TPortProtocol), ArtnetParamsMask::PROTOCOL);

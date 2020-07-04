@@ -28,15 +28,21 @@
 
 #include "dmxserialparams.h"
 
-class StoreDmxSerial: public DmxSerialParamsStore {
+#include "spiflashstore.h"
+
+class StoreDmxSerial final: public DmxSerialParamsStore {
 public:
-	StoreDmxSerial(void);
-	~StoreDmxSerial(void);
+	StoreDmxSerial();
 
-	void Update(const struct TDmxSerialParams *ptDmxSerialParams);
-	void Copy(struct TDmxSerialParams *ptDmxSerialParams);
+	void Update(const struct TDmxSerialParams *ptDmxSerialParams) override {
+		SpiFlashStore::Get()->Update(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+	}
 
-	static StoreDmxSerial *Get(void) {
+	void Copy(struct TDmxSerialParams *ptDmxSerialParams) override {
+		SpiFlashStore::Get()->Copy(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+	}
+
+	static StoreDmxSerial *Get() {
 		return s_pThis;
 	}
 

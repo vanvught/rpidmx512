@@ -40,7 +40,7 @@ constexpr char sTxtFile[TXT_FILE_LAST][15] = {
 		"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt",
 		"motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt",
 #endif
-		"rdm_device.txt", "show.txt", "serial.txt"
+		"show.txt", "serial.txt"
 };
 
 constexpr uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {
@@ -51,7 +51,7 @@ constexpr uint8_t sTxtFileNameLength[TXT_FILE_LAST] = {
 		10, 10, 10, 10,
 		10, 10, 10, 10,
 #endif
-		14, 8, 10
+		8, 10
 };
 
 constexpr TStore sMap[TXT_FILE_LAST] = { STORE_RCONFIG,
@@ -62,7 +62,7 @@ constexpr TStore sMap[TXT_FILE_LAST] = { STORE_RCONFIG,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 		STORE_MOTORS, STORE_MOTORS, STORE_MOTORS, STORE_MOTORS,
 #endif
-		STORE_RDMDEVICE, STORE_SHOW, STORE_SERIAL
+		STORE_SHOW, STORE_SERIAL
 };
 
 uint32_t RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {

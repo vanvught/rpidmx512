@@ -26,8 +26,7 @@
 #ifndef REMOTECONFIGCONST_H_
 #define REMOTECONFIGCONST_H_
 
-class RemoteConfigConst {
-public:
+struct RemoteConfigConst {
 	static const char PARAMS_FILE_NAME[];
 
 	static const char PARAMS_DISABLE[];

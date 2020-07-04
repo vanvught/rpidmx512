@@ -30,13 +30,12 @@
 
 class StoreDmxSend: public DMXParamsStore {
 public:
-	StoreDmxSend(void);
-	~StoreDmxSend(void);
+	StoreDmxSend();
 
 	void Update(const struct TDMXParams *pDMXParams);
 	void Copy(struct TDMXParams *pDMXParams);
 
-	static StoreDmxSend *Get(void) {
+	static StoreDmxSend *Get() {
 		return s_pThis;
 	}
 

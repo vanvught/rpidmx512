@@ -23,48 +23,17 @@
  * THE SOFTWARE.
  */
 
-
-#include <stdint.h>
-#include <cassert>
-
 #include "storemonitor.h"
-
-#include "dmxmonitorparams.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreMonitor *StoreMonitor::s_pThis = 0;
 
-StoreMonitor::StoreMonitor(void) {
+StoreMonitor::StoreMonitor() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreMonitor::~StoreMonitor(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreMonitor::Update(const struct TDMXMonitorParams *pDMXMonitorParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-
-	DEBUG_EXIT
-}
-
-void StoreMonitor::Copy(struct TDMXMonitorParams *pDMXMonitorParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

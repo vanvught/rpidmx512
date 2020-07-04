@@ -28,15 +28,21 @@
 
 #include "showfileparams.h"
 
-class StoreShowFile: public ShowFileParamsStore {
+#include "spiflashstore.h"
+
+class StoreShowFile final: public ShowFileParamsStore {
 public:
-	StoreShowFile(void);
-	~StoreShowFile(void);
+	StoreShowFile();
 
-	void Update(const struct TShowFileParams *ptShowFileParams);
-	void Copy(struct TShowFileParams *ptShowFileParams);
+	void Update(const struct TShowFileParams *ptShowFileParams) override {
+		SpiFlashStore::Get()->Update(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+	}
 
-	static StoreShowFile *Get(void) {
+	void Copy(struct TShowFileParams *ptShowFileParams) override {
+		SpiFlashStore::Get()->Copy(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+	}
+
+	static StoreShowFile *Get() {
 		return s_pThis;
 	}
 

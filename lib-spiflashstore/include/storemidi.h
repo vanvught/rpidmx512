@@ -28,15 +28,21 @@
 
 #include "midiparams.h"
 
-class StoreMidi: public MidiParamsStore {
+#include "spiflashstore.h"
+
+class StoreMidi final: public MidiParamsStore {
 public:
-	StoreMidi(void);
-	~StoreMidi(void);
+	StoreMidi();
 
-	void Update(const struct TMidiParams *pMidiParams);
-	void Copy(struct TMidiParams *pMidiParams);
+	void Update(const struct TMidiParams *pMidiParams) override {
+		SpiFlashStore::Get()->Update(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
+	}
 
-	static StoreMidi *Get(void) {
+	void Copy(struct TMidiParams *pMidiParams) override {
+		SpiFlashStore::Get()->Copy(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
+	}
+
+	static StoreMidi *Get() {
 		return s_pThis;
 	}
 

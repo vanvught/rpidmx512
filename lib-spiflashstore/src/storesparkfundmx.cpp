@@ -44,14 +44,14 @@ StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = 0;
 
 #define STORE_SPARKFUN_OFFSET(x)		(STORE_SPARKFUN_STRUCT_OFFSET + ((x) * sizeof(struct TSparkFunDmxParams)))
 
-StoreSparkFunDmx::StoreSparkFunDmx(void) {
+StoreSparkFunDmx::StoreSparkFunDmx() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-	DEBUG_PRINTF("sizeof(TSparkFunDmxParams)=%d", sizeof(struct TSparkFunDmxParams));
-	DEBUG_PRINTF("STORE_SPARKFUN_STRUCT_OFFSET+STORE_SPARKFUN_STRUCT_SIZE=%d", (STORE_SPARKFUN_STRUCT_OFFSET + STORE_SPARKFUN_STRUCT_SIZE));
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_PRINTF("sizeof(TSparkFunDmxParams)=%d", static_cast<int>(sizeof(struct TSparkFunDmxParams)));
+	DEBUG_PRINTF("STORE_SPARKFUN_STRUCT_OFFSET+STORE_SPARKFUN_STRUCT_SIZE=%d", static_cast<int>(STORE_SPARKFUN_STRUCT_OFFSET + STORE_SPARKFUN_STRUCT_SIZE));
 
 	assert(sizeof(struct TSparkFunDmxParams) <= STORE_SPARKFUN_STRUCT_OFFSET);
 	assert((STORE_SPARKFUN_STRUCT_OFFSET + STORE_SPARKFUN_STRUCT_SIZE) <= STORE_SPARKFUN_MAX_SIZE);
@@ -69,12 +69,6 @@ StoreSparkFunDmx::StoreSparkFunDmx(void) {
 			Update(nMotorIndex, &tSparkFunDmxParams);
 		}
 	}
-
-	DEBUG_EXIT
-}
-
-StoreSparkFunDmx::~StoreSparkFunDmx(void) {
-	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }

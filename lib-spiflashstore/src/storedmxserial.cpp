@@ -24,42 +24,16 @@
  */
 
 #include "storedmxserial.h"
-#include "dmxserialparams.h"
-
-#include "spiflashstore.h"
 
 #include "debug.h"
 
 StoreDmxSerial *StoreDmxSerial::s_pThis = 0;
 
-StoreDmxSerial::StoreDmxSerial(void) {
+StoreDmxSerial::StoreDmxSerial() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreDmxSerial::~StoreDmxSerial(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSerial::Update(const struct TDmxSerialParams *ptDmxSerialParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSerial::Copy(struct TDmxSerialParams *ptDmxSerialParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

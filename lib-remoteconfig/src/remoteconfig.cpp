@@ -43,85 +43,89 @@
 #include "storeremoteconfig.h"
 /* network.txt */
 #include "networkparams.h"
+#include "storenetwork.h"
 
 #if defined (ARTNET_NODE)
- /* artnet.txt */
- #include "artnetparams.h"
- #include "storeartnet.h"
- #include "artnet4params.h"
- #include "storeartnet4.h"
+/* artnet.txt */
+# include "artnetparams.h"
+# include "storeartnet.h"
+# include "artnet4params.h"
+# include "storeartnet4.h"
 #endif
 #if defined (E131_BRIDGE)
- /* e131.txt */
- #include "e131params.h"
- #include "storee131.h"
+/* e131.txt */
+# include "e131params.h"
+# include "storee131.h"
 #endif
 #if defined (OSC_SERVER)
- /* osc.txt */
- #include "oscserverparms.h"
- #include "storeoscserver.h"
+/* osc.txt */
+# include "oscserverparms.h"
+# include "storeoscserver.h"
 #endif
 #if defined (DMXSEND)
- /* params.txt */
- #include "dmxparams.h"
- #include "storedmxsend.h"
+/* params.txt */
+# include "dmxparams.h"
+# include "storedmxsend.h"
 #endif
 #if defined (PIXEL)
- /* devices.txt */
- #include "ws28xxdmxparams.h"
- #include "storews28xxdmx.h"
- #include "tlc59711dmxparams.h"
- #include "storetlc59711.h"
+/* devices.txt */
+# include "ws28xxdmxparams.h"
+# include "storews28xxdmx.h"
+# include "tlc59711dmxparams.h"
+# include "storetlc59711.h"
 #endif
 #if defined (LTC_READER)
- /* ltc.txt */
- #include "ltcparams.h"
- #include "storeltc.h"
- /* ldisplay.txt */
- #include "ltcdisplayparams.h"
- #include "storeltcdisplay.h"
- /* tcnet.txt */
- #include "tcnetparams.h"
- #include "storetcnet.h"
+/* ltc.txt */
+# include "ltcparams.h"
+# include "storeltc.h"
+/* ldisplay.txt */
+# include "ltcdisplayparams.h"
+# include "storeltcdisplay.h"
+/* tcnet.txt */
+# include "tcnetparams.h"
+# include "storetcnet.h"
 #endif
 #if defined (DMX_MONITOR)
- #include "dmxmonitorparams.h"
- #include "storemonitor.h"
+# include "dmxmonitorparams.h"
+# include "storemonitor.h"
 #endif
 #if defined (OSC_CLIENT)
- /* oscclnt.txt */
- #include "oscclientparams.h"
- #include "storeoscclient.h"
+/* oscclnt.txt */
+# include "oscclientparams.h"
+# include "storeoscclient.h"
 #endif
 #if defined(DISPLAY_UDF)
- /* display.txt */
- #include "displayudfparams.h"
- #include "storedisplayudf.h"
+/* display.txt */
+# include "displayudfparams.h"
+# include "storedisplayudf.h"
 #endif
 #if defined(STEPPER)
- /* sparkfun.txt */
- #include "sparkfundmxparams.h"
- #include "storesparkfundmx.h"
- /* motor%.txt */
- #include "modeparams.h"
- #include "motorparams.h"
- #include "l6470params.h"
- #include "storemotors.h"
-#endif
-#if defined(RDM_RESPONDER)
- /* rdm_device.txt */
- #include "rdmdeviceparams.h"
- #include "storerdmdevice.h"
+/* sparkfun.txt */
+# include "sparkfundmxparams.h"
+# include "storesparkfundmx.h"
+/* motor%.txt */
+# include "modeparams.h"
+# include "motorparams.h"
+# include "l6470params.h"
+# include "storemotors.h"
 #endif
 #if defined(SHOWFILE)
  /* show.txt */
- #include "showfileparams.h"
- #include "storeshowfile.h"
+# include "showfileparams.h"
+# include "storeshowfile.h"
 #endif
 #if defined (DMXSERIAL)
- /* serial.txt */
- #include "dmxserialparams.h"
- #include "storedmxserial.h"
+/* serial.txt */
+# include "dmxserialparams.h"
+# include "storedmxserial.h"
+#endif
+#if defined (RDM_RESPONDER)
+/* sensors.txt */
+# include "rdmsensorsparams.h"
+# include "storerdmsensors.h"
+/* "subdev.txt" */
+# include "rdmsubdevicesparams.h"
+# include "storerdmdevice.h"
 #endif
 
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
@@ -228,7 +232,7 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	DEBUG_EXIT
 }
 
-RemoteConfig::~RemoteConfig(void) {
+RemoteConfig::~RemoteConfig() {
 	DEBUG_ENTRY
 
 	delete [] m_pStoreBuffer;
@@ -270,7 +274,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::Run(void) {
+void RemoteConfig::Run() {
 	uint16_t nForeignPort;
 
 	if (__builtin_expect((m_bDisable), 1)) {
@@ -381,7 +385,7 @@ void RemoteConfig::HandleVersion() {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleList(void) {
+void RemoteConfig::HandleList() {
 	DEBUG_ENTRY
 
 	if (m_tRemoteConfigListBin.aDisplayName[0] != '\0') {
@@ -430,7 +434,7 @@ void RemoteConfig::HandleDisplayGet() {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleStoreGet(void) {
+void RemoteConfig::HandleStoreGet() {
 	DEBUG_ENTRY
 
 	uint32_t nLenght = udp::BUFFER_SIZE - REQUEST_STORE_LENGTH;
@@ -452,7 +456,7 @@ void RemoteConfig::HandleStoreGet(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleGet(void) {
+void RemoteConfig::HandleGet() {
 	DEBUG_ENTRY
 
 	uint32_t nSize = udp::BUFFER_SIZE - REQUEST_GET_LENGTH;
@@ -528,11 +532,6 @@ void RemoteConfig::HandleGet(void) {
 		HandleGetMotorTxt((nIndex - TXT_FILE_MOTOR0), nSize);
 		break;
 #endif
-#if defined(RDM_RESPONDER)
-	case TXT_FILE_RDM:
-		HandleGetRdmTxt(nSize);
-		break;
-#endif
 #if defined(SHOWFILE)
 	case TXT_FILE_SHOW:
 		HandleGetShowTxt(nSize);
@@ -571,7 +570,7 @@ void RemoteConfig::HandleGetRconfigTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	NetworkParams networkParams(SpiFlashStore::Get()->GetStoreNetwork());
+	NetworkParams networkParams(StoreNetwork::Get());
 	networkParams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
@@ -583,14 +582,14 @@ void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 
 	uint32_t nSizeArtNet3 = 0;
 
-	ArtNetParams artnetparams(SpiFlashStore::Get()->GetStoreArtNet());
+	ArtNetParams artnetparams(StoreArtNet::Get());
 	artnetparams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSizeArtNet3);
 
 	DEBUG_PRINTF("nSizeArtNet3=%d", nSizeArtNet3);
 
 	uint32_t nSizeArtNet4 = 0;
 
-	ArtNet4Params artnet4params(SpiFlashStore::Get()->GetStoreArtNet4());
+	ArtNet4Params artnet4params(StoreArtNet4::Get());
 	artnet4params.Save(m_pUdpBuffer + nSizeArtNet3, udp::BUFFER_SIZE - nSizeArtNet3, nSizeArtNet4);
 
 	DEBUG_PRINTF("nSizeArtNet4=%d", nSizeArtNet4);
@@ -767,17 +766,6 @@ void RemoteConfig::HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize) {
 }
 #endif
 
-#if defined(RDM_RESPONDER)
-void RemoteConfig::HandleGetRdmTxt(uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	RDMDeviceParams rdmDeviceParams(StoreRDMDevice::Get());
-	rdmDeviceParams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
-
-	DEBUG_EXIT
-}
-#endif
-
 #if defined(SHOWFILE)
 void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
@@ -804,7 +792,7 @@ void RemoteConfig::HandleGetSerialTxt(uint32_t& nSize) {
  *
  */
 
-void RemoteConfig::HandleTxtFile(void) {
+void RemoteConfig::HandleTxtFile() {
 	DEBUG_ENTRY
 
 	uint32_t i;
@@ -892,11 +880,6 @@ void RemoteConfig::HandleTxtFile(void) {
 		HandleTxtFileMotor(i - TXT_FILE_MOTOR0);
 		break;
 #endif
-#if defined(RDM_RESPONDER)
-	case TXT_FILE_RDM:
-		HandleTxtFileRdm();
-		break;
-#endif
 #if defined(SHOWFILE)
 	case TXT_FILE_SHOW:
 		HandleTxtFileShow();
@@ -914,7 +897,7 @@ void RemoteConfig::HandleTxtFile(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTxtFileRconfig(void) {
+void RemoteConfig::HandleTxtFileRconfig() {
 	DEBUG_ENTRY
 
 	RemoteConfigParams remoteConfigParams(StoreRemoteConfig::Get());
@@ -933,10 +916,10 @@ void RemoteConfig::HandleTxtFileRconfig(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTxtFileNetwork(void) {
+void RemoteConfig::HandleTxtFileNetwork() {
 	DEBUG_ENTRY
 
-	NetworkParams params(SpiFlashStore::Get()->GetStoreNetwork());
+	NetworkParams params(StoreNetwork::Get());
 
 	if ((m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) && (m_nBytesReceived == sizeof(struct TNetworkParams))){
 		uint32_t nSize;
@@ -953,15 +936,15 @@ void RemoteConfig::HandleTxtFileNetwork(void) {
 }
 
 #if defined (ARTNET_NODE)
-void RemoteConfig::HandleTxtFileArtnet(void) {
+void RemoteConfig::HandleTxtFileArtnet() {
 	DEBUG_ENTRY
-	assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams));
+	static_assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams), "");
 
-	ArtNet4Params artnet4params(SpiFlashStore::Get()->GetStoreArtNet4());
+	ArtNet4Params artnet4params(StoreArtNet4::Get());
 
 	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
 		if (m_nBytesReceived == sizeof(struct TArtNetParams)) {
-			ArtNetParams artnetparams(SpiFlashStore::Get()->GetStoreArtNet());
+			ArtNetParams artnetparams(StoreArtNet::Get());
 			uint32_t nSize;
 			artnetparams.Builder(reinterpret_cast<const struct TArtNetParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = nSize;
@@ -982,7 +965,7 @@ void RemoteConfig::HandleTxtFileArtnet(void) {
 #endif
 
 #if defined (E131_BRIDGE)
-void RemoteConfig::HandleTxtFileE131(void) {
+void RemoteConfig::HandleTxtFileE131() {
 	DEBUG_ENTRY
 
 	E131Params e131params(StoreE131::Get());
@@ -1002,7 +985,7 @@ void RemoteConfig::HandleTxtFileE131(void) {
 #endif
 
 #if defined (OSC_SERVER)
-void RemoteConfig::HandleTxtFileOsc(void) {
+void RemoteConfig::HandleTxtFileOsc() {
 	DEBUG_ENTRY
 
 	OSCServerParams oscServerParams(StoreOscServer::Get());
@@ -1023,7 +1006,7 @@ void RemoteConfig::HandleTxtFileOsc(void) {
 #endif
 
 #if defined (OSC_CLIENT)
-void RemoteConfig::HandleTxtFileOscClient(void) {
+void RemoteConfig::HandleTxtFileOscClient() {
 	DEBUG_ENTRY
 
 	OscClientParams oscClientParams(StoreOscClient::Get());
@@ -1044,7 +1027,7 @@ void RemoteConfig::HandleTxtFileOscClient(void) {
 #endif
 
 #if defined (DMXSEND)
-void RemoteConfig::HandleTxtFileParams(void) {
+void RemoteConfig::HandleTxtFileParams() {
 	DEBUG_ENTRY
 
 	DMXParams dmxparams(StoreDmxSend::Get());
@@ -1065,9 +1048,9 @@ void RemoteConfig::HandleTxtFileParams(void) {
 #endif
 
 #if defined (PIXEL)
-void RemoteConfig::HandleTxtFileDevices(void) {
+void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_ENTRY
-	assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams));
+	static_assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams), "");
 
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
 
@@ -1103,7 +1086,7 @@ void RemoteConfig::HandleTxtFileDevices(void) {
 #endif
 
 #if defined (LTC_READER)
-void RemoteConfig::HandleTxtFileLtc(void) {
+void RemoteConfig::HandleTxtFileLtc() {
 	DEBUG_ENTRY
 
 	LtcParams ltcParams(StoreLtc::Get());
@@ -1122,7 +1105,7 @@ void RemoteConfig::HandleTxtFileLtc(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTxtFileLtcDisplay(void) {
+void RemoteConfig::HandleTxtFileLtcDisplay() {
 	DEBUG_ENTRY
 
 	LtcDisplayParams ltcDisplayParams(StoreLtcDisplay::Get());
@@ -1141,7 +1124,7 @@ void RemoteConfig::HandleTxtFileLtcDisplay(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTxtFileTCNet(void) {
+void RemoteConfig::HandleTxtFileTCNet() {
 	DEBUG_ENTRY
 
 	TCNetParams tcnetParams(StoreTCNet::Get());
@@ -1162,7 +1145,7 @@ void RemoteConfig::HandleTxtFileTCNet(void) {
 #endif
 
 #if defined(DMX_MONITOR)
-void RemoteConfig::HandleTxtFileMon(void) {
+void RemoteConfig::HandleTxtFileMon() {
 	DEBUG_ENTRY
 
 	DMXMonitorParams monitorParams(StoreMonitor::Get());
@@ -1183,7 +1166,7 @@ void RemoteConfig::HandleTxtFileMon(void) {
 #endif
 
 #if defined(DISPLAY_UDF)
-void RemoteConfig::HandleTxtFileDisplay(void) {
+void RemoteConfig::HandleTxtFileDisplay() {
 	DEBUG_ENTRY
 
 	DisplayUdfParams displayParams(StoreDisplayUdf::Get());
@@ -1204,7 +1187,7 @@ void RemoteConfig::HandleTxtFileDisplay(void) {
 #endif
 
 #if defined(STEPPER)
-void RemoteConfig::HandleTxtFileSparkFun(void) {
+void RemoteConfig::HandleTxtFileSparkFun() {
 	DEBUG_ENTRY
 
 	SparkFunDmxParams sparkFunDmxParams(StoreSparkFunDmx::Get());
@@ -1260,22 +1243,8 @@ void RemoteConfig::HandleTxtFileMotor(uint32_t nMotorIndex) {
 }
 #endif
 
-#if defined(RDM_RESPONDER)
-void RemoteConfig::HandleTxtFileRdm(void) {
-	DEBUG_ENTRY
-
-	RDMDeviceParams rdmDeviceParams(StoreRDMDevice::Get());
-	rdmDeviceParams.Load(m_pUdpBuffer, m_nBytesReceived);
-#ifndef NDEBUG
-	rdmDeviceParams.Dump();
-#endif
-
-	DEBUG_EXIT
-}
-#endif
-
 #if defined(SHOWFILE)
-void RemoteConfig::HandleTxtFileShow(void) {
+void RemoteConfig::HandleTxtFileShow() {
 	DEBUG_ENTRY
 
 	ShowFileParams showFileParams(StoreShowFile::Get());
@@ -1289,7 +1258,7 @@ void RemoteConfig::HandleTxtFileShow(void) {
 #endif
 
 #if defined (DMXSERIAL)
-void RemoteConfig::HandleTxtFileSerial(void) {
+void RemoteConfig::HandleTxtFileSerial() {
 	DEBUG_ENTRY
 
 	DmxSerialParams dmxSerialParams(StoreDmxSerial::Get());
@@ -1313,7 +1282,7 @@ void RemoteConfig::HandleTxtFileSerial(void) {
  * TFTP Update firmware
  */
 
-void RemoteConfig::TftpExit(void) {
+void RemoteConfig::TftpExit() {
 	DEBUG_ENTRY
 
 	m_pUdpBuffer[GET_TFTP_LENGTH] = '0';
@@ -1323,7 +1292,7 @@ void RemoteConfig::TftpExit(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTftpSet(void) {
+void RemoteConfig::HandleTftpSet() {
 	DEBUG_ENTRY
 
 	DEBUG_PRINTF("%c", m_pUdpBuffer[GET_TFTP_LENGTH]);
@@ -1376,7 +1345,7 @@ void RemoteConfig::HandleTftpSet(void) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleTftpGet(void) {
+void RemoteConfig::HandleTftpGet() {
 	DEBUG_ENTRY
 
 	if (m_nBytesReceived == GET_TFTP_LENGTH) {

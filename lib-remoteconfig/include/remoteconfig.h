@@ -99,7 +99,6 @@ enum TTxtFile {
 	TXT_FILE_MOTOR6,
 	TXT_FILE_MOTOR7,
 #endif
-	TXT_FILE_RDM,
 	TXT_FILE_SHOW,
 	TXT_FILE_SERIAL,
 	TXT_FILE_LAST
@@ -126,58 +125,58 @@ struct TRemoteConfigListBin {
 class RemoteConfig {
 public:
 	RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs = 0);
-	~RemoteConfig(void);
+	~RemoteConfig();
 
 	void SetDisable(bool bDisable = true);
-	bool GetDisable(void) {
+	bool GetDisable() {
 		return m_bDisable;
 	}
 
 	void SetDisableWrite(bool bDisableWrite = true) {
 		m_bDisableWrite = bDisableWrite;
 	}
-	bool GetDisableWrite(void) {
+	bool GetDisableWrite() {
 		return m_bDisableWrite;
 	}
 
 	void SetEnableReboot(bool bEnableReboot = true) {
 		m_bEnableReboot = bEnableReboot;
 	}
-	bool GetEnableReboot(void) {
+	bool GetEnableReboot() {
 		return m_bEnableReboot;
 	}
 
 	void SetEnableUptime(bool bEnableUptime = true) {
 		m_bEnableUptime = bEnableUptime;
 	}
-	bool GetEnableUptime(void) {
+	bool GetEnableUptime() {
 		return m_bEnableUptime;
 	}
 
 	void SetDisplayName(const char *pDisplayName);
 
-	bool IsReboot(void) {
+	bool IsReboot() {
 		return m_bIsReboot;
 	}
 
-	void Run(void);
+	void Run();
 
-	void TftpExit(void);
+	void TftpExit();
 
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
-	static RemoteConfig *Get(void) {
+	static RemoteConfig *Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandleReboot(void);
+	void HandleReboot();
 
-	void HandleList(void);
-	void HandleUptime(void);
-	void HandleVersion(void);
+	void HandleList();
+	void HandleUptime();
+	void HandleVersion();
 
-	void HandleGet(void);
+	void HandleGet();
 	void HandleGetRconfigTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
 
@@ -214,71 +213,69 @@ private:
 	void HandleGetSparkFunTxt(uint32_t& nSize);
 	void HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize);
 #endif
-#if defined(RDM_RESPONDER)
-	void HandleGetRdmTxt(uint32_t& nSize);
-#endif
 #if defined(SHOWFILE)
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
 #if defined (DMXSERIAL)
 	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
+#if defined (RDM_RESPONDER)
+#endif
 
-	void HandleTxtFile(void);
-	void HandleTxtFileRconfig(void);
-	void HandleTxtFileNetwork(void);
+	void HandleTxtFile();
+	void HandleTxtFileRconfig();
+	void HandleTxtFileNetwork();
 
 #if defined (ARTNET_NODE)
-	void HandleTxtFileArtnet(void);
+	void HandleTxtFileArtnet();
 #endif
 #if defined (E131_BRIDGE)
-	void HandleTxtFileE131(void);
+	void HandleTxtFileE131();
 #endif
 #if defined (OSC_SERVER)
-	void HandleTxtFileOsc(void);
+	void HandleTxtFileOsc();
 #endif
 #if defined (DMXSEND)
-	void HandleTxtFileParams(void);
+	void HandleTxtFileParams();
 #endif
 #if defined (PIXEL)
-	void HandleTxtFileDevices(void);
+	void HandleTxtFileDevices();
 #endif
 #if defined (LTC_READER)
-	void HandleTxtFileLtc(void);
-	void HandleTxtFileLtcDisplay(void);
-	void HandleTxtFileTCNet(void);
+	void HandleTxtFileLtc();
+	void HandleTxtFileLtcDisplay();
+	void HandleTxtFileTCNet();
 #endif
 #if defined (DMX_MONITOR)
-	void HandleTxtFileMon(void);
+	void HandleTxtFileMon();
 #endif
 #if defined (OSC_CLIENT)
-	void HandleTxtFileOscClient(void);
+	void HandleTxtFileOscClient();
 #endif
 #if defined(DISPLAY_UDF)
-	void HandleTxtFileDisplay(void);
+	void HandleTxtFileDisplay();
 #endif
 #if defined(STEPPER)
-	void HandleTxtFileSparkFun(void);
+	void HandleTxtFileSparkFun();
 	void HandleTxtFileMotor(uint32_t nMotorIndex);
 #endif
-#if defined(RDM_RESPONDER)
-	void HandleTxtFileRdm(void);
-#endif
 #if defined(SHOWFILE)
-	void HandleTxtFileShow(void);
+	void HandleTxtFileShow();
 #endif
 #if defined (DMXSERIAL)
-	void HandleTxtFileSerial(void);
+	void HandleTxtFileSerial();
+#endif
+#if defined (RDM_RESPONDER)
 #endif
 
-	void HandleDisplaySet(void);
-	void HandleDisplayGet(void);
+	void HandleDisplaySet();
+	void HandleDisplayGet();
 
-	void HandleStoreSet(void);
-	void HandleStoreGet(void);
+	void HandleStoreSet();
+	void HandleStoreGet();
 
-	void HandleTftpSet(void);
-	void HandleTftpGet(void);
+	void HandleTftpSet();
+	void HandleTftpGet();
 
 private:
 	TRemoteConfig m_tRemoteConfig;

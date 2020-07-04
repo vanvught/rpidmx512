@@ -30,13 +30,12 @@
 
 class StoreArtNet4: public ArtNet4ParamsStore {
 public:
-	StoreArtNet4(void);
-	~StoreArtNet4(void);
+	StoreArtNet4();
 
 	void Update(const struct TArtNet4Params *pArtNet4Params);
 	void Copy(struct TArtNet4Params *pArtNet4Params);
 
-	static StoreArtNet4 *Get(void) {
+	static StoreArtNet4 *Get() {
 		return s_pThis;
 	}
 

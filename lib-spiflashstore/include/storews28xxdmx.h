@@ -31,17 +31,25 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxstore.h"
 
+#include "spiflashstore.h"
+
 class StoreWS28xxDmx: public WS28xxDmxParamsStore, public WS28xxDmxStore {
 public:
-	StoreWS28xxDmx(void);
-	~StoreWS28xxDmx(void);
+	StoreWS28xxDmx();
 
-	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams);
-	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams);
+	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) {
+		SpiFlashStore::Get()->Update(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+	}
 
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress);
+	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) {
+		SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+	}
 
-	static StoreWS28xxDmx *Get(void) {
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+		SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
+	}
+
+	static StoreWS28xxDmx *Get() {
 		return s_pThis;
 	}
 

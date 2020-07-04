@@ -35,8 +35,7 @@
 
 class StoreMotors: public ModeParamsStore, public MotorParamsStore, public L6470ParamsStore, public ModeStore {
 public:
-	StoreMotors(void);
-	~StoreMotors(void);
+	StoreMotors();
 
 	void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams);
 	void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams);
@@ -49,7 +48,7 @@ public:
 
 	void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress);
 
-	static StoreMotors *Get(void) {
+	static StoreMotors *Get() {
 		return s_pThis;
 	}
 

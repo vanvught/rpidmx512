@@ -41,6 +41,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
 #include "ipprog.h"

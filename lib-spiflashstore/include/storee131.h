@@ -28,15 +28,21 @@
 
 #include "e131params.h"
 
+#include "spiflashstore.h"
+
 class StoreE131: public E131ParamsStore {
 public:
-	StoreE131(void);
-	~StoreE131(void);
+	StoreE131();
 
-	void Update(const struct TE131Params *pE131Params);
-	void Copy(struct TE131Params *pE131Params);
+	void Update(const struct TE131Params *pE131Params) {
+		SpiFlashStore::Get()->Update(STORE_E131, pE131Params, sizeof(struct TE131Params));
+	}
 
-	static StoreE131 *Get(void) {
+	void Copy(struct TE131Params *pE131Params) {
+		SpiFlashStore::Get()->Copy(STORE_E131, pE131Params, sizeof(struct TE131Params));
+	}
+
+	static StoreE131* Get() {
 		return s_pThis;
 	}
 

@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -82,7 +83,7 @@ void notmain(void) {
 	StoreDmxSend storeDmxSend;
 	StoreRDMDevice storeRdmDevice;
 
-	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(StoreArtNet4::Get());
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();
@@ -110,9 +111,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.SetNetworkDisplay(&displayUdfHandler);
-	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -124,7 +125,7 @@ void notmain(void) {
 
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
+	node.SetArtNetStore(StoreArtNet::Get());
 
 	DMXSend *pDmxOutput;
 	DmxInput *pDmxInput;

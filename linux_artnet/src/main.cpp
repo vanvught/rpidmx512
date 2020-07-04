@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	}
 
 	SpiFlashStore spiFlashStore;
-	ArtNet4Params artnet4Params(spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnet4Params(StoreArtNet4::Get());
 
 	ArtNet4Node node;
 
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 		node.SetIpProgHandler(new IpProg);
 	}
 #endif
-	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
+	node.SetArtNetStore(StoreArtNet::Get());
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);

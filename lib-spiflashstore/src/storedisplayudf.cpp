@@ -36,19 +36,12 @@
 
 StoreDisplayUdf *StoreDisplayUdf::s_pThis = 0;
 
-StoreDisplayUdf::StoreDisplayUdf(void) {
+StoreDisplayUdf::StoreDisplayUdf() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-
-	DEBUG_EXIT
-}
-
-StoreDisplayUdf::~StoreDisplayUdf(void) {
-	DEBUG_ENTRY
-
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 

@@ -28,17 +28,25 @@
 
 #include "ltcparams.h"
 
+#include "spiflashstore.h"
+
 class StoreLtc: public LtcParamsStore {
 public:
-	StoreLtc(void);
-	~StoreLtc(void);
+	StoreLtc();
 
-	void Update(const struct TLtcParams *pLtcParams);
-	void Copy(struct TLtcParams *pLtcParams);
+	void Update(const struct TLtcParams *pLtcParams) {
+		SpiFlashStore::Get()->Update(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
+	}
 
-	void SaveSource(uint8_t nSource);
+	void Copy(struct TLtcParams *pLtcParams) {
+		SpiFlashStore::Get()->Copy(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
+	}
 
-	static StoreLtc *Get(void) {
+	void SaveSource(uint8_t nSource) {
+		SpiFlashStore::Get()->Update(STORE_LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
+	}
+
+	static StoreLtc *Get() {
 		return s_pThis;
 	}
 

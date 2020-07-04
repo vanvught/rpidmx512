@@ -30,13 +30,12 @@
 
 class StoreOscServer: public OSCServerParamsStore {
 public:
-	StoreOscServer(void);
-	~StoreOscServer(void);
+	StoreOscServer();
 
 	void Update(const struct TOSCServerParams *pOSCServerParams);
 	void Copy(struct TOSCServerParams *pOSCServerParams);
 
-	static StoreOscServer *Get(void) {
+	static StoreOscServer *Get() {
 		return s_pThis;
 	}
 

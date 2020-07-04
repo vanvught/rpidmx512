@@ -31,8 +31,7 @@
 
 class StoreArtNet: public ArtNetParamsStore, public ArtNetStore {
 public:
-	StoreArtNet(void);
-	~StoreArtNet(void);
+	StoreArtNet();
 
 	void Update(const struct TArtNetParams *pArtNetParams);
 	void Copy(struct TArtNetParams *pArtNetParams);
@@ -45,7 +44,7 @@ public:
 	void SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge);
 	void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
 
-	static StoreArtNet *Get(void) {
+	static StoreArtNet *Get() {
 		return s_pThis;
 	}
 

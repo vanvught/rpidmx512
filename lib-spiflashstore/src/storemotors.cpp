@@ -54,13 +54,13 @@ struct TMotorStore {
 
 StoreMotors *StoreMotors::s_pThis = 0;
 
-StoreMotors::StoreMotors(void) {
+StoreMotors::StoreMotors() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", s_pThis);
-	DEBUG_PRINTF("STORE_MOTORS_STRUCT_SIZE=%d", STORE_MOTORS_STRUCT_SIZE);
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_PRINTF("STORE_MOTORS_STRUCT_SIZE=%d", static_cast<int>(STORE_MOTORS_STRUCT_SIZE));
 
 	assert(STORE_MOTORS_STRUCT_SIZE <= STORE_MOTORS_MAX_SIZE);
 
@@ -101,12 +101,6 @@ StoreMotors::StoreMotors(void) {
 			Update(nMotorIndex, &tL6470Params);
 		}
 	}
-
-	DEBUG_EXIT
-}
-
-StoreMotors::~StoreMotors(void) {
-	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }

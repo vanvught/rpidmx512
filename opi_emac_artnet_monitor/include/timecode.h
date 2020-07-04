@@ -31,14 +31,11 @@
 class TimeCode: public ArtNetTimeCode {
 public:
 	TimeCode(void);
-	~TimeCode(void);
 
 	void Start(void);
 	void Stop(void);
 
 	void Handler(const struct TArtNetTimeCode *);
 };
-
-
 
 #endif /* TIMECODE_H_ */
