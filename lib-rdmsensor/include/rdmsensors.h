@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,30 +29,49 @@
 #include <stdint.h>
 
 #include "rdmsensor.h"
+#include "rdmsensorsconst.h"
+
+#if defined (RASPPI) || defined(BARE_METAL)
+ #define RDM_SENSORS_ENABLE
+#endif
+
+#if !defined (__CYGWIN__) && !defined (__APPLE__)
+ #define RDMSENSOR_CPU_ENABLE
+#endif
+
+#if defined (RDMNET_LLRP_ONLY)
+ #undef RDM_SENSORS_ENABLE
+ #undef RDMSENSOR_CPU_ENABLE
+#endif
+
+namespace rdm {
+namespace sensors {
+static constexpr uint32_t max = 16;
+static constexpr uint32_t store = 64;	// bytes
+}  // namespace sensors
+}  // namespace rdm
 
 class RDMSensors {
 public:
-	RDMSensors(void);
-	~RDMSensors(void);
+	RDMSensors();
+	~RDMSensors();
 
-	void Init(void);
 	bool Add(RDMSensor *pRDMSensor);
-	uint8_t GetCount(void) const;
+	uint8_t GetCount() {
+		return m_nCount;
+	}
 
 	const struct TRDMSensorDefintion* GetDefintion(uint8_t nSensor);
 	const struct TRDMSensorValues* GetValues(uint8_t nSensor);
 	void SetValues(uint8_t nSensor);
 	void SetRecord(uint8_t nSensor);
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	static const char *GetTypeString(rdm::sensors::type tType);
+	static rdm::sensors::type GetTypeString(const char *pValue);
 
-	static RDMSensors* Get(void) {
+	static RDMSensors* Get() {
 		return s_pThis;
 	}
-
-private:
-    void callbackFunction(const char *s);
 
 private:
 	RDMSensor **m_pRDMSensor;

@@ -28,7 +28,7 @@
 
 #include "c/sys_time.h"
 
-#include "rtc.h"
+#include "../rtc/rtc.h"
 
 #include "debug.h"
 

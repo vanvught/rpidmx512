@@ -143,7 +143,7 @@ int console_draw_char(int ch, uint16_t x, uint16_t y, uint16_t fore, uint16_t ba
 	return (int)ch;
 }
 
-int console_putc(int ch) {
+void console_putc(int ch) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
@@ -165,11 +165,9 @@ int console_putc(int ch) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	__sync_lock_release(&lock);
 #endif
-
-	return ch;
 }
 
-int console_puts(const char *s) {
+void console_puts(const char *s) {
 	char c;
 	int i = 0;;
 
@@ -177,8 +175,6 @@ int console_puts(const char *s) {
 		i++;
 		(void) console_putc((int) c);
 	}
-
-	return i;
 }
 
 void console_write(const char *s, unsigned int n) {
@@ -189,7 +185,7 @@ void console_write(const char *s, unsigned int n) {
 	}
 }
 
-int console_error(const char *s) {
+void console_error(const char *s) {
 	char c;
 	int i = 0;;
 
@@ -210,8 +206,6 @@ int console_error(const char *s) {
 
 	cur_fore = fore_current;
 	cur_back = back_current;
-
-	return i;
 }
 
 int console_status(uint32_t color, const char *s) {

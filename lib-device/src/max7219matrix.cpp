@@ -28,7 +28,7 @@
 
 #include "max7219matrix.h"
 
-#include "../../lib-bob/include/font_cp437.h"
+#include "font_cp437.h"
 
 #include "debug.h"
 
@@ -37,7 +37,8 @@ static uint8_t spi_data[64] __attribute__((aligned(4)));
 void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
 	DEBUG_ENTRY
 
-	m_nCount = std::min(nCount, sizeof(spi_data) / 2);
+	constexpr uint32_t sf = sizeof(spi_data) / 2;
+	m_nCount = std::min(nCount, sf);
 
 	DEBUG_PRINTF("m_nCount=%d", m_nCount);
 
@@ -53,9 +54,8 @@ void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
 	DEBUG_EXIT
 }
 
-void Max7219Matrix::Cls(void) {
+void Max7219Matrix::Cls() {
 	DEBUG_ENTRY
-
 
 	WriteAll(max7219::reg::DIGIT0, 0);
 	WriteAll(max7219::reg::DIGIT1, 0);
@@ -121,8 +121,8 @@ uint8_t Max7219Matrix::Rotate(uint8_t r, uint8_t x) {
 	uint8_t b = 0;
 
 	for (uint8_t y = 0; y < 8; y++) {
-		const uint8_t set = cp437_font[r][y] & (1 << x);
-		b |= (set != 0) ? (1 << y) : 0;
+		const uint8_t set = cp437_font[r][y] & (1U << x);
+		b |= (set != 0) ? (1U << y) : 0;
 	}
 
 	return b;

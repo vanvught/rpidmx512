@@ -46,7 +46,9 @@ ifdef COND
 	LIBS+=artnet4 artnet artnethandlers e131 uuid
 endif
 
+RDM=
 ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	RDM=1
 	ifneq ($(findstring uuid,$(LIBS)),uuid)
 		LIBS+=uuid
 	endif
@@ -75,6 +77,10 @@ ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
 	DEFINES+=ENABLE_TC1602 ENABLE_CURSOR_MODE
 endif
 
+ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
+	RDM=1
+endif
+
 # Output 
 TARGET = $(SUFFIX).img
 LIST = $(SUFFIX).list
@@ -86,7 +92,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display device c++ hal c bob h3 debug  arm
+LIBS+=lightset properties display device hal c++ c h3 debug  arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -127,7 +133,8 @@ COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  #-Wconver
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 
 # Why does gcc not automatically select the correct path based on -m options?
-PLATFORM_LIBGCC := -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4 -lgcc
+PLATFORM_LIBGCC:= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
+PLATFORM_LIBGCC+= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)
 
 $(info $$PLATFORM_LIBGCC [${PLATFORM_LIBGCC}])
 
@@ -160,7 +167,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
-ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+ifdef RDM
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsubdevice
@@ -202,7 +209,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) # $(PLATFORM_LIBGCC)
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 

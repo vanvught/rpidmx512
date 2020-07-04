@@ -43,7 +43,7 @@
 #define UUID_STRING_LENGTH	36
 
 RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
-	RDMDeviceResponder(pRDMPersonality, LightSet::Get(), false),
+	RDMDeviceResponder(pRDMPersonality, LightSet::Get()),
 	m_RDMHandler(0),
 	m_pRdmCommand(0)
 {

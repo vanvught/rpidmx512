@@ -47,33 +47,33 @@ enum TRDMSubDeviceUpdateEvent {
 class RDMSubDevice {
 public:
 	RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress = 1, uint8_t PersonalitynCurrent = 1);
-	virtual ~RDMSubDevice(void);
+	virtual ~RDMSubDevice();
 
-	inline uint16_t GetDmxStartAddress(void) { return m_tSubDevicesInfo.dmx_start_address;}
+	inline uint16_t GetDmxStartAddress() { return m_tSubDevicesInfo.dmx_start_address;}
 	void SetDmxStartAddress(uint16_t nDmxStartAddress);
 
-	inline uint8_t GetPersonalityCurrent(void) { return m_tSubDevicesInfo.current_personality;}
+	inline uint8_t GetPersonalityCurrent() { return m_tSubDevicesInfo.current_personality;}
 	void SetPersonalityCurrent(uint8_t nCurrent);
 
 	void GetLabel(struct TRDMDeviceInfoData *pInfoData);
 	void SetLabel(const char* pLabel);
 	void SetLabel(const char* pLabel, uint8_t nLabelLength);
 
-	inline struct TRDMSubDevicesInfo *GetInfo(void) { return &m_tSubDevicesInfo; }
+	inline struct TRDMSubDevicesInfo *GetInfo() { return &m_tSubDevicesInfo; }
 
 	RDMPersonality* GetPersonality(uint8_t nPersonality);
 
-	inline uint8_t GetPersonalityCount(void) { return m_tSubDevicesInfo.personality_count;}
+	inline uint8_t GetPersonalityCount() { return m_tSubDevicesInfo.personality_count;}
 
-	inline uint16_t GetDmxFootPrint(void) { return m_tSubDevicesInfo.dmx_footprint;}
+	inline uint16_t GetDmxFootPrint() { return m_tSubDevicesInfo.dmx_footprint;}
 
-	bool GetFactoryDefaults(void);
-	void SetFactoryDefaults(void);
+	bool GetFactoryDefaults();
+	void SetFactoryDefaults();
 
-	virtual bool Initialize(void)=0;
+	virtual bool Initialize()=0;
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	virtual void Start()= 0;
+	virtual void Stop()= 0;
 	virtual void Data(const uint8_t *pDdata, uint16_t nLength)=0;
 
 protected:
@@ -82,7 +82,7 @@ protected:
 
 private:
 	virtual void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent);
-	uint16_t CalculateChecksum(void);
+	uint16_t CalculateChecksum();
 
 private:
 	RDMPersonality **m_pRDMPersonalities;

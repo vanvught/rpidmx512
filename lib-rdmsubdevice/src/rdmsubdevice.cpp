@@ -50,7 +50,7 @@ RDMSubDevice::RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress, uint8_
 	m_nCheckSum = CalculateChecksum();
 }
 
-RDMSubDevice::~RDMSubDevice(void) {
+RDMSubDevice::~RDMSubDevice() {
 }
 
 void RDMSubDevice::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -111,7 +111,7 @@ void RDMSubDevice::SetPersonalityCurrent(uint8_t nCurrent) {
 	m_tSubDevicesInfo.current_personality = nCurrent;
 }
 
-bool RDMSubDevice::GetFactoryDefaults(void) {
+bool RDMSubDevice::GetFactoryDefaults() {
 	if (m_IsFactoryDefaults) {
 		if (m_nCheckSum != CalculateChecksum()) {
 			m_IsFactoryDefaults = false;
@@ -121,7 +121,7 @@ bool RDMSubDevice::GetFactoryDefaults(void) {
 	return m_IsFactoryDefaults;
 }
 
-void RDMSubDevice::SetFactoryDefaults(void) {
+void RDMSubDevice::SetFactoryDefaults() {
 	if (m_IsFactoryDefaults) {
 		return;
 	}
@@ -134,7 +134,7 @@ void RDMSubDevice::SetFactoryDefaults(void) {
 	m_IsFactoryDefaults = true;
 }
 
-uint16_t RDMSubDevice::CalculateChecksum(void) {
+uint16_t RDMSubDevice::CalculateChecksum() {
 	uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
 	nChecksum += m_tSubDevicesInfo.current_personality;
 

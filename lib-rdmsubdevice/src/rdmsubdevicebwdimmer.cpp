@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwdimmer.cpp
  *
@@ -26,51 +26,19 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 
 #include "rdmsubdevicebwdimmer.h"
 
-#include "bw_spi_dimmer.h"
+#include "bwspidimmer.h"
 
-#define DMX_FOOTPRINT	1
-
+static constexpr uint32_t DMX_FOOTPRINT = 1;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dimmer", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress),
-	m_nData(0)
+RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
-}
-
-RDMSubDeviceBwDimmer::~RDMSubDeviceBwDimmer(void) {
-}
-
-bool RDMSubDeviceBwDimmer::Initialize(void) {
-	const bool IsConnected = bw_spi_dimmer_start(&m_tDeviceInfo);
-
-	if (IsConnected) {
-		bw_spi_dimmer_output(&m_tDeviceInfo, 0);
-	}
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
-}
-
-void RDMSubDeviceBwDimmer::Start(void) {
-}
-
-void RDMSubDeviceBwDimmer::Stop(void) {
 }
 
 void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint16_t nLength) {
@@ -79,7 +47,7 @@ void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint16_t nLength) {
 	if (nDmxStartAddress <= nLength) {
 		const uint8_t nData = pData[nDmxStartAddress - 1];
 		if (m_nData != nData) {
-			bw_spi_dimmer_output(&m_tDeviceInfo, nData);
+			m_BwSpiDimmer.Output(nData);
 			m_nData = nData;
 		}
 	}

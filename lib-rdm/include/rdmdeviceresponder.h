@@ -43,8 +43,7 @@ enum {
 
 class RDMDeviceResponder: public RDMDevice {
 public:
-	RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, bool EnableSubDevices = true);
-	~RDMDeviceResponder(void);
+	RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 
 	void Init(void);
 	void Print(void);
@@ -94,7 +93,6 @@ public:
 		m_pRDMFactoryDefaults = pRDMFactoryDefaults;
 	}
 
-public:
 	static RDMDeviceResponder* Get(void) {
 		return s_pThis;
 	}
@@ -107,7 +105,6 @@ private:
 	RDMSubDevices m_RDMSubDevices;
 	RDMPersonality *m_pRDMPersonality;
 	LightSet* m_pLightSet;
-	bool m_IsSubDevicesEnabled;
 	char* m_pSoftwareVersion;
 	uint8_t m_nSoftwareVersionLength;
 	struct TRDMDeviceInfo m_tRDMDeviceInfo;

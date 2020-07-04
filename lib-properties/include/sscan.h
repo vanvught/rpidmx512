@@ -2,7 +2,7 @@
  * @file sscan.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,15 +43,23 @@ extern int sscan_float(const char *, const char *, /*@out@*/float *);
 extern int sscan_char_p(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
 extern int sscan_ip_address(const char *, const char *, /*@out@*/uint32_t *);
 extern int sscan_uuid(const char *, const char *, /*@out@*/char *, /*@out@*/uint8_t *);
-extern int sscan_i2c(const char *, /*@out@*/char *, /*@out@*/uint8_t *, /*@out@*/uint8_t *, /*@out@*/uint8_t *);
 extern int sscan_i2c_address(const char *, const char *, /*@out@*/uint8_t *);
 extern int sscan_hexuint16(const char *buf, const char *name, /*@out@*/uint16_t *uint16);
 extern int sscan_hex24uint32(const char *buf, const char *name, /*@out@*/uint32_t *uint32);
-extern int sscan_spi(const char *buf, /*@out@*/char *spi, /*@out@*/char *name, /*@out@*/uint8_t *len, /*@out@*/uint8_t *address, /*@out@*/uint16_t *dmx, /*@out@*/uint32_t *speed);
 
 #ifdef __cplusplus
 class Sscan {
 public:
+	enum ReturnCode {
+		OK = 2, NAME_ERROR = 1, VALUE_ERROR = 0	// TODO
+	};
+
+	static ReturnCode Uint8(const char *pBuffer, const char *pName, uint8_t &nValue);
+	static ReturnCode Uint16(const char *pBuffer, const char *pName, uint16_t &nValue);
+	static ReturnCode Uint32(const char *pBuffer, const char *pName, uint32_t &nValue);
+	static ReturnCode I2c(const char *pBuffer, char *pName, uint8_t &nLength, uint8_t &nAddress, uint8_t &nChannel);
+	static ReturnCode Spi(const char *pBuffer, char& nChipSelect, char *pName, uint8_t& nLength, uint8_t& nAddress, uint16_t& nDmxStartAddress, uint32_t& nSpeedHz);
+
 	static int Uint8(const char *a, const char *b, uint8_t *c) {
 		return sscan_uint8_t(a, b, c);
 	}
@@ -80,10 +88,6 @@ public:
 		return sscan_uuid(a, b, c, d);
 	}
 
-	static int I2c(const char *a, char *b, uint8_t *c, uint8_t *d, uint8_t *e) {
-		return sscan_i2c(a, b, c, d, e);
-	}
-
 	static int I2cAddress(const char *a, const char *b, uint8_t *c) {
 		return sscan_i2c_address(a, b, c);
 	}
@@ -96,9 +100,9 @@ public:
 		return sscan_hex24uint32(a, b, c);
 	}
 
-	static int Spi(const char *a, char *b, char *c, uint8_t *d, uint8_t *e, uint16_t *f, uint32_t *g) {
-		return sscan_spi(a, b, c , d, e, f, g);
-	}
+private:
+	static uint8_t fromHex(const char Hex[2]);
+	static const char *checkName(const char *pBuffer, const char *pName);
 };
 }
 #endif

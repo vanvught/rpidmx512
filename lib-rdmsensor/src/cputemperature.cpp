@@ -24,13 +24,14 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 
 #include "cputemperature.h"
+
 #include "rdm_e120.h"
+
 #include "hardware.h"
+
+#include "debug.h"
 
 CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetType(E120_SENS_TEMPERATURE);
@@ -43,10 +44,7 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetDescription("CPU");
 }
 
-CpuTemperature::~CpuTemperature(void) {
-}
-
-bool CpuTemperature::Initialize(void) {
+bool CpuTemperature::Initialize() {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
@@ -54,11 +52,10 @@ bool CpuTemperature::Initialize(void) {
 #endif
 }
 
-int16_t CpuTemperature::GetValue(void) {
+int16_t CpuTemperature::GetValue() {
 	const int16_t nValue = Hardware::Get()->GetCoreTemperature();
 
-#ifndef NDEBUG
-	printf("%s\tnValue=%d\n", __FUNCTION__, static_cast<int>(nValue));
-#endif
+	DEBUG_PRINTF("nValue=%d", nValue);
+
 	return nValue;
 }

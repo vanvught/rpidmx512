@@ -28,55 +28,53 @@
 
 #include <stdint.h>
 
-#if defined(__linux__)
- #include "bcm2835.h"
+#if defined(__linux__) || defined (__APPLE__)
+# include "linux/hal_api.h"
+# include "linux/hal_spi.h"
 #elif defined(H3)
- #include "h3_spi.h"
+# include "h3/hal_api.h"
+# include "h3/hal_spi.h"
 #else
- #include "bcm2835_spi.h"
-#endif
-
-#if defined(H3)
- #define SPI_BIT_ORDER_MSBFIRST	H3_SPI_BIT_ORDER_MSBFIRST
- #define SPI_MODE0				H3_SPI_MODE0
- #define SPI_MODE3				H3_SPI_MODE3
- #define SPI_CS0				H3_SPI_CS0
- #define SPI_CS_NONE			H3_SPI_CS_NONE
-#else
- #define SPI_BIT_ORDER_MSBFIRST	BCM2835_SPI_BIT_ORDER_MSBFIRST
- #define SPI_MODE0				BCM2835_SPI_MODE0
- #define SPI_MODE3				BCM2835_SPI_MODE3
- #define SPI_CS0				BCM2835_SPI_CS0
- #define SPI_CS_NONE			BCM2835_SPI_CS_NONE
-#endif
-
-#if defined(H3)
- #define FUNC_PREFIX(x) h3_##x
-#else
- #define FUNC_PREFIX(x) bcm2835_##x
+# include "rpi/hal_api.h"
+# include "rpi/hal_spi.h"
 #endif
 
 class HAL_SPI {
+	void Setup() {
+		FUNC_PREFIX(spi_chipSelect(m_nChipSelect));
+		FUNC_PREFIX(spi_setDataMode	(m_nMode));
+		FUNC_PREFIX(spi_set_speed_hz(m_nSpeedHz));
+	}
 public:
-	HAL_SPI(uint8_t nChipSelect, uint32_t nSpeedHz) :
-			m_nChipSelect(nChipSelect), m_nSpeedHz(nSpeedHz) {
+	HAL_SPI(uint8_t nChipSelect, uint32_t nSpeedHz, uint8_t nMode = 0) :
+		m_nSpeedHz(nSpeedHz), m_nChipSelect(nChipSelect), m_nMode(nMode & 0x3) {
 	}
 
-	void Write(const char *pData, uint32_t nLength) {
-		FUNC_PREFIX(spi_chipSelect(m_nChipSelect));
-		FUNC_PREFIX(spi_set_speed_hz(m_nSpeedHz));
+	void Write(const char *pData, uint32_t nLength, const bool bDoSetup = true) {
+		if (bDoSetup) {
+			Setup();
+		}
 		FUNC_PREFIX(spi_writenb(pData, nLength));
 	}
 
-	void Write(uint16_t nData) {
-		FUNC_PREFIX(spi_chipSelect(m_nChipSelect));
-		FUNC_PREFIX(spi_set_speed_hz(m_nSpeedHz));
+	void Write(uint16_t nData, const bool bDoSetup = true) {
+		if (bDoSetup) {
+			Setup();
+		}
 		FUNC_PREFIX(spi_write(nData));
 	}
 
+	void WriteRead(char *pData, uint32_t nLength, const bool bDoSetup = true) {
+		if (bDoSetup) {
+			Setup();
+		}
+		FUNC_PREFIX(spi_transfern(pData, nLength));
+	}
+
 private:
-	uint8_t m_nChipSelect;
 	uint32_t m_nSpeedHz;
+	uint8_t m_nChipSelect;
+	uint8_t m_nMode;
 };
 
 #endif /* HAL_SPI_H_ */

@@ -48,8 +48,7 @@ enum TSocType {
 
 class Hardware {
 public:
-	Hardware(void);
-	~Hardware(void);
+	Hardware();
 
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
@@ -57,11 +56,11 @@ public:
 	const char *GetCpuName(uint8_t &nLength);
 	const char *GetSocName(uint8_t &nLength);
 
-	uint32_t GetReleaseId(void) {
+	uint32_t GetReleaseId() {
 		return 0;	// TODO U-Boot version
 	}
 
-	uint32_t GetBoardId(void) {
+	uint32_t GetBoardId() {
 	#if defined(ORANGE_PI)
 		return 0;
 	#elif defined(ORANGE_PI_ONE)
@@ -71,11 +70,11 @@ public:
 	#endif
 	}
 
-	float GetCoreTemperature(void) {
+	float GetCoreTemperature() {
 		return static_cast<float>(h3_thermal_gettemp());
 	}
 
-	float GetCoreTemperatureMax(void) {
+	float GetCoreTemperatureMax() {
 		return static_cast<float>(h3_thermal_getalarm());
 	}
 
@@ -87,13 +86,13 @@ public:
 		}
 	}
 
-	bool Reboot(void);
+	bool Reboot();
 
 	void SetRebootHandler(RebootHandler *pRebootHandler) {
 		m_pRebootHandler = pRebootHandler;
 	}
 
-	bool PowerOff(void) {
+	bool PowerOff() {
 		return false;
 	}
 
@@ -104,49 +103,49 @@ public:
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
-	time_t GetTime(void) {
+	time_t GetTime() {
 		return time(0);
 	}
 
-	uint32_t GetUpTime(void) {
+	uint32_t GetUpTime() {
 		return hardware_uptime_seconds();
 	}
 
-	uint32_t Micros(void) {
+	uint32_t Micros() {
 		return H3_TIMER->AVS_CNT1;
 	}
 
-	uint32_t Millis(void) {
+	uint32_t Millis() {
 		return H3_TIMER->AVS_CNT0;
 	}
 
-	void WatchdogInit(void) {
+	void WatchdogInit() {
 		m_bIsWatchdog = true;
 		h3_watchdog_enable();
 	}
 
-	void WatchdogFeed(void) {
+	void WatchdogFeed() {
 		h3_watchdog_restart();
 	}
 
-	void WatchdogStop(void) {
+	void WatchdogStop() {
 		m_bIsWatchdog = false;
 		h3_watchdog_disable();
 	}
 
-	bool IsWatchdog(void) {
+	bool IsWatchdog() {
 		return m_bIsWatchdog;
 	}
 
-	TBootDevice GetBootDevice(void){
+	TBootDevice GetBootDevice(){
 		return static_cast<TBootDevice>(h3_get_boot_device());
 	}
 
-	const char *GetWebsiteUrl(void) {
+	const char *GetWebsiteUrl() {
 		return "www.orangepi-dmx.org";
 	}
 
-	static Hardware *Get(void) {
+	static Hardware *Get() {
 		return s_pThis;
 	}
 

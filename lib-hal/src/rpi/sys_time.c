@@ -30,7 +30,7 @@
 #include "bcm2835_st.h"
 #include "arm/synchronize.h"
 
-#include "rtc.h"
+#include "../rtc/rtc.h"
 
 static volatile uint64_t sys_time_init_startup_micros = 0;	///<
 static volatile time_t rtc_startup_seconds = 0;				///<

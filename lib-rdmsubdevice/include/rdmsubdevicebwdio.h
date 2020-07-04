@@ -2,7 +2,7 @@
  * @file rdmsubdevicebwdio.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,25 +30,37 @@
 
 #include "rdmsubdevice.h"
 
-#include "bw_spi_dio.h"
+#include "bwspidio.h"
 
 class RDMSubDeviceBwDio: public RDMSubDevice {
 public:
-	RDMSubDeviceBwDio(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
-	~RDMSubDeviceBwDio(void);
+	RDMSubDeviceBwDio(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::dio::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize(void);
+	bool Initialize() {
+		if (m_BwSpiDio.IsConnected()) {
+			m_BwSpiDio.SetDirection(0x7F);
+			m_BwSpiDio.Output(0x00);
+			return true;
+		}
+		return false;
+	}
 
-	void Start(void);
-	void Stop(void);
+	void Start() {
+	}
+
+	void Stop() {
+		m_BwSpiDio.Output(0x00);
+		m_nData = 0;
+	}
+
 	void Data(const uint8_t *pData, uint16_t nLength);
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
 private:
-	uint8_t m_nData;
-	struct _device_info m_tDeviceInfo;
+	BwSpiDio m_BwSpiDio;
+	uint8_t m_nData = 0;
 };
 
 #endif /* RDMSUBDEVICEBWDIO_H_ */

@@ -2,7 +2,7 @@
  * @file rdmsubdevicedummy.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,18 +33,15 @@
 class RDMSubDeviceDummy: public RDMSubDevice {
 public:
 	RDMSubDeviceDummy(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
-	~RDMSubDeviceDummy(void);
 
-	bool Initialize(void) override;
+	bool Initialize() override;
 
-	void Start(void) override;
-	void Stop(void) override;
+	void Start() override;
+	void Stop() override;
 	void Data(const uint8_t *pDdata, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
-
-private:
 };
 
 #endif /* RDMSUBDEVICEDUMMY_H_ */

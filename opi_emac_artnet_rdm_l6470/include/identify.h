@@ -30,14 +30,14 @@
 
 class Identify: public RDMIdentify {
 public:
-	Identify(void);
-	~Identify(void);
+	Identify(void) {
+	}
+	void SetMode(TRdmIdentifyMode nMode) {
+		m_nMode = nMode;
+	}
 
-	void SetMode(TRdmIdentifyMode nMode);
-	void Run(void);
-
-private:
-
+	void Run(void) {
+	}
 };
 
 #endif /* IDENTIFY_H_ */

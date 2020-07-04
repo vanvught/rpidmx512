@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined(RASPPI)
 /**
  * @file rdmsubdevicebw7fets.cpp
  *
@@ -26,66 +26,33 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 
 #include "rdmsubdevicebw7fets.h"
 
-#include "bw_spi_7fets.h"
+#include "bwspi7fets.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 7;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_7fets", nDmxStartAddress),
-	m_nData(0)
+RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_7fets", nDmxStartAddress), m_BwSpi7fets(nChipSselect, nSlaveAddress)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-RDMSubDeviceBw7fets::~RDMSubDeviceBw7fets(void) {
-}
-
-bool RDMSubDeviceBw7fets::Initialize(void) {
-	const bool IsConnected = bw_spi_7fets_start(&m_tDeviceInfo);
-
-	if (IsConnected) {
-		bw_spi_7fets_output(&m_tDeviceInfo, 0);
-	}
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
-}
-
-void RDMSubDeviceBw7fets::Start(void) {
-}
-
-void RDMSubDeviceBw7fets::Stop(void) {
-	bw_spi_7fets_output(&m_tDeviceInfo, 0);
-	m_nData = 0;
-}
-
 void RDMSubDeviceBw7fets::Data(const uint8_t *pData, uint16_t nLength) {
 	uint8_t nData = 0;
-	const uint16_t nDmxStartAddress = GetDmxStartAddress();
+	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (1 << j);
 		}
 	}
 
 	if (m_nData != nData) {
-		bw_spi_7fets_output(&m_tDeviceInfo, nData);
+		m_BwSpi7fets.Output(nData);
 		m_nData = nData;
 	}
 }

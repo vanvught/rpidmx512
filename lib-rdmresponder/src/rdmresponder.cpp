@@ -31,6 +31,7 @@
 #include "dmxreceiver.h"
 
 #include "rdmresponder.h"
+#include "rdmsubdevices.h"
 
 #include "lightset.h"
 
@@ -39,12 +40,11 @@
 
 #include "debug.h"
 
-RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin, bool EnableSubDevices) :
+RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin) :
 	DMXReceiver(nGpioPin),
-	RDMDeviceResponder(pRDMPersonality, pLightSet, EnableSubDevices),
+	RDMDeviceResponder(pRDMPersonality, pLightSet),
 	m_pRdmCommand(0),
 	m_RDMHandler(0),
-	m_IsEnableSubDevices(EnableSubDevices),
 	m_IsSubDeviceActive(false)
 {
 	m_pRdmCommand = new struct TRdmMessage;
@@ -91,16 +91,18 @@ int RDMResponder::Run(void) {
 
 	const uint8_t *pDmxDataIn = DMXReceiver::Run(nLength);
 
-	if (m_IsEnableSubDevices && (nLength == -1)) {
-		if (m_IsSubDeviceActive) {
-			RDMSubDevices::Get()->Stop();
-			m_IsSubDeviceActive = false;
-		}
-	} else if (pDmxDataIn != 0) {
-		RDMSubDevices::Get()->SetData(pDmxDataIn, static_cast<uint16_t>(nLength));
-		if (!m_IsSubDeviceActive) {
-			RDMSubDevices::Get()->Start();
-			m_IsSubDeviceActive = true;
+	if (RDMSubDevices::Get()->GetCount() != 0) {
+		if (nLength == -1) {
+			if (m_IsSubDeviceActive) {
+				RDMSubDevices::Get()->Stop();
+				m_IsSubDeviceActive = false;
+			}
+		} else if (pDmxDataIn != 0) {
+			RDMSubDevices::Get()->SetData(pDmxDataIn, static_cast<uint16_t>(nLength));
+			if (!m_IsSubDeviceActive) {
+				RDMSubDevices::Get()->Start();
+				m_IsSubDeviceActive = true;
+			}
 		}
 	}
 

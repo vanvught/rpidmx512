@@ -63,9 +63,6 @@ RDMDiscovery::RDMDiscovery(uint8_t nPort) : m_nPort(nPort) {
 	m_DiscUniqueBranch.SetPid(E120_DISC_UNIQUE_BRANCH);
 }
 
-RDMDiscovery::~RDMDiscovery(void) {
-}
-
 void RDMDiscovery::SetUid(const uint8_t *uid) {
 	memcpy(m_Uid, uid, RDM_UID_SIZE);
 

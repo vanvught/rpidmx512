@@ -21,12 +21,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef SERIAL_MCP23X17_H_
-#define SERIAL_MCP23X17_H_
+#ifndef MCP23X17_H_
+#define MCP23X17_H_
 
 #include <stdint.h>
 
 namespace mcp23x17 {
+namespace reg {
 static constexpr uint8_t IODIRA = 0x00;		///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
 static constexpr uint8_t IODIRB = 0x01;		///< I/O DIRECTION (IODIRB) REGISTER, 1 = Input (default), 0 = Output
 static constexpr uint8_t IPOLA = 0x02;		///< INPUT POLARITY (IPOLA) REGISTER, 0 = Normal (default)(low reads as 0), 1 = Inverted (low reads as 1)
@@ -49,11 +50,25 @@ static constexpr uint8_t GPIOA = 0x12;		///< PORT (GPIOA) REGISTER, Value on the
 static constexpr uint8_t GPIOB = 0x13;		///< PORT (GPIOB) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
 static constexpr uint8_t OLATA = 0x14;		///< OUTPUT LATCH REGISTER (OLATA), 1 = Latch High, 0 = Latch Low (default) Reading Returns Latch State, Not Port Value
 static constexpr uint8_t OLATB = 0x15;		///< OUTPUT LATCH REGISTER (OLATB), 1 = Latch High, 0 = Latch Low (default) Reading Returns Latch State, Not Port Value
-// SPI
-static constexpr uint8_t CMD_WRITE = 0x40;
-static constexpr uint8_t CMD_READ = 0x41;
+namespace iocon {
+static constexpr uint8_t HAEN = (1U << 3);
+}  // namespace iocon
+}  // namespace reg
 
-static constexpr uint8_t IOCON_HAEN = (1U << 3);
-}
+namespace i2c {
+static constexpr auto address = 0x20;
+}  // namespace i2c
 
-#endif /* SERIAL_MCP23X17_H_ */
+namespace spi {
+namespace speed {
+static constexpr uint32_t max_hz = 10000000;	///< 10 MHz
+static constexpr uint32_t default_hz = 2000000;	///< 2 MHz
+}  // namespace speed
+namespace cmd {
+static constexpr uint8_t WRITE = 0x40;
+static constexpr uint8_t READ = 0x41;
+}  // namespace cmd
+}  // namespace spi
+}  // namespace mcp23x17
+
+#endif /* MCP23X17_H_ */

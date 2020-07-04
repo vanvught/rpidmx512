@@ -47,7 +47,7 @@ struct RDMDeviceParamsMask {
 
 class RDMDeviceParamsStore {
 public:
-	virtual ~RDMDeviceParamsStore(void) {
+	virtual ~RDMDeviceParamsStore() {
 	}
 
 	virtual void Update(const struct TRDMDeviceParams *pRDMDeviceParams)=0;
@@ -56,10 +56,9 @@ public:
 
 class RDMDeviceParams {
 public:
-	RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore = 0);
-	~RDMDeviceParams(void);
+	RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -67,7 +66,7 @@ public:
 
 	void Set(RDMDevice *pRDMDevice);
 
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

@@ -47,5 +47,10 @@ typedef unsigned int 		uintptr_t;
  #endif
 #endif
 
+
+#define INT16_MIN   (-0x7fff - 1)
+
+#define INT16_MAX   0x7fff
+
 #endif
 

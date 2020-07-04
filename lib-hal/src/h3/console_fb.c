@@ -61,7 +61,7 @@ static uint32_t saved_back = CONSOLE_BLACK;
 #define FB_PITCH	fb_pitch
 #endif
 
-int console_init(void) {
+int __attribute__((cold)) console_init(void) {
 	int r = fb_init();
 
 	if (r == FB_OK) {

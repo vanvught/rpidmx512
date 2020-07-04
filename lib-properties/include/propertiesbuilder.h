@@ -32,7 +32,6 @@
 class PropertiesBuilder {
 public:
 	PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength);
-	~PropertiesBuilder(void);
 
 	template<typename T>
 	bool Add(const char *pProperty, const T x, bool bIsSet = true, uint32_t nPrecision = 1) {
@@ -64,22 +63,31 @@ public:
 
 	bool AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet = true);
 
-	bool AddHex8(const char *pProperty, uint8_t nValue, bool bIsSet = true);
-
-	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet = true);
-
-	bool AddHex16(const char *pProperty, const uint16_t nValue16, bool bIsSet = true) {
-		const uint8_t nValue[2] = { static_cast<uint8_t>((nValue16 & 0xFF00) >> 8), static_cast<uint8_t>(nValue16 & 0xFF) };
-		return AddHex16(pProperty, nValue, bIsSet);
+	bool AddHex8(const char *pProperty, uint8_t nValue, bool bIsSet = true) {
+		return AddHex(pProperty, nValue, bIsSet, 2);
 	}
 
-	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true);
+	bool AddHex16(const char *pProperty, const uint16_t nValue16, bool bIsSet = true) {
+		return AddHex(pProperty, nValue16, bIsSet, 4);
+	}
+
+	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet = true) {
+		const uint16_t v = (static_cast<uint16_t>(nValue[0]) << 8) | nValue[1];
+		return AddHex16(pProperty, v, bIsSet);
+	}
+
+	bool AddHex24(const char *pProperty, const uint32_t nValue32, bool bIsSet = true) {
+		return AddHex(pProperty, nValue32, bIsSet, 6);
+	}
 
 	bool AddComment(const char *pComment);
 
-	uint32_t GetSize(void) {
+	uint32_t GetSize() {
 		return m_nSize;
 	}
+
+private:
+	bool AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const uint32_t nWidth);
 
 private:
 	char *m_pBuffer;

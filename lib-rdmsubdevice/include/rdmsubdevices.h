@@ -2,7 +2,7 @@
  * @file rdmsubdevices.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,34 @@
 #include <stdint.h>
 
 #include "rdmsubdevice.h"
+#include "rdmsubdevicesconst.h"
+
 #include "rdmpersonality.h"
+
+#if defined(BARE_METAL) && !( defined(ARTNET_NODE) && defined(RDM_RESPONDER) )
+# define RDM_SUBDEVICES_ENABLE
+#endif
+
+#if defined (RDMNET_LLRP_ONLY)
+# undef RDM_SUBDEVICES_ENABLE
+#endif
+
+namespace rdm {
+namespace subdevices {
+static constexpr uint32_t max = 8;
+static constexpr uint32_t store = 96;	// bytes
+}  // namespace subdevices
+}  // namespace rdm
 
 class RDMSubDevices {
 public:
-	RDMSubDevices(void);
-	~RDMSubDevices(void);
+	RDMSubDevices();
+	~RDMSubDevices();
 
-	void Init(void);
 	bool Add(RDMSubDevice *pRDMSubDevice);
-	uint16_t GetCount(void) const;
+	uint16_t GetCount() {
+		return m_nCount;
+	}
 
 	struct TRDMSubDevicesInfo *GetInfo(uint16_t nSubDevice);
 
@@ -54,28 +72,23 @@ public:
 	void SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength);
 
 	// E120_FACTORY_DEFAULTS		0x0090
-	bool GetFactoryDefaults(void);
-	void SetFactoryDefaults(void);
+	bool GetFactoryDefaults();
+	void SetFactoryDefaults();
 
 	// E120_DMX_START_ADDRESS		0x00F0
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice);
 	void SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAddress);
 
-public:
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 	void SetData(const uint8_t *pData, uint16_t nLength);
 
-public:
-	static RDMSubDevices* Get(void) {
+	static const char *GetTypeString(rdm::subdevices::type tType);
+	static rdm::subdevices::type GetTypeString(const char *pValue);
+
+	static RDMSubDevices* Get() {
 		return s_pThis;
 	}
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *s);
 
 private:
 	RDMSubDevice **m_pRDMSubDevice;

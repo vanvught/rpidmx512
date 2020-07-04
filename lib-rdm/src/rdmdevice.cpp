@@ -96,12 +96,6 @@ RDMDevice::RDMDevice(void):
 	DEBUG_EXIT
 }
 
-RDMDevice::~RDMDevice(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 uint16_t RDMDevice::CalculateChecksum(void) {
 	uint16_t nChecksum = m_nDeviceRootLabelLength;
 

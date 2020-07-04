@@ -37,7 +37,6 @@ void hardware_led_set(const int);
 class LedBlink {
 public:
 	LedBlink(void);
-	~LedBlink(void);
 
 	void SetFrequency(uint32_t nFreqHz) {
 		m_nFreqHz = nFreqHz;

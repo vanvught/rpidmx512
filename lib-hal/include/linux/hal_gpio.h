@@ -26,5 +26,33 @@
 #ifndef LINUX_HAL_GPIO_H_
 #define LINUX_HAL_GPIO_H_
 
+#if defined (RASPPI)
+
+#else
+
+enum GPIO_EXT {
+	GPIO_EXT_35,
+	GPIO_EXT_26,
+	GPIO_EXT_38
+};
+
+enum GPIO_FSEL {
+	GPIO_FSEL_OUTPUT, GPIO_FSEL_INPUT
+};
+
+# define FUNC_PREFIX(x) x
+# include <stdint.h>
+# ifdef __cplusplus
+extern "C" {
+# endif
+  inline static void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
+  inline static void gpio_set(__attribute__((unused)) uint8_t _p) { }
+  inline static void gpio_clr(__attribute__((unused)) uint8_t _p) { }
+# ifdef __cplusplus
+}
+# endif
+
+#endif
+
 
 #endif /* LINUX_HAL_GPIO_H_ */

@@ -36,8 +36,7 @@
 
 class Hardware {
 public:
-	Hardware(void);
-	~Hardware(void);
+	Hardware();
 
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
@@ -45,29 +44,29 @@ public:
 	const char *GetCpuName(uint8_t &nLength);
 	const char *GetSocName(uint8_t &nLength);
 
-	uint32_t GetReleaseId(void);
+	uint32_t GetReleaseId();
 
-	uint32_t GetBoardId(void) {
+	uint32_t GetBoardId() {
 		return m_nBoardId;
 	}
 
-	float GetCoreTemperature(void);
-	float GetCoreTemperatureMax(void);
+	float GetCoreTemperature();
+	float GetCoreTemperatureMax();
 
 	void SetLed(THardwareLedStatus tLedStatus);
 
-	bool Reboot(void);
+	bool Reboot();
 
 	void SetRebootHandler(RebootHandler *pRebootHandler) {
 		m_pRebootHandler = pRebootHandler;
 	}
 
-	bool PowerOff(void);
+	bool PowerOff();
 
-	uint32_t GetUpTime(void);
+	uint32_t GetUpTime();
 
-	time_t GetTime(void) {
-		return time(NULL);
+	time_t GetTime() {
+		return time(nullptr);
 	}
 
 	void SetSysTime(time_t nTime);
@@ -75,19 +74,19 @@ public:
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
-	uint32_t Micros(void);
-	uint32_t Millis(void);
+	uint32_t Micros();
+	uint32_t Millis();
 
-	bool IsWatchdog(void) { return false;}
-	void WatchdogInit(void) { } // Not implemented
-	void WatchdogFeed(void) { } // Not implemented
-	void WatchdogStop(void) { } // Not implemented
+	bool IsWatchdog() { return false;}
+	void WatchdogInit() { } // Not implemented
+	void WatchdogFeed() { } // Not implemented
+	void WatchdogStop() { } // Not implemented
 
-	const char *GetWebsiteUrl(void) {
+	const char *GetWebsiteUrl() {
 		return "www.orangepi-dmx.org";
 	}
 
-	TBootDevice GetBootDevice(void) {
+	TBootDevice GetBootDevice() {
 #if defined (RASPPI)
 		return BOOT_DEVICE_MMC0;
 #else
@@ -95,7 +94,7 @@ public:
 #endif
 	}
 
-	 static Hardware *Get(void) {
+	 static Hardware *Get() {
 		return s_pThis;
 	}
 
@@ -103,7 +102,7 @@ private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
 
 private:
-	RebootHandler *m_pRebootHandler = 0;
+	RebootHandler *m_pRebootHandler = nullptr;
 	enum TBoardType {
 		BOARD_TYPE_LINUX,
 		BOARD_TYPE_CYGWIN,

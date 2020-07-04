@@ -27,7 +27,7 @@
 
 #include "h3.h"
 
-#include "rtc.h"
+#include "../rtc/rtc.h"
 
 #include "debug.h"
 
@@ -36,7 +36,7 @@ static time_t elapsed_previous = 0;
 static uint32_t millis_init = 0;
 static bool have_rtc = false;
 
-void sys_time_init(void) {
+void __attribute__((cold)) sys_time_init(void) {
 	struct tm tmbuf;
 	struct tm tm_rtc;
 

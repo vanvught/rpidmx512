@@ -33,7 +33,6 @@
 class LedBlink {
 public:
 	LedBlink(void);
-	~LedBlink(void);
 
 	void SetFrequency(uint32_t nFreqHz);
 	uint32_t GetFrequency(void) {

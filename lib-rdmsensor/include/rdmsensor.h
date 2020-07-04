@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,10 +57,34 @@ struct TRDMSensorValues {
 
 static constexpr int16_t RDM_SENSOR_TEMPERATURE_ABS_ZERO	=	-273;
 
+namespace rdm {
+namespace sensor {
+
+template<class T>
+constexpr int16_t safe_range_max(const T& a)
+{
+    static_assert(sizeof(int16_t) <= sizeof(T), "T");
+
+    return (a > static_cast<T>(INT16_MAX)) ? INT16_MAX : static_cast<int16_t>(a);
+}
+
+template<class T>
+constexpr int16_t safe_range_min(const T& a)
+{
+    static_assert(sizeof(int16_t) <= sizeof(T), "T");
+
+    return (a < static_cast<T>(INT16_MIN)) ? INT16_MIN : static_cast<int16_t>(a);
+}
+
+}  // namespace rdm
+}  // namespace sensor
+
+
 class RDMSensor {
 public:
 	RDMSensor(uint8_t nSensor);
-	virtual ~RDMSensor(void);
+	virtual ~RDMSensor() {
+	}
 
 public:
 	void SetType(uint8_t nType) {
@@ -93,17 +117,19 @@ public:
 
 	void SetDescription(const char *pDescription);
 
-public:
-	const struct TRDMSensorDefintion* GetDefintion(void) {
-		return &m_tRDMSensorDefintion;
-	}
-	const struct TRDMSensorValues* GetValues(void);
-	void SetValues(void);
-	void Record(void);
+	void Print();
 
 public:
-	virtual bool Initialize(void)=0;
-	virtual int16_t GetValue(void)=0;
+	const struct TRDMSensorDefintion* GetDefintion() {
+		return &m_tRDMSensorDefintion;
+	}
+	const struct TRDMSensorValues* GetValues();
+	void SetValues();
+	void Record();
+
+public:
+	virtual bool Initialize()=0;
+	virtual int16_t GetValue()=0;
 
 private:
 	uint8_t m_nSensor;

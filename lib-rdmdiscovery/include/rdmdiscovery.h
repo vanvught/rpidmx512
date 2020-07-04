@@ -36,7 +36,6 @@
 class RDMDiscovery: public RDMTod {
 public:
 	RDMDiscovery(uint8_t nPort = 0);
-	~RDMDiscovery(void);
 
 	void SetUid(const uint8_t *);
 	const uint8_t *GetUid(void);

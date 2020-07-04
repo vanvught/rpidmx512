@@ -62,9 +62,6 @@ RDMHandler::RDMHandler(bool bIsRdm):
 {
 }
 
-RDMHandler::~RDMHandler(void) {
-}
-
 void RDMHandler::HandleString(const char *pString, uint32_t nLength) {
 	struct TRdmMessage *RdmMessage = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 

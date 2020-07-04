@@ -36,6 +36,10 @@
 
 #include "arm/synchronize.h"
 
+#ifndef NDEBUG
+# include "../debug/i2cdetect.h"
+#endif
+
 #if defined(ORANGE_PI)
 #elif defined(ORANGE_PI_ONE)
 #else
@@ -64,12 +68,13 @@ namespace sysname {
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void) {
+Hardware::Hardware() {
 	assert(s_pThis == 0);
 	s_pThis = this;
-}
 
-Hardware::~Hardware(void) {
+#ifndef NDEBUG
+	I2cDetect i2cdetect;
+#endif
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -123,7 +128,7 @@ void Hardware::GetTime(struct tm *pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-bool Hardware::Reboot(void) {
+bool Hardware::Reboot() {
 	LedBlink::Get()->SetFrequency(8);
 
 	if (m_pRebootHandler != 0) {

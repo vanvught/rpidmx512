@@ -54,31 +54,31 @@ public:
 	};
 
 	SC16IS740(uint8_t nAddress = sc16is740::I2C_ADDRESS, uint32_t nOnBoardCrystal = sc16is740::CRISTAL_HZ);
-	~SC16IS740(void);
+	~SC16IS740();
 
 	void SetOnBoardCrystal(uint32_t nHz) {
 		m_nOnBoardCrystal = nHz;
 	}
-	uint32_t GetOnBoardCrystal(void) {
+	uint32_t GetOnBoardCrystal() {
 		return m_nOnBoardCrystal;
 	}
 
-	bool Init(void);
+	bool Init();
 
 	void SetFormat(uint32_t nBits, SerialParity tParity, uint32_t nStopBits);
 	void SetBaud(uint32_t nBaud);
 
-	bool IsInterrupt(void) {
+	bool IsInterrupt() {
 		const uint32_t nRegisterIIR = ReadRegister(SC16IS7X0_IIR);
 
 		return ((nRegisterIIR & 0x1) != 0x1);
 	}
 
-	void Print(void);
+	void Print();
 
 	// Read
 
-	int GetChar(void) {
+	int GetChar() {
 		if (!IsReadable()) {
 			return -1;
 		}
@@ -111,11 +111,11 @@ public:
 	void FlushRead(uint32_t nTimeOut);
 
 private:
-	bool IsWritable(void) {
+	bool IsWritable() {
 		return (ReadRegister(SC16IS7X0_TXLVL) != 0);
 	}
 
-	bool IsReadable(void) {
+	bool IsReadable() {
 		return (ReadRegister(SC16IS7X0_RXLVL) != 0);
 	}
 

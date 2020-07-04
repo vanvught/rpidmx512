@@ -44,30 +44,29 @@ enum TSocType {
 
 class Hardware {
 public:
-	Hardware(void);
-	~Hardware(void);
+	Hardware();
 
 	const char* GetMachine(uint8_t &nLength);
 	const char* GetSysName(uint8_t &nLength);
 
-	uint32_t GetReleaseId(void) {
+	uint32_t GetReleaseId() {
 		return static_cast<uint32_t>(bcm2835_vc_get_get_firmware_revision());
 	}
 
 	const char* GetBoardName(uint8_t &nLength);
 
-	uint32_t GetBoardId(void) {
+	uint32_t GetBoardId() {
 		return m_nBoardId;
 	}
 
 	const char* GetCpuName(uint8_t &nLength);
 	const char* GetSocName(uint8_t &nLength);
 
-	float GetCoreTemperature(void) {
+	float GetCoreTemperature() {
 		return static_cast<float>(bcm2835_vc_get_temperature()) / 1000;
 	}
 
-	float GetCoreTemperatureMax(void) {
+	float GetCoreTemperatureMax() {
 		return static_cast<float>(85);
 	}
 
@@ -79,8 +78,8 @@ public:
 		}
 	}
 
-	bool Reboot(void);
-	bool PowerOff(void) {
+	bool Reboot();
+	bool PowerOff() {
 		return false;
 	}
 
@@ -91,46 +90,46 @@ public:
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
-	time_t GetTime(void) {
+	time_t GetTime() {
 		return time(0);
 	}
 
-	uint32_t GetUpTime(void) {
+	uint32_t GetUpTime() {
 		return hardware_uptime_seconds();
 	}
 
-	uint32_t Micros(void) {
+	uint32_t Micros() {
 		return BCM2835_ST->CLO;
 	}
 
-	uint32_t Millis(void) {
+	uint32_t Millis() {
 		return millis();
 	}
 
-	void WatchdogInit(void) {
+	void WatchdogInit() {
 		bcm2835_watchdog_init();
 	}
 
-	void WatchdogFeed(void) {
+	void WatchdogFeed() {
 		bcm2835_watchdog_feed();
 	}
 
-	void WatchdogStop(void) {
+	void WatchdogStop() {
 		bcm2835_watchdog_stop();
 	}
 
-	const char* GetWebsiteUrl(void) {
+	const char* GetWebsiteUrl() {
 		return "www.orangepi-dmx.org";
 	}
 
-	TBootDevice GetBootDevice(void) {
+	TBootDevice GetBootDevice() {
 		return BOOT_DEVICE_MMC0;
 	}
 
-	void SoftReset(void) {}
+	void SoftReset() {}
 
 public:
-	 static Hardware* Get(void) {
+	 static Hardware* Get() {
 		return s_pThis;
 	}
 

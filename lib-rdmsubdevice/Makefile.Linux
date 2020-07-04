@@ -1,6 +1,6 @@
 #
 DEFINES = #NDEBUG
 #
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-bob/include
+EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-device/include
 #
 include ../linux-template/lib/Rules.mk

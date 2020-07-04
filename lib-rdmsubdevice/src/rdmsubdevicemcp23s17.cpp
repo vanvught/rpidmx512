@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicemcp23s17.cpp
  *
@@ -26,75 +26,33 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 
 #include "rdmsubdevicemcp23s17.h"
 
 #include "mcp23s17.h"
 
-#define MCP23S17_IODIRA	0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
-#define MCP23S17_GPIOA	0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
-
-#define DMX_FOOTPRINT	16
-
+static constexpr uint32_t DMX_FOOTPRINT = 16;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 16-lines", DMX_FOOTPRINT)};
 
 RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp23s17", nDmxStartAddress),
-	m_nData(0)
+	RDMSubDevice("mcp23s17", nDmxStartAddress), m_MCP23S17(nChipSselect, nSpiSpeed, nSlaveAddress)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-RDMSubDeviceMCP23S17::~RDMSubDeviceMCP23S17(void) {
-}
-
-bool RDMSubDeviceMCP23S17::Initialize(void) {
-	const bool IsConnected = mcp23s17_start(&m_tDeviceInfo);
-
-	if (IsConnected) {
-		mcp23s17_reg_write(&m_tDeviceInfo, MCP23S17_IODIRA, 0x0000);
-		mcp23s17_reg_write(&m_tDeviceInfo, MCP23S17_GPIOA, 0x0000);
-	}
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
-}
-
-void RDMSubDeviceMCP23S17::Start(void) {
-}
-
-void RDMSubDeviceMCP23S17::Stop(void) {
-	mcp23s17_reg_write(&m_tDeviceInfo, MCP23S17_GPIOA, 0x0000);
-	m_nData = 0;
-}
-
 void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint16_t nLength) {
 	uint16_t nData = 0;
-	const uint16_t nDmxStartAddress = GetDmxStartAddress();
+	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (1 << i);
 		}
 	}
 
-#ifndef NDEBUG
-	printf("%s:%s m_nData=%x, nData=%x\n", __FILE__, __FUNCTION__, m_nData, nData);
-#endif
-
 	if (m_nData != nData) {
-		mcp23s17_reg_write(&m_tDeviceInfo, MCP23S17_GPIOA, nData);
+		m_MCP23S17.WriteRegister(mcp23x17::reg::GPIOA, nData);
 		m_nData = nData;
 	}
 }

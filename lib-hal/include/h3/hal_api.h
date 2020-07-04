@@ -26,6 +26,8 @@
 #ifndef H3_HAL_API_H_
 #define H3_HAL_API_H_
 
+#include <stdint.h>
+
 #define FUNC_PREFIX(x) h3_##x
 
 #ifdef __cplusplus

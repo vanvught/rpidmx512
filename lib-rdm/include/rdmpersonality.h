@@ -2,7 +2,7 @@
  * @file rdmpersonality.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,14 +33,13 @@
 class RDMPersonality {
 public:
 	RDMPersonality(const char *pDescription, uint16_t nSlots);
-	~RDMPersonality(void);
 
-	uint16_t GetSlots(void) const;
+	uint16_t GetSlots() const;
 
-	const char *GetDescription(void) const;
+	const char *GetDescription() const;
 	void SetDescription(const char *pDescription);
 
-	uint8_t GetDescriptionLength(void) const;
+	uint8_t GetDescriptionLength() const;
 
 	void DescriptionCopyTo(char* p, uint8_t &nLength);
 

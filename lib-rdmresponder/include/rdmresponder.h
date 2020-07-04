@@ -44,7 +44,7 @@
 
 class RDMResponder: public DMXReceiver, public RDMDeviceResponder  {
 public:
-	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool EnableSubDevices = true);
+	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
 	~RDMResponder(void);
 
 	void Init(void);
@@ -59,7 +59,6 @@ private:
 private:
 	struct TRdmMessage *m_pRdmCommand;
 	RDMHandler *m_RDMHandler;
-	bool m_IsEnableSubDevices;
 	bool m_IsSubDeviceActive;
 };
 

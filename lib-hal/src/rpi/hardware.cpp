@@ -57,7 +57,7 @@ namespace sysname {
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
+Hardware::Hardware(): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
@@ -74,9 +74,6 @@ Hardware::Hardware(void): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_T
 	}
 
 	m_nBoardId = bcm2835_vc_get_get_board_revision();
-}
-
-Hardware::~Hardware(void) {
 }
 
 const char *Hardware::GetMachine(uint8_t& nLength) {
@@ -125,7 +122,7 @@ void Hardware::GetTime(struct tm *pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-bool Hardware::Reboot(void) {
+bool Hardware::Reboot() {
 	hardware_led_set(1);
 
 	bcm2835_watchdog_init();

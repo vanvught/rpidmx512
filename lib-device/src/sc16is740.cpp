@@ -35,10 +35,10 @@ SC16IS740::SC16IS740(uint8_t nAddress, uint32_t nOnBoardCrystal) :
 		HAL_I2C(nAddress, hal::i2c::FULL_SPEED), m_nOnBoardCrystal(nOnBoardCrystal) {
 }
 
-SC16IS740::~SC16IS740(void) {
+SC16IS740::~SC16IS740() {
 }
 
-bool SC16IS740::Init(void) {
+bool SC16IS740::Init() {
 	if (!IsConnected()) {
 		DEBUG_PRINTF("Not connected at address %.2x", GetAddress());
 		return false;

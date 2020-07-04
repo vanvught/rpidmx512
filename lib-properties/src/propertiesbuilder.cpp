@@ -38,6 +38,8 @@ PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint3
 	m_nLength(nLength),
 	m_nSize(0)
 {
+	DEBUG_ENTRY
+
 	assert(pFileName != 0);
 	assert(pBuffer != 0);
 
@@ -49,9 +51,8 @@ PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint3
 		pBuffer[l + 1] = '\n';
 		m_nSize = l + 2;
 	}
-}
 
-PropertiesBuilder::~PropertiesBuilder(void) {
+	DEBUG_EXIT
 }
 
 bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet) {
@@ -68,87 +69,6 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
 	} else {
 		i = snprintf(p, nSize, "#%s=" IPSTR "\n", pProperty, IP2STR(nValue));
-	}
-
-	if (i > static_cast<int>(nSize)) {
-		return false;
-	}
-
-	m_nSize += static_cast<uint32_t>(i);
-
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
-
-	return true;
-}
-
-bool PropertiesBuilder::AddHex8(const char *pProperty, uint8_t nValue, bool bIsSet) {
-	if (m_nSize >= m_nLength) {
-		return false;
-	}
-
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
-
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.2x\n", pProperty, nValue);
-	} else {
-		i = snprintf(p, nSize, "#%s=%.2x\n", pProperty, nValue);
-	}
-
-	if (i > static_cast<int>(nSize)) {
-		return false;
-	}
-
-	m_nSize += static_cast<uint32_t>(i);
-
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
-
-	return true;
-}
-
-bool PropertiesBuilder::AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet) {
-	if (m_nSize >= m_nLength) {
-		return false;
-	}
-
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
-
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
-	} else {
-		i = snprintf(p, nSize, "#%s=%.2x%.2x\n", pProperty, nValue[0], nValue[1]);
-	}
-
-	if (i > static_cast<int>(nSize)) {
-		return false;
-	}
-
-	m_nSize += static_cast<uint32_t>(i);
-
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
-
-	return true;
-}
-
-bool PropertiesBuilder::AddHex24(const char *pProperty, const uint32_t nValue, bool bIsSet) {
-	if (m_nSize >= m_nLength) {
-		return false;
-	}
-
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
-
-	int i;
-
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.6x\n", pProperty, nValue);
-	} else {
-		i = snprintf(p, nSize, "#%s=%.6x\n", pProperty, nValue);
 	}
 
 	if (i > static_cast<int>(nSize)) {

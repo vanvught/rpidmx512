@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwdio.cpp
  *
@@ -26,71 +26,33 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 
 #include "rdmsubdevicebwdio.h"
 
-#include "bw_spi_dio.h"
+#include "bwspidio.h"
 
 static constexpr uint32_t DMX_FOOTPRINT = 7;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dio", nDmxStartAddress),
-	m_nData(0)
+RDMSubDeviceBwDio::RDMSubDeviceBwDio(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_dio", nDmxStartAddress), m_BwSpiDio(nChipSselect, nSlaveAddress)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-RDMSubDeviceBwDio::~RDMSubDeviceBwDio(void) {
-}
-
-bool RDMSubDeviceBwDio::Initialize(void) {
-	const bool IsConnected = bw_spi_dio_start(&m_tDeviceInfo);
-
-	if (IsConnected) {
-		bw_spi_dio_fsel_mask(&m_tDeviceInfo, 0x7F);
-		bw_spi_dio_output(&m_tDeviceInfo, 0);
-	}
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
-}
-
-void RDMSubDeviceBwDio::Start(void) {
-}
-
-void RDMSubDeviceBwDio::Stop(void) {
-	bw_spi_dio_output(&m_tDeviceInfo, 0);
-	m_nData = 0;
-}
-
 void RDMSubDeviceBwDio::Data(const uint8_t* pData, uint16_t nLength) {
 	uint8_t nData = 0;
-	const uint16_t nDmxStartAddress = GetDmxStartAddress();
+	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
 			nData = nData | (1 << j);
 		}
 	}
 
-#ifndef NDEBUG
-	printf("%s:%s m_nData=%x, nData=%x\n", __FILE__, __FUNCTION__, m_nData, nData);
-#endif
-
 	if (m_nData != nData) {
-		bw_spi_dio_output(&m_tDeviceInfo, nData);
+		m_BwSpiDio.Output(nData);
 		m_nData = nData;
 	}
 }

@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-bob/include
+EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-device/include
 #
 include ../h3-firmware-template/lib/Rules.mk

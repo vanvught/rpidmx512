@@ -30,27 +30,26 @@
 
 class LedBlink {
 public:
-	LedBlink(void);
-	~LedBlink(void);
+	LedBlink();
 
 	void SetFrequency(uint32_t nFreqHz);
-	uint32_t GetFrequency(void) {
+	uint32_t GetFrequency() {
 		return m_nFreqHz;
 	}
 
 	void SetMode(tLedBlinkMode Mode);
-	tLedBlinkMode GetMode(void) {
+	tLedBlinkMode GetMode() {
 		return m_tMode;
 	}
 
-	void Run(void) {} // Not needed
+	void Run() {} // Not needed
 
 	void SetLedBlinkDisplay(LedBlinkDisplay *pLedBlinkDisplay) {
 		m_pLedBlinkDisplay = pLedBlinkDisplay;
 	}
 
 public:
-	static LedBlink* Get(void) {
+	static LedBlink* Get() {
 		return s_pThis;
 	}
 

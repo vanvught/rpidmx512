@@ -2,7 +2,7 @@
  * @file rdmsubdevicebwdimmer.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,25 +30,36 @@
 
 #include "rdmsubdevice.h"
 
-#include "bw_spi_dimmer.h"
+#include "bwspidimmer.h"
 
 class RDMSubDeviceBwDimmer: public RDMSubDevice {
 public:
-	RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
-	~RDMSubDeviceBwDimmer(void);
+	RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::dimmer::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize(void);
+	bool Initialize() {
+		if (m_BwSpiDimmer.IsConnected()) {
+			m_BwSpiDimmer.Output(0x00);
+			return true;
+		}
+		return false;
+	}
 
-	void Start(void);
-	void Stop(void);
+	void Start() {
+	}
+
+	void Stop() {
+		m_BwSpiDimmer.Output(0x00);
+		m_nData = 0;
+	}
+
 	void Data(const uint8_t *pData, uint16_t nLength);
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
 private:
-	struct _device_info m_tDeviceInfo;
-	uint8_t m_nData;
+	BwSpiDimmer m_BwSpiDimmer;
+	uint8_t m_nData = 0;
 };
 
 #endif /* RDMSUBDEVICEBWDIMMER_H_ */

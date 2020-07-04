@@ -32,13 +32,13 @@
 
 class Max7219Matrix: public MAX7219 {
 public:
-	Max7219Matrix(void) {
+	Max7219Matrix() {
 
 	}
 
 	void Init(uint32_t nCount, uint8_t nIntensity);
 
-	void Cls(void);
+	void Cls();
 
 	void Write(const char *pBuffer, uint8_t nLength);
 

@@ -40,7 +40,7 @@
 #include "debug.h"
 
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	RDMDeviceResponder(pRDMPersonality, pLightSet, false),
+	RDMDeviceResponder(pRDMPersonality, pLightSet),
 	m_pRdmCommand(0),
 	m_RDMHandler(0)
 {

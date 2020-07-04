@@ -2,7 +2,7 @@
  * @file identify.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,14 +30,15 @@
 
 class Identify: public RDMIdentify {
 public:
-	Identify(void);
-	~Identify(void);
+	Identify(void) {
+	}
 
-	void SetMode(TRdmIdentifyMode nMode);
-	void Run(void);
+	void SetMode(TRdmIdentifyMode nMode) {
+		m_nMode = nMode;
+	}
 
-private:
-
+	void Run(void) {
+	}
 };
 
 #endif /* IDENTIFY_H_ */

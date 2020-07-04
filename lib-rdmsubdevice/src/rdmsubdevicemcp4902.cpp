@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicemcp4902.cpp
  *
@@ -25,9 +25,6 @@
  */
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <cassert>
 
 /*
@@ -36,45 +33,16 @@
 
 #include "rdmsubdevicemcp4902.h"
 
-#include "mcp4902.h"
+#include "mcp49x2.h"
 
-#define DMX_FOOTPRINT	2
-
+static constexpr uint32_t DMX_FOOTPRINT = 2;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Analog output 2-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp4902",nDmxStartAddress),
-	m_nDataA(0),
-	m_nDataB(0)
+RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
+	RDMSubDevice("mcp4902",nDmxStartAddress), m_MCP4902(nChipSselect, nSpiSpeed)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
-}
-
-RDMSubDeviceMCP4902::~RDMSubDeviceMCP4902(void) {
-}
-
-bool RDMSubDeviceMCP4902::Initialize(void) {
-	const bool IsConnected = mcp4902_start(&m_tDeviceInfo);
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
-}
-
-void RDMSubDeviceMCP4902::Start(void) {
-}
-
-void RDMSubDeviceMCP4902::Stop(void) {
-	mcp4902_write_ab(&m_tDeviceInfo, 0, 0);
-	m_nDataA = 0;
-	m_nDataB = 0;
 }
 
 void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
@@ -86,7 +54,7 @@ void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
 		const uint8_t nDataA = pData[nOffset];
 
 		if (nDataA != m_nDataA) {
-			mcp4902_write_a(&m_tDeviceInfo, nDataA);
+			m_MCP4902.WriteDacA(nDataA);
 			m_nDataA = nDataA;
 		}
 
@@ -96,7 +64,7 @@ void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
 			const uint8_t nDataB = pData[nOffset];
 
 			if (nDataB != m_nDataB) {
-				mcp4902_write_b(&m_tDeviceInfo, nDataB);
+				m_MCP4902.WriteDacB(nDataB);
 				m_nDataB = nDataB;
 			}
 		}

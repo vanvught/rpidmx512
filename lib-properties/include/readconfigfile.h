@@ -30,7 +30,7 @@ typedef void (*CallbackFunctionPtr)(void *, const char *);
 class ReadConfigFile {
 public:
 	ReadConfigFile(CallbackFunctionPtr cb, void *p);
-	~ReadConfigFile(void);
+	~ReadConfigFile();
 
 	bool Read(const char *pFileName);
 	void Read(const char *pBuffer, unsigned nLength);

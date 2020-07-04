@@ -57,13 +57,7 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 	DEBUG_EXIT
 }
 
-RDMDeviceParams::~RDMDeviceParams(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-bool RDMDeviceParams::Load(void) {
+bool RDMDeviceParams::Load() {
 	DEBUG_ENTRY
 
 	m_tRDMDeviceParams.nSetList = 0;
@@ -72,10 +66,10 @@ bool RDMDeviceParams::Load(void) {
 
 	if (configfile.Read(RDMDeviceParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pRDMDeviceParamsStore != 0) {
+		if (m_pRDMDeviceParamsStore != nullptr) {
 			m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
 		}
-	} else if (m_pRDMDeviceParamsStore != 0) {
+	} else if (m_pRDMDeviceParamsStore != nullptr) {
 		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
 	} else {
 		DEBUG_EXIT
@@ -89,11 +83,11 @@ bool RDMDeviceParams::Load(void) {
 void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pRDMDeviceParamsStore != 0);
+	assert(m_pRDMDeviceParamsStore != nullptr);
 
-	if (m_pRDMDeviceParamsStore == 0) {
+	if (m_pRDMDeviceParamsStore == nullptr) {
 		DEBUG_EXIT
 		return;
 	}
@@ -110,7 +104,7 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void RDMDeviceParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t len;
 	uint16_t uint16;
@@ -135,7 +129,7 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 }
 
 void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
-	assert(pRDMDevice != 0);
+	assert(pRDMDevice != nullptr);
 
 	struct TRDMDeviceInfoData Info;
 
@@ -154,7 +148,7 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 	}
 }
 
-void RDMDeviceParams::Dump(void) {
+void RDMDeviceParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMDeviceParamsConst::FILE_NAME);
 
@@ -173,8 +167,8 @@ void RDMDeviceParams::Dump(void) {
 }
 
 void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<RDMDeviceParams*>(p))->callbackFunction(s);
 }

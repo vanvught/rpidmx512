@@ -28,6 +28,7 @@ SECTIONS
     .text : 
     {
     . = ALIGN(4);
+     *( .text.unlikely)
      *(.text*)
     } > ram
     

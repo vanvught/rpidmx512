@@ -30,7 +30,7 @@
 
 class LedBlinkDisplay {
 public:
-	virtual ~LedBlinkDisplay(void) {}
+	virtual ~LedBlinkDisplay() {}
 
 	virtual void Print(uint32_t nState)=0;
 };

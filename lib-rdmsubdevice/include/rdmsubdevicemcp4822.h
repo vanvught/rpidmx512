@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp4822.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,26 +30,34 @@
 
 #include "rdmsubdevice.h"
 
-#include "device_info.h"
+#include "mcp48x2.h"
 
 class RDMSubDeviceMCP4822: public RDMSubDevice {
 public:
 	RDMSubDeviceMCP4822(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
-	~RDMSubDeviceMCP4822(void);
 
-	bool Initialize(void);
+	bool Initialize() {
+		return true;
+	}
 
-	void Start(void);
-	void Stop(void);
+	void Start() {
+	}
+
+	void Stop() {
+		m_MCP4822.WriteDacAB(0, 0);
+		m_nDataA = 0;
+		m_nDataB = 0;
+	}
+
 	void Data(const uint8_t *pData, uint16_t nLength);
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
 private:
-	struct _device_info m_tDeviceInfo;
-	uint16_t m_nDataA;
-	uint16_t m_nDataB;
+	dac::MCP4822 m_MCP4822;
+	uint16_t m_nDataA = 0;
+	uint16_t m_nDataB = 0;
 };
 
 #endif /* RDMSUBDEVICEMCP4822_H_ */

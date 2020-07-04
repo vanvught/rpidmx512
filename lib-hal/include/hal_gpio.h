@@ -37,7 +37,7 @@
 # include "rpi/hal_api.h"
 #endif
 
-#if !defined (H3)
+#if defined (RASPPI)
  #define GPIO_EXT_7		RPI_V2_GPIO_P1_07
  #define GPIO_EXT_11	RPI_V2_GPIO_P1_11
  #define GPIO_EXT_12	RPI_V2_GPIO_P1_12

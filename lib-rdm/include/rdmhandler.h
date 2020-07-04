@@ -34,7 +34,6 @@
 class RDMHandler {
 public:
 	RDMHandler(bool bRDM = true);
-	~RDMHandler(void);
 
 	void HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut);
 

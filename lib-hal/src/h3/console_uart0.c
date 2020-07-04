@@ -32,7 +32,7 @@
 static _console_colors cur_fore = CONSOLE_WHITE;
 static _console_colors cur_back = CONSOLE_BLACK;
 
-int console_init(void) {
+int __attribute__((cold)) console_init(void) {
 	uart0_init();
 
 	console_set_fg_color(cur_fore);

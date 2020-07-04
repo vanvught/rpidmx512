@@ -24,56 +24,32 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
-#include <string.h>
 #include <cassert>
-
-#include "readconfigfile.h"
-#include "sscan.h"
-
-#include "debug.h"
 
 #include "rdmsubdevices.h"
 #include "rdmsubdevice.h"
 
 #include "rdmsubdevicedummy.h"
 
-#if defined(BARE_METAL) && !( defined (ARTNET_NODE) && defined(RDM_RESPONDER) )
- #define RDM_SUBDEVICES_ENABLE
-#endif
-
-#if defined (RDMNET_LLRP_ONLY)
- #undef RDM_SUBDEVICES_ENABLE
-#endif
-
-#if defined(RDM_SUBDEVICES_ENABLE)
-#include "devicesparamsconst.h"
-//
-#include "rdmsubdevicebw7fets.h"
-#include "rdmsubdevicebwdimmer.h"
-#include "rdmsubdevicebwdio.h"
-#include "rdmsubdevicebwlcd.h"
-#include "rdmsubdevicebwrelay.h"
-//
-#include "rdmsubdevicemcp23s08.h"
-#include "rdmsubdevicemcp23s17.h"
-#include "rdmsubdevicemcp4822.h"
-#include "rdmsubdevicemcp4902.h"
-#endif
-
-#define RDM_SUBDEVICES_MAX	8
+#include "debug.h"
 
 RDMSubDevices *RDMSubDevices::s_pThis = 0;
 
-RDMSubDevices::RDMSubDevices(void) : m_nCount(0) {
+RDMSubDevices::RDMSubDevices() : m_nCount(0) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
-	m_pRDMSubDevice = new RDMSubDevice*[RDM_SUBDEVICES_MAX];
+#if defined(RDM_SUBDEVICES_ENABLE)
+	m_pRDMSubDevice = new RDMSubDevice*[rdm::subdevices::max];
 	assert(m_pRDMSubDevice != 0);
+
+# ifndef NDEBUG
+	Add(new RDMSubDeviceDummy);
+# endif
+#endif
 }
 
-RDMSubDevices::~RDMSubDevices(void) {
+RDMSubDevices::~RDMSubDevices() {
 	for (unsigned i = 0; i < m_nCount; i++) {
 		delete m_pRDMSubDevice[i];
 		m_pRDMSubDevice[i] = 0;
@@ -82,41 +58,6 @@ RDMSubDevices::~RDMSubDevices(void) {
 	delete [] m_pRDMSubDevice;
 
 	m_nCount = 0;
-}
-
-void RDMSubDevices::Init(void) {
-#ifndef NDEBUG
-	Add(new RDMSubDeviceDummy);
-#endif
-
-#if defined(RDM_SUBDEVICES_ENABLE)
-	ReadConfigFile configfile(RDMSubDevices::staticCallbackFunction, this);
-	configfile.Read(DevicesParamsConst::FILE_NAME);
-#endif
-
-	DEBUG_PRINTF("SubDevices added: %d", m_nCount);
-}
-
-bool RDMSubDevices::Add(RDMSubDevice* pRDMSubDevice) {
-	if(m_nCount == RDM_SUBDEVICES_MAX) {
-		return false;
-	}
-
-	assert(pRDMSubDevice != 0);
-
-	if (!pRDMSubDevice->Initialize()) {
-		delete pRDMSubDevice;
-		pRDMSubDevice = 0;
-		return false;
-	}
-
-	m_pRDMSubDevice[m_nCount++] = pRDMSubDevice;
-
-	return true;
-}
-
-uint16_t RDMSubDevices::GetCount(void) const {
-	return m_nCount;
 }
 
 struct TRDMSubDevicesInfo* RDMSubDevices::GetInfo(uint16_t nSubDevice) {
@@ -192,7 +133,7 @@ RDMPersonality* RDMSubDevices::GetPersonality(uint16_t nSubDevice, uint8_t nPers
 	return m_pRDMSubDevice[nSubDevice - 1]->GetPersonality(nPersonality);
 }
 
-void RDMSubDevices::Start(void) {
+void RDMSubDevices::Start() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < m_nCount; i++) {
@@ -204,7 +145,7 @@ void RDMSubDevices::Start(void) {
 	DEBUG_EXIT
 }
 
-void RDMSubDevices::Stop(void) {
+void RDMSubDevices::Stop() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < m_nCount; i++) {
@@ -226,7 +167,7 @@ void RDMSubDevices::SetData(const uint8_t* pData, uint16_t nLength) {
 	}
 }
 
-bool RDMSubDevices::GetFactoryDefaults(void) {
+bool RDMSubDevices::GetFactoryDefaults() {
 	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			if (!m_pRDMSubDevice[i]->GetFactoryDefaults()) {
@@ -238,64 +179,10 @@ bool RDMSubDevices::GetFactoryDefaults(void) {
 	return true;
 }
 
-void RDMSubDevices::SetFactoryDefaults(void) {
+void RDMSubDevices::SetFactoryDefaults() {
 	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != 0) {
 			m_pRDMSubDevice[i]->SetFactoryDefaults();
 		}
 	}
-}
-
-void RDMSubDevices::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
-
-	(static_cast<RDMSubDevices*>(p))->callbackFunction(s);
-}
-
-void RDMSubDevices::callbackFunction(__attribute__((unused)) const char *pLine) {
-#if defined(RDM_SUBDEVICES_ENABLE)
-	assert(pLine != 0);
-	int nReturnCode;
-	char aDeviceName[65];
-	uint8_t nLength = sizeof(aDeviceName) - 1;
-	char nChipSselect = static_cast<char>(-1);
-	uint8_t nSlaveAddress = 0;
-	uint16_t nDmxStartAddress = 0;
-	uint32_t nSpiSpeed = 0;
-
-	memset(aDeviceName, 0, sizeof(aDeviceName));
-
-	nReturnCode = Sscan::Spi(pLine, &nChipSselect, aDeviceName, &nLength, &nSlaveAddress, &nDmxStartAddress, &nSpiSpeed);
-
-	if ((nReturnCode == SSCAN_OK) && (nLength != 0)) {
-
-		DEBUG_PRINTF("%s [%d] SPI%d %x %d %ld", aDeviceName, nLength, nChipSselect, nSlaveAddress, nDmxStartAddress, static_cast<long int>(nSpiSpeed));
-
-		if ((nChipSselect > 2) || (nDmxStartAddress == 0) || (nDmxStartAddress > 512) ) {
-			DEBUG_EXIT
-			return;
-		}
-
-		if (memcmp(aDeviceName, "bw_spi_7fets", 12) == 0) {
-			Add(new RDMSubDeviceBw7fets(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "bw_spi_dimmer", 13) == 0) {
-			Add(new RDMSubDeviceBwDimmer(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "bw_spi_dio", 10) == 0) {
-			Add(new RDMSubDeviceBwDio(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "bw_spi_lcd", 10) == 0) {
-			Add(new RDMSubDeviceBwLcd(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "bw_spi_relay", 12) == 0) {
-			Add(new RDMSubDeviceBwRelay(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "mcp23s08", 8) == 0) {
-			Add(new RDMSubDeviceMCP23S08(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "mcp23s17", 8) == 0) {
-			Add(new RDMSubDeviceMCP23S17(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "mcp4822", 7) == 0) {
-			Add(new RDMSubDeviceMCP4822(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		} else if (memcmp(aDeviceName, "mcp4902", 7) == 0) {
-			Add(new RDMSubDeviceMCP4902(nDmxStartAddress, nChipSselect, nSlaveAddress, nSpiSpeed));
-		}
-	}
-#endif
 }

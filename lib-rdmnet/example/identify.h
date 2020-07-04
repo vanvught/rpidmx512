@@ -35,9 +35,6 @@ public:
 
 	void SetMode(TRdmIdentifyMode nMode);
 	void Run(void);
-
-private:
-
 };
 
 #endif /* IDENTIFY_H_ */

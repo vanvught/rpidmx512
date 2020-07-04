@@ -36,7 +36,8 @@ enum TRdmIdentifyMode {
 class RDMIdentify {
 public:
 	RDMIdentify(void);
-	virtual ~RDMIdentify(void);
+	virtual ~RDMIdentify(void) {
+	}
 
 	void On(void);
 	void Off(void);

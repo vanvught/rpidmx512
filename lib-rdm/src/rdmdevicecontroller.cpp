@@ -50,9 +50,6 @@ RDMDeviceController::RDMDeviceController(void) {
 	DEBUG_EXIT
 }
 
-RDMDeviceController::~RDMDeviceController(void) {
-}
-
 void RDMDeviceController::Init(void) {
 	DEBUG_ENTRY
 

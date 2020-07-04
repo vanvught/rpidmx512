@@ -67,24 +67,23 @@ struct TRDMDevice {
 
 class RDMDevice {
 public:
-	RDMDevice(void);
-	~RDMDevice(void);
+	RDMDevice();
 
-	void Init(void);
-	void Print(void);
+	void Init();
+	void Print();
 
 	void SetRDMDeviceStore(RDMDeviceStore *pRDMDeviceStore) {
 		m_pRDMDeviceStore = pRDMDeviceStore;
 	}
 
-	void SetFactoryDefaults(void);
-	bool GetFactoryDefaults(void);
+	void SetFactoryDefaults();
+	bool GetFactoryDefaults();
 
-	const uint8_t* GetUID(void) {
+	const uint8_t* GetUID() {
 		return m_tRDMDevice.aDeviceUID;
 	}
 
-	const uint8_t *GetSN(void) {
+	const uint8_t *GetSN() {
 		return m_tRDMDevice.aDeviceSN;
 	}
 
@@ -100,19 +99,19 @@ public:
 	void SetProductCategory(uint16_t nProductCategory) {
 		m_tRDMDevice.nProductCategory = nProductCategory;
 	}
-	uint16_t GetProductCategory(void) {
+	uint16_t GetProductCategory() {
 		return m_tRDMDevice.nProductCategory;
 	}
 
 	void SetProductDetail(uint16_t nProductDetail) {
 		m_tRDMDevice.nProductDetail = nProductDetail;
 	}
-	uint16_t GetProductDetail(void) {
+	uint16_t GetProductDetail() {
 		return m_tRDMDevice.nProductDetail;
 	}
 
 private:
-	uint16_t CalculateChecksum(void);
+	uint16_t CalculateChecksum();
 
 private:
 	struct TRDMDevice m_tRDMDevice;

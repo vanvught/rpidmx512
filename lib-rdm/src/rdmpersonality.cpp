@@ -42,9 +42,6 @@ RDMPersonality::RDMPersonality(const char* pDescription, uint16_t nSlots):
 	SetDescription(pDescription);
 }
 
-RDMPersonality::~RDMPersonality(void) {
-}
-
 uint16_t RDMPersonality::GetSlots(void) const {
 	return m_nSlots;
 }

@@ -41,10 +41,6 @@ RDMIdentify::RDMIdentify(void) :
 	s_pThis = this;
 }
 
-RDMIdentify::~RDMIdentify(void) {
-
-}
-
 void RDMIdentify::On(void) {
 	m_bIsEnabled = true;
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);

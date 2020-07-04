@@ -76,9 +76,9 @@ public:
 		HAL_SPI(SPI_CS0, nSpeedHz == 0 ? max7219::SPEED_DEFAULT_HZ : (nSpeedHz <= max7219::SPEED_MAX_HZ ? nSpeedHz : max7219::SPEED_MAX_HZ)) {
 	}
 
-	void WriteRegister(uint32_t nRegister, uint32_t nData) {
-		const uint16_t nSpiData = (nRegister << 8) | nData;
-		Write(nSpiData);
+	void WriteRegister(uint32_t nRegister, uint32_t nData, const bool bSpiSetup = true) {
+		const uint16_t nSpiData = ((nRegister & 0xFF) << 8) | (nData & 0xFF);
+		Write(nSpiData, bSpiSetup);
 	}
 };
 

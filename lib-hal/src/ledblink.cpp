@@ -45,9 +45,6 @@ LedBlink::LedBlink(void) : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedB
 	s_pThis = this;
 }
 
-LedBlink::~LedBlink(void) {
-}
-
 void LedBlink::SetMode(tLedBlinkMode Mode) {
 	if (m_tMode == Mode) {
 		return;

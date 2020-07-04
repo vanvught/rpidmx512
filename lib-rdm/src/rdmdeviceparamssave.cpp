@@ -42,9 +42,9 @@
 void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptRDMDeviceParams != 0) {
+	if (ptRDMDeviceParams != nullptr) {
 		DEBUG_PUTS("ptRDMDeviceParams != 0");
 		memcpy(&m_tRDMDeviceParams, ptRDMDeviceParams, sizeof(struct TRDMDeviceParams));
 	} else {
@@ -71,13 +71,13 @@ void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, 
 void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pRDMDeviceParamsStore == 0) {
+	if (m_pRDMDeviceParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 
 	DEBUG_EXIT
 }

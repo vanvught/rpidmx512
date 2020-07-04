@@ -40,19 +40,16 @@ RDMSubDeviceDummy::RDMSubDeviceDummy(__attribute__((unused)) uint16_t nDmxStartA
 	SetPersonalities(s_RDMPersonalities, 2);
 }
 
-RDMSubDeviceDummy::~RDMSubDeviceDummy(void) {
-}
-
-bool RDMSubDeviceDummy::Initialize(void) {
+bool RDMSubDeviceDummy::Initialize() {
 	return true;
 }
 
-void RDMSubDeviceDummy::Start(void) {
-	printf("RDMSubDeviceDummy::Start(void)\n");
+void RDMSubDeviceDummy::Start() {
+	printf("RDMSubDeviceDummy::Start()\n");
 }
 
-void RDMSubDeviceDummy::Stop(void) {
-	printf("RDMSubDeviceDummy::Stop(void)\n");
+void RDMSubDeviceDummy::Stop() {
+	printf("RDMSubDeviceDummy::Stop()\n");
 }
 
 void RDMSubDeviceDummy::Data(const uint8_t* pData, uint16_t nLength) {

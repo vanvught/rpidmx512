@@ -1,4 +1,4 @@
-#if defined (BARE_METAL)
+#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwlcd.cpp
  *
@@ -27,69 +27,42 @@
 #include <algorithm>
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
+
+#include "stdio.h"
 
 #include "rdmsubdevicebwlcd.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
+#include "bwspilcd.h"
 
 #ifndef TO_HEX
  #define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 #endif
 
-#include "bw_spi_lcd.h"
-
 static constexpr uint32_t DMX_FOOTPRINT = 4;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("LCD 4-slots H", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots D", DMX_FOOTPRINT), new RDMPersonality("LCD 4-slots %%", DMX_FOOTPRINT)};
-const char s_aLine[BW_LCD_MAX_CHARACTERS + 1] ALIGNED = "--- --- --- --- ";
+static constexpr char s_aLine[bw::lcd::max_characters + 1] = "--- --- --- --- ";
 
-RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed):
-	RDMSubDevice("bw_spi_lcd", nDmxStartAddress),
-	m_IsStarted(false),
-	m_nLength(0)
+RDMSubDeviceBwLcd::RDMSubDeviceBwLcd(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed):
+	RDMSubDevice("bw_spi_lcd", nDmxStartAddress), m_BwSpiLcd(nChipSselect, nSlaveAddress)
 {
-	m_tDeviceInfo.chip_select = static_cast<spi_cs_t>(nChipSselect);
-	m_tDeviceInfo.slave_address = nSlaveAddress;
-	m_tDeviceInfo.speed_hz = nSpiSpeed;
-
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 3);
 
-	for (unsigned i = 0; i < BW_LCD_MAX_CHARACTERS; i++) {
-		m_aText[i] = ' ';
-	}
-
-	for (unsigned i = 0; i < sizeof(m_Data); i++) {
-		m_Data[i] = 0;
-	}
+	memset(m_aText, ' ', sizeof(m_aText));
+	memset(m_Data, 0, sizeof(m_Data));
 }
 
-RDMSubDeviceBwLcd::~RDMSubDeviceBwLcd(void) {
-}
-
-bool RDMSubDeviceBwLcd::Initialize(void) {
-	const bool IsConnected = bw_spi_lcd_start(&m_tDeviceInfo);
-
-	if (IsConnected) {
-		for (unsigned i = 0; i < BW_LCD_MAX_CHARACTERS; i++) {
-			m_aText[i] = ' ';
-		}
-		bw_spi_lcd_text_line_1(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS);
-		bw_spi_lcd_text_line_2(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS);
+bool RDMSubDeviceBwLcd::Initialize() {
+	if (m_BwSpiLcd.IsConnected()) {
+		memset(m_aText, ' ', sizeof(m_aText));
+		m_BwSpiLcd.TextLine(0, m_aText, sizeof(m_aText));
+		m_BwSpiLcd.TextLine(1, m_aText, sizeof(m_aText));
+		return true;
 	}
-
-#ifndef NDEBUG
-	printf("%s:%s IsConnected=%d\n", __FILE__, __FUNCTION__, static_cast<int>(IsConnected));
-#endif
-
-	return IsConnected;
+	return false;
 }
 
-void RDMSubDeviceBwLcd::Start(void) {
+void RDMSubDeviceBwLcd::Start() {
 	if (m_IsStarted) {
 		return;
 	}
@@ -98,23 +71,20 @@ void RDMSubDeviceBwLcd::Start(void) {
 
 	DisplayChannels();
 
-	for (unsigned i = 0; i < BW_LCD_MAX_CHARACTERS; i++) {
-		m_aText[i] = ' ';
-	}
+	memset(m_aText, ' ', sizeof(m_aText));
 
 	DisplayUpdatePersonality();
 
-	bw_spi_lcd_text_line_2(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS);
+	m_BwSpiLcd.TextLine(1, m_aText, bw::lcd::max_characters);
 }
 
-void RDMSubDeviceBwLcd::Stop(void) {
+void RDMSubDeviceBwLcd::Stop() {
 	if(!m_IsStarted) {
 		return;
 	}
 
 	m_IsStarted = false;
-
-	bw_spi_lcd_text_line_2(&m_tDeviceInfo, s_aLine, BW_LCD_MAX_CHARACTERS - 1); // Leave H, D, % at the end
+	m_BwSpiLcd.TextLine(1, s_aLine, bw::lcd::max_characters - 1); // Leave H, D, % at the end
 }
 
 void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint16_t nLength) {
@@ -126,7 +96,7 @@ void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint16_t nLength) {
 
 	const uint8_t* p = &pData[nDmxStartAddress-1];
 
-	for (unsigned i = 0; (i < sizeof(m_Data)) && (i < nLength); i++) {
+	for (uint32_t i = 0; (i < sizeof(m_Data)) && (i < nLength); i++) {
 		if (m_Data[i] != p[i]) {
 			IsDataChanged = true;
 		}
@@ -153,11 +123,11 @@ void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint16_t nLength) {
 			break;
 	}
 
-	bw_spi_lcd_text_line_2(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS - 1);
+	m_BwSpiLcd.TextLine(1, m_aText, bw::lcd::max_characters - 1);
 }
 
-void RDMSubDeviceBwLcd::DisplayChannels(void) {
-	char text[BW_LCD_MAX_CHARACTERS];
+void RDMSubDeviceBwLcd::DisplayChannels() {
+	char text[bw::lcd::max_characters];
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 	unsigned i;
 
@@ -179,7 +149,7 @@ void RDMSubDeviceBwLcd::DisplayChannels(void) {
 		text[nOffset + 3] = ' ';
 	}
 
-	bw_spi_lcd_text_line_1(&m_tDeviceInfo, text, BW_LCD_MAX_CHARACTERS);
+	m_BwSpiLcd.TextLine(0, text, bw::lcd::max_characters);
 }
 
 void RDMSubDeviceBwLcd::DataHex(const uint8_t* pData, uint16_t nLength) {
@@ -253,12 +223,16 @@ void RDMSubDeviceBwLcd::itoaBase10(uint16_t arg, char buf[]) {
 void RDMSubDeviceBwLcd::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		DisplayChannels();
-		for (unsigned i = 0; i < BW_LCD_MAX_CHARACTERS - 1; i++) { // Leave H, D, % at the end
+
+		for (uint32_t i = 0; i < bw::lcd::max_characters - 1; i++) { // Leave H, D, % at the end
 			m_aText[i] = ' ';
 		}
-		bw_spi_lcd_text_line_2(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS - 1); // Leave H, D, % at the end
+
+		m_BwSpiLcd.TextLine(1, m_aText, bw::lcd::max_characters - 1); // Leave H, D, % at the end
 		return;
-	} else if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY) {
+	}
+
+	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_PERSONALITY) {
 		DisplayUpdatePersonality();
 		if (m_aText[2] != ' ') {
 			switch (GetPersonalityCurrent()) {
@@ -276,11 +250,11 @@ void RDMSubDeviceBwLcd::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 			}
 		}
 
-		bw_spi_lcd_text_line_2(&m_tDeviceInfo, m_aText, BW_LCD_MAX_CHARACTERS);
+		m_BwSpiLcd.TextLine(1, m_aText, bw::lcd::max_characters);
 	}
 }
 
-void RDMSubDeviceBwLcd::DisplayUpdatePersonality(void) {
+void RDMSubDeviceBwLcd::DisplayUpdatePersonality() {
 	const uint8_t PersonalityCurrent = GetPersonalityCurrent();
 
 	switch (PersonalityCurrent) {

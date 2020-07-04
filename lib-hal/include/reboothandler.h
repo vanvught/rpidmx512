@@ -28,9 +28,9 @@
 
 class RebootHandler {
 public:
-	virtual ~RebootHandler(void) {}
+	virtual ~RebootHandler() {}
 
-	virtual void Run(void)=0;
+	virtual void Run()=0;
 };
 
 #endif /* REBOOTHANDLER_H_ */

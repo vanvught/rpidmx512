@@ -64,10 +64,9 @@ static constexpr char LANGUAGE[2] = { 'e', 'n' };
 
 RDMDeviceResponder *RDMDeviceResponder::s_pThis = 0;
 
-RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, bool EnableSubDevices) :
+RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 		m_pRDMPersonality(pRDMPersonality),
 		m_pLightSet(pLightSet),
-		m_IsSubDevicesEnabled(EnableSubDevices),
 		m_IsFactoryDefaults(true),
 		m_nCheckSum(0),
 		m_nDmxStartAddressFactoryDefault(DMX_START_ADDRESS_DEFAULT),
@@ -99,37 +98,25 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	DEBUG_EXIT
 }
 
-RDMDeviceResponder::~RDMDeviceResponder(void) {
-	memset(&m_tRDMDeviceInfo, 0, sizeof(struct TRDMDeviceInfo));
-	memset(&m_tRDMSubDeviceInfo, 0, sizeof(struct TRDMDeviceInfo));
-}
-
 void RDMDeviceResponder::Init(void) {
 	DEBUG_ENTRY
 
 	RDMDevice::Init();
 
-	const uint32_t nSoftwareVersionId = RDMSoftwareVersion::GetVersionId();
-	const uint16_t nDeviceModel = Hardware::Get()->GetBoardId();
-
-	m_RDMSensors.Init();
-
-	if (m_IsSubDevicesEnabled) {
-		m_RDMSubDevices.Init();
-	}
-
-	const uint16_t nProductCategory = RDMDevice::GetProductCategory();
-	const uint16_t nSubDevices = m_RDMSubDevices.GetCount();
+	const auto nSoftwareVersionId = RDMSoftwareVersion::GetVersionId();
+	const auto nDeviceModel = Hardware::Get()->GetBoardId();
+	const auto nProductCategory = RDMDevice::GetProductCategory();
+	const auto nSubDevices = m_RDMSubDevices.GetCount();
 
 	m_tRDMDeviceInfo.protocol_major = (E120_PROTOCOL_VERSION >> 8);
 	m_tRDMDeviceInfo.protocol_minor = static_cast<uint8_t>(E120_PROTOCOL_VERSION);
-	m_tRDMDeviceInfo.device_model[0] = (nDeviceModel >> 8);
+	m_tRDMDeviceInfo.device_model[0] = nDeviceModel >> 8;
 	m_tRDMDeviceInfo.device_model[1] = nDeviceModel;
-	m_tRDMDeviceInfo.product_category[0] = (nProductCategory >> 8);
+	m_tRDMDeviceInfo.product_category[0] = nProductCategory >> 8;
 	m_tRDMDeviceInfo.product_category[1] = nProductCategory;
-	m_tRDMDeviceInfo.software_version[0] = (nSoftwareVersionId >> 24);
-	m_tRDMDeviceInfo.software_version[1] = (nSoftwareVersionId >> 16);
-	m_tRDMDeviceInfo.software_version[2] = (nSoftwareVersionId >> 8);
+	m_tRDMDeviceInfo.software_version[0] = nSoftwareVersionId >> 24;
+	m_tRDMDeviceInfo.software_version[1] = nSoftwareVersionId >> 16;
+	m_tRDMDeviceInfo.software_version[2] = nSoftwareVersionId >> 8;
 	m_tRDMDeviceInfo.software_version[3] = nSoftwareVersionId;
 	m_tRDMDeviceInfo.dmx_footprint[0] = (m_pLightSet->GetDmxFootprint() >> 8);
 	m_tRDMDeviceInfo.dmx_footprint[1] = m_pLightSet->GetDmxFootprint();
@@ -292,8 +279,9 @@ bool RDMDeviceResponder::GetFactoryDefaults(void) {
 			return false;
 		}
 
-		if (m_IsSubDevicesEnabled) {
-			m_IsFactoryDefaults = m_RDMSubDevices.GetFactoryDefaults();
+		if (!m_RDMSubDevices.GetFactoryDefaults()) {
+			m_IsFactoryDefaults = false;
+			return false;
 		}
 	}
 

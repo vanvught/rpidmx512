@@ -43,6 +43,7 @@
 #include "rdmpersonality.h"
 
 #include "rdmdeviceparams.h"
+#include "rdmsensorsparams.h"
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
@@ -50,11 +51,12 @@
 #include "lightsetchain.h"
 
 #if defined (ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
- #include "storerdmdevice.h"
- #include "storetlc59711.h"
- #include "storerdmdevice.h"
+# include "spiflashinstall.h"
+# include "spiflashstore.h"
+# include "storerdmdevice.h"
+# include "storetlc59711.h"
+# include "storerdmdevice.h"
+# include "storerdmsensors.h"
 #endif
 
 #include "firmwareversion.h"
@@ -167,20 +169,28 @@ void notmain(void) {
 #endif
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
-	RDMResponder dmxrdm(&personality, pBoard, nGpioDataDirection, false);
+	RDMResponder dmxrdm(&personality, pBoard, nGpioDataDirection);
 
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	RDMDevice *pRDMDevice = &dmxrdm;
-	pRDMDevice->SetRDMDeviceStore(&storeRdmDevice);
+	dmxrdm.SetRDMDeviceStore(&storeRdmDevice);
+
+	StoreRDMSensors storeRdmSensors;
+	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
 #else
 	RDMDeviceParams rdmDeviceParams;
+	RDMSensorsParams rdmSensorsParams;
 #endif
 
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&dmxrdm);
 		rdmDeviceParams.Dump();
+	}
+
+	if (rdmSensorsParams.Load()) {
+		rdmSensorsParams.Set();
+		rdmSensorsParams.Dump();
 	}
 
 	dmxrdm.Init();

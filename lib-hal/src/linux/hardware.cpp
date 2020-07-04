@@ -85,9 +85,9 @@ static char* str_find_replace(char *str, const char *find, const char *replace) 
 #if defined (__linux__)
 # if defined (RASPPI)
  extern "C" {
-  int bcm2835_init(void);
-  int bcm2835_i2c_begin(void);
-  int bcm2835_spi_begin(void);
+  int bcm2835_init();
+  int bcm2835_i2c_begin();
+  int bcm2835_spi_begin();
  }
 # endif
 static constexpr char RASPBIAN_LED_INIT[] = "echo gpio | sudo tee /sys/class/leds/led0/trigger";
@@ -101,7 +101,7 @@ static constexpr char UNKNOWN[] = "Unknown";
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(void):
+Hardware::Hardware():
 #if defined (__CYGWIN__)
 	m_tBoardType(BOARD_TYPE_CYGWIN)
 #elif defined (__linux__)
@@ -197,9 +197,6 @@ Hardware::Hardware(void):
 	}
 }
 
-Hardware::~Hardware(void) {
-}
-
 const char* Hardware::GetMachine(uint8_t &nLength) {
 	nLength = strlen(m_TOsInfo.machine);
 	return m_TOsInfo.machine;
@@ -220,7 +217,7 @@ const char* Hardware::GetSocName(uint8_t& nLength) {
 	return m_aSocName;
 }
 
-uint32_t Hardware::GetReleaseId(void) {
+uint32_t Hardware::GetReleaseId() {
 	const size_t len = strlen(m_TOsInfo.release);
 	uint32_t rev = 0;
 
@@ -239,7 +236,7 @@ const char* Hardware::GetBoardName(uint8_t& nLength) {
 	return m_aBoardName;
 }
 
-uint32_t Hardware::GetUpTime(void) {
+uint32_t Hardware::GetUpTime() {
 #if defined (__APPLE__)
 	struct timeval boottime;
 	size_t len = sizeof(boottime);
@@ -290,7 +287,7 @@ void Hardware::GetTime(struct tm *pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
-bool Hardware::Reboot(void) {
+bool Hardware::Reboot() {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
@@ -312,7 +309,7 @@ bool Hardware::Reboot(void) {
 	return false;
 }
 
-//void Hardware::SoftReset(void) {
+//void Hardware::SoftReset() {
 //	if (m_argv != 0) {
 //		sync();
 //
@@ -326,7 +323,7 @@ bool Hardware::Reboot(void) {
 //	}
 //}
 
-bool Hardware::PowerOff(void) {
+bool Hardware::PowerOff() {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 	return false;
 #else
@@ -346,7 +343,7 @@ bool Hardware::PowerOff(void) {
 #endif
 }
 
-float Hardware::GetCoreTemperature(void) {
+float Hardware::GetCoreTemperature() {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		const char cmd[] = "/opt/vc/bin/vcgencmd measure_temp| egrep \"[0-9.]{4,}\" -o";
@@ -378,7 +375,7 @@ float Hardware::GetCoreTemperature(void) {
 	return -1;
 }
 
-float Hardware::GetCoreTemperatureMax(void) {
+float Hardware::GetCoreTemperatureMax() {
 #if defined (__linux__)
 	return 85; //TODO GetCoreTemperatureMax
 #else
@@ -434,13 +431,13 @@ bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
 	return true;
 }
 
-uint32_t Hardware::Micros(void) {
+uint32_t Hardware::Micros() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
-uint32_t Hardware::Millis(void) {
+uint32_t Hardware::Millis() {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
 

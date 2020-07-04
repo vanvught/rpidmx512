@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -48,7 +49,9 @@
 
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
+
 #include "rdmdeviceparams.h"
+#include "rdmsensorsparams.h"
 
 #include "artnetrdmresponder.h"
 
@@ -60,25 +63,26 @@
 #include "lightsetchain.h"
 
 #if defined (ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
- #include "remoteconfig.h"
- #include "remoteconfigparams.h"
- #include "storeremoteconfig.h"
- #include "storedisplayudf.h"
- #include "storerdmdevice.h"
- #include "storetlc59711.h"
+# include "spiflashinstall.h"
+# include "spiflashstore.h"
+# include "remoteconfig.h"
+# include "remoteconfigparams.h"
+# include "storeremoteconfig.h"
+# include "storedisplayudf.h"
+# include "storerdmdevice.h"
+# include "storerdmsensors.h"
+# include "storetlc59711.h"
 #endif
 
 #if defined (ORANGE_PI_ONE)
- #include "slushdmx.h"
- #define BOARD_NAME	"Slushengine"
+# include "slushdmx.h"
+# define BOARD_NAME	"Slushengine"
 #else
- #include "sparkfundmx.h"
- #include "sparkfundmxconst.h"
- #define BOARD_NAME "Sparkfun"
- #include "storesparkfundmx.h"
- #include "storemotors.h"
+# include "sparkfundmx.h"
+# include "sparkfundmxconst.h"
+# define BOARD_NAME "Sparkfun"
+# include "storesparkfundmx.h"
+# include "storemotors.h"
 #endif
 
 #include "firmwareversion.h"
@@ -193,8 +197,8 @@ void notmain(void) {
 
 	nw.SetNetworkDisplay(&displayUdfHandler);
 #if defined (ORANGE_PI)
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
-	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(StoreNetwork::Get());
+	nw.Init(StoreNetwork::Get());
 #else
 	nw.Init();
 #endif
@@ -204,7 +208,7 @@ void notmain(void) {
 
 	ArtNet4Node node;
 #if defined (ORANGE_PI)
-	ArtNet4Params artnetparams(spiFlashStore.GetStoreArtNet4());
+	ArtNet4Params artnetparams(StoreArtNet4::Get());
 #else
 	ArtNet4Params artnetparams;
 #endif
@@ -222,7 +226,7 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetDirectUpdate(false);
 #if defined (ORANGE_PI)
-	node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
+	node.SetArtNetStore(StoreArtNet::Get());
 #endif
 	node.SetOutput(pBoard);
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
@@ -234,13 +238,22 @@ void notmain(void) {
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 	RdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+
+	StoreRDMSensors storeRdmSensors;
+	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
 #else
 	RDMDeviceParams rdmDeviceParams;
+	RDMSensorsParams rdmSensorsParams;
 #endif
 
 	if(rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&RdmResponder);
 		rdmDeviceParams.Dump();
+	}
+
+	if (rdmSensorsParams.Load()) {
+		rdmSensorsParams.Set();
+		rdmSensorsParams.Dump();
 	}
 
 	RdmResponder.Init();

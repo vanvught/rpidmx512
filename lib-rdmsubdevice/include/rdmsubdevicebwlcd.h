@@ -2,7 +2,7 @@
  * @file rdmsubdevicebwlcd.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,40 +28,37 @@
 
 #include "rdmsubdevice.h"
 
-#include "bw.h"
-#include "bw_spi_lcd.h"
+#include "bwspilcd.h"
 
 class RDMSubDeviceBwLcd: public RDMSubDevice {
 public:
-	RDMSubDeviceBwLcd(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
-	~RDMSubDeviceBwLcd(void);
+	RDMSubDeviceBwLcd(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::lcd::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize(void);
+	bool Initialize();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 	void Data(const uint8_t *pData, uint16_t nLength);
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
 
-private:
 	void itoaBase10(uint16_t arg, char buf[]);
 
-	void DisplayChannels(void);
+	void DisplayChannels();
 
 	void DataHex(const uint8_t *pData, uint16_t nLength);
 	void DataDec(const uint8_t *pData, uint16_t nLength);
 	void DataPct(const uint8_t *pData, uint16_t nLength);
 
-	void DisplayUpdatePersonality(void);
+	void DisplayUpdatePersonality();
 
 private:
-	struct _device_info m_tDeviceInfo;
-	char m_aText[BW_LCD_MAX_CHARACTERS];
-	bool m_IsStarted;
+	BwSpiLcd m_BwSpiLcd;
+	char m_aText[bw::lcd::max_characters];
+	bool m_IsStarted = false;
 	uint8_t m_Data[4];
-	uint8_t m_nLength;
+	uint32_t m_nLength = 0;
 };
 
 #endif /* RDMSUBDEVICEBWLCD_H_ */

@@ -51,15 +51,15 @@ public:
 	HAL_I2C(uint8_t nAddress, uint32_t nBaudrate = hal::i2c::FULL_SPEED) : m_nAddress(nAddress), m_nBaudrate(nBaudrate) {
 	}
 
-	uint8_t GetAddress(void) {
+	uint8_t GetAddress() {
 		return m_nAddress;
 	}
 
-	uint32_t GetBaudrate(void) {
+	uint32_t GetBaudrate() {
 		return m_nBaudrate;
 	}
 
-	bool IsConnected(void) {
+	bool IsConnected() {
 		return IsConnected_(m_nAddress, m_nBaudrate);
 	}
 
@@ -98,8 +98,8 @@ public:
 		FUNC_PREFIX(i2c_write(buffer, 3));
 	}
 
-	uint8_t Read(void) {
-		char buf[1];
+	uint8_t Read() {
+		char buf[1] = {0};
 
 		Setup();
 		FUNC_PREFIX(i2c_read(buf, 1));
@@ -112,8 +112,8 @@ public:
 		return FUNC_PREFIX(i2c_read(pBuffer, nLength));
 	}
 
-	uint16_t Read16(void) {
-		char buf[2];
+	uint16_t Read16() {
+		char buf[2] = {0};
 
 		Setup();
 		FUNC_PREFIX(i2c_read(buf, 2));
@@ -147,7 +147,7 @@ public:
 	}
 
 	uint16_t ReadRegister16DelayUs(uint8_t nRegister, uint32_t nDelayUs) {
-		char buf[2];
+		char buf[2] = {0};
 
 		buf[0] = static_cast<char>(nRegister);
 
@@ -162,7 +162,7 @@ public:
 	}
 
 private:
-	void Setup(void) {
+	void Setup() {
 		FUNC_PREFIX(i2c_set_address(m_nAddress));
 		FUNC_PREFIX(i2c_set_baudrate(m_nBaudrate));
 	}
@@ -178,7 +178,7 @@ private:
 		}
 
 		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		return FUNC_PREFIX(i2c_write(0, 0)) == 0;
+		return FUNC_PREFIX(i2c_write(nullptr, 0)) == 0;
 	}
 
 	uint8_t m_nAddress;

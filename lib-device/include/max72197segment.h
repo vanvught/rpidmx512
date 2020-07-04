@@ -30,26 +30,28 @@
 
 class Max72197Segment: public MAX7219 {
 public:
-	Max72197Segment(void) {
+	Max72197Segment() {
 
 	}
 
 	void Init(uint8_t nIntensity) {
 		WriteRegister(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);
-		WriteRegister(max7219::reg::DISPLAY_TEST, 0);
-		WriteRegister(max7219::reg::DECODE_MODE, max7219::reg::decode_mode::CODEB);
-		WriteRegister(max7219::reg::SCAN_LIMIT, 7);
+		WriteRegister(max7219::reg::DISPLAY_TEST, 0, false);
+		WriteRegister(max7219::reg::DECODE_MODE, max7219::reg::decode_mode::CODEB, false);
+		WriteRegister(max7219::reg::SCAN_LIMIT, 7, false);
 
-		WriteRegister(max7219::reg::INTENSITY, nIntensity & 0x0F);
+		WriteRegister(max7219::reg::INTENSITY, nIntensity & 0x0F, false);
 
 		Cls();
 	}
 
-	void Cls(void) {
-		uint32_t i = 8;
+	void Cls() {
+		WriteRegister(8, max7219::digit::BLANK);
+
+		uint32_t i = 7;
 
 		do {
-			WriteRegister(i, max7219::digit::BLANK);
+			WriteRegister(i, max7219::digit::BLANK, false);
 		} while (--i > 0);
 	}
 

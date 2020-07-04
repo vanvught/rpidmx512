@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -42,6 +42,8 @@
 #include "rdmpersonality.h"
 
 #include "rdmdeviceparams.h"
+#include "rdmsensorsparams.h"
+#include "rdmsubdevicesparams.h"
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
@@ -56,6 +58,8 @@
 #include "storews28xxdmx.h"
 #include "storetlc59711.h"
 #include "storerdmdevice.h"
+#include "storerdmsensors.h"
+#include "storerdmsubdevices.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -128,29 +132,45 @@ void notmain(void) {
 
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
 
-	RDMResponder dmxrdm(&personality, pLightSet, nGpioDataDirection);
+	RDMResponder rdmResponder(&personality, pLightSet, nGpioDataDirection);
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-	dmxrdm.SetRDMDeviceStore(&storeRdmDevice);
+	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&dmxrdm);
+		rdmDeviceParams.Set(&rdmResponder);
 		rdmDeviceParams.Dump();
 	}
 
-	dmxrdm.Init();
-	dmxrdm.Print();
+	StoreRDMSensors storeRdmSensors;
+	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
+
+	if (rdmSensorsParams.Load()) {
+		rdmSensorsParams.Set();
+		rdmSensorsParams.Dump();
+	}
+
+	StoreRDMSubDevices storeRdmSubDevices;
+	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
+
+	if (rdmSubDevicesParams.Load()) {
+		rdmSubDevicesParams.Set();
+		rdmSubDevicesParams.Dump();
+	}
+
+	rdmResponder.Init();
+	rdmResponder.Print();
 
 	hw.WatchdogInit();
 
-	dmxrdm.SetOutput(pLightSet);
-	dmxrdm.Start();
+	rdmResponder.SetOutput(pLightSet);
+	rdmResponder.Start();
 
 	for(;;) {
 		hw.WatchdogFeed();
-		dmxrdm.Run();
+		rdmResponder.Run();
 		spiFlashStore.Flash();
 		identify.Run();
 		lb.Run();
