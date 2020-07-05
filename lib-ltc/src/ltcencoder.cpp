@@ -1,7 +1,7 @@
 /**
  * @file ltcencoder.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -92,9 +92,9 @@ struct TTable {
  *
  */
 
-LtcEncoder *LtcEncoder::s_pThis = 0;
+LtcEncoder *LtcEncoder::s_pThis = nullptr;
 
-LtcEncoder::LtcEncoder(void):
+LtcEncoder::LtcEncoder():
 	m_pLtcBits(0),
 	m_pBuffer(0),
 	m_nBufferSize(SAMPLE_RATE / 24),	// Max buffer size
@@ -120,7 +120,7 @@ LtcEncoder::LtcEncoder(void):
 	p->Format.half_words[4] = __builtin_bswap16(SYNC_WORD_VALUE);
 }
 
-LtcEncoder::~LtcEncoder(void) {
+LtcEncoder::~LtcEncoder() {
 	delete [] m_pBuffer;
 	m_pBuffer = 0;
 
@@ -209,7 +209,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	}
 }
 
-void LtcEncoder::Encode(void) {
+void LtcEncoder::Encode() {
 	const struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	int16_t *dst = m_pBuffer;
@@ -248,7 +248,7 @@ void LtcEncoder::Encode(void) {
 	}
 }
 
-uint32_t LtcEncoder::GetBufferSize(void) {
+uint32_t LtcEncoder::GetBufferSize() {
 	const uint32_t nSize = SAMPLE_RATE / sTables[m_nType].nFPS;
 
 	DEBUG_PRINTF("m_nType=%d, nSize=%d", m_nType, nSize);
@@ -256,7 +256,7 @@ uint32_t LtcEncoder::GetBufferSize(void) {
 	return nSize;
 }
 
-void LtcEncoder::Dump(void) {
+void LtcEncoder::Dump() {
 	debug_dump( m_pLtcBits, sizeof(struct TLtcFormatTemplate));
 
 	printf("\n");
@@ -286,7 +286,7 @@ void LtcEncoder::Dump(void) {
 	printf("\n\nZero's=%d (%s), Ones's=%d\n", nZeros, (nZeros % 2 == 0) ? "even" : "odd!", nOnes);
 }
 
-void LtcEncoder::DumpBuffer(void) {
+void LtcEncoder::DumpBuffer() {
 	debug_dump(m_pBuffer, m_nBufferSize * 2);
 }
 

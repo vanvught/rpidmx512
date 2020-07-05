@@ -34,8 +34,7 @@
 
 class LtcDisplayMax72197Segment: public LtcDisplayMax7219Set, public Max72197Segment {
 public:
-	LtcDisplayMax72197Segment(void);
-	~LtcDisplayMax72197Segment(void);
+	LtcDisplayMax72197Segment();
 
 	void Init(uint8_t nIntensity);
 
@@ -44,7 +43,7 @@ public:
 
 	void WriteChar(uint8_t nChar, uint8_t nPos=0);
 
-	static LtcDisplayMax72197Segment *Get(void) {
+	static LtcDisplayMax72197Segment *Get() {
 		return s_pThis;
 	}
 

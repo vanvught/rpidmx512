@@ -1,7 +1,7 @@
 /**
  * @file ltcencoder.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,23 +31,23 @@
 
 class LtcEncoder {
 public:
-	LtcEncoder(void);
-	~LtcEncoder(void);
+	LtcEncoder();
+	~LtcEncoder();
 
 	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
-	void Encode(void);
-	void Send(void);
+	void Encode();
+	void Send();
 
-	void Dump(void);
-	void DumpBuffer(void);
+	void Dump();
+	void DumpBuffer();
 
-	int16_t *GetBufferPointer(void) {
+	int16_t *GetBufferPointer() {
 		return m_pBuffer;
 	}
 
-	uint32_t GetBufferSize(void);
+	uint32_t GetBufferSize();
 
-	static LtcEncoder* Get(void) {
+	static LtcEncoder* Get() {
 		return s_pThis;
 	}
 
@@ -61,6 +61,7 @@ private:
 	int16_t *m_pBuffer;
 	uint32_t m_nBufferSize;
 	uint32_t m_nType;
+
 	static LtcEncoder *s_pThis;
 };
 

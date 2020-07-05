@@ -30,8 +30,6 @@
 #include "h3/midireader.h"
 #include "ltc.h"
 
-#include "c/led.h"
-
 #include "arm/synchronize.h"
 #include "h3.h"
 #include "h3_timer.h"
@@ -72,9 +70,6 @@ MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	assert(m_ptLtcDisabledOutputs != 0);
 
 	Ltc::InitTimeCode(m_aTimeCode);
-}
-
-MidiReader::~MidiReader(void) {
 }
 
 void MidiReader::Start(void) {

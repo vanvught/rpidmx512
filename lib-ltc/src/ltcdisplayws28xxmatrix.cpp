@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(void) {
+LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix() {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8);
@@ -43,7 +43,7 @@ LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(void) {
 	DEBUG1_EXIT
 }
 
-LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix(void) {
+LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
 	DEBUG1_ENTRY
 
 	delete m_pWS28xxDisplayMatrix;
@@ -91,10 +91,10 @@ void LtcDisplayWS28xxMatrix::ShowMessage(const char *pMessage, struct TLtcDispla
 
 void LtcDisplayWS28xxMatrix::WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) {
 	m_pWS28xxDisplayMatrix->SetCursorPos(nPos, 0);
-	m_pWS28xxDisplayMatrix->PutChar(nChar, tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplayMatrix->PutChar(static_cast<char>(nChar), tColours.nRed, tColours.nGreen, tColours.nBlue);
 	m_pWS28xxDisplayMatrix->Show();
 }
 
-void LtcDisplayWS28xxMatrix::Print(void) {
+void LtcDisplayWS28xxMatrix::Print() {
 	printf(" Matrix %dx%d\n", m_pWS28xxDisplayMatrix->GetMaxPosition(), m_pWS28xxDisplayMatrix->GetMaxLine());
 }

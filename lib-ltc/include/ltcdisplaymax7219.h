@@ -37,25 +37,25 @@ enum TLtcDisplayMax7219Types {
 class LtcDisplayMax7219 {
 public:
 	LtcDisplayMax7219(TLtcDisplayMax7219Types tType = LTCDISPLAYMAX7219_TYPE_MATRIX);
-	~LtcDisplayMax7219(void);
+	~LtcDisplayMax7219();
 
 	void Init(uint8_t nIntensity);
 
-	void Print(void);
+	void Print();
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	static LtcDisplayMax7219 *Get(void) {
+	static LtcDisplayMax7219 *Get() {
 		return s_pThis;
 	}
 
 private:
 	TLtcDisplayMax7219Types m_tMax7219Types;
-	uint8_t m_nIntensity;
-	LtcDisplayMax7219Set *m_pMax7219Set;
+	uint8_t m_nIntensity = 0;
+	LtcDisplayMax7219Set *m_pMax7219Set = nullptr;
 
 	static LtcDisplayMax7219 *s_pThis;
 };

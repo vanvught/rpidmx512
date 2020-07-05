@@ -32,7 +32,7 @@
 #include "display.h"
 #include "display7segment.h"
 
-Ltc7segment *Ltc7segment::s_pThis = 0;
+Ltc7segment *Ltc7segment::s_pThis = nullptr;
 
 static constexpr Display7SegmentMessage msg[4]  = {
 		Display7SegmentMessage::LTC_FILM,
@@ -40,12 +40,9 @@ static constexpr Display7SegmentMessage msg[4]  = {
 		Display7SegmentMessage::LTC_DF,
 		Display7SegmentMessage::LTC_SMPTE };
 
-Ltc7segment::Ltc7segment(void) {
-	assert(s_pThis == 0);
+Ltc7segment::Ltc7segment() {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
-}
-
-Ltc7segment::~Ltc7segment(void) {
 }
 
 void Ltc7segment::Show(TTimecodeTypes tTimecodeType) {

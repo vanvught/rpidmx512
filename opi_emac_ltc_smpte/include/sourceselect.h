@@ -38,24 +38,22 @@
 
 #include "hal_i2c.h"
 
-enum TRunStatus {
-	RUN_STATUS_IDLE,
-	RUN_STATUS_CONTINUE,
-	RUN_STATUS_REBOOT
+enum class RunStatus {
+	IDLE, CONTINUE, REBOOT, TC_RESET
 };
 
 class SourceSelect {
 public:
-	SourceSelect(TLtcReaderSource tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs);
+	SourceSelect(TLtcReaderSource tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds);
 
-	bool Check(void);
+	bool Check();
 	bool Wait(TLtcReaderSource& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
 
-	bool IsConnected(void) {
+	bool IsConnected() {
 		return m_bIsConnected;
 	}
 
-	void Run(void);
+	void Run();
 
 private:
 	void LedBlink(uint8_t nPortB);
@@ -65,13 +63,13 @@ private:
 	void HandleRotary(uint8_t nInputAB, TLtcReaderSource& tLtcReaderSource);
 	void UpdateDisplays(const TLtcReaderSource& tLtcReaderSource);
 	// Running mode
-	void HandleRunActionSelect(void);
-	void SetRunState(TRunStatus tRunState);
+	void HandleRunActionSelect();
+	void SetRunState(RunStatus tRunState);
 	// Internal
 	void HandleInternalTimeCodeStart(TLtcTimeCode &timecode);
 	void HandleInternalTimeCodeStop(TLtcTimeCode &timecode);
 	void HandleInternalTimeCodeFps(TLtcTimeCode &timecode);
-	void HandleInternalKeyEsc(void);
+	void HandleInternalKeyEsc();
 
 private:
 	HAL_I2C m_I2C;
@@ -85,14 +83,16 @@ private:
 	} m_State = SOURCE_SELECT;
 	TLtcReaderSource m_tLtcReaderSource;
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	bool m_bIsConnected;
-	uint8_t m_nPortAPrevious;
-	uint8_t m_nPortB;
-	uint32_t m_nMillisPrevious;
+	bool m_bUseAltFunction;
+	int32_t m_nSkipSeconds;
+	bool m_bIsConnected = false;
+	uint8_t m_nPortAPrevious = 0;
+	uint8_t m_nPortB = 0;
+	uint32_t m_nMillisPrevious = 0;
 	RotaryEncoder m_RotaryEncoder;
-	uint8_t m_tRotaryDirection;
-	TRunStatus m_tRunStatus;
-	uint32_t m_nSelectMillis;
+	uint8_t m_tRotaryDirection = RotaryEncoder::NONE;
+	RunStatus m_tRunStatus = RunStatus::IDLE;
+	uint32_t m_nSelectMillis = 0;
 	int m_nKey = INPUT_KEY_NOT_DEFINED;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };

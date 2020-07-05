@@ -57,6 +57,8 @@ static constexpr char SET[] = "/set/";
 static constexpr char GOTO[] = "goto";
 static constexpr char DIRECTION[] = "direction";
 static constexpr char PITCH[] = "pitch";
+static constexpr char FORWARD[] = "forward";
+static constexpr char BACKWARD[] = "backward";
 } // namespace cmd
 
 namespace length {
@@ -68,6 +70,8 @@ static constexpr auto SET = sizeof(cmd::SET) - 1;
 static constexpr auto GOTO = sizeof(cmd::GOTO) - 1;
 static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
 static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
+static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
+static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
 } // namespace length
 
 namespace tcnet {
@@ -154,8 +158,7 @@ void OSCServer::Run(void) {
 	if (OSC::isMatch(m_pBuffer, m_aPath)) {
 		const uint32_t nCommandLength = strlen(m_pBuffer);
 
-		DEBUG_PUTS(m_pBuffer);
-		DEBUG_PRINTF("%d,%d %s", static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
+		DEBUG_PRINTF("[%s]:%d %d:|%s|", m_pBuffer, static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);
 
 		// */pitch f
 		if (memcmp(&m_pBuffer[m_nPathLength], cmd::PITCH, length::PITCH) == 0) {
@@ -230,6 +233,40 @@ void OSCServer::Run(void) {
 
 					DEBUG_PUTS(&m_pBuffer[nOffset]);
 				}
+			}
+
+			return;
+		}
+		// */forward i
+		if (memcmp(&m_pBuffer[m_nPathLength], cmd::FORWARD, length::FORWARD) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
+
+			if (Msg.GetType(0) != osc::type::INT32) {
+				return;
+			}
+
+			const int nValue = Msg.GetInt(0);
+
+			if (nValue > 0) {
+				LtcGenerator::Get()->ActionForward(nValue);
+				DEBUG_PRINTF("ActionForward(%d)", nValue);
+			}
+
+			return;
+		}
+		// */backward i
+		if (memcmp(&m_pBuffer[m_nPathLength], cmd::BACKWARD, length::BACKWARD) == 0) {
+			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
+
+			if (Msg.GetType(0) != osc::type::INT32) {
+				return;
+			}
+
+			const int nValue = Msg.GetInt(0);
+
+			if (nValue > 0) {
+				LtcGenerator::Get()->ActionBackward(nValue);
+				DEBUG_PRINTF("ActionBackward(%d)", nValue);
 			}
 
 			return;

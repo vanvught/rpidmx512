@@ -55,7 +55,7 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-LtcOutputs *LtcOutputs::s_pThis = 0;
+LtcOutputs *LtcOutputs::s_pThis = nullptr;
 
 LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime):
 	m_bShowSysTime(bShowSysTime),
@@ -78,9 +78,6 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TL
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
-}
-
-LtcOutputs::~LtcOutputs(void) {
 }
 
 void LtcOutputs::Init(void) {

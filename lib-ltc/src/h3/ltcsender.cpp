@@ -33,14 +33,11 @@
 
 #include "debug.h"
 
-LtcSender *LtcSender::s_pThis = 0;
+LtcSender *LtcSender::s_pThis = nullptr;
 
 LtcSender::LtcSender(void): m_nTypePrevious(TC_TYPE_INVALID) {
 	assert(s_pThis == 0);
 	s_pThis = this;
-}
-
-LtcSender::~LtcSender(void) {
 }
 
 void LtcSender::Start(void) {

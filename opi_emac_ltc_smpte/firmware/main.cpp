@@ -79,6 +79,7 @@
 #include "spiflashstore.h"
 #include "storeltc.h"
 #include "storeltcdisplay.h"
+#include "storeartnet.h"
 #include "storetcnet.h"
 #include "storeremoteconfig.h"
 
@@ -139,9 +140,9 @@ void notmain(void) {
 
 	NetworkHandlerOled networkHandlerOled;
 
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.SetNetworkDisplay(&networkHandlerOled);
-	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -188,7 +189,7 @@ void notmain(void) {
 
 	const bool IsAutoStart = ((source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsAutoStart());
 
-	SourceSelect sourceSelect(source, &tLtcDisabledOutputs);
+	SourceSelect sourceSelect(source, &tLtcDisabledOutputs, ltcParams.IsAltFunction(), ltcParams.GetSkipSeconds());
 
 	if (sourceSelect.Check() && !IsAutoStart) {
 		while (sourceSelect.Wait(source, tStartTimeCode, tStopTimeCode)) {
@@ -221,14 +222,14 @@ void notmain(void) {
 	if (bRunArtNet) {
 		display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-		ArtNetParams artnetparams(spiFlashStore.GetStoreArtNet());
+		ArtNetParams artnetparams(StoreArtNet::Get());
 
 		if (artnetparams.Load()) {
 			artnetparams.Set(&node);
 			artnetparams.Dump();
 		}
 
-		node.SetArtNetStore(spiFlashStore.GetStoreArtNet());
+		node.SetArtNetStore(StoreArtNet::Get());
 		node.SetShortName("LTC SMPTE Node");
 		node.SetIpProgHandler(&ipprog);
 
@@ -341,7 +342,7 @@ void notmain(void) {
 	 * LTC Generator
 	 */
 
-	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs);
+	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs, ltcParams.GetSkipFree());
 
 	/**
 	 * Start the reader

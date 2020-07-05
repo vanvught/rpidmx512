@@ -31,7 +31,6 @@
 class LtcOutputs {
 public:
 	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime);
-	~LtcOutputs(void);
 
 	void Init(void);
 	void Update(const struct TLtcTimeCode *ptLtcTimeCode);

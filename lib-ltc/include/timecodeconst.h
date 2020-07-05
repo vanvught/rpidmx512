@@ -27,8 +27,7 @@
 
 #include <stdint.h>
 
-class TimeCodeConst {
-public:
+struct TimeCodeConst {
 	static const uint8_t FPS[4];
 	static const uint32_t TMR_INTV[4];
 };

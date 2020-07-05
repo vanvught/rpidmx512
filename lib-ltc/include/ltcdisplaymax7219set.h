@@ -30,7 +30,7 @@
 
 class LtcDisplayMax7219Set {
 public:
-	virtual ~LtcDisplayMax7219Set(void) {}
+	virtual ~LtcDisplayMax7219Set() {}
 
 	virtual void Init(uint8_t nIntensity)=0;
 

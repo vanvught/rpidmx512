@@ -34,8 +34,6 @@
 
 #include "network.h"
 
-#include "c/led.h"
-
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
@@ -74,6 +72,8 @@ namespace cmd {
 	static constexpr char RATE[] = "rate#";
 	static constexpr char DIRECTION[] = "direction#";
 	static constexpr char PITCH[] = "pitch#";
+	static constexpr char FORWARD[] = "forward#";
+	static constexpr char BACKWARD[] = "backward#";
 }
 
 namespace length {
@@ -83,6 +83,8 @@ namespace length {
 	static constexpr auto RATE = sizeof(cmd::RATE) - 1;
 	static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
 	static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
+	static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
+	static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
 }
 
 namespace udp {
@@ -127,26 +129,18 @@ static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 	return sign * res;
 }
 
-LtcGenerator *LtcGenerator::s_pThis = 0;
+LtcGenerator *LtcGenerator::s_pThis = nullptr;
 
-LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs):
+LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const struct TLtcTimeCode* pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs, bool bSkipFree):
 	m_pStartLtcTimeCode(const_cast<struct TLtcTimeCode*>(pStartLtcTimeCode)),
+	m_nStartSeconds(GetSeconds(*m_pStartLtcTimeCode)),
 	m_pStopLtcTimeCode(const_cast<struct TLtcTimeCode*>(pStopLtcTimeCode)),
-	m_nFps(0),
-	m_tDirection(LTC_GENERATOR_FORWARD),
-	m_fPitchControl(0),
-	m_nPitchTicker(1),
-	m_nPitchPrevious(0),
-	m_tPitch(LTC_GENERATOR_FASTER),
-	m_nTimer0Interval(0),
-	m_nButtons(0),
-	m_nHandle(-1),
-	m_nBytesReceived(0),
-	m_bIsStarted(false)
+	m_nStopSeconds(GetSeconds(*m_pStopLtcTimeCode)),
+	m_bSkipFree(bSkipFree)
 {
-	assert(pStartLtcTimeCode != 0);
-	assert(pStopLtcTimeCode != 0);
-	assert(pLtcDisabledOutputs != 0);
+	assert(pStartLtcTimeCode != nullptr);
+	assert(pStopLtcTimeCode != nullptr);
+	assert(pLtcDisabledOutputs != nullptr);
 
 	s_pThis = this;
 
@@ -154,8 +148,7 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 
 	bTimeCodeAvailable = false;
 
-	memset(&s_tLtcTimeCode, 0, sizeof(struct TLtcTimeCode));
-	s_tLtcTimeCode.nType = pStartLtcTimeCode->nType;
+	memcpy(&s_tLtcTimeCode, pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
 
 	m_nFps = TimeCodeConst::FPS[pStartLtcTimeCode->nType];
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[pStartLtcTimeCode->nType];
@@ -169,11 +162,11 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 	}
 }
 
-LtcGenerator::~LtcGenerator(void) {
+LtcGenerator::~LtcGenerator() {
 	Stop();
 }
 
-void LtcGenerator::Start(void) {
+void LtcGenerator::Start() {
 	DEBUG_ENTRY
 
 	// Buttons
@@ -185,19 +178,9 @@ void LtcGenerator::Start(void) {
 	h3_gpio_pud(BUTTON1_GPIO, GPIO_PULL_UP);
 	h3_gpio_pud(BUTTON2_GPIO, GPIO_PULL_UP);
 
-//	uint32_t value = H3_PIO_PORTA->PUL0;
-//	value &= (uint32_t)~((GPIO_PULL_MASK << 4) | (GPIO_PULL_MASK << 6) | (GPIO_PULL_MASK << 12));
-//	value |= (GPIO_PULL_UP << 4) | (GPIO_PULL_UP << 6) | (GPIO_PULL_UP << 12);
-//	H3_PIO_PORTA->PUL0 = value;
-
 	h3_gpio_int_cfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE);
 	h3_gpio_int_cfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE);
 	h3_gpio_int_cfg(BUTTON2_GPIO, GPIO_INT_CFG_NEG_EDGE);
-
-//	value = H3_PIO_PA_INT->CFG0;
-//	value &= ~((GPIO_INT_CFG_MASK << 8) | (GPIO_INT_CFG_MASK << 12) | (GPIO_INT_CFG_MASK << 24));
-//	value |= (GPIO_INT_CFG_NEG_EDGE << 8) | (GPIO_INT_CFG_NEG_EDGE << 12) | (GPIO_INT_CFG_NEG_EDGE << 24);
-//	H3_PIO_PA_INT->CFG0 = value;
 
 	H3_PIO_PA_INT->CTL |= BUTTONS_MASK;
 	H3_PIO_PA_INT->STA = BUTTONS_MASK;
@@ -236,7 +219,7 @@ void LtcGenerator::Start(void) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::Stop(void) {
+void LtcGenerator::Stop() {
 	DEBUG_ENTRY
 
 	__disable_irq();
@@ -247,23 +230,25 @@ void LtcGenerator::Stop(void) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionStart(void) {
+void LtcGenerator::ActionStart(bool bDoReset) {
 	DEBUG_ENTRY
 
-	if(m_bIsStarted) {
+	if (m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = true;
 
-	memcpy(&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
+	if (bDoReset) {
+		ActionReset();
+	}
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionStop(void) {
+void LtcGenerator::ActionStop() {
 	DEBUG_ENTRY
 
 	m_bIsStarted = false;
@@ -271,7 +256,7 @@ void LtcGenerator::ActionStop(void) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionResume(void) {
+void LtcGenerator::ActionResume() {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -281,10 +266,22 @@ void LtcGenerator::ActionResume(void) {
 	DEBUG_EXIT
 }
 
+void LtcGenerator::ActionReset() {
+	DEBUG_ENTRY
+
+	memcpy(&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
+
+	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
+
+	DEBUG_EXIT
+}
+
 void LtcGenerator::ActionSetStart(const char *pTimeCode) {
 	DEBUG_ENTRY
 
 	Ltc::ParseTimeCode(pTimeCode, m_nFps, m_pStartLtcTimeCode);
+
+	m_nStartSeconds = GetSeconds(*m_pStartLtcTimeCode);
 
 	DEBUG_EXIT
 }
@@ -293,6 +290,8 @@ void LtcGenerator::ActionSetStop(const char *pTimeCode) {
 	DEBUG_ENTRY
 
 	Ltc::ParseTimeCode(pTimeCode, m_nFps, m_pStopLtcTimeCode);
+
+	m_nStopSeconds = GetSeconds(*m_pStopLtcTimeCode);
 
 	DEBUG_EXIT
 }
@@ -368,20 +367,6 @@ void LtcGenerator::ActionSetDirection(const char *pTimeCodeDirection) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize) {
-	DEBUG_ENTRY
-
-	debug_dump(const_cast<char*>(pTimeCodePitch), nSize);
-
-	const float f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
-
-	DEBUG_PRINTF("f=%f", f);
-
-	ActionSetPitch(f);
-
-	DEBUG_EXIT
-}
-
 void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
 	DEBUG_ENTRY
 
@@ -408,7 +393,94 @@ void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
 	DEBUG_EXIT
 }
 
-void LtcGenerator::HandleButtons(void) {
+void LtcGenerator::ActionForward(int32_t nSeconds) {
+	DEBUG_ENTRY
+
+	if (m_bIsStarted) {
+		return;
+	}
+
+	constexpr int32_t nMaxSeconds = ((23 * 60) + 59) * 60 + 59;
+	const int32_t s = GetSeconds(s_tLtcTimeCode) + nSeconds;
+	const int32_t nLimit = m_bSkipFree ? nMaxSeconds : m_nStopSeconds;
+
+	if (s <= nLimit) {
+		SetTimeCode(s);
+	} else {
+		memcpy(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode));
+	}
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::ActionBackward(int32_t nSeconds) {
+	DEBUG_ENTRY
+
+	if (m_bIsStarted) {
+		return;
+	}
+
+	const int32_t s = GetSeconds(s_tLtcTimeCode) - nSeconds;
+	const int32_t nLimit = m_bSkipFree ? 0 : m_nStartSeconds;
+
+	if (s >= nLimit) {
+		SetTimeCode(s);
+	} else {
+		memcpy(&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode));
+	}
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
+	DEBUG_ENTRY
+	debug_dump(const_cast<char*>(pTimeCodePitch), nSize);
+
+	const float f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
+
+	DEBUG_PRINTF("f=%f", f);
+
+	ActionSetPitch(f);
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection) {
+	DEBUG_ENTRY
+	debug_dump(const_cast<char*>(pSeconds), nSize);
+
+	const int32_t nSeconds = atoi(pSeconds, nSize);
+
+	DEBUG_PRINTF("nSeconds=%d", nSeconds);
+
+	if (tDirection == LTC_GENERATOR_FORWARD) {
+		ActionForward(nSeconds);
+	} else {
+		ActionBackward(nSeconds);
+	}
+
+	DEBUG_EXIT
+}
+
+int32_t LtcGenerator::GetSeconds(const TLtcTimeCode &timecode) {
+	int32_t nSeconds = timecode.nHours;
+	nSeconds *= 60;
+	nSeconds += timecode.nMinutes;
+	nSeconds *= 60;
+	nSeconds += timecode.nSeconds;
+
+	return nSeconds;
+}
+
+void LtcGenerator::SetTimeCode(int32_t nSeconds) {
+	s_tLtcTimeCode.nHours = static_cast<uint8_t>(nSeconds / 3600);
+	nSeconds -= s_tLtcTimeCode.nHours * 3600;
+	s_tLtcTimeCode.nMinutes = static_cast<uint8_t>(nSeconds / 60);
+	nSeconds -= s_tLtcTimeCode.nMinutes * 60;
+	s_tLtcTimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
+}
+
+void LtcGenerator::HandleButtons() {
 	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
 
 	if (__builtin_expect((m_nButtons != 0), 0)) {
@@ -426,7 +498,7 @@ void LtcGenerator::HandleButtons(void) {
 	}
 }
 
-void LtcGenerator::HandleUdpRequest(void) {
+void LtcGenerator::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
@@ -512,7 +584,21 @@ void LtcGenerator::HandleUdpRequest(void) {
 
 	if (m_nBytesReceived <= (4 + length::PITCH + 4)) {
 		if (memcmp(&m_Buffer[4], cmd::PITCH, length::PITCH) == 0) {
-			ActionSetPitch(&m_Buffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
+			SetPitch(&m_Buffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
+			return;
+		}
+	}
+
+	if (m_nBytesReceived <= (4 + length::FORWARD + 2)) {
+		if (memcmp(&m_Buffer[4], cmd::FORWARD, length::FORWARD) == 0) {
+			SetSkip(&m_Buffer[(4 + length::FORWARD)], m_nBytesReceived - (4 + length::FORWARD), LTC_GENERATOR_FORWARD);
+			return;
+		}
+	}
+
+	if (m_nBytesReceived <= (4 + length::BACKWARD + 2)) {
+		if (memcmp(&m_Buffer[4], cmd::BACKWARD, length::BACKWARD) == 0) {
+			SetSkip(&m_Buffer[(4 + length::BACKWARD)], m_nBytesReceived - (4 + length::BACKWARD), LTC_GENERATOR_BACKWARD);
 			return;
 		}
 	}
@@ -520,7 +606,7 @@ void LtcGenerator::HandleUdpRequest(void) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void LtcGenerator::Increment(void) {
+void LtcGenerator::Increment() {
 
 	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
 		return;
@@ -553,7 +639,7 @@ void LtcGenerator::Increment(void) {
 	//FIXME Add support for DF
 }
 
-void LtcGenerator::Decrement(void) {
+void LtcGenerator::Decrement() {
 
 	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
 		return;
@@ -596,7 +682,7 @@ void LtcGenerator::Decrement(void) {
 	//FIXME Add support for DF
 }
 
-bool LtcGenerator::PitchControl(void) {
+bool LtcGenerator::PitchControl() {
 	const uint32_t p = (m_fPitchControl * m_nPitchTicker); // / 100;
 	const uint32_t r = (p - m_nPitchPrevious);
 
@@ -606,7 +692,7 @@ bool LtcGenerator::PitchControl(void) {
 	return (r != 0);
 }
 
-void LtcGenerator::Update(void) {
+void LtcGenerator::Update() {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 	}
@@ -659,14 +745,14 @@ void LtcGenerator::Update(void) {
 	}
 }
 
-void LtcGenerator::Print(void) {
+void LtcGenerator::Print() {
 	printf("Internal\n");
 	printf(" %s\n", Ltc::GetType(static_cast<TTimecodeTypes>(m_pStartLtcTimeCode->nType)));
 	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
 	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);
 }
 
-void LtcGenerator::Run(void) {
+void LtcGenerator::Run() {
 	Update();
 
 	HandleButtons();

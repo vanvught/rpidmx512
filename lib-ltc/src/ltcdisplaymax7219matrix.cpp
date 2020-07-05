@@ -34,18 +34,15 @@
 
 #include "debug.h"
 
-LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = 0;
+LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = nullptr;
 
 LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_EXIT
-}
-
-LtcDisplayMax7219Matrix::~LtcDisplayMax7219Matrix(void) {
 }
 
 void LtcDisplayMax7219Matrix::Init(uint8_t nIntensity) {

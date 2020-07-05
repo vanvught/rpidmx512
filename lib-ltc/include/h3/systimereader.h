@@ -35,7 +35,6 @@
 class SystimeReader {
 public:
 	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps);
-	~SystimeReader(void);
 
 	void Start(bool bAutoStart = false);
 	void Run(void);

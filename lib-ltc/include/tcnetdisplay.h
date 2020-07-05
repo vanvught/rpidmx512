@@ -28,7 +28,7 @@
 
 class TCNetDisplay {
 public:
-	static void Show(void);
+	static void Show();
 };
 
 #endif /* TCNETDISPLAY_H_ */

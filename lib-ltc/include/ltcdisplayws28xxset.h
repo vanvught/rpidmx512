@@ -43,10 +43,10 @@ struct TLtcDisplayRgbColours {
 
 class LtcDisplayWS28xxSet {
 public:
-	virtual ~LtcDisplayWS28xxSet(void) {}
+	virtual ~LtcDisplayWS28xxSet() {}
 
 	virtual void Init(TWS28XXType tLedType, TRGBMapping tRGBMapping)=0;
-	virtual void Print(void)=0;
+	virtual void Print()=0;
 
 	virtual void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
 	virtual void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;

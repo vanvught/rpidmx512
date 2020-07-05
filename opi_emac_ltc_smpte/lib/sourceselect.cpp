@@ -64,15 +64,10 @@
 #include "debug.h"
 
 static constexpr Display7SegmentMessage s_7Segment[] = {
-		Display7SegmentMessage::GENERIC_1,
-		Display7SegmentMessage::GENERIC_2,
-		Display7SegmentMessage::GENERIC_3,
-		Display7SegmentMessage::GENERIC_4,
-		Display7SegmentMessage::GENERIC_5,
-		Display7SegmentMessage::GENERIC_6,
-		Display7SegmentMessage::GENERIC_7,
-		Display7SegmentMessage::GENERIC_8
-};
+		Display7SegmentMessage::GENERIC_1, Display7SegmentMessage::GENERIC_2,
+		Display7SegmentMessage::GENERIC_3, Display7SegmentMessage::GENERIC_4,
+		Display7SegmentMessage::GENERIC_5, Display7SegmentMessage::GENERIC_6,
+		Display7SegmentMessage::GENERIC_7, Display7SegmentMessage::GENERIC_8 };
 
 namespace mcp23017 {
 static constexpr auto I2C_ADDRESS = 0x20;
@@ -94,17 +89,13 @@ static constexpr auto RESUME = 7;
 #define BUTTON(x)			((nButtonsChanged >> x) & 0x01)
 #define BUTTON_STATE(x)		((nButtonsChanged & (1U << x)) == (1U << x))
 
-SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutput):
+SourceSelect::SourceSelect(TLtcReaderSource tLtcReaderSource, struct TLtcDisabledOutputs *ptLtcDisabledOutput, bool bUseAltFunction, int32_t nSkipSeconds):
 	m_I2C(mcp23017::I2C_ADDRESS),
 	m_tLtcReaderSource(tLtcReaderSource),
 	m_ptLtcDisabledOutputs(ptLtcDisabledOutput),
-	m_bIsConnected(false),
-	m_nPortAPrevious(0),
-	m_nPortB(0),
-	m_nMillisPrevious(0),
-	m_tRotaryDirection(RotaryEncoder::NONE),
-	m_tRunStatus(RUN_STATUS_IDLE),
-	m_nSelectMillis(0)
+	m_bUseAltFunction(bUseAltFunction),
+	m_nSkipSeconds(nSkipSeconds)
+
 {
 	Ltc::InitTimeCode(m_aTimeCode);
 }
@@ -195,7 +186,7 @@ void SourceSelect::UpdateDisplays(const TLtcReaderSource& tLtcReaderSource) {
 	}
 }
 
-bool SourceSelect::Check(void) {
+bool SourceSelect::Check() {
 	DEBUG_ENTRY
 
 	m_bIsConnected = m_I2C.IsConnected();
@@ -324,28 +315,32 @@ bool SourceSelect::Wait(TLtcReaderSource &tLtcReaderSource, TLtcTimeCode& StartT
  * Run state
  */
 
-void SourceSelect::SetRunState(TRunStatus tRunState) {
+void SourceSelect::SetRunState(RunStatus tRunState) {
 	m_tRunStatus = tRunState;
 
 	switch (tRunState) {
-	case RUN_STATUS_IDLE:
+	case RunStatus::IDLE:
 		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1u << m_tLtcReaderSource));
 		Display::Get()->TextStatus(SourceSelectConst::SOURCE[m_tLtcReaderSource]);
 		break;
-	case RUN_STATUS_CONTINUE:
+	case RunStatus::CONTINUE:
 		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0x0F));
 		Display::Get()->TextStatus(">CONTINUE?<");
 		break;
-	case RUN_STATUS_REBOOT:
+	case RunStatus::REBOOT:
 		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xF0));
 		Display::Get()->TextStatus(">REBOOT?  <");
+		break;
+	case RunStatus::TC_RESET:
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xAA));
+		Display::Get()->TextStatus(">RESET TC?<");
 		break;
 	default:
 		break;
 	}
 }
 
-void SourceSelect::HandleRunActionSelect(void) {
+void SourceSelect::HandleRunActionSelect() {
 	const uint32_t nMillisNow = Hardware::Get()->Millis();
 
 	if ((nMillisNow - m_nSelectMillis) < 300) {
@@ -354,12 +349,17 @@ void SourceSelect::HandleRunActionSelect(void) {
 
 	m_nSelectMillis = nMillisNow;
 
-	if (m_tRunStatus == RUN_STATUS_IDLE) {
-		SetRunState(RUN_STATUS_CONTINUE);
-	} else if (m_tRunStatus == RUN_STATUS_CONTINUE) {
-		SetRunState(RUN_STATUS_IDLE);
-	} else if (m_tRunStatus == RUN_STATUS_REBOOT) {
+	if (m_tRunStatus == RunStatus::IDLE) {
+		SetRunState(RunStatus::CONTINUE);
+		return;
+	}
 
+	if (m_tRunStatus == RunStatus::CONTINUE) {
+		SetRunState(RunStatus::IDLE);
+		return;
+	}
+
+	if (m_tRunStatus == RunStatus::REBOOT) {
 		while (SpiFlashStore::Get()->Flash())
 			;
 
@@ -372,10 +372,19 @@ void SourceSelect::HandleRunActionSelect(void) {
 
 		Network::Get()->Shutdown();
 		Hardware::Get()->Reboot();
+
+		return;
+	}
+
+	if (m_tRunStatus == RunStatus::TC_RESET) {
+		SetRunState(RunStatus::IDLE);
+		LtcGenerator::Get()->ActionReset();
+
+		return;
 	}
 }
 
-void SourceSelect::Run(void) {
+void SourceSelect::Run() {
 	if (__builtin_expect(!m_bIsConnected, 0)) {
 		return;
 	}
@@ -387,36 +396,98 @@ void SourceSelect::Run(void) {
 
 		m_nPortAPrevious = nPortA;
 
-		if (BUTTON_STATE(button::START)) {
-			LtcGenerator::Get()->ActionStart();
-		} else if (BUTTON_STATE(button::STOP)) {
-			LtcGenerator::Get()->ActionStop();
-		} else if (BUTTON_STATE(button::RESUME)) {
-			LtcGenerator::Get()->ActionResume();
-		} else if (BUTTON_STATE(button::SELECT)) {
-			HandleRunActionSelect();
-		} else if (BUTTON_STATE(button::LEFT)) {
-			if (m_tRunStatus == RUN_STATUS_REBOOT) {
-				SetRunState(RUN_STATUS_CONTINUE);
+		if (m_tLtcReaderSource == LTC_READER_SOURCE_INTERNAL) {
+			if (BUTTON_STATE(button::START)) {
+				LtcGenerator::Get()->ActionStart(!m_bUseAltFunction);
+				return;
 			}
-		} else if (BUTTON_STATE(button::RIGHT)) {
-			if (m_tRunStatus == RUN_STATUS_CONTINUE) {
-				SetRunState(RUN_STATUS_REBOOT);
+
+			if (BUTTON_STATE(button::STOP)) {
+				LtcGenerator::Get()->ActionStop();
+				return;
 			}
-		} else {
-			if ((m_tRunStatus == RUN_STATUS_CONTINUE) || (m_tRunStatus == RUN_STATUS_REBOOT)) {
-				m_tRotaryDirection = m_RotaryEncoder.Process(nPortA);
-				if (m_tRotaryDirection == RotaryEncoder::CCW) {
-					if (m_tRunStatus == RUN_STATUS_REBOOT) {
-						SetRunState(RUN_STATUS_CONTINUE);
-					}
-				} else if (m_tRotaryDirection == RotaryEncoder::CW) {
-					if (m_tRunStatus == RUN_STATUS_CONTINUE) {
-						SetRunState(RUN_STATUS_REBOOT);
-					}
+
+			if (BUTTON_STATE(button::RESUME)) {
+				if (!m_bUseAltFunction) {
+					LtcGenerator::Get()->ActionResume();
+					return;
 				}
+
+				if (m_tRunStatus == RunStatus::IDLE) {
+					SetRunState(RunStatus::TC_RESET);
+					return;
+				}
+
+				if (m_tRunStatus == RunStatus::TC_RESET) {
+					SetRunState(RunStatus::IDLE);
+					return;
+				}
+
+				return;
 			}
 		}
 
+		if (BUTTON_STATE(button::SELECT)) {
+			HandleRunActionSelect();
+			return;
+		}
+
+		if (BUTTON_STATE(button::LEFT)) {
+			if (m_tRunStatus == RunStatus::REBOOT) {
+				SetRunState(RunStatus::CONTINUE);
+				return;
+			}
+
+			if (m_tRunStatus == RunStatus::IDLE) {
+				LtcGenerator::Get()->ActionBackward(m_nSkipSeconds);
+				return;
+			}
+
+			return;
+		}
+
+		if (BUTTON_STATE(button::RIGHT)) {
+			if (m_tRunStatus == RunStatus::CONTINUE) {
+				SetRunState(RunStatus::REBOOT);
+				return;
+			}
+
+			if (m_tRunStatus == RunStatus::IDLE) {
+				LtcGenerator::Get()->ActionForward(m_nSkipSeconds);
+				return;
+			}
+
+			return;
+		}
+
+		m_tRotaryDirection = m_RotaryEncoder.Process(nPortA);
+
+		if (m_tRotaryDirection == RotaryEncoder::CCW) {
+			if (m_tRunStatus == RunStatus::REBOOT) {
+				SetRunState(RunStatus::CONTINUE);
+				return;
+			}
+
+			if (m_tRunStatus == RunStatus::IDLE) {
+				LtcGenerator::Get()->ActionBackward(m_nSkipSeconds);
+				return;
+			}
+
+			return;
+		}
+
+		if (m_tRotaryDirection == RotaryEncoder::CW) {
+			if (m_tRunStatus == RunStatus::CONTINUE) {
+				SetRunState(RunStatus::REBOOT);
+				return;
+			}
+
+			if (m_tRunStatus == RunStatus::IDLE) {
+				LtcGenerator::Get()->ActionForward(m_nSkipSeconds);
+				return;
+			}
+
+			return;
+		}
 	}
 }

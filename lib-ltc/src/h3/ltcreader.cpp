@@ -34,8 +34,6 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "c/led.h"
-
 #include "h3.h"
 #include "h3_board.h"
 #include "h3_gpio.h"
@@ -201,9 +199,6 @@ LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
 {
 	Ltc::InitTimeCode(const_cast<char*>(aTimeCode));
-}
-
-LtcReader::~LtcReader(void) {
 }
 
 void LtcReader::Start(void) {

@@ -30,12 +30,11 @@
 
 class Ltc7segment {
 public:
-	Ltc7segment(void);
-	~Ltc7segment(void);
+	Ltc7segment();
 
 	void Show(TTimecodeTypes tTimecodeType);
 
-	static Ltc7segment* Get(void) {
+	static Ltc7segment* Get() {
 		return s_pThis;
 	}
 

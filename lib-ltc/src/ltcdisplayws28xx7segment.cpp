@@ -36,17 +36,11 @@
 
 #include "debug.h"
 
-LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment(void) {
+LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment;
 	assert(m_pWS28xxDisplay7Segment != 0);
-
-	DEBUG1_EXIT
-}
-
-LtcDisplayWS28xx7Segment::~LtcDisplayWS28xx7Segment(void) {
-	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
@@ -116,10 +110,10 @@ void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct TLtcDisp
 }
 
 void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) {
-	m_pWS28xxDisplay7Segment->WriteChar(nChar, nPos, tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplay7Segment->WriteChar(static_cast<char>(nChar), nPos, tColours.nRed, tColours.nGreen, tColours.nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::Print(void) {
+void LtcDisplayWS28xx7Segment::Print() {
 	printf(" 7-Segment %d Digit(s), %d Colons, %d LEDs\n", WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS, WS28xxDisplay7SegmentConfig::NUM_OF_COLONS, WS28xxDisplay7SegmentConfig::LED_COUNT);
 }

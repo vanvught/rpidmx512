@@ -33,8 +33,6 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "c/led.h"
-
 #include "arm/synchronize.h"
 #include "h3.h"
 #include "h3_timer.h"
@@ -63,10 +61,6 @@ ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs)
 {
 	assert(m_ptLtcDisabledOutputs != 0);
-}
-
-ArtNetReader::~ArtNetReader(void) {
-
 }
 
 void ArtNetReader::Start(void) {

@@ -66,7 +66,7 @@ namespace udp {
 
 #define MESSAGE_TIME_MS		3000
 
-LtcDisplayWS28xx *LtcDisplayWS28xx::s_pThis = 0;
+LtcDisplayWS28xx *LtcDisplayWS28xx::s_pThis = nullptr;
 
 LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 	m_tDisplayWS28xxTypes(tType),
@@ -94,7 +94,7 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 	DEBUG_EXIT
 }
 
-LtcDisplayWS28xx::~LtcDisplayWS28xx(void) {
+LtcDisplayWS28xx::~LtcDisplayWS28xx() {
 	DEBUG_ENTRY
 
 	assert(m_pLtcDisplayWS28xxSet == 0);
@@ -250,7 +250,7 @@ void LtcDisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
 	m_bShowMsg = true;
 }
 
-void LtcDisplayWS28xx::ShowMessage(void) {
+void LtcDisplayWS28xx::ShowMessage() {
 	struct TLtcDisplayRgbColours tColours;
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
@@ -278,7 +278,7 @@ void LtcDisplayWS28xx::WriteChar(uint8_t nChar, uint8_t nPos) {
 	m_pLtcDisplayWS28xxSet->WriteChar(nChar, nPos, tColours);
 }
 
-void LtcDisplayWS28xx::Run(void) {
+void LtcDisplayWS28xx::Run() {
 	if (__builtin_expect((m_bShowMsg), 0)) {
 		if (Hardware::Get()->Millis() - m_nMsgTimer >= MESSAGE_TIME_MS) {
 			m_bShowMsg = false;
@@ -338,7 +338,7 @@ void LtcDisplayWS28xx::Run(void) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void LtcDisplayWS28xx::Print(void) {
+void LtcDisplayWS28xx::Print() {
 	printf("Display WS28xx\n");
 	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_tMapping), m_tMapping);

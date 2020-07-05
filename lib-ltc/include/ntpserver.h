@@ -36,32 +36,31 @@
 class NtpServer {
 public:
 	NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay);
-	~NtpServer(void);
+	~NtpServer();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
 	void SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode);
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
-	static NtpServer* Get(void) {
+	static NtpServer* Get() {
 		return s_pThis;
 	}
 
 private:
-	static NtpServer *s_pThis;
-
-private:
-	time_t m_tDate;
-	time_t m_tTimeDate;
-	uint32_t m_nFraction;
-	int32_t m_nHandle;
+	time_t m_tDate = 0;
+	time_t m_tTimeDate = 0;
+	uint32_t m_nFraction = 0;
+	int32_t m_nHandle = -1;
 
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
+
+	static NtpServer *s_pThis;
 };
 
 #endif /* NTPSERVER_H_ */

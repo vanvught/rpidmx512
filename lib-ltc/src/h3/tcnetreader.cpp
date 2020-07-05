@@ -31,8 +31,6 @@
 #include "tcnet.h"
 #include "timecodeconst.h"
 
-#include "c/led.h"
-
 #include "arm/synchronize.h"
 #include "h3.h"
 #include "h3_timer.h"

@@ -37,11 +37,10 @@
 
 class LtcDisplayWS28xx7Segment: public LtcDisplayWS28xxSet {
 public:
-	LtcDisplayWS28xx7Segment(void);
-	~LtcDisplayWS28xx7Segment(void);
+	LtcDisplayWS28xx7Segment();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
-	void Print(void);
+	void Print();
 
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);

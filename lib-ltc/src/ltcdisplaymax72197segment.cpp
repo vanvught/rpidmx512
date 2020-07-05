@@ -31,44 +31,41 @@
 
 #include "max72197segment.h"
 
-LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = 0;
+LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = nullptr;
 
 LtcDisplayMax72197Segment::LtcDisplayMax72197Segment(void) {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
-}
-
-LtcDisplayMax72197Segment::~LtcDisplayMax72197Segment(void) {
 }
 
 void LtcDisplayMax72197Segment::Init(uint8_t nIntensity) {
 	Max72197Segment::Init(nIntensity);
 
 	WriteRegister(max7219::reg::DIGIT6, 0x80);
-	WriteRegister(max7219::reg::DIGIT4, 0x80);
-	WriteRegister(max7219::reg::DIGIT2, 0x80);
+	WriteRegister(max7219::reg::DIGIT4, 0x80, false);
+	WriteRegister(max7219::reg::DIGIT2, 0x80, false);
 }
 
 void LtcDisplayMax72197Segment::Show(const char *pTimecode) {
 	WriteRegister(max7219::reg::DIGIT7, static_cast<uint32_t>(pTimecode[0] - '0'));
-	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>((pTimecode[1] - '0') | 0x80));
-	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>(pTimecode[3] - '0'));
-	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>((pTimecode[4] - '0') | 0x80));
-	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>(pTimecode[6] - '0'));
-	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>((pTimecode[7] - '0') | 0x80));
-	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pTimecode[9] - '0'));
-	WriteRegister(max7219::reg::DIGIT0, static_cast<uint32_t>(pTimecode[10] - '0'));
+	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>((pTimecode[1] - '0') | 0x80), false);
+	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>(pTimecode[3] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>((pTimecode[4] - '0') | 0x80), false);
+	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>(pTimecode[6] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>((pTimecode[7] - '0') | 0x80), false);
+	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pTimecode[9] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT0, static_cast<uint32_t>(pTimecode[10] - '0'), false);
 }
 
 void LtcDisplayMax72197Segment::ShowSysTime(const char *pSystemTime) {
 	WriteRegister(max7219::reg::DIGIT7, max7219::digit::BLANK);
-	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>(pSystemTime[0] - '0'));
-	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>((pSystemTime[1] - '0') | 0x80));
-	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>(pSystemTime[3] - '0'));
-	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>((pSystemTime[4] - '0') | 0x80));
-	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>(pSystemTime[6] - '0'));
-	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pSystemTime[7] - '0'));
-	WriteRegister(max7219::reg::DIGIT0, max7219::digit::BLANK);
+	WriteRegister(max7219::reg::DIGIT6, static_cast<uint32_t>(pSystemTime[0] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT5, static_cast<uint32_t>((pSystemTime[1] - '0') | 0x80), false);
+	WriteRegister(max7219::reg::DIGIT4, static_cast<uint32_t>(pSystemTime[3] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT3, static_cast<uint32_t>((pSystemTime[4] - '0') | 0x80), false);
+	WriteRegister(max7219::reg::DIGIT2, static_cast<uint32_t>(pSystemTime[6] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT1, static_cast<uint32_t>(pSystemTime[7] - '0'), false);
+	WriteRegister(max7219::reg::DIGIT0, max7219::digit::BLANK, false);
 }
 
 void LtcDisplayMax72197Segment::WriteChar(uint8_t nChar, uint8_t nPos) {

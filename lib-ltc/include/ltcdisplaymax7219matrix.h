@@ -36,8 +36,7 @@
 
 class LtcDisplayMax7219Matrix: public LtcDisplayMax7219Set, public Max7219Matrix {
 public:
-	LtcDisplayMax7219Matrix(void);
-	~LtcDisplayMax7219Matrix(void);
+	LtcDisplayMax7219Matrix();
 
 	void Init(uint8_t nIntensity);
 
@@ -46,7 +45,7 @@ public:
 
 	void WriteChar(uint8_t nChar, uint8_t nPos=0);
 
-	static LtcDisplayMax7219Matrix* Get(void) {
+	static LtcDisplayMax7219Matrix* Get() {
 		return s_pThis;
 	}
 

@@ -65,7 +65,7 @@ enum TLtcDisplayWS28xxDefaults {
 class LtcDisplayWS28xx {
 public:
 	LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType = LTCDISPLAYWS28XX_TYPE_7SEGMENT);
-	~LtcDisplayWS28xx(void);
+	~LtcDisplayWS28xx();
 
 	void SetMapping(TRGBMapping tMapping) {
 		m_tMapping = tMapping;
@@ -87,16 +87,16 @@ public:
 	}
 
 	void Init(TWS28XXType tLedType, uint8_t nIntensity = 0xFF);
-	void Print(void);
+	void Print();
 
-	void Run(void);
+	void Run();
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	static LtcDisplayWS28xx *Get(void) {
+	static LtcDisplayWS28xx *Get() {
 		return s_pThis;
 	}
 
@@ -107,7 +107,7 @@ private:
 	void SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex);
 	void SetRGB(const char *pHexString);
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
-	void ShowMessage(void);
+	void ShowMessage();
 
 private:
 	TLtcDisplayWS28xxTypes m_tDisplayWS28xxTypes;

@@ -31,14 +31,10 @@
 #include "ltcdisplaymax72197segment.h"
 #include "ltcdisplaymax7219matrix.h"
 
-LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis = 0;
+LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis = nullptr;
 
-LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType):
-	m_tMax7219Types(tType),
-	m_nIntensity(0),
-	m_pMax7219Set(0)
-{
-	assert(s_pThis == 0);
+LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType): m_tMax7219Types(tType) {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	if (tType == LTCDISPLAYMAX7219_TYPE_7SEGMENT) {
@@ -50,7 +46,7 @@ LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType):
 	assert(m_pMax7219Set != 0);
 }
 
-LtcDisplayMax7219::~LtcDisplayMax7219(void) {
+LtcDisplayMax7219::~LtcDisplayMax7219() {
 	delete m_pMax7219Set;
 	m_pMax7219Set = 0;
 }
@@ -72,7 +68,7 @@ void LtcDisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
 	m_pMax7219Set->WriteChar(nChar, nPos);
 }
 
-void LtcDisplayMax7219::Print(void) {
+void LtcDisplayMax7219::Print() {
 	printf("MAX7219\n");
 	printf(" %s [%d]\n", m_tMax7219Types == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7-segment" : "matrix", m_nIntensity);
 }

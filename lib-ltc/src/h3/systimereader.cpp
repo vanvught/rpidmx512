@@ -32,8 +32,6 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "c/led.h"
-
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 
@@ -78,7 +76,7 @@ static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 	bTimeCodeAvailable = true;
 }
 
-SystimeReader *SystimeReader::s_pThis = 0;
+SystimeReader *SystimeReader::s_pThis = nullptr;
 
 SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
@@ -95,9 +93,6 @@ SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ui
 
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[Ltc::GetType(nFps)];
 	m_tMidiTimeCode.nType = Ltc::GetType(nFps);
-}
-
-SystimeReader::~SystimeReader(void) {
 }
 
 void SystimeReader::Start(bool bAutoStart) {

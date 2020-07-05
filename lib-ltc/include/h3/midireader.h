@@ -32,7 +32,6 @@
 class MidiReader {
 public:
 	MidiReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~MidiReader(void);
 
 	void Start(void);
 	void Run(void);

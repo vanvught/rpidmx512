@@ -31,67 +31,76 @@
 #include "ltc.h"
 
 enum TLtcGeneratorDirection {
-	LTC_GENERATOR_FORWARD = 0,
+	LTC_GENERATOR_FORWARD,
 	LTC_GENERATOR_BACKWARD
 };
 
 enum TLtcGeneratorPitch {
-	LTC_GENERATOR_NORMAL = 0,
+	LTC_GENERATOR_NORMAL,
 	LTC_GENERATOR_FASTER,
 	LTC_GENERATOR_SLOWER
 };
 
 class LtcGenerator {
 public:
-	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcGenerator(void);
+	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs, bool bSkipFree = false);
+	~LtcGenerator();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	// Control
-	void ActionStart(void);
-	void ActionStop(void);
-	void ActionResume(void);
+	void ActionStart(bool bDoReset = true);
+	void ActionStop();
+	void ActionResume();
+	void ActionReset();
 	void ActionSetStart(const char *pTimeCode);
 	void ActionSetStop(const char *pTimeCode);
 	void ActionSetRate(const char *pTimeCodeRate);
 	void ActionGoto(const char *pTimeCode);
 	void ActionSetDirection(const char *pTimeCodeDirection);
-	void ActionSetPitch(const char *pTimeCodePitch, uint32_t nSize);
 	void ActionSetPitch(float fTimeCodePitch);
+	void ActionForward(int32_t nSeconds);
+	void ActionBackward(int32_t nSeconds);
 
-	static LtcGenerator* Get(void) {
+	static LtcGenerator* Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandleButtons(void);
-	void HandleUdpRequest(void);
-	void Update(void);
-	void Increment(void);
-	void Decrement(void);
-	bool PitchControl(void);
+	void HandleButtons();
+	void HandleUdpRequest();
+	void Update();
+	void Increment();
+	void Decrement();
+	bool PitchControl();
+	void SetPitch(const char *pTimeCodePitch, uint32_t nSize);
+	void SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection);
+	void SetTimeCode(int32_t nSeconds);
+	int32_t GetSeconds(const TLtcTimeCode &timecode);
 
 private:
 	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
+	int32_t m_nStartSeconds;
 	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
-	uint8_t m_nFps;
-	TLtcGeneratorDirection m_tDirection;
-	float m_fPitchControl;
-	uint32_t m_nPitchTicker;
-	uint32_t m_nPitchPrevious;
-	TLtcGeneratorPitch m_tPitch;
-	uint32_t m_nTimer0Interval;
-	uint32_t m_nButtons;
-	int m_nHandle;
+	int32_t m_nStopSeconds;
+	bool m_bSkipFree;
+	uint8_t m_nFps = 0;
+	TLtcGeneratorDirection m_tDirection = LTC_GENERATOR_FORWARD;
+	float m_fPitchControl = 0;
+	uint32_t m_nPitchTicker = 1;
+	uint32_t m_nPitchPrevious = 0;
+	TLtcGeneratorPitch m_tPitch = LTC_GENERATOR_FASTER;
+	uint32_t m_nTimer0Interval = 0;
+	uint32_t m_nButtons = 0;
+	int m_nHandle = -1;
 	alignas(uint32_t) char m_Buffer[64];
-	uint16_t m_nBytesReceived;
-	bool m_bIsStarted;
+	uint16_t m_nBytesReceived = 0;
+	bool m_bIsStarted = false;
 
 	static LtcGenerator *s_pThis;
 };

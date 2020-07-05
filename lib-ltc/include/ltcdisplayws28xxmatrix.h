@@ -35,11 +35,11 @@
 
 class LtcDisplayWS28xxMatrix: public LtcDisplayWS28xxSet {
 public:
-	LtcDisplayWS28xxMatrix(void);
-	~LtcDisplayWS28xxMatrix(void);
+	LtcDisplayWS28xxMatrix();
+	~LtcDisplayWS28xxMatrix();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
-	void Print(void);
+	void Print();
 
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons);

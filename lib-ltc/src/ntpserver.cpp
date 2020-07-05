@@ -27,10 +27,9 @@
  * https://tools.ietf.org/html/rfc5905
  */
 
-// TODO Remove when using compressed firmware
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -46,18 +45,13 @@
 
 #include "debug.h"
 
-NtpServer *NtpServer::s_pThis = 0;
+NtpServer *NtpServer::s_pThis = nullptr;
 
-NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
-	m_tDate(0),
-	m_tTimeDate(0),
-	m_nFraction(0),
-	m_nHandle(-1)
-{
+NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("year=%d, month=%d, day=%d", nYear, nMonth, nDay);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	struct tm timeDate;
@@ -78,11 +72,11 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay):
 	DEBUG_EXIT
 }
 
-NtpServer::~NtpServer(void) {
+NtpServer::~NtpServer() {
 	Stop();
 }
 
-void NtpServer::Start(void) {
+void NtpServer::Start() {
 	DEBUG_ENTRY
 
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
@@ -100,7 +94,7 @@ void NtpServer::Start(void) {
 	DEBUG_EXIT
 }
 
-void NtpServer::Stop(void) {
+void NtpServer::Stop() {
 	DEBUG_ENTRY
 
 	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
@@ -134,7 +128,7 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 	m_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
 }
 
-void NtpServer::Run(void) {
+void NtpServer::Run() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
@@ -154,7 +148,7 @@ void NtpServer::Run(void) {
 	Network::Get()->SendTo(m_nHandle, &m_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
 }
 
-void NtpServer::Print(void) {
+void NtpServer::Print() {
 	printf("NTP v%d Server\n", NTP_VERSION >> 3);
 	printf(" Port : %d\n", NTP_UDP_PORT);
 	printf(" Stratum : %d\n", NTP_STRATUM);

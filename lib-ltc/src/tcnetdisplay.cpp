@@ -30,7 +30,7 @@
 
 static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
-void TCNetDisplay::Show(void) {
+void TCNetDisplay::Show() {
 	Display::Get()->SetCursorPos(6,3);
 
 	Display::Get()->PutChar('L');
