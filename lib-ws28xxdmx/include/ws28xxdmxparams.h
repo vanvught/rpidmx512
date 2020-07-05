@@ -67,7 +67,7 @@ struct WS28xxDmxParamsMask {
 
 class WS28xxDmxParamsStore {
 public:
-	virtual ~WS28xxDmxParamsStore(void) {
+	virtual ~WS28xxDmxParamsStore() {
 	}
 
 	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
@@ -76,10 +76,10 @@ public:
 
 class WS28xxDmxParams {
 public:
-	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28xxParamsStore = 0);
-	~WS28xxDmxParams(void);
+	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28xxParamsStore = nullptr);
+	~WS28xxDmxParams();
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -88,53 +88,53 @@ public:
 	void Set(WS28xxDmx *pWS28xxDmx);
 	void Set(WS28xxDmxMulti *pWS28xxDmxMulti);
 
-	void Dump(void);
+	void Dump();
 
-	TWS28XXType GetLedType(void) {
+	TWS28XXType GetLedType() {
 		return m_tWS28xxParams.tLedType;
 	}
 
-	uint16_t GetLedCount(void) {
+	uint16_t GetLedCount() {
 		return m_tWS28xxParams.nLedCount;
 	}
 
-	uint32_t GetClockSpeedHz(void) {
+	uint32_t GetClockSpeedHz() {
 		return m_tWS28xxParams.nSpiSpeedHz;
 	}
 
-	uint8_t GetGlobalBrightness(void) {
+	uint8_t GetGlobalBrightness() {
 		return m_tWS28xxParams.nGlobalBrightness;
 	}
 
-	uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() {
 		return m_tWS28xxParams.nDmxStartAddress;
 	}
 
-	bool IsLedGrouping(void) {
+	bool IsLedGrouping() {
 		return m_tWS28xxParams.bLedGrouping;
 	}
 
-	uint8_t GetActivePorts(void){
+	uint8_t GetActivePorts(){
 		return m_tWS28xxParams.nActiveOutputs;
 	}
 
-	bool UseSI5351A(void) {
+	bool UseSI5351A() {
 		return m_tWS28xxParams.bUseSI5351A;
 	}
 
-	uint16_t GetLedGroupCount(void) {
+	uint16_t GetLedGroupCount() {
 		return m_tWS28xxParams.nLedGroupCount;
 	}
 
-	TRGBMapping GetRgbMapping(void) {
+	TRGBMapping GetRgbMapping() {
 		return static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping);
 	}
 
-	float GetLowCode(void) {
+	float GetLowCode() {
 		return WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode);
 	}
 
-	float GetHighCode(void) {
+	float GetHighCode() {
 		return WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode);
 	}
 

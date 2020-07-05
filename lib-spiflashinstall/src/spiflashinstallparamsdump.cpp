@@ -1,8 +1,8 @@
 /**
- * @file scan_uuid.c
+ * @file spiflashinstallparamsdump.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,61 +23,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
-#include <ctype.h>
-#include <assert.h>
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
 
-#include "sscan.h"
+#include <stdio.h>
 
-extern char *get_name(const char *buf, const char *name);
+#include "spiflashinstallparams.h"
+#include "spiflashinstallparamsconst.h"
 
-int sscan_uuid(const char *buf, const char *name, char *value, uint8_t *len) {
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
-	assert(len != NULL);
+#include "debug.h"
 
-	int k;
-	const char *b;
-	char *v = value;
+void SpiFlashInstallParams::Dump() {
+#ifndef NDEBUG
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SpiFlashInstallParamsConst::FILE_NAME);
 
-	if (*len != 36) {
-		return 0;
+	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT)) {
+		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT, m_bInstalluboot, BOOL2STRING::Get(m_bInstalluboot));
 	}
 
-	if ((b = get_name(buf, name)) == NULL) {
-		return SSCAN_NAME_ERROR;
+	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE)) {
+		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE, m_bInstalluImage, BOOL2STRING::Get(m_bInstalluImage));
 	}
-
-	k = 0;
-
-	while ((*b != (char) 0) && (k < (int) *len)) {
-		const char ch = *b;
-		if ((k == 8) || (k == 13) || (k == 18) || (k == 23)) {
-			if (ch != '-') {
-				*len = (uint8_t) k;
-				return 1;
-			}
-		} else if (isxdigit((int) ch) == 0) {
-			*len = (uint8_t) k;
-			return 1;
-		}
-		*v++ = *b++;
-		k++;
-	}
-
-	if (k != 36) {
-		*len = (uint8_t) k;
-		return 1;
-	}
-
-	if ((*b != (char) 0)) {
-		*len = (uint8_t) k;
-		return 1;
-	}
-
-	*len = (uint8_t) 36;
-
-	return SSCAN_OK;
+#endif
 }

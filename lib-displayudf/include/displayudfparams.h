@@ -44,7 +44,7 @@ struct DisplayUdfParamsMask {
 
 class DisplayUdfParamsStore {
 public:
-	virtual ~DisplayUdfParamsStore(void) {}
+	virtual ~DisplayUdfParamsStore() {}
 
 	virtual void Update(const struct TDisplayUdfParams *ptDisplayUdfParams)=0;
 	virtual void Copy(struct TDisplayUdfParams *ptDisplayUdfParams)=0;
@@ -52,10 +52,9 @@ public:
 
 class DisplayUdfParams {
 public:
-	DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore = 0);
-	~DisplayUdfParams(void);
+	DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -63,7 +62,7 @@ public:
 
 	void Set(DisplayUdf *pDisplayUdf);
 
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -74,7 +73,7 @@ private:
     	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
     }
 
-    void Set(void);
+    void Set();
 
 private:
     DisplayUdfParamsStore *m_pDisplayUdfParamsStore;

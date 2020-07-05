@@ -1,8 +1,8 @@
 /**
- * @file sscan_i2c_address.c
+ * @file sscan_uint8_t.c
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,23 +28,17 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "sscan.h"
+#include "c/sscan.h"
 
 extern char *get_name(const char *buf, const char *name);
 
-int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
+int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	assert(buf != NULL);
 	assert(name != NULL);
-	assert(address != NULL);
+	assert(value != NULL);
 
-	int k = 0;
 	char *b;
-	char tmp[8];
-	uint8_t nibble_high;
-	uint8_t nibble_low;
-
-	tmp[0] = (char) 0;
-	tmp[1] = (char) 0;
+	int32_t k;
 
 	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
@@ -52,31 +46,19 @@ int sscan_i2c_address(const char *buf, const char *name, uint8_t *address) {
 
 	k = 0;
 
-	while ((*b != (char) '\0') && (k < 2)) {
-		if (isxdigit((int) *b) == 0) {
-			return SSCAN_NAME_ERROR;
+	do {
+		if (isdigit((int) *b) == 0) {
+			return SSCAN_VALUE_ERROR;
 		}
-		tmp[k] = *b;
-		k++;
+		k = k * 10 + *b - '0';
 		b++;
-	}
+	} while ((*b != ' ') && (*b != (char) 0));
 
-	if ((*b != (char) '\0') && (*b != (char) ' ')) {
-		return SSCAN_NAME_ERROR;
-	}
-
-	if (k == 2) {
-		nibble_low = (uint8_t) (tmp[1] > '9' ? (tmp[1] | (char) 0x20) - 'a' + (char) 10 : tmp[1] - '0');
-		nibble_high = (uint8_t) (tmp[0] > '9' ? (tmp[0] | (char) 0x20) - 'a' + (char) 10 : tmp[0] - '0') << 4;
-		*address = nibble_high | nibble_low;
-	} else {
-		nibble_low = (uint8_t) (tmp[0] > '9' ? (tmp[0] | (char) 0x20) - 'a' + (char) 10 : tmp[0] - '0');
-		*address = nibble_low;
-	}
-
-	if (*address >= 0x7f) {
+	if (k > (int32_t) ((uint8_t) ~0)) {
 		return SSCAN_VALUE_ERROR;
 	}
+
+	*value = (uint8_t) k;
 
 	return SSCAN_OK;
 }

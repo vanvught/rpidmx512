@@ -40,7 +40,7 @@ Sscan::ReturnCode Sscan::Uint16(const char *pBuffer, const char *pName, uint16_t
 
 	const char *p;
 
-	if ((p = Sscan::checkName(pBuffer, pName)) == nullptr) {
+	if ((p = checkName(pBuffer, pName)) == nullptr) {
 		return Sscan::NAME_ERROR;
 	}
 

@@ -33,12 +33,12 @@
 
 class PCA9685DmxServoParams: public PCA9685DmxParams  {
 public:
-	PCA9685DmxServoParams(void);
-	~PCA9685DmxServoParams(void);
+	PCA9685DmxServoParams();
+	~PCA9685DmxServoParams();
 
-	bool Load(void);
+	bool Load();
 	void Set(PCA9685DmxServo *);
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -50,10 +50,10 @@ private:
     }
 
 private:
-    uint32_t m_bSetList;
-    uint8_t m_nI2cAddress;
-	uint16_t m_nLeftUs;
-	uint16_t m_nRightUs;
+    uint32_t m_bSetList{0};
+    uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
+	uint16_t m_nLeftUs{SERVO_LEFT_DEFAULT_US};
+	uint16_t m_nRightUs{SERVO_RIGHT_DEFAULT_US};
 };
 
 #endif /* PCA9685DMXSERVOPARAMS_H_ */

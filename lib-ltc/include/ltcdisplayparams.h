@@ -61,7 +61,7 @@ struct LtcDisplayParamsMask {
 
 class LtcDisplayParamsStore {
 public:
-	virtual ~LtcDisplayParamsStore(void) {
+	virtual ~LtcDisplayParamsStore() {
 	}
 
 	virtual void Update(const struct TLtcDisplayParams *ptLtcDisplayParams)=0;
@@ -70,10 +70,9 @@ public:
 
 class LtcDisplayParams {
 public:
-	LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore = 0);
-	~LtcDisplayParams(void);
+	LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -81,25 +80,25 @@ public:
 
 	void Set(LtcDisplayWS28xx *pLtcDisplayWS28xx);
 
-	void Dump(void);
+	void Dump();
 
-	uint8_t GetGlobalBrightness(void) {
+	uint8_t GetGlobalBrightness() {
 		return m_tLtcDisplayParams.nGlobalBrightness;
 	}
 
-	TLtcDisplayMax7219Types GetMax7219Type(void) {
+	TLtcDisplayMax7219Types GetMax7219Type() {
 		return static_cast<TLtcDisplayMax7219Types>(m_tLtcDisplayParams.nMax7219Type);
 	}
 
-	uint8_t GetMax7219Intensity(void) {
+	uint8_t GetMax7219Intensity() {
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
 
-	TWS28XXType GetLedType(void) {
+	TWS28XXType GetLedType() {
 		return static_cast<TWS28XXType>(m_tLtcDisplayParams.nLedType);
 	}
 
-	TLtcDisplayWS28xxTypes GetWS28xxType(void) {
+	TLtcDisplayWS28xxTypes GetWS28xxType() {
 		return static_cast<TLtcDisplayWS28xxTypes>(m_tLtcDisplayParams.nWS28xxType);
 	}
 

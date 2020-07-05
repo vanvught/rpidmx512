@@ -40,7 +40,7 @@ struct MidiParamsMask {
 
 class MidiParamsStore {
 public:
-	virtual ~MidiParamsStore(void) {
+	virtual ~MidiParamsStore() {
 	}
 
 	virtual void Update(const struct TMidiParams *pMidiParams)=0;
@@ -49,24 +49,23 @@ public:
 
 class MidiParams {
 public:
-	MidiParams(MidiParamsStore *pMidiParamsStore = 0);
-	~MidiParams(void);
+	MidiParams(MidiParamsStore *pMidiParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TMidiParams *ptMidiParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Set(void);
+	void Set();
 
-	void Dump(void);
+	void Dump();
 
-	uint32_t GetBaudrate(void) {
+	uint32_t GetBaudrate() {
 		return m_tMidiParams.nBaudrate;
 	}
 
-	bool GetActiveSense(void) {
+	bool GetActiveSense() {
 		return (m_tMidiParams.nActiveSense != 0);
 	}
 

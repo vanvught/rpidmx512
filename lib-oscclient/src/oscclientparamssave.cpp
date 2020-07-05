@@ -43,9 +43,9 @@
 void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptOscClientParams != 0) {
+	if (ptOscClientParams != nullptr) {
 		memcpy(&m_tOscClientParams, ptOscClientParams, sizeof(struct TOscClientParams));
 	} else {
 		m_pOscClientParamsStore->Copy(&m_tOscClientParams);
@@ -79,11 +79,11 @@ void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 void OscClientParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pOscClientParamsStore == 0) {
+	if (m_pOscClientParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

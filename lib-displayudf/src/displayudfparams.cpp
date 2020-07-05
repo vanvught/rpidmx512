@@ -83,23 +83,17 @@ DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore
 	DEBUG_EXIT
 }
 
-DisplayUdfParams::~DisplayUdfParams(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-bool DisplayUdfParams::Load(void) {
+bool DisplayUdfParams::Load() {
 	m_tDisplayUdfParams.nSetList = 0;
 
 	ReadConfigFile configfile(DisplayUdfParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DisplayUdfParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pDisplayUdfParamsStore != 0) {
+		if (m_pDisplayUdfParamsStore != nullptr) {
 			m_pDisplayUdfParamsStore->Update(&m_tDisplayUdfParams);
 		}
-	} else if (m_pDisplayUdfParamsStore != 0) {
+	} else if (m_pDisplayUdfParamsStore != nullptr) {
 		m_pDisplayUdfParamsStore->Copy(&m_tDisplayUdfParams);
 	} else {
 		return false;
@@ -109,12 +103,12 @@ bool DisplayUdfParams::Load(void) {
 }
 
 void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	assert(m_pDisplayUdfParamsStore != 0);
+	assert(m_pDisplayUdfParamsStore != nullptr);
 
-	if (m_pDisplayUdfParamsStore == 0) {
+	if (m_pDisplayUdfParamsStore == nullptr) {
 		return;
 	}
 
@@ -128,10 +122,10 @@ void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void DisplayUdfParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::SLEEP_TIMEOUT, value8) == Sscan::OK) {
 		if (value8 != DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
 			m_tDisplayUdfParams.nSleepTimeout = value8;
 			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::SLEEP_TIMEOUT;
@@ -143,7 +137,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	}
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (Sscan::Uint8(pLine, pArray[i], &value8) == SSCAN_OK) {
+		if (Sscan::Uint8(pLine, pArray[i], value8) == Sscan::OK) {
 			m_tDisplayUdfParams.nLabelIndex[i] = value8;
 			m_tDisplayUdfParams.nSetList |= (1U << i);
 			return;
@@ -154,9 +148,9 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptDisplayUdfParams != 0) {
+	if (ptDisplayUdfParams != nullptr) {
 		memcpy(&m_tDisplayUdfParams, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
 	} else {
 		m_pDisplayUdfParamsStore->Copy(&m_tDisplayUdfParams);
@@ -181,13 +175,13 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pDisplayUdfParamsStore == 0) {
+	if (m_pDisplayUdfParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
@@ -202,7 +196,7 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	}
 }
 
-void DisplayUdfParams::Dump(void) {
+void DisplayUdfParams::Dump() {
 #ifndef NDEBUG
 	if (m_tDisplayUdfParams.nSetList == 0) {
 		return;
@@ -224,8 +218,8 @@ void DisplayUdfParams::Dump(void) {
 }
 
 void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<DisplayUdfParams*>(p))->callbackFunction(s);
 }

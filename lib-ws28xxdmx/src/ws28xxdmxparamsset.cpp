@@ -29,7 +29,7 @@
 #include "ws28xxdmx.h"
 
 void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
-	assert(pWS28xxDmx != 0);
+	assert(pWS28xxDmx != nullptr);
 
 	if (isMaskSet(WS28xxDmxParamsMask::LED_TYPE)) {
 		pWS28xxDmx->SetLEDType(m_tWS28xxParams.tLedType);

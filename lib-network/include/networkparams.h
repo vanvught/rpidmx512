@@ -55,7 +55,7 @@ struct NetworkParamsMask {
 
 class NetworkParamsStore {
 public:
-	virtual ~NetworkParamsStore(void) {
+	virtual ~NetworkParamsStore() {
 	}
 
 	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
@@ -64,49 +64,48 @@ public:
 
 class NetworkParams {
 public:
-	NetworkParams(NetworkParamsStore *pNetworkParamsStore = 0);
-	~NetworkParams(void);
+	NetworkParams(NetworkParamsStore *pNetworkParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Dump(void);
+	void Dump();
 
-	bool isDhcpUsed(void) {
+	bool isDhcpUsed() {
 		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
-	uint32_t GetIpAddress(void) {
+	uint32_t GetIpAddress() {
 		return m_tNetworkParams.nLocalIp;
 	}
 
-	uint32_t GetNetMask(void) {
+	uint32_t GetNetMask() {
 		return m_tNetworkParams.nNetmask;
 	}
 
-	const char *GetHostName(void) {
+	const char *GetHostName() {
 		return m_tNetworkParams.aHostName;
 	}
 
-	uint32_t GetDefaultGateway(void) {
+	uint32_t GetDefaultGateway() {
 		return m_tNetworkParams.nGatewayIp;
 	}
 
-	uint32_t GetNameServer(void) {
+	uint32_t GetNameServer() {
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	uint32_t GetNtpServer(void) {
+	uint32_t GetNtpServer() {
 		if (!isMaskSet(NetworkParamsMask::NTP_SERVER)) {
 			return 0;
 		}
 		return m_tNetworkParams.nNtpServerIp;
 	}
 
-	float GetNtpUtcOffset(void) {
+	float GetNtpUtcOffset() {
 		if (!isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
 			return 0;
 		}

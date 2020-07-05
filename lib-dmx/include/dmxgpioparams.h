@@ -32,11 +32,10 @@
 
 class DmxGpioParams {
 public:
-	DmxGpioParams(void);
-	~DmxGpioParams(void);
+	DmxGpioParams();
 
-	bool Load(void);
-	void Dump(void);
+	bool Load();
+	void Dump();
 
 	uint8_t GetDataDirection(bool &bIsSet) const;
 	uint8_t GetDataDirection(bool &bIsSet, uint8_t nUart) const;
@@ -50,8 +49,8 @@ private:
     }
 
 private:
-    uint32_t m_nSetList;
-    uint8_t m_nDmxDataDirection;
+    uint32_t m_nSetList{0};
+    uint8_t m_nDmxDataDirection{GPIO_DMX_DATA_DIRECTION};
     uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
 };
 

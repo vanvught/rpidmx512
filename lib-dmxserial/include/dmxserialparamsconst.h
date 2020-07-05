@@ -26,8 +26,7 @@
 #ifndef DMXSERIALPARAMSCONST_H_
 #define DMXSERIALPARAMSCONST_H_
 
-class DmxSerialParamsConst {
-public:
+struct DmxSerialParamsConst {
 	static const char FILE_NAME[];
 
 	static const char TYPE[];

@@ -48,7 +48,7 @@ struct TLC59711DmxParamsMask {
 
 class TLC59711DmxParamsStore {
 public:
-	virtual ~TLC59711DmxParamsStore(void) {
+	virtual ~TLC59711DmxParamsStore() {
 	}
 
 	virtual void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams)=0;
@@ -57,10 +57,9 @@ public:
 
 class TLC59711DmxParams {
 public:
-	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore = 0);
-	~TLC59711DmxParams(void);
+	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -68,21 +67,21 @@ public:
 
 	void Set(TLC59711Dmx *);
 
-	void Dump(void);
+	void Dump();
 
-	TTLC59711Type GetLedType(void) {
+	TTLC59711Type GetLedType() {
 		return m_tTLC59711Params.LedType;
 	}
 
-	uint16_t GetLedCount(void) {
+	uint16_t GetLedCount() {
 		return m_tTLC59711Params.nLedCount;
 	}
 
-	bool IsSetLedType(void) {
+	bool IsSetLedType() {
 		return isMaskSet(TLC59711DmxParamsMask::LED_TYPE);
 	}
 
-	bool IsSetLedCount(void) {
+	bool IsSetLedCount() {
 		return isMaskSet(TLC59711DmxParamsMask::LED_COUNT);
 	}
 

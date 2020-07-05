@@ -55,20 +55,17 @@ DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore
 	m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
 }
 
-DMXMonitorParams::~DMXMonitorParams(void) {
-}
-
-bool DMXMonitorParams::Load(void) {
+bool DMXMonitorParams::Load() {
 	m_tDMXMonitorParams.nSetList = 0;
 
 	ReadConfigFile configfile(DMXMonitorParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DMXMonitorParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pDMXMonitorParamsStore != 0) {
+		if (m_pDMXMonitorParamsStore != nullptr) {
 			m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
 		}
-	} else if (m_pDMXMonitorParamsStore != 0) {
+	} else if (m_pDMXMonitorParamsStore != nullptr) {
 		m_pDMXMonitorParamsStore->Copy(&m_tDMXMonitorParams);
 	} else {
 		return false;
@@ -78,11 +75,11 @@ bool DMXMonitorParams::Load(void) {
 }
 
 void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pDMXMonitorParamsStore != 0);
+	assert(m_pDMXMonitorParamsStore != nullptr);
 
-	if (m_pDMXMonitorParamsStore == 0) {
+	if (m_pDMXMonitorParamsStore == nullptr) {
 		return;
 	}
 
@@ -97,9 +94,9 @@ void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
 
 void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptDMXMonitorParams != 0) {
+	if (ptDMXMonitorParams != nullptr) {
 		memcpy(&m_tDMXMonitorParams, ptDMXMonitorParams, sizeof(struct TDMXMonitorParams));
 	} else {
 		m_pDMXMonitorParamsStore->Copy(&m_tDMXMonitorParams);
@@ -120,19 +117,19 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pDMXMonitorParamsStore == 0) {
+	if (m_pDMXMonitorParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 
 	DEBUG_EXIT
 }
 
 void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
-	assert(pDMXMonitor != 0);
+	assert(pDMXMonitor != nullptr);
 
 	if (isMaskSet(DMXMonitorParamsMask::START_ADDRESS)) {
 		pDMXMonitor->SetDmxStartAddress(m_tDMXMonitorParams.nDmxStartAddress);
@@ -150,13 +147,13 @@ void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
 }
 
 void DMXMonitorParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint16_t value16;
 	char value[8];
-	uint8_t len;
+	uint32_t nLength;
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxStartAddress = value16;
 			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::START_ADDRESS;
@@ -164,7 +161,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, DMXMonitorParamsConst::DMX_MAX_CHANNELS, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, DMXMonitorParamsConst::DMX_MAX_CHANNELS, value16) == Sscan::OK) {
 		if (value16 != 0 && value16 <= 512) {
 			m_tDMXMonitorParams.nDmxMaxChannels = value16;
 			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::MAX_CHANNELS;
@@ -172,8 +169,8 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	len = 3;
-	if (Sscan::Char(pLine, DMXMonitorParamsConst::FORMAT, value, &len) == SSCAN_OK) {
+	nLength = 3;
+	if (Sscan::Char(pLine, DMXMonitorParamsConst::FORMAT, value, nLength) == Sscan::OK) {
 		if (memcmp(value, "pct", 3) == 0) {
 			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT;
 			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::FORMAT;
@@ -188,7 +185,7 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void DMXMonitorParams::Dump(void) {
+void DMXMonitorParams::Dump() {
 #ifndef NDEBUG
 	if (m_tDMXMonitorParams.nSetList == 0) {
 		return;
@@ -211,8 +208,8 @@ void DMXMonitorParams::Dump(void) {
 }
 
 void DMXMonitorParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<DMXMonitorParams*>(p))->callbackFunction(s);
 }

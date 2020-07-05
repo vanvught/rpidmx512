@@ -37,9 +37,9 @@
 bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptDMXParams != 0) {
+	if (ptDMXParams != nullptr) {
 		memcpy(&m_tDMXParams, ptDMXParams, sizeof(struct TDMXParams));
 	} else {
 		m_pDMXParamsStore->Copy(&m_tDMXParams);
@@ -62,13 +62,13 @@ bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uin
 bool DMXParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (m_pDMXParamsStore == 0) {
+	if (m_pDMXParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return false;
 	}
 
-	return Builder(0, pBuffer, nLength, nSize);
+	return Builder(nullptr, pBuffer, nLength, nSize);
 }

@@ -28,12 +28,14 @@
 #include <string.h>
 
 #include "ff.h"
-#include "sscan.h"
+#include "c/sscan.h"
 
 #include "widget.h"
 #include "widget_params.h"
 
 #include "dmx.h"
+
+extern int sscan_uint8_t(const char *, const char *, /*@out@*/uint8_t *);
 
 static const uint8_t DEVICE_TYPE_ID[DEVICE_TYPE_ID_LENGTH] __attribute__((aligned(4))) = { (uint8_t) 1, (uint8_t) 0 };
 

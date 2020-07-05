@@ -31,14 +31,14 @@
 
 static constexpr char sSource[LTC_READER_SOURCE_UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
 
-const char* LtcParams::GetSourceType(enum TLtcReaderSource tSource) {
+const char* LtcParams::GetSourceType(TLtcReaderSource tSource) {
 	assert(tSource < LTC_READER_SOURCE_UNDEFINED);
 
 	return sSource[tSource];
 }
 
-enum TLtcReaderSource LtcParams::GetSourceType(const char *pType) {
-	for (uint32_t i = 0; i < sizeof(sSource) / sizeof(sSource[0]); i++) {
+TLtcReaderSource LtcParams::GetSourceType(const char *pType) {
+	for (uint32_t i = 0; i < LTC_READER_SOURCE_UNDEFINED; i++) {
 		if (strcasecmp(sSource[i], pType) == 0) {
 			return static_cast<TLtcReaderSource>(i);
 		}

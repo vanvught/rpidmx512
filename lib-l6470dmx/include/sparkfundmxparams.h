@@ -47,7 +47,7 @@ struct SparkFunDmxParamsMask {
 
 class SparkFunDmxParamsStore {
 public:
-	virtual ~SparkFunDmxParamsStore(void) {
+	virtual ~SparkFunDmxParamsStore() {
 	}
 
 	virtual void Update(const struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
@@ -59,10 +59,9 @@ public:
 
 class SparkFunDmxParams {
 public:
-	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore = 0);
-	~SparkFunDmxParams(void);
+	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	bool Load(uint8_t nMotorIndex);
 	void Load(const char *pBuffer, uint32_t nLength);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);

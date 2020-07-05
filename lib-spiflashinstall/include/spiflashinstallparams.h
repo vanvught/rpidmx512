@@ -28,19 +28,21 @@
 
 #include <stdint.h>
 
+struct SpiFlashInstallParamsMask {
+	static constexpr auto INSTALL_UBOOT = (1U << 0);
+	static constexpr auto INSTALL_UIMAGE = (1U << 1);
+};
+
 class SpiFlashInstallParams {
 public:
-	SpiFlashInstallParams(void);
-	~SpiFlashInstallParams(void);
+	bool Load();
+	void Dump();
 
-	bool Load(void);
-	void Dump(void);
-
-	 bool GetInstalluboot(void) {
+	 bool GetInstalluboot() {
 		return m_bInstalluboot;
 	}
 
-	 bool GetInstalluImage(void) {
+	 bool GetInstalluImage() {
 		return m_bInstalluImage;
 	}
 

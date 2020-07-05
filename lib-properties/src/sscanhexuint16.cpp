@@ -1,8 +1,8 @@
 /**
- * @file sscan_char_p.c
+ * @file sscanhexuint16.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,47 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
-#include <stddef.h>
-#include <assert.h>
+#include <ctype.h>
+#include <cassert>
 
 #include "sscan.h"
 
-extern char *get_name(const char *buf, const char *name);
+Sscan::ReturnCode Sscan::HexUint16(const char *pBuffer, const char *pName, uint16_t &nValue) {
+	assert(pBuffer != nullptr);
+	assert(pName != nullptr);
 
-int sscan_char_p(const char *buf, const char *name, char *value, uint8_t *len) {
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
-	assert(len != NULL);
+	const char *p;
 
-	char *b;
-	int k;
-	char *v = value;
-
-	if ((b = get_name(buf, name)) == NULL) {
-		return SSCAN_NAME_ERROR;
+	if ((p = Sscan::checkName(pBuffer, pName)) == nullptr) {
+		return Sscan::NAME_ERROR;
 	}
 
-	k = 0;
+	uint32_t k = 0;
+	nValue = 0;
 
-	while ((*b != (char) 0) && (k < (int) *len)) {
-		*v++ = *b++;
+	while ((*p != '\0') && (k < 4)) {
+		if (isxdigit(*p) == 0) {
+			return Sscan::NAME_ERROR;
+		}
+		uint8_t nibble = *p > '9' ? static_cast<uint8_t>(*p | 0x20) - 'a' + 10 : static_cast<uint8_t>(*p - '0');
+		nValue = (nValue << 4) | nibble;
 		k++;
+		p++;
 	}
 
-	if ((k < (int) *len) || (*b == '\0') || (*b == '\n')) {
-		*len = (uint8_t) k;
-		return SSCAN_OK;
+	if (k != 4) {
+		return Sscan::VALUE_ERROR;
 	}
 
-	return SSCAN_VALUE_ERROR;
+	if ((*p != '\0') && (*p != ' ')) {
+		return Sscan::NAME_ERROR;
+	}
+
+	return Sscan::OK;
 }
-

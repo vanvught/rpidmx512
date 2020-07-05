@@ -1,8 +1,7 @@
 /**
- * @file sscan_uint16_t.c
- *
+ * @file read_config_file.c
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +22,47 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <stdio.h>
+#include <stdbool.h>
 #include <stddef.h>
-#include <ctype.h>
 #include <assert.h>
 
-#include "sscan.h"
+#include <c/read_config_file.h>
 
-extern char *get_name(const char *buf, const char *name);
+bool read_config_file(const char *file_name, funcptr pfi) {
+	char buffer[128];
+	unsigned i;
+	FILE *fp;
 
-int sscan_uint16_t(const char *buf, const char *name, uint16_t *value) {
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
+	assert(file_name != NULL);
+	assert(pfi != NULL);
 
-	char *b;
-	int32_t k;
+	fp = fopen(file_name, "r");
 
-	if ((b = get_name(buf, name)) == NULL) {
-		return SSCAN_NAME_ERROR;
-	}
+	if (fp != NULL) {
+		for (;;) {
+			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
+				break; /* Error or end of file */
+			}
 
-	k = 0;
+			if (buffer[0] >= 'a') {
+				char *q = (char*) buffer;
 
-	do {
-		if (isdigit((int) *b) == 0) {
-			return SSCAN_VALUE_ERROR;
+				for (i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
+					if ((*q == '\r') || (*q == '\n')) {
+						*q = '\0';
+					}
+					q++;
+				}
+
+				pfi((const char*) buffer);
+			}
 		}
-		k = k * 10 + *b - '0';
-		b++;
-	} while ((*b != ' ') && (*b != (char) 0));
 
-	if (k > (int32_t) ((uint16_t) ~0)) {
-		return SSCAN_VALUE_ERROR;
+		fclose(fp);
+	} else {
+		return false;
 	}
 
-	*value = (uint16_t) k;
-
-	return SSCAN_OK;
+	return true;
 }

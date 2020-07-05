@@ -37,8 +37,7 @@
 struct TArtNet4Params {
 	uint32_t nSetList;
 	bool bMapUniverse0;
-};
-// } __attribute__((packed));
+} __attribute__((packed));
 
 struct ArtNet4ParamsMask {
 	static constexpr auto MAP_UNIVERSE0 = (1U << 0);
@@ -46,7 +45,7 @@ struct ArtNet4ParamsMask {
 
 class ArtNet4ParamsStore {
 public:
-	virtual ~ArtNet4ParamsStore(void) {}
+	virtual ~ArtNet4ParamsStore() {}
 
 	virtual void Update(const struct TArtNet4Params *pArtNet4Params)=0;
 	virtual void Copy(struct TArtNet4Params *pArtNet4Params)=0;
@@ -54,10 +53,9 @@ public:
 
 class ArtNet4Params: public ArtNetParams {
 public:
-	ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore = 0);
-	~ArtNet4Params(void);
+	ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TArtNet4Params *pArtNet4Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -65,13 +63,12 @@ public:
 
 	void Set(ArtNet4Node *pArtNet4Node);
 
-	void Dump(void);
+	void Dump();
 
-	bool IsMapUniverse0(void) {
+	bool IsMapUniverse0() {
 		return m_tArtNet4Params.bMapUniverse0;
 	}
 
-public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

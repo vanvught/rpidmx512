@@ -76,23 +76,17 @@ ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pSh
 	DEBUG_EXIT
 }
 
-ShowFileParams::~ShowFileParams(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-bool ShowFileParams::Load(void) {
+bool ShowFileParams::Load() {
 	m_tShowFileParams.nSetList = 0;
 
 	ReadConfigFile configfile(ShowFileParams::staticCallbackFunction, this);
 
 	if (configfile.Read(ShowFileParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pShowFileParamsStore != 0) {
+		if (m_pShowFileParamsStore != nullptr) {
 			m_pShowFileParamsStore->Update(&m_tShowFileParams);
 		}
-	} else if (m_pShowFileParamsStore != 0) {
+	} else if (m_pShowFileParamsStore != nullptr) {
 		m_pShowFileParamsStore->Copy(&m_tShowFileParams);
 	} else {
 		return false;
@@ -102,11 +96,11 @@ bool ShowFileParams::Load(void) {
 }
 
 void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pShowFileParamsStore != 0);
+	assert(m_pShowFileParamsStore != nullptr);
 
-	if (m_pShowFileParamsStore == 0) {
+	if (m_pShowFileParamsStore == nullptr) {
 		return;
 	}
 
@@ -122,7 +116,7 @@ void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask) {
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, pKeyword, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, pKeyword, value8) == Sscan::OK) {
 		if (value8 != 0) {
 			m_tShowFileParams.nOptions |= nMask;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OPTIONS;
@@ -137,15 +131,15 @@ void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint
 }
 
 void ShowFileParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	char aValue[16];
-	uint8_t nLength;
+	uint32_t nLength;
 	uint8_t nValue8;
 	uint16_t nValue16;
 
 	nLength = ShowFileConst::SHOWFILECONST_FORMAT_NAME_LENGTH - 1;
-	if (Sscan::Char(pLine, ShowFileParamsConst::FORMAT, aValue, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, ShowFileParamsConst::FORMAT, aValue, nLength) == Sscan::OK) {
 		aValue[nLength] = '\0';
 
 		ShowFileFormats tFormat = ShowFile::GetFormat(aValue);
@@ -161,7 +155,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, nValue16) == Sscan::OK) {
 		if ((nValue16 != osc::port::DEFAULT_INCOMING) && (nValue16 > 1023)) {
 			m_tShowFileParams.nOscPortIncoming = nValue16;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_INCOMING;
@@ -172,7 +166,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, nValue16) == Sscan::OK) {
 		if ((nValue16 != osc::port::DEFAULT_OUTGOING) && (nValue16 > 1023)) {
 			m_tShowFileParams.nOscPortOutgoing = nValue16;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_OUTGOING;
@@ -183,7 +177,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, ShowFileParamsConst::SHOW, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
 		if (nValue8 < ShowFileFile::MAX_NUMBER) {
 			m_tShowFileParams.nShow = nValue8;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::SHOW;
@@ -195,7 +189,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = 6;
-	if (Sscan::Char(pLine, ShowFileParamsConst::PROTOCOL, aValue, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, ShowFileParamsConst::PROTOCOL, aValue, nLength) == Sscan::OK) {
 		aValue[nLength] = '\0';
 
 		if(strcasecmp(aValue, "artnet") == 0) {
@@ -208,7 +202,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, ShowFileParamsConst::SACN_SYNC_UNIVERSE, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, ShowFileParamsConst::SACN_SYNC_UNIVERSE, nValue16) == Sscan::OK) {
 		if (nValue16 > E131_UNIVERSE_MAX) {
 			m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
 			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::SACN_UNIVERSE;
@@ -219,7 +213,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, ShowFileParamsConst::ARTNET_DISABLE_UNICAST, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, ShowFileParamsConst::ARTNET_DISABLE_UNICAST, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_tShowFileParams.nDisableUnicast = 1;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::ARTNET_UNICAST_DISABLED;
@@ -230,7 +224,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, ShowFileParamsConst::DMX_MASTER, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, ShowFileParamsConst::DMX_MASTER, nValue8) == Sscan::OK) {
 		if (nValue8 < DMX_MAX_VALUE) {
 			m_tShowFileParams.nDmxMaster = nValue8;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::DMX_MASTER;
@@ -249,7 +243,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (ptShowFileParamss != 0) {
+	if (ptShowFileParamss != nullptr) {
 		memcpy(&m_tShowFileParams, ptShowFileParamss, sizeof(struct TShowFileParams));
 	} else {
 		m_pShowFileParamsStore->Copy(&m_tShowFileParams);
@@ -288,19 +282,19 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pShowFileParamsStore == 0) {
+	if (m_pShowFileParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 
 	DEBUG_EXIT
 	return;
 }
 
-void ShowFileParams::Set(void) {
+void ShowFileParams::Set() {
 	DEBUG_ENTRY
 
 	if (isMaskSet(ShowFileParamsMask::OSC_PORT_INCOMING)) {
@@ -314,7 +308,7 @@ void ShowFileParams::Set(void) {
 	// sACN E1.31
 
 	if (isMaskSet(ShowFileParamsMask::SACN_UNIVERSE)) {
-		if (E131Controller::Get() != 0) {
+		if (E131Controller::Get() != nullptr) {
 			E131Controller::Get()->SetSynchronizationAddress(m_tShowFileParams.nUniverse);
 		}
 	}
@@ -322,7 +316,7 @@ void ShowFileParams::Set(void) {
 	// Art-Net
 
 	if (isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED)) {
-		if (ArtNetController::Get() != 0) {
+		if (ArtNetController::Get() != nullptr) {
 			ArtNetController::Get()->SetUnicast(false);
 		}
 	}
@@ -334,11 +328,11 @@ void ShowFileParams::Set(void) {
 	}
 
 	if (isOptionSet(ShowFileOptions::DISABLE_SYNC)) {
-		if (E131Controller::Get() != 0) {
+		if (E131Controller::Get() != nullptr) {
 			E131Controller::Get()->SetSynchronizationAddress(0);
 		}
 
-		if (ArtNetController::Get() != 0) {
+		if (ArtNetController::Get() != nullptr) {
 			ArtNetController::Get()->SetSynchronization(false);
 		}
 	}
@@ -346,7 +340,7 @@ void ShowFileParams::Set(void) {
 	DEBUG_EXIT
 }
 
-void ShowFileParams::Dump(void) {
+void ShowFileParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ShowFileParamsConst::FILE_NAME);
 
@@ -401,8 +395,8 @@ void ShowFileParams::Dump(void) {
 }
 
 void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<ShowFileParams *>(p))->callbackFunction(s);
 }

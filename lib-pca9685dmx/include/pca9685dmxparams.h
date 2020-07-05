@@ -29,11 +29,11 @@
 class PCA9685DmxParams {
 public:
 	PCA9685DmxParams(const char *);
-	~PCA9685DmxParams(void);
+	~PCA9685DmxParams();
 
-	void Dump(void);
+	void Dump();
 
-	bool GetSetList(void) const;
+	bool GetSetList() const;
 
 	uint8_t GetI2cAddress(bool &pIsSet) const;
 	uint16_t GetDmxStartAddress(bool &pIsSet) const;

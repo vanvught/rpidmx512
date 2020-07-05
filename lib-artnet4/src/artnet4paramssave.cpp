@@ -39,9 +39,9 @@
 void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (pArtNet4Params != 0) {
+	if (pArtNet4Params != nullptr) {
 		memcpy(&m_tArtNet4Params, pArtNet4Params, sizeof(struct TArtNet4Params));
 	} else {
 		m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
@@ -61,11 +61,11 @@ void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, char *p
 void ArtNet4Params::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pArtNet4ParamsStore == 0) {
+	if (m_pArtNet4ParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

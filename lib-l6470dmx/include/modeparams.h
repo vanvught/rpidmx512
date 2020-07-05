@@ -69,7 +69,7 @@ struct ModeParamsMask {
 
 class ModeParamsStore {
 public:
-	virtual ~ModeParamsStore(void) {}
+	virtual ~ModeParamsStore() {}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams)=0;
@@ -77,8 +77,8 @@ public:
 
 class ModeParams {
 public:
-	ModeParams(ModeParamsStore *pModeParamsStore=0);
-	~ModeParams(void);
+	ModeParams(ModeParamsStore *pModeParamsStore=nullptr);
+	~ModeParams();
 
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
@@ -86,33 +86,33 @@ public:
 	void Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
-	void Dump(void);
+	void Dump();
 
-	uint16_t GetDmxMode(void) {
+	uint16_t GetDmxMode() {
 		return m_tModeParams.nDmxMode;
 	}
 
-	uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() {
 		return m_tModeParams.nDmxStartAddress;
 	}
 
-	uint32_t GetMaxSteps(void) {
+	uint32_t GetMaxSteps() {
 		return m_tModeParams.nMaxSteps;
 	}
 
-	TL6470Action GetSwitchAction(void) {
+	TL6470Action GetSwitchAction() {
 		return m_tModeParams.tSwitchAction;
 	}
 
-	TL6470Direction GetSwitchDir(void) {
+	TL6470Direction GetSwitchDir() {
 		return m_tModeParams.tSwitchDir;
 	}
 
-	float GetSwitchStepsPerSec(void) {
+	float GetSwitchStepsPerSec() {
 		return m_tModeParams.fSwitchStepsPerSec;
 	}
 
-	bool HasSwitch(void) {
+	bool HasSwitch() {
 		return m_tModeParams.bSwitch;
 	}
 

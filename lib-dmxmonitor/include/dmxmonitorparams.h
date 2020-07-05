@@ -45,7 +45,7 @@ struct DMXMonitorParamsMask {
 
 class DMXMonitorParamsStore {
 public:
-	virtual ~DMXMonitorParamsStore(void) {
+	virtual ~DMXMonitorParamsStore() {
 	}
 
 	virtual void Update(const struct TDMXMonitorParams *pDMXMonitorParams)=0;
@@ -54,10 +54,9 @@ public:
 
 class DMXMonitorParams {
 public:
-	DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore = 0);
-	~DMXMonitorParams(void);
+	DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -65,7 +64,7 @@ public:
 	
 	void Set(DMXMonitor *pDMXMonitor);
 	
-	void Dump(void);
+	void Dump();
 
     static void staticCallbackFunction(void *p, const char *s);
 

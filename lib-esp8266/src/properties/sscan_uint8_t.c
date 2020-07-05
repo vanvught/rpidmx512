@@ -1,5 +1,5 @@
 /**
- * @file sscan_uin32_t.c
+ * @file sscan_uint8_t.c
  *
  */
 /* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -28,17 +28,17 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "sscan.h"
+#include "c/sscan.h"
 
 extern char *get_name(const char *buf, const char *name);
 
-int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
+int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
 	assert(buf != NULL);
 	assert(name != NULL);
 	assert(value != NULL);
 
-	int64_t k;
 	char *b;
+	int32_t k;
 
 	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
@@ -50,15 +50,15 @@ int sscan_uint32_t(const char *buf, const char *name, uint32_t *value) {
 		if (isdigit((int) *b) == 0) {
 			return SSCAN_VALUE_ERROR;
 		}
-		k = k * 10 + (int64_t) *b - (int64_t) '0';
+		k = k * 10 + *b - '0';
 		b++;
 	} while ((*b != ' ') && (*b != (char) 0));
 
-	if (k > (int64_t) ((uint32_t) ~0)) {
+	if (k > (int32_t) ((uint8_t) ~0)) {
 		return SSCAN_VALUE_ERROR;
 	}
 
-	*value = (uint32_t) k;
+	*value = (uint8_t) k;
 
 	return SSCAN_OK;
 }

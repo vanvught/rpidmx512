@@ -1,8 +1,8 @@
 /**
- * @file sscan_ip_address.c
+ * @file sscanhex24uint32.cpp
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,76 +23,47 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
-#include <stddef.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "sscan.h"
 
-typedef union pcast32 {
-	uint32_t u32;
-	uint8_t u8[4];
-} _pcast32;
+Sscan::ReturnCode Sscan::Hex24Uint32(const char *pBuffer, const char *pName, uint32_t &nValue) {
+	assert(pBuffer != nullptr);
+	assert(pName != nullptr);
 
-extern char *get_name(const char *buf, const char *name);
+	const char *p;
 
-int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(ip_address != NULL);
-
-	char *b;
-	int i, j, k;
-	_pcast32 cast32;
-
-	if ((b = get_name(buf, name)) == NULL) {
-		return SSCAN_NAME_ERROR;
+	if ((p = checkName(pBuffer, pName)) == nullptr) {
+		return Sscan::NAME_ERROR;
 	}
 
-	for (i = 0 ; i < 3 ; i++) {
-		j = 0;
-		k = 0;
+	uint32_t k = 0;
+	nValue = 0;
 
-		while ((*b != '.') && (*b != (char) 0)) {
-			if (j == 3) {
-				return SSCAN_VALUE_ERROR;
-			}
-
-			if (isdigit((int) *b) == 0) {
-				return SSCAN_VALUE_ERROR;
-			}
-
-			j++;
-			k = k * 10 + (int) *b - (int) '0';
-			b++;
+	while ((*p != '\0') && (k < 6)) {
+		if (isxdigit(*p) == 0) {
+			return Sscan::NAME_ERROR;
 		}
-
-		cast32.u8[i] = (uint8_t) k;
-		b++;
-
+		const uint8_t nibble = *p > '9' ? static_cast<uint8_t>(*p | 0x20) - 'a' + 10 : static_cast<uint8_t>(*p - '0');
+		nValue = (nValue << 4) | nibble;
+		k++;
+		p++;
 	}
 
-	j = 0;
-	k = 0;
-
-	while ((*b != ' ') && (*b != (char) 0)) {
-		if (j == 3) {
-			return SSCAN_VALUE_ERROR;
-		}
-
-		if (isdigit((int) *b) == 0) {
-			return SSCAN_VALUE_ERROR;
-		}
-
-		j++;
-		k = k * 10 + (int) *b - (int) '0';
-		b++;
+	if ((*p != '\0') && (*p != ' ')) {
+		return Sscan::NAME_ERROR;
 	}
 
-	cast32.u8[i] = (uint8_t) k;
+	if (k != 6) {
+		return Sscan::VALUE_ERROR;
+	}
 
-	*ip_address = cast32.u32;
-
-	return SSCAN_OK;
+	return Sscan::OK;
 }

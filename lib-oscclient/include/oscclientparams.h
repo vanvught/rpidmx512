@@ -60,7 +60,7 @@ struct OscClientParamsMask {
 
 class OscClientParamsStore {
 public:
-	virtual ~OscClientParamsStore(void) {}
+	virtual ~OscClientParamsStore() {}
 
 	virtual void Update(const struct TOscClientParams *pOscClientParams)=0;
 	virtual void Copy(struct TOscClientParams *pOscClientParams)=0;
@@ -68,10 +68,9 @@ public:
 
 class OscClientParams {
 public:
-	OscClientParams(OscClientParamsStore *pOscClientParamsStore=0);
-	~OscClientParams(void);
+	OscClientParams(OscClientParamsStore *pOscClientParamsStore=nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TOscClientParams *ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -79,17 +78,17 @@ public:
 
 	void Set(OscClient *pOscClient);
 
-	void Dump(void);
+	void Dump();
 
-	uint32_t GetServerIP(void) {
+	uint32_t GetServerIP() {
 		return m_tOscClientParams.nServerIp;
 	}
 
-	uint16_t GetOutgoingPort(void) {
+	uint16_t GetOutgoingPort() {
 		return m_tOscClientParams.nOutgoingPort;
 	}
 
-	uint16_t GetIncomingPort(void) {
+	uint16_t GetIncomingPort() {
 		return m_tOscClientParams.nIncomingPort;
 	}
 

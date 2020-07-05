@@ -114,8 +114,8 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	uint8_t nLength = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
-	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, &nLength) == SSCAN_OK) {
+	uint32_t nLength = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
+	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, nLength) == Sscan::OK) {
 		m_tRemoteConfigParams.aDisplayName[nLength] = '\0';
 		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::DISPLAY_NAME;
 		return;

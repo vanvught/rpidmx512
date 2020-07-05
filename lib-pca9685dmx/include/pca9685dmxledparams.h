@@ -33,12 +33,12 @@
 
 class PCA9685DmxLedParams: public PCA9685DmxParams {
 public:
-	PCA9685DmxLedParams(void);
-	~PCA9685DmxLedParams(void);
+	PCA9685DmxLedParams();
+	~PCA9685DmxLedParams();
 
-	bool Load(void);
+	bool Load();
 	void Set(PCA9685DmxLed *);
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
@@ -50,11 +50,11 @@ private:
     }
 
 private:
-    uint32_t m_bSetList;
-    uint8_t m_nI2cAddress;
-    uint16_t m_nPwmFrequency;
-	bool m_bOutputInvert;
-	bool m_bOutputDriver;
+    uint32_t m_bSetList{0};
+    uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
+    uint16_t m_nPwmFrequency{PWMLED_DEFAULT_FREQUENCY};
+	bool m_bOutputInvert{false};
+	bool m_bOutputDriver{true};
 };
 
 #endif /* PCA9685DMXLEDPARAMS_H_ */

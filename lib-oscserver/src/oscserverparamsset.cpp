@@ -29,7 +29,7 @@
 #include "oscserver.h"
 
 void OSCServerParams::Set(OscServer *pOscServer) {
-	assert(pOscServer != 0);
+	assert(pOscServer != nullptr);
 
 	if (isMaskSet(OSCServerParamsMask::INCOMING_PORT)) {
 		pOscServer->SetPortIncoming(m_tOSCServerParams.nIncomingPort);

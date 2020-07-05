@@ -106,24 +106,23 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 void RDMDeviceParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
-	uint8_t len;
-	uint16_t uint16;
-
-	len = RDM_DEVICE_LABEL_MAX_LENGTH;
-	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, &len) == SSCAN_OK) {
-		m_tRDMDeviceParams.nDeviceRootLabelLength = len;
+	uint32_t nLength = RDM_DEVICE_LABEL_MAX_LENGTH;
+	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, nLength) == Sscan::OK) {
+		m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
 		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::LABEL;
 		return;
 	}
 
-	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_CATEGORY, &uint16) == SSCAN_OK) {
-		m_tRDMDeviceParams.nProductCategory = uint16;
+	uint16_t nValue16;
+
+	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_CATEGORY, nValue16) == Sscan::OK) {
+		m_tRDMDeviceParams.nProductCategory = nValue16;
 		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_CATEGORY;
 		return;
 	}
 
-	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_DETAIL, &uint16) == SSCAN_OK) {
-		m_tRDMDeviceParams.nProductDetail = uint16;
+	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_DETAIL, nValue16) == Sscan::OK) {
+		m_tRDMDeviceParams.nProductDetail = nValue16;
 		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_DETAIL;
 	}
 }

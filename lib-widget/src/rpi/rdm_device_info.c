@@ -29,8 +29,8 @@
 
 #include "rdm_device_info.h"
 
-#include "read_config_file.h"
-#include "sscan.h"
+#include "c/read_config_file.h"
+#include "c/sscan.h"
 
 #include "dmx.h"
 
@@ -38,8 +38,10 @@
 
 #include "c/hardware.h"
 
+extern int sscan_char_p(const char *, const char *, char *, uint8_t *);
+
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 static const char DEVICE_LABEL[] ALIGNED = "Raspberry Pi DMX USB Pro";

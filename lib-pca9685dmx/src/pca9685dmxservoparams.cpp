@@ -44,24 +44,21 @@ constexpr char PARAMS_I2C_SLAVE_ADDRESS[] = "i2c_slave_address";
 constexpr char PARAMS_LEFT_US[] = "left_us";
 constexpr char PARAMS_RIGHT_US[] = "right_us";
 
-PCA9685DmxServoParams::PCA9685DmxServoParams(void) :
-	PCA9685DmxParams(PARAMS_FILE_NAME),
-	m_bSetList(0),
-	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
-	m_nLeftUs(SERVO_LEFT_DEFAULT_US), m_nRightUs(SERVO_RIGHT_DEFAULT_US)
+PCA9685DmxServoParams::PCA9685DmxServoParams() :
+	PCA9685DmxParams(PARAMS_FILE_NAME) 
 {
 }
 
-PCA9685DmxServoParams::~PCA9685DmxServoParams(void) {
+PCA9685DmxServoParams::~PCA9685DmxServoParams() {
 }
 
-bool PCA9685DmxServoParams::Load(void) {
+bool PCA9685DmxServoParams::Load() {
 	ReadConfigFile configfile(PCA9685DmxServoParams::staticCallbackFunction, this);
 	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void PCA9685DmxServoParams::Set(PCA9685DmxServo* pDmxServo) {
-	assert(pDmxServo != 0);
+	assert(pDmxServo != nullptr);
 
 	bool isSet;
 
@@ -98,7 +95,7 @@ void PCA9685DmxServoParams::Set(PCA9685DmxServo* pDmxServo) {
 	}
 }
 
-void PCA9685DmxServoParams::Dump(void) {
+void PCA9685DmxServoParams::Dump() {
 #ifndef NDEBUG
 	if ((!GetSetList()) && (m_bSetList == 0)) {
 		return;
@@ -123,12 +120,12 @@ void PCA9685DmxServoParams::Dump(void) {
 }
 
 void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t value8;
 	uint16_t value16;
 
-	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, &value8) == SSCAN_OK) {
+	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, value8) == Sscan::OK) {
 		if ((value8 >= PCA9685_I2C_ADDRESS_DEFAULT) && (value8 != PCA9685_I2C_ADDRESS_FIXED)) {
 			m_nI2cAddress = value8;
 			m_bSetList |= I2C_SLAVE_ADDRESS_MASK;
@@ -136,7 +133,7 @@ void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_LEFT_US, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, PARAMS_LEFT_US, value16) == Sscan::OK) {
 		if ((value16 != 0) && (value16 < m_nRightUs)) {
 			m_nLeftUs = value16;
 			m_bSetList |= LEFT_US_MASK;
@@ -144,7 +141,7 @@ void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_RIGHT_US, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, PARAMS_RIGHT_US, value16) == Sscan::OK) {
 		if (value16 > m_nLeftUs) {
 			m_nRightUs = value16;
 			m_bSetList |= RIGHT_US_MASK;
@@ -154,8 +151,8 @@ void PCA9685DmxServoParams::callbackFunction(const char* pLine) {
 }
 
 void PCA9685DmxServoParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<PCA9685DmxServoParams*>(p))->callbackFunction(s);
 }

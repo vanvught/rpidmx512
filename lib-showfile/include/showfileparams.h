@@ -63,7 +63,7 @@ struct ShowFileParamsMask {
 
 class ShowFileParamsStore {
 public:
-	virtual ~ShowFileParamsStore(void) {
+	virtual ~ShowFileParamsStore() {
 	}
 
 	virtual void Update(const struct TShowFileParams *pShowFileParams)=0;
@@ -72,36 +72,35 @@ public:
 
 class ShowFileParams {
 public:
-	ShowFileParams(ShowFileParamsStore *pShowFileParamsStore = 0);
-	~ShowFileParams(void);
+	ShowFileParams(ShowFileParamsStore *pShowFileParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Set(void);
+	void Set();
 
-	void Dump(void);
+	void Dump();
 
-	ShowFileFormats GetFormat(void) {
+	ShowFileFormats GetFormat() {
 		return static_cast<ShowFileFormats>(m_tShowFileParams.nFormat);
 	}
 
-	ShowFileProtocols GetProtocol(void) {
+	ShowFileProtocols GetProtocol() {
 		return static_cast<ShowFileProtocols>(m_tShowFileParams.nProtocol);
 	}
 
-	uint8_t GetShow(void) {
+	uint8_t GetShow() {
 		return m_tShowFileParams.nShow;
 	}
 
-	bool IsAutoStart(void) {
+	bool IsAutoStart() {
 		return isOptionSet(ShowFileOptions::AUTO_START);
 	}
 
-	bool IsArtNetBroadcast(void) {
+	bool IsArtNetBroadcast() {
 		return isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED);
 	}
 

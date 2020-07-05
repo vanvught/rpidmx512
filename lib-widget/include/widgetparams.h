@@ -62,7 +62,6 @@ public:
 class WidgetParams {
 public:
 	WidgetParams(WidgetParamsStore *pWidgetParamsStore = 0);
-	~WidgetParams(void);
 
 	bool Load(void);
 	void Set(void);

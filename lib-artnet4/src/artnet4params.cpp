@@ -33,29 +33,28 @@
 #endif
 #include <cassert>
 
-#include "debug.h"
-
 #include "artnet4params.h"
 #include "artnet4paramsconst.h"
 #include "artnetparamsconst.h"
+
+#include "storeartnet.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
 #include "spiflashstore.h"
 
+#include "debug.h"
+
 ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
-	ArtNetParams(pArtNet4ParamsStore == 0 ? 0 : SpiFlashStore::Get()->GetStoreArtNet()),
+	ArtNetParams(pArtNet4ParamsStore == nullptr ? nullptr : StoreArtNet::Get()),
 	m_pArtNet4ParamsStore(pArtNet4ParamsStore)
 {
 	m_tArtNet4Params.nSetList = 0;
 	m_tArtNet4Params.bMapUniverse0 = false;
 }
 
-ArtNet4Params::~ArtNet4Params(void) {
-}
-
-bool ArtNet4Params::Load(void) {
+bool ArtNet4Params::Load() {
 	DEBUG_ENTRY
 
 	ArtNetParams::Load();
@@ -66,10 +65,10 @@ bool ArtNet4Params::Load(void) {
 
 	if (configfile.Read(ArtNetParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pArtNet4ParamsStore != 0) {
+		if (m_pArtNet4ParamsStore != nullptr) {
 			m_pArtNet4ParamsStore->Update(&m_tArtNet4Params);
 		}
-	} else if (m_pArtNet4ParamsStore != 0) {
+	} else if (m_pArtNet4ParamsStore != nullptr) {
 		m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
 	} else {
 		DEBUG_EXIT
@@ -83,13 +82,13 @@ bool ArtNet4Params::Load(void) {
 void ArtNet4Params::Load(const char* pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pArtNet4ParamsStore != 0);
+	assert(m_pArtNet4ParamsStore != nullptr);
 
 	ArtNetParams::Load(pBuffer, nLength);
 
-	if (m_pArtNet4ParamsStore == 0) {
+	if (m_pArtNet4ParamsStore == nullptr) {
 		return;
 	}
 
@@ -105,23 +104,23 @@ void ArtNet4Params::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void ArtNet4Params::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
-	uint8_t value8;
+	uint8_t nValue8;
 
-	if (Sscan::Uint8(pLine, ArtNet4ParamsConst::MAP_UNIVERSE0, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tArtNet4Params.bMapUniverse0 = 1;
+	if (Sscan::Uint8(pLine, ArtNet4ParamsConst::MAP_UNIVERSE0, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_tArtNet4Params.bMapUniverse0 = true;
 			m_tArtNet4Params.nSetList |= ArtNet4ParamsMask::MAP_UNIVERSE0;
 		} else {
-			m_tArtNet4Params.bMapUniverse0 = 0;
+			m_tArtNet4Params.bMapUniverse0 = false;
 			m_tArtNet4Params.nSetList &= ~ArtNet4ParamsMask::MAP_UNIVERSE0;
 		}
 		return;
 	}
 }
 
-void ArtNet4Params::Dump(void) {
+void ArtNet4Params::Dump() {
 #ifndef NDEBUG
 	ArtNetParams::Dump();
 
@@ -134,8 +133,8 @@ void ArtNet4Params::Dump(void) {
 }
 
 void ArtNet4Params::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<ArtNet4Params*>(p))->callbackFunction(s);
 }

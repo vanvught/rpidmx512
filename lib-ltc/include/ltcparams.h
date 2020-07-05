@@ -56,6 +56,9 @@ struct TLtcParams {
 	uint8_t nEnableOsc;
 	uint16_t nOscPort;
 	uint8_t nEnableWS28xx;
+	uint8_t nAltFunction;
+	uint8_t nSkipSeconds;
+	uint8_t nSkipFree;
 }__attribute__((packed));
 
 static_assert(sizeof(struct TLtcParams) <= 32, "struct TLtcParams is too large");
@@ -84,11 +87,14 @@ struct LtcParamsMask {
 	static constexpr auto ENABLE_OSC = (1U << 20);
 	static constexpr auto OSC_PORT = (1U << 21);
 	static constexpr auto ENABLE_WS28XX = (1U << 22);
+	static constexpr auto ALT_FUNCTION = (1U << 23);
+	static constexpr auto SKIP_SECONDS = (1U << 24);
+	static constexpr auto SKIP_FREE = (1U << 25);
 };
 
 class LtcParamsStore {
 public:
-	virtual ~LtcParamsStore(void) {}
+	virtual ~LtcParamsStore() {}
 
 	virtual void Update(const struct TLtcParams *pTLtcParams)=0;
 	virtual void Copy(struct TLtcParams *pTLtcParams)=0;
@@ -98,63 +104,62 @@ public:
 
 class LtcParams {
 public:
-	LtcParams(LtcParamsStore *pLtcParamsStore = 0);
-	~LtcParams(void);
+	LtcParams(LtcParamsStore *pLtcParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
-	void Dump(void);
+	void Dump();
 
-	TLtcReaderSource GetSource(void) {
+	TLtcReaderSource GetSource() {
 		return static_cast<TLtcReaderSource>(m_tLtcParams.tSource);
 	}
 
 	const char *GetSourceType(TLtcReaderSource tSource);
 	TLtcReaderSource GetSourceType(const char *pType);
 
-	bool IsAutoStart(void) {
+	bool IsAutoStart() {
 		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LtcParamsMask::AUTO_START));
 	}
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-	bool IsShowSysTime(void) {
+	bool IsShowSysTime() {
 		return (m_tLtcParams.nShowSysTime != 0);
 	}
 
-	bool IsTimeSyncDisabled(void) {
+	bool IsTimeSyncDisabled() {
 		return (m_tLtcParams.nDisableTimeSync == 1);
 	}
 
-	uint8_t GetYear(void) {
+	uint8_t GetYear() {
 		return m_tLtcParams.nYear;
 	}
 
-	uint8_t GetMonth(void) {
+	uint8_t GetMonth() {
 		return m_tLtcParams.nMonth;
 	}
 
-	uint8_t GetDay(void) {
+	uint8_t GetDay() {
 		return m_tLtcParams.nDay;
 	}
 
-	bool IsNtpEnabled(void) {
+	bool IsNtpEnabled() {
 		return (m_tLtcParams.nEnableNtp == 1);
 	}
 
-	bool IsSetDate(void) {
+	bool IsSetDate() {
 		return (m_tLtcParams.nSetDate == 1);
 	}
 
-	uint8_t GetFps(void) {
+	uint8_t GetFps() {
 		return m_tLtcParams.nFps;
 	}
 
-	bool IsOscEnabled(void) {
+	bool IsOscEnabled() {
 		return (m_tLtcParams.nEnableOsc == 1);
 	}
 
@@ -163,8 +168,20 @@ public:
 		return m_tLtcParams.nOscPort;
 	}
 
-	bool IsWS28xxEnabled(void) {
+	bool IsWS28xxEnabled() {
 		return (m_tLtcParams.nEnableWS28xx == 1);
+	}
+
+	bool IsAltFunction() {
+		return (m_tLtcParams.nAltFunction == 1);
+	}
+
+	uint8_t GetSkipSeconds() {
+		return m_tLtcParams.nSkipSeconds;
+	}
+
+	uint8_t GetSkipFree() {
+		return (m_tLtcParams.nSkipFree == 1);
 	}
 
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
@@ -185,6 +202,8 @@ private:
     };
 
 	void HandleDisabledOutput(const char *pLine, const char *pKeyword, unsigned nMaskDisabledOutputs);
+	void SetBool(const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
+	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) {

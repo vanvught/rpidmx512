@@ -29,7 +29,7 @@
 #include "tlc59711dmx.h"
 
 void TLC59711DmxParams::Set(TLC59711Dmx* pTLC59711Dmx) {
-	assert(pTLC59711Dmx != 0);
+	assert(pTLC59711Dmx != nullptr);
 
 	if(isMaskSet(TLC59711DmxParamsMask::LED_TYPE)) {
 		pTLC59711Dmx->SetLEDType(m_tTLC59711Params.LedType);

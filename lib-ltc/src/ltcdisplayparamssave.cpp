@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -46,9 +46,9 @@
 #include "propertiesbuilder.h"
 
 void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptLtcDisplayParams != 0) {
+	if (ptLtcDisplayParams != nullptr) {
 		memcpy(&m_tLtcDisplayParams, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
 	} else {
 		m_pLtcDisplayParamsStore->Copy(&m_tLtcDisplayParams);
@@ -86,10 +86,10 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 }
 
 void LtcDisplayParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	if (m_pLtcDisplayParamsStore == 0) {
+	if (m_pLtcDisplayParamsStore == nullptr) {
 		nSize = 0;
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

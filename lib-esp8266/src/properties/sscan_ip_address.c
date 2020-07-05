@@ -1,5 +1,5 @@
 /**
- * @file sscan_uint8_t.c
+ * @file sscan_ip_address.c
  *
  */
 /* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -28,37 +28,71 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include "sscan.h"
+#include "c/sscan.h"
+
+typedef union pcast32 {
+	uint32_t u32;
+	uint8_t u8[4];
+} _pcast32;
 
 extern char *get_name(const char *buf, const char *name);
 
-int sscan_uint8_t(const char *buf, const char *name, uint8_t *value) {
+int sscan_ip_address(const char *buf, const char *name, uint32_t *ip_address) {
 	assert(buf != NULL);
 	assert(name != NULL);
-	assert(value != NULL);
+	assert(ip_address != NULL);
 
 	char *b;
-	int32_t k;
+	int i, j, k;
+	_pcast32 cast32;
 
 	if ((b = get_name(buf, name)) == NULL) {
 		return SSCAN_NAME_ERROR;
 	}
 
+	for (i = 0 ; i < 3 ; i++) {
+		j = 0;
+		k = 0;
+
+		while ((*b != '.') && (*b != (char) 0)) {
+			if (j == 3) {
+				return SSCAN_VALUE_ERROR;
+			}
+
+			if (isdigit((int) *b) == 0) {
+				return SSCAN_VALUE_ERROR;
+			}
+
+			j++;
+			k = k * 10 + (int) *b - (int) '0';
+			b++;
+		}
+
+		cast32.u8[i] = (uint8_t) k;
+		b++;
+
+	}
+
+	j = 0;
 	k = 0;
 
-	do {
+	while ((*b != ' ') && (*b != (char) 0)) {
+		if (j == 3) {
+			return SSCAN_VALUE_ERROR;
+		}
+
 		if (isdigit((int) *b) == 0) {
 			return SSCAN_VALUE_ERROR;
 		}
-		k = k * 10 + *b - '0';
-		b++;
-	} while ((*b != ' ') && (*b != (char) 0));
 
-	if (k > (int32_t) ((uint8_t) ~0)) {
-		return SSCAN_VALUE_ERROR;
+		j++;
+		k = k * 10 + (int) *b - (int) '0';
+		b++;
 	}
 
-	*value = (uint8_t) k;
+	cast32.u8[i] = (uint8_t) k;
+
+	*ip_address = cast32.u32;
 
 	return SSCAN_OK;
 }

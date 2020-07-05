@@ -44,7 +44,7 @@
 void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (ptE131Params != 0) {
+	if (ptE131Params != nullptr) {
 		memcpy(&m_tE131Params, ptE131Params, sizeof(struct TE131Params));
 	} else {
 		m_pE131ParamsStore->Copy(&m_tE131Params);
@@ -85,11 +85,11 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, 
 void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pE131ParamsStore == 0) {
+	if (m_pE131ParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

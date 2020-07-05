@@ -25,14 +25,13 @@
 #ifndef LTCPARAMSCONST_H_
 #define LTCPARAMSCONST_H_
 
-#include <stdint.h>
-
-class LtcParamsConst {
-public:
+struct LtcParamsConst {
 	static const char FILE_NAME[];
 
 	static const char SOURCE[];
+	// System time
 	static const char AUTO_START[];
+	// Output options
 	static const char DISABLE_DISPLAY[];
 	static const char DISABLE_MAX7219[];
 	static const char DISABLE_MIDI[];
@@ -42,10 +41,12 @@ public:
 	static const char DISABLE_RTPMIDI[];
 	static const char SHOW_SYSTIME[];
 	static const char DISABLE_TIMESYNC[];
+	// NTP
 	static const char YEAR[];
 	static const char MONTH[];
 	static const char DAY[];
 	static const char NTP_ENABLE[];
+	// Generator
 	static const char FPS[];
 	static const char START_FRAME[];
 	static const char START_SECOND[];
@@ -55,8 +56,13 @@ public:
 	static const char STOP_SECOND[];
 	static const char STOP_MINUTE[];
 	static const char STOP_HOUR[];
+	static const char ALT_FUNCTION[];
+	static const char SKIP_SECONDS[];
+	static const char SKIP_FREE[];
+	// OSC
 	static const char OSC_ENABLE[];
 	static const char OSC_PORT[];
+	// WS28xx Display
 	static const char WS28XX_ENABLE[];
 };
 

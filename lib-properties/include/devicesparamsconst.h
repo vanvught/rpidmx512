@@ -26,8 +26,7 @@
 #ifndef DEVICESPARAMSCONST_H_
 #define DEVICESPARAMSCONST_H_
 
-class DevicesParamsConst {
-public:
+struct DevicesParamsConst {
 	static const char FILE_NAME[];
 
 	static const char LED_TYPE[];

@@ -57,7 +57,7 @@ struct DmxSerialParamsMask {
 
 class DmxSerialParamsStore {
 public:
-	virtual ~DmxSerialParamsStore(void) {
+	virtual ~DmxSerialParamsStore() {
 	}
 
 	virtual void Update(const struct TDmxSerialParams *pDmxSerialParams)=0;
@@ -66,18 +66,17 @@ public:
 
 class DmxSerialParams {
 public:
-	DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore = 0);
-	~DmxSerialParams(void);
+	DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TDmxSerialParams *pDmxSerialParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Dump(void);
+	void Dump();
 
-	void Set(void);
+	void Set();
 
     static void staticCallbackFunction(void *p, const char *s);
 

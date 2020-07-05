@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -43,10 +43,10 @@
 void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(m_tTTCNetParams.nTimeCodeType < (sizeof(TCNetConst::FPS) / sizeof(TCNetConst::FPS[0])));
 
-	if (pTTCNetParams != 0) {
+	if (pTTCNetParams != nullptr) {
 		memcpy(&m_tTTCNetParams, pTTCNetParams, sizeof(struct TTCNetParams));
 	} else {
 		m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
@@ -73,11 +73,11 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffe
 void TCNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pTCNetParamsStore == 0) {
+	if (m_pTCNetParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

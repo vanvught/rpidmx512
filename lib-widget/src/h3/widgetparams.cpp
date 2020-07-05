@@ -23,8 +23,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -100,10 +100,6 @@ WidgetParams::WidgetParams(WidgetParamsStore* pWidgetParamsStore): m_pWidgetPara
 	m_tWidgetParams.nThrottle = 0;
 }
 
-WidgetParams::~WidgetParams(void) {
-	m_tWidgetParams.nSetList = 0;
-}
-
 bool WidgetParams::Load(void) {
 	m_tWidgetParams.nSetList = 0;
 
@@ -128,7 +124,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_BREAK_TIME, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_BREAK_TIME, value8) == Sscan::OK) {
 		if ((value8 >= WIDGET_MIN_BREAK_TIME) && (value8 <= WIDGET_MAX_BREAK_TIME)) {
 			m_tWidgetParams.nBreakTime = value8;
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_BREAK_TIME;
@@ -136,7 +132,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 		}
 	}
 
-	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_MAB_TIME, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_MAB_TIME, value8) == Sscan::OK) {
 		if ((value8 >= WIDGET_MIN_MAB_TIME) && (value8 <= WIDGET_MAX_MAB_TIME)) {
 			m_tWidgetParams.nMabTime = value8;
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_MAB_TIME;
@@ -144,13 +140,13 @@ void WidgetParams::callbackFunction(const char* pLine) {
 		}
 	}
 
-	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_REFRESH_RATE, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXUSBPRO_PARAMS_REFRESH_RATE, value8) == Sscan::OK) {
 		m_tWidgetParams.nRefreshRate = value8;
 		m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_REFRESH_RATE;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_WIDGET_MODE, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_WIDGET_MODE, value8) == Sscan::OK) {
 		if (value8 <= WIDGET_MODE_RDM_SNIFFER) {
 			m_tWidgetParams.tMode = static_cast<TWidgetMode>(value8);
 			m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_MODE;
@@ -158,7 +154,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 		}
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DMX_SEND_TO_HOST_THROTTLE, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DMX_SEND_TO_HOST_THROTTLE, value8) == Sscan::OK) {
 		m_tWidgetParams.nThrottle = value8;
 		m_tWidgetParams.nSetList |= WIDGET_PARAMS_MASK_THROTTLE;
 		return;
@@ -234,13 +230,11 @@ void WidgetParams::Dump(void) {
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_MODE)) {
-		printf(" %s=%d\n", PARAMS_WIDGET_MODE,
-				static_cast<int>(m_tWidgetParams.tMode));
+		printf(" %s=%d\n", PARAMS_WIDGET_MODE, static_cast<int>(m_tWidgetParams.tMode));
 	}
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_THROTTLE)) {
-		printf(" %s=%d\n", PARAMS_DMX_SEND_TO_HOST_THROTTLE,
-				static_cast<int>(m_tWidgetParams.nThrottle));
+		printf(" %s=%d\n", PARAMS_DMX_SEND_TO_HOST_THROTTLE, static_cast<int>(m_tWidgetParams.nThrottle));
 	}
 #endif
 }

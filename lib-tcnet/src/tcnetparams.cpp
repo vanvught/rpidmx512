@@ -24,16 +24,13 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <cassert>
 
 #include "tcnetparams.h"
@@ -52,20 +49,17 @@ TCNetParams::TCNetParams(TCNetParamsStore* pTCNetParamsStore): m_pTCNetParamsSto
 	m_tTTCNetParams.nUseTimeCode = 0;
 }
 
-TCNetParams::~TCNetParams(void) {
-}
-
-bool TCNetParams::Load(void) {
+bool TCNetParams::Load() {
 	m_tTTCNetParams.nSetList = 0;
 
 	ReadConfigFile configfile(TCNetParams::staticCallbackFunction, this);
 
 	if (configfile.Read(TCNetParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pTCNetParamsStore != 0) {
+		if (m_pTCNetParamsStore != nullptr) {
 			m_pTCNetParamsStore->Update(&m_tTTCNetParams);
 		}
-	} else if (m_pTCNetParamsStore != 0) {
+	} else if (m_pTCNetParamsStore != nullptr) {
 		m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
 	} else {
 		return false;
@@ -75,11 +69,11 @@ bool TCNetParams::Load(void) {
 }
 
 void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pTCNetParamsStore != 0);
+	assert(m_pTCNetParamsStore != nullptr);
 
-	if (m_pTCNetParamsStore == 0) {
+	if (m_pTCNetParamsStore == nullptr) {
 		return;
 	}
 
@@ -93,21 +87,20 @@ void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void TCNetParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
-	uint8_t nLength;
 	char ch;
 	uint8_t nValue8;
 
-	nLength = TCNET_NODE_NAME_LENGTH;
-	if (Sscan::Char(pLine, TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, &nLength) == SSCAN_OK) {
+	uint32_t nLength = TCNET_NODE_NAME_LENGTH;
+	if (Sscan::Char(pLine, TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName, nLength) == Sscan::OK) {
 		m_tTTCNetParams.nSetList |= TCNetParamsMask::NODE_NAME;
 		return;
 	}
 
 	nLength = 1;
 	ch = ' ';
-	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, TCNetParamsConst::LAYER, &ch, nLength) == Sscan::OK) {
 		const TCNetLayer tLayer = TCNet::GetLayer(ch);
 
 		if (tLayer != TCNetLayer::LAYER_UNDEFINED) {
@@ -120,7 +113,7 @@ void TCNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, TCNetParamsConst::TIMECODE_TYPE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, TCNetParamsConst::TIMECODE_TYPE, nValue8) == Sscan::OK) {
 		switch (nValue8) {
 		case 24:
 			m_tTTCNetParams.nTimeCodeType = TCNET_TIMECODE_TYPE_FILM;
@@ -146,7 +139,7 @@ void TCNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, TCNetParamsConst::USE_TIMECODE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, TCNetParamsConst::USE_TIMECODE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_tTTCNetParams.nUseTimeCode = 1;
 			m_tTTCNetParams.nSetList |= TCNetParamsMask::USE_TIMECODE;
@@ -160,54 +153,32 @@ void TCNetParams::callbackFunction(const char *pLine) {
 }
 
 void TCNetParams::Set(TCNet *pTCNet) {
-	assert(pTCNet != 0);
+	assert(pTCNet != nullptr);
 
 	if (m_tTTCNetParams.nSetList == 0) {
 		return;
 	}
 
-	if(isMaskSet(TCNetParamsMask::NODE_NAME)) {
+	if (isMaskSet(TCNetParamsMask::NODE_NAME)) {
 		pTCNet->SetNodeName(reinterpret_cast<const char*>(m_tTTCNetParams.aNodeName));
 	}
 
-	if(isMaskSet(TCNetParamsMask::LAYER)) {
+	if (isMaskSet(TCNetParamsMask::LAYER)) {
 		pTCNet->SetLayer(static_cast<TCNetLayer>(m_tTTCNetParams.nLayer));
 	}
 
-	if(isMaskSet(TCNetParamsMask::TIMECODE_TYPE)) {
+	if (isMaskSet(TCNetParamsMask::TIMECODE_TYPE)) {
 		pTCNet->SetTimeCodeType(static_cast<TTCNetTimeCodeType>(m_tTTCNetParams.nTimeCodeType));
 	}
 
-	if(isMaskSet(TCNetParamsMask::USE_TIMECODE)) {
+	if (isMaskSet(TCNetParamsMask::USE_TIMECODE)) {
 		pTCNet->SetUseTimeCode(m_tTTCNetParams.nUseTimeCode != 0);
 	}
 }
 
-void TCNetParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_tTTCNetParams.nSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, TCNetParamsConst::FILE_NAME);
-
-	if (isMaskSet(TCNetParamsMask::NODE_NAME)) {
-		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName);
-	}
-
-	if (isMaskSet(TCNetParamsMask::LAYER)) {
-		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_tTTCNetParams.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_tTTCNetParams.nLayer)));
-	}
-
-	if (isMaskSet(TCNetParamsMask::TIMECODE_TYPE)) {
-		printf(" %s=%d\n", TCNetParamsConst::TIMECODE_TYPE, m_tTTCNetParams.nTimeCodeType);
-	}
-#endif
-}
-
 void TCNetParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<TCNetParams *>(p))->callbackFunction(s);
 }

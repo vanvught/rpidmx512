@@ -71,20 +71,20 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nHighCode = 0;
 }
 
-WS28xxDmxParams::~WS28xxDmxParams(void) {
+WS28xxDmxParams::~WS28xxDmxParams() {
 }
 
-bool WS28xxDmxParams::Load(void) {
+bool WS28xxDmxParams::Load() {
 	m_tWS28xxParams.nSetList = 0;
 
 	ReadConfigFile configfile(WS28xxDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pWS28xxParamsStore != 0) {
+		if (m_pWS28xxParamsStore != nullptr) {
 			m_pWS28xxParamsStore->Update(&m_tWS28xxParams);
 		}
-	} else if (m_pWS28xxParamsStore != 0) {
+	} else if (m_pWS28xxParamsStore != nullptr) {
 		m_pWS28xxParamsStore->Copy(&m_tWS28xxParams);
 	} else {
 		return false;
@@ -94,11 +94,11 @@ bool WS28xxDmxParams::Load(void) {
 }
 
 void WS28xxDmxParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pWS28xxParamsStore != 0);
+	assert(m_pWS28xxParamsStore != nullptr);
 
-	if (m_pWS28xxParamsStore == 0) {
+	if (m_pWS28xxParamsStore == nullptr) {
 		return;
 	}
 
@@ -112,17 +112,16 @@ void WS28xxDmxParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void WS28xxDmxParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 	uint16_t nValue16;
 	uint32_t nValue32;
-	uint8_t nLength;
 	float fValue;
 	char cBuffer[16];
 
-	nLength = 7;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, cBuffer, &nLength) == SSCAN_OK) {
+	uint32_t nLength = 7;
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
 		uint32_t i;
 
@@ -138,7 +137,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_COUNT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_COUNT, nValue16) == Sscan::OK) {
 		if (nValue16 != 0 && nValue16 <= (4 * 170)) {
 			m_tWS28xxParams.nLedCount = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_COUNT;
@@ -147,7 +146,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = 3;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, cBuffer, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
 		enum TRGBMapping tMapping;
 
@@ -162,7 +161,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Float(pLine, DevicesParamsConst::LED_T0H, &fValue) == SSCAN_OK) {
+	if (Sscan::Float(pLine, DevicesParamsConst::LED_T0H, fValue) == Sscan::OK) {
 		if ((nValue8 = WS28xx::ConvertTxH(fValue)) != 0) {
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LOW_CODE;
 		} else {
@@ -174,7 +173,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Float(pLine, DevicesParamsConst::LED_T1H, &fValue) == SSCAN_OK) {
+	if (Sscan::Float(pLine, DevicesParamsConst::LED_T1H, fValue) == Sscan::OK) {
 		if ((nValue8 = WS28xx::ConvertTxH(fValue)) != 0) {
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::HIGH_CODE;
 		} else {
@@ -186,25 +185,25 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
 		m_tWS28xxParams.nActiveOutputs = nValue8;
 		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::ACTIVE_OUT;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::USE_SI5351A, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::USE_SI5351A, nValue8) == Sscan::OK) {
 		m_tWS28xxParams.bUseSI5351A = (nValue8 != 0);
 		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::USE_SI5351A;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_GROUPING, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_GROUPING, nValue8) == Sscan::OK) {
 		m_tWS28xxParams.bLedGrouping = (nValue8 != 0);
 		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_GROUPING;
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_GROUP_COUNT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, DevicesParamsConst::LED_GROUP_COUNT, nValue16) == Sscan::OK) {
 		if (nValue16 != 0 && nValue16 <= (4 * 170)) {
 			m_tWS28xxParams.nLedGroupCount = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_GROUP_COUNT;
@@ -212,19 +211,19 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint32(pLine, DevicesParamsConst::SPI_SPEED_HZ, &nValue32) == SSCAN_OK) {
+	if (Sscan::Uint32(pLine, DevicesParamsConst::SPI_SPEED_HZ, nValue32) == Sscan::OK) {
 		m_tWS28xxParams.nSpiSpeedHz = nValue32;
 		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::SPI_SPEED;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, nValue8) == Sscan::OK) {
 		m_tWS28xxParams.nGlobalBrightness = nValue8;
 		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS;
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
 		if (nValue16 != 0 && nValue16 <= DMX_UNIVERSE_SIZE) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
@@ -233,7 +232,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void WS28xxDmxParams::Dump(void) {
+void WS28xxDmxParams::Dump() {
 #ifndef NDEBUG
 	if (m_tWS28xxParams.nSetList == 0) {
 		return;
@@ -288,8 +287,8 @@ void WS28xxDmxParams::Dump(void) {
 }
 
 void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<WS28xxDmxParams*>(p))->callbackFunction(s);
 }

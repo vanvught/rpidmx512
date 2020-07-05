@@ -24,14 +24,11 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <cassert>
 
 #include "spiflashinstallparams.h"
@@ -40,18 +37,7 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-struct SpiFlashInstallParamsMask {
-	static constexpr auto INSTALL_UBOOT = (1U << 0);
-	static constexpr auto INSTALL_UIMAGE = (1U << 1);
-};
-
-SpiFlashInstallParams::SpiFlashInstallParams(void) {
-}
-
-SpiFlashInstallParams::~SpiFlashInstallParams(void) {
-}
-
-bool SpiFlashInstallParams::Load(void) {
+bool SpiFlashInstallParams::Load() {
 	m_nSetList = 0;
 
 	ReadConfigFile configfile(SpiFlashInstallParams::staticCallbackFunction, this);
@@ -59,11 +45,11 @@ bool SpiFlashInstallParams::Load(void) {
 }
 
 void SpiFlashInstallParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 
-	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UBOOT, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UBOOT, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_bInstalluboot = true;
 			m_nSetList |= SpiFlashInstallParamsMask::INSTALL_UBOOT;
@@ -74,7 +60,7 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UIMAGE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UIMAGE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_bInstalluImage = true;
 			m_nSetList |= SpiFlashInstallParamsMask::INSTALL_UIMAGE;
@@ -86,28 +72,9 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void SpiFlashInstallParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_nSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SpiFlashInstallParamsConst::FILE_NAME);
-
-	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT)) {
-		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT, m_bInstalluboot, BOOL2STRING::Get(m_bInstalluboot));
-	}
-
-	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE)) {
-		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE, m_bInstalluImage, BOOL2STRING::Get(m_bInstalluImage));
-	}
-
-#endif
-}
-
 void SpiFlashInstallParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<SpiFlashInstallParams*>(p))->callbackFunction(s);
 }

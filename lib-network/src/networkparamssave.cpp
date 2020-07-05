@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -44,9 +44,9 @@
 void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptNetworkParams != 0) {
+	if (ptNetworkParams != nullptr) {
 		memcpy(&m_tNetworkParams, ptNetworkParams, sizeof(struct TNetworkParams));
 	} else {
 		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
@@ -78,11 +78,11 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pNetworkParamsStore == 0) {
+	if (m_pNetworkParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

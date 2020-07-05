@@ -60,21 +60,17 @@ DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXPa
 	m_tDMXParams.nRefreshRate = DMXParamsTime::DEFAULT_REFRESH_RATE;
 }
 
-DMXParams::~DMXParams(void) {
-	m_tDMXParams.nSetList = 0;
-}
-
-bool DMXParams::Load(void) {
+bool DMXParams::Load() {
 	m_tDMXParams.nSetList = 0;
 
 	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DMXSendConst::PARAMS_FILE_NAME)) {
 		// There is a configuration file
-		if (m_pDMXParamsStore != 0) {
+		if (m_pDMXParamsStore != nullptr) {
 			m_pDMXParamsStore->Update(&m_tDMXParams);
 		}
-	} else if (m_pDMXParamsStore != 0) {
+	} else if (m_pDMXParamsStore != nullptr) {
 		m_pDMXParamsStore->Copy(&m_tDMXParams);
 	} else {
 		return false;
@@ -84,11 +80,11 @@ bool DMXParams::Load(void) {
 }
 
 void DMXParams::Load(const char* pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pDMXParamsStore != 0);
+	assert(m_pDMXParamsStore != nullptr);
 
-	if (m_pDMXParamsStore == 0) {
+	if (m_pDMXParamsStore == nullptr) {
 		return;
 	}
 
@@ -102,11 +98,11 @@ void DMXParams::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void DMXParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 
-	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_BREAK_TIME, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_BREAK_TIME, nValue8) == Sscan::OK) {
 		if ((nValue8 >= DMXParamsTime::MIN_BREAK_TIME) && (nValue8 <= DMXParamsTime::MAX_BREAK_TIME)) {
 			m_tDMXParams.nBreakTime = nValue8;
 			m_tDMXParams.nSetList |= DmxSendParamsMask::BREAK_TIME;
@@ -114,7 +110,7 @@ void DMXParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_MAB_TIME, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_MAB_TIME, nValue8) == Sscan::OK) {
 		if ((nValue8 >= DMXParamsTime::MIN_MAB_TIME) && (nValue8 <= DMXParamsTime::MAX_MAB_TIME)) {
 			m_tDMXParams.nMabTime = nValue8;
 			m_tDMXParams.nSetList |= DmxSendParamsMask::MAB_TIME;
@@ -122,14 +118,14 @@ void DMXParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_REFRESH_RATE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DMXSendConst::PARAMS_REFRESH_RATE, nValue8) == Sscan::OK) {
 		m_tDMXParams.nRefreshRate = nValue8;
 		m_tDMXParams.nSetList |= DmxSendParamsMask::REFRESH_RATE;
 		return;
 	}
 }
 
-void DMXParams::Dump(void) {
+void DMXParams::Dump() {
 #ifndef NDEBUG
 	if (m_tDMXParams.nSetList == 0) {
 		return;
@@ -152,8 +148,8 @@ void DMXParams::Dump(void) {
 }
 
 void DMXParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<DMXParams*>(p))->callbackFunction(s);
 }

@@ -39,9 +39,9 @@
 void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptTLC59711Params != 0) {
+	if (ptTLC59711Params != nullptr) {
 		memcpy(&m_tTLC59711Params, ptTLC59711Params, sizeof(struct TTLC59711DmxParams));
 	} else {
 		m_pLC59711ParamsStore->Copy(&m_tTLC59711Params);
@@ -63,11 +63,11 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 void TLC59711DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pLC59711ParamsStore == 0) {
+	if (m_pLC59711ParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

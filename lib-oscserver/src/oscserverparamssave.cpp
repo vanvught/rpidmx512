@@ -45,9 +45,9 @@
 void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptOSCServerParams != 0) {
+	if (ptOSCServerParams != nullptr) {
 		memcpy(&m_tOSCServerParams, ptOSCServerParams, sizeof(struct TOSCServerParams));
 	} else {
 		m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
@@ -72,11 +72,11 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pOSCServerParamsStore == 0) {
+	if (m_pOSCServerParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

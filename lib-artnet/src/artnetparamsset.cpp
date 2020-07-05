@@ -34,7 +34,7 @@
 #include "artnet.h"
 
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
-	assert(pArtNetNode != 0);
+	assert(pArtNetNode != nullptr);
 
 	if (m_tArtNetParams.nSetList == 0) {
 		return;

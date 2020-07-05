@@ -52,21 +52,17 @@ OSCServerParams::OSCServerParams(OSCServerParamsStore *pOSCServerParamsStore): m
 	m_tOSCServerParams.nOutgoingPort = osc::port::DEFAULT_OUTGOING;
 }
 
-OSCServerParams::~OSCServerParams(void) {
-	m_tOSCServerParams.nSetList = 0;
-}
-
-bool OSCServerParams::Load(void) {
+bool OSCServerParams::Load() {
 	m_tOSCServerParams.nSetList = 0;
 
 	ReadConfigFile configfile(OSCServerParams::staticCallbackFunction, this);
 
 	if (configfile.Read(OSCServerConst::PARAMS_FILE_NAME)) {
 		// There is a configuration file
-		if (m_pOSCServerParamsStore != 0) {
+		if (m_pOSCServerParamsStore != nullptr) {
 			m_pOSCServerParamsStore->Update(&m_tOSCServerParams);
 		}
-	} else if (m_pOSCServerParamsStore != 0) {
+	} else if (m_pOSCServerParamsStore != nullptr) {
 		m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
 	} else {
 		return false;
@@ -76,11 +72,11 @@ bool OSCServerParams::Load(void) {
 }
 
 void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pOSCServerParamsStore != 0);
+	assert(m_pOSCServerParamsStore != nullptr);
 
-	if (m_pOSCServerParamsStore == 0) {
+	if (m_pOSCServerParamsStore == nullptr) {
 		return;
 	}
 
@@ -94,13 +90,13 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void OSCServerParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 	uint16_t nValue16;
-	uint8_t nLength;
+	uint32_t nLength;
 
-	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nIncomingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCServerParamsMask::INCOMING_PORT;
@@ -108,7 +104,7 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_tOSCServerParams.nOutgoingPort = nValue16;
 			m_tOSCServerParams.nSetList |= OSCServerParamsMask::OUTGOING_PORT;
@@ -116,38 +112,38 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OSCServerConst::PARAMS_TRANSMISSION, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, OSCServerConst::PARAMS_TRANSMISSION, nValue8) == Sscan::OK) {
 		m_tOSCServerParams.bPartialTransmission = (nValue8 != 0);
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::TRANSMISSION;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPath) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH, m_tOSCServerParams.aPath, nLength) == Sscan::OK) {
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPathInfo) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathInfo, nLength) == Sscan::OK) {
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH_INFO;
 		return;
 	}
 
 	nLength = sizeof(m_tOSCServerParams.aPathBlackOut) - 1;
-	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathBlackOut, &nLength) == SSCAN_OK) {
+	if (Sscan::Char(pLine, OSCServerConst::PARAMS_PATH_INFO, m_tOSCServerParams.aPathBlackOut, nLength) == Sscan::OK) {
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH_BLACKOUT;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, nValue8) == Sscan::OK) {
 		m_tOSCServerParams.bEnableNoChangeUpdate = (nValue8 != 0);
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT;
 		return;
 	}
 }
 
-void OSCServerParams::Dump(void) {
+void OSCServerParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, OSCServerConst::PARAMS_FILE_NAME);
 
@@ -182,8 +178,8 @@ void OSCServerParams::Dump(void) {
 }
 
 void OSCServerParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<OSCServerParams*>(p))->callbackFunction(s);
 }

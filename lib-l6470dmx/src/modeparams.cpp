@@ -63,7 +63,7 @@ ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pM
 	m_tModeParams.bSwitch = true;
 
 	m_pDmxSlotInfo = new DmxSlotInfo(m_tModeParams.tLightSetSlotInfo, MODE_PARAMS_MAX_DMX_FOOTPRINT);
-	assert(m_pDmxSlotInfo != 0);
+	assert(m_pDmxSlotInfo != nullptr);
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
@@ -71,11 +71,9 @@ ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pM
 	DEBUG_EXIT
 }
 
-ModeParams::~ModeParams(void) {
+ModeParams::~ModeParams() {
 	delete m_pDmxSlotInfo;
-	m_pDmxSlotInfo = 0;
-
-	m_tModeParams.nSetList = 0;
+	m_pDmxSlotInfo = nullptr;
 }
 
 bool ModeParams::Load(uint8_t nMotorIndex) {
@@ -89,10 +87,10 @@ bool ModeParams::Load(uint8_t nMotorIndex) {
 
 	if (configfile.Read(m_aFileName)) {
 		// There is a configuration file
-		if (m_pModeParamsStore != 0) {
+		if (m_pModeParamsStore != nullptr) {
 			m_pModeParamsStore->Update(nMotorIndex, &m_tModeParams);
 		}
-	} else if (m_pModeParamsStore != 0) {
+	} else if (m_pModeParamsStore != nullptr) {
 		m_pModeParamsStore->Copy(nMotorIndex, &m_tModeParams);
 	} else {
 		DEBUG_EXIT
@@ -106,11 +104,11 @@ bool ModeParams::Load(uint8_t nMotorIndex) {
 void ModeParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pModeParamsStore != 0);
+	assert(m_pModeParamsStore != nullptr);
 
-	if (m_pModeParamsStore == 0) {
+	if (m_pModeParamsStore == nullptr) {
 		DEBUG_EXIT
 		return;
 	}
@@ -127,55 +125,55 @@ void ModeParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength
 }
 
 void ModeParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
-	float f;
+	float fValue;
 	char value[128];
-	uint8_t len;
-	uint8_t value8;
-	uint16_t value16;
-	uint32_t value32;
+	uint32_t nLength;
+	uint8_t nValue8;
+	uint16_t nValue16;
+	uint32_t nValue32;
 
-	if (Sscan::Uint8(pLine, ModeParamsConst::DMX_MODE, &value8) == SSCAN_OK) {
-		if (value8 < L6470DMXMODE_UNDEFINED) {
-			m_tModeParams.nDmxMode = value8;
+	if (Sscan::Uint8(pLine, ModeParamsConst::DMX_MODE, nValue8) == Sscan::OK) {
+		if (nValue8 < L6470DMXMODE_UNDEFINED) {
+			m_tModeParams.nDmxMode = nValue8;
 			m_tModeParams.nSetList |= ModeParamsMask::DMX_MODE;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
-		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
-			m_tModeParams.nDmxStartAddress = value16;
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && (nValue16 <= DMX_UNIVERSE_SIZE)) {
+			m_tModeParams.nDmxStartAddress = nValue16;
 			m_tModeParams.nSetList |= ModeParamsMask::DMX_START_ADDRESS;
 		}
 		return;
 	}
 
-	len = sizeof(value) - 1;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, value, &len) == SSCAN_OK) {
-		value[len] = '\0';
+	nLength = sizeof(value) - 1;
+	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, value, nLength) == Sscan::OK) {
+		value[nLength] = '\0';
 		uint32_t nMask = 0;
 		m_pDmxSlotInfo->FromString(value, nMask);
 		m_tModeParams.nSetList |= (nMask << ModeParamsMask::SLOT_INFO_SHIFT);
 	}
 
-	if (Sscan::Uint32(pLine, ModeParamsConst::MAX_STEPS, &value32) == SSCAN_OK) {
-		m_tModeParams.nMaxSteps = value32;
+	if (Sscan::Uint32(pLine, ModeParamsConst::MAX_STEPS, nValue32) == Sscan::OK) {
+		m_tModeParams.nMaxSteps = nValue32;
 		m_tModeParams.nSetList |= ModeParamsMask::MAX_STEPS;
 		return;
 	}
 
-	len = 5; //  copy, reset
-	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_ACT, value, &len) == SSCAN_OK) {
-		if (len == 4) {
+	nLength = 5; //  copy, reset
+	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_ACT, value, nLength) == Sscan::OK) {
+		if (nLength == 4) {
 			if (memcmp(value, "copy", 4) == 0) {
 				m_tModeParams.tSwitchAction = L6470_ABSPOS_COPY;
 				m_tModeParams.nSetList |= ModeParamsMask::SWITCH_ACT;
 				return;
 			}
 		}
-		if (len == 5) {
+		if (nLength == 5) {
 			if (memcmp(value, "reset", 5) == 0) {
 				m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
 				m_tModeParams.nSetList |= ModeParamsMask::SWITCH_ACT;
@@ -184,9 +182,9 @@ void ModeParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-	len = 7; //  reverse, forward
-	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_DIR, value, &len) == SSCAN_OK) {
-		if (len != 7) {
+	nLength = 7; //  reverse, forward
+	if (Sscan::Char(pLine, ModeParamsConst::SWITCH_DIR, value, nLength) == Sscan::OK) {
+		if (nLength != 7) {
 			return;
 		}
 		if (memcmp(value, "forward", 7) == 0) {
@@ -201,14 +199,14 @@ void ModeParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-	if (Sscan::Float(pLine, ModeParamsConst::SWITCH_SPS, &f) == SSCAN_OK) {
-		m_tModeParams.fSwitchStepsPerSec = f;
+	if (Sscan::Float(pLine, ModeParamsConst::SWITCH_SPS, fValue) == Sscan::OK) {
+		m_tModeParams.fSwitchStepsPerSec = fValue;
 		m_tModeParams.nSetList |= ModeParamsMask::SWITCH_SPS;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, ModeParamsConst::SWITCH, &value8) == SSCAN_OK) {
-		if (value8 == 0) {
+	if (Sscan::Uint8(pLine, ModeParamsConst::SWITCH, nValue8) == Sscan::OK) {
+		if (nValue8 == 0) {
 			m_tModeParams.bSwitch = false;
 			m_tModeParams.nSetList |= ModeParamsMask::SWITCH;
 		}
@@ -218,11 +216,11 @@ void ModeParams::callbackFunction(const char *pLine) {
 void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG1_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
 	m_aFileName[5] = nMotorIndex + '0';
 
-	if (ptModeParams != 0) {
+	if (ptModeParams != nullptr) {
 		memcpy(&m_tModeParams, ptModeParams, sizeof(struct TModeParams));
 	} else {
 		debug_dump( &m_tModeParams, sizeof(struct TModeParams));
@@ -253,17 +251,17 @@ void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 void ModeParams::Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pModeParamsStore == 0) {
+	if (m_pModeParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(nMotorIndex, 0, pBuffer, nLength, nSize);
+	Builder(nMotorIndex, nullptr, pBuffer, nLength, nSize);
 	DEBUG_EXIT
 }
 
-void ModeParams::Dump(void) {
+void ModeParams::Dump() {
 #ifndef NDEBUG
 	if (m_tModeParams.nSetList == 0) {
 		return;
@@ -317,8 +315,8 @@ void ModeParams::GetSlotInfo(uint32_t nOffset, struct TLightSetSlotInfo &tLightS
 }
 
 void ModeParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<ModeParams*>(p))->callbackFunction(s);
 }

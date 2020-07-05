@@ -58,21 +58,17 @@ OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m
 	strncpy(m_aLed, OscClientParamsConst::LED, sizeof(m_aLed));
 }
 
-OscClientParams::~OscClientParams(void) {
-	m_tOscClientParams.nSetList = 0;
-}
-
-bool OscClientParams::Load(void) {
+bool OscClientParams::Load() {
 	m_tOscClientParams.nSetList = 0;
 
 	ReadConfigFile configfile(OscClientParams::staticCallbackFunction, this);
 
 	if (configfile.Read(OscClientParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pOscClientParamsStore != 0) {
+		if (m_pOscClientParamsStore != nullptr) {
 			m_pOscClientParamsStore->Update(&m_tOscClientParams);
 		}
-	} else if (m_pOscClientParamsStore != 0) {
+	} else if (m_pOscClientParamsStore != nullptr) {
 		m_pOscClientParamsStore->Copy(&m_tOscClientParams);
 	} else {
 		return false;
@@ -82,11 +78,11 @@ bool OscClientParams::Load(void) {
 }
 
 void OscClientParams::Load(const char* pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pOscClientParamsStore != 0);
+	assert(m_pOscClientParamsStore != nullptr);
 
-	if (m_pOscClientParamsStore == 0) {
+	if (m_pOscClientParamsStore == nullptr) {
 		return;
 	}
 
@@ -100,19 +96,19 @@ void OscClientParams::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void OscClientParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 	uint16_t nValue16;
 	uint32_t nValue32;
 
-	if (Sscan::IpAddress(pLine, OscClientParamsConst::SERVER_IP, &nValue32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, OscClientParamsConst::SERVER_IP, nValue32) == Sscan::OK) {
 		m_tOscClientParams.nServerIp = nValue32;
 		m_tOscClientParams.nSetList |= OscClientParamsMask::SERVER_IP;
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nOutgoingPort = nValue16;
 			m_tOscClientParams.nSetList |= OscClientParamsMask::OUTGOING_PORT;
@@ -122,7 +118,7 @@ void OscClientParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, &nValue16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
 			m_tOscClientParams.nIncomingPort = nValue16;
 			m_tOscClientParams.nSetList |= OscClientParamsMask::INCOMING_PORT;
@@ -132,13 +128,13 @@ void OscClientParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DISABLE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DISABLE, nValue8) == Sscan::OK) {
 		m_tOscClientParams.nPingDisable = (nValue8 != 0);
 		m_tOscClientParams.nSetList |= OscClientParamsMask::PING_DISABLE;
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DELAY, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, OscClientParamsConst::PING_DELAY, nValue8) == Sscan::OK) {
 		if ((nValue8 >= 2) && (nValue8 <= 60)) {
 			m_tOscClientParams.nPingDelay = nValue8;
 			m_tOscClientParams.nSetList |= OscClientParamsMask::PING_DELAY;
@@ -150,8 +146,8 @@ void OscClientParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
 		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
-		nValue8 = OscClientParamsMax::CMD_PATH_LENGTH;
-		if (Sscan::Char(pLine, m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]), &nValue8) == SSCAN_OK) {
+		nValue32 = OscClientParamsMax::CMD_PATH_LENGTH;
+		if (Sscan::Char(pLine, m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]), nValue32) == Sscan::OK) {
 			if (m_tOscClientParams.aCmd[i][0] == '/') {
 				m_tOscClientParams.nSetList |= OscClientParamsMask::CMD;
 			} else {
@@ -162,8 +158,8 @@ void OscClientParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
 		m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
-		nValue8 = OscClientParamsMax::LED_PATH_LENGTH;
-		if (Sscan::Char(pLine, m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]), &nValue8) == SSCAN_OK) {
+		nValue32 = OscClientParamsMax::LED_PATH_LENGTH;
+		if (Sscan::Char(pLine, m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]), nValue32) == Sscan::OK) {
 			if (m_tOscClientParams.aLed[i][0] == '/') {
 				m_tOscClientParams.nSetList |= OscClientParamsMask::LED;
 			} else {
@@ -174,7 +170,7 @@ void OscClientParams::callbackFunction(const char *pLine) {
 }
 
 void OscClientParams::Set(OscClient* pOscClient) {
-	assert(pOscClient != 0);
+	assert(pOscClient != nullptr);
 
 	if (isMaskSet(OscClientParamsMask::SERVER_IP)) {
 		pOscClient->SetServerIP(m_tOscClientParams.nServerIp);
@@ -205,7 +201,7 @@ void OscClientParams::Set(OscClient* pOscClient) {
 	}
 }
 
-void OscClientParams::Dump(void) {
+void OscClientParams::Dump() {
 #ifndef NDEBUG
 	if (m_tOscClientParams.nSetList == 0) {
 		return;
@@ -250,8 +246,8 @@ void OscClientParams::Dump(void) {
 }
 
 void OscClientParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<OscClientParams*>(p))->callbackFunction(s);
 }

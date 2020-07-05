@@ -50,26 +50,21 @@ constexpr char PARAMS_PWM_FREQUENCY[] = "pwm_frequency";
 constexpr char PARAMS_OUTPUT_INVERT[] = "output_invert";
 constexpr char PARAMS_OUTPUT_DRIVER[] = "output_driver";
 
-PCA9685DmxLedParams::PCA9685DmxLedParams(void) :
-	PCA9685DmxParams(PARAMS_FILE_NAME),
-	m_bSetList(0),
-	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
-	m_nPwmFrequency(PWMLED_DEFAULT_FREQUENCY),
-	m_bOutputInvert(false), // Output logic state not inverted. Value to use when external driver used.
-	m_bOutputDriver(true)	// The 16 LEDn outputs are configured with a totem pole structure.
+PCA9685DmxLedParams::PCA9685DmxLedParams() :
+	PCA9685DmxParams(PARAMS_FILE_NAME)
 {
 }
 
-PCA9685DmxLedParams::~PCA9685DmxLedParams(void) {
+PCA9685DmxLedParams::~PCA9685DmxLedParams() {
 }
 
-bool PCA9685DmxLedParams::Load(void) {
+bool PCA9685DmxLedParams::Load() {
 	ReadConfigFile configfile(PCA9685DmxLedParams::staticCallbackFunction, this);
 	return configfile.Read(PARAMS_FILE_NAME);
 }
 
 void PCA9685DmxLedParams::Set(PCA9685DmxLed* pDmxLed) {
-	assert(pDmxLed != 0);
+	assert(pDmxLed != nullptr);
 
 	bool isSet;
 
@@ -115,7 +110,7 @@ void PCA9685DmxLedParams::Set(PCA9685DmxLed* pDmxLed) {
 	}
 }
 
-void PCA9685DmxLedParams::Dump(void) {
+void PCA9685DmxLedParams::Dump() {
 #ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
@@ -144,12 +139,12 @@ void PCA9685DmxLedParams::Dump(void) {
 }
 
 void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t value8;
 	uint16_t value16;
 
-	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, &value8) == SSCAN_OK) {
+	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, value8) == Sscan::OK) {
 		if ((value8 >= PCA9685_I2C_ADDRESS_DEFAULT) && (value8 != PCA9685_I2C_ADDRESS_FIXED)) {
 			m_nI2cAddress = value8;
 			m_bSetList |= I2C_SLAVE_ADDRESS_MASK;
@@ -157,7 +152,7 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_PWM_FREQUENCY, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, PARAMS_PWM_FREQUENCY, value16) == Sscan::OK) {
 		if ((value16 >= TPCA9685FrequencyRange::MIN) && (value16 <= TPCA9685FrequencyRange::MAX)) {
 			m_nPwmFrequency = value16;
 			m_bSetList |= SET_PWM_FREQUENCY_MASK;
@@ -165,7 +160,7 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_OUTPUT_INVERT, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_OUTPUT_INVERT, value8) == Sscan::OK) {
 		if (value8 != 0) {
 			m_bOutputInvert = true;
 			m_bSetList |= SET_OUTPUT_INVERT_MASK;
@@ -173,7 +168,7 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_OUTPUT_DRIVER, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_OUTPUT_DRIVER, value8) == Sscan::OK) {
 		if (value8 == 0) {
 			m_bOutputDriver = false;
 			m_bSetList |= SET_OUTPUT_DRIVER_MASK;
@@ -183,8 +178,8 @@ void PCA9685DmxLedParams::callbackFunction(const char* pLine) {
 }
 
 void PCA9685DmxLedParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<PCA9685DmxLedParams*>(p))->callbackFunction(s);
 }

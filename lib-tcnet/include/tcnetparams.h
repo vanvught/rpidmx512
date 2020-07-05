@@ -49,7 +49,7 @@ struct TCNetParamsMask {
 
 class TCNetParamsStore {
 public:
-	virtual ~TCNetParamsStore(void) {}
+	virtual ~TCNetParamsStore() {}
 
 	virtual void Update(const struct TTCNetParams *pTCNetParams)=0;
 	virtual void Copy(struct TTCNetParams *pTCNetParams)=0;
@@ -57,10 +57,9 @@ public:
 
 class TCNetParams {
 public:
-	TCNetParams(TCNetParamsStore *pTCNetParamsStore = 0);
-	~TCNetParams(void);
+	TCNetParams(TCNetParamsStore *pTCNetParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -68,7 +67,7 @@ public:
 
 	void Set(TCNet *pTCNet);
 
-	void Dump(void);
+	void Dump();
 
     static void staticCallbackFunction(void *p, const char *s);
 

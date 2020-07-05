@@ -44,20 +44,17 @@ MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pM
 	m_tMidiParams.nActiveSense = 1;
 }
 
-MidiParams::~MidiParams(void) {
-}
-
-bool MidiParams::Load(void) {
+bool MidiParams::Load() {
 	m_tMidiParams.nSetList = 0;
 
 	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
 
 	if (configfile.Read(MidiParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pMidiParamsStore != 0) {
+		if (m_pMidiParamsStore != nullptr) {
 			m_pMidiParamsStore->Update(&m_tMidiParams);
 		}
-	} else if (m_pMidiParamsStore != 0) {
+	} else if (m_pMidiParamsStore != nullptr) {
 		m_pMidiParamsStore->Copy(&m_tMidiParams);
 	} else {
 		return false;
@@ -67,11 +64,11 @@ bool MidiParams::Load(void) {
 }
 
 void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pMidiParamsStore != 0);
+	assert(m_pMidiParamsStore != nullptr);
 
-	if (m_pMidiParamsStore == 0) {
+	if (m_pMidiParamsStore == nullptr) {
 		return;
 	}
 
@@ -85,12 +82,12 @@ void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void MidiParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 	uint32_t nValue32;
 
-	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, &nValue32) == SSCAN_OK) {
+	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, nValue32) == Sscan::OK) {
 		if ((nValue32 != MIDI_BAUDRATE_DEFAULT) && (nValue32 >= 9600) && (nValue32 <= 115200)) {
 			m_tMidiParams.nBaudrate = nValue32;
 			m_tMidiParams.nSetList |= MidiParamsMask::BAUDRATE;
@@ -101,7 +98,7 @@ void MidiParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, MidiParamsConst::ACTIVE_SENSE, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, MidiParamsConst::ACTIVE_SENSE, nValue8) == Sscan::OK) {
 		if (nValue8 == 0) {
 			m_tMidiParams.nActiveSense = 0;
 			m_tMidiParams.nSetList |= MidiParamsMask::ACTIVE_SENSE;
@@ -113,7 +110,7 @@ void MidiParams::callbackFunction(const char* pLine) {
 	}
 }
 
-void MidiParams::Set(void) {
+void MidiParams::Set() {
 	if (m_tMidiParams.nSetList == 0) {
 		return;
 	}
@@ -127,7 +124,7 @@ void MidiParams::Set(void) {
 	}
 }
 
-void MidiParams::Dump(void) {
+void MidiParams::Dump() {
 #ifndef NDEBUG
 	if (m_tMidiParams.nSetList == 0) {
 		return;
@@ -147,8 +144,8 @@ void MidiParams::Dump(void) {
 }
 
 void MidiParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<MidiParams*>(p))->callbackFunction(s);
 }

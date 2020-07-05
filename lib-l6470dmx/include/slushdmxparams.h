@@ -62,7 +62,6 @@ public:
 class SlushDmxParams {
 public:
 	SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore=0);
-	~SlushDmxParams(void);
 
 	bool Load(void);
 	void Load(const char *pBuffer, uint32_t nLength);

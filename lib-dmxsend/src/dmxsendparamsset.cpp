@@ -29,7 +29,7 @@
 #include "dmxparams.h"
 
 void DMXParams::Set(DMXSend *pDMXSend) {
-	assert(pDMXSend != 0);
+	assert(pDMXSend != nullptr);
 
 	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
 		pDMXSend->SetDmxBreakTime(m_tDMXParams.nBreakTime);
@@ -50,7 +50,7 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 
 #if defined (H3)
 void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
-	assert(pDMXSendMulti != 0);
+	assert(pDMXSendMulti != nullptr);
 
 	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
 		pDMXSendMulti->SetDmxBreakTime(m_tDMXParams.nBreakTime);

@@ -58,7 +58,7 @@ struct L6470ParamsMask {
 
 class L6470ParamsStore {
 public:
-	virtual ~L6470ParamsStore(void) {}
+	virtual ~L6470ParamsStore() {}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
 	virtual void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
@@ -66,8 +66,7 @@ public:
 
 class L6470Params {
 public:
-	L6470Params(L6470ParamsStore *pL6470ParamsStore=0);
-	~L6470Params(void);
+	L6470Params(L6470ParamsStore *pL6470ParamsStore=nullptr);
 
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
@@ -77,7 +76,7 @@ public:
 
 	void Set(L6470 *);
 
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

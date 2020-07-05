@@ -1,8 +1,8 @@
 /**
- * @file sscan_float.c
+ * @file sscanfloat.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,80 +23,75 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <ctype.h>
-#include <assert.h>
+#include <cassert>
 
 #include "sscan.h"
 
-extern char *get_name(const char *buf, const char *name);
+Sscan::ReturnCode Sscan::Float(const char *pBuffer, const char *pName, float &fValue) {
+	assert(pBuffer != nullptr);
+	assert(pName != nullptr);
 
-int sscan_float(const char *buf, const char *name, float *value) {
-	assert(buf != NULL);
-	assert(name != NULL);
-	assert(value != NULL);
+	const char *p;
 
-	float k, f;
-	uint32_t div;
-	bool is_negative = false;
-	char *b;
-
-	if ((b = get_name(buf, name)) == NULL) {
-		return SSCAN_NAME_ERROR;
+	if ((p = checkName(pBuffer, pName)) == nullptr) {
+		return Sscan::NAME_ERROR;
 	}
 
-	if (*b == (char) '-') {
-		b++;
-		is_negative = true;
+	bool bIsNegatieve = false;
+
+	if (*p == '-') {
+		p++;
+		bIsNegatieve = true;
 	}
 
-	if ((*b == ' ') || (*b == (char) 0)) {
-		return SSCAN_VALUE_ERROR;
+	if ((*p == ' ') || (*p == 0)) {
+		return Sscan::VALUE_ERROR;
 	}
 
-	k = 0;
+	uint32_t k = 0;
 
 	do {
-		if (isdigit((int) *b) == 0) {
-			return SSCAN_VALUE_ERROR;
+		if (isdigit(*p) == 0) {
+			return Sscan::VALUE_ERROR;
 		}
-		k = k * 10 + (float) *b - (float) '0';
-		b++;
-	} while ((*b != '.') && (*b != ' ') && (*b != (char) 0));
+		k = k * 10.0 + static_cast<uint32_t>(*p - '0');
+		p++;
+	} while ((*p != '.') && (*p != ' ') && (*p != 0));
 
-	if (*b != '.') {
-		if (is_negative) {
-			*value = (float) 0 - k;
-		} else {
-			*value = k;
+	fValue = k;
+
+	if (*p != '.') {
+		if (bIsNegatieve) {
+			fValue = -fValue;
 		}
-		return SSCAN_OK;
+		return Sscan::OK;
 	}
-
-	f = k;
 
 	k = 0;
-	div = 1;
-	b++;
+	p++;
+	uint32_t div = 1;
 
-	while ((*b != ' ') && (*b != (char) 0)) {
-		if (isdigit((int) *b) == 0) {
-			return SSCAN_VALUE_ERROR;
+	while ((*p != ' ') && (*p != 0)) {
+		if (isdigit(*p) == 0) {
+			return Sscan::VALUE_ERROR;
 		}
-		k = k * 10 + (float) *b - (float) '0';
-		div = div * 10;
-		b++;
+		k = k * 10.0 + static_cast<uint32_t>(*p - '0');
+		div *= 10;
+		p++;
 	}
 
-	f = f + (k / div);
+	fValue += (static_cast<float>(k) / div);
 
-	if (is_negative) {
-		*value = (float) 0 - f;
-	} else {
-		*value = f;
+	if (bIsNegatieve) {
+		fValue = -fValue;
 	}
 
-	return SSCAN_OK;
+	return Sscan::OK;
 }

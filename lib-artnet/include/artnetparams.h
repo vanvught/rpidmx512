@@ -107,7 +107,7 @@ struct ArtnetParamsMask {
 
 class ArtNetParamsStore {
 public:
-	virtual ~ArtNetParamsStore(void) {
+	virtual ~ArtNetParamsStore() {
 	}
 
 	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
@@ -116,10 +116,9 @@ public:
 
 class ArtNetParams {
 public:
-	ArtNetParams(ArtNetParamsStore *pArtNetParamsStore = 0);
-	~ArtNetParams(void);
+	ArtNetParams(ArtNetParamsStore *pArtNetParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -127,59 +126,59 @@ public:
 
 	void Set(ArtNetNode *);
 
-	void Dump(void);
+	void Dump();
 
-	uint8_t GetNet(void) {
+	uint8_t GetNet() {
 		return m_tArtNetParams.nNet;
 	}
 
-	uint8_t GetSubnet(void) {
+	uint8_t GetSubnet() {
 		return m_tArtNetParams.nSubnet;
 	}
 
-	uint8_t GetUniverse(void) {
+	uint8_t GetUniverse() {
 		return m_tArtNetParams.nUniverse;
 	}
 
-	const uint8_t *GetShortName(void) {
+	const uint8_t *GetShortName() {
 		return m_tArtNetParams.aShortName;
 	}
 
-	const uint8_t *GetLongName(void) {
+	const uint8_t *GetLongName() {
 		return m_tArtNetParams.aLongName;
 	}
 
-	TLightSetOutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType() {
 		return m_tArtNetParams.tOutputType;
 	}
 
-	time_t GetNetworkTimeout(void) {
+	time_t GetNetworkTimeout() {
 		return m_tArtNetParams.nNetworkTimeout;
 	}
 
-	bool IsUseTimeCode(void) {
+	bool IsUseTimeCode() {
 		return m_tArtNetParams.bUseTimeCode;
 	}
 
-	bool IsUseTimeSync(void) {
+	bool IsUseTimeSync() {
 		return m_tArtNetParams.bUseTimeSync;
 	}
 
-	bool IsRdm(void) {
+	bool IsRdm() {
 		return m_tArtNetParams.bEnableRdm;
 	}
 
-	bool IsRdmDiscovery(void) {
+	bool IsRdmDiscovery() {
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
 
-	bool IsEnableNoChangeUpdate(void) {
+	bool IsEnableNoChangeUpdate() {
 		return m_tArtNetParams.bEnableNoChangeUpdate;
 	}
 
-	TArtNetPortDir GetDirection(void) {
+	TArtNetPortDir GetDirection() {
 		return static_cast<TArtNetPortDir>(m_tArtNetParams.nDirection);
 	}
 

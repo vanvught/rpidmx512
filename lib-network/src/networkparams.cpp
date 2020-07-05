@@ -24,20 +24,13 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <cassert>
-
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #include "networkparams.h"
 #include "network.h"
@@ -51,20 +44,17 @@ NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetwor
 	m_tNetworkParams.bIsDhcpUsed = true;
 }
 
-NetworkParams::~NetworkParams(void) {
-}
-
-bool NetworkParams::Load(void) {
+bool NetworkParams::Load() {
 	m_tNetworkParams.nSetList = 0;
 
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
 	if (configfile.Read(NetworkConst::PARAMS_FILE_NAME)) {
 		// There is a configuration file
-		if (m_pNetworkParamsStore != 0) {
+		if (m_pNetworkParamsStore != nullptr) {
 			m_pNetworkParamsStore->Update(&m_tNetworkParams);
 		}
-	} else if (m_pNetworkParamsStore != 0) {
+	} else if (m_pNetworkParamsStore != nullptr) {
 		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
 	} else {
 		return false;
@@ -74,11 +64,11 @@ bool NetworkParams::Load(void) {
 }
 
 void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pNetworkParamsStore != 0);
+	assert(m_pNetworkParamsStore != nullptr);
 
-	if (m_pNetworkParamsStore == 0) {
+	if (m_pNetworkParamsStore == nullptr) {
 		return;
 	}
 
@@ -92,59 +82,44 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 }
 
 void NetworkParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t nValue8;
 	uint32_t nValue32;
-	uint8_t nLength;
 	float f;
 
-	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, &nValue8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, nValue8) == Sscan::OK) {
 		m_tNetworkParams.bIsDhcpUsed = !(nValue8 == 0);
 		m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, &nValue32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nLocalIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, &nValue32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNetmask = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NET_MASK;
 		return;
 	}
 
-	nLength = NETWORK_HOSTNAME_SIZE - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, &nLength) == SSCAN_OK) {
+	uint32_t nLength = NETWORK_HOSTNAME_SIZE - 1;
+	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::HOSTNAME;
 		return;
 	}
 
-#if !defined (H3)
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, &nValue32) == SSCAN_OK) {
-		m_tNetworkParams.nGatewayIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
-		return;
-	}
-
-	if (Sscan::IpAddress(pLine,  NetworkConst::PARAMS_NAME_SERVER, &nValue32) == SSCAN_OK) {
-		m_tNetworkParams.nNameServerIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::NAME_SERVER;
-		return;
-	}
-#endif
-
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, &nValue32) == SSCAN_OK) {
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNtpServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
 		return;
 	}
 
-	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, &f) == SSCAN_OK) {
+	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, f) == Sscan::OK) {
 		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
 			m_tNetworkParams.fNtpUtcOffset = f;
@@ -152,52 +127,25 @@ void NetworkParams::callbackFunction(const char *pLine) {
 			return;
 		}
 	}
-}
 
-void NetworkParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_tNetworkParams.nSetList == 0) {
+#if !defined (H3)
+	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
+		m_tNetworkParams.nGatewayIp = nValue32;
+		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
 		return;
 	}
 
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkConst::PARAMS_FILE_NAME);
-
-	if (isMaskSet(NetworkParamsMask::DHCP)) {
-		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP, static_cast<int>(m_tNetworkParams.bIsDhcpUsed), BOOL2STRING::Get(m_tNetworkParams.bIsDhcpUsed));
-	}
-
-	if (isMaskSet(NetworkParamsMask::IP_ADDRESS)) {
-		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_IP_ADDRESS, IP2STR(m_tNetworkParams.nLocalIp));
-	}
-
-	if (isMaskSet(NetworkParamsMask::NET_MASK)) {
-		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
-	}
-
-#if !defined (H3)
-	if (isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY)) {
-		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
-	}
-
-	if (isMaskSet(NetworkParamsMask::NAME_SERVER)) {
-		printf(" %s=" IPSTR "\n",  NetworkConst::PARAMS_NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
-	}
-#endif
-
-	if (isMaskSet(NetworkParamsMask::HOSTNAME)) {
-		printf(" %s=%s\n", NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName);
-	}
-
-	if (isMaskSet(NetworkParamsMask::NTP_SERVER)) {
-		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NTP_SERVER, IP2STR(m_tNetworkParams.nNtpServerIp));
+	if (Sscan::IpAddress(pLine,  NetworkConst::PARAMS_NAME_SERVER, nValue32) == Sscan::OK) {
+		m_tNetworkParams.nNameServerIp = nValue32;
+		m_tNetworkParams.nSetList |= NetworkParamsMask::NAME_SERVER;
+		return;
 	}
 #endif
 }
 
 void NetworkParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<NetworkParams*>(p))->callbackFunction(s);
 }
-

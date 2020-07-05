@@ -57,9 +57,6 @@ SlushDmxParams::SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore): m_pSl
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
-SlushDmxParams::~SlushDmxParams(void) {
-}
-
 bool SlushDmxParams::Load(void) {
 	m_tSlushDmxParams.nSetList = 0;
 
@@ -101,7 +98,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	uint8_t value;
 	uint16_t value16;
 
-	if (Sscan::Uint8(pLine, SlushDmxParamsConst::USE_SPI, &value) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, SlushDmxParamsConst::USE_SPI, value) == Sscan::OK) {
 		if (value != 0) {
 			m_tSlushDmxParams.nUseSpiBusy = 1;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::USE_SPI_BUSY;
@@ -109,7 +106,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, value16) == Sscan::OK) {
 		if (value16 <= DMX_UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortA = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_A;
@@ -117,7 +114,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, value16) == Sscan::OK) {
 		if (value16 <= DMX_UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortB = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_B;
@@ -125,7 +122,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_A, value16) == Sscan::OK) {
 		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
 			m_tSlushDmxParams.nDmxFootprintPortA = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::FOOTPRINT_PORT_A;
@@ -133,7 +130,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_FOOTPRINT_PORT_B, value16) == Sscan::OK) {
 		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
 			m_tSlushDmxParams.nDmxFootprintPortB = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::FOOTPRINT_PORT_B;

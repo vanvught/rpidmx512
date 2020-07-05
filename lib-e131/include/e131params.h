@@ -74,7 +74,7 @@ struct E131ParamsMask {
 
 class E131ParamsStore {
 public:
-	virtual ~E131ParamsStore(void) {
+	virtual ~E131ParamsStore() {
 	}
 
 	virtual void Update(const struct TE131Params *pE131Params)=0;
@@ -83,10 +83,9 @@ public:
 
 class E131Params {
 public:
-	E131Params(E131ParamsStore *pE131ParamsStore = 0);
-	~E131Params(void);
+	E131Params(E131ParamsStore *pE131ParamsStore = nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -94,27 +93,27 @@ public:
 
 	void Set(E131Bridge *);
 
-	void Dump(void);
+	void Dump();
 
-	TLightSetOutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType() {
 		return m_tE131Params.tOutputType;
 	}
 
-	uint16_t GetUniverse(void) {
+	uint16_t GetUniverse() {
 		return m_tE131Params.nUniverse;
 	}
 
-	E131Merge GetMergeMode(void) {
+	E131Merge GetMergeMode() {
 		return static_cast<E131Merge>(m_tE131Params.nMergeMode);
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
 
-	bool IsEnableNoChangeUpdate(void) {
+	bool IsEnableNoChangeUpdate() {
 		return m_tE131Params.bEnableNoChangeUpdate;
 	}
 
-	TE131PortDir GetDirection(void) {
+	TE131PortDir GetDirection() {
 		return static_cast<TE131PortDir>(m_tE131Params.nDirection);
 	}
 

@@ -1,8 +1,7 @@
 /**
- * @file buttonsset.cpp
- *
+ * @file read_config_file.c
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +22,47 @@
  * THE SOFTWARE.
  */
 
-#include "buttonsset.h"
+#include <stdio.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <assert.h>
 
-ButtonsSet::ButtonsSet(void): m_nButtonsCount(0) {
-}
+#include <c/read_config_file.h>
 
-ButtonsSet::~ButtonsSet(void) {
+bool read_config_file(const char *file_name, funcptr pfi) {
+	char buffer[128];
+	unsigned i;
+	FILE *fp;
+
+	assert(file_name != NULL);
+	assert(pfi != NULL);
+
+	fp = fopen(file_name, "r");
+
+	if (fp != NULL) {
+		for (;;) {
+			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
+				break; /* Error or end of file */
+			}
+
+			if (buffer[0] >= 'a') {
+				char *q = (char*) buffer;
+
+				for (i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
+					if ((*q == '\r') || (*q == '\n')) {
+						*q = '\0';
+					}
+					q++;
+				}
+
+				pfi((const char*) buffer);
+			}
+		}
+
+		fclose(fp);
+	} else {
+		return false;
+	}
+
+	return true;
 }

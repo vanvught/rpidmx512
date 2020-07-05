@@ -1,5 +1,5 @@
 /**
- * @file ltcparams.h
+ * @file ltcparams.cpp
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
@@ -23,20 +23,16 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <time.h>
 #include <cassert>
 
 #include "ltcparams.h"
-
 #include "ltcparamsconst.h"
 
 #include "readconfigfile.h"
@@ -46,8 +42,8 @@
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	memset(&m_tLtcParams, 0, sizeof(struct TLtcParams));
 
-	time_t ltime = time(0);
-	struct tm *tm = localtime(&ltime);
+	const time_t ltime = time(nullptr);
+	const struct tm *tm = localtime(&ltime);
 
 	m_tLtcParams.tSource = LTC_READER_SOURCE_LTC;
 	m_tLtcParams.nYear = tm->tm_year - 100;
@@ -56,25 +52,23 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nFps = 25;
 	m_tLtcParams.nStopFrame = m_tLtcParams.nFps - 1;
 	m_tLtcParams.nStopSecond = 59;
-	m_tLtcParams.nStopMinute = 29;
+	m_tLtcParams.nStopMinute = 59;
 	m_tLtcParams.nStopHour = 23;
 	m_tLtcParams.nOscPort = 8000;
+	m_tLtcParams.nSkipSeconds = 5;
 }
 
-LtcParams::~LtcParams(void) {
-}
-
-bool LtcParams::Load(void) {
+bool LtcParams::Load() {
 	m_tLtcParams.nSetList = 0;
 
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pLTcParamsStore != 0) {
+		if (m_pLTcParamsStore != nullptr) {
 			m_pLTcParamsStore->Update(&m_tLtcParams);
 		}
-	} else if (m_pLTcParamsStore != 0) {
+	} else if (m_pLTcParamsStore != nullptr) {
 		m_pLTcParamsStore->Copy(&m_tLtcParams);
 	} else {
 		return false;
@@ -84,11 +78,11 @@ bool LtcParams::Load(void) {
 }
 
 void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pLTcParamsStore != 0);
+	assert(m_pLTcParamsStore != nullptr);
 
-	if (m_pLTcParamsStore == 0) {
+	if (m_pLTcParamsStore == nullptr) {
 		return;
 	}
 
@@ -102,10 +96,10 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 }
 
 void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, unsigned nMaskDisabledOutputs) {
-	uint8_t value8;
+	uint8_t nValue8;
 
-	if (Sscan::Uint8(pLine, pKeyword, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
+	if (Sscan::Uint8(pLine, pKeyword, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
 			m_tLtcParams.nDisabledOutputs |= nMaskDisabledOutputs;
 			m_tLtcParams.nSetList |= LtcParamsMask::DISABLED_OUTPUTS;
 		} else {
@@ -114,28 +108,40 @@ void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, un
 	}
 }
 
+void LtcParams::SetBool(const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask) {
+	if (nValue != 0) {
+		nProperty = 1;
+		m_tLtcParams.nSetList |= nMask;
+	} else {
+		nProperty = 0;
+		m_tLtcParams.nSetList &= ~nMask;
+	}
+}
+
+void LtcParams::SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask) {
+	if (bEvaluate) {
+		nProperty = nValue;
+		m_tLtcParams.nSetList |= nMask;
+	}
+	return;
+}
+
 void LtcParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
-	uint8_t value8;
-	uint16_t value16;
+	uint8_t nValue8;
+	uint16_t nValue16;
 	char source[16];
-	uint8_t len = sizeof(source);
+	uint32_t nLength = sizeof(source) - 1;
 
-	if (Sscan::Char(pLine, LtcParamsConst::SOURCE, source, &len) == SSCAN_OK) {
-		source[len] = '\0';
+	if (Sscan::Char(pLine, LtcParamsConst::SOURCE, source, nLength) == Sscan::OK) {
+		source[nLength] = '\0';
 		m_tLtcParams.tSource = GetSourceType(source);
 		m_tLtcParams.nSetList |= LtcParamsMask::SOURCE;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nAutoStart = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::AUTO_START;
-		} else {
-			m_tLtcParams.nAutoStart = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::AUTO_START;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nAutoStart, LtcParamsMask::AUTO_START);
 	}
 
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LtcParamsMaskDisabledOutputs::DISPLAY);
@@ -146,169 +152,113 @@ void LtcParams::callbackFunction(const char* pLine) {
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_TCNET, LtcParamsMaskDisabledOutputs::TCNET);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_RTPMIDI, LtcParamsMaskDisabledOutputs::RTPMIDI);
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nShowSysTime = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::SHOW_SYSTIME;
-		} else {
-			m_tLtcParams.nShowSysTime = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::SHOW_SYSTIME;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nShowSysTime, LtcParamsMask::SHOW_SYSTIME);
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nDisableTimeSync = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::DISABLE_TIMESYNC;
-		} else {
-			m_tLtcParams.nDisableTimeSync = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::DISABLE_TIMESYNC;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nDisableTimeSync, LtcParamsMask::DISABLE_TIMESYNC);
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::YEAR, &value8) == SSCAN_OK) {
-		if (value8 >= 19) {
-			m_tLtcParams.nYear = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::YEAR;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::YEAR, nValue8) == Sscan::OK) {
+		SetValue((nValue8 >= 19), nValue8, m_tLtcParams.nYear, LtcParamsMask::YEAR);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::MONTH, &value8) == SSCAN_OK) {
-		if ((value8 >= 1) && (value8 <= 12)) {
-			m_tLtcParams.nMonth = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::MONTH;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::MONTH, nValue8) == Sscan::OK) {
+		SetValue((nValue8 >= 1) && (nValue8 <= 12), nValue8, m_tLtcParams.nMonth, LtcParamsMask::MONTH);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::DAY, &value8) == SSCAN_OK) {
-		if ((value8 >= 1) && (value8 <= 31)) {
-			m_tLtcParams.nDay = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::DAY;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::DAY, nValue8) == Sscan::OK) {
+		SetValue((nValue8 >= 1) && (nValue8 <= 31), nValue8, m_tLtcParams.nDay, LtcParamsMask::DAY);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nEnableNtp = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::ENABLE_NTP;
-		} else {
-			m_tLtcParams.nEnableNtp = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::ENABLE_NTP;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nEnableNtp, LtcParamsMask::ENABLE_NTP);
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::FPS, &value8) == SSCAN_OK) {
-		if ((value8 >= 24) && (value8 <= 30)) {
-			m_tLtcParams.nFps = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::FPS;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::FPS, nValue8) == Sscan::OK) {
+		SetValue((nValue8 >= 24) && (nValue8 <= 30), nValue8, m_tLtcParams.nFps, LtcParamsMask::FPS);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::START_FRAME, &value8) == SSCAN_OK) {
-		if (value8 <= 30) {
-			m_tLtcParams.nStartFrame = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::START_FRAME;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::START_FRAME, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 30), nValue8, m_tLtcParams.nStartFrame, LtcParamsMask::START_FRAME);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::START_SECOND, &value8) == SSCAN_OK) {
-		if (value8 <= 59) {
-			m_tLtcParams.nStartSecond = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::START_SECOND;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::START_SECOND, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 59), nValue8, m_tLtcParams.nStartSecond, LtcParamsMask::START_SECOND);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::START_MINUTE, &value8) == SSCAN_OK) {
-		if (value8 <= 59) {
-			m_tLtcParams.nStartMinute = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::START_MINUTE;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::START_MINUTE, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 59), nValue8, m_tLtcParams.nStartMinute, LtcParamsMask::START_MINUTE);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::START_HOUR, &value8) == SSCAN_OK) {
-		if (value8 <= 23) {
-			m_tLtcParams.nStartHour = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::START_HOUR;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::START_HOUR, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 23), nValue8, m_tLtcParams.nStartHour, LtcParamsMask::START_HOUR);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_FRAME, &value8) == SSCAN_OK) {
-		if (value8 <= 30) {
-			m_tLtcParams.nStopFrame = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::STOP_FRAME;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_FRAME, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 30), nValue8, m_tLtcParams.nStopFrame, LtcParamsMask::STOP_FRAME);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_SECOND, &value8) == SSCAN_OK) {
-		if (value8 <= 59) {
-			m_tLtcParams.nStopSecond = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::STOP_SECOND;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_SECOND, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 59), nValue8, m_tLtcParams.nStopSecond, LtcParamsMask::STOP_SECOND);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_MINUTE, &value8) == SSCAN_OK) {
-		if (value8 <= 59) {
-			m_tLtcParams.nStopMinute = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::STOP_MINUTE;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_MINUTE, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 59), nValue8, m_tLtcParams.nStopMinute, LtcParamsMask::STOP_MINUTE);
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_HOUR, &value8) == SSCAN_OK) {
-		if (value8 <= 99) {
-			m_tLtcParams.nStopHour = value8;
-			m_tLtcParams.nSetList |= LtcParamsMask::STOP_HOUR;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::STOP_HOUR, nValue8) == Sscan::OK) {
+		SetValue((nValue8 <= 23), nValue8, m_tLtcParams.nStopHour, LtcParamsMask::STOP_HOUR);
 		return;
 	}
 
 #if 0
-	if (Sscan::Uint8(pLine, LtcParamsConst::SET_DATE, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nSetDate = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::SET_DATE;
-		} else {
-			m_tLtcParams.nSetDate = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::SET_DATE;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::SET_DATE, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nSetDate, LtcParamsMask::SET_DATE);
 	}
 #endif
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
-			m_tLtcParams.nEnableOsc = 1;
-			m_tLtcParams.nSetList |= LtcParamsMask::ENABLE_OSC;
-		} else {
-			m_tLtcParams.nEnableOsc = 0;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::ENABLE_OSC;
-		}
+	if (Sscan::Uint8(pLine, LtcParamsConst::ALT_FUNCTION, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nAltFunction, LtcParamsMask::ALT_FUNCTION);
 	}
 
-	if (Sscan::Uint16(pLine, LtcParamsConst::OSC_PORT, &value16) == SSCAN_OK) {
-		if (value16 > 1023) {
-			m_tLtcParams.nOscPort = value16;
+	if (Sscan::Uint8(pLine, LtcParamsConst::SKIP_SECONDS, nValue8) == Sscan::OK) {
+		SetValue((nValue8 > 0) && (nValue8 <= 99), nValue8, m_tLtcParams.nSkipSeconds, LtcParamsMask::SKIP_SECONDS);
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::SKIP_FREE, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nSkipFree, LtcParamsMask::SKIP_FREE);
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, nValue8) == Sscan::OK) {
+		SetBool(nValue8, m_tLtcParams.nEnableOsc, LtcParamsMask::ENABLE_OSC);
+	}
+
+	if (Sscan::Uint16(pLine, LtcParamsConst::OSC_PORT, nValue16) == Sscan::OK) {
+		if (nValue16 > 1023) {
+			m_tLtcParams.nOscPort = nValue16;
 			m_tLtcParams.nSetList |= LtcParamsMask::OSC_PORT;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, &value8) == SSCAN_OK) {
-		if (value8 != 0) {
+	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
 			m_tLtcParams.nEnableWS28xx = 1;
 			m_tLtcParams.nDisabledOutputs |= LtcParamsMaskDisabledOutputs::MAX7219;
-#if !defined(USE_SPI_DMA)
-			m_tLtcParams.nDisabledOutputs |= LtcParamsMaskDisabledOutputs::LTC;		// TODO Temporarily code until SPI DMA has been implemented
-#endif
 			m_tLtcParams.nSetList |= LtcParamsMask::ENABLE_WS28XX;
 			m_tLtcParams.nSetList |= LtcParamsMask::DISABLED_OUTPUTS;
 		} else {
@@ -316,138 +266,13 @@ void LtcParams::callbackFunction(const char* pLine) {
 			if (!isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219)) {
 				m_tLtcParams.nDisabledOutputs &= ~LtcParamsMaskDisabledOutputs::MAX7219;
 			}
-#if !defined(USE_SPI_DMA)
-			if (!isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC)) {			// TODO Temporarily code until SPI DMA has been implemented
-				m_tLtcParams.nDisabledOutputs &= ~LtcParamsMaskDisabledOutputs::LTC;	// TODO Temporarily code until SPI DMA has been implemented
-			}																// TODO Temporarily code until SPI DMA has been implemented
-#endif
 			m_tLtcParams.nSetList &= ~LtcParamsMask::ENABLE_WS28XX;
 		}
 	}
 }
 
-void LtcParams::Dump(void) {
-#ifndef NDEBUG
-	if (m_tLtcParams.nSetList == 0) {
-		return;
-	}
-
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::FILE_NAME);
-
-	if (isMaskSet(LtcParamsMask::SOURCE)) {
-		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType(static_cast<TLtcReaderSource>(m_tLtcParams.tSource)));
-	}
-
-	if (isMaskSet(LtcParamsMask::AUTO_START)) {
-		printf(" %s=%d\n", LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart);
-	}
-
-	if (isMaskSet(LtcParamsMask::DISABLED_OUTPUTS)) {
-		printf(" Disabled outputs %.2x:\n", m_tLtcParams.nDisabledOutputs);
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY)) {
-			printf("  Display\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219)) {
-			printf("  Max7219\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI)) {
-			printf("  MIDI\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI)) {
-			printf("  RtpMIDI\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET)) {
-			printf("  Art-Net\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::TCNET)) {
-			printf("  TCNet\n");
-		}
-
-		if (isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC)) {
-			printf("  LTC\n");
-		}
-	}
-
-	if (isMaskSet(LtcParamsMask::YEAR)) {
-		printf(" %s=%d\n", LtcParamsConst::YEAR, m_tLtcParams.nYear);
-	}
-
-	if (isMaskSet(LtcParamsMask::MONTH)) {
-		printf(" %s=%d\n", LtcParamsConst::MONTH, m_tLtcParams.nMonth);
-	}
-
-	if (isMaskSet(LtcParamsMask::DAY)) {
-		printf(" %s=%d\n", LtcParamsConst::DAY, m_tLtcParams.nDay);
-	}
-
-	if (isMaskSet(LtcParamsMask::ENABLE_NTP)) {
-		printf(" NTP is enabled\n");
-	}
-
-	if (isMaskSet(LtcParamsMask::FPS)) {
-		printf(" %s=%d\n", LtcParamsConst::FPS, m_tLtcParams.nFps);
-	}
-
-	if (isMaskSet(LtcParamsMask::START_FRAME)) {
-		printf(" %s=%d\n", LtcParamsConst::START_FRAME, m_tLtcParams.nStartFrame);
-	}
-
-	if (isMaskSet(LtcParamsMask::START_SECOND)) {
-		printf(" %s=%d\n", LtcParamsConst::START_SECOND, m_tLtcParams.nStartSecond);
-	}
-
-	if (isMaskSet(LtcParamsMask::START_MINUTE)) {
-		printf(" %s=%d\n", LtcParamsConst::START_MINUTE, m_tLtcParams.nStartMinute);
-	}
-
-	if (isMaskSet(LtcParamsMask::START_HOUR)) {
-		printf(" %s=%d\n", LtcParamsConst::START_HOUR, m_tLtcParams.nStartHour);
-	}
-
-	if (isMaskSet(LtcParamsMask::STOP_FRAME)) {
-		printf(" %s=%d\n", LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame);
-	}
-
-	if (isMaskSet(LtcParamsMask::STOP_SECOND)) {
-		printf(" %s=%d\n", LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond);
-	}
-
-	if (isMaskSet(LtcParamsMask::STOP_MINUTE)) {
-		printf(" %s=%d\n", LtcParamsConst::STOP_MINUTE, m_tLtcParams.nStopMinute);
-	}
-
-	if (isMaskSet(LtcParamsMask::STOP_HOUR)) {
-		printf(" %s=%d\n", LtcParamsConst::STOP_HOUR, m_tLtcParams.nStopHour);
-	}
-
-#if 0
-	if (isMaskSet(LtcParamsMask::SET_DATE)) {
-		printf(" %s=%d\n", LtcParamsConst::SET_DATE, m_tLtcParams.nSetDate);
-	}
-#endif
-
-	if (isMaskSet(LtcParamsMask::ENABLE_OSC)) {
-		printf(" OSC is enabled\n");
-
-		if (isMaskSet(LtcParamsMask::OSC_PORT)) {
-			printf(" %s=%d\n", LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort);
-		}
-	}
-
-	if (isMaskSet(LtcParamsMask::ENABLE_WS28XX)) {
-		printf(" WS28xx is enabled\n");
-	}
-#endif
-}
-
 void LtcParams::StartTimeCodeCopyTo(TLtcTimeCode* ptStartTimeCode) {
-	assert(ptStartTimeCode != 0);
+	assert(ptStartTimeCode != nullptr);
 
 	if ((isMaskSet(LtcParamsMask::START_FRAME)) || (isMaskSet(LtcParamsMask::START_SECOND)) || (isMaskSet(LtcParamsMask::START_MINUTE)) || (isMaskSet(LtcParamsMask::START_HOUR)) ) {
 		memset(ptStartTimeCode, 0, sizeof(struct TLtcTimeCode));
@@ -478,7 +303,7 @@ void LtcParams::StartTimeCodeCopyTo(TLtcTimeCode* ptStartTimeCode) {
 }
 
 void LtcParams::StopTimeCodeCopyTo(TLtcTimeCode* ptStopTimeCode) {
-	assert(ptStopTimeCode != 0);
+	assert(ptStopTimeCode != nullptr);
 
 	if ((isMaskSet(LtcParamsMask::STOP_FRAME)) || (isMaskSet(LtcParamsMask::STOP_SECOND)) || (isMaskSet(LtcParamsMask::STOP_MINUTE)) || (isMaskSet(LtcParamsMask::STOP_HOUR)) ) {
 		memset(ptStopTimeCode, 0, sizeof(struct TLtcTimeCode));
@@ -509,8 +334,8 @@ void LtcParams::StopTimeCodeCopyTo(TLtcTimeCode* ptStopTimeCode) {
 }
 
 void LtcParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<LtcParams*>(p))->callbackFunction(s);
 }

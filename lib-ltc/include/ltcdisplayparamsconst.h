@@ -28,8 +28,7 @@
 
 #include "ltcdisplayws28xx.h"
 
-class LtcDisplayParamsConst {
-public:
+struct LtcDisplayParamsConst {
 	static const char FILE_NAME[];
 
 	static const char MAX7219_TYPE[];

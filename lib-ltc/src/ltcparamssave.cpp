@@ -1,7 +1,7 @@
 /**
  * @file ltcparamssave.h
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -42,9 +42,9 @@
 void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 
-	if (ptLtcParams != 0) {
+	if (ptLtcParams != nullptr) {
 		memcpy(&m_tLtcParams, ptLtcParams, sizeof(struct TLtcParams));
 	} else {
 		m_pLTcParamsStore->Copy(&m_tLtcParams);
@@ -80,6 +80,10 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::STOP_MINUTE,  m_tLtcParams.nStopMinute, isMaskSet(LtcParamsMask::STOP_MINUTE));
 	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LtcParamsMask::STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LtcParamsMask::STOP_FRAME));
+	builder.AddComment("/buttons");
+	builder.Add(LtcParamsConst::ALT_FUNCTION, m_tLtcParams.nAltFunction, isMaskSet(LtcParamsMask::ALT_FUNCTION));
+	builder.Add(LtcParamsConst::SKIP_SECONDS, m_tLtcParams.nSkipSeconds, isMaskSet(LtcParamsMask::SKIP_SECONDS));
+	builder.Add(LtcParamsConst::SKIP_FREE, m_tLtcParams.nSkipFree, isMaskSet(LtcParamsMask::SKIP_FREE));
 
 	builder.AddComment("NTP Server");
 	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LtcParamsMask::ENABLE_NTP));
@@ -104,11 +108,11 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 void LtcParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
-	if (m_pLTcParamsStore == 0) {
+	if (m_pLTcParamsStore == nullptr) {
 		nSize = 0;
 		DEBUG_EXIT
 		return;
 	}
 
-	Builder(0, pBuffer, nLength, nSize);
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

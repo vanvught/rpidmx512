@@ -30,7 +30,7 @@
 #include "e131.h"
 
 void E131Params::Set(E131Bridge *pE131Bridge) {
-	assert(pE131Bridge != 0);
+	assert(pE131Bridge != nullptr);
 
 	if (m_tE131Params.nSetList == 0) {
 		return;

@@ -44,9 +44,8 @@
 #define DATA_DIRECTION_OUT_C_MASK	(1U << 3)
 #define DATA_DIRECTION_OUT_D_MASK	(1U << 4)
 
-DmxGpioParams::DmxGpioParams(void):
-		m_nSetList(0),
-		m_nDmxDataDirection(GPIO_DMX_DATA_DIRECTION)
+DmxGpioParams::DmxGpioParams()
+		
 {
 #if defined(H3)
  #if defined(ORANGE_PI_ONE)
@@ -63,10 +62,7 @@ DmxGpioParams::DmxGpioParams(void):
 #endif
 }
 
-DmxGpioParams::~DmxGpioParams(void) {
-}
-
-bool DmxGpioParams::Load(void) {
+bool DmxGpioParams::Load() {
 	m_nSetList = 0;
 
 	ReadConfigFile configfile(DmxGpioParams::staticCallbackFunction, this);
@@ -74,11 +70,11 @@ bool DmxGpioParams::Load(void) {
 }
 
 void DmxGpioParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t value8;
 
-	if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION, value8) == Sscan::OK) {
 		if (value8 < 32) {
 			m_nDmxDataDirection = value8;
 			m_nSetList |= DATA_DIRECTION_MASK;
@@ -87,7 +83,7 @@ void DmxGpioParams::callbackFunction(const char* pLine) {
 	}
 
 	for (unsigned i = 0; i < 4; i++) {
-		if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION_OUT[i], &value8) == SSCAN_OK) {
+		if (Sscan::Uint8(pLine, DmxGpioParamsConst::DATA_DIRECTION_OUT[i], value8) == Sscan::OK) {
 			m_nDmxDataDirectionOut[i] = value8;
 			m_nSetList |= (DATA_DIRECTION_OUT_A_MASK << i);
 			return;
@@ -123,7 +119,7 @@ uint8_t DmxGpioParams::GetDataDirection(bool &bIsSet, uint8_t nUart) const {
 	return m_nDmxDataDirectionOut[nUart];
 }
 
-void DmxGpioParams::Dump(void) {
+void DmxGpioParams::Dump() {
 #ifndef NDEBUG
 	if (m_nSetList == 0) {
 		return;
@@ -144,8 +140,8 @@ void DmxGpioParams::Dump(void) {
 }
 
 void DmxGpioParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<DmxGpioParams*>(p))->callbackFunction(s);
 }

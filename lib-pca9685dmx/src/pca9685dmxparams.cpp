@@ -55,7 +55,7 @@ constexpr char PARAMS_BOARD_INSTANCES[] = "board_instances";
 #define DMX_SLOT_INFO_LENGTH				128
 
 PCA9685DmxParams::PCA9685DmxParams(const char *pFileName): m_bSetList(0) {
-	assert(pFileName != 0);
+	assert(pFileName != nullptr);
 
 	m_nI2cAddress = PCA9685_I2C_ADDRESS_DEFAULT;
 
@@ -65,7 +65,7 @@ PCA9685DmxParams::PCA9685DmxParams(const char *pFileName): m_bSetList(0) {
 
 	m_pDmxSlotInfoRaw = new char[DMX_SLOT_INFO_LENGTH];
 
-	assert(m_pDmxSlotInfoRaw != 0);
+	assert(m_pDmxSlotInfoRaw != nullptr);
 	for (unsigned i = 0; i < DMX_SLOT_INFO_LENGTH; i++) {
 		m_pDmxSlotInfoRaw[i] = 0;
 	}
@@ -74,26 +74,26 @@ PCA9685DmxParams::PCA9685DmxParams(const char *pFileName): m_bSetList(0) {
 	configfile.Read(pFileName);
 }
 
-PCA9685DmxParams::~PCA9685DmxParams(void) {
+PCA9685DmxParams::~PCA9685DmxParams() {
 	delete[] m_pDmxSlotInfoRaw;
-	m_pDmxSlotInfoRaw = 0;
+	m_pDmxSlotInfoRaw = nullptr;
 }
 
 void PCA9685DmxParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<PCA9685DmxParams*>(p))->callbackFunction(s);
 }
 
 void PCA9685DmxParams::callbackFunction(const char *pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t value8;
 	uint16_t value16;
-	uint8_t len;
+	uint32_t nLength;
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
 		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
@@ -101,7 +101,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_FOOTPRINT, &value16) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, PARAMS_DMX_FOOTPRINT, value16) == Sscan::OK) {
 		if ((value16 != 0) && (value16 <= (PCA9685_PWM_CHANNELS * PARAMS_BOARD_INSTANCES_MAX))) {
 			m_nDmxFootprint = value16;
 			m_bSetList |= DMX_FOOTPRINT_MASK;
@@ -109,7 +109,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, &value8) == SSCAN_OK) {
+	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, value8) == Sscan::OK) {
 		if ((value8 >= PCA9685_I2C_ADDRESS_DEFAULT) && (value8 != PCA9685_I2C_ADDRESS_FIXED)) {
 			m_nI2cAddress = value8;
 			m_bSetList |= I2C_SLAVE_ADDRESS_MASK;
@@ -117,7 +117,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_BOARD_INSTANCES, &value8) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_BOARD_INSTANCES, value8) == Sscan::OK) {
 		if ((value8 != 0) && (value8 <= PARAMS_BOARD_INSTANCES_MAX)) {
 			m_nBoardInstances = value8;
 			m_bSetList |= BOARD_INSTANCES_MASK;
@@ -125,9 +125,9 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	len = DMX_SLOT_INFO_LENGTH;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, &len) == SSCAN_OK) {
-		if (len >= 7) { // 00:0000 at least one value set
+	nLength = DMX_SLOT_INFO_LENGTH;
+	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, nLength) == Sscan::OK) {
+		if (nLength >= 7) { // 00:0000 at least one value set
 			m_bSetList |= DMX_SLOT_INFO_MASK;
 		}
 	}
@@ -158,7 +158,7 @@ const char* PCA9685DmxParams::GetDmxSlotInfoRaw(bool &pIsSet) const {
 	return m_pDmxSlotInfoRaw;
 }
 
-void PCA9685DmxParams::Dump(void) {
+void PCA9685DmxParams::Dump() {
 #ifndef NDEBUG
 	if (m_bSetList == 0) {
 		return;
@@ -190,6 +190,6 @@ bool PCA9685DmxParams::isMaskSet(uint32_t mask) const {
 	return (m_bSetList & mask) == mask;
 }
 
-bool PCA9685DmxParams::GetSetList(void) const {
+bool PCA9685DmxParams::GetSetList() const {
 	return m_bSetList != 0;
 }

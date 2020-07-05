@@ -49,7 +49,7 @@ struct MotorParamsMask {
 
 class MotorParamsStore {
 public:
-	virtual ~MotorParamsStore(void) {
+	virtual ~MotorParamsStore() {
 	}
 
 	virtual void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams)=0;
@@ -58,8 +58,7 @@ public:
 
 class MotorParams {
 public:
-	MotorParams(MotorParamsStore *pMotorParamsStore=0);
-	~MotorParams(void);
+	MotorParams(MotorParamsStore *pMotorParamsStore=nullptr);
 
 	bool Load(uint8_t nMotorIndex);
 	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
@@ -69,25 +68,25 @@ public:
 
 	void Set(L6470 *pL6470);
 
-	void Dump(void);
+	void Dump();
 
-	float GetStepAngel(void) {
+	float GetStepAngel() {
 		return m_tMotorParams.fStepAngel;
 	}
 
-	float GetVoltage(void) {
+	float GetVoltage() {
 		return m_tMotorParams.fVoltage;
 	}
 
-	float GetCurrent(void) {
+	float GetCurrent() {
 		return m_tMotorParams.fCurrent;
 	}
 
-	float GetResistance(void) {
+	float GetResistance() {
 		return m_tMotorParams.fResistance;
 	}
 
-	float GetInductance(void) {
+	float GetInductance() {
 		return m_tMotorParams.fInductance;
 	}
 
@@ -97,7 +96,7 @@ private:
     	return (m_tMotorParams.nSetList & nMask) == nMask;
     }
 
-	float calcIntersectSpeed(void);
+	float calcIntersectSpeed();
 	uint32_t calcIntersectSpeedReg(float) const;
 
     static void staticCallbackFunction(void *p, const char *s);

@@ -2,7 +2,7 @@
  * @file fota_params.c
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "read_config_file.h"
-#include "sscan.h"
+#include "c/read_config_file.h"
+#include "c/sscan.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 static const char PARAMS_FILE_NAME[] ALIGNED = "fota.txt";

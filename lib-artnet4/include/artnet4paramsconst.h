@@ -26,8 +26,7 @@
 #ifndef ARTNET4PARAMSCONST_H_
 #define ARTNET4PARAMSCONST_H_
 
-class ArtNet4ParamsConst {
-public:
+struct ArtNet4ParamsConst {
 	static const char MAP_UNIVERSE0[];
 };
 
