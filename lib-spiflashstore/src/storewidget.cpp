@@ -34,11 +34,12 @@
 
 #include "debug.h"
 
-StoreWidget *StoreWidget::s_pThis = 0;
+StoreWidget *StoreWidget::s_pThis = nullptr;
 
 StoreWidget::StoreWidget() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

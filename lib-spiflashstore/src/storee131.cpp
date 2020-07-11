@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storee131.h"
 
 #include "debug.h"
 
-StoreE131 *StoreE131::s_pThis = 0;
+StoreE131 *StoreE131::s_pThis = nullptr;
 
 StoreE131::StoreE131() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

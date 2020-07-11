@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storedmxserial.h"
 
 #include "debug.h"
 
-StoreDmxSerial *StoreDmxSerial::s_pThis = 0;
+StoreDmxSerial *StoreDmxSerial::s_pThis = nullptr;
 
 StoreDmxSerial::StoreDmxSerial() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

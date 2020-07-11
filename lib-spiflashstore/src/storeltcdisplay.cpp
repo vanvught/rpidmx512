@@ -23,40 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storeltcdisplay.h"
 
-#include "ltcdisplayparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
-StoreLtcDisplay *StoreLtcDisplay::s_pThis = 0;
+StoreLtcDisplay *StoreLtcDisplay::s_pThis = nullptr;
 
 StoreLtcDisplay::StoreLtcDisplay() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}
-
-void StoreLtcDisplay::Update(const struct TLtcDisplayParams *ptLtcDisplayParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
-
-	DEBUG_EXIT
-}
-
-void StoreLtcDisplay::Copy(struct TLtcDisplayParams *ptLtcDisplayParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
-
 	DEBUG_EXIT
 }

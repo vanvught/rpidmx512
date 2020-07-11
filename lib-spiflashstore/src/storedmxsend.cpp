@@ -24,39 +24,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storedmxsend.h"
-#include "dmxparams.h"
-#include "spiflashstore.h"
 
 #include "debug.h"
 
-StoreDmxSend *StoreDmxSend::s_pThis = 0;
+StoreDmxSend *StoreDmxSend::s_pThis = nullptr;
 
 StoreDmxSend::StoreDmxSend() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Update(const struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DMXSEND, pDmxParams, sizeof(struct TDMXParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDmxSend::Copy(struct TDMXParams *pDmxParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DMXSEND, pDmxParams, sizeof(struct TDMXParams));
-
 	DEBUG_EXIT
 }
 #endif

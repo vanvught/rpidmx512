@@ -29,19 +29,22 @@
 #include <stdint.h>
 #include <cassert>
 
-#include "spiflashstore.h"
+#include "storeartnet.h"
 
 #include "artnetstore.h"
 #include "artnetparams.h"
 #include "artnet.h"
 
+#include "spiflashstore.h"
+
 #include "debug.h"
 
-StoreArtNet *StoreArtNet::s_pThis = 0;
+StoreArtNet *StoreArtNet::s_pThis = nullptr;
 
 StoreArtNet::StoreArtNet() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

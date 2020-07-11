@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet.h"
 #include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
@@ -111,7 +112,11 @@ void notmain(void) {
 	const uint8_t nActivePorts = ws28xxDmxMulti.GetActivePorts();
 
 	ArtNet4Node node(nActivePorts);
-	ArtNet4Params artnetparams(StoreArtNet4::Get());
+
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+
+	ArtNet4Params artnetparams(&storeArtNet4);
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);

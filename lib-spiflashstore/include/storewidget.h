@@ -33,12 +33,12 @@ class StoreWidget: public WidgetParamsStore, public WidgetStore {
 public:
 	StoreWidget();
 
-	void Update(const struct TWidgetParams *pWidgetParams);
-	void Copy(struct TWidgetParams *pWidgetParams);
+	void Update(const struct TWidgetParams *pWidgetParams) override;
+	void Copy(struct TWidgetParams *pWidgetParams) override;
 
-	void UpdateBreakTime(uint8_t nBreakTime);
-	void UpdateMabTime(uint8_t nMabTime);
-	void UpdateRefreshRate(uint8_t nRefreshRate);
+	void UpdateBreakTime(uint8_t nBreakTime) override;
+	void UpdateMabTime(uint8_t nMabTime) override;
+	void UpdateRefreshRate(uint8_t nRefreshRate) override;
 
 	static StoreWidget* Get() {
 		return s_pThis;

@@ -35,6 +35,8 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet.h"
+#include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
 #include "dmxmonitor.h"
@@ -80,6 +82,10 @@ int main(int argc, char **argv) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+
 	ArtNet4Params artnet4Params(StoreArtNet4::Get());
 
 	ArtNet4Node node;

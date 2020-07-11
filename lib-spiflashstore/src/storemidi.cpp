@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storemidi.h"
 
 #include "debug.h"
 
-StoreMidi *StoreMidi::s_pThis = 0;
+StoreMidi *StoreMidi::s_pThis = nullptr;
 
 StoreMidi::StoreMidi() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

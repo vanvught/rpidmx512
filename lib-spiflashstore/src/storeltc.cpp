@@ -23,18 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storeltc.h"
 
 #include "debug.h"
 
-StoreLtc *StoreLtc::s_pThis = 0;
+StoreLtc *StoreLtc::s_pThis = nullptr;
 
 StoreLtc::StoreLtc() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

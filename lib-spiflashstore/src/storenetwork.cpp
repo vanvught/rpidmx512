@@ -33,11 +33,12 @@
 
 #include "debug.h"
 
-StoreNetwork *StoreNetwork::s_pThis = 0;
+StoreNetwork *StoreNetwork::s_pThis = nullptr;
 
 StoreNetwork::StoreNetwork() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

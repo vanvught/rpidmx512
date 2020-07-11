@@ -28,12 +28,19 @@
 
 #include "ltcdisplayparams.h"
 
+#include "spiflashstore.h"
+
 class StoreLtcDisplay: public LtcDisplayParamsStore {
 public:
 	StoreLtcDisplay();
 
-	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams);
-	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams);
+	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams) override {
+		SpiFlashStore::Get()->Update(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+	}
+
+	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams) override {
+		SpiFlashStore::Get()->Copy(STORE_LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
+	}
 
 	static StoreLtcDisplay *Get() {
 		return s_pThis;

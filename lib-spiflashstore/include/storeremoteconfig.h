@@ -34,11 +34,11 @@ class StoreRemoteConfig: public RemoteConfigParamsStore {
 public:
 	StoreRemoteConfig();
 
-	void Update(const struct TRemoteConfigParams *pRemoteConfigParams) {
+	void Update(const struct TRemoteConfigParams *pRemoteConfigParams) override {
 		SpiFlashStore::Get()->Update(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 	}
 
-	void Copy(struct TRemoteConfigParams *pRemoteConfigParams) {
+	void Copy(struct TRemoteConfigParams *pRemoteConfigParams) override {
 		SpiFlashStore::Get()->Copy(STORE_RCONFIG, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 	}
 

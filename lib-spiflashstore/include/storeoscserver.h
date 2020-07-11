@@ -28,12 +28,19 @@
 
 #include "oscserverparms.h"
 
+#include "spiflashstore.h"
+
 class StoreOscServer: public OSCServerParamsStore {
 public:
 	StoreOscServer();
 
-	void Update(const struct TOSCServerParams *pOSCServerParams);
-	void Copy(struct TOSCServerParams *pOSCServerParams);
+	void Update(const struct TOSCServerParams *pOSCServerParams) override {
+		SpiFlashStore::Get()->Update(STORE_OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+	}
+
+	void Copy(struct TOSCServerParams *pOSCServerParams) override {
+		SpiFlashStore::Get()->Copy(STORE_OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+	}
 
 	static StoreOscServer *Get() {
 		return s_pThis;

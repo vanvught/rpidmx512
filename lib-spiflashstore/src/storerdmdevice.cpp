@@ -23,49 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storerdmdevice.h"
 
-#include "rdmdeviceparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
-StoreRDMDevice *StoreRDMDevice::s_pThis = 0;
+StoreRDMDevice *StoreRDMDevice::s_pThis = nullptr;
 
 StoreRDMDevice::StoreRDMDevice() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 
-void StoreRDMDevice::Update(const struct TRDMDeviceParams *pRDMDeviceParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
-
-	DEBUG_EXIT
-}
-
-void StoreRDMDevice::Copy(struct TRDMDeviceParams *pRDMDeviceParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
-
-	DEBUG_EXIT
-}
-
-void StoreRDMDevice::SaveLabel(const char *pLabel, uint8_t nLength) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDeviceParamsMask::LABEL);
-	SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDeviceParamsMask::LABEL);
-
-	DEBUG_EXIT
-}

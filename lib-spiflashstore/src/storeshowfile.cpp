@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storeshowfile.h"
 
 #include "debug.h"
 
-StoreShowFile *StoreShowFile::s_pThis = 0;
+StoreShowFile *StoreShowFile::s_pThis = nullptr;
 
 StoreShowFile::StoreShowFile() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

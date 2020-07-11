@@ -28,12 +28,19 @@
 
 #include "displayudfparams.h"
 
+#include "spiflashstore.h"
+
 class StoreDisplayUdf: public DisplayUdfParamsStore {
 public:
 	StoreDisplayUdf();
 
-	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams);
-	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams);
+	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams) override {
+		SpiFlashStore::Get()->Update(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	}
+
+	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams) override {
+		SpiFlashStore::Get()->Copy(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	}
 
 	static StoreDisplayUdf *Get() {
 		return s_pThis;

@@ -46,14 +46,10 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "rdmdeviceparams.h"
-#if defined(ORANGE_PI)
- #include "storedmxsend.h"
- #include "storerdmdevice.h"
-#endif
 #include "artnetdiscovery.h"
 #ifndef H3
  // Monitor Output
- #include "dmxmonitor.h"
+# include "dmxmonitor.h"
 #endif
 // Pixel Controller
 #include "lightset.h"
@@ -61,13 +57,14 @@
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
 #include "ws28xx.h"
-#if defined(ORANGE_PI)
- #include "storews28xxdmx.h"
-#endif
 
 #if defined(ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
+# include "spiflashinstall.h"
+# include "spiflashstore.h"
+# include "storeartnet.h"
+# include "storerdmdevice.h"
+# include "storedmxsend.h"
+# include "storews28xxdmx.h"
 #endif
 
 #include "software_version.h"
@@ -92,11 +89,12 @@ void notmain(void) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
 	StoreDmxSend storeDmxSend;
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreRDMDevice storeRdmDevice;
 
-	ArtNetParams artnetparams((ArtNetParamsStore *)spiFlashStore.GetStoreArtNet());
+	ArtNetParams artnetparams(StoreArtNet::Get());
 #else
 	ArtNetParams artnetparams;
 #endif
@@ -238,7 +236,7 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+		DMXParams dmxparams(&storeDmxSend);
 #else
 		DMXParams dmxparams;
 #endif
@@ -251,12 +249,12 @@ void notmain(void) {
 
 		if (artnetparams.IsRdm()) {
 #if defined (ORANGE_PI)
-			RDMDeviceParams rdmDeviceParams((RDMDeviceParamsStore *)&storeRdmDevice);
+			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 #else
 			RDMDeviceParams rdmDeviceParams;
 #endif
 			if(rdmDeviceParams.Load()) {
-				rdmDeviceParams.Set((RDMDevice *)&discovery);
+				rdmDeviceParams.Set(&discovery);
 				rdmDeviceParams.Dump();
 			}
 

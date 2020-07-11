@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet.h"
 #include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
@@ -208,7 +209,10 @@ void notmain(void) {
 
 	ArtNet4Node node;
 #if defined (ORANGE_PI)
-	ArtNet4Params artnetparams(StoreArtNet4::Get());
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+
+	ArtNet4Params artnetparams(&storeArtNet4);
 #else
 	ArtNet4Params artnetparams;
 #endif

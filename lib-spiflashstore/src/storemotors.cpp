@@ -52,11 +52,12 @@ struct TMotorStore {
 
 #define STORE_MOTOR_OFFSET(x)		((x) * sizeof(struct TMotorStore))
 
-StoreMotors *StoreMotors::s_pThis = 0;
+StoreMotors *StoreMotors::s_pThis = nullptr;
 
 StoreMotors::StoreMotors() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

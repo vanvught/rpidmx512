@@ -28,12 +28,19 @@
 
 #include "oscclientparams.h"
 
+#include "spiflashstore.h"
+
 class StoreOscClient: public OscClientParamsStore {
 public:
 	StoreOscClient();
 
-	void Update(const struct TOscClientParams *pOscClientParams);
-	void Copy(struct TOscClientParams *pOscClientParams);
+	void Update(const struct TOscClientParams *pOscClientParams) override {
+		SpiFlashStore::Get()->Update(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
+	}
+
+	void Copy(struct TOscClientParams *pOscClientParams) override {
+		SpiFlashStore::Get()->Copy(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
+	}
 
 	static StoreOscClient *Get() {
 		return s_pThis;

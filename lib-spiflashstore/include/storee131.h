@@ -34,11 +34,11 @@ class StoreE131: public E131ParamsStore {
 public:
 	StoreE131();
 
-	void Update(const struct TE131Params *pE131Params) {
+	void Update(const struct TE131Params *pE131Params) override {
 		SpiFlashStore::Get()->Update(STORE_E131, pE131Params, sizeof(struct TE131Params));
 	}
 
-	void Copy(struct TE131Params *pE131Params) {
+	void Copy(struct TE131Params *pE131Params) override {
 		SpiFlashStore::Get()->Copy(STORE_E131, pE131Params, sizeof(struct TE131Params));
 	}
 

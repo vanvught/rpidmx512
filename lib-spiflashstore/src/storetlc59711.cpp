@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storetlc59711.h"
 
 #include "debug.h"
 
-StoreTLC59711 *StoreTLC59711::s_pThis = 0;
+StoreTLC59711 *StoreTLC59711::s_pThis = nullptr;
 
 StoreTLC59711::StoreTLC59711() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

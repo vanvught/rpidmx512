@@ -34,11 +34,12 @@
 
 #include "debug.h"
 
-StoreSlushDmx *StoreSlushDmx::s_pThis = 0;
+StoreSlushDmx *StoreSlushDmx::s_pThis = nullptr;
 
 StoreSlushDmx::StoreSlushDmx() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

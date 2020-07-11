@@ -42,12 +42,21 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 	endif
 endif
 
-ifdef COND
-	LIBS+=artnet4 artnet artnethandlers e131 uuid
+ifeq ($(findstring ARTNET_NODE,$(DEFINES)),ARTNET_NODE)
+	ifdef COND
+		LIBS+=artnet4 artnet artnethandlers e131 uuid
+	endif
+endif
+
+ifeq ($(findstring E131_BRIDGE,$(DEFINES)),E131_BRIDGE)
+	ifdef COND
+		LIBS+=artnet e131 uuid
+	endif
 endif
 
 RDM=
 ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	LIBS+=artnet e131
 	RDM=1
 	ifneq ($(findstring uuid,$(LIBS)),uuid)
 		LIBS+=uuid
@@ -166,7 +175,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
+#	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
 ifdef RDM
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor

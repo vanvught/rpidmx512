@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storerdmsubdevices.h"
 
 #include "debug.h"
 
-StoreRDMSubDevices *StoreRDMSubDevices::s_pThis = 0;
+StoreRDMSubDevices *StoreRDMSubDevices::s_pThis = nullptr;
 
 StoreRDMSubDevices::StoreRDMSubDevices() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

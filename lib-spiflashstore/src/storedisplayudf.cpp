@@ -23,40 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storedisplayudf.h"
 
-#include "displayudfparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
-StoreDisplayUdf *StoreDisplayUdf::s_pThis = 0;
+StoreDisplayUdf *StoreDisplayUdf::s_pThis = nullptr;
 
 StoreDisplayUdf::StoreDisplayUdf() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}
-
-void StoreDisplayUdf::Update(const struct TDisplayUdfParams *ptDisplayUdfParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
-
-	DEBUG_EXIT
-}
-
-void StoreDisplayUdf::Copy(struct TDisplayUdfParams *ptDisplayUdfParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
-
 	DEBUG_EXIT
 }

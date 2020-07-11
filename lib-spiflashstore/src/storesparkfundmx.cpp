@@ -35,7 +35,7 @@
 
 #include "debug.h"
 
-StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = 0;
+StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = nullptr;
 
 #define STORE_SPARKFUN_MAX_SIZE			96
 #define STORE_SPARKFUN_MAX_MOTORS		8
@@ -47,6 +47,7 @@ StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = 0;
 StoreSparkFunDmx::StoreSparkFunDmx() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

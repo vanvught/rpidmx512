@@ -32,11 +32,11 @@ class StoreSparkFunDmx: public SparkFunDmxParamsStore {
 public:
 	StoreSparkFunDmx();
 
-	void Update(const struct TSparkFunDmxParams *pSparkFunDmxParams);
-	void Copy(struct TSparkFunDmxParams *pSparkFunDmxParams);
+	void Update(const struct TSparkFunDmxParams *pSparkFunDmxParams) override;
+	void Copy(struct TSparkFunDmxParams *pSparkFunDmxParams) override;
 
-	void Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams);
-	void Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams);
+	void Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams) override;
+	void Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams) override;
 
 	static StoreSparkFunDmx *Get() {
 		return s_pThis;

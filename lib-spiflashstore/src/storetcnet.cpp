@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storetcnet.h"
 
 #include "debug.h"
 
-StoreTCNet *StoreTCNet::s_pThis = 0;
+StoreTCNet *StoreTCNet::s_pThis = nullptr;
 
 StoreTCNet::StoreTCNet() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

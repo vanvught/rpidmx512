@@ -29,8 +29,6 @@
 #include <stdint.h>
 
 #include "storenetwork.h"
-#include "storeartnet.h"
-#include "storeartnet4.h"
 
 #define SPI_FLASH_STORE_SIZE	4096
 
@@ -105,12 +103,9 @@ private:
 	uint32_t m_nStartAddress;
 	uint32_t m_nSpiFlashStoreSize;
 	TStoreState m_tState;
-
-	alignas(uintptr_t) uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
+	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
 
 	StoreNetwork m_StoreNetwork;
-	StoreArtNet m_StoreArtNet;
-	StoreArtNet4 m_StoreArtNet4;
 
 	static SpiFlashStore *s_pThis;
 };

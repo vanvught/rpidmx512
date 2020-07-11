@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storews28xxdmx.h"
 
 #include "debug.h"
 
-StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = 0;
+StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = nullptr;
 
 StoreWS28xxDmx::StoreWS28xxDmx() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

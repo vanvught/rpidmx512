@@ -23,40 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "storeoscclient.h"
 
-#include "oscclientparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
 
-StoreOscClient *StoreOscClient::s_pThis = 0;
+StoreOscClient *StoreOscClient::s_pThis = nullptr;
 
 StoreOscClient::StoreOscClient() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
 
-void StoreOscClient::Update(const struct TOscClientParams* pOscClientParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
-
-	DEBUG_EXIT
-}
-
-void StoreOscClient::Copy(struct TOscClientParams* pOscClientParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
-
-	DEBUG_EXIT
-}

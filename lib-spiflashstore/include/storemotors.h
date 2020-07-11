@@ -37,16 +37,16 @@ class StoreMotors: public ModeParamsStore, public MotorParamsStore, public L6470
 public:
 	StoreMotors();
 
-	void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams);
-	void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams);
+	void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams) override;
+	void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams) override;
 
-	void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams);
-	void Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams);
+	void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams) override ;
+	void Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams) override;
 
-	void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params);
-	void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params);
+	void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params) override;
+	void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params) override;
 
-	void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress);
+	void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress) override;
 
 	static StoreMotors *Get() {
 		return s_pThis;

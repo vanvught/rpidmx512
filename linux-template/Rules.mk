@@ -29,6 +29,8 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 	LIBS+=spiflashstore spiflashinstall spiflash
 endif
 
+LIBS+=network properties hal debug
+
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
 		LIBS+=bob
@@ -41,8 +43,6 @@ ifeq ($(detected_OS),Linux)
 		DEFINES+=-DRASPPI
 	endif
 endif
-
-LIBS+=network properties hal debug
 
 ifeq ($(findstring displayudf,$(LIBS)),displayudf)
 endif

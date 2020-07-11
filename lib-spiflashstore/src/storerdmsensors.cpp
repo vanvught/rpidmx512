@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storerdmsensors.h"
 
 #include "debug.h"
 
-StoreRDMSensors *StoreRDMSensors::s_pThis = 0;
+StoreRDMSensors *StoreRDMSensors::s_pThis = nullptr;
 
 StoreRDMSensors::StoreRDMSensors() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

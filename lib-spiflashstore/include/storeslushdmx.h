@@ -32,11 +32,11 @@ class StoreSlushDmx: public SlushDmxParamsStore {
 public:
 	StoreSlushDmx();
 
-	void Update(const struct TSlushDmxParams *pSlushDmxParams);
-	void Copy(struct TSlushDmxParams *pSlushDmxParams);
+	void Update(const struct TSlushDmxParams *pSlushDmxParams) override;
+	void Copy(struct TSlushDmxParams *pSlushDmxParams) override;
 
-	void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams);
-	void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams);
+	void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams) override;
+	void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams) override;
 
 	static StoreSlushDmx *Get() {
 		return s_pThis;

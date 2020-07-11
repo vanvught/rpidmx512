@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storemonitor.h"
 
 #include "debug.h"
 
-StoreMonitor *StoreMonitor::s_pThis = 0;
+StoreMonitor *StoreMonitor::s_pThis = nullptr;
 
 StoreMonitor::StoreMonitor() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

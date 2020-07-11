@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "storeremoteconfig.h"
 
 #include "debug.h"
 
-StoreRemoteConfig *StoreRemoteConfig::s_pThis = 0;
+StoreRemoteConfig *StoreRemoteConfig::s_pThis = nullptr;
 
 StoreRemoteConfig::StoreRemoteConfig() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));

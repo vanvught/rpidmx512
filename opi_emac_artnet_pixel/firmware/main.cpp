@@ -39,6 +39,7 @@
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet.h"
 #include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
@@ -85,7 +86,10 @@ void notmain(void) {
 	StoreWS28xxDmx storeWS28xxDmx;
 	StoreTLC59711 storeTLC59711;
 
-	ArtNet4Params artnetparams(StoreArtNet4::Get());
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+
+	ArtNet4Params artnetparams(&storeArtNet4);
 
 	if (artnetparams.Load()) {
 		artnetparams.Dump();

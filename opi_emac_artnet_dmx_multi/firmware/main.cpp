@@ -36,12 +36,13 @@
 #include "storedisplayudf.h"
 
 #include "networkconst.h"
-#include "artnetmsgconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
+#include "storeartnet.h"
 #include "storeartnet4.h"
 #include "artnetreboot.h"
+#include "artnetmsgconst.h"
 
 #include "artnetdiscovery.h"
 #include "ipprog.h"
@@ -84,13 +85,16 @@ void notmain(void) {
 	StoreDmxSend storeDmxSend;
 	StoreRDMDevice storeRdmDevice;
 
-	ArtNet4Params artnetParams(StoreArtNet4::Get());
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
 
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
+	ArtNet4Params artnetparams(&storeArtNet4);
+
+	if (artnetparams.Load()) {
+		artnetparams.Dump();
 	}
 
-	const TArtNetPortDir portDir = artnetParams.GetDirection();
+	const TArtNetPortDir portDir = artnetparams.GetDirection();
 
 	fw.Print();
 
@@ -102,7 +106,7 @@ void notmain(void) {
 		console_puts("DMX Output");
 		console_set_fg_color(CONSOLE_WHITE);
 		console_puts(" / ");
-		console_set_fg_color((artnetParams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
+		console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
 		console_puts("RDM");
 	}
 	console_set_fg_color(CONSOLE_WHITE);
@@ -127,7 +131,7 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	artnetParams.Set(&node);
+	artnetparams.Set(&node);
 
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
@@ -137,26 +141,26 @@ void notmain(void) {
 	bool bIsSetIndividual = false;
 	bool bIsSet;
 
-	nAddress = artnetParams.GetUniverse(0, bIsSet);
+	nAddress = artnetparams.GetUniverse(0, bIsSet);
 
 	if (bIsSet) {
 		node.SetUniverseSwitch(0, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
 
-	nAddress = artnetParams.GetUniverse(1, bIsSet);
+	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(1, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
 #if defined (ORANGE_PI_ONE)
-	nAddress = artnetParams.GetUniverse(2, bIsSet);
+	nAddress = artnetparams.GetUniverse(2, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(2, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
 #ifndef DO_NOT_USE_UART0
-	nAddress = artnetParams.GetUniverse(3, bIsSet);
+	nAddress = artnetparams.GetUniverse(3, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(3, portDir, nAddress);
 		bIsSetIndividual = true;
@@ -165,12 +169,12 @@ void notmain(void) {
 #endif
 
 	if (!bIsSetIndividual) { // Backwards compatibility
-		node.SetUniverseSwitch(0, portDir, 0 + artnetParams.GetUniverse());
-		node.SetUniverseSwitch(1, portDir, 1 + artnetParams.GetUniverse());
+		node.SetUniverseSwitch(0, portDir, 0 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(1, portDir, 1 + artnetparams.GetUniverse());
 #if defined (ORANGE_PI_ONE)
-		node.SetUniverseSwitch(2, portDir, 2 + artnetParams.GetUniverse());
+		node.SetUniverseSwitch(2, portDir, 2 + artnetparams.GetUniverse());
 #ifndef DO_NOT_USE_UART0
-		node.SetUniverseSwitch(3, portDir, 3 + artnetParams.GetUniverse());
+		node.SetUniverseSwitch(3, portDir, 3 + artnetparams.GetUniverse());
 #endif
 #endif
 	}
@@ -205,7 +209,7 @@ void notmain(void) {
 		pDiscovery = new ArtNetRdmController;
 		assert(pDiscovery != 0);
 
-		if(artnetParams.IsRdm()) {
+		if(artnetparams.IsRdm()) {
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
@@ -216,7 +220,7 @@ void notmain(void) {
 			pDiscovery->Init();
 			pDiscovery->Print();
 
-			if (artnetParams.IsRdmDiscovery()) {
+			if (artnetparams.IsRdmDiscovery()) {
 				display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
 				for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
@@ -233,7 +237,7 @@ void notmain(void) {
 
 	node.Print();
 
-	display.SetTitle("Art-Net 4 %s", artnetParams.GetDirection() == ARTNET_INPUT_PORT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
+	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == ARTNET_INPUT_PORT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
 	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
@@ -250,9 +254,9 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	const uint32_t nActivePorts = (artnetParams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetParams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, nActivePorts);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 
