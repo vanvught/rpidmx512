@@ -52,7 +52,7 @@ static const _pcast32 s_ip_end   __attribute__ ((aligned (4))) = { .u8 = { 169, 
 static uint8_t s_mac_address[6] __attribute__ ((aligned (4)));
 static uint8_t s_mac_address_arp_reply[6] __attribute__ ((aligned (4)));
 
-void rfc3927_init(const uint8_t *mac_address) {
+void __attribute__((cold)) rfc3927_init(const uint8_t *mac_address) {
 	memcpy(s_mac_address, mac_address, ETH_ADDR_LEN);
 }
 

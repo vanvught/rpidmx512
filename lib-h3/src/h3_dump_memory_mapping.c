@@ -27,7 +27,7 @@
 
 #include "h3.h"
 
-void h3_dump_memory_mapping(void) {
+void __attribute__((cold)) h3_dump_memory_mapping(void) {
 	printf("4.1 Memory Mapping\n");
 	printf("DMA       %p\n", (void *)H3_DMA_BASE);
 	printf("SD/MMC0   %p\n", (void *)H3_SD_MMC0_BASE);

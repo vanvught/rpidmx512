@@ -60,7 +60,7 @@ static void uart_clock_init(void) {
 	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
 }
 
-void uart0_init(void) {
+void __attribute__((cold)) uart0_init(void) {
 	uart_gpio_init();
 	uart_clock_init();
 

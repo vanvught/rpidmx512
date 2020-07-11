@@ -535,7 +535,7 @@ void h3_codec_begin(void) {
 #endif
 }
 
-void h3_codec_start(void) {
+void __attribute__((cold)) h3_codec_start(void) {
 	H3_AC->DAC_DAP_CTR = 0;
 
 #ifndef NDEBUG

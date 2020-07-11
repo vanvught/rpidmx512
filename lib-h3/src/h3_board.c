@@ -31,7 +31,7 @@
 #define OUT_L(g)			g, PORT_LETTER(g), H3_GPIO_TO_NUMBER(g)
 #define OUT_R(g)			PORT_LETTER(g), H3_GPIO_TO_NUMBER(g), g
 
-void h3_board_dump(void) {
+void __attribute__((cold)) h3_board_dump(void) {
 	printf("%s\n", H3_BOARD_NAME);
 	printf("              3V3 PWR   1 :  2 5V PWR\n");
 	printf("I2C%d SDA  GPIO%-3d P%c%-2d  3 :  4 5V PWR\n", EXT_I2C_NUMBER, OUT_L(GPIO_EXT_3));

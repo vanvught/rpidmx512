@@ -58,7 +58,7 @@ static uint8_t s_multicast_mac[ETH_ADDR_LEN] = {0x01, 0x00, 0x5E}; // Fixed part
  static volatile uint32_t s_ticker ;
 #endif
 
-void arp_cache_init(void) {
+void __attribute__((cold)) arp_cache_init(void) {
 	uint16_t i;
 
 	s_entry_current = 0;

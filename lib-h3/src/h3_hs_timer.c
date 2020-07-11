@@ -33,7 +33,7 @@
 #define CTRL_START		(1 << 0)
 #define CTRL_RELOAD		(1 << 1)
 
-void h3_hs_timer_init(void) {
+void __attribute__((cold)) h3_hs_timer_init(void) {
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_HSTMR;
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_HSTMR;
 

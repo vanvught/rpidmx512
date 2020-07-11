@@ -74,7 +74,7 @@ void igmp_set_ip(const struct ip_info  *p_ip_info) {
 	memcpy(s_leave.ip4.src, src.u8, IPv4_ADDR_LEN);
 }
 
-void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
+void __attribute__((cold)) igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	uint32_t i;
 
 	for (i = 0; i < MAX_JOINS_ALLOWED ; i++) {
@@ -133,7 +133,7 @@ void igmp_init(uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_leave.igmp.report.igmp.max_resp_time = 0;
 }
 
-void igmp_shutdown(void) {
+void __attribute__((cold)) igmp_shutdown(void) {
 	DEBUG1_ENTRY
 
 	uint32_t i;

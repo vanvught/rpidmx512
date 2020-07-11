@@ -55,13 +55,13 @@ void ip_set_ip(const struct ip_info *p_ip_info) {
 	icmp_set_ip(p_ip_info);
 }
 
-void ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
+void __attribute__((cold)) ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
 	udp_init(mac_address, p_ip_info);
 	igmp_init(mac_address, p_ip_info);
 	icmp_init(mac_address, p_ip_info);
 }
 
-void ip_shutdown(void) {
+void __attribute__((cold)) ip_shutdown(void) {
 	icmp_shutdown();
 	igmp_shutdown();
 	udp_shutdown();

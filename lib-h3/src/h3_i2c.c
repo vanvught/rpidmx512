@@ -362,7 +362,7 @@ static int _write(char *buffer, int len) {
 	return ret0;
 }
 
-void h3_i2c_begin(void) {
+void __attribute__((cold)) h3_i2c_begin(void) {
 	h3_gpio_fsel(EXT_I2C_SCL, ALT_FUNCTION_SCK);
 	h3_gpio_fsel(EXT_I2C_SDA, ALT_FUNCTION_SDA);
 
@@ -401,7 +401,7 @@ void h3_i2c_begin(void) {
 #endif
 }
 
-void h3_i2c_end(void) {
+void __attribute__((cold)) h3_i2c_end(void) {
 #if (EXT_I2C_NUMBER == 0)
 	H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_TWI0;
 	H3_CCU->BUS_SOFT_RESET4 &= ~CCU_BUS_SOFT_RESET4_TWI0;

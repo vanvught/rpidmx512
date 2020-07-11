@@ -36,7 +36,7 @@ static volatile uint32_t s_ticker;
 
 #define INTERVAL_US (100*1000)	// 100 msec, 1/10 second
 
-void net_timers_init(void) {
+void __attribute__((cold)) net_timers_init(void) {
 	s_ticker = 0;
 }
 

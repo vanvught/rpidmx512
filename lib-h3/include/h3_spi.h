@@ -58,7 +58,7 @@ extern void h3_spi_end(void);
 
 extern void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order);
 extern void h3_spi_set_speed_hz(uint32_t speed_hz);
-extern void h3_spi_setDataMode(h3_spi_mode_t mode);
+extern void h3_spi_setDataMode(uint8_t mode);
 extern void h3_spi_chipSelect(uint8_t chip_select);
 extern void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
 

@@ -105,7 +105,7 @@ void h3_thermal_setalarm(int temp) {
 	H3_THS->ALARM_CTRL = value;
 }
 
-void h3_thermal_init(void) {
+void __attribute__((cold)) h3_thermal_init(void) {
 	uint32_t value = H3_CCU->THS_CLK;
 	value &= ~(CCU_THS_CLK_SRC_MASK);
 	value |= (CCU_THS_CLK_SRC_OSC24M << CCU_THS_CLK_SRC_SHIFT);

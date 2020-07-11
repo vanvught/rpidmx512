@@ -54,7 +54,7 @@ static uint8_t impemented_cpu_interfaces;
 #define GICC_CTL_ENABLE_GRP1	(1 << 1)
 #define GICC_CTL_ENABLE_FIQ		(1 << 3)
 
-void gic_init(void) {
+void __attribute__((cold)) gic_init(void) {
 	unsigned i;
 
 	max_interrupts = (uint16_t) ((H3_GIC_DIST->TYPE & 0x1F) + 1) * 32;

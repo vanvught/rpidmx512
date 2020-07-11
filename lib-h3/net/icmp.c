@@ -52,7 +52,7 @@ void icmp_set_ip(const struct ip_info *p_ip_info) {
 	memcpy(s_reply.ip4.src, src.u8, IPv4_ADDR_LEN);
 }
 
-void icmp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
+void __attribute__((cold)) icmp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	// Ethernet
 	memcpy(s_reply.ether.src, mac_address, ETH_ADDR_LEN);
 	s_reply.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
@@ -68,7 +68,7 @@ void icmp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_reply.icmp.code = ICMP_CODE_ECHO;
 }
 
-void icmp_shutdown(void) {
+void __attribute__((cold)) icmp_shutdown(void) {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT

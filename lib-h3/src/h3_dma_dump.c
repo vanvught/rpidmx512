@@ -29,7 +29,7 @@
 #include "h3_dma.h"
 #include "h3.h"
 
-void h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
+void __attribute__((cold)) h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
 	printf("DMA lli %p:\n", (void *)lli);
 	printf("\tcfg        0x%08x\n", lli->cfg);
 	printf("\tsrc        0x%08x\n", lli->src);
@@ -40,7 +40,7 @@ void h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
 	printf("\n");
 }
 
-void h3_dma_dump_common(void) {
+void __attribute__((cold)) h3_dma_dump_common(void) {
 	printf("DMA common registers:\n");
 	printf("\t[%p] IRQ_EN0    0x%08x\n", &H3_DMA->IRQ_EN0, H3_DMA->IRQ_EN0);
 	printf("\t[%p] IRQ_EN1    0x%08x\n", &H3_DMA->IRQ_EN1, H3_DMA->IRQ_EN1);

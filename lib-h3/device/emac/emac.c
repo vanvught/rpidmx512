@@ -352,7 +352,7 @@ void _autonegotiation(void) {
 
 }
 
-void emac_start(__attribute__((unused)) bool reset_emac) {
+void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
 	uint32_t value;
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;

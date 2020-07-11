@@ -504,7 +504,7 @@ out:
 	return 0;
 }
 
-int sunxi_mmc_init(void) {
+int __attribute__((cold)) sunxi_mmc_init(void) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("mmc driver ver %s",__DATE__ " " __TIME__);
 

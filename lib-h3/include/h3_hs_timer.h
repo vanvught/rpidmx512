@@ -32,7 +32,7 @@
 extern "C" {
 #endif
 
-inline static uint32_t h3_hs_timer_lo_us(void) {
+inline static uint32_t h3_hs_timer_lo_us() {
 	return ~(H3_HS_TIMER->CURNT_LO / 100);
 }
 

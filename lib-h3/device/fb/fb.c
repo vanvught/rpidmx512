@@ -63,7 +63,7 @@ struct de_ui {
 #define SUNXI_DE2_MUX_CHAN_REGS		0x02000
 #define SUNXI_DE2_MUX_CHAN_SZ		0x1000
 
-int fb_init(void) {
+int __attribute__((cold)) fb_init(void) {
 	const uint32_t de_mux_base = SUNXI_DE2_MUX0_BASE;
 	struct de_ui * const de_ui_regs = (struct de_ui *) (de_mux_base + SUNXI_DE2_MUX_CHAN_REGS + SUNXI_DE2_MUX_CHAN_SZ * 1);
 

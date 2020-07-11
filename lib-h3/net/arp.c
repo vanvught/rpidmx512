@@ -103,7 +103,7 @@ void arp_handle_reply(struct t_arp *p_arp) {
 	DEBUG2_EXIT
 }
 
-void arp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
+void __attribute__((cold)) arp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	arp_cache_init();
 
 	const uint32_t local_ip = p_ip_info->ip.addr;

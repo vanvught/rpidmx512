@@ -83,7 +83,7 @@ void irq_timer_set(_irq_timers timer, thunk_irq_timer_t func) {
 	isb();
 }
 
-void irq_timer_init(void) {
+void __attribute__((cold)) irq_timer_init(void) {
 	arm_install_handler((unsigned) irq_timer_handler, ARM_VECTOR(ARM_VECTOR_IRQ));
 
 	gic_irq_config(H3_TIMER0_IRQn, GIC_CORE0);

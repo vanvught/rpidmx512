@@ -241,7 +241,7 @@ static void _interrupt_handler(void) {
 	EXT_SPI->IS = intr;
 }
 
-void h3_spi_begin(void) {
+void __attribute__((cold)) h3_spi_begin(void) {
 	h3_gpio_fsel(EXT_SPI_CS, ALT_FUNCTION_CS);
 	h3_gpio_fsel(EXT_SPI_CLK, ALT_FUNCTION_CLK);
 	h3_gpio_fsel(EXT_SPI_MOSI, ALT_FUNCTION_MOSI);
@@ -302,7 +302,7 @@ void h3_spi_begin(void) {
 #endif
 }
 
-void h3_spi_end(void) {
+void __attribute__((cold)) h3_spi_end(void) {
 	uint32_t value;
 
 	value = EXT_SPI->GC;
@@ -350,7 +350,7 @@ void h3_spi_setBitOrder(h3_spi_bit_order_t bit_order) {
 	EXT_SPI->TC = value;
 }
 
-void h3_spi_setDataMode(h3_spi_mode_t mode) {
+void h3_spi_setDataMode(uint8_t mode) {
 	uint32_t value = EXT_SPI->TC;
 	value &= (uint32_t)~TC_CPHA;
 	value &= (uint32_t)~TC_CPOL;

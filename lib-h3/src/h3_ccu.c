@@ -108,7 +108,7 @@ uint32_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
 	return freq;
 }
 
-void h3_ccu_pll_dump(void) {
+void __attribute__((cold)) h3_ccu_pll_dump(void) {
 #ifndef NDEBUG
 	printf("CCU_PLL_CPUX=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_CPUX));
 	printf("CCU_PLL_AUDIO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_AUDIO));

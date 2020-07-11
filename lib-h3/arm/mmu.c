@@ -126,7 +126,7 @@ uint32_t *mmu_get_page_table(void) {
 	return (uint32_t *) &page_table;
 }
 
-void mmu_enable(void) {
+void __attribute__((cold)) mmu_enable(void) {
 	uint32_t entry;
 	const uint32_t dram_size = h3_get_dram_size(); // This is already in MEGABYTE
 

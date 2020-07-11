@@ -89,7 +89,7 @@ void udp_set_ip(const struct ip_info *p_ip_info) {
 	broadcast_mask = ~(p_ip_info->netmask.addr);
 }
 
-void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
+void __attribute__((cold)) udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	uint32_t i;
 
 	for (i = 0; i < MAX_PORTS_ALLOWED; i++) {
@@ -114,7 +114,7 @@ void udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
 	s_send_packet.udp.checksum = 0;
 }
 
-void udp_shutdown(void) {
+void __attribute__((cold)) udp_shutdown(void) {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT

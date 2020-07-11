@@ -58,7 +58,7 @@ static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* includin
 static uint8_t *s_p __attribute__ ((aligned (4)));
 static bool s_is_dhcp = false;
 
-void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
+void __attribute__((cold)) net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
 	uint32_t i;
 
 	net_set_hostname((char *)hostname);
@@ -93,7 +93,7 @@ void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8
 	s_is_dhcp = *use_dhcp;
 }
 
-void net_shutdown(void) {
+void __attribute__((cold)) net_shutdown(void) {
 	ip_shutdown();
 
 	if (s_is_dhcp) {
