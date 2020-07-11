@@ -41,9 +41,7 @@
 // Output
 #include "h3/ltcsender.h"
 #include "artnetnode.h"
-#include "tcnet.h"
 #include "rtpmidi.h"
-//
 #include "h3/ltcoutputs.h"
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
@@ -67,17 +65,17 @@ MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
-	assert(m_ptLtcDisabledOutputs != 0);
+	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 }
 
-void MidiReader::Start(void) {
+void MidiReader::Start() {
 	midi_active_set_sense(false); //TODO We do nothing with sense data, yet
 	midi_init(MIDI_DIRECTION_INPUT);
 }
 
-void MidiReader::HandleMtc(void) {
+void MidiReader::HandleMtc() {
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
@@ -97,7 +95,7 @@ void MidiReader::HandleMtc(void) {
 	Update();
 }
 
-void MidiReader::HandleMtcQf(void) {
+void MidiReader::HandleMtcQf() {
 	uint8_t nData1, nData2;
 
 	Midi::Get()->GetMessageData(nData1, nData2);
@@ -131,7 +129,7 @@ void MidiReader::HandleMtcQf(void) {
 	m_nPartPrevious = nPart;
 }
 
-void MidiReader::Update(void) {
+void MidiReader::Update() {
 	if (!m_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_MidiTimeCode));
 	}
@@ -147,7 +145,7 @@ void MidiReader::Update(void) {
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_MidiTimeCode));
 }
 
-void MidiReader::Run(void) {
+void MidiReader::Run() {
 	uint8_t nSystemExclusiveLength;
 	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
@@ -169,8 +167,8 @@ void MidiReader::Run(void) {
 	}
 
 	if (Midi::Get()->GetUpdatesPerSeconde() != 0)  {
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 	}
 }

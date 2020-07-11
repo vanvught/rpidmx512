@@ -89,18 +89,22 @@ private:
 	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
 	int32_t m_nStopSeconds;
 	bool m_bSkipFree;
-	uint8_t m_nFps = 0;
-	TLtcGeneratorDirection m_tDirection = LTC_GENERATOR_FORWARD;
-	float m_fPitchControl = 0;
-	uint32_t m_nPitchTicker = 1;
-	uint32_t m_nPitchPrevious = 0;
-	TLtcGeneratorPitch m_tPitch = LTC_GENERATOR_FASTER;
-	uint32_t m_nTimer0Interval = 0;
-	uint32_t m_nButtons = 0;
-	int m_nHandle = -1;
+	uint8_t m_nFps{0};
+	TLtcGeneratorDirection m_tDirection{LTC_GENERATOR_FORWARD};
+	float m_fPitchControl{0};
+	uint32_t m_nPitchTicker{1};
+	uint32_t m_nPitchPrevious{0};
+	TLtcGeneratorPitch m_tPitch{LTC_GENERATOR_FASTER};
+	uint32_t m_nTimer0Interval{0};
+	uint32_t m_nButtons{0};
+	int m_nHandle{-1};
 	alignas(uint32_t) char m_Buffer[64];
-	uint16_t m_nBytesReceived = 0;
-	bool m_bIsStarted = false;
+	uint16_t m_nBytesReceived{0};
+	enum {
+		STOPPED,
+		STARTED,
+		LIMIT
+	} m_State{STOPPED};
 
 	static LtcGenerator *s_pThis;
 };

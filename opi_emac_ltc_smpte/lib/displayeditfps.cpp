@@ -60,8 +60,8 @@ void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 		}
 	}
 
-	Display::Get()->TextLine(2, Ltc::GetType(static_cast<TTimecodeTypes>(nType)), TC_TYPE_MAX_LENGTH);
-	Ltc7segment::Get()->Show(static_cast<TTimecodeTypes>(nType));
+	Display::Get()->TextLine(2, Ltc::GetType(static_cast<ltc::type>(nType)), TC_TYPE_MAX_LENGTH);
+	Ltc7segment::Get()->Show(static_cast<ltc::type>(nType));
 
 	if (m_bCursorOn) {
 		Display::Get()->SetCursor(display::cursor::ON);

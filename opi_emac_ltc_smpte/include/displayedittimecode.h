@@ -37,8 +37,8 @@ public:
 private:
 	void KeyUp(TLtcTimeCode& timecode);
 	void KeyDown(TLtcTimeCode& timecode);
-	void KeyLeft(void);
-	void KeyRight(void);
+	void KeyLeft();
+	void KeyRight();
 
 private:
 	uint8_t m_nFrames = 0;

@@ -37,21 +37,21 @@ public:
 	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps);
 
 	void Start(bool bAutoStart = false);
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	// Control
-	void ActionStart(void);
-	void ActionStop(void);
+	void ActionStart();
+	void ActionStop();
 	void ActionSetRate(const char *pTimeCodeRate);
 
-	static SystimeReader *Get(void) {
+	static SystimeReader *Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandleUdpRequest(void);
+	void HandleUdpRequest();
 
 private:
 	TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

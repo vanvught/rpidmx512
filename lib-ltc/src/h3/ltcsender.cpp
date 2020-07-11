@@ -35,16 +35,16 @@
 
 LtcSender *LtcSender::s_pThis = nullptr;
 
-LtcSender::LtcSender(void): m_nTypePrevious(TC_TYPE_INVALID) {
-	assert(s_pThis == 0);
+LtcSender::LtcSender(): m_nTypePrevious(ltc::type::INVALID) {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 }
 
-void LtcSender::Start(void) {
+void LtcSender::Start() {
 	h3_codec_begin();
 }
 
-void LtcSender::Stop(void) {
+void LtcSender::Stop() {
 
 }
 

@@ -1,7 +1,7 @@
 /**
  * @file ltcparamscopydisabledoutputs.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@ void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutp
 	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
 	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
 	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
-	pLtcDisabledOutputs->bTCNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::TCNET);
 	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
 	pLtcDisabledOutputs->bNtp = (m_tLtcParams.nEnableNtp == 0);
 	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);

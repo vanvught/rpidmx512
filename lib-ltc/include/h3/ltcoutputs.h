@@ -30,29 +30,29 @@
 
 class LtcOutputs {
 public:
-	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime);
+	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, ltc::source tSource, bool bShowSysTime);
 
-	void Init(void);
+	void Init();
 	void Update(const struct TLtcTimeCode *ptLtcTimeCode);
 	void UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode);
 
-	void ShowSysTime(void);
+	void ShowSysTime();
 
-	void ResetTimeCodeTypePrevious(void) {
-		m_tTimeCodeTypePrevious = TC_TYPE_INVALID;
+	void ResetTimeCodeTypePrevious() {
+		m_tTimeCodeTypePrevious = ltc::type::INVALID;
 	}
 
-	bool IsActiveMax7219(void) {
+	bool IsActiveMax7219() {
 		return !m_tLtcDisabledOutputs.bMax7219;
 	}
 
-	bool IsActiveWS28xx(void) {
+	bool IsActiveWS28xx() {
 		return !m_tLtcDisabledOutputs.bWS28xx;
 	}
 
-	void Print(void);
+	void Print();
 
-	static LtcOutputs* Get(void) {
+	static LtcOutputs* Get() {
 		return s_pThis;
 	}
 
@@ -62,7 +62,7 @@ private:
 private:
 	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
 	bool m_bShowSysTime;
-	TTimecodeTypes m_tTimeCodeTypePrevious;
+	ltc::type m_tTimeCodeTypePrevious;
 	uint32_t m_nMidiQuarterFramePiece;
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];

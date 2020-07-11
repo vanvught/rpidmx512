@@ -34,17 +34,17 @@
 class TCNetReader : public TCNetTimeCode {
 public:
 	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~TCNetReader(void);
+	~TCNetReader();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void Handler(const struct TTCNetTimeCode *pTimeCode);
 
 private:
-	void HandleUdpRequest(void);
+	void HandleUdpRequest();
 
 private:
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

@@ -52,7 +52,6 @@
 
 // Output
 #include "artnetnode.h"
-#include "tcnet.h"
 #include "rtpmidi.h"
 #include "midi.h"
 //
@@ -97,7 +96,7 @@ static volatile bool bIsDropFrameFlagSet = false;
 static volatile bool bTimeCodeAvailable = false;
 static volatile struct _midi_send_tc s_tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
 
-static void __attribute__((interrupt("FIQ"))) fiq_handler(void) {
+static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 	dmb();
 
 	nFiqUsCurrent = h3_hs_timer_lo_us();
@@ -196,12 +195,12 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 
 LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_tTimeCodeTypePrevious(TC_TYPE_INVALID)
+	m_tTimeCodeTypePrevious(ltc::type::INVALID)
 {
 	Ltc::InitTimeCode(const_cast<char*>(aTimeCode));
 }
 
-void LtcReader::Start(void) {
+void LtcReader::Start() {
 	h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_EINT);
 
 	arm_install_handler(reinterpret_cast<unsigned>(fiq_handler), ARM_VECTOR(ARM_VECTOR_FIQ));
@@ -226,7 +225,7 @@ void LtcReader::Start(void) {
 	__enable_fiq();
 }
 
-void LtcReader::Run(void) {
+void LtcReader::Run() {
 	uint8_t TimeCodeType;
 #ifndef NDEBUG
 	char aLimitWarning[16] ALIGNED;
@@ -242,22 +241,22 @@ void LtcReader::Run(void) {
 #ifndef NDEBUG
 		nNowUs =  h3_hs_timer_lo_us();
 #endif
-		TimeCodeType = TC_TYPE_UNKNOWN;
+		TimeCodeType = ltc::type::UNKNOWN;
 
 		dmb();
 		if (bIsDropFrameFlagSet) {
-			TimeCodeType = TC_TYPE_DF;
+			TimeCodeType = ltc::type::DF;
 #ifndef NDEBUG
 			nLimitUs = (1000000.0 / 30);
 #endif
 		} else {
 			if (nUpdatesPerSecond == 24) {
-				TimeCodeType = TC_TYPE_FILM;
+				TimeCodeType = ltc::type::FILM;
 #ifndef NDEBUG
 				nLimitUs = (1000000.0 / 24);
 #endif
 			} else if (nUpdatesPerSecond == 25) {
-				TimeCodeType = TC_TYPE_EBU;
+				TimeCodeType = ltc::type::EBU;
 #ifndef NDEBUG
 				nLimitUs = 1000000 / 25;
 #endif
@@ -265,7 +264,7 @@ void LtcReader::Run(void) {
 #ifndef NDEBUG
 				nLimitUs = (1000000.0 / 30);
 #endif
-				TimeCodeType = TC_TYPE_SMPTE;
+				TimeCodeType = ltc::type::SMPTE;
 			}
 		}
 
@@ -326,8 +325,8 @@ void LtcReader::Run(void) {
 			IsMidiQuarterFrameMessage = false;
 			Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
 		}
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 	}
 }

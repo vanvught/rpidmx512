@@ -44,11 +44,9 @@
 
 // Output
 #include "artnetnode.h"
-#include "tcnet.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
 #include "display.h"
-//
 #include "h3/ltcoutputs.h"
 
 #include "debug.h"
@@ -86,9 +84,9 @@ SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ui
 	m_nBytesReceived(0),
 	m_bIsStarted(false)
 {
-	assert(m_ptLtcDisabledOutputs != 0);
+	assert(m_ptLtcDisabledOutputs != nullptr);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[Ltc::GetType(nFps)];
@@ -109,17 +107,17 @@ void SystimeReader::Start(bool bAutoStart) {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 
 	if (bAutoStart) {
 		ActionStart();
 	}
 }
 
-void SystimeReader::Print(void) {
+void SystimeReader::Print() {
 }
 
-void SystimeReader::ActionStart(void) {
+void SystimeReader::ActionStart() {
 	DEBUG_ENTRY
 
 	if(m_bIsStarted) {
@@ -131,17 +129,17 @@ void SystimeReader::ActionStart(void) {
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-	LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 
 	DEBUG_EXIT
 }
 
-void SystimeReader::ActionStop(void) {
+void SystimeReader::ActionStop() {
 	DEBUG_ENTRY
 
 	m_bIsStarted = false;
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 
 	DEBUG_EXIT
 }
@@ -150,7 +148,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
 	uint8_t nFps;
-	TTimecodeTypes tType;
+	ltc::type tType;
 
 	if (Ltc::ParseTimeCodeRate(pTimeCodeRate, nFps, tType)) {
 		if (nFps != m_nFps) {
@@ -186,7 +184,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
-void SystimeReader::HandleUdpRequest(void) {
+void SystimeReader::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
@@ -235,7 +233,7 @@ void SystimeReader::HandleUdpRequest(void) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void SystimeReader::Run(void) {
+void SystimeReader::Run() {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 

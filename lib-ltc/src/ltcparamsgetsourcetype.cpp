@@ -29,20 +29,22 @@
 
 #include "ltcparams.h"
 
-static constexpr char sSource[LTC_READER_SOURCE_UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
+using namespace ltc;
 
-const char* LtcParams::GetSourceType(TLtcReaderSource tSource) {
-	assert(tSource < LTC_READER_SOURCE_UNDEFINED);
+static constexpr char sSource[source::UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
+
+const char* LtcParams::GetSourceType(ltc::source tSource) {
+	assert(tSource < ltc::source::UNDEFINED);
 
 	return sSource[tSource];
 }
 
-TLtcReaderSource LtcParams::GetSourceType(const char *pType) {
-	for (uint32_t i = 0; i < LTC_READER_SOURCE_UNDEFINED; i++) {
+ltc::source LtcParams::GetSourceType(const char *pType) {
+	for (uint32_t i = 0; i < ltc::source::UNDEFINED; i++) {
 		if (strcasecmp(sSource[i], pType) == 0) {
-			return static_cast<TLtcReaderSource>(i);
+			return static_cast<source>(i);
 		}
 	}
 
-	return LTC_READER_SOURCE_LTC;
+	return ltc::source::LTC;
 }

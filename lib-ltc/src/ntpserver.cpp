@@ -108,11 +108,11 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
 
-	if (pLtcTimeCode->nType == TC_TYPE_FILM) {
+	if (pLtcTimeCode->nType == ltc::type::FILM) {
 		m_nFraction = static_cast<uint32_t>((178956970.625 * pLtcTimeCode->nFrames));
-	} else if (pLtcTimeCode->nType == TC_TYPE_EBU) {
+	} else if (pLtcTimeCode->nType == ltc::type::EBU) {
 		m_nFraction = static_cast<uint32_t>((171798691.8 * pLtcTimeCode->nFrames));
-	} else if ((pLtcTimeCode->nType == TC_TYPE_DF) || (pLtcTimeCode->nType == TC_TYPE_SMPTE)) {
+	} else if ((pLtcTimeCode->nType == ltc::type::DF) || (pLtcTimeCode->nType == ltc::type::SMPTE)) {
 		m_nFraction = static_cast<uint32_t>((143165576.5 * pLtcTimeCode->nFrames));
 	} else {
 		assert(0);

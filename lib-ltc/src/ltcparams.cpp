@@ -39,13 +39,15 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
+using namespace ltc;
+
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	memset(&m_tLtcParams, 0, sizeof(struct TLtcParams));
 
 	const time_t ltime = time(nullptr);
 	const struct tm *tm = localtime(&ltime);
 
-	m_tLtcParams.tSource = LTC_READER_SOURCE_LTC;
+	m_tLtcParams.tSource = source::LTC;
 	m_tLtcParams.nYear = tm->tm_year - 100;
 	m_tLtcParams.nMonth = tm->tm_mon + 1;
 	m_tLtcParams.nDay = tm->tm_mday;
@@ -149,7 +151,6 @@ void LtcParams::callbackFunction(const char* pLine) {
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_LTC, LtcParamsMaskDisabledOutputs::LTC);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_MIDI, LtcParamsMaskDisabledOutputs::MIDI);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_ARTNET, LtcParamsMaskDisabledOutputs::ARTNET);
-	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_TCNET, LtcParamsMaskDisabledOutputs::TCNET);
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_RTPMIDI, LtcParamsMaskDisabledOutputs::RTPMIDI);
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, nValue8) == Sscan::OK) {

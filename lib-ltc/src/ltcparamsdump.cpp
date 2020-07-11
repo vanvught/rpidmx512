@@ -37,7 +37,7 @@ void LtcParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::FILE_NAME);
 
 	if (isMaskSet(LtcParamsMask::SOURCE)) {
-		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType(static_cast<TLtcReaderSource>(m_tLtcParams.tSource)));
+		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType(static_cast<ltc::source>(m_tLtcParams.tSource)));
 	}
 
 	if (isMaskSet(LtcParamsMask::AUTO_START)) {

@@ -42,12 +42,12 @@ enum class RunStatus {
 	IDLE, CONTINUE, REBOOT, TC_RESET
 };
 
-class SourceSelect {
+class McpButtons {
 public:
-	SourceSelect(TLtcReaderSource tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds);
+	McpButtons(ltc::source tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds);
 
 	bool Check();
-	bool Wait(TLtcReaderSource& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
+	bool Wait(ltc::source& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
 
 	bool IsConnected() {
 		return m_bIsConnected;
@@ -57,11 +57,11 @@ public:
 
 private:
 	void LedBlink(uint8_t nPortB);
-	void HandleActionLeft(TLtcReaderSource& tLtcReaderSource);
-	void HandleActionRight(TLtcReaderSource& tLtcReaderSource);
-	void HandleActionSelect(const TLtcReaderSource& tLtcReaderSource);
-	void HandleRotary(uint8_t nInputAB, TLtcReaderSource& tLtcReaderSource);
-	void UpdateDisplays(const TLtcReaderSource& tLtcReaderSource);
+	void HandleActionLeft(ltc::source& tLtcReaderSource);
+	void HandleActionRight(ltc::source& tLtcReaderSource);
+	void HandleActionSelect(const ltc::source& tLtcReaderSource);
+	void HandleRotary(uint8_t nInputAB, ltc::source& tLtcReaderSource);
+	void UpdateDisplays(const ltc::source& tLtcReaderSource);
 	// Running mode
 	void HandleRunActionSelect();
 	void SetRunState(RunStatus tRunState);
@@ -81,7 +81,7 @@ private:
 		EDIT_TIMECODE_STOP,
 		EDIT_FPS
 	} m_State = SOURCE_SELECT;
-	TLtcReaderSource m_tLtcReaderSource;
+	ltc::source m_tLtcReaderSource;
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bUseAltFunction;
 	int32_t m_nSkipSeconds;

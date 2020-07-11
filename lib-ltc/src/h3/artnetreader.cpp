@@ -42,7 +42,6 @@
 #include "artnettimecode.h"
 
 // Output
-#include "tcnet.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
 #include "h3/ltcoutputs.h"
@@ -60,10 +59,10 @@ static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_ptLtcDisabledOutputs(pLtcDisabledOutputs)
 {
-	assert(m_ptLtcDisabledOutputs != 0);
+	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
-void ArtNetReader::Start(void) {
+void ArtNetReader::Start() {
 	irq_timer_init();
 
 	irq_timer_set(IRQ_TIMER_0, reinterpret_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
@@ -73,11 +72,11 @@ void ArtNetReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 }
 
-void ArtNetReader::Stop(void) {
-	irq_timer_set(IRQ_TIMER_0, 0);
+void ArtNetReader::Stop() {
+	irq_timer_set(IRQ_TIMER_0, nullptr);
 }
 
 void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
@@ -96,14 +95,14 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 }
 
-void ArtNetReader::Run(void) {
+void ArtNetReader::Run() {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 	}
 }

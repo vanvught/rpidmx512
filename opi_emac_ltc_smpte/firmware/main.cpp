@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <mcpbuttonsconst.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -59,16 +60,15 @@
 #include "ntpserver.h"
 #include "ntpclient.h"
 
-#include "oscserver.h"
-
 #include "display.h"
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayws28xx.h"
 
 #include "networkhandleroled.h"
 
-#include "sourceselect.h"
-#include "sourceselectconst.h"
+#include "mcpbuttons.h"
+
+#include "ltcoscserver.h"
 
 #include "ntpserver.h"
 
@@ -181,18 +181,18 @@ void notmain(void) {
 
 	NetworkHandlerOled::Get()->ShowIp();
 
-	TLtcReaderSource source = ltcParams.GetSource();
+	ltc::source ltcSource = ltcParams.GetSource();
 
 	/**
 	 * Select the source using buttons/rotary
 	 */
 
-	const bool IsAutoStart = ((source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsAutoStart());
+	const bool IsAutoStart = ((ltcSource == ltc::source::SYSTIME) && ltcParams.IsAutoStart());
 
-	SourceSelect sourceSelect(source, &tLtcDisabledOutputs, ltcParams.IsAltFunction(), ltcParams.GetSkipSeconds());
+	McpButtons sourceSelect(ltcSource, &tLtcDisabledOutputs, ltcParams.IsAltFunction(), ltcParams.GetSkipSeconds());
 
 	if (sourceSelect.Check() && !IsAutoStart) {
-		while (sourceSelect.Wait(source, tStartTimeCode, tStopTimeCode)) {
+		while (sourceSelect.Wait(ltcSource, tStartTimeCode, tStopTimeCode)) {
 			nw.Run();
 			lb.Run();
 		}
@@ -202,18 +202,18 @@ void notmain(void) {
 	 * From here work with source selection
 	 */
 
-	Reboot reboot(source);
+	Reboot reboot(ltcSource);
 	hw.SetRebootHandler(&reboot);
 
 	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 
-	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, source, ltcParams.IsShowSysTime());
+	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, ltcSource, ltcParams.IsShowSysTime());
 
 	/**
 	 * Art-Net
 	 */
 
-	const bool bRunArtNet = ((source == LTC_READER_SOURCE_ARTNET) || (!tLtcDisabledOutputs.bArtNet));
+	const bool bRunArtNet = ((ltcSource == ltc::source::ARTNET) || (!tLtcDisabledOutputs.bArtNet));
 
 	ArtNetNode node;
 	IpProg ipprog;
@@ -222,7 +222,7 @@ void notmain(void) {
 	if (bRunArtNet) {
 		display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-		ArtNetParams artnetparams(StoreArtNet::Get());
+		ArtNetParams artnetparams(new StoreArtNet);
 
 		if (artnetparams.Load()) {
 			artnetparams.Set(&node);
@@ -249,7 +249,7 @@ void notmain(void) {
 	 * TCNet
 	 */
 
-	const bool bRunTCNet = (source == LTC_READER_SOURCE_TCNET);
+	const bool bRunTCNet = (ltcSource == ltc::source::TCNET);
 
 	TCNet tcnet(TCNET_TYPE_SLAVE);
 	StoreTCNet storetcnet;
@@ -272,7 +272,7 @@ void notmain(void) {
 
 	Midi midi;
 
-	if (source != LTC_READER_SOURCE_MIDI) {
+	if (ltcSource != ltc::source::MIDI) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
 
@@ -282,7 +282,7 @@ void notmain(void) {
 	 * RTP-MIDI
 	 */
 
-	const bool bRunRtpMidi = ((source == LTC_READER_SOURCE_APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
+	const bool bRunRtpMidi = ((ltcSource == ltc::source::APPLEMIDI) || (!tLtcDisabledOutputs.bRtpMidi));
 
 	RtpMidi rtpMidi;
 
@@ -298,7 +298,7 @@ void notmain(void) {
 
 	LtcSender ltcSender;
 
-	if ((source != LTC_READER_SOURCE_LTC) && (!tLtcDisabledOutputs.bLtc)) {
+	if ((ltcSource != ltc::source::LTC) && (!tLtcDisabledOutputs.bLtc)) {
 		ltcSender.Start();
 	}
 
@@ -306,9 +306,9 @@ void notmain(void) {
 	 * The OSC Server is running when enabled AND source = TCNet OR Internal OR System-Time
 	 */
 
-	const bool bRunOSCServer = ((source == LTC_READER_SOURCE_TCNET || source == LTC_READER_SOURCE_INTERNAL || source == LTC_READER_SOURCE_SYSTIME) && ltcParams.IsOscEnabled());
+	const bool bRunOSCServer = ((ltcSource == ltc::source::TCNET || ltcSource == ltc::source::INTERNAL || ltcSource == ltc::source::SYSTIME) && ltcParams.IsOscEnabled());
 
-	OSCServer oscServer;
+	LtcOscServer oscServer;
 
 	if (bRunOSCServer) {
 		bool isSet;
@@ -348,27 +348,27 @@ void notmain(void) {
 	 * Start the reader
 	 */
 
-	switch (source) {
-	case LTC_READER_SOURCE_ARTNET:
+	switch (ltcSource) {
+	case ltc::source::ARTNET:
 		node.SetTimeCodeHandler(&artnetReader);
 		artnetReader.Start();
 		break;
-	case LTC_READER_SOURCE_MIDI:
+	case ltc::source::MIDI:
 		midiReader.Start();
 		break;
-	case LTC_READER_SOURCE_TCNET:
+	case ltc::source::TCNET:
 		tcnet.SetTimeCodeHandler(&tcnetReader);
 		tcnetReader.Start();
 		break;
-	case LTC_READER_SOURCE_INTERNAL:
+	case ltc::source::INTERNAL:
 		ltcGenerator.Start();
 		ltcGenerator.Print();
 		break;
-	case LTC_READER_SOURCE_APPLEMIDI:
+	case ltc::source::APPLEMIDI:
 		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidiReader.Start();
 		break;
-	case LTC_READER_SOURCE_SYSTIME:
+	case ltc::source::SYSTIME:
 		sysTimeReader.Start(ltcParams.IsAutoStart());
 		break;
 	default:
@@ -385,7 +385,7 @@ void notmain(void) {
 	rdmNetLLRPOnly.Print();
 	rdmNetLLRPOnly.Start();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + source);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + ltcSource);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
@@ -396,14 +396,14 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	printf("Source : %s\n", SourceSelectConst::SOURCE[source]);
+	printf("Source : %s\n", McpButtonsConst::SOURCE[ltcSource]);
 
 	// OLED display
 
 	display.ClearLine(4);
-	display.PutString(SourceSelectConst::SOURCE[source]);
+	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
 
-	if (source == LTC_READER_SOURCE_TCNET) {
+	if (ltcSource == ltc::source::TCNET) {
 		TCNetDisplay::Show();
 	}
 
@@ -416,26 +416,26 @@ void notmain(void) {
 		nw.Run();
 
 		// Run the reader
-		switch (source) {
-		case LTC_READER_SOURCE_LTC:
+		switch (ltcSource) {
+		case ltc::source::LTC:
 			ltcReader.Run();
 			break;
-		case LTC_READER_SOURCE_ARTNET:
+		case ltc::source::ARTNET:
 			artnetReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
-		case LTC_READER_SOURCE_MIDI:
+		case ltc::source::MIDI:
 			midiReader.Run();
 			break;
-		case LTC_READER_SOURCE_TCNET:
+		case ltc::source::TCNET:
 			tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
 			break;
-		case LTC_READER_SOURCE_INTERNAL:
+		case ltc::source::INTERNAL:
 			ltcGenerator.Run();		// Handles MIDI Quarter Frame output messages
 			break;
-		case LTC_READER_SOURCE_APPLEMIDI:
+		case ltc::source::APPLEMIDI:
 			rtpMidiReader.Run();	// Handles status led
 			break;
-		case LTC_READER_SOURCE_SYSTIME:
+		case ltc::source::SYSTIME:
 			sysTimeReader.Run();
 			break;
 		default:

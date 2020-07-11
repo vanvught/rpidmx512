@@ -33,13 +33,13 @@ class MidiReader {
 public:
 	MidiReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-	void Start(void);
-	void Run(void);
+	void Start();
+	void Run();
 
 private:
-	void HandleMtc(void);
-	void HandleMtcQf(void);
-	void Update(void);
+	void HandleMtc();
+	void HandleMtcQf();
+	void Update();
 
 private:
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

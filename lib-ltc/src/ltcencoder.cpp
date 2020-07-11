@@ -158,7 +158,7 @@ void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExte
 	 * This converts 30 frame/second time code to the 29.97 frame/second NTSC standard.
 	 */
 
-	if (pLtcTimeCode->nType == TC_TYPE_DF) {
+	if (pLtcTimeCode->nType == ltc::type::DF) {
 		p->Format.bytes[1] |= (1 << 5);
 	}
 
@@ -184,7 +184,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 
 	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
-	if (nType == TC_TYPE_EBU) {
+	if (nType == ltc::type::EBU) {
 		uint8_t b = p->Format.bytes[7];
 		b &= ~(1 << 4);
 		p->Format.bytes[7] = b;
@@ -197,7 +197,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	bool bParityOnes = GetParity(p->Format.words[0]) ^ GetParity(p->Format.words[1]);
 
 	if (!bParityOnes) {
-		if (nType == TC_TYPE_EBU) {
+		if (nType == ltc::type::EBU) {
 			uint8_t b = p->Format.bytes[7];
 			b |= (1 << 4);
 			p->Format.bytes[7] = b;

@@ -34,33 +34,33 @@ static constexpr char aTypes[5][TC_TYPE_MAX_LENGTH + 1] =
 	{ "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps", "----- -----" };
 
 
-const char* Ltc::GetType(TTimecodeTypes tTimeCodeType) {
-	if (tTimeCodeType > TC_TYPE_UNKNOWN) {
-		return aTypes[TC_TYPE_UNKNOWN];
+const char* Ltc::GetType(ltc::type tTimeCodeType) {
+	if (tTimeCodeType > ltc::type::UNKNOWN) {
+		return aTypes[ltc::type::UNKNOWN];
 	}
 
 	return aTypes[tTimeCodeType];
 }
 
-TTimecodeTypes Ltc::GetType(uint8_t nFps) {
+ltc::type Ltc::GetType(uint8_t nFps) {
 	switch (nFps) {
 		case 24:
-			return TC_TYPE_FILM;
+			return ltc::type::FILM;
 			break;
 		case 25:
-			return TC_TYPE_EBU;
+			return ltc::type::EBU;
 			break;
 		case 29:
-			return TC_TYPE_DF;
+			return ltc::type::DF;
 			break;
 		case 30:
-			return TC_TYPE_SMPTE;
+			return ltc::type::SMPTE;
 			break;
 		default:
 			break;
 	}
 
-	return TC_TYPE_UNKNOWN;
+	return ltc::type::UNKNOWN;
 }
 
 static void itoa_base10(int arg, char *pBuffer) {
@@ -201,7 +201,7 @@ void Ltc::InitSystemTime(char *pSystemTime) {
 	pSystemTime[LTC_ST_INDEX_COLON_2] = ':';
 }
 
-bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType) {
+bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::type &tType) {
 	int32_t nTenths;
 	int32_t nDigit;
 	int32_t nValue;
@@ -220,16 +220,16 @@ bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTime
 
 	switch (nValue) {
 	case 24:
-		tType = TC_TYPE_FILM;
+		tType = ltc::type::FILM;
 		break;
 	case 25:
-		tType = TC_TYPE_EBU;
+		tType = ltc::type::EBU;
 		break;
 	case 29:
-		tType = TC_TYPE_DF;
+		tType = ltc::type::DF;
 		break;
 	case 30:
-		tType = TC_TYPE_SMPTE;
+		tType = ltc::type::SMPTE;
 		break;
 	default:
 		return false;

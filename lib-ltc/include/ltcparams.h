@@ -114,12 +114,12 @@ public:
 
 	void Dump();
 
-	TLtcReaderSource GetSource() {
-		return static_cast<TLtcReaderSource>(m_tLtcParams.tSource);
+	ltc::source GetSource() {
+		return static_cast<ltc::source>(m_tLtcParams.tSource);
 	}
 
-	const char *GetSourceType(TLtcReaderSource tSource);
-	TLtcReaderSource GetSourceType(const char *pType);
+	const char *GetSourceType(ltc::source tSource);
+	ltc::source GetSourceType(const char *pType);
 
 	bool IsAutoStart() {
 		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LtcParamsMask::AUTO_START));

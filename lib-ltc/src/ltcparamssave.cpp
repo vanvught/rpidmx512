@@ -39,6 +39,8 @@
 
 #include "debug.h"
 
+using namespace ltc;
+
 void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
@@ -52,7 +54,7 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(LtcParamsConst::SOURCE, GetSourceType(static_cast<TLtcReaderSource>(m_tLtcParams.tSource)), isMaskSet(LtcParamsMask::SOURCE));
+	builder.Add(LtcParamsConst::SOURCE, GetSourceType(static_cast<source>(m_tLtcParams.tSource)), isMaskSet(LtcParamsMask::SOURCE));
 
 	builder.AddComment("Disable outputs");
 	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY));
@@ -60,7 +62,6 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC));
 	builder.Add(LtcParamsConst::DISABLE_MIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI));
 	builder.Add(LtcParamsConst::DISABLE_ARTNET, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET));
-	builder.Add(LtcParamsConst::DISABLE_TCNET, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::TCNET), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::TCNET));
 	builder.Add(LtcParamsConst::DISABLE_RTPMIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI));
 
 	builder.AddComment("System clock / RTC");
@@ -80,10 +81,10 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::STOP_MINUTE,  m_tLtcParams.nStopMinute, isMaskSet(LtcParamsMask::STOP_MINUTE));
 	builder.Add(LtcParamsConst::STOP_SECOND, m_tLtcParams.nStopSecond, isMaskSet(LtcParamsMask::STOP_SECOND));
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LtcParamsMask::STOP_FRAME));
-	builder.AddComment("/buttons");
+	builder.Add(LtcParamsConst::SKIP_FREE, m_tLtcParams.nSkipFree, isMaskSet(LtcParamsMask::SKIP_FREE));
+	builder.AddComment("MCP buttons");
 	builder.Add(LtcParamsConst::ALT_FUNCTION, m_tLtcParams.nAltFunction, isMaskSet(LtcParamsMask::ALT_FUNCTION));
 	builder.Add(LtcParamsConst::SKIP_SECONDS, m_tLtcParams.nSkipSeconds, isMaskSet(LtcParamsMask::SKIP_SECONDS));
-	builder.Add(LtcParamsConst::SKIP_FREE, m_tLtcParams.nSkipFree, isMaskSet(LtcParamsMask::SKIP_FREE));
 
 	builder.AddComment("NTP Server");
 	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LtcParamsMask::ENABLE_NTP));

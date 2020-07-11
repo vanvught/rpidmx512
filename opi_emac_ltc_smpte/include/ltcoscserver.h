@@ -1,5 +1,5 @@
 /**
- * @file oscserver.h
+ * @file ltcoscserver.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -32,21 +32,21 @@
 
 #define OSCSERVER_PATH_LENGTH_MAX	128
 
-class OSCServer {
+class LtcOscServer {
 public:
-	OSCServer(void);
-	~OSCServer(void);
+	LtcOscServer();
+	~LtcOscServer();
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void SetPortIncoming(uint16_t nPortIncoming) {
 		m_nPortIncoming = nPortIncoming;
 	}
-	uint16_t GetPortIncoming(void) {
+	uint16_t GetPortIncoming() {
 		return m_nPortIncoming;
 	}
 

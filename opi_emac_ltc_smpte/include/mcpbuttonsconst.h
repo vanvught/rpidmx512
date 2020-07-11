@@ -26,11 +26,10 @@
 #ifndef SOURCESELECTCONST_H_
 #define SOURCESELECTCONST_H_
 
-#include "ltcparams.h"
+#include "ltc.h"
 
-class SourceSelectConst {
-public:
-	static const char SOURCE[LTC_READER_SOURCE_UNDEFINED][12];
+struct McpButtonsConst {
+	static const char SOURCE[ltc::source::UNDEFINED][12];
 };
 
 #endif /* SOURCESELECTCONST_H_ */

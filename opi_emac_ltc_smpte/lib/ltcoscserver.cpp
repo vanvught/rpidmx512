@@ -28,10 +28,11 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "ltcoscserver.h"
+
 #include "tcnetdisplay.h"
 #include "ltcdisplayws28xx.h"
 
-#include "oscserver.h"
 #include "osc.h"
 #include "oscsimplemessage.h"
 
@@ -120,7 +121,7 @@ static constexpr auto MESSAGE = sizeof(cmd::MESSAGE) - 1;
 static constexpr auto VALUE_LENGTH = 11;
 static constexpr auto RATE_VALUE_LENGTH = 2;
 
-OSCServer::OSCServer(void):
+LtcOscServer::LtcOscServer():
 	m_nPortIncoming(osc::port::DEFAULT_INCOMING),
 	m_nHandle(-1),
 	m_nRemoteIp(0),
@@ -128,27 +129,27 @@ OSCServer::OSCServer(void):
 	m_nPathLength(0)
 {
 	m_pBuffer = new char[udp::MAX_BUFFER];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
 
 	DEBUG_PRINTF("%d [%s]", m_nPathLength, m_aPath);
 }
 
-OSCServer::~OSCServer(void) {
+LtcOscServer::~LtcOscServer() {
 	delete[] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 }
 
-void OSCServer::Start(void) {
+void LtcOscServer::Start() {
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
 }
 
-void OSCServer::Stop(void) {
+void LtcOscServer::Stop() {
 }
 
-void OSCServer::Run(void) {
+void LtcOscServer::Run() {
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, udp::MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= 4), 1)) {
@@ -469,7 +470,7 @@ void OSCServer::Run(void) {
 	}
 }
 
-void OSCServer::SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex) {
+void LtcOscServer::SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex) {
 	OscSimpleMessage Msg(m_pBuffer, nSize);
 
 	if (Msg.GetArgc() == 3) {
@@ -485,7 +486,7 @@ void OSCServer::SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex
 	}
 }
 
-void OSCServer::Print(void) {
+void LtcOscServer::Print() {
 	printf("OSC Server\n");
 	printf(" Port : %d\n", m_nPortIncoming);
 	printf(" Path : [%s]\n", m_aPath);

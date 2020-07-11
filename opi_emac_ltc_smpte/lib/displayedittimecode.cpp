@@ -207,7 +207,7 @@ void DisplayEditTimeCode::KeyDown(TLtcTimeCode& timecode) {
 	}
 }
 
-void DisplayEditTimeCode::KeyLeft(void) {
+void DisplayEditTimeCode::KeyLeft() {
 	if (m_nCursorPositionIndex > 0) {
 		m_nCursorPositionIndex--;
 		return;
@@ -215,7 +215,7 @@ void DisplayEditTimeCode::KeyLeft(void) {
 	m_nCursorPositionIndex = s_IndexSize - 1;
 }
 
-void DisplayEditTimeCode::KeyRight(void) {
+void DisplayEditTimeCode::KeyRight() {
 	if (m_nCursorPositionIndex < s_IndexSize) {
 		m_nCursorPositionIndex++;
 		return;

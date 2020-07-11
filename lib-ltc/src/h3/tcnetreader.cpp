@@ -78,14 +78,14 @@ TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_nHandle(-1),
 	m_nBytesReceived(0)
 {
-	assert(m_ptLtcDisabledOutputs != 0);
+	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
-TCNetReader::~TCNetReader(void) {
+TCNetReader::~TCNetReader() {
 	Stop();
 }
 
-void TCNetReader::Start(void) {
+void TCNetReader::Start() {
 	irq_timer_init();
 
 	irq_timer_set(IRQ_TIMER_0, reinterpret_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
@@ -95,15 +95,15 @@ void TCNetReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 
 	// UDP Request
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 }
 
-void TCNetReader::Stop(void) {
-	irq_timer_set(IRQ_TIMER_0, 0);
+void TCNetReader::Stop() {
+	irq_timer_set(IRQ_TIMER_0, nullptr);
 }
 
 void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
@@ -140,7 +140,7 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	}
 }
 
-void TCNetReader::HandleUdpRequest(void) {
+void TCNetReader::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
@@ -224,15 +224,15 @@ void TCNetReader::HandleUdpRequest(void) {
 	DEBUG_PUTS("Invalid command");
 }
 
-void TCNetReader::Run(void) {
+void TCNetReader::Run() {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 	}
 

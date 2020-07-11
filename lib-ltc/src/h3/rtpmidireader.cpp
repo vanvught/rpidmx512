@@ -36,10 +36,8 @@
 
 // Output
 #include "artnetnode.h"
-#include "tcnet.h"
 #include "midi.h"
 #include "h3/ltcsender.h"
-//
 #include "h3/ltcoutputs.h"
 
 // IRQ Timer0
@@ -67,7 +65,7 @@ inline static void itoa_base10(int arg, char *buf) {
 	*n = '0' + (arg % 10);
 }
 
-RtpMidiHandler::~RtpMidiHandler(void) {
+RtpMidiHandler::~RtpMidiHandler() {
 
 }
 
@@ -77,16 +75,16 @@ RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
 	m_nPartPrevious(0),
 	m_bDirection(true)
 {
-	assert(m_ptLtcDisabledOutputs != 0);
+	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 }
 
-RtpMidiReader::~RtpMidiReader(void) {
+RtpMidiReader::~RtpMidiReader() {
 	Stop();
 }
 
-void RtpMidiReader::Start(void) {
+void RtpMidiReader::Start() {
 	irq_timer_init();
 
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
@@ -96,11 +94,11 @@ void RtpMidiReader::Start(void) {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 }
 
-void RtpMidiReader::Stop(void) {
-	irq_timer_set(IRQ_TIMER_0, 0);
+void RtpMidiReader::Stop() {
+	irq_timer_set(IRQ_TIMER_0, nullptr);
 }
 
 void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
@@ -177,7 +175,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 	m_nPartPrevious = nPart;
 }
 
-void RtpMidiReader::Update(void) {
+void RtpMidiReader::Update() {
 	if (!m_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 	}
@@ -189,14 +187,14 @@ void RtpMidiReader::Update(void) {
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 }
 
-void RtpMidiReader::Run(void) {
+void RtpMidiReader::Run() {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 
 	dmb();
 	if (nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 	}
 }

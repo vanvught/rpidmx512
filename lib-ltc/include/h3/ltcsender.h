@@ -30,14 +30,14 @@
 
 class LtcSender: public LtcEncoder {
 public:
-	LtcSender(void);
+	LtcSender();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
 	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
 
-	static LtcSender* Get(void) {
+	static LtcSender* Get() {
 		return s_pThis;
 	}
 

@@ -1,5 +1,5 @@
 /**
- * @file sourceselectinternal.cpp
+ * @file mcpbuttonsinternal.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#include "sourceselect.h"
+#include "mcpbuttons.h"
 
 #include "displayedittimecode.h"
 #include "displayeditfps.h"
@@ -36,7 +36,7 @@
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayws28xx.h"
 
-void SourceSelect::HandleInternalTimeCodeStart(TLtcTimeCode &StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeStart(TLtcTimeCode &StartTimeCode) {
 	displayEditTimeCode.HandleKey(m_nKey, StartTimeCode, m_aTimeCode);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
@@ -50,7 +50,7 @@ void SourceSelect::HandleInternalTimeCodeStart(TLtcTimeCode &StartTimeCode) {
 	HandleInternalKeyEsc();
 }
 
-void SourceSelect::HandleInternalTimeCodeStop(TLtcTimeCode &StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeStop(TLtcTimeCode &StartTimeCode) {
 	displayEditTimeCode.HandleKey(m_nKey, StartTimeCode, m_aTimeCode);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
@@ -64,13 +64,13 @@ void SourceSelect::HandleInternalTimeCodeStop(TLtcTimeCode &StartTimeCode) {
 	HandleInternalKeyEsc();
 }
 
-void SourceSelect::HandleInternalTimeCodeFps(TLtcTimeCode &StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeFps(TLtcTimeCode &StartTimeCode) {
 	displayEditFps.HandleKey(m_nKey, StartTimeCode.nType);
 
 	HandleInternalKeyEsc();
 }
 
-void SourceSelect::HandleInternalKeyEsc(void) {
+void McpButtons::HandleInternalKeyEsc() {
 	if (m_nKey == INPUT_KEY_ESC) {
 		Display::Get()->SetCursor(display::cursor::OFF);
 		Display::Get()->SetCursorPos(0, 0);

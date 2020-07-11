@@ -32,7 +32,7 @@ class Ltc7segment {
 public:
 	Ltc7segment();
 
-	void Show(TTimecodeTypes tTimecodeType);
+	void Show(ltc::type tTimecodeType);
 
 	static Ltc7segment* Get() {
 		return s_pThis;

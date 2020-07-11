@@ -28,6 +28,8 @@
 
 #include "reboothandler.h"
 
+#include "ltc.h"
+
 #include "remoteconfig.h"
 #include "display.h"
 
@@ -42,7 +44,7 @@
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(TLtcReaderSource tSource) :m_tSource(tSource) {
+	Reboot(ltc::source tSource) :m_tSource(tSource) {
 	}
 	~Reboot(void) {
 	}
@@ -51,7 +53,7 @@ public:
 		DEBUG_ENTRY
 
 		switch (m_tSource) {
-		case LTC_READER_SOURCE_TCNET:
+		case ltc::source::TCNET:
 			TCNet::Get()->Stop();
 			break;
 		default:
@@ -86,7 +88,7 @@ public:
 	}
 
 private:
-	TLtcReaderSource m_tSource;
+	ltc::source m_tSource;
 };
 
 #endif /* REBOOT_H_ */

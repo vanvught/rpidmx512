@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "h3/ltcoutputs.h"
+
 #include "ltc.h"
 #include "timecodeconst.h"
 
@@ -57,48 +58,49 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 
 LtcOutputs *LtcOutputs::s_pThis = nullptr;
 
-LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, TLtcReaderSource tSource, bool bShowSysTime):
+using namespace ltc;
+
+LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, source tSource, bool bShowSysTime):
 	m_bShowSysTime(bShowSysTime),
-	m_tTimeCodeTypePrevious(TC_TYPE_INVALID),
+	m_tTimeCodeTypePrevious(ltc::type::INVALID),
 	m_nMidiQuarterFramePiece(0),
 	m_nSecondsPrevious(60)
 {
-	assert(pLtcDisabledOutputs != 0);
+	assert(pLtcDisabledOutputs != nullptr);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	memcpy(&m_tLtcDisabledOutputs, pLtcDisabledOutputs, sizeof(struct TLtcDisabledOutputs));
 
-	m_tLtcDisabledOutputs.bMidi |= (tSource == LTC_READER_SOURCE_MIDI);
-	m_tLtcDisabledOutputs.bArtNet |= (tSource == LTC_READER_SOURCE_ARTNET);
-	m_tLtcDisabledOutputs.bTCNet = true;
-	m_tLtcDisabledOutputs.bLtc |= (tSource == LTC_READER_SOURCE_LTC);
-	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == LTC_READER_SOURCE_APPLEMIDI);
+	m_tLtcDisabledOutputs.bMidi |= (tSource == source::MIDI);
+	m_tLtcDisabledOutputs.bArtNet |= (tSource == source::ARTNET);
+	m_tLtcDisabledOutputs.bLtc |= (tSource == source::LTC);
+	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == source::APPLEMIDI);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
 }
 
-void LtcOutputs::Init(void) {
+void LtcOutputs::Init() {
 	if (!m_tLtcDisabledOutputs.bMidi) {
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 	}
 
 	if (!m_tLtcDisabledOutputs.bDisplay) {
-		Display::Get()->TextLine(2, Ltc::GetType(TC_TYPE_UNKNOWN), TC_TYPE_MAX_LENGTH);
+		Display::Get()->TextLine(2, Ltc::GetType(ltc::type::UNKNOWN), TC_TYPE_MAX_LENGTH);
 	}
 }
 
 void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
-	assert(ptLtcTimeCode != 0);
+	assert(ptLtcTimeCode != nullptr);
 
 	if (!m_tLtcDisabledOutputs.bNtp) {
 		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
 	}
 
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_tTimeCodeTypePrevious)) {
-		m_tTimeCodeTypePrevious = static_cast<TTimecodeTypes>(ptLtcTimeCode->nType);
+		m_tTimeCodeTypePrevious = static_cast<ltc::type>(ptLtcTimeCode->nType);
 
 		if (!m_tLtcDisabledOutputs.bMidi) {
 			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode));
@@ -110,10 +112,10 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 		m_nMidiQuarterFramePiece = 0;
 
 		if (!m_tLtcDisabledOutputs.bDisplay) {
-			Display::Get()->TextLine(2, Ltc::GetType(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType)), TC_TYPE_MAX_LENGTH);
+			Display::Get()->TextLine(2, Ltc::GetType(static_cast<ltc::type>(ptLtcTimeCode->nType)), TC_TYPE_MAX_LENGTH);
 		}
 
-		Ltc7segment::Get()->Show(static_cast<TTimecodeTypes>(ptLtcTimeCode->nType));
+		Ltc7segment::Get()->Show(static_cast<ltc::type>(ptLtcTimeCode->nType));
 	}
 
 	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
@@ -139,9 +141,9 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 	}
 }
 
-void LtcOutputs::ShowSysTime(void) {
+void LtcOutputs::ShowSysTime() {
 	if (m_bShowSysTime) {
-		const time_t tTime = time(0);
+		const time_t tTime = time(nullptr);
 		const struct tm *pLocalTime = localtime(&tTime);
 
 		if (__builtin_expect((m_nSecondsPrevious == pLocalTime->tm_sec), 1)) {
@@ -157,7 +159,7 @@ void LtcOutputs::ShowSysTime(void) {
 			Display::Get()->ClearLine(2);
 		}
 
-		Ltc7segment::Get()->Show(TC_TYPE_UNKNOWN);
+		Ltc7segment::Get()->Show(ltc::type::UNKNOWN);
 
 		if (!m_tLtcDisabledOutputs.bMax7219) {
 			LtcDisplayMax7219::Get()->ShowSysTime(m_aSystemTime);
@@ -177,9 +179,8 @@ void LtcOutputs::PrintDisabled(bool IsDisabled, const char *pString) {
 	}
 }
 
-void LtcOutputs::Print(void) {
+void LtcOutputs::Print() {
 	PrintDisabled(m_tLtcDisabledOutputs.bLtc, "LTC");
-	PrintDisabled(m_tLtcDisabledOutputs.bTCNet, "TCNet");
 	PrintDisabled(m_tLtcDisabledOutputs.bArtNet, "Art-Net");
 	PrintDisabled(m_tLtcDisabledOutputs.bRtpMidi, "AppleMIDI");
 	PrintDisabled(m_tLtcDisabledOutputs.bMidi, "MIDI");

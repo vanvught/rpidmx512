@@ -36,7 +36,6 @@ struct LtcParamsConst {
 	static const char DISABLE_MAX7219[];
 	static const char DISABLE_MIDI[];
 	static const char DISABLE_ARTNET[];
-	static const char DISABLE_TCNET[];
 	static const char DISABLE_LTC[];
 	static const char DISABLE_RTPMIDI[];
 	static const char SHOW_SYSTIME[];

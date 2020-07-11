@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include "sourceselectconst.h"
+#include "mcpbuttonsconst.h"
 
-#include "ltcparams.h"
+#include "ltc.h"
 
-const char SourceSelectConst::SOURCE[LTC_READER_SOURCE_UNDEFINED][12] =
+const char McpButtonsConst::SOURCE[ltc::source::UNDEFINED][12] =
 	{
 		"LTC",
 		"Art-Net",

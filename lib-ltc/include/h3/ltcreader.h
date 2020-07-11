@@ -32,8 +32,8 @@ class LtcReader {
 public:
 	LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-	void Start(void);
-	void Run(void);
+	void Start();
+	void Run();
 
 private:
 	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

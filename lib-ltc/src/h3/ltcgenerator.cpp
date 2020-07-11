@@ -47,11 +47,8 @@
 
 // Output
 #include "artnetnode.h"
-#include "tcnet.h"
 #include "rtpmidi.h"
 #include "h3/ltcsender.h"
-#include "display.h"
-//
 #include "h3/ltcoutputs.h"
 
 #include "debug.h"
@@ -106,7 +103,7 @@ static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 }
 
 static int32_t atoi(const char *pBuffer, uint32_t nSize) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nSize <= 4); // -100
 
 	const char *p = pBuffer;
@@ -214,7 +211,7 @@ void LtcGenerator::Start() {
 
 	LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 
-	LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 
 	DEBUG_EXIT
 }
@@ -223,7 +220,7 @@ void LtcGenerator::Stop() {
 	DEBUG_ENTRY
 
 	__disable_irq();
-	irq_timer_set(IRQ_TIMER_0, 0);
+	irq_timer_set(IRQ_TIMER_0, nullptr);
 
 	m_nHandle = Network::Get()->End(udp::PORT);
 
@@ -233,11 +230,13 @@ void LtcGenerator::Stop() {
 void LtcGenerator::ActionStart(bool bDoReset) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+
+	if (m_State == STARTED) {
+		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = true;
+	m_State = STARTED;
 
 	if (bDoReset) {
 		ActionReset();
@@ -251,7 +250,7 @@ void LtcGenerator::ActionStart(bool bDoReset) {
 void LtcGenerator::ActionStop() {
 	DEBUG_ENTRY
 
-	m_bIsStarted = false;
+	m_State = STOPPED;
 
 	DEBUG_EXIT
 }
@@ -259,8 +258,8 @@ void LtcGenerator::ActionStop() {
 void LtcGenerator::ActionResume() {
 	DEBUG_ENTRY
 
-	if (!m_bIsStarted) {
-		m_bIsStarted = true;
+	if (m_State != STARTED) {
+		m_State = STARTED;
 	}
 
 	DEBUG_EXIT
@@ -300,9 +299,9 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_ENTRY
 
 	uint8_t nFps;
-	TTimecodeTypes tType;
+	ltc::type tType;
 
-	if ((!m_bIsStarted) && (Ltc::ParseTimeCodeRate(pTimeCodeRate, nFps, tType))) {
+	if ((m_State == STOPPED) && (Ltc::ParseTimeCodeRate(pTimeCodeRate, nFps, tType))) {
 		if (nFps != m_nFps) {
 			m_nFps = nFps;
 			//
@@ -396,12 +395,17 @@ void LtcGenerator::ActionSetPitch(float fTimeCodePitch) {
 void LtcGenerator::ActionForward(int32_t nSeconds) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+	if (m_State == STARTED) {
+		DEBUG_EXIT
 		return;
 	}
 
-	constexpr int32_t nMaxSeconds = ((23 * 60) + 59) * 60 + 59;
+	if (m_State == LIMIT) {
+		m_State = STARTED;
+	}
+
 	const int32_t s = GetSeconds(s_tLtcTimeCode) + nSeconds;
+	constexpr int32_t nMaxSeconds = ((23 * 60) + 59) * 60 + 59;
 	const int32_t nLimit = m_bSkipFree ? nMaxSeconds : m_nStopSeconds;
 
 	if (s <= nLimit) {
@@ -416,8 +420,13 @@ void LtcGenerator::ActionForward(int32_t nSeconds) {
 void LtcGenerator::ActionBackward(int32_t nSeconds) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+	if (m_State == STARTED) {
+		DEBUG_EXIT
 		return;
+	}
+
+	if (m_State == LIMIT) {
+		m_State = STARTED;
 	}
 
 	const int32_t s = GetSeconds(s_tLtcTimeCode) - nSeconds;
@@ -609,10 +618,13 @@ void LtcGenerator::HandleUdpRequest() {
 void LtcGenerator::Increment() {
 
 	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
+		if (m_State == STARTED) {
+			m_State = LIMIT;
+		}
 		return;
 	}
 
-	if (__builtin_expect((!m_bIsStarted), 0)) {
+	if (__builtin_expect((m_State == STOPPED), 0)) {
 		return;
 	}
 
@@ -641,11 +653,14 @@ void LtcGenerator::Increment() {
 
 void LtcGenerator::Decrement() {
 
-	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStopLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
+	if (__builtin_expect((memcmp(&s_tLtcTimeCode, m_pStartLtcTimeCode, sizeof(struct TLtcTimeCode)) == 0), 0)) {
+		if (m_State == STARTED) {
+			m_State = LIMIT;
+		}
 		return;
 	}
 
-	if (__builtin_expect((!m_bIsStarted), 0)) {
+	if (__builtin_expect((m_State == STOPPED), 0)) {
 		return;
 	}
 
@@ -693,7 +708,7 @@ bool LtcGenerator::PitchControl() {
 }
 
 void LtcGenerator::Update() {
-	if (m_bIsStarted) {
+	if (m_State != STOPPED) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 	}
 
@@ -747,7 +762,7 @@ void LtcGenerator::Update() {
 
 void LtcGenerator::Print() {
 	printf("Internal\n");
-	printf(" %s\n", Ltc::GetType(static_cast<TTimecodeTypes>(m_pStartLtcTimeCode->nType)));
+	printf(" %s\n", Ltc::GetType(static_cast<ltc::type>(m_pStartLtcTimeCode->nType)));
 	printf(" Start : %.2d.%.2d.%.2d:%.2d\n", m_pStartLtcTimeCode->nHours, m_pStartLtcTimeCode->nMinutes, m_pStartLtcTimeCode->nSeconds, m_pStartLtcTimeCode->nFrames);
 	printf(" Stop  : %.2d.%.2d.%.2d:%.2d\n", m_pStopLtcTimeCode->nHours, m_pStopLtcTimeCode->nMinutes, m_pStopLtcTimeCode->nSeconds, m_pStopLtcTimeCode->nFrames);
 }
@@ -758,9 +773,9 @@ void LtcGenerator::Run() {
 	HandleButtons();
 	HandleUdpRequest();
 
-	if (m_bIsStarted) {
-		LedBlink::Get()->SetFrequency(LedFrequency::DATA);
+	if (m_State == STARTED) {
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(LedFrequency::NO_DATA);
+		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 	}
 }

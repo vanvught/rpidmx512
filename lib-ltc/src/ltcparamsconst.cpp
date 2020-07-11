@@ -34,7 +34,6 @@ const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
 const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";
 const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
 const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
-const char LtcParamsConst::DISABLE_TCNET[] = "disable_tcnet";
 const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
 const char LtcParamsConst::DISABLE_RTPMIDI[] = "disable_rtp-midi";
 const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";

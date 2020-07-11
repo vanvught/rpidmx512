@@ -37,10 +37,10 @@ class ArtNetReader: public ArtNetTimeCode {
 public:
 	ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void Handler(const struct TArtNetTimeCode *);
 

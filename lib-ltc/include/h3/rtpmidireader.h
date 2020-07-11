@@ -34,19 +34,19 @@
 class RtpMidiReader: public RtpMidiHandler {
 public:
 	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~RtpMidiReader(void);
+	~RtpMidiReader();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void MidiMessage(const struct _midi_message *ptMidiMessage);
 
 private:
 	void HandleMtc(const struct _midi_message *ptMidiMessage);
 	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
-	void Update(void);
+	void Update();
 
 private:
 	alignas(uint32_t)  struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;

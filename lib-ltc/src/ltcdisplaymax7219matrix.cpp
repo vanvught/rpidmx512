@@ -32,26 +32,16 @@
 
 #include "max7219matrix.h"
 
-#include "debug.h"
-
 LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = nullptr;
 
 LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
-	DEBUG_ENTRY
-
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	DEBUG_EXIT
 }
 
 void LtcDisplayMax7219Matrix::Init(uint8_t nIntensity) {
-	DEBUG_ENTRY
-
 	Max7219Matrix::Init(SEGMENTS, nIntensity);
 	Max7219Matrix::Write("Waiting", 7);
-
-	DEBUG_EXIT
 }
 
 void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
@@ -81,4 +71,3 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {
 	// TODO Max7219Matrix::WriteChar
 }
-

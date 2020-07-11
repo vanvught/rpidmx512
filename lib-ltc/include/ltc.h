@@ -2,7 +2,7 @@
  * @file ltc.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,20 +29,23 @@
 #include <stdint.h>
 #include <time.h>
 
-#if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
-
-enum TLtcReaderSource {
-	LTC_READER_SOURCE_LTC,
-	LTC_READER_SOURCE_ARTNET,
-	LTC_READER_SOURCE_MIDI,
-	LTC_READER_SOURCE_TCNET,
-	LTC_READER_SOURCE_INTERNAL,
-	LTC_READER_SOURCE_APPLEMIDI,
-	LTC_READER_SOURCE_SYSTIME,
-	LTC_READER_SOURCE_UNDEFINED
+namespace ltc {
+enum source : uint8_t {
+	LTC, ARTNET, MIDI, TCNET, INTERNAL, APPLEMIDI, SYSTIME, UNDEFINED
 };
+enum type : uint8_t {
+	FILM, EBU, DF, SMPTE, UNKNOWN, INVALID = 255
+};
+namespace led_frequency {
+static constexpr uint32_t NO_DATA = 1;
+static constexpr uint32_t DATA = 3;
+}
+}  // namespace ltc
+
+static constexpr uint32_t TC_CODE_MAX_LENGTH = 11;
+static constexpr uint32_t TC_TYPE_MAX_LENGTH = 11;
+static constexpr uint32_t TC_RATE_MAX_LENGTH = 2;
+static constexpr uint32_t TC_SYSTIME_MAX_LENGTH = TC_CODE_MAX_LENGTH;
 
 struct TLtcTimeCode {
 	uint8_t nFrames;		///< Frames time. 0 – 29 depending on mode.
@@ -50,28 +53,13 @@ struct TLtcTimeCode {
 	uint8_t nMinutes;		///< Minutes. 0 - 59.
 	uint8_t nHours;			///< Hours. 0 - 59.
 	uint8_t nType;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
-}PACKED;
-
-enum TTimecodeTypes {
-	TC_TYPE_FILM = 0,
-	TC_TYPE_EBU,
-	TC_TYPE_DF,
-	TC_TYPE_SMPTE,
-	TC_TYPE_UNKNOWN,
-	TC_TYPE_INVALID = 255
-};
-
-namespace LedFrequency {
-	static constexpr uint32_t NO_DATA = 1;
-	static constexpr uint32_t DATA = 3;
-}
+}__attribute__((packed));
 
 struct TLtcDisabledOutputs {
 	bool bDisplay;
 	bool bMax7219;
 	bool bMidi;
 	bool bArtNet;
-	bool bTCNet;
 	bool bLtc;
 	bool bNtp;
 	bool bRtpMidi;
@@ -110,15 +98,10 @@ enum TLtcSystemTimeIndex {
 	LTC_ST_INDEX_SECONDS_UNITS = 7
 };
 
-#define TC_CODE_MAX_LENGTH		11
-#define TC_TYPE_MAX_LENGTH		11
-#define TC_RATE_MAX_LENGTH  	2
-#define TC_SYSTIME_MAX_LENGTH	TC_CODE_MAX_LENGTH
-
 class Ltc {
 public:
-	static const char *GetType(TTimecodeTypes tTimeCodeType);
-	static TTimecodeTypes GetType(uint8_t nFps);
+	static const char *GetType(ltc::type tTimeCodeType);
+	static ltc::type GetType(uint8_t nFps);
 
 	static void InitTimeCode(char *pTimeCode);
 	static void InitSystemTime(char *pSystemTime);
@@ -127,7 +110,7 @@ public:
 	static void ItoaBase10(const struct tm *ptLocalTime, char *pSystemTime);
 
 	static bool ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode);
-	static bool ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, enum TTimecodeTypes &tType);
+	static bool ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::type &tType);
 };
 
 #endif /* LTC_H_ */
