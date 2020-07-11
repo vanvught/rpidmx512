@@ -2,7 +2,7 @@
  * @file rtpmidi.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +35,12 @@
 
 class RtpMidi: public AppleMidi {
 public:
-	RtpMidi(void);
-	~RtpMidi(void);
+	RtpMidi();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void SendTimeCode(const struct _midi_send_tc *tTimeCode);
 
@@ -49,9 +48,9 @@ public:
 		m_pRtpMidiHandler = pRtpMidiHandler;
 	}
 
-	void Print(void);
+	void Print();
 
-	static RtpMidi* Get(void) {
+	static RtpMidi* Get() {
 		return s_pThis;
 	}
 

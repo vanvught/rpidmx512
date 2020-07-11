@@ -1,5 +1,5 @@
 # Library MIDI
-## Open Source library for the MIDI implementation
+## Open Source C++ library for the MIDI implementation
 
 Supported boards:
 

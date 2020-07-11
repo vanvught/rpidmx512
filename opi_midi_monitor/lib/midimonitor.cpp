@@ -30,7 +30,7 @@
 #include "midimonitor.h"
 
 #include "midi.h"
-#include "midi_description.h"
+#include "mididescription.h"
 
 #include "hardware.h"
 #include "console.h"
@@ -58,7 +58,7 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 	*p = '0' + (nArg % 10);
 }
 
-MidiMonitor::MidiMonitor(void):
+MidiMonitor::MidiMonitor():
 	m_nMillisPrevious(Hardware::Get()->Millis()),
 	m_pMidiMessage(midi_message_get()),
 	m_nInitTimestamp(0),
@@ -68,10 +68,7 @@ MidiMonitor::MidiMonitor(void):
 {
 }
 
-MidiMonitor::~MidiMonitor(void) {
-}
-
-void MidiMonitor::Init(void) {
+void MidiMonitor::Init() {
 	//                                       1         2         3         4
 	//                              1234567890123456789012345678901234567890
 	constexpr char aHeaderLine[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
@@ -103,7 +100,7 @@ void MidiMonitor::Update(uint8_t nType) {
 	}
 }
 
-void MidiMonitor::HandleMtc(void) {
+void MidiMonitor::HandleMtc() {
 	const uint8_t type = m_pMidiMessage->system_exclusive[5] >> 5;
 
 	itoa_base10((m_pMidiMessage->system_exclusive[5] & 0x1F), &s_aTimecode[0]);
@@ -114,7 +111,7 @@ void MidiMonitor::HandleMtc(void) {
 	Update(type);
 }
 
-void MidiMonitor::HandleQf(void) {
+void MidiMonitor::HandleQf() {
 	const uint8_t nPart = (m_pMidiMessage->data1 & 0x70) >> 4;
 	const uint8_t nValue = m_pMidiMessage->data1 & 0x0F;
 
@@ -139,7 +136,7 @@ void MidiMonitor::HandleQf(void) {
 	m_nPartPrevious = nPart;
 }
 
-void MidiMonitor::HandleMessage(void) {
+void MidiMonitor::HandleMessage() {
 	size_t i;
 
 	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
@@ -188,8 +185,8 @@ void MidiMonitor::HandleMessage(void) {
 			// Channel messages
 			printf("%2d  ", m_pMidiMessage->channel);
 			if (m_pMidiMessage->type == MIDI_TYPES_NOTE_OFF || m_pMidiMessage->type == MIDI_TYPES_NOTE_ON) {
-				console_puts(midi_description_get_key_name(m_pMidiMessage->data1));
-				i = strlen(midi_description_get_key_name(m_pMidiMessage->data1));
+				console_puts(MidiDescription::GetKeyName(m_pMidiMessage->data1));
+				i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->data1));
 				while ((5 - i++) > 0) {
 					console_putc(' ');
 				}
@@ -201,7 +198,7 @@ void MidiMonitor::HandleMessage(void) {
 			console_puts("--  ---- ");
 		}
 
-		console_puts(midi_description_get_type(m_pMidiMessage->type));
+		console_puts(MidiDescription::GetType(m_pMidiMessage->type));
 
 		if (m_pMidiMessage->channel != 0) {
 			// Channel messages
@@ -218,14 +215,14 @@ void MidiMonitor::HandleMessage(void) {
 				// https://www.midi.org/specifications/item/table-3-control-change-messages-data-bytes-2
 				if (m_pMidiMessage->data1 < 120) {
 					// Control Change
-					printf(", %s, Value %d\n", midi_description_get_control_function(m_pMidiMessage->data1), m_pMidiMessage->data2);
+					printf(", %s, Value %d\n", MidiDescription::GetControlFunction(m_pMidiMessage->data1), m_pMidiMessage->data2);
 				} else {
 					// Controller numbers 120-127 are reserved for Channel Mode Messages, which rather than controlling sound parameters, affect the channel's operating mode.
 					// Channel Mode Messages
-					printf(", %s", midi_description_get_control_change(m_pMidiMessage->data1));
+					printf(", %s", MidiDescription::GetControlChange(m_pMidiMessage->data1));
 
-					if (m_pMidiMessage->data1	== MIDI_CONTROL_CHANGE_LOCAL_CONTROL) {
-						printf(" %s\n",	m_pMidiMessage->data2 == 0 ? "OFF" : "ON");
+					if (m_pMidiMessage->data1 == MIDI_CONTROL_CHANGE_LOCAL_CONTROL) {
+						printf(" %s\n", m_pMidiMessage->data2 == 0 ? "OFF" : "ON");
 					} else {
 						console_putc('\n');
 					}
@@ -233,9 +230,9 @@ void MidiMonitor::HandleMessage(void) {
 				break;
 			case MIDI_TYPES_PROGRAM_CHANGE:
 				if (m_pMidiMessage->channel == 10) {
-					printf(", %s {%d}\n", midi_description_get_drum_kit_name(m_pMidiMessage->data1), m_pMidiMessage->data1);
+					printf(", %s {%d}\n", MidiDescription::GetDrumKitName(m_pMidiMessage->data1), m_pMidiMessage->data1);
 				} else {
-					printf(", %s {%d}\n", midi_description_get_instrument_name(m_pMidiMessage->data1), m_pMidiMessage->data1);
+					printf(", %s {%d}\n", MidiDescription::GetInstrumentName(m_pMidiMessage->data1), m_pMidiMessage->data1);
 				}
 				break;
 			case MIDI_TYPES_AFTER_TOUCH_CHANNEL:
@@ -298,7 +295,7 @@ void MidiMonitor::HandleMessage(void) {
 	}
 }
 
-void MidiMonitor::ShowActiveSense(void) {
+void MidiMonitor::ShowActiveSense() {
 	uint32_t nNow = Hardware::Get()->Millis();
 
 	if (__builtin_expect(((nNow - m_nMillisPrevious) < 1000), 0)) {
@@ -324,7 +321,7 @@ void MidiMonitor::ShowActiveSense(void) {
 	}
 }
 
-void MidiMonitor::Run(void) {
+void MidiMonitor::Run() {
 	HandleMessage();
 	ShowActiveSense();
 }

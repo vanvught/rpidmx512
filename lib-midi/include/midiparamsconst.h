@@ -25,8 +25,7 @@
 #ifndef MIDIPARAMSCONST_H_
 #define MIDIPARAMSCONST_H_
 
-class MidiParamsConst {
-public:
+struct MidiParamsConst {
 	static const char FILE_NAME[];
 
 	static const char BAUDRATE[];

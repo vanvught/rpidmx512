@@ -1,7 +1,7 @@
 /**
- * @file midi_description.h
+ * @file mididescription.h
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,24 +22,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MIDI_DESCRIPTION_H_
-#define MIDI_DESCRIPTION_H_
+#ifndef MIDIDESCRIPTION_H_
+#define MIDIDESCRIPTION_H_
 
 #include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class MidiDescription {
+public:
+	static const char *GetType(uint8_t nType);
+	static const char *GetControlChange(uint8_t nControlChange);
+	static const char *GetControlFunction(uint8_t nControlFunction);
+	static const char *GetKeyName(uint8_t nKey);
+	static const char *GetDrumKitName(uint8_t nDrumKit);
+	static const char *GetInstrumentName(uint8_t nInstrumentName);
+};
 
-/*@observer@*/extern const char *midi_description_get_type(uint8_t);
-/*@observer@*/extern const char *midi_description_get_control_change(uint8_t);
-/*@observer@*/extern const char *midi_description_get_control_function(uint8_t);
-/*@observer@*/extern const char *midi_description_get_key_name(uint8_t);
-/*@observer@*/extern const char *midi_description_get_drum_kit_name(uint8_t);
-/*@observer@*/extern const char *midi_description_get_instrument_name(uint8_t);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* MIDI_DESCRIPTION_H_ */
+#endif /* MIDIDESCRIPTION_H_ */

@@ -1,7 +1,7 @@
 /**
- * @file midi_description.c
+ * @file mididescription.h
  */
-/* Copyright (C) 2016, 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,17 +25,19 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "mididescription.h"
+
 #include "midi.h"
 
-static const char key_names[][3] __attribute__((aligned(4))) = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
+static constexpr char KEY_NAMES[][3] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 static char key_name[8] __attribute__((aligned(4)));
 
-struct _drum_kits {			// Channel 10
+struct TDrumKits {			// Channel 10
 	const uint8_t program;
 	const char name[16];	// Including '\0' byte
 };
 
-static const struct _drum_kits drum_kits[8] __attribute__((aligned(4))) =  {
+static constexpr struct TDrumKits DRUM_KITS[8] =  {
 	{  1, "Standaard Kit"  },
 	{  9, "Room Kit"       },
 	{ 17, "Rock Kit"       },
@@ -46,7 +48,7 @@ static const struct _drum_kits drum_kits[8] __attribute__((aligned(4))) =  {
 	{ 49, "Classical Kit"  }
 };
 
-static const char instrument_names[127][32] __attribute__((aligned(4))) = {
+static constexpr char INSTRUMENT_NAMES[127][32] = {
 	"Grand Piano", "Brite Piano", "Electronic Grand Piano", "Honky Tonk Piano", "Electronic Piano 1", "Electronic Piano 2", "Harpsichord", "Clavinet",	//   1-  8 Pianoforte
 	"Celesta", "Glocken", "MusicBox", "Vibes", "Marimba", "Xylophone", "Tubular Bells", "Dulcimer", 													//   9- 16 Chromatic percussion
 	"Drawbar Organ", "Percussive Organ", "Rock Organ", "Church Organ", "Reed Organ", "Accordion", "Harmonica", "Tango Accordion",						//  17- 24 Organ
@@ -65,29 +67,8 @@ static const char instrument_names[127][32] __attribute__((aligned(4))) = {
 	"Fret Noise", "Breath Noise", "Seashore", "Tweet", "Telephone", "Helicopter", "Applause", "Gunshot"													// 121-128 Sound effects
 };
 
-/*@observer@*/ const char *midi_description_get_drum_kit_name(uint8_t number) {
-	const uint8_t array_length = sizeof(drum_kits) / sizeof(drum_kits[0]);
-	uint8_t i;
-
-	for (i = 0; i < array_length; i++) {
-		if (drum_kits[i].program == (number + 1)) {
-			return (const char *) drum_kits[i].name;
-		}
-	}
-
-	return (const char *) "Percussion";
-}
-
-const char *midi_description_get_instrument_name(uint8_t number) {
-	if (number > 127) {
-		return (const char *) "";
-	}
-
-	return (const char *)instrument_names[number];
-}
-
-/*@observer@*/const char *midi_description_get_type(uint8_t type) {
-	switch (type) {
+const char* MidiDescription::GetType(uint8_t nType) {
+	switch (nType) {
 	case MIDI_TYPES_INVALIDE_TYPE:
 		return "> program internal use <";
 	case MIDI_TYPES_NOTE_OFF:
@@ -97,7 +78,7 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	case MIDI_TYPES_AFTER_TOUCH_POLY:
 		return "Polyphonic AfterTouch";
 	case MIDI_TYPES_CONTROL_CHANGE:
-		if (type < 120) {
+		if (nType < 120) {
 			return "Control Change";
 		} else {
 			// Controller numbers 120-127 are reserved for Channel Mode Messages,
@@ -137,8 +118,8 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/*@observer@*/const char *midi_description_get_control_change(uint8_t data) {
-	switch (data) {
+const char* MidiDescription::GetControlChange(uint8_t nControlChange) {
+	switch (nControlChange) {
 	case MIDI_CONTROL_CHANGE_ALL_SOUND_OFF:
 		return "All Sound Off";
 	case MIDI_CONTROL_CHANGE_RESET_ALL_CONTROLLERS:
@@ -160,16 +141,16 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/*@observer@*/const char *midi_description_get_control_function(uint8_t data) {
-	if (data >= 0x14 && data <= 0x1F) {
+const char* MidiDescription::GetControlFunction(uint8_t nControlFunction) {
+	if (nControlFunction >= 0x14 && nControlFunction <= 0x1F) {
 		return "Undefined";
 	}
 
-	if (data >= 0x66 && data <= 0x77) {
-			return "Undefined";
+	if (nControlFunction >= 0x66 && nControlFunction <= 0x77) {
+		return "Undefined";
 	}
 
-	switch (data) {
+	switch (nControlFunction) {
 	case MIDI_CONTROL_FUNCTION_BANK_SELECT:
 		return "Bank Select";
 	case MIDI_CONTROL_FUNCTION_MODULATION_WHEEL:
@@ -224,16 +205,35 @@ const char *midi_description_get_instrument_name(uint8_t number) {
 	}
 }
 
-/*@observer@*/const char *midi_description_get_key_name(uint8_t key_number) {
-	int	note = (int)(key_number % 12);
-	int	octave = (int)(key_number / 12);
-
-
-	if (key_number > (uint8_t) 127) {
+const char* MidiDescription::GetKeyName(uint8_t nKey) {
+	if (nKey > 127) {
 		return "";
 	}
 
-	sprintf(key_name, "%s%d", key_names[note], octave);
+	const int nNote = (nKey % 12);
+	const int nOctave = (nKey / 12);
 
-	return (const char *) key_name;
+	snprintf(key_name, sizeof(key_name) - 1, "%s%d", KEY_NAMES[nNote], nOctave);
+
+	return const_cast<const char*>(key_name);
+}
+
+const char* MidiDescription::GetDrumKitName(uint8_t nDrumKit) {
+	constexpr uint32_t nArraySize = sizeof(DRUM_KITS) / sizeof(DRUM_KITS[0]);
+
+	for (uint32_t i = 0; i < nArraySize; i++) {
+		if (DRUM_KITS[i].program == (nDrumKit + 1)) {
+			return const_cast<const char*>(DRUM_KITS[i].name);
+		}
+	}
+
+	return "Percussion";
+}
+
+const char* MidiDescription::GetInstrumentName(uint8_t nInstrumentName) {
+	if (nInstrumentName > 127) {
+		return "";
+	}
+
+	return const_cast<const char*>(INSTRUMENT_NAMES[nInstrumentName]);
 }

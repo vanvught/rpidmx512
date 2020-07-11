@@ -74,30 +74,30 @@ struct TSessionStatus {
 
 class AppleMidi: public MDNS {
 public:
-	AppleMidi(void);
-	virtual ~AppleMidi(void);
+	AppleMidi();
+	virtual ~AppleMidi();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void SetPort(uint16_t nPort = APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT);
 	void SetSessionName(const char *pSessionName);
 
-	uint32_t GetSSRC(void) {
+	uint32_t GetSSRC() {
 		return m_nSSRC;
 	}
 
-	void Print(void);
+	void Print();
 
 protected:
-	uint32_t Now(void);
+	uint32_t Now();
 	bool Send(const uint8_t *pBuffer, uint32_t nLength);
 
 private:
-	void HandleControlMessage(void);
-	void HandleMidiMessage(void);
+	void HandleControlMessage();
+	void HandleMidiMessage();
 
 	virtual void HandleRtpMidi(const uint8_t *pBuffer);
 

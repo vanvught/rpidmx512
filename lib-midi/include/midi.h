@@ -2,7 +2,7 @@
  * @file midi.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -192,16 +192,15 @@ extern uint32_t midi_get_updates_per_seconds(void);
 #ifdef __cplusplus
 class Midi {
 public:
-	Midi(void);
-	~Midi(void);
+	Midi();
 
 	void Init(_midi_direction tMidiDirection) {
 		midi_init(tMidiDirection);
 	}
 
-	void Run(void);
+	void Run();
 
-	_midi_direction GetDirection(void) {
+	_midi_direction GetDirection() {
 		return midi_get_direction();
 	}
 
@@ -209,7 +208,7 @@ public:
 		midi_set_baudrate(nBaudrate);
 	}
 
-	uint32_t GetBaudrate(void) {
+	uint32_t GetBaudrate() {
 		return midi_get_baudrate();
 	}
 
@@ -217,11 +216,11 @@ public:
 		midi_active_set_sense(bActiveSense);
 	}
 
-	bool GetActiveSense(void) {
+	bool GetActiveSense() {
 		return midi_active_get_sense();
 	}
 
-	uint32_t GetUpdatesPerSeconde(void) {
+	uint32_t GetUpdatesPerSeconde() {
 		return midi_get_updates_per_seconds();
 	}
 
@@ -229,15 +228,15 @@ public:
 		midi_set_input_channel(nChannel);
 	}
 
-	uint8_t GetChannel(void) {
+	uint8_t GetChannel() {
 		return midi_get_input_channel();
 	}
 
-	_midi_active_sense_state GetActiveSenseState(void) {
+	_midi_active_sense_state GetActiveSenseState() {
 		return midi_active_get_sense_state();
 	}
 
-	const char* GetInterfaceDescription(void) {
+	const char* GetInterfaceDescription() {
 		return midi_get_interface_description();
 	}
 
@@ -255,7 +254,7 @@ public:
 		midi_send_raw(pBuffer, nLength);
 	}
 
-	bool Read(void) {
+	bool Read() {
 		return midi_read();
 	}
 
@@ -263,11 +262,11 @@ public:
 		return midi_read_channel(nChannel);
 	}
 
-	uint32_t GetMessageTimeStamp(void) {
+	uint32_t GetMessageTimeStamp() {
 		return m_pMessage->timestamp;
 	}
 
-	uint8_t GetMessageType(void) {
+	uint8_t GetMessageType() {
 		return m_pMessage->type;
 	}
 
@@ -281,11 +280,11 @@ public:
 		return m_pMessage->system_exclusive;
 	}
 
-	static Midi* Get(void) {
+	static Midi* Get() {
 		return s_pThis;
 	}
 
-	void Print(void);
+	void Print();
 
 private:
 	struct _midi_message *m_pMessage;

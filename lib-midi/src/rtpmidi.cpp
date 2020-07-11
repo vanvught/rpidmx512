@@ -58,12 +58,12 @@ struct TRtpHeader {
 
 #define BUFFER_SIZE	512
 
-RtpMidi *RtpMidi::s_pThis = 0;
+RtpMidi *RtpMidi::s_pThis = nullptr;
 
-RtpMidi::RtpMidi(void):
-	m_pRtpMidiHandler(0),
-	m_pReceiveBuffer(0),
-	m_pSendBuffer(0),
+RtpMidi::RtpMidi():
+	m_pRtpMidiHandler(nullptr),
+	m_pReceiveBuffer(nullptr),
+	m_pSendBuffer(nullptr),
 	m_nSequenceNumber(0)
 {
 	DEBUG_ENTRY
@@ -73,19 +73,13 @@ RtpMidi::RtpMidi(void):
 	DEBUG_EXIT
 }
 
-RtpMidi::~RtpMidi(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void RtpMidi::Start(void) {
+void RtpMidi::Start() {
 	DEBUG_ENTRY
 
 	AppleMidi::Start();
 
 	m_pSendBuffer = new uint8_t[BUFFER_SIZE];
-	assert(m_pSendBuffer != 0);
+	assert(m_pSendBuffer != nullptr);
 
 	TRtpHeader *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
 	pHeader->nStatic = 0x6180;
@@ -94,7 +88,7 @@ void RtpMidi::Start(void) {
 	DEBUG_EXIT
 }
 
-void RtpMidi::Stop(void) {
+void RtpMidi::Stop() {
 	DEBUG_ENTRY
 
 	AppleMidi::Stop();
@@ -102,7 +96,7 @@ void RtpMidi::Stop(void) {
 	DEBUG_EXIT
 }
 
-void RtpMidi::Run(void) {
+void RtpMidi::Run() {
 	AppleMidi::Run();
 }
 
@@ -196,7 +190,7 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 
-	if (m_pRtpMidiHandler != 0) m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
+	if (m_pRtpMidiHandler != nullptr) m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
 
 	DEBUG_EXIT
 	return nSize;
@@ -283,7 +277,7 @@ void  RtpMidi::Send(uint32_t nLength) {
 	AppleMidi::Send(m_pSendBuffer, 1 + sizeof(struct TRtpHeader) + nLength);
 }
 
-void RtpMidi::Print(void) {
+void RtpMidi::Print() {
 	DEBUG_ENTRY
 
 	AppleMidi::Print();

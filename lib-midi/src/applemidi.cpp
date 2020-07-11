@@ -73,13 +73,13 @@ struct TTimestampSynchronization {
 
 constexpr uint16_t APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct TExchangePacket) - APPLE_MIDI_SESSION_NAME_LENGTH_MAX - 1;
 
-AppleMidi::AppleMidi(void) :
+AppleMidi::AppleMidi() :
 	m_nStartTime(0),
 	m_nSSRC(Network::Get()->GetIp()),
 	m_nPort(APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT),
 	m_nHandleControl(-1),
 	m_nHandleMidi(-1),
-	m_pBuffer(0),
+	m_pBuffer(nullptr),
 	m_nRemoteIp(0),
 	m_nRemotePort(0),
 	m_nBytesReceived(0),
@@ -92,21 +92,22 @@ AppleMidi::AppleMidi(void) :
 	SetSessionName(Network::Get()->GetHostName());
 
 	m_pBuffer = new uint8_t[BUFFER_SIZE];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	memset(&m_tSessionStatus, 0, sizeof (struct TSessionStatus));
 
 	DEBUG_PRINTF("APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = %d", APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH);
 }
 
-AppleMidi::~AppleMidi(void) {
+AppleMidi::~AppleMidi() {
+	Stop();
 }
 
-void AppleMidi::Start(void) {
+void AppleMidi::Start() {
 	DEBUG_ENTRY
 
 	MDNS::Start();
-	MDNS::AddServiceRecord(0, MDNS_SERVICE_MIDI, m_nPort);
+	MDNS::AddServiceRecord(nullptr, MDNS_SERVICE_MIDI, m_nPort);
 
 	m_nHandleControl = Network::Get()->Begin(m_nPort);
 	assert(m_nHandleControl != -1);
@@ -121,7 +122,7 @@ void AppleMidi::Start(void) {
 	DEBUG_EXIT
 }
 
-void AppleMidi::Stop(void) {
+void AppleMidi::Stop() {
 	DEBUG_ENTRY
 
 	MDNS::Stop();
@@ -143,7 +144,7 @@ void AppleMidi::SetSessionName(const char *pSessionName) {
 	m_nExchangePacketReplySize = APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH + 1 + strlen(reinterpret_cast<const char*>(m_ExchangePacketReply.aName));
 }
 
-void AppleMidi::HandleControlMessage(void) {
+void AppleMidi::HandleControlMessage() {
 	DEBUG_ENTRY
 
 	struct TExchangePacket *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
@@ -201,7 +202,7 @@ void AppleMidi::HandleControlMessage(void) {
 	DEBUG_EXIT
 }
 
-void AppleMidi::HandleMidiMessage(void) {
+void AppleMidi::HandleMidiMessage() {
 	DEBUG_ENTRY
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
@@ -278,7 +279,7 @@ void AppleMidi::HandleMidiMessage(void) {
 	DEBUG_EXIT
 }
 
-void AppleMidi::Run(void) {
+void AppleMidi::Run() {
 
 	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandleMidi, m_pBuffer, BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
@@ -311,7 +312,7 @@ void AppleMidi::HandleRtpMidi(__attribute__((unused)) const uint8_t *pBuffer) {
 	// override
 }
 
-uint32_t AppleMidi::Now(void) {
+uint32_t AppleMidi::Now() {
 	const uint32_t nElapsed = Hardware::Get()->Millis() - m_nStartTime;
 
 	return (nElapsed * 10);
@@ -330,7 +331,7 @@ bool AppleMidi::Send(const uint8_t *pBuffer, uint32_t nLength) {
 }
 
 
-void AppleMidi::Print(void) {
+void AppleMidi::Print() {
 	MDNS::Print();
 	
 	const uint32_t nSSRC = __builtin_bswap32(m_nSSRC);

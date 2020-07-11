@@ -29,17 +29,16 @@
 
 class MidiMonitor {
 public:
-	MidiMonitor(void);
-	~MidiMonitor(void);
+	MidiMonitor();
 
-	void Init(void);
-	void Run(void);
+	void Init();
+	void Run();
 
 private:
-	void HandleMessage(void);
-	void ShowActiveSense(void);
-	void HandleMtc(void);
-	void HandleQf(void);
+	void HandleMessage();
+	void ShowActiveSense();
+	void HandleMtc();
+	void HandleQf();
 	void Update(uint8_t nType);
 
 private:

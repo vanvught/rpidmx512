@@ -1,7 +1,7 @@
 /**
  * @file midicommon.cpp
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,10 @@
 
 #include "midi.h"
 
-Midi *Midi::s_pThis = 0;
+Midi *Midi::s_pThis = nullptr;
 
-Midi::Midi(void): m_pMessage(0)
-{
+Midi::Midi() : m_pMessage(nullptr) {
 	s_pThis = this;
 
 	m_pMessage = midi_message_get();
-}
-
-Midi::~Midi(void) {
-	m_pMessage = 0;
-	s_pThis = 0;
 }

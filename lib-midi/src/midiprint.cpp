@@ -27,7 +27,7 @@
 
 #include "midi.h"
 
-void Midi::Print(void) {
+void Midi::Print() {
 	const _midi_direction dir = GetDirection();
 	const uint32_t nBaudrate = GetBaudrate();
 	const uint8_t nChannel = GetChannel();

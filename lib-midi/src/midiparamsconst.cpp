@@ -24,9 +24,9 @@
 
 #include "midiparamsconst.h"
 
-const char FILE_NAME[] = "midi.txt";
+const char MidiParamsConst::FILE_NAME[] = "midi.txt";
 
-const char BAUDRATE[] = "baudrate";
-const char ACTIVE_SENSE[] = "active_sense";
+const char MidiParamsConst::BAUDRATE[] = "baudrate";
+const char MidiParamsConst::ACTIVE_SENSE[] = "active_sense";
 
 
