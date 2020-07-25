@@ -116,6 +116,8 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 		}
 
 		Ltc7segment::Get()->Show(static_cast<ltc::type>(ptLtcTimeCode->nType));
+
+		m_aTimeCode[LTC_TC_INDEX_COLON_3] = (ptLtcTimeCode->nType != ltc::type::DF ? '.' : ',');
 	}
 
 	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
