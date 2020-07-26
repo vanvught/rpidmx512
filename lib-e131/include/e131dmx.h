@@ -30,7 +30,7 @@
 
 class E131Dmx {
 public:
-	virtual ~E131Dmx(void) {}
+	virtual ~E131Dmx() {}
 
 	virtual void Start(uint8_t nPort)=0;
 	virtual void Stop(uint8_t nPort)=0;

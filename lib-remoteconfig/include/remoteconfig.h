@@ -29,19 +29,19 @@
 #include <stdint.h>
 
 #if defined (ARTNET_NODE_MULTI)
- #define ARTNET_NODE
+# define ARTNET_NODE
 #endif
 
 #if defined (E131_BRIDGE_MULTI)
- #define E131_BRIDGE
+# define E131_BRIDGE
 #endif
 
 #if defined (PIXEL_MULTI)
- #define PIXEL
+# define PIXEL
 #endif
 
 #if defined (DMXSEND_MULTI)
- #define DMXSEND
+# define DMXSEND
 #endif
 
 #include "spiflashstore.h"

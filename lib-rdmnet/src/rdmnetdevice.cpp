@@ -2,7 +2,7 @@
  * @file rdmnetdevice.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,7 @@ RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
 	DEBUG_EXIT
 }
 
-RDMNetDevice::~RDMNetDevice(void) {
+RDMNetDevice::~RDMNetDevice() {
 	DEBUG_ENTRY
 
 	delete m_RDMHandler;
@@ -72,7 +72,7 @@ RDMNetDevice::~RDMNetDevice(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Start(void) {
+void RDMNetDevice::Start() {
 	DEBUG_ENTRY
 
 	LLRPDevice::Start();
@@ -80,7 +80,7 @@ void RDMNetDevice::Start(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Stop(void) {
+void RDMNetDevice::Stop() {
 	DEBUG_ENTRY
 
 	LLRPDevice::Stop();
@@ -88,11 +88,11 @@ void RDMNetDevice::Stop(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Run(void) {
+void RDMNetDevice::Run() {
 	LLRPDevice::Run();
 }
 
-void RDMNetDevice::Print(void) {
+void RDMNetDevice::Print() {
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);

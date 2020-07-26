@@ -29,6 +29,6 @@
 
 Network *Network::s_pThis = 0;
 
-Network::Network(void) {
+Network::Network() {
 	s_pThis = this;
 }

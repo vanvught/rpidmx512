@@ -50,8 +50,8 @@ struct WS28xxDisplay7SegmentConfig {
 
 class WS28xxDisplay7Segment {
 public:
-	WS28xxDisplay7Segment(void);
-	~WS28xxDisplay7Segment(void);
+	WS28xxDisplay7Segment();
+	~WS28xxDisplay7Segment();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
@@ -60,9 +60,9 @@ public:
 
 	void WriteAll(const char *pChars, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
-	void SetColonsOff(void);
+	void SetColonsOff();
 
-	void Show(void);
+	void Show();
 
 private:
 	void RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);

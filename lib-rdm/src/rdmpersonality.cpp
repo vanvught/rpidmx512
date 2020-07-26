@@ -42,11 +42,11 @@ RDMPersonality::RDMPersonality(const char* pDescription, uint16_t nSlots):
 	SetDescription(pDescription);
 }
 
-uint16_t RDMPersonality::GetSlots(void) const {
+uint16_t RDMPersonality::GetSlots() const {
 	return m_nSlots;
 }
 
-const char* RDMPersonality::GetDescription(void) const {
+const char* RDMPersonality::GetDescription() const {
 	return m_aDescription;
 }
 
@@ -67,7 +67,7 @@ void RDMPersonality::SetDescription(const char *pDescription) {
 
 }
 
-uint8_t RDMPersonality::GetDescriptionLength(void) const {
+uint8_t RDMPersonality::GetDescriptionLength() const {
 	return m_nDescriptionLength;
 }
 

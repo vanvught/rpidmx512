@@ -35,7 +35,7 @@
 class PCA9685PWMLed: public PCA9685 {
 public:
 	PCA9685PWMLed(uint8_t nAddress = PCA9685_I2C_ADDRESS_DEFAULT);
-	~PCA9685PWMLed(void);
+	~PCA9685PWMLed();
 
 	void Set(uint8_t nChannel, uint16_t nData);
 	void Set(uint8_t nChannel, uint8_t nData);

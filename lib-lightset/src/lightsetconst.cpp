@@ -26,7 +26,12 @@
 #include "lightsetconst.h"
 
 const char LightSetConst::PARAMS_OUTPUT[] = "output";
+
 const char LightSetConst::PARAMS_UNIVERSE[] = "universe";
+const char LightSetConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+
+const char LightSetConst::PARAMS_MERGE_MODE[] = "merge_mode";
+const char LightSetConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 
 const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_update";
 

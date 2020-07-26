@@ -34,12 +34,12 @@
 
 #include "debug.h"
 
-ShowFile *ShowFile::s_pThis = 0;
+ShowFile *ShowFile::s_pThis = nullptr;
 
-ShowFile::ShowFile(void) {
+ShowFile::ShowFile() {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_aShowFileName[0] = '\0';
@@ -54,11 +54,11 @@ void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
 	if (nShowFileNumber <= ShowFileFile::MAX_NUMBER) {
 		ShowFileStop();
 
-		if (m_pShowFile != 0) {
+		if (m_pShowFile != nullptr) {
 			if (fclose(m_pShowFile) != 0) {
 				perror("fclose(m_pShowFile)");
 			}
-			m_pShowFile = 0;
+			m_pShowFile = nullptr;
 		}
 
 		m_nShowFileNumber = nShowFileNumber;
@@ -69,12 +69,12 @@ void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
 
 		m_pShowFile = fopen(m_aShowFileName, "r");
 
-		if (m_pShowFile == 0) {
+		if (m_pShowFile == nullptr) {
 			perror(const_cast<char *>(m_aShowFileName));
 			m_aShowFileName[0] = '\0';
 		}
 
-		if (m_pShowFileDisplay != 0) {
+		if (m_pShowFileDisplay != nullptr) {
 			m_pShowFileDisplay->ShowFileName(m_aShowFileName, nShowFileNumber);
 			m_pShowFileDisplay->ShowShowFileStatus();
 		}
@@ -83,8 +83,8 @@ void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
 	DEBUG_EXIT
 }
 
-void ShowFile::BlackOut(void) {
-	if (m_pShowFileProtocolHandler != 0) {
+void ShowFile::BlackOut() {
+	if (m_pShowFileProtocolHandler != nullptr) {
 		Stop();
 		m_pShowFileProtocolHandler->DmxBlackout();
 	}
@@ -122,24 +122,24 @@ void ShowFile::EnableTFTP(bool bEnableTFTP) {
 	m_bEnableTFTP = bEnableTFTP;
 
 	if (m_bEnableTFTP) {
-		assert(m_pShowFileTFTP == 0);
+		assert(m_pShowFileTFTP == nullptr);
 
 		Stop();
 
-		if (m_pShowFile != 0) {
+		if (m_pShowFile != nullptr) {
 			if (fclose(m_pShowFile) != 0) {
 				perror("fclose(m_pShowFile)");
 			}
-			m_pShowFile = 0;
+			m_pShowFile = nullptr;
 		}
 
 		m_pShowFileTFTP = new ShowFileTFTP;
-		assert(m_pShowFileTFTP != 0);
+		assert(m_pShowFileTFTP != nullptr);
 	} else {
-		assert(m_pShowFileTFTP != 0);
+		assert(m_pShowFileTFTP != nullptr);
 
 		delete m_pShowFileTFTP;
-		m_pShowFileTFTP = 0;
+		m_pShowFileTFTP = nullptr;
 
 		SetShowFile(m_nShowFileNumber);
 		SetShowFileStatus(ShowFileStatus::IDLE);
@@ -150,12 +150,12 @@ void ShowFile::EnableTFTP(bool bEnableTFTP) {
 	DEBUG_EXIT
 }
 
-void ShowFile::Start(void) {
+void ShowFile::Start() {
 	DEBUG_ENTRY
 
 	EnableTFTP(false);
 
-	if (m_pShowFile != 0) {
+	if (m_pShowFile != nullptr) {
 		ShowFileStart();
 		SetShowFileStatus(ShowFileStatus::RUNNING);
 	} else {
@@ -165,10 +165,10 @@ void ShowFile::Start(void) {
 	DEBUG_EXIT
 }
 
-void ShowFile::Stop(void) {
+void ShowFile::Stop() {
 	DEBUG_ENTRY
 
-	if (m_pShowFile != 0) {
+	if (m_pShowFile != nullptr) {
 		ShowFileStop();
 		SetShowFileStatus(ShowFileStatus::STOPPED);
 	}
@@ -176,10 +176,10 @@ void ShowFile::Stop(void) {
 	DEBUG_EXIT
 }
 
-void ShowFile::Resume(void) {
+void ShowFile::Resume() {
 	DEBUG_ENTRY
 
-	if (m_pShowFile != 0) {
+	if (m_pShowFile != nullptr) {
 		ShowFileResume();
 		SetShowFileStatus(ShowFileStatus::RUNNING);
 	}
@@ -220,18 +220,18 @@ void ShowFile::SetShowFileStatus(ShowFileStatus tShowFileStatus) {
 	DEBUG_EXIT
 }
 
-void ShowFile::Run(void) {
+void ShowFile::Run() {
 	if (m_tShowFileStatus == ShowFileStatus::RUNNING) {
 		ShowFileRun();
 		return;
 	}
 
-	if (m_pShowFileTFTP != 0) {
+	if (m_pShowFileTFTP != nullptr) {
 		m_pShowFileTFTP->Run();
 	}
 }
 
-void ShowFile::Print(void) {
+void ShowFile::Print() {
 	printf("[%s]\n", m_aShowFileName);
 	printf("%s\n", m_bDoLoop ? "Looping" : "Not looping");
 	ShowFilePrint();

@@ -28,7 +28,7 @@
 
 #include "slushdmxparams.h"
 
-class StoreSlushDmx: public SlushDmxParamsStore {
+class StoreSlushDmx final: public SlushDmxParamsStore {
 public:
 	StoreSlushDmx();
 

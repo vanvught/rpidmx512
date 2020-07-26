@@ -42,12 +42,12 @@ WS28xxDMA::WS28xxDMA(TWS28XXType Type, uint16_t nLEDCount, TRGBMapping tRGBMappi
 	DEBUG_EXIT
 }
 
-WS28xxDMA::~WS28xxDMA(void) {
+WS28xxDMA::~WS28xxDMA() {
 	m_pBlackoutBuffer = 0;
 	m_pBuffer = 0;
 }
 
-bool WS28xxDMA::Initialize(void) {
+bool WS28xxDMA::Initialize() {
 	uint32_t nSize;
 
 	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
@@ -81,15 +81,15 @@ bool WS28xxDMA::Initialize(void) {
 	return true;
 }
 
-void WS28xxDMA::Update(void) {
-	assert(m_pBuffer != 0);
+void WS28xxDMA::Update() {
+	assert(m_pBuffer != nullptr);
 	assert(!IsUpdating());
 
 	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
 }
 
-void WS28xxDMA::Blackout(void) {
-	assert(m_pBlackoutBuffer != 0);
+void WS28xxDMA::Blackout() {
+	assert(m_pBlackoutBuffer != nullptr);
 	assert(!IsUpdating());
 
 	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);

@@ -43,7 +43,7 @@ struct TWS28xxDisplayMatrixColon {
 class WS28xxDisplayMatrix {
 public:
 	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows);
-	~WS28xxDisplayMatrix(void);
+	~WS28xxDisplayMatrix();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
@@ -54,20 +54,20 @@ public:
 	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
 	void SetColon(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
-	void SetColonsOff(void);
+	void SetColonsOff();
 
 	void ClearLine(uint8_t nLine);
 
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
-	void Cls(void);
-	void Show(void);
+	void Cls();
+	void Show();
 
-	uint32_t GetMaxPosition(void) {
+	uint32_t GetMaxPosition() {
 		return m_nMaxPosition;
 	}
 
-	uint32_t GetMaxLine(void) {
+	uint32_t GetMaxLine() {
 		return m_nMaxLine;
 	}
 

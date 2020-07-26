@@ -36,30 +36,30 @@
 class SlushMotor: public L6470 {
 public:
 	SlushMotor(unsigned, bool bUseSPI = true);
-	~SlushMotor(void);
+	~SlushMotor() override;
 
-	int busyCheck(void);
+	int busyCheck() override;
 
 	/*
 	 * Roboteurs Slushengine Phyton compatible methods
 	 */
-	int isBusy(void);
+	int isBusy();
 
 	void setOverCurrent(unsigned int);
-	void setAsHome(void);
+	void setAsHome();
 
-	void softFree(void);
-	void free(void);
+	void softFree();
+	void free();
 
 	/*
 	 * Additional methods
 	 */
-	bool GetUseSpiBusy(void) const;
+	bool GetUseSpiBusy() const;
 	void SetUseSpiBusy(bool);
-	bool IsConnected(void) const;
+	bool IsConnected() const;
 
 private:
-	uint8_t SPIXfer(uint8_t);
+	uint8_t SPIXfer(uint8_t) override;
 
 private:
 	unsigned m_nSpiChipSelect;

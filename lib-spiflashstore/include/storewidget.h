@@ -29,7 +29,7 @@
 #include "widgetparams.h"
 #include "widgetstore.h"
 
-class StoreWidget: public WidgetParamsStore, public WidgetStore {
+class StoreWidget final: public WidgetParamsStore, public WidgetStore {
 public:
 	StoreWidget();
 

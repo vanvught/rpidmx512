@@ -28,7 +28,7 @@
 
 #include "l6470dmxmodes.h"
 
-void L6470DmxModes::Print(void) {
+void L6470DmxModes::Print() {
 	printf(" DMX: Mode=%d, StartAddress=%d, FootPrint=%d\n",
 			static_cast<int>(m_nMode), static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_DmxFootPrint));
 }

@@ -55,7 +55,7 @@ static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8
 
 E131Controller *E131Controller::s_pThis = 0;
 
-E131Controller::E131Controller(void):
+E131Controller::E131Controller():
 	m_nHandle(-1),
 	m_nCurrentPacketMillis(0),
 	m_pE131DataPacket(0),
@@ -108,7 +108,7 @@ E131Controller::E131Controller(void):
 	DEBUG_EXIT
 }
 
-E131Controller::~E131Controller(void) {
+E131Controller::~E131Controller() {
 	DEBUG_ENTRY
 
 	Network::Get()->End(E131_DEFAULT_PORT);
@@ -128,7 +128,7 @@ E131Controller::~E131Controller(void) {
 	DEBUG_EXIT
 }
 
-void E131Controller::Start(void) {
+void E131Controller::Start() {
 	DEBUG_ENTRY
 
 	FillDataPacket();
@@ -140,18 +140,18 @@ void E131Controller::Start(void) {
 	DEBUG_EXIT
 }
 
-void E131Controller::Stop(void) {
+void E131Controller::Stop() {
 	m_State.bIsRunning = false;
 }
 
-void E131Controller::Run(void) {
+void E131Controller::Run() {
 	if (__builtin_expect((m_State.bIsRunning), 1)) {
 		m_nCurrentPacketMillis = Hardware::Get()->Millis();
 		SendDiscoveryPacket();
 	}
 }
 
-void E131Controller::FillDataPacket(void) {
+void E131Controller::FillDataPacket() {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
 	m_pE131DataPacket->RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
@@ -174,7 +174,7 @@ void E131Controller::FillDataPacket(void) {
 	m_pE131DataPacket->DMPLayer.PropertyValues[0] = 0;
 }
 
-void E131Controller::FillDiscoveryPacket(void) {
+void E131Controller::FillDiscoveryPacket() {
 	memset(m_pE131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
 
 	// Root Layer (See Section 5)
@@ -191,7 +191,7 @@ void E131Controller::FillDiscoveryPacket(void) {
 	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
 }
 
-void E131Controller::FillSynchronizationPacket(void) {
+void E131Controller::FillSynchronizationPacket() {
 	memset(m_pE131SynchronizationPacket, 0, sizeof(struct TE131SynchronizationPacket));
 
 	// Root Layer (See Section 4.2)
@@ -236,14 +236,14 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(1U + nLength), nIp, E131_DEFAULT_PORT);
 }
 
-void E131Controller::HandleSync(void) {
+void E131Controller::HandleSync() {
 	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {
 		m_pE131SynchronizationPacket->FrameLayer.SequenceNumber = m_State.SynchronizationPacket.nSequenceNumber++;
 		Network::Get()->SendTo(m_nHandle, m_pE131SynchronizationPacket, SYNCHRONIZATION_PACKET_SIZE, m_State.SynchronizationPacket.nIpAddress, E131_DEFAULT_PORT);
 	}
 }
 
-void E131Controller::HandleBlackout(void) {
+void E131Controller::HandleBlackout() {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(513)));
 
@@ -274,12 +274,12 @@ uint32_t E131Controller::UniverseToMulticastIp(uint16_t nUniverse) const {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
 
-	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & static_cast<uint32_t>(0xFF)) << 24) | ((nUniverse &  0xFF00) << 8);
+	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
 
 	return nMulticastIp;
 }
 
-const uint8_t *E131Controller::GetSoftwareVersion(void) {
+const uint8_t *E131Controller::GetSoftwareVersion() {
 	return DEVICE_SOFTWARE_VERSION;
 }
 
@@ -302,7 +302,7 @@ void E131Controller::SetPriority(uint8_t nPriority) { //TODO SetPriority
 	m_State.nPriority = nPriority;
 }
 
-void E131Controller::SendDiscoveryPacket(void) {
+void E131Controller::SendDiscoveryPacket() {
 	assert(m_DiscoveryIpAddress != 0);
 
 	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
@@ -377,7 +377,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 	return 0;
 }
 
-void E131Controller::Print(void) {
+void E131Controller::Print() {
 	printf("sACN E1.31 Controller\n");
 	printf(" Max Universes : %d\n", static_cast<int>(sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0])));
 	if (m_State.SynchronizationPacket.nUniverseNumber != 0) {

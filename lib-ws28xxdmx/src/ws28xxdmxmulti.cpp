@@ -25,6 +25,7 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <algorithm>
 #include <cassert>
 
 #include "ws28xxdmxmulti.h"
@@ -35,10 +36,6 @@
 #include "rgbmapping.h"
 
 #include "debug.h"
-
-#ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
-#endif
 
 WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 	m_tSrc(tSrc),
@@ -68,12 +65,12 @@ WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 	DEBUG_EXIT
 }
 
-WS28xxDmxMulti::~WS28xxDmxMulti(void) {
+WS28xxDmxMulti::~WS28xxDmxMulti() {
 	delete m_pLEDStripe;
 	m_pLEDStripe = 0;
 }
 
-void WS28xxDmxMulti::Initialize(void) {
+void WS28xxDmxMulti::Initialize() {
 	assert(m_pLEDStripe != 0);
 
 	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
@@ -132,19 +129,19 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 	switch (nPortId & ~static_cast<uint8_t>(m_nUniverses) & 0x03) {
 	case 0:
 		beginIndex = 0;
-		endIndex = MIN(m_nLedCount, (nLength / m_nChannelsPerLed));
+		endIndex = std::min(m_nLedCount, (nLength / m_nChannelsPerLed));
 		break;
 	case 1:
 		beginIndex = m_nBeginIndexPortId1;
-		endIndex = MIN(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
 		break;
 	case 2:
 		beginIndex = m_nBeginIndexPortId2;
-		endIndex = MIN(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
 		break;
 	case 3:
 		beginIndex = m_nBeginIndexPortId3;
-		endIndex = MIN(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
 		break;
 	default:
 		__builtin_unreachable();
@@ -161,7 +158,7 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nPortId=%d, beginIndex=%d, endIndex=%d",
 			static_cast<int>(nPortId), static_cast<int>(nLength), static_cast<int>(nOutIndex),
-			static_cast<int>(nPortId) & ~m_nUniverses & 0x03, static_cast<int>(beginIndex), static_cast<int>(endIndex));
+			static_cast<int>(nPortId & ~m_nUniverses & 0x03), static_cast<int>(beginIndex), static_cast<int>(endIndex));
 
 	while (m_pLEDStripe->IsUpdating()) {
 		// wait for completion
@@ -234,16 +231,16 @@ void WS28xxDmxMulti::SetLEDCount(uint16_t nLedCount) {
 void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
 	DEBUG_ENTRY
 
-	const uint32_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X ? 4 : 8);
+	const uint8_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X ? 4 : 8);
 
-	m_nActiveOutputs = MIN(nActiveOutputs, nMaxActiveOutputs);
+	m_nActiveOutputs = std::min(nActiveOutputs, nMaxActiveOutputs);
 
 	UpdateMembers();
 
 	DEBUG_EXIT
 }
 
-void WS28xxDmxMulti::UpdateMembers(void) {
+void WS28xxDmxMulti::UpdateMembers() {
 	m_nUniverses = 1 + (m_nLedCount / (1 + m_nBeginIndexPortId1));
 
 	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
@@ -255,7 +252,7 @@ void WS28xxDmxMulti::UpdateMembers(void) {
 	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_nUniverses=%d, m_nPortIndexLast=%d", static_cast<int>(m_tLedType), static_cast<int>(m_nLedCount), static_cast<int>(m_nUniverses), static_cast<int>(m_nPortIdLast));
 }
 
-void WS28xxDmxMulti::Print(void) {
+void WS28xxDmxMulti::Print() {
 	assert(m_pLEDStripe != 0);
 
 	printf("Led parameters\n");

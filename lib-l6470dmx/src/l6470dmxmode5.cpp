@@ -4,7 +4,7 @@
  * @file l6470dmxmode5.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,13 +53,13 @@ L6470DmxMode5::L6470DmxMode5(L6470 *pL6470, __attribute__((unused)) MotorParams 
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode5::~L6470DmxMode5(void) {
+L6470DmxMode5::~L6470DmxMode5() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode5::InitSwitch(void) {
+void L6470DmxMode5::InitSwitch() {
 	DEBUG2_ENTRY;
 
 	if (m_pModeParams->HasSwitch()) {
@@ -73,7 +73,7 @@ void L6470DmxMode5::InitSwitch(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode5::InitPos(void) {
+void L6470DmxMode5::InitPos() {
 	DEBUG2_ENTRY;
 
 	m_pL6470->resetPos();
@@ -81,19 +81,19 @@ void L6470DmxMode5::InitPos(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode5::Start(void) {
+void L6470DmxMode5::Start() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode5::Stop(void) {
+void L6470DmxMode5::Stop() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode5::HandleBusy(void) {
+void L6470DmxMode5::HandleBusy() {
 	DEBUG2_ENTRY
 
 	if (m_pL6470->busyCheck()) {
@@ -109,7 +109,7 @@ void L6470DmxMode5::HandleBusy(void) {
 	DEBUG2_EXIT
 }
 
-bool L6470DmxMode5::BusyCheck(void) {
+bool L6470DmxMode5::BusyCheck() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

@@ -42,7 +42,7 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-PCA9685DmxServo::PCA9685DmxServo(void):
+PCA9685DmxServo::PCA9685DmxServo():
 	m_nDmxStartAddress(1),
 	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
 	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
@@ -55,7 +55,7 @@ PCA9685DmxServo::PCA9685DmxServo(void):
 {
 }
 
-PCA9685DmxServo::~PCA9685DmxServo(void) {
+PCA9685DmxServo::~PCA9685DmxServo() {
 	delete m_pServo;
 	m_pServo = 0;
 }
@@ -149,7 +149,7 @@ void PCA9685DmxServo::SetDmxFootprint(uint16_t nDmxFootprint) {
 	m_nBoardInstances = static_cast<uint16_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
 }
 
-void PCA9685DmxServo::Initialize(void) {
+void PCA9685DmxServo::Initialize() {
 	assert(m_pDmxData == 0);
 	m_pDmxData = new uint8_t[m_nBoardInstances * PCA9685_PWM_CHANNELS];
 	assert(m_pDmxData != 0);

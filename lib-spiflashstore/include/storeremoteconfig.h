@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreRemoteConfig: public RemoteConfigParamsStore {
+class StoreRemoteConfig final: public RemoteConfigParamsStore {
 public:
 	StoreRemoteConfig();
 

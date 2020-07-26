@@ -33,7 +33,7 @@
 
 Network *Network::s_pThis = 0;
 
-Network::Network(void) :
+Network::Network() :
 	m_nLocalIp(0),
 	m_nGatewayIp(0),
 	m_nNetmask(0),
@@ -56,11 +56,7 @@ Network::Network(void) :
 	m_aIfName[0] = '\0';
 }
 
-Network::~Network(void) {
-	s_pThis = 0;
-}
-
-void Network::Shutdown(void) {
+void Network::Shutdown() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -84,7 +80,7 @@ void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
 	DEBUG_EXIT
 }
 
-void Network::SetQueuedDhcp(void) {
+void Network::SetQueuedDhcp() {
 	DEBUG_ENTRY
 
 	m_QueuedConfig.nMask |= QueuedConfig::DHCP;
@@ -92,7 +88,7 @@ void Network::SetQueuedDhcp(void) {
 	DEBUG_EXIT
 }
 
-void Network::SetQueuedZeroconf(void) {
+void Network::SetQueuedZeroconf() {
 	DEBUG_ENTRY
 
 	m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
@@ -100,9 +96,9 @@ void Network::SetQueuedZeroconf(void) {
 	DEBUG_EXIT
 }
 
-bool Network::ApplyQueuedConfig(void) {
+bool Network::ApplyQueuedConfig() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_QueuedConfig.nMask=%x", m_QueuedConfig.nMask);
+	DEBUG_PRINTF("m_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, m_QueuedConfig.nMask, IP2STR(m_QueuedConfig.nLocalIp), IP2STR(m_QueuedConfig.nNetmask));
 
 	if (m_QueuedConfig.nMask == QueuedConfig::NONE) {
 		DEBUG_EXIT
@@ -111,7 +107,7 @@ bool Network::ApplyQueuedConfig(void) {
 
 	if ((isQueuedMaskSet(QueuedConfig::STATIC_IP)) || (isQueuedMaskSet(QueuedConfig::NET_MASK))) {
 		if (isQueuedMaskSet(QueuedConfig::NET_MASK)) {
-			SetNetmask(m_nNetmask);
+			SetNetmask(m_QueuedConfig.nNetmask);
 			m_QueuedConfig.nMask &= ~(QueuedConfig::NET_MASK);
 		}
 

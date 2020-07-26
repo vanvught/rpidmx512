@@ -151,7 +151,7 @@ enum class E131Merge {
 
 struct E131 {
 	static E131Merge GetMergeMode(const char *pMergeMode) {
-		if (pMergeMode != 0) {
+		if (pMergeMode != nullptr) {
 			if (((pMergeMode[0] | 0x20) == 'l')
 					&& ((pMergeMode[1] | 0x20) == 't')
 					&& ((pMergeMode[2] | 0x20) == 'p')) {

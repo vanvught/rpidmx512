@@ -46,12 +46,6 @@ Handler::Handler(WS28xxDmx *pWS28xxDmx):
 	DEBUG_EXIT
 }
 
-Handler::~Handler(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 void Handler::Blackout(void) {
 	DEBUG_ENTRY
 

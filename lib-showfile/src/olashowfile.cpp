@@ -35,19 +35,13 @@
 
 #include "debug.h"
 
-OlaShowFile::OlaShowFile(void) {
+OlaShowFile::OlaShowFile() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
 
-OlaShowFile::~OlaShowFile(void) {
-	DEBUG1_ENTRY
-
-	DEBUG1_EXIT
-}
-
-void OlaShowFile::ShowFileStart(void) {
+void OlaShowFile::ShowFileStart() {
 	DEBUG1_ENTRY
 
 	m_nDelayMillis = 0;
@@ -60,13 +54,13 @@ void OlaShowFile::ShowFileStart(void) {
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::ShowFileStop(void) {
+void OlaShowFile::ShowFileStop() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::ShowFileResume(void) {
+void OlaShowFile::ShowFileResume() {
 	DEBUG1_ENTRY
 
 	m_nDelayMillis = 0;
@@ -75,7 +69,7 @@ void OlaShowFile::ShowFileResume(void) {
 	DEBUG1_EXIT
 }
 
-void OlaShowFile::ShowFileRun(void) {
+void OlaShowFile::ShowFileRun() {
 	if (m_tState != OlaState::TIME_WAITING) {
 		m_tParseCode = GetNextLine();
 
@@ -166,8 +160,8 @@ OlaParseCode OlaShowFile::ParseLine(const char *pLine) {
 	return OlaParseCode::TIME;
 }
 
-OlaParseCode OlaShowFile::GetNextLine(void) {
-	if (m_pShowFile != NULL) {
+OlaParseCode OlaShowFile::GetNextLine() {
+	if (m_pShowFile != nullptr) {
 		if (fgets(s_buffer, (sizeof(s_buffer) - 1), m_pShowFile) != s_buffer) {
 			return OlaParseCode::EOFILE;
 		}

@@ -30,9 +30,8 @@
 
 #include "e117.h"
 
-class E117Const {
-public:
-	alignas(uintptr_t) static const uint8_t ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH];
+struct E117Const {
+	static const uint8_t ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH];
 };
 
 #endif /* E131CONST_H_ */

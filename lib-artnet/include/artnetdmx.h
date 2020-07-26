@@ -33,7 +33,7 @@
 
 class ArtNetDmx {
 public:
-	virtual ~ArtNetDmx(void) {}
+	virtual ~ArtNetDmx() {}
 
 	virtual void Start(uint8_t nPort)=0;
 	virtual void Stop(uint8_t nPort)=0;

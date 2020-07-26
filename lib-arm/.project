@@ -3,7 +3,6 @@
 	<name>lib-arm</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

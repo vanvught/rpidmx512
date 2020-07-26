@@ -27,7 +27,7 @@
 
 #include "rdmdevice.h"
 
-void RDMDevice::Print(void) {
+void RDMDevice::Print() {
 	printf("RDM Device configuration\n");
 	printf(" Manufacturer Name : %.*s\n", m_tRDMDevice.nDdeviceManufacturerNameLength, m_tRDMDevice.aDeviceManufacturerName);
 	printf(" Manufacturer ID   : %.2X%.2X\n", m_tRDMDevice.aDeviceUID[0], m_tRDMDevice.aDeviceUID[1]);

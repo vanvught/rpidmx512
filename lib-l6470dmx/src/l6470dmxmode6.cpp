@@ -46,19 +46,19 @@ L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, __attribute__((unused)) MotorParams 
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode6::~L6470DmxMode6(void) {
+L6470DmxMode6::~L6470DmxMode6() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode6::Start(void) {
+void L6470DmxMode6::Start() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode6::Stop(void) {
+void L6470DmxMode6::Stop() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

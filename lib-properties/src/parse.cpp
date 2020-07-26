@@ -30,7 +30,7 @@
 #include "parse.h"
 
 char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCategory) {
-	assert(s != 0);
+	assert(s != nullptr);
 
 	char *b = s;
 	uint8_t i = 0;
@@ -40,7 +40,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 	while ((i < 2) && (*b != ':')) {
 		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
-			return 0;
+			return nullptr;
 		}
 
 		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
@@ -51,7 +51,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 
 	if ((i != 2) && (*b != ':')) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	nType = nTmp;
@@ -64,7 +64,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 	while ((i < 4) && (*b != ',') && (*b != '\0')) {
 		if (isxdigit(static_cast<int>(*b)) == 0) {
 			isValid = false;
-			return 0;
+			return nullptr;
 		}
 
 		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
@@ -75,12 +75,12 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 
 	if (i != 4) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	if ((*b != ',') && (*b != ' ') && (*b != '\0')) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	nCategory = nTmp;
@@ -88,7 +88,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 	isValid = true;
 
 	if (*b == '\0') {
-		return 0;
+		return nullptr;
 	}
 
 	return ++b;

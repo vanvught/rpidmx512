@@ -79,7 +79,7 @@ void WS28xxMulti::SetupBuffers4x(void) {
 
 void WS28xxMulti::Generate800kHz(const uint32_t *pBuffer) {
 	uint32_t i = 0;
-	const uint32_t d = (125 * 24) / 100;
+	constexpr uint32_t d = (125 * 24) / 100;
 	uint32_t dat;
 
 	do {

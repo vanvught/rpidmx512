@@ -33,7 +33,7 @@
 
 #include "spiflashstore.h"
 
-class StoreWS28xxDmx: public WS28xxDmxParamsStore, public WS28xxDmxStore {
+class StoreWS28xxDmx final: public WS28xxDmxParamsStore, public WS28xxDmxStore {
 public:
 	StoreWS28xxDmx();
 

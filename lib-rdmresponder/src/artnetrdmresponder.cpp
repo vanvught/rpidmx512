@@ -55,7 +55,7 @@ ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet
 	DEBUG_EXIT
 }
 
-ArtNetRdmResponder::~ArtNetRdmResponder(void) {
+ArtNetRdmResponder::~ArtNetRdmResponder() {
 	DEBUG_ENTRY
 
 	delete m_RDMHandler;

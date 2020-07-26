@@ -39,10 +39,10 @@ struct TRdmQueuedMessage {
 
 class RDMQueuedMessage {
 public:
-	RDMQueuedMessage(void);
-	~RDMQueuedMessage(void);
+	RDMQueuedMessage();
+	~RDMQueuedMessage();
 
-	uint8_t GetMessageCount(void) const;
+	uint8_t GetMessageCount() const;
 
 	void Handler(uint8_t *pRdmData);
 

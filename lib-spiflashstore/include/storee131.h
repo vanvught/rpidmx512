@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreE131: public E131ParamsStore {
+class StoreE131 final: public E131ParamsStore {
 public:
 	StoreE131();
 

@@ -34,12 +34,12 @@
 #include "rdm_e120.h"
 
 
-RDMQueuedMessage::RDMQueuedMessage(void): m_nMessageCount(0), m_IsNeverQueued(true) {
+RDMQueuedMessage::RDMQueuedMessage(): m_nMessageCount(0), m_IsNeverQueued(true) {
 	m_pQueue = new TRdmQueuedMessage[RDM_MESSAGE_COUNT_MAX];
 	assert(m_pQueue != 0);
 }
 
-RDMQueuedMessage::~RDMQueuedMessage(void) {
+RDMQueuedMessage::~RDMQueuedMessage() {
 	assert(m_pQueue == 0);
 	delete[] m_pQueue;
 }
@@ -58,7 +58,7 @@ void RDMQueuedMessage::Copy(struct TRdmMessage *pRdmMessage, uint32_t nIndex) {
 
 }
 
-uint8_t RDMQueuedMessage::GetMessageCount(void) const {
+uint8_t RDMQueuedMessage::GetMessageCount() const {
 	return m_nMessageCount;
 }
 

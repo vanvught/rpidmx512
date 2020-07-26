@@ -26,8 +26,7 @@
 #ifndef DMXMONITORPARAMSCONST_H_
 #define DMXMONITORPARAMSCONST_H_
 
-class DMXMonitorParamsConst {
-public:
+struct DMXMonitorParamsConst {
 	static const char FILE_NAME[];
 
 	static const char DMX_MAX_CHANNELS[];

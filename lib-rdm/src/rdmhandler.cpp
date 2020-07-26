@@ -127,7 +127,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 	DEBUG1_EXIT
 }
 
-void RDMHandler::RespondMessageAck(void) {
+void RDMHandler::RespondMessageAck() {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if(pRdmDataIn->param_data_length == 0) {

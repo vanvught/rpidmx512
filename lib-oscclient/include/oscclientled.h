@@ -28,7 +28,7 @@
 
 class OscClientLed {
 public:
-	virtual ~OscClientLed(void) {
+	virtual ~OscClientLed() {
 	}
 
 	virtual void SetLed(uint8_t nLed, bool bOn) = 0;

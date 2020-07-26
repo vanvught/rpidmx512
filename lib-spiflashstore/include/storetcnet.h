@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreTCNet: public TCNetParamsStore {
+class StoreTCNet final: public TCNetParamsStore {
 public:
 	StoreTCNet();
 

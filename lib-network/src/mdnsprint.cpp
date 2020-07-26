@@ -28,7 +28,7 @@
 
 #include "mdns.h"
 
-void MDNS::Print(void) {
+void MDNS::Print() {
 	printf("mDNS\n");
 	if (m_nHandle == -1) {
 		printf(" Not running\n");

@@ -36,7 +36,7 @@
 
 static TWS28XXType s_NotSupported[] = {WS2801, APA102, P9813};	// SPI Clock based
 
-WS28xxMulti::WS28xxMulti(void):
+WS28xxMulti::WS28xxMulti():
 	m_tBoard(WS28XXMULTI_BOARD_4X),
 	m_tWS28xxType(WS2812B),
 	m_nLedCount(170),
@@ -57,7 +57,7 @@ WS28xxMulti::WS28xxMulti(void):
 	DEBUG_EXIT
 }
 
-WS28xxMulti::~WS28xxMulti(void) {
+WS28xxMulti::~WS28xxMulti() {
 	if (m_tBoard == WS28XXMULTI_BOARD_4X) {
 		delete[] m_pBlackoutBuffer4x;
 		m_pBlackoutBuffer4x = 0;
@@ -120,10 +120,12 @@ void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, __attr
 		SetupGPIO();
 		SetupBuffers4x();
 	} else {
-		SetupHC595(m_nLowCode, m_nHighCode);
+		SetupHC595(ReverseBits(m_nLowCode), ReverseBits(m_nHighCode));
 		SetupSPI();
+		m_nBufSize++;
 		SetupBuffers8x();
 	}
 
+	DEBUG_PRINTF("m_nLedCount=%d, m_nBufSize=%d", m_nLedCount,m_nBufSize);
 	DEBUG_EXIT
 }

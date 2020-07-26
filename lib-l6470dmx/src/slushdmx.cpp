@@ -76,71 +76,71 @@ void SlushDmx::staticCallbackFunction(void *p, const char *s) {
 void SlushDmx::callbackFunction(const char *pLine) {
 	assert(pLine != 0);
 
-	uint8_t value;
-	uint16_t value16;
-	uint8_t len;
+	uint8_t nValue8;
+	uint16_t nValue16;
+	uint32_t nLength;
 
-	if (Sscan::Uint8(pLine, PARAMS_SLUSH_USE_SPI, &value) == SSCAN_OK) {
-		if (value != 0) {
+	if (Sscan::Uint8(pLine, PARAMS_SLUSH_USE_SPI, nValue8) ==Sscan::OK) {
+		if (nValue8 != 0) {
 			m_bUseSpiBusy = true;
 			return;
 		}
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A, &value16) == SSCAN_OK) {
-		if (value16 <= DMX_MAX_CHANNELS) {
-			m_nDmxStartAddressPortA = value16;
+	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A, nValue16) == Sscan::OK) {
+		if (nValue16 <= DMX_MAX_CHANNELS) {
+			m_nDmxStartAddressPortA = nValue16;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B, &value16) == SSCAN_OK) {
-		if (value16 <= DMX_MAX_CHANNELS) {
-			m_nDmxStartAddressPortB = value16;
+	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B, nValue16) == Sscan::OK) {
+		if (nValue16 <= DMX_MAX_CHANNELS) {
+			m_nDmxStartAddressPortB = nValue16;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_FOOTPRINT_PORT_A, &value16) == SSCAN_OK) {
-		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
-			m_nDmxFootprintPortA = value16;
+	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_FOOTPRINT_PORT_A, nValue16) == Sscan::OK) {
+		if ((nValue16 > 0) && (nValue16 <= IO_PINS_IOPORT)) {
+			m_nDmxFootprintPortA = nValue16;
 		}
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_FOOTPRINT_PORT_B, &value16) == SSCAN_OK) {
-		if ((value16 > 0) && (value16 <= IO_PINS_IOPORT)) {
-			m_nDmxFootprintPortB = value16;
+	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_FOOTPRINT_PORT_B, nValue16) == Sscan::OK) {
+		if ((nValue16 > 0) && (nValue16 <= IO_PINS_IOPORT)) {
+			m_nDmxFootprintPortB = nValue16;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, PARAMS_DMX_MODE, &m_nDmxMode) == SSCAN_OK) {
+	if (Sscan::Uint8(pLine, PARAMS_DMX_MODE, m_nDmxMode) == Sscan::OK) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, &m_nDmxStartAddressMode) == SSCAN_OK) {
+	if (Sscan::Uint16(pLine, PARAMS_DMX_START_ADDRESS, m_nDmxStartAddressMode) == Sscan::OK) {
 		return;
 	}
 
-	len = DMX_SLOT_INFO_RAW_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO_PORT_A, m_pSlotInfoRawPortA, &len) == SSCAN_OK) {
-		if (len < 7) { // 00:0000 at least one value set
+	nLength = DMX_SLOT_INFO_RAW_LENGTH;
+	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO_PORT_A, m_pSlotInfoRawPortA, nLength) == Sscan::OK) {
+		if (nLength < 7) { // 00:0000 at least one value set
 			m_pSlotInfoRawPortA[0] = '\0';
 		}
 		return;
 	}
 
-	len = DMX_SLOT_INFO_RAW_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO_PORT_B, m_pSlotInfoRawPortB, &len) == SSCAN_OK) {
-		if (len < 7) { // 00:0000 at least one value set
+	nLength = DMX_SLOT_INFO_RAW_LENGTH;
+	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO_PORT_B, m_pSlotInfoRawPortB, nLength) == Sscan::OK) {
+		if (nLength < 7) { // 00:0000 at least one value set
 			m_pSlotInfoRawPortB[0] = '\0';
 		}
 	}
 
-	len = DMX_SLOT_INFO_RAW_LENGTH;
-	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO, m_pSlotInfoRaw, &len) == SSCAN_OK) {
-		if (len < 7) { // 00:0000 at least one value set
+	nLength = DMX_SLOT_INFO_RAW_LENGTH;
+	if (Sscan::Char(pLine, PARAMS_DMX_SLOT_INFO, m_pSlotInfoRaw, nLength) == Sscan::OK) {
+		if (nLength < 7) { // 00:0000 at least one value set
 			m_pSlotInfoRaw[0] = '\0';
 		}
 	}

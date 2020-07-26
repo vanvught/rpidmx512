@@ -42,7 +42,7 @@
 
 #include "debug.h"
 
-ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
+ArtNetRdmController::ArtNetRdmController() : m_pRdmCommand(0){
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != 0);
@@ -55,7 +55,7 @@ ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
 	m_pRdmCommand->start_code = E120_SC_RDM;
 }
 
-ArtNetRdmController::~ArtNetRdmController(void) {
+ArtNetRdmController::~ArtNetRdmController() {
 	for (unsigned i = 0; i < DMX_MAX_UARTS; i++) {
 		if (m_Discovery[i] != 0) {
 			delete m_Discovery[i];
@@ -64,7 +64,7 @@ ArtNetRdmController::~ArtNetRdmController(void) {
 	}
 }
 
-void ArtNetRdmController::Print(void) {
+void ArtNetRdmController::Print() {
 	RDMDeviceController::Print();
 }
 

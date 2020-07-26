@@ -33,7 +33,7 @@
 
 static uint32_t s_nTimeStampPrevious = 0;
 
-void TCNet::DumpManagementHeader(void) {
+void TCNet::DumpManagementHeader() {
 	printf("ManagementHeader\n");
 	printf(" %.3s V%d.%d %.8s\n", m_TTCNet.TCNetPacket.ManagementHeader.Header, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMajor, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMinor,m_TTCNet.TCNetPacket.ManagementHeader.NodeName);
 	printf(" %s\n", m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
@@ -42,7 +42,7 @@ void TCNet::DumpManagementHeader(void) {
 	s_nTimeStampPrevious = m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp;
 }
 
-void TCNet::DumpOptIn(void) {
+void TCNet::DumpOptIn() {
 	DEBUG_ENTRY
 
 	DumpManagementHeader();

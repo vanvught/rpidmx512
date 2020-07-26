@@ -54,18 +54,18 @@ extern void udelay(uint32_t);
 #define BW_PORT_READ_BUTTON_5			0x44
 #define BW_PORT_READ_BUTTON_6			0x45
 
-ButtonsBw::ButtonsBw(void): m_I2C(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
+ButtonsBw::ButtonsBw(): m_I2C(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
 }
 
-ButtonsBw::~ButtonsBw(void) {
+ButtonsBw::~ButtonsBw() {
 }
 
-bool ButtonsBw::Start(void) {
+bool ButtonsBw::Start() {
 	return m_I2C.IsConnected();
 }
 
-bool ButtonsBw::IsAvailable(void) {
-	const char cmd[] = { BW_PORT_READ_BUTTON_SINCE_LAST, 0xFF };
+bool ButtonsBw::IsAvailable() {
+	const char cmd[] = { BW_PORT_READ_BUTTON_SINCE_LAST, static_cast<char>(0xFF) };
 
 
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
@@ -76,7 +76,7 @@ bool ButtonsBw::IsAvailable(void) {
 	return m_nButtons == 0 ? false : true;
 }
 
-int ButtonsBw::GetChar(void) {
+int ButtonsBw::GetChar() {
 	switch (m_nButtons) {
 		case (1 << 0):
 			return INPUT_KEY_ESC;

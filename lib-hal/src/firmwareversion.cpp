@@ -67,7 +67,7 @@ FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const 
 	DEBUG_EXIT
 }
 
-FirmwareVersion::~FirmwareVersion(void) {
+FirmwareVersion::~FirmwareVersion() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

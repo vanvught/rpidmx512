@@ -38,21 +38,11 @@
 
 #include "debug.h"
 
-ArtNet4Node::ArtNet4Node(uint8_t nPages):
-	ArtNetNode(4, nPages),
-	m_bMapUniverse0(false)
-{
+ArtNet4Node::ArtNet4Node(uint8_t nPages) : ArtNetNode(4, nPages) {
 	DEBUG_ENTRY
-
-	assert((TArtnetConst::MAX_PORTS * nPages) <= E131_MAX_PORTS);
+	assert((ArtNet::MAX_PORTS * nPages) <= E131_MAX_PORTS);
 
 	ArtNetNode::SetArtNet4Handler(static_cast<ArtNet4Handler*>(this));
-
-	DEBUG_EXIT
-}
-
-ArtNet4Node::~ArtNet4Node(void) {
-	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
@@ -73,7 +63,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	if (isActive) {
 		const TPortProtocol tPortProtocol = GetPortProtocol(nPortId);
 
-		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol), true);
+		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 
 		if (tPortProtocol == PORT_ARTNET_SACN) {
 
@@ -93,11 +83,11 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::Start(void) {
+void ArtNet4Node::Start() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (artnet::MAX_PORTS * GetPages()); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::MAX_PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(nPortIndex, nUniverse);
 		
@@ -106,7 +96,7 @@ void ArtNet4Node::Start(void) {
 		if (isActive) {
 			const TPortProtocol tPortProtocol = GetPortProtocol(nPortIndex);
 			
-			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol), true);
+			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 			
 			if (tPortProtocol == PORT_ARTNET_SACN) {
 				const E131Merge tE131Merge = static_cast<E131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
@@ -127,7 +117,7 @@ void ArtNet4Node::Start(void) {
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::Stop(void) {
+void ArtNet4Node::Stop() {
 	DEBUG_ENTRY
 
 	m_Bridge.Stop();
@@ -136,7 +126,7 @@ void ArtNet4Node::Stop(void) {
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::Run(void) {
+void ArtNet4Node::Run() {
 	ArtNetNode::Run();
 
 	if (m_Bridge.GetActiveOutputPorts() != 0) {
@@ -148,7 +138,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (artnet::MAX_PORTS * GetPages()); i++) {
+	for (uint32_t i = 0; i < (ArtNet::MAX_PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse);
 
@@ -232,7 +222,7 @@ uint8_t ArtNet4Node::GetStatus(uint8_t nPortId) {
 	return 0;
 }
 
-void ArtNet4Node::Print(void) {
+void ArtNet4Node::Print() {
 	ArtNetNode::Print();
 
 	if (ArtNetNode::GetActiveOutputPorts() != 0) {

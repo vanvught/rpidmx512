@@ -141,9 +141,9 @@ enum class Display7SegmentMessage {
 
 class Display7Segment {
 public:
-	Display7Segment(void);
+	Display7Segment();
 
-	bool Have7Segment(void) {
+	bool Have7Segment() {
 		return m_bHave7Segment;
 	}
 
@@ -208,7 +208,7 @@ public:
 		return display7segment::CH_BLANK;
 	}
 
-	static Display7Segment* Get(void) {
+	static Display7Segment* Get() {
 		return s_pThis;
 	}
 

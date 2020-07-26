@@ -40,12 +40,12 @@
 class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm {
 public:
 	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
-	~ArtNetRdmResponder(void);
+	~ArtNetRdmResponder() override;
 
-	void Full(uint8_t nPort);
-	uint8_t GetUidCount(uint8_t nPort);
-	void Copy(uint8_t nPort, uint8_t *);
-	const uint8_t *Handler(uint8_t nPort, const uint8_t *);
+	void Full(uint8_t nPort) override;
+	uint8_t GetUidCount(uint8_t nPort) override;
+	void Copy(uint8_t nPort, uint8_t *) override;
+	const uint8_t *Handler(uint8_t nPort, const uint8_t *) override;
 
 private:
 	struct TRdmMessage *m_pRdmCommand;

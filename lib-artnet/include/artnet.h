@@ -31,52 +31,9 @@
 
 #include <stdint.h>
 
-#define NODE_ID						"Art-Net"					///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-
 namespace artnet {
-static constexpr uint8_t PROTOCOL_REVISION = 14;
-static constexpr uint16_t UDP_PORT = 0x1936;
-static constexpr uint32_t MAX_PORTS = 4;
-static constexpr uint32_t MAX_PAGES = 8;
-static constexpr uint32_t DMX_LENGTH = 512;
-static constexpr uint32_t SHORT_NAME_LENGTH = 18;
-static constexpr uint32_t LONG_NAME_LENGTH = 64;
+static constexpr char NODE_ID[] = "Art-Net";				///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 }  // namespace artnet
-
-/**
- * The length of the report field. Always 64
- */
-enum {
-	ARTNET_REPORT_LENGTH = 64
-};
-
-/**
- * Number of bytes in a RDM UID
- */
-enum {
-	ARTNET_RDM_UID_WIDTH = 6
-};
-
-/**
- * Length of the hardware address
- */
-enum {
-	ARTNET_MAC_SIZE = 6
-};
-
-/**
- * Length of the ESTA field
- */
-enum {
-	ARTNET_ESTA_SIZE = 2
-};
-
-/**
- * Length of the IP field
- */
-enum {
-	ARTNET_IP_SIZE = 4
-};
 
 /**
  * Table 4 – Style Codes
@@ -124,7 +81,6 @@ enum TArtNetPortDir{
 	ARTNET_OUTPUT_PORT,
 	ARTNET_DISABLE_PORT
 };
-
 
 /**
  * Node configuration commands
@@ -211,8 +167,21 @@ enum TPortProtocol {
 };
 
 struct ArtNet {
+	static constexpr uint8_t PROTOCOL_REVISION = 14;
+	static constexpr uint16_t UDP_PORT = 0x1936;
+	static constexpr uint32_t MAX_PORTS = 4;
+	static constexpr uint32_t MAX_PAGES = 8;
+	static constexpr uint32_t DMX_LENGTH = 512;
+	static constexpr uint32_t SHORT_NAME_LENGTH = 18;
+	static constexpr uint32_t LONG_NAME_LENGTH = 64;
+	static constexpr uint32_t REPORT_LENGTH = 64;
+	static constexpr uint32_t RDM_UID_WIDTH = 6;
+	static constexpr uint32_t MAC_SIZE = 6;
+	static constexpr uint32_t IP_SIZE = 4;
+	static constexpr uint32_t ESTA_SIZE = 2;
+
 	static ArtNetMerge GetMergeMode(const char *pMergeMode) {
-		if (pMergeMode != 0) {
+		if (pMergeMode != nullptr) {
 			if (((pMergeMode[0] | 0x20) == 'l')
 					&& ((pMergeMode[1] | 0x20) == 't')
 					&& ((pMergeMode[2] | 0x20) == 'p')) {

@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-WS28xxDmxGrouping::WS28xxDmxGrouping(void):
+WS28xxDmxGrouping::WS28xxDmxGrouping():
 	m_pDmxData(0),
 	m_nLEDGroupCount(0),
 	m_nGroups(0)
@@ -44,7 +44,7 @@ WS28xxDmxGrouping::WS28xxDmxGrouping(void):
 	UpdateMembers();
 }
 
-WS28xxDmxGrouping::~WS28xxDmxGrouping(void) {
+WS28xxDmxGrouping::~WS28xxDmxGrouping() {
 	delete [] m_pDmxData;
 	m_pDmxData = 0;
 }
@@ -150,7 +150,7 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void WS28xxDmxGrouping::UpdateMembers(void) {
+void WS28xxDmxGrouping::UpdateMembers() {
 	if ((m_nLEDGroupCount > m_nLedCount) || (m_nLEDGroupCount == 0)) {
 		m_nLEDGroupCount = m_nLedCount;
 	}
@@ -172,7 +172,7 @@ void WS28xxDmxGrouping::UpdateMembers(void) {
 	DEBUG_PRINTF("m_nLEDGroupCount=%d, m_nGroups=%d, m_nDmxFootprint=%d", static_cast<int>(m_nLEDGroupCount), static_cast<int>(m_nGroups), static_cast<int>(m_nDmxFootprint));
 }
 
-void WS28xxDmxGrouping::Print(void) {
+void WS28xxDmxGrouping::Print() {
 	printf("Led (grouping) parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", static_cast<int>(m_nLedCount));

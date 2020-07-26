@@ -48,7 +48,7 @@ DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
 	DEBUG1_EXIT
 }
 
-DMXReceiver::~DMXReceiver(void) {
+DMXReceiver::~DMXReceiver() {
 	DEBUG1_ENTRY
 
 	Stop();
@@ -68,7 +68,7 @@ void DMXReceiver::SetOutput(LightSet *pLightSet) {
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::Start(void) {
+void DMXReceiver::Start() {
 	DEBUG1_ENTRY
 
 	Init();
@@ -77,7 +77,7 @@ void DMXReceiver::Start(void) {
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::Stop(void) {
+void DMXReceiver::Stop() {
 	DEBUG1_ENTRY
 
 	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
@@ -151,6 +151,6 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 	return 0;
 }
 
-void DMXReceiver::Print(void) {
+void DMXReceiver::Print() {
 
 }

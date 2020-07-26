@@ -27,7 +27,7 @@
 
 #include "network.h"
 
-void Network::Print(void) {
+void Network::Print() {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
 	printf(" Domain    : %s\n", m_aDomainName);

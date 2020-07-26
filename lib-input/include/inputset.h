@@ -28,14 +28,14 @@
 
 class InputSet {
 public:
-	virtual ~InputSet(void) {
+	virtual ~InputSet() {
 
 	}
 
-	virtual bool Start(void)= 0;
+	virtual bool Start()= 0;
 
-	virtual bool IsAvailable(void)= 0;
-	virtual int GetChar(void)= 0;
+	virtual bool IsAvailable()= 0;
+	virtual int GetChar()= 0;
 };
 
 #endif /* INPUTSET_H_ */

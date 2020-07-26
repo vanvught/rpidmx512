@@ -35,13 +35,13 @@
 
 class ButtonsBw: public InputSet {
 public:
-	ButtonsBw(void);
-	~ButtonsBw(void);
+	ButtonsBw();
+	~ButtonsBw() override;
 
-	bool Start(void);
+	bool Start() override;
 
-	bool IsAvailable(void);
-	int GetChar(void);
+	bool IsAvailable() override;
+	int GetChar() override;
 
 private:
 	void Write(const char *, uint32_t);

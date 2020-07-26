@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-void RemoteConfig::HandleReboot(void) {
+void RemoteConfig::HandleReboot() {
 	DEBUG_ENTRY
 
 	m_bIsReboot = true;

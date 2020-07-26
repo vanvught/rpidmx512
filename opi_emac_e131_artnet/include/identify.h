@@ -30,8 +30,8 @@
 
 class Identify: public RDMIdentify {
 public:
-	Identify(void) {}
-	~Identify(void) {}
+	Identify(void) {
+	}
 
 	void SetMode(TRdmIdentifyMode nMode) {
 		m_nMode = nMode;

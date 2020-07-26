@@ -38,28 +38,28 @@ class L6470DmxModes {
 
 public:
 	L6470DmxModes(TL6470DmxModes, uint16_t, L6470 *, MotorParams *, ModeParams *);
-	~L6470DmxModes(void);
+	~L6470DmxModes();
 
-	void InitSwitch(void);
-	void InitPos(void);
+	void InitSwitch();
+	void InitPos();
 
-	void HandleBusy(void);
-	bool BusyCheck(void);
+	void HandleBusy();
+	bool BusyCheck();
 
 	bool IsDmxDataChanged(const uint8_t *, uint16_t);
 	void DmxData(const uint8_t *, uint16_t);
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Print(void);
+	void Print();
 
-	TL6470DmxModes GetMode(void) {
+	TL6470DmxModes GetMode() {
 		return m_nMode;
 	}
 
 public: // RDM
-	uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() {
 		return m_nDmxStartAddress;
 	}
 
@@ -67,7 +67,7 @@ public: // RDM
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootPrint(void) {
+	uint16_t GetDmxFootPrint() {
 		return m_DmxFootPrint;
 	}
 

@@ -42,7 +42,7 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-TLC59711Dmx::TLC59711Dmx(void):
+TLC59711Dmx::TLC59711Dmx():
 	m_nDmxStartAddress(1),
 	m_nDmxFootprint(TLC59711Channels::OUT),
 	m_nBoardInstances(1),
@@ -57,7 +57,7 @@ TLC59711Dmx::TLC59711Dmx(void):
 	UpdateMembers();
 }
 
-TLC59711Dmx::~TLC59711Dmx(void) {
+TLC59711Dmx::~TLC59711Dmx() {
 	delete m_pTLC59711;
 	m_pTLC59711 = 0;
 }
@@ -130,14 +130,14 @@ void TLC59711Dmx::SetSpiSpeedHz(uint32_t nSpiSpeedHz) {
 	m_nSpiSpeedHz = nSpiSpeedHz;
 }
 
-void TLC59711Dmx::Initialize(void) {
+void TLC59711Dmx::Initialize() {
 	assert(m_pTLC59711 == 0);
 	m_pTLC59711 = new TLC59711(m_nBoardInstances, m_nSpiSpeedHz);
 	assert(m_pTLC59711 != 0);
 	m_pTLC59711->Dump();
 }
 
-void TLC59711Dmx::UpdateMembers(void) {
+void TLC59711Dmx::UpdateMembers() {
 	if (m_LEDType == TTLC59711_TYPE_RGB) {
 		m_nDmxFootprint = m_nLEDCount * 3;
 	} else {

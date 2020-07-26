@@ -192,7 +192,7 @@ static constexpr uint8_t Seg7Array[] = {
 		0 //0b0000000, // 127 'DEL'  NO DISPLAY
 };
 
-WS28xxDisplay7Segment::WS28xxDisplay7Segment(void):
+WS28xxDisplay7Segment::WS28xxDisplay7Segment():
 	m_pWS28xx(0)
 {
 	DEBUG2_ENTRY
@@ -200,7 +200,7 @@ WS28xxDisplay7Segment::WS28xxDisplay7Segment(void):
 	DEBUG2_EXIT
 }
 
-WS28xxDisplay7Segment::~WS28xxDisplay7Segment(void) {
+WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 	DEBUG2_ENTRY
 
 	if (m_pWS28xx != 0) {
@@ -268,7 +268,7 @@ void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, u
 	}
 }
 
-void WS28xxDisplay7Segment::SetColonsOff(void) {
+void WS28xxDisplay7Segment::SetColonsOff() {
 	for (uint32_t nCount = 0; nCount < WS28xxDisplay7SegmentConfig::NUM_OF_COLONS; nCount++) {
 		WriteColon(' ', nCount, 0x00, 0x00, 0x00);
 	}
@@ -296,7 +296,7 @@ void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBas
 	}
 }
 
-void WS28xxDisplay7Segment::Show(void) {
+void WS28xxDisplay7Segment::Show() {
 //	if (m_bUpdateNeeded) {
 //		m_bUpdateNeeded = false;
 		m_pWS28xx->Update();

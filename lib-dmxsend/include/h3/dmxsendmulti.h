@@ -2,7 +2,7 @@
  * @file dmxsendmulti.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,15 +34,14 @@
 
 class DMXSendMulti: public DmxMulti, public LightSet  {
 public:
-	DMXSendMulti(void);
-	~DMXSendMulti(void);
+	DMXSendMulti();
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
-	void Print(void);
+	void Print() override;
 
 private:
 	bool m_bIsStarted[4];

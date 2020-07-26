@@ -52,7 +52,7 @@ static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LEN
 }  // namespace size
 }  // namespace buffer
 
-OscClient::OscClient(void):
+OscClient::OscClient():
 	m_nServerIP(0),
 	m_nPortOutgoing(OscClientDefault::PORT_OUTGOING),
 	m_nPortIncoming(OscClientDefault::PORT_INCOMING),
@@ -79,11 +79,11 @@ OscClient::OscClient(void):
 	memset(m_pLeds, 0, buffer::size::LED);
 }
 
-OscClient::~OscClient(void) {
+OscClient::~OscClient() {
 	Stop();
 }
 
-void OscClient::Start(void) {
+void OscClient::Start() {
 	DEBUG_ENTRY
 
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
@@ -92,11 +92,11 @@ void OscClient::Start(void) {
 	DEBUG_EXIT
 }
 
-void OscClient::Stop(void) {
+void OscClient::Stop() {
 	m_nHandle = Network::Get()->End(m_nPortIncoming);
 }
 
-int OscClient::Run(void) {
+int OscClient::Run() {
 	if (!m_bPingDisable) {
 		m_nCurrenMillis = Hardware::Get()->Millis();
 
@@ -152,7 +152,7 @@ int OscClient::Run(void) {
 	return 0;
 }
 
-void OscClient::Print(void) {
+void OscClient::Print() {
 	printf("OSC Client\n");
 	printf(" Server ip-address :" IPSTR "\n", IP2STR(m_nServerIP));
 	printf(" Outgoing Port     : %d\n", m_nPortOutgoing);
@@ -220,7 +220,7 @@ void OscClient::SetLedHandler(OscClientLed *pOscClientLed) {
 	m_pOscClientLed = pOscClientLed;
 }
 
-bool OscClient::HandleLedMessage(void) {
+bool OscClient::HandleLedMessage() {
 	DEBUG_ENTRY
 
 	uint32_t i;

@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreDmxSend: public DMXParamsStore {
+class StoreDmxSend final: public DMXParamsStore {
 public:
 	StoreDmxSend();
 

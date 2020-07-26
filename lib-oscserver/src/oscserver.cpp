@@ -50,7 +50,7 @@
 
 #define SOFTWARE_VERSION "1.0"
 
-OscServer::OscServer(void) {
+OscServer::OscServer() {
 	memset(m_aPath, 0, sizeof(m_aPath));
 	strcpy(m_aPath, OSCSERVER_DEFAULT_PATH_PRIMARY);
 
@@ -86,7 +86,7 @@ OscServer::OscServer(void) {
 	}
 }
 
-OscServer::~OscServer(void) {
+OscServer::~OscServer() {
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop(0);
 		m_pLightSet = 0;
@@ -102,7 +102,7 @@ OscServer::~OscServer(void) {
 	m_pOsc = 0;
 }
 
-void OscServer::Start(void) {
+void OscServer::Start() {
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
 
@@ -113,13 +113,13 @@ void OscServer::Start(void) {
 	}
 }
 
-void OscServer::Stop(void) {
+void OscServer::Stop() {
 	if (m_pLightSet != 0) {
 		m_pLightSet->Stop(0);
 	}
 }
 
-uint16_t OscServer::GetPortIncoming(void) const {
+uint16_t OscServer::GetPortIncoming() const {
 	return m_nPortIncoming;
 }
 
@@ -128,7 +128,7 @@ void OscServer::SetPortIncoming(uint16_t nPortIncoming) {
 	m_nPortIncoming = nPortIncoming;
 }
 
-uint16_t OscServer::GetPortOutgoing(void) const {
+uint16_t OscServer::GetPortOutgoing() const {
 	return m_nPortOutgoing;
 }
 
@@ -168,7 +168,7 @@ void OscServer::SetPath(const char* pPath) {
 	DEBUG_PUTS(m_aPathSecond);
 }
 
-const char* OscServer::GetPath(void) {
+const char* OscServer::GetPath() {
 	return m_aPath;
 }
 
@@ -186,7 +186,7 @@ void OscServer::SetPathInfo(const char* pPathInfo) {
 	DEBUG_PUTS(m_aPathInfo);
 }
 
-const char* OscServer::GetPathInfo(void) {
+const char* OscServer::GetPathInfo() {
 	return m_aPathInfo;
 }
 
@@ -204,11 +204,11 @@ void OscServer::SetPathBlackOut(const char* pPathBlackOut) {
 	DEBUG_PUTS(m_aPathBlackOut);
 }
 
-const char* OscServer::GetPathBlackOut(void) {
+const char* OscServer::GetPathBlackOut() {
 	return m_aPathBlackOut;
 }
 
-bool OscServer::IsPartialTransmission(void) const {
+bool OscServer::IsPartialTransmission() const {
 	return m_bPartialTransmission;
 }
 
@@ -266,7 +266,7 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 	return isChanged;
 }
 
-void OscServer::Run(void) {
+void OscServer::Run() {
 	uint32_t nRemoteIp;
 	uint16_t nRemotePort;
 

@@ -49,7 +49,7 @@
  #define SHOW_RDM_MESSAGE
 #endif
 
-LLRPDevice::LLRPDevice(void) {
+LLRPDevice::LLRPDevice() {
 	DEBUG_ENTRY
 
 	struct in_addr addr;
@@ -64,13 +64,13 @@ LLRPDevice::LLRPDevice(void) {
 	DEBUG_EXIT
 }
 
-LLRPDevice::~LLRPDevice(void) {
+LLRPDevice::~LLRPDevice() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void LLRPDevice::Start(void) {
+void LLRPDevice::Start() {
 	DEBUG_ENTRY
 
 	m_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
@@ -81,7 +81,7 @@ void LLRPDevice::Start(void) {
 	DEBUG_EXIT
 }
 
-void LLRPDevice::Stop(void) {
+void LLRPDevice::Stop() {
 	DEBUG_ENTRY
 
 	Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
@@ -90,7 +90,7 @@ void LLRPDevice::Stop(void) {
 	DEBUG_EXIT
 }
 
-void LLRPDevice::HandleRequestMessage(void) {
+void LLRPDevice::HandleRequestMessage() {
 	struct TTProbeReplyPDUPacket *pReply = &(m_tLLRP.LLRPPacket.Reply);
 
 	uint8_t DestinationCid[16];
@@ -122,7 +122,7 @@ void LLRPDevice::HandleRequestMessage(void) {
 #endif
 }
 
-void LLRPDevice::HandleRdmCommand(void) {
+void LLRPDevice::HandleRdmCommand() {
 	DEBUG_ENTRY
 
 	struct LTRDMCommandPDUPacket *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
@@ -171,7 +171,7 @@ void LLRPDevice::HandleRdmCommand(void) {
 	DEBUG_EXIT
 }
 
-void LLRPDevice::Run(void) {
+void LLRPDevice::Run() {
 	uint8_t *packet = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
 	uint16_t nForeignPort;
 
@@ -212,7 +212,7 @@ void LLRPDevice::Run(void) {
 	}
 }
 
-void LLRPDevice::Print(void) {
+void LLRPDevice::Print() {
 	printf("LLRP Device configuration\n");
 	printf(" Port UDP               : %d\n", LLRP_PORT);
 	printf(" Multicast join Request : " IPSTR "\n", IP2STR(m_nIpAddresLLRPRequest));

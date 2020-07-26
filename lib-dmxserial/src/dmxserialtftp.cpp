@@ -32,19 +32,19 @@
 
 #include "debug.h"
 
-DmxSerialTFTP::DmxSerialTFTP(void) {
+DmxSerialTFTP::DmxSerialTFTP() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-DmxSerialTFTP::~DmxSerialTFTP(void) {
+DmxSerialTFTP::~DmxSerialTFTP() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void DmxSerialTFTP::Exit(void) {
+void DmxSerialTFTP::Exit() {
 	DEBUG_ENTRY
 
 	DmxSerial::Get()->EnableTFTP(false);
@@ -62,7 +62,7 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTP
 	}
 
 	m_pFile = fopen(pFileName, "r");
-	return (m_pFile != 0);
+	return (m_pFile != nullptr);
 }
 
 bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
@@ -75,15 +75,15 @@ bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TF
 	}
 
 	m_pFile = fopen(pFileName, "w+");
-	return (m_pFile != 0);
+	return (m_pFile != nullptr);
 }
 
-bool DmxSerialTFTP::FileClose(void) {
+bool DmxSerialTFTP::FileClose() {
 	DEBUG_ENTRY
 
-	if (m_pFile != 0) {
+	if (m_pFile != nullptr) {
 		fclose(m_pFile);
-		m_pFile = 0;
+		m_pFile = nullptr;
 	}
 
 	DEBUG_EXIT

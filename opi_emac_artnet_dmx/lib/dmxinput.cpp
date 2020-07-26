@@ -32,7 +32,7 @@
 
 #include "debug.h"
 
-DmxInput::DmxInput(void): m_bIsStarted(false) {
+DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -71,12 +71,12 @@ const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPort, uint16_t
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
-	if (pDmx != 0) {
-		const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
+	if (pDmx != nullptr) {
+		const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
 		nLength = static_cast<uint16_t>(dmx_statistics->Statistics.SlotsInPacket);
 		return (pDmx + 1);
 	}
 
 	nLength = 0;
-	return 0;
+	return nullptr;
 }

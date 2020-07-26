@@ -48,7 +48,7 @@ enum TNetwork {
 
 class NetworkStore {
 public:
-	virtual ~NetworkStore(void) {}
+	virtual ~NetworkStore() {}
 
 	virtual void SaveIp(uint32_t nIp)=0;
 	virtual void SaveNetMask(uint32_t nNetMask)=0;
@@ -58,28 +58,28 @@ public:
 
 class Network {
 public:
-	Network(void);
-	~Network(void) {
+	Network();
+	~Network() {
 
 	}
 
-	uint32_t GetIp(void) {
+	uint32_t GetIp() {
 		return m_nLocalIp;
 	}
 
-	uint32_t GetNetmask(void) {
+	uint32_t GetNetmask() {
 		return m_nNetmask;
 	}
 
-	 bool IsDhcpKnown(void) {
+	 bool IsDhcpKnown() {
 		return true;
 	}
 
-	bool IsDhcpUsed(void) {
+	bool IsDhcpUsed() {
 		return m_IsDhcpUsed;
 	}
 
-	static Network *Get(void) {
+	static Network *Get() {
 		return s_pThis;
 	}
 

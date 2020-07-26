@@ -39,7 +39,7 @@
 
 #include "network.h"
 
-void ArtNetNode::Print(void) {
+void ArtNetNode::Print() {
 	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
 
 	printf("Node %d\n", m_nVersion);
@@ -50,11 +50,11 @@ void ArtNetNode::Print(void) {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * artnet::MAX_PORTS); nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::MAX_PORTS); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress)) {
-				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / artnet::MAX_PORTS];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / artnet::MAX_PORTS];
+				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ArtNet::MAX_PORTS];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ArtNet::MAX_PORTS];
 
 				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
 				if (m_nVersion == 4) {

@@ -34,27 +34,27 @@
 
 static char s_buffer[2048] __attribute__ ((aligned (4)));
 
-DmxSerialChannelData::DmxSerialChannelData(void) {
+DmxSerialChannelData::DmxSerialChannelData() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < sizeof(m_pChannelData) / sizeof(m_pChannelData[0]); i++) {
 		m_nChannelDataLength[i] = 0;
-		m_pChannelData[i] = 0;
+		m_pChannelData[i] = nullptr;
 	}
 
 	DEBUG_EXIT
 }
 
-DmxSerialChannelData::~DmxSerialChannelData(void) {
+DmxSerialChannelData::~DmxSerialChannelData() {
 	for (uint32_t i = 0; i < sizeof(m_pChannelData) / sizeof(m_pChannelData[0]); i++) {
-		if (m_pChannelData[i] != 0) {
+		if (m_pChannelData[i] != nullptr) {
 			DEBUG_PRINTF("m_pChannelData[%d]", i);
 			delete[] m_pChannelData[i];
 		}
 	}
 }
 
-void DmxSerialChannelData::Clear(void) {
+void DmxSerialChannelData::Clear() {
 }
 
 bool DmxSerialChannelData::Parse(const char *pFileName) {
@@ -62,7 +62,7 @@ bool DmxSerialChannelData::Parse(const char *pFileName) {
 
 	m_pFile = fopen(pFileName, "r");
 
-	if (m_pFile == 0) {
+	if (m_pFile == nullptr) {
 		perror(const_cast<char *>(pFileName));
 		DEBUG_EXIT
 		return false;
@@ -87,19 +87,19 @@ bool DmxSerialChannelData::Parse(const char *pFileName) {
 }
 
 const uint8_t *DmxSerialChannelData::GetData(uint8_t nChannelValue, uint32_t &nLength) {
-	if (m_pChannelData[nChannelValue] != 0) {
+	if (m_pChannelData[nChannelValue] != nullptr) {
 		nLength = m_nChannelDataLength[nChannelValue];
 		return m_pChannelData[nChannelValue];
 	}
 
 	nLength = 0;
-	return 0;
+	return nullptr;
 }
 
-void DmxSerialChannelData::Dump(void) {
+void DmxSerialChannelData::Dump() {
 #ifndef NDEBUG
 	for (uint32_t i = 0; i < sizeof(m_pChannelData) /  sizeof(m_pChannelData[0]); i++) {
-		if (m_pChannelData[i] != 0) {
+		if (m_pChannelData[i] != nullptr) {
 			printf("[%d]:%d ", i, m_nChannelDataLength[i]);
 			for (uint32_t j = 0; j <  m_nChannelDataLength[i]; j++) {
 				printf("%d ", m_pChannelData[i][j]);
@@ -110,7 +110,7 @@ void DmxSerialChannelData::Dump(void) {
 #endif
 }
 
-DmxSerialParseCode DmxSerialChannelData::GetNextLine(void) {
+DmxSerialParseCode DmxSerialChannelData::GetNextLine() {
 	if (fgets(s_buffer, static_cast<int>(sizeof(s_buffer) - 1), m_pFile) != s_buffer) {
 		return DmxSerialParseCode::EOFILE;
 	}

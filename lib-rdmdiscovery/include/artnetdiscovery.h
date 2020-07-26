@@ -14,15 +14,15 @@
 
 class ArtNetRdmController: public RDMDeviceController, public ArtNetRdm {
 public:
-	ArtNetRdmController(void);
-	~ArtNetRdmController(void);
+	ArtNetRdmController();
+	~ArtNetRdmController() override;
 
-	void Print(void);
+	void Print();
 
-	void Full(uint8_t nPort = 0);
-	uint8_t GetUidCount(uint8_t nPort = 0);
-	void Copy(uint8_t nPort, uint8_t *pTod);
-	const uint8_t *Handler(uint8_t nPort, const uint8_t *pRdmData);
+	void Full(uint8_t nPort = 0) override;
+	uint8_t GetUidCount(uint8_t nPort = 0) override;
+	void Copy(uint8_t nPort, uint8_t *pTod) override;
+	const uint8_t *Handler(uint8_t nPort, const uint8_t *pRdmData) override;
 
 	void DumpTod(uint8_t nPort = 0);
 

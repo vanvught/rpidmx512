@@ -40,33 +40,33 @@
 
 #include "debug.h"
 
-DmxSerial *DmxSerial::s_pThis = 0;
+DmxSerial *DmxSerial::s_pThis = nullptr;
 
-DmxSerial::DmxSerial(void) {
-	assert(s_pThis == 0);
+DmxSerial::DmxSerial() {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
 		m_aFileIndex[i] = -1;
-		m_pDmxSerialChannelData[i] = 0;
+		m_pDmxSerialChannelData[i] = nullptr;
 	}
 
 	memset(m_DmxData, 0, sizeof(m_DmxData));
 }
 
-DmxSerial::~DmxSerial(void) {
+DmxSerial::~DmxSerial() {
 	for (uint32_t i = 0; i < m_nFilesCount; i++) {
-		if (m_pDmxSerialChannelData[i] != 0) {
+		if (m_pDmxSerialChannelData[i] != nullptr) {
 			delete m_pDmxSerialChannelData[i];
 		}
 	}
 
 	Network::Get()->End(UDP::PORT);
 
-	s_pThis = 0;
+	s_pThis = nullptr;
 }
 
-void DmxSerial::Init(void) {
+void DmxSerial::Init() {
 	// UDP Request
 	m_nHandle = Network::Get()->Begin(UDP::PORT);
 	assert(m_nHandle != -1);
@@ -93,7 +93,7 @@ void DmxSerial::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pD
 
 //			DEBUG_PRINTF("nPort=%d, nIndex=%d, m_aFileIndex[nIndex]=%d, nOffset=%d, m_DmxData[nOffset]=%d", nPort, nIndex, m_aFileIndex[nIndex], nOffset, m_DmxData[nOffset]);
 
-			if (m_pDmxSerialChannelData[nIndex] != 0) {
+			if (m_pDmxSerialChannelData[nIndex] != nullptr) {
 				uint32_t nLength;
 				const uint8_t *pSerialData = m_pDmxSerialChannelData[nIndex]->GetData(m_DmxData[nOffset], nLength);
 
@@ -107,7 +107,7 @@ void DmxSerial::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pD
 	}
 }
 
-void DmxSerial::Print(void) {
+void DmxSerial::Print() {
 	m_Serial.Print();
 
 	printf("Files : %d\n", m_nFilesCount);
@@ -116,15 +116,15 @@ void DmxSerial::Print(void) {
 	printf(" Last channel  : %d\n", m_nDmxLastSlot);
 }
 
-void DmxSerial::ScanDirectory(void) {
+void DmxSerial::ScanDirectory() {
 	// We can only run this once, for now
-	assert(m_pDmxSerialChannelData[0] == 0);
+	assert(m_pDmxSerialChannelData[0] == nullptr);
 
     DIR *dirp;
     struct dirent *dp;
     m_nFilesCount = 0;
 
-    if ((dirp = opendir(".")) == NULL) {
+    if ((dirp = opendir(".")) == nullptr) {
 		perror("couldn't open '.'");
 
 		for (uint32_t i = 0; i < DmxSerialFile::MAX_NUMBER; i++) {
@@ -135,7 +135,7 @@ void DmxSerial::ScanDirectory(void) {
 	}
 
     do {
-        if ((dp = readdir(dirp)) != NULL) {
+        if ((dp = readdir(dirp)) != nullptr) {
         	if (dp->d_type == DT_DIR) {
         		continue;
         	}
@@ -155,7 +155,7 @@ void DmxSerial::ScanDirectory(void) {
             	break;
             }
         }
-    } while (dp != NULL);
+    } while (dp != nullptr);
 
     // Sort
 	for (uint32_t i = 0; i < m_nFilesCount; i++) {
@@ -186,7 +186,7 @@ void DmxSerial::ScanDirectory(void) {
 #endif
 
 		m_pDmxSerialChannelData[nIndex] = new DmxSerialChannelData;
-		assert(m_pDmxSerialChannelData[nIndex] != 0);
+		assert(m_pDmxSerialChannelData[nIndex] != nullptr);
 
 		char pBuffer[16];
 		snprintf(pBuffer, sizeof(pBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, m_aFileIndex[nIndex]);
@@ -215,22 +215,22 @@ void DmxSerial::EnableTFTP(bool bEnableTFTP) {
 	m_bEnableTFTP = bEnableTFTP;
 
 	if (m_bEnableTFTP) {
-		assert(m_pDmxSerialTFTP == 0);
+		assert(m_pDmxSerialTFTP == nullptr);
 		m_pDmxSerialTFTP = new DmxSerialTFTP;
-		assert(m_pDmxSerialTFTP != 0);
+		assert(m_pDmxSerialTFTP != nullptr);
 	} else {
-		assert(m_pDmxSerialTFTP != 0);
+		assert(m_pDmxSerialTFTP != nullptr);
 		delete m_pDmxSerialTFTP;
-		m_pDmxSerialTFTP = 0;
+		m_pDmxSerialTFTP = nullptr;
 	}
 
 	DEBUG_EXIT
 }
 
-void DmxSerial::Run(void) {
+void DmxSerial::Run() {
 	HandleUdp();
 
-	if (m_pDmxSerialTFTP == 0) {
+	if (m_pDmxSerialTFTP == nullptr) {
 		return;
 	}
 

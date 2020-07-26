@@ -77,7 +77,7 @@ struct TmDNSHeader {
 	uint16_t additionalCount;
 } __attribute__((__packed__));
 
-MDNS::MDNS(void):
+MDNS::MDNS():
 	m_nHandle(-1),
 	m_pBuffer(0),
 	m_pOutBuffer(0),
@@ -101,7 +101,7 @@ MDNS::MDNS(void):
 	memset(&m_aServiceRecords, 0, sizeof(m_aServiceRecords));
 }
 
-MDNS::~MDNS(void) {
+MDNS::~MDNS() {
 	delete[] m_pOutBuffer;
 	m_pOutBuffer = 0;
 
@@ -109,7 +109,7 @@ MDNS::~MDNS(void) {
 	m_pBuffer = 0;
 }
 
-void MDNS::Start(void) {
+void MDNS::Start() {
 	assert(m_nHandle == -1);
 
 	m_nHandle = Network::Get()->Begin(MDNS_PORT);
@@ -124,7 +124,7 @@ void MDNS::Start(void) {
 	Network::Get()->SetDomainName(&MDNS_TLD[1]);
 }
 
-void MDNS::Stop(void) {
+void MDNS::Stop() {
 	Network::Get()->End(MDNS_PORT);
 	m_nHandle = -1;
 }
@@ -331,7 +331,7 @@ uint32_t MDNS::WriteDnsName(const char *pSource, char *pDestination, bool bNullT
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-void MDNS::CreateAnswerLocalIpAddress(void) {
+void MDNS::CreateAnswerLocalIpAddress() {
 	DEBUG1_ENTRY
 
 	struct TmDNSHeader *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_tAnswerLocalIp.aBuffer);
@@ -504,7 +504,7 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 	DEBUG_EXIT
 }
 
-void MDNS::Parse(void) {
+void MDNS::Parse() {
 	DEBUG_ENTRY
 
 	struct TmDNSHeader *pmDNSHeader = reinterpret_cast<struct TmDNSHeader*>(m_pBuffer);
@@ -523,7 +523,7 @@ void MDNS::Parse(void) {
 	DEBUG_EXIT
 }
 
-void MDNS::Run(void) {
+void MDNS::Run() {
 #if 0
 	 uint32_t nNow = Hardware::Get()->Millis();
 #endif

@@ -98,7 +98,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	DEBUG_EXIT
 }
 
-void RDMDeviceResponder::Init(void) {
+void RDMDeviceResponder::Init() {
 	DEBUG_ENTRY
 
 	RDMDevice::Init();
@@ -260,14 +260,14 @@ void RDMDeviceResponder::SetLanguage(const char aLanguage[2]) {
 	m_aLanguage[1] = aLanguage[1];
 }
 
-uint16_t RDMDeviceResponder::CalculateChecksum(void) {
+uint16_t RDMDeviceResponder::CalculateChecksum() {
 	uint16_t nChecksum = (m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1];
 	nChecksum += m_tRDMDeviceInfo.current_personality;
 
 	return nChecksum;
 }
 
-bool RDMDeviceResponder::GetFactoryDefaults(void) {
+bool RDMDeviceResponder::GetFactoryDefaults() {
 	if (m_IsFactoryDefaults) {
 		if (!RDMDevice::GetFactoryDefaults()) {
 			m_IsFactoryDefaults = false;
@@ -288,7 +288,7 @@ bool RDMDeviceResponder::GetFactoryDefaults(void) {
 	return m_IsFactoryDefaults;
 }
 
-void RDMDeviceResponder::SetFactoryDefaults(void) {
+void RDMDeviceResponder::SetFactoryDefaults() {
 	DEBUG_ENTRY
 
 	RDMDevice::SetFactoryDefaults();

@@ -35,10 +35,10 @@
 #define MCP23X17_IODIRA			0x00	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
 #define MCP23X17_GPIOA			0x12	///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
 
-Display7Segment *Display7Segment::s_pThis = 0;
+Display7Segment *Display7Segment::s_pThis = nullptr;
 
-Display7Segment::Display7Segment(void) : m_I2C(SEGMENT7_I2C_ADDRESS) {
-	assert(s_pThis == 0);
+Display7Segment::Display7Segment() : m_I2C(SEGMENT7_I2C_ADDRESS) {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_bHave7Segment = m_I2C.IsConnected();

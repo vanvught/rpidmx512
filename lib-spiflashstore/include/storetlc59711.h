@@ -33,7 +33,7 @@
 
 #include "spiflashstore.h"
 
-class StoreTLC59711: public TLC59711DmxParamsStore, public TLC59711DmxStore {
+class StoreTLC59711 final: public TLC59711DmxParamsStore, public TLC59711DmxStore {
 public:
 	StoreTLC59711();
 

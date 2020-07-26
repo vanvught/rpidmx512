@@ -38,18 +38,18 @@ struct TRdmTod {
 
 class RDMTod {
 public:
-	 RDMTod(void);
-	 ~RDMTod(void);
+	 RDMTod();
+	 ~RDMTod();
 
-	 void Reset(void);
+	 void Reset();
 	 bool AddUid(const uint8_t *pUid);
-	 uint8_t GetUidCount(void) const;
+	 uint8_t GetUidCount() const;
 	 void Copy(uint8_t *pTable);
 
 	 bool Delete(const uint8_t *pUid);
 	 bool Exist(const uint8_t *pUid);
 
-	 void Dump(void);
+	 void Dump();
 	 void Dump(uint8_t nCount);
 private:
 	 uint8_t m_nEntries;

@@ -50,7 +50,7 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-ArtNetPollTable::ArtNetPollTable(void) :
+ArtNetPollTable::ArtNetPollTable() :
 	m_nPollTableEntries(0),
 	m_nTableUniversesEntries(0)
 {
@@ -69,15 +69,15 @@ ArtNetPollTable::ArtNetPollTable(void) :
 		assert(m_pTableUniverses[nIndex].pIpAddresses != 0);
 	}
 
-	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, static_cast<unsigned int>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), static_cast<unsigned int>(sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
-	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, static_cast<unsigned int>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), static_cast<unsigned int>(sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
+	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %ld bytes [%ld Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
+	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %ld bytes [%ld Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
 
 	m_tTableClean.nTableIndex = 0;
 	m_tTableClean.nUniverseIndex = 0;
 	m_tTableClean.bOffLine = true;
 }
 
-ArtNetPollTable::~ArtNetPollTable(void) {
+ArtNetPollTable::~ArtNetPollTable() {
 	for (uint32_t nIndex = 0; nIndex < ARTNET_POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
 		delete[] m_pTableUniverses[nIndex].pIpAddresses;
 		m_pTableUniverses[nIndex].pIpAddresses = 0;
@@ -303,17 +303,17 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 #ifndef NDEBUG
 	if (ptArtPollReply->BindIndex <= 1) {
-		memcpy(m_pPollTable[i].Mac, ptArtPollReply->MAC, ARTNET_MAC_SIZE);
+		memcpy(m_pPollTable[i].Mac, ptArtPollReply->MAC, ArtNet::MAC_SIZE);
 
 		const uint8_t *pSrc = ptArtPollReply->ShortName;
 		uint8_t *pDst = m_pPollTable[i].ShortName;
-		memcpy(pDst, pSrc, artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
+		memcpy(pDst, pSrc, ArtNet::SHORT_NAME_LENGTH + ArtNet::LONG_NAME_LENGTH);
 	}
 #endif
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
 
-	for (uint32_t nIndex = 0; nIndex < artnet::MAX_PORTS; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < ArtNet::MAX_PORTS; nIndex++) {
 		const uint8_t nPortAddress = ptArtPollReply->SwOut[nIndex];
 
 		if (ptArtPollReply->PortTypes[nIndex] == ARTNET_ENABLE_OUTPUT) {
@@ -346,7 +346,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 	DEBUG_EXIT;
 }
 
-void ArtNetPollTable::Clean(void) {
+void ArtNetPollTable::Clean() {
 	if (m_nPollTableEntries == 0) {
 		return;
 	}
@@ -391,7 +391,7 @@ void ArtNetPollTable::Clean(void) {
 			pDst->nUniversesCount = 0;
 			memset(pDst->Universe, 0, sizeof(struct TArtNetNodeEntryUniverse[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES]));
 #ifndef NDEBUG
-			memset(pDst->Mac, 0, ARTNET_MAC_SIZE + artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
+			memset(pDst->Mac, 0, ArtNet::MAC_SIZE + ArtNet::SHORT_NAME_LENGTH + ArtNet::LONG_NAME_LENGTH);
 #endif
 		}
 
@@ -405,7 +405,7 @@ void ArtNetPollTable::Clean(void) {
 	}
 }
 
-void ArtNetPollTable::Dump(void) {
+void ArtNetPollTable::Dump() {
 #ifndef NDEBUG
 	printf("Entries : %d\n", m_nPollTableEntries);
 
@@ -421,7 +421,7 @@ void ArtNetPollTable::Dump(void) {
 #endif
 }
 
-void ArtNetPollTable::DumpTableUniverses(void) {
+void ArtNetPollTable::DumpTableUniverses() {
 #ifndef NDEBUG
 	printf("Entries : %d\n", m_nTableUniversesEntries);
 

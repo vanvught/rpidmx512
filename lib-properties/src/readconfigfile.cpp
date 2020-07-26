@@ -30,26 +30,26 @@
 #include "readconfigfile.h"
 
 ReadConfigFile::ReadConfigFile(CallbackFunctionPtr cb, void *p) {
-	assert(cb != 0);
-	assert(p != 0);
+	assert(cb != nullptr);
+	assert(p != nullptr);
 
     m_cb = cb;
     m_p = p;
 }
 
-ReadConfigFile::~ReadConfigFile(void) {
-    m_cb = 0;
-    m_p = 0;
+ReadConfigFile::~ReadConfigFile() {
+    m_cb = nullptr;
+    m_p = nullptr;
 }
 
 bool ReadConfigFile::Read(const char *pFileName) {
-	assert(pFileName != 0);
+	assert(pFileName != nullptr);
 
 	char buffer[128];
 
 	FILE *fp = fopen(pFileName, "r");
 
-	if (fp != NULL) {
+	if (fp != nullptr) {
 		for (;;) {
 			if (fgets(buffer, static_cast<int>(sizeof(buffer)) - 1, fp) != buffer) {
 				break; // Error or end of file
@@ -78,7 +78,7 @@ bool ReadConfigFile::Read(const char *pFileName) {
 }
 
 void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
 	char *pSrc = new char[nLength + 1];

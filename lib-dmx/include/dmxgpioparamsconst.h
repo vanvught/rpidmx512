@@ -28,8 +28,7 @@
 
 #include "dmx.h"
 
-class DmxGpioParamsConst {
-public:
+struct DmxGpioParamsConst {
 	static constexpr auto DATA_DIRECTION_OUT_MAX_LENGTH = 21;
 
 	static const char FILE_NAME[];

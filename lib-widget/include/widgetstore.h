@@ -29,7 +29,7 @@
 
 class WidgetStore {
 public:
-	virtual ~WidgetStore(void) {}
+	virtual ~WidgetStore() {}
 
 	virtual void UpdateBreakTime(uint8_t nBreakTime)=0;
 	virtual void UpdateMabTime(uint8_t nMabTime)=0;

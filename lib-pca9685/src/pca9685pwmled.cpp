@@ -34,7 +34,7 @@ PCA9685PWMLed::PCA9685PWMLed(uint8_t nAddress): PCA9685(nAddress) {
 	SetFrequency(PWMLED_DEFAULT_FREQUENCY);
 }
 
-PCA9685PWMLed::~PCA9685PWMLed(void) {
+PCA9685PWMLed::~PCA9685PWMLed() {
 }
 
 void PCA9685PWMLed::Set(uint8_t nChannel, uint16_t nData) {

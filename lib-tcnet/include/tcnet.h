@@ -47,38 +47,38 @@ enum class TCNetLayer {
 class TCNet {
 public:
 	TCNet(TTCNetNodeType tNodeType = TCNET_TYPE_SLAVE);
-	~TCNet(void);
+	~TCNet();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
-	TTCNetNodeType GetNodeType(void) {
+	TTCNetNodeType GetNodeType() {
 		return static_cast<TTCNetNodeType>(m_tOptIn.ManagementHeader.NodeType);
 	}
 
 	void SetNodeName(const char *pNodeName);
-	const char *GetNodeName(void) {
+	const char *GetNodeName() {
 		return reinterpret_cast<char*>(m_tOptIn.ManagementHeader.NodeName);
 	}
 
 	void SetLayer(TCNetLayer tLayer);
-	TCNetLayer GetLayer(void) {
+	TCNetLayer GetLayer() {
 		return m_tLayer;
 	}
 
 	void SetUseTimeCode(bool bUseTimeCode) {
 		m_bUseTimeCode = bUseTimeCode;
 	}
-	bool GetUseTimeCode(void) {
+	bool GetUseTimeCode() {
 		return m_bUseTimeCode;
 	}
 
 	void SetTimeCodeType(TTCNetTimeCodeType tType);
-	TTCNetTimeCodeType GetTimeCodeType(void) {
+	TTCNetTimeCodeType GetTimeCodeType() {
 		return m_tTimeCodeType;
 	}
 
@@ -90,19 +90,19 @@ public:
 	static char GetLayerName(TCNetLayer tLayer);
 	static TCNetLayer GetLayer(char nChar);
 
-	static TCNet *Get(void) {
+	static TCNet *Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandlePort60000Incoming(void);
-	void HandlePort60001Incoming(void);
-	void HandlePort60002Incoming(void);
-	void HandlePortUnicastIncoming(void);
-	void HandleOptInOutgoing(void);
+	void HandlePort60000Incoming();
+	void HandlePort60001Incoming();
+	void HandlePort60002Incoming();
+	void HandlePortUnicastIncoming();
+	void HandleOptInOutgoing();
 
-	void DumpManagementHeader(void);
-	void DumpOptIn(void);
+	void DumpManagementHeader();
+	void DumpOptIn();
 
 private:
 	struct TCNetBroadcast {
@@ -126,10 +126,10 @@ private:
 	uint32_t m_nCurrentMillis = 0;
 	uint32_t m_nPreviousMillis = 0;
 	TCNetLayer m_tLayer = TCNetLayer::LAYER_M;
-	uint32_t *m_pLTime = 0;
-	TTCNetPacketTimeTimeCode *m_pLTimeCode = 0;
+	uint32_t *m_pLTime = nullptr;
+	TTCNetPacketTimeTimeCode *m_pLTimeCode = nullptr;
 	bool m_bUseTimeCode = false;
-	TCNetTimeCode *m_pTCNetTimeCode = 0;
+	TCNetTimeCode *m_pTCNetTimeCode = nullptr;
 	float m_fTypeDivider = 1000.0F / 30;
 	TTCNetTimeCodeType m_tTimeCodeType;
 	uint8_t m_nSeqTimeMessage = 0;

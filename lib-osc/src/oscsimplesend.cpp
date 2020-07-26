@@ -35,7 +35,7 @@
 
 // Support for path only
 OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType) {
-	if (pType == 0) {
+	if (pType == nullptr) {
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4;
 
@@ -48,7 +48,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 
 // Support for 's'
 OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, const char *pString) {
-	if ((pType != 0) && (*pType == 's')) {
+	if ((pType != nullptr) && (*pType == 's')) {
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + OSCString::Size(pString);
 
@@ -65,7 +65,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 
 // Support for type 'i'
 OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, int nValue) {
-	if ((pType != 0) && (*pType == 'i')) {
+	if ((pType != nullptr) && (*pType == 'i')) {
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + 4;
 
@@ -81,7 +81,7 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 
 // Support for type 'f'
 OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPort, const char *pPath, const char *pType, float fValue) {
-	if ((pType != 0) && (*pType == 'f')) {
+	if ((pType != nullptr) && (*pType == 'f')) {
 		const uint32_t nPathLength = OSCString::Size(pPath);
 		const uint32_t nMessageLength = nPathLength + 4 + 4;
 

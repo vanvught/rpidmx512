@@ -39,47 +39,47 @@ struct TLightSetEntry {
 
 class LightSetChain: public LightSet {
 public:
-	LightSetChain(void);
-	~LightSetChain(void);
+	LightSetChain();
+	~LightSetChain() override;
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
 
-	void Print(void);
+	void Print() override;
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	 uint16_t GetDmxStartAddress(void) {
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	 uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	 uint16_t GetDmxFootprint(void)  {
+	 uint16_t GetDmxFootprint() override  {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 public:
 	bool Add(LightSet *, int nType = LIGHTSET_TYPE_UNDEFINED);
-	bool IsEmpty(void) const;
+	bool IsEmpty() const;
 	bool Exist(LightSet *);
 	bool Exist(LightSet *, int, bool DoIgnoreType = false);
 
-	uint8_t GetSize(void) const;
+	uint8_t GetSize() const;
 	int GetType(uint8_t) const;
 	const LightSet *GetLightSet(uint8_t);
 
 public:
 	void Dump(uint8_t);
-	void Dump(void);
+	void Dump();
 
 private:
-	uint8_t m_nSize;
+	uint8_t m_nSize{0};
 	TLightSetEntry *m_pTable;
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
+	uint16_t m_nDmxStartAddress{DMX_ADDRESS_INVALID};
+	uint16_t m_nDmxFootprint{0};
 };
 
 #endif /* LIGHTSETCHAIN_H_ */

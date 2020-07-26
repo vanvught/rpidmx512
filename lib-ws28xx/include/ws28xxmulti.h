@@ -48,32 +48,32 @@ enum WS28xxMultiActivePorts {
 
 class WS28xxMulti {
 public:
-	WS28xxMulti(void);
-	~WS28xxMulti(void);
+	WS28xxMulti();
+	~WS28xxMulti();
 
 	void Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 
-	TWS28XXType GetLEDType(void) {
+	TWS28XXType GetLEDType() {
 		return m_tWS28xxType;
 	}
 
-	TRGBMapping GetRgbMapping(void) {
+	TRGBMapping GetRgbMapping() {
 		return m_tRGBMapping;
 	}
 
-	uint8_t GetLowCode(void) {
+	uint8_t GetLowCode() {
 		return m_nLowCode;
 	}
 
-	uint8_t GetHighCode(void) {
+	uint8_t GetHighCode() {
 		return m_nHighCode;
 	}
 
-	uint16_t GetLEDCount(void) {
+	uint16_t GetLEDCount() {
 		return m_nLedCount;
 	}
 
-	WS28xxMultiBoard GetBoard(void) {
+	WS28xxMultiBoard GetBoard() {
 		return m_tBoard;
 	}
 
@@ -93,7 +93,7 @@ public:
 	}
 
 #if defined (H3)
-	bool IsUpdating(void) {
+	bool IsUpdating() {
 		if (m_tBoard == WS28XXMULTI_BOARD_8X) {
 			return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
 		} else {
@@ -106,25 +106,25 @@ public:
 	}
 #endif
 
-	void Update(void);
-	void Blackout(void);
+	void Update();
+	void Blackout();
 
 private:
 	uint8_t ReverseBits(uint8_t nBits);
 
 // 4x
-	bool IsMCP23017(void);
+	bool IsMCP23017();
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
-	bool SetupSI5351A(void);
-	void SetupGPIO(void);
-	void SetupBuffers4x(void);
+	bool SetupSI5351A();
+	void SetupGPIO();
+	void SetupBuffers4x();
 	void Generate800kHz(const uint32_t *pBuffer);
 	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 // 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
-	void SetupSPI(void);
-	void SetupBuffers8x(void);
+	void SetupSPI();
+	void SetupBuffers8x();
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 

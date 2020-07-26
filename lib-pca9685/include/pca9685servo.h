@@ -39,13 +39,13 @@
 class PCA9685Servo: public PCA9685 {
 public:
 	PCA9685Servo(uint8_t nAddress = 0x40);
-	~PCA9685Servo(void);
+	~PCA9685Servo();
 
 	void SetLeftUs(uint16_t);
-	uint16_t GetLeftUs(void) const;
+	uint16_t GetLeftUs() const;
 
 	void SetRightUs(uint16_t);
-	uint16_t GetRightUs(void) const;
+	uint16_t GetRightUs() const;
 
 	void Set(uint8_t nChannel, uint16_t nData);
 	void Set(uint8_t nChannel, uint8_t nData);
@@ -53,8 +53,8 @@ public:
 	void SetAngle(uint8_t nChannel, uint8_t nAngle);
 
 private:
-	void CalcLeftCount(void);
-	void CalcRightCount(void);
+	void CalcLeftCount();
+	void CalcRightCount();
 
 private:
 	uint16_t m_nLeftUs;

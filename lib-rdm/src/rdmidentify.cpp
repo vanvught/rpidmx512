@@ -33,7 +33,7 @@
 
 RDMIdentify *RDMIdentify::s_pThis = 0;
 
-RDMIdentify::RDMIdentify(void) :
+RDMIdentify::RDMIdentify() :
 	m_bIsEnabled(false),
 	m_nMode(IDENTIFY_MODE_QUIET)
 {
@@ -41,18 +41,18 @@ RDMIdentify::RDMIdentify(void) :
 	s_pThis = this;
 }
 
-void RDMIdentify::On(void) {
+void RDMIdentify::On() {
 	m_bIsEnabled = true;
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
 
 }
 
-void RDMIdentify::Off(void) {
+void RDMIdentify::Off() {
 	m_bIsEnabled = false;
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 
 }
 
-bool RDMIdentify::IsEnabled(void) {
+bool RDMIdentify::IsEnabled() {
 	return m_bIsEnabled;
 }

@@ -178,7 +178,7 @@ namespace udp {
 	static constexpr auto BUFFER_SIZE = 1024;
 }
 
-RemoteConfig *RemoteConfig::s_pThis = 0;
+RemoteConfig *RemoteConfig::s_pThis = nullptr;
 
 RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs):
 	m_tRemoteConfig(tRemoteConfig),
@@ -189,15 +189,15 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	m_bEnableReboot(false),
 	m_bEnableUptime(false),
 	m_bEnableTFTP(false),
-	m_pTFTPFileServer(0),
-	m_pTFTPBuffer(0),
+	m_pTFTPFileServer(nullptr),
+	m_pTFTPBuffer(nullptr),
 	m_nIdLength(0),
 	m_nHandle(-1),
-	m_pUdpBuffer(0),
+	m_pUdpBuffer(nullptr),
 	m_nIPAddressFrom(0),
 	m_nBytesReceived(0),
 	m_tRemoteConfigHandleMode(REMOTE_CONFIG_HANDLE_MODE_TXT),
-	m_pStoreBuffer(0),
+	m_pStoreBuffer(nullptr),
 	m_bIsReboot(false)
 
 {
@@ -206,7 +206,7 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	assert(tRemoteConfig < REMOTE_CONFIG_LAST);
 	assert(tRemoteConfigMode < REMOTE_CONFIG_MODE_LAST);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	Network::Get()->MacAddressCopyTo(m_tRemoteConfigListBin.aMacAddress);
@@ -224,10 +224,10 @@ RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemot
 	assert(m_nHandle != -1);
 
 	m_pUdpBuffer = new char[udp::BUFFER_SIZE];
-	assert(m_pUdpBuffer != 0);
+	assert(m_pUdpBuffer != nullptr);
 
 	m_pStoreBuffer = new uint8_t[udp::BUFFER_SIZE];
-	assert(m_pStoreBuffer != 0);
+	assert(m_pStoreBuffer != nullptr);
 
 	DEBUG_EXIT
 }
@@ -236,10 +236,10 @@ RemoteConfig::~RemoteConfig() {
 	DEBUG_ENTRY
 
 	delete [] m_pStoreBuffer;
-	m_pStoreBuffer = 0;
+	m_pStoreBuffer = nullptr;
 
 	delete [] m_pUdpBuffer;
-	m_pUdpBuffer = 0;
+	m_pUdpBuffer = nullptr;
 
 	Network::Get()->End(udp::PORT);
 	m_nHandle = -1;
@@ -281,7 +281,7 @@ void RemoteConfig::Run() {
 		return;
 	}
 
-	if (__builtin_expect((m_pTFTPFileServer != 0), 0)) {
+	if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
 		m_pTFTPFileServer->Run();
 	}
 
@@ -577,22 +577,20 @@ void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 }
 
 #if defined (ARTNET_NODE)
-void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetArtnetTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	uint32_t nSizeArtNet3 = 0;
 
+	assert(StoreArtNet::Get() != nullptr);
 	ArtNetParams artnetparams(StoreArtNet::Get());
 	artnetparams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSizeArtNet3);
 
-	DEBUG_PRINTF("nSizeArtNet3=%d", nSizeArtNet3);
-
 	uint32_t nSizeArtNet4 = 0;
 
+	assert(StoreArtNet4::Get() != nullptr);
 	ArtNet4Params artnet4params(StoreArtNet4::Get());
 	artnet4params.Save(m_pUdpBuffer + nSizeArtNet3, udp::BUFFER_SIZE - nSizeArtNet3, nSizeArtNet4);
-
-	DEBUG_PRINTF("nSizeArtNet4=%d", nSizeArtNet4);
 
 	nSize = nSizeArtNet3 + nSizeArtNet4;
 
@@ -601,7 +599,7 @@ void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 #endif
 
 #if defined (E131_BRIDGE)
-void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
+void RemoteConfig::HandleGetE131Txt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	E131Params e131params(StoreE131::Get());
@@ -612,7 +610,7 @@ void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 #endif
 
 #if defined (OSC_SERVER)
-void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetOscTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	OSCServerParams oscServerParams(StoreOscServer::Get());
@@ -623,7 +621,7 @@ void RemoteConfig::HandleGetOscTxt(uint32_t& nSize) {
 #endif
 
 #if defined (OSC_CLIENT)
-void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetOscClntTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	OscClientParams oscClientParams(StoreOscClient::Get());
@@ -634,7 +632,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 #endif
 
 #if defined (DMXSEND)
-void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetParamsTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	DMXParams dmxparams(StoreDmxSend::Get());
@@ -645,7 +643,7 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 #endif
 
 #if defined (PIXEL)
-void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetDevicesTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	bool bIsSetLedType = false;
@@ -668,7 +666,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 #endif
 
 #if defined (LTC_READER)
-void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetLtcTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	LtcParams ltcParams(StoreLtc::Get());
@@ -677,7 +675,7 @@ void RemoteConfig::HandleGetLtcTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleGetLtcDisplayTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetLtcDisplayTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	LtcDisplayParams ltcDisplayParams(StoreLtcDisplay::Get());
@@ -686,7 +684,7 @@ void RemoteConfig::HandleGetLtcDisplayTxt(uint32_t& nSize) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetTCNetTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	TCNetParams tcnetParams(StoreTCNet::Get());
@@ -697,7 +695,7 @@ void RemoteConfig::HandleGetTCNetTxt(uint32_t& nSize) {
 #endif
 
 #if defined(DMX_MONITOR)
-void RemoteConfig::HandleGetMonTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetMonTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	DMXMonitorParams monitorParams(StoreMonitor::Get());
@@ -708,7 +706,7 @@ void RemoteConfig::HandleGetMonTxt(uint32_t& nSize) {
 #endif
 
 #if defined(DISPLAY_UDF)
-void RemoteConfig::HandleGetDisplayTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetDisplayTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	DisplayUdfParams displayParams(StoreDisplayUdf::Get());
@@ -719,7 +717,7 @@ void RemoteConfig::HandleGetDisplayTxt(uint32_t& nSize) {
 #endif
 
 #if defined(STEPPER)
-void RemoteConfig::HandleGetSparkFunTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetSparkFunTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	SparkFunDmxParams sparkFunParams(StoreSparkFunDmx::Get());
@@ -767,7 +765,7 @@ void RemoteConfig::HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize) {
 #endif
 
 #if defined(SHOWFILE)
-void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetShowTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	ShowFileParams showFileParams(StoreShowFile::Get());
@@ -778,7 +776,7 @@ void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
 #endif
 
 #if defined (DMXSERIAL)
-void RemoteConfig::HandleGetSerialTxt(uint32_t& nSize) {
+void RemoteConfig::HandleGetSerialTxt(uint32_t &nSize) {
 	DEBUG_ENTRY
 
 	DmxSerialParams dmxSerialParams(StoreDmxSerial::Get());
@@ -940,6 +938,7 @@ void RemoteConfig::HandleTxtFileArtnet() {
 	DEBUG_ENTRY
 	static_assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams), "");
 
+	assert(StoreArtNet4::Get() != nullptr);
 	ArtNet4Params artnet4params(StoreArtNet4::Get());
 
 	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
@@ -1303,16 +1302,16 @@ void RemoteConfig::HandleTftpSet() {
 		Display::Get()->SetSleep(false);
 	}
 
-	if (m_bEnableTFTP && (m_pTFTPFileServer == 0)) {
+	if (m_bEnableTFTP && (m_pTFTPFileServer == nullptr)) {
 		printf("Create TFTP Server\n");
 
 		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
-		assert(m_pTFTPBuffer != 0);
+		assert(m_pTFTPBuffer != nullptr);
 
 		m_pTFTPFileServer = new TFTPFileServer(m_pTFTPBuffer, FIRMWARE_MAX_SIZE);
-		assert(m_pTFTPFileServer != 0);
+		assert(m_pTFTPFileServer != nullptr);
 		Display::Get()->TextStatus("TFTP On", Display7SegmentMessage::INFO_TFTP_ON);
-	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != 0)) {
+	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != nullptr)) {
 		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
 		DEBUG_PRINTF("nFileSize=%d, %d", nFileSize, m_pTFTPFileServer->isDone());
 
@@ -1332,10 +1331,10 @@ void RemoteConfig::HandleTftpSet() {
 		printf("Delete TFTP Server\n");
 
 		delete m_pTFTPFileServer;
-		m_pTFTPFileServer = 0;
+		m_pTFTPFileServer = nullptr;
 
 		delete[] m_pTFTPBuffer;
-		m_pTFTPBuffer = 0;
+		m_pTFTPBuffer = nullptr;
 
 		if (bSucces) { // Keep error message
 			Display::Get()->TextStatus("TFTP Off", Display7SegmentMessage::INFO_TFTP_OFF);

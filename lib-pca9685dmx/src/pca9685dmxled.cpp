@@ -44,7 +44,7 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-PCA9685DmxLed::PCA9685DmxLed(void):
+PCA9685DmxLed::PCA9685DmxLed():
 	m_nDmxStartAddress(1),
 	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
 	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
@@ -60,7 +60,7 @@ PCA9685DmxLed::PCA9685DmxLed(void):
 {
 }
 
-PCA9685DmxLed::~PCA9685DmxLed(void) {
+PCA9685DmxLed::~PCA9685DmxLed() {
 	delete[] m_pDmxData;
 	m_pDmxData = 0;
 
@@ -156,7 +156,7 @@ bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& 
 	return true;
 }
 
-uint8_t PCA9685DmxLed::GetI2cAddress(void) const {
+uint8_t PCA9685DmxLed::GetI2cAddress() const {
 	return m_nI2cAddress;
 }
 
@@ -175,7 +175,7 @@ void PCA9685DmxLed::SetPwmfrequency(uint16_t nPwmfrequency) {
 	m_nPwmFrequency = nPwmfrequency;
 }
 
-bool PCA9685DmxLed::GetInvert(void) const {
+bool PCA9685DmxLed::GetInvert() const {
 	return m_bOutputInvert;
 }
 
@@ -183,7 +183,7 @@ void PCA9685DmxLed::SetInvert(bool bOutputInvert) {
 	m_bOutputInvert = bOutputInvert;
 }
 
-bool PCA9685DmxLed::GetOutDriver(void) const {
+bool PCA9685DmxLed::GetOutDriver() const {
 	return m_bOutputDriver;
 }
 
@@ -196,7 +196,7 @@ void PCA9685DmxLed::SetDmxFootprint(uint16_t nDmxFootprint) {
 	m_nBoardInstances = static_cast<uint16_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
 }
 
-void PCA9685DmxLed::Initialize(void) {
+void PCA9685DmxLed::Initialize() {
 	assert(m_pDmxData == 0);
 	m_pDmxData = new uint8_t[m_nDmxFootprint];
 	assert(m_pDmxData != 0);

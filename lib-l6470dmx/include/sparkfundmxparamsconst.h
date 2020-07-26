@@ -26,8 +26,7 @@
 #ifndef SPARKFUNDMXPARAMSCONST_H_
 #define SPARKFUNDMXPARAMSCONST_H_
 
-class SparkFunDmxParamsConst {
-public:
+struct SparkFunDmxParamsConst {
 	static const char FILE_NAME[];
 	static const char POSITION[];
 #if !defined (H3)

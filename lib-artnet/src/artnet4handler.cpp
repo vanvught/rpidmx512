@@ -30,7 +30,7 @@
 
 #include "artnetnode.h"
 
-ArtNet4Handler::~ArtNet4Handler(void) {
+ArtNet4Handler::~ArtNet4Handler() {
 
 }
 

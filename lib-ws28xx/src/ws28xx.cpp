@@ -25,9 +25,6 @@
 
 #include <stdint.h>
 #include <string.h>
-#ifndef NDEBUG
- #include <stdio.h>
-#endif
 #include <cassert>
 
 #include "ws28xx.h"
@@ -126,12 +123,10 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 
 	FUNC_PREFIX(spi_set_speed_hz(m_nClockSpeedHz));
 
-#ifndef NDEBUG
-	printf("m_bIsRTZProtocol=%d, m_nClockSpeedHz=%d\n", static_cast<int>(m_bIsRTZProtocol), m_nClockSpeedHz);
-#endif
+	DEBUG_PRINTF("m_bIsRTZProtocol=%d, m_nClockSpeedHz=%d", static_cast<int>(m_bIsRTZProtocol), m_nClockSpeedHz);
 }
 
-WS28xx::~WS28xx(void) {
+WS28xx::~WS28xx() {
 	if (m_pBlackoutBuffer != 0) {
 		delete [] m_pBlackoutBuffer;
 		m_pBlackoutBuffer = 0;
@@ -143,7 +138,7 @@ WS28xx::~WS28xx(void) {
 	}
 }
 
-bool WS28xx::Initialize(void) {
+bool WS28xx::Initialize() {
 	assert(m_pBuffer == 0);
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != 0);
@@ -175,12 +170,12 @@ bool WS28xx::Initialize(void) {
 	return true;
 }
 
-void WS28xx::Update(void) {
-	assert (m_pBuffer != 0);
+void WS28xx::Update() {
+	assert (m_pBuffer != nullptr);
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
 }
 
-void WS28xx::Blackout(void) {
-	assert (m_pBlackoutBuffer != 0);
+void WS28xx::Blackout() {
+	assert (m_pBlackoutBuffer != nullptr);
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 }

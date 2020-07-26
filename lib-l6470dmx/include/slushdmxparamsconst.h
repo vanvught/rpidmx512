@@ -27,8 +27,7 @@
 #ifndef SLUSHDMXPARAMSCONST_H_
 #define SLUSHDMXPARAMSCONST_H_
 
-class SlushDmxParamsConst {
-public:
+struct SlushDmxParamsConst {
 	static const char FILE_NAME[];
 
 	static const char USE_SPI[];

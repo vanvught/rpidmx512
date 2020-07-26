@@ -27,18 +27,20 @@
 
 #include "debug.h"
 
+using namespace serial;
+
 bool Serial::Init(void) {
 	DEBUG_ENTRY
 
-	if (m_tType == SerialType::UART) {
+	if (m_tType == type::UART) {
 		return InitUart();
 	}
 
-	if (m_tType == SerialType::SPI) {
+	if (m_tType == type::SPI) {
 		return InitSpi();
 	}
 
-	if (m_tType == SerialType::I2C) {
+	if (m_tType == type::I2C) {
 		return InitI2c();
 	}
 

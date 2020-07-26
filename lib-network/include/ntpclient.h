@@ -40,7 +40,7 @@ enum class NtpClientStatus {
 
 class NtpClientDisplay {
 public:
-	virtual ~NtpClientDisplay(void) {
+	virtual ~NtpClientDisplay() {
 	}
 
 	virtual void ShowNtpClientStatus(NtpClientStatus nStatus)=0;
@@ -49,14 +49,13 @@ public:
 class NtpClient {
 public:
 	NtpClient(uint32_t nServerIp = 0);
-	~NtpClient(void);
 
-	void Init(void);
-	void Run(void);
+	void Init();
+	void Run();
 
-	void Print(void);
+	void Print();
 
-	NtpClientStatus GetStatus(void) {
+	NtpClientStatus GetStatus() {
 		return m_tStatus;
 	}
 

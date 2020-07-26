@@ -34,16 +34,16 @@
 
 #define SEGMENTS	8
 
-class LtcDisplayMax7219Matrix: public LtcDisplayMax7219Set, public Max7219Matrix {
+class LtcDisplayMax7219Matrix final: public LtcDisplayMax7219Set, public Max7219Matrix {
 public:
 	LtcDisplayMax7219Matrix();
 
-	void Init(uint8_t nIntensity);
+	void Init(uint8_t nIntensity) override;
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+	void Show(const char *pTimecode) override;
+	void ShowSysTime(const char *pSystemTime) override;
 
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+	void WriteChar(uint8_t nChar, uint8_t nPos=0) override;
 
 	static LtcDisplayMax7219Matrix* Get() {
 		return s_pThis;

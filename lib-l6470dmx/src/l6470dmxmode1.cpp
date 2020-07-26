@@ -46,19 +46,19 @@ L6470DmxMode1::L6470DmxMode1(L6470 *pL6470) {
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode1::~L6470DmxMode1(void) {
+L6470DmxMode1::~L6470DmxMode1() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode1::Start(void) {
+void L6470DmxMode1::Start() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode1::Stop(void) {
+void L6470DmxMode1::Stop() {
 	DEBUG2_ENTRY;
 
 	m_pL6470->hardHiZ();

@@ -71,11 +71,11 @@ void RDMDiscovery::SetUid(const uint8_t *uid) {
 	m_DiscUniqueBranch.SetSrcUid(uid);
 }
 
-const uint8_t *RDMDiscovery::GetUid(void) {
+const uint8_t *RDMDiscovery::GetUid() {
 	return m_Uid;
 }
 
-void RDMDiscovery::Full(void) {
+void RDMDiscovery::Full() {
 	Reset();
 
 	m_UnMute.Send(m_nPort);

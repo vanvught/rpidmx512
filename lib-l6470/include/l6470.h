@@ -91,11 +91,11 @@ enum TL6470ParamRegisters {
 class L6470 {
 
 public:
-	virtual ~L6470(void);
+	virtual ~L6470();
 	virtual int busyCheck()=0;
 
 public:
-	int getStatus(void);
+	int getStatus();
 
 	void setParam(TL6470ParamRegisters, unsigned long);
 	long getParam(TL6470ParamRegisters);
@@ -129,28 +129,28 @@ public:
 
 	void setMicroSteps(unsigned int);
 
-	bool getLoSpdOpt(void);
-	uint8_t getStepMode(void);
-	float getMaxSpeed(void);
-	float getMinSpeed(void);
-	float getFullSpeed(void);
-	float getAcc(void);
-	float getDec(void);
-	uint8_t getOCThreshold(void);
-	int getPWMFreqDivisor(void);
-	int getPWMFreqMultiplier(void);
-	int getSlewRate(void);
-	int getOCShutdown(void);
-	int getVoltageComp(void);
-	int getSwitchMode(void);
-	int getOscMode(void);
-	uint8_t getAccKVAL(void);
-	uint8_t getDecKVAL(void);
-	uint8_t getRunKVAL(void);
-	uint8_t getHoldKVAL(void);
+	bool getLoSpdOpt();
+	uint8_t getStepMode();
+	float getMaxSpeed();
+	float getMinSpeed();
+	float getFullSpeed();
+	float getAcc();
+	float getDec();
+	uint8_t getOCThreshold();
+	int getPWMFreqDivisor();
+	int getPWMFreqMultiplier();
+	int getSlewRate();
+	int getOCShutdown();
+	int getVoltageComp();
+	int getSwitchMode();
+	int getOscMode();
+	uint8_t getAccKVAL();
+	uint8_t getDecKVAL();
+	uint8_t getRunKVAL();
+	uint8_t getHoldKVAL();
 
-	long getPos(void);
-	long getMark(void);
+	long getPos();
+	long getMark();
 	void run(TL6470Direction, float);
 	void stepClock(TL6470Direction);
 	void move(TL6470Direction, unsigned long);
@@ -158,16 +158,16 @@ public:
 	void goToDir(TL6470Direction, long);
 	void goUntil(TL6470Action, TL6470Direction, float);
 	void releaseSw(TL6470Action, TL6470Direction);
-	void goHome(void);
-	void goMark(void);
+	void goHome();
+	void goMark();
 	void setMark(long);
 	void setPos(long);
-	void resetPos(void);
-	void resetDev(void);
-	void softStop(void);
-	void hardStop(void);
-	void softHiZ(void);
-	void hardHiZ(void);
+	void resetPos();
+	void resetDev();
+	void softStop();
+	void hardStop();
+	void softHiZ();
+	void hardHiZ();
 
 	void move(long nStep) {
 		if (nStep >= 0) {
@@ -188,11 +188,11 @@ public:
 	/**
 	 * Just for administration purposes
 	 */
-	unsigned GetMotorNumber(void) {
+	unsigned GetMotorNumber() {
 		return m_nMotorNumber;
 	}
 
-	void Dump(void);
+	void Dump();
 
 private:
 	virtual uint8_t SPIXfer(uint8_t)=0;

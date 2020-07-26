@@ -62,7 +62,7 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 
 	m_tArtNetParams.nUniverse = 1;
 
-	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		m_tArtNetParams.nUniversePort[i] = 1 + i;
 	}
 
@@ -145,14 +145,14 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	nLength = artnet::SHORT_NAME_LENGTH - 1;
+	nLength = ArtNet::SHORT_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<char*>(m_tArtNetParams.aShortName), nLength) == Sscan::OK) {
 		m_tArtNetParams.aShortName[nLength] = '\0';
 		m_tArtNetParams.nSetList |= ArtnetParamsMask::SHORT_NAME;
 		return;
 	}
 
-	nLength = artnet::LONG_NAME_LENGTH - 1;
+	nLength = ArtNet::LONG_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<char*>(m_tArtNetParams.aLongName), nLength) == Sscan::OK) {
 		m_tArtNetParams.aLongName[nLength] = '\0';
 		m_tArtNetParams.nSetList |= ArtnetParamsMask::LONG_NAME;
@@ -202,7 +202,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = 3;
-	if (Sscan::Char(pLine, ArtNetParamsConst::MERGE_MODE, value, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, LightSetConst::PARAMS_MERGE_MODE, value, nLength) == Sscan::OK) {
 		if(ArtNet::GetMergeMode(value) == ArtNetMerge::LTP) {
 			m_tArtNetParams.nMergeMode = static_cast<uint8_t>(ArtNetMerge::LTP);
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::MERGE_MODE;
@@ -225,8 +225,8 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (unsigned i = 0; i < artnet::MAX_PORTS; i++) {
-		if (Sscan::Uint8(pLine, ArtNetParamsConst::UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
+	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+		if (Sscan::Uint8(pLine, LightSetConst::PARAMS_UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
 			if ((nValue8 != (i + 1)) && (nValue8 <= 0xF)) {
 				m_tArtNetParams.nUniversePort[i] = nValue8;
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::UNIVERSE_A << i);
@@ -238,7 +238,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		}
 
 		nLength = 3;
-		if (Sscan::Char(pLine, ArtNetParamsConst::MERGE_MODE_PORT[i], value, nLength) == Sscan::OK) {
+		if (Sscan::Char(pLine, LightSetConst::PARAMS_MERGE_MODE_PORT[i], value, nLength) == Sscan::OK) {
 			if(ArtNet::GetMergeMode(value) == ArtNetMerge::LTP) {
 				m_tArtNetParams.nMergeModePort[i] = static_cast<uint8_t>(ArtNetMerge::LTP);
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::MERGE_MODE_A << i);
@@ -297,7 +297,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 }
 
 uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) {
-	assert(nPort < artnet::MAX_PORTS);
+	assert(nPort < ArtNet::MAX_PORTS);
 
 	IsSet = isMaskSet(ArtnetParamsMask::UNIVERSE_A << nPort);
 

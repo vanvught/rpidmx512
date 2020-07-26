@@ -26,13 +26,9 @@
 #ifndef E131PARAMSCONST_H_
 #define E131PARAMSCONST_H_
 
-class E131ParamsConst {
-public:
+struct E131ParamsConst {
 	static const char FILE_NAME[];
 
-	static const char UNIVERSE_PORT[4][16];
-	static const char MERGE_MODE[];
-	static const char MERGE_MODE_PORT[4][18];
 	static const char NETWORK_DATA_LOSS_TIMEOUT[];
 	static const char DISABLE_MERGE_TIMEOUT[];
 	static const char DIRECTION[];

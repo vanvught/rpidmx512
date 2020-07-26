@@ -46,45 +46,45 @@ struct OscClientMax {
 
 class OscClient {
 public:
-	OscClient(void);
-	~OscClient(void);
+	OscClient();
+	~OscClient();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	int Run(void);
+	int Run();
 
 	void Send(const char *pPath);
 	void SendCmd(uint8_t nCmd);
 
-	void Print(void);
+	void Print();
 
 	void SetServerIP(uint32_t nServerIP) {
 		m_nServerIP = nServerIP;
 	}
-	uint32_t GetServerIP(void) {
+	uint32_t GetServerIP() {
 		return m_nServerIP;
 	}
 
 	void SetPortOutgoing(uint16_t nPortOutgoing = OscClientDefault::PORT_OUTGOING);
-	uint16_t GetPortOutgoing(void) {
+	uint16_t GetPortOutgoing() {
 		return m_nPortOutgoing;
 	}
 
 	void SetPortIncoming(uint16_t nPortIncoming = OscClientDefault::PORT_INCOMING);
-	uint16_t GetPortIncoming(void) {
+	uint16_t GetPortIncoming() {
 		return m_nPortIncoming;
 	}
 
 	void SetPingDisable(bool nPingDisable = true) {
 		m_bPingDisable = nPingDisable;
 	}
-	bool GetPingDisable(void) {
+	bool GetPingDisable() {
 		return m_bPingDisable;
 	}
 
 	void SetPingDelay(uint32_t nPingDelay = OscClientDefault::PING_DELAY_SECONDS);
-	uint8_t GetPingDelay(void) {
+	uint8_t GetPingDelay() {
 		return m_nPingDelayMillis / 1000;
 	}
 
@@ -94,7 +94,7 @@ public:
 	void SetLedHandler(OscClientLed *pOscClientLed);
 
 private:
-	bool HandleLedMessage(void);
+	bool HandleLedMessage();
 
 private:
 	uint32_t m_nServerIP;

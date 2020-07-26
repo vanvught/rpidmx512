@@ -28,7 +28,7 @@
 
 #include "sparkfundmxparams.h"
 
-class StoreSparkFunDmx: public SparkFunDmxParamsStore {
+class StoreSparkFunDmx final: public SparkFunDmxParamsStore {
 public:
 	StoreSparkFunDmx();
 

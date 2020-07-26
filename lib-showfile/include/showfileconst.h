@@ -28,10 +28,9 @@
 
 #include "showfile.h"
 
-class ShowFileConst {
-public:
+struct ShowFileConst {
 	static constexpr auto SHOWFILECONST_FORMAT_NAME_LENGTH = 6;	///< Includes '\0'
-	static const char FORMAT[static_cast<int>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
+	static const char FORMAT[static_cast<unsigned>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
 
 	static const char STATUS[static_cast<int>(ShowFileStatus::UNDEFINED)][12];
 };

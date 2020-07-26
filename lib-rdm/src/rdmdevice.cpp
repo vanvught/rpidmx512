@@ -54,7 +54,7 @@
  static constexpr char DEVICE_LABEL[] = "RDM Device";
 #endif
 
-RDMDevice::RDMDevice(void):
+RDMDevice::RDMDevice():
 	m_IsInit(false),
 	m_nDeviceRootLabelLength(0),
 	m_nCheckSum(0),
@@ -96,7 +96,7 @@ RDMDevice::RDMDevice(void):
 	DEBUG_EXIT
 }
 
-uint16_t RDMDevice::CalculateChecksum(void) {
+uint16_t RDMDevice::CalculateChecksum() {
 	uint16_t nChecksum = m_nDeviceRootLabelLength;
 
 	for (uint32_t i = 0; i < m_tRDMDevice.nDeviceRootLabelLength; i++) {
@@ -106,7 +106,7 @@ uint16_t RDMDevice::CalculateChecksum(void) {
 	return nChecksum;
 }
 
-void RDMDevice::Init(void) {
+void RDMDevice::Init() {
 	DEBUG_ENTRY
 
 	assert(!m_IsInit);
@@ -120,7 +120,7 @@ void RDMDevice::Init(void) {
 	DEBUG_EXIT
 }
 
-void RDMDevice::SetFactoryDefaults(void) {
+void RDMDevice::SetFactoryDefaults() {
 	DEBUG_ENTRY
 
 	struct TRDMDeviceInfoData info;
@@ -133,7 +133,7 @@ void RDMDevice::SetFactoryDefaults(void) {
 	DEBUG_EXIT
 }
 
-bool RDMDevice::GetFactoryDefaults(void) {
+bool RDMDevice::GetFactoryDefaults() {
 	return (m_nCheckSum == CalculateChecksum());
 }
 

@@ -37,7 +37,7 @@
 
 #include "debug.h"
 
-void E131Bridge::FillDataPacket(void) {
+void E131Bridge::FillDataPacket() {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
 	m_pE131DataPacket->RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
@@ -56,7 +56,7 @@ void E131Bridge::FillDataPacket(void) {
 	m_pE131DataPacket->DMPLayer.AddressIncrement = __builtin_bswap16(0x0001);
 }
 
-void E131Bridge::HandleDmxIn(void) {
+void E131Bridge::HandleDmxIn() {
 	assert(m_pE131DataPacket != 0);
 
 	for (uint32_t i = 0 ; i < E131_MAX_UARTS; i++) {

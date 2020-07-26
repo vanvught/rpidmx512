@@ -39,36 +39,33 @@ static constexpr auto BLINK_ON = (1 << 1);
 
 class DisplaySet {
 public:
-	virtual ~DisplaySet(void) {
+	virtual ~DisplaySet() {
 	}
 
-	uint8_t GetColumns(void) {
+	uint8_t GetColumns() {
 		return m_nCols;
 	}
 
-	uint8_t GetRows(void) {
+	uint8_t GetRows() {
 		return m_nRows;
 	}
 
-	virtual bool Start(void)= 0;
-
-	virtual void Cls(void)= 0;
-
+	virtual bool Start()= 0;
+	virtual void Cls()= 0;
 	virtual void PutChar(int)= 0;
-	virtual void PutString(const char *)= 0;
-
-	virtual void TextLine(uint8_t, const char *, uint8_t)= 0;
+	virtual void PutString(const char*)= 0;
+	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
 	virtual void ClearLine(uint8_t)= 0;
-
 	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
-
-	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
+	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
+	}
 
 #if defined(ENABLE_CURSOR_MODE)
 	virtual void SetCursor(uint32_t)= 0;
 #endif
 
-	virtual void PrintInfo(void) {}
+	virtual void PrintInfo() {
+	}
 
 protected:
 	uint8_t m_nCols;

@@ -35,12 +35,12 @@
 
 class ArtNet4Handler {
 public:
-	virtual ~ArtNet4Handler(void);
+	virtual ~ArtNet4Handler();
 
 	virtual void SetPort(uint8_t nPortId, TArtNetPortDir dir)=0;
 	virtual void HandleAddress(uint8_t nCommand)=0;
 	virtual uint8_t GetStatus(uint8_t nPortId)=0;
-	virtual bool IsStatusChanged(void)=0;
+	virtual bool IsStatusChanged()=0;
 
 private:
 };

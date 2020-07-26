@@ -39,9 +39,9 @@ uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 	return static_cast<uint8_t>((output >> 24));
 }
 
-void WS28xxMulti::Update(void) {
+void WS28xxMulti::Update() {
 	if (m_tBoard == WS28XXMULTI_BOARD_8X) {
-		assert(m_pBuffer8x != 0);
+		assert(m_pBuffer8x != nullptr);
 		assert(!h3_spi_dma_tx_is_active());
 
 		h3_spi_dma_tx_start(m_pBuffer8x, m_nBufSize);
@@ -51,11 +51,11 @@ void WS28xxMulti::Update(void) {
 	}
 }
 
-void WS28xxMulti::Blackout(void) {
+void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
 	if (m_tBoard == WS28XXMULTI_BOARD_8X) {
-		assert(m_pBlackoutBuffer8x != 0);
+		assert(m_pBlackoutBuffer8x != nullptr);
 		assert(!h3_spi_dma_tx_is_active());
 
 		h3_spi_dma_tx_start(m_pBlackoutBuffer8x, m_nBufSize);

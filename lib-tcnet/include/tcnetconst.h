@@ -28,8 +28,7 @@
 
 #include <stdint.h>
 
-class TCNetConst {
-public:
+struct TCNetConst {
 	static const uint8_t FPS[4];
 };
 

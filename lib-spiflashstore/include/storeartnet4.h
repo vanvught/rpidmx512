@@ -28,12 +28,12 @@
 
 #include "artnet4params.h"
 
-class StoreArtNet4: public ArtNet4ParamsStore {
+class StoreArtNet4 final: public ArtNet4ParamsStore {
 public:
 	StoreArtNet4();
 
-	void Update(const struct TArtNet4Params *pArtNet4Params);
-	void Copy(struct TArtNet4Params *pArtNet4Params);
+	void Update(const struct TArtNet4Params *pArtNet4Params) override;
+	void Copy(struct TArtNet4Params *pArtNet4Params) override;
 
 	static StoreArtNet4 *Get() {
 		return s_pThis;

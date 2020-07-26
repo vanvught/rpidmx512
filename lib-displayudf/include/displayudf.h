@@ -62,29 +62,26 @@ enum TDisplayUdfLabels {
 
 class DisplayUdf: public Display {
 public:
-	DisplayUdf(void);
-	~DisplayUdf(void);
+	DisplayUdf();
 
 	void SetTitle(const char *format, ...);
 
-	// Art-Net
 	void Show(ArtNetNode *pArtNetNode);
 	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 
-	// sACN E1.31
 	void Show(E131Bridge *pE131Bridge);
 
 	// LightSet
-	void ShowDmxStartAddress(void);
+	void ShowDmxStartAddress();
 
 	// Network
-	void ShowIpAddress(void);
-	void ShowNetmask(void);
-	void ShowHostName(void);
+	void ShowIpAddress();
+	void ShowNetmask();
+	void ShowHostName();
 	void ShowDhcpStatus(DhcpClientStatus nStatus);
-	void ShowShutdown(void);
+	void ShowShutdown();
 
 	void Set(uint8_t nLine, enum TDisplayUdfLabels tLabel);
 
@@ -96,11 +93,11 @@ public:
 		return m_aLabels[0];
 	}
 
-	static DisplayUdf *Get(void) {
+	static DisplayUdf *Get() {
 		return s_pThis;
 	}
 
-	void Show(void);
+	void Show();
 
 private:
 	char m_aTitle[32];

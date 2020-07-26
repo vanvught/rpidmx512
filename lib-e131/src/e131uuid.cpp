@@ -37,13 +37,13 @@
 static constexpr char EXT_UID[] = ".uid";
 static constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
 
-E131Uuid::E131Uuid(void) {
+E131Uuid::E131Uuid() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-E131Uuid::~E131Uuid(void) {
+E131Uuid::~E131Uuid() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

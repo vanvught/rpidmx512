@@ -26,8 +26,7 @@
 #ifndef RDMDEVICEPARAMSCONST_H_
 #define RDMDEVICEPARAMSCONST_H_
 
-class RDMDeviceParamsConst {
-public:
+struct RDMDeviceParamsConst {
 	static const char FILE_NAME[];
 
 	static const char LABEL[];

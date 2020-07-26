@@ -74,15 +74,12 @@ NtpClient::NtpClient(uint32_t nServerIp):
 	DEBUG_EXIT
 }
 
-NtpClient::~NtpClient(void) {
-}
-
 void NtpClient::SetUtcOffset(float fUtcOffset) {
 	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 	m_nUtcOffset = Utc::Validate(fUtcOffset);
 }
 
-void NtpClient::Init(void) {
+void NtpClient::Init() {
 	DEBUG_ENTRY
 
 	if (m_nServerIp == 0) {
@@ -153,7 +150,7 @@ void NtpClient::Init(void) {
 	DEBUG_EXIT
 }
 
-void NtpClient::Run(void) {
+void NtpClient::Run() {
 	if (m_tStatus == NtpClientStatus::STOPPED) {
 		return;
 	}
@@ -212,7 +209,7 @@ void NtpClient::Run(void) {
 	}
 }
 
-void NtpClient::Print(void) {
+void NtpClient::Print() {
 	printf("NTP v%d Client\n", NTP_VERSION >> 3);
 	if (m_nServerIp == 0) {
 		printf(" Not enabled\n");

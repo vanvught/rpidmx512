@@ -28,7 +28,7 @@
 #include "rdmdeviceresponder.h"
 #include "rdmdevice.h"
 
-void RDMDeviceResponder::Print(void) {
+void RDMDeviceResponder::Print() {
 	RDMDevice::Print();
 
 	const struct TRDMDeviceInfo *pDeviceInfo = GetDeviceInfo();

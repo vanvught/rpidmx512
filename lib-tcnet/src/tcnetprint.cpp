@@ -28,7 +28,7 @@
 #include "tcnet.h"
 #include "tcnetconst.h"
 
-void TCNet::Print(void) {
+void TCNet::Print() {
 	printf("TCNet\n");
 	printf(" Node : %.8s\n", m_tOptIn.ManagementHeader.NodeName);
 	if (m_tLayer != TCNetLayer::LAYER_UNDEFINED) {

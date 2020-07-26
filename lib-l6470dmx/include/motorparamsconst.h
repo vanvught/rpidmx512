@@ -26,8 +26,7 @@
 #ifndef MOTORPARAMSCONST_H_
 #define MOTORPARAMSCONST_H_
 
-class MotorParamsConst {
-public:
+struct MotorParamsConst {
 	static const char STEP_ANGEL[];
 	static const char VOLTAGE[];
 	static const char CURRENT[];
