@@ -35,14 +35,14 @@
 class WS28xxDMA: public WS28xx {
 public:
 	WS28xxDMA(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
-	~WS28xxDMA(void);
+	~WS28xxDMA();
 
-	bool Initialize (void);
+	bool Initialize ();
 
-	void Update(void);
-	void Blackout(void);
+	void Update();
+	void Blackout();
 
-	bool IsUpdating (void) { // returns TRUE while DMA operation is active
+	bool IsUpdating () { // returns TRUE while DMA operation is active
 		return h3_spi_dma_tx_is_active();
 	}
 };

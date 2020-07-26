@@ -71,47 +71,47 @@ static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
 class WS28xx {
 public:
 	WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
-	~WS28xx(void);
+	~WS28xx();
 
-	bool Initialize (void);
+	bool Initialize ();
 
-	TWS28XXType GetLEDType(void) {
+	TWS28XXType GetLEDType() {
 		return m_tLEDType;
 	}
 
-	TRGBMapping GetRgbMapping(void) {
+	TRGBMapping GetRgbMapping() {
 		return m_tRGBMapping;
 	}
 
-	uint8_t GetLowCode(void) {
+	uint8_t GetLowCode() {
 		return m_nLowCode;
 	}
 
-	uint8_t GetHighCode(void) {
+	uint8_t GetHighCode() {
 		return m_nHighCode;
 	}
 
-	uint16_t GetLEDCount(void) {
+	uint16_t GetLEDCount() {
 		return m_nLedCount;
 	}
 
-	uint32_t GetClockSpeedHz(void) {
+	uint32_t GetClockSpeedHz() {
 		return m_nClockSpeedHz;
 	}
 
 	void SetGlobalBrightness(uint8_t nGlobalBrightness);
 
-	uint8_t GetGlobalBrightness(void) {
+	uint8_t GetGlobalBrightness() {
 		return m_nGlobalBrightness;
 	}
 
 	void SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
-	void Update(void);
-	void Blackout(void);
+	void Update();
+	void Blackout();
 
-	bool IsUpdating(void) {
+	bool IsUpdating() {
 		return false;
 	}
 

@@ -58,7 +58,7 @@ void WS28xxMulti::SetupHC595(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_EXIT
 }
 
-void WS28xxMulti::SetupSPI(void) {
+void WS28xxMulti::SetupSPI() {
 	DEBUG_ENTRY
 
 	FUNC_PREFIX (spi_begin());

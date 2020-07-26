@@ -30,78 +30,54 @@
 #include "ws28xxmulti.h"
 
 #include "si5351a.h"
-#include "mcp23017.h"
 #include "mcp23x17.h"
-
-#include "display.h"
+#include "hal_i2c.h"
 
 #include "debug.h"
 
-bool WS28xxMulti::SetupSI5351A(void) {
+bool WS28xxMulti::SetupSI5351A(	) {
 	DEBUG_ENTRY
 
-	device_info_t clock_generator; // = { static_cast<spi_cs_t>(0), };
-	memset(&clock_generator, 0, sizeof(device_info_t));
+	SI5351A si5351a;
 
-	if (!si5351a_start(&clock_generator)) {
-		DEBUG_PUTS("si5351a not connected!");
+	if (!si5351a.IsConnected()) {
+		DEBUG_PUTS("SI5351A is not connected!");
 		DEBUG_EXIT
 		return false;
-	} else {
-		if (si5351a_clock_builder(&clock_generator)) {
-			DEBUG_PUTS("si5351a is running");
-			DEBUG_EXIT
-			return true;
-		} else {
-			Display::Get()->TextStatus("E: SI5351A", Display7SegmentMessage::ERROR_SI5351A);
-			DEBUG_PUTS("si5351a error");
-			DEBUG_EXIT
-			return false;
-		}
 	}
 
-	__builtin_unreachable();
+	si5351a.ClockBuilder();
+
+	DEBUG_PUTS("SI5351A is running");
+	DEBUG_EXIT
+	return true;
 }
 
-bool WS28xxMulti::IsMCP23017(void) {
-	DEBUG_ENTRY
-
-	device_info_t timing;// = { static_cast<spi_cs_t>(0), };
-	memset(&timing, 0, sizeof(device_info_t));
-
-	if (!mcp23017_start(&timing)) {
-		puts("mcp23017 not connected!");
-		DEBUG_EXIT
-		return false;
-	}
-
-	return true;
-
-	DEBUG_EXIT
+bool WS28xxMulti::IsMCP23017() {
+	return HAL_I2C::IsConnected(mcp23x17::i2c::address, hal::i2c::NORMAL_SPEED);
 }
 
 bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_ENTRY
 
-	device_info_t timing;// = { static_cast<spi_cs_t>(0), };
-	memset(&timing, 0, sizeof(device_info_t));
+	HAL_I2C MCP23017(mcp23x17::i2c::address);
 
-	if (!mcp23017_start(&timing)) {
-		puts("mcp23017 not connected!");
+	if (!MCP23017.IsConnected()) {
+		puts("MCP23017 not connected!");
 		DEBUG_EXIT
 		return false;
 	}
 
-	mcp23017_reg_write(&timing, MCP23X17_IODIRA, 0x0000); // All output
+	MCP23017.WriteRegister(mcp23x17::reg::IODIRA, static_cast<uint16_t>(0x0000)); // All output
 
 	nT0H = (nT0H << 1);
 	nT1H = (nT1H << 1);
 
 	DEBUG_PRINTF("nT0H=%.2x nT1H=%.2x", nT0H, nT1H);
 
-	mcp23017_reg_write(&timing, MCP23X17_GPIOA, (nT1H << 8) | nT0H);
+	MCP23017.WriteRegister(mcp23x17::reg::GPIOA, static_cast<uint16_t>(nT1H | (nT0H << 8)));
 
-	puts("mcp23017 running");
+	puts("MCP23017 is configured");
 	DEBUG_EXIT
 	return true;
 }
