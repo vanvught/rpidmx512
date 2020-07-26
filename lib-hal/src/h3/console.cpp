@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file console.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#include <stdint.h>
+#include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "h3_uart0_debug.h"
 
-extern void uart0_init(void);
-extern void uart0_putc(char);
-extern void uart0_puts(char *);
-extern int uart0_getc(void);
+#include "console.h"
 
-#ifdef __cplusplus
+Console::Console() {
 }
-#endif
 
-#endif /* H3_UART_DEBUG_H_ */
+const char* Console::ReadLine(uint32_t &nLength) {
+	int c;
+
+	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {
+		if (m_nLength < sizeof(m_Buffer)) {
+			if ((c == '\r') || (c == '\n')){
+				m_bIsEndOfLine = true;
+				nLength = m_nLength;
+				m_nLength = 0;
+				return m_Buffer;
+			} else {
+				if (m_bIsEndOfLine) {
+					m_bIsEndOfLine = false;
+					nLength = 0;
+				}
+			}
+			m_Buffer[m_nLength] = c;
+			m_nLength++;
+		}
+	}
+
+	return nullptr;
+}

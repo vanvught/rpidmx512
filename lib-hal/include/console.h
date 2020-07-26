@@ -82,4 +82,16 @@ extern uint16_t console_get_line_width(void);
 }
 #endif
 
+#ifdef __cplusplus
+class Console {
+public:
+	Console();
+	const char *ReadLine(uint32_t &nLength);
+
+private:
+	bool m_bIsEndOfLine{false};
+	uint32_t m_nLength{0};
+	char m_Buffer[255];
+};
+#endif
 #endif /* CONSOLE_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file timecode.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2019 Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#ifndef TIMECODE_H_
+#define TIMECODE_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "artnettimecode.h"
 
-extern void uart0_init(void);
-extern void uart0_putc(char);
-extern void uart0_puts(char *);
-extern int uart0_getc(void);
+class TimeCode: public ArtNetTimeCode {
+public:
+	TimeCode(void);
+	~TimeCode(void);
 
-#ifdef __cplusplus
-}
-#endif
+	void Start(void);
+	void Stop(void);
 
-#endif /* H3_UART_DEBUG_H_ */
+	void Handler(const struct TArtNetTimeCode *);
+};
+
+
+
+#endif /* TIMECODE_H_ */

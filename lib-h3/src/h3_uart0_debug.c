@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 
 #include "h3.h"
 #include "h3_ccu.h"
@@ -92,3 +93,12 @@ void uart0_puts(char *s) {
 		uart0_putc(*s++);
 	}
 }
+
+int uart0_getc(void) {
+	if (__builtin_expect(((H3_UART0->LSR & UART_LSR_DR) != UART_LSR_DR), 1)) {
+		return EOF;
+	}
+
+	return (int) H3_UART0->O00.RBR;
+}
+
