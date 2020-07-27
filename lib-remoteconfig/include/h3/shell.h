@@ -1,5 +1,5 @@
 /**
- * @file console.cpp
+ * @file shell.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,36 +23,48 @@
  * THE SOFTWARE.
  */
 
+#ifndef H3_SHELL_H_
+#define H3_SHELL_H_
+
 #include <stdint.h>
-#include <stdio.h>
 
-#include "h3_uart0_debug.h"
+namespace shell {
+enum class CmdIndex: uint32_t {
+	REBOOT,
+	INFO,
+#ifndef NDEBUG
+	I2CDETECT,
+#endif
+	HELP
+};
+static constexpr auto BUFLEN = 196;
+static constexpr auto MAXARG = 4;
+}  // namespace shell
 
-#include "console.h"
+class Shell {
+public:
+	Shell();
 
-Console::Console() {
-}
+	void Run();
 
-const char* Console::ReadLine(uint32_t &nLength) {
-	int c;
+private:
+	const char *ReadLine(uint32_t &nLength);
+	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
+	void ValidateArg(uint32_t nOffset, uint32_t nLength);
+	// Cmd
+	void CmdReboot();
+	void CmdInfo();
+#ifndef NDEBUG
+	void CmdI2cDetect();
+#endif
+	void CmdHelp();
 
-	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {
-		if (m_nLength < sizeof(m_Buffer)) {
-			if ((c == '\r') || (c == '\n')){
-				m_bIsEndOfLine = true;
-				nLength = m_nLength;
-				m_nLength = 0;
-				return m_Buffer;
-			} else {
-				if (m_bIsEndOfLine) {
-					m_bIsEndOfLine = false;
-					nLength = 0;
-				}
-			}
-			m_Buffer[m_nLength] = c;
-			m_nLength++;
-		}
-	}
+private:
+	bool m_bIsEndOfLine{false};
+	uint32_t m_nLength{0};
+	char m_Buffer[shell::BUFLEN];
+	uint32_t m_Argc{0};
+	char *m_Argv[shell::MAXARG]{nullptr};
+};
 
-	return nullptr;
-}
+#endif /* H3_SHELL_H_ */

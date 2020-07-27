@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file shellcmd.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
-
-#ifdef __cplusplus
-extern "C" {
+// FIXME Remove when finished
+#ifdef NDEBUG
+#undef NDEBUG
 #endif
 
-extern void uart0_init(void);
-extern void uart0_putc(char);
-extern void uart0_puts(const char *);
-extern int uart0_getc(void);
+#include <stdint.h>
 
-#ifdef __cplusplus
+#include <h3/shell.h>
+
+#ifndef NDEBUG
+# include "../debug/i2cdetect.h"
+#endif
+
+#include "debug.h"
+
+void Shell::CmdReboot() {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void Shell::CmdInfo() {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+#ifndef NDEBUG
+void Shell::CmdI2cDetect() {
+	DEBUG_ENTRY
+	I2cDetect i2cdetect;
+	DEBUG_EXIT
 }
 #endif
-
-#endif /* H3_UART_DEBUG_H_ */

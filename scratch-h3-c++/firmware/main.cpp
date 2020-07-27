@@ -25,7 +25,7 @@ static const char SOFTWARE_VERSION[] = "0.0";
 /*
  *
  */
-#include "console.h"
+#include <h3/shell.h>
 
 extern "C" {
 
@@ -60,7 +60,7 @@ void notmain(void) {
 	/*
 	 *
 	 */
-	Console console;
+	Shell shell;
 
 	for (;;) {
 		nw.Run();
@@ -70,13 +70,7 @@ void notmain(void) {
 		/*
 		 *
 		 */
-
-		const char *p;
-		uint32_t nLength;
-
-		if ((p = console.ReadLine(nLength)) != nullptr) {
-			printf("[%d] {%.*s}\n", nLength, nLength, p);
-		}
+		shell.Run();
 	}
 }
 
