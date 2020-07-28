@@ -31,6 +31,10 @@
 #include <stdint.h>
 
 #include <h3/shell.h>
+#include "remoteconfig.h"
+
+#include "hardware.h"
+#include "firmwareversion.h"
 
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
@@ -40,11 +44,18 @@
 
 void Shell::CmdReboot() {
 	DEBUG_ENTRY
+	RemoteConfig::Get()->Reboot();
 	DEBUG_EXIT
 }
 
 void Shell::CmdInfo() {
 	DEBUG_ENTRY
+	FirmwareVersion::Get()->Print("");
+	printf("Core Temperature: %.2f\n",Hardware::Get()->GetCoreTemperature());
+	printf("Core Temperature Max: %.2f\n",Hardware::Get()->GetCoreTemperatureMax());
+	printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
+	printf("Hostname: %s\n", Network::Get()->GetHostName());
+	printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
 	DEBUG_EXIT
 }
 
