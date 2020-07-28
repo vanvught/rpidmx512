@@ -72,10 +72,7 @@ Shell::Shell() {
 const char* Shell::ReadLine(uint32_t &nLength) {
 	int c;
 
-	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {
-		if (m_bEcho) {
-			uart0_putc(c); 
-		}		
+	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {	
 		if (c == 127) {		// Backspace
 			if (m_nLength > 0) {
 				m_nLength--;
@@ -187,9 +184,6 @@ void Shell::Run() {
 		return;
 	}
 	
-	if (m_bEcho){
-		uart0_puts("\n");
-	}
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
 #ifndef NDEBUG

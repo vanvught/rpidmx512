@@ -60,8 +60,7 @@ private:
 	void CmdHelp();
 
 private:
-	bool m_bIsEndOfLine{false};	
-	bool m_bEcho{true};
+	bool m_bIsEndOfLine{false};		
 	uint32_t m_nLength{0};
 	char m_Buffer[shell::BUFLEN];
 	uint32_t m_Argc{0};
