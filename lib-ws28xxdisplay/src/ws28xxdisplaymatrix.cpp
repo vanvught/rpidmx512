@@ -33,7 +33,7 @@
  #include "ws28xx.h"
 #endif
 
-#include "../../lib-bob/include/font_cp437.h"
+#include "../lib-device/src/font_cp437.h"
 
 #include "debug.h"
 
@@ -66,7 +66,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 	DEBUG2_EXIT
 }
 
-WS28xxDisplayMatrix::~WS28xxDisplayMatrix(void) {
+WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 	DEBUG2_ENTRY
 
 	if (m_pWS28xx != 0) {
@@ -211,14 +211,14 @@ void WS28xxDisplayMatrix::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	m_nLine = nRow;
 }
 
-void WS28xxDisplayMatrix::Cls(void) {
+void WS28xxDisplayMatrix::Cls() {
 	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 	m_pWS28xx->Blackout();
 }
 
-void WS28xxDisplayMatrix::Show(void) {
+void WS28xxDisplayMatrix::Show() {
 	if (m_bUpdateNeeded) {
 		m_bUpdateNeeded = false;
 		m_pWS28xx->Update();
@@ -247,7 +247,7 @@ void WS28xxDisplayMatrix::SetColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, ui
 	m_ptColons[nPos].nGreen = nGreen;
 }
 
-void WS28xxDisplayMatrix::SetColonsOff(void) {
+void WS28xxDisplayMatrix::SetColonsOff() {
 	for (uint32_t nPos = 0; nPos < m_nMaxPosition; nPos++) {
 		m_ptColons[nPos].nBits = 0;
 		m_ptColons[nPos].nRed = 0;
