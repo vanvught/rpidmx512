@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "h3_uart0_debug.h"
 
@@ -156,7 +157,7 @@ void Shell::ValidateArg(uint32_t nOffset, uint32_t nLength) {
 #ifndef NDEBUG
 	DEBUG_PRINTF("m_Argc=%d", m_Argc);
 	for (uint32_t i = 0; i < m_Argc; i++) {
-		printf("%d:[%s]\n", i, m_Argv[i]);
+		uart0_printf("%d:[%s]\n", i, m_Argv[i]);
 	}
 #endif
 }
@@ -175,7 +176,7 @@ void Shell::Run() {
 	}
 
 #ifndef NDEBUG
-	printf("[%d] {%.*s}\n", nLength, nLength, p); // FIXME Subject for removal when finished
+	uart0_printf("[%d] {%.*s}\n", nLength, nLength, p); // FIXME Subject for removal when finished
 #endif
 
 	uint32_t nOffset;
@@ -187,7 +188,7 @@ void Shell::Run() {
 	}
 
 #ifndef NDEBUG
-	printf("nCmdIndex=%d\n", nCmdIndex); // FIXME Subject for removal when finished
+	uart0_printf("nCmdIndex=%d\n", nCmdIndex); // FIXME Subject for removal when finished
 #endif
 
 	ValidateArg(nOffset, nLength);
