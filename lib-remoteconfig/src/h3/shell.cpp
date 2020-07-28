@@ -52,9 +52,12 @@ static constexpr TCommands cmd_table[] = {
 		{ "?", 0 }
 };
 
+
+
 namespace shell {
 static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
 namespace msg {
+static constexpr char CMD_PROMPT[] = "opi> ";
 static constexpr char CMD_NOT_FOUND[] = "Command not found\n";
 static constexpr char TOO_MANY_ARGUMENTS[] = "Too many arguments\n";
 }  // namespace msg
@@ -70,6 +73,9 @@ const char* Shell::ReadLine(uint32_t &nLength) {
 	int c;
 
 	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {
+		if (m_bEcho) {
+			uart0_putc(c); 
+		}		
 		if (c == 127) {		// Backspace
 			if (m_nLength > 0) {
 				m_nLength--;
@@ -166,13 +172,25 @@ void Shell::CmdHelp() {
 	DEBUG_EXIT
 }
 
+
 void Shell::Run() {
 	const char *p;
 	uint32_t nLength;
+	
 
-	if (__builtin_expect(((p = ReadLine(nLength)) == nullptr), 1)) {
+	if (__builtin_expect((m_bShownPrompt == 0), 1)) {
+		uart0_puts(msg::CMD_PROMPT);
+		m_bShownPrompt = true;
+	}
+
+	if (__builtin_expect(((p = ReadLine(nLength)) == nullptr), 1)) {		
 		return;
 	}
+	
+	if (m_bEcho){
+		uart0_puts("\n");
+	}
+	m_bShownPrompt = false; // next time round, we show the prompt.
 
 #ifndef NDEBUG
 	printf("[%d] {%.*s}\n", nLength, nLength, p); // FIXME Subject for removal when finished
@@ -214,4 +232,5 @@ void Shell::Run() {
 		default:
 			break;
 	}
+
 }

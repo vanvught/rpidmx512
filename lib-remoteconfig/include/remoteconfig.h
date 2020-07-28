@@ -159,6 +159,10 @@ public:
 		return m_bIsReboot;
 	}
 
+	void Reboot() {
+		HandleReboot();
+	}
+
 	void Run();
 
 	void TftpExit();
