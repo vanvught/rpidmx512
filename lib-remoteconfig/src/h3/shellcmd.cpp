@@ -30,7 +30,9 @@
 
 #include <stdint.h>
 
-#include <h3/shell.h>
+#include "h3/shell.h"
+#include "h3_uart0_debug.h"
+
 #include "remoteconfig.h"
 
 #include "hardware.h"
@@ -50,12 +52,12 @@ void Shell::CmdReboot() {
 
 void Shell::CmdInfo() {
 	DEBUG_ENTRY
-	FirmwareVersion::Get()->Print("");
-	printf("Core Temperature: %.2f\n",Hardware::Get()->GetCoreTemperature());
-	printf("Core Temperature Max: %.2f\n",Hardware::Get()->GetCoreTemperatureMax());
-	printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
-	printf("Hostname: %s\n", Network::Get()->GetHostName());
-	printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
+	uart0_printf("%s", FirmwareVersion::Get()->GetPrint());
+	uart0_printf("Core Temperature: %.0f\n",Hardware::Get()->GetCoreTemperature());
+	uart0_printf("Core Temperature Max: %.0f\n",Hardware::Get()->GetCoreTemperatureMax());
+	uart0_printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
+	uart0_printf("Hostname: %s\n", Network::Get()->GetHostName());
+	uart0_printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
 	DEBUG_EXIT
 }
 

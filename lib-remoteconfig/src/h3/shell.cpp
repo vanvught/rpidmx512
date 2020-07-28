@@ -176,7 +176,7 @@ void Shell::Run() {
 	uint32_t nLength;
 	
 
-	if (__builtin_expect((m_bShownPrompt == 0), 1)) {
+	if (__builtin_expect((!m_bShownPrompt), 1)) {
 		uart0_puts(msg::CMD_PROMPT);
 		m_bShownPrompt = true;
 	}
