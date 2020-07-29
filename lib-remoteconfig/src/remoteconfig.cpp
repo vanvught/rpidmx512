@@ -886,15 +886,15 @@ void RemoteConfig::HandleTxtFileRconfig() {
 
 	RemoteConfigParams remoteConfigParams(StoreRemoteConfig::Get());
 
-	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN)
-		if (m_nBytesReceived == sizeof(struct TRemoteConfigParams))  {
-			uint32_t nSize;
-			remoteConfigParams.Builder(reinterpret_cast<const struct TRemoteConfigParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
-			m_nBytesReceived = nSize;
-        } else {
-            DEBUG_EXIT
-            return;
-        }
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+	        if (m_nBytesReceived == sizeof(struct TRemoteConfigParams)) {
+		        uint32_t nSize;
+		        remoteConfigParams.Builder(reinterpret_cast<const struct TRemoteConfigParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+		        m_nBytesReceived = nSize;
+		} else {
+		        DEBUG_EXIT
+			return;
+		}
 	}
 
 	remoteConfigParams.Load(m_pUdpBuffer, m_nBytesReceived);
