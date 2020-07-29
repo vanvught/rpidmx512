@@ -183,23 +183,7 @@ RemoteConfig *RemoteConfig::s_pThis = nullptr;
 RemoteConfig::RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs):
 	m_tRemoteConfig(tRemoteConfig),
 	m_tRemoteConfigMode(tRemoteConfigMode),
-	m_nOutputs(nOutputs),
-	m_bDisable(false),
-	m_bDisableWrite(false),
-	m_bEnableReboot(false),
-	m_bEnableUptime(false),
-	m_bEnableTFTP(false),
-	m_pTFTPFileServer(nullptr),
-	m_pTFTPBuffer(nullptr),
-	m_nIdLength(0),
-	m_nHandle(-1),
-	m_pUdpBuffer(nullptr),
-	m_nIPAddressFrom(0),
-	m_nBytesReceived(0),
-	m_tRemoteConfigHandleMode(REMOTE_CONFIG_HANDLE_MODE_TXT),
-	m_pStoreBuffer(nullptr),
-	m_bIsReboot(false)
-
+	m_nOutputs(nOutputs)
 {
 	DEBUG_ENTRY
 
@@ -377,7 +361,7 @@ void RemoteConfig::HandleVersion() {
 	} else if (m_nBytesReceived == REQUEST_VERSION_LENGTH + 3) {
 		DEBUG_PUTS("Check for \'bin\' parameter");
 		if (memcmp(&m_pUdpBuffer[REQUEST_VERSION_LENGTH], "bin", 3) == 0) {
-			const uint8_t *p = reinterpret_cast<const uint8_t*>(FirmwareVersion::Get()->GetVersion());
+			const auto *p = reinterpret_cast<const uint8_t*>(FirmwareVersion::Get()->GetVersion());
 			Network::Get()->SendTo(m_nHandle, p, sizeof(struct TFirmwareVersion) , m_nIPAddressFrom, udp::PORT);
 		}
 	}
@@ -803,7 +787,9 @@ void RemoteConfig::HandleTxtFile() {
 		nLength = udp::BUFFER_SIZE - SET_STORE_LENGTH;
 		i = GetIndex(&m_pUdpBuffer[SET_STORE_LENGTH], nLength);
 		if (i < TXT_FILE_LAST) {
-			memcpy(m_pStoreBuffer, m_pUdpBuffer, udp::BUFFER_SIZE);
+			m_nBytesReceived = m_nBytesReceived - nLength - SET_STORE_LENGTH;
+			memcpy(m_pStoreBuffer, &m_pUdpBuffer[nLength + SET_STORE_LENGTH], udp::BUFFER_SIZE);
+			debug_dump(m_pStoreBuffer, m_nBytesReceived);
 		} else {
 			return;
 		}
