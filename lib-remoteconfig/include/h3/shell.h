@@ -32,6 +32,7 @@ namespace shell {
 enum class CmdIndex: uint32_t {
 	REBOOT,
 	INFO,
+	SET,
 #ifndef NDEBUG
 	I2CDETECT,
 #endif
@@ -54,6 +55,7 @@ private:
 	// Cmd
 	void CmdReboot();
 	void CmdInfo();
+	void CmdSet();
 #ifndef NDEBUG
 	void CmdI2cDetect();
 #endif
