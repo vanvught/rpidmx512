@@ -34,6 +34,7 @@ extern void uart0_init(void);
 extern void uart0_putc(char);
 extern void uart0_puts(const char *);
 extern int uart0_getc(void);
+extern int uart0_printf(const char* fmt, ...);
 
 #ifdef __cplusplus
 }
