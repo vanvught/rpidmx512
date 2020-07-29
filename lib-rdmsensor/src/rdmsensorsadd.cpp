@@ -35,7 +35,8 @@ bool RDMSensors::Add(RDMSensor *pRDMSensor) {
 
 	assert(m_pRDMSensor != nullptr);
 
-	if (m_pRDMSensor != nullptr) {
+	if (m_pRDMSensor == nullptr) {
+		DEBUG_EXIT
 		return false;
 	}
 
