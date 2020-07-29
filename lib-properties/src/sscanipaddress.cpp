@@ -106,3 +106,68 @@ Sscan::ReturnCode Sscan::IpAddress(const char *pBuffer, const char *pName, uint3
 
 	return Sscan::OK;
 }
+
+
+
+Sscan::ReturnCode Sscan::IpAddress(const char *pBuffer, uint32_t& nIpAddress) {
+	assert(pBuffer != nullptr);
+
+	_pcast32 cast32;
+
+	const char *p = pBuffer;
+
+	uint32_t i, j, k;
+
+	for (i = 0; i < 3; ++i) {
+		j = 0;
+		k = 0;
+
+		while ((*p != '.') && (*p != 0)) {
+			if (j == 3) {
+				return Sscan::VALUE_ERROR;
+			}
+
+			if (isdigit(*p) == 0) {
+				return Sscan::VALUE_ERROR;
+			}
+
+			j++;
+			k = k * 10 + static_cast<uint32_t>(*p) - '0';
+			p++;
+		}
+
+		if (k > 255) {
+			return Sscan::VALUE_ERROR;
+		}
+
+		cast32.u8[i] = static_cast<uint8_t>(k);
+		p++;
+	}
+
+	j = 0;
+	k = 0;
+
+	while ((*p != ' ') && (*p != 0)) {
+		if (j == 3) {
+			return Sscan::VALUE_ERROR;
+		}
+
+		if (isdigit(*p) == 0) {
+			return Sscan::VALUE_ERROR;
+		}
+
+		j++;
+		k = k * 10 + static_cast<uint32_t>(*p) - '0';
+		p++;
+	}
+
+	if (k > 255) {
+		return Sscan::VALUE_ERROR;
+	}
+
+	cast32.u8[i] = static_cast<uint8_t>(k);
+
+	nIpAddress = cast32.u32;
+
+	return Sscan::OK;
+}

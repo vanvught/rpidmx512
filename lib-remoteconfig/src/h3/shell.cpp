@@ -47,6 +47,7 @@ struct TCommands {
 static constexpr TCommands cmd_table[] = {
 		{ "reboot", 0 },
 		{ "info", 0 },
+		{ "set", 2},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
 #endif
@@ -216,6 +217,9 @@ void Shell::Run() {
 		case CmdIndex::INFO:
 			CmdInfo();
 			break;
+		case CmdIndex::SET:
+			CmdSet();
+			break;			
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:
 			CmdI2cDetect();

@@ -29,20 +29,34 @@
 #endif
 
 #include <stdint.h>
+#include <string.h>
 
 #include "h3/shell.h"
 #include "h3_uart0_debug.h"
 
 #include "remoteconfig.h"
+#include "network.h"
 
 #include "hardware.h"
 #include "firmwareversion.h"
+
+#include "sscan.h"
 
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
 #endif
 
 #include "debug.h"
+
+
+static constexpr char sSetIP[] = "ip";
+static constexpr auto SETIP_LENGTH = sizeof(sSetIP) - 1;
+
+static constexpr char sSetHostname[] = "hostname";
+static constexpr auto SETHOSTNAME_LENGTH = sizeof(sSetHostname) - 1;
+
+
+using namespace shell;
 
 void Shell::CmdReboot() {
 	DEBUG_ENTRY
@@ -60,6 +74,37 @@ void Shell::CmdInfo() {
 	uart0_printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
 	DEBUG_EXIT
 }
+
+void Shell::CmdSet() {
+	DEBUG_ENTRY
+#ifndef NDEBUG
+	uart0_printf("m_Argv[0..1]: %s %s\n", m_Argv[0], m_Argv[1]);
+#endif
+	size_t nArgLen = strlen(m_Argv[0]);
+	
+	if ((nArgLen == SETIP_LENGTH) && (memcmp(m_Argv[0], sSetIP, SETIP_LENGTH) == 0)) {					
+		nArgLen = strlen(m_Argv[1]);	// set ip command, 2nd arg is IP address string	
+		uint32_t nValue32;
+		if (Sscan::IpAddress(m_Argv[1],nValue32) == Sscan::OK) {
+			uart0_printf("New IP: %d.%d.%d.%d\n", IP2STR(nValue32));  // testing					
+			Network::Get()->SetIp(nValue32);
+		} else {
+			uart0_puts("Usage: set ip x.x.x.x\n");
+		}	
+	} else if ((nArgLen == SETHOSTNAME_LENGTH) && (memcmp(m_Argv[0], sSetHostname, SETHOSTNAME_LENGTH) == 0)) {
+		nArgLen = strlen(m_Argv[1]);	// hostname command, 2nd arg is hostname string		
+		uart0_printf("New hostname: %s\n", m_Argv[1]);					
+		if ((nArgLen) && (nArgLen <= TNetwork::NETWORK_HOSTNAME_SIZE)) {				
+			Network::Get()->SetHostName(m_Argv[1]);	// FIXME do some validation ... check for special characters maybe?
+		} else {
+			uart0_puts("Usage: set hostname name\n");	
+		}	  
+	} else { // unknown set command
+		uart0_puts("Usage: set [ip][hostname] [value]\n");
+	}
+	DEBUG_EXIT
+}
+
 
 #ifndef NDEBUG
 void Shell::CmdI2cDetect() {
