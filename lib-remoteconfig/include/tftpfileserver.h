@@ -31,17 +31,17 @@
 
 #include "tftpdaemon.h"
 
-class TFTPFileServer: public TFTPDaemon {
+class TFTPFileServer final: public TFTPDaemon {
 public:
 	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer ();
+	~TFTPFileServer () override;
 
-	bool FileOpen (const char *pFileName, TFTPMode tMode);
-	bool FileCreate (const char *pFileName, TFTPMode tMode);
-	bool FileClose ();
-	size_t FileRead (void *pBuffer, size_t nCount, unsigned nBlockNumber);
-	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber);
-	void Exit();
+	bool FileOpen (const char *pFileName, TFTPMode tMode) override;
+	bool FileCreate (const char *pFileName, TFTPMode tMode) override;
+	bool FileClose () override;
+	size_t FileRead (void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+	void Exit() override;
 
 	uint32_t GetFileSize() {
 		return m_nFileSize;

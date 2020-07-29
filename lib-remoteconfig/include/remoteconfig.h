@@ -29,19 +29,19 @@
 #include <stdint.h>
 
 #if defined (ARTNET_NODE_MULTI)
- #define ARTNET_NODE
+# define ARTNET_NODE
 #endif
 
 #if defined (E131_BRIDGE_MULTI)
- #define E131_BRIDGE
+# define E131_BRIDGE
 #endif
 
 #if defined (PIXEL_MULTI)
- #define PIXEL
+# define PIXEL
 #endif
 
 #if defined (DMXSEND_MULTI)
- #define DMXSEND
+# define DMXSEND
 #endif
 
 #include "spiflashstore.h"
@@ -157,6 +157,10 @@ public:
 
 	bool IsReboot() {
 		return m_bIsReboot;
+	}
+
+	void Reboot() {
+		HandleReboot();
 	}
 
 	void Run();
@@ -281,23 +285,23 @@ private:
 	TRemoteConfig m_tRemoteConfig;
 	TRemoteConfigMode m_tRemoteConfigMode;
 	uint8_t m_nOutputs;
-	bool m_bDisable;
-	bool m_bDisableWrite;
-	bool m_bEnableReboot;
-	bool m_bEnableUptime;
-	bool m_bEnableTFTP;
-	TFTPFileServer *m_pTFTPFileServer;
-	uint8_t *m_pTFTPBuffer;
+	bool m_bDisable{false};
+	bool m_bDisableWrite{false};
+	bool m_bEnableReboot{false};
+	bool m_bEnableUptime{false};
+	bool m_bEnableTFTP{false};
+	TFTPFileServer *m_pTFTPFileServer{nullptr};
+	uint8_t *m_pTFTPBuffer{nullptr};
 	char m_aId[REMOTE_CONFIG_ID_LENGTH];
-	int32_t m_nIdLength;
+	int32_t m_nIdLength{0};
 	struct TRemoteConfigListBin m_tRemoteConfigListBin;
-	int32_t m_nHandle;
-	char *m_pUdpBuffer;
-	uint32_t m_nIPAddressFrom;
-	uint16_t m_nBytesReceived;
-	TRemoteConfigHandleMode m_tRemoteConfigHandleMode;
-	uint8_t *m_pStoreBuffer;
-	bool m_bIsReboot;
+	int32_t m_nHandle{-1};
+	char *m_pUdpBuffer{nullptr};
+	uint32_t m_nIPAddressFrom{0};
+	uint16_t m_nBytesReceived{0};
+	TRemoteConfigHandleMode m_tRemoteConfigHandleMode{REMOTE_CONFIG_HANDLE_MODE_TXT};
+	uint8_t *m_pStoreBuffer{nullptr};
+	bool m_bIsReboot{false};
 
 	static RemoteConfig *s_pThis;
 };

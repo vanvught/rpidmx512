@@ -46,7 +46,7 @@ struct RemoteConfigParamsMask {
 	static constexpr auto ENABLE_REBOOT = (1U << 2);
 	static constexpr auto ENABLE_UPTIME = (1U << 3);
 	static constexpr auto DISPLAY_NAME = (1U << 4);
-	static constexpr auto DISABLE_RDMNET_LLRP_ONY = (1U << 5);
+	static constexpr auto DISABLE_RDMNET_LLRP_ONLY = (1U << 5);
 };
 
 class RemoteConfigParamsStore {

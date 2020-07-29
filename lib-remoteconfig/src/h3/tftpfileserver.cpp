@@ -55,7 +55,7 @@ TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 {
 	DEBUG_ENTRY
 
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_bIsCompressedSupported = Compressed::IsSupported();
 	DEBUG_PRINTF("m_bIsCompressedSupported=%d", static_cast<int>(m_bIsCompressedSupported));
@@ -63,13 +63,13 @@ TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
 	DEBUG_EXIT
 }
 
-TFTPFileServer::~TFTPFileServer(void) {
+TFTPFileServer::~TFTPFileServer() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void TFTPFileServer::Exit(void) {
+void TFTPFileServer::Exit() {
 	DEBUG_ENTRY
 
 	RemoteConfig::Get()->TftpExit();
@@ -88,7 +88,7 @@ bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __a
 bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
 	DEBUG_ENTRY
 
-	assert(pFileName != 0);
+	assert(pFileName != nullptr);
 
 	if (tMode != TFTPMode::BINARY) {
 		DEBUG_EXIT
@@ -109,7 +109,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
 	return (true);
 }
 
-bool TFTPFileServer::FileClose(void) {
+bool TFTPFileServer::FileClose() {
 	DEBUG_ENTRY
 
 	m_bDone = true;
