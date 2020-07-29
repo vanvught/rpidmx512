@@ -61,7 +61,7 @@ static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
 namespace msg {
 static constexpr char CMD_PROMPT[] = "opi> ";
 static constexpr char CMD_NOT_FOUND[] = "Command not found\n";
-static constexpr char TOO_MANY_ARGUMENTS[] = "Too many arguments\n";
+static constexpr char WRONG_ARGUMENTS[] = "Wrong arguments\n";
 }  // namespace msg
 }  // namespace shell
 
@@ -207,7 +207,8 @@ void Shell::Run() {
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
-		uart0_puts(msg::TOO_MANY_ARGUMENTS);
+		uart0_puts(msg::WRONG_ARGUMENTS);
+		return;
 	}
 
 	switch (nCmdIndex) {

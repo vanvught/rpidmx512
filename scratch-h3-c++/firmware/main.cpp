@@ -42,6 +42,7 @@ void notmain(void) {
 	fw.Print();
 
 	nw.Init(StoreNetwork::Get());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);

@@ -49,13 +49,16 @@
 
 #include "debug.h"
 
-
-static constexpr char sSetIP[] = "ip";
-static constexpr auto SETIP_LENGTH = sizeof(sSetIP) - 1;
-
-static constexpr char sSetHostname[] = "hostname";
-static constexpr auto SETHOSTNAME_LENGTH = sizeof(sSetHostname) - 1;
-
+namespace shell {
+namespace cmd {
+static constexpr char SET_IP[] = "ip";
+static constexpr char SET_HOSTNAME[] = "hostname";
+}  // namespace cmd
+namespace length {
+static constexpr auto SET_IP = sizeof(cmd::SET_IP) - 1;
+static constexpr auto SET_HOSTNAME = sizeof(cmd::SET_HOSTNAME) - 1;
+}  // namespace length
+}  // namespace shell
 
 using namespace shell;
 
@@ -65,13 +68,10 @@ void Shell::CmdReboot() {
 	DEBUG_EXIT
 }
 
-
-
 void Shell::CmdInfo() {
 	DEBUG_ENTRY
 	uart0_printf("%s", FirmwareVersion::Get()->GetPrint());
-	uart0_printf("Core Temperature: %.0f\n",Hardware::Get()->GetCoreTemperature());
-	uart0_printf("Core Temperature Max: %.0f\n",Hardware::Get()->GetCoreTemperatureMax());
+	uart0_printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
 	uart0_printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
 	uart0_printf("Hostname: %s\n", Network::Get()->GetHostName());
 	uart0_printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
@@ -83,26 +83,45 @@ void Shell::CmdSet() {
 #ifndef NDEBUG
 	uart0_printf("m_Argv[0..1]: %s %s\n", m_Argv[0], m_Argv[1]);
 #endif
-	size_t nArgLen = strlen(m_Argv[0]);	
-	if ((nArgLen == SETIP_LENGTH) && (memcmp(m_Argv[0], sSetIP, SETIP_LENGTH) == 0)) {							
-		in_addr group_ip;	
-		if (inet_aton(m_Argv[1], &group_ip)) {		
-			uart0_printf("New IP: %d.%d.%d.%d\n", IP2STR(group_ip.s_addr));  // testing			 			
+
+	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+
+	const auto nArgv0Length = strlen(m_Argv[0]);
+
+	if ((nArgv0Length == length::SET_IP) && (memcmp(m_Argv[0], cmd::SET_IP, length::SET_IP) == 0)) {
+		in_addr group_ip;
+		if (inet_aton(m_Argv[1], &group_ip)) {
+			DEBUG_PRINTF("New IP: " IPSTR, IP2STR(group_ip.s_addr));
 			Network::Get()->SetIp(group_ip.s_addr);
 		} else {
 			uart0_puts("Usage: set ip x.x.x.x\n");
-		}	
-	} else if ((nArgLen == SETHOSTNAME_LENGTH) && (memcmp(m_Argv[0], sSetHostname, SETHOSTNAME_LENGTH) == 0)) {
-		nArgLen = strlen(m_Argv[1]);	// 2nd arg is hostname string		
-		uart0_printf("New hostname: %s\n", m_Argv[1]);					
-		if ((nArgLen) && (nArgLen <= TNetwork::NETWORK_HOSTNAME_SIZE)) {				
+		}
+
+		return;
+	}
+
+	if ((nArgv0Length == length::SET_HOSTNAME) && (memcmp(m_Argv[0], cmd::SET_HOSTNAME, length::SET_HOSTNAME) == 0)) {
+		const auto nArgv1Length = strlen(m_Argv[1]);	// 2nd arg is hostname string
+
+		DEBUG_PRINTF("New hostname: %s", m_Argv[1]);
+
+		if ((nArgv1Length != 0) && (nArgv1Length <= TNetwork::NETWORK_HOSTNAME_SIZE)) {
 			Network::Get()->SetHostName(m_Argv[1]);
 		} else {
 			uart0_puts("Usage: set hostname name\n");	
-		}	  
-	} else { // unknown set command
-		uart0_puts("Usage: set [ip][hostname] [value]\n");
+		}
+
+		return;
 	}
+
+	uint32_t nLength = nArgv0Length;
+	if (RemoteConfig::GetIndex(m_Argv[0], nLength) < TXT_FILE_LAST) {
+		DEBUG_PUTS(m_Argv[0]);
+		// TODO
+		return;
+	}
+
+	uart0_puts("Usage: set [ip][hostname][name\'.txt\'] [value]\n");
 	DEBUG_EXIT
 }
 
