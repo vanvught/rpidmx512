@@ -33,6 +33,8 @@
 #include "remoteconfigparams.h"
 #include "remoteconfigconst.h"
 
+#include "debug.h"
+
 void RemoteConfigParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RemoteConfigConst::PARAMS_FILE_NAME);
