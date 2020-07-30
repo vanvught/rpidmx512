@@ -48,8 +48,10 @@ static constexpr TCommands cmd_table[] = {
 		{ "reboot", 0 },
 		{ "info", 0 },
 		{ "set", 2},
+		{ "dhcp", 0},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
+		{ "dump" , 1},
 #endif
 		{ "?", 0 }
 };
@@ -224,6 +226,9 @@ void Shell::Run() {
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:
 			CmdI2cDetect();
+			break;
+		case CmdIndex::DUMP:
+			CmdDump();
 			break;
 #endif
 		case CmdIndex::HELP:

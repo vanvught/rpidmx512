@@ -23,36 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
 #include "h3.h"
+#include "h3_uart0_debug.h"
 
 void __attribute__((cold)) h3_dump_memory_mapping(void) {
-	printf("4.1 Memory Mapping\n");
-	printf("DMA       %p\n", (void *)H3_DMA_BASE);
-	printf("SD/MMC0   %p\n", (void *)H3_SD_MMC0_BASE);
-	printf("SD/MMC1   %p\n", (void *)H3_SD_MMC1_BASE);
-	printf("SD/MMC2   %p\n", (void *)H3_SD_MMC2_BASE);
-	printf("SID       %p\n", (void *)H3_SID_BASE);
-	printf("CCU       %p\n", (void *)H3_CCU_BASE);
-	printf("PIO       %p\n", (void *)H3_PIO_BASE);
-	printf("TIMER     %p\n", (void *)H3_TIMER_BASE);
-	printf("AC        %p\n", (void *)H3_AC_BASE);
-	printf("THS       %p\n", (void *)H3_THS_BASE);
-	printf("UART0     %p\n", (void *)H3_UART0_BASE);
-	printf("UART1     %p\n", (void *)H3_UART1_BASE);
-	printf("UART2     %p\n", (void *)H3_UART2_BASE);
-	printf("UART3     %p\n", (void *)H3_UART3_BASE);
-	printf("TWI0      %p\n", (void *)H3_TWI0_BASE);
-	printf("TWI1      %p\n", (void *)H3_TWI1_BASE);
-	printf("TWI2      %p\n", (void *)H3_TWI2_BASE);
-	printf("EMAC      %p\n", (void *)H3_EMAC_BASE);
-	printf("GPU       %p\n", (void *)H3_GPU_BASE);
-	printf("SPI0      %p\n", (void *)H3_SPI0_BASE);
-	printf("SPI1      %p\n", (void *)H3_SPI1_BASE);
+	uart0_printf("4.1 Memory Mapping\n");
+	uart0_printf("DE        %p\n", (void *)H3_DE_BASE);
+	uart0_printf("DMA       %p\n", (void *)H3_DMA_BASE);
+	uart0_printf("LCD0      %p\n", (void *)H3_LCD0_BASE);
+	uart0_printf("LCD1      %p\n", (void *)H3_LCD1_BASE);
+	uart0_printf("SD/MMC0   %p\n", (void *)H3_SD_MMC0_BASE);
+	uart0_printf("SD/MMC1   %p\n", (void *)H3_SD_MMC1_BASE);
+	uart0_printf("SD/MMC2   %p\n", (void *)H3_SD_MMC2_BASE);
+	uart0_printf("SID       %p\n", (void *)H3_SID_BASE);
+	uart0_printf("CCU       %p\n", (void *)H3_CCU_BASE);
+	uart0_printf("PIO       %p\n", (void *)H3_PIO_BASE);
+	uart0_printf("TIMER     %p\n", (void *)H3_TIMER_BASE);
+	uart0_printf("AC        %p\n", (void *)H3_AC_BASE);
+	uart0_printf("THS       %p\n", (void *)H3_THS_BASE);
+	uart0_printf("UART0     %p\n", (void *)H3_UART0_BASE);
+	uart0_printf("UART1     %p\n", (void *)H3_UART1_BASE);
+	uart0_printf("UART2     %p\n", (void *)H3_UART2_BASE);
+	uart0_printf("UART3     %p\n", (void *)H3_UART3_BASE);
+	uart0_printf("TWI0      %p\n", (void *)H3_TWI0_BASE);
+	uart0_printf("TWI1      %p\n", (void *)H3_TWI1_BASE);
+	uart0_printf("TWI2      %p\n", (void *)H3_TWI2_BASE);
+	uart0_printf("EMAC      %p\n", (void *)H3_EMAC_BASE);
+	uart0_printf("GPU       %p\n", (void *)H3_GPU_BASE);
+	uart0_printf("SPI0      %p\n", (void *)H3_SPI0_BASE);
+	uart0_printf("SPI1      %p\n", (void *)H3_SPI1_BASE);
+	uart0_printf("HDMI      %p\n", (void *)H3_HDMI_BASE);
+	uart0_printf("RTC       %p\n", (void *)H3_RTC_BASE);
 	//
-	printf("GIC       %p\n", (void *)H3_GIC_BASE);
-	printf("PRCM      %p\n", (void *)H3_PRCM_BASE);
-	printf("CPUCFG    %p\n", (void *)H3_CPUCFG_BASE);
-	printf("PIO_PORTL %p\n", (void *)H3_PIO_PORTL_BASE);
+	uart0_printf("GIC       %p\n", (void *)H3_GIC_BASE);
+	uart0_printf("PRCM      %p\n", (void *)H3_PRCM_BASE);
+	uart0_printf("CPUCFG    %p\n", (void *)H3_CPUCFG_BASE);
+	uart0_printf("PIO_PORTL %p\n", (void *)H3_PIO_PORTL_BASE);
 }

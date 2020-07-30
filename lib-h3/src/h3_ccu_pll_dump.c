@@ -1,8 +1,8 @@
 /**
- * @file shell.h
+ * @file h3_ccu.c
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,56 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_SHELL_H_
-#define H3_SHELL_H_
-
 #include <stdint.h>
 
-namespace shell {
-enum class CmdIndex: uint32_t {
-	REBOOT,
-	INFO,
-	SET,
-	DHCP,
-#ifndef NDEBUG
-	I2CDETECT,
-	DUMP,
-#endif
-	HELP
-};
-static constexpr auto BUFLEN = 196;
-static constexpr auto MAXARG = 4;
-}  // namespace shell
+#include "h3_ccu.h"
+#include "h3_uart0_debug.h"
 
-class Shell {
-public:
-	Shell();
-
-	void Run();
-
-private:
-	const char *ReadLine(uint32_t &nLength);
-	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
-	void ValidateArg(uint32_t nOffset, uint32_t nLength);
-	// Cmd
-	void CmdReboot();
-	void CmdInfo();
-	void CmdSet();
-	void CmdDhcp();
-#ifndef NDEBUG
-	void CmdI2cDetect();
-	void CmdDump();
-#endif
-	void CmdHelp();
-
-private:
-	bool m_bIsEndOfLine{false};		
-	uint32_t m_nLength{0};
-	char m_Buffer[shell::BUFLEN];
-	uint32_t m_Argc{0};
-	char *m_Argv[shell::MAXARG]{nullptr};
-	bool m_bShownPrompt{false};
-	
-};
-
-#endif /* H3_SHELL_H_ */
+void __attribute__((cold)) h3_ccu_pll_dump(void) {
+	uart0_puts("PLL (Hz)\n");
+	uart0_printf("CPUX=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_CPUX));
+	uart0_printf("AUDIO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
+	uart0_printf("VIDEO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
+	uart0_printf("VE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VE));
+	uart0_printf("DDR=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DDR));
+	uart0_printf("PERIPH0=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
+	uart0_printf("GPU=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_GPU));
+	uart0_printf("PERIPH1=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
+	uart0_printf("DE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DE));
+}

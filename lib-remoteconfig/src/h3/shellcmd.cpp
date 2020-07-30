@@ -42,9 +42,14 @@
 #include "hardware.h"
 #include "firmwareversion.h"
 
-
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
+extern "C" {
+void h3_board_dump(void);
+void h3_dump_memory_mapping(void);
+void h3_ccu_pll_dump(void);
+void arm_dump_memmap(void);
+}
 #endif
 
 #include "debug.h"
@@ -58,6 +63,20 @@ namespace length {
 static constexpr auto SET_IP = sizeof(cmd::SET_IP) - 1;
 static constexpr auto SET_HOSTNAME = sizeof(cmd::SET_HOSTNAME) - 1;
 }  // namespace length
+namespace dump {
+namespace cmd {
+static constexpr char BOARD[] = "board";
+static constexpr char MMAP[] = "mmap";
+static constexpr char PLL[] = "pll";
+static constexpr char LINKER[] = "linker";
+}  // namespace cmd
+namespace length {
+static constexpr auto BOARD = sizeof(cmd::BOARD) - 1;
+static constexpr auto MMAP = sizeof(cmd::MMAP) - 1;
+static constexpr auto PLL = sizeof(cmd::PLL) - 1;
+static constexpr auto LINKER = sizeof(cmd::LINKER) - 1;
+}  // namespace length
+}  // namespace dump
 }  // namespace shell
 
 using namespace shell;
@@ -74,7 +93,7 @@ void Shell::CmdInfo() {
 	uart0_printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
 	uart0_printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
 	uart0_printf("Hostname: %s\n", Network::Get()->GetHostName());
-	uart0_printf("IP: %d.%d.%d.%d\n", IP2STR(Network::Get()->GetIp()));
+	uart0_printf("IP " IPSTR "/%d %c\n", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 	DEBUG_EXIT
 }
 
@@ -125,11 +144,52 @@ void Shell::CmdSet() {
 	DEBUG_EXIT
 }
 
+void Shell::CmdDhcp() {
+	DEBUG_ENTRY
+
+	if (Network::Get()->EnableDhcp()) {
+		uart0_puts("DHCP is enabled\n");
+	} else {
+		uart0_puts("DHCP failed\n");
+	}
+
+	DEBUG_EXIT
+}
 
 #ifndef NDEBUG
 void Shell::CmdI2cDetect() {
 	DEBUG_ENTRY
 	I2cDetect i2cdetect;
+	DEBUG_EXIT
+}
+
+void Shell::CmdDump() {
+	DEBUG_ENTRY
+
+	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+
+	const auto nArgv0Length = strlen(m_Argv[0]);
+
+	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::cmd::BOARD, dump::length::BOARD) == 0)) {
+		h3_board_dump();
+		return;
+	}
+
+	if ((nArgv0Length == dump::length::MMAP) && (memcmp(m_Argv[0], dump::cmd::MMAP, dump::length::MMAP) == 0)) {
+		h3_dump_memory_mapping();
+		return;
+	}
+
+	if ((nArgv0Length == dump::length::PLL) && (memcmp(m_Argv[0], dump::cmd::PLL, dump::length::PLL) == 0)) {
+		h3_ccu_pll_dump();
+		return;
+	}
+
+	if ((nArgv0Length == dump::length::LINKER) && (memcmp(m_Argv[0], dump::cmd::LINKER, dump::length::LINKER) == 0)) {
+		arm_dump_memmap();
+		return;
+	}
+
 	DEBUG_EXIT
 }
 #endif

@@ -37,13 +37,17 @@
 #define H3_MEM_BROM_START		0xFFFF0000
 
 #if defined (ORANGE_PI_ONE)
-	#define H3_MEM_FB_SIZE		(32 * MEGABYTE)
+# define H3_MEM_FB_SIZE		(32 * MEGABYTE)
 #else
-	#define H3_MEM_FB_SIZE		0
+# define H3_MEM_FB_SIZE		0
 #endif
 
+#define H3_SRAM_A1_BASE			0x00000000
+#define H3_SRAM_A2_BASE			0x00044000
+#define H3_DE_BASE				0x01000000
 #define H3_SYSTEM_BASE			0x01C00000
 #define H3_DMA_BASE				0x01C02000
+#define H3_LCD_BASE				0x01C0C000
 #define H3_SD_MMC_BASE			0x01C0F000
 #define H3_SID_BASE				0x01C14000
 #define H3_CCU_BASE				0x01C20000
@@ -58,10 +62,14 @@
 #define H3_HS_TIMER_BASE		0x01C60000
 #define H3_SPI_BASE				0x01C68000
 #define H3_GIC_BASE 			0x01C80000	///< GIC-400 v2
+#define H3_HDMI_BASE			0x01EE0000
 #define H3_RTC_BASE				0x01F00000
 #define H3_PRCM_BASE			0x01F01400
 #define H3_CPUCFG_BASE			0x01F01C00
 #define H3_PIO_PORTL_BASE		0x01F02C00
+
+#define H3_LCD0_BASE			(H3_LCD_BASE + (0 * 0x1000))
+#define H3_LCD1_BASE			(H3_LCD_BASE + (1 * 0x1000))
 
 #define H3_DMA_CHL0_BASE		(H3_DMA_BASE + 0x100 + (0 * 0x40))
 #define H3_DMA_CHL1_BASE		(H3_DMA_BASE + 0x100 + (1 * 0x40))
@@ -176,6 +184,20 @@ typedef struct T_H3_DMA_CHL {
 
 } H3_DMA_CHL_TypeDef;
 
+typedef struct T_H3_TCON {
+	__IO uint32_t GCTL;				///< 0x00
+	__IO uint32_t GINT0;			///< 0x04
+	__IO uint32_t GINT1;			///< 0x08
+	__I  uint32_t RES0[33];   		///< 0x0C-0x8C
+	__IO uint32_t TCON1_CTL;		///< 0x90;
+	__IO uint32_t TCON1_BASIC0;		///< 0x94;
+	__IO uint32_t TCON1_BASIC1;		///< 0x98;
+	__IO uint32_t TCON1_BASIC2;		///< 0x9C;
+	__IO uint32_t TCON1_BASIC3;		///< 0xA0;
+	__IO uint32_t TCON1_BASIC4;		///< 0xA4;
+	__IO uint32_t TCON1_BASIC5;		///< 0xA8;
+} H3_TCON_TypeDef;
+
 typedef struct T_H3_SD_MMC {
 	__IO uint32_t GCTL;				///< 0x00
 	__IO uint32_t CKC;				///< 0x04
@@ -283,7 +305,8 @@ typedef struct T_H3_CCU {
 	__IO uint32_t RES131;			///< 0xF8
 	__IO uint32_t MBUS_RESET;		///< 0xFC
 	__IO uint32_t DRAM_CLK_GATING;	///< 0x100
-	__IO uint32_t RES14[5];			///< 0x104
+	__IO uint32_t DE_CLK;			///< 0x104
+	__IO uint32_t RES14[4];			///< 0x108
 	__IO uint32_t TCON0_CLK;		///< 0x118
 	__IO uint32_t RES141;			///< 0x11C
 	__IO uint32_t RES15[4];			///< 0x120
@@ -294,8 +317,8 @@ typedef struct T_H3_CCU {
 	__IO uint32_t AC_DIG_CLK;		///< 0x140 AC Digital Clock Register
 	__IO uint32_t AVS_CLK_CFG;		///< 0x144 AVS module clock
 	__IO uint32_t RES18[2];			///< 0x148
-	__IO uint32_t HDMI_CLK_CFG;		///< 0x150 HDMI module clock
-	__IO uint32_t HDMI_slow_CLK_CFG;///< 0x154 HDMI slow module clock
+	__IO uint32_t HDMI_CLK;			///< 0x150 HDMI module clock
+	__IO uint32_t HDMI_SLOW_CLK;	///< 0x154 HDMI slow module clock
 	__IO uint32_t RES19;			///< 0x158
 	__IO uint32_t mbus_CLK_CFG;		///< 0x15c MBUS module clock
 	__IO uint32_t RES20[2];			///< 0x160
