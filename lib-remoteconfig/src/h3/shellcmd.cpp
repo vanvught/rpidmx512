@@ -104,7 +104,6 @@ void Shell::CmdSet() {
 #endif
 
 	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-
 	const auto nArgv0Length = strlen(m_Argv[0]);
 
 	if ((nArgv0Length == length::SET_IP) && (memcmp(m_Argv[0], cmd::SET_IP, length::SET_IP) == 0)) {
@@ -144,6 +143,68 @@ void Shell::CmdSet() {
 	DEBUG_EXIT
 }
 
+void Shell::CmdGet() {
+	DEBUG_ENTRY
+
+	char buffer[1024];
+
+	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+	uint32_t nArgv0Length = strlen(m_Argv[0]);
+
+	memcpy(buffer, m_Argv[0], nArgv0Length);
+	uint32_t nLength;
+
+	if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - 1)) {
+
+		if (*buffer == '?') { // "?get#ERROR#\n"
+			uart0_puts(".txt not found\n");
+			return;
+		}
+
+		buffer[nLength] = '\0';
+
+		char *p = buffer;
+		// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+		const auto nPropertyLength = strlen(m_Argv[1]);
+
+		uint32_t i;
+
+		for (i = 0; i < nLength; p++, i++) {
+			if (*p == '#') {
+				continue;
+			}
+
+			if (memcmp(p, m_Argv[1], nPropertyLength) == 0) {
+				const char *pValue = p + nPropertyLength + 1;
+				for (; i < nLength; p++, i++) {
+					if (*p == '\n') {
+						break;
+					}
+				}
+
+				*++p = '\0';
+				uart0_puts(pValue);
+
+				return;
+			}
+
+			// We could use returned value by memcmp?
+			for (; i < nLength; p++, i++) {
+				if (*p == '\n') {
+					break;
+				}
+			}
+		}
+	} else {
+		uart0_puts("Error\n");
+	}
+
+	uart0_puts("Property not found\n");
+	return;
+
+	DEBUG_EXIT
+}
+
 void Shell::CmdDhcp() {
 	DEBUG_ENTRY
 
@@ -156,6 +217,10 @@ void Shell::CmdDhcp() {
 	DEBUG_EXIT
 }
 
+/*
+ * Debug commands
+ */
+
 #ifndef NDEBUG
 void Shell::CmdI2cDetect() {
 	DEBUG_ENTRY
@@ -167,7 +232,6 @@ void Shell::CmdDump() {
 	DEBUG_ENTRY
 
 	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-
 	const auto nArgv0Length = strlen(m_Argv[0]);
 
 	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::cmd::BOARD, dump::length::BOARD) == 0)) {

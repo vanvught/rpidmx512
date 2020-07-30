@@ -167,6 +167,8 @@ public:
 
 	void TftpExit();
 
+	uint32_t HandleGet(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
+
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
 	static RemoteConfig *Get() {
@@ -180,7 +182,6 @@ private:
 	void HandleUptime();
 	void HandleVersion();
 
-	void HandleGet();
 	void HandleGetRconfigTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
 

@@ -48,6 +48,7 @@ static constexpr TCommands cmd_table[] = {
 		{ "reboot", 0 },
 		{ "info", 0 },
 		{ "set", 2},
+		{ "get", 2},
 		{ "dhcp", 0},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
@@ -222,7 +223,13 @@ void Shell::Run() {
 			break;
 		case CmdIndex::SET:
 			CmdSet();
-			break;			
+			break;
+		case CmdIndex::GET:
+			CmdGet();
+			break;
+		case CmdIndex::DHCP:
+			CmdDhcp();
+			break;
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:
 			CmdI2cDetect();
@@ -237,5 +244,4 @@ void Shell::Run() {
 		default:
 			break;
 	}
-
 }

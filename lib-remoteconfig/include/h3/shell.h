@@ -33,6 +33,7 @@ enum class CmdIndex: uint32_t {
 	REBOOT,
 	INFO,
 	SET,
+	GET,
 	DHCP,
 #ifndef NDEBUG
 	I2CDETECT,
@@ -58,6 +59,7 @@ private:
 	void CmdReboot();
 	void CmdInfo();
 	void CmdSet();
+	void CmdGet();
 	void CmdDhcp();
 #ifndef NDEBUG
 	void CmdI2cDetect();
