@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-DmxInput::DmxInput(void) {
+DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]); i++) {
@@ -83,12 +83,12 @@ const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUp
 
 	nUpdatesPerSecond = dmx_multi_get_updates_per_seconde(nPort);
 
-	if (pDmx != 0) {
-		const struct _dmx_data *dmx_data = reinterpret_cast<const struct _dmx_data*>(pDmx);
+	if (pDmx != nullptr) {
+		const auto *dmx_data = reinterpret_cast<const struct _dmx_data*>(pDmx);
 		nLength = dmx_data->statistics.slots_in_packet;
 		return (pDmx + 1);
 	}
 
 	nLength = 0;
-	return 0;
+	return nullptr;
 }

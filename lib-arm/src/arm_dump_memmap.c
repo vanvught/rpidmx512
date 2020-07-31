@@ -44,7 +44,7 @@ extern uint32_t __irq_stack_top;
 extern uint32_t __svc_stack_top;
 extern uint32_t __sys_stack_top;
 
-void arm_dump_memmap(void) {
+void __attribute__((cold)) arm_dump_memmap(void) {
 	printf("memmap\n");
 	printf("__ram_start = %p\n", &__ram_start);
 	printf("  __data_start = %p\n", &__data_start);

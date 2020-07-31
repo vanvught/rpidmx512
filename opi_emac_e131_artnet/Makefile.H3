@@ -3,7 +3,7 @@ PLATFORM = ORANGE_PI
 #
 DEFINES = E131_BRIDGE_MULTI DISPLAY_UDF RDMNET_LLRP_ONLY NDEBUG
 #
-LIBS = rdmnet rdm rdmsensor rdmsubdevice
+LIBS = rdmnet rdm rdmsensor rdmsubdevice artnet
 #
 SRCDIR = firmware lib
 

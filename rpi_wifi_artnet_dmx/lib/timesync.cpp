@@ -56,9 +56,6 @@ TimeSync::TimeSync(void) : m_nSecondsPrevious(60) {
 	// 60 : Force initial update for ShowSystemTime
 }
 
-TimeSync::~TimeSync(void) {
-}
-
 void TimeSync::Start(void) {
 	this->Show();
 }

@@ -32,7 +32,7 @@
 
 #include "debug.h"
 
-ArtNetOutput::ArtNetOutput(void) {
+ArtNetOutput::ArtNetOutput() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
@@ -42,13 +42,7 @@ ArtNetOutput::ArtNetOutput(void) {
 	DEBUG_EXIT
 }
 
-ArtNetOutput::~ArtNetOutput(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void ArtNetOutput::Handler(void) {
+void ArtNetOutput::Handler() {
 	DEBUG_ENTRY
 
 	ArtNetController::Get()->HandleSync();
@@ -95,6 +89,6 @@ void ArtNetOutput::SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t
 	}
 }
 
-void ArtNetOutput::Print(void) {
+void ArtNetOutput::Print() {
 
 }
