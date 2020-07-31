@@ -44,10 +44,10 @@ private:
 private:
 	uint32_t m_nMillisPrevious;
 	struct _midi_message *m_pMidiMessage;
-	uint32_t m_nInitTimestamp{0};
-	uint8_t m_nTypePrevious{0xFF};
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
+	uint32_t m_nInitTimestamp;
+	uint8_t m_nTypePrevious;
+	uint8_t m_nPartPrevious;
+	bool m_bDirection;
 };
 
 #endif /* MIDIMONITOR_H_ */

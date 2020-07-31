@@ -52,10 +52,10 @@ inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
 	*nDst = '0' + (nArg % 10);
 }
 
-TimeCode::TimeCode() {
+TimeCode::TimeCode(void) {
 }
 
-void TimeCode::Start() {
+void TimeCode::Start(void) {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_CYAN);
@@ -63,7 +63,7 @@ void TimeCode::Start() {
 	console_restore_cursor();
 }
 
-void TimeCode::Stop() {
+void TimeCode::Stop(void) {
 	console_set_cursor(COLUMN, ROW);
 	console_puts("                 ");
 }

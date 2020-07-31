@@ -223,7 +223,7 @@ void notmain(void) {
 			if (artnetparams.IsRdmDiscovery()) {
 				display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-				for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+				for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
 					uint8_t nAddress;
 					if (node.GetUniverseSwitch(i, nAddress)) {
 						pDiscovery->Full(i);

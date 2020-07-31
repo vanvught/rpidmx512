@@ -43,8 +43,6 @@ done
 
 cd ..
 
-find . -name sofware_version_id.h | xargs rm
-
 #find . -name "*.uImage" | xargs ls -al
 find . -name "*.uImage" | xargs ls -al | wc -l
 find . -name "*.uImage" | sort | xargs -I{} bash -c "do_check {}"

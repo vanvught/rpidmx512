@@ -3,6 +3,6 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES =
 #
-EXTRA_SRCDIR =
+EXTRA_SRCDIR = src/builtins
 #
 include ../h3-firmware-template/lib/Rules.mk

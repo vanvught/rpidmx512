@@ -35,16 +35,17 @@
 
 class ArtNetOutput: public E131Sync, public LightSet {
 public:
-	ArtNetOutput();
+	ArtNetOutput(void);
+	~ArtNetOutput(void);
 
-	void Handler();
+	void Handler(void);
 
 	void Start(uint8_t nPortIndex);
 	void Stop(uint8_t nPortIndex);
 
 	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
 
-	void Print();
+	void Print(void);
 
 private:
 	uint16_t m_nUniverse[E131_MAX_PORTS];

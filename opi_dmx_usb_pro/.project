@@ -3,6 +3,14 @@
 	<name>opi_dmx_usb_pro</name>
 	<comment></comment>
 	<projects>
+		<project>h3-firmware-template</project>
+		<project>include</project>
+		<project>lib-display</project>
+		<project>lib-dmx</project>
+		<project>lib-hal</project>
+		<project>lib-rdm</project>
+		<project>lib-usb</project>
+		<project>lib-widget</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

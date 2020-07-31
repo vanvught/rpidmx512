@@ -34,7 +34,8 @@
 
 class DmxInput: public Dmx, public E131Dmx {
 public:
-	DmxInput();
+	DmxInput(void);
+	~DmxInput(void);
 
 	void Start(uint8_t nPort);
 	void Stop(uint8_t nPort);
@@ -42,7 +43,7 @@ public:
 	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
 
 private:
-	bool m_bIsStarted{false};
+	bool m_bIsStarted;
 };
 
 #endif /* DMXINPUT_H_ */

@@ -3,6 +3,8 @@
 	<name>opi_dmx_monitor</name>
 	<comment></comment>
 	<projects>
+		<project>lib-dmxmonitor</project>
+		<project>lib-dmxreceiver</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

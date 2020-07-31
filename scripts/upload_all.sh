@@ -4,8 +4,6 @@ echo $1
 DIR=../opi_emac*
 UIMAGE=orangepi_zero.uImage.gz
 
-array=('rconfig.txt' 'display.txt' 'network.txt' 'artnet.txt' 'e131.txt' 'devices.txt')
-
 for f in $DIR
 do
 	echo -e "\e[32m[$f]\e[0m"
@@ -27,13 +25,6 @@ do
 		
 		echo -e "\e[36m[$ON_LINE]\e[0m"
 		
-		for i in "${array[@]}"
-		do
-			echo $i
-			TXT_FILE=$(echo ?get#$i | nc -u -p 10501 -w 1 $1 10501)  || true
-			echo $TXT_FILE
-		done
-		
-		# sleep 1
+		sleep 1
 	fi
 done

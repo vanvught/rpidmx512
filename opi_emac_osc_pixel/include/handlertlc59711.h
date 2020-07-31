@@ -35,9 +35,10 @@
 class HandlerTLC59711: public OscServerHandler  {
 public:
 	HandlerTLC59711(TLC59711Dmx *pTLC59711Dmx);
+	~HandlerTLC59711(void);
 
-	void Blackout();
-	void Update();
+	void Blackout(void);
+	void Update(void);
 
 	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
 

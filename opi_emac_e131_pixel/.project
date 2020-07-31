@@ -3,6 +3,7 @@
 	<name>opi_emac_e131_pixel</name>
 	<comment></comment>
 	<projects>
+		<project>include</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

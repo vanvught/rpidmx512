@@ -91,9 +91,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
+	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
 	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
-	nw.Init(StoreNetwork::Get());
+	nw.Init(spiFlashStore.GetStoreNetwork());
 	nw.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);

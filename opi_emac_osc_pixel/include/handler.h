@@ -35,9 +35,10 @@
 class Handler: public OscServerHandler  {
 public:
 	Handler(WS28xxDmx *pWS28xxDmx);
+	~Handler(void);
 
-	void Blackout();
-	void Update();
+	void Blackout(void);
+	void Update(void);
 
 	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
 

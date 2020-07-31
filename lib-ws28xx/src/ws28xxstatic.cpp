@@ -39,7 +39,7 @@ const char *WS28xx::GetLedTypeString(TWS28XXType tType) {
 }
 
 TWS28XXType WS28xx::GetLedTypeString(const char *pValue) {
-	assert(pValue != nullptr);
+	assert(pValue != 0);
 
 	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
 		if (strcasecmp(pValue, WS28xxConst::TYPES[i]) == 0) {

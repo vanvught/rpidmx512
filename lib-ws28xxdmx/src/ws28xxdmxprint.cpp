@@ -29,7 +29,7 @@
 
 #include "ws28xx.h"
 
-void WS28xxDmx::Print() {
+void WS28xxDmx::Print(void) {
 	printf("Led parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", m_nLedCount);

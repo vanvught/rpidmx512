@@ -53,10 +53,13 @@
 #define LED3_GPIO			GPIO_EXT_18		// PA18
 
 ButtonsGpio::ButtonsGpio(OscClient *pOscClient) : m_pOscClient(pOscClient), m_nButtons(0) {
-	assert(m_pOscClient != nullptr);
+	assert(m_pOscClient != 0);
 }
 
-bool ButtonsGpio::Start() {
+ButtonsGpio::~ButtonsGpio(void) {
+}
+
+bool ButtonsGpio::Start(void) {
 	h3_gpio_fsel(LED0_GPIO, GPIO_FSEL_OUTPUT);
 	h3_gpio_fsel(LED1_GPIO, GPIO_FSEL_OUTPUT);
 	h3_gpio_fsel(LED2_GPIO, GPIO_FSEL_OUTPUT);
@@ -97,7 +100,7 @@ bool ButtonsGpio::Start() {
 	return true;
 }
 
-void ButtonsGpio::Stop() {
+void ButtonsGpio::Stop(void) {
 	h3_gpio_fsel(BUTTON0_GPIO, GPIO_FSEL_DISABLE);
 	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_DISABLE);
 	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_DISABLE);
@@ -109,7 +112,7 @@ void ButtonsGpio::Stop() {
 	h3_gpio_fsel(LED3_GPIO, GPIO_FSEL_DISABLE);
 }
 
-void ButtonsGpio::Run() {
+void ButtonsGpio::Run(void) {
 	m_nButtons = H3_PIO_PA_INT->STA & INT_MASK;
 
 	if (__builtin_expect((m_nButtons != 0), 0)) {

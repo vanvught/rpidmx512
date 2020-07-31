@@ -36,28 +36,28 @@
 
 #include "debug.h"
 
-WS28xxDmxGrouping::WS28xxDmxGrouping():
-	m_pDmxData(nullptr),
+WS28xxDmxGrouping::WS28xxDmxGrouping(void):
+	m_pDmxData(0),
 	m_nLEDGroupCount(0),
 	m_nGroups(0)
 {
 	UpdateMembers();
 }
 
-WS28xxDmxGrouping::~WS28xxDmxGrouping() {
+WS28xxDmxGrouping::~WS28xxDmxGrouping(void) {
 	delete [] m_pDmxData;
-	m_pDmxData = nullptr;
+	m_pDmxData = 0;
 }
 
 void WS28xxDmxGrouping::Start(__attribute__((unused)) uint8_t nPort) {
 	m_pDmxData = new uint8_t[m_nDmxFootprint];
-	assert(m_pDmxData != nullptr);
+	assert(m_pDmxData != 0);
 
 	WS28xxDmx::Start();
 }
 
 void WS28xxDmxGrouping::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
-	if (__builtin_expect((m_pLEDStripe == nullptr), 0)) {
+	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
 
@@ -136,11 +136,11 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
-		if (m_pWS28xxDmxStore != nullptr) {
+		if (m_pWS28xxDmxStore != 0) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != nullptr) {
+		if (m_pLightSetDisplay != 0) {
 			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
@@ -150,7 +150,7 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void WS28xxDmxGrouping::UpdateMembers() {
+void WS28xxDmxGrouping::UpdateMembers(void) {
 	if ((m_nLEDGroupCount > m_nLedCount) || (m_nLEDGroupCount == 0)) {
 		m_nLEDGroupCount = m_nLedCount;
 	}
@@ -172,7 +172,7 @@ void WS28xxDmxGrouping::UpdateMembers() {
 	DEBUG_PRINTF("m_nLEDGroupCount=%d, m_nGroups=%d, m_nDmxFootprint=%d", static_cast<int>(m_nLEDGroupCount), static_cast<int>(m_nGroups), static_cast<int>(m_nDmxFootprint));
 }
 
-void WS28xxDmxGrouping::Print() {
+void WS28xxDmxGrouping::Print(void) {
 	printf("Led (grouping) parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", static_cast<int>(m_nLedCount));

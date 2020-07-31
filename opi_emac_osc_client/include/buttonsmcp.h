@@ -39,11 +39,12 @@
 class ButtonsMcp: public ButtonsSet, public OscClientLed {
 public:
 	ButtonsMcp(OscClient *pOscClient);
+	~ButtonsMcp(void);
 
-	bool Start();
-	void Stop();
+	bool Start(void);
+	void Stop(void);
 
-	void Run();
+	void Run(void);
 
 	void SetLed(uint8_t nLed, bool bOn);
 
@@ -51,6 +52,7 @@ private:
 	HAL_I2C m_I2C;
 	OscClient *m_pOscClient;
 	bool m_bIsConnected;
+	uint8_t m_nButtons;
 	uint8_t m_nButtonsPrevious;
 	uint8_t m_nPortB;
 };

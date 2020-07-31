@@ -30,10 +30,10 @@
 
 class TimeCode: public ArtNetTimeCode {
 public:
-	TimeCode();
+	TimeCode(void);
 
-	void Start();
-	void Stop();
+	void Start(void);
+	void Stop(void);
 
 	void Handler(const struct TArtNetTimeCode *);
 };

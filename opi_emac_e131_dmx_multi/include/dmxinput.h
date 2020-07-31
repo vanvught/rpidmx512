@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXINPUT_H_
+#ifndef _DMXINPUT_H_
 #define DMXINPUT_H_
 
 #include <stdint.h>
@@ -35,7 +35,8 @@
 
 class DmxInput: public E131Dmx {
 public:
-	DmxInput();
+	DmxInput(void);
+	~DmxInput(void);
 
 	void Start(uint8_t nPort);
 	void Stop(uint8_t nPort);

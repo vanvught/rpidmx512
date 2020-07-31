@@ -24,7 +24,6 @@
  */
 
 #include <stdint.h>
-#include <algorithm>
 #include <cassert>
 
 #ifndef NDEBUG
@@ -39,7 +38,11 @@
 #include "lightset.h"
 #include "lightsetdisplay.h"
 
-WS28xxDmx::WS28xxDmx() :
+#ifndef MIN
+ #define MIN(a, b) ((a) < (b) ? (a) : (b))
+#endif
+
+WS28xxDmx::WS28xxDmx(void) :
 	m_tLedType(WS2812B),
 	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
 	m_nLowCode(0),
@@ -47,10 +50,10 @@ WS28xxDmx::WS28xxDmx() :
 	m_nLedCount(170),
 	m_nDmxStartAddress(DMX_START_ADDRESS_DEFAULT),
 	m_nDmxFootprint(170 * 3),
-	m_pLEDStripe(nullptr),
+	m_pLEDStripe(0),
 	m_bIsStarted(false),
 	m_bBlackout(false),
-	m_pWS28xxDmxStore(nullptr),
+	m_pWS28xxDmxStore(0),
 	m_nClockSpeedHz(0),
 	m_nGlobalBrightness(0xFF),
 	m_nBeginIndexPortId1(170),
@@ -62,9 +65,9 @@ WS28xxDmx::WS28xxDmx() :
 	UpdateMembers();
 }
 
-WS28xxDmx::~WS28xxDmx() {
+WS28xxDmx::~WS28xxDmx(void) {
 	delete m_pLEDStripe;
-	m_pLEDStripe = nullptr;
+	m_pLEDStripe = 0;
 }
 
 void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
@@ -74,9 +77,9 @@ void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (m_pLEDStripe == nullptr) {
+	if (m_pLEDStripe == 0) {
 		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
-		assert(m_pLEDStripe != nullptr);
+		assert(m_pLEDStripe != 0);
 		m_pLEDStripe->SetGlobalBrightness(m_nGlobalBrightness);
 		m_pLEDStripe->Initialize();
 	} else {
@@ -94,7 +97,7 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	if (m_pLEDStripe != nullptr) {
+	if (m_pLEDStripe != 0) {
 		while (m_pLEDStripe->IsUpdating()) {
 			// wait for completion
 		}
@@ -103,36 +106,35 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 }
 
 void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	assert(pData != nullptr);
+	assert(pData != 0);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
 
-	if (__builtin_expect((m_pLEDStripe == nullptr), 0)) {
-		m_bIsStarted = false;
+	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
 		Start();
 	}
 
 	switch (nPortId & 0x03) {
 	case 0:
 		beginIndex = 0;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(nLength / m_nChannelsPerLed));
+		endIndex = MIN(m_nLedCount, (nLength / m_nChannelsPerLed));
 		if (m_nLedCount < m_nBeginIndexPortId1) {
 			i = static_cast<uint32_t>(m_nDmxStartAddress - 1);
 		}
 		break;
 	case 1:
 		beginIndex = m_nBeginIndexPortId1;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		break;
 	case 2:
 		beginIndex = m_nBeginIndexPortId2;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		break;
 	case 3:
 		beginIndex = m_nBeginIndexPortId3;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		endIndex = MIN(m_nLedCount, (beginIndex + (nLength /  m_nChannelsPerLed)));
 		break;
 	default:
 		__builtin_unreachable();
@@ -191,7 +193,7 @@ void WS28xxDmx::SetLEDCount(uint16_t nCount) {
 	UpdateMembers();
 }
 
-void WS28xxDmx::UpdateMembers() {
+void WS28xxDmx::UpdateMembers(void) {
 	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
 
 	if (m_nDmxFootprint > DMX_UNIVERSE_SIZE) {
@@ -225,11 +227,11 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
-		if (m_pWS28xxDmxStore != nullptr) {
+		if (m_pWS28xxDmxStore != 0) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != nullptr) {
+		if (m_pLightSetDisplay != 0) {
 			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 

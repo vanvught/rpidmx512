@@ -44,10 +44,10 @@ WS28xxMulti::WS28xxMulti():
 	m_nLowCode(0),
 	m_nHighCode(0),
 	m_nBufSize(0),
-	m_pBuffer4x(nullptr),
-	m_pBlackoutBuffer4x(nullptr),
-	m_pBuffer8x(nullptr),
-	m_pBlackoutBuffer8x(nullptr)
+	m_pBuffer4x(0),
+	m_pBlackoutBuffer4x(0),
+	m_pBuffer8x(0),
+	m_pBlackoutBuffer8x(0)
 {
 	DEBUG_ENTRY
 
@@ -60,13 +60,13 @@ WS28xxMulti::WS28xxMulti():
 WS28xxMulti::~WS28xxMulti() {
 	if (m_tBoard == WS28XXMULTI_BOARD_4X) {
 		delete[] m_pBlackoutBuffer4x;
-		m_pBlackoutBuffer4x = nullptr;
+		m_pBlackoutBuffer4x = 0;
 
 		delete[] m_pBuffer4x;
-		m_pBuffer4x = nullptr;
+		m_pBuffer4x = 0;
 	} else {
-		m_pBlackoutBuffer8x = nullptr;
-		m_pBuffer8x = nullptr;
+		m_pBlackoutBuffer8x = 0;
+		m_pBuffer8x = 0;
 	}
 }
 

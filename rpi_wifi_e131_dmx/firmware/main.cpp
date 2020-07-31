@@ -44,6 +44,9 @@
 // DMX output
 #include "dmxparams.h"
 #include "dmxsend.h"
+#if defined(ORANGE_PI)
+ #include "storedmxsend.h"
+#endif
 #ifndef H3
  // Monitor Output
  #include "dmxmonitor.h"
@@ -53,13 +56,14 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
+#if defined(ORANGE_PI)
+ #include "storews28xxdmx.h"
+#endif
 
 #if defined(ORANGE_PI)
-# include "spiflashinstall.h"
-# include "spiflashstore.h"
-# include "storee131.h"
-# include "storedmxsend.h"
-# include "storews28xxdmx.h"
+ #include "spiflashinstall.h"
+ #include "spiflashstore.h"
+ #include "storee131.h"
 #endif
 
 #include "software_version.h"

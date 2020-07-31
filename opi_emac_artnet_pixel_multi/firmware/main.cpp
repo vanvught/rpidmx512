@@ -165,7 +165,7 @@ void notmain(void) {
 			}
 		}
 
-		if (nPage < ArtNet::MAX_PAGES) {
+		if (nPage < artnet::MAX_PAGES) {
 			uint8_t nSubnetSwitch = node.GetSubnetSwitch(nPage - 1);
 			nSubnetSwitch = (nSubnetSwitch + 1) & 0x0F;
 			node.SetSubnetSwitch(nSubnetSwitch, nPage);
@@ -178,7 +178,7 @@ void notmain(void) {
 			nPage++;
 		}
 
-		nPortIndex += ArtNet::MAX_PORTS;
+		nPortIndex += artnet::MAX_PORTS;
 	}
 
 	node.Print();

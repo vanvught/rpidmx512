@@ -30,14 +30,14 @@
 #include "software_version.h"
 #include "sofware_version_id.h"
 
-const char *RDMSoftwareVersion::GetVersion() {
+const char *RDMSoftwareVersion::GetVersion(void) {
 	return SOFTWARE_VERSION;
 }
 
-uint32_t RDMSoftwareVersion::GetVersionLength() {
+uint32_t RDMSoftwareVersion::GetVersionLength(void) {
 	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
 }
 
-uint32_t RDMSoftwareVersion::GetVersionId() {
+uint32_t RDMSoftwareVersion::GetVersionId(void) {
 	return DEVICE_SOFTWARE_VERSION_ID;
 }

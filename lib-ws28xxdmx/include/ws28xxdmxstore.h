@@ -30,7 +30,7 @@
 
 class WS28xxDmxStore {
 public:
-	virtual ~WS28xxDmxStore() {}
+	virtual ~WS28xxDmxStore(void) {}
 
 	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
 };

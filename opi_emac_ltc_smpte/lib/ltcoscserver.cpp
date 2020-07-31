@@ -122,8 +122,11 @@ static constexpr auto VALUE_LENGTH = 11;
 static constexpr auto RATE_VALUE_LENGTH = 2;
 
 LtcOscServer::LtcOscServer():
-	m_nPortIncoming(osc::port::DEFAULT_INCOMING)
-	
+	m_nPortIncoming(osc::port::DEFAULT_INCOMING),
+	m_nHandle(-1),
+	m_nRemoteIp(0),
+	m_nRemotePort(0),
+	m_nPathLength(0)
 {
 	m_pBuffer = new char[udp::MAX_BUFFER];
 	assert(m_pBuffer != nullptr);

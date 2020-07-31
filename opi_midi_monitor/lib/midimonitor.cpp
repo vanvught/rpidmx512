@@ -60,8 +60,11 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 
 MidiMonitor::MidiMonitor():
 	m_nMillisPrevious(Hardware::Get()->Millis()),
-	m_pMidiMessage(midi_message_get())
-	
+	m_pMidiMessage(midi_message_get()),
+	m_nInitTimestamp(0),
+	m_nTypePrevious(0xFF),	// Invalid type. Force initial update.
+	m_nPartPrevious(0),
+	m_bDirection(true)
 {
 }
 
