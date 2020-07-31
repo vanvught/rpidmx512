@@ -103,10 +103,7 @@ void Shell::CmdSet() {
 	uart0_printf("m_Argv[0..1]: %s %s\n", m_Argv[0], m_Argv[1]);
 #endif
 
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv0Length = strlen(m_Argv[0]);
-
-	if ((nArgv0Length == length::SET_IP) && (memcmp(m_Argv[0], cmd::SET_IP, length::SET_IP) == 0)) {
+	if ((m_nArgv0Length == length::SET_IP) && (memcmp(m_Argv[0], cmd::SET_IP, length::SET_IP) == 0)) {
 		in_addr group_ip;
 		if (inet_aton(m_Argv[1], &group_ip)) {
 			DEBUG_PRINTF("New IP: " IPSTR, IP2STR(group_ip.s_addr));
@@ -118,7 +115,7 @@ void Shell::CmdSet() {
 		return;
 	}
 
-	if ((nArgv0Length == length::SET_HOSTNAME) && (memcmp(m_Argv[0], cmd::SET_HOSTNAME, length::SET_HOSTNAME) == 0)) {
+	if ((m_nArgv0Length == length::SET_HOSTNAME) && (memcmp(m_Argv[0], cmd::SET_HOSTNAME, length::SET_HOSTNAME) == 0)) {
 		const auto nArgv1Length = strlen(m_Argv[1]);	// 2nd arg is hostname string
 
 		DEBUG_PRINTF("New hostname: %s", m_Argv[1]);
@@ -132,7 +129,7 @@ void Shell::CmdSet() {
 		return;
 	}
 
-	uint32_t nLength = nArgv0Length;
+	uint32_t nLength = m_nArgv0Length; 
 	if (RemoteConfig::GetIndex(m_Argv[0], nLength) < TXT_FILE_LAST) {
 		DEBUG_PUTS(m_Argv[0]);
 		// TODO
@@ -148,10 +145,7 @@ void Shell::CmdGet() {
 
 	char buffer[1024];
 
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	uint32_t nArgv0Length = strlen(m_Argv[0]);
-
-	memcpy(buffer, m_Argv[0], nArgv0Length);
+	memcpy(buffer, m_Argv[0], m_nArgv0Length);
 	uint32_t nLength;
 
 	if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - 1)) {
@@ -231,25 +225,22 @@ void Shell::CmdI2cDetect() {
 void Shell::CmdDump() {
 	DEBUG_ENTRY
 
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv0Length = strlen(m_Argv[0]);
-
-	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::cmd::BOARD, dump::length::BOARD) == 0)) {
+	if ((m_nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::cmd::BOARD, dump::length::BOARD) == 0)) {
 		h3_board_dump();
 		return;
 	}
 
-	if ((nArgv0Length == dump::length::MMAP) && (memcmp(m_Argv[0], dump::cmd::MMAP, dump::length::MMAP) == 0)) {
+	if ((m_nArgv0Length == dump::length::MMAP) && (memcmp(m_Argv[0], dump::cmd::MMAP, dump::length::MMAP) == 0)) {
 		h3_dump_memory_mapping();
 		return;
 	}
 
-	if ((nArgv0Length == dump::length::PLL) && (memcmp(m_Argv[0], dump::cmd::PLL, dump::length::PLL) == 0)) {
+	if ((m_nArgv0Length == dump::length::PLL) && (memcmp(m_Argv[0], dump::cmd::PLL, dump::length::PLL) == 0)) {
 		h3_ccu_pll_dump();
 		return;
 	}
 
-	if ((nArgv0Length == dump::length::LINKER) && (memcmp(m_Argv[0], dump::cmd::LINKER, dump::length::LINKER) == 0)) {
+	if ((m_nArgv0Length == dump::length::LINKER) && (memcmp(m_Argv[0], dump::cmd::LINKER, dump::length::LINKER) == 0)) {
 		arm_dump_memmap();
 		return;
 	}

@@ -74,7 +74,7 @@ private:
 	uint32_t m_Argc{0};
 	char *m_Argv[shell::MAXARG]{nullptr};
 	bool m_bShownPrompt{false};
-	
+	uint32_t m_nArgv0Length{0};	
 };
 
 #endif /* H3_SHELL_H_ */
