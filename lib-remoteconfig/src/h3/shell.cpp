@@ -179,7 +179,6 @@ void Shell::Run() {
 	const char *p;
 	uint32_t nLength;
 	
-
 	if (__builtin_expect((!m_bShownPrompt), 1)) {
 		uart0_puts(msg::CMD_PROMPT);
 		m_bShownPrompt = true;
@@ -208,6 +207,7 @@ void Shell::Run() {
 #endif
 
 	ValidateArg(nOffset, nLength);
+	m_nArgv0Length = strlen(m_Argv[0]); 
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
 		uart0_puts(msg::WRONG_ARGUMENTS);
