@@ -90,6 +90,11 @@ static constexpr char EXT = sizeof(file::EXT) - 1;
 }  // namespace length
 }  // namespace file
 
+namespace msg {
+
+
+
+}  // namespace msg
 }  // namespace shell
 
 using namespace shell;
@@ -154,10 +159,25 @@ void Shell::CmdSet() {
 		return;
 	}
 
-	uint32_t nLength = nArgv0Length;
-	if (RemoteConfig::GetIndex(m_Argv[0], nLength) < TXT_FILE_LAST) {
+	char buffer[1024];
+	memcpy(buffer, m_Argv[0], nArgv0Length);
+	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
+	buffer[nArgv0Length + file::length::EXT] = '\0';
+	uint32_t nLength = nArgv0Length + file::length::EXT;
+
+	if (RemoteConfig::GetIndex(buffer, nLength) < TXT_FILE_LAST) {
 		DEBUG_PUTS(m_Argv[0]);
-		// TODO
+
+		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {
+			memcpy(&buffer[nLength], m_Argv[1], m_nArgvLength[1]);
+			RemoteConfig::Get()->HandleTxtFile(buffer, nLength + m_nArgvLength[1]);
+			uart0_puts("Stored\n");
+			return;
+		} else {
+			uart0_puts("Internal error\n");
+			return;
+		}
+
 		return;
 	}
 
@@ -214,7 +234,8 @@ void Shell::CmdGet() {
 			}
 		}
 	} else {
-		uart0_puts("Error\n");
+		uart0_puts("Internal error\n");
+		return;
 	}
 
 	uart0_puts("Property not found\n");

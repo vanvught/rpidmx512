@@ -819,25 +819,33 @@ void RemoteConfig::HandleGetSerialTxt(uint32_t &nSize) {
  *
  */
 
-void RemoteConfig::HandleTxtFile() {
+void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 	DEBUG_ENTRY
 
 	uint32_t i;
 	uint32_t nLength;
 
-	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
-		 nLength = udp::BUFFER_SIZE - 1;
-		i = GetIndex(&m_pUdpBuffer[1], nLength);
-	} else {
-		nLength = udp::BUFFER_SIZE - SET_STORE_LENGTH;
-		i = GetIndex(&m_pUdpBuffer[SET_STORE_LENGTH], nLength);
-		if (i < TXT_FILE_LAST) {
-			m_nBytesReceived = m_nBytesReceived - nLength - SET_STORE_LENGTH;
-			memcpy(m_pStoreBuffer, &m_pUdpBuffer[nLength + SET_STORE_LENGTH], udp::BUFFER_SIZE);
-			debug_dump(m_pStoreBuffer, m_nBytesReceived);
+	if(pBuffer == nullptr) {
+		if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
+			nLength = udp::BUFFER_SIZE - 1;
+			i = GetIndex(&m_pUdpBuffer[1], nLength);
 		} else {
-			return;
+			nLength = udp::BUFFER_SIZE - SET_STORE_LENGTH;
+			i = GetIndex(&m_pUdpBuffer[SET_STORE_LENGTH], nLength);
+			if (i < TXT_FILE_LAST) {
+				m_nBytesReceived = m_nBytesReceived - nLength - SET_STORE_LENGTH;
+				memcpy(m_pStoreBuffer, &m_pUdpBuffer[nLength + SET_STORE_LENGTH], udp::BUFFER_SIZE);
+				debug_dump(m_pStoreBuffer, m_nBytesReceived);
+			} else {
+				return;
+			}
 		}
+	} else {
+		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
+		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
+		m_nBytesReceived = nBufferLength;
+		nLength = nBufferLength;
+		i = GetIndex(&m_pUdpBuffer[1], nLength);
 	}
 
 	switch (i) {
