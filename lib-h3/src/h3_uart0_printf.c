@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file h3_uart0_printf.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#include <stdarg.h>
+#include <stdio.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void uart0_init(void);
-extern void uart0_putc(char);
 extern void uart0_puts(const char *);
-extern int uart0_getc(void);
-extern int uart0_printf(const char* fmt, ...);
 
-#ifdef __cplusplus
+static char s[128];
+
+int uart0_printf(const char* fmt, ...) {
+	va_list arp;
+
+	va_start(arp, fmt);
+
+	int i = vsnprintf(s, sizeof(s) -1, fmt, arp);
+	va_end(arp);
+
+	uart0_puts(s);
+
+	return i;
 }
-#endif
-
-#endif /* H3_UART_DEBUG_H_ */

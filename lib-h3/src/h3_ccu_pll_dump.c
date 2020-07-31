@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file h3_ccu.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "h3_ccu.h"
+#include "h3_uart0_debug.h"
 
-extern void uart0_init(void);
-extern void uart0_putc(char);
-extern void uart0_puts(const char *);
-extern int uart0_getc(void);
-extern int uart0_printf(const char* fmt, ...);
-
-#ifdef __cplusplus
+void __attribute__((cold)) h3_ccu_pll_dump(void) {
+	uart0_puts("PLL (Hz)\n");
+	uart0_printf("CPUX=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_CPUX));
+	uart0_printf("AUDIO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
+	uart0_printf("VIDEO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
+	uart0_printf("VE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VE));
+	uart0_printf("DDR=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DDR));
+	uart0_printf("PERIPH0=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
+	uart0_printf("GPU=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_GPU));
+	uart0_printf("PERIPH1=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
+	uart0_printf("DE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DE));
 }
-#endif
-
-#endif /* H3_UART_DEBUG_H_ */
