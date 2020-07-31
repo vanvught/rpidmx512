@@ -48,8 +48,11 @@ static constexpr TCommands cmd_table[] = {
 		{ "reboot", 0 },
 		{ "info", 0 },
 		{ "set", 2},
+		{ "get", 2},
+		{ "dhcp", 0},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
+		{ "dump" , 1},
 #endif
 		{ "?", 0 }
 };
@@ -61,7 +64,7 @@ static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
 namespace msg {
 static constexpr char CMD_PROMPT[] = "opi> ";
 static constexpr char CMD_NOT_FOUND[] = "Command not found\n";
-static constexpr char TOO_MANY_ARGUMENTS[] = "Too many arguments\n";
+static constexpr char WRONG_ARGUMENTS[] = "Wrong arguments\n";
 }  // namespace msg
 }  // namespace shell
 
@@ -207,7 +210,8 @@ void Shell::Run() {
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
-		uart0_puts(msg::TOO_MANY_ARGUMENTS);
+		uart0_puts(msg::WRONG_ARGUMENTS);
+		return;
 	}
 
 	switch (nCmdIndex) {
@@ -219,10 +223,19 @@ void Shell::Run() {
 			break;
 		case CmdIndex::SET:
 			CmdSet();
-			break;			
+			break;
+		case CmdIndex::GET:
+			CmdGet();
+			break;
+		case CmdIndex::DHCP:
+			CmdDhcp();
+			break;
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:
 			CmdI2cDetect();
+			break;
+		case CmdIndex::DUMP:
+			CmdDump();
 			break;
 #endif
 		case CmdIndex::HELP:
@@ -231,5 +244,4 @@ void Shell::Run() {
 		default:
 			break;
 	}
-
 }

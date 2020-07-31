@@ -25,7 +25,8 @@
 
 #include <stdint.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
+# include "h3_uart0_debug.h"
 #endif
 
 #include "h3.h"
@@ -108,16 +109,3 @@ uint32_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
 	return freq;
 }
 
-void __attribute__((cold)) h3_ccu_pll_dump(void) {
-#ifndef NDEBUG
-	printf("CCU_PLL_CPUX=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_CPUX));
-	printf("CCU_PLL_AUDIO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
-	printf("CCU_PLL_VIDEO=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VIDEO));
-	printf("CCU_PLL_VE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_VE));
-	printf("CCU_PLL_DDR=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DDR));
-	printf("CCU_PLL_PERIPH0=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH0));
-	printf("CCU_PLL_GPU=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_GPU));
-	printf("CCU_PLL_PERIPH1=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_PERIPH1));
-	printf("CCU_PLL_DE=%ld\n", (long int) h3_ccu_get_pll_rate(CCU_PLL_DE));
-#endif
-}
