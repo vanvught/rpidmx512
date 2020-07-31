@@ -43,6 +43,8 @@
 #include "hardware.h"
 #include "firmwareversion.h"
 
+#include "debug.h"
+
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
 extern "C" {
@@ -52,8 +54,6 @@ void h3_ccu_pll_dump(void);
 void arm_dump_memmap(void);
 }
 #endif
-
-#include "debug.h"
 
 namespace shell {
 
@@ -91,16 +91,29 @@ static constexpr char EXT = sizeof(file::EXT) - 1;
 }  // namespace file
 
 namespace msg {
-
-
-
+namespace usage {
+static constexpr char IP[] = "Usage: set ip x.x.x.x\n";
+static constexpr auto HOSTNAME = "Usage: set hostname name\n";
+}  // namespace usage
+namespace info {
+static constexpr char DHCP[] = "DHCP enabled\n";
+static constexpr char STORED[] = "Stored\n";
+}  // namespace info
+namespace error {
+static constexpr char INVALID[] = "Invalid command\n";
+static constexpr char INTERNAL[] = "Internal error\n";
+static constexpr char DHCP[] = "DHCP failed\n";
+static constexpr char TXT[] = ".txt not found\n";
+static constexpr char PROPERTY[] = "Property not found\n";
+}  // namespace error
 }  // namespace msg
+
 }  // namespace shell
 
 using namespace shell;
 
 uint32_t Shell::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
-	char *pSrc = const_cast<char*>(pHexValue);
+	const char *pSrc = pHexValue;
 	uint32_t nValue = 0;
 
 	while (nLength-- > 0) {
@@ -136,10 +149,9 @@ void Shell::CmdSet() {
 	if ((nArgv0Length == set::length::IP) && (memcmp(m_Argv[0], set::arg::IP, set::length::IP) == 0)) {
 		in_addr group_ip;
 		if (inet_aton(m_Argv[1], &group_ip)) {
-			DEBUG_PRINTF("New IP: " IPSTR, IP2STR(group_ip.s_addr));
 			Network::Get()->SetIp(group_ip.s_addr);
 		} else {
-			uart0_puts("Usage: set ip x.x.x.x\n");
+			uart0_puts(msg::usage::IP);
 		}
 
 		return;
@@ -148,12 +160,10 @@ void Shell::CmdSet() {
 	if ((nArgv0Length == set::length::HOSTNAME) && (memcmp(m_Argv[0], set::arg::HOSTNAME, set::length::HOSTNAME) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
 
-		DEBUG_PRINTF("New hostname: %s", m_Argv[1]);
-
 		if ((nArgv1Length != 0) && (nArgv1Length <= TNetwork::NETWORK_HOSTNAME_SIZE)) {
 			Network::Get()->SetHostName(m_Argv[1]);
 		} else {
-			uart0_puts("Usage: set hostname name\n");	
+			uart0_puts(msg::usage::HOSTNAME);
 		}
 
 		return;
@@ -171,17 +181,17 @@ void Shell::CmdSet() {
 		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {
 			memcpy(&buffer[nLength], m_Argv[1], m_nArgvLength[1]);
 			RemoteConfig::Get()->HandleTxtFile(buffer, nLength + m_nArgvLength[1]);
-			uart0_puts("Stored\n");
+			uart0_puts(msg::info::STORED);
 			return;
 		} else {
-			uart0_puts("Internal error\n");
+			uart0_puts(msg::error::INTERNAL);
 			return;
 		}
 
 		return;
 	}
 
-	uart0_puts("Usage: set [ip][hostname][name\'.txt\'] [value]\n");
+	uart0_puts(msg::error::INVALID);
 }
 
 void Shell::CmdGet() {
@@ -197,7 +207,7 @@ void Shell::CmdGet() {
 	if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - 1)) {
 
 		if (*buffer == '?') { // "?get#ERROR#\n"
-			uart0_puts(".txt not found\n");
+			uart0_puts(msg::error::TXT);
 			return;
 		}
 
@@ -234,19 +244,19 @@ void Shell::CmdGet() {
 			}
 		}
 	} else {
-		uart0_puts("Internal error\n");
+		uart0_puts(msg::error::INTERNAL);
 		return;
 	}
 
-	uart0_puts("Property not found\n");
+	uart0_puts(msg::error::PROPERTY);
 	return;
 }
 
 void Shell::CmdDhcp() {
 	if (Network::Get()->EnableDhcp()) {
-		uart0_puts("DHCP is enabled\n");
+		uart0_puts(msg::info::DHCP);
 	} else {
-		uart0_puts("DHCP failed\n");
+		uart0_puts(msg::error::DHCP);
 	}
 }
 
@@ -259,7 +269,7 @@ void Shell::CmdI2cDetect() {
 	I2cDetect i2cdetect;
 }
 
-void Shell::CmdDump() {	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+void Shell::CmdDump() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::arg::BOARD, dump::length::BOARD) == 0)) {
@@ -281,6 +291,8 @@ void Shell::CmdDump() {	// TOOD We know the m_Argv[] length in ValidateArg. Let'
 		arm_dump_memmap();
 		return;
 	}
+
+	uart0_puts(msg::error::INVALID);
 }
 
 void Shell::CmdMem() {

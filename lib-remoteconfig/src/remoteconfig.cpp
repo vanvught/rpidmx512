@@ -841,11 +841,11 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 			}
 		}
 	} else {
-		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
 		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
+		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
 		m_nBytesReceived = nBufferLength;
 		nLength = nBufferLength;
-		i = GetIndex(&m_pUdpBuffer[1], nLength);
+		i = GetIndex(&m_pUdpBuffer[1], nBufferLength);
 	}
 
 	switch (i) {
