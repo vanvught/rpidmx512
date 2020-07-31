@@ -44,7 +44,7 @@ void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
 }
 
 void RDMMessage::Print(const uint8_t *pRdmData) {
-	if (pRdmData == 0) {
+	if (pRdmData == nullptr) {
 		printf("No RDM data {pRdmData == 0}\n");
 		return;
 	}

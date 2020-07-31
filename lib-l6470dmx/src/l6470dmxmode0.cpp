@@ -36,7 +36,7 @@
 L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
+	assert(pL6470 != nullptr);
 
 	m_pL6470 = pL6470;
 

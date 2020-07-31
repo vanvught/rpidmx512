@@ -96,7 +96,7 @@ struct TTFTPDataPacket {
 	uint8_t Data[max::DATA_LEN];
 } PACKED;
 
-TFTPDaemon *TFTPDaemon::s_pThis = 0;
+TFTPDaemon *TFTPDaemon::s_pThis = nullptr;
 
 TFTPDaemon::TFTPDaemon():
 		m_nState(TFTPState::INIT),
@@ -112,7 +112,7 @@ TFTPDaemon::TFTPDaemon():
 	DEBUG_ENTRY
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
 
-	if (s_pThis != 0) {
+	if (s_pThis != nullptr) {
 		s_pThis->Exit();
 	}
 
@@ -120,7 +120,7 @@ TFTPDaemon::TFTPDaemon():
 
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
 
-	assert(Network::Get() != 0);
+	assert(Network::Get() != nullptr);
 	memset(m_Buffer, 0, sizeof(m_Buffer));
 
 	DEBUG_EXIT
@@ -132,7 +132,7 @@ TFTPDaemon::~TFTPDaemon() {
 
 	Network::Get()->End(TFTP_UDP_PORT);
 
-	s_pThis = 0;
+	s_pThis = nullptr;
 
 	DEBUG_EXIT
 }

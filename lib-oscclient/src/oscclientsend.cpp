@@ -36,10 +36,10 @@
 void OscClient::Send(const char *pPath) {
 	DEBUG_ENTRY
 
-	assert(pPath != 0);
+	assert(pPath != nullptr);
 
 	if (*pPath != 0) {
-		OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, pPath, 0);
+		OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, pPath, nullptr);
 	}
 
 	DEBUG_EXIT

@@ -37,7 +37,7 @@
 #include "debug.h"
 
 WS28xxDmxGrouping::WS28xxDmxGrouping():
-	m_pDmxData(0),
+	m_pDmxData(nullptr),
 	m_nLEDGroupCount(0),
 	m_nGroups(0)
 {
@@ -46,18 +46,18 @@ WS28xxDmxGrouping::WS28xxDmxGrouping():
 
 WS28xxDmxGrouping::~WS28xxDmxGrouping() {
 	delete [] m_pDmxData;
-	m_pDmxData = 0;
+	m_pDmxData = nullptr;
 }
 
 void WS28xxDmxGrouping::Start(__attribute__((unused)) uint8_t nPort) {
 	m_pDmxData = new uint8_t[m_nDmxFootprint];
-	assert(m_pDmxData != 0);
+	assert(m_pDmxData != nullptr);
 
 	WS28xxDmx::Start();
 }
 
 void WS28xxDmxGrouping::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
-	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
+	if (__builtin_expect((m_pLEDStripe == nullptr), 0)) {
 		Start();
 	}
 
@@ -136,11 +136,11 @@ bool WS28xxDmxGrouping::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (DMX_UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
-		if (m_pWS28xxDmxStore != 0) {
+		if (m_pWS28xxDmxStore != nullptr) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != 0) {
+		if (m_pLightSetDisplay != nullptr) {
 			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 

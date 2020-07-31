@@ -50,7 +50,7 @@ RDMSensor::RDMSensor(uint8_t nSensor) : m_nSensor(nSensor) {
 void RDMSensor::SetDescription(const char *pDescription) {
 	DEBUG1_ENTRY
 
-	assert(pDescription != 0);
+	assert(pDescription != nullptr);
 	uint32_t i;
 
 	for (i = 0; i < 32 && pDescription[i] != 0; i++) {

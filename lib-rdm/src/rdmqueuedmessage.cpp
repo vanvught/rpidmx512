@@ -36,11 +36,11 @@
 
 RDMQueuedMessage::RDMQueuedMessage(): m_nMessageCount(0), m_IsNeverQueued(true) {
 	m_pQueue = new TRdmQueuedMessage[RDM_MESSAGE_COUNT_MAX];
-	assert(m_pQueue != 0);
+	assert(m_pQueue != nullptr);
 }
 
 RDMQueuedMessage::~RDMQueuedMessage() {
-	assert(m_pQueue == 0);
+	assert(m_pQueue == nullptr);
 	delete[] m_pQueue;
 }
 

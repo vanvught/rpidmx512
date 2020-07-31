@@ -61,7 +61,7 @@ void ArtNetNode::HandleDmxIn() {
 			uint16_t nLength;
 			const uint8_t *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
-			if (pDmxData != 0) {
+			if (pDmxData != nullptr) {
 				tArtDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
 				tArtDmx.Physical = i;
 				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;

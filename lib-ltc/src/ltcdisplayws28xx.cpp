@@ -1,4 +1,4 @@
-	/**
+/**
  * @file ltcdisplayws28xx.cpp
  */
 /*
@@ -80,11 +80,11 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 	m_nColonBlinkMillis(0),
 	m_nSecondsPrevious(60),
 	m_tColonBlinkMode(LTCDISPLAYWS28XX_COLON_BLINK_MODE_DOWN),
-	m_pLtcDisplayWS28xxSet(0)
+	m_pLtcDisplayWS28xxSet(nullptr)
 {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT;
@@ -97,10 +97,10 @@ LtcDisplayWS28xx::LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType) :
 LtcDisplayWS28xx::~LtcDisplayWS28xx() {
 	DEBUG_ENTRY
 
-	assert(m_pLtcDisplayWS28xxSet == 0);
+	assert(m_pLtcDisplayWS28xxSet == nullptr);
 
 	delete m_pLtcDisplayWS28xxSet;
-	m_pLtcDisplayWS28xxSet = 0;
+	m_pLtcDisplayWS28xxSet = nullptr;
 
 	DEBUG_EXIT
 }
@@ -116,7 +116,7 @@ void LtcDisplayWS28xx::Init(TWS28XXType tLedType, __attribute__((unused)) uint8_
 		m_pLtcDisplayWS28xxSet = new LtcDisplayWS28xxMatrix;
 	}
 
-	assert(m_pLtcDisplayWS28xxSet != 0);
+	assert(m_pLtcDisplayWS28xxSet != nullptr);
 	m_pLtcDisplayWS28xxSet->Init(tLedType, m_tMapping);
 
 	SetRGB(m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT], LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT);
@@ -232,7 +232,7 @@ void LtcDisplayWS28xx::ShowSysTime(const char *pSystemTime) {
 }
 
 void LtcDisplayWS28xx::SetMessage(const char *pMessage, uint32_t nSize) {
-	assert(pMessage != 0);
+	assert(pMessage != nullptr);
 
 	uint32_t i;
 	const char *pSrc = pMessage;

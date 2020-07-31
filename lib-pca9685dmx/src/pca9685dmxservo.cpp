@@ -50,14 +50,14 @@ PCA9685DmxServo::PCA9685DmxServo():
 	m_nLeftUs(SERVO_LEFT_DEFAULT_US),
 	m_nRightUs(SERVO_RIGHT_DEFAULT_US),
 	m_bIsStarted(false),
-	m_pServo(0),
-	m_pDmxData(0)
+	m_pServo(nullptr),
+	m_pDmxData(nullptr)
 {
 }
 
 PCA9685DmxServo::~PCA9685DmxServo() {
 	delete m_pServo;
-	m_pServo = 0;
+	m_pServo = nullptr;
 }
 
 bool PCA9685DmxServo::SetDmxStartAddress(uint16_t nDmxStartAddress) {
@@ -78,7 +78,7 @@ void PCA9685DmxServo::Start(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (__builtin_expect((m_pServo == 0), 0)) {
+	if (__builtin_expect((m_pServo == nullptr), 0)) {
 		Initialize();
 	}
 }
@@ -92,10 +92,10 @@ void PCA9685DmxServo::Stop(__attribute__((unused)) uint8_t nPort) {
 }
 
 void PCA9685DmxServo::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
-	assert(pDmxData != 0);
+	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
-	if (__builtin_expect((m_pServo == 0), 0)) {
+	if (__builtin_expect((m_pServo == nullptr), 0)) {
 		Start();
 	}
 
@@ -150,26 +150,26 @@ void PCA9685DmxServo::SetDmxFootprint(uint16_t nDmxFootprint) {
 }
 
 void PCA9685DmxServo::Initialize() {
-	assert(m_pDmxData == 0);
+	assert(m_pDmxData == nullptr);
 	m_pDmxData = new uint8_t[m_nBoardInstances * PCA9685_PWM_CHANNELS];
-	assert(m_pDmxData != 0);
+	assert(m_pDmxData != nullptr);
 
 	for (unsigned i = 0; i < m_nBoardInstances * PCA9685_PWM_CHANNELS; i++) {
 		m_pDmxData[i] = 0;
 	}
 
-	assert(m_pServo == 0);
+	assert(m_pServo == nullptr);
 	m_pServo = new PCA9685Servo*[m_nBoardInstances];
-	assert(m_pServo != 0);
+	assert(m_pServo != nullptr);
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
-		m_pServo[i] = 0;
+		m_pServo[i] = nullptr;
 	}
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
-		assert(m_pServo[i] == 0);
+		assert(m_pServo[i] == nullptr);
 		m_pServo[i] = new PCA9685Servo(m_nI2cAddress + i);
-		assert(m_pServo[i] != 0);
+		assert(m_pServo[i] != nullptr);
 
 		m_pServo[i]->SetLeftUs(m_nLeftUs);
 		m_pServo[i]->SetRightUs(m_nRightUs);

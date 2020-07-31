@@ -120,7 +120,7 @@ void TCNet::HandlePort60000Incoming() {
 }
 
 void TCNet::HandlePort60001Incoming() {
-	if (__builtin_expect((m_pTCNetTimeCode != 0), 1)) {
+	if (__builtin_expect((m_pTCNetTimeCode != nullptr), 1)) {
 		if (static_cast<TTCNetMessageType>(m_TTCNet.TCNetPacket.ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
 			struct TTCNetTimeCode TimeCode;
 

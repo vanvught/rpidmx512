@@ -93,16 +93,16 @@ void ArtNetNode::SendTod(uint8_t nPortId) {
 }
 
 void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
-	assert(pArtNetTRdm != 0);
+	assert(pArtNetTRdm != nullptr);
 
-	if (pArtNetTRdm != 0) {
+	if (pArtNetTRdm != nullptr) {
 		m_pArtNetRdm = pArtNetTRdm;
 		m_IsRdmResponder = IsResponder;
 
 		m_pTodData = new TArtTodData;
-		assert(m_pTodData != 0);
+		assert(m_pTodData != nullptr);
 
-		if (m_pTodData != 0) {
+		if (m_pTodData != nullptr) {
 			m_Node.Status1 |= STATUS1_RDM_CAPABLE;
 			memset(m_pTodData, 0, sizeof(struct TArtTodData));
 
@@ -122,7 +122,7 @@ void ArtNetNode::HandleRdm() {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 
 			if (!m_IsRdmResponder) {
-				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != 0)) {
+				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != nullptr)) {
 					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 					m_IsLightSetRunning[i] = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
@@ -134,7 +134,7 @@ void ArtNetNode::HandleRdm() {
 
 			const uint8_t *response = const_cast<uint8_t*>(m_pArtNetRdm->Handler(i, pArtRdm->RdmPacket));
 
-			if (response != 0) {
+			if (response != nullptr) {
 				pArtRdm->RdmVer = 0x01;
 
 				const uint16_t nMessageLength = response[2] + 1;

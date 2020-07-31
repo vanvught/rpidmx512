@@ -45,7 +45,7 @@ WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 	m_nHighCode(0),
 	m_nLedCount(170),
 	m_nActiveOutputs(1),
-	m_pLEDStripe(0),
+	m_pLEDStripe(nullptr),
 	m_bIsStarted(false),
 	m_bBlackout(false),
 	m_nUniverses(1), // -> m_nLedCount(170)
@@ -67,11 +67,11 @@ WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
 
 WS28xxDmxMulti::~WS28xxDmxMulti() {
 	delete m_pLEDStripe;
-	m_pLEDStripe = 0;
+	m_pLEDStripe = nullptr;
 }
 
 void WS28xxDmxMulti::Initialize() {
-	assert(m_pLEDStripe != 0);
+	assert(m_pLEDStripe != nullptr);
 
 	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
 
@@ -83,7 +83,7 @@ void WS28xxDmxMulti::Initialize() {
 }
 
 void WS28xxDmxMulti::Start(__attribute__((unused)) uint8_t nPort) {
-	assert(m_pLEDStripe != 0);
+	assert(m_pLEDStripe != nullptr);
 
 	DEBUG_PRINTF("%d", static_cast<int>(nPort));
 
@@ -101,7 +101,7 @@ void WS28xxDmxMulti::Start(__attribute__((unused)) uint8_t nPort) {
 }
 
 void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
-	assert(m_pLEDStripe != 0);
+	assert(m_pLEDStripe != nullptr);
 
 	DEBUG_PRINTF("%d", static_cast<int>(nPort));
 
@@ -119,9 +119,9 @@ void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
 }
 
 void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
-	assert(m_pLEDStripe != 0);
+	assert(m_pLEDStripe != nullptr);
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
@@ -253,7 +253,7 @@ void WS28xxDmxMulti::UpdateMembers() {
 }
 
 void WS28xxDmxMulti::Print() {
-	assert(m_pLEDStripe != 0);
+	assert(m_pLEDStripe != nullptr);
 
 	printf("Led parameters\n");
 	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_pLEDStripe->GetLEDType()), m_pLEDStripe->GetLEDType());

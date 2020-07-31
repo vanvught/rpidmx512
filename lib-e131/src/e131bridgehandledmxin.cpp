@@ -57,7 +57,7 @@ void E131Bridge::FillDataPacket() {
 }
 
 void E131Bridge::HandleDmxIn() {
-	assert(m_pE131DataPacket != 0);
+	assert(m_pE131DataPacket != nullptr);
 
 	for (uint32_t i = 0 ; i < E131_MAX_UARTS; i++) {
 		uint32_t nUpdatesPerSecond;
@@ -66,7 +66,7 @@ void E131Bridge::HandleDmxIn() {
 			uint16_t nLength;
 			const uint8_t *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
 
-			if (pDmxData != 0) {
+			if (pDmxData != nullptr) {
 				// Root Layer (See Section 5)
 				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength)));
 				// E1.31 Framing Layer (See Section 6)

@@ -57,7 +57,7 @@ RDMNetLLRPOnly::~RDMNetLLRPOnly() {
 void RDMNetLLRPOnly::Init() {
 	DEBUG_ENTRY
 
-	if (m_pLabel == 0) {
+	if (m_pLabel == nullptr) {
 		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, LABEL, LABEL_LENGTH);
 	} else {
 		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, strlen(m_pLabel));

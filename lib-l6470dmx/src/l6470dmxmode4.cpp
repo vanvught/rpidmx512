@@ -41,9 +41,9 @@
 L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
-	assert(pModeParams != 0);
+	assert(pL6470 != nullptr);
+	assert(pMotorParams != nullptr);
+	assert(pModeParams != nullptr);
 
 	m_pModeParams = pModeParams;
 	m_pL6470 = pL6470;

@@ -128,7 +128,7 @@ const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint8_t &nLength) {
 
 	if (nIndex < 0) {
 		nLength = 0;
-		return 0;
+		return nullptr;
 	}
 
 	nLength = strlen(s_tTableC2[nIndex].pDescription);

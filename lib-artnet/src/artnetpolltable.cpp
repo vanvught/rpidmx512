@@ -55,18 +55,18 @@ ArtNetPollTable::ArtNetPollTable() :
 	m_nTableUniversesEntries(0)
 {
 	m_pPollTable = new TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES];
-	assert(m_pPollTable != 0);
+	assert(m_pPollTable != nullptr);
 
 	memset(m_pPollTable, 0, sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES]));
 
 	m_pTableUniverses = new TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES];
-	assert(m_pTableUniverses != 0);
+	assert(m_pTableUniverses != nullptr);
 
 	memset(m_pTableUniverses, 0, sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES]));
 
 	for (uint32_t nIndex = 0; nIndex < ARTNET_POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
 		m_pTableUniverses[nIndex].pIpAddresses = new uint32_t[ARTNET_POLL_TABLE_SIZE_ENRIES];
-		assert(m_pTableUniverses[nIndex].pIpAddresses != 0);
+		assert(m_pTableUniverses[nIndex].pIpAddresses != nullptr);
 	}
 
 	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %ld bytes [%ld Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
@@ -80,14 +80,14 @@ ArtNetPollTable::ArtNetPollTable() :
 ArtNetPollTable::~ArtNetPollTable() {
 	for (uint32_t nIndex = 0; nIndex < ARTNET_POLL_TABLE_SIZE_UNIVERSES; nIndex++) {
 		delete[] m_pTableUniverses[nIndex].pIpAddresses;
-		m_pTableUniverses[nIndex].pIpAddresses = 0;
+		m_pTableUniverses[nIndex].pIpAddresses = nullptr;
 	}
 
 	delete[] m_pTableUniverses;
-	m_pTableUniverses = 0;
+	m_pTableUniverses = nullptr;
 
 	delete[] m_pPollTable;
-	m_pPollTable = 0;
+	m_pPollTable = nullptr;
 }
 
 uint16_t ArtNetPollTable::MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse) {
@@ -101,20 +101,20 @@ uint16_t ArtNetPollTable::MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch
 
 const struct TArtNetPollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t nUniverse) {
 	if (m_nTableUniversesEntries == 0) {
-		return 0;
+		return nullptr;
 	}
 
 	// FIXME Universe lookup
 	for (uint32_t nEntry = 0; nEntry < m_nTableUniversesEntries; nEntry++) {
 		TArtNetPollTableUniverses *pTableUniverses = &m_pTableUniverses[nEntry];
-		assert(pTableUniverses != 0);
+		assert(pTableUniverses != nullptr);
 
 		if (pTableUniverses->nUniverse == nUniverse) {
 			return &m_pTableUniverses[nEntry];
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 
@@ -128,7 +128,7 @@ void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
 	// FIXME Universe lookup
 	for (nEntry = 0; nEntry < m_nTableUniversesEntries; nEntry++) {
 		TArtNetPollTableUniverses *pTableUniverses = &m_pTableUniverses[nEntry];
-		assert(pTableUniverses != 0);
+		assert(pTableUniverses != nullptr);
 
 		if (pTableUniverses->nUniverse == nUniverse) {
 			break;
@@ -196,7 +196,7 @@ void ArtNetPollTable::ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse) {
 
 	for (nEntry = 0; nEntry < m_nTableUniversesEntries; nEntry++) {
 		TArtNetPollTableUniverses *pTableUniverses = &m_pTableUniverses[nEntry];
-		assert(pTableUniverses != 0);
+		assert(pTableUniverses != nullptr);
 
 		if (pTableUniverses->nUniverse == nUniverse) {
 			bFoundUniverse = true;
@@ -427,12 +427,12 @@ void ArtNetPollTable::DumpTableUniverses() {
 
 	for (uint32_t nEntry = 0; nEntry < m_nTableUniversesEntries; nEntry++) {
 		const TArtNetPollTableUniverses *pTableUniverses = &m_pTableUniverses[nEntry];
-		assert(pTableUniverses != 0);
+		assert(pTableUniverses != nullptr);
 
 		printf("%3d |%4u | %d ", nEntry, pTableUniverses->nUniverse, pTableUniverses->nCount);
 
 		const uint32_t *pIpAddresses = pTableUniverses->pIpAddresses;
-		assert(pIpAddresses != 0);
+		assert(pIpAddresses != nullptr);
 
 		for (uint32_t nCount = 0; nCount < pTableUniverses->nCount; nCount++) {
 			printf(" " IPSTR, IP2STR(pIpAddresses[nCount]));

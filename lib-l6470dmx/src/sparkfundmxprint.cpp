@@ -31,10 +31,10 @@
 
 void SparkFunDmx::Print() {
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-		if (m_pAutoDriver[i] != 0) {
+		if (m_pAutoDriver[i] != nullptr) {
 			m_pAutoDriver[i]->Print();
 
-			if (m_pL6470DmxModes[i] != 0) {
+			if (m_pL6470DmxModes[i] != nullptr) {
 				m_pL6470DmxModes[i]->Print();
 
 				printf(" SlotInfo: ");

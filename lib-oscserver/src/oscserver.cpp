@@ -64,17 +64,17 @@ OscServer::OscServer() {
 	strcpy(m_aPathBlackOut, OSCSERVER_DEFAULT_PATH_BLACKOUT);
 
 	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_pData  = new uint8_t[DMX_UNIVERSE_SIZE];
-	assert(m_pData != 0);
+	assert(m_pData != nullptr);
 
 	for (unsigned i = 0; i < DMX_UNIVERSE_SIZE; i++) {
 		m_pData[i] = 0;
 	}
 
 	m_pOsc  = new uint8_t[DMX_UNIVERSE_SIZE];
-	assert(m_pOsc != 0);
+	assert(m_pOsc != nullptr);
 
 	snprintf(m_Os, sizeof(m_Os), "[V%s] %s", SOFTWARE_VERSION, __DATE__);
 
@@ -87,34 +87,34 @@ OscServer::OscServer() {
 }
 
 OscServer::~OscServer() {
-	if (m_pLightSet != 0) {
+	if (m_pLightSet != nullptr) {
 		m_pLightSet->Stop(0);
-		m_pLightSet = 0;
+		m_pLightSet = nullptr;
 	}
 
 	delete[] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 
 	delete[] m_pData;
-	m_pData = 0;
+	m_pData = nullptr;
 
 	delete[] m_pOsc;
-	m_pOsc = 0;
+	m_pOsc = nullptr;
 }
 
 void OscServer::Start() {
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
 
-	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", 0);
+	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
-	if (m_pLightSet != 0) {
+	if (m_pLightSet != nullptr) {
 		m_pLightSet->Start(0);
 	}
 }
 
 void OscServer::Stop() {
-	if (m_pLightSet != 0) {
+	if (m_pLightSet != nullptr) {
 		m_pLightSet->Stop(0);
 	}
 }
@@ -138,12 +138,12 @@ void OscServer::SetPortOutgoing(uint16_t nPortOutgoing) {
 }
 
 void OscServer::SetOutput(LightSet *pLightSet) {
-	assert(pLightSet != 0);
+	assert(pLightSet != nullptr);
 	m_pLightSet = pLightSet;
 }
 
 void  OscServer::SetOscServerHandler(OscServerHandler *pOscServerHandler) {
-	assert(pOscServerHandler != 0);
+	assert(pOscServerHandler != nullptr);
 	m_pOscServerHandler = pOscServerHandler;
 }
 
@@ -217,7 +217,7 @@ void OscServer::SetPartialTransmission(bool bPartialTransmission) {
 }
 
 int OscServer::GetChannel(const char* p) {
-	assert(p != 0);
+	assert(p != nullptr);
 
 	char *s = const_cast<char *>(p) + strlen(m_aPath) + 1;
 	int nChannel = 0;
@@ -242,7 +242,7 @@ int OscServer::GetChannel(const char* p) {
 }
 
 bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
 
 	bool isChanged = false;
@@ -384,7 +384,7 @@ void OscServer::Run() {
 		return;
 	}
 
-	if ((m_pOscServerHandler != 0) && (OSC::isMatch(m_pBuffer, m_aPathBlackOut))) {
+	if ((m_pOscServerHandler != nullptr) && (OSC::isMatch(m_pBuffer, m_aPathBlackOut))) {
 		OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
 		if (Msg.GetType(0) != osc::type::FLOAT) {
@@ -404,7 +404,7 @@ void OscServer::Run() {
 
 	if (OSC::isMatch(m_pBuffer, "/ping")) {
 		DEBUG_PUTS("ping received");
-		OscSimpleSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", 0);
+		OscSimpleSend MsgSend(m_nHandle, nRemoteIp, m_nPortOutgoing, "/pong", nullptr);
 
 		return;
 	}
@@ -414,7 +414,7 @@ void OscServer::Run() {
 		OscSimpleSend MsgSendModel(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/model", "s", m_pModel);
 		OscSimpleSend MsgSendSoc(m_nHandle, nRemoteIp, m_nPortOutgoing, "/info/soc", "s", m_pSoC);
 
-		if (m_pOscServerHandler != 0) {
+		if (m_pOscServerHandler != nullptr) {
 			m_pOscServerHandler->Info(m_nHandle, nRemoteIp, m_nPortOutgoing);
 		}
 

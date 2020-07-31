@@ -58,7 +58,7 @@ RDMDevice::RDMDevice():
 	m_IsInit(false),
 	m_nDeviceRootLabelLength(0),
 	m_nCheckSum(0),
-	m_pRDMDeviceStore(0)
+	m_pRDMDeviceStore(nullptr)
 {
 	DEBUG_ENTRY
 
@@ -144,7 +144,7 @@ void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *pInfo) {
 		memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
 		m_tRDMDevice.nDeviceRootLabelLength = nLength;
 
-		if (m_pRDMDeviceStore != 0) {
+		if (m_pRDMDeviceStore != nullptr) {
 			m_pRDMDeviceStore->SaveLabel(m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
 		}
 	} else {

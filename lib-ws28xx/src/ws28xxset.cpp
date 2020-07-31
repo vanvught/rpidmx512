@@ -31,7 +31,7 @@
 
 
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 	assert(nLEDIndex < m_nLedCount);
 
 	if (__builtin_expect((m_bIsRTZProtocol), 1)) {
@@ -118,7 +118,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 }
 
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 	assert(nLEDIndex < m_nLedCount);
 	assert(m_tLEDType == SK6812W);
 

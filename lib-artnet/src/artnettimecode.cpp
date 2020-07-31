@@ -36,13 +36,13 @@
 #include "network.h"
 
 void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
-	assert(pArtNetTimeCode != 0);
+	assert(pArtNetTimeCode != nullptr);
 
-	if (pArtNetTimeCode != 0) {
+	if (pArtNetTimeCode != nullptr) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 
 		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != 0);
+		assert(m_pTimeCodeData != nullptr);
 
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
 		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
@@ -58,15 +58,15 @@ void ArtNetNode::HandleTimeCode() {
 }
 
 void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
-	assert(pArtNetTimeCode != 0);
+	assert(pArtNetTimeCode != nullptr);
 
 	if (pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ) {
 		return;
 	}
 
-	if (m_pTimeCodeData == 0) {
+	if (m_pTimeCodeData == nullptr) {
 		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != 0);
+		assert(m_pTimeCodeData != nullptr);
 
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
 		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
