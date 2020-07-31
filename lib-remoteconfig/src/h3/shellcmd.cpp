@@ -83,6 +83,13 @@ static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 }  // namespace length
 }  // namespace dump
 
+namespace file {
+static constexpr char EXT[] = ".txt";
+namespace length {
+static constexpr char EXT = sizeof(file::EXT) - 1;
+}  // namespace length
+}  // namespace file
+
 }  // namespace shell
 
 using namespace shell;
@@ -160,10 +167,12 @@ void Shell::CmdSet() {
 
 void Shell::CmdGet() {
 	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	uint32_t nArgv0Length = strlen(m_Argv[0]);
+	const uint32_t nArgv0Length = strlen(m_Argv[0]);
 
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
+	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
+	buffer[nArgv0Length + file::length::EXT] = '\0';
 
 	uint32_t nLength;
 
