@@ -2,7 +2,8 @@
  * @file shell.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,11 +54,10 @@ static constexpr TCommands cmd_table[] = {
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
 		{ "dump" , 1},
+		{ "mem" , 2},
 #endif
 		{ "?", 0 }
 };
-
-
 
 namespace shell {
 static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
@@ -236,6 +236,9 @@ void Shell::Run() {
 			break;
 		case CmdIndex::DUMP:
 			CmdDump();
+			break;
+		case CmdIndex::MEM:
+			CmdMem();
 			break;
 #endif
 		case CmdIndex::HELP:
