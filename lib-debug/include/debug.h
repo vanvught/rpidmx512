@@ -2,7 +2,7 @@
  * @file debug.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@
  #ifdef __cplusplus
   extern "C" {
  #endif
- extern void debug_dump(void *, uint16_t);
+ extern void debug_dump(const void *, uint16_t);
  extern void debug_print_bits(uint32_t);
  #ifdef __cplusplus
   }

@@ -29,10 +29,10 @@
 
 #define CHARS_PER_LINE 16
 
-void debug_dump(void *packet, uint16_t len) {
+void debug_dump(const void *packet, uint16_t len) {
 	uint16_t chars = 0;
 	uint16_t chars_this_line = 0;
-	uint8_t *p = (uint8_t *) packet;
+	const uint8_t *p = (const uint8_t *) packet;
 
 	printf("size=%d\n", len);
 
@@ -41,7 +41,7 @@ void debug_dump(void *packet, uint16_t len) {
 
 		printf("%04x ", chars);
 
-		uint8_t *q = p;
+		const uint8_t *q = p;
 
 		while ((chars_this_line < CHARS_PER_LINE) && (chars < len)) {
 			if (chars_this_line % 8 == 0) {
