@@ -77,6 +77,7 @@ private:
 	char m_Buffer[shell::BUFLEN];
 	uint32_t m_Argc{0};
 	char *m_Argv[shell::MAXARG]{nullptr};
+	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
 	
 };

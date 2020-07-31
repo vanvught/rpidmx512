@@ -126,8 +126,7 @@ void Shell::CmdInfo() {
 }
 
 void Shell::CmdSet() {
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv0Length = strlen(m_Argv[0]);
+	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == set::length::IP) && (memcmp(m_Argv[0], set::arg::IP, set::length::IP) == 0)) {
 		in_addr group_ip;
@@ -142,7 +141,7 @@ void Shell::CmdSet() {
 	}
 
 	if ((nArgv0Length == set::length::HOSTNAME) && (memcmp(m_Argv[0], set::arg::HOSTNAME, set::length::HOSTNAME) == 0)) {
-		const auto nArgv1Length = strlen(m_Argv[1]);	// 2nd arg is hostname string
+		const auto nArgv1Length = m_nArgvLength[1];
 
 		DEBUG_PRINTF("New hostname: %s", m_Argv[1]);
 
@@ -166,8 +165,7 @@ void Shell::CmdSet() {
 }
 
 void Shell::CmdGet() {
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const uint32_t nArgv0Length = strlen(m_Argv[0]);
+	const uint32_t nArgv0Length = m_nArgvLength[0];
 
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
@@ -186,8 +184,7 @@ void Shell::CmdGet() {
 		buffer[nLength] = '\0';
 
 		char *p = buffer;
-		// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-		const auto nPropertyLength = strlen(m_Argv[1]);
+		const auto nPropertyLength = m_nArgvLength[1];
 
 		uint32_t i;
 
@@ -241,9 +238,8 @@ void Shell::CmdI2cDetect() {
 	I2cDetect i2cdetect;
 }
 
-void Shell::CmdDump() {
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv0Length = strlen(m_Argv[0]);
+void Shell::CmdDump() {	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
+	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::arg::BOARD, dump::length::BOARD) == 0)) {
 		h3_board_dump();
@@ -267,12 +263,8 @@ void Shell::CmdDump() {
 }
 
 void Shell::CmdMem() {
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv0Length = strlen(m_Argv[0]);
-	const char *pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], nArgv0Length));
-	// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-	const auto nArgv1Length = strlen(m_Argv[1]);
-	const auto nSize = hexadecimalToDecimal(m_Argv[1], nArgv1Length);
+	const char *pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], m_nArgvLength[0]));
+	const auto nSize = hexadecimalToDecimal(m_Argv[1], m_nArgvLength[1]);
 
 	debug_dump(pAddress, nSize);
 }

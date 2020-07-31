@@ -140,31 +140,40 @@ void Shell::ValidateArg(uint32_t nOffset, uint32_t nLength) {
 		return;
 	}
 
+	uint32_t nArgvStart = nOffset;
 	m_Argv[0] = &m_Buffer[nOffset++];
 	m_Argc = 1;
 
-	uint32_t j = 1;
+	uint32_t i, j = 1;
 
-	for (uint32_t i = nOffset; i < nLength; i++) {
+	for (i = nOffset; i < nLength; i++) {
 		if ((m_Buffer[i] > ' ') && (m_Buffer[i] < 127)) {
 			continue;
 		}
 
 		if ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t')) {
+			if (j < MAXARG) {
+				m_nArgvLength[j - 1] = i - nArgvStart;
+			}
 			while (i < nLength && ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t'))) {
 				m_Buffer[i++] = '\0';
 			}
 			if (j < MAXARG) {
+				nArgvStart = i;
 				m_Argv[j++] = &m_Buffer[i];
 			}
 			m_Argc++;
 		}
 	}
 
+	if (j < MAXARG) {
+		m_nArgvLength[j - 1] = i - nArgvStart;
+	}
+
 #ifndef NDEBUG
 	DEBUG_PRINTF("m_Argc=%d", m_Argc);
 	for (uint32_t i = 0; i < m_Argc; i++) {
-		uart0_printf("%d:[%s]\n", i, m_Argv[i]);
+		uart0_printf("%d:[%s]{%d}\n", i, m_Argv[i], m_nArgvLength[i]);
 	}
 #endif
 }
