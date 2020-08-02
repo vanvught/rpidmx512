@@ -90,7 +90,7 @@ void NtpClient::Init() {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	if (m_pNtpClientDisplay != 0) {
+	if (m_pNtpClientDisplay != nullptr) {
 		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::INIT);
 	}
 
@@ -141,7 +141,7 @@ void NtpClient::Init() {
 	}
 
 	if (m_tStatus == NtpClientStatus::STOPPED) {
-		if (m_pNtpClientDisplay != 0) {
+		if (m_pNtpClientDisplay != nullptr) {
 			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
 		}
 	}
@@ -174,7 +174,7 @@ void NtpClient::Run() {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = NtpClientStatus::STOPPED;
 				if (m_tStatus == NtpClientStatus::STOPPED) {
-					if (m_pNtpClientDisplay != 0) {
+					if (m_pNtpClientDisplay != nullptr) {
 						m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
 					}
 				}

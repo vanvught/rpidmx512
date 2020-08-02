@@ -34,17 +34,17 @@
  #include "cputemperature.h"
 #endif
 
-RDMSensors *RDMSensors::s_pThis = 0;
+RDMSensors *RDMSensors::s_pThis = nullptr;
 
-RDMSensors::RDMSensors(): m_pRDMSensor(0), m_nCount(0) {
+RDMSensors::RDMSensors(): m_pRDMSensor(nullptr), m_nCount(0) {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 #if defined (RDM_SENSORS_ENABLE) || defined (RDMSENSOR_CPU_ENABLE)
 	m_pRDMSensor = new RDMSensor*[rdm::sensors::max];
-	assert(m_pRDMSensor != 0);
+	assert(m_pRDMSensor != nullptr);
 
 # if defined (RDMSENSOR_CPU_ENABLE)
 	Add(new CpuTemperature(m_nCount));
@@ -55,9 +55,9 @@ RDMSensors::RDMSensors(): m_pRDMSensor(0), m_nCount(0) {
 
 RDMSensors::~RDMSensors() {
 	for (unsigned i = 0; i < m_nCount; i++) {
-		if (m_pRDMSensor[i] != 0) {
+		if (m_pRDMSensor[i] != nullptr) {
 			delete m_pRDMSensor[i];
-			m_pRDMSensor[i] = 0;
+			m_pRDMSensor[i] = nullptr;
 		}
 	}
 
@@ -67,14 +67,14 @@ RDMSensors::~RDMSensors() {
 const struct TRDMSensorDefintion* RDMSensors::GetDefintion(uint8_t nSensor) {
 	assert(nSensor < m_nCount);
 
-	assert(m_pRDMSensor[nSensor] != 0);
+	assert(m_pRDMSensor[nSensor] != nullptr);
 	return m_pRDMSensor[nSensor]->GetDefintion();
 }
 
 const struct TRDMSensorValues* RDMSensors::GetValues(uint8_t nSensor) {
 	assert(nSensor < m_nCount);
 
-	assert(m_pRDMSensor[nSensor] != 0);
+	assert(m_pRDMSensor[nSensor] != nullptr);
 	return m_pRDMSensor[nSensor]->GetValues();
 }
 

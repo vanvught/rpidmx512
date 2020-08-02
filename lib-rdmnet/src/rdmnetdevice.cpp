@@ -44,18 +44,18 @@
 
 RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
 	RDMDeviceResponder(pRDMPersonality, LightSet::Get()),
-	m_RDMHandler(0),
-	m_pRdmCommand(0)
+	m_RDMHandler(nullptr),
+	m_pRdmCommand(nullptr)
 {
 	DEBUG_ENTRY
 
 	m_E131Uuid.GetHardwareUuid(m_Cid);
 
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != 0);
+	assert(m_pRdmCommand != nullptr);
 
 	m_RDMHandler = new RDMHandler(false);
-	assert(m_RDMHandler != 0);
+	assert(m_RDMHandler != nullptr);
 
 	DEBUG_EXIT
 }
@@ -64,10 +64,10 @@ RDMNetDevice::~RDMNetDevice() {
 	DEBUG_ENTRY
 
 	delete m_RDMHandler;
-	m_RDMHandler = 0;
+	m_RDMHandler = nullptr;
 
 	delete m_pRdmCommand;
-	m_pRdmCommand = 0;
+	m_pRdmCommand = nullptr;
 
 	DEBUG_EXIT
 }
@@ -105,12 +105,12 @@ void RDMNetDevice::Print() {
 }
 
 void RDMNetDevice::CopyUID(uint8_t *pUID) {
-	assert(pUID != 0);
+	assert(pUID != nullptr);
 	memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 }
 
 void RDMNetDevice::CopyCID(uint8_t *pCID) {
-	assert(pCID != 0);
+	assert(pCID != nullptr);
 	memcpy(pCID, m_Cid, sizeof(m_Cid));
 }
 

@@ -53,7 +53,7 @@ void RDMSubDeviceDummy::Stop() {
 }
 
 void RDMSubDeviceDummy::Data(const uint8_t* pData, uint16_t nLength) {
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength <= 512);
 
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();

@@ -31,7 +31,7 @@
 
 #include "debug.h"
 
-Network *Network::s_pThis = 0;
+Network *Network::s_pThis = nullptr;
 
 Network::Network() :
 	m_nLocalIp(0),
@@ -44,10 +44,10 @@ Network::Network() :
 	m_nIfIndex(1),
 	m_nNtpServerIp(0),
 	m_fNtpUtcOffset(0),
-	m_pNetworkDisplay(0),
-	m_pNetworkStore(0)
+	m_pNetworkDisplay(nullptr),
+	m_pNetworkStore(nullptr)
 {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_aNetMacaddr[0] = '\0';

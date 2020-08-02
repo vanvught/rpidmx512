@@ -53,7 +53,7 @@
  #ifdef __cplusplus
   extern "C" {
  #endif
- extern void debug_dump(void *, uint16_t);
+ extern void debug_dump(const void *, uint16_t);
  extern void debug_print_bits(uint32_t);
  #ifdef __cplusplus
   }

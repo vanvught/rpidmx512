@@ -193,7 +193,7 @@ static constexpr uint8_t Seg7Array[] = {
 };
 
 WS28xxDisplay7Segment::WS28xxDisplay7Segment():
-	m_pWS28xx(0)
+	m_pWS28xx(nullptr)
 {
 	DEBUG2_ENTRY
 
@@ -203,9 +203,9 @@ WS28xxDisplay7Segment::WS28xxDisplay7Segment():
 WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 	DEBUG2_ENTRY
 
-	if (m_pWS28xx != 0) {
+	if (m_pWS28xx != nullptr) {
 		delete m_pWS28xx;
-		m_pWS28xx = 0;
+		m_pWS28xx = nullptr;
 	}
 
 	DEBUG2_EXIT
@@ -214,13 +214,13 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 void WS28xxDisplay7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG2_ENTRY
 
-	assert(m_pWS28xx == 0);
+	assert(m_pWS28xx == nullptr);
 #if defined(USE_SPI_DMA)
 	m_pWS28xx = new WS28xxDMA(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
 #else
 	m_pWS28xx = new WS28xx(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
 #endif
-	assert(m_pWS28xx != 0);
+	assert(m_pWS28xx != nullptr);
 
 	m_pWS28xx->Initialize();
 

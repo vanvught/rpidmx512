@@ -43,12 +43,12 @@ LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType): m_tMax7219T
 		m_pMax7219Set = new LtcDisplayMax7219Matrix;
 	}
 
-	assert(m_pMax7219Set != 0);
+	assert(m_pMax7219Set != nullptr);
 }
 
 LtcDisplayMax7219::~LtcDisplayMax7219() {
 	delete m_pMax7219Set;
-	m_pMax7219Set = 0;
+	m_pMax7219Set = nullptr;
 }
 
 void LtcDisplayMax7219::Init(uint8_t nIntensity) {

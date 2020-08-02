@@ -65,8 +65,8 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 	aFileName[12] = '\0';
 
 	fp = fopen(aFileName, "r");
-	if (fp != NULL) {
-		if (fgets(aBuffer, sizeof(aBuffer), fp) != NULL) {
+	if (fp != nullptr) {
+		if (fgets(aBuffer, sizeof(aBuffer), fp) != nullptr) {
 			if (uuid_parse(aBuffer, out) == 0) {
 				bHaveUuid = true;
 			}
@@ -86,7 +86,7 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 		bHaveUuid = true;
 
 		fp = fopen(aFileName, "w+");
-		if (fp != NULL) {
+		if (fp != nullptr) {
 			static_cast<void>(fputs(aBuffer, fp));
 			static_cast<void>(fclose(fp));
 		} else {

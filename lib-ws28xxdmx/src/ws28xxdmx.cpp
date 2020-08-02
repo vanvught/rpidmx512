@@ -47,10 +47,10 @@ WS28xxDmx::WS28xxDmx() :
 	m_nLedCount(170),
 	m_nDmxStartAddress(DMX_START_ADDRESS_DEFAULT),
 	m_nDmxFootprint(170 * 3),
-	m_pLEDStripe(0),
+	m_pLEDStripe(nullptr),
 	m_bIsStarted(false),
 	m_bBlackout(false),
-	m_pWS28xxDmxStore(0),
+	m_pWS28xxDmxStore(nullptr),
 	m_nClockSpeedHz(0),
 	m_nGlobalBrightness(0xFF),
 	m_nBeginIndexPortId1(170),
@@ -64,7 +64,7 @@ WS28xxDmx::WS28xxDmx() :
 
 WS28xxDmx::~WS28xxDmx() {
 	delete m_pLEDStripe;
-	m_pLEDStripe = 0;
+	m_pLEDStripe = nullptr;
 }
 
 void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
@@ -74,9 +74,9 @@ void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (m_pLEDStripe == 0) {
+	if (m_pLEDStripe == nullptr) {
 		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
-		assert(m_pLEDStripe != 0);
+		assert(m_pLEDStripe != nullptr);
 		m_pLEDStripe->SetGlobalBrightness(m_nGlobalBrightness);
 		m_pLEDStripe->Initialize();
 	} else {
@@ -94,7 +94,7 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	if (m_pLEDStripe != 0) {
+	if (m_pLEDStripe != nullptr) {
 		while (m_pLEDStripe->IsUpdating()) {
 			// wait for completion
 		}
@@ -109,7 +109,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
 
-	if (__builtin_expect((m_pLEDStripe == 0), 0)) {
+	if (__builtin_expect((m_pLEDStripe == nullptr), 0)) {
 		m_bIsStarted = false;
 		Start();
 	}
@@ -225,11 +225,11 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
-		if (m_pWS28xxDmxStore != 0) {
+		if (m_pWS28xxDmxStore != nullptr) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != 0) {
+		if (m_pLightSetDisplay != nullptr) {
 			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 

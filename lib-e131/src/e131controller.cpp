@@ -53,20 +53,20 @@ struct TSequenceNumbers {
 
 static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8)));
 
-E131Controller *E131Controller::s_pThis = 0;
+E131Controller *E131Controller::s_pThis = nullptr;
 
 E131Controller::E131Controller():
 	m_nHandle(-1),
 	m_nCurrentPacketMillis(0),
-	m_pE131DataPacket(0),
-	m_pE131DiscoveryPacket(0),
-	m_pE131SynchronizationPacket(0),
+	m_pE131DataPacket(nullptr),
+	m_pE131DiscoveryPacket(nullptr),
+	m_pE131SynchronizationPacket(nullptr),
 	m_DiscoveryIpAddress(0),
 	m_nMaster(DMX_MAX_VALUE)
 {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	memset(&m_State, 0, sizeof(struct TE131ControllerState));
@@ -92,15 +92,15 @@ E131Controller::E131Controller():
 
 	// TE131DataPacket
 	m_pE131DataPacket = new struct TE131DataPacket;
-	assert(m_pE131DataPacket != 0);
+	assert(m_pE131DataPacket != nullptr);
 
 	// TE131DiscoveryPacket
 	m_pE131DiscoveryPacket = new struct TE131DiscoveryPacket;
-	assert(m_pE131DiscoveryPacket != 0);
+	assert(m_pE131DiscoveryPacket != nullptr);
 
 	// TE131SynchronizationPacket
 	m_pE131SynchronizationPacket = new struct TE131SynchronizationPacket;
-	assert(m_pE131SynchronizationPacket != 0);
+	assert(m_pE131SynchronizationPacket != nullptr);
 
 	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT);
 	assert(m_nHandle != -1);
@@ -113,15 +113,15 @@ E131Controller::~E131Controller() {
 
 	Network::Get()->End(E131_DEFAULT_PORT);
 
-	if (m_pE131SynchronizationPacket != 0) {
+	if (m_pE131SynchronizationPacket != nullptr) {
 		delete m_pE131SynchronizationPacket;
 	}
 
-	if (m_pE131DiscoveryPacket != 0) {
+	if (m_pE131DiscoveryPacket != nullptr) {
 		delete m_pE131DiscoveryPacket;
 	}
 
-	if (m_pE131DataPacket != 0) {
+	if (m_pE131DataPacket != nullptr) {
 		delete m_pE131DataPacket;
 	}
 
@@ -284,7 +284,7 @@ const uint8_t *E131Controller::GetSoftwareVersion() {
 }
 
 void E131Controller::SetSourceName(const char *pSourceName) {
-	assert(pSourceName != 0);
+	assert(pSourceName != nullptr);
 
 	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
 #if (__GNUC__ > 8)

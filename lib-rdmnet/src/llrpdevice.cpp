@@ -134,7 +134,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	const uint8_t *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
 
-	if ((pReply == 0) || (*pReply != E120_SC_RDM)) {
+	if ((pReply == nullptr) || (*pReply != E120_SC_RDM)) {
 		DEBUG_EXIT
 		return;
 	}
@@ -229,5 +229,5 @@ void LLRPDevice::CopyCID(__attribute__((unused)) uint8_t *pCID) {
 
 uint8_t *LLRPDevice::LLRPHandleRdmCommand(__attribute__((unused)) const uint8_t *pRDMCommand) {
 	// Override
-	return 0;
+	return nullptr;
 }

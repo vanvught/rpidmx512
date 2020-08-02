@@ -31,17 +31,17 @@
 class UBootHeader {
 public:
 	UBootHeader(uint8_t *pHeader);
-	~UBootHeader(void);
+	~UBootHeader();
 
-	bool IsValid(void) {
+	bool IsValid() {
 		return m_bIsValid;
 	}
 
-	bool IsCompressed(void) {
+	bool IsCompressed() {
 		return m_bIsCompressed;
 	}
 
-	void Dump(void);
+	void Dump();
 
 private:
 	uint8_t *m_pHeader;

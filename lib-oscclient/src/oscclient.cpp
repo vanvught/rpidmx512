@@ -65,17 +65,17 @@ OscClient::OscClient():
 	m_nCurrenMillis(0),
 	m_nPreviousMillis(0),
 	m_nPingTimeMillis(0),
-	m_pOscClientLed(0)
+	m_pOscClientLed(nullptr)
 {
 	m_pBuffer = new char[buffer::size::PATH];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_pCmds = new char[buffer::size::CMD];
-	assert(m_pCmds != 0);
+	assert(m_pCmds != nullptr);
 	memset(m_pCmds, 0, buffer::size::CMD);
 
 	m_pLeds = new char[buffer::size::LED];
-	assert(m_pLeds != 0);
+	assert(m_pLeds != nullptr);
 	memset(m_pLeds, 0, buffer::size::LED);
 }
 
@@ -101,7 +101,7 @@ int OscClient::Run() {
 		m_nCurrenMillis = Hardware::Get()->Millis();
 
 		if ((m_nCurrenMillis - m_nPreviousMillis) >= m_nPingDelayMillis) {
-			OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", 0);
+			OscSimpleSend MsgSend(m_nHandle, m_nServerIP, m_nPortOutgoing, "/ping", nullptr);
 			m_bPingSent = true;
 			m_nPreviousMillis = m_nCurrenMillis;
 			m_nPingTimeMillis = m_nCurrenMillis;
@@ -129,7 +129,7 @@ int OscClient::Run() {
 			return 0;
 		}
 
-		if ((m_pOscClientLed != 0) && (!HandleLedMessage())) {
+		if ((m_pOscClientLed != nullptr) && (!HandleLedMessage())) {
 			if (!OSC::isMatch(m_pBuffer, "/pong")) {
 				DEBUG_PUTS(m_pBuffer);
 				return 0;
@@ -195,7 +195,7 @@ void OscClient::SetPingDelay(uint32_t nPingDelay) {
 }
 
 void OscClient::CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength) {
-	assert(pCmds != 0);
+	assert(pCmds != nullptr);
 
 	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::CMD_COUNT); i++) {
 		char *dst = &m_pCmds[i * OscClientMax::CMD_PATH_LENGTH];
@@ -205,7 +205,7 @@ void OscClient::CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength) {
 }
 
 void OscClient::CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength) {
-	assert(pLeds != 0);
+	assert(pLeds != nullptr);
 
 	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::LED_COUNT); i++) {
 		char *dst = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
@@ -215,7 +215,7 @@ void OscClient::CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength) {
 }
 
 void OscClient::SetLedHandler(OscClientLed *pOscClientLed) {
-	assert(pOscClientLed != 0);
+	assert(pOscClientLed != nullptr);
 
 	m_pOscClientLed = pOscClientLed;
 }

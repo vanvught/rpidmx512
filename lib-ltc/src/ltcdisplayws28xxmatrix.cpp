@@ -38,7 +38,7 @@ LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix() {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8);
-	assert(m_pWS28xxDisplayMatrix != 0);
+	assert(m_pWS28xxDisplayMatrix != nullptr);
 
 	DEBUG1_EXIT
 }
@@ -47,7 +47,7 @@ LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
 	DEBUG1_ENTRY
 
 	delete m_pWS28xxDisplayMatrix;
-	m_pWS28xxDisplayMatrix = 0;
+	m_pWS28xxDisplayMatrix = nullptr;
 
 	DEBUG1_EXIT
 }

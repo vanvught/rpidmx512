@@ -168,6 +168,7 @@ public:
 	void TftpExit();
 
 	uint32_t HandleGet(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
+	void HandleTxtFile(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
 
 	static uint32_t GetIndex(const void *p, uint32_t &nLength);
 	static TStore GetStore(TTxtFile tTxtFile);
@@ -227,7 +228,6 @@ private:
 #if defined (RDM_RESPONDER)
 #endif
 
-	void HandleTxtFile();
 	void HandleTxtFileRconfig();
 	void HandleTxtFileNetwork();
 

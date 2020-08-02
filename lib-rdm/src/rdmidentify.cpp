@@ -31,13 +31,13 @@
 
 #include "debug.h"
 
-RDMIdentify *RDMIdentify::s_pThis = 0;
+RDMIdentify *RDMIdentify::s_pThis = nullptr;
 
 RDMIdentify::RDMIdentify() :
 	m_bIsEnabled(false),
 	m_nMode(IDENTIFY_MODE_QUIET)
 {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 }
 

@@ -41,7 +41,7 @@ const char* RDMSensors::GetTypeString(type tType) {
 }
 
 type RDMSensors::GetTypeString(const char *pValue) {
-	assert(pValue != 0);
+	assert(pValue != nullptr);
 
 	for (uint32_t i = 0; i < type::UNDEFINED; i++) {
 		if (strcasecmp(pValue, RDMSensorsConst::TYPE[i]) == 0) {

@@ -48,18 +48,18 @@ TLC59711Dmx::TLC59711Dmx():
 	m_nBoardInstances(1),
 	m_bIsStarted(false),
 	m_bBlackout(false),
-	m_pTLC59711(0),
+	m_pTLC59711(nullptr),
 	m_nSpiSpeedHz(0),
 	m_LEDType(TTLC59711_TYPE_RGB),
 	m_nLEDCount(TLC59711Channels::RGB),
-	m_pTLC59711DmxStore(0)
+	m_pTLC59711DmxStore(nullptr)
 {
 	UpdateMembers();
 }
 
 TLC59711Dmx::~TLC59711Dmx() {
 	delete m_pTLC59711;
-	m_pTLC59711 = 0;
+	m_pTLC59711 = nullptr;
 }
 
 void TLC59711Dmx::Start(__attribute__((unused)) uint8_t nPort) {
@@ -69,7 +69,7 @@ void TLC59711Dmx::Start(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (__builtin_expect((m_pTLC59711 == 0), 0)) {
+	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
 		Initialize();
 	}
 }
@@ -83,10 +83,10 @@ void TLC59711Dmx::Stop(__attribute__((unused)) uint8_t nPort) {
 }
 
 void TLC59711Dmx::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
-	assert(pDmxData != 0);
+	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_UNIVERSE_SIZE);
 
-	if (__builtin_expect((m_pTLC59711 == 0), 0)) {
+	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
 		Start();
 	}
 
@@ -131,9 +131,9 @@ void TLC59711Dmx::SetSpiSpeedHz(uint32_t nSpiSpeedHz) {
 }
 
 void TLC59711Dmx::Initialize() {
-	assert(m_pTLC59711 == 0);
+	assert(m_pTLC59711 == nullptr);
 	m_pTLC59711 = new TLC59711(m_nBoardInstances, m_nSpiSpeedHz);
-	assert(m_pTLC59711 != 0);
+	assert(m_pTLC59711 != nullptr);
 	m_pTLC59711->Dump();
 }
 
@@ -167,11 +167,11 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
-		if (m_pTLC59711DmxStore != 0) {
+		if (m_pTLC59711DmxStore != nullptr) {
 			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != 0) {
+		if (m_pLightSetDisplay != nullptr) {
 			m_pLightSetDisplay->ShowDmxStartAddress();
 		}
 

@@ -40,7 +40,7 @@ LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment;
-	assert(m_pWS28xxDisplay7Segment != 0);
+	assert(m_pWS28xxDisplay7Segment != nullptr);
 
 	DEBUG1_EXIT
 }

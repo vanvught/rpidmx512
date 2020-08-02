@@ -30,7 +30,7 @@
 constexpr char aMapping[RGB_MAPPING_UNDEFINED][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
 TRGBMapping RGBMapping::FromString(const char *pString) {
-	assert(pString != 0);
+	assert(pString != nullptr);
 
 	for (uint32_t nIndex = 0; nIndex < RGB_MAPPING_UNDEFINED; nIndex++) {
 		if (strncasecmp(aMapping[nIndex], pString, 3) == 0) {

@@ -97,6 +97,7 @@ int NetworkLinux::Init(const char *s) {
 
 	if (result < 0) {
 		fprintf(stderr, "Not able to start network on : %s\n", s);
+		return result;
 	}
 #if defined (__linux__)
 	else {
@@ -178,6 +179,10 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		perror("socket");
 		exit(EXIT_FAILURE);
 	}
+
+//	if (setsockopt(nSocket, SOL_SOCKET, SO_TIMESTAMPING, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
+//		perror("setsockopt(SO_TIMESTAMP)");
+//	}
 
 	if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
 		perror("setsockopt(SO_BROADCAST)");

@@ -40,22 +40,22 @@ union uip {
 } static ip;
 
 void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
-	assert(pArtNetIpProg != 0);
+	assert(pArtNetIpProg != nullptr);
 
-	if(pArtNetIpProg != 0) {
+	if(pArtNetIpProg != nullptr) {
 		m_pArtNetIpProg = pArtNetIpProg;
 
 		m_pIpProgReply = new TArtIpProgReply;
-		assert(m_pIpProgReply != 0);
+		assert(m_pIpProgReply != nullptr);
 
-		if (m_pIpProgReply != 0) {
+		if (m_pIpProgReply != nullptr) {
 			memset(m_pIpProgReply, 0, sizeof(struct TArtIpProgReply));
 
 			memcpy(m_pIpProgReply->Id, artnet::NODE_ID, sizeof(m_pIpProgReply->Id));
 			m_pIpProgReply->OpCode = OP_IPPROGREPLY;
 			m_pIpProgReply->ProtVerLo = ArtNet::PROTOCOL_REVISION;
 		} else {
-			m_pArtNetIpProg = 0;
+			m_pArtNetIpProg = nullptr;
 		}
 	}
 }

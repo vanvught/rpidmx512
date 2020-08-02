@@ -1,7 +1,7 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_SRCDIR = #src/aeabi
+EXTRA_SRCDIR =
 #
 EXTRA_INCLUDES = 
 #

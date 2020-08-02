@@ -29,7 +29,7 @@
 #include "rdmsubdevice.h"
 
 RDMSubDevice::RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress, uint8_t nPersonalityCurrent):
-	m_pRDMPersonalities(0),
+	m_pRDMPersonalities(nullptr),
 	m_IsFactoryDefaults(true),
 	m_nCheckSum(0),
 	m_nDmxStartAddressFactoryDefault(nDmxStartAddress),
@@ -63,7 +63,7 @@ void RDMSubDevice::SetDmxFootprint(uint16_t nDmxFootprint) {
 }
 
 void RDMSubDevice::SetPersonalities(RDMPersonality **pRDMPersonalities, uint8_t nPersonalityCount) {
-	assert(pRDMPersonalities != 0);
+	assert(pRDMPersonalities != nullptr);
 
 	m_tSubDevicesInfo.personality_count = nPersonalityCount;
 	m_pRDMPersonalities = pRDMPersonalities;
@@ -79,14 +79,14 @@ RDMPersonality* RDMSubDevice::GetPersonality(uint8_t nPersonality) {
 }
 
 void RDMSubDevice::GetLabel(struct TRDMDeviceInfoData* pInfoData) {
-	assert(pInfoData != 0);
+	assert(pInfoData != nullptr);
 
 	pInfoData->data = m_tSubDevicesInfo.device_label;
 	pInfoData->length = m_tSubDevicesInfo.device_label_length;
 }
 
 void RDMSubDevice::SetLabel(const char *pLabel) {
-	assert(pLabel != 0);
+	assert(pLabel != nullptr);
 	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (pLabel[i] != 0); i++) {
@@ -97,7 +97,7 @@ void RDMSubDevice::SetLabel(const char *pLabel) {
 }
 
 void RDMSubDevice::SetLabel(const char *pLabel, uint8_t nLabelLength) {
-	assert(pLabel != 0);
+	assert(pLabel != nullptr);
 	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < nLabelLength); i++) {

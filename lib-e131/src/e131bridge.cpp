@@ -46,26 +46,26 @@
 
 static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 18 };
 
-E131Bridge *E131Bridge::s_pThis = 0;
+E131Bridge *E131Bridge::s_pThis = nullptr;
 
 E131Bridge::E131Bridge() :
 	m_nHandle(-1),
-	m_pLightSet(0),
+	m_pLightSet(nullptr),
 	m_bDirectUpdate(false),
 	m_bEnableDataIndicator(true),
 	m_nCurrentPacketMillis(0),
 	m_nPreviousPacketMillis(0),
-	m_pE131DmxIn(0),
-	m_pE131DataPacket(0),
-	m_pE131DiscoveryPacket(0),
+	m_pE131DmxIn(nullptr),
+	m_pE131DataPacket(nullptr),
+	m_pE131DiscoveryPacket(nullptr),
 	m_DiscoveryIpAddress(0),
-	m_pE131Sync(0)
+	m_pE131Sync(nullptr)
 {
-	assert(Hardware::Get() != 0);
-	assert(Network::Get() != 0);
-	assert(LedBlink::Get() != 0);
+	assert(Hardware::Get() != nullptr);
+	assert(Network::Get() != nullptr);
+	assert(LedBlink::Get() != nullptr);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
@@ -99,18 +99,18 @@ E131Bridge::~E131Bridge() {
 }
 
 void E131Bridge::Start() {
-	if (m_pE131DmxIn != 0) {
-		if (m_pE131DataPacket == 0) {
+	if (m_pE131DmxIn != nullptr) {
+		if (m_pE131DataPacket == nullptr) {
 			struct in_addr addr;
 			static_cast<void>(inet_aton("239.255.0.0", &addr));
 			m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
 			// TE131DataPacket
 			m_pE131DataPacket = new struct TE131DataPacket;
-			assert(m_pE131DataPacket != 0);
+			assert(m_pE131DataPacket != nullptr);
 			FillDataPacket();
 			// TE131DiscoveryPacket
 			m_pE131DiscoveryPacket = new struct TE131DiscoveryPacket;
-			assert(m_pE131DiscoveryPacket != 0);
+			assert(m_pE131DiscoveryPacket != nullptr);
 			FillDiscoveryPacket();
 		}
 		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
@@ -126,7 +126,7 @@ void E131Bridge::Start() {
 void E131Bridge::Stop() {
 	m_State.IsNetworkDataLoss = true;
 
-	if (m_pLightSet != 0) {
+	if (m_pLightSet != nullptr) {
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 			m_pLightSet->Stop(i);
 			m_OutputPort[i].length = 0;
@@ -134,7 +134,7 @@ void E131Bridge::Stop() {
 		}
 	}
 
-	if (m_pE131DmxIn != 0) {
+	if (m_pE131DmxIn != nullptr) {
 		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Stop(nPortIndex);
@@ -150,7 +150,7 @@ const uint8_t *E131Bridge::GetSoftwareVersion() {
 }
 
 void E131Bridge::SetSourceName(const char *pSourceName) {
-	assert(pSourceName != 0);
+	assert(pSourceName != nullptr);
 	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
 #if (__GNUC__ > 8)
 # pragma GCC diagnostic push
@@ -323,7 +323,7 @@ E131Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
 
 bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
 	assert(nPortIndex < E131_MAX_PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 
 	bool isChanged = false;
 
@@ -352,7 +352,7 @@ bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint
 
 bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
 	assert(nPortIndex < E131_MAX_PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 
 	bool isChanged = false;
 
@@ -685,7 +685,7 @@ void E131Bridge::HandleSynchronization() {
 		}
 	}
 
-	if (m_pE131Sync != 0) {
+	if (m_pE131Sync != nullptr) {
 		m_pE131Sync->Handler();
 	}
 }
@@ -859,7 +859,7 @@ void E131Bridge::Run() {
 			}
 		}
 
-		if (m_pE131DmxIn != 0) {
+		if (m_pE131DmxIn != nullptr) {
 			HandleDmxIn();
 			SendDiscoveryPacket();
 
@@ -904,7 +904,7 @@ void E131Bridge::Run() {
 		DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
 	}
 
-	if (m_pE131DmxIn != 0) {
+	if (m_pE131DmxIn != nullptr) {
 		HandleDmxIn();
 		SendDiscoveryPacket();
 	}

@@ -2,7 +2,8 @@
  * @file shell.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +39,7 @@ enum class CmdIndex: uint32_t {
 #ifndef NDEBUG
 	I2CDETECT,
 	DUMP,
+	MEM,
 #endif
 	HELP
 };
@@ -56,6 +58,7 @@ private:
 	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
 	void ValidateArg(uint32_t nOffset, uint32_t nLength);
 	// Cmd
+	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength);
 	void CmdReboot();
 	void CmdInfo();
 	void CmdSet();
@@ -64,6 +67,7 @@ private:
 #ifndef NDEBUG
 	void CmdI2cDetect();
 	void CmdDump();
+	void CmdMem();
 #endif
 	void CmdHelp();
 
@@ -73,6 +77,7 @@ private:
 	char m_Buffer[shell::BUFLEN];
 	uint32_t m_Argc{0};
 	char *m_Argv[shell::MAXARG]{nullptr};
+	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
 	uint32_t m_nArgv0Length{0};	
 };

@@ -39,8 +39,8 @@
 L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
+	assert(pL6470 != nullptr);
+	assert(pMotorParams != nullptr);
 
 	m_pL6470 = pL6470;
 

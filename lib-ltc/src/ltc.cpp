@@ -93,7 +93,7 @@ void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
 #define VALUE(x,y)	(((x) * 10) + (y))
 
 bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
-	assert(ptLtcTimeCode != 0);
+	assert(ptLtcTimeCode != nullptr);
 
 	int32_t nTenths;
 	int32_t nDigit;

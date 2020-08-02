@@ -39,17 +39,17 @@
 
 #include "debug.h"
 
-FirmwareVersion *FirmwareVersion::s_pThis = 0;
+FirmwareVersion *FirmwareVersion::s_pThis = nullptr;
 
 FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime) {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
-	assert(pVersion != 0);
-	assert(pDate != 0);
-	assert(pTime != 0);
+	assert(s_pThis == nullptr);
+	assert(pVersion != nullptr);
+	assert(pDate != nullptr);
+	assert(pTime != nullptr);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	memcpy(m_tFirmwareVersion.SoftwareVersion, pVersion, SOFTWARE_VERSION_LENGTH);
@@ -76,7 +76,7 @@ FirmwareVersion::~FirmwareVersion() {
 void FirmwareVersion::Print(const char *pTitle) {
 	printf("%s", m_aPrint);
 
-	if (pTitle != 0) {
+	if (pTitle != nullptr) {
 		puts(pTitle);
 	}
 }

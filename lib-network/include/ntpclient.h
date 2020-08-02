@@ -77,7 +77,7 @@ private:
 	uint32_t m_MillisRequest;
 	uint32_t m_MillisLastPoll;
 
-	NtpClientDisplay *m_pNtpClientDisplay = 0;
+	NtpClientDisplay *m_pNtpClientDisplay = nullptr;
 };
 
 #endif /* NTPCLIENT_H_ */

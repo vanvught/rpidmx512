@@ -41,16 +41,16 @@
 
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 	RDMDeviceResponder(pRDMPersonality, pLightSet),
-	m_pRdmCommand(0),
-	m_RDMHandler(0)
+	m_pRdmCommand(nullptr),
+	m_RDMHandler(nullptr)
 {
 	DEBUG_ENTRY
 
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != 0);
+	assert(m_pRdmCommand != nullptr);
 
 	m_RDMHandler = new RDMHandler;
-	assert(m_RDMHandler != 0);
+	assert(m_RDMHandler != nullptr);
 
 	DEBUG_EXIT
 }
@@ -59,10 +59,10 @@ ArtNetRdmResponder::~ArtNetRdmResponder() {
 	DEBUG_ENTRY
 
 	delete m_RDMHandler;
-	m_RDMHandler = 0;
+	m_RDMHandler = nullptr;
 
 	delete m_pRdmCommand;
-	m_pRdmCommand = 0;
+	m_pRdmCommand = nullptr;
 
 	DEBUG_EXIT
 }
@@ -82,9 +82,9 @@ void ArtNetRdmResponder::Copy(__attribute__((unused)) uint8_t nPort, unsigned ch
 const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint8_t nPort, const uint8_t *pRdmDataNoSC) {
 	DEBUG_ENTRY
 
-	if (pRdmDataNoSC == 0) {
+	if (pRdmDataNoSC == nullptr) {
 		DEBUG_EXIT
-		return 0;
+		return nullptr;
 	}
 
 #ifndef NDEBUG
@@ -95,7 +95,7 @@ const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint8_t nPort
 
 	if (m_pRdmCommand->start_code != E120_SC_RDM) {
 		DEBUG_EXIT
-		return 0;
+		return nullptr;
 	}
 
 #ifndef NDEBUG

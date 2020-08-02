@@ -2,7 +2,8 @@
  * @file shellcmd.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +43,8 @@
 #include "hardware.h"
 #include "firmwareversion.h"
 
+#include "debug.h"
+
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
 extern "C" {
@@ -52,114 +55,166 @@ void arm_dump_memmap(void);
 }
 #endif
 
-#include "debug.h"
-
 namespace shell {
-namespace cmd {
-static constexpr char SET_IP[] = "ip";
-static constexpr char SET_HOSTNAME[] = "hostname";
-}  // namespace cmd
+
+namespace set {
+namespace arg {
+static constexpr char IP[] = "ip";
+static constexpr char HOSTNAME[] = "hostname";
+}  // namespace arg
 namespace length {
-static constexpr auto SET_IP = sizeof(cmd::SET_IP) - 1;
-static constexpr auto SET_HOSTNAME = sizeof(cmd::SET_HOSTNAME) - 1;
+static constexpr auto IP = sizeof(arg::IP) - 1;
+static constexpr auto HOSTNAME = sizeof(arg::HOSTNAME) - 1;
 }  // namespace length
+}  // namespace set
+
 namespace dump {
-namespace cmd {
+namespace arg {
 static constexpr char BOARD[] = "board";
 static constexpr char MMAP[] = "mmap";
 static constexpr char PLL[] = "pll";
 static constexpr char LINKER[] = "linker";
 }  // namespace cmd
 namespace length {
-static constexpr auto BOARD = sizeof(cmd::BOARD) - 1;
-static constexpr auto MMAP = sizeof(cmd::MMAP) - 1;
-static constexpr auto PLL = sizeof(cmd::PLL) - 1;
-static constexpr auto LINKER = sizeof(cmd::LINKER) - 1;
+static constexpr auto BOARD = sizeof(arg::BOARD) - 1;
+static constexpr auto MMAP = sizeof(arg::MMAP) - 1;
+static constexpr auto PLL = sizeof(arg::PLL) - 1;
+static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 }  // namespace length
 }  // namespace dump
+
+namespace file {
+static constexpr char EXT[] = ".txt";
+namespace length {
+static constexpr char EXT = sizeof(file::EXT) - 1;
+}  // namespace length
+}  // namespace file
+
+namespace msg {
+namespace usage {
+static constexpr char IP[] = "Usage: set ip x.x.x.x\n";
+static constexpr auto HOSTNAME = "Usage: set hostname name\n";
+}  // namespace usage
+namespace info {
+static constexpr char DHCP[] = "DHCP enabled\n";
+static constexpr char STORED[] = "Stored\n";
+}  // namespace info
+namespace error {
+static constexpr char INVALID[] = "Invalid command\n";
+static constexpr char INTERNAL[] = "Internal error\n";
+static constexpr char DHCP[] = "DHCP failed\n";
+static constexpr char TXT[] = ".txt not found\n";
+static constexpr char PROPERTY[] = "Property not found\n";
+}  // namespace error
+}  // namespace msg
+
 }  // namespace shell
 
 using namespace shell;
 
+uint32_t Shell::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
+	const char *pSrc = pHexValue;
+	uint32_t nValue = 0;
+
+	while (nLength-- > 0) {
+		const char c = *pSrc;
+
+		if (isxdigit(c) == 0) {
+			break;
+		}
+
+		const uint8_t nNibble = c > '9' ? (c | 0x20) - 'a' + 10 : (c - '0');
+		nValue = (nValue << 4) | nNibble;
+		pSrc++;
+	}
+
+	return nValue;
+}
+
 void Shell::CmdReboot() {
-	DEBUG_ENTRY
 	RemoteConfig::Get()->Reboot();
-	DEBUG_EXIT
 }
 
 void Shell::CmdInfo() {
-	DEBUG_ENTRY
 	uart0_printf("%s", FirmwareVersion::Get()->GetPrint());
 	uart0_printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
 	uart0_printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
 	uart0_printf("Hostname: %s\n", Network::Get()->GetHostName());
 	uart0_printf("IP " IPSTR "/%d %c\n", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
-	DEBUG_EXIT
 }
 
 void Shell::CmdSet() {
-	DEBUG_ENTRY
-#ifndef NDEBUG
-	uart0_printf("m_Argv[0..1]: %s %s\n", m_Argv[0], m_Argv[1]);
-#endif
+	const auto nArgv0Length = m_nArgvLength[0];
 
-	if ((m_nArgv0Length == length::SET_IP) && (memcmp(m_Argv[0], cmd::SET_IP, length::SET_IP) == 0)) {
+	if ((nArgv0Length == set::length::IP) && (memcmp(m_Argv[0], set::arg::IP, set::length::IP) == 0)) {
 		in_addr group_ip;
 		if (inet_aton(m_Argv[1], &group_ip)) {
-			DEBUG_PRINTF("New IP: " IPSTR, IP2STR(group_ip.s_addr));
 			Network::Get()->SetIp(group_ip.s_addr);
 		} else {
-			uart0_puts("Usage: set ip x.x.x.x\n");
+			uart0_puts(msg::usage::IP);
 		}
 
 		return;
 	}
 
-	if ((m_nArgv0Length == length::SET_HOSTNAME) && (memcmp(m_Argv[0], cmd::SET_HOSTNAME, length::SET_HOSTNAME) == 0)) {
-		const auto nArgv1Length = strlen(m_Argv[1]);	// 2nd arg is hostname string
-
-		DEBUG_PRINTF("New hostname: %s", m_Argv[1]);
+	if ((nArgv0Length == set::length::HOSTNAME) && (memcmp(m_Argv[0], set::arg::HOSTNAME, set::length::HOSTNAME) == 0)) {
+		const auto nArgv1Length = m_nArgvLength[1];
 
 		if ((nArgv1Length != 0) && (nArgv1Length <= TNetwork::NETWORK_HOSTNAME_SIZE)) {
 			Network::Get()->SetHostName(m_Argv[1]);
 		} else {
-			uart0_puts("Usage: set hostname name\n");	
+			uart0_puts(msg::usage::HOSTNAME);
 		}
 
 		return;
 	}
 
-	uint32_t nLength = m_nArgv0Length; 
-	if (RemoteConfig::GetIndex(m_Argv[0], nLength) < TXT_FILE_LAST) {
+	char buffer[1024];
+	memcpy(buffer, m_Argv[0], nArgv0Length);
+	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
+	buffer[nArgv0Length + file::length::EXT] = '\0';
+	uint32_t nLength = nArgv0Length + file::length::EXT;
+
+	if (RemoteConfig::GetIndex(buffer, nLength) < TXT_FILE_LAST) {
 		DEBUG_PUTS(m_Argv[0]);
-		// TODO
+
+		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {
+			memcpy(&buffer[nLength], m_Argv[1], m_nArgvLength[1]);
+			RemoteConfig::Get()->HandleTxtFile(buffer, nLength + m_nArgvLength[1]);
+			uart0_puts(msg::info::STORED);
+			return;
+		} else {
+			uart0_puts(msg::error::INTERNAL);
+			return;
+		}
+
 		return;
 	}
 
-	uart0_puts("Usage: set [ip][hostname][name\'.txt\'] [value]\n");
-	DEBUG_EXIT
+	uart0_puts(msg::error::INVALID);
 }
 
 void Shell::CmdGet() {
-	DEBUG_ENTRY
+	const uint32_t nArgv0Length = m_nArgvLength[0];
 
 	char buffer[1024];
+	memcpy(buffer, m_Argv[0], nArgv0Length);
+	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
+	buffer[nArgv0Length + file::length::EXT] = '\0';
 
-	memcpy(buffer, m_Argv[0], m_nArgv0Length);
 	uint32_t nLength;
 
 	if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - 1)) {
 
 		if (*buffer == '?') { // "?get#ERROR#\n"
-			uart0_puts(".txt not found\n");
+			uart0_puts(msg::error::TXT);
 			return;
 		}
 
 		buffer[nLength] = '\0';
 
 		char *p = buffer;
-		// TOOD We know the m_Argv[] length in ValidateArg. Let's store it in member variable?
-		const auto nPropertyLength = strlen(m_Argv[1]);
+		const auto nPropertyLength = m_nArgvLength[1];
 
 		uint32_t i;
 
@@ -182,7 +237,6 @@ void Shell::CmdGet() {
 				return;
 			}
 
-			// We could use returned value by memcmp?
 			for (; i < nLength; p++, i++) {
 				if (*p == '\n') {
 					break;
@@ -190,25 +244,20 @@ void Shell::CmdGet() {
 			}
 		}
 	} else {
-		uart0_puts("Error\n");
+		uart0_puts(msg::error::INTERNAL);
+		return;
 	}
 
-	uart0_puts("Property not found\n");
+	uart0_puts(msg::error::PROPERTY);
 	return;
-
-	DEBUG_EXIT
 }
 
 void Shell::CmdDhcp() {
-	DEBUG_ENTRY
-
 	if (Network::Get()->EnableDhcp()) {
-		uart0_puts("DHCP is enabled\n");
+		uart0_puts(msg::info::DHCP);
 	} else {
-		uart0_puts("DHCP failed\n");
+		uart0_puts(msg::error::DHCP);
 	}
-
-	DEBUG_EXIT
 }
 
 /*
@@ -217,34 +266,39 @@ void Shell::CmdDhcp() {
 
 #ifndef NDEBUG
 void Shell::CmdI2cDetect() {
-	DEBUG_ENTRY
 	I2cDetect i2cdetect;
-	DEBUG_EXIT
 }
 
 void Shell::CmdDump() {
-	DEBUG_ENTRY
+	const auto nArgv0Length = m_nArgvLength[0];
 
-	if ((m_nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::cmd::BOARD, dump::length::BOARD) == 0)) {
+	if ((nArgv0Length == dump::length::BOARD) && (memcmp(m_Argv[0], dump::arg::BOARD, dump::length::BOARD) == 0)) {
 		h3_board_dump();
 		return;
 	}
 
-	if ((m_nArgv0Length == dump::length::MMAP) && (memcmp(m_Argv[0], dump::cmd::MMAP, dump::length::MMAP) == 0)) {
+	if ((nArgv0Length == dump::length::MMAP) && (memcmp(m_Argv[0], dump::arg::MMAP, dump::length::MMAP) == 0)) {
 		h3_dump_memory_mapping();
 		return;
 	}
 
-	if ((m_nArgv0Length == dump::length::PLL) && (memcmp(m_Argv[0], dump::cmd::PLL, dump::length::PLL) == 0)) {
+	if ((nArgv0Length == dump::length::PLL) && (memcmp(m_Argv[0], dump::arg::PLL, dump::length::PLL) == 0)) {
 		h3_ccu_pll_dump();
 		return;
 	}
 
-	if ((m_nArgv0Length == dump::length::LINKER) && (memcmp(m_Argv[0], dump::cmd::LINKER, dump::length::LINKER) == 0)) {
+	if ((nArgv0Length == dump::length::LINKER) && (memcmp(m_Argv[0], dump::arg::LINKER, dump::length::LINKER) == 0)) {
 		arm_dump_memmap();
 		return;
 	}
 
-	DEBUG_EXIT
+	uart0_puts(msg::error::INVALID);
+}
+
+void Shell::CmdMem() {
+	const char *pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], m_nArgvLength[0]));
+	const auto nSize = hexadecimalToDecimal(m_Argv[1], m_nArgvLength[1]);
+
+	debug_dump(pAddress, nSize);
 }
 #endif
