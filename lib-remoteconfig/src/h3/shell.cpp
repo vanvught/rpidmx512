@@ -51,6 +51,7 @@ static constexpr TCommands cmd_table[] = {
 		{ "set", 2},
 		{ "get", 2},
 		{ "dhcp", 0},
+		{ "date", 0},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
 		{ "dump" , 1},
@@ -179,10 +180,8 @@ void Shell::ValidateArg(uint32_t nOffset, uint32_t nLength) {
 }
 
 void Shell::CmdHelp() {
-	DEBUG_ENTRY
-	DEBUG_EXIT
+	uart0_puts("http://www.orangepi-dmx.org/orange-pi-dmx512-rdm/uart0-shell\n");
 }
-
 
 void Shell::Run() {
 	const char *p;
@@ -212,10 +211,6 @@ void Shell::Run() {
 		return;
 	}
 
-#ifndef NDEBUG
-	uart0_printf("nCmdIndex=%d\n", nCmdIndex); // FIXME Subject for removal when finished
-#endif
-
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
@@ -238,6 +233,9 @@ void Shell::Run() {
 			break;
 		case CmdIndex::DHCP:
 			CmdDhcp();
+			break;
+		case CmdIndex::DATE:
+			CmdDate();
 			break;
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:

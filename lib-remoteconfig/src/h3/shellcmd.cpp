@@ -31,6 +31,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
@@ -147,9 +148,9 @@ void Shell::CmdSet() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == set::length::IP) && (memcmp(m_Argv[0], set::arg::IP, set::length::IP) == 0)) {
-		in_addr group_ip;
-		if (inet_aton(m_Argv[1], &group_ip)) {
-			Network::Get()->SetIp(group_ip.s_addr);
+		in_addr ip;
+		if (inet_aton(m_Argv[1], &ip) != 0) {
+			Network::Get()->SetIp(ip.s_addr);
 		} else {
 			uart0_puts(msg::usage::IP);
 		}
@@ -258,6 +259,16 @@ void Shell::CmdDhcp() {
 	} else {
 		uart0_puts(msg::error::DHCP);
 	}
+}
+
+void Shell::CmdDate() {
+	time_t rawtime;
+	struct tm *timeinfo;
+
+	time(&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	uart0_puts(asctime(timeinfo));
 }
 
 /*
