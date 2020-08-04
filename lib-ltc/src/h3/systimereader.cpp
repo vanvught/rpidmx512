@@ -185,8 +185,9 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 }
 
 void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
-	if (pBuffer != nullptr) {
-		memcpy(m_Buffer, pBuffer, std::min(nBufferLength, sizeof(m_Buffer)));
+	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
+		memcpy(m_Buffer, pBuffer, nBufferLength);
+		m_nBytesReceived = nBufferLength;
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
