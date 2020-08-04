@@ -179,14 +179,25 @@ void Shell::CmdSet() {
 
 	if ((nArgv0Length == set::length::LTC) && (memcmp(m_Argv[0], set::arg::LTC, set::length::LTC) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
-		if ((nArgv1Length != 0) && (nArgv1Length <= set::arg::LTC)) {	
+		if ((nArgv1Length != 0) && (nArgv1Length <= 64)) {	
+			char sRequest[64] = {0};
+			//size_t nReqLen = 0;
+			sRequest[0] = 'l';
+ 			sRequest[1] = 't';
+ 			sRequest[2] = 'c';
+ 			sRequest[3] = '!';						
+ 			memcpy(&sRequest[4], m_Argv[1], nArgv1Length);
+			//nReqLen = 4 + nArgv1Length;
+			sRequest[63] = 0; // enforce terminator
+
+ 			uart0_printf("LTC Generator Command: %s\n", sRequest);
 
 			switch (m_ltcSource) {
 			case ltc::source::INTERNAL:
-				LtcGenerator::Get()->HandleRequest(m_Argv[1]);;		
+				LtcGenerator::Get()->HandleRequest(sRequest);;		
 				break;	
 			case ltc::source::SYSTIME:
-				SystimeReader::Get()->HandleRequest(m_Argv[1]);
+				SystimeReader::Get()->HandleRequest(sRequest);
 				break;							
 /* 
 			case ltc::source::LTC:

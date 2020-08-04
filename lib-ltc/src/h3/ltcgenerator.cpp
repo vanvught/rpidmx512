@@ -512,17 +512,11 @@ void LtcGenerator::HandleRequest(const char * sCommand) {
 	uint32_t nIPAddressFrom = 0;
 	uint16_t nForeignPort = 0;
 
-	if (sCommand != nullptr) {
-		m_nBytesReceived = strlen(sCommand) + 4;
-		if (m_nBytesReceived <= (sizeof(m_Buffer) - 4)) {
-			m_Buffer[0] = 'l';
-			m_Buffer[1] = 't';
-			m_Buffer[2] = 'c';
-			m_Buffer[3] = '!';			
-			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);				
-		}
-	} else { 
-		  	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	if (sCommand != nullptr) { // if an argument specified
+		m_nBytesReceived = strlen(sCommand);
+		memcpy(m_Buffer, sCommand, m_nBytesReceived);
+	} else { // not a immeadite command, check network
+		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 	}
 
 	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
