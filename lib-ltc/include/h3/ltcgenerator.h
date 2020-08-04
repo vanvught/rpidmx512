@@ -53,6 +53,9 @@ public:
 
 	void Print();
 
+	//
+	void HandleRequest(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
+
 	// Control
 	void ActionStart(bool bDoReset = true);
 	void ActionStop();
