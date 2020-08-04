@@ -36,7 +36,7 @@ static time_t elapsed_previous = 0;
 static uint32_t millis_init = 0;
 static bool have_rtc = false;
 
-void __attribute__((cold)) sys_time_init(void) {
+void __attribute__((weak)) __attribute__((cold)) sys_time_init(void) {
 	struct tm tmbuf;
 	struct tm tm_rtc;
 
@@ -96,7 +96,7 @@ uint32_t millis(void) {
 	return H3_TIMER->AVS_CNT0;
 }
 
-time_t time(time_t *__timer) {
+__attribute__((weak)) time_t time(time_t *__timer) {
 	struct tm tm_rtc;
 
 	time_t elapsed = (time_t) (H3_TIMER->AVS_CNT0 - millis_init) / 1000;
