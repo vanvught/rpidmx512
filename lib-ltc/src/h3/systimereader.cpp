@@ -189,7 +189,6 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 	uint32_t nIPAddressFrom = 0;
 	uint16_t nForeignPort = 0;
 
-
 	if (sCommand != nullptr) {
 		m_nBytesReceived = strlen(sCommand) + 4;
 		if (m_nBytesReceived <= (sizeof(m_Buffer) - 4)) {
@@ -197,12 +196,12 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 			m_Buffer[1] = 't';
 			m_Buffer[2] = 'c';
 			m_Buffer[3] = '!';			
-			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);	
-			uart0_printf("LTC Systime Command: %s\n", m_Buffer);		
+			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);				
 		}
 	} else { 
 		  	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 	}
+
 	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;
 	}
@@ -221,10 +220,18 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 	if (m_nBytesReceived == (4 + length::START)) {
 		if (memcmp(&m_Buffer[4], cmd::aStart, length::START) == 0) {
 			ActionStart();
+			if (!nForeignPort) {
+				uart0_puts("TC Started\n");
+			}	
+
 			return;
 		}
 
+		if (!nForeignPort) {
+			uart0_puts("Invalid !start command\n");
+		}	
 		DEBUG_PUTS("Invalid !start command");
+
 	}
 
 	if (m_nBytesReceived == (4 + length::STOP)) {
@@ -232,7 +239,9 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 			ActionStop();
 			return;
 		}
-
+		if (!nForeignPort) {
+			uart0_puts("Invalid !stop command\n");
+		}	
 		DEBUG_PUTS("Invalid !stop command");
 	}
 
@@ -243,6 +252,9 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 		}
 	}
 
+	if (!nForeignPort) {
+		uart0_puts("Invalid command\n");
+	}	
 	DEBUG_PUTS("Invalid command");
 }
 

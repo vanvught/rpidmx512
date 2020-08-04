@@ -512,7 +512,6 @@ void LtcGenerator::HandleRequest(const char * sCommand) {
 	uint32_t nIPAddressFrom = 0;
 	uint16_t nForeignPort = 0;
 
-
 	if (sCommand != nullptr) {
 		m_nBytesReceived = strlen(sCommand) + 4;
 		if (m_nBytesReceived <= (sizeof(m_Buffer) - 4)) {
@@ -520,8 +519,7 @@ void LtcGenerator::HandleRequest(const char * sCommand) {
 			m_Buffer[1] = 't';
 			m_Buffer[2] = 'c';
 			m_Buffer[3] = '!';			
-			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);
-			uart0_printf("LTC Generator Command: %s\n", m_Buffer);			
+			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);				
 		}
 	} else { 
 		  	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
