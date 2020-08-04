@@ -2,7 +2,7 @@
  * @file time.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef TIME_H_
-#define TIME_H_
+#ifndef SYS_TIME_H_
+#define SYS_TIME_H_
 
 #ifndef _TIME_T
 #define	_TIME_T
-typedef long int time_t;
+typedef long time_t;
 #endif	/* _TIME_T */
 
-struct tm {
-	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
-	int tm_min;		///< Minutes.		[0-59]
-	int tm_hour;	///< Hours.			[0-23]
-	int tm_mday;	///< Day.		 	[1-31]
-	int tm_mon;		///< Month.			[0-11]
-	int tm_year;	///< Year - 1900
-	int tm_wday;	///< Day of week.	[0-6]
-	int tm_yday;	///< Days in year.	[0-365]
-	int tm_isdst;	///< DST.			[-1/0/1]
+#ifndef	_SUSECONDS_T
+#define	_SUSECONDS_T
+typedef long suseconds_t;
+#endif	/* _SUSECONDS_T */
+
+struct timeval {
+	time_t tv_sec; /* seconds */
+	suseconds_t tv_usec; /* microseconds */
+};
+
+struct timezone {
+	int tz_minuteswest; /* minutes west of Greenwich */
+	int tz_dsttime; /* type of DST correction */
 };
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern time_t time(time_t *t);
-extern time_t mktime(struct tm *tm);
-extern struct tm *localtime(const time_t *timep);
-extern char *asctime(const struct tm *tm);
+extern int gettimeofday(struct timeval *tv, struct timezone *tz);
+extern int settimeofday(const struct timeval *tv, const struct timezone *tz);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TIME_H_ */
+#endif /* SYS_TIME_H_ */
