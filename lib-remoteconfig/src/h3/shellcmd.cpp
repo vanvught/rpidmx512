@@ -179,9 +179,8 @@ void Shell::CmdSet() {
 
 	if ((nArgv0Length == set::length::LTC) && (memcmp(m_Argv[0], set::arg::LTC, set::length::LTC) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
-		if ((nArgv1Length != 0) && (nArgv1Length <= TNetwork::NETWORK_HOSTNAME_SIZE)) {	
-				
-	// Run the reader
+		if ((nArgv1Length != 0) && (nArgv1Length <= set::arg::LTC)) {	
+
 			switch (m_ltcSource) {
 			case ltc::source::INTERNAL:
 				LtcGenerator::Get()->HandleRequest(m_Argv[1]);;		
