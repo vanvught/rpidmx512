@@ -50,6 +50,7 @@
 #include "h3/ltcoutputs.h"
 
 #include "debug.h"
+#include "h3_uart0_debug.h"
 
 namespace cmd {
 	static constexpr char aStart[] = "start";
@@ -184,12 +185,24 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
-void SystimeReader::HandleUdpRequest() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
+void SystimeReader::HandleRequest(const char * sCommand) {
+	uint32_t nIPAddressFrom = 0;
+	uint16_t nForeignPort = 0;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
+	if (sCommand != nullptr) {
+		m_nBytesReceived = strlen(sCommand) + 4;
+		if (m_nBytesReceived <= (sizeof(m_Buffer) - 4)) {
+			m_Buffer[0] = 'l';
+			m_Buffer[1] = 't';
+			m_Buffer[2] = 'c';
+			m_Buffer[3] = '!';			
+			memcpy(&m_Buffer[4], sCommand, m_nBytesReceived);	
+			uart0_printf("LTC Systime Command: %s\n", m_Buffer);		
+		}
+	} else { 
+		  	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	}
 	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;
 	}
@@ -203,7 +216,7 @@ void SystimeReader::HandleUdpRequest() {
 		m_nBytesReceived--;
 	}
 
-	debug_dump(m_Buffer, m_nBytesReceived);
+	debug_dump(m_Buffer, m_nBytesReceived);	
 
 	if (m_nBytesReceived == (4 + length::START)) {
 		if (memcmp(&m_Buffer[4], cmd::aStart, length::START) == 0) {
@@ -278,5 +291,5 @@ void SystimeReader::Run() {
 		}
 	}
 
-	HandleUdpRequest();
+	HandleRequest();
 }

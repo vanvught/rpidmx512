@@ -37,6 +37,12 @@
 #include "h3/shell.h"
 #include "h3_uart0_debug.h"
 
+#if defined (LTC_READER)
+#include "ltc.h"
+#include "h3/ltcgenerator.h"
+#include "h3/systimereader.h"
+#endif
+
 #include "remoteconfig.h"
 #include "network.h"
 
@@ -61,10 +67,12 @@ namespace set {
 namespace arg {
 static constexpr char IP[] = "ip";
 static constexpr char HOSTNAME[] = "hostname";
+static constexpr char LTC[] = "ltc";
 }  // namespace arg
 namespace length {
 static constexpr auto IP = sizeof(arg::IP) - 1;
 static constexpr auto HOSTNAME = sizeof(arg::HOSTNAME) - 1;
+static constexpr auto LTC = sizeof(arg::LTC) - 1;
 }  // namespace length
 }  // namespace set
 
@@ -169,6 +177,45 @@ void Shell::CmdSet() {
 		return;
 	}
 
+	if ((nArgv0Length == set::length::LTC) && (memcmp(m_Argv[0], set::arg::LTC, set::length::LTC) == 0)) {
+		const auto nArgv1Length = m_nArgvLength[1];
+		if ((nArgv1Length != 0) && (nArgv1Length <= TNetwork::NETWORK_HOSTNAME_SIZE)) {	
+				
+	// Run the reader
+			switch (m_ltcSource) {
+		/* 	case ltc::source::LTC:
+				ltcReader.Run();
+				break;
+			case ltc::source::ARTNET:
+				artnetReader.Run();		// Handles MIDI Quarter Frame output messages
+				break;
+			case ltc::source::MIDI:
+				midiReader.Run();
+				break;
+			case ltc::source::TCNET:
+				tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
+				break; */
+			case ltc::source::INTERNAL:
+				LtcGenerator::Get()->HandleRequest(m_Argv[1]);;		
+				break;
+			case ltc::source::APPLEMIDI:
+				break; 
+			case ltc::source::SYSTIME:
+				SystimeReader::Get()->HandleRequest(m_Argv[1]);
+				break;
+			default:
+				// no handler for source
+				break;
+			}	
+
+		} else {
+			//uart0_puts(msg::usage::LTC);
+		}
+
+		return;
+	}
+
+\
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
 	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);

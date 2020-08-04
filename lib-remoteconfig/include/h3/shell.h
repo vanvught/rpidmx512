@@ -29,6 +29,10 @@
 
 #include <stdint.h>
 
+#if defined (LTC_READER)
+#include "ltc.h"
+#endif
+
 namespace shell {
 enum class CmdIndex: uint32_t {
 	REBOOT,
@@ -53,6 +57,9 @@ public:
 
 	void Run();
 
+#if defined (LTC_READER)
+	void SetSource(ltc::source ltcSource) { m_ltcSource = ltcSource; }
+#endif
 private:
 	const char *ReadLine(uint32_t &nLength);
 	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
@@ -80,6 +87,9 @@ private:
 	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
 	uint32_t m_nArgv0Length{0};	
+#if defined (LTC_READER)
+	ltc::source m_ltcSource;
+#endif
 };
 
 #endif /* H3_SHELL_H_ */
