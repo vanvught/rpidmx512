@@ -184,14 +184,9 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
-void SystimeReader::HandleUdpRequest() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
-		return;
+void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
+	if (pBuffer != nullptr) {
+		memcpy(m_Buffer, pBuffer, std::min(nBufferLength, sizeof(m_Buffer)));
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
@@ -231,6 +226,19 @@ void SystimeReader::HandleUdpRequest() {
 	}
 
 	DEBUG_PUTS("Invalid command");
+}
+
+void SystimeReader::HandleUdpRequest() {
+	uint32_t nIPAddressFrom;
+	uint16_t nForeignPort;
+
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
+		return;
+	}
+
+	HandleRequest();
 }
 
 void SystimeReader::Run() {
