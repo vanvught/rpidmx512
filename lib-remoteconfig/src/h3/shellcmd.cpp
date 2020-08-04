@@ -183,28 +183,31 @@ void Shell::CmdSet() {
 				
 	// Run the reader
 			switch (m_ltcSource) {
-		/* 	case ltc::source::LTC:
-				ltcReader.Run();
-				break;
-			case ltc::source::ARTNET:
-				artnetReader.Run();		// Handles MIDI Quarter Frame output messages
-				break;
-			case ltc::source::MIDI:
-				midiReader.Run();
-				break;
-			case ltc::source::TCNET:
-				tcnetReader.Run();		// Handles MIDI Quarter Frame output messages
-				break; */
 			case ltc::source::INTERNAL:
 				LtcGenerator::Get()->HandleRequest(m_Argv[1]);;		
-				break;
-			case ltc::source::APPLEMIDI:
-				break; 
+				break;	
 			case ltc::source::SYSTIME:
 				SystimeReader::Get()->HandleRequest(m_Argv[1]);
+				break;							
+/* 
+			case ltc::source::LTC:
+				//ltcReader
 				break;
+			case ltc::source::ARTNET:
+				//artnetReader		// Handles MIDI Quarter Frame output messages
+				break;
+			case ltc::source::MIDI:
+				//midiReader
+				break;
+			case ltc::source::TCNET:
+				//tcnetReader
+				break; 
+			case ltc::source::APPLEMIDI:
+				break;  
+*/		
 			default:
-				// no handler for source
+				// no handler for source yet
+				uart0_puts("This source does not support the set command.\n");
 				break;
 			}	
 
@@ -215,7 +218,7 @@ void Shell::CmdSet() {
 		return;
 	}
 
-\
+
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
 	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
