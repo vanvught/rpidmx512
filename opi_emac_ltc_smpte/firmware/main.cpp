@@ -99,6 +99,9 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+// UART0 shell
+#include <h3/shell.h>
+
 extern "C" {
 
 void notmain(void) {
@@ -107,6 +110,7 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	Shell shell;
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -182,6 +186,8 @@ void notmain(void) {
 	NetworkHandlerOled::Get()->ShowIp();
 
 	ltc::source ltcSource = ltcParams.GetSource();
+
+	shell.SetSource(ltcSource);
 
 	/**
 	 * Select the source using buttons/rotary
@@ -480,6 +486,7 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+		shell.Run();
 	}
 }
 

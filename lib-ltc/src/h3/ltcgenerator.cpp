@@ -52,6 +52,7 @@
 #include "h3/ltcoutputs.h"
 
 #include "debug.h"
+#include "h3_uart0_debug.h"
 
 #define BUTTON(x)			((m_nButtons >> x) & 0x01)
 #define BUTTON_STATE(x)		((m_nButtons & (1 << x)) == (1 << x))
@@ -780,7 +781,7 @@ void LtcGenerator::Run() {
 	Update();
 
 	HandleButtons();
-	HandleUdpRequest();
+	HandleRequest();
 
 	if (m_State == STARTED) {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);

@@ -34,6 +34,10 @@
 
 #include "uart.h"
 
+
+#define UART0_ECHO  // UART0 will echo back characters it receives
+
+
 #define BUS_CLK_GATING3_UART0	(1U << 16)
 #define BUS_SOFT_RESET4_UART0	(1U << 16)
 
@@ -99,6 +103,13 @@ int uart0_getc(void) {
 		return EOF;
 	}
 
+#if defined (UART0_ECHO)
+	char c = H3_UART0->O00.RBR; 
+	uart0_putc(c); // send it back
+	return (int) c;
+#else
 	return (int) H3_UART0->O00.RBR;
+#endif 	
+
 }
 
