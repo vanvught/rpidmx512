@@ -40,6 +40,7 @@ enum class CmdIndex: uint32_t {
 	SET,
 	GET,
 	DHCP,
+	DATE,
 #ifndef NDEBUG
 	I2CDETECT,
 	DUMP,
@@ -71,6 +72,7 @@ private:
 	void CmdSet();
 	void CmdGet();
 	void CmdDhcp();
+	void CmdDate();
 #ifndef NDEBUG
 	void CmdI2cDetect();
 	void CmdDump();
@@ -86,10 +88,6 @@ private:
 	char *m_Argv[shell::MAXARG]{nullptr};
 	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
-	uint32_t m_nArgv0Length{0};	
-#if defined (LTC_READER)
-	ltc::source m_ltcSource;
-#endif
 };
 
 #endif /* H3_SHELL_H_ */

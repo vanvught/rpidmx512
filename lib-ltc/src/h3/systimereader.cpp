@@ -185,19 +185,10 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
-void SystimeReader::HandleRequest(const char * sCommand) {
-	uint32_t nIPAddressFrom = 0;
-	uint16_t nForeignPort = 0;
-
-	if (sCommand != nullptr) { // if an argument specified
-		m_nBytesReceived = strlen(sCommand);
-		memcpy(m_Buffer, sCommand, m_nBytesReceived);
-	} else { // not a immeadite command, check network
-		m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
-	}
-
-	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
-		return;
+void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
+	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
+		memcpy(m_Buffer, pBuffer, nBufferLength);
+		m_nBytesReceived = nBufferLength;
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
@@ -250,6 +241,19 @@ void SystimeReader::HandleRequest(const char * sCommand) {
 		uart0_puts("Invalid command\n");
 	}	
 	DEBUG_PUTS("Invalid command");
+}
+
+void SystimeReader::HandleUdpRequest() {
+	uint32_t nIPAddressFrom;
+	uint16_t nForeignPort;
+
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
+		return;
+	}
+
+	HandleRequest();
 }
 
 void SystimeReader::Run() {

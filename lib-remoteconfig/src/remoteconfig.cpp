@@ -840,7 +840,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 				return;
 			}
 		}
-	} else {
+	} else if (nBufferLength <= BUFFER_SIZE){
 		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
 		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
 		m_nBytesReceived = nBufferLength;
