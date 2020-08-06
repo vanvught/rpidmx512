@@ -70,15 +70,13 @@ public:
 	void ActionForward(int32_t nSeconds);
 	void ActionBackward(int32_t nSeconds);
 
-	// check network or use given command
-	void HandleRequest(const char * sCommand = nullptr);
-
 	static LtcGenerator* Get() {
 		return s_pThis;
 	}
 
 private:
-	void HandleButtons();	
+	void HandleButtons();
+	void HandleUdpRequest();
 	void Update();
 	void Increment();
 	void Decrement();

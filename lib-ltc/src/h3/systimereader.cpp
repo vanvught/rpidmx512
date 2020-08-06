@@ -50,7 +50,6 @@
 #include "h3/ltcoutputs.h"
 
 #include "debug.h"
-#include "h3_uart0_debug.h"
 
 namespace cmd {
 	static constexpr char aStart[] = "start";
@@ -200,23 +199,15 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 		m_nBytesReceived--;
 	}
 
-	debug_dump(m_Buffer, m_nBytesReceived);	
+	debug_dump(m_Buffer, m_nBytesReceived);
 
 	if (m_nBytesReceived == (4 + length::START)) {
 		if (memcmp(&m_Buffer[4], cmd::aStart, length::START) == 0) {
 			ActionStart();
-			if (!nForeignPort) {
-				uart0_puts("TC Started\n");
-			}	
-
 			return;
 		}
 
-		if (!nForeignPort) {
-			uart0_puts("Invalid !start command\n");
-		}	
 		DEBUG_PUTS("Invalid !start command");
-
 	}
 
 	if (m_nBytesReceived == (4 + length::STOP)) {
@@ -224,9 +215,7 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 			ActionStop();
 			return;
 		}
-		if (!nForeignPort) {
-			uart0_puts("Invalid !stop command\n");
-		}	
+
 		DEBUG_PUTS("Invalid !stop command");
 	}
 
@@ -237,9 +226,6 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 		}
 	}
 
-	if (!nForeignPort) {
-		uart0_puts("Invalid command\n");
-	}	
 	DEBUG_PUTS("Invalid command");
 }
 
@@ -301,5 +287,5 @@ void SystimeReader::Run() {
 		}
 	}
 
-	HandleRequest();
+	HandleUdpRequest();
 }

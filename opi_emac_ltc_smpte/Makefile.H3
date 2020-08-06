@@ -1,5 +1,5 @@
 #
-DEFINES = LTC_READER RDMNET_LLRP_ONLY NDEBUG
+DEFINES = LTC_READER RDMNET_LLRP_ONLY ENABLE_SHELL NDEBUG
 #
 LIBS = ltc tcnet artnet artnethandlers midi input osc ws28xxdisplay ws28xx rdmnet rdm rdmsensor rdmsubdevice
 #

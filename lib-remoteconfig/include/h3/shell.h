@@ -59,8 +59,11 @@ public:
 	void Run();
 
 #if defined (LTC_READER)
-	void SetSource(ltc::source ltcSource) { m_ltcSource = ltcSource; }
+	void SetSource(ltc::source ltcSource) {
+		m_ltcSource = ltcSource;
+	}
 #endif
+
 private:
 	const char *ReadLine(uint32_t &nLength);
 	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
@@ -88,6 +91,9 @@ private:
 	char *m_Argv[shell::MAXARG]{nullptr};
 	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
+#if defined (LTC_READER)
+	ltc::source m_ltcSource{ltc::UNDEFINED};
+#endif
 };
 
 #endif /* H3_SHELL_H_ */

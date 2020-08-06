@@ -109,11 +109,12 @@ static constexpr char DHCP[] = "DHCP enabled\n";
 static constexpr char STORED[] = "Stored\n";
 }  // namespace info
 namespace error {
-static constexpr char INVALID[] = "Invalid command\n";
-static constexpr char INTERNAL[] = "Internal error\n";
-static constexpr char DHCP[] = "DHCP failed\n";
+static constexpr char INVALID[] = "Invalid command.\n";
+static constexpr char INTERNAL[] = "Internal error.\n";
+static constexpr char DHCP[] = "DHCP failed.\n";
 static constexpr char TXT[] = ".txt not found\n";
-static constexpr char PROPERTY[] = "Property not found\n";
+static constexpr char PROPERTY[] = "Property not found.\n";
+static constexpr char LTC[] = "This source does not support the set command.\n";
 }  // namespace error
 }  // namespace msg
 
@@ -180,35 +181,29 @@ void Shell::CmdSet() {
 
 	if ((nArgv0Length == set::length::LTC) && (memcmp(m_Argv[0], set::arg::LTC, set::length::LTC) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
-		if ((nArgv1Length != 0) && (nArgv1Length <= 64)) {	
-			char sRequest[64] = {0};
-			//size_t nReqLen = 0;
+		char sRequest[64];
+
+		if ((nArgv1Length != 0) && (nArgv1Length <= (sizeof(sRequest) - 4))) {
 			sRequest[0] = 'l';
  			sRequest[1] = 't';
  			sRequest[2] = 'c';
  			sRequest[3] = '!';						
  			memcpy(&sRequest[4], m_Argv[1], nArgv1Length);
-			//nReqLen = 4 + nArgv1Length;
-			sRequest[63] = 0; // enforce terminator
 
- 			uart0_printf("LTC Generator Command: %s\n", sRequest);
+ 			const auto nRequestLenght = 4 + nArgv1Length;
+
+ 			uart0_printf("LTC Generator Command: %.*s\n", nRequestLenght, sRequest);
 
 			switch (m_ltcSource) {
 			case ltc::source::INTERNAL:
-				LtcGenerator::Get()->HandleRequest(sRequest);;		
+				LtcGenerator::Get()->HandleRequest(sRequest, nRequestLenght);;
 				break;	
 			case ltc::source::SYSTIME:
-				SystimeReader::Get()->HandleRequest(sRequest);
+				SystimeReader::Get()->HandleRequest(sRequest, nRequestLenght);
 				break;							
 /* 
 			case ltc::source::LTC:
 				//ltcReader
-				break;
-			case ltc::source::ARTNET:
-				//artnetReader		// Handles MIDI Quarter Frame output messages
-				break;
-			case ltc::source::MIDI:
-				//midiReader
 				break;
 			case ltc::source::TCNET:
 				//tcnetReader
@@ -217,8 +212,7 @@ void Shell::CmdSet() {
 				break;  
 */		
 			default:
-				// no handler for source yet
-				uart0_puts("This source does not support the set command.\n");
+				uart0_puts(msg::error::LTC);
 				break;
 			}	
 
@@ -228,7 +222,6 @@ void Shell::CmdSet() {
 
 		return;
 	}
-
 
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);

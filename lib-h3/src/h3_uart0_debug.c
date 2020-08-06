@@ -103,13 +103,12 @@ int uart0_getc(void) {
 		return EOF;
 	}
 
-#if defined (UART0_ECHO)
-	char c = H3_UART0->O00.RBR; 
-	uart0_putc(c); // send it back
-	return (int) c;
-#else
-	return (int) H3_UART0->O00.RBR;
-#endif 	
+	const char c = H3_UART0->O00.RBR;
 
+#if defined (UART0_ECHO)
+	uart0_putc(c);
+#endif
+
+	return (int) c;
 }
 

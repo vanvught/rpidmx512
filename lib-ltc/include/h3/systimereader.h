@@ -49,11 +49,12 @@ public:
 	void ActionStop();
 	void ActionSetRate(const char *pTimeCodeRate);
 
-	void HandleRequest(const char * sCommand = nullptr);
-
 	static SystimeReader *Get() {
 		return s_pThis;
 	}
+
+private:
+	void HandleUdpRequest();
 
 private:
 	TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
