@@ -34,10 +34,6 @@
 
 #include "uart.h"
 
-
-#define UART0_ECHO  // UART0 will echo back characters it receives
-
-
 #define BUS_CLK_GATING3_UART0	(1U << 16)
 #define BUS_SOFT_RESET4_UART0	(1U << 16)
 

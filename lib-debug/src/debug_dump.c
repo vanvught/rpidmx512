@@ -2,7 +2,7 @@
  * @file debug_dump.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,9 @@
 #include <stdio.h>
 #include <stdint.h>
 
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
+
 #define CHARS_PER_LINE 16
 
 void debug_dump(const void *packet, uint16_t len) {
@@ -34,7 +37,7 @@ void debug_dump(const void *packet, uint16_t len) {
 	uint16_t chars_this_line = 0;
 	const uint8_t *p = (const uint8_t *) packet;
 
-	printf("size=%d\n", len);
+	printf("%p:%d\n", packet, len);
 
 	do {
 		chars_this_line = 0;
