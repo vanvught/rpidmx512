@@ -57,8 +57,8 @@ private:
 	void GetTime() {
         struct timeval tv = {0, 0};
         gettimeofday(&tv, nullptr);
-        m_nSeconds =  tv.tv_sec;
-        m_nNanoSeconds =  static_cast<uint32_t>(tv.tv_usec * 1000);
+        m_nSeconds =  static_cast<uint32_t>(tv.tv_sec);
+        m_nMicroSeconds =  static_cast<uint32_t>(tv.tv_usec) * 1000U;
 	}
 
 private:
@@ -71,7 +71,7 @@ private:
 	uint32_t m_nMasterIpAddress;
 
 	uint32_t m_nSeconds;
-	uint32_t m_nNanoSeconds;
+	uint32_t m_nMicroSeconds;
 	uint16_t m_DelayReqSequenceId{0};
 
 	PtpClientDisplay *m_pPtpClientDisplay{nullptr};

@@ -29,9 +29,11 @@
 
 #include <stdint.h>
 
+// Firmware specific BEGIN
 #if defined (LTC_READER)
-#include "ltc.h"
+# include "ltc.h"
 #endif
+// Firmware specific END
 
 namespace shell {
 enum class CmdIndex: uint32_t {
@@ -45,6 +47,8 @@ enum class CmdIndex: uint32_t {
 	I2CDETECT,
 	DUMP,
 	MEM,
+	NTP,
+	PTP,
 #endif
 	HELP
 };
@@ -80,6 +84,8 @@ private:
 	void CmdI2cDetect();
 	void CmdDump();
 	void CmdMem();
+	void CmdNtp();
+	void CmdPtp();
 #endif
 	void CmdHelp();
 
@@ -91,9 +97,12 @@ private:
 	char *m_Argv[shell::MAXARG]{nullptr};
 	uint32_t m_nArgvLength[shell::MAXARG];
 	bool m_bShownPrompt{false};
+
+// Firmware specific BEGIN
 #if defined (LTC_READER)
 	ltc::source m_ltcSource{ltc::UNDEFINED};
 #endif
+// Firmware specific END
 };
 
 #endif /* H3_SHELL_H_ */

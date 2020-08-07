@@ -1,7 +1,8 @@
+# PLATFORM=ORANGE_PI_ONE
 #
-DEFINES =
+# DEFINES = CONSOLE_FB
 #
-LIBS = 
+LIBS =
 #
 SRCDIR = firmware lib
 

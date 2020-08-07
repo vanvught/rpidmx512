@@ -48,6 +48,8 @@ extern "C" {
 #define TIMEOUT_MILLIS	3000 	// 3 seconds
 #define POLL_SECONDS	1024	// 2ˆ10
 
+NtpClient *NtpClient::s_pThis = nullptr;
+
 NtpClient::NtpClient(uint32_t nServerIp):
 	m_nServerIp(nServerIp),
 	m_nHandle(-1),
@@ -57,6 +59,8 @@ NtpClient::NtpClient(uint32_t nServerIp):
 	m_MillisLastPoll(0)
 {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	if (m_nServerIp == 0) {
 		m_nServerIp = Network::Get()->GetNtpServerIp();

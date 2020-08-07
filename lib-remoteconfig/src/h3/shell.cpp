@@ -56,6 +56,8 @@ static constexpr TCommands cmd_table[] = {
 		{ "i2cdetect" , 0},
 		{ "dump" , 1},
 		{ "mem" , 2},
+		{ "ntp" , 1},
+		{ "ptp" , 1},
 #endif
 		{ "?", 0 }
 };
@@ -198,10 +200,6 @@ void Shell::Run() {
 	
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
-#ifndef NDEBUG
-	uart0_printf("[%d] {%.*s}\n", nLength, nLength, p); // FIXME Subject for removal when finished
-#endif
-
 	uint32_t nOffset;
 	CmdIndex nCmdIndex;
 
@@ -245,6 +243,12 @@ void Shell::Run() {
 			break;
 		case CmdIndex::MEM:
 			CmdMem();
+			break;
+		case CmdIndex::NTP:
+			CmdNtp();
+			break;
+		case CmdIndex::PTP:
+			CmdPtp();
 			break;
 #endif
 		case CmdIndex::HELP:

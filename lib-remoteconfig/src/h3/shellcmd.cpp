@@ -38,22 +38,26 @@
 #include "h3/shell.h"
 #include "h3_uart0_debug.h"
 
-#if defined (LTC_READER)
-#include "ltc.h"
-#include "h3/ltcgenerator.h"
-#include "h3/systimereader.h"
-#endif
-
 #include "remoteconfig.h"
 #include "network.h"
 
 #include "hardware.h"
 #include "firmwareversion.h"
 
+// Firmware specific BEGIN
+#if defined (LTC_READER)
+# include "ltc.h"
+# include "h3/ltcgenerator.h"
+# include "h3/systimereader.h"
+#endif
+// Firmware specific BEGIN
+
 #include "debug.h"
 
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
+# include "ntpclient.h"
+# include "ptpclient.h"
 extern "C" {
 void h3_board_dump(void);
 void h3_dump_memory_mapping(void);
@@ -83,7 +87,7 @@ static constexpr char BOARD[] = "board";
 static constexpr char MMAP[] = "mmap";
 static constexpr char PLL[] = "pll";
 static constexpr char LINKER[] = "linker";
-}  // namespace cmd
+}  // namespace arg
 namespace length {
 static constexpr auto BOARD = sizeof(arg::BOARD) - 1;
 static constexpr auto MMAP = sizeof(arg::MMAP) - 1;
@@ -91,6 +95,19 @@ static constexpr auto PLL = sizeof(arg::PLL) - 1;
 static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 }  // namespace length
 }  // namespace dump
+
+namespace networktime {
+namespace arg {
+static constexpr char START[] = "start";
+static constexpr char STOP[] = "stop";
+static constexpr char PRINT[] = "print";
+}  // namespace arg
+namespace length {
+static constexpr auto START = sizeof(arg::START) - 1;
+static constexpr auto STOP = sizeof(arg::STOP) - 1;
+static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
+}  // namespace length
+}  // namespace time
 
 namespace file {
 static constexpr char EXT[] = ".txt";
@@ -179,49 +196,41 @@ void Shell::CmdSet() {
 		return;
 	}
 
+// Firmware specific BEGIN
+#if defined (LTC_READER)
 	if ((nArgv0Length == set::length::LTC) && (memcmp(m_Argv[0], set::arg::LTC, set::length::LTC) == 0)) {
 		const auto nArgv1Length = m_nArgvLength[1];
-		char sRequest[64];
+		char request[64];
 
-		if ((nArgv1Length != 0) && (nArgv1Length <= (sizeof(sRequest) - 4))) {
-			sRequest[0] = 'l';
- 			sRequest[1] = 't';
- 			sRequest[2] = 'c';
- 			sRequest[3] = '!';						
- 			memcpy(&sRequest[4], m_Argv[1], nArgv1Length);
+		if ((nArgv1Length != 0) && (nArgv1Length <= (sizeof(request) - 4))) {
+			request[0] = 'l';
+ 			request[1] = 't';
+ 			request[2] = 'c';
+ 			request[3] = '!';						
+ 			memcpy(&request[4], m_Argv[1], nArgv1Length);
 
  			const auto nRequestLenght = 4 + nArgv1Length;
 
- 			uart0_printf("LTC Generator Command: %.*s\n", nRequestLenght, sRequest);
+ 			DEBUG_PRINTF("Request: %.*s", nRequestLenght, request);
 
 			switch (m_ltcSource) {
 			case ltc::source::INTERNAL:
-				LtcGenerator::Get()->HandleRequest(sRequest, nRequestLenght);;
+				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);;
 				break;	
 			case ltc::source::SYSTIME:
-				SystimeReader::Get()->HandleRequest(sRequest, nRequestLenght);
-				break;							
-/* 
-			case ltc::source::LTC:
-				//ltcReader
+				SystimeReader::Get()->HandleRequest(request, nRequestLenght);
 				break;
-			case ltc::source::TCNET:
-				//tcnetReader
-				break; 
-			case ltc::source::APPLEMIDI:
-				break;  
-*/		
 			default:
 				uart0_puts(msg::error::LTC);
 				break;
 			}	
-
 		} else {
 			//uart0_puts(msg::usage::LTC);
 		}
-
 		return;
 	}
+#endif
+// Firmware specific END
 
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
@@ -364,5 +373,43 @@ void Shell::CmdMem() {
 	const auto nSize = hexadecimalToDecimal(m_Argv[1], m_nArgvLength[1]);
 
 	debug_dump(pAddress, nSize);
+}
+
+void Shell::CmdNtp() {
+	const auto nArgv0Length = m_nArgvLength[0];
+
+	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
+		// NtpClient::Get()->Start(); //TODO Implement
+		return;
+	}
+
+	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
+		// NtpClient::Get()->Stop(); //TODO Implement
+		return;
+	}
+
+	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
+		NtpClient::Get()->Print();
+		return;
+	}
+}
+
+void Shell::CmdPtp() {
+	const auto nArgv0Length = m_nArgvLength[0];
+
+	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
+		//TODO Implement
+		return;
+	}
+
+	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
+		//TODO Implement
+		return;
+	}
+
+	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
+		//TODO Implement
+		return;
+	}
 }
 #endif
