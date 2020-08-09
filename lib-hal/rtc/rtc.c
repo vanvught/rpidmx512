@@ -137,6 +137,11 @@ bool rtc_is_connected(void) {
 	return i2c_is_connected(s_i2c_address);
 }
 
+
+rtc_types_t rtc_get_type(void) {
+	return s_type;
+}
+
 /*
  * Members of the tm structure:
  *

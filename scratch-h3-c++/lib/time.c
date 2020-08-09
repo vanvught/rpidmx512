@@ -27,49 +27,46 @@
  * PoC Code -> Do not use in production
  */
 
+#define NDEBUG
+
 #include <stddef.h>
 #include <sys/time.h>
 #include <assert.h>
+
+#include <stdio.h>
 
 #include "h3.h"
 
 #include "debug.h"
 
-int32_t correction_seconds = 0;
-int32_t correction_micros = 0;
+static uint32_t set_hs_timer = 0;
+static uint64_t s_micros = 0;
+
+#define MICROS_SECONDS	1000000
 
 /*
  * number of seconds and microseconds since the Epoch,
  *     1970-01-01 00:00:00 +0000 (UTC).
  */
 
-int gettimeofday(struct timeval *tv, __attribute__((unused)) struct timezone *tz) {
+int gettimeofday(struct timeval *tv, __attribute__((unused))  struct timezone *tz) {
 	assert(tv != 0);
 
-	const uint32_t micros = H3_TIMER->AVS_CNT0;
+	const uint32_t hs_timer = H3_HS_TIMER->CURNT_LO / 100;
 
-	tv->tv_sec = (time_t) (micros / 1000);
-	tv->tv_usec = (suseconds_t) micros - (1000 * tv->tv_sec);
+	uint32_t hs_timer_elapsed;
 
-	if (correction_seconds < 0) {
-		if (__builtin_expect(((time_t) (-correction_seconds) > tv->tv_sec), 0)) {
-			DEBUG_PUTS(">ERROR<");
-		} else {
-			tv->tv_sec += correction_seconds;
-		}
+	if (set_hs_timer >= hs_timer) {
+		hs_timer_elapsed = set_hs_timer - hs_timer;
 	} else {
-		tv->tv_sec += correction_seconds;
+		hs_timer_elapsed = (uint32_t)(~0) / 100 - (hs_timer - set_hs_timer);
 	}
 
-	if (correction_micros < 0) {
-		if ((suseconds_t) (-correction_micros) > tv->tv_usec) {
-			DEBUG_PUTS("");
-		} else {
-			tv->tv_usec += correction_micros;
-		}
-	} else {
-		tv->tv_usec += correction_micros;
-	}
+	set_hs_timer = hs_timer;
+	s_micros += hs_timer_elapsed;
+
+	tv->tv_sec = s_micros / MICROS_SECONDS;
+	tv->tv_usec = (suseconds_t) (s_micros - ((uint64_t) tv->tv_sec * MICROS_SECONDS));
 
 	return 0;
 }
@@ -77,12 +74,8 @@ int gettimeofday(struct timeval *tv, __attribute__((unused)) struct timezone *tz
 int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct timezone *tz) {
 	assert(tv != 0);
 
-	const uint32_t micros_avs = H3_TIMER->AVS_CNT0;
-	const uint32_t micros_avs_seconds = micros_avs / 1000;
-	const uint32_t micros_avs_micros = micros_avs - (micros_avs_seconds * 1000);
-
-	correction_seconds = tv->tv_sec - (time_t) micros_avs_seconds;
-	correction_micros = tv->tv_usec - (suseconds_t) micros_avs_micros;
+	set_hs_timer = H3_HS_TIMER->CURNT_LO / 100;
+	s_micros = ((uint64_t) tv->tv_sec * MICROS_SECONDS) + (uint64_t) tv->tv_usec;
 
 	return 0;
 }
@@ -92,21 +85,12 @@ int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct 
        1970-01-01 00:00:00 +0000 (UTC).
  */
 time_t time(time_t *__timer) {
-	time_t elapsed = (time_t) (H3_TIMER->AVS_CNT0 / 1000);
-
-	if (correction_seconds < 0) {
-		if (__builtin_expect(((time_t) (-correction_seconds) > elapsed), 0)) {
-			DEBUG_PUTS("");
-		} else {
-			elapsed += correction_seconds;
-		}
-	} else {
-		elapsed += correction_seconds;
-	}
+	struct timeval tv;
+	gettimeofday(&tv, 0);
 
 	if (__timer != NULL) {
-		*__timer = elapsed;
+		*__timer = tv.tv_sec;
 	}
 
-	return elapsed;
+	return tv.tv_sec;
 }

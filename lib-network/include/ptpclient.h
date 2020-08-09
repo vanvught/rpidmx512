@@ -51,11 +51,15 @@ public:
 		m_pPtpClientDisplay = pPtpClientDisplay;
 	}
 
+	static PtpClient *Get() {
+		return s_pThis;
+	}
+
 private:
 	void HandleEventMessage();
 	void HandleGeneralMessage();
 	void GetTime() {
-        struct timeval tv = {0, 0};
+        struct timeval tv;
         gettimeofday(&tv, nullptr);
         m_nSeconds =  static_cast<uint32_t>(tv.tv_sec);
         m_nMicroSeconds =  static_cast<uint32_t>(tv.tv_usec) * 1000U;
@@ -87,6 +91,8 @@ private:
 	TimeStamp T4{0, 0};
 
 	struct PTPDelayReq m_DelayReq;
+
+	static PtpClient *s_pThis;
 };
 
 #endif /* PTPCLIENT_H_ */

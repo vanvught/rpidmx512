@@ -52,6 +52,7 @@ static constexpr TCommands cmd_table[] = {
 		{ "get", 2},
 		{ "dhcp", 0},
 		{ "date", 0},
+		{ "hwclock", 1},
 #ifndef NDEBUG
 		{ "i2cdetect" , 0},
 		{ "dump" , 1},
@@ -233,6 +234,9 @@ void Shell::Run() {
 			break;
 		case CmdIndex::DATE:
 			CmdDate();
+			break;
+		case CmdIndex::HWCLOCK:
+			CmdHwClock();
 			break;
 #ifndef NDEBUG
 		case CmdIndex::I2CDETECT:

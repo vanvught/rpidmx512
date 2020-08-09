@@ -27,7 +27,7 @@
  * PoC Code -> Do not use in production
  */
 
-#undef NDEBUG
+#define NDEBUG
 
 #include <stdint.h>
 #include <stdio.h>
@@ -76,7 +76,7 @@ Originate Timestamp   T1   time request sent by client
 Receive Timestamp     T2   time request received by server
 Transmit Timestamp    T3   time reply sent by server
 Destination Timestamp T4   time reply received by client
- */
+*/
 
 NtpClient *NtpClient::s_pThis = nullptr;
 
@@ -92,12 +92,11 @@ NtpClient::NtpClient(uint32_t nServerIp): m_nServerIp(nServerIp) {
 	SetUtcOffset(Network::Get()->GetNtpUtcOffset());
 
 	memset(&m_Request, 0, sizeof m_Request);
+	memset(&m_Reply, 0, sizeof m_Reply);
 
 	m_Request.LiVnMode = NTP_VERSION | NTP_MODE_CLIENT;
 	m_Request.Poll = 10; // Poll: 1024 seconds
 	m_Request.ReferenceID = ('A' << 0) | ('V' << 8) | ('S' << 16);
-
-	memset(&m_Reply, 0, sizeof m_Reply);
 
 	DEBUG_EXIT
 }
@@ -185,29 +184,28 @@ int NtpClient::SetTimeOfDay() {
 	m_nOffsetSeconds = nDiffSeconds1 + nDiffSeconds2;
 	m_nOffsetMicros = nDiffFraction1 + nDiffFraction2;
 
-	if (m_nOffsetMicros >= 1000) {
-		m_nOffsetMicros -= 1000;
+	if (m_nOffsetMicros >= 1E6) {
+		m_nOffsetMicros -= 1E6	;
 		m_nOffsetSeconds += 1;
 	}
 
 	m_nOffsetSeconds /= 2;
 	m_nOffsetMicros /= 2;
 
-	const struct timeval tv = {
-			static_cast<time_t>(T4.nSeconds - JAN_1970)  + m_nOffsetSeconds + m_nUtcOffset,
-			static_cast<suseconds_t>(static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros))};
+	struct timeval tv;
 
+	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970)  + m_nOffsetSeconds + m_nUtcOffset;
+	tv.tv_usec = static_cast<suseconds_t>(static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
+
+	if (tv.tv_usec >= 1E6) {
+		tv.tv_sec++;
+		tv.tv_usec = 1E6 - tv.tv_usec;
+	}
+
+	DEBUG_PRINTF("(%u, %u) %s ", tv.tv_sec, tv.tv_usec , tv.tv_usec  >= 1E6 ? "!" : "");
 	DEBUG_PRINTF("%d %u",m_nOffsetSeconds, m_nOffsetMicros);
 
 	return settimeofday(&tv, nullptr);
-}
-
-void NtpClient::PrintNtpTime(const char *pText, const struct TimeStamp *pNtpTime) {
-#ifndef NDEBUG
-	const time_t nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
-	const struct tm *pTm = localtime(&nSeconds);
-	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
-#endif
 }
 
 void NtpClient::Start() {
@@ -270,6 +268,10 @@ void NtpClient::Stop() {
 	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
 	m_tStatus = NtpClientStatus::STOPPED;
 
+	if (m_pNtpClientDisplay != nullptr) {
+		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+	}
+
 	DEBUG_EXIT
 }
 
@@ -320,6 +322,14 @@ void NtpClient::Run() {
 		m_tStatus = NtpClientStatus::IDLE;
 		DEBUG_PUTS("NtpClientStatus::IDLE");
 	}
+}
+
+void NtpClient::PrintNtpTime(__attribute__((unused)) const char *pText, __attribute__((unused)) const struct TimeStamp *pNtpTime) {
+#ifndef NDEBUG
+	const time_t nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
+	const struct tm *pTm = localtime(&nSeconds);
+	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
+#endif
 }
 
 void NtpClient::Print() {

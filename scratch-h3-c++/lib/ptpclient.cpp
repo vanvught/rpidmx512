@@ -47,8 +47,12 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } pcast32;
 
+PtpClient *PtpClient::s_pThis = nullptr;
+
 PtpClient::PtpClient() {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton(udp::MULTICAST_ADDRESS, &group_ip));

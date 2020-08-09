@@ -633,6 +633,10 @@ typedef struct T_H3_PRCM {
 #endif
 
 #define H3_SYSTEM		((H3_SYSTEM_TypeDef *) H3_SYSTEM_BASE)
+
+#define H3_LCD0			(_CAST(H3_TCON_TypeDef *)(H3_LCD0_BASE))
+#define H3_LCD1			(_CAST(H3_TCON_TypeDef *)(H3_LCD1_BASE))
+
 #define H3_DMA			((H3_DMA_TypeDef *) H3_DMA_BASE)
 #define H3_DMA_CHL0		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL0_BASE)
 #define H3_DMA_CHL1		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL1_BASE)
@@ -646,42 +650,21 @@ typedef struct T_H3_PRCM {
 #define H3_SD_MMC1		((H3_SD_MMC_TypeDef *) H3_SD_MMC1_BASE)
 #define H3_SD_MMC2		((H3_SD_MMC_TypeDef *) H3_SD_MMC2_BASE)
 #define H3_SID			((H3_SID_TypeDef *) H3_SID_BASE)
-
-//#define H3_CCU			((H3_CCU_TypeDef *) H3_CCU_BASE)
 #define H3_CCU 			(_CAST(H3_CCU_TypeDef *)(H3_CCU_BASE))
-
-//#define H3_PIO_PORTA	((H3_PIO_TypeDef *) H3_PIO_PORTA_BASE)
 #define H3_PIO_PORTA 	(_CAST(H3_PIO_TypeDef *)(H3_PIO_PORTA_BASE))
-
 #define H3_PIO_PORTC	((H3_PIO_TypeDef *) H3_PIO_PORTC_BASE)
 #define H3_PIO_PORTD	((H3_PIO_TypeDef *) H3_PIO_PORTD_BASE)
 #define H3_PIO_PORTE	((H3_PIO_TypeDef *) H3_PIO_PORTE_BASE)
 #define H3_PIO_PORTF	((H3_PIO_TypeDef *) H3_PIO_PORTF_BASE)
-
-//#define H3_PIO_PORTG	((H3_PIO_TypeDef *) H3_PIO_PORTG_BASE)
 #define H3_PIO_PORTG 	(_CAST(H3_PIO_TypeDef *)(H3_PIO_PORTG_BASE))
-
 #define H3_PIO_PORTL	((H3_PIO_TypeDef *) H3_PIO_PORTL_BASE)
-
-//#define H3_PIO_PA_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PA_INT_BASE)
 #define H3_PIO_PA_INT 	(_CAST(H3_PIO_INT_TypeDef *)(H3_PIO_PA_INT_BASE))
-
 #define H3_PIO_PG_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PG_INT_BASE)
 #define H3_EMAC			((H3_EMAC_TypeDef *) H3_EMAC_BASE)
-
-//#define H3_TIMER		((H3_TIMER_TypeDef *) H3_TIMER_BASE)
 #define H3_TIMER 		(_CAST(H3_TIMER_TypeDef *)(H3_TIMER_BASE))
-
-//#define H3_HS_TIMER		((H3_HS_TIMER_TypeDef *) H3_HS_TIMER_BASE)
 #define H3_HS_TIMER		(_CAST(H3_HS_TIMER_TypeDef *)(H3_HS_TIMER_BASE))
-
 #define H3_AC			((H3_AC_TypeDef *) H3_AC_BASE)
 #define H3_THS			((H3_THS_TypeDef *) H3_THS_BASE)
-
-//#define H3_UART0		((H3_UART_TypeDef *) H3_UART0_BASE)
-//#define H3_UART1		((H3_UART_TypeDef *) H3_UART1_BASE)
-//#define H3_UART2		((H3_UART_TypeDef *) H3_UART2_BASE)
-//#define H3_UART3		((H3_UART_TypeDef *) H3_UART3_BASE)
 #define H3_UART0		(_CAST(H3_UART_TypeDef *)(H3_UART0_BASE))
 #define H3_UART1		(_CAST(H3_UART_TypeDef *)(H3_UART1_BASE))
 #define H3_UART2		(_CAST(H3_UART_TypeDef *)(H3_UART2_BASE))

@@ -43,6 +43,7 @@ enum class CmdIndex: uint32_t {
 	GET,
 	DHCP,
 	DATE,
+	HWCLOCK,
 #ifndef NDEBUG
 	I2CDETECT,
 	DUMP,
@@ -69,10 +70,11 @@ public:
 #endif
 
 private:
+	// shell.cpp
 	const char *ReadLine(uint32_t &nLength);
 	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
 	void ValidateArg(uint32_t nOffset, uint32_t nLength);
-	// Cmd
+	// shellcmd.cpp
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength);
 	void CmdReboot();
 	void CmdInfo();
@@ -80,6 +82,7 @@ private:
 	void CmdGet();
 	void CmdDhcp();
 	void CmdDate();
+	void CmdHwClock();
 #ifndef NDEBUG
 	void CmdI2cDetect();
 	void CmdDump();

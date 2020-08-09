@@ -47,8 +47,12 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } pcast32;
 
+PtpClient *PtpClient::s_pThis = nullptr;
+
 PtpClient::PtpClient() {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton(udp::MULTICAST_ADDRESS, &group_ip));
@@ -112,7 +116,7 @@ void PtpClient::HandleEventMessage() {
 		T1.NanoSeconds = __builtin_bswap32(cast.u32);
 
 		T2.Seconds = m_nSeconds;
-		T2.NanoSeconds = m_nNanoSeconds;
+		T2.NanoSeconds = m_nMicroSeconds / 1000;
 
 		DEBUG_PRINTF("SYNC (%d %d) (%d %d)", T1.Seconds, T1.NanoSeconds, T2.Seconds, T2.NanoSeconds);
 		return;
@@ -128,7 +132,7 @@ void PtpClient::HandleGeneralMessage() {
 		T1.NanoSeconds = __builtin_bswap32(cast.u32);
 
 		T2.Seconds = m_nSeconds;
-		T2.NanoSeconds = m_nNanoSeconds;
+		T2.NanoSeconds = m_nMicroSeconds / 1000;
 
 		m_DelayReq.Header.SequenceId[0] = m_DelayReqSequenceId >> 8;
 		m_DelayReq.Header.SequenceId[1] = m_DelayReqSequenceId & 0xFF;
@@ -136,13 +140,13 @@ void PtpClient::HandleGeneralMessage() {
 		GetTime();
 		cast.u32 = __builtin_bswap32(m_nSeconds);
 		memcpy(m_DelayReq.Seconds, cast.u8, 4);
-		cast.u32 = __builtin_bswap32(m_nNanoSeconds);
+		cast.u32 = __builtin_bswap32(1000 * m_nMicroSeconds);
 		memcpy(m_DelayReq.NanoSeconds, cast.u8, 4);
 
 		Network::Get()->SendTo(m_nHandleEvent, &m_DelayReq, sizeof(m_DelayReq), m_nMasterIpAddress, udp::port::EVENT);
 
 		T3.Seconds = m_nSeconds;
-		T3.NanoSeconds = m_nNanoSeconds;
+		T3.NanoSeconds = m_nMicroSeconds / 1000;
 		m_DelayReqSequenceId++;
 
 		DEBUG_PRINTF("DELAY_REQ (%d %d)", T3.Seconds, T3.NanoSeconds);

@@ -1,8 +1,9 @@
+
 /**
- * @file rtc.h
+ * @file hwclock.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +24,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef RTC_H_
-#define RTC_H_
+/*
+ * PoC Code -> Do not use in production
+ */
+
+#ifndef HWCLOCK_H_
+#define HWCLOCK_H_
 
 #include <stdint.h>
-#include <stdbool.h>
-#include <time.h>
 
-typedef enum rtc_types {
-	RTC_MCP7941X,
-	RTC_DS3231,
-	RTC_PROBE
-} rtc_types_t;
+class HwClock {
+public:
+	HwClock();
 
-#define RTC_OK			0
-#define RTC_ERROR		1
+	void HcToSys(); // Set the System Clock from the Hardware Clock
+	void SysToHc(); // Set the Hardware Clock from the System Clock
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	void Print();
 
-extern bool rtc_start(rtc_types_t type);
-extern bool rtc_is_connected(void);
-extern rtc_types_t rtc_get_type(void);
+	static HwClock *Get() {
+		return s_pThis;
+	}
 
-extern void rtc_get_date_time(struct tm *tm);
-extern void rtc_set_date_time(/*@out@*/const struct tm *tm);
+private:
+	bool m_bIsConnected{false};
+	uint32_t m_nSetDelayMicros;
 
-#ifdef __cplusplus
-}
-#endif
+	static HwClock *s_pThis;
+};
 
-#endif /* RTC_H_ */
+#endif /* HWCLOCK_H_ */
