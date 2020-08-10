@@ -1,4 +1,8 @@
-/* oPi port - hippy - dmxout at gmail */
+/* oPi port - hippy - dmxout at gmail 
+
+ This is just for reference....
+
+*/
 
 /*
  * MIT License
