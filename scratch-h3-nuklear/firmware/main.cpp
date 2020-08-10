@@ -12,8 +12,6 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "display.h"
-
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 #include "remoteconfig.h"
@@ -21,8 +19,6 @@
 
 #include "storenetwork.h"
 #include "storeremoteconfig.h"
-
-#include "networkhandleroled.h"
 
 #include "firmwareversion.h"
 
@@ -69,7 +65,7 @@ void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
 	LedBlink lb;
-	Display display(0,4);
+	//Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
@@ -86,14 +82,9 @@ void notmain(void) {
 
 	fw.Print();
 
-	NetworkHandlerOled networkHandlerOled;
-
-	nw.SetNetworkDisplay(&networkHandlerOled);
 	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
-
-	networkHandlerOled.ShowIp();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
 
