@@ -367,6 +367,8 @@ void Shell::CmdHwClock() {
 		HwClock::Get()->Print();
 		return;
 	}
+
+	uart0_puts(msg::error::INVALID);
 }
 
 /*
@@ -428,6 +430,8 @@ void Shell::CmdNtp() {
 		NtpClient::Get()->Print();
 		return;
 	}
+
+	uart0_puts(msg::error::INVALID);
 }
 
 void Shell::CmdPtp() {
@@ -447,5 +451,7 @@ void Shell::CmdPtp() {
 		//TODO Implement
 		return;
 	}
+
+	uart0_puts(msg::error::INVALID);
 }
 #endif

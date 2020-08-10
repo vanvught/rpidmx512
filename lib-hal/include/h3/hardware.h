@@ -150,8 +150,8 @@ public:
 	}
 
 private:
-	RebootHandler *m_pRebootHandler = 0;
-	bool m_bIsWatchdog = false;
+	RebootHandler *m_pRebootHandler{nullptr};
+	bool m_bIsWatchdog{false};
 
 	static Hardware *s_pThis;
 };
