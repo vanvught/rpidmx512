@@ -42,6 +42,10 @@ typedef enum rawfb_pixel_layout {
 rawfb_pl;
 
 
+// footprint 
+#define MAX_MEMORY  (32 * MEGABYTE)
+
+
 /* All functions are thread-safe */
 NK_API struct rawfb_context *nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int h, const unsigned int pitch, const rawfb_pl pl);
 NK_API void                  nk_rawfb_render(const struct rawfb_context *rawfb, const struct nk_color clear, const unsigned char enable_clear);
@@ -867,12 +871,25 @@ nk_rawfb_init(void *fb, void *tex_mem, const unsigned int w, const unsigned int 
 	return NULL;
     }
 
-    if (0 == nk_init_default(&rawfb->ctx, 0)) {
+
+
+    
+      
+    if (0 == nk_init_fixed(&rawfb->ctx, malloc(MAX_MEMORY), MAX_MEMORY, nullptr/*&font*/)) {
 	free(rawfb);
 	return NULL;
     }
+    
+    struct nk_font_atlas atlas{};
+//	nk_font_atlas_init(&rawfb->atlas), &data->allocator);
+    
+    struct nk_allocator alloc;
+	alloc.userdata.ptr = 0;
+	alloc.alloc = malloc;
+	alloc.free = free();
+	nk_font_atlas_init( &( xu->fontAtlas ), &alloc );
 
-    nk_font_atlas_init_default(&rawfb->atlas);
+    //nk_font_atlas_init_default(&rawfb->atlas);
     nk_font_atlas_begin(&rawfb->atlas);
     tex = nk_font_atlas_bake(&rawfb->atlas, &rawfb->font_tex.w, &rawfb->font_tex.h, rawfb->font_tex.format);
     if (!tex) {

@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
-#include <string.h>
+#include "string.h"
 #include <assert.h>
 
 #include "hardware.h"
@@ -31,23 +31,26 @@ static const char SOFTWARE_VERSION[] = "0.0";
 #include "h3.h"
 #include "device/fb.h"
 
-#define NK_ASSERT
+//#define NK_ASSERT
 #define NK_INCLUDE_FIXED_TYPES
 //#define NK_INCLUDE_STANDARD_IO
 //#define NK_INCLUDE_STANDARD_VARARGS
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
+//#define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 #define NK_INCLUDE_SOFTWARE_FONT
 #define NK_RAWFB_IMPLEMENTATION
 
 #define NK_IMPLEMENTATION
+#define NK_ASSERT
+
 #include "../include/nuklear.h"
 #include "../include/nuklear_rawfb.h"
 
 
 extern "C" {
 extern int uart0_printf(const char* fmt, ...);
+
 #define printf uart0_printf
 extern void debug_dump(const void *packet, uint16_t len);
 }
