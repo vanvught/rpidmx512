@@ -45,13 +45,7 @@ HandlerTLC59711::HandlerTLC59711(TLC59711Dmx *pTLC59711Dmx):
 	DEBUG_EXIT
 }
 
-HandlerTLC59711::~HandlerTLC59711(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void HandlerTLC59711::Blackout(void) {
+void HandlerTLC59711::Blackout() {
 	DEBUG_ENTRY
 
 	m_pTLC59711Dmx->Blackout(true);
@@ -59,7 +53,7 @@ void HandlerTLC59711::Blackout(void) {
 	DEBUG_EXIT
 }
 
-void HandlerTLC59711::Update(void) {
+void HandlerTLC59711::Update() {
 	DEBUG_ENTRY
 
 	m_pTLC59711Dmx->Blackout(false);

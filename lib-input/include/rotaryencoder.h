@@ -34,8 +34,8 @@ public:
 	static constexpr uint8_t CW = 0x10;
 	static constexpr uint8_t CCW = 0x20;
 
-	RotaryEncoder(void);
-	~RotaryEncoder(void) {
+	RotaryEncoder();
+	~RotaryEncoder() {
 
 	}
 

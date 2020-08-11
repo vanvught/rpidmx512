@@ -26,8 +26,7 @@
 #ifndef TCNETPARAMSCONST_H_
 #define TCNETPARAMSCONST_H_
 
-class TCNetParamsConst {
-public:
+struct TCNetParamsConst {
 	static const char FILE_NAME[];
 
 	static const char NODE_NAME[];

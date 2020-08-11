@@ -39,11 +39,11 @@
 DmxSlotInfo::DmxSlotInfo(struct TLightSetSlotInfo *ptLightSetSlotInfo, uint32_t nSize):
 	m_ptLightSetSlotInfo(ptLightSetSlotInfo),
 	m_nSize(nSize),
-	m_pToString(0)
+	m_pToString(nullptr)
 {
 	DEBUG_ENTRY
 
-	assert(m_ptLightSetSlotInfo != 0);
+	assert(m_ptLightSetSlotInfo != nullptr);
 	assert(m_nSize != 0);
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
@@ -54,19 +54,19 @@ DmxSlotInfo::DmxSlotInfo(struct TLightSetSlotInfo *ptLightSetSlotInfo, uint32_t 
 	DEBUG_EXIT
 }
 
-DmxSlotInfo::~DmxSlotInfo(void) {
+DmxSlotInfo::~DmxSlotInfo() {
 	DEBUG_ENTRY
 
-	if (m_pToString != 0) {
+	if (m_pToString != nullptr) {
 		delete[] m_pToString;
-		m_pToString = 0;
+		m_pToString = nullptr;
 	}
 
 	DEBUG_EXIT
 }
 
 void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
-	assert(pString != 0);
+	assert(pString != nullptr);
 
 	char *pSlotInfoRaw = const_cast<char*>(pString);
 	nMask = 0;
@@ -76,7 +76,7 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 		bool isSet = false;
 		struct TLightSetSlotInfo tLightSetSlotInfo;
 
-		if (pSlotInfoRaw == 0) {
+		if (pSlotInfoRaw == nullptr) {
 			break;
 		}
 
@@ -93,9 +93,9 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 }
 
 const char *DmxSlotInfo::ToString(uint32_t nMask) {
-	if (m_pToString == 0) {
+	if (m_pToString == nullptr) {
 		m_pToString = new char[m_nSize * 7];
-		assert(m_pToString != 0);
+		assert(m_pToString != nullptr);
 
 		m_pToString[0] = '\0';
 	}
@@ -137,14 +137,14 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 	return m_pToString;
 }
 
-void DmxSlotInfo::Dump(void) {
+void DmxSlotInfo::Dump() {
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		printf("  Slot:%d %.2X:%.4X\n", i, m_ptLightSetSlotInfo[i].nType, m_ptLightSetSlotInfo[i].nCategory);
 	}
 }
 
 char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLightSetSlotInfo) {
-	assert(s != 0);
+	assert(s != nullptr);
 
 	char *b = s;
 	uint8_t i = 0;
@@ -152,12 +152,12 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 	uint16_t nTmp = 0;
 
 	while ((i < 2) && (*b != ':')) {
-		if (isxdigit(static_cast<int>(*b)) == 0) {
+		if (isxdigit(*b) == 0) {
 			isValid = false;
-			return 0;
+			return nullptr;
 		}
 
-		const uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
+		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;
@@ -165,7 +165,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 
 	if ((i != 2) && (*b != ':')) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	tLightSetSlotInfo.nType = nTmp;
@@ -176,12 +176,12 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 	b++;
 
 	while ((i < 4) && (*b != ',') && (*b != '\0')) {
-		if (isxdigit(static_cast<int>(*b)) == 0) {
+		if (isxdigit(*b) == 0) {
 			isValid = false;
-			return 0;
+			return nullptr;
 		}
 
-		const uint8_t nibble = *b > '9' ? (*b | 0x20) - 'a' + 10 : (*b - '0');
+		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
 		nTmp = (nTmp << 4) | nibble;
 		b++;
 		i++;
@@ -189,12 +189,12 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 
 	if (i != 4) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	if ((*b != ',') && (*b != ' ') && (*b != '\0')) {
 		isValid = false;
-		return 0;
+		return nullptr;
 	}
 
 	tLightSetSlotInfo.nCategory = nTmp;
@@ -202,7 +202,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLigh
 	isValid = true;
 
 	if (*b == '\0') {
-		return 0;
+		return nullptr;
 	}
 
 	return ++b;

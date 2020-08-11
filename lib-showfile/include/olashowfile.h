@@ -38,16 +38,15 @@ enum class OlaParseCode {
 	EOFILE
 };
 
-class OlaShowFile: public ShowFile {
+class OlaShowFile final: public ShowFile {
 public:
-	OlaShowFile(void);
-	~OlaShowFile(void);
+	OlaShowFile();
 
-	void ShowFileStart(void);
-	void ShowFileStop(void);
-	void ShowFileResume(void);
-	void ShowFileRun(void);
-	void ShowFilePrint(void) {
+	void ShowFileStart() override;
+	void ShowFileStop() override;
+	void ShowFileResume() override;
+	void ShowFileRun() override;
+	void ShowFilePrint() override {
 		puts("OlaShowFile");
 	}
 
@@ -58,19 +57,19 @@ private:
 		TIME_WAITING
 	};
 
-	OlaParseCode GetNextLine(void);
+	OlaParseCode GetNextLine();
 	OlaParseCode ParseLine(const char *pLine);
 	OlaParseCode ParseDmxData(const char *pLine);
 
 private:
-	OlaParseCode m_tParseCode = OlaParseCode::FAILED;
-	OlaState m_tState = OlaState::IDLE;
+	OlaParseCode m_tParseCode{OlaParseCode::FAILED};
+	OlaState m_tState{OlaState::IDLE};
 	char s_buffer[2048];
-	uint32_t m_nDelayMillis = 0;
-	uint32_t m_nLastMillis = 0;
-	uint32_t m_nUniverse = 0;
+	uint32_t m_nDelayMillis{0};
+	uint32_t m_nLastMillis{0};
+	uint32_t m_nUniverse{0};
 	uint8_t m_DmxData[512];
-	uint32_t m_nDmxDataLength = 0;
+	uint32_t m_nDmxDataLength{0};
 };
 
 #endif /* OLASHOWFILE_H_ */

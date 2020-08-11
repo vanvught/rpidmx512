@@ -2,7 +2,7 @@
  * @file vector.S
  *
  */
- /* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,13 @@
 .endm
 
 @ Standard definitions of Mode bits and Interrupt (I & F) flags in PSRs
-.set  MODE_USR, 0x10				@ User Mode
-.set  MODE_FIQ, 0x11				@ FIQ Mode
-.set  MODE_IRQ, 0x12				@ IRQ Mode
-.set  MODE_SVC, 0x13				@ Supervisor Mode
-.set  MODE_ABT, 0x17				@ Abort Mode
-.set  MODE_UND, 0x1B				@ Undefined Mode
-.set  MODE_SYS, 0x1F				@ System Mode
+.set  MODE_USR, 0x10			@ User Mode
+.set  MODE_FIQ, 0x11			@ FIQ Mode
+.set  MODE_IRQ, 0x12			@ IRQ Mode
+.set  MODE_SVC, 0x13			@ Supervisor Mode
+.set  MODE_ABT, 0x17			@ Abort Mode
+.set  MODE_UND, 0x1B			@ Undefined Mode
+.set  MODE_SYS, 0x1F			@ System Mode
 
 .set  I_BIT, 0x80				@ when I bit is set, IRQ is disabled
 .set  F_BIT, 0x40				@ when F bit is set, FIQ is disabled
@@ -93,6 +93,47 @@ reset:
     cpsid i
     cpsid f
 
+    @ ARM® Cortex™-A Series Version: 4.0 Programmer’s Guide
+    @ Example 13-3 Setting up caches, MMU and branch predictors
+
+    @ Disable MMU
+    mrc p15, 0, r1, c1, c0, 0
+    bic r1, r1, #0x1
+    mcr p15, 0, r1, c1, c0, 0
+
+    @ Disable L1 Caches
+    mrc p15, 0, r1, c1, c0, 0
+    bic r1, r1, #(0x1 << 12)	@ Disable I Cache
+    bic r1, r1, #(0x1 << 2)		@ Disable D Cache
+    mcr p15, 0, r1, c1, c0, 0
+
+    @ Invalidate L1 Caches
+    @ Invalidate Instruction cache
+    mov r1, #0
+    mcr p15, 0, r1, c7, c5, 0
+
+    @ Invalidate TLB
+    mcr p15, 0, r1, c8, c7, 0
+
+    @ Branch Prediction Enable
+    mov r1, #0
+    mrc p15, 0, r1, c1, c0, 0
+    orr r1, r1, #(0x1 << 11)	@ Global BP Enable bit
+    mcr p15, 0, r1, c1, c0, 0
+
+	@ Enable D-side Prefetch
+	mrc p15, 0, r1, c1, c0, 0
+	orr r1, r1, #(0x1 << 2)		@ Enable D-side prefetch
+	mcr p15, 0, r1, c1, c0, 0
+
+	@ Bit 2 is set by U-Boot
+    mrc p15, 0, r0, c1, c0, 0
+	bic r0, r0, #0x0002 		@ Allow misalignment (Bit 2)
+    mcr p15, 0, r0, c1, c0, 0
+
+	dsb
+	isb
+
     @ clear bss section
     mov   r0, #0
     ldr   r1, =__bss_start
@@ -102,25 +143,8 @@ reset:
     blo   4b
 
     bl vfp_init
-
-	@ Bit 2 is set by U-Boot
-    mrc p15, 0, r0, c1, c0, 0
-	bic r0,r0, #0x0002 			@ Allow misalignment (Bit 2)
-    mcr p15, 0, r0, c1, c0, 0
-
-#if defined ( NO_MMU )
-	@ start L1 chache
-	mrc p15, 0, r0, c1, c0, 0
-	orr r0,r0, #0x0004			@ Data Cache (Bit 3)
-	orr r0,r0, #0x0800			@ Branch Prediction (Bit 11)
-	orr r0,r0, #0x1000			@ Instruction Caches (Bit 12)
-	mcr p15, 0, r0, c1, c0, 0
-#else
 	bl mmu_enable
-#endif
-
     bl hardware_init
-
 #if defined ( NO_EMAC )
 	bl emac_shutdown
 #endif

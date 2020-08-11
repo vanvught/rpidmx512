@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,15 +53,17 @@ enum TLightSetOutputType {
 
 class LightSet {
 public:
-	LightSet(void);
-	virtual ~LightSet(void);
+	LightSet();
+	virtual ~LightSet() {
+	}
 
 	virtual void Start(uint8_t nPort)= 0;
 	virtual void Stop(uint8_t nPort)= 0;
 
 	virtual void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength)= 0;
 
-	virtual void Print(void);
+	virtual void Print() {
+	}
 
 	void SetLightSetDisplay(LightSetDisplay *pLightSetDisplay) {
 		DEBUG_ENTRY
@@ -71,20 +73,20 @@ public:
 
 	// RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	virtual uint16_t GetDmxStartAddress(void);
-	virtual uint16_t GetDmxFootprint(void);
+	virtual uint16_t GetDmxStartAddress();
+	virtual uint16_t GetDmxFootprint();
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
 
 	// WiFi solutions only
 	static const char *GetOutputType(TLightSetOutputType type);
 	static TLightSetOutputType GetOutputType(const char *sType);
 
-	static LightSet *Get(void) {
+	static LightSet *Get() {
 		return s_pThis;
 	}
 
 protected:
-	LightSetDisplay *m_pLightSetDisplay;
+	LightSetDisplay *m_pLightSetDisplay{nullptr};
 
 private:
 	static LightSet *s_pThis;

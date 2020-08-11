@@ -37,7 +37,7 @@
 
 #include "debug.h"
 
-void LLRPDevice::DumpCommon(void) {
+void LLRPDevice::DumpCommon() {
 #ifndef NDEBUG
 	struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
@@ -122,7 +122,7 @@ void LLRPDevice::DumpCommon(void) {
 #endif
 }
 
-void LLRPDevice::DumpLLRP(void) {
+void LLRPDevice::DumpLLRP() {
 	const struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
 	printf("SenderCID: ");

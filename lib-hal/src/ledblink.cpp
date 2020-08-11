@@ -38,10 +38,10 @@ enum tFreqMode {
 	FREQ_MODE_OFF_ON = 255
 };
 
-LedBlink *LedBlink::s_pThis = 0;
+LedBlink *LedBlink::s_pThis = nullptr;
 
-LedBlink::LedBlink(void) : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedBlinkDisplay(0) {
-	assert(s_pThis == 0);
+LedBlink::LedBlink() : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedBlinkDisplay(nullptr) {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 }
 
@@ -73,7 +73,7 @@ void LedBlink::SetMode(tLedBlinkMode Mode) {
 		break;
 	}
 
-	if (m_pLedBlinkDisplay != 0) {
+	if (m_pLedBlinkDisplay != nullptr) {
 		m_pLedBlinkDisplay->Print(m_tMode);
 	}
 

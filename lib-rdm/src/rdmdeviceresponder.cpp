@@ -62,7 +62,7 @@ static constexpr char LANGUAGE[2] = { 'e', 'n' };
  static constexpr char DEVICE_LABEL[] = "RDM Responder";
 #endif
 
-RDMDeviceResponder *RDMDeviceResponder::s_pThis = 0;
+RDMDeviceResponder *RDMDeviceResponder::s_pThis = nullptr;
 
 RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 		m_pRDMPersonality(pRDMPersonality),
@@ -71,11 +71,11 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 		m_nCheckSum(0),
 		m_nDmxStartAddressFactoryDefault(DMX_START_ADDRESS_DEFAULT),
 		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY),
-		m_pRDMFactoryDefaults(0)
+		m_pRDMFactoryDefaults(nullptr)
 {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_aLanguage[0] = LANGUAGE[0];
@@ -98,7 +98,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	DEBUG_EXIT
 }
 
-void RDMDeviceResponder::Init(void) {
+void RDMDeviceResponder::Init() {
 	DEBUG_ENTRY
 
 	RDMDevice::Init();
@@ -123,7 +123,7 @@ void RDMDeviceResponder::Init(void) {
 	m_tRDMDeviceInfo.dmx_start_address[0] = (m_nDmxStartAddressFactoryDefault >> 8);
 	m_tRDMDeviceInfo.dmx_start_address[1] = m_nDmxStartAddressFactoryDefault;
 	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
-	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == 0 ? 0 : 1;
+	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == nullptr ? 0 : 1;
 	m_tRDMDeviceInfo.sub_device_count[0] = (nSubDevices >> 8);
 	m_tRDMDeviceInfo.sub_device_count[1] = nSubDevices;
 	m_tRDMDeviceInfo.sensor_count = m_RDMSensors.GetCount();
@@ -171,7 +171,7 @@ uint8_t RDMDeviceResponder::GetPersonalityCount(uint16_t nSubDevice) {
 		return m_RDMSubDevices.GetPersonalityCount(nSubDevice);
 	}
 
-	return m_pRDMPersonality == 0 ? 0 : 1;
+	return m_pRDMPersonality == nullptr ? 0 : 1;
 }
 
 uint8_t RDMDeviceResponder::GetPersonalityCurrent(uint16_t nSubDevice) {
@@ -211,7 +211,7 @@ struct TRDMDeviceInfo* RDMDeviceResponder::GetDeviceInfo(uint16_t nSubDevice) {
 	if (nSubDevice != RDM_ROOT_DEVICE) {
 		const struct TRDMSubDevicesInfo *sub_device_info = m_RDMSubDevices.GetInfo(nSubDevice);
 
-		if (sub_device_info != 0) {
+		if (sub_device_info != nullptr) {
 			m_tRDMSubDeviceInfo.dmx_footprint[0] = (sub_device_info->dmx_footprint >> 8);
 			m_tRDMSubDeviceInfo.dmx_footprint[1] = sub_device_info->dmx_footprint;
 			m_tRDMSubDeviceInfo.current_personality = sub_device_info->current_personality;
@@ -260,14 +260,14 @@ void RDMDeviceResponder::SetLanguage(const char aLanguage[2]) {
 	m_aLanguage[1] = aLanguage[1];
 }
 
-uint16_t RDMDeviceResponder::CalculateChecksum(void) {
+uint16_t RDMDeviceResponder::CalculateChecksum() {
 	uint16_t nChecksum = (m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1];
 	nChecksum += m_tRDMDeviceInfo.current_personality;
 
 	return nChecksum;
 }
 
-bool RDMDeviceResponder::GetFactoryDefaults(void) {
+bool RDMDeviceResponder::GetFactoryDefaults() {
 	if (m_IsFactoryDefaults) {
 		if (!RDMDevice::GetFactoryDefaults()) {
 			m_IsFactoryDefaults = false;
@@ -288,7 +288,7 @@ bool RDMDeviceResponder::GetFactoryDefaults(void) {
 	return m_IsFactoryDefaults;
 }
 
-void RDMDeviceResponder::SetFactoryDefaults(void) {
+void RDMDeviceResponder::SetFactoryDefaults() {
 	DEBUG_ENTRY
 
 	RDMDevice::SetFactoryDefaults();
@@ -302,7 +302,7 @@ void RDMDeviceResponder::SetFactoryDefaults(void) {
 
 	m_IsFactoryDefaults = true;
 
-	if (m_pRDMFactoryDefaults != 0) {
+	if (m_pRDMFactoryDefaults != nullptr) {
 		DEBUG_PUTS("");
 		m_pRDMFactoryDefaults->Set();
 	}

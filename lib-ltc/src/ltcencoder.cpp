@@ -95,19 +95,19 @@ struct TTable {
 LtcEncoder *LtcEncoder::s_pThis = nullptr;
 
 LtcEncoder::LtcEncoder():
-	m_pLtcBits(0),
-	m_pBuffer(0),
+	m_pLtcBits(nullptr),
+	m_pBuffer(nullptr),
 	m_nBufferSize(SAMPLE_RATE / 24),	// Max buffer size
 	m_nType(0xFF)						// Invalid to force action
 {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_pLtcBits = new uint8_t[sizeof (struct TLtcFormatTemplate)];
-	assert(m_pLtcBits != 0);
+	assert(m_pLtcBits != nullptr);
 
 	m_pBuffer = new int16_t[m_nBufferSize];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	DEBUG_PRINTF("m_pBuffer=%p", reinterpret_cast<void *>(m_pBuffer));
 
@@ -122,10 +122,10 @@ LtcEncoder::LtcEncoder():
 
 LtcEncoder::~LtcEncoder() {
 	delete [] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 
 	delete [] m_pLtcBits;
-	m_pLtcBits = 0;
+	m_pLtcBits = nullptr;
 }
 
 void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock) {

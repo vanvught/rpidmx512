@@ -28,63 +28,62 @@
 
 #include "serial.h"
 
-#include "debug.h"
+using namespace serial;
 
-constexpr char aType[static_cast<int>(SerialType::UNDEFINED)][5] = { "uart", "spi", "i2c" };
-constexpr char aUartParity[static_cast<int>(SerialUartParity::UNDEFINED)][5] = { "none", "odd", "even" };
-constexpr char aI2cSpeed[static_cast<int>(SerialI2cSpeedMode::UNDEFINED)][9] = { "standard", "fast" };
+constexpr char aType[type::UNDEFINED][5] = { "uart", "spi", "i2c" };
+constexpr char aUartParity[uart::parity::UNDEFINED][5] = { "none", "odd", "even" };
+constexpr char aI2cSpeed[i2c::speed::UNDEFINED][9] = { "standard", "fast" };
 
-const char *Serial::GetType(SerialType tType) {
-	if (tType < SerialType::UNDEFINED) {
-		return aType[static_cast<int>(tType)];
+const char* Serial::GetType(type tType) {
+	if (tType < type::UNDEFINED) {
+		return aType[tType];
 	}
 
 	return "Undefined";
 }
 
-SerialType Serial::GetType(const char *pType) {
-	for (uint32_t i = 0; i < sizeof(aType) / sizeof(aType[0]); i++) {
+type Serial::GetType(const char *pType) {
+	for (uint32_t i = 0; i < type::UNDEFINED; i++) {
 		if (strcasecmp(aType[i], pType) == 0) {
-			return static_cast<SerialType>(i);
+			return static_cast<type>(i);
 		}
 	}
 
-	return SerialType::UART;
+	return type::UART;
 }
 
-const char *Serial::GetUartParity(SerialUartParity tParity) {
-	if (tParity < SerialUartParity::UNDEFINED) {
-		return aUartParity[static_cast<int>(tParity)];
+const char* Serial::GetUartParity(uart::parity tParity) {
+	if (tParity < uart::parity::UNDEFINED) {
+		return aUartParity[tParity];
 	}
 
 	return "Undefined";
 }
 
-SerialUartParity Serial::GetUartParity(const char *pParity) {
-	for (uint32_t i = 0; i < sizeof(aUartParity) / sizeof(aUartParity[0]); i++) {
+uart::parity Serial::GetUartParity(const char *pParity) {
+	for (uint32_t i = 0; i < uart::parity::UNDEFINED; i++) {
 		if (strcasecmp(aUartParity[i], pParity) == 0) {
-			return static_cast<SerialUartParity>(i);
+			return static_cast<uart::parity>(i);
 		}
 	}
 
-	return SerialUartParity::NONE;
+	return uart::parity::NONE;
 }
 
-const char *Serial::GetI2cSpeed(SerialI2cSpeedMode tSpeed) {
-	if (tSpeed < SerialI2cSpeedMode::UNDEFINED) {
-		return aI2cSpeed[static_cast<int>(tSpeed)];
+const char* Serial::GetI2cSpeed(i2c::speed tSpeed) {
+	if (tSpeed < i2c::speed::UNDEFINED) {
+		return aI2cSpeed[tSpeed];
 	}
 
 	return "Undefined";
-
 }
 
-SerialI2cSpeedMode Serial::GetI2cSpeed(const char *pSpeed) {
-	for (uint32_t i = 0; i < sizeof(aI2cSpeed) / sizeof(aI2cSpeed[0]); i++) {
+i2c::speed Serial::GetI2cSpeed(const char *pSpeed) {
+	for (uint32_t i = 0; i < i2c::speed::UNDEFINED; i++) {
 		if (strcasecmp(aI2cSpeed[i], pSpeed) == 0) {
-			return static_cast<SerialI2cSpeedMode>(i);
+			return static_cast<i2c::speed>(i);
 		}
 	}
 
-	return SerialI2cSpeedMode::FAST;
+	return i2c::speed::FAST;
 }

@@ -33,7 +33,7 @@
 
 class ArtNetRdm {
 public:
-	virtual ~ArtNetRdm(void) {}
+	virtual ~ArtNetRdm() {}
 
 	virtual void Full(uint8_t nPort)=0;
 	virtual uint8_t GetUidCount(uint8_t nPort)=0;

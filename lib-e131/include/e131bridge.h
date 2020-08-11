@@ -96,14 +96,14 @@ struct TE131InputPort {
 
 class E131Bridge {
 public:
-	E131Bridge(void);
-	~E131Bridge(void);
+	E131Bridge();
+	~E131Bridge();
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
 
-	const uint8_t *GetSoftwareVersion(void);
+	const uint8_t *GetSoftwareVersion();
 
 	void SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse);
 	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir = E131_OUTPUT_PORT) const;
@@ -111,50 +111,50 @@ public:
 	void SetMergeMode(uint8_t nPortIndex, E131Merge tE131Merge);
 	E131Merge GetMergeMode(uint8_t nPortIndex) const;
 
-	uint8_t GetActiveOutputPorts(void) {
+	uint8_t GetActiveOutputPorts() {
 		return m_State.nActiveOutputPorts;
 	}
 
-	uint8_t GetActiveInputPorts(void) {
+	uint8_t GetActiveInputPorts() {
 		return m_State.nActiveInputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	bool GetDirectUpdate(void) {
+	bool GetDirectUpdate() {
 		return m_bDirectUpdate;
 	}
 
 	bool IsTransmitting(uint8_t nPortIndex) const;
 	bool IsMerging(uint8_t nPortIndex) const;
-	bool IsStatusChanged(void);
+	bool IsStatusChanged();
 
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
 		m_State.bDisableNetworkDataLossTimeout = bDisable;
 	}
-	bool GetDisableNetworkDataLossTimeout(void) {
+	bool GetDisableNetworkDataLossTimeout() {
 		return m_State.bDisableNetworkDataLossTimeout;
 	}
 
 	void SetDisableMergeTimeout(bool bDisable = true) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-	bool GetDisableMergeTimeout(void) {
+	bool GetDisableMergeTimeout() {
 		return m_State.bDisableMergeTimeout;
 	}
 
 	void SetEnableDataIndicator(bool bEnable = true) {
 		m_bEnableDataIndicator = bEnable;
 	}
-	bool GetEnableDataIndicator(void) {
+	bool GetEnableDataIndicator() {
 		return m_bEnableDataIndicator;
 	}
 
 	void SetDisableSynchronize(bool bDisableSynchronize = false) {
 		m_State.bDisableSynchronize = bDisableSynchronize;
 	}
-	bool GetDisableSynchronize(void) {
+	bool GetDisableSynchronize() {
 		return m_State.bDisableSynchronize;
 	}
 
@@ -166,12 +166,12 @@ public:
 		m_pE131Sync = pE131Sync;
 	}
 
-	const uint8_t *GetCid(void) {
+	const uint8_t *GetCid() {
 		return m_Cid;
 	}
 
 	void SetSourceName(const char *pSourceName);
-	const char *GetSourceName(void) {
+	const char *GetSourceName() {
 		return m_SourceName;
 	}
 
@@ -188,16 +188,16 @@ public:
 
 	void Clear(uint8_t nPortIndex);
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
 private:
-	bool IsValidRoot(void);
-	bool IsValidDataPacket(void);
+	bool IsValidRoot();
+	bool IsValidDataPacket();
 
 	void SetNetworkDataLossCondition(bool bSourceA = true, bool bSourceB = true);
 
@@ -209,17 +209,17 @@ private:
 	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
 	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
 
-	void HandleDmx(void);
-	void HandleSynchronization(void);
+	void HandleDmx();
+	void HandleSynchronization();
 
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
 	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
 
 	// Input
-	void HandleDmxIn(void);
-	void FillDataPacket(void);
-	void FillDiscoveryPacket(void);
-	void SendDiscoveryPacket(void);
+	void HandleDmxIn();
+	void FillDataPacket();
+	void FillDiscoveryPacket();
+	void SendDiscoveryPacket();
 
 private:
 	int32_t m_nHandle;
@@ -249,7 +249,7 @@ private:
 	E131Sync *m_pE131Sync;
 
 public:
-	static E131Bridge* Get(void) {
+	static E131Bridge* Get() {
 		return s_pThis;
 	}
 

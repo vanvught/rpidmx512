@@ -49,18 +49,18 @@ struct TArtNetController {
 
 class ArtNetController: public ArtNetPollTable {
 public:
-	ArtNetController(void);
-	~ArtNetController(void);
+	ArtNetController();
+	~ArtNetController();
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength, uint8_t nPortIndex = 0);
-	void HandleSync(void);
-	void HandleBlackout(void);
+	void HandleSync();
+	void HandleBlackout();
 
 	void SetRunTableCleanup(bool bDoTableCleanup) {
 		m_bDoTableCleanup = bDoTableCleanup;
@@ -69,14 +69,14 @@ public:
 	void SetSynchronization(bool bSynchronization) {
 		m_bSynchronization = bSynchronization;
 	}
-	bool GetSynchronization(void) {
+	bool GetSynchronization() {
 		return m_bSynchronization;
 	}
 
 	void SetUnicast(bool bUnicast) {
 		m_bUnicast = bUnicast;
 	}
-	bool GetUnicast(void) {
+	bool GetUnicast() {
 		return m_bUnicast;
 	}
 
@@ -87,7 +87,7 @@ public:
 			m_nMaster = DMX_MAX_VALUE;
 		}
 	}
-	uint32_t GetMaster(void) {
+	uint32_t GetMaster() {
 		return m_nMaster;
 	}
 
@@ -95,18 +95,18 @@ public:
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
-	ArtNetTrigger *GetArtNetTrigger(void) {
+	ArtNetTrigger *GetArtNetTrigger() {
 		return m_pArtNetTrigger;
 	}
 
-	const uint8_t *GetSoftwareVersion(void);
+	const uint8_t *GetSoftwareVersion();
 
 private:
-	void HandlePoll(void);
-	void HandlePollReply(void);
-	void HandleTrigger(void);
+	void HandlePoll();
+	void HandlePollReply();
+	void HandleTrigger();
 	void ActiveUniversesAdd(uint16_t nUniverse);
-	void ActiveUniversesClear(void);
+	void ActiveUniversesClear();
 
 private:
 	struct TArtNetController m_tArtNetController;
@@ -125,7 +125,7 @@ private:
 	uint32_t m_nMaster;
 
 public:
-	static ArtNetController *Get(void) {
+	static ArtNetController *Get() {
 		return s_pThis;
 	}
 

@@ -46,7 +46,7 @@ bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileN
 bool DmxSerial::CheckFileName(const char *pFileName, int16_t &nFileNumber) {
 	DEBUG_PRINTF("pFileName=[%s]", pFileName);
 
-	if ((pFileName == 0) || (strlen(pFileName) != DmxSerialFile::NAME_LENGTH)) {
+	if ((pFileName == nullptr) || (strlen(pFileName) != DmxSerialFile::NAME_LENGTH)) {
 		DEBUG_EXIT
 		return false;
 	}

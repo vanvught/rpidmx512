@@ -55,20 +55,20 @@ extern void udelay(uint32_t);
 
 #define BW_LCD_I2C_BYTE_WAIT_US	37
 
-LcdBw::LcdBw(void): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
+LcdBw::LcdBw(): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED) {
 }
 
-LcdBw::LcdBw(uint8_t nCols, uint8_t nRows): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
+LcdBw::LcdBw(uint8_t nCols, uint8_t nRows): m_I2C(BW_LCD_DEFAULT_SLAVE_ADDRESS, hal::i2c::NORMAL_SPEED) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 }
 
-LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_I2C((nSlaveAddress == 0 ? BW_LCD_DEFAULT_SLAVE_ADDRESS : nSlaveAddress >> 1), hal::i2c::NORMAL_SPEED), m_nWriteMicros(0) {
+LcdBw::LcdBw(uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows): m_I2C((nSlaveAddress == 0 ? BW_LCD_DEFAULT_SLAVE_ADDRESS : nSlaveAddress >> 1), hal::i2c::NORMAL_SPEED) {
 	m_nCols = nCols;
 	m_nRows = nRows;
 }
 
-bool LcdBw::Start(void) {
+bool LcdBw::Start() {
 	if (!m_I2C.IsConnected()) {
 		return false;
 	}
@@ -76,7 +76,7 @@ bool LcdBw::Start(void) {
 	return true;
 }
 
-void LcdBw::Cls(void) {
+void LcdBw::Cls() {
 	char cmd[] = { BW_PORT_WRITE_CLEAR_SCREEN, ' ' };
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
@@ -161,8 +161,10 @@ void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 	Write(data, static_cast<uint32_t>(m_nCols + 1));
 }
 
+#if defined(ENABLE_CURSOR_MODE)
 void LcdBw::SetCursor(__attribute__((unused))const uint32_t constEnumTCursorOnOff) {
 }
+#endif
 
 void LcdBw::Write(const char *buffer, uint32_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;

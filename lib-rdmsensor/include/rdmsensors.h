@@ -32,16 +32,16 @@
 #include "rdmsensorsconst.h"
 
 #if defined (RASPPI) || defined(BARE_METAL)
- #define RDM_SENSORS_ENABLE
+# define RDM_SENSORS_ENABLE
 #endif
 
 #if !defined (__CYGWIN__) && !defined (__APPLE__)
- #define RDMSENSOR_CPU_ENABLE
+# define RDMSENSOR_CPU_ENABLE
 #endif
 
 #if defined (RDMNET_LLRP_ONLY)
- #undef RDM_SENSORS_ENABLE
- #undef RDMSENSOR_CPU_ENABLE
+# undef RDM_SENSORS_ENABLE
+# undef RDMSENSOR_CPU_ENABLE
 #endif
 
 namespace rdm {

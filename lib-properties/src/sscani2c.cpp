@@ -86,7 +86,7 @@ Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength,
 		return Sscan::VALUE_ERROR;
 	}
 
-	const uint8_t uint8 = static_cast<uint8_t>(*b - '0');
+	const auto uint8 = static_cast<uint8_t>(*b - '0');
 
 	if (uint8 > 7) {
 		return Sscan::VALUE_ERROR;

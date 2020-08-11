@@ -46,26 +46,26 @@
 
 static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 18 };
 
-E131Bridge *E131Bridge::s_pThis = 0;
+E131Bridge *E131Bridge::s_pThis = nullptr;
 
-E131Bridge::E131Bridge(void) :
+E131Bridge::E131Bridge() :
 	m_nHandle(-1),
-	m_pLightSet(0),
+	m_pLightSet(nullptr),
 	m_bDirectUpdate(false),
 	m_bEnableDataIndicator(true),
 	m_nCurrentPacketMillis(0),
 	m_nPreviousPacketMillis(0),
-	m_pE131DmxIn(0),
-	m_pE131DataPacket(0),
-	m_pE131DiscoveryPacket(0),
+	m_pE131DmxIn(nullptr),
+	m_pE131DataPacket(nullptr),
+	m_pE131DiscoveryPacket(nullptr),
 	m_DiscoveryIpAddress(0),
-	m_pE131Sync(0)
+	m_pE131Sync(nullptr)
 {
-	assert(Hardware::Get() != 0);
-	assert(Network::Get() != 0);
-	assert(LedBlink::Get() != 0);
+	assert(Hardware::Get() != nullptr);
+	assert(Network::Get() != nullptr);
+	assert(LedBlink::Get() != nullptr);
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
@@ -94,23 +94,23 @@ E131Bridge::E131Bridge(void) :
 	e131UUID.GetHardwareUuid(m_Cid);
 }
 
-E131Bridge::~E131Bridge(void) {
+E131Bridge::~E131Bridge() {
 	Stop();
 }
 
-void E131Bridge::Start(void) {
-	if (m_pE131DmxIn != 0) {
-		if (m_pE131DataPacket == 0) {
+void E131Bridge::Start() {
+	if (m_pE131DmxIn != nullptr) {
+		if (m_pE131DataPacket == nullptr) {
 			struct in_addr addr;
 			static_cast<void>(inet_aton("239.255.0.0", &addr));
 			m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
 			// TE131DataPacket
 			m_pE131DataPacket = new struct TE131DataPacket;
-			assert(m_pE131DataPacket != 0);
+			assert(m_pE131DataPacket != nullptr);
 			FillDataPacket();
 			// TE131DiscoveryPacket
 			m_pE131DiscoveryPacket = new struct TE131DiscoveryPacket;
-			assert(m_pE131DiscoveryPacket != 0);
+			assert(m_pE131DiscoveryPacket != nullptr);
 			FillDiscoveryPacket();
 		}
 		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
@@ -123,10 +123,10 @@ void E131Bridge::Start(void) {
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 }
 
-void E131Bridge::Stop(void) {
+void E131Bridge::Stop() {
 	m_State.IsNetworkDataLoss = true;
 
-	if (m_pLightSet != 0) {
+	if (m_pLightSet != nullptr) {
 		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
 			m_pLightSet->Stop(i);
 			m_OutputPort[i].length = 0;
@@ -134,7 +134,7 @@ void E131Bridge::Stop(void) {
 		}
 	}
 
-	if (m_pE131DmxIn != 0) {
+	if (m_pE131DmxIn != nullptr) {
 		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Stop(nPortIndex);
@@ -145,12 +145,12 @@ void E131Bridge::Stop(void) {
 	LedBlink::Get()->SetMode(LEDBLINK_MODE_OFF_OFF);
 }
 
-const uint8_t *E131Bridge::GetSoftwareVersion(void) {
+const uint8_t *E131Bridge::GetSoftwareVersion() {
 	return SOFTWARE_VERSION;
 }
 
 void E131Bridge::SetSourceName(const char *pSourceName) {
-	assert(pSourceName != 0);
+	assert(pSourceName != nullptr);
 	//TODO https://gcc.gnu.org/bugzilla/show_bug.cgi?id=88780
 #if (__GNUC__ > 8)
 # pragma GCC diagnostic push
@@ -167,7 +167,7 @@ uint32_t E131Bridge::UniverseToMulticastIp(uint16_t nUniverse) const {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
 
-	const uint32_t nMulticastIp = group_ip.s_addr | ((nUniverse & static_cast<uint32_t>(0xFF)) << 24) | ((nUniverse & 0xFF00) << 8);
+	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
 
 	DEBUG_PRINTF(IPSTR, IP2STR(nMulticastIp));
 
@@ -323,7 +323,7 @@ E131Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
 
 bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
 	assert(nPortIndex < E131_MAX_PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 
 	bool isChanged = false;
 
@@ -352,7 +352,7 @@ bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint
 
 bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
 	assert(nPortIndex < E131_MAX_PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 
 	bool isChanged = false;
 
@@ -457,7 +457,7 @@ bool E131Bridge::isIpCidMatch(const struct TSource *source) {
 	return true;
 }
 
-void E131Bridge::HandleDmx(void) {
+void E131Bridge::HandleDmx() {
 	const uint8_t *p = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
 	const uint16_t slots = __builtin_bswap16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - 1;
 
@@ -490,13 +490,13 @@ void E131Bridge::HandleDmx(void) {
 		// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
 		// the packet containing sequence number B shall be deemed out of sequence and discarded
 		if (isSourceA) {
-			const int8_t diff = (m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceA->sequenceNumberData);
+			const auto diff = static_cast<int8_t>(m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceA->sequenceNumberData);
 			pSourceA->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			if ((diff <= 0) && (diff > -20)) {
 				continue;
 			}
 		} else if (isSourceB) {
-			const int8_t diff = (m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceB->sequenceNumberData);
+			const auto diff = static_cast<int8_t>(m_E131.E131Packet.Data.FrameLayer.SequenceNumber - pSourceB->sequenceNumberData);
 			pSourceB->sequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			if ((diff <= 0) && (diff > -20)) {
 				continue;
@@ -653,7 +653,7 @@ void E131Bridge::HandleDmx(void) {
 	}
 }
 
-void E131Bridge::HandleSynchronization(void) {
+void E131Bridge::HandleSynchronization() {
 	// 6.3.3.1 Synchronization Address Usage in an E1.31 Synchronization Packet
 	// Receivers may ignore Synchronization Packets sent to multicast addresses
 	// which do not correspond to their Synchronization Address.
@@ -685,7 +685,7 @@ void E131Bridge::HandleSynchronization(void) {
 		}
 	}
 
-	if (m_pE131Sync != 0) {
+	if (m_pE131Sync != nullptr) {
 		m_pE131Sync->Handler();
 	}
 }
@@ -759,7 +759,7 @@ bool E131Bridge::IsMerging(uint8_t nPortIndex) const {
 	return m_OutputPort[nPortIndex].IsMerging;
 }
 
-bool E131Bridge::IsStatusChanged(void) {
+bool E131Bridge::IsStatusChanged() {
 	if (m_State.IsChanged) {
 		m_State.IsChanged = false;
 		return true;
@@ -789,7 +789,7 @@ void E131Bridge::Clear(uint8_t nPortIndex) {
 	m_State.IsNetworkDataLoss = false; // Force timeout
 }
 
-bool E131Bridge::IsValidRoot(void) {
+bool E131Bridge::IsValidRoot() {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
 	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, E117_PACKET_IDENTIFIER_LENGTH) != 0) {
@@ -804,7 +804,7 @@ bool E131Bridge::IsValidRoot(void) {
 	return true;
 }
 
-bool E131Bridge::IsValidDataPacket(void) {
+bool E131Bridge::IsValidDataPacket() {
 	// DMP layer
 
 	// The DMP Layer's Vector shall be set to 0x02, which indicates a DMP Set Property message by
@@ -834,7 +834,7 @@ bool E131Bridge::IsValidDataPacket(void) {
 	return true;
 }
 
-void E131Bridge::Run(void) {
+void E131Bridge::Run() {
 	uint16_t nForeignPort;
 
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_E131.E131Packet, sizeof(m_E131.E131Packet), &m_E131.IPAddressFrom, &nForeignPort) ;
@@ -859,7 +859,7 @@ void E131Bridge::Run(void) {
 			}
 		}
 
-		if (m_pE131DmxIn != 0) {
+		if (m_pE131DmxIn != nullptr) {
 			HandleDmxIn();
 			SendDiscoveryPacket();
 
@@ -904,7 +904,7 @@ void E131Bridge::Run(void) {
 		DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
 	}
 
-	if (m_pE131DmxIn != 0) {
+	if (m_pE131DmxIn != nullptr) {
 		HandleDmxIn();
 		SendDiscoveryPacket();
 	}

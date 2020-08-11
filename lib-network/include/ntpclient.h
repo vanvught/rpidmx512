@@ -40,7 +40,7 @@ enum class NtpClientStatus {
 
 class NtpClientDisplay {
 public:
-	virtual ~NtpClientDisplay(void) {
+	virtual ~NtpClientDisplay() {
 	}
 
 	virtual void ShowNtpClientStatus(NtpClientStatus nStatus)=0;
@@ -49,19 +49,22 @@ public:
 class NtpClient {
 public:
 	NtpClient(uint32_t nServerIp = 0);
-	~NtpClient(void);
 
-	void Init(void);
-	void Run(void);
+	void Init();
+	void Run();
 
-	void Print(void);
+	void Print();
 
-	NtpClientStatus GetStatus(void) {
+	NtpClientStatus GetStatus() {
 		return m_tStatus;
 	}
 
 	void SetNtpClientDisplay(NtpClientDisplay *pNtpClientDisplay) {
 		m_pNtpClientDisplay = pNtpClientDisplay;
+	}
+
+	static NtpClient *Get() {
+		return s_pThis;
 	}
 
 private:
@@ -70,15 +73,17 @@ private:
 private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
-	int32_t m_nHandle;
-	NtpClientStatus m_tStatus;
+	int32_t m_nHandle{-1};
+	NtpClientStatus m_tStatus{NtpClientStatus::STOPPED};
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
-	time_t m_InitTime;
-	uint32_t m_MillisRequest;
-	uint32_t m_MillisLastPoll;
+	time_t m_InitTime{0};
+	uint32_t m_MillisRequest{0};
+	uint32_t m_MillisLastPoll{0};
 
-	NtpClientDisplay *m_pNtpClientDisplay = 0;
+	NtpClientDisplay *m_pNtpClientDisplay = nullptr;
+
+	static NtpClient *s_pThis;
 };
 
 #endif /* NTPCLIENT_H_ */

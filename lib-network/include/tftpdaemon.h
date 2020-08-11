@@ -35,26 +35,26 @@ enum class TFTPMode {
 
 class TFTPDaemon {
 public:
-	TFTPDaemon(void);
-	virtual ~TFTPDaemon(void);
+	TFTPDaemon();
+	virtual ~TFTPDaemon();
 
-	bool Run(void);
+	bool Run();
 
 	virtual bool FileOpen(const char *pFileName, TFTPMode tMode)=0;
 	virtual bool FileCreate(const char *pFileName, TFTPMode tMode)=0;
-	virtual bool FileClose(void)=0;
+	virtual bool FileClose()=0;
 	virtual size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 	virtual size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 
-	virtual void Exit(void)=0;
+	virtual void Exit()=0;
 
 private:
-	void HandleRequest(void);
-	void HandleRecvAck(void);
-	void HandleRecvData(void);
+	void HandleRequest();
+	void HandleRecvAck();
+	void HandleRecvData();
 	void SendError (uint16_t usErrorCode, const char *pErrorMessage);
-	void DoRead(void);
-	void DoWriteAck(void);
+	void DoRead();
+	void DoWriteAck();
 
 private:
 	enum class TFTPState {
@@ -76,7 +76,7 @@ private:
 	uint16_t m_nPacketLength;
 	bool m_bIsLastBlock;
 
-	static TFTPDaemon* Get(void) {
+	static TFTPDaemon* Get() {
 		return s_pThis;
 	}
 

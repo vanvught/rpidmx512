@@ -50,7 +50,7 @@ struct TArtNetTrigger {
 
 class ArtNetTrigger {
 public:
-	virtual ~ArtNetTrigger(void) {}
+	virtual ~ArtNetTrigger() {}
 
 	virtual void Handler(const struct TArtNetTrigger *ptArtNetTrigger)= 0;
 };

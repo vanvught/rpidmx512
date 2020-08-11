@@ -34,8 +34,8 @@ class CpuTemperature: public RDMSensor {
 public:
 	CpuTemperature(uint8_t nSensor);
 
-	bool Initialize();
-	int16_t GetValue();
+	bool Initialize() override;
+	int16_t GetValue() override;
 };
 
 #endif /* CPUTEMPERATURE_H_ */

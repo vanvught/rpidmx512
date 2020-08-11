@@ -51,9 +51,9 @@ struct TArtNetNodeEntryUniverse {
 
 struct TArtNetNodeEntry {
 	uint32_t IPAddress;
-	uint8_t Mac[ARTNET_MAC_SIZE];
-	uint8_t ShortName[artnet::SHORT_NAME_LENGTH];
-	uint8_t LongName[artnet::LONG_NAME_LENGTH];
+	uint8_t Mac[ArtNet::MAC_SIZE];
+	uint8_t ShortName[ArtNet::SHORT_NAME_LENGTH];
+	uint8_t LongName[ArtNet::LONG_NAME_LENGTH];
 	uint32_t nUniversesCount;
 	struct TArtNetNodeEntryUniverse Universe[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES];
 };
@@ -72,20 +72,20 @@ struct TArtNetPollTableClean {
 
 class ArtNetPollTable {
 public:
-	ArtNetPollTable(void);
-	~ArtNetPollTable(void);
+	ArtNetPollTable();
+	~ArtNetPollTable();
 
-	uint32_t GetEntries(void) {
+	uint32_t GetEntries() {
 		return m_nPollTableEntries;
 	}
 
 	void Add(const struct TArtPollReply *ptArtPollReply);
-	void Clean(void);
+	void Clean();
 
 	const struct TArtNetPollTableUniverses *GetIpAddress(uint16_t nUniverse);
 
-	void Dump(void);
-	void DumpTableUniverses(void);
+	void Dump();
+	void DumpTableUniverses();
 
 private:
 	uint16_t MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse);

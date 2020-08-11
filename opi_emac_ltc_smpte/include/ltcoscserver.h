@@ -55,11 +55,11 @@ private:
 
 private:
 	uint16_t m_nPortIncoming;
-	int32_t m_nHandle;
-	uint32_t m_nRemoteIp;
-	uint16_t m_nRemotePort;
+	int32_t m_nHandle{-1};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
 	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
-	uint32_t m_nPathLength;
+	uint32_t m_nPathLength{0};
 	char *m_pBuffer;
 };
 

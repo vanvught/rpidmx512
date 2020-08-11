@@ -99,6 +99,11 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+// UART0 shell
+#if defined ( ENABLE_SHELL )
+# include <h3/shell.h>
+#endif
+
 extern "C" {
 
 void notmain(void) {
@@ -107,6 +112,9 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+#if defined ( ENABLE_SHELL)
+	Shell shell;
+#endif
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -201,6 +209,10 @@ void notmain(void) {
 	/**
 	 * From here work with source selection
 	 */
+
+#if defined ( ENABLE_SHELL )
+	shell.SetSource(ltcSource);
+#endif
 
 	Reboot reboot(ltcSource);
 	hw.SetRebootHandler(&reboot);
@@ -480,6 +492,10 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+		//
+#if defined ( ENABLE_SHELL )
+		shell.Run();
+#endif
 	}
 }
 

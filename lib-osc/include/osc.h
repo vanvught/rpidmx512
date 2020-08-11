@@ -83,7 +83,7 @@ int lo_pattern_match(const char *, const char *);
 class OSC {
 public:
 	 static char *GetPath(void *pPath, unsigned nSize) {
-		return (OSCString::Validate(pPath, nSize) >= 4) ? reinterpret_cast<char *>(pPath) : 0;
+		return (OSCString::Validate(pPath, nSize) >= 4) ? reinterpret_cast<char *>(pPath) : nullptr;
 	}
 
 	 static bool isMatch(const char *str, const char *p) {

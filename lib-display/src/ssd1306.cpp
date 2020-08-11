@@ -200,11 +200,11 @@ static const uint8_t oled_128x32_init[] __attribute__((aligned(4))) = {
 
 static uint8_t _ClearBuffer[133 + 1] __attribute__((aligned(4)));
 
-Ssd1306 *Ssd1306::s_pThis = 0;
+Ssd1306 *Ssd1306::s_pThis = nullptr;
 
-Ssd1306::Ssd1306(void) :
-		m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(OLED_PANEL_128x64_8ROWS){
-	assert(s_pThis == 0);
+Ssd1306::Ssd1306() :
+		m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT) {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	InitMembers();
@@ -212,7 +212,7 @@ Ssd1306::Ssd1306(void) :
 
 Ssd1306::Ssd1306(TOledPanel tOledPanel) :
 		m_I2C(OLED_I2C_SLAVE_ADDRESS_DEFAULT), m_OledPanel(tOledPanel) {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	InitMembers();
@@ -220,20 +220,20 @@ Ssd1306::Ssd1306(TOledPanel tOledPanel) :
 
 Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) :
 		m_I2C(nSlaveAddress == 0 ? OLED_I2C_SLAVE_ADDRESS_DEFAULT : nSlaveAddress), m_OledPanel(tOledPanel) {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	InitMembers();
 }
 
-Ssd1306::~Ssd1306(void) {
+Ssd1306::~Ssd1306() {
 #if defined(ENABLE_CURSOR_MODE)
 	delete[] m_pShadowRam;
-	m_pShadowRam = 0;
+	m_pShadowRam = nullptr;
 #endif
 }
 
-void Ssd1306::CheckSH1106(void) {
+void Ssd1306::CheckSH1106() {
 	// Check for columns 128-133
 	SendCommand(SSD1306_CMD_SET_LOWCOLUMN | (128 & 0XF));
 	SendCommand(SSD1306_CMD_SET_HIGHCOLUMN | (128));
@@ -247,7 +247,7 @@ void Ssd1306::CheckSH1106(void) {
 	SendCommand(SSD1306_CMD_SET_HIGHCOLUMN | (128));
 	SendCommand(SSD1306_CMD_SET_STARTPAGE);
 
-	char aResultBytes[5];
+	char aResultBytes[5] = {0};
 
 	m_I2C.Write(0x40);
 	m_I2C.Read(aResultBytes, sizeof(aResultBytes));
@@ -263,7 +263,7 @@ void Ssd1306::CheckSH1106(void) {
 #endif
 }
 
-bool Ssd1306::Start(void) {
+bool Ssd1306::Start() {
 	if (!m_I2C.IsConnected()) {
 		return false;
 	}
@@ -300,7 +300,7 @@ bool Ssd1306::Start(void) {
 	return true;
 }
 
-void Ssd1306::Cls(void) {
+void Ssd1306::Cls() {
 	uint32_t nColumnAdd = 0;
 
 	if (m_bHaveSH1106) {
@@ -340,7 +340,9 @@ void Ssd1306::PutChar(int c) {
 	uint8_t i;
 
 	if (c < 32 || c > 127) {
+#if defined(ENABLE_CURSOR_MODE)
 		c = 32;
+#endif
 		i = 0;
 	} else {
 		i = (c - 32);
@@ -427,7 +429,7 @@ void Ssd1306::SetSleep(bool bSleep) {
 	}
 }
 
-void Ssd1306::InitMembers(void) {
+void Ssd1306::InitMembers() {
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:
 		m_nCols = OLED_FONT8x6_COLS;
@@ -464,7 +466,7 @@ void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
 
 #if defined(ENABLE_CURSOR_MODE)
 #ifndef NDEBUG
-void Ssd1306::DumpShadowRam(void) {
+void Ssd1306::DumpShadowRam() {
 	for (int i = 0; i < m_nRows; i++) {
 		printf("%d: [%.*s]\n", i, OLED_FONT8x6_COLS, &m_pShadowRam[i * OLED_FONT8x6_COLS]);
 	}
@@ -495,7 +497,7 @@ void Ssd1306::SetCursor(uint32_t tCursorMode) {
 	}
 }
 
-void Ssd1306::SetCursorOn(void) {
+void Ssd1306::SetCursorOn() {
 	m_nCursorOnCol = m_nShadowRamIndex % OLED_FONT8x6_COLS;
 	m_nCursorOnRow =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
@@ -514,7 +516,7 @@ void Ssd1306::SetCursorOn(void) {
 	SetColumnRow(m_nCursorOnCol, m_nCursorOnRow);
 }
 
-void Ssd1306::SetCursorBlinkOn(void) {
+void Ssd1306::SetCursorBlinkOn() {
 	m_nCursorOnCol = m_nShadowRamIndex % OLED_FONT8x6_COLS;
 	m_nCursorOnRow =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
@@ -533,7 +535,7 @@ void Ssd1306::SetCursorBlinkOn(void) {
 	SetColumnRow(m_nCursorOnCol, m_nCursorOnRow);
 }
 
-void Ssd1306::SetCursorOff(void) {
+void Ssd1306::SetCursorOff() {
 	const uint8_t col = m_nShadowRamIndex % OLED_FONT8x6_COLS;
 	const uint8_t row =  m_nShadowRamIndex / OLED_FONT8x6_COLS;
 
@@ -558,6 +560,6 @@ void Ssd1306::SetColumnRow(uint8_t nColumn, uint8_t nRow) {
 }
 #endif
 
-void Ssd1306::PrintInfo(void) {
+void Ssd1306::PrintInfo() {
 	printf("%s (%d,%d)\n", m_bHaveSH1106 ? "SH1106" : "SSD1306", m_nRows, m_nCols);
 }

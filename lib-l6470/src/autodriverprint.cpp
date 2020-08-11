@@ -2,7 +2,7 @@
  * @file autodriverprint.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "autodriver.h"
 
-void AutoDriver::Print(void) {
+void AutoDriver::Print() {
 	printf("SparkFun AutoDriver [%d]\n", m_nMotorNumber);
 	printf(" Position=%d, ChipSelect=%d, ResetPin=%d, BusyPin=%d [%s]\n", m_nPosition, m_nSpiChipSelect, m_nResetPin, m_nBusyPin, m_nBusyPin == 0xFF ? "SPI" : "GPIO");
 	printf(" MinSpeed=%3.0f, MaxSpeed=%3.0f, Acc=%4.0f, Dec=%4.0f\n", getMinSpeed(), getMaxSpeed(), getAcc(), getDec());

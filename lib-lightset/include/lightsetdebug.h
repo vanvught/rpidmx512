@@ -2,7 +2,7 @@
  * @file lightsetdebug.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,25 +32,24 @@
 
 class LightSetDebug: public LightSet {
 public:
-	LightSetDebug(void);
-	~LightSetDebug(void);
+	LightSetDebug();
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	uint16_t GetDmxStartAddress(void);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	uint16_t GetDmxStartAddress() override;
 
-	uint16_t GetDmxFootprint(void);
+	uint16_t GetDmxFootprint() override;
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 private:
-	bool m_bIsStarted;
-	uint16_t m_nDmxStartAddress;
+	bool m_bIsStarted{false};
+	uint16_t m_nDmxStartAddress{1};
 };
 
 #endif /* LIGHTSETDEBUG_H_ */

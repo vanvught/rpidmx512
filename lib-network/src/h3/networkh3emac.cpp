@@ -221,6 +221,7 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
 	if (nIp == m_nLocalIp) {
+		DEBUG_EXIT
 		return;
 	}
 
@@ -270,6 +271,10 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 
 	if (m_pNetworkStore != 0) {
 		m_pNetworkStore->SaveNetMask(nNetmask);
+	}
+
+	if (m_pNetworkDisplay != 0) {
+		m_pNetworkDisplay->ShowIp();
 	}
 
 	if (m_pNetworkDisplay != 0) {

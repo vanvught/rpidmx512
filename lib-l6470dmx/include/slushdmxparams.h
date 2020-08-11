@@ -49,7 +49,7 @@ struct SlushDmxParamsMask {
 
 class SlushDmxParamsStore {
 public:
-	virtual ~SlushDmxParamsStore(void) {
+	virtual ~SlushDmxParamsStore() {
 	}
 
 	virtual void Update(const struct TSlushDmxParams *ptSlushDmxParams)=0;
@@ -61,9 +61,9 @@ public:
 
 class SlushDmxParams {
 public:
-	SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore=0);
+	SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore=nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Set(SlushDmx *pSlushDmx);
@@ -71,7 +71,7 @@ public:
 	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Dump(void);
+	void Dump();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

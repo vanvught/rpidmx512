@@ -76,13 +76,13 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	DEBUG_EXIT
 }
 
-AutoDriver::~AutoDriver(void) {
+AutoDriver::~AutoDriver() {
 	hardHiZ();
 	m_bIsBusy = false;
 	m_nNumBoards[m_nSpiChipSelect]--;
 }
 
-int AutoDriver::busyCheck(void) {
+int AutoDriver::busyCheck() {
 	if (m_nBusyPin == BUSY_PIN_NOT_USED) {
 		if (getParam(L6470_PARAM_STATUS) & L6470_STATUS_BUSY) {
 			return 0;
@@ -129,12 +129,12 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 	FUNC_PREFIX(spi_transfern(dataPacket, m_nNumBoards[m_nSpiChipSelect]));
 
-	DEBUG_PRINTF("data=%x, dataPacket[m_nPosition]=%x", data, m_nPosition, dataPacket[m_nPosition]);
+	DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, m_nPosition, dataPacket[m_nPosition]);
 	DEBUG_EXIT
 	return dataPacket[m_nPosition];
 }
 
-uint16_t AutoDriver::getNumBoards(void) {
+uint16_t AutoDriver::getNumBoards() {
 	uint16_t n = 0;
 
 	for (uint32_t i = 0; i < (sizeof(m_nNumBoards) / sizeof(m_nNumBoards[0])); i++) {
@@ -152,7 +152,7 @@ uint8_t AutoDriver::getNumBoards(uint8_t cs) {
 	}
 }
 
-bool AutoDriver::IsConnected(void) {
+bool AutoDriver::IsConnected() {
 	DEBUG_ENTRY
 
 	if (getParam(L6470_PARAM_CONFIG) == 0x2e88) {

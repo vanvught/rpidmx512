@@ -57,21 +57,21 @@ enum class DhcpClientStatus {
 
 class NetworkDisplay {
 public:
-	virtual ~NetworkDisplay(void) {
+	virtual ~NetworkDisplay() {
 	}
 
-	virtual void ShowIp(void)=0;
-	virtual void ShowNetMask(void)=0;
-	virtual void ShowHostName(void)=0;
+	virtual void ShowIp()=0;
+	virtual void ShowNetMask()=0;
+	virtual void ShowHostName()=0;
 
 	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
 
-	virtual void ShowShutdown(void)=0;
+	virtual void ShowShutdown()=0;
 };
 
 class NetworkStore {
 public:
-	virtual ~NetworkStore(void) {}
+	virtual ~NetworkStore() {}
 
 	virtual void SaveIp(uint32_t nIp)=0;
 	virtual void SaveNetMask(uint32_t nNetMask)=0;
@@ -81,12 +81,13 @@ public:
 
 class Network {
 public:
-	Network(void);
-	virtual ~Network(void);
+	Network();
+	virtual ~Network() {
+	}
 
-	void Print(void);
+	void Print();
 
-	virtual void Shutdown(void);
+	virtual void Shutdown();
 
 	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual int32_t End(uint16_t nPort)=0;
@@ -101,62 +102,62 @@ public:
 
 	virtual void SetIp(uint32_t nIp)=0;
 	virtual void SetNetmask(uint32_t nNetmask)=0;
-	virtual bool SetZeroconf(void)=0;
-	virtual bool EnableDhcp(void)=0;
+	virtual bool SetZeroconf()=0;
+	virtual bool EnableDhcp()=0;
 
 	virtual void SetHostName(const char *pHostName);
 	virtual void SetDomainName(const char *pDomainName);
 
-	uint32_t GetIp(void) {
+	uint32_t GetIp() {
 		return m_nLocalIp;
 	}
 
-	const char *GetHostName(void) {
+	const char *GetHostName() {
 		return m_aHostName;
 	}
 
-	const char *GetDomainName(void) {
+	const char *GetDomainName() {
 		return m_aDomainName;
 	}
 
 	void SetQueuedStaticIp(uint32_t nLocalIp = 0, uint32_t nNetmask = 0);
-	void SetQueuedDhcp(void);
-	void SetQueuedZeroconf(void);
-	bool ApplyQueuedConfig(void);
+	void SetQueuedDhcp();
+	void SetQueuedZeroconf();
+	bool ApplyQueuedConfig();
 
-	uint32_t GetGatewayIp(void) {
+	uint32_t GetGatewayIp() {
 		return m_nGatewayIp;
 	}
 
-	uint32_t GetNetmask(void) {
+	uint32_t GetNetmask() {
 		return m_nNetmask;
 	}
 
-	uint32_t GetNetmaskCIDR(void) {
+	uint32_t GetNetmaskCIDR() {
 		return static_cast<uint32_t>(__builtin_popcount(m_nNetmask));
 	}
 
-	uint32_t GetBroadcastIp(void) {
+	uint32_t GetBroadcastIp() {
 		return m_nLocalIp | ~m_nNetmask;
 	}
 
-	bool IsDhcpCapable(void) {
+	bool IsDhcpCapable() {
 		return m_IsDhcpCapable;
 	}
 
-	bool IsDhcpUsed(void) {
+	bool IsDhcpUsed() {
 		return m_IsDhcpUsed;
 	}
 
-	bool IsZeroconfCapable(void) {
+	bool IsZeroconfCapable() {
 		return m_IsZeroconfCapable;
 	}
 
-	bool IsZeroconfUsed(void) {
+	bool IsZeroconfUsed() {
 		return m_IsZeroconfUsed;
 	}
 
-	char GetAddressingMode(void) {
+	char GetAddressingMode() {
 		if (Network::Get()->IsZeroconfUsed()) {
 			return  'Z';
 		} else if (Network::Get()->IsDhcpKnown()) {
@@ -170,7 +171,7 @@ public:
 		return 'U';
 	}
 
-	 bool IsDhcpKnown(void) {
+	 bool IsDhcpKnown() {
 #if defined (__CYGWIN__) || defined (__APPLE__)
 		return false;
 #else
@@ -178,7 +179,7 @@ public:
 #endif
 	}
 
-	TDhcpMode GetDhcpMode(void) {
+	TDhcpMode GetDhcpMode() {
 		if (IsDhcpKnown()) {
 			if (m_IsDhcpUsed) {
 				return TDhcpMode::ACTIVE;
@@ -190,19 +191,19 @@ public:
 		return TDhcpMode::UNKNOWN;
 	}
 
-	const char *GetIfName(void) {
+	const char *GetIfName() {
 		return m_aIfName;
 	}
 
-	uint32_t GetIfIndex(void) {
+	uint32_t GetIfIndex() {
 		return m_nIfIndex;
 	}
 
-	uint32_t GetNtpServerIp(void) {
+	uint32_t GetNtpServerIp() {
 		return m_nNtpServerIp;
 	}
 
-	float GetNtpUtcOffset(void) {
+	float GetNtpUtcOffset() {
 		return m_fNtpUtcOffset;
 	}
 
@@ -214,7 +215,7 @@ public:
 		m_pNetworkStore = pNetworkStore;
 	}
 
-	static Network *Get(void) {
+	static Network *Get() {
 		return s_pThis;
 	}
 
@@ -236,8 +237,8 @@ protected:
 	uint32_t m_nNtpServerIp;
 	float m_fNtpUtcOffset;
 
-	NetworkDisplay *m_pNetworkDisplay = 0;
-	NetworkStore *m_pNetworkStore = 0;
+	NetworkDisplay *m_pNetworkDisplay = nullptr;
+	NetworkStore *m_pNetworkStore = nullptr;
 
 private:
 	struct QueuedConfig {

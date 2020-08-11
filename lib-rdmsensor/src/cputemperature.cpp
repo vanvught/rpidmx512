@@ -45,9 +45,12 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 }
 
 bool CpuTemperature::Initialize() {
+	DEBUG_ENTRY
 #if defined (__CYGWIN__) || defined (__APPLE__)
+	DEBUG_EXIT
 	return false;
 #else
+	DEBUG_EXIT
 	return true;
 #endif
 }

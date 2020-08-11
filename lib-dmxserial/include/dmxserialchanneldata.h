@@ -32,30 +32,27 @@
 #include "lightset.h"
 
 enum class DmxSerialParseCode {
-	FAILED,
-	SERIAL,
-	NONE,
-	EOFILE
+	FAILED, SERIAL, NONE, EOFILE
 };
 
 class DmxSerialChannelData {
 public:
-	DmxSerialChannelData(void);
-	~DmxSerialChannelData(void);
+	DmxSerialChannelData();
+	~DmxSerialChannelData();
 
-	void Clear(void);
+	void Clear();
 	bool Parse(const char *pFileName);
 	const uint8_t *GetData(uint8_t nChannelValue, uint32_t &nLength);
 
-	void Dump(void);
+	void Dump();
 
 private:
-	DmxSerialParseCode GetNextLine(void);
+	DmxSerialParseCode GetNextLine();
 	DmxSerialParseCode ParseLine(const char *pLine);
 	DmxSerialParseCode ParseSerialData(const char *pLine);
 
 private:
-	FILE *m_pFile = 0;
+	FILE *m_pFile = nullptr;
 	uint8_t m_nChannelValue = 0;
 	uint8_t m_nChannelDataLength[DMX_UNIVERSE_SIZE];
 	uint8_t *m_pChannelData[DMX_UNIVERSE_SIZE];

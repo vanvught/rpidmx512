@@ -101,3 +101,5 @@ opi_emac_artnet_rdm_l6470/generate_sofware_version_id.sh
 opi_emac_e131_artnet/generate_sofware_version_id.sh
 opi_rdm_responder_l6470/generate_sofware_version_id.sh
 opi_rdm_responder/generate_sofware_version_id.sh
+*.bin
+scratch-linux-c++/scratch-linux-c++

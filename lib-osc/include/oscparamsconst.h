@@ -26,8 +26,7 @@
 #ifndef OSCPARAMSCONST_H_
 #define OSCPARAMSCONST_H_
 
-class OscParamsConst {
-public:
+struct OscParamsConst {
 	static const char INCOMING_PORT[];
 	static const char OUTGOING_PORT[];
 };

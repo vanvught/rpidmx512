@@ -32,16 +32,16 @@
 
 #include "max72197segment.h"
 
-class LtcDisplayMax72197Segment: public LtcDisplayMax7219Set, public Max72197Segment {
+class LtcDisplayMax72197Segment final: public LtcDisplayMax7219Set, public Max72197Segment {
 public:
 	LtcDisplayMax72197Segment();
 
-	void Init(uint8_t nIntensity);
+	void Init(uint8_t nIntensity) override;
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+	void Show(const char *pTimecode) override;
+	void ShowSysTime(const char *pSystemTime) override;
 
-	void WriteChar(uint8_t nChar, uint8_t nPos=0);
+	void WriteChar(uint8_t nChar, uint8_t nPos=0) override;
 
 	static LtcDisplayMax72197Segment *Get() {
 		return s_pThis;

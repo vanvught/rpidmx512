@@ -53,24 +53,24 @@ struct TE131ControllerState {
 
 class E131Controller {
 public:
-	E131Controller(void);
-	~E131Controller(void);
+	E131Controller();
+	~E131Controller();
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
-	void HandleSync(void);
-	void HandleBlackout(void);
+	void HandleSync();
+	void HandleBlackout();
 
 	void SetSynchronizationAddress(uint16_t nSynchronizationAddress = DEFAULT_SYNCHRONIZATION_ADDRESS) {
 		m_State.SynchronizationPacket.nUniverseNumber = nSynchronizationAddress;
 		m_State.SynchronizationPacket.nIpAddress = UniverseToMulticastIp(nSynchronizationAddress);
 	}
-	uint16_t GetSynchronizationAddress(void) {
+	uint16_t GetSynchronizationAddress() {
 		return m_State.SynchronizationPacket.nUniverseNumber;
 	}
 
@@ -81,21 +81,21 @@ public:
 			m_nMaster = DMX_MAX_VALUE;
 		}
 	}
-	uint32_t GetMaster(void) {
+	uint32_t GetMaster() {
 		return m_nMaster;
 	}
 
-	const uint8_t *GetSoftwareVersion(void);
+	const uint8_t *GetSoftwareVersion();
 
 	void SetSourceName(const char *pSourceName);
 	void SetPriority(uint8_t nPriority);
 
 private:
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
-	void FillDataPacket(void);
-	void FillDiscoveryPacket(void);
-	void FillSynchronizationPacket(void);
-	void SendDiscoveryPacket(void);
+	void FillDataPacket();
+	void FillDiscoveryPacket();
+	void FillSynchronizationPacket();
+	void SendDiscoveryPacket();
 	uint8_t GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress);
 
 private:
@@ -111,7 +111,7 @@ private:
 	uint32_t m_nMaster;
 
 public:
-	static E131Controller* Get(void) {
+	static E131Controller* Get() {
 		return s_pThis;
 	}
 

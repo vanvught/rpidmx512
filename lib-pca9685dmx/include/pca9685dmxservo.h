@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,25 +32,25 @@
 
 #include "pca9685servo.h"
 
-class PCA9685DmxServo: public LightSet {
+class PCA9685DmxServo final: public LightSet {
 public:
-	PCA9685DmxServo(void);
-	~PCA9685DmxServo(void);
+	PCA9685DmxServo();
+	~PCA9685DmxServo() override;
 
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
-	inline uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	void Start(uint8_t nPort = 0);
-	void Stop(uint8_t nPort = 0);
+	void Start(uint8_t nPort = 0) override;
+	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
 
 public:
 	void SetI2cAddress(uint8_t nI2cAddress);
@@ -61,7 +61,7 @@ public:
 	void SetDmxFootprint(uint16_t nDmxFootprint);
 
 private:
-	void Initialize(void);
+	void Initialize();
 
 private:
 	uint16_t m_nDmxStartAddress;

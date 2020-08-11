@@ -40,8 +40,8 @@ PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint3
 {
 	DEBUG_ENTRY
 
-	assert(pFileName != 0);
-	assert(pBuffer != 0);
+	assert(pFileName != nullptr);
+	assert(pBuffer != nullptr);
 
 	const uint32_t l = strlen(pFileName);
 

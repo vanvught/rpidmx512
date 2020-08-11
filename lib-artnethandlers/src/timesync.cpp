@@ -34,13 +34,7 @@
 
 #include "debug.h"
 
-TimeSync::TimeSync(void){
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-TimeSync::~TimeSync(void) {
+TimeSync::TimeSync(){
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

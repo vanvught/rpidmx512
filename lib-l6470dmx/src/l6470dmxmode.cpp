@@ -27,28 +27,28 @@
 
 #include "debug.h"
 
-L6470DmxMode::~L6470DmxMode(void) {
+L6470DmxMode::~L6470DmxMode() {
 }
 
-void L6470DmxMode::InitSwitch(void) {
+void L6470DmxMode::InitSwitch() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
 
-void L6470DmxMode::InitPos(void) {
+void L6470DmxMode::InitPos() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
 
-void L6470DmxMode::HandleBusy(void) {
+void L6470DmxMode::HandleBusy() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT
 }
 
-bool L6470DmxMode::BusyCheck(void) {
+bool L6470DmxMode::BusyCheck() {
 	DEBUG1_ENTRY
 
 	DEBUG1_EXIT

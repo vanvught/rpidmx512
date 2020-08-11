@@ -35,7 +35,7 @@
 #include "e131bridge.h"
 #include "e131.h"
 
-void E131Bridge::Print(void) {
+void E131Bridge::Print() {
 	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';

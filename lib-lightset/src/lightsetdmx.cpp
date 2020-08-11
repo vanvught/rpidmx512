@@ -27,11 +27,11 @@
 
 #include "lightset.h"
 
-uint16_t LightSet::GetDmxStartAddress(void) {
+uint16_t LightSet::GetDmxStartAddress() {
 	return DMX_START_ADDRESS_DEFAULT;
 }
 
-uint16_t LightSet::GetDmxFootprint(void) {
+uint16_t LightSet::GetDmxFootprint() {
 	return DMX_UNIVERSE_SIZE;
 }
 

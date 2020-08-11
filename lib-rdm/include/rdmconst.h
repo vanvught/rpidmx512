@@ -28,8 +28,7 @@
 
 #include <stdint.h>
 
-class RDMConst {
-public:
+struct RDMConst {
 	static const char MANUFACTURER_NAME[];
 	static const uint8_t MANUFACTURER_ID[];
 };

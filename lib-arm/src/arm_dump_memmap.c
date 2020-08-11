@@ -26,6 +26,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
+
 /* Defined by the linker */
 extern uint32_t __ram_start;
 extern uint32_t __ram_end;

@@ -35,7 +35,7 @@
 
 class ArtNetDisplay {
 public:
-	virtual ~ArtNetDisplay(void) {}
+	virtual ~ArtNetDisplay() {}
 
 	virtual void ShowShortName(const char *pShortName)= 0;
 	virtual void ShowLongName(const char *pLongName)= 0;

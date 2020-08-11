@@ -2,7 +2,7 @@
  * @file rdmnetdevice.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,35 +44,35 @@
 
 RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
 	RDMDeviceResponder(pRDMPersonality, LightSet::Get()),
-	m_RDMHandler(0),
-	m_pRdmCommand(0)
+	m_RDMHandler(nullptr),
+	m_pRdmCommand(nullptr)
 {
 	DEBUG_ENTRY
 
 	m_E131Uuid.GetHardwareUuid(m_Cid);
 
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != 0);
+	assert(m_pRdmCommand != nullptr);
 
 	m_RDMHandler = new RDMHandler(false);
-	assert(m_RDMHandler != 0);
+	assert(m_RDMHandler != nullptr);
 
 	DEBUG_EXIT
 }
 
-RDMNetDevice::~RDMNetDevice(void) {
+RDMNetDevice::~RDMNetDevice() {
 	DEBUG_ENTRY
 
 	delete m_RDMHandler;
-	m_RDMHandler = 0;
+	m_RDMHandler = nullptr;
 
 	delete m_pRdmCommand;
-	m_pRdmCommand = 0;
+	m_pRdmCommand = nullptr;
 
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Start(void) {
+void RDMNetDevice::Start() {
 	DEBUG_ENTRY
 
 	LLRPDevice::Start();
@@ -80,7 +80,7 @@ void RDMNetDevice::Start(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Stop(void) {
+void RDMNetDevice::Stop() {
 	DEBUG_ENTRY
 
 	LLRPDevice::Stop();
@@ -88,11 +88,11 @@ void RDMNetDevice::Stop(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetDevice::Run(void) {
+void RDMNetDevice::Run() {
 	LLRPDevice::Run();
 }
 
-void RDMNetDevice::Print(void) {
+void RDMNetDevice::Print() {
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);
@@ -105,12 +105,12 @@ void RDMNetDevice::Print(void) {
 }
 
 void RDMNetDevice::CopyUID(uint8_t *pUID) {
-	assert(pUID != 0);
+	assert(pUID != nullptr);
 	memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 }
 
 void RDMNetDevice::CopyCID(uint8_t *pCID) {
-	assert(pCID != 0);
+	assert(pCID != nullptr);
 	memcpy(pCID, m_Cid, sizeof(m_Cid));
 }
 

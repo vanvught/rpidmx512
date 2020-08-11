@@ -33,6 +33,8 @@
 
 #include "debug.h"
 
+using namespace serial;
+
 void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
 	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 
@@ -44,7 +46,7 @@ void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
 	m_SpiConfiguration.nSpeed = nSpeedHz;
 }
 
-void Serial::SetSpiMode(SerialSpiMode tMode) {
+void Serial::SetSpiMode(spi::mode tMode) {
 	DEBUG_PRINTF("tMode=%d", tMode);
 
 	if (static_cast<int>(tMode) > 3) {

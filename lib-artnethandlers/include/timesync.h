@@ -32,10 +32,9 @@
 
 class TimeSync: public ArtNetTimeSync {
 public:
-	TimeSync(void);
-	~TimeSync(void);
+	TimeSync();
 
-	void Handler(const struct TArtNetTimeSync*);
+	void Handler(const struct TArtNetTimeSync*) override;
 };
 
 #endif /* TIMESYNC_H_ */

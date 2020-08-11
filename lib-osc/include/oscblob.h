@@ -39,18 +39,18 @@ public:
 	OSCBlob(const uint8_t *pData, uint32_t nSize) :
 			m_pData(const_cast<uint8_t*>(pData)), m_nSize(nSize) {
 	}
-	~OSCBlob(void) {
+	~OSCBlob() {
 	}
 
-	uint32_t GetDataSize(void) {
+	uint32_t GetDataSize() {
 		return m_nSize;
 	}
 
-	const uint8_t* GetDataPtr(void) {
+	const uint8_t* GetDataPtr() {
 		return m_pData;
 	}
 
-	uint32_t GetSize(void) {
+	uint32_t GetSize() {
 		const uint32_t nBlobSize = sizeof(int32_t) + m_nSize;
 		return (4 * ((nBlobSize + 3) / 4));
 	}

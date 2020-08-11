@@ -38,6 +38,8 @@
 
 #include "debug.h"
 
+using namespace serial;
+
 void Serial::SetUartBaud(uint32_t nBaud) {
 	DEBUG_PRINTF("nBaud=%d", nBaud);
 
@@ -66,10 +68,10 @@ void Serial::SetUartBits(uint8_t nBits) {
 	}
 }
 
-void Serial::SetUartParity(SerialUartParity tParity) {
+void Serial::SetUartParity(uart::parity tParity) {
 	DEBUG_PRINTF("tParity=%d", tParity);
 
-	if (tParity >= SerialUartParity::UNDEFINED ) {
+	if (tParity >= uart::parity::UNDEFINED ) {
 		return;
 	}
 
@@ -121,12 +123,12 @@ bool Serial::InitUart(void) {
 		nRegisterLCR |= UART_LCR_DLS_8BITS;
 	}
 
-	if (m_UartConfiguration.tParity != SerialUartParity::NONE) {
+	if (m_UartConfiguration.tParity != uart::parity::NONE) {
 		nRegisterLCR |= UART_LCR_PEN;
 
-		if (m_UartConfiguration.tParity == SerialUartParity::ODD) {
+		if (m_UartConfiguration.tParity == uart::parity::ODD) {
 			nRegisterLCR |= UART_LCR_EPS_ODD;
-		} else if (m_UartConfiguration.tParity == SerialUartParity::EVEN) {
+		} else if (m_UartConfiguration.tParity == uart::parity::EVEN) {
 			nRegisterLCR |= UART_LCR_EPS_EVEN;
 		}
 	}

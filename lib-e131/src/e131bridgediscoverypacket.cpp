@@ -34,7 +34,7 @@
 
 #include "network.h"
 
-void E131Bridge::FillDiscoveryPacket(void) {
+void E131Bridge::FillDiscoveryPacket() {
 	m_State.DiscoveryPacketLength = DISCOVERY_PACKET_SIZE(m_State.nActiveInputPorts);
 
 	memset(m_pE131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
@@ -56,7 +56,7 @@ void E131Bridge::FillDiscoveryPacket(void) {
 	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
 }
 
-void E131Bridge::SendDiscoveryPacket(void) {
+void E131Bridge::SendDiscoveryPacket() {
 	assert(m_DiscoveryIpAddress != 0);
 
 	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {

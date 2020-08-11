@@ -52,7 +52,7 @@
 
 #include "debug.h"
 
-SparkFunDmx::SparkFunDmx(void):
+SparkFunDmx::SparkFunDmx():
 	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
 	m_nDmxFootprint(0),
 	m_pModeStore(0)
@@ -91,7 +91,7 @@ SparkFunDmx::SparkFunDmx(void):
 	DEBUG_EXIT;
 }
 
-SparkFunDmx::~SparkFunDmx(void) {
+SparkFunDmx::~SparkFunDmx() {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -407,8 +407,6 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	}
 
 	m_nDmxStartAddress = nDmxStartAddress;
-
-	DEBUG_PRINTF("m_pLightSetDisplay=%x", reinterpret_cast<unsigned int>(reinterpret_cast<void *>(m_pLightSetDisplay)));
 
 	if (m_pLightSetDisplay != 0) {
 		m_pLightSetDisplay->ShowDmxStartAddress();

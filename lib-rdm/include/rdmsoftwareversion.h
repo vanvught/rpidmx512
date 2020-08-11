@@ -30,9 +30,9 @@
 
 class RDMSoftwareVersion {
 public:
-	static const char *GetVersion(void);
-	static uint32_t GetVersionLength(void);
-	static uint32_t GetVersionId(void);
+	static const char *GetVersion();
+	static uint32_t GetVersionLength();
+	static uint32_t GetVersionId();
 };
 
 #endif /* RDMSOFTWAREVERSION_H_ */

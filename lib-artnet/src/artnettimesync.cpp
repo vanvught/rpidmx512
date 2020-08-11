@@ -35,13 +35,7 @@
 
 #include "debug.h"
 
-ArtNetTimeSync::~ArtNetTimeSync(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void ArtNetNode::HandleTimeSync(void) {
+void ArtNetNode::HandleTimeSync() {
 	DEBUG_ENTRY
 
 	struct TArtTimeSync *pArtTimeSync = &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
@@ -50,7 +44,7 @@ void ArtNetNode::HandleTimeSync(void) {
 
 	pArtTimeSync->Prog = 0;
 
-	Network::Get()->SendTo(m_nHandle, pArtTimeSync, sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pArtTimeSync, sizeof(struct TArtTimeSync), m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
 
 	DEBUG_EXIT
 }

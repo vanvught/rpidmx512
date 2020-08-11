@@ -26,7 +26,10 @@
 #ifndef TIME_H_
 #define TIME_H_
 
-typedef long int	time_t;
+#ifndef _TIME_T
+#define	_TIME_T
+typedef long int time_t;
+#endif	/* _TIME_T */
 
 struct tm {
 	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)

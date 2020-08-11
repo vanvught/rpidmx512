@@ -29,9 +29,9 @@
 
 class E131Sync {
 public:
-	virtual ~E131Sync(void) {}
+	virtual ~E131Sync() {}
 
-	virtual void Handler(void)=0;
+	virtual void Handler()=0;
 };
 
 #endif /* E131SYNC_H_ */

@@ -46,22 +46,22 @@ void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 	}
 }
 
-void ArtNetNode::HandleDmxIn(void) {
+void ArtNetNode::HandleDmxIn() {
 	struct TArtDmx tArtDmx;
 
-	memcpy(tArtDmx.Id, NODE_ID, sizeof m_PollReply.Id);
+	memcpy(tArtDmx.Id, artnet::NODE_ID, sizeof m_PollReply.Id);
 	tArtDmx.OpCode = OP_DMX;
 	tArtDmx.ProtVerHi = 0;
-	tArtDmx.ProtVerLo = artnet::PROTOCOL_REVISION;
+	tArtDmx.ProtVerLo = ArtNet::PROTOCOL_REVISION;
 
-	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPorts[i].bIsEnabled){
 			uint16_t nLength;
 			const uint8_t *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
-			if (pDmxData != 0) {
+			if (pDmxData != nullptr) {
 				tArtDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
 				tArtDmx.Physical = i;
 				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
@@ -72,7 +72,7 @@ void ArtNetNode::HandleDmxIn(void) {
 
 				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
 
-				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, artnet::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, ArtNet::UDP_PORT);
 
 				m_State.bIsReceivingDmx = true;
 			} else {

@@ -35,32 +35,31 @@
 #define BW_LCD_DEFAULT_SLAVE_ADDRESS	0x82
 #define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
 
-class LcdBw: public DisplaySet {
+class LcdBw final: public DisplaySet {
 public:
-	LcdBw (void);
+	LcdBw ();
 	LcdBw (uint8_t, uint8_t);
 	LcdBw (uint8_t, uint8_t, uint8_t);
 
-	bool Start(void);
+	bool Start() override;
+	void Cls() override;
+	void ClearLine(uint8_t) override;
+	void PutChar(int) override;
+	void PutString(const char *) override;
+	void TextLine(uint8_t, const char *, uint8_t) override;
+	void SetCursorPos(uint8_t, uint8_t) override;
+#if defined(ENABLE_CURSOR_MODE)
+	void SetCursor(uint32_t) override;
+#endif
 
-	void Cls(void);
-	void ClearLine(uint8_t);
-
-	void PutChar(int);
-	void PutString(const char *);
-
-	void TextLine(uint8_t, const char *, uint8_t);
 	void Text(const char *, uint8_t);
-
-	void SetCursorPos(uint8_t, uint8_t);
-	void SetCursor(uint32_t);
 
 private:
 	void Write(const char *, uint32_t);
 
 private:
 	HAL_I2C m_I2C;
-	uint32_t m_nWriteMicros;
+	uint32_t m_nWriteMicros{0};
 };
 
 #endif /* BWLCD_H_ */

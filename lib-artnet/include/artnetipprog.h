@@ -84,7 +84,7 @@ struct TArtNetIpProgReply {
 
 class ArtNetIpProg {
 public:
-	virtual ~ArtNetIpProg(void) {}
+	virtual ~ArtNetIpProg() {}
 
 	virtual void Handler(const struct TArtNetIpProg *, struct TArtNetIpProgReply *)= 0;
 };

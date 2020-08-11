@@ -42,43 +42,43 @@ struct OscServerMax {
 
 class OscServer {
 public:
-	OscServer(void);
-	~OscServer(void);
+	OscServer();
+	~OscServer();
 
 	void SetOscServerHandler(OscServerHandler *pOscServerHandler);
 	void SetOutput(LightSet *pLightSet);
 
 	void SetPortIncoming(uint16_t nPortIncoming = OscServerDefaultPort::INCOMING);
-	uint16_t GetPortIncoming(void) const;
+	uint16_t GetPortIncoming() const;
 
 	void SetPortOutgoing(uint16_t nPortOutgoing = OscServerDefaultPort::OUTGOING);
-	uint16_t GetPortOutgoing(void) const;
+	uint16_t GetPortOutgoing() const;
 
 	void SetPath(const char *pPath);
-	const char *GetPath(void);
+	const char *GetPath();
 
 	void SetPathInfo(const char *pPathInfo);
-	const char *GetPathInfo(void);
+	const char *GetPathInfo();
 
 	void SetPathBlackOut(const char *pPathBlackOut);
-	const char *GetPathBlackOut(void);
+	const char *GetPathBlackOut();
 
 	void SetPartialTransmission(bool bPartialTransmission = false);
-	bool IsPartialTransmission(void) const;
+	bool IsPartialTransmission() const;
 
 	void SetEnableNoChangeUpdate(bool bEnableNoChangeUpdate) {
 		m_bEnableNoChangeUpdate = bEnableNoChangeUpdate;
 	}
-	bool GetEnableNoChangeUpdate(void) {
+	bool GetEnableNoChangeUpdate() {
 		return m_bEnableNoChangeUpdate;
 	}
 
-	void Print(void);
+	void Print();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 private:
 	int GetChannel(const char *p);
@@ -95,11 +95,11 @@ private:
 	char m_aPathSecond[OscServerMax::PATH_LENGTH];
 	char m_aPathInfo[OscServerMax::PATH_LENGTH];
 	char m_aPathBlackOut[OscServerMax::PATH_LENGTH];
-	OscServerHandler *m_pOscServerHandler = 0;
-	LightSet *m_pLightSet = 0;
-	char *m_pBuffer = 0;
-	uint8_t *m_pData = 0;
-	uint8_t *m_pOsc = 0;
+	OscServerHandler *m_pOscServerHandler = nullptr;
+	LightSet *m_pLightSet = nullptr;
+	char *m_pBuffer = nullptr;
+	uint8_t *m_pData = nullptr;
+	uint8_t *m_pOsc = nullptr;
 	char m_Os[32];
 	const char *m_pModel;
 	const char *m_pSoC;

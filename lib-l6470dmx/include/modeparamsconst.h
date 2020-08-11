@@ -26,8 +26,7 @@
 #ifndef MODEPARAMSCONST_H_
 #define MODEPARAMSCONST_H_
 
-class ModeParamsConst {
-public:
+struct ModeParamsConst {
 	static const char DMX_MODE[];
 
 	static const char MAX_STEPS[];

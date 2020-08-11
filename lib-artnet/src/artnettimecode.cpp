@@ -35,50 +35,47 @@
 
 #include "network.h"
 
-ArtNetTimeCode::~ArtNetTimeCode(void) {
-}
-
 void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
-	assert(pArtNetTimeCode != 0);
+	assert(pArtNetTimeCode != nullptr);
 
-	if (pArtNetTimeCode != 0) {
+	if (pArtNetTimeCode != nullptr) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 
 		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != 0);
+		assert(m_pTimeCodeData != nullptr);
 
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
-		memcpy(m_pTimeCodeData->Id, NODE_ID, sizeof m_pTimeCodeData->Id );
+		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
 		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = artnet::PROTOCOL_REVISION;
+		m_pTimeCodeData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
 	}
 }
 
-void ArtNetNode::HandleTimeCode(void) {
+void ArtNetNode::HandleTimeCode() {
 	const struct TArtTimeCode *pArtTimeCode = &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
 
 	m_pArtNetTimeCode->Handler(reinterpret_cast<const struct TArtNetTimeCode*>(&pArtTimeCode->Frames));
 }
 
 void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
-	assert(pArtNetTimeCode != 0);
+	assert(pArtNetTimeCode != nullptr);
 
 	if (pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ) {
 		return;
 	}
 
-	if (m_pTimeCodeData == 0) {
+	if (m_pTimeCodeData == nullptr) {
 		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != 0);
+		assert(m_pTimeCodeData != nullptr);
 
 		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
-		memcpy(m_pTimeCodeData->Id, NODE_ID, sizeof m_pTimeCodeData->Id );
+		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
 		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = artnet::PROTOCOL_REVISION;
+		m_pTimeCodeData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
 	}
 
 	memcpy(&m_pTimeCodeData->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 }
 

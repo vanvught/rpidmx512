@@ -2,7 +2,7 @@
  * @file pca9685dmxled.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,55 +32,55 @@
 
 #include "pca9685pwmled.h"
 
-class PCA9685DmxLed: public LightSet {
+class PCA9685DmxLed final: public LightSet {
 public:
-	PCA9685DmxLed(void);
-	~PCA9685DmxLed(void);
+	PCA9685DmxLed();
+	~PCA9685DmxLed() override;
 
-	void Start(uint8_t nPort = 0);
-	void Stop(uint8_t nPort = 0);
+	void Start(uint8_t nPort = 0) override;
+	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
-	inline uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
 	void SetSlotInfoRaw(const char *pSlotInfoRaw);
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 public:
-	uint8_t GetI2cAddress(void) const;
+	uint8_t GetI2cAddress() const;
 	void SetI2cAddress(uint8_t nI2cAddress);
 
-	inline uint8_t GetBoardInstances(void) {
+	uint8_t GetBoardInstances() {
 		return m_nBoardInstances;
 	}
 	void SetBoardInstances(uint8_t nBoardInstances);
 
-	inline uint16_t GetPwmfrequency(void) {
+	uint16_t GetPwmfrequency() {
 		return m_nPwmFrequency;
 	}
 	void SetPwmfrequency(uint16_t nPwmfrequency);
 
-	bool GetInvert(void) const;
+	bool GetInvert() const;
 	void SetInvert(bool bOutputInvert);
 
-	bool GetOutDriver(void) const;
+	bool GetOutDriver() const;
 	void SetOutDriver(bool bOutputDriver);
 
 	void SetDmxFootprint(uint16_t nDmxFootprint);
 
 private:
-	void Initialize(void);
+	void Initialize();
 
 private:
 	uint16_t m_nDmxStartAddress;

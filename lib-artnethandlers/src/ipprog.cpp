@@ -42,27 +42,24 @@ union uip {
 	uint8_t u8[4];
 } static ip_union;
 
-IpProg::IpProg(void) {
-}
-
-IpProg::~IpProg(void) {
+IpProg::IpProg() {
 }
 
 void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIpProgReply *pArtNetIpProgReply) {
 	// Ip
 	ip_union.u32 = Network::Get()->GetIp();
-	memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ArtNet::IP_SIZE);
 	// Netmask
 	ip_union.u32 = Network::Get()->GetNetmask();
-	memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ArtNet::IP_SIZE);
 	// Port
-	pArtNetIpProgReply->ProgPortHi = (artnet::UDP_PORT >> 8);
-	pArtNetIpProgReply->ProgPortLo = artnet::UDP_PORT & 0xFF;
+	pArtNetIpProgReply->ProgPortHi = (ArtNet::UDP_PORT >> 8);
+	pArtNetIpProgReply->ProgPortLo = ArtNet::UDP_PORT & 0xFF;
 	//
 	pArtNetIpProgReply->Filler = 0;
 	// Gateway
 	ip_union.u32 = Network::Get()->GetGatewayIp();
-	memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
+	memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ArtNet::IP_SIZE);
 
 #ifndef NDEBUG
 	printf("IpProg::Handler, Command = %d\n", pArtNetIpProg->Command);
@@ -82,11 +79,11 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 			pArtNetIpProgReply->Status = (1 << 6); // DHCP Enabled
 
 			ip_union.u32 = Network::Get()->GetIp();
-			memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ArtNet::IP_SIZE);
 			ip_union.u32 = Network::Get()->GetNetmask();
-			memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ArtNet::IP_SIZE);
 			ip_union.u32 = Network::Get()->GetGatewayIp();
-			memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
+			memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ArtNet::IP_SIZE);
 		}
 	}
 
@@ -94,34 +91,34 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 		Network::Get()->SetIp(0);
 
 		ip_union.u32 = Network::Get()->GetIp();
-		memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgIpHi, ip_union.u8, ArtNet::IP_SIZE);
 		ip_union.u32 = Network::Get()->GetNetmask();
-		memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgSmHi, ip_union.u8, ArtNet::IP_SIZE);
 		ip_union.u32 = Network::Get()->GetGatewayIp();
-		memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgGwHi, ip_union.u8, ArtNet::IP_SIZE);
 
 		pArtNetIpProgReply->Status = 0; // DHCP Disabled;
 	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
 		// Get IPAddress from IpProg
-		memcpy(ip_union.u8, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+		memcpy(ip_union.u8, &pArtNetIpProg->ProgIpHi, ArtNet::IP_SIZE);
 
 		Network::Get()->SetIp(ip_union.u32);
 
 		// Set IPAddress in IpProgReply
-		memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgIpHi, &pArtNetIpProg->ProgIpHi, ArtNet::IP_SIZE);
 		pArtNetIpProgReply->Status = 0; // DHCP Disabled;
 	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_SUBNETMASK) == IPPROG_COMMAND_PROGRAM_SUBNETMASK) {
 		// Get SubnetMask from IpProg
-		memcpy(ip_union.u8, &pArtNetIpProg->ProgSmHi, ARTNET_IP_SIZE);
+		memcpy(ip_union.u8, &pArtNetIpProg->ProgSmHi, ArtNet::IP_SIZE);
 
 		Network::Get()->SetNetmask(ip_union.u32);
 
 		// Set SubnetMask in IpProgReply
-		memcpy(&pArtNetIpProgReply->ProgSmHi, &pArtNetIpProg->ProgSmHi, ARTNET_IP_SIZE);
+		memcpy(&pArtNetIpProgReply->ProgSmHi, &pArtNetIpProg->ProgSmHi, ArtNet::IP_SIZE);
 	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_GATEWAY) == IPPROG_COMMAND_PROGRAM_GATEWAY) {

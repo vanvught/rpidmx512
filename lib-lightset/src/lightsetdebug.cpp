@@ -33,13 +33,10 @@
 
 #define DMX_FOOTPRINT	16
 
-LightSetDebug::LightSetDebug(void): m_bIsStarted(false), m_nDmxStartAddress(1) {
+LightSetDebug::LightSetDebug() {
 }
 
-LightSetDebug::~LightSetDebug(void) {
-}
-
-uint16_t LightSetDebug::GetDmxFootprint(void) {
+uint16_t LightSetDebug::GetDmxFootprint() {
 	DEBUG_PRINTF("DMX_FOOTPRINT=%d", DMX_FOOTPRINT);
 	return DMX_FOOTPRINT;
 }
@@ -55,7 +52,7 @@ bool LightSetDebug::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t LightSetDebug::GetDmxStartAddress(void) {
+uint16_t LightSetDebug::GetDmxStartAddress() {
 	DEBUG_PRINTF("m_nDmxStartAddress=%d", m_nDmxStartAddress);
 	return m_nDmxStartAddress;
 }
@@ -96,11 +93,11 @@ void LightSetDebug::Stop(__attribute__((unused)) uint8_t nPort) {
 }
 
 void LightSetDebug::SetData(uint8_t nPort, const uint8_t* pData, uint16_t nLength) {
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength <= 512);
 
-	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__, static_cast<int>(nPort), pData, static_cast<int>(nLength));
-	printf("%d:%d:%d: ", static_cast<int>(nLength), DMX_FOOTPRINT, static_cast<int>(m_nDmxStartAddress));
+	printf("%s:%s(%d, %p, %d)\n", __FILE__, __FUNCTION__, nPort, reinterpret_cast<const void *>(pData), nLength);
+	printf("%d:%d: ", DMX_FOOTPRINT, m_nDmxStartAddress);
 
 	for (uint32_t i = static_cast<uint32_t>(m_nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		printf("%.2x ", pData[i]);

@@ -38,25 +38,25 @@ enum class DMXMonitorFormat {
 
 class DMXMonitor: public LightSet {
 public:
-	DMXMonitor(void);
-	~DMXMonitor(void);
+	DMXMonitor();
+	~DMXMonitor() override;
 
 	void SetFormat(DMXMonitorFormat tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX) {
 		m_tFormat = tFormat;
 	}
-	DMXMonitorFormat GetFormat(void) {
+	DMXMonitorFormat GetFormat() {
 		return m_tFormat;
 	}
 
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	uint16_t GetDmxStartAddress(void);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	uint16_t GetDmxStartAddress() override;
 
-	uint16_t GetDmxFootprint(void);
+	uint16_t GetDmxFootprint() override;
 
-	void Start(uint8_t nPortId);
-	void Stop(uint8_t nPortId);
+	void Start(uint8_t nPortId) override;
+	void Stop(uint8_t nPortId) override;
 
-	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
 
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 #else
@@ -71,7 +71,7 @@ private:
 #endif
 
 private:
-	void Update(void);
+	void Update();
 
 private:
 	DMXMonitorFormat m_tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;

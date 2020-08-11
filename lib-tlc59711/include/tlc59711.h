@@ -42,30 +42,30 @@ struct TLC59711Channels {
 class TLC59711 {
 public:
 	TLC59711(uint8_t nBoards = 1, uint32_t nSpiSpeedHz = TLC59711SpiSpeed::DEFAULT);
-	~TLC59711(void);
+	~TLC59711();
 
-	int GetBlank(void) const;
+	int GetBlank() const;
 	void SetBlank(bool pBlank = false);
 
-	int GetDisplayRepeat(void) const;
+	int GetDisplayRepeat() const;
 	void SetDisplayRepeat(bool pDisplayRepeat = true);
 
-	int GetDisplayTimingReset(void) const;
+	int GetDisplayTimingReset() const;
 	void SetDisplayTimingReset(bool pDisplayTimingReset = true);
 
-	int GetExternalClock(void) const;
+	int GetExternalClock() const;
 	void SetExternalClock(bool pExternalClock = false);
 
-	int GetOnOffTiming(void) const;
+	int GetOnOffTiming() const;
 	void SetOnOffTiming(bool pOnOffTiming = false);
 
-	uint8_t GetGbcRed(void) const;
+	uint8_t GetGbcRed() const;
 	void SetGbcRed(uint8_t nValue = 0x7F);
 
-	uint8_t GetGbcGreen(void) const;
+	uint8_t GetGbcGreen() const;
 	void SetGbcGreen(uint8_t nValue = 0x7F);
 
-	uint8_t GetGbcBlue(void) const;
+	uint8_t GetGbcBlue() const;
 	void SetGbcBlue(uint8_t nValue = 0x7F);
 
 	bool Get(uint8_t nChannel, uint16_t &nValue);
@@ -78,13 +78,13 @@ public:
 
 	void SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
-	void Update(void);
-	void Blackout(void);
+	void Update();
+	void Blackout();
 
-	void Dump(void);
+	void Dump();
 
 private:
-	void UpdateFirst32(void);
+	void UpdateFirst32();
 
 private:
 	uint8_t m_nBoards;

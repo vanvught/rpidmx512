@@ -70,8 +70,8 @@ extern void console_clear_line(uint16_t);
 
 extern void console_set_cursor(uint16_t, uint16_t);
 
-extern void console_save_cursor(void);
-extern void console_restore_cursor(void);
+extern void console_save_cursor();
+extern void console_restore_cursor();
 
 extern void console_save_color(void);
 extern void console_restore_color(void);

@@ -57,7 +57,7 @@ struct OSCServerParamsMask {
 
 class OSCServerParamsStore {
 public:
-	virtual ~OSCServerParamsStore(void) {}
+	virtual ~OSCServerParamsStore() {}
 
 	virtual void Update(const struct TOSCServerParams *pOSCServerParams)=0;
 	virtual void Copy(struct TOSCServerParams *pOSCServerParams)=0;
@@ -65,10 +65,9 @@ public:
 
 class OSCServerParams {
 public:
-	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore=0);
-	~OSCServerParams(void);
+	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore=nullptr);
 
-	bool Load(void);
+	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TOSCServerParams *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
@@ -76,25 +75,25 @@ public:
 
 	void Set(OscServer *pOscServer);
 
-	void Dump(void);
+	void Dump();
 
-	uint16_t GetIncomingPort(void) {
+	uint16_t GetIncomingPort() {
 		return m_tOSCServerParams.nIncomingPort;
 	}
 
-	uint16_t GetOutgoingPort(void) {
+	uint16_t GetOutgoingPort() {
 		return m_tOSCServerParams.nOutgoingPort;
 	}
 
-	bool GetPartialTransmission(void) {
+	bool GetPartialTransmission() {
 		return m_tOSCServerParams.bPartialTransmission;
 	}
 
-	TLightSetOutputType GetOutputType(void) {
+	TLightSetOutputType GetOutputType() {
 		return m_tOSCServerParams.tOutputType;
 	}
 
-	bool IsEnableNoChangeUpdate(void) {
+	bool IsEnableNoChangeUpdate() {
 		return m_tOSCServerParams.bEnableNoChangeUpdate;
 	}
 

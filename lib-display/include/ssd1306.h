@@ -40,66 +40,60 @@ enum TOledPanel {
 	OLED_PANEL_128x32_4ROWS
 };
 
-class Ssd1306: public DisplaySet {
+class Ssd1306 final: public DisplaySet {
 public:
-	Ssd1306 (void);
+	Ssd1306 ();
 	Ssd1306 (TOledPanel);
 	Ssd1306 (uint8_t, TOledPanel);
-	~Ssd1306 (void);
+	~Ssd1306 () override;
 
-	bool Start(void);
+	bool Start() override;
+	void Cls() override;
+	void ClearLine(uint8_t) override;
+	void PutChar(int) override;
+	void PutString(const char *) override;
+	void TextLine(uint8_t, const char *, uint8_t) override;
+	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetSleep(bool bSleep) override;
+#if defined(ENABLE_CURSOR_MODE)
+	void SetCursor(uint32_t) override;
+#endif
+	void PrintInfo() override;
 
-	void Cls(void);
-	void ClearLine(uint8_t);
-
-	void PutChar(int);
-	void PutString(const char *);
-
-	void TextLine(uint8_t, const char *, uint8_t);
 	void Text(const char *, uint8_t);
 
-	void SetCursorPos(uint8_t, uint8_t);
-
-	void SetSleep(bool bSleep) override;
-
-	bool IsSH1106(void) {
+	bool IsSH1106() {
 		return m_bHaveSH1106;
 	}
 
-#if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(uint32_t);
-#endif
-
-	void PrintInfo(void);
-
-	static Ssd1306* Get(void) {
+	static Ssd1306* Get() {
 		return s_pThis;
 	}
 
 private:
-	void CheckSH1106(void);
-	void InitMembers(void);
+	void CheckSH1106();
+	void InitMembers();
 	void SendCommand(uint8_t);
 	void SendData(const uint8_t *, uint32_t);
 
 #if defined(ENABLE_CURSOR_MODE)
-	void SetCursorOn(void);
-	void SetCursorOff(void);
-	void SetCursorBlinkOn(void);
+	void SetCursorOn();
+	void SetCursorOff();
+	void SetCursorBlinkOn();
 	void SetColumnRow(uint8_t nColumn, uint8_t nRow);
 #ifndef NDEBUG
-	void DumpShadowRam(void);
+	void DumpShadowRam();
 #endif
 #endif
 
 private:
 	HAL_I2C m_I2C;
-	TOledPanel m_OledPanel = OLED_PANEL_128x64_8ROWS;
-	bool m_bHaveSH1106 = false;
+	TOledPanel m_OledPanel{OLED_PANEL_128x64_8ROWS};
+	bool m_bHaveSH1106{false};
 	uint32_t m_nPages;
 #if defined(ENABLE_CURSOR_MODE)
-	uint32_t m_tCursorMode = display::cursor::OFF;
-	alignas(uintptr_t) char *m_pShadowRam;
+	uint32_t m_tCursorMode{display::cursor::OFF};
+	char *m_pShadowRam;
 	uint16_t m_nShadowRamIndex;
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;

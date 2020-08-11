@@ -75,7 +75,7 @@ static float KThermCalcValueReg(uint8_t reg) {
 }
 #endif
 
-void L6470::Dump(void) {
+void L6470::Dump() {
 #ifndef NDEBUG
 	uint8_t reg;
 

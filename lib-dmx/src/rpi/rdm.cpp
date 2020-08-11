@@ -40,10 +40,6 @@ Rdm::Rdm(void) {
 
 }
 
-Rdm::~Rdm(void) {
-
-}
-
 const uint8_t *Rdm::Receive(uint8_t nPort) {
 	const uint8_t *p = rdm_get_available();
 	return p;

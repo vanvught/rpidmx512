@@ -35,11 +35,11 @@ class OscSimpleMessage {
 public:
 	OscSimpleMessage(void *pData, unsigned nLength);
 
-	bool IsValid(void) {
+	bool IsValid() {
 		return m_bIsValid;
 	}
 
-	int GetArgc(void) {
+	int GetArgc() {
 		if (m_bIsValid) {
 			return static_cast<int>(m_nArgc);
 		}
@@ -66,7 +66,7 @@ private:
 	bool m_bIsValid = false;
 	uint8_t *m_pArg;
 	uint32_t m_nArgc = 0;
-	uint8_t *m_pOscMessageData = 0;
+	uint8_t *m_pOscMessageData = nullptr;
 	uint32_t m_nOscMessageDataLength = 0;
 };
 

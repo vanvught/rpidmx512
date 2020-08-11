@@ -59,7 +59,7 @@ static constexpr uint8_t s_StateTable[][4] = {
   {State::CCW_NEXT, State::CCW_FINAL, State::CCW_BEGIN, State::START},
 };
 
-RotaryEncoder::RotaryEncoder(void) : m_nState(State::START) {
+RotaryEncoder::RotaryEncoder() : m_nState(State::START) {
 }
 
 uint8_t RotaryEncoder::Process(uint8_t nInputAB) {

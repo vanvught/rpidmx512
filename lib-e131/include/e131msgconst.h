@@ -26,8 +26,7 @@
 #ifndef E131MSGCONST_H_
 #define E131MSGCONST_H_
 
-class E131MsgConst {
-public:
+struct E131MsgConst {
 	static const char PARAMS[];
 	static const char START[];
 	static const char STARTED[];

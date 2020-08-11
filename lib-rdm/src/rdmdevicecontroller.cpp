@@ -37,7 +37,7 @@
  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
 #endif
 
-RDMDeviceController::RDMDeviceController(void) {
+RDMDeviceController::RDMDeviceController() {
 	DEBUG_ENTRY
 
 	struct TRDMDeviceInfoData info;
@@ -50,7 +50,7 @@ RDMDeviceController::RDMDeviceController(void) {
 	DEBUG_EXIT
 }
 
-void RDMDeviceController::Init(void) {
+void RDMDeviceController::Init() {
 	DEBUG_ENTRY
 
 	RDMDevice::Init();
@@ -58,6 +58,6 @@ void RDMDeviceController::Init(void) {
 	DEBUG_EXIT
 }
 
-void RDMDeviceController::Print(void) {
+void RDMDeviceController::Print() {
 	RDMDevice::Print();
 }

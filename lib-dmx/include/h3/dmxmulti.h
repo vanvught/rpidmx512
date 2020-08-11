@@ -31,16 +31,15 @@
 
 class DmxMulti: public DmxSet {
 public:
-	DmxMulti(void);
-	~DmxMulti(void);
+	DmxMulti();
 
-	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false);
+	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
 
 	inline void SetDmxBreakTime(uint32_t nBreakTime) {
 		dmx_multi_set_output_break_time(nBreakTime);
 	}
 
-	inline  uint32_t GetDmxBreakTime(void) {
+	inline  uint32_t GetDmxBreakTime() {
 		return dmx_multi_get_output_break_time();
 	}
 
@@ -48,18 +47,18 @@ public:
 		dmx_multi_set_output_mab_time(nMabTime);
 	}
 
-	inline uint32_t GetDmxMabTime(void) {
+	inline uint32_t GetDmxMabTime() {
 		return dmx_multi_get_output_mab_time();
 	}
 
-	inline uint32_t GetDmxPeriodTime(void) {
+	inline uint32_t GetDmxPeriodTime() {
 		return dmx_multi_get_output_period();
 	}
 
-	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength);
+	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
-	const uint8_t *RdmReceive(uint8_t nPort);
-	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut);
+	const uint8_t *RdmReceive(uint8_t nPort) override;
+	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) override;
 
 private:
 };

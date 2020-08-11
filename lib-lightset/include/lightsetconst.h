@@ -26,10 +26,14 @@
 #ifndef LIGHTSETCONST_H_
 #define LIGHTSETCONST_H_
 
-class LightSetConst {
-public:
+struct LightSetConst {
 	static const char PARAMS_OUTPUT[];
+
 	static const char PARAMS_UNIVERSE[];
+	static const char PARAMS_UNIVERSE_PORT[4][16];
+
+	static const char PARAMS_MERGE_MODE[];
+	static const char PARAMS_MERGE_MODE_PORT[4][18];
 
 	static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
 

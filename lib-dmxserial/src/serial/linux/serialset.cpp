@@ -45,7 +45,7 @@ void Serial::SetUartBits(__attribute__((unused)) uint8_t nBits) {
 
 }
 
-void Serial::SetUartParity(__attribute__((unused)) SerialUartParity tParity) {
+void Serial::SetUartParity(__attribute__((unused)) serial::uart::parity tParity) {
 	DEBUG_PRINTF("tParity=%d", static_cast<int>(tParity));
 
 }
@@ -62,7 +62,7 @@ void Serial::SetSpiSpeedHz(__attribute__((unused)) uint32_t nSpeedHz) {
 	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 }
 
-void Serial::SetSpiMode(__attribute__((unused)) SerialSpiMode tMode) {
+void Serial::SetSpiMode(__attribute__((unused)) serial::spi::mode tMode) {
 	DEBUG_PRINTF("tMode=%d", static_cast<int>(tMode));
 }
 
@@ -73,7 +73,7 @@ void Serial::SetI2cAddress(__attribute__((unused)) uint8_t nAddress) {
 	DEBUG_PRINTF("nAddress=%.x", nAddress);
 }
 
-void Serial::SetI2cSpeedMode(__attribute__((unused)) SerialI2cSpeedMode tSpeedMode) {
+void Serial::SetI2cSpeedMode(__attribute__((unused)) serial::i2c::speed tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", static_cast<int>(tSpeedMode));
 }
 

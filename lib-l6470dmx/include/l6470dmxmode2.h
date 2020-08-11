@@ -31,21 +31,21 @@
 
 #include "motorparams.h"
 
-class L6470DmxMode2: public L6470DmxMode {
+class L6470DmxMode2 final: public L6470DmxMode {
 public:
 	L6470DmxMode2(L6470 *pL6470);
-	~L6470DmxMode2(void);
+	~L6470DmxMode2() override;
 
-	void Start(void);
-	void Stop(void);
+	void Start() override;
+	void Stop() override;
 
-	void Data(const uint8_t*);
+	void Data(const uint8_t*) override;
 
-	static TL6470DmxModes GetMode(void) {
+	static TL6470DmxModes GetMode() {
 		return L6470DMXMODE2;
 	}
 
-	static uint16_t GetDmxFootPrint(void) {
+	static uint16_t GetDmxFootPrint() {
 		return 1;
 	}
 

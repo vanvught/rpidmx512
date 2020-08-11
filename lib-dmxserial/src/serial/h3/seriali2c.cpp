@@ -33,16 +33,18 @@
 
 #include "debug.h"
 
+using namespace serial;
+
 void Serial::SetI2cAddress(uint8_t nAddress) {
 	DEBUG_PRINTF("nAddress=%.x", nAddress);
 
 	m_I2cConfiguration.nAddress = nAddress;
 }
 
-void Serial::SetI2cSpeedMode(SerialI2cSpeedMode tSpeedMode) {
+void Serial::SetI2cSpeedMode(i2c::speed tSpeedMode) {
 	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
 
-	if (tSpeedMode >= SerialI2cSpeedMode::UNDEFINED) {
+	if (tSpeedMode >= i2c::speed::UNDEFINED) {
 		return;
 	}
 
@@ -53,7 +55,7 @@ bool Serial::InitI2c(void) {
 	DEBUG_ENTRY
 
 	h3_i2c_begin();
-	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == SerialI2cSpeedMode::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
+	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == i2c::speed::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
 
 	DEBUG_EXIT
 	return true;

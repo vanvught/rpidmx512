@@ -41,10 +41,6 @@ Rdm::Rdm(void) {
 	assert(DmxSet::Get() != 0);
 }
 
-Rdm::~Rdm(void) {
-
-}
-
 const uint8_t *Rdm::Receive(uint8_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
 }

@@ -88,8 +88,8 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(spiFlashStore.GetStoreNetwork());
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.Init(StoreNetwork::Get());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.Print();
 
 	MDNS mDns;

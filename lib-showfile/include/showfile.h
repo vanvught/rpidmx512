@@ -32,24 +32,16 @@
 #include "showfiledisplay.h"
 #include "showfiletftp.h"
 
-enum class ShowFileStatus {
-	IDLE,
-	RUNNING,
-	STOPPED,
-	ENDED,
-	UNDEFINED
+enum class ShowFileStatus : unsigned {
+	IDLE, RUNNING, STOPPED, ENDED, UNDEFINED
 };
 
-enum class ShowFileFormats {
-	OLA,
-	DUMMY,
-	UNDEFINED
+enum class ShowFileFormats : unsigned {
+	OLA, DUMMY, UNDEFINED
 };
 
-enum class ShowFileProtocols {
-	SACN,
-	ARTNET,
-	UNDEFINED
+enum class ShowFileProtocols : unsigned {
+	SACN, ARTNET, UNDEFINED
 };
 
 #define SHOWFILE_PREFIX	"show"
@@ -62,31 +54,31 @@ struct ShowFileFile {
 
 class ShowFile {
 public:
-	ShowFile(void);
-	virtual ~ShowFile(void) {}
+	ShowFile();
+	virtual ~ShowFile() {}
 
-	void Start(void);
-	void Stop(void);
-	void Resume(void);
-	void Run(void);
-	void Print(void);
+	void Start();
+	void Stop();
+	void Resume();
+	void Run();
+	void Print();
 
 	void SetShowFileStatus(ShowFileStatus tShowFileStatus);
 
 	void SetProtocolHandler(ShowFileProtocolHandler *pShowFileProtocolHandler) {
 		m_pShowFileProtocolHandler = pShowFileProtocolHandler;
 	}
-	ShowFileProtocolHandler *GetProtocolHandler(void) {
+	ShowFileProtocolHandler *GetProtocolHandler() {
 		return m_pShowFileProtocolHandler;
 	}
 
 	void SetShowFile(uint8_t nShowFileNumber);
 
-	const char *GetShowFileName(void) {
+	const char *GetShowFileName() {
 		return static_cast<const char *>(m_aShowFileName);
 	}
 
-	uint8_t GetShowFile(void) {
+	uint8_t GetShowFile() {
 		return m_nShowFileNumber;
 	}
 
@@ -95,19 +87,19 @@ public:
 	void DoLoop(bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
 	}
-	bool GetDoLoop(void) {
+	bool GetDoLoop() {
 		return m_bDoLoop;
 	}
 
-	void BlackOut(void);
+	void BlackOut();
 
 	void SetMaster(uint32_t nMaster) {
-		if (m_pShowFileProtocolHandler != 0) {
+		if (m_pShowFileProtocolHandler != nullptr) {
 			m_pShowFileProtocolHandler->DmxMaster(nMaster);
 		}
 	}
 
-	enum ShowFileStatus GetStatus(void) {
+	enum ShowFileStatus GetStatus() {
 		return m_tShowFileStatus;
 	}
 
@@ -116,12 +108,12 @@ public:
 	}
 
 	void EnableTFTP(bool bEnableTFTP);
-	bool IsTFTPEnabled(void) {
+	bool IsTFTPEnabled() {
 		return m_bEnableTFTP;
 	}
 
-	void UpdateDisplayStatus(void) {
-		if (m_pShowFileDisplay != 0) {
+	void UpdateDisplayStatus() {
+		if (m_pShowFileDisplay != nullptr) {
 			m_pShowFileDisplay->ShowShowFileStatus();
 		}
 	}
@@ -131,29 +123,29 @@ public:
 	static bool CheckShowFileName(const char *pShowFileName, uint8_t& nShowFileNumber);
 	static bool ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t nShowFileNumber);
 
-	static ShowFile* Get(void) {
+	static ShowFile* Get() {
 		return s_pThis;
 	}
 
 protected:
-	virtual void ShowFileStart(void)=0;
-	virtual void ShowFileStop(void)=0;
-	virtual void ShowFileResume(void)=0;
-	virtual void ShowFileRun(void)=0;
-	virtual void ShowFilePrint(void)=0;
+	virtual void ShowFileStart()=0;
+	virtual void ShowFileStop()=0;
+	virtual void ShowFileResume()=0;
+	virtual void ShowFileRun()=0;
+	virtual void ShowFilePrint()=0;
 
 protected:
-	uint8_t m_nShowFileNumber = ShowFileFile::MAX_NUMBER + 1;
-	bool m_bDoLoop = false;
-	FILE *m_pShowFile = 0;
-	ShowFileProtocolHandler *m_pShowFileProtocolHandler = 0;
-	ShowFileDisplay *m_pShowFileDisplay = 0;
+	uint8_t m_nShowFileNumber{ShowFileFile::MAX_NUMBER + 1};
+	bool m_bDoLoop{false};
+	FILE *m_pShowFile{nullptr};
+	ShowFileProtocolHandler *m_pShowFileProtocolHandler{nullptr};
+	ShowFileDisplay *m_pShowFileDisplay{nullptr};
 
 private:
-	ShowFileStatus m_tShowFileStatus = ShowFileStatus::IDLE;
+	ShowFileStatus m_tShowFileStatus{ShowFileStatus::IDLE};
 	char m_aShowFileName[ShowFileFile::NAME_LENGTH + 1]; // Including '\0'
-	bool m_bEnableTFTP = false;
-	ShowFileTFTP *m_pShowFileTFTP = 0;
+	bool m_bEnableTFTP{false};
+	ShowFileTFTP *m_pShowFileTFTP{nullptr};
 
 	static ShowFile *s_pThis;
 };

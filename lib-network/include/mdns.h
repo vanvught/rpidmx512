@@ -57,22 +57,22 @@ struct TMDNSRecordData {
 
 class MDNS {
 public:
-	MDNS(void);
-	~MDNS(void);
+	MDNS();
+	~MDNS();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void SetName(const char *pName);
 
-	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = 0);
+	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = nullptr);
 
 private:
-	void Parse(void);
+	void Parse();
 	void HandleRequest(uint16_t nQuestions);
 
 	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
@@ -80,7 +80,7 @@ private:
 	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
 	const char *FindFirstDotFromRight(const char *pString);
 
-	void CreateAnswerLocalIpAddress(void);
+	void CreateAnswerLocalIpAddress();
 
 	uint32_t CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination);
 	uint32_t CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination);

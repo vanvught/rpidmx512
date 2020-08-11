@@ -39,36 +39,36 @@ struct ShowFileOSCMax {
 
 class ShowFileOSC {
 public:
-	ShowFileOSC(void);
-	~ShowFileOSC(void);
+	ShowFileOSC();
+	~ShowFileOSC();
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void SetPortIncoming(uint16_t nPortIncoming) {
 		m_nPortIncoming = nPortIncoming;
 	}
-	uint16_t GetPortIncoming(void) {
+	uint16_t GetPortIncoming() {
 		return m_nPortIncoming;
 	}
 
 	void SetPortOutgoing(uint16_t nPortOutgoing) {
 		m_nPortOutgoing = nPortOutgoing;
 	}
-	uint16_t GetPortOutgoing(void) {
+	uint16_t GetPortOutgoing() {
 		return m_nPortOutgoing;
 	}
 
-	static ShowFileOSC *Get(void) {
+	static ShowFileOSC *Get() {
 		return s_pThis;
 	}
 
 private:
-	void SendStatus(void);
-	void Reload(void);
+	void SendStatus();
+	void Reload();
 
 private:
 	uint16_t m_nPortIncoming = osc::port::DEFAULT_INCOMING;
@@ -76,7 +76,7 @@ private:
 	int32_t m_nHandle = -1;
 	uint32_t m_nRemoteIp = 0;
 	uint16_t m_nRemotePort = 0;
-	char *m_pBuffer = 0;
+	char *m_pBuffer = nullptr;
 	int32_t m_aFileIndex[ShowFileOSCMax::FILES_ENTRIES];
 
 	static ShowFileOSC *s_pThis;

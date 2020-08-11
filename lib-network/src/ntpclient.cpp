@@ -48,6 +48,8 @@ extern "C" {
 #define TIMEOUT_MILLIS	3000 	// 3 seconds
 #define POLL_SECONDS	1024	// 2ˆ10
 
+NtpClient *NtpClient::s_pThis = nullptr;
+
 NtpClient::NtpClient(uint32_t nServerIp):
 	m_nServerIp(nServerIp),
 	m_nHandle(-1),
@@ -57,6 +59,8 @@ NtpClient::NtpClient(uint32_t nServerIp):
 	m_MillisLastPoll(0)
 {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	if (m_nServerIp == 0) {
 		m_nServerIp = Network::Get()->GetNtpServerIp();
@@ -74,15 +78,12 @@ NtpClient::NtpClient(uint32_t nServerIp):
 	DEBUG_EXIT
 }
 
-NtpClient::~NtpClient(void) {
-}
-
 void NtpClient::SetUtcOffset(float fUtcOffset) {
 	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 	m_nUtcOffset = Utc::Validate(fUtcOffset);
 }
 
-void NtpClient::Init(void) {
+void NtpClient::Init() {
 	DEBUG_ENTRY
 
 	if (m_nServerIp == 0) {
@@ -93,7 +94,7 @@ void NtpClient::Init(void) {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	if (m_pNtpClientDisplay != 0) {
+	if (m_pNtpClientDisplay != nullptr) {
 		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::INIT);
 	}
 
@@ -144,7 +145,7 @@ void NtpClient::Init(void) {
 	}
 
 	if (m_tStatus == NtpClientStatus::STOPPED) {
-		if (m_pNtpClientDisplay != 0) {
+		if (m_pNtpClientDisplay != nullptr) {
 			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
 		}
 	}
@@ -153,7 +154,7 @@ void NtpClient::Init(void) {
 	DEBUG_EXIT
 }
 
-void NtpClient::Run(void) {
+void NtpClient::Run() {
 	if (m_tStatus == NtpClientStatus::STOPPED) {
 		return;
 	}
@@ -177,7 +178,7 @@ void NtpClient::Run(void) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = NtpClientStatus::STOPPED;
 				if (m_tStatus == NtpClientStatus::STOPPED) {
-					if (m_pNtpClientDisplay != 0) {
+					if (m_pNtpClientDisplay != nullptr) {
 						m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
 					}
 				}
@@ -212,7 +213,7 @@ void NtpClient::Run(void) {
 	}
 }
 
-void NtpClient::Print(void) {
+void NtpClient::Print() {
 	printf("NTP v%d Client\n", NTP_VERSION >> 3);
 	if (m_nServerIp == 0) {
 		printf(" Not enabled\n");

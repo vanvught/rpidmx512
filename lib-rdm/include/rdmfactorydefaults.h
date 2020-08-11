@@ -28,9 +28,9 @@
 
 class RDMFactoryDefaults {
 public:
-	virtual ~RDMFactoryDefaults(void) {}
+	virtual ~RDMFactoryDefaults() {}
 
-	virtual void Set(void)=0;
+	virtual void Set()=0;
 };
 
 #endif /* RDMFACTORYDEFAULTS_H_ */

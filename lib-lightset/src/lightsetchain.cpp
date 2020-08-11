@@ -36,19 +36,19 @@
 
 #define LIGHTSET_CHAIN_MAX_ENTRIES	16
 
-LightSetChain::LightSetChain(void): m_nSize(0), m_nDmxStartAddress(DMX_ADDRESS_INVALID), m_nDmxFootprint(0) { // Invalidate DMX Start Address and DMX Footprint
+LightSetChain::LightSetChain() { // Invalidate DMX Start Address and DMX Footprint
 	m_pTable = new TLightSetEntry[LIGHTSET_CHAIN_MAX_ENTRIES];
-	assert(m_pTable != 0);
+	assert(m_pTable != nullptr);
 
 	for (unsigned i = 0; i < LIGHTSET_CHAIN_MAX_ENTRIES ; i++) {
-		m_pTable[i].pLightSet = 0;
+		m_pTable[i].pLightSet = nullptr;
 		m_pTable[i].nType = LIGHTSET_TYPE_UNDEFINED;
 	}
 }
 
-LightSetChain::~LightSetChain(void) {
+LightSetChain::~LightSetChain() {
 	delete[] m_pTable;
-	m_pTable = 0;
+	m_pTable = nullptr;
 	m_nSize = 0;
 }
 
@@ -65,14 +65,14 @@ void LightSetChain::Stop(uint8_t nPort) {
 }
 
 void LightSetChain::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nSize) {
-	assert(pData != 0);
+	assert(pData != nullptr);
 
 	for (unsigned i = 0; i < m_nSize; i++) {
 		m_pTable[i].pLightSet->SetData(nPort, pData, nSize);
 	}
 }
 
-void LightSetChain::Print(void) {
+void LightSetChain::Print() {
 	for (unsigned i = 0; i < m_nSize; i++) {
 		m_pTable[i].pLightSet->Print();
 	}
@@ -97,7 +97,7 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	DEBUG_PRINTF("m_pLightSetDisplay=%p", m_pLightSetDisplay);
 
-	if (m_pLightSetDisplay != 0) {
+	if (m_pLightSetDisplay != nullptr) {
 		m_pLightSetDisplay->ShowDmxStartAddress();
 	}
 
@@ -114,7 +114,7 @@ bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &
 
 	for (unsigned i = 0; i < m_nSize; i++) {
 		const uint16_t nDmxAddress = m_nDmxStartAddress + nSlotOffset;
-		const int16_t nOffset = nDmxAddress - m_pTable[i].pLightSet->GetDmxStartAddress();
+		const int16_t nOffset = static_cast<int16_t>(nDmxAddress) - m_pTable[i].pLightSet->GetDmxStartAddress();
 
 #ifndef NDEBUG
 		printf("\tnSlotOffset=%d, m_nDmxStartAddress=%d, m_pTable[%d].pLightSet->GetDmxStartAddress()=%d, m_pTable[%d].pLightSet->GetDmxFootprint()=%d\n",
@@ -153,7 +153,7 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 		return false;
 	}
 
-	if (pLightSet != 0) {
+	if (pLightSet != nullptr) {
 #ifndef NDEBUG
 		printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n",
 				static_cast<int>(m_nDmxStartAddress),
@@ -206,7 +206,7 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 	return false;
 }
 
-uint8_t LightSetChain::GetSize(void) const {
+uint8_t LightSetChain::GetSize() const {
 	return m_nSize;
 }
 
@@ -220,13 +220,13 @@ int LightSetChain::GetType(uint8_t nEntry) const {
 
 const LightSet* LightSetChain::GetLightSet(uint8_t nEntry) {
 	if (nEntry > LIGHTSET_CHAIN_MAX_ENTRIES) {
-		return 0;
+		return nullptr;
 	}
 
 	return m_pTable[nEntry].pLightSet;
 }
 
-bool LightSetChain::IsEmpty(void) const {
+bool LightSetChain::IsEmpty() const {
 	return (m_nSize == 0);
 }
 
@@ -261,7 +261,7 @@ void LightSetChain::Dump(__attribute__((unused)) uint8_t nEntries) {
 #endif
 }
 
-void LightSetChain::Dump(void) {
+void LightSetChain::Dump() {
 #ifndef NDEBUG
 	Dump(m_nSize);
 #endif

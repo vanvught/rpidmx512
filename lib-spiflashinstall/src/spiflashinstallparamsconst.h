@@ -26,8 +26,7 @@
 #ifndef SPIFLASHINSTALLPARAMSCONST_H_
 #define SPIFLASHINSTALLPARAMSCONST_H_
 
-class SpiFlashInstallParamsConst {
-public:
+struct SpiFlashInstallParamsConst {
 	static const char FILE_NAME[];
 
 	static const char INSTALL_UBOOT[];

@@ -38,22 +38,22 @@ public:
 	AutoDriver(uint8_t, uint8_t, uint8_t, uint8_t);
 	AutoDriver(uint8_t, uint8_t, uint8_t);
 
-	~AutoDriver(void);
+	~AutoDriver() override;
 
-	int busyCheck(void);
+	int busyCheck() override;
 
-	void Print(void);
+	void Print();
 
 private:
-	uint8_t SPIXfer(uint8_t);
+	uint8_t SPIXfer(uint8_t) override;
 
 	/*
 	 * Additional methods
 	 */
 public:
-	bool IsConnected(void);
+	bool IsConnected();
 
-	unsigned getMotorNumber(void) {
+	unsigned getMotorNumber() {
 		return m_nMotorNumber;
 	}
 
@@ -61,7 +61,7 @@ public:
 		m_nMotorNumber = nMotorNumber;
 	}
 
-	static uint16_t getNumBoards(void);
+	static uint16_t getNumBoards();
 	static uint8_t getNumBoards(uint8_t cs);
 
 private:

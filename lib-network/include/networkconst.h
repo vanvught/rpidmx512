@@ -26,8 +26,7 @@
 #ifndef NETWORKCONST_H_
 #define NETWORKCONST_H_
 
-class NetworkConst {
-public:
+struct NetworkConst {
 	static const char PARAMS_FILE_NAME[];
 	static const char PARAMS_USE_DHCP[];
 	static const char PARAMS_IP_ADDRESS[];

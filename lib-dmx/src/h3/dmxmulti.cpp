@@ -48,12 +48,6 @@ DmxMulti::DmxMulti(void) {
 	DEBUG_EXIT
 }
 
-DmxMulti::~DmxMulti(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 void DmxMulti::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
 	assert(nPort < DMX_MAX_OUT);
 

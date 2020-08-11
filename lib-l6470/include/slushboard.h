@@ -73,14 +73,14 @@ enum TSlushIOFSel {
 
 class SlushBoard {
 public:
-	SlushBoard(void);
-	~SlushBoard(void);
+	SlushBoard();
+	~SlushBoard();
 
 	void setIOState(uint8_t, uint8_t, uint8_t);
 	uint8_t getIOState(uint8_t, uint8_t);
 
-	uint16_t getTempRaw(void);
-	float getTemprature(void);
+	uint16_t getTempRaw();
+	float getTemprature();
 
 private:
 	float calcTemp(uint16_t);
@@ -98,8 +98,8 @@ public:
 	uint8_t IOLev(TSlushIOPorts, TSlushIOPins);
 
 private:
-	void InitSpi(void);
-	void InitI2c(void);
+	void InitSpi();
+	void InitI2c();
 	void I2cSetup(uint8_t);
 	uint8_t Mcp23017ReadReg(uint8_t);
 	void Mcp23017WriteReg(uint8_t, uint8_t);

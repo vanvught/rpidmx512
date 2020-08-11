@@ -30,8 +30,8 @@
 
 class RDMMessage: public Rdm {
 public:
-	RDMMessage(void);
-	~RDMMessage(void);
+	RDMMessage();
+	~RDMMessage();
 
 	void SetSrcUid(const uint8_t *);
 	void SetDstUid(const uint8_t *);

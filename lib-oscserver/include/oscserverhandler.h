@@ -30,12 +30,12 @@
 
 class OscServerHandler {
 public:
-	virtual ~OscServerHandler(void) {
+	virtual ~OscServerHandler() {
 
 	}
 
-	virtual void Blackout(void)=0;
-	virtual void Update(void)=0;
+	virtual void Blackout()=0;
+	virtual void Update()=0;
 
 	virtual void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing)=0;
 };

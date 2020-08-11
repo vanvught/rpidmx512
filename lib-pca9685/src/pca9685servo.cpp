@@ -43,7 +43,7 @@ PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress), m_nLeftUs(SERVO
 	CalcRightCount();
 }
 
-PCA9685Servo::~PCA9685Servo(void) {
+PCA9685Servo::~PCA9685Servo() {
 }
 
 void PCA9685Servo::SetLeftUs(uint16_t nLeftUs) {
@@ -53,7 +53,7 @@ void PCA9685Servo::SetLeftUs(uint16_t nLeftUs) {
 	CalcLeftCount();
 }
 
-uint16_t PCA9685Servo::GetLeftUs(void) const {
+uint16_t PCA9685Servo::GetLeftUs() const {
 	return m_nLeftUs;
 }
 
@@ -64,15 +64,15 @@ void PCA9685Servo::SetRightUs(uint16_t nRightUs) {
 	CalcRightCount();
 }
 
-uint16_t PCA9685Servo::GetRightUs(void) const {
+uint16_t PCA9685Servo::GetRightUs() const {
 	return m_nRightUs;
 }
 
-void PCA9685Servo::CalcLeftCount(void) {
+void PCA9685Servo::CalcLeftCount() {
 	m_nLeftCount = (.5 + ((204.8 * m_nLeftUs) / 1000));
 }
 
-void PCA9685Servo::CalcRightCount(void) {
+void PCA9685Servo::CalcRightCount() {
 	m_nRightCount = (.5 + ((204.8 * m_nRightUs) / 1000));
 }
 

@@ -35,15 +35,15 @@
 #include "../src/serial/serial.h"
 
 namespace DmxSerialDefaults {
-	static constexpr auto TYPE = SerialType::UART;
+	static constexpr auto TYPE = serial::type::UART;
 	static constexpr auto UART_BAUD = 115200;
 	static constexpr auto UART_BITS = 8;
-	static constexpr auto UART_PARITY = SerialUartParity::NONE;
+	static constexpr auto UART_PARITY = serial::uart::parity::NONE;
 	static constexpr auto UART_STOPBITS = 1;
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;
 	static constexpr auto I2C_ADDRESS = 0x30;
-	static constexpr auto I2C_SPEED_MODE = SerialI2cSpeedMode::FAST;
+	static constexpr auto I2C_SPEED_MODE = serial::i2c::speed::FAST;
 }
 
 #define DMXSERIAL_FILE_PREFIX	"chl"
@@ -57,25 +57,25 @@ namespace DmxSerialFile {
 
 class DmxSerial: public LightSet {
 public:
-	DmxSerial(void);
-	~DmxSerial(void);
+	DmxSerial();
+	~DmxSerial() override;
 
-	void Init(void);
+	void Init();
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print() override;
 
-	const char *GetSerialType(void) {
+	const char *GetSerialType() {
 		return Serial::GetType(m_Serial.GetType());
 	}
 
-	uint32_t GetFilesCount(void) {
+	uint32_t GetFilesCount() {
 		return m_nFilesCount;
 	}
 
@@ -87,24 +87,24 @@ public:
 	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileNumber);
 	static bool CheckFileName(const char *pFileName, int16_t &nFileNumber);
 
-	static DmxSerial *Get(void) {
+	static DmxSerial *Get() {
 		return s_pThis;
 	}
 
 private:
-	void ScanDirectory(void);
-	void HandleUdp(void);
+	void ScanDirectory();
+	void HandleUdp();
 
 private:
 	Serial m_Serial;
-	uint32_t m_nFilesCount = 0;
+	uint32_t m_nFilesCount{0};
 	int16_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
-	int32_t m_nHandle = -1;
+	int32_t m_nHandle{-1};
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
 	uint16_t m_nDmxLastSlot = DMX_UNIVERSE_SIZE;
 	uint8_t m_DmxData[DMX_UNIVERSE_SIZE];
-	bool m_bEnableTFTP = false;
-	DmxSerialTFTP *m_pDmxSerialTFTP = 0;
+	bool m_bEnableTFTP{false};
+	DmxSerialTFTP *m_pDmxSerialTFTP{nullptr};
 
 	static DmxSerial *s_pThis;
 };

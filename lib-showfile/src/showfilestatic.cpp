@@ -35,9 +35,9 @@
 #include "debug.h"
 
 ShowFileFormats ShowFile::GetFormat(const char *pString) {
-	assert(pString != 0);
+	assert(pString != nullptr);
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(ShowFileFormats::UNDEFINED); i++) {
+	for (uint32_t i = 0; i < static_cast<unsigned>(ShowFileFormats::UNDEFINED); i++) {
 		if (strcasecmp(pString, ShowFileConst::FORMAT[i]) == 0) {
 			return static_cast<ShowFileFormats>(i);
 		}
@@ -48,7 +48,7 @@ ShowFileFormats ShowFile::GetFormat(const char *pString) {
 
 const char *ShowFile::GetFormat(ShowFileFormats tFormat) {
 	if (tFormat < ShowFileFormats::UNDEFINED) {
-		return ShowFileConst::FORMAT[static_cast<int>(tFormat)];
+		return ShowFileConst::FORMAT[static_cast<unsigned>(tFormat)];
 	}
 
 	return "Unknown";
@@ -68,7 +68,7 @@ bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t
 bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNumber) {
 	DEBUG_PRINTF("pShowFileName=[%s]", pShowFileName);
 
-	if ((pShowFileName == 0) || (strlen(pShowFileName) != ShowFileFile::NAME_LENGTH)) {
+	if ((pShowFileName == nullptr) || (strlen(pShowFileName) != ShowFileFile::NAME_LENGTH)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -91,7 +91,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNu
 		return false;
 	}
 
-	nShowFileNumber = 10 * (cDigit - '0');
+	nShowFileNumber = 10 * static_cast<uint8_t>(cDigit - '0');
 
 	cDigit = pShowFileName[sizeof(SHOWFILE_PREFIX)];
 	DEBUG_PRINTF("cDigit=%c", cDigit);

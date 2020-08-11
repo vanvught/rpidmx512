@@ -27,8 +27,7 @@
 #ifndef DMXSENDCONST_H_
 #define DMXSENDCONST_H_
 
-class DMXSendConst {
-public:
+struct DMXSendConst {
 	static const char PARAMS_FILE_NAME[];
 
 	static const char PARAMS_BREAK_TIME[];

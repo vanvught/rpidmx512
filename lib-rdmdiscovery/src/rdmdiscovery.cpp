@@ -71,11 +71,11 @@ void RDMDiscovery::SetUid(const uint8_t *uid) {
 	m_DiscUniqueBranch.SetSrcUid(uid);
 }
 
-const uint8_t *RDMDiscovery::GetUid(void) {
+const uint8_t *RDMDiscovery::GetUid() {
 	return m_Uid;
 }
 
-void RDMDiscovery::Full(void) {
+void RDMDiscovery::Full() {
 	Reset();
 
 	m_UnMute.Send(m_nPort);
@@ -94,7 +94,7 @@ void RDMDiscovery::Full(void) {
 
 	const struct TRdmMessage *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
-	if (pResponse != 0) {
+	if (pResponse != nullptr) {
 		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
 	}
 
@@ -127,7 +127,7 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 
 		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
 
-		if (pRdmMessage != 0) {
+		if (pRdmMessage != nullptr) {
 			if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
 				AddUid(uid);
 			}
@@ -143,7 +143,7 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 
 		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
 
-		if (pRdmMessage != 0) {
+		if (pRdmMessage != nullptr) {
 			bDeviceFound = true;
 
 			if (IsValidDiscoveryResponse(reinterpret_cast<const uint8_t*>(pRdmMessage), uid)) {
@@ -245,7 +245,7 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 
 	uint8_t *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
-	if (pResponse != 0) {
+	if (pResponse != nullptr) {
 		struct TRdmMessage *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
 
 		if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
@@ -259,7 +259,7 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 
 	pResponse = const_cast<uint8_t *>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
-	if ((pResponse != 0) && (IsValidDiscoveryResponse(pResponse, r_uid))) {
+	if ((pResponse != nullptr) && (IsValidDiscoveryResponse(pResponse, r_uid))) {
 		QuickFind(r_uid);
 	} else {
 		return true;

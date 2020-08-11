@@ -42,34 +42,34 @@
 class SlushDmx: public LightSet {
 public:
 	SlushDmx(bool bUseSPI = false);
-	~SlushDmx(void);
+	~SlushDmx() override;
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
 
-	uint32_t GetMotorsConnected(void) {
+	uint32_t GetMotorsConnected() {
 		return m_nMotorsConnected;
 	}
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	uint16_t GetDmxStartAddress(void) {
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 public:
 	void SetUseSpiBusy(bool bUseSpiBusy) {
 		m_bUseSpiBusy = bUseSpiBusy;
 	}
-	bool GetUseSpiBusy(void)  {
+	bool GetUseSpiBusy()  {
 		return m_bUseSpiBusy;
 	}
 
@@ -91,7 +91,7 @@ public:	// MCP23017 Port A , Port B
 	}
 
 public:
-	void ReadConfigFiles(void);
+	void ReadConfigFiles();
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
