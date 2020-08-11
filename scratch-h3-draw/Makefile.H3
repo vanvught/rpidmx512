@@ -1,0 +1,11 @@
+PLATFORM=ORANGE_PI_ONE
+#
+DEFINES = CONSOLE_FB
+#
+LIBS =
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

@@ -59,6 +59,8 @@ extern void console_status(uint32_t, const char *);
 
 extern void console_clear_top_row(void);
 
+extern void console_putpixel(uint32_t x, uint32_t y, uint32_t color); 
+
 #ifdef __cplusplus
 }
 #endif

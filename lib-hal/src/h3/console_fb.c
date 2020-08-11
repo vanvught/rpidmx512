@@ -151,6 +151,10 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint3
 	}
 }
 
+void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
+  draw_pixel(x,y,color);
+}
+
 int console_draw_char(int ch, uint16_t x, uint16_t y, uint32_t fore, uint32_t back) {
 	draw_char(ch, x * FB_CHAR_W, y * FB_CHAR_H, fore, back);
 	return (int)ch;
