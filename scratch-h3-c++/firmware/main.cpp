@@ -46,8 +46,6 @@ static const char SOFTWARE_VERSION[] = "0.0";
  *
  */
 #include "hwclock.h"
-#include "../lib-hal/rtc/rtc.h"
-
 
 /*
  * Debugging HDMI support Orange Pi One
@@ -99,10 +97,10 @@ void notmain(void) {
 	ntpClient.Print();
 
 	if (ntpClient.GetStatus() != NtpClientStatus::STOPPED) {
-		printf("Set RTC from System Clock");
+		printf("Set RTC from System Clock\n");
 		hwClock.SysToHc();
 	} else {
-		printf("Set System Clock from RTC");
+		printf("Set System Clock from RTC\n");
 		hwClock.HcToSys();
 	}
 
@@ -142,6 +140,7 @@ void notmain(void) {
 #endif
 
 	int nPrevSeconds = 60; // Force initial update
+
 	display.ClearLine(0);
 	display.ClearLine(1);
 
@@ -172,11 +171,16 @@ void notmain(void) {
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
-			struct tm rtc;
-			rtc_get_date_time(&rtc);
+			struct rtc_time rtc;
+			hwClock.Get(&rtc);
 
 			display.Printf(1, "%.2d:%.2d:%.2d", tm->tm_hour, tm->tm_min, tm->tm_sec);
 			display.Printf(2, "%.2d:%.2d:%.2d", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
+
+//			const uint32_t nMicros = H3_HS_TIMER->CURNT_LO / 100;
+//			udelay(200);
+//			const uint32_t m = H3_HS_TIMER->CURNT_LO / 100;
+//			printf("%.8x - %.8x = %u\n", nMicros, m, nMicros - m);
 		}
 	}
 }

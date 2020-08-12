@@ -34,10 +34,12 @@
 #include <sys/time.h>
 
 #include "hwclock.h"
-#include "../lib-hal/rtc/rtc.h"
+
 #include "hardware.h"
 
 #include "debug.h"
+
+using namespace rtc;
 
 HwClock *HwClock::s_pThis = nullptr;
 
@@ -47,9 +49,7 @@ HwClock::HwClock() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	rtc_start(RTC_PROBE);
-
-	m_bIsConnected = rtc_is_connected();
+	RtcProbe();
 
 	DEBUG_EXIT
 }
@@ -60,8 +60,11 @@ void HwClock::Print() {
 		return;
 	}
 
-	struct tm tm;
-	rtc_get_date_time(&tm);
+	printf("%s\n", m_nType == MCP7941X ? "MCP7941X" : (m_nType == DS3231 ? "DS3231" : "Unknown"));
+
+
+	struct rtc_time tm;
+	Get(&tm);
 	printf("%.4d/%.2d/%.2d %.2d:%.2d:%.2d\n", 1900 + tm.tm_year, tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
 
@@ -82,32 +85,48 @@ void HwClock::HcToSys() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	struct tm tmT1;
-	struct tm tmT2;
-	uint32_t MicrosT2;
+	struct rtc_time tmT1;
+	struct rtc_time tmT2;
 
-	rtc_get_date_time(&tmT1);
+	struct timeval tvT1;
+	struct timeval tvT2;
 
-	const uint32_t MicrosT1 = Hardware::Get()->Micros();
+	Get(&tmT1);
+
+	gettimeofday(&tvT1, nullptr);
+
 	const int32_t nSecondsT1 = tmT1.tm_sec + tmT1.tm_min * 60;
-	const time_t nSeconds = mktime(&tmT1);
+
+	struct tm tm;
+
+	tm.tm_sec = tmT1.tm_sec;
+	tm.tm_min = tmT1.tm_min;
+	tm.tm_hour = tmT1.tm_hour;
+	tm.tm_mday = tmT1.tm_mday;
+	tm.tm_mon = tmT1.tm_mon;
+	tm.tm_year = tmT1.tm_year;
+
+	const time_t nSeconds = mktime(&tm);
 
 	while(true) {
-		rtc_get_date_time(&tmT2);
+		Get(&tmT2);
 
 		const int32_t nSeconds2 = tmT2.tm_sec + tmT2.tm_min * 60;
 
 		if (nSecondsT1 != nSeconds2) {
-			MicrosT2 = Hardware::Get()->Micros();
+			gettimeofday(&tvT2, nullptr);
 			break;
 		}
 	}
 
-	const auto nDelay = MicrosT2 - MicrosT1;
-
 	struct timeval tv;
 	tv.tv_sec = nSeconds;
-	tv.tv_usec = 1000000 -  static_cast<suseconds_t>(nDelay);
+
+	if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+		tv.tv_usec = 1000000 -  (tvT2.tv_usec - tvT1.tv_usec);
+	} else {
+		tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
+	}
 
 	settimeofday(&tv, nullptr);
 
@@ -144,7 +163,17 @@ void HwClock::SysToHc() {
 
 		if (tv2.tv_sec >= (tv1.tv_sec + 1)) {
 			const struct tm *tm = localtime(&tv2.tv_sec);
-			rtc_set_date_time(tm);
+
+			struct rtc_time rtc;
+
+			rtc.tm_sec = tm->tm_sec;
+			rtc.tm_min = tm->tm_min;
+			rtc.tm_hour = tm->tm_hour;
+			rtc.tm_mday = tm->tm_mday;
+			rtc.tm_mon = tm->tm_mon;
+			rtc.tm_year = tm->tm_year;
+
+			Set(&rtc);
 			break;
 		}
 	}

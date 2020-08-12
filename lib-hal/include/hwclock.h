@@ -33,12 +33,34 @@
 
 #include <stdint.h>
 
+namespace rtc {
+enum {
+	MCP7941X,
+	DS3231
+};
+}  // namespace rtc
+
+struct rtc_time {
+    int tm_sec;
+    int tm_min;
+    int tm_hour;
+    int tm_mday;
+    int tm_mon;
+    int tm_year;
+    int tm_wday;     /* unused */
+    int tm_yday;     /* unused */
+    int tm_isdst;    /* unused */
+};
+
 class HwClock {
 public:
 	HwClock();
 
 	void HcToSys(); // Set the System Clock from the Hardware Clock
 	void SysToHc(); // Set the Hardware Clock from the System Clock
+
+	bool Set(const struct rtc_time *pRtcTime);
+	bool Get(struct rtc_time *pRtcTime);
 
 	void Print();
 
@@ -47,7 +69,12 @@ public:
 	}
 
 private:
+	void RtcProbe();
+
+private:
 	bool m_bIsConnected{false};
+	uint32_t m_nType;
+	uint8_t m_nAddress;
 	uint32_t m_nSetDelayMicros;
 
 	static HwClock *s_pThis;
