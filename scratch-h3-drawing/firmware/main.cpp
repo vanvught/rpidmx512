@@ -53,12 +53,11 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
-	Drawing * draw = Drawing::Get();
+	Drawing draw;
 
 	// background
-	draw->fillRect(0,0,fb_width,fb_height,0x000000FF);
+	draw.fillRect(0,0,fb_width,fb_height,0x000000FF);
 	
-
 	console_puts("Drawing Test ");
 	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("Check 123");
@@ -69,19 +68,19 @@ void notmain(void) {
 		
 	nw.Init();
 	nw.Print();
-
+	
 	NtpClient ntpClient;
 	ntpClient.Init();
 	ntpClient.Print();
 
 	console_set_top_row(20);
 
-	draw->rect(500,20,200,100, 0x0000FFFF); // yellow rectangle
-	draw->line(0,0,fb_width,fb_height,0x00FFFFFF); // top left to bottom right
-	draw->line(fb_width,0,0,fb_height,0x00FFFFFF); // top right to bottom left
-	draw->circle(200,200,100,0x0000FF00); // green circle outline
-	draw->fillCircle(250,200,50,0x00FF0000); // red, filled circle
-	draw->triangle(300,300,350,200,400,300, 0x00FF00FF); // draw a triangle outline
+	draw.rect(500,20,200,100, 0x0000FFFF); // yellow rectangle
+	draw.line(0,0,fb_width,fb_height,0x00FFFFFF); // top left to bottom right
+	draw.line(fb_width,0,0,fb_height,0x00FFFFFF); // top right to bottom left
+	draw.circle(200,200,100,0x0000FF00); // green circle outline
+	draw.fillCircle(250,200,50,0x00FF0000); // red, filled circle
+	draw.triangle(300,300,350,200,400,300, 0x00FF00FF); // draw a triangle outline
  
 
 	hw.WatchdogInit();
