@@ -58,10 +58,6 @@ __bss_start = . ;
 __bss_end = . ; 
     } > ram
 	
-    __exidx_start = .;
-    .ARM.exidx   : { *(.ARM.exidx* .gnu.linkonce.armexidx.*) } >ram
-    __exidx_end = .;
-
 	/DISCARD/ :
 	{
 	*(*.ARM.attributes)
