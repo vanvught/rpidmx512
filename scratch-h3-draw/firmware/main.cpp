@@ -1,45 +1,47 @@
-#ifndef ORANGE_PI_ONE
- #define ORANGE_PI_ONE
-#endif
+/**
+ * @file main.cpp
+ *
+ */
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <stdio.h>
 #include <stdint.h>
-#include <math.h>
-#include "string.h"
-#include <assert.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
 #include "ledblink.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "h3/showsystime.h"
 
-#include "storenetwork.h"
-#include "storeremoteconfig.h"
+#include "ntpclient.h"
+
+#include "display.h"
+
+#include "networkconst.h"
 
 #include "firmwareversion.h"
-
-static const char SOFTWARE_VERSION[] = "0.0";
-
-/*
- * Debugging HDMI support Orange Pi One
- */
-#ifdef ORANGE_PI_ONE
-#include "h3.h"
-#include "device/fb.h"
+#include "software_version.h"
 
 #include "drawing.h"
-
-extern "C" {
-extern int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
-extern void debug_dump(const void *packet, uint16_t len);
-}
-#endif
-
 
 extern "C" {
 
@@ -47,39 +49,53 @@ void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
 	LedBlink lb;
+	
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	ShowSystime showSystime;
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	Drawing draw;
 
-	fw.Print();
+	// background
+	draw.fillRect(0,0,fb_width,fb_height,0x000000FF);
+	
+	console_puts("Drawing Test ");
+	console_set_fg_color(CONSOLE_GREEN);
+	console_puts("Check 123");
+	console_set_fg_color(CONSOLE_WHITE);
+	console_putc('\n');
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	hw.SetLed(HARDWARE_LED_ON);
+		
+	nw.Init();
 	nw.Print();
+	
+	NtpClient ntpClient;
+	ntpClient.Init();
+	ntpClient.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
+	console_set_top_row(20);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	draw.rect(500,20,200,100, 0x0000FFFF); // yellow rectangle
+	draw.line(0,0,fb_width,fb_height,0x00FFFFFF); // top left to bottom right
+	draw.line(fb_width,0,0,fb_height,0x00FFFFFF); // top right to bottom left
+	draw.circle(200,200,100,0x0000FF00); // green circle outline
+	draw.fillCircle(250,200,50,0x00FF0000); // red, filled circle
+	draw.triangle(300,300,350,200,400,300, 0x00FF00FF); // draw a triangle outline
+ 
 
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	hw.WatchdogInit();
 
-	while (spiFlashStore.Flash())
-		;
-
+	uint32_t clr = 0;
 
 	for (;;) {
+		hw.WatchdogFeed();
 		nw.Run();
-		remoteConfig.Run();
-		spiFlashStore.Flash();
+		ntpClient.Run();
 		lb.Run();
+		showSystime.Run();
 
-  
-
+		draw.fillRect(400,400,200,200,clr++);
+	
 	}
 }
 

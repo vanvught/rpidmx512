@@ -37,7 +37,7 @@
  #error Support for Orange Pi One only
 #endif
 
-
+#include "stdint.h"
 #include "device/fb.h"
 
 
