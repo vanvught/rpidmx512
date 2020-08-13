@@ -43,10 +43,8 @@
 
 #include "drawing.h"
 
-//#include "renderer.h"
-//#include "microui.h"
-
-
+#include "renderer.h"
+#include "microui.h"
 
 extern "C" {
 
@@ -59,6 +57,9 @@ void notmain(void) {
 	ShowSystime showSystime;
 
 	Drawing draw;
+
+	mu_Context *ctx = new mu_Context;
+	mu_init(ctx);
 
 	// background
 	draw.fillRect(0,0,fb_width,fb_height,0x000000FF);
