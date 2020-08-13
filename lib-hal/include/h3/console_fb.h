@@ -47,6 +47,8 @@ typedef enum {
 extern "C" {
 #endif
 
+extern void console_putpixel(uint32_t x, uint32_t y, uint32_t color);
+
 extern void console_set_fg_color(uint32_t);
 extern void console_set_bg_color(uint32_t);
 extern void console_set_fg_bg_color(uint32_t, uint32_t);
