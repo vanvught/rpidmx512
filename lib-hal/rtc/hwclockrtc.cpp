@@ -82,7 +82,7 @@ void HwClock::RtcProbe() {
 	}
 }
 
-bool HwClock::Set(const struct rtc_time *pRtcTime) {
+bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	assert(pRtcTime != 0);
 
 	if(!m_bIsConnected) {
@@ -123,7 +123,7 @@ bool HwClock::Set(const struct rtc_time *pRtcTime) {
 	return true;
 }
 
-bool HwClock::Get(struct rtc_time *pRtcTime) {
+bool HwClock::RtcGet(struct rtc_time *pRtcTime) {
 	assert(pRtcTime != 0);
 
 	if(!m_bIsConnected) {

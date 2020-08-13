@@ -60,7 +60,9 @@ public:
 	void SysToHc(); // Set the Hardware Clock from the System Clock
 
 	bool Set(const struct rtc_time *pRtcTime);
-	bool Get(struct rtc_time *pRtcTime);
+	bool Get(struct rtc_time *pRtcTime) {
+		return RtcGet(pRtcTime);
+	}
 
 	void Print();
 
@@ -70,6 +72,8 @@ public:
 
 private:
 	void RtcProbe();
+	bool RtcSet(const struct rtc_time *pRtcTime);
+	bool RtcGet(struct rtc_time *pRtcTime);
 
 private:
 	bool m_bIsConnected{false};
