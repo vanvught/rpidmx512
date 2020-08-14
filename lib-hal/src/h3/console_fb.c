@@ -132,6 +132,10 @@ inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
 	*address = (uint32_t) color;
 }
 
+inline static uint32_t get_pixel(uint32_t x, uint32_t y){
+	return *(uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+}
+
 inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back) {
 	uint32_t i, j;
 	uint8_t line;
