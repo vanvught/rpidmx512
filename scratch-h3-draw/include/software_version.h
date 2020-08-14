@@ -1,5 +1,5 @@
 /**
- * @file console_fb.h
+ * @file software_version.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,46 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONSOLE_FB_H_
-#define CONSOLE_FB_H_
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#if !defined ORANGE_PI_ONE
- #error Support for Orange Pi One only
-#endif
+constexpr char SOFTWARE_VERSION[] = "0.1";
 
-#include <stdint.h>
-
-// some RGB color definitions
-typedef enum {
-	CONSOLE_BLACK = 0x00000000,		///<   0,   0,   0
-	CONSOLE_BLUE = 0x000000FF,		///<   0,   0, 255
-	CONSOLE_GREEN = 0x0000FF00,		///<   0, 255,   0
-	CONSOLE_CYAN = 0x0000FFFF,		///<   0, 255, 255
-	CONSOLE_RED = 0x00FF0000,		///< 255,   0,   0
-	CONSOLE_YELLOW = 0x00FFFF00,	///< 255, 255,   0
-	CONSOLE_WHITE = 0x00FFFFFF		///< 255, 255, 255
-} _console_colors;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void console_putpixel(uint32_t x, uint32_t y, uint32_t color);
-
-extern void console_set_fg_color(uint32_t);
-extern void console_set_bg_color(uint32_t);
-extern void console_set_fg_bg_color(uint32_t, uint32_t);
-
-extern void console_puthex_fg_bg(uint8_t, uint32_t, uint32_t);
-extern void console_putpct_fg_bg(uint8_t, uint32_t, uint32_t);
-extern void console_put3dec_fg_bg(uint8_t, uint32_t, uint32_t);
-
-extern void console_status(uint32_t, const char *);
-
-extern void console_clear_top_row(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* CONSOLE_FB_H_ */
+#endif /* SOFTWARE_VERSION_H_ */
