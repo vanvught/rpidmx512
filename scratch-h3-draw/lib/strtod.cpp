@@ -38,6 +38,10 @@
 #include <stdlib.h>
 #include "strtod.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 double strtod(const char *str, char **endptr) {
   double number;
   int exponent;
@@ -164,3 +168,7 @@ double strtod(const char *str, char **endptr) {
 //double atof(const char *str) {
 //  return strtod(str, NULL);
 //}
+
+#ifdef __cplusplus
+}
+#endif

@@ -24,15 +24,36 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+//#include <string.h>
 
 
 #include "h3_uart0_debug.h"
+
+
 #include "qsort.h"
+#include "strtod.h"
 #include "microui.h"
 
 extern int uart0_printf(const char* fmt, ...);
 #define printf uart0_printf
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+
+
+// static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+// 	char *dp = (char *) dest;
+// 	const char *sp = (const char *) src;
+
+// 	while (n-- != (size_t) 0) {
+// 		*dp++ = *sp++;
+// 	}
+
+// 	return dest;
+// }
+
 
 #define unused(x) ((void) (x))
 
@@ -156,9 +177,9 @@ void mu_begin(mu_Context *ctx) {
 }
 
 
-static int compare_zindex(const void *a, const void *b) {
-  return (*(mu_Container**) a)->zindex - (*(mu_Container**) b)->zindex;
-}
+//static int compare_zindex(const void *a, const void *b) {
+//  return (*(mu_Container**) a)->zindex - (*(mu_Container**) b)->zindex;
+//}
 
 
 void mu_end(mu_Context *ctx) {
@@ -196,7 +217,7 @@ void mu_end(mu_Context *ctx) {
 
   /* sort root containers by zindex */
   n = ctx->root_list.idx;
-  qsort(ctx->root_list.items, n, sizeof(mu_Container*), compare_zindex);
+//  qsort(ctx->root_list.items, n, sizeof(mu_Container*), compare_zindex);
 
   /* set root container jump commands */
   for (i = 0; i < n; i++) {
@@ -1226,3 +1247,8 @@ void mu_end_panel(mu_Context *ctx) {
   mu_pop_clip_rect(ctx);
   pop_container(ctx);
 }
+
+
+#ifdef __cplusplus
+}
+#endif

@@ -26,6 +26,10 @@
 #include "qsort.h"
 
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define CHAR_BIT 8
 
 
@@ -252,3 +256,7 @@ void qsort (void *const pbase, size_t total_elems, size_t size, __compar_fn_t cm
       }
   }
 }
+
+#ifdef __cplusplus
+}
+#endif

@@ -8,8 +8,14 @@
 #ifndef MICROUI_H
 #define MICROUI_H
 
-#include "strtod.h"
+
 #include "string.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "strtod.h"
 
 #define MU_VERSION "2.01"
 
@@ -296,4 +302,9 @@ void mu_end_popup(mu_Context *ctx);
 void mu_begin_panel_ex(mu_Context *ctx, const char *name, int opt);
 void mu_end_panel(mu_Context *ctx);
 
+#ifdef __cplusplus
+}
 #endif
+
+#endif
+

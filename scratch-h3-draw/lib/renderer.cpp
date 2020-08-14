@@ -3,9 +3,30 @@
 //#include <assert.h>
 
 #include "drawing.h"
-//#include "atlas.inl"
+#include "renderer.h"
 
 #define BUFFER_SIZE 16384
+
+
+extern int text_width(mu_Font font, const char *text, int len) {
+  if (len == -1) { len = strlen(text); }
+  return r_get_text_width(text, len);
+  font = font; // ignore unused variable 
+}
+
+extern int text_height(mu_Font font) {
+  return r_get_text_height();
+  font = font; // ignore unused variable
+}
+
+
+
+//#include "atlas.inl"
+
+
+
+
+
 
 // static GLfloat   tex_buf[BUFFER_SIZE *  8];
 // static GLfloat  vert_buf[BUFFER_SIZE *  8];
@@ -166,21 +187,23 @@ void r_init(void) {
 // }
 
 
-// int r_get_text_width(const char *text, int len) {
-//   int res = 0;
-//   for (const char *p = text; *p && len--; p++) {
-//     if ((*p & 0xc0) == 0x80) { continue; }
-//     int chr = mu_min((unsigned char) *p, 127);
-//     res += atlas[ATLAS_FONT + chr].w;
-//   }
-//   return res;
-// }
+int r_get_text_width(const char *text, int len) {
+  // int res = 0;
+  // for (const char *p = text; *p && len--; p++) {
+  //   if ((*p & 0xc0) == 0x80) { continue; }
+  //   int chr = mu_min((unsigned char) *p, 127);
+  //   res += atlas[ATLAS_FONT + chr].w;
+  // }
+  // return res;
+  return 8;
+  len = len;  // avoid unused variables error in this implementation
+  text = text;
+}
 
 
-/* int r_get_text_height(void) {
+int r_get_text_height(void) {
   return 16;
-} */
-
+}
 
 /* void r_set_clip_rect(mu_Rect rect) {
  // flush();
@@ -200,3 +223,4 @@ void r_init(void) {
  // SDL_GL_SwapWindow(window);
 }
  */
+

@@ -53,7 +53,8 @@ inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+//inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+__attribute__((weak)) extern void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
 	char *dp = (char *) dest;
 	const char *sp = (const char *) src;
 

@@ -48,6 +48,8 @@
 
 extern "C" {
 
+
+
 void notmain(void) {
 	Hardware hw;
 	NetworkH3emac nw;
@@ -58,8 +60,13 @@ void notmain(void) {
 
 	Drawing draw;
 
+	// prepare UI context
 	mu_Context *ctx = new mu_Context;
 	mu_init(ctx);
+	ctx->text_width = text_width;
+	ctx->text_height = text_height;
+
+
 
 	// background
 	draw.fillRect(0,0,fb_width,fb_height,0x000000FF);

@@ -3,6 +3,11 @@
 
 #include "microui.h"
 
+
+int text_width(mu_Font font, const char *text, int len);
+int text_height(mu_Font font);
+
+
 void r_init(void);
 void r_draw_rect(mu_Rect rect, mu_Color color);
 void r_draw_text(const char *text, mu_Vec2 pos, mu_Color color);
