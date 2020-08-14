@@ -2,7 +2,7 @@ PLATFORM=ORANGE_PI_ONE
 #
 DEFINES = CONSOLE_FB
 #
-LIBS =
+LIBS = dmxmonitor
 #
 SRCDIR = firmware lib
 
