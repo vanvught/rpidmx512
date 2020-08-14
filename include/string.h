@@ -53,8 +53,16 @@ inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-//inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
-__attribute__((weak)) extern void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+
+/* 
+   refer to https://github.com/vanvught/rpidmx512/issues/143
+*/
+#if !defined (NO_INLINE_MEMCPY)
+inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) 
+#else	
+__attribute__((weak)) extern void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) 
+#endif
+{
 	char *dp = (char *) dest;
 	const char *sp = (const char *) src;
 

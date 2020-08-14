@@ -22,38 +22,43 @@
 ** IN THE SOFTWARE.
 */
 
+
+
+
 #include <stdio.h>
 #include <stdlib.h>
-//#include <string.h>
 
+#if defined (ORANGE_PI_ONE)
 
-#include "h3_uart0_debug.h"
+#if !defined(__clang__)	// Needed for compiling on MacOS
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+#endif
 
+/* 
+   hack to tell compiler to not inline memcpy() so weird bug can be overcome 
+   when used with some 3rd-party C code that is related to assigning structures.
+   If you get undefined memcpy at linking stage, it could be compiler generated assembly 
+   that is refering to memcpy, but because by default it is inlined, it can't be found. 
+   refer to https://github.com/vanvught/rpidmx512/issues/143
+*/
+#define NO_INLINE_MEMCPY   
 
-#include "qsort.h"
-#include "strtod.h"
-#include "microui.h"
-
+#include "h3_uart0_debug.h" // for printf()
 extern int uart0_printf(const char* fmt, ...);
 #define printf uart0_printf
+
+#include "qsort.h"  // not implemented on platform
+#include "strtod.h"
+
+#endif // ORANGE_PI_ONE
+
+
+#include "microui.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
-
-// static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
-// 	char *dp = (char *) dest;
-// 	const char *sp = (const char *) src;
-
-// 	while (n-- != (size_t) 0) {
-// 		*dp++ = *sp++;
-// 	}
-
-// 	return dest;
-// }
-
 
 #define unused(x) ((void) (x))
 
@@ -176,7 +181,7 @@ void mu_begin(mu_Context *ctx) {
   ctx->frame++;
 }
 
-
+/* -Wunused */
 //static int compare_zindex(const void *a, const void *b) {
 //  return (*(mu_Container**) a)->zindex - (*(mu_Container**) b)->zindex;
 //}
@@ -441,23 +446,13 @@ void mu_input_keyup(mu_Context *ctx, int key) {
 }
 
 
-void* ui_memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
-	char *dp = (char *) dest;
-	const char *sp = (const char *) src;
-
-	while (n-- != (size_t) 0) {
-		*dp++ = *sp++;
-	}
-
-	return dest;
-}
 
 
 void mu_input_text(mu_Context *ctx, const char *text) {
   int len = strlen(ctx->input_text);
   int size = strlen(text) + 1;
   expect(len + size <= (int) sizeof(ctx->input_text));
-  ui_memcpy(ctx->input_text + len, text, size);
+  memcpy(ctx->input_text + len, text, size);
 }
 
 
@@ -535,7 +530,7 @@ void mu_draw_text(mu_Context *ctx, mu_Font font, const char *str, int len,
   /* add command */
   if (len < 0) { len = strlen(str); }
   cmd = mu_push_command(ctx, MU_COMMAND_TEXT, sizeof(mu_TextCommand) + len);
-  ui_memcpy(cmd->text.str, str, len);
+  memcpy(cmd->text.str, str, len);
   cmd->text.str[len] = '\0';
   cmd->text.pos = pos;
   cmd->text.color = color;
@@ -590,7 +585,7 @@ void mu_layout_row(mu_Context *ctx, int items, const int *widths, int height) {
   mu_Layout *layout = get_layout(ctx);
   if (widths) {
     expect(items <= MU_MAX_WIDTHS);
-    ui_memcpy(layout->widths, widths, items * sizeof(widths[0]));
+    memcpy(layout->widths, widths, items * sizeof(widths[0]));
   }
   layout->items = items;
   layout->position = mu_vec2(layout->indent, layout->next_row);
@@ -821,7 +816,7 @@ int mu_textbox_raw(mu_Context *ctx, char *buf, int bufsz, mu_Id id, mu_Rect r,
     int len = strlen(buf);
     int n = mu_min(bufsz - len - 1, (int) strlen(ctx->input_text));
     if (n > 0) {
-      ui_memcpy(buf + len, ctx->input_text, n);
+      memcpy(buf + len, ctx->input_text, n);
       len += n;
       buf[len] = '\0';
       res |= MU_RES_CHANGE;
