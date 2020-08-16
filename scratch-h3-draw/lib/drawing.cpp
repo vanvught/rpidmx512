@@ -51,6 +51,11 @@ void Drawing::pixel(int32_t x, int32_t y, uint32_t c) {
         console_putpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y), c);
 }
 
+uint32_t Drawing::get_pixel(int32_t x, int32_t y) {
+        return console_getpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
+}
+
+
 void Drawing::line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t p) { 
 
     int32_t dx = abs(static_cast<int32_t>(x2 - x1));
@@ -287,4 +292,68 @@ next:
     }
 }
  */
+
+
+// #define outside(x, y) (x < __clipx1 || x > __clipx2 || y < __clipy1 || y > __clipy2)
+// #define x_outside(x) (x < __clipx1 || x > __clipx2)
+// #define y_outside(y) (y < __clipy1 || y > __clipy2)
+// #define clipxleft(x) if (x < __clipx1) x = __clipx1;
+// #define clipxright(x) if (x > __clipx2) x = __clipx2;
+// #define clipytop(y) if (y < __clipy1) y = __clipy1;
+// #define clipybottom(y) if (y > __clipy2) y = __clipy2;
+
+/* 
+#define ADJUSTBITMAPBOX() \
+	nw = w; nh = h; nx = x; ny = y;				\
+	if (nx + nw < __clipx1 || nx > __clipx2)		\
+		return;						\
+	if (ny + nh < __clipy1 || ny > __clipy2)		\
+		return;						\
+	if (nx < __clipx1) {			\
+		nw += nx - __clipx1;				\
+		nx = __clipx1;					\
+	}							\
+	if (ny < __clipy1) {			\
+		nh += ny - __clipy1;				\
+		ny = __clipy1;					\
+	}							\
+	if (nx + nw > __clipx2)			\
+		nw = __clipx2 - nx + 1;				\
+	if (ny + nh > __clipy2)			\
+		nh = __clipy2 - ny + 1;				\
+
+
+ */
+// void gl_setclippingwindow(int x1, int y1, int x2, int y2)
+// {
+//     __clip = 1;
+//     __clipx1 = x1;
+//     __clipy1 = y1;
+//     __clipx2 = x2;
+//     __clipy2 = y2;
+// }
+
+// void gl_enableclipping()
+// {
+//     __clip = 1;
+//     __clipx1 = 0;
+//     __clipy1 = 0;
+//     __clipx2 = WIDTH - 1;
+//     __clipy2 = HEIGHT - 1;
+// }
+
+// void gl_disableclipping()
+// {
+//     __clip = 0;
+// }
+
+
+
+
+
+
+
+
+
 #endif
+

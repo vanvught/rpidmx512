@@ -43,6 +43,7 @@
 
 #include "drawing.h"
 
+#include "user_interface.h"
 #include "renderer.h"
 #include "microui.h"
 
@@ -60,12 +61,13 @@ void notmain(void) {
 
 	Drawing draw;
 
-	// prepare UI context
+	// prepare renderer
+	r_init(fb_width, fb_height);
+	// prepare user interface context
 	mu_Context *ctx = new mu_Context;
 	mu_init(ctx);
-	ctx->text_width = text_width;
-	ctx->text_height = text_height;
-
+	ctx->text_width = ui_text_width;
+	ctx->text_height = ui_text_height;
 
 
 	// background
@@ -106,9 +108,34 @@ void notmain(void) {
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();
+			
+		/* process frame */
+		ui_process_frame(ctx);
 
-		draw.fillRect(400,400,200,200,clr++);
-	
+		/* render */
+		r_clear(mu_color(0, 0, 64, 255));
+		mu_Command *cmd = NULL;
+		while (mu_next_command(ctx, &cmd)) {
+			switch (cmd->type) {
+				case MU_COMMAND_TEXT: 
+					r_draw_text(cmd->text.str, cmd->text.pos, cmd->text.color); 
+					break;
+				case MU_COMMAND_RECT: 
+					r_draw_rect(cmd->rect.rect, cmd->rect.color); 
+					break;
+				case MU_COMMAND_ICON: 
+					r_draw_icon(cmd->icon.id, cmd->icon.rect, cmd->icon.color); 
+					break;
+				case MU_COMMAND_CLIP: 
+					r_set_clip_rect(cmd->clip.rect);
+					break;
+			}
+		}	
+		r_present();
+		
+
+
+
 	}
 }
 

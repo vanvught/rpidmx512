@@ -22,13 +22,11 @@
 ** IN THE SOFTWARE.
 */
 
-
-
-
 #include <stdio.h>
 #include <stdlib.h>
 
 #if defined (ORANGE_PI_ONE)
+/* https://github.com/hippyau/rpidmx512/tree/experimental-ui */ 
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
 #pragma GCC push_options

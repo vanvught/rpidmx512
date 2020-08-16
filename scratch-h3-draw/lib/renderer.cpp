@@ -1,63 +1,23 @@
-//#include <SDL2/SDL.h>
-//#include <SDL2/SDL_opengl.h>
-//#include <assert.h>
 
-#include "drawing.h"
+#include <stdio.h>
 #include "renderer.h"
+#include "drawing.h"
+
 
 #define BUFFER_SIZE 16384
 
-
-extern int text_width(mu_Font font, const char *text, int len) {
-  if (len == -1) { len = strlen(text); }
-  return r_get_text_width(text, len);
-  font = font; // ignore unused variable 
-}
-
-extern int text_height(mu_Font font) {
-  return r_get_text_height();
-  font = font; // ignore unused variable
-}
-
+static int width  = 800;
+static int height = 480;
 
 
 //#include "atlas.inl"
 
 
+void r_init(uint32_t w, uint32_t h) {
+  width = w;
+  height = h;
 
-
-
-
-// static GLfloat   tex_buf[BUFFER_SIZE *  8];
-// static GLfloat  vert_buf[BUFFER_SIZE *  8];
-// static GLubyte color_buf[BUFFER_SIZE * 16];
-// static GLuint  index_buf[BUFFER_SIZE *  6];
-
-//static int width  = 800;
-//static int height = 600;
-//static int buf_idx;
-
-//static SDL_Window *window;
-
-
-void r_init(void) {
-/*   // init SDL window 
-  window = SDL_CreateWindow(
-    NULL, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    width, height, SDL_WINDOW_OPENGL);
-  SDL_GL_CreateContext(window);
-
-  // init gl
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glDisable(GL_CULL_FACE);
-  glDisable(GL_DEPTH_TEST);
-  glEnable(GL_SCISSOR_TEST);
-  glEnable(GL_TEXTURE_2D);
-  glEnableClientState(GL_VERTEX_ARRAY);
-  glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-  glEnableClientState(GL_COLOR_ARRAY);
-
+/*
   int i,j;
   for(i=0;i<128;i++){
     for(j=0;j<128;j++){
@@ -67,7 +27,6 @@ void r_init(void) {
        atlas_texture[i][j]=-1;
     }
   }
-
   // init texture 
   GLuint id;
   glGenTextures(1, &id);
@@ -76,7 +35,9 @@ void r_init(void) {
     GL_ALPHA, GL_UNSIGNED_BYTE, atlas_texture);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  assert(glGetError() == 0); */
+  assert(glGetError() == 0); 
+*/
+
 }
 
 
@@ -155,17 +116,16 @@ void r_init(void) {
 //}
 
 
-/* void r_draw_rect(mu_Rect rect, mu_Color color) {
+void r_draw_rect(mu_Rect rect, mu_Color color) {
   //push_quad(rect, atlas[ATLAS_WHITE], color);
   uint32_t clr = 0x00000000 | ((color.r << 16) + (color.r << 8) + (color.b));
   Drawing::Get()->rect(rect.x,rect.y,rect.w,rect.h,clr);
-
+  return; 
+  rect = rect; color = color; // ignore unused variables
 }
- */
 
-//void r_draw_text(const char *text, mu_Vec2 pos, mu_Color color) {
 
-  
+void r_draw_text(const char *text, mu_Vec2 pos, mu_Color color) {
   /* mu_Rect dst = { pos.x, pos.y, 0, 0 };
   for (const char *p = text; *p; p++) {
     if ((*p & 0xc0) == 0x80) { continue; }
@@ -176,15 +136,19 @@ void r_init(void) {
     push_quad(dst, src, color);
     dst.x += dst.w;
   } */
-//}
+  return;
+  text = text; pos = pos; color = color; // ignore unused variables
+}
 
 
-// void r_draw_icon(int id, mu_Rect rect, mu_Color color) {
+void r_draw_icon(int id, mu_Rect rect, mu_Color color) {
 //   mu_Rect src;// = atlas[id];
 //   int x = rect.x + (rect.w - src.w) / 2;
 //   int y = rect.y + (rect.h - src.h) / 2;
 // //  push_quad(mu_rect(x, y, src.w, src.h), src, color);
-// }
+ return;
+ id = id; rect = rect; color = color; // ignore unused variables
+}
 
 
 int r_get_text_width(const char *text, int len) {
@@ -196,7 +160,7 @@ int r_get_text_width(const char *text, int len) {
   // }
   // return res;
   return 8;
-  len = len;  // avoid unused variables error in this implementation
+  len = len;   // ignore unused variables
   text = text;
 }
 
@@ -205,22 +169,23 @@ int r_get_text_height(void) {
   return 16;
 }
 
-/* void r_set_clip_rect(mu_Rect rect) {
+void r_set_clip_rect(mu_Rect rect) {
  // flush();
  // glScissor(rect.x, height - (rect.y + rect.h), rect.w, rect.h);
+ return;
+ rect = rect; // ignore unused variables
 }
- */
 
-/* void r_clear(mu_Color clr) {
- // flush();
- // glClearColor(clr.r / 255., clr.g / 255., clr.b / 255., clr.a / 255.);
- // glClear(GL_COLOR_BUFFER_BIT);
+
+void r_clear(mu_Color color) {
+  uint32_t clr = 0x00000000 | ((color.r << 16) + (color.r << 8) + (color.b));
+  Drawing::Get()->rect(0,0,fb_width, fb_height, clr);
 }
- */
 
-/* void r_present(void) {
+
+void r_present(void) {
  // flush();
  // SDL_GL_SwapWindow(window);
 }
- */
+
 

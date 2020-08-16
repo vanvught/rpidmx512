@@ -137,7 +137,7 @@ COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 #COPS+=-fstack-usage
-COPS+=-O2 -Wall -Werror -Wpedantic -Wextra #-Wunused #-Wsign-conversion  #-Wconversion
+COPS+=-O2 -Wall -Werror -Wextra #-Wpedantic -Wunused #-Wsign-conversion  #-Wconversion
 
 CPPOPS=-std=c++11 -fno-unwind-tables -fno-rtti -fno-exceptions -Wuseless-cast -Wnon-virtual-dtor -Wnull-dereference #-Wold-style-cast 
 

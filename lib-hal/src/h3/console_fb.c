@@ -61,6 +61,48 @@ static uint32_t saved_back = CONSOLE_BLACK;
 #define FB_PITCH	fb_pitch
 #endif
 
+/* ------------------------------------------ */
+
+inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
+	volatile uint32_t *address = (volatile uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+	*address = (uint32_t) color;
+}
+
+inline static uint32_t get_pixel(uint32_t x, uint32_t y){
+	return *(uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+}
+
+inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back) {
+	uint32_t i, j;
+	uint8_t line;
+	unsigned char *p = FONT + (c * (int) FB_CHAR_H);
+
+	for (i = 0; i < FB_CHAR_H; i++) {
+		line = (uint8_t) *p++;
+		for (j = x; j < (FB_CHAR_W + x); j++) {
+			if ((line & 0x1) != 0) {
+				draw_pixel(j, y, fore);
+			} else {
+				draw_pixel(j, y, back);
+			}
+			line >>= 1;
+		}
+		y++;
+	}
+}
+
+void draw_string(uint32_t x, uint32_t y, const char *s, uint32_t clr) {
+	// FIXME clipping
+	char c;
+	uint32_t xx = 0;
+	while ((c = *s++) != (char) 0) {
+		draw_char(c, x + xx, y, clr, 0x00000000);
+		xx += (FB_CHAR_W);
+	}
+}
+
+/* ------------------------------------------ */
+
 int __attribute__((cold)) console_init(void) {
 	int r = fb_init();
 
@@ -127,36 +169,13 @@ inline static void newline(void) {
 	}
 }
 
-inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
-	volatile uint32_t *address = (volatile uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
-	*address = (uint32_t) color;
-}
-
-inline static uint32_t get_pixel(uint32_t x, uint32_t y){
-	return *(uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
-}
-
-inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint32_t back) {
-	uint32_t i, j;
-	uint8_t line;
-	unsigned char *p = FONT + (c * (int) FB_CHAR_H);
-
-	for (i = 0; i < FB_CHAR_H; i++) {
-		line = (uint8_t) *p++;
-		for (j = x; j < (FB_CHAR_W + x); j++) {
-			if ((line & 0x1) != 0) {
-				draw_pixel(j, y, fore);
-			} else {
-				draw_pixel(j, y, back);
-			}
-			line >>= 1;
-		}
-		y++;
-	}
-}
 
 inline void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
   draw_pixel(x,y,color);
+}
+
+inline uint32_t console_getpixel(uint32_t x, uint32_t y){
+	return get_pixel(x,y);
 }
 
 int console_draw_char(int ch, uint16_t x, uint16_t y, uint32_t fore, uint32_t back) {
@@ -179,6 +198,8 @@ void console_putc(int ch) {
 		}
 	}
 }
+
+
 
 void console_puts(const char *s) {
 	char c;
