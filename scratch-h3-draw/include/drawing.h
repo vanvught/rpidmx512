@@ -8,8 +8,8 @@
  *
 */
 
-/*  Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- *  Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/*  Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ *  Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,21 +34,22 @@
 #define DRAWING_H_
 
 #if !defined ORANGE_PI_ONE
- #error Support for Orange Pi One only
+# error Support for Orange Pi One only
 #endif
 
 #include "stdint.h"
-#include "device/fb.h"
 
+extern "C" {
+	void console_putpixel(uint32_t x, uint32_t y, uint32_t color);
+	extern volatile uint32_t fb_width;
+	extern volatile uint32_t fb_height;
+	extern volatile uint32_t fb_pitch;
+}
 
 class Drawing {
-  
 public:
-    Drawing() {};
+    Drawing();
     
-    void pixel(uint32_t x, uint32_t y, uint32_t c); 
-    void pixel(int32_t x, int32_t y, uint32_t c); 
-    uint32_t get_pixel(int32_t x, int32_t y);
     void line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t p);
     void rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p);
     void fillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p);    
@@ -63,8 +64,21 @@ public:
 
   
 private:
-    uint32_t fbW(void) { return (fb_width); }
-    uint32_t fbH(void) { return (fb_height); }
+    void pixel(uint32_t x, uint32_t y, uint32_t c) {
+    	 console_putpixel(x, y, c);
+    }
+
+    void pixel(int32_t x, int32_t y, uint32_t c) {
+    	 console_putpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y), c);
+    }
+
+	uint32_t fbW() {
+		return fb_width;
+	}
+
+	uint32_t fbH() {
+		return fb_height;
+	}
 
     // static bool clip;           /* is clipping */
     // static uint32_t clipx1;		/* top-left coordinate of clip window */
@@ -74,6 +88,5 @@ private:
 
     static Drawing *s_pThis;
 };
-
 
 #endif

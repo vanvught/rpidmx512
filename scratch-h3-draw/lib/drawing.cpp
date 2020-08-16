@@ -9,8 +9,8 @@
  *
 */
 
-/*  Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- *  Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/*  Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ *  Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,63 +35,73 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cassert>
+
 #include "drawing.h"
-
-#include "h3/console_fb.h"  // console_putpixel()
-#include "device/fb.h"
-
 
 Drawing *Drawing::s_pThis = 0;
 
-void Drawing::pixel(uint32_t x, uint32_t y, uint32_t c) {
-        console_putpixel(x, y, c);
+Drawing::Drawing() {
+	s_pThis = this;
 }
 
-void Drawing::pixel(int32_t x, int32_t y, uint32_t c) {
-        console_putpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y), c);
-}
+void Drawing::line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
+		uint32_t p) {
 
-uint32_t Drawing::get_pixel(int32_t x, int32_t y) {
-        return console_getpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y));
-}
+	int32_t dx = abs(static_cast<int32_t>(x2 - x1));
+	uint32_t sx = x1 < x2 ? 1U : -1U;
+	int32_t dy = abs(static_cast<int32_t>(y2 - y1));
+	uint32_t sy = y1 < y2 ? 1U : -1U;
+	int32_t err = (dx > dy ? dx : -dy) / 2;
 
+	while (pixel(x1, y1, p), x1 != x2 || y1 != y2) {
+		int32_t e2 = err;
 
-void Drawing::line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t p) { 
+		if (e2 > -dx) {
+			err -= dy;
+			x1 += sx;
+		}
 
-    int32_t dx = abs(static_cast<int32_t>(x2 - x1));
-    uint32_t sx = x1 < x2 ? 1U : -1U;
-    int32_t dy = abs(static_cast<int32_t>(y2 - y1));
-    uint32_t sy = y1 < y2 ? 1U : -1U;
-    int32_t err = (dx > dy ? dx : -dy) / 2;
-
-    while (pixel(x1, y1, p), x1 != x2 || y1 != y2) {
-        int32_t e2 = err;
-        if (e2 > -dx) { err -= dy; x1 += sx; }
-        if (e2 <  dy) { err += dx; y1 += sy; }
-    }
+		if (e2 < dy) {
+			err += dx;
+			y1 += sy;
+		}
+	}
 }
 
 void Drawing::rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p) {
-    line(x, y, x + w, y, p);
-    line(x + w, y, x + w, y + h, p);
-    line(x + w, y + h, x, y + h, p);
-    line(x, y + h, x, y, p);
+	line(x, y, x + w, y, p);
+	line(x + w, y, x + w, y + h, p);
+	line(x + w, y + h, x, y + h, p);
+	line(x, y + h, x, y, p);
 }
 
 void Drawing::fillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p) {
 
-    uint32_t x2 = x + w;
-    uint32_t y2 = y + h;
+	uint32_t x2 = x + w;
+	uint32_t y2 = y + h;
 
-    if (x >= fbW()) { x = fbW(); }
-    if (y >= fbH()) { y = fbH(); }
-    if (x2 >= fbW()) { x2 = fbW(); }
-    if (y2 >= fbH()) { y2 = fbH(); }
-    for (unsigned int i = x; i < x2; i++) {
-        for (unsigned int j = y; j < y2; j++) {
-            pixel(i, j, p);
-        }
-    }     
+	if (x >= fbW()) {
+		x = fbW();
+	}
+
+	if (y >= fbH()) {
+		y = fbH();
+	}
+
+	if (x2 >= fbW()) {
+		x2 = fbW();
+	}
+
+	if (y2 >= fbH()) {
+		y2 = fbH();
+	}
+
+	for (unsigned int i = x; i < x2; i++) {
+		for (unsigned int j = y; j < y2; j++) {
+			pixel(i, j, p);
+		}
+	}
 }
 
 // Function for circle-generation using Bresenham's algorithm 
@@ -125,18 +135,17 @@ void Drawing::circle(uint32_t xc, uint32_t yc, uint32_t radius, uint32_t p) {
 } 
 
 void Drawing::fillCircle(uint32_t x, uint32_t y, uint32_t radius, uint32_t p) {
+	int ox = static_cast<int>(x);
+	int oy = static_cast<int>(y);
+	int rad = static_cast<int>(radius);
 
-    int ox = static_cast<int>(x);
-    int oy = static_cast<int>(y);
-    int rad = static_cast<int>(radius);
-
-    for(int y=-rad; y<=rad; y++){ 
-        for(int x=-rad; x<=rad; x++) {
-            if(x*x+y*y <= rad*rad) {
-                pixel(ox+x, oy+y, p);
-            }
-        }
-    }
+	for (int y = -rad; y <= rad; y++) {
+		for (int x = -rad; x <= rad; x++) {
+			if (x * x + y * y <= rad * rad) {
+				pixel(ox + x, oy + y, p);
+			}
+		}
+	}
 }
 
 void Drawing::triangle(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t x3, uint32_t y3, uint32_t p) {
@@ -292,68 +301,4 @@ next:
     }
 }
  */
-
-
-// #define outside(x, y) (x < __clipx1 || x > __clipx2 || y < __clipy1 || y > __clipy2)
-// #define x_outside(x) (x < __clipx1 || x > __clipx2)
-// #define y_outside(y) (y < __clipy1 || y > __clipy2)
-// #define clipxleft(x) if (x < __clipx1) x = __clipx1;
-// #define clipxright(x) if (x > __clipx2) x = __clipx2;
-// #define clipytop(y) if (y < __clipy1) y = __clipy1;
-// #define clipybottom(y) if (y > __clipy2) y = __clipy2;
-
-/* 
-#define ADJUSTBITMAPBOX() \
-	nw = w; nh = h; nx = x; ny = y;				\
-	if (nx + nw < __clipx1 || nx > __clipx2)		\
-		return;						\
-	if (ny + nh < __clipy1 || ny > __clipy2)		\
-		return;						\
-	if (nx < __clipx1) {			\
-		nw += nx - __clipx1;				\
-		nx = __clipx1;					\
-	}							\
-	if (ny < __clipy1) {			\
-		nh += ny - __clipy1;				\
-		ny = __clipy1;					\
-	}							\
-	if (nx + nw > __clipx2)			\
-		nw = __clipx2 - nx + 1;				\
-	if (ny + nh > __clipy2)			\
-		nh = __clipy2 - ny + 1;				\
-
-
- */
-// void gl_setclippingwindow(int x1, int y1, int x2, int y2)
-// {
-//     __clip = 1;
-//     __clipx1 = x1;
-//     __clipy1 = y1;
-//     __clipx2 = x2;
-//     __clipy2 = y2;
-// }
-
-// void gl_enableclipping()
-// {
-//     __clip = 1;
-//     __clipx1 = 0;
-//     __clipy1 = 0;
-//     __clipx2 = WIDTH - 1;
-//     __clipy2 = HEIGHT - 1;
-// }
-
-// void gl_disableclipping()
-// {
-//     __clip = 0;
-// }
-
-
-
-
-
-
-
-
-
 #endif
-
