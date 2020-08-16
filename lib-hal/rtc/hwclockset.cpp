@@ -1,8 +1,8 @@
 /**
- * @file networkconst.cpp
+ * @file hwclockset.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,50 @@
  * THE SOFTWARE.
  */
 
-#include "networkconst.h"
+/*
+ * PoC Code -> Do not use in production
+ */
 
-const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
+#include <cassert>
+#include <time.h>
+#include <sys/time.h>
 
-const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
-const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
-const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
+#include "hwclock.h"
 
-const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
-const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
+#include "debug.h"
 
-const char NetworkConst::PARAMS_PTP_ENABLE[] = "ptp_enable";
-const char NetworkConst::PARAMS_PTP_DOMAIN[] = "ptp_domain";
+bool HwClock::Set(const rtc_time *pRtcTime) {
+	if (!m_bIsConnected) {
+		return false;
+	}
 
-#if !defined (H3)
- const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
- const char NetworkConst::PARAMS_NAME_SERVER[] = "name_server";
-#endif
+	struct timeval tvT1;
+	gettimeofday(&tvT1, nullptr);
 
-const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
+	RtcSet(pRtcTime);
+
+	struct tm tm;
+	tm.tm_sec = pRtcTime->tm_sec;
+	tm.tm_min = pRtcTime->tm_min;
+	tm.tm_hour = pRtcTime->tm_hour;
+	tm.tm_mday = pRtcTime->tm_mday;
+	tm.tm_mon = pRtcTime->tm_mon;
+	tm.tm_year = pRtcTime->tm_year;
+	tm.tm_isdst = 0;
+
+	struct timeval tv;
+	tv.tv_sec = mktime(&tm);
+
+	struct timeval tvT2;
+	gettimeofday(&tvT2, nullptr);
+
+	if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+		tv.tv_usec = tvT2.tv_usec - tvT1.tv_usec;
+	} else {
+		tv.tv_usec = 1000000 - (tvT1.tv_usec - tvT2.tv_usec);
+	}
+
+	settimeofday(&tv, nullptr);
+
+	return true;
+}

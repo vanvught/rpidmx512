@@ -32,8 +32,12 @@ struct NetworkConst {
 	static const char PARAMS_IP_ADDRESS[];
 	static const char PARAMS_NET_MASK[];
 	static const char PARAMS_HOSTNAME[];
+
 	static const char PARAMS_NTP_SERVER[];
 	static const char PARAMS_NTP_UTC_OFFSET[];
+
+	static const char PARAMS_PTP_ENABLE[];
+	static const char PARAMS_PTP_DOMAIN[];
 
 #if !defined (H3)
 	static const char PARAMS_DEFAULT_GATEWAY[];
