@@ -9,8 +9,8 @@
  *
 */
 
-/*  Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- *  Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/*  Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ *  Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,58 +35,73 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <cassert>
+
 #include "drawing.h"
-
-#include "h3/console_fb.h"  // console_putpixel()
-#include "device/fb.h"
-
 
 Drawing *Drawing::s_pThis = 0;
 
-void Drawing::pixel(uint32_t x, uint32_t y, uint32_t c) {
-        console_putpixel(x, y, c);
+Drawing::Drawing() {
+	s_pThis = this;
 }
 
-void Drawing::pixel(int32_t x, int32_t y, uint32_t c) {
-        console_putpixel(static_cast<uint32_t>(x), static_cast<uint32_t>(y), c);
-}
+void Drawing::line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2,
+		uint32_t p) {
 
-void Drawing::line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t p) { 
+	int32_t dx = abs(static_cast<int32_t>(x2 - x1));
+	uint32_t sx = x1 < x2 ? 1U : -1U;
+	int32_t dy = abs(static_cast<int32_t>(y2 - y1));
+	uint32_t sy = y1 < y2 ? 1U : -1U;
+	int32_t err = (dx > dy ? dx : -dy) / 2;
 
-    int32_t dx = abs(static_cast<int32_t>(x2 - x1));
-    uint32_t sx = x1 < x2 ? 1U : -1U;
-    int32_t dy = abs(static_cast<int32_t>(y2 - y1));
-    uint32_t sy = y1 < y2 ? 1U : -1U;
-    int32_t err = (dx > dy ? dx : -dy) / 2;
+	while (pixel(x1, y1, p), x1 != x2 || y1 != y2) {
+		int32_t e2 = err;
 
-    while (pixel(x1, y1, p), x1 != x2 || y1 != y2) {
-        int32_t e2 = err;
-        if (e2 > -dx) { err -= dy; x1 += sx; }
-        if (e2 <  dy) { err += dx; y1 += sy; }
-    }
+		if (e2 > -dx) {
+			err -= dy;
+			x1 += sx;
+		}
+
+		if (e2 < dy) {
+			err += dx;
+			y1 += sy;
+		}
+	}
 }
 
 void Drawing::rect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p) {
-    line(x, y, x + w, y, p);
-    line(x + w, y, x + w, y + h, p);
-    line(x + w, y + h, x, y + h, p);
-    line(x, y + h, x, y, p);
+	line(x, y, x + w, y, p);
+	line(x + w, y, x + w, y + h, p);
+	line(x + w, y + h, x, y + h, p);
+	line(x, y + h, x, y, p);
 }
 
 void Drawing::fillRect(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t p) {
 
-    uint32_t x2 = x + w;
-    uint32_t y2 = y + h;
+	uint32_t x2 = x + w;
+	uint32_t y2 = y + h;
 
-    if (x >= fbW()) { x = fbW(); }
-    if (y >= fbH()) { y = fbH(); }
-    if (x2 >= fbW()) { x2 = fbW(); }
-    if (y2 >= fbH()) { y2 = fbH(); }
-    for (unsigned int i = x; i < x2; i++) {
-        for (unsigned int j = y; j < y2; j++) {
-            pixel(i, j, p);
-        }
-    }     
+	if (x >= fbW()) {
+		x = fbW();
+	}
+
+	if (y >= fbH()) {
+		y = fbH();
+	}
+
+	if (x2 >= fbW()) {
+		x2 = fbW();
+	}
+
+	if (y2 >= fbH()) {
+		y2 = fbH();
+	}
+
+	for (unsigned int i = x; i < x2; i++) {
+		for (unsigned int j = y; j < y2; j++) {
+			pixel(i, j, p);
+		}
+	}
 }
 
 // Function for circle-generation using Bresenham's algorithm 
@@ -120,18 +135,17 @@ void Drawing::circle(uint32_t xc, uint32_t yc, uint32_t radius, uint32_t p) {
 } 
 
 void Drawing::fillCircle(uint32_t x, uint32_t y, uint32_t radius, uint32_t p) {
+	int ox = static_cast<int>(x);
+	int oy = static_cast<int>(y);
+	int rad = static_cast<int>(radius);
 
-    int ox = static_cast<int>(x);
-    int oy = static_cast<int>(y);
-    int rad = static_cast<int>(radius);
-
-    for(int y=-rad; y<=rad; y++){ 
-        for(int x=-rad; x<=rad; x++) {
-            if(x*x+y*y <= rad*rad) {
-                pixel(ox+x, oy+y, p);
-            }
-        }
-    }
+	for (int y = -rad; y <= rad; y++) {
+		for (int x = -rad; x <= rad; x++) {
+			if (x * x + y * y <= rad * rad) {
+				pixel(ox + x, oy + y, p);
+			}
+		}
+	}
 }
 
 void Drawing::triangle(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t x3, uint32_t y3, uint32_t p) {
