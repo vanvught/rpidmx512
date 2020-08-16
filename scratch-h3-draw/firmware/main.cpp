@@ -100,8 +100,8 @@ void notmain(void) {
 
 	hw.WatchdogInit();
 
-	uint32_t clr = 0;
-
+	
+	
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();

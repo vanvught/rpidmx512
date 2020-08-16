@@ -14,8 +14,8 @@ extern "C" {
 // background colour
 static float ui_bg[3] = { 90, 95, 100 };
 
-static char logbuf[] = { "This ie a log buffer\n example\n text\n here\n"} ;
-static int logbuf_updated = 0;
+static char ui_logbuf[] = { "This ie a log buffer\n example\n text\n here\n"} ;
+static int ui_logbuf_updated = 0;
 
 
 static void ui_write_log(const char *text) {
@@ -129,11 +129,11 @@ static void ui_log_window(mu_Context *ctx) {
     mu_begin_panel(ctx, "Log Output");
     mu_Container *panel = mu_get_current_container(ctx);
     mu_layout_row(ctx, 1, (int[]) { -1 }, -1);
-    mu_text(ctx, logbuf);
+    mu_text(ctx, ui_logbuf);
     mu_end_panel(ctx);
-    if (logbuf_updated) {
+    if (ui_logbuf_updated) {
       panel->scroll.y = panel->content_size.y;
-      logbuf_updated = 0;
+      ui_logbuf_updated = 0;
     }
 
     /* input textbox + submit button */
