@@ -43,9 +43,8 @@
 
 #include "drawing.h"
 
-#include "user_interface.h"
-#include "renderer.h"
-#include "microui.h"
+#include "../lib/lvgl/lvgl.h"
+#include "lv_port_disp.h"
 
 extern "C" {
 
@@ -61,15 +60,6 @@ void notmain(void) {
 
 	Drawing draw;
 
-	// prepare renderer
-	r_init(fb_width, fb_height);
-	// prepare user interface context
-	mu_Context *ctx = new mu_Context;
-	mu_init(ctx);
-	ctx->text_width = ui_text_width;
-	ctx->text_height = ui_text_height;
-
-
 	// background
 	draw.fillRect(0,0,fb_width,fb_height,0x000000FF);
 	
@@ -79,8 +69,8 @@ void notmain(void) {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_putc('\n');
 
+
 	hw.SetLed(HARDWARE_LED_ON);
-		
 	nw.Init();
 	nw.Print();
 	
@@ -109,30 +99,7 @@ void notmain(void) {
 		lb.Run();
 		showSystime.Run();
 			
-		/* process frame */
-		ui_process_frame(ctx);
-
-		/* render */
-		r_clear(mu_color(0, 0, 64, 255));
-		mu_Command *cmd = NULL;
-		while (mu_next_command(ctx, &cmd)) {
-			switch (cmd->type) {
-				case MU_COMMAND_TEXT: 
-					r_draw_text(cmd->text.str, cmd->text.pos, cmd->text.color); 
-					break;
-				case MU_COMMAND_RECT: 
-					r_draw_rect(cmd->rect.rect, cmd->rect.color); 
-					break;
-				case MU_COMMAND_ICON: 
-					r_draw_icon(cmd->icon.id, cmd->icon.rect, cmd->icon.color); 
-					break;
-				case MU_COMMAND_CLIP: 
-					r_set_clip_rect(cmd->clip.rect);
-					break;
-			}
-		}	
-		r_present();
-		
+	
 
 
 

@@ -137,9 +137,9 @@ COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 #COPS+=-fstack-usage
-COPS+=-O2 -Wall -Werror -Wextra #-Wpedantic -Wunused #-Wsign-conversion  #-Wconversion
+COPS+=-O2 -Wall  -Wextra #-Werror #-Wpedantic -Wunused #-Wsign-conversion  #-Wconversion
 
-CPPOPS=-std=c++11 -fno-unwind-tables -fno-rtti -fno-exceptions -Wuseless-cast -Wnon-virtual-dtor -Wnull-dereference #-Wold-style-cast 
+CPPOPS=-std=c++11 -fno-unwind-tables -fno-rtti -fno-exceptions -Wnon-virtual-dtor -Wnull-dereference #-Wuseless-cast #-Wold-style-cast  
 
 # Why does gcc not automatically select the correct path based on -m options?
 PLATFORM_LIBGCC:= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4

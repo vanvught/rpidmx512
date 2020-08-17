@@ -32,4 +32,12 @@ typedef __builtin_va_list va_list;
 #define va_end(arg)		__builtin_va_end (arg)
 #define va_arg(arg, type)	__builtin_va_arg (arg, type)
 
+#ifndef va_copy
+# ifdef __va_copy
+#   define va_copy(d,s)  __va_copy (d, s)
+# else
+#   define va_copy(d,s)  ((d) = (s))
+# endif
+#endif
+
 #endif /* STDARG_H_ */

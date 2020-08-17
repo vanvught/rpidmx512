@@ -4,8 +4,12 @@ DEFINES = CONSOLE_FB
 #
 LIBS = dmxmonitor
 #
-SRCDIR = firmware lib
+SRCDIR = firmware lib lib/lvgl/src/lv_core lib/lvgl/src/lv_draw lib/lvgl/src/lv_font lib/lvgl/src/lv_hal lib/lvgl/src/lv_misc lib/lvgl/src/lv_themes lib/lvgl/src/lv_widgets 
 
-include ../h3-firmware-template/Rules.mk
+LVGL_DIR = lib/lvgl
+
+include ../h3-firmware-template/Rules.mk lib/lvgl/lvgl.mk
+
+
 
 prerequisites:
