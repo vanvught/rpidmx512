@@ -43,12 +43,22 @@
 
 #include "drawing.h"
 
-#include "qsort.h"
-#include "im_math.h"
-#include "../lib/ImSoft/imgui.h"
+#include "../lib/lvgl/lvgl.h"
+#include "lv_port_disp.h"
 
 extern "C" {
 
+
+
+static void event_handler(lv_obj_t * obj, lv_event_t event)
+{
+    if(event == LV_EVENT_CLICKED) {
+        printf("Clicked\n");
+    }
+    else if(event == LV_EVENT_VALUE_CHANGED) {
+        printf("Toggled\n");
+    }
+}
 
 
 void notmain(void) {
@@ -89,21 +99,67 @@ void notmain(void) {
 	draw.triangle(300,300,350,200,400,300, 0x00FF00FF); // draw a triangle outline
  
 
+	lv_port_disp_init();
+
+//    lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 10);
+
+    /*Initialize the (dummy) input device driver*/
+//    lv_indev_drv_t indev_drv;
+//    lv_indev_drv_init(&indev_drv);
+//    indev_drv.type = LV_INDEV_TYPE_POINTER;
+//    indev_drv.read_cb = my_touchpad_read;
+//    lv_indev_drv_register(&indev_drv);
+
+	/* Try an example from the lv_examples repository
+		* https://github.com/lvgl/lv_examples*/
+//	void lv_ex_btn_1(void)
+
+//Create a label. Style is NULL by default for labels    
+    lv_obj_t * label1 = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(label1, "Function 1");
+    lv_obj_t * label2 = lv_label_create(lv_scr_act(), NULL);
+    lv_label_set_text(label2, "Section A");
+
+    // Alignment
+    // NULL = align on parent (the screen)
+    lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+    lv_obj_align(label2, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
+
+{
+    lv_obj_t * label;
+    lv_obj_t * btn1 = lv_btn_create(lv_scr_act(), NULL);
+    lv_obj_set_event_cb(btn1, event_handler);
+    lv_obj_align(btn1, NULL, LV_ALIGN_CENTER, 0, -40);
+    label = lv_label_create(btn1, NULL);
+    lv_label_set_text(label, "Button");
+    lv_obj_t * btn2 = lv_btn_create(lv_scr_act(), NULL);
+    lv_obj_set_event_cb(btn2, event_handler);
+    lv_obj_align(btn2, NULL, LV_ALIGN_CENTER, 0, 40);
+    //lv_btn_set_toggle(btn2, true);
+    lv_btn_toggle(btn2);
+    lv_btn_set_fit2(btn2, LV_FIT_NONE, LV_FIT_TIGHT);
+    label = lv_label_create(btn2, NULL);
+    lv_label_set_text(label, "Toggled");
+}
+
+
+
 	hw.WatchdogInit();
 
-	
-	
+	uint32_t nLastPollMillis = 0; 
+	uint32_t nCurrentMillis = Hardware::Get()->Millis(); 
+		
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();
-			
-	
-
-
-
+		
+		//nCurrentMillis = Hardware::Get()->Millis();
+		//lv_tick_inc(nCurrentMillis - nLastPollMillis);
+		//nLastPollMillis = nCurrentMillis;        	
+		//lv_task_handler();
 	}
 }
 
