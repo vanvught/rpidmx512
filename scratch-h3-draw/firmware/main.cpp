@@ -42,10 +42,8 @@
 #include "software_version.h"
 
 #include "drawing.h"
+#include "ui.h"
 
-#include "qsort.h"
-#include "im_math.h"
-#include "../lib/ImSoft/imgui.h"
 
 extern "C" {
 

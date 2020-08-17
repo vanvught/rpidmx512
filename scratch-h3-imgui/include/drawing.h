@@ -41,6 +41,7 @@
 
 extern "C" {
 	void console_putpixel(uint32_t x, uint32_t y, uint32_t color);
+	void console_draw_string(uint32_t x, uint32_t y, const char *s, uint32_t clr);
 	extern volatile uint32_t fb_width;
 	extern volatile uint32_t fb_height;
 	extern volatile uint32_t fb_pitch;
@@ -58,6 +59,10 @@ public:
     void triangle(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t x3, uint32_t y3, uint32_t p);
    // void fillTriangle(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t x3, uint32_t y3, uint32_t p);
 
+	void text(uint32_t x, uint32_t y, char * sText, uint32_t clr) {
+   		console_draw_string(x, y, sText, clr);
+	}
+	
 	static Drawing *Get() {
 		return s_pThis;
 	}

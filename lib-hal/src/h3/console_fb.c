@@ -91,7 +91,7 @@ inline static void draw_char(int c, uint32_t x, uint32_t y, uint32_t fore, uint3
 	}
 }
 
-void draw_string(uint32_t x, uint32_t y, const char *s, uint32_t clr) {
+inline static void console_draw_string(uint32_t x, uint32_t y, const char *s, uint32_t clr) {
 	// FIXME clipping
 	char c;
 	uint32_t xx = 0;
