@@ -24,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-// FIXME Remove when finished
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
@@ -65,6 +60,7 @@ void h3_board_dump(void);
 void h3_dump_memory_mapping(void);
 void h3_ccu_pll_dump(void);
 void arm_dump_memmap(void);
+void arm_dump_page_table(void);
 }
 #endif
 
@@ -354,17 +350,17 @@ void Shell::CmdHwClock() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == hwclock::length::HCTOSYS) && (memcmp(m_Argv[0], hwclock::arg::HCTOSYS, hwclock::length::HCTOSYS) == 0)) {
-		HwClock::Get()->HcToSys();
+		//HwClock::Get()->HcToSys(); //TODO Implement
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::SYSTOHC) && (memcmp(m_Argv[0], hwclock::arg::SYSTOHC, hwclock::length::SYSTOHC) == 0)) {
-		HwClock::Get()->SysToHc();
+		//HwClock::Get()->SysToHc(); //TODO Implement
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::PRINT) && (memcmp(m_Argv[0], hwclock::arg::PRINT, hwclock::length::PRINT) == 0)) {
-		HwClock::Get()->Print();
+		//HwClock::Get()->Print(); //TODO Implement
 		return;
 	}
 

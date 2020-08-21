@@ -27,8 +27,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#if defined (H3)
 extern int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+# define printf uart0_printf
+#endif
 
 #define CHARS_PER_LINE 16
 

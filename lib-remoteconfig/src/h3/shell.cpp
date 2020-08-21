@@ -24,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-// FIXME Remove when finished
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>

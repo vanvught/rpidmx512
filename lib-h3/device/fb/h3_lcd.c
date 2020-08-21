@@ -24,6 +24,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/*
+ * https://github.com/u-boot/u-boot/blob/master/drivers/video/sunxi/lcdc.c
+ *
+ * Optimized for HDMI/DVI fixed resolution and now can be compiled with
+ * -Wpedantic -Wsign-conversion
+ *
+ */
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Timing controller driver for Allwinner SoCs.
+ *
+ * (C) Copyright 2013-2014 Luc Verhaegen <libv@skynet.be>
+ * (C) Copyright 2014-2015 Hans de Goede <hdegoede@redhat.com>
+ * (C) Copyright 2017 Jernej Skrabec <jernej.skrabec@siol.net>
+ */
 
 #include <stdint.h>
 #include <stdbool.h>
