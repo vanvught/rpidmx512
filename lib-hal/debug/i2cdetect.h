@@ -28,7 +28,7 @@
 
 class I2cDetect {
 public:
-	I2cDetect(void);
+	I2cDetect();
 };
 
 #endif /* I2CDETECT_H_ */

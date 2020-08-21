@@ -2,7 +2,7 @@
  * @file debug_print_bits.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
 
 void debug_print_bits(uint32_t u) {
 	uint32_t i;

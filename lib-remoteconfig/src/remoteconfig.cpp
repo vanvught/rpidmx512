@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -286,28 +287,54 @@ void RemoteConfig::Run() {
 
 	if (m_pUdpBuffer[0] == '?') {
 		DEBUG_PUTS("?");
+
 		if ((m_bEnableReboot) && (memcmp(m_pUdpBuffer, sRequestReboot, REQUEST_REBOOT_LENGTH) == 0)) {
 			HandleReboot();
-		} else if ((m_bEnableUptime) && (memcmp(m_pUdpBuffer, sRequestUptime, REQUEST_UPTIME_LENGTH) == 0)) {
-			HandleUptime();
-		} else if (memcmp(m_pUdpBuffer, sRequestVersion, REQUEST_VERSION_LENGTH) == 0) {
-			HandleVersion();
-		} else if (memcmp(m_pUdpBuffer, sRequestList, REQUEST_FILES_LENGTH) == 0) {
-			HandleList();
-		} else if ((m_nBytesReceived > REQUEST_GET_LENGTH) && (memcmp(m_pUdpBuffer, sRequestGet, REQUEST_GET_LENGTH) == 0)) {
-			HandleGet();
-		} else if ((m_nBytesReceived > REQUEST_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sRequestStore, REQUEST_STORE_LENGTH) == 0)) {
-			HandleStoreGet();
-		} else if ((m_nBytesReceived >= GET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sGetDisplay, GET_DISPLAY_LENGTH) == 0)) {
-			HandleDisplayGet();
-		} else if ((m_nBytesReceived >= GET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sGetTFTP, GET_TFTP_LENGTH) == 0)) {
-			HandleTftpGet();
-		} else {
-#ifndef NDEBUG
-			Network::Get()->SendTo(m_nHandle, "?#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
-#endif
+			__builtin_unreachable();
+			return;
 		}
-	} else if (!m_bDisableWrite) {
+
+		if ((m_bEnableUptime) && (memcmp(m_pUdpBuffer, sRequestUptime, REQUEST_UPTIME_LENGTH) == 0)) {
+			HandleUptime();
+			return;
+		}
+
+		if (memcmp(m_pUdpBuffer, sRequestVersion, REQUEST_VERSION_LENGTH) == 0) {
+			HandleVersion();
+			return;
+		}
+
+		if (memcmp(m_pUdpBuffer, sRequestList, REQUEST_FILES_LENGTH) == 0) {
+			HandleList();
+			return;
+		}
+
+		if ((m_nBytesReceived > REQUEST_GET_LENGTH) && (memcmp(m_pUdpBuffer, sRequestGet, REQUEST_GET_LENGTH) == 0)) {
+			HandleGet();
+			return;
+		}
+
+		if ((m_nBytesReceived > REQUEST_STORE_LENGTH) && (memcmp(m_pUdpBuffer, sRequestStore, REQUEST_STORE_LENGTH) == 0)) {
+			HandleStoreGet();
+			return;
+		}
+
+		if ((m_nBytesReceived >= GET_DISPLAY_LENGTH) && (memcmp(m_pUdpBuffer, sGetDisplay, GET_DISPLAY_LENGTH) == 0)) {
+			HandleDisplayGet();
+			return;
+		}
+
+		if ((m_nBytesReceived >= GET_TFTP_LENGTH) && (memcmp(m_pUdpBuffer, sGetTFTP, GET_TFTP_LENGTH) == 0)) {
+			HandleTftpGet();
+			return;
+		}
+
+		Network::Get()->SendTo(m_nHandle, "?#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
+
+		return;
+	}
+
+	if (!m_bDisableWrite) {
 		if (m_pUdpBuffer[0] == '#') {
 			DEBUG_PUTS("#");
 			m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
@@ -325,11 +352,11 @@ void RemoteConfig::Run() {
 				m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_BIN;
 				HandleTxtFile();
 			} else {
-#ifndef NDEBUG
 				Network::Get()->SendTo(m_nHandle, "!#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
-#endif
 			}
 		}
+
+		return;
 	}
 }
 
@@ -440,12 +467,19 @@ void RemoteConfig::HandleStoreGet() {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::HandleGet() {
+uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 	DEBUG_ENTRY
 
-	uint32_t nSize = udp::BUFFER_SIZE - REQUEST_GET_LENGTH;
+	uint32_t nSize;
+	uint32_t nIndex;
 
-	const uint32_t nIndex = GetIndex(&m_pUdpBuffer[REQUEST_GET_LENGTH], nSize);
+	if (pBuffer == nullptr) {
+		nSize = udp::BUFFER_SIZE - REQUEST_GET_LENGTH;
+		nIndex = GetIndex(&m_pUdpBuffer[REQUEST_GET_LENGTH], nSize);
+	} else {
+		nSize = nBufferLength;
+		nIndex = GetIndex(pBuffer, nSize);
+	}
 
 	switch (nIndex) {
 	case TXT_FILE_RCONFIG:
@@ -527,9 +561,14 @@ void RemoteConfig::HandleGet() {
 		break;
 #endif
 	default:
-		Network::Get()->SendTo(m_nHandle, "?get#ERROR#\n", 12, m_nIPAddressFrom, udp::PORT);
+		if (pBuffer == nullptr) {
+			Network::Get()->SendTo(m_nHandle, "?get#ERROR#\n", 12, m_nIPAddressFrom, udp::PORT);
+		} else {
+			DEBUG_PUTS("");
+			memcpy(pBuffer, "?get#ERROR#\n", std::min(12U, nBufferLength));
+		}
 		DEBUG_EXIT
-		return;
+		return 12;
 		__builtin_unreachable ();
 		break;
 	}
@@ -537,9 +576,15 @@ void RemoteConfig::HandleGet() {
 #ifndef NDEBUG
 	debug_dump(m_pUdpBuffer, nSize);
 #endif
-	Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nSize, m_nIPAddressFrom, udp::PORT);
+
+	if (pBuffer == nullptr) {
+		Network::Get()->SendTo(m_nHandle, m_pUdpBuffer, nSize, m_nIPAddressFrom, udp::PORT);
+	} else {
+		memcpy(pBuffer, m_pUdpBuffer, std::min(nSize, nBufferLength));
+	}
 
 	DEBUG_EXIT
+	return nSize;
 }
 
 void RemoteConfig::HandleGetRconfigTxt(uint32_t& nSize) {
@@ -774,25 +819,35 @@ void RemoteConfig::HandleGetSerialTxt(uint32_t &nSize) {
  *
  */
 
-void RemoteConfig::HandleTxtFile() {
+void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 	DEBUG_ENTRY
 
 	uint32_t i;
 	uint32_t nLength;
 
-	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
-		 nLength = udp::BUFFER_SIZE - 1;
-		i = GetIndex(&m_pUdpBuffer[1], nLength);
-	} else {
-		nLength = udp::BUFFER_SIZE - SET_STORE_LENGTH;
-		i = GetIndex(&m_pUdpBuffer[SET_STORE_LENGTH], nLength);
-		if (i < TXT_FILE_LAST) {
-			m_nBytesReceived = m_nBytesReceived - nLength - SET_STORE_LENGTH;
-			memcpy(m_pStoreBuffer, &m_pUdpBuffer[nLength + SET_STORE_LENGTH], udp::BUFFER_SIZE);
-			debug_dump(m_pStoreBuffer, m_nBytesReceived);
+	if(pBuffer == nullptr) {
+		if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_TXT) {
+			nLength = udp::BUFFER_SIZE - 1;
+			i = GetIndex(&m_pUdpBuffer[1], nLength);
 		} else {
-			return;
+			nLength = udp::BUFFER_SIZE - SET_STORE_LENGTH;
+			i = GetIndex(&m_pUdpBuffer[SET_STORE_LENGTH], nLength);
+			if (i < TXT_FILE_LAST) {
+				m_nBytesReceived = m_nBytesReceived - nLength - SET_STORE_LENGTH;
+				memcpy(m_pStoreBuffer, &m_pUdpBuffer[nLength + SET_STORE_LENGTH], udp::BUFFER_SIZE);
+				debug_dump(m_pStoreBuffer, m_nBytesReceived);
+			} else {
+				return;
+			}
 		}
+	} else if (nBufferLength <= udp::BUFFER_SIZE){
+		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
+		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
+		m_nBytesReceived = nBufferLength;
+		nLength = nBufferLength;
+		i = GetIndex(&m_pUdpBuffer[1], nBufferLength);
+	} else {
+		return;
 	}
 
 	switch (i) {

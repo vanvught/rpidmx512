@@ -1,8 +1,8 @@
 /**
- * @file stdint.h
+ * @file time.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef STDINT_H_
-#define STDINT_H_
+#ifndef SYS_TIME_H_
+#define SYS_TIME_H_
 
-typedef unsigned char		uint8_t;
-typedef unsigned short		uint16_t;
-typedef unsigned int		uint32_t;
-typedef unsigned long long	uint64_t;
+#ifndef _TIME_T
+#define	_TIME_T
+typedef long time_t;
+#endif	/* _TIME_T */
 
-typedef signed char			int8_t;
-typedef signed short		int16_t;
-typedef signed int			int32_t;
-typedef signed long long	int64_t;
+#ifndef	_SUSECONDS_T
+#define	_SUSECONDS_T
+typedef long suseconds_t;
+#endif	/* _SUSECONDS_T */
 
-typedef int 				intptr_t;
-typedef unsigned int 		uintptr_t;
+struct timeval {
+	time_t tv_sec; /* seconds */
+	suseconds_t tv_usec; /* microseconds */
+};
 
-#if !defined(UINT32_MAX)
- #ifdef __cplusplus
-  #define UINT32_MAX	(static_cast<uint32_t>(-1))
- #else
-  #define UINT32_MAX	((uint32_t)-1)
- #endif
+struct timezone {
+	int tz_minuteswest; /* minutes west of Greenwich */
+	int tz_dsttime; /* type of DST correction */
+};
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
+extern int gettimeofday(struct timeval *tv, struct timezone *tz);
+extern int settimeofday(const struct timeval *tv, const struct timezone *tz);
 
-#define INT16_MIN   (-0x7fff - 1)
-
-#define INT16_MAX   0x7fff
-
+#ifdef __cplusplus
+}
 #endif
 
+#endif /* SYS_TIME_H_ */

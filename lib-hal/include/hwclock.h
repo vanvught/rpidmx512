@@ -1,8 +1,9 @@
+
 /**
- * @file stdint.h
+ * @file hwclock.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +24,60 @@
  * THE SOFTWARE.
  */
 
-#ifndef STDINT_H_
-#define STDINT_H_
+#ifndef HWCLOCK_H_
+#define HWCLOCK_H_
 
-typedef unsigned char		uint8_t;
-typedef unsigned short		uint16_t;
-typedef unsigned int		uint32_t;
-typedef unsigned long long	uint64_t;
+#include <stdint.h>
 
-typedef signed char			int8_t;
-typedef signed short		int16_t;
-typedef signed int			int32_t;
-typedef signed long long	int64_t;
+namespace rtc {
+enum {
+	MCP7941X,
+	DS3231
+};
+}  // namespace rtc
 
-typedef int 				intptr_t;
-typedef unsigned int 		uintptr_t;
+struct rtc_time {
+    int tm_sec;
+    int tm_min;
+    int tm_hour;
+    int tm_mday;
+    int tm_mon;
+    int tm_year;
+    int tm_wday;     /* unused */
+    int tm_yday;     /* unused */
+    int tm_isdst;    /* unused */
+};
 
-#if !defined(UINT32_MAX)
- #ifdef __cplusplus
-  #define UINT32_MAX	(static_cast<uint32_t>(-1))
- #else
-  #define UINT32_MAX	((uint32_t)-1)
- #endif
-#endif
+class HwClock {
+public:
+	HwClock();
 
+	void HcToSys(); // Set the System Clock from the Hardware Clock
+	void SysToHc(); // Set the Hardware Clock from the System Clock
 
-#define INT16_MIN   (-0x7fff - 1)
+	bool Set(const struct rtc_time *pRtcTime);
+	bool Get(struct rtc_time *pRtcTime) {
+		return RtcGet(pRtcTime);
+	}
 
-#define INT16_MAX   0x7fff
+	void Print();
 
-#endif
+	static HwClock *Get() {
+		return s_pThis;
+	}
 
+private:
+	void RtcProbe();
+	bool RtcSet(const struct rtc_time *pRtcTime);
+	bool RtcGet(struct rtc_time *pRtcTime);
+
+private:
+	bool m_bIsConnected{false};
+	uint32_t m_nType;
+	uint8_t m_nAddress;
+	uint32_t m_nSetDelayMicros;
+
+	static HwClock *s_pThis;
+};
+
+#endif /* HWCLOCK_H_ */
