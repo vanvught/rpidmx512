@@ -156,9 +156,6 @@ void Drawing::triangle(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint3
 }
 
 
-void Drawing::text(uint32_t x, uint32_t y, char * sText, uint32_t clr) {
-    console_draw_string(x, y, sText, clr);
-}
 
 
 /* 
