@@ -1,3 +1,8 @@
+
+#ifndef ORANGE_PI_ONE
+# define ORANGE_PI_ONE
+#endif
+
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -29,27 +34,63 @@ static const char SOFTWARE_VERSION[] = "0.0";
  */
 #include <h3/shell.h>
 /*
- * Debugging System Clock framework for PTP implementation
+ * Debugging HDMI support Orange Pi One
  */
-#include <arpa/inet.h>
-#include <netinet/in.h>
+#ifdef ORANGE_PI_ONE
+extern "C" {
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
+}
 
-#include "ntpclient.h"
-#include "ptpclient.h"
-/*
- *
- */
-#include "hwclock.h"
+#include "display_timing.h"
+struct display_timing default_timing;
+
+#endif
 
 extern "C" {
+#ifdef ORANGE_PI_ONE
+void h3_de2_dump(void);
+void h3_hdmi_phy_dump(void);
+void h3_lcdc_dump(void);
+void h3_de2_init(struct display_timing *timing, uint32_t fbbase);
+
+int console_init(void);
+#endif
 
 void notmain(void) {
+#ifdef ORANGE_PI_ONE
+	memset(&default_timing, 0, sizeof(struct display_timing));
+
+	default_timing.hdmi_monitor = false;
+	default_timing.pixelclock.typ = 32000000;
+	default_timing.hactive.typ = 800;
+	default_timing.hback_porch.typ = 40;
+	default_timing.hfront_porch.typ = 40;
+	default_timing.hsync_len.typ = 48;
+	default_timing.vactive.typ = 480;
+	default_timing.vback_porch.typ = 29;
+	default_timing.vfront_porch.typ = 13;
+	default_timing.vsync_len.typ = 3;
+	default_timing.flags = static_cast<display_flags>(DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
+
+	h3_de2_init(&default_timing, 0x5E000000);
+
+	console_init();
+
+	const struct display_timing *edid = &default_timing;
+	printf("pixelclock: %d\n", edid->pixelclock.typ);
+	printf("h: %d %d %d %d\n", edid->hactive.typ, edid->hback_porch.typ, edid->hfront_porch, edid->hsync_len.typ);
+	printf("v: %d %d %d %d\n", edid->vactive.typ, edid->vback_porch.typ, edid->vfront_porch, edid->vsync_len.typ);
+	printf("flags: %d\n", edid->flags);
+
+	h3_de2_dump();
+#endif
 	Hardware hw;
-	HwClock hwClock;
 	NetworkH3emac nw;
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	Shell shell;
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -65,24 +106,7 @@ void notmain(void) {
 
 	networkHandlerOled.ShowIp();
 
-	/*
-	 * Debugging System Clock framework for PTP implementation
-	 */
-
-	NtpClient ntpClient(nw.GetNtpServerIp());
-	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
-	ntpClient.Start();
-	ntpClient.Print();
-
-	if (ntpClient.GetStatus() != NtpClientStatus::STOPPED) {
-		printf("Set RTC from System Clock\n");
-		hwClock.SysToHc();
-	} else {
-		printf("Set System Clock from RTC\n");
-		hwClock.HcToSys();
-	}
-
-	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_DMX, 0);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -95,11 +119,6 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	/*
-	 *
-	 */
-	Shell shell;
-
 	int nPrevSeconds = 60; // Force initial update
 
 	display.ClearLine(0);
@@ -110,20 +129,7 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
-
-		/*
-		 *
-		 */
 		shell.Run();
-
-		/*
-		 * Debugging System Clock framework for PTP implementation
-		 */
-		// ntpClient.Run();
-
-		/*
-		 *
-		 */
 
 		time_t ltime;
 		struct tm *tm;
@@ -132,11 +138,7 @@ void notmain(void) {
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
-			struct rtc_time rtc;
-			hwClock.Get(&rtc);
-
 			display.Printf(1, "%.2d:%.2d:%.2d", tm->tm_hour, tm->tm_min, tm->tm_sec);
-			display.Printf(2, "%.2d:%.2d:%.2d", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
 		}
 	}
 }

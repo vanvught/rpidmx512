@@ -1,8 +1,8 @@
 /**
- * @file fb.h
+ * @file h3_hdmi_phy_dump.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_FB_H_
-#define DEVICE_FB_H_
+#include <stdio.h>
 
-#if !defined ORANGE_PI_ONE
-# error Support for Orange Pi One only
-#endif
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
 
-extern volatile uint32_t fb_width;
-extern volatile uint32_t fb_height;
-extern volatile uint32_t fb_pitch;
-extern volatile uint32_t fb_addr;
+#include "h3.h"
 
-#define FB_WIDTH			800
-#define FB_HEIGHT			480
-#define FB_BYTES_PER_PIXEL	4
-#define FB_BPP				(FB_BYTES_PER_PIXEL << 3)
-#define FB_PITCH			(FB_WIDTH * FB_BYTES_PER_PIXEL)
-#define FB_ADDRESS			0x5E000000
+void h3_hdmi_phy_dump(void) {
+	/* enable read access to HDMI controller */
+	H3_HDMI_PHY->READ_EN = 0x54524545;
+	/* descramble register offsets */
+	H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
 
-#define FB_OK	0
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int fb_init(void);
-
-#ifdef __cplusplus
+	printf("HDMI_PHY\n");
+	printf(" POL        %p\n", H3_HDMI_PHY->POL);
+	printf(" READ_EN    %p\n", H3_HDMI_PHY->READ_EN);
+	printf(" UNSCRAMBLE %p\n", H3_HDMI_PHY->UNSCRAMBLE);
+	printf(" CTRL       %p\n", H3_HDMI_PHY->CTRL);
+	printf(" UNK1       %p\n", H3_HDMI_PHY->UNK1);
+	printf(" UNK2       %p\n", H3_HDMI_PHY->UNK2);
+	printf(" PLL        %p\n", H3_HDMI_PHY->PLL);
+	printf(" CLK        %p\n", H3_HDMI_PHY->CLK);
+	printf(" UNK3       %p\n", H3_HDMI_PHY->UNK3);
+	printf(" STATUS     %p\n", H3_HDMI_PHY->STATUS);
 }
-#endif
-
-#endif /* DEVICE_FB_H_ */

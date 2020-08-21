@@ -44,6 +44,7 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "storee131.h"
 #include "e131msgconst.h"
 
 // Monitor Output
@@ -55,6 +56,13 @@
 #include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
+
 extern "C" {
 
 void notmain(void) {
@@ -65,13 +73,20 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	StoreE131 storeE131;
+
+	console_clear();
+
 	fw.Print();
 
-	console_puts("Ethernet sACN E1.31 ");
+	console_puts("sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
+	console_set_top_row(2);
 
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
@@ -81,7 +96,8 @@ void notmain(void) {
 	DisplayUdfNetworkHandler displayUdfNetworkHandler;
 
 	nw.SetNetworkDisplay(&displayUdfNetworkHandler);
-	nw.Init();
+	nw.SetNetworkStore(StoreNetwork::Get());
+	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -92,11 +108,11 @@ void notmain(void) {
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	E131Bridge bridge;
-	E131Params e131params;
+	E131Params e131params(&storeE131);
 
 	if (e131params.Load()) {
-		e131params.Set(&bridge);
 		e131params.Dump();
+		e131params.Set(&bridge);
 	}
 
 	bridge.SetUniverse(0, E131_OUTPUT_PORT, e131params.GetUniverse());
@@ -117,7 +133,8 @@ void notmain(void) {
 	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
 	display.Set(6, DISPLAY_UDF_LABEL_AP);
 
-	DisplayUdfParams displayUdfParams;
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if(displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
@@ -125,6 +142,19 @@ void notmain(void) {
 	}
 
 	display.Show(&bridge);
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_MONITOR, 0);
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -138,6 +168,8 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();

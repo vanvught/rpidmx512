@@ -43,6 +43,7 @@
 
 #include "oscserver.h"
 #include "oscserverparms.h"
+#include "storeoscserver.h"
 #include "oscservermsgconst.h"
 
 // Monitor Output
@@ -52,6 +53,13 @@
 #include "software_version.h"
 
 #include "displayhandler.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
 
 extern "C" {
 
@@ -63,18 +71,26 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
-	console_puts("Ethernet OSC ");
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	console_clear();
+
+	fw.Print();
+
+	console_puts("OSC ");
 	console_set_fg_color(CONSOLE_GREEN);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
+	console_set_top_row(2);
 
 	hw.SetLed(HARDWARE_LED_ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init();
+	nw.SetNetworkStore(StoreNetwork::Get());
+	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -83,7 +99,8 @@ void notmain(void) {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	OSCServerParams params;
+	StoreOscServer storeOscServer;
+	OSCServerParams params(&storeOscServer);
 	OscServer server;
 
 	if (params.Load()) {
@@ -116,6 +133,19 @@ void notmain(void) {
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
+	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC, REMOTE_CONFIG_MODE_MONITOR, 1);
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
+
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	server.Start();
@@ -128,6 +158,8 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		server.Run();
+		remoteConfig.Run();
+		spiFlashStore.Flash();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();

@@ -1,8 +1,8 @@
 /**
- * @file fb.h
+ * @file sys_time.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,35 +21,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_FB_H_
-#define DEVICE_FB_H_
+/*
+ * PoC Code -> Do not use in production
+ */
 
-#if !defined ORANGE_PI_ONE
-# error Support for Orange Pi One only
-#endif
+#include <time.h>
+#include <sys/time.h>
 
-extern volatile uint32_t fb_width;
-extern volatile uint32_t fb_height;
-extern volatile uint32_t fb_pitch;
-extern volatile uint32_t fb_addr;
+#include "debug.h"
 
-#define FB_WIDTH			800
-#define FB_HEIGHT			480
-#define FB_BYTES_PER_PIXEL	4
-#define FB_BPP				(FB_BYTES_PER_PIXEL << 3)
-#define FB_PITCH			(FB_WIDTH * FB_BYTES_PER_PIXEL)
-#define FB_ADDRESS			0x5E000000
+void __attribute__((cold)) sys_time_init(void) {
+	struct tm tmbuf;
 
-#define FB_OK	0
+	tmbuf.tm_hour = 0;
+	tmbuf.tm_min = 0;
+	tmbuf.tm_sec = 0;
+	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
+	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
+	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
+	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+	const time_t seconds = mktime(&tmbuf);
+	const struct timeval tv = { .tv_sec = seconds, .tv_usec = 0 };
 
-extern int fb_init(void);
+	settimeofday(&tv, NULL);
 
-#ifdef __cplusplus
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
+	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
 }
-#endif
-
-#endif /* DEVICE_FB_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file fb.h
+ * @file h3_lcdc_dump.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef DEVICE_FB_H_
-#define DEVICE_FB_H_
+#include <stdio.h>
 
-#if !defined ORANGE_PI_ONE
-# error Support for Orange Pi One only
-#endif
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
 
-extern volatile uint32_t fb_width;
-extern volatile uint32_t fb_height;
-extern volatile uint32_t fb_pitch;
-extern volatile uint32_t fb_addr;
+#include "h3.h"
 
-#define FB_WIDTH			800
-#define FB_HEIGHT			480
-#define FB_BYTES_PER_PIXEL	4
-#define FB_BPP				(FB_BYTES_PER_PIXEL << 3)
-#define FB_PITCH			(FB_WIDTH * FB_BYTES_PER_PIXEL)
-#define FB_ADDRESS			0x5E000000
+/*
+ * The LCD0 module is used for HDMI
+ */
 
-#define FB_OK	0
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern int fb_init(void);
-
-#ifdef __cplusplus
+void h3_lcdc_dump(void) {
+	printf("LCD0\n");
+	printf(" GCTL         %p\n", H3_LCD0->GCTL);
+	printf(" GINT0        %p\n", H3_LCD0->GINT0);
+	printf(" GINT1        %p\n", H3_LCD0->GINT1);
+	printf(" TCON1_CTL    %p\n", H3_LCD0->TCON1_CTL);
+	printf(" TCON1_BASIC0 %p\n", H3_LCD0->TCON1_BASIC0);
+	printf(" TCON1_BASIC1 %p\n", H3_LCD0->TCON1_BASIC1);
+	printf(" TCON1_BASIC2 %p\n", H3_LCD0->TCON1_BASIC2);
+	printf(" TCON1_BASIC3 %p\n", H3_LCD0->TCON1_BASIC3);
+	printf(" TCON1_BASIC4 %p\n", H3_LCD0->TCON1_BASIC4);
+	printf(" TCON1_BASIC5 %p\n", H3_LCD0->TCON1_BASIC5);
 }
-#endif
-
-#endif /* DEVICE_FB_H_ */
