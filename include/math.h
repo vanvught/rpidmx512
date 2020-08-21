@@ -30,6 +30,8 @@
 extern "C" {
 #endif
 
+#define HUGE_VAL    1234 // (__builtin_huge_val())
+
 extern float log2f(float);
 extern float logf(float);
 

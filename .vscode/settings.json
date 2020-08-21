@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "cctype": "c",
+        "atomic": "cpp",
+        "cstdint": "cpp"
+    }
+}

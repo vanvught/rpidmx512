@@ -54,6 +54,10 @@ inline static int isalpha(int c) {
 	return ((isupper(c) != 0) || (islower(c) != 0)) ? 1 : 0;
 }
 
+inline static int isspace(int c) {
+	return (c == ' ') ? 1 : 0;
+}
+
 inline static int tolower(int c) {
 	return ((isupper(c) != 0) ? (c + 32) : c);
 }
@@ -61,6 +65,8 @@ inline static int tolower(int c) {
 inline static int toupper(int c) {
 	return ((islower(c) != 0) ? (c - 32) : c);
 }
+
+
 
 #ifdef __cplusplus
 }
