@@ -30,20 +30,20 @@
 #define MAX_ASC_TIME	50
 
 static char s_buffer[MAX_ASC_TIME + 1];
-static const char *pMonthName[12] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-static const char *pDaysOfWeek[7] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+static const char mon_name[][4] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+static const char wday_name[][4] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
 char *asctime(const struct tm *pTm) {
 	if (pTm == NULL) {
 		return NULL;
 	}
 
-	snprintf(s_buffer, MAX_ASC_TIME, "%s %s %2u %02u:%02u:%02u %04u\n",
-			(0 <= pTm->tm_wday && pTm->tm_wday <= 6) ? pDaysOfWeek[pTm->tm_wday] : "???",
-			(0 <= pTm->tm_mon && pTm->tm_mon <= 11) ? pMonthName[pTm->tm_mon] : "???",
-			(unsigned) pTm->tm_mday, (unsigned) pTm->tm_hour,
-			(unsigned) pTm->tm_min, (unsigned) pTm->tm_sec,
-			(unsigned) pTm->tm_year + 1900);
+	snprintf(s_buffer, MAX_ASC_TIME - 1, "%s %s %2d %02d:%02d:%02d %04d\n",
+			(0 <= pTm->tm_wday && pTm->tm_wday <= 6) ? wday_name[pTm->tm_wday] : "???",
+			(0 <= pTm->tm_mon && pTm->tm_mon <= 11) ? mon_name[pTm->tm_mon] : "???",
+			pTm->tm_mday, pTm->tm_hour,
+			pTm->tm_min,  pTm->tm_sec,
+			pTm->tm_year + 1900);
 
 	return s_buffer;
 }
