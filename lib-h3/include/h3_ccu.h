@@ -26,6 +26,8 @@
 #ifndef H3_CCU_H_
 #define H3_CCU_H_
 
+#include <stdint.h>
+
 typedef enum H3_CCU_PLL {
 	CCU_PLL_CPUX,
 	CCU_PLL_AUDIO,
@@ -43,6 +45,11 @@ typedef enum H3_CCU_PLL {
 #define CCU_BUS_CLK_GATING0_SPI0	(1U << 20)
 #define CCU_BUS_CLK_GATING0_SPI1	(1U << 21)
 
+#define CCU_BUS_CLK_GATING1_TCON0	(1U << 3)
+#define CCU_BUS_CLK_GATING1_TCON1	(1U << 4)
+#define CCU_BUS_CLK_GATING1_HDMI	(1U << 11)
+#define CCU_BUS_CLK_GATING1_DE		(1U << 12)
+
 #define CCU_BUS_CLK_GATING2_AC_DIG	(1U << 0)
 #define CCU_BUS_CLK_GATING2_THS		(1U << 8)
 
@@ -57,6 +64,12 @@ typedef enum H3_CCU_PLL {
 #define CCU_BUS_SOFT_RESET0_HSTMR	(1U << 19)
 #define CCU_BUS_SOFT_RESET0_SPI0	(1U << 20)
 #define CCU_BUS_SOFT_RESET0_SPI1	(1U << 21)
+
+#define CCU_BUS_SOFT_RESET1_TCON0	(1U << 3)
+#define CCU_BUS_SOFT_RESET1_TCON1	(1U << 4)
+#define CCU_BUS_SOFT_RESET1_HDMI2	(1U << 10)
+#define CCU_BUS_SOFT_RESET1_HDMI	(1U << 11)
+#define CCU_BUS_SOFT_RESET1_DE		(1U << 12)
 
 #define CCU_BUS_SOFT_RESET3_AC		(1U << 0)
 #define CCU_BUS_SOFT_RESET3_THS		(1U << 8)
@@ -92,9 +105,6 @@ extern "C" {
 #endif
 
 extern uint32_t h3_ccu_get_pll_rate(ccu_pll_t);
-
-// NDEBUG
-extern void h3_ccu_pll_dump(void);
 
 #ifdef __cplusplus
 }

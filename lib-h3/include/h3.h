@@ -37,13 +37,17 @@
 #define H3_MEM_BROM_START		0xFFFF0000
 
 #if defined (ORANGE_PI_ONE)
-	#define H3_MEM_FB_SIZE		(32 * MEGABYTE)
+# define H3_MEM_FB_SIZE		(32 * MEGABYTE)
 #else
-	#define H3_MEM_FB_SIZE		0
+# define H3_MEM_FB_SIZE		0
 #endif
 
+#define H3_SRAM_A1_BASE			0x00000000
+#define H3_SRAM_A2_BASE			0x00044000
+#define H3_DE_BASE				0x01000000
 #define H3_SYSTEM_BASE			0x01C00000
 #define H3_DMA_BASE				0x01C02000
+#define H3_LCD_BASE				0x01C0C000
 #define H3_SD_MMC_BASE			0x01C0F000
 #define H3_SID_BASE				0x01C14000
 #define H3_CCU_BASE				0x01C20000
@@ -58,10 +62,14 @@
 #define H3_HS_TIMER_BASE		0x01C60000
 #define H3_SPI_BASE				0x01C68000
 #define H3_GIC_BASE 			0x01C80000	///< GIC-400 v2
+#define H3_HDMI_BASE			0x01EE0000
 #define H3_RTC_BASE				0x01F00000
 #define H3_PRCM_BASE			0x01F01400
 #define H3_CPUCFG_BASE			0x01F01C00
 #define H3_PIO_PORTL_BASE		0x01F02C00
+
+#define H3_LCD0_BASE			(H3_LCD_BASE + (0 * 0x1000))
+#define H3_LCD1_BASE			(H3_LCD_BASE + (1 * 0x1000))
 
 #define H3_DMA_CHL0_BASE		(H3_DMA_BASE + 0x100 + (0 * 0x40))
 #define H3_DMA_CHL1_BASE		(H3_DMA_BASE + 0x100 + (1 * 0x40))
@@ -100,6 +108,8 @@
 
 #define H3_GIC_DIST_BASE		(H3_GIC_BASE + 0x1000)
 #define H3_GIC_CPUIF_BASE		(H3_GIC_BASE + 0x2000)
+
+#define HDMI_PHY_BASE 			(H3_HDMI_BASE + 0x10000)
 
 typedef enum T_H3_Pn {
 	H3_GPIO_PORTA = 0,
@@ -175,6 +185,26 @@ typedef struct T_H3_DMA_CHL {
 	__I  uint32_t PKG_NUM;			///< 0x30
 
 } H3_DMA_CHL_TypeDef;
+
+typedef struct T_H3_TCON {
+	__IO uint32_t GCTL;				///< 0x00
+	__IO uint32_t GINT0;			///< 0x04
+	__IO uint32_t GINT1;			///< 0x08
+	__I  uint32_t RES0[14];   		///< 0x0C-0x40
+	__IO uint32_t TCON0_DCLK;		///< 0x44
+	__I  uint32_t RES1[17];   		///< 0x48-0x88
+	__IO uint32_t TCON0_IO_TRI;		///< 0x8C
+	__IO uint32_t TCON1_CTL;		///< 0x90
+	__IO uint32_t TCON1_BASIC0;		///< 0x94	Timing Source
+	__IO uint32_t TCON1_BASIC1;		///< 0x98 	Timing Scale
+	__IO uint32_t TCON1_BASIC2;		///< 0x9C	Timing Out
+	__IO uint32_t TCON1_BASIC3;		///< 0xA0	Timing H
+	__IO uint32_t TCON1_BASIC4;		///< 0xA4	Timing V
+	__IO uint32_t TCON1_BASIC5;		///< 0xA8	Timing Sync
+	__I  uint32_t RES2[17];   		///< 0xAC-0xDF
+	__IO uint32_t TCON1_IO_POL;		///< 0xF0
+	__IO uint32_t TCON1_IO_TRI;		///< 0xF4
+} H3_TCON_TypeDef;
 
 typedef struct T_H3_SD_MMC {
 	__IO uint32_t GCTL;				///< 0x00
@@ -283,9 +313,10 @@ typedef struct T_H3_CCU {
 	__IO uint32_t RES131;			///< 0xF8
 	__IO uint32_t MBUS_RESET;		///< 0xFC
 	__IO uint32_t DRAM_CLK_GATING;	///< 0x100
-	__IO uint32_t RES14[5];			///< 0x104
+	__IO uint32_t DE_CLK;			///< 0x104
+	__IO uint32_t RES14[4];			///< 0x108
 	__IO uint32_t TCON0_CLK;		///< 0x118
-	__IO uint32_t RES141;			///< 0x11C
+	__IO uint32_t TCON1_CLK;		///< 0x11C
 	__IO uint32_t RES15[4];			///< 0x120
 	__IO uint32_t mipi_csi_CLK_CFG;	///< 0x130 MIPI CSI module clock
 	__IO uint32_t csi_CLK_CFG;		///< 0x134 CSI module clock
@@ -294,8 +325,8 @@ typedef struct T_H3_CCU {
 	__IO uint32_t AC_DIG_CLK;		///< 0x140 AC Digital Clock Register
 	__IO uint32_t AVS_CLK_CFG;		///< 0x144 AVS module clock
 	__IO uint32_t RES18[2];			///< 0x148
-	__IO uint32_t HDMI_CLK_CFG;		///< 0x150 HDMI module clock
-	__IO uint32_t HDMI_slow_CLK_CFG;///< 0x154 HDMI slow module clock
+	__IO uint32_t HDMI_CLK;			///< 0x150 HDMI module clock
+	__IO uint32_t HDMI_SLOW_CLK;	///< 0x154 HDMI slow module clock
 	__IO uint32_t RES19;			///< 0x158
 	__IO uint32_t mbus_CLK_CFG;		///< 0x15c MBUS module clock
 	__IO uint32_t RES20[2];			///< 0x160
@@ -603,6 +634,21 @@ typedef struct T_H3_PRCM {
 	__IO uint32_t AUDIO_CFG;		///< 0x1C0
 } H3_PRCM_TypeDef;
 
+typedef struct T_H3_HDMI_PHY {
+	__IO uint32_t POL;			///< 0x00
+	__IO uint32_t RES1[3];		///< 0x04
+	__IO uint32_t READ_EN;		///< 0x10
+	__IO uint32_t UNSCRAMBLE;	///< 0x14
+	__IO uint32_t RES2[2];		///< 0x18
+	__IO uint32_t CTRL;			///< 0x20
+	__IO uint32_t UNK1;			///< 0x24
+	__IO uint32_t UNK2;			///< 0x28
+	__IO uint32_t PLL;			///< 0x2C
+	__IO uint32_t CLK;			///< 0x30
+	__IO uint32_t UNK3;			///< 0x34
+	__IO uint32_t STATUS;		///< 0x38
+} H3_HDMI_PHY_TypeDef;
+
 #ifdef __cplusplus
 # define _CAST(x)	reinterpret_cast<x>
 #else
@@ -610,6 +656,10 @@ typedef struct T_H3_PRCM {
 #endif
 
 #define H3_SYSTEM		((H3_SYSTEM_TypeDef *) H3_SYSTEM_BASE)
+
+#define H3_LCD0			(_CAST(H3_TCON_TypeDef *)(H3_LCD0_BASE))
+#define H3_LCD1			(_CAST(H3_TCON_TypeDef *)(H3_LCD1_BASE))
+
 #define H3_DMA			((H3_DMA_TypeDef *) H3_DMA_BASE)
 #define H3_DMA_CHL0		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL0_BASE)
 #define H3_DMA_CHL1		((H3_DMA_CHL_TypeDef *) H3_DMA_CHL1_BASE)
@@ -623,42 +673,21 @@ typedef struct T_H3_PRCM {
 #define H3_SD_MMC1		((H3_SD_MMC_TypeDef *) H3_SD_MMC1_BASE)
 #define H3_SD_MMC2		((H3_SD_MMC_TypeDef *) H3_SD_MMC2_BASE)
 #define H3_SID			((H3_SID_TypeDef *) H3_SID_BASE)
-
-//#define H3_CCU			((H3_CCU_TypeDef *) H3_CCU_BASE)
 #define H3_CCU 			(_CAST(H3_CCU_TypeDef *)(H3_CCU_BASE))
-
-//#define H3_PIO_PORTA	((H3_PIO_TypeDef *) H3_PIO_PORTA_BASE)
 #define H3_PIO_PORTA 	(_CAST(H3_PIO_TypeDef *)(H3_PIO_PORTA_BASE))
-
 #define H3_PIO_PORTC	((H3_PIO_TypeDef *) H3_PIO_PORTC_BASE)
 #define H3_PIO_PORTD	((H3_PIO_TypeDef *) H3_PIO_PORTD_BASE)
 #define H3_PIO_PORTE	((H3_PIO_TypeDef *) H3_PIO_PORTE_BASE)
 #define H3_PIO_PORTF	((H3_PIO_TypeDef *) H3_PIO_PORTF_BASE)
-
-//#define H3_PIO_PORTG	((H3_PIO_TypeDef *) H3_PIO_PORTG_BASE)
 #define H3_PIO_PORTG 	(_CAST(H3_PIO_TypeDef *)(H3_PIO_PORTG_BASE))
-
 #define H3_PIO_PORTL	((H3_PIO_TypeDef *) H3_PIO_PORTL_BASE)
-
-//#define H3_PIO_PA_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PA_INT_BASE)
 #define H3_PIO_PA_INT 	(_CAST(H3_PIO_INT_TypeDef *)(H3_PIO_PA_INT_BASE))
-
 #define H3_PIO_PG_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PG_INT_BASE)
 #define H3_EMAC			((H3_EMAC_TypeDef *) H3_EMAC_BASE)
-
-//#define H3_TIMER		((H3_TIMER_TypeDef *) H3_TIMER_BASE)
 #define H3_TIMER 		(_CAST(H3_TIMER_TypeDef *)(H3_TIMER_BASE))
-
-//#define H3_HS_TIMER		((H3_HS_TIMER_TypeDef *) H3_HS_TIMER_BASE)
 #define H3_HS_TIMER		(_CAST(H3_HS_TIMER_TypeDef *)(H3_HS_TIMER_BASE))
-
 #define H3_AC			((H3_AC_TypeDef *) H3_AC_BASE)
 #define H3_THS			((H3_THS_TypeDef *) H3_THS_BASE)
-
-//#define H3_UART0		((H3_UART_TypeDef *) H3_UART0_BASE)
-//#define H3_UART1		((H3_UART_TypeDef *) H3_UART1_BASE)
-//#define H3_UART2		((H3_UART_TypeDef *) H3_UART2_BASE)
-//#define H3_UART3		((H3_UART_TypeDef *) H3_UART3_BASE)
 #define H3_UART0		(_CAST(H3_UART_TypeDef *)(H3_UART0_BASE))
 #define H3_UART1		(_CAST(H3_UART_TypeDef *)(H3_UART1_BASE))
 #define H3_UART2		(_CAST(H3_UART_TypeDef *)(H3_UART2_BASE))
@@ -671,6 +700,8 @@ typedef struct T_H3_PRCM {
 #define H3_SPI1			((H3_SPI_TypeDef *) H3_SPI1_BASE)
 #define H3_RTC			((H3_RTC_TypeDef *) H3_RTC_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
+
+#define H3_HDMI_PHY		((H3_HDMI_PHY_TypeDef *) HDMI_PHY_BASE)
 
 #ifdef __cplusplus
 extern "C" {

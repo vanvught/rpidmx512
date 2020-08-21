@@ -1,8 +1,8 @@
 /**
- * @file tftp_internal.h
+ * @file h3_hdmi_phy_dump.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef TFTP_INTERNAL_H_
-#define TFTP_INTERNAL_H_
+#include <stdio.h>
 
-enum {
-	TFTP_PORT_SERVER = 69
-};
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
 
-#endif /* TFTP_INTERNAL_H_ */
+#include "h3.h"
+
+void h3_hdmi_phy_dump(void) {
+	/* enable read access to HDMI controller */
+	H3_HDMI_PHY->READ_EN = 0x54524545;
+	/* descramble register offsets */
+	H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+
+	printf("HDMI_PHY\n");
+	printf(" POL        %p\n", H3_HDMI_PHY->POL);
+	printf(" READ_EN    %p\n", H3_HDMI_PHY->READ_EN);
+	printf(" UNSCRAMBLE %p\n", H3_HDMI_PHY->UNSCRAMBLE);
+	printf(" CTRL       %p\n", H3_HDMI_PHY->CTRL);
+	printf(" UNK1       %p\n", H3_HDMI_PHY->UNK1);
+	printf(" UNK2       %p\n", H3_HDMI_PHY->UNK2);
+	printf(" PLL        %p\n", H3_HDMI_PHY->PLL);
+	printf(" CLK        %p\n", H3_HDMI_PHY->CLK);
+	printf(" UNK3       %p\n", H3_HDMI_PHY->UNK3);
+	printf(" STATUS     %p\n", H3_HDMI_PHY->STATUS);
+}

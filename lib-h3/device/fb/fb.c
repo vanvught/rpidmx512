@@ -28,52 +28,51 @@
 
 #include "device/fb.h"
 
+#include "h3_de2.h"
+
+#if !defined(USE_UBOOT_HDMI)
+# include <string.h>
+# include "display_timing.h"
+void h3_de2_init(struct display_timing *timing, uint32_t fbbase);
+#endif
+
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
+
 volatile uint32_t fb_width;
 volatile uint32_t fb_height;
 volatile uint32_t fb_pitch;
 volatile uint32_t fb_addr;
 
-/*
- * u-boot/arch/arm/include/asm/arch-sunxi/display2.h
- */
-
-struct de_ui {
-	struct {
-		uint32_t attr;
-		uint32_t size;
-		uint32_t coord;
-		uint32_t pitch;
-		uint32_t top_laddr;
-		uint32_t bot_laddr;
-		uint32_t fcolor;
-		uint32_t dum;
-	} cfg[4];
-	uint32_t top_haddr;
-	uint32_t bot_haddr;
-	uint32_t ovl_size;
-};
-
-/*
- * u-boot/arch/arm/include/asm/arch-sunxi/display.h
- */
-
-#define SUNXI_DE2_BASE				0x01000000
-#define SUNXI_DE2_MUX0_BASE			(SUNXI_DE2_BASE + 0x100000)
-
-#define SUNXI_DE2_MUX_CHAN_REGS		0x02000
-#define SUNXI_DE2_MUX_CHAN_SZ		0x1000
-
 int __attribute__((cold)) fb_init(void) {
-	const uint32_t de_mux_base = SUNXI_DE2_MUX0_BASE;
-	struct de_ui * const de_ui_regs = (struct de_ui *) (de_mux_base + SUNXI_DE2_MUX_CHAN_REGS + SUNXI_DE2_MUX_CHAN_SZ * 1);
+#if !defined(USE_UBOOT_HDMI)
+	struct display_timing default_timing;
+	memset(&default_timing, 0, sizeof(struct display_timing));
 
-	// This is working with u-boot-2018.09
-	// fb_addr = 0x5E000000;
-	const uint32_t size = de_ui_regs->cfg[0].size;
+	default_timing.hdmi_monitor = false;
+	default_timing.pixelclock.typ = 32000000;
+	default_timing.hactive.typ = 800;
+	default_timing.hback_porch.typ = 40;
+	default_timing.hfront_porch.typ = 40;
+	default_timing.hsync_len.typ = 48;
+	default_timing.vactive.typ = 480;
+	default_timing.vback_porch.typ = 29;
+	default_timing.vfront_porch.typ = 13;
+	default_timing.vsync_len.typ = 3;
+	default_timing.flags = (DISPLAY_FLAGS_HSYNC_LOW | DISPLAY_FLAGS_VSYNC_LOW);
+
+	h3_de2_init(&default_timing, FB_ADDRESS);
+#endif
+	const uint32_t size = H3_DE2_MUX0_UI->CFG[0].SIZE;
 	fb_width = (size & 0xFFFF) + 1;
 	fb_height = (size >> 16) + 1;
-	fb_pitch = de_ui_regs->cfg[0].pitch;
-	fb_addr = de_ui_regs->cfg[0].top_laddr;
+	fb_pitch = H3_DE2_MUX0_UI->CFG[0].PITCH;
+	fb_addr = H3_DE2_MUX0_UI->CFG[0].TOP_LADDR;
+
+	if (fb_addr == 0) {
+		printf("fb_addr == 0\n");
+		fb_addr = FB_ADDRESS;
+	}
 
 	return FB_OK;
 }

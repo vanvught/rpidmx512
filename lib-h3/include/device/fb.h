@@ -2,7 +2,7 @@
  * @file fb.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define DEVICE_FB_H_
 
 #if !defined ORANGE_PI_ONE
- #error Support for Orange Pi One only
+# error Support for Orange Pi One only
 #endif
 
 extern volatile uint32_t fb_width;
@@ -40,6 +40,7 @@ extern volatile uint32_t fb_addr;
 #define FB_BYTES_PER_PIXEL	4
 #define FB_BPP				(FB_BYTES_PER_PIXEL << 3)
 #define FB_PITCH			(FB_WIDTH * FB_BYTES_PER_PIXEL)
+#define FB_ADDRESS			0x5E000000
 
 #define FB_OK	0
 

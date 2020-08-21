@@ -50,7 +50,7 @@ static uint32_t cur_back = CONSOLE_BLACK;
 static uint32_t saved_fore = CONSOLE_WHITE;
 static uint32_t saved_back = CONSOLE_BLACK;
 
-#if !defined(FB_FIXED_SIZE)
+#if defined(USE_UBOOT_HDMI)
 #undef FB_WIDTH
 #define FB_WIDTH	fb_width
 
@@ -59,10 +59,13 @@ static uint32_t saved_back = CONSOLE_BLACK;
 
 #undef FB_PITCH
 #define FB_PITCH	fb_pitch
+
+#undef FB_ADDRESS
+#define FB_ADDRESS	fb_addr
 #endif
 
 int __attribute__((cold)) console_init(void) {
-	int r = fb_init();
+	const int r = fb_init();
 
 	if (r == FB_OK) {
 		console_clear();
@@ -106,13 +109,13 @@ inline static void newline(void) {
 	if (current_y == FB_HEIGHT / FB_CHAR_H) {
 		if (top_row == 0) {
 			/* Pointer to row = 0 */
-			to = (uint32_t *) (fb_addr);
+			to = (uint32_t *) (FB_ADDRESS);
 			/* Pointer to row = 1 */
 			from = to + (FB_CHAR_H * FB_WIDTH);
 			/* Copy block from {row = 1, rows} to {row = 0, rows - 1} */
 			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH);
 		} else {
-			to = (uint32_t *) (fb_addr) + ((FB_CHAR_H * FB_WIDTH) * top_row);
+			to = (uint32_t *) (FB_ADDRESS) + ((FB_CHAR_H * FB_WIDTH) * top_row);
 			from = to + (FB_CHAR_H * FB_WIDTH);
 			i = ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH - ((FB_CHAR_H * FB_WIDTH) * top_row));
 		}
@@ -120,7 +123,7 @@ inline static void newline(void) {
 		memcpy_blk(to, from, i/8);
 
 		/* Clear last row */
-		address = (uint32_t *)(fb_addr) + ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH);
+		address = (uint32_t *)(FB_ADDRESS) + ((FB_HEIGHT - FB_CHAR_H) * FB_WIDTH);
 		clear_row(address);
 
 		current_y--;
@@ -128,7 +131,7 @@ inline static void newline(void) {
 }
 
 inline static void draw_pixel(uint32_t x, uint32_t y, uint32_t color) {
-	volatile uint32_t *address = (volatile uint32_t *)(fb_addr + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
+	volatile uint32_t *address = (volatile uint32_t *)(FB_ADDRESS + (x * FB_BYTES_PER_PIXEL) + (y * FB_WIDTH * FB_BYTES_PER_PIXEL));
 	*address = (uint32_t) color;
 }
 
@@ -373,6 +376,10 @@ void console_clear_top_row(void) {
 
 	current_x = 0;
 	current_y = top_row;
+}
+
+void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
+	draw_pixel(x, y, color);
 }
 #else
  typedef int ISO_C_forbids_an_empty_translation_unit;
