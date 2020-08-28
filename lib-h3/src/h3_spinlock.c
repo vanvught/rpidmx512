@@ -1,5 +1,5 @@
 /**
- * @file h3_lcdc_dump.c
+ * @file h3_spinlock.c
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,27 +23,37 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-
-extern int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+#include <stdint.h>
+#include <assert.h>
 
 #include "h3.h"
+#include "h3_ccu.h"
 
-/*
- * The LCD0 module is used for HDMI
- */
+#define MAX_LOCKS	32
 
-void h3_lcdc_dump(void) {
-	printf("LCD0\n");
-	printf(" GCTL         %p\n", H3_LCD0->GCTL);
-	printf(" GINT0        %p\n", H3_LCD0->GINT0);
-	printf(" GINT1        %p\n", H3_LCD0->GINT1);
-	printf(" TCON1_CTL    %p\n", H3_LCD0->TCON1_CTL);
-	printf(" TCON1_BASIC0 %p\n", H3_LCD0->TCON1_BASIC0);
-	printf(" TCON1_BASIC1 %p\n", H3_LCD0->TCON1_BASIC1);
-	printf(" TCON1_BASIC2 %p\n", H3_LCD0->TCON1_BASIC2);
-	printf(" TCON1_BASIC3 %p\n", H3_LCD0->TCON1_BASIC3);
-	printf(" TCON1_BASIC4 %p\n", H3_LCD0->TCON1_BASIC4);
-	printf(" TCON1_BASIC5 %p\n", H3_LCD0->TCON1_BASIC5);
+void __attribute__((cold)) h3_spinlock_init(void) {
+	H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_SPINLOCK;
+	H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_SPINLOCK;
+}
+
+uint32_t h3_spinlock_check(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	return H3_SPINLOCK->STATUS & (1U << lock);
+}
+
+void h3_spinlock_lock(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	for (;;) {
+		if ( H3_SPINLOCK->LOCK[lock] == 0) {
+			break;
+		}
+	}
+}
+
+void h3_spinlock_unlock(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	H3_SPINLOCK->LOCK[lock] = 0;
 }

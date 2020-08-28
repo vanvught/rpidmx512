@@ -1,5 +1,5 @@
 /**
- * @file h3_hdmi_phy_dump.c
+ * @file h3_spinlock.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,28 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef H3_SPINLOCK_H_
+#define H3_SPINLOCK_H_
 
-extern int uart0_printf(const char* fmt, ...);
-#define printf uart0_printf
+#include <stdint.h>
 
-#include "h3.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void h3_hdmi_phy_dump(void) {
-	/* enable read access to HDMI controller */
-	H3_HDMI_PHY->READ_EN = 0x54524545;
-	/* descramble register offsets */
-	H3_HDMI_PHY->UNSCRAMBLE = 0x42494E47;
+extern uint32_t h3_spinlock_check(uint32_t lock);
+extern void h3_spinlock_lock(uint32_t lock);
+extern void h3_spinlock_unlock(uint32_t lock);
 
-	printf("HDMI_PHY\n");
-	printf(" POL        %p\n", H3_HDMI_PHY->POL);
-	printf(" READ_EN    %p\n", H3_HDMI_PHY->READ_EN);
-	printf(" UNSCRAMBLE %p\n", H3_HDMI_PHY->UNSCRAMBLE);
-	printf(" CTRL       %p\n", H3_HDMI_PHY->CTRL);
-	printf(" UNK1       %p\n", H3_HDMI_PHY->UNK1);
-	printf(" UNK2       %p\n", H3_HDMI_PHY->UNK2);
-	printf(" PLL        %p\n", H3_HDMI_PHY->PLL);
-	printf(" CLK        %p\n", H3_HDMI_PHY->CLK);
-	printf(" UNK3       %p\n", H3_HDMI_PHY->UNK3);
-	printf(" STATUS     %p\n", H3_HDMI_PHY->STATUS);
+#ifdef __cplusplus
 }
+#endif
+
+#endif /* H3_SPINLOCK_H_ */

@@ -31,8 +31,9 @@
 
 #include "network.h"
 #include "ntpclient.h"
+#include "gps.h"
 
-class NetworkHandlerOled: public NetworkDisplay, public NtpClientDisplay {
+class NetworkHandlerOled: public NetworkDisplay, public NtpClientDisplay, public GPSDisplay {
 public:
 	NetworkHandlerOled(void) {
 		s_pThis = this;
@@ -87,6 +88,19 @@ public:
 
 		if (nStatus == NtpClientStatus::STOPPED) {
 			Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
+			return;
+		}
+	}
+
+	// GPS
+	void ShowSGpstatus(GPSStatus nStatus) {
+		if (nStatus == GPSStatus::WARNING) {
+			Display::Get()->TextStatus("GPS No Fix");
+			return;
+		}
+
+		if (nStatus == GPSStatus::VALID) {
+			Display::Get()->TextStatus("GPS Has Fix");
 			return;
 		}
 	}

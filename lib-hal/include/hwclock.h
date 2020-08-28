@@ -24,6 +24,10 @@
  * THE SOFTWARE.
  */
 
+/*
+ * PoC Code -> Do not use in production
+ */
+
 #ifndef HWCLOCK_H_
 #define HWCLOCK_H_
 
