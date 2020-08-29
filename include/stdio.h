@@ -50,6 +50,7 @@ extern "C" {
 #endif
 
 extern int puts(const char *s);
+extern int putchar(int c);
 
 extern FILE *fopen(const char *path, const char *mode);
 extern int fclose(FILE *stream);

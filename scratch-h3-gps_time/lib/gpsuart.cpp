@@ -56,7 +56,7 @@ using namespace gps;
 static constexpr uint32_t RING_BUFFER_INDEX_ENTRIES = (1 << 4);
 static constexpr uint32_t RING_BUFFER_INDEX_MASK = (RING_BUFFER_INDEX_ENTRIES - 1);
 
-static uint8_t s_RingBuffer[nmea::MAX_SENTENCE_LENGTH][RING_BUFFER_INDEX_ENTRIES];
+static uint8_t s_RingBuffer[RING_BUFFER_INDEX_ENTRIES][nmea::MAX_SENTENCE_LENGTH];
 static uint32_t s_nRingBufferIndexHead;
 static uint32_t s_nRingBufferIndexTail;
 static uint32_t s_nDataIndex;
@@ -93,7 +93,6 @@ void GPS::UartInit() {
 #endif
 
 	UartSetBaud();
-	EXT_UART->LCR = UART_LCR_8_N_1;
 	isb();
 
 	s_nRingBufferIndexHead = 0;
@@ -117,6 +116,7 @@ void GPS::UartSetBaud(uint32_t nBaud) {
 	EXT_UART->O00.DLL = nDivisor & 0xFF;
 	EXT_UART->O04.DLH = (nDivisor >> 8);
 	EXT_UART->O08.FCR = UART_FCR_EFIFO | UART_FCR_RRESET | UART_FCR_TRESET;
+	EXT_UART->LCR = UART_LCR_8_N_1;
 	isb();
 
 	m_nBaud = nBaud;
@@ -130,13 +130,11 @@ void GPS::UartSend(const char *pSentence) {
 	const char *p = pSentence;
 
 	while (*p != '\0') {
-		uint32_t nAvailable = 64 - EXT_UART->TFL;
+		while (!(EXT_UART->LSR & UART_LSR_THRE))
+			;
 
-		while ((*p != '\0') && (nAvailable > 0)) {
-			EXT_UART->O00.THR = static_cast<uint32_t>(*p);
-			nAvailable--;
-			p++;
-		}
+		EXT_UART->O00.THR = static_cast<uint32_t>(*p);
+		p++;
 	}
 
 	DEBUG_EXIT

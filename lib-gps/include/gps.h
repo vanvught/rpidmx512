@@ -85,6 +85,8 @@ private:
 	void SetTime(int32_t nTime);
 	void SetDate(int32_t nDate);
 
+	void DumpSentence(const char *pSentence);
+
 private:
 	GPSModule m_tModule{GPSModule::UNDEFINED};
 	uint32_t m_nBaud{9600};

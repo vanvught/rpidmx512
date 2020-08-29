@@ -31,6 +31,8 @@ static const char SOFTWARE_VERSION[] = "0.0";
  *
  */
 #include "gps.h"
+#include "gpsparams.h"
+#include "storegps.h"
 
 extern "C" {
 
@@ -60,7 +62,7 @@ void notmain(void) {
 	ntpClient.Start();
 	ntpClient.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
+	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 0);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -79,6 +81,13 @@ void notmain(void) {
 	/*
 	 *
 	 */
+
+	GPSParams gpsParams(new StoreGPS);
+
+	if (gpsParams.Load()) {
+		gpsParams.Dump();
+	}
+
 	GPS gps;
 	gps.SetGPSDisplay(&networkHandlerOled);
 	gps.Print();

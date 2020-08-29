@@ -163,7 +163,7 @@ void GPS::Run() {
 		return;
 	}
 
-	debug_dump(m_pSentence, 16);
+	DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 
@@ -173,8 +173,6 @@ void GPS::Run() {
 
 	uint32_t nOffset = 1 + nmea::length::TALKER_ID + nmea::length::TAG + 1; // $ and ,
 	uint32_t nFieldIndex = 1;
-
-//	debug_dump(&m_pSentence[nOffset], 16);
 
 	do {
 		uint32_t nLenght = 0;
@@ -187,7 +185,7 @@ void GPS::Run() {
 			break;
 		case nmea::RMC | (2 << 8):					// Status, A = Valid, V = Warning
 			m_tStatusCurrent = (m_pSentence[nOffset] == 'A' ? GPSStatus::VALID : GPSStatus::WARNING);
-			printf("(%c)\n", m_pSentence[nOffset]);
+			printf("(%c) : %d\n", m_pSentence[nOffset], nOffset	);
 			nOffset += 1;
 			break;
 		case nmea::RMC | (9 << 8):					// Date, ddmmyy
