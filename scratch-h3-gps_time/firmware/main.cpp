@@ -81,6 +81,7 @@ void notmain(void) {
 	 */
 	GPS gps;
 	gps.SetGPSDisplay(&networkHandlerOled);
+	gps.Print();
 
 	int nPrevSeconds = 60; // Force initial update
 

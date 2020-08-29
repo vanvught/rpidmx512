@@ -65,9 +65,46 @@ constexpr char aTag[static_cast<int>(nmea::UNDEFINED)][nmea::length::TAG] =
 	};
 
 GPS::GPS() {
+	DEBUG_ENTRY
+
 	memset(&m_Tm, 0, sizeof(struct tm));
+
 	UartInit();
-	//TODO Set higher baud
+
+	uint32_t i;
+
+	for (i = 0; i < static_cast<uint32_t>(GPSModule::UNDEFINED); i++) {
+		printf("i=%d\n", i);
+
+		UartSend(GPSConst::BAUD_115200[i]);
+		UartSetBaud(115200);
+
+		int32_t nTimeOut = 0xFFFFFF;
+
+		while (nTimeOut-- > 0) {
+			m_pSentence = const_cast<char *>(UartGetSentence());
+
+			if (m_pSentence != nullptr) {
+				m_tModule = static_cast<GPSModule>(i);
+				debug_dump(m_pSentence, 16);
+				printf("[%x]\n", nTimeOut);	//TODO remove
+				break;
+			}
+		}
+
+		if (m_pSentence != nullptr) {
+			break;
+		}
+
+		UartSetBaud(9600);
+	}
+
+	if (i == static_cast<uint32_t>(GPSModule::UNDEFINED)) {
+		m_tModule = GPSModule::UNDEFINED;
+		UartSetBaud(9600);
+	}
+
+	DEBUG_EXIT
 }
 
 uint32_t GPS::GetTag(const char *pTag) {
@@ -126,7 +163,7 @@ void GPS::Run() {
 		return;
 	}
 
-//	debug_dump(m_pSentence, 16);
+	debug_dump(m_pSentence, 16);
 
 	uint32_t nTag;
 

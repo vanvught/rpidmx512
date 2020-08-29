@@ -40,6 +40,8 @@
 
 #include "arm/synchronize.h"
 
+#include "debug.h"
+
 enum class State {
 	START_DELIMITER,
 	DATA,
@@ -100,6 +102,8 @@ void GPS::UartInit() {
 }
 
 void GPS::UartSetBaud(uint32_t nBaud) {
+	DEBUG_ENTRY
+
 	assert(nBaud != 0);
 
 	const uint32_t nDivisor = (24000000 / 16) / nBaud;
@@ -114,9 +118,15 @@ void GPS::UartSetBaud(uint32_t nBaud) {
 	EXT_UART->O04.DLH = (nDivisor >> 8);
 	EXT_UART->O08.FCR = UART_FCR_EFIFO | UART_FCR_RRESET | UART_FCR_TRESET;
 	isb();
+
+	m_nBaud = nBaud;
+
+	DEBUG_EXIT
 }
 
 void GPS::UartSend(const char *pSentence) {
+	DEBUG_ENTRY
+
 	const char *p = pSentence;
 
 	while (*p != '\0') {
@@ -128,6 +138,8 @@ void GPS::UartSend(const char *pSentence) {
 			p++;
 		}
 	}
+
+	DEBUG_EXIT
 }
 
 const char* GPS::UartGetSentence() {

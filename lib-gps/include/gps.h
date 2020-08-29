@@ -56,6 +56,9 @@ public:
 	GPS();
 
 	void Run();
+
+	void Print();
+
 	const struct tm *GetDateTime() {
 		return &m_Tm;
 	}
@@ -83,8 +86,11 @@ private:
 	void SetDate(int32_t nDate);
 
 private:
+	GPSModule m_tModule{GPSModule::UNDEFINED};
+	uint32_t m_nBaud{9600};
 	char *m_pSentence{nullptr};
 	struct tm m_Tm;
+	int32_t m_nUtcOffset{0};
 
 	GPSStatus m_tStatusCurrent{GPSStatus::UNDEFINED};
 	GPSStatus m_tStatusPrevious{GPSStatus::UNDEFINED};

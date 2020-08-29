@@ -1,5 +1,5 @@
 /**
- * @file gpsconst.cpp
+ * @file gpsprint.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -21,24 +21,12 @@
  * THE SOFTWARE.
  */
 
-#include "gpsconst.h"
+#include <stdio.h>
 
-using namespace gps;
+#include "gps.h"
 
-const char GPSConst::MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][module::MAX_NAME_LENGTH] = {
-		"ATGM336H",
-		"ublox",
-		"Adafruit"
-};
-
-const char GPSConst::BAUD_9600[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-		"$PCAS01,1*1D\r\n",
-		"$,*00\r\n",
-		"$,*00\r\n"
-};
-
-const char GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-		"$PCAS01,5*19\r\n",
-		"$..\r\n",
-		"$..\r\n"
-};
+void GPS::Print() {
+	printf("GPS\n");
+	printf(" Module : %s [%u]\n", GetModuleName(m_tModule), m_nBaud);
+	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
+}
