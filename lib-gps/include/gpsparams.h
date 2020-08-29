@@ -58,6 +58,10 @@ public:
 
 	void Dump();
 
+	float GetUtcOffset() {
+		return m_tTGPSParams.fUtcOffset;
+	}
+
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

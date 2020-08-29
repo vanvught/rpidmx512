@@ -27,6 +27,7 @@
 #include "gps.h"
 
 void GPS::DumpSentence(const char *pSentence) {
+#ifndef NDEBUG
 	printf("%p |", pSentence);
 
 	const char *p = pSentence;
@@ -36,4 +37,5 @@ void GPS::DumpSentence(const char *pSentence) {
 	}
 
 	puts("|");
+#endif
 }

@@ -88,7 +88,7 @@ void notmain(void) {
 		gpsParams.Dump();
 	}
 
-	GPS gps;
+	GPS gps(gpsParams.GetUtcOffset());
 	gps.SetGPSDisplay(&networkHandlerOled);
 	gps.Print();
 
@@ -120,9 +120,10 @@ void notmain(void) {
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
-			const struct tm *gps_time = gps.GetDateTime();
 
 			display.Printf(1, "%.2d:%.2d:%.2d (NTP)", tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+			const struct tm *gps_time = gps.GetLocalDateTime();
 			display.Printf(2, "%.2d:%.2d:%.2d (GPS)", gps_time->tm_hour, gps_time->tm_min, gps_time->tm_sec);
 		}
 	}

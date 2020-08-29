@@ -30,6 +30,20 @@
 #include <stdio.h>
 
 #include "gpsparams.h"
+#include "gpsparamsconst.h"
+
+#include "debug.h"
 
 void GPSParams::Dump() {
+#ifndef NDEBUG
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, GPSParamsConst::FILE_NAME);
+
+	if (isMaskSet(GPSParamsMask::ENABLE)) {
+		printf(" %s=%d [%s]\n", GPSParamsConst::ENABLE, static_cast<int>(m_tTGPSParams.nEnable), BOOL2STRING::Get(m_tTGPSParams.nEnable));
+	}
+
+	if (isMaskSet(GPSParamsMask::UTC_OFFSET)) {
+		printf(" %s=%1.1f\n", GPSParamsConst::UTC_OFFSET, m_tTGPSParams.fUtcOffset);
+	}
+#endif
 }

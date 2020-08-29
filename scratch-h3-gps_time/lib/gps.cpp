@@ -37,6 +37,8 @@
 
 #include "gps.h"
 
+#include "utc.h"
+
 #include "debug.h"
 
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
@@ -64,10 +66,21 @@ constexpr char aTag[static_cast<int>(nmea::UNDEFINED)][nmea::length::TAG] =
 	  { 'Z', 'D', 'A' }		// Time & Date - UTC, day, month, year and local time zone
 	};
 
-GPS::GPS() {
+GPS *GPS::s_pThis = nullptr;
+
+GPS::GPS(float fUtcOffset) {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	memset(&m_Tm, 0, sizeof(struct tm));
+
+	m_Tm.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
+	m_Tm.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
+	m_Tm.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
+
+	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
+	m_nUtcOffset = Utc::Validate(fUtcOffset);
 
 	UartInit();
 
@@ -86,8 +99,10 @@ GPS::GPS() {
 
 			if (m_pSentence != nullptr) {
 				m_tModule = static_cast<GPSModule>(i);
-				debug_dump(m_pSentence, 16);
-				printf("[%x]\n", nTimeOut);	//TODO remove
+				DumpSentence(m_pSentence);
+#ifndef NDEBUG
+				printf("[%x]\n", nTimeOut);
+#endif
 				break;
 			}
 		}
@@ -146,16 +161,30 @@ void GPS::SetTime(int32_t nTime) {
 	m_Tm.tm_min = nTime % 100;
 	m_Tm.tm_hour = nTime / 100;
 
+#ifndef NDEBUG
 	printf("%.2d:%.2d:%.2d\n", m_Tm.tm_hour, m_Tm.tm_min, m_Tm.tm_sec);
+#endif
 }
 
 void GPS::SetDate(int32_t nDate) {
-	m_Tm.tm_year = 100 + nDate % 100;	// The number of years since 1900.
-	nDate /= 100;
-	m_Tm.tm_mon = (nDate % 100) - 1;	// The number of months since January, in the range 0 to 11.
-	m_Tm.tm_mday = nDate / 100;			// The day of the month, in the range 1 to 31.
+	if (nDate != 0) {
+		m_Tm.tm_year = 100 + nDate % 100;	// The number of years since 1900.
+		nDate /= 100;
+		m_Tm.tm_mon = (nDate % 100) - 1;	// The number of months since January, in the range 0 to 11.
+		m_Tm.tm_mday = nDate / 100;			// The day of the month, in the range 1 to 31.
+	}
 
+#ifndef NDEBUG
 	printf("%.2d/%.2d/%.2d\n", m_Tm.tm_mday, 1 + m_Tm.tm_mon, 1900 + m_Tm.tm_year);
+#endif
+}
+
+const struct tm* GPS::GetLocalDateTime() {
+	time_t t = mktime(&m_Tm);
+
+	t += m_nUtcOffset;
+
+	return localtime(&t);
 }
 
 void GPS::Run() {

@@ -53,7 +53,7 @@ public:
 
 class GPS {
 public:
-	GPS();
+	GPS(float fUtcOffset = 0.0);
 
 	void Run();
 
@@ -63,12 +63,18 @@ public:
 		return &m_Tm;
 	}
 
+	const struct tm *GetLocalDateTime();
+
 	GPSStatus GetStatus() {
 		return m_tStatusCurrent;
 	}
 
 	void SetGPSDisplay(GPSDisplay *pGPSDisplay) {
 		 m_pGPSDisplay = pGPSDisplay;
+	}
+
+	static GPS *Get() {
+		return s_pThis;
 	}
 
 	static GPSModule GetModule(const char *pName);
@@ -92,11 +98,14 @@ private:
 	uint32_t m_nBaud{9600};
 	char *m_pSentence{nullptr};
 	struct tm m_Tm;
+	struct tm m_TmLocal;
 	int32_t m_nUtcOffset{0};
 
 	GPSStatus m_tStatusCurrent{GPSStatus::UNDEFINED};
 	GPSStatus m_tStatusPrevious{GPSStatus::UNDEFINED};
 	GPSDisplay *m_pGPSDisplay{nullptr};
+
+	static GPS *s_pThis;
 };
 
 #endif /* GPS_H_ */
