@@ -37,6 +37,8 @@
 
 #include "gps.h"
 
+#include "debug.h"
+
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
 
 namespace gps {
@@ -124,16 +126,18 @@ void GPS::Run() {
 		return;
 	}
 
-//	printf("%s\n", m_pSentence);
+//	debug_dump(m_pSentence, 16);
 
 	uint32_t nTag;
 
-	if ((nTag = GetTag(&m_pSentence[3])) == nmea::UNDEFINED) {
+	if ((nTag = GetTag(&m_pSentence[1 + nmea::length::TALKER_ID])) == nmea::UNDEFINED) {
 		return;
 	}
 
 	uint32_t nOffset = 1 + nmea::length::TALKER_ID + nmea::length::TAG + 1; // $ and ,
 	uint32_t nFieldIndex = 1;
+
+//	debug_dump(&m_pSentence[nOffset], 16);
 
 	do {
 		uint32_t nLenght = 0;

@@ -35,12 +35,7 @@
 #include <stdint.h>
 #include <time.h>
 
-namespace gps {
-namespace nmea{
-static constexpr uint32_t MAX_SENTENCE_LENGTH = 82;	///< including the $ and <CR><LF>
-static constexpr char START_DELIMITER = '$';		///< The start delimiter is normally '$' (ASCII 36)
-}  // namespace nmea
-}  // namespace gps
+#include "gpsconst.h"
 
 enum class GPSStatus {
 	WARNING,
@@ -72,6 +67,9 @@ public:
 	void SetGPSDisplay(GPSDisplay *pGPSDisplay) {
 		 m_pGPSDisplay = pGPSDisplay;
 	}
+
+	static GPSModule GetModule(const char *pName);
+	static const char *GetModuleName(GPSModule tModule);
 
 private:
 	void UartInit();

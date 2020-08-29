@@ -53,21 +53,25 @@
 # include "artnet4params.h"
 # include "storeartnet4.h"
 #endif
+
 #if defined (E131_BRIDGE)
 /* e131.txt */
 # include "e131params.h"
 # include "storee131.h"
 #endif
+
 #if defined (OSC_SERVER)
 /* osc.txt */
 # include "oscserverparms.h"
 # include "storeoscserver.h"
 #endif
+
 #if defined (DMXSEND)
 /* params.txt */
 # include "dmxparams.h"
 # include "storedmxsend.h"
 #endif
+
 #if defined (PIXEL)
 /* devices.txt */
 # include "ws28xxdmxparams.h"
@@ -75,6 +79,7 @@
 # include "tlc59711dmxparams.h"
 # include "storetlc59711.h"
 #endif
+
 #if defined (LTC_READER)
 /* ltc.txt */
 # include "ltcparams.h"
@@ -85,11 +90,16 @@
 /* tcnet.txt */
 # include "tcnetparams.h"
 # include "storetcnet.h"
+/* gps.txt */
+# include "gpsparams.h"
+# include "storegps.h"
 #endif
+
 #if defined (DMX_MONITOR)
 # include "dmxmonitorparams.h"
 # include "storemonitor.h"
 #endif
+
 #if defined (OSC_CLIENT)
 /* oscclnt.txt */
 # include "oscclientparams.h"
@@ -523,6 +533,9 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 	case TXT_FILE_TCNET:
 		HandleGetTCNetTxt(nSize);
 		break;
+	case TXT_FILE_GPS:
+		HandleGetGpsTxt(nSize);
+		break;
 #endif
 #if defined (DMX_MONITOR)
 	case TXT_FILE_MONITOR:
@@ -721,6 +734,15 @@ void RemoteConfig::HandleGetTCNetTxt(uint32_t &nSize) {
 
 	DEBUG_EXIT
 }
+
+void RemoteConfig::HandleGetGpsTxt(uint32_t &nSize) {
+	DEBUG_ENTRY
+
+	GPSParams gpsParams(StoreGPS::Get());
+	gpsParams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
 #endif
 
 #if defined(DMX_MONITOR)
@@ -891,6 +913,9 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		break;
 	case TXT_FILE_TCNET:
 		HandleTxtFileTCNet();
+		break;
+	case TXT_FILE_GPS:
+		HandleTxtFileGps();
 		break;
 #endif
 #if defined (OSC_CLIENT)
@@ -1239,6 +1264,30 @@ void RemoteConfig::HandleTxtFileTCNet() {
 	tcnetParams.Load(m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	tcnetParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleTxtFileGps() {
+	DEBUG_ENTRY
+
+	GPSParams gpsParams(StoreGPS::Get());
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+		if (m_nBytesReceived == sizeof(struct TGPSParams)) {
+			uint32_t nSize;
+			gpsParams.Builder(reinterpret_cast<const struct TGPSParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		} else {
+			DEBUG_EXIT
+			return;
+		}
+	}
+
+	gpsParams.Load(m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	gpsParams.Dump();
 #endif
 
 	DEBUG_EXIT
