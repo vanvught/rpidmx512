@@ -74,7 +74,7 @@ void notmain(void) {
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::STOPPED) {
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
 		printf("Set RTC from System Clock\n");
 		hwClock.SysToHc();
 	} else {
@@ -95,9 +95,6 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	/*
-	 *
-	 */
 	Shell shell;
 
 	int nPrevSeconds = 60; // Force initial update
@@ -110,33 +107,30 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
-
-		/*
-		 *
-		 */
 		shell.Run();
 
 		/*
 		 * Debugging System Clock framework for PTP implementation
 		 */
-		// ntpClient.Run();
+		ntpClient.Run();
 
-		/*
-		 *
-		 */
+		hwClock.Run(!(ntpClient.GetStatus() != NtpClientStatus::FAILED));
 
-		time_t ltime;
-		struct tm *tm;
-		ltime = time(nullptr);
-		tm = localtime(&ltime);
+		time_t ltime = time(nullptr);
+		const struct tm *tm = localtime(&ltime);
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
 			struct rtc_time rtc;
 			hwClock.Get(&rtc);
 
-			display.Printf(1, "%.2d:%.2d:%.2d", tm->tm_hour, tm->tm_min, tm->tm_sec);
-			display.Printf(2, "%.2d:%.2d:%.2d", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
+			if (tm->tm_sec != rtc.tm_sec) {
+				printf("> %.2d:%.2d:%.2d (SYS) <\n", tm->tm_hour, tm->tm_min, tm->tm_sec);
+				printf("> %.2d:%.2d:%.2d (RTC) <\n", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
+			}
+
+			display.Printf(1, "%.2d:%.2d:%.2d (SYS)", tm->tm_hour, tm->tm_min, tm->tm_sec);
+			display.Printf(2, "%.2d:%.2d:%.2d (RTC)", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
 		}
 	}
 }

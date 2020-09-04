@@ -89,20 +89,6 @@ void PtpClient::Start() {
 	DEBUG_EXIT
 }
 
-void PtpClient::Stop() {
-	DEBUG_ENTRY
-
-	Network::Get()->LeaveGroup(m_nHandleEvent, m_nMulticastIp);
-
-	Network::Get()->End(udp::port::GENERAL);
-	m_nHandleGeneral = -1;
-
-	Network::Get()->End(udp::port::EVENT);
-	m_nHandleEvent = -1;
-
-	DEBUG_EXIT
-}
-
 void PtpClient::HandleEventMessage() {
 	if (m_Message.Header.TransportType == MessageType::SYNC) {
 		if ((m_Message.Header.Flags & __builtin_bswap16(Flags::TWO_STEP)) ==  __builtin_bswap16(Flags::TWO_STEP)) {

@@ -32,6 +32,7 @@
 #define HWCLOCK_H_
 
 #include <stdint.h>
+#include <sys/time.h>
 
 namespace rtc {
 enum {
@@ -64,6 +65,8 @@ public:
 		return RtcGet(pRtcTime);
 	}
 
+	void Run(bool bDoRun);
+
 	void Print();
 
 	static HwClock *Get() {
@@ -80,6 +83,7 @@ private:
 	uint32_t m_nType;
 	uint8_t m_nAddress;
 	uint32_t m_nSetDelayMicros;
+	uint32_t m_nLastHcToSysMillis;
 
 	static HwClock *s_pThis;
 };

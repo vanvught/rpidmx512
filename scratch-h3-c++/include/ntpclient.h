@@ -36,9 +36,8 @@
 #include "ntp.h"
 
 enum class NtpClientStatus {
-	INIT,
 	IDLE,
-	STOPPED,
+	FAILED,
 	WAITING
 };
 
@@ -55,7 +54,6 @@ public:
 	NtpClient(uint32_t nServerIp = 0);
 
 	void Start();
-	void Stop();
 	void Run();
 
 	void Print();
@@ -92,7 +90,7 @@ private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
 	int32_t m_nHandle{-1};
-	NtpClientStatus m_tStatus{NtpClientStatus::STOPPED};
+	NtpClientStatus m_tStatus{NtpClientStatus::IDLE};
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
 	uint32_t m_MillisRequest{0};

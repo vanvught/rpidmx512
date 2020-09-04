@@ -50,6 +50,8 @@ HwClock::HwClock() {
 
 	RtcProbe();
 
+	m_nLastHcToSysMillis = Hardware::Get()->Millis();
+
 	DEBUG_EXIT
 }
 
@@ -127,6 +129,8 @@ void HwClock::HcToSys() {
 	}
 
 	settimeofday(&tv, nullptr);
+
+	m_nLastHcToSysMillis = Hardware::Get()->Millis();
 
 	if (bIsWatchdog) {
 		Hardware::Get()->WatchdogInit();

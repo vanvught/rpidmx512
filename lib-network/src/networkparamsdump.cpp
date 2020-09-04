@@ -73,5 +73,9 @@ void NetworkParams::Dump() {
 	if (isMaskSet(NetworkParamsMask::NTP_SERVER)) {
 		printf(" %s=" IPSTR "\n", NetworkConst::PARAMS_NTP_SERVER, IP2STR(m_tNetworkParams.nNtpServerIp));
 	}
+
+	if (isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
+		printf(" %s=%1.1f\n", NetworkConst::PARAMS_NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset);
+	}
 #endif
 }

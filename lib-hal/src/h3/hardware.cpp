@@ -40,15 +40,16 @@
 # include "../debug/i2cdetect.h"
 #endif
 
-#if defined(ORANGE_PI)
-#elif defined(ORANGE_PI_ONE)
-#else
- #error Platform not supported
-#endif
-
 namespace soc {
-	static constexpr char NAME[2][4] = { "H2+", "H3\0" };
-	static constexpr uint8_t NAME_LENGTH[2] = { 3, 2 };
+#if defined(ORANGE_PI)
+	static constexpr char NAME[] = "H2+";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+#elif defined(ORANGE_PI_ONE)
+	static constexpr char NAME[] = "H3";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+#else
+# error Platform not supported
+#endif
 }
 
 namespace cpu {
@@ -98,13 +99,8 @@ const char *Hardware::GetCpuName(uint8_t &nLength) {
 }
 
 const char *Hardware::GetSocName(uint8_t &nLength) {
-#if defined(ORANGE_PI)
-	nLength = soc::NAME_LENGTH[0];
-	return soc::NAME[0];
-#else
-	nLength = soc::NAME_LENGTH[1];
-	return soc::NAME[1];
-#endif
+	nLength = soc::NAME_LENGTH;
+	return soc::NAME;
 }
 
 bool Hardware::SetTime(const struct tm *pTime) {

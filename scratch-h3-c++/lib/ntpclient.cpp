@@ -220,7 +220,7 @@ void NtpClient::Start() {
 	assert(m_nHandle != -1);
 
 	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::INIT);
+		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::IDLE);
 	}
 
 	const uint32_t nNow = Hardware::Get()->Millis();
@@ -240,7 +240,6 @@ void NtpClient::Start() {
 
 		if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
 			if (SetTimeOfDay() == 0) {
-				m_MillisLastPoll = Hardware::Get()->Millis();
 				m_tStatus = NtpClientStatus::IDLE;
 			} else {
 				// Error
@@ -252,35 +251,23 @@ void NtpClient::Start() {
 		break;
 	}
 
-	if (m_tStatus == NtpClientStatus::STOPPED) {
+	m_MillisLastPoll = Hardware::Get()->Millis();
+
+	if (nRetries == RETRIES) {
+		m_tStatus = NtpClientStatus::FAILED;
+
 		if (m_pNtpClientDisplay != nullptr) {
-			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::FAILED);
 		}
 	}
+
 
 	DEBUG_PRINTF("nRetries=%d, m_tStatus=%d", nRetries, static_cast<int>(m_tStatus));
 	DEBUG_EXIT
 }
 
-void NtpClient::Stop() {
-	DEBUG_ENTRY
-
-	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
-	m_tStatus = NtpClientStatus::STOPPED;
-
-	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
-	}
-
-	DEBUG_EXIT
-}
-
 void NtpClient::Run() {
-	if (m_tStatus == NtpClientStatus::STOPPED) {
-		return;
-	}
-
-	if (m_tStatus == NtpClientStatus::IDLE) {
+	if ((m_tStatus == NtpClientStatus::IDLE) || (m_tStatus == NtpClientStatus::FAILED)) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
 			Send();
 			m_MillisRequest = Hardware::Get()->Millis();
@@ -294,12 +281,14 @@ void NtpClient::Run() {
 	if (m_tStatus == NtpClientStatus::WAITING) {
 		if (!Receive()) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
-				m_tStatus = NtpClientStatus::STOPPED;
+				m_tStatus = NtpClientStatus::FAILED;
+
 				if (m_pNtpClientDisplay != nullptr) {
-					m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+					m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::FAILED);
 				}
-				DEBUG_PUTS("NtpClientStatus::STOPPED");
+				DEBUG_PUTS("NtpClientStatus::FAILED");
 			}
+
 			return;
 		}
 
@@ -339,10 +328,8 @@ void NtpClient::Print() {
 		return;
 	}
 	printf(" Server : " IPSTR ":%d\n", IP2STR(m_nServerIp), NTP_UDP_PORT);
-	printf(" Status : %d%c\n", static_cast<int>(m_tStatus), m_tStatus == NtpClientStatus::STOPPED ? '!' : ' ');
-	time_t rawtime;
-	time(&rawtime);
-	printf(" Time : %s with UTC offset : %d (seconds)\n", asctime(localtime(&rawtime)), m_nUtcOffset);
+	printf(" Status : %d\n", static_cast<int>(m_tStatus));
+	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 	// Debug ONLY
 	PrintNtpTime("Originate", &T1);
 	PrintNtpTime("Receive", &T2);
