@@ -40,12 +40,6 @@
 
 #include "reboothandler.h"
 
-enum TSocType {
-	SOC_TYPE_H2_PLUS,
-	SOC_TYPE_H3,
-	SOC_TYPE_UNKNOWN
-};
-
 class Hardware {
 public:
 	Hardware();

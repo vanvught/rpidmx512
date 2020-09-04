@@ -39,6 +39,8 @@
 
 #include "utc.h"
 
+#include "hardware.h"
+
 #include "debug.h"
 
 // Maximum sentence length, including the $ and <CR><LF> is 82 bytes.
@@ -68,7 +70,7 @@ constexpr char aTag[static_cast<int>(nmea::UNDEFINED)][nmea::length::TAG] =
 
 GPS *GPS::s_pThis = nullptr;
 
-GPS::GPS(float fUtcOffset) {
+GPS::GPS(float fUtcOffset): m_nUtcOffset(Utc::Validate(fUtcOffset)) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -79,8 +81,90 @@ GPS::GPS(float fUtcOffset) {
 	m_Tm.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
 	m_Tm.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
 
-	// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-	m_nUtcOffset = Utc::Validate(fUtcOffset);
+	DEBUG_EXIT
+}
+
+uint32_t GPS::GetTag(const char *pTag) {
+	for (uint32_t i = 0; i < nmea::UNDEFINED; i++) {
+		if (memcmp(aTag[i], pTag, nmea::length::TAG) == 0) {
+			return i;
+		}
+	}
+
+	return static_cast<uint32_t>(nmea::UNDEFINED);
+}
+
+int32_t GPS::ParseDecimal(const char *p, uint32_t &nLength) {
+	const bool bIsNegative = (*p == '-');
+
+	nLength = bIsNegative ? 1 : 0;
+	int32_t nValue = 0;
+
+	while ((p[nLength] != '.') && (p[nLength] != ',')) {
+		nValue = nValue * 10 + p[nLength] - '0';
+		nLength++;
+	}
+
+	if (p[nLength] == '.') {
+		nLength++;
+		nValue = nValue * 10 + p[nLength] - '0';
+		nLength++;
+		nValue = nValue * 10 + p[nLength] - '0';
+		nLength++;
+	}
+
+	return bIsNegative ? -nValue : nValue;
+}
+
+void GPS::SetTime(int32_t nTime) {
+	if (nTime != 0) {
+		m_nTimeTimestampMillis = Hardware::Get()->Millis();
+		m_IsTimeUpdated = true;
+
+		nTime /= 100;
+		m_Tm.tm_sec = nTime % 100;
+		nTime /= 100;
+		m_Tm.tm_min = nTime % 100;
+		m_Tm.tm_hour = nTime / 100;
+
+#ifndef NDEBUG
+//	printf("%.2d:%.2d:%.2d\n", m_Tm.tm_hour, m_Tm.tm_min, m_Tm.tm_sec);
+#endif
+	}
+}
+
+void GPS::SetDate(int32_t nDate) {
+	if (nDate != 0) {
+		m_nDateTimestampMillis = Hardware::Get()->Millis();
+		m_IsDateUpdated = true;
+
+		m_Tm.tm_year = 100 + (nDate % 100);	// The number of years since 1900.
+		nDate /= 100;
+		m_Tm.tm_mon = (nDate % 100) - 1;	// The number of months since January, in the range 0 to 11.
+		m_Tm.tm_mday = nDate / 100;			// The day of the month, in the range 1 to 31.
+
+#ifndef NDEBUG
+//	printf("%.2d/%.2d/%.2d\n", m_Tm.tm_mday, 1 + m_Tm.tm_mon, 1900 + m_Tm.tm_year);
+#endif
+	}
+}
+
+const struct tm* GPS::GetLocalDateTime() {
+	time_t t = mktime(&m_Tm);
+
+	t += m_nUtcOffset;
+
+	//m_IsTimeUpdated = m_IsDateUpdated = false;
+
+	return localtime(&t);
+}
+
+void GPS::Start() {
+	DEBUG_ENTRY
+
+	if (m_pGPSDisplay != nullptr) {
+		m_pGPSDisplay->ShowSGpstatus(GPSStatus::PROBE);
+	}
 
 	UartInit();
 
@@ -119,84 +203,25 @@ GPS::GPS(float fUtcOffset) {
 		UartSetBaud(9600);
 	}
 
+	m_tStatusCurrent = GPSStatus::IDLE;
+
+	if (m_pGPSDisplay != nullptr) {
+		m_pGPSDisplay->ShowSGpstatus(GPSStatus::IDLE);
+	}
+
 	DEBUG_EXIT
 }
 
-uint32_t GPS::GetTag(const char *pTag) {
-	for (uint32_t i = 0; i < nmea::UNDEFINED; i++) {
-		if (memcmp(aTag[i], pTag, nmea::length::TAG) == 0) {
-			return i;
-		}
-	}
-
-	return static_cast<uint32_t>(nmea::UNDEFINED);
-}
-
-int32_t GPS::ParseDecimal(const char *p, uint32_t &nLength) {
-	const bool bIsNegative = (*p == '-');
-
-	nLength = bIsNegative ? 1 : 0;
-	int32_t nValue = 0;
-
-	while ((p[nLength] != '.') && (p[nLength] != ',')) {
-		nValue = nValue * 10 + p[nLength] - '0';
-		nLength++;
-	}
-
-	if (p[nLength] == '.') {
-		nLength++;
-		nValue = nValue * 10 + p[nLength] - '0';
-		nLength++;
-		nValue = nValue * 10 + p[nLength] - '0';
-		nLength++;
-	}
-
-	return bIsNegative ? -nValue : nValue;
-}
-
-void GPS::SetTime(int32_t nTime) {
-	nTime /= 100;
-	m_Tm.tm_sec = nTime % 100;
-	nTime /= 100;
-	m_Tm.tm_min = nTime % 100;
-	m_Tm.tm_hour = nTime / 100;
-
-#ifndef NDEBUG
-	printf("%.2d:%.2d:%.2d\n", m_Tm.tm_hour, m_Tm.tm_min, m_Tm.tm_sec);
-#endif
-}
-
-void GPS::SetDate(int32_t nDate) {
-	if (nDate != 0) {
-		m_Tm.tm_year = 100 + nDate % 100;	// The number of years since 1900.
-		nDate /= 100;
-		m_Tm.tm_mon = (nDate % 100) - 1;	// The number of months since January, in the range 0 to 11.
-		m_Tm.tm_mday = nDate / 100;			// The day of the month, in the range 1 to 31.
-	}
-
-#ifndef NDEBUG
-	printf("%.2d/%.2d/%.2d\n", m_Tm.tm_mday, 1 + m_Tm.tm_mon, 1900 + m_Tm.tm_year);
-#endif
-}
-
-const struct tm* GPS::GetLocalDateTime() {
-	time_t t = mktime(&m_Tm);
-
-	t += m_nUtcOffset;
-
-	return localtime(&t);
-}
-
 void GPS::Run() {
-	if ((m_pSentence = const_cast<char *>(UartGetSentence())) == nullptr) {
+	if (__builtin_expect(((m_pSentence = const_cast<char *>(UartGetSentence())) == nullptr), 1)) {
 		return;
 	}
 
-	DumpSentence(m_pSentence);
+	//DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 
-	if ((nTag = GetTag(&m_pSentence[1 + nmea::length::TALKER_ID])) == nmea::UNDEFINED) {
+	if (__builtin_expect(((nTag = GetTag(&m_pSentence[1 + nmea::length::TALKER_ID])) == nmea::UNDEFINED), 0)) {
 		return;
 	}
 
@@ -206,18 +231,18 @@ void GPS::Run() {
 	do {
 		uint32_t nLenght = 0;
 		switch (nTag | nFieldIndex << 8) {
-		case nmea::RMC | (1 << 8):					// UTC Time of position, hhmmss.ss
+		case nmea::RMC | (1 << 8):	// UTC Time of position, hhmmss.ss
 		case nmea::GGA | (1 << 8):
 		case nmea::ZDA | (1 << 8):
 			SetTime(ParseDecimal(&m_pSentence[nOffset], nLenght));
 			nOffset += nLenght;
 			break;
-		case nmea::RMC | (2 << 8):					// Status, A = Valid, V = Warning
+		case nmea::RMC | (2 << 8):	// Status, A = Valid, V = Warning
 			m_tStatusCurrent = (m_pSentence[nOffset] == 'A' ? GPSStatus::VALID : GPSStatus::WARNING);
-			printf("(%c) : %d\n", m_pSentence[nOffset], nOffset	);
+//			printf("(%c) : %d\n", m_pSentence[nOffset], nOffset	);
 			nOffset += 1;
 			break;
-		case nmea::RMC | (9 << 8):					// Date, ddmmyy
+		case nmea::RMC | (9 << 8):	// Date, ddmmyy
 			SetDate(ParseDecimal(&m_pSentence[nOffset], nLenght));
 			nOffset += nLenght;
 			break;
@@ -235,6 +260,7 @@ void GPS::Run() {
 
 	if (m_tStatusCurrent != m_tStatusPrevious) {
 		m_tStatusPrevious = m_tStatusCurrent;
+
 		if (m_pGPSDisplay != nullptr) {
 			m_pGPSDisplay->ShowSGpstatus(m_tStatusCurrent);
 		}

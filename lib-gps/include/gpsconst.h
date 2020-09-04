@@ -37,10 +37,9 @@ static constexpr auto MAX_NAME_LENGTH = 8 + 1;  	// + '\0'
 }  // namespace gps
 
 enum class GPSModule {
-	DUMMY,
 	ATGM336H,
 	UBLOX,
-	//ADAFRUIT,
+	ADAFRUIT,
 	UNDEFINED
 };
 

@@ -30,7 +30,7 @@ static const char SOFTWARE_VERSION[] = "0.0";
 /**
  *
  */
-#include "gps.h"
+#include "gpstimeclient.h"
 #include "gpsparams.h"
 #include "storegps.h"
 
@@ -57,10 +57,10 @@ void notmain(void) {
 
 	networkHandlerOled.ShowIp();
 
-	NtpClient ntpClient(nw.GetNtpServerIp());
-	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
-	ntpClient.Start();
-	ntpClient.Print();
+//	NtpClient ntpClient(nw.GetNtpServerIp());
+//	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
+//	ntpClient.Start();
+//	ntpClient.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 0);
 
@@ -88,8 +88,9 @@ void notmain(void) {
 		gpsParams.Dump();
 	}
 
-	GPS gps(gpsParams.GetUtcOffset());
+	GPSTimeClient gps(gpsParams.GetUtcOffset());
 	gps.SetGPSDisplay(&networkHandlerOled);
+	gps.Start();
 	gps.Print();
 
 	int nPrevSeconds = 60; // Force initial update
@@ -103,7 +104,11 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		shell.Run();
-		ntpClient.Run();
+
+		/*
+		 *
+		 */
+//		ntpClient.Run();
 
 		/*
 		 *
@@ -113,18 +118,21 @@ void notmain(void) {
 		/*
 		 *
 		 */
-		time_t ltime;
-		struct tm *tm;
-		ltime = time(nullptr);
-		tm = localtime(&ltime);
+		const time_t ltime = time(nullptr);
+		struct tm *tm = localtime(&ltime);
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
 
-			display.Printf(1, "%.2d:%.2d:%.2d (NTP)", tm->tm_hour, tm->tm_min, tm->tm_sec);
+			display.Printf(1, "%.2d:%.2d:%.2d (SYS)", tm->tm_hour, tm->tm_min, tm->tm_sec);
 
-			const struct tm *gps_time = gps.GetLocalDateTime();
-			display.Printf(2, "%.2d:%.2d:%.2d (GPS)", gps_time->tm_hour, gps_time->tm_min, gps_time->tm_sec);
+			if (gps.IsTimeUpdated()) {
+				const struct tm *gps_time = gps.GetLocalDateTime();
+				display.Printf(2, "%.2d:%.2d:%.2d (GPS)", gps_time->tm_hour, gps_time->tm_min, gps_time->tm_sec);
+			} else {
+				display.Printf(2, "--:--:-- (GPS)");
+
+			}
 		}
 	}
 }

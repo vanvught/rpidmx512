@@ -1,7 +1,7 @@
 #
 DEFINES = LTC_READER
 #
-LIBS = gps ltc ltc tcnet artnet midi ws28xxdisplay ws28xx 
+LIBS = gps ltc tcnet artnet midi ws28xxdisplay ws28xx 
 #
 SRCDIR = firmware lib 
 

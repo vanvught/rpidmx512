@@ -38,6 +38,8 @@
 #include "gpsconst.h"
 
 enum class GPSStatus {
+	PROBE,
+	IDLE,
 	WARNING,
 	VALID,
 	UNDEFINED
@@ -55,17 +57,36 @@ class GPS {
 public:
 	GPS(float fUtcOffset = 0.0);
 
+	void Start();
 	void Run();
 
 	void Print();
 
+	bool IsDateUpdated() const {
+		return m_IsDateUpdated;
+	}
+
+	bool IsTimeUpdated() const {
+		return m_IsTimeUpdated;
+	}
+
+	uint32_t GetTimeTimestampMillis() const {
+		return m_nTimeTimestampMillis;
+	}
+
 	const struct tm *GetDateTime() {
+		//m_IsTimeUpdated = m_IsDateUpdated = false;
 		return &m_Tm;
 	}
 
 	const struct tm *GetLocalDateTime();
 
-	GPSStatus GetStatus() {
+	time_t GetLocalSeconds() {
+		m_IsTimeUpdated = m_IsDateUpdated = false;
+		return mktime(&m_Tm) + m_nUtcOffset;
+	}
+
+	GPSStatus GetStatus() const {
 		return m_tStatusCurrent;
 	}
 
@@ -98,8 +119,13 @@ private:
 	uint32_t m_nBaud{9600};
 	char *m_pSentence{nullptr};
 	struct tm m_Tm;
-	struct tm m_TmLocal;
 	int32_t m_nUtcOffset{0};
+
+	bool m_IsTimeUpdated{false};
+	bool m_IsDateUpdated{false};
+
+	uint32_t m_nTimeTimestampMillis;
+	uint32_t m_nDateTimestampMillis;
 
 	GPSStatus m_tStatusCurrent{GPSStatus::UNDEFINED};
 	GPSStatus m_tStatusPrevious{GPSStatus::UNDEFINED};

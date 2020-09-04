@@ -1,5 +1,5 @@
 /**
- * @file gpsconst.cpp
+ * @file gpstimeclient.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -21,24 +21,22 @@
  * THE SOFTWARE.
  */
 
-#include "gpsconst.h"
+#ifndef GPSTIMECLIENT_H_
+#define GPSTIMECLIENT_H_
 
-using namespace gps;
+#include <stdint.h>
 
-const char GPSConst::MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][module::MAX_NAME_LENGTH] = {
-		"ATGM336H",
-		"ublox",
-		"Adafruit"
+#include "gps.h"
+
+class GPSTimeClient: public GPS {
+public:
+	GPSTimeClient(float fUtcOffset);
+
+	void Run();
+
+private:
+	uint32_t m_nLastUpdateMillis;
+	uint32_t m_nWaitPPSMillis;
 };
 
-const char GPSConst::BAUD_9600[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-		"$PCAS01,1*1D\r\n",
-		"$,*00\r\n",
-		"$,*00\r\n"
-};
-
-const char GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-		"$PCAS01,5*19\r\n",
-		"$,*00\r\n",
-		"$,*00\r\n"
-};
+#endif /* GPSTIMECLIENT_H_ */
