@@ -25,6 +25,10 @@
  * https://gpsd.gitlab.io/gpsd/NMEA.html
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 /*
  * PoC Code -> Do not use in production
  */
@@ -176,16 +180,16 @@ void GPS::Start() {
 		UartSend(GPSConst::BAUD_115200[i]);
 		UartSetBaud(115200);
 
-		int32_t nTimeOut = 0xFFFFFF;
+		const uint32_t nMillis = Hardware::Get()->Millis();
 
-		while (nTimeOut-- > 0) {
+		while ((Hardware::Get()->Millis() - nMillis) < 1000) {
 			m_pSentence = const_cast<char *>(UartGetSentence());
 
 			if (m_pSentence != nullptr) {
 				m_tModule = static_cast<GPSModule>(i);
 				DumpSentence(m_pSentence);
 #ifndef NDEBUG
-				printf("[%x]\n", nTimeOut);
+				printf("[%u]\n", Hardware::Get()->Millis() - nMillis);
 #endif
 				break;
 			}
@@ -217,7 +221,7 @@ void GPS::Run() {
 		return;
 	}
 
-	//DumpSentence(m_pSentence);
+	DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 

@@ -31,7 +31,8 @@
 
 #include "hardware.h"
 
-#include "c/sys_time.h"
+#include "hwclock.h"
+
 #include "c/hardware.h"
 
 #include "h3.h"
@@ -90,10 +91,6 @@ public:
 		return false;
 	}
 
-	void SetSysTime(time_t nTime) {
-		sys_time_set_systime(nTime);
-	}
-
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
@@ -144,6 +141,7 @@ public:
 	}
 
 private:
+	HwClock m_HwClock;
 	RebootHandler *m_pRebootHandler{nullptr};
 	bool m_bIsWatchdog{false};
 

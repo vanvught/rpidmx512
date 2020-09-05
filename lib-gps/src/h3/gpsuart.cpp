@@ -21,6 +21,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 /*
  * PoC Code -> Do not use in production
  */

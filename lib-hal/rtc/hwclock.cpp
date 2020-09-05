@@ -27,6 +27,10 @@
  * PoC Code -> Do not use in production
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <cassert>
 #include <stdint.h>
 #include <stdio.h>

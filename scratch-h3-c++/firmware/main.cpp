@@ -36,16 +36,11 @@ static const char SOFTWARE_VERSION[] = "0.0";
 
 #include "ntpclient.h"
 #include "ptpclient.h"
-/*
- *
- */
-#include "hwclock.h"
 
 extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	HwClock hwClock;
 	NetworkH3emac nw;
 	LedBlink lb;
 	Display display(0,4);
@@ -76,10 +71,7 @@ void notmain(void) {
 
 	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
 		printf("Set RTC from System Clock\n");
-		hwClock.SysToHc();
-	} else {
-		printf("Set System Clock from RTC\n");
-		hwClock.HcToSys();
+		HwClock::Get()->SysToHc();
 	}
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
@@ -114,7 +106,7 @@ void notmain(void) {
 		 */
 		ntpClient.Run();
 
-		hwClock.Run(!(ntpClient.GetStatus() != NtpClientStatus::FAILED));
+		HwClock::Get()->Run(!(ntpClient.GetStatus() != NtpClientStatus::FAILED));
 
 		time_t ltime = time(nullptr);
 		const struct tm *tm = localtime(&ltime);
@@ -122,12 +114,12 @@ void notmain(void) {
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
 			struct rtc_time rtc;
-			hwClock.Get(&rtc);
+			HwClock::Get()->Get(&rtc);
 
-			if (tm->tm_sec != rtc.tm_sec) {
-				printf("> %.2d:%.2d:%.2d (SYS) <\n", tm->tm_hour, tm->tm_min, tm->tm_sec);
-				printf("> %.2d:%.2d:%.2d (RTC) <\n", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
-			}
+//			if (tm->tm_sec != rtc.tm_sec) {
+//				printf("> %.2d:%.2d:%.2d (SYS) <\n", tm->tm_hour, tm->tm_min, tm->tm_sec);
+//				printf("> %.2d:%.2d:%.2d (RTC) <\n", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);
+//			}
 
 			display.Printf(1, "%.2d:%.2d:%.2d (SYS)", tm->tm_hour, tm->tm_min, tm->tm_sec);
 			display.Printf(2, "%.2d:%.2d:%.2d (RTC)", rtc.tm_hour, rtc.tm_min, rtc.tm_sec);

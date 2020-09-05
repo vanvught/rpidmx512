@@ -21,6 +21,14 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
+/*
+ * PoC Code -> Do not use in production
+ */
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # pragma GCC push_options
 # pragma GCC optimize ("Os")

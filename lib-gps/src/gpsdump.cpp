@@ -1,8 +1,8 @@
 /**
- * @file hardware_rtc.c
+ * @file gpsdump.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,31 +21,28 @@
  * THE SOFTWARE.
  */
 
-#include <stdbool.h>
-#include <assert.h>
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
 
-#include "c/sys_time.h"
+/*
+ * PoC Code -> Do not use in production
+ */
 
-#include "../rtc/rtc.h"
+#include <stdio.h>
 
-#include "debug.h"
+#include "gps.h"
 
-void hardware_rtc_set(const struct tm *tm_rtc) {
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc->tm_year, tm_rtc->tm_mon, tm_rtc->tm_mday, tm_rtc->tm_hour, tm_rtc->tm_min, tm_rtc->tm_sec);
+void GPS::DumpSentence(__attribute__((unused)) const char *pSentence) {
+#ifndef NDEBUG
+	printf("%p |", pSentence);
 
-	if (rtc_start(RTC_PROBE)) {
-		rtc_set_date_time(tm_rtc);
+	const char *p = pSentence;
+
+	while (*p != '\r') {
+		putchar(*p++);
 	}
 
-	sys_time_set(tm_rtc);
-}
-
-bool hardware_rtc_get(struct tm *tm_rtc) {
-	if (rtc_start(RTC_PROBE)) {
-		rtc_get_date_time(tm_rtc);
-		DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc->tm_year, tm_rtc->tm_mon, tm_rtc->tm_mday, tm_rtc->tm_hour, tm_rtc->tm_min, tm_rtc->tm_sec);
-		return true;
-	}
-
-	return false;
+	puts("|");
+#endif
 }

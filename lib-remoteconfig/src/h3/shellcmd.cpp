@@ -98,13 +98,9 @@ static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 
 namespace networktime {
 namespace arg {
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
 static constexpr char PRINT[] = "print";
 }  // namespace arg
 namespace length {
-static constexpr auto START = sizeof(arg::START) - 1;
-static constexpr auto STOP = sizeof(arg::STOP) - 1;
 static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
 }  // namespace length
 }  // namespace networktime
@@ -350,17 +346,17 @@ void Shell::CmdHwClock() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == hwclock::length::HCTOSYS) && (memcmp(m_Argv[0], hwclock::arg::HCTOSYS, hwclock::length::HCTOSYS) == 0)) {
-		//HwClock::Get()->HcToSys(); //TODO Implement
+		HwClock::Get()->HcToSys();
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::SYSTOHC) && (memcmp(m_Argv[0], hwclock::arg::SYSTOHC, hwclock::length::SYSTOHC) == 0)) {
-		//HwClock::Get()->SysToHc(); //TODO Implement
+		HwClock::Get()->SysToHc();
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::PRINT) && (memcmp(m_Argv[0], hwclock::arg::PRINT, hwclock::length::PRINT) == 0)) {
-		//HwClock::Get()->Print(); //TODO Implement
+		HwClock::Get()->Print();
 		return;
 	}
 
@@ -412,16 +408,6 @@ void Shell::CmdMem() {
 void Shell::CmdNtp() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
-	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
-		//NtpClient::Get()->Start(); //TODO Implement
-		return;
-	}
-
-	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
-		//NtpClient::Get()->Stop(); //TODO Implement
-		return;
-	}
-
 	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
 		NtpClient::Get()->Print();
 		return;
@@ -432,16 +418,6 @@ void Shell::CmdNtp() {
 
 void Shell::CmdPtp() {
 	const auto nArgv0Length = m_nArgvLength[0];
-
-	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
-		//TODO Implement
-		return;
-	}
-
-	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
-		//TODO Implement
-		return;
-	}
 
 	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
 		//TODO Implement

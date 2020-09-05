@@ -50,6 +50,7 @@ enum class CmdIndex: uint32_t {
 	MEM,
 	NTP,
 	PTP,
+	GPS,
 #endif
 	HELP
 };
@@ -89,6 +90,7 @@ private:
 	void CmdMem();
 	void CmdNtp();
 	void CmdPtp();
+	void CmdGps();
 #endif
 	void CmdHelp();
 

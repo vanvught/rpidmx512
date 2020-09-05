@@ -73,6 +73,8 @@ Hardware::Hardware() {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
+	m_HwClock.HcToSys();
+
 #ifndef NDEBUG
 	I2cDetect i2cdetect;
 #endif
@@ -104,16 +106,23 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 }
 
 bool Hardware::SetTime(const struct tm *pTime) {
-	hardware_rtc_set(pTime);
+	rtc_time rtc_time;
+
+	rtc_time.tm_sec = pTime->tm_sec;
+	rtc_time.tm_min = pTime->tm_min;
+	rtc_time.tm_hour = pTime->tm_hour;
+	rtc_time.tm_mday = pTime->tm_mday;
+	rtc_time.tm_mon = pTime->tm_mon;
+	rtc_time.tm_year = pTime->tm_year;
+
+	m_HwClock.Set(&rtc_time);
+
 	return true;
 }
 
 void Hardware::GetTime(struct tm *pTime) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(0);
-    local_time = localtime(&ltime);
+	time_t ltime = time(nullptr);
+	const struct tm *local_time = localtime(&ltime);
 
     pTime->tm_year = local_time->tm_year;
     pTime->tm_mon = local_time->tm_mon ;

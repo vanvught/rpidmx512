@@ -27,8 +27,6 @@
  * PoC Code -> Do not use in production
  */
 
-#define NDEBUG
-
 #include <stddef.h>
 #include <sys/time.h>
 #include <assert.h>

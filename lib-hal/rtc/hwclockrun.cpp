@@ -27,6 +27,10 @@
  * PoC Code -> Do not use in production
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <stdint.h>
 #include <sys/time.h>
 #include <time.h>

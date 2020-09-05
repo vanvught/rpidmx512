@@ -1,5 +1,5 @@
 /**
- * @file gpsprint.cpp
+ * @file gpstimeclient.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -21,12 +21,22 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#ifndef GPSTIMECLIENT_H_
+#define GPSTIMECLIENT_H_
+
+#include <stdint.h>
 
 #include "gps.h"
 
-void GPS::Print() {
-	printf("GPS\n");
-	printf(" Module : %s [%u]\n", GetModuleName(m_tModule), m_nBaud);
-	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
-}
+class GPSTimeClient: public GPS {
+public:
+	GPSTimeClient(float fUtcOffset);
+
+	void Start();
+	void Run();
+
+private:
+	uint32_t m_nWaitPPSMillis;
+};
+
+#endif /* GPSTIMECLIENT_H_ */

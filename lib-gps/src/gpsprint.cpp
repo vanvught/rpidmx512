@@ -1,5 +1,5 @@
 /**
- * @file sys_time.c
+ * @file gpsprint.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -21,31 +21,32 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
+#include <stdio.h>
 
-#include <time.h>
-#include <sys/time.h>
+#include "gps.h"
 
-#include "debug.h"
+#if defined (H3)
+# include "h3_board.h"
+#endif
 
-void __attribute__((cold)) sys_time_init(void) {
-	struct tm tmbuf;
-
-	tmbuf.tm_hour = 0;
-	tmbuf.tm_min = 0;
-	tmbuf.tm_sec = 0;
-	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
-	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
-	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
-	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
-
-	const time_t seconds = mktime(&tmbuf);
-	const struct timeval tv = { .tv_sec = seconds, .tv_usec = 0 };
-
-	settimeofday(&tv, NULL);
-
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
+void GPS::Print() {
+	printf("GPS\n");
+	printf(" Module : %s [%u]\n", GetModuleName(m_tModule), m_nBaud);
+	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
+	switch (m_tStatusCurrent) {
+	case GPSStatus::WARNING:
+		puts(" No Fix");
+		break;
+	case GPSStatus::VALID:
+		puts(" Has Fix");
+		break;
+	case GPSStatus::IDLE:
+		puts(" Idle");
+		break;
+	default:
+		break;
+	}
+#if defined (H3)
+	printf(" UART: %d\n", EXT_UART_NUMBER);
+#endif
 }

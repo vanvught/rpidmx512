@@ -21,12 +21,23 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <stdint.h>
 #include <sys/time.h>
 
 #include "gpstimeclient.h"
 
 #include "hardware.h"
+
+#include "h3_gpio.h"
+#include "board/h3_opi_zero.h"
+
+#include "arm/arm.h"
+#include "arm/synchronize.h"
+#include "arm/gic.h"
 
 #include "debug.h"
 
@@ -36,26 +47,72 @@ enum Status {
 	WAITING_PPS
 };
 
-static Status Status;
+static volatile Status s_Status;
+static volatile uint32_t s_nLastUpdateMillis;
+
+static GPSTimeClient *s_pGPS;
+
+extern "C" {
+time_t WrapperGetLocalSeconds(GPSTimeClient *pGPS) {
+	return pGPS->GetLocalSeconds();
+}
+}
+
+static void __attribute__((interrupt("FIQ"))) pps_handler() {
+	dmb();
+	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
+
+	struct timeval tv;
+	tv.tv_sec = WrapperGetLocalSeconds(s_pGPS);
+	tv.tv_usec = 0;
+	settimeofday(&tv, nullptr);
+
+	s_nLastUpdateMillis = H3_TIMER->AVS_CNT0; // Hardware::Get()->Millis();
+	s_Status = Status::WAITING_TIMEOUT;
+
+//	H3_GIC_CPUIF->EOI = H3_PA_EINT_IRQn; //TODO old-style
+//	gic_unpend(H3_PA_EINT_IRQn);
+
+	dmb();
+}
 
 GPSTimeClient::GPSTimeClient(float fUtcOffset): GPS(fUtcOffset) {
-	m_nLastUpdateMillis = m_nWaitPPSMillis = Hardware::Get()->Millis();
-	Status = Status::NOT_SET;
+	s_nLastUpdateMillis = m_nWaitPPSMillis = Hardware::Get()->Millis();
+	s_Status = Status::NOT_SET;
+	s_pGPS = this;
+}
+
+void GPSTimeClient::Start() {
+	GPS::Start();
+
+	h3_gpio_fsel(GPIO_EXT_18, GPIO_FSEL_EINT);
+
+	arm_install_handler(reinterpret_cast<unsigned>(pps_handler), ARM_VECTOR(ARM_VECTOR_FIQ));
+
+	gic_fiq_config(H3_PA_EINT_IRQn, GIC_CORE0);
+
+	H3_PIO_PA_INT->CFG2 = (GPIO_INT_CFG_POS_EDGE << 8);
+	H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_18);
+	H3_PIO_PA_INT->STA = (1 << GPIO_EXT_18);
+	H3_PIO_PA_INT->DEB = 1;
 }
 
 void GPSTimeClient::Run() {
 	GPS::Run();
 
-	if (Status == Status::WAITING_TIMEOUT) {
+	if (s_Status == Status::WAITING_TIMEOUT) {
 		const uint32_t nMillis = Hardware::Get()->Millis();
 
-		if (__builtin_expect(((nMillis - m_nLastUpdateMillis) < 150 * 1000), 1)) {
+		if (__builtin_expect(((nMillis - s_nLastUpdateMillis) < (150 * 1000)), 1)) {
+			__disable_fiq(); //TODO Can this be done different?
 			return;
 		}
 
 		if (GPS::GetStatus() == GPSStatus::VALID) {
 			m_nWaitPPSMillis = nMillis;
-			Status = Status::WAITING_PPS;
+
+			s_Status = Status::WAITING_PPS;
+			__enable_fiq();
 
 			DEBUG_PUTS("(GPS::GetStatus() == GPSStatus::VALID)");
 			return;
@@ -66,15 +123,15 @@ void GPSTimeClient::Run() {
 		if (GPS::IsTimeUpdated()) {
 			const uint32_t nElapsedMillis = nMillis - GetTimeTimestampMillis();
 
-			if (nElapsedMillis < 1000) {
+			if (nElapsedMillis < (1 * 1000)) {
 
 				struct timeval tv;
 				tv.tv_sec = GPS::GetLocalSeconds();
 				tv.tv_usec = 0;
 				settimeofday(&tv, nullptr);
 
-				m_nLastUpdateMillis = nMillis;
-				Status = Status::WAITING_TIMEOUT;
+				s_nLastUpdateMillis = nMillis;
+				s_Status = Status::WAITING_TIMEOUT;
 
 				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
 
@@ -82,18 +139,16 @@ void GPSTimeClient::Run() {
 			}
 		}
 
-		Status = Status::NOT_SET;
+		s_Status = Status::NOT_SET;
 
 		DEBUG_PUTS("No time update");
 		return;
 	}
 
-	if (Status == Status::WAITING_PPS) {
+	if (s_Status == Status::WAITING_PPS) {
 		const uint32_t nMillis = Hardware::Get()->Millis();
 
-		// TODO if PPS interrupt then set time and Status = Status::WAITING_TIMEOUT and return
-
-		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > 1 * 1000), 0)) {
+		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (1 * 1000)), 0)) {
 			// There is no PPS
 			if (GPS::IsTimeUpdated()) {
 
@@ -105,19 +160,23 @@ void GPSTimeClient::Run() {
 				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nMillis - GetTimeTimestampMillis());
 			}
 
-			m_nLastUpdateMillis = nMillis;
-			Status = Status::WAITING_TIMEOUT;
+			s_nLastUpdateMillis = nMillis;
 
-			DEBUG_PUTS("((tv.tv_sec - nWaitPPS) >= 2)");
+			s_Status = Status::WAITING_TIMEOUT;
+			__disable_fiq();
+
+			DEBUG_PUTS("((tv.tv_sec - nWaitPPS) >= 1 * 1000)");
 			return;
 		}
 
 		return;
 	}
 
-	if ((Status == Status::NOT_SET) && GPS::IsTimeUpdated()) {
+	if ((s_Status == Status::NOT_SET) && GPS::IsTimeUpdated()) {
 		m_nWaitPPSMillis = Hardware::Get()->Millis();
-		Status = Status::WAITING_PPS;
+
+		s_Status = Status::WAITING_PPS;
+		__enable_fiq();
 
 		DEBUG_PUTS("((Status == Status::NOT_SET) && GPS::IsTimeUpdated())");
 		return;

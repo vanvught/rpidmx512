@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <mcpbuttonsconst.h>
+
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -67,6 +67,7 @@
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
+#include "mcpbuttonsconst.h"
 
 #include "ltcoscserver.h"
 
@@ -99,11 +100,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-// UART0 shell
-#if defined ( ENABLE_SHELL )
-# include <h3/shell.h>
-#endif
-
 extern "C" {
 
 void notmain(void) {
@@ -112,9 +108,6 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-#if defined ( ENABLE_SHELL)
-	Shell shell;
-#endif
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -155,8 +148,13 @@ void notmain(void) {
 
 	NtpClient ntpClient;
 	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
-	ntpClient.Init();
+	ntpClient.Start();
 	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	LtcReader ltcReader(&tLtcDisabledOutputs);
 	MidiReader midiReader(&tLtcDisabledOutputs);
@@ -209,10 +207,6 @@ void notmain(void) {
 	/**
 	 * From here work with source selection
 	 */
-
-#if defined ( ENABLE_SHELL )
-	shell.SetSource(ltcSource);
-#endif
 
 	Reboot reboot(ltcSource);
 	hw.SetRebootHandler(&reboot);
@@ -339,7 +333,7 @@ void notmain(void) {
 	 * NTP Server is running when the NTP Client is not running (stopped)
 	 */
 
-	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NtpClientStatus::STOPPED);
+	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NtpClientStatus::FAILED);
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
@@ -390,7 +384,6 @@ void notmain(void) {
 
 	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
 
-//	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	rdmNetLLRPOnly.Init();
@@ -449,6 +442,11 @@ void notmain(void) {
 			break;
 		case ltc::source::SYSTIME:
 			sysTimeReader.Run();
+			if (bRunNtpServer) {
+				HwClock::Get()->Run(true);
+			} else {
+				HwClock::Get()->Run(!(ntpClient.GetStatus() != NtpClientStatus::FAILED));
+			}
 			break;
 		default:
 			break;
@@ -487,15 +485,11 @@ void notmain(void) {
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
-		//
+
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
-		//
-#if defined ( ENABLE_SHELL )
-		shell.Run();
-#endif
 	}
 }
 
