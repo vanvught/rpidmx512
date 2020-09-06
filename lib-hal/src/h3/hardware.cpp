@@ -73,11 +73,12 @@ Hardware::Hardware() {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
-	m_HwClock.HcToSys();
-
 #ifndef NDEBUG
 	I2cDetect i2cdetect;
 #endif
+
+	m_HwClock.Print();
+	m_HwClock.HcToSys();
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {

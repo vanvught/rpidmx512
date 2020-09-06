@@ -333,11 +333,13 @@ void notmain(void) {
 	 * NTP Server is running when the NTP Client is not running (stopped)
 	 */
 
-	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NtpClientStatus::FAILED);
+	const bool bRunNtpServer = ltcParams.IsNtpEnabled();
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	if (bRunNtpServer) {
+		ntpClient.Stop();
+
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();

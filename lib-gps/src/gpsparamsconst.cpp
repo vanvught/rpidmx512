@@ -25,5 +25,6 @@
 
 const char GPSParamsConst::FILE_NAME[] = "gps.txt";
 
+const char GPSParamsConst::MODULE[] = "module";
 const char GPSParamsConst::ENABLE[] = "enable";
 const char GPSParamsConst::UTC_OFFSET[] = "utc_offset";

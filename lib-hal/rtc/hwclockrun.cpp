@@ -27,10 +27,6 @@
  * PoC Code -> Do not use in production
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <sys/time.h>
 #include <time.h>
@@ -78,8 +74,6 @@ void HwClock::Run(bool bDoRun) {
 			tm.tm_year = rtcT1.tm_year;
 
 			nSeconds = mktime(&tm);
-
-			DEBUG_PRINTF("%u", nSeconds);
 		}
 
 		return;
@@ -96,10 +90,14 @@ void HwClock::Run(bool bDoRun) {
 			struct timeval tv;
 			tv.tv_sec = nSeconds;
 
-			if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+			if (tvT2.tv_sec == tvT1.tv_sec) {
 				tv.tv_usec = 1000000 - (tvT2.tv_usec - tvT1.tv_usec);
 			} else {
-				tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
+				if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+					tv.tv_usec = tvT2.tv_usec - tvT1.tv_usec;
+				} else {
+					tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
+				}
 			}
 
 			settimeofday(&tv, nullptr);
@@ -107,7 +105,7 @@ void HwClock::Run(bool bDoRun) {
 			m_nLastHcToSysMillis = Hardware::Get()->Millis();
 			Status = Status::WAITING;
 
-			DEBUG_PRINTF("%u %u", tv.tv_sec, tv.tv_usec);
+			DEBUG_PRINTF("%d:%d (%u %u) (%u %u) -> %u", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
 		}
 
 		return;

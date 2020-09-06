@@ -67,16 +67,13 @@ static void __attribute__((interrupt("FIQ"))) pps_handler() {
 	tv.tv_usec = 0;
 	settimeofday(&tv, nullptr);
 
-	s_nLastUpdateMillis = H3_TIMER->AVS_CNT0; // Hardware::Get()->Millis();
+	s_nLastUpdateMillis = H3_TIMER->AVS_CNT0; // --> Hardware::Get()->Millis();
 	s_Status = Status::WAITING_TIMEOUT;
-
-//	H3_GIC_CPUIF->EOI = H3_PA_EINT_IRQn; //TODO old-style
-//	gic_unpend(H3_PA_EINT_IRQn);
 
 	dmb();
 }
 
-GPSTimeClient::GPSTimeClient(float fUtcOffset): GPS(fUtcOffset) {
+GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module): GPS(fUtcOffset, module) {
 	s_nLastUpdateMillis = m_nWaitPPSMillis = Hardware::Get()->Millis();
 	s_Status = Status::NOT_SET;
 	s_pGPS = this;

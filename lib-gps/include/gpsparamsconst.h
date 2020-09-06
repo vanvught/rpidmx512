@@ -27,6 +27,7 @@
 struct GPSParamsConst {
 	static const char FILE_NAME[];
 
+	static const char MODULE[];
 	static const char ENABLE[];
 	static const char UTC_OFFSET[];
 };

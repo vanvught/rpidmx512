@@ -265,6 +265,19 @@ void NtpClient::Start() {
 	DEBUG_EXIT
 }
 
+void NtpClient::Stop() {
+	DEBUG_ENTRY
+
+	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
+	m_tStatus = NtpClientStatus::STOPPED;
+
+	if (m_pNtpClientDisplay != nullptr) {
+		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+	}
+
+	DEBUG_EXIT
+}
+
 void NtpClient::Run() {
 	if ((m_tStatus == NtpClientStatus::IDLE) || (m_tStatus == NtpClientStatus::FAILED)) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {

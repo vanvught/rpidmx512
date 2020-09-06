@@ -101,9 +101,6 @@ public:
 			case GPSStatus::VALID:
 				Display::Get()->TextStatus("GPS has Fix");
 				break;
-			case GPSStatus::PROBE:
-				Display::Get()->TextStatus("GPS module probe");
-				break;
 			case GPSStatus::IDLE:
 				Display::Get()->TextStatus("GPS idle");
 				break;

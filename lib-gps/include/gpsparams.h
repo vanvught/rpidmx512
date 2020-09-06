@@ -26,15 +26,19 @@
 
 #include <stdint.h>
 
+#include "gpsconst.h"
+
 struct TGPSParams {
 	uint32_t nSetList;
+	uint8_t nModule;
 	uint8_t nEnable;
 	float fUtcOffset;
 } __attribute__((packed));
 
 struct GPSParamsMask {
-	static constexpr auto ENABLE = (1U << 0);
-	static constexpr auto UTC_OFFSET = (1U << 1);
+	static constexpr auto MODULE = (1U << 0);
+	static constexpr auto ENABLE = (1U << 1);
+	static constexpr auto UTC_OFFSET = (1U << 2);
 };
 
 class GPSParamsStore {
@@ -58,7 +62,11 @@ public:
 
 	void Dump();
 
-	float GetUtcOffset() {
+	GPSModule GetModule() const {
+		return static_cast<GPSModule>(m_tTGPSParams.nModule);
+	}
+
+	float GetUtcOffset() const {
 		return m_tTGPSParams.fUtcOffset;
 	}
 
@@ -66,7 +74,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_tTGPSParams.nSetList & nMask) == nMask;
 	}
 

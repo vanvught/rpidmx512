@@ -74,7 +74,7 @@ constexpr char aTag[static_cast<int>(nmea::UNDEFINED)][nmea::length::TAG] =
 
 GPS *GPS::s_pThis = nullptr;
 
-GPS::GPS(float fUtcOffset): m_nUtcOffset(Utc::Validate(fUtcOffset)) {
+GPS::GPS(float fUtcOffset, GPSModule module): m_nUtcOffset(Utc::Validate(fUtcOffset)), m_tModule(module) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -166,18 +166,10 @@ const struct tm* GPS::GetLocalDateTime() {
 void GPS::Start() {
 	DEBUG_ENTRY
 
-	if (m_pGPSDisplay != nullptr) {
-		m_pGPSDisplay->ShowSGpstatus(GPSStatus::PROBE);
-	}
-
 	UartInit();
 
-	uint32_t i;
-
-	for (i = 0; i < static_cast<uint32_t>(GPSModule::UNDEFINED); i++) {
-		printf("i=%d\n", i);
-
-		UartSend(GPSConst::BAUD_115200[i]);
+	if (m_tModule < GPSModule::UNDEFINED) {
+		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)]);
 		UartSetBaud(115200);
 
 		const uint32_t nMillis = Hardware::Get()->Millis();
@@ -186,7 +178,6 @@ void GPS::Start() {
 			m_pSentence = const_cast<char *>(UartGetSentence());
 
 			if (m_pSentence != nullptr) {
-				m_tModule = static_cast<GPSModule>(i);
 				DumpSentence(m_pSentence);
 #ifndef NDEBUG
 				printf("[%u]\n", Hardware::Get()->Millis() - nMillis);
@@ -195,16 +186,9 @@ void GPS::Start() {
 			}
 		}
 
-		if (m_pSentence != nullptr) {
-			break;
+		if (m_pSentence == nullptr) {
+			UartSetBaud(9600);
 		}
-
-		UartSetBaud(9600);
-	}
-
-	if (i == static_cast<uint32_t>(GPSModule::UNDEFINED)) {
-		m_tModule = GPSModule::UNDEFINED;
-		UartSetBaud(9600);
 	}
 
 	m_tStatusCurrent = GPSStatus::IDLE;

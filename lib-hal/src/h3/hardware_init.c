@@ -133,15 +133,15 @@ void hardware_led_set(int state) {
 
 void __attribute__((cold)) hardware_init(void) {
 	h3_watchdog_disable();
-	h3_i2c_begin();	// Needed for RTC
-	sys_time_init();
 	h3_timer_init();
 	h3_hs_timer_init();
+	sys_time_init();
 	console_init();
 	gic_init();
 	h3_thermal_init();
 	emac_init();
 	h3_spi_begin();
+	h3_i2c_begin();
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
 

@@ -23,14 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <cassert>
 #include <stdint.h>
 #include <stdio.h>
@@ -126,10 +118,14 @@ void HwClock::HcToSys() {
 	struct timeval tv;
 	tv.tv_sec = nSeconds;
 
-	if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+	if (tvT2.tv_sec == tvT1.tv_sec) {
 		tv.tv_usec = 1000000 - (tvT2.tv_usec - tvT1.tv_usec);
 	} else {
-		tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
+		if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+			tv.tv_usec = tvT2.tv_usec - tvT1.tv_usec;
+		} else {
+			tv.tv_usec = tvT1.tv_usec - tvT2.tv_usec;
+		}
 	}
 
 	settimeofday(&tv, nullptr);

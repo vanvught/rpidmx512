@@ -47,6 +47,8 @@ GPSParams::GPSParams(GPSParamsStore *pGPSParamsStore): m_pGPSParamsStore(pGPSPar
 
 	memset(&m_tTGPSParams, 0, sizeof(struct TGPSParams));
 
+	m_tTGPSParams.nModule = static_cast<uint8_t>(GPSModule::UNDEFINED);
+
 	DEBUG_EXIT
 }
 
@@ -91,6 +93,21 @@ void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
 void GPSParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
+	char moduleName[16];
+	uint32_t nLength = sizeof(moduleName) - 1;
+
+	if (Sscan::Char(pLine, GPSParamsConst::MODULE, moduleName, nLength) == Sscan::OK) {
+		moduleName[nLength] = '\0';
+		m_tTGPSParams.nModule = static_cast<uint8_t>(GPS::GetModule(moduleName));
+
+		if (m_tTGPSParams.nModule != static_cast<uint8_t>(GPSModule::UNDEFINED)) {
+			m_tTGPSParams.nSetList |= GPSParamsMask::MODULE;
+		} else {
+			m_tTGPSParams.nSetList &= ~GPSParamsMask::MODULE;
+		}
+		return;
+	}
+
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, GPSParamsConst::ENABLE, nValue8) == Sscan::OK) {
@@ -102,10 +119,13 @@ void GPSParams::callbackFunction(const char *pLine) {
 	float f;
 
 	if (Sscan::Float(pLine, GPSParamsConst::UTC_OFFSET, f) == Sscan::OK) {
-		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
 		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
 			m_tTGPSParams.fUtcOffset = f;
 			m_tTGPSParams.nSetList |= GPSParamsMask::UTC_OFFSET;
+			return;
+		} else {
+			m_tTGPSParams.fUtcOffset = 0.0;
+			m_tTGPSParams.nSetList &= ~GPSParamsMask::UTC_OFFSET;
 			return;
 		}
 	}
@@ -122,6 +142,7 @@ void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint
 
 	PropertiesBuilder builder(GPSParamsConst::FILE_NAME, pBuffer, nLength);
 
+	builder.Add(GPSParamsConst::MODULE, GPS::GetModuleName(static_cast<GPSModule>(m_tTGPSParams.nModule)), isMaskSet(GPSParamsMask::MODULE));
 	builder.Add(GPSParamsConst::ENABLE, m_tTGPSParams.nEnable, isMaskSet(GPSParamsMask::ENABLE));
 	builder.Add(GPSParamsConst::UTC_OFFSET, m_tTGPSParams.fUtcOffset, isMaskSet(GPSParamsMask::UTC_OFFSET));
 

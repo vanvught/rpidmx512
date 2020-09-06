@@ -88,7 +88,7 @@ void notmain(void) {
 		gpsParams.Dump();
 	}
 
-	GPSTimeClient gps(gpsParams.GetUtcOffset());
+	GPSTimeClient gps(gpsParams.GetUtcOffset(), gpsParams.GetModule());
 	gps.SetGPSDisplay(&networkHandlerOled);
 	gps.Start();
 	gps.Print();

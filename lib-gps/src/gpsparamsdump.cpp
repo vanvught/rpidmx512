@@ -39,12 +39,17 @@
 
 #include "gpsparams.h"
 #include "gpsparamsconst.h"
+#include "gps.h"
 
 #include "debug.h"
 
 void GPSParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, GPSParamsConst::FILE_NAME);
+
+	if (isMaskSet(GPSParamsMask::MODULE)) {
+		printf(" %s=%d [%s]\n", GPSParamsConst::MODULE, static_cast<int>(m_tTGPSParams.nModule), GPS::GetModuleName(static_cast<GPSModule>(m_tTGPSParams.nModule)));
+	}
 
 	if (isMaskSet(GPSParamsMask::ENABLE)) {
 		printf(" %s=%d [%s]\n", GPSParamsConst::ENABLE, static_cast<int>(m_tTGPSParams.nEnable), BOOL2STRING::Get(m_tTGPSParams.nEnable));

@@ -38,6 +38,7 @@
 enum class NtpClientStatus {
 	IDLE,
 	FAILED,
+	STOPPED,
 	WAITING
 };
 
@@ -54,6 +55,7 @@ public:
 	NtpClient(uint32_t nServerIp = 0);
 
 	void Start();
+	void Stop();
 	void Run();
 
 	void Print();

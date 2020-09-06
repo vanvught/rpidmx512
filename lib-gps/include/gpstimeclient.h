@@ -30,7 +30,7 @@
 
 class GPSTimeClient: public GPS {
 public:
-	GPSTimeClient(float fUtcOffset);
+	GPSTimeClient(float fUtcOffset, GPSModule module);
 
 	void Start();
 	void Run();
