@@ -2,7 +2,7 @@
  * @file arm_dump_page_table.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,9 @@
 
 #include <stdint.h>
 #include <stdio.h>
+
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
 
 #include "arm/synchronize.h"
 

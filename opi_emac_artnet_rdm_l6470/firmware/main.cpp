@@ -31,6 +31,8 @@
 #include "networkh3emac.h"
 #include "ledblink.h"
 
+#include "ntpclient.h"
+
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "display7segment.h"
@@ -204,6 +206,16 @@ void notmain(void) {
 	nw.Init();
 #endif
 	nw.Print();
+
+	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
+	ntpClient.Start();
+	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 

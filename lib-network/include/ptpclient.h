@@ -42,7 +42,6 @@ public:
 	PtpClient();
 
 	void Start();
-	void Stop();
 	void Run();
 
 	void Print();

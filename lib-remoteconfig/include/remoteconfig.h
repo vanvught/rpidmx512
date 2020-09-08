@@ -101,6 +101,7 @@ enum TTxtFile {
 #endif
 	TXT_FILE_SHOW,
 	TXT_FILE_SERIAL,
+	TXT_FILE_GPS,
 	TXT_FILE_LAST
 };
 
@@ -189,42 +190,55 @@ private:
 #if defined (ARTNET_NODE)
 	void HandleGetArtnetTxt(uint32_t& nSize);
 #endif
+
 #if defined (E131_BRIDGE)
 	void HandleGetE131Txt(uint32_t& nSize);
 #endif
+
 #if defined (OSC_SERVER)
 	void HandleGetOscTxt(uint32_t& nSize);
 #endif
+
 #if defined (DMXSEND)
 	void HandleGetParamsTxt(uint32_t& nSize);
 #endif
+
 #if defined (PIXEL)
 	void HandleGetDevicesTxt(uint32_t& nSize);
 #endif
+
 #if defined (LTC_READER)
 	void HandleGetLtcTxt(uint32_t& nSize);
 	void HandleGetLtcDisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
+	void HandleGetGpsTxt(uint32_t& nSize);
 #endif
+
 #if defined (DMX_MONITOR)
 	void HandleGetMonTxt(uint32_t& nSize);
 #endif
+
 #if defined (OSC_CLIENT)
 	void HandleGetOscClntTxt(uint32_t& nSize);
 #endif
+
 #if defined(DISPLAY_UDF)
 	void HandleGetDisplayTxt(uint32_t& nSize);
 #endif
+
 #if defined(STEPPER)
 	void HandleGetSparkFunTxt(uint32_t& nSize);
 	void HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize);
 #endif
+
 #if defined(SHOWFILE)
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
+
 #if defined (DMXSERIAL)
 	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
+
 #if defined (RDM_RESPONDER)
 #endif
 
@@ -234,43 +248,56 @@ private:
 #if defined (ARTNET_NODE)
 	void HandleTxtFileArtnet();
 #endif
+
 #if defined (E131_BRIDGE)
 	void HandleTxtFileE131();
 #endif
+
 #if defined (OSC_SERVER)
 	void HandleTxtFileOsc();
 #endif
+
 #if defined (DMXSEND)
 	void HandleTxtFileParams();
 #endif
+
 #if defined (PIXEL)
 	void HandleTxtFileDevices();
 #endif
+
 #if defined (LTC_READER)
 	void HandleTxtFileLtc();
 	void HandleTxtFileLtcDisplay();
 	void HandleTxtFileTCNet();
+	void HandleTxtFileGps();
 #endif
+
 #if defined (DMX_MONITOR)
 	void HandleTxtFileMon();
 #endif
+
 #if defined (OSC_CLIENT)
 	void HandleTxtFileOscClient();
 #endif
+
 #if defined(DISPLAY_UDF)
 	void HandleTxtFileDisplay();
 #endif
+
 #if defined(STEPPER)
 	void HandleTxtFileSparkFun();
 	void HandleTxtFileMotor(uint32_t nMotorIndex);
 #endif
+
 #if defined(SHOWFILE)
 	void HandleTxtFileShow();
 #endif
+
 #if defined (DMXSERIAL)
 	void HandleTxtFileSerial();
 #endif
-#if defined (RDM_RESPONDER)
+
+	#if defined (RDM_RESPONDER)
 #endif
 
 	void HandleDisplaySet();

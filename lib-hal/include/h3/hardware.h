@@ -31,7 +31,8 @@
 
 #include "hardware.h"
 
-#include "c/sys_time.h"
+#include "hwclock.h"
+
 #include "c/hardware.h"
 
 #include "h3.h"
@@ -39,12 +40,6 @@
 #include "h3_thermal.h"
 
 #include "reboothandler.h"
-
-enum TSocType {
-	SOC_TYPE_H2_PLUS,
-	SOC_TYPE_H3,
-	SOC_TYPE_UNKNOWN
-};
 
 class Hardware {
 public:
@@ -94,10 +89,6 @@ public:
 
 	bool PowerOff() {
 		return false;
-	}
-
-	void SetSysTime(time_t nTime) {
-		sys_time_set_systime(nTime);
 	}
 
 	bool SetTime(const struct tm *pTime);
@@ -150,6 +141,7 @@ public:
 	}
 
 private:
+	HwClock m_HwClock;
 	RebootHandler *m_pRebootHandler{nullptr};
 	bool m_bIsWatchdog{false};
 

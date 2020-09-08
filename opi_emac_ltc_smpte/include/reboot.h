@@ -37,6 +37,8 @@
 #include "ltcdisplayws28xx.h"
 
 #include "network.h"
+#include "ntpclient.h"
+#include "hwclock.h"
 
 #include "tcnet.h"
 
@@ -46,6 +48,7 @@ class Reboot: public RebootHandler {
 public:
 	Reboot(ltc::source tSource) :m_tSource(tSource) {
 	}
+
 	~Reboot(void) {
 	}
 
@@ -58,6 +61,10 @@ public:
 			break;
 		default:
 			break;
+		}
+
+		if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED) && (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+			HwClock::Get()->SysToHc();
 		}
 
 		if (LtcOutputs::Get()->IsActiveMax7219()) {

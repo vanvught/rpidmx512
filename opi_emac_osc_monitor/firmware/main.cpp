@@ -94,7 +94,7 @@ void notmain(void) {
 	nw.Print();
 
 	NtpClient ntpClient;
-	ntpClient.Init();
+	ntpClient.Start();
 	ntpClient.Print();
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);

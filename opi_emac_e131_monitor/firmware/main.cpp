@@ -102,8 +102,13 @@ void notmain(void) {
 
 	NtpClient ntpClient;
 	ntpClient.SetNtpClientDisplay(&displayUdfNetworkHandler);
-	ntpClient.Init();
+	ntpClient.Start();
 	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 

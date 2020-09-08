@@ -40,15 +40,16 @@
 # include "../debug/i2cdetect.h"
 #endif
 
-#if defined(ORANGE_PI)
-#elif defined(ORANGE_PI_ONE)
-#else
- #error Platform not supported
-#endif
-
 namespace soc {
-	static constexpr char NAME[2][4] = { "H2+", "H3\0" };
-	static constexpr uint8_t NAME_LENGTH[2] = { 3, 2 };
+#if defined(ORANGE_PI)
+	static constexpr char NAME[] = "H2+";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+#elif defined(ORANGE_PI_ONE)
+	static constexpr char NAME[] = "H3";
+	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+#else
+# error Platform not supported
+#endif
 }
 
 namespace cpu {
@@ -75,6 +76,9 @@ Hardware::Hardware() {
 #ifndef NDEBUG
 	I2cDetect i2cdetect;
 #endif
+
+	m_HwClock.Print();
+	m_HwClock.HcToSys();
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -98,26 +102,28 @@ const char *Hardware::GetCpuName(uint8_t &nLength) {
 }
 
 const char *Hardware::GetSocName(uint8_t &nLength) {
-#if defined(ORANGE_PI)
-	nLength = soc::NAME_LENGTH[0];
-	return soc::NAME[0];
-#else
-	nLength = soc::NAME_LENGTH[1];
-	return soc::NAME[1];
-#endif
+	nLength = soc::NAME_LENGTH;
+	return soc::NAME;
 }
 
 bool Hardware::SetTime(const struct tm *pTime) {
-	hardware_rtc_set(pTime);
+	rtc_time rtc_time;
+
+	rtc_time.tm_sec = pTime->tm_sec;
+	rtc_time.tm_min = pTime->tm_min;
+	rtc_time.tm_hour = pTime->tm_hour;
+	rtc_time.tm_mday = pTime->tm_mday;
+	rtc_time.tm_mon = pTime->tm_mon;
+	rtc_time.tm_year = pTime->tm_year;
+
+	m_HwClock.Set(&rtc_time);
+
 	return true;
 }
 
 void Hardware::GetTime(struct tm *pTime) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(0);
-    local_time = localtime(&ltime);
+	time_t ltime = time(nullptr);
+	const struct tm *local_time = localtime(&ltime);
 
     pTime->tm_year = local_time->tm_year;
     pTime->tm_mon = local_time->tm_mon ;

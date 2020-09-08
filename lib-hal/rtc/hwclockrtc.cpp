@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #include <cassert>
 
 #include "hwclock.h"
@@ -63,7 +59,20 @@ static constexpr uint8_t DS3231 = 0x68;
 using namespace rtc;
 
 void HwClock::RtcProbe() {
-	if (HAL_I2C::IsConnected(i2caddress::MCP7941X, hal::i2c::NORMAL_SPEED)) {
+	DEBUG_ENTRY
+
+	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::NORMAL_SPEED));
+	FUNC_PREFIX(i2c_set_address(i2caddress::MCP7941X));
+
+	char registers[1];
+	registers[0] = reg::YEAR;
+
+	// The I2C bus is not stable at cold start? These dummy write/read helps.
+	// This needs some more investigation for what is really happening here.
+	FUNC_PREFIX(i2c_write(registers, 1));
+	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+
+	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		m_bIsConnected = true;
 		m_nType = MCP7941X;
 		m_nAddress = i2caddress::MCP7941X;
@@ -72,7 +81,14 @@ void HwClock::RtcProbe() {
 		return;
 	}
 
-	if (HAL_I2C::IsConnected(i2caddress::DS3231, hal::i2c::NORMAL_SPEED)) {
+	FUNC_PREFIX(i2c_set_address(i2caddress::DS3231));
+
+	registers[0] = reg::YEAR;
+
+	FUNC_PREFIX(i2c_write(registers, 1));
+	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+
+	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		m_bIsConnected = true;
 		m_nType = DS3231;
 		m_nAddress = i2caddress::DS3231;

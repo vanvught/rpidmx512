@@ -1,0 +1,10 @@
+#
+DEFINES = LTC_READER
+#
+LIBS = gps ltc tcnet artnet midi ws28xxdisplay ws28xx 
+#
+SRCDIR = firmware lib 
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

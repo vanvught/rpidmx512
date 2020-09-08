@@ -24,6 +24,19 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/*
+ * https://github.com/u-boot/u-boot/blob/master/drivers/video/sunxi/sunxi_dw_hdmi.c
+ *
+ * Optimized for HDMI/DVI fixed resolution and now can be compiled with
+ * -Wpedantic -Wsign-conversion
+ *
+ */
+// SPDX-License-Identifier: GPL-2.0+
+/*
+ * Allwinner DW HDMI bridge
+ *
+ * (C) Copyright 2017 Jernej Skrabec <jernej.skrabec@siol.net>
+ */
 
 #include <stdint.h>
 #include <string.h>

@@ -29,6 +29,8 @@
 #include "h3_ccu.h"
 #include "h3_sid.h"
 
+#include "debug.h"
+
 #define CTRL1_ADC_CALI_EN			(1U << 17)
 
 #define CTRL2_SENSOR_EN				(1U << 0)

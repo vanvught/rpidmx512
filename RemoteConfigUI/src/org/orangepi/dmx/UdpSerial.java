@@ -20,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.JRadioButton;
 
 public class UdpSerial extends JDialog {
 	private static final long serialVersionUID = -4391872265315903050L;
@@ -34,8 +35,10 @@ public class UdpSerial extends JDialog {
 	private JTextField textIPAddress;
 	private JButton btnConnect;
 	private JTextArea textArea;
+	private JRadioButton rdbtnNewRadioButton;
 	
-
+	private volatile boolean isPause = false;
+		
 	/**
 	 * Launch the application.
 	 */
@@ -88,22 +91,26 @@ public class UdpSerial extends JDialog {
 		btnConnect = new JButton("Connect");
 		
 		JScrollPane scrollPane = new JScrollPane();
+		
+		rdbtnNewRadioButton = new JRadioButton("Pause");
 
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+					.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 						.addComponent(scrollPane, GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
-						.addGroup(groupLayout.createSequentialGroup()
+						.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
 							.addComponent(lblNewLabel)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(textIPAddress, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(btnConnect))
-						.addGroup(Alignment.TRAILING, groupLayout.createSequentialGroup()
-							.addComponent(textFieldCmd, GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+							.addComponent(btnConnect)
+							.addGap(74)
+							.addComponent(rdbtnNewRadioButton))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(textFieldCmd, GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE)
 							.addGap(9)))
 					.addContainerGap())
 		);
@@ -112,6 +119,7 @@ public class UdpSerial extends JDialog {
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(15)
 					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(rdbtnNewRadioButton)
 						.addComponent(lblNewLabel, GroupLayout.PREFERRED_SIZE, 17, GroupLayout.PREFERRED_SIZE)
 						.addComponent(textIPAddress, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addComponent(btnConnect))
@@ -150,6 +158,16 @@ public class UdpSerial extends JDialog {
 			}
 		});
 		
+		rdbtnNewRadioButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+					if (rdbtnNewRadioButton.isSelected()) {
+						isPause = true;
+					} else {
+						isPause = false;
+					}
+			}
+		});
+		
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -159,7 +177,7 @@ public class UdpSerial extends JDialog {
 						btnConnect.setEnabled(false);
 						textFieldCmd.setEditable(true);
 
-						Thread t = new Thread(new Runnable() {
+						 Thread t = new Thread(new Runnable() {
 							public void run() {
 								try {
 									startServer();
@@ -188,9 +206,11 @@ public class UdpSerial extends JDialog {
 									try {
 										DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 										serverSocket.receive(receivePacket);
-										String str = new String( receivePacket.getData(), 0, receivePacket.getLength() ) + newline;
-										textArea.append(str);
-										textArea.setCaretPosition(textArea.getDocument().getLength());
+										if (!isPause) {
+											String str = new String( receivePacket.getData(), 0, receivePacket.getLength() ) + newline;
+											textArea.append(str);
+											textArea.setCaretPosition(textArea.getDocument().getLength());
+										}
 									} catch (Exception e) {
 										e.printStackTrace();
 									}

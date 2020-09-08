@@ -24,11 +24,6 @@
  * THE SOFTWARE.
  */
 
-// FIXME Remove when finished
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <time.h>
@@ -65,6 +60,7 @@ void h3_board_dump(void);
 void h3_dump_memory_mapping(void);
 void h3_ccu_pll_dump(void);
 void arm_dump_memmap(void);
+void arm_dump_page_table(void);
 }
 #endif
 
@@ -102,13 +98,9 @@ static constexpr auto LINKER = sizeof(arg::LINKER) - 1;
 
 namespace networktime {
 namespace arg {
-static constexpr char START[] = "start";
-static constexpr char STOP[] = "stop";
 static constexpr char PRINT[] = "print";
 }  // namespace arg
 namespace length {
-static constexpr auto START = sizeof(arg::START) - 1;
-static constexpr auto STOP = sizeof(arg::STOP) - 1;
 static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
 }  // namespace length
 }  // namespace networktime
@@ -416,16 +408,6 @@ void Shell::CmdMem() {
 void Shell::CmdNtp() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
-	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
-		//NtpClient::Get()->Start(); //TODO Implement
-		return;
-	}
-
-	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
-		//NtpClient::Get()->Stop(); //TODO Implement
-		return;
-	}
-
 	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
 		NtpClient::Get()->Print();
 		return;
@@ -436,16 +418,6 @@ void Shell::CmdNtp() {
 
 void Shell::CmdPtp() {
 	const auto nArgv0Length = m_nArgvLength[0];
-
-	if ((nArgv0Length == networktime::length::START) && (memcmp(m_Argv[0], networktime::arg::START, networktime::length::START) == 0)) {
-		//TODO Implement
-		return;
-	}
-
-	if ((nArgv0Length == networktime::length::STOP) && (memcmp(m_Argv[0], networktime::arg::STOP, networktime::length::STOP) == 0)) {
-		//TODO Implement
-		return;
-	}
 
 	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
 		//TODO Implement

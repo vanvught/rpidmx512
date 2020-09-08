@@ -30,7 +30,7 @@
 #include "timesync.h"
 #include "artnettimesync.h"
 
-#include "c/hardware.h"
+#include "hardware.h"
 #include "console.h"
 
 #define ROW		2
@@ -70,7 +70,7 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	hw_time.tm_mon = pArtNetTimeSync->tm_mon;
 	hw_time.tm_year = (pArtNetTimeSync->tm_year_hi << 8) +  pArtNetTimeSync->tm_year_lo;
 
-	hardware_rtc_set(&hw_time);
+	Hardware::Get()->SetTime(&hw_time);
 
 	itoa_base10(hw_time.tm_hour, &timesync[0]);
 	itoa_base10(hw_time.tm_min, &timesync[3]);
