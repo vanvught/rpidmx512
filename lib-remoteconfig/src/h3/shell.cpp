@@ -54,6 +54,7 @@ static constexpr TCommands cmd_table[] = {
 		{ "mem" , 2},
 		{ "ntp" , 1},
 		{ "ptp" , 1},
+		{ "gps" , 1},
 #endif
 		{ "?", 0 }
 };
@@ -248,6 +249,9 @@ void Shell::Run() {
 			break;
 		case CmdIndex::PTP:
 			CmdPtp();
+			break;
+		case CmdIndex::GPS:
+			CmdGps();
 			break;
 #endif
 		case CmdIndex::HELP:

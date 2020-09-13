@@ -100,7 +100,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
 		return false;
 	}
 
-	printf("TFTP started ...\n");
+	printf("TFTP started\n");
 	Display::Get()->TextStatus("TFTP Started", Display7SegmentMessage::INFO_TFTP_STARTED);
 
 	m_nFileSize = 0;
@@ -113,6 +113,8 @@ bool TFTPFileServer::FileClose() {
 	DEBUG_ENTRY
 
 	m_bDone = true;
+
+	printf("TFTP ended\n");
 	Display::Get()->TextStatus("TFTP Ended", Display7SegmentMessage::INFO_TFTP_ENDED);
 
 	DEBUG_EXIT

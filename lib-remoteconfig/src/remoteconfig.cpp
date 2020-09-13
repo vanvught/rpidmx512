@@ -866,7 +866,6 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		m_tRemoteConfigHandleMode = REMOTE_CONFIG_HANDLE_MODE_TXT;
 		memcpy(m_pUdpBuffer, pBuffer, nBufferLength);
 		m_nBytesReceived = nBufferLength;
-		nLength = nBufferLength;
 		i = GetIndex(&m_pUdpBuffer[1], nBufferLength);
 	} else {
 		return;
@@ -1474,7 +1473,7 @@ void RemoteConfig::HandleTftpSet() {
 	}
 
 	if (m_bEnableTFTP && (m_pTFTPFileServer == nullptr)) {
-		printf("Create TFTP Server\n");
+		puts("Create TFTP Server");
 
 		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
 		assert(m_pTFTPBuffer != nullptr);
@@ -1489,9 +1488,6 @@ void RemoteConfig::HandleTftpSet() {
 		bool bSucces = true;
 
 		if (m_pTFTPFileServer->isDone()) {
-#ifndef NDEBUG
-			debug_dump(m_pTFTPBuffer, 512);
-#endif
 			bSucces = SpiFlashInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
 
 			if (!bSucces) {
@@ -1499,7 +1495,7 @@ void RemoteConfig::HandleTftpSet() {
 			}
 		}
 
-		printf("Delete TFTP Server\n");
+		puts("Delete TFTP Server");
 
 		delete m_pTFTPFileServer;
 		m_pTFTPFileServer = nullptr;
