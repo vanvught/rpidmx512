@@ -26,12 +26,8 @@
  */
 
 #ifdef NDEBUG
-#undef NDEBUG
+#undef NDEBUG  // FIXME Remove #undef NDEBUG
 #endif
-
-/*
- * PoC Code -> Do not use in production
- */
 
 #include <stdint.h>
 #include <string.h>
@@ -153,23 +149,13 @@ void GPS::SetDate(int32_t nDate) {
 	}
 }
 
-const struct tm* GPS::GetLocalDateTime() {
-	time_t t = mktime(&m_Tm);
-
-	t += m_nUtcOffset;
-
-	//m_IsTimeUpdated = m_IsDateUpdated = false;
-
-	return localtime(&t);
-}
-
 void GPS::Start() {
 	DEBUG_ENTRY
 
 	UartInit();
 
 	if (m_tModule < GPSModule::UNDEFINED) {
-		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)]);
+		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
 		UartSetBaud(115200);
 
 		const uint32_t nMillis = Hardware::Get()->Millis();
@@ -205,7 +191,7 @@ void GPS::Run() {
 		return;
 	}
 
-	DumpSentence(m_pSentence);
+	//DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 

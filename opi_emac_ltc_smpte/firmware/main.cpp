@@ -28,7 +28,6 @@
 #include <string.h>
 #include <assert.h>
 
-
 #include "hardware.h"
 #include "networkh3emac.h"
 #include "ledblink.h"
@@ -58,7 +57,6 @@
 #include "tcnetdisplay.h"
 
 #include "ntpserver.h"
-#include "ntpclient.h"
 
 #include "display.h"
 #include "ltcdisplaymax7219.h"
@@ -70,8 +68,6 @@
 #include "mcpbuttonsconst.h"
 
 #include "ltcoscserver.h"
-
-#include "ntpserver.h"
 
 #include "h3/ltc.h"
 
@@ -90,9 +86,14 @@
 // LLRP Only Device
 #include "rdmnetllrponly.h"
 #include "rdm_e120.h"
-
 // LLRP Handler
 #include "factorydefaults.h"
+
+// System Time
+#include "ntpclient.h"
+#include "gpstimeclient.h"
+#include "gpsparams.h"
+#include "storegps.h"
 
 // Reboot handler
 #include "reboot.h"
@@ -111,20 +112,6 @@ void notmain(void) {
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-
-	StoreLtc storeLtc;
-	LtcParams ltcParams(&storeLtc);
-
-	TLtcDisabledOutputs tLtcDisabledOutputs;
-	TLtcTimeCode tStartTimeCode;
-	TLtcTimeCode tStopTimeCode;
-
-	if (ltcParams.Load()) {
-		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
-		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
-		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
-		ltcParams.Dump();
-	}
 
 	Ltc7segment leds;
 
@@ -154,6 +141,23 @@ void notmain(void) {
 	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
+
+		const time_t rawtime = time(nullptr);
+		printf(asctime(localtime(&rawtime)));
+	}
+
+	StoreLtc storeLtc;
+	LtcParams ltcParams(&storeLtc);
+
+	TLtcDisabledOutputs tLtcDisabledOutputs;
+	TLtcTimeCode tStartTimeCode;
+	TLtcTimeCode tStopTimeCode;
+
+	if (ltcParams.Load()) {
+		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
+		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
+		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
+		ltcParams.Dump();
 	}
 
 	LtcReader ltcReader(&tLtcDisabledOutputs);
@@ -330,7 +334,31 @@ void notmain(void) {
 	}
 
 	/**
-	 * NTP Server is running when the NTP Client is not running (stopped)
+	 * The GPS Time client is running when enabled AND source = System-Time
+	 * The NTP Client is stopped.
+	 */
+
+	GPSParams gpsParams(new StoreGPS);
+
+	if ((ltcSource == ltc::source::SYSTIME)) {
+		if (gpsParams.Load()) {
+			gpsParams.Dump();
+		}
+	}
+
+	const bool bRunGpsTimeClient = ((ltcSource == ltc::source::SYSTIME) && (gpsParams.IsEnabled()));
+
+	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
+
+	if (bRunGpsTimeClient) {
+		ntpClient.Stop();
+
+		gpsTimeClient.Start();
+		gpsTimeClient.Print();
+	}
+
+	/**
+	 * When the NTP Server is enabled then the NTP Client is not running (stopped)
 	 */
 
 	const bool bRunNtpServer = ltcParams.IsNtpEnabled();
@@ -405,10 +433,20 @@ void notmain(void) {
 
 	printf("Source : %s\n", McpButtonsConst::SOURCE[ltcSource]);
 
-	// OLED display
-
 	display.ClearLine(4);
 	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
+
+	if (ltcSource == ltc::source::SYSTIME) {
+		display.SetCursorPos(17,3);
+		if (bRunGpsTimeClient) {
+			display.PutString("GPS");
+		} else if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED)
+				&& (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+			display.PutString("NTP");
+		} else if (HwClock::Get()->IsConnected()) {
+			display.PutString("RTC");
+		}
+	}
 
 	if (ltcSource == ltc::source::TCNET) {
 		TCNetDisplay::Show();
@@ -444,10 +482,14 @@ void notmain(void) {
 			break;
 		case ltc::source::SYSTIME:
 			sysTimeReader.Run();
-			if (bRunNtpServer) {
-				HwClock::Get()->Run(true);
+			if (!bRunGpsTimeClient) {
+				if (bRunNtpServer) {
+					HwClock::Get()->Run(true);
+				} else {
+					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == NtpClientStatus::FAILED); // No need to check for STOPPED
+				}
 			} else {
-				HwClock::Get()->Run(!(ntpClient.GetStatus() != NtpClientStatus::FAILED));
+				gpsTimeClient.Run();
 			}
 			break;
 		default:
@@ -473,7 +515,7 @@ void notmain(void) {
 		if (bRunNtpServer) {
 			ntpServer.Run();
 		} else {
-			ntpClient.Run();
+			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
 		}
 
 		if (tLtcDisabledOutputs.bDisplay) {

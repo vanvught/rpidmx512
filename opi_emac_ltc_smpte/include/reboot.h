@@ -38,6 +38,7 @@
 
 #include "network.h"
 #include "ntpclient.h"
+#include "gpstimeclient.h"
 #include "hwclock.h"
 
 #include "tcnet.h"
@@ -63,7 +64,9 @@ public:
 			break;
 		}
 
-		if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED) && (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+		if (((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED)
+				&& (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED))
+				|| (GPSTimeClient::Get()->GetStatus() == GPSStatus::VALID)) {
 			HwClock::Get()->SysToHc();
 		}
 

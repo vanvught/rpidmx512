@@ -21,10 +21,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <sys/time.h>
 
@@ -33,7 +29,7 @@
 #include "hardware.h"
 
 #include "h3_gpio.h"
-#include "board/h3_opi_zero.h"
+#include "h3_board.h"
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -100,8 +96,8 @@ void GPSTimeClient::Run() {
 	if (s_Status == Status::WAITING_TIMEOUT) {
 		const uint32_t nMillis = Hardware::Get()->Millis();
 
-		if (__builtin_expect(((nMillis - s_nLastUpdateMillis) < (150 * 1000)), 1)) {
-			__disable_fiq(); //TODO Can this be done different?
+		if (__builtin_expect(((nMillis - s_nLastUpdateMillis) < (3600 * 1000)), 1)) {
+			__disable_fiq(); //TODO Can this be done different? I am not happy now ;)
 			return;
 		}
 

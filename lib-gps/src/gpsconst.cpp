@@ -31,12 +31,6 @@ const char GPSConst::MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][module:
 //		"Adafruit"
 };
 
-//const char GPSConst::BAUD_9600[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-//		"$PCAS01,1*1D\r\n",
-//		"$,*00\r\n",
-//		"$,*00\r\n"
-//};
-
 const char GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
 		"$PCAS01,5*19\r\n",
 //		"$,*00\r\n",

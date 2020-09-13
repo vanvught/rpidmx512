@@ -46,7 +46,6 @@ enum class GPSModule {
 struct GPSConst {
 	static const char MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][gps::module::MAX_NAME_LENGTH];
 
-//	static const char BAUD_9600[static_cast<unsigned>(GPSModule::UNDEFINED)][gps::nmea::MAX_SENTENCE_LENGTH];
 	static const char BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][gps::nmea::MAX_SENTENCE_LENGTH];
 };
 
