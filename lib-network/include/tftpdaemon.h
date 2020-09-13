@@ -65,16 +65,16 @@ private:
 		WRQ_SEND_ACK,
 		WRQ_RECV_PACKET
 	};
-	TFTPState m_nState;
-	int m_nIdx;
+	TFTPState m_nState{TFTPState::INIT};
+	int m_nIdx{-1};
 	uint8_t m_Buffer[528];
-	uint32_t m_nFromIp;
-	uint16_t m_nFromPort;
-	size_t m_nLength;
-	uint16_t m_nBlockNumber;
-	size_t m_nDataLength;
-	uint16_t m_nPacketLength;
-	bool m_bIsLastBlock;
+	uint32_t m_nFromIp{0};
+	uint16_t m_nFromPort{0};
+	size_t m_nLength{0};
+	uint16_t m_nBlockNumber{0};
+	size_t m_nDataLength{0};
+	uint16_t m_nPacketLength{0};
+	bool m_bIsLastBlock{false};
 
 	static TFTPDaemon* Get() {
 		return s_pThis;

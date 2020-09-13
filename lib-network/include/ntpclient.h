@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #ifndef NTPCLIENT_H_
 #define NTPCLIENT_H_
 

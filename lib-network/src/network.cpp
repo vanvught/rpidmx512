@@ -33,20 +33,7 @@
 
 Network *Network::s_pThis = nullptr;
 
-Network::Network() :
-	m_nLocalIp(0),
-	m_nGatewayIp(0),
-	m_nNetmask(0),
-	m_IsDhcpCapable(true),
-	m_IsDhcpUsed(false),
-	m_IsZeroconfCapable(true),
-	m_IsZeroconfUsed(false),
-	m_nIfIndex(1),
-	m_nNtpServerIp(0),
-	m_fNtpUtcOffset(0),
-	m_pNetworkDisplay(nullptr),
-	m_pNetworkStore(nullptr)
-{
+Network::Network() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 

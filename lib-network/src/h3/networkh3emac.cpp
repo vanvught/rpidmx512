@@ -47,7 +47,7 @@ int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 int emac_start(bool reset_emac);
 }
 
-NetworkH3emac::NetworkH3emac(void) {
+NetworkH3emac::NetworkH3emac() {
 	DEBUG_ENTRY
 
 	strcpy(m_aIfName, "eth0");
@@ -55,7 +55,7 @@ NetworkH3emac::NetworkH3emac(void) {
 	DEBUG_EXIT
 }
 
-NetworkH3emac::~NetworkH3emac(void) {
+NetworkH3emac::~NetworkH3emac() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -113,13 +113,13 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		tIpInfo.gw.addr = m_nLocalIp;
 	}
 
-	if ((m_pNetworkDisplay != 0) && m_IsDhcpUsed) {
+	if ((m_pNetworkDisplay != nullptr) && m_IsDhcpUsed) {
 		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
 	}
 
 	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
-	if ((m_pNetworkDisplay != 0) && m_IsZeroconfUsed) {
+	if ((m_pNetworkDisplay != nullptr) && m_IsZeroconfUsed) {
 		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
 	}
 
@@ -134,10 +134,10 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::Shutdown(void) {
+void NetworkH3emac::Shutdown() {
 	DEBUG_ENTRY
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowShutdown();
 	}
 
@@ -204,7 +204,7 @@ void NetworkH3emac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLengt
 	udp_send(nHandle, reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
-void NetworkH3emac::SetDefaultIp(void) {
+void NetworkH3emac::SetDefaultIp() {
 	DEBUG_ENTRY
 
 	m_nLocalIp = 2
@@ -242,17 +242,17 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 		m_nLocalIp = nIp;
 		m_nGatewayIp = m_nLocalIp;
 
-		if (m_pNetworkStore != 0) {
+		if (m_pNetworkStore != nullptr) {
 			m_pNetworkStore->SaveIp(nIp);
 			m_pNetworkStore->SaveDhcp(false);
 		}
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowIp();
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowNetMask();
 	}
 
@@ -269,15 +269,15 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 
 	m_nNetmask = nNetmask;
 
-	if (m_pNetworkStore != 0) {
+	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveNetMask(nNetmask);
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowIp();
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowNetMask();
 	}
 
@@ -289,12 +289,12 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 
 	net_set_hostname(pHostName);
 
-	if (m_pNetworkStore != 0) {
+	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveHostName(pHostName, strlen(pHostName));
 	}
 }
 
-bool NetworkH3emac::SetZeroconf(void) {
+bool NetworkH3emac::SetZeroconf() {
 	struct ip_info tIpInfo;
 
 	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
@@ -306,23 +306,23 @@ bool NetworkH3emac::SetZeroconf(void) {
 
 		m_IsDhcpUsed = false;
 
-		if (m_pNetworkStore != 0) {
+		if (m_pNetworkStore != nullptr) {
 			m_pNetworkStore->SaveDhcp(true);	// Zeroconf is enabled only when use_dhcp=1
 		}
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowIp();
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowNetMask();
 	}
 
 	return m_IsZeroconfUsed;
 }
 
-bool NetworkH3emac::EnableDhcp(void) {
+bool NetworkH3emac::EnableDhcp() {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
@@ -333,13 +333,13 @@ bool NetworkH3emac::EnableDhcp(void) {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
 	}
 
 	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		if (m_IsZeroconfUsed) {
 			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
 		} else {
@@ -357,15 +357,15 @@ bool NetworkH3emac::EnableDhcp(void) {
 	m_nNetmask = tIpInfo.netmask.addr;
 	m_nGatewayIp = tIpInfo.gw.addr;
 
-	if (m_pNetworkStore != 0) {
+	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowIp();
 	}
 
-	if (m_pNetworkDisplay != 0) {
+	if (m_pNetworkDisplay != nullptr) {
 		m_pNetworkDisplay->ShowNetMask();
 	}
 

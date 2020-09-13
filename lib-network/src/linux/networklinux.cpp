@@ -57,10 +57,10 @@ static int snHandles[max::PORTS_ALLOWED];
  * END
  */
 
-NetworkLinux::NetworkLinux(void) {
+NetworkLinux::NetworkLinux() {
 }
 
-NetworkLinux::~NetworkLinux(void) {
+NetworkLinux::~NetworkLinux() {
 }
 
 int NetworkLinux::Init(const char *s) {
@@ -84,7 +84,7 @@ int NetworkLinux::Init(const char *s) {
  * END
  */
 
-	assert(s != NULL);
+	assert(s != nullptr);
 
 	if (IfGetByAddress(s, m_aIfName, sizeof(m_aIfName)) == 0) {
 	} else {
@@ -342,9 +342,9 @@ void NetworkLinux::LeaveGroup(int32_t nHandle, uint32_t ip) {
 }
 
 uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
-	assert(pPacket != NULL);
-	assert(pFromIp != NULL);
-	assert(pFromPort != NULL);
+	assert(pPacket != nullptr);
+	assert(pFromIp != nullptr);
+	assert(pFromPort != nullptr);
 
 	int recv_len;
 	struct sockaddr_in si_other;
@@ -396,14 +396,14 @@ bool NetworkLinux::IsDhclient(const char* if_name) {
 
 	fp = popen(cmd, "r");
 
-    if (fgets(buf, sizeof(buf), fp) == NULL) {
+    if (fgets(buf, sizeof(buf), fp) == nullptr) {
     	pclose(fp);
     	return false;
     }
 
     pclose(fp);
 
-    if ((strlen(buf) != 0) && (strstr(buf, if_name) != NULL)){
+    if ((strlen(buf) != 0) && (strstr(buf, if_name) != nullptr)){
     	return true;
     }
 
@@ -411,7 +411,7 @@ bool NetworkLinux::IsDhclient(const char* if_name) {
 }
 #endif
 
-uint32_t NetworkLinux::GetDefaultGateway(void) {
+uint32_t NetworkLinux::GetDefaultGateway() {
 	char cmd[255];
 	char buf[1024];
 	FILE *fp;
@@ -423,7 +423,7 @@ uint32_t NetworkLinux::GetDefaultGateway(void) {
 
 	fp = popen(cmd, "r");
 
-    if (fgets(buf, sizeof(buf), fp) == NULL) {
+    if (fgets(buf, sizeof(buf), fp) == nullptr) {
     	pclose(fp);
     	return 0;
     }
@@ -444,7 +444,7 @@ int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 
 	getifaddrs(&addrs);
 
-	for (iap = addrs; iap != NULL; iap = iap->ifa_next) {
+	for (iap = addrs; iap != nullptr; iap = iap->ifa_next) {
 		if (iap->ifa_addr->sa_family == AF_INET) {
 			sa = reinterpret_cast<struct sockaddr_in*>((iap->ifa_addr));
 			inet_ntop(iap->ifa_addr->sa_family,	static_cast<void*>(&(sa->sin_addr)), buf, sizeof(buf));
@@ -464,7 +464,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     int fd;
     struct ifreq ifr;
 
-    assert(pIfInterface != NULL);
+    assert(pIfInterface != nullptr);
 
     fd = socket(AF_INET, SOCK_DGRAM, 0);
 

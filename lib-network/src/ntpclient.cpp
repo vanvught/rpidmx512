@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,6 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
- */
-
-/*
- * PoC Code -> Do not use in production
  */
 
 #include <stdint.h>
@@ -215,6 +211,11 @@ void NtpClient::Start() {
 		return;
 	}
 
+	if ((m_tStatus != NtpClientStatus::IDLE) && (m_tStatus != NtpClientStatus::STOPPED)) {
+		DEBUG_EXIT
+		return;
+	}
+
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
@@ -267,6 +268,10 @@ void NtpClient::Start() {
 
 void NtpClient::Stop() {
 	DEBUG_ENTRY
+
+	if (m_tStatus == NtpClientStatus::STOPPED) {
+		return;
+	}
 
 	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
 	m_tStatus = NtpClientStatus::STOPPED;
@@ -327,7 +332,7 @@ void NtpClient::Run() {
 
 void NtpClient::PrintNtpTime(__attribute__((unused)) const char *pText, __attribute__((unused)) const struct TimeStamp *pNtpTime) {
 #ifndef NDEBUG
-	const time_t nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
+	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
 	const struct tm *pTm = localtime(&nSeconds);
 	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
 #endif

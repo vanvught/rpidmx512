@@ -98,16 +98,8 @@ struct TTFTPDataPacket {
 
 TFTPDaemon *TFTPDaemon::s_pThis = nullptr;
 
-TFTPDaemon::TFTPDaemon():
-		m_nState(TFTPState::INIT),
-		m_nIdx(-1),
-		m_nFromIp(0),
-		m_nFromPort(0),
-		m_nLength(0),
-		m_nBlockNumber(0),
-		m_nDataLength(0),
-		m_nPacketLength(0),
-		m_bIsLastBlock(false)
+TFTPDaemon::TFTPDaemon()
+		
 {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
@@ -186,7 +178,7 @@ bool TFTPDaemon::Run() {
 }
 
 void TFTPDaemon::HandleRequest() {
-	struct TTFTPReqPacket *packet = reinterpret_cast<struct TTFTPReqPacket *>(&m_Buffer);
+	auto *packet = reinterpret_cast<struct TTFTPReqPacket *>(&m_Buffer);
 
 	const uint16_t nOpCode = __builtin_bswap16(packet->OpCode);
 
@@ -257,7 +249,7 @@ void TFTPDaemon::SendError (uint16_t nErrorCode, const char *pErrorMessage) {
 }
 
 void TFTPDaemon::DoRead() {
-	struct TTFTPDataPacket *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
+	auto *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
 
 	if (m_nState == TFTPState::RRQ_SEND_PACKET) {
 		m_nDataLength = FileRead(pDataPacket->Data, max::DATA_LEN, ++m_nBlockNumber);
@@ -283,7 +275,7 @@ void TFTPDaemon::DoRead() {
 }
 
 void TFTPDaemon::HandleRecvAck() {
-	struct TTFTPAckPacket *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
+	auto *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
 
 	if (pAckPacket->OpCode == __builtin_bswap16(OP_CODE_ACK)) {
 
@@ -296,7 +288,7 @@ void TFTPDaemon::HandleRecvAck() {
 }
 
 void TFTPDaemon::DoWriteAck() {
-	struct TTFTPAckPacket *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
+	auto *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
 
 	pAckPacket->OpCode = __builtin_bswap16(OP_CODE_ACK);
 	pAckPacket->BlockNumber =  __builtin_bswap16(m_nBlockNumber);
@@ -308,7 +300,7 @@ void TFTPDaemon::DoWriteAck() {
 }
 
 void TFTPDaemon::HandleRecvData() {
-	struct TTFTPDataPacket *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
+	auto *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
 
 	if (pDataPacket->OpCode == __builtin_bswap16(OP_CODE_DATA)) {
 		m_nDataLength = m_nLength - 4;

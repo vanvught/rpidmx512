@@ -33,15 +33,15 @@ extern "C" {
 	int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 }
 
-NetworkBaremetalMacAddress::NetworkBaremetalMacAddress(void) {
+NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
 	strcpy(m_aIfName, "lo");
 }
 
-NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress(void) {
+NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress() {
 }
 
 void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
-	assert(pMacAddress != 0);
+	assert(pMacAddress != nullptr);
 
 	hardware_get_mac_address(pMacAddress);
 }
