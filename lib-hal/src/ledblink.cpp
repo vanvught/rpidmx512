@@ -40,7 +40,7 @@ enum tFreqMode {
 
 LedBlink *LedBlink::s_pThis = nullptr;
 
-LedBlink::LedBlink() : m_nFreqHz(0), m_tMode(LEDBLINK_MODE_UNKNOWN), m_pLedBlinkDisplay(nullptr) {
+LedBlink::LedBlink() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

@@ -58,9 +58,9 @@ public:
 	}
 
 private:
-	uint32_t m_nFreqHz;
-	tLedBlinkMode m_tMode;
-	LedBlinkDisplay *m_pLedBlinkDisplay;
+	uint32_t m_nFreqHz{0};
+	tLedBlinkMode m_tMode{LEDBLINK_MODE_UNKNOWN};
+	LedBlinkDisplay *m_pLedBlinkDisplay{nullptr};
 
 	static LedBlink *s_pThis;
 };

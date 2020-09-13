@@ -65,12 +65,12 @@ public:
 		}
 	}
 
-	uint32_t GetFrequency(void) {
+	uint32_t GetFrequency(void) const {
 		return m_nFreqHz;
 	}
 
 	void SetMode(tLedBlinkMode tMode);
-	tLedBlinkMode GetMode(void) {
+	tLedBlinkMode GetMode(void) const {
 		return m_tMode;
 	}
 
@@ -101,13 +101,13 @@ public:
 	}
 
 private:
-	uint32_t m_nFreqHz;
-	tLedBlinkMode m_tMode;
-	LedBlinkDisplay *m_pLedBlinkDisplay;
+	uint32_t m_nFreqHz{0};
+	tLedBlinkMode m_tMode{LEDBLINK_MODE_UNKNOWN};
+	LedBlinkDisplay *m_pLedBlinkDisplay{nullptr};
 	//
-	uint32_t m_nTicksPerSecond = 1000000 / 2;
-	int32_t m_nToggleLed = 0;
-	uint32_t m_nMicrosPrevious = 0;
+	uint32_t m_nTicksPerSecond{1000000 / 2};
+	int32_t m_nToggleLed{0};
+	uint32_t m_nMicrosPrevious{0};
 
 	static LedBlink *s_pThis;
 };

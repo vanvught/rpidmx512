@@ -67,18 +67,20 @@ namespace sysname {
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
-Hardware *Hardware::s_pThis = 0;
+Hardware *Hardware::s_pThis = nullptr;
 
 Hardware::Hardware() {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 #ifndef NDEBUG
 	I2cDetect i2cdetect;
 #endif
 
+#if !defined(DISABLE_RTC)
 	m_HwClock.Print();
 	m_HwClock.HcToSys();
+#endif
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -106,7 +108,8 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 	return soc::NAME;
 }
 
-bool Hardware::SetTime(const struct tm *pTime) {
+bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
+#if !defined(DISABLE_RTC)
 	rtc_time rtc_time;
 
 	rtc_time.tm_sec = pTime->tm_sec;
@@ -119,6 +122,9 @@ bool Hardware::SetTime(const struct tm *pTime) {
 	m_HwClock.Set(&rtc_time);
 
 	return true;
+#else
+	return false;
+#endif
 }
 
 void Hardware::GetTime(struct tm *pTime) {
