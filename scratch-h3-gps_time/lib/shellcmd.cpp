@@ -357,17 +357,17 @@ void Shell::CmdHwClock() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == hwclock::length::HCTOSYS) && (memcmp(m_Argv[0], hwclock::arg::HCTOSYS, hwclock::length::HCTOSYS) == 0)) {
-		//HwClock::Get()->HcToSys(); //TODO Implement
+		HwClock::Get()->HcToSys();
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::SYSTOHC) && (memcmp(m_Argv[0], hwclock::arg::SYSTOHC, hwclock::length::SYSTOHC) == 0)) {
-		//HwClock::Get()->SysToHc(); //TODO Implement
+		HwClock::Get()->SysToHc();
 		return;
 	}
 
 	if ((nArgv0Length == hwclock::length::PRINT) && (memcmp(m_Argv[0], hwclock::arg::PRINT, hwclock::length::PRINT) == 0)) {
-		//HwClock::Get()->Print(); //TODO Implement
+		HwClock::Get()->Print();
 		return;
 	}
 
@@ -448,7 +448,8 @@ void Shell::CmdGps() {
 	}
 
 	if ((nArgv0Length == shell::gps::length::LOCALTIME) && (memcmp(m_Argv[0], shell::gps::arg::LOCALTIME, shell::gps::length::LOCALTIME) == 0)) {
-		uart0_puts(asctime(GPS::Get()->GetLocalDateTime()));
+		const time_t t = GPS::Get()->GetLocalSeconds();
+		uart0_puts(asctime(localtime(&t)));
 		return;
 	}
 
