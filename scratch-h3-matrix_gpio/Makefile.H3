@@ -1,7 +1,7 @@
 #
-#DEFINES = 
+DEFINES = E131_BRIDGE
 #
-LIBS =
+LIBS = e131 lightset
 #
 SRCDIR = firmware lib
 
