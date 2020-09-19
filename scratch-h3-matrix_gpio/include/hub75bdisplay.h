@@ -38,6 +38,7 @@ private:
 	uint32_t m_nColumns;
 	uint32_t m_nRows;
 	uint32_t *m_pFramebuffer{0};
+	uint8_t m_TablePWM[255];
 };
 
 #endif /* HUB75BDISPLAY_H_ */

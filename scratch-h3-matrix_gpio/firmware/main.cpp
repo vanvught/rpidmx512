@@ -78,7 +78,7 @@ void notmain(void) {
 	uint32_t n = 0;
 
 	for (uint32_t nRow = 0; nRow < ROWS; nRow++) {
-		for (uint32_t nColomn = 0; nColomn < COLUMNS; nColomn++) {
+		for (uint32_t nColomn = 0; nColomn < COLUMNS; nColomn = nColomn + 8) {
 			switch (n) {
 				case 0:
 					matrix.SetPixel(nColomn, nRow, 0xFF, 0, 0);
@@ -101,6 +101,8 @@ void notmain(void) {
 		}
 	}
 
+	matrix.Dump();
+
 	E131Bridge bridge;
 
 	for (uint32_t i = 0; i < 13; i++) { // ceil(COLUMNS * ROWS / 170)
@@ -110,35 +112,38 @@ void notmain(void) {
 	bridge.SetOutput(&matrix);
 	bridge.Print();
 
-
-	//matrix.Dump();
-
 	display.ClearLine(0);
-	display.ClearLine(1);
-	display.ClearLine(3);
 
-//	int nPrevSeconds = 60; // Force initial update
+	int nPrevSeconds = 60; // Force initial update
+	uint32_t nFpsPrevious = 0;
 
 	for (;;) {
 		nw.Run();
 		remoteConfig.Run();
 		//spiFlashStore.Flash();
-		//lb.Run();
+		lb.Run();
 		//shell.Run();
 		bridge.Run();
+
+		matrix.Run();
 
 		/*
 		 * Debugging
 		 */
-		matrix.Run();
 
-//		time_t ltime = time(nullptr);
-//		const struct tm *tm = localtime(&ltime);
-//
-//		if (tm->tm_sec != nPrevSeconds) {
-//			nPrevSeconds = tm->tm_sec;
-//			display.Printf(1, "%u", matrix.GetFps());
-//		}
+		const time_t ltime = time(nullptr);
+		const struct tm *tm = localtime(&ltime);
+
+		if (tm->tm_sec != nPrevSeconds) {
+			nPrevSeconds = tm->tm_sec;
+
+			const auto nFPs = matrix.GetFps();
+
+			if (nFpsPrevious != nFPs) {
+				nFpsPrevious = nFPs;
+				display.Printf(1, "%6u", nFPs);
+			}
+		}
 	}
 }
 

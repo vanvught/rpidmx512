@@ -1,7 +1,7 @@
 #
-DEFINES = E131_BRIDGE
+DEFINES = E131_BRIDGE DO_NOT_USE_EXTERNAL_LED
 #
-LIBS = e131 lightset
+LIBS = e131
 #
 SRCDIR = firmware lib
 
