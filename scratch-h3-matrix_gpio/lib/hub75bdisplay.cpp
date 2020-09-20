@@ -1,12 +1,31 @@
-/*
- * hub75bdisplay.cpp
+/**
+ * @file hub75bdisplay.cpp
  *
+ */
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 /**
  * PoC
  */
 
-#include <assert.h>
+#include <cassert>
+#include <algorithm>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -45,24 +64,9 @@
 #define HUB75B_G2		GPIO_EXT_18		// PA18
 #define HUB75B_B2		GPIO_EXT_16		// PA19
 
-#define PWM_WIDTH		8
-
-/*
- * BAM (not PWM:)
- *
- *
- * The basic process is to
- * - blank the display,
- * - latch in the previously shifted data,
- * - update the row selects,
- * - unblank the display,
- * - shift in the next set of pixel data,
- * and then wait for an update timer to expire.
- * This is repeated four times for each row.
- * If you examine the blanking output,
- * you’ll notice that its low period doubles three times within the output period for each display row.
- * This is the result of using binary coded modulation to vary the intensity of each pixel.
- */
+namespace hub75b {
+static constexpr auto PWM_WIDTH = 16;
+}  // namespace hub75b
 
 /**
  * Timer 1
@@ -81,6 +85,8 @@ static void irq_timer1(__attribute__((unused)) uint32_t clo) {
 
 	dmb();
 }
+
+using namespace hub75b;
 
 Hub75bDisplay::Hub75bDisplay(uint32_t nColumns, uint32_t nRows): m_nColumns(nColumns), m_nRows(nRows) {
 	h3_spi_end();
@@ -136,6 +142,10 @@ Hub75bDisplay::Hub75bDisplay(uint32_t nColumns, uint32_t nRows): m_nColumns(nCol
 	for (uint32_t i = 0; i < sizeof(m_TablePWM); i++) {
 		m_TablePWM[i] = (i * PWM_WIDTH) / sizeof(m_TablePWM);
 	}
+
+	// LightSet
+	m_nLastPortId = (m_nColumns * m_nRows) / 170;
+	m_nLastPortDataLength = 3 * ((m_nColumns * m_nRows) - (m_nLastPortId * 170));
 }
 
 void Hub75bDisplay::Start() {
@@ -166,6 +176,10 @@ uint32_t Hub75bDisplay::GetFps() {
 }
 
 void Hub75bDisplay::SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	if (__builtin_expect(((nColumn >= m_nColumns) || (nRow >= m_nRows)), 0)) {
+		return;
+	}
+
 	if (nRow < (m_nRows / 2)) {
 		const uint32_t nBaseIndex = (nRow * m_nColumns * PWM_WIDTH) + nColumn;
 
@@ -227,11 +241,11 @@ void Hub75bDisplay::Run() {
 
 		for (uint32_t nPWM = 0; nPWM < PWM_WIDTH; nPWM++) {
 
-			const uint32_t nIndex = nBaseIndex + (nPWM * m_nColumns);
+			uint32_t nIndex = nBaseIndex + (nPWM * m_nColumns);
 
 			/* Shift in next data */
 			for (uint32_t i = 0; i < m_nColumns; i++) {
-				const uint32_t nValue = m_pFramebuffer[nIndex + i];
+				const uint32_t nValue = m_pFramebuffer[nIndex++];
 				// Clock high with data
 				H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_CK) | nValue;
 				// Clock low
@@ -255,7 +269,6 @@ void Hub75bDisplay::Run() {
 			nGPIO &= ~(1U << HUB75B_OE);
 			H3_PIO_PORTA->DAT = nGPIO;
 		}
-
 	}
 
 	updates_counter++;
@@ -264,10 +277,20 @@ void Hub75bDisplay::Run() {
 /**
  * DMX LightSet
  */
-void Hub75bDisplay::SetData(uint8_t nPort, const uint8_t *pData, __attribute__((unused)) uint16_t nLength) {
+void Hub75bDisplay::Print() {
+	printf("Universes : 1 to %u-%u\n", 1 + m_nLastPortId, m_nLastPortDataLength);
+}
+
+void Hub75bDisplay::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+	if (nPort < m_nLastPortId) {
+		nLength = std::min(nLength, static_cast<uint16_t>(510));
+	} else {
+		nLength = std::min(nLength, static_cast<uint16_t>(m_nLastPortDataLength));
+	}
+
 	uint32_t nIndex = 0;
 
-	for (uint32_t i = 0; i < 510; i = i + 3) {
+	for (uint32_t i = 0; i < nLength; i = i + 3) {
 
 		const uint32_t nPixelIndex = (nPort * 170U) + nIndex++;
 
@@ -275,5 +298,9 @@ void Hub75bDisplay::SetData(uint8_t nPort, const uint8_t *pData, __attribute__((
 		const uint32_t nColumn = nPixelIndex - (nRow * m_nColumns);
 
 		SetPixel(nColumn, nRow, pData[i], pData[i + 1], pData[i + 2]);
+	}
+
+	if (nPort == m_nLastPortId) {
+		// Swap buffers
 	}
 }

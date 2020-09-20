@@ -74,6 +74,7 @@ void notmain(void) {
 
 	Hub75bDisplay matrix(COLUMNS,ROWS);
 	matrix.Start();
+	matrix.Print();
 
 	uint32_t n = 0;
 
@@ -101,11 +102,11 @@ void notmain(void) {
 		}
 	}
 
-	matrix.Dump();
+//	matrix.Dump();
 
 	E131Bridge bridge;
 
-	for (uint32_t i = 0; i < 13; i++) { // ceil(COLUMNS * ROWS / 170)
+	for (uint32_t i = 0; i < matrix.GetUniverses(); i++) {
 		bridge.SetUniverse(i, E131_OUTPUT_PORT, i + 1);
 	}
 
