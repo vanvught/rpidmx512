@@ -1,0 +1,10 @@
+#
+DEFINES = ARM_ALLOW_MULTI_CORE DISABLE_RTC
+#
+LIBS = 
+#
+SRCDIR = firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:

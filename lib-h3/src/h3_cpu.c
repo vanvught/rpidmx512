@@ -102,21 +102,80 @@ void h3_cpu_off(h3_cpu_t cpuid) {
 	}
 }
 
+void h3_cpu_on(h3_cpu_t cpuid) {
+	assert(H3_CPU0 != cpuid);
+	assert(cpuid < H3_CPU_COUNT);
+
+	const uint32_t cpu = cpuid & H3_CPUS_MASK;
+
+	/* Assert the CPU core in reset */
+	H3_CPUCFG->CPU[cpu].RST = 0;
+
+	/* Assert the L1 cache in reset */
+	uint32_t reg = H3_CPUCFG->GEN_CTRL;
+	reg &= ~(1U << cpu);
+	H3_CPUCFG->GEN_CTRL = reg;
+
+	udelay(10);
+
+	volatile uint32_t *p = 0;
+
+	switch (cpu) {
+	case H3_CPU0:
+		// Do nothing
+		break;
+	case H3_CPU1:
+		p = (uint32_t *)H3_PRCM->CPU1_PWR_CLAMP;
+		break;
+	case H3_CPU2:
+		p = (uint32_t *)H3_PRCM->CPU2_PWR_CLAMP;
+		break;
+	case H3_CPU3:
+		p = (uint32_t *)H3_PRCM->CPU3_PWR_CLAMP;
+		break;
+	default:
+		break;
+	}
+
+	assert(p != 0);
+
+	*p = 0xFE;
+	udelay(20);
+	*p = 0xF8;
+	udelay(10);
+	*p = 0xE0;
+	udelay(10);
+	*p = 0x80;
+	udelay(10);
+	*p = 0x00;
+	udelay(10);
+
+	while (0x00 != *p);
+
+	/* Clear CPU power-off gating */
+	uint32_t value = H3_PRCM->CPU_PWROFF;
+	value &= ~(1U << cpu);
+	H3_PRCM->CPU_PWROFF = value;
+
+	/* Deassert the CPU core reset */
+	H3_CPUCFG->CPU[cpu].RST = 3;
+}
+
 void h3_cpu_set_clock(uint64_t clock) {
 	uint32_t value;
 
 	// Switch to 24MHz clock while changing CCU_PLL_CPUX
 	value = H3_CCU->CPU_AXI_CFG;
-	value &= (uint32_t)~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
+	value &= (uint32_t) ~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
 	value |= CPU_CLK_SRC_OSC24M;
 	H3_CCU->CPU_AXI_CFG = value;
 
 	if ((clock < CCU_PLL_CPUX_MIN_CLOCK_HZ) || (clock > CCU_PLL_CPUX_MAX_CLOCK_HZ)) {
 		// Set default
 		value = H3_CCU->PLL_CPUX_CTRL;
-		value &= (uint32_t)~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
-		value &= (uint32_t)~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
-		value &= (uint32_t)~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
 		value |= (0x10 << PLL_FACTOR_N_SHIFT);
 		H3_CCU->PLL_CPUX_CTRL = value;
 	} else {
@@ -128,7 +187,7 @@ void h3_cpu_set_clock(uint64_t clock) {
 	} while (!(value & PLL_LOCK));
 
 	value = H3_CCU->CPU_AXI_CFG;
-	value &= (uint32_t)~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
+	value &= (uint32_t) ~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
 	value |= CPU_CLK_SRC_PLL_CPUX;
 	H3_CCU->CPU_AXI_CFG = value;
 }

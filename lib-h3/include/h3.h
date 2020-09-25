@@ -643,6 +643,54 @@ typedef struct T_H3_PRCM {
 	__IO uint32_t AUDIO_CFG;		///< 0x1C0
 } H3_PRCM_TypeDef;
 
+typedef struct H3_CPUCFG {
+	__I  uint32_t RES0[0x10];			///< 0x000
+	struct {
+		__IO uint32_t RST;		///< base + 0x0
+		__IO uint32_t CTRL;		///< base + 0x4
+		__IO uint32_t STATUS;	///< base + 0x8
+		__I  uint32_t RES[0xD];	///< base + 0xc
+	} CPU[4];
+	__I  uint32_t RES1[0x11];			///< 0x140
+	__IO uint32_t GEN_CTRL;				///< 0x184
+	__IO uint32_t L2_STATUS;			///< 0x188
+	__I  uint32_t RES2;					///< 0x18c
+	__IO uint32_t EVENT_IN;				///< 0x190
+	__I  uint32_t RES3[0x3];			///< 0x194
+	__IO uint32_t SUPER_STANDBY_FLAG;	///< 0x1a0
+	__IO uint32_t PRIVATE0;				///< 0x1a4
+	__IO uint32_t PRIVATE1;				///< 0x1a8
+	__I  uint32_t RES4;					///< 0x1ac
+	__IO uint32_t CPU1_PWR_CLAMP;		///< 0x1b0
+	__IO uint32_t CPU1_PWROFF;			///< 0x1b4
+	__I  uint32_t RES5[0xB];			///< 0x1b8
+	__IO uint32_t DBG_CTRL1;			///< 0x1e4
+	__I  uint32_t RES6[0x6];			///< 0x1e8
+	__IO uint32_t IDLE_CNT0_LOW;		///< 0x200
+	__IO uint32_t IDLE_CNT0_HIGH;		///< 0x204
+	__IO uint32_t IDLE_CNT0_CTRL;		///< 0x208
+	__I  uint32_t RES8;					///< 0x20c
+	__IO uint32_t IDLE_CNT1_LOW;		///< 0x210
+	__IO uint32_t IDLE_CNT1_HIGH;		///< 0x214
+	__IO uint32_t IDLE_CNT1_CTRL;		///< 0x218
+	__I  uint32_t RES9;					///< 0x21c
+	__IO uint32_t IDLE_CNT2_LOW;		///< 0x220
+	__IO uint32_t IDLE_CNT2_HIGH;		///< 0x224
+	__IO uint32_t IDLE_CNT2_CTRL;		///< 0x228
+	__I  uint32_t RES10;				///< 0x22c
+	__IO uint32_t IDLE_CNT3_LOW;		///< 0x230
+	__IO uint32_t IDLE_CNT3_HIGH;		///< 0x234
+	__IO uint32_t IDLE_CNT3_CTRL;		///< 0x238
+	__I  uint32_t RES11;				///< 0x23c
+	__IO uint32_t IDLE_CNT4_LOW;		///< 0x240
+	__IO uint32_t IDLE_CNT4_HIGH;		///< 0x244
+	__IO uint32_t IDLE_CNT4_CTRL;		///< 0x248
+	__I  uint32_t RES12[0xD];			///< 0x24c
+	__IO uint32_t CNT64_CTRL;			///< 0x280
+	__IO uint32_t CNT64_LOW;			///< 0x284
+	__IO uint32_t CNT64_HIGH;			///< 0x288
+} H3_CPUCFG_TypeDef;
+
 typedef struct T_H3_HDMI_PHY {
 	__IO uint32_t POL;			///< 0x00
 	__I  uint32_t RES1[3];		///< 0x04
@@ -710,6 +758,7 @@ typedef struct T_H3_HDMI_PHY {
 #define H3_SPI1			((H3_SPI_TypeDef *) H3_SPI1_BASE)
 #define H3_RTC			((H3_RTC_TypeDef *) H3_RTC_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
+#define H3_CPUCFG		((H3_CPUCFG_TypeDef *) H3_CPUCFG_BASE)
 
 #define H3_HDMI_PHY		((H3_HDMI_PHY_TypeDef *) HDMI_PHY_BASE)
 
