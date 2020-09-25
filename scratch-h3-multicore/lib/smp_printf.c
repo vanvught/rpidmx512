@@ -2,14 +2,16 @@
  * smp_printf.c
  */
 
-
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "h3_spinlock.h"
+#include "arm/spinlock.h"
+
+unsigned int output_mutex = spin_unlocked;
 
 int smp_printf(const char *format, ...) {
-	h3_spinlock_lock(1);
+    /* Wait until the output spin lock is acquired */
+	spin_lock(&output_mutex);
 
 	va_list arp;
 
@@ -19,7 +21,8 @@ int smp_printf(const char *format, ...) {
 
 	va_end(arp);
 
-	h3_spinlock_unlock(1);
+    /* Leave critical section - release output spin lock */
+	spin_unlock(&output_mutex);
 
 	return i;
 }
