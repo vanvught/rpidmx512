@@ -133,6 +133,8 @@ void notmain(void) {
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
+	networkHandlerOled.ShowIp();
+
 	NtpClient ntpClient;
 	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
 	ntpClient.Start();
@@ -188,8 +190,6 @@ void notmain(void) {
 		ltcDisplayWS28xx.Init(ltcDisplayParams.GetLedType());
 		ltcDisplayWS28xx.Print();
 	}
-
-	NetworkHandlerOled::Get()->ShowIp();
 
 	ltc::source ltcSource = ltcParams.GetSource();
 
@@ -334,7 +334,7 @@ void notmain(void) {
 	}
 
 	/**
-	 * The GPS Time client is running when enabled AND source = System-Time
+	 * The GPS Time client is running when enabled AND source = System-Time AND RGB Panel is disabled
 	 * The NTP Client is stopped.
 	 */
 
@@ -346,7 +346,7 @@ void notmain(void) {
 		}
 	}
 
-	const bool bRunGpsTimeClient = ((ltcSource == ltc::source::SYSTIME) && (gpsParams.IsEnabled()));
+	const bool bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::source::SYSTIME) && tLtcDisabledOutputs.bRgbPanel);
 
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
 
@@ -417,8 +417,8 @@ void notmain(void) {
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	rdmNetLLRPOnly.Init();
-	rdmNetLLRPOnly.Print();
 	rdmNetLLRPOnly.Start();
+	rdmNetLLRPOnly.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + ltcSource);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);

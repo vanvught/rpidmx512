@@ -150,8 +150,14 @@ void LtcParams::Dump() {
 		}
 	}
 
-	if (isMaskSet(LtcParamsMask::ENABLE_WS28XX)) {
-		printf(" WS28xx is enabled\n");
+	if (isMaskSet(LtcParamsMask::RGBLEDTYPE)) {
+		if (m_tLtcParams.nRgbLedType == static_cast<uint8_t>(TLtcParamsRgbLedType::WS28XX)) {
+			printf(" WS28xx is enabled\n");
+		} else if (m_tLtcParams.nRgbLedType == static_cast<uint8_t>(TLtcParamsRgbLedType::RGBPANEL)) {
+			printf(" RGB panel is enabled\n");
+		} else {
+			printf("nRgbLedType=%u\n", m_tLtcParams.nRgbLedType);
+		}
 	}
 #endif
 }

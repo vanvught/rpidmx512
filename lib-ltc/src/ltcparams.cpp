@@ -39,6 +39,8 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
+#include "debug.h"
+
 using namespace ltc;
 
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
@@ -258,17 +260,30 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::WS28XX_ENABLE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_tLtcParams.nEnableWS28xx = 1;
-			m_tLtcParams.nDisabledOutputs |= LtcParamsMaskDisabledOutputs::MAX7219;
-			m_tLtcParams.nSetList |= LtcParamsMask::ENABLE_WS28XX;
-			m_tLtcParams.nSetList |= LtcParamsMask::DISABLED_OUTPUTS;
+			m_tLtcParams.nRgbLedType = static_cast<uint8_t>(TLtcParamsRgbLedType::WS28XX);
+			m_tLtcParams.nSetList |= LtcParamsMask::RGBLEDTYPE;
 		} else {
-			m_tLtcParams.nEnableWS28xx = 0;
-			if (!isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219)) {
-				m_tLtcParams.nDisabledOutputs &= ~LtcParamsMaskDisabledOutputs::MAX7219;
+			m_tLtcParams.nRgbLedType &= ~static_cast<uint8_t>(TLtcParamsRgbLedType::WS28XX);
+
+			if (m_tLtcParams.nRgbLedType == 0) {
+				m_tLtcParams.nSetList &= ~LtcParamsMask::RGBLEDTYPE;
 			}
-			m_tLtcParams.nSetList &= ~LtcParamsMask::ENABLE_WS28XX;
 		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::RGBPANEL_ENABLE, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_tLtcParams.nRgbLedType = static_cast<uint8_t>(TLtcParamsRgbLedType::RGBPANEL);
+			m_tLtcParams.nSetList |= LtcParamsMask::RGBLEDTYPE;
+		} else {
+			m_tLtcParams.nRgbLedType &= ~static_cast<uint8_t>(TLtcParamsRgbLedType::RGBPANEL);
+
+			if (m_tLtcParams.nRgbLedType == 0) {
+				m_tLtcParams.nSetList &= ~LtcParamsMask::RGBLEDTYPE;
+			}
+		}
+		return;
 	}
 }
 

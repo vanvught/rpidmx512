@@ -61,3 +61,5 @@ const char LtcParamsConst::OSC_ENABLE[] = "osc_enable";
 const char LtcParamsConst::OSC_PORT[] = "osc_port";
 // WS28xx Display
 const char LtcParamsConst::WS28XX_ENABLE[] = "ws28xx_enable";
+// RGB led panel
+const char LtcParamsConst::RGBPANEL_ENABLE[] = "rgbpanel_enable";

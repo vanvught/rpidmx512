@@ -64,6 +64,7 @@ struct TLtcDisabledOutputs {
 	bool bNtp;
 	bool bRtpMidi;
 	bool bWS28xx;
+	bool bRgbPanel;
 };
 
 enum TLtcTimeCodeIndex {

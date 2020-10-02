@@ -77,6 +77,9 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, so
 	m_tLtcDisabledOutputs.bArtNet |= (tSource == source::ARTNET);
 	m_tLtcDisabledOutputs.bLtc |= (tSource == source::LTC);
 	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == source::APPLEMIDI);
+	// Display's
+	m_tLtcDisabledOutputs.bRgbPanel |= ((tSource == source::LTC) || (tSource == source::MIDI));
+	m_tLtcDisabledOutputs.bMax7219 |= (!m_tLtcDisabledOutputs.bWS28xx || !m_tLtcDisabledOutputs.bRgbPanel);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
@@ -190,4 +193,5 @@ void LtcOutputs::Print() {
 	PrintDisabled(m_tLtcDisabledOutputs.bDisplay, "OLED");
 	PrintDisabled(m_tLtcDisabledOutputs.bMax7219, "Max7219");
 	PrintDisabled(m_tLtcDisabledOutputs.bWS28xx, "WS28xx");
+	PrintDisabled(m_tLtcDisabledOutputs.bRgbPanel, "RGB panel");
 }

@@ -97,12 +97,14 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LtcParamsMask::OSC_PORT));
 
 	builder.AddComment("WS28xx display");
-	builder.Add(LtcParamsConst::WS28XX_ENABLE, m_tLtcParams.nEnableWS28xx, isMaskSet(LtcParamsMask::ENABLE_WS28XX));
+	builder.Add(LtcParamsConst::WS28XX_ENABLE, m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::WS28XX, m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::WS28XX);
+
+	builder.AddComment("RGB panel");
+	builder.Add(LtcParamsConst::RGBPANEL_ENABLE, m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::RGBPANEL, m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::RGBPANEL);
 
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-
 	DEBUG_EXIT
 }
 
