@@ -68,6 +68,10 @@ COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS7+=-DRPI2
 COPS7+=$(COPS_COMMON)
 
+# Why does gcc not automatically select the correct path based on -m options?
+PLATFORM_LIBGCC:= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
+PLATFORM_LIBGCC+= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)
+
 C_OBJECTS=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
 C_OBJECTS+=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.cpp,$(BUILD)$(sdir)/%.o,$(wildcard $(sdir)/*.cpp)))
 C_OBJECTS7=$(foreach sdir,$(SRCDIR),$(patsubst $(sdir)/%.c,$(BUILD7)$(sdir)/%.o,$(wildcard $(sdir)/*.c)))
@@ -119,7 +123,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf : Makefile $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS)
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 
@@ -132,7 +136,7 @@ $(BUILD7)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS7) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD7)vectors.o
 	
 $(BUILD7)main.elf : Makefile $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
-	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS)
+	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
 	$(PREFIX)objdump -D $(BUILD7)main.elf | $(PREFIX)c++filt > $(LIST7)
 	$(PREFIX)size -A $(BUILD7)main.elf
 

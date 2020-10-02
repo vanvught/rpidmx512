@@ -42,11 +42,11 @@
 extern int console_error(const char *);
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #ifndef MIN
- #define MIN(a, b) ((a) < (b) ? (a) : (b))
+# define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 extern void emac_eth_send(void *, int);

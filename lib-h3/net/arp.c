@@ -33,7 +33,7 @@
 #include "net_debug.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 extern void arp_cache_init(void);

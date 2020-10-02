@@ -46,6 +46,9 @@ extern uint32_t __fiq_stack_top;
 extern uint32_t __irq_stack_top;
 extern uint32_t __svc_stack_top;
 extern uint32_t __sys_stack_top;
+extern uint32_t __svc_stack_top_core1;
+extern uint32_t __svc_stack_top_core2;
+extern uint32_t __svc_stack_top_core3;
 
 void __attribute__((cold)) arm_dump_memmap(void) {
 	printf("memmap\n");
@@ -61,6 +64,9 @@ void __attribute__((cold)) arm_dump_memmap(void) {
 	printf("    __irq_stack_top = %p\n", &__irq_stack_top);
 	printf("    __svc_stack_top = %p\n", &__svc_stack_top);
 	printf("    __sys_stack_top = %p\n", &__sys_stack_top);
+	printf("    __svc_stack_top_core1 = %p\n", &__svc_stack_top_core1);
+	printf("    __svc_stack_top_core2 = %p\n", &__svc_stack_top_core2);
+	printf("    __svc_stack_top_core3 = %p\n", &__svc_stack_top_core3);
 	printf("  __heap_start = %p\n", &__heap_start);
 	printf("    heap_low = %p\n", &heap_low);
 	printf("    heap_top = %p\n", &heap_top);

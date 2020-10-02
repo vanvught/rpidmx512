@@ -2,7 +2,7 @@
  * @file h3_cpu.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,20 @@
 
 	#define PLL_FACTOR_M_MASK	0x03
 	#define PLL_FACTOR_M_SHIFT	0
+	#define PLL_CTRL_M(n)		((((n) - 1) & PLL_FACTOR_M_MASK) << PLL_FACTOR_M_SHIFT)
 
 	#define PLL_FACTOR_K_MASK	0x03
 	#define PLL_FACTOR_K_SHIFT	4
+	#define PLL_CTRL_K(n)		((((n) - 1) & PLL_FACTOR_K_MASK) << PLL_FACTOR_K_SHIFT)
 
 	#define PLL_FACTOR_N_MASK	0x1F
 	#define PLL_FACTOR_N_SHIFT	8
+	#define PLL_CTRL_N(n)		((((n) - 1) & PLL_FACTOR_N_MASK) << PLL_FACTOR_N_SHIFT)
+
+	#define PLL_FACTOR_P_MASK	0x03
+	#define PLL_FACTOR_P_SHIFT	16
+	#define PLL_CTRL_P(n)		(((n) & PLL_FACTOR_P_MASK) << PLL_FACTOR_P_SHIFT)
+
 #define PLL_LOCK					(1 << 28)	// Read only, 1 indicates that the PLL has been stable
 #define PLL_ENABLE					(1 << 31)
 
@@ -176,10 +184,31 @@ void h3_cpu_set_clock(uint64_t clock) {
 		value &= (uint32_t) ~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
 		value &= (uint32_t) ~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
 		value &= (uint32_t) ~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_P_MASK << PLL_FACTOR_P_SHIFT);
 		value |= (0x10 << PLL_FACTOR_N_SHIFT);
 		H3_CCU->PLL_CPUX_CTRL = value;
 	} else {
-		//TODO Implement h3_cpu_set_clock not default
+		const uint32_t p = 0;
+		uint32_t k = 1;
+		uint32_t m = 1;
+
+		if (clock > 1152000000) {
+			k = 2;
+		} else if (clock > 768000000) {
+			k = 4;
+			m = 2;
+		}
+
+		value = H3_CCU->PLL_CPUX_CTRL;
+		value &= (uint32_t) ~(PLL_FACTOR_N_MASK << PLL_FACTOR_N_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
+		value &= (uint32_t) ~(PLL_FACTOR_P_MASK << PLL_FACTOR_P_SHIFT);
+		value |= PLL_CTRL_N(clock / (24000000 * k / m));
+		value |= PLL_CTRL_K(k);
+		value |= PLL_CTRL_M(m);
+		value |= PLL_CTRL_P(p);
+		H3_CCU->PLL_CPUX_CTRL = value;
 	}
 
 	do {
@@ -190,8 +219,4 @@ void h3_cpu_set_clock(uint64_t clock) {
 	value &= (uint32_t) ~(CPU_CLK_SRC_MASK << CPU_CLK_SRC_SHIFT);
 	value |= CPU_CLK_SRC_PLL_CPUX;
 	H3_CCU->CPU_AXI_CFG = value;
-}
-
-uint64_t h3_cpu_get_clock(void) {
-	return h3_ccu_get_pll_rate(CCU_PLL_CPUX);
 }

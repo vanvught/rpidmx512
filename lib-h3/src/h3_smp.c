@@ -1,8 +1,8 @@
 /**
- * @file smph.h
+ * @file h3_smp.c
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef SMP_H_
-#define SMP_H_
-
 #include <stdint.h>
+#include <stdbool.h>
 
-#define SMP_CORE_MASK 			3			///<
+#include "h3_smp.h"
 
-typedef void (*start_fn_t)(void);
-extern void _init_core(void);
+#include "h3.h"
+#include "h3_cpu.h"
+#include "h3_spinlock.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "arm/synchronize.h"
 
-extern uint32_t smp_get_core_number(void);
-extern void smp_start_core(uint32_t, start_fn_t);
+static volatile bool core_is_started;
+static start_fn_t start_fn;
 
-#ifdef __cplusplus
+void smp_core_main(void) {
+	start_fn_t temp_fn = start_fn;
+	dmb();
+
+	core_is_started = true;
+
+	temp_fn();
+
+	for (;;)
+		;
 }
-#endif
 
-#endif /* SMP_H_ */
+void smp_start_core(uint32_t core_number, start_fn_t start) {
+	if (core_number == 0 || core_number >= H3_CPU_COUNT) {
+		return;
+	}
+
+	h3_spinlock_lock(0);
+
+	start_fn = start;
+
+	H3_CPUCFG->PRIVATE0 = (uint32_t) _init_core;
+
+	h3_cpu_on(core_number);
+
+	core_is_started = false;
+
+	while (!core_is_started) { //TODO blocking wait
+		dmb();
+	}
+
+	h3_spinlock_unlock(0);
+}
