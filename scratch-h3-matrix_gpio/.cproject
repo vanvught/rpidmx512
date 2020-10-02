@@ -33,7 +33,6 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-remoteconfig/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-display/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
-									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/scratch-h3-matrix/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-arm/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/scratch-h3-matrix_gpio/include}&quot;"/>
@@ -92,7 +91,8 @@
 					<sourceEntries>
 						<entry excluding="lib__|firmware|lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="firmware"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="lib"/>
+						<entry excluding="h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="lib"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="lib/h3"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

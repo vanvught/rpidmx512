@@ -24,9 +24,10 @@ static const char SOFTWARE_VERSION[] = "0.0";
 
 #include "h3/shell.h"
 
-#include "hub75bdisplay.h"
+#include "rgbpanel.h"
 
 #include "e131bridge.h"
+#include "reboot.h"
 
 #define COLUMNS 64
 #define ROWS 	32
@@ -72,14 +73,14 @@ void notmain(void) {
 	 *
 	 */
 
-	Hub75bDisplay matrix(COLUMNS,ROWS);
+	RgbPanel matrix(COLUMNS,ROWS);
 	matrix.Start();
 	matrix.Print();
 
 	uint32_t n = 0;
 
 	for (uint32_t nRow = 0; nRow < ROWS; nRow++) {
-		for (uint32_t nColomn = 0; nColomn < COLUMNS; nColomn = nColomn + 8) {
+		for (uint32_t nColomn = 0; nColomn < COLUMNS; nColomn++) {
 			switch (n) {
 				case 0:
 					matrix.SetPixel(nColomn, nRow, 0xFF, 0, 0);
@@ -102,6 +103,20 @@ void notmain(void) {
 		}
 	}
 
+	matrix.Cls();
+//	matrix.PutString("Hello", 0xF0, 0xFF, 0xF0);
+//	matrix.ClearLine(2);
+	matrix.SetColon(':', 1, 0, 0xF0, 0x0, 0x0);
+	matrix.SetColon(':', 3, 0, 0xF0, 0x0, 0x0);
+	matrix.SetColon('.', 5, 0, 0xF0, 0x0, 0x0);
+	matrix.PutString("00000000", 0x70, 0x70, 0x70);
+	matrix.TextLine(3, "SMPTE", 6, 0x0F, 0x0F, 0x0);
+	matrix.TextLine(4, "Layer A", 7, 0x0F, 0x0F, 0x0);
+//	matrix.TextLine(3, "World!", 6, 0, 0x0F, 0xF0);
+//	matrix.SetCursorPos(7, 3);
+//	matrix.PutChar(':', 0xF0, 0xF0, 0xF0);
+	matrix.Show();
+
 //	matrix.Dump();
 
 	E131Bridge bridge;
@@ -111,38 +126,48 @@ void notmain(void) {
 	}
 
 	bridge.SetOutput(&matrix);
+	bridge.SetDirectUpdate(true);
 	bridge.Print();
+
+	Reboot reboot;
+	hw.SetRebootHandler(&reboot);
 
 	display.ClearLine(0);
 
 	int nPrevSeconds = 60; // Force initial update
+	uint32_t nUpdatesPrevious = 0;
 	uint32_t nFpsPrevious = 0;
+	uint32_t nShowCounterPrevious = 0;
 
 	for (;;) {
 		nw.Run();
 		remoteConfig.Run();
-		//spiFlashStore.Flash();
-		lb.Run();
-		//shell.Run();
+		spiFlashStore.Flash();
+		//lb.Run();
+		shell.Run();
 		bridge.Run();
-
-		matrix.Run();
 
 		/*
 		 * Debugging
 		 */
 
-		const time_t ltime = time(nullptr);
-		const struct tm *tm = localtime(&ltime);
+		const auto ltime = time(nullptr);
+		const auto *tm = localtime(&ltime);
 
 		if (tm->tm_sec != nPrevSeconds) {
 			nPrevSeconds = tm->tm_sec;
 
-			const auto nFPs = matrix.GetFps();
+			const auto nUpdates = matrix.GetUpdatesCounter();
+			const auto nFps = nUpdates - nUpdatesPrevious;
+			nUpdatesPrevious = nUpdates;
 
-			if (nFpsPrevious != nFPs) {
-				nFpsPrevious = nFPs;
-				display.Printf(1, "%6u", nFPs);
+			const auto nShowCounter = matrix.GetShowCounter();
+			const auto nShowUpdates = nShowCounter - nShowCounterPrevious;
+			nShowCounterPrevious = nShowCounter;
+
+			if ((nFpsPrevious != nFps) || (nShowCounterPrevious != nShowCounter)) {
+				nFpsPrevious = nFps;
+				display.Printf(1, "%6u %6u", nFps, nShowUpdates);
 			}
 		}
 	}
