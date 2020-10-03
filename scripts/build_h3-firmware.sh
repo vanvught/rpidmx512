@@ -16,7 +16,6 @@ array=('PLATFORM=ORANGE_PI' 'PLATFORM=ORANGE_PI NO_EXT_LED=1' 'PLATFORM=ORANGE_P
 
 do_build() 
 {
-	./makeall_firmware_h3.sh $1 $2 clean
 	./makeall_firmware_h3.sh $1 $2
 }
 
@@ -42,6 +41,8 @@ do
 done
 
 cd ..
+
+find . -name sofware_version_id.h | xargs rm
 
 #find . -name "*.uImage" | xargs ls -al
 find . -name "*.uImage" | xargs ls -al | wc -l
