@@ -33,7 +33,7 @@
 #include "l6470params.h"
 #include "modestore.h"
 
-class StoreMotors: public ModeParamsStore, public MotorParamsStore, public L6470ParamsStore, public ModeStore {
+class StoreMotors final: public ModeParamsStore, public MotorParamsStore, public L6470ParamsStore, public ModeStore {
 public:
 	StoreMotors();
 

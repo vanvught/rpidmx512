@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreLtc: public LtcParamsStore {
+class StoreLtc final: public LtcParamsStore {
 public:
 	StoreLtc();
 

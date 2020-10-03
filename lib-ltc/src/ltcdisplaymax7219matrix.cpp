@@ -34,7 +34,7 @@
 
 LtcDisplayMax7219Matrix *LtcDisplayMax7219Matrix::s_pThis = nullptr;
 
-LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix(void) {
+LtcDisplayMax7219Matrix::LtcDisplayMax7219Matrix() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

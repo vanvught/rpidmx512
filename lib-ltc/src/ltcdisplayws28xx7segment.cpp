@@ -2,7 +2,7 @@
  * @file ltcdisplayws28xx7segment.cpp
  */
 /*
- * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
  * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +40,7 @@ LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment;
-	assert(m_pWS28xxDisplay7Segment != 0);
+	assert(m_pWS28xxDisplay7Segment != nullptr);
 
 	DEBUG1_EXIT
 }

@@ -33,7 +33,7 @@
 
 LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = nullptr;
 
-LtcDisplayMax72197Segment::LtcDisplayMax72197Segment(void) {
+LtcDisplayMax72197Segment::LtcDisplayMax72197Segment() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

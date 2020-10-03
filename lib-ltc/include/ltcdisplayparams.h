@@ -82,23 +82,23 @@ public:
 
 	void Dump();
 
-	uint8_t GetGlobalBrightness() {
+	uint8_t GetGlobalBrightness() const {
 		return m_tLtcDisplayParams.nGlobalBrightness;
 	}
 
-	TLtcDisplayMax7219Types GetMax7219Type() {
+	TLtcDisplayMax7219Types GetMax7219Type() const {
 		return static_cast<TLtcDisplayMax7219Types>(m_tLtcDisplayParams.nMax7219Type);
 	}
 
-	uint8_t GetMax7219Intensity() {
+	uint8_t GetMax7219Intensity() const {
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
 
-	TWS28XXType GetLedType() {
+	TWS28XXType GetLedType() const {
 		return static_cast<TWS28XXType>(m_tLtcDisplayParams.nLedType);
 	}
 
-	TLtcDisplayWS28xxTypes GetWS28xxType() {
+	TLtcDisplayWS28xxTypes GetWS28xxType() const {
 		return static_cast<TLtcDisplayWS28xxTypes>(m_tLtcDisplayParams.nWS28xxType);
 	}
 
@@ -106,7 +106,7 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask)  {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tLtcDisplayParams.nSetList & nMask) == nMask;
     }
 

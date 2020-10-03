@@ -63,6 +63,8 @@ struct LtcParamsConst {
 	static const char OSC_PORT[];
 	// WS28xx Display
 	static const char WS28XX_ENABLE[];
+	// RGB led panel
+	static const char RGBPANEL_ENABLE[];
 };
 
 #endif /* LTCPARAMSCONST_H_ */

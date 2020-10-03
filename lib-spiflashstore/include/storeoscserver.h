@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreOscServer: public OSCServerParamsStore {
+class StoreOscServer final: public OSCServerParamsStore {
 public:
 	StoreOscServer();
 

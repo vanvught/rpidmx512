@@ -27,7 +27,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <mcpbuttonsconst.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -58,7 +57,6 @@
 #include "tcnetdisplay.h"
 
 #include "ntpserver.h"
-#include "ntpclient.h"
 
 #include "display.h"
 #include "ltcdisplaymax7219.h"
@@ -67,10 +65,9 @@
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
+#include "mcpbuttonsconst.h"
 
 #include "ltcoscserver.h"
-
-#include "ntpserver.h"
 
 #include "h3/ltc.h"
 
@@ -89,9 +86,14 @@
 // LLRP Only Device
 #include "rdmnetllrponly.h"
 #include "rdm_e120.h"
-
 // LLRP Handler
 #include "factorydefaults.h"
+
+// System Time
+#include "ntpclient.h"
+#include "gpstimeclient.h"
+#include "gpsparams.h"
+#include "storegps.h"
 
 // Reboot handler
 #include "reboot.h"
@@ -110,20 +112,6 @@ void notmain(void) {
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-
-	StoreLtc storeLtc;
-	LtcParams ltcParams(&storeLtc);
-
-	TLtcDisabledOutputs tLtcDisabledOutputs;
-	TLtcTimeCode tStartTimeCode;
-	TLtcTimeCode tStopTimeCode;
-
-	if (ltcParams.Load()) {
-		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
-		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
-		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
-		ltcParams.Dump();
-	}
 
 	Ltc7segment leds;
 
@@ -145,10 +133,34 @@ void notmain(void) {
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
+	networkHandlerOled.ShowIp();
+
 	NtpClient ntpClient;
 	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
-	ntpClient.Init();
+	ntpClient.Start();
 	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+
+		const time_t rawtime = time(nullptr);
+		printf(asctime(localtime(&rawtime)));
+	}
+
+	StoreLtc storeLtc;
+	LtcParams ltcParams(&storeLtc);
+
+	TLtcDisabledOutputs tLtcDisabledOutputs;
+	TLtcTimeCode tStartTimeCode;
+	TLtcTimeCode tStopTimeCode;
+
+	if (ltcParams.Load()) {
+		ltcParams.CopyDisabledOutputs(&tLtcDisabledOutputs);
+		ltcParams.StartTimeCodeCopyTo(&tStartTimeCode);
+		ltcParams.StopTimeCodeCopyTo(&tStopTimeCode);
+		ltcParams.Dump();
+	}
 
 	LtcReader ltcReader(&tLtcDisabledOutputs);
 	MidiReader midiReader(&tLtcDisabledOutputs);
@@ -178,8 +190,6 @@ void notmain(void) {
 		ltcDisplayWS28xx.Init(ltcDisplayParams.GetLedType());
 		ltcDisplayWS28xx.Print();
 	}
-
-	NetworkHandlerOled::Get()->ShowIp();
 
 	ltc::source ltcSource = ltcParams.GetSource();
 
@@ -324,14 +334,40 @@ void notmain(void) {
 	}
 
 	/**
-	 * NTP Server is running when the NTP Client is not running (stopped)
+	 * The GPS Time client is running when enabled AND source = System-Time AND RGB Panel is disabled
+	 * The NTP Client is stopped.
 	 */
 
-	const bool bRunNtpServer = ltcParams.IsNtpEnabled() && (ntpClient.GetStatus() == NtpClientStatus::STOPPED);
+	GPSParams gpsParams(new StoreGPS);
+
+	if ((ltcSource == ltc::source::SYSTIME)) {
+		if (gpsParams.Load()) {
+			gpsParams.Dump();
+		}
+	}
+
+	const bool bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::source::SYSTIME) && tLtcDisabledOutputs.bRgbPanel);
+
+	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
+
+	if (bRunGpsTimeClient) {
+		ntpClient.Stop();
+
+		gpsTimeClient.Start();
+		gpsTimeClient.Print();
+	}
+
+	/**
+	 * When the NTP Server is enabled then the NTP Client is not running (stopped)
+	 */
+
+	const bool bRunNtpServer = ltcParams.IsNtpEnabled();
 
 	NtpServer ntpServer(ltcParams.GetYear(), ltcParams.GetMonth(), ltcParams.GetDay());
 
 	if (bRunNtpServer) {
+		ntpClient.Stop();
+
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
@@ -378,12 +414,11 @@ void notmain(void) {
 
 	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
 
-//	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	rdmNetLLRPOnly.Init();
-	rdmNetLLRPOnly.Print();
 	rdmNetLLRPOnly.Start();
+	rdmNetLLRPOnly.Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + ltcSource);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
@@ -398,10 +433,20 @@ void notmain(void) {
 
 	printf("Source : %s\n", McpButtonsConst::SOURCE[ltcSource]);
 
-	// OLED display
-
 	display.ClearLine(4);
 	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
+
+	if (ltcSource == ltc::source::SYSTIME) {
+		display.SetCursorPos(17,3);
+		if (bRunGpsTimeClient) {
+			display.PutString("GPS");
+		} else if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED)
+				&& (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+			display.PutString("NTP");
+		} else if (HwClock::Get()->IsConnected()) {
+			display.PutString("RTC");
+		}
+	}
 
 	if (ltcSource == ltc::source::TCNET) {
 		TCNetDisplay::Show();
@@ -437,6 +482,15 @@ void notmain(void) {
 			break;
 		case ltc::source::SYSTIME:
 			sysTimeReader.Run();
+			if (!bRunGpsTimeClient) {
+				if (bRunNtpServer) {
+					HwClock::Get()->Run(true);
+				} else {
+					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == NtpClientStatus::FAILED); // No need to check for STOPPED
+				}
+			} else {
+				gpsTimeClient.Run();
+			}
 			break;
 		default:
 			break;
@@ -461,7 +515,7 @@ void notmain(void) {
 		if (bRunNtpServer) {
 			ntpServer.Run();
 		} else {
-			ntpClient.Run();
+			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
 		}
 
 		if (tLtcDisabledOutputs.bDisplay) {
@@ -475,7 +529,7 @@ void notmain(void) {
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
-		//
+
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();

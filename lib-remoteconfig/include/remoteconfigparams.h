@@ -72,7 +72,7 @@ public:
 
 	void Dump();
 
-	bool IsDisableRdmNetLlrpOnly() {
+	bool IsDisableRdmNetLlrpOnly() const {
 		return m_tRemoteConfigParams.bDisableRdmNetLlrpOnly;
 	}
 
@@ -81,7 +81,7 @@ public:
 private:
     void callbackFunction(const char *pLine);
     void SetBool(const uint8_t nValue, bool& nProperty, const uint32_t nMask);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
     }
 

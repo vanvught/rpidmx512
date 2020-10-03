@@ -30,7 +30,7 @@
 
 #include "spiflashstore.h"
 
-class StoreDisplayUdf: public DisplayUdfParamsStore {
+class StoreDisplayUdf final: public DisplayUdfParamsStore {
 public:
 	StoreDisplayUdf();
 
