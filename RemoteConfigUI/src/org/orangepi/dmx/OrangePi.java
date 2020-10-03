@@ -41,6 +41,7 @@ public class OrangePi {
 	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
+	private static final String GPS_TXT = "gps.txt";
 	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
 	private static final String RDM_TXT = "rdm_device.txt";
 	private static final String SPARKFUN_TXT = "sparkfun.txt";
@@ -63,6 +64,7 @@ public class OrangePi {
 	private String nodeMode = null;
 	private String nodeLtcDisplay = null;
 	private String nodeTCNet = null;
+	private String nodeGPS = null;
 	private String nodeMotors[] = {null, null, null, null, null, null, null, null};
 	private String nodeRDM = null;
 	private String nodeSparkFun = null;
@@ -77,6 +79,7 @@ public class OrangePi {
 	private String sbMode = null;
 	private String sbLtcDisplay = null;
 	private String sbTCNet = null;
+	private String sbGPS = null;
 	private String sbMotors[] = {null, null, null, null, null, null, null, null};
 	private String sbRDM = null;
 	private String sbSparkFun = null;
@@ -112,6 +115,7 @@ public class OrangePi {
 					nodeMode = MODES_TXT[3];
 					nodeLtcDisplay = LDISPLAY_TXT;
 					nodeTCNet = TCNET_TXT;
+					nodeGPS = GPS_TXT;
 				} else if (Mode[0].equals("OSC")) {
 				} else if (Mode[0].equals("Config")) {
 					//
@@ -201,6 +205,11 @@ public class OrangePi {
 				sbTCNet = doGet(txt);
 			}
 			return sbTCNet.toString();
+		} else if (isGPSTxt(txt)) {
+			if (sbGPS == null) {
+				sbGPS = doGet(txt);
+			}
+			return sbGPS.toString();	
 		} else if (isMotorTxt(txt)) {
 			int nIndex = txt.charAt(5) - '0';
 			if (sbMotors[nIndex] == null) {
@@ -303,6 +312,9 @@ public class OrangePi {
 		} else if (isTCNetTxt(txt)) {
 			sbTCNet = null;
 			bDoSave = true;
+		} else if (isGPSTxt(txt)) {
+			sbGPS = null;
+			bDoSave = true;	
 		} else if (isMotorTxt(txt)) {
 			int nMotorIndex = txt.charAt(5) - '0';
 			sbMotors[nMotorIndex] = null;
@@ -478,6 +490,13 @@ public class OrangePi {
 		return false;
 	}
 	
+	private Boolean isGPSTxt(String gps) {
+		if (gps.equals(GPS_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
 	private Boolean isMotorTxt(String motor) {
 		for (int i = 0; i < MOTORS_TXT.length; i++) {
 			if (motor.equals(MOTORS_TXT[i])) {
@@ -546,6 +565,10 @@ public class OrangePi {
 	
 	public String getNodeTCNet() {
 		return nodeTCNet;
+	}
+	
+	public String getNodeGPS() {
+		return nodeGPS;
 	}
 	
 	public String getNodeMotor(int MotorIndex) {
