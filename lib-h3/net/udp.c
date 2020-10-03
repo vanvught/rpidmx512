@@ -75,7 +75,7 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static uint32_t s_ports_allowed[MAX_PORTS_ALLOWED];
+static uint32_t s_ports_allowed[MAX_PORTS_ALLOWED] ALIGNED;
 static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
 static uint16_t s_id ALIGNED;

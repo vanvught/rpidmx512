@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #include <stddef.h>
 #include <sys/time.h>
 #include <assert.h>

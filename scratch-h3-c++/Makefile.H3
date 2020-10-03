@@ -2,7 +2,7 @@
 #
 #DEFINES = ENABLE_SPIFLASH CONSOLE_FB
 #
-LIBS =
+LIBS = gps
 #
 SRCDIR = firmware lib
 

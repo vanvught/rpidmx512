@@ -118,7 +118,29 @@ void notmain(void) {
 
 	hw.SetLed(HARDWARE_LED_ON);
 	hw.SetRebootHandler(new ArtNetReboot);
+
 	lb.SetLedBlinkDisplay(new DisplayHandler);
+
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+
+	nw.SetNetworkDisplay(&displayUdfHandler);
+#if defined (ORANGE_PI)
+	nw.SetNetworkStore(StoreNetwork::Get());
+	nw.Init(StoreNetwork::Get());
+#else
+	nw.Init();
+#endif
+	nw.Print();
+
+	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
+	ntpClient.Start();
+	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
@@ -194,27 +216,6 @@ void notmain(void) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 	} else {
 		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d]", BOARD_NAME, nMotorsConnected);
-	}
-
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
-	nw.SetNetworkDisplay(&displayUdfHandler);
-#if defined (ORANGE_PI)
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
-#else
-	nw.Init();
-#endif
-	nw.Print();
-
-	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
-	ntpClient.Start();
-	ntpClient.Print();
-
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
-		printf("Set RTC from System Clock\n");
-		HwClock::Get()->SysToHc();
 	}
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -328,6 +329,7 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+		ntpClient.Run();
 		identify.Run();
 #if defined (ORANGE_PI)
 		remoteConfig.Run();

@@ -90,43 +90,43 @@ public:
 
 	void Dump();
 
-	TWS28XXType GetLedType() {
+	TWS28XXType GetLedType() const {
 		return m_tWS28xxParams.tLedType;
 	}
 
-	uint16_t GetLedCount() {
+	uint16_t GetLedCount() const {
 		return m_tWS28xxParams.nLedCount;
 	}
 
-	uint32_t GetClockSpeedHz() {
+	uint32_t GetClockSpeedHz() const {
 		return m_tWS28xxParams.nSpiSpeedHz;
 	}
 
-	uint8_t GetGlobalBrightness() {
+	uint8_t GetGlobalBrightness() const {
 		return m_tWS28xxParams.nGlobalBrightness;
 	}
 
-	uint16_t GetDmxStartAddress() {
+	uint16_t GetDmxStartAddress() const {
 		return m_tWS28xxParams.nDmxStartAddress;
 	}
 
-	bool IsLedGrouping() {
+	bool IsLedGrouping() const {
 		return m_tWS28xxParams.bLedGrouping;
 	}
 
-	uint8_t GetActivePorts(){
+	uint8_t GetActivePorts() const {
 		return m_tWS28xxParams.nActiveOutputs;
 	}
 
-	bool UseSI5351A() {
+	bool UseSI5351A() const {
 		return m_tWS28xxParams.bUseSI5351A;
 	}
 
-	uint16_t GetLedGroupCount() {
+	uint16_t GetLedGroupCount() const {
 		return m_tWS28xxParams.nLedGroupCount;
 	}
 
-	TRGBMapping GetRgbMapping() {
+	TRGBMapping GetRgbMapping() const {
 		return static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping);
 	}
 
@@ -143,7 +143,7 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tWS28xxParams.nSetList & nMask) == nMask;
     }
 

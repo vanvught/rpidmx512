@@ -97,6 +97,7 @@ private:
 	char m_aPathBlackOut[OscServerMax::PATH_LENGTH];
 	OscServerHandler *m_pOscServerHandler = nullptr;
 	LightSet *m_pLightSet = nullptr;
+	bool m_bIsRunning{false};
 	char *m_pBuffer = nullptr;
 	uint8_t *m_pData = nullptr;
 	uint8_t *m_pOsc = nullptr;

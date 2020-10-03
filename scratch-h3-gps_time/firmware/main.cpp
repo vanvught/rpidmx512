@@ -127,7 +127,8 @@ void notmain(void) {
 			display.Printf(1, "%.2d:%.2d:%.2d (SYS)", tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 			if (gps.IsTimeUpdated()) {
-				const struct tm *gps_time = gps.GetLocalDateTime();
+				const time_t t = GPS::Get()->GetLocalSeconds();
+				const struct tm *gps_time = localtime(&t);
 				display.Printf(2, "%.2d:%.2d:%.2d (GPS)", gps_time->tm_hour, gps_time->tm_min, gps_time->tm_sec);
 			} else {
 				display.Printf(2, "--:--:-- (GPS)");

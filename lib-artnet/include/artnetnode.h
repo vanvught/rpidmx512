@@ -165,31 +165,31 @@ public:
 		return m_nVersion;
 	}
 
-	uint8_t GetPages() {
+	uint8_t GetPages() const {
 		return m_nPages;
 	}
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
-	LightSet *GetOutput() {
+	LightSet *GetOutput() const {
 		return m_pLightSet;
 	}
 
 	const uint8_t *GetSoftwareVersion();
 
-	uint8_t GetActiveInputPorts() {
+	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
-	uint8_t GetActiveOutputPorts() {
+	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	bool GetDirectUpdate() {
+	bool GetDirectUpdate() const {
 		return m_bDirectUpdate;
 	}
 
@@ -221,21 +221,21 @@ public:
 	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;
 
 	void SetOemValue(const uint8_t *);
-	const uint8_t *GetOemValue() {
+	const uint8_t *GetOemValue() const {
 		return m_Node.Oem;
 	}
 
 	void SetNetworkTimeout(uint32_t nNetworkDataLossTimeout) {
 		m_State.nNetworkDataLossTimeoutMillis = nNetworkDataLossTimeout * 1000;
 	}
-	uint32_t GetNetworkTimeout() {
+	uint32_t GetNetworkTimeout() const {
 		return m_State.nNetworkDataLossTimeoutMillis / 1000;
 	}
 
 	void SetDisableMergeTimeout(bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-	bool GetDisableMergeTimeout() {
+	bool GetDisableMergeTimeout() const {
 		return m_State.bDisableMergeTimeout;
 	}
 
@@ -243,14 +243,21 @@ public:
 	void SendTimeCode(const struct TArtNetTimeCode *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
+
 	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 		m_pArtNetTimeSync = pArtNetTimeSync;
 	}
+	ArtNetTimeSync *GetTimeSyncHandler() const {
+		return m_pArtNetTimeSync;
+	}
+
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
+
 	void SetArtNetStore(ArtNetStore *pArtNetStore) {
 		m_pArtNetStore = pArtNetStore;
 	}
+
 	void SetArtNetDisplay(ArtNetDisplay *pArtNetDisplay) {
 		m_pArtNetDisplay = pArtNetDisplay;
 	}
@@ -258,19 +265,19 @@ public:
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
-	ArtNetTrigger *GetArtNetTrigger() {
+	ArtNetTrigger *GetArtNetTrigger() const {
 		return m_pArtNetTrigger;
 	}
 
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
 		m_pArtNetDmx = pArtNetDmx;
 	}
-	ArtNetDmx *GetArtNetDmx() {
+	ArtNetDmx *GetArtNetDmx() const {
 		return m_pArtNetDmx;
 	}
 
 	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(uint8_t nPortIndex) {
+	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}

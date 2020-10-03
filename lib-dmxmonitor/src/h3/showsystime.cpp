@@ -30,38 +30,29 @@
 
 #include "console.h"
 
-#define ROW		0
-#define COLUMN	80
+static constexpr auto ROW = 0;
+static constexpr auto COLUMN = 80;
 
-static char systime[] __attribute__ ((aligned (4))) =  "--:--:-- --/--/--";
+static char systime[] __attribute__ ((aligned (4))) = "--:--:-- --/--/--";
 
-static void itoa_base10(int arg, char *buf) {
-	char *n = buf;
+static void itoa_base10(int nArg, char *pBuffer) {
+	char *p = pBuffer;
 
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
+	if (nArg == 0) {
+		*p++ = '0';
+		*p = '0';
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
-ShowSystime::ShowSystime(void): m_nSecondsPrevious(60) {
-}
+void ShowSystime::Run() {
+	const time_t ltime = time(nullptr);
+	const struct tm *pLocalTime = localtime(&ltime);
 
-ShowSystime::~ShowSystime(void) {
-}
-
-void ShowSystime::Run(void) {
-	time_t ltime;
-	struct tm *pLocalTime;
-
-	ltime = time(0);
-	pLocalTime = localtime(&ltime);
-
-	if (m_nSecondsPrevious == pLocalTime->tm_sec) {
+	if (__builtin_expect((m_nSecondsPrevious == pLocalTime->tm_sec), 0)) {
 		return;
 	}
 

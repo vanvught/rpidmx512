@@ -97,6 +97,11 @@ void notmain(void) {
 	ntpClient.Start();
 	ntpClient.Print();
 
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
+
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreOscServer storeOscServer;
