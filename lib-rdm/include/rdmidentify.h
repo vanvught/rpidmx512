@@ -35,23 +35,23 @@ enum TRdmIdentifyMode {
 
 class RDMIdentify {
 public:
-	RDMIdentify(void);
-	virtual ~RDMIdentify(void) {
+	RDMIdentify();
+	virtual ~RDMIdentify() {
 	}
 
-	void On(void);
-	void Off(void);
+	void On();
+	void Off();
 
-	bool IsEnabled(void);
+	bool IsEnabled();
 
 	//
-	TRdmIdentifyMode GetMode(void) {
+	TRdmIdentifyMode GetMode() {
 		return m_nMode;
 	}
 	virtual void SetMode(TRdmIdentifyMode nMode)=0;
 
 public:
-	inline static RDMIdentify* Get(void) {
+	inline static RDMIdentify* Get() {
 		return s_pThis;
 	}
 

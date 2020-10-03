@@ -32,7 +32,7 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
-RDMMessage::RDMMessage(void)  {
+RDMMessage::RDMMessage()  {
 	m_pRdmCommand = new struct TRdmMessage;
 
 	m_pRdmCommand->start_code = E120_SC_RDM;
@@ -47,7 +47,7 @@ RDMMessage::RDMMessage(void)  {
 	m_pRdmCommand->param_data_length = 0;
 }
 
-RDMMessage::~RDMMessage(void) {
+RDMMessage::~RDMMessage() {
 	delete m_pRdmCommand;
 }
 

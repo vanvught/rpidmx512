@@ -53,7 +53,7 @@ struct TWidgetParams {
 
 class WidgetParamsStore {
 public:
-	virtual ~WidgetParamsStore(void) {}
+	virtual ~WidgetParamsStore() {}
 
 	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
 	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;
@@ -61,30 +61,30 @@ public:
 
 class WidgetParams {
 public:
-	WidgetParams(WidgetParamsStore *pWidgetParamsStore = 0);
+	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
 
-	bool Load(void);
-	void Set(void);
+	bool Load();
+	void Set();
 
-	void Dump(void);
+	void Dump();
 
-	uint8_t GetBreakTime(void) {
+	uint8_t GetBreakTime() {
 		return m_tWidgetParams.nBreakTime;
 	}
 
-	uint8_t GetMabTime(void) {
+	uint8_t GetMabTime() {
 		return m_tWidgetParams.nMabTime;
 	}
 
-	uint8_t GetRefreshRate(void) {
+	uint8_t GetRefreshRate() {
 		return m_tWidgetParams.nRefreshRate;
 	}
 
-	TWidgetMode GetMode(void) {
+	TWidgetMode GetMode() {
 		return m_tWidgetParams.tMode;
 	}
 
-	uint8_t GetThrottle(void) {
+	uint8_t GetThrottle() {
 		return m_tWidgetParams.nThrottle;
 	}
 

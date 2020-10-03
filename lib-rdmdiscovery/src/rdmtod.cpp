@@ -35,7 +35,7 @@
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-RDMTod::RDMTod(void) : m_nEntries(0) {
+RDMTod::RDMTod() : m_nEntries(0) {
 	m_pTable = new TRdmTod[TOD_TABLE_SIZE];
 
 	for (uint32_t i = 0 ; i < TOD_TABLE_SIZE; i++) {
@@ -43,12 +43,12 @@ RDMTod::RDMTod(void) : m_nEntries(0) {
 	}
 }
 
-RDMTod::~RDMTod(void) {
+RDMTod::~RDMTod() {
 	m_nEntries = 0;
 	delete[] m_pTable;
 }
 
-uint8_t RDMTod::GetUidCount(void) const {
+uint8_t RDMTod::GetUidCount() const {
 	return m_nEntries;
 }
 
@@ -74,7 +74,7 @@ void RDMTod::Dump(__attribute__((unused)) uint8_t nCount) {
 #endif
 }
 
-void RDMTod::Dump(void) {
+void RDMTod::Dump() {
 #ifndef NDEBUG
 	Dump(m_nEntries);
 #endif
@@ -131,7 +131,7 @@ void RDMTod::Copy(uint8_t *pTable) {
 	}
 }
 
-void RDMTod::Reset(void) {
+void RDMTod::Reset() {
 	for (uint32_t i = 0 ; i < m_nEntries; i++) {
 		memcpy(&m_pTable[i], UID_ALL, RDM_UID_SIZE);
 	}

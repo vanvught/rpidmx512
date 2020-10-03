@@ -26,8 +26,7 @@
 #ifndef OSCSERVERCONST_H_
 #define OSCSERVERCONST_H_
 
-class OSCServerConst {
-public:
+struct OSCServerConst {
 	static const char MSG_BRIDGE_PARAMS[];
 	static const char MSG_BRIDGE_START[];
 	static const char MSG_BRIDGE_STARTED[];

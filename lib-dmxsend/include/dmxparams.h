@@ -72,15 +72,15 @@ public:
 
 	void Dump();
 
-	uint8_t GetBreakTime() {
+	uint8_t GetBreakTime() const {
 		return m_tDMXParams.nBreakTime;
 	}
 
-	uint8_t GetMabTime() {
+	uint8_t GetMabTime() const {
 		return m_tDMXParams.nMabTime;
 	}
 
-	uint8_t GetRefreshRate() {
+	uint8_t GetRefreshRate() const {
 		return m_tDMXParams.nRefreshRate;
 	}
 
@@ -88,7 +88,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask)const  {
     	return (m_tDMXParams.nSetList & nMask) == nMask;
     }
 

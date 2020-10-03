@@ -2,7 +2,7 @@
  * @file dmxsendmulti.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,12 +39,6 @@ DMXSendMulti::DMXSendMulti(void) {
 	for (uint32_t i = 0; i < MAX_PORTS ; i++) {
 		m_bIsStarted[i] = false;
 	}
-
-	DEBUG_EXIT
-}
-
-DMXSendMulti::~DMXSendMulti(void) {
-	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }

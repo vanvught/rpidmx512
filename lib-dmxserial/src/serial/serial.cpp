@@ -33,7 +33,9 @@
 
 Serial *Serial::s_pThis = 0;
 
-Serial::Serial(void) : m_tType(SerialType::UART) {
+using namespace serial;
+
+Serial::Serial(void) : m_tType(type::UART) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -41,14 +43,14 @@ Serial::Serial(void) : m_tType(SerialType::UART) {
 
 	m_UartConfiguration.nBaud = 115200;
 	m_UartConfiguration.nBits = 8;
-	m_UartConfiguration.tParity = SerialUartParity::NONE;
+	m_UartConfiguration.tParity = uart::parity::NONE;
 	m_UartConfiguration.nStopBits = 1;
 
 	m_SpiConfiguration.nSpeed = 1000000; // 1MHz
 	m_SpiConfiguration.nMode = 0;
 
 	m_I2cConfiguration.nAddress = 0x30;
-	m_I2cConfiguration.tMode = SerialI2cSpeedMode::FAST;
+	m_I2cConfiguration.tMode = i2c::speed::FAST;
 
 	DEBUG_EXIT
 }
@@ -65,15 +67,15 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 	debug_dump(const_cast<uint8_t *>(pData), nLength);
 
-	if (m_tType == SerialType::UART) {
+	if (m_tType == type::UART) {
 		SendUart(pData, nLength);
 	}
 
-	if (m_tType == SerialType::SPI) {
+	if (m_tType == type::SPI) {
 		SendSpi(pData, nLength);
 	}
 
-	if (m_tType == SerialType::I2C) {
+	if (m_tType == type::I2C) {
 		SendI2c(pData, nLength);
 	}
 
@@ -83,7 +85,7 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 void Serial::Print(void) {
 	printf("Serial [%s]\n", GetType(m_tType));
 
-	if (m_tType == SerialType::UART) {
+	if (m_tType == type::UART) {
 		printf(" Baud     : %d\n", m_UartConfiguration.nBaud);
 		printf(" Bits     : %d\n", m_UartConfiguration.nBits);
 		printf(" Parity   : %s\n", GetUartParity(m_UartConfiguration.tParity));
@@ -91,13 +93,13 @@ void Serial::Print(void) {
 		return;
 	}
 
-	if (m_tType == SerialType::SPI) {
+	if (m_tType == type::SPI) {
 		printf(" Speed : %d Hz\n", m_SpiConfiguration.nSpeed);
 		printf(" Mode  : %d\n", m_SpiConfiguration.nMode);
 		return;
 	}
 
-	if (m_tType == SerialType::I2C) {
+	if (m_tType == type::I2C) {
 		printf(" Address    : %.2x\n", m_I2cConfiguration.nAddress);
 		printf(" Speed mode : %s\n", GetI2cSpeed(m_I2cConfiguration.tMode));
 		return;

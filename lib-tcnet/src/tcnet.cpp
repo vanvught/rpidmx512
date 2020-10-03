@@ -39,10 +39,10 @@
 
 static constexpr char NODE_NAME_DEFAULT[] = "AvV-OPi";
 
-TCNet *TCNet::s_pThis = 0;
+TCNet *TCNet::s_pThis = nullptr;
 
 TCNet::TCNet(TTCNetNodeType tNodeType) {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	memset(&m_tOptIn, 0, sizeof(struct TTCNetPacketOptIn));
@@ -59,7 +59,7 @@ TCNet::TCNet(TTCNetNodeType tNodeType) {
 	m_tOptIn.NodeListenerPort = TCNETUnicast::PORT;
 	memcpy(&m_tOptIn.VendorName, "orangepi-dmx.org", TCNET_VENDOR_NAME_LENGTH);
 	memcpy(&m_tOptIn.DeviceName, "LTC SMPTE Node  ", TCNET_DEVICE_NAME_LENGTH);
-	m_tOptIn.DeviceMajorVersion = _TIME_STAMP_YEAR_ - 2000;
+	m_tOptIn.DeviceMajorVersion = static_cast<uint8_t>(_TIME_STAMP_YEAR_ - 2000);
 	m_tOptIn.DeviceMinorVersion = _TIME_STAMP_MONTH_;
 	m_tOptIn.DeviceBugVersion = _TIME_STAMP_DAY_;
 
@@ -68,10 +68,11 @@ TCNet::TCNet(TTCNetNodeType tNodeType) {
 	SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
 }
 
-TCNet::~TCNet(void) {
+TCNet::~TCNet() {
+	Stop();
 }
 
-void TCNet::Start(void) {
+void TCNet::Start() {
 	m_tNode.nIPAddressLocal = Network::Get()->GetIp();
 	m_tNode.nIPAddressBroadcast = m_tNode.nIPAddressLocal | ~(Network::Get()->GetNetmask());
 
@@ -92,7 +93,7 @@ void TCNet::Start(void) {
 #endif
 }
 
-void TCNet::Stop(void) {
+void TCNet::Stop() {
 	DEBUG_ENTRY
 
 	struct TTCNetPacketOptOut OptOut;
@@ -104,7 +105,7 @@ void TCNet::Stop(void) {
 	DEBUG_EXIT
 }
 
-void TCNet::HandlePort60000Incoming(void) {
+void TCNet::HandlePort60000Incoming() {
 	const struct TTCNetPacket *packet = &(m_TTCNet.TCNetPacket);
 	const TTCNetMessageType type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
 
@@ -118,8 +119,8 @@ void TCNet::HandlePort60000Incoming(void) {
 	}
 }
 
-void TCNet::HandlePort60001Incoming(void) {
-	if (__builtin_expect((m_pTCNetTimeCode != 0), 1)) {
+void TCNet::HandlePort60001Incoming() {
+	if (__builtin_expect((m_pTCNetTimeCode != nullptr), 1)) {
 		if (static_cast<TTCNetMessageType>(m_TTCNet.TCNetPacket.ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
 			struct TTCNetTimeCode TimeCode;
 
@@ -169,19 +170,19 @@ void TCNet::HandlePort60001Incoming(void) {
 	}
 }
 
-void TCNet::HandlePort60002Incoming(void) {
+void TCNet::HandlePort60002Incoming() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void TCNet::HandlePortUnicastIncoming(void) {
+void TCNet::HandlePortUnicastIncoming() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void TCNet::HandleOptInOutgoing(void) {
+void TCNet::HandleOptInOutgoing() {
 	m_tOptIn.ManagementHeader.SEQ += 1;
 	m_tOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
 	m_tOptIn.Uptime = Hardware::Get()->GetUpTime();
@@ -189,7 +190,7 @@ void TCNet::HandleOptInOutgoing(void) {
 	Network::Get()->SendTo(m_aHandles[0], &m_tOptIn, sizeof(struct TTCNetPacketOptIn), m_tNode.nIPAddressBroadcast, TCNetBroadcast::PORT_0);
 }
 
-void TCNet::Run(void) {
+void TCNet::Run() {
 	uint8_t *packet = reinterpret_cast<uint8_t*>(&m_TTCNet.TCNetPacket);
 	uint16_t nForeignPort;
 

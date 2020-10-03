@@ -32,19 +32,19 @@
 
 class DmxSerialTFTP: public TFTPDaemon {
 public:
-	DmxSerialTFTP(void);
-	~DmxSerialTFTP(void);
+	DmxSerialTFTP();
+	~DmxSerialTFTP() override;
 
-	bool FileOpen(const char *pFileName, TFTPMode tMode);
-	bool FileCreate(const char *pFileName, TFTPMode tMode);
-	bool FileClose(void);
-	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber);
-	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber);
+	bool FileOpen(const char *pFileName, TFTPMode tMode) override;
+	bool FileCreate(const char *pFileName, TFTPMode tMode) override;
+	bool FileClose() override;
+	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
 
-	void Exit(void);
+	void Exit() override;
 
 private:
-	FILE *m_pFile = 0;
+	FILE *m_pFile = nullptr;
 };
 
 #endif /* DMXSERIALTFTP_H_ */

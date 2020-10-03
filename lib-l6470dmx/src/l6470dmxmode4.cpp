@@ -4,7 +4,7 @@
  * @file l6470dmxmode4.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,9 @@
 L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
-	assert(pModeParams != 0);
+	assert(pL6470 != nullptr);
+	assert(pMotorParams != nullptr);
+	assert(pModeParams != nullptr);
 
 	m_pModeParams = pModeParams;
 	m_pL6470 = pL6470;
@@ -52,13 +52,13 @@ L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams 
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode4::~L6470DmxMode4(void) {
+L6470DmxMode4::~L6470DmxMode4() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::InitSwitch(void) {
+void L6470DmxMode4::InitSwitch() {
 	DEBUG2_ENTRY;
 
 	if (m_pModeParams->HasSwitch()) {
@@ -72,7 +72,7 @@ void L6470DmxMode4::InitSwitch(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::InitPos(void) {
+void L6470DmxMode4::InitPos() {
 	DEBUG2_ENTRY;
 
 	m_pL6470->resetPos();
@@ -80,19 +80,19 @@ void L6470DmxMode4::InitPos(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::Start(void) {
+void L6470DmxMode4::Start() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::Stop(void) {
+void L6470DmxMode4::Stop() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode4::HandleBusy(void) {
+void L6470DmxMode4::HandleBusy() {
 	DEBUG2_ENTRY
 
 	if (m_pL6470->busyCheck()) {
@@ -108,7 +108,7 @@ void L6470DmxMode4::HandleBusy(void) {
 	DEBUG2_EXIT
 }
 
-bool L6470DmxMode4::BusyCheck(void) {
+bool L6470DmxMode4::BusyCheck() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

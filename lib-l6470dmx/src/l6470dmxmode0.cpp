@@ -36,7 +36,7 @@
 L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
+	assert(pL6470 != nullptr);
 
 	m_pL6470 = pL6470;
 
@@ -46,13 +46,13 @@ L6470DmxMode0::L6470DmxMode0(L6470 *pL6470) {
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode0::~L6470DmxMode0(void) {
+L6470DmxMode0::~L6470DmxMode0() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode0::Start(void) {
+void L6470DmxMode0::Start() {
 	DEBUG2_ENTRY;
 
 	m_pL6470->run(L6470_DIR_FWD, m_fMaxSpeed);
@@ -60,7 +60,7 @@ void L6470DmxMode0::Start(void) {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode0::Stop(void) {
+void L6470DmxMode0::Stop() {
 	DEBUG2_ENTRY;
 
 	m_pL6470->hardHiZ();

@@ -31,21 +31,21 @@
 
 class SpiFlashInstall {
 public:
-	SpiFlashInstall(void);
-	~SpiFlashInstall(void);
+	SpiFlashInstall();
+	~SpiFlashInstall();
 
 	bool WriteFirmware(const uint8_t *pBuffer, uint32_t nSize);
 
 private:
 	bool Open(const char *pFileName);
-	void Close(void);
+	void Close();
 	bool BuffersCompare(uint32_t nSize);
 	bool Diff(uint32_t nOffset);
 	void Write(uint32_t nOffset);
 	void Process(const char *pFileName, uint32_t nOffset);
 
 public:
-	static SpiFlashInstall* Get(void) {
+	static SpiFlashInstall* Get() {
 		return s_pThis;
 	}
 

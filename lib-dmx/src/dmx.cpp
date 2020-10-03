@@ -42,10 +42,7 @@ Dmx::Dmx(uint8_t nGpioPin, bool DoInit): m_IsInitDone(DoInit) {
 	}
 }
 
-Dmx::~Dmx(void) {
-}
-
-void Dmx::Init(void) {
+void Dmx::Init() {
 	assert(!m_IsInitDone);
 
 	if (!m_IsInitDone) {

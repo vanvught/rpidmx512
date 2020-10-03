@@ -2,7 +2,7 @@
  * @file lightsetllrponly.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,37 +30,36 @@
 
 #include "lightset.h"
 
-class LightSetLLRPOnly: public LightSet {
+class LightSetLLRPOnly final: public LightSet {
 public:
-	LightSetLLRPOnly(void) {
-	}
-	~LightSetLLRPOnly(void) {
+	LightSetLLRPOnly() {
 	}
 
-	void Start(__attribute__((unused)) uint8_t nPort) {
-	}
-	void Stop(__attribute__((unused)) uint8_t nPort) {
+	void Start(__attribute__((unused)) uint8_t nPort) override {
 	}
 
-	void SetData(__attribute__((unused)) uint8_t nPort, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint16_t nLength) {
+	void Stop(__attribute__((unused)) uint8_t nPort) override {
 	}
 
-	void Print(void) {
+	void SetData(__attribute__((unused)) uint8_t nPort, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint16_t nLength) override {
 	}
 
-	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
+	void Print() override {
+	}
+
+	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
-	uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() override {
 		return DMX_ADDRESS_INVALID;
 	}
 
-	uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return 0;
 	}
 
-	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) struct TLightSetSlotInfo &tSlotInfo) {
+	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) struct TLightSetSlotInfo &tSlotInfo) override {
 		return false;
 	}
 };

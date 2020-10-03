@@ -31,19 +31,13 @@
 
 #include "debug.h"
 
-ShowFileTFTP::ShowFileTFTP(void) {
+ShowFileTFTP::ShowFileTFTP() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-ShowFileTFTP::~ShowFileTFTP(void) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void ShowFileTFTP::Exit(void) {
+void ShowFileTFTP::Exit() {
 	DEBUG_ENTRY
 
 	ShowFile::Get()->EnableTFTP(false);
@@ -61,7 +55,7 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPM
 	}
 
 	m_pFile = fopen(pFileName, "r");
-	return (m_pFile != 0);
+	return (m_pFile != nullptr);
 }
 
 bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
@@ -74,15 +68,15 @@ bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFT
 	}
 
 	m_pFile = fopen(pFileName, "w+");
-	return (m_pFile != 0);
+	return (m_pFile != nullptr);
 }
 
-bool ShowFileTFTP::FileClose(void) {
+bool ShowFileTFTP::FileClose() {
 	DEBUG_ENTRY
 
-	if (m_pFile != 0) {
+	if (m_pFile != nullptr) {
 		fclose(m_pFile);
-		m_pFile = 0;
+		m_pFile = nullptr;
 	}
 
 	DEBUG_EXIT

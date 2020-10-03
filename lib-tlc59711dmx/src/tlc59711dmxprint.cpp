@@ -29,7 +29,7 @@
 #include "tlc59711dmxparams.h"
 #include "tlc59711.h"
 
-void TLC59711Dmx::Print(void) {
+void TLC59711Dmx::Print() {
 	printf("PWM parameters\n");
 	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetLedTypeString(m_LEDType), m_LEDType); //TODO Move TLC59711DmxParams to TLC59711
 	printf(" Count : %d %s\n", m_nLEDCount, m_LEDType == TTLC59711_TYPE_RGB ? "RGB" : "RGBW");

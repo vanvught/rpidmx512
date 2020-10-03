@@ -58,7 +58,7 @@ MCP9808::MCP9808(uint8_t nAddress) : HAL_I2C(nAddress == 0 ? I2C_ADDRESS : nAddr
 
 float MCP9808::Get() {
 	const uint16_t nValue = ReadRegister16(reg::AMBIENT_TEMP);
-	float fTemperature = static_cast<float>(nValue
+	auto fTemperature = static_cast<float>(nValue
 			& static_cast<uint16_t>(0x0FFF));
 
 	fTemperature /= 16.0f;

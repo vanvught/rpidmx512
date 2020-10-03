@@ -27,7 +27,7 @@
 
 #include "oscserver.h"
 
-void OscServer::Print(void) {
+void OscServer::Print() {
 	printf("OSC Server\n");
 	printf(" Incoming Port        : %d\n", m_nPortIncoming);
 	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);

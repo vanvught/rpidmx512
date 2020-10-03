@@ -1,5 +1,5 @@
 #
-DEFINES = RASPPI NDEBUG
+DEFINES = RASPPI #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-hal/include
 #

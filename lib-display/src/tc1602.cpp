@@ -76,22 +76,22 @@
 
 #define LCD_SETDDRAMADDR 0x80
 
-Tc1602::Tc1602(void): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
+Tc1602::Tc1602(): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS) {
 	m_nCols = 16;
 	m_nRows = 2;
 }
 
-Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS), bFastMode(true) {
+Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
-Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_I2C(nSlaveAddress == 0 ? TC1602_I2C_DEFAULT_SLAVE_ADDRESS : nSlaveAddress), bFastMode(true) {
+Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_I2C(nSlaveAddress == 0 ? TC1602_I2C_DEFAULT_SLAVE_ADDRESS : nSlaveAddress) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
-bool Tc1602::Start(void) {
+bool Tc1602::Start() {
 	if (!m_I2C.IsConnected()) {
 		return false;
 	}
@@ -108,7 +108,7 @@ bool Tc1602::Start(void) {
 	return true;
 }
 
-void Tc1602::Cls(void) {
+void Tc1602::Cls() {
 	WriteCmd(TC1602_IC_CLS);
 	udelay(EXEC_TIME_CLS - EXEC_TIME_CMD);
 }

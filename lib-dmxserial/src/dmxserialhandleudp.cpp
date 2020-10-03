@@ -54,7 +54,7 @@ namespace length {
 
 static char s_UdpBuffer[UDP::BUFFER_SIZE] __attribute__ ((aligned (4)));
 
-void DmxSerial::HandleUdp(void) {
+void DmxSerial::HandleUdp() {
 	uint16_t nForeignPort;
 	uint32_t nIPAddressFrom;
 

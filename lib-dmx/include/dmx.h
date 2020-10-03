@@ -135,8 +135,9 @@ struct TDmxData {
 #if defined (H3)
 class DmxSet {
 public:
-	DmxSet(void);
-	virtual ~DmxSet(void);
+	DmxSet();
+	virtual ~DmxSet() {
+	}
 
 	virtual void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData)=0;
 
@@ -146,7 +147,7 @@ public:
 	virtual const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut)=0;
 
 public:
-	inline static DmxSet* Get(void) {
+	inline static DmxSet* Get() {
 		return s_pThis;
 	}
 
@@ -157,36 +158,34 @@ private:
 class Dmx: public DmxSet {
 public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
-	~Dmx(void);
 
-	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false);
+	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
 
-	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength);
+	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
-	const uint8_t *RdmReceive(uint8_t nPort);
-	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut);
+	const uint8_t *RdmReceive(uint8_t nPort) override;
+	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) override;
 #else
 class Dmx {
 public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
-	~Dmx(void);
 
 	inline void SetPortDirection(__attribute__((unused)) uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) {
 		dmx_set_port_direction(static_cast<_dmx_port_direction>(tPortDirection), bEnableData);
 	}
 #endif
 public: // DMX
-	void Init(void);
+	void Init();
 
-	inline uint32_t GetUpdatesPerSecond(void) {
+	inline uint32_t GetUpdatesPerSecond() {
 		return dmx_get_updates_per_seconde();
 	}
 
-	inline const uint8_t *GetDmxCurrentData(void) {
+	inline const uint8_t *GetDmxCurrentData() {
 		return dmx_get_current_data();
 	}
 
-	inline const uint8_t *GetDmxAvailable(void) {
+	inline const uint8_t *GetDmxAvailable() {
 		return dmx_get_available();
 	}
 
@@ -194,7 +193,7 @@ public: // DMX
 		dmx_set_output_break_time(nBreakTime);
 	}
 
-	inline  uint32_t GetDmxBreakTime(void) {
+	inline  uint32_t GetDmxBreakTime() {
 		return dmx_get_output_break_time();
 	}
 
@@ -202,7 +201,7 @@ public: // DMX
 		dmx_set_output_mab_time(nMabTime);
 	}
 
-	inline uint32_t GetDmxMabTime(void) {
+	inline uint32_t GetDmxMabTime() {
 		return dmx_get_output_mab_time();
 	}
 
@@ -210,7 +209,7 @@ public: // DMX
 		dmx_set_output_period(nPeriodTime);
 	}
 
-	inline uint32_t GetDmxPeriodTime(void) {
+	inline uint32_t GetDmxPeriodTime() {
 		return dmx_get_output_period();
 	}
 

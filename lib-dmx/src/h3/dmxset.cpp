@@ -33,6 +33,3 @@ DmxSet *DmxSet::s_pThis = 0;
 DmxSet::DmxSet(void) {
 	s_pThis = this;
 }
-
-DmxSet::~DmxSet(void) {
-}

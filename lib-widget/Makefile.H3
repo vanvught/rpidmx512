@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-hal/include../lib-monitor/include ../lib-dmx/include ../lib-rdm/include ../lib-properties/include ../lib-usb/include
+EXTRA_INCLUDES = ../lib-hal/include../lib-monitor/include ../lib-dmx/include ../lib-rdm/include ../lib-usb/include ../lib-properties/include
 #
 include ../h3-firmware-template/lib/Rules.mk

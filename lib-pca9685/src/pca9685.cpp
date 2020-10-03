@@ -91,7 +91,7 @@ PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
 	Sleep(false);
 }
 
-PCA9685::~PCA9685(void) {
+PCA9685::~PCA9685() {
 }
 
 void PCA9685::Sleep(bool bMode) {
@@ -119,7 +119,7 @@ void PCA9685::SetPreScaller(uint8_t nPrescale) {
 	Sleep(false);
 }
 
-uint8_t PCA9685::GetPreScaller(void) {
+uint8_t PCA9685::GetPreScaller() {
 	return 	I2cReadReg(PCA9685_REG_PRE_SCALE);
 }
 
@@ -127,7 +127,7 @@ void PCA9685::SetFrequency(uint16_t nFreq) {
 	SetPreScaller(CalcPresScale(nFreq));
 }
 
-uint16_t PCA9685::GetFrequency(void) {
+uint16_t PCA9685::GetFrequency() {
 	return CalcFrequency(GetPreScaller());
 }
 
@@ -143,7 +143,7 @@ void PCA9685::SetOCH(TPCA9685Och enumTPCA9685Och) {
 	I2cWriteReg(PCA9685_REG_MODE2, Data);
 }
 
-TPCA9685Och PCA9685::GetOCH(void) {
+TPCA9685Och PCA9685::GetOCH() {
 	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH;
 
 	return static_cast<TPCA9685Och>(Data);
@@ -161,7 +161,7 @@ void PCA9685::SetInvert(bool bInvert) {
 	I2cWriteReg(PCA9685_REG_MODE2, Data);
 }
 
-bool PCA9685::GetInvert(void) {
+bool PCA9685::GetInvert() {
 	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_INVRT;
 
 	return (Data == PCA9685_MODE2_INVRT);
@@ -179,7 +179,7 @@ void PCA9685::SetOutDriver(bool bOutDriver) {
 	I2cWriteReg(PCA9685_REG_MODE2, Data);
 }
 
-bool PCA9685::GetOutDriver(void) {
+bool PCA9685::GetOutDriver() {
 	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OUTDRV;
 
 	return (Data == PCA9685_MODE2_OUTDRV);
@@ -302,7 +302,7 @@ uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
 	return (f_max + f_min) / 2;
 }
 
-void PCA9685::Dump(void) {
+void PCA9685::Dump() {
 #ifndef NDEBUG
 	uint8_t reg = I2cReadReg(PCA9685_REG_MODE1);
 
@@ -360,7 +360,7 @@ void PCA9685::AutoIncrement(bool bMode) {
 	I2cWriteReg(PCA9685_REG_MODE1, Data);
 }
 
-void PCA9685::I2cSetup(void) {
+void PCA9685::I2cSetup() {
 	FUNC_PREFIX(i2c_set_address(m_nAddress));
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));
 }

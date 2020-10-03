@@ -34,24 +34,24 @@
 
 class RDMNetLLRPOnly: public RDMIdentify  {
 public:
-	RDMNetLLRPOnly(const char *pLabel = 0);
-	~RDMNetLLRPOnly(void);
+	RDMNetLLRPOnly(const char *pLabel = nullptr);
+	~RDMNetLLRPOnly() override;
 
-	void Init(void);
-	void Start(void);
-	void Stop(void);
+	void Init();
+	void Start();
+	void Stop();
 
-	void Run(void) {
+	void Run() {
 		m_RDMNetDevice.Run();
 	}
 
-	void Print(void) {
+	void Print() {
 		m_RDMNetDevice.Print();
 	}
 
-	void SetMode(TRdmIdentifyMode nMode);
+	void SetMode(TRdmIdentifyMode nMode) override;
 
-	RDMNetDevice *GetRDMNetDevice(void) {
+	RDMNetDevice *GetRDMNetDevice() {
 		return &m_RDMNetDevice;
 	}
 

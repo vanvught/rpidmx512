@@ -46,34 +46,30 @@
  #include "console.h"
 #endif
 
-Display *Display::s_pThis = 0;
+Display *Display::s_pThis = nullptr;
 
 Display::Display(uint32_t nCols, uint32_t nRows):
 	m_tType(DisplayType::UNKNOWN),
-	m_LcdDisplay(0),
-	m_bIsSleep(false),
+	
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	Detect(nCols, nRows);
 }
 
 Display::Display(DisplayType tDisplayType):
-	m_nCols(0),
-	m_nRows(0),
-	m_LcdDisplay(0),
-	m_bIsSleep(false),
+	
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
 	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_tType = tDisplayType;
@@ -105,10 +101,10 @@ Display::Display(DisplayType tDisplayType):
 			break;
 	}
 
-	if (m_LcdDisplay != 0) {
+	if (m_LcdDisplay != nullptr) {
 		if (!m_LcdDisplay->Start()) {
 			delete m_LcdDisplay;
-			m_LcdDisplay = 0;
+			m_LcdDisplay = nullptr;
 			m_tType = DisplayType::UNKNOWN;
 		} else {
 			m_LcdDisplay->Cls();
@@ -117,7 +113,7 @@ Display::Display(DisplayType tDisplayType):
 		}
 	}
 
-	if (m_LcdDisplay == 0){
+	if (m_LcdDisplay == nullptr){
 		m_nSleepTimeout = 0;
 	}
 }
@@ -125,7 +121,7 @@ Display::Display(DisplayType tDisplayType):
 void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	m_nCols = nCols;
 	m_nRows = nRows;
-	m_LcdDisplay = 0;
+	m_LcdDisplay = nullptr;
 	m_tType = DisplayType::UNKNOWN;
 
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
@@ -171,7 +167,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 		return;
 	}
 
-	if (m_LcdDisplay != 0) {
+	if (m_LcdDisplay != nullptr) {
 		m_nCols = m_LcdDisplay->GetColumns();
 		m_nRows = m_LcdDisplay->GetRows();
 	} else {
@@ -179,27 +175,27 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	}
 }
 
-Display::~Display(void) {
-	s_pThis = 0;
+Display::~Display() {
+	s_pThis = nullptr;
 	delete m_LcdDisplay;
 }
 
-void Display::Cls(void) {
-	if (m_LcdDisplay == 0) {
+void Display::Cls() {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->Cls();
 }
 
 void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
 int Display::Printf(uint8_t nLine, const char *format, ...) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
 
@@ -219,7 +215,7 @@ int Display::Printf(uint8_t nLine, const char *format, ...) {
 }
 
 int Display::Write(uint8_t nLine, const char *pText) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
 
@@ -236,28 +232,28 @@ int Display::Write(uint8_t nLine, const char *pText) {
 }
 
 void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->SetCursorPos(nCol, nRow);
 }
 
 void Display::PutChar(int c) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->PutChar(c);
 }
 
 void Display::PutString(const char *pText) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->PutString(pText);
 }
 
 void Display::ClearLine(uint8_t nLine) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->ClearLine(nLine);
@@ -265,7 +261,7 @@ void Display::ClearLine(uint8_t nLine) {
 
 #if defined(ENABLE_CURSOR_MODE)
 void Display::SetCursor(uint32_t nMode) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 	m_LcdDisplay->SetCursor(nMode);
@@ -273,7 +269,7 @@ void Display::SetCursor(uint32_t nMode) {
 #endif
 
 void Display::TextStatus(const char *pText) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 
@@ -306,7 +302,7 @@ void Display::TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex) {
 
 #if !defined(NO_HAL)
 void Display::SetSleep(bool bSleep) {
-	if (m_LcdDisplay == 0) {
+	if (m_LcdDisplay == nullptr) {
 		return;
 	}
 
@@ -319,7 +315,7 @@ void Display::SetSleep(bool bSleep) {
 	}
 }
 
-void Display::Run(void) {
+void Display::Run() {
 	if (m_nSleepTimeout == 0) {
 		return;
 	}
@@ -332,8 +328,8 @@ void Display::Run(void) {
 }
 #endif
 
-void Display::PrintInfo(void) {
-	if (m_LcdDisplay == 0) {
+void Display::PrintInfo() {
+	if (m_LcdDisplay == nullptr) {
 		puts("No display found");
 		return;
 	}

@@ -69,7 +69,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
     }
 

@@ -37,21 +37,21 @@ RDMPersonality::RDMPersonality(const char* pDescription, uint16_t nSlots):
 	m_nSlots(nSlots),
 	m_nDescriptionLength(0)
 {
-	assert(pDescription != 0);
+	assert(pDescription != nullptr);
 
 	SetDescription(pDescription);
 }
 
-uint16_t RDMPersonality::GetSlots(void) const {
+uint16_t RDMPersonality::GetSlots() const {
 	return m_nSlots;
 }
 
-const char* RDMPersonality::GetDescription(void) const {
+const char* RDMPersonality::GetDescription() const {
 	return m_aDescription;
 }
 
 void RDMPersonality::SetDescription(const char *pDescription) {
-	assert(pDescription != 0);
+	assert(pDescription != nullptr);
 
 	m_nDescriptionLength = 0;
 
@@ -67,12 +67,12 @@ void RDMPersonality::SetDescription(const char *pDescription) {
 
 }
 
-uint8_t RDMPersonality::GetDescriptionLength(void) const {
+uint8_t RDMPersonality::GetDescriptionLength() const {
 	return m_nDescriptionLength;
 }
 
 void RDMPersonality::DescriptionCopyTo(char *p, uint8_t &nLength) {
-	assert(p != 0);
+	assert(p != nullptr);
 
 	char *pSrc = m_aDescription;
 	char *pDst = p;

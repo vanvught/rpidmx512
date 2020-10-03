@@ -76,16 +76,16 @@ namespace length {
 	static constexpr auto INDEX = sizeof(cmd::INDEX) - 1;
 }
 
-ShowFileOSC *ShowFileOSC::s_pThis = 0;
+ShowFileOSC *ShowFileOSC::s_pThis = nullptr;
 
-ShowFileOSC::ShowFileOSC(void) {
+ShowFileOSC::ShowFileOSC() {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	m_pBuffer = new char[MAX_BUFFER_SIZE];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	for (uint32_t i = 0; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
 		m_aFileIndex[i] = -1;
@@ -94,12 +94,12 @@ ShowFileOSC::ShowFileOSC(void) {
 	DEBUG_EXIT
 }
 
-ShowFileOSC::~ShowFileOSC(void) {
+ShowFileOSC::~ShowFileOSC() {
 	delete[] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 }
 
-void ShowFileOSC::Start(void) {
+void ShowFileOSC::Start() {
 	DEBUG_ENTRY
 
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
@@ -108,7 +108,7 @@ void ShowFileOSC::Start(void) {
 	DEBUG_EXIT
 }
 
-void ShowFileOSC::Stop(void) {
+void ShowFileOSC::Stop() {
 	DEBUG_ENTRY
 
 	//TODO Implement ShowFileOSC::Stop
@@ -116,7 +116,7 @@ void ShowFileOSC::Stop(void) {
 	DEBUG_EXIT
 }
 
-void ShowFileOSC::Run(void) {
+void ShowFileOSC::Run() {
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, MAX_BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= length::PATH), 1)) {
@@ -305,7 +305,7 @@ void ShowFileOSC::Run(void) {
 }
 
 // TouchOSC
-void ShowFileOSC::SendStatus(void) {
+void ShowFileOSC::SendStatus() {
 	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
 
 	const ShowFileStatus tStatus = ShowFile::Get()->GetStatus();
@@ -315,13 +315,13 @@ void ShowFileOSC::SendStatus(void) {
 }
 
 // TouchOSC
-void ShowFileOSC::Reload(void) {
+void ShowFileOSC::Reload() {
     DIR *dirp;
     struct dirent *dp;
     uint32_t nIndex = 0;
 
 
-    if ((dirp = opendir(".")) == NULL) {
+    if ((dirp = opendir(".")) == nullptr) {
 		perror("couldn't open '.'");
 
 		for (uint32_t i = 0; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
@@ -332,7 +332,7 @@ void ShowFileOSC::Reload(void) {
 	}
 
     do {
-        if ((dp = readdir(dirp)) != NULL) {
+        if ((dp = readdir(dirp)) != nullptr) {
         	if (dp->d_type == DT_DIR) {
         		continue;
         	}
@@ -352,7 +352,7 @@ void ShowFileOSC::Reload(void) {
             	break;
             }
         }
-    } while (dp != NULL);
+    } while (dp != nullptr);
 
     // Sort
 	for (uint32_t i = 0; i < nIndex; i++) {
@@ -388,7 +388,7 @@ void ShowFileOSC::Reload(void) {
 	SendStatus();
 }
 
-void ShowFileOSC::Print(void) {
+void ShowFileOSC::Print() {
 	printf("OSC Server\n");
 	printf(" Path : [%s]\n", cmd::PATH);
 	printf(" Incoming port : %u\n", m_nPortIncoming);

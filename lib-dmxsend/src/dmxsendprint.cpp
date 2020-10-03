@@ -27,7 +27,7 @@
 
 #include "dmxsend.h"
 
-void DMXSend::Print(void) {
+void DMXSend::Print() {
 	printf("DMX Send\n");
 	printf(" Break time   : %d\n", GetDmxBreakTime());
 	printf(" MAB time     : %d\n", GetDmxMabTime());

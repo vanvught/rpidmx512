@@ -52,18 +52,18 @@ class Display {
 public:
 	Display(uint32_t nCols, uint32_t nRows);
 	Display(DisplayType tDisplayType = DisplayType::SSD1306);
-	~Display(void);
+	~Display();
 
 #if !defined(NO_HAL)
 	void SetSleep(bool bSleep);
-	bool isSleep(void) {
+	bool isSleep() {
 		return m_bIsSleep;
 	}
 
-	void Run(void);
+	void Run();
 #endif
 
-	void Cls(void);
+	void Cls();
 	void ClearLine(uint8_t nLine);
 
 	void PutChar(int c);
@@ -78,11 +78,11 @@ public:
 	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
 	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false);
 
-	bool isDetected(void) {
-		return m_LcdDisplay == 0 ? false : true;
+	bool isDetected() {
+		return m_LcdDisplay == nullptr ? false : true;
 	}
 
-	DisplayType GetDetectedType(void) {
+	DisplayType GetDetectedType() {
 		return m_tType;
 	}
 
@@ -95,21 +95,21 @@ public:
 	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
 	}
-	uint32_t GetSleepTimeout(void) {
+	uint32_t GetSleepTimeout() {
 		return m_nSleepTimeout / 1000 / 60;
 	}
 
-	uint32_t getCols(void) {
+	uint32_t getCols() {
 		return m_nCols;
 	}
 
-	uint32_t getRows(void) {
+	uint32_t getRows() {
 		return m_nRows;
 	}
 
-	void PrintInfo(void);
+	void PrintInfo();
 
-	static Display* Get(void) {
+	static Display* Get() {
 		return s_pThis;
 	}
 
@@ -117,11 +117,11 @@ private:
 	void Detect(uint32_t nCols, uint32_t nRows);
 
 private:
-	uint32_t m_nCols;
-	uint32_t m_nRows;
+	uint32_t m_nCols{0};
+	uint32_t m_nRows{0};
 	DisplayType m_tType;
-	DisplaySet *m_LcdDisplay;
-	bool m_bIsSleep;
+	DisplaySet *m_LcdDisplay{nullptr};
+	bool m_bIsSleep{false};
 #if !defined(NO_HAL)
 	uint32_t m_nMillis;
 #endif

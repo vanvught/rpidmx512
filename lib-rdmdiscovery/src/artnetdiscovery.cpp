@@ -42,29 +42,29 @@
 
 #include "debug.h"
 
-ArtNetRdmController::ArtNetRdmController(void) : m_pRdmCommand(0){
+ArtNetRdmController::ArtNetRdmController() : m_pRdmCommand(nullptr){
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
-		assert(m_Discovery[i] != 0);
+		assert(m_Discovery[i] != nullptr);
 		m_Discovery[i]->SetUid(GetUID());
 	}
 
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != 0);
+	assert(m_pRdmCommand != nullptr);
 
 	m_pRdmCommand->start_code = E120_SC_RDM;
 }
 
-ArtNetRdmController::~ArtNetRdmController(void) {
+ArtNetRdmController::~ArtNetRdmController() {
 	for (unsigned i = 0; i < DMX_MAX_UARTS; i++) {
-		if (m_Discovery[i] != 0) {
+		if (m_Discovery[i] != nullptr) {
 			delete m_Discovery[i];
-			m_Discovery[i] = 0;
+			m_Discovery[i] = nullptr;
 		}
 	}
 }
 
-void ArtNetRdmController::Print(void) {
+void ArtNetRdmController::Print() {
 	RDMDeviceController::Print();
 }
 
@@ -103,13 +103,13 @@ void ArtNetRdmController::DumpTod(uint8_t nPort) {
 const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmData) {
 	assert(nPort < DMX_MAX_UARTS);
 
-	if (pRdmData == 0) {
-		return 0;
+	if (pRdmData == nullptr) {
+		return nullptr;
 	}
 
 	Hardware::Get()->WatchdogFeed();
 
-	while (0 != RDMMessage::Receive(nPort)) {
+	while (nullptr != RDMMessage::Receive(nPort)) {
 		// Discard late responses
 	}
 

@@ -39,8 +39,8 @@
 L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
-	assert(pL6470 != 0);
-	assert(pMotorParams != 0);
+	assert(pL6470 != nullptr);
+	assert(pMotorParams != nullptr);
 
 	m_pL6470 = pL6470;
 
@@ -51,25 +51,25 @@ L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPrevi
 	DEBUG2_EXIT;
 }
 
-L6470DmxMode3::~L6470DmxMode3(void) {
+L6470DmxMode3::~L6470DmxMode3() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode3::Start(void) {
+void L6470DmxMode3::Start() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode3::Stop(void) {
+void L6470DmxMode3::Stop() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode3::HandleBusy(void) {
+void L6470DmxMode3::HandleBusy() {
 	DEBUG2_ENTRY
 
 	if (m_pL6470->busyCheck()) {
@@ -85,7 +85,7 @@ void L6470DmxMode3::HandleBusy(void) {
 	DEBUG2_EXIT
 }
 
-bool L6470DmxMode3::BusyCheck(void) {
+bool L6470DmxMode3::BusyCheck() {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

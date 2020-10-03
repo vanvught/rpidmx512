@@ -35,18 +35,18 @@
 
 class WS28xxDmx: public LightSet {
 public:
-	WS28xxDmx(void);
-	virtual ~WS28xxDmx(void);
+	WS28xxDmx();
+	~WS28xxDmx() override;
 
-	void Start(uint8_t nPort = 0);
-	void Stop(uint8_t nPort = 0);
+	void Start(uint8_t nPort = 0) override;
+	void Stop(uint8_t nPort = 0) override;
 
-	virtual void SetData(uint8_t nPort, const uint8_t*, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t*, uint16_t) override;
 
 	void Blackout(bool bBlackout);
 
 	virtual void SetLEDType(TWS28XXType);
-	TWS28XXType GetLEDType(void) {
+	TWS28XXType GetLEDType() {
 		return m_tLedType;
 	}
 
@@ -63,7 +63,7 @@ public:
 	}
 
 	virtual void SetLEDCount(uint16_t);
-	uint16_t GetLEDCount(void) {
+	uint16_t GetLEDCount() {
 		return m_nLedCount;
 	}
 
@@ -71,7 +71,7 @@ public:
 		m_nClockSpeedHz = nClockSpeedHz;
 	}
 
-	uint32_t GetClockSpeedHz(void) const {
+	uint32_t GetClockSpeedHz() const {
 		return m_nClockSpeedHz;
 	}
 
@@ -79,7 +79,7 @@ public:
 		m_nGlobalBrightness = nGlobalBrightness;
 	}
 
-	uint8_t GetGlobalBrightness(void) const {
+	uint8_t GetGlobalBrightness() const {
 		return m_nGlobalBrightness;
 	}
 
@@ -87,23 +87,23 @@ public:
 		m_pWS28xxDmxStore = pWS28xxDmxStore;
 	}
 
-	virtual void Print(void);
+	void Print() override;
 
 public: // RDM
-	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
-	uint16_t GetDmxStartAddress(void) {
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	virtual bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 private:
-	void UpdateMembers(void);
+	void UpdateMembers();
 
 protected:
 	TWS28XXType m_tLedType;

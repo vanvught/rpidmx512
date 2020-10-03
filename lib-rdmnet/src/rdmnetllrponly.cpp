@@ -48,16 +48,16 @@ RDMNetLLRPOnly::RDMNetLLRPOnly(const char *pLabel):
 	DEBUG_EXIT
 }
 
-RDMNetLLRPOnly::~RDMNetLLRPOnly(void) {
+RDMNetLLRPOnly::~RDMNetLLRPOnly() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void RDMNetLLRPOnly::Init(void) {
+void RDMNetLLRPOnly::Init() {
 	DEBUG_ENTRY
 
-	if (m_pLabel == 0) {
+	if (m_pLabel == nullptr) {
 		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, LABEL, LABEL_LENGTH);
 	} else {
 		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, strlen(m_pLabel));
@@ -67,7 +67,7 @@ void RDMNetLLRPOnly::Init(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetLLRPOnly::Start(void) {
+void RDMNetLLRPOnly::Start() {
 	DEBUG_ENTRY
 
 	m_RDMNetDevice.Start();
@@ -75,7 +75,7 @@ void RDMNetLLRPOnly::Start(void) {
 	DEBUG_EXIT
 }
 
-void RDMNetLLRPOnly::Stop(void) {
+void RDMNetLLRPOnly::Stop() {
 	DEBUG_ENTRY
 
 	m_RDMNetDevice.Stop();

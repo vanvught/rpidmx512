@@ -39,57 +39,57 @@
 
 class ShowFileProtocolArtNet: public ShowFileProtocolHandler, public ArtNetTrigger {
 public:
-	ShowFileProtocolArtNet(void) {
+	ShowFileProtocolArtNet() {
 		m_ArtNetController.SetArtNetTrigger(this);
 	}
 
-	~ShowFileProtocolArtNet(void) {
+	~ShowFileProtocolArtNet() override {
 		m_ArtNetController.Stop();
 	}
 
-	void Start(void) {
+	void Start() override {
 		m_ArtNetController.Start();
 	}
 
-	void Stop(void) {
+	void Stop() override {
 		m_ArtNetController.Stop();
 	}
 
-	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
+	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) override {
 		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
 
-	void DmxSync(void) {
+	void DmxSync() override {
 		m_ArtNetController.HandleSync();
 	}
 
-	void DmxBlackout(void) {
+	void DmxBlackout() override {
 		m_ArtNetController.HandleBlackout();
 	}
 
-	void DmxMaster(uint32_t nMaster) {
+	void DmxMaster(uint32_t nMaster) override {
 		m_ArtNetController.SetMaster(nMaster);
 	}
 
-	void DoRunCleanupProcess(bool bDoRun) {
+	void DoRunCleanupProcess(bool bDoRun) override {
 		m_ArtNetController.SetRunTableCleanup(bDoRun);
 	}
 
-	void Run(void) {
+	void Run() override {
 		m_ArtNetController.Run();
 	}
 
-	bool IsSyncDisabled(void) {
+	bool IsSyncDisabled() override {
 		return !m_ArtNetController.GetSynchronization();
 	}
 
-	void Print(void) {
+	void Print() override {
 		puts("ShowFileProtocolArtNet");
 		m_ArtNetController.Print();
 	}
 
 	// ArtNetTrigger
-	void Handler(const struct TArtNetTrigger *ptArtNetTrigger);
+	void Handler(const struct TArtNetTrigger *ptArtNetTrigger) override;
 
 private:
 	ArtNetController m_ArtNetController;

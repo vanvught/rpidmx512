@@ -46,7 +46,7 @@ struct TTCNetTimeCode {
 
 class TCNetTimeCode {
 public:
-	virtual ~TCNetTimeCode(void) {}
+	virtual ~TCNetTimeCode() {}
 
 	virtual void Handler(const struct TTCNetTimeCode *)= 0;
 };

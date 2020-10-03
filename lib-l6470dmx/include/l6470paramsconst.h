@@ -26,8 +26,7 @@
 #ifndef L6470PARAMSCONST_H_
 #define L6470PARAMSCONST_H_
 
-class L6470ParamsConst {
-public:
+struct L6470ParamsConst {
 	static const char MIN_SPEED[];
 	static const char MAX_SPEED[];
 	static const char ACC[];

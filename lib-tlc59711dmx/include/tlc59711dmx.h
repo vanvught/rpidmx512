@@ -39,30 +39,30 @@ enum TTLC59711Type {
 	TTLC59711_TYPE_UNDEFINED
 };
 
-class TLC59711Dmx: public LightSet {
+class TLC59711Dmx final: public LightSet {
 public:
-	TLC59711Dmx(void);
-	~TLC59711Dmx(void);
+	TLC59711Dmx();
+	~TLC59711Dmx() override;
 
-	void Start(uint8_t nPort = 0);
-	void Stop(uint8_t nPort = 0);
+	void Start(uint8_t nPort = 0) override;
+	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
 
 	void Blackout(bool bBlackout);
 
 	void SetLEDType(TTLC59711Type tTLC59711Type);
-	TTLC59711Type GetLEDType(void) {
+	TTLC59711Type GetLEDType() {
 		return m_LEDType;
 	}
 
 	void SetLEDCount(uint8_t nLEDCount);
-	uint8_t GetLEDCount(void) {
+	uint8_t GetLEDCount() {
 		return m_nLEDCount;
 	}
 
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
-	uint32_t GetSpiSpeedHz(void) {
+	uint32_t GetSpiSpeedHz() {
 		return m_nSpiSpeedHz;
 	}
 
@@ -70,29 +70,29 @@ public:
 		m_pTLC59711DmxStore = pTLC59711Store;
 	}
 
-	void Print(void);
+	void Print() override;
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
-	inline uint16_t GetDmxStartAddress(void) {
+	inline uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint(void) {
+	inline uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 public:
-	inline uint8_t GetBoardInstances(void) {
+	inline uint8_t GetBoardInstances() {
 		return m_nBoardInstances;
 	}
 
 private:
-	void Initialize(void);
-	void UpdateMembers(void);
+	void Initialize();
+	void UpdateMembers();
 
 private:
 	uint16_t m_nDmxStartAddress;

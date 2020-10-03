@@ -30,11 +30,11 @@
 
 class ShowFileDisplay {
 public:
-	virtual ~ShowFileDisplay(void) {
+	virtual ~ShowFileDisplay() {
 	}
 
 	virtual void ShowFileName(const char *pFileName, uint8_t nShow)=0;
-	virtual void ShowShowFileStatus(void)=0;
+	virtual void ShowShowFileStatus()=0;
 };
 
 #endif /* SHOWFILEDISPLAY_H_ */

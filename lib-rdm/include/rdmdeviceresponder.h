@@ -45,8 +45,8 @@ class RDMDeviceResponder: public RDMDevice {
 public:
 	RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 
-	void Init(void);
-	void Print(void);
+	void Init();
+	void Print();
 
 	// E120_DEVICE_INFO				0x0060
 	struct TRDMDeviceInfo *GetDeviceInfo(uint16_t nSubDevice = RDM_ROOT_DEVICE);
@@ -56,20 +56,20 @@ public:
 	void SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength);
 
 	// E120_FACTORY_DEFAULTS		0x0090
-	bool GetFactoryDefaults(void);
-	void SetFactoryDefaults(void);
+	bool GetFactoryDefaults();
+	void SetFactoryDefaults();
 
 	// E120_LANGUAGE				0x00B0
-	const char* GetLanguage(void) {
+	const char* GetLanguage() {
 		return m_aLanguage;
 	}
 	void SetLanguage(const char aLanguage[2]);
 
 	// E120_SOFTWARE_VERSION_LABEL	0x00C0
-	const char* GetSoftwareVersion(void) {
+	const char* GetSoftwareVersion() {
 		return m_pSoftwareVersion;
 	}
-	uint8_t GetSoftwareVersionLength(void) {
+	uint8_t GetSoftwareVersionLength() {
 		return m_nSoftwareVersionLength;
 	}
 
@@ -93,12 +93,12 @@ public:
 		m_pRDMFactoryDefaults = pRDMFactoryDefaults;
 	}
 
-	static RDMDeviceResponder* Get(void) {
+	static RDMDeviceResponder* Get() {
 		return s_pThis;
 	}
 
 private:
-	uint16_t CalculateChecksum(void);
+	uint16_t CalculateChecksum();
 
 private:
 	RDMSensors m_RDMSensors;

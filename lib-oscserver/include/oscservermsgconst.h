@@ -26,8 +26,7 @@
 #ifndef OSCSERVERMSGCONST_H_
 #define OSCSERVERMSGCONST_H_
 
-class OscServerMsgConst {
-public:
+struct OscServerMsgConst {
 	static const char PARAMS[];
 	static const char START[];
 	static const char STARTED[];

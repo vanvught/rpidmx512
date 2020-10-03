@@ -30,23 +30,23 @@
 
 class ShowFileProtocolHandler {
 public:
-	virtual ~ShowFileProtocolHandler(void) {
+	virtual ~ShowFileProtocolHandler() {
 	}
 
 	virtual void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength)=0;
-	virtual void DmxSync(void)=0;
-	virtual void DmxBlackout(void)=0;
+	virtual void DmxSync()=0;
+	virtual void DmxBlackout()=0;
 	virtual void DmxMaster(uint32_t nMaster)=0;
 
 	virtual void DoRunCleanupProcess(bool bDoRun)=0;
 
-	virtual void Start(void)=0;
-	virtual void Stop(void)=0;
-	virtual void Run(void)=0;
+	virtual void Start()=0;
+	virtual void Stop()=0;
+	virtual void Run()=0;
 
-	virtual bool IsSyncDisabled(void)=0;
+	virtual bool IsSyncDisabled()=0;
 
-	virtual void Print(void)=0;
+	virtual void Print()=0;
 };
 
 #endif /* SHOWFILEPROTOCOLHANDLER_H_ */

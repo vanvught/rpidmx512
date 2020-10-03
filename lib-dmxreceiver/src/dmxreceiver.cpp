@@ -33,7 +33,7 @@
 
 DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
 	Dmx(nGpioPin, false),
-	m_pLightSet(0),
+	m_pLightSet(nullptr),
 	m_IsActive(false),
 	m_nLength(0)
 {
@@ -48,12 +48,12 @@ DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
 	DEBUG1_EXIT
 }
 
-DMXReceiver::~DMXReceiver(void) {
+DMXReceiver::~DMXReceiver() {
 	DEBUG1_ENTRY
 
 	Stop();
 
-	m_pLightSet = 0;
+	m_pLightSet = nullptr;
 	m_IsActive = false;
 
 	DEBUG1_EXIT
@@ -62,13 +62,13 @@ DMXReceiver::~DMXReceiver(void) {
 void DMXReceiver::SetOutput(LightSet *pLightSet) {
 	DEBUG1_ENTRY
 
-	assert(pLightSet != 0);
+	assert(pLightSet != nullptr);
 	m_pLightSet = pLightSet;
 
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::Start(void) {
+void DMXReceiver::Start() {
 	DEBUG1_ENTRY
 
 	Init();
@@ -77,7 +77,7 @@ void DMXReceiver::Start(void) {
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::Stop(void) {
+void DMXReceiver::Stop() {
 	DEBUG1_ENTRY
 
 	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
@@ -113,7 +113,7 @@ bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 }
 
 const uint8_t* DMXReceiver::Run(int16_t &nLength) {
-	uint8_t* p = 0;
+	uint8_t* p = nullptr;
 
 	if (GetUpdatesPerSecond() == 0) {
 		if (m_IsActive) {
@@ -122,11 +122,11 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		}
 
 		nLength = -1;
-		return 0;
+		return nullptr;
 	} else {
 		const uint8_t *pDmx = GetDmxAvailable();
 
-		if (pDmx != 0) {
+		if (pDmx != nullptr) {
 			const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
 			nLength = dmx_statistics->Statistics.SlotsInPacket;
 
@@ -148,9 +148,9 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 	}
 
 	nLength = 0;
-	return 0;
+	return nullptr;
 }
 
-void DMXReceiver::Print(void) {
+void DMXReceiver::Print() {
 
 }

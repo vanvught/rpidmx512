@@ -45,7 +45,7 @@ public:
 
 private:
     void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_bSetList & nMask) == nMask;
     }
 

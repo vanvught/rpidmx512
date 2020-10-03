@@ -90,7 +90,7 @@ char* OscSimpleMessage::GetString(__attribute__ ((unused)) unsigned argc) {
 		return reinterpret_cast<char *>(m_pOscMessageData);
 	}
 
-	return 0;
+	return nullptr;
 }
 
 OSCBlob OscSimpleMessage::GetBlob(__attribute__ ((unused)) unsigned argc) {
@@ -104,5 +104,5 @@ OSCBlob OscSimpleMessage::GetBlob(__attribute__ ((unused)) unsigned argc) {
 		}
 	}
 
-	return OSCBlob(0, 0);
+	return OSCBlob(nullptr, 0);
 }

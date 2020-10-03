@@ -2,7 +2,7 @@
  * @file l6470dmxmode.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,16 +41,16 @@ enum TL6470DmxModes {
 
 class L6470DmxMode {
 public:
-	virtual ~L6470DmxMode(void);
+	virtual ~L6470DmxMode();
 
-	virtual void InitSwitch(void);
-	virtual void InitPos(void);
+	virtual void InitSwitch();
+	virtual void InitPos();
 
-	virtual void Start(void)= 0;
-	virtual void Stop(void)= 0;
+	virtual void Start()= 0;
+	virtual void Stop()= 0;
 
-	virtual void HandleBusy(void);
-	virtual bool BusyCheck(void);
+	virtual void HandleBusy();
+	virtual bool BusyCheck();
 
 	virtual void Data(const uint8_t *)= 0;
 };

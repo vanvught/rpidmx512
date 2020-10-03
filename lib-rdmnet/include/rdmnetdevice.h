@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,13 +39,13 @@
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
 	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice(void);
+	~RDMNetDevice() override;
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void CopyUID(uint8_t *pUID) override;
 	void CopyCID(uint8_t *pCID) override;

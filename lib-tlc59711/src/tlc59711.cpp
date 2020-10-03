@@ -105,7 +105,7 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	memcpy(m_pBufferBlackout, m_pBuffer, m_nBufSize * 2);
 }
 
-TLC59711::~TLC59711(void) {
+TLC59711::~TLC59711() {
 	delete[] m_pBuffer;
 	m_pBuffer = 0;
 }
@@ -204,7 +204,7 @@ void TLC59711::SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue)
 #endif
 }
 
-int TLC59711::GetBlank(void) const {
+int TLC59711::GetBlank() const {
 	return (m_nFirst32 & (1U << TLC59711_BLANK_SHIFT)) == (1U << TLC59711_BLANK_SHIFT);
 }
 
@@ -218,7 +218,7 @@ void TLC59711::SetBlank(bool pBlank) {
 	UpdateFirst32();
 }
 
-int TLC59711::GetDisplayRepeat(void) const {
+int TLC59711::GetDisplayRepeat() const {
 	return (m_nFirst32 & (1U << TLC59711_DSPRPT_SHIFT)) == (1U << TLC59711_DSPRPT_SHIFT);
 }
 
@@ -232,7 +232,7 @@ void TLC59711::SetDisplayRepeat(bool pDisplayRepeat) {
 	UpdateFirst32();
 }
 
-int TLC59711::GetDisplayTimingReset(void) const {
+int TLC59711::GetDisplayTimingReset() const {
 	return (m_nFirst32 & (1U << TLC59711_TMGRST_SHIFT)) == (1U << TLC59711_TMGRST_SHIFT);
 }
 
@@ -246,7 +246,7 @@ void TLC59711::SetDisplayTimingReset(bool pDisplayTimingReset) {
 	UpdateFirst32();
 }
 
-int TLC59711::GetExternalClock(void) const {
+int TLC59711::GetExternalClock() const {
 	return (m_nFirst32 & (1U << TLC59711_EXTGCK_SHIFT)) == (1U << TLC59711_EXTGCK_SHIFT);
 }
 
@@ -260,7 +260,7 @@ void TLC59711::SetExternalClock(bool pExternalClock) {
 	UpdateFirst32();
 }
 
-int TLC59711::GetOnOffTiming(void) const {
+int TLC59711::GetOnOffTiming() const {
 	return (m_nFirst32 & (1U << TLC59711_OUTTMG_SHIFT)) == (1U << TLC59711_OUTTMG_SHIFT);
 }
 
@@ -274,7 +274,7 @@ void TLC59711::SetOnOffTiming(bool pOnOffTiming) {
 	UpdateFirst32();
 }
 
-uint8_t TLC59711::GetGbcRed(void) const {
+uint8_t TLC59711::GetGbcRed() const {
 	return (m_nFirst32 >> TLC59711_GS_RED_SHIFT) & TLC59711_GS_MASK;
 }
 
@@ -285,7 +285,7 @@ void TLC59711::SetGbcRed(uint8_t nValue) {
 	UpdateFirst32();
 }
 
-uint8_t TLC59711::GetGbcGreen(void) const {
+uint8_t TLC59711::GetGbcGreen() const {
 	return (m_nFirst32 >> TLC59711_GS_GREEN_SHIFT) & TLC59711_GS_MASK;
 }
 
@@ -296,7 +296,7 @@ void TLC59711::SetGbcGreen(uint8_t nValue) {
 	UpdateFirst32();
 }
 
-uint8_t TLC59711::GetGbcBlue(void) const {
+uint8_t TLC59711::GetGbcBlue() const {
 	return (m_nFirst32 >> TLC59711_GS_BLUE_SHIFT) & TLC59711_GS_MASK;
 }
 
@@ -307,7 +307,7 @@ void TLC59711::SetGbcBlue(uint8_t nValue) {
 	UpdateFirst32();
 }
 
-void TLC59711::UpdateFirst32(void) {
+void TLC59711::UpdateFirst32() {
 	for (uint32_t i = 0; i < m_nBoards; i++) {
 		const uint32_t nIndex = TLC59711Channels::U16BIT * i;
 		m_pBuffer[nIndex] = __builtin_bswap16(static_cast<uint16_t>((m_nFirst32 >> 16)));
@@ -315,7 +315,7 @@ void TLC59711::UpdateFirst32(void) {
 	}
 }
 
-void TLC59711::Dump(void) {
+void TLC59711::Dump() {
 #ifndef NDEBUG
 	printf("Command:0x%.2X\n", m_nFirst32 >> TLC59711_COMMAND_SHIFT);
 	printf("\tOUTTMG:%d (default=%d)\n", GetOnOffTiming(), TLC59711_OUTTMG_DEFAULT);
@@ -354,7 +354,7 @@ void TLC59711::Dump(void) {
 #endif
 }
 
-void TLC59711::Update(void) {
+void TLC59711::Update() {
 	assert(m_pBuffer != 0);
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
@@ -363,7 +363,7 @@ void TLC59711::Update(void) {
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize * 2));
 }
 
-void TLC59711::Blackout(void) {
+void TLC59711::Blackout() {
 	assert(m_pBufferBlackout != 0);
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));

@@ -40,7 +40,7 @@ const char* RDMSubDevices::GetTypeString(type tType) {
 }
 
 type RDMSubDevices::GetTypeString(const char *pValue) {
-	assert(pValue != 0);
+	assert(pValue != nullptr);
 
 	for (uint32_t i = 0; i < (type::UNDEFINED); i++) {
 		if (strcasecmp(pValue, RDMSubDevicesConst::TYPE[i]) == 0) {

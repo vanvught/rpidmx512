@@ -31,30 +31,30 @@
 #include "ws28xxdmx.h"
 #include "ws28xx.h"
 
-class WS28xxDmxGrouping: public WS28xxDmx {
+class WS28xxDmxGrouping final: public WS28xxDmx {
 public:
-	WS28xxDmxGrouping(void);
-	~WS28xxDmxGrouping(void);
+	WS28xxDmxGrouping();
+	~WS28xxDmxGrouping() override;
 
-	void Start(uint8_t nPort = 0);
+	void Start(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght) override;
 
-	void SetLEDType(TWS28XXType tLedType);
-	void SetLEDCount(uint16_t nLedCount);
+	void SetLEDType(TWS28XXType tLedType) override;
+	void SetLEDCount(uint16_t nLedCount) override;
 	void SetLEDGroupCount(uint16_t nLedGroupCount);
-	uint32_t GetLEDGroupCount(void) {
+	uint32_t GetLEDGroupCount() {
 		return m_nLEDGroupCount;
 	}
 
-	void Print(void);
+	void Print() override;
 
 public: // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 private:
-	void UpdateMembers(void);
+	void UpdateMembers();
 
 private:
 	uint8_t *m_pDmxData;

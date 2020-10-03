@@ -33,7 +33,7 @@
 #define PCA9685_I2C_ADDRESSES_MAX	62
 
 #define CHANNEL(x)	(static_cast<uint8_t>(x))
-#define VALUE(x)	(static_cast<uint16_>(x))
+#define VALUE(x)	(static_cast<uint16_t>(x))
 
 #define PCA9685_VALUE_MIN	VALUE(0)
 #define PCA9685_VALUE_MAX	VALUE(4096)
@@ -53,22 +53,22 @@ enum TPCA9685Och {
 class PCA9685 {
 public:
 	PCA9685(uint8_t nAddress = PCA9685_I2C_ADDRESS_DEFAULT);
-	~PCA9685(void);
+	~PCA9685();
 
 	void SetPreScaller(uint8_t);
-	uint8_t GetPreScaller(void);
+	uint8_t GetPreScaller();
 
 	void SetFrequency(uint16_t);
-	uint16_t GetFrequency(void);
+	uint16_t GetFrequency();
 
 	void SetOCH(TPCA9685Och);
-	TPCA9685Och GetOCH(void);
+	TPCA9685Och GetOCH();
 
 	void SetInvert(bool);
-	bool GetInvert(void);
+	bool GetInvert();
 
 	void SetOutDriver(bool);
-	bool GetOutDriver(void);
+	bool GetOutDriver();
 
 	void Write(uint8_t, uint16_t, uint16_t);
 	void Read(uint8_t, uint16_t *, uint16_t *);
@@ -82,7 +82,7 @@ public:
 	void SetFullOn(uint8_t, bool);
 	void SetFullOff(uint8_t, bool);
 
-	void Dump(void);
+	void Dump();
 
 private:
 	uint8_t CalcPresScale(uint16_t);
@@ -93,7 +93,7 @@ private:
 	void AutoIncrement(bool);
 
 private:
-	void I2cSetup(void);
+	void I2cSetup();
 
 	void I2cWriteReg(uint8_t, uint8_t);
 	uint8_t I2cReadReg(uint8_t);

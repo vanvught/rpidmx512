@@ -36,16 +36,16 @@
 class DMXReceiver: public Dmx {
 public:
 	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
-	~DMXReceiver(void);
+	~DMXReceiver();
 
 	void SetOutput(LightSet *pLightSet);
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
 	const uint8_t* Run(int16_t &nLength);
 
-	void Print(void);
+	void Print();
 
 private:
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nLength);

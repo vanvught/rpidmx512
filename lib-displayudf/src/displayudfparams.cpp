@@ -24,14 +24,14 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -53,7 +53,9 @@
 
 #include "debug.h"
 
-static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
+//static constexpr const char UNUSED[] = "not_used";
+
+static constexpr const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		DisplayUdfParamsConst::TITLE,
 		DisplayUdfParamsConst::BOARD_NAME,
 		NetworkConst::PARAMS_IP_ADDRESS,
@@ -62,10 +64,10 @@ static const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		DisplayUdfParamsConst::ACTIVE_PORTS,
 		ArtNetParamsConst::NODE_SHORT_NAME,
 		NetworkConst::PARAMS_HOSTNAME,
-		ArtNetParamsConst::UNIVERSE_PORT[0],
-		ArtNetParamsConst::UNIVERSE_PORT[1],
-		ArtNetParamsConst::UNIVERSE_PORT[2],
-		ArtNetParamsConst::UNIVERSE_PORT[3],
+		LightSetConst::PARAMS_UNIVERSE_PORT[0],
+		LightSetConst::PARAMS_UNIVERSE_PORT[1],
+		LightSetConst::PARAMS_UNIVERSE_PORT[2],
+		LightSetConst::PARAMS_UNIVERSE_PORT[3],
 		NetworkConst::PARAMS_NET_MASK,
 		LightSetConst::PARAMS_DMX_START_ADDRESS,
 		ArtNetParamsConst::DESTINATION_IP_PORT[0],
@@ -196,12 +198,15 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	}
 }
 
+void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != nullptr);
+	assert(s != nullptr);
+
+	(static_cast<DisplayUdfParams*>(p))->callbackFunction(s);
+}
+
 void DisplayUdfParams::Dump() {
 #ifndef NDEBUG
-	if (m_tDisplayUdfParams.nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DisplayUdfParamsConst::FILE_NAME);
 
 	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
@@ -215,11 +220,4 @@ void DisplayUdfParams::Dump() {
 	}
 
 #endif
-}
-
-void DisplayUdfParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<DisplayUdfParams*>(p))->callbackFunction(s);
 }

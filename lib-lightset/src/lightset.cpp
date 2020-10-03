@@ -27,16 +27,9 @@
 
 #include "lightset.h"
 
-LightSet *LightSet::s_pThis = 0;
+LightSet *LightSet::s_pThis = nullptr;
 
-LightSet::LightSet(void) : m_pLightSetDisplay(0) {
-	assert(s_pThis == 0);
+LightSet::LightSet()  {
+	assert(s_pThis == nullptr);
 	s_pThis = this;
-}
-
-LightSet::~LightSet(void) {
-}
-
-void LightSet::Print(void) {
-	// override
 }

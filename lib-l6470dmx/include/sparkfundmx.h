@@ -50,17 +50,17 @@ struct TSparkFunStores {
 
 class SparkFunDmx: public LightSet {
 public:
-	SparkFunDmx(void);
-	~SparkFunDmx(void);
+	SparkFunDmx();
+	~SparkFunDmx() override;
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t);
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
 
-	void Print(void);
+	void Print() override;
 
-	uint32_t GetMotorsConnected(void) {
+	uint32_t GetMotorsConnected() {
 		return AutoDriver::getNumBoards();
 	}
 
@@ -69,16 +69,16 @@ public:
 	}
 
 // RDM
-	bool SetDmxStartAddress(uint16_t nDmxStartAddress);
-	uint16_t GetDmxStartAddress(void) {
+	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	uint16_t GetDmxFootprint(void) {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
 
 //
 	void SetGlobalSpiCs(uint8_t nSpiCs) {
@@ -117,7 +117,7 @@ public:
 	}
 
 public:
-	void ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores=0);
+	void ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores=nullptr);
 
 private:
 	AutoDriver *m_pAutoDriver[SPARKFUN_DMX_MAX_MOTORS];

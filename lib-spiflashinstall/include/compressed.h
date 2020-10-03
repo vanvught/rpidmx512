@@ -44,7 +44,7 @@ enum TCheckCodes {
 class Compressed {
 public:
 	static uint32_t Check(const char *pFilename);
-	static bool IsSupported(void);
+	static bool IsSupported();
 
 private:
 	static int32_t GetFileSize(const char *pFilename);

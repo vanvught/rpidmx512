@@ -26,8 +26,7 @@
 #ifndef L6470DMXCONST_H_
 #define L6470DMXCONST_H_
 
-class L6470DmxConst {
-public:
+struct L6470DmxConst {
 	static const char FILE_NAME_MOTOR[];
 };
 

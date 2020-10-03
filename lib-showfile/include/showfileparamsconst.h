@@ -26,8 +26,7 @@
 #ifndef SHOWFILEPARAMSCONST_H_
 #define SHOWFILEPARAMSCONST_H_
 
-class ShowFileParamsConst {
-public:
+struct ShowFileParamsConst {
 	static  const char FILE_NAME[];
 
 	static  const char FORMAT[];

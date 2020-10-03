@@ -40,12 +40,12 @@
 
 #include "debug.h"
 
-DisplayUdf *DisplayUdf::s_pThis = 0;
+DisplayUdf *DisplayUdf::s_pThis = nullptr;
 
-DisplayUdf::DisplayUdf(void): Display(DisplayType::SSD1306) {
+DisplayUdf::DisplayUdf(): Display(DisplayType::SSD1306) {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
@@ -53,9 +53,6 @@ DisplayUdf::DisplayUdf(void): Display(DisplayType::SSD1306) {
 	}
 
 	DEBUG_EXIT
-}
-
-DisplayUdf::~DisplayUdf(void) {
 }
 
 void DisplayUdf::SetTitle(const char *format, ...) {
@@ -71,7 +68,7 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	DEBUG_PUTS(m_aTitle);
 }
 
-void DisplayUdf::Show(void) {
+void DisplayUdf::Show() {
 	DEBUG1_ENTRY
 
 	uint8_t nHwTextLength;
@@ -103,10 +100,10 @@ void DisplayUdf::Show(void) {
 	DEBUG1_EXIT
 }
 
-void DisplayUdf::ShowDmxStartAddress(void) {
+void DisplayUdf::ShowDmxStartAddress() {
 	DEBUG_ENTRY
 
-	if (LightSet::Get() != 0) {
+	if (LightSet::Get() != nullptr) {
 		Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS],
 				"DMX S:%3d F:%3d",
 				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
@@ -116,18 +113,18 @@ void DisplayUdf::ShowDmxStartAddress(void) {
 	DEBUG_EXIT
 }
 
-void DisplayUdf::ShowIpAddress(void) {
+void DisplayUdf::ShowIpAddress() {
 	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }
 
-void DisplayUdf::ShowNetmask(void) {
+void DisplayUdf::ShowNetmask() {
 	DEBUG_PRINTF("%d " IPSTR, Network::Get()->GetNetmaskCIDR(), IP2STR(Network::Get()->GetNetmask()));
 	Printf(m_aLabels[DISPLAY_UDF_LABEL_NETMASK], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	ShowIpAddress();
 }
 
-void DisplayUdf::ShowHostName(void) {
+void DisplayUdf::ShowHostName() {
 	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME]);
 	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
 }
@@ -152,11 +149,11 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 	}
 }
 
-void DisplayUdf::ShowShutdown(void) {
+void DisplayUdf::ShowShutdown() {
 	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
-void DisplayUdf::Set(uint8_t nLine, enum TDisplayUdfLabels tLabel) {
+void DisplayUdf::Set(uint8_t nLine, TDisplayUdfLabels tLabel) {
 	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
 		if (m_aLabels[i] == nLine) {
 			m_aLabels[i] = m_aLabels[tLabel];

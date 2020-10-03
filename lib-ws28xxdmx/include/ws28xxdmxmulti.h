@@ -39,23 +39,23 @@ enum TWS28xxDmxMultiSrc {
 	WS28XXDMXMULTI_SRC_E131
 };
 
-class WS28xxDmxMulti: public LightSet {
+class WS28xxDmxMulti final: public LightSet {
 public:
 	WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc);
-	virtual ~WS28xxDmxMulti(void);
+	~WS28xxDmxMulti() override;
 
-	void Initialize(void);
+	void Initialize();
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
 	void Blackout(bool bBlackout);
 
 	virtual void SetLEDType(TWS28XXType tWS28xxMultiType);
-	TWS28XXType GetLEDType(void) {
-		if (m_pLEDStripe != 0) {
+	TWS28XXType GetLEDType() {
+		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetLEDType();
 		}
 		return m_tLedType;
@@ -74,37 +74,37 @@ public:
 	}
 
 	void SetLEDCount(uint16_t nLedCount);
-	uint32_t GetLEDCount(void) {
+	uint32_t GetLEDCount() {
 		return m_nLedCount;
 	}
 
 	void SetActivePorts(uint8_t nActiveOutputs);
-	uint32_t GetActivePorts(void) {
+	uint32_t GetActivePorts() {
 		return m_nActiveOutputs;
 	}
 
-	uint32_t GetUniverses(void) {
+	uint32_t GetUniverses() {
 		return m_nUniverses;
 	}
 
 	void SetUseSI5351A(bool bUse) {
 		m_bUseSI5351A = bUse;
 	}
-	bool GetUseSI5351A(void) {
+	bool GetUseSI5351A() {
 		return m_bUseSI5351A;
 	}
 
-	WS28xxMultiBoard GetBoard(void) {
-		if (m_pLEDStripe != 0) {
+	WS28xxMultiBoard GetBoard() {
+		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetBoard();
 		}
 		return WS28XXMULTI_BOARD_UNKNOWN;
 	}
 
-	void Print(void);
+	void Print() override;
 
 private:
-	void UpdateMembers(void);
+	void UpdateMembers();
 
 private:
 	TWS28xxDmxMultiSrc m_tSrc;

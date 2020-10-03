@@ -257,8 +257,6 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeed(static_cast<i2c::speed>(m_tDmxSerialParams.nI2cSpeedMode)), isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE));
 
 	nSize = builder.GetSize();
-
-	return;
 }
 
 void DmxSerialParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {

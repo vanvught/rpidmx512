@@ -33,12 +33,12 @@
 class DmxSlotInfo {
 public:
 	DmxSlotInfo(struct TLightSetSlotInfo *ptLightSetSlotInfo, uint32_t nSize);
-	~DmxSlotInfo(void);
+	~DmxSlotInfo();
 
 	void FromString(const char *pString, uint32_t &nMask);
 	const char *ToString(uint32_t nMask);
 
-	void Dump(void);
+	void Dump();
 
 private:
 	char *Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLightSetSlotInfo);

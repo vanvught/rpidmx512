@@ -38,9 +38,9 @@ public:
 	RDMDiscovery(uint8_t nPort = 0);
 
 	void SetUid(const uint8_t *);
-	const uint8_t *GetUid(void);
+	const uint8_t *GetUid();
 
-	void Full(void);
+	void Full();
 
 private:
 	bool FindDevices(uint64_t, uint64_t);

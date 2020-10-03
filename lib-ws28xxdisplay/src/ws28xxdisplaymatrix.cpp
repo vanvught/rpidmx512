@@ -28,9 +28,9 @@
 #include "ws28xxdisplaymatrix.h"
 
 #if defined(USE_SPI_DMA)
- #include "h3/ws28xxdma.h"
+# include "h3/ws28xxdma.h"
 #else
- #include "ws28xx.h"
+# include "ws28xx.h"
 #endif
 
 #include "../lib-device/src/font_cp437.h"
@@ -46,11 +46,11 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 	m_nMaxLeds(nColumns * nRows),
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
 	m_nMaxLine(nRows / FONT_CP437_CHAR_H),
-	m_pWS28xx(0),
+	m_pWS28xx(nullptr),
 	m_bUpdateNeeded(false),
 	m_nPosition(0),
 	m_nLine(0),
-	m_ptColons(0)
+	m_ptColons(nullptr)
 {
 	DEBUG2_ENTRY
 
@@ -58,7 +58,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 	assert(nRows % FONT_CP437_CHAR_H == 0);
 
 	m_ptColons = new struct TWS28xxDisplayMatrixColon[m_nMaxPosition];
-	assert(m_ptColons != 0);
+	assert(m_ptColons != nullptr);
 
 	SetColonsOff();
 
@@ -69,15 +69,15 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 	DEBUG2_ENTRY
 
-	if (m_pWS28xx != 0) {
+	if (m_pWS28xx != nullptr) {
 		Cls();
 
 		delete m_pWS28xx;
-		m_pWS28xx = 0;
+		m_pWS28xx = nullptr;
 	}
 
 	delete[] m_ptColons;
-	m_ptColons = 0;
+	m_ptColons = nullptr;
 
 	DEBUG2_EXIT
 }
@@ -85,13 +85,13 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 void WS28xxDisplayMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
 	DEBUG2_ENTRY
 
-	assert(m_pWS28xx == 0);
+	assert(m_pWS28xx == nullptr);
 #if defined(USE_SPI_DMA)
 	m_pWS28xx = new WS28xxDMA(tLedType, m_nMaxLeds, tRGBMapping);
 #else
 	m_pWS28xx = new WS28xx(tLedType, m_nMaxLeds, tRGBMapping);
 #endif
-	assert(m_pWS28xx != 0);
+	assert(m_pWS28xx != nullptr);
 
 	m_pWS28xx->Initialize();
 
@@ -111,6 +111,8 @@ void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint
 
 	for (uint32_t nWidth = 0; nWidth < FONT_CP437_CHAR_W; nWidth++) {
 		uint8_t nByte = cp437_font[static_cast<int>(nChar)][nWidth];
+
+		//FIXME This can be optimized. See rgbpanel code
 
 		if (nWidth == (FONT_CP437_CHAR_W - 1)) {
 			if (m_ptColons[m_nPosition].nBits != 0) {
@@ -258,7 +260,7 @@ void WS28xxDisplayMatrix::SetColonsOff() {
 
 uint8_t WS28xxDisplayMatrix::ReverseBits(uint8_t nBits) {
 #if defined (H3)
-	const uint32_t input = static_cast<uint32_t>(nBits);
+	const auto input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
 	return static_cast<uint8_t>((output >> 24));

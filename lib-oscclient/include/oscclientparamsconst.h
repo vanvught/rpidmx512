@@ -28,8 +28,7 @@
 
 #include <stdint.h>
 
-class OscClientParamsConst {
-public:
+struct OscClientParamsConst {
 	static const char FILE_NAME[];
 
 	static const char SERVER_IP[];

@@ -64,6 +64,10 @@ inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src
 	return dest;
 }
 
+inline static void* mempcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+	return (char *)memcpy (dest, src, n) + n;
+}
+
 inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
 	char *dp = (char *) dst;
 	const char *sp = (const char *) src;

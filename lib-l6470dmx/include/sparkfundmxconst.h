@@ -26,8 +26,7 @@
 #ifndef SPARKFUNDMXCONST_H_
 #define SPARKFUNDMXCONST_H_
 
-class SparkFunDmxConst {
-public:
+struct SparkFunDmxConst {
 	static const char MSG_INIT[];
 };
 

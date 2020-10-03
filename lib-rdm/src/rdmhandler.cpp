@@ -57,8 +57,8 @@ enum TPowerState {
 RDMHandler::RDMHandler(bool bIsRdm):
 	m_bIsRDM(bIsRdm),
 	m_IsMuted(false),
-	m_pRdmDataIn(0),
-	m_pRdmDataOut(0)
+	m_pRdmDataIn(nullptr),
+	m_pRdmDataOut(nullptr)
 {
 }
 
@@ -127,7 +127,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 	DEBUG1_EXIT
 }
 
-void RDMHandler::RespondMessageAck(void) {
+void RDMHandler::RespondMessageAck() {
 	struct TRdmMessageNoSc *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
 	if(pRdmDataIn->param_data_length == 0) {
@@ -142,55 +142,55 @@ void RDMHandler::RespondMessageNack(uint16_t nReason) {
 }
 
 const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
-//  {E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	0,                   				1, true , false},
-	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	0,             						0, false, true , false},
-	{E120_DEVICE_INFO,                	&RDMHandler::GetDeviceInfo,               	0,                					0, false, true , true },
-	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	0,									0, true , true , false},
-	{E120_DEVICE_MODEL_DESCRIPTION,    	&RDMHandler::GetDeviceModelDescription,		0,                 					0, true , true , true },
-	{E120_MANUFACTURER_LABEL,          	&RDMHandler::GetManufacturerLabel,         	0,                        			0, true , true , true },
+//  {E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
+	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	nullptr,             				0, false, true , false},
+	{E120_DEVICE_INFO,                	&RDMHandler::GetDeviceInfo,               	nullptr,                			0, false, true , true },
+	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	nullptr,							0, true , true , false},
+	{E120_DEVICE_MODEL_DESCRIPTION,    	&RDMHandler::GetDeviceModelDescription,		nullptr,                 			0, true , true , true },
+	{E120_MANUFACTURER_LABEL,          	&RDMHandler::GetManufacturerLabel,         	nullptr,                        	0, true , true , true },
 	{E120_DEVICE_LABEL,                	&RDMHandler::GetDeviceLabel,               	&RDMHandler::SetDeviceLabel,		0, true , true , true },
 	{E120_FACTORY_DEFAULTS,            	&RDMHandler::GetFactoryDefaults,          	&RDMHandler::SetFactoryDefaults,	0, true , true , true },
-	{E120_LANGUAGE_CAPABILITIES,       	&RDMHandler::GetLanguage,			        0,                 					0, true , true , false},
+	{E120_LANGUAGE_CAPABILITIES,       	&RDMHandler::GetLanguage,			        nullptr,                 			0, true , true , false},
 	{E120_LANGUAGE,						&RDMHandler::GetLanguage,			        &RDMHandler::SetLanguage,           0, true , true , false},
-	{E120_SOFTWARE_VERSION_LABEL,		&RDMHandler::GetSoftwareVersionLabel,   	0,                  				0, false, true , false},
-	{E120_BOOT_SOFTWARE_VERSION_ID,		&RDMHandler::GetBootSoftwareVersionId, 		0,                 					0, true , true , false},
-	{E120_BOOT_SOFTWARE_VERSION_LABEL,	&RDMHandler::GetBootSoftwareVersionLabel,	0,                   				0, true , true , false},
+	{E120_SOFTWARE_VERSION_LABEL,		&RDMHandler::GetSoftwareVersionLabel,   	nullptr,                  			0, false, true , false},
+	{E120_BOOT_SOFTWARE_VERSION_ID,		&RDMHandler::GetBootSoftwareVersionId, 		nullptr,                 			0, true , true , false},
+	{E120_BOOT_SOFTWARE_VERSION_LABEL,	&RDMHandler::GetBootSoftwareVersionLabel,	nullptr,                   			0, true , true , false},
 	{E120_DMX_PERSONALITY,		      	&RDMHandler::GetPersonality,               	&RDMHandler::SetPersonality,        0, true , true , false},
-	{E120_DMX_PERSONALITY_DESCRIPTION,	&RDMHandler::GetPersonalityDescription,    	0,                 					1, true , true , false},
+	{E120_DMX_PERSONALITY_DESCRIPTION,	&RDMHandler::GetPersonalityDescription,    	nullptr,                 			1, true , true , false},
 	{E120_DMX_START_ADDRESS,           	&RDMHandler::GetDmxStartAddress,          	&RDMHandler::SetDmxStartAddress,	0, false, true , false},
-	{E120_SLOT_INFO,					&RDMHandler::GetSlotInfo,					0,									0, true , true , false},
-	{E120_SLOT_DESCRIPTION,				&RDMHandler::GetSlotDescription,			0,									2, true , true , false},
-	{E120_SENSOR_DEFINITION,		   	&RDMHandler::GetSensorDefinition,			0,									1, true , true , false},
+	{E120_SLOT_INFO,					&RDMHandler::GetSlotInfo,					nullptr,							0, true , true , false},
+	{E120_SLOT_DESCRIPTION,				&RDMHandler::GetSlotDescription,			nullptr,							2, true , true , false},
+	{E120_SENSOR_DEFINITION,		   	&RDMHandler::GetSensorDefinition,			nullptr,							1, true , true , false},
 	{E120_SENSOR_VALUE,				   	&RDMHandler::GetSensorValue,				&RDMHandler::SetSensorValue,		1, true , true , false},
-	{E120_RECORD_SENSORS,			   	0,											&RDMHandler::SetRecordSensors,	 	0, true , true , false},
+	{E120_RECORD_SENSORS,			   	nullptr,									&RDMHandler::SetRecordSensors,	 	0, true , true , false},
 	{E120_DEVICE_HOURS,                	&RDMHandler::GetDeviceHours,    	      	&RDMHandler::SetDeviceHours,       	0, true , true , false},
 	{E120_REAL_TIME_CLOCK,		       	&RDMHandler::GetRealTimeClock,  			&RDMHandler::SetRealTimeClock,    	0, true , true , false},
 	{E120_IDENTIFY_DEVICE,		       	&RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,    	0, false, true , true },
-	{E120_RESET_DEVICE,			    	0,                                			&RDMHandler::SetResetDevice,       	0, true , true , true },
+	{E120_RESET_DEVICE,			    	nullptr,                                	&RDMHandler::SetResetDevice,       	0, true , true , true },
 	{E120_POWER_STATE,					&RDMHandler::GetPowerState,					&RDMHandler::SetPowerState,			0, true , true , false},
 	{E137_1_IDENTIFY_MODE,			   	&RDMHandler::GetIdentifyMode,				&RDMHandler::SetIdentifyMode,		0, true , true , false},
-	{E137_2_LIST_INTERFACES,			&RDMHandler::GetInterfaceList,				0,									0, false, false, true },
-	{E137_2_INTERFACE_LABEL,			&RDMHandler::GetInterfaceName,				0,									4, false, false, true },
-	{E137_2_INTERFACE_HARDWARE_ADDRESS_TYPE1,&RDMHandler::GetHardwareAddress,		0,									4, false, false, true },
+	{E137_2_LIST_INTERFACES,			&RDMHandler::GetInterfaceList,				nullptr,							0, false, false, true },
+	{E137_2_INTERFACE_LABEL,			&RDMHandler::GetInterfaceName,				nullptr,							4, false, false, true },
+	{E137_2_INTERFACE_HARDWARE_ADDRESS_TYPE1,&RDMHandler::GetHardwareAddress,		nullptr,							4, false, false, true },
 	{E137_2_IPV4_DHCP_MODE,				&RDMHandler::GetDHCPMode,					&RDMHandler::SetDHCPMode,			4, false, false, true },
 	{E137_2_IPV4_ZEROCONF_MODE,			&RDMHandler::GetZeroconf,					&RDMHandler::SetZeroconf,			4, false, false, true },
-	{E137_2_IPV4_CURRENT_ADDRESS,		&RDMHandler::GetAddressNetmask,				0,									4, false, false, true },
-	{E137_2_INTERFACE_RENEW_DHCP, 		0,											&RDMHandler::RenewDhcp,				4, false, false, true },
+	{E137_2_IPV4_CURRENT_ADDRESS,		&RDMHandler::GetAddressNetmask,				nullptr,							4, false, false, true },
+	{E137_2_INTERFACE_RENEW_DHCP, 		nullptr,									&RDMHandler::RenewDhcp,				4, false, false, true },
 	{E137_2_IPV4_STATIC_ADDRESS,		&RDMHandler::GetStaticAddress,				&RDMHandler::SetStaticAddress,		4, false, false, true },
-	{E137_2_INTERFACE_APPLY_CONFIGURATION,0,										&RDMHandler::ApplyConfiguration,	4, false, false, true },
-	{E137_2_DNS_IPV4_NAME_SERVER,		&RDMHandler::GetNameServers,				0,									1, false, false, true },
+	{E137_2_INTERFACE_APPLY_CONFIGURATION,nullptr,									&RDMHandler::ApplyConfiguration,	4, false, false, true },
+	{E137_2_DNS_IPV4_NAME_SERVER,		&RDMHandler::GetNameServers,				nullptr,							1, false, false, true },
 	{E137_2_IPV4_DEFAULT_ROUTE,			&RDMHandler::GetDefaultRoute,				&RDMHandler::SetDefaultRoute,		4, false, false, true },
 	{E137_2_DNS_HOSTNAME,               &RDMHandler::GetHostName,                   &RDMHandler::SetHostName,           0, false, false, true },
 	{E137_2_DNS_DOMAIN_NAME,			&RDMHandler::GetDomainName,					&RDMHandler::SetDomainName,			0, false, false, true }
 };
 
 const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS_SUB_DEVICES[] {
-	{E120_SUPPORTED_PARAMETERS,        &RDMHandler::GetSupportedParameters,			0,                       			0, true, true ,  false},
-	{E120_DEVICE_INFO,                 &RDMHandler::GetDeviceInfo,					0,                        			0, true, true ,  false},
-	{E120_PRODUCT_DETAIL_ID_LIST, 	   &RDMHandler::GetProductDetailIdList,			0,						 			0, true, true ,  false},
-	{E120_SOFTWARE_VERSION_LABEL,      &RDMHandler::GetSoftwareVersionLabel,		0,                       			0, true, true ,  false},
+	{E120_SUPPORTED_PARAMETERS,        &RDMHandler::GetSupportedParameters,			nullptr,                   			0, true, true ,  false},
+	{E120_DEVICE_INFO,                 &RDMHandler::GetDeviceInfo,					nullptr,                   			0, true, true ,  false},
+	{E120_PRODUCT_DETAIL_ID_LIST, 	   &RDMHandler::GetProductDetailIdList,			nullptr,							0, true, true ,  false},
+	{E120_SOFTWARE_VERSION_LABEL,      &RDMHandler::GetSoftwareVersionLabel,		nullptr,                    		0, true, true ,  false},
 	{E120_DMX_PERSONALITY,		       &RDMHandler::GetPersonality,            		&RDMHandler::SetPersonality,        0, true, true ,  false},
-	{E120_DMX_PERSONALITY_DESCRIPTION, &RDMHandler::GetPersonalityDescription,		0,                        			1, true, true ,  false},
+	{E120_DMX_PERSONALITY_DESCRIPTION, &RDMHandler::GetPersonalityDescription,		nullptr,                        	1, true, true ,  false},
 	{E120_DMX_START_ADDRESS,           &RDMHandler::GetDmxStartAddress,          	&RDMHandler::SetDmxStartAddress,	0, true, true ,  false},
 	{E120_IDENTIFY_DEVICE,		       &RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,		0, true, true ,  false}
 };
@@ -202,8 +202,8 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS_SUB_DEVICES[] {
 void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 	DEBUG_ENTRY
 
-	assert(pRdmDataIn != 0);
-	assert(pRdmDataOut != 0);
+	assert(pRdmDataIn != nullptr);
+	assert(pRdmDataOut != nullptr);
 
 	pRdmDataOut[0] = 0xFF; // Invalidate outgoing message;
 
@@ -334,7 +334,7 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t nSubDevice) {
 	DEBUG1_ENTRY
 
-	TPidDefinition const *pid_handler = 0;
+	TPidDefinition const *pid_handler = nullptr;
 	bool bRDM;
 	bool bRDMNet;
 
@@ -929,7 +929,7 @@ void RDMHandler::GetIdentifyDevice(__attribute__((unused)) uint16_t nSubDevice) 
 
 	pRdmDataOut->param_data_length = 1;
 
-	assert(RDMIdentify::Get() != 0);
+	assert(RDMIdentify::Get() != nullptr);
 	pRdmDataOut->param_data[0] = RDMIdentify::Get()->IsEnabled() ? 1 : 0;
 
 	RespondMessageAck();
@@ -1110,7 +1110,7 @@ void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	uint8_t nLength;
 	const char *pText = RDMSlotInfo::GetCategoryText(tSlotInfo.nCategory, nLength);
 
-	if (pText == 0) {
+	if (pText == nullptr) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
