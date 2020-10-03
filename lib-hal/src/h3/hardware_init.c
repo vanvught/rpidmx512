@@ -133,26 +133,25 @@ void hardware_led_set(int state) {
 
 void __attribute__((cold)) hardware_init(void) {
 	h3_watchdog_disable();
-	h3_i2c_begin();	// Needed for RTC
-	sys_time_init();
 	h3_timer_init();
 	h3_hs_timer_init();
+	sys_time_init();
 	console_init();
 	gic_init();
 	h3_thermal_init();
 	emac_init();
 	h3_spi_begin();
+	h3_i2c_begin();
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
 
 #ifndef ARM_ALLOW_MULTI_CORE
-	uint8_t cpu_number = 1;
+	uint8_t cpu_number;
 	for (cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
 		h3_cpu_off(cpu_number);
 	}
 #endif
 
-//	if (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) {
 	const FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) ? 1 : 0);
 	if (result != FR_OK) {
 		char buffer[32];
@@ -160,7 +159,6 @@ void __attribute__((cold)) hardware_init(void) {
 		console_error(buffer);
 		assert(0);
 	}
-//	}
 
 	// Power led
 	#define PRCM_APB0_GATE_PIO (0x1 << 0)

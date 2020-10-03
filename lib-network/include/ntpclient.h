@@ -32,15 +32,15 @@
 #include "ntp.h"
 
 enum class NtpClientStatus {
-	INIT,
 	IDLE,
+	FAILED,
 	STOPPED,
 	WAITING
 };
 
 class NtpClientDisplay {
 public:
-	virtual ~NtpClientDisplay(void) {
+	virtual ~NtpClientDisplay() {
 	}
 
 	virtual void ShowNtpClientStatus(NtpClientStatus nStatus)=0;
@@ -49,14 +49,14 @@ public:
 class NtpClient {
 public:
 	NtpClient(uint32_t nServerIp = 0);
-	~NtpClient(void);
 
-	void Init(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void Print(void);
+	void Print();
 
-	NtpClientStatus GetStatus(void) {
+	NtpClientStatus GetStatus() {
 		return m_tStatus;
 	}
 
@@ -64,21 +64,47 @@ public:
 		m_pNtpClientDisplay = pNtpClientDisplay;
 	}
 
+	static NtpClient *Get() {
+		return s_pThis;
+	}
+
 private:
 	void SetUtcOffset(float fUtcOffset);
+	void GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction);
+	void Send();
+	bool Receive();
+
+	struct TimeStamp {
+		uint32_t nSeconds;
+		uint32_t nFraction;
+	};
+
+	void Difference(const struct TimeStamp *Start, const struct TimeStamp *Stop, int32_t &nDiffSeconds, uint32_t &nDiffFraction);
+	int SetTimeOfDay();
+
+	void PrintNtpTime(const char *pText, const struct TimeStamp *pNtpTime);
 
 private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
-	int32_t m_nHandle;
-	NtpClientStatus m_tStatus;
+	int32_t m_nHandle{-1};
+	NtpClientStatus m_tStatus{NtpClientStatus::IDLE};
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
-	time_t m_InitTime;
-	uint32_t m_MillisRequest;
-	uint32_t m_MillisLastPoll;
+	uint32_t m_MillisRequest{0};
+	uint32_t m_MillisLastPoll{0};
 
-	NtpClientDisplay *m_pNtpClientDisplay = 0;
+	struct TimeStamp T1{0,0};	// time request sent by client
+	struct TimeStamp T2{0,0};	// time request received by server
+	struct TimeStamp T3{0,0};	// time reply sent by server
+	struct TimeStamp T4{0,0};	// time reply received by client
+
+	int32_t m_nOffsetSeconds{0};
+	uint32_t m_nOffsetMicros{0};
+
+	NtpClientDisplay *m_pNtpClientDisplay = nullptr;
+
+	static NtpClient *s_pThis;
 };
 
 #endif /* NTPCLIENT_H_ */

@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,7 @@ public:
 	}
 
 	void WatchdogInit() {
+		m_bIsWatchdog = true;
 		bcm2835_watchdog_init();
 	}
 
@@ -115,7 +116,12 @@ public:
 	}
 
 	void WatchdogStop() {
+		m_bIsWatchdog = false;
 		bcm2835_watchdog_stop();
+	}
+
+	bool IsWatchdog() {
+		return m_bIsWatchdog;
 	}
 
 	const char* GetWebsiteUrl() {
@@ -137,6 +143,7 @@ private:
 	uint32_t m_nBoardId;
 	uint32_t m_nBoardRevision;
 	TSocType m_tSocType;
+	bool m_bIsWatchdog{false};
 
 	static Hardware *s_pThis;
 };

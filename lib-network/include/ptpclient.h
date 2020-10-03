@@ -1,6 +1,5 @@
-
 /**
- * @file hwclock.h
+ * @file ptpclient.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -24,68 +23,75 @@
  * THE SOFTWARE.
  */
 
-#ifndef HWCLOCK_H_
-#define HWCLOCK_H_
+#ifndef PTPCLIENT_H_
+#define PTPCLIENT_H_
 
 #include <stdint.h>
 #include <sys/time.h>
 
-namespace rtc {
-enum {
-	MCP7941X,
-	DS3231
-};
-}  // namespace rtc
+#include "ptp.h"
 
-struct rtc_time {
-    int tm_sec;
-    int tm_min;
-    int tm_hour;
-    int tm_mday;
-    int tm_mon;
-    int tm_year;
-    int tm_wday;     /* unused */
-    int tm_yday;     /* unused */
-    int tm_isdst;    /* unused */
-};
-
-class HwClock {
+class PtpClientDisplay {
 public:
-	HwClock();
-
-	void HcToSys(); // Set the System Clock from the Hardware Clock
-	void SysToHc(); // Set the Hardware Clock from the System Clock
-
-	bool Set(const struct rtc_time *pRtcTime);
-	bool Get(struct rtc_time *pRtcTime) {
-		return RtcGet(pRtcTime);
+	virtual ~PtpClientDisplay() {
 	}
+};
 
-	bool IsConnected() const {
-		return m_bIsConnected;
-	}
+class PtpClient {
+public:
+	PtpClient();
 
-	void Run(bool bDoRun);
+	void Start();
+	void Run();
 
 	void Print();
 
-	static HwClock *Get() {
+	void SetDisplay(PtpClientDisplay *pPtpClientDisplay) {
+		m_pPtpClientDisplay = pPtpClientDisplay;
+	}
+
+	static PtpClient *Get() {
 		return s_pThis;
 	}
 
 private:
-	void RtcProbe();
-	bool RtcSet(const struct rtc_time *pRtcTime);
-	bool RtcGet(struct rtc_time *pRtcTime);
+	void HandleEventMessage();
+	void HandleGeneralMessage();
+	void GetTime() {
+        struct timeval tv;
+        gettimeofday(&tv, nullptr);
+        m_nSeconds =  static_cast<uint32_t>(tv.tv_sec);
+        m_nMicroSeconds =  static_cast<uint32_t>(tv.tv_usec) * 1000U;
+	}
 
 private:
-	bool m_bIsConnected{false};
-	uint32_t m_nType;
-	uint8_t m_nAddress;
-	uint32_t m_nSetDelayMicros;
-	uint32_t m_nLastHcToSysMillis;
+	int32_t m_nHandleEvent{-1};
+	int32_t m_nHandleGeneral{-1};
+	uint32_t m_nMulticastIp{0};
 
-	static HwClock *s_pThis;
+	PTPMessage m_Message;
+	uint32_t m_nBytesReceived;
+	uint32_t m_nMasterIpAddress;
+
+	uint32_t m_nSeconds;
+	uint32_t m_nMicroSeconds;
+	uint16_t m_DelayReqSequenceId{0};
+
+	PtpClientDisplay *m_pPtpClientDisplay{nullptr};
+
+	struct TimeStamp {
+		uint32_t Seconds;
+		uint32_t NanoSeconds;
+	};
+
+	TimeStamp T1{0, 0};
+	TimeStamp T2{0, 0};
+	TimeStamp T3{0, 0};
+	TimeStamp T4{0, 0};
+
+	struct PTPDelayReq m_DelayReq;
+
+	static PtpClient *s_pThis;
 };
 
-#endif /* HWCLOCK_H_ */
+#endif /* PTPCLIENT_H_ */

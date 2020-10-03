@@ -36,39 +36,39 @@ extern "C" {
 	void net_handle(void);
 }
 
-class NetworkH3emac: public Network {
+class NetworkH3emac final : public Network {
 public:
-	NetworkH3emac(void);
-	~NetworkH3emac(void);
+	NetworkH3emac();
+	~NetworkH3emac();
 
-	void Init(NetworkParamsStore *pNetworkParamsStore = 0);
+	void Init(NetworkParamsStore *pNetworkParamsStore = nullptr);
 
-	void Shutdown(void);
+	void Shutdown() override;
 
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
+	int32_t Begin(uint16_t nPort) override;
+	int32_t End(uint16_t nPort) override;
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+	void MacAddressCopyTo(uint8_t *pMacAddress) override;
 
-	void JoinGroup(int32_t nHandle, uint32_t nIp);
-	void LeaveGroup(int32_t nHandle, uint32_t nIp);
+	void JoinGroup(int32_t nHandle, uint32_t nIp) override;
+	void LeaveGroup(int32_t nHandle, uint32_t nIp) override;
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) override;
+	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) override;
 
-	void SetIp(uint32_t nIp);
-	void SetNetmask(uint32_t nNetmask);
-	void SetHostName(const char *pHostName);
-	bool SetZeroconf(void);
+	void SetIp(uint32_t nIp) override;
+	void SetNetmask(uint32_t nNetmask) override;
+	void SetHostName(const char *pHostName) override;
+	bool SetZeroconf() override;
 
-	bool EnableDhcp(void);
+	bool EnableDhcp() override; 
 
-	void Run(void) {
+	void Run() {
 		net_handle();
 	}
 
 private:
-	void SetDefaultIp(void);
+	void SetDefaultIp();
 };
 
 #endif /* NETWORKH3EMAC_H_ */

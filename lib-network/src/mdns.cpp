@@ -77,45 +77,35 @@ struct TmDNSHeader {
 	uint16_t additionalCount;
 } __attribute__((__packed__));
 
-MDNS::MDNS(void):
-	m_nHandle(-1),
-	m_pBuffer(0),
-	m_pOutBuffer(0),
-	m_nRemoteIp(0),
-	m_nRemotePort(0),
-	m_nBytesReceived(0),
-	m_pName(0),
-	m_nLastAnnounceMillis(0),
-	m_nDNSServiceRecords(0)
-{
+MDNS::MDNS() {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton(MDNS_MULTICAST_ADDRESS, &group_ip));
 	m_nMulticastIp = group_ip.s_addr;
 
 	m_pBuffer = new uint8_t[BUFFER_SIZE];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_pOutBuffer = new uint8_t[BUFFER_SIZE];
-	assert(m_pOutBuffer != 0);
+	assert(m_pOutBuffer != nullptr);
 
 	memset(&m_aServiceRecords, 0, sizeof(m_aServiceRecords));
 }
 
-MDNS::~MDNS(void) {
+MDNS::~MDNS() {
 	delete[] m_pOutBuffer;
-	m_pOutBuffer = 0;
+	m_pOutBuffer = nullptr;
 
 	delete[] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 }
 
-void MDNS::Start(void) {
+void MDNS::Start() {
 	assert(m_nHandle == -1);
 
 	m_nHandle = Network::Get()->Begin(MDNS_PORT);
 	Network::Get()->JoinGroup(m_nHandle, m_nMulticastIp);
 
-	if (m_pName == 0) {
+	if (m_pName == nullptr) {
 		SetName(Network::Get()->GetHostName());
 	}
 
@@ -124,21 +114,21 @@ void MDNS::Start(void) {
 	Network::Get()->SetDomainName(&MDNS_TLD[1]);
 }
 
-void MDNS::Stop(void) {
+void MDNS::Stop() {
 	Network::Get()->End(MDNS_PORT);
 	m_nHandle = -1;
 }
 
 void MDNS::SetName(const char *pName) {
-	assert(pName != 0);
+	assert(pName != nullptr);
 	assert(strlen(pName) != 0);
 
-	if (m_pName != 0) {
+	if (m_pName != nullptr) {
 		delete[] m_pName;
 	}
 
 	m_pName = new char[strlen(pName) + sizeof(MDNS_TLD)];
-	assert(m_pName != 0);
+	assert(m_pName != nullptr);
 
 	strcpy(m_pName, pName);
 	strcpy(m_pName + strlen(pName), MDNS_TLD);
@@ -149,7 +139,7 @@ void MDNS::SetName(const char *pName) {
 void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	DEBUG1_ENTRY
 
-	struct TmDNSHeader *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_aServiceRecordsData[nIndex].aBuffer);
+	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_aServiceRecordsData[nIndex].aBuffer);
 
 	pHeader->nFlags = __builtin_bswap16(0x8400);
 	pHeader->queryCount = 0;
@@ -157,7 +147,7 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	pHeader->authorityCount = __builtin_bswap16(1);
 	pHeader->additionalCount = __builtin_bswap16(0);
 
-	uint8_t *pData = reinterpret_cast<uint8_t*>(&m_aServiceRecordsData[nIndex].aBuffer) + sizeof(struct TmDNSHeader);
+	auto *pData = reinterpret_cast<uint8_t*>(&m_aServiceRecordsData[nIndex].aBuffer) + sizeof(struct TmDNSHeader);
 
 	pData += CreateAnswerServiceSrv(nIndex, pData);
 	pData += CreateAnswerServiceTxt(nIndex, pData);
@@ -234,23 +224,23 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t nPort, const char *pTextContent) {
 	DEBUG1_ENTRY
 
-	assert(pServName != 0);
+	assert(pServName != nullptr);
 	assert(nPort != 0);
 
 	uint32_t i;
 
 	for (i = 0; i < SERVICE_RECORDS_MAX; i++) {
-		if (m_aServiceRecords[i].pName == 0) {
+		if (m_aServiceRecords[i].pName == nullptr) {
 			m_aServiceRecords[i].nPort = nPort;
 
-			if (pName == 0) {
+			if (pName == nullptr) {
 				m_aServiceRecords[i].pName = new char[1 + strlen(Network::Get()->GetHostName() + strlen(pServName))];
-				assert(m_aServiceRecords[i].pName != 0);
+				assert(m_aServiceRecords[i].pName != nullptr);
 
 				strcpy(m_aServiceRecords[i].pName, Network::Get()->GetHostName());
 			} else {
 				m_aServiceRecords[i].pName = new char[1 + strlen(pName) + strlen(pServName)];
-				assert(m_aServiceRecords[i].pName != 0);
+				assert(m_aServiceRecords[i].pName != nullptr);
 
 				strcpy(m_aServiceRecords[i].pName, pName);
 			}
@@ -260,14 +250,14 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 			const char *p = FindFirstDotFromRight(pServName);
 
 			m_aServiceRecords[i].pServName = new char[1 + strlen(p) + 12];
-			assert(m_aServiceRecords[i].pServName != 0);
+			assert(m_aServiceRecords[i].pServName != nullptr);
 
 			strcpy(m_aServiceRecords[i].pServName, p);
 			strcat(m_aServiceRecords[i].pServName, "._udp" MDNS_TLD);
 
-			if (pTextContent != 0) {
+			if (pTextContent != nullptr) {
 				m_aServiceRecords[i].pTextContent = new char[1 + strlen(pTextContent)];
-				assert(m_aServiceRecords[i].pTextContent != 0);
+				assert(m_aServiceRecords[i].pTextContent != nullptr);
 
 				strcpy(m_aServiceRecords[i].pTextContent, pTextContent);
 			}
@@ -331,10 +321,10 @@ uint32_t MDNS::WriteDnsName(const char *pSource, char *pDestination, bool bNullT
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-void MDNS::CreateAnswerLocalIpAddress(void) {
+void MDNS::CreateAnswerLocalIpAddress() {
 	DEBUG1_ENTRY
 
-	struct TmDNSHeader *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_tAnswerLocalIp.aBuffer);
+	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_tAnswerLocalIp.aBuffer);
 
 	pHeader->nFlags = __builtin_bswap16(0x8400);
 	pHeader->queryCount = 0;
@@ -403,7 +393,7 @@ uint32_t MDNS::CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination) {
 	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
 	pDst += 4;
 
-	if (m_aServiceRecords[nIndex].pTextContent == 0) {
+	if (m_aServiceRecords[nIndex].pTextContent == nullptr) {
 		*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16(0x0001);	// Data length
 		pDst += 2;
 		*pDst = 0;														// Text length
@@ -491,7 +481,7 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 			const bool isDnsDs = (strcmp(DNS_SD_SERVICE, DnsName) == 0);
 
 			for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
-				if (m_aServiceRecords[i].pName != 0) {
+				if (m_aServiceRecords[i].pName != nullptr) {
 					if ((isDnsDs || (strcmp(m_aServiceRecords[i].pServName, DnsName) == 0)) && (nType == DNSRecordTypePTR) ) {
 						Network::Get()->SendTo(m_nHandle, &m_aServiceRecordsData[i].aBuffer, m_aServiceRecordsData[i].nSize, m_nMulticastIp, MDNS_PORT);
 					}
@@ -504,10 +494,10 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 	DEBUG_EXIT
 }
 
-void MDNS::Parse(void) {
+void MDNS::Parse() {
 	DEBUG_ENTRY
 
-	struct TmDNSHeader *pmDNSHeader = reinterpret_cast<struct TmDNSHeader*>(m_pBuffer);
+	auto *pmDNSHeader = reinterpret_cast<struct TmDNSHeader*>(m_pBuffer);
 	const uint16_t nFlags = __builtin_bswap16(pmDNSHeader->nFlags);
 
 #ifndef NDEBUG
@@ -523,7 +513,7 @@ void MDNS::Parse(void) {
 	DEBUG_EXIT
 }
 
-void MDNS::Run(void) {
+void MDNS::Run() {
 #if 0
 	 uint32_t nNow = Hardware::Get()->Millis();
 #endif

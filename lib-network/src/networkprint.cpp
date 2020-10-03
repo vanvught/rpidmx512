@@ -27,10 +27,12 @@
 
 #include "network.h"
 
-void Network::Print(void) {
+void Network::Print() {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
+#if !defined(H3)
 	printf(" Domain    : %s\n", m_aDomainName);
+#endif
 	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
 	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
 	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));

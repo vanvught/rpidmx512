@@ -35,26 +35,26 @@ enum class TFTPMode {
 
 class TFTPDaemon {
 public:
-	TFTPDaemon(void);
-	virtual ~TFTPDaemon(void);
+	TFTPDaemon();
+	virtual ~TFTPDaemon();
 
-	bool Run(void);
+	bool Run();
 
 	virtual bool FileOpen(const char *pFileName, TFTPMode tMode)=0;
 	virtual bool FileCreate(const char *pFileName, TFTPMode tMode)=0;
-	virtual bool FileClose(void)=0;
+	virtual bool FileClose()=0;
 	virtual size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 	virtual size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 
-	virtual void Exit(void)=0;
+	virtual void Exit()=0;
 
 private:
-	void HandleRequest(void);
-	void HandleRecvAck(void);
-	void HandleRecvData(void);
+	void HandleRequest();
+	void HandleRecvAck();
+	void HandleRecvData();
 	void SendError (uint16_t usErrorCode, const char *pErrorMessage);
-	void DoRead(void);
-	void DoWriteAck(void);
+	void DoRead();
+	void DoWriteAck();
 
 private:
 	enum class TFTPState {
@@ -65,18 +65,18 @@ private:
 		WRQ_SEND_ACK,
 		WRQ_RECV_PACKET
 	};
-	TFTPState m_nState;
-	int m_nIdx;
+	TFTPState m_nState{TFTPState::INIT};
+	int m_nIdx{-1};
 	uint8_t m_Buffer[528];
-	uint32_t m_nFromIp;
-	uint16_t m_nFromPort;
-	size_t m_nLength;
-	uint16_t m_nBlockNumber;
-	size_t m_nDataLength;
-	uint16_t m_nPacketLength;
-	bool m_bIsLastBlock;
+	uint32_t m_nFromIp{0};
+	uint16_t m_nFromPort{0};
+	size_t m_nLength{0};
+	uint16_t m_nBlockNumber{0};
+	size_t m_nDataLength{0};
+	uint16_t m_nPacketLength{0};
+	bool m_bIsLastBlock{false};
 
-	static TFTPDaemon* Get(void) {
+	static TFTPDaemon* Get() {
 		return s_pThis;
 	}
 

@@ -1,5 +1,5 @@
 /**
- * @file mdnsservices.h
+ * @file utc.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,13 +21,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef MDNSSERVICES_H_
-#define MDNSSERVICES_H_
+#ifndef UTC_H_
+#define UTC_H_
 
-#define MDNS_SERVICE_MIDI		"._apple-midi"
-#define MDNS_SERVICE_OSC		"._osc"
-#define MDNS_SERVICE_CONFIG		"._config"
-#define MDNS_SERVICE_TFTP		"._tftp"
-#define MDNS_SERVICE_NTP		"._ntp"
+#include <stdint.h>
 
-#endif /* INCLUDE_MDNSSERVICES_H_ */
+enum TUtcOffset {
+	UTC_OFFSET_MIN = -12,
+	UTC_OFFSET_MAX = 14
+};
+
+class Utc {
+public:
+	static int32_t Validate(float fOffset);
+};
+
+#endif /* UTC_H_ */

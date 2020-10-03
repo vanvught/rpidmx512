@@ -33,15 +33,15 @@ extern "C" {
 	int32_t bcm2835_vc_get_board_mac_address(/*@out@*/uint8_t *);
 }
 
-NetworkBaremetalMacAddress::NetworkBaremetalMacAddress(void) {
+NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
 	strcpy(m_aIfName, "lo");
 }
 
-NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress(void) {
+NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress() {
 }
 
 void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
-	assert(pMacAddress != 0);
+	assert(pMacAddress != nullptr);
 
 	bcm2835_vc_get_board_mac_address(pMacAddress);
 }

@@ -74,27 +74,27 @@ public:
 
 	void Dump();
 
-	bool isDhcpUsed() {
+	bool isDhcpUsed() const {
 		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
-	uint32_t GetIpAddress() {
+	uint32_t GetIpAddress() const {
 		return m_tNetworkParams.nLocalIp;
 	}
 
-	uint32_t GetNetMask() {
+	uint32_t GetNetMask() const {
 		return m_tNetworkParams.nNetmask;
 	}
 
-	const char *GetHostName() {
+	const char *GetHostName() const {
 		return m_tNetworkParams.aHostName;
 	}
 
-	uint32_t GetDefaultGateway() {
+	uint32_t GetDefaultGateway() const {
 		return m_tNetworkParams.nGatewayIp;
 	}
 
-	uint32_t GetNameServer() {
+	uint32_t GetNameServer() const {
 		return m_tNetworkParams.nNameServerIp;
 	}
 
@@ -117,7 +117,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tNetworkParams.nSetList & nMask) == nMask;
     }
 

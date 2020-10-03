@@ -96,23 +96,15 @@ struct TTFTPDataPacket {
 	uint8_t Data[max::DATA_LEN];
 } PACKED;
 
-TFTPDaemon *TFTPDaemon::s_pThis = 0;
+TFTPDaemon *TFTPDaemon::s_pThis = nullptr;
 
-TFTPDaemon::TFTPDaemon(void):
-		m_nState(TFTPState::INIT),
-		m_nIdx(-1),
-		m_nFromIp(0),
-		m_nFromPort(0),
-		m_nLength(0),
-		m_nBlockNumber(0),
-		m_nDataLength(0),
-		m_nPacketLength(0),
-		m_bIsLastBlock(false)
+TFTPDaemon::TFTPDaemon()
+		
 {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
 
-	if (s_pThis != 0) {
+	if (s_pThis != nullptr) {
 		s_pThis->Exit();
 	}
 
@@ -120,24 +112,24 @@ TFTPDaemon::TFTPDaemon(void):
 
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
 
-	assert(Network::Get() != 0);
+	assert(Network::Get() != nullptr);
 	memset(m_Buffer, 0, sizeof(m_Buffer));
 
 	DEBUG_EXIT
 }
 
-TFTPDaemon::~TFTPDaemon(void) {
+TFTPDaemon::~TFTPDaemon() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("s_pThis=%p", s_pThis);
 
 	Network::Get()->End(TFTP_UDP_PORT);
 
-	s_pThis = 0;
+	s_pThis = nullptr;
 
 	DEBUG_EXIT
 }
 
-bool TFTPDaemon::Run(void) {
+bool TFTPDaemon::Run() {
 
 	if (m_nState == TFTPState::INIT) {
 		if (m_nFromPort != 0) {
@@ -185,8 +177,8 @@ bool TFTPDaemon::Run(void) {
 	return true;
 }
 
-void TFTPDaemon::HandleRequest(void) {
-	struct TTFTPReqPacket *packet = reinterpret_cast<struct TTFTPReqPacket *>(&m_Buffer);
+void TFTPDaemon::HandleRequest() {
+	auto *packet = reinterpret_cast<struct TTFTPReqPacket *>(&m_Buffer);
 
 	const uint16_t nOpCode = __builtin_bswap16(packet->OpCode);
 
@@ -256,8 +248,8 @@ void TFTPDaemon::SendError (uint16_t nErrorCode, const char *pErrorMessage) {
 	Network::Get()->SendTo(m_nIdx, &ErrorPacket, sizeof ErrorPacket, m_nFromIp, m_nFromPort);
 }
 
-void TFTPDaemon::DoRead(void) {
-	struct TTFTPDataPacket *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
+void TFTPDaemon::DoRead() {
+	auto *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
 
 	if (m_nState == TFTPState::RRQ_SEND_PACKET) {
 		m_nDataLength = FileRead(pDataPacket->Data, max::DATA_LEN, ++m_nBlockNumber);
@@ -282,8 +274,8 @@ void TFTPDaemon::DoRead(void) {
 	m_nState = TFTPState::RRQ_RECV_ACK;
 }
 
-void TFTPDaemon::HandleRecvAck(void) {
-	struct TTFTPAckPacket *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
+void TFTPDaemon::HandleRecvAck() {
+	auto *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
 
 	if (pAckPacket->OpCode == __builtin_bswap16(OP_CODE_ACK)) {
 
@@ -295,8 +287,8 @@ void TFTPDaemon::HandleRecvAck(void) {
 	}
 }
 
-void TFTPDaemon::DoWriteAck(void) {
-	struct TTFTPAckPacket *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
+void TFTPDaemon::DoWriteAck() {
+	auto *pAckPacket = reinterpret_cast<struct TTFTPAckPacket*>(&m_Buffer);
 
 	pAckPacket->OpCode = __builtin_bswap16(OP_CODE_ACK);
 	pAckPacket->BlockNumber =  __builtin_bswap16(m_nBlockNumber);
@@ -307,8 +299,8 @@ void TFTPDaemon::DoWriteAck(void) {
 	Network::Get()->SendTo(m_nIdx, &m_Buffer, sizeof(struct TTFTPAckPacket), m_nFromIp, m_nFromPort);
 }
 
-void TFTPDaemon::HandleRecvData(void) {
-	struct TTFTPDataPacket *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
+void TFTPDaemon::HandleRecvData() {
+	auto *pDataPacket = reinterpret_cast<struct TTFTPDataPacket*>(&m_Buffer);
 
 	if (pDataPacket->OpCode == __builtin_bswap16(OP_CODE_DATA)) {
 		m_nDataLength = m_nLength - 4;

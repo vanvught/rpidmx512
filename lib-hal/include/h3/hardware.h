@@ -31,7 +31,8 @@
 
 #include "hardware.h"
 
-#include "c/sys_time.h"
+#include "hwclock.h"
+
 #include "c/hardware.h"
 
 #include "h3.h"
@@ -39,12 +40,6 @@
 #include "h3_thermal.h"
 
 #include "reboothandler.h"
-
-enum TSocType {
-	SOC_TYPE_H2_PLUS,
-	SOC_TYPE_H3,
-	SOC_TYPE_UNKNOWN
-};
 
 class Hardware {
 public:
@@ -56,7 +51,7 @@ public:
 	const char *GetCpuName(uint8_t &nLength);
 	const char *GetSocName(uint8_t &nLength);
 
-	uint32_t GetReleaseId() {
+	uint32_t GetReleaseId() const {
 		return 0;	// TODO U-Boot version
 	}
 
@@ -92,12 +87,8 @@ public:
 		m_pRebootHandler = pRebootHandler;
 	}
 
-	bool PowerOff() {
+	bool PowerOff() const {
 		return false;
-	}
-
-	void SetSysTime(time_t nTime) {
-		sys_time_set_systime(nTime);
 	}
 
 	bool SetTime(const struct tm *pTime);
@@ -133,15 +124,15 @@ public:
 		h3_watchdog_disable();
 	}
 
-	bool IsWatchdog() {
+	bool IsWatchdog() const {
 		return m_bIsWatchdog;
 	}
 
-	TBootDevice GetBootDevice(){
+	TBootDevice GetBootDevice() const {
 		return static_cast<TBootDevice>(h3_get_boot_device());
 	}
 
-	const char *GetWebsiteUrl() {
+	const char *GetWebsiteUrl() const {
 		return "www.orangepi-dmx.org";
 	}
 
@@ -150,8 +141,11 @@ public:
 	}
 
 private:
-	RebootHandler *m_pRebootHandler = 0;
-	bool m_bIsWatchdog = false;
+#if !defined(DISABLE_RTC)
+	HwClock m_HwClock;
+#endif
+	RebootHandler *m_pRebootHandler{nullptr};
+	bool m_bIsWatchdog{false};
 
 	static Hardware *s_pThis;
 };

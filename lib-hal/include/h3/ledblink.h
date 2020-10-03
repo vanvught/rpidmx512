@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,12 +65,12 @@ public:
 		}
 	}
 
-	uint32_t GetFrequency(void) {
+	uint32_t GetFrequency(void) const {
 		return m_nFreqHz;
 	}
 
 	void SetMode(tLedBlinkMode tMode);
-	tLedBlinkMode GetMode(void) {
+	tLedBlinkMode GetMode(void) const {
 		return m_tMode;
 	}
 
@@ -101,13 +101,13 @@ public:
 	}
 
 private:
-	uint32_t m_nFreqHz;
-	tLedBlinkMode m_tMode;
-	LedBlinkDisplay *m_pLedBlinkDisplay;
+	uint32_t m_nFreqHz{0};
+	tLedBlinkMode m_tMode{LEDBLINK_MODE_UNKNOWN};
+	LedBlinkDisplay *m_pLedBlinkDisplay{nullptr};
 	//
-	uint32_t m_nTicksPerSecond = 1000000 / 2;
-	int32_t m_nToggleLed = 0;
-	uint32_t m_nMicrosPrevious = 0;
+	uint32_t m_nTicksPerSecond{1000000 / 2};
+	int32_t m_nToggleLed{0};
+	uint32_t m_nMicrosPrevious{0};
 
 	static LedBlink *s_pThis;
 };

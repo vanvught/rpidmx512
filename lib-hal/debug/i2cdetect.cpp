@@ -47,13 +47,13 @@ inline static bool i2c_is_connected(uint8_t address) {
 		ret = FUNC_PREFIX(i2c_read(&buf, 1));
 	} else {
 		/* This is known to corrupt the Atmel AT24RF08 EEPROM */
-		ret = FUNC_PREFIX(i2c_write(0, 0));
+		ret = FUNC_PREFIX(i2c_write(nullptr, 0));
 	}
 
 	return (ret == 0) ? true : false;
 }
 
-I2cDetect::I2cDetect(void) {
+I2cDetect::I2cDetect() {
 	uint8_t first = 0x03, last = 0x77;
 	uint8_t i, j;
 

@@ -39,23 +39,23 @@ struct TFirmwareVersion {
 class FirmwareVersion {
 public:
 	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
-	~FirmwareVersion(void);
+	~FirmwareVersion();
 
-	void Print(const char *pTitle = 0);
+	void Print(const char *pTitle = nullptr);
 
-	const struct TFirmwareVersion* GetVersion(void) {
+	const struct TFirmwareVersion* GetVersion() {
 		return &m_tFirmwareVersion;
 	}
 
-	const char* GetPrint(void) {
+	const char* GetPrint() {
 		return m_aPrint;
 	}
 
-	const char* GetSoftwareVersion(void) {
+	const char* GetSoftwareVersion() {
 		return m_tFirmwareVersion.SoftwareVersion;
 	}
 
-	static FirmwareVersion* Get(void) {
+	static FirmwareVersion* Get() {
 		return s_pThis;
 	}
 

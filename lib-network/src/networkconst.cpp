@@ -31,8 +31,12 @@ const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
 const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
 const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
 const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
+
 const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
 const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
+
+const char NetworkConst::PARAMS_PTP_ENABLE[] = "ptp_enable";
+const char NetworkConst::PARAMS_PTP_DOMAIN[] = "ptp_domain";
 
 #if !defined (H3)
  const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";

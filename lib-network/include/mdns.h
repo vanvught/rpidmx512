@@ -57,22 +57,22 @@ struct TMDNSRecordData {
 
 class MDNS {
 public:
-	MDNS(void);
-	~MDNS(void);
+	MDNS();
+	~MDNS();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	void Print(void);
+	void Print();
 
 	void SetName(const char *pName);
 
-	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = 0);
+	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = nullptr);
 
 private:
-	void Parse(void);
+	void Parse();
 	void HandleRequest(uint16_t nQuestions);
 
 	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
@@ -80,7 +80,7 @@ private:
 	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
 	const char *FindFirstDotFromRight(const char *pString);
 
-	void CreateAnswerLocalIpAddress(void);
+	void CreateAnswerLocalIpAddress();
 
 	uint32_t CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination);
 	uint32_t CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination);
@@ -95,17 +95,17 @@ private:
 
 private:
 	uint32_t m_nMulticastIp;
-	int32_t m_nHandle;
-	uint8_t *m_pBuffer;
-	uint8_t *m_pOutBuffer;
-	uint32_t m_nRemoteIp;
-	uint16_t m_nRemotePort;
-	uint16_t m_nBytesReceived;
-	char *m_pName;
-	uint32_t m_nLastAnnounceMillis;
+	int32_t m_nHandle{-1};
+	uint8_t *m_pBuffer{nullptr};
+	uint8_t *m_pOutBuffer{nullptr};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
+	uint16_t m_nBytesReceived{0};
+	char *m_pName{nullptr};
+	uint32_t m_nLastAnnounceMillis{0};
 	TMDNSServiceRecord m_aServiceRecords[SERVICE_RECORDS_MAX];
 	TMDNSRecordData m_aServiceRecordsData[SERVICE_RECORDS_MAX];
-	uint32_t m_nDNSServiceRecords;
+	uint32_t m_nDNSServiceRecords{0};
 	TMDNSRecordData m_tAnswerLocalIp;
 };
 

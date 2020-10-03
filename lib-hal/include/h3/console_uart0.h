@@ -57,8 +57,8 @@ extern void console_status(uint32_t, const char *);
 inline static void console_set_top_row(__attribute__((unused)) uint16_t __d) {}
 inline static void console_clear_line(__attribute__((unused)) uint16_t __d) {}
 inline static void console_set_cursor(__attribute__((unused)) uint16_t __d, __attribute__((unused)) uint16_t __e) {}
-inline static void console_save_cursor(void) {}
-inline static void console_restore_cursor(void) {}
+inline static void console_save_cursor() {}
+inline static void console_restore_cursor() {}
 
 #ifdef __cplusplus
 }

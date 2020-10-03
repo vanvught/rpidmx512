@@ -30,7 +30,7 @@
 static const float s_ValidOffets[] = { -9.5, -3.5, 3.5, 4.5, 5.5, 5.75, 6.5, 8.75, 9.5, 10.5, 12.75 };
 
 int32_t Utc::Validate(float fOffset) {
-	int32_t nInt = static_cast<int32_t>(fOffset);
+	auto nInt = static_cast<int32_t>(fOffset);
 
 	if ((nInt >= -12) && (nInt <= 14)) {
 		if (fOffset == static_cast<float>(nInt)) {

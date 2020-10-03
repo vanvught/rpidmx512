@@ -1,8 +1,8 @@
 /**
- * @file utc.h
+ * @file hwclockset.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
+
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,19 +23,50 @@
  * THE SOFTWARE.
  */
 
-#ifndef UTC_H_
-#define UTC_H_
+#ifdef NDEBUG
+#undef NDEBUG //TODO Remove
+#endif
 
-#include <stdint.h>
+#include <cassert>
+#include <time.h>
+#include <sys/time.h>
 
-enum TUtcOffset {
-	UTC_OFFSET_MIN = -12,
-	UTC_OFFSET_MAX = 14
-};
+#include "hwclock.h"
 
-class Utc {
-public:
-	static int32_t Validate(float fOffset);
-};
+#include "debug.h"
 
-#endif /* UTC_H_ */
+bool HwClock::Set(const rtc_time *pRtcTime) {
+	if (!m_bIsConnected) {
+		return false;
+	}
+
+	struct timeval tvT1;
+	gettimeofday(&tvT1, nullptr);
+
+	RtcSet(pRtcTime);
+
+	struct tm tm;
+	tm.tm_sec = pRtcTime->tm_sec;
+	tm.tm_min = pRtcTime->tm_min;
+	tm.tm_hour = pRtcTime->tm_hour;
+	tm.tm_mday = pRtcTime->tm_mday;
+	tm.tm_mon = pRtcTime->tm_mon;
+	tm.tm_year = pRtcTime->tm_year;
+	tm.tm_isdst = 0;
+
+	struct timeval tv;
+	tv.tv_sec = mktime(&tm);
+
+	struct timeval tvT2;
+	gettimeofday(&tvT2, nullptr);
+
+	if (tvT2.tv_usec - tvT1.tv_usec >= 0) {
+		tv.tv_usec = tvT2.tv_usec - tvT1.tv_usec;
+	} else {
+		tv.tv_usec = 1000000 - (tvT1.tv_usec - tvT2.tv_usec);
+	}
+
+	settimeofday(&tv, nullptr);
+
+	return true;
+}
