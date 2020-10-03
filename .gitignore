@@ -39,6 +39,7 @@ lib*.a
 
 # Eclipse
 .tracecompass
+*/.tracecompass
 
 # H2+/H3 binaries 
 uImage
@@ -51,15 +52,16 @@ orangepi*.img.gz
 kernel.img
 kernel7.img
 
-# examples binaries
 # lib-i2c
 i2cdetect
+
 # lib-display
 detect
 lcd1602
 lcd2004
 oled128x32
 ssd1306
+
 # lib-l6470
 get_set_param_test
 get_temp
@@ -70,12 +72,13 @@ simple_move
 SparkFunGetSetParamTest
 #lib-rdmnet
 dummy_device
+
 # lib-pca9685
 servo
 simple
+
 # lib-tlc59711
 pwmled
-do-tftp.sh
 linux_artnet
 linux_e131
 linux_osc
@@ -85,19 +88,17 @@ osc.txt
 *.Linux
 *.MacOS
 # 
-#
 lib-bob/examples/si5351a
 linux_rpi_artipprog/linux_rpi_artipprog
 *.gz
 #
 */sofware_version_id.h
 */include/sofware_version_id.h
-sofware_version_id.h
-lib-rdmnet/example/sofware_version_id.h
-lib-rdmnet/example/generate_sofware_version_id.sh
-opi_dmx_monitor/include/software_version.h
-opi_emac_artnet_serial/generate_sofware_version_id.sh
-opi_emac_artnet_rdm_l6470/generate_sofware_version_id.sh
-opi_emac_e131_artnet/generate_sofware_version_id.sh
-opi_rdm_responder_l6470/generate_sofware_version_id.sh
-opi_rdm_responder/generate_sofware_version_id.sh
+*/example/sofware_version_id.h
+
+# Scripts
+loop.sh
+do-tftp.sh
+*/do-tftp.sh
+do-tftp-one.sh
+*/do-tftp-one.sh
