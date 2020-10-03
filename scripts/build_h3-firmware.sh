@@ -16,7 +16,6 @@ array=('PLATFORM=ORANGE_PI' 'PLATFORM=ORANGE_PI NO_EXT_LED=1' 'PLATFORM=ORANGE_P
 
 do_build() 
 {
-	./makeall_firmware_h3.sh $1 $2 clean
 	./makeall_firmware_h3.sh $1 $2
 }
 
