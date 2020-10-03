@@ -33,7 +33,7 @@
 #include "net_debug.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 extern void arp_cache_init(void);
@@ -42,7 +42,7 @@ extern void arp_cache_update(uint8_t *, uint32_t);
 extern void emac_eth_send(void *, int);
 
 static struct t_arp s_arp_announce ALIGNED;
-static struct t_arp s_arp_request ALIGNED;
+static struct t_arp s_arp_request ALIGNED ;
 static struct t_arp s_arp_reply ALIGNED;
 
 typedef union pcast32 {

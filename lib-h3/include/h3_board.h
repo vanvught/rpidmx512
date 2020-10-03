@@ -2,7 +2,7 @@
  * @file h3_board.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,8 +58,16 @@
  #error EXT_SPI_BASE not defined
 #endif
 
+#ifdef __cplusplus
+# define _CAST(x)	reinterpret_cast<x>
+#else
+# define _CAST(x)	(x)
+#endif
+
 #define EXT_UART_NUMBER		((EXT_UART_BASE - H3_UART_BASE) / 0x400)
-#define EXT_UART			((H3_UART_TypeDef *) EXT_UART_BASE)
+//#define EXT_UART			((H3_UART_TypeDef *) EXT_UART_BASE)
+#define EXT_UART			(_CAST(H3_UART_TypeDef *)(EXT_UART_BASE))
+
 #define EXT_UART_TX			GPIO_EXT_8
 #define EXT_UART_RX			GPIO_EXT_10
 

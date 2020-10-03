@@ -1,8 +1,8 @@
 /**
- * @file h3_cpu.h
+ * @file h3_spinlock.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CPU_H_
-#define H3_CPU_H_
-
 #include <stdint.h>
+#include <assert.h>
 
-#define H3_CPU_COUNT	4
-#define H3_CPUS_MASK	(H3_CPU_COUNT - 1)
+#include "h3.h"
+#include "h3_ccu.h"
 
-typedef enum h3_cpu {
-	H3_CPU0 = 0,
-	H3_CPU1,
-	H3_CPU2,
-	H3_CPU3
-} h3_cpu_t;
+#define MAX_LOCKS	32
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void h3_cpu_off(h3_cpu_t);
-extern void h3_cpu_on(h3_cpu_t);
-
-extern void h3_cpu_set_clock(uint64_t);
-
-#ifdef __cplusplus
+void __attribute__((cold)) h3_spinlock_init(void) {
+	H3_CCU->BUS_CLK_GATING1 |= CCU_BUS_CLK_GATING1_SPINLOCK;
+	H3_CCU->BUS_SOFT_RESET1 |= CCU_BUS_SOFT_RESET1_SPINLOCK;
 }
-#endif
 
-#endif /* H3_CPU_H_ */
+uint32_t h3_spinlock_check(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	return H3_SPINLOCK->STATUS & (1U << lock);
+}
+
+void h3_spinlock_lock(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	for (;;) {
+		if ( H3_SPINLOCK->LOCK[lock] == 0) {
+			break;
+		}
+	}
+}
+
+void h3_spinlock_unlock(uint32_t lock) {
+	assert(lock < MAX_LOCKS);
+
+	H3_SPINLOCK->LOCK[lock] = 0;
+}

@@ -1,8 +1,8 @@
 /**
- * @file h3_cpu.h
+ * @file spinlock.S
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CPU_H_
-#define H3_CPU_H_
+.macro FUNC name
+.text
+.code 32
+.global \name
+\name:
+.endm
 
-#include <stdint.h>
+FUNC spin_lock
+	mov	r2, #1
+1:
+	ldrex	r1, [r0]
+	cmp	r1, #0
+	wfene
+	strexeq	r1, r2, [r0]
+	cmpeq	r1, #0
+	bne	1b
+	dmb
+	bx	lr
 
-#define H3_CPU_COUNT	4
-#define H3_CPUS_MASK	(H3_CPU_COUNT - 1)
+FUNC spin_unlock
+	mov	r1, #0
+	dmb
+	str	r1, [r0]
+	sev
+	bx	lr
 
-typedef enum h3_cpu {
-	H3_CPU0 = 0,
-	H3_CPU1,
-	H3_CPU2,
-	H3_CPU3
-} h3_cpu_t;
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void h3_cpu_off(h3_cpu_t);
-extern void h3_cpu_on(h3_cpu_t);
-
-extern void h3_cpu_set_clock(uint64_t);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* H3_CPU_H_ */

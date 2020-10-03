@@ -1,8 +1,8 @@
 /**
- * @file h3_cpu.h
+ * @file spinlock.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CPU_H_
-#define H3_CPU_H_
+#ifndef SPINLOCK_H_
+#define SPINLOCK_H_
 
-#include <stdint.h>
-
-#define H3_CPU_COUNT	4
-#define H3_CPUS_MASK	(H3_CPU_COUNT - 1)
-
-typedef enum h3_cpu {
-	H3_CPU0 = 0,
-	H3_CPU1,
-	H3_CPU2,
-	H3_CPU3
-} h3_cpu_t;
+#define spin_locked		1
+#define spin_unlocked	0
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void h3_cpu_off(h3_cpu_t);
-extern void h3_cpu_on(h3_cpu_t);
-
-extern void h3_cpu_set_clock(uint64_t);
+extern void spin_lock(void *lock);
+extern void spin_unlock(void *lock);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* H3_CPU_H_ */
+#endif /* SPINLOCK_H_ */

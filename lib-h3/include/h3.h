@@ -50,6 +50,7 @@
 #define H3_LCD_BASE				0x01C0C000
 #define H3_SD_MMC_BASE			0x01C0F000
 #define H3_SID_BASE				0x01C14000
+#define H3_SPINLOCK_BASE      	0x01C18000
 #define H3_CCU_BASE				0x01C20000
 #define H3_PIO_BASE				0x01C20800
 #define H3_TIMER_BASE			0x01C20C00
@@ -151,9 +152,9 @@ typedef enum T_H3_IRQn {
 #define		__IO	volatile		///< defines 'read / write' permissions
 
 typedef struct T_H3_SYSTEM {
-	__I uint32_t RES0[9];
-	__I uint32_t VER;				///< 0x24 Version Register
-	__I uint32_t RES1[2];
+	__I  uint32_t RES0[9];
+	__I  uint32_t VER;				///< 0x24 Version Register
+	__I  uint32_t RES1[2];
 	__IO uint32_t EMAC_CLK;			///< 0x30 EMAC-EPHY Clock register
 } H3_SYSTEM_TypeDef;
 
@@ -253,12 +254,20 @@ typedef struct T_H3_SD_MMC {
 	__IO uint32_t FIFO;          	///< 0x200
 } H3_SD_MMC_TypeDef;
 
-typedef struct T_H3_SID {				///< http://linux-sunxi.org/SID_Register_Guide
-	__IO uint32_t RES1[16];			///< 0x00-0x3C
+typedef struct T_H3_SPINLOCK {
+	__I  uint32_t SYS_STATUS;		///< 0x00
+	__I  uint32_t RES1[3];			///< 0x04, 0x08, 0x0C
+	__I  uint32_t STATUS;			///< 0x10
+	__I  uint32_t RES2[59];			///< 0x14-0x0FC
+	__IO uint32_t LOCK[32];         ///< 0x100
+} H3_SPINLOCK_TypeDef;
+
+typedef struct T_H3_SID {			///< http://linux-sunxi.org/SID_Register_Guide
+	__I  uint32_t RES1[16];			///< 0x00-0x3C
 	__IO uint32_t PRCTL;			///< 0x40 Control register
-	__IO uint32_t RES2[3];			///< 0x44,0x48,0x4C
+	__I  uint32_t RES2[3];			///< 0x44,0x48,0x4C
 	__IO uint32_t PRKEY; 			///< 0x50 Program data
-	__IO uint32_t RES33[3];			///< 0x54,0x58,0x5C
+	__I  uint32_t RES33[3];			///< 0x54,0x58,0x5C
 	__IO uint32_t RDKEY; 			///< 0x60 Read data
 } H3_SID_TypeDef;
 
@@ -449,27 +458,27 @@ typedef struct H3_AC {
 typedef struct T_H3_THS {
 	__IO uint32_t CTRL0;			///< 0x00 THS Control register 0
 	__IO uint32_t CTRL1;			///< 0x04 THS Control register 1
-	__I uint32_t RES1[3];			///< 0x08,0x0C,0x10
+	__I  uint32_t RES1[3];			///< 0x08,0x0C,0x10
 	__IO uint32_t ADC_CDAT;			///< 0x14 ADC calibration data Register
-	__I uint32_t RES2[10];			///<
+	__I  uint32_t RES2[10];			///<
 	__IO uint32_t CTRL2;			///< 0x40 THS Control register 2
 	__IO uint32_t INT_CTRL;			///< 0x44 THS Interrupt Control Register
 	__IO uint32_t STAT;				///< 0x48 THS Status Register
-	__I uint32_t RES3;				///< 0x4C
+	__I  uint32_t RES3;				///< 0x4C
 	__IO uint32_t ALARM_CTRL;		///< 0x50 Alarm threshold Control Register
-	__I uint32_t RES4[3];			///<
+	__I  uint32_t RES4[3];			///<
 	__IO uint32_t SHUTDOWN_CTRL;	///< 0x60 Shutdown threshold Control Register
-	__I uint32_t RES5[3];			///<
+	__I  uint32_t RES5[3];			///<
 	__IO uint32_t FILTER;			///< 0x70 Median filter Control Register
 	__IO uint32_t CDATA;			///< 0x74 Thermal Sensor Calibration Data
-	__I uint32_t RES6[2];			///< 0x78,0x7C
-	__I uint32_t DATA;				///< 0x80 THS Data Register
+	__I  uint32_t RES6[2];			///< 0x78,0x7C
+	__I  uint32_t DATA;				///< 0x80 THS Data Register
 } H3_THS_TypeDef;
 
 typedef struct T_H3_UART {
 	union {							///< 0x00
-		__I uint32_t RBR;			///< Receive Buffer register
-		__O uint32_t THR;			///< Transmit Holding register
+		__I  uint32_t RBR;			///< Receive Buffer register
+		__O  uint32_t THR;			///< Transmit Holding register
 		__IO uint32_t DLL;			///< Divisor Latch Low register
 	} O00;
 	union {							///< 0x04
@@ -483,15 +492,15 @@ typedef struct T_H3_UART {
 	} O08;
 	__IO uint32_t LCR;				///< 0x0C Line Control Register
 	__IO uint32_t MCR;				///< 0x10 Modem Control Register
-	__I uint32_t LSR;				///< 0x14 Line Status Register
-	__I uint32_t MSR;				///< 0x18 Modem Status Register
-	__I uint32_t SCH;				///< 0x1C
-	__I uint32_t RES1[23];			///< unused UART registers
-	__I uint32_t USR;				///< 0x7C system status register
-	__I uint32_t TFL;				///< 0x80
-	__I uint32_t RFL;				///< 0x84
-	__I uint32_t RES2[7]; 			///< unused UART registers
-	__I uint32_t HALT; 				///< 0xA4 halt tx register
+	__I  uint32_t LSR;				///< 0x14 Line Status Register
+	__I  uint32_t MSR;				///< 0x18 Modem Status Register
+	__I  uint32_t SCH;				///< 0x1C
+	__I  uint32_t RES1[23];			///< unused UART registers
+	__I  uint32_t USR;				///< 0x7C system status register
+	__I  uint32_t TFL;				///< 0x80
+	__I  uint32_t RFL;				///< 0x84
+	__I  uint32_t RES2[7]; 			///< unused UART registers
+	__I  uint32_t HALT; 				///< 0xA4 halt tx register
 } H3_UART_TypeDef;
 
 typedef struct T_H3_TWI {
@@ -569,7 +578,7 @@ typedef struct T_H3_EMAC {
 typedef struct T_H3_HS_TIMER {
 	__IO uint32_t IRQ_EN;			///< 0x00 IRQ Enable Register
 	__IO uint32_t IRQ_STAS;			///< 0x04 IRQ Status Register
-	__IO uint32_t RES1[2];			///< 0x08-0x0C
+	__I  uint32_t RES1[2];			///< 0x08-0x0C
 	__IO uint32_t CTRL;				///< 0x10
 	__IO uint32_t INTV_LO;			///< 0x14 Interval Value Low Register
 	__IO uint32_t INTV_HI;			///< 0x18 Interval Value High Register
@@ -587,7 +596,7 @@ typedef struct T_H3_RTC {
 	__IO uint32_t LOSC_CTRL;		///< 0x00
 	__IO uint32_t LOSC_AUTO;		///< 0x04
 	__IO uint32_t INTOSC;			///< 0x08
-	__IO uint32_t RES1;				///< 0x0C
+	__I  uint32_t RES1;				///< 0x0C
 	__IO uint32_t YMD;				///< 0x10
 	__IO uint32_t HMS;				///< 0x14
 } H3_RTC_TypeDef;
@@ -634,12 +643,60 @@ typedef struct T_H3_PRCM {
 	__IO uint32_t AUDIO_CFG;		///< 0x1C0
 } H3_PRCM_TypeDef;
 
+typedef struct H3_CPUCFG {
+	__I  uint32_t RES0[0x10];			///< 0x000
+	struct {
+		__IO uint32_t RST;		///< base + 0x0
+		__IO uint32_t CTRL;		///< base + 0x4
+		__IO uint32_t STATUS;	///< base + 0x8
+		__I  uint32_t RES[0xD];	///< base + 0xc
+	} CPU[4];
+	__I  uint32_t RES1[0x11];			///< 0x140
+	__IO uint32_t GEN_CTRL;				///< 0x184
+	__IO uint32_t L2_STATUS;			///< 0x188
+	__I  uint32_t RES2;					///< 0x18c
+	__IO uint32_t EVENT_IN;				///< 0x190
+	__I  uint32_t RES3[0x3];			///< 0x194
+	__IO uint32_t SUPER_STANDBY_FLAG;	///< 0x1a0
+	__IO uint32_t PRIVATE0;				///< 0x1a4
+	__IO uint32_t PRIVATE1;				///< 0x1a8
+	__I  uint32_t RES4;					///< 0x1ac
+	__IO uint32_t CPU1_PWR_CLAMP;		///< 0x1b0
+	__IO uint32_t CPU1_PWROFF;			///< 0x1b4
+	__I  uint32_t RES5[0xB];			///< 0x1b8
+	__IO uint32_t DBG_CTRL1;			///< 0x1e4
+	__I  uint32_t RES6[0x6];			///< 0x1e8
+	__IO uint32_t IDLE_CNT0_LOW;		///< 0x200
+	__IO uint32_t IDLE_CNT0_HIGH;		///< 0x204
+	__IO uint32_t IDLE_CNT0_CTRL;		///< 0x208
+	__I  uint32_t RES8;					///< 0x20c
+	__IO uint32_t IDLE_CNT1_LOW;		///< 0x210
+	__IO uint32_t IDLE_CNT1_HIGH;		///< 0x214
+	__IO uint32_t IDLE_CNT1_CTRL;		///< 0x218
+	__I  uint32_t RES9;					///< 0x21c
+	__IO uint32_t IDLE_CNT2_LOW;		///< 0x220
+	__IO uint32_t IDLE_CNT2_HIGH;		///< 0x224
+	__IO uint32_t IDLE_CNT2_CTRL;		///< 0x228
+	__I  uint32_t RES10;				///< 0x22c
+	__IO uint32_t IDLE_CNT3_LOW;		///< 0x230
+	__IO uint32_t IDLE_CNT3_HIGH;		///< 0x234
+	__IO uint32_t IDLE_CNT3_CTRL;		///< 0x238
+	__I  uint32_t RES11;				///< 0x23c
+	__IO uint32_t IDLE_CNT4_LOW;		///< 0x240
+	__IO uint32_t IDLE_CNT4_HIGH;		///< 0x244
+	__IO uint32_t IDLE_CNT4_CTRL;		///< 0x248
+	__I  uint32_t RES12[0xD];			///< 0x24c
+	__IO uint32_t CNT64_CTRL;			///< 0x280
+	__IO uint32_t CNT64_LOW;			///< 0x284
+	__IO uint32_t CNT64_HIGH;			///< 0x288
+} H3_CPUCFG_TypeDef;
+
 typedef struct T_H3_HDMI_PHY {
 	__IO uint32_t POL;			///< 0x00
-	__IO uint32_t RES1[3];		///< 0x04
+	__I  uint32_t RES1[3];		///< 0x04
 	__IO uint32_t READ_EN;		///< 0x10
 	__IO uint32_t UNSCRAMBLE;	///< 0x14
-	__IO uint32_t RES2[2];		///< 0x18
+	__I  uint32_t RES2[2];		///< 0x18
 	__IO uint32_t CTRL;			///< 0x20
 	__IO uint32_t UNK1;			///< 0x24
 	__IO uint32_t UNK2;			///< 0x28
@@ -672,6 +729,7 @@ typedef struct T_H3_HDMI_PHY {
 #define H3_SD_MMC0		((H3_SD_MMC_TypeDef *) H3_SD_MMC0_BASE)
 #define H3_SD_MMC1		((H3_SD_MMC_TypeDef *) H3_SD_MMC1_BASE)
 #define H3_SD_MMC2		((H3_SD_MMC_TypeDef *) H3_SD_MMC2_BASE)
+#define H3_SPINLOCK 	(_CAST(H3_SPINLOCK_TypeDef *)(H3_SPINLOCK_BASE))
 #define H3_SID			((H3_SID_TypeDef *) H3_SID_BASE)
 #define H3_CCU 			(_CAST(H3_CCU_TypeDef *)(H3_CCU_BASE))
 #define H3_PIO_PORTA 	(_CAST(H3_PIO_TypeDef *)(H3_PIO_PORTA_BASE))
@@ -700,6 +758,7 @@ typedef struct T_H3_HDMI_PHY {
 #define H3_SPI1			((H3_SPI_TypeDef *) H3_SPI1_BASE)
 #define H3_RTC			((H3_RTC_TypeDef *) H3_RTC_BASE)
 #define H3_PRCM			((H3_PRCM_TypeDef *) H3_PRCM_BASE)
+#define H3_CPUCFG		((H3_CPUCFG_TypeDef *) H3_CPUCFG_BASE)
 
 #define H3_HDMI_PHY		((H3_HDMI_PHY_TypeDef *) HDMI_PHY_BASE)
 
