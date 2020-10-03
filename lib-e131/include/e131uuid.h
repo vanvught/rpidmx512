@@ -32,8 +32,8 @@
 
 class E131Uuid {
 public:
-	E131Uuid(void);
-	~E131Uuid(void);
+	E131Uuid();
+	~E131Uuid();
 
 	void GetHardwareUuid(uuid_t out);
 };

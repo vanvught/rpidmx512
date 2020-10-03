@@ -37,13 +37,13 @@
 static constexpr char EXT_UID[] = ".uid";
 static constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
 
-E131Uuid::E131Uuid(void) {
+E131Uuid::E131Uuid() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-E131Uuid::~E131Uuid(void) {
+E131Uuid::~E131Uuid() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
@@ -65,8 +65,8 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 	aFileName[12] = '\0';
 
 	fp = fopen(aFileName, "r");
-	if (fp != NULL) {
-		if (fgets(aBuffer, sizeof(aBuffer), fp) != NULL) {
+	if (fp != nullptr) {
+		if (fgets(aBuffer, sizeof(aBuffer), fp) != nullptr) {
 			if (uuid_parse(aBuffer, out) == 0) {
 				bHaveUuid = true;
 			}
@@ -86,7 +86,7 @@ void E131Uuid::GetHardwareUuid(uuid_t out) {
 		bHaveUuid = true;
 
 		fp = fopen(aFileName, "w+");
-		if (fp != NULL) {
+		if (fp != nullptr) {
 			static_cast<void>(fputs(aBuffer, fp));
 			static_cast<void>(fclose(fp));
 		} else {
