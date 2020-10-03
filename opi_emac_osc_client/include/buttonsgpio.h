@@ -37,12 +37,11 @@
 class ButtonsGpio: public ButtonsSet, public OscClientLed  {
 public:
 	ButtonsGpio(OscClient *pOscClient);
-	~ButtonsGpio(void);
 
-	bool Start(void);
-	void Stop(void);
+	bool Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
 	void SetLed(uint8_t nLed, bool bOn);
 

@@ -89,9 +89,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(spiFlashStore.GetStoreNetwork());
+	nw.SetNetworkStore(StoreNetwork::Get());
 	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
-	nw.Init(spiFlashStore.GetStoreNetwork());
+	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	StoreShowFile storeShowFile;
