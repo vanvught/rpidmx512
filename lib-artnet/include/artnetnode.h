@@ -50,8 +50,8 @@
 #include "artnet4handler.h"
 
 enum TArtNetNodeMaxPorts {
-	ARTNET_NODE_MAX_PORTS_OUTPUT = artnet::MAX_PORTS * artnet::MAX_PAGES,
-	ARTNET_NODE_MAX_PORTS_INPUT = artnet::MAX_PORTS
+	ARTNET_NODE_MAX_PORTS_OUTPUT = ArtNet::MAX_PORTS * ArtNet::MAX_PAGES,
+	ARTNET_NODE_MAX_PORTS_INPUT = ArtNet::MAX_PORTS
 };
 
 
@@ -111,12 +111,12 @@ struct TArtNetNode {
 	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
 	uint32_t IPSubnetMask;							///< The subnet mask
 	uint32_t IPAddressRemote;						///< The remote IP Address
-	uint8_t MACAddressLocal[ARTNET_MAC_SIZE];		///< The local MAC Address
-	uint8_t NetSwitch[artnet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch[artnet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];		///< The local MAC Address
+	uint8_t NetSwitch[ArtNet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[ArtNet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
-	char ShortName[artnet::SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
-	char LongName[artnet::LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
+	char ShortName[ArtNet::SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
+	char LongName[ArtNet::LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;								///< General Status register
 	uint8_t Status2;
@@ -129,12 +129,12 @@ struct TGenericPort {
 };
 
 struct TOutputPort {
-	uint8_t data[artnet::DMX_LENGTH];	///< Data sent
+	uint8_t data[ArtNet::DMX_LENGTH];	///< Data sent
 	uint16_t nLength;					///< Length of sent DMX data
-	uint8_t dataA[artnet::DMX_LENGTH];	///< The data received from Port A
+	uint8_t dataA[ArtNet::DMX_LENGTH];	///< The data received from Port A
 	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
-	uint8_t dataB[artnet::DMX_LENGTH];	///< The data received from Port B
+	uint8_t dataB[ArtNet::DMX_LENGTH];	///< The data received from Port B
 	uint32_t nMillisB;					///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
 	ArtNetMerge mergeMode;				///< \ref ArtNetMerge
@@ -154,52 +154,52 @@ struct TInputPort {
 class ArtNetNode {
 public:
 	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
-	~ArtNetNode(void);
+	~ArtNetNode();
 
-	void Start(void);
-	void Stop(void);
+	void Start();
+	void Stop();
 
-	void Run(void);
+	void Run();
 
-	uint8_t GetVersion(void) {
+	uint8_t GetVersion() {
 		return m_nVersion;
 	}
 
-	uint8_t GetPages(void) {
+	uint8_t GetPages() const {
 		return m_nPages;
 	}
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
-	LightSet *GetOutput(void) {
+	LightSet *GetOutput() const {
 		return m_pLightSet;
 	}
 
-	const uint8_t *GetSoftwareVersion(void);
+	const uint8_t *GetSoftwareVersion();
 
-	uint8_t GetActiveInputPorts(void) {
+	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
-	uint8_t GetActiveOutputPorts(void) {
+	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	bool GetDirectUpdate(void) {
+	bool GetDirectUpdate() const {
 		return m_bDirectUpdate;
 	}
 
 	void SetShortName(const char *);
-	const char *GetShortName(void) {
+	const char *GetShortName() {
 		return m_Node.ShortName;
 	}
 
 	void SetLongName(const char *);
-	const char *GetLongName(void) {
+	const char *GetLongName() {
 		return m_Node.LongName;
 	}
 
@@ -221,21 +221,21 @@ public:
 	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;
 
 	void SetOemValue(const uint8_t *);
-	const uint8_t *GetOemValue(void) {
+	const uint8_t *GetOemValue() const {
 		return m_Node.Oem;
 	}
 
 	void SetNetworkTimeout(uint32_t nNetworkDataLossTimeout) {
 		m_State.nNetworkDataLossTimeoutMillis = nNetworkDataLossTimeout * 1000;
 	}
-	uint32_t GetNetworkTimeout(void) {
+	uint32_t GetNetworkTimeout() const {
 		return m_State.nNetworkDataLossTimeoutMillis / 1000;
 	}
 
 	void SetDisableMergeTimeout(bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-	bool GetDisableMergeTimeout(void) {
+	bool GetDisableMergeTimeout() const {
 		return m_State.bDisableMergeTimeout;
 	}
 
@@ -243,14 +243,21 @@ public:
 	void SendTimeCode(const struct TArtNetTimeCode *);
 
 	void SetTimeCodeHandler(ArtNetTimeCode *);
+
 	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 		m_pArtNetTimeSync = pArtNetTimeSync;
 	}
+	ArtNetTimeSync *GetTimeSyncHandler() const {
+		return m_pArtNetTimeSync;
+	}
+
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 	void SetIpProgHandler(ArtNetIpProg *);
+
 	void SetArtNetStore(ArtNetStore *pArtNetStore) {
 		m_pArtNetStore = pArtNetStore;
 	}
+
 	void SetArtNetDisplay(ArtNetDisplay *pArtNetDisplay) {
 		m_pArtNetDisplay = pArtNetDisplay;
 	}
@@ -258,19 +265,19 @@ public:
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
-	ArtNetTrigger *GetArtNetTrigger(void) {
+	ArtNetTrigger *GetArtNetTrigger() const {
 		return m_pArtNetTrigger;
 	}
 
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
 		m_pArtNetDmx = pArtNetDmx;
 	}
-	ArtNetDmx *GetArtNetDmx(void) {
+	ArtNetDmx *GetArtNetDmx() const {
 		return m_pArtNetDmx;
 	}
 
 	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(uint8_t nPortIndex) {
+	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}
@@ -280,28 +287,28 @@ public:
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
-	void Print(void);
+	void Print();
 
 private:
-	void FillPollReply(void);
+	void FillPollReply();
 #if defined ( ENABLE_SENDDIAG )
 	void FillDiagData(void);
 #endif
 
-	void GetType(void);
+	void GetType();
 
-	void HandlePoll(void);
-	void HandleDmx(void);
-	void HandleSync(void);
-	void HandleAddress(void);
-	void HandleTimeCode(void);
-	void HandleTimeSync(void);
-	void HandleTodRequest(void);
-	void HandleTodControl(void);
-	void HandleRdm(void);
-	void HandleIpProg(void);
-	void HandleDmxIn(void);
-	void HandleTrigger(void);
+	void HandlePoll();
+	void HandleDmx();
+	void HandleSync();
+	void HandleAddress();
+	void HandleTimeCode();
+	void HandleTimeSync();
+	void HandleTodRequest();
+	void HandleTodControl();
+	void HandleRdm();
+	void HandleIpProg();
+	void HandleDmxIn();
+	void HandleTrigger();
 
 	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
 
@@ -312,7 +319,7 @@ private:
 	void SendPollRelply(bool);
 	void SendTod(uint8_t nPortId = 0);
 
-	void SetNetworkDataLossCondition(void);
+	void SetNetworkDataLossCondition();
 
 private:
 	uint8_t m_nVersion;
@@ -356,10 +363,10 @@ private:
 	bool m_IsRdmResponder;
 
 	alignas(uint32_t) char m_aSysName[16];
-	alignas(uint32_t) char m_aDefaultNodeLongName[artnet::LONG_NAME_LENGTH];
+	alignas(uint32_t) char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
 
 public:
-	static ArtNetNode* Get(void) {
+	static ArtNetNode* Get() {
 		return s_pThis;
 	}
 

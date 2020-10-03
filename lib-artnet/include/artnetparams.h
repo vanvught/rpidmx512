@@ -46,21 +46,21 @@ struct TArtNetParams {
 	bool bUseTimeSync;										///< 1	 10
 	bool bEnableRdm;										///< 1	 11
 	bool bRdmDiscovery;										///< 1	 12
-	uint8_t aShortName[artnet::SHORT_NAME_LENGTH];			///< 18	 30
-	uint8_t aLongName[artnet::LONG_NAME_LENGTH];			///< 64	 94
+	uint8_t aShortName[ArtNet::SHORT_NAME_LENGTH];			///< 18	 30
+	uint8_t aLongName[ArtNet::LONG_NAME_LENGTH];			///< 64	 94
 	uint16_t nMultiPortOptions;								///< 2	 96
 	uint8_t aOemValue[2];									///< 2	 98
 	time_t nNetworkTimeout;									///< 4	102
 	bool bDisableMergeTimeout;								///< 1	103
-	uint8_t nUniversePort[artnet::MAX_PORTS];				///< 4	107
+	uint8_t nUniversePort[ArtNet::MAX_PORTS];				///< 4	107
 	uint8_t nMergeMode;										///< 1	108
-	uint8_t nMergeModePort[artnet::MAX_PORTS];				///< 4	112
+	uint8_t nMergeModePort[ArtNet::MAX_PORTS];				///< 4	112
 	uint8_t nProtocol;										///< 1	113
-	uint8_t nProtocolPort[artnet::MAX_PORTS];				///< 4	117
+	uint8_t nProtocolPort[ArtNet::MAX_PORTS];				///< 4	117
 	bool bEnableNoChangeUpdate;								///< 1	118
 	uint8_t nDirection;										///< 1	119
-	uint32_t nDestinationIpPort[artnet::MAX_PORTS];			///< 16	135
-#if defined (__linux__)
+	uint32_t nDestinationIpPort[ArtNet::MAX_PORTS];			///< 16	135
+#if defined (__linux__) || defined (__APPLE__)
 }__attribute__((packed));
 #else
 };													///< Not packed!
@@ -128,57 +128,57 @@ public:
 
 	void Dump();
 
-	uint8_t GetNet() {
+	uint8_t GetNet() const {
 		return m_tArtNetParams.nNet;
 	}
 
-	uint8_t GetSubnet() {
+	uint8_t GetSubnet() const {
 		return m_tArtNetParams.nSubnet;
 	}
 
-	uint8_t GetUniverse() {
+	uint8_t GetUniverse() const {
 		return m_tArtNetParams.nUniverse;
 	}
 
-	const uint8_t *GetShortName() {
+	const uint8_t *GetShortName() const {
 		return m_tArtNetParams.aShortName;
 	}
 
-	const uint8_t *GetLongName() {
+	const uint8_t *GetLongName() const {
 		return m_tArtNetParams.aLongName;
 	}
 
-	TLightSetOutputType GetOutputType() {
+	TLightSetOutputType GetOutputType() const {
 		return m_tArtNetParams.tOutputType;
 	}
 
-	time_t GetNetworkTimeout() {
+	time_t GetNetworkTimeout() const {
 		return m_tArtNetParams.nNetworkTimeout;
 	}
 
-	bool IsUseTimeCode() {
+	bool IsUseTimeCode() const {
 		return m_tArtNetParams.bUseTimeCode;
 	}
 
-	bool IsUseTimeSync() {
+	bool IsUseTimeSync() const {
 		return m_tArtNetParams.bUseTimeSync;
 	}
 
-	bool IsRdm() {
+	bool IsRdm() const {
 		return m_tArtNetParams.bEnableRdm;
 	}
 
-	bool IsRdmDiscovery() {
+	bool IsRdmDiscovery() const {
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
 
-	bool IsEnableNoChangeUpdate() {
+	bool IsEnableNoChangeUpdate() const {
 		return m_tArtNetParams.bEnableNoChangeUpdate;
 	}
 
-	TArtNetPortDir GetDirection() {
+	TArtNetPortDir GetDirection() const {
 		return static_cast<TArtNetPortDir>(m_tArtNetParams.nDirection);
 	}
 
@@ -187,7 +187,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_tArtNetParams.nSetList & nMask) == nMask;
 	}
 	bool isMaskMultiPortOptionsSet(uint16_t nMask) {

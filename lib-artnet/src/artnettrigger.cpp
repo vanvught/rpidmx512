@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-void ArtNetNode::HandleTrigger(void) {
+void ArtNetNode::HandleTrigger() {
 	DEBUG_ENTRY
 	const struct TArtTrigger *pArtTrigger = &(m_ArtNetPacket.ArtPacket.ArtTrigger);
 

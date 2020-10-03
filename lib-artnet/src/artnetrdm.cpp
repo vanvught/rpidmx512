@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,11 @@
 
 #include "artnetnode_internal.h"
 
-void ArtNetNode::HandleTodControl(void) {
+void ArtNetNode::HandleTodControl() {
 	const struct TArtTodControl *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const uint16_t portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
-	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 
 			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {
@@ -60,11 +60,11 @@ void ArtNetNode::HandleTodControl(void) {
 	}
 }
 
-void ArtNetNode::HandleTodRequest(void) {
+void ArtNetNode::HandleTodRequest() {
 	const struct TArtTodRequest *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const uint16_t portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
-	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			SendTod(i);
 		}
@@ -72,7 +72,7 @@ void ArtNetNode::HandleTodRequest(void) {
 }
 
 void ArtNetNode::SendTod(uint8_t nPortId) {
-	assert(nPortId < artnet::MAX_PORTS);
+	assert(nPortId < ArtNet::MAX_PORTS);
 
 	m_pTodData->Net = m_Node.NetSwitch[0];
 	m_pTodData->Address = m_OutputPorts[nPortId].port.nDefaultAddress;
@@ -89,40 +89,40 @@ void ArtNetNode::SendTod(uint8_t nPortId) {
 
 	const size_t nLength = sizeof(struct TArtTodData) - (sizeof m_pTodData->Tod) + (discovered * 6U);
 
-	Network::Get()->SendTo(m_nHandle, m_pTodData, nLength, m_Node.IPAddressBroadcast, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pTodData, nLength, m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 }
 
 void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
-	assert(pArtNetTRdm != 0);
+	assert(pArtNetTRdm != nullptr);
 
-	if (pArtNetTRdm != 0) {
+	if (pArtNetTRdm != nullptr) {
 		m_pArtNetRdm = pArtNetTRdm;
 		m_IsRdmResponder = IsResponder;
 
 		m_pTodData = new TArtTodData;
-		assert(m_pTodData != 0);
+		assert(m_pTodData != nullptr);
 
-		if (m_pTodData != 0) {
+		if (m_pTodData != nullptr) {
 			m_Node.Status1 |= STATUS1_RDM_CAPABLE;
 			memset(m_pTodData, 0, sizeof(struct TArtTodData));
 
-			memcpy(m_pTodData->Id, NODE_ID, sizeof(m_pTodData->Id));
+			memcpy(m_pTodData->Id, artnet::NODE_ID, sizeof(m_pTodData->Id));
 			m_pTodData->OpCode = OP_TODDATA;
-			m_pTodData->ProtVerLo = artnet::PROTOCOL_REVISION;
+			m_pTodData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
 			m_pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 		}
 	}
 }
 
-void ArtNetNode::HandleRdm(void) {
+void ArtNetNode::HandleRdm() {
 	struct TArtRdm *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const uint16_t portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
-	for (uint32_t i = 0; i < artnet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 
 			if (!m_IsRdmResponder) {
-				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != 0)) {
+				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != nullptr)) {
 					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 					m_IsLightSetRunning[i] = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
@@ -134,7 +134,7 @@ void ArtNetNode::HandleRdm(void) {
 
 			const uint8_t *response = const_cast<uint8_t*>(m_pArtNetRdm->Handler(i, pArtRdm->RdmPacket));
 
-			if (response != 0) {
+			if (response != nullptr) {
 				pArtRdm->RdmVer = 0x01;
 
 				const uint16_t nMessageLength = response[2] + 1;
@@ -142,7 +142,7 @@ void ArtNetNode::HandleRdm(void) {
 
 				const uint16_t nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
 
-				Network::Get()->SendTo(m_nHandle, pArtRdm, nLength, m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, pArtRdm, nLength, m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
 			} else {
 				//printf("\n==> No response <==\n");
 			}

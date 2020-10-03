@@ -33,9 +33,8 @@
 
 #include "artnet.h"
 
-class ArtNetConst {
-public:
-	static const uint8_t ESTA_ID[ARTNET_ESTA_SIZE];
+struct ArtNetConst {
+	static const uint8_t ESTA_ID[ArtNet::ESTA_SIZE];
 	static const uint8_t OEM_ID[];
 
 	static const char MSG_NODE_PARAMS[];

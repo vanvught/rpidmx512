@@ -38,33 +38,32 @@
 class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
-	~ArtNet4Node(void);
 
-	void SetPort(uint8_t nPortId, TArtNetPortDir dir = ARTNET_OUTPUT_PORT);
+	void SetPort(uint8_t nPortId, TArtNetPortDir dir = ARTNET_OUTPUT_PORT) override;
 
-	void Print(void);
+	void Print();
 
-	void Start(void);
-	void Stop(void);
-	void Run(void);
+	void Start();
+	void Stop();
+	void Run();
 
-	void HandleAddress(uint8_t nCommand);
-	uint8_t GetStatus(uint8_t nPortId);
+	void HandleAddress(uint8_t nCommand) override;
+	uint8_t GetStatus(uint8_t nPortId) override;
 
 	void SetMapUniverse0(bool bMapUniverse0 = false) {
 		m_bMapUniverse0 = bMapUniverse0;
 	}
-	bool IsMapUniverse0(void) {
+	bool IsMapUniverse0() {
 		return m_bMapUniverse0;
 	}
 
-	bool IsStatusChanged(void) {
+	bool IsStatusChanged() override {
 		return m_Bridge.IsStatusChanged();
 	}
 
 private:
 	E131Bridge m_Bridge;
-	bool m_bMapUniverse0;
+	bool m_bMapUniverse0{false};
 };
 
 #endif /* ARTNET4NODE_H_ */

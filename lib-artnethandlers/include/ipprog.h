@@ -30,10 +30,9 @@
 
 class IpProg: public ArtNetIpProg {
 public:
-	IpProg(void);
-	~IpProg(void);
+	IpProg();
 
-	void Handler(const struct TArtNetIpProg*, struct TArtNetIpProgReply*);
+	void Handler(const struct TArtNetIpProg*, struct TArtNetIpProgReply*) override;
 };
 
 #endif /* IPPROG_H_ */

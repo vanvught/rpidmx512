@@ -45,10 +45,7 @@ const char ArtNetParamsConst::NODE_OEM_VALUE[] = "oem_value";
 const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
 const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
 
-const char ArtNetParamsConst::UNIVERSE_PORT[artnet::MAX_PORTS][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
-const char ArtNetParamsConst::MERGE_MODE[] = "merge_mode";
-const char ArtNetParamsConst::MERGE_MODE_PORT[artnet::MAX_PORTS][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
 const char ArtNetParamsConst::PROTOCOL[] = "protocol";
-const char ArtNetParamsConst::PROTOCOL_PORT[artnet::MAX_PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
+const char ArtNetParamsConst::PROTOCOL_PORT[ArtNet::MAX_PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
 const char ArtNetParamsConst::DIRECTION[] = "direction";
-const char ArtNetParamsConst::DESTINATION_IP_PORT[artnet::MAX_PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };
+const char ArtNetParamsConst::DESTINATION_IP_PORT[ArtNet::MAX_PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };
