@@ -1,7 +1,8 @@
 /**
- * @file ltcdisplayws28xxmatrix.h
+ * @file ltcdisplayrgbpanel.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/*
+ * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYWS28XXMATRIX_H_
-#define LTCDISPLAYWS28XXMATRIX_H_
+#ifndef LTCDISPLAYRGBPANEL_H_
+#define LTCDISPLAYRGBPANEL_H_
 
 #include <stdint.h>
 
 #include "ltcdisplayrgbset.h"
 
-#include "ws28xxdisplaymatrix.h"
+#include "rgbpanel.h"
 
-#include "rgbmapping.h"
-
-class LtcDisplayWS28xxMatrix final: public LtcDisplayRgbSet {
+class LtcDisplayRgbPanel final: public LtcDisplayRgbSet {
 public:
-	LtcDisplayWS28xxMatrix();
-	~LtcDisplayWS28xxMatrix();
+	LtcDisplayRgbPanel();
+	~LtcDisplayRgbPanel();
 
-	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED) override;
+	void Init() override;
 	void Print() override;
 
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours) override;
-
+	//
+	void ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours) override;
+	void ShowSource(const char *pSource, uint32_t nLength, struct TLtcDisplayRgbColours &tColours) override;
+	//
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) override;
 
 private:
-	WS28xxDisplayMatrix *m_pWS28xxDisplayMatrix;
+	RgbPanel *m_pRgbPanel;
+	char m_Line[4][8];
+	struct TLtcDisplayRgbColours m_LineColours[4];
 };
 
-#endif /* LTCDISPLAYWS28XXMATRIX_H_ */
+#endif /* LTCDISPLAYRGBPANEL_H_ */

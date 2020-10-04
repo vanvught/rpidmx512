@@ -1,6 +1,5 @@
 /**
- * @file ltcoscserver.h
- *
+ * @file ltcdisplayrgbset.h
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
@@ -23,44 +22,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCSERVER_H_
-#define OSCSERVER_H_
+#ifndef LTCDISPLAYRGBSET_H_
+#define LTCDISPLAYRGBSET_H_
 
-#include <ltcdisplayrgb.h>
 #include <stdint.h>
 
+#include "ltc.h"
+#include "ws28xx.h"
 
-#define OSCSERVER_PATH_LENGTH_MAX	128
+#include "rgbmapping.h"
 
-class LtcOscServer {
-public:
-	LtcOscServer();
-	~LtcOscServer();
-
-	void Start();
-	void Stop();
-	void Run();
-
-	void Print();
-
-	void SetPortIncoming(uint16_t nPortIncoming) {
-		m_nPortIncoming = nPortIncoming;
-	}
-	uint16_t GetPortIncoming() {
-		return m_nPortIncoming;
-	}
-
-private:
-	void SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex);
-
-private:
-	uint16_t m_nPortIncoming;
-	int32_t m_nHandle{-1};
-	uint32_t m_nRemoteIp{0};
-	uint16_t m_nRemotePort{0};
-	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
-	uint32_t m_nPathLength{0};
-	char *m_pBuffer;
+enum TLtcDisplayMessage {
+	LTCDISPLAY_MAX_MESSAGE_SIZE = 8
 };
 
-#endif /* OSCSERVER_H_ */
+struct TLtcDisplayRgbColours {
+	uint8_t nRed;
+	uint8_t nGreen;
+	uint8_t nBlue;
+};
+
+class LtcDisplayRgbSet {
+public:
+	virtual ~LtcDisplayRgbSet() {}
+
+	virtual void Init(TWS28XXType tLedType, TRGBMapping tRGBMapping);
+	virtual void Init();
+
+	virtual void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
+	virtual void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
+	virtual void ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours)=0;
+
+	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours)=0;
+
+	virtual void ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours);
+	virtual void ShowSource(const char *pSource, uint32_t nLength, struct TLtcDisplayRgbColours &tColours);
+
+	virtual void Print()=0;
+};
+
+#endif /* LTCDISPLAYRGBSET_H_ */

@@ -26,13 +26,12 @@
 
 #include <stdint.h>
 #include <ctype.h>
+#include <ltcdisplayrgb.h>
 #include <cassert>
-
-#include "ltcdisplayws28xx.h"
 
 #include "rgbmapping.h"
 
-void LtcDisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex) {
+void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex) {
 	switch (tIndex) {
 	case LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT:
 		m_tColours.nRed = nRed;
@@ -54,7 +53,7 @@ void LtcDisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcD
 	}
 }
 
-void LtcDisplayWS28xx::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
+void LtcDisplayRgb::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
 	const uint8_t nRed = ((nRGB & 0xFF0000) >> 16);
 	const uint8_t nGreen = ((nRGB & 0xFF00) >> 8);
 	const uint8_t nBlue = (nRGB & 0xFF);
@@ -62,7 +61,7 @@ void LtcDisplayWS28xx::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex
 	SetRGB(nRed, nGreen, nBlue, tIndex);
 }
 
-void LtcDisplayWS28xx::SetRGB(const char *pHexString) {
+void LtcDisplayRgb::SetRGB(const char *pHexString) {
 	if (!isdigit(pHexString[0])) {
 		return;
 	}
@@ -78,7 +77,7 @@ void LtcDisplayWS28xx::SetRGB(const char *pHexString) {
 	SetRGB(nRGB, tIndex);
 }
 
-uint32_t LtcDisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
+uint32_t LtcDisplayRgb::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
 	char *src = const_cast<char*>(pHexValue);
 	uint32_t ret = 0;
 	uint8_t nibble;

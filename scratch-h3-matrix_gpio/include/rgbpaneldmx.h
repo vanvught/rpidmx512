@@ -1,8 +1,8 @@
 /**
- * @file ltcdisplayparamsconst.cpp
+ * @file rgbpaneldmx.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -22,16 +20,45 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+/**
+ * PoC
+ */
 
-#include <ltcdisplayrgb.h>
-#include "ltcdisplayparamsconst.h"
+#ifndef RGBPANELDMX_H_
+#define RGBPANELDMX_H_
 
-const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
+#include <stdint.h>
 
-const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
-const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
+#include "rgbpanel.h"
+#include "rgbpanelconst.h"
 
-const char LtcDisplayParamsConst::WS28XX_TYPE[] = "ws28xx_type";
-const char LtcDisplayParamsConst::WS28XX_INTENSITY[] = "ws28xx_intensity";
-const char LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";
-const char LtcDisplayParamsConst::WS28XX_COLOUR[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST][24] = { "ws28xx_colour_segment", "ws28xx_colour_colon", "ws28xx_colour_message" };
+#include "lightset.h"
+
+class RgbPanelDmx: public RgbPanel, public LightSet {
+public:
+	RgbPanelDmx(uint32_t nColumns, uint32_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, RgbPanelTypes type = rgbpanel::defaults::TYPE);
+
+	void Start(__attribute__((unused)) uint8_t nPort = 0) {
+		RgbPanel::Start();
+	}
+	void Stop(__attribute__((unused)) uint8_t nPort = 0) {
+		RgbPanel::Stop();
+	}
+
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+
+	uint32_t GetUniverses() const {
+		if (m_nLastPortId == 0) {
+			return 0;
+		}
+		return 1 + m_nLastPortId;
+	}
+
+	void Print();
+
+private:
+	uint32_t m_nLastPortId{0};
+	uint32_t m_nLastPortDataLength{0};
+};
+
+#endif /* RGBPANELDMX_H_ */

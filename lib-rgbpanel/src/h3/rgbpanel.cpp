@@ -39,6 +39,8 @@
 
 #include "arm/synchronize.h"
 
+#include "debug.h"
+
 extern "C" {
 void core1_task();
 }
@@ -151,13 +153,15 @@ void RgbPanel::PlatformCleanUp() {
 }
 
 void RgbPanel::Start() {
+	if (m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = true;
+
 	puts("smp_start_core(1, core1_task)");
 	smp_start_core(1, core1_task);
 	puts("Running");
-}
-
-void RgbPanel::Stop() {
-
 }
 
 void RgbPanel::Dump() {

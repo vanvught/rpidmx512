@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <assert.h>
+#include <ltcdisplayrgb.h>
 
 #include "mcpbuttons.h"
 #include "mcpbuttonsconst.h"
@@ -41,8 +42,6 @@
 #include "display.h"
 #include "display7segment.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
 #include "rotaryencoder.h"
 
 #include "hal_i2c.h"
@@ -184,7 +183,7 @@ void McpButtons::UpdateDisplays(const ltc::source& tLtcReaderSource) {
 	}
 
 	if (!m_ptLtcDisabledOutputs->bWS28xx) {
-		LtcDisplayWS28xx::Get()->WriteChar(tLtcReaderSource);
+		LtcDisplayRgb::Get()->WriteChar(tLtcReaderSource);
 	}
 }
 

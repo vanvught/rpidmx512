@@ -26,7 +26,7 @@
 #ifndef LTCDISPLAYPARAMSCONST_H_
 #define LTCDISPLAYPARAMSCONST_H_
 
-#include "ltcdisplayws28xx.h"
+#include <ltcdisplayrgb.h>
 
 struct LtcDisplayParamsConst {
 	static const char FILE_NAME[];

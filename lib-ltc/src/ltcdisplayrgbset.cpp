@@ -1,7 +1,7 @@
 /**
- * @file ltcdisplayws28xxset.h
+ * @file ltcdisplayrgbset.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,37 +22,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYWS28XXSET_H_
-#define LTCDISPLAYWS28XXSET_H_
+#include "ltcdisplayrgbset.h"
 
-#include <stdint.h>
-
+#include "ltc.h"
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
+#include "debug.h"
 
-enum TLtcDisplayMessage {
-	LTCDISPLAY_MAX_MESSAGE_SIZE = 8
-};
+using namespace ltc;
 
-struct TLtcDisplayRgbColours {
-	uint8_t nRed;
-	uint8_t nGreen;
-	uint8_t nBlue;
-};
+void LtcDisplayRgbSet::Init(__attribute__((unused)) TWS28XXType tLedType, __attribute__((unused)) TRGBMapping tRGBMapping) {
+	DEBUG_ENTRY
 
-class LtcDisplayWS28xxSet {
-public:
-	virtual ~LtcDisplayWS28xxSet() {}
+	DEBUG_EXIT
+}
 
-	virtual void Init(TWS28XXType tLedType, TRGBMapping tRGBMapping)=0;
-	virtual void Print()=0;
+void LtcDisplayRgbSet::Init() {
+	DEBUG_ENTRY
 
-	virtual void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
-	virtual void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
-	virtual void ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours)=0;
+	DEBUG_EXIT
+}
 
-	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours)=0;
-};
+void LtcDisplayRgbSet::ShowFPS(__attribute__((unused)) type tTimeCodeType, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
 
-#endif /* LTCDISPLAYWS28XXSET_H_ */
+	DEBUG_EXIT
+}
+
+void LtcDisplayRgbSet::ShowSource(__attribute__((unused)) const char *pSource, __attribute__((unused)) uint32_t nLength, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

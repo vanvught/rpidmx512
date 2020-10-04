@@ -29,24 +29,25 @@
 
 #include <stdint.h>
 
-#include "ltcdisplayws28xxset.h"
-
 #include "ws28xxdisplay7segment.h"
+
+#include "ltcdisplayrgbset.h"
 
 #include "rgbmapping.h"
 
-class LtcDisplayWS28xx7Segment final: public LtcDisplayWS28xxSet {
+class LtcDisplayWS28xx7Segment final: public LtcDisplayRgbSet {
 public:
 	LtcDisplayWS28xx7Segment();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED) override;
-	void Print() override;
 
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours) override;
 
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) override;
+
+	void Print() override;
 
 private:
 	WS28xxDisplay7Segment *m_pWS28xxDisplay7Segment;

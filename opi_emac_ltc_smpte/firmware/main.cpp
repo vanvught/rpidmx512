@@ -27,6 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <ltcdisplayrgb.h>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -60,8 +61,6 @@
 
 #include "display.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
@@ -169,28 +168,6 @@ void notmain(void) {
 	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
 	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
 
-	StoreLtcDisplay storeLtcDisplay;
-	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
-
-	if (ltcDisplayParams.Load()) {
-		ltcDisplayParams.Dump();
-	}
-
-	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
-
-	if(!tLtcDisabledOutputs.bMax7219) {
-		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
-		ltcDdisplayMax7219.Print();
-	}
-
-	LtcDisplayWS28xx ltcDisplayWS28xx(ltcDisplayParams.GetWS28xxType());
-
-	if (!tLtcDisabledOutputs.bWS28xx){
-		ltcDisplayParams.Set(&ltcDisplayWS28xx);
-		ltcDisplayWS28xx.Init(ltcDisplayParams.GetLedType());
-		ltcDisplayWS28xx.Print();
-	}
-
 	ltc::source ltcSource = ltcParams.GetSource();
 
 	/**
@@ -212,12 +189,45 @@ void notmain(void) {
 	 * From here work with source selection
 	 */
 
-	Reboot reboot(ltcSource);
+	Reboot reboot(ltcSource, &tLtcDisabledOutputs);
 	hw.SetRebootHandler(&reboot);
 
 	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, ltcSource, ltcParams.IsShowSysTime());
+
+	StoreLtcDisplay storeLtcDisplay;
+	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
+
+	if (ltcDisplayParams.Load()) {
+		ltcDisplayParams.Dump();
+	}
+
+	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
+
+	if (!tLtcDisabledOutputs.bMax7219) {
+		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
+		ltcDdisplayMax7219.Print();
+	}
+
+	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? LtcDisplayRgbType::RGBPANEL : LtcDisplayRgbType::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
+
+	if ((!tLtcDisabledOutputs.bWS28xx) || (!tLtcDisabledOutputs.bRgbPanel)) {
+		ltcDisplayParams.Set(&ltcDisplayRgb);
+
+		if (!tLtcDisabledOutputs.bRgbPanel) {
+			ltcDisplayRgb.Init();
+		} else {
+			ltcDisplayParams.Set(&ltcDisplayRgb);
+			ltcDisplayRgb.Init(ltcDisplayParams.GetLedType());
+		}
+
+		ltcDisplayRgb.Print();
+	}
+
+	if (tLtcDisabledOutputs.bRgbPanel) {
+
+	}
 
 	/**
 	 * Art-Net
@@ -230,8 +240,6 @@ void notmain(void) {
 	TimeSync timeSync;
 
 	if (bRunArtNet) {
-		display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
-
 		ArtNetParams artnetparams(new StoreArtNet);
 
 		if (artnetparams.Load()) {
@@ -247,12 +255,8 @@ void notmain(void) {
 			node.SetTimeSyncHandler(&timeSync);
 		}
 
-		display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
-
 		node.Start();
 		node.Print();
-
-		display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 	}
 
 	/**
@@ -282,11 +286,13 @@ void notmain(void) {
 
 	Midi midi;
 
-	if (ltcSource != ltc::source::MIDI) {
+	if ((ltcSource != ltc::source::MIDI) && (!tLtcDisabledOutputs.bMidi)) {
 		midi.Init(MIDI_DIRECTION_OUTPUT);
 	}
 
-	midi.Print();
+	if ((ltcSource == ltc::source::MIDI) || (!tLtcDisabledOutputs.bMidi)) {
+		midi.Print();
+	}
 
 	/**
 	 * RTP-MIDI
@@ -433,8 +439,13 @@ void notmain(void) {
 
 	printf("Source : %s\n", McpButtonsConst::SOURCE[ltcSource]);
 
+
 	display.ClearLine(4);
 	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
+
+	if (!tLtcDisabledOutputs.bRgbPanel) {
+		ltcDisplayRgb.ShowSource(McpButtonsConst::SOURCE[ltcSource]);
+	}
 
 	if (ltcSource == ltc::source::SYSTIME) {
 		display.SetCursorPos(17,3);
@@ -522,8 +533,8 @@ void notmain(void) {
 			display.Run();
 		}
 
-		if (!tLtcDisabledOutputs.bWS28xx){
-			ltcDisplayWS28xx.Run();
+		if ((!tLtcDisabledOutputs.bWS28xx) || (!tLtcDisabledOutputs.bRgbPanel)) {
+			ltcDisplayRgb.Run();
 		}
 
 		if (sourceSelect.IsConnected()) {

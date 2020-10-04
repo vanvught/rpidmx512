@@ -16,6 +16,7 @@ lib*.a
 *.elf
 *.prefs
 *.class
+*.bin
 
 *.txt
 *._txt
@@ -102,3 +103,4 @@ do-tftp.sh
 */do-tftp.sh
 do-tftp-one.sh
 */do-tftp-one.sh
+#

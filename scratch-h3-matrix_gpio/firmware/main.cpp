@@ -24,7 +24,7 @@ static const char SOFTWARE_VERSION[] = "0.0";
 
 #include "h3/shell.h"
 
-#include "rgbpanel.h"
+#include "rgbpaneldmx.h"
 
 #include "e131bridge.h"
 #include "reboot.h"
@@ -73,7 +73,7 @@ void notmain(void) {
 	 *
 	 */
 
-	RgbPanel matrix(COLUMNS,ROWS);
+	RgbPanelDmx matrix(COLUMNS,ROWS);
 	matrix.Start();
 	matrix.Print();
 

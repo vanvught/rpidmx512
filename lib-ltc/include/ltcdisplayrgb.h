@@ -24,19 +24,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYWS28XX_H_
-#define LTCDISPLAYWS28XX_H_
+#ifndef LTCDISPLAYRGB_H_
+#define LTCDISPLAYRGB_H_
 
 #include <stdint.h>
 
-#include "ltcdisplayws28xxset.h"
+#include "ltcdisplayrgbset.h"
 
 #include "ws28xx.h"
 #include "rgbmapping.h"
 
-enum TLtcDisplayWS28xxTypes {
-	LTCDISPLAYWS28XX_TYPE_7SEGMENT,
-	LTCDISPLAYWS28XX_TYPE_MATRIX
+enum class LtcDisplayRgbType {
+	WS28XX,
+	RGBPANEL
+};
+
+enum class LtcDisplayRgbWS28xxType {
+	SEGMENT,
+	MATRIX
 };
 
 enum TLtcDisplayWS28xxColonBlinkMode {
@@ -62,10 +67,10 @@ enum TLtcDisplayWS28xxDefaults {
 	LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS = 0xFF,
 };
 
-class LtcDisplayWS28xx {
+class LtcDisplayRgb {
 public:
-	LtcDisplayWS28xx(TLtcDisplayWS28xxTypes tType = LTCDISPLAYWS28XX_TYPE_7SEGMENT);
-	~LtcDisplayWS28xx();
+	LtcDisplayRgb(LtcDisplayRgbType tRgbType, LtcDisplayRgbWS28xxType tWS28xxType);
+	~LtcDisplayRgb();
 
 	void SetMapping(TRGBMapping tMapping) {
 		m_tMapping = tMapping;
@@ -86,17 +91,19 @@ public:
 		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
 	}
 
-	void Init(TWS28XXType tLedType, uint8_t nIntensity = 0xFF);
+	void Init(TWS28XXType tLedType = TWS28XXType::WS2812B);
 	void Print();
 
 	void Run();
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
+	void ShowFPS(ltc::type tTimeCodeType);
+	void ShowSource(const char *pSource);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
-	static LtcDisplayWS28xx *Get() {
+	static LtcDisplayRgb *Get() {
 		return s_pThis;
 	}
 
@@ -110,7 +117,8 @@ private:
 	void ShowMessage();
 
 private:
-	TLtcDisplayWS28xxTypes m_tDisplayWS28xxTypes;
+	LtcDisplayRgbType m_tDisplayRgbType;
+	LtcDisplayRgbWS28xxType m_tDisplayRgbWS28xxType;
 	uint8_t m_nIntensity;
 	int32_t m_nHandle;
 	char m_Buffer[64];
@@ -125,12 +133,12 @@ private:
 	char m_nSecondsPrevious;
 	enum TLtcDisplayWS28xxColonBlinkMode m_tColonBlinkMode;
 
-	LtcDisplayWS28xxSet *m_pLtcDisplayWS28xxSet;
+	LtcDisplayRgbSet *m_pLtcDisplayRgbSet;
 	struct TLtcDisplayRgbColours m_tColours;
 	struct TLtcDisplayRgbColours m_tColoursMessage;
 	struct TLtcDisplayRgbColours m_tColoursColons;
 
-	static LtcDisplayWS28xx *s_pThis;
+	static LtcDisplayRgb *s_pThis;
 };
 
-#endif /* LTCDISPLAYWS28XX_H_ */
+#endif /* LTCDISPLAYRGB_H_ */

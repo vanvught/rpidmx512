@@ -31,13 +31,11 @@
 
 #include "rgbpanelconst.h"
 
-#include "lightset.h"
-
 namespace rgbpanel {
-static constexpr auto PWM_WIDTH = 44;
+static constexpr auto PWM_WIDTH = 80;
 }  // namespace rgbpanel
 
-class RgbPanel: public LightSet {
+class RgbPanel {
 public:
 	RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, RgbPanelTypes type = rgbpanel::defaults::TYPE);
 	~RgbPanel() {
@@ -76,32 +74,18 @@ public:
 
 	void Print();
 
-	// LightSet
-	void Start(__attribute__((unused)) uint8_t nPort) {
-
-	}
-	void Stop(__attribute__((unused)) uint8_t nPort) {
-		Cls();
-		Show();
-	}
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
-
-	uint32_t GetUniverses() const {
-		if (m_nLastPortId == 0) {
-			return 0;
-		}
-		return 1 + m_nLastPortId;
-	}
-
 private:
 	void PlatformInit();
 	void PlatformCleanUp();
 
-private:
+protected:
 	uint32_t m_nColumns;
 	uint32_t m_nRows;
+
+private:
 	uint32_t m_nChain;
 	RgbPanelTypes m_tType;
+	bool m_bIsStarted{false};
 	// Text
 	uint32_t m_nMaxPosition;
 	uint32_t m_nMaxLine;
@@ -114,9 +98,6 @@ private:
 		uint8_t nBlue;
 	};
 	TColon *m_ptColons{nullptr};
-	// LightSet
-	uint32_t m_nLastPortId{0};
-	uint32_t m_nLastPortDataLength{0};
 };
 
 #endif /* RGBPANEL_H_ */

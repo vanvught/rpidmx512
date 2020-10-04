@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <ltcdisplayrgb.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
@@ -47,7 +48,6 @@
 #include "ltc7segment.h"
 #include "display.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
 
 // IRQ Timer1
 static volatile bool IsMidiQuarterFrameMessage = false;
@@ -60,7 +60,8 @@ LtcOutputs *LtcOutputs::s_pThis = nullptr;
 
 using namespace ltc;
 
-LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, source tSource, bool bShowSysTime):
+LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source tSource, bool bShowSysTime):
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
 	m_bShowSysTime(bShowSysTime),
 	m_tTimeCodeTypePrevious(ltc::type::INVALID),
 	m_nMidiQuarterFramePiece(0),
@@ -71,26 +72,26 @@ LtcOutputs::LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, so
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	memcpy(&m_tLtcDisabledOutputs, pLtcDisabledOutputs, sizeof(struct TLtcDisabledOutputs));
-
-	m_tLtcDisabledOutputs.bMidi |= (tSource == source::MIDI);
-	m_tLtcDisabledOutputs.bArtNet |= (tSource == source::ARTNET);
-	m_tLtcDisabledOutputs.bLtc |= (tSource == source::LTC);
-	m_tLtcDisabledOutputs.bRtpMidi |= (tSource == source::APPLEMIDI);
+	pLtcDisabledOutputs->bMidi |= (tSource == source::MIDI);
+	pLtcDisabledOutputs->bArtNet |= (tSource == source::ARTNET);
+	pLtcDisabledOutputs->bLtc |= (tSource == source::LTC);
+	pLtcDisabledOutputs->bRtpMidi |= (tSource == source::APPLEMIDI);
 	// Display's
-	m_tLtcDisabledOutputs.bRgbPanel |= ((tSource == source::LTC) || (tSource == source::MIDI));
-	m_tLtcDisabledOutputs.bMax7219 |= (!m_tLtcDisabledOutputs.bWS28xx || !m_tLtcDisabledOutputs.bRgbPanel);
+	pLtcDisabledOutputs->bRgbPanel |= ((tSource == source::LTC) || (tSource == source::MIDI));
+	pLtcDisabledOutputs->bMax7219 |= (!pLtcDisabledOutputs->bWS28xx || !pLtcDisabledOutputs->bRgbPanel);
+	//
+	pLtcDisabledOutputs->bMidi |= (!pLtcDisabledOutputs->bRgbPanel);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
 }
 
 void LtcOutputs::Init() {
-	if (!m_tLtcDisabledOutputs.bMidi) {
+	if (!m_ptLtcDisabledOutputs->bMidi) {
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 	}
 
-	if (!m_tLtcDisabledOutputs.bDisplay) {
+	if (!m_ptLtcDisabledOutputs->bDisplay) {
 		Display::Get()->TextLine(2, Ltc::GetType(ltc::type::UNKNOWN), TC_TYPE_MAX_LENGTH);
 	}
 }
@@ -98,14 +99,14 @@ void LtcOutputs::Init() {
 void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	assert(ptLtcTimeCode != nullptr);
 
-	if (!m_tLtcDisabledOutputs.bNtp) {
+	if (!m_ptLtcDisabledOutputs->bNtp) {
 		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
 	}
 
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_tTimeCodeTypePrevious)) {
 		m_tTimeCodeTypePrevious = static_cast<ltc::type>(ptLtcTimeCode->nType);
 
-		if (!m_tLtcDisabledOutputs.bMidi) {
+		if (!m_ptLtcDisabledOutputs->bMidi) {
 			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode));
 		}
 
@@ -114,8 +115,12 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 		m_nMidiQuarterFramePiece = 0;
 
-		if (!m_tLtcDisabledOutputs.bDisplay) {
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
 			Display::Get()->TextLine(2, Ltc::GetType(static_cast<ltc::type>(ptLtcTimeCode->nType)), TC_TYPE_MAX_LENGTH);
+		}
+
+		if (!m_ptLtcDisabledOutputs->bRgbPanel) {
+			LtcDisplayRgb::Get()->ShowFPS(static_cast<ltc::type>(ptLtcTimeCode->nType));
 		}
 
 		Ltc7segment::Get()->Show(static_cast<ltc::type>(ptLtcTimeCode->nType));
@@ -125,16 +130,16 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
 
-	if (!m_tLtcDisabledOutputs.bDisplay) {
+	if (!m_ptLtcDisabledOutputs->bDisplay) {
 		Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);
 	}
 
-	if (!m_tLtcDisabledOutputs.bMax7219) {
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
 	}
 
-	if(!m_tLtcDisabledOutputs.bWS28xx) {
-		LtcDisplayWS28xx::Get()->Show(m_aTimeCode);
+	if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
+		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 }
 
@@ -159,19 +164,19 @@ void LtcOutputs::ShowSysTime() {
 
 		Ltc::ItoaBase10(pLocalTime, m_aSystemTime);
 
-		if (!m_tLtcDisabledOutputs.bDisplay) {
+		if (!m_ptLtcDisabledOutputs->bDisplay) {
 			Display::Get()->TextLine(1, m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
 			Display::Get()->ClearLine(2);
 		}
 
 		Ltc7segment::Get()->Show(ltc::type::UNKNOWN);
 
-		if (!m_tLtcDisabledOutputs.bMax7219) {
+		if (!m_ptLtcDisabledOutputs->bMax7219) {
 			LtcDisplayMax7219::Get()->ShowSysTime(m_aSystemTime);
 		}
 
-		if(!m_tLtcDisabledOutputs.bWS28xx) {
-			LtcDisplayWS28xx::Get()->ShowSysTime(m_aSystemTime);
+		if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
+			LtcDisplayRgb::Get()->ShowSysTime(m_aSystemTime);
 		}
 
 		ResetTimeCodeTypePrevious();
@@ -185,13 +190,13 @@ void LtcOutputs::PrintDisabled(bool IsDisabled, const char *pString) {
 }
 
 void LtcOutputs::Print() {
-	PrintDisabled(m_tLtcDisabledOutputs.bLtc, "LTC");
-	PrintDisabled(m_tLtcDisabledOutputs.bArtNet, "Art-Net");
-	PrintDisabled(m_tLtcDisabledOutputs.bRtpMidi, "AppleMIDI");
-	PrintDisabled(m_tLtcDisabledOutputs.bMidi, "MIDI");
-	PrintDisabled(m_tLtcDisabledOutputs.bNtp, "NTP");
-	PrintDisabled(m_tLtcDisabledOutputs.bDisplay, "OLED");
-	PrintDisabled(m_tLtcDisabledOutputs.bMax7219, "Max7219");
-	PrintDisabled(m_tLtcDisabledOutputs.bWS28xx, "WS28xx");
-	PrintDisabled(m_tLtcDisabledOutputs.bRgbPanel, "RGB panel");
+	PrintDisabled(m_ptLtcDisabledOutputs->bLtc, "LTC");
+	PrintDisabled(m_ptLtcDisabledOutputs->bArtNet, "Art-Net");
+	PrintDisabled(m_ptLtcDisabledOutputs->bRtpMidi, "AppleMIDI");
+	PrintDisabled(m_ptLtcDisabledOutputs->bMidi, "MIDI");
+	PrintDisabled(m_ptLtcDisabledOutputs->bNtp, "NTP");
+	PrintDisabled(m_ptLtcDisabledOutputs->bDisplay, "OLED");
+	PrintDisabled(m_ptLtcDisabledOutputs->bMax7219, "Max7219");
+	PrintDisabled(m_ptLtcDisabledOutputs->bWS28xx, "WS28xx");
+	PrintDisabled(m_ptLtcDisabledOutputs->bRgbPanel, "RGB panel");
 }

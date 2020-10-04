@@ -55,10 +55,6 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
 	m_ptColons = new struct TColon[m_nMaxPosition * m_nMaxLine];
 	assert(m_ptColons != nullptr);
 	SetColonsOff();
-
-	// LightSet
-	m_nLastPortId = (m_nColumns * m_nRows) / 170;
-	m_nLastPortDataLength = 3 * ((m_nColumns * m_nRows) - (m_nLastPortId * 170));
 }
 
 /**
@@ -211,32 +207,21 @@ void RgbPanel::SetColonsOff() {
 }
 
 /**
- * DMX LightSet
+ * void RgbPanel::Start() is implemented as platform specific
  */
-void RgbPanel::Print() {
-	printf("Universes : 1 to %u-%u\n", 1 + m_nLastPortId, m_nLastPortDataLength);
+
+void RgbPanel::Stop() {
+	if (!m_bIsStarted) {
+		return;
+	}
+
+	m_bIsStarted = false;
+
+	Cls();
+	Show();
 }
 
-void RgbPanel::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
-	if (nPort < m_nLastPortId) {
-		nLength = std::min(nLength, static_cast<uint16_t>(510));
-	} else {
-		nLength = std::min(nLength, static_cast<uint16_t>(m_nLastPortDataLength));
-	}
-
-	uint32_t nIndex = 0;
-
-	for (uint32_t i = 0; i < nLength; i = i + 3) {
-
-		const uint32_t nPixelIndex = (nPort * 170U) + nIndex++;
-
-		const uint32_t nRow = nPixelIndex / m_nColumns;
-		const uint32_t nColumn = nPixelIndex - (nRow * m_nColumns);
-
-		SetPixel(nColumn, nRow, pData[i], pData[i + 1], pData[i + 2]);
-	}
-
-	if (nPort == m_nLastPortId) {
-		Show();
-	}
+void RgbPanel::Print() {
+	printf("RGB led panel\n");
+	printf(" %ux%ux%u\n", m_nColumns, m_nRows, m_nChain);
 }

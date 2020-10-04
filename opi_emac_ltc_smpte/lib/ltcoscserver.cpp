@@ -27,12 +27,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
+#include <ltcdisplayrgb.h>
 
 #include "ltcoscserver.h"
 
 #include "tcnetdisplay.h"
-#include "ltcdisplayws28xx.h"
-
 #include "osc.h"
 #include "oscsimplemessage.h"
 
@@ -406,7 +405,7 @@ void LtcOscServer::Run() {
 
 					const int nValue = Msg.GetInt(0);
 
-					LtcDisplayWS28xx::Get()->SetMaster(nValue);
+					LtcDisplayRgb::Get()->SetMaster(nValue);
 
 					DEBUG_PRINTF("*/ws28xx/master -> %d", static_cast<int>(static_cast<uint8_t>(nValue)));
 				}
@@ -425,7 +424,7 @@ void LtcOscServer::Run() {
 					char *pString = Msg.GetString(0);
 					const uint8_t nSize = strlen(pString);
 
-					LtcDisplayWS28xx::Get()->SetMessage(pString, nSize);
+					LtcDisplayRgb::Get()->SetMessage(pString, nSize);
 
 					DEBUG_PRINTF("*/ws28xx/message -> [%.*s]", nSize, pString);
 				}
@@ -475,7 +474,7 @@ void LtcOscServer::SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIn
 		const int nGreen = Msg.GetInt(1);
 		const int nBlue = Msg.GetInt(2);
 
-		LtcDisplayWS28xx::Get()->SetRGB(nRed, nGreen, nBlue, tIndex);
+		LtcDisplayRgb::Get()->SetRGB(nRed, nGreen, nBlue, tIndex);
 
 		DEBUG_PRINTF("*/ws28xx/rgb/[%d] -> %d %d %d", static_cast<int>(tIndex), static_cast<int>(nRed), static_cast<int>(nGreen), static_cast<int>(nBlue));
 	} else {
