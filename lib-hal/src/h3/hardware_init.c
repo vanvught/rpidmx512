@@ -46,16 +46,17 @@
 #include "console.h"
 #include "../ff12c/ff.h"
 
+#define WIFI_EN_PIO		7	// PL7
 #define POWER_LED_PIO	10	// PL10
 #define EXTERNAL_LED 	GPIO_EXT_16
 
 #if (_FFCONF == 68300)		// R0.12c
  static FATFS fat_fs;
 #else
-#error Not a recognized/tested FatFs version
+# error Not a recognized/tested FatFs version
 #endif
 
-#if defined (ORANGE_PI_ONE)
+#if defined (ORANGE_PI_ONE) && defined(ENABLE_PWR_BUTTON)
  static bool s_is_pwr_button_pressed = false;
 #endif
 
@@ -64,6 +65,7 @@ static uint32_t s_hardware_init_startup_seconds = 0;
 extern void sys_time_init(void);
 extern void h3_timer_init(void);
 extern void h3_hs_timer_init(void);
+extern void h3_usb_end(void);
 
 uint32_t hardware_uptime_seconds(void) {
 	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
@@ -133,6 +135,7 @@ void hardware_led_set(int state) {
 
 void __attribute__((cold)) hardware_init(void) {
 	h3_watchdog_disable();
+	h3_usb_end();
 	h3_timer_init();
 	h3_hs_timer_init();
 	sys_time_init();
@@ -160,19 +163,21 @@ void __attribute__((cold)) hardware_init(void) {
 		assert(0);
 	}
 
-	// Power led
-	#define PRCM_APB0_GATE_PIO (0x1 << 0)
+#define PRCM_APB0_GATE_PIO (0x1 << 0)
 	H3_PRCM->APB0_GATE |= PRCM_APB0_GATE_PIO;
-	#define PRCM_APB0_RESET_PIO (0x1 << 0)
+#define PRCM_APB0_RESET_PIO (0x1 << 0)
 	H3_PRCM->APB0_RESET |= PRCM_APB0_RESET_PIO;
 	uint32_t value = H3_PIO_PORTL->CFG1;
-	value &= (uint32_t)~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PL10_SELECT_CFG1_SHIFT);
 	H3_PIO_PORTL->CFG1 = value;
-	// Set on
-	H3_PIO_PORTL->DAT |= 1 << POWER_LED_PIO;
+	// Power led on, disable WiFi
+	value = H3_PIO_PORTL->DAT;
+	value &= ~(1U << WIFI_EN_PIO);
+	value |= (1U << POWER_LED_PIO);
+	H3_PIO_PORTL->DAT = value;
 
-#if defined (ORANGE_PI_ONE)
+#if defined (ORANGE_PI_ONE) && defined(ENABLE_PWR_BUTTON)
 	// PWR-KEY
 	value = H3_PIO_PORTL->CFG0;
 	value &= (uint32_t)~(GPIO_SELECT_MASK << PL3_SELECT_CFG0_SHIFT);
