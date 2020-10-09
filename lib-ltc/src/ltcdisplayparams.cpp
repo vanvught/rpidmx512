@@ -30,6 +30,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "ltcdisplayparams.h"
@@ -46,20 +47,28 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "debug.h"
+
 static constexpr char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
-	m_tLtcDisplayParams.nWS28xxLedType = LTCDISPLAYWS28XX_DEFAULT_LED_TYPE;
-	m_tLtcDisplayParams.nGlobalBrightness = LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS;
+	DEBUG_ENTRY;
+
+	m_tLtcDisplayParams.nSetList = 0;
+	m_tLtcDisplayParams.nWS28xxLedType = LtcDisplayWS28xxDefaults::LED_TYPE;
+	m_tLtcDisplayParams.nGlobalBrightness = LtcDisplayWS28xxDefaults::GLOBAL_BRIGHTNESS;	// Not used
 	m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = 4;
 	m_tLtcDisplayParams.nWS28xxRgbMapping = RGB_MAPPING_RGB;
-	m_tLtcDisplayParams.nDisplayRgbIntensity = LTCDISPLAYWS28XX_DEFAULT_MASTER;
-	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = LTCDISPLAYWS28XX_DEFAULT_COLON_BLINK_MODE;
-	m_tLtcDisplayParams.aDisplayRgbColour[LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT;
-	m_tLtcDisplayParams.aDisplayRgbColour[LTCDISPLAYWS28XX_COLOUR_INDEX_COLON] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_COLON;
-	m_tLtcDisplayParams.aDisplayRgbColour[LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE] = LTCDISPLAYWS28XX_DEFAULT_COLOUR_MESSAGE;
+	m_tLtcDisplayParams.nDisplayRgbIntensity = LtcDisplayWS28xxDefaults::MASTER;
+	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(LtcDisplayWS28xxDefaults::COLON_BLINK_MODE);
+	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::DIGIT)] = LtcDisplayWS28xxDefaults::COLOUR_DIGIT;
+	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::COLON)] = LtcDisplayWS28xxDefaults::COLOUR_COLON;
+	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)] = LtcDisplayWS28xxDefaults::COLOUR_MESSAGE;
 	m_tLtcDisplayParams.nWS28xxDisplayType = static_cast<uint8_t>(LtcDisplayRgbWS28xxType::SEGMENT);
+	memset(m_tLtcDisplayParams.aInfoMessage, ' ', sizeof(m_tLtcDisplayParams.aInfoMessage));
+
+	DEBUG_EXIT;
 }
 
 bool LtcDisplayParams::Load() {
@@ -106,6 +115,8 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 	uint32_t nValue32;
 	uint32_t nLength = sizeof(aBuffer) - 1;
+
+	DEBUG_PRINTF("%x", m_tLtcDisplayParams.nSetList);
 
 	if (Sscan::Char(pLine, LtcDisplayParamsConst::MAX7219_TYPE, aBuffer, nLength) == Sscan::OK) {
 		if (strncasecmp(aBuffer, "7segment", nLength) == 0) {
@@ -163,7 +174,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::WS28XX_INTENSITY, nValue8) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::INTENSITY, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
 			m_tLtcDisplayParams.nDisplayRgbIntensity = nValue8;
 			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::DISPLAYRGB_INTENSITY;
@@ -172,7 +183,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = 4;
-	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE, aBuffer, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::COLON_BLINK_MODE, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
 		for (uint32_t i = 0; i < (sizeof(aColonBlinkMode) / sizeof(aColonBlinkMode[0])); i++) {
 			if (strcasecmp(aBuffer, aColonBlinkMode[i]) == 0) {
@@ -184,39 +195,42 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
-		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::WS28XX_COLOUR[nIndex], nValue32) == Sscan::OK) {
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST); nIndex++) {
+		if(Sscan::Hex24Uint32(pLine, LtcDisplayParamsConst::COLOUR[nIndex], nValue32) == Sscan::OK) {
 			m_tLtcDisplayParams.aDisplayRgbColour[nIndex] = nValue32;
 			m_tLtcDisplayParams.nSetList |= (LtcDisplayParamsMask::DISLAYRGB_COLOUR_INDEX << nIndex);
 			return;
 		}
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::GLOBAL_BRIGHTNESS, nValue8) == Sscan::OK) {
-		m_tLtcDisplayParams.nGlobalBrightness = nValue8;
-		m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::GLOBAL_BRIGHTNESS;
+	nLength = sizeof(m_tLtcDisplayParams.aInfoMessage);
+	if (Sscan::Char(pLine, LtcDisplayParamsConst::INFO_MSG, m_tLtcDisplayParams.aInfoMessage, nLength) == Sscan::OK) {
+		for (; nLength < sizeof(m_tLtcDisplayParams.aInfoMessage); nLength++) {
+			m_tLtcDisplayParams.aInfoMessage[nLength] = ' ';
+		}
+		m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::INFO_MSG;
 		return;
 	}
 }
 
-void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayWS28xx) {
-	assert(pLtcDisplayWS28xx != nullptr);
+void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {
+	assert(pLtcDisplayRgb != nullptr);
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		pLtcDisplayWS28xx->SetMapping(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping));
+		pLtcDisplayRgb->SetMapping(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {
-		pLtcDisplayWS28xx->SetMaster(m_tLtcDisplayParams.nDisplayRgbIntensity);
+		pLtcDisplayRgb->SetMaster(m_tLtcDisplayParams.nDisplayRgbIntensity);
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_COLON_BLINK_MODE)) {
-		pLtcDisplayWS28xx->SetColonBlinkMode(static_cast<TLtcDisplayWS28xxColonBlinkMode>(m_tLtcDisplayParams.nDisplayRgbColonBlinkMode));
+		pLtcDisplayRgb->SetColonBlinkMode(static_cast<LtcDisplayRgbColonBlinkMode>(m_tLtcDisplayParams.nDisplayRgbColonBlinkMode));
 	}
 
-	for (uint32_t nIndex = 0; nIndex < LTCDISPLAYWS28XX_COLOUR_INDEX_LAST; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST); nIndex++) {
 		if (isMaskSet((LtcDisplayParamsMask::DISLAYRGB_COLOUR_INDEX << nIndex))) {
-			pLtcDisplayWS28xx->SetColour(m_tLtcDisplayParams.aDisplayRgbColour[nIndex], static_cast<TLtcDisplayWS28xxColourIndex>(nIndex));
+			pLtcDisplayRgb->SetColour(m_tLtcDisplayParams.aDisplayRgbColour[nIndex], static_cast<LtcDisplayRgbColourIndex>(nIndex));
 		}
 	}
 }

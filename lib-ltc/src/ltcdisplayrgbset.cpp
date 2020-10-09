@@ -49,7 +49,13 @@ void LtcDisplayRgbSet::ShowFPS(__attribute__((unused)) type tTimeCodeType, __att
 	DEBUG_EXIT
 }
 
-void LtcDisplayRgbSet::ShowSource(__attribute__((unused)) const char *pSource, __attribute__((unused)) uint32_t nLength, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+void LtcDisplayRgbSet::ShowSource(__attribute__((unused)) ltc::source tSource, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void LtcDisplayRgbSet::ShowInfo(__attribute__((unused)) const char *pInfo, __attribute__((unused)) uint32_t nLength, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

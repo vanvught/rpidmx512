@@ -36,7 +36,7 @@ public:
 	void Run();
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_tTimeCodeTypePrevious;
 };
 

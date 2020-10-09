@@ -87,9 +87,9 @@ private:
 	int32_t GetSeconds(const TLtcTimeCode &timecode);
 
 private:
-	alignas(uint32_t) struct TLtcTimeCode *m_pStartLtcTimeCode;
+	struct TLtcTimeCode *m_pStartLtcTimeCode;
 	int32_t m_nStartSeconds;
-	alignas(uint32_t) struct TLtcTimeCode *m_pStopLtcTimeCode;
+	struct TLtcTimeCode *m_pStopLtcTimeCode;
 	int32_t m_nStopSeconds;
 	bool m_bSkipFree;
 	uint8_t m_nFps{0};
@@ -101,7 +101,7 @@ private:
 	uint32_t m_nTimer0Interval{0};
 	uint32_t m_nButtons{0};
 	int m_nHandle{-1};
-	alignas(uint32_t) char m_Buffer[64];
+	char m_Buffer[64];
 	uint16_t m_nBytesReceived{0};
 	enum {
 		STOPPED,

@@ -76,14 +76,7 @@ static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 
 SystimeReader *SystimeReader::s_pThis = nullptr;
 
-SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps) :
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nFps(nFps),
-	m_ntimePrevious(0),
-	m_nHandle(-1),
-	m_nBytesReceived(0),
-	m_bIsStarted(false)
-{
+SystimeReader::SystimeReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_nFps(nFps) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	assert(s_pThis == nullptr);
@@ -246,7 +239,7 @@ void SystimeReader::Run() {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
-		time_t nTime = Hardware::Get()->GetTime();
+		auto nTime = Hardware::Get()->GetTime();
 
 		if (__builtin_expect((m_ntimePrevious != nTime), 0)) {
 			m_ntimePrevious = nTime;

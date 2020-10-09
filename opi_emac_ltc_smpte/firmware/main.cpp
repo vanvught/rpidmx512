@@ -26,8 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
-#include <ltcdisplayrgb.h>
+#include <cassert>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -35,6 +34,8 @@
 
 #include "ltcparams.h"
 #include "ltcdisplayparams.h"
+#include "ltcdisplayrgb.h"
+#include "ltcdisplaymax7219.h"
 #include "ltc7segment.h"
 
 #include "artnetnode.h"
@@ -60,7 +61,6 @@
 #include "ntpserver.h"
 
 #include "display.h"
-#include "ltcdisplaymax7219.h"
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
@@ -100,7 +100,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#if defined(ENABLE_SHELL)
+# include "h3/shell.h"
+#endif
+
 extern "C" {
+
+void h3_cpu_off(uint8_t);
 
 void notmain(void) {
 	Hardware hw;
@@ -108,6 +114,9 @@ void notmain(void) {
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+#if defined(ENABLE_SHELL)
+	Shell shell;
+#endif
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -217,16 +226,26 @@ void notmain(void) {
 
 		if (!tLtcDisabledOutputs.bRgbPanel) {
 			ltcDisplayRgb.Init();
+
+			char aInfoMessage[8 + 1];
+			uint32_t nLength;
+			const char *p = ltcDisplayParams.GetInfoMessage(nLength);
+			assert(nLength == 8);
+			memcpy(aInfoMessage, p, 8);
+			aInfoMessage[8] = '\0';
+			ltcDisplayRgb.ShowInfo(aInfoMessage);
 		} else {
 			ltcDisplayParams.Set(&ltcDisplayRgb);
-			ltcDisplayRgb.Init(ltcDisplayParams.GetLedType());
+			ltcDisplayRgb.Init(ltcDisplayParams.GetWS28xxLedType());
 		}
 
 		ltcDisplayRgb.Print();
 	}
 
 	if (tLtcDisabledOutputs.bRgbPanel) {
-
+		for (uint8_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
+			h3_cpu_off(nCpuNumber);
+		}
 	}
 
 	/**
@@ -444,7 +463,7 @@ void notmain(void) {
 	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
 
 	if (!tLtcDisabledOutputs.bRgbPanel) {
-		ltcDisplayRgb.ShowSource(McpButtonsConst::SOURCE[ltcSource]);
+		ltcDisplayRgb.ShowSource(ltcSource);
 	}
 
 	if (ltcSource == ltc::source::SYSTIME) {
@@ -529,12 +548,16 @@ void notmain(void) {
 			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
 		}
 
-		if (tLtcDisabledOutputs.bDisplay) {
+		if (tLtcDisabledOutputs.bOled) {
 			display.Run();
 		}
 
 		if ((!tLtcDisabledOutputs.bWS28xx) || (!tLtcDisabledOutputs.bRgbPanel)) {
 			ltcDisplayRgb.Run();
+		}
+
+		if (tLtcDisabledOutputs.bRgbPanel) {
+			lb.Run();
 		}
 
 		if (sourceSelect.IsConnected()) {
@@ -544,7 +567,9 @@ void notmain(void) {
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
-		lb.Run();
+#if defined(ENABLE_SHELL)
+		shell.Run();
+#endif
 	}
 }
 

@@ -35,36 +35,29 @@
 #include "rgbmapping.h"
 
 enum class LtcDisplayRgbType {
-	WS28XX,
-	RGBPANEL
+	WS28XX, RGBPANEL
 };
 
 enum class LtcDisplayRgbWS28xxType {
-	SEGMENT,
-	MATRIX
+	SEGMENT, MATRIX
 };
 
-enum TLtcDisplayWS28xxColonBlinkMode {
-	LTCDISPLAYWS28XX_COLON_BLINK_MODE_OFF,
-	LTCDISPLAYWS28XX_COLON_BLINK_MODE_DOWN,
-	LTCDISPLAYWS28XX_COLON_BLINK_MODE_UP
+enum class LtcDisplayRgbColonBlinkMode {
+	OFF, DOWN, UP
 };
 
-enum TLtcDisplayWS28xxColourIndex {
-	LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT,
-	LTCDISPLAYWS28XX_COLOUR_INDEX_COLON,
-	LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE,
-	LTCDISPLAYWS28XX_COLOUR_INDEX_LAST
+enum class LtcDisplayRgbColourIndex {
+	DIGIT, COLON, MESSAGE, LAST
 };
 
-enum TLtcDisplayWS28xxDefaults {
-	LTCDISPLAYWS28XX_DEFAULT_LED_TYPE = WS2812B,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_DIGIT = 0x00FF0000,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_COLON = 0x00FFFC00,
-	LTCDISPLAYWS28XX_DEFAULT_COLOUR_MESSAGE = 0x00FFFFFF,
-	LTCDISPLAYWS28XX_DEFAULT_COLON_BLINK_MODE = LTCDISPLAYWS28XX_COLON_BLINK_MODE_UP,
-	LTCDISPLAYWS28XX_DEFAULT_MASTER = 0xFF,
-	LTCDISPLAYWS28XX_DEFAULT_GLOBAL_BRIGHTNESS = 0xFF,
+struct LtcDisplayWS28xxDefaults {
+	static constexpr auto LED_TYPE = WS2812B;
+	static constexpr auto COLOUR_DIGIT = 0x00FF0000;
+	static constexpr auto COLOUR_COLON = 0x00FFFC00;
+	static constexpr auto COLOUR_MESSAGE = 0x00FFFFFF;
+	static constexpr auto COLON_BLINK_MODE = LtcDisplayRgbColonBlinkMode::UP;
+	static constexpr auto MASTER = 0xFF;
+	static constexpr auto GLOBAL_BRIGHTNESS = 0xFF;
 };
 
 class LtcDisplayRgb {
@@ -80,12 +73,12 @@ public:
 		m_nMaster = nValue;
 	}
 
-	void SetColonBlinkMode(TLtcDisplayWS28xxColonBlinkMode tColonBlinkMode) {
+	void SetColonBlinkMode(LtcDisplayRgbColonBlinkMode tColonBlinkMode) {
 		m_tColonBlinkMode = tColonBlinkMode;
 	}
 
-	void SetColour(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
-		if (tIndex >= LTCDISPLAYWS28XX_COLOUR_INDEX_LAST) {
+	void SetColour(uint32_t nRGB, LtcDisplayRgbColourIndex tIndex) {
+		if (tIndex >= LtcDisplayRgbColourIndex::LAST) {
 			return;
 		}
 		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
@@ -99,7 +92,8 @@ public:
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
 	void ShowFPS(ltc::type tTimeCodeType);
-	void ShowSource(const char *pSource);
+	void ShowSource(ltc::source tSource);
+	void ShowInfo(const char *pInfo);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
 
@@ -108,10 +102,10 @@ public:
 	}
 
 	void SetMessage(const char *pMessage, uint32_t nSize);
-	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex);
+	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, LtcDisplayRgbColourIndex tIndex);
 
 private:
-	void SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex);
+	void SetRGB(uint32_t nRGB, LtcDisplayRgbColourIndex tIndex);
 	void SetRGB(const char *pHexString);
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
 	void ShowMessage();
@@ -119,21 +113,22 @@ private:
 private:
 	LtcDisplayRgbType m_tDisplayRgbType;
 	LtcDisplayRgbWS28xxType m_tDisplayRgbWS28xxType;
-	uint8_t m_nIntensity;
-	int32_t m_nHandle;
+	uint8_t m_nIntensity{LtcDisplayWS28xxDefaults::GLOBAL_BRIGHTNESS};
+	int32_t m_nHandle{-1};
 	char m_Buffer[64];
-  	TRGBMapping m_tMapping;
-  	TWS28XXType m_tLedType;
-	uint32_t m_aColour[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST];
-	uint32_t m_nMaster;
-	bool m_bShowMsg;
+  	TRGBMapping m_tMapping{RGB_MAPPING_UNDEFINED};
+  	TWS28XXType m_tLedType{WS28XX_UNDEFINED};
+	uint32_t m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)];
+	uint32_t m_nMaster{LtcDisplayWS28xxDefaults::MASTER};
+	bool m_bShowMsg{false};
 	char m_aMessage[LTCDISPLAY_MAX_MESSAGE_SIZE];
-	uint32_t m_nMsgTimer;
-	uint32_t m_nColonBlinkMillis;
-	char m_nSecondsPrevious;
-	enum TLtcDisplayWS28xxColonBlinkMode m_tColonBlinkMode;
+	uint32_t m_nMsgTimer{0};
+	uint32_t m_nColonBlinkMillis{0};
+	char m_nSecondsPrevious{60};
+	LtcDisplayRgbColonBlinkMode m_tColonBlinkMode{LtcDisplayWS28xxDefaults::COLON_BLINK_MODE};
 
-	LtcDisplayRgbSet *m_pLtcDisplayRgbSet;
+	LtcDisplayRgbSet *m_pLtcDisplayRgbSet{nullptr};
+
 	struct TLtcDisplayRgbColours m_tColours;
 	struct TLtcDisplayRgbColours m_tColoursMessage;
 	struct TLtcDisplayRgbColours m_tColoursColons;

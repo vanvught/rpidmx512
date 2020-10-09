@@ -2,6 +2,6 @@
 #
 DEFINES = #RASPPI NDEBUG
 #
-EXTRA_INCLUDES = ../lib-network/include ../lib-device/include ../lib-display/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-artnet/include ../lib-tcnet/include ../lib-lightset/include ../lib-properties/include
+EXTRA_INCLUDES = ../lib-network/include ../lib-device/include ../lib-display/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-artnet/include ../lib-tcnet/include ../lib-lightset/include ../lib-properties/include ../lib-rgbpanel/include
 #
 include ../linux-template/lib/Rules.mk

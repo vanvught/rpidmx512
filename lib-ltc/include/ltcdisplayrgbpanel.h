@@ -45,7 +45,9 @@ public:
 	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours) override;
 	//
 	void ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours) override;
-	void ShowSource(const char *pSource, uint32_t nLength, struct TLtcDisplayRgbColours &tColours) override;
+	void ShowSource(ltc::source tSource, struct TLtcDisplayRgbColours &tColours) override;
+	void ShowInfo(const char *pInfo, uint32_t nLength, struct TLtcDisplayRgbColours &tColours) override;
+
 	//
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) override;
 

@@ -61,11 +61,7 @@ LtcOutputs *LtcOutputs::s_pThis = nullptr;
 using namespace ltc;
 
 LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source tSource, bool bShowSysTime):
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_bShowSysTime(bShowSysTime),
-	m_tTimeCodeTypePrevious(ltc::type::INVALID),
-	m_nMidiQuarterFramePiece(0),
-	m_nSecondsPrevious(60)
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_bShowSysTime(bShowSysTime)
 {
 	assert(pLtcDisabledOutputs != nullptr);
 
@@ -81,6 +77,7 @@ LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source t
 	pLtcDisabledOutputs->bMax7219 |= (!pLtcDisabledOutputs->bWS28xx || !pLtcDisabledOutputs->bRgbPanel);
 	//
 	pLtcDisabledOutputs->bMidi |= (!pLtcDisabledOutputs->bRgbPanel);
+	pLtcDisabledOutputs->bLtc |= (!pLtcDisabledOutputs->bRgbPanel);
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
@@ -91,7 +88,7 @@ void LtcOutputs::Init() {
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
 	}
 
-	if (!m_ptLtcDisabledOutputs->bDisplay) {
+	if (!m_ptLtcDisabledOutputs->bOled) {
 		Display::Get()->TextLine(2, Ltc::GetType(ltc::type::UNKNOWN), TC_TYPE_MAX_LENGTH);
 	}
 }
@@ -115,7 +112,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 		m_nMidiQuarterFramePiece = 0;
 
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
+		if (!m_ptLtcDisabledOutputs->bOled) {
 			Display::Get()->TextLine(2, Ltc::GetType(static_cast<ltc::type>(ptLtcTimeCode->nType)), TC_TYPE_MAX_LENGTH);
 		}
 
@@ -130,7 +127,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
 
-	if (!m_ptLtcDisabledOutputs->bDisplay) {
+	if (!m_ptLtcDisabledOutputs->bOled) {
 		Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);
 	}
 
@@ -164,7 +161,7 @@ void LtcOutputs::ShowSysTime() {
 
 		Ltc::ItoaBase10(pLocalTime, m_aSystemTime);
 
-		if (!m_ptLtcDisabledOutputs->bDisplay) {
+		if (!m_ptLtcDisabledOutputs->bOled) {
 			Display::Get()->TextLine(1, m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
 			Display::Get()->ClearLine(2);
 		}
@@ -195,7 +192,7 @@ void LtcOutputs::Print() {
 	PrintDisabled(m_ptLtcDisabledOutputs->bRtpMidi, "AppleMIDI");
 	PrintDisabled(m_ptLtcDisabledOutputs->bMidi, "MIDI");
 	PrintDisabled(m_ptLtcDisabledOutputs->bNtp, "NTP");
-	PrintDisabled(m_ptLtcDisabledOutputs->bDisplay, "OLED");
+	PrintDisabled(m_ptLtcDisabledOutputs->bOled, "OLED");
 	PrintDisabled(m_ptLtcDisabledOutputs->bMax7219, "Max7219");
 	PrintDisabled(m_ptLtcDisabledOutputs->bWS28xx, "WS28xx");
 	PrintDisabled(m_ptLtcDisabledOutputs->bRgbPanel, "RGB panel");

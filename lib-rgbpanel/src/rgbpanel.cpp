@@ -65,9 +65,9 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		nChar = ' ';
 	}
 
-	const uint32_t nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
-	uint32_t nRow = m_nLine * m_nMaxPosition;
-	const uint32_t nColonIndex = m_nPosition + nRow;
+	const auto nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
+	auto nRow = m_nLine * m_nMaxPosition;
+	const auto nColonIndex = m_nPosition + nRow;
 	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
 	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
@@ -87,7 +87,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 				continue;
 			}
 
-			const uint8_t nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
+			const auto nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
 
 			if ((nByte & 0x1) != 0) {
 				SetPixel(nColumn, nRow, nRed, nGreen, nBlue);
@@ -150,7 +150,7 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	const uint32_t nStartRow = (nLine - 1U) * m_nMaxPosition;
+	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
 
 	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
 		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {

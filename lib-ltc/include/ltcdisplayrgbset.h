@@ -56,7 +56,8 @@ public:
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours)=0;
 
 	virtual void ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours);
-	virtual void ShowSource(const char *pSource, uint32_t nLength, struct TLtcDisplayRgbColours &tColours);
+	virtual void ShowSource(ltc::source tSource, struct TLtcDisplayRgbColours &tColours);
+	virtual void ShowInfo(const char *pInfo, uint32_t nLength, struct TLtcDisplayRgbColours &tColours);
 
 	virtual void Print()=0;
 };

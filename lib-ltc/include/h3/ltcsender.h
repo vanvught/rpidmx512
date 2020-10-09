@@ -42,7 +42,7 @@ public:
 	}
 
 private:
-	uint32_t m_nTypePrevious;
+	uint32_t m_nTypePrevious{ltc::type::INVALID};
 
 	static LtcSender *s_pThis;
 };

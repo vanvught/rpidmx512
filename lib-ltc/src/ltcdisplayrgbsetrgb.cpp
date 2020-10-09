@@ -26,24 +26,24 @@
 
 #include <stdint.h>
 #include <ctype.h>
-#include <ltcdisplayrgb.h>
 #include <cassert>
 
+#include "ltcdisplayrgb.h"
 #include "rgbmapping.h"
 
-void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex) {
+void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, LtcDisplayRgbColourIndex tIndex) {
 	switch (tIndex) {
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT:
+	case LtcDisplayRgbColourIndex::DIGIT:
 		m_tColours.nRed = nRed;
 		m_tColours.nGreen = nGreen;
 		m_tColours.nBlue = nBlue;
 		break;
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_COLON:
+	case LtcDisplayRgbColourIndex::COLON:
 		m_tColoursColons.nRed = nRed;
 		m_tColoursColons.nGreen = nGreen;
 		m_tColoursColons.nBlue = nBlue;
 		break;
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE:
+	case LtcDisplayRgbColourIndex::MESSAGE:
 		m_tColoursMessage.nRed = nRed;
 		m_tColoursMessage.nGreen = nGreen;
 		m_tColoursMessage.nBlue = nBlue;
@@ -53,10 +53,10 @@ void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisp
 	}
 }
 
-void LtcDisplayRgb::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
-	const uint8_t nRed = ((nRGB & 0xFF0000) >> 16);
-	const uint8_t nGreen = ((nRGB & 0xFF00) >> 8);
-	const uint8_t nBlue = (nRGB & 0xFF);
+void LtcDisplayRgb::SetRGB(uint32_t nRGB, LtcDisplayRgbColourIndex tIndex) {
+	const auto nRed = ((nRGB & 0xFF0000) >> 16);
+	const auto nGreen = ((nRGB & 0xFF00) >> 8);
+	const auto nBlue = (nRGB & 0xFF);
 
 	SetRGB(nRed, nGreen, nBlue, tIndex);
 }
@@ -66,33 +66,32 @@ void LtcDisplayRgb::SetRGB(const char *pHexString) {
 		return;
 	}
 
-	const TLtcDisplayWS28xxColourIndex tIndex = static_cast<TLtcDisplayWS28xxColourIndex>((pHexString[0] - '0'));
+	const auto tIndex = static_cast<LtcDisplayRgbColourIndex>((pHexString[0] - '0'));
 
-	if (tIndex >= LTCDISPLAYWS28XX_COLOUR_INDEX_LAST) {
+	if (tIndex >= LtcDisplayRgbColourIndex::LAST) {
 		return;
 	}
 
-	const uint32_t nRGB = hexadecimalToDecimal(pHexString + 1);
+	const auto nRGB = hexadecimalToDecimal(pHexString + 1);
 
 	SetRGB(nRGB, tIndex);
 }
 
 uint32_t LtcDisplayRgb::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
-	char *src = const_cast<char*>(pHexValue);
-	uint32_t ret = 0;
-	uint8_t nibble;
+	auto *pSrc = const_cast<char*>(pHexValue);
+	uint32_t nReturn = 0;
 
 	while (nLength-- > 0) {
-		const char d = *src;
+		const char c = *pSrc;
 
-		if (isxdigit(d) == 0) {
+		if (isxdigit(c) == 0) {
 			break;
 		}
 
-		nibble = d > '9' ? (d | 0x20) - 'a' + 10 : (d - '0');
-		ret = (ret << 4) | nibble;
-		src++;
+		const uint8_t nNibble = c > '9' ? (c | 0x20) - 'a' + 10 : (c - '0');
+		nReturn = (nReturn << 4) | nNibble;
+		pSrc++;
 	}
 
-	return ret;
+	return nReturn;
 }

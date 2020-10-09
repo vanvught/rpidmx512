@@ -47,12 +47,12 @@ private:
 	void HandleUdpRequest();
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious;
-	int m_nHandle;
-	alignas(uint32_t) uint8_t m_Buffer[64];
-	uint16_t m_nBytesReceived;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct _midi_send_tc m_tMidiTimeCode;
+	uint32_t m_nTimeCodePrevious{0xFF};
+	int m_nHandle{-1};
+	uint8_t m_Buffer[64];
+	uint16_t m_nBytesReceived{0};
 };
 
 #endif /* H3_TCNETREADER_H_ */

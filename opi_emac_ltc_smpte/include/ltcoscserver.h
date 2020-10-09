@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	void SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex);
+	void SetWS28xxRGB(uint32_t nSize, LtcDisplayRgbColourIndex tIndex);
 
 private:
 	uint16_t m_nPortIncoming;

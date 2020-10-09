@@ -35,7 +35,7 @@
 
 LtcSender *LtcSender::s_pThis = nullptr;
 
-LtcSender::LtcSender(): m_nTypePrevious(ltc::type::INVALID) {
+LtcSender::LtcSender() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

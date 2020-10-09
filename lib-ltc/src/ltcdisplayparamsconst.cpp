@@ -23,15 +23,35 @@
  * THE SOFTWARE.
  */
 
-#include <ltcdisplayrgb.h>
+#include <stdint.h>
+
 #include "ltcdisplayparamsconst.h"
+#include "ltcdisplayrgb.h"
 
 const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
 
 const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
 const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
 
+/**
+ * RGB Display generic
+ */
+
+const char LtcDisplayParamsConst::INTENSITY[] = "ws28xx_intensity";
+const char LtcDisplayParamsConst::COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";
+const char LtcDisplayParamsConst::COLOUR[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)][24] =
+	{ "ws28xx_colour_segment",
+	  "ws28xx_colour_colon",
+	  "ws28xx_colour_message" };
+
+/**
+ * WS28xx specific
+ */
+
 const char LtcDisplayParamsConst::WS28XX_TYPE[] = "ws28xx_type";
-const char LtcDisplayParamsConst::WS28XX_INTENSITY[] = "ws28xx_intensity";
-const char LtcDisplayParamsConst::WS28XX_COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";
-const char LtcDisplayParamsConst::WS28XX_COLOUR[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST][24] = { "ws28xx_colour_segment", "ws28xx_colour_colon", "ws28xx_colour_message" };
+
+/**
+ * RGB panel specific
+ */
+
+const char LtcDisplayParamsConst::INFO_MSG[] = "info_msg";

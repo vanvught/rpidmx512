@@ -28,7 +28,7 @@
 #include "ltc.h"
 
 void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs) {
-	pLtcDisabledOutputs->bDisplay = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
+	pLtcDisabledOutputs->bOled = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
 	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
 	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
 	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);

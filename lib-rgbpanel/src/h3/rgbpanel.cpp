@@ -133,6 +133,8 @@ void RgbPanel::PlatformInit() {
 	s_pFramebuffer2 = new uint32_t[s_nBufferSize];
 	assert(s_pFramebuffer2 != nullptr);
 
+printf("%p %p\n", s_pFramebuffer1, s_pFramebuffer2);
+
 	for (uint32_t i = 0; i < s_nBufferSize; i++) {
 		s_pFramebuffer1[i] = 0;
 		s_pFramebuffer2[i] = 0;
