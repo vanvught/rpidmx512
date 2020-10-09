@@ -1,5 +1,5 @@
 /**
- * @file h3_cpu.h
+ * @file h3_cpu.c
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
