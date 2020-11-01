@@ -1,5 +1,5 @@
 /**
- * @file rgbpanelparamsconst.h
+ * @file storergbpanel.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,16 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef RGBPANELPARAMSCONST_H_
-#define RGBPANELPARAMSCONST_H_
+#include <cassert>
 
-struct RgbPanelParamsConst {
-	static const char FILE_NAME[];
+#include "storergbpanel.h"
 
-	static const char COLS[];
-	static const char ROWS[];
-	static const char CHAIN[];
-	static const char TYPE[];
-};
+#include "debug.h"
 
-#endif /* RGBPANELPARAMSCONST_H_ */
+StoreRgbPanel *StoreRgbPanel::s_pThis = nullptr;
+
+StoreRgbPanel::StoreRgbPanel() {
+	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_EXIT
+}

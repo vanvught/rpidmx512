@@ -32,7 +32,7 @@
 #include "rgbpanelconst.h"
 
 namespace rgbpanel {
-static constexpr auto PWM_WIDTH = 80;
+static constexpr auto PWM_WIDTH = 84;
 }  // namespace rgbpanel
 
 class RgbPanel {
@@ -73,6 +73,11 @@ public:
 	}
 
 	void Print();
+
+	static uint32_t ValidateColumns(uint32_t nColumns);
+	static uint32_t ValidateRows(uint32_t nRows);
+	static RgbPanelTypes GetType(const char *pType);
+	static const char *GetType(RgbPanelTypes tType);
 
 private:
 	void PlatformInit();

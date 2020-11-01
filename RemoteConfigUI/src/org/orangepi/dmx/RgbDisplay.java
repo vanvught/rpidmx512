@@ -22,7 +22,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.MaskFormatter;
 
-public class WS28xxDisplay extends JDialog {
+public class RgbDisplay extends JDialog {
 	private static final long serialVersionUID = -3879847439023085704L;
 	
 	static final int UDP_PORT = 0x2812;
@@ -49,7 +49,7 @@ public class WS28xxDisplay extends JDialog {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					WS28xxDisplay dialog = new WS28xxDisplay(InetAddress.getByName("192.168.2.120"));
+					RgbDisplay dialog = new RgbDisplay(InetAddress.getByName("192.168.2.120"));
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 					dialog.setVisible(true);
 				} catch (Exception e) {
@@ -62,7 +62,7 @@ public class WS28xxDisplay extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public WS28xxDisplay(InetAddress IPAddressLtcNode) {
+	public RgbDisplay(InetAddress IPAddressLtcNode) {
 		InitComponents();
 		CreateEvents();
 		

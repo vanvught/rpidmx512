@@ -1,6 +1,6 @@
 #
-DEFINES = NDEBUG
+DEFINES = #NDEBUG
 #
-EXTRA_INCLUDES =
+EXTRA_INCLUDES = ../lib-properties/include
 #
 include ../h3-firmware-template/lib/Rules.mk

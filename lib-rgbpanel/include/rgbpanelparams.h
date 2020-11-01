@@ -28,6 +28,8 @@
 
 #include <stdint.h>
 
+#include "rgbpanelconst.h"
+
 struct TRgbPanelParams {
 	uint32_t nSetList;
 	uint8_t nCols;
@@ -35,6 +37,8 @@ struct TRgbPanelParams {
 	uint8_t nChain;
 	uint8_t nType;
 } __attribute__((packed));
+
+static_assert(sizeof(struct TRgbPanelParams) <= 32, "struct TRgbPanelParams is too large");
 
 struct RgbPanelParamsMask {
 	static constexpr auto COLS = (1U << 0);
@@ -64,17 +68,33 @@ public:
 
 	void Dump();
 
+	uint32_t GetCols() const {
+		return m_tRgbPanelParams.nCols;
+	}
+
+	uint32_t GetRows() const {
+		return m_tRgbPanelParams.nRows;
+	}
+
+	uint32_t GetChain() const {
+		return m_tRgbPanelParams.nChain;
+	}
+
+	RgbPanelTypes GetType() const {
+		return static_cast<RgbPanelTypes>(m_tRgbPanelParams.nType);
+	}
+
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tTRgbPanelParams.nSetList & nMask) == nMask;
+		return (m_tRgbPanelParams.nSetList & nMask) == nMask;
 	}
 
 private:
 	RgbPanelParamsStore *m_pRgbPanelParamsStore;
-	struct TRgbPanelParams m_tTRgbPanelParams;
+	struct TRgbPanelParams m_tRgbPanelParams;
 };
 
 #endif /* RGBPANELPARAMS_H_ */

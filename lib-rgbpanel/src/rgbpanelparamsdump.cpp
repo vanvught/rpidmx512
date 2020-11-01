@@ -1,5 +1,5 @@
 /**
- * @file rgbpanelparamsconst.h
+ * @file rgbpanelparamsdump.cpp
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,16 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef RGBPANELPARAMSCONST_H_
-#define RGBPANELPARAMSCONST_H_
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
 
-struct RgbPanelParamsConst {
-	static const char FILE_NAME[];
+#include <stdint.h>
+#include <stdio.h>
 
-	static const char COLS[];
-	static const char ROWS[];
-	static const char CHAIN[];
-	static const char TYPE[];
-};
+#include "rgbpanelparams.h"
+#include "rgbpanelparamsconst.h"
+#include "rgbpanel.h"
 
-#endif /* RGBPANELPARAMSCONST_H_ */
+using namespace rgbpanel;
+
+void RgbPanelParams::Dump() {
+#ifndef NDEBUG
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RgbPanelParamsConst::FILE_NAME);
+
+	if (isMaskSet(RgbPanelParamsMask::COLS)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::COLS, m_tRgbPanelParams.nCols);
+	}
+
+	if (isMaskSet(RgbPanelParamsMask::ROWS)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::ROWS, m_tRgbPanelParams.nRows);
+	}
+
+	if (isMaskSet(RgbPanelParamsMask::CHAIN)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::CHAIN, m_tRgbPanelParams.nChain);
+	}
+
+	if (isMaskSet(RgbPanelParamsMask::TYPE)) {
+		printf(" %s=%d [%s]\n", RgbPanelParamsConst::TYPE, m_tRgbPanelParams.nType, RgbPanel::GetType(static_cast<RgbPanelTypes>(m_tRgbPanelParams.nType)));
+	}
+#endif
+}

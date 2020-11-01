@@ -31,7 +31,7 @@
 
 #include "rgbpanel.h"
 
-#include "../lib-device/src/font_cp437.h"
+#include "../../lib-device/src/font_cp437.h"
 
 #include "debug.h"
 
@@ -61,7 +61,7 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
  * Text
  */
 void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect((nChar >= cp437_font_size()), 0)) {
+	if (__builtin_expect((static_cast<uint32_t>(nChar) >= cp437_font_size()), 0)) {
 		nChar = ' ';
 	}
 
@@ -113,7 +113,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 }
 
 void RgbPanel::PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	uint8_t nChar;
+	char nChar;
 
 	while ((nChar = *pString++) != 0) {
 		PutChar(nChar, nRed, nGreen, nBlue);

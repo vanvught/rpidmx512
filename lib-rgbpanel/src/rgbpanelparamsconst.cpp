@@ -25,7 +25,9 @@
 
 #include "rgbpanelparamsconst.h"
 
-const char RgbPanelParamsConst::COLS[] = "panel_cols";
-const char RgbPanelParamsConst::ROWS[] = "panel_rows";
-const char RgbPanelParamsConst::CHAIN[] = "panel_chain";
-const char RgbPanelParamsConst::TYPE[] = "panel_type";
+const char RgbPanelParamsConst::FILE_NAME[] = "rgbpanel.txt";
+
+const char RgbPanelParamsConst::COLS[] = "cols";
+const char RgbPanelParamsConst::ROWS[] = "rows";
+const char RgbPanelParamsConst::CHAIN[] = "chain";
+const char RgbPanelParamsConst::TYPE[] = "type";

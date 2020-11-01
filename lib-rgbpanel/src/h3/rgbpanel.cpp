@@ -133,7 +133,7 @@ void RgbPanel::PlatformInit() {
 	s_pFramebuffer2 = new uint32_t[s_nBufferSize];
 	assert(s_pFramebuffer2 != nullptr);
 
-printf("%p %p\n", s_pFramebuffer1, s_pFramebuffer2);
+	DEBUG_PRINTF("%p %p", s_pFramebuffer1, s_pFramebuffer2);
 
 	for (uint32_t i = 0; i < s_nBufferSize; i++) {
 		s_pFramebuffer1[i] = 0;
@@ -272,8 +272,10 @@ void RgbPanel::Show() {
 void core1_task() {
 	const uint32_t nMultiplier = s_nColumns * PWM_WIDTH;
 
+	uint32_t nGPIO = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
+
 	for (;;) {
-		uint32_t nGPIO = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
+//		uint32_t nGPIO = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
 
 		for (uint32_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
 

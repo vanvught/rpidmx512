@@ -1,5 +1,5 @@
 /**
- * @file rgbpanelparamsconst.h
+ * @file storergbpanel.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,16 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef RGBPANELPARAMSCONST_H_
-#define RGBPANELPARAMSCONST_H_
+#ifndef STORERGBPANEL_H_
+#define STORERGBPANEL_H_
 
-struct RgbPanelParamsConst {
-	static const char FILE_NAME[];
+#include "rgbpanelparams.h"
 
-	static const char COLS[];
-	static const char ROWS[];
-	static const char CHAIN[];
-	static const char TYPE[];
+#include "spiflashstore.h"
+
+class StoreRgbPanel final: public RgbPanelParamsStore {
+public:
+	StoreRgbPanel();
+
+	void Update(const struct TRgbPanelParams *pRgbPanelParams) override {
+		SpiFlashStore::Get()->Update(STORE_RGBPANEL, pRgbPanelParams, sizeof(struct TRgbPanelParams));
+	}
+
+	void Copy(struct TRgbPanelParams *pRgbPanelParamss) override {
+		SpiFlashStore::Get()->Copy(STORE_RGBPANEL, pRgbPanelParamss, sizeof(struct TRgbPanelParams));
+	}
+
+	static StoreRgbPanel *Get() {
+		return s_pThis;
+	}
+
+private:
+	static StoreRgbPanel *s_pThis;
 };
 
-#endif /* RGBPANELPARAMSCONST_H_ */
+#endif /* STORERGBPANEL_H_ */
