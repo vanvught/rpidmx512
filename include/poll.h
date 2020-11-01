@@ -1,8 +1,8 @@
 /**
- * @file stdlib.h
+ * @file poll.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +22,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef POLL_H_
+#define POLL_H_
 
-#ifndef STDLIB_H_
-#define STDLIB_H_
+#define POLLIN		0x001		/* There is data to read.  */
+#define POLLPRI		0x002		/* There is urgent data to read.  */
+#define POLLOUT		0x004		/* Writing now will not block.  */
+#define POLLERR		0x008		/* Error condition.  */
+#define POLLHUP		0x010		/* Hung up.  */
+#define POLLNVAL	0x020		/* Invalid polling request.  */
 
-#include <stddef.h>
+/* Type used for the number of file descriptors.  */
+typedef unsigned long int nfds_t;
 
-#define RAND_MAX	0xFFFFu
+struct pollfd {
+	int fd; 		/* file descriptor */
+	short events; 	/* requested events */
+	short revents; 	/* returned events */
+};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void *malloc(size_t size);
-extern void free(void *ptr);
-extern void *calloc(size_t nmemb, size_t size);
-extern void *realloc(void *ptr, size_t size);
-
-/* Return the absolute value of I.  */
-inline static int abs(int i) {
-	return i < 0 ? -i : i;
-}
-
-extern long int random(void);
-extern void srandom(unsigned int seed);
+extern int poll(struct pollfd *fds, nfds_t nfds, int timeout);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* STDLIB_H_ */
+#endif /* POLL_H_ */

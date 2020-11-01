@@ -1,8 +1,8 @@
 /**
- * @file stdlib.h
+ * @file timerfd.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef STDLIB_H_
-#define STDLIB_H_
+#ifndef SYS_TIMERFD_H_
+#define SYS_TIMERFD_H_
 
-#include <stddef.h>
+#include <time.h>
 
-#define RAND_MAX	0xFFFFu
+/* Bits to be set in the FLAGS parameter of `timerfd_settime'.  */
+enum {
+	TFD_TIMER_ABSTIME = (1U << 0)
+#define TFD_TIMER_ABSTIME TFD_TIMER_ABSTIME
+};
+
+struct itimerspec {
+	struct timespec it_interval;	/* Interval for periodic timer */
+	struct timespec it_value;		/* Initial expiration */
+};
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void *malloc(size_t size);
-extern void free(void *ptr);
-extern void *calloc(size_t nmemb, size_t size);
-extern void *realloc(void *ptr, size_t size);
-
-/* Return the absolute value of I.  */
-inline static int abs(int i) {
-	return i < 0 ? -i : i;
-}
-
-extern long int random(void);
-extern void srandom(unsigned int seed);
+int timerfd_create(int clockid, int flags);
+int timerfd_settime(int fd, int flags, const struct itimerspec *new_value, struct itimerspec *old_value);
+int timerfd_gettime(int fd, struct itimerspec *curr_value);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* STDLIB_H_ */
+#endif /* SYS_TIMERFD_H_ */

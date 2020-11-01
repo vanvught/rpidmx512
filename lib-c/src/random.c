@@ -1,8 +1,8 @@
 /**
- * @file stdlib.h
+ * @file random.c
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef STDLIB_H_
-#define STDLIB_H_
+/**
+ * https://en.wikipedia.org/wiki/Linear-feedback_shift_register
+ */
 
-#include <stddef.h>
+static long int lfsr = 0xACE1u;
+static long int bit;
 
-#define RAND_MAX	0xFFFFu
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void *malloc(size_t size);
-extern void free(void *ptr);
-extern void *calloc(size_t nmemb, size_t size);
-extern void *realloc(void *ptr, size_t size);
-
-/* Return the absolute value of I.  */
-inline static int abs(int i) {
-	return i < 0 ? -i : i;
+void srandom(unsigned int seed) {
+	if (seed != 0) {
+		lfsr = seed & 0xFFFFu;
+	} else {
+		lfsr = 0xACE1u;
+	}
 }
 
-extern long int random(void);
-extern void srandom(unsigned int seed);
-
-#ifdef __cplusplus
+long int random(void) {
+	bit = ((lfsr >> 0) ^ (lfsr >> 2) ^ (lfsr >> 3) ^ (lfsr >> 5)) & 1;
+	return lfsr = (lfsr >> 1) | (bit << 15);
 }
-#endif
 
-#endif /* STDLIB_H_ */
