@@ -1,5 +1,5 @@
 /**
- * @file ltcdisplayws28xx.cpp
+ * @file ltcdisplayrgb.cpp
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
@@ -37,7 +37,6 @@
 
 #include "hardware.h"
 #include "network.h"
-
 //
 #include "ltcdisplayws28xx7segment.h"
 #include "ltcdisplayws28xxmatrix.h"
@@ -46,28 +45,29 @@
 
 #include "debug.h"
 
+namespace ltcdisplayrgb {
 namespace RGB {
-	static constexpr char PATH[] = "rgb";
-	static constexpr auto LENGTH = sizeof(PATH) - 1;
-	static constexpr auto HEX_SIZE = 7; // 1 byte index followed by 6 bytes hex RGB
+static constexpr char PATH[] = "rgb";
+static constexpr auto LENGTH = sizeof(PATH) - 1;
+static constexpr auto HEX_SIZE = 7; // 1 byte index followed by 6 bytes hex RGB
 }
-
 namespace MASTER {
-	static constexpr char PATH[] = "master";
-	static constexpr auto LENGTH = sizeof(PATH) - 1;
-	static constexpr auto HEX_SIZE = 2;
+static constexpr char PATH[] = "master";
+static constexpr auto LENGTH = sizeof(PATH) - 1;
+static constexpr auto HEX_SIZE = 2;
 }
-
 namespace SHOWMSG {
-	static constexpr char PATH[] = "showmsg";
-	static constexpr auto LENGTH = sizeof(PATH) - 1;
+static constexpr char PATH[] = "showmsg";
+static constexpr auto LENGTH = sizeof(PATH) - 1;
 }
-
 namespace udp {
-	static constexpr auto PORT = 0x2812;
+static constexpr auto PORT = 0x2812;
 }
+}  // namespace ltcdisplayrgb
 
 #define MESSAGE_TIME_MS		3000
+
+using namespace ltcdisplayrgb;
 
 LtcDisplayRgb *LtcDisplayRgb::s_pThis = nullptr;
 
@@ -81,8 +81,10 @@ LtcDisplayRgb::LtcDisplayRgb(LtcDisplayRgbType tRgbType, LtcDisplayRgbWS28xxType
 	s_pThis = this;
 
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::DIGIT)] = LtcDisplayWS28xxDefaults::COLOUR_DIGIT;
-	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::COLON)] =LtcDisplayWS28xxDefaults::COLOUR_COLON;
+	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::COLON)] = LtcDisplayWS28xxDefaults::COLOUR_COLON;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)] = LtcDisplayWS28xxDefaults::COLOUR_MESSAGE;
+	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::INFO)] = LtcDisplayWS28xxDefaults::COLOUR_INFO;
+	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::SOURCE)] = LtcDisplayWS28xxDefaults::COLOUR_SOURCE;
 
 	DEBUG_EXIT
 }
@@ -120,9 +122,9 @@ void LtcDisplayRgb::Init(TWS28XXType tLedType) {
 		m_pLtcDisplayRgbSet->Init(tLedType, m_tMapping);
 	}
 
-	SetRGB(m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::DIGIT)], LtcDisplayRgbColourIndex::DIGIT);
-	SetRGB(m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::COLON)], LtcDisplayRgbColourIndex::COLON);
-	SetRGB(m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)], LtcDisplayRgbColourIndex::MESSAGE);
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST); nIndex++) {
+		SetRGB(m_aColour[nIndex], static_cast<LtcDisplayRgbColourIndex>(nIndex));
+	}
 
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
@@ -131,6 +133,10 @@ void LtcDisplayRgb::Init(TWS28XXType tLedType) {
 }
 
 void LtcDisplayRgb::Show(const char *pTimecode) {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
 	if (__builtin_expect((m_bShowMsg), 0)) {
 		ShowMessage();
 		return;
@@ -203,6 +209,10 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 }
 
 void LtcDisplayRgb::ShowSysTime(const char *pSystemTime) {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
 	if (__builtin_expect((m_bShowMsg), 0)) {
 		ShowMessage();
 		return;
@@ -252,6 +262,10 @@ void LtcDisplayRgb::SetMessage(const char *pMessage, uint32_t nSize) {
 }
 
 void LtcDisplayRgb::ShowMessage() {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
 	struct TLtcDisplayRgbColours tColours;
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
@@ -264,49 +278,47 @@ void LtcDisplayRgb::ShowMessage() {
 }
 
 void LtcDisplayRgb::ShowFPS(ltc::type tTimeCodeType) {
-	struct TLtcDisplayRgbColours tColours;
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
 
-	tColours.nRed = 0x00;
-	tColours.nGreen = 0x00;
-	tColours.nBlue = 0x1F;
-
-	m_pLtcDisplayRgbSet->ShowFPS(tTimeCodeType, tColours);
-}
-
-void LtcDisplayRgb::ShowSource(ltc::source tSource) {
-	struct TLtcDisplayRgbColours tColours;
-
-	tColours.nRed = 0x00;
-	tColours.nGreen = 0x00;
-	tColours.nBlue = 0x1F;
-
-	m_pLtcDisplayRgbSet->ShowSource(tSource, tColours);
-}
-
-void LtcDisplayRgb::ShowInfo(const char *pInfo) {
-	struct TLtcDisplayRgbColours tColours;
-
-	tColours.nRed = 0x00;
-	tColours.nGreen = 0x00;
-	tColours.nBlue = 0x1F;
-
-	m_pLtcDisplayRgbSet->ShowInfo(pInfo, strlen(pInfo), tColours);
-}
-
-void LtcDisplayRgb::WriteChar(uint8_t nChar, uint8_t nPos) {
 	struct TLtcDisplayRgbColours tColours;
 
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = (m_nMaster * m_tColours.nRed) / 255;
-		tColours.nGreen = (m_nMaster * m_tColours.nGreen) / 255;
-		tColours.nBlue = (m_nMaster * m_tColours.nBlue) / 255;
+		tColours.nRed = (m_nMaster * m_tColours.nRed) / 255 ;
+		tColours.nGreen = (m_nMaster * m_tColours.nGreen) / 255 ;
+		tColours.nBlue = (m_nMaster * m_tColours.nBlue) / 255 ;
 	} else {
 		tColours.nRed = m_tColours.nRed;
 		tColours.nGreen = m_tColours.nGreen;
 		tColours.nBlue = m_tColours.nBlue;
 	}
 
-	m_pLtcDisplayRgbSet->WriteChar(nChar, nPos, tColours);
+	m_pLtcDisplayRgbSet->ShowFPS(tTimeCodeType, tColours);
+}
+
+void LtcDisplayRgb::ShowInfo(const char *pInfo) {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
+	m_pLtcDisplayRgbSet->ShowInfo(pInfo, strlen(pInfo), m_tColoursInfo);
+}
+
+void LtcDisplayRgb::ShowSource(ltc::source tSource) {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
+	m_pLtcDisplayRgbSet->ShowSource(tSource, m_tColoursSource);
+}
+
+void LtcDisplayRgb::WriteChar(uint8_t nChar, uint8_t nPos) {
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		return;
+	}
+
+	m_pLtcDisplayRgbSet->WriteChar(nChar, nPos, m_tColoursInfo);
 }
 
 void LtcDisplayRgb::Run() {
@@ -380,5 +392,9 @@ void LtcDisplayRgb::Print() {
 	printf(" Master  : %d\n", m_nMaster);
 	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::DIGIT)], m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::COLON)], m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)]);
 
-	m_pLtcDisplayRgbSet->Print();
+	if (m_pLtcDisplayRgbSet == nullptr) {
+		printf(" No Init()!\n");
+	} else {
+		m_pLtcDisplayRgbSet->Print();
+	}
 }

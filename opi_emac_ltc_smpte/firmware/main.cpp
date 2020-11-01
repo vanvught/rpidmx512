@@ -179,6 +179,17 @@ void notmain(void) {
 
 	ltc::source ltcSource = ltcParams.GetSource();
 
+	StoreLtcDisplay storeLtcDisplay;
+	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
+
+	if (ltcDisplayParams.Load()) {
+		ltcDisplayParams.Dump();
+	}
+
+	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
+
+	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? LtcDisplayRgbType::RGBPANEL : LtcDisplayRgbType::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
+
 	/**
 	 * Select the source using buttons/rotary
 	 */
@@ -205,21 +216,10 @@ void notmain(void) {
 
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, ltcSource, ltcParams.IsShowSysTime());
 
-	StoreLtcDisplay storeLtcDisplay;
-	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
-
-	if (ltcDisplayParams.Load()) {
-		ltcDisplayParams.Dump();
-	}
-
-	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
-
 	if (!tLtcDisabledOutputs.bMax7219) {
 		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 		ltcDdisplayMax7219.Print();
 	}
-
-	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? LtcDisplayRgbType::RGBPANEL : LtcDisplayRgbType::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
 
 	if ((!tLtcDisabledOutputs.bWS28xx) || (!tLtcDisabledOutputs.bRgbPanel)) {
 		ltcDisplayParams.Set(&ltcDisplayRgb);

@@ -47,7 +47,7 @@ enum class LtcDisplayRgbColonBlinkMode {
 };
 
 enum class LtcDisplayRgbColourIndex {
-	DIGIT, COLON, MESSAGE, LAST
+	DIGIT, COLON, MESSAGE, INFO, SOURCE, LAST
 };
 
 struct LtcDisplayWS28xxDefaults {
@@ -55,6 +55,8 @@ struct LtcDisplayWS28xxDefaults {
 	static constexpr auto COLOUR_DIGIT = 0x00FF0000;
 	static constexpr auto COLOUR_COLON = 0x00FFFC00;
 	static constexpr auto COLOUR_MESSAGE = 0x00FFFFFF;
+	static constexpr auto COLOUR_INFO = 0x00808080;
+	static constexpr auto COLOUR_SOURCE = 0x00707070;
 	static constexpr auto COLON_BLINK_MODE = LtcDisplayRgbColonBlinkMode::UP;
 	static constexpr auto MASTER = 0xFF;
 	static constexpr auto GLOBAL_BRIGHTNESS = 0xFF;
@@ -132,6 +134,8 @@ private:
 	struct TLtcDisplayRgbColours m_tColours;
 	struct TLtcDisplayRgbColours m_tColoursMessage;
 	struct TLtcDisplayRgbColours m_tColoursColons;
+	struct TLtcDisplayRgbColours m_tColoursInfo;
+	struct TLtcDisplayRgbColours m_tColoursSource;
 
 	static LtcDisplayRgb *s_pThis;
 };

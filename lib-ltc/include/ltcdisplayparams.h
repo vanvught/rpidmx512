@@ -43,12 +43,12 @@ struct TLtcDisplayParams {
 	uint8_t nWS28xxRgbMapping;			//  9
 	uint8_t nDisplayRgbIntensity;		// 10
 	uint8_t nDisplayRgbColonBlinkMode;	// 11
-	uint32_t aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)]; // 23	4 * 3 = 12
-	uint8_t nWS28xxDisplayType;			// 24
-	char aInfoMessage[8];				// 32
+	uint32_t aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)]; // 23	5 * 4 = 20
+	uint8_t nWS28xxDisplayType;			// 32
+	char aInfoMessage[8];				// 40
 } __attribute__((packed));
 
-static_assert(sizeof(struct TLtcDisplayParams) <= 32, "struct TLtcDisplayParams is too large");
+static_assert(sizeof(struct TLtcDisplayParams) <= 64, "struct TLtcDisplayParams is too large");
 
 struct LtcDisplayParamsMask {
 	static constexpr auto MAX7219_TYPE = (1U << 0);

@@ -1,5 +1,5 @@
 /**
- * @file sourceselect.h
+ * @file mcpbuttons.h
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -56,7 +56,7 @@ public:
 	void Run();
 
 private:
-	void LedBlink(uint8_t nPortB);
+	uint32_t LedBlink(uint8_t nPortB);
 	void HandleActionLeft(ltc::source& tLtcReaderSource);
 	void HandleActionRight(ltc::source& tLtcReaderSource);
 	void HandleActionSelect(const ltc::source& tLtcReaderSource);
@@ -76,24 +76,23 @@ private:
 	DisplayEditTimeCode displayEditTimeCode;
 	DisplayEditFps displayEditFps;
 	enum {
-		SOURCE_SELECT,
-		EDIT_TIMECODE_START,
-		EDIT_TIMECODE_STOP,
-		EDIT_FPS
-	} m_State = SOURCE_SELECT;
+		SOURCE_SELECT, EDIT_TIMECODE_START, EDIT_TIMECODE_STOP, EDIT_FPS
+	} m_State {SOURCE_SELECT};
 	ltc::source m_tLtcReaderSource;
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bUseAltFunction;
 	int32_t m_nSkipSeconds;
-	bool m_bIsConnected = false;
-	uint8_t m_nPortAPrevious = 0;
-	uint8_t m_nPortB = 0;
-	uint32_t m_nMillisPrevious = 0;
+	bool m_bIsConnected{false};
+	uint8_t m_nPortAPrevious{0};
+	uint8_t m_nPortB{0};
+	uint32_t m_nMillisPrevious{0};
+	uint32_t m_nLedTicker{0};
+	uint32_t m_nLedTickerMax{20};	// 10 seconds
 	RotaryEncoder m_RotaryEncoder;
-	uint8_t m_tRotaryDirection = RotaryEncoder::NONE;
-	RunStatus m_tRunStatus = RunStatus::IDLE;
-	uint32_t m_nSelectMillis = 0;
-	int m_nKey = INPUT_KEY_NOT_DEFINED;
+	uint8_t m_tRotaryDirection{RotaryEncoder::NONE};
+	RunStatus m_tRunStatus{RunStatus::IDLE};
+	uint32_t m_nSelectMillis{0};
+	int m_nKey{INPUT_KEY_NOT_DEFINED};
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 };
 

@@ -37,12 +37,14 @@ const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
  * RGB Display generic
  */
 
-const char LtcDisplayParamsConst::INTENSITY[] = "ws28xx_intensity";
-const char LtcDisplayParamsConst::COLON_BLINK_MODE[] = "ws28xx_colon_blink_mode";
+const char LtcDisplayParamsConst::INTENSITY[] = "intensity";
+const char LtcDisplayParamsConst::COLON_BLINK_MODE[] = "colon_blink_mode";
 const char LtcDisplayParamsConst::COLOUR[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)][24] =
-	{ "ws28xx_colour_segment",
-	  "ws28xx_colour_colon",
-	  "ws28xx_colour_message" };
+	{ "colour_segment",
+	  "colour_colon",
+	  "colour_message",
+	  "colour_info",		// RGB panel specific
+	  "colour_source" };	// RGB panel specific
 
 /**
  * WS28xx specific

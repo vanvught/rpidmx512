@@ -91,14 +91,17 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 
 	const char cLine[8] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 
-	m_pRgbPanel->TextLine(1, cLine, 8, tColours.nRed, tColours.nGreen, tColours.nBlue);
-
 	memcpy(m_Line[0], cLine, 8);
+
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	for (uint32_t i = 1; i < 4; i++) {
+	m_LineColours[1].nRed = tColours.nRed;
+	m_LineColours[1].nGreen = tColours.nGreen;
+	m_LineColours[1].nBlue = tColours.nBlue;
+
+	for (uint32_t i = 0; i < 4; i++) {
 		m_pRgbPanel->TextLine(1 + i, m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
 	}
 
@@ -112,9 +115,19 @@ void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplay
 
 	const char cLine[] = { ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7], ' '};
 
-	m_pRgbPanel->ClearLine(1);
-	m_pRgbPanel->TextLine(2, cLine, sizeof(cLine), tColours.nRed, tColours.nGreen, tColours.nBlue);
-	m_pRgbPanel->ClearLine(3);
+	memcpy(m_Line[0], cLine, 8);
+
+	m_LineColours[0].nRed = tColours.nRed;
+	m_LineColours[0].nGreen = tColours.nGreen;
+	m_LineColours[0].nBlue = tColours.nBlue;
+
+	m_LineColours[1].nRed = tColours.nRed;
+	m_LineColours[1].nGreen = tColours.nGreen;
+	m_LineColours[1].nBlue = tColours.nBlue;
+
+	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
+	m_pRgbPanel->ClearLine(2);
+	m_pRgbPanel->TextLine(3, m_Line[2], 8, m_LineColours[2].nRed, m_LineColours[2].nGreen, m_LineColours[2].nBlue);
 	m_pRgbPanel->TextLine(4, m_Line[3], 8, m_LineColours[3].nRed, m_LineColours[3].nGreen, m_LineColours[3].nBlue);
 
 	m_pRgbPanel->Show();
