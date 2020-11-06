@@ -83,7 +83,7 @@ else
 endif
 
 ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
-	DEFINES+=ENABLE_TC1602 ENABLE_CURSOR_MODE
+	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
 endif
 
 ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)

@@ -66,10 +66,10 @@ private:
 
 private:
 	struct _midi_message m_tMidiMessage;
-	RtpMidiHandler *m_pRtpMidiHandler;
-	uint8_t *m_pReceiveBuffer;
-	uint8_t *m_pSendBuffer;
-	uint16_t m_nSequenceNumber;
+	RtpMidiHandler *m_pRtpMidiHandler{nullptr};
+	uint8_t *m_pReceiveBuffer{nullptr};
+	uint8_t *m_pSendBuffer{nullptr};
+	uint16_t m_nSequenceNumber{0};
 
 	static RtpMidi *s_pThis;
 };

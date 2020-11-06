@@ -56,19 +56,6 @@ void notmain(void) {
 
 	networkHandlerOled.ShowIp();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
-
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
-
-	while (spiFlashStore.Flash())
-		;
-
 	/*
 	 *
 	 */
@@ -131,6 +118,27 @@ void notmain(void) {
 
 	Reboot reboot;
 	hw.SetRebootHandler(&reboot);
+
+	/**
+	 *
+	 */
+
+	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_RGBPANEL, matrix.GetUniverses());
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if (remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
+
+	/**
+	 *
+	 */
 
 	display.ClearLine(0);
 
