@@ -2,7 +2,7 @@
 DEFINES = E131_BRIDGE ARM_ALLOW_MULTI_CORE DO_NOT_USE_EXTERNAL_LED DISABLE_RTC
 #
 # Needed for shell
-LIBS = gps
+LIBS = gps rgbpanel
 #
 SRCDIR = firmware lib lib/h3
 
