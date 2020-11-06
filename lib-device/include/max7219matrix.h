@@ -32,9 +32,8 @@
 
 class Max7219Matrix: public MAX7219 {
 public:
-	Max7219Matrix() {
-
-	}
+	Max7219Matrix();
+	~Max7219Matrix();
 
 	void Init(uint32_t nCount, uint8_t nIntensity);
 
@@ -42,12 +41,16 @@ public:
 
 	void Write(const char *pBuffer, uint8_t nLength);
 
+	void UpdateCharacter(uint8_t nChar, const uint8_t pBytes[8]);
+
 private:
 	uint8_t Rotate(uint8_t r, uint8_t x);
 	void WriteAll(uint8_t nRegister, uint8_t nData);
 
 private:
-	uint32_t m_nCount = 4;
+	uint32_t m_nFontSize;
+	uint8_t *m_pFont;
+	uint32_t m_nCount{4};
 };
 
 #endif /* DEVICE_MAX7219MATRIX_H_ */

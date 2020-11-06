@@ -122,7 +122,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 
 		Ltc7segment::Get()->Show(static_cast<ltc::type>(ptLtcTimeCode->nType));
 
-		m_aTimeCode[LTC_TC_INDEX_COLON_3] = (ptLtcTimeCode->nType != ltc::type::DF ? '.' : ',');
+		m_aTimeCode[LTC_TC_INDEX_COLON_3] = (ptLtcTimeCode->nType != ltc::type::DF ? ':' : ';');
 	}
 
 	Ltc::ItoaBase10(ptLtcTimeCode, m_aTimeCode);
@@ -150,8 +150,8 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 
 void LtcOutputs::ShowSysTime() {
 	if (m_bShowSysTime) {
-		const time_t tTime = time(nullptr);
-		const struct tm *pLocalTime = localtime(&tTime);
+		const auto tTime = time(nullptr);
+		const auto pLocalTime = localtime(&tTime);
 
 		if (__builtin_expect((m_nSecondsPrevious == pLocalTime->tm_sec), 1)) {
 			return;
