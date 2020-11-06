@@ -32,8 +32,6 @@
 extern "C" {
 #endif
 
-extern void udelay(uint32_t);
-
 #ifdef __cplusplus
 }
 #endif
