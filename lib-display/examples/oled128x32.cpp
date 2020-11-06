@@ -33,8 +33,6 @@
 
 #include "ssd1306.h"
 
-static char line[] = "Line ";
-
 int main(int argc, char **argv) {
 	if (getuid() != 0) {
 		fprintf(stderr, "Error: Not started with 'root'\n");
@@ -46,11 +44,18 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+		return -3;
+	}
+
 	Ssd1306 ssd1306(OLED_PANEL_128x32_4ROWS);
 
-	bool isDetected = ssd1306.Start();
+	const bool isDetected = ssd1306.Start();
 
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
+	ssd1306.PrintInfo();
+
+	char line[] = "Line ";
 
 	if (isDetected) {
 		for (int i = 1; i <= 4; i++) {

@@ -214,7 +214,7 @@ public:
 
 private:
 	HAL_I2C m_I2C;
-	bool m_bHave7Segment = false;
+	bool m_bHave7Segment{false};
 
 	static Display7Segment *s_pThis;
 };

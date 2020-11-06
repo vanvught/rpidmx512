@@ -42,17 +42,18 @@ public:
 	LcdBw (uint8_t, uint8_t, uint8_t);
 
 	bool Start() override;
+
 	void Cls() override;
 	void ClearLine(uint8_t) override;
+
 	void PutChar(int) override;
 	void PutString(const char *) override;
-	void TextLine(uint8_t, const char *, uint8_t) override;
-	void SetCursorPos(uint8_t, uint8_t) override;
-#if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(uint32_t) override;
-#endif
 
 	void Text(const char *, uint8_t);
+	void TextLine(uint8_t, const char *, uint8_t) override;
+
+	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetCursor(uint32_t) override;
 
 private:
 	void Write(const char *, uint32_t);

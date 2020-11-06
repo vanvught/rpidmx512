@@ -1,8 +1,8 @@
 /**
- * @file dislpayset.h
+ * @file ssd1311.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,51 +23,55 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYSET_H_
-#define DISPLAYSET_H_
+#ifndef SDD1311_H_
+#define SDD1311_H_
 
 #include <stdint.h>
 
-namespace display {
-namespace cursor {
-static constexpr auto OFF = 0;
-static constexpr auto ON = (1 << 0);
-static constexpr auto BLINK_OFF = 0;
-static constexpr auto BLINK_ON = (1 << 1);
-}  // namespace cursor_mode
-}  // namespace display
+#include "displayset.h"
+#include "hal_i2c.h"
 
-class DisplaySet {
+class Ssd1311 final: public DisplaySet {
 public:
-	virtual ~DisplaySet() {
+	Ssd1311 ();
+	~Ssd1311 () override;
+
+	bool Start() override;
+
+	void Cls() override;
+	void ClearLine(uint8_t) override;
+
+	void PutChar(int) override;
+	void PutString(const char *) override;
+
+	void Text(const char *, uint8_t);
+	void TextLine(uint8_t, const char *, uint8_t) override;
+
+	void SetSleep(bool bSleep) override;
+
+	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetCursor(uint32_t) override;
+
+	void PrintInfo() override;
+
+	static Ssd1311* Get() {
+		return s_pThis;
 	}
 
-	uint8_t GetColumns() {
-		return m_nCols;
-	}
+private:
+	bool CheckSSD1311();
+	void SelectRamRom(uint32_t nRam, uint32_t nRom);
+	void SetDDRAM(uint8_t nAddress);
+	void SetCGRAM(uint8_t nAddress);
+	void SendCommand(uint8_t nCommand);
+	void SendData(uint8_t nData);
+	void SendData(const uint8_t *, uint32_t);
 
-	uint8_t GetRows() {
-		return m_nRows;
-	}
+private:
+	HAL_I2C m_I2C;
+	uint8_t m_nDisplayControl{1U << 3}; // Section 9.1.4 Display ON/OFF Control
 
-	virtual bool Start()= 0;
-	virtual void Cls()= 0;
-	virtual void PutChar(int)= 0;
-	virtual void PutString(const char*)= 0;
-	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
-	virtual void ClearLine(uint8_t)= 0;
-	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
-	}
-
-	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
-	virtual void SetCursor(uint32_t)= 0;
-
-	virtual void PrintInfo() {
-	}
-
-protected:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
+	static Ssd1311 *s_pThis;
 };
 
-#endif /* DISPLAYSET_H_ */
+#endif /* SDD1311_H_ */

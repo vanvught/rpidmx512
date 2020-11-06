@@ -186,7 +186,13 @@ void Tc1602::WriteReg(const uint8_t reg) {
 }
 
 #if defined(ENABLE_CURSOR_MODE)
-void Tc1602::SetCursor(uint32_t nMode) {
+# define UNUSED
+#else
+# define UNUSED __attribute__((unused))
+#endif
+
+void Tc1602::SetCursor(UNUSED uint32_t nMode) {
+#if defined(ENABLE_CURSOR_MODE)
 	uint8_t mode = TC1602_IC_DISPLAY | TC1602_IC_DISPLAY_ON;
 
 	if ((nMode & display::cursor::ON) == display::cursor::ON ){
@@ -198,5 +204,5 @@ void Tc1602::SetCursor(uint32_t nMode) {
 	}
 
 	WriteCmd(mode);
-}
 #endif
+}

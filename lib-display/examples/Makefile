@@ -26,18 +26,18 @@ else
 	LDLIBS += -lbcm2835
 endif
 
-all : detect oled128x32 ssd1306 # lcd1602 lcd2004
+all : detect oled128x32 ssd1306 ssd1311 lcd2004 lcd1602 
 
 clean :
 	rm -f *.o
-	rm -f detect oled128x32 ssd1306
+	rm -f detect oled128x32 ssd1306 ssd1311
 	cd $(ROOT)/lib-display && make -f Makefile.Linux clean
 
 mircos.o	: Makefile micros.c
 	$(CC) -c micros.c
 	
 $(ROOT)/lib-display/lib_linux/libdisplay.a :
-	cd $(ROOT)/lib-display && make -f Makefile.Linux 'DEFINES=-DRASPPI -DENABLE_TC1602 -DENABLE_LCDBW -DNO_HAL -DNDEBUG'
+	cd $(ROOT)/lib-display && make -f Makefile.Linux 'DEFINES=-DRASPPI -DENABLE_SSD1311 -DENABLE_TC1602 -DENABLE_LCDBW -DENABLE_CURSOR_MODE -DNO_HAL -DNDEBUG'
 
 $(ROOT)/lib-i2c/lib_linux/libi2c.a :
 	cd $(ROOT)/lib-i2c && make -f Makefile.Linux 'DEFINES=-DRASPPI -DNDEBUG'
@@ -50,6 +50,9 @@ oled128x32 : Makefile detect.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a
 	
 ssd1306 : Makefile ssd1306.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a 
 	$(CPP) ssd1306.cpp micros.o $(INCLUDES) $(COPS) -o ssd1306 $(LIB) $(LDLIBS)
+
+ssd1311 : Makefile ssd1311.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a 
+	$(CPP) ssd1311.cpp micros.o $(INCLUDES) $(COPS) -o ssd1311 $(LIB) $(LDLIBS)
 
 lcd1602 : Makefile lcd1602.cpp $(ROOT)/lib-display/lib_linux/libdisplay.a micros.o
 	$(CPP) lcd1602.cpp micros.o $(INCLUDES) $(COPS) -o lcd1602 $(LIB) $(LDLIBS)
