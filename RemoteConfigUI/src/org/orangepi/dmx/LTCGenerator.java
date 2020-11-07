@@ -459,7 +459,7 @@ public class LTCGenerator extends JDialog {
 		btnSetStart.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 	
-				String ltcStart = String.format("ltc!start#%02d:%02d:%02d.%02d", 
+				String ltcStart = String.format("ltc!start#%02d:%02d:%02d:%02d", 
 						Integer.parseInt(spinnerStartHours.getValue().toString()),
 						Integer.parseInt(spinnerStartMinutes.getValue().toString()), 
 						Integer.parseInt(spinnerStartSeconds.getValue().toString()), 
@@ -472,7 +472,7 @@ public class LTCGenerator extends JDialog {
 		btnSetStop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				String ltcStop = String.format("ltc!stop#%02d:%02d:%02d.%02d", 
+				String ltcStop = String.format("ltc!stop#%02d:%02d:%02d:%02d", 
 						Integer.parseInt(spinnerStopHours.getValue().toString()),
 						Integer.parseInt(spinnerStopMinutes.getValue().toString()), 
 						Integer.parseInt(spinnerStopSeconds.getValue().toString()), 
@@ -485,7 +485,7 @@ public class LTCGenerator extends JDialog {
 		btnSn1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				String ltcStart = String.format("ltc!start!%02d:%02d:%02d.%02d", 
+				String ltcStart = String.format("ltc!start!%02d:%02d:%02d:%02d", 
 						Integer.parseInt(Sn1Hours.getValue().toString()),
 						Integer.parseInt(Sn1Minutes.getValue().toString()), 
 						Integer.parseInt(Sn1Seconds.getValue().toString()), 
@@ -498,7 +498,7 @@ public class LTCGenerator extends JDialog {
 		btnSn2.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				String ltcStart = String.format("ltc!start!%02d:%02d:%02d.%02d", 
+				String ltcStart = String.format("ltc!start!%02d:%02d:%02d:%02d", 
 						Integer.parseInt(Sn2Hours.getValue().toString()),
 						Integer.parseInt(Sn2Minutes.getValue().toString()), 
 						Integer.parseInt(Sn2Seconds.getValue().toString()), 
@@ -511,7 +511,7 @@ public class LTCGenerator extends JDialog {
 		btnSn3.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				String ltcStart = String.format("ltc!start!%02d:%02d:%02d.%02d", 
+				String ltcStart = String.format("ltc!start!%02d:%02d:%02d:%02d", 
 						Sn3Hours.getValue(),
 						Sn3Minutes.getValue(), 
 						Sn3Seconds.getValue(), 
@@ -524,7 +524,7 @@ public class LTCGenerator extends JDialog {
 		btnSn4.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				
-				String ltcStart = String.format("ltc!start!%02d:%02d:%02d.%02d", 
+				String ltcStart = String.format("ltc!start!%02d:%02d:%02d:%02d", 
 						Integer.parseInt(Sn4Hours.getValue().toString()),
 						Integer.parseInt(Sn4Minutes.getValue().toString()), 
 						Integer.parseInt(Sn4Seconds.getValue().toString()), 

@@ -75,6 +75,8 @@ static volatile uint32_t s_nUpdatesCounter;
 static uint32_t *s_pFramebuffer1 ;
 static uint32_t *s_pFramebuffer2 ;
 static uint8_t *s_pTablePWM ;
+//
+static bool s_bIsCoreRunning;
 
 using namespace rgbpanel;
 
@@ -87,6 +89,7 @@ void RgbPanel::PlatformInit() {
 	s_nShowCounter = 0;
 	s_bDoSwap = false;
 	s_nUpdatesCounter = 0;
+	s_bIsCoreRunning = false;
 
 	h3_spi_end();
 
@@ -161,9 +164,20 @@ void RgbPanel::Start() {
 
 	m_bIsStarted = true;
 
+	/**
+	 * Currently it is not possible stop/starting the additionals core(s)
+	 * We need to keep the additional core(s) running.
+	 * Starting an already running core can crash the system.
+	 */
+
+	if (s_bIsCoreRunning) {
+		return;
+	}
+
 	puts("smp_start_core(1, core1_task)");
 	smp_start_core(1, core1_task);
 	puts("Running");
+	s_bIsCoreRunning = true;
 }
 
 void RgbPanel::Dump() {

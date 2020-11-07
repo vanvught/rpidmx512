@@ -182,9 +182,11 @@ void RgbPanel::SetColon(uint8_t nChar, uint8_t nCol, uint8_t nRow, uint8_t nRed,
 
 	switch (nChar) {
 	case ':':
+	case ';':
 		m_ptColons[nIndex].nBits = 0x66;
 		break;
 	case '.':
+	case ',':
 		m_ptColons[nIndex].nBits = 0x60;
 		break;
 	default:
