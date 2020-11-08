@@ -31,7 +31,9 @@
 
 #include "rgbpanel.h"
 
+
 #include "../../lib-device/src/font_cp437.h"
+#include "../../lib-device/src/font_5x8.h"
 
 #include "debug.h"
 
@@ -44,7 +46,8 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
 	m_tType(tType),
 	// Text
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
-	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
+	m_nMaxLine(nRows / FONT_CP437_CHAR_H),
+	m_nFontID(0)
 {
 	PlatformInit();
 
@@ -61,21 +64,32 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
  * Text
  */
 void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect((static_cast<uint32_t>(nChar) >= cp437_font_size()), 0)) {
+
+	uint32_t font_size = 0;
+	uint32_t font_width = 0, font_height = 8;
+	if (m_nFontID == 0){
+		font_size = cp437_font_size();
+		font_width = 8;		
+	} else if (m_nFontID == 1) {
+		font_size = font_5x8_size();
+		font_width = 5;
+	}
+
+	if (__builtin_expect((static_cast<uint32_t>(nChar) >= font_size), 0)) {
 		nChar = ' ';
 	}
 
-	const auto nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
+	const auto nStartColumn = m_nPosition * font_width;
 	auto nRow = m_nLine * m_nMaxPosition;
 	const auto nColonIndex = m_nPosition + nRow;
 	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
-	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
+	for (uint32_t i = 0; i < font_height; i++) {
 		uint32_t nWidth = 0;
 
-		for (uint32_t nColumn = nStartColumn; nColumn < (FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
+		for (uint32_t nColumn = nStartColumn; nColumn < (font_width + nStartColumn); nColumn++) {
 
-			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
+			if ((bShowColon) && (nColumn == (nStartColumn + font_width - 1))) {
 				const uint8_t nByte = m_ptColons[nColonIndex].nBits >> i;
 
 				if ((nByte & 0x1) != 0) {
@@ -87,8 +101,13 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 				continue;
 			}
 
-			const auto nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
-
+			uint8_t nByte = 0;
+			if (m_nFontID == 0){
+				nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
+			} else if (m_nFontID == 1) {
+				nByte = font_5x8[static_cast<int>(nChar)][nWidth++] >> 3 >> i;							
+			}
+			 
 			if ((nByte & 0x1) != 0) {
 				SetPixel(nColumn, nRow, nRed, nGreen, nBlue);
 			} else {
@@ -100,7 +119,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		nRow++;
 	}
 
-	m_nPosition++;
+	m_nPosition++;  // FIXME:  I've probably broken this
 
 	if (m_nPosition == m_nMaxPosition ) {
 		m_nPosition = 0;
@@ -152,7 +171,14 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 
 	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
 
-	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
+	uint32_t font_height = 8;
+//	if (m_nFontID == 0){
+		
+//	} else if (m_nFontID == 1) {
+		
+//	}
+
+	for (uint32_t nRow = nStartRow; nRow < (nStartRow + font_height); nRow++) {
 		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
 			SetPixel(nColumn, nRow, 0, 0, 0);
 		}

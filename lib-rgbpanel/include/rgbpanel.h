@@ -72,6 +72,14 @@ public:
 		return m_nMaxLine;
 	}
 
+	uint32_t GetFontID() {
+		return m_nFontID;
+	}
+	
+	void SetFont(uint8_t font_id) {
+		m_nFontID = font_id;
+	}
+
 	void Print();
 
 	static uint32_t ValidateColumns(uint32_t nColumns);
@@ -87,7 +95,7 @@ protected:
 	uint32_t m_nColumns;
 	uint32_t m_nRows;
 
-private:
+private:	
 	uint32_t m_nChain;
 	RgbPanelTypes m_tType;
 	bool m_bIsStarted{false};
@@ -103,6 +111,8 @@ private:
 		uint8_t nBlue;
 	};
 	TColon *m_ptColons{nullptr};
+	uint8_t m_nFontID;
+
 };
 
 #endif /* RGBPANEL_H_ */
