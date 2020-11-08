@@ -35,4 +35,9 @@
 #   undef INT_MAX
 #   define INT_MAX __INT_MAX__
 
+#define FLT_MAX_EXP        128
+#define DBL_MAX_EXP        1024
+#define FLT_MIN_EXP        -125
+#define DBL_MIN_EXP        -1021
+
 #endif /* LIMITS_H_ */
