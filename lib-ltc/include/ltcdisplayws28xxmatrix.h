@@ -27,16 +27,16 @@
 
 #include <stdint.h>
 
-#include "ltcdisplayws28xxset.h"
+#include "ltcdisplayrgbset.h"
 
 #include "ws28xxdisplaymatrix.h"
 
 #include "rgbmapping.h"
 
-class LtcDisplayWS28xxMatrix final: public LtcDisplayWS28xxSet {
+class LtcDisplayWS28xxMatrix final: public LtcDisplayRgbSet {
 public:
 	LtcDisplayWS28xxMatrix();
-	~LtcDisplayWS28xxMatrix() override;
+	~LtcDisplayWS28xxMatrix();
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED) override;
 	void Print() override;

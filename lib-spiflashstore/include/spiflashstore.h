@@ -59,6 +59,7 @@ enum TStore {
 	STORE_RDMSENSORS,
 	STORE_RDMSUBDEVICES,
 	STORE_GPS,
+	STORE_RGBPANEL,
 	STORE_LAST
 };
 
@@ -99,11 +100,11 @@ private:
 	uint32_t GetStoreOffset(TStore tStore);
 
 private:
-	bool m_bHaveFlashChip;
-	bool m_bIsNew;
-	uint32_t m_nStartAddress;
-	uint32_t m_nSpiFlashStoreSize;
-	TStoreState m_tState;
+	bool m_bHaveFlashChip{false};
+	bool m_bIsNew{false};
+	uint32_t m_nStartAddress{0};
+	uint32_t m_nSpiFlashStoreSize{SPI_FLASH_STORE_SIZE};
+	TStoreState m_tState{STORE_STATE_IDLE};
 	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
 
 	StoreNetwork m_StoreNetwork;

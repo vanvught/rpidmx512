@@ -6,7 +6,7 @@
 
 class RtpMidiHandler {
 public:
-	virtual ~RtpMidiHandler();
+	virtual ~RtpMidiHandler() {};
 
 	virtual void MidiMessage(const struct _midi_message  *pMidiMessage)=0;
 };

@@ -36,7 +36,7 @@
 class DMXReceiver: public Dmx {
 public:
 	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
-	~DMXReceiver() override;
+	~DMXReceiver();
 
 	void SetOutput(LightSet *pLightSet);
 

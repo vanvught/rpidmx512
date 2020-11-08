@@ -2,34 +2,34 @@
 
 #include "tftpfileserver.h"
 
-TFTPFileServer::TFTPFileServer(void): m_pFile(0) {
+TFTPFileServer::TFTPFileServer() {
 }
 
-TFTPFileServer::~TFTPFileServer(void) {
+TFTPFileServer::~TFTPFileServer() {
 }
 
-bool TFTPFileServer::FileOpen(const char* pFileName, TFTPMode tMode) {
+bool TFTPFileServer::FileOpen(const char *pFileName, TFTPMode tMode) {
 	m_pFile = fopen(pFileName, "r");
-	return (m_pFile != NULL);
+	return (m_pFile != nullptr);
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
+bool TFTPFileServer::FileCreate(const char *pFileName, TFTPMode tMode) {
 	m_pFile = fopen(pFileName, "wb");
-	return (m_pFile != NULL);
+	return (m_pFile != nullptr);
 }
 
-bool TFTPFileServer::FileClose(void) {
-	if (m_pFile != 0) {
+bool TFTPFileServer::FileClose() {
+	if (m_pFile != nullptr) {
 		static_cast<void>(fclose(m_pFile));
-		m_pFile = 0;
+		m_pFile = nullptr;
 	}
 	return true;
 }
 
-int TFTPFileServer::FileRead(void* pBuffer, unsigned nCount) {
+int TFTPFileServer::FileRead(void *pBuffer, unsigned nCount) {
 	return fread(pBuffer, 1, nCount, m_pFile);
 }
 
-int TFTPFileServer::FileWrite(const void* pBuffer, unsigned nCount) {
+int TFTPFileServer::FileWrite(const void *pBuffer, unsigned nCount) {
 	return fwrite(pBuffer, 1, nCount, m_pFile);
 }

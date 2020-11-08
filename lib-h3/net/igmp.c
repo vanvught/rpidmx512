@@ -33,7 +33,7 @@
 #include "net_debug.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 extern uint16_t net_chksum(void *, uint32_t);

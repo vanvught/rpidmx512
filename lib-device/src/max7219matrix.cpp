@@ -34,6 +34,30 @@
 
 static uint8_t spi_data[64] __attribute__((aligned(4)));
 
+Max7219Matrix::Max7219Matrix(): m_nFontSize(cp437_font_size()) {
+	DEBUG_ENTRY
+
+	m_pFont = new uint8_t[m_nFontSize * 8];
+
+	auto pDst= m_pFont;
+
+	for (uint32_t i = 0; i < m_nFontSize; i++) {
+		for (uint32_t j = 0; j < 8; j++) {
+			*pDst++ = Rotate(i, 7 - j);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
+Max7219Matrix::~Max7219Matrix() {
+	DEBUG_ENTRY
+
+	delete[] m_pFont;
+
+	DEBUG_EXIT
+}
+
 void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
 	DEBUG_ENTRY
 
@@ -72,40 +96,60 @@ void Max7219Matrix::Cls() {
 void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
 	DEBUG_PRINTF("nByte=%d", nCount);
 
-	int32_t j, k;
-
 	if (nCount > m_nCount) {
 		nCount = m_nCount;
 	}
 
+	int32_t k;
+
 	for (uint32_t i = 1; i < 9; i++) {
 		k = nCount;
 
-		for (j = 0; j < static_cast<int32_t>(m_nCount * 2) - (nCount * 2); j = j + 2) {
+		uint32_t j;
+
+		for (j = 0; j < (m_nCount * 2U) - (nCount * 2U); j = j + 2) {
 			spi_data[j] = max7219::reg::NOOP;
 			spi_data[j + 1] = 0;
 		}
 
 		while (--k >= 0) {
-			char c = pBuffer[k];
-			if (c >= cp437_font_size()) {
+			auto c = pBuffer[k];
+
+			if (c >= m_nFontSize) {
 				c = ' ';
 			}
+
+			const auto p = &m_pFont[c * 8];
+
 			spi_data[j++] = i;
-			spi_data[j++] = Rotate(c, 8 - i);
+			spi_data[j++] = p[i - 1];
 		}
 
+		HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), j);
+	}
+}
 
-		HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), static_cast<uint32_t>(j));
+void Max7219Matrix::UpdateCharacter(uint8_t nChar, const uint8_t pBytes[8]) {
+	if (nChar > m_nFontSize) {
+		return;
+	}
+
+	auto pFont = &m_pFont[nChar * 8];
+
+	for (uint32_t j = 0; j < 8; j++) {
+		uint8_t b = 0;
+
+		for (uint8_t y = 0; y < 8; y++) {
+			const auto set = pBytes[y] & (1U << (7U - j));
+			b |= (set != 0) ? (1U << y) : 0;
+		}
+
+		pFont[j] = b;
 	}
 }
 
 void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 	DEBUG_ENTRY
-
-	if ((m_nCount * 2) > sizeof(spi_data)) {
-		return;
-	}
 
 	for (uint32_t i = 0; i < (m_nCount * 2); i = i + 2) {
 		spi_data[i] = nRegister;
@@ -118,12 +162,12 @@ void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 }
 
 uint8_t Max7219Matrix::Rotate(uint8_t r, uint8_t x) {
-	uint8_t b = 0;
+	uint8_t nByte = 0;
 
 	for (uint8_t y = 0; y < 8; y++) {
-		const uint8_t set = cp437_font[r][y] & (1U << x);
-		b |= (set != 0) ? (1U << y) : 0;
+		const auto set = cp437_font[r][y] & (1U << x);
+		nByte |= (set != 0) ? (1U << y) : 0;
 	}
 
-	return b;
+	return nByte;
 }

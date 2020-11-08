@@ -50,6 +50,9 @@ public:
 	}
 
 private:
+	int32_t Offset(const char nChar, const char nSeconds);
+
+private:
 	char m_aBuffer[SEGMENTS];
 
 	static LtcDisplayMax7219Matrix *s_pThis;

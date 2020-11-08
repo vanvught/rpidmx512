@@ -62,7 +62,7 @@ union uip {
 #define NODE_DEFAULT_SUBNET_SWITCH	0
 #define NODE_DEFAULT_UNIVERSE		1
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 46 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 47 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
 #define ARTNET_MERGE_TIMEOUT_SECONDS	10

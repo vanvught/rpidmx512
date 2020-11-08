@@ -2,7 +2,7 @@
  * @file h3_cpu.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #define H3_CPU_COUNT	4
+#define H3_CPUS_MASK	(H3_CPU_COUNT - 1)
 
 typedef enum h3_cpu {
 	H3_CPU0 = 0,
@@ -42,9 +43,9 @@ extern "C" {
 #endif
 
 extern void h3_cpu_off(h3_cpu_t);
+extern void h3_cpu_on(h3_cpu_t);
 
 extern void h3_cpu_set_clock(uint64_t);
-extern uint64_t h3_cpu_get_clock(void);
 
 #ifdef __cplusplus
 }

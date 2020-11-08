@@ -45,8 +45,8 @@ public:
 	void Handler(const struct TArtNetTimeCode *);
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_tMidiTimeCode;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct _midi_send_tc m_tMidiTimeCode;
 };
 
 #endif /* H3_ARTNETREADER_H_ */

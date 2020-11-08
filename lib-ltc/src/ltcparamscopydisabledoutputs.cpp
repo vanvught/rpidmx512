@@ -22,16 +22,21 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
+
 #include "ltcparams.h"
 #include "ltc.h"
 
 void LtcParams::CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs) {
-	pLtcDisabledOutputs->bDisplay = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
+	pLtcDisabledOutputs->bOled = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY);
 	pLtcDisabledOutputs->bMax7219 = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219);
 	pLtcDisabledOutputs->bMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI);
 	pLtcDisabledOutputs->bArtNet = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET);
 	pLtcDisabledOutputs->bLtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC);
 	pLtcDisabledOutputs->bNtp = (m_tLtcParams.nEnableNtp == 0);
 	pLtcDisabledOutputs->bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
-	pLtcDisabledOutputs->bWS28xx = (m_tLtcParams.nEnableWS28xx == 0);
+	pLtcDisabledOutputs->bWS28xx = (m_tLtcParams.nRgbLedType != TLtcParamsRgbLedType::WS28XX);
+	pLtcDisabledOutputs->bRgbPanel = (m_tLtcParams.nRgbLedType != TLtcParamsRgbLedType::RGBPANEL);
+
+	assert (pLtcDisabledOutputs->bWS28xx || pLtcDisabledOutputs->bRgbPanel);
 }

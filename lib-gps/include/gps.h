@@ -25,10 +25,6 @@
  * https://gpsd.gitlab.io/gpsd/NMEA.html
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #ifndef GPS_H_
 #define GPS_H_
 
@@ -73,13 +69,10 @@ public:
 		return m_nTimeTimestampMillis;
 	}
 
-	//TODO Cleanup
-	const struct tm *GetDateTime() const {
-		//m_IsTimeUpdated = m_IsDateUpdated = false;
+	const struct tm *GetDateTime() {
+		m_IsTimeUpdated = m_IsDateUpdated = false;
 		return &m_Tm;
 	}
-
-	const struct tm *GetLocalDateTime();
 
 	time_t GetLocalSeconds() {
 		m_IsTimeUpdated = m_IsDateUpdated = false;

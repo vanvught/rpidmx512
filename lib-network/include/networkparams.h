@@ -41,6 +41,11 @@ struct TNetworkParams {
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
 };
+//	uint8_t nPtpEnable;
+//	uint8_t nPtpDomain;
+//}__attribute__((packed));
+
+static_assert(sizeof(struct TNetworkParams) <= 96, "struct TNetworkParams is too large");
 
 struct NetworkParamsMask {
 	static constexpr auto DHCP = (1U << 0);
@@ -51,6 +56,8 @@ struct NetworkParamsMask {
 	static constexpr auto HOSTNAME = (1U << 5);
 	static constexpr auto NTP_SERVER = (1U << 6);
 	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
+	static constexpr auto PTP_ENABLE = (1U << 8);
+	static constexpr auto PTP_DOMAIN = (1U << 9);
 };
 
 class NetworkParamsStore {
@@ -74,38 +81,38 @@ public:
 
 	void Dump();
 
-	bool isDhcpUsed() {
+	bool isDhcpUsed() const {
 		return m_tNetworkParams.bIsDhcpUsed;
 	}
 
-	uint32_t GetIpAddress() {
+	uint32_t GetIpAddress() const {
 		return m_tNetworkParams.nLocalIp;
 	}
 
-	uint32_t GetNetMask() {
+	uint32_t GetNetMask() const {
 		return m_tNetworkParams.nNetmask;
 	}
 
-	const char *GetHostName() {
+	const char *GetHostName() const {
 		return m_tNetworkParams.aHostName;
 	}
 
-	uint32_t GetDefaultGateway() {
+	uint32_t GetDefaultGateway() const {
 		return m_tNetworkParams.nGatewayIp;
 	}
 
-	uint32_t GetNameServer() {
+	uint32_t GetNameServer() const {
 		return m_tNetworkParams.nNameServerIp;
 	}
 
-	uint32_t GetNtpServer() {
+	uint32_t GetNtpServer() const {
 		if (!isMaskSet(NetworkParamsMask::NTP_SERVER)) {
 			return 0;
 		}
 		return m_tNetworkParams.nNtpServerIp;
 	}
 
-	float GetNtpUtcOffset() {
+	float GetNtpUtcOffset() const {
 		if (!isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
 			return 0;
 		}
@@ -117,7 +124,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tNetworkParams.nSetList & nMask) == nMask;
     }
 

@@ -24,10 +24,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #ifndef HWCLOCK_H_
 #define HWCLOCK_H_
 
@@ -63,6 +59,10 @@ public:
 	bool Set(const struct rtc_time *pRtcTime);
 	bool Get(struct rtc_time *pRtcTime) {
 		return RtcGet(pRtcTime);
+	}
+
+	bool IsConnected() const {
+		return m_bIsConnected;
 	}
 
 	void Run(bool bDoRun);

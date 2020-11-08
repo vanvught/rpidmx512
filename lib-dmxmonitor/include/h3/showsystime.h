@@ -2,7 +2,7 @@
  * @file showsystime.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef SHOWSYSTIME_H_
-#define SHOWSYSTIME_H_
+#ifndef H3_SHOWSYSTIME_H_
+#define H3_SHOWSYSTIME_H_
 
 class ShowSystime {
 public:
-	ShowSystime(void);
-	~ShowSystime(void);
-
-	void Run(void);
+	ShowSystime() {
+	}
+	void Run();
 
 private:
-	int m_nSecondsPrevious;
+	int m_nSecondsPrevious { 60 };
 };
 
-#endif /* SHOWSYSTIME_H_ */
+#endif /* H3_SHOWSYSTIME_H_ */

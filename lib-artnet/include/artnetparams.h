@@ -128,57 +128,57 @@ public:
 
 	void Dump();
 
-	uint8_t GetNet() {
+	uint8_t GetNet() const {
 		return m_tArtNetParams.nNet;
 	}
 
-	uint8_t GetSubnet() {
+	uint8_t GetSubnet() const {
 		return m_tArtNetParams.nSubnet;
 	}
 
-	uint8_t GetUniverse() {
+	uint8_t GetUniverse() const {
 		return m_tArtNetParams.nUniverse;
 	}
 
-	const uint8_t *GetShortName() {
+	const uint8_t *GetShortName() const {
 		return m_tArtNetParams.aShortName;
 	}
 
-	const uint8_t *GetLongName() {
+	const uint8_t *GetLongName() const {
 		return m_tArtNetParams.aLongName;
 	}
 
-	TLightSetOutputType GetOutputType() {
+	TLightSetOutputType GetOutputType() const {
 		return m_tArtNetParams.tOutputType;
 	}
 
-	time_t GetNetworkTimeout() {
+	time_t GetNetworkTimeout() const {
 		return m_tArtNetParams.nNetworkTimeout;
 	}
 
-	bool IsUseTimeCode() {
+	bool IsUseTimeCode() const {
 		return m_tArtNetParams.bUseTimeCode;
 	}
 
-	bool IsUseTimeSync() {
+	bool IsUseTimeSync() const {
 		return m_tArtNetParams.bUseTimeSync;
 	}
 
-	bool IsRdm() {
+	bool IsRdm() const {
 		return m_tArtNetParams.bEnableRdm;
 	}
 
-	bool IsRdmDiscovery() {
+	bool IsRdmDiscovery() const {
 		return m_tArtNetParams.bRdmDiscovery;
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
 
-	bool IsEnableNoChangeUpdate() {
+	bool IsEnableNoChangeUpdate() const {
 		return m_tArtNetParams.bEnableNoChangeUpdate;
 	}
 
-	TArtNetPortDir GetDirection() {
+	TArtNetPortDir GetDirection() const {
 		return static_cast<TArtNetPortDir>(m_tArtNetParams.nDirection);
 	}
 
@@ -187,7 +187,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_tArtNetParams.nSetList & nMask) == nMask;
 	}
 	bool isMaskMultiPortOptionsSet(uint16_t nMask) {

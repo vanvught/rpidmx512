@@ -42,12 +42,12 @@ private:
 	void Update();
 
 private:
-	alignas(uint32_t) struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	alignas(uint32_t) struct _midi_send_tc m_MidiTimeCode;
-	_midi_timecode_type m_nTimeCodeType;
-	alignas(uint32_t) char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	uint8_t m_nPartPrevious;
-	bool m_bDirection;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct _midi_send_tc m_MidiTimeCode;
+	_midi_timecode_type m_nTimeCodeType{MIDI_TC_TYPE_UNKNOWN};
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	uint8_t m_nPartPrevious{0};
+	bool m_bDirection{true};
 };
 
 #endif /* H3_MIDIREADER_H_ */

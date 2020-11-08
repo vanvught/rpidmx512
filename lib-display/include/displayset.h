@@ -56,13 +56,11 @@ public:
 	virtual void PutString(const char*)= 0;
 	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
 	virtual void ClearLine(uint8_t)= 0;
-	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
 	}
 
-#if defined(ENABLE_CURSOR_MODE)
+	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 	virtual void SetCursor(uint32_t)= 0;
-#endif
 
 	virtual void PrintInfo() {
 	}

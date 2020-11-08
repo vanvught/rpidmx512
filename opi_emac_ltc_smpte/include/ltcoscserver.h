@@ -26,9 +26,9 @@
 #ifndef OSCSERVER_H_
 #define OSCSERVER_H_
 
+#include <ltcdisplayrgb.h>
 #include <stdint.h>
 
-#include "ltcdisplayws28xx.h"
 
 #define OSCSERVER_PATH_LENGTH_MAX	128
 
@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	void SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex);
+	void SetWS28xxRGB(uint32_t nSize, LtcDisplayRgbColourIndex tIndex);
 
 private:
 	uint16_t m_nPortIncoming;

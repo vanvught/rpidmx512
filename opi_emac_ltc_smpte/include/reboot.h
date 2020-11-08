@@ -26,6 +26,7 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
+#include <ltcdisplayrgb.h>
 #include "reboothandler.h"
 
 #include "ltc.h"
@@ -34,10 +35,9 @@
 #include "display.h"
 
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
 #include "network.h"
 #include "ntpclient.h"
+#include "gpstimeclient.h"
 #include "hwclock.h"
 
 #include "tcnet.h"
@@ -46,7 +46,8 @@
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(ltc::source tSource) :m_tSource(tSource) {
+	Reboot(ltc::source tSource, struct TLtcDisabledOutputs *ptLtcDisabledOutputs) :
+			m_tSource(tSource), m_ptLtcDisabledOutputs(ptLtcDisabledOutputs) {
 	}
 
 	~Reboot(void) {
@@ -63,16 +64,18 @@ public:
 			break;
 		}
 
-		if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED) && (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+		if (((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED)
+				&& (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED))
+				|| (GPSTimeClient::Get()->GetStatus() == GPSStatus::VALID)) {
 			HwClock::Get()->SysToHc();
 		}
 
-		if (LtcOutputs::Get()->IsActiveMax7219()) {
+		if (!m_ptLtcDisabledOutputs->bMax7219) {
 			LtcDisplayMax7219::Get()->Init(2); // TODO WriteChar
 		}
 
-		if (LtcOutputs::Get()->IsActiveWS28xx()) {
-			LtcDisplayWS28xx::Get()->WriteChar('-');
+		if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
+			LtcDisplayRgb::Get()->WriteChar('-');
 		}
 
 		if (!RemoteConfig::Get()->IsReboot()) {
@@ -96,6 +99,7 @@ public:
 
 private:
 	ltc::source m_tSource;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 };
 
 #endif /* REBOOT_H_ */

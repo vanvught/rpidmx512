@@ -182,3 +182,31 @@ fiq:
 
 FUNC hang
     b hang
+
+FUNC _init_core
+#ifdef ARM_ALLOW_MULTI_CORE
+    msr CPSR_c,#MODE_SVC|I_BIT|F_BIT	@ Supervisor Mode
+
+	@ Return current CPU ID (0..3)
+	mrc p15, 0, r0, c0, c0, 5 			@ r0 = Multiprocessor Affinity Register (MPIDR)
+	ands r0, #3							@ r0 = CPU ID (Bits 0..1)
+
+	cmp r0, #1							@ CPU ID == 1
+    ldreq r0, =__svc_stack_top_core1
+    beq 4f
+    cmp r0, #2							@ CPU ID == 2
+    ldreq r0, =__svc_stack_top_core2
+    beq 4f
+    ldr r0, =__svc_stack_top_core3		@ CPU ID == 3
+4:	mov sp, r0
+
+	bl vfp_init
+	bl mmu_enable
+
+	ldr r3, =smp_core_main
+    blx r3
+#else
+	dsb
+1:	wfi
+	b	1b
+#endif

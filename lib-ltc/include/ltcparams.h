@@ -31,6 +31,11 @@
 
 #include "ltc.h"
 
+struct TLtcParamsRgbLedType {
+	static constexpr auto WS28XX = (1U << 0);
+	static constexpr auto RGBPANEL = (1U << 1);
+};
+
 struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
@@ -55,7 +60,7 @@ struct TLtcParams {
 	uint8_t nStopHour;
 	uint8_t nEnableOsc;
 	uint16_t nOscPort;
-	uint8_t nEnableWS28xx;
+	uint8_t nRgbLedType;
 	uint8_t nAltFunction;
 	uint8_t nSkipSeconds;
 	uint8_t nSkipFree;
@@ -86,7 +91,7 @@ struct LtcParamsMask {
 	static constexpr auto STOP_HOUR = (1U << 19);
 	static constexpr auto ENABLE_OSC = (1U << 20);
 	static constexpr auto OSC_PORT = (1U << 21);
-	static constexpr auto ENABLE_WS28XX = (1U << 22);
+	static constexpr auto RGBLEDTYPE = (1U << 22);
 	static constexpr auto ALT_FUNCTION = (1U << 23);
 	static constexpr auto SKIP_SECONDS = (1U << 24);
 	static constexpr auto SKIP_FREE = (1U << 25);
@@ -127,39 +132,39 @@ public:
 
 	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-	bool IsShowSysTime() {
+	bool IsShowSysTime() const {
 		return (m_tLtcParams.nShowSysTime != 0);
 	}
 
-	bool IsTimeSyncDisabled() {
+	bool IsTimeSyncDisabled() const {
 		return (m_tLtcParams.nDisableTimeSync == 1);
 	}
 
-	uint8_t GetYear() {
+	uint8_t GetYear() const {
 		return m_tLtcParams.nYear;
 	}
 
-	uint8_t GetMonth() {
+	uint8_t GetMonth() const {
 		return m_tLtcParams.nMonth;
 	}
 
-	uint8_t GetDay() {
+	uint8_t GetDay() const {
 		return m_tLtcParams.nDay;
 	}
 
-	bool IsNtpEnabled() {
+	bool IsNtpEnabled() const {
 		return (m_tLtcParams.nEnableNtp == 1);
 	}
 
-	bool IsSetDate() {
+	bool IsSetDate() const {
 		return (m_tLtcParams.nSetDate == 1);
 	}
 
-	uint8_t GetFps() {
+	uint8_t GetFps() const {
 		return m_tLtcParams.nFps;
 	}
 
-	bool IsOscEnabled() {
+	bool IsOscEnabled() const {
 		return (m_tLtcParams.nEnableOsc == 1);
 	}
 
@@ -168,19 +173,23 @@ public:
 		return m_tLtcParams.nOscPort;
 	}
 
-	bool IsWS28xxEnabled() {
-		return (m_tLtcParams.nEnableWS28xx == 1);
+	bool IsWS28xxEnabled() const {
+		return (m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::WS28XX);
 	}
 
-	bool IsAltFunction() {
+	bool IsRgbPanelEnabled() const {
+		return (m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::RGBPANEL);
+	}
+
+	bool IsAltFunction() const {
 		return (m_tLtcParams.nAltFunction == 1);
 	}
 
-	uint8_t GetSkipSeconds() {
+	uint8_t GetSkipSeconds() const {
 		return m_tLtcParams.nSkipSeconds;
 	}
 
-	uint8_t GetSkipFree() {
+	uint8_t GetSkipFree() const {
 		return (m_tLtcParams.nSkipFree == 1);
 	}
 
@@ -206,10 +215,10 @@ private:
 	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_tLtcParams.nSetList & nMask) == nMask;
 	}
-	bool isDisabledOutputMaskSet(uint8_t nMask) {
+	bool isDisabledOutputMaskSet(uint8_t nMask) const {
 		return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
 	}
 

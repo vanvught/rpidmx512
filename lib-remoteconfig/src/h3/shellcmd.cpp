@@ -55,6 +55,7 @@
 # include "../debug/i2cdetect.h"
 # include "ntpclient.h"
 # include "ptpclient.h"
+# include "gps.h"
 extern "C" {
 void h3_board_dump(void);
 void h3_dump_memory_mapping(void);
@@ -117,6 +118,19 @@ static constexpr auto SYSTOHC = sizeof(arg::SYSTOHC) - 1;
 static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
 }  // namespace length
 }  // namespace hwclock
+
+namespace gps {
+namespace arg {
+static constexpr char DATE[] = "date";
+static constexpr char LOCALTIME[] = "localtime";
+static constexpr char PRINT[] = "print";
+}  // namespace arg
+namespace length {
+static constexpr auto DATE = sizeof(arg::DATE) - 1;
+static constexpr auto LOCALTIME = sizeof(arg::LOCALTIME) - 1;
+static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
+}  // namespace length
+}  // namespace gps
 
 namespace file {
 static constexpr char EXT[] = ".txt";
@@ -334,12 +348,9 @@ void Shell::CmdDhcp() {
 
 void Shell::CmdDate() {
 	time_t rawtime;
-	struct tm *timeinfo;
-
 	time(&rawtime);
-	timeinfo = localtime(&rawtime);
 
-	uart0_puts(asctime(timeinfo));
+	uart0_puts(asctime(localtime(&rawtime)));
 }
 
 void Shell::CmdHwClock() {
@@ -421,6 +432,29 @@ void Shell::CmdPtp() {
 
 	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
 		//TODO Implement
+		return;
+	}
+
+	uart0_puts(msg::error::INVALID);
+}
+
+void Shell::CmdGps() {
+	const auto nArgv0Length = m_nArgvLength[0];
+
+	if ((nArgv0Length == shell::gps::length::DATE) && (memcmp(m_Argv[0], shell::gps::arg::DATE, shell::gps::length::DATE) == 0)) {
+		const struct tm *tm = GPS::Get()->GetDateTime();
+		uart0_printf("%.2d/%.2d/%.2d %.2d:%.2d:%.2d\n", tm->tm_mday, 1 + tm->tm_mon, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min, tm->tm_sec);
+		return;
+	}
+
+	if ((nArgv0Length == shell::gps::length::LOCALTIME) && (memcmp(m_Argv[0], shell::gps::arg::LOCALTIME, shell::gps::length::LOCALTIME) == 0)) {
+		const time_t t = GPS::Get()->GetLocalSeconds();
+		uart0_puts(asctime(localtime(&t)));
+		return;
+	}
+
+	if ((nArgv0Length == shell::gps::length::PRINT) && (memcmp(m_Argv[0], shell::gps::arg::PRINT, shell::gps::length::PRINT) == 0)) {
+		GPS::Get()->Print();
 		return;
 	}
 

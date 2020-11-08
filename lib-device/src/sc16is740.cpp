@@ -160,7 +160,7 @@ void SC16IS740::SetBaud(uint32_t nBaud) {
 }
 
 void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
-	uint8_t *p = const_cast<uint8_t *>(pBytes);
+	auto *p = const_cast<uint8_t *>(pBytes);
 
 	while (nSize > 0) {
 		uint32_t nAvailable = ReadRegister(SC16IS7X0_TXLVL);

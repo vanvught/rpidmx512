@@ -74,15 +74,9 @@ struct TTimestampSynchronization {
 constexpr uint16_t APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct TExchangePacket) - APPLE_MIDI_SESSION_NAME_LENGTH_MAX - 1;
 
 AppleMidi::AppleMidi() :
-	m_nStartTime(0),
+	
 	m_nSSRC(Network::Get()->GetIp()),
-	m_nPort(APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT),
-	m_nHandleControl(-1),
-	m_nHandleMidi(-1),
-	m_pBuffer(nullptr),
-	m_nRemoteIp(0),
-	m_nRemotePort(0),
-	m_nBytesReceived(0),
+	
 	m_nExchangePacketReplySize(APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH)
 {
 	m_ExchangePacketReply.nSignature = APPLEMIDI_SIGNATURE;
@@ -147,7 +141,7 @@ void AppleMidi::SetSessionName(const char *pSessionName) {
 void AppleMidi::HandleControlMessage() {
 	DEBUG_ENTRY
 
-	struct TExchangePacket *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
+	auto *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
 	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, m_tSessionStatus.tSessionState);
@@ -219,7 +213,7 @@ void AppleMidi::HandleMidiMessage() {
 			if (m_tSessionStatus.tSessionState == SESSION_STATE_WAITING_IN_MIDI) {
 				DEBUG_PUTS("SESSION_STATE_WAITING_IN_MIDI");
 
-				struct TExchangePacket *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
+				auto *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
 
 				DEBUG_PRINTF("Command: %.4x", pPacket->nCommand);
 
@@ -242,11 +236,11 @@ void AppleMidi::HandleMidiMessage() {
 			if (m_tSessionStatus.tSessionState == SESSION_STATE_ESTABLISHED) {
 				DEBUG_PUTS("SESSION_STATE_ESTABLISHED");
 
-				struct TExchangePacket *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
+				auto *pPacket = reinterpret_cast<struct TExchangePacket*>(m_pBuffer);
 
 				if (pPacket->nCommand == APPLEMIDI_COMMAND_SYNCHRONIZATION) {
 					DEBUG_PUTS("Timestamp Synchronization");
-					struct TTimestampSynchronization *t = reinterpret_cast<struct TTimestampSynchronization*>(m_pBuffer);
+					auto *t = reinterpret_cast<struct TTimestampSynchronization*>(m_pBuffer);
 
 					m_tSessionStatus.nSynchronizationTimestamp = Hardware::Get()->Millis();
 

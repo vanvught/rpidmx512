@@ -71,6 +71,7 @@ enum TRemoteConfigMode {
 	REMOTE_CONFIG_MODE_PLAYER,
 	REMOTE_CONFIG_MODE_ARTNET,
 	REMOTE_CONFIG_MODE_SERIAL,
+	REMOTE_CONFIG_MODE_RGBPANEL,
 	REMOTE_CONFIG_MODE_LAST
 };
 
@@ -102,6 +103,7 @@ enum TTxtFile {
 	TXT_FILE_SHOW,
 	TXT_FILE_SERIAL,
 	TXT_FILE_GPS,
+	TXT_FILE_RGBPANEL,
 	TXT_FILE_LAST
 };
 
@@ -239,6 +241,10 @@ private:
 	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
 
+#if defined (RGB_PANEL)
+	void HandleGetRgbPanelTxt(uint32_t& nSize);
+#endif
+
 #if defined (RDM_RESPONDER)
 #endif
 
@@ -297,7 +303,11 @@ private:
 	void HandleTxtFileSerial();
 #endif
 
-	#if defined (RDM_RESPONDER)
+#if defined (RGB_PANEL)
+	void HandleTxtFileRgbPanel();
+#endif
+
+#if defined (RDM_RESPONDER)
 #endif
 
 	void HandleDisplaySet();

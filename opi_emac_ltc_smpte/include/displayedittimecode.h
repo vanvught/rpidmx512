@@ -35,19 +35,18 @@ public:
 	void HandleKey(int nKey, TLtcTimeCode& timecode, char m_aTimeCode[TC_CODE_MAX_LENGTH]);
 
 private:
-	void KeyUp(TLtcTimeCode& timecode);
-	void KeyDown(TLtcTimeCode& timecode);
+	void KeyUp(TLtcTimeCode &timecode);
+	void KeyDown(TLtcTimeCode &timecode);
 	void KeyLeft();
 	void KeyRight();
 
 private:
-	uint8_t m_nFrames = 0;
+	uint8_t m_nFrames {0};
 	enum State {
-		IDLE,
-		EDIT
-	} m_State = IDLE;
-	uint32_t m_nCursorPositionIndex = 0;
-	bool m_bCursorOn = false;
+		IDLE, EDIT
+	} m_State {IDLE};
+	uint32_t m_nCursorPositionIndex {0};
+	bool m_bCursorOn {false};
 };
 
 #endif /* DISPLAYEDITTIMECODE_H_ */

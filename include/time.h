@@ -31,6 +31,8 @@
 typedef long int time_t;
 #endif	/* _TIME_T */
 
+#define CLOCKS_PER_SEC	(1000000U)
+
 struct tm {
 	int tm_sec;		///< Seconds.		[0-60]	(1 leap second)
 	int tm_min;		///< Minutes.		[0-59]
@@ -43,6 +45,16 @@ struct tm {
 	int tm_isdst;	///< DST.			[-1/0/1]
 };
 
+struct timespec {
+	time_t tv_sec;	/* seconds */
+	long tv_nsec;	/* nanoseconds */
+};
+
+typedef enum {
+	CLOCK_REALTIME,
+	CLOCK_MONOTONIC
+} clockid_t;
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,6 +63,10 @@ extern time_t time(time_t *t);
 extern time_t mktime(struct tm *tm);
 extern struct tm *localtime(const time_t *timep);
 extern char *asctime(const struct tm *tm);
+
+extern int clock_getres(clockid_t clockid, struct timespec *res);
+extern int clock_gettime(clockid_t clockid, struct timespec *tp);
+extern int clock_settime(clockid_t clockid, const struct timespec *tp);
 
 #ifdef __cplusplus
 }

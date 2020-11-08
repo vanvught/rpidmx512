@@ -18,6 +18,13 @@ endif
 
 SRCDIR = src src/h3 $(EXTRA_SRCDIR)
 
+#ifeq ($(findstring NDEBUG,$(DEFINES)),NDEBUG)
+#else
+SRCDIR+=src/debug
+#endif
+
+$(info [${SRCDIR}])
+
 INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 

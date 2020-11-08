@@ -30,27 +30,33 @@
 #include "displayset.h"
 #include "display.h"
 
-#include "lcdbw.h"
-#include "tc1602.h"
+#if defined(ENABLE_LCDBW)
+# include "lcdbw.h"
+#endif
+#if defined(ENABLE_TC1602)
+# include "tc1602.h"
+#endif
 #include "ssd1306.h"
+#if defined(ENABLE_SSD1311)
+# include "ssd1311.h"
+#endif
 
 #include "display7segment.h"
 
 #include "hal_i2c.h"
 
 #if !defined(NO_HAL)
- #include "hardware.h"
+# include "hardware.h"
 #endif
 
 #if defined (BARE_METAL)
- #include "console.h"
+# include "console.h"
 #endif
 
 Display *Display::s_pThis = nullptr;
 
 Display::Display(uint32_t nCols, uint32_t nRows):
 	m_tType(DisplayType::UNKNOWN),
-	
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
@@ -63,7 +69,6 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 }
 
 Display::Display(DisplayType tDisplayType):
-	
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis()),
 #endif
@@ -89,6 +94,11 @@ Display::Display(DisplayType tDisplayType):
 			break;
 		case DisplayType::PCF8574T_2004:
 			m_LcdDisplay = new Tc1602(20, 4);
+			break;
+#endif
+#if defined(ENABLE_SSD1311)
+		case DisplayType::SSD1311:
+			m_LcdDisplay = new Ssd1311;
 			break;
 #endif
 		case DisplayType::SSD1306:
@@ -139,6 +149,7 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 #if defined(ENABLE_TC1602)
 	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
+
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::PCF8574T_1602;
 			Printf(1, "TC1602_PCF8574T");
@@ -148,12 +159,14 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 #if defined(ENABLE_LCDBW)
 	else if (HAL_I2C::IsConnected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
+
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::BW_LCD_1602;
 			Printf(1, "BW_LCD");
 		}
 	} else if (HAL_I2C::IsConnected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
 		m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
+
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::BW_UI_1602;
 			Printf(1, "BW_UI");
@@ -184,6 +197,7 @@ void Display::Cls() {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->Cls();
 }
 
@@ -191,6 +205,7 @@ void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
@@ -235,6 +250,7 @@ void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->SetCursorPos(nCol, nRow);
 }
 
@@ -242,6 +258,7 @@ void Display::PutChar(int c) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->PutChar(c);
 }
 
@@ -249,6 +266,7 @@ void Display::PutString(const char *pText) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->PutString(pText);
 }
 
@@ -256,17 +274,25 @@ void Display::ClearLine(uint8_t nLine) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->ClearLine(nLine);
 }
 
 #if defined(ENABLE_CURSOR_MODE)
-void Display::SetCursor(uint32_t nMode) {
+# define UNUSED
+#else
+# define UNUSED __attribute__((unused))
+#endif
+
+void Display::SetCursor(UNUSED uint32_t nMode) {
+#if defined(ENABLE_CURSOR_MODE)
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
+
 	m_LcdDisplay->SetCursor(nMode);
-}
 #endif
+}
 
 void Display::TextStatus(const char *pText) {
 	if (m_LcdDisplay == nullptr) {
@@ -310,7 +336,7 @@ void Display::SetSleep(bool bSleep) {
 
 	m_LcdDisplay->SetSleep(bSleep);
 
-	if(!bSleep) {
+	if (!bSleep) {
 		m_nMillis = Hardware::Get()->Millis();
 	}
 }
@@ -333,5 +359,6 @@ void Display::PrintInfo() {
 		puts("No display found");
 		return;
 	}
+
 	m_LcdDisplay->PrintInfo();
 }

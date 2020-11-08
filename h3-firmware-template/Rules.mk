@@ -83,7 +83,7 @@ else
 endif
 
 ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
-	DEFINES+=ENABLE_TC1602 ENABLE_CURSOR_MODE
+	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
 endif
 
 ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
@@ -101,7 +101,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display device hal c++ c h3 debug  arm
+LIBS+=lightset properties display device hal c++ c debug h3 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -177,7 +177,7 @@ clearlibs:
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
-#	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
+	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
 ifdef RDM
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
 	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor

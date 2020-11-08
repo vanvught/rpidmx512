@@ -56,9 +56,7 @@ static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPrevious = nUpdates;
 }
 
-ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs)
-{
+ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 

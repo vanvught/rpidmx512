@@ -31,7 +31,7 @@
 #include "net_debug.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 extern void arp_send_request(uint32_t ip);
@@ -45,8 +45,8 @@ struct t_arp_record {
 } ALIGNED;
 
 typedef union pcast32 {
-		uint32_t u32;
-		uint8_t u8[4];
+	uint32_t u32;
+	uint8_t u8[4];
 } _pcast32;
 
 static struct t_arp_record s_arp_records[MAX_RECORDS] ALIGNED;

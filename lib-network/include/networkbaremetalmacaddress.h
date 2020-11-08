@@ -32,8 +32,8 @@
 
 class NetworkBaremetalMacAddress: public Network {
 public:
-	NetworkBaremetalMacAddress(void);
-	~NetworkBaremetalMacAddress(void);
+	NetworkBaremetalMacAddress();
+	~NetworkBaremetalMacAddress();
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
@@ -65,11 +65,11 @@ public:
 	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 	}
 
-	bool SetZeroconf(void) {
+	bool SetZeroconf() {
 		return false;
 	}
 
-	bool EnableDhcp(void) {
+	bool EnableDhcp() {
 		return false;
 	}
 };

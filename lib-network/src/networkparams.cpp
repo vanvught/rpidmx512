@@ -128,6 +128,12 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		}
 	}
 
+//	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_PTP_ENABLE, nValue8) == Sscan::OK) {
+//		m_tNetworkParams.nPtpEnable = !(nValue8 == 0);
+//		m_tNetworkParams.nSetList |= NetworkParamsMask::PTP_ENABLE;
+//		return;
+//	}
+
 #if !defined (H3)
 	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nGatewayIp = nValue32;

@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG //TODO Remove
+#endif
+
 #include <cassert>
 
 #include "hwclock.h"
@@ -77,6 +81,26 @@ void HwClock::RtcProbe() {
 		m_nType = MCP7941X;
 		m_nAddress = i2caddress::MCP7941X;
 
+		registers[0] = reg::SECONDS;
+
+		FUNC_PREFIX(i2c_write(registers, 1));
+		FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+
+		if ((registers[0] & mcp7941x::bit::ST) == 0) {
+			DEBUG_PUTS("Start the on-board oscillator");
+
+			struct rtc_time RtcTime;
+
+			RtcTime.tm_hour = 0;
+			RtcTime.tm_min = 0;
+			RtcTime.tm_sec = 0;
+			RtcTime.tm_mday = _TIME_STAMP_DAY_;
+			RtcTime.tm_mon = _TIME_STAMP_MONTH_ - 1;
+			RtcTime.tm_year = _TIME_STAMP_YEAR_ - 1900;
+
+			RtcSet(&RtcTime);
+		}
+
 		DEBUG_EXIT
 		return;
 	}
@@ -99,7 +123,7 @@ void HwClock::RtcProbe() {
 }
 
 bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
-	assert(pRtcTime != 0);
+	assert(pRtcTime != nullptr);
 
 	if(!m_bIsConnected) {
 		return false;
@@ -140,7 +164,7 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 }
 
 bool HwClock::RtcGet(struct rtc_time *pRtcTime) {
-	assert(pRtcTime != 0);
+	assert(pRtcTime != nullptr);
 
 	if(!m_bIsConnected) {
 		return false;

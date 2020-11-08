@@ -32,13 +32,13 @@
 #include "net_debug.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 static struct t_icmp s_reply ALIGNED;
 
-extern uint16_t net_chksum(void *, uint32_t);
-extern void emac_eth_send(void *, int);
+extern uint16_t net_chksum(void*, uint32_t);
+extern void emac_eth_send(void*, int);
 
 typedef union pcast32 {
 	uint32_t u32;

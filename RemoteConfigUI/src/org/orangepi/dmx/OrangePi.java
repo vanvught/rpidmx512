@@ -34,11 +34,10 @@ public class OrangePi {
 	
 	private static final String RCONFIG_TXT = "rconfig.txt";
 	private static final String DISPLAY_TXT = "display.txt";
-	private static final String NEXTION_TXT = "nextion.txt";
 	private static final String NETWORK_TXT = "network.txt";
 	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
 	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
-	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", ""};
+	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", "rgbpanel.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String GPS_TXT = "gps.txt";
@@ -58,7 +57,6 @@ public class OrangePi {
 	
 	private String nodeRemoteConfig = null;
 	private String nodeDisplay = null;
-	private String nodeNextion = null;
 	private String nodeNetwork = null;
 	private String nodeType = null;
 	private String nodeMode = null;
@@ -69,11 +67,9 @@ public class OrangePi {
 	private String nodeRDM = null;
 	private String nodeSparkFun = null;
 	private String nodeShow = null;
-	private String nodeSerial = null;
 	
 	private String sbRemoteConfig = null;
 	private String sbDisplay = null;
-	private String sbNextion = null;
 	private String sbNetwork = null;
 	private String sbType = null;
 	private String sbMode = null;
@@ -102,13 +98,11 @@ public class OrangePi {
 			if (isValid) {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
 					nodeMode = MODES_TXT[0];
-					nodeNextion = NEXTION_TXT;
 					if (Mode[0].equals("RDM")) {
 						nodeRDM = RDM_TXT;
 					}
 				} else if (Mode[0].equals("Pixel")) {
 					nodeMode = MODES_TXT[1];
-					nodeNextion = NEXTION_TXT;
 				} else if (Mode[0].equals("Monitor")) {
 					nodeMode = MODES_TXT[2];
 				} else if (Mode[0].equals("TimeCode")) {
@@ -132,6 +126,8 @@ public class OrangePi {
 					//
 				} else if (Mode[0].equals("Serial")) {
 					nodeMode = MODES_TXT[4];
+				} else if (Mode[0].equals("RGB Panel")) {
+					nodeMode = MODES_TXT[5];	
 				} else {
 					isValid = false;
 				}
@@ -175,11 +171,6 @@ public class OrangePi {
 				sbDisplay = doGet(txt);
 			}
 			return sbDisplay.toString();
-		} else if (isNextionTxt(txt)) {
-			if (sbNextion == null) {
-				sbNextion = doGet(txt);
-			}
-			return sbNextion.toString();
 		} else if (isNetworkTxt(txt)) {
 			if (sbNetwork == null) {
 				sbNetwork = doGet(txt);
@@ -444,13 +435,6 @@ public class OrangePi {
 		return false;
 	}
 	
-	private Boolean isNextionTxt(String nextion) {
-		if (nextion.equals(NEXTION_TXT)) {
-			return true;
-		}
-		return false;
-	}
-	
 	private Boolean isNetworkTxt(String network) {
 		if (network.equals(NETWORK_TXT)) {
 			return true;
@@ -539,11 +523,7 @@ public class OrangePi {
 	public String getNodeDisplay() {
 		return nodeDisplay;
 	}
-	
-	public String getNodeNextion() {
-		return nodeNextion;
-	}
-	
+		
 	public String getNodeNetwork() {
 		return nodeNetwork;
 	}
@@ -588,11 +568,6 @@ public class OrangePi {
 
 	public String getNodeShow() {
 		return nodeShow;
-	}
-	
-	public String getNodeSerial() {
-		System.out.println(nodeSerial);
-		return nodeSerial;
 	}
 	
 	public InetAddress getAddress() {

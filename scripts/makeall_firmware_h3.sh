@@ -51,6 +51,7 @@ do
 				board=1
 			fi
 			echo $f $1 $2 $3 > build$board.txt
+			make -f Makefile.H3 $1 $2 $3 clean || exit
 			make -f Makefile.H3 $1 $2 $3 || exit
 		fi
 			
@@ -87,6 +88,7 @@ do
 					echo -e "\e[33mSkipping...\e[0m"
 				else
 					echo $1 $2 $3
+					make -f Makefile.H3 $1 $2 $3 clean || exit
 					make -f Makefile.H3 $1 $2 $3 || exit
 				fi
 			else

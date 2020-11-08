@@ -62,6 +62,10 @@ public:
 
 	void Dump();
 
+	bool IsEnabled() const {
+		return (m_tTGPSParams.nEnable == 1);
+	}
+
 	GPSModule GetModule() const {
 		return static_cast<GPSModule>(m_tTGPSParams.nModule);
 	}

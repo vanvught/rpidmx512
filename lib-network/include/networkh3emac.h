@@ -41,7 +41,7 @@ public:
 	NetworkH3emac();
 	~NetworkH3emac();
 
-	void Init(NetworkParamsStore *pNetworkParamsStore = 0);
+	void Init(NetworkParamsStore *pNetworkParamsStore = nullptr);
 
 	void Shutdown() override;
 
@@ -61,7 +61,7 @@ public:
 	void SetHostName(const char *pHostName) override;
 	bool SetZeroconf() override;
 
-	bool EnableDhcp();
+	bool EnableDhcp() override; 
 
 	void Run() {
 		net_handle();

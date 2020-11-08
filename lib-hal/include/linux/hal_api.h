@@ -37,8 +37,11 @@ extern "C" {
 
 extern uint32_t micros(void);
 
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
+#if defined (RASPPI)
+inline static void udelay(uint32_t d) { bcm2835_delayMicroseconds(d); }
+#else
+inline static void udelay(__attribute__((unused)) uint32_t _q) {}
+#endif
 
 #ifdef __cplusplus
 }

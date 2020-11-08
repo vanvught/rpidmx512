@@ -95,17 +95,17 @@ private:
 
 private:
 	uint32_t m_nMulticastIp;
-	int32_t m_nHandle;
-	uint8_t *m_pBuffer;
-	uint8_t *m_pOutBuffer;
-	uint32_t m_nRemoteIp;
-	uint16_t m_nRemotePort;
-	uint16_t m_nBytesReceived;
-	char *m_pName;
-	uint32_t m_nLastAnnounceMillis;
+	int32_t m_nHandle{-1};
+	uint8_t *m_pBuffer{nullptr};
+	uint8_t *m_pOutBuffer{nullptr};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
+	uint16_t m_nBytesReceived{0};
+	char *m_pName{nullptr};
+	uint32_t m_nLastAnnounceMillis{0};
 	TMDNSServiceRecord m_aServiceRecords[SERVICE_RECORDS_MAX];
 	TMDNSRecordData m_aServiceRecordsData[SERVICE_RECORDS_MAX];
-	uint32_t m_nDNSServiceRecords;
+	uint32_t m_nDNSServiceRecords{0};
 	TMDNSRecordData m_tAnswerLocalIp;
 };
 

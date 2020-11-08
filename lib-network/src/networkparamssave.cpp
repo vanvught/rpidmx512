@@ -66,8 +66,12 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	}
 	builder.Add(NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
 
+	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkConst::PARAMS_NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NetworkParamsMask::NTP_SERVER));
 	builder.Add(NetworkConst::PARAMS_NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET));
+
+//	builder.AddComment("PTP Client");
+//	builder.Add(NetworkConst::PARAMS_PTP_ENABLE, m_tNetworkParams.nPtpEnable, isMaskSet(NetworkParamsMask::PTP_ENABLE));
 
 	nSize = builder.GetSize();
 

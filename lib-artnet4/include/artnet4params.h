@@ -65,7 +65,7 @@ public:
 
 	void Dump();
 
-	bool IsMapUniverse0() {
+	bool IsMapUniverse0() const {
 		return m_tArtNet4Params.bMapUniverse0;
 	}
 
@@ -73,7 +73,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_tArtNet4Params.nSetList & nMask) == nMask;
 	}
 

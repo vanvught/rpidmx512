@@ -38,6 +38,7 @@
 #include "network.h"
 
 #include "hardware.h"
+#include "ledblink.h"
 
 #include "debug.h"
 
@@ -108,9 +109,7 @@ void OscServer::Start() {
 
 	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
-	if (m_pLightSet != nullptr) {
-		m_pLightSet->Start(0);
-	}
+	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 }
 
 void OscServer::Stop() {
@@ -305,6 +304,11 @@ void OscServer::Run() {
 						m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
 						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
 					}
+
+					if (!m_bIsRunning) {
+						m_bIsRunning = true;
+						m_pLightSet->Start(0);
+					}
 				}
 			} else {
 				DEBUG_PUTS("Too many channels");
@@ -341,6 +345,11 @@ void OscServer::Run() {
 					m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 					m_pLightSet->SetData(0, m_pData, m_nLastChannel);
 				}
+
+				if (!m_bIsRunning) {
+					m_bIsRunning = true;
+					m_pLightSet->Start(0);
+				}
 			}
 		}
 
@@ -376,6 +385,11 @@ void OscServer::Run() {
 					} else {
 						m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
+					}
+
+					if (!m_bIsRunning) {
+						m_bIsRunning = true;
+						m_pLightSet->Start(0);
 					}
 				}
 			}

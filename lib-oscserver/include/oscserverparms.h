@@ -77,23 +77,23 @@ public:
 
 	void Dump();
 
-	uint16_t GetIncomingPort() {
+	uint16_t GetIncomingPort() const {
 		return m_tOSCServerParams.nIncomingPort;
 	}
 
-	uint16_t GetOutgoingPort() {
+	uint16_t GetOutgoingPort() const {
 		return m_tOSCServerParams.nOutgoingPort;
 	}
 
-	bool GetPartialTransmission() {
+	bool GetPartialTransmission() const {
 		return m_tOSCServerParams.bPartialTransmission;
 	}
 
-	TLightSetOutputType GetOutputType() {
+	TLightSetOutputType GetOutputType() const {
 		return m_tOSCServerParams.tOutputType;
 	}
 
-	bool IsEnableNoChangeUpdate() {
+	bool IsEnableNoChangeUpdate() const {
 		return m_tOSCServerParams.bEnableNoChangeUpdate;
 	}
 
@@ -102,7 +102,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tOSCServerParams.nSetList & nMask) == nMask;
     }
 

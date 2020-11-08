@@ -48,19 +48,22 @@ public:
 	~Ssd1306 () override;
 
 	bool Start() override;
+
 	void Cls() override;
 	void ClearLine(uint8_t) override;
+
 	void PutChar(int) override;
 	void PutString(const char *) override;
-	void TextLine(uint8_t, const char *, uint8_t) override;
-	void SetCursorPos(uint8_t, uint8_t) override;
-	void SetSleep(bool bSleep) override;
-#if defined(ENABLE_CURSOR_MODE)
-	void SetCursor(uint32_t) override;
-#endif
-	void PrintInfo() override;
 
 	void Text(const char *, uint8_t);
+	void TextLine(uint8_t, const char *, uint8_t) override;
+
+	void SetSleep(bool bSleep) override;
+
+	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetCursor(uint32_t) override;
+
+	void PrintInfo() override;
 
 	bool IsSH1106() {
 		return m_bHaveSH1106;
@@ -76,29 +79,24 @@ private:
 	void SendCommand(uint8_t);
 	void SendData(const uint8_t *, uint32_t);
 
-#if defined(ENABLE_CURSOR_MODE)
 	void SetCursorOn();
 	void SetCursorOff();
 	void SetCursorBlinkOn();
 	void SetColumnRow(uint8_t nColumn, uint8_t nRow);
-#ifndef NDEBUG
+
 	void DumpShadowRam();
-#endif
-#endif
 
 private:
 	HAL_I2C m_I2C;
 	TOledPanel m_OledPanel{OLED_PANEL_128x64_8ROWS};
 	bool m_bHaveSH1106{false};
 	uint32_t m_nPages;
-#if defined(ENABLE_CURSOR_MODE)
 	uint32_t m_tCursorMode{display::cursor::OFF};
-	char *m_pShadowRam;
-	uint16_t m_nShadowRamIndex;
+	char *m_pShadowRam{nullptr};
+	uint16_t m_nShadowRamIndex{0};
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
-#endif
 
 	static Ssd1306 *s_pThis;
 };

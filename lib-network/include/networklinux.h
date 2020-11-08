@@ -27,14 +27,13 @@
 #define NETWORKLINUX_H_
 
 #include <stdint.h>
-#include <limits.h>
 
 #include "network.h"
 
 class NetworkLinux: public Network {
 public:
-	NetworkLinux(void);
-	~NetworkLinux(void);
+	NetworkLinux();
+	~NetworkLinux();
 
 	int Init(const char *s);
 
@@ -45,10 +44,10 @@ public:
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);
-	bool SetZeroconf(void) {
+	bool SetZeroconf() {
 		return false;
 	}
-	bool EnableDhcp(void) {
+	bool EnableDhcp() {
 		return false;
 	}
 
@@ -61,7 +60,7 @@ public:
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
 
 private:
-	uint32_t GetDefaultGateway(void);
+	uint32_t GetDefaultGateway();
 	bool IsDhclient(const char *pIfName);
 	int IfGetByAddress(const char *pIp, char *pName, size_t nLength);
 	int IfDetails(const char *pIfInterface);

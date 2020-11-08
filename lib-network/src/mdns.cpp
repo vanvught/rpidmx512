@@ -77,17 +77,7 @@ struct TmDNSHeader {
 	uint16_t additionalCount;
 } __attribute__((__packed__));
 
-MDNS::MDNS():
-	m_nHandle(-1),
-	m_pBuffer(nullptr),
-	m_pOutBuffer(nullptr),
-	m_nRemoteIp(0),
-	m_nRemotePort(0),
-	m_nBytesReceived(0),
-	m_pName(nullptr),
-	m_nLastAnnounceMillis(0),
-	m_nDNSServiceRecords(0)
-{
+MDNS::MDNS() {
 	struct in_addr group_ip;
 	static_cast<void>(inet_aton(MDNS_MULTICAST_ADDRESS, &group_ip));
 	m_nMulticastIp = group_ip.s_addr;
@@ -149,7 +139,7 @@ void MDNS::SetName(const char *pName) {
 void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	DEBUG1_ENTRY
 
-	struct TmDNSHeader *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_aServiceRecordsData[nIndex].aBuffer);
+	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_aServiceRecordsData[nIndex].aBuffer);
 
 	pHeader->nFlags = __builtin_bswap16(0x8400);
 	pHeader->queryCount = 0;
@@ -157,7 +147,7 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	pHeader->authorityCount = __builtin_bswap16(1);
 	pHeader->additionalCount = __builtin_bswap16(0);
 
-	uint8_t *pData = reinterpret_cast<uint8_t*>(&m_aServiceRecordsData[nIndex].aBuffer) + sizeof(struct TmDNSHeader);
+	auto *pData = reinterpret_cast<uint8_t*>(&m_aServiceRecordsData[nIndex].aBuffer) + sizeof(struct TmDNSHeader);
 
 	pData += CreateAnswerServiceSrv(nIndex, pData);
 	pData += CreateAnswerServiceTxt(nIndex, pData);
@@ -334,7 +324,7 @@ uint32_t MDNS::WriteDnsName(const char *pSource, char *pDestination, bool bNullT
 void MDNS::CreateAnswerLocalIpAddress() {
 	DEBUG1_ENTRY
 
-	struct TmDNSHeader *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_tAnswerLocalIp.aBuffer);
+	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&m_tAnswerLocalIp.aBuffer);
 
 	pHeader->nFlags = __builtin_bswap16(0x8400);
 	pHeader->queryCount = 0;
@@ -507,7 +497,7 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 void MDNS::Parse() {
 	DEBUG_ENTRY
 
-	struct TmDNSHeader *pmDNSHeader = reinterpret_cast<struct TmDNSHeader*>(m_pBuffer);
+	auto *pmDNSHeader = reinterpret_cast<struct TmDNSHeader*>(m_pBuffer);
 	const uint16_t nFlags = __builtin_bswap16(pmDNSHeader->nFlags);
 
 #ifndef NDEBUG

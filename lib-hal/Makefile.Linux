@@ -3,6 +3,6 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES= 
 #
-EXTRA_SRCDIR = 
+EXTRA_SRCDIR = debug
 #
 include ../linux-template/lib/Rules.mk

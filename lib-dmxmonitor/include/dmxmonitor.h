@@ -44,7 +44,7 @@ public:
 	void SetFormat(DMXMonitorFormat tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX) {
 		m_tFormat = tFormat;
 	}
-	DMXMonitorFormat GetFormat() {
+	DMXMonitorFormat GetFormat() const {
 		return m_tFormat;
 	}
 

@@ -51,7 +51,7 @@ public:
 	const char *GetCpuName(uint8_t &nLength);
 	const char *GetSocName(uint8_t &nLength);
 
-	uint32_t GetReleaseId() {
+	uint32_t GetReleaseId() const {
 		return 0;	// TODO U-Boot version
 	}
 
@@ -87,7 +87,7 @@ public:
 		m_pRebootHandler = pRebootHandler;
 	}
 
-	bool PowerOff() {
+	bool PowerOff() const {
 		return false;
 	}
 
@@ -124,15 +124,15 @@ public:
 		h3_watchdog_disable();
 	}
 
-	bool IsWatchdog() {
+	bool IsWatchdog() const {
 		return m_bIsWatchdog;
 	}
 
-	TBootDevice GetBootDevice(){
+	TBootDevice GetBootDevice() const {
 		return static_cast<TBootDevice>(h3_get_boot_device());
 	}
 
-	const char *GetWebsiteUrl() {
+	const char *GetWebsiteUrl() const {
 		return "www.orangepi-dmx.org";
 	}
 
@@ -141,7 +141,9 @@ public:
 	}
 
 private:
+#if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
+#endif
 	RebootHandler *m_pRebootHandler{nullptr};
 	bool m_bIsWatchdog{false};
 

@@ -1,7 +1,7 @@
 #
 DEFINES = USE_SPI_DMA NDEBUG
 #
-EXTRA_INCLUDES = ../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-device/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES = ../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-rgbpanel/include ../lib-device/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 #
 include ../h3-firmware-template/lib/Rules.mk
 

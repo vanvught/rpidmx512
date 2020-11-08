@@ -22,12 +22,8 @@
  */
 
 #ifdef NDEBUG
-#undef NDEBUG
+#undef NDEBUG // FIXME Remove #undef NDEBUG
 #endif
-
-/*
- * PoC Code -> Do not use in production
- */
 
 #include <stdio.h>
 

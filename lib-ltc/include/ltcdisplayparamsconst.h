@@ -26,7 +26,9 @@
 #ifndef LTCDISPLAYPARAMSCONST_H_
 #define LTCDISPLAYPARAMSCONST_H_
 
-#include "ltcdisplayws28xx.h"
+#include <stdint.h>
+
+#include <ltcdisplayrgb.h>
 
 struct LtcDisplayParamsConst {
 	static const char FILE_NAME[];
@@ -34,10 +36,26 @@ struct LtcDisplayParamsConst {
 	static const char MAX7219_TYPE[];
 	static const char MAX7219_INTENSITY[];
 
+	/**
+	 * RGB Display generic
+	 */
+
+	static const char INTENSITY[];
+	static const char COLON_BLINK_MODE[];
+	static const char COLOUR[static_cast<uint32_t>(LtcDisplayRgbColourIndex::LAST)][24];
+
+	/**
+	 * WS28xx specific
+	 */
+
 	static const char WS28XX_TYPE[];
-	static const char WS28XX_INTENSITY[];
-	static const char WS28XX_COLON_BLINK_MODE[];
-	static const char WS28XX_COLOUR[LTCDISPLAYWS28XX_COLOUR_INDEX_LAST][24];
+
+	/**
+	 * RGB panel specific
+	 */
+
+	static const char INFO_MSG[];
+
 };
 
 #endif /* LTCDISPLAYPARAMSCONST_H_ */

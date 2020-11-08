@@ -38,11 +38,11 @@ public:
 	bool Load();
 	void Dump();
 
-	 bool GetInstalluboot() {
+	 bool GetInstalluboot() const {
 		return m_bInstalluboot;
 	}
 
-	 bool GetInstalluImage() {
+	 bool GetInstalluImage() const {
 		return m_bInstalluImage;
 	}
 
@@ -50,7 +50,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) {
+	bool isMaskSet(uint32_t nMask) const {
 		return (m_nSetList & nMask) == nMask;
 	}
 

@@ -29,7 +29,7 @@
 
 Midi *Midi::s_pThis = nullptr;
 
-Midi::Midi() : m_pMessage(nullptr) {
+Midi::Midi()  {
 	s_pThis = this;
 
 	m_pMessage = midi_message_get();

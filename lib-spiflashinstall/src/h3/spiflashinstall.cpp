@@ -371,6 +371,12 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		return false;
 	}
 
+	const bool bWatchdog = Hardware::Get()->IsWatchdog();
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogStop();
+	}
+
 	puts("Write firmware");
 
 	const uint32_t nSectorSize = spi_flash_get_sector_size();
@@ -378,20 +384,14 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 
 	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
 
-	const bool bWatchdog = Hardware::Get()->IsWatchdog();
-
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogStop();
-	}
-
-	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_ERASE);
+	Display::Get()->TextStatus("Erase", Display7SegmentMessage::INFO_SPI_ERASE, CONSOLE_GREEN);
 
 	if (spi_flash_cmd_erase(OFFSET_UIMAGE, nEraseSize) < 0) {
 		puts("error: flash erase");
 		return false;
 	}
 
-	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_WRITING);
+	Display::Get()->TextStatus("Writing", Display7SegmentMessage::INFO_SPI_WRITING, CONSOLE_GREEN);
 
 	if (spi_flash_cmd_write_multi(OFFSET_UIMAGE, nSize, pBuffer) < 0) {
 		puts("error: flash write");
@@ -402,7 +402,7 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		Hardware::Get()->WatchdogInit();
 	}
 
-	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_SPI_DONE);
+	Display::Get()->TextStatus("Done", Display7SegmentMessage::INFO_SPI_DONE, CONSOLE_GREEN);
 
 	return true;
 

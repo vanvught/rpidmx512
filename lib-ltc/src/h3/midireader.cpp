@@ -59,12 +59,7 @@ inline static void itoa_base10(int arg, char *buf) {
 	*n = '0' + (arg % 10);
 }
 
-MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_nPartPrevious(0),
-	m_bDirection(true)
-{
+MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	Ltc::InitTimeCode(m_aTimeCode);

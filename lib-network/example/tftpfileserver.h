@@ -1,5 +1,3 @@
-
-
 #ifndef TFTPFILESERVER_H_
 #define TFTPFILESERVER_H_
 
@@ -9,17 +7,17 @@
 
 class TFTPFileServer: public TFTPDaemon {
 public:
-	TFTPFileServer (void);
-	~TFTPFileServer (void);
+	TFTPFileServer();
+	~TFTPFileServer();
 
-	bool FileOpen (const char *pFileName, TFTPMode tMode);
-	bool FileCreate (const char *pFileName, TFTPMode tMode);
-	bool FileClose (void);
-	int FileRead (void *pBuffer, unsigned nCount);
-	int FileWrite (const void *pBuffer, unsigned nCount);
+	bool FileOpen(const char *pFileName, TFTPMode tMode);
+	bool FileCreate(const char *pFileName, TFTPMode tMode);
+	bool FileClose();
+	int FileRead(void *pBuffer, unsigned nCount);
+	int FileWrite(const void *pBuffer, unsigned nCount);
 
 private:
-	FILE *m_pFile;
+	FILE *m_pFile{nullptr};
 };
 
 #endif /* TFTPFILESERVER_H_ */

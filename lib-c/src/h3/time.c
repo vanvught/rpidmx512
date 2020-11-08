@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-/*
- * PoC Code -> Do not use in production
- */
-
 #include <stddef.h>
 #include <sys/time.h>
 #include <assert.h>
@@ -37,7 +33,7 @@
 
 #include "debug.h"
 
-static uint32_t set_hs_timer = 0;
+static uint32_t set_timer = 0;
 static uint64_t s_micros = 0;
 
 #define MICROS_SECONDS	1000000
@@ -50,18 +46,18 @@ static uint64_t s_micros = 0;
 int gettimeofday(struct timeval *tv, __attribute__((unused))  struct timezone *tz) {
 	assert(tv != 0);
 
-	const uint32_t hs_timer = H3_HS_TIMER->CURNT_LO / 100;
+	const uint32_t timer = H3_TIMER->AVS_CNT0; // Millis timer
 
-	uint32_t hs_timer_elapsed;
+	uint32_t timer_elapsed;
 
-	if (set_hs_timer >= hs_timer) {
-		hs_timer_elapsed = set_hs_timer - hs_timer;
+	if (set_timer >= timer) {
+		timer_elapsed = set_timer - timer;
 	} else {
-		hs_timer_elapsed = (uint32_t)(~0) / 100 - (hs_timer - set_hs_timer);
+		timer_elapsed = timer - set_timer;
 	}
 
-	set_hs_timer = hs_timer;
-	s_micros += hs_timer_elapsed;
+	set_timer = timer;
+	s_micros += (timer_elapsed * 1000);
 
 	tv->tv_sec = s_micros / MICROS_SECONDS;
 	tv->tv_usec = (suseconds_t) (s_micros - ((uint64_t) tv->tv_sec * MICROS_SECONDS));
@@ -72,7 +68,7 @@ int gettimeofday(struct timeval *tv, __attribute__((unused))  struct timezone *t
 int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct timezone *tz) {
 	assert(tv != 0);
 
-	set_hs_timer = H3_HS_TIMER->CURNT_LO / 100;
+	set_timer = H3_TIMER->AVS_CNT0;
 	s_micros = ((uint64_t) tv->tv_sec * MICROS_SECONDS) + (uint64_t) tv->tv_usec;
 
 	return 0;

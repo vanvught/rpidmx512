@@ -102,15 +102,15 @@ private:
 	virtual void HandleRtpMidi(const uint8_t *pBuffer);
 
 private:
-	uint32_t m_nStartTime;
+	uint32_t m_nStartTime{0};
 	uint32_t m_nSSRC;
-	uint16_t m_nPort;
-	int32_t m_nHandleControl;
-	int32_t m_nHandleMidi;
-	uint8_t *m_pBuffer;
-	uint32_t m_nRemoteIp;
-	uint16_t m_nRemotePort;
-	uint16_t m_nBytesReceived;
+	uint16_t m_nPort{APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT};
+	int32_t m_nHandleControl{-1};
+	int32_t m_nHandleMidi{-1};
+	uint8_t *m_pBuffer{nullptr};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
+	uint16_t m_nBytesReceived{0};
 	TExchangePacket m_ExchangePacketReply;
 	uint16_t m_nExchangePacketReplySize;
 	TSessionStatus m_tSessionStatus;

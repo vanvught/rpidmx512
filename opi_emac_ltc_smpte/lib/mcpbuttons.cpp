@@ -1,5 +1,5 @@
 /**
- * @file sourceselect.cpp
+ * @file mcpbuttons.cpp
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -36,13 +36,12 @@
 
 #include "arm/synchronize.h"
 
+#include "ltcdisplayrgb.h"
 #include "ltcparams.h"
 
 #include "display.h"
 #include "display7segment.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayws28xx.h"
-
 #include "rotaryencoder.h"
 
 #include "hal_i2c.h"
@@ -56,7 +55,7 @@
 
 // Interrupt
 #include "board/h3_opi_zero.h"
-#include "h3_gpio.h"	//TODO Remove H3 dependency
+#include "h3_gpio.h"
 
 #include "spiflashstore.h"
 #include "storeltc.h"
@@ -102,16 +101,18 @@ McpButtons::McpButtons(source tLtcReaderSource, struct TLtcDisabledOutputs *ptLt
 	Ltc::InitTimeCode(m_aTimeCode);
 }
 
-void McpButtons::LedBlink(uint8_t nPortB) {
-	const uint32_t nMillisNow = Hardware::Get()->Millis();
+uint32_t McpButtons::LedBlink(uint8_t nPortB) {
+	const auto nMillisNow = Hardware::Get()->Millis();
 
 	if (__builtin_expect(((nMillisNow - m_nMillisPrevious) < 500), 1)) {
-		return;
+		return m_nLedTicker;
 	}
 
 	m_nMillisPrevious = nMillisNow;
 	m_nPortB ^= nPortB;
 	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, m_nPortB);
+
+	return ++m_nLedTicker;
 }
 
 void McpButtons::HandleActionLeft(ltc::source &tLtcReaderSource) {
@@ -180,11 +181,13 @@ void McpButtons::UpdateDisplays(const ltc::source& tLtcReaderSource) {
 	Display::Get()->TextStatus(McpButtonsConst::SOURCE[tLtcReaderSource], s_7Segment[tLtcReaderSource]);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
+		DEBUG_PUTS("");
 		LtcDisplayMax7219::Get()->WriteChar(tLtcReaderSource);
 	}
 
 	if (!m_ptLtcDisabledOutputs->bWS28xx) {
-		LtcDisplayWS28xx::Get()->WriteChar(tLtcReaderSource);
+		DEBUG_PUTS("");
+		LtcDisplayRgb::Get()->WriteChar(tLtcReaderSource);
 	}
 }
 
@@ -219,11 +222,15 @@ bool McpButtons::Check() {
 }
 
 bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode) {
-	LedBlink(1 << tLtcReaderSource);
+	if (__builtin_expect((LedBlink(1 << tLtcReaderSource) >= m_nLedTickerMax), 0)) {
+		return false;
+	}
+//	LedBlink(1 << tLtcReaderSource);
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
+		m_nLedTickerMax = UINT32_MAX;
 
-		const uint8_t nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const auto nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
 		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
 		m_nPortAPrevious = nPortA;
@@ -393,7 +400,7 @@ void McpButtons::Run() {
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		const uint8_t nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const auto nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
 		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
 		m_nPortAPrevious = nPortA;
