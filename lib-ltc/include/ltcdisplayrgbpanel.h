@@ -54,7 +54,7 @@ public:
 private:
 	RgbPanel *m_pRgbPanel;
 	char m_Line[4][8];
-	struct TLtcDisplayRgbColours m_LineColours[4];
+	struct TLtcDisplayRgbColours m_LineColours[4];	
 };
 
 #endif /* LTCDISPLAYRGBPANEL_H_ */

@@ -92,14 +92,16 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 	const char cLine[8] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 
 	memcpy(m_Line[0], cLine, 8);
-
+	
+	// TC Display
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	m_LineColours[1].nRed = tColours.nRed;
-	m_LineColours[1].nGreen = tColours.nGreen;
-	m_LineColours[1].nBlue = tColours.nBlue;
+	// TC Type
+	m_LineColours[1].nRed = tColours.nRed / 3; 
+	m_LineColours[1].nGreen = tColours.nGreen / 3;
+	m_LineColours[1].nBlue = tColours.nBlue / 3;
 
 	m_pRgbPanel->SetFont(0);
 	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);

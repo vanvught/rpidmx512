@@ -58,6 +58,10 @@ void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, LtcDispl
 		m_tColoursSource.nGreen = nGreen;
 		m_tColoursSource.nBlue = nBlue;
 		break;
+	case LtcDisplayRgbColourIndex::RATE:
+		m_tColoursRate.nRed = nRed;
+		m_tColoursRate.nGreen = nGreen;
+		m_tColoursRate.nBlue = nBlue;		
 	default:
 		break;
 	}

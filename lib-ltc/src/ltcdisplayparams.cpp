@@ -67,6 +67,7 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)] = LtcDisplayWS28xxDefaults::COLOUR_MESSAGE;
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::INFO)] = LtcDisplayWS28xxDefaults::COLOUR_INFO;
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::SOURCE)] = LtcDisplayWS28xxDefaults::COLOUR_SOURCE;
+	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::RATE)] = LtcDisplayWS28xxDefaults::COLOUR_RATE;	
 	m_tLtcDisplayParams.nWS28xxDisplayType = static_cast<uint8_t>(LtcDisplayRgbWS28xxType::SEGMENT);
 	memset(m_tLtcDisplayParams.aInfoMessage, ' ', sizeof(m_tLtcDisplayParams.aInfoMessage));
 

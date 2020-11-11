@@ -31,6 +31,10 @@
 
 #include "rgbpanelconst.h"
 
+#include "../../lib-device/src/font_cp437.h"
+#include "../../lib-device/src/font_5x8.h"
+
+
 namespace rgbpanel {
 static constexpr auto PWM_WIDTH = 84;
 }  // namespace rgbpanel
@@ -72,12 +76,10 @@ public:
 		return m_nMaxLine;
 	}
 
+	void SetFont(uint8_t font_id);
+
 	uint32_t GetFontID() {
 		return m_nFontID;
-	}
-	
-	void SetFont(uint8_t font_id) {
-		m_nFontID = font_id;
 	}
 
 	void Print();
