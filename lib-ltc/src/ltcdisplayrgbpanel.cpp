@@ -93,15 +93,21 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 
 	memcpy(m_Line[0], cLine, 8);
 
+	// TC Display
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	m_LineColours[1].nRed = tColours.nRed;
-	m_LineColours[1].nGreen = tColours.nGreen;
-	m_LineColours[1].nBlue = tColours.nBlue;
+	// TC Type - Rate
+	m_LineColours[1].nRed = 0x00;//tColours.nRed / 3; 
+	m_LineColours[1].nGreen = 0x7f;// tColours.nGreen / 3;
+	m_LineColours[1].nBlue = 0x00;//tColours.nBlue / 3;
 
-	for (uint32_t i = 0; i < 4; i++) {
+	m_pRgbPanel->SetFont(0);
+	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
+
+	m_pRgbPanel->SetFont(1);
+	for (uint32_t i = 1; i < 4; i++) {
 		m_pRgbPanel->TextLine(1 + i, m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
 	}
 
@@ -179,3 +185,4 @@ void LtcDisplayRgbPanel::WriteChar(__attribute__((unused)) uint8_t nChar, __attr
 
 	DEBUG_EXIT
 }
+

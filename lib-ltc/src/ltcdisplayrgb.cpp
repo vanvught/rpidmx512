@@ -85,6 +85,7 @@ LtcDisplayRgb::LtcDisplayRgb(LtcDisplayRgbType tRgbType, LtcDisplayRgbWS28xxType
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)] = LtcDisplayWS28xxDefaults::COLOUR_MESSAGE;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::INFO)] = LtcDisplayWS28xxDefaults::COLOUR_INFO;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::SOURCE)] = LtcDisplayWS28xxDefaults::COLOUR_SOURCE;
+	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::RATE)] = LtcDisplayWS28xxDefaults::COLOUR_RATE;
 
 	DEBUG_EXIT
 }
@@ -285,13 +286,13 @@ void LtcDisplayRgb::ShowFPS(ltc::type tTimeCodeType) {
 	struct TLtcDisplayRgbColours tColours;
 
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = (m_nMaster * m_tColours.nRed) / 255 ;
-		tColours.nGreen = (m_nMaster * m_tColours.nGreen) / 255 ;
-		tColours.nBlue = (m_nMaster * m_tColours.nBlue) / 255 ;
+		tColours.nRed = (m_nMaster * m_tColoursRate.nRed) / 255 ;
+		tColours.nGreen = (m_nMaster * m_tColoursRate.nGreen) / 255 ;
+		tColours.nBlue = (m_nMaster * m_tColoursRate.nBlue) / 255 ;
 	} else {
-		tColours.nRed = m_tColours.nRed;
-		tColours.nGreen = m_tColours.nGreen;
-		tColours.nBlue = m_tColours.nBlue;
+		tColours.nRed = m_tColoursRate.nRed;
+		tColours.nGreen = m_tColoursRate.nGreen;
+		tColours.nBlue = m_tColoursRate.nBlue;
 	}
 
 	m_pLtcDisplayRgbSet->ShowFPS(tTimeCodeType, tColours);
@@ -398,3 +399,4 @@ void LtcDisplayRgb::Print() {
 		m_pLtcDisplayRgbSet->Print();
 	}
 }
+
