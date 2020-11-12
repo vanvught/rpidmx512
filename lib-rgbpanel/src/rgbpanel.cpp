@@ -31,7 +31,9 @@
 
 #include "rgbpanel.h"
 
+
 #include "../../lib-device/src/font_cp437.h"
+#include "../../lib-device/src/font_5x8.h"
 
 #include "debug.h"
 
@@ -44,7 +46,8 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
 	m_tType(tType),
 	// Text
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
-	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
+	m_nMaxLine(nRows / FONT_CP437_CHAR_H),
+	m_nFontID(0)
 {
 	PlatformInit();
 
@@ -61,21 +64,38 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
  * Text
  */
 void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (__builtin_expect((static_cast<uint32_t>(nChar) >= cp437_font_size()), 0)) {
+
+	uint32_t font_size = 0;
+	uint32_t font_width = 0;
+	uint32_t font_height = 8;
+	uint32_t font_space = 0;
+
+	if (m_nFontID == 0){
+		font_size = cp437_font_size();
+		font_width = FONT_CP437_CHAR_W;
+	} else if (m_nFontID == 1) {
+		font_size = font_5x8_size();
+		font_width = FONT_5x8_CHAR_W;
+//		font_height = FONT_5x8_CHAR_H;
+		font_space = 1;		
+	}
+
+	if (__builtin_expect((static_cast<uint32_t>(nChar) >= font_size), 0)) {
 		nChar = ' ';
 	}
 
-	const auto nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
-	auto nRow = m_nLine * m_nMaxPosition;
+	auto nStartColumn = m_nPosition * (font_width + font_space);
+	auto nRow = m_nLine * font_height; //* m_nMaxPosition;
 	const auto nColonIndex = m_nPosition + nRow;
 	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
-	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
-		uint32_t nWidth = 0;
+	uint32_t nColumn = 0;
+	for (uint32_t i = 0; i < font_height; i++) {
+		uint32_t nWidth = font_space;
 
-		for (uint32_t nColumn = nStartColumn; nColumn < (FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
-
-			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
+		for (nColumn = nStartColumn; nColumn < ((font_width) + nStartColumn); nColumn++) {
+			
+			if ((m_nFontID == 0) && (bShowColon) && (nColumn == (nStartColumn + font_width - 1))) {
 				const uint8_t nByte = m_ptColons[nColonIndex].nBits >> i;
 
 				if ((nByte & 0x1) != 0) {
@@ -87,8 +107,13 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 				continue;
 			}
 
-			const auto nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
-
+			uint8_t nByte = 0;
+			if (m_nFontID == 0){
+				nByte = cp437_font[static_cast<int>(nChar)][nWidth++] >> i;
+			} else if (m_nFontID == 1) {
+				nByte = font_5x8[static_cast<int>(nChar)-127][(nWidth++)] >> i;																					
+			}
+			 
 			if ((nByte & 0x1) != 0) {
 				SetPixel(nColumn, nRow, nRed, nGreen, nBlue);
 			} else {
@@ -100,7 +125,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		nRow++;
 	}
 
-	m_nPosition++;
+	m_nPosition++;  
 
 	if (m_nPosition == m_nMaxPosition ) {
 		m_nPosition = 0;
@@ -136,8 +161,7 @@ void RgbPanel::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nG
 void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
 		return;
-	}
-
+	}	
 	SetCursorPos(0, nLine - 1);
 	Text(pText, nLength, nRed, nGreen, nBlue);
 }
@@ -152,13 +176,40 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 
 	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
 
-	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
+	uint32_t font_height = 8;
+
+	for (uint32_t nRow = nStartRow; nRow < (nStartRow + font_height); nRow++) {
 		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
 			SetPixel(nColumn, nRow, 0, 0, 0);
 		}
 	}
 
 	SetCursorPos(0, nLine - 1);
+}
+
+/**
+ * 0 is 8x8 with 0 column spacing 
+ * 1 is 5x8 with 1 column spacing
+ */	
+void RgbPanel::SetFont(uint8_t font_id) {
+		m_nFontID = font_id;
+		switch (font_id)
+		{
+		case 0:
+			m_nMaxPosition = m_nColumns / FONT_CP437_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_CP437_CHAR_H;			
+			break;
+		
+		case 1:
+			m_nMaxPosition = m_nColumns / FONT_5x8_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_5x8_CHAR_H;
+			break;
+		
+		default:
+			m_nMaxPosition = m_nColumns / FONT_CP437_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_CP437_CHAR_H;
+			break;
+		}
 }
 
 /**
@@ -227,3 +278,4 @@ void RgbPanel::Print() {
 	printf("RGB led panel\n");
 	printf(" %ux%ux%u\n", m_nColumns, m_nRows, m_nChain);
 }
+
