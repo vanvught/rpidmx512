@@ -118,7 +118,7 @@ void LtcDisplayRgb::Init(TWS28XXType tLedType) {
 		} else {
 			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix;
 		}
-
+		
 		assert(m_pLtcDisplayRgbSet != nullptr);
 		m_pLtcDisplayRgbSet->Init(tLedType, m_tMapping);
 	}
@@ -205,9 +205,14 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 		tColours.nGreen = m_tColours.nGreen;
 		tColours.nBlue = m_tColours.nBlue;
 	}
+	
+	m_pLtcDisplayRgbSet->ShowStopTime(pTimecode, tColours);
 
 	m_pLtcDisplayRgbSet->Show(pTimecode, tColours, tColoursColons);
+	
 }
+
+
 
 void LtcDisplayRgb::ShowSysTime(const char *pSystemTime) {
 	if (m_pLtcDisplayRgbSet == nullptr) {

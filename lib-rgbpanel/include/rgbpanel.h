@@ -76,7 +76,7 @@ public:
 		return m_nMaxLine;
 	}
 
-	void SetFont(uint8_t font_id);
+	void SetFont(uint8_t nLine, uint8_t font_id);
 
 	uint32_t GetFontID() {
 		return m_nFontID;
@@ -105,6 +105,9 @@ private:
 	uint32_t m_nMaxPosition;
 	uint32_t m_nMaxLine;
 	uint32_t m_nPosition{0};
+	uint32_t m_LineFont[4];
+	uint32_t m_LineLength[4];
+
 	uint32_t m_nLine{0};
 	struct TColon {
 		uint8_t nBits;

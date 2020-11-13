@@ -32,6 +32,10 @@
 
 #include "rgbpanel.h"
 
+#define RGBPANEL_TEXT_MAX_COLS 32 
+#define RGBPANEL_TEXT_MAX_LINES 4
+
+
 class LtcDisplayRgbPanel final: public LtcDisplayRgbSet {
 public:
 	LtcDisplayRgbPanel();
@@ -54,7 +58,8 @@ public:
 
 private:
 	RgbPanel *m_pRgbPanel;
-	char m_Line[4][8];
+
+	char m_Line[RGBPANEL_TEXT_MAX_LINES][RGBPANEL_TEXT_MAX_COLS];
 	struct TLtcDisplayRgbColours m_LineColours[4];	
 };
 

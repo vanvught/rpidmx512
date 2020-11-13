@@ -68,13 +68,15 @@ void LtcDisplayRgbPanel::Init() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < 4; i++) {
-		memset(m_Line[i], ' ', 8);
+		memset(m_Line[i], ' ', RGBPANEL_TEXT_MAX_COLS);
 		m_LineColours[i].nRed = 0x00;
 		m_LineColours[i].nGreen = 0x00;
 		m_LineColours[i].nBlue = 0x00;
 	}
 
 	m_pRgbPanel->Start();
+
+
 
 	DEBUG_EXIT
 }
@@ -90,29 +92,31 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 	m_pRgbPanel->SetColon('.', 5, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
 
 	const char cLine[8] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
-
 	memcpy(m_Line[0], cLine, 8);
 
 	// TC Display
+	m_pRgbPanel->SetFont(0, 0);
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
 	// TC Type - Rate
-	m_LineColours[1].nRed = 0x00;//tColours.nRed / 3; 
-	m_LineColours[1].nGreen = 0x7f;// tColours.nGreen / 3;
-	m_LineColours[1].nBlue = 0x00;//tColours.nBlue / 3;
-
-	m_pRgbPanel->SetFont(0);
+//	m_LineFont[1] = 1; // 5x8
+//	m_LineColours[1].nRed = 0x00;//tColours.nRed / 3; 
+//	m_LineColours[1].nGreen = 0x7f;// tColours.nGreen / 3;
+//	m_LineColours[1].nBlue = 0x00;//tColours.nBlue / 3;
+ 
 	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
 
-	m_pRgbPanel->SetFont(1);
-	for (uint32_t i = 1; i < 4; i++) {
-		m_pRgbPanel->TextLine(1 + i, m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
+	// render the remaining display
+	for (uint32_t i = 1; i < 4; i++) {		
+		// TODO: optimize strlen() away
+		m_pRgbPanel->TextLine(1 + i, m_Line[i], strlen(m_Line[i]), m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
 	}
-
+	
 	m_pRgbPanel->Show();
 }
+
 
 void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) {
 	m_pRgbPanel->SetColonsOff();
@@ -123,16 +127,17 @@ void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplay
 
 	memcpy(m_Line[0], cLine, 8);
 
+	m_pRgbPanel->SetFont(0, 0);
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	m_LineColours[1].nRed = tColours.nRed;
-	m_LineColours[1].nGreen = tColours.nGreen;
-	m_LineColours[1].nBlue = tColours.nBlue;
-
+//	m_LineColours[1].nRed = tColours.nRed;
+//	m_LineColours[1].nGreen = tColours.nGreen;
+//	m_LineColours[1].nBlue = tColours.nBlue;
+			
 	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
-	m_pRgbPanel->ClearLine(2);
+	m_pRgbPanel->ClearLine(2); // TODO: NTP/GPS date?
 	m_pRgbPanel->TextLine(3, m_Line[2], 8, m_LineColours[2].nRed, m_LineColours[2].nGreen, m_LineColours[2].nBlue);
 	m_pRgbPanel->TextLine(4, m_Line[3], 8, m_LineColours[3].nRed, m_LineColours[3].nGreen, m_LineColours[3].nBlue);
 
@@ -141,13 +146,25 @@ void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplay
 
 void LtcDisplayRgbPanel::ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours) {
 	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->TextLine(1, pMessage, LTCDISPLAY_MAX_MESSAGE_SIZE, tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pRgbPanel->TextLine(4, pMessage, LTCDISPLAY_MAX_MESSAGE_SIZE, tColours.nRed, tColours.nGreen, tColours.nBlue);
 	m_pRgbPanel->Show();
 }
 
 void LtcDisplayRgbPanel::ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours) {
-	memcpy(m_Line[1], aTypes[tTimeCodeType], 8);
+	memcpy(m_Line[2], aTypes[tTimeCodeType], 8);
+		
+	m_pRgbPanel->SetFont(2, 1);
+	m_LineColours[2].nRed = tColours.nRed;
+	m_LineColours[2].nGreen = tColours.nGreen;
+	m_LineColours[2].nBlue = tColours.nBlue;
+}
 
+
+void LtcDisplayRgbPanel::ShowStopTime(const char *pStopTime, struct TLtcDisplayRgbColours &tColours) {
+	const char cLine[11] = { '-', pStopTime[0], pStopTime[1], pStopTime[3], pStopTime[4], pStopTime[6], pStopTime[7], pStopTime[9], pStopTime[10],' ',' '};
+	memcpy(m_Line[1], cLine, 11);
+	
+	m_pRgbPanel->SetFont(1, 1);
 	m_LineColours[1].nRed = tColours.nRed;
 	m_LineColours[1].nGreen = tColours.nGreen;
 	m_LineColours[1].nBlue = tColours.nBlue;
@@ -156,6 +173,7 @@ void LtcDisplayRgbPanel::ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbC
 void LtcDisplayRgbPanel::ShowSource(ltc::source tSource, struct TLtcDisplayRgbColours &tColours) {
 	memcpy(m_Line[3], aSources[tSource], 8);
 
+	m_pRgbPanel->SetFont(3, 1);
 	m_LineColours[3].nRed = tColours.nRed;
 	m_LineColours[3].nGreen = tColours.nGreen;
 	m_LineColours[3].nBlue = tColours.nBlue;
