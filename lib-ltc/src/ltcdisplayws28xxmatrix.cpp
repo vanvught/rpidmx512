@@ -98,3 +98,9 @@ void LtcDisplayWS28xxMatrix::WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcD
 void LtcDisplayWS28xxMatrix::Print() {
 	printf(" Matrix %dx%d\n", m_pWS28xxDisplayMatrix->GetMaxPosition(), m_pWS28xxDisplayMatrix->GetMaxLine());
 }
+
+void LtcDisplayWS28xxMatrix::ShowStopTime(__attribute__((unused)) const char *pStopTime, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

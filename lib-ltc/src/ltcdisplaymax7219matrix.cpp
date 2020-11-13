@@ -152,6 +152,10 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	Max7219Matrix::Write(m_aBuffer, SEGMENTS);
 }
 
+// void LtcDisplayMax7219Matrix::ShowStopTime(__attribute__((unused)) const char *pStopTime, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours){
+
+// }
+
 void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {
 	// TODO Max7219Matrix::WriteChar
 }

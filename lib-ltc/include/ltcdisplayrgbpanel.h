@@ -41,6 +41,7 @@ public:
 	void Print() override;
 
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
+	void ShowStopTime(const char *pStopTime, struct TLtcDisplayRgbColours &tColours) override;
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours) override;
 	//

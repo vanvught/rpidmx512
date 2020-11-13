@@ -60,3 +60,10 @@ void LtcDisplayRgbSet::ShowInfo(__attribute__((unused)) const char *pInfo, __att
 
 	DEBUG_EXIT
 }
+
+
+void LtcDisplayRgbSet::ShowStopTime(__attribute__((unused)) const char *pStopTime, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

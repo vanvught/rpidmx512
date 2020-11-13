@@ -113,3 +113,10 @@ void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct TLt
 void LtcDisplayWS28xx7Segment::Print() {
 	printf(" 7-Segment %d Digit(s), %d Colons, %d LEDs\n", WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS, WS28xxDisplay7SegmentConfig::NUM_OF_COLONS, WS28xxDisplay7SegmentConfig::LED_COUNT);
 }
+
+
+void LtcDisplayWS28xx7Segment::ShowStopTime( __attribute__((unused)) const char *pStopTime, __attribute__((unused)) struct TLtcDisplayRgbColours &tColours) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}

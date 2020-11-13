@@ -44,8 +44,10 @@ public:
 	void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct TLtcDisplayRgbColours &tColours) override;
-
+	void ShowStopTime(const char *pStopTime, struct TLtcDisplayRgbColours &tColours) override;
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) override;
+
+
 
 private:
 	WS28xxDisplayMatrix *m_pWS28xxDisplayMatrix;

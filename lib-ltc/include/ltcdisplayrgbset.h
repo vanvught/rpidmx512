@@ -50,7 +50,8 @@ public:
 	virtual void Init();
 
 	virtual void Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
-	virtual void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;
+	virtual void ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons)=0;	
+	virtual void ShowStopTime(const char *pStopTime, struct TLtcDisplayRgbColours &tColours)=0;
 	virtual void ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours)=0;
 
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours)=0;
