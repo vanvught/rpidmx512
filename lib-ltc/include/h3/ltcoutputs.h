@@ -26,6 +26,7 @@
 #ifndef H3_LTCOUTPUTS_H_
 #define H3_LTCOUTPUTS_H_
 
+#include "string.h"
 #include "ltc.h"
 
 class LtcOutputs {
@@ -42,6 +43,21 @@ public:
 		m_tTimeCodeTypePrevious = ltc::type::INVALID;
 	}
 
+
+	TLtcTimeCode* GetNowTimeCode() {
+		return &m_pNowLtcTimeCode;
+	}
+
+	TLtcTimeCode* GetStopTimeCode() {
+		return &m_pStopLtcTimeCode;
+	}
+
+	void SetStopTimeCode(TLtcTimeCode* tc) {
+		if (tc) {
+			memcpy(&m_pStopLtcTimeCode, tc, sizeof(TLtcTimeCode));  // better to just assign 5 bytes, or compiler optimize?
+		}
+	}
+
 	void Print();
 
 	static LtcOutputs* Get() {
@@ -53,6 +69,8 @@ private:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct TLtcTimeCode m_pNowLtcTimeCode; 
+	struct TLtcTimeCode m_pStopLtcTimeCode; 
 	bool m_bShowSysTime;
 	ltc::type m_tTimeCodeTypePrevious{ltc::type::INVALID};
 	uint32_t m_nMidiQuarterFramePiece {0};

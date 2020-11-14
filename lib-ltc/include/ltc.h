@@ -112,6 +112,9 @@ public:
 
 	static bool ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode);
 	static bool ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, ltc::type &tType);
+
+	static uint32_t TCtoMS(const struct TLtcTimeCode *ptLtcTimeCode);
+	static uint32_t MStoTC(const uint32_t ms, struct TLtcTimeCode *ptLtcTimeCode);
 };
 
 #endif /* LTC_H_ */

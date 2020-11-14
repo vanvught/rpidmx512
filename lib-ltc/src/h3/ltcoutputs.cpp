@@ -81,6 +81,14 @@ LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source t
 
 	Ltc::InitTimeCode(m_aTimeCode);
 	Ltc::InitSystemTime(m_aSystemTime);
+
+	struct TLtcTimeCode endTc;
+	endTc.nType = ltc::SMPTE;
+	endTc.nHours = 23;
+	endTc.nMinutes = 59;
+	endTc.nSeconds = 59;
+	endTc.nFrames = 29;
+	SetStopTimeCode(&endTc);
 }
 
 void LtcOutputs::Init() {
@@ -99,6 +107,17 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 	if (!m_ptLtcDisabledOutputs->bNtp) {
 		NtpServer::Get()->SetTimeCode(ptLtcTimeCode);
 	}
+
+	m_pStopLtcTimeCode.nType = ptLtcTimeCode->nType;
+	LtcOutputs::
+
+	//memcpy(&m_pNowLtcTimeCode, *ptLtcTimeCode, sizeof(TLtcTimeCode));
+	m_pNowLtcTimeCode.nHours = ptLtcTimeCode->nHours;
+	m_pNowLtcTimeCode.nMinutes = ptLtcTimeCode->nMinutes;
+	m_pNowLtcTimeCode.nSeconds = ptLtcTimeCode->nSeconds;
+	m_pNowLtcTimeCode.nFrames = ptLtcTimeCode->nFrames;
+	m_pNowLtcTimeCode.nType = ptLtcTimeCode->nType;
+
 
 	if (ptLtcTimeCode->nType != static_cast<uint8_t>(m_tTimeCodeTypePrevious)) {
 		m_tTimeCodeTypePrevious = static_cast<ltc::type>(ptLtcTimeCode->nType);

@@ -42,6 +42,7 @@
 #include "ltcdisplayws28xxmatrix.h"
 //
 #include "ltcdisplayrgbpanel.h"
+#include "../../lib-ltc/include/h3/ltcoutputs.h"
 
 #include "debug.h"
 
@@ -87,6 +88,8 @@ LtcDisplayRgb::LtcDisplayRgb(LtcDisplayRgbType tRgbType, LtcDisplayRgbWS28xxType
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::SOURCE)] = LtcDisplayWS28xxDefaults::COLOUR_SOURCE;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::RATE)] = LtcDisplayWS28xxDefaults::COLOUR_RATE;
 
+	Ltc::InitTimeCode(m_aRemainingTime);
+	
 	DEBUG_EXIT
 }
 
@@ -195,7 +198,7 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 	}
 
 	struct TLtcDisplayRgbColours tColours;
-
+	
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
 		tColours.nRed = (m_nMaster * m_tColours.nRed) / 255 ;
 		tColours.nGreen = (m_nMaster * m_tColours.nGreen) / 255 ;
@@ -205,14 +208,34 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 		tColours.nGreen = m_tColours.nGreen;
 		tColours.nBlue = m_tColours.nBlue;
 	}
+	struct TLtcTimeCode tRemaining;
+	struct TLtcTimeCode *tStop;
+	struct TLtcTimeCode *tStart;
 	
-	m_pLtcDisplayRgbSet->ShowStopTime(pTimecode, tColours);
+	tStart = LtcOutputs::Get()->GetNowTimeCode();
+	tStop = LtcOutputs::Get()->GetStopTimeCode();
+	
+	tStop->nType = tStart->nType;
+	tRemaining.nType = tStart->nType;
+
+	uint32_t start_ms = Ltc::TCtoMS(tStart);
+	uint32_t stop_ms = Ltc::TCtoMS(tStop);
+	
+	if (Ltc::MStoTC(stop_ms - start_ms, &tRemaining) != 0){
+		// failed		
+		printf("failed MStoTC: stop:%d now:%d fr:%d->%d !\n", stop_ms, start_ms, tStart->nFrames, tRemaining.nFrames);	
+	};
+
+	struct TLtcDisplayRgbColours tRemainColours;
+	tRemainColours.nRed = 0xFF;
+	tRemainColours.nGreen = 0x00;
+	tRemainColours.nBlue = 0x00;
+	
+	Ltc::ItoaBase10(&tRemaining, m_aRemainingTime);	
+	m_pLtcDisplayRgbSet->ShowStopTime(m_aRemainingTime, tRemainColours);
 
 	m_pLtcDisplayRgbSet->Show(pTimecode, tColours, tColoursColons);
-	
 }
-
-
 
 void LtcDisplayRgb::ShowSysTime(const char *pSystemTime) {
 	if (m_pLtcDisplayRgbSet == nullptr) {
