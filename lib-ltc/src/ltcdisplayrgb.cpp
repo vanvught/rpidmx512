@@ -86,7 +86,7 @@ LtcDisplayRgb::LtcDisplayRgb(LtcDisplayRgbType tRgbType, LtcDisplayRgbWS28xxType
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::MESSAGE)] = LtcDisplayWS28xxDefaults::COLOUR_MESSAGE;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::INFO)] = LtcDisplayWS28xxDefaults::COLOUR_INFO;
 	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::SOURCE)] = LtcDisplayWS28xxDefaults::COLOUR_SOURCE;
-	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::RATE)] = LtcDisplayWS28xxDefaults::COLOUR_RATE;
+	m_aColour[static_cast<uint32_t>(LtcDisplayRgbColourIndex::FPS)] = LtcDisplayWS28xxDefaults::COLOUR_FPS;
 
 	Ltc::InitTimeCode(m_aRemainingTime);
 	
