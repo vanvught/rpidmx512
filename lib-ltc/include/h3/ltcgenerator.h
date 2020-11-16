@@ -70,14 +70,6 @@ public:
 	void ActionForward(int32_t nSeconds);
 	void ActionBackward(int32_t nSeconds);
 
-	TLtcTimeCode* GetStopTimeCode() {
-		return m_pStopLtcTimeCode;
-	}
-
-	TLtcTimeCode* GetStartTimeCode() {
-		return m_pStartLtcTimeCode;
-	}
-
 	static LtcGenerator* Get() {
 		return s_pThis;
 	}

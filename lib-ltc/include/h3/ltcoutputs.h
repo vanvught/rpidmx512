@@ -26,7 +26,6 @@
 #ifndef H3_LTCOUTPUTS_H_
 #define H3_LTCOUTPUTS_H_
 
-#include "string.h"
 #include "ltc.h"
 
 class LtcOutputs {
@@ -69,8 +68,6 @@ private:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	struct TLtcTimeCode m_pNowLtcTimeCode; 
-	struct TLtcTimeCode m_pStopLtcTimeCode; 
 	bool m_bShowSysTime;
 	ltc::type m_tTimeCodeTypePrevious{ltc::type::INVALID};
 	uint32_t m_nMidiQuarterFramePiece {0};
