@@ -314,13 +314,13 @@ void LtcDisplayRgb::ShowFPS(ltc::type tTimeCodeType) {
 	struct TLtcDisplayRgbColours tColours;
 
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = (m_nMaster * m_tColoursRate.nRed) / 255 ;
-		tColours.nGreen = (m_nMaster * m_tColoursRate.nGreen) / 255 ;
-		tColours.nBlue = (m_nMaster * m_tColoursRate.nBlue) / 255 ;
+		tColours.nRed = (m_nMaster * m_tColoursFPS.nRed) / 255 ;
+		tColours.nGreen = (m_nMaster * m_tColoursFPS.nGreen) / 255 ;
+		tColours.nBlue = (m_nMaster * m_tColoursFPS.nBlue) / 255 ;
 	} else {
-		tColours.nRed = m_tColoursRate.nRed;
-		tColours.nGreen = m_tColoursRate.nGreen;
-		tColours.nBlue = m_tColoursRate.nBlue;
+		tColours.nRed = m_tColoursFPS.nRed;
+		tColours.nGreen = m_tColoursFPS.nGreen;
+		tColours.nBlue = m_tColoursFPS.nBlue;
 	}
 
 	m_pLtcDisplayRgbSet->ShowFPS(tTimeCodeType, tColours);

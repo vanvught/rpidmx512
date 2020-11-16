@@ -53,7 +53,7 @@ public:
 	}
 
 	void SetStopTimeCode(TLtcTimeCode* tc) {
-		if (tc) {
+		if (tc != nullptr) {
 			memcpy(&m_pStopLtcTimeCode, tc, sizeof(TLtcTimeCode));  // better to just assign 5 bytes, or compiler optimize?
 		}
 	}

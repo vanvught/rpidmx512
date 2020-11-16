@@ -23,6 +23,6 @@ if [ -f "$filename" ]; then
     if (( filesize > maxsize )); then
         echo "Firmware is too big for SPI Flash, maximum $maxsize."
     else
-        ../scripts/do-tftp.sh 192.168.1.56 
+        ../scripts/do-tftp.sh 192.168.1.134 
     fi
 fi

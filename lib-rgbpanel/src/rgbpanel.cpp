@@ -88,11 +88,10 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 	const auto nColonIndex = m_nPosition + nRow;
 	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
-	uint32_t nColumn = 0;
 	for (uint32_t i = 0; i < font_height; i++) {
 		uint32_t nWidth = font_space;
 
-		for (nColumn = nStartColumn; nColumn < ((font_width) + nStartColumn); nColumn++) {
+		for (uint32_t nColumn = nStartColumn; nColumn < ((font_width) + nStartColumn); nColumn++) {
 			
 			if ((m_TFontID == rgbpanel::TFontID::FONT_8x8) && (bShowColon) && (nColumn == (nStartColumn + font_width - 1))) {
 				const uint8_t nByte = m_ptColons[nColonIndex].nBits >> i;
