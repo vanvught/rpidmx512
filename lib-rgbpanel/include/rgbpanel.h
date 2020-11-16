@@ -37,6 +37,7 @@
 
 namespace rgbpanel {
 static constexpr auto PWM_WIDTH = 84;
+enum class TFontID { FONT_8x8, FONT_5x8 };
 }  // namespace rgbpanel
 
 class RgbPanel {
@@ -76,10 +77,10 @@ public:
 		return m_nMaxLine;
 	}
 
-	void SetFont(uint8_t nLine, uint8_t font_id);
+	void SetFont(uint8_t nLine, rgbpanel::TFontID font_id);
 
-	uint32_t GetFontID() {
-		return m_nFontID;
+	rgbpanel::TFontID GetFontID() {
+		return m_TFontID;
 	}
 
 	void Print();
@@ -105,7 +106,7 @@ private:
 	uint32_t m_nMaxPosition;
 	uint32_t m_nMaxLine;
 	uint32_t m_nPosition{0};
-	uint32_t m_LineFont[4];
+	rgbpanel::TFontID m_LineFont[4];
 	uint32_t m_LineLength[4];
 
 	uint32_t m_nLine{0};
@@ -116,7 +117,7 @@ private:
 		uint8_t nBlue;
 	};
 	TColon *m_ptColons{nullptr};
-	uint8_t m_nFontID;
+	rgbpanel::TFontID m_TFontID;
 
 };
 

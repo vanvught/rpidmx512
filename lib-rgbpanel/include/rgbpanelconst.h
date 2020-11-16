@@ -49,6 +49,9 @@ static constexpr auto ROWS = 4;
 namespace type {
 static constexpr auto MAX_NAME_LENGTH = 7 + 1;  	// + '\0'
 }  // namespace type
+namespace font {
+enum class RgbPanelFontID { DEFAULT, FONT_5x8 };
+}  // namespace type
 }  // namespace rgbpanel
 
 struct RgbPanelConst {

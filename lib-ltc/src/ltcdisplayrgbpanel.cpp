@@ -95,7 +95,7 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 	memcpy(m_Line[0], cLine, 8);
 
 	// TC Display
-	m_pRgbPanel->SetFont(0, 0);
+	m_pRgbPanel->SetFont(0, rgbpanel::TFontID::FONT_8x8);
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
@@ -114,7 +114,7 @@ void LtcDisplayRgbPanel::ShowStopTime(const char *pStopTime, struct TLtcDisplayR
 	const char cLine[11] = { '-', pStopTime[0], pStopTime[1], pStopTime[3], pStopTime[4], pStopTime[6], pStopTime[7], pStopTime[9], pStopTime[10],' ',' '};
 	memcpy(m_Line[1], cLine, 11);
 	
-	m_pRgbPanel->SetFont(1, 1);
+	m_pRgbPanel->SetFont(1, rgbpanel::TFontID::FONT_5x8);
 	m_LineColours[1].nRed = tColours.nRed;
 	m_LineColours[1].nGreen = tColours.nGreen;
 	m_LineColours[1].nBlue = tColours.nBlue;
@@ -129,7 +129,7 @@ void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplay
 
 	memcpy(m_Line[0], cLine, 8);
 
-	m_pRgbPanel->SetFont(0, 0);
+	m_pRgbPanel->SetFont(0, rgbpanel::TFontID::FONT_8x8);
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
@@ -151,7 +151,7 @@ void LtcDisplayRgbPanel::ShowMessage(const char *pMessage, struct TLtcDisplayRgb
 void LtcDisplayRgbPanel::ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbColours &tColours) {
 	memcpy(m_Line[2], aTypes[tTimeCodeType], 8);
 		
-	m_pRgbPanel->SetFont(2, 1);
+	m_pRgbPanel->SetFont(2, rgbpanel::TFontID::FONT_5x8);
 	m_LineColours[2].nRed = tColours.nRed;
 	m_LineColours[2].nGreen = tColours.nGreen;
 	m_LineColours[2].nBlue = tColours.nBlue;
@@ -160,7 +160,7 @@ void LtcDisplayRgbPanel::ShowFPS(ltc::type tTimeCodeType, struct TLtcDisplayRgbC
 void LtcDisplayRgbPanel::ShowSource(ltc::source tSource, struct TLtcDisplayRgbColours &tColours) {
 	memcpy(m_Line[3], aSources[tSource], 8);
 
-	m_pRgbPanel->SetFont(3, 1);
+	m_pRgbPanel->SetFont(3, rgbpanel::TFontID::FONT_5x8);
 	m_LineColours[3].nRed = tColours.nRed;
 	m_LineColours[3].nGreen = tColours.nGreen;
 	m_LineColours[3].nBlue = tColours.nBlue;
