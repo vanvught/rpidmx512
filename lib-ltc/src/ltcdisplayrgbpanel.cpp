@@ -99,7 +99,14 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct TLtcDisplayRgbColour
 	m_LineColours[0].nRed = tColours.nRed;
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
- 	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
+
+	// TC Type - Rate
+//	m_LineFont[1] = 1; // 5x8
+//	m_LineColours[1].nRed = 0x00;//tColours.nRed / 3; 
+//	m_LineColours[1].nGreen = 0x7f;// tColours.nGreen / 3;
+//	m_LineColours[1].nBlue = 0x00;//tColours.nBlue / 3;
+ 
+	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
 
 	// render the remaining display
 	for (uint32_t i = 1; i < 4; i++) {		
@@ -134,6 +141,10 @@ void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct TLtcDisplay
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
+//	m_LineColours[1].nRed = tColours.nRed;
+//	m_LineColours[1].nGreen = tColours.nGreen;
+//	m_LineColours[1].nBlue = tColours.nBlue;
+			
 	m_pRgbPanel->TextLine(1, m_Line[0], 8, m_LineColours[0].nRed, m_LineColours[0].nGreen, m_LineColours[0].nBlue);
 	m_pRgbPanel->ClearLine(2); // TODO: NTP/GPS date?
 	m_pRgbPanel->TextLine(3, m_Line[2], 8, m_LineColours[2].nRed, m_LineColours[2].nGreen, m_LineColours[2].nBlue);
