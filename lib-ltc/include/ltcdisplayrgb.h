@@ -137,7 +137,7 @@ private:
 	struct TLtcDisplayRgbColours m_tColoursColons;
 	struct TLtcDisplayRgbColours m_tColoursInfo;
 	struct TLtcDisplayRgbColours m_tColoursSource;
-	struct TLtcDisplayRgbColours m_tColoursRate;
+	struct TLtcDisplayRgbColours m_tColoursFPS;
 
 	static LtcDisplayRgb *s_pThis;
 };
