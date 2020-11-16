@@ -129,7 +129,7 @@ private:
 	uint32_t m_nColonBlinkMillis{0};
 	char m_nSecondsPrevious{60};
 	LtcDisplayRgbColonBlinkMode m_tColonBlinkMode{LtcDisplayWS28xxDefaults::COLON_BLINK_MODE};
-
+	char m_aRemainingTime[TC_CODE_MAX_LENGTH];
 	LtcDisplayRgbSet *m_pLtcDisplayRgbSet{nullptr};
 
 	struct TLtcDisplayRgbColours m_tColours;
