@@ -34,11 +34,12 @@
 #define FONT_5x8_CHAR_W	5
 #define FONT_5x8_CHAR_H	8
 
-extern uint8_t font_5x8[][8];
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern uint8_t font_5x8[][8];
 
 extern uint32_t font_5x8_size(void);
 

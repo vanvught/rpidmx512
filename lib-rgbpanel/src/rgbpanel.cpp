@@ -33,7 +33,7 @@
 
 
 #include "../../lib-device/src/font_cp437.h"
-#include "font_5x8.h"
+#include "../../lib-device/src/font_5x8.h"
 
 #include "debug.h"
 
