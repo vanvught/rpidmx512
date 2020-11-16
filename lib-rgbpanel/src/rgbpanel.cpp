@@ -54,7 +54,7 @@ RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, RgbPanelT
 	assert(nColumns % FONT_CP437_CHAR_W == 0);
 	assert(nRows % FONT_CP437_CHAR_H == 0);
 
-	m_ptColons = new struct TColon[m_nMaxPosition * m_nMaxLine];
+	m_ptColons = new struct TColon[m_nMaxPosition * m_nMaxLine];  // TODO: Support smaller font 
 	assert(m_ptColons != nullptr);
 	SetColonsOff();
 
@@ -213,6 +213,25 @@ void RgbPanel::SetFont(uint8_t nLine, rgbpanel::TFontID font_id) {
 		return;
 	}	
 	m_LineFont[nLine] = font_id;	
+
+	// TODO: Optimize away, they are all currently 8 high,  only width varies. 
+	switch (m_LineFont[nLine-1])
+		{
+		case rgbpanel::TFontID::FONT_8x8:
+			m_nMaxPosition = m_nColumns / FONT_CP437_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_CP437_CHAR_H;		
+			break;
+		
+		case rgbpanel::TFontID::FONT_5x8:
+			m_nMaxPosition = m_nColumns / FONT_5x8_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_5x8_CHAR_H;
+			break;
+		
+		default:
+			m_nMaxPosition = m_nColumns / FONT_CP437_CHAR_W;
+			m_nMaxLine = m_nRows / FONT_CP437_CHAR_H;
+			break;
+		}	
 }
 
 /**
