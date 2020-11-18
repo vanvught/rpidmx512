@@ -381,6 +381,13 @@ void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 	if (m_Updates == 0)
 	 return;
 
+	static bool half_rate = 0;
+	half_rate = !half_rate;
+	if (half_rate) {
+		return;
+	}
+
+
 	Ssd1306::SetCursorPos(0, nLine - 1);
 	Text(pData, nLength);
 }
