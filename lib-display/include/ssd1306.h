@@ -97,7 +97,8 @@ private:
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
-
+	bool m_Updates{true};
+	
 	static Ssd1306 *s_pThis;
 };
 
