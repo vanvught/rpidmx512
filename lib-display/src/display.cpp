@@ -202,20 +202,6 @@ void Display::Cls() {
 }
 
 void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
-		
-	static int half_rate = 0;
-
-	if (half_rate && nLine == 4) {
-		half_rate++;
-		if (half_rate > 2) {
-			half_rate = 0;
-		}
-	}
-	
-	if (half_rate != 0) {
-		return;
-	}
-
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}

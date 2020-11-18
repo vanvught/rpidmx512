@@ -378,15 +378,6 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 
 void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 	assert(nLine <= m_nRows);
-	if (m_Updates == 0)
-	 return;
-
-	static bool half_rate = 0;
-	half_rate = !half_rate;
-	if (half_rate) {
-		return;
-	}
-
 
 	Ssd1306::SetCursorPos(0, nLine - 1);
 	Text(pData, nLength);
@@ -432,10 +423,8 @@ void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 void Ssd1306::SetSleep(bool bSleep) {
 	if (bSleep) {
 		SendCommand(SSD1306_CMD_DISPLAY_OFF);
-		m_Updates = 0;
 	} else {
 		SendCommand(SSD1306_CMD_DISPLAY_ON);
-		m_Updates = 1;		
 	}
 }
 
