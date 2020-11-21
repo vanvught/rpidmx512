@@ -70,6 +70,9 @@ public class TFTPClient extends JDialog {
 	
 	static final int DATA_SIZE = 512;
 	static final int TFTP_DEFAULT_PORT = 69;
+	private JButton btnClose;
+	
+	private int result = 0;
 
 	/**
 	 * Launch the application.
@@ -80,14 +83,18 @@ public class TFTPClient extends JDialog {
 				try {
 					TFTPClient dialog = new TFTPClient("/Volumes/development/workspace/opi_emac_artnet_dmx/orangepi_one.uImage", InetAddress.getByName("192.168.2.121") );
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					dialog.Show();
+					dialog.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
+	
+	public int result() {
+		return result;
+	}
+	
 	public TFTPClient(String FileName, InetAddress IPAddressTFTPServer) {
 		InitComponents();
 		CreateEvents();
@@ -107,24 +114,21 @@ public class TFTPClient extends JDialog {
 		
         receiveBuffer = new byte[512];
         setTitle("TFTP Client " + IPAddressTFTPServer.getHostAddress());
-	}
-	
-	public void Show() {
-		setVisible(true);
+        setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
 	}
 	
 	private void InitComponents() {
 		setTitle("TFTP Client");
-		setBounds(100, 100, 450, 120);
+		setBounds(100, 100, 450, 138);
 		
 		textField = new JTextField();
 		textField.setEditable(false);
 		textField.setColumns(10);
 		
 		btnPut = new JButton("TFTP put");
+		btnUimage = new JButton("Select uImage");	
+		btnClose = new JButton("Close");
 		
-		btnUimage = new JButton("Select uImage");
-
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.TRAILING)
@@ -135,7 +139,8 @@ public class TFTPClient extends JDialog {
 							.addComponent(btnUimage)
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addComponent(btnPut))
-						.addComponent(textField, GroupLayout.DEFAULT_SIZE, 426, Short.MAX_VALUE))
+						.addComponent(textField, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 438, Short.MAX_VALUE)
+						.addComponent(btnClose, Alignment.TRAILING))
 					.addContainerGap())
 		);
 		groupLayout.setVerticalGroup(
@@ -145,14 +150,22 @@ public class TFTPClient extends JDialog {
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
 						.addComponent(btnPut)
 						.addComponent(btnUimage))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addComponent(textField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap(52, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(btnClose)
+					.addContainerGap(8, Short.MAX_VALUE))
 		);
 		getContentPane().setLayout(groupLayout);
 	}
 	
 	private void CreateEvents() {
+		btnClose.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dispose();
+			}
+		});
+		
 		btnPut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				System.out.println(e);
@@ -227,12 +240,15 @@ public class TFTPClient extends JDialog {
 	private void displayError(String txt) {
 		textField.setText(txt);
 		textField.setForeground(Color.RED);
+		result = -1;
 	}
 	
 	private void doTFTPput() {
 		textField.setForeground(Color.BLACK);
 		
 		file = new File(pathFile);
+		
+		result = 1;
 		
 		try {
 			outOctet = new FileInputStream(file);
