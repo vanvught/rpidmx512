@@ -46,7 +46,7 @@ void WS28xxMulti::Update() {
 
 		h3_spi_dma_tx_start(m_pBuffer8x, m_nBufSize);
 	} else {
-		assert(m_pBuffer4x != 0);
+		assert(m_pBuffer4x != nullptr);
 		Generate800kHz(m_pBuffer4x);
 	}
 }

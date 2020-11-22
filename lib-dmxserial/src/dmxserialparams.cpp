@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -271,7 +271,6 @@ void DmxSerialParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	Builder(nullptr, pBuffer, nLength, nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
 void DmxSerialParams::Set() {

@@ -55,15 +55,7 @@ static struct TSequenceNumbers s_SequenceNumbers[512] __attribute__ ((aligned (8
 
 E131Controller *E131Controller::s_pThis = nullptr;
 
-E131Controller::E131Controller():
-	m_nHandle(-1),
-	m_nCurrentPacketMillis(0),
-	m_pE131DataPacket(nullptr),
-	m_pE131DiscoveryPacket(nullptr),
-	m_pE131SynchronizationPacket(nullptr),
-	m_DiscoveryIpAddress(0),
-	m_nMaster(DMX_MAX_VALUE)
-{
+E131Controller::E131Controller() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
@@ -350,7 +342,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 	DEBUG_PRINTF("nActiveUniverses=%u -> %u : nLow=%d, nMid=%d, nHigh=%d", m_State.nActiveUniverses, nUniverse, nLow, nMid, nHigh);
 
 	if ((nHigh != -1) && (m_State.nActiveUniverses != static_cast<uint32_t>(nHigh))) {
-		uint64_t *p64 = reinterpret_cast<uint64_t *>(s_SequenceNumbers);
+		auto p64 = reinterpret_cast<uint64_t *>(s_SequenceNumbers);
 
 		for (int32_t i = m_State.nActiveUniverses - 1; i >= nLow; i--) {
 			p64[i + 1] = p64[i];

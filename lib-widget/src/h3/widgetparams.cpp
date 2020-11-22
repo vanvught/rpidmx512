@@ -100,17 +100,17 @@ WidgetParams::WidgetParams(WidgetParamsStore* pWidgetParamsStore): m_pWidgetPara
 	m_tWidgetParams.nThrottle = 0;
 }
 
-bool WidgetParams::Load(void) {
+bool WidgetParams::Load() {
 	m_tWidgetParams.nSetList = 0;
 
 	ReadConfigFile configfile(WidgetParams::staticCallbackFunction, this);
 
 	if (configfile.Read(PARAMS_FILE_NAME)) {
 		// There is a configuration file
-		if (m_pWidgetParamsStore != 0) {
+		if (m_pWidgetParamsStore != nullptr) {
 			m_pWidgetParamsStore->Update(&m_tWidgetParams);
 		}
-	} else if (m_pWidgetParamsStore != 0) {
+	} else if (m_pWidgetParamsStore != nullptr) {
 		m_pWidgetParamsStore->Copy(&m_tWidgetParams);
 	} else {
 		return false;
@@ -120,7 +120,7 @@ bool WidgetParams::Load(void) {
 }
 
 void WidgetParams::callbackFunction(const char* pLine) {
-	assert(pLine != 0);
+	assert(pLine != nullptr);
 
 	uint8_t value8;
 
@@ -162,7 +162,7 @@ void WidgetParams::callbackFunction(const char* pLine) {
 
 }
 
-void WidgetParams::Set(void) {
+void WidgetParams::Set() {
 	uint32_t period = 0;
 
 	if (isMaskSet(WIDGET_PARAMS_MASK_REFRESH_RATE)) {
@@ -206,7 +206,7 @@ void WidgetParams::Set(void) {
 	}
 }
 
-void WidgetParams::Dump(void) {
+void WidgetParams::Dump() {
 #ifndef NDEBUG
 	if (m_tWidgetParams.nSetList == 0) {
 		return;
@@ -240,8 +240,8 @@ void WidgetParams::Dump(void) {
 }
 
 void WidgetParams::staticCallbackFunction(void* p, const char* s) {
-	assert(p != 0);
-	assert(s != 0);
+	assert(p != nullptr);
+	assert(s != nullptr);
 
 	(static_cast<WidgetParams*>(p))->callbackFunction(s);
 }

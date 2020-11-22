@@ -83,18 +83,18 @@ private:
 	void Initialize();
 
 private:
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
-	uint8_t m_nI2cAddress;
-	uint8_t m_nBoardInstances;
-	uint16_t m_nPwmFrequency;
-	bool m_bOutputInvert;
-	bool m_bOutputDriver;
-	bool m_bIsStarted;
-	PCA9685PWMLed **m_pPWMLed;
-	uint8_t *m_pDmxData;
-	char *m_pSlotInfoRaw;
-	struct TLightSetSlotInfo *m_pSlotInfo;
+	uint16_t m_nDmxStartAddress{1};
+	uint16_t m_nDmxFootprint{PCA9685_PWM_CHANNELS};
+	uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
+	uint8_t m_nBoardInstances{1};
+	uint16_t m_nPwmFrequency{PWMLED_DEFAULT_FREQUENCY};
+	bool m_bOutputInvert{false};
+	bool m_bOutputDriver{true};
+	bool m_bIsStarted{false};
+	PCA9685PWMLed **m_pPWMLed{nullptr};
+	uint8_t *m_pDmxData{nullptr};
+	char *m_pSlotInfoRaw{nullptr};
+	struct TLightSetSlotInfo *m_pSlotInfo{nullptr};
 };
 
 #endif /* PCA9685DMXLED_H_ */

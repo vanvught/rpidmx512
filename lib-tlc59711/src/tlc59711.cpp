@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #if !defined(NDEBUG) || defined(__linux__)
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <string.h>
 #include <cassert>
@@ -82,10 +82,10 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_nBufSize = nBoards * TLC59711Channels::U16BIT;
 
 	m_pBuffer = new uint16_t[m_nBufSize];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	m_pBufferBlackout = new uint16_t[m_nBufSize];
-	assert(m_pBufferBlackout != 0);
+	assert(m_pBufferBlackout != nullptr);
 
 	for (uint32_t i = 0; i < m_nBufSize; i++) {
 		m_pBuffer[i] = 0;
@@ -107,7 +107,7 @@ TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 
 TLC59711::~TLC59711() {
 	delete[] m_pBuffer;
-	m_pBuffer = 0;
+	m_pBuffer = nullptr;
 }
 
 bool TLC59711::Get(uint8_t nChannel, uint16_t &nValue) {
@@ -131,9 +131,7 @@ void TLC59711::Set(uint8_t nChannel, uint16_t nValue) {
 	}
 #ifndef NDEBUG
 	else {
-		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n",
-				static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex),
-				static_cast<int>(nChannel));
+		printf("\t\tm_nBoards=%d, nBoardIndex=%d, nChannel=%d\n", static_cast<int>(m_nBoards), static_cast<int>(nBoardIndex), static_cast<int>(nChannel));
 	}
 #endif
 }
@@ -309,7 +307,7 @@ void TLC59711::SetGbcBlue(uint8_t nValue) {
 
 void TLC59711::UpdateFirst32() {
 	for (uint32_t i = 0; i < m_nBoards; i++) {
-		const uint32_t nIndex = TLC59711Channels::U16BIT * i;
+		const auto nIndex = TLC59711Channels::U16BIT * i;
 		m_pBuffer[nIndex] = __builtin_bswap16(static_cast<uint16_t>((m_nFirst32 >> 16)));
 		m_pBuffer[nIndex + 1] = __builtin_bswap16(static_cast<uint16_t>(m_nFirst32));
 	}

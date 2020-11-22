@@ -120,7 +120,7 @@ bool Network::ApplyQueuedConfig() {
 
 uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
 	if (nCDIR != 0) {
-		const uint32_t nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
+		const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
 		DEBUG_PRINTF("%d " IPSTR, nCDIR, IP2STR(nNetmask));
 		return nNetmask;
 	}

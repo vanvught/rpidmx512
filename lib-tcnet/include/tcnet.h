@@ -110,11 +110,9 @@ private:
 		static constexpr auto PORT_1 = 60001;
 		static constexpr auto PORT_2 = 60002;
 	};
-
 	struct TCNETUnicast {
 		static constexpr auto PORT = 65023;
 	};
-
 	struct TTCNetNodeIP {
 		uint32_t nIPAddressLocal;
 		uint32_t nIPAddressBroadcast;
@@ -123,16 +121,16 @@ private:
 	int32_t m_aHandles[4];
 	TTCNetPacketOptIn m_tOptIn;
 	TTCNet m_TTCNet;
-	uint32_t m_nCurrentMillis = 0;
-	uint32_t m_nPreviousMillis = 0;
+	uint32_t m_nCurrentMillis{0};
+	uint32_t m_nPreviousMillis{0};
 	TCNetLayer m_tLayer = TCNetLayer::LAYER_M;
-	uint32_t *m_pLTime = nullptr;
-	TTCNetPacketTimeTimeCode *m_pLTimeCode = nullptr;
+	uint32_t *m_pLTime{nullptr};
+	TTCNetPacketTimeTimeCode *m_pLTimeCode{nullptr};
 	bool m_bUseTimeCode = false;
-	TCNetTimeCode *m_pTCNetTimeCode = nullptr;
-	float m_fTypeDivider = 1000.0F / 30;
+	TCNetTimeCode *m_pTCNetTimeCode{nullptr};
+	float m_fTypeDivider{1000.0F / 30};
 	TTCNetTimeCodeType m_tTimeCodeType;
-	uint8_t m_nSeqTimeMessage = 0;
+	uint8_t m_nSeqTimeMessage{0};
 
 	static TCNet *s_pThis;
 };

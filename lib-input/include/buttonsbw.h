@@ -48,8 +48,8 @@ private:
 
 private:
 	HAL_I2C m_I2C;
-	uint32_t m_nWriteMicros;
-	uint8_t m_nButtons;
+	uint32_t m_nWriteMicros{0};
+	uint8_t m_nButtons{0};
 };
 
 #endif /* BUTTONSBW_H_ */

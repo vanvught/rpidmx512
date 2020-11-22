@@ -40,6 +40,8 @@ struct TDMXParams {
 	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
 }__attribute__((packed));
 
+static_assert(sizeof(struct TDMXParams) <= 32, "struct TDMXParams is too large");
+
 struct DmxSendParamsMask {
 	static constexpr auto BREAK_TIME = (1U << 0);
 	static constexpr auto MAB_TIME = (1U << 1);

@@ -28,8 +28,8 @@
 
 #include "dmx.h"
 
-DmxSet *DmxSet::s_pThis = 0;
+DmxSet *DmxSet::s_pThis = nullptr;
 
-DmxSet::DmxSet(void) {
+DmxSet::DmxSet() {
 	s_pThis = this;
 }

@@ -42,7 +42,7 @@
 
 #include "debug.h"
 
-ArtNetRdmController::ArtNetRdmController() : m_pRdmCommand(nullptr){
+ArtNetRdmController::ArtNetRdmController()  {
 	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != nullptr);
@@ -113,8 +113,8 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 		// Discard late responses
 	}
 
-	const TRdmMessageNoSc *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
-	uint8_t *pRdmCommand = reinterpret_cast<uint8_t*>(m_pRdmCommand);
+	const auto *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
+	auto *pRdmCommand = reinterpret_cast<uint8_t*>(m_pRdmCommand);
 
 	memcpy(&pRdmCommand[1], pRdmData, static_cast<size_t>(pRdmMessageNoSc->message_length + 2));
 
@@ -124,7 +124,7 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 
 	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2);
 
-	const uint8_t *pResponse = RDMMessage::ReceiveTimeOut(nPort, 20000);
+	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 20000);
 
 #ifndef NDEBUG
 	RDMMessage::Print(pResponse);

@@ -52,7 +52,7 @@ public:
 	 void Dump();
 	 void Dump(uint8_t nCount);
 private:
-	 uint8_t m_nEntries;
+	 uint8_t m_nEntries{0};
 	 TRdmTod *m_pTable;
 };
 

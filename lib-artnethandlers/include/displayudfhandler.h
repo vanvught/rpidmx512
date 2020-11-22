@@ -41,9 +41,9 @@
 
 class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay, public NtpClientDisplay {
 public:
-	DisplayUdfHandler(void) {
+	DisplayUdfHandler() {
 	}
-	~DisplayUdfHandler(void) {
+	~DisplayUdfHandler() {
 	}
 
 	void ShowShortName(__attribute__((unused)) const char *pShortName) {
@@ -73,23 +73,23 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowDmxStartAddress(void) {
+	void ShowDmxStartAddress() {
 		DisplayUdf::Get()->ShowDmxStartAddress();
 	}
 
-	void ShowIp(void) {
+	void ShowIp() {
 		DisplayUdf::Get()->ShowIpAddress();
 	}
 
-	void ShowNetMask(void) {
+	void ShowNetMask() {
 		DisplayUdf::Get()->ShowNetmask();
 	}
 
-	void ShowHostName(void) {
+	void ShowHostName() {
 		DisplayUdf::Get()->ShowHostName();
 	}
 
-	void ShowShutdown(void) {
+	void ShowShutdown() {
 		DisplayUdf::Get()->ShowShutdown();
 	}
 

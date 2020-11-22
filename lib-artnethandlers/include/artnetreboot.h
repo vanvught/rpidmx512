@@ -32,12 +32,12 @@
 
 class ArtNetReboot: public RebootHandler {
 public:
-	ArtNetReboot(void) {
+	ArtNetReboot() {
 	}
-	~ArtNetReboot(void) {
+	~ArtNetReboot() {
 	}
 
-	void Run(void) {
+	void Run() {
 		ArtNetNode::Get()->Stop();
 	}
 };

@@ -57,8 +57,8 @@ private:
 	void CalcRightCount();
 
 private:
-	uint16_t m_nLeftUs;
-	uint16_t m_nRightUs;
+	uint16_t m_nLeftUs{SERVO_LEFT_DEFAULT_US};
+	uint16_t m_nRightUs{SERVO_RIGHT_DEFAULT_US};
 	uint16_t m_nLeftCount;
 	uint16_t m_nRightCount;
 };

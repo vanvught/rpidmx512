@@ -33,7 +33,7 @@
 
 #define MAX_PORTS (sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]))
 
-DMXSendMulti::DMXSendMulti(void) {
+DMXSendMulti::DMXSendMulti() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < MAX_PORTS ; i++) {
@@ -85,7 +85,7 @@ void DMXSendMulti::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength
 	DEBUG_ENTRY
 
 	assert(nPort < MAX_PORTS);
-	assert(pData != 0);
+	assert(pData != nullptr);
 	assert(nLength != 0);
 
 	if (__builtin_expect((nLength == 0), 0)) {

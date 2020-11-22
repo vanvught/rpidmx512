@@ -45,8 +45,8 @@ void LLRPDevice::DumpCommon() {
 	printf("RootLayerPreAmble.PostAmbleSize=0x%.04x\n",  __builtin_bswap16(pCommon->RootLayerPreAmble.PostAmbleSize));
 	printf("RootLayerPreAmble.ACNPacketIdentifier=[%s]\n", pCommon->RootLayerPreAmble.ACNPacketIdentifier);
 
-	uint8_t *pPdu = reinterpret_cast<uint8_t*>(pCommon->RootLayerPDU.FlagsLength);
-	uint32_t nLength = static_cast<uint32_t>(((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
+	auto *pPdu = reinterpret_cast<uint8_t*>(pCommon->RootLayerPDU.FlagsLength);
+	auto nLength = static_cast<uint32_t>(((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
 
 	printf("RootLayerPDU PDU length=%d, High 4 bits=0x%.1x\n", nLength, static_cast<int>(pCommon->RootLayerPDU.FlagsLength[0]) >> 4);
 	printf("RootLayerPDU.Vector=0x%.8x\n", __builtin_bswap32(pCommon->RootLayerPDU.Vector));

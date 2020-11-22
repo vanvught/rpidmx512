@@ -60,16 +60,16 @@ public:
 	void SetFactoryDefaults();
 
 	// E120_LANGUAGE				0x00B0
-	const char* GetLanguage() {
+	const char* GetLanguage() const {
 		return m_aLanguage;
 	}
 	void SetLanguage(const char aLanguage[2]);
 
 	// E120_SOFTWARE_VERSION_LABEL	0x00C0
-	const char* GetSoftwareVersion() {
+	const char* GetSoftwareVersion() const {
 		return m_pSoftwareVersion;
 	}
-	uint8_t GetSoftwareVersionLength() {
+	uint8_t GetSoftwareVersionLength() const {
 		return m_nSoftwareVersionLength;
 	}
 

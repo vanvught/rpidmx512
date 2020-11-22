@@ -36,8 +36,8 @@ bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const boo
 		return false;
 	}
 
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
+	auto *p = &m_pBuffer[m_nSize];
+	const auto nSize = m_nLength - m_nSize;
 
 	int i;
 

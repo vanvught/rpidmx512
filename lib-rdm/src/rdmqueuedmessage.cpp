@@ -34,7 +34,7 @@
 #include "rdm_e120.h"
 
 
-RDMQueuedMessage::RDMQueuedMessage(): m_nMessageCount(0), m_IsNeverQueued(true) {
+RDMQueuedMessage::RDMQueuedMessage() {
 	m_pQueue = new TRdmQueuedMessage[RDM_MESSAGE_COUNT_MAX];
 	assert(m_pQueue != nullptr);
 }
@@ -63,7 +63,7 @@ uint8_t RDMQueuedMessage::GetMessageCount() const {
 }
 
 void RDMQueuedMessage::Handler(uint8_t *pRdmData) {
-	struct TRdmMessage *rdm_response = reinterpret_cast<struct TRdmMessage*>(pRdmData);
+	auto rdm_response = reinterpret_cast<struct TRdmMessage*>(pRdmData);
 
 	if (m_IsNeverQueued) {
 		rdm_response->slot16.response_type = E120_STATUS_MESSAGES;
@@ -81,18 +81,18 @@ void RDMQueuedMessage::Handler(uint8_t *pRdmData) {
 	}
 }
 
-bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage *msg) {
+bool RDMQueuedMessage::Add(const struct TRdmQueuedMessage *pMessage) {
 	m_IsNeverQueued = false;
 
 	if (m_nMessageCount != RDM_MESSAGE_COUNT_MAX) {
 
-		m_pQueue[m_nMessageCount].command_class = msg->command_class;
-		m_pQueue[m_nMessageCount].param_id[0] = msg->param_id[0];
-		m_pQueue[m_nMessageCount].param_id[1] = msg->param_id[1];
-		m_pQueue[m_nMessageCount].param_data_length = msg->param_data_length;
+		m_pQueue[m_nMessageCount].command_class = pMessage->command_class;
+		m_pQueue[m_nMessageCount].param_id[0] = pMessage->param_id[0];
+		m_pQueue[m_nMessageCount].param_id[1] = pMessage->param_id[1];
+		m_pQueue[m_nMessageCount].param_data_length = pMessage->param_data_length;
 
-		for (uint32_t i = 0; i < msg->param_data_length; i++) {
-			m_pQueue[m_nMessageCount].param_data[i] = msg->param_data[i];
+		for (uint32_t i = 0; i < pMessage->param_data_length; i++) {
+			m_pQueue[m_nMessageCount].param_data[i] = pMessage->param_data[i];
 		}
 
 		m_nMessageCount++;

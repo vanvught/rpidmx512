@@ -289,6 +289,10 @@ public:
 
 	void Print();
 
+	static ArtNetNode* Get() {
+		return s_pThis;
+	}
+
 private:
 	void FillPollReply();
 #if defined ( ENABLE_SENDDIAG )
@@ -324,18 +328,19 @@ private:
 private:
 	uint8_t m_nVersion;
 	uint8_t m_nPages;
-	int32_t m_nHandle;
-	LightSet *m_pLightSet;
+	int32_t m_nHandle{-1};
+	LightSet *m_pLightSet{nullptr};
 
-	ArtNetTimeCode *m_pArtNetTimeCode;
-	ArtNetTimeSync *m_pArtNetTimeSync;
-	ArtNetRdm *m_pArtNetRdm;
-	ArtNetIpProg *m_pArtNetIpProg;
-	ArtNetStore *m_pArtNetStore;
-	ArtNetDisplay *m_pArtNetDisplay;
-	ArtNetDmx *m_pArtNetDmx;
-	ArtNetTrigger *m_pArtNetTrigger;
-	ArtNet4Handler *m_pArtNet4Handler;
+	ArtNetTimeCode *m_pArtNetTimeCode{nullptr};
+	ArtNetTimeSync *m_pArtNetTimeSync{nullptr};
+	ArtNetRdm *m_pArtNetRdm{nullptr};
+	ArtNetIpProg *m_pArtNetIpProg{nullptr};	ArtNetDmx *m_pArtNetDmx{nullptr};
+	ArtNetTrigger *m_pArtNetTrigger{nullptr};
+
+	ArtNetStore *m_pArtNetStore{nullptr};
+	ArtNetDisplay *m_pArtNetDisplay{nullptr};
+
+	ArtNet4Handler *m_pArtNet4Handler{nullptr};
 
 	struct TArtNetNode m_Node;
 	struct TArtNetNodeState m_State;
@@ -345,32 +350,26 @@ private:
 #if defined ( ENABLE_SENDDIAG )
 	struct TArtDiagData m_DiagData;
 #endif
-	struct TArtTimeCode *m_pTimeCodeData;
-	struct TArtTodData *m_pTodData;
-	struct TArtIpProgReply *m_pIpProgReply;
+	struct TArtTimeCode *m_pTimeCodeData{nullptr};
+	struct TArtTodData *m_pTodData{nullptr};
+	struct TArtIpProgReply *m_pIpProgReply{nullptr};
 
 	struct TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
 	struct TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
-	bool m_bDirectUpdate;
+	bool m_bDirectUpdate{false};
 
-	uint32_t m_nCurrentPacketMillis;
-	uint32_t m_nPreviousPacketMillis;
+	uint32_t m_nCurrentPacketMillis{0};
+	uint32_t m_nPreviousPacketMillis{0};
 
 	TOpCodes m_tOpCodePrevious;
 
 	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
-	bool m_IsRdmResponder;
+	bool m_IsRdmResponder{false};
 
-	alignas(uint32_t) char m_aSysName[16];
-	alignas(uint32_t) char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
+	char m_aSysName[16];
+	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
 
-public:
-	static ArtNetNode* Get() {
-		return s_pThis;
-	}
-
-private:
 	static ArtNetNode *s_pThis;
 };
 

@@ -70,7 +70,7 @@ public:
 		m_State.SynchronizationPacket.nUniverseNumber = nSynchronizationAddress;
 		m_State.SynchronizationPacket.nIpAddress = UniverseToMulticastIp(nSynchronizationAddress);
 	}
-	uint16_t GetSynchronizationAddress() {
+	uint16_t GetSynchronizationAddress() const {
 		return m_State.SynchronizationPacket.nUniverseNumber;
 	}
 
@@ -81,7 +81,7 @@ public:
 			m_nMaster = DMX_MAX_VALUE;
 		}
 	}
-	uint32_t GetMaster() {
+	uint32_t GetMaster() const {
 		return m_nMaster;
 	}
 
@@ -89,6 +89,10 @@ public:
 
 	void SetSourceName(const char *pSourceName);
 	void SetPriority(uint8_t nPriority);
+
+	static E131Controller* Get() {
+		return s_pThis;
+	}
 
 private:
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
@@ -99,23 +103,17 @@ private:
 	uint8_t GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress);
 
 private:
-	int32_t m_nHandle;
-	uint32_t m_nCurrentPacketMillis;
+	int32_t m_nHandle{-1};
+	uint32_t m_nCurrentPacketMillis{0};
 	struct TE131ControllerState m_State;
-	TE131DataPacket *m_pE131DataPacket;
-	TE131DiscoveryPacket *m_pE131DiscoveryPacket;
-	TE131SynchronizationPacket *m_pE131SynchronizationPacket;
-	uint32_t m_DiscoveryIpAddress;
+	TE131DataPacket *m_pE131DataPacket{nullptr};
+	TE131DiscoveryPacket *m_pE131DiscoveryPacket{nullptr};
+	TE131SynchronizationPacket *m_pE131SynchronizationPacket{nullptr};
+	uint32_t m_DiscoveryIpAddress{0};
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
-	uint32_t m_nMaster;
+	uint32_t m_nMaster{DMX_MAX_VALUE};
 
-public:
-	static E131Controller* Get() {
-		return s_pThis;
-	}
-
-private:
 	static E131Controller *s_pThis;
 };
 

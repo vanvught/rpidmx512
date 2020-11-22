@@ -35,15 +35,14 @@
 
 PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength):
 	m_pBuffer(pBuffer),
-	m_nLength(nLength),
-	m_nSize(0)
+	m_nLength(nLength)
 {
 	DEBUG_ENTRY
 
 	assert(pFileName != nullptr);
 	assert(pBuffer != nullptr);
 
-	const uint32_t l = strlen(pFileName);
+	const auto l = strlen(pFileName);
 
 	if ((l + 2) <= m_nLength) {
 		*pBuffer = '#';
@@ -60,8 +59,8 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		return false;
 	}
 
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
+	auto *p = &m_pBuffer[m_nSize];
+	const auto nSize = m_nLength - m_nSize;
 
 	int i;
 
@@ -87,10 +86,10 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 		return false;
 	}
 
-	char *p = &m_pBuffer[m_nSize];
-	const uint32_t nSize = m_nLength - m_nSize;
+	auto *p = &m_pBuffer[m_nSize];
+	const auto nSize = m_nLength - m_nSize;
 
-	const int i = snprintf(p, nSize, "# %s #\n", pComment);
+	const auto i = snprintf(p, nSize, "# %s #\n", pComment);
 
 	if (i > static_cast<int>(nSize)) {
 		return false;

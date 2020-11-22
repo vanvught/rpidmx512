@@ -97,22 +97,22 @@ private:
 	bool HandleLedMessage();
 
 private:
-	uint32_t m_nServerIP;
+	uint32_t m_nServerIP{0};
 	uint16_t m_nPortOutgoing;
 	uint16_t m_nPortIncoming;
-	int32_t m_nHandle;
-	bool m_bPingDisable;
+	int32_t m_nHandle{-1};
+	bool m_bPingDisable{false};
 	uint32_t m_nPingDelayMillis;
-	bool m_bPingSent;
-	bool m_bPongReceived;
+	bool m_bPingSent{false};
+	bool m_bPongReceived{false};
 	char *m_pBuffer;
-	uint16_t m_nBytesReceived;
-	uint32_t m_nCurrenMillis;
-	uint32_t m_nPreviousMillis;
-	uint32_t m_nPingTimeMillis;
+	uint16_t m_nBytesReceived{0};
+	uint32_t m_nCurrenMillis{0};
+	uint32_t m_nPreviousMillis{0};
+	uint32_t m_nPingTimeMillis{0};
 	char *m_pCmds;
 	char *m_pLeds;
-	OscClientLed *m_pOscClientLed;
+	OscClientLed *m_pOscClientLed{nullptr};
 };
 
 #endif /* OSCCLIENT_H_ */

@@ -27,7 +27,7 @@
 #define DISPLAYHANDLER_H_
 
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "showfile.h"
 #include "showfiledisplay.h"
@@ -37,11 +37,11 @@
 
 class DisplayHandler: public ShowFileDisplay {
 public:
-	DisplayHandler(void) {}
-	~DisplayHandler(void) {}
+	DisplayHandler() {}
+	~DisplayHandler() {}
 
 	void ShowFileName(const char *pFileName, uint8_t nShow) {
-		assert (pFileName !=0 );
+		assert(pFileName != nullptr);
 
 		if (pFileName[0] != 0) {
 			Display::Get()->TextStatus(pFileName, nShow);
@@ -50,7 +50,7 @@ public:
 		}
 	}
 
-	void ShowShowFileStatus(void) {
+	void ShowShowFileStatus() {
 		Display::Get()->SetCursorPos(0, 6);
 
 		switch (ShowFile::Get()->GetStatus()) {

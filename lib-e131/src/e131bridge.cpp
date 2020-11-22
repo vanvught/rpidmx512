@@ -48,19 +48,7 @@ static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 19 };
 
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
-E131Bridge::E131Bridge() :
-	m_nHandle(-1),
-	m_pLightSet(nullptr),
-	m_bDirectUpdate(false),
-	m_bEnableDataIndicator(true),
-	m_nCurrentPacketMillis(0),
-	m_nPreviousPacketMillis(0),
-	m_pE131DmxIn(nullptr),
-	m_pE131DataPacket(nullptr),
-	m_pE131DiscoveryPacket(nullptr),
-	m_DiscoveryIpAddress(0),
-	m_pE131Sync(nullptr)
-{
+E131Bridge::E131Bridge() {
 	assert(Hardware::Get() != nullptr);
 	assert(Network::Get() != nullptr);
 	assert(LedBlink::Get() != nullptr);

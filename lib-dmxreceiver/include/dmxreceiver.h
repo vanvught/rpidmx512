@@ -51,10 +51,10 @@ private:
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nLength);
 
 private:
-	LightSet *m_pLightSet;
-	bool m_IsActive;
+	LightSet *m_pLightSet{nullptr};
+	bool m_IsActive{false};
 	alignas(uint32_t) uint8_t m_Data[DMX_DATA_BUFFER_SIZE]; // With DMX Start Code
-	uint16_t m_nLength;
+	uint16_t m_nLength{0};
 };
 
 #endif /* DMXCONTROLLER_H_ */

@@ -75,33 +75,33 @@ public:
 
 	bool Initialize ();
 
-	TWS28XXType GetLEDType() {
+	TWS28XXType GetLEDType() const {
 		return m_tLEDType;
 	}
 
-	TRGBMapping GetRgbMapping() {
+	TRGBMapping GetRgbMapping() const {
 		return m_tRGBMapping;
 	}
 
-	uint8_t GetLowCode() {
+	uint8_t GetLowCode() const {
 		return m_nLowCode;
 	}
 
-	uint8_t GetHighCode() {
+	uint8_t GetHighCode() const {
 		return m_nHighCode;
 	}
 
-	uint16_t GetLEDCount() {
+	uint16_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
-	uint32_t GetClockSpeedHz() {
+	uint32_t GetClockSpeedHz() const {
 		return m_nClockSpeedHz;
 	}
 
 	void SetGlobalBrightness(uint8_t nGlobalBrightness);
 
-	uint8_t GetGlobalBrightness() {
+	uint8_t GetGlobalBrightness() const {
 		return m_nGlobalBrightness;
 	}
 
@@ -111,7 +111,7 @@ public:
 	void Update();
 	void Blackout();
 
-	bool IsUpdating() {
+	bool IsUpdating() const {
 		return false;
 	}
 
@@ -129,15 +129,14 @@ protected:
 	TWS28XXType m_tLEDType;
 	uint16_t m_nLedCount;
 	TRGBMapping m_tRGBMapping;
-	bool m_bIsRTZProtocol;
 	uint32_t m_nClockSpeedHz;
 	uint32_t m_nBufSize;
-	uint8_t m_nGlobalBrightness;
 	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;
-
-	alignas(uintptr_t) uint8_t *m_pBuffer;
-	alignas(uintptr_t) uint8_t *m_pBlackoutBuffer;
+	bool m_bIsRTZProtocol{false};
+	uint8_t m_nGlobalBrightness{0xFF};
+	uint8_t *m_pBuffer{nullptr};
+	uint8_t *m_pBlackoutBuffer{nullptr};
 };
 
 #endif /* WS28XX_H_ */

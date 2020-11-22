@@ -68,17 +68,17 @@ public:
 	void SetProtocolHandler(ShowFileProtocolHandler *pShowFileProtocolHandler) {
 		m_pShowFileProtocolHandler = pShowFileProtocolHandler;
 	}
-	ShowFileProtocolHandler *GetProtocolHandler() {
+	ShowFileProtocolHandler *GetProtocolHandler() const {
 		return m_pShowFileProtocolHandler;
 	}
 
 	void SetShowFile(uint8_t nShowFileNumber);
 
-	const char *GetShowFileName() {
+	const char *GetShowFileName() const {
 		return static_cast<const char *>(m_aShowFileName);
 	}
 
-	uint8_t GetShowFile() {
+	uint8_t GetShowFile() const {
 		return m_nShowFileNumber;
 	}
 
@@ -87,7 +87,7 @@ public:
 	void DoLoop(bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
 	}
-	bool GetDoLoop() {
+	bool GetDoLoop() const {
 		return m_bDoLoop;
 	}
 
@@ -99,7 +99,7 @@ public:
 		}
 	}
 
-	enum ShowFileStatus GetStatus() {
+	enum ShowFileStatus GetStatus() const {
 		return m_tShowFileStatus;
 	}
 
@@ -108,7 +108,7 @@ public:
 	}
 
 	void EnableTFTP(bool bEnableTFTP);
-	bool IsTFTPEnabled() {
+	bool IsTFTPEnabled() const 	{
 		return m_bEnableTFTP;
 	}
 

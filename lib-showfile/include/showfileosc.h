@@ -73,10 +73,10 @@ private:
 private:
 	uint16_t m_nPortIncoming = osc::port::DEFAULT_INCOMING;
 	uint16_t m_nPortOutgoing = osc::port::DEFAULT_OUTGOING;
-	int32_t m_nHandle = -1;
-	uint32_t m_nRemoteIp = 0;
-	uint16_t m_nRemotePort = 0;
-	char *m_pBuffer = nullptr;
+	int32_t m_nHandle{-1};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
+	char *m_pBuffer{nullptr};
 	int32_t m_aFileIndex[ShowFileOSCMax::FILES_ENTRIES];
 
 	static ShowFileOSC *s_pThis;

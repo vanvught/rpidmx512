@@ -27,7 +27,7 @@
 #define H3_OPI_ZERO_H_
 
 #if !defined(ORANGE_PI)
- #error This file should not be included
+# error This file should not be included
 #endif
 
 #include "h3_gpio.h"

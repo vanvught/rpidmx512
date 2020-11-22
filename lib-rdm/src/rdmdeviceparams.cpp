@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 

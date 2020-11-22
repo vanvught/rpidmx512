@@ -32,18 +32,18 @@
 #include "oscstring.h"
 
 OscSimpleMessage::OscSimpleMessage(void *pData, unsigned nLength) : m_pOscMessage(reinterpret_cast<uint8_t *>(pData)), m_nLength(nLength) {
-	int result = OSCString::Validate(m_pOscMessage, m_nLength);
+	auto nResult = OSCString::Validate(m_pOscMessage, m_nLength);
 
-	if (result < 0) {
+	if (nResult < 0) {
 		return;
 	}
 
-	m_pArg = &m_pOscMessage[result];
-	uint32_t nDataOffset = static_cast<uint32_t>(result);
+	m_pArg = &m_pOscMessage[nResult];
+	auto nDataOffset = static_cast<uint32_t>(nResult);
 
-	result = OSCString::Validate(m_pArg, m_nLength - static_cast<unsigned>(result));
+	nResult = OSCString::Validate(m_pArg, m_nLength - static_cast<unsigned>(nResult));
 
-	if ((result < 0) || (m_pArg[0] != ',')) {
+	if ((nResult < 0) || (m_pArg[0] != ',')) {
 		return;
 	}
 
@@ -55,7 +55,7 @@ OscSimpleMessage::OscSimpleMessage(void *pData, unsigned nLength) : m_pOscMessag
 	m_pArg++; // Skip ','
 	m_nArgc = strlen(reinterpret_cast<const char *>(m_pArg));
 
-	nDataOffset += static_cast<uint32_t>(result);
+	nDataOffset += static_cast<uint32_t>(nResult);
 
 	m_pOscMessageData = &m_pOscMessage[nDataOffset];
 	m_nOscMessageDataLength = m_nLength - nDataOffset;

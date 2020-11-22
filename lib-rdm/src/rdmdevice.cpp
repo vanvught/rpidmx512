@@ -54,12 +54,7 @@
  static constexpr char DEVICE_LABEL[] = "RDM Device";
 #endif
 
-RDMDevice::RDMDevice():
-	m_IsInit(false),
-	m_nDeviceRootLabelLength(0),
-	m_nCheckSum(0),
-	m_pRDMDeviceStore(nullptr)
-{
+RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
 	const uint8_t nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));

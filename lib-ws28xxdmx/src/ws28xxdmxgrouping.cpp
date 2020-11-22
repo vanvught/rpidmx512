@@ -36,10 +36,8 @@
 
 #include "debug.h"
 
-WS28xxDmxGrouping::WS28xxDmxGrouping():
-	m_pDmxData(nullptr),
-	m_nLEDGroupCount(0),
-	m_nGroups(0)
+WS28xxDmxGrouping::WS28xxDmxGrouping()
+	
 {
 	UpdateMembers();
 }

@@ -106,8 +106,8 @@ void TCNet::Stop() {
 }
 
 void TCNet::HandlePort60000Incoming() {
-	const struct TTCNetPacket *packet = &(m_TTCNet.TCNetPacket);
-	const TTCNetMessageType type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
+	const auto packet = &(m_TTCNet.TCNetPacket);
+	const auto type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
 
 	DEBUG_PRINTF("MessageType = %d", static_cast<int>(type));
 
@@ -178,6 +178,11 @@ void TCNet::HandlePort60002Incoming() {
 
 void TCNet::HandlePortUnicastIncoming() {
 	DEBUG_ENTRY
+#ifndef NDEBUG
+	const auto packet = &(m_TTCNet.TCNetPacket);
+	const auto type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
+#endif
+	DEBUG_PRINTF("MessageType = %d", static_cast<int>(type));
 
 	DEBUG_EXIT
 }
@@ -191,16 +196,8 @@ void TCNet::HandleOptInOutgoing() {
 }
 
 void TCNet::Run() {
-	uint8_t *packet = reinterpret_cast<uint8_t*>(&m_TTCNet.TCNetPacket);
+	auto packet = reinterpret_cast<uint8_t*>(&m_TTCNet.TCNetPacket);
 	uint16_t nForeignPort;
-
-#if defined(USE_PORT_UNICAST)
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[3], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
-
-	if (m_TTCNet.BytesReceived != 0) {
-		HandlePortUnicastIncoming();
-	}
-#endif
 
 	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[1], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
 
@@ -219,6 +216,14 @@ void TCNet::Run() {
 
 	if (m_TTCNet.BytesReceived != 0) {
 		HandlePort60002Incoming();
+	}
+#endif
+
+#if defined(USE_PORT_UNICAST)
+	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[3], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+
+	if (m_TTCNet.BytesReceived != 0) {
+		HandlePortUnicastIncoming();
 	}
 #endif
 
@@ -261,7 +266,7 @@ char TCNet::GetLayerName(TCNetLayer tLayer) {
 	case TCNetLayer::LAYER_2:
 	case TCNetLayer::LAYER_3:
 	case TCNetLayer::LAYER_4:
-		return static_cast<char>(tLayer) +  '1';
+		return static_cast<char>(tLayer) + '1';
 		break;
 	case TCNetLayer::LAYER_A:
 		return 'A';
@@ -310,7 +315,6 @@ TCNetLayer TCNet::GetLayer(char nChar) {
 }
 
 void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
-
 	switch (tType) {
 	case TCNET_TIMECODE_TYPE_FILM:
 		m_fTypeDivider = 1000.0F / 24;

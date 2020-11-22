@@ -92,7 +92,7 @@ public:
 
 private:
 	RDMSubDevice **m_pRDMSubDevice;
-	uint16_t m_nCount;
+	uint16_t m_nCount{0};
 
 	static RDMSubDevices *s_pThis;
 };

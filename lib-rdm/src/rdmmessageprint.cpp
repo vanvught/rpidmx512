@@ -1,9 +1,8 @@
 /**
  * @file rdmmessageprint.cpp
  *
- *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,11 +33,11 @@
 #include "rdm_e120.h"
 
 void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
-	const struct TRdmMessage *p = reinterpret_cast<const struct TRdmMessage*>(pRdmDataNoSc);
+	const auto *pData = reinterpret_cast<const struct TRdmMessage*>(pRdmDataNoSc);
 
 	uint8_t dummy[512];
 	dummy[0] = E120_SC_RDM;
-	memcpy(&dummy[1], p, p->message_length);
+	memcpy(&dummy[1], pData, pData->message_length);
 
 	Print(dummy);
 }
@@ -49,7 +48,7 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 		return;
 	}
 
-	const struct TRdmMessage *pRdmMessage = reinterpret_cast<const struct TRdmMessage*>(pRdmData);
+	const auto *pRdmMessage = reinterpret_cast<const struct TRdmMessage*>(pRdmData);
 
 	if (pRdmData[0] == E120_SC_RDM) {
 		const uint8_t *pSrcUid = pRdmMessage->source_uid;

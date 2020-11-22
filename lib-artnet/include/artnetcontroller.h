@@ -110,19 +110,19 @@ private:
 
 private:
 	struct TArtNetController m_tArtNetController;
-	bool m_bSynchronization;
-	bool m_bUnicast;
-	int32_t m_nHandle;
+	bool m_bSynchronization{true};
+	bool m_bUnicast{true};
+	int32_t m_nHandle{-1};
 	struct TArtNetPacket *m_pArtNetPacket;
 	struct TArtPoll m_ArtNetPoll;
 	struct TArtDmx *m_pArtDmx;
 	struct TArtSync *m_pArtSync;
-	ArtNetTrigger *m_pArtNetTrigger; // Trigger handler
-	uint32_t m_nLastPollMillis;
-	bool m_bDoTableCleanup;
-	bool m_bDmxHandled;
-	uint32_t m_nActiveUniverses;
-	uint32_t m_nMaster;
+	ArtNetTrigger *m_pArtNetTrigger{nullptr}; // Trigger handler
+	uint32_t m_nLastPollMillis{0};
+	bool m_bDoTableCleanup{true};
+	bool m_bDmxHandled{false};
+	uint32_t m_nActiveUniverses{0};
+	uint32_t m_nMaster{DMX_MAX_VALUE};
 
 public:
 	static ArtNetController *Get() {

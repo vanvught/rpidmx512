@@ -107,11 +107,8 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 }
 
 void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	DEBUG_ENTRY
-
 	if (m_pArtNetParamsStore == nullptr) {
 		nSize = 0;
-		DEBUG_EXIT
 		return;
 	}
 

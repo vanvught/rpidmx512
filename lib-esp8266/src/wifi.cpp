@@ -38,7 +38,7 @@
 #include "wificonst.h"
 
 static 	_wifi_mode opmode = WIFI_OFF;
-static const char *ssid = NULL;
+static const char *ssid = nullptr;
 
 bool wifi(struct ip_info *info) {
 	uint8_t mac_address[6];
@@ -98,7 +98,7 @@ bool wifi(struct ip_info *info) {
 		printf(" Gateway     : " IPSTR "\n", IP2STR(ip_config.gw.addr));
 
 		if (opmode == WIFI_STA) {
-			const _wifi_station_status status = wifi_station_get_connect_status();
+			const auto status = wifi_station_get_connect_status();
 			printf(" Status : %s\n", wifi_station_status(status));
 
 			if (status != WIFI_STATION_GOT_IP) {
@@ -130,6 +130,6 @@ const char *wifi_get_ssid(void) {
 	if (opmode == WIFI_STA ||opmode == WIFI_STA) {
 		return ssid;
 	} else {
-		return NULL;
+		return nullptr;
 	}
 }

@@ -25,10 +25,6 @@
  * https://gpsd.gitlab.io/gpsd/NMEA.html
  */
 
-#ifdef NDEBUG
-#undef NDEBUG  // FIXME Remove #undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>

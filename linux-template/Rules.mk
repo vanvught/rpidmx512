@@ -33,7 +33,6 @@ LIBS+=network properties hal debug
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
-		LIBS+=bob
 		BCM2835 = ./../lib-bcm2835_raspbian
 		ifneq "$(wildcard $(BCM2835) )" ""
 			LIBS+=bcm2835_raspbian
@@ -48,7 +47,7 @@ ifeq ($(findstring displayudf,$(LIBS)),displayudf)
 endif
 
 # The variable for the firmware include directories
-INCDIRS=$(wildcard ./include) $(wildcard ./*/include)
+INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 ifeq ($(findstring displayudf,$(LIBS)),displayudf)

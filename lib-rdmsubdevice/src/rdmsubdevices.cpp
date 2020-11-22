@@ -35,7 +35,7 @@
 
 RDMSubDevices *RDMSubDevices::s_pThis = nullptr;
 
-RDMSubDevices::RDMSubDevices() : m_nCount(0) {
+RDMSubDevices::RDMSubDevices()  {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,13 @@
 
 class ArtNet4Handler {
 public:
-	virtual ~ArtNet4Handler();
+	virtual ~ArtNet4Handler() {
+	}
 
 	virtual void SetPort(uint8_t nPortId, TArtNetPortDir dir)=0;
 	virtual void HandleAddress(uint8_t nCommand)=0;
 	virtual uint8_t GetStatus(uint8_t nPortId)=0;
 	virtual bool IsStatusChanged()=0;
-
-private:
 };
 
 #endif /* ARTNET4HANDLER_H_ */

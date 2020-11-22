@@ -35,9 +35,9 @@
 
 class ShowFileProtocolE131: public ShowFileProtocolHandler {
 public:
-	ShowFileProtocolE131(void) {
+	ShowFileProtocolE131() {
 	}
-	~ShowFileProtocolE131(void) {
+	~ShowFileProtocolE131() {
 		m_E131Controller.Stop();
 	}
 
@@ -45,11 +45,11 @@ public:
 		m_E131Controller.SetSynchronizationAddress(SynchronizationAddress);
 	}
 
-	void Start(void) {
+	void Start() {
 		m_E131Controller.Start();
 	}
 
-	void Stop(void) {
+	void Stop() {
 		m_E131Controller.Stop();
 	}
 
@@ -57,11 +57,11 @@ public:
 		m_E131Controller.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
 
-	void DmxSync(void) {
+	void DmxSync() {
 		m_E131Controller.HandleSync();
 	}
 
-	void DmxBlackout(void) {
+	void DmxBlackout() {
 		m_E131Controller.HandleBlackout();
 	}
 
@@ -71,15 +71,15 @@ public:
 
 	void DoRunCleanupProcess(__attribute__((unused)) bool bDoRun) {}
 
-	void Run(void) {
+	void Run() {
 		m_E131Controller.Run();
 	}
 
-	bool IsSyncDisabled(void) {
+	bool IsSyncDisabled() {
 		return (m_E131Controller.GetSynchronizationAddress() == 0);
 	}
 
-	void Print(void) {
+	void Print() {
 		puts("ShowFileProtocolE131");
 		m_E131Controller.Print();
 	}

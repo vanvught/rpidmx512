@@ -161,7 +161,6 @@ void GPSParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	Builder(nullptr, pBuffer, nLength, nSize);
 
 	DEBUG_EXIT
-	return;
 }
 
 void GPSParams::staticCallbackFunction(void *p, const char *s) {

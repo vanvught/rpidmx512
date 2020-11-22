@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -42,16 +42,8 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-PCA9685DmxServo::PCA9685DmxServo():
-	m_nDmxStartAddress(1),
-	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
-	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
-	m_nBoardInstances(1),
-	m_nLeftUs(SERVO_LEFT_DEFAULT_US),
-	m_nRightUs(SERVO_RIGHT_DEFAULT_US),
-	m_bIsStarted(false),
-	m_pServo(nullptr),
-	m_pDmxData(nullptr)
+PCA9685DmxServo::PCA9685DmxServo()
+	
 {
 }
 

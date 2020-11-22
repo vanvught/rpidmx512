@@ -74,8 +74,8 @@ public:
 	}
 
 private:
-	RDMSensor **m_pRDMSensor;
-	uint8_t m_nCount;
+	RDMSensor **m_pRDMSensor{nullptr};
+	uint8_t m_nCount{0};
 
 	static RDMSensors *s_pThis;
 };

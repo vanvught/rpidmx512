@@ -52,20 +52,10 @@ static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LEN
 }  // namespace size
 }  // namespace buffer
 
-OscClient::OscClient():
-	m_nServerIP(0),
+OscClient::OscClient() :
 	m_nPortOutgoing(OscClientDefault::PORT_OUTGOING),
 	m_nPortIncoming(OscClientDefault::PORT_INCOMING),
-	m_nHandle(-1),
-	m_bPingDisable(false),
-	m_nPingDelayMillis(OscClientDefault::PING_DELAY_SECONDS * 1000),
-	m_bPingSent(false),
-	m_bPongReceived(false),
-	m_nBytesReceived(0),
-	m_nCurrenMillis(0),
-	m_nPreviousMillis(0),
-	m_nPingTimeMillis(0),
-	m_pOscClientLed(nullptr)
+	m_nPingDelayMillis(OscClientDefault::PING_DELAY_SECONDS * 1000)
 {
 	m_pBuffer = new char[buffer::size::PATH];
 	assert(m_pBuffer != nullptr);

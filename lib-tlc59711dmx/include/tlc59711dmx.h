@@ -95,17 +95,17 @@ private:
 	void UpdateMembers();
 
 private:
-	uint16_t m_nDmxStartAddress;
+	uint16_t m_nDmxStartAddress{1};
 	uint16_t m_nDmxFootprint;
-	uint8_t m_nBoardInstances;
-	bool m_bIsStarted;
-	bool m_bBlackout;
-	TLC59711 *m_pTLC59711;
-	uint32_t m_nSpiSpeedHz;
-	TTLC59711Type m_LEDType;
+	uint8_t m_nBoardInstances{1};
+	bool m_bIsStarted{false};
+	bool m_bBlackout{false};
+	TLC59711 *m_pTLC59711{nullptr};
+	uint32_t m_nSpiSpeedHz{0};
+	TTLC59711Type m_LEDType{TTLC59711_TYPE_RGB};
 	uint8_t m_nLEDCount;
 
-	TLC59711DmxStore *m_pTLC59711DmxStore;
+	TLC59711DmxStore *m_pTLC59711DmxStore{nullptr};
 };
 
 #endif /* TLC59711DMX_H_ */

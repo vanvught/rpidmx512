@@ -111,18 +111,18 @@ public:
 	void SetMergeMode(uint8_t nPortIndex, E131Merge tE131Merge);
 	E131Merge GetMergeMode(uint8_t nPortIndex) const;
 
-	uint8_t GetActiveOutputPorts() {
+	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
-	uint8_t GetActiveInputPorts() {
+	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
 	void SetDirectUpdate(bool bDirectUpdate) {
 		m_bDirectUpdate = bDirectUpdate;
 	}
-	bool GetDirectUpdate() {
+	bool GetDirectUpdate() const {
 		return m_bDirectUpdate;
 	}
 
@@ -133,28 +133,28 @@ public:
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
 		m_State.bDisableNetworkDataLossTimeout = bDisable;
 	}
-	bool GetDisableNetworkDataLossTimeout() {
+	bool GetDisableNetworkDataLossTimeout() const {
 		return m_State.bDisableNetworkDataLossTimeout;
 	}
 
 	void SetDisableMergeTimeout(bool bDisable = true) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-	bool GetDisableMergeTimeout() {
+	bool GetDisableMergeTimeout() const {
 		return m_State.bDisableMergeTimeout;
 	}
 
 	void SetEnableDataIndicator(bool bEnable = true) {
 		m_bEnableDataIndicator = bEnable;
 	}
-	bool GetEnableDataIndicator() {
+	bool GetEnableDataIndicator() const {
 		return m_bEnableDataIndicator;
 	}
 
 	void SetDisableSynchronize(bool bDisableSynchronize = false) {
 		m_State.bDisableSynchronize = bDisableSynchronize;
 	}
-	bool GetDisableSynchronize() {
+	bool GetDisableSynchronize() const {
 		return m_State.bDisableSynchronize;
 	}
 
@@ -166,12 +166,12 @@ public:
 		m_pE131Sync = pE131Sync;
 	}
 
-	const uint8_t *GetCid() {
+	const uint8_t *GetCid() const {
 		return m_Cid;
 	}
 
 	void SetSourceName(const char *pSourceName);
-	const char *GetSourceName() {
+	const char *GetSourceName() const {
 		return m_SourceName;
 	}
 
@@ -181,7 +181,7 @@ public:
 			m_InputPort[nPortIndex].nPriority = nPriority;
 		}
 	}
-	uint8_t GetPriority(uint8_t nPortIndex = 0) {
+	uint8_t GetPriority(uint8_t nPortIndex = 0) const {
 		assert(nPortIndex < E131_MAX_UARTS);
 		return m_InputPort[nPortIndex].nPriority;
 	}
@@ -194,6 +194,10 @@ public:
 	void Run();
 
 	void Print();
+
+	static E131Bridge* Get() {
+		return s_pThis;
+	}
 
 private:
 	bool IsValidRoot();
@@ -222,15 +226,15 @@ private:
 	void SendDiscoveryPacket();
 
 private:
-	int32_t m_nHandle;
+	int32_t m_nHandle{-1};
 
-	LightSet *m_pLightSet;
+	LightSet *m_pLightSet{nullptr};
 
-	bool m_bDirectUpdate;
-	bool m_bEnableDataIndicator;
+	bool m_bDirectUpdate{false};
+	bool m_bEnableDataIndicator{true};
 
-	uint32_t m_nCurrentPacketMillis;
-	uint32_t m_nPreviousPacketMillis;
+	uint32_t m_nCurrentPacketMillis{0};
+	uint32_t m_nPreviousPacketMillis{0};
 
 	struct TE131BridgeState m_State;
 	struct TE131OutputPort m_OutputPort[E131_MAX_PORTS];
@@ -238,22 +242,16 @@ private:
 	struct TE131 m_E131;
 
 	// Input
-	E131Dmx *m_pE131DmxIn;
-	TE131DataPacket *m_pE131DataPacket;
-	TE131DiscoveryPacket *m_pE131DiscoveryPacket;
-	uint32_t m_DiscoveryIpAddress;
+	E131Dmx *m_pE131DmxIn{nullptr};
+	TE131DataPacket *m_pE131DataPacket{nullptr};
+	TE131DiscoveryPacket *m_pE131DiscoveryPacket{nullptr};
+	uint32_t m_DiscoveryIpAddress{0};
 	uint8_t m_Cid[E131_CID_LENGTH];
 	char m_SourceName[E131_SOURCE_NAME_LENGTH];
 
 	// Synchronization handler
-	E131Sync *m_pE131Sync;
+	E131Sync *m_pE131Sync{nullptr};
 
-public:
-	static E131Bridge* Get() {
-		return s_pThis;
-	}
-
-private:
 	static E131Bridge *s_pThis;
 };
 

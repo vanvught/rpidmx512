@@ -90,7 +90,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	assert(nLedIndex < m_nLedCount);
 
 	uint32_t j = 0;
-	uint32_t k = static_cast<uint32_t>(nLedIndex * SINGLE_RGB);
+	auto k = static_cast<uint32_t>(nLedIndex * SINGLE_RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		switch (m_tRGBMapping) {
@@ -225,7 +225,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	assert(m_tWS28xxType == SK6812W);
 
 	uint32_t j = 0;
-	uint32_t k = static_cast<uint32_t>(nLedIndex * SINGLE_RGBW);
+	auto	 k = static_cast<uint32_t>(nLedIndex * SINGLE_RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

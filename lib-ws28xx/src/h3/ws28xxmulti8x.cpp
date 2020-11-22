@@ -34,13 +34,13 @@
 
 #include "debug.h"
 
-void WS28xxMulti::SetupBuffers8x(void) {
+void WS28xxMulti::SetupBuffers8x() {
 	DEBUG_ENTRY
 
 	uint32_t nSize;
 
 	m_pBuffer8x = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
-	assert(m_pBuffer8x != 0);
+	assert(m_pBuffer8x != nullptr);
 
 	const uint32_t nSizeHalf = nSize / 2;
 	assert(m_nBufSize <= nSizeHalf);

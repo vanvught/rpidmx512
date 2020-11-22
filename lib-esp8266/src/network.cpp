@@ -27,7 +27,7 @@
 
 #include "network.h"
 
-Network *Network::s_pThis = 0;
+Network *Network::s_pThis = nullptr;
 
 Network::Network() {
 	s_pThis = this;

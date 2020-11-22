@@ -27,14 +27,11 @@
 
 #include "i2cdetect.h"
 
+#include "hal_i2c.h"
+
 #if defined(H3)
-# include "h3/hal_api.h"
-# include "h3/hal_i2c.h"
 # include "h3_uart0_debug.h"
 # define printf uart0_printf
-#else
-# include "rpi/hal_api.h"
-# include "rpi/hal_i2c.h"
 #endif
 
 inline static bool i2c_is_connected(uint8_t address) {

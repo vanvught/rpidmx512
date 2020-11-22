@@ -50,6 +50,8 @@ struct TWS28xxDmxParams {
 	uint8_t nHighCode;
 };
 
+static_assert(sizeof(struct TWS28xxDmxParams) <= 64, "struct TWS28xxDmxParams is too large");
+
 struct WS28xxDmxParamsMask {
 	static constexpr auto LED_TYPE = (1U << 0);
 	static constexpr auto LED_COUNT = (1U << 1);

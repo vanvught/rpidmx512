@@ -47,16 +47,8 @@ static uint16_t s_ActiveUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES] __attribute_
 
 ArtNetController *ArtNetController::s_pThis = nullptr;
 
-ArtNetController::ArtNetController():
-	m_bSynchronization(true),
-	m_bUnicast(true),
-	m_nHandle(-1),
-	m_pArtNetTrigger(nullptr),
-	m_nLastPollMillis(0),
-	m_bDoTableCleanup(true),
-	m_bDmxHandled(false),
-	m_nActiveUniverses(0),
-	m_nMaster(DMX_MAX_VALUE)
+ArtNetController::ArtNetController()
+	
 {
 	DEBUG_ENTRY
 
@@ -156,7 +148,7 @@ void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData,
 	}
 
 	uint32_t nCount = 0;
-	struct TArtNetPollTableUniverses *IpAddresses = const_cast<struct TArtNetPollTableUniverses*>(GetIpAddress(nUniverse));
+	auto IpAddresses = const_cast<struct TArtNetPollTableUniverses*>(GetIpAddress(nUniverse));
 
 	if (m_bUnicast) {
 		if (IpAddresses != nullptr) {
@@ -321,7 +313,7 @@ void ArtNetController::Run() {
 		return;
 	}
 
-	const TOpCodes OpCode = static_cast<TOpCodes>(((pArtPacket[9] << 8)) + pArtPacket[8]);
+	const auto OpCode = static_cast<TOpCodes>(((pArtPacket[9] << 8)) + pArtPacket[8]);
 
 	switch (OpCode) {
 	case OP_POLLREPLY:
@@ -348,7 +340,7 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 
 	int32_t nLow = 0;
 	int32_t nMid = 0;
-	int32_t nHigh = static_cast<int32_t>(m_nActiveUniverses);
+	auto nHigh = static_cast<int32_t>(m_nActiveUniverses);
 
 	if (m_nActiveUniverses == (sizeof(s_ActiveUniverses) / sizeof(s_ActiveUniverses[0]))) {
 		assert(0);
@@ -374,7 +366,7 @@ void ArtNetController::ActiveUniversesAdd(uint16_t nUniverse) {
 
 	if ((nHigh != -1) && (m_nActiveUniverses != static_cast<uint32_t>(nHigh))) {
 
-		uint16_t *p16 = reinterpret_cast<uint16_t*>(s_ActiveUniverses);
+		auto p16 = reinterpret_cast<uint16_t*>(s_ActiveUniverses);
 
 		assert(nLow >= 0);
 

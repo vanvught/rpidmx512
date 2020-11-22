@@ -42,18 +42,7 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-TLC59711Dmx::TLC59711Dmx():
-	m_nDmxStartAddress(1),
-	m_nDmxFootprint(TLC59711Channels::OUT),
-	m_nBoardInstances(1),
-	m_bIsStarted(false),
-	m_bBlackout(false),
-	m_pTLC59711(nullptr),
-	m_nSpiSpeedHz(0),
-	m_LEDType(TTLC59711_TYPE_RGB),
-	m_nLEDCount(TLC59711Channels::RGB),
-	m_pTLC59711DmxStore(nullptr)
-{
+TLC59711Dmx::TLC59711Dmx() : m_nDmxFootprint(TLC59711Channels::OUT), m_nLEDCount(TLC59711Channels::RGB) {
 	UpdateMembers();
 }
 

@@ -33,24 +33,24 @@
 
 class DisplayUdfNetworkHandler: public NetworkDisplay, public NtpClientDisplay {
 public:
-	DisplayUdfNetworkHandler(void) {
+	DisplayUdfNetworkHandler() {
 	}
-	~DisplayUdfNetworkHandler(void) {
+	~DisplayUdfNetworkHandler() {
 	}
 
-	void ShowIp(void) {
+	void ShowIp() {
 		DisplayUdf::Get()->ShowIpAddress();
 	}
 
-	void ShowNetMask(void) {
+	void ShowNetMask() {
 		DisplayUdf::Get()->ShowNetmask();
 	}
 
-	void ShowHostName(void) {
+	void ShowHostName() {
 		DisplayUdf::Get()->ShowHostName();
 	}
 
-	void ShowShutdown(void) {
+	void ShowShutdown() {
 		DisplayUdf::Get()->ShowShutdown();
 	}
 

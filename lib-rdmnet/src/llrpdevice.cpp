@@ -172,7 +172,7 @@ void LLRPDevice::HandleRdmCommand() {
 }
 
 void LLRPDevice::Run() {
-	uint8_t *packet = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
+	auto *packet = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
 	uint16_t nForeignPort;
 
 	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandleLLRP, packet, sizeof(m_tLLRP.LLRPPacket), &m_tLLRP.nIPAddressFrom, &nForeignPort) ;

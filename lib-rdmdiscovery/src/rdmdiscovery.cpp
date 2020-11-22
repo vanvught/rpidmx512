@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
-#include <stdio.h>
+# include <stdio.h>
 #endif
 
 #include "rdm.h"
@@ -92,7 +92,7 @@ void RDMDiscovery::Full() {
 
 	m_UnMute.Send(m_nPort);
 
-	const struct TRdmMessage *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+	const auto *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
 	if (pResponse != nullptr) {
 		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
@@ -243,10 +243,10 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 	m_Mute.SetDstUid(uid);
 	m_Mute.Send(m_nPort);
 
-	uint8_t *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+	auto *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
 	if (pResponse != nullptr) {
-		struct TRdmMessage *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
+		auto *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
 
 		if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
 			AddUid(uid);

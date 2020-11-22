@@ -26,16 +26,12 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 
 #include "rdmtod.h"
 
-#ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
-#endif
-
-RDMTod::RDMTod() : m_nEntries(0) {
+RDMTod::RDMTod()  {
 	m_pTable = new TRdmTod[TOD_TABLE_SIZE];
 
 	for (uint32_t i = 0 ; i < TOD_TABLE_SIZE; i++) {
@@ -123,7 +119,7 @@ bool RDMTod::Delete(const uint8_t *pUid) {
 }
 
 void RDMTod::Copy(uint8_t *pTable) {
-	const uint8_t *pSrc = reinterpret_cast<const uint8_t*>(m_pTable);
+	const auto *pSrc = reinterpret_cast<const uint8_t*>(m_pTable);
 	uint8_t *pDst = pTable;
 
 	for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {

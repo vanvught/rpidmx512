@@ -94,9 +94,9 @@ private:
 
 private:
 	TArtNetNodeEntry *m_pPollTable;
-	uint32_t m_nPollTableEntries;
+	uint32_t m_nPollTableEntries{0};
 	TArtNetPollTableUniverses *m_pTableUniverses;
-	uint32_t m_nTableUniversesEntries;
+	uint32_t m_nTableUniversesEntries{0};
 	TArtNetPollTableClean m_tTableClean;
 };
 

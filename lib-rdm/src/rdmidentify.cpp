@@ -33,9 +33,8 @@
 
 RDMIdentify *RDMIdentify::s_pThis = nullptr;
 
-RDMIdentify::RDMIdentify() :
-	m_bIsEnabled(false),
-	m_nMode(IDENTIFY_MODE_QUIET)
+RDMIdentify::RDMIdentify() 
+	
 {
 	assert(s_pThis == nullptr);
 	s_pThis = this;

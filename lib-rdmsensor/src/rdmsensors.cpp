@@ -36,7 +36,7 @@
 
 RDMSensors *RDMSensors::s_pThis = nullptr;
 
-RDMSensors::RDMSensors(): m_pRDMSensor(nullptr), m_nCount(0) {
+RDMSensors::RDMSensors() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);

@@ -106,31 +106,31 @@ private:
 	void UpdateMembers();
 
 protected:
-	TWS28XXType m_tLedType;
+	TWS28XXType m_tLedType{WS2812B};
 
-	TRGBMapping m_tRGBMapping;
-	uint8_t m_nLowCode;
-	uint8_t m_nHighCode;
+	TRGBMapping m_tRGBMapping{RGB_MAPPING_UNDEFINED};
+	uint8_t m_nLowCode{0};
+	uint8_t m_nHighCode{0};
 
-	uint16_t m_nLedCount;
-	uint16_t m_nDmxStartAddress;
+	uint16_t m_nLedCount{170};
+	uint16_t m_nDmxStartAddress{DMX_START_ADDRESS_DEFAULT};
 	uint16_t m_nDmxFootprint;
 
-	WS28xx* m_pLEDStripe;
-	bool m_bIsStarted;
-	bool m_bBlackout;
+	WS28xx* m_pLEDStripe{nullptr};
+	bool m_bIsStarted{false};
+	bool m_bBlackout{false};
 
-	WS28xxDmxStore *m_pWS28xxDmxStore;
+	WS28xxDmxStore *m_pWS28xxDmxStore{nullptr};
 
 private:
-	uint32_t m_nClockSpeedHz;
-	uint8_t m_nGlobalBrightness;
-	uint32_t m_nBeginIndexPortId1;
-	uint32_t m_nBeginIndexPortId2;
-	uint32_t m_nBeginIndexPortId3;
-	uint32_t m_nChannelsPerLed;
+	uint32_t m_nClockSpeedHz{0};
+	uint8_t m_nGlobalBrightness{0xFF};
+	uint32_t m_nBeginIndexPortId1{170};
+	uint32_t m_nBeginIndexPortId2{340};
+	uint32_t m_nBeginIndexPortId3{510};
+	uint32_t m_nChannelsPerLed{3};
 
-	uint32_t m_nPortIdLast;
+	uint32_t m_nPortIdLast{3};
 };
 
 #endif /* WS28XXDMX_H_ */

@@ -49,7 +49,7 @@ constexpr char bootcmd[] = "bootcmd=sf probe; sf read 48000000 180000 22000; boo
 int32_t Compressed::GetFileSize(const char *pFileName) {
 	FILE *pFile = fopen(pFileName, "r");
 
-	if (pFile == NULL) {
+	if (pFile == nullptr) {
 		DEBUG_EXIT
 		return -1;
 	}
@@ -66,7 +66,7 @@ int32_t Compressed::GetFileSize(const char *pFileName) {
 	return static_cast<int32_t>(nFileSize);
 }
 
-bool Compressed::IsSupported(void) {
+bool Compressed::IsSupported() {
 	const uint32_t nEraseSize = spi_flash_get_sector_size();
 	assert(nEraseSize != 0);
 
@@ -86,7 +86,7 @@ bool Compressed::IsSupported(void) {
 
 	DEBUG_PRINTF("offset %x", (pResult - reinterpret_cast<char*>(pFlashBuffer)));
 
-	if (pResult != 0) {
+	if (pResult != nullptr) {
 		debug_dump(pResult, 64);
 		DEBUG_PUTS(pResult);
 	} else {
@@ -95,12 +95,12 @@ bool Compressed::IsSupported(void) {
 
 	delete[] pFlashBuffer;
 
-	return (pResult != 0);
+	return (pResult != nullptr);
 }
 
 char *Compressed::Find(const char *pBuffer, uint32_t nBufferLength, const char *pFind, uint32_t nFindLength) {
-	assert(pBuffer != 0);
-	assert(pFind != 0);
+	assert(pBuffer != nullptr);
+	assert(pFind != nullptr);
 
 	char *pDst = const_cast<char*>(pBuffer);
 
@@ -128,7 +128,7 @@ char *Compressed::Find(const char *pBuffer, uint32_t nBufferLength, const char *
 		}
 	}
 
-	return 0;
+	return nullptr;
 }
 
 uint32_t Compressed::Check(const char *pFilename) {
@@ -148,7 +148,7 @@ uint32_t Compressed::Check(const char *pFilename) {
 
 	FILE *pFile = fopen(pFilename, "r");
 
-	if (pFile == NULL) {
+	if (pFile == nullptr) {
 		DEBUG_EXIT
 		return CHECK_CODE_CHECK_ERROR;
 	}

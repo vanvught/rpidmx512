@@ -52,8 +52,8 @@ private:
 	void Copy(struct TRdmMessage *pRdmMessage, uint32_t nIndex);
 
 private:
-	uint8_t m_nMessageCount;
-	bool m_IsNeverQueued;
+	uint8_t m_nMessageCount{0};
+	bool m_IsNeverQueued{true};
 
 	struct TRdmQueuedMessage *m_pQueue;
 };

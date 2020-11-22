@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG //TODO Remove
-#endif
-
 #include <cassert>
 #include <stdint.h>
 #include <stdio.h>

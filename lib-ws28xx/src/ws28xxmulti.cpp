@@ -24,7 +24,7 @@
  */
 
 #ifdef NDEBUG
-#undef NDEBUG
+# undef NDEBUG //TODO Remove
 #endif
 
 #include <stdint.h>
@@ -36,19 +36,7 @@
 
 static TWS28XXType s_NotSupported[] = {WS2801, APA102, P9813};	// SPI Clock based
 
-WS28xxMulti::WS28xxMulti():
-	m_tBoard(WS28XXMULTI_BOARD_4X),
-	m_tWS28xxType(WS2812B),
-	m_nLedCount(170),
-	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
-	m_nLowCode(0),
-	m_nHighCode(0),
-	m_nBufSize(0),
-	m_pBuffer4x(nullptr),
-	m_pBlackoutBuffer4x(nullptr),
-	m_pBuffer8x(nullptr),
-	m_pBlackoutBuffer8x(nullptr)
-{
+WS28xxMulti::WS28xxMulti() {
 	DEBUG_ENTRY
 
 	m_tBoard = (IsMCP23017() ? WS28XXMULTI_BOARD_4X : WS28XXMULTI_BOARD_8X);

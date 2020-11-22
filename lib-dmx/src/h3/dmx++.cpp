@@ -55,11 +55,11 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint8_t nPort) {
 const uint8_t *Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint8_t nPort, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
-	uint8_t *p = 0;
+	uint8_t *p = nullptr;
 	const uint32_t nMicros = h3_hs_timer_lo_us() + nTimeOut;
 
 	do {
-		if ((p = const_cast<uint8_t *>(rdm_get_available())) != 0) {
+		if ((p = const_cast<uint8_t *>(rdm_get_available())) != nullptr) {
 			return p;
 		}
 	} while (h3_hs_timer_lo_us() < nMicros);

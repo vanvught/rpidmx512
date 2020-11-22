@@ -43,6 +43,8 @@ struct TDmxSerialParams {
 	uint8_t nI2cSpeedMode;
 } __attribute__((packed));
 
+static_assert(sizeof(struct TDmxSerialParams) <= 32, "struct TDmxSerialParams is too large");
+
 struct DmxSerialParamsMask {
 	static constexpr auto TYPE = (1U << 0);
 	static constexpr auto BAUD = (1U << 1);

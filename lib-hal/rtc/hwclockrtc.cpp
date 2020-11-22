@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG //TODO Remove
-#endif
-
 #include <cassert>
 
 #include "hwclock.h"
@@ -116,6 +112,20 @@ void HwClock::RtcProbe() {
 		m_bIsConnected = true;
 		m_nType = DS3231;
 		m_nAddress = i2caddress::DS3231;
+
+		struct rtc_time tm;
+		RtcGet(&tm);
+
+		if ((tm.tm_hour > 24) || (tm.tm_year > _TIME_STAMP_YEAR_ - 1900)) {
+			tm.tm_hour = 0;
+			tm.tm_min = 0;
+			tm.tm_sec = 0;
+			tm.tm_mday = _TIME_STAMP_DAY_;
+			tm.tm_mon = _TIME_STAMP_MONTH_ - 1;
+			tm.tm_year = _TIME_STAMP_YEAR_ - 1900;
+
+			RtcSet(&tm);
+		}
 
 		DEBUG_EXIT
 		return;

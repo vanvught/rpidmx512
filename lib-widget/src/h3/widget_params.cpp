@@ -40,7 +40,7 @@ static struct _widget_params dmx_usb_pro_params __attribute__((aligned(4))) = {
 		WIDGET_DEFAULT_BREAK_TIME, WIDGET_DEFAULT_MAB_TIME,
 		WIDGET_DEFAULT_REFRESH_RATE };
 
-static WidgetStore *spWidgetStore = 0;
+static WidgetStore *spWidgetStore = nullptr;
 
 void widget_params_set_store(WidgetStore *pWidgetStore) {
 	spWidgetStore = pWidgetStore;
@@ -75,7 +75,7 @@ void widget_params_get(struct _widget_params *widget_params) {
 }
 
 void widget_params_set(const struct _widget_params *widget_params) {
-	assert(spWidgetStore != 0);
+	assert(spWidgetStore != nullptr);
 
 	if (widget_params->break_time != dmx_usb_pro_params.break_time) {
 		dmx_usb_pro_params.break_time = widget_params->break_time;

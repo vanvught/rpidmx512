@@ -21,10 +21,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-#undef NDEBUG // FIXME Remove #undef NDEBUG
-#endif
-
 #include <stdio.h>
 
 #include "gps.h"

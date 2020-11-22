@@ -28,8 +28,8 @@
 
 #include <stdint.h>
 
-typedef void (*start_fn_t)(void);
-extern void _init_core(void);
+typedef void (*start_fn_t)();
+extern void _init_core();
 
 #ifdef __cplusplus
 extern "C" {

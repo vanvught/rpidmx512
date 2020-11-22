@@ -64,15 +64,15 @@ private:
 	void Initialize();
 
 private:
-	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
-	uint8_t m_nI2cAddress;
-	uint8_t m_nBoardInstances;
-	uint16_t m_nLeftUs;
-	uint16_t m_nRightUs;
-	bool m_bIsStarted;
-	PCA9685Servo **m_pServo;
-	uint8_t *m_pDmxData;
+	uint16_t m_nDmxStartAddress{1};
+	uint16_t m_nDmxFootprint{PCA9685_PWM_CHANNELS};
+	uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
+	uint8_t m_nBoardInstances{1};
+	uint16_t m_nLeftUs{SERVO_LEFT_DEFAULT_US};
+	uint16_t m_nRightUs{SERVO_RIGHT_DEFAULT_US};
+	bool m_bIsStarted{false};
+	PCA9685Servo **m_pServo{nullptr};
+	uint8_t *m_pDmxData{nullptr};
 };
 
 #endif /* PWMDMXPCA9685SERVO_H_ */

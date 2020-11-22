@@ -66,6 +66,8 @@ struct TArtNetParams {
 };													///< Not packed!
 #endif
 
+static_assert(sizeof(struct TArtNetParams) <= 144, "struct TArtNetParams is too large");
+
 struct ArtnetParamsMaskMultiPortOptions {
 	static constexpr auto DESTINATION_IP_A = (1U << 0);
 	static constexpr auto DESTINATION_IP_B = (1U << 1);
@@ -190,7 +192,7 @@ private:
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_tArtNetParams.nSetList & nMask) == nMask;
 	}
-	bool isMaskMultiPortOptionsSet(uint16_t nMask) {
+	bool isMaskMultiPortOptionsSet(uint16_t nMask) const {
 		return (m_tArtNetParams.nMultiPortOptions & nMask) == nMask;
 	}
 

@@ -50,10 +50,7 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-ArtNetPollTable::ArtNetPollTable() :
-	m_nPollTableEntries(0),
-	m_nTableUniversesEntries(0)
-{
+ArtNetPollTable::ArtNetPollTable() {
 	m_pPollTable = new TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES];
 	assert(m_pPollTable != nullptr);
 
@@ -246,16 +243,16 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 	memcpy(ip.u8, ptArtPollReply->IPAddress, 4);
 
-	const uint32_t nIpSwap = __builtin_bswap32(ip.u32);
+	const auto nIpSwap = __builtin_bswap32(ip.u32);
 
 	int32_t i;
 	int32_t nLow = 0;
 	int32_t nMid;
-	int32_t nHigh = static_cast<int32_t>(m_nPollTableEntries);
+	auto nHigh = static_cast<int32_t>(m_nPollTableEntries);
 
 	while (nLow <= nHigh) {
 		nMid = nLow + ((nHigh - nLow) / 2);
-		const uint32_t nMidValue = __builtin_bswap32(m_pPollTable[nMid].IPAddress);
+		const auto nMidValue = __builtin_bswap32(m_pPollTable[nMid].IPAddress);
 
 		if (nMidValue < nIpSwap) {
 			nLow = nMid + 1;

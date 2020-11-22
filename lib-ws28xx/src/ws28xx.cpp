@@ -39,20 +39,16 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 	m_tLEDType(Type),
 	m_nLedCount(nLedCount),
 	m_tRGBMapping(tRGBMapping),
-	m_bIsRTZProtocol(false),
 	m_nClockSpeedHz(nClockSpeed),
-	m_nGlobalBrightness(0xFF),
 	m_nLowCode(nT0H),
-	m_nHighCode(nT1H),
-	m_pBuffer(0),
-	m_pBlackoutBuffer(0)
+	m_nHighCode(nT1H)
 {
 	assert(m_nLedCount != 0);
 
 	if ((m_tLEDType == SK6812W) || (m_tLEDType == APA102)) {
-		m_nBufSize = static_cast<uint32_t>(m_nLedCount * 4);
+		m_nBufSize = m_nLedCount * 4U;
 	} else {
-		m_nBufSize = static_cast<uint32_t>(m_nLedCount * 3);
+		m_nBufSize = m_nLedCount * 3U;
 	}
 
 	// TODO Update when new chip is added
@@ -127,21 +123,21 @@ WS28xx::WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping, ui
 }
 
 WS28xx::~WS28xx() {
-	if (m_pBlackoutBuffer != 0) {
+	if (m_pBlackoutBuffer != nullptr) {
 		delete [] m_pBlackoutBuffer;
-		m_pBlackoutBuffer = 0;
+		m_pBlackoutBuffer = nullptr;
 	}
 
-	if (m_pBuffer != 0) {
+	if (m_pBuffer != nullptr) {
 		delete [] m_pBuffer;
-		m_pBuffer = 0;
+		m_pBuffer = nullptr;
 	}
 }
 
 bool WS28xx::Initialize() {
-	assert(m_pBuffer == 0);
+	assert(m_pBuffer == nullptr);
 	m_pBuffer = new uint8_t[m_nBufSize];
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	if ((m_tLEDType == APA102) || (m_tLEDType == P9813)) {
 		memset(m_pBuffer, 0, 4);
@@ -159,9 +155,9 @@ bool WS28xx::Initialize() {
 		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : m_nLowCode, m_nBufSize);
 	}
 
-	assert(m_pBlackoutBuffer == 0);
+	assert(m_pBlackoutBuffer == nullptr);
 	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
-	assert(m_pBlackoutBuffer != 0);
+	assert(m_pBlackoutBuffer != nullptr);
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 

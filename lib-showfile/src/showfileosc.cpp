@@ -117,7 +117,7 @@ void ShowFileOSC::Stop() {
 }
 
 void ShowFileOSC::Run() {
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, MAX_BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, MAX_BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= length::PATH), 1)) {
 		return;
@@ -279,7 +279,7 @@ void ShowFileOSC::Run() {
 				return;
 			}
 
-			const uint32_t nIndex = static_cast<uint32_t>(Msg.GetFloat(0));
+			const auto nIndex = static_cast<uint32_t>(Msg.GetFloat(0));
 
 			DEBUG_PRINTF("Index %u", nIndex);
 
@@ -287,7 +287,7 @@ void ShowFileOSC::Run() {
 				return;
 			}
 
-			int32_t nShow = m_aFileIndex[nIndex];
+			auto nShow = m_aFileIndex[nIndex];
 
 			if (nShow < 0) {
 				return;
@@ -308,7 +308,7 @@ void ShowFileOSC::Run() {
 void ShowFileOSC::SendStatus() {
 	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
 
-	const ShowFileStatus tStatus = ShowFile::Get()->GetStatus();
+	const auto tStatus = ShowFile::Get()->GetStatus();
 	assert(tStatus != ShowFileStatus::UNDEFINED);
 
 	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", ShowFileConst::STATUS[static_cast<int>(tStatus)]);

@@ -40,7 +40,7 @@
 
 #include "debug.h"
 
-DmxMulti::DmxMulti(void) {
+DmxMulti::DmxMulti() {
 	DEBUG_ENTRY
 
 	dmx_multi_init();
@@ -58,7 +58,7 @@ void DmxMulti::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirecti
 
 void DmxMulti::RdmSendRaw(uint8_t nPort, const uint8_t* pRdmData, uint16_t nLength) {
 	assert(nPort < DMX_MAX_OUT);
-	assert(pRdmData != 0);
+	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
 	H3_UART_TypeDef *p = _get_uart(_port_to_uart(nPort));
@@ -90,11 +90,11 @@ const uint8_t *DmxMulti::RdmReceive(uint8_t nPort) {
 const uint8_t *DmxMulti::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	assert(nPort < DMX_MAX_OUT);
 
-	uint8_t *p = 0;
+	uint8_t *p = nullptr;
 	const uint32_t nMicros = h3_hs_timer_lo_us() + nTimeOut;
 
 	do {
-		if ((p = const_cast<uint8_t*>(dmx_multi_rdm_get_available(_port_to_uart(nPort)))) != 0) {
+		if ((p = const_cast<uint8_t*>(dmx_multi_rdm_get_available(_port_to_uart(nPort)))) != nullptr) {
 			return p;
 		}
 	} while (h3_hs_timer_lo_us() < nMicros);

@@ -42,7 +42,7 @@
 
 #define DATA_MASK	((1U << PULSE) | (1U << ENABLE) | (1U << OUT3) | (1U << OUT2) | (1U << OUT1) | (1U << OUT0))
 
-void WS28xxMulti::SetupGPIO(void) {
+void WS28xxMulti::SetupGPIO() {
 	h3_gpio_fsel(OUT0, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(OUT0);
 	h3_gpio_fsel(OUT1, GPIO_FSEL_OUTPUT);
@@ -59,14 +59,14 @@ void WS28xxMulti::SetupGPIO(void) {
 	h3_gpio_set(ENABLE);
 }
 
-void WS28xxMulti::SetupBuffers4x(void) {
+void WS28xxMulti::SetupBuffers4x() {
 	DEBUG_ENTRY
 
 	m_pBuffer4x = new uint32_t[m_nBufSize];
-	assert(m_pBuffer4x != 0);
+	assert(m_pBuffer4x != nullptr);
 
 	m_pBlackoutBuffer4x = new uint32_t[m_nBufSize];
-	assert(m_pBlackoutBuffer4x != 0);
+	assert(m_pBlackoutBuffer4x != nullptr);
 
 	for (uint32_t i = 0; i < m_nBufSize; i++) {
 		uint32_t d = (i & 0x1) ? (1 << PULSE) : 0;

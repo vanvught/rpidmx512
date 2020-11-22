@@ -196,7 +196,7 @@ int NtpClient::SetTimeOfDay() {
 		tv.tv_usec = 1E6 - tv.tv_usec;
 	}
 
-	DEBUG_PRINTF("(%u, %u) %s ", tv.tv_sec, tv.tv_usec , tv.tv_usec  >= 1E6 ? "!" : "");
+	DEBUG_PRINTF("(%ld, %d) %s ", tv.tv_sec, static_cast<int>(tv.tv_usec) , tv.tv_usec  >= 1E6 ? "!" : "");
 	DEBUG_PRINTF("%d %u",m_nOffsetSeconds, m_nOffsetMicros);
 
 	return settimeofday(&tv, nullptr);
@@ -284,6 +284,10 @@ void NtpClient::Stop() {
 }
 
 void NtpClient::Run() {
+	if (__builtin_expect((m_nServerIp == 0), 0)) {
+		return;
+	}
+
 	if ((m_tStatus == NtpClientStatus::IDLE) || (m_tStatus == NtpClientStatus::FAILED)) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
 			Send();

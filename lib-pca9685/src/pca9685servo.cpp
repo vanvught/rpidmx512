@@ -35,7 +35,7 @@
 
 #define MID_COUNT	static_cast<uint16_t>(.5 + ((204.8 * SERVO_CENTER_DEFAULT_US) / 1000))
 
-PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress), m_nLeftUs(SERVO_LEFT_DEFAULT_US), m_nRightUs(SERVO_RIGHT_DEFAULT_US) {
+PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress) {
 	SetInvert(false);
 	SetOutDriver(true);
 	SetFrequency(50);

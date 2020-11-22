@@ -50,7 +50,7 @@ static uint8_t manufacturer_id[RDM_DEVICE_MANUFACTURER_ID_LENGTH] ALIGNED;
 static uint8_t device_sn[DEVICE_SN_LENGTH] ALIGNED;
 
 void rdm_device_info_init(RDMDevice *pRdmDevice) {
-	assert(pRdmDevice != 0);
+	assert(pRdmDevice != nullptr);
 
 	struct TRDMDeviceInfoData info;
 

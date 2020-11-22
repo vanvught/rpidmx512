@@ -84,23 +84,23 @@ public:
 
 	void Dump();
 
-	ShowFileFormats GetFormat() {
+	ShowFileFormats GetFormat() const {
 		return static_cast<ShowFileFormats>(m_tShowFileParams.nFormat);
 	}
 
-	ShowFileProtocols GetProtocol() {
+	ShowFileProtocols GetProtocol() const {
 		return static_cast<ShowFileProtocols>(m_tShowFileParams.nProtocol);
 	}
 
-	uint8_t GetShow() {
+	uint8_t GetShow() const {
 		return m_tShowFileParams.nShow;
 	}
 
-	bool IsAutoStart() {
+	bool IsAutoStart() const {
 		return isOptionSet(ShowFileOptions::AUTO_START);
 	}
 
-	bool IsArtNetBroadcast() {
+	bool IsArtNetBroadcast() const {
 		return isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED);
 	}
 
@@ -109,10 +109,10 @@ public:
 private:
     void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tShowFileParams.nSetList & nMask) == nMask;
     }
-    bool isOptionSet(uint16_t nMask) {
+    bool isOptionSet(uint16_t nMask) const {
     	return (m_tShowFileParams.nOptions & nMask) == nMask;
     }
 

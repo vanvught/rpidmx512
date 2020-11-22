@@ -37,8 +37,8 @@
 
 uint8_t Rdm::m_TransactionNumber[DMX_MAX_OUT] = {0, };
 
-Rdm::Rdm(void) {
-	assert(DmxSet::Get() != 0);
+Rdm::Rdm() {
+	assert(DmxSet::Get() != nullptr);
 }
 
 const uint8_t *Rdm::Receive(uint8_t nPort) {
@@ -53,7 +53,7 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
 	DEBUG_ENTRY
 
 	assert(nPort < DMX_MAX_OUT);
-	assert(pRdmCommand != 0);
+	assert(pRdmCommand != nullptr);
 
 	uint8_t *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
 	uint32_t i;
@@ -79,7 +79,7 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	DEBUG_ENTRY
 
 	assert(nPort < DMX_MAX_OUT);
-	assert(pRdmData != 0);
+	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
 	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
@@ -94,7 +94,7 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 }
 
 void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
-	assert(pRdmData != 0);
+	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
 	const uint32_t delay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();

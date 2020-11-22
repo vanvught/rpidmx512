@@ -52,6 +52,8 @@ struct TE131Params {
 };
 //} __attribute__((packed));
 
+static_assert(sizeof(struct TE131Params) <= 96, "struct TE131Params is too large");
+
 struct E131ParamsMask {
 	static constexpr auto UNIVERSE = (1U << 0);
 	static constexpr auto MERGE_MODE = (1U << 1);
@@ -95,25 +97,25 @@ public:
 
 	void Dump();
 
-	TLightSetOutputType GetOutputType() {
+	TLightSetOutputType GetOutputType() const {
 		return m_tE131Params.tOutputType;
 	}
 
-	uint16_t GetUniverse() {
+	uint16_t GetUniverse() const {
 		return m_tE131Params.nUniverse;
 	}
 
-	E131Merge GetMergeMode() {
+	E131Merge GetMergeMode() const {
 		return static_cast<E131Merge>(m_tE131Params.nMergeMode);
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
 
-	bool IsEnableNoChangeUpdate() {
+	bool IsEnableNoChangeUpdate() const {
 		return m_tE131Params.bEnableNoChangeUpdate;
 	}
 
-	TE131PortDir GetDirection() {
+	TE131PortDir GetDirection() const {
 		return static_cast<TE131PortDir>(m_tE131Params.nDirection);
 	}
 
@@ -121,7 +123,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tE131Params.nSetList & nMask) == nMask;
     }
 

@@ -44,19 +44,8 @@ static unsigned long ceil(float f) {
 	return static_cast<unsigned long>(i + 1);
 }
 
-PCA9685DmxLed::PCA9685DmxLed():
-	m_nDmxStartAddress(1),
-	m_nDmxFootprint(PCA9685_PWM_CHANNELS),
-	m_nI2cAddress(PCA9685_I2C_ADDRESS_DEFAULT),
-	m_nBoardInstances(1),
-	m_nPwmFrequency(PWMLED_DEFAULT_FREQUENCY),
-	m_bOutputInvert(false), // Output logic state not inverted. Value to use when external driver used.
-	m_bOutputDriver(true),	// The 16 LEDn outputs are configured with a totem pole structure.
-	m_bIsStarted(false),
-	m_pPWMLed(nullptr),
-	m_pDmxData(nullptr),
-	m_pSlotInfoRaw(nullptr),
-	m_pSlotInfo(nullptr)
+PCA9685DmxLed::PCA9685DmxLed()
+	
 {
 }
 

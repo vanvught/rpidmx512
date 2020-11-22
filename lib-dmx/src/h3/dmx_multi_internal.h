@@ -69,7 +69,7 @@ inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
 		break;
 	}
 
-	return 0;
+	return NULL;
 }
 
 #endif /* DMX_MULTI_INTERNAL_H_ */

@@ -57,9 +57,9 @@ private:
 	void UpdateMembers();
 
 private:
-	uint8_t *m_pDmxData;
-	uint32_t m_nLEDGroupCount;
-	uint32_t m_nGroups;
+	uint8_t *m_pDmxData{nullptr};
+	uint32_t m_nLEDGroupCount{0};
+	uint32_t m_nGroups{0};
 };
 
 #endif /* WS28XXDMXGROUPING_H_ */

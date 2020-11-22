@@ -79,34 +79,31 @@ public:
 	void SetFactoryDefaults();
 	bool GetFactoryDefaults();
 
-	const uint8_t* GetUID() {
+	const uint8_t* GetUID() const {
 		return m_tRDMDevice.aDeviceUID;
 	}
 
-	const uint8_t *GetSN() {
+	const uint8_t *GetSN() const {
 		return m_tRDMDevice.aDeviceSN;
 	}
 
 	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);
 	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo);
 
-	/*
-	 *
-	 */
 	void SetLabel(const struct TRDMDeviceInfoData *pInfo);
 	void GetLabel(struct TRDMDeviceInfoData *pInfo);
 
 	void SetProductCategory(uint16_t nProductCategory) {
 		m_tRDMDevice.nProductCategory = nProductCategory;
 	}
-	uint16_t GetProductCategory() {
+	uint16_t GetProductCategory() const {
 		return m_tRDMDevice.nProductCategory;
 	}
 
 	void SetProductDetail(uint16_t nProductDetail) {
 		m_tRDMDevice.nProductDetail = nProductDetail;
 	}
-	uint16_t GetProductDetail() {
+	uint16_t GetProductDetail() const {
 		return m_tRDMDevice.nProductDetail;
 	}
 
@@ -115,12 +112,12 @@ private:
 
 private:
 	struct TRDMDevice m_tRDMDevice;
-	bool m_IsInit;
+	bool m_IsInit{false};
 	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t m_nDeviceRootLabelLength;
-	uint16_t m_nCheckSum;
+	uint8_t m_nDeviceRootLabelLength{0};
+	uint16_t m_nCheckSum{0};
 
-	RDMDeviceStore *m_pRDMDeviceStore;
+	RDMDeviceStore *m_pRDMDeviceStore{nullptr};
 };
 
 #endif /* RDMDEVICE_H_ */

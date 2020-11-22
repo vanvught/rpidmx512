@@ -75,25 +75,7 @@ ArtNetNode *ArtNetNode::s_pThis = nullptr;
 
 ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_nVersion(nVersion),
-	m_nPages(nPages <= ArtNet::MAX_PAGES ? nPages : ArtNet::MAX_PAGES),
-	m_nHandle(-1),
-	m_pLightSet(nullptr),
-	m_pArtNetTimeCode(nullptr),
-	m_pArtNetTimeSync(nullptr),
-	m_pArtNetRdm(nullptr),
-	m_pArtNetIpProg(nullptr),
-	m_pArtNetStore(nullptr),
-	m_pArtNetDisplay(nullptr),
-	m_pArtNetDmx(nullptr),
-	m_pArtNetTrigger(nullptr),
-	m_pArtNet4Handler(nullptr),
-	m_pTimeCodeData(nullptr),
-	m_pTodData(nullptr),
-	m_pIpProgReply(nullptr),
-	m_bDirectUpdate(false),
-	m_nCurrentPacketMillis(0),
-	m_nPreviousPacketMillis(0),
-	m_IsRdmResponder(false)
+	m_nPages(nPages <= ArtNet::MAX_PAGES ? nPages : ArtNet::MAX_PAGES)
 {
 	assert(Hardware::Get() != nullptr);
 	assert(Network::Get() != nullptr);

@@ -60,11 +60,8 @@ struct TRtpHeader {
 
 RtpMidi *RtpMidi::s_pThis = nullptr;
 
-RtpMidi::RtpMidi():
-	m_pRtpMidiHandler(nullptr),
-	m_pReceiveBuffer(nullptr),
-	m_pSendBuffer(nullptr),
-	m_nSequenceNumber(0)
+RtpMidi::RtpMidi()
+	
 {
 	DEBUG_ENTRY
 
@@ -81,7 +78,7 @@ void RtpMidi::Start() {
 	m_pSendBuffer = new uint8_t[BUFFER_SIZE];
 	assert(m_pSendBuffer != nullptr);
 
-	TRtpHeader *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
+	auto *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
 	pHeader->nStatic = 0x6180;
 	pHeader->nSenderSSRC = AppleMidi::GetSSRC();
 
@@ -267,7 +264,7 @@ void RtpMidi::SendTimeCode(const struct _midi_send_tc *tTimeCode) {
 }
 
 void  RtpMidi::Send(uint32_t nLength) {
-	TRtpHeader *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
+	auto *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
 
 	pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
 	pHeader->nTimestamp = __builtin_bswap32(Now());

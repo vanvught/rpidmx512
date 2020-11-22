@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,6 @@
 #include "artnet4handler.h"
 
 #include "artnetnode.h"
-
-ArtNet4Handler::~ArtNet4Handler() {
-
-}
 
 void ArtNetNode::SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler) {
 	if (m_nVersion >= 4) {

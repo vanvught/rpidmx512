@@ -92,7 +92,7 @@ private:
 private:
 	char *m_pBuffer;
 	uint32_t m_nLength;
-	uint32_t m_nSize;
+	uint32_t m_nSize{0};
 };
 
 template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, uint32_t nPrecision) {

@@ -60,7 +60,7 @@ enum TImageHeaderCompression {
 };
 
 UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false) {
-	assert(pHeader != 0);
+	assert(pHeader != nullptr);
 
 	TImageHeader *pImageHeader = reinterpret_cast<TImageHeader*>(pHeader);
 
@@ -75,11 +75,11 @@ UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false
 	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
 }
 
-UBootHeader::~UBootHeader(void) {
+UBootHeader::~UBootHeader() {
 	m_bIsValid = false;
 }
 
-void UBootHeader::Dump(void) {
+void UBootHeader::Dump() {
 #ifndef NDEBUG
 	if (!m_bIsValid) {
 		printf("* Not a valid header! *\n");

@@ -76,7 +76,7 @@ void L6470::run(TL6470Direction dir, float stepsPerSec) {
 	//  valid here.
 
 	// We begin by pointing bytePointer at the first uint8_t in integerSpeed.
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&integerSpeed);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&integerSpeed);
 	// Next, we'll iterate through a for loop, indexing across the bytes in
 	//  integerSpeed starting with uint8_t 2 and ending with uint8_t 0.
 	for (int8_t i = 2; i >= 0; i--) {
@@ -93,7 +93,7 @@ void L6470::move(TL6470Direction dir, unsigned long numSteps) {
 	if (numSteps > 0x3FFFFF)
 		numSteps = 0x3FFFFF;
 
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&numSteps);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&numSteps);
 	for (int8_t i = 2; i >= 0; i--) {
 		SPIXfer(bytePointer[i]);
 	}
@@ -104,7 +104,7 @@ void L6470::goTo(long pos) {
 	if (pos > 0x3FFFFF)
 		pos = 0x3FFFFF;
 
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&pos);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&pos);
 	for (int8_t i = 2; i >= 0; i--) {
 		SPIXfer(bytePointer[i]);
 	}
@@ -115,7 +115,7 @@ void L6470::goToDir(TL6470Direction dir, long pos) {
 	if (pos > 0x3FFFFF)
 		pos = 0x3FFFFF;
 
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&pos);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&pos);
 	for (int8_t i = 2; i >= 0; i--) {
 		SPIXfer(bytePointer[i]);
 	}
@@ -127,7 +127,7 @@ void L6470::goUntil(TL6470Action action, TL6470Direction dir, float stepsPerSec)
 	if (integerSpeed > 0x3FFFFF)
 		integerSpeed = 0x3FFFFF;
 
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&integerSpeed);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&integerSpeed);
 	for (int8_t i = 2; i >= 0; i--) {
 		SPIXfer(bytePointer[i]);
 	}
@@ -180,7 +180,7 @@ void L6470::hardHiZ() {
 int L6470::getStatus() {
 	int temp = 0;
 
-	uint8_t *bytePointer = reinterpret_cast<uint8_t*>(&temp);
+	auto *bytePointer = reinterpret_cast<uint8_t*>(&temp);
 	SPIXfer(L6470_CMD_GET_STATUS);
 	bytePointer[1] = SPIXfer(0);
 	bytePointer[0] = SPIXfer(0);

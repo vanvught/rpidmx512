@@ -287,7 +287,7 @@ public:
 	void Print();
 
 private:
-	struct _midi_message *m_pMessage;
+	struct _midi_message *m_pMessage{nullptr};
 
 	static Midi *s_pThis;
 };

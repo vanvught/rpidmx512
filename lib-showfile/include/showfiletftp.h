@@ -43,7 +43,7 @@ public:
 	void Exit() override;
 
 private:
-	FILE *m_pFile { nullptr };
+	FILE *m_pFile {nullptr};
 };
 
 #endif /* SHOWFILETFTP_H_ */

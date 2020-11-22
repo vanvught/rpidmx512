@@ -54,7 +54,7 @@ extern void udelay(uint32_t);
 #define BW_PORT_READ_BUTTON_5			0x44
 #define BW_PORT_READ_BUTTON_6			0x45
 
-ButtonsBw::ButtonsBw(): m_I2C(BW_UI_DEFAULT_SLAVE_ADDRESS), m_nWriteMicros(0), m_nButtons(0) {
+ButtonsBw::ButtonsBw(): m_I2C(BW_UI_DEFAULT_SLAVE_ADDRESS) {
 }
 
 ButtonsBw::~ButtonsBw() {

@@ -40,10 +40,10 @@
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(void) {}
-	~Reboot(void) {}
+	Reboot() {}
+	~Reboot() {}
 
-	void Run(void) {
+	void Run() {
 		DEBUG_ENTRY
 
 		ShowFile::Get()->Stop();

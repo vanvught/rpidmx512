@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include <cassert>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -101,7 +102,7 @@ void notmain(void) {
 		showFileParams.Dump();
 	}
 
-	ShowFile *pShowFile = 0;
+	ShowFile *pShowFile = nullptr;
 
 	switch (showFileParams.GetFormat()) {
 //		case SHOWFILE_FORMAT_:
@@ -111,23 +112,23 @@ void notmain(void) {
 			break;
 	}
 
-	assert(pShowFile != 0);
+	assert(pShowFile != nullptr);
 
 	DisplayHandler displayHandler;
 	pShowFile->SetShowFileDisplay(&displayHandler);
 
-	ShowFileProtocolHandler *pShowFileProtocolHandler = 0;
+	ShowFileProtocolHandler *pShowFileProtocolHandler = nullptr;
 
 	switch (showFileParams.GetProtocol()) {
-		case ShowFileProtocols::ARTNET:
-			pShowFileProtocolHandler = new ShowFileProtocolArtNet;
-			break;
-		default:
-			pShowFileProtocolHandler = new ShowFileProtocolE131;
-			break;
+	case ShowFileProtocols::ARTNET:
+		pShowFileProtocolHandler = new ShowFileProtocolArtNet;
+		break;
+	default:
+		pShowFileProtocolHandler = new ShowFileProtocolE131;
+		break;
 	}
 
-	assert(pShowFileProtocolHandler != 0);
+	assert(pShowFileProtocolHandler != nullptr);
 	pShowFile->SetProtocolHandler(pShowFileProtocolHandler);
 
 	ShowFileOSC oscServer;

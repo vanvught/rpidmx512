@@ -40,24 +40,9 @@
 #include "lightsetdisplay.h"
 
 WS28xxDmx::WS28xxDmx() :
-	m_tLedType(WS2812B),
-	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
-	m_nLowCode(0),
-	m_nHighCode(0),
-	m_nLedCount(170),
-	m_nDmxStartAddress(DMX_START_ADDRESS_DEFAULT),
-	m_nDmxFootprint(170 * 3),
-	m_pLEDStripe(nullptr),
-	m_bIsStarted(false),
-	m_bBlackout(false),
-	m_pWS28xxDmxStore(nullptr),
-	m_nClockSpeedHz(0),
-	m_nGlobalBrightness(0xFF),
-	m_nBeginIndexPortId1(170),
-	m_nBeginIndexPortId2(340),
-	m_nBeginIndexPortId3(510),
-	m_nChannelsPerLed(3),
-	m_nPortIdLast(3)
+	
+	m_nDmxFootprint(170 * 3)
+	
 {
 	UpdateMembers();
 }

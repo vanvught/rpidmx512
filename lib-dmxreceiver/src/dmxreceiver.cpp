@@ -31,15 +31,10 @@
 
 #include "debug.h"
 
-DMXReceiver::DMXReceiver(uint8_t nGpioPin) :
-	Dmx(nGpioPin, false),
-	m_pLightSet(nullptr),
-	m_IsActive(false),
-	m_nLength(0)
-{
+DMXReceiver::DMXReceiver(uint8_t nGpioPin) : Dmx(nGpioPin, false) {
 	DEBUG1_ENTRY
 
-	uint32_t *p = reinterpret_cast<uint32_t*>(m_Data);
+	auto *p = reinterpret_cast<uint32_t*>(m_Data);
 
 	for (uint32_t i = 0; i < (sizeof m_Data) / 4; i ++) {
 		*p++ = 0;
@@ -90,7 +85,7 @@ bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
 	bool isChanged = false;
 
 	const uint8_t *pSrc = pData;
-	uint8_t *pDst = const_cast<uint8_t*>(m_Data);
+	auto *pDst = const_cast<uint8_t*>(m_Data);
 
 	if (nLength != m_nLength) {
 		m_nLength = nLength;
@@ -127,7 +122,7 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		const uint8_t *pDmx = GetDmxAvailable();
 
 		if (pDmx != nullptr) {
-			const struct TDmxData *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
+			const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
 			nLength = dmx_statistics->Statistics.SlotsInPacket;
 
 			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE

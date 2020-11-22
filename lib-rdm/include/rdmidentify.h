@@ -59,8 +59,8 @@ private:
 	static RDMIdentify *s_pThis;
 
 protected:
-	bool m_bIsEnabled;
-	TRdmIdentifyMode m_nMode;
+	bool m_bIsEnabled{false};
+	TRdmIdentifyMode m_nMode{IDENTIFY_MODE_QUIET};
 };
 
 #endif /* RDMIDENTIFY_H_ */

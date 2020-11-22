@@ -61,7 +61,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId, TArtNetPortDir dir) {
 	}
 
 	if (isActive) {
-		const TPortProtocol tPortProtocol = GetPortProtocol(nPortId);
+		const auto tPortProtocol = GetPortProtocol(nPortId);
 
 		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 
@@ -94,12 +94,12 @@ void ArtNet4Node::Start() {
 		DEBUG_PRINTF("Port %d, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 		
 		if (isActive) {
-			const TPortProtocol tPortProtocol = GetPortProtocol(nPortIndex);
+			const auto tPortProtocol = GetPortProtocol(nPortIndex);
 			
 			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 			
 			if (tPortProtocol == PORT_ARTNET_SACN) {
-				const E131Merge tE131Merge = static_cast<E131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
+				const auto tE131Merge = static_cast<E131Merge>(ArtNetNode::GetMergeMode(nPortIndex));
 				m_Bridge.SetMergeMode(nPortIndex, tE131Merge);
 				DEBUG_PRINTF("\tMerge mode %s", E131::GetMergeMode(tE131Merge));
 			}

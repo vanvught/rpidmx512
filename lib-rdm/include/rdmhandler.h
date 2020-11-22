@@ -129,9 +129,9 @@ private:
 private:
 	bool m_bIsRDM;
 	RDMQueuedMessage m_RDMQueuedMessage;
-	bool m_IsMuted;
-	uint8_t *m_pRdmDataIn;
-	uint8_t *m_pRdmDataOut;
+	bool m_IsMuted{false};
+	uint8_t *m_pRdmDataIn{nullptr};
+	uint8_t *m_pRdmDataOut{nullptr};
 };
 
 #endif /* RDMHANDLER_H_ */

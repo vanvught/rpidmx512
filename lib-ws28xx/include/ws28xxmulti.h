@@ -33,7 +33,7 @@
 #include "rgbmapping.h"
 
 #if defined (H3)
- #include "h3/ws28xxdma.h"
+# include "h3/ws28xxdma.h"
 #endif
 
 enum WS28xxMultiBoard {
@@ -53,27 +53,27 @@ public:
 
 	void Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 
-	TWS28XXType GetLEDType() {
+	TWS28XXType GetLEDType() const {
 		return m_tWS28xxType;
 	}
 
-	TRGBMapping GetRgbMapping() {
+	TRGBMapping GetRgbMapping() const {
 		return m_tRGBMapping;
 	}
 
-	uint8_t GetLowCode() {
+	uint8_t GetLowCode() const {
 		return m_nLowCode;
 	}
 
-	uint8_t GetHighCode() {
+	uint8_t GetHighCode() const {
 		return m_nHighCode;
 	}
 
-	uint16_t GetLEDCount() {
+	uint16_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
-	WS28xxMultiBoard GetBoard() {
+	WS28xxMultiBoard GetBoard() const {
 		return m_tBoard;
 	}
 
@@ -111,7 +111,6 @@ public:
 
 private:
 	uint8_t ReverseBits(uint8_t nBits);
-
 // 4x
 	bool IsMCP23017();
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
@@ -129,18 +128,17 @@ private:
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 private:
-	WS28xxMultiBoard m_tBoard;
-	TWS28XXType m_tWS28xxType;
-	uint16_t m_nLedCount;
-	TRGBMapping m_tRGBMapping;
-	uint8_t m_nLowCode;
-	uint8_t m_nHighCode;
-	uint32_t m_nBufSize;
-	uint32_t *m_pBuffer4x;
-	uint32_t *m_pBlackoutBuffer4x;
-
-	alignas(uintptr_t) uint8_t *m_pBuffer8x;
-	alignas(uintptr_t) uint8_t *m_pBlackoutBuffer8x;
+	WS28xxMultiBoard m_tBoard{WS28XXMULTI_BOARD_4X};
+	TWS28XXType m_tWS28xxType{WS2812B};
+	uint16_t m_nLedCount{170};
+	TRGBMapping m_tRGBMapping{RGB_MAPPING_UNDEFINED};
+	uint8_t m_nLowCode{0};
+	uint8_t m_nHighCode{0};
+	uint32_t m_nBufSize{0};
+	uint32_t *m_pBuffer4x{nullptr};
+	uint32_t *m_pBlackoutBuffer4x{nullptr};
+	uint8_t *m_pBuffer8x{nullptr};
+	uint8_t *m_pBlackoutBuffer8x{nullptr};
 };
 
 #endif /* WS28XXMULTI_H_ */
