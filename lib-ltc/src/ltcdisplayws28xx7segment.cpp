@@ -36,6 +36,8 @@
 
 #include "debug.h"
 
+using namespace ltcdisplayrgb;
+
 LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
 	DEBUG1_ENTRY
 
@@ -53,10 +55,10 @@ void LtcDisplayWS28xx7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMappin
 	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) {
-	uint8_t nRed = tColours.nRed;
-	uint8_t nGreen = tColours.nGreen;
-	uint8_t nBlue = tColours.nBlue;
+void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct Colours &tColours, struct Colours &tColoursColons) {
+	auto nRed = tColours.nRed;
+	auto nGreen = tColours.nGreen;
+	auto nBlue = tColours.nBlue;
 
 	const char aChars[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
@@ -67,17 +69,16 @@ void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct TLtcDisplayRgb
 	nGreen = tColoursColons.nGreen;
 	nBlue = tColoursColons.nBlue;
 
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[2], 0, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[5], 1, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[8], 2, nRed, nGreen, nBlue);
-
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_1], 0, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_2], 1, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_3], 2, nRed, nGreen, nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct TLtcDisplayRgbColours &tColours, struct TLtcDisplayRgbColours &tColoursColons) {
-	uint8_t nRed = tColours.nRed;
-	uint8_t nGreen = tColours.nGreen;
-	uint8_t nBlue = tColours.nBlue;
+void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct Colours &tColours, struct Colours &tColoursColons) {
+	auto nRed = tColours.nRed;
+	auto nGreen = tColours.nGreen;
+	auto nBlue = tColours.nBlue;
 
 	const char aChars[] = { ' ', ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7]};
 	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
@@ -89,27 +90,24 @@ void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct TLtcD
 	nBlue = tColoursColons.nBlue;
 
 	m_pWS28xxDisplay7Segment->WriteColon(' ', 0, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(':', 1, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(':', 3, nRed, nGreen, nBlue);
-
+	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[LTC_ST_INDEX_COLON_1], 1, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[LTC_ST_INDEX_COLON_2], 2, nRed, nGreen, nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct TLtcDisplayRgbColours &tColours) {
-	assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == LTCDISPLAY_MAX_MESSAGE_SIZE);
+void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct Colours &tColours) {
+	assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == MAX_MESSAGE_SIZE);
 
-	const uint8_t nRed = tColours.nRed;
-	const uint8_t nGreen = tColours.nGreen;
-	const uint8_t nBlue = tColours.nBlue;
+	const auto nRed = tColours.nRed;
+	const auto nGreen = tColours.nGreen;
+	const auto nBlue = tColours.nBlue;
 
 	m_pWS28xxDisplay7Segment->WriteAll(pMessage, nRed, nGreen, nBlue);
-
 	m_pWS28xxDisplay7Segment->SetColonsOff();
-
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct TLtcDisplayRgbColours &tColours) {
+void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct Colours &tColours) {
 	m_pWS28xxDisplay7Segment->WriteChar(static_cast<char>(nChar), nPos, tColours.nRed, tColours.nGreen, tColours.nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }

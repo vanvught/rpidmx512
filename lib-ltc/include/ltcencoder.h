@@ -57,10 +57,10 @@ private:
 	uint8_t ReverseBits(uint8_t nBits);
 
 private:
-	uint8_t *m_pLtcBits;
-	int16_t *m_pBuffer;
+	uint8_t *m_pLtcBits{nullptr};
+	int16_t *m_pBuffer{nullptr};
 	uint32_t m_nBufferSize;
-	uint32_t m_nType;
+	uint32_t m_nType{0xFF};
 
 	static LtcEncoder *s_pThis;
 };

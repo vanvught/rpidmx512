@@ -28,9 +28,11 @@
 
 #include <stdint.h>
 
-#include "ltcdisplayws28xx.h"
+#include "ltcdisplayrgb.h"
 
-#define OSCSERVER_PATH_LENGTH_MAX	128
+namespace ltcoscserver {
+static constexpr auto PATH_LENGTH_MAX =128;
+}  // namespace ltcoscserver
 
 class LtcOscServer {
 public:
@@ -46,19 +48,20 @@ public:
 	void SetPortIncoming(uint16_t nPortIncoming) {
 		m_nPortIncoming = nPortIncoming;
 	}
-	uint16_t GetPortIncoming() {
+
+	uint16_t GetPortIncoming() const {
 		return m_nPortIncoming;
 	}
 
 private:
-	void SetWS28xxRGB(uint32_t nSize, TLtcDisplayWS28xxColourIndex tIndex);
+	void SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tIndex);
 
 private:
 	uint16_t m_nPortIncoming;
 	int32_t m_nHandle{-1};
 	uint32_t m_nRemoteIp{0};
 	uint16_t m_nRemotePort{0};
-	char m_aPath[OSCSERVER_PATH_LENGTH_MAX];
+	char m_aPath[ltcoscserver::PATH_LENGTH_MAX];
 	uint32_t m_nPathLength{0};
 	char *m_pBuffer;
 };

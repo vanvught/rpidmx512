@@ -34,26 +34,26 @@
 
 class NetworkHandlerOled: public NetworkDisplay, public NtpClientDisplay {
 public:
-	NetworkHandlerOled(void) {
+	NetworkHandlerOled() {
 		s_pThis = this;
 	}
 
-	~NetworkHandlerOled(void) {
+	~NetworkHandlerOled() {
 	}
 
-	void ShowIp(void) {
+	void ShowIp() {
 		Display::Get()->ClearLine(3);
 		Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());
 	}
 
-	void ShowNetMask(void) {
+	void ShowNetMask() {
 		ShowIp();
 	}
 
-	void ShowHostName(void) {
+	void ShowHostName() {
 	}
 
-	void ShowShutdown(void) {
+	void ShowShutdown() {
 
 	}
 
@@ -91,7 +91,7 @@ public:
 		}
 	}
 
-	static NetworkHandlerOled *Get(void) {
+	static NetworkHandlerOled *Get() {
 		return s_pThis;
 	}
 

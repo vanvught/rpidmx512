@@ -94,12 +94,7 @@ struct TTable {
 
 LtcEncoder *LtcEncoder::s_pThis = nullptr;
 
-LtcEncoder::LtcEncoder():
-	m_pLtcBits(nullptr),
-	m_pBuffer(nullptr),
-	m_nBufferSize(SAMPLE_RATE / 24),	// Max buffer size
-	m_nType(0xFF)						// Invalid to force action
-{
+LtcEncoder::LtcEncoder() : m_nBufferSize(SAMPLE_RATE / 24) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -111,7 +106,7 @@ LtcEncoder::LtcEncoder():
 
 	DEBUG_PRINTF("m_pBuffer=%p", reinterpret_cast<void *>(m_pBuffer));
 
-	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
+	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	for (uint32_t i = 0; i < FORMAT_SIZE_WORDS ;i ++) {
 		p->Format.words[i] = 0;
@@ -129,7 +124,7 @@ LtcEncoder::~LtcEncoder() {
 }
 
 void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock) {
-	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
+	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	uint32_t nTens = pLtcTimeCode->nFrames / 10;
 
@@ -182,7 +177,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	 * This keeps the phase of each frame consistent, so it always starts with a rising edge at the beginning of bit 0.
 	 */
 
-	struct TLtcFormatTemplate *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
+	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	if (nType == ltc::type::EBU) {
 		uint8_t b = p->Format.bytes[7];
@@ -303,7 +298,7 @@ bool LtcEncoder::GetParity(uint32_t nValue) {
 
 uint8_t LtcEncoder::ReverseBits(uint8_t nBits) {
 #if defined (H3)
-	const uint32_t input = static_cast<uint32_t>(nBits);
+	const auto input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
 	return (output >> 24);

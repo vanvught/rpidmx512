@@ -37,12 +37,12 @@
 
 class FactoryDefaults: public RDMFactoryDefaults {
 public:
-	FactoryDefaults(void) {
+	FactoryDefaults() {
 	}
-	~FactoryDefaults(void) {
+	~FactoryDefaults() {
 	}
 
-	void Set(void) {
+	void Set() {
 		DEBUG_ENTRY
 
 		RemoteConfig::Get()->SetDisable(false);

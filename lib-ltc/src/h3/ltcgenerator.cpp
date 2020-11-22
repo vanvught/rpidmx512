@@ -63,29 +63,29 @@
 #define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
 
 namespace cmd {
-	static constexpr char START[] = "start";
-	static constexpr char STOP[] = "stop";
-	static constexpr char RESUME[] = "resume";
-	static constexpr char RATE[] = "rate#";
-	static constexpr char DIRECTION[] = "direction#";
-	static constexpr char PITCH[] = "pitch#";
-	static constexpr char FORWARD[] = "forward#";
-	static constexpr char BACKWARD[] = "backward#";
+static constexpr char START[] = "start";
+static constexpr char STOP[] = "stop";
+static constexpr char RESUME[] = "resume";
+static constexpr char RATE[] = "rate#";
+static constexpr char DIRECTION[] = "direction#";
+static constexpr char PITCH[] = "pitch#";
+static constexpr char FORWARD[] = "forward#";
+static constexpr char BACKWARD[] = "backward#";
 }
 
 namespace length {
-	static constexpr auto START = sizeof(cmd::START) - 1;
-	static constexpr auto STOP = sizeof(cmd::STOP) - 1;
-	static constexpr auto RESUME = sizeof(cmd::RESUME) - 1;
-	static constexpr auto RATE = sizeof(cmd::RATE) - 1;
-	static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
-	static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
-	static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
-	static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
+static constexpr auto START = sizeof(cmd::START) - 1;
+static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+static constexpr auto RESUME = sizeof(cmd::RESUME) - 1;
+static constexpr auto RATE = sizeof(cmd::RATE) - 1;
+static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
+static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
+static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
+static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
 }
 
 namespace udp {
-	static constexpr auto PORT = 0x5443;
+static constexpr auto PORT = 0x5443;
 }
 
 // IRQ Timer0
@@ -404,9 +404,9 @@ void LtcGenerator::ActionForward(int32_t nSeconds) {
 		m_State = STARTED;
 	}
 
-	const int32_t s = GetSeconds(s_tLtcTimeCode) + nSeconds;
-	constexpr int32_t nMaxSeconds = ((23 * 60) + 59) * 60 + 59;
-	const int32_t nLimit = m_bSkipFree ? nMaxSeconds : m_nStopSeconds;
+	const auto s = GetSeconds(s_tLtcTimeCode) + nSeconds;
+	constexpr auto nMaxSeconds = ((23 * 60) + 59) * 60 + 59;
+	const auto nLimit = m_bSkipFree ? nMaxSeconds : m_nStopSeconds;
 
 	if (s <= nLimit) {
 		SetTimeCode(s);
@@ -429,8 +429,8 @@ void LtcGenerator::ActionBackward(int32_t nSeconds) {
 		m_State = STARTED;
 	}
 
-	const int32_t s = GetSeconds(s_tLtcTimeCode) - nSeconds;
-	const int32_t nLimit = m_bSkipFree ? 0 : m_nStartSeconds;
+	const auto s = GetSeconds(s_tLtcTimeCode) - nSeconds;
+	const auto nLimit = m_bSkipFree ? 0 : m_nStartSeconds;
 
 	if (s >= nLimit) {
 		SetTimeCode(s);
@@ -445,7 +445,7 @@ void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_ENTRY
 	debug_dump(const_cast<char*>(pTimeCodePitch), nSize);
 
-	const float f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
+	const auto f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
 
 	DEBUG_PRINTF("f=%f", f);
 
@@ -458,7 +458,7 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDi
 	DEBUG_ENTRY
 	debug_dump(const_cast<char*>(pSeconds), nSize);
 
-	const int32_t nSeconds = atoi(pSeconds, nSize);
+	const auto nSeconds = atoi(pSeconds, nSize);
 
 	DEBUG_PRINTF("nSeconds=%d", nSeconds);
 

@@ -45,12 +45,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 	m_nOffset((nRows - FONT_CP437_CHAR_H) * 2),
 	m_nMaxLeds(nColumns * nRows),
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
-	m_nMaxLine(nRows / FONT_CP437_CHAR_H),
-	m_pWS28xx(nullptr),
-	m_bUpdateNeeded(false),
-	m_nPosition(0),
-	m_nLine(0),
-	m_ptColons(nullptr)
+	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
 {
 	DEBUG2_ENTRY
 
@@ -227,7 +222,7 @@ void WS28xxDisplayMatrix::Show() {
 	}
 }
 
-void WS28xxDisplayMatrix::SetColon(uint8_t nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::SetColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nPos >= m_nMaxPosition) {
 		return;
 	}

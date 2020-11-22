@@ -30,7 +30,7 @@
 
 class LtcOutputs {
 public:
-	LtcOutputs(const struct TLtcDisabledOutputs *pLtcDisabledOutputs, ltc::source tSource, bool bShowSysTime);
+	LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ltc::source tSource, bool bShowSysTime);
 
 	void Init();
 	void Update(const struct TLtcTimeCode *ptLtcTimeCode);
@@ -40,14 +40,6 @@ public:
 
 	void ResetTimeCodeTypePrevious() {
 		m_tTimeCodeTypePrevious = ltc::type::INVALID;
-	}
-
-	bool IsActiveMax7219() {
-		return !m_tLtcDisabledOutputs.bMax7219;
-	}
-
-	bool IsActiveWS28xx() {
-		return !m_tLtcDisabledOutputs.bWS28xx;
 	}
 
 	void Print();
@@ -60,13 +52,13 @@ private:
 	void PrintDisabled(bool IsDisabled, const char *p);
 
 private:
-	struct TLtcDisabledOutputs m_tLtcDisabledOutputs;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bShowSysTime;
-	ltc::type m_tTimeCodeTypePrevious;
-	uint32_t m_nMidiQuarterFramePiece;
+	ltc::type m_tTimeCodeTypePrevious{ltc::type::INVALID};
+	uint32_t m_nMidiQuarterFramePiece {0};
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
-	int32_t m_nSecondsPrevious;
+	int32_t m_nSecondsPrevious{60};
 
 	static LtcOutputs *s_pThis;
 };

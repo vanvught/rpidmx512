@@ -1,9 +1,8 @@
 /**
- * @file ltcdisplayws28xx7segment.h
+ * @file ltcdisplayrgbpanel.h
  */
 /*
- * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYWS28XX7SEGMENT_H_
-#define LTCDISPLAYWS28XX7SEGMENT_H_
+#ifndef LTCDISPLAYRGBPANEL_H_
+#define LTCDISPLAYRGBPANEL_H_
 
 #include <stdint.h>
 
-#include "ws28xxdisplay7segment.h"
-
 #include "ltcdisplayrgbset.h"
 
-#include "rgbmapping.h"
+#include "rgbpanel.h"
 
-class LtcDisplayWS28xx7Segment final: public LtcDisplayRgbSet {
+class LtcDisplayRgbPanel final: public LtcDisplayRgbSet {
 public:
-	LtcDisplayWS28xx7Segment();
+	LtcDisplayRgbPanel();
+	~LtcDisplayRgbPanel();
 
-	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED) override;
+	void Init() override;
+	void Print() override;
 
 	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
 	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct ltcdisplayrgb::Colours &tColours) override;
+	//
+	void ShowFPS(ltc::type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours) override;
+	void ShowSource(ltc::source tSource, struct ltcdisplayrgb::Colours &tColours) override;
+	void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours) override;
 
+	//
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours) override;
 
-	void Print() override;
-
 private:
-	WS28xxDisplay7Segment *m_pWS28xxDisplay7Segment;
+	RgbPanel *m_pRgbPanel;
+	char m_Line[4][8];
+	struct ltcdisplayrgb::Colours m_LineColours[4];
 };
 
-#endif /* INCLUDE_LTCDISPLAYWS28XX7SEGMENT_H_ */
+#endif /* LTCDISPLAYRGBPANEL_H_ */

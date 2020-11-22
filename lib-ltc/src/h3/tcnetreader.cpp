@@ -47,19 +47,19 @@
 #include "network.h"
 
 namespace cmd {
-	static constexpr char LAYER[] = "layer#";
-	static constexpr char TYPE[] = "type#";
-	static constexpr char TIMECODE[] = "timecode#";
+static constexpr char LAYER[] = "layer#";
+static constexpr char TYPE[] = "type#";
+static constexpr char TIMECODE[] = "timecode#";
 }
 
 namespace length {
-	static constexpr auto LAYER = sizeof(cmd::LAYER) - 1;
-	static constexpr auto TYPE = sizeof(cmd::TYPE) - 1;
-	static constexpr auto TIMECODE = sizeof(cmd::TIMECODE) - 1;
+static constexpr auto LAYER = sizeof(cmd::LAYER) - 1;
+static constexpr auto TYPE = sizeof(cmd::TYPE) - 1;
+static constexpr auto TIMECODE = sizeof(cmd::TIMECODE) - 1;
 }
 
 namespace udp {
-	static constexpr auto PORT = 0x0ACA;
+static constexpr auto PORT = 0x0ACA;
 }
 
 // IRQ Timer0
@@ -72,12 +72,7 @@ static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPrevious = nUpdates;
 }
 
-TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nTimeCodePrevious(0xFF),
-	m_nHandle(-1),
-	m_nBytesReceived(0)
-{
+TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
@@ -162,7 +157,7 @@ void TCNetReader::HandleUdpRequest() {
 	debug_dump(m_Buffer, m_nBytesReceived);
 
 	if ((m_nBytesReceived == (6 + length::LAYER + 1)) && (memcmp(&m_Buffer[6], cmd::LAYER, length::LAYER) == 0)) {
-		const TCNetLayer tLayer = TCNet::GetLayer(m_Buffer[6 + length::LAYER]);
+		const auto tLayer = TCNet::GetLayer(m_Buffer[6 + length::LAYER]);
 
 		TCNet::Get()->SetLayer(tLayer);
 		TCNetDisplay::Show();
@@ -174,24 +169,23 @@ void TCNetReader::HandleUdpRequest() {
 	if ((m_nBytesReceived == (6 + length::TYPE + 2)) && (memcmp(&m_Buffer[6], cmd::TYPE, length::TYPE) == 0)) {
 		if (m_Buffer[6 + length::TYPE] == '2') {
 
-			const uint32_t nValue = 20U + m_Buffer[6 + length::TYPE + 1] - '0';
+			const auto nValue = 20U + m_Buffer[6 + length::TYPE + 1] - '0';
 
 			switch (nValue) {
 			case 24:
 				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_FILM);
-				TCNetDisplay::Show();
 				break;
 			case 25:
 				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_EBU_25FPS);
-				TCNetDisplay::Show();
 				break;
 			case 29:
 				TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_DF);
-				TCNetDisplay::Show();
 				break;;
 			default:
 				break;
 			}
+
+			TCNetDisplay::Show();
 
 			DEBUG_PRINTF("tcnet!type#%d", nValue);
 			return;
@@ -202,7 +196,6 @@ void TCNetReader::HandleUdpRequest() {
 			TCNetDisplay::Show();
 
 			DEBUG_PUTS("tcnet!type#30");
-
 			return;
 		}
 
@@ -211,8 +204,8 @@ void TCNetReader::HandleUdpRequest() {
 	}
 
 	if ((m_nBytesReceived == (6 + length::TIMECODE + 1)) && (memcmp(&m_Buffer[6], cmd::TIMECODE, length::TIMECODE) == 0)) {
-		const char nChar = m_Buffer[6 + length::TIMECODE];
-		const bool bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
+		const auto nChar = m_Buffer[6 + length::TIMECODE];
+		const auto bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
 		TCNetDisplay::Show();

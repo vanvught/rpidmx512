@@ -56,9 +56,7 @@ static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPrevious = nUpdates;
 }
 
-ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs)
-{
+ArtNetReader::ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
@@ -90,7 +88,7 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ArtNetTimeCode));
 	}
 
-	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof (struct _midi_send_tc ));
+	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof(struct _midi_send_tc));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 }

@@ -60,12 +60,12 @@ private:
 	TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
-	time_t m_ntimePrevious;
+	time_t m_ntimePrevious{0};
 	struct _midi_send_tc m_tMidiTimeCode;
-	int32_t m_nHandle;
-	alignas(uint32_t) char m_Buffer[64];
-	uint16_t m_nBytesReceived;
-	bool m_bIsStarted;
+	int32_t m_nHandle{-1};
+	char m_Buffer[64];
+	uint16_t m_nBytesReceived{0};
+	bool m_bIsStarted{false};
 
 	static SystimeReader *s_pThis;
 };

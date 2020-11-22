@@ -192,9 +192,7 @@ static constexpr uint8_t Seg7Array[] = {
 		0 //0b0000000, // 127 'DEL'  NO DISPLAY
 };
 
-WS28xxDisplay7Segment::WS28xxDisplay7Segment():
-	m_pWS28xx(nullptr)
-{
+WS28xxDisplay7Segment::WS28xxDisplay7Segment() {
 	DEBUG2_ENTRY
 
 	DEBUG2_EXIT

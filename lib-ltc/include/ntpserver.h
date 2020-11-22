@@ -52,10 +52,10 @@ public:
 	}
 
 private:
-	time_t m_tDate = 0;
-	time_t m_tTimeDate = 0;
-	uint32_t m_nFraction = 0;
-	int32_t m_nHandle = -1;
+	time_t m_tDate{0};
+	time_t m_tTimeDate{0};
+	uint32_t m_nFraction{0};
+	int32_t m_nHandle{-1};
 
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;

@@ -28,6 +28,8 @@
 #include "tcnet.h"
 #include "display.h"
 
+#include "ltcdisplayrgb.h"
+
 static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
 void TCNetDisplay::Show() {
@@ -41,4 +43,8 @@ void TCNetDisplay::Show() {
 	} else {
 		Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
 	}
+
+	char Info[9] = "Layer  ";
+	Info[6] = TCNet::GetLayerName(TCNet::Get()->GetLayer());
+	LtcDisplayRgb::Get()->ShowInfo(Info);
 }

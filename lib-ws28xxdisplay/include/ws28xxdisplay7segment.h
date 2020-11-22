@@ -30,7 +30,7 @@
 #include <stdint.h>
 
 #if defined(USE_SPI_DMA)
- #include "h3/ws28xxdma.h"
+# include "h3/ws28xxdma.h"
 #endif
 #include "ws28xx.h"
 
@@ -55,10 +55,10 @@ public:
 
 	void Init(TWS28XXType tLedType = WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED);
 
-	void WriteChar(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
-	void WriteColon(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
-	void WriteAll(const char *pChars, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void WriteAll(const char *pChars, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 	void SetColonsOff();
 
@@ -69,9 +69,9 @@ private:
 
 private:
 #if defined(USE_SPI_DMA)
-	WS28xxDMA *m_pWS28xx;
+	WS28xxDMA *m_pWS28xx{nullptr};
 #else
-	WS28xx *m_pWS28xx;
+	WS28xx *m_pWS28xx{nullptr};
 #endif
 };
 

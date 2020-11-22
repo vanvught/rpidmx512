@@ -53,7 +53,7 @@ public:
 	void Text(const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
-	void SetColon(uint8_t nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void SetColon(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void SetColonsOff();
 
 	void ClearLine(uint8_t nLine);
@@ -82,14 +82,14 @@ private:
 	uint32_t m_nMaxPosition;
 	uint32_t m_nMaxLine;
 #if defined(USE_SPI_DMA)
-	WS28xxDMA *m_pWS28xx;
+	WS28xxDMA *m_pWS28xx{nullptr};
 #else
-	WS28xx *m_pWS28xx;
+	WS28xx *m_pWS28xx{nullptr};
 #endif
-	bool m_bUpdateNeeded;
-	uint32_t m_nPosition;
-	uint32_t m_nLine;
-	struct TWS28xxDisplayMatrixColon *m_ptColons;
+	bool m_bUpdateNeeded{false};
+	uint32_t m_nPosition{0};
+	uint32_t m_nLine{0};
+	struct TWS28xxDisplayMatrixColon *m_ptColons{nullptr};
 };
 
 #endif /* WS28XXDISPLAYMATRIX_H_ */

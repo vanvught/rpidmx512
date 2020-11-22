@@ -30,18 +30,17 @@
 
 class DisplayEditFps {
 public:
-	void HandleKey(int nKey, uint8_t& nFps);
+	void HandleKey(int nKey, uint8_t &nFps);
 
 private:
-	void KeyLeft(uint8_t& nFps);
-	void KeyRight(uint8_t& nFps);
+	void KeyLeft(uint8_t &nFps);
+	void KeyRight(uint8_t &nFps);
 
 private:
 	enum State {
-		IDLE,
-		EDIT
-	} m_State = IDLE;
-	bool m_bCursorOn = false;
+		IDLE, EDIT
+	} m_State{IDLE};
+	bool m_bCursorOn {false};
 };
 
 #endif /* DISPLAYEDITFPS_H_ */

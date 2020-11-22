@@ -46,25 +46,20 @@
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
-inline static void itoa_base10(int arg, char *buf) {
-	char *n = buf;
+inline static void itoa_base10(int nArg, char *pBuffer) {
+	char *p = pBuffer;
 
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
+	if (nArg == 0) {
+		*p++ = '0';
+		*p = '0';
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
-MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_nPartPrevious(0),
-	m_bDirection(true)
-{
+MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	Ltc::InitTimeCode(m_aTimeCode);
@@ -77,7 +72,7 @@ void MidiReader::Start() {
 
 void MidiReader::HandleMtc() {
 	uint8_t nSystemExclusiveLength;
-	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
+	const auto *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
 	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
 
@@ -100,7 +95,7 @@ void MidiReader::HandleMtcQf() {
 
 	Midi::Get()->GetMessageData(nData1, nData2);
 
-	const uint8_t nPart = (nData1 & 0x70) >> 4;
+	const auto nPart = (nData1 & 0x70) >> 4;
 
 	qf[nPart] = nData1 & 0x0F;
 
@@ -147,7 +142,7 @@ void MidiReader::Update() {
 
 void MidiReader::Run() {
 	uint8_t nSystemExclusiveLength;
-	const uint8_t *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
+	const auto *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
 	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
 		if (Midi::Get()->GetChannel() == 0) {

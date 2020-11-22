@@ -52,29 +52,20 @@ static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
 	nUpdatesPrevious = nUpdates;
 }
 
-inline static void itoa_base10(int arg, char *buf) {
-	char *n = buf;
+inline static void itoa_base10(int nArg, char *pBuffer) {
+	char *p = pBuffer;
 
-	if (arg == 0) {
-		*n++ = '0';
-		*n = '0';
+	if (nArg == 0) {
+		*p++ = '0';
+		*p = '0';
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
-RtpMidiHandler::~RtpMidiHandler() {
-
-}
-
-RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) :
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_nTimeCodeType(MIDI_TC_TYPE_UNKNOWN),
-	m_nPartPrevious(0),
-	m_bDirection(true)
-{
+RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 
 	Ltc::InitTimeCode(m_aTimeCode);
@@ -102,9 +93,9 @@ void RtpMidiReader::Stop() {
 }
 
 void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
-	const uint8_t *pSystemExclusive = ptMidiMessage->system_exclusive;
+	const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
 
-	bool isMtc = false;
+	auto isMtc = false;
 
 	if (ptMidiMessage->type == MIDI_TYPES_TIME_CODE_QUARTER_FRAME) {
 		HandleMtcQf(ptMidiMessage);
@@ -122,7 +113,7 @@ void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
 }
 
 void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
-	const uint8_t *pSystemExclusive =ptMidiMessage->system_exclusive;
+	const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
 
 	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
 
@@ -141,8 +132,8 @@ void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 }
 
 void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
-	const uint8_t nData1 = ptMidiMessage->data1;
-	const uint8_t nPart = (nData1 & 0x70) >> 4;
+	const auto nData1 = ptMidiMessage->data1;
+	const auto nPart = (nData1 & 0x70) >> 4;
 
 	qf[nPart] = nData1 & 0x0F;
 

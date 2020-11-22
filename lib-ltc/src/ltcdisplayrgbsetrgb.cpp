@@ -28,72 +28,87 @@
 #include <ctype.h>
 #include <cassert>
 
-#include "ltcdisplayws28xx.h"
-
+#include "ltcdisplayrgb.h"
 #include "rgbmapping.h"
 
-void LtcDisplayWS28xx::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, TLtcDisplayWS28xxColourIndex tIndex) {
+using namespace ltcdisplayrgb;
+
+void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, ColourIndex tIndex) {
 	switch (tIndex) {
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_DIGIT:
-		m_tColours.nRed = nRed;
-		m_tColours.nGreen = nGreen;
-		m_tColours.nBlue = nBlue;
+	case ColourIndex::TIME:
+		m_tColoursTime.nRed = nRed;
+		m_tColoursTime.nGreen = nGreen;
+		m_tColoursTime.nBlue = nBlue;
 		break;
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_COLON:
+	case ColourIndex::COLON:
 		m_tColoursColons.nRed = nRed;
 		m_tColoursColons.nGreen = nGreen;
 		m_tColoursColons.nBlue = nBlue;
 		break;
-	case LTCDISPLAYWS28XX_COLOUR_INDEX_MESSAGE:
+	case ColourIndex::MESSAGE:
 		m_tColoursMessage.nRed = nRed;
 		m_tColoursMessage.nGreen = nGreen;
 		m_tColoursMessage.nBlue = nBlue;
+		break;
+	case ColourIndex::FPS:
+		m_tColoursFPS.nRed = nRed;
+		m_tColoursFPS.nGreen = nGreen;
+		m_tColoursFPS.nBlue = nBlue;
+		break;
+	case ColourIndex::INFO:
+		m_tColoursInfo.nRed = nRed;
+		m_tColoursInfo.nGreen = nGreen;
+		m_tColoursInfo.nBlue = nBlue;
+		break;
+	case ColourIndex::SOURCE:
+		m_tColoursSource.nRed = nRed;
+		m_tColoursSource.nGreen = nGreen;
+		m_tColoursSource.nBlue = nBlue;
 		break;
 	default:
 		break;
 	}
 }
 
-void LtcDisplayWS28xx::SetRGB(uint32_t nRGB, TLtcDisplayWS28xxColourIndex tIndex) {
-	const uint8_t nRed = ((nRGB & 0xFF0000) >> 16);
-	const uint8_t nGreen = ((nRGB & 0xFF00) >> 8);
-	const uint8_t nBlue = (nRGB & 0xFF);
+void LtcDisplayRgb::SetRGB(uint32_t nRGB, ColourIndex tIndex) {
+	const auto nRed = ((nRGB & 0xFF0000) >> 16);
+	const auto nGreen = ((nRGB & 0xFF00) >> 8);
+	const auto nBlue = (nRGB & 0xFF);
 
 	SetRGB(nRed, nGreen, nBlue, tIndex);
 }
 
-void LtcDisplayWS28xx::SetRGB(const char *pHexString) {
+void LtcDisplayRgb::SetRGB(const char *pHexString) {
 	if (!isdigit(pHexString[0])) {
 		return;
 	}
 
-	const TLtcDisplayWS28xxColourIndex tIndex = static_cast<TLtcDisplayWS28xxColourIndex>((pHexString[0] - '0'));
+	const auto tIndex = static_cast<ColourIndex>((pHexString[0] - '0'));
 
-	if (tIndex >= LTCDISPLAYWS28XX_COLOUR_INDEX_LAST) {
+	if (tIndex >= ColourIndex::LAST) {
 		return;
 	}
 
-	const uint32_t nRGB = hexadecimalToDecimal(pHexString + 1);
+	const auto nRGB = hexadecimalToDecimal(pHexString + 1);
 
 	SetRGB(nRGB, tIndex);
 }
 
-uint32_t LtcDisplayWS28xx::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
-	char *src = const_cast<char*>(pHexValue);
-	uint32_t ret = 0;
-	uint8_t nibble;
+uint32_t LtcDisplayRgb::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
+	auto *pSrc = const_cast<char*>(pHexValue);
+	uint32_t nReturn = 0;
 
 	while (nLength-- > 0) {
-		const char d = *src;
+		const auto c = *pSrc;
 
-		if (isxdigit(d) == 0) {
+		if (isxdigit(c) == 0) {
 			break;
 		}
 
-		nibble = d > '9' ? (d | 0x20) - 'a' + 10 : (d - '0');
-		ret = (ret << 4) | nibble;
-		src++;
+		const uint8_t nNibble = c > '9' ? (c | 0x20) - 'a' + 10 : (c - '0');
+		nReturn = (nReturn << 4) | nNibble;
+		pSrc++;
 	}
 
-	return ret;
+	return nReturn;
 }

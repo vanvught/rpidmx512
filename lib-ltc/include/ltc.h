@@ -56,7 +56,7 @@ struct TLtcTimeCode {
 }__attribute__((packed));
 
 struct TLtcDisabledOutputs {
-	bool bDisplay;
+	bool bOled;
 	bool bMax7219;
 	bool bMidi;
 	bool bArtNet;
