@@ -25,16 +25,6 @@
 
 #include <stdint.h>
 
-extern "C" {
-extern uint32_t micros(void);
-#if defined(__linux__)
-extern void bcm2835_delayMicroseconds (const uint64_t);
-#define udelay bcm2835_delayMicroseconds
-#else
-extern void udelay(uint32_t);
-#endif
-}
-
 #include "lcdbw.h"
 
 #include "hal_i2c.h"
@@ -161,10 +151,11 @@ void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 	Write(data, static_cast<uint32_t>(m_nCols + 1));
 }
 
-#if defined(ENABLE_CURSOR_MODE)
+
 void LcdBw::SetCursor(__attribute__((unused))const uint32_t constEnumTCursorOnOff) {
-}
+#if defined(ENABLE_CURSOR_MODE)
 #endif
+}
 
 void LcdBw::Write(const char *buffer, uint32_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;

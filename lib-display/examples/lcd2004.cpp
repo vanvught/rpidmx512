@@ -44,11 +44,16 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	Display display(DISPLAY_PCF8574T_2004);
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+		return -3;
+	}
 
-	bool isDetected = display.isDetected();
+	Display display(DisplayType::PCF8574T_2004);
 
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
+	const bool isDetected = display.isDetected();
+
+	display.PrintInfo();
 
 	if (isDetected) {
 		printf("Display type : %d\n", static_cast<int>(display.GetDetectedType()));

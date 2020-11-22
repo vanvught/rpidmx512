@@ -45,6 +45,7 @@ enum class DisplayType {
 	PCF8574T_1602,
 	PCF8574T_2004,
 	SSD1306,
+	SSD1311,
 	UNKNOWN
 };
 
@@ -86,10 +87,7 @@ public:
 		return m_tType;
 	}
 
-#if defined(ENABLE_CURSOR_MODE)
 	void SetCursor(uint32_t nMode);
-#endif
-
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {

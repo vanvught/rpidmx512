@@ -1,8 +1,8 @@
 /**
- * @file dislpayset.h
+ * @file ssd1311.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,51 +23,49 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYSET_H_
-#define DISPLAYSET_H_
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-#include <stdint.h>
+#include "bcm2835.h"
 
-namespace display {
-namespace cursor {
-static constexpr auto OFF = 0;
-static constexpr auto ON = (1 << 0);
-static constexpr auto BLINK_OFF = 0;
-static constexpr auto BLINK_ON = (1 << 1);
-}  // namespace cursor_mode
-}  // namespace display
+#include "display.h"
 
-class DisplaySet {
-public:
-	virtual ~DisplaySet() {
+int main(int argc, char **argv) {
+	if (getuid() != 0) {
+		fprintf(stderr, "Error: Not started with 'root'\n");
+		return -1;
 	}
 
-	uint8_t GetColumns() {
-		return m_nCols;
+	if (bcm2835_init() != 1) {
+		fprintf(stderr, "bcm2835_init() failed\n");
+		return -2;
 	}
 
-	uint8_t GetRows() {
-		return m_nRows;
+	bcm2835_gpio_fsel(4, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set(4);
+	bcm2835_delayMicroseconds(100);
+
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+		return -3;
 	}
 
-	virtual bool Start()= 0;
-	virtual void Cls()= 0;
-	virtual void PutChar(int)= 0;
-	virtual void PutString(const char*)= 0;
-	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
-	virtual void ClearLine(uint8_t)= 0;
-	virtual void SetSleep(__attribute__((unused)) bool bSleep) {
+	bcm2835_gpio_clr(4);
+	bcm2835_delayMicroseconds(10);
+	bcm2835_gpio_set(4);
+
+	Display display(DisplayType::SSD1311);
+
+	const bool isDetected = display.isDetected();
+
+	display.PrintInfo();
+
+	if (isDetected) {
+		for (unsigned i = 1; i <= display.getRows(); i++) {
+			display.Printf(i, "Line %u", i);
+		}
 	}
 
-	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
-	virtual void SetCursor(uint32_t)= 0;
-
-	virtual void PrintInfo() {
-	}
-
-protected:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
-};
-
-#endif /* DISPLAYSET_H_ */
+	return 0;
+}

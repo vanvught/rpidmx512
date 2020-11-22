@@ -44,14 +44,18 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+		return -3;
+	}
+
 	Tc1602 display;
 
-	bool isDetected = display.Start();
+	const bool isDetected = display.Start();
 
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
+	display.PrintInfo();
 
 	if (isDetected) {
-		display.SetCursor(SET_CURSOR_ON);
 		display.TextLine(1, "Line 1", 6);
 		display.TextLine(2, "Line 2", 6);
 	}

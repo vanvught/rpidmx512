@@ -36,8 +36,8 @@
 
 class DisplayHandler: public LedBlinkDisplay {
 public:
-	DisplayHandler(void): m_bHaveDisplay(Display::Get() != 0) {}
-	~DisplayHandler(void) {}
+	DisplayHandler(): m_bHaveDisplay(Display::Get() != nullptr) {}
+	~DisplayHandler() {}
 
 	void Print(uint32_t nState) {
 		if (m_bHaveDisplay) {

@@ -42,16 +42,20 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
+	if (bcm2835_i2c_begin() != 1) {
+		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
+		return -2;
+	}
+
 	Display display(DisplayType::SSD1306);
 
-	bool isDetected = display.isDetected();
+	const bool isDetected = display.isDetected();
 
-	printf("Display is detected : %s\n", isDetected ? "Yes" : "No");
+	display.PrintInfo();
 
 	if (isDetected) {
-		printf("Display type : %d\n", static_cast<int>(display.GetDetectedType()));
-		for (int i = 1; i <= 8; i++) {	// We assume OLED_PANEL_128x64_8ROWS
-			display.Printf(i, "Line %d", static_cast<int>(i));
+		for (unsigned i = 1; i <= display.getRows(); i++) {
+			display.Printf(i, "Line %u", i);
 		}
 	}
 
