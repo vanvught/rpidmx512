@@ -105,11 +105,13 @@
 # include "oscclientparams.h"
 # include "storeoscclient.h"
 #endif
+
 #if defined(DISPLAY_UDF)
 /* display.txt */
 # include "displayudfparams.h"
 # include "storedisplayudf.h"
 #endif
+
 #if defined(STEPPER)
 /* sparkfun.txt */
 # include "sparkfundmxparams.h"
@@ -120,16 +122,25 @@
 # include "l6470params.h"
 # include "storemotors.h"
 #endif
+
 #if defined(SHOWFILE)
- /* show.txt */
+/* show.txt */
 # include "showfileparams.h"
 # include "storeshowfile.h"
 #endif
+
 #if defined (DMXSERIAL)
 /* serial.txt */
 # include "dmxserialparams.h"
 # include "storedmxserial.h"
 #endif
+
+#if defined (RGB_PANEL)
+/* rgbpanel.txt */
+# include "rgbpanelparams.h"
+# include "storergbpanel.h"
+#endif
+
 #if defined (RDM_RESPONDER)
 /* sensors.txt */
 # include "rdmsensorsparams.h"
@@ -149,7 +160,7 @@
 #include "debug.h"
 
 static constexpr char sRemoteConfigs[REMOTE_CONFIG_LAST][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile" };
-static constexpr char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial" };
+static constexpr char sRemoteConfigModes[REMOTE_CONFIG_MODE_LAST][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel" };
 
 static constexpr char sRequestReboot[] = "?reboot##";
 static constexpr auto REQUEST_REBOOT_LENGTH = sizeof(sRequestReboot) - 1;
@@ -573,6 +584,11 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		HandleGetSerialTxt(nSize);
 		break;
 #endif
+#if defined (RGB_PANEL)
+	case TXT_FILE_RGBPANEL:
+		HandleGetRgbPanelTxt(nSize);
+		break;
+#endif
 	default:
 		if (pBuffer == nullptr) {
 			Network::Get()->SendTo(m_nHandle, "?get#ERROR#\n", 12, m_nIPAddressFrom, udp::PORT);
@@ -837,6 +853,17 @@ void RemoteConfig::HandleGetSerialTxt(uint32_t &nSize) {
 }
 #endif
 
+#if defined (RGB_PANEL)
+void RemoteConfig::HandleGetRgbPanelTxt(uint32_t &nSize) {
+	DEBUG_ENTRY
+
+	RgbPanelParams rgbPanelParams(StoreRgbPanel::Get());
+	rgbPanelParams.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
 /*
  *
  */
@@ -951,6 +978,11 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 #if defined (DMXSERIAL)
 	case TXT_FILE_SERIAL:
 		HandleTxtFileSerial();
+		break;
+#endif
+#if defined (RGB_PANEL)
+	case TXT_FILE_RGBPANEL:
+		HandleTxtFileRgbPanel();
 		break;
 #endif
 	default:
@@ -1412,6 +1444,18 @@ void RemoteConfig::HandleTxtFileShow() {
 	DEBUG_ENTRY
 
 	ShowFileParams showFileParams(StoreShowFile::Get());
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+		if (m_nBytesReceived == sizeof(struct TShowFileParams)) {
+			uint32_t nSize;
+			showFileParams.Builder(reinterpret_cast<const struct TShowFileParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		} else {
+			DEBUG_EXIT
+			return;
+		}
+	}
+
 	showFileParams.Load(m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	showFileParams.Dump();
@@ -1441,6 +1485,32 @@ void RemoteConfig::HandleTxtFileSerial() {
 	dmxSerialParams.Load(m_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	dmxSerialParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (RGB_PANEL)
+void RemoteConfig::HandleTxtFileRgbPanel() {
+	DEBUG_ENTRY
+
+	RgbPanelParams rgbPanelParams(StoreRgbPanel::Get());
+
+	if (m_tRemoteConfigHandleMode == REMOTE_CONFIG_HANDLE_MODE_BIN) {
+		if (m_nBytesReceived == sizeof(struct TRgbPanelParams)) {
+			uint32_t nSize;
+			rgbPanelParams.Builder(reinterpret_cast<const struct TRgbPanelParams*>(m_pStoreBuffer), m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			m_nBytesReceived = nSize;
+		} else {
+			DEBUG_EXIT
+			return;
+		}
+	}
+
+	rgbPanelParams.Load(m_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	rgbPanelParams.Dump();
 #endif
 
 	DEBUG_EXIT

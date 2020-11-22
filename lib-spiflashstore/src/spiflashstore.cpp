@@ -39,14 +39,14 @@
 
 static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for UUID
-static constexpr uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        32,            32,        96,         32,      1024,     32,     32,       64,            96,               32};
+static constexpr uint32_t s_aStorSize[STORE_LAST]  = {96,        144,       32,    64,       96,      32,     64,     32,         480,           64,        32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32};
 #ifndef NDEBUG
-static constexpr char s_aStoreName[STORE_LAST][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS"};
+static constexpr char s_aStoreName[STORE_LAST][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel"};
 #endif
 
 SpiFlashStore *SpiFlashStore::s_pThis = nullptr;
 
-SpiFlashStore::SpiFlashStore(): m_bHaveFlashChip(false), m_bIsNew(false), m_nStartAddress(0), m_nSpiFlashStoreSize(SPI_FLASH_STORE_SIZE), m_tState(STORE_STATE_IDLE) {
+SpiFlashStore::SpiFlashStore() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
@@ -201,7 +201,7 @@ void SpiFlashStore::Update(TStore tStore, uint32_t nOffset, const void *pData, u
 
 	const uint32_t nBase = nOffset + GetStoreOffset(tStore);
 
-	const uint8_t *pSrc = static_cast<const uint8_t*>(pData);
+	const auto *pSrc = static_cast<const uint8_t*>(pData);
 	uint8_t *pDst = &m_aSpiFlashData[nBase];
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
@@ -218,7 +218,7 @@ void SpiFlashStore::Update(TStore tStore, uint32_t nOffset, const void *pData, u
 	}
 
 	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
-		uint32_t *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffsetSetList));
+		auto *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffsetSetList));
 
 		*pSet |= nSetList;
 	}
@@ -240,7 +240,7 @@ void SpiFlashStore::Copy(TStore tStore, void *pData, uint32_t nDataLength, uint3
 	assert(pData != nullptr);
 	assert((nDataLength + nOffset) <= s_aStorSize[tStore]);
 
-	const uint32_t *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset));
+	const auto *pSet = reinterpret_cast<uint32_t*>((&m_aSpiFlashData[GetStoreOffset(tStore)] + nOffset));
 
 	DEBUG_PRINTF("*pSet=0x%x", reinterpret_cast<uint32_t>(*pSet));
 
@@ -250,8 +250,8 @@ void SpiFlashStore::Copy(TStore tStore, void *pData, uint32_t nDataLength, uint3
 		return;
 	}
 
-	const uint8_t *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]) + nOffset;
-	uint8_t *pDst = static_cast<uint8_t*>(pData);
+	const auto *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]) + nOffset;
+	auto *pDst = static_cast<uint8_t*>(pData);
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		*pDst++ = *pSrc++;
@@ -270,8 +270,8 @@ void SpiFlashStore::CopyTo(TStore tStore, void* pData, uint32_t& nDataLength) {
 
 	nDataLength = s_aStorSize[tStore];
 
-	const uint8_t *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]);
-	uint8_t *pDst = static_cast<uint8_t*>(pData);
+	const auto *pSrc = const_cast<const uint8_t*>(&m_aSpiFlashData[GetStoreOffset(tStore)]);
+	auto *pDst = static_cast<uint8_t*>(pData);
 
 	for (uint32_t i = 0; i < nDataLength; i++) {
 		*pDst++ = *pSrc++;

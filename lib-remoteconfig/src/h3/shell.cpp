@@ -53,7 +53,6 @@ static constexpr TCommands cmd_table[] = {
 		{ "dump" , 1},
 		{ "mem" , 2},
 		{ "ntp" , 1},
-		{ "ptp" , 1},
 		{ "gps" , 1},
 #endif
 		{ "?", 0 }
@@ -183,7 +182,6 @@ void Shell::CmdHelp() {
 }
 
 void Shell::Run() {
-	const char *p;
 	uint32_t nLength;
 	
 	if (__builtin_expect((!m_bShownPrompt), 1)) {
@@ -191,7 +189,7 @@ void Shell::Run() {
 		m_bShownPrompt = true;
 	}
 
-	if (__builtin_expect(((p = ReadLine(nLength)) == nullptr), 1)) {		
+	if (__builtin_expect((ReadLine(nLength) == nullptr), 1)) {
 		return;
 	}
 	

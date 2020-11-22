@@ -26,6 +26,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -54,7 +55,6 @@
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
 # include "ntpclient.h"
-# include "ptpclient.h"
 # include "gps.h"
 extern "C" {
 void h3_board_dump(void);
@@ -163,11 +163,11 @@ static constexpr char LTC[] = "This source does not support the set command.\n";
 using namespace shell;
 
 uint32_t Shell::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
-	const char *pSrc = pHexValue;
+	const auto *pSrc = pHexValue;
 	uint32_t nValue = 0;
 
 	while (nLength-- > 0) {
-		const char c = *pSrc;
+		const auto c = *pSrc;
 
 		if (isxdigit(c) == 0) {
 			break;
@@ -281,7 +281,7 @@ void Shell::CmdSet() {
 }
 
 void Shell::CmdGet() {
-	const uint32_t nArgv0Length = m_nArgvLength[0];
+	const auto nArgv0Length = m_nArgvLength[0];
 
 	char buffer[1024];
 	memcpy(buffer, m_Argv[0], nArgv0Length);
@@ -299,7 +299,7 @@ void Shell::CmdGet() {
 
 		buffer[nLength] = '\0';
 
-		char *p = buffer;
+		auto p = buffer;
 		const auto nPropertyLength = m_nArgvLength[1];
 
 		uint32_t i;
@@ -410,7 +410,7 @@ void Shell::CmdDump() {
 }
 
 void Shell::CmdMem() {
-	const char *pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], m_nArgvLength[0]));
+	const auto pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], m_nArgvLength[0]));
 	const auto nSize = hexadecimalToDecimal(m_Argv[1], m_nArgvLength[1]);
 
 	debug_dump(pAddress, nSize);
@@ -427,28 +427,17 @@ void Shell::CmdNtp() {
 	uart0_puts(msg::error::INVALID);
 }
 
-void Shell::CmdPtp() {
-	const auto nArgv0Length = m_nArgvLength[0];
-
-	if ((nArgv0Length == networktime::length::PRINT) && (memcmp(m_Argv[0], networktime::arg::PRINT, networktime::length::PRINT) == 0)) {
-		//TODO Implement
-		return;
-	}
-
-	uart0_puts(msg::error::INVALID);
-}
-
 void Shell::CmdGps() {
 	const auto nArgv0Length = m_nArgvLength[0];
 
 	if ((nArgv0Length == shell::gps::length::DATE) && (memcmp(m_Argv[0], shell::gps::arg::DATE, shell::gps::length::DATE) == 0)) {
-		const struct tm *tm = GPS::Get()->GetDateTime();
+		const auto tm = GPS::Get()->GetDateTime();
 		uart0_printf("%.2d/%.2d/%.2d %.2d:%.2d:%.2d\n", tm->tm_mday, 1 + tm->tm_mon, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min, tm->tm_sec);
 		return;
 	}
 
 	if ((nArgv0Length == shell::gps::length::LOCALTIME) && (memcmp(m_Argv[0], shell::gps::arg::LOCALTIME, shell::gps::length::LOCALTIME) == 0)) {
-		const time_t t = GPS::Get()->GetLocalSeconds();
+		const auto t = GPS::Get()->GetLocalSeconds();
 		uart0_puts(asctime(localtime(&t)));
 		return;
 	}
