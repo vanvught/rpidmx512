@@ -220,19 +220,19 @@ void Ltc::InitSystemTime(char *pSystemTime) {
 bool Ltc::ParseTimeCodeRate(const char *pTimeCodeRate, uint8_t &nFPS, type &tType) {
 	assert(pTimeCodeRate != nullptr);
 
-	auto nTenths = DIGIT(pTimeCodeRate[0]);
+	const auto nTenths = DIGIT(pTimeCodeRate[0]);
 
 	if ((nTenths < 0) || (nTenths > 3)) {
 		return false;
 	}
 
-	auto nDigit = DIGIT(pTimeCodeRate[1]);
+	const auto nDigit = DIGIT(pTimeCodeRate[1]);
 
 	if ((nDigit < 0) || (nDigit > 9)) {
 		return false;
 	}
 
-	auto nValue = VALUE(nTenths, nDigit);
+	const auto nValue = VALUE(nTenths, nDigit);
 
 	switch (nValue) {
 	case 24:

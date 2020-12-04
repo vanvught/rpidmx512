@@ -239,10 +239,10 @@ void SystimeReader::Run() {
 	if (m_bIsStarted) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
-		auto nTime = Hardware::Get()->GetTime();
+		auto nTime = time(nullptr);
 
-		if (__builtin_expect((m_ntimePrevious != nTime), 0)) {
-			m_ntimePrevious = nTime;
+		if (__builtin_expect((m_nTimePrevious != nTime), 0)) {
+			m_nTimePrevious = nTime;
 
 			m_tMidiTimeCode.nFrames = 0;
 			m_tMidiTimeCode.nSeconds = nTime % 60;

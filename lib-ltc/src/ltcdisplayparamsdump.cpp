@@ -47,14 +47,11 @@ void LtcDisplayParams::Dump() {
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE,
-				WS28xx::GetLedTypeString(
-						static_cast<TWS28XXType>(m_tLtcDisplayParams.nWS28xxLedType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxLedType));
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<TWS28XXType>(m_tLtcDisplayParams.nWS28xxLedType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxLedType));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING,
-				RGBMapping::ToString(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {
@@ -81,6 +78,14 @@ void LtcDisplayParams::Dump() {
 
 	if (isMaskSet(LtcDisplayParamsMask::MAX7219_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity);
+	}
+
+	if (isMaskSet(LtcDisplayParamsMask::OLED_INTENSITY)) {
+		printf(" %s=%d\n", LtcDisplayParamsConst::OLED_INTENSITY, m_tLtcDisplayParams.nOledIntensity);
+	}
+
+	if (isMaskSet(LtcDisplayParamsMask::ROTARY_FULLSTEP)) {
+		printf(" %s=%d\n", LtcDisplayParamsConst::ROTARY_FULLSTEP, m_tLtcDisplayParams.nRotaryFullStep);
 	}
 #endif
 }

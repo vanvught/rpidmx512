@@ -32,6 +32,22 @@ using namespace ltcdisplayrgb;
 
 const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
 
+/**
+ * OLED SSD1306 / SSD1311
+ */
+
+const char LtcDisplayParamsConst::OLED_INTENSITY[] = "oled_intensity";
+
+/**
+ * Rotary control
+ */
+
+const char LtcDisplayParamsConst::ROTARY_FULLSTEP[] = "rotary_fullstep";
+
+/**
+ * MAX7219 7-segment / matrix
+ */
+
 const char LtcDisplayParamsConst::MAX7219_TYPE[] = "max7219_type";
 const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
 

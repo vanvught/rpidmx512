@@ -45,8 +45,6 @@
 
 #include "propertiesbuilder.h"
 
-#include "debug.h"
-
 void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	assert(pBuffer != nullptr);
 
@@ -57,6 +55,12 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 	}
 
 	PropertiesBuilder builder(LtcDisplayParamsConst::FILE_NAME, pBuffer, nLength);
+
+	builder.AddComment("OLED SSD1306/11");
+	builder.Add(LtcDisplayParamsConst::OLED_INTENSITY, m_tLtcDisplayParams.nOledIntensity, isMaskSet(LtcDisplayParamsMask::OLED_INTENSITY));
+
+	builder.AddComment("Rotary control");
+	builder.Add(LtcDisplayParamsConst::ROTARY_FULLSTEP, m_tLtcDisplayParams.nRotaryFullStep, isMaskSet(LtcDisplayParamsMask::ROTARY_FULLSTEP));
 
 	builder.AddComment("MAX7219");
 	builder.Add(LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7segment" : "matrix" , isMaskSet(LtcDisplayParamsMask::MAX7219_TYPE));

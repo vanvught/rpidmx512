@@ -47,20 +47,22 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
-#include "debug.h"
-
 static constexpr char aColonBlinkMode[3][5] = { "off", "down", "up" };
 
 using namespace ltcdisplayrgb;
 
-LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
-	DEBUG_ENTRY;
+namespace defaults {
+static constexpr auto OLED_INTENSITY = 0x7F;
+static constexpr auto MAX7219_INTENSITY = 0x04;
+static constexpr auto ROTARY_FULLSTEP = 0x00;
+}  // namespace defaults
 
+LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nSetList = 0;
 	m_tLtcDisplayParams.nWS28xxLedType = Defaults::LED_TYPE;
 	m_tLtcDisplayParams.nGlobalBrightness = Defaults::GLOBAL_BRIGHTNESS;	// Not used
 	m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
-	m_tLtcDisplayParams.nMax7219Intensity = 4;
+	m_tLtcDisplayParams.nMax7219Intensity = defaults::MAX7219_INTENSITY;
 	m_tLtcDisplayParams.nWS28xxRgbMapping = RGB_MAPPING_RGB;
 	m_tLtcDisplayParams.nDisplayRgbIntensity = Defaults::MASTER;
 	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(Defaults::COLON_BLINK_MODE);
@@ -72,8 +74,8 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(ColourIndex::SOURCE)] = Defaults::COLOUR_SOURCE;
 	m_tLtcDisplayParams.nWS28xxDisplayType = static_cast<uint8_t>(WS28xxType::SEGMENT);
 	memset(m_tLtcDisplayParams.aInfoMessage, ' ', sizeof(m_tLtcDisplayParams.aInfoMessage));
-
-	DEBUG_EXIT;
+	m_tLtcDisplayParams.nOledIntensity = defaults::OLED_INTENSITY;
+	m_tLtcDisplayParams.nRotaryFullStep = defaults::ROTARY_FULLSTEP;
 }
 
 bool LtcDisplayParams::Load() {
@@ -121,7 +123,27 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	uint32_t nValue32;
 	uint32_t nLength = sizeof(aBuffer) - 1;
 
-	DEBUG_PRINTF("%x", m_tLtcDisplayParams.nSetList);
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::OLED_INTENSITY, nValue8) == Sscan::OK) {
+		m_tLtcDisplayParams.nOledIntensity = nValue8;
+
+		if (nValue8 != defaults::OLED_INTENSITY) {
+			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::OLED_INTENSITY;
+		} else {
+			m_tLtcDisplayParams.nSetList &= ~LtcDisplayParamsMask::OLED_INTENSITY;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::ROTARY_FULLSTEP, nValue8) == Sscan::OK) {
+		m_tLtcDisplayParams.nRotaryFullStep = (nValue8 != 0);
+
+		if (nValue8 != defaults::ROTARY_FULLSTEP) {
+			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::ROTARY_FULLSTEP;
+		} else {
+			m_tLtcDisplayParams.nSetList &= ~LtcDisplayParamsMask::ROTARY_FULLSTEP;
+		}
+		return;
+	}
 
 	if (Sscan::Char(pLine, LtcDisplayParamsConst::MAX7219_TYPE, aBuffer, nLength) == Sscan::OK) {
 		if (strncasecmp(aBuffer, "7segment", nLength) == 0) {
@@ -137,7 +159,12 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::MAX7219_INTENSITY, nValue8) == Sscan::OK) {
 		if (nValue8 <= 0x0F) {
 			m_tLtcDisplayParams.nMax7219Intensity = nValue8;
-			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::MAX7219_INTENSITY;
+
+			if (nValue8 != defaults::MAX7219_INTENSITY) {
+				m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::MAX7219_INTENSITY;
+			} else {
+				m_tLtcDisplayParams.nSetList &= ~LtcDisplayParamsMask::MAX7219_INTENSITY;
+			}
 		}
 		return;
 	}
