@@ -47,7 +47,7 @@
 #define EXEC_TIME_CLS		1520	///< 1.52ms
 
 /// Instruction Code
-/// http://www.oppod.com/upload/download/20111224105943_57765.pdf
+/// https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf
 /// 1. Clear Display
 #define TC1602_IC_CLS			(1<<0)	///< Clear all the display data by writing "20H" (space code) to all DDRAM address.
 /// 2. Return Home

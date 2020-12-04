@@ -36,6 +36,12 @@
 
 #include "network.h"
 
+namespace displayudf {
+struct Defaults {
+	static constexpr auto INTENSITY = 0x7F;
+};
+}  // namespace displayudf
+
 enum TDisplayUdfLabels {
 	DISPLAY_UDF_LABEL_TITLE,
 	DISPLAY_UDF_LABEL_BOARDNAME,

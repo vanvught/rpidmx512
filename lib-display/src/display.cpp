@@ -53,14 +53,15 @@
 # include "console.h"
 #endif
 
+using namespace display;
+
 Display *Display::s_pThis = nullptr;
 
 Display::Display(uint32_t nCols, uint32_t nRows):
 	m_tType(DisplayType::UNKNOWN),
 #if !defined(NO_HAL)
-	m_nMillis(Hardware::Get()->Millis()),
+	m_nMillis(Hardware::Get()->Millis())
 #endif
-	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -69,15 +70,13 @@ Display::Display(uint32_t nCols, uint32_t nRows):
 }
 
 Display::Display(DisplayType tDisplayType):
+	m_tType(tDisplayType),
 #if !defined(NO_HAL)
-	m_nMillis(Hardware::Get()->Millis()),
+	m_nMillis(Hardware::Get()->Millis())
 #endif
-	m_nSleepTimeout(1000 * 60 * DISPLAY_SLEEP_TIMEOUT_DEFAULT)
 {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	m_tType = tDisplayType;
 
 	switch (tDisplayType) {
 #if defined(ENABLE_LCDBW)
@@ -136,6 +135,14 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
+#if defined(ENABLE_SSD1311)
+			m_LcdDisplay = new Ssd1311;
+
+			if (m_LcdDisplay->Start()) {
+				m_tType = DisplayType::SSD1311;
+				Printf(1, "SSD1311");
+			} else
+#endif
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_4ROWS);
 		} else {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
@@ -353,6 +360,14 @@ void Display::Run() {
 	}
 }
 #endif
+
+void Display::SetContrast(uint8_t nContrast) {
+	if (m_LcdDisplay == nullptr) {
+		return;
+	}
+
+	m_LcdDisplay->SetContrast(nContrast);
+}
 
 void Display::PrintInfo() {
 	if (m_LcdDisplay == nullptr) {

@@ -44,13 +44,17 @@ enum class RunStatus {
 
 class McpButtons {
 public:
-	McpButtons(ltc::source tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds);
+	McpButtons(ltc::source tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds, bool bRotaryHalfStep);
 
 	bool Check();
 	bool Wait(ltc::source& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
 
 	bool IsConnected() const {
 		return m_bIsConnected;
+	}
+
+	void SetRunGpsTimeClient(bool bRunGpsTimeClient) {
+		m_bRunGpsTimeClient = bRunGpsTimeClient;
 	}
 
 	void Run();
@@ -94,6 +98,7 @@ private:
 	uint32_t m_nSelectMillis{0};
 	int m_nKey{INPUT_KEY_NOT_DEFINED};
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	bool m_bRunGpsTimeClient{false};
 };
 
 #endif /* SOURCESELECT_H_ */

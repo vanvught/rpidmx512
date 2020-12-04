@@ -30,11 +30,14 @@
 #include "input.h"
 
 #include "ltc.h"
-
-#include "display.h"
 #include "ltc7segment.h"
 
+#include "display.h"
+
+#include "debug.h"
+
 void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
+	DEBUG_PRINTF("%d %d", m_State, nKey);
 
 	if (m_State == IDLE) {
 		if (nKey == INPUT_KEY_ENTER) {

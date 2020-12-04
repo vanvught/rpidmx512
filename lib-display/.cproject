@@ -194,6 +194,7 @@
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="ENABLE_CURSOR_MODE"/>
+									<listOptionValue builtIn="false" value="ENABLE_SSD1311"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.334666458" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

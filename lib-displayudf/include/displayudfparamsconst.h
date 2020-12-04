@@ -28,7 +28,10 @@
 
 struct DisplayUdfParamsConst {
 	static const char FILE_NAME[];
+
+	static const char INTENSITY[];
 	static const char SLEEP_TIMEOUT[];
+
 	static const char TITLE[];
 	static const char BOARD_NAME[];
 	static const char VERSION[];

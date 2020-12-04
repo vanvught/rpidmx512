@@ -30,16 +30,18 @@
 
 #include "displayudf.h"
 
-#define DISPLAYUDF_PARAMS_SLEEP_TIMEOUT_DEFAULT		5
-
 struct TDisplayUdfParams {
     uint32_t nSetList;
     uint8_t nLabelIndex[28];
     uint8_t nSleepTimeout;
+    uint8_t nIntensity;
 }__attribute__((packed));
+
+static_assert(sizeof(struct TDisplayUdfParams) <= 48, "struct TDisplayUdfParams is too large");
 
 struct DisplayUdfParamsMask {
 	static constexpr auto SLEEP_TIMEOUT = (1U << 28);
+	static constexpr auto INTENSITY = (1U << 29);
 };
 
 class DisplayUdfParamsStore {

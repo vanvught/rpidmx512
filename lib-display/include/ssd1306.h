@@ -58,10 +58,11 @@ public:
 	void Text(const char *, uint8_t);
 	void TextLine(uint8_t, const char *, uint8_t) override;
 
-	void SetSleep(bool bSleep) override;
-
 	void SetCursorPos(uint8_t, uint8_t) override;
 	void SetCursor(uint32_t) override;
+
+	void SetSleep(bool bSleep) override;
+	void SetContrast(uint8_t nContrast) override;
 
 	void PrintInfo() override;
 

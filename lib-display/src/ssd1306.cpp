@@ -428,6 +428,11 @@ void Ssd1306::SetSleep(bool bSleep) {
 	}
 }
 
+void Ssd1306::SetContrast(uint8_t nContrast) {
+	SendCommand(SSD1306_CMD_SET_CONTRAST);
+	SendCommand(nContrast);
+}
+
 void Ssd1306::InitMembers() {
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:

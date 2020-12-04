@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <ltcdisplayrgb.h>
 #include <stdint.h>
 
 #include "mcpbuttons.h"
@@ -33,17 +32,15 @@
 #include "input.h"
 
 #include "display.h"
-
 #include "ltcdisplaymax7219.h"
+#include "ltcdisplayrgb.h"
 
 void McpButtons::HandleInternalTimeCodeStart(TLtcTimeCode &StartTimeCode) {
 	displayEditTimeCode.HandleKey(m_nKey, StartTimeCode, m_aTimeCode);
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-	}
-
-	if (!m_ptLtcDisabledOutputs->bWS28xx) {
+	} else if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 
@@ -55,9 +52,7 @@ void McpButtons::HandleInternalTimeCodeStop(TLtcTimeCode &StartTimeCode) {
 
 	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-	}
-
-	if (!m_ptLtcDisabledOutputs->bWS28xx) {
+	} else if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 

@@ -25,14 +25,14 @@
 
 #include <stdint.h>
 
-#include <stdio.h>
-
 #include "displayedittimecode.h"
 
 #include "ltc.h"
 #include "timecodeconst.h"
 #include "input.h"
 #include "display.h"
+
+#include "debug.h"
 
 static constexpr TLtcTimeCodeIndex s_Index[] = {
 		LTC_TC_INDEX_HOURS_TENS,
@@ -48,6 +48,8 @@ static constexpr TLtcTimeCodeIndex s_Index[] = {
 static constexpr auto s_IndexSize = sizeof(s_Index) / sizeof(s_Index[0]);
 
 void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTimeCode[TC_CODE_MAX_LENGTH]) {
+	DEBUG_PRINTF("%d %d", m_State, nKey);
+
 	m_nFrames = TimeCodeConst::FPS[timecode.nType];
 
 	if (m_State == IDLE) {
@@ -58,6 +60,8 @@ void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTi
 		}
 	} else {
 		switch (nKey) {
+		case INPUT_KEY_ENTER:
+			break;
 		case INPUT_KEY_ESC:
 			m_State = IDLE;
 			m_nCursorPositionIndex = 0;
@@ -76,6 +80,7 @@ void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTi
 			KeyRight();
 			break;
 		default:
+			return;
 			break;
 		}
 	}
@@ -92,8 +97,8 @@ void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTi
 
 	Display::Get()->SetCursorPos(s_Index[m_nCursorPositionIndex], 0);
 
-	printf("m_State=%d, s_Index[m_nCursorPositionIndex]=%d, m_bCursorOn=%d\n", m_State, s_Index[m_nCursorPositionIndex], m_bCursorOn);
-	printf("%.2d:%.2d:%.2d.%.2d\n", timecode.nHours, timecode.nMinutes, timecode.nSeconds, timecode.nFrames);
+	DEBUG_PRINTF("m_State=%d, s_Index[m_nCursorPositionIndex]=%d, m_bCursorOn=%d", m_State, s_Index[m_nCursorPositionIndex], m_bCursorOn);
+	DEBUG_PRINTF("%.2d:%.2d:%.2d.%.2d", timecode.nHours, timecode.nMinutes, timecode.nSeconds, timecode.nFrames);
 }
 
 void DisplayEditTimeCode::KeyUp(TLtcTimeCode& timecode) {
@@ -216,7 +221,7 @@ void DisplayEditTimeCode::KeyLeft() {
 }
 
 void DisplayEditTimeCode::KeyRight() {
-	if (m_nCursorPositionIndex < s_IndexSize) {
+	if (m_nCursorPositionIndex < (s_IndexSize - 1)) {
 		m_nCursorPositionIndex++;
 		return;
 	}

@@ -37,7 +37,11 @@
 # include "console.h"
 #endif
 
-static constexpr uint32_t DISPLAY_SLEEP_TIMEOUT_DEFAULT	= 5;
+namespace display {
+struct Defaults {
+	static constexpr auto SEEP_TIMEOUT = 5;
+};
+}  // namespace display
 
 enum class DisplayType {
 	BW_UI_1602,
@@ -90,12 +94,14 @@ public:
 	void SetCursor(uint32_t nMode);
 	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
-	void SetSleepTimeout(uint32_t nSleepTimeout = DISPLAY_SLEEP_TIMEOUT_DEFAULT) {
+	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
 	}
 	uint32_t GetSleepTimeout() {
 		return m_nSleepTimeout / 1000 / 60;
 	}
+
+	void SetContrast(uint8_t nContrast);
 
 	uint32_t getCols() {
 		return m_nCols;
@@ -123,7 +129,7 @@ private:
 #if !defined(NO_HAL)
 	uint32_t m_nMillis;
 #endif
-	uint32_t m_nSleepTimeout;
+	uint32_t m_nSleepTimeout{1000 * 60 * display::Defaults::SEEP_TIMEOUT};
 
 	Display7Segment m_Display7Segment;
 

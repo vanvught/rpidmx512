@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-# undef NDEBUG	// FIXME Remove
-#endif
-
 #include <cassert>
 #include <stdint.h>
 #include <stdio.h>
@@ -53,11 +49,13 @@ static constexpr uint8_t CLEAR_DISPLAY = 0x01;
 static constexpr uint8_t CGRAM_ADDRESS = 0x40;
 static constexpr uint8_t FUNCTION_SELECTION_B = 0x72;
 static constexpr uint8_t DDRAM_ADDRESS = 0x80;
+static constexpr uint8_t CONTRAST = 0x81;
 }  // namespace cmd
 
 using namespace sdd1311;
 
 static uint8_t _ClearBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
+static uint8_t _TextBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
 
 Ssd1311 *Ssd1311::s_pThis = nullptr;
 
@@ -67,9 +65,6 @@ Ssd1311::Ssd1311(): m_I2C(DEFAULT_I2C_ADDRESS) {
 
 	m_nRows = MAX_ROWS;
 	m_nCols = MAX_COLUMNS;
-}
-
-Ssd1311::~Ssd1311() {
 }
 
 bool Ssd1311::Start() {
@@ -86,6 +81,7 @@ bool Ssd1311::Start() {
 	}
 
 	_ClearBuffer[0] = MODE_DATA;
+	_TextBuffer[0] = MODE_DATA;
 
 	SelectRamRom(0, static_cast<uint8_t>(Rom::A));
 
@@ -116,32 +112,40 @@ void Ssd1311::PutChar(int c) {
 }
 
 void Ssd1311::PutString(const char *pString) {
-	const char *p = pString;
+	assert(pString != nullptr);
 
-	m_I2C.Write(MODE_DATA);
+	uint32_t n = MAX_COLUMNS;
+	auto *pSrc = pString;
+	auto *s = reinterpret_cast<char *>(&_TextBuffer[1]);
 
-	for (uint32_t i = 0; *p != '\0'; i++) {
-		m_I2C.Write(*p);
-		p++;
+	while (n > 0 && *pSrc != '\0') {
+		*s++ = *pSrc++;
+		--n;
 	}
+
+	SendData(_TextBuffer, 1U + MAX_COLUMNS - n);
 }
 
 void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
-	assert(nLine <= m_nRows);
+	assert(nLine <= MAX_ROWS);
 
 	Ssd1311::SetCursorPos(0, nLine - 1);
 
-	m_I2C.Write(MODE_DATA);
-	SendData(reinterpret_cast<const uint8_t *>(pData), nLength);
+	if (nLength > MAX_COLUMNS) {
+		nLength = MAX_COLUMNS;
+	}
+
+	memcpy(&_TextBuffer[1], pData, nLength);
+	SendData(_TextBuffer, 1U + nLength);
 }
 
 void Ssd1311::Text(const char *pData, uint8_t nLength) {
-	if (nLength > m_nCols) {
-		nLength = m_nCols;
+	if (nLength > MAX_COLUMNS) {
+		nLength = MAX_COLUMNS;
 	}
 
-	m_I2C.Write(MODE_DATA);
-	SendData(reinterpret_cast<const uint8_t *>(pData), nLength);
+	memcpy(&_TextBuffer[1], pData, nLength);
+	SendData(_TextBuffer, 1U + nLength);
 }
 
 /**
@@ -167,18 +171,67 @@ void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
  * while clear display (cmd 01h) is recommended to sent afterwards
  */
 void Ssd1311::SelectRamRom(uint32_t nRam, uint32_t nRom) {
+	// [IS=X,RE=1,SD=0]
 	Ssd1311::SetSleep(true);
-	SendCommand(cmd::FUNCTION_SELECTION_B | ((nRom & 0x03) << 2) | (nRam & 0x03));
+
+	SetRE(FunctionSet::RE_ONE);
+
+	SendCommand(cmd::FUNCTION_SELECTION_B);
+	SendCommand(((nRom & 0x03) << 2) | (nRam & 0x03));
+
+	SetRE(FunctionSet::RE_ZERO);
+
 	Ssd1311::SetSleep(false);
 	Ssd1311::Cls();
 }
 
 void Ssd1311::SetDDRAM(uint8_t nAddress) {
+	// [IS=X,RE=0,SD=0]
 	SendCommand(cmd::DDRAM_ADDRESS | (nAddress & 0x7F));
 }
 
 void Ssd1311::SetCGRAM(uint8_t nAddress) {
+	// [IS=0,RE=0,SD=0]
 	SendCommand(cmd::CGRAM_ADDRESS | (nAddress & 0x3F));
+}
+
+void Ssd1311::SetRE(FunctionSet re) {
+	uint8_t nCmd = 0x20;
+
+	constexpr auto N = 1;
+	constexpr auto DH = 0;
+
+	if (re == FunctionSet::RE_ZERO) {
+		// 0 0 1 0 N DH RE IS
+		// N - Numbers of display line
+		// DH - Double height font control
+		// RE register set to 0
+		// IS register
+		constexpr auto IS = 0;
+		nCmd |= (N << 3);
+		nCmd |= (DH << 2);
+		nCmd |= (0 << 1);
+		nCmd |= (IS << 0);
+	} else {
+		// 0 0 1 0 N BE RE REV
+		// N - Numbers of display line
+		// BE - CGRAM blink enable
+		// RE register set to 1
+		// REV - reverse display
+		constexpr auto BE = 0;
+		constexpr auto REV = 0;
+		nCmd |= (N << 3);
+		nCmd |= (BE << 2);
+		nCmd |= (1 << 1);
+		nCmd |= (REV << 0);
+	}
+
+	SendCommand(nCmd);
+}
+
+void Ssd1311::SetSD(CommandSet sd) {
+	SetRE(FunctionSet::RE_ONE);
+	SendCommand(sd == CommandSet::DISABLED ? 0x78 : 0x79);
 }
 
 void Ssd1311::SendCommand(uint8_t nCommand) {
@@ -196,19 +249,19 @@ void Ssd1311::SendData(const uint8_t *pData, uint32_t nLength) {
 bool Ssd1311::CheckSSD1311() {
 	SetCGRAM(0);
 
-	const uint8_t dataSend[] = {0xAA, 0x55, 0xAA, 0x55 };
+	const uint8_t dataSend[] = {MODE_DATA, 0xAA, 0x55, 0xAA, 0x55};
+
 	SendData(dataSend, sizeof(dataSend));
 
-	SetCGRAM(0);
-
-	uint8_t dataReceive[] = { 0x00, 0x00, 0x00, 0x00, 0x00 };
+	uint8_t dataReceive[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
 	static_assert((1 + sizeof(dataSend)) == sizeof(dataReceive), "Mismatch buffers");
 
+	SetCGRAM(0);
 	m_I2C.Write(MODE_DATA);
 	m_I2C.Read(reinterpret_cast<char *>(dataReceive), sizeof(dataReceive));
 
-	const auto isEqual = (memcmp(dataSend, &dataReceive[1], sizeof(dataSend)) == 0);
+	const auto isEqual = (memcmp(&dataSend[1], &dataReceive[1], sizeof(dataSend) - 1) == 0);
 
 #ifndef NDEBUG
 	printf("CheckSSD1311 isEqual=%d\n", isEqual);
@@ -221,9 +274,9 @@ bool Ssd1311::CheckSSD1311() {
  * 9.1.4 Display ON/OFF Control
  */
 
-#define DISPLAY_ON_OFF		(1U << 2)
-#define CURSOR_ON_OFF		(1U << 1)
-#define CURSOR_BLINK_ON_OFF	(1U << 0)
+constexpr auto DISPLAY_ON_OFF = (1U << 2);
+constexpr auto CURSOR_ON_OFF = (1U << 1);
+constexpr auto CURSOR_BLINK_ON_OFF = (1U << 0);
 
 void Ssd1311::SetSleep(bool bSleep) {
 	if (bSleep) {
@@ -233,6 +286,19 @@ void Ssd1311::SetSleep(bool bSleep) {
 	}
 
 	SendCommand(m_nDisplayControl);
+}
+
+void Ssd1311::SetContrast(uint8_t nContrast) {
+	// [IS=X,RE=1,SD=1]
+	SetRE(FunctionSet::RE_ONE);
+	SetSD(CommandSet::ENABLED);
+
+	// This is a two bytes command
+	SendCommand(cmd::CONTRAST);
+	SendCommand(nContrast);
+
+	SetSD(CommandSet::DISABLED);
+	SetRE(FunctionSet::RE_ZERO);
 }
 
 #if defined(ENABLE_CURSOR_MODE)

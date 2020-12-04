@@ -1,8 +1,8 @@
 /**
- * @file mcpbuttonsconst.h
+ * @file poll.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOURCESELECTCONST_H_
-#define SOURCESELECTCONST_H_
+#include <poll.h>
 
-#include "ltc.h"
+#include "debug.h"
 
-struct McpButtonsConst {
-	static const char SOURCE[ltc::source::UNDEFINED][12];
-};
+extern int timerfd_poll(int fd, int timeout);
 
-#endif /* SOURCESELECTCONST_H_ */
+int poll(struct pollfd *fds, nfds_t nfds, int timeout) {
+	int count = 0;
+
+	for (unsigned i = 0; i < nfds; i++) {
+		if (fds[i].fd < 0) {
+			fds[i].revents = 0;
+			continue;
+		}
+
+		switch (timerfd_poll(fds[i].fd, timeout)) {
+		case -1:
+			fds[i].revents = POLLERR;
+			break;
+		case 0:
+			fds[i].revents = 0;
+			break;
+		default:
+			fds[i].revents = POLLIN;
+			break;
+		}
+
+		if (fds[i].revents != 0) {
+			count++;
+		}
+	}
+
+	return count;
+}

@@ -26,7 +26,10 @@
 #include "displayudfparamsconst.h"
 
 const char DisplayUdfParamsConst::FILE_NAME[] = "display.txt";
+
+const char DisplayUdfParamsConst::INTENSITY[] = "intensity";
 const char DisplayUdfParamsConst::SLEEP_TIMEOUT[] = "sleep_timeout";
+
 const char DisplayUdfParamsConst::TITLE[] = "title";
 const char DisplayUdfParamsConst::BOARD_NAME[] = "board_name";
 const char DisplayUdfParamsConst::VERSION[] = "version";

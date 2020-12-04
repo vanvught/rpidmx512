@@ -54,7 +54,6 @@ public:
 	void SetCursorPos(uint8_t, uint8_t) override;
 	void SetCursor(uint32_t) override;
 
-
 private:
 	void Write4bits(uint8_t);
 	void WriteCmd(uint8_t);

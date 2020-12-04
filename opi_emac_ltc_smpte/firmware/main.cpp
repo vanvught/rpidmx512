@@ -64,9 +64,10 @@
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
-#include "mcpbuttonsconst.h"
-
 #include "ltcoscserver.h"
+
+#include "sourceconst.h"
+#include "source.h"
 
 #include "h3/ltc.h"
 
@@ -152,7 +153,7 @@ void notmain(void) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 
-		const time_t rawtime = time(nullptr);
+		const auto rawtime = time(nullptr);
 		printf(asctime(localtime(&rawtime)));
 	}
 
@@ -184,10 +185,10 @@ void notmain(void) {
 
 	if (ltcDisplayParams.Load()) {
 		ltcDisplayParams.Dump();
+		display.SetContrast(ltcDisplayParams.GetOledIntensity());
 	}
 
 	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
-
 	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? ltcdisplayrgb::Type::RGBPANEL : ltcdisplayrgb::Type::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
 
 	/**
@@ -196,7 +197,7 @@ void notmain(void) {
 
 	const auto IsAutoStart = ((ltcSource == ltc::source::SYSTIME) && ltcParams.IsAutoStart());
 
-	McpButtons sourceSelect(ltcSource, &tLtcDisabledOutputs, ltcParams.IsAltFunction(), ltcParams.GetSkipSeconds());
+	McpButtons sourceSelect(ltcSource, &tLtcDisabledOutputs, ltcParams.IsAltFunction(), ltcParams.GetSkipSeconds(), !ltcDisplayParams.IsRotaryFullStep());
 
 	if (sourceSelect.Check() && !IsAutoStart) {
 		while (sourceSelect.Wait(ltcSource, tStartTimeCode, tStopTimeCode)) {
@@ -456,30 +457,12 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	printf("Source : %s\n", McpButtonsConst::SOURCE[ltcSource]);
+	printf("Source : %s\n", SourceConst::SOURCE[ltcSource]);
 
-
-	display.ClearLine(4);
-	display.PutString(McpButtonsConst::SOURCE[ltcSource]);
+	Source::Show(ltcSource, bRunGpsTimeClient);
 
 	if (!tLtcDisabledOutputs.bRgbPanel) {
 		ltcDisplayRgb.ShowSource(ltcSource);
-	}
-
-	if (ltcSource == ltc::source::SYSTIME) {
-		display.SetCursorPos(17,3);
-		if (bRunGpsTimeClient) {
-			display.PutString("GPS");
-		} else if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED)
-				&& (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
-			display.PutString("NTP");
-		} else if (HwClock::Get()->IsConnected()) {
-			display.PutString("RTC");
-		}
-	}
-
-	if (ltcSource == ltc::source::TCNET) {
-		TCNetDisplay::Show();
 	}
 
 	ltcOutputs.Print();

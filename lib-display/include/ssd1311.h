@@ -34,7 +34,7 @@
 class Ssd1311 final: public DisplaySet {
 public:
 	Ssd1311 ();
-	~Ssd1311 () override;
+	~Ssd1311 () {}
 
 	bool Start() override;
 
@@ -47,10 +47,11 @@ public:
 	void Text(const char *, uint8_t);
 	void TextLine(uint8_t, const char *, uint8_t) override;
 
-	void SetSleep(bool bSleep) override;
-
 	void SetCursorPos(uint8_t, uint8_t) override;
 	void SetCursor(uint32_t) override;
+
+	void SetSleep(bool bSleep) override;
+	void SetContrast(uint8_t nContrast) override;
 
 	void PrintInfo() override;
 
@@ -63,6 +64,16 @@ private:
 	void SelectRamRom(uint32_t nRam, uint32_t nRom);
 	void SetDDRAM(uint8_t nAddress);
 	void SetCGRAM(uint8_t nAddress);
+	enum class FunctionSet {
+		RE_ZERO = (0 << 1),
+		RE_ONE = (1 << 1)
+	};
+	void SetRE(FunctionSet re);
+	enum class CommandSet {
+		DISABLED = 0,
+		ENABLED = 1
+	};
+	void SetSD(CommandSet sd);
 	void SendCommand(uint8_t nCommand);
 	void SendData(uint8_t nData);
 	void SendData(const uint8_t *, uint32_t);
