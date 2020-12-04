@@ -32,40 +32,55 @@
 
 #include "debug.h"
 
-struct State {
-	static constexpr uint8_t START = 0x0;
-	static constexpr uint8_t CW_FINAL = 0x1;
-	static constexpr uint8_t CW_BEGIN = 0x2;
-	static constexpr uint8_t CW_NEXT = 0x3;
-	static constexpr uint8_t CCW_BEGIN = 0x4;
-	static constexpr uint8_t CCW_FINAL = 0x5;
-	static constexpr uint8_t CCW_NEXT = 0x6;
+namespace hs {	// half-step
+static constexpr uint8_t START = 0x0;
+static constexpr uint8_t CCW_BEGIN = 0x1;
+static constexpr uint8_t CW_BEGIN = 0x2;
+static constexpr uint8_t START_M = 0x3;
+static constexpr uint8_t CW_BEGIN_M = 0x4;
+static constexpr uint8_t CCW_BEGIN_M = 0x5;
+}  // namespace hs
+
+namespace fs {	// full-step
+static constexpr uint8_t START = 0x0;
+static constexpr uint8_t CW_FINAL = 0x1;
+static constexpr uint8_t CW_BEGIN = 0x2;
+static constexpr uint8_t CW_NEXT = 0x3;
+static constexpr uint8_t CCW_BEGIN = 0x4;
+static constexpr uint8_t CCW_FINAL = 0x5;
+static constexpr uint8_t CCW_NEXT = 0x6;
+}  // namespace fs
+
+static constexpr uint8_t s_StateTableHalfStep[6][4] = {
+  {hs::START_M,            			hs::CW_BEGIN,	 hs::CCW_BEGIN,  hs::START},
+  {hs::START_M | RotaryEncoder::CW, hs::START,		 hs::CCW_BEGIN,  hs::START},
+  {hs::START_M | RotaryEncoder::CCW,hs::CW_BEGIN,    hs::START,      hs::START},
+  {hs::START_M,            			hs::CCW_BEGIN_M, hs::CW_BEGIN_M, hs::START},
+  {hs::START_M,            			hs::START_M,     hs::CW_BEGIN_M, hs::START | RotaryEncoder::CCW},
+  {hs::START_M,            			hs::CCW_BEGIN_M, hs::START_M,    hs::START | RotaryEncoder::CW},
 };
 
-static constexpr uint8_t s_StateTable[][4] = {
-  // R_START
-  {State::START,	State::CW_BEGIN,  State::CCW_BEGIN, State::START},
-  // R_CW_FINAL
-  {State::CW_NEXT,  State::START,     State::CW_FINAL,  State::START | RotaryEncoder::CW},
-  // R_CW_BEGIN
-  {State::CW_NEXT,  State::CW_BEGIN,  State::START,     State::START},
-  // R_CW_NEXT
-  {State::CW_NEXT,  State::CW_BEGIN,  State::CW_FINAL,  State::START},
-  // R_CCW_BEGIN
-  {State::CCW_NEXT, State::START,     State::CCW_BEGIN, State::START},
-  // R_CCW_FINAL
-  {State::CCW_NEXT, State::CCW_FINAL, State::START,     State::START | RotaryEncoder::CCW},
-  // R_CCW_NEXT
-  {State::CCW_NEXT, State::CCW_FINAL, State::CCW_BEGIN, State::START},
+static constexpr uint8_t s_StateTableFullStep[7][4] = {
+  {fs::START,	 fs::CW_BEGIN,  fs::CCW_BEGIN, fs::START},
+  {fs::CW_NEXT,  fs::START,     fs::CW_FINAL,  fs::START | RotaryEncoder::CCW},
+  {fs::CW_NEXT,  fs::CW_BEGIN,  fs::START,     fs::START},
+  {fs::CW_NEXT,  fs::CW_BEGIN,  fs::CW_FINAL,  fs::START},
+  {fs::CCW_NEXT, fs::START,     fs::CCW_BEGIN, fs::START},
+  {fs::CCW_NEXT, fs::CCW_FINAL, fs::START,     fs::START | RotaryEncoder::CW},
+  {fs::CCW_NEXT, fs::CCW_FINAL, fs::CCW_BEGIN, fs::START},
 };
 
-RotaryEncoder::RotaryEncoder() : m_nState(State::START) {
+RotaryEncoder::RotaryEncoder(bool bHalfStep) : m_bHalfStep(bHalfStep) {
 }
 
 uint8_t RotaryEncoder::Process(uint8_t nInputAB) {
 	DEBUG_PRINTF("%x:%x", m_nState & 0x0F, nInputAB & 0x03);
 
-	m_nState = s_StateTable[m_nState & 0x0F][nInputAB & 0x03];
+	if (m_bHalfStep) {
+		m_nState = s_StateTableHalfStep[m_nState & 0x0F][nInputAB & 0x03];
+	} else {
+		m_nState = s_StateTableFullStep[m_nState & 0x0F][nInputAB & 0x03];
+	}
 
 	DEBUG_PRINTF("%x", m_nState & 0x30);
 

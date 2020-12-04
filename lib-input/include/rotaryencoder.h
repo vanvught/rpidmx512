@@ -34,7 +34,7 @@ public:
 	static constexpr uint8_t CW = 0x10;
 	static constexpr uint8_t CCW = 0x20;
 
-	RotaryEncoder();
+	RotaryEncoder(bool bHalfStep = true);
 	~RotaryEncoder() {
 
 	}
@@ -42,7 +42,8 @@ public:
 	uint8_t Process(uint8_t nInputAB);
 
 private:
-	uint8_t m_nState;
+	bool m_bHalfStep;
+	uint8_t m_nState{0};
 };
 
 #endif /* ROTARYENCODER_H_ */
