@@ -125,6 +125,8 @@ Display::Display(DisplayType tDisplayType):
 	if (m_LcdDisplay == nullptr){
 		m_nSleepTimeout = 0;
 	}
+
+	PrintInfo();
 }
 
 void Display::Detect(uint32_t nCols, uint32_t nRows) {
@@ -193,6 +195,8 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	} else {
 		m_nSleepTimeout = 0;
 	}
+
+	PrintInfo();
 }
 
 Display::~Display() {

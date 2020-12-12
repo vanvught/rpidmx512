@@ -72,14 +72,14 @@ public:
 				break;
 		}
 
-		Display::Get()->SetCursorPos(10, 7);
+		Display::Get()->SetCursorPos(11, 7);
 
 		if (ShowFile::Get()->IsTFTPEnabled()) {
-			Display::Get()->PutString(" [TFTP On]");
+			Display::Get()->PutString("[TFTP On]");
 		} else 	if (ShowFile::Get()->GetDoLoop()) {
-			Display::Get()->PutString(" [Looping]");
+			Display::Get()->PutString("[Looping]");
 		} else {
-			Display::Get()->PutString("          ");
+			Display::Get()->PutString("         ");
 		}
 	}
 };

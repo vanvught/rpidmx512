@@ -96,17 +96,6 @@ void Ssd1311::Cls() {
 	SendCommand(cmd::CLEAR_DISPLAY);
 }
 
-/**
- * nLine [1..4]
- */
-void Ssd1311::ClearLine(uint8_t nLine) {
-	assert((nLine > 0) && (nLine <= MAX_ROWS));
-
-	Ssd1311::SetCursorPos(0, nLine - 1);
-	SendData(_ClearBuffer, sizeof(_ClearBuffer));
-	Ssd1311::SetCursorPos(0, nLine - 1);
-}
-
 void Ssd1311::PutChar(int c) {
 	SendData(c & 0x7F);
 }
@@ -126,8 +115,23 @@ void Ssd1311::PutString(const char *pString) {
 	SendData(_TextBuffer, 1U + MAX_COLUMNS - n);
 }
 
+/**
+ * nLine [1..4]
+ */
+void Ssd1311::ClearLine(uint8_t nLine) {
+	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
+		return;
+	}
+
+	Ssd1311::SetCursorPos(0, nLine - 1);
+	SendData(_ClearBuffer, sizeof(_ClearBuffer));
+	Ssd1311::SetCursorPos(0, nLine - 1);
+}
+
 void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
-	assert(nLine <= MAX_ROWS);
+	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
+		return;
+	}
 
 	Ssd1311::SetCursorPos(0, nLine - 1);
 
@@ -152,8 +156,9 @@ void Ssd1311::Text(const char *pData, uint8_t nLength) {
  * (0,0)
  */
 void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
-	assert(nCol < MAX_COLUMNS);
-	assert(nRow < MAX_ROWS);
+	if  (__builtin_expect((!((nCol < MAX_COLUMNS) && (nRow < MAX_ROWS))), 0)) {
+		return;
+	}
 
 	// In 4-line display mode (N=1, NW = 1), DDRAM address is from “00H” – “13H” in the 1st line, from
 	// “20H” to “33H” in the 2nd line, from “40H” – “53H” in the 3rd line and from “60H” – “73H” in the 4th line.

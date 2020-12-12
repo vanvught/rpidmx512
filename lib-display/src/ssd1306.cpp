@@ -369,7 +369,9 @@ void Ssd1306::PutString(const char *pString) {
  * nLine [1..4]
  */
 void Ssd1306::ClearLine(uint8_t nLine) {
-	assert((nLine > 0) && (nLine <= m_nRows));
+	if (__builtin_expect((!((nLine > 0) && (nLine <= m_nRows))), 0)) {
+		return;
+	}
 
 	Ssd1306::SetCursorPos(0, nLine - 1);
 	SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), SSD1306_LCD_WIDTH + 1);
@@ -377,7 +379,9 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 }
 
 void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
-	assert(nLine <= m_nRows);
+	if (__builtin_expect((!((nLine > 0) && (nLine <= m_nRows))), 0)) {
+		return;
+	}
 
 	Ssd1306::SetCursorPos(0, nLine - 1);
 	Text(pData, nLength);
@@ -393,9 +397,13 @@ void Ssd1306::Text(const char *pData, uint8_t nLength) {
 	}
 }
 
+/**
+ * (0,0)
+ */
 void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
-	assert(nCol < OLED_FONT8x6_COLS);
-	assert(nRow < m_nRows);
+	if  (__builtin_expect((!((nCol < OLED_FONT8x6_COLS) && (nRow < m_nRows))), 0)) {
+		return;
+	}
 
 	nCol = nCol * OLED_FONT8x6_CHAR_W;
 
