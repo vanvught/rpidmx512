@@ -27,12 +27,6 @@
 #include <string.h>
 #include <assert.h>
 
-//#if !defined (ORANGE_PI_ONE)
-// #define LOGIC_ANALYZER
-//#endif
-//#include <stdio.h>
-extern void console_error(const char *);
-
 #include "h3_gpio.h"
 #include "h3_timer.h"
 
@@ -50,6 +44,10 @@ extern void console_error(const char *);
 #include "dmx_uarts.h"
 #include "dmx_multi_internal.h"
 
+extern void console_error(const char *);
+
+extern void dmx_multi_uart_init(uint8_t uart);
+
 typedef enum {
 	UART_STATE_IDLE,
 	UART_STATE_RX
@@ -63,10 +61,8 @@ typedef enum {
 } _dmx_state;
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
-
-extern void dmx_multi_uart_init(uint8_t uart);
 
 static _uart_state uart_state[4] ALIGNED;
 
@@ -264,17 +260,9 @@ void dmx_multi_start_data(uint8_t port) {
 	H3_UART_TypeDef *p = _get_uart(uart);
 	assert(p != 0);
 
-//#ifdef LOGIC_ANALYZER
-//	h3_gpio_set(GPIO_ANALYZER_CH7);
-//#endif
-
 	while ((p->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		(void) p->O00.RBR;
 	}
-
-//#ifdef LOGIC_ANALYZER
-//	h3_gpio_clr(GPIO_ANALYZER_CH7);
-//#endif
 
 	p->O08.FCR = UART_FCR_EFIFO | UART_FCR_RRESET | UART_FCR_TRIG1;
 	p->O04.IER = UART_IER_ERBFI;
@@ -348,9 +336,9 @@ void dmx_multi_input_init(void) {
 	dmx_multi_uart_init(2);
 #if defined (ORANGE_PI_ONE)
 	dmx_multi_uart_init(3);
- #ifndef DO_NOT_USE_UART0
+# ifndef DO_NOT_USE_UART0
 	dmx_multi_uart_init(0);
- #endif
+# endif
 #endif
 
 	__disable_fiq();
@@ -361,9 +349,9 @@ void dmx_multi_input_init(void) {
 	gic_fiq_config(H3_UART2_IRQn, 1);
 #if defined (ORANGE_PI_ONE)
 	gic_fiq_config(H3_UART3_IRQn, 1);
- #ifndef DO_NOT_USE_UART0
+# ifndef DO_NOT_USE_UART0
 	gic_fiq_config(H3_UART0_IRQn, 1);
- #endif
+# endif
 #endif
 
 	isb();

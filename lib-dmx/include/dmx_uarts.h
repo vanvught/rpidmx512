@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_UART_H_
-#define DMX_UART_H_
+#ifndef DMX_UARTS_H_
+#define DMX_UARTS_H_
 
 #if defined(H3)
- #if defined(ORANGE_PI_ONE)
-  #define DMX_MAX_UARTS	4
- #else
-  #define DMX_MAX_UARTS	2	///< Orange Pi Zero
- #endif
+# if defined(ORANGE_PI_ONE)
+#  define DMX_MAX_UARTS	4	///< Orange Pi One
+# else
+#  define DMX_MAX_UARTS	2	///< Orange Pi Zero
+# endif
 #else
- #define DMX_MAX_UARTS	1	///< All Raspberry Pi's
+# define DMX_MAX_UARTS	1	///< All Raspberry Pi's
 #endif
 
-#endif /* DMX_UART_H_ */
+#endif /* DMX_UARTS_H_ */

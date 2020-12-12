@@ -71,6 +71,7 @@
 #define UART_FCR_TRIG3	0xC0	///< RCVR FIFO trigger level 3/4
 
 #define UART_USR_BUSY	(1 << 0)
+#define UART_USR_TFE	(1 << 2)	///< Transmit FIFO empty
 #define UART_USR_RFNE	(1 << 3)	///< Receive FIFO not empty
 
 #define BAUD_31250_L	 (48)		///< 24000000 / 16 / 31250 = 48

@@ -2,7 +2,7 @@
  * @file dmx.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,16 +48,26 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+extern void console_error(const char *);
+
 #if (GPIO_DMX_DATA_DIRECTION != GPIO_EXT_12)
- #error
+# error GPIO_DMX_DATA_DIRECTION
+#endif
+
+#if (EXT_UART_NUMBER == 1)
+# define UART_IRQN 		H3_UART1_IRQn
+#elif (EXT_UART_NUMBER == 3)
+# define UART_IRQN 		H3_UART3_IRQn
+#else
+# error Unsupported UART device configured
 #endif
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #ifndef MAX
- #define MAX(a, b) ((a) > (b) ? (a) : (b))
+# define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 typedef enum {
@@ -84,13 +94,13 @@ static uint8_t dmx_data_previous[DMX_DATA_BUFFER_SIZE] ALIGNED;
 static volatile _dmx_state dmx_receive_state = IDLE;
 static volatile uint32_t dmx_data_index = 0;
 
-static uint32_t dmx_output_break_time = (uint32_t) DMX_TRANSMIT_BREAK_TIME_MIN;
-static uint32_t dmx_output_mab_time = (uint32_t) DMX_TRANSMIT_MAB_TIME_MIN;
-static uint32_t dmx_output_period = (uint32_t) DMX_TRANSMIT_PERIOD_DEFAULT;
-static uint32_t dmx_output_period_requested = (uint32_t) DMX_TRANSMIT_PERIOD_DEFAULT;
+static uint32_t dmx_output_break_time = DMX_TRANSMIT_BREAK_TIME_MIN;
+static uint32_t dmx_output_mab_time = DMX_TRANSMIT_MAB_TIME_MIN;
+static uint32_t dmx_output_period = DMX_TRANSMIT_PERIOD_DEFAULT;
+static uint32_t dmx_output_period_requested =  DMX_TRANSMIT_PERIOD_DEFAULT;
 
-static uint32_t dmx_output_break_time_intv = (uint32_t) (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
-static uint32_t dmx_output_mab_time_intv = (uint32_t) (DMX_TRANSMIT_MAB_TIME_MIN * 12);
+static uint32_t dmx_output_break_time_intv = (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
+static uint32_t dmx_output_mab_time_intv = (DMX_TRANSMIT_MAB_TIME_MIN * 12);
 static uint32_t dmx_output_period_intv = (DMX_TRANSMIT_PERIOD_DEFAULT * 12) - (DMX_TRANSMIT_MAB_TIME_MIN * 12) - (DMX_TRANSMIT_BREAK_TIME_MIN * 12);
 
 static uint32_t dmx_send_data_length = (uint32_t) (DMX_MAX_CHANNELS + 1);		///< SC + UNIVERSE SIZE
@@ -288,8 +298,8 @@ void dmx_set_output_mab_time(uint32_t mab_time) {
 }
 
 void dmx_reset_total_statistics(void) {
-	total_statistics.dmx_packets = (uint32_t) 0;
-	total_statistics.rdm_packets = (uint32_t) 0;
+	total_statistics.dmx_packets = 0;
+	total_statistics.rdm_packets = 0;
 }
 
 const volatile struct _total_statistics *dmx_get_total_statistics(void) {
@@ -303,24 +313,13 @@ static void fiq_dmx_in_handler(void) {
 	dmx_fiq_micros_current = h3_hs_timer_lo_us();
 
 	if (EXT_UART->LSR & UART_LSR_BI) {
-#ifdef LOCIG_ANALYZER
-		h3_gpio_set(11); //BREAK
-#endif
-
 		dmx_receive_state = PRE_BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
 	} else if (EXT_UART->O08.IIR & UART_IIR_IID_RD) {
-#ifdef LOCIG_ANALYZER
-		h3_gpio_set(6); //DR
-#endif
-
 		const uint8_t data = EXT_UART->O00.RBR;
 
 		switch (dmx_receive_state) {
 		case IDLE:
-#ifdef LOCIG_ANALYZER
-			h3_gpio_clr(16);
-#endif
 			if (data == 0xFE) {
 				dmx_receive_state = RDMDISCFE;
 				rdm_data_buffer[rdm_data_buffer_index_head][0] = 0xFE;
@@ -346,10 +345,6 @@ static void fiq_dmx_in_handler(void) {
 					dmx_is_previous_break_dmx = true;
 					dmx_break_to_break_previous = dmx_break_to_break_latest;
 				}
-#ifdef LOCIG_ANALYZER
-				h3_gpio_clr(11);
-				h3_gpio_set(14);
-#endif
 				break;
 			case E120_SC_RDM:
 				dmx_receive_state = RDMDATA;
@@ -366,10 +361,6 @@ static void fiq_dmx_in_handler(void) {
 			}
 			break;
 		case DMXDATA:
-#ifdef LOCIG_ANALYZER
-			h3_gpio_clr(14);
-			h3_gpio_set(16);
-#endif
 			dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
 			dmx_data[dmx_data_buffer_index_head].data[dmx_data_index++] = data;
 
@@ -377,9 +368,6 @@ static void fiq_dmx_in_handler(void) {
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 			if (dmx_data_index > DMX_MAX_CHANNELS) {
-#ifdef LOCIG_ANALYZER
-				h3_gpio_clr(16);
-#endif
 				dmx_receive_state = IDLE;
 				dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = DMX_MAX_CHANNELS;
 				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
@@ -450,9 +438,6 @@ static void fiq_dmx_in_handler(void) {
 			dmx_is_previous_break_dmx = false;
 			break;
 		}
-#ifdef LOCIG_ANALYZER
-		h3_gpio_clr(6);
-#endif
 	} else {
 	}
 
@@ -471,9 +456,6 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
 			dmx_receive_state = IDLE;
 			dmx_data[dmx_data_buffer_index_head].statistics.slots_in_packet = dmx_data_index - 1;
 			dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & DMX_DATA_BUFFER_INDEX_MASK;
-#ifdef LOCIG_ANALYZER
-			h3_gpio_clr(16);
-#endif
 		} else {
 			H3_TIMER->TMR0_INTV = dmx_data[dmx_data_buffer_index_head].statistics.slot_to_slot * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
@@ -553,42 +535,44 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
  * EXT_UART TX interrupt
  */
 static void fiq_dmx_out_handler(void) {
-	if (EXT_UART->O08.IIR & UART_IIR_IID_THRE) {
+	uint32_t fifo_cnt = 16;
 
-		uint32_t fifo_cnt = 16;
-
-		for (; fifo_cnt-- > 0; dmx_send_current_slot++) {
-			if (dmx_send_current_slot >= dmx_send_data_length) {
-				break;
-			}
-
-			EXT_UART->O00.THR = dmx_data[0].data[dmx_send_current_slot];
-		}
-
+	for (; fifo_cnt-- > 0; dmx_send_current_slot++) {
 		if (dmx_send_current_slot >= dmx_send_data_length) {
-			EXT_UART->O04.IER &= (uint32_t) ~UART_IER_ETBEI; //UART_IER_PTIME;
-			dmb();
-			dmx_send_state = DMXINTER;
+			break;
 		}
+
+		EXT_UART->O00.THR = dmx_data[0].data[dmx_send_current_slot];
+	}
+
+	if (dmx_send_current_slot >= dmx_send_data_length) {
+		EXT_UART->O04.IER &= (uint32_t) ~UART_IER_ETBEI; //UART_IER_PTIME;
+		dmb();
+		dmx_send_state = DMXINTER;
 	}
 }
 
 static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 	dmb();
 
-	if (dmx_port_direction == DMX_PORT_DIRECTION_INP) {
-		fiq_dmx_in_handler();
-	} else {
-		fiq_dmx_out_handler();
-	}
+	if (gic_get_active_fiq() == UART_IRQN) {
+		const uint32_t iir = EXT_UART->O08.IIR ;
 
-#if (EXT_UART_NUMBER == 1)
-	H3_GIC_CPUIF->EOI = H3_UART1_IRQn;
-	gic_unpend(H3_UART1_IRQn);
-#elif (EXT_UART_NUMBER == 3)
-	H3_GIC_CPUIF->EOI = H3_UART3_IRQn;
-	gic_unpend(H3_UART3_IRQn);
-#endif
+		if (dmx_port_direction == DMX_PORT_DIRECTION_INP) {
+			fiq_dmx_in_handler();
+		} else {
+			if ((iir & 0xF) == UART_IIR_IID_THRE) {
+				fiq_dmx_out_handler();
+			} else {
+				(void) EXT_UART->USR;
+			}
+		}
+
+		H3_GIC_CPUIF->EOI = UART_IRQN;
+		gic_unpend(UART_IRQN);
+	} else {
+		console_error("spurious interrupt\n");
+	}
 
 	dmb();
 }
@@ -665,22 +649,20 @@ static void dmx_stop_data(void) {
 		do {
 			dmb();
 			if (dmx_send_state == DMXINTER) {
-				while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY)
+				while (!(EXT_UART->USR & UART_USR_TFE))
 					;
-				dmb();
 				dmx_send_state = IDLE;
 			}
 			dmb();
 		} while (dmx_send_state != IDLE);
 	}
 
-	dmx_send_always = false;
+	irq_timer_set(IRQ_TIMER_0, NULL);
 
 	__disable_fiq();
 	isb();
 
-	irq_timer_set(IRQ_TIMER_0, NULL);
-
+	dmx_send_always = false;
 	dmx_receive_state = IDLE;
 
 	for (i = 0; i < DMX_DATA_BUFFER_INDEX_ENTRIES; i++) {
@@ -743,7 +725,7 @@ static void uart_init(void) {
 	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
 	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
 #else
- #error Unsupported UART device configured
+# error Unsupported UART device configured
 #endif
 
 	EXT_UART->O08.FCR = 0;
@@ -764,17 +746,21 @@ void dmx_init(void) {
 	h3_gpio_fsel(dmx_data_direction_gpio_pin, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(dmx_data_direction_gpio_pin);	// 0 = input, 1 = output
 
-#ifdef LOCIG_ANALYZER
-	h3_gpio_fsel(12, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(12); // FIQ
-	h3_gpio_fsel(11, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(11); // BREAK
-	h3_gpio_fsel(6, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(6);  // DR
-	h3_gpio_fsel(14, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(14); // SC
-	h3_gpio_fsel(16, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(16); // DATA
+#ifdef LOGIC_ANALYZER
+	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH1);
+	h3_gpio_fsel(GPIO_ANALYZER_CH2, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH2);
+	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH3);
+	h3_gpio_fsel(GPIO_ANALYZER_CH4, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH4);
+	h3_gpio_fsel(GPIO_ANALYZER_CH5, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH5);
+	h3_gpio_fsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH6);
+	h3_gpio_fsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_clr(GPIO_ANALYZER_CH7);
 #endif
 
 	dmx_clear_data();
@@ -797,13 +783,7 @@ void dmx_init(void) {
 	H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-#if (EXT_UART_NUMBER == 1)
-	gic_fiq_config(H3_UART1_IRQn, 1);
-#elif (EXT_UART_NUMBER == 3)
-	gic_fiq_config(H3_UART3_IRQn, 1);
-#else
- #error Unsupported UART device configured
-#endif
+	gic_fiq_config(UART_IRQN, 1);
 
 	uart_init();
 

@@ -2,7 +2,7 @@
  * @file dmx_multi.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,6 +49,10 @@
 
 #include "uart.h"
 
+extern void dmx_multi_uart_init(uint8_t uart);
+
+extern int console_error(const char *);
+
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
 #endif
@@ -56,8 +60,6 @@
 #ifndef MAX
  #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #endif
-
-extern int console_error(const char *);
 
 #define DMX_DATA_OUT_INDEX	(1 << 2)
 
@@ -452,7 +454,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 	}
 #endif
 
-	if (H3_GIC_CPUIF->IA == H3_DMA_IRQn) {
+	if (gic_get_active_fiq() == H3_DMA_IRQn) {
 		H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
 			
 		H3_GIC_CPUIF->EOI = H3_DMA_IRQn;
@@ -514,81 +516,6 @@ static void uart_disable_fifo(uint8_t uart) {	// RDM RX
 	isb();
 }
 
-static void uart_init(uint8_t uart) {
-	assert(uart < DMX_MAX_OUT);
-
-	H3_UART_TypeDef *p = 0;
-
-	if (uart == 1) {
-		p = (H3_UART_TypeDef *)H3_UART1_BASE;
-
-		uint32_t value = H3_PIO_PORTG->CFG0;
-		// PG6, TX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT);
-		value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
-		// PG7, RX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT);
-		value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
-		H3_PIO_PORTG->CFG0 = value;
-
-		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
-		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	} else if (uart == 2) {
-		p = (H3_UART_TypeDef *)H3_UART2_BASE;
-
-		uint32_t value = H3_PIO_PORTA->CFG0;
-		// PA0, TX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT);
-		value |= H3_PA0_SELECT_UART2_TX << PA0_SELECT_CFG0_SHIFT;
-		// PA1, RX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
-		value |= H3_PA1_SELECT_UART2_RX << PA1_SELECT_CFG0_SHIFT;
-		H3_PIO_PORTA->CFG0 = value;
-
-		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART2;
-		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART2;
-	} else if (uart == 3) {
-		p = (H3_UART_TypeDef *)H3_UART3_BASE;
-
-		uint32_t value = H3_PIO_PORTA->CFG1;
-		// PA13, TX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT);
-		value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
-		// PA14, RX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT);
-		value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
-		H3_PIO_PORTA->CFG1 = value;
-
-		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
-		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
-	} else if (uart == 0) {
-		p = (H3_UART_TypeDef *)H3_UART0_BASE;
-
-		uint32_t value = H3_PIO_PORTA->CFG0;
-		// PA4, TX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
-		value |= H3_PA4_SELECT_UART0_TX << PA4_SELECT_CFG0_SHIFT;
-		// PA5, RX
-		value &= (uint32_t) ~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
-		value |= H3_PA5_SELECT_UART0_RX << PA5_SELECT_CFG0_SHIFT;
-		H3_PIO_PORTA->CFG0 = value;
-
-		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART0;
-		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
-	}
-
-	assert(p != 0);
-
-	p->O08.FCR = 0;
-	p->LCR = UART_LCR_DLAB;
-	p->O00.DLL = BAUD_250000_L;
-	p->O04.DLH = BAUD_250000_H;
-	p->O04.IER = 0;
-	p->LCR = UART_LCR_8_N_2;
-
-	isb();
-}
-
 static void dmx_multi_start_data(uint8_t uart) {
 	assert(uart_state[uart] == UART_STATE_IDLE);
 
@@ -632,7 +559,7 @@ static void dmx_multi_stop_data(uint8_t uart) {
 		do {
 			dmb();
 			if (dmx_send_state == DMXINTER) {
-				while ((p->USR & UART_USR_BUSY) == UART_USR_BUSY)
+				while (!(p->USR & UART_USR_TFE))
 					;
 				is_idle = true;
 			}
@@ -798,13 +725,13 @@ void dmx_multi_init(void) {
 
 	uarts_sending = 0;
 
-	uart_init(1);
-	uart_init(2);
+	dmx_multi_uart_init(1);
+	dmx_multi_uart_init(2);
 #if defined (ORANGE_PI_ONE)
-	uart_init(3);
- #ifndef DO_NOT_USE_UART0
-	uart_init(0);
- #endif
+	dmx_multi_uart_init(3);
+# ifndef DO_NOT_USE_UART0
+	dmx_multi_uart_init(0);
+# endif
 #endif
 
 	__disable_fiq();
@@ -817,9 +744,9 @@ void dmx_multi_init(void) {
 	gic_fiq_config(H3_UART2_IRQn, 1);
 #if defined (ORANGE_PI_ONE)
 	gic_fiq_config(H3_UART3_IRQn, 1);
- #ifndef DO_NOT_USE_UART0
+# ifndef DO_NOT_USE_UART0
 	gic_fiq_config(H3_UART0_IRQn, 1);
- #endif
+# endif
 #endif
 
 	dmx_send_state = IDLE;
@@ -828,9 +755,9 @@ void dmx_multi_init(void) {
 	uart_enable_fifo(2);
 #if defined (ORANGE_PI_ONE)
 	uart_enable_fifo(3);
- #ifndef DO_NOT_USE_UART0
+# ifndef DO_NOT_USE_UART0
 	uart_enable_fifo(0);
- #endif
+# endif
 #endif
 
 	irq_timer_init();
