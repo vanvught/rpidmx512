@@ -48,6 +48,7 @@
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
 #include "ws28xx.h"
+#include "h3/ws28xxdmxstartstop.h"
 #include "handler.h"
 #include "storews28xxdmx.h"
 // PWM Led
@@ -136,7 +137,6 @@ void notmain(void) {
 	}
 
 	if (!isLedTypeSet) {
-
 		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
@@ -185,6 +185,7 @@ void notmain(void) {
 	server.SetOscServerHandler(pHandler);
 	server.Print();
 
+	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC,  REMOTE_CONFIG_MODE_PIXEL, 1);

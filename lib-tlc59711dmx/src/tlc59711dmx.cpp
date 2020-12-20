@@ -30,7 +30,6 @@
 #include "tlc59711.h"
 
 #include "lightset.h"
-#include "lightsetdisplay.h"
 
 static unsigned long ceil(float f) {
 	int i = static_cast<int>(f);

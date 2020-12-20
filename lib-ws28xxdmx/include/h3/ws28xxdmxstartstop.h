@@ -1,5 +1,5 @@
 /**
- * @file lightsetdisplay.h
+ * @file ws28xxdmxstartstop.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,15 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSETDISPLAY_H_
-#define LIGHTSETDISPLAY_H_
+#ifndef H3_WS28XXDMXSTARTSTOP_H_
+#define H3_WS28XXDMXSTARTSTOP_H_
 
-class LightSetDisplay {
+#include "lightset.h"
+
+#include "h3_gpio.h"
+#include "board/h3_opi_zero.h"
+
+class WS28xxDmxStartSop final: public LightSetHandler {
 public:
-	virtual ~LightSetDisplay() {
+	WS28xxDmxStartSop() {
+		h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_OUTPUT);
+		h3_gpio_clr(GPIO_EXT_26);
 	}
 
-	virtual void ShowDmxStartAddress()=0;
+	~WS28xxDmxStartSop() override {
+	}
+
+	void Start() override {
+		h3_gpio_set(GPIO_EXT_26);
+	}
+
+	void Stop() override {
+		h3_gpio_clr(GPIO_EXT_26);
+	}
 };
 
-#endif /* LIGHTSETDISPLAY_H_ */
+#endif /* H3_WS28XXDMXSTARTSTOP_H_ */

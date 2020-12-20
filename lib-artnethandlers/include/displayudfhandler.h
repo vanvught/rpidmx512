@@ -34,7 +34,7 @@
 #include "artnet.h"
 
 #include "artnetdisplay.h"
-#include "lightsetdisplay.h"
+#include "lightset.h"
 
 #include "network.h"
 #include "ntpclient.h"

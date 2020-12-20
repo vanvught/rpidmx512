@@ -116,7 +116,7 @@ protected:
 	uint16_t m_nDmxStartAddress{DMX_START_ADDRESS_DEFAULT};
 	uint16_t m_nDmxFootprint;
 
-	WS28xx* m_pLEDStripe{nullptr};
+	WS28xx* m_pWS28xx{nullptr};
 	bool m_bIsStarted{false};
 	bool m_bBlackout{false};
 

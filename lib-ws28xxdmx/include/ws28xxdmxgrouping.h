@@ -34,9 +34,7 @@
 class WS28xxDmxGrouping final: public WS28xxDmx {
 public:
 	WS28xxDmxGrouping();
-	~WS28xxDmxGrouping() override;
-
-	void Start(uint8_t nPort = 0) override;
+	~WS28xxDmxGrouping() {}
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght) override;
 
@@ -57,7 +55,6 @@ private:
 	void UpdateMembers();
 
 private:
-	uint8_t *m_pDmxData{nullptr};
 	uint32_t m_nLEDGroupCount{0};
 	uint32_t m_nGroups{0};
 };

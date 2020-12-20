@@ -98,6 +98,10 @@ void WS28xxDmxMulti::Start(__attribute__((unused)) uint8_t nPort) {
 	}
 
 	m_pLEDStripe->Update();
+
+	if (m_pLightSetHandler != nullptr) {
+		m_pLightSetHandler->Start();
+	}
 }
 
 void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
@@ -116,6 +120,10 @@ void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
 	}
 
 	m_pLEDStripe->Blackout();
+
+	if (m_pLightSetHandler != nullptr) {
+		m_pLightSetHandler->Stop();
+	}
 }
 
 void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {

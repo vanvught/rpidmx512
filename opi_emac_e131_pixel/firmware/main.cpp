@@ -50,6 +50,7 @@
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
 #include "ws28xx.h"
+#include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 // PWM Led
 #include "tlc59711dmxparams.h"
@@ -113,7 +114,7 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const uint8_t nUniverse = e131params.GetUniverse();
+	const auto nUniverse = e131params.GetUniverse();
 
 	bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
 
@@ -158,7 +159,7 @@ void notmain(void) {
 			pSpi = pWS28xxDmx;
 			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
 
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+			const auto nLedCount = pWS28xxDmx->GetLEDCount();
 
 			if (pWS28xxDmx->GetLEDType() == SK6812W) {
 				if (nLedCount > 128) {
@@ -188,6 +189,8 @@ void notmain(void) {
 
 	bridge.SetOutput(pSpi);
 	bridge.Print();
+
+	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	display.SetTitle("Eth sACN Pixel 1");

@@ -44,22 +44,33 @@ endif
 
 ifeq ($(findstring ARTNET_NODE,$(DEFINES)),ARTNET_NODE)
 	ifdef COND
-		LIBS+=artnet4 artnet artnethandlers e131 uuid
+		LIBS+=artnet4 artnethandlers artnet e131 uuid
 	endif
 endif
 
 ifeq ($(findstring E131_BRIDGE,$(DEFINES)),E131_BRIDGE)
 	ifdef COND
-		LIBS+=artnet e131 uuid
+		ifneq ($(findstring e131,$(LIBS)),e131)
+			LIBS+=e131
+		endif
+		ifneq ($(findstring artnet,$(LIBS)),artnet)
+			LIBS+=artnet
+		endif
+		LIBS+=uuid
 	endif
 endif
 
 RDM=
 ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
-	LIBS+=artnet e131
+	ifneq ($(findstring e131,$(LIBS)),e131)
+		LIBS+=e131
+	endif
 	RDM=1
 	ifneq ($(findstring uuid,$(LIBS)),uuid)
 		LIBS+=uuid
+	endif
+	ifneq ($(findstring artnet,$(LIBS)),artnet)
+		LIBS+=artnet
 	endif
 endif
 

@@ -30,8 +30,6 @@
 #include "lightsetchain.h"
 #include "lightset.h"
 
-#include "lightsetdisplay.h"
-
 #include "debug.h"
 
 #define LIGHTSET_CHAIN_MAX_ENTRIES	16

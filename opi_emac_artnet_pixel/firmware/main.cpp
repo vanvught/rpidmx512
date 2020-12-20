@@ -52,6 +52,7 @@
 #include "ws28xxdmx.h"
 #include "ws28xxdmxgrouping.h"
 #include "ws28xx.h"
+#include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 // PWM Led
 #include "tlc59711dmxparams.h"
@@ -145,14 +146,13 @@ void notmain(void) {
 	}
 
 	if (!isLedTypeSet) {
-
 		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
 			ws28xxparms.Dump();
 		}
 
-		const bool bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
+		const auto bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
 
 		if (bIsLedGrouping) {
 			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
@@ -168,7 +168,7 @@ void notmain(void) {
 			pSpi = pWS28xxDmx;
 			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
 
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+			const auto nLedCount = pWS28xxDmx->GetLEDCount();
 
 			if (pWS28xxDmx->GetLEDType() == SK6812W) {
 				if (nLedCount > 128) {
@@ -199,6 +199,7 @@ void notmain(void) {
 	node.SetOutput(pSpi);
 	node.Print();
 
+	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	display.SetTitle("Eth Art-Net 4 Pixel 1");

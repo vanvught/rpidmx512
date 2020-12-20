@@ -23,13 +23,15 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include <stdint.h>
 #include <algorithm>
 #include <cassert>
 
 #ifndef NDEBUG
 #if (__linux__)
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #endif
 
@@ -37,19 +39,14 @@
 #include "ws28xx.h"
 
 #include "lightset.h"
-#include "lightsetdisplay.h"
 
-WS28xxDmx::WS28xxDmx() :
-	
-	m_nDmxFootprint(170 * 3)
-	
-{
+WS28xxDmx::WS28xxDmx() : m_nDmxFootprint(170 * 3) {
 	UpdateMembers();
 }
 
 WS28xxDmx::~WS28xxDmx() {
-	delete m_pLEDStripe;
-	m_pLEDStripe = nullptr;
+	delete m_pWS28xx;
+	m_pWS28xx = nullptr;
 }
 
 void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
@@ -59,16 +56,20 @@ void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = true;
 
-	if (m_pLEDStripe == nullptr) {
-		m_pLEDStripe = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
-		assert(m_pLEDStripe != nullptr);
-		m_pLEDStripe->SetGlobalBrightness(m_nGlobalBrightness);
-		m_pLEDStripe->Initialize();
+	if (m_pWS28xx == nullptr) {
+		m_pWS28xx = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
+		assert(m_pWS28xx != nullptr);
+		m_pWS28xx->SetGlobalBrightness(m_nGlobalBrightness);
+		m_pWS28xx->Initialize();
 	} else {
-		while (m_pLEDStripe->IsUpdating()) {
+		while (m_pWS28xx->IsUpdating()) {
 			// wait for completion
 		}
-		m_pLEDStripe->Update();
+		m_pWS28xx->Update();
+	}
+
+	if (m_pLightSetHandler != nullptr) {
+		m_pLightSetHandler->Start();
 	}
 }
 
@@ -79,11 +80,15 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 
 	m_bIsStarted = false;
 
-	if (m_pLEDStripe != nullptr) {
-		while (m_pLEDStripe->IsUpdating()) {
+	if (m_pWS28xx != nullptr) {
+		while (m_pWS28xx->IsUpdating()) {
 			// wait for completion
 		}
-		m_pLEDStripe->Blackout();
+		m_pWS28xx->Blackout();
+	}
+
+	if (m_pLightSetHandler != nullptr) {
+		m_pLightSetHandler->Stop();
 	}
 }
 
@@ -94,7 +99,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
 
-	if (__builtin_expect((m_pLEDStripe == nullptr), 0)) {
+	if (__builtin_expect((m_pWS28xx == nullptr), 0)) {
 		m_bIsStarted = false;
 		Start();
 	}
@@ -130,7 +135,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 #endif
 #endif
 
-	while (m_pLEDStripe->IsUpdating()) {
+	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 
@@ -140,19 +145,19 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 			if (i + 3 > nLength) {
 				break;
 			}
-			m_pLEDStripe->SetLED(j, pData[i], pData[i + 1], pData[i + 2], pData[i + 3]);
+			m_pWS28xx->SetLED(j, pData[i], pData[i + 1], pData[i + 2], pData[i + 3]);
 			i = i + 4;
 		} else {
 			if (i + 2 > nLength) {
 				break;
 			}
-			m_pLEDStripe->SetLED(j, pData[i], pData[i + 1], pData[i + 2]);
+			m_pWS28xx->SetLED(j, pData[i], pData[i + 1], pData[i + 2]);
 			i = i + 3;
 		}
 	}
 
 	if (nPortId == m_nPortIdLast) {
-		m_pLEDStripe->Update();
+		m_pWS28xx->Update();
 	}
 }
 
@@ -189,14 +194,14 @@ void WS28xxDmx::UpdateMembers() {
 void WS28xxDmx::Blackout(bool bBlackout) {
 	m_bBlackout = bBlackout;
 
-	while (m_pLEDStripe->IsUpdating()) {
+	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 
 	if (bBlackout) {
-		m_pLEDStripe->Blackout();
+		m_pWS28xx->Blackout();
 	} else {
-		m_pLEDStripe->Update();
+		m_pWS28xx->Update();
 	}
 }
 

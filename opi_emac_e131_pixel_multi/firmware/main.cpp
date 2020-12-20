@@ -48,6 +48,7 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
 #include "ws28xx.h"
+#include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 
 #include "spiflashinstall.h"
@@ -115,6 +116,7 @@ void notmain(void) {
 	}
 
 	ws28xxDmxMulti.Initialize();
+	ws28xxDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
 
 	bridge.SetDirectUpdate(true);
 	bridge.SetOutput(&ws28xxDmxMulti);
