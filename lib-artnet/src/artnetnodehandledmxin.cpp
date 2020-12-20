@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@
 
 #include "debug.h"
 
+static uint32_t s_ReceivingMask = 0;
+
 void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 	if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 		m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
@@ -59,7 +61,7 @@ void ArtNetNode::HandleDmxIn() {
 
 		if (m_InputPorts[i].bIsEnabled){
 			uint16_t nLength;
-			const uint8_t *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
+			const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
 				tArtDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
@@ -74,12 +76,14 @@ void ArtNetNode::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, ArtNet::UDP_PORT);
 
-				m_State.bIsReceivingDmx = true;
+				s_ReceivingMask = (1U << i);
+				m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 			} else {
 				if ((m_InputPorts[i].port.nStatus & GO_DATA_IS_BEING_TRANSMITTED) == GO_DATA_IS_BEING_TRANSMITTED) {
 					if (nUpdatesPerSecond == 0) {
 						m_InputPorts[i].port.nStatus = m_InputPorts[i].port.nStatus & ~GI_DATA_RECIEVED;
-						m_State.bIsReceivingDmx = false;
+						s_ReceivingMask &= ~(1U << i);
+						m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 					}
 				}
 			}

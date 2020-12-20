@@ -37,6 +37,8 @@
 
 #include "debug.h"
 
+static uint32_t s_ReceivingMask = 0;
+
 void E131Bridge::FillDataPacket() {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
@@ -64,7 +66,7 @@ void E131Bridge::HandleDmxIn() {
 
 		if (m_InputPort[i].bIsEnabled) {
 			uint16_t nLength;
-			const uint8_t *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
+			const auto *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
 				// Root Layer (See Section 5)
@@ -81,10 +83,12 @@ void E131Bridge::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
 
-				m_State.bIsReceivingDmx = true;
+				s_ReceivingMask = (1U << i);
+				m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 			} else {
 				if (nUpdatesPerSecond == 0) {
-					m_State.bIsReceivingDmx = false;
+					s_ReceivingMask &= ~(1U << i);
+					m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 				}
 			}
 		}

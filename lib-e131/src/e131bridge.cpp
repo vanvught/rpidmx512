@@ -833,8 +833,8 @@ void E131Bridge::Run() {
 		if (m_State.nActiveOutputPorts != 0) {
 			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
 				if (!m_State.IsNetworkDataLoss) {
-					DEBUG_PUTS("");
 					SetNetworkDataLossCondition();
+					DEBUG_PUTS("");
 				}
 			}
 
@@ -843,6 +843,7 @@ void E131Bridge::Run() {
 				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
 					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
 					m_State.bIsReceivingDmx = false;
+					DEBUG_PUTS("");
 				}
 			}
 		}

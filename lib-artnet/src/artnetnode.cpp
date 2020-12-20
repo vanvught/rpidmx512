@@ -100,6 +100,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
 		memset(&m_InputPorts[i], 0 , sizeof(struct TInputPort));
 		m_InputPorts[i].nDestinationIp = Network::Get()->GetIp() | ~(Network::Get()->GetNetmask());
+		m_InputPorts[i].port.nStatus = PORT_IN_STATUS_DISABLED_MASK;
 	}
 
 	SetShortName(NODE_DEFAULT_SHORT_NAME);
@@ -216,6 +217,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			if (m_InputPorts[nPortIndex].bIsEnabled) {
 				m_InputPorts[nPortIndex].bIsEnabled = false;
+				m_InputPorts[nPortIndex].port.nStatus = PORT_IN_STATUS_DISABLED_MASK;
 				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
 			}
 		}
@@ -230,6 +232,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 		}
 
 		m_InputPorts[nPortIndex].bIsEnabled = true;
+		m_InputPorts[nPortIndex].port.nStatus = 0;
 		m_InputPorts[nPortIndex].port.nDefaultAddress = nAddress & 0x0F;// Universe : Bits 3-0
 		m_InputPorts[nPortIndex].port.nPortAddress = MakePortAddress(nAddress, (nPortIndex / ArtNet::MAX_PORTS));
 
@@ -254,6 +257,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			if (m_InputPorts[nPortIndex].bIsEnabled) {
 				m_InputPorts[nPortIndex].bIsEnabled = false;
+				m_InputPorts[nPortIndex].port.nStatus = PORT_IN_STATUS_DISABLED_MASK;
 				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
 			}
 		}
@@ -498,11 +502,6 @@ void ArtNetNode::FillPollReply() {
 
 	memcpy(m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
 	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
-
-	// Disable all input
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
-		m_PollReply.GoodInput[i] = PORT_IN_STATUS_DISABLED_MASK;
-	}
 
 	m_PollReply.Style = ARTNET_ST_NODE;
 
