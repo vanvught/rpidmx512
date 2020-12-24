@@ -259,6 +259,7 @@ static bool parse(void) {
 			// We still need to reset these
 			pending_message_index = 0;
 			pending_message_expected_lenght = 0;
+			updates++;
 			return true;
 			break;
 		// 2 bytes messages
@@ -633,7 +634,7 @@ void midi_init(_midi_direction dir) {
 		H3_TIMER->TMR0_INTV = 0xB71B00; 				/* 1 second */
 		H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-		H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR0;			/* Enable Timer 0 Interrupts */
+		H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR0;
 
 		/*
 		 * Active Sense
@@ -645,7 +646,7 @@ void midi_init(_midi_direction dir) {
 			H3_TIMER->TMR1_INTV = 12000; 				/*  1 ms TODO 10ms */
 			H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-			H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR1;		/* Enable Timer 1 Interrupts */
+			H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR1;
 		}
 
 		arm_install_handler((unsigned) irq_midi_in_handler, ARM_VECTOR(ARM_VECTOR_IRQ));
@@ -654,7 +655,6 @@ void midi_init(_midi_direction dir) {
 	}
 
 	if ((dir & MIDI_DIRECTION_OUTPUT) == MIDI_DIRECTION_OUTPUT) {
-		midi_active_sense = false;	//TODO Implement output active sense
 	}
 
 	uart2_init();

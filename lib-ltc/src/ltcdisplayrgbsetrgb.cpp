@@ -105,7 +105,7 @@ uint32_t LtcDisplayRgb::hexadecimalToDecimal(const char *pHexValue, uint32_t nLe
 			break;
 		}
 
-		const uint8_t nNibble = c > '9' ? (c | 0x20) - 'a' + 10 : (c - '0');
+		const auto nNibble = c > '9' ? static_cast<uint8_t>((c | 0x20) - 'a' + 10) : static_cast<uint8_t>(c - '0');
 		nReturn = (nReturn << 4) | nNibble;
 		pSrc++;
 	}

@@ -1,5 +1,5 @@
 /**
- * @file h_timer.c
+ * @file h3_timer.h
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -47,6 +47,8 @@
 #define TIMER_CTRL_CLK_PRES_64		(6U << 4)
 #define TIMER_CTRL_CLK_PRES_128		(7U << 4)
 #define TIMER_CTRL_SINGLE_MODE		(1U << 7)	///< When interval reached , the timer will disable automatically
+
+#define TIMER_INTV_1SECOND			(0xB71B00)	///< 12.000.000 ticks with TIMER_CTRL_CLK_PRES_2 and TIMER_CTRL_CLK_SRC_OSC24M
 
 #ifdef __cplusplus
 extern "C" {

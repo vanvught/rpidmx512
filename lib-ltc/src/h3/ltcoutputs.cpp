@@ -69,6 +69,9 @@ LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source t
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
+	memset(m_cBPM, 0, sizeof(m_cBPM));
+	memcpy(m_cBPM, "BPM: ", 5);
+
 	pLtcDisabledOutputs->bMidi |= (tSource == source::MIDI);
 	pLtcDisabledOutputs->bArtNet |= (tSource == source::ARTNET);
 	pLtcDisabledOutputs->bLtc |= (tSource == source::LTC);
@@ -165,7 +168,6 @@ void LtcOutputs::ShowSysTime() {
 
 		if (!m_ptLtcDisabledOutputs->bOled) {
 			Display::Get()->TextLine(1, m_aSystemTime, TC_SYSTIME_MAX_LENGTH);
-			Display::Get()->ClearLine(2);
 		}
 
 		Ltc7segment::Get()->Show(ltc::type::UNKNOWN);
@@ -179,6 +181,42 @@ void LtcOutputs::ShowSysTime() {
 		}
 
 		ResetTimeCodeTypePrevious();
+	}
+}
+
+void LtcOutputs::ShowBPM(uint32_t nBPM) {
+	if ((nBPM < midi::bpm::MIN) || (nBPM > midi::bpm::MAX)) {
+		m_cBPM[5] = '-';
+		m_cBPM[6] = '-';
+		m_cBPM[7] = '-';
+	} else {
+		m_cBPM[7] = nBPM % 10 + '0';
+		nBPM /= 10;
+		const uint32_t nDigit = nBPM % 10;
+
+		if (nBPM != 0) {
+			m_cBPM[6] = nDigit + '0';
+			nBPM /= 10;
+			const uint32_t nDigit = nBPM % 10;
+
+			if (nBPM != 0) {
+				m_cBPM[5] = nDigit + '0';
+			} else {
+				m_cBPM[5] = ' ';
+			}
+		} else {
+			m_cBPM[6] = ' ';
+			m_cBPM[5] = ' ';
+		}
+	}
+
+	if (!m_ptLtcDisabledOutputs->bOled) {
+		Display::Get()->SetCursorPos(Display::Get()->getCols() - 3, 1);
+		Display::Get()->PutString(&m_cBPM[5]);
+	}
+
+	if (!m_ptLtcDisabledOutputs->bRgbPanel) {
+		LtcDisplayRgb::Get()->ShowInfo(m_cBPM);
 	}
 }
 

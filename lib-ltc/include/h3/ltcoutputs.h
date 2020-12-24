@@ -37,6 +37,7 @@ public:
 	void UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode);
 
 	void ShowSysTime();
+	void ShowBPM(uint32_t nBPM);
 
 	void ResetTimeCodeTypePrevious() {
 		m_tTimeCodeTypePrevious = ltc::type::INVALID;
@@ -59,6 +60,7 @@ private:
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
 	int32_t m_nSecondsPrevious{60};
+	char m_cBPM[9];
 
 	static LtcOutputs *s_pThis;
 };

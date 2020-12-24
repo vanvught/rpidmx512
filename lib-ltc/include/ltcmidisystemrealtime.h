@@ -1,8 +1,8 @@
 /**
- * @file rtpmidireader.h
+ * @file ltcmidisystemrealtime.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_RTPMIDIREADER_H_
-#define H3_RTPMIDIREADER_H_
+#ifndef LTCMIDISYSTEMREALTIME_H_
+#define LTCMIDISYSTEMREALTIME_H_
 
-#include <stdint.h>
-
-#include "rtpmidihandler.h"
-#include "ltc.h"
-
-#include "midibpm.h"
-
-class RtpMidiReader: public RtpMidiHandler {
+class LtcMidiSystemRealtime {
 public:
-	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~RtpMidiReader();
+	LtcMidiSystemRealtime(struct TLtcDisabledOutputs *ptLtcDisabledOutputs);
+	~LtcMidiSystemRealtime() {}
 
 	void Start();
 	void Stop();
-
 	void Run();
 
-	void MidiMessage(const struct _midi_message *ptMidiMessage);
+	void SendStart();
+	void SendStop();
+	void SendContinue();
+
+	void SetBPM(uint32_t nBPM);
+
+	static LtcMidiSystemRealtime *Get() {
+		return s_pThis;
+	}
 
 private:
-	void HandleMtc(const struct _midi_message *ptMidiMessage);
-	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
-	void Update();
+	void Send(uint8_t nByte);
+	void ShowBPM(uint32_t nBPM);
 
 private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	_midi_timecode_type m_nTimeCodeType{MIDI_TC_TYPE_UNKNOWN};
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	TLtcTimeCode m_tLtcTimeCode;
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
-	MidiBPM m_MidiBPM;
+	int m_nHandle{-1};
+	uint8_t m_Buffer[64];
+	uint32_t m_nBPMPrevious{999};
+
+	static LtcMidiSystemRealtime *s_pThis;
 };
 
-#endif /* H3_RTPMIDIREADER_H_ */
+#endif /* LTCMIDISYSTEMREALTIME_H_ */

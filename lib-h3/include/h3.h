@@ -122,10 +122,26 @@ typedef enum T_H3_Pn {
 	H3_GPIO_PORTG,
 } H3_Pn_TypeDef;
 
-///< * The H3 defines 157 interrupts (0-156)
+///< The H3 defines 157 interrupts (0-156)
 #define H3_IRQn	157
 
 typedef enum T_H3_IRQn {
+	H3_PPI0_IRQn = 16,
+	H3_PPI1_IRQn = 17,
+	H3_PPI2_IRQn = 18,
+	H3_PPI3_IRQn = 19,
+	H3_PPI4_IRQn = 20,
+	H3_PPI5_IRQn = 21,
+	H3_PPI6_IRQn = 22,
+	H3_PPI7_IRQn = 23,
+	H3_PPI8_IRQn = 24,
+	H3_PPI9_IRQn = 25,
+	H3_PPI10_IRQn = 26,
+	H3_PPI11_IRQn = 27, ///< Generic Timer - virtual timer
+	H3_PPI12_IRQn = 28,
+	H3_PPI13_IRQn = 29,	///< Generic Timer - Secure physical timer
+	H3_PPI14_IRQn = 30,	///< Generic Timer - Non-secure physical timer
+	H3_PPI15_IRQn = 31,
 	H3_UART0_IRQn = 32,
 	H3_UART1_IRQn = 33,
 	H3_UART2_IRQn = 34,
@@ -143,9 +159,9 @@ typedef enum T_H3_IRQn {
 #include <stddef.h>
 
 #ifdef __cplusplus
- #define	__I		volatile		///< defines 'read only' permissions
+# define	__I		volatile		///< defines 'read only' permissions
 #else
- #define	__I		volatile const	///< defines 'read only' permissions
+# define	__I		volatile const	///< defines 'read only' permissions
 #endif
 
 #define		__O		volatile		///< defines 'write only' permissions

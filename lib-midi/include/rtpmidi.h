@@ -42,6 +42,8 @@ public:
 
 	void Run();
 
+	void SendRaw(uint8_t nByte);
+
 	void SendTimeCode(const struct _midi_send_tc *tTimeCode);
 
 	void SetHandler(RtpMidiHandler *pRtpMidiHandler) {

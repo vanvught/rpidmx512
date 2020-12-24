@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -47,7 +47,7 @@
 #include "arm/gic.h"
 
 #ifndef NDEBUG
- #include "console.h"
+# include "console.h"
 #endif
 
 // Output
@@ -72,10 +72,6 @@
 
 static volatile char aTimeCode[TC_CODE_MAX_LENGTH] ALIGNED;
 
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
-
 static volatile bool IsMidiQuarterFrameMessage = false;
 static uint32_t nMidiQuarterFramePiece = 0;
 
@@ -95,6 +91,11 @@ static volatile bool bIsDropFrameFlagSet = false;
 
 static volatile bool bTimeCodeAvailable = false;
 static volatile struct _midi_send_tc s_tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
+
+// ARM Generic Timer
+static volatile uint32_t nUpdatesPerSecond = 0;
+static volatile uint32_t nUpdatesPrevious = 0;
+static volatile uint32_t nUpdates = 0;
 
 static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 	dmb();
@@ -183,8 +184,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 	dmb();
 }
 
-static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
-	dmb();
+static void arm_timer_handler(void) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
@@ -194,13 +194,25 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 }
 
 LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs),
-	m_tTimeCodeTypePrevious(ltc::type::INVALID)
+	m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_tTimeCodeTypePrevious(ltc::type::INVALID)
 {
 	Ltc::InitTimeCode(const_cast<char*>(aTimeCode));
 }
 
 void LtcReader::Start() {
+	/**
+	 * IRQ
+	 */
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
+
+	irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
+	H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
+
+	irq_timer_init();
+
+	/**
+	 * FIQ
+	 */
 	h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_EINT);
 
 	arm_install_handler(reinterpret_cast<unsigned>(fiq_handler), ARM_VECTOR(ARM_VECTOR_FIQ));
@@ -211,16 +223,6 @@ void LtcReader::Start() {
 	H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_26);
 	H3_PIO_PA_INT->STA = (1 << GPIO_EXT_26);
 	H3_PIO_PA_INT->DEB = 1;
-
-	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
-	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-	irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
-	H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
 
 	__enable_fiq();
 }

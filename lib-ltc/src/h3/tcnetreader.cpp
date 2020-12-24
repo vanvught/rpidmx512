@@ -46,6 +46,8 @@
 
 #include "network.h"
 
+#include "debug.h"
+
 namespace cmd {
 static constexpr char LAYER[] = "layer#";
 static constexpr char TYPE[] = "type#";
@@ -62,12 +64,12 @@ namespace udp {
 static constexpr auto PORT = 0x0ACA;
 }
 
-// IRQ Timer0
+// ARM Generic Timer
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
+static void arm_timer_handler(void) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
@@ -81,12 +83,8 @@ TCNetReader::~TCNetReader() {
 }
 
 void TCNetReader::Start() {
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_0, reinterpret_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
-	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	LtcOutputs::Get()->Init();
 
@@ -98,7 +96,7 @@ void TCNetReader::Start() {
 }
 
 void TCNetReader::Stop() {
-	irq_timer_set(IRQ_TIMER_0, nullptr);
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 }
 
 void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
@@ -150,7 +148,6 @@ void TCNetReader::HandleUdpRequest() {
 	}
 
 	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
-		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
 	}
 

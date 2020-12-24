@@ -47,7 +47,6 @@ public:
 	void ShowFPS(ltc::type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours) override;
 	void ShowSource(ltc::source tSource, struct ltcdisplayrgb::Colours &tColours) override;
 	void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours) override;
-
 	//
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours) override;
 

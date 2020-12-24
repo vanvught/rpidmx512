@@ -190,6 +190,13 @@ extern uint32_t midi_get_updates_per_seconds(void);
 #endif
 
 #ifdef __cplusplus
+namespace midi {
+namespace bpm {
+static constexpr auto MIN = 8;
+static constexpr auto MAX = 300;
+}  // namespace bpm
+}  // namespace midi
+
 class Midi {
 public:
 	Midi();
@@ -249,6 +256,10 @@ public:
 	}
 
 	void SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
+
+	void SendRaw(uint8_t nByte) {
+		midi_send_raw(&nByte, 1);
+	}
 
 	void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
 		midi_send_raw(pBuffer, nLength);

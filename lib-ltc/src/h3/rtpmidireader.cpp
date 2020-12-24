@@ -40,14 +40,14 @@
 #include "h3/ltcsender.h"
 #include "h3/ltcoutputs.h"
 
-// IRQ Timer0
+// ARM Generic Timer
 static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static void irq_timer0_update_handler(__attribute__((unused)) uint32_t clo) {
+static void irq_arm_handler(void) {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
@@ -76,12 +76,8 @@ RtpMidiReader::~RtpMidiReader() {
 }
 
 void RtpMidiReader::Start() {
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(irq_arm_handler));
 	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_update_handler));
-	H3_TIMER->TMR0_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 	LtcOutputs::Get()->Init();
 
@@ -89,26 +85,24 @@ void RtpMidiReader::Start() {
 }
 
 void RtpMidiReader::Stop() {
-	irq_timer_set(IRQ_TIMER_0, nullptr);
+	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 }
 
 void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
-	const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
-
-	auto isMtc = false;
-
 	if (ptMidiMessage->type == MIDI_TYPES_TIME_CODE_QUARTER_FRAME) {
 		HandleMtcQf(ptMidiMessage);
-		isMtc = true;
+		nUpdates++;;
 	} else if (ptMidiMessage->type == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
+		const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
 		if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
 			HandleMtc(ptMidiMessage);
-			isMtc = true;
+			nUpdates++;;
 		}
-	}
-
-	if (isMtc) {
-		nUpdates++;
+	} else if (ptMidiMessage->type == MIDI_TYPES_CLOCK) {
+		uint32_t nBPM;
+		if (m_MidiBPM.Get(ptMidiMessage->timestamp, nBPM)) {
+			LtcOutputs::Get()->ShowBPM(nBPM);
+		}
 	}
 }
 

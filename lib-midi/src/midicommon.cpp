@@ -34,3 +34,4 @@ Midi::Midi()  {
 
 	m_pMessage = midi_message_get();
 }
+

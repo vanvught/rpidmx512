@@ -2,7 +2,7 @@
  * @file gic.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 
 #include "arm/synchronize.h"
@@ -172,7 +172,7 @@ void gic_init_dump(void) {
 void gic_int_dump(__attribute__((unused)) H3_IRQn_TypeDef n) {
 #ifndef NDEBUG
 	uint32_t index = n / 32;
-	uint32_t mask = 1 << (n % 32);
+	uint32_t mask = 1U << (n % 32);
 
 	GIC_GROUP_TypeDef group = (GIC_GROUP_TypeDef) ((H3_GIC_DIST->IGROUP[index] & mask) == mask);
 	bool is_enabled = (H3_GIC_DIST->ISENABLE[index] & mask) == mask;

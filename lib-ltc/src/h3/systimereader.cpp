@@ -52,15 +52,15 @@
 #include "debug.h"
 
 namespace cmd {
-static constexpr char aStart[] = "start";
-static constexpr char aStop[] = "stop";
-static constexpr char aRate[] = "rate#";
+static constexpr char START[] = "start";
+static constexpr char STOP[] = "stop";
+static constexpr char RATE[] = "rate#";
 }
 
 namespace length {
-static constexpr auto START = sizeof(cmd::aStart) - 1;
-static constexpr auto STOP = sizeof(cmd::aStop) - 1;
-static constexpr auto RATE = sizeof(cmd::aRate) - 1;
+static constexpr auto START = sizeof(cmd::START) - 1;
+static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+static constexpr auto RATE = sizeof(cmd::RATE) - 1;
 }
 
 namespace udp {
@@ -91,7 +91,7 @@ void SystimeReader::Start(bool bAutoStart) {
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 
-	// System Time
+	// System Time -> Frames
 	irq_timer_init();
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 
@@ -195,7 +195,7 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 	debug_dump(m_Buffer, m_nBytesReceived);
 
 	if (m_nBytesReceived == (4 + length::START)) {
-		if (memcmp(&m_Buffer[4], cmd::aStart, length::START) == 0) {
+		if (memcmp(&m_Buffer[4], cmd::START, length::START) == 0) {
 			ActionStart();
 			return;
 		}
@@ -204,7 +204,7 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 	}
 
 	if (m_nBytesReceived == (4 + length::STOP)) {
-		if (memcmp(&m_Buffer[4], cmd::aStop, length::STOP) == 0) {
+		if (memcmp(&m_Buffer[4], cmd::STOP, length::STOP) == 0) {
 			ActionStop();
 			return;
 		}
@@ -213,7 +213,7 @@ void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 	}
 
 	if (m_nBytesReceived == (4 + length::RATE  + TC_RATE_MAX_LENGTH)) {
-		if (memcmp(&m_Buffer[4], cmd::aRate, length::RATE) == 0) {
+		if (memcmp(&m_Buffer[4], cmd::RATE, length::RATE) == 0) {
 			ActionSetRate(&m_Buffer[(4 + length::RATE)]);
 			return;
 		}

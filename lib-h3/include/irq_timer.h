@@ -2,7 +2,7 @@
  * @file irq_timer.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,16 @@ typedef enum irq_timers {
 } _irq_timers;
 
 typedef void (*thunk_irq_timer_t)(const uint32_t);
+typedef void (*thunk_irq_timer_arm_t)(void);
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 extern void irq_timer_set(_irq_timers, thunk_irq_timer_t);
+extern void irq_timer_arm_physical_set(thunk_irq_timer_arm_t);
+extern void irq_timer_arm_virtual_set(thunk_irq_timer_arm_t, uint32_t);
+
 extern void irq_timer_init(void);
 
 #ifdef __cplusplus

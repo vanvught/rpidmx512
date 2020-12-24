@@ -60,9 +60,7 @@ struct TRtpHeader {
 
 RtpMidi *RtpMidi::s_pThis = nullptr;
 
-RtpMidi::RtpMidi()
-	
-{
+RtpMidi::RtpMidi() {
 	DEBUG_ENTRY
 
 	s_pThis = this;
@@ -104,7 +102,7 @@ int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uin
 	unsigned long deltatime = 0;
 
 	for (uint32_t i = 0; i < 4; i++ ) {
-		const uint8_t nOctet = m_pReceiveBuffer[nOffset + static_cast<uint32_t>(nSize)];
+		const auto nOctet = m_pReceiveBuffer[nOffset + static_cast<uint32_t>(nSize)];
 		deltatime = ( deltatime << 7 ) | ( nOctet & RTP_MIDI_DELTA_TIME_OCTET_MASK );
 		nSize++;
 
@@ -140,9 +138,10 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 
 	int32_t nSize = -1;
 
-	const uint8_t nStatusByte = m_pReceiveBuffer[nOffset];
-	const uint8_t nType = GetTypeFromStatusByte(nStatusByte);
+	const auto nStatusByte = m_pReceiveBuffer[nOffset];
+	const auto nType = GetTypeFromStatusByte(nStatusByte);
 
+	m_tMidiMessage.timestamp = __builtin_bswap32(*reinterpret_cast<uint32_t *>(&m_pReceiveBuffer[4]));
 	m_tMidiMessage.type = nType;
 	m_tMidiMessage.channel = 0;
 	m_tMidiMessage.data1 = 0;
@@ -187,7 +186,10 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 
-	if (m_pRtpMidiHandler != nullptr) m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
+	if (m_pRtpMidiHandler != nullptr) {
+		m_pRtpMidiHandler->MidiMessage(&m_tMidiMessage);
+		DEBUG_PUTS("");
+	}
 
 	DEBUG_EXIT
 	return nSize;
@@ -198,7 +200,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 	m_pReceiveBuffer = const_cast<uint8_t *>(pBuffer);
 
-	const uint8_t nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
+	const auto nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
 
 	int32_t nCommandLength = nFlags & RTP_MIDI_CS_MASK_SHORTLEN;
 	int32_t nOffset;
@@ -246,8 +248,14 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	DEBUG_EXIT
 }
 
+void RtpMidi::SendRaw(uint8_t nByte) {
+	auto *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
+	data[0] = nByte;
+	Send(1);
+}
+
 void RtpMidi::SendTimeCode(const struct _midi_send_tc *tTimeCode) {
-	uint8_t *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
+	auto *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
 
 	data[0] = 0xF0;
 	data[1] = 0x7F;
@@ -275,9 +283,5 @@ void  RtpMidi::Send(uint32_t nLength) {
 }
 
 void RtpMidi::Print() {
-	DEBUG_ENTRY
-
 	AppleMidi::Print();
-
-	DEBUG_EXIT
 }

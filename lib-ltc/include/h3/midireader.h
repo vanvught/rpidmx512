@@ -27,7 +27,9 @@
 #define H3_MIDIREADER_H_
 
 #include "ltc.h"
+
 #include "midi.h"
+#include "midibpm.h"
 
 class MidiReader {
 public:
@@ -48,6 +50,7 @@ private:
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	uint8_t m_nPartPrevious{0};
 	bool m_bDirection{true};
+	MidiBPM m_MidiBPM;
 };
 
 #endif /* H3_MIDIREADER_H_ */

@@ -42,6 +42,7 @@
 #include "h3/ltcsender.h"
 #include "artnetnode.h"
 #include "rtpmidi.h"
+#include "ltcmidisystemrealtime.h"
 #include "h3/ltcoutputs.h"
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
@@ -148,11 +149,17 @@ void MidiReader::Run() {
 		if (Midi::Get()->GetChannel() == 0) {
 			switch (Midi::Get()->GetMessageType()) {
 			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
-				HandleMtcQf(); // type = midi_reader_mtc_qf(midi_message);
+				HandleMtcQf();
 				break;
 			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
 				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
-					HandleMtc(); // type = midi_reader_mtc(midi_message);
+					HandleMtc();
+				}
+				break;
+			case MIDI_TYPES_CLOCK:
+				uint32_t nBPM;
+				if (m_MidiBPM.Get(Midi::Get()->GetMessageTimeStamp() / 100, nBPM)) {
+					LtcOutputs::Get()->ShowBPM(nBPM);
 				}
 				break;
 			default:

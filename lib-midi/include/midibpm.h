@@ -1,8 +1,8 @@
 /**
- * @file rtpmidireader.h
+ * @file midibpm.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,41 +23,58 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_RTPMIDIREADER_H_
-#define H3_RTPMIDIREADER_H_
+#ifndef MIDIBPM_H_
+#define MIDIBPM_H_
 
 #include <stdint.h>
 
-#include "rtpmidihandler.h"
-#include "ltc.h"
-
-#include "midibpm.h"
-
-class RtpMidiReader: public RtpMidiHandler {
+class MidiBPM {
 public:
-	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~RtpMidiReader();
+	bool Get(uint32_t nTimeStamp, uint32_t &nBPM) {
+		m_nBpmDelta[m_nBpmClockCounter] = nTimeStamp - m_nBpmTimeStampPrevious;
 
-	void Start();
-	void Stop();
+		if (m_nBpmDelta[m_nBpmClockCounter] == 0) {
+			return false;
+		}
 
-	void Run();
+		m_nBpmTimeStampPrevious = nTimeStamp;
 
-	void MidiMessage(const struct _midi_message *ptMidiMessage);
+		if (++m_nBpmClockCounter == 24) {
+			m_nBpmClockCounter = 0;
+
+			uint32_t nDelta = 0;
+			uint32_t nCount = 0;
+
+			for (uint32_t i = 1; i < 24; i++) {
+				const uint32_t nDiff = m_nBpmDelta[i] - m_nBpmDelta[i - 1];
+
+				if (nDiff <= 1) {
+					nDelta += m_nBpmDelta[i];
+					nCount++;
+				}
+			}
+
+			if (nCount == 0) {
+				return false;
+			}
+
+			const float fBPM = static_cast<float>(25000 * nCount) / nDelta;	// 25000 = 600000 / 24
+			nBPM = static_cast<uint32_t>(fBPM + .5);
+
+			if (nBPM != m_nBpmPrevious) {
+				m_nBpmPrevious = nBPM;
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 private:
-	void HandleMtc(const struct _midi_message *ptMidiMessage);
-	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
-	void Update();
-
-private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	_midi_timecode_type m_nTimeCodeType{MIDI_TC_TYPE_UNKNOWN};
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	TLtcTimeCode m_tLtcTimeCode;
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
-	MidiBPM m_MidiBPM;
+	uint32_t m_nBpmPrevious{0};
+	uint32_t m_nBpmTimeStampPrevious{0};
+	uint32_t m_nBpmClockCounter{0};
+	uint32_t m_nBpmDelta[24];
 };
 
-#endif /* H3_RTPMIDIREADER_H_ */
+#endif /* MIDIBPM_H_ */
