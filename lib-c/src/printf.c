@@ -29,6 +29,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include "console.h"
 
@@ -224,7 +225,7 @@ static void _format_hex(struct context *ctx, unsigned int arg) {
 	}
 }
 
-static void _format_int(struct context *ctx, long unsigned arg) {
+static void _format_int(struct context *ctx, uint64_t arg) {
 	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
@@ -359,7 +360,8 @@ static void _format_pointer(struct context *ctx, unsigned int arg) {
 static int _vprintf(const int size, const char *fmt, va_list va) {
 	struct context ctx;
 	float f;
-	long int l;
+	int64_t l;
+	uint64_t lu;
 	const char *s;
 
 	ctx.total = 0;
@@ -425,34 +427,35 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			/*@fallthrough@*/
 			/* no break */
 		case 'i':
-			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, long int) : (long int) va_arg(va, int);
-			if ((int64_t) l < 0) {
+			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, int64_t) : (long int) va_arg(va, int32_t);
+			if (l < 0) {
 				ctx.flag |= FLAG_NEGATIVE;
 				l = -l;
 			}
-			_format_int(&ctx, (unsigned int) l);
+			_format_int(&ctx, (uint64_t) l);
 			break;
 		case 'f':
 			f = (float) va_arg(va, double);
 			_format_float(&ctx, f);
 			break;
 		case 'p':
-			_format_pointer(&ctx, va_arg(va, unsigned int));
+			_format_pointer(&ctx, va_arg(va, uint32_t));
 			break;
 		case 's':
 			s = va_arg(va, const char *);
 			_format_string(&ctx, s);
 			break;
 		case 'u':
-			l = (long int) va_arg(va, unsigned int);
-			_format_int(&ctx, (unsigned int) l);
+			lu = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, uint64_t) : va_arg(va,uint32_t);
+			//l = (long int) va_arg(va, unsigned int);
+			_format_int(&ctx, lu);
 			break;
 		case 'X':
 			ctx.flag |= FLAG_UPPERCASE;
 			/*@fallthrough@*/
 			/* no break */
 		case 'x':
-			_format_hex(&ctx, va_arg(va, unsigned int));
+			_format_hex(&ctx, va_arg(va, uint32_t));
 			break;
 		default:
 			_xputch(&ctx, (int) *fmt);
