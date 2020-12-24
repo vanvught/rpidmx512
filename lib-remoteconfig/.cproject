@@ -23,7 +23,25 @@
 							<builder arguments="-f Makefile.H3" command="make" id="cdt.managedbuild.builder.gnu.cross.699030104" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1060623090" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.c.compiler.option.include.paths.1411220262" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="gnu.c.compiler.option.preprocessor.def.symbols.1929452772" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols"/>
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1929452772" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+									<listOptionValue builtIn="false" value="OSC_CLIENT_NODE"/>
+									<listOptionValue builtIn="false" value="OSC_SERVER_NODE"/>
+									<listOptionValue builtIn="false" value="SHOWFILE_NODE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_STEPPER"/>
+									<listOptionValue builtIn="false" value="OUTPUT_RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSERIAL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_SERVER"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
+								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1698677010" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.579897155" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
@@ -60,21 +78,22 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rgbpanel/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.96528660" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="OSC_SERVER"/>
-									<listOptionValue builtIn="false" value="LTC_READER"/>
-									<listOptionValue builtIn="false" value="OSC_CLIENT"/>
-									<listOptionValue builtIn="false" value="E131_BRIDGE_MULTI"/>
-									<listOptionValue builtIn="false" value="ARTNET_NODE_MULTI"/>
-									<listOptionValue builtIn="false" value="PIXEL_MULTI"/>
-									<listOptionValue builtIn="false" value="DMXSEND_MULTI"/>
 									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
-									<listOptionValue builtIn="false" value="DISPLAY_NEXTION"/>
-									<listOptionValue builtIn="false" value="STEPPER"/>
 									<listOptionValue builtIn="false" value="RDM_RESPONDER"/>
-									<listOptionValue builtIn="false" value="SHOWFILE"/>
-									<listOptionValue builtIn="false" value="DMX_MONITOR"/>
-									<listOptionValue builtIn="false" value="DMXSERIAL"/>
-									<listOptionValue builtIn="false" value="RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_STEPPER"/>
+									<listOptionValue builtIn="false" value="OUTPUT_RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSERIAL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_SERVER"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -145,6 +164,23 @@
 									<listOptionValue builtIn="false" value="SHOWFILE"/>
 									<listOptionValue builtIn="false" value="DMX_MONITOR"/>
 									<listOptionValue builtIn="false" value="DMXSERIAL"/>
+									<listOptionValue builtIn="false" value="OSC_CLIENT_NODE"/>
+									<listOptionValue builtIn="false" value="OSC_SERVER_NODE"/>
+									<listOptionValue builtIn="false" value="SHOWFILE_NODE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_STEPPER"/>
+									<listOptionValue builtIn="false" value="OUTPUT_RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSERIAL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_SERVER"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1810325769" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -201,6 +237,23 @@
 									<listOptionValue builtIn="false" value="DMXSERIAL"/>
 									<listOptionValue builtIn="false" value="RGBPANEL"/>
 									<listOptionValue builtIn="false" value="RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OSC_CLIENT_NODE"/>
+									<listOptionValue builtIn="false" value="OSC_SERVER_NODE"/>
+									<listOptionValue builtIn="false" value="SHOWFILE_NODE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_STEPPER"/>
+									<listOptionValue builtIn="false" value="OUTPUT_RGB_PANEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSERIAL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL"/>
+									<listOptionValue builtIn="false" value="OUTPUT_PIXEL_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND_MULTI"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMXSEND"/>
+									<listOptionValue builtIn="false" value="NODE_ARTNET"/>
+									<listOptionValue builtIn="false" value="NODE_E131"/>
+									<listOptionValue builtIn="false" value="NODE_SHOWFILE"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_SERVER"/>
+									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
+									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1213842804" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
