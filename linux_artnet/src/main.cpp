@@ -51,7 +51,7 @@
 #include "rdmdeviceparams.h"
 
 #if defined (__linux__)
- #include "ipprog.h"
+# include "ipprog.h"
 #endif
 
 #include "spiflashstore.h"
@@ -170,7 +170,7 @@ int main(int argc, char **argv) {
 		RdmResponder.Print();
 	}
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_MONITOR, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

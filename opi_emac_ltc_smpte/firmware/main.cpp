@@ -37,6 +37,7 @@
 #include "ltcdisplayrgb.h"
 #include "ltcdisplaymax7219.h"
 #include "ltc7segment.h"
+#include "ltcmidisystemrealtime.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -382,7 +383,7 @@ void notmain(void) {
 	}
 
 	/**
-	 * When the NTP Server is enabled then the NTP Client is not running (stopped)
+	 * When the NTP Server is enabled then the NTP Client is not running (stopped).
 	 */
 
 	const auto bRunNtpServer = ltcParams.IsNtpEnabled();
@@ -403,6 +404,23 @@ void notmain(void) {
 	 */
 
 	LtcGenerator ltcGenerator(&tStartTimeCode, &tStopTimeCode, &tLtcDisabledOutputs, ltcParams.GetSkipFree());
+
+	/**
+	 * MIDI output System Real Time
+	 */
+
+	LtcMidiSystemRealtime ltcMidiSystemRealtime(&tLtcDisabledOutputs);
+
+	/**
+	 * The UDP request handler is running when source is NOT MIDI AND source is NOT RTP-MIDI
+	 * AND when MIDI output is NOT disabled OR the RTP-MIDI is NOT disabled.
+	 */
+
+	const auto bRunMidiSystemRealtime = (ltcSource != ltc::source::MIDI) && (ltcSource != ltc::source::APPLEMIDI) && ((!tLtcDisabledOutputs.bRtpMidi) || (!tLtcDisabledOutputs.bMidi));
+
+	if (bRunMidiSystemRealtime) {
+		ltcMidiSystemRealtime.Start();
+	}
 
 	/**
 	 * Start the reader
@@ -444,7 +462,7 @@ void notmain(void) {
 	rdmNetLLRPOnly.Start();
 	rdmNetLLRPOnly.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_LTC, REMOTE_CONFIG_MODE_TIMECODE, 1 + ltcSource);
+	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + ltcSource);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
@@ -527,6 +545,10 @@ void notmain(void) {
 			ntpServer.Run();
 		} else {
 			ntpClient.Run();	// We could check for GPS Time client running. But not really needed.
+		}
+
+		if (bRunMidiSystemRealtime) {
+			ltcMidiSystemRealtime.Run();	// UDP requests
 		}
 
 		if (tLtcDisabledOutputs.bOled) {

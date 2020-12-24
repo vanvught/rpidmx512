@@ -118,7 +118,7 @@ int main(int argc, char **argv) {
 	nw.Print();
 	bridge.Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_MONITOR, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {

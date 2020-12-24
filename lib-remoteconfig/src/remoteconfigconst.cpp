@@ -35,5 +35,5 @@ const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
 
 const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";
 
-const char RemoteConfigConst::PARAMS_DISABLE_RDMNET_LLRP_ONLY[] = "disable_rdmnet_llrp_only";
+const char RemoteConfigConst::PARAMS_DISABLE_NODE_RDMNET_LLRP_ONLY[] = "disable_rdmnet_llrp_only";
 

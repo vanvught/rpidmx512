@@ -35,11 +35,11 @@ public:
 	StoreRDMSubDevices();
 
 	void Update(const struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
-		SpiFlashStore::Get()->Update(STORE_RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
 	}
 
 	void Copy(struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
-		SpiFlashStore::Get()->Copy(STORE_RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
 	}
 
 	static StoreRDMSubDevices *Get() {

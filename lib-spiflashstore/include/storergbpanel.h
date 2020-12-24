@@ -35,11 +35,11 @@ public:
 	StoreRgbPanel();
 
 	void Update(const struct TRgbPanelParams *pRgbPanelParams) override {
-		SpiFlashStore::Get()->Update(STORE_RGBPANEL, pRgbPanelParams, sizeof(struct TRgbPanelParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RGBPANEL, pRgbPanelParams, sizeof(struct TRgbPanelParams));
 	}
 
 	void Copy(struct TRgbPanelParams *pRgbPanelParamss) override {
-		SpiFlashStore::Get()->Copy(STORE_RGBPANEL, pRgbPanelParamss, sizeof(struct TRgbPanelParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::RGBPANEL, pRgbPanelParamss, sizeof(struct TRgbPanelParams));
 	}
 
 	static StoreRgbPanel *Get() {

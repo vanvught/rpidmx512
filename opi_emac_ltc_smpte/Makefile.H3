@@ -1,7 +1,7 @@
 #
-DEFINES = LTC_READER RDMNET_LLRP_ONLY ARM_ALLOW_MULTI_CORE NDEBUG #ENABLE_SHELL
+DEFINES = NODE_LTC_SMPTE NODE_ARTNET NODE_RDMNET_LLRP_ONLY ARM_ALLOW_MULTI_CORE NDEBUG #ENABLE_SHELL
 #
-LIBS = ltc tcnet artnethandlers midi input osc ws28xxdisplay ws28xx rgbpanel rdmnet rdm rdmsensor rdmsubdevice gps
+LIBS = ltc tcnet midi input osc ws28xxdisplay ws28xx rgbpanel rdmnet rdm rdmsensor rdmsubdevice gps
 #
 SRCDIR = firmware lib
 

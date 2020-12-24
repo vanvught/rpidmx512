@@ -40,6 +40,8 @@
 
 #include "network.h"
 
+#include "debug.h"
+
 void ArtNetParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);

@@ -35,11 +35,11 @@ public:
 	StoreE131();
 
 	void Update(const struct TE131Params *pE131Params) override {
-		SpiFlashStore::Get()->Update(STORE_E131, pE131Params, sizeof(struct TE131Params));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::E131, pE131Params, sizeof(struct TE131Params));
 	}
 
 	void Copy(struct TE131Params *pE131Params) override {
-		SpiFlashStore::Get()->Copy(STORE_E131, pE131Params, sizeof(struct TE131Params));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::E131, pE131Params, sizeof(struct TE131Params));
 	}
 
 	static StoreE131* Get() {

@@ -256,7 +256,7 @@ void notmain(void) {
 
 	const uint32_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, artnetparams.IsRdm() ? REMOTE_CONFIG_MODE_RDM : REMOTE_CONFIG_MODE_DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetparams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 

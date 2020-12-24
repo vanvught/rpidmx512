@@ -34,7 +34,6 @@
 #include "sparkfundmxparamsconst.h"
 
 #include "lightset.h"
-#include "lightsetdisplay.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"

@@ -35,11 +35,11 @@ public:
 	StoreGPS();
 
 	void Update(const struct TGPSParams *pGPSParams) override {
-		SpiFlashStore::Get()->Update(STORE_GPS, pGPSParams, sizeof(struct TGPSParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::GPS, pGPSParams, sizeof(struct TGPSParams));
 	}
 
 	void Copy(struct TGPSParams *pGPSParams) override {
-		SpiFlashStore::Get()->Copy(STORE_GPS, pGPSParams, sizeof(struct TGPSParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::GPS, pGPSParams, sizeof(struct TGPSParams));
 	}
 
 	static StoreGPS *Get() {

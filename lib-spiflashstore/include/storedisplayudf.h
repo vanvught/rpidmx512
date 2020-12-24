@@ -35,11 +35,11 @@ public:
 	StoreDisplayUdf();
 
 	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams) override {
-		SpiFlashStore::Get()->Update(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
 	}
 
 	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams) override {
-		SpiFlashStore::Get()->Copy(STORE_DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
 	}
 
 	static StoreDisplayUdf *Get() {

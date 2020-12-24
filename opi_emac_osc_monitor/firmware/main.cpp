@@ -138,7 +138,7 @@ void notmain(void) {
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC, REMOTE_CONFIG_MODE_MONITOR, 1);
+	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

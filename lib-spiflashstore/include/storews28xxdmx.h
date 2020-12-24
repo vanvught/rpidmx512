@@ -38,15 +38,15 @@ public:
 	StoreWS28xxDmx();
 
 	void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams) override {
-		SpiFlashStore::Get()->Update(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 	}
 
 	void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams) override {
-		SpiFlashStore::Get()->Copy(STORE_WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 	}
 
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		SpiFlashStore::Get()->Update(STORE_WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
 	}
 
 	static StoreWS28xxDmx *Get() {

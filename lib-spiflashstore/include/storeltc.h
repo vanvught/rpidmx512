@@ -35,15 +35,15 @@ public:
 	StoreLtc();
 
 	void Update(const struct TLtcParams *pLtcParams) override {
-		SpiFlashStore::Get()->Update(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, pLtcParams, sizeof(struct TLtcParams));
 	}
 
 	void Copy(struct TLtcParams *pLtcParams) override {
-		SpiFlashStore::Get()->Copy(STORE_LTC, pLtcParams, sizeof(struct TLtcParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::LTC, pLtcParams, sizeof(struct TLtcParams));
 	}
 
 	void SaveSource(uint8_t nSource) override {
-		SpiFlashStore::Get()->Update(STORE_LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
 	}
 
 	static StoreLtc *Get() {

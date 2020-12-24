@@ -165,7 +165,7 @@ void notmain(void) {
 
 	const uint32_t nActivePorts = (e131params.GetDirection() == E131_INPUT_PORT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

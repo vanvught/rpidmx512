@@ -35,11 +35,11 @@ public:
 	StoreTCNet();
 
 	void Update(const struct TTCNetParams *pTCNetParams) override {
-		SpiFlashStore::Get()->Update(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::TCNET, pTCNetParams, sizeof(struct TTCNetParams));
 	}
 
 	void Copy(struct TTCNetParams *pTCNetParams) override {
-		SpiFlashStore::Get()->Copy(STORE_TCNET, pTCNetParams, sizeof(struct TTCNetParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::TCNET, pTCNetParams, sizeof(struct TTCNetParams));
 	}
 
 	static StoreTCNet *Get() {

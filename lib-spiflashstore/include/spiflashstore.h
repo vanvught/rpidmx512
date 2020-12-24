@@ -30,62 +30,56 @@
 
 #include "storenetwork.h"
 
-#define SPI_FLASH_STORE_SIZE	4096
-
-enum TStore {
-	STORE_NETWORK,
-	STORE_ARTNET,
-	STORE_DMXSEND,
-	STORE_WS28XXDMX,
-	STORE_E131,
-	STORE_LTC,
-	STORE_MIDI,
-	STORE_ARTNET4,
-	STORE_OSC,
-	STORE_TLC5711DMX,
-	STORE_WIDGET,
-	STORE_RDMDEVICE,
-	STORE_RCONFIG,
-	STORE_TCNET,
-	STORE_OSC_CLIENT,
-	STORE_DISPLAYUDF,
-	STORE_LTCDISPLAY,
-	STORE_MONITOR,
-	STORE_SPARKFUN,
-	STORE_SLUSH,
-	STORE_MOTORS,
-	STORE_SHOW,
-	STORE_SERIAL,
-	STORE_RDMSENSORS,
-	STORE_RDMSUBDEVICES,
-	STORE_GPS,
-	STORE_RGBPANEL,
-	STORE_LAST
+namespace spiflashstore {
+enum class Store {
+	NETWORK,
+	ARTNET,
+	DMXSEND,
+	WS28XXDMX,
+	E131,
+	LTC,
+	MIDI,
+	ARTNET4,
+	OSC,
+	TLC5711DMX,
+	WIDGET,
+	RDMDEVICE,
+	RCONFIG,
+	TCNET,
+	OSC_CLIENT,
+	DISPLAYUDF,
+	LTCDISPLAY,
+	MONITOR,
+	SPARKFUN,
+	SLUSH,
+	MOTORS,
+	SHOW,
+	SERIAL,
+	RDMSENSORS,
+	RDMSUBDEVICES,
+	GPS,
+	RGBPANEL,
+	LAST
 };
-
-enum TStoreState {
-	STORE_STATE_IDLE,
-	STORE_STATE_CHANGED,
-	STORE_STATE_ERASED
-};
+}  // namespace spiflashstore
 
 class SpiFlashStore {
 public:
 	SpiFlashStore();
 	~SpiFlashStore();
 
-	 bool HaveFlashChip() {
+	 bool HaveFlashChip() const {
 		return m_bHaveFlashChip;
 	}
 
-	void Update(TStore tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
-	void Update(TStore tStore, const void *pData, uint32_t nDataLength) {
+	void Update(spiflashstore::Store tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
+	void Update(spiflashstore::Store tStore, const void *pData, uint32_t nDataLength) {
 		Update(tStore, 0, pData, nDataLength);
 	}
-	void Copy(TStore tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
-	void CopyTo(TStore tStore, void *pData, uint32_t &nDataLength);
+	void Copy(spiflashstore::Store tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
+	void CopyTo(spiflashstore::Store tStore, void *pData, uint32_t &nDataLength);
 
-	void ResetSetList(TStore tStore);
+	void ResetSetList(spiflashstore::Store tStore);
 
 	bool Flash();
 
@@ -97,15 +91,21 @@ public:
 
 private:
 	bool Init();
-	uint32_t GetStoreOffset(TStore tStore);
+	uint32_t GetStoreOffset(spiflashstore::Store tStore);
 
 private:
-	bool m_bHaveFlashChip{false};
-	bool m_bIsNew{false};
-	uint32_t m_nStartAddress{0};
-	uint32_t m_nSpiFlashStoreSize{SPI_FLASH_STORE_SIZE};
-	TStoreState m_tState{STORE_STATE_IDLE};
-	uint8_t m_aSpiFlashData[SPI_FLASH_STORE_SIZE];
+	bool m_bHaveFlashChip { false };
+	bool m_bIsNew { false };
+	enum class State {
+		IDLE, CHANGED, ERASED
+	};
+	State m_tState { State::IDLE };
+	uint32_t m_nStartAddress { 0 };
+	struct FlashStore {
+		static constexpr auto SIZE = 4096;
+	};
+	uint32_t m_nSpiFlashStoreSize { FlashStore::SIZE };
+	uint8_t m_aSpiFlashData[FlashStore::SIZE];
 
 	StoreNetwork m_StoreNetwork;
 

@@ -150,7 +150,7 @@ void notmain(void) {
 	rdmNetLLRPOnly.Print();
 	rdmNetLLRPOnly.Start();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_SHOWFILE, REMOTE_CONFIG_MODE_PLAYER, 0);
+	RemoteConfig remoteConfig(remoteconfig::Node::SHOWFILE, remoteconfig::Output::PLAYER, 0);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if (remoteConfigParams.Load()) {

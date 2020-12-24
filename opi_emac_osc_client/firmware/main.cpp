@@ -123,7 +123,7 @@ void notmain(void) {
 		client.SetLedHandler(pButtonsGpio);
 	}
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC_CLIENT, REMOTE_CONFIG_MODE_OSC, pButtonsSet->GetButtonsCount());
+	RemoteConfig remoteConfig(remoteconfig::Node::OSC_CLIENT, remoteconfig::Output::OSC, pButtonsSet->GetButtonsCount());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

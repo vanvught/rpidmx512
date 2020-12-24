@@ -35,11 +35,11 @@ public:
 	StoreDmxSend();
 
 	void Update(const struct TDMXParams *pDmxParams) override {
-		SpiFlashStore::Get()->Update(STORE_DMXSEND, pDmxParams, sizeof(struct TDMXParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDMXParams));
 	}
 
 	void Copy(struct TDMXParams *pDmxParams) override {
-		SpiFlashStore::Get()->Copy(STORE_DMXSEND, pDmxParams, sizeof(struct TDMXParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDMXParams));
 	}
 
 	static StoreDmxSend *Get() {

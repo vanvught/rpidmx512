@@ -52,6 +52,8 @@ struct TMotorStore {
 
 #define STORE_MOTOR_OFFSET(x)		((x) * sizeof(struct TMotorStore))
 
+using namespace spiflashstore;
+
 StoreMotors *StoreMotors::s_pThis = nullptr;
 
 StoreMotors::StoreMotors() {
@@ -111,7 +113,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Update(STORE_MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, ModeParams), ptModeParams, sizeof(struct TModeParams));
+	SpiFlashStore::Get()->Update(Store::MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, ModeParams), ptModeParams, sizeof(struct TModeParams));
 
 	DEBUG_EXIT
 }
@@ -121,7 +123,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams) {
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Copy(STORE_MOTORS, ptModeParams, sizeof(struct TModeParams), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, ModeParams));
+	SpiFlashStore::Get()->Copy(Store::MOTORS, ptModeParams, sizeof(struct TModeParams), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, ModeParams));
 
 	DEBUG_EXIT
 }
@@ -131,7 +133,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotor
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Update(STORE_MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, MotorParams), ptMotorParams, sizeof(struct TMotorParams));
+	SpiFlashStore::Get()->Update(Store::MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, MotorParams), ptMotorParams, sizeof(struct TMotorParams));
 
 	DEBUG_EXIT
 }
@@ -141,7 +143,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams) 
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Copy(STORE_MOTORS, ptMotorParams, sizeof(struct TMotorParams), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, MotorParams));
+	SpiFlashStore::Get()->Copy(Store::MOTORS, ptMotorParams, sizeof(struct TMotorParams), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, MotorParams));
 
 	DEBUG_EXIT
 }
@@ -151,7 +153,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Update(STORE_MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, L6470Params), ptL6470Params, sizeof(struct TL6470Params));
+	SpiFlashStore::Get()->Update(Store::MOTORS, STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, L6470Params), ptL6470Params, sizeof(struct TL6470Params));
 
 	DEBUG_EXIT
 }
@@ -161,7 +163,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params) 
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Copy(STORE_MOTORS, ptL6470Params, sizeof(struct TL6470Params), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, L6470Params));
+	SpiFlashStore::Get()->Copy(Store::MOTORS, ptL6470Params, sizeof(struct TL6470Params), STORE_MOTOR_OFFSET(nMotorIndex) + __builtin_offsetof(struct TMotorStore, L6470Params));
 
 	DEBUG_EXIT
 }
@@ -175,7 +177,7 @@ void StoreMotors::SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAdd
 
 	DEBUG_PRINTF("nOffsetModeParms=%d", nOffsetModeParms);
 
-	SpiFlashStore::Get()->Update(STORE_MOTORS, nOffsetModeParms + __builtin_offsetof(struct TModeParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), ModeParamsMask::DMX_START_ADDRESS, nOffsetModeParms);
+	SpiFlashStore::Get()->Update(Store::MOTORS, nOffsetModeParms + __builtin_offsetof(struct TModeParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), ModeParamsMask::DMX_START_ADDRESS, nOffsetModeParms);
 
 	DEBUG_EXIT
 }

@@ -38,15 +38,15 @@ public:
 	StoreTLC59711();
 
 	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams) override {
-		SpiFlashStore::Get()->Update(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
 	}
 
 	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams) override {
-		SpiFlashStore::Get()->Copy(STORE_TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
 	}
 
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		SpiFlashStore::Get()->Update(STORE_TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DmxParamsMask::START_ADDRESS);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DmxParamsMask::START_ADDRESS);
 	}
 
 	static StoreTLC59711 *Get() {

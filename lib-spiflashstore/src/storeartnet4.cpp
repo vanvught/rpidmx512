@@ -32,8 +32,9 @@
 
 #include "spiflashstore.h"
 
-
 #include "debug.h"
+
+using namespace spiflashstore;
 
 StoreArtNet4 *StoreArtNet4::s_pThis = nullptr;
 
@@ -50,7 +51,7 @@ StoreArtNet4::StoreArtNet4() {
 void StoreArtNet4::Update(const struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
+	SpiFlashStore::Get()->Update(Store::ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }
@@ -58,7 +59,7 @@ void StoreArtNet4::Update(const struct TArtNet4Params* pArtNet4Params) {
 void StoreArtNet4::Copy(struct TArtNet4Params* pArtNet4Params) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
+	SpiFlashStore::Get()->Copy(Store::ARTNET4, pArtNet4Params, sizeof(struct TArtNet4Params));
 
 	DEBUG_EXIT
 }

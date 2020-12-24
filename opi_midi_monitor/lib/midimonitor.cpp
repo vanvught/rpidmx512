@@ -46,7 +46,7 @@ static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
 static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
-	char *p = pBuffer;
+	auto *p = pBuffer;
 
 	if (nArg == 0) {
 		*p++ = '0';
@@ -61,7 +61,6 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 MidiMonitor::MidiMonitor():
 	m_nMillisPrevious(Hardware::Get()->Millis()),
 	m_pMidiMessage(midi_message_get())
-	
 {
 }
 
@@ -134,10 +133,7 @@ void MidiMonitor::HandleQf() {
 }
 
 void MidiMonitor::HandleMessage() {
-	size_t i;
-
-	if (midi_read_channel(MIDI_CHANNEL_OMNI)) {
-
+	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
 		// Handle Active Sensing messages
 		if (m_pMidiMessage->type == MIDI_TYPES_ACTIVE_SENSING) {
 			// This is handled in ShowActiveSense
@@ -183,7 +179,7 @@ void MidiMonitor::HandleMessage() {
 			printf("%2d  ", m_pMidiMessage->channel);
 			if (m_pMidiMessage->type == MIDI_TYPES_NOTE_OFF || m_pMidiMessage->type == MIDI_TYPES_NOTE_ON) {
 				console_puts(MidiDescription::GetKeyName(m_pMidiMessage->data1));
-				i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->data1));
+				auto i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->data1));
 				while ((5 - i++) > 0) {
 					console_putc(' ');
 				}
@@ -293,7 +289,7 @@ void MidiMonitor::HandleMessage() {
 }
 
 void MidiMonitor::ShowActiveSense() {
-	uint32_t nNow = Hardware::Get()->Millis();
+	const auto nNow = Hardware::Get()->Millis();
 
 	if (__builtin_expect(((nNow - m_nMillisPrevious) < 1000), 0)) {
 		return;
@@ -301,7 +297,7 @@ void MidiMonitor::ShowActiveSense() {
 
 	m_nMillisPrevious = nNow;
 
-	const _midi_active_sense_state tState = midi_active_get_sense_state();
+	const auto tState = Midi::Get()->GetActiveSenseState();
 
 	if (tState == MIDI_ACTIVE_SENSE_ENABLED) {
 		console_save_cursor();
@@ -322,4 +318,3 @@ void MidiMonitor::Run() {
 	HandleMessage();
 	ShowActiveSense();
 }
-

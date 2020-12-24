@@ -27,9 +27,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include <ltcdisplayrgb.h>
 
+#include "ltcdisplayrgb.h"
 #include "ltcoscserver.h"
+
+#include "ltcmidisystemrealtime.h"
 
 #include "tcnetdisplay.h"
 #include "osc.h"
@@ -39,8 +41,10 @@
 
 #include "h3/ltcgenerator.h"
 #include "h3/systimereader.h"
+#include "h3/ltcoutputs.h"
 
 #include "tcnet.h"
+#include "midi.h"
 
 #include "debug.h"
 
@@ -87,7 +91,24 @@ static constexpr auto LAYER = sizeof(cmd::LAYER) - 1;
 static constexpr auto TYPE = sizeof(cmd::TYPE) - 1;
 static constexpr auto TIMECODE = sizeof(cmd::TIMECODE) - 1;
 } // namespace length
-} // namespace tnet
+} // namespace tcnet
+
+namespace midi {
+namespace cmd {
+static constexpr char PATH[] = "midi/";
+static constexpr char START[] = "start";
+static constexpr char STOP[] = "stop";
+static constexpr char CONTINUE[] = "continue";
+static constexpr char BPM[] = "bpm";
+} // namespace cmd
+namespace length {
+static constexpr auto PATH = sizeof(cmd::PATH) - 1;
+static constexpr auto START = sizeof(cmd::START) - 1;
+static constexpr auto STOP = sizeof(cmd::STOP) - 1;
+static constexpr auto RESUME = sizeof(cmd::CONTINUE) - 1;
+static constexpr auto BPM = sizeof(cmd::BPM) - 1;
+} // namespace length
+} // namespace midi
 
 namespace ws28xx {
 namespace cmd {
@@ -126,10 +147,7 @@ static constexpr auto INFO = sizeof(cmd::INFO) - 1;
 static constexpr auto VALUE_LENGTH = 11;
 static constexpr auto FPS_VALUE_LENGTH = 2;
 
-LtcOscServer::LtcOscServer():
-	m_nPortIncoming(osc::port::DEFAULT_INCOMING)
-	
-{
+LtcOscServer::LtcOscServer(): m_nPortIncoming(osc::port::DEFAULT_INCOMING) {
 	m_pBuffer = new char[udp::MAX_BUFFER];
 	assert(m_pBuffer != nullptr);
 
@@ -382,6 +400,52 @@ void LtcOscServer::Run() {
 					DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(bUseTimeCode));
 					return;
 				}
+			}
+		}
+
+		// */midi/
+		if (memcmp(&m_pBuffer[m_nPathLength], midi::cmd::PATH, midi::length::PATH) == 0) {
+			// */start
+			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::START)) && (memcmp(&m_pBuffer[m_nPathLength + midi::length::PATH], midi::cmd::START, midi::length::START) == 0)) {
+				LtcMidiSystemRealtime::Get()->SendStart();
+				DEBUG_PUTS("MIDI Start");
+				return;
+			}
+			// */stop
+			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::STOP)) && (memcmp(&m_pBuffer[m_nPathLength + midi::length::PATH], midi::cmd::STOP, midi::length::STOP) == 0)) {
+				LtcMidiSystemRealtime::Get()->SendStop();
+				DEBUG_PUTS("MIDI Stop");
+				return;
+			}
+			// */continue
+			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::RESUME)) && (memcmp(&m_pBuffer[m_nPathLength + midi::length::PATH], midi::cmd::CONTINUE, midi::length::RESUME) == 0)) {
+				LtcMidiSystemRealtime::Get()->SendContinue();
+				DEBUG_PUTS("MIDI Continue");
+				return;
+			}
+			// */bpm i or */bpm f
+			if ((nCommandLength == (m_nPathLength + midi::length::PATH + midi::length::BPM)) && (memcmp(&m_pBuffer[m_nPathLength + midi::length::PATH], midi::cmd::BPM, midi::length::BPM) == 0)) {
+				uint32_t nBPM = 0;
+
+				OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
+
+				if (Msg.GetType(0) == osc::type::FLOAT) {
+					const auto fValue = Msg.GetFloat(0);
+					if (fValue > 0) {
+						nBPM = static_cast<uint32_t>(fValue);
+					}
+				} else if (Msg.GetType(0) == osc::type::INT32) {
+					const auto nValue = Msg.GetInt(0);
+					if (nValue > 0) {
+						nBPM = static_cast<uint32_t>(nValue);
+					}
+				}
+
+				LtcMidiSystemRealtime::Get()->SetBPM(nBPM);
+				LtcOutputs::Get()->ShowBPM(nBPM);
+				
+				DEBUG_PRINTF("MIDI BPM: %u", nBPM);
+				return;
 			}
 		}
 

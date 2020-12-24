@@ -188,7 +188,7 @@ void notmain(void) {
 	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_OSC,  REMOTE_CONFIG_MODE_PIXEL, 1);
+	RemoteConfig remoteConfig(remoteconfig::Node::OSC,  remoteconfig::Output::PIXEL, 1);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

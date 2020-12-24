@@ -35,9 +35,9 @@ public class OrangePi {
 	private static final String RCONFIG_TXT = "rconfig.txt";
 	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] TYPES_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
-	private static final String[] TYPEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
-	private static final String[] MODES_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", "rgbpanel.txt", ""};
+	private static final String[] NODE_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
+	private static final String[] NODEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
+	private static final String[] OUTPUT_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", "rgbpanel.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String GPS_TXT = "gps.txt";
@@ -59,7 +59,7 @@ public class OrangePi {
 	private String nodeDisplay = null;
 	private String nodeNetwork = null;
 	private String nodeType = null;
-	private String nodeMode = null;
+	private String nodeOutput = null;
 	private String nodeLtcDisplay = null;
 	private String nodeTCNet = null;
 	private String nodeGPS = null;
@@ -97,14 +97,14 @@ public class OrangePi {
 			
 			if (isValid) {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
-					nodeMode = MODES_TXT[0];
+					nodeOutput = OUTPUT_TXT[0];
 					if (Mode[0].equals("RDM")) {
 						nodeRDM = RDM_TXT;
 					}
 				} else if (Mode[0].equals("Pixel")) {
-					nodeMode = MODES_TXT[1];
+					nodeOutput = OUTPUT_TXT[1];
 				} else if (Mode[0].equals("Monitor")) {
-					nodeMode = MODES_TXT[2];
+					nodeOutput = OUTPUT_TXT[2];
 				} else if (Mode[0].equals("TimeCode")) {
 					nodeLtcDisplay = LDISPLAY_TXT;
 					nodeTCNet = TCNET_TXT;
@@ -113,7 +113,7 @@ public class OrangePi {
 				} else if (Mode[0].equals("Config")) {
 					//
 				} else if (Mode[0].equals("Stepper")) {
-					nodeMode = MODES_TXT[1];
+					nodeOutput = OUTPUT_TXT[1];
 					nodeSparkFun = SPARKFUN_TXT;
 					for (int i = 0; i < nodeMotors.length; i++) {
 						nodeMotors[i] = MOTORS_TXT[i];
@@ -124,9 +124,9 @@ public class OrangePi {
 				} else if (Mode[0].equals("Art-Net")) {
 					//
 				} else if (Mode[0].equals("Serial")) {
-					nodeMode = MODES_TXT[4];
+					nodeOutput = OUTPUT_TXT[4];
 				} else if (Mode[0].equals("RGB Panel")) {
-					nodeMode = MODES_TXT[5];	
+					nodeOutput = OUTPUT_TXT[5];	
 				} else {
 					isValid = false;
 				}
@@ -408,9 +408,9 @@ public class OrangePi {
 	}
 			
 	private Boolean isMapTypeValues(String type) {
-		for (int i = 0; i < TYPEVALUES.length; i++) {
-			if (type.equals(TYPEVALUES[i])) {
-				nodeType = TYPES_TXT[i];
+		for (int i = 0; i < NODEVALUES.length; i++) {
+			if (type.equals(NODEVALUES[i])) {
+				nodeType = NODE_TXT[i];
 				if ((i == 0) || (i == 1)) {
 					nodeDisplay = DISPLAY_TXT;
 				}
@@ -442,8 +442,8 @@ public class OrangePi {
 	}
 	
 	private Boolean isTypeTxt(String type) {
-		for (int i = 0; i < TYPES_TXT.length; i++) {
-			if (type.equals(TYPES_TXT[i])) {
+		for (int i = 0; i < NODE_TXT.length; i++) {
+			if (type.equals(NODE_TXT[i])) {
 				return true;
 			}
 		}
@@ -451,8 +451,8 @@ public class OrangePi {
 	}	
 	
 	private Boolean isModeTxt(String mode) {
-		for (int i = 0; i < MODES_TXT.length; i++) {
-			if (mode.equals(MODES_TXT[i])) {
+		for (int i = 0; i < OUTPUT_TXT.length; i++) {
+			if (mode.equals(OUTPUT_TXT[i])) {
 				return true;
 			}
 		}
@@ -535,7 +535,7 @@ public class OrangePi {
 	}
 
 	public String getNodeMode() {
-		return nodeMode;
+		return nodeOutput;
 	}
 	
 	public String getNodeLtcDisplay() {

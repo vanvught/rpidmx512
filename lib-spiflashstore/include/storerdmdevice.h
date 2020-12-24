@@ -38,16 +38,16 @@ public:
 	StoreRDMDevice();
 
 	void Update(const struct TRDMDeviceParams *pRDMDeviceParams) override {
-		SpiFlashStore::Get()->Update(STORE_RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
 	}
 
 	void Copy(struct TRDMDeviceParams *pRDMDeviceParams) override {
-		SpiFlashStore::Get()->Copy(STORE_RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
 	}
 
 	void SaveLabel(const char *pLabel, uint8_t nLength) override {
-		SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDeviceParamsMask::LABEL);
-		SpiFlashStore::Get()->Update(STORE_RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDeviceParamsMask::LABEL);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDeviceParamsMask::LABEL);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDeviceParamsMask::LABEL);
 	}
 
 	static StoreRDMDevice *Get() {

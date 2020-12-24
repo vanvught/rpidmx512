@@ -35,11 +35,11 @@ public:
 	StoreOscClient();
 
 	void Update(const struct TOscClientParams *pOscClientParams) override {
-		SpiFlashStore::Get()->Update(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
 	}
 
 	void Copy(struct TOscClientParams *pOscClientParams) override {
-		SpiFlashStore::Get()->Copy(STORE_OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::OSC_CLIENT, pOscClientParams, sizeof(struct TOscClientParams));
 	}
 
 	static StoreOscClient *Get() {

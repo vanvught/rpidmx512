@@ -35,11 +35,11 @@ public:
 	StoreDmxSerial();
 
 	void Update(const struct TDmxSerialParams *ptDmxSerialParams) override {
-		SpiFlashStore::Get()->Update(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
 	}
 
 	void Copy(struct TDmxSerialParams *ptDmxSerialParams) override {
-		SpiFlashStore::Get()->Copy(STORE_SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::SERIAL, ptDmxSerialParams, sizeof(struct TDmxSerialParams));
 	}
 
 	static StoreDmxSerial *Get() {

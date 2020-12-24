@@ -43,7 +43,7 @@ public:
 		DEBUG_ENTRY
 
 		RemoteConfig::Get()->SetDisable(false);
-		SpiFlashStore::Get()->ResetSetList(STORE_RDMDEVICE);
+		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
 		StoreNetwork::Get()->SaveDhcp(true);
 
 		DEBUG_EXIT

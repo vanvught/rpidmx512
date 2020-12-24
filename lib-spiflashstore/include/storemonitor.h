@@ -35,11 +35,11 @@ public:
 	StoreMonitor();
 
 	void Update(const struct TDMXMonitorParams *pDMXMonitorParams) override {
-		SpiFlashStore::Get()->Update(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
 	}
 
 	void Copy(struct TDMXMonitorParams *pDMXMonitorParams) override {
-		SpiFlashStore::Get()->Copy(STORE_MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
 	}
 
 	static StoreMonitor* Get() {

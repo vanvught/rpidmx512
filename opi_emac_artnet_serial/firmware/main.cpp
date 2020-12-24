@@ -161,7 +161,7 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_SERIAL, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::SERIAL, node.GetActiveOutputPorts());
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {

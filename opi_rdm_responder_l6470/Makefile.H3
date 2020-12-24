@@ -1,5 +1,5 @@
 #
-DEFINES = NO_EMAC RDM_RESPONDER STEPPER NDEBUG
+DEFINES = NO_EMAC RDM_RESPONDER OUTPUT_STEPPER NDEBUG
 #
 LIBS = dmxreceiver rdmresponder rdm rdmsensor rdmsubdevice dmx l6470dmx l6470 tlc59711dmx tlc59711
 #

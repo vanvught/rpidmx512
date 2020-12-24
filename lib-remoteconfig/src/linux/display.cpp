@@ -107,6 +107,11 @@ void Display::ClearLine(__attribute__((unused)) unsigned char){
 	DEBUG_EXIT
 }
 
+void Display::SetContrast(__attribute__((unused)) uint8_t nContrast) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
 #if !defined(NO_HAL)
 void Display::SetSleep(__attribute__((unused)) bool bSleep) {
 	DEBUG_ENTRY

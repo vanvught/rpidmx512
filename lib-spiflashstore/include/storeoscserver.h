@@ -35,11 +35,11 @@ public:
 	StoreOscServer();
 
 	void Update(const struct TOSCServerParams *pOSCServerParams) override {
-		SpiFlashStore::Get()->Update(STORE_OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
 	}
 
 	void Copy(struct TOSCServerParams *pOSCServerParams) override {
-		SpiFlashStore::Get()->Copy(STORE_OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
 	}
 
 	static StoreOscServer *Get() {

@@ -261,7 +261,7 @@ void Shell::CmdSet() {
 	buffer[nArgv0Length + file::length::EXT] = '\0';
 	uint32_t nLength = nArgv0Length + file::length::EXT;
 
-	if (RemoteConfig::GetIndex(buffer, nLength) < TXT_FILE_LAST) {
+	if (RemoteConfig::GetIndex(buffer, nLength) < remoteconfig::TxtFile::LAST) {
 		DEBUG_PUTS(m_Argv[0]);
 
 		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {

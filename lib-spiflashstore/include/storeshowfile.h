@@ -35,11 +35,11 @@ public:
 	StoreShowFile();
 
 	void Update(const struct TShowFileParams *ptShowFileParams) override {
-		SpiFlashStore::Get()->Update(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
 	}
 
 	void Copy(struct TShowFileParams *ptShowFileParams) override {
-		SpiFlashStore::Get()->Copy(STORE_SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
 	}
 
 	static StoreShowFile *Get() {

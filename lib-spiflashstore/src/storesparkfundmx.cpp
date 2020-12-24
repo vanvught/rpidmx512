@@ -35,6 +35,8 @@
 
 #include "debug.h"
 
+using namespace spiflashstore;
+
 StoreSparkFunDmx *StoreSparkFunDmx::s_pThis = nullptr;
 
 #define STORE_SPARKFUN_MAX_SIZE			96
@@ -77,7 +79,7 @@ StoreSparkFunDmx::StoreSparkFunDmx() {
 void StoreSparkFunDmx::Update(const struct TSparkFunDmxParams *pSparkFunDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Update(Store::SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -85,7 +87,7 @@ void StoreSparkFunDmx::Update(const struct TSparkFunDmxParams *pSparkFunDmxParam
 void StoreSparkFunDmx::Copy(struct TSparkFunDmxParams *pSparkFunDmxParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Copy(Store::SPARKFUN, pSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -95,7 +97,7 @@ void StoreSparkFunDmx::Update(uint8_t nMotorIndex, const struct TSparkFunDmxPara
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Update(STORE_SPARKFUN, STORE_SPARKFUN_OFFSET(nMotorIndex), ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
+	SpiFlashStore::Get()->Update(Store::SPARKFUN, STORE_SPARKFUN_OFFSET(nMotorIndex), ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams));
 
 	DEBUG_EXIT
 }
@@ -105,7 +107,7 @@ void StoreSparkFunDmx::Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSp
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);
 
-	SpiFlashStore::Get()->Copy(STORE_SPARKFUN, ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams), STORE_SPARKFUN_OFFSET(nMotorIndex));
+	SpiFlashStore::Get()->Copy(Store::SPARKFUN, ptSparkFunDmxParams, sizeof(struct TSparkFunDmxParams), STORE_SPARKFUN_OFFSET(nMotorIndex));
 
 	DEBUG_EXIT
 }

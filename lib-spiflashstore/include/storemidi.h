@@ -35,11 +35,11 @@ public:
 	StoreMidi();
 
 	void Update(const struct TMidiParams *pMidiParams) override {
-		SpiFlashStore::Get()->Update(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::MIDI, pMidiParams, sizeof(struct TMidiParams));
 	}
 
 	void Copy(struct TMidiParams *pMidiParams) override {
-		SpiFlashStore::Get()->Copy(STORE_MIDI, pMidiParams, sizeof(struct TMidiParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::MIDI, pMidiParams, sizeof(struct TMidiParams));
 	}
 
 	static StoreMidi *Get() {

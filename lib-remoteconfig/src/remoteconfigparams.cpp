@@ -114,7 +114,7 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	uint32_t nLength = REMOTE_CONFIG_DISPLAY_NAME_LENGTH - 1;
+	uint32_t nLength = remoteconfig::DISPLAY_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, nLength) == Sscan::OK) {
 		m_tRemoteConfigParams.aDisplayName[nLength] = '\0';
 		m_tRemoteConfigParams.nSetList |= RemoteConfigParamsMask::DISPLAY_NAME;
@@ -142,7 +142,7 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
 
 //	builder.AddComment("RDMNet LLRP Only (not used, yet)");
-//	builder.Add(RemoteConfigConst::PARAMS_DISABLE_RDMNET_LLRP_ONLY, m_tRemoteConfigParams.bDisableRdmNetLlrpOnly, isMaskSet(RemoteConfigParamsMask::DISABLE_RDMNET_LLRP_ONY));
+//	builder.Add(RemoteConfigConst::PARAMS_DISABLE_NODE_RDMNET_LLRP_ONLY, m_tRemoteConfigParams.bDisableRdmNetLlrpOnly, isMaskSet(RemoteConfigParamsMask::DISABLE_RDMNET_LLRP_ONY));
 
 	nSize = builder.GetSize();
 

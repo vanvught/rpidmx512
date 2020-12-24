@@ -42,7 +42,6 @@
 #include "modeparams.h"
 
 #include "lightset.h"
-#include "lightsetdisplay.h"
 
 #include "parse.h"
 

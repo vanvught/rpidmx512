@@ -51,8 +51,8 @@ Sscan::ReturnCode Sscan::HexUint16(const char *pBuffer, const char *pName, uint1
 		if (isxdigit(*p) == 0) {
 			return Sscan::NAME_ERROR;
 		}
-		const uint8_t nibble = *p > '9' ? static_cast<uint8_t>(*p | 0x20) - 'a' + 10 : static_cast<uint8_t>(*p - '0');
-		nValue = (nValue << 4) | nibble;
+		const auto nNibble = *p > '9' ? static_cast<uint8_t>((*p | 0x20) - 'a' + 10) : static_cast<uint8_t>(*p - '0');
+		nValue = (nValue << 4) | nNibble;
 		k++;
 		p++;
 	}

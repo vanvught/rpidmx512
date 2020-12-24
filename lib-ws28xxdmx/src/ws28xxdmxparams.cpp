@@ -31,12 +31,12 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "ws28xxdmxparams.h"
@@ -54,6 +54,8 @@
 #include "sscan.h"
 
 #include "devicesparamsconst.h"
+
+#include "debug.h"
 
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;

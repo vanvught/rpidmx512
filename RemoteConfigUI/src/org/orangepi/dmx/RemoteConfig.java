@@ -100,7 +100,7 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmRgbDisplay;
 	private JMenu mnLTC;
 	private JMenuItem mntmSytemTime;
-	private JMenuItem mntmNewMenuItem;
+	private JMenuItem mntmTCNet;
 	private JMenuItem mntmBroadcast;
 	private JMenu mnWorkflow;
 	private JMenuItem mntmFirmwareInstallation;
@@ -110,6 +110,7 @@ public class RemoteConfig extends JFrame {
 	
 	HashSet<OrangePi> h;
 	private JMenuItem mntmRestore;
+	private JMenuItem mntmMIDI;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -441,7 +442,7 @@ public class RemoteConfig extends JFrame {
 						
 						if (pi.getNodeType().contains("ltc")) {							
 							SystemTime client = new SystemTime(pi.getAddress());
-							client.Show();
+							client.setVisible(true);
 						} else {
 							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
 						}
@@ -452,7 +453,31 @@ public class RemoteConfig extends JFrame {
 			}
 		});
 		
-		mntmNewMenuItem.addActionListener(new ActionListener() {
+		mntmMIDI.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+				
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getNodeType().contains("ltc")) {							
+							MIDI midi = new MIDI(pi.getAddress());
+							midi.setVisible(true);
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for MIDI to run.");
+				}
+			}
+		});
+		
+		mntmTCNet.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {	
 				TreePath path = tree.getSelectionPath();
 				
@@ -465,7 +490,7 @@ public class RemoteConfig extends JFrame {
 						
 						if (pi.getNodeType().contains("ltc")) {							
 							TCNet client = new TCNet(pi.getAddress());
-							client.Show();
+							client.setVisible(true);
 						} else {
 							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
 						}
@@ -601,13 +626,17 @@ public class RemoteConfig extends JFrame {
 		mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
 		mnLTC.add(mntmSytemTime);
 		
-		mntmNewMenuItem = new JMenuItem("TCNet");
-		mntmNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
-		mnLTC.add(mntmNewMenuItem);
+		mntmTCNet = new JMenuItem("TCNet");
+		mntmTCNet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
+		mnLTC.add(mntmTCNet);
 		
 		mntmRgbDisplay = new JMenuItem("RGB Display");
 		mntmRgbDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_MASK));
 		mnLTC.add(mntmRgbDisplay);
+		
+		mntmMIDI = new JMenuItem("MIDI");
+		mntmMIDI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_MASK));
+		mnLTC.add(mntmMIDI);
 		
 		mntmBroadcast = new JMenuItem("Broadcast");
 		mnRun.add(mntmBroadcast);

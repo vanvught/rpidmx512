@@ -35,11 +35,11 @@ public:
 	StoreRDMSensors();
 
 	void Update(const struct TRDMSensorsParams *pRDMSensorsParams) override {
-		SpiFlashStore::Get()->Update(STORE_RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
+		SpiFlashStore::Get()->Update(spiflashstore::Store::RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
 	}
 
 	void Copy(struct TRDMSensorsParams *pRDMSensorsParams) override {
-		SpiFlashStore::Get()->Copy(STORE_RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
 	}
 
 	static StoreRDMSensors *Get() {

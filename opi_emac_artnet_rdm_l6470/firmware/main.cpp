@@ -303,7 +303,7 @@ void notmain(void) {
 	display.Show(&node);
 
 #if defined (ORANGE_PI)
-	RemoteConfig remoteConfig(REMOTE_CONFIG_ARTNET, REMOTE_CONFIG_MODE_STEPPER, node.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::STEPPER, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

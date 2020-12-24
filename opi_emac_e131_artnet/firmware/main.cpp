@@ -166,7 +166,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_ARTNET, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::ARTNET, bridge.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 

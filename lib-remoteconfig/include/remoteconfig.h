@@ -28,137 +28,132 @@
 
 #include <stdint.h>
 
-#if defined (ARTNET_NODE_MULTI)
-# define ARTNET_NODE
+#if defined (NODE_ARTNET_MULTI)
+# define NODE_ARTNET
 #endif
 
-#if defined (E131_BRIDGE_MULTI)
-# define E131_BRIDGE
+#if defined (NODE_E131_MULTI)
+# define NODE_E131
 #endif
 
-#if defined (PIXEL_MULTI)
-# define PIXEL
+#if defined (OUTPUT_PIXEL_MULTI)
+# define OUTPUT_PIXEL
 #endif
 
-#if defined (DMXSEND_MULTI)
-# define DMXSEND
+#if defined (OUTPUT_DMXSEND_MULTI)
+# define OUTPUT_DMXSEND
 #endif
 
 #include "spiflashstore.h"
 
 #include "tftpfileserver.h"
 
-enum TRemoteConfig {
-	REMOTE_CONFIG_ARTNET,
-	REMOTE_CONFIG_E131,
-	REMOTE_CONFIG_OSC,
-	REMOTE_CONFIG_LTC,
-	REMOTE_CONFIG_OSC_CLIENT,
-	REMOTE_CONFIG_RDMNET_LLRP_ONLY,
-	REMOTE_CONFIG_SHOWFILE,
-	REMOTE_CONFIG_LAST
+namespace remoteconfig {
+
+enum class Node {
+	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, LAST
+};
+enum class Output {
+	DMX,
+	RDM,
+	MONITOR,
+	PIXEL,
+	TIMECODE,
+	OSC,
+	CONFIG,
+	STEPPER,
+	PLAYER,
+	ARTNET,
+	SERIAL,
+	RGBPANEL,
+	LAST
 };
 
-enum TRemoteConfigMode {
-	REMOTE_CONFIG_MODE_DMX,
-	REMOTE_CONFIG_MODE_RDM,
-	REMOTE_CONFIG_MODE_MONITOR,
-	REMOTE_CONFIG_MODE_PIXEL,
-	REMOTE_CONFIG_MODE_TIMECODE,
-	REMOTE_CONFIG_MODE_OSC,
-	REMOTE_CONFIG_MODE_CONFIG,
-	REMOTE_CONFIG_MODE_STEPPER,
-	REMOTE_CONFIG_MODE_PLAYER,
-	REMOTE_CONFIG_MODE_ARTNET,
-	REMOTE_CONFIG_MODE_SERIAL,
-	REMOTE_CONFIG_MODE_RGBPANEL,
-	REMOTE_CONFIG_MODE_LAST
-};
-
-enum TTxtFile {
-	TXT_FILE_RCONFIG,
-	TXT_FILE_NETWORK,
-	TXT_FILE_ARTNET,
-	TXT_FILE_E131,
-	TXT_FILE_OSC,
-	TXT_FILE_PARAMS,
-	TXT_FILE_DEVICES,
-	TXT_FILE_LTC,
-	TXT_FILE_TCNET,
-	TXT_FILE_OSC_CLIENT,
-	TXT_FILE_DISPLAY_UDF,
-	TXT_FILE_LTCDISPLAY,
-	TXT_FILE_MONITOR,
-#if defined(STEPPER)
-	TXT_FILE_SPARKFUN,
-	TXT_FILE_MOTOR0,
-	TXT_FILE_MOTOR1,
-	TXT_FILE_MOTOR2,
-	TXT_FILE_MOTOR3,
-	TXT_FILE_MOTOR4,
-	TXT_FILE_MOTOR5,
-	TXT_FILE_MOTOR6,
-	TXT_FILE_MOTOR7,
-#endif
-	TXT_FILE_SHOW,
-	TXT_FILE_SERIAL,
-	TXT_FILE_GPS,
-	TXT_FILE_RGBPANEL,
-	TXT_FILE_LAST
+enum class HandleMode {
+	TXT, BIN
 };
 
 enum {
-	REMOTE_CONFIG_DISPLAY_NAME_LENGTH = 24,
-	REMOTE_CONFIG_ID_LENGTH = (32 + REMOTE_CONFIG_DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
+	DISPLAY_NAME_LENGTH = 24,
+	ID_LENGTH = (32 + remoteconfig::DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
 };
 
-enum TRemoteConfigHandleMode {
-	REMOTE_CONFIG_HANDLE_MODE_TXT,
-	REMOTE_CONFIG_HANDLE_MODE_BIN
+enum class TxtFile {
+	RCONFIG,
+	NETWORK,
+	ARTNET,
+	E131,
+	OSC_SERVER,
+	PARAMS,
+	DEVICES,
+	LTC,
+	TCNET,
+	OSC_CLIENT,
+	DISPLAY,
+	LTCDISPLAY,
+	MONITOR,
+#if defined(OUTPUT_STEPPER)
+	SPARKFUN,
+	MOTOR0,
+	MOTOR1,
+	MOTOR2,
+	MOTOR3,
+	MOTOR4,
+	MOTOR5,
+	MOTOR6,
+	MOTOR7,
+#endif
+	SHOW,
+	SERIAL,
+	GPS,
+	RGBPANEL,
+	LAST
 };
 
-struct TRemoteConfigListBin {
+struct ListBin {
 	uint8_t aMacAddress[6];
-	uint8_t nType;				// TRemoteConfig
-	uint8_t nMode;				// TRemoteConfigMode
+	uint8_t nNode;
+	uint8_t nOutput;
 	uint8_t nActiveUniverses;
-	char aDisplayName[REMOTE_CONFIG_DISPLAY_NAME_LENGTH];
+	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 }__attribute__((packed));
+
+}  // namespace remoteconfig
 
 class RemoteConfig {
 public:
-	RemoteConfig(TRemoteConfig tRemoteConfig, TRemoteConfigMode tRemoteConfigMode, uint8_t nOutputs = 0);
+	RemoteConfig(remoteconfig::Node tType, remoteconfig::Output tMode, uint32_t nOutputs = 0);
 	~RemoteConfig();
 
 	void SetDisable(bool bDisable = true);
-	bool GetDisable() {
+	bool GetDisable() const {
 		return m_bDisable;
 	}
 
 	void SetDisableWrite(bool bDisableWrite = true) {
 		m_bDisableWrite = bDisableWrite;
 	}
-	bool GetDisableWrite() {
+	bool GetDisableWrite() const {
 		return m_bDisableWrite;
 	}
 
 	void SetEnableReboot(bool bEnableReboot = true) {
 		m_bEnableReboot = bEnableReboot;
 	}
-	bool GetEnableReboot() {
+	bool GetEnableReboot() const {
 		return m_bEnableReboot;
 	}
 
 	void SetEnableUptime(bool bEnableUptime = true) {
 		m_bEnableUptime = bEnableUptime;
 	}
-	bool GetEnableUptime() {
+	bool GetEnableUptime() const {
 		return m_bEnableUptime;
 	}
 
 	void SetDisplayName(const char *pDisplayName);
 
-	bool IsReboot() {
+	bool IsReboot() const {
 		return m_bIsReboot;
 	}
 
@@ -173,8 +168,8 @@ public:
 	uint32_t HandleGet(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
 	void HandleTxtFile(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
 
-	static uint32_t GetIndex(const void *p, uint32_t &nLength);
-	static TStore GetStore(TTxtFile tTxtFile);
+	static remoteconfig::TxtFile GetIndex(const void *p, uint32_t &nLength);
+	static spiflashstore::Store GetStore(remoteconfig::TxtFile tTxtFile);
 	static RemoteConfig *Get() {
 		return s_pThis;
 	}
@@ -189,59 +184,59 @@ private:
 	void HandleGetRconfigTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
 
-#if defined (ARTNET_NODE)
+#if defined (NODE_ARTNET)
 	void HandleGetArtnetTxt(uint32_t& nSize);
 #endif
 
-#if defined (E131_BRIDGE)
+#if defined (NODE_E131)
 	void HandleGetE131Txt(uint32_t& nSize);
 #endif
 
-#if defined (OSC_SERVER)
+#if defined (NODE_OSC_SERVER)
 	void HandleGetOscTxt(uint32_t& nSize);
 #endif
 
-#if defined (DMXSEND)
+#if defined (OUTPUT_DMXSEND)
 	void HandleGetParamsTxt(uint32_t& nSize);
 #endif
 
-#if defined (PIXEL)
+#if defined (OUTPUT_PIXEL)
 	void HandleGetDevicesTxt(uint32_t& nSize);
 #endif
 
-#if defined (LTC_READER)
+#if defined (NODE_LTC_SMPTE)
 	void HandleGetLtcTxt(uint32_t& nSize);
 	void HandleGetLtcDisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 	void HandleGetGpsTxt(uint32_t& nSize);
 #endif
 
-#if defined (DMX_MONITOR)
+#if defined (OUTPUT_DMX_MONITOR)
 	void HandleGetMonTxt(uint32_t& nSize);
 #endif
 
-#if defined (OSC_CLIENT)
+#if defined (NODE_OSC_CLIENT)
 	void HandleGetOscClntTxt(uint32_t& nSize);
 #endif
 
-#if defined(DISPLAY_UDF)
+#if defined (DISPLAY_UDF)
 	void HandleGetDisplayTxt(uint32_t& nSize);
 #endif
 
-#if defined(STEPPER)
+#if defined (OUTPUT_STEPPER)
 	void HandleGetSparkFunTxt(uint32_t& nSize);
 	void HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize);
 #endif
 
-#if defined(SHOWFILE)
+#if defined(NODE_SHOWFILE)
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
 
-#if defined (DMXSERIAL)
+#if defined (OUTPUT_DMXSERIAL)
 	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
 
-#if defined (RGB_PANEL)
+#if defined (OUTPUT_RGB_PANEL)
 	void HandleGetRgbPanelTxt(uint32_t& nSize);
 #endif
 
@@ -251,59 +246,59 @@ private:
 	void HandleTxtFileRconfig();
 	void HandleTxtFileNetwork();
 
-#if defined (ARTNET_NODE)
+#if defined (NODE_ARTNET)
 	void HandleTxtFileArtnet();
 #endif
 
-#if defined (E131_BRIDGE)
+#if defined (NODE_E131)
 	void HandleTxtFileE131();
 #endif
 
-#if defined (OSC_SERVER)
+#if defined (NODE_OSC_SERVER)
 	void HandleTxtFileOsc();
 #endif
 
-#if defined (DMXSEND)
+#if defined (OUTPUT_DMXSEND)
 	void HandleTxtFileParams();
 #endif
 
-#if defined (PIXEL)
+#if defined (OUTPUT_PIXEL)
 	void HandleTxtFileDevices();
 #endif
 
-#if defined (LTC_READER)
+#if defined (NODE_LTC_SMPTE)
 	void HandleTxtFileLtc();
 	void HandleTxtFileLtcDisplay();
 	void HandleTxtFileTCNet();
 	void HandleTxtFileGps();
 #endif
 
-#if defined (DMX_MONITOR)
+#if defined (OUTPUT_DMX_MONITOR)
 	void HandleTxtFileMon();
 #endif
 
-#if defined (OSC_CLIENT)
+#if defined (NODE_OSC_CLIENT)
 	void HandleTxtFileOscClient();
 #endif
 
-#if defined(DISPLAY_UDF)
+#if defined (DISPLAY_UDF)
 	void HandleTxtFileDisplay();
 #endif
 
-#if defined(STEPPER)
+#if defined (OUTPUT_STEPPER)
 	void HandleTxtFileSparkFun();
 	void HandleTxtFileMotor(uint32_t nMotorIndex);
 #endif
 
-#if defined(SHOWFILE)
+#if defined(NODE_SHOWFILE)
 	void HandleTxtFileShow();
 #endif
 
-#if defined (DMXSERIAL)
+#if defined (OUTPUT_DMXSERIAL)
 	void HandleTxtFileSerial();
 #endif
 
-#if defined (RGB_PANEL)
+#if defined (OUTPUT_RGB_PANEL)
 	void HandleTxtFileRgbPanel();
 #endif
 
@@ -320,9 +315,9 @@ private:
 	void HandleTftpGet();
 
 private:
-	TRemoteConfig m_tRemoteConfig;
-	TRemoteConfigMode m_tRemoteConfigMode;
-	uint8_t m_nOutputs;
+	remoteconfig::Node m_tNode;
+	remoteconfig::Output m_tOutput;
+	uint32_t m_nOutputs;
 	bool m_bDisable{false};
 	bool m_bDisableWrite{false};
 	bool m_bEnableReboot{false};
@@ -330,14 +325,14 @@ private:
 	bool m_bEnableTFTP{false};
 	TFTPFileServer *m_pTFTPFileServer{nullptr};
 	uint8_t *m_pTFTPBuffer{nullptr};
-	char m_aId[REMOTE_CONFIG_ID_LENGTH];
+	char m_aId[remoteconfig::ID_LENGTH];
 	int32_t m_nIdLength{0};
-	struct TRemoteConfigListBin m_tRemoteConfigListBin;
+	struct remoteconfig::ListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle{-1};
 	char *m_pUdpBuffer{nullptr};
 	uint32_t m_nIPAddressFrom{0};
 	uint16_t m_nBytesReceived{0};
-	TRemoteConfigHandleMode m_tRemoteConfigHandleMode{REMOTE_CONFIG_HANDLE_MODE_TXT};
+	remoteconfig::HandleMode m_tHandleMode{remoteconfig::HandleMode::TXT};
 	uint8_t *m_pStoreBuffer{nullptr};
 	bool m_bIsReboot{false};
 

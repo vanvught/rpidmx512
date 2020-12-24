@@ -34,6 +34,8 @@
 
 #include "debug.h"
 
+using namespace spiflashstore;
+
 StoreWidget *StoreWidget::s_pThis = nullptr;
 
 StoreWidget::StoreWidget() {
@@ -49,7 +51,7 @@ StoreWidget::StoreWidget() {
 void StoreWidget::Update(const struct TWidgetParams* pWidgetParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Update(STORE_WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
+	SpiFlashStore::Get()->Update(Store::WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
 
 	DEBUG_EXIT
 }
@@ -57,7 +59,7 @@ void StoreWidget::Update(const struct TWidgetParams* pWidgetParams) {
 void StoreWidget::Copy(struct TWidgetParams* pWidgetParams) {
 	DEBUG_ENTRY
 
-	SpiFlashStore::Get()->Copy(STORE_WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
+	SpiFlashStore::Get()->Copy(Store::WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
 
 	DEBUG_EXIT
 }
@@ -65,9 +67,7 @@ void StoreWidget::Copy(struct TWidgetParams* pWidgetParams) {
 void StoreWidget::UpdateBreakTime(uint8_t nBreakTime) {
 	DEBUG_ENTRY
 
-//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TWidgetParams, nBreakTime));
-
-	SpiFlashStore::Get()->Update(STORE_WIDGET, __builtin_offsetof(struct TWidgetParams, nBreakTime), &nBreakTime, sizeof(uint8_t), WIDGET_PARAMS_MASK_BREAK_TIME);
+	SpiFlashStore::Get()->Update(Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nBreakTime), &nBreakTime, sizeof(uint8_t), WIDGET_PARAMS_MASK_BREAK_TIME);
 
 	DEBUG_EXIT
 }
@@ -75,9 +75,7 @@ void StoreWidget::UpdateBreakTime(uint8_t nBreakTime) {
 void StoreWidget::UpdateMabTime(uint8_t nMabTime) {
 	DEBUG_ENTRY
 
-//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TWidgetParams, nMabTime));
-
-	SpiFlashStore::Get()->Update(STORE_WIDGET, __builtin_offsetof(struct TWidgetParams, nMabTime), &nMabTime, sizeof(uint8_t), WIDGET_PARAMS_MASK_MAB_TIME);
+	SpiFlashStore::Get()->Update(Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nMabTime), &nMabTime, sizeof(uint8_t), WIDGET_PARAMS_MASK_MAB_TIME);
 
 	DEBUG_EXIT
 }
@@ -85,9 +83,7 @@ void StoreWidget::UpdateMabTime(uint8_t nMabTime) {
 void StoreWidget::UpdateRefreshRate(uint8_t nRefreshRate) {
 	DEBUG_ENTRY
 
-//	DEBUG_PRINTF("offsetof=%d", __builtin_offsetof(struct TWidgetParams, nRefreshRate));
-
-	SpiFlashStore::Get()->Update(STORE_WIDGET, __builtin_offsetof(struct TWidgetParams, nRefreshRate), &nRefreshRate, sizeof(uint8_t), WIDGET_PARAMS_MASK_REFRESH_RATE);
+	SpiFlashStore::Get()->Update(Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nRefreshRate), &nRefreshRate, sizeof(uint8_t), WIDGET_PARAMS_MASK_REFRESH_RATE);
 
 	DEBUG_EXIT
 }

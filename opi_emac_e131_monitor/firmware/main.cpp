@@ -148,7 +148,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_E131, REMOTE_CONFIG_MODE_MONITOR, 0);
+	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

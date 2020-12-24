@@ -93,7 +93,7 @@ void notmain(void) {
 	device.Print();
 	device.Start();
 
-	RemoteConfig remoteConfig(REMOTE_CONFIG_RDMNET_LLRP_ONLY, REMOTE_CONFIG_MODE_CONFIG, 0);
+	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if (remoteConfigParams.Load()) {

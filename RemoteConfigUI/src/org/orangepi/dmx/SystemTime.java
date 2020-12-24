@@ -59,11 +59,7 @@ public class SystemTime extends JDialog {
 			e.printStackTrace();
 		}
 	}
-	
-	public void Show() {
-		setVisible(true);
-	}
-	
+		
 	private void InitComponents() {
 		setBounds(100, 100, 251, 121);
 		
