@@ -23,16 +23,14 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
+
 #include "arm/synchronize.h"
 
 #include "bcm2835_wdog.h"
 
-#include "hardware.h"
+extern void hardware_led_set(uint32_t );
 
-/**
- * @ingroup hal
- *
- */
 void hardware_reboot(void) {
 	hardware_led_set(1);
 

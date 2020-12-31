@@ -127,7 +127,7 @@ void notmain(void) {
 
 	fw.Print("LTC SMPTE");
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 	display.ClearLine(1);
 	display.ClearLine(2);
@@ -306,7 +306,7 @@ void notmain(void) {
 	Midi midi;
 
 	if ((ltcSource != ltc::source::MIDI) && (!tLtcDisabledOutputs.bMidi)) {
-		midi.Init(MIDI_DIRECTION_OUTPUT);
+		midi.Init(midi::Direction::OUTPUT);
 	}
 
 	if ((ltcSource == ltc::source::MIDI) || (!tLtcDisabledOutputs.bMidi)) {

@@ -87,11 +87,9 @@ void notmain(void) {
 #endif
 
 #if defined (ORANGE_PI)
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
-
+	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
 	StoreOscServer storeOscServer;
 	StoreDmxSend storeDmxSend;
 	StoreWS28xxDmx storeWS28xxDmx;
@@ -131,7 +129,7 @@ void notmain(void) {
 	console_putc('\n');
 #endif
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 	console_set_top_row(3);
 
@@ -263,7 +261,7 @@ void notmain(void) {
 
 	server.Start();
 
-	hw.SetLed(HARDWARE_LED_FLASH);
+	hw.SetLed(hardware::LedStatus::FLASH);
 
 	console_status(CONSOLE_GREEN, BRIDGE_STARTED);
 	display.TextStatus(BRIDGE_STARTED);

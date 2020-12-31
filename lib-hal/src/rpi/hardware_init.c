@@ -27,8 +27,6 @@
 #include <stdio.h>
 #include <time.h>
 
-#include "c/sys_time.h"
-
 #include "arm/synchronize.h"
 #include "arm/smp.h"
 

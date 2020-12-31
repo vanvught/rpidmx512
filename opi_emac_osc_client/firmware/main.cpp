@@ -83,7 +83,7 @@ void notmain(void) {
 
 	fw.Print();
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -153,7 +153,7 @@ void notmain(void) {
 
 	display.TextStatus(OscClientMsgConst::STARTED, Display7SegmentMessage::INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
 
-	lb.SetMode(LEDBLINK_MODE_NORMAL);
+	lb.SetMode(ledblink::Mode::NORMAL);
 
 	hw.WatchdogInit();
 

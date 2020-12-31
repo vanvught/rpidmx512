@@ -28,24 +28,68 @@
 
 #include <stdint.h>
 
-#include "c/led.h"
+#include "bcm2835.h"
+
+extern "C" {
+void hardware_led_set(const int);
+}
 
 class LedBlink {
 public:
 	LedBlink(void);
 
-	void SetFrequency(uint32_t nFreqHz);
-	uint32_t GetFrequency(void) {
+	void SetFrequency(uint32_t nFreqHz) {
+		m_nFreqHz = nFreqHz;
+
+		switch (nFreqHz) {
+		case 0:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(0);
+			break;
+		case 1:
+			m_nTicksPerSecond = (1000000 / 1);
+			break;
+		case 3:
+			m_nTicksPerSecond = (1000000 / 3);
+			break;
+		case 5:
+			m_nTicksPerSecond = (1000000 / 5);
+			break;
+		case 255:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(1);
+			break;
+		default:
+			m_nTicksPerSecond = (1000000 / nFreqHz);
+			break;
+		}
+	}
+
+	uint32_t GetFrequency(void) const {
 		return m_nFreqHz;
 	}
 
-	void SetMode(tLedBlinkMode tMode);
-	tLedBlinkMode GetMode(void) {
+	void SetMode(ledblink::Mode tMode);
+
+	ledblink::Mode GetMode(void) const {
 		return m_tMode;
 	}
 
 	void Run(void) {
-		led_blink();
+		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
+			return;
+		}
+
+		const auto nMicros = BCM2835_ST->CLO;
+
+		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+			return;
+		}
+
+		m_nMicrosPrevious = nMicros;
+
+		m_nToggleLed ^= 0x1;
+		hardware_led_set(m_nToggleLed);
 	}
 
 	void SetLedBlinkDisplay(LedBlinkDisplay *pLedBlinkDisplay) {
@@ -58,9 +102,13 @@ public:
 	}
 
 private:
-	uint32_t m_nFreqHz{0};
-	tLedBlinkMode m_tMode{LEDBLINK_MODE_UNKNOWN};
-	LedBlinkDisplay *m_pLedBlinkDisplay{nullptr};
+	uint32_t m_nFreqHz { 0 };
+	ledblink::Mode m_tMode { ledblink::Mode::UNKNOWN };
+	LedBlinkDisplay *m_pLedBlinkDisplay { nullptr };
+	//
+	uint32_t m_nTicksPerSecond { 1000000 / 2 };
+	int32_t m_nToggleLed { 0 };
+	uint32_t m_nMicrosPrevious { 0 };
 
 	static LedBlink *s_pThis;
 };

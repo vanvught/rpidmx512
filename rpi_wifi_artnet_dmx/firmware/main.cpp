@@ -84,10 +84,7 @@ void notmain(void) {
 	Display display(DisplayType::SSD1306);
 
 #if defined (ORANGE_PI)
-	if (hw.GetBootDevice() == BOOT_DEVICE_MMC0) {
-		SpiFlashInstall spiFlashInstall;
-	}
-
+	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
 	StoreDmxSend storeDmxSend;
@@ -132,7 +129,7 @@ void notmain(void) {
 
 	console_set_top_row(3);
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);

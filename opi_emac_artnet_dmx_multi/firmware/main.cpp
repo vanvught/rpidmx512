@@ -116,7 +116,7 @@ void notmain(void) {
 	console_puts(" {4 Universes}\n");
 #endif
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 

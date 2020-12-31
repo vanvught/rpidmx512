@@ -30,12 +30,8 @@
 
 #include "debug.h"
 
-enum tFreqMode {
-	FREQ_MODE_OFF_OFF = 0,
-	FREQ_MODE_NORMAL = 1,
-	FREQ_MODE_DATA = 3,
-	FREQ_MODE_FAST = 5,
-	FREQ_MODE_OFF_ON = 255
+enum class FreqMode {
+	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, OFF_ON = 255
 };
 
 LedBlink *LedBlink::s_pThis = nullptr;
@@ -45,7 +41,7 @@ LedBlink::LedBlink() {
 	s_pThis = this;
 }
 
-void LedBlink::SetMode(tLedBlinkMode Mode) {
+void LedBlink::SetMode(ledblink::Mode Mode) {
 	if (m_tMode == Mode) {
 		return;
 	}
@@ -53,28 +49,28 @@ void LedBlink::SetMode(tLedBlinkMode Mode) {
 	m_tMode = Mode;
 
 	switch (m_tMode) {
-	case LEDBLINK_MODE_OFF_OFF:
-		SetFrequency(FREQ_MODE_OFF_OFF);
+	case ledblink::Mode::OFF_OFF:
+		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_OFF));
 		break;
-	case LEDBLINK_MODE_OFF_ON:
-		SetFrequency(FREQ_MODE_OFF_ON);
+	case ledblink::Mode::OFF_ON:
+		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_ON));
 		break;
-	case LEDBLINK_MODE_NORMAL:
-		SetFrequency(FREQ_MODE_NORMAL);
+	case ledblink::Mode::NORMAL:
+		SetFrequency(static_cast<uint32_t>(FreqMode::NORMAL));
 		break;
-	case LEDBLINK_MODE_DATA:
-		SetFrequency(FREQ_MODE_DATA);
+	case ledblink::Mode::DATA:
+		SetFrequency(static_cast<uint32_t>(FreqMode::DATA));
 		break;
-	case LEDBLINK_MODE_FAST:
-		SetFrequency(FREQ_MODE_FAST);
+	case ledblink::Mode::FAST:
+		SetFrequency(static_cast<uint32_t>(FreqMode::FAST));
 		break;
 	default:
-		SetFrequency(FREQ_MODE_OFF_OFF);
+		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_OFF));
 		break;
 	}
 
 	if (m_pLedBlinkDisplay != nullptr) {
-		m_pLedBlinkDisplay->Print(m_tMode);
+		m_pLedBlinkDisplay->Print(static_cast<uint32_t>(m_tMode));
 	}
 
 	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_tMode));

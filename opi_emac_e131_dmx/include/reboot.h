@@ -26,8 +26,6 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
-#include "reboothandler.h"
-
 #include "e131bridge.h"
 
 class Reboot: public RebootHandler {

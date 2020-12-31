@@ -33,13 +33,14 @@
 
 #include "hwclock.h"
 
-#include "c/hardware.h"
-
 #include "h3.h"
 #include "h3_watchdog.h"
 #include "h3_thermal.h"
 
-#include "reboothandler.h"
+extern "C" {
+uint32_t hardware_uptime_seconds(void);
+void hardware_led_set(int);
+}
 
 class Hardware {
 public:
@@ -73,8 +74,8 @@ public:
 		return static_cast<float>(h3_thermal_getalarm());
 	}
 
-	void SetLed(THardwareLedStatus tLedStatus) {
-		if (tLedStatus == HARDWARE_LED_OFF) {
+	void SetLed(hardware::LedStatus tLedStatus) {
+		if (tLedStatus == hardware::LedStatus::OFF) {
 			hardware_led_set(0);
 		} else {
 			hardware_led_set(1);
@@ -128,8 +129,8 @@ public:
 		return m_bIsWatchdog;
 	}
 
-	TBootDevice GetBootDevice() const {
-		return static_cast<TBootDevice>(h3_get_boot_device());
+	hardware::BootDevice GetBootDevice() const {
+		return static_cast<hardware::BootDevice>(h3_get_boot_device());
 	}
 
 	const char *GetWebsiteUrl() const {
@@ -144,8 +145,8 @@ private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
-	RebootHandler *m_pRebootHandler{nullptr};
-	bool m_bIsWatchdog{false};
+	RebootHandler *m_pRebootHandler { nullptr };
+	bool m_bIsWatchdog { false };
 
 	static Hardware *s_pThis;
 };

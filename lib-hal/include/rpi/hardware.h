@@ -29,14 +29,15 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "hardware.h"
-
 #include "c/hardware.h"
-#include "c/sys_time.h"
 
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
+
+extern "C" {
+uint32_t millis(void);
+}
 
 enum TSocType {
 	SOC_TYPE_BCM2835, SOC_TYPE_BCM2836, SOC_TYPE_BCM2837, SOC_TYPE_UNKNOWN
@@ -56,7 +57,7 @@ public:
 	const char* GetBoardName(uint8_t &nLength);
 
 	uint32_t GetBoardId() {
-		return m_nBoardId;
+		return m_nBoardRevision;
 	}
 
 	const char* GetCpuName(uint8_t &nLength);
@@ -70,8 +71,8 @@ public:
 		return static_cast<float>(85);
 	}
 
-	void SetLed(THardwareLedStatus tLedStatus) {
-		if (tLedStatus == HARDWARE_LED_OFF) {
+	void SetLed(hardware::LedStatus tLedStatus) {
+		if (tLedStatus == hardware::LedStatus::OFF) {
 			hardware_led_set(0);
 		} else {
 			hardware_led_set(1);
@@ -81,10 +82,6 @@ public:
 	bool Reboot();
 	bool PowerOff() {
 		return false;
-	}
-
-	void SetSysTime(time_t nTime) {
-		sys_time_set_systime(nTime);
 	}
 
 	bool SetTime(const struct tm *pTime);
@@ -128,8 +125,8 @@ public:
 		return "www.orangepi-dmx.org";
 	}
 
-	TBootDevice GetBootDevice() {
-		return BOOT_DEVICE_MMC0;
+	hardware::BootDevice GetBootDevice() {
+		return hardware::BootDevice::MMC0;
 	}
 
 	void SoftReset() {}
@@ -140,10 +137,10 @@ public:
 	}
 
 private:
-	uint32_t m_nBoardId;
 	uint32_t m_nBoardRevision;
+	char *m_pBoardName;
 	TSocType m_tSocType;
-	bool m_bIsWatchdog{false};
+	bool m_bIsWatchdog { false };
 
 	static Hardware *s_pThis;
 };

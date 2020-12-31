@@ -44,8 +44,6 @@
 
 #include "hardware.h"
 
-#include "reboothandler.h"
-
 #include "debug.h"
 
 static char* str_find_replace(char *str, const char *find, const char *replace) {
@@ -383,22 +381,22 @@ float Hardware::GetCoreTemperatureMax() {
 #endif
 }
 
-void Hardware::SetLed(__attribute__((unused)) THardwareLedStatus tLedStatus) {
+void Hardware::SetLed(__attribute__((unused)) hardware::LedStatus tLedStatus) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
 		char *p = 0;
 
 		switch (tLedStatus) {
-		case HARDWARE_LED_OFF:
+		case hardware::LedStatus::OFF:
 			p = const_cast<char*>(RASPBIAN_LED_OFF);
 			break;
-		case HARDWARE_LED_ON:
+		case hardware::LedStatus::ON:
 			p = const_cast<char*>(RASPBIAN_LED_ON);
 			break;
-		case HARDWARE_LED_HEARTBEAT:
+		case hardware::LedStatus::HEARTBEAT:
 			p = const_cast<char*>(RASPBIAN_LED_HB);
 			break;
-		case HARDWARE_LED_FLASH:
+		case hardware::LedStatus::FLASH:
 			p = const_cast<char*>(RASPBIAN_LED_FLASH);
 			break;
 		default:

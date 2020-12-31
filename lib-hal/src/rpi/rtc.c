@@ -28,13 +28,8 @@
 #include <stddef.h>
 #include <time.h>
 
-#if defined(H3)
-# include "h3/hal_api.h"
-# include "h3/hal_i2c.h"
-#else
-# include "rpi/hal_api.h"
-# include "rpi/hal_i2c.h"
-#endif
+#include "rpi/hal_api.h"
+#include "rpi/hal_i2c.h"
 
 #include "rtc.h"
 

@@ -96,7 +96,7 @@ void notmain(void) {
 
 	fw.Print();
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -214,12 +214,12 @@ void notmain(void) {
 
 	server.Start();
 
-	hw.SetLed(HARDWARE_LED_FLASH);
-
 	display.TextStatus(OscServerMsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	while (spiFlashStore.Flash())
 		;
+
+	lb.SetMode(ledblink::Mode::NORMAL);
 
 	hw.WatchdogInit();
 

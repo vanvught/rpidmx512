@@ -84,7 +84,7 @@ void notmain(void) {
 
 	console_puts("sACN E1.31 -> Art-Net\n");
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new Reboot);
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);

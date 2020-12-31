@@ -69,8 +69,9 @@ public:
 		return m_nFreqHz;
 	}
 
-	void SetMode(tLedBlinkMode tMode);
-	tLedBlinkMode GetMode(void) const {
+	void SetMode(ledblink::Mode tMode);
+
+	ledblink::Mode GetMode(void) const {
 		return m_tMode;
 	}
 
@@ -79,7 +80,7 @@ public:
 			return;
 		}
 
-		const uint32_t nMicros = H3_TIMER->AVS_CNT1;
+		const auto nMicros = H3_TIMER->AVS_CNT1;
 
 		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
 			return;
@@ -101,13 +102,13 @@ public:
 	}
 
 private:
-	uint32_t m_nFreqHz{0};
-	tLedBlinkMode m_tMode{LEDBLINK_MODE_UNKNOWN};
-	LedBlinkDisplay *m_pLedBlinkDisplay{nullptr};
+	uint32_t m_nFreqHz { 0 };
+	ledblink::Mode m_tMode { ledblink::Mode::UNKNOWN };
+	LedBlinkDisplay *m_pLedBlinkDisplay { nullptr };
 	//
-	uint32_t m_nTicksPerSecond{1000000 / 2};
-	int32_t m_nToggleLed{0};
-	uint32_t m_nMicrosPrevious{0};
+	uint32_t m_nTicksPerSecond { 1000000 / 2 };
+	int32_t m_nToggleLed { 0 };
+	uint32_t m_nMicrosPrevious { 0 };
 
 	static LedBlink *s_pThis;
 };

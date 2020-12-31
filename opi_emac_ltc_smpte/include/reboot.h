@@ -26,9 +26,7 @@
 #ifndef REBOOT_H_
 #define REBOOT_H_
 
-#include <ltcdisplayrgb.h>
-#include "reboothandler.h"
-
+#include "ltcdisplayrgb.h"
 #include "ltc.h"
 
 #include "remoteconfig.h"

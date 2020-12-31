@@ -83,7 +83,7 @@ void notmain(void) {
 
 	fw.Print();
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 	DmxGpioParams dmxgpioparams;
 

@@ -86,7 +86,7 @@ void notmain(void) {
 	fw.Print("Showfile player");
 
 	hw.SetRebootHandler(new Reboot);
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 

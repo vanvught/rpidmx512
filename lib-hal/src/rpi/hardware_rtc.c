@@ -26,11 +26,11 @@
 #include <stdbool.h>
 #include <assert.h>
 
-#include "c/sys_time.h"
-
-#include "../rtc/rtc.h"
+#include "rtc.h"
 
 #include "debug.h"
+
+extern void sys_time_set(const struct tm *);
 
 void hardware_rtc_set(const struct tm *tm_rtc) {
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", tm_rtc->tm_year, tm_rtc->tm_mon, tm_rtc->tm_mday, tm_rtc->tm_hour, tm_rtc->tm_min, tm_rtc->tm_sec);

@@ -32,8 +32,6 @@
 
 #include "hardware.h"
 
-#include "reboothandler.h"
-
 class Hardware {
 public:
 	Hardware();
@@ -53,7 +51,7 @@ public:
 	float GetCoreTemperature();
 	float GetCoreTemperatureMax();
 
-	void SetLed(THardwareLedStatus tLedStatus);
+	void SetLed(hardware::LedStatus tLedStatus);
 
 	bool Reboot();
 
@@ -86,11 +84,11 @@ public:
 		return "www.orangepi-dmx.org";
 	}
 
-	TBootDevice GetBootDevice() {
+	hardware::BootDevice GetBootDevice() {
 #if defined (RASPPI)
-		return BOOT_DEVICE_MMC0;
+		return hardware::BootDevice::MMC0;
 #else
-		return BOOT_DEVICE_HDD;
+		return hardware::BootDevice::HDD;
 #endif
 	}
 

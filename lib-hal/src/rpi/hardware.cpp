@@ -30,34 +30,76 @@
 
 #include "hardware.h"
 
-#include "c/hardware.h"
-#include "c/sys_time.h"
-
 #include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
 
 #include "arm/synchronize.h"
 
+extern "C" {
+void hardware_rtc_set(const struct tm *);
+bool hardware_rtc_get(struct tm *);
+}
+
+///< Reference http://www.raspberrypi-spy.co.uk/2012/09/checking-your-raspberry-pi-board-version/
+///< Reference http://elinux.org/RPi_HardwareHistory
+
+#define MAX_NAME_LENGTH 24		///< Length for model name
+
+struct _hardware_revision_code {
+	const uint32_t value;
+	const char name[MAX_NAME_LENGTH + 1];	///< Including '\0' byte
+} static constexpr board_version[] __attribute__((aligned(4))) = {
+		{ 0x000000, "Model Unknown" },
+		{ 0x000002, "Pi 1 Model B R1 256MB" },
+		{ 0x000003, "Pi 1 Model B R1 256MB" },
+		{ 0x000004, "Pi 1 Model B R2 256MB" },
+		{ 0x000005, "Pi 1 Model B R2 256MB" },
+		{ 0x000006, "Pi 1 Model B R2 256MB" },
+		{ 0x000007, "Pi 1 Model A R2 256MB" },
+		{ 0x000008, "Pi 1 Model A R2 256MB" },
+		{ 0x000009, "Pi 1 Model A R2 256MB" },
+		{ 0x00000d, "Pi 1 Model B R2 512MB" },
+		{ 0x00000e, "Pi 1 Model B R2 512MB" },
+		{ 0x00000f, "Pi 1 Model B R2 512MB" },
+		{ 0x000010, "Pi 1 Model B+ 512MB V1.0" },
+		{ 0x000011, "Compute Module 512MB" },
+		{ 0x000012, "Pi 1 Model A+ 256MB V1.1" },
+		{ 0x000013, "Pi 1 Model B+ 512MB V1.2" },
+		{ 0x000014, "Compute Module 512MB" },
+		{ 0x000015, "Pi 1 Model A+ 256MB V1.1" },
+		{ 0x900021, "Pi 1 Model A+ 512MB" },
+		{ 0xa01040, "Pi 2 Model B 1GB V1.0" },
+		{ 0xa01041, "Pi 2 Model B 1GB V1.1" },
+		{ 0xa21041, "Pi 2 Model B 1GB V1.1" },
+		{ 0xa22042, "Pi 2 Model B 1GB V1.2" },		///< 2 Model B (with BCM2837)
+		{ 0x900092, "Pi Zero 512MB V1.2" },
+		{ 0x900093, "Pi Zero 512MB V1.3" },
+		{ 0x9000c1, "Pi Zero W 512MB" },
+		{ 0xa02082, "Pi 3 Model B 1GB V1.2" },
+		{ 0xa22082, "Pi 3 Model B 1GB V1.2" },
+		{ 0xa020d3, "Pi 3 Model B+ 1GB" }
+};
+
 static constexpr char aSocName[4][8] = { "BCM2835", "BCM2836", "BCM2837", "Unknown" };
 
 namespace cpu {
-	static constexpr char NAME[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
-	static constexpr uint8_t NAME_LENGTH[4] = {12, 9, 18, 8};
+static constexpr char NAME[4][24] = { "ARM1176JZF-S", "Cortex-A7", "Cortex-A53 (ARMv8)", "Unknown" };
+static constexpr uint8_t NAME_LENGTH[4] = { 12, 9, 18, 8 };
 }
 
 namespace machine {
-	static constexpr char NAME[] = "arm";
-	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+static constexpr char NAME[] = "arm";
+static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
 namespace sysname {
-	static constexpr char NAME[] = "Baremetal";
-	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
+static constexpr char NAME[] = "Baremetal";
+static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 }
 
 Hardware *Hardware::s_pThis = 0;
 
-Hardware::Hardware(): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
+Hardware::Hardware(): m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
 	assert(s_pThis == 0);
 	s_pThis = this;
 
@@ -73,7 +115,15 @@ Hardware::Hardware(): m_nBoardId(-1), m_nBoardRevision(-1), m_tSocType(SOC_TYPE_
 		m_tSocType = SOC_TYPE_BCM2835;
 	}
 
-	m_nBoardId = bcm2835_vc_get_get_board_revision();
+	if (m_nBoardRevision <= 0) {
+		m_pBoardName = const_cast<char*>(board_version[0].name);
+	} else {
+		for (uint32_t i = 1; i < sizeof(board_version) / sizeof(board_version[0]); i++) {
+			if (m_nBoardRevision == board_version[i].value) {
+				m_pBoardName = const_cast<char*>(board_version[i].name);
+			}
+		}
+	}
 }
 
 const char *Hardware::GetMachine(uint8_t& nLength) {
@@ -87,8 +137,8 @@ const char *Hardware::GetSysName(uint8_t& nLength) {
 }
 
 const char *Hardware::GetBoardName(uint8_t& nLength) {
-	nLength = hardware_board_get_model_length();
-	return hardware_board_get_model();
+	nLength = MAX_NAME_LENGTH;
+	return m_pBoardName;
 }
 
 const char *Hardware::GetCpuName(uint8_t& nLength) {

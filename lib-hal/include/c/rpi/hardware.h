@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef RPI_HARDWARE_H_
-#define RPI_HARDWARE_H_
+#ifndef C_RPI_HARDWARE_H_
+#define C_RPI_HARDWARE_H_
 
 #include <stdint.h>
 
@@ -61,4 +61,4 @@ inline static void hardware_watchdog_stop(void) {
 }
 #endif
 
-#endif /* RPI_HARDWARE_H_ */
+#endif /* C_RPI_HARDWARE_H_ */

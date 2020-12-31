@@ -33,14 +33,14 @@ void LedBlink::SetFrequency(uint32_t nFreqHz) {
 	m_nFreqHz = nFreqHz;
 
 	if (nFreqHz == 0) {
-		Hardware::Get()->SetLed(HARDWARE_LED_OFF);
+		Hardware::Get()->SetLed(hardware::LedStatus::OFF);
 	} else if (nFreqHz > 20) {
-		Hardware::Get()->SetLed(HARDWARE_LED_ON);
+		Hardware::Get()->SetLed(hardware::LedStatus::ON);
 	} else {
 		if (nFreqHz > 1) {
-			Hardware::Get()->SetLed(HARDWARE_LED_HEARTBEAT);
+			Hardware::Get()->SetLed(hardware::LedStatus::HEARTBEAT);
 		} else {
-			Hardware::Get()->SetLed(HARDWARE_LED_FLASH);
+			Hardware::Get()->SetLed(hardware::LedStatus::FLASH);
 		}
 	}
 }

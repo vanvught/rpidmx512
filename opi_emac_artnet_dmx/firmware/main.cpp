@@ -109,7 +109,7 @@ void notmain(void) {
 	console_set_fg_color (CONSOLE_WHITE);
 	console_puts(" {1 Universe}\n");
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 

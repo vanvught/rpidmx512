@@ -28,8 +28,6 @@
 
 #include <stdio.h>
 
-#include "reboothandler.h"
-
 #include "showfile.h"
 #include "remoteconfig.h"
 #include "display.h"

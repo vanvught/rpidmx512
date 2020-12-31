@@ -28,33 +28,43 @@
 
 #ifdef __cplusplus
 
-enum THardwareLedStatus {
-	HARDWARE_LED_OFF,
-	HARDWARE_LED_ON,
-	HARDWARE_LED_HEARTBEAT,
-	HARDWARE_LED_FLASH
+namespace hardware {
+
+enum class LedStatus {
+	OFF,
+	ON,
+	HEARTBEAT,
+	FLASH
 };
 
-enum TBootDevice {
-	BOOT_DEVICE_UNK,
-	BOOT_DEVICE_FEL,	// H3 Only
-	BOOT_DEVICE_MMC0,
-	BOOT_DEVICE_SPI,	// H3 Only
-	BOOT_DEVICE_HDD
+enum class BootDevice {
+	UNKOWN,
+	FEL,	// H3 Only
+	MMC0,
+	SPI,	// H3 Only
+	HDD
+};
+
+}  // namespace hardware
+
+class RebootHandler {
+public:
+	virtual ~RebootHandler() {
+	}
+
+	virtual void Run()=0;
 };
 
 #if defined (BARE_METAL)
- #if defined (H3)
-  #include "h3/hardware.h"
- #else
-  #include "rpi/hardware.h"
- #endif
+# if defined (H3)
+#  include "h3/hardware.h"
+# else
+#  include "rpi/hardware.h"
+# endif
 #else
- #include "linux/hardware.h"
+# include "linux/hardware.h"
 #endif
 
-#elif defined(BARE_METAL)
- #include "c/hardware.h"
 #endif
 
 #endif /* HARDWARE_H_ */

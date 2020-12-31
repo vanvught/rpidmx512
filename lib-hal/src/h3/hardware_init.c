@@ -39,8 +39,6 @@
 #include "arm/gic.h"
 #include "arm/synchronize.h"
 
-#include "c/sys_time.h"
-
 #include "device/emac.h"
 
 #include "console.h"

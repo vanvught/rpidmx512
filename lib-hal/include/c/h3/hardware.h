@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_HARDWARE_H_
-#define H3_HARDWARE_H_
+#ifndef C_H3_HARDWARE_H_
+#define C_H3_HARDWARE_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -54,4 +54,4 @@ inline static void hardware_watchdog_feed(void) {
 }
 #endif
 
-#endif /* H3_HARDWARE_H_ */
+#endif /* C_H3_HARDWARE_H_ */

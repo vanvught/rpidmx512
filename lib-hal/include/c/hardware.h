@@ -59,9 +59,9 @@ extern bool hardware_rtc_get(struct tm *);
 #endif
 
 #ifdef H3
- #include "c/h3/hardware.h"
+# include "c/h3/hardware.h"
 #else
- #include "c/rpi/hardware.h"
+# include "c/rpi/hardware.h"
 #endif
 
 #endif /* C_HARDWARE_H_ */

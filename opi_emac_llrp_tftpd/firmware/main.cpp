@@ -45,6 +45,9 @@
 #include "mdns.h"
 #include "mdnsservices.h"
 
+// System Time
+#include "ntpclient.h"
+
 // Handlers
 #include "displayudfnetworkhandler.h"
 #include "factorydefaults.h"
@@ -68,15 +71,30 @@ void notmain(void) {
 
 	console_puts("RDMNet LLRP device only\n");
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new Reboot);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
+	DisplayUdfNetworkHandler displayUdfNetworkHandler;
+
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	nw.SetNetworkDisplay(&displayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
+
+	NtpClient ntpClient;
+	ntpClient.SetNtpClientDisplay(&displayUdfNetworkHandler);
+	ntpClient.Start();
+	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+
+		const auto rawtime = time(nullptr);
+		printf(asctime(localtime(&rawtime)));
+	}
 
 	MDNS mDns;
 
@@ -114,7 +132,7 @@ void notmain(void) {
 
 	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
-	lb.SetMode(LEDBLINK_MODE_NORMAL);
+	lb.SetMode(ledblink::Mode::NORMAL);
 
 	for (;;) {
 		nw.Run();

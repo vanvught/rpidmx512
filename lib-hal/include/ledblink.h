@@ -26,25 +26,30 @@
 #ifndef LEDBLINK_H
 #define LEDBLINK_H
 
-enum tLedBlinkMode {
-	LEDBLINK_MODE_OFF_OFF,
-	LEDBLINK_MODE_OFF_ON,
-	LEDBLINK_MODE_NORMAL,
-	LEDBLINK_MODE_DATA,
-	LEDBLINK_MODE_FAST,
-	LEDBLINK_MODE_UNKNOWN
+#include <stdint.h>
+
+namespace ledblink {
+enum class Mode {
+	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, UNKNOWN
+};
+}  // namespace ledblink
+
+class LedBlinkDisplay {
+public:
+	virtual ~LedBlinkDisplay() {
+	}
+
+	virtual void Print(uint32_t nState)=0;
 };
 
-#include "ledblinkdisplay.h"
-
 #if defined (BARE_METAL)
- #if defined (H3)
-  #include "h3/ledblink.h"
- #else
-  #include "rpi/ledblink.h"
- #endif
+# if defined (H3)
+#  include "h3/ledblink.h"
+# else
+#  include "rpi/ledblink.h"
+# endif
 #else
- #include "linux/ledblink.h"
+# include "linux/ledblink.h"
 #endif
 
 #endif /* LEDBLINK_H */
