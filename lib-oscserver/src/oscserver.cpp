@@ -109,7 +109,7 @@ void OscServer::Start() {
 
 	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 }
 
 void OscServer::Stop() {

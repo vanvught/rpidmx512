@@ -27,43 +27,42 @@
 #define DISPLAYHANDLER_H_
 
 #include <stdint.h>
-#include <stdio.h>
-
-#include "ledblinkdisplay.h"
 
 #include "ledblink.h"
 #include "display.h"
 
 class DisplayHandler: public LedBlinkDisplay {
 public:
-	DisplayHandler(): m_bHaveDisplay(Display::Get() != nullptr) {}
-	~DisplayHandler() {}
+	DisplayHandler() : m_bHaveDisplay(Display::Get() != nullptr) {
+	}
+	~DisplayHandler() {
+	}
 
-	void Print(uint32_t nState) {
+	void Print(uint32_t nMode) {
 		if (m_bHaveDisplay) {
 			char c;
-			switch (static_cast<tLedBlinkMode>(nState)) {
-				case LEDBLINK_MODE_OFF_OFF:
-					c = 'O';
-					break;
-				case LEDBLINK_MODE_OFF_ON:
-					c = 'O';
-					break;
-				case LEDBLINK_MODE_NORMAL:
-					c = 'N';
-					break;
-				case LEDBLINK_MODE_DATA:
-					c = 'D';
-					break;
-				case LEDBLINK_MODE_FAST:
-					c = 'F';
-					break;
-				default:
-					c = 'U';
-					break;
+			switch (static_cast<ledblink::Mode>(nMode)) {
+			case ledblink::Mode::OFF_OFF:
+				c = 'O';
+				break;
+			case ledblink::Mode::OFF_ON:
+				c = 'O';
+				break;
+			case ledblink::Mode::NORMAL:
+				c = 'N';
+				break;
+			case ledblink::Mode::DATA:
+				c = 'D';
+				break;
+			case ledblink::Mode::FAST:
+				c = 'F';
+				break;
+			default:
+				c = 'U';
+				break;
 			}
 
-			Display::Get()->SetCursorPos(20,7);
+			Display::Get()->SetCursorPos(20, 7);
 			Display::Get()->PutChar(c);
 		}
 	}

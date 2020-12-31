@@ -27,9 +27,9 @@
 #define SOFTWARE_VERSION_H_
 
 #if defined(H3)
- constexpr char SOFTWARE_VERSION[] = "1.5";
+ constexpr char SOFTWARE_VERSION[] = "1.6";
 #else
- constexpr char SOFTWARE_VERSION[] = "1.5";
+ constexpr char SOFTWARE_VERSION[] = "1.6";
 #endif
 
 #endif /* SOFTWARE_VERSION_H_ */
