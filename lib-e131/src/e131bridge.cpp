@@ -44,7 +44,7 @@
 
 #include "debug.h"
 
-static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 19 };
+static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 20 };
 
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
@@ -108,7 +108,7 @@ void E131Bridge::Start() {
 		}
 	}
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 }
 
 void E131Bridge::Stop() {
@@ -130,7 +130,7 @@ void E131Bridge::Stop() {
 		}
 	}
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_OFF_OFF);
+	LedBlink::Get()->SetMode(ledblink::Mode::OFF_OFF);
 }
 
 const uint8_t *E131Bridge::GetSoftwareVersion() {
@@ -652,7 +652,7 @@ void E131Bridge::HandleSynchronization() {
 	const uint16_t nSynchronizationAddress = __builtin_bswap16(m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber);
 
 	if ((nSynchronizationAddress != m_State.nSynchronizationAddressSourceA) && (nSynchronizationAddress != m_State.nSynchronizationAddressSourceB)) {
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 		DEBUG_PUTS("");
 		return;
 	}
@@ -731,7 +731,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 		}
 	}
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 	m_State.bIsReceivingDmx = false;
 
 	DEBUG_EXIT
@@ -838,10 +838,10 @@ void E131Bridge::Run() {
 				}
 			}
 
-			// The LEDBLINK_MODE_FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
+			// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
+			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
 				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 					m_State.bIsReceivingDmx = false;
 					DEBUG_PUTS("");
 				}
@@ -852,12 +852,12 @@ void E131Bridge::Run() {
 			HandleDmxIn();
 			SendDiscoveryPacket();
 
-			// The LEDBLINK_MODE_FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
+			// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
+			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
 				if (m_State.bIsReceivingDmx) {
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 				} else {
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 				}
 			}
 		}
@@ -898,12 +898,12 @@ void E131Bridge::Run() {
 		SendDiscoveryPacket();
 	}
 
-	// The LEDBLINK_MODE_FAST is for RDM Identify (Art-Net 4)
-	if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != LEDBLINK_MODE_FAST)) {
+	// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
+	if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
 		if (m_State.bIsReceivingDmx) {
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 		}
 	}
 }
