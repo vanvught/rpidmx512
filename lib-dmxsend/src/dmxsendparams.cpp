@@ -23,15 +23,17 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -42,15 +44,15 @@
 #include "sscan.h"
 
 struct DMXParamsTime {
-	static constexpr auto MIN_BREAK_TIME = 9;
-	static constexpr auto DEFAULT_BREAK_TIME = 9;
-	static constexpr auto MAX_BREAK_TIME = 127;
+	static constexpr auto MIN_BREAK_TIME = 9U;
+	static constexpr auto DEFAULT_BREAK_TIME = 9U;
+	static constexpr auto MAX_BREAK_TIME = 127U;
 
-	static constexpr auto MIN_MAB_TIME = 1;
-	static constexpr auto DEFAULT_MAB_TIME = 1;
-	static constexpr auto MAX_MAB_TIME = 127;
+	static constexpr auto MIN_MAB_TIME = 1U;
+	static constexpr auto DEFAULT_MAB_TIME = 1U;
+	static constexpr auto MAX_MAB_TIME = 127U;
 
-	static constexpr auto DEFAULT_REFRESH_RATE = 40;
+	static constexpr auto DEFAULT_REFRESH_RATE = 40U;
 };
 
 DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXParamsStore) {
@@ -106,6 +108,9 @@ void DMXParams::callbackFunction(const char *pLine) {
 		if ((nValue8 >= DMXParamsTime::MIN_BREAK_TIME) && (nValue8 <= DMXParamsTime::MAX_BREAK_TIME)) {
 			m_tDMXParams.nBreakTime = nValue8;
 			m_tDMXParams.nSetList |= DmxSendParamsMask::BREAK_TIME;
+		} else {
+			m_tDMXParams.nBreakTime = DMXParamsTime::DEFAULT_BREAK_TIME;
+			m_tDMXParams.nSetList &= ~DmxSendParamsMask::BREAK_TIME;
 		}
 		return;
 	}
@@ -114,6 +119,9 @@ void DMXParams::callbackFunction(const char *pLine) {
 		if ((nValue8 >= DMXParamsTime::MIN_MAB_TIME) && (nValue8 <= DMXParamsTime::MAX_MAB_TIME)) {
 			m_tDMXParams.nMabTime = nValue8;
 			m_tDMXParams.nSetList |= DmxSendParamsMask::MAB_TIME;
+		} else {
+			m_tDMXParams.nMabTime = DMXParamsTime::DEFAULT_MAB_TIME;
+			m_tDMXParams.nSetList &= ~DmxSendParamsMask::MAB_TIME;
 		}
 		return;
 	}

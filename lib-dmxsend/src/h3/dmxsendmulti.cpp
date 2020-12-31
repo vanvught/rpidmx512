@@ -27,7 +27,6 @@
 #include <cassert>
 
 #include "h3/dmxsendmulti.h"
-#include "h3/dmx_multi.h"
 
 #include "debug.h"
 
@@ -82,7 +81,7 @@ void DMXSendMulti::Stop(uint8_t nPort) {
 }
 
 void DMXSendMulti::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
-	DEBUG_ENTRY
+//	DEBUG_ENTRY
 
 	assert(nPort < MAX_PORTS);
 	assert(pData != nullptr);
@@ -93,7 +92,7 @@ void DMXSendMulti::SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength
 		return;
 	}
 
-	dmx_multi_set_port_send_data_without_sc(nPort, pData, nLength);
+	SetPortSendDataWithoutSC(nPort, pData, nLength);
 
-	DEBUG_EXIT
+//	DEBUG_EXIT
 }

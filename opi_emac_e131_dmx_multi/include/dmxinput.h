@@ -31,6 +31,7 @@
 
 #include "e131dmx.h"
 
+#include "h3/dmxmultiinput.h"
 #include "dmx_uarts.h"
 
 class DmxInput: public E131Dmx {
@@ -43,6 +44,7 @@ public:
 	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
 
 private:
+	DmxMultiInput m_DmxMultiInput;
 	bool m_bIsStarted[DMX_MAX_UARTS];
 };
 

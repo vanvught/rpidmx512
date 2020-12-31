@@ -1,8 +1,8 @@
 /**
- * @file dmxsendparamsset.cpp
+ * @file dmxsendparamssetmulti.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,15 +28,16 @@
 
 #include "dmxparams.h"
 
-void DMXParams::Set(DMXSend *pDMXSend) {
-	assert(pDMXSend != nullptr);
+#if defined (H3)
+void DMXParams::Set(DMXSendMulti *pDMXSendMulti) {
+	assert(pDMXSendMulti != nullptr);
 
 	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
-		pDMXSend->SetDmxBreakTime(m_tDMXParams.nBreakTime);
+		pDMXSendMulti->SetDmxBreakTime(m_tDMXParams.nBreakTime);
 	}
 
 	if (isMaskSet(DmxSendParamsMask::MAB_TIME)) {
-		pDMXSend->SetDmxMabTime(m_tDMXParams.nMabTime);
+		pDMXSendMulti->SetDmxMabTime(m_tDMXParams.nMabTime);
 	}
 
 	if (isMaskSet(DmxSendParamsMask::REFRESH_RATE)) {
@@ -44,6 +45,7 @@ void DMXParams::Set(DMXSend *pDMXSend) {
 		if (m_tDMXParams.nRefreshRate != 0) {
 			period = static_cast<uint32_t>(1000000 / m_tDMXParams.nRefreshRate);
 		}
-		pDMXSend->SetDmxPeriodTime(period);
+		pDMXSendMulti->SetDmxPeriodTime(period);
 	}
 }
+#endif
