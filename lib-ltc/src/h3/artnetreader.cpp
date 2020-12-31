@@ -81,10 +81,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	}
 
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ArtNetTimeCode));
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
 	}
 
-	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof(struct _midi_send_tc));
+	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof(struct midi::Timecode));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(ArtNetTimeCode));
 }

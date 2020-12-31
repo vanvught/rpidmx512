@@ -88,28 +88,35 @@ void RtpMidiReader::Stop() {
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
 }
 
-void RtpMidiReader::MidiMessage(const struct _midi_message *ptMidiMessage) {
-	if (ptMidiMessage->type == MIDI_TYPES_TIME_CODE_QUARTER_FRAME) {
+void RtpMidiReader::MidiMessage(const struct midi::Message *ptMidiMessage) {
+	switch (static_cast<midi::Types>(ptMidiMessage->tType)) {
+	case midi::Types::TIME_CODE_QUARTER_FRAME:
 		HandleMtcQf(ptMidiMessage);
-		nUpdates++;;
-	} else if (ptMidiMessage->type == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
-		const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
+		nUpdates++;
+		break;
+	case midi::Types::SYSTEM_EXCLUSIVE: {
+		const auto *pSystemExclusive = ptMidiMessage->aSystemExclusive;
 		if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
 			HandleMtc(ptMidiMessage);
-			nUpdates++;;
+			nUpdates++;
 		}
-	} else if (ptMidiMessage->type == MIDI_TYPES_CLOCK) {
+	}
+		break;
+	case midi::Types::CLOCK: {
 		uint32_t nBPM;
-		if (m_MidiBPM.Get(ptMidiMessage->timestamp, nBPM)) {
+		if (m_MidiBPM.Get(ptMidiMessage->nTimestamp, nBPM)) {
 			LtcOutputs::Get()->ShowBPM(nBPM);
 		}
 	}
+	default:
+		break;
+	}
 }
 
-void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
-	const auto *pSystemExclusive = ptMidiMessage->system_exclusive;
+void RtpMidiReader::HandleMtc(const struct midi::Message *ptMidiMessage) {
+	const auto *pSystemExclusive = ptMidiMessage->aSystemExclusive;
 
-	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
+	m_nTimeCodeType = static_cast<midi::TimecodeType>((pSystemExclusive[5] >> 5));
 
 	itoa_base10((pSystemExclusive[5] & 0x1F), &m_aTimeCode[0]);
 	itoa_base10(pSystemExclusive[6], &m_aTimeCode[3]);
@@ -120,21 +127,21 @@ void RtpMidiReader::HandleMtc(const struct _midi_message *ptMidiMessage) {
 	m_tLtcTimeCode.nSeconds = pSystemExclusive[7];
 	m_tLtcTimeCode.nMinutes = pSystemExclusive[6];
 	m_tLtcTimeCode.nHours = pSystemExclusive[5] & 0x1F;
-	m_tLtcTimeCode.nType = m_nTimeCodeType;
+	m_tLtcTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 	Update();
 }
 
-void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
-	const auto nData1 = ptMidiMessage->data1;
+void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
+	const auto nData1 = ptMidiMessage->nData1;
 	const auto nPart = (nData1 & 0x70) >> 4;
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_nTimeCodeType = static_cast<_midi_timecode_type>((qf[7] >> 1));
+	m_nTimeCodeType = static_cast<midi::TimecodeType>((qf[7] >> 1));
 
 	if (!m_ptLtcDisabledOutputs->bMidi) {
-		midi_send_qf(ptMidiMessage->data1);
+		Midi::Get()->SendQf(ptMidiMessage->nData1);
 	}
 
 	if ((nPart == 7) || (m_nPartPrevious == 7)) {
@@ -152,7 +159,7 @@ void RtpMidiReader::HandleMtcQf(const struct _midi_message *ptMidiMessage) {
 		m_tLtcTimeCode.nSeconds = qf[2] | (qf[3] << 4);
 		m_tLtcTimeCode.nMinutes = qf[4] | (qf[5] << 4);
 		m_tLtcTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
-		m_tLtcTimeCode.nType = m_nTimeCodeType;
+		m_tLtcTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 		Update();
 	}

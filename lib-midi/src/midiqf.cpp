@@ -27,7 +27,7 @@
 
 #include "midi.h"
 
-void Midi::SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
+void Midi::SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
 	uint8_t data = nMidiQuarterFramePiece << 4;
 
 	switch (nMidiQuarterFramePiece) {
@@ -59,7 +59,7 @@ void Midi::SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuar
 		break;
 	}
 
-	midi_send_qf(data);
+	SendQf(data);
 
 	nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 }

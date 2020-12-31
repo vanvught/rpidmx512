@@ -27,11 +27,13 @@
 
 #include <stdint.h>
 
+#include "midi.h"
+
 class MidiDescription {
 public:
-	static const char *GetType(uint8_t nType);
-	static const char *GetControlChange(uint8_t nControlChange);
-	static const char *GetControlFunction(uint8_t nControlFunction);
+	static const char *GetType(midi::Types tType);
+	static const char *GetControlChange(midi::control::Change tControlChange);
+	static const char *GetControlFunction(midi::control::Function tControlFunction);
 	static const char *GetKeyName(uint8_t nKey);
 	static const char *GetDrumKitName(uint8_t nDrumKit);
 	static const char *GetInstrumentName(uint8_t nInstrumentName);

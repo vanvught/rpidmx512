@@ -38,11 +38,11 @@ static struct TLtcDisabledOutputs *s_ptLtcDisabledOutputs;
 
 static void timer_handler() {
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendRaw(MIDI_TYPES_CLOCK);
+		RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 
 	if (!s_ptLtcDisabledOutputs->bMidi) {
-		Midi::Get()->SendRaw(MIDI_TYPES_CLOCK);
+		Midi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 }
 
@@ -56,13 +56,13 @@ LtcMidiSystemRealtime::LtcMidiSystemRealtime(struct TLtcDisabledOutputs *ptLtcDi
 	s_pThis = this;
 }
 
-void LtcMidiSystemRealtime::Send(uint8_t nByte) {
+void LtcMidiSystemRealtime::Send(midi::Types tType) {
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendRaw(nByte);
+		RtpMidi::Get()->SendRaw(tType);
 	}
 
 	if (!s_ptLtcDisabledOutputs->bMidi) {
-		Midi::Get()->SendRaw(nByte);
+		Midi::Get()->SendRaw(tType);
 	}
 }
 

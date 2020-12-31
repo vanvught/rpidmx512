@@ -37,6 +37,8 @@
 
 #include "h3_hs_timer.h"
 
+using namespace midi;
+
 static char s_aTimecode[] __attribute__ ((aligned (4))) =  "--:--:--;-- -----";
 static uint8_t s_Qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
@@ -58,10 +60,9 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 	*p = '0' + (nArg % 10);
 }
 
-MidiMonitor::MidiMonitor():
-	m_nMillisPrevious(Hardware::Get()->Millis()),
-	m_pMidiMessage(midi_message_get())
-{
+MidiMonitor::MidiMonitor() :
+		m_nMillisPrevious(Hardware::Get()->Millis()),
+		m_pMidiMessage(const_cast<struct Message *>(Midi::Get()->GetMessage())) {
 }
 
 void MidiMonitor::Init() {
@@ -97,19 +98,19 @@ void MidiMonitor::Update(uint8_t nType) {
 }
 
 void MidiMonitor::HandleMtc() {
-	const uint8_t type = m_pMidiMessage->system_exclusive[5] >> 5;
+	const uint8_t type = m_pMidiMessage->aSystemExclusive[5] >> 5;
 
-	itoa_base10((m_pMidiMessage->system_exclusive[5] & 0x1F), &s_aTimecode[0]);
-	itoa_base10(m_pMidiMessage->system_exclusive[6], &s_aTimecode[3]);
-	itoa_base10(m_pMidiMessage->system_exclusive[7], &s_aTimecode[6]);
-	itoa_base10(m_pMidiMessage->system_exclusive[8], &s_aTimecode[9]);
+	itoa_base10((m_pMidiMessage->aSystemExclusive[5] & 0x1F), &s_aTimecode[0]);
+	itoa_base10(m_pMidiMessage->aSystemExclusive[6], &s_aTimecode[3]);
+	itoa_base10(m_pMidiMessage->aSystemExclusive[7], &s_aTimecode[6]);
+	itoa_base10(m_pMidiMessage->aSystemExclusive[8], &s_aTimecode[9]);
 
 	Update(type);
 }
 
 void MidiMonitor::HandleQf() {
-	const uint8_t nPart = (m_pMidiMessage->data1 & 0x70) >> 4;
-	const uint8_t nValue = m_pMidiMessage->data1 & 0x0F;
+	const uint8_t nPart = (m_pMidiMessage->nData1 & 0x70) >> 4;
+	const uint8_t nValue = m_pMidiMessage->nData1 & 0x0F;
 
 	s_Qf[nPart] = nValue;
 
@@ -133,15 +134,15 @@ void MidiMonitor::HandleQf() {
 }
 
 void MidiMonitor::HandleMessage() {
-	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
+	if (Midi::Get()->Read(static_cast<uint8_t>(Channel::OMNI))) {
 		// Handle Active Sensing messages
-		if (m_pMidiMessage->type == MIDI_TYPES_ACTIVE_SENSING) {
+		if (m_pMidiMessage->tType == Types::ACTIVE_SENSING) {
 			// This is handled in ShowActiveSense
 			return;
 		}
 
 		// Time stamp
-		const uint32_t nDeltaUs = m_pMidiMessage->timestamp - m_nInitTimestamp;
+		const uint32_t nDeltaUs = m_pMidiMessage->nTimestamp - m_nInitTimestamp;
 		uint32_t nTime = nDeltaUs / 1000;
 		const uint32_t nHours = nTime / 3600000;
 		nTime -= nHours * 3600000;
@@ -152,21 +153,21 @@ void MidiMonitor::HandleMessage() {
 
 		printf("%02d:%02d.%03d ", (nHours * 60) + nMinutes, nSeconds, nMillis);
 
-		console_puthex(m_pMidiMessage->type);
+		console_puthex(static_cast<uint8_t>(m_pMidiMessage->tType));
 		console_putc(' ');
 
-		switch (m_pMidiMessage->bytes_count) {
+		switch (m_pMidiMessage->nBytesCount) {
 		case 1:
 			console_puts("-- -- ");
 			break;
 		case 2:
-			console_puthex(m_pMidiMessage->data1);
+			console_puthex(m_pMidiMessage->nData1);
 			console_puts(" -- ");
 			break;
 		case 3:
-			console_puthex(m_pMidiMessage->data1);
+			console_puthex(m_pMidiMessage->nData1);
 			console_putc(' ');
-			console_puthex(m_pMidiMessage->data2);
+			console_puthex(m_pMidiMessage->nData2);
 			console_putc(' ');
 			break;
 		default:
@@ -174,12 +175,12 @@ void MidiMonitor::HandleMessage() {
 			break;
 		}
 
-		if (m_pMidiMessage->channel != 0) {
+		if (m_pMidiMessage->nChannel != 0) {
 			// Channel messages
-			printf("%2d  ", m_pMidiMessage->channel);
-			if (m_pMidiMessage->type == MIDI_TYPES_NOTE_OFF || m_pMidiMessage->type == MIDI_TYPES_NOTE_ON) {
-				console_puts(MidiDescription::GetKeyName(m_pMidiMessage->data1));
-				auto i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->data1));
+			printf("%2d  ", m_pMidiMessage->nChannel);
+			if (m_pMidiMessage->tType == Types::NOTE_OFF || m_pMidiMessage->tType == Types::NOTE_ON) {
+				console_puts(MidiDescription::GetKeyName(m_pMidiMessage->nData1));
+				auto i = strlen(MidiDescription::GetKeyName(m_pMidiMessage->nData1));
 				while ((5 - i++) > 0) {
 					console_putc(' ');
 				}
@@ -191,95 +192,95 @@ void MidiMonitor::HandleMessage() {
 			console_puts("--  ---- ");
 		}
 
-		console_puts(MidiDescription::GetType(m_pMidiMessage->type));
+		console_puts(MidiDescription::GetType(m_pMidiMessage->tType));
 
-		if (m_pMidiMessage->channel != 0) {
+		if (m_pMidiMessage->nChannel != 0) {
 			// Channel messages
-			switch (m_pMidiMessage->type) {
+			switch (m_pMidiMessage->tType) {
 			// Channel message
-			case MIDI_TYPES_NOTE_OFF:
-			case MIDI_TYPES_NOTE_ON:
-				printf(" %d, Velocity %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
+			case Types::NOTE_OFF:
+			case Types::NOTE_ON:
+				printf(" %d, Velocity %d\n", m_pMidiMessage->nData1, m_pMidiMessage->nData2);
 				break;
-			case MIDI_TYPES_AFTER_TOUCH_POLY:
-				printf(" %d, Pressure %d\n", m_pMidiMessage->data1, m_pMidiMessage->data2);
+			case Types::AFTER_TOUCH_POLY:
+				printf(" %d, Pressure %d\n", m_pMidiMessage->nData1, m_pMidiMessage->nData2);
 				break;
-			case MIDI_TYPES_CONTROL_CHANGE:
+			case Types::CONTROL_CHANGE:
 				// https://www.midi.org/specifications/item/table-3-control-change-messages-data-bytes-2
-				if (m_pMidiMessage->data1 < 120) {
+				if (m_pMidiMessage->nData1 < 120) {
 					// Control Change
-					printf(", %s, Value %d\n", MidiDescription::GetControlFunction(m_pMidiMessage->data1), m_pMidiMessage->data2);
+					printf(", %s, Value %d\n", MidiDescription::GetControlFunction(static_cast<control::Function>(m_pMidiMessage->nData1)), m_pMidiMessage->nData2);
 				} else {
 					// Controller numbers 120-127 are reserved for Channel Mode Messages, which rather than controlling sound parameters, affect the channel's operating mode.
 					// Channel Mode Messages
-					printf(", %s", MidiDescription::GetControlChange(m_pMidiMessage->data1));
+					printf(", %s", MidiDescription::GetControlChange(static_cast<control::Change>(m_pMidiMessage->nData1)));
 
-					if (m_pMidiMessage->data1 == MIDI_CONTROL_CHANGE_LOCAL_CONTROL) {
-						printf(" %s\n", m_pMidiMessage->data2 == 0 ? "OFF" : "ON");
+					if (m_pMidiMessage->nData1 == static_cast<uint8_t>(control::Change::LOCAL_CONTROL)) {
+						printf(" %s\n", m_pMidiMessage->nData2 == 0 ? "OFF" : "ON");
 					} else {
 						console_putc('\n');
 					}
 				}
 				break;
-			case MIDI_TYPES_PROGRAM_CHANGE:
-				if (m_pMidiMessage->channel == 10) {
-					printf(", %s {%d}\n", MidiDescription::GetDrumKitName(m_pMidiMessage->data1), m_pMidiMessage->data1);
+			case Types::PROGRAM_CHANGE:
+				if (m_pMidiMessage->nChannel == 10) {
+					printf(", %s {%d}\n", MidiDescription::GetDrumKitName(m_pMidiMessage->nData1), m_pMidiMessage->nData1);
 				} else {
-					printf(", %s {%d}\n", MidiDescription::GetInstrumentName(m_pMidiMessage->data1), m_pMidiMessage->data1);
+					printf(", %s {%d}\n", MidiDescription::GetInstrumentName(m_pMidiMessage->nData1), m_pMidiMessage->nData1);
 				}
 				break;
-			case MIDI_TYPES_AFTER_TOUCH_CHANNEL:
-				printf(", Pressure %d\n", m_pMidiMessage->data1);
+			case Types::AFTER_TOUCH_CHANNEL:
+				printf(", Pressure %d\n", m_pMidiMessage->nData1);
 				break;
-			case MIDI_TYPES_PITCH_BEND:
-				printf(", Bend %d\n", (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
+			case Types::PITCH_BEND:
+				printf(", Bend %d\n", (m_pMidiMessage->nData1 | (m_pMidiMessage->nData2 << 7)));
 				break;
 			default:
 				break;
 			}
 		} else {
-			switch (m_pMidiMessage->type) {
+			switch (m_pMidiMessage->tType) {
 			// 1 byte message
-			case MIDI_TYPES_START:
-			case MIDI_TYPES_CONTINUE:
-			case MIDI_TYPES_STOP:
-			case MIDI_TYPES_CLOCK:
-			case MIDI_TYPES_ACTIVE_SENSING:
-			case MIDI_TYPES_SYSTEM_RESET:
-			case MIDI_TYPES_TUNE_REQUEST:
+			case Types::START:
+			case Types::CONTINUE:
+			case Types::STOP:
+			case Types::CLOCK:
+			case Types::ACTIVE_SENSING:
+			case Types::SYSTEM_RESET:
+			case Types::TUNE_REQUEST:
 				console_putc('\n');
 				break;
 				// 2 bytes messages
-			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
-				printf(", Message number %d, Data %d\n", ((m_pMidiMessage->data1 & 0x70) >> 4), (m_pMidiMessage->data1 & 0x0F));
+			case Types::TIME_CODE_QUARTER_FRAME:
+				printf(", Message number %d, Data %d\n", ((m_pMidiMessage->nData1 & 0x70) >> 4), (m_pMidiMessage->nData1 & 0x0F));
 				HandleQf();
 				break;
-			case MIDI_TYPES_SONG_SELECT:
-				printf(", Song id number %d\n", m_pMidiMessage->data1);
+			case Types::SONG_SELECT:
+				printf(", Song id number %d\n", m_pMidiMessage->nData1);
 				break;
 				// 3 bytes messages
-			case MIDI_TYPES_SONG_POSITION:
-				printf(", Song position %d\n", (m_pMidiMessage->data1 | (m_pMidiMessage->data2 << 7)));
+			case Types::SONG_POSITION:
+				printf(", Song position %d\n", (m_pMidiMessage->nData1 | (m_pMidiMessage->nData2 << 7)));
 				break;
 				// > 3 bytes messages
-			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
-				printf(", [%d] ", m_pMidiMessage->bytes_count);
+			case Types::SYSTEM_EXCLUSIVE:
+				printf(", [%d] ", m_pMidiMessage->nBytesCount);
 				{
 					uint8_t c;
-					for (c = 0; c < std::min(m_pMidiMessage->bytes_count, static_cast<uint8_t>(16)); c++) {
-						console_puthex(m_pMidiMessage->system_exclusive[c]);
+					for (c = 0; c < std::min(m_pMidiMessage->nBytesCount, static_cast<uint8_t>(16)); c++) {
+						console_puthex(m_pMidiMessage->aSystemExclusive[c]);
 						console_putc(' ');
 					}
-					if (c < m_pMidiMessage->bytes_count) {
+					if (c < m_pMidiMessage->nBytesCount) {
 						console_puts("..");
 					}
 				}
 				console_putc('\n');
-				if ((m_pMidiMessage->system_exclusive[1] == 0x7F) && (m_pMidiMessage->system_exclusive[2] == 0x7F) && (m_pMidiMessage->system_exclusive[3] == 0x01)) {
+				if ((m_pMidiMessage->aSystemExclusive[1] == 0x7F) && (m_pMidiMessage->aSystemExclusive[2] == 0x7F) && (m_pMidiMessage->aSystemExclusive[3] == 0x01)) {
 					HandleMtc();
 				}
 				break;
-			case MIDI_TYPES_INVALIDE_TYPE:
+			case Types::INVALIDE_TYPE:
 			default:
 				console_puts(", Invalid MIDI message\n");
 				break;
@@ -299,13 +300,13 @@ void MidiMonitor::ShowActiveSense() {
 
 	const auto tState = Midi::Get()->GetActiveSenseState();
 
-	if (tState == MIDI_ACTIVE_SENSE_ENABLED) {
+	if (tState == ActiveSenseState::ENABLED) {
 		console_save_cursor();
 		console_set_cursor(70, 3);
 		console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_CYAN);
 		console_puts("ACTIVE SENSING          ");
 		console_restore_cursor();
-	} else if (tState == MIDI_ACTIVE_SENSE_FAILED) {
+	} else if (tState == ActiveSenseState::FAILED) {
 		console_save_cursor();
 		console_set_cursor(70, 3);
 		console_set_fg_bg_color(CONSOLE_RED, CONSOLE_WHITE);

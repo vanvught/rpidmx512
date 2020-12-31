@@ -1,7 +1,7 @@
 /**
- * @file midi_interface.h
+ * @file midi.cpp
  */
-/* Copyright (C) 2016 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,13 +22,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef MIDI_INTERFACE_H_
-#define MIDI_INTERFACE_H_
+#include "midi.h"
 
-typedef enum midi_interfaces {
-	MIDI_INTERFACE_IN_UART = 0,
-	MIDI_INTERFACE_IN_SPI = 1
-} _midi_interfaces;
+Midi *Midi::s_pThis = nullptr;
 
+Midi::Midi()  {
+	s_pThis = this;
+}
 
-#endif /* MIDI_INTERFACE_H_ */

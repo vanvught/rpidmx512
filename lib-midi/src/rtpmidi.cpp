@@ -117,16 +117,16 @@ int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uin
 	return nSize;
 }
 
-uint8_t RtpMidi::GetTypeFromStatusByte(uint8_t nStatusByte) {
+midi::Types RtpMidi::GetTypeFromStatusByte(uint8_t nStatusByte) {
 	if ((nStatusByte < 0x80) || (nStatusByte == 0xf4) || (nStatusByte == 0xf5) || (nStatusByte == 0xf9) || (nStatusByte == 0xfD)) {
-		return MIDI_TYPES_INVALIDE_TYPE;
+		return midi::Types::INVALIDE_TYPE;
 	}
 
 	if (nStatusByte < 0xF0) {
-		return nStatusByte & 0xF0;
+		return static_cast<midi::Types>(nStatusByte & 0xF0);
 	}
 
-	return nStatusByte;
+	return static_cast<midi::Types>(nStatusByte);
 }
 
 uint8_t RtpMidi::GetChannelFromStatusByte(uint8_t nStatusByte) {
@@ -141,47 +141,59 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 	const auto nStatusByte = m_pReceiveBuffer[nOffset];
 	const auto nType = GetTypeFromStatusByte(nStatusByte);
 
-	m_tMidiMessage.timestamp = __builtin_bswap32(*reinterpret_cast<uint32_t *>(&m_pReceiveBuffer[4]));
-	m_tMidiMessage.type = nType;
-	m_tMidiMessage.channel = 0;
-	m_tMidiMessage.data1 = 0;
-	m_tMidiMessage.data2 = 0;
+	m_tMidiMessage.nTimestamp = __builtin_bswap32(*reinterpret_cast<uint32_t *>(&m_pReceiveBuffer[4]));
+	m_tMidiMessage.tType = nType;
+	m_tMidiMessage.nChannel = 0;
+	m_tMidiMessage.nData1 = 0;
+	m_tMidiMessage.nData2 = 0;
 
-	if ((nType == MIDI_TYPES_ACTIVE_SENSING) || (nType == MIDI_TYPES_START)
-			|| (nType == MIDI_TYPES_CONTINUE) || (nType == MIDI_TYPES_STOP)
-			|| (nType == MIDI_TYPES_CLOCK) || (nType == MIDI_TYPES_SYSTEM_RESET)
-			|| (nType == MIDI_TYPES_TUNE_REQUEST)) {
-		m_tMidiMessage.bytes_count = 1;
+	switch (static_cast<midi::Types>(nType)) {
+	case midi::Types::ACTIVE_SENSING:
+	case midi::Types::START:
+	case midi::Types::STOP:
+	case midi::Types::CONTINUE:
+	case midi::Types::CLOCK:
+	case midi::Types::TUNE_REQUEST:
+	case midi::Types::SYSTEM_RESET:
+		m_tMidiMessage.nBytesCount = 1;
 		nSize = 1;
-	} else if ((nType == MIDI_TYPES_PROGRAM_CHANGE)
-			|| (nType == MIDI_TYPES_AFTER_TOUCH_CHANNEL)
-			|| (nType == MIDI_TYPES_TIME_CODE_QUARTER_FRAME)
-			|| (nType == MIDI_TYPES_SONG_SELECT)) {
-		m_tMidiMessage.channel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.data1 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.bytes_count = 2;
+		break;
+	case midi::Types::PROGRAM_CHANGE:
+	case midi::Types::AFTER_TOUCH_CHANNEL:
+	case midi::Types::TIME_CODE_QUARTER_FRAME:
+	case midi::Types::SONG_SELECT:
+		m_tMidiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
+		m_tMidiMessage.nData1 = m_pReceiveBuffer[++nOffset];
+		m_tMidiMessage.nBytesCount = 2;
 		nSize = 2;
-	} else if ((nType == MIDI_TYPES_NOTE_ON) || (nType == MIDI_TYPES_NOTE_OFF)
-			|| (nType == MIDI_TYPES_CONTROL_CHANGE)
-			|| (nType == MIDI_TYPES_PITCH_BEND)
-			|| (nType == MIDI_TYPES_AFTER_TOUCH_POLY)
-			|| (nType == MIDI_TYPES_SONG_POSITION)) {
-		m_tMidiMessage.channel = GetChannelFromStatusByte(nStatusByte);
-		m_tMidiMessage.data1 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.data2 = m_pReceiveBuffer[++nOffset];
-		m_tMidiMessage.bytes_count = 3;
+		break;
+	case midi::Types::NOTE_ON:
+	case midi::Types::NOTE_OFF:
+	case midi::Types::CONTROL_CHANGE:
+	case midi::Types::PITCH_BEND:
+	case midi::Types::AFTER_TOUCH_POLY:
+	case midi::Types::SONG_POSITION:
+		m_tMidiMessage.nChannel = GetChannelFromStatusByte(nStatusByte);
+		m_tMidiMessage.nData1 = m_pReceiveBuffer[++nOffset];
+		m_tMidiMessage.nData2 = m_pReceiveBuffer[++nOffset];
+		m_tMidiMessage.nBytesCount = 3;
 		nSize = 3;
-	} else if (nType == MIDI_TYPES_SYSTEM_EXCLUSIVE) {
+		break;
+	case midi::Types::SYSTEM_EXCLUSIVE: {
 		for (nSize = 0; (static_cast<uint32_t>(nSize) < nCommandLength) && (static_cast<uint32_t>(nSize) < MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES); nSize++) {
-			m_tMidiMessage.system_exclusive[nSize] = m_pReceiveBuffer[nOffset++];
-			if (m_tMidiMessage.system_exclusive[nSize] == 0xF7) {
+			m_tMidiMessage.aSystemExclusive[nSize] = m_pReceiveBuffer[nOffset++];
+			if (m_tMidiMessage.aSystemExclusive[nSize] == 0xF7) {
 				break;
 			}
 		}
 		nSize++;
-		m_tMidiMessage.data1 = nSize & 0xFF; // LSB
-		m_tMidiMessage.data2 = nSize >> 8;   // MSB
-		m_tMidiMessage.bytes_count = nSize;
+		m_tMidiMessage.nData1 = nSize & 0xFF; // LSB
+		m_tMidiMessage.nData2 = nSize >> 8;   // MSB
+		m_tMidiMessage.nBytesCount = nSize;
+	}
+		break;
+	default:
+		break;
 	}
 
 	DEBUG_PRINTF("nSize=%d", nSize);
@@ -254,7 +266,7 @@ void RtpMidi::SendRaw(uint8_t nByte) {
 	Send(1);
 }
 
-void RtpMidi::SendTimeCode(const struct _midi_send_tc *tTimeCode) {
+void RtpMidi::SendTimeCode(const midi::Timecode *tTimeCode) {
 	auto *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
 
 	data[0] = 0xF0;

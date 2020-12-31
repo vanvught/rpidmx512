@@ -90,7 +90,7 @@ static volatile uint8_t aTimeCodeBits[8] ALIGNED;
 static volatile bool bIsDropFrameFlagSet = false;
 
 static volatile bool bTimeCodeAvailable = false;
-static volatile struct _midi_send_tc s_tMidiTimeCode = { 0, 0, 0, 0, MIDI_TC_TYPE_EBU };
+static volatile struct midi::Timecode s_tMidiTimeCode = { 0, 0, 0, 0, static_cast<uint8_t>(midi::TimecodeType::EBU) };
 
 // ARM Generic Timer
 static volatile uint32_t nUpdatesPerSecond = 0;
@@ -285,13 +285,13 @@ void LtcReader::Run() {
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)));
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
 			m_tTimeCodeTypePrevious = TimeCodeType;
 
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)));
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[TimeCodeType] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
@@ -325,7 +325,7 @@ void LtcReader::Run() {
 		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 			dmb();
 			IsMidiQuarterFrameMessage = false;
-			Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(const_cast<struct _midi_send_tc*>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
+			Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
 		}
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {

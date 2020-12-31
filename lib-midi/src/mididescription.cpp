@@ -29,6 +29,8 @@
 
 #include "midi.h"
 
+using namespace midi;
+
 static constexpr char KEY_NAMES[][3] = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 static char key_name[8] __attribute__((aligned(4)));
 
@@ -67,138 +69,140 @@ static constexpr char INSTRUMENT_NAMES[127][32] = {
 	"Fret Noise", "Breath Noise", "Seashore", "Tweet", "Telephone", "Helicopter", "Applause", "Gunshot"													// 121-128 Sound effects
 };
 
-const char* MidiDescription::GetType(uint8_t nType) {
-	switch (nType) {
-	case MIDI_TYPES_INVALIDE_TYPE:
+const char* MidiDescription::GetType(Types tType) {
+	switch (tType) {
+	case Types::INVALIDE_TYPE:
 		return "> program internal use <";
-	case MIDI_TYPES_NOTE_OFF:
+	case Types::NOTE_OFF:
 		return "Note Off";
-	case MIDI_TYPES_NOTE_ON:
+	case Types::NOTE_ON:
 		return "Note On";
-	case MIDI_TYPES_AFTER_TOUCH_POLY:
+	case Types::AFTER_TOUCH_POLY:
 		return "Polyphonic AfterTouch";
-	case MIDI_TYPES_CONTROL_CHANGE:
-		if (nType < 120) {
+	case Types::CONTROL_CHANGE:
+		if (static_cast<uint8_t>(tType) < 120) {
 			return "Control Change";
 		} else {
 			// Controller numbers 120-127 are reserved for Channel Mode Messages,
 			// which rather than controlling sound parameters, affect the channel's operating mode.
 			return "Channel Mode";
 		}
-	case MIDI_TYPES_PROGRAM_CHANGE:
+	case Types::PROGRAM_CHANGE:
 		return "Program Change";
-	case MIDI_TYPES_AFTER_TOUCH_CHANNEL:
+	case Types::AFTER_TOUCH_CHANNEL:
 		return "Channel (monophonic) AfterTouch";
-	case MIDI_TYPES_PITCH_BEND:
+	case Types::PITCH_BEND:
 		return "Pitch Bend";
-	case MIDI_TYPES_SYSTEM_EXCLUSIVE:
+	case Types::SYSTEM_EXCLUSIVE:
 		return "Sys Exclusive";
-	case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
+	case Types::TIME_CODE_QUARTER_FRAME:
 		return "Sys Common - MIDI Time Code Quarter Frame";
-	case MIDI_TYPES_SONG_POSITION:
+	case Types::SONG_POSITION:
 		return "Sys Common - Song Position Pointer";
-	case MIDI_TYPES_SONG_SELECT:
+	case Types::SONG_SELECT:
 		return "Sys Common - Song Select";
-	case MIDI_TYPES_TUNE_REQUEST:
+	case Types::TUNE_REQUEST:
 		return "Sys Common - Tune Request";
-	case MIDI_TYPES_CLOCK:
+	case Types::CLOCK:
 		return "Sys Real Time - Timing Clock";
-	case MIDI_TYPES_START:
+	case Types::START:
 		return "Sys Real Time - Start";
-	case MIDI_TYPES_CONTINUE:
+	case Types::CONTINUE:
 		return "Sys Real Time - Continue";
-	case MIDI_TYPES_STOP:
+	case Types::STOP:
 		return "Sys Real Time - Stop";
-	case MIDI_TYPES_ACTIVE_SENSING:
+	case Types::ACTIVE_SENSING:
 		return "Sys Real Time - Active Sensing";
-	case MIDI_TYPES_SYSTEM_RESET:
+	case Types::SYSTEM_RESET:
 		return "Sys Real Time - Sys Reset";
 	default:
 		return "Unknown Type";
 	}
 }
 
-const char* MidiDescription::GetControlChange(uint8_t nControlChange) {
-	switch (nControlChange) {
-	case MIDI_CONTROL_CHANGE_ALL_SOUND_OFF:
+const char* MidiDescription::GetControlChange(control::Change tControlChange) {
+	switch (tControlChange) {
+	case control::Change::ALL_SOUND_OFF:
 		return "All Sound Off";
-	case MIDI_CONTROL_CHANGE_RESET_ALL_CONTROLLERS:
+	case control::Change::RESET_ALL_CONTROLLERS:
 		return "Reset All Controllers";
-	case MIDI_CONTROL_CHANGE_LOCAL_CONTROL:
+	case control::Change::LOCAL_CONTROL:
 		return "Local Control";
-	case MIDI_CONTROL_CHANGE_ALL_NOTES_OFF:
+	case control::Change::ALL_NOTES_OFF:
 		return "All Notes Off";
-	case MIDI_CONTROL_CHANGE_OMNI_MODE_OFF:
+	case control::Change::OMNI_MODE_OFF:
 		return "Omni Mode Off (+ all notes off)";
-	case MIDI_CONTROL_CHANGE_OMNI_MODE_ON:
+	case control::Change::OMNI_MODE_ON:
 		return "Omni Mode On (+ all notes off)";
-	case MIDI_CONTROL_CHANGE_MONO_MODE_ON:
+	case control::Change::MONO_MODE_ON:
 		return "Mono Mode On (+ poly off, + all notes off)";
-	case MIDI_CONTROL_CHANGE_POLY_MODE_ON:
+	case control::Change::POLY_MODE_ON:
 		return "Poly Mode On (+ mono off, + all notes off)";
 	default:
 		return "Unknown Control Change";
 	}
 }
 
-const char* MidiDescription::GetControlFunction(uint8_t nControlFunction) {
-	if (nControlFunction >= 0x14 && nControlFunction <= 0x1F) {
+const char* MidiDescription::GetControlFunction(control::Function tControlFunction) {
+	const auto nFunction = static_cast<uint8_t>(tControlFunction);
+
+	if (nFunction >= 0x14 && nFunction <= 0x1F) {
 		return "Undefined";
 	}
 
-	if (nControlFunction >= 0x66 && nControlFunction <= 0x77) {
+	if (nFunction >= 0x66 && nFunction <= 0x77) {
 		return "Undefined";
 	}
 
-	switch (nControlFunction) {
-	case MIDI_CONTROL_FUNCTION_BANK_SELECT:
+	switch (tControlFunction) {
+	case control::Function::BANK_SELECT:
 		return "Bank Select";
-	case MIDI_CONTROL_FUNCTION_MODULATION_WHEEL:
+	case control::Function::MODULATION_WHEEL:
 		return "Modulation Wheel or Lever";
-	case MIDI_CONTROL_FUNCTION_BREATH_CONTROLLER:
+	case control::Function::BREATH_CONTROLLER:
 		return "Breath Controller";
-	case MIDI_CONTROL_FUNCTION_FOOT_CONTROLLER:
+	case control::Function::FOOT_CONTROLLER:
 		return "Foot Controller";
-	case MIDI_CONTROL_FUNCTION_PORTAMENTO_TIME:
+	case control::Function::PORTAMENTO_TIME:
 		return "Portamento Time";
-	case MIDI_CONTROL_FUNCTION_DATA_ENTRY_MSB:
+	case control::Function::DATA_ENTRY_MSB:
 		return "Data Entry MSB";
-	case MIDI_CONTROL_FUNCTION_CHANNEL_VOLUME:
+	case control::Function::CHANNEL_VOLUME:
 		return "Channel Volume (formerly Main Volume)";
-	case MIDI_CONTROL_FUNCTION_BALANCE:
+	case control::Function::BALANCE:
 		return "Balance";
-	case MIDI_CONTROL_FUNCTION_PAN:
+	case control::Function::PAN:
 		return "Pan";
-	case MIDI_CONTROL_FUNCTION_EXPRESSION_CONTROLLER:
+	case control::Function::EXPRESSION_CONTROLLER:
 		return "Expression Controller";
-	case MIDI_CONTROL_FUNCTION_EFFECT_CONTROL_1:
+	case control::Function::EFFECT_CONTROL_1:
 		return "Effect Control 1";
-	case MIDI_CONTROL_FUNCTION_EFFECT_CONTROL_2:
+	case control::Function::EFFECT_CONTROL_2:
 		return "Effect Control 2";
-	case MIDI_CONTROL_FUNCTION_GP_CONTROLLER_1:
+	case control::Function::GP_CONTROLLER_1:
 		return "General Purpose Controller 1";
-	case MIDI_CONTROL_FUNCTION_GP_CONTROLLER_2:
+	case control::Function::GP_CONTROLLER_2:
 		return "General Purpose Controller 2";
-	case MIDI_CONTROL_FUNCTION_GP_CONTROLLER_3:
+	case control::Function::GP_CONTROLLER_3:
 		return "General Purpose Controller 3";
-	case MIDI_CONTROL_FUNCTION_GP_CONTROLLER_4:
+	case control::Function::GP_CONTROLLER_4:
 		return "General Purpose Controller 4";
-	case MIDI_CONTROL_FUNCTION_DAMPER_PEDAL_ON_OFF:
+	case control::Function::DAMPER_PEDAL_ON_OFF:
 		return "Damper Pedal on/off (Sustain)";
-	case MIDI_CONTROL_FUNCTION_PORTAMENTO_ON_OFF:
+	case control::Function::PORTAMENTO_ON_OFF:
 		return "Portamento On/Off";
-	case MIDI_CONTROL_FUNCTION_SOSTENUTO_ON_OFF:
+	case control::Function::SOSTENUTO_ON_OFF:
 		return "Sostenuto On/Off";
-	case MIDI_CONTROL_FUNCTION_SOFT_PEDAL_ON_OFF:
+	case control::Function::SOFT_PEDAL_ON_OFF:
 		return "Soft Pedal On/Off";
-	case MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH:
+	case control::Function::LEGATO_FOOTSWITCH:
 		return "Legato Footswitch";
-	case MIDI_CONTROL_FUNCTION_HOLD_2:
+	case control::Function::HOLD_2:
 		return "Hold 2";
-	case MIDI_CONTROL_FUNCTION_UNDEFINED_03:
-	case MIDI_CONTROL_FUNCTION_UNDEFINED_09:
-	case MIDI_CONTROL_FUNCTION_UNDEFINED_0E:
-	case MIDI_CONTROL_FUNCTION_UNDEFINED_0F:
+	case control::Function::UNDEFINED_03:
+	case control::Function::UNDEFINED_09:
+	case control::Function::UNDEFINED_0E:
+	case control::Function::UNDEFINED_0F:
 		return "Undefined";
 	default:
 		return "Not implemented / Unknown Control Function";

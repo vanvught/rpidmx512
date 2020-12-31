@@ -98,8 +98,14 @@ typedef struct {
 	__O uint32_t AEOI;	///< 0x24 Aliased End of Interrupt Register
 } GIC_CPUIF_TypeDef;
 
-#define H3_GIC_DIST		((GIC_DIST_TypeDef *) H3_GIC_DIST_BASE)
-#define H3_GIC_CPUIF	((GIC_CPUIF_TypeDef *) H3_GIC_CPUIF_BASE)
+#ifdef __cplusplus
+# define _CAST(x)	reinterpret_cast<x>
+#else
+# define _CAST(x)	(x)
+#endif
+
+#define H3_GIC_DIST		(_CAST(GIC_DIST_TypeDef *)(H3_GIC_DIST_BASE))
+#define H3_GIC_CPUIF	(_CAST(GIC_CPUIF_TypeDef *)(H3_GIC_CPUIF_BASE))
 
 #ifdef __cplusplus
 extern "C" {

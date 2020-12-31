@@ -58,15 +58,15 @@ static constexpr auto PORT = 0x4444;
 }
 
 void LtcMidiSystemRealtime::SendStart() {
-	Send(MIDI_TYPES_START);
+	Send(midi::Types::START);
 }
 
 void LtcMidiSystemRealtime::SendStop() {
-	Send(MIDI_TYPES_STOP);
+	Send(midi::Types::STOP);
 }
 
 void LtcMidiSystemRealtime::SendContinue() {
-	Send(MIDI_TYPES_CONTINUE);
+	Send(midi::Types::CONTINUE);
 }
 
 void LtcMidiSystemRealtime::Start() {

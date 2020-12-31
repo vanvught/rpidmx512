@@ -38,9 +38,11 @@
 
 #include "debug.h"
 
+using namespace midi;
+
 MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pMidiParamsStore) {
 	memset(&m_tMidiParams, 0, sizeof(struct TMidiParams));
-	m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
+	m_tMidiParams.nBaudrate = defaults::BAUDRATE;
 	m_tMidiParams.nActiveSense = 1;
 }
 
@@ -88,11 +90,11 @@ void MidiParams::callbackFunction(const char* pLine) {
 	uint32_t nValue32;
 
 	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, nValue32) == Sscan::OK) {
-		if ((nValue32 != MIDI_BAUDRATE_DEFAULT) && (nValue32 >= 9600) && (nValue32 <= 115200)) {
+		if ((nValue32 != defaults::BAUDRATE) && (nValue32 >= 9600) && (nValue32 <= 115200)) {
 			m_tMidiParams.nBaudrate = nValue32;
 			m_tMidiParams.nSetList |= MidiParamsMask::BAUDRATE;
 		} else {
-			m_tMidiParams.nBaudrate = MIDI_BAUDRATE_DEFAULT;
+			m_tMidiParams.nBaudrate = defaults::BAUDRATE;
 			m_tMidiParams.nSetList &= ~MidiParamsMask::BAUDRATE;
 		}
 		return;

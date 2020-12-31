@@ -37,12 +37,10 @@ inline static uint32_t h3_hs_timer_lo_us() {
 }
 
 inline static void h3_hs_timer_delay(uint32_t d) {
-	uint32_t t1 = H3_HS_TIMER->CURNT_LO;
-	const uint32_t t2 = t1 - d;
+	const uint32_t t1 = H3_HS_TIMER->CURNT_LO;
 
 	do {
-		t1 = H3_HS_TIMER->CURNT_LO;
-	} while (t1 >= t2);
+	} while (t1 - H3_HS_TIMER->CURNT_LO < d);
 }
 
 extern void h3_hs_timer_udelay(uint32_t d);

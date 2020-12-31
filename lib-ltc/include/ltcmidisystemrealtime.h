@@ -26,6 +26,8 @@
 #ifndef LTCMIDISYSTEMREALTIME_H_
 #define LTCMIDISYSTEMREALTIME_H_
 
+#include "midi.h"
+
 class LtcMidiSystemRealtime {
 public:
 	LtcMidiSystemRealtime(struct TLtcDisabledOutputs *ptLtcDisabledOutputs);
@@ -46,7 +48,7 @@ public:
 	}
 
 private:
-	void Send(uint8_t nByte);
+	void Send(midi::Types tType);
 	void ShowBPM(uint32_t nBPM);
 
 private:

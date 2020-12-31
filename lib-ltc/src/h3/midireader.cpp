@@ -45,6 +45,8 @@
 #include "ltcmidisystemrealtime.h"
 #include "h3/ltcoutputs.h"
 
+using namespace midi;
+
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
@@ -67,15 +69,15 @@ MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtc
 }
 
 void MidiReader::Start() {
-	midi_active_set_sense(false); //TODO We do nothing with sense data, yet
-	midi_init(MIDI_DIRECTION_INPUT);
+	Midi::Get()->SetActiveSense(false);
+	Midi::Get()->Init(midi::Direction::INPUT);
 }
 
 void MidiReader::HandleMtc() {
 	uint8_t nSystemExclusiveLength;
 	const auto *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-	m_nTimeCodeType = static_cast<_midi_timecode_type>((pSystemExclusive[5] >> 5));
+	m_nTimeCodeType = static_cast<midi::TimecodeType>((pSystemExclusive[5] >> 5));
 
 	itoa_base10((pSystemExclusive[5] & 0x1F), &m_aTimeCode[0]);
 	itoa_base10(pSystemExclusive[6], &m_aTimeCode[3]);
@@ -86,7 +88,7 @@ void MidiReader::HandleMtc() {
 	m_MidiTimeCode.nMinutes = pSystemExclusive[6];
 	m_MidiTimeCode.nSeconds = pSystemExclusive[7];
 	m_MidiTimeCode.nFrames = pSystemExclusive[8];
-	m_MidiTimeCode.nType = m_nTimeCodeType;
+	m_MidiTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 	Update();
 }
@@ -100,7 +102,7 @@ void MidiReader::HandleMtcQf() {
 
 	qf[nPart] = nData1 & 0x0F;
 
-	m_nTimeCodeType = static_cast<_midi_timecode_type>((qf[7] >> 1));
+	m_nTimeCodeType = static_cast<midi::TimecodeType>((qf[7] >> 1));
 
 	if ((nPart == 7) || (m_nPartPrevious == 7)) {
 	} else {
@@ -117,7 +119,7 @@ void MidiReader::HandleMtcQf() {
 		m_MidiTimeCode.nMinutes = qf[4] | (qf[5] << 4);
 		m_MidiTimeCode.nSeconds = qf[2] | (qf[3] << 4);
 		m_MidiTimeCode.nFrames = qf[0] | (qf[1] << 4);
-		m_MidiTimeCode.nType = m_nTimeCodeType;
+		m_MidiTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 		Update();
 	}
@@ -145,18 +147,18 @@ void MidiReader::Run() {
 	uint8_t nSystemExclusiveLength;
 	const auto *pSystemExclusive = Midi::Get()->GetSystemExclusive(nSystemExclusiveLength);
 
-	if (Midi::Get()->Read(MIDI_CHANNEL_OMNI)) {
+	if (Midi::Get()->Read(static_cast<uint8_t>(Channel::OMNI))) {
 		if (Midi::Get()->GetChannel() == 0) {
 			switch (Midi::Get()->GetMessageType()) {
-			case MIDI_TYPES_TIME_CODE_QUARTER_FRAME:
+			case Types::TIME_CODE_QUARTER_FRAME:
 				HandleMtcQf();
 				break;
-			case MIDI_TYPES_SYSTEM_EXCLUSIVE:
+			case Types::SYSTEM_EXCLUSIVE:
 				if ((pSystemExclusive[1] == 0x7F) && (pSystemExclusive[2] == 0x7F) && (pSystemExclusive[3] == 0x01)) {
 					HandleMtc();
 				}
 				break;
-			case MIDI_TYPES_CLOCK:
+			case Types::CLOCK:
 				uint32_t nBPM;
 				if (m_MidiBPM.Get(Midi::Get()->GetMessageTimeStamp() / 100, nBPM)) {
 					LtcOutputs::Get()->ShowBPM(nBPM);

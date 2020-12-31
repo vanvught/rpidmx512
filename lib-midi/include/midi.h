@@ -27,268 +27,208 @@
 #define MIDI_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 
-#include "midi_interface.h"
+namespace midi {
 
-#if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
+namespace defaults {
+static constexpr auto BAUDRATE = 31250;
+}  // namespace defaults
 
-#define MIDI_RX_BUFFER_INDEX_ENTRIES			(1 << 6)							///<
-#define MIDI_RX_BUFFER_INDEX_MASK 				(MIDI_RX_BUFFER_INDEX_ENTRIES - 1)	///<
+namespace pitchbend {
+static constexpr auto MIN = -8192;
+static constexpr auto MAX = 8191;
+}  // namespace pitchband
 
-#define MIDI_BAUDRATE_DEFAULT					31250
-
-#define MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES		128
-
-/*! NoteOn with 0 velocity should be handled as NoteOf.
- Set to true  to get NoteOff events when receiving null-velocity NoteOn messages.
- Set to false to get NoteOn  events when receiving null-velocity NoteOn messages.
-*/
-#define HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF	true
-/*! Setting this to true will make midi_read parse only one byte of data for each
-  call when data is available. This can speed up your application if receiving
-  a lot of traffic, but might induce MIDI Thru and treatment latency.
-*/
-#define USE_1_BYTE_PARSING							true
-
-#define MIDI_CHANNEL_OMNI		0		///<
-#define MIDI_CHANNEL_OFF		17		///<
-
-#define MIDI_PITCHBEND_MIN		-8192	///<
-#define MIDI_PITCHBEND_MAX 		8191	///<
-
-struct _midi_message {
-	uint32_t timestamp;												///<
-	uint8_t type;													///<
-	uint8_t channel;												///<
-	uint8_t data1;													///<
-	uint8_t data2;													///<
-	uint8_t system_exclusive[MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES];	///<
-	uint8_t bytes_count;											///<
+namespace control {
+enum class Change : uint8_t {
+	ALL_SOUND_OFF 			= 0x78,
+	RESET_ALL_CONTROLLERS 	= 0x79,
+	LOCAL_CONTROL 			= 0x7A,
+	ALL_NOTES_OFF 			= 0x7B,
+	OMNI_MODE_OFF 			= 0x7C,
+	OMNI_MODE_ON 			= 0x7D,
+	MONO_MODE_ON 			= 0x7E,
+	POLY_MODE_ON 			= 0x7F
 };
 
-typedef enum midi_active_sense_state {
-	MIDI_ACTIVE_SENSE_NOT_ENABLED = 0,	///<
-	MIDI_ACTIVE_SENSE_ENABLED,			///<
-	MIDI_ACTIVE_SENSE_FAILED			///<
-} _midi_active_sense_state;
+enum class Function : uint8_t {
+	BANK_SELECT				= 0x00,	///< MSB
+	MODULATION_WHEEL		= 0x01,	///< MSB
+	BREATH_CONTROLLER		= 0x02,	///< MSB
+	UNDEFINED_03			= 0x03,	///< MSB
+	FOOT_CONTROLLER			= 0x04,	///< MSB
+	PORTAMENTO_TIME			= 0x05,	///< MSB
+	DATA_ENTRY_MSB			= 0x06,	///< MSB
+	CHANNEL_VOLUME			= 0x07,	///< MSB
+	BALANCE					= 0x08,	///< MSB
+	UNDEFINED_09			= 0x09,	///< MSB
+	PAN						= 0x0A,	///< MSB
+	EXPRESSION_CONTROLLER	= 0x0B,	///< MSB
+	EFFECT_CONTROL_1		= 0x0C,	///< MSB
+	EFFECT_CONTROL_2		= 0x0D,	///< MSB
+	UNDEFINED_0E			= 0x0E,	///< MSB
+	UNDEFINED_0F			= 0x0F,	///< MSB
+	GP_CONTROLLER_1			= 0x10, ///< MSB
+	GP_CONTROLLER_2			= 0x11, ///< MSB
+	GP_CONTROLLER_3			= 0x12, ///< MSB
+	GP_CONTROLLER_4			= 0x13, ///< MSB
+	DAMPER_PEDAL_ON_OFF		= 0x40,	///< 63 off, 64 on
+	PORTAMENTO_ON_OFF		= 0x41,	///< 63 off, 64 on
+	SOSTENUTO_ON_OFF		= 0x42,	///< 63 off, 64 on
+	SOFT_PEDAL_ON_OFF		= 0x43,	///< 63 off, 64 on
+	LEGATO_FOOTSWITCH		= 0x44,	///< 63 off, 64 on
+	HOLD_2					= 0x45	///< 63 off, 64 on
+} ;
+}  // namespace control
 
-typedef enum midi_types {
-	MIDI_TYPES_INVALIDE_TYPE 			= 0x00,	///< For notifying errors
-	MIDI_TYPES_NOTE_OFF					= 0x80,	///< Note Off
-	MIDI_TYPES_NOTE_ON					= 0x90,	///< Note On
-	MIDI_TYPES_AFTER_TOUCH_POLY			= 0xA0,	///< Polyphonic AfterTouch
-	MIDI_TYPES_CONTROL_CHANGE			= 0xB0,	///< Control Change / Channel Mode
-	MIDI_TYPES_PROGRAM_CHANGE			= 0xC0,	///< Program Change
-	MIDI_TYPES_AFTER_TOUCH_CHANNEL		= 0xD0,	///< Channel (monophonic) AfterTouch
-	MIDI_TYPES_PITCH_BEND				= 0xE0,	///< Pitch Bend
-	MIDI_TYPES_SYSTEM_EXCLUSIVE			= 0xF0,	///< System Exclusive
-	MIDI_TYPES_TIME_CODE_QUARTER_FRAME	= 0xF1,	///< System Common - MIDI Time Code Quarter Frame
-	MIDI_TYPES_SONG_POSITION			= 0xF2,	///< System Common - Song Position Pointer
-	MIDI_TYPES_SONG_SELECT				= 0xF3,	///< System Common - Song Select
-	MIDI_TYPES_TUNE_REQUEST				= 0xF6,	///< System Common - Tune Request
-	MIDI_TYPES_CLOCK					= 0xF8,	///< System Real Time - Timing Clock
-	MIDI_TYPES_START					= 0xFA,	///< System Real Time - Start
-	MIDI_TYPES_CONTINUE					= 0xFB,	///< System Real Time - Continue
-	MIDI_TYPES_STOP						= 0xFC,	///< System Real Time - Stop
-	MIDI_TYPES_ACTIVE_SENSING			= 0xFE,	///< System Real Time - Active Sensing
-	MIDI_TYPES_SYSTEM_RESET				= 0xFF	///< System Real Time - System Reset
-} _midi_types;
+enum class Channel : uint8_t {
+	OMNI = 0, OFF = 17
+};
 
-typedef enum midi_channel_mode_message {
-	MIDI_CONTROL_CHANGE_ALL_SOUND_OFF			= 0x78, ///<
-	MIDI_CONTROL_CHANGE_RESET_ALL_CONTROLLERS	= 0x79,	///<
-	MIDI_CONTROL_CHANGE_LOCAL_CONTROL			= 0x7A,	///<
-	MIDI_CONTROL_CHANGE_ALL_NOTES_OFF			= 0x7B,	///<
-	MIDI_CONTROL_CHANGE_OMNI_MODE_OFF			= 0x7C,	///<
-	MIDI_CONTROL_CHANGE_OMNI_MODE_ON			= 0x7D,	///<
-	MIDI_CONTROL_CHANGE_MONO_MODE_ON			= 0x7E,	///<
-	MIDI_CONTROL_CHANGE_POLY_MODE_ON			= 0x7F	///<
-} _midi_channel_mode_message;
+enum class ActiveSenseState {
+	NOT_ENABLED, ENABLED, FAILED
+};
 
-typedef enum midi_channel_control_function {
-	MIDI_CONTROL_FUNCTION_BANK_SELECT			= 0x00,	///< MSB
-	MIDI_CONTROL_FUNCTION_MODULATION_WHEEL		= 0x01,	///< MSB
-	MIDI_CONTROL_FUNCTION_BREATH_CONTROLLER		= 0x02,	///< MSB
-	MIDI_CONTROL_FUNCTION_UNDEFINED_03			= 0x03,	///< MSB
-	MIDI_CONTROL_FUNCTION_FOOT_CONTROLLER		= 0x04,	///< MSB
-	MIDI_CONTROL_FUNCTION_PORTAMENTO_TIME		= 0x05,	///< MSB
-	MIDI_CONTROL_FUNCTION_DATA_ENTRY_MSB		= 0x06,	///< MSB
-	MIDI_CONTROL_FUNCTION_CHANNEL_VOLUME		= 0x07,	///< MSB
-	MIDI_CONTROL_FUNCTION_BALANCE				= 0x08,	///< MSB
-	MIDI_CONTROL_FUNCTION_UNDEFINED_09			= 0x09,	///< MSB
-	MIDI_CONTROL_FUNCTION_PAN					= 0x0A,	///< MSB
-	MIDI_CONTROL_FUNCTION_EXPRESSION_CONTROLLER	= 0x0B,	///< MSB
-	MIDI_CONTROL_FUNCTION_EFFECT_CONTROL_1		= 0x0C,	///< MSB
-	MIDI_CONTROL_FUNCTION_EFFECT_CONTROL_2		= 0x0D,	///< MSB
-	MIDI_CONTROL_FUNCTION_UNDEFINED_0E			= 0x0E,	///< MSB
-	MIDI_CONTROL_FUNCTION_UNDEFINED_0F			= 0x0F,	///< MSB
-	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_1		= 0x10, ///< MSB
-	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_2		= 0x11, ///< MSB
-	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_3		= 0x12, ///< MSB
-	MIDI_CONTROL_FUNCTION_GP_CONTROLLER_4		= 0x13, ///< MSB
-	MIDI_CONTROL_FUNCTION_DAMPER_PEDAL_ON_OFF	= 0x40,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_PORTAMENTO_ON_OFF		= 0x41,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_SOSTENUTO_ON_OFF		= 0x42,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_SOFT_PEDAL_ON_OFF		= 0x43,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_LEGATO_FOOTSWITCH		= 0x44,	///< 63 off, 64 on
-	MIDI_CONTROL_FUNCTION_HOLD_2				= 0x45	///< 63 off, 64 on
-} _midi_channel_control_function;
+enum class Types: uint8_t {
+	INVALIDE_TYPE 			= 0x00,	///< For notifying errors
+	NOTE_OFF				= 0x80,	///< Note Off
+	NOTE_ON					= 0x90,	///< Note On
+	AFTER_TOUCH_POLY		= 0xA0,	///< Polyphonic AfterTouch
+	CONTROL_CHANGE			= 0xB0,	///< Control Change / Channel Mode
+	PROGRAM_CHANGE			= 0xC0,	///< Program Change
+	AFTER_TOUCH_CHANNEL		= 0xD0,	///< Channel (monophonic) AfterTouch
+	PITCH_BEND				= 0xE0,	///< Pitch Bend
+	SYSTEM_EXCLUSIVE		= 0xF0,	///< System Exclusive
+	TIME_CODE_QUARTER_FRAME	= 0xF1,	///< System Common - MIDI Time Code Quarter Frame
+	SONG_POSITION			= 0xF2,	///< System Common - Song Position Pointer
+	SONG_SELECT				= 0xF3,	///< System Common - Song Select
+	TUNE_REQUEST			= 0xF6,	///< System Common - Tune Request
+	CLOCK					= 0xF8,	///< System Real Time - Timing Clock
+	START					= 0xFA,	///< System Real Time - Start
+	CONTINUE				= 0xFB,	///< System Real Time - Continue
+	STOP					= 0xFC,	///< System Real Time - Stop
+	ACTIVE_SENSING			= 0xFE,	///< System Real Time - Active Sensing
+	SYSTEM_RESET			= 0xFF	///< System Real Time - System Reset
+};
 
-typedef enum midi_timecode_type {
-	MIDI_TC_TYPE_FILM = 0,
-	MIDI_TC_TYPE_EBU,
-	MIDI_TC_TYPE_DF,
-	MIDI_TC_TYPE_SMPTE,
-	MIDI_TC_TYPE_UNKNOWN = 255
-} _midi_timecode_type;
+#define MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES			128
 
-typedef enum midi_direction {
-	MIDI_DIRECTION_INPUT 	= (1 << 0),
-	MIDI_DIRECTION_OUTPUT	= (1 << 1)
-} _midi_direction;
+struct Message {
+	uint32_t nTimestamp;
+	midi::Types tType;
+	uint8_t nChannel;
+	uint8_t nData1;
+	uint8_t nData2;
+	uint8_t aSystemExclusive[MIDI_SYSTEM_EXCLUSIVE_INDEX_ENTRIES];
+	uint8_t nBytesCount;
+};
 
-struct _midi_send_tc {
+enum class Direction {
+	INPUT = (1U << 0), OUTPUT = (1U << 1)
+};
+
+struct Timecode {
 	uint8_t nFrames;
 	uint8_t nSeconds;
 	uint8_t nMinutes;
 	uint8_t nHours;
 	uint8_t nType;
-}PACKED;
+} __attribute__((packed));
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+enum class TimecodeType {
+	FILM = 0, EBU, DF, SMPTE, UNKNOWN = 255
+};
 
-extern void midi_init(_midi_direction);
-extern _midi_direction midi_get_direction(void);
-extern void midi_set_baudrate(uint32_t);
-extern uint32_t midi_get_baudrate(void);
-extern /*@shared@*/const char *midi_get_interface_description(void);
-extern void midi_set_interface(_midi_interfaces);
-
-extern /*@shared@*/struct _midi_message *midi_message_get(void) __attribute__((assume_aligned(4)));
-extern bool midi_read(void);
-extern bool midi_read_channel(uint8_t);
-extern uint8_t midi_get_input_channel(void);
-extern void midi_set_input_channel(uint8_t);
-
-extern _midi_active_sense_state midi_active_get_sense_state(void);
-extern bool midi_active_get_sense(void);
-extern void midi_active_set_sense(bool);
-
-extern void midi_send_tc(const struct _midi_send_tc *);
-extern void midi_send_qf(uint8_t);
-extern void midi_send_raw(const uint8_t *, uint16_t);
-
-extern uint32_t midi_get_updates_per_seconds(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#ifdef __cplusplus
-namespace midi {
 namespace bpm {
 static constexpr auto MIN = 8;
 static constexpr auto MAX = 300;
 }  // namespace bpm
+
 }  // namespace midi
 
 class Midi {
 public:
 	Midi();
 
-	void Init(_midi_direction tMidiDirection) {
-		midi_init(tMidiDirection);
-	}
+	void Init(midi::Direction tMidiDirection);
 
 	void Run();
 
-	_midi_direction GetDirection() {
-		return midi_get_direction();
+	midi::Direction GetDirection() const {
+		return m_tDirection;
 	}
 
 	void SetBaudrate(uint32_t nBaudrate) {
-		midi_set_baudrate(nBaudrate);
+		m_nBaudrate = nBaudrate;
 	}
-
-	uint32_t GetBaudrate() {
-		return midi_get_baudrate();
+	uint32_t GetBaudrate() const {
+		return m_nBaudrate;
 	}
 
 	void SetActiveSense(bool bActiveSense = true) {
-		midi_active_set_sense(bActiveSense);
+		m_bActiveSense = bActiveSense;
 	}
 
-	bool GetActiveSense() {
-		return midi_active_get_sense();
+	bool GetActiveSense() const {
+		return m_bActiveSense;
 	}
 
-	uint32_t GetUpdatesPerSeconde() {
-		return midi_get_updates_per_seconds();
-	}
+	uint32_t GetUpdatesPerSeconde();
 
 	void SetChannel(uint8_t nChannel) {
-		midi_set_input_channel(nChannel);
+		m_nInputChannel = nChannel;
 	}
 
-	uint8_t GetChannel() {
-		return midi_get_input_channel();
+	uint8_t GetChannel() const {
+		return m_nInputChannel;
 	}
 
-	_midi_active_sense_state GetActiveSenseState() {
-		return midi_active_get_sense_state();
+	midi::ActiveSenseState GetActiveSenseState();
+
+	const char* GetInterfaceDescription() const {
+		return "UART2";
 	}
 
-	const char* GetInterfaceDescription() {
-		return midi_get_interface_description();
+	void SendTimeCode(const struct midi::Timecode *tTimeCode);
+
+	void SendQf(uint8_t nData);
+	void SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
+
+	void SendRaw(const uint8_t *pData, uint16_t nLength) {
+		SendUart2(pData, nLength);
 	}
-
-	void SendTimeCode(const struct _midi_send_tc *tTimeCode) {
-		midi_send_tc(tTimeCode);
-	}
-
-	void SendQf(uint8_t nData) {
-		midi_send_qf(nData);
-	}
-
-	void SendQf(const struct _midi_send_tc *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
-
 	void SendRaw(uint8_t nByte) {
-		midi_send_raw(&nByte, 1);
+		SendRaw(&nByte, 1);
+	}
+	void SendRaw(midi::Types tType) {
+		SendRaw(static_cast<uint8_t>(tType));
 	}
 
-	void SendRaw(const uint8_t *pBuffer, uint16_t nLength) {
-		midi_send_raw(pBuffer, nLength);
-	}
-
+	bool Read(uint8_t nChannel);
 	bool Read() {
-		return midi_read();
+		return Read(m_nInputChannel);
 	}
 
-	bool Read(uint8_t nChannel) {
-		return midi_read_channel(nChannel);
+	const struct midi::Message *GetMessage() const {
+		return &m_Message;
 	}
 
-	uint32_t GetMessageTimeStamp() {
-		return m_pMessage->timestamp;
+	uint32_t GetMessageTimeStamp() const {
+		return m_Message.nTimestamp;
 	}
 
-	uint8_t GetMessageType() {
-		return m_pMessage->type;
+	midi::Types GetMessageType() const {
+		return static_cast<midi::Types>(m_Message.tType);
 	}
 
-	void GetMessageData(uint8_t &nData1, uint8_t &nData2) {
-		nData1 = m_pMessage->data1;
-		nData2 = m_pMessage->data2;
+	void GetMessageData(uint8_t &nData1, uint8_t &nData2) const {
+		nData1 = m_Message.nData1;
+		nData2 = m_Message.nData2;
 	}
 
-	uint8_t* GetSystemExclusive(uint8_t &nLength) {
-		nLength = m_pMessage->bytes_count;
-		return m_pMessage->system_exclusive;
+	const uint8_t* GetSystemExclusive(uint8_t &nLength) const {
+		nLength = m_Message.nBytesCount;
+		return reinterpret_cast<const uint8_t*>(m_Message.aSystemExclusive);
 	}
 
 	static Midi* Get() {
@@ -298,10 +238,29 @@ public:
 	void Print();
 
 private:
-	struct _midi_message *m_pMessage{nullptr};
+	void InitUart2(void);
+	void SendUart2(const uint8_t *data, uint16_t length);
+	bool InputFilter(uint8_t nChannel) const;
+	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) const;
+	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte) const;
+	bool isChannelMessage(midi::Types tType) const;
+	void HandleNullVelocityNoteOnAsNoteOff();
+	bool Parse();
+	void ResetInput();
+	bool ReadRaw(uint8_t *byte, uint32_t *timestamp);
+
+private:
+	uint32_t m_nBaudrate { midi::defaults::BAUDRATE };
+	midi::Direction m_tDirection { midi::Direction::INPUT };
+	bool m_bActiveSense { false };
+	struct midi::Message m_Message;
+	uint8_t m_nInputChannel { static_cast<uint8_t>(midi::Channel::OMNI) };
+	uint8_t m_nPendingMessageIndex { 0 };
+	uint8_t m_nPendingMessageExpectedLenght { 0 };
+	uint8_t m_nRunningStatusRx { static_cast<uint8_t>(midi::Types::INVALIDE_TYPE) };
+	uint8_t m_aPendingMessage[8];
 
 	static Midi *s_pThis;
 };
-#endif
 
 #endif /* MIDI_H_ */

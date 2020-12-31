@@ -46,7 +46,7 @@ public:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	struct _midi_send_tc m_tMidiTimeCode;
+	struct midi::Timecode m_tMidiTimeCode;
 };
 
 #endif /* H3_ARTNETREADER_H_ */

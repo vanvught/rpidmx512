@@ -48,7 +48,7 @@ private:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	struct _midi_send_tc m_tMidiTimeCode;
+	struct midi::Timecode m_tMidiTimeCode;
 	uint32_t m_nTimeCodePrevious{0xFF};
 	int m_nHandle{-1};
 	uint8_t m_Buffer[64];

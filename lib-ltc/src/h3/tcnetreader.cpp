@@ -124,10 +124,10 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 		}
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(pTimeCode));
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pTimeCode));
 		}
 
-		memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct _midi_send_tc));
+		memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
 
 		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
 	}

@@ -43,8 +43,11 @@ public:
 	void Run();
 
 	void SendRaw(uint8_t nByte);
+	void SendRaw(midi::Types tType) {
+		SendRaw(static_cast<uint8_t>(tType));
+	}
 
-	void SendTimeCode(const struct _midi_send_tc *tTimeCode);
+	void SendTimeCode(const midi::Timecode *tTimeCode);
 
 	void SetHandler(RtpMidiHandler *pRtpMidiHandler) {
 		m_pRtpMidiHandler = pRtpMidiHandler;
@@ -61,13 +64,13 @@ private:
 
 	int32_t DecodeTime(uint32_t nCommandLength, uint32_t nOffset);
 	int32_t DecodeMidi(uint32_t nCommandLength, uint32_t nOffset);
-	uint8_t GetTypeFromStatusByte(uint8_t nStatusByte);
+	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte);
 	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte);
 
 	void Send(uint32_t nLength);
 
 private:
-	struct _midi_message m_tMidiMessage;
+	struct midi::Message m_tMidiMessage;
 	RtpMidiHandler *m_pRtpMidiHandler{nullptr};
 	uint8_t *m_pReceiveBuffer{nullptr};
 	uint8_t *m_pSendBuffer{nullptr};

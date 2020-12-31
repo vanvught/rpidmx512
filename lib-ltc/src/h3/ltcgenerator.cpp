@@ -206,7 +206,7 @@ void LtcGenerator::Start() {
 	}
 
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 	}
 
 	LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
@@ -331,7 +331,7 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 			}
 
 			if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 			}
 
 			LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
@@ -730,7 +730,7 @@ void LtcGenerator::Update() {
 		}
 
 		if (!s_ptLtcDisabledOutputs->bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&s_tLtcTimeCode));
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 		}
 
 		LtcOutputs::Get()->Update(static_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));

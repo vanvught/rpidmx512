@@ -109,7 +109,7 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 		m_tTimeCodeTypePrevious = static_cast<ltc::type>(ptLtcTimeCode->nType);
 
 		if (!m_ptLtcDisabledOutputs->bMidi) {
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode));
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
 		}
 
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
@@ -149,7 +149,7 @@ void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcT
 	dmb();
 	if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
 		IsMidiQuarterFrameMessage = false;
-		Midi::Get()->SendQf(reinterpret_cast<const struct _midi_send_tc*>(ptLtcTimeCode), m_nMidiQuarterFramePiece);
+		Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode), m_nMidiQuarterFramePiece);
 	}
 }
 

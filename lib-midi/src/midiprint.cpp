@@ -27,18 +27,20 @@
 
 #include "midi.h"
 
+using namespace midi;
+
 void Midi::Print() {
-	const _midi_direction dir = GetDirection();
+	const Direction dir = GetDirection();
 	const uint32_t nBaudrate = GetBaudrate();
 	const uint8_t nChannel = GetChannel();
 
 	printf("MIDI\n");
-	printf(" Direction    : %s\n", dir == MIDI_DIRECTION_INPUT ? "Input" : "Output");
-	if (dir == MIDI_DIRECTION_INPUT) {
+	printf(" Direction    : %s\n", dir == Direction::INPUT ? "Input" : "Output");
+	if (dir == Direction::INPUT) {
 		printf(" Channel      : %d %s\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
 	}
 	printf(" Active sense : %s\n", GetActiveSense() ? "Enabled" : "Disabled");
-	printf(" Baudrate     : %d %s\n", static_cast<int>(nBaudrate), nBaudrate == MIDI_BAUDRATE_DEFAULT ? "(Default)" : "");
+	printf(" Baudrate     : %d %s\n", static_cast<int>(nBaudrate), nBaudrate == defaults::BAUDRATE ? "(Default)" : "");
 	printf(" Interface    : %s\n", GetInterfaceDescription());
 }
 

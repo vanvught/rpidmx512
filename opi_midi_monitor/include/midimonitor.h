@@ -27,6 +27,8 @@
 
 #include <stdint.h>
 
+#include "midi.h"
+
 class MidiMonitor {
 public:
 	MidiMonitor();
@@ -42,12 +44,12 @@ private:
 	void Update(uint8_t nType);
 
 private:
-	uint32_t m_nMillisPrevious;
-	struct _midi_message *m_pMidiMessage;
-	uint32_t m_nInitTimestamp{0};
-	uint8_t m_nTypePrevious{0xFF};
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
+	uint32_t m_nMillisPrevious { 0 };
+	struct midi::Message *m_pMidiMessage { nullptr };
+	uint32_t m_nInitTimestamp { 0 };
+	uint8_t m_nTypePrevious { 0xFF };
+	uint8_t m_nPartPrevious { 0 };
+	bool m_bDirection { true };
 };
 
 #endif /* MIDIMONITOR_H_ */

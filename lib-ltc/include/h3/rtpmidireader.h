@@ -43,20 +43,20 @@ public:
 
 	void Run();
 
-	void MidiMessage(const struct _midi_message *ptMidiMessage);
+	void MidiMessage(const struct midi::Message *ptMidiMessage);
 
 private:
-	void HandleMtc(const struct _midi_message *ptMidiMessage);
-	void HandleMtcQf(const struct _midi_message *ptMidiMessage);
+	void HandleMtc(const struct midi::Message *ptMidiMessage);
+	void HandleMtcQf(const struct midi::Message *ptMidiMessage);
 	void Update();
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	_midi_timecode_type m_nTimeCodeType{MIDI_TC_TYPE_UNKNOWN};
+	midi::TimecodeType m_nTimeCodeType { midi::TimecodeType::UNKNOWN };
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	TLtcTimeCode m_tLtcTimeCode;
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
+	uint8_t m_nPartPrevious { 0 };
+	bool m_bDirection { true };
 	MidiBPM m_MidiBPM;
 };
 

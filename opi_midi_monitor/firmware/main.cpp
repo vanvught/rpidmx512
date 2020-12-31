@@ -40,6 +40,8 @@
 
 extern "C" {
 
+using namespace midi;
+
 void notmain(void) {
 	Hardware hw;
 	LedBlink lb;
@@ -48,7 +50,7 @@ void notmain(void) {
 	Midi midi;
 
 	midi.SetActiveSense(true);
-	midi.Init(MIDI_DIRECTION_INPUT);
+	midi.Init(Direction::INPUT);
 
 	fw.Print();
 	printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), midi.GetInterfaceDescription());

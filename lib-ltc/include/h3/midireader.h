@@ -45,11 +45,11 @@ private:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	struct _midi_send_tc m_MidiTimeCode;
-	_midi_timecode_type m_nTimeCodeType{MIDI_TC_TYPE_UNKNOWN};
+	struct midi::Timecode m_MidiTimeCode;
+	midi::TimecodeType m_nTimeCodeType { midi::TimecodeType::UNKNOWN };
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
-	uint8_t m_nPartPrevious{0};
-	bool m_bDirection{true};
+	uint8_t m_nPartPrevious { 0 };
+	bool m_bDirection { true };
 	MidiBPM m_MidiBPM;
 };
 

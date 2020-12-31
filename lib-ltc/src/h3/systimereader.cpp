@@ -165,7 +165,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 			}
 
 			if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&m_tMidiTimeCode));
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_tMidiTimeCode));
 			}
 
 			LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
@@ -268,7 +268,7 @@ void SystimeReader::Run() {
 			}
 
 			if (!m_ptLtcDisabledOutputs->bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct _midi_send_tc*>(&m_tMidiTimeCode));
+				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_tMidiTimeCode));
 			}
 
 			LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
