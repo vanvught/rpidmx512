@@ -30,6 +30,10 @@
 \name:
 .endm
 
+#if defined (__ARM_ARCH_7A__)
+
+/* See: ARMv7-A Architecture Reference Manual, Section D7.3 */
+
 FUNC spin_lock
 	mov	r2, #1
 1:
@@ -49,3 +53,4 @@ FUNC spin_unlock
 	sev
 	bx	lr
 
+#endif
