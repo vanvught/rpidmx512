@@ -42,13 +42,13 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 	endif
 endif
 
-ifeq ($(findstring ARTNET_NODE,$(DEFINES)),ARTNET_NODE)
+ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	ifdef COND
 		LIBS+=artnet4 artnethandlers artnet e131 uuid
 	endif
 endif
 
-ifeq ($(findstring E131_BRIDGE,$(DEFINES)),E131_BRIDGE)
+ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
 	ifdef COND
 		ifneq ($(findstring e131,$(LIBS)),e131)
 			LIBS+=e131
@@ -61,7 +61,7 @@ ifeq ($(findstring E131_BRIDGE,$(DEFINES)),E131_BRIDGE)
 endif
 
 RDM=
-ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	ifneq ($(findstring e131,$(LIBS)),e131)
 		LIBS+=e131
 	endif
@@ -74,11 +74,11 @@ ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
 	endif
 endif
 
-ifeq ($(findstring DMXSEND,$(DEFINES)),DMXSEND)
+ifeq ($(findstring OUTPUT_DMXSEND,$(DEFINES)),OUTPUT_DMXSEND)
 	LIBS+=dmxsend dmx
 endif
 
-ifeq ($(findstring PIXEL,$(DEFINES)),PIXEL)
+ifeq ($(findstring OUTPUT_PIXEL,$(DEFINES)),OUTPUT_PIXEL)
 	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
 endif
 
@@ -93,7 +93,7 @@ else
 	LIBS+=network
 endif
 
-ifeq ($(findstring LTC_READER,$(DEFINES)),LTC_READER)
+ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
 endif
 

@@ -62,7 +62,7 @@ union uip {
 #define NODE_DEFAULT_SUBNET_SWITCH	0
 #define NODE_DEFAULT_UNIVERSE		1
 
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 47 };
+static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 48 };
 
 #define ARTNET_MIN_HEADER_SIZE			12
 #define ARTNET_MERGE_TIMEOUT_SECONDS	10
@@ -168,7 +168,7 @@ void ArtNetNode::Start() {
 		}
 	}
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 
 	SendPollRelply(false);	// send a reply on startup
 }
@@ -191,7 +191,7 @@ void ArtNetNode::Stop() {
 		}
 	}
 
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_OFF_OFF);
+	LedBlink::Get()->SetMode(ledblink::Mode::OFF_OFF);
 	m_Node.Status1 = (m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE;
 
 	m_State.status = ARTNET_OFF;
@@ -927,15 +927,15 @@ void ArtNetNode::HandleAddress() {
 		break;
 
 	case ARTNET_PC_LED_NORMAL:
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 		m_Node.Status1 = (m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_NORMAL_MODE;
 		break;
 	case ARTNET_PC_LED_MUTE:
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_OFF_OFF);
+		LedBlink::Get()->SetMode(ledblink::Mode::OFF_OFF);
 		m_Node.Status1 = (m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE;
 		break;
 	case ARTNET_PC_LED_LOCATE:
-		LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 		m_Node.Status1 = (m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_LOCATE_MODE;
 		break;
 
@@ -1059,7 +1059,7 @@ void ArtNetNode::Run() {
 
 		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (1 * 1000)) {
 			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
-				LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 				m_State.bIsReceivingDmx = false;
 			}
 		}
@@ -1069,9 +1069,9 @@ void ArtNetNode::Run() {
 
 			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
 				if (m_State.bIsReceivingDmx) {
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 				} else {
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 				}
 			}
 		}
@@ -1154,9 +1154,9 @@ void ArtNetNode::Run() {
 
 	if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
 		if (m_State.bIsReceivingDmx) {
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 		}
 	}
 

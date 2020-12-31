@@ -26,7 +26,7 @@
 #ifndef ARTNETREBOOT_H_
 #define ARTNETREBOOT_H_
 
-#include "reboothandler.h"
+#include "hardware.h"
 
 #include "artnetnode.h"
 
