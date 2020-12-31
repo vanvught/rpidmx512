@@ -31,15 +31,13 @@
 #include "rdm.h"
 #include "rdm_send.h"
 
+#include "h3_timer.h"
 #include "h3_hs_timer.h"
 
 #include "debug.h"
 
 uint8_t Rdm::m_TransactionNumber[DMX_MAX_OUT] = {0, };
-
-Rdm::Rdm() {
-	assert(DmxSet::Get() != nullptr);
-}
+uint32_t Rdm::m_nLastSendMicros[DMX_MAX_OUT] = {0, };
 
 const uint8_t *Rdm::Receive(uint8_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
@@ -49,11 +47,23 @@ const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }
 
-void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand) {
+void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	DEBUG_ENTRY
 
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmCommand != nullptr);
+
+	if (nSpacingMicros != 0) {
+		const uint32_t nMicros = H3_TIMER->AVS_CNT1;
+		const uint32_t nDeltaMicros = nMicros - m_nLastSendMicros[nPort];
+		if (nDeltaMicros < nSpacingMicros) {
+			const uint32_t nWait = nSpacingMicros - nDeltaMicros;
+			do {
+			} while ((H3_TIMER->AVS_CNT1 - nMicros) < nWait);
+		}
+	}
+
+	m_nLastSendMicros[nPort] = H3_TIMER->AVS_CNT1;
 
 	uint8_t *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
 	uint32_t i;

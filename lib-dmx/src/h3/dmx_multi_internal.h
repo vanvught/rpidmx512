@@ -38,7 +38,7 @@
  * 3	UART0
  */
 
-inline static uint8_t _port_to_uart(uint8_t port) {
+inline static uint32_t _port_to_uart(uint32_t port) {
 	assert(port < DMX_MAX_UARTS);
 
 	if (port < 3) {
@@ -50,7 +50,7 @@ inline static uint8_t _port_to_uart(uint8_t port) {
 
 #include "h3.h"
 
-inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
+inline static H3_UART_TypeDef * _get_uart(uint32_t uart) {
 	switch (uart) {
 	case 0:
 		return H3_UART0;
@@ -69,7 +69,7 @@ inline static H3_UART_TypeDef * _get_uart(uint8_t uart) {
 		break;
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 #endif /* DMX_MULTI_INTERNAL_H_ */

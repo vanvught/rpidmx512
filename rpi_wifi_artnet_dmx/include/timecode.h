@@ -38,6 +38,4 @@ public:
 	void Handler(const struct TArtNetTimeCode *);
 };
 
-
-
 #endif /* TIMECODE_H_ */

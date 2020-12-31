@@ -29,27 +29,21 @@
 
 #include "ledblink.h"
 
-#include "debug.h"
-
 RDMIdentify *RDMIdentify::s_pThis = nullptr;
 
-RDMIdentify::RDMIdentify() 
-	
-{
+RDMIdentify::RDMIdentify() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }
 
 void RDMIdentify::On() {
 	m_bIsEnabled = true;
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
-
+	LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 }
 
 void RDMIdentify::Off() {
 	m_bIsEnabled = false;
-	LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
-
+	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 }
 
 bool RDMIdentify::IsEnabled() {

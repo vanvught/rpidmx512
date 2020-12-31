@@ -1,7 +1,8 @@
 /**
  * @file widgetparams.h
+ *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +26,26 @@
 #ifndef WIDGETPARAMS_H_
 #define WIDGETPARAMS_H_
 
-#include <stdint.h>
-
-enum TWidgetParamsMask {
-	WIDGET_PARAMS_MASK_BREAK_TIME = (1 << 0),
-	WIDGET_PARAMS_MASK_MAB_TIME = (1 << 1),
-	WIDGET_PARAMS_MASK_REFRESH_RATE = (1 << 2),
-	WIDGET_PARAMS_MASK_MODE = (1 << 3),
-	WIDGET_PARAMS_MASK_THROTTLE = (1 << 4)
-};
-
-enum TWidgetMode {
-	WIDGET_MODE_DMX_RDM = 0,	///< Both DMX and RDM firmware enabled.
-	WIDGET_MODE_DMX = 1,		///< DMX firmware enabled
-	WIDGET_MODE_RDM = 2,		///< RDM firmware enabled.
-	WIDGET_MODE_RDM_SNIFFER = 3	///< RDM Sniffer firmware enabled.
-};
+#include "widgetconfiguration.h"
 
 struct TWidgetParams {
     uint32_t nSetList;
 	uint8_t nBreakTime;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
 	uint8_t nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
 	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
-	TWidgetMode tMode;
+	uint8_t tMode;
 	uint8_t	nThrottle;		///< DMX send to host throttle
 };
 
+struct WidgetParamsMask {
+	static constexpr auto BREAK_TIME = (1U << 0);
+	static constexpr auto MAB_TIME = (1U << 1);
+	static constexpr auto REFRESH_RATE = (1U << 2);
+	static constexpr auto MODE = (1U << 3);
+	static constexpr auto THROTTLE = (1U << 4);
+};
+
+#if defined (H3)
 class WidgetParamsStore {
 public:
 	virtual ~WidgetParamsStore() {}
@@ -58,10 +53,16 @@ public:
 	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
 	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;
 };
+#else
+#endif
 
 class WidgetParams {
 public:
+#if defined (H3)
 	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
+#else
+	WidgetParams();
+#endif
 
 	bool Load();
 	void Set();
@@ -80,8 +81,8 @@ public:
 		return m_tWidgetParams.nRefreshRate;
 	}
 
-	TWidgetMode GetMode() {
-		return m_tWidgetParams.tMode;
+	widget::Mode GetMode() {
+		return static_cast<widget::Mode>(m_tWidgetParams.tMode);
 	}
 
 	uint8_t GetThrottle() {
@@ -98,7 +99,9 @@ private:
     }
 
 private:
+#if defined (H3)
     WidgetParamsStore *m_pWidgetParamsStore;
+#endif
     struct TWidgetParams m_tWidgetParams;
 };
 

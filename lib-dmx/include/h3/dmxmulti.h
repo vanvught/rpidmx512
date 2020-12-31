@@ -22,10 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef DMXMULTI_H_
-#define DMXMULTI_H_
 
-#include "dmx_multi.h"
+#ifndef H3_DMXMULTI_H_
+#define H3_DMXMULTI_H_
+
+#include <stdint.h>
 
 #include "dmx.h"
 
@@ -35,32 +36,45 @@ public:
 
 	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
 
-	inline void SetDmxBreakTime(uint32_t nBreakTime) {
-		dmx_multi_set_output_break_time(nBreakTime);
-	}
-
-	inline  uint32_t GetDmxBreakTime() {
-		return dmx_multi_get_output_break_time();
-	}
-
-	inline void SetDmxMabTime(uint32_t nMabTime) {
-		dmx_multi_set_output_mab_time(nMabTime);
-	}
-
-	inline uint32_t GetDmxMabTime() {
-		return dmx_multi_get_output_mab_time();
-	}
-
-	inline uint32_t GetDmxPeriodTime() {
-		return dmx_multi_get_output_period();
-	}
-
 	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
 	const uint8_t *RdmReceive(uint8_t nPort) override;
 	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) override;
 
+	void SetPortSendDataWithoutSC(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
+
+	void SetDmxBreakTime(uint32_t nBreakTime);
+	uint32_t GetDmxBreakTime() const {
+		return m_nDmxTransmitMabTime;
+	}
+
+	void SetDmxMabTime(uint32_t nMabTime);
+	uint32_t GetDmxMabTime() const {
+		return m_nDmxTransmitMabTime;
+	}
+	
+	void SetDmxPeriodTime(uint32_t nPeriod);
+	uint32_t GetDmxPeriodTime() const {
+		return m_nDmxTransmitPeriod;
+	}
+
+	static void UartInit(uint32_t nUart);
+
 private:
+	void ClearData(uint32_t uart);
+	void UartEnableFifo(uint32_t uart);
+	void UartDisableFifo(uint32_t uart);
+	void StartData(uint32_t uart);
+	void StopData(uint32_t uart);
+
+private:
+	uint32_t m_nDmxTransmitBreakTime { DMX_TRANSMIT_BREAK_TIME_MIN };
+	uint32_t m_nDmxTransmitMabTime { DMX_TRANSMIT_MAB_TIME_MIN };
+	uint32_t m_nDmxTransmitPeriod { DMX_TRANSMIT_PERIOD_DEFAULT };
+	uint32_t m_nDmxTransmitPeriodRequested { DMX_TRANSMIT_PERIOD_DEFAULT };
+	uint8_t m_nDmxDataDirectionGpioPin[DMX_MAX_OUT];
+	TDmxRdmPortDirection m_tDmxPortDirection[DMX_MAX_OUT];
+	uint32_t m_nDmxTransmissionLength[DMX_MAX_OUT];
 };
 
-#endif /* DMXMULTI_H_ */
+#endif /* H3_DMXMULTI_H_ */

@@ -1,9 +1,9 @@
 #
-DEFINES = RDM_CONTROLLER UPDATE_CONFIG_FILE ENABLE_MMU NDEBUG
+DEFINES = RDM_CONTROLLER UPDATE_CONFIG_FILE DISABLE_RTC ENABLE_MMU NDEBUG
 #
-LIBS = widget dmx rdm usb
+LIBS = widget dmx rdm usb network display hal
 #
-SRCDIR = firmware oled oled/i2c
+SRCDIR = firmware
 #
 EXTRA_INCLUDES = 
 

@@ -32,16 +32,10 @@
 
 #include "display.h"
 
-#include "usb.h"
-
-#include "dmx.h"
-
-#include "rdmdevice.h"
-#include "rdmdeviceparams.h"
-
 #include "widget.h"
 #include "widgetparams.h"
-#include "widgetstore.h"
+#include "h3/widgetstore.h"
+#include "rdmdeviceparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -51,32 +45,16 @@
 
 #include "software_version.h"
 
-extern void widget_params_set_store(WidgetStore *pWidgetStore);
-
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
-extern void rdm_device_info_init(RDMDevice *pRdmDevice);
-
 extern "C" {
 
-struct _poll {
-	void (*f)(void);
-}static const poll_table[] ALIGNED = {
-		{ widget_receive_data_from_host },
-		{ widget_received_dmx_packet },
-		{ widget_received_dmx_change_of_state_packet },
-		{ widget_received_rdm_packet },
-		{ widget_rdm_timeout },
-		{ widget_sniffer_rdm },
-		{ widget_sniffer_dmx } };
-
 void notmain(void) {
-	// Do not change order
 	Hardware hw;
 	NetworkBaremetalMacAddress nw;
 	LedBlink lb;
@@ -88,58 +66,48 @@ void notmain(void) {
 	StoreWidget storeWidget;
 	StoreRDMDevice storeRDMDevice;
 
-	usb_init();
-
-	dmx_init();
-	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, false);
+	Widget widget;
+	widget.SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
 
 	WidgetParams widgetParams(&storeWidget);
-	widget_params_set_store(&storeWidget);
 
 	if (widgetParams.Load()) {
 		widgetParams.Set();
 		widgetParams.Dump();
 	}
 
-	const TWidgetMode tWidgetMode = widgetParams.GetMode();
-
 	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);
-	RDMDevice rdmDevice;
 
-	rdmDevice.SetLabel(&deviceLabel);
+	widget.SetLabel(&deviceLabel);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&rdmDevice);
+		rdmDeviceParams.Set(&widget);
 		rdmDeviceParams.Dump();
 	}
 
-	rdmDevice.Init();
+	widget.Init();
 
-	rdm_device_info_init(&rdmDevice);
-
-	const uint8_t *pRdmDeviceUid = rdmDevice.GetUID();
+	const auto *pRdmDeviceUid = widget.GetUID();
 	struct TRDMDeviceInfoData tRdmDeviceLabel;
-	rdmDevice.GetLabel(&tRdmDeviceLabel);
+	widget.GetLabel(&tRdmDeviceLabel);
+	const auto tWidgetMode = widgetParams.GetMode();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
-	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", tWidgetMode, widget_mode_names[tWidgetMode]);
+	printf("RDM Controller with USB [Compatible with Enttec USB Pro protocol], Widget mode : %d (%s)\n", tWidgetMode, widget_mode_names[static_cast<uint32_t>(tWidgetMode)]);
 	printf("Device UUID : %.2x%.2x:%.2x%.2x%.2x%.2x, ", pRdmDeviceUid[0], pRdmDeviceUid[1], pRdmDeviceUid[2], pRdmDeviceUid[3], pRdmDeviceUid[4], pRdmDeviceUid[5]);
 	printf("Label : %.*s\n", static_cast<int>(tRdmDeviceLabel.length), reinterpret_cast<const char*>(tRdmDeviceLabel.data));
 
 	hw.WatchdogInit();
 
-	if (tWidgetMode == WIDGET_MODE_RDM_SNIFFER) {
-		widget_sniffer_fill_transmit_buffer();	// Prevent missing first frame
+	if (tWidgetMode == widget::Mode::RDM_SNIFFER) {
+		widget.SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+		widget.SnifferFillTransmitBuffer();	// Prevent missing first frame
 	}
 
 	for (;;) {
 		hw.WatchdogFeed();
-
-		for (uint32_t i = 0; i < sizeof(poll_table) / sizeof(poll_table[0]); i++) {
-			poll_table[i].f();
-		}
-
+		widget.Run();
 		lb.Run();
 		spiFlashStore.Flash();
 	}

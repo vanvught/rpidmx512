@@ -1,7 +1,8 @@
 /**
  * @file widgetstore.h
+ *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,15 +26,10 @@
 #ifndef WIDGETSTORE_H_
 #define WIDGETSTORE_H_
 
-#include <stdint.h>
-
-class WidgetStore {
-public:
-	virtual ~WidgetStore() {}
-
-	virtual void UpdateBreakTime(uint8_t nBreakTime)=0;
-	virtual void UpdateMabTime(uint8_t nMabTime)=0;
-	virtual void UpdateRefreshRate(uint8_t nRefreshRate)=0;
-};
+#if defined (H3)
+# include "h3/widgetstore.h"
+#else
+# error
+#endif
 
 #endif /* WIDGETSTORE_H_ */

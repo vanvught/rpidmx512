@@ -91,7 +91,7 @@ void notmain(void) {
 	Identify identify;
 	LightSet *pBoard;
 
-	hw.SetLed(HARDWARE_LED_ON);
+	hw.SetLed(hardware::LedStatus::ON);
 
 #if defined (ORANGE_PI_ONE)
 	SlushDmx *pSlushDmx = new SlushDmx(false);	// Do not use SPI busy check

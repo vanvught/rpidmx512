@@ -58,7 +58,7 @@ private:
 
 private:
 	struct TRdmMessage *m_pRdmCommand;
-	RDMHandler *m_RDMHandler;
+	RDMHandler *m_pRDMHandler;
 	bool m_IsSubDeviceActive;
 };
 

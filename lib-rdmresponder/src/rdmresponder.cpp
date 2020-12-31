@@ -44,22 +44,22 @@ RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet,
 	DMXReceiver(nGpioPin),
 	RDMDeviceResponder(pRDMPersonality, pLightSet),
 	m_pRdmCommand(0),
-	m_RDMHandler(0),
+	m_pRDMHandler(0),
 	m_IsSubDeviceActive(false)
 {
 	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != 0);
+	assert(m_pRdmCommand != nullptr);
 
-	m_RDMHandler = new RDMHandler;
-	assert(m_RDMHandler != 0);
+	m_pRDMHandler = new RDMHandler;
+	assert(m_pRDMHandler != nullptr);
 }
 
 RDMResponder::~RDMResponder(void) {
-	delete m_RDMHandler;
-	m_RDMHandler = 0;
+	delete m_pRDMHandler;
+	m_pRDMHandler = nullptr;
 
 	delete m_pRdmCommand;
-	m_pRdmCommand = 0;
+	m_pRdmCommand = nullptr;
 }
 
 void RDMResponder::Init(void) {
@@ -70,13 +70,12 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	int nLength = RDM_RESPONDER_INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
-		const struct TRdmMessage *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
+		const auto *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
 		nLength = p->message_length + RDM_MESSAGE_CHECKSUM_SIZE;
 		Rdm::SendRawRespondMessage(0, pResponse, nLength);
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
 		Rdm::SendDiscoveryRespondMessage(pResponse, nLength);
-	} else {
 	}
 
 #ifndef NDEBUG
@@ -89,7 +88,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 int RDMResponder::Run(void) {
 	int16_t nLength;
 
-	const uint8_t *pDmxDataIn = DMXReceiver::Run(nLength);
+	const auto *pDmxDataIn = DMXReceiver::Run(nLength);
 
 	if (RDMSubDevices::Get()->GetCount() != 0) {
 		if (nLength == -1) {
@@ -106,9 +105,9 @@ int RDMResponder::Run(void) {
 		}
 	}
 
-	const uint8_t *pRdmDataIn = Rdm::Receive(0);
+	const auto *pRdmDataIn = Rdm::Receive(0);
 
-	if (pRdmDataIn == 0) {
+	if (pRdmDataIn == nullptr) {
 		return RDM_RESPONDER_NO_DATA;
 	}
 
@@ -117,13 +116,13 @@ int RDMResponder::Run(void) {
 #endif
 
 	if (pRdmDataIn[0] == E120_SC_RDM) {
-		const struct TRdmMessage *pRdmCommand = reinterpret_cast<const struct TRdmMessage*>(pRdmDataIn);
+		const auto *pRdmCommand = reinterpret_cast<const struct TRdmMessage*>(pRdmDataIn);
 
 		switch (pRdmCommand->command_class) {
 		case E120_DISCOVERY_COMMAND:
 		case E120_GET_COMMAND:
 		case E120_SET_COMMAND:
-			m_RDMHandler->HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(m_pRdmCommand));
+			m_pRDMHandler->HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(m_pRdmCommand));
 			return HandleResponse(reinterpret_cast<uint8_t*>(m_pRdmCommand));
 			break;
 		default:

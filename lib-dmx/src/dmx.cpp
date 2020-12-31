@@ -25,13 +25,18 @@
 
 #include <stdint.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
 #include "dmx.h"
+#include "rdm_send.h"
+
+Dmx *Dmx::s_pThis = nullptr;
 
 Dmx::Dmx(uint8_t nGpioPin, bool DoInit): m_IsInitDone(DoInit) {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 #ifndef NDEBUG
 	printf("Dmx::Dmx nGpioPin=%d, DoInit=%d\n", nGpioPin, DoInit);
 #endif
@@ -49,5 +54,24 @@ void Dmx::Init() {
 		dmx_init();
 		m_IsInitDone = true;
 	}
+}
+
+void Dmx::SetPortDirection(__attribute__((unused)) uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
+	assert(nPort == 0);
+
+	dmx_set_port_direction(static_cast<_dmx_port_direction>(tPortDirection), bEnableData);
+}
+
+void Dmx::RdmSendRaw(__attribute__((unused)) uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort == 0);
+
+	rdm_send_data(pRdmData, nLength);
+}
+
+const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint8_t nPort) {
+	assert(nPort == 0);
+
+	const auto *p = rdm_get_available();
+	return p;
 }
 

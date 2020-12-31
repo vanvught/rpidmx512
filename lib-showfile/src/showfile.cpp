@@ -200,16 +200,16 @@ void ShowFile::SetShowFileStatus(ShowFileStatus tShowFileStatus) {
 	switch (m_tShowFileStatus) {
 		case ShowFileStatus::IDLE:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			break;
 		case ShowFileStatus::RUNNING:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_DATA);
+			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 			break;
 		case ShowFileStatus::STOPPED:
 		case ShowFileStatus::ENDED:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
-			LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			break;
 		default:
 			break;

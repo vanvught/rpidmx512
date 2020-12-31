@@ -81,6 +81,6 @@ void RDMMessage::SetPd(const uint8_t *pd, uint8_t length) {
 
 }
 
-void RDMMessage::Send(uint8_t nPort) {
-	Rdm::Send(nPort, m_pRdmCommand);
+void RDMMessage::Send(uint8_t nPort, uint32_t nSpacingMicros) {
+	Rdm::Send(nPort, m_pRdmCommand, nSpacingMicros);
 }

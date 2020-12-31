@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,63 +32,129 @@
 
 #include <stdint.h>
 
-typedef enum {
-	GET_WIDGET_PARAMS = 3,						///< Get Widget Parameters Request
-	GET_WIDGET_PARAMS_REPLY = 3,				///< Get Widget Parameters Reply
-	SET_WIDGET_PARAMS = 4,						///< Set Widget Parameters Request
-	RECEIVED_DMX_PACKET = 5,					///< Received DMX Packet
-	OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST = 6,	///< Output Only Send DMX Packet Request
-	SEND_RDM_PACKET_REQUEST = 7,				///< Send RDM Packet Request
-	RECEIVE_DMX_ON_CHANGE = 8,					///< Receive DMX on Change
-	RECEIVED_DMX_COS_TYPE = 9,					///< Received DMX Change Of State Packet
-	GET_WIDGET_SN_REQUEST = 10,					///< Get Widget Serial Number Request
-	GET_WIDGET_SN_REPLY = 10,					///< Get Widget Serial Number Reply
-	SEND_RDM_DISCOVERY_REQUEST = 11,			///< Send RDM Discovery Request
-	RDM_TIMEOUT = 12,							///< https://github.com/OpenLightingProject/ola/blob/master/plugins/usbpro/EnttecUsbProWidget.cpp#L353
-	MANUFACTURER_LABEL = 77,					///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
-	GET_WIDGET_NAME_LABEL = 78					///< https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
-} _widget_codes;
+#include "dmx.h"
+#include "rdmdevice.h"
 
-typedef enum {
-	AMF_START_CODE = 0x7E,						///< Start of message delimiter
-	AMF_END_CODE = 0xE7							///< End of message delimiter
-} _application_message_format_codes;
+namespace widget {
+enum class Amf {
+	START_CODE = 0x7E,	///< Start of message delimiter
+	END_CODE = 0xE7		///< End of message delimiter
+};
 
-typedef enum {
-	SEND_ALWAYS = 0,							///< The widget will always send (default)
-	SEND_ON_DATA_CHANGE_ONLY = 1				///< Requests the Widget to send a DMX packet to the host only when the DMX values change on the input port
-} _widget_send_state;
+enum class SendState {
+	ALWAYS = 0,				///< The widget will always send (default)
+	ON_DATA_CHANGE_ONLY = 1	///< Requests the Widget to send a DMX packet to the host only when the DMX values change on the input port
+};
 
-typedef enum {
-	MODE_DMX_RDM = 0,							///< Both DMX (\ref FIRMWARE_NORMAL_DMX)and RDM (\ref FIRMWARE_RDM) firmware enabled.
-	MODE_DMX = 1,								///< DMX (\ref FIRMWARE_NORMAL_DMX) firmware enabled
-	MODE_RDM = 2,								///< RDM (\ref FIRMWARE_RDM) firmware enabled.
-	MODE_RDM_SNIFFER = 3						///< RDM Sniffer firmware enabled.
-} _widget_mode;
+enum class Mode {
+	DMX_RDM = 0,	///< Both DMX (FIRMWARE_NORMAL_DMX)and RDM (FIRMWARE_RDM) firmware enabled.
+	DMX = 1,		///< DMX (FIRMWARE_NORMAL_DMX) firmware enabled
+	RDM = 2,		///< RDM (FIRMWARE_RDM) firmware enabled.
+	RDM_SNIFFER = 3	///< RDM Sniffer firmware enabled.
+};
+}  // namespace widget
 
+struct TRdmStatistics {
+	uint32_t nDiscoveryPackets;
+	uint32_t nDiscoveryResponsePackets;
+	uint32_t nGetRequests;
+	uint32_t nSetRequests;
+};
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+class Widget: public Dmx, public RDMDevice {
+public:
+	Widget();
 
-extern _widget_send_state widget_get_receive_dmx_on_change(void);
-extern _widget_mode widget_get_mode(void);
-extern void widget_set_mode(_widget_mode);
-extern uint32_t widget_get_received_dmx_packet_period(void);
-extern void widget_set_received_dmx_packet_period(uint32_t);
-extern uint32_t widget_get_received_dmx_packet_count(void);
-// poll table
-extern void widget_receive_data_from_host(void);
-extern void widget_received_dmx_packet(void);
-extern void widget_received_dmx_change_of_state_packet(void);
-extern void widget_received_rdm_packet(void);
-extern void widget_rdm_timeout(void);
-extern void widget_sniffer_rdm(void);
-extern void widget_sniffer_dmx(void);
-extern void widget_sniffer_fill_transmit_buffer(void);
+	void Init() {
+		RDMDevice::Init();
+	}
 
-#ifdef __cplusplus
-}
-#endif
+	widget::SendState GetReceiveDmxOnChange() const {
+		return m_tReceiveDmxOnChange;
+	}
+
+	widget::Mode GetMode() const {
+		return m_tMode;
+	}
+
+	void SetMode(widget::Mode mode)  {
+		m_tMode = mode;
+	}
+
+	uint32_t GetReceivedDmxPacketPeriodMillis() const {
+		return m_nReceivedDmxPacketPeriodMillis;
+	}
+
+	void SetReceivedDmxPacketPeriodMillis(uint32_t period) {
+		m_nReceivedDmxPacketPeriodMillis = period;
+	}
+
+	uint32_t GetReceivedDmxPacketCount() const {
+		return m_nReceivedDmxPacketCount;
+	}
+
+	const struct TRdmStatistics *RdmStatisticsGet() const {
+		return &m_RdmStatistics;
+	}
+
+	void SnifferFillTransmitBuffer();
+
+	void Run() {
+		ReceiveDataFromHost();
+		ReceivedDmxPacket();
+		ReceivedDmxChangeOfStatePacket();
+		ReceivedRdmPacket();
+		RdmTimeout();
+		SnifferRdm();
+		SnifferDmx();
+	}
+
+	static Widget* Get() {
+		return s_pThis;
+	}
+
+private:
+	// Labels
+	void GetParamsReply();
+	void SetParams();
+	void GetNameReply();
+	void SendDmxPacketRequestOutputOnly(uint16_t nDataLength);
+	void SendRdmPacketRequest(uint16_t nDataLength);
+	void ReceiveDmxOnChange();
+	void GetSnReply();
+	void SendRdmDiscoveryRequest(uint16_t nDataLength);
+	void GetManufacturerReply();
+	void RdmTimeOutMessage();
+	// Run
+	void ReceiveDataFromHost();
+	void ReceivedDmxPacket();
+	void ReceivedDmxChangeOfStatePacket();
+	void ReceivedRdmPacket();
+	void RdmTimeout();
+	void SnifferRdm();
+	void SnifferDmx();
+	// USB
+	void SendMessage(uint8_t nLabel, const uint8_t *pData, uint16_t nLength);
+	void SendHeader(uint8_t nLabel, uint16_t nLength);
+	void SendData(const uint8_t *pData, uint16_t nLength);
+	void SendFooter();
+	//
+	void UsbSendPackage(const uint8_t *pData, uint16_t nStart, uint16_t nDdataLength);
+	bool UsbCanSend();
+
+private:
+#define WIDGET_DATA_BUFFER_SIZE		600
+	uint8_t m_aData[WIDGET_DATA_BUFFER_SIZE];	///< Message between widget and the USB host
+	widget::Mode m_tMode { widget::Mode::DMX_RDM };
+	widget::SendState m_tReceiveDmxOnChange { widget::SendState::ALWAYS };
+	uint32_t m_nReceivedDmxPacketPeriodMillis { 0 };
+	uint32_t m_nReceivedDmxPacketStartMillis { 0 };
+	uint32_t m_nSendRdmPacketStartMillis { 0 };
+	bool m_isRdmDiscoveryRunning { false };
+	uint32_t m_nReceivedDmxPacketCount { 0 };
+	struct TRdmStatistics m_RdmStatistics;
+
+	static Widget *s_pThis;
+};
 
 #endif /* WIDGET_H_ */

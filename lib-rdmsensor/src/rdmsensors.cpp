@@ -31,7 +31,7 @@
 #include "debug.h"
 
 #if defined (RDMSENSOR_CPU_ENABLE)
- #include "cputemperature.h"
+# include "cputemperature.h"
 #endif
 
 RDMSensors *RDMSensors::s_pThis = nullptr;

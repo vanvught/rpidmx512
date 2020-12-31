@@ -39,7 +39,7 @@
 # define RDMSENSOR_CPU_ENABLE
 #endif
 
-#if defined (RDMNET_LLRP_ONLY)
+#if defined (NODE_RDMNET_LLRP_ONLY)
 # undef RDM_SENSORS_ENABLE
 # undef RDMSENSOR_CPU_ENABLE
 #endif

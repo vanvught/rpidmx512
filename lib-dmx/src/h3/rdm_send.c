@@ -37,6 +37,9 @@
 void rdm_send_data(const uint8_t *data, uint16_t data_length) {
 	uint16_t i;
 
+	while (!(EXT_UART->LSR & UART_LSR_TEMT))
+		;
+
 	EXT_UART->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 	udelay(RDM_TRANSMIT_BREAK_TIME);
 

@@ -48,7 +48,7 @@ typedef union cast {
 
 static _cast uuid_cast;
 
-#define RECEIVE_TIME_OUT (2800*100) //TODO #define
+#define RECEIVE_TIME_OUT (2800U)
 
 RDMDiscovery::RDMDiscovery(uint8_t nPort) : m_nPort(nPort) {
 	m_UnMute.SetDstUid(UID_ALL);
@@ -78,17 +78,21 @@ const uint8_t *RDMDiscovery::GetUid() {
 void RDMDiscovery::Full() {
 	Reset();
 
+	Hardware::Get()->WatchdogFeed();
+
 	m_UnMute.Send(m_nPort);
-	m_UnMute.ReceiveTimeOut(m_nPort, 2800);
+	m_UnMute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
 	udelay(100000);
+	Hardware::Get()->WatchdogFeed();
 
 	m_UnMute.Send(m_nPort);
-	m_UnMute.ReceiveTimeOut(m_nPort, 2800);
+	m_UnMute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
 	udelay(100000);
+	Hardware::Get()->WatchdogFeed();
 
 	m_UnMute.Send(m_nPort);
 
@@ -241,7 +245,7 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 #endif
 
 	m_Mute.SetDstUid(uid);
-	m_Mute.Send(m_nPort);
+	m_Mute.Send(m_nPort, 5800);
 
 	auto *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
 
@@ -258,6 +262,8 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 	m_DiscUniqueBranch.Send(m_nPort);
 
 	pResponse = const_cast<uint8_t *>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+
+	Hardware::Get()->WatchdogFeed();
 
 	if ((pResponse != nullptr) && (IsValidDiscoveryResponse(pResponse, r_uid))) {
 		QuickFind(r_uid);

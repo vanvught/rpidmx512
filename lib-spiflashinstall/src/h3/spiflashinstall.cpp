@@ -84,7 +84,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 		Display::Get()->Write(1, spi_flash_get_name());
 	}
 
-	if (Hardware::Get()->GetBootDevice() == BOOT_DEVICE_MMC0) {
+	if (Hardware::Get()->GetBootDevice() == hardware::BootDevice::MMC0) {
 		DEBUG_PUTS("BOOT_DEVICE_MMC0");
 
 		SpiFlashInstallParams params;
@@ -130,7 +130,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 						puts("uImage too big");
 						Display::Get()->Write(2, "uImage too big");
 						Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
-						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+						LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 						for (;;) {
 							LedBlink::Get()->Run();
 						}
@@ -138,7 +138,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 
 					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
 						Display::Get()->TextStatus("Update UBoot SPI", Display7SegmentMessage::INFO_SPI_UPDATE);
-						LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+						LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 						const uint32_t now = Hardware::Get()->Millis();
 
 						while ((Hardware::Get()->Millis() - now) < 3000) {
@@ -147,14 +147,14 @@ SpiFlashInstall::SpiFlashInstall(void):
 
 						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
 							Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
-							LedBlink::Get()->SetMode(LEDBLINK_MODE_FAST);
+							LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 							for (;;) {
 								LedBlink::Get()->Run();
 							}
 						}
 
 					}
-					LedBlink::Get()->SetMode(LEDBLINK_MODE_NORMAL);
+					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 					// Temporarily code END
 
 					Process(aFileuImage, OFFSET_UIMAGE);

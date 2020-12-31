@@ -167,12 +167,7 @@ static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF,
 
 class Rdm {
 public:
-	Rdm();
-	~Rdm() {
-
-	}
-
-	static void Send(uint8_t nPort, struct TRdmMessage *);
+	static void Send(uint8_t nPort, struct TRdmMessage *, uint32_t nSpacingMicros = 0);
 	static void SendRaw(uint8_t nPort, const uint8_t *, uint16_t);
 
 	static void SendRawRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
@@ -184,11 +179,11 @@ public:
 public:
 #if defined(H3)
 	static uint8_t m_TransactionNumber[4];
+	static uint32_t m_nLastSendMicros[4];
 #else
 	static uint8_t m_TransactionNumber;
+	static uint32_t m_nLastSendMicros;
 #endif
-
-private:
 };
 
 #endif
