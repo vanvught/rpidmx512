@@ -41,6 +41,7 @@ PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress) {
 	SetFrequency(50);
 	CalcLeftCount();
 	CalcRightCount();
+	CalcCenterCount();
 }
 
 PCA9685Servo::~PCA9685Servo() {
@@ -48,6 +49,7 @@ PCA9685Servo::~PCA9685Servo() {
 
 void PCA9685Servo::SetLeftUs(uint16_t nLeftUs) {
 	assert(nLeftUs < m_nRightUs);
+	assert(nLeftUs < m_nCenterUs);
 
 	m_nLeftUs = nLeftUs;
 	CalcLeftCount();
@@ -58,7 +60,8 @@ uint16_t PCA9685Servo::GetLeftUs() const {
 }
 
 void PCA9685Servo::SetRightUs(uint16_t nRightUs) {
-	assert(nRightUs > m_nLeftUs);
+	assert(m_nLeftUs < nRightUs);
+	assert(m_nCenterUs < nRightUs);
 
 	m_nRightUs = nRightUs;
 	CalcRightCount();
@@ -68,12 +71,28 @@ uint16_t PCA9685Servo::GetRightUs() const {
 	return m_nRightUs;
 }
 
+void PCA9685Servo::SetCenterUs(uint16_t nCenterUs) {
+	assert(nCenterUs < m_nRightUs);
+	assert(m_nLeftUs < nCenterUs);
+
+	m_nCenterUs = nCenterUs;
+	CalcCenterCount();
+}
+
+uint16_t PCA9685Servo::GetCenterUs() const {
+	return m_nCenterUs;
+}
+
 void PCA9685Servo::CalcLeftCount() {
 	m_nLeftCount = (.5 + ((204.8 * m_nLeftUs) / 1000));
 }
 
 void PCA9685Servo::CalcRightCount() {
 	m_nRightCount = (.5 + ((204.8 * m_nRightUs) / 1000));
+}
+
+void PCA9685Servo::CalcCenterCount() {
+	m_nCenterCount = (.5 + ((204.8 * m_nCenterUs) / 1000));
 }
 
 void PCA9685Servo::Set(uint8_t nChannel, uint16_t nData) {
@@ -92,7 +111,7 @@ void PCA9685Servo::Set(uint8_t nChannel, uint8_t nData) {
 	if (nData == 0) {
 		Write(nChannel, m_nLeftCount);
 	} else if (nData == (MAX_8BIT + 1) / 2) {
-		Write(nChannel, MID_COUNT);
+		Write(nChannel, m_nCenterCount);
 	}  else if (nData == MAX_8BIT) {
 		Write(nChannel, m_nRightCount);
 	} else {
@@ -106,14 +125,14 @@ void PCA9685Servo::SetAngle(uint8_t nChannel, uint8_t nAngle) {
 	if (nAngle == 0) {
 		Write(nChannel, m_nLeftCount);
 	} else if (nAngle == 90) {
-		Write(nChannel, MID_COUNT);
+		Write(nChannel, m_nCenterCount);
 	}  else if (nAngle >= 180) {
 		Write(nChannel, m_nRightCount);
 	} else if (nAngle < 90) {
-		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((MID_COUNT - m_nLeftCount)) / 90) * nAngle);
+		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((m_nCenterCount - m_nLeftCount)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	} else {
-		const uint16_t nCount = (2 * MID_COUNT) - m_nRightCount + (.5 + (static_cast<float>((m_nRightCount - MID_COUNT)) / 90) * nAngle);
+		const uint16_t nCount = (2 * m_nCenterCount) - m_nRightCount + (.5 + (static_cast<float>((m_nRightCount - m_nCenterCount)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	}
 }
