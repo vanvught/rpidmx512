@@ -2,7 +2,7 @@
  * @file ws28xxdmxstartstop.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +31,24 @@
 #include "h3_gpio.h"
 #include "board/h3_opi_zero.h"
 
+#define GPIO_START_STOP		GPIO_EXT_12
+
 class WS28xxDmxStartSop final: public LightSetHandler {
 public:
 	WS28xxDmxStartSop() {
-		h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_OUTPUT);
-		h3_gpio_clr(GPIO_EXT_26);
+		h3_gpio_fsel(GPIO_START_STOP, GPIO_FSEL_OUTPUT);
+		h3_gpio_clr(GPIO_START_STOP);
 	}
 
 	~WS28xxDmxStartSop() override {
 	}
 
 	void Start() override {
-		h3_gpio_set(GPIO_EXT_26);
+		h3_gpio_set(GPIO_START_STOP);
 	}
 
 	void Stop() override {
-		h3_gpio_clr(GPIO_EXT_26);
+		h3_gpio_clr(GPIO_START_STOP);
 	}
 };
 
