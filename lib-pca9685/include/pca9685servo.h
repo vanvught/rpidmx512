@@ -47,6 +47,9 @@ public:
 	void SetRightUs(uint16_t);
 	uint16_t GetRightUs() const;
 
+	void SetCenterUs(uint16_t);
+	uint16_t GetCenterUs() const;
+
 	void Set(uint8_t nChannel, uint16_t nData);
 	void Set(uint8_t nChannel, uint8_t nData);
 
@@ -55,12 +58,15 @@ public:
 private:
 	void CalcLeftCount();
 	void CalcRightCount();
+	void CalcCenterCount();
 
 private:
 	uint16_t m_nLeftUs{SERVO_LEFT_DEFAULT_US};
 	uint16_t m_nRightUs{SERVO_RIGHT_DEFAULT_US};
+	uint16_t m_nCenterUs{SERVO_CENTER_DEFAULT_US};
 	uint16_t m_nLeftCount;
 	uint16_t m_nRightCount;
+	uint16_t m_nCenterCount;
 };
 
 #endif /* PCA9685SERVO_H_ */
