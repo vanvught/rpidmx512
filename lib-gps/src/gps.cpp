@@ -2,7 +2,7 @@
  * @file gps.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,7 +91,7 @@ uint32_t GPS::GetTag(const char *pTag) {
 }
 
 int32_t GPS::ParseDecimal(const char *p, uint32_t &nLength) {
-	const bool bIsNegative = (*p == '-');
+	const auto bIsNegative = (*p == '-');
 
 	nLength = bIsNegative ? 1 : 0;
 	int32_t nValue = 0;
@@ -122,10 +122,6 @@ void GPS::SetTime(int32_t nTime) {
 		nTime /= 100;
 		m_Tm.tm_min = nTime % 100;
 		m_Tm.tm_hour = nTime / 100;
-
-#ifndef NDEBUG
-//	printf("%.2d:%.2d:%.2d\n", m_Tm.tm_hour, m_Tm.tm_min, m_Tm.tm_sec);
-#endif
 	}
 }
 
@@ -138,10 +134,6 @@ void GPS::SetDate(int32_t nDate) {
 		nDate /= 100;
 		m_Tm.tm_mon = (nDate % 100) - 1;	// The number of months since January, in the range 0 to 11.
 		m_Tm.tm_mday = nDate / 100;			// The day of the month, in the range 1 to 31.
-
-#ifndef NDEBUG
-//	printf("%.2d/%.2d/%.2d\n", m_Tm.tm_mday, 1 + m_Tm.tm_mon, 1900 + m_Tm.tm_year);
-#endif
 	}
 }
 
@@ -152,6 +144,7 @@ void GPS::Start() {
 
 	if (m_tModule < GPSModule::UNDEFINED) {
 		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
+		udelay(100*1000);
 		UartSetBaud(115200);
 
 		const uint32_t nMillis = Hardware::Get()->Millis();

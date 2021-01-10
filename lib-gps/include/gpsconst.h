@@ -2,7 +2,7 @@
  * @file gpsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,25 +27,24 @@
 #include <stdint.h>
 
 namespace gps {
-namespace nmea{
+namespace nmea {
 static constexpr uint32_t MAX_SENTENCE_LENGTH = 82;	///< including the $ and <CR><LF>
 static constexpr char START_DELIMITER = '$';		///< The start delimiter is normally '$' (ASCII 36)
 }  // namespace nmea
 namespace module {
-static constexpr auto MAX_NAME_LENGTH = 8 + 1;  	// + '\0'
+static constexpr auto MAX_NAME_LENGTH = 15 + 1;  	// + '\0'
 }  // namespace module
 }  // namespace gps
 
 enum class GPSModule {
 	ATGM336H,
-//	UBLOX,
-//	ADAFRUIT,
+	UBLOX_NEO,
+	MTK3339,
 	UNDEFINED
 };
 
 struct GPSConst {
 	static const char MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][gps::module::MAX_NAME_LENGTH];
-
 	static const char BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][gps::nmea::MAX_SENTENCE_LENGTH];
 };
 

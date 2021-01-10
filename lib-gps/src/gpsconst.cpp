@@ -2,7 +2,7 @@
  * @file gpsconst.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,14 @@
 
 using namespace gps;
 
-const char GPSConst::MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][module::MAX_NAME_LENGTH] = {
-		"ATGM336H",
-//		"ublox",
-//		"Adafruit"
-};
+const char GPSConst::MODULE[static_cast<unsigned>(GPSModule::UNDEFINED)][module::MAX_NAME_LENGTH] =
+		{ "ATGM336H",
+		  "ublox-NEO7",
+		  "MTK3339"
+		};
 
-const char GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] = {
-		"$PCAS01,5*19\r\n",
-//		"$,*00\r\n",
-//		"$,*00\r\n"
-};
+const char GPSConst::BAUD_115200[static_cast<unsigned>(GPSModule::UNDEFINED)][nmea::MAX_SENTENCE_LENGTH] =
+		{ "$PCAS01,5*19\r\n",
+		  "$PUBX,41,1,0007,0003,115200,0*18\r\n",
+		  "$PMTK251,115200*1F\r\n"
+		};
