@@ -2,7 +2,7 @@
  * @file dmx_multi_internal.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,11 +38,11 @@
  * 3	UART0
  */
 
-inline static uint32_t _port_to_uart(uint32_t port) {
-	assert(port < DMX_MAX_UARTS);
+inline static uint32_t _port_to_uart(uint32_t nPort) {
+	assert(nPort < DMX_MAX_UARTS);
 
-	if (port < 3) {
-		return port + 1;
+	if (nPort < 3) {
+		return nPort + 1;
 	}
 
 	return 0;
@@ -50,8 +50,8 @@ inline static uint32_t _port_to_uart(uint32_t port) {
 
 #include "h3.h"
 
-inline static H3_UART_TypeDef * _get_uart(uint32_t uart) {
-	switch (uart) {
+inline static H3_UART_TypeDef * _get_uart(uint32_t nUart) {
+	switch (nUart) {
 	case 0:
 		return H3_UART0;
 		break;

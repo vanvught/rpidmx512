@@ -2,7 +2,7 @@
  * @file dmxmulti.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,8 @@ public:
 
 private:
 	void ClearData(uint32_t uart);
-	void UartEnableFifo(uint32_t uart);
-	void UartDisableFifo(uint32_t uart);
+	void UartEnableFifoTx(uint32_t uart);
+	void UartEnableFifoRx(uint32_t uart);
 	void StartData(uint32_t uart);
 	void StopData(uint32_t uart);
 

@@ -2,7 +2,7 @@
  * @file dmxmulti.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -147,10 +147,12 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		if (s_UartState[2] == UartState::TX) {
 			H3_UART2->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
+
 #if defined (ORANGE_PI_ONE)
 		if (s_UartState[3] == UartState::TX) {
 			H3_UART3->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
+
 # ifndef DO_NOT_USE_UART0
 		if (s_UartState[0] == UartState::TX) {
 			H3_UART0->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
@@ -171,6 +173,7 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 			s_pCoherentRegion->lli[2].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].data[0]);
 			s_pCoherentRegion->lli[2].len = s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].nLength;
 		}
+
 #if defined (ORANGE_PI_ONE)
 		if (s_nDmxDataWriteIndex[3] != s_nDmxDataReadIndex[3]) {
 			s_nDmxDataReadIndex[3] = (s_nDmxDataReadIndex[3] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -178,6 +181,7 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 			s_pCoherentRegion->lli[3].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].data[0]);
 			s_pCoherentRegion->lli[3].len = s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].nLength;
 		}
+
 # ifndef DO_NOT_USE_UART0
 		if (s_nDmxDataWriteIndex[0] != s_nDmxDataReadIndex[0]) {
 			s_nDmxDataReadIndex[0] = (s_nDmxDataReadIndex[0] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -283,19 +287,25 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 #endif
 }
 
-static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
-	uint16_t index;
+static void fiq_rdm_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, __attribute__((unused))  const uint32_t nIIR) {
+	uint16_t nIndex;
 
 	isb();
 
-	if (u->LSR & UART_LSR_BI) {
+	if (pUart->LSR & UART_LSR_BI) {
 		s_tRdmReceiveState[nUart] = TxRxState::PRE_BREAK;
-	} else {
-		const uint8_t data = u->O00.RBR;
+	}
+
+	auto nRFL = pUart->RFL;
+
+	while(nRFL--) {
+		while ((pUart->LSR & UART_LSR_DR) != UART_LSR_DR)
+			;
+		const uint8_t nData = pUart->O00.RBR;
 
 		switch (s_tRdmReceiveState[nUart]) {
 		case TxRxState::IDLE:
-			if (data == 0xFE) {
+			if (nData == 0xFE) {
 				s_pRdmDataCurrent[nUart]->data[0] = 0xFE;
 				s_pRdmDataCurrent[nUart]->nIndex = 1;
 
@@ -306,7 +316,7 @@ static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
 			s_tRdmReceiveState[nUart] = TxRxState::BREAK;
 			break;
 		case TxRxState::BREAK:
-			switch (data) {
+			switch (nData) {
 			case E120_SC_RDM:
 				s_pRdmDataCurrent[nUart]->data[0] = E120_SC_RDM;
 				s_pRdmDataCurrent[nUart]->nChecksum = E120_SC_RDM;
@@ -323,11 +333,11 @@ static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
 			if (s_pRdmDataCurrent[nUart]->nIndex > RDM_DATA_BUFFER_SIZE) {
 				s_tRdmReceiveState[nUart] = TxRxState::IDLE;
 			} else {
-				index = s_pRdmDataCurrent[nUart]->nIndex;
-				s_pRdmDataCurrent[nUart]->data[index] = data;
+				nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+				s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 				s_pRdmDataCurrent[nUart]->nIndex++;
 
-				s_pRdmDataCurrent[nUart]->nChecksum += data;
+				s_pRdmDataCurrent[nUart]->nChecksum += nData;
 
 				const auto *p = reinterpret_cast<struct _rdm_command *>(&s_pRdmDataCurrent[nUart]->data[0]);
 
@@ -337,26 +347,25 @@ static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
 			}
 			break;
 		case TxRxState::CHECKSUMH:
-			index = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[index] = data;
+			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
-			s_pRdmDataCurrent[nUart]->nChecksum -= data << 8;
+			s_pRdmDataCurrent[nUart]->nChecksum -= nData << 8;
 
 			s_tRdmReceiveState[nUart] = TxRxState::CHECKSUML;
 			break;
 		case TxRxState::CHECKSUML: {
-			index = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[index] = data;
+			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
-			s_pRdmDataCurrent[nUart]->nChecksum -= data;
+			s_pRdmDataCurrent[nUart]->nChecksum -= nData;
 
 			const auto *p = reinterpret_cast<struct _rdm_command *>(&s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].data[0]);
 
 			if ((s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].nChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				dmb();
 				s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
 			}
 
@@ -364,19 +373,19 @@ static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
 		}
 			break;
 		case TxRxState::RDMDISCFE:
-			index = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[index] = data;
+			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
-			if ((data == 0xAA) || (s_pRdmDataCurrent[nUart]->nIndex == 9)) {
+			if ((nData == 0xAA) || (s_pRdmDataCurrent[nUart]->nIndex == 9)) {
 				s_pRdmDataCurrent[nUart]->nDiscIndex = 0;
 
 				s_tRdmReceiveState[nUart] = TxRxState::RDMDISCEUID;
 			}
 			break;
 		case TxRxState::RDMDISCEUID:
-			index = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[index] = data;
+			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
 			s_pRdmDataCurrent[nUart]->nDiscIndex++;
@@ -388,15 +397,14 @@ static void fiq_rdm_in_handler(uint32_t nUart, const H3_UART_TypeDef *u) {
 			}
 			break;
 		case TxRxState::RDMDISCECS:
-			index = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[index] = data;
+			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
+			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
 			s_pRdmDataCurrent[nUart]->nDiscIndex++;
 
 			if (s_pRdmDataCurrent[nUart]->nDiscIndex == 4) {
 				s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				dmb();
 				s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
 
 				s_tRdmReceiveState[nUart] = TxRxState::IDLE;
@@ -453,26 +461,32 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 		}
 	}
 
-	// Single 'threaded', there is just a single RDM process
-
-	if (H3_UART1->O08.IIR & UART_IIR_IID_RD) {
-		fiq_rdm_in_handler(1, reinterpret_cast<H3_UART_TypeDef *>(H3_UART1_BASE));
+	auto nIIR = H3_UART1->O08.IIR;
+	if (nIIR & UART_IIR_IID_RD) {
+		fiq_rdm_in_handler(1, reinterpret_cast<H3_UART_TypeDef *>(H3_UART1_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART1_IRQn;
 		gic_unpend(H3_UART1_IRQn);
-	} else if (H3_UART2->O08.IIR & UART_IIR_IID_RD) {
-		fiq_rdm_in_handler(2, reinterpret_cast<H3_UART_TypeDef *>(H3_UART2_BASE));
+	}
+
+	nIIR = H3_UART2->O08.IIR;
+	if (nIIR & UART_IIR_IID_RD) {
+		fiq_rdm_in_handler(2, reinterpret_cast<H3_UART_TypeDef *>(H3_UART2_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART2_IRQn;
 		gic_unpend(H3_UART2_IRQn);
 	}
+
 #if defined (ORANGE_PI_ONE)
-	else if (H3_UART3->O08.IIR & UART_IIR_IID_RD) {
-		fiq_rdm_in_handler(3, reinterpret_cast<H3_UART_TypeDef *>(H3_UART3_BASE));
+	nIIR = H3_UART3->O08.IIR;
+	if (nIIR & UART_IIR_IID_RD) {
+		fiq_rdm_in_handler(3, reinterpret_cast<H3_UART_TypeDef *>(H3_UART3_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART3_IRQn;
 		gic_unpend(H3_UART3_IRQn);
 	}
+
 # ifndef DO_NOT_USE_UART0
-	else if (H3_UART0->O08.IIR & UART_IIR_IID_RD) {
-		fiq_rdm_in_handler(0, reinterpret_cast<H3_UART_TypeDef *>(H3_UART0_BASE));
+	nIIR = H3_UART0->O08.IIR;
+	if (nIIR & UART_IIR_IID_RD) {
+		fiq_rdm_in_handler(0, reinterpret_cast<H3_UART_TypeDef *>(H3_UART0_BASE), nIIR);
 		H3_GIC_CPUIF->EOI = H3_UART0_IRQn;
 		gic_unpend(H3_UART0_IRQn);
 	}
@@ -592,12 +606,12 @@ DmxMulti::DmxMulti() {
 
 	s_tDmxSendState = TxRxState::IDLE;
 
-	UartEnableFifo(1);
-	UartEnableFifo(2);
+	UartEnableFifoTx(1);
+	UartEnableFifoTx(2);
 #if defined (ORANGE_PI_ONE)
-	UartEnableFifo(3);
+	UartEnableFifoTx(3);
 # ifndef DO_NOT_USE_UART0
-	UartEnableFifo(0);
+	UartEnableFifoTx(0);
 # endif
 #endif
 
@@ -781,24 +795,24 @@ const uint8_t *DmxMulti::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	return p;
 }
 
-void DmxMulti::UartEnableFifo(uint32_t nUart) {	// DMX TX
-	auto *p = _get_uart(nUart);
-	assert(p != nullptr);
+void DmxMulti::UartEnableFifoTx(uint32_t nUart) {	// DMX TX
+	auto *pUart = _get_uart(nUart);
+	assert(pUart != nullptr);
 
-	if (p != nullptr) {
-		p->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
-		p->O04.IER = 0;
+	if (pUart != nullptr) {
+		pUart->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
+		pUart->O04.IER = 0;
 		isb();
 	}
 }
 
-void DmxMulti::UartDisableFifo(uint32_t nUart) {	// RDM RX
-	auto *p = _get_uart(nUart);
-	assert(p != nullptr);
+void DmxMulti::UartEnableFifoRx(uint32_t nUart) {	// RDM RX
+	auto *pUart = _get_uart(nUart);
+	assert(pUart != nullptr);
 
-	if (p != nullptr) {
-		p->O08.FCR = 0;
-		p->O04.IER = UART_IER_ERBFI;
+	if (pUart != nullptr) {
+		pUart->O08.FCR = UART_FCR_EFIFO | UART_FCR_RRESET | UART_FCR_TRIG1;
+		pUart->O04.IER = UART_IER_ERBFI;
 		isb();
 	}
 }
@@ -821,7 +835,7 @@ void DmxMulti::StartData(uint32_t nUart) {
 
 	switch (m_tDmxPortDirection[nUart]) {
 	case DMX_PORT_DIRECTION_OUTP:
-		UartEnableFifo(nUart);
+		UartEnableFifoTx(nUart);
 		dmb();
 		s_UartState[nUart] = UartState::TX;
 		break;
@@ -836,7 +850,7 @@ void DmxMulti::StartData(uint32_t nUart) {
 				;
 		}
 
-		UartDisableFifo(nUart);
+		UartEnableFifoRx(nUart);
 		dmb();
 		s_UartState[nUart] = UartState::RX;
 		break;
@@ -856,15 +870,15 @@ void DmxMulti::StopData(uint32_t nUart) {
 	}
 
 	if (m_tDmxPortDirection[nUart] == DMXRDM_PORT_DIRECTION_OUTP) {
-		auto *p = _get_uart(nUart);
-		assert(p != nullptr);
+		auto *pUart = _get_uart(nUart);
+		assert(pUart != nullptr);
 
 		auto IsIdle = false;
 
 		do {
 			dmb();
 			if (s_tDmxSendState == TxRxState::DMXINTER) {
-				while (!(p->USR & UART_USR_TFE))
+				while (!(pUart->USR & UART_USR_TFE))
 					;
 				IsIdle = true;
 			}

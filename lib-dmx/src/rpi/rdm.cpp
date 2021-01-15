@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include "rdm.h"
 #include "dmx.h"
 
-#include "rdm_send.h"
+#include "arm/pl011.h"
 
 uint8_t Rdm::m_TransactionNumber = 0;
 uint32_t Rdm::m_nLastSendMicros = 0;
@@ -82,29 +82,66 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != 0);
 	assert(nLength != 0);
 
-	dmx_set_port_direction(DMX_PORT_DIRECTION_OUTP, false);
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
 
-	rdm_send_data(reinterpret_cast<const uint8_t*>(pRdmData), nLength);
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2 | PL011_LCRH_BRK;
+	udelay(RDM_TRANSMIT_BREAK_TIME);	// Break Time
+
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+	udelay(RDM_TRANSMIT_MAB_TIME);		// Mark After Break
+
+	for (uint16_t i = 0; i < nLength; i++) {
+		while ((BCM2835_PL011->FR & PL011_FR_TXFF) == PL011_FR_TXFF) {
+		}
+		BCM2835_PL011->DR = pRdmData[i];
+	}
+
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
+		;
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	dmx_set_port_direction(DMX_PORT_DIRECTION_INP, true);
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
 }
 
 void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != 0);
 	assert(nLength != 0);
 
-	const uint32_t delay = BCM2835_ST->CLO - rdm_get_data_receive_end();
+	const uint32_t nDelay = BCM2835_ST->CLO - rdm_get_data_receive_end();
 
 	// 3.2.2 Responder Packet spacing
-	if (delay < RDM_RESPONDER_PACKET_SPACING) {
-		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
+	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
+		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
 	SendRaw(nPort, pRdmData, nLength);
 }
 
-void Rdm::SendDiscoveryRespondMessage(const uint8_t *data, uint16_t data_length) {
-	rdm_send_discovery_respond_message(data, data_length);
+void Rdm::SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	const uint32_t nDelay = BCM2835_ST->CLO - rdm_get_data_receive_end();
+
+	// 3.2.2 Responder Packet spacing
+	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
+		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
+	}
+
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
+
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
+
+	for (uint16_t i = 0; i < nLength; i++) {
+		while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
+			;
+		BCM2835_PL011->DR = pRdmData[i];
+	}
+
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
+		;
+
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
 }

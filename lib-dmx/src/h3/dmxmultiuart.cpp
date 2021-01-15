@@ -36,12 +36,12 @@
 
 #include "arm/synchronize.h"
 
-void DmxMulti::UartInit(uint32_t uart) {
-	assert(uart < DMX_MAX_OUT);
+void DmxMulti::UartInit(uint32_t nUart) {
+	assert(nUart < DMX_MAX_OUT);
 
-	H3_UART_TypeDef *p = 0;
+	H3_UART_TypeDef *p = nullptr;
 
-	if (uart == 1) {
+	if (nUart == 1) {
 		p = reinterpret_cast<H3_UART_TypeDef *>(H3_UART1_BASE);
 
 		uint32_t value = H3_PIO_PORTG->CFG0;
@@ -55,7 +55,7 @@ void DmxMulti::UartInit(uint32_t uart) {
 
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	} else if (uart == 2) {
+	} else if (nUart == 2) {
 		p = reinterpret_cast<H3_UART_TypeDef *>(H3_UART2_BASE);
 
 		uint32_t value = H3_PIO_PORTA->CFG0;
@@ -71,7 +71,7 @@ void DmxMulti::UartInit(uint32_t uart) {
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART2;
 	}
 #if defined (ORANGE_PI_ONE)
-	else if (uart == 3) {
+	else if (nUart == 3) {
 		p = reinterpret_cast<H3_UART_TypeDef *>(H3_UART3_BASE);
 
 		uint32_t value = H3_PIO_PORTA->CFG1;
@@ -86,8 +86,8 @@ void DmxMulti::UartInit(uint32_t uart) {
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
 	}
-#ifndef DO_NOT_USE_UART0
-	else if (uart == 0) {
+# ifndef DO_NOT_USE_UART0
+	else if (nUart == 0) {
 		p = reinterpret_cast<H3_UART_TypeDef *>(H3_UART0_BASE);
 
 		uint32_t value = H3_PIO_PORTA->CFG0;
@@ -102,11 +102,8 @@ void DmxMulti::UartInit(uint32_t uart) {
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART0;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
 	}
+# endif
 #endif
-#endif
-	else {
-		assert(0);
-	}
 
 	assert(p != nullptr);
 

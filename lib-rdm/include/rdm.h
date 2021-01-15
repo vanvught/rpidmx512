@@ -171,7 +171,7 @@ public:
 	static void SendRaw(uint8_t nPort, const uint8_t *, uint16_t);
 
 	static void SendRawRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
-	static void SendDiscoveryRespondMessage(const uint8_t *, uint16_t);
+	static void SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
 
 	static const uint8_t *Receive(uint8_t nPort);
 	static const uint8_t *ReceiveTimeOut(uint8_t nPort, uint32_t);

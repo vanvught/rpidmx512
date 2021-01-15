@@ -1,5 +1,5 @@
 # Library DMX512 / RDM
-## Open Source Baremetal C/C++
+## Open Source Baremetal C++
 
 Supported boards:
 

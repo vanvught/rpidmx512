@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,13 @@
 #include <cassert>
 
 #include "dmx.h"
-
+#include "dmx_multi_internal.h"
 #include "rdm.h"
-#include "rdm_send.h"
 
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
+
+#include "uart.h"
 
 #include "debug.h"
 
@@ -48,8 +49,6 @@ const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 }
 
 void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
-	DEBUG_ENTRY
-
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmCommand != nullptr);
 
@@ -81,13 +80,9 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacing
 	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 	m_TransactionNumber[nPort]++;
-
-	DEBUG_EXIT
 }
 
 void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
-	DEBUG_ENTRY
-
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
@@ -99,28 +94,45 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
 	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
-
-	DEBUG_EXIT
 }
 
 void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const uint32_t delay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
+	const uint32_t nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
 
 	// 3.2.2 Responder Packet spacing
-	if (delay < RDM_RESPONDER_PACKET_SPACING) {
-		udelay(RDM_RESPONDER_PACKET_SPACING - delay);
+	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
+		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
 	SendRaw(nPort, pRdmData, nLength);
 }
 
-void Rdm::SendDiscoveryRespondMessage(const uint8_t *data, uint16_t data_length) {
-	DEBUG_ENTRY
+void Rdm::SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	const uint32_t nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
 
-	rdm_send_discovery_respond_message(data, data_length);
+	// 3.2.2 Responder Packet spacing
+	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
+		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
+	}
 
-	DEBUG_EXIT
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_OUTP, false);
+
+	auto *p = _get_uart(_port_to_uart(nPort));
+	p->LCR = UART_LCR_8_N_2;
+
+	for (uint16_t i = 0; i < nLength; i++) {
+		while (!(p->LSR & UART_LSR_THRE))
+				;
+		EXT_UART->O00.THR = pRdmData[i];
+	}
+
+	while (!((p->LSR & UART_LSR_TEMT) == UART_LSR_TEMT))
+		;
+
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
+	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
 }

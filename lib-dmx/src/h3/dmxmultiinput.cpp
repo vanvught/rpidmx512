@@ -2,7 +2,7 @@
  * @file dmx_multiinput.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -283,8 +283,6 @@ void DmxMultiInput::StopData(uint32_t nPort) {
 }
 
 DmxMultiInput::DmxMultiInput() {
-	uint32_t i;
-
 	// 0 = input, 1 = output
 	h3_gpio_fsel(GPIO_DMX_DATA_DIRECTION_OUT_B, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_DMX_DATA_DIRECTION_OUT_B);
@@ -314,7 +312,7 @@ DmxMultiInput::DmxMultiInput() {
 	h3_gpio_clr(GPIO_ANALYZER_CH7);
 #endif
 
-	for (i = 0; i < DMX_MAX_IN; i++) {
+	for (uint32_t i = 0; i < DMX_MAX_IN; i++) {
 		s_nDmxDataBufferIndexHead[i] = 0;
 		s_nDmxDataBufferIndexTail[i] = 0;
 
