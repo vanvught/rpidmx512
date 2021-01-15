@@ -73,6 +73,8 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 void WS28xxDmxMulti::Initialize() {
 	assert(m_pLEDStripe != nullptr);
 
+	DEBUG_PRINTF("m_tLedType=%d", m_tLedType);
+
 	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
 
 	while (m_pLEDStripe->IsUpdating()) {

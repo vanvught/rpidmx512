@@ -53,7 +53,7 @@ public:
 
 	void Blackout(bool bBlackout);
 
-	virtual void SetLEDType(TWS28XXType tWS28xxMultiType);
+	void SetLEDType(TWS28XXType tWS28xxMultiType);
 	TWS28XXType GetLEDType() {
 		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetLEDType();

@@ -2,7 +2,7 @@
  * @file ws28xxparams.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,6 @@
 # include <stdio.h>
 #endif
 #include <cassert>
-
-#ifndef ALIGNED
-# define ALIGNED __attribute__ ((aligned (4)))
-#endif
 
 #include "ws28xxdmxparams.h"
 

@@ -60,10 +60,9 @@ WS28xxMulti::~WS28xxMulti() {
 
 void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, __attribute__((unused)) TRGBMapping tRGBMapping, __attribute__((unused)) uint8_t nT0H, __attribute__((unused)) uint8_t nT1H, bool bUseSI5351A) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
-	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping	, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
-
 	assert(nLedCount > 0);
+
+	m_tWS28xxType = tWS28xxType;
 
 	for (uint32_t i = 0; i < sizeof(s_NotSupported) / sizeof(s_NotSupported[0]) ; i++) {
 		if (tWS28xxType == s_NotSupported[i]) {
@@ -71,6 +70,9 @@ void WS28xxMulti::Initialize(TWS28XXType tWS28xxType, uint16_t nLedCount, __attr
 			break;
 		}
 	}
+
+	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
+	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping	, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	if (m_tRGBMapping == RGB_MAPPING_UNDEFINED) {
 		m_tRGBMapping = WS28xx::GetRgbMapping(m_tWS28xxType);
