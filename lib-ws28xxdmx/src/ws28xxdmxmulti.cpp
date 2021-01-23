@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,8 +135,17 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
+	uint8_t nSwitch = nPortId & static_cast<uint8_t>(~m_nUniverses) & 0x03;
 
-	switch (nPortId & ~static_cast<uint8_t>(m_nUniverses) & 0x03) {
+	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
+		if (m_nUniverses != 1) {
+			nSwitch /= (m_nUniverses - 1);
+		} else {
+			nSwitch = 0;
+		}
+	}
+
+	switch (nSwitch) {
 	case 0:
 		beginIndex = 0;
 		endIndex = std::min(m_nLedCount, (nLength / m_nChannelsPerLed));
@@ -166,9 +175,9 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 		nOutIndex = nPortId / 4;
 	}
 
-	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nPortId=%d, beginIndex=%d, endIndex=%d",
+	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nSwitch=%d, beginIndex=%d, endIndex=%d",
 			static_cast<int>(nPortId), static_cast<int>(nLength), static_cast<int>(nOutIndex),
-			static_cast<int>(nPortId & ~m_nUniverses & 0x03), static_cast<int>(beginIndex), static_cast<int>(endIndex));
+			static_cast<int>(nSwitch), static_cast<int>(beginIndex), static_cast<int>(endIndex));
 
 	while (m_pLEDStripe->IsUpdating()) {
 		// wait for completion
