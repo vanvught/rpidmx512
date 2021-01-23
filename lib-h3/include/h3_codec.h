@@ -2,7 +2,7 @@
  * @file h3_codec.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+extern void h3_codec_set_volume(uint8_t volume);
 
 extern void h3_codec_begin(void);
 

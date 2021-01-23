@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ struct TLtcParams {
 	uint32_t nSetList;
 	uint8_t tSource;
 	uint8_t nAutoStart;
-	uint8_t nReserved2;
+	uint8_t nVolume;
 	uint8_t nDisabledOutputs;
 	uint8_t nShowSysTime;
 	uint8_t nDisableTimeSync;
@@ -71,7 +71,7 @@ static_assert(sizeof(struct TLtcParams) <= 32, "struct TLtcParams is too large")
 struct LtcParamsMask {
 	static constexpr auto SOURCE = (1U << 0);
 	static constexpr auto AUTO_START = (1U << 1);
-	static constexpr auto RESERVED2 = (1U << 2);
+	static constexpr auto VOLUME = (1U << 2);
 	static constexpr auto DISABLED_OUTPUTS = (1U << 3);
 	static constexpr auto SHOW_SYSTIME = (1U << 4);
 	static constexpr auto DISABLE_TIMESYNC = (1U << 5);
@@ -119,14 +119,18 @@ public:
 
 	void Dump();
 
-	ltc::source GetSource() {
+	ltc::source GetSource() const {
 		return static_cast<ltc::source>(m_tLtcParams.tSource);
 	}
 
 	const char *GetSourceType(ltc::source tSource);
 	ltc::source GetSourceType(const char *pType);
 
-	bool IsAutoStart() {
+	uint8_t GetVolume() const {
+		return m_tLtcParams.nVolume;
+	}
+
+	bool IsAutoStart() const {
 		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LtcParamsMask::AUTO_START));
 	}
 

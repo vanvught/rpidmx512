@@ -152,7 +152,7 @@ enum H3_PG_SELECT {
 extern "C" {
 #endif
 
-extern void h3_gpio_fsel(uint32_t gpio, gpio_fsel_t fsel);
+extern void h3_gpio_fsel(uint32_t gpio, uint32_t fsel);
 extern void h3_gpio_pud(uint32_t gpio, gpio_pull_t pull);
 extern void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg);
 

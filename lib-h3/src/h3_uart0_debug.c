@@ -46,7 +46,7 @@ static void uart_gpio_init(void) {
 	value &= (uint32_t)~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
 	value |= H3_PA5_SELECT_UART0_RX << PA5_SELECT_CFG0_SHIFT;
 	H3_PIO_PORTA->CFG0 = value;
-	// Pin 5, RX, Pull-up
+	// Pin RX, Pull-up
 	value = H3_PIO_PORTA->PUL0;
 	value &= (uint32_t)~(GPIO_PULL_MASK << H3_PA5_PULL0_SHIFT);
 	value |= GPIO_PULL_UP << H3_PA5_PULL0_SHIFT;

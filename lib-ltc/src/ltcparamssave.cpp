@@ -86,6 +86,9 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::ALT_FUNCTION, m_tLtcParams.nAltFunction, isMaskSet(LtcParamsMask::ALT_FUNCTION));
 	builder.Add(LtcParamsConst::SKIP_SECONDS, m_tLtcParams.nSkipSeconds, isMaskSet(LtcParamsMask::SKIP_SECONDS));
 
+	builder.AddComment("LTC output");
+	builder.Add(LtcParamsConst::VOLUME, m_tLtcParams.nVolume, isMaskSet(LtcParamsMask::VOLUME));
+
 	builder.AddComment("NTP Server");
 	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LtcParamsMask::ENABLE_NTP));
 	builder.Add(LtcParamsConst::YEAR, m_tLtcParams.nYear, isMaskSet(LtcParamsMask::YEAR));

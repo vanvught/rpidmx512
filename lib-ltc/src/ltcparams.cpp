@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@
 
 using namespace ltc;
 
+static constexpr auto VOLUME_0DBV = 28;
+
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	memset(&m_tLtcParams, 0, sizeof(struct TLtcParams));
 
@@ -50,6 +52,7 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	const struct tm *tm = localtime(&ltime);
 
 	m_tLtcParams.tSource = source::LTC;
+	m_tLtcParams.nVolume = VOLUME_0DBV;
 	m_tLtcParams.nYear = tm->tm_year - 100;
 	m_tLtcParams.nMonth = tm->tm_mon + 1;
 	m_tLtcParams.nDay = tm->tm_mday;
@@ -142,6 +145,16 @@ void LtcParams::callbackFunction(const char* pLine) {
 		source[nLength] = '\0';
 		m_tLtcParams.tSource = GetSourceType(source);
 		m_tLtcParams.nSetList |= LtcParamsMask::SOURCE;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::VOLUME, nValue8) == Sscan::OK) {
+		if ((nValue8 > 1) && (nValue8 < 32)) {
+			m_tLtcParams.nVolume = nValue8;
+			m_tLtcParams.nSetList |= LtcParamsMask::VOLUME_0DBV;
+		} else {
+			m_tLtcParams.nVolume = VOLUME_0DBV;
+			m_tLtcParams.nSetList &= ~LtcParamsMask::VOLUME_0DBV;
+		}
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, nValue8) == Sscan::OK) {

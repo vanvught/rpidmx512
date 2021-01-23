@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsdump.cpp
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,10 @@ void LtcParams::Dump() {
 
 	if (isMaskSet(LtcParamsMask::SOURCE)) {
 		printf(" %s=%d [%s]\n", LtcParamsConst::SOURCE, m_tLtcParams.tSource, GetSourceType(static_cast<ltc::source>(m_tLtcParams.tSource)));
+	}
+
+	if (isMaskSet(LtcParamsMask::VOLUME)) {
+		printf(" %s=%d\n", LtcParamsConst::VOLUME, m_tLtcParams.nVolume);
 	}
 
 	if (isMaskSet(LtcParamsMask::AUTO_START)) {

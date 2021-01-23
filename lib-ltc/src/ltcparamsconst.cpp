@@ -43,6 +43,8 @@ const char LtcParamsConst::YEAR[] = "year";
 const char LtcParamsConst::MONTH[] = "month";
 const char LtcParamsConst::DAY[] = "day";
 const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
+// LTC
+const char LtcParamsConst::VOLUME[] = "volume";
 // Generator
 const char LtcParamsConst::FPS[] = "fps";
 const char LtcParamsConst::START_FRAME[] = "start_frame";

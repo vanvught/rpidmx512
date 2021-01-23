@@ -2,7 +2,7 @@
  * @file ltcsender.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,17 +35,17 @@
 
 LtcSender *LtcSender::s_pThis = nullptr;
 
-LtcSender::LtcSender() {
+LtcSender::LtcSender(uint32_t nVolume) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+
+	if ((nVolume > 1) && (nVolume < 32)) {	// TODO constexpr
+		h3_codec_set_volume(nVolume);
+	}
 }
 
 void LtcSender::Start() {
 	h3_codec_begin();
-}
-
-void LtcSender::Stop() {
-
 }
 
 void LtcSender::SetTimeCode(const struct TLtcTimeCode* pLtcSenderTimeCode, bool nExternalClock) {

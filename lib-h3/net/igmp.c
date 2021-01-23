@@ -2,7 +2,7 @@
  * @file igmp.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 extern uint16_t net_chksum(void *, uint32_t);
 extern void emac_eth_send(void *, int);
 
-#define MAX_JOINS_ALLOWED	(4 + (4 * 4))
+#define MAX_JOINS_ALLOWED	(4 + (8 * 4)) /* 8 outputs x 4 Universes */
 
 typedef enum s_state {
 	NON_MEMBER = 0,

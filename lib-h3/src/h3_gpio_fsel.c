@@ -31,7 +31,7 @@
 #include "h3_gpio.h"
 #include "h3.h"
 
-void h3_gpio_fsel(uint32_t gpio, gpio_fsel_t fsel) {
+void h3_gpio_fsel(uint32_t gpio, uint32_t fsel) {
 	const uint32_t number = H3_GPIO_TO_NUMBER(gpio);
 	const uint32_t reg = number / 8;
 	const uint32_t shift = (number & 0x7) * 4;

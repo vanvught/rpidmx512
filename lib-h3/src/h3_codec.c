@@ -6,7 +6,7 @@
  * Based on https://github.com/allwinner-zh/linux-3.4-sunxi/blob/master/sound/soc/sunxi/audiocodec/sun8iw7_sndcodec.c
  * Based on https://elixir.bootlin.com/linux/latest/source/sound/soc/sunxi/sun4i-codec.c
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@
 #include "h3_gpio.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 //TODO This could be moved to h3.h
@@ -137,6 +137,8 @@ static uint32_t circular_buffer_size;
 #define CIRCULAR_BUFFER_INDEX_MASK 		(CIRCULAR_BUFFER_INDEX_ENTRIES - 1)
 
 static int16_t circular_buffer[CIRCULAR_BUFFER_INDEX_ENTRIES][CONFIG_BUFSIZE] ALIGNED;
+
+static uint32_t s_volume;
 
 struct coherent_region {
 	struct sunxi_dma_lli lli[CONFIG_TX_DESCR_NUM];
@@ -451,6 +453,10 @@ static void __attribute__((interrupt("FIQ"))) codec_fiq_handler(void) {
 	dmb();
 }
 
+void h3_codec_set_volume(uint8_t volume) {
+	s_volume = volume;
+}
+
 void h3_codec_begin(void) {
 	__disable_fiq();
 
@@ -518,7 +524,11 @@ void h3_codec_begin(void) {
 	 * Codec setup
 	 */
 
-	codec_init(31);
+	if (s_volume == 0) {
+		s_volume = 28;
+	}
+
+	codec_init(s_volume);
 
 	codec_hw_params(48000, 1);
 
