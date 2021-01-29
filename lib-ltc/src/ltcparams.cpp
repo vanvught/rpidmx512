@@ -150,10 +150,10 @@ void LtcParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint8(pLine, LtcParamsConst::VOLUME, nValue8) == Sscan::OK) {
 		if ((nValue8 > 1) && (nValue8 < 32)) {
 			m_tLtcParams.nVolume = nValue8;
-			m_tLtcParams.nSetList |= LtcParamsMask::VOLUME_0DBV;
+			m_tLtcParams.nSetList |= LtcParamsMask::VOLUME;
 		} else {
 			m_tLtcParams.nVolume = VOLUME_0DBV;
-			m_tLtcParams.nSetList &= ~LtcParamsMask::VOLUME_0DBV;
+			m_tLtcParams.nSetList &= ~LtcParamsMask::VOLUME;
 		}
 	}
 
