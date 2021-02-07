@@ -30,8 +30,6 @@
 #include <stdint.h>
 #include <sys/utsname.h>
 
-#include "hardware.h"
-
 class Hardware {
 public:
 	Hardware();

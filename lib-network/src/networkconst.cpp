@@ -2,7 +2,7 @@
  * @file networkconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,12 @@ const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
 const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
 const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
 
-#if !defined (H3)
+#if defined (ESP8266)
  const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
  const char NetworkConst::PARAMS_NAME_SERVER[] = "name_server";
+
+ const char NetworkConst::PARAMS_SSID[] = "ssid";
+ const char NetworkConst::PARAMS_PASSWORD[] = "password";
 #endif
 
 const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";

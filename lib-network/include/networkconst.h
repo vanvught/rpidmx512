@@ -2,7 +2,7 @@
  * @file networkconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 struct NetworkConst {
 	static const char PARAMS_FILE_NAME[];
+
 	static const char PARAMS_USE_DHCP[];
 	static const char PARAMS_IP_ADDRESS[];
 	static const char PARAMS_NET_MASK[];
@@ -36,9 +37,12 @@ struct NetworkConst {
 	static const char PARAMS_NTP_SERVER[];
 	static const char PARAMS_NTP_UTC_OFFSET[];
 
-#if !defined (H3)
+#if defined (ESP8266)
 	static const char PARAMS_DEFAULT_GATEWAY[];
 	static const char PARAMS_NAME_SERVER[];
+
+	static const char PARAMS_SSID[];
+	static const char PARAMS_PASSWORD[];
 #endif
 
 	static const char MSG_NETWORK_INIT[];

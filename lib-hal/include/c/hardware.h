@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ extern void hardware_led_init(void);
 extern void hardware_led_set(const int);
 
 extern uint32_t hardware_uptime_seconds(void);
+
+extern int32_t hardware_get_mac_address(uint8_t *mac_address);
 
 extern int32_t hardware_firmware_get_revision(void);
 extern const char *hardware_firmware_get_copyright(void);

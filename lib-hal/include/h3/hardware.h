@@ -29,8 +29,6 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "hardware.h"
-
 #include "hwclock.h"
 
 #include "h3.h"
