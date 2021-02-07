@@ -2,7 +2,7 @@
  * @file spiflashstore.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 
 #include <stdint.h>
 
-#include "storenetwork.h"
+#if !defined( NO_EMAC )
+# include "storenetwork.h"
+#endif
 
 namespace spiflashstore {
 enum class Store {
@@ -107,7 +109,9 @@ private:
 	uint32_t m_nSpiFlashStoreSize { FlashStore::SIZE };
 	uint8_t m_aSpiFlashData[FlashStore::SIZE];
 
+#if !defined( NO_EMAC )
 	StoreNetwork m_StoreNetwork;
+#endif
 
 	static SpiFlashStore *s_pThis;
 };

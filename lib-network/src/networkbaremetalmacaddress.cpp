@@ -1,7 +1,8 @@
 /**
- * @file read_config_file.c
+ * @file networkbaremetalmacaddress.cpp
+ *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,47 +23,25 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <stddef.h>
-#include <assert.h>
+#include <stdint.h>
+#include <string.h>
+#include <cassert>
 
-#include <c/read_config_file.h>
+#include "networkbaremetalmacaddress.h"
 
-bool read_config_file(const char *file_name, funcptr pfi) {
-	char buffer[128];
-	unsigned i;
-	FILE *fp;
+extern "C" {
+	int32_t hardware_get_mac_address(uint8_t *mac_address);
+}
 
-	assert(file_name != NULL);
-	assert(pfi != NULL);
+NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
+	strcpy(m_aIfName, "lo");
+}
 
-	fp = fopen(file_name, "r");
+NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress() {
+}
 
-	if (fp != NULL) {
-		for (;;) {
-			if (fgets(buffer, (int) sizeof(buffer) - 1, fp) != buffer) {
-				break; /* Error or end of file */
-			}
+void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
+	assert(pMacAddress != nullptr);
 
-			if (buffer[0] >= 'a') {
-				char *q = (char*) buffer;
-
-				for (i = 0; (i < sizeof(buffer) - 1) && (*q != '\0'); i++) {
-					if ((*q == '\r') || (*q == '\n')) {
-						*q = '\0';
-					}
-					q++;
-				}
-
-				pfi((const char*) buffer);
-			}
-		}
-
-		fclose(fp);
-	} else {
-		return false;
-	}
-
-	return true;
+	hardware_get_mac_address(pMacAddress);
 }

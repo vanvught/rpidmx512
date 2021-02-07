@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,10 +40,15 @@ struct TNetworkParams {
 	char aHostName[NETWORK_HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
-};
-//}__attribute__((packed));
+#if defined (ESP8266)
+	char aSsid[34];
+	char aPassword[34];
+#endif
+}__attribute__((packed));
 
-static_assert(sizeof(struct TNetworkParams) <= 96, "struct TNetworkParams is too large");
+#if !defined (ESP8266)
+ static_assert(sizeof(struct TNetworkParams) <= 96, "struct TNetworkParams is too large");
+#endif
 
 struct NetworkParamsMask {
 	static constexpr auto DHCP = (1U << 0);
@@ -56,6 +61,10 @@ struct NetworkParamsMask {
 	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
 	static constexpr auto PTP_ENABLE = (1U << 8);
 	static constexpr auto PTP_DOMAIN = (1U << 9);
+#if defined (ESP8266)
+	static constexpr auto SSID = (1U << 30);
+	static constexpr auto PASSWORD = (1U << 31);
+#endif
 };
 
 class NetworkParamsStore {
@@ -95,14 +104,6 @@ public:
 		return m_tNetworkParams.aHostName;
 	}
 
-	uint32_t GetDefaultGateway() const {
-		return m_tNetworkParams.nGatewayIp;
-	}
-
-	uint32_t GetNameServer() const {
-		return m_tNetworkParams.nNameServerIp;
-	}
-
 	uint32_t GetNtpServer() const {
 		if (!isMaskSet(NetworkParamsMask::NTP_SERVER)) {
 			return 0;
@@ -116,6 +117,24 @@ public:
 		}
 		return m_tNetworkParams.fNtpUtcOffset;
 	}
+
+#if defined (ESP8266)
+	uint32_t GetDefaultGateway() const {
+		return m_tNetworkParams.nGatewayIp;
+	}
+
+	uint32_t GetNameServer() const {
+		return m_tNetworkParams.nNameServerIp;
+	}
+
+	const char *GetSSid() const {
+		return m_tNetworkParams.aSsid;
+	}
+
+	const char *GetPassword() const {
+		return m_tNetworkParams.aPassword;
+	}
+#endif
 
 public:
     static void staticCallbackFunction(void *p, const char *s);

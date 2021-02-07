@@ -1,8 +1,9 @@
+#if defined (H3)
 /**
  * @file storewidget.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,3 +88,4 @@ void StoreWidget::UpdateRefreshRate(uint8_t nRefreshRate) {
 
 	DEBUG_EXIT
 }
+#endif

@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
 
 inline static uint32_t hardware_micros(void) {
 	return h3_hs_timer_lo_us();

@@ -2,7 +2,7 @@
  * @file hardware_init.c
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,6 +56,10 @@ static volatile uint64_t hardware_init_startup_micros = 0;	///<
 
 uint32_t hardware_uptime_seconds(void) {
 	return (uint32_t) (bcm2835_st_read() - hardware_init_startup_micros) / 1000000;
+}
+
+int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
+	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
 void hardware_led_init(void) {

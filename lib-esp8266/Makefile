@@ -1,8 +1,8 @@
 #
 DEFINES = ESP8266 NDEBUG
 #
-EXTRA_SRCDIR = src/properties
+EXTRA_SRCDIR = 
 #
-EXTRA_INCLUDES = ../lib-display/include ../lib-bob/include ../lib-hal/include
+EXTRA_INCLUDES = ../lib-network/include ../lib-display/include ../lib-properties/include
 #
 include ../firmware-template/lib/Rules.mk

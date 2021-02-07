@@ -27,9 +27,11 @@
 #include <stdint.h>
 #include <cassert>
 
-#include "spiflashstore.h"
+#include "storenetwork.h"
 
 #include "networkparams.h"
+
+#include "spiflashstore.h"
 
 #include "debug.h"
 
