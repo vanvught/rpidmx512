@@ -7,7 +7,7 @@ LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
-	LIBS += esp8266 network
+	LIBS += network esp8266
 endif
 
 # Output

@@ -1,8 +1,8 @@
 /**
- * @file networkesp8266.h
+ * @file wifi.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKESP8266_H_
-#define NETWORKESP8266_H_
+#ifndef WIFI_H_
+#define WIFI_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
-#include "network.h"
-
-struct ip_addr {
-    uint32_t addr;
-};
-
-typedef struct ip_addr ip_addr_t;
-
-struct ip_info {
-    struct ip_addr ip;
-    struct ip_addr netmask;
-    struct ip_addr gw;
-};
+#include "ip_address.h"
 
 typedef enum wifi_mode {
 	WIFI_OFF = 0,
@@ -68,71 +57,52 @@ typedef enum wifiphy_phy_mode {
 #define SOFTAP_IF	0x01
 
 #define HOST_NAME_MAX			255
+#define SDK_VERSION_MAX			255
+#define FIRMWARE_VERSION_MAX	255
 
-class NetworkESP8266: public Network {
-public:
-	NetworkESP8266(void);
-	~NetworkESP8266(void);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-	void Init();
+/*
+ * ESP8266 SDK functions 
+ */
 
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
+extern /*@shared@*/const char *system_get_sdk_version(void);
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+/*
+ * Wifi functions
+ */
 
-	void JoinGroup(int32_t nHandle, uint32_t nIp);
-	void LeaveGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
-		// Not supported
-	}
+extern bool wifi(struct ip_info *);
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+extern bool wifi_get_macaddr(/*@out@*/const uint8_t *);
+extern bool wifi_get_ip_info(/*@out@*/const struct ip_info *);
+extern _wifi_mode wifi_get_opmode(void);
+extern /*@shared@*/const char *wifi_get_hostname(void);
+extern bool wifi_detect(void);
+extern /*@shared@*/const char *wifi_get_firmware_version(void);
 
-	void Print(void) {
-	}
+/*
+ * Wifi AP functions
+ */
 
-	_wifi_mode GetOpmode() const {
-		return m_Mode;
-	}
+extern void wifi_ap_init(const char *);
+extern bool wifi_ap_is_open(void);
 
-	bool IsApOpen() const {
-		return m_isApOpen;
-	}
+/*
+ * Wifi Station functions
+ */
 
-	const char *GetSsid() const {
-		return m_pSSID;
-	}
+extern void wifi_station(const char *, const char *);
+extern void wifi_station_ip(const char *, const char *, const struct ip_info *);
+extern /*@observer@*/const char *wifi_station_status(_wifi_station_status);
+extern bool wifi_station_is_dhcp_used(void);
+extern _wifi_station_status wifi_station_get_connect_status(void);
+extern /*@observer@*//*@null@*/const char *wifi_get_ssid(void);
 
-	void SetIp(__attribute__((unused)) uint32_t nIp) {
-	}
+#ifdef __cplusplus
+}
+#endif
 
-	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
-	}
-
-	bool SetZeroconf() {
-		return false;
-	}
-
-	bool EnableDhcp() {
-		return false;
-	}
-
-private:
-	bool Start();
-	const char *GetSystemSdkVersion();
-	const char *GetFirmwareVersion();
-	void ApCreate(const char *pPassword);
-	void StationCreate(const char *pSsid, const char *pPassword) ;
-	void StationCreate(const char *pSsid, const char *pPassword, const struct ip_info *pInfo);
-	_wifi_station_status StationGetConnectStatus();
-	const char *StationStatus(_wifi_station_status status);
-
-private:
-	bool m_IsInitDone { false };
-	_wifi_mode m_Mode { WIFI_OFF };
-	bool m_isApOpen { true };
-	char *m_pSSID { nullptr };
-};
-
-#endif /* NETWORKESP8266_H_ */
+#endif /* WIFI_H_ */

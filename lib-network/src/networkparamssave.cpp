@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,9 +57,8 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	builder.Add(NetworkConst::PARAMS_USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NetworkParamsMask::DHCP));
 	builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NetworkParamsMask::IP_ADDRESS));
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NetworkParamsMask::NET_MASK));
-#if defined(ESP8266)
+#if !defined(H3)
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY));
-	builder.AddIpAddress(NetworkConst::PARAMS_NAME_SERVER, m_tNetworkParams.nNameServerIp, isMaskSet(NetworkParamsMask::NAME_SERVER));
 #endif
 	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
 		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);

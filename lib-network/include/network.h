@@ -55,7 +55,8 @@ enum class DhcpClientStatus {
 	FAILED
 };
 
-struct NetworkDisplay {
+class NetworkDisplay {
+public:
 	virtual ~NetworkDisplay() {
 	}
 

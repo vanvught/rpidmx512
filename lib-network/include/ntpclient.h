@@ -38,7 +38,8 @@ enum class NtpClientStatus {
 	WAITING
 };
 
-struct NtpClientDisplay {
+class NtpClientDisplay {
+public:
 	virtual ~NtpClientDisplay() {
 	}
 

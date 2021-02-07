@@ -1,8 +1,8 @@
 /**
- * @file fota.cpp
+ * @file wifi.c
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,53 +23,27 @@
  * THE SOFTWARE.
  */
 
+#include <assert.h>
 #include <stdint.h>
-#include <cassert>
+
+#include "wifi.h"
 
 #include "esp8266.h"
 #include "esp8266_cmd.h"
 
-#include "hardware.h"
-#include "console.h"
+static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
-static void esp8266_fota_start(const uint32_t server_ip_address) {
-	esp8266_write_4bits(CMD_ESP_FOTA_START);
-	esp8266_write_word(server_ip_address);
+
+/**
+ *
+ * @return
+ */
+const char *system_get_sdk_version(void) {
+	uint16_t len = SDK_VERSION_MAX;
+
+	esp8266_write_4bits((uint8_t) CMD_SYSTEM_SDK_VERSION);
+	esp8266_read_str(sdk_version, &len);
+
+	return sdk_version;
 }
 
-static void esp8266_fota_status(char *status, uint16_t *len) {
-	assert(status != nullptr);
-	assert(len != nullptr);
-
-	esp8266_write_4bits(CMD_NOP);
-	esp8266_read_str(status, len);
-}
-
-void fota(uint32_t server_ip_address) {
-	char message[80];
-	uint16_t nLength;
-	char last_first_char = ' ';
-
-	console_status(CONSOLE_YELLOW, "Starting FOTA ...");
-
-	esp8266_fota_start(server_ip_address);
-
-	do {
-		nLength = sizeof(message) / sizeof(char);
-		esp8266_fota_status(message, &nLength);
-		if (nLength != 0) {
-			console_puts(message);
-			console_newline();
-			last_first_char = message[0];
-		}
-	} while (nLength != 0);
-
-	if (last_first_char == 'S') {
-		console_status(CONSOLE_GREEN, "FOTA Done!");
-	} else {
-		console_status(CONSOLE_RED, "FOTA Failed!");
-	}
-
-	for (;;)
-		;
-}

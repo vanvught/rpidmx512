@@ -1,5 +1,5 @@
 #
-DEFINES = ESP8266 ENABLE_MMU DISABLE_RTC NDEBUG
+DEFINES = ESP8266 ENABLE_MMU NDEBUG
 #
 LIBS = display oscserver osc dmxmonitor dmxsend ws28xxdmx ws28xx dmx lightset
 #

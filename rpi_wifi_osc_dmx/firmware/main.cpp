@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 
 #include "console.h"
 #include "display.h"
+
+#include "wifi.h"
 
 #include "oscserverparms.h"
 #include "oscserver.h"
@@ -134,6 +136,12 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
 
+#if defined (ORANGE_PI)
+	nw.Init();
+	//nw.Init((NetworkParamsStore *)spiFlashStore.GetStoreNetwork());
+#else
+	nw.Init();
+#endif
 	nw.Print();
 
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
@@ -229,10 +237,10 @@ void notmain(void) {
 
 	display.Printf(1, "WiFi OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
 
-	if (nw.GetOpmode() == WIFI_STA) {
-		display.Printf(2, "S: %s", nw.GetSsid());
+	if (wifi_get_opmode() == WIFI_STA) {
+		display.Printf(2, "S: %s", wifi_get_ssid());
 	} else {
-		display.Printf(2, "AP (%s)\n", nw.IsApOpen() ? "Open" : "WPA_WPA2_PSK");
+		display.Printf(2, "AP (%s)\n", wifi_ap_is_open() ? "Open" : "WPA_WPA2_PSK");
 	}
 
 	display.Printf(3, "IP: " IPSTR "", IP2STR(Network::Get()->GetIp()));

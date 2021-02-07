@@ -89,9 +89,9 @@ endif
 ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
 	LIBS+=esp8266
 	INCDIRS=../lib-network/include
+else
+	LIBS+=network
 endif
-
-LIBS+=network
 
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
@@ -112,7 +112,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display device hal c++ debug h3 c arm
+LIBS+=lightset properties display device hal c++ c debug h3 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 

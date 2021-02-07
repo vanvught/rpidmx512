@@ -128,7 +128,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-#if defined (ESP8266)
+#if !defined (H3)
 	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nGatewayIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
@@ -138,20 +138,6 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	if (Sscan::IpAddress(pLine,  NetworkConst::PARAMS_NAME_SERVER, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNameServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NAME_SERVER;
-		return;
-	}
-
-	nLength = 34 - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_SSID, m_tNetworkParams.aSsid, nLength) == Sscan::OK) {
-		m_tNetworkParams.aSsid[nLength] = '\0';
-		m_tNetworkParams.nSetList |= NetworkParamsMask::SSID;
-		return;
-	}
-
-	nLength = 34 - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_PASSWORD, m_tNetworkParams.aPassword, nLength) == Sscan::OK) {
-		m_tNetworkParams.aPassword[nLength] = '\0';
-		m_tNetworkParams.nSetList |= NetworkParamsMask::PASSWORD;
 		return;
 	}
 #endif

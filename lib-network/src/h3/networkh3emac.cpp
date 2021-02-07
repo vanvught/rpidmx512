@@ -50,7 +50,7 @@ int emac_start(bool reset_emac);
 NetworkH3emac::NetworkH3emac() {
 	DEBUG_ENTRY
 
-	strcpy(m_aIfName, "wlan0");
+	strcpy(m_aIfName, "eth0");
 
 	DEBUG_EXIT
 }
@@ -78,7 +78,7 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
-//	tIpInfo.gw.addr = params.GetDefaultGateway();
+	tIpInfo.gw.addr = params.GetDefaultGateway();
 
 	m_IsDhcpUsed = params.isDhcpUsed();
 	m_nNtpServerIp = params.GetNtpServer();

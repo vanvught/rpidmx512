@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "bcm2835.h"
+#include "bcm2835_vc.h"
 #include "bcm2835_wdog.h"
 #include "bcm2835_rng.h"
 
@@ -38,6 +39,10 @@ extern "C" {
 
 inline static uint32_t hardware_micros(void) {
 	return BCM2835_ST->CLO;
+}
+
+inline static int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
+	return bcm2835_vc_get_board_mac_address(mac_address);
 }
 
 inline static void hardware_watchdog_init(void) {
