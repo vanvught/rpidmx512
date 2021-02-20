@@ -35,12 +35,12 @@
 
 class Reboot: public RebootHandler {
 public:
-	Reboot(void) {
+	Reboot() {
 	}
-	~Reboot(void) {
+	~Reboot() {
 	}
 
-	void Run(void) {
+	void Run() {
 		DEBUG_ENTRY
 
 		if (!RemoteConfig::Get()->IsReboot()) {

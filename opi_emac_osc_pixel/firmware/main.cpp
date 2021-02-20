@@ -108,8 +108,8 @@ void notmain(void) {
 	MDNS mDns;
 
 	mDns.Start();
-	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
 	mDns.Print();
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
@@ -123,14 +123,14 @@ void notmain(void) {
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != 0);
+			auto *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != nullptr);
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 			pSpi = pTLC59711Dmx;
 
 			pHandler = new HandlerTLC59711(pTLC59711Dmx);
-			assert(pHandler != 0);
+			assert(pHandler != nullptr);
 
 			display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 		}
@@ -146,18 +146,18 @@ void notmain(void) {
 		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
 
 		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
+			auto *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+			assert(pWS28xxDmxGrouping != nullptr);
 			ws28xxparms.Set(pWS28xxDmxGrouping);
 			pSpi = pWS28xxDmxGrouping;
 
 			display.Printf(7, "%s:%d G", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
 
 			pHandler = new Handler(pWS28xxDmxGrouping);
-			assert(pHandler != 0);
+			assert(pHandler != nullptr);
 		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
+			auto *pWS28xxDmx = new WS28xxDmx;
+			assert(pWS28xxDmx != nullptr);
 			ws28xxparms.Set(pWS28xxDmx);
 			pSpi = pWS28xxDmx;
 
@@ -177,7 +177,7 @@ void notmain(void) {
 			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
 
 			pHandler = new Handler(pWS28xxDmx);
-			assert(pHandler != 0);
+			assert(pHandler != nullptr);
 		}
 	}
 

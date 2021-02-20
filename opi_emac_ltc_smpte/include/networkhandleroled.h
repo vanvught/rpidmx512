@@ -99,6 +99,6 @@ private:
 	static NetworkHandlerOled *s_pThis;
 };
 
-NetworkHandlerOled *NetworkHandlerOled::s_pThis = 0;
+NetworkHandlerOled *NetworkHandlerOled::s_pThis = nullptr;
 
 #endif /* NETWORKHANDLEROLED_H_ */

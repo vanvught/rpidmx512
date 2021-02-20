@@ -136,13 +136,13 @@ void notmain(void) {
 
 	if (artnetparams.GetDirection() == ARTNET_INPUT_PORT) {
 		pDmxInput = new DmxInput;
-		assert(pDmxInput != 0);
+		assert(pDmxInput != nullptr);
 
 		node.SetUniverseSwitch(0, ARTNET_INPUT_PORT, artnetparams.GetUniverse());
 		node.SetArtNetDmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSend;
-		assert(pDmxOutput != 0);
+		assert(pDmxOutput != nullptr);
 
 		DMXParams dmxparams(&storeDmxSend);
 

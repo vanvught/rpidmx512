@@ -164,12 +164,12 @@ void notmain(void) {
 
 	if (portDir == E131_INPUT_PORT) {
 		pDmxInput = new DmxInput;
-		assert(pDmxInput != 0);
+		assert(pDmxInput != nullptr);
 
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSendMulti;
-		assert(pDmxOutput != 0);
+		assert(pDmxOutput != nullptr);
 
 		DMXParams dmxparams(&storeDmxSend);
 

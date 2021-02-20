@@ -166,8 +166,8 @@ void notmain(void) {
 
 	display.TextStatus(SparkFunDmxConst::MSG_INIT, Display7SegmentMessage::INFO_SPARKFUN, CONSOLE_YELLOW);
 
-	SparkFunDmx *pSparkFunDmx = new SparkFunDmx;
-	assert(pSparkFunDmx != 0);
+	auto *pSparkFunDmx = new SparkFunDmx;
+	assert(pSparkFunDmx != nullptr);
 
 	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
 	pSparkFunDmx->SetModeStore(&storeMotors);
@@ -188,8 +188,8 @@ void notmain(void) {
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != 0);
+			auto *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != nullptr);
 #if defined (ORANGE_PI)
 			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
 #endif
@@ -198,8 +198,8 @@ void notmain(void) {
 
 			display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 
-			LightSetChain *pChain = new LightSetChain;
-			assert(pChain != 0);
+			auto *pChain = new LightSetChain;
+			assert(pChain != nullptr);
 
 			pChain->Add(pBoard, 0);
 			pChain->Add(pTLC59711Dmx, 1);

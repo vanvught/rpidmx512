@@ -121,13 +121,13 @@ void notmain(void) {
 
 	if (e131params.GetDirection() == E131_INPUT_PORT) {
 		pDmxInput = new DmxInput;
-		assert(pDmxInput != 0);
+		assert(pDmxInput != nullptr);
 
 		bridge.SetUniverse(0, E131_INPUT_PORT, nUniverse);
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSend;
-		assert(pDmxOutput != 0);
+		assert(pDmxOutput != nullptr);
 
 		DMXParams dmxparams(&storeDmxSend);
 

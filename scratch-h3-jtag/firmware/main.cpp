@@ -31,7 +31,6 @@ static const char SOFTWARE_VERSION[] = "0.0";
 
 extern uint32_t PIXEL8X4_PROGRAM;
 
-
 extern "C" {
 
 extern uint32_t getPIXEL8X4_SIZE();

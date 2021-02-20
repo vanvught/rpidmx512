@@ -187,12 +187,12 @@ void notmain(void) {
 
 	if (portDir == ARTNET_INPUT_PORT) {
 		pDmxInput = new DmxInput;
-		assert(pDmxInput != 0);
+		assert(pDmxInput != nullptr);
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSendMulti;
-		assert(pDmxOutput != 0);
+		assert(pDmxOutput != nullptr);
 
 		DMXParams dmxParams(&storeDmxSend);
 
@@ -207,7 +207,7 @@ void notmain(void) {
 		pDmxOutput->Print();
 
 		pDiscovery = new ArtNetRdmController;
-		assert(pDiscovery != 0);
+		assert(pDiscovery != nullptr);
 
 		if(artnetparams.IsRdm()) {
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);

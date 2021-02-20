@@ -238,7 +238,7 @@ public:
 	void Print();
 
 private:
-	void InitUart2(void);
+	void InitUart2();
 	void SendUart2(const uint8_t *data, uint16_t length);
 	bool InputFilter(uint8_t nChannel) const;
 	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) const;

@@ -36,6 +36,19 @@
 
 Display *Display::s_pThis = 0;
 
+Display::Display()
+#if !defined(NO_HAL)
+	: m_nMillis(0)
+#endif
+{
+	DEBUG_ENTRY
+
+	assert(s_pThis == 0);
+	s_pThis = this;
+
+	DEBUG_EXIT
+}
+
 Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused)) uint32_t nRows):
 	m_tType(DisplayType::UNKNOWN),
 	m_LcdDisplay(0),
