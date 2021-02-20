@@ -128,16 +128,18 @@ void notmain(void) {
 
 	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
 
-	LightSet *pSpi;
+	LightSet *pSpi = nullptr;
 
-	bool isLedTypeSet = false;
+	auto isLedTypeSet = false;
+	WS28xxDmx *pWS28xxDmx = nullptr;
+	auto bRunTestPattern = false;
 
 	TLC59711DmxParams pwmledparms(&storeTLC59711);
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != 0);
+			auto *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != nullptr);
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 			pSpi = pTLC59711Dmx;
@@ -155,15 +157,15 @@ void notmain(void) {
 		const auto bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
 
 		if (bIsLedGrouping) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
+			auto *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
+			assert(pWS28xxDmxGrouping != nullptr);
 			ws28xxparms.Set(pWS28xxDmxGrouping);
 			pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
 			pSpi = pWS28xxDmxGrouping;
 			display.Printf(7, "%s:%d G%d", WS28xx::GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
 		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
+			pWS28xxDmx = new WS28xxDmx;
+			assert(pWS28xxDmx != nullptr);
 			ws28xxparms.Set(pWS28xxDmx);
 			pSpi = pWS28xxDmx;
 			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
@@ -193,10 +195,23 @@ void notmain(void) {
 					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3U);
 				}
 			}
+
+			uint8_t nTestPattern;
+			if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+				bRunTestPattern = true;
+				pWS28xxDmx->Start(0);
+				pWS28xxDmx->Blackout(true);
+				pWS28xxDmx->SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+			}
 		}
 	}
 
-	node.SetOutput(pSpi);
+	if (bRunTestPattern) {
+		node.SetOutput(nullptr);
+	} else {
+		node.SetOutput(pSpi);
+	}
+
 	node.Print();
 
 	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
@@ -248,6 +263,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (__builtin_expect((bRunTestPattern), 0)) {
+			pWS28xxDmx->RunTestPattern();
+		}
 	}
 }
 

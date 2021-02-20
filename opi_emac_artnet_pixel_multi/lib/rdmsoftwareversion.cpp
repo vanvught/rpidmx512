@@ -1,8 +1,8 @@
 /**
- * @file e131reboot.h
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef E131REBOOT_H_
-#define E131REBOOT_H_
+#include <stdint.h>
 
-#include "hardware.h"
+#include "rdmsoftwareversion.h"
 
-#include "e131bridge.h"
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-class E131Reboot: public RebootHandler {
-public:
-	E131Reboot() {
-	}
-	~E131Reboot() {
-	}
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
+}
 
-	void Run() {
-		E131Bridge::Get()->Stop();
-	}
-};
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-#endif /* E131REBOOT_H_ */
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

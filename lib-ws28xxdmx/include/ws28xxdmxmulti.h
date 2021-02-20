@@ -34,16 +34,15 @@
 
 #include "rgbmapping.h"
 
+#include "pixelpatterns.h"
+
 namespace ws28xxdmxmulti {
-enum class Source {
-	ARTNET,
-	E131
-};
+
 }  // namespace ws28xxdmxmulti
 
 class WS28xxDmxMulti final: public LightSet {
 public:
-	WS28xxDmxMulti(ws28xxdmxmulti::Source tSrc);
+	WS28xxDmxMulti();
 	~WS28xxDmxMulti() override;
 
 	void Initialize();
@@ -103,36 +102,53 @@ public:
 		return ws28xxmulti::Board::UNKNOWN;
 	}
 
+	void SetTestPattern(pixelpatterns::Pattern TestPattern);
+	void RunTestPattern();
+
 	void Print() override;
+
+	// RDMNet LLRP Device Only
+	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
+		return false;
+	}
+
+	uint16_t GetDmxStartAddress() override {
+		return DMX_ADDRESS_INVALID;
+	}
+
+	uint16_t GetDmxFootprint() override {
+		return 0;
+	}
 
 private:
 	void UpdateMembers();
 
 private:
-	ws28xxdmxmulti::Source m_tSrc;
-	ws28xx::Type m_tLedType;
+	ws28xx::Type m_tLedType { ws28xx::Type::WS2812B };
 
-	TRGBMapping m_tRGBMapping;
-	uint8_t m_nLowCode;
-	uint8_t m_nHighCode;
+	TRGBMapping m_tRGBMapping { RGB_MAPPING_UNDEFINED };
+	uint8_t m_nLowCode { 0 };
+	uint8_t m_nHighCode { 0 };
 
-	uint32_t m_nLedCount;
-	uint32_t m_nActiveOutputs;
+	uint32_t m_nLedCount { 170 };
+	uint32_t m_nActiveOutputs { 1 };
 
-	WS28xxMulti *m_pLEDStripe;
+	WS28xxMulti *m_pLEDStripe { nullptr };
 
 	bool m_bIsStarted { false };
 	bool m_bBlackout { false };
 
-	uint32_t m_nUniverses;
+	uint32_t m_nUniverses { 1 };
 
-	uint32_t m_nBeginIndexPortId1;
-	uint32_t m_nBeginIndexPortId2;
-	uint32_t m_nBeginIndexPortId3;
-	uint32_t m_nChannelsPerLed;
+	uint32_t m_nBeginIndexPortId1 { 170 };
+	uint32_t m_nBeginIndexPortId2 { 340 };
+	uint32_t m_nBeginIndexPortId3 { 510 };
+	uint32_t m_nChannelsPerLed { 3 };
 
-	uint32_t m_nPortIdLast;
+	uint32_t m_nPortIdLast { 3 };
 	bool m_bUseSI5351A { false };
+
+	PixelPatterns *m_pPixelPatterns { nullptr };
 };
 
 #endif /* WS28XXDMXMULTI_H_ */

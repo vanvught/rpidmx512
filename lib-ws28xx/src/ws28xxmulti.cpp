@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-# undef NDEBUG //TODO Remove
-#endif
-
 #include <stdint.h>
 #include <cassert>
 
@@ -39,12 +35,17 @@ using namespace ws28xx;
 
 static Type s_NotSupported[] = {Type::WS2801, Type::APA102, Type::P9813};	// SPI Clock based
 
+WS28xxMulti *WS28xxMulti::s_pThis = nullptr;
+
 WS28xxMulti::WS28xxMulti() {
 	DEBUG_ENTRY
 
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
 	m_tBoard = (IsMCP23017() ? Board::X4 : Board::X8);
 
-	DEBUG_PRINTF("m_tBoard=%d [%dx]", m_tBoard, m_tBoard == Board::X4 ? 4 : 8);
+	DEBUG_PRINTF("m_tBoard=%d [%dx]", static_cast<int>(m_tBoard), m_tBoard == Board::X4 ? 4 : 8);
 	DEBUG_EXIT
 }
 
@@ -74,7 +75,7 @@ void WS28xxMulti::Initialize(Type tWS28xxType, uint16_t nLedCount, __attribute__
 		}
 	}
 
-	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
+	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tWS28xxType), WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
 	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping	, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	if (m_tRGBMapping == RGB_MAPPING_UNDEFINED) {
@@ -102,7 +103,7 @@ void WS28xxMulti::Initialize(Type tWS28xxType, uint16_t nLedCount, __attribute__
 		m_nBufSize = static_cast<uint32_t>(nLedCount * ws28xx::single::RGB);
 	}
 
-	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tWS28xxType, WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
+	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tWS28xxType), WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
 	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	if (m_tBoard == Board::X4) {

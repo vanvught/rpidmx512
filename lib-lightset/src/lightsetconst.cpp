@@ -44,3 +44,5 @@ const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_u
 
 const char LightSetConst::PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
 const char LightSetConst::PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";
+
+const char LightSetConst::PARAMS_TEST_PATTERN[] = "test_pattern";

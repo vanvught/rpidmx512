@@ -108,6 +108,9 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	builder.AddComment("4x only");
 	builder.Add(DevicesParamsConst::USE_SI5351A, m_tWS28xxParams.bUseSI5351A, isMaskSet(WS28xxDmxParamsMask::USE_SI5351A));
 
+	builder.AddComment("Test pattern");
+	builder.Add(LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));
+
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);

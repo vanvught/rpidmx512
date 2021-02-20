@@ -107,6 +107,10 @@ public:
 	void Update();
 	void Blackout();
 
+	static WS28xxMulti *Get() {
+		return s_pThis;
+	}
+
 private:
 	uint8_t ReverseBits(uint8_t nBits);
 // 4x
@@ -137,6 +141,8 @@ private:
 	uint32_t *m_pBlackoutBuffer4x { nullptr };
 	uint8_t *m_pBuffer8x { nullptr };
 	uint8_t *m_pBlackoutBuffer8x { nullptr };
+
+	static WS28xxMulti *s_pThis;
 };
 
 #endif /* WS28XXMULTI_H_ */

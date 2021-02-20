@@ -1,8 +1,8 @@
 /**
- * @file e131reboot.h
+ * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef E131REBOOT_H_
-#define E131REBOOT_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-#include "hardware.h"
+#include "rdmfactorydefaults.h"
 
-#include "e131bridge.h"
+#include "remoteconfig.h"
+#include "spiflashstore.h"
 
-class E131Reboot: public RebootHandler {
+class FactoryDefaults: public RDMFactoryDefaults {
 public:
-	E131Reboot() {
+	FactoryDefaults() {
 	}
-	~E131Reboot() {
+	~FactoryDefaults() {
 	}
 
-	void Run() {
-		E131Bridge::Get()->Stop();
+	void Set() {
+		RemoteConfig::Get()->SetDisable(false);
+		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
 	}
 };
 
-#endif /* E131REBOOT_H_ */
+#endif /* FACTORYDEFAULTS_H_ */

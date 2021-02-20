@@ -41,6 +41,8 @@ struct LightSetConst {
 
 	static const char PARAMS_DMX_START_ADDRESS[];
 	static const char PARAMS_DMX_SLOT_INFO[];
+
+	static const char PARAMS_TEST_PATTERN[];
 };
 
 #endif /* LIGHTSETCONST_H_ */

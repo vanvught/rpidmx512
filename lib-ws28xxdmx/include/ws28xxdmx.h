@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 
 #include "ws28xx.h"
 #include "ws28xxdmxstore.h"
+
+#include "pixelpatterns.h"
 
 class WS28xxDmx: public LightSet {
 public:
@@ -87,6 +89,9 @@ public:
 		m_pWS28xxDmxStore = pWS28xxDmxStore;
 	}
 
+	void SetTestPattern(pixelpatterns::Pattern TestPattern);
+	void RunTestPattern();
+
 	void Print() override;
 
 public: // RDM
@@ -131,6 +136,8 @@ private:
 	uint32_t m_nChannelsPerLed { 3 };
 
 	uint32_t m_nPortIdLast { 3 };
+
+	PixelPatterns *m_pPixelPatterns { nullptr };
 };
 
 #endif /* WS28XXDMX_H_ */

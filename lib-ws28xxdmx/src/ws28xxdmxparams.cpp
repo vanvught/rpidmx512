@@ -72,9 +72,17 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nHighCode = 0;
 	uint16_t nStartUniverse = 1;
 	for (uint32_t i = 0; i < MAX_OUTPUTS; i++) {
+#if defined (NODE_ARTNET)
+		const auto nDiff = ((nStartUniverse + 4) & 0xF) - (nStartUniverse & 0xF);
+
+		if (nDiff != 4) {
+			nStartUniverse = nStartUniverse + nDiff + 15;
+		}
+#endif
 		m_tWS28xxParams.nStartUniverse[i] = nStartUniverse;
 		nStartUniverse += 4;
 	}
+	m_tWS28xxParams.nTestPattern = 0;
 }
 
 bool WS28xxDmxParams::Load() {
@@ -144,6 +152,9 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		if (nValue16 != 0 && nValue16 <= (4 * 170)) {
 			m_tWS28xxParams.nLedCount = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_COUNT;
+		} else {
+			m_tWS28xxParams.nLedCount = 170;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::LED_COUNT;
 		}
 		return;
 	}
@@ -190,19 +201,28 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0])); i++) {
 		if (Sscan::Uint16(pLine, LightSetConst::PARAMS_START_UNI_PORT[i], nValue16) == Sscan::OK) {
+#if !defined (NODE_ARTNET)
 			if (nValue16 > 0) {
+#endif
 				m_tWS28xxParams.nStartUniverse[i] = nValue16;
 				m_tWS28xxParams.nSetList |= (WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
+#if !defined (NODE_ARTNET)
 			} else {
-				m_tWS28xxParams.nStartUniverse[i] = i * 4;
+				m_tWS28xxParams.nStartUniverse[i] = 1 + (i * 4);
 				m_tWS28xxParams.nSetList &= ~(WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
 			}
+#endif
 		}
 	}
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
-		m_tWS28xxParams.nActiveOutputs = nValue8;
-		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::ACTIVE_OUT;
+		if ((nValue8 > 0) &&  (nValue8 <= 8)) {
+			m_tWS28xxParams.nActiveOutputs = nValue8;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::ACTIVE_OUT;
+		} else {
+			m_tWS28xxParams.nActiveOutputs = 1;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::ACTIVE_OUT;
+		}
 		return;
 	}
 
@@ -242,6 +262,20 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		if (nValue16 != 0 && nValue16 <= DMX_UNIVERSE_SIZE) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
+		} else {
+			m_tWS28xxParams.nDmxStartAddress = 1;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::DMX_START_ADDRESS;
+		}
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_TEST_PATTERN, nValue8) == Sscan::OK) {
+		if ((nValue8 != 0) && (nValue8 < 6)) {
+			m_tWS28xxParams.nTestPattern = nValue8;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::TEST_PATTERN;
+		} else {
+			m_tWS28xxParams.nTestPattern = 0;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::TEST_PATTERN;
 		}
 		return;
 	}
@@ -303,6 +337,10 @@ void WS28xxDmxParams::Dump() {
 
 	if (isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS)) {
 		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN)) {
+		printf(" %s=%d\n", LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern);
 	}
 #endif
 }

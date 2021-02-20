@@ -25,6 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <algorithm>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -50,6 +51,14 @@
 #include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
+
+// RDMNet LLRP Device Only
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -97,7 +106,7 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	WS28xxDmxMulti ws28xxDmxMulti(ws28xxdmxmulti::Source::ARTNET);
+	WS28xxDmxMulti ws28xxDmxMulti;
 
 	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -131,7 +140,8 @@ void notmain(void) {
 
 	const auto nUniverses = ws28xxDmxMulti.GetUniverses();
 
-	uint8_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndexMax = 0;
 
 	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
@@ -142,10 +152,49 @@ void notmain(void) {
 				nPortProtocolIndex++;
 			}
 			nPortProtocolIndex += (ArtNet::MAX_PORTS - nUniverses);
+			nPortProtocolIndexMax = std::max(nPortProtocolIndexMax, nPortProtocolIndex);
 		} else {
 			nPortProtocolIndex += ArtNet::MAX_PORTS;
 		}
 	}
+
+	ws28xxDmxMulti.SetActivePorts((nPortProtocolIndexMax + 1) / 4);
+
+	auto bRunTestPattern = false;
+	uint8_t nTestPattern;
+	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+		bRunTestPattern = true;
+		ws28xxDmxMulti.SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+		ws28xxDmxMulti.Start(0);
+		ws28xxDmxMulti.Blackout(true);
+		node.SetOutput(nullptr);
+	}
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
+
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.Init();
+	llrpOnlyDevice.Start();
+	llrpOnlyDevice.Print();
 
 	node.Print();
 	ws28xxDmxMulti.Print();
@@ -192,11 +241,15 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();;
+		node.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (__builtin_expect((bRunTestPattern), 0)) {
+			ws28xxDmxMulti.RunTestPattern();
+		}
 	}
 }
 

@@ -125,6 +125,10 @@ public:
 	static float ConvertTxH(uint8_t nCode);
 	static uint8_t ConvertTxH(float fTxH);
 
+	static WS28xx *Get() {
+		return s_pThis;
+	}
+
 private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
@@ -140,6 +144,8 @@ protected:
 	uint8_t m_nGlobalBrightness { 0xFF };
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };
+
+	static WS28xx *s_pThis;
 };
 
 #endif /* WS28XX_H_ */

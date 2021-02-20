@@ -37,6 +37,8 @@
 
 using namespace ws28xx;
 
+WS28xx *WS28xx::s_pThis = nullptr;
+
 WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed) :
 	m_tLEDType(Type),
 	m_nLedCount(nLedCount),
@@ -45,6 +47,9 @@ WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t n
 	m_nLowCode(nT0H),
 	m_nHighCode(nT1H)
 {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
 	assert(m_nLedCount != 0);
 
 	if ((m_tLEDType == Type::SK6812W) || (m_tLEDType == Type::APA102)) {
@@ -75,7 +80,7 @@ WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t n
 #endif
 
 	if (m_bIsRTZProtocol) {
-		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tLEDType, WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
+		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tLEDType), WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
 		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
 
 		if (m_tRGBMapping == RGB_MAPPING_UNDEFINED) {
@@ -95,7 +100,7 @@ WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t n
 			m_nHighCode = nHighCode;
 		}
 
-		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", m_tLEDType, WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
+		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tLEDType), WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
 		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
 	}
 

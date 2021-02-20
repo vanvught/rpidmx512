@@ -48,6 +48,14 @@
 #include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 
+// RDMNet LLRP Device Only
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
+
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 #include "storee131.h"
@@ -104,7 +112,7 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	WS28xxDmxMulti ws28xxDmxMulti(ws28xxdmxmulti::Source::E131);
+	WS28xxDmxMulti ws28xxDmxMulti;
 
 	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -138,6 +146,42 @@ void notmain(void) {
 			nPortProtocolIndex++;
 		}
 	}
+
+	auto bRunTestPattern = false;
+	uint8_t nTestPattern;
+	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+		bRunTestPattern = true;
+		ws28xxDmxMulti.SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+		ws28xxDmxMulti.Start(0);
+		ws28xxDmxMulti.Blackout(true);
+		bridge.SetOutput(nullptr);
+	}
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
+
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.Init();
+	llrpOnlyDevice.Start();
+	llrpOnlyDevice.Print();
 
 	bridge.Print();
 	ws28xxDmxMulti.Print();
@@ -186,9 +230,13 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (__builtin_expect((bRunTestPattern), 0)) {
+			ws28xxDmxMulti.RunTestPattern();
+		}
 	}
 }
 

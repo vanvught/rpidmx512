@@ -53,6 +53,7 @@ struct TWS28xxDmxParams {
 	uint8_t nLowCode;										///< 1	  21
 	uint8_t nHighCode;										///< 1	  22
 	uint16_t nStartUniverse[ws28xxdmxparams::MAX_OUTPUTS];	///< 16   38
+	uint8_t nTestPattern;									///< 1    39
 }__attribute__((packed));
 
 static_assert(sizeof(struct TWS28xxDmxParams) <= 64, "struct TWS28xxDmxParams is too large");
@@ -78,6 +79,7 @@ struct WS28xxDmxParamsMask {
 	static constexpr auto START_UNI_PORT_6 = (1U << 17);
 	static constexpr auto START_UNI_PORT_7 = (1U << 18);
 	static constexpr auto START_UNI_PORT_8 = (1U << 19);
+	static constexpr auto TEST_PATTERN = (1U << 20);
 };
 
 class WS28xxDmxParamsStore {
@@ -162,6 +164,10 @@ public:
 
 		isSet = false;
 		return 0;
+	}
+
+	uint8_t GetTestPattern() const {
+		return m_tWS28xxParams.nTestPattern;
 	}
 
 public:

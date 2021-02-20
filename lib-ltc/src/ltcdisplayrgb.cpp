@@ -371,7 +371,7 @@ void LtcDisplayRgb::Print() {
 		printf("Display RGB panel\n");
 	} else {
 		printf("Display WS28xx\n");
-		printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
+		printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), static_cast<int>(m_tLedType));
 		printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_tMapping), m_tMapping);
 	}
 	printf(" Master  : %d\n", m_nMaster);
