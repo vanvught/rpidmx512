@@ -80,9 +80,9 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		m_tLtcDisplayParams.nWS28xxRgbMapping = WS28xx::GetRgbMapping(static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType));
+		m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(WS28xx::GetRgbMapping(static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType)));
 	}
-	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping)), isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING));
+	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<rgbmapping::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING));
 
 	builder.AddComment("RGB panel (specific)");
 	char aTemp[sizeof(m_tLtcDisplayParams.aInfoMessage) + 1];

@@ -34,7 +34,7 @@
 
 class WS28xxDMA: public WS28xx {
 public:
-	WS28xxDMA(ws28xx::Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = ws28xx::spi::speed::ws2801::default_hz);
+	WS28xxDMA(ws28xx::Type Type, uint16_t nLedCount, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = ws28xx::spi::speed::ws2801::default_hz);
 	~WS28xxDMA();
 
 	bool Initialize ();

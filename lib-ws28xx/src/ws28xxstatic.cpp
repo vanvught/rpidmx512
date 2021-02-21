@@ -63,20 +63,20 @@ void WS28xx::GetTxH(Type tType, uint8_t &nLowCode, uint8_t &nHighCode) {
 }
 
 // TODO Update when a new chip is added
-TRGBMapping WS28xx::GetRgbMapping(Type tType) {
+rgbmapping::Map WS28xx::GetRgbMapping(Type tType) {
 	if ((tType == Type::WS2811) || (tType == Type::UCS2903)) {
-		return RGB_MAPPING_RGB;
+		return rgbmapping::Map::RGB;
 	}
 
 	if (tType == Type::UCS1903) {
-		return RGB_MAPPING_BRG;
+		return rgbmapping::Map::BRG;
 	}
 
 	if (tType == Type::CS8812) {
-		return RGB_MAPPING_BGR;
+		return rgbmapping::Map::BGR;
 	}
 
-	return RGB_MAPPING_GRB;
+	return rgbmapping::Map::GRB;
 }
 
 float WS28xx::ConvertTxH(uint8_t nCode) {

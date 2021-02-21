@@ -43,7 +43,7 @@ public:
 	void Start(uint8_t nPort = 0) override;
 	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t*, uint16_t) override;
+	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
 
 	void Blackout(bool bBlackout);
 
@@ -52,7 +52,7 @@ public:
 		return m_tLedType;
 	}
 
-	void SetRgbMapping(TRGBMapping tRGBMapping) {
+	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
 		m_tRGBMapping = tRGBMapping;
 	}
 
@@ -65,7 +65,7 @@ public:
 	}
 
 	virtual void SetLEDCount(uint16_t);
-	uint16_t GetLEDCount() {
+	uint16_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
@@ -111,13 +111,13 @@ private:
 	void UpdateMembers();
 
 protected:
-	ws28xx::Type m_tLedType { ws28xx::Type::WS2812B };
+	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
 
-	TRGBMapping m_tRGBMapping { RGB_MAPPING_UNDEFINED };
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 
-	uint16_t m_nLedCount { 170 };
+	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
 	uint16_t m_nDmxStartAddress { DMX_START_ADDRESS_DEFAULT };
 	uint16_t m_nDmxFootprint { 170 * 3 };
 

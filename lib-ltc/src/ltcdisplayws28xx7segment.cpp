@@ -47,7 +47,7 @@ LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
 	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xx7Segment::Init(ws28xx::Type tLedType, TRGBMapping tRGBMapping) {
+void LtcDisplayWS28xx7Segment::Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplay7Segment->Init(tLedType, tRGBMapping);

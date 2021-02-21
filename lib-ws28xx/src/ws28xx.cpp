@@ -39,7 +39,7 @@ using namespace ws28xx;
 
 WS28xx *WS28xx::s_pThis = nullptr;
 
-WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed) :
+WS28xx::WS28xx(Type Type, uint16_t nLedCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed) :
 	m_tLEDType(Type),
 	m_nLedCount(nLedCount),
 	m_tRGBMapping(tRGBMapping),
@@ -83,12 +83,11 @@ WS28xx::WS28xx(Type Type, uint16_t nLedCount, TRGBMapping tRGBMapping, uint8_t n
 		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tLEDType), WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
 		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
 
-		if (m_tRGBMapping == RGB_MAPPING_UNDEFINED) {
+		if (m_tRGBMapping == rgbmapping::Map::UNDEFINED) {
 			m_tRGBMapping = WS28xx::GetRgbMapping(m_tLEDType);
 		}
 
-		uint8_t nLowCode;
-		uint8_t nHighCode;
+		uint8_t nLowCode, nHighCode;
 
 		WS28xx::GetTxH(m_tLEDType, nLowCode, nHighCode);
 

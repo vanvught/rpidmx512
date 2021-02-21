@@ -96,7 +96,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		switch (m_tRGBMapping) {
-		case RGB_MAPPING_RGB:
+		case rgbmapping::Map::RGB:
 			if (mask & nRed) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {
@@ -113,7 +113,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_RBG:
+		case rgbmapping::Map::RBG:
 			if (mask & nRed) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {
@@ -130,7 +130,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_GRB:
+		case rgbmapping::Map::GRB:
 			if (mask & nGreen) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {
@@ -147,7 +147,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_GBR:
+		case rgbmapping::Map::GBR:
 			if (mask & nGreen) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {
@@ -164,7 +164,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_BRG:
+		case rgbmapping::Map::BRG:
 			if (mask & nBlue) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {
@@ -181,7 +181,7 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_BGR:
+		case rgbmapping::Map::BGR:
 			if (mask & nBlue) {
 				BIT_SET(m_pBuffer4x[k + j], nPort);
 			} else {

@@ -212,7 +212,7 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplay7Segment::Init(Type tLedType, TRGBMapping tRGBMapping) {
+void WS28xxDisplay7Segment::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == nullptr);

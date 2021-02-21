@@ -79,7 +79,7 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplayMatrix::Init(Type tLedType, TRGBMapping tRGBMapping) {
+void WS28xxDisplayMatrix::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == nullptr);

@@ -2,7 +2,7 @@
  * @file rdmhandlere137.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,6 @@
 
 #include "rdmhandler.h"
 
-#include "rdmidentify.h"
 #include "rdm_e120.h"
 
 #include "network.h"
@@ -38,59 +37,6 @@ enum {
 	IPV4_UNCONFIGURED = 0x00000000,
 	NO_DEFAULT_ROUTE = 0x00000000
 };
-
-/*
- * ANSI E1.37-1
- */
-
-void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
-	DEBUG_ENTRY
-
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-
-	pRdmDataOut->param_data_length = 1;
-
-	pRdmDataOut->param_data[0] = RDMIdentify::Get()->GetMode();
-
-	RespondMessageAck();
-
-	DEBUG_EXIT
-}
-
-void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
-	DEBUG_ENTRY
-
-	const auto *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
-
-	if (rdm_command->param_data_length != 1) {
-		RespondMessageNack(E120_NR_FORMAT_ERROR);
-
-		DEBUG_EXIT
-		return;
-	}
-
-	if ((rdm_command->param_data[0] != 0) && (rdm_command->param_data[0] != 0xFF)) {
-		RespondMessageNack( E120_NR_DATA_OUT_OF_RANGE);
-
-		DEBUG_EXIT
-		return;
-	}
-
-	RDMIdentify::Get()->SetMode(static_cast<TRdmIdentifyMode>(rdm_command->param_data[0]));
-
-	if(IsBroadcast) {
-
-		DEBUG_EXIT
-		return;
-	}
-
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	pRdmDataOut->param_data_length = 0;
-
-	RespondMessageAck();
-
-	DEBUG_EXIT
-}
 
 /*
  * ANSI E1.37-2
@@ -374,7 +320,7 @@ void RDMHandler::GetAddressNetmask(__attribute__((unused)) uint16_t nSubDevice) 
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	uint32_t nIpAddress = Network::Get()->GetIp();
+	auto nIpAddress = Network::Get()->GetIp();
 	const auto *p = reinterpret_cast<const uint8_t*>(&nIpAddress);
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
@@ -503,7 +449,7 @@ void RDMHandler::SetDefaultRoute(__attribute__((unused)) bool IsBroadcast, __att
 void RDMHandler::GetHostName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
-	const char *pHostName = Network::Get()->GetHostName();
+	const auto *pHostName = Network::Get()->GetHostName();
 	HandleString(pHostName, strlen(pHostName));
 
 	RespondMessageAck();
@@ -535,7 +481,7 @@ void RDMHandler::SetHostName(__attribute__((unused)) bool IsBroadcast, __attribu
 void RDMHandler::GetDomainName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
-	const char *pDomainName = Network::Get()->GetDomainName();
+	const auto *pDomainName = Network::Get()->GetDomainName();
 	HandleString(pDomainName, strlen(pDomainName));
 
 	RespondMessageAck();

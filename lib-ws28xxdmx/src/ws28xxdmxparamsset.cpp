@@ -2,7 +2,7 @@
  * @file ws28xxparamsset.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@ void WS28xxDmxParams::Set(WS28xxDmx *pWS28xxDmx) {
 	assert(pWS28xxDmx != nullptr);
 
 	if (isMaskSet(WS28xxDmxParamsMask::LED_TYPE)) {
-		pWS28xxDmx->SetLEDType(m_tWS28xxParams.tLedType);
+		pWS28xxDmx->SetLEDType(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType));
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
-		pWS28xxDmx->SetRgbMapping(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping));
+		pWS28xxDmx->SetRgbMapping(static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping));
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {

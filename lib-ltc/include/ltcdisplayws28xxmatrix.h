@@ -38,7 +38,7 @@ public:
 	LtcDisplayWS28xxMatrix();
 	~LtcDisplayWS28xxMatrix();
 
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED) override;
+	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED) override;
 	void Print() override;
 
 	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;

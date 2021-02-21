@@ -36,7 +36,7 @@
 
 using namespace ws28xx;
 
-WS28xxDMA::WS28xxDMA(Type tType, uint16_t nLEDCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed):
+WS28xxDMA::WS28xxDMA(Type tType, uint16_t nLEDCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed):
 	WS28xx(tType, nLEDCount, tRGBMapping, nT0H, nT1H, nClockSpeed)
 {
 	DEBUG_ENTRY

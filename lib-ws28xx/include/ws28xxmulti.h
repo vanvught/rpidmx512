@@ -38,10 +38,11 @@
 
 namespace ws28xxmulti {
 enum class Board {
-	X4,
-	X8,
-	UNKNOWN
+	X4, X8, UNKNOWN
 };
+namespace defaults {
+static constexpr auto BOARD = Board::X4;
+}  // namespace defaults
 }  // namespace ws28xxmulti
 
 class WS28xxMulti {
@@ -49,13 +50,13 @@ public:
 	WS28xxMulti();
 	~WS28xxMulti();
 
-	void Initialize(ws28xx::Type tWS28xxType, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
+	void Initialize(ws28xx::Type tWS28xxType, uint16_t nLedCount, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
 
 	ws28xx::Type GetLEDType() const {
 		return m_tWS28xxType;
 	}
 
-	TRGBMapping GetRgbMapping() const {
+	rgbmapping::Map GetRgbMapping() const {
 		return m_tRGBMapping;
 	}
 
@@ -130,10 +131,10 @@ private:
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 private:
-	ws28xxmulti::Board m_tBoard { ws28xxmulti::Board::X4 };
-	ws28xx::Type m_tWS28xxType { ws28xx::Type::WS2812B };
-	uint16_t m_nLedCount { 170 };
-	TRGBMapping m_tRGBMapping { RGB_MAPPING_UNDEFINED };
+	ws28xxmulti::Board m_tBoard { ws28xxmulti::defaults::BOARD };
+	ws28xx::Type m_tWS28xxType { ws28xx::defaults::TYPE };
+	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 	uint32_t m_nBufSize { 0 };

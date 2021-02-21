@@ -54,7 +54,7 @@ LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
 	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xxMatrix::Init(ws28xx::Type tLedType, TRGBMapping tRGBMapping) {
+void LtcDisplayWS28xxMatrix::Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplayMatrix->Init(tLedType, tRGBMapping);

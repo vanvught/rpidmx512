@@ -2,7 +2,7 @@
  * @file rgbmapping.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,22 +27,24 @@
 
 #include "rgbmapping.h"
 
-constexpr char aMapping[RGB_MAPPING_UNDEFINED][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+using namespace rgbmapping;
 
-TRGBMapping RGBMapping::FromString(const char *pString) {
+constexpr char aMapping[static_cast<uint32_t>(Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+
+Map RGBMapping::FromString(const char *pString) {
 	assert(pString != nullptr);
 
-	for (uint32_t nIndex = 0; nIndex < RGB_MAPPING_UNDEFINED; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(Map::UNDEFINED); nIndex++) {
 		if (strncasecmp(aMapping[nIndex], pString, 3) == 0) {
-			return static_cast<TRGBMapping>(nIndex);
+			return static_cast<Map>(nIndex);
 		}
 	}
 
-	return RGB_MAPPING_UNDEFINED;
+	return Map::UNDEFINED;
 }
 
-const char *RGBMapping::ToString(TRGBMapping tRGBMapping) {
-	if (tRGBMapping < RGB_MAPPING_UNDEFINED) {
+const char *RGBMapping::ToString(Map tRGBMapping) {
+	if (tRGBMapping < Map::UNDEFINED) {
 		return aMapping[static_cast<uint32_t>(tRGBMapping)];
 	}
 

@@ -40,7 +40,7 @@ namespace ws28xxdmxparams {
 
 struct TWS28xxDmxParams {
     uint32_t nSetList;										///< 4	   4
-	ws28xx::Type tLedType;									///< 1	   5
+	uint8_t tLedType;										///< 1	   5
 	uint16_t nLedCount;										///< 2	   7
 	uint16_t nDmxStartAddress;								///< 2	   9
 	bool bLedGrouping;										///< 1	  10
@@ -109,7 +109,7 @@ public:
 	void Dump();
 
 	ws28xx::Type GetLedType() const {
-		return m_tWS28xxParams.tLedType;
+		return static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType);
 	}
 
 	uint16_t GetLedCount() const {
@@ -144,8 +144,8 @@ public:
 		return m_tWS28xxParams.nLedGroupCount;
 	}
 
-	TRGBMapping GetRgbMapping() const {
-		return static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping);
+	rgbmapping::Map GetRgbMapping() const {
+		return static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping);
 	}
 
 	float GetLowCode() const {

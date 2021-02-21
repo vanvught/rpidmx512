@@ -45,7 +45,7 @@ class LtcDisplayRgbSet {
 public:
 	virtual ~LtcDisplayRgbSet() {}
 
-	virtual void Init(ws28xx::Type tLedType, TRGBMapping tRGBMapping);
+	virtual void Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping);
 	virtual void Init();
 
 	virtual void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;

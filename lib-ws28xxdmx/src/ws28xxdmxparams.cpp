@@ -58,16 +58,16 @@ using namespace ws28xxdmxparams;
 
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;
-	m_tWS28xxParams.tLedType = ws28xx::Type::WS2812B;
-	m_tWS28xxParams.nLedCount = 170;
-	m_tWS28xxParams.nDmxStartAddress = 1;
+	m_tWS28xxParams.tLedType = static_cast<uint8_t>(ws28xx::defaults::TYPE);
+	m_tWS28xxParams.nLedCount = ws28xx::defaults::LED_COUNT;
+	m_tWS28xxParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
 	m_tWS28xxParams.bLedGrouping = false;
 	m_tWS28xxParams.nSpiSpeedHz = ws28xx::spi::speed::ws2801::default_hz;
 	m_tWS28xxParams.nGlobalBrightness = 0xFF;
-	m_tWS28xxParams.nActiveOutputs = 1;
+	m_tWS28xxParams.nActiveOutputs = ws28xx::defaults::ACTIVE_OUTPUTS;
 	m_tWS28xxParams.bUseSI5351A = false;
 	m_tWS28xxParams.nLedGroupCount = DMX_UNIVERSE_SIZE;
-	m_tWS28xxParams.nRgbMapping = RGB_MAPPING_UNDEFINED;
+	m_tWS28xxParams.nRgbMapping = static_cast<uint8_t>(rgbmapping::Map::UNDEFINED);
 	m_tWS28xxParams.nLowCode = 0;
 	m_tWS28xxParams.nHighCode = 0;
 	uint16_t nStartUniverse = 1;
@@ -142,8 +142,13 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 			}
 		}
 
-		m_tWS28xxParams.tLedType = static_cast<ws28xx::Type>(i);
-		m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_TYPE;
+		if ((i != static_cast<uint32_t>(ws28xx::Type::UNDEFINED) && (i != static_cast<uint32_t>(ws28xx::defaults::TYPE)))) {
+			m_tWS28xxParams.tLedType = i;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::LED_TYPE;
+		} else {
+			m_tWS28xxParams.tLedType = static_cast<uint8_t>(ws28xx::defaults::TYPE);
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::LED_TYPE;
+		}
 
 		return;
 	}
@@ -162,15 +167,15 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	nLength = 3;
 	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
-		enum TRGBMapping tMapping;
+		rgbmapping::Map tMapping;
 
-		if ((tMapping = RGBMapping::FromString(cBuffer)) != RGB_MAPPING_UNDEFINED) {
+		if ((tMapping = RGBMapping::FromString(cBuffer)) != rgbmapping::Map::UNDEFINED) {
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::RGB_MAPPING;
 		} else {
 			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::RGB_MAPPING;
 		}
 
-		m_tWS28xxParams.nRgbMapping = tMapping;
+		m_tWS28xxParams.nRgbMapping = static_cast<uint8_t>(tMapping);
 
 		return;
 	}
@@ -216,11 +221,11 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
-		if ((nValue8 > 0) &&  (nValue8 <= 8)) {
+		if ((nValue8 > 0) &&  (nValue8 <= 8) &&  (nValue8 != ws28xx::defaults::ACTIVE_OUTPUTS)) {
 			m_tWS28xxParams.nActiveOutputs = nValue8;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::ACTIVE_OUT;
 		} else {
-			m_tWS28xxParams.nActiveOutputs = 1;
+			m_tWS28xxParams.nActiveOutputs = ws28xx::defaults::ACTIVE_OUTPUTS;
 			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::ACTIVE_OUT;
 		}
 		return;
@@ -259,11 +264,11 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if (nValue16 != 0 && nValue16 <= DMX_UNIVERSE_SIZE) {
+		if ((nValue16 != 0) && nValue16 <= (DMX_UNIVERSE_SIZE) && (nValue16 != DMX_START_ADDRESS_DEFAULT)) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
 		} else {
-			m_tWS28xxParams.nDmxStartAddress = 1;
+			m_tWS28xxParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
 			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::DMX_START_ADDRESS;
 		}
 		return;

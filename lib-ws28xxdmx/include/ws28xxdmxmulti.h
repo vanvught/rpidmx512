@@ -55,14 +55,14 @@ public:
 	void Blackout(bool bBlackout);
 
 	void SetLEDType(ws28xx::Type tWS28xxMultiType);
-	ws28xx::Type GetLEDType() {
+	ws28xx::Type GetLEDType() const {
 		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetLEDType();
 		}
 		return m_tLedType;
 	}
 
-	void SetRgbMapping(TRGBMapping tRGBMapping) {
+	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
 		m_tRGBMapping = tRGBMapping;
 	}
 
@@ -75,27 +75,27 @@ public:
 	}
 
 	void SetLEDCount(uint16_t nLedCount);
-	uint32_t GetLEDCount() {
+	uint32_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
 	void SetActivePorts(uint8_t nActiveOutputs);
-	uint32_t GetActivePorts() {
+	uint32_t GetActivePorts() const {
 		return m_nActiveOutputs;
 	}
 
-	uint32_t GetUniverses() {
+	uint32_t GetUniverses() const {
 		return m_nUniverses;
 	}
 
 	void SetUseSI5351A(bool bUse) {
 		m_bUseSI5351A = bUse;
 	}
-	bool GetUseSI5351A() {
+	bool GetUseSI5351A() const {
 		return m_bUseSI5351A;
 	}
 
-	ws28xxmulti::Board GetBoard() {
+	ws28xxmulti::Board GetBoard() const {
 		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetBoard();
 		}
@@ -124,14 +124,14 @@ private:
 	void UpdateMembers();
 
 private:
-	ws28xx::Type m_tLedType { ws28xx::Type::WS2812B };
+	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
 
-	TRGBMapping m_tRGBMapping { RGB_MAPPING_UNDEFINED };
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 
-	uint32_t m_nLedCount { 170 };
-	uint32_t m_nActiveOutputs { 1 };
+	uint32_t m_nLedCount { ws28xx::defaults::LED_COUNT };
+	uint32_t m_nActiveOutputs { ws28xx::defaults::ACTIVE_OUTPUTS };
 
 	WS28xxMulti *m_pLEDStripe { nullptr };
 

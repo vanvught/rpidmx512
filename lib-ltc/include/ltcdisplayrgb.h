@@ -70,7 +70,7 @@ public:
 	LtcDisplayRgb(ltcdisplayrgb::Type tRgbType, ltcdisplayrgb::WS28xxType tWS28xxType);
 	~LtcDisplayRgb();
 
-	void SetMapping(TRGBMapping tMapping) {
+	void SetMapping(rgbmapping::Map tMapping) {
 		m_tMapping = tMapping;
 	}
 
@@ -121,7 +121,7 @@ private:
 	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
 	int32_t m_nHandle { -1 };
 	char m_Buffer[64];
-	TRGBMapping m_tMapping { RGB_MAPPING_UNDEFINED };
+	rgbmapping::Map m_tMapping { rgbmapping::Map::UNDEFINED };
 	ws28xx::Type m_tLedType { ws28xx::Type::UNDEFINED };
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
 	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };

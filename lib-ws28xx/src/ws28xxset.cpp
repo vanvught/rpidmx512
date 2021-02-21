@@ -40,32 +40,32 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		nOffset *= 8;
 
 		switch (m_tRGBMapping) {
-		case RGB_MAPPING_RGB:
+		case rgbmapping::Map::RGB:
 			SetColorWS28xx(nOffset, nRed);
 			SetColorWS28xx(nOffset + 8, nGreen);
 			SetColorWS28xx(nOffset + 16, nBlue);
 			break;
-		case RGB_MAPPING_RBG:
+		case rgbmapping::Map::RBG:
 			SetColorWS28xx(nOffset, nRed);
 			SetColorWS28xx(nOffset + 8, nBlue);
 			SetColorWS28xx(nOffset + 16, nGreen);
 			break;
-		case RGB_MAPPING_GRB:
+		case rgbmapping::Map::GRB:
 			SetColorWS28xx(nOffset, nGreen);
 			SetColorWS28xx(nOffset + 8, nRed);
 			SetColorWS28xx(nOffset + 16, nBlue);
 			break;
-		case RGB_MAPPING_GBR:
+		case rgbmapping::Map::GBR:
 			SetColorWS28xx(nOffset, nGreen);
 			SetColorWS28xx(nOffset + 8, nBlue);
 			SetColorWS28xx(nOffset + 16, nRed);
 			break;
-		case RGB_MAPPING_BRG:
+		case rgbmapping::Map::BRG:
 			SetColorWS28xx(nOffset, nBlue);
 			SetColorWS28xx(nOffset + 8, nRed);
 			SetColorWS28xx(nOffset + 16, nGreen);
 			break;
-		case RGB_MAPPING_BGR:
+		case rgbmapping::Map::BGR:
 			SetColorWS28xx(nOffset, nBlue);
 			SetColorWS28xx(nOffset + 8, nGreen);
 			SetColorWS28xx(nOffset + 16, nRed);

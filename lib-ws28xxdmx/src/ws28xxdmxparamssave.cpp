@@ -58,20 +58,20 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(m_tWS28xxParams.tLedType), isMaskSet(WS28xxDmxParamsMask::LED_TYPE));
+	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType)), isMaskSet(WS28xxDmxParamsMask::LED_TYPE));
 	builder.Add(DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount, isMaskSet(WS28xxDmxParamsMask::LED_COUNT));
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
-		m_tWS28xxParams.nRgbMapping = WS28xx::GetRgbMapping(m_tWS28xxParams.tLedType);
+		m_tWS28xxParams.nRgbMapping = static_cast<uint8_t>(WS28xx::GetRgbMapping(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType)));
 	}
-	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping)), isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING));
+	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping)), isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING));
 
 	if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE) || !isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
 		uint8_t nLowCode;
 		uint8_t nHighCode;
 
-		WS28xx::GetTxH(m_tWS28xxParams.tLedType, nLowCode, nHighCode);
+		WS28xx::GetTxH(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType), nLowCode, nHighCode);
 
 		if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
 			m_tWS28xxParams.nLowCode = nLowCode;

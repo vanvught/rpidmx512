@@ -1,5 +1,6 @@
 /**
- * @file ltcdisplayrgbset.cpp
+ * @file rdmhandlere1371.cpp
+ *
  */
 /* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
@@ -22,41 +23,64 @@
  * THE SOFTWARE.
  */
 
-#include "ltcdisplayrgbset.h"
+#include <string.h>
 
-#include "ltc.h"
-#include "ws28xx.h"
+#include "rdmhandler.h"
+
+#include "rdmidentify.h"
+#include "rdm_e120.h"
 
 #include "debug.h"
 
-using namespace ltcdisplayrgb;
+/*
+ * ANSI E1.37-1
+ */
 
-void LtcDisplayRgbSet::Init(__attribute__((unused)) ws28xx::Type tLedType, __attribute__((unused)) rgbmapping::Map tRGBMapping) {
+void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+
+	pRdmDataOut->param_data_length = 1;
+
+	pRdmDataOut->param_data[0] = RDMIdentify::Get()->GetMode();
+
+	RespondMessageAck();
 
 	DEBUG_EXIT
 }
 
-void LtcDisplayRgbSet::Init() {
+void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
-	DEBUG_EXIT
-}
+	const auto *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-void LtcDisplayRgbSet::ShowFPS(__attribute__((unused)) ltc::type tTimeCodeType, __attribute__((unused)) struct Colours &tColours) {
-	DEBUG_ENTRY
+	if (rdm_command->param_data_length != 1) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
 
-	DEBUG_EXIT
-}
+		DEBUG_EXIT
+		return;
+	}
 
-void LtcDisplayRgbSet::ShowSource(__attribute__((unused)) ltc::source tSource, __attribute__((unused)) struct Colours &tColours) {
-	DEBUG_ENTRY
+	if ((rdm_command->param_data[0] != 0) && (rdm_command->param_data[0] != 0xFF)) {
+		RespondMessageNack( E120_NR_DATA_OUT_OF_RANGE);
 
-	DEBUG_EXIT
-}
+		DEBUG_EXIT
+		return;
+	}
 
-void LtcDisplayRgbSet::ShowInfo(__attribute__((unused)) const char *pInfo, __attribute__((unused)) uint32_t nLength, __attribute__((unused)) struct Colours &tColours) {
-	DEBUG_ENTRY
+	RDMIdentify::Get()->SetMode(static_cast<TRdmIdentifyMode>(rdm_command->param_data[0]));
+
+	if(IsBroadcast) {
+
+		DEBUG_EXIT
+		return;
+	}
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
+
+	RespondMessageAck();
 
 	DEBUG_EXIT
 }
