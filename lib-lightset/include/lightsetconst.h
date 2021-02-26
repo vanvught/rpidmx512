@@ -2,7 +2,7 @@
  * @file lightsetconst.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,10 +35,14 @@ struct LightSetConst {
 	static const char PARAMS_MERGE_MODE[];
 	static const char PARAMS_MERGE_MODE_PORT[4][18];
 
+	static const char PARAMS_START_UNI_PORT[8][18];
+
 	static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
 
 	static const char PARAMS_DMX_START_ADDRESS[];
 	static const char PARAMS_DMX_SLOT_INFO[];
+
+	static const char PARAMS_TEST_PATTERN[];
 };
 
 #endif /* LIGHTSETCONST_H_ */

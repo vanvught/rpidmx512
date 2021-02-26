@@ -2,7 +2,7 @@
  * @file lightsetconst.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,21 @@
 const char LightSetConst::PARAMS_OUTPUT[] = "output";
 
 const char LightSetConst::PARAMS_UNIVERSE[] = "universe";
-const char LightSetConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d" };
+const char LightSetConst::PARAMS_UNIVERSE_PORT[4][16] = { "universe_port_a",
+		"universe_port_b", "universe_port_c", "universe_port_d" };
 
 const char LightSetConst::PARAMS_MERGE_MODE[] = "merge_mode";
-const char LightSetConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a", "merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+const char LightSetConst::PARAMS_MERGE_MODE_PORT[4][18] = { "merge_mode_port_a",
+		"merge_mode_port_b", "merge_mode_port_c", "merge_mode_port_d" };
+
+const char LightSetConst::PARAMS_START_UNI_PORT[8][18] = { "start_uni_port_1",
+		"start_uni_port_2", "start_uni_port_3", "start_uni_port_4",
+		"start_uni_port_5", "start_uni_port_6", "start_uni_port_7",
+		"start_uni_port_8" };
 
 const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_update";
 
 const char LightSetConst::PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
 const char LightSetConst::PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";
+
+const char LightSetConst::PARAMS_TEST_PATTERN[] = "test_pattern";

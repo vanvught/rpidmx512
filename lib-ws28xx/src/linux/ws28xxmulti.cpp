@@ -5,7 +5,7 @@
 /**
  * Stub for testing purpose only
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,8 @@ void WS28xxMulti::Blackout(void) {
 }
 
 void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
-	for (uint32_t k = 0; k < m_nBufSize; k = k + SINGLE_RGB) {
-		printf("%.2d ", k / SINGLE_RGB);
+	for (uint32_t k = 0; k < m_nBufSize; k = k + ws28xx::single::RGB) {
+		printf("%.2d ", k / ws28xx::single::RGB);
 
 		for (uint32_t j = 0; j < 4; j++) {
 

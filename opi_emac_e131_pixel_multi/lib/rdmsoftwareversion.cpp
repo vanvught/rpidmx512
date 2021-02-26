@@ -1,8 +1,8 @@
 /**
- * @file ws28xxconst.cpp
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include "ws28xxconst.h"
+#include <stdint.h>
 
-#include "ws28xx.h"
+#include "rdmsoftwareversion.h"
 
-using namespace ws28xx;
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-const char WS28xxConst::TYPES[static_cast<unsigned>(Type::UNDEFINED)][WS28XX_TYPES_MAX_NAME_LENGTH] =
-		{ "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",	// 6
-		  "SK6812\0", "SK6812W",													// 2
-		  "APA102\0",																// 1
-		  "UCS1903", "UCS2903",														// 2
-		  "P9813",																	// 1
-		  "CS8812"																	// 1
-		};																			// = 13
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
+}
+
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
+
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

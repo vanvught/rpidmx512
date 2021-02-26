@@ -2,7 +2,7 @@
  * @file ws28xxset.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include "ws28xx.h"
 #include "rgbmapping.h"
 
+using namespace ws28xx;
 
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(m_pBuffer != nullptr);
@@ -39,32 +40,32 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		nOffset *= 8;
 
 		switch (m_tRGBMapping) {
-		case RGB_MAPPING_RGB:
+		case rgbmapping::Map::RGB:
 			SetColorWS28xx(nOffset, nRed);
 			SetColorWS28xx(nOffset + 8, nGreen);
 			SetColorWS28xx(nOffset + 16, nBlue);
 			break;
-		case RGB_MAPPING_RBG:
+		case rgbmapping::Map::RBG:
 			SetColorWS28xx(nOffset, nRed);
 			SetColorWS28xx(nOffset + 8, nBlue);
 			SetColorWS28xx(nOffset + 16, nGreen);
 			break;
-		case RGB_MAPPING_GRB:
+		case rgbmapping::Map::GRB:
 			SetColorWS28xx(nOffset, nGreen);
 			SetColorWS28xx(nOffset + 8, nRed);
 			SetColorWS28xx(nOffset + 16, nBlue);
 			break;
-		case RGB_MAPPING_GBR:
+		case rgbmapping::Map::GBR:
 			SetColorWS28xx(nOffset, nGreen);
 			SetColorWS28xx(nOffset + 8, nBlue);
 			SetColorWS28xx(nOffset + 16, nRed);
 			break;
-		case RGB_MAPPING_BRG:
+		case rgbmapping::Map::BRG:
 			SetColorWS28xx(nOffset, nBlue);
 			SetColorWS28xx(nOffset + 8, nRed);
 			SetColorWS28xx(nOffset + 16, nGreen);
 			break;
-		case RGB_MAPPING_BGR:
+		case rgbmapping::Map::BGR:
 			SetColorWS28xx(nOffset, nBlue);
 			SetColorWS28xx(nOffset + 8, nGreen);
 			SetColorWS28xx(nOffset + 16, nRed);
@@ -79,7 +80,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		return;
 	}
 
-	if (m_tLEDType == APA102) {
+	if (m_tLEDType == Type::APA102) {
 		uint32_t nOffset = 4 + (nLEDIndex * 4);
 		assert(nOffset + 3 < m_nBufSize);
 
@@ -91,7 +92,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		return;
 	}
 
-	if (m_tLEDType == WS2801) {
+	if (m_tLEDType == Type::WS2801) {
 		uint32_t nOffset = nLEDIndex * 3;
 		assert(nOffset + 2 < m_nBufSize);
 
@@ -102,7 +103,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 		return;
 	}
 
-	if (m_tLEDType == P9813) {
+	if (m_tLEDType == Type::P9813) {
 		uint32_t nOffset = 4 + (nLEDIndex * 4);
 		assert(nOffset + 3 < m_nBufSize);
 
@@ -120,11 +121,11 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(m_pBuffer != nullptr);
 	assert(nLEDIndex < m_nLedCount);
-	assert(m_tLEDType == SK6812W);
+	assert(m_tLEDType == Type::SK6812W);
 
 	uint32_t nOffset = nLEDIndex * 4;
 
-	if (m_tLEDType == SK6812W) {
+	if (m_tLEDType == Type::SK6812W) {
 		nOffset *= 8;
 
 		SetColorWS28xx(nOffset, nGreen);
@@ -135,7 +136,7 @@ void WS28xx::SetLED(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nB
 }
 
 void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
-	assert(m_tLEDType != WS2801);
+	assert(m_tLEDType != Type::WS2801);
 	assert(nOffset + 7 < m_nBufSize);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
@@ -149,7 +150,7 @@ void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
 }
 
 void WS28xx::SetGlobalBrightness(uint8_t nGlobalBrightness) {
-	if (m_tLEDType == APA102) {
+	if (m_tLEDType == Type::APA102) {
 		if (nGlobalBrightness > 0x1F) {
 			m_nGlobalBrightness = 0xFF;
 		} else {

@@ -2,7 +2,7 @@
  * @file rgbmapping.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,20 +24,15 @@
 #ifndef RGBMAPPING_H_
 #define RGBMAPPING_H_
 
-enum TRGBMapping {
-	RGB_MAPPING_RGB,
-	RGB_MAPPING_RBG,
-	RGB_MAPPING_GRB,
-	RGB_MAPPING_GBR,
-	RGB_MAPPING_BRG,
-	RGB_MAPPING_BGR,
-	RGB_MAPPING_UNDEFINED
+namespace rgbmapping {
+enum class Map {
+	RGB, RBG, GRB, GBR, BRG, BGR, UNDEFINED
 };
+}  // namespace rgbmapping
 
-class RGBMapping {
-public:
-	static TRGBMapping FromString(const char *pString);
-	static const char *ToString(TRGBMapping tRGBMapping);
+struct RGBMapping {
+	static rgbmapping::Map FromString(const char *pString);
+	static const char* ToString(rgbmapping::Map tRGBMapping);
 };
 
 #endif /* RGBMAPPING_H_ */

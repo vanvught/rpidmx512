@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,9 @@
 #include "rgbmapping.h"
 
 #include "debug.h"
+
+using namespace ws28xx;
+
 
 /*
  *  A 8 x 7 Segment (with 3 colons) TC Display constructed of WS82xx LEDS,
@@ -209,7 +212,7 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplay7Segment::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
+void WS28xxDisplay7Segment::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == nullptr);

@@ -2,7 +2,7 @@
  * @file ws28xxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 
 #include "debug.h"
 
+using namespace ws28xxmulti;
+
 uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 	const uint32_t input = nBits;
 	uint32_t output;
@@ -40,7 +42,7 @@ uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 }
 
 void WS28xxMulti::Update() {
-	if (m_tBoard == WS28XXMULTI_BOARD_8X) {
+	if (m_tBoard == Board::X8) {
 		assert(m_pBuffer8x != nullptr);
 		assert(!h3_spi_dma_tx_is_active());
 
@@ -54,7 +56,7 @@ void WS28xxMulti::Update() {
 void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
-	if (m_tBoard == WS28XXMULTI_BOARD_8X) {
+	if (m_tBoard == Board::X8) {
 		assert(m_pBlackoutBuffer8x != nullptr);
 		assert(!h3_spi_dma_tx_is_active());
 

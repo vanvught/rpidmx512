@@ -2,7 +2,7 @@
  * @file ws28xxdmx.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG
-
 #include <stdint.h>
 #include <algorithm>
 #include <cassert>
@@ -40,7 +38,9 @@
 
 #include "lightset.h"
 
-WS28xxDmx::WS28xxDmx() : m_nDmxFootprint(170 * 3) {
+using namespace ws28xx;
+
+WS28xxDmx::WS28xxDmx() {
 	UpdateMembers();
 }
 
@@ -141,7 +141,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 
 	for (uint32_t j = beginIndex; j < endIndex; j++) {
 		__builtin_prefetch(&pData[i]);
-		if (m_tLedType == SK6812W) {
+		if (m_tLedType == Type::SK6812W) {
 			if (i + 3 > nLength) {
 				break;
 			}
@@ -161,10 +161,10 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 	}
 }
 
-void WS28xxDmx::SetLEDType(TWS28XXType type) {
+void WS28xxDmx::SetLEDType(Type type) {
 	m_tLedType = type;
 
-	if (type == SK6812W) {
+	if (type == Type::SK6812W) {
 		m_nBeginIndexPortId1 = 128;
 		m_nBeginIndexPortId2 = 256;
 		m_nBeginIndexPortId3 = 384;
@@ -240,7 +240,7 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 		return false;
 	}
 
-	if (m_tLedType == SK6812W) {
+	if (m_tLedType == Type::SK6812W) {
 		nIndex = MOD(nSlotOffset, 4);
 	} else {
 		nIndex = MOD(nSlotOffset, 3);
@@ -266,4 +266,44 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 	}
 
 	return true;
+}
+
+void WS28xxDmx::SetTestPattern(pixelpatterns::Pattern TestPattern) {
+	if ((TestPattern != pixelpatterns::Pattern::NONE) && (TestPattern < pixelpatterns::Pattern::LAST)) {
+		if (m_pPixelPatterns == nullptr) {
+			m_pPixelPatterns = new PixelPatterns(1);
+			assert(m_pPixelPatterns != nullptr);
+		}
+
+		const auto nColour1 = m_pPixelPatterns->Colour(0, 0, 0);
+		const auto nColour2 = m_pPixelPatterns->Colour(100, 100, 100);
+		constexpr auto nInterval = 100;
+		constexpr auto nSteps = 10;
+
+		switch (TestPattern) {
+		case pixelpatterns::Pattern::RAINBOW_CYCLE:
+			m_pPixelPatterns->RainbowCycle(0, nInterval);
+			break;
+		case pixelpatterns::Pattern::THEATER_CHASE:
+			m_pPixelPatterns->TheaterChase(0, nColour1, nColour2, nInterval);
+			break;
+		case pixelpatterns::Pattern::COLOR_WIPE:
+			m_pPixelPatterns->ColourWipe(0, nColour2, nInterval);
+			break;
+		case pixelpatterns::Pattern::SCANNER:
+			m_pPixelPatterns->Scanner(0, m_pPixelPatterns->Colour(255, 255, 255), nInterval);
+			break;
+		case pixelpatterns::Pattern::FADE:
+			m_pPixelPatterns->Fade(0, nColour1, nColour2, nSteps, nInterval);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void WS28xxDmx::RunTestPattern() {
+	if (m_pPixelPatterns != nullptr) {
+		m_pPixelPatterns->Run();
+	}
 }

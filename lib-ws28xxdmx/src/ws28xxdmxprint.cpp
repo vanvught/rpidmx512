@@ -2,7 +2,7 @@
  * @file ws28xxdmxprint.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,18 +29,20 @@
 
 #include "ws28xx.h"
 
+using namespace ws28xx;
+
 void WS28xxDmx::Print() {
 	printf("Led parameters\n");
 	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
 	printf(" Count : %d\n", m_nLedCount);
 
-	if ((m_tLedType == WS2801) || (m_tLedType == APA102) || (m_tLedType == P9813)) {
-		if (m_tLedType == P9813) {
+	if ((m_tLedType == Type::WS2801) || (m_tLedType == Type::APA102) || (m_tLedType == Type::P9813)) {
+		if (m_tLedType == Type::P9813) {
 			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::p9813::default_hz, spi::speed::p9813::max_hz);
 		} else {
 			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::ws2801::default_hz, spi::speed::ws2801::max_hz);
 		}
-		if (m_tLedType == APA102) {
+		if (m_tLedType == Type::APA102) {
 			printf(" GlbBr : %d\n", m_nGlobalBrightness);
 		}
 	}

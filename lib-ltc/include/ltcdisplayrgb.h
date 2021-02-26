@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ enum class ColourIndex {
 };
 
 struct Defaults {
-	static constexpr auto LED_TYPE = WS2812B;
+	static constexpr auto LED_TYPE = ws28xx::Type::WS2812B;
 	static constexpr auto COLOUR_TIME = 0x00FF0000;
 	static constexpr auto COLOUR_COLON = 0x00FFFC00;
 	static constexpr auto COLOUR_MESSAGE = 0x00FFFFFF;
@@ -70,7 +70,7 @@ public:
 	LtcDisplayRgb(ltcdisplayrgb::Type tRgbType, ltcdisplayrgb::WS28xxType tWS28xxType);
 	~LtcDisplayRgb();
 
-	void SetMapping(TRGBMapping tMapping) {
+	void SetMapping(rgbmapping::Map tMapping) {
 		m_tMapping = tMapping;
 	}
 
@@ -89,7 +89,7 @@ public:
 		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
 	}
 
-	void Init(TWS28XXType tLedType = TWS28XXType::WS2812B);
+	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B);
 	void Print();
 
 	void Run();
@@ -118,21 +118,21 @@ private:
 private:
 	ltcdisplayrgb::Type m_tDisplayRgbType;
 	ltcdisplayrgb::WS28xxType m_tDisplayRgbWS28xxType;
-	uint8_t m_nIntensity{ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS};
-	int32_t m_nHandle{-1};
+	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
+	int32_t m_nHandle { -1 };
 	char m_Buffer[64];
-  	TRGBMapping m_tMapping{RGB_MAPPING_UNDEFINED};
-  	TWS28XXType m_tLedType{WS28XX_UNDEFINED};
+	rgbmapping::Map m_tMapping { rgbmapping::Map::UNDEFINED };
+	ws28xx::Type m_tLedType { ws28xx::Type::UNDEFINED };
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
-	uint32_t m_nMaster{ltcdisplayrgb::Defaults::MASTER};
-	bool m_bShowMsg{false};
+	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };
+	bool m_bShowMsg { false };
 	char m_aMessage[ltcdisplayrgb::MAX_MESSAGE_SIZE];
-	uint32_t m_nMsgTimer{0};
-	uint32_t m_nColonBlinkMillis{0};
-	char m_nSecondsPrevious{60};
-	ltcdisplayrgb::ColonBlinkMode m_tColonBlinkMode{ltcdisplayrgb::Defaults::COLON_BLINK_MODE};
+	uint32_t m_nMsgTimer { 0 };
+	uint32_t m_nColonBlinkMillis { 0 };
+	char m_nSecondsPrevious { 60 };
+	ltcdisplayrgb::ColonBlinkMode m_tColonBlinkMode { ltcdisplayrgb::Defaults::COLON_BLINK_MODE };
 
-	LtcDisplayRgbSet *m_pLtcDisplayRgbSet{nullptr};
+	LtcDisplayRgbSet *m_pLtcDisplayRgbSet { nullptr };
 
 	struct ltcdisplayrgb::Colours m_tColoursTime;
 	struct ltcdisplayrgb::Colours m_tColoursColons;

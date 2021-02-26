@@ -38,7 +38,7 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght) override;
 
-	void SetLEDType(TWS28XXType tLedType) override;
+	void SetLEDType(ws28xx::Type tLedType) override;
 	void SetLEDCount(uint16_t nLedCount) override;
 	void SetLEDGroupCount(uint16_t nLedGroupCount);
 	uint32_t GetLEDGroupCount() {

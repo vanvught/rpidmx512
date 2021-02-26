@@ -167,7 +167,7 @@ void notmain(void) {
 
 			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 
-			if (pWS28xxDmx->GetLEDType() == SK6812W) {
+			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
 				if (nLedCount > 128) {
 					bridge.SetDirectUpdate(true);
 					bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse + 1);

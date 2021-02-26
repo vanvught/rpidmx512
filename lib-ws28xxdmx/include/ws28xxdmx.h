@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 #include "ws28xx.h"
 #include "ws28xxdmxstore.h"
 
+#include "pixelpatterns.h"
+
 class WS28xxDmx: public LightSet {
 public:
 	WS28xxDmx();
@@ -41,16 +43,16 @@ public:
 	void Start(uint8_t nPort = 0) override;
 	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t*, uint16_t) override;
+	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
 
 	void Blackout(bool bBlackout);
 
-	virtual void SetLEDType(TWS28XXType);
-	TWS28XXType GetLEDType() {
+	virtual void SetLEDType(ws28xx::Type type);
+	ws28xx::Type GetLEDType() {
 		return m_tLedType;
 	}
 
-	void SetRgbMapping(TRGBMapping tRGBMapping) {
+	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
 		m_tRGBMapping = tRGBMapping;
 	}
 
@@ -63,7 +65,7 @@ public:
 	}
 
 	virtual void SetLEDCount(uint16_t);
-	uint16_t GetLEDCount() {
+	uint16_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
@@ -87,6 +89,9 @@ public:
 		m_pWS28xxDmxStore = pWS28xxDmxStore;
 	}
 
+	void SetTestPattern(pixelpatterns::Pattern TestPattern);
+	void RunTestPattern();
+
 	void Print() override;
 
 public: // RDM
@@ -106,31 +111,33 @@ private:
 	void UpdateMembers();
 
 protected:
-	TWS28XXType m_tLedType{WS2812B};
+	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
 
-	TRGBMapping m_tRGBMapping{RGB_MAPPING_UNDEFINED};
-	uint8_t m_nLowCode{0};
-	uint8_t m_nHighCode{0};
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
+	uint8_t m_nLowCode { 0 };
+	uint8_t m_nHighCode { 0 };
 
-	uint16_t m_nLedCount{170};
-	uint16_t m_nDmxStartAddress{DMX_START_ADDRESS_DEFAULT};
-	uint16_t m_nDmxFootprint;
+	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
+	uint16_t m_nDmxStartAddress { DMX_START_ADDRESS_DEFAULT };
+	uint16_t m_nDmxFootprint { 170 * 3 };
 
-	WS28xx* m_pWS28xx{nullptr};
-	bool m_bIsStarted{false};
-	bool m_bBlackout{false};
+	WS28xx *m_pWS28xx { nullptr };
+	bool m_bIsStarted { false };
+	bool m_bBlackout { false };
 
-	WS28xxDmxStore *m_pWS28xxDmxStore{nullptr};
+	WS28xxDmxStore *m_pWS28xxDmxStore { nullptr };
 
 private:
-	uint32_t m_nClockSpeedHz{0};
-	uint8_t m_nGlobalBrightness{0xFF};
-	uint32_t m_nBeginIndexPortId1{170};
-	uint32_t m_nBeginIndexPortId2{340};
-	uint32_t m_nBeginIndexPortId3{510};
-	uint32_t m_nChannelsPerLed{3};
+	uint32_t m_nClockSpeedHz { 0 };
+	uint8_t m_nGlobalBrightness { 0xFF };
+	uint32_t m_nBeginIndexPortId1 { 170 };
+	uint32_t m_nBeginIndexPortId2 { 340 };
+	uint32_t m_nBeginIndexPortId3 { 510 };
+	uint32_t m_nChannelsPerLed { 3 };
 
-	uint32_t m_nPortIdLast{3};
+	uint32_t m_nPortIdLast { 3 };
+
+	PixelPatterns *m_pPixelPatterns { nullptr };
 };
 
 #endif /* WS28XXDMX_H_ */

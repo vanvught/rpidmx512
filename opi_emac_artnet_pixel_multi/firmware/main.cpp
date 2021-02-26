@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <cassert>
+#include <algorithm>
 
 #include "hardware.h"
 #include "networkh3emac.h"
@@ -52,6 +52,14 @@
 #include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 
+// RDMNet LLRP Device Only
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+#include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
+
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 #include "remoteconfig.h"
@@ -77,8 +85,6 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreWS28xxDmx storeWS28xxDmx;
-
 	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
@@ -100,7 +106,9 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	WS28xxDmxMulti ws28xxDmxMulti(WS28XXDMXMULTI_SRC_ARTNET);
+	WS28xxDmxMulti ws28xxDmxMulti;
+
+	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 	if (ws28xxparms.Load()) {
@@ -117,7 +125,6 @@ void notmain(void) {
 
 	StoreArtNet storeArtNet;
 	StoreArtNet4 storeArtNet4;
-
 	ArtNet4Params artnetparams(&storeArtNet4);
 
 	if (artnetparams.Load()) {
@@ -127,66 +134,72 @@ void notmain(void) {
 
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetArtNetStore(StoreArtNet::Get());
+	node.SetArtNetStore(&storeArtNet);
 	node.SetDirectUpdate(true);
 	node.SetOutput(&ws28xxDmxMulti);
 
-	const uint16_t nLedCount = ws28xxDmxMulti.GetLEDCount();
-	const uint8_t nUniverseStart = artnetparams.GetUniverse();
+	const auto nUniverses = ws28xxDmxMulti.GetUniverses();
 
-	uint8_t nPortIndex = 0;
-	uint8_t nPage = 1;
+	uint32_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndexMax = 0;
 
-	for (uint32_t i = 0; i < nActivePorts; i++) {
-
-		node.SetUniverseSwitch(nPortIndex, ARTNET_OUTPUT_PORT,  nUniverseStart);
-
-		if (ws28xxDmxMulti.GetLEDType() == SK6812W) {
-			if (nLedCount > 128) {
-				node.SetUniverseSwitch(nPortIndex + 1, ARTNET_OUTPUT_PORT, nUniverseStart + 1);
+	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
+		auto isSet = false;
+		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
+		if (isSet) {
+			for (uint32_t u = 0; u < nUniverses; u++) {
+				node.SetUniverse(nPortProtocolIndex, ARTNET_OUTPUT_PORT, nStartUniversePort + u);
+				nPortProtocolIndex++;
 			}
-
-			if (nLedCount > 256) {
-				node.SetUniverseSwitch(nPortIndex + 2, ARTNET_OUTPUT_PORT, nUniverseStart + 2);
-			}
-
-			if (nLedCount > 384) {
-				node.SetUniverseSwitch(nPortIndex + 3, ARTNET_OUTPUT_PORT, nUniverseStart + 3);
-			}
+			nPortProtocolIndex += (ArtNet::MAX_PORTS - nUniverses);
+			nPortProtocolIndexMax = std::max(nPortProtocolIndexMax, nPortProtocolIndex);
 		} else {
-			if (nLedCount > 170) {
-				node.SetUniverseSwitch(nPortIndex + 1, ARTNET_OUTPUT_PORT, nUniverseStart + 1);
-			}
-
-			if (nLedCount > 340) {
-				node.SetUniverseSwitch(nPortIndex + 2, ARTNET_OUTPUT_PORT, nUniverseStart + 2);
-			}
-
-			if (nLedCount > 510) {
-				node.SetUniverseSwitch(nPortIndex + 3, ARTNET_OUTPUT_PORT, nUniverseStart + 3);
-			}
+			nPortProtocolIndex += ArtNet::MAX_PORTS;
 		}
-
-		if (nPage < ArtNet::MAX_PAGES) {
-			uint8_t nSubnetSwitch = node.GetSubnetSwitch(nPage - 1);
-			nSubnetSwitch = (nSubnetSwitch + 1) & 0x0F;
-			node.SetSubnetSwitch(nSubnetSwitch, nPage);
-
-			if (nSubnetSwitch == 0) {
-				uint8_t nNetSwitch = node.GetNetSwitch(nPage);
-				nNetSwitch = (nNetSwitch + 1) & 0x0F;
-				node.SetNetSwitch(nNetSwitch, nPage);
-			}
-			nPage++;
-		}
-
-		nPortIndex += ArtNet::MAX_PORTS;
 	}
+
+	ws28xxDmxMulti.SetActivePorts((nPortProtocolIndexMax + 1) / 4);
+
+	auto bRunTestPattern = false;
+	uint8_t nTestPattern;
+	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+		bRunTestPattern = true;
+		ws28xxDmxMulti.SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+		ws28xxDmxMulti.Start(0);
+		ws28xxDmxMulti.Blackout(true);
+		node.SetOutput(nullptr);
+	}
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
+
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.Init();
+	llrpOnlyDevice.Start();
+	llrpOnlyDevice.Print();
 
 	node.Print();
 	ws28xxDmxMulti.Print();
 
-	display.SetTitle("Eth Art-Net 4 Pixel %c", ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_8X ? '8' : (ws28xxDmxMulti.GetBoard() == WS28XXMULTI_BOARD_4X ? '4' : ' '));
+	display.SetTitle("Eth Art-Net 4 Pixel %c", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '));
 	display.Set(2, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(3, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(4, DISPLAY_UDF_LABEL_HOSTNAME);
@@ -228,11 +241,15 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		node.Run();;
+		node.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (__builtin_expect((bRunTestPattern), 0)) {
+			ws28xxDmxMulti.RunTestPattern();
+		}
 	}
 }
 

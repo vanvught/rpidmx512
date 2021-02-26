@@ -189,9 +189,9 @@ void notmain(void) {
 			ws28xxparms.Set(pWS28xxDmx);
 			pSpi = pWS28xxDmx;
 
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+			const auto nLedCount = pWS28xxDmx->GetLEDCount();
 
-			if (pWS28xxDmx->GetLEDType() == SK6812W) {
+			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
 				if (nLedCount > 128) {
 					node.SetDirectUpdate(true);
 					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);

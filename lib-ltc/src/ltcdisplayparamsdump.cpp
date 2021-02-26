@@ -2,7 +2,7 @@
  * @file ltcdisplayparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ void LtcDisplayParams::Dump() {
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<TWS28XXType>(m_tLtcDisplayParams.nWS28xxLedType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxLedType));
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxLedType));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {

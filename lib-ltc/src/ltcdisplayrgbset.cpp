@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayrgbset.cpp
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 using namespace ltcdisplayrgb;
 
-void LtcDisplayRgbSet::Init(__attribute__((unused)) TWS28XXType tLedType, __attribute__((unused)) TRGBMapping tRGBMapping) {
+void LtcDisplayRgbSet::Init(__attribute__((unused)) ws28xx::Type tLedType, __attribute__((unused)) rgbmapping::Map tRGBMapping) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

@@ -172,7 +172,7 @@ void notmain(void) {
 			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
 
 			// For the time being, just 1 Universe
-			if (pWS28xxDmx->GetLEDType() == SK6812W) {
+			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
 				if (nLedCount > 128) {
 					pWS28xxDmx->SetLEDCount(128);
 				}

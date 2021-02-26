@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,14 +34,15 @@
 
 #include "rgbmapping.h"
 
-enum TWS28xxDmxMultiSrc {
-	WS28XXDMXMULTI_SRC_ARTNET,
-	WS28XXDMXMULTI_SRC_E131
-};
+#include "pixelpatterns.h"
+
+namespace ws28xxdmxmulti {
+
+}  // namespace ws28xxdmxmulti
 
 class WS28xxDmxMulti final: public LightSet {
 public:
-	WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc);
+	WS28xxDmxMulti();
 	~WS28xxDmxMulti() override;
 
 	void Initialize();
@@ -53,15 +54,15 @@ public:
 
 	void Blackout(bool bBlackout);
 
-	void SetLEDType(TWS28XXType tWS28xxMultiType);
-	TWS28XXType GetLEDType() {
+	void SetLEDType(ws28xx::Type tWS28xxMultiType);
+	ws28xx::Type GetLEDType() const {
 		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetLEDType();
 		}
 		return m_tLedType;
 	}
 
-	void SetRgbMapping(TRGBMapping tRGBMapping) {
+	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
 		m_tRGBMapping = tRGBMapping;
 	}
 
@@ -74,63 +75,80 @@ public:
 	}
 
 	void SetLEDCount(uint16_t nLedCount);
-	uint32_t GetLEDCount() {
+	uint32_t GetLEDCount() const {
 		return m_nLedCount;
 	}
 
 	void SetActivePorts(uint8_t nActiveOutputs);
-	uint32_t GetActivePorts() {
+	uint32_t GetActivePorts() const {
 		return m_nActiveOutputs;
 	}
 
-	uint32_t GetUniverses() {
+	uint32_t GetUniverses() const {
 		return m_nUniverses;
 	}
 
 	void SetUseSI5351A(bool bUse) {
 		m_bUseSI5351A = bUse;
 	}
-	bool GetUseSI5351A() {
+	bool GetUseSI5351A() const {
 		return m_bUseSI5351A;
 	}
 
-	WS28xxMultiBoard GetBoard() {
+	ws28xxmulti::Board GetBoard() const {
 		if (m_pLEDStripe != nullptr) {
 			return m_pLEDStripe->GetBoard();
 		}
-		return WS28XXMULTI_BOARD_UNKNOWN;
+		return ws28xxmulti::Board::UNKNOWN;
 	}
 
+	void SetTestPattern(pixelpatterns::Pattern TestPattern);
+	void RunTestPattern();
+
 	void Print() override;
+
+	// RDMNet LLRP Device Only
+	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
+		return false;
+	}
+
+	uint16_t GetDmxStartAddress() override {
+		return DMX_ADDRESS_INVALID;
+	}
+
+	uint16_t GetDmxFootprint() override {
+		return 0;
+	}
 
 private:
 	void UpdateMembers();
 
 private:
-	TWS28xxDmxMultiSrc m_tSrc;
-	TWS28XXType m_tLedType;
+	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
 
-	TRGBMapping m_tRGBMapping;
-	uint8_t m_nLowCode;
-	uint8_t m_nHighCode;
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
+	uint8_t m_nLowCode { 0 };
+	uint8_t m_nHighCode { 0 };
 
-	uint32_t m_nLedCount;
-	uint32_t m_nActiveOutputs;
+	uint32_t m_nLedCount { ws28xx::defaults::LED_COUNT };
+	uint32_t m_nActiveOutputs { ws28xx::defaults::ACTIVE_OUTPUTS };
 
-	WS28xxMulti *m_pLEDStripe;
+	WS28xxMulti *m_pLEDStripe { nullptr };
 
-	bool m_bIsStarted;
-	bool m_bBlackout;
+	bool m_bIsStarted { false };
+	bool m_bBlackout { false };
 
-	uint32_t m_nUniverses;
+	uint32_t m_nUniverses { 1 };
 
-	uint32_t m_nBeginIndexPortId1;
-	uint32_t m_nBeginIndexPortId2;
-	uint32_t m_nBeginIndexPortId3;
-	uint32_t m_nChannelsPerLed;
+	uint32_t m_nBeginIndexPortId1 { 170 };
+	uint32_t m_nBeginIndexPortId2 { 340 };
+	uint32_t m_nBeginIndexPortId3 { 510 };
+	uint32_t m_nChannelsPerLed { 3 };
 
-	uint32_t m_nPortIdLast;
-	bool m_bUseSI5351A;
+	uint32_t m_nPortIdLast { 3 };
+	bool m_bUseSI5351A { false };
+
+	PixelPatterns *m_pPixelPatterns { nullptr };
 };
 
 #endif /* WS28XXDMXMULTI_H_ */

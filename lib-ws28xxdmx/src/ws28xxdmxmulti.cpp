@@ -37,25 +37,10 @@
 
 #include "debug.h"
 
-WS28xxDmxMulti::WS28xxDmxMulti(TWS28xxDmxMultiSrc tSrc):
-	m_tSrc(tSrc),
-	m_tLedType(WS2812B),
-	m_tRGBMapping(RGB_MAPPING_UNDEFINED),
-	m_nLowCode(0),
-	m_nHighCode(0),
-	m_nLedCount(170),
-	m_nActiveOutputs(1),
-	m_pLEDStripe(nullptr),
-	m_bIsStarted(false),
-	m_bBlackout(false),
-	m_nUniverses(1), // -> m_nLedCount(170)
-	m_nBeginIndexPortId1(170),
-	m_nBeginIndexPortId2(340),
-	m_nBeginIndexPortId3(510),
-	m_nChannelsPerLed(3),
-	m_nPortIdLast(3), // -> (m_nActiveOutputs * m_nUniverses) -1;
-	m_bUseSI5351A(false)
-{
+using namespace ws28xxdmxmulti;
+using namespace ws28xx;
+
+WS28xxDmxMulti::WS28xxDmxMulti() {
 	DEBUG_ENTRY
 
 	UpdateMembers();
@@ -135,15 +120,14 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
-	uint8_t nSwitch = nPortId & static_cast<uint8_t>(~m_nUniverses) & 0x03;
 
-	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
-		if (m_nUniverses != 1) {
-			nSwitch /= (m_nUniverses - 1);
-		} else {
-			nSwitch = 0;
-		}
-	}
+#if defined (NODE_ARTNET)
+	const uint32_t nOutIndex = nPortId / 4;
+	const uint8_t nSwitch = nPortId - (nOutIndex * 4);
+#else
+	const uint32_t nOutIndex = nPortId / m_nUniverses;
+	const uint8_t nSwitch = nPortId - (nOutIndex * m_nUniverses);
+#endif
 
 	switch (nSwitch) {
 	case 0:
@@ -167,14 +151,6 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 		break;
 	}
 
-	uint32_t nOutIndex;
-
-	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
-		nOutIndex = nPortId / m_nUniverses;
-	} else {
-		nOutIndex = nPortId / 4;
-	}
-
 	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nSwitch=%d, beginIndex=%d, endIndex=%d",
 			static_cast<int>(nPortId), static_cast<int>(nLength), static_cast<int>(nOutIndex),
 			static_cast<int>(nSwitch), static_cast<int>(beginIndex), static_cast<int>(endIndex));
@@ -185,7 +161,7 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 	for (uint32_t j = beginIndex; j < endIndex; j++) {
 		__builtin_prefetch(&pData[i]);
-		if (m_tLedType == SK6812W) {
+		if (m_tLedType == Type::SK6812W) {
 			if (i + 3 > nLength) {
 				break;
 			}
@@ -219,12 +195,12 @@ void WS28xxDmxMulti::Blackout(bool bBlackout) {
 	}
 }
 
-void WS28xxDmxMulti::SetLEDType(TWS28XXType tWS28xxMultiType) {
+void WS28xxDmxMulti::SetLEDType(Type tWS28xxMultiType) {
 	DEBUG_ENTRY
 
 	m_tLedType = tWS28xxMultiType;
 
-	if (tWS28xxMultiType == SK6812W) {
+	if (tWS28xxMultiType == Type::SK6812W) {
 		m_nBeginIndexPortId1 = 128;
 		m_nBeginIndexPortId2 = 256;
 		m_nBeginIndexPortId3 = 384;
@@ -250,7 +226,7 @@ void WS28xxDmxMulti::SetLEDCount(uint16_t nLedCount) {
 void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
 	DEBUG_ENTRY
 
-	const uint8_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X ? 4 : 8);
+	const uint8_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8);
 
 	m_nActiveOutputs = std::min(nActiveOutputs, nMaxActiveOutputs);
 
@@ -262,11 +238,11 @@ void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
 void WS28xxDmxMulti::UpdateMembers() {
 	m_nUniverses = 1 + (m_nLedCount / (1 + m_nBeginIndexPortId1));
 
-	if (m_tSrc == WS28XXDMXMULTI_SRC_E131) {
-		m_nPortIdLast = (m_nActiveOutputs * m_nUniverses)  - 1;
-	} else {
-		m_nPortIdLast = ((m_nActiveOutputs - 1) * 4) + m_nUniverses - 1;
-	}
+#if defined (NODE_ARTNET)
+	m_nPortIdLast = ((m_nActiveOutputs - 1) * 4) + m_nUniverses - 1;
+#else
+	m_nPortIdLast = (m_nActiveOutputs * m_nUniverses)  - 1;
+#endif
 
 	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_nUniverses=%d, m_nPortIndexLast=%d", static_cast<int>(m_tLedType), static_cast<int>(m_nLedCount), static_cast<int>(m_nUniverses), static_cast<int>(m_nPortIdLast));
 }
@@ -281,8 +257,50 @@ void WS28xxDmxMulti::Print() {
 	printf(" T1H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(m_pLEDStripe->GetHighCode()), m_pLEDStripe->GetHighCode());
 	printf(" Count   : %d\n", m_nLedCount);
 	printf(" Outputs : %d\n", m_nActiveOutputs);
-	printf(" Board   : %dx\n", m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X ? 4 : 8);
-	if (m_pLEDStripe->GetBoard() == WS28XXMULTI_BOARD_4X) {
+	printf(" Board   : %dx\n", m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8);
+	if (m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4) {
 		printf("  SI5351A : %c\n", m_bUseSI5351A ? 'Y' : 'N');
+	}
+}
+
+void WS28xxDmxMulti::SetTestPattern(pixelpatterns::Pattern TestPattern) {
+	if ((TestPattern != pixelpatterns::Pattern::NONE) && (TestPattern < pixelpatterns::Pattern::LAST)) {
+		if (m_pPixelPatterns == nullptr) {
+			m_pPixelPatterns = new PixelPatterns(m_nActiveOutputs);
+			assert(m_pPixelPatterns != nullptr);
+		}
+
+		const auto nColour1 = m_pPixelPatterns->Colour(0, 0, 0);
+		const auto nColour2 = m_pPixelPatterns->Colour(100, 100, 100);
+		constexpr auto nInterval = 100;
+		constexpr auto nSteps = 10;
+
+		for (uint32_t i = 0; i < m_nActiveOutputs; i++) {
+			switch (TestPattern) {
+			case pixelpatterns::Pattern::RAINBOW_CYCLE:
+				m_pPixelPatterns->RainbowCycle(i, nInterval);
+				break;
+			case pixelpatterns::Pattern::THEATER_CHASE:
+				m_pPixelPatterns->TheaterChase(i, nColour1, nColour2, nInterval);
+				break;
+			case pixelpatterns::Pattern::COLOR_WIPE:
+				m_pPixelPatterns->ColourWipe(i, nColour2, nInterval);
+				break;
+			case pixelpatterns::Pattern::SCANNER:
+				m_pPixelPatterns->Scanner(i, m_pPixelPatterns->Colour(255, 255, 255), nInterval);
+				break;
+			case pixelpatterns::Pattern::FADE:
+				m_pPixelPatterns->Fade(i, nColour1, nColour2, nSteps, nInterval);
+				break;
+			default:
+				break;
+			}
+		}
+	}
+}
+
+void WS28xxDmxMulti::RunTestPattern() {
+	if (m_pPixelPatterns != nullptr) {
+		m_pPixelPatterns->Run();
 	}
 }

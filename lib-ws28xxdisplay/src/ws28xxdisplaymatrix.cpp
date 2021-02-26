@@ -2,7 +2,7 @@
  * @file ws28xxmatrix.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,8 @@
 #include "../lib-device/src/font_cp437.h"
 
 #include "debug.h"
+
+using namespace ws28xx;
 
 // FIXME Currently working for single row only
 
@@ -77,7 +79,7 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 	DEBUG2_EXIT
 }
 
-void WS28xxDisplayMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
+void WS28xxDisplayMatrix::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG2_ENTRY
 
 	assert(m_pWS28xx == nullptr);

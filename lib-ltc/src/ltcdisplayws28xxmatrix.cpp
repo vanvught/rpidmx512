@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayws28xxmatrix.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,7 +54,7 @@ LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
 	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xxMatrix::Init(TWS28XXType tLedType, TRGBMapping tRGBMapping) {
+void LtcDisplayWS28xxMatrix::Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping) {
 	DEBUG1_ENTRY
 
 	m_pWS28xxDisplayMatrix->Init(tLedType, tRGBMapping);

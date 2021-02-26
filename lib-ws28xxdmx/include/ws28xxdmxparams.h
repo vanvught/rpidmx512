@@ -1,8 +1,8 @@
 /**
- * @file devicesparams.h
+ * @file ws28xxdmxparams.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -34,21 +34,27 @@
 
 #include "rgbmapping.h"
 
+namespace ws28xxdmxparams {
+	static constexpr auto MAX_OUTPUTS = 8;
+}  // ws28xxdmxparams name
+
 struct TWS28xxDmxParams {
-    uint32_t nSetList;
-	TWS28XXType tLedType;
-	uint16_t nLedCount;
-	uint16_t nDmxStartAddress;
-	bool bLedGrouping;
-	uint32_t nSpiSpeedHz;
-	uint8_t nGlobalBrightness;
-	uint8_t nActiveOutputs;
-	bool bUseSI5351A;
-	uint16_t nLedGroupCount;
-	uint8_t nRgbMapping;
-	uint8_t nLowCode;
-	uint8_t nHighCode;
-};
+    uint32_t nSetList;										///< 4	   4
+	uint8_t tLedType;										///< 1	   5
+	uint16_t nLedCount;										///< 2	   7
+	uint16_t nDmxStartAddress;								///< 2	   9
+	bool bLedGrouping;										///< 1	  10
+	uint32_t nSpiSpeedHz;									///< 4	  14
+	uint8_t nGlobalBrightness;								///< 1	  15
+	uint8_t nActiveOutputs;									///< 1	  16
+	bool bUseSI5351A;										///< 1	  17
+	uint16_t nLedGroupCount;								///< 2	  19
+	uint8_t nRgbMapping;									///< 1	  20
+	uint8_t nLowCode;										///< 1	  21
+	uint8_t nHighCode;										///< 1	  22
+	uint16_t nStartUniverse[ws28xxdmxparams::MAX_OUTPUTS];	///< 16   38
+	uint8_t nTestPattern;									///< 1    39
+}__attribute__((packed));
 
 static_assert(sizeof(struct TWS28xxDmxParams) <= 64, "struct TWS28xxDmxParams is too large");
 
@@ -65,6 +71,15 @@ struct WS28xxDmxParamsMask {
 	static constexpr auto RGB_MAPPING = (1U << 9);
 	static constexpr auto LOW_CODE = (1U << 10);
 	static constexpr auto HIGH_CODE = (1U << 11);
+	static constexpr auto START_UNI_PORT_1 = (1U << 12);
+	static constexpr auto START_UNI_PORT_2 = (1U << 13);
+	static constexpr auto START_UNI_PORT_3 = (1U << 14);
+	static constexpr auto START_UNI_PORT_4 = (1U << 15);
+	static constexpr auto START_UNI_PORT_5 = (1U << 16);
+	static constexpr auto START_UNI_PORT_6 = (1U << 17);
+	static constexpr auto START_UNI_PORT_7 = (1U << 18);
+	static constexpr auto START_UNI_PORT_8 = (1U << 19);
+	static constexpr auto TEST_PATTERN = (1U << 20);
 };
 
 class WS28xxDmxParamsStore {
@@ -79,7 +94,8 @@ public:
 class WS28xxDmxParams {
 public:
 	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28xxParamsStore = nullptr);
-	~WS28xxDmxParams();
+	~WS28xxDmxParams() {
+	}
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
@@ -92,8 +108,8 @@ public:
 
 	void Dump();
 
-	TWS28XXType GetLedType() const {
-		return m_tWS28xxParams.tLedType;
+	ws28xx::Type GetLedType() const {
+		return static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType);
 	}
 
 	uint16_t GetLedCount() const {
@@ -128,16 +144,30 @@ public:
 		return m_tWS28xxParams.nLedGroupCount;
 	}
 
-	TRGBMapping GetRgbMapping() const {
-		return static_cast<TRGBMapping>(m_tWS28xxParams.nRgbMapping);
+	rgbmapping::Map GetRgbMapping() const {
+		return static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping);
 	}
 
-	float GetLowCode() {
+	float GetLowCode() const {
 		return WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode);
 	}
 
-	float GetHighCode() {
+	float GetHighCode() const {
 		return WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode);
+	}
+
+	uint16_t GetStartUniversePort(uint32_t nOutputPortIndex, bool& isSet) const {
+		if (nOutputPortIndex < ws28xxdmxparams::MAX_OUTPUTS) {
+			isSet = isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << nOutputPortIndex);
+			return m_tWS28xxParams.nStartUniverse[nOutputPortIndex];
+		}
+
+		isSet = false;
+		return 0;
+	}
+
+	uint8_t GetTestPattern() const {
+		return m_tWS28xxParams.nTestPattern;
 	}
 
 public:

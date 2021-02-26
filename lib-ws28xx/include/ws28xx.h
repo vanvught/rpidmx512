@@ -2,7 +2,7 @@
  * @file ws28xx.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,8 @@
 
 #include "rgbmapping.h"
 
-enum TWS28XXType {
+namespace ws28xx {
+enum class Type {
 	WS2801 = 0,
 	WS2811,
 	WS2812,
@@ -44,17 +45,18 @@ enum TWS28XXType {
 	UCS2903,
 	P9813,
 	CS8812,
-	WS28XX_UNDEFINED
+	UNDEFINED
 };
-
-enum {
-	LEDCOUNT_RGB_MAX = (4 * 170), LEDCOUNT_RGBW_MAX = (4 * 128)
-};
-
-enum {
-	SINGLE_RGB = 24, SINGLE_RGBW = 32
-};
-
+namespace max {
+namespace ledcount {
+static constexpr auto RGB = (4 * 170);
+static constexpr auto RGBW = (4 * 128);
+}  // namespace ledcount
+}  // namespace max
+namespace single {
+static constexpr auto RGB = 24;
+static constexpr auto RGBW = 32;
+}  // namespace single
 namespace spi {
 namespace speed {
 namespace ws2801 {
@@ -67,19 +69,25 @@ static constexpr uint32_t default_hz = 4000000;	///< 4 MHz
 }  // namespace p9813
 }  // namespace speed
 }  // namespace spi
+namespace defaults {
+static constexpr auto TYPE = Type::WS2812B;
+static constexpr auto LED_COUNT = 170;
+static constexpr auto ACTIVE_OUTPUTS = 1;
+}  // namespace defaults
+}  // namespace ws28xx
 
 class WS28xx {
 public:
-	WS28xx(TWS28XXType Type, uint16_t nLedCount, TRGBMapping tRGBMapping = RGB_MAPPING_UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = spi::speed::ws2801::default_hz);
+	WS28xx(ws28xx::Type Type, uint16_t nLedCount, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, uint32_t nClockSpeed = ws28xx::spi::speed::ws2801::default_hz);
 	~WS28xx();
 
 	bool Initialize ();
 
-	TWS28XXType GetLEDType() const {
+	ws28xx::Type GetLEDType() const {
 		return m_tLEDType;
 	}
 
-	TRGBMapping GetRgbMapping() const {
+	rgbmapping::Map GetRgbMapping() const {
 		return m_tRGBMapping;
 	}
 
@@ -115,28 +123,34 @@ public:
 		return false;
 	}
 
-	static const char *GetLedTypeString(TWS28XXType tType);
-	static TWS28XXType GetLedTypeString(const char *pValue);
-	static void GetTxH(TWS28XXType tType, uint8_t &nLowCode, uint8_t &nHighCode);
-	static TRGBMapping GetRgbMapping(TWS28XXType tType);
+	static const char *GetLedTypeString(ws28xx::Type tType);
+	static ws28xx::Type GetLedTypeString(const char *pValue);
+	static void GetTxH(ws28xx::Type tType, uint8_t &nLowCode, uint8_t &nHighCode);
+	static rgbmapping::Map GetRgbMapping(ws28xx::Type tType);
 	static float ConvertTxH(uint8_t nCode);
 	static uint8_t ConvertTxH(float fTxH);
+
+	static WS28xx *Get() {
+		return s_pThis;
+	}
 
 private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
 protected:
-	TWS28XXType m_tLEDType;
-	uint16_t m_nLedCount;
-	TRGBMapping m_tRGBMapping;
+	ws28xx::Type m_tLEDType { ws28xx::defaults::TYPE };
+	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
+	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
 	uint32_t m_nClockSpeedHz;
 	uint32_t m_nBufSize;
 	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;
-	bool m_bIsRTZProtocol{false};
-	uint8_t m_nGlobalBrightness{0xFF};
-	uint8_t *m_pBuffer{nullptr};
-	uint8_t *m_pBlackoutBuffer{nullptr};
+	bool m_bIsRTZProtocol { false };
+	uint8_t m_nGlobalBrightness { 0xFF };
+	uint8_t *m_pBuffer { nullptr };
+	uint8_t *m_pBlackoutBuffer { nullptr };
+
+	static WS28xx *s_pThis;
 };
 
 #endif /* WS28XX_H_ */

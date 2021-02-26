@@ -2,7 +2,7 @@
  * @file ws28xxdma.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,10 @@
 
 #include "debug.h"
 
-WS28xxDMA::WS28xxDMA(TWS28XXType Type, uint16_t nLEDCount, TRGBMapping tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed):
-	WS28xx(Type, nLEDCount, tRGBMapping, nT0H, nT1H, nClockSpeed)
+using namespace ws28xx;
+
+WS28xxDMA::WS28xxDMA(Type tType, uint16_t nLEDCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed):
+	WS28xx(tType, nLEDCount, tRGBMapping, nT0H, nT1H, nClockSpeed)
 {
 	DEBUG_ENTRY
 
@@ -62,14 +64,14 @@ bool WS28xxDMA::Initialize() {
 
 	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
-	if (m_tLEDType == APA102) {
+	if (m_tLEDType == Type::APA102) {
 		memset(m_pBuffer, 0, 4);
 		for (uint32_t i = 0; i < m_nLedCount; i++) {
 			SetLED(i, 0, 0, 0);
 		}
 		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 	} else {
-		memset(m_pBuffer, m_tLEDType == WS2801 ? 0 : 0xC0, m_nBufSize);
+		memset(m_pBuffer, m_tLEDType == Type::WS2801 ? 0 : 0xC0, m_nBufSize);
 	}
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);

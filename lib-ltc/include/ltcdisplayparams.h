@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,8 +98,8 @@ public:
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
 
-	TWS28XXType GetWS28xxLedType() const {
-		return static_cast<TWS28XXType>(m_tLtcDisplayParams.nWS28xxLedType);
+	ws28xx::Type GetWS28xxLedType() const {
+		return static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType);
 	}
 
 	ltcdisplayrgb::WS28xxType GetWS28xxDisplayType() const {

@@ -2,7 +2,7 @@
  * @file ws28xxstatic.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,47 +30,53 @@
 #include "ws28xx.h"
 #include "ws28xxconst.h"
 
-const char *WS28xx::GetLedTypeString(TWS28XXType tType) {
-	if (tType < WS28XX_UNDEFINED) {
-		return WS28xxConst::TYPES[tType];
+using namespace ws28xx;
+
+const char *WS28xx::GetLedTypeString(Type tType) {
+	if (tType < Type::UNDEFINED) {
+		return WS28xxConst::TYPES[static_cast<uint32_t>(tType)];
 	}
 
 	return "Unknown";
 }
 
-TWS28XXType WS28xx::GetLedTypeString(const char *pValue) {
+Type WS28xx::GetLedTypeString(const char *pValue) {
 	assert(pValue != nullptr);
 
-	for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Type::UNDEFINED); i++) {
 		if (strcasecmp(pValue, WS28xxConst::TYPES[i]) == 0) {
-			return static_cast<TWS28XXType>(i);
+			return static_cast<Type>(i);
 		}
 	}
 
-	return WS28XX_UNDEFINED;
+	return Type::UNDEFINED;
 }
 
 // TODO Update when a new chip is added
-void WS28xx::GetTxH(TWS28XXType tType, uint8_t &nLowCode, uint8_t &nHighCode) {
+void WS28xx::GetTxH(Type tType, uint8_t &nLowCode, uint8_t &nHighCode) {
 	nLowCode = 0xC0;
-	nHighCode = (tType == WS2812B ? 0xF8 : (((tType == UCS1903) || (tType == UCS2903) || (tType == CS8812)) ? 0xFC : 0xF0));
+	nHighCode = (
+			tType == Type::WS2812B ?
+					0xF8 :
+					(((tType == Type::UCS1903) || (tType == Type::UCS2903)
+							|| (tType == Type::CS8812)) ? 0xFC : 0xF0));
 }
 
 // TODO Update when a new chip is added
-TRGBMapping WS28xx::GetRgbMapping(TWS28XXType tType) {
-	if ((tType == WS2811) || (tType == UCS2903)) {
-		return RGB_MAPPING_RGB;
+rgbmapping::Map WS28xx::GetRgbMapping(Type tType) {
+	if ((tType == Type::WS2811) || (tType == Type::UCS2903)) {
+		return rgbmapping::Map::RGB;
 	}
 
-	if (tType == UCS1903) {
-		return RGB_MAPPING_BRG;
+	if (tType == Type::UCS1903) {
+		return rgbmapping::Map::BRG;
 	}
 
-	if (tType == CS8812) {
-		return RGB_MAPPING_BGR;
+	if (tType == Type::CS8812) {
+		return rgbmapping::Map::BGR;
 	}
 
-	return RGB_MAPPING_GRB;
+	return rgbmapping::Map::GRB;
 }
 
 float WS28xx::ConvertTxH(uint8_t nCode) {

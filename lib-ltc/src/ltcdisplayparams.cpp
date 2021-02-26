@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,11 +59,11 @@ static constexpr auto ROTARY_FULLSTEP = 0x00;
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nSetList = 0;
-	m_tLtcDisplayParams.nWS28xxLedType = Defaults::LED_TYPE;
+	m_tLtcDisplayParams.nWS28xxLedType = static_cast<uint8_t>(Defaults::LED_TYPE);
 	m_tLtcDisplayParams.nGlobalBrightness = Defaults::GLOBAL_BRIGHTNESS;	// Not used
 	m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = defaults::MAX7219_INTENSITY;
-	m_tLtcDisplayParams.nWS28xxRgbMapping = RGB_MAPPING_RGB;
+	m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(rgbmapping::Map::RGB);
 	m_tLtcDisplayParams.nDisplayRgbIntensity = Defaults::MASTER;
 	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(Defaults::COLON_BLINK_MODE);
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(ColourIndex::TIME)] = Defaults::COLOUR_TIME;
@@ -185,7 +185,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	nLength = 7;
 	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
-		for (uint32_t i = 0; i < WS28XX_UNDEFINED; i++) {
+		for (uint32_t i = 0; i < static_cast<uint32_t>(ws28xx::Type::UNDEFINED); i++) {
 			if (strcasecmp(aBuffer, WS28xxConst::TYPES[i]) == 0) {
 				m_tLtcDisplayParams.nWS28xxLedType = i;
 				m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::WS28XX_LED_TYPE;
@@ -198,9 +198,9 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	nLength = 3;
 	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
-		enum TRGBMapping tMapping;
-		if ((tMapping = RGBMapping::FromString(aBuffer)) != RGB_MAPPING_UNDEFINED) {
-			m_tLtcDisplayParams.nWS28xxRgbMapping = tMapping;
+		rgbmapping::Map tMapping;
+		if ((tMapping = RGBMapping::FromString(aBuffer)) != rgbmapping::Map::UNDEFINED) {
+			m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(tMapping);
 			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::WS28XX_RGB_MAPPING;
 		}
 		return;
@@ -249,7 +249,7 @@ void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {
 	assert(pLtcDisplayRgb != nullptr);
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		pLtcDisplayRgb->SetMapping(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping));
+		pLtcDisplayRgb->SetMapping(static_cast<rgbmapping::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {

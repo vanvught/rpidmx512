@@ -2,7 +2,7 @@
  * @file ws28xxmulti8x.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 #include "hal_spi.h"
 
 #include "debug.h"
+
+using namespace ws28xx;
 
 #define SPI_CS1		GPIO_EXT_26
 
@@ -76,11 +78,11 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	assert(nLedIndex < m_nLedCount);
 
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * SINGLE_RGB);
+	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		switch (m_tRGBMapping) {
-		case RGB_MAPPING_RGB:
+		case rgbmapping::Map::RGB:
 			if (mask & nRed) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -97,7 +99,7 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_RBG:
+		case rgbmapping::Map::RBG:
 			if (mask & nRed) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -114,7 +116,7 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_GRB:
+		case rgbmapping::Map::GRB:
 			if (mask & nGreen) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -131,7 +133,7 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_GBR:
+		case rgbmapping::Map::GBR:
 			if (mask & nGreen) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -148,7 +150,7 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_BRG:
+		case rgbmapping::Map::BRG:
 			if (mask & nBlue) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -165,7 +167,7 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
 			}
 			break;
-		case RGB_MAPPING_BGR:
+		case rgbmapping::Map::BGR:
 			if (mask & nBlue) {
 				BIT_SET(m_pBuffer8x[k + j], nPort);
 			} else {
@@ -208,10 +210,10 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPort < 8);
 	assert(nLedIndex < m_nLedCount);
-	assert(m_tWS28xxType == SK6812W);
+	assert(m_tWS28xxType == Type::SK6812W);
 
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * SINGLE_RGBW);
+	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

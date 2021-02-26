@@ -2,7 +2,7 @@
  * @file ws28xxdmxgrouping.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 
 #include "debug.h"
 
+using namespace ws28xx;
+
 WS28xxDmxGrouping::WS28xxDmxGrouping() {
 	UpdateMembers();
 }
@@ -50,7 +52,7 @@ void WS28xxDmxGrouping::SetData(__attribute__((unused)) uint8_t nPort, const uin
 	uint32_t i = 0;
 	uint32_t d = 0;
 
-	if (m_tLedType == SK6812W) {
+	if (m_tLedType == Type::SK6812W) {
 		for (uint32_t g = 0; (g < m_nGroups) && (d < nLength); g++) {
 			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < m_nLEDGroupCount; k++) {
@@ -76,7 +78,7 @@ void WS28xxDmxGrouping::SetData(__attribute__((unused)) uint8_t nPort, const uin
 
 }
 
-void WS28xxDmxGrouping::SetLEDType(TWS28XXType tLedType) {
+void WS28xxDmxGrouping::SetLEDType(Type tLedType) {
 	DEBUG_PRINTF("tLedType=%d", static_cast<int>(tLedType));
 
 	m_tLedType = tLedType;
@@ -129,7 +131,7 @@ void WS28xxDmxGrouping::UpdateMembers() {
 
 	m_nGroups = m_nLedCount / m_nLEDGroupCount;
 
-	if (m_tLedType == SK6812W) {
+	if (m_tLedType == Type::SK6812W) {
 		if (m_nGroups > (DMX_UNIVERSE_SIZE / 4)) {
 			m_nGroups = DMX_UNIVERSE_SIZE / 4;
 		}

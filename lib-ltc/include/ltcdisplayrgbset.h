@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayrgbset.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ class LtcDisplayRgbSet {
 public:
 	virtual ~LtcDisplayRgbSet() {}
 
-	virtual void Init(TWS28XXType tLedType, TRGBMapping tRGBMapping);
+	virtual void Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping);
 	virtual void Init();
 
 	virtual void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;
