@@ -2,7 +2,7 @@
  * @file displayudfshowartnet.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,7 +56,7 @@ void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
 void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 	uint8_t nAddress;
 	if (pArtNetNode->GetUniverseSwitch(0, nAddress)) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(), pArtNetNode->GetSubnetSwitch(), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(), true), pArtNetNode->GetPortProtocol() == PORT_ARTNET_ARTNET ? "    " : "sACN");
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(0), pArtNetNode->GetSubnetSwitch(0), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(0), true), pArtNetNode->GetPortProtocol(0) == PORT_ARTNET_ARTNET ? "    " : "sACN");
 	}
 
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {

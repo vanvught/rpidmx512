@@ -42,7 +42,7 @@
 
 DisplayUdf *DisplayUdf::s_pThis = nullptr;
 
-DisplayUdf::DisplayUdf(): Display(DisplayType::SSD1306) {
+DisplayUdf::DisplayUdf() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);

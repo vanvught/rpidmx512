@@ -2,7 +2,7 @@
  * @file displayhandler.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,7 @@
 #include "ledblink.h"
 #include "display.h"
 
-class DisplayHandler: public LedBlinkDisplay {
-public:
+struct DisplayHandler: public LedBlinkDisplay {
 	DisplayHandler() : m_bHaveDisplay(Display::Get() != nullptr) {
 	}
 	~DisplayHandler() {
@@ -62,7 +61,7 @@ public:
 				break;
 			}
 
-			Display::Get()->SetCursorPos(20, 7);
+			Display::Get()->SetCursorPos(Display::Get()->getCols() - 1, Display::Get()->getRows() - 1);
 			Display::Get()->PutChar(c);
 		}
 	}

@@ -55,8 +55,9 @@ enum class DisplayType {
 
 class Display {
 public:
+	Display();
 	Display(uint32_t nCols, uint32_t nRows);
-	Display(DisplayType tDisplayType = DisplayType::SSD1306);
+	Display(DisplayType tDisplayType);
 	~Display();
 
 #if !defined(NO_HAL)
@@ -118,18 +119,19 @@ public:
 	}
 
 private:
+	void Detect(DisplayType tDisplayType);
 	void Detect(uint32_t nCols, uint32_t nRows);
 
 private:
-	uint32_t m_nCols{0};
-	uint32_t m_nRows{0};
-	DisplayType m_tType;
-	DisplaySet *m_LcdDisplay{nullptr};
-	bool m_bIsSleep{false};
+	uint32_t m_nCols { 0 };
+	uint32_t m_nRows { 0 };
+	DisplayType m_tType { DisplayType::UNKNOWN };
+	DisplaySet *m_LcdDisplay { nullptr };
+	bool m_bIsSleep { false };
 #if !defined(NO_HAL)
 	uint32_t m_nMillis;
 #endif
-	uint32_t m_nSleepTimeout{1000 * 60 * display::Defaults::SEEP_TIMEOUT};
+	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
 
 	Display7Segment m_Display7Segment;
 

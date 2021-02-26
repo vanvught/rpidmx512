@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,20 +57,39 @@ using namespace display;
 
 Display *Display::s_pThis = nullptr;
 
-Display::Display(uint32_t nCols, uint32_t nRows):
-	m_tType(DisplayType::UNKNOWN),
+Display::Display()
 #if !defined(NO_HAL)
-	m_nMillis(Hardware::Get()->Millis())
+	: m_nMillis(Hardware::Get()->Millis())
+#endif
+{
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
+#if defined(ENABLE_SSD1311)
+	Detect(DisplayType::SSD1311);
+#endif
+
+	if (m_LcdDisplay == nullptr) {
+		Detect(DisplayType::SSD1306);
+	}
+
+	PrintInfo();
+}
+
+Display::Display(uint32_t nCols, uint32_t nRows)
+#if !defined(NO_HAL)
+	: m_nMillis(Hardware::Get()->Millis())
 #endif
 {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	Detect(nCols, nRows);
+
+	PrintInfo();
 }
 
-Display::Display(DisplayType tDisplayType):
-	m_tType(tDisplayType),
+Display::Display(DisplayType tDisplayType): m_tType(tDisplayType),
 #if !defined(NO_HAL)
 	m_nMillis(Hardware::Get()->Millis())
 #endif
@@ -78,6 +97,12 @@ Display::Display(DisplayType tDisplayType):
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
+	Detect(tDisplayType);
+
+	PrintInfo();
+}
+
+void Display::Detect(DisplayType tDisplayType) {
 	switch (tDisplayType) {
 #if defined(ENABLE_LCDBW)
 		case DisplayType::BW_UI_1602:
@@ -125,16 +150,9 @@ Display::Display(DisplayType tDisplayType):
 	if (m_LcdDisplay == nullptr){
 		m_nSleepTimeout = 0;
 	}
-
-	PrintInfo();
 }
 
-void Display::Detect(uint32_t nCols, uint32_t nRows) {
-	m_nCols = nCols;
-	m_nRows = nRows;
-	m_LcdDisplay = nullptr;
-	m_tType = DisplayType::UNKNOWN;
-
+void Display::Detect(__attribute__((unused)) uint32_t nCols, uint32_t nRows) {
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
 #if defined(ENABLE_SSD1311)
@@ -182,12 +200,6 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 		}
 	}
 #endif
-	else {
-#ifndef BARE_METAL
-		puts("Unknown or no display attached");
-#endif
-		return;
-	}
 
 	if (m_LcdDisplay != nullptr) {
 		m_nCols = m_LcdDisplay->GetColumns();
@@ -195,8 +207,6 @@ void Display::Detect(uint32_t nCols, uint32_t nRows) {
 	} else {
 		m_nSleepTimeout = 0;
 	}
-
-	PrintInfo();
 }
 
 Display::~Display() {
@@ -337,6 +347,23 @@ void Display::TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex) {
 	m_Display7Segment.Status(nValue7Segment, bHex);
 }
 
+void Display::SetContrast(uint8_t nContrast) {
+	if (m_LcdDisplay == nullptr) {
+		return;
+	}
+
+	m_LcdDisplay->SetContrast(nContrast);
+}
+
+void Display::PrintInfo() {
+	if (m_LcdDisplay == nullptr) {
+		puts("No display found");
+		return;
+	}
+
+	m_LcdDisplay->PrintInfo();
+}
+
 #if !defined(NO_HAL)
 void Display::SetSleep(bool bSleep) {
 	if (m_LcdDisplay == nullptr) {
@@ -364,20 +391,3 @@ void Display::Run() {
 	}
 }
 #endif
-
-void Display::SetContrast(uint8_t nContrast) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->SetContrast(nContrast);
-}
-
-void Display::PrintInfo() {
-	if (m_LcdDisplay == nullptr) {
-		puts("No display found");
-		return;
-	}
-
-	m_LcdDisplay->PrintInfo();
-}
