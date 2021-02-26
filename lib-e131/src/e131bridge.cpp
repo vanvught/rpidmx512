@@ -44,7 +44,7 @@
 
 #include "debug.h"
 
-static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 20 };
+static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 21 };
 
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
