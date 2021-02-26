@@ -95,7 +95,7 @@ public class RestoreConfiguration extends JDialog {
         
         files = f.listFiles(filter);
         
-        if(files.length == 0) {
+        if ((files == null) || (files.length == 0)) {
         	btnRestore.setEnabled(false);
         	textArea.append("<none>\n");
         	return;
