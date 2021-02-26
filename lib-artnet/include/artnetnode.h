@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -203,22 +203,24 @@ public:
 		return m_Node.LongName;
 	}
 
+	int SetUniverse(uint8_t nPortIndex, TArtNetPortDir dir, uint16_t nAddress);
+
 	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
 	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
 
-	void SetNetSwitch(uint8_t nAddress, uint8_t nPage = 0);
-	uint8_t GetNetSwitch(uint8_t nPage = 0) const;
+	void SetNetSwitch(uint8_t nAddress, uint8_t nPage);
+	uint8_t GetNetSwitch(uint8_t nPage) const;
 
-	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage = 0);
-	uint8_t GetSubnetSwitch(uint8_t nPage = 0) const;
+	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage);
+	uint8_t GetSubnetSwitch(uint8_t nPage) const;
 
 	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
 
 	void SetMergeMode(uint8_t nPortIndex, ArtNetMerge tMergeMode);
-	ArtNetMerge GetMergeMode(uint8_t nPortIndex = 0) const;
+	ArtNetMerge GetMergeMode(uint8_t nPortIndex) const;
 
 	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
-	TPortProtocol GetPortProtocol(uint8_t nPortIndex = 0) const;
+	TPortProtocol GetPortProtocol(uint8_t nPortIndex) const;
 
 	void SetOemValue(const uint8_t *);
 	const uint8_t *GetOemValue() const {

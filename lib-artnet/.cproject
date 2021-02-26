@@ -14,7 +14,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625" name="rpi" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625" name="rpi" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.563973127.1101867625." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.513480504" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.1843511646" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
@@ -22,7 +22,7 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1523206879" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder id="cdt.managedbuild.builder.gnu.cross.401199610" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1420361499" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.381544522" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.381544522" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
@@ -35,7 +35,7 @@
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.272354303" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.1509546674" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1846812570" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.1846812570" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-utils/include}&quot;"/>
@@ -91,7 +91,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979" name="Linux" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979" name="Linux" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.653134790.1458406979." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.cross.base.755868381" name="Cross GCC" superClass="cdt.managedbuild.toolchain.gnu.cross.base">
 							<option id="cdt.managedbuild.option.gnu.cross.prefix.2018645703" name="Prefix" superClass="cdt.managedbuild.option.gnu.cross.prefix"/>
@@ -99,22 +99,24 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.489796991" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder arguments="-f Makefile.Linux" command="make" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.1557214624" incrementalBuildTarget="" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.1079115894" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.599306367" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.599306367" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1814233140" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.123988024" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.942356681" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.942356681" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.138434766" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -133,6 +135,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-network/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-debug/include}&quot;"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.341220262" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
@@ -167,7 +170,7 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="cdt.managedbuild.targetPlatform.gnu.cross.1646566496" isAbstract="false" osList="all" superClass="cdt.managedbuild.targetPlatform.gnu.cross"/>
 							<builder arguments="-f Makefile.H3" autoBuildTarget="all" cleanBuildTarget="clean" command="make" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="cdt.managedbuild.builder.gnu.cross.1591568533" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="cdt.managedbuild.builder.gnu.cross"/>
 							<tool id="cdt.managedbuild.tool.gnu.cross.c.compiler.169225723" name="Cross GCC Compiler" superClass="cdt.managedbuild.tool.gnu.cross.c.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1171910437" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.include.paths.1171910437" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
@@ -176,14 +179,14 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1217840962" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1217840962" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL=1"/>
 									<listOptionValue builtIn="false" value="H3=1"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1117533543" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.cross.cpp.compiler.2145490480" name="Cross G++ Compiler" superClass="cdt.managedbuild.tool.gnu.cross.cpp.compiler">
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.812407173" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" valueType="includePath">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.include.paths.812407173" name="Include paths (-I)" superClass="gnu.cpp.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-artnet/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-lightset/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-properties/include}&quot;"/>
@@ -192,7 +195,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-hal/include}&quot;"/>
 								</option>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1952748089" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.1952748089" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="BARE_METAL=1"/>
 									<listOptionValue builtIn="false" value="H3"/>
 								</option>

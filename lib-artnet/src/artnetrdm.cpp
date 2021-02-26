@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
  */
 
 #include <string.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "artnetrdm.h"
@@ -88,7 +89,7 @@ void ArtNetNode::SendTod(uint8_t nPortId) {
 	m_pTodData->Net = m_Node.NetSwitch[0];
 	m_pTodData->Address = m_OutputPorts[nPortId].port.nDefaultAddress;
 
-	const uint8_t discovered = m_pArtNetRdm->GetUidCount(nPortId);
+	const auto discovered = m_pArtNetRdm->GetUidCount(nPortId);
 
 	m_pTodData->UidTotalHi = 0;
 	m_pTodData->UidTotalLo = discovered;
@@ -134,7 +135,7 @@ void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 void ArtNetNode::HandleRdm() {
 	DEBUG_ENTRY
 
-	struct TArtRdm *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
+	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
@@ -151,19 +152,19 @@ void ArtNetNode::HandleRdm() {
 
 			}
 
-			const auto *response = const_cast<uint8_t*>(m_pArtNetRdm->Handler(i, pArtRdm->RdmPacket));
+			const auto *pRdmResponse = const_cast<uint8_t*>(m_pArtNetRdm->Handler(i, pArtRdm->RdmPacket));
 
-			if (response != nullptr) {
+			if (pRdmResponse != nullptr) {
 				pArtRdm->RdmVer = 0x01;
 
-				const uint16_t nMessageLength = response[2] + 1;
-				memcpy(pArtRdm->RdmPacket, &response[1], nMessageLength);
+				const uint16_t nMessageLength = pRdmResponse[2] + 1;
+				memcpy(pArtRdm->RdmPacket, &pRdmResponse[1], nMessageLength);
 
-				const uint16_t nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
+				const auto nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
 
 				Network::Get()->SendTo(m_nHandle, pArtRdm, nLength, m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
 			} else {
-				//printf("\n==> No response <==\n");
+				printf("No RDM response\n");
 			}
 
 			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,11 +49,11 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 
 	if (isMaskSet(ArtnetParamsMask::NET)) {
-		pArtNetNode->SetNetSwitch(m_tArtNetParams.nNet);
+		pArtNetNode->SetNetSwitch(m_tArtNetParams.nNet, 0);
 	}
 
 	if (isMaskSet(ArtnetParamsMask::SUBNET)) {
-		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet);
+		pArtNetNode->SetSubnetSwitch(m_tArtNetParams.nSubnet, 0);
 	}
 
 	if (isMaskSet(ArtnetParamsMask::OEM_VALUE)) {

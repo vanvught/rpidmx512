@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -60,11 +60,8 @@ struct TArtNetParams {
 	bool bEnableNoChangeUpdate;								///< 1	118
 	uint8_t nDirection;										///< 1	119
 	uint32_t nDestinationIpPort[ArtNet::MAX_PORTS];			///< 16	135
-#if defined (__linux__) || defined (__APPLE__)
 }__attribute__((packed));
-#else
-};													///< Not packed!
-#endif
+
 
 static_assert(sizeof(struct TArtNetParams) <= 144, "struct TArtNetParams is too large");
 
