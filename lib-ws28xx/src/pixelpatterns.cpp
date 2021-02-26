@@ -248,12 +248,14 @@ uint32_t PixelPatterns::Wheel(uint8_t nWheelPos) {
 void PixelPatterns::Increment(uint8_t nPort) {
 	if (m_PortConfig[nPort].Direction == Direction::FORWARD) {
 		m_PortConfig[nPort].nIndex++;
-		if (m_PortConfig[nPort].nIndex >= m_PortConfig[nPort].nTotalSteps) {
+		if (m_PortConfig[nPort].nIndex == m_PortConfig[nPort].nTotalSteps) {
 			m_PortConfig[nPort].nIndex = 0;
 		}
 	} else {
-		--m_PortConfig[nPort].nIndex;
-		if (m_PortConfig[nPort].nIndex <= 0) {
+		if (m_PortConfig[nPort].nIndex > 0) {
+			--m_PortConfig[nPort].nIndex;
+		}
+		if (m_PortConfig[nPort].nIndex == 0) {
 			m_PortConfig[nPort].nIndex = m_PortConfig[nPort].nTotalSteps - 1;
 		}
 	}
