@@ -2,7 +2,7 @@
  * @file e131bridge.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@
 
 #include "debug.h"
 
-static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 20 };
+static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 21 };
 
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
@@ -825,14 +825,14 @@ bool E131Bridge::IsValidDataPacket() {
 void E131Bridge::Run() {
 	uint16_t nForeignPort;
 
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_E131.E131Packet, sizeof(m_E131.E131Packet), &m_E131.IPAddressFrom, &nForeignPort) ;
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_E131.E131Packet, sizeof(m_E131.E131Packet), &m_E131.IPAddressFrom, &nForeignPort) ;
 
 	m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		if (m_State.nActiveOutputPorts != 0) {
 			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
-				if (!m_State.IsNetworkDataLoss) {
+				if ((m_pLightSet != nullptr) && (!m_State.IsNetworkDataLoss)) {
 					SetNetworkDataLossCondition();
 					DEBUG_PUTS("");
 				}
@@ -843,7 +843,6 @@ void E131Bridge::Run() {
 				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
 					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 					m_State.bIsReceivingDmx = false;
-					DEBUG_PUTS("");
 				}
 			}
 		}
@@ -878,19 +877,21 @@ void E131Bridge::Run() {
 		}
 	}
 
-	const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
+	if (m_pLightSet != nullptr) {
+		const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
-	if (nRootVector == E131_VECTOR_ROOT_DATA) {
-		if (IsValidDataPacket()) {
-			HandleDmx();
+		if (nRootVector == E131_VECTOR_ROOT_DATA) {
+			if (IsValidDataPacket()) {
+				HandleDmx();
+			}
+		} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
+			const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
+				if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
+				HandleSynchronization();
+			}
+		} else {
+			DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
 		}
-	} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
-		const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
-			if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
-			HandleSynchronization();
-		}
-	} else {
-		DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
 	}
 
 	if (m_pE131DmxIn != nullptr) {
