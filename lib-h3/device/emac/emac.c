@@ -2,7 +2,7 @@
  * @file emac.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <assert.h>
 
@@ -60,9 +60,9 @@
 
 #define	ARM_DMA_ALIGN	64
 
-#define CONFIG_TX_DESCR_NUM	32
-#define CONFIG_RX_DESCR_NUM	32
-#define CONFIG_ETH_BUFSIZE	2048 /* Note must be dma aligned */
+#define CONFIG_TX_DESCR_NUM	48
+#define CONFIG_RX_DESCR_NUM	48
+#define CONFIG_ETH_BUFSIZE	2048 /* Note must be DMA aligned */
 /*
  * The datasheet says that each descriptor can transfers up to 4096 bytes
  * But later, the register documentation reduces that value to 2048,
@@ -366,6 +366,7 @@ void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
 	_adjust_link(true, 100);
 
 #ifndef NDEBUG
+	printf("sizeof(struct coherent_region)=%u\n", sizeof(struct coherent_region));
 	printf("H3_SYSTEM->EMAC_CLK=%p ", H3_SYSTEM->EMAC_CLK);
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 	printf("H3_EMAC->CTL0=%p ", H3_EMAC->CTL0);
@@ -376,6 +377,7 @@ void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
 #endif
 
 	assert(p_coherent_region == 0);
+	assert(sizeof(struct coherent_region) < MEGABYTE/2);
 
 	p_coherent_region = (struct coherent_region *)H3_MEM_COHERENT_REGION;
 
