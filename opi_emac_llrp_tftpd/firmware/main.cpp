@@ -99,8 +99,8 @@ void notmain(void) {
 	MDNS mDns;
 
 	mDns.Start();
-	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(0, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
 	mDns.Print();
 
 	RDMNetLLRPOnly device;

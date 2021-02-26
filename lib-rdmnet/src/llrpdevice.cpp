@@ -2,7 +2,7 @@
  * @file llrpdevice.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,12 +64,6 @@ LLRPDevice::LLRPDevice() {
 	DEBUG_EXIT
 }
 
-LLRPDevice::~LLRPDevice() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 void LLRPDevice::Start() {
 	DEBUG_ENTRY
 
@@ -91,7 +85,7 @@ void LLRPDevice::Stop() {
 }
 
 void LLRPDevice::HandleRequestMessage() {
-	struct TTProbeReplyPDUPacket *pReply = &(m_tLLRP.LLRPPacket.Reply);
+	auto *pReply = &(m_tLLRP.LLRPPacket.Reply);
 
 	uint8_t DestinationCid[16];
 	memcpy(DestinationCid, pReply->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
@@ -125,7 +119,7 @@ void LLRPDevice::HandleRequestMessage() {
 void LLRPDevice::HandleRdmCommand() {
 	DEBUG_ENTRY
 
-	struct LTRDMCommandPDUPacket *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
+	auto *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
 
 #ifdef SHOW_RDM_MESSAGE
 	const uint8_t *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData)	;
@@ -172,21 +166,21 @@ void LLRPDevice::HandleRdmCommand() {
 }
 
 void LLRPDevice::Run() {
-	auto *packet = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
+	auto *pPacket = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
 	uint16_t nForeignPort;
 
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandleLLRP, packet, sizeof(m_tLLRP.LLRPPacket), &m_tLLRP.nIPAddressFrom, &nForeignPort) ;
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandleLLRP, pPacket, sizeof(m_tLLRP.LLRPPacket), &m_tLLRP.nIPAddressFrom, &nForeignPort) ;
 
 	if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
 		return;
 	}
 
 #ifndef NDEBUG
-	debug_dump(packet, nBytesReceived);
+	debug_dump(pPacket, nBytesReceived);
 	DumpCommon();
 #endif
 
-	const struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
+	const auto *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
 	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
 	case VECTOR_LLRP_PROBE_REQUEST:

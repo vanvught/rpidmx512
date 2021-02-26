@@ -2,7 +2,7 @@
  * @file dump.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,14 +39,14 @@
 
 void LLRPDevice::DumpCommon() {
 #ifndef NDEBUG
-	struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
+	auto *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
 	printf("RootLayerPreAmble.PreAmbleSize=0x%.04x\n", __builtin_bswap16(pCommon->RootLayerPreAmble.PreAmbleSize));
 	printf("RootLayerPreAmble.PostAmbleSize=0x%.04x\n",  __builtin_bswap16(pCommon->RootLayerPreAmble.PostAmbleSize));
 	printf("RootLayerPreAmble.ACNPacketIdentifier=[%s]\n", pCommon->RootLayerPreAmble.ACNPacketIdentifier);
 
 	auto *pPdu = reinterpret_cast<uint8_t*>(pCommon->RootLayerPDU.FlagsLength);
-	auto nLength = static_cast<uint32_t>(((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
+	auto nLength = (((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>((pPdu[1] << 8)) | static_cast<uint32_t>(pPdu[2]));
 
 	printf("RootLayerPDU PDU length=%d, High 4 bits=0x%.1x\n", nLength, static_cast<int>(pCommon->RootLayerPDU.FlagsLength[0]) >> 4);
 	printf("RootLayerPDU.Vector=0x%.8x\n", __builtin_bswap32(pCommon->RootLayerPDU.Vector));
@@ -73,7 +73,7 @@ void LLRPDevice::DumpCommon() {
 
 	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
 	case VECTOR_LLRP_PROBE_REQUEST: {
-		struct TProbeRequestPDUPacket *pRequest = &(m_tLLRP.LLRPPacket.Request);
+		auto *pRequest = &(m_tLLRP.LLRPPacket.Request);
 
 		pPdu = reinterpret_cast<uint8_t*>(pRequest->ProbeRequestPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -84,7 +84,7 @@ void LLRPDevice::DumpCommon() {
 	}
 	break;
 	case VECTOR_LLRP_PROBE_REPLY: {
-		struct TTProbeReplyPDUPacket *pReply = &(m_tLLRP.LLRPPacket.Reply);
+		auto *pReply = &(m_tLLRP.LLRPPacket.Reply);
 
 		pPdu = reinterpret_cast<uint8_t*>(pReply->ProbeReplyPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -107,7 +107,7 @@ void LLRPDevice::DumpCommon() {
 	}
 	break;
 	case VECTOR_LLRP_RDM_CMD: {
-		struct LTRDMCommandPDUPacket *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
+		auto *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
 
 		pPdu = reinterpret_cast<uint8_t*>(pRDMCommand->RDMCommandPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -123,7 +123,7 @@ void LLRPDevice::DumpCommon() {
 }
 
 void LLRPDevice::DumpLLRP() {
-	const struct TLLRPCommonPacket *pCommon = &(m_tLLRP.LLRPPacket.Common);
+	const auto *pCommon = &(m_tLLRP.LLRPPacket.Common);
 
 	printf("SenderCID: ");
 
@@ -136,5 +136,6 @@ void LLRPDevice::DumpLLRP() {
 	for (uint32_t i = 0; i < sizeof(pCommon->LlrpPDU.DestinationCid); i++) {
 		printf("%.02X", pCommon->LlrpPDU.DestinationCid[i]);
 	}
+
 	printf("\n");
 }

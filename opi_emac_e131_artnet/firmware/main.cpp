@@ -37,14 +37,13 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "e131reboot.h"
 #include "storee131.h"
 #include "e131msgconst.h"
 #include "e131sync.h"
 
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
-
-#include "reboot.h"
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -85,7 +84,7 @@ void notmain(void) {
 	console_puts("sACN E1.31 -> Art-Net\n");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new Reboot);
+	hw.SetRebootHandler(new E131Reboot);
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 

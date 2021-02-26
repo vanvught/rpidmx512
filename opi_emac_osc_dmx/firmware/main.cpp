@@ -96,8 +96,8 @@ void notmain(void) {
 	MDNS mDns;
 
 	mDns.Start();
-	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=server");
 	mDns.Print();
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);

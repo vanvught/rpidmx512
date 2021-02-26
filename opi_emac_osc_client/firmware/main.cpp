@@ -95,8 +95,8 @@ void notmain(void) {
 	MDNS mDns;
 
 	mDns.Start();
-	mDns.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
 	mDns.Print();
 
 	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
@@ -105,8 +105,8 @@ void notmain(void) {
 
 	ButtonsSet *pButtonsSet;
 
-	ButtonsMcp *pButtonsMcp = new ButtonsMcp(&client);
-	assert(pButtonsMcp != 0);
+	auto *pButtonsMcp = new ButtonsMcp(&client);
+	assert(pButtonsMcp != nullptr);
 
 	if (pButtonsMcp->Start()) {
 		pButtonsSet = static_cast<ButtonsSet*>(pButtonsMcp);
@@ -114,8 +114,8 @@ void notmain(void) {
 	} else {
 		delete pButtonsMcp;
 
-		ButtonsGpio *pButtonsGpio = new ButtonsGpio(&client);
-		assert(pButtonsGpio != 0);
+		auto *pButtonsGpio = new ButtonsGpio(&client);
+		assert(pButtonsGpio != nullptr);
 
 		pButtonsGpio->Start();
 

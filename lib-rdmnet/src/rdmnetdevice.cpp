@@ -2,7 +2,7 @@
  * @file rdmnetdevice.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,11 +42,7 @@
 
 #define UUID_STRING_LENGTH	36
 
-RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) :
-	RDMDeviceResponder(pRDMPersonality, LightSet::Get()),
-	m_RDMHandler(nullptr),
-	m_pRdmCommand(nullptr)
-{
+RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
 	DEBUG_ENTRY
 
 	m_E131Uuid.GetHardwareUuid(m_Cid);

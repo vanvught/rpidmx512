@@ -101,8 +101,8 @@ void notmain(void) {
 
 	if (pwmledparms.Load()) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			TLC59711Dmx *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != 0);
+			auto *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != nullptr);
 			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
 
 			pwmledparms.Dump();
@@ -115,8 +115,8 @@ void notmain(void) {
 	StoreWS28xxDmx storeWS28xxDmx;
 
 	if (!isLedTypeSet) {
-		WS28xxDmx *pSPISend = new WS28xxDmx;
-		assert(pSPISend != 0);
+		auto *pSPISend = new WS28xxDmx;
+		assert(pSPISend != nullptr);
 		pSPISend->SetWS28xxDmxStore(&storeWS28xxDmx);
 
 		WS28xxDmxParams deviceparams(&storeWS28xxDmx);

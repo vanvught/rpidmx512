@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,8 +53,8 @@ public:
 	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
 
 private:
-	RDMHandler *m_RDMHandler;
-	struct TRdmMessage *m_pRdmCommand;
+	RDMHandler *m_RDMHandler { nullptr };
+	struct TRdmMessage *m_pRdmCommand { nullptr };
 	uint8_t m_Cid[E131_CID_LENGTH];
 	E131Uuid m_E131Uuid;
 };

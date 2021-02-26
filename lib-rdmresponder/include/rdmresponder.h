@@ -45,13 +45,13 @@
 class RDMResponder: public DMXReceiver, public RDMDeviceResponder  {
 public:
 	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
-	~RDMResponder(void);
+	~RDMResponder();
 
-	void Init(void);
+	void Init();
 
-	int Run(void);
+	int Run();
 
-	void Print(void);
+	void Print();
 
 private:
 	int HandleResponse(uint8_t *pResponse);

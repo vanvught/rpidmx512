@@ -110,7 +110,7 @@ void RDMDiscovery::Full() {
 bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 	struct TRdmMessage *pRdmMessage;
 	uint8_t uid[RDM_UID_SIZE];
-	bool bDeviceFound = false;
+	auto bDeviceFound = false;
 	uint64_t MidPosition;
 
 	Hardware::Get()->WatchdogFeed();
@@ -172,61 +172,61 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 	return false;
 }
 
-const uint8_t *RDMDiscovery::ConvertUid(uint64_t uid) {
-	uuid_cast.uint = __builtin_bswap64(uid << 16);
+const uint8_t *RDMDiscovery::ConvertUid(uint64_t nUid) {
+	uuid_cast.uint = __builtin_bswap64(nUid << 16);
 	return uuid_cast.uid;
 }
 
-uint64_t RDMDiscovery::ConvertUid(const uint8_t *uid) {
-	memcpy(uuid_cast.uid, uid, RDM_UID_SIZE);
+uint64_t RDMDiscovery::ConvertUid(const uint8_t *pUid) {
+	memcpy(uuid_cast.uid, pUid, RDM_UID_SIZE);
 	return __builtin_bswap64(uuid_cast.uint << 16);
 }
 
-void RDMDiscovery::PrintUid(__attribute__((unused)) uint64_t uid) {
+void RDMDiscovery::PrintUid(__attribute__((unused)) uint64_t nUid) {
 #ifndef NDEBUG
-	PrintUid(ConvertUid(uid));
+	PrintUid(ConvertUid(nUid));
 #endif
 }
 
-void RDMDiscovery::PrintUid(__attribute__((unused)) const uint8_t *uid) {
+void RDMDiscovery::PrintUid(__attribute__((unused)) const uint8_t *pUid) {
 #ifndef NDEBUG
-	printf("%.2x%.2x:%.2x%.2x%.2x%.2x", uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
+	printf("%.2x%.2x:%.2x%.2x%.2x%.2x", pUid[0], pUid[1], pUid[2], pUid[3], pUid[4], pUid[5]);
 #endif
 }
 
-bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *response, uint8_t *uid) {
+bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_t *pUid) {
 	uint8_t checksum[2];
-	uint16_t rdm_checksum = 6 * 0xFF;
-	bool bIsValid = false;
+	uint16_t nRdmChecksum = 6 * 0xFF;
+	auto bIsValid = false;
 
-	if (response[0] == 0xFE) {
-		uid[0] = response[8] & response[9];
-		uid[1] = response[10] & response[11];
+	if (pDiscResponse[0] == 0xFE) {
+		pUid[0] = pDiscResponse[8] & pDiscResponse[9];
+		pUid[1] = pDiscResponse[10] & pDiscResponse[11];
 
-		uid[2] = response[12] & response[13];
-		uid[3] = response[14] & response[15];
-		uid[4] = response[16] & response[17];
-		uid[5] = response[18] & response[19];
+		pUid[2] = pDiscResponse[12] & pDiscResponse[13];
+		pUid[3] = pDiscResponse[14] & pDiscResponse[15];
+		pUid[4] = pDiscResponse[16] & pDiscResponse[17];
+		pUid[5] = pDiscResponse[18] & pDiscResponse[19];
 
-		checksum[0] = response[22] & response[23];
-		checksum[1] = response[20] & response[21];
+		checksum[0] = pDiscResponse[22] & pDiscResponse[23];
+		checksum[1] = pDiscResponse[20] & pDiscResponse[21];
 
-		for (unsigned i = 0; i < 6; i++) {
-			rdm_checksum += uid[i];
+		for (uint32_t i = 0; i < 6; i++) {
+			nRdmChecksum += pUid[i];
 		}
 
-		if (((rdm_checksum >> 8) == checksum[1]) && ((rdm_checksum & 0xFF) == checksum[0])) {
+		if (((nRdmChecksum >> 8) == checksum[1]) && ((nRdmChecksum & 0xFF) == checksum[0])) {
 			bIsValid = true;
 		}
 
 #ifndef NDEBUG
-		PrintUid(uid);
-		printf(", checksum %.2x%.2x -> %.4x {%c}\n", checksum[1], checksum[0], rdm_checksum, bIsValid ? 'Y' : 'N');
+		PrintUid(pUid);
+		printf(", checksum %.2x%.2x -> %.4x {%c}\n", checksum[1], checksum[0], nRdmChecksum, bIsValid ? 'Y' : 'N');
 #endif
 
 	} else {
 #ifndef NDEBUG
-		printf("Not a valid response [%.2x]\n", response[0]);
+		printf("Not a valid response [%.2x]\n", pDiscResponse[0]);
 #endif
 	}
 

@@ -323,7 +323,7 @@ void notmain(void) {
 
 	if (bRunRtpMidi) {
 		rtpMidi.Start();
-		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_CONFIG, 0x2905);
+		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 		rtpMidi.Print();
 	}
 
@@ -355,7 +355,7 @@ void notmain(void) {
 
 		oscServer.Start();
 		oscServer.Print();
-		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
+		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
 	}
 
 	/**
@@ -396,7 +396,7 @@ void notmain(void) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
-		rtpMidi.AddServiceRecord(0, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
+		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
 	}
 
 	/**

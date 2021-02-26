@@ -43,7 +43,7 @@
 #include "debug.h"
 
 ArtNetRdmController::ArtNetRdmController()  {
-	for (unsigned i = 0 ; i < DMX_MAX_UARTS; i++) {
+	for (uint32_t i = 0 ; i < DMX_MAX_UARTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != nullptr);
 		m_Discovery[i]->SetUid(GetUID());
@@ -56,7 +56,7 @@ ArtNetRdmController::ArtNetRdmController()  {
 }
 
 ArtNetRdmController::~ArtNetRdmController() {
-	for (unsigned i = 0; i < DMX_MAX_UARTS; i++) {
+	for (uint32_t i = 0; i < DMX_MAX_UARTS; i++) {
 		if (m_Discovery[i] != nullptr) {
 			delete m_Discovery[i];
 			m_Discovery[i] = nullptr;
@@ -72,9 +72,9 @@ void ArtNetRdmController::Full(uint8_t nPort) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
-
 	m_Discovery[nPort]->Full();
+
+	DEBUG_PRINTF("nPort=%d", nPort);
 	DEBUG_EXIT
 }
 
@@ -90,10 +90,9 @@ void ArtNetRdmController::Copy(uint8_t nPort, uint8_t *pTod) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
-
 	m_Discovery[nPort]->Copy(pTod);
 
+	DEBUG_PRINTF("nPort=%d", nPort);
 	DEBUG_EXIT
 }
 
@@ -101,10 +100,9 @@ void ArtNetRdmController::DumpTod(uint8_t nPort) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
-
 	m_Discovery[nPort]->Dump();
 
+	DEBUG_PRINTF("nPort=%d", nPort);
 	DEBUG_EXIT
 }
 
@@ -133,7 +131,7 @@ const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmDa
 
 	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2);
 
-	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 20000);
+	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 200000);
 
 #ifndef NDEBUG
 	RDMMessage::Print(pResponse);

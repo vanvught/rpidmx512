@@ -39,12 +39,11 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "e131reboot.h"
 #include "storee131.h"
 #include "e131msgconst.h"
 
 #include "e131.h"
-
-#include "reboot.h"
 
 // DMX Output
 #include "dmxparams.h"
@@ -99,7 +98,7 @@ void notmain(void) {
 	console_puts(" {1 Universe}\n");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new Reboot);
+	hw.SetRebootHandler(new E131Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -122,13 +121,13 @@ void notmain(void) {
 
 	if (e131params.GetDirection() == E131_INPUT_PORT) {
 		pDmxInput = new DmxInput;
-		assert(pDmxInput != 0);
+		assert(pDmxInput != nullptr);
 
 		bridge.SetUniverse(0, E131_INPUT_PORT, nUniverse);
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSend;
-		assert(pDmxOutput != 0);
+		assert(pDmxOutput != nullptr);
 
 		DMXParams dmxparams(&storeDmxSend);
 

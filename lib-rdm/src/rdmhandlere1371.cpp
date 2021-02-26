@@ -1,8 +1,8 @@
 /**
- * @file rdmnetllrponly.cpp
+ * @file rdmhandlere1371.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,62 +23,64 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <string.h>
-#include <cassert>
 
-#include "rdmnetllrponly.h"
+#include "rdmhandler.h"
 
-#include "rdmnetdevice.h"
-#include "lightset.h"
 #include "rdmidentify.h"
-#include "rdmpersonality.h"
-#include "rdm.h"
+#include "rdm_e120.h"
 
 #include "debug.h"
 
-static constexpr char LABEL[] = "RDMNet LLRP Only";
-static constexpr auto LABEL_LENGTH = sizeof(LABEL) - 1;
+/*
+ * ANSI E1.37-1
+ */
 
-RDMNetLLRPOnly::RDMNetLLRPOnly(const char *pLabel):
-	m_pLabel(const_cast<char*>(pLabel)),
-	m_RDMNetDevice(new RDMPersonality(LABEL, LightSet::Get()->GetDmxFootprint())) {
+void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+
+	pRdmDataOut->param_data_length = 1;
+
+	pRdmDataOut->param_data[0] = RDMIdentify::Get()->GetMode();
+
+	RespondMessageAck();
 
 	DEBUG_EXIT
 }
 
-void RDMNetLLRPOnly::Init() {
+void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
-	if (m_pLabel == nullptr) {
-		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, LABEL, LABEL_LENGTH);
-	} else {
-		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, strlen(m_pLabel));
+	const auto *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
+
+	if (rdm_command->param_data_length != 1) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
+
+		DEBUG_EXIT
+		return;
 	}
-	m_RDMNetDevice.Init();
 
-	DEBUG_EXIT
-}
+	if ((rdm_command->param_data[0] != 0) && (rdm_command->param_data[0] != 0xFF)) {
+		RespondMessageNack( E120_NR_DATA_OUT_OF_RANGE);
 
-void RDMNetLLRPOnly::Start() {
-	DEBUG_ENTRY
+		DEBUG_EXIT
+		return;
+	}
 
-	m_RDMNetDevice.Start();
+	RDMIdentify::Get()->SetMode(static_cast<TRdmIdentifyMode>(rdm_command->param_data[0]));
 
-	DEBUG_EXIT
-}
+	if(IsBroadcast) {
 
-void RDMNetLLRPOnly::Stop() {
-	DEBUG_ENTRY
+		DEBUG_EXIT
+		return;
+	}
 
-	m_RDMNetDevice.Stop();
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
 
-	DEBUG_EXIT
-}
-
-void RDMNetLLRPOnly::SetMode(__attribute__((unused)) TRdmIdentifyMode nMode) {
-	DEBUG_ENTRY
+	RespondMessageAck();
 
 	DEBUG_EXIT
 }

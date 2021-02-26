@@ -75,7 +75,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 		Rdm::SendRawRespondMessage(0, pResponse, nLength);
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
-		Rdm::SendDiscoveryRespondMessage(pResponse, nLength);
+		Rdm::SendDiscoveryRespondMessage(0, pResponse, nLength);
 	}
 
 #ifndef NDEBUG

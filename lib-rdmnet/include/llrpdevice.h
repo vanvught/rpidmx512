@@ -2,7 +2,7 @@
  * @file llrpdevice.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,8 @@
 class LLRPDevice {
 public:
 	LLRPDevice();
-	virtual ~LLRPDevice();
+	virtual ~LLRPDevice() {
+	}
 
 	void Start();
 	void Stop();
@@ -56,9 +57,9 @@ private:
 	void DumpRdmMessageInNoSc();
 
 private:
-	int32_t m_nHandleLLRP = -1;
-	uint32_t m_nIpAddresLLRPRequest = 0;
-	uint32_t m_nIpAddressLLRPResponse = 0;
+	int32_t m_nHandleLLRP { -1 };
+	uint32_t m_nIpAddresLLRPRequest { 0 };
+	uint32_t m_nIpAddressLLRPResponse { 0 };
 
 	struct TLLRP m_tLLRP;
 };
