@@ -252,11 +252,9 @@ void notmain(void) {
 			discovery.Init();
 			discovery.Print();
 
-			if (artnetparams.IsRdmDiscovery()) {
-				console_status(CONSOLE_YELLOW, RUN_RDM);
-				display.TextStatus(RUN_RDM);
-				discovery.Full();
-			}
+			console_status(CONSOLE_YELLOW, RUN_RDM);
+			display.TextStatus(RUN_RDM);
+			discovery.Full();
 
 			node.SetRdmHandler((ArtNetRdm *)&discovery);
 		}

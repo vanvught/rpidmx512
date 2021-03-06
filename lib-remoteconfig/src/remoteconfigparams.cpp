@@ -2,7 +2,7 @@
  * @file remoteconfigparams.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,12 +79,10 @@ void RemoteConfigParams::Load(const char* pBuffer, uint32_t nLength) {
 	m_pRemoteConfigParamsStore->Update(&m_tRemoteConfigParams);
 }
 
-void RemoteConfigParams::SetBool(const uint8_t nValue, bool& nProperty, const uint32_t nMask) {
+void RemoteConfigParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
 	if (nValue != 0) {
-		nProperty = true;
 		m_tRemoteConfigParams.nSetList |= nMask;
 	} else {
-		nProperty = false;
 		m_tRemoteConfigParams.nSetList &= ~nMask;
 	}
 }
@@ -95,22 +93,22 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_tRemoteConfigParams.bDisable, RemoteConfigParamsMask::DISABLE);
+		SetBool(nValue8, RemoteConfigParamsMask::DISABLE);
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_DISABLE_WRITE, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_tRemoteConfigParams.bDisableWrite, RemoteConfigParamsMask::DISABLE_WRITE);
+		SetBool(nValue8, RemoteConfigParamsMask::DISABLE_WRITE);
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_REBOOT, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_tRemoteConfigParams.bEnableReboot, RemoteConfigParamsMask::ENABLE_REBOOT);
+		SetBool(nValue8, RemoteConfigParamsMask::ENABLE_REBOOT);
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_UPTIME, nValue8) == Sscan::OK) {
-		SetBool(nValue8, m_tRemoteConfigParams.bEnableUptime, RemoteConfigParamsMask::ENABLE_UPTIME);
+		SetBool(nValue8, RemoteConfigParamsMask::ENABLE_UPTIME);
 		return;
 	}
 
@@ -135,14 +133,12 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 
 	PropertiesBuilder builder(RemoteConfigConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
-	builder.Add(RemoteConfigConst::PARAMS_DISABLE, m_tRemoteConfigParams.bDisable, isMaskSet(RemoteConfigParamsMask::DISABLE));
-	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, m_tRemoteConfigParams.bDisableWrite, isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE));
-	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, m_tRemoteConfigParams.bEnableReboot, isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT));
-	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, m_tRemoteConfigParams.bEnableUptime, isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
-	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE, isMaskSet(RemoteConfigParamsMask::DISABLE));
+	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
 
-//	builder.AddComment("RDMNet LLRP Only (not used, yet)");
-//	builder.Add(RemoteConfigConst::PARAMS_DISABLE_NODE_RDMNET_LLRP_ONLY, m_tRemoteConfigParams.bDisableRdmNetLlrpOnly, isMaskSet(RemoteConfigParamsMask::DISABLE_RDMNET_LLRP_ONY));
+	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
 
 	nSize = builder.GetSize();
 
@@ -168,19 +164,19 @@ void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {
 	assert(pRemoteConfig != nullptr);
 
 	if (isMaskSet(RemoteConfigParamsMask::DISABLE)) {
-		pRemoteConfig->SetDisable(m_tRemoteConfigParams.bDisable);
+		pRemoteConfig->SetDisable(true);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE)) {
-		pRemoteConfig->SetDisableWrite(m_tRemoteConfigParams.bDisableWrite);
+		pRemoteConfig->SetDisableWrite(true);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT)) {
-		pRemoteConfig->SetEnableReboot(m_tRemoteConfigParams.bEnableReboot);
+		pRemoteConfig->SetEnableReboot(true);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME)) {
-		pRemoteConfig->SetEnableUptime(m_tRemoteConfigParams.bEnableUptime);
+		pRemoteConfig->SetEnableUptime(true);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {

@@ -194,12 +194,12 @@ public:
 	}
 
 	void SetShortName(const char *);
-	const char *GetShortName() {
+	const char *GetShortName() const {
 		return m_Node.ShortName;
 	}
 
 	void SetLongName(const char *);
-	const char *GetLongName() {
+	const char *GetLongName() const {
 		return m_Node.LongName;
 	}
 
@@ -244,13 +244,12 @@ public:
 	void SendDiag(const char *, TPriorityCodes);
 	void SendTimeCode(const struct TArtNetTimeCode *);
 
-	void SetTimeCodeHandler(ArtNetTimeCode *);
+	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
+		m_pArtNetTimeCode = pArtNetTimeCode;
+	}
 
 	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 		m_pArtNetTimeSync = pArtNetTimeSync;
-	}
-	ArtNetTimeSync *GetTimeSyncHandler() const {
-		return m_pArtNetTimeSync;
 	}
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
@@ -266,9 +265,6 @@ public:
 
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
-	}
-	ArtNetTrigger *GetArtNetTrigger() const {
-		return m_pArtNetTrigger;
 	}
 
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
@@ -330,19 +326,24 @@ private:
 private:
 	uint8_t m_nVersion;
 	uint8_t m_nPages;
-	int32_t m_nHandle{-1};
-	LightSet *m_pLightSet{nullptr};
+	int32_t m_nHandle { -1 };
+	LightSet *m_pLightSet { nullptr };
 
-	ArtNetTimeCode *m_pArtNetTimeCode{nullptr};
-	ArtNetTimeSync *m_pArtNetTimeSync{nullptr};
-	ArtNetRdm *m_pArtNetRdm{nullptr};
-	ArtNetIpProg *m_pArtNetIpProg{nullptr};	ArtNetDmx *m_pArtNetDmx{nullptr};
-	ArtNetTrigger *m_pArtNetTrigger{nullptr};
+	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
+	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
+	ArtNetRdm *m_pArtNetRdm { nullptr };
+	ArtNetIpProg *m_pArtNetIpProg { nullptr };
+	ArtNetDmx *m_pArtNetDmx { nullptr };
+	ArtNetTrigger *m_pArtNetTrigger { nullptr };
 
-	ArtNetStore *m_pArtNetStore{nullptr};
-	ArtNetDisplay *m_pArtNetDisplay{nullptr};
+	ArtNetStore *m_pArtNetStore { nullptr };
+	ArtNetDisplay *m_pArtNetDisplay { nullptr };
 
-	ArtNet4Handler *m_pArtNet4Handler{nullptr};
+	ArtNet4Handler *m_pArtNet4Handler { nullptr };
+
+	struct TArtTimeCode *m_pTimeCodeData { nullptr };
+	struct TArtTodData *m_pTodData { nullptr };
+	struct TArtIpProgReply *m_pIpProgReply { nullptr };
 
 	struct TArtNetNode m_Node;
 	struct TArtNetNodeState m_State;
@@ -352,22 +353,19 @@ private:
 #if defined ( ENABLE_SENDDIAG )
 	struct TArtDiagData m_DiagData;
 #endif
-	struct TArtTimeCode *m_pTimeCodeData{nullptr};
-	struct TArtTodData *m_pTodData{nullptr};
-	struct TArtIpProgReply *m_pIpProgReply{nullptr};
 
 	struct TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
 	struct TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
-	bool m_bDirectUpdate{false};
+	bool m_bDirectUpdate { false };
 
-	uint32_t m_nCurrentPacketMillis{0};
-	uint32_t m_nPreviousPacketMillis{0};
+	uint32_t m_nCurrentPacketMillis { 0 };
+	uint32_t m_nPreviousPacketMillis { 0 };
 
 	TOpCodes m_tOpCodePrevious;
 
 	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
-	bool m_IsRdmResponder{false};
+	bool m_IsRdmResponder { false };
 
 	char m_aSysName[16];
 	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];

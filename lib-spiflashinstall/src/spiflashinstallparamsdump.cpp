@@ -2,7 +2,7 @@
  * @file spiflashinstallparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,18 +33,16 @@
 #include "spiflashinstallparams.h"
 #include "spiflashinstallparamsconst.h"
 
-#include "debug.h"
-
 void SpiFlashInstallParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SpiFlashInstallParamsConst::FILE_NAME);
 
 	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT)) {
-		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT, m_bInstalluboot, BOOL2STRING::Get(m_bInstalluboot));
+		printf(" %s=%1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT);
 	}
 
 	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE)) {
-		printf(" %s=%d [%s]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE, m_bInstalluImage, BOOL2STRING::Get(m_bInstalluImage));
+		printf(" %s=%1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE);
 	}
 #endif
 }

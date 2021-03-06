@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,6 @@
 
 #include "network.h"
 
-#include "debug.h"
-
 void ArtNetParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
@@ -71,18 +69,15 @@ void ArtNetParams::Dump() {
 	}
 
 	if (isMaskSet(ArtnetParamsMask::RDM)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::RDM, static_cast<int>(m_tArtNetParams.bEnableRdm), BOOL2STRING::Get(m_tArtNetParams.bEnableRdm));
-		if (m_tArtNetParams.bEnableRdm) {
-			printf("  %s=%d [%s]\n", ArtNetParamsConst::RDM_DISCOVERY, static_cast<int>(m_tArtNetParams.bRdmDiscovery), BOOL2STRING::Get(m_tArtNetParams.bRdmDiscovery));
-		}
+		printf(" %s=1 [Yes]\n", ArtNetParamsConst::ENABLE_RDM);
 	}
 
 	if(isMaskSet(ArtnetParamsMask::TIMECODE)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMECODE, static_cast<int>(m_tArtNetParams.bUseTimeCode), BOOL2STRING::Get(m_tArtNetParams.bUseTimeCode));
+		printf(" %s=1 [Yes]\n", ArtNetParamsConst::USE_TIMECODE);
 	}
 
 	if(isMaskSet(ArtnetParamsMask::TIMESYNC)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::TIMESYNC, static_cast<int>(m_tArtNetParams.bUseTimeCode), BOOL2STRING::Get(m_tArtNetParams.bUseTimeSync));
+		printf(" %s=1 [Yes]\n", ArtNetParamsConst::USE_TIMESYNC);
 	}
 
 	if(isMaskSet(ArtnetParamsMask::OEM_VALUE)) {
@@ -93,8 +88,8 @@ void ArtNetParams::Dump() {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, static_cast<int>(m_tArtNetParams.nNetworkTimeout), (m_tArtNetParams.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
-	if(isMaskSet(ArtnetParamsMask::MERGE_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, static_cast<int>(m_tArtNetParams.bDisableMergeTimeout), BOOL2STRING::Get(m_tArtNetParams.bDisableMergeTimeout));
+	if(isMaskSet(ArtnetParamsMask::DISABLE_MERGE_TIMEOUT)) {
+		printf(" %s=1 [Yes]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT);
 	}
 
 	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
@@ -120,7 +115,7 @@ void ArtNetParams::Dump() {
 	}
 
 	if(isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, static_cast<int>(m_tArtNetParams.bEnableNoChangeUpdate), BOOL2STRING::Get(m_tArtNetParams.bEnableNoChangeUpdate));
+		printf(" %s=1 [Yes]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE);
 	}
 
 	if(isMaskSet(ArtnetParamsMask::DIRECTION)) {

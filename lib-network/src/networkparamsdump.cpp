@@ -45,7 +45,7 @@ void NetworkParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(NetworkParamsMask::DHCP)) {
-		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP, static_cast<int>(m_tNetworkParams.bIsDhcpUsed), BOOL2STRING::Get(m_tNetworkParams.bIsDhcpUsed));
+		printf(" %s=%d [%s]\n", NetworkConst::PARAMS_USE_DHCP, static_cast<int>(m_tNetworkParams.bIsDhcpUsed), m_tNetworkParams.bIsDhcpUsed != 0 ? "Yes" : "No");
 	}
 
 	if (isMaskSet(NetworkParamsMask::IP_ADDRESS)) {

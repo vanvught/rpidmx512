@@ -2,7 +2,7 @@
  * @file gpsparams.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@
 struct TGPSParams {
 	uint32_t nSetList;
 	uint8_t nModule;
-	uint8_t nEnable;
 	float fUtcOffset;
 } __attribute__((packed));
 
@@ -63,7 +62,7 @@ public:
 	void Dump();
 
 	bool IsEnabled() const {
-		return (m_tTGPSParams.nEnable == 1);
+		return isMaskSet(GPSParamsMask::ENABLE);
 	}
 
 	GPSModule GetModule() const {

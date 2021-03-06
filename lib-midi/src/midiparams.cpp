@@ -1,7 +1,7 @@
 /**
  * @file midiparams.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,12 @@
 using namespace midi;
 
 MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pMidiParamsStore) {
-	memset(&m_tMidiParams, 0, sizeof(struct TMidiParams));
+	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
 	m_tMidiParams.nBaudrate = defaults::BAUDRATE;
-	m_tMidiParams.nActiveSense = 1;
 }
 
 bool MidiParams::Load() {
-	m_tMidiParams.nSetList = 0;
+	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
 
 	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
 
@@ -74,7 +73,7 @@ void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
 		return;
 	}
 
-	m_tMidiParams.nSetList = 0;
+	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
 
 	ReadConfigFile config(MidiParams::staticCallbackFunction, this);
 
@@ -86,7 +85,6 @@ void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
 void MidiParams::callbackFunction(const char* pLine) {
 	assert(pLine != nullptr);
 
-	uint8_t nValue8;
 	uint32_t nValue32;
 
 	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, nValue32) == Sscan::OK) {
@@ -100,12 +98,12 @@ void MidiParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
+	uint8_t nValue8;
+
 	if (Sscan::Uint8(pLine, MidiParamsConst::ACTIVE_SENSE, nValue8) == Sscan::OK) {
-		if (nValue8 == 0) {
-			m_tMidiParams.nActiveSense = 0;
+		if (nValue8 != 0) {
 			m_tMidiParams.nSetList |= MidiParamsMask::ACTIVE_SENSE;
 		} else {
-			m_tMidiParams.nActiveSense = 1;
 			m_tMidiParams.nSetList &= ~MidiParamsMask::ACTIVE_SENSE;
 		}
 		return;
@@ -113,25 +111,17 @@ void MidiParams::callbackFunction(const char* pLine) {
 }
 
 void MidiParams::Set() {
-	if (m_tMidiParams.nSetList == 0) {
-		return;
-	}
-
 	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
 		Midi::Get()->SetBaudrate(m_tMidiParams.nBaudrate);
 	}
 
 	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
-		Midi::Get()->SetActiveSense(m_tMidiParams.nActiveSense != 0);
+		Midi::Get()->SetActiveSense(true);
 	}
 }
 
 void MidiParams::Dump() {
 #ifndef NDEBUG
-	if (m_tMidiParams.nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, MidiParamsConst::FILE_NAME);
 
 	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
@@ -139,7 +129,7 @@ void MidiParams::Dump() {
 	}
 
 	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
-		printf(" %s=%d [%s]\n", MidiParamsConst::ACTIVE_SENSE, m_tMidiParams.nActiveSense, BOOL2STRING::Get(m_tMidiParams.nActiveSense));
+		printf(" %s=%1 [Yes]\n", MidiParamsConst::ACTIVE_SENSE);
 	}
 
 #endif

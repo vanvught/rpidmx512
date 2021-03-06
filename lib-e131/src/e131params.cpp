@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -100,7 +100,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	float fValue;
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_UNIVERSE, value16) == Sscan::OK) {
-		if ((value16 == 0) || (value16 > E131_UNIVERSE_MAX)) {
+		if ((value16 == 0) || (value16 > E131_UNIVERSE_MAX) || (value16 == E131_UNIVERSE_DEFAULT)) {
 			m_tE131Params.nUniverse = E131_UNIVERSE_DEFAULT;
 			m_tE131Params.nSetList &= ~E131ParamsMask::UNIVERSE;
 		} else {
@@ -115,11 +115,10 @@ void E131Params::callbackFunction(const char *pLine) {
 		if (E131::GetMergeMode(value) == E131Merge::LTP) {
 			m_tE131Params.nMergeMode = static_cast<uint8_t>(E131Merge::LTP);
 			m_tE131Params.nSetList |= E131ParamsMask::MERGE_MODE;
-			return;
+		} else {
+			m_tE131Params.nMergeMode = static_cast<uint8_t>(E131Merge::HTP);
+			m_tE131Params.nSetList &= ~E131ParamsMask::MERGE_MODE;
 		}
-
-		m_tE131Params.nMergeMode = static_cast<uint8_t>(E131Merge::HTP);
-		m_tE131Params.nSetList &= ~E131ParamsMask::MERGE_MODE;
 		return;
 	}
 
@@ -149,20 +148,30 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Float(pLine, E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, fValue) == Sscan::OK) {
+		if (fValue != E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS) {
+			m_tE131Params.nSetList |= E131ParamsMask::NETWORK_TIMEOUT;
+		} else {
+			m_tE131Params.nSetList &= ~E131ParamsMask::NETWORK_TIMEOUT;
+		}
 		m_tE131Params.nNetworkTimeout = fValue;
-		m_tE131Params.nSetList |= E131ParamsMask::NETWORK_TIMEOUT;
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, E131ParamsConst::DISABLE_MERGE_TIMEOUT, value8) == Sscan::OK) {
-		m_tE131Params.bDisableMergeTimeout = (value8 != 0);
-		m_tE131Params.nSetList |= E131ParamsMask::MERGE_TIMEOUT;
+		if (value8 != 0) {
+			m_tE131Params.nSetList |= E131ParamsMask::DISABLE_MERGE_TIMEOUT;
+		} else {
+			m_tE131Params.nSetList &= ~E131ParamsMask::DISABLE_MERGE_TIMEOUT;
+		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, value8) == Sscan::OK) {
-		m_tE131Params.bEnableNoChangeUpdate = (value8 != 0);
-		m_tE131Params.nSetList |= E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT;
+		if (value8 != 0) {
+			m_tE131Params.nSetList |= E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT;
+		} else {
+			m_tE131Params.nSetList &= ~E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT;
+		}
 		return;
 	}
 
@@ -171,23 +180,20 @@ void E131Params::callbackFunction(const char *pLine) {
 		if (memcmp(value, "input", 5) == 0) {
 			m_tE131Params.nDirection = E131_INPUT_PORT;
 			m_tE131Params.nSetList |= E131ParamsMask::DIRECTION;
-		}
-		return;
-	}
-
-	nLength = 6;
-	if (Sscan::Char(pLine, E131ParamsConst::DIRECTION, value, nLength) == Sscan::OK) {
-		if (memcmp(value, "output", 6) == 0) {
+		} else {
 			m_tE131Params.nDirection = E131_OUTPUT_PORT;
-			m_tE131Params.nSetList |= E131ParamsMask::DIRECTION;
+			m_tE131Params.nSetList &= ~E131ParamsMask::DIRECTION;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, E131ParamsConst::PRIORITY, value8) == Sscan::OK) {
-		if ((value8 >= E131_PRIORITY_LOWEST) && (value8 <= E131_PRIORITY_HIGHEST)) {
+		if ((value8 >= E131_PRIORITY_LOWEST) && (value8 <= E131_PRIORITY_HIGHEST) && (value8 != E131_PRIORITY_DEFAULT)) {
 			m_tE131Params.nPriority = value8;
 			m_tE131Params.nSetList |= E131ParamsMask::PRIORITY;
+		} else {
+			m_tE131Params.nPriority = E131_PRIORITY_DEFAULT;
+			m_tE131Params.nSetList &= ~E131ParamsMask::PRIORITY;
 		}
 		return;
 	}

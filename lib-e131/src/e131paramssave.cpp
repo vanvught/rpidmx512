@@ -2,7 +2,7 @@
  * @file e131paramssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,9 +69,9 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, 
 	}
 
 	builder.Add(E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, isMaskSet(E131ParamsMask::NETWORK_TIMEOUT));
-	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, m_tE131Params.bDisableMergeTimeout, isMaskSet(E131ParamsMask::MERGE_TIMEOUT));
+	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tE131Params.bEnableNoChangeUpdate, isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
 	builder.Add(E131ParamsConst::PRIORITY, m_tE131Params.nPriority, isMaskSet(E131ParamsMask::PRIORITY));

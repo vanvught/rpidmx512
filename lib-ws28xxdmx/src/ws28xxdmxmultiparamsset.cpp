@@ -56,6 +56,6 @@ void WS28xxDmxParams::Set(WS28xxDmxMulti *pWS28xxDmxMulti) {
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::USE_SI5351A)) {
-		pWS28xxDmxMulti->SetUseSI5351A(m_tWS28xxParams.bUseSI5351A);
+		pWS28xxDmxMulti->SetUseSI5351A(isMaskSet(WS28xxDmxParamsMask::USE_SI5351A));
 	}
 }

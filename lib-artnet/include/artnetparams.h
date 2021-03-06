@@ -42,22 +42,22 @@ struct TArtNetParams {
 	uint8_t nSubnet;										///< 1	  6
 	uint8_t nUniverse;										///< 1	  7
 	TLightSetOutputType tOutputType;						///< 1	  8
-	bool bUseTimeCode;										///< 1	  9
-	bool bUseTimeSync;										///< 1	 10
-	bool bEnableRdm;										///< 1	 11
-	bool bRdmDiscovery;										///< 1	 12
+	uint8_t NotUsed0;										///< 1	  9
+	uint8_t NotUsed1;										///< 1	 10
+	uint8_t NotUsed2;										///< 1	 11
+	uint8_t NotUsed3;										///< 1	 12
 	uint8_t aShortName[ArtNet::SHORT_NAME_LENGTH];			///< 18	 30
 	uint8_t aLongName[ArtNet::LONG_NAME_LENGTH];			///< 64	 94
 	uint16_t nMultiPortOptions;								///< 2	 96
 	uint8_t aOemValue[2];									///< 2	 98
 	time_t nNetworkTimeout;									///< 4	102
-	bool bDisableMergeTimeout;								///< 1	103
+	uint8_t NotUsed4;										///< 1	103
 	uint8_t nUniversePort[ArtNet::MAX_PORTS];				///< 4	107
 	uint8_t nMergeMode;										///< 1	108
 	uint8_t nMergeModePort[ArtNet::MAX_PORTS];				///< 4	112
 	uint8_t nProtocol;										///< 1	113
 	uint8_t nProtocolPort[ArtNet::MAX_PORTS];				///< 4	117
-	bool bEnableNoChangeUpdate;								///< 1	118
+	uint8_t NotUsed5;										///< 1	118
 	uint8_t nDirection;										///< 1	119
 	uint32_t nDestinationIpPort[ArtNet::MAX_PORTS];			///< 16	135
 }__attribute__((packed));
@@ -82,10 +82,10 @@ struct ArtnetParamsMask {
 	static constexpr auto TIMECODE = (1U << 6);
 	static constexpr auto TIMESYNC = (1U << 7);
 	static constexpr auto OUTPUT = (1U << 8);
-	//static constexpr auto NOT_USED = (1U << 9); // aManufacturerId
+	//static constexpr auto NOT_USED = (1U << 9); // WAS: aManufacturerId
 	static constexpr auto OEM_VALUE = (1U << 10);
 	static constexpr auto NETWORK_TIMEOUT = (1U << 11);
-	static constexpr auto MERGE_TIMEOUT = (1U << 12);
+	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 12);
 	static constexpr auto UNIVERSE_A = (1U << 13);
 	static constexpr auto UNIVERSE_B = (1U << 14);
 	static constexpr auto UNIVERSE_C = (1U << 15);
@@ -156,25 +156,21 @@ public:
 	}
 
 	bool IsUseTimeCode() const {
-		return m_tArtNetParams.bUseTimeCode;
+		return isMaskSet(ArtnetParamsMask::TIMECODE);
 	}
 
 	bool IsUseTimeSync() const {
-		return m_tArtNetParams.bUseTimeSync;
+		return isMaskSet(ArtnetParamsMask::TIMESYNC);
 	}
 
 	bool IsRdm() const {
-		return m_tArtNetParams.bEnableRdm;
-	}
-
-	bool IsRdmDiscovery() const {
-		return m_tArtNetParams.bRdmDiscovery;
+		return isMaskSet(ArtnetParamsMask::RDM);
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate() const {
-		return m_tArtNetParams.bEnableNoChangeUpdate;
+		return isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT);
 	}
 
 	TArtNetPortDir GetDirection() const {
@@ -186,6 +182,7 @@ public:
 
 private:
 	void callbackFunction(const char *pLine);
+	void SetBool(const uint8_t nValue, const uint32_t nMask);
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_tArtNetParams.nSetList & nMask) == nMask;
 	}

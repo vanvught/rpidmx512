@@ -2,7 +2,7 @@
  * @file gpsparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,11 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
 #include <stdio.h>
 
 #include "gpsparams.h"
 #include "gpsparamsconst.h"
 #include "gps.h"
-
-#include "debug.h"
 
 void GPSParams::Dump() {
 #ifndef NDEBUG
@@ -44,7 +41,7 @@ void GPSParams::Dump() {
 	}
 
 	if (isMaskSet(GPSParamsMask::ENABLE)) {
-		printf(" %s=%d [%s]\n", GPSParamsConst::ENABLE, static_cast<int>(m_tTGPSParams.nEnable), BOOL2STRING::Get(m_tTGPSParams.nEnable));
+		printf(" %s=1 [Yes]\n", GPSParamsConst::ENABLE);
 	}
 
 	if (isMaskSet(GPSParamsMask::UTC_OFFSET)) {

@@ -135,9 +135,7 @@ int main(int argc, char **argv) {
 
 		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4Params.GetUniverse());
 
-		if (artnet4Params.IsRdmDiscovery()) {
-			RdmResponder.Full(0);
-		}
+		RdmResponder.Full(0);
 
 		node.SetRdmHandler(&RdmResponder, true);
 	} else {

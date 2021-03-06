@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,10 @@
 
 void ArtNet4Params::Set(ArtNet4Node *pArtNet4Node) {
 	DEBUG_ENTRY
+	assert(pArtNet4Node != nullptr);
 
 	if(isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0)) {
-		pArtNet4Node->SetMapUniverse0(m_tArtNet4Params.bMapUniverse0);
+		pArtNet4Node->SetMapUniverse0(true);
 	}
 
 	ArtNetParams::Set(pArtNet4Node);

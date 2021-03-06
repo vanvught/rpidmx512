@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,8 +89,12 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	float f;
 
 	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {	// Default
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::DHCP;
+		} else {
+			m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP;
+		}
 		m_tNetworkParams.bIsDhcpUsed = !(nValue8 == 0);
-		m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP;
 		return;
 	}
 
@@ -114,18 +118,25 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, nValue32) == Sscan::OK) {
+		if (nValue32 != 0) {
+			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
+		} else {
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::NTP_SERVER;
+		}
 		m_tNetworkParams.nNtpServerIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
 		return;
 	}
 
 	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, f) == Sscan::OK) {
 		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
+		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14) && (static_cast<int32_t>(f) != 0)) {
 			m_tNetworkParams.fNtpUtcOffset = f;
 			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_UTC_OFFSET;
-			return;
+		} else {
+			m_tNetworkParams.fNtpUtcOffset = 0.0f;
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::NTP_UTC_OFFSET;
 		}
+		return;
 	}
 
 #if defined (ESP8266)

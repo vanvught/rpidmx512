@@ -73,11 +73,11 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ArtnetParamsMask::OEM_VALUE));
 
 	builder.AddComment("Time");
-	builder.Add(ArtNetParamsConst::TIMECODE, m_tArtNetParams.bUseTimeCode, isMaskSet(ArtnetParamsMask::TIMECODE));
-	builder.Add(ArtNetParamsConst::TIMESYNC, m_tArtNetParams.bUseTimeSync, isMaskSet(ArtnetParamsMask::TIMESYNC));
+	builder.Add(ArtNetParamsConst::USE_TIMECODE, isMaskSet(ArtnetParamsMask::TIMECODE));
+	builder.Add(ArtNetParamsConst::USE_TIMESYNC, isMaskSet(ArtnetParamsMask::TIMESYNC));
 
 	builder.AddComment("DMX/RDM Output");
-	builder.Add(ArtNetParamsConst::RDM, m_tArtNetParams.bEnableRdm, isMaskSet(ArtnetParamsMask::RDM));
+	builder.Add(ArtNetParamsConst::ENABLE_RDM, isMaskSet(ArtnetParamsMask::RDM));
 
 	builder.Add(LightSetConst::PARAMS_MERGE_MODE, ArtNet::GetMergeMode(m_tArtNetParams.nMergeMode), isMaskSet(ArtnetParamsMask::MERGE_MODE));
 	builder.Add(ArtNetParamsConst::PROTOCOL, ArtNet::GetProtocolMode(m_tArtNetParams.nProtocol), isMaskSet(ArtnetParamsMask::PROTOCOL));
@@ -88,9 +88,9 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	}
 
 	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ArtnetParamsMask::NETWORK_TIMEOUT));
-	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, m_tArtNetParams.bDisableMergeTimeout, isMaskSet(ArtnetParamsMask::MERGE_TIMEOUT));
+	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, isMaskSet(ArtnetParamsMask::DISABLE_MERGE_TIMEOUT));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tArtNetParams.bEnableNoChangeUpdate, isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT));
+	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
 	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {

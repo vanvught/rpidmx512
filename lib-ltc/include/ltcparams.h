@@ -37,33 +37,33 @@ struct TLtcParamsRgbLedType {
 };
 
 struct TLtcParams {
-	uint32_t nSetList;
-	uint8_t tSource;
-	uint8_t nAutoStart;
-	uint8_t nVolume;
-	uint8_t nDisabledOutputs;
-	uint8_t nShowSysTime;
-	uint8_t nDisableTimeSync;
-	uint8_t nYear;
-	uint8_t nMonth;
-	uint8_t nDay;
-	uint8_t nEnableNtp;
-	uint8_t nSetDate;
-	uint8_t nFps;
-	uint8_t nStartFrame;
-	uint8_t nStartSecond;
-	uint8_t nStartMinute;
-	uint8_t nStartHour;
-	uint8_t nStopFrame;
-	uint8_t nStopSecond;
-	uint8_t nStopMinute;
-	uint8_t nStopHour;
-	uint8_t nEnableOsc;
-	uint16_t nOscPort;
-	uint8_t nRgbLedType;
-	uint8_t nAltFunction;
-	uint8_t nSkipSeconds;
-	uint8_t nSkipFree;
+	uint32_t nSetList;			///< 4	4
+	uint8_t tSource;			///< 1	5
+	uint8_t nAutoStart;			///< 1	6
+	uint8_t nVolume;			///< 1	7
+	uint8_t nDisabledOutputs;	///< 1	8
+	uint8_t nShowSysTime;		///< 1	9
+	uint8_t nDisableTimeSync;	///< 1	10
+	uint8_t nYear;				///< 1	11
+	uint8_t nMonth;				///< 1	12
+	uint8_t nDay;				///< 1	13
+	uint8_t nEnableNtp;			///< 1	14
+	uint8_t nSetDate;			///< 1	15
+	uint8_t nFps;				///< 1	16
+	uint8_t nStartFrame;		///< 1	17
+	uint8_t nStartSecond;		///< 1	18
+	uint8_t nStartMinute;		///< 1	19
+	uint8_t nStartHour;			///< 1	20
+	uint8_t nStopFrame;			///< 1	21
+	uint8_t nStopSecond;		///< 1	22
+	uint8_t nStopMinute;		///< 1	23
+	uint8_t nStopHour;			///< 1	24
+	uint8_t nEnableOsc;			///< 1	25
+	uint16_t nOscPort;			///< 2	27
+	uint8_t nRgbLedType;		///< 1	28
+	uint8_t nAltFunction;		///< 1	29
+	uint8_t nSkipSeconds;		///< 1	30
+	uint8_t nSkipFree;			///< 1	31
 }__attribute__((packed));
 
 static_assert(sizeof(struct TLtcParams) <= 32, "struct TLtcParams is too large");

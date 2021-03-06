@@ -88,7 +88,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	builder.Add(DevicesParamsConst::LED_T1H, WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28xxDmxParamsMask::HIGH_CODE), 2);
 
 	builder.AddComment("Grouping");
-	builder.Add(DevicesParamsConst::LED_GROUPING, m_tWS28xxParams.bLedGrouping, isMaskSet(WS28xxDmxParamsMask::LED_GROUPING));
+	builder.Add(DevicesParamsConst::LED_GROUPING, isMaskSet(WS28xxDmxParamsMask::LED_GROUPING));
 	builder.Add(DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28xxDmxParamsMask::LED_GROUP_COUNT));
 
 	builder.AddComment("DMX");
@@ -106,7 +106,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	}
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT));
 	builder.AddComment("4x only");
-	builder.Add(DevicesParamsConst::USE_SI5351A, m_tWS28xxParams.bUseSI5351A, isMaskSet(WS28xxDmxParamsMask::USE_SI5351A));
+	builder.Add(DevicesParamsConst::USE_SI5351A, isMaskSet(WS28xxDmxParamsMask::USE_SI5351A));
 
 	builder.AddComment("Test pattern");
 	builder.Add(LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));

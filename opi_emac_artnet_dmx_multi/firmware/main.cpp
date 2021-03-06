@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -220,14 +220,12 @@ void notmain(void) {
 			pDiscovery->Init();
 			pDiscovery->Print();
 
-			if (artnetparams.IsRdmDiscovery()) {
-				display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
+			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-				for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
-					uint8_t nAddress;
-					if (node.GetUniverseSwitch(i, nAddress)) {
-						pDiscovery->Full(i);
-					}
+			for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+				uint8_t nAddress;
+				if (node.GetUniverseSwitch(i, nAddress)) {
+					pDiscovery->Full(i);
 				}
 			}
 

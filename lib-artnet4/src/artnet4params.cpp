@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,6 @@ ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
 	m_pArtNet4ParamsStore(pArtNet4ParamsStore)
 {
 	m_tArtNet4Params.nSetList = 0;
-	m_tArtNet4Params.bMapUniverse0 = false;
 }
 
 bool ArtNet4Params::Load() {
@@ -110,10 +109,8 @@ void ArtNet4Params::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, ArtNet4ParamsConst::MAP_UNIVERSE0, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_tArtNet4Params.bMapUniverse0 = true;
 			m_tArtNet4Params.nSetList |= ArtNet4ParamsMask::MAP_UNIVERSE0;
 		} else {
-			m_tArtNet4Params.bMapUniverse0 = false;
 			m_tArtNet4Params.nSetList &= ~ArtNet4ParamsMask::MAP_UNIVERSE0;
 		}
 		return;
@@ -127,7 +124,7 @@ void ArtNet4Params::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
 	if(isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0)) {
-		printf(" %s=%d [%s]\n", ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, BOOL2STRING::Get(m_tArtNet4Params.bMapUniverse0));
+		printf(" %s=1 [Yes]\n", ArtNet4ParamsConst::MAP_UNIVERSE0);
 	}
 #endif
 }

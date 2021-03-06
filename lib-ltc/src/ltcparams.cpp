@@ -48,8 +48,8 @@ static constexpr auto VOLUME_0DBV = 28;
 LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
 	memset(&m_tLtcParams, 0, sizeof(struct TLtcParams));
 
-	const time_t ltime = time(nullptr);
-	const struct tm *tm = localtime(&ltime);
+	const auto ltime = time(nullptr);
+	const auto *tm = localtime(&ltime);
 
 	m_tLtcParams.tSource = source::LTC;
 	m_tLtcParams.nVolume = VOLUME_0DBV;
@@ -129,6 +129,8 @@ void LtcParams::SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nP
 	if (bEvaluate) {
 		nProperty = nValue;
 		m_tLtcParams.nSetList |= nMask;
+	} else {
+		m_tLtcParams.nSetList &= ~nMask;
 	}
 	return;
 }
@@ -145,6 +147,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 		source[nLength] = '\0';
 		m_tLtcParams.tSource = GetSourceType(source);
 		m_tLtcParams.nSetList |= LtcParamsMask::SOURCE;
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::VOLUME, nValue8) == Sscan::OK) {
@@ -155,10 +158,12 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nVolume = VOLUME_0DBV;
 			m_tLtcParams.nSetList &= ~LtcParamsMask::VOLUME;
 		}
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nAutoStart, LtcParamsMask::AUTO_START);
+		return;
 	}
 
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LtcParamsMaskDisabledOutputs::DISPLAY);
@@ -170,10 +175,12 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SHOW_SYSTIME, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nShowSysTime, LtcParamsMask::SHOW_SYSTIME);
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::DISABLE_TIMESYNC, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nDisableTimeSync, LtcParamsMask::DISABLE_TIMESYNC);
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::YEAR, nValue8) == Sscan::OK) {
@@ -193,6 +200,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::NTP_ENABLE, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nEnableNtp, LtcParamsMask::ENABLE_NTP);
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::FPS, nValue8) == Sscan::OK) {
@@ -248,6 +256,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::ALT_FUNCTION, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nAltFunction, LtcParamsMask::ALT_FUNCTION);
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SKIP_SECONDS, nValue8) == Sscan::OK) {
@@ -257,10 +266,12 @@ void LtcParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::SKIP_FREE, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nSkipFree, LtcParamsMask::SKIP_FREE);
+		return;
 	}
 
 	if (Sscan::Uint8(pLine, LtcParamsConst::OSC_ENABLE, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_tLtcParams.nEnableOsc, LtcParamsMask::ENABLE_OSC);
+		return;
 	}
 
 	if (Sscan::Uint16(pLine, LtcParamsConst::OSC_PORT, nValue16) == Sscan::OK) {

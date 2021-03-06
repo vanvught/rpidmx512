@@ -76,7 +76,7 @@ void WS28xxMulti::Initialize(Type tWS28xxType, uint16_t nLedCount, __attribute__
 	}
 
 	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tWS28xxType), WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
-	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping	, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
+	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	if (m_tRGBMapping == rgbmapping::Map::UNDEFINED) {
 		m_tRGBMapping = WS28xx::GetRgbMapping(m_tWS28xxType);
@@ -103,7 +103,7 @@ void WS28xxMulti::Initialize(Type tWS28xxType, uint16_t nLedCount, __attribute__
 	}
 
 	DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tWS28xxType), WS28xx::GetLedTypeString(m_tWS28xxType), m_nLedCount, m_nBufSize);
-	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", m_tRGBMapping, RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
+	DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	if (m_tBoard == Board::X4) {
 		SetupMCP23017(ReverseBits(m_nLowCode), ReverseBits(m_nHighCode));

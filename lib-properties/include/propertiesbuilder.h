@@ -2,7 +2,7 @@
  * @file propertiesbuilder.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +33,20 @@ class PropertiesBuilder {
 public:
 	PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength);
 
+	bool Add(const char *pProperty, bool bValue) {
+		return Add(pProperty, bValue, bValue);
+	}
+
 	template<typename T>
-	bool Add(const char *pProperty, const T x, bool bIsSet = true, uint32_t nPrecision = 1) {
+	bool Add(const char *pProperty, const T x, bool bIsSet, uint32_t nPrecision = 1) {
 		if (m_nSize >= m_nLength) {
 			return false;
 		}
 
-		char *p = &m_pBuffer[m_nSize];
-		const uint32_t nSize = m_nLength - m_nSize;
+		auto *p = &m_pBuffer[m_nSize];
+		const auto nSize = m_nLength - m_nSize;
 
-		int i = add_part(p, nSize, pProperty, x, bIsSet, nPrecision);
+		auto i = add_part(p, nSize, pProperty, x, bIsSet, nPrecision);
 
 		if (i > static_cast<int>(nSize)) {
 			return false;

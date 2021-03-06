@@ -54,6 +54,19 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 
 	PropertiesBuilder builder(NetworkConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
+	if (!isMaskSet(NetworkParamsMask::IP_ADDRESS)) {
+		m_tNetworkParams.nLocalIp = Network::Get()->GetIp();
+	}
+
+	if (!isMaskSet(NetworkParamsMask::NET_MASK)) {
+		m_tNetworkParams.nNetmask = Network::Get()->GetNetmask();
+	}
+
+	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
+		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);
+		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+	}
+
 	builder.Add(NetworkConst::PARAMS_USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NetworkParamsMask::DHCP));
 	builder.AddIpAddress(NetworkConst::PARAMS_IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NetworkParamsMask::IP_ADDRESS));
 	builder.AddIpAddress(NetworkConst::PARAMS_NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NetworkParamsMask::NET_MASK));
@@ -61,10 +74,6 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	builder.AddIpAddress(NetworkConst::PARAMS_DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY));
 	builder.AddIpAddress(NetworkConst::PARAMS_NAME_SERVER, m_tNetworkParams.nNameServerIp, isMaskSet(NetworkParamsMask::NAME_SERVER));
 #endif
-	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
-		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);
-		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-	}
 	builder.Add(NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
 
 	builder.AddComment("NTP Server");

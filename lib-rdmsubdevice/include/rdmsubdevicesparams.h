@@ -2,7 +2,7 @@
  * @file rdmsubdevicesparams.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ struct TRDMSubDevicesParams {
 	} __attribute__((packed)) Entry[rdm::subdevices::max];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TRDMSubDevicesParams) <= rdm::subdevices::store, "too big");
+static_assert(sizeof(struct TRDMSubDevicesParams) <= rdm::subdevices::store, "struct TRDMSubDevicesParams is too large");
 
 class RDMSubDevicesParamsStore {
 public:

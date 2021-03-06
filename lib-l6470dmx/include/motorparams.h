@@ -70,29 +70,29 @@ public:
 
 	void Dump();
 
-	float GetStepAngel() {
+	float GetStepAngel() const {
 		return m_tMotorParams.fStepAngel;
 	}
 
-	float GetVoltage() {
+	float GetVoltage() const {
 		return m_tMotorParams.fVoltage;
 	}
 
-	float GetCurrent() {
+	float GetCurrent() const {
 		return m_tMotorParams.fCurrent;
 	}
 
-	float GetResistance() {
+	float GetResistance() const {
 		return m_tMotorParams.fResistance;
 	}
 
-	float GetInductance() {
+	float GetInductance() const {
 		return m_tMotorParams.fInductance;
 	}
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tMotorParams.nSetList & nMask) == nMask;
     }
 

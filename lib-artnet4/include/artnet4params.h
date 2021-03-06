@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@
 
 struct TArtNet4Params {
 	uint32_t nSetList;
-	bool bMapUniverse0;
 } __attribute__((packed));
 
 struct ArtNet4ParamsMask {
@@ -66,7 +65,7 @@ public:
 	void Dump();
 
 	bool IsMapUniverse0() const {
-		return m_tArtNet4Params.bMapUniverse0;
+		return isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0);
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);

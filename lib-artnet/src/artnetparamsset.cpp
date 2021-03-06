@@ -64,8 +64,8 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		pArtNetNode->SetNetworkTimeout(static_cast<uint32_t>(m_tArtNetParams.nNetworkTimeout));
 	}
 
-	if (isMaskSet(ArtnetParamsMask::MERGE_TIMEOUT)) {
-		pArtNetNode->SetDisableMergeTimeout(m_tArtNetParams.bDisableMergeTimeout);
+	if (isMaskSet(ArtnetParamsMask::DISABLE_MERGE_TIMEOUT)) {
+		pArtNetNode->SetDisableMergeTimeout(true);
 	}
 
 	unsigned i;
@@ -94,6 +94,6 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 
 	if (isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		pArtNetNode->SetDirectUpdate(m_tArtNetParams.bEnableNoChangeUpdate);
+		pArtNetNode->SetDirectUpdate(true);
 	}
 }
