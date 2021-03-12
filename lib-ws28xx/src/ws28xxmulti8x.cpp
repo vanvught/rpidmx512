@@ -73,137 +73,57 @@ void WS28xxMulti::SetupSPI() {
 #define BIT_SET(a,b) 	((a) |= (1<<(b)))
 #define BIT_CLEAR(a,b) 	((a) &= ~(1<<(b)))
 
-void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(nPort < 8);
-	assert(nLedIndex < m_nLedCount);
-
+void WS28xxMulti::SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
 	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
-		switch (m_tRGBMapping) {
-		case rgbmapping::Map::RGB:
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::RBG:
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::GRB:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::GBR:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::BRG:
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::BGR:
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			break;
-		default:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer8x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer8x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer8x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
-			}
-			break;
+		if (mask & nColour1) {
+			BIT_SET(m_pBuffer8x[k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer8x[k + j], nPort);
+		}
+		if (mask & nColour2) {
+			BIT_SET(m_pBuffer8x[8 + k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
+		}
+		if (mask & nColour3) {
+			BIT_SET(m_pBuffer8x[16 + k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
 		}
 
 		j++;
+	}
+}
+
+void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	assert(nPort < 8);
+	assert(nLedIndex < m_nLedCount);
+
+	switch (m_tRGBMapping) {
+	case rgbmapping::Map::RGB:
+		SetColour8x(nPort, nLedIndex, nRed, nGreen, nBlue);
+		break;
+	case rgbmapping::Map::RBG:
+		SetColour8x(nPort, nLedIndex, nRed, nBlue, nGreen);
+		break;
+	case rgbmapping::Map::GRB:
+		SetColour8x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		break;
+	case rgbmapping::Map::GBR:
+		SetColour8x(nPort, nLedIndex, nGreen, nBlue, nRed);
+		break;
+	case rgbmapping::Map::BRG:
+		SetColour8x(nPort, nLedIndex, nBlue, nRed, nGreen);
+		break;
+	case rgbmapping::Map::BGR:
+		SetColour8x(nPort, nLedIndex, nBlue, nGreen, nRed);
+		break;
+	default:
+		SetColour8x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		break;
 	}
 }
 

@@ -29,11 +29,14 @@
 #endif
 
 #include <stdint.h>
+#include <algorithm>
 #ifndef NDEBUG
 # include <stdio.h>
 #endif
 
 #include "ws28xxdmxparams.h"
+#include "devicesparamsconst.h"
+#include "lightsetconst.h"
 
 #include "ws28xx.h"
 #include "ws28xxconst.h"

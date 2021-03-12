@@ -48,7 +48,7 @@ public:
 	void Blackout(bool bBlackout);
 
 	virtual void SetLEDType(ws28xx::Type type);
-	ws28xx::Type GetLEDType() {
+	ws28xx::Type GetLEDType() const {
 		return m_tLedType;
 	}
 

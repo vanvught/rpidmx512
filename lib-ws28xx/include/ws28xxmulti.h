@@ -50,7 +50,7 @@ public:
 	WS28xxMulti();
 	~WS28xxMulti();
 
-	void Initialize(ws28xx::Type tWS28xxType, uint16_t nLedCount, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED, uint8_t nT0H = 0, uint8_t nT1H = 0, bool bUseSI5351A = false);
+	void Initialize(ws28xx::Type tWS28xxType, uint16_t nLedCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, bool bUseSI5351A = false);
 
 	ws28xx::Type GetLEDType() const {
 		return m_tWS28xxType;
@@ -121,12 +121,14 @@ private:
 	void SetupGPIO();
 	void SetupBuffers4x();
 	void Generate800kHz(const uint32_t *pBuffer);
+	void SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 // 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
 	void SetupSPI();
 	void SetupBuffers8x();
+	void SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 

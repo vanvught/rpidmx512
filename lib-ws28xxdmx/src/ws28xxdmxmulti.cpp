@@ -58,7 +58,7 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 void WS28xxDmxMulti::Initialize() {
 	assert(m_pLEDStripe != nullptr);
 
-	DEBUG_PRINTF("m_tLedType=%d", m_tLedType);
+	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_tRGBMapping=%d, m_nLowCode=%d, m_nHighCode=%d", m_tLedType, m_nLedCount, static_cast<int>(m_tRGBMapping), m_nLowCode, m_nHighCode);
 
 	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
 
@@ -151,9 +151,11 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 		break;
 	}
 
+#if 0
 	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nSwitch=%d, beginIndex=%d, endIndex=%d",
 			static_cast<int>(nPortId), static_cast<int>(nLength), static_cast<int>(nOutIndex),
 			static_cast<int>(nSwitch), static_cast<int>(beginIndex), static_cast<int>(endIndex));
+#endif
 
 	while (m_pLEDStripe->IsUpdating()) {
 		// wait for completion

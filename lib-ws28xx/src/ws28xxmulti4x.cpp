@@ -87,137 +87,57 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 #define BIT_SET(a,b) 	((a) |= (1U<<(b)))
 #define BIT_CLEAR(a,b) 	((a) &= ~(1U<<(b)))
 
+void  WS28xxMulti::SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+	uint32_t j = 0;
+	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
+
+	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+		if (mask & nColour1) {
+			BIT_SET(m_pBuffer4x[k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer4x[k + j], nPort);
+		}
+		if (mask & nColour2) {
+			BIT_SET(m_pBuffer4x[8 + k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
+		}
+		if (mask & nColour3) {
+			BIT_SET(m_pBuffer4x[16 + k + j], nPort);
+		} else {
+			BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
+		}
+
+		j++;
+	}
+}
+
 void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 4);
 	assert(nLedIndex < m_nLedCount);
 
-	uint32_t j = 0;
-	auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
-
-	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
-		switch (m_tRGBMapping) {
-		case rgbmapping::Map::RGB:
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::RBG:
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::GRB:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::GBR:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::BRG:
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			break;
-		case rgbmapping::Map::BGR:
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			break;
-		default:
-			if (mask & nGreen) {
-				BIT_SET(m_pBuffer4x[k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[k + j], nPort);
-			}
-			if (mask & nRed) {
-				BIT_SET(m_pBuffer4x[8 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
-			}
-			if (mask & nBlue) {
-				BIT_SET(m_pBuffer4x[16 + k + j], nPort);
-			} else {
-				BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
-			}
-			break;
-		}
-
-		j++;
+	switch (m_tRGBMapping) {
+	case rgbmapping::Map::RGB:
+		SetColour4x(nPort, nLedIndex, nRed, nGreen, nBlue);
+		break;
+	case rgbmapping::Map::RBG:
+		SetColour4x(nPort, nLedIndex, nRed, nBlue, nGreen);
+		break;
+	case rgbmapping::Map::GRB:
+		SetColour4x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		break;
+	case rgbmapping::Map::GBR:
+		SetColour4x(nPort, nLedIndex, nGreen, nBlue, nRed);
+		break;
+	case rgbmapping::Map::BRG:
+		SetColour4x(nPort, nLedIndex, nBlue, nRed, nGreen);
+		break;
+	case rgbmapping::Map::BGR:
+		SetColour4x(nPort, nLedIndex, nBlue, nGreen, nRed);
+		break;
+	default:
+		SetColour4x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		break;
 	}
 }
 
