@@ -174,11 +174,18 @@ void RgbPanel::Start() {
 		return;
 	}
 
-	h3_i2c_end();
+	h3_i2c_end();							// PA11, PA12
 
 	// DEBUG UART
-	h3_gpio_fsel(4, GPIO_FSEL_DISABLE);
-	h3_gpio_fsel(5, GPIO_FSEL_DISABLE);
+	h3_gpio_fsel(4, GPIO_FSEL_DISABLE);		// PA4
+	h3_gpio_fsel(5, GPIO_FSEL_DISABLE);		// PA5
+
+	// Remaining
+	h3_gpio_fsel(8, GPIO_FSEL_DISABLE);		// PA8
+	h3_gpio_fsel(9, GPIO_FSEL_DISABLE);		// PA9
+	h3_gpio_fsel(17, GPIO_FSEL_DISABLE);	// PA17
+	h3_gpio_fsel(20, GPIO_FSEL_DISABLE);	// PA20
+	h3_gpio_fsel(21, GPIO_FSEL_DISABLE);	// PA21
 
 	puts("smp_start_core(1, core1_task)");
 	smp_start_core(1, core1_task);
