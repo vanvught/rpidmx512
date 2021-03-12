@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,8 +43,13 @@ static uint32_t s_ReceivingMask = 0;
 
 void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 	if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
-		m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
-		DEBUG_PRINTF("m_nDestinationIp=" IPSTR ", Netmask=" IPSTR, IP2STR(m_InputPorts[nPortIndex].nDestinationIp), IP2STR(Network::Get()->GetNetmask()));
+		if (Network::Get()->IsValidIp(nDestinationIp)) {
+			m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
+		} else {
+			m_InputPorts[nPortIndex].nDestinationIp = m_Node.IPAddressBroadcast;
+		}
+
+		DEBUG_PRINTF("m_nDestinationIp=" IPSTR, IP2STR(m_InputPorts[nPortIndex].nDestinationIp));
 	}
 }
 

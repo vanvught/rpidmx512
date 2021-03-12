@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,15 +35,14 @@
 #include <stdio.h>
 
 #include "artnetnode.h"
+#include "artnetconst.h"
 #include "artnet.h"
 
 #include "network.h"
 
 void ArtNetNode::Print() {
-	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
-
 	printf("Node %d\n", m_nVersion);
-	printf(" Firmware   : %d.%d\n", pSoftwareVersion[0], pSoftwareVersion[1]);
+	printf(" Firmware   : %d.%d\n", ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
 

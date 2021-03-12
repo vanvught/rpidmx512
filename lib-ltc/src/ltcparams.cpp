@@ -35,6 +35,8 @@
 #include "ltcparams.h"
 #include "ltcparamsconst.h"
 
+#include "network.h"
+
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
@@ -63,6 +65,7 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nStopHour = 23;
 	m_tLtcParams.nOscPort = 8000;
 	m_tLtcParams.nSkipSeconds = 5;
+	m_tLtcParams.nTimeCodeIp = Network::Get()->GetBroadcastIp();
 }
 
 bool LtcParams::Load() {
@@ -306,6 +309,19 @@ void LtcParams::callbackFunction(const char* pLine) {
 			if (m_tLtcParams.nRgbLedType == 0) {
 				m_tLtcParams.nSetList &= ~LtcParamsMask::RGBLEDTYPE;
 			}
+		}
+		return;
+	}
+
+	uint32_t nValue32;
+
+	if (Sscan::IpAddress(pLine, LtcParamsConst::TIMECODE_IP, nValue32) == Sscan::OK) {
+		if (Network::Get()->IsValidIp(nValue32)) {
+			m_tLtcParams.nSetList |= LtcParamsMask::TIMECODE_IP;
+			m_tLtcParams.nTimeCodeIp = nValue32;
+		} else {
+			m_tLtcParams.nSetList &= ~LtcParamsMask::TIMECODE_IP;
+			m_tLtcParams.nTimeCodeIp = Network::Get()->GetBroadcastIp();
 		}
 		return;
 	}

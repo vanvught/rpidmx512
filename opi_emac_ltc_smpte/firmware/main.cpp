@@ -270,6 +270,8 @@ void notmain(void) {
 		node.SetShortName("LTC SMPTE Node");
 		node.SetIpProgHandler(&ipprog);
 
+		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
+
 		if (!ltcParams.IsTimeSyncDisabled()) {
 			node.SetTimeSyncHandler(&timeSync);
 		}

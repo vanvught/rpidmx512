@@ -107,25 +107,26 @@ struct TArtNetNodeState {
 };
 
 struct TArtNetNode {
-	uint32_t IPAddressLocal;						///< Local IP Address
-	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
-	uint32_t IPSubnetMask;							///< The subnet mask
+	uint32_t IPAddressLocal;
+	uint32_t IPAddressBroadcast;
+	uint32_t IPSubnetMask;
 	uint32_t IPAddressRemote;						///< The remote IP Address
-	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];		///< The local MAC Address
+	uint32_t IPAddressTimeCode;
+	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];
 	uint8_t NetSwitch[ArtNet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 	uint8_t SubSwitch[ArtNet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
-	char ShortName[ArtNet::SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
-	char LongName[ArtNet::LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
+	uint8_t Oem[2];
+	char ShortName[ArtNet::SHORT_NAME_LENGTH];
+	char LongName[ArtNet::LONG_NAME_LENGTH];
 	uint8_t TalkToMe;								///< Behavior of Node
-	uint8_t Status1;								///< General Status register
+	uint8_t Status1;
 	uint8_t Status2;
 };
 
 struct TGenericPort {
 	uint16_t nPortAddress;		///< One of the 32,768 possible addresses to which a DMX frame can be directed. The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 	uint8_t nDefaultAddress;	///< the address set by the hardware
-	uint8_t nStatus;			///<
+	uint8_t nStatus;
 };
 
 struct TOutputPort {
@@ -175,8 +176,6 @@ public:
 	LightSet *GetOutput() const {
 		return m_pLightSet;
 	}
-
-	const uint8_t *GetSoftwareVersion();
 
 	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
@@ -248,6 +247,7 @@ public:
 		m_pArtNetTimeCode = pArtNetTimeCode;
 	}
 
+	void SetTimeCodeIp(uint32_t nDestinationIp);
 	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 		m_pArtNetTimeSync = pArtNetTimeSync;
 	}

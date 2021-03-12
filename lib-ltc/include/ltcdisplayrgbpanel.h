@@ -35,7 +35,7 @@
 class LtcDisplayRgbPanel final: public LtcDisplayRgbSet {
 public:
 	LtcDisplayRgbPanel();
-	~LtcDisplayRgbPanel();
+	~LtcDisplayRgbPanel() override;
 
 	void Init() override;
 	void Print() override;

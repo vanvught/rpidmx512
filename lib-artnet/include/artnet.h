@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,9 @@
 #include <stdint.h>
 
 namespace artnet {
-static constexpr char NODE_ID[] = "Art-Net";				///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
+static constexpr char NODE_ID[] = "Art-Net";			///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
+static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
+static constexpr auto NETWORK_DATA_LOSS_TIMEOUT = 10;	///< Seconds
 }  // namespace artnet
 
 /**

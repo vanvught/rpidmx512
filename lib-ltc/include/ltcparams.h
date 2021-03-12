@@ -64,9 +64,10 @@ struct TLtcParams {
 	uint8_t nAltFunction;		///< 1	29
 	uint8_t nSkipSeconds;		///< 1	30
 	uint8_t nSkipFree;			///< 1	31
+	uint32_t nTimeCodeIp;		///< 4  35
 }__attribute__((packed));
 
-static_assert(sizeof(struct TLtcParams) <= 32, "struct TLtcParams is too large");
+static_assert(sizeof(struct TLtcParams) <= 64, "struct TLtcParams is too large");
 
 struct LtcParamsMask {
 	static constexpr auto SOURCE = (1U << 0);
@@ -95,6 +96,7 @@ struct LtcParamsMask {
 	static constexpr auto ALT_FUNCTION = (1U << 23);
 	static constexpr auto SKIP_SECONDS = (1U << 24);
 	static constexpr auto SKIP_FREE = (1U << 25);
+	static constexpr auto TIMECODE_IP = (1U << 26);
 };
 
 class LtcParamsStore {
@@ -195,6 +197,10 @@ public:
 
 	uint8_t GetSkipFree() const {
 		return (m_tLtcParams.nSkipFree == 1);
+	}
+
+	uint32_t GetTimecodeIp() const {
+		return m_tLtcParams.nTimeCodeIp;
 	}
 
 	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
