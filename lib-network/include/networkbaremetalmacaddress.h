@@ -2,7 +2,7 @@
  * @file networkbaremetalmacaddress.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,46 +30,46 @@
 
 #include "network.h"
 
-class NetworkBaremetalMacAddress: public Network {
+class NetworkBaremetalMacAddress final : public Network {
 public:
 	NetworkBaremetalMacAddress();
-	~NetworkBaremetalMacAddress();
+	~NetworkBaremetalMacAddress() override;
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+	void MacAddressCopyTo(uint8_t *pMacAddress) override;
 
 	// Dummy methods - not implemented virtual
 
-	int32_t Begin(__attribute__((unused)) uint16_t nPort) {
+	int32_t Begin(__attribute__((unused))  uint16_t nPort) override {
 		return 0;
 	}
 
-	int32_t End(__attribute__((unused)) uint16_t nPort) {
+	int32_t End(__attribute__((unused))  uint16_t nPort) override {
 		return 0;
 	}
 
-	void JoinGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
+	void JoinGroup(__attribute__((unused))  int32_t nHandle, __attribute__((unused))  uint32_t nIp) override {
 	}
 
-	void LeaveGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
+	void LeaveGroup(__attribute__((unused))  int32_t nHandle, __attribute__((unused))  uint32_t nIp) override {
 	}
 
-	uint16_t RecvFrom(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t *pFromIp, __attribute__((unused)) uint16_t *pFromPort) {
+	uint16_t RecvFrom(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t *pFromIp, __attribute__((unused)) uint16_t *pFromPort) override {
 		return 0;
 	}
-	void SendTo(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) const void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t nToIp, __attribute__((unused)) uint16_t nRemotePort) {
+	void SendTo(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) const void *pBuffer, __attribute__((unused)) uint16_t nLength, __attribute__((unused)) uint32_t nToIp, __attribute__((unused)) uint16_t nRemotePort) override {
 	}
 
-	void SetIp(__attribute__((unused)) uint32_t nIp) {
+	void SetIp(__attribute__((unused)) uint32_t nIp) override {
 	}
 
-	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+	void SetNetmask(__attribute__((unused))  uint32_t nNetmask) override {
 	}
 
-	bool SetZeroconf() {
+	bool SetZeroconf() override {
 		return false;
 	}
 
-	bool EnableDhcp() {
+	bool EnableDhcp() override {
 		return false;
 	}
 };

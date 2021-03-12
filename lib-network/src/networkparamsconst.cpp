@@ -1,8 +1,8 @@
 /**
- * @file networkconst.h
+ * @file networkparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKCONST_H_
-#define NETWORKCONST_H_
+#include "networkparamsconst.h"
 
-struct NetworkConst {
-	static const char MSG_NETWORK_INIT[];
-};
+const char NetworkParamsConst::FILE_NAME[] = "network.txt";
 
-#endif /* NETWORKCONST_H_ */
+const char NetworkParamsConst::USE_DHCP[] = "use_dhcp";
+const char NetworkParamsConst::DHCP_RETRY_TIME[] = "dhcp_retry_time";
+
+const char NetworkParamsConst::IP_ADDRESS[] = "ip_address";
+const char NetworkParamsConst::NET_MASK[] = "net_mask";
+const char NetworkParamsConst::HOSTNAME[] = "hostname";
+
+const char NetworkParamsConst::NTP_SERVER[] = "ntp_server";
+const char NetworkParamsConst::NTP_UTC_OFFSET[] = "ntp_utc_offset";
+
+#if defined (ESP8266)
+ const char NetworkParamsConst::DEFAULT_GATEWAY[] = "default_gateway";
+ const char NetworkParamsConst::NAME_SERVER[] = "name_server";
+
+ const char NetworkParamsConst::SSID[] = "ssid";
+ const char NetworkParamsConst::PASSWORD[] = "password";
+#endif
+

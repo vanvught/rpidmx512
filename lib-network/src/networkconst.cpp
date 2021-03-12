@@ -25,22 +25,4 @@
 
 #include "networkconst.h"
 
-const char NetworkConst::PARAMS_FILE_NAME[] = "network.txt";
-
-const char NetworkConst::PARAMS_USE_DHCP[] = "use_dhcp";
-const char NetworkConst::PARAMS_IP_ADDRESS[] = "ip_address";
-const char NetworkConst::PARAMS_NET_MASK[] = "net_mask";
-const char NetworkConst::PARAMS_HOSTNAME[] = "hostname";
-
-const char NetworkConst::PARAMS_NTP_SERVER[] = "ntp_server";
-const char NetworkConst::PARAMS_NTP_UTC_OFFSET[] = "ntp_utc_offset";
-
-#if defined (ESP8266)
- const char NetworkConst::PARAMS_DEFAULT_GATEWAY[] = "default_gateway";
- const char NetworkConst::PARAMS_NAME_SERVER[] = "name_server";
-
- const char NetworkConst::PARAMS_SSID[] = "ssid";
- const char NetworkConst::PARAMS_PASSWORD[] = "password";
-#endif
-
 const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";

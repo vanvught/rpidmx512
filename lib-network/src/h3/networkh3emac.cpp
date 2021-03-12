@@ -2,7 +2,7 @@
  * networkh3emac.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,18 @@
 #include <stdint.h>
 #include <string.h>
 #include <netinet/in.h>
+#include <time.h>
 #include <cassert>
-
-#include "debug.h"
 
 #include "networkh3emac.h"
 #include "networkparams.h"
 
 #include "hardware.h"
+#include "ledblink.h"
 
 #include "./../lib-h3/include/net/net.h"
+
+#include "debug.h"
 
 #define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 
@@ -121,6 +123,37 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	if ((m_pNetworkDisplay != nullptr) && m_IsZeroconfUsed) {
 		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
+	}
+
+	const auto nRetryTime = params.GetDhcpRetryTime();
+	const auto bUseDhcp = params.isDhcpUsed();
+
+	while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
+		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+
+		if (m_pNetworkDisplay != nullptr) {
+			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RETRYING);
+		}
+		DEBUG_PUTS("");
+		auto nTime = time(nullptr);
+		while ((time(nullptr) - nTime) < (nRetryTime * 60)) {
+			LedBlink::Get()->Run();
+		}
+
+		if (m_pNetworkDisplay != nullptr) {
+			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+		}
+
+		LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
+
+		m_IsDhcpUsed = true;
+		m_IsZeroconfUsed = false;
+
+		net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
+
+		if (m_IsDhcpUsed) {
+			break;
+		}
 	}
 
 	m_nLocalIp = tIpInfo.ip.addr;

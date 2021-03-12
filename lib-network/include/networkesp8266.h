@@ -69,25 +69,25 @@ typedef enum wifiphy_phy_mode {
 
 #define HOST_NAME_MAX			255
 
-class NetworkESP8266: public Network {
+class NetworkESP8266 final : public Network {
 public:
 	NetworkESP8266(void);
 	~NetworkESP8266(void);
 
 	void Init();
 
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
+	int32_t Begin(uint16_t nPort) override ;
+	int32_t End(uint16_t nPort) override ;
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
 	void JoinGroup(int32_t nHandle, uint32_t nIp);
-	void LeaveGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp) {
+	void LeaveGroup(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nIp)  override {
 		// Not supported
 	}
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) override ;
+	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) override ;
 
 	void Print(void) {
 	}

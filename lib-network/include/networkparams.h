@@ -30,6 +30,14 @@
 
 #include "network.h"
 
+namespace networkparams {
+namespace defaults {
+static constexpr auto IS_DHCP_USED = true;
+static constexpr auto DHCP_RETRY_TIME = 0;
+static constexpr auto NTP_UTC_OFFSET = 0.0f;
+}  // namespace defaults
+}  // namespace networkparams
+
 struct TNetworkParams {
 	uint32_t nSetList;
 	uint32_t nLocalIp;
@@ -40,6 +48,7 @@ struct TNetworkParams {
 	char aHostName[NETWORK_HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
+	uint8_t nDhcpRetryTime;
 #if defined (ESP8266)
 	char aSsid[34];
 	char aPassword[34];
@@ -59,8 +68,9 @@ struct NetworkParamsMask {
 	static constexpr auto HOSTNAME = (1U << 5);
 	static constexpr auto NTP_SERVER = (1U << 6);
 	static constexpr auto NTP_UTC_OFFSET = (1U << 7);
-	static constexpr auto PTP_ENABLE = (1U << 8);
-	static constexpr auto PTP_DOMAIN = (1U << 9);
+	static constexpr auto DHCP_RETRY_TIME = (1U << 8);
+	static constexpr auto PTP_ENABLE = (1U << 9);
+	static constexpr auto PTP_DOMAIN = (1U << 10);
 #if defined (ESP8266)
 	static constexpr auto SSID = (1U << 30);
 	static constexpr auto PASSWORD = (1U << 31);
@@ -90,6 +100,10 @@ public:
 
 	bool isDhcpUsed() const {
 		return m_tNetworkParams.bIsDhcpUsed;
+	}
+
+	uint8_t GetDhcpRetryTime() const {
+		return m_tNetworkParams.nDhcpRetryTime;
 	}
 
 	uint32_t GetIpAddress() const {
