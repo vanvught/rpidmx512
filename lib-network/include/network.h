@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,7 @@ enum class DhcpClientStatus {
 	IDLE,
 	RENEW,
 	GOT_IP,
+	RETRYING,
 	FAILED
 };
 
@@ -214,6 +215,10 @@ public:
 		m_pNetworkStore = pNetworkStore;
 	}
 
+	bool IsValidIp(uint32_t nIp) {
+		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
+	}
+
 	static Network *Get() {
 		return s_pThis;
 	}
@@ -222,22 +227,22 @@ public:
 
 protected:
 	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
-	uint32_t m_nLocalIp{0};
-	uint32_t m_nGatewayIp{0};
-	uint32_t m_nNetmask{0};
-	bool m_IsDhcpCapable{true};
-	bool m_IsDhcpUsed{false};
-	bool m_IsZeroconfCapable{true};
-	bool m_IsZeroconfUsed{false};
+	uint32_t m_nLocalIp { 0 };
+	uint32_t m_nGatewayIp { 0 };
+	uint32_t m_nNetmask { 0 };
+	bool m_IsDhcpCapable { true };
+	bool m_IsDhcpUsed { false };
+	bool m_IsZeroconfCapable { true };
+	bool m_IsZeroconfUsed { false };
 	char m_aHostName[NETWORK_HOSTNAME_SIZE];
 	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
 	char m_aIfName[IFNAMSIZ];
-	uint32_t m_nIfIndex{1};
-	uint32_t m_nNtpServerIp{0};
-	float m_fNtpUtcOffset{0};
+	uint32_t m_nIfIndex { 1 };
+	uint32_t m_nNtpServerIp { 0 };
+	float m_fNtpUtcOffset { 0 };
 
-	NetworkDisplay *m_pNetworkDisplay{nullptr};
-	NetworkStore *m_pNetworkStore{nullptr};
+	NetworkDisplay *m_pNetworkDisplay { nullptr };
+	NetworkStore *m_pNetworkStore { nullptr };
 
 private:
 	struct QueuedConfig {

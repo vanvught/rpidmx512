@@ -2,7 +2,7 @@
  * @file displayudf.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,6 +140,11 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 		break;
 	case DhcpClientStatus::GOT_IP:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
+		break;
+	case DhcpClientStatus::RETRYING:
+		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+		ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
+		Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "DHCP retrying");
 		break;
 	case DhcpClientStatus::FAILED:
 		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);

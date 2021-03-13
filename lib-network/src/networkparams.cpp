@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,15 +33,18 @@
 #include <cassert>
 
 #include "networkparams.h"
+#include "networkparamsconst.h"
 #include "network.h"
-#include "networkconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
+using namespace networkparams;
+
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	memset(&m_tNetworkParams, 0, sizeof(struct TNetworkParams));
-	m_tNetworkParams.bIsDhcpUsed = true;
+	m_tNetworkParams.bIsDhcpUsed = defaults::IS_DHCP_USED;
+	m_tNetworkParams.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
 }
 
 bool NetworkParams::Load() {
@@ -49,7 +52,7 @@ bool NetworkParams::Load() {
 
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
-	if (configfile.Read(NetworkConst::PARAMS_FILE_NAME)) {
+	if (configfile.Read(NetworkParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pNetworkParamsStore != nullptr) {
 			m_pNetworkParamsStore->Update(&m_tNetworkParams);
@@ -85,71 +88,94 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint8_t nValue8;
-	uint32_t nValue32;
-	float f;
 
-	if (Sscan::Uint8(pLine, NetworkConst::PARAMS_USE_DHCP, nValue8) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, NetworkParamsConst::USE_DHCP, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {	// Default
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::DHCP;
+		} else {
+			m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP;
+		}
 		m_tNetworkParams.bIsDhcpUsed = !(nValue8 == 0);
-		m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_IP_ADDRESS, nValue32) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, NetworkParamsConst::DHCP_RETRY_TIME, nValue8) == Sscan::OK) {
+		if ((nValue8 != defaults::DHCP_RETRY_TIME) && (nValue8 <= 5)) {
+			m_tNetworkParams.nSetList |= NetworkParamsMask::DHCP_RETRY_TIME;
+			m_tNetworkParams.nDhcpRetryTime = nValue8;
+		} else {
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::DHCP_RETRY_TIME;
+			m_tNetworkParams.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
+		}
+	}
+
+	uint32_t nValue32;
+
+	if (Sscan::IpAddress(pLine, NetworkParamsConst::IP_ADDRESS, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nLocalIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NET_MASK, nValue32) == Sscan::OK) {
+	if (Sscan::IpAddress(pLine, NetworkParamsConst::NET_MASK, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNetmask = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NET_MASK;
 		return;
 	}
 
 	uint32_t nLength = NETWORK_HOSTNAME_SIZE - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::HOSTNAME;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_NTP_SERVER, nValue32) == Sscan::OK) {
+	if (Sscan::IpAddress(pLine, NetworkParamsConst::NTP_SERVER, nValue32) == Sscan::OK) {
+		if (nValue32 != 0) {
+			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
+		} else {
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::NTP_SERVER;
+		}
 		m_tNetworkParams.nNtpServerIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
 		return;
 	}
 
-	if (Sscan::Float(pLine, NetworkConst::PARAMS_NTP_UTC_OFFSET, f) == Sscan::OK) {
+	float fValue;
+
+	if (Sscan::Float(pLine, NetworkParamsConst::NTP_UTC_OFFSET, fValue) == Sscan::OK) {
 		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
-			m_tNetworkParams.fNtpUtcOffset = f;
+		if ((static_cast<int32_t>(fValue) >= -12) && (static_cast<int32_t>(fValue) <= 14) && (fValue != defaults::NTP_UTC_OFFSET)) {
+			m_tNetworkParams.fNtpUtcOffset = fValue;
 			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_UTC_OFFSET;
-			return;
+		} else {
+			m_tNetworkParams.fNtpUtcOffset = defaults::NTP_UTC_OFFSET;
+			m_tNetworkParams.nSetList &= ~NetworkParamsMask::NTP_UTC_OFFSET;
 		}
+		return;
 	}
 
 #if defined (ESP8266)
-	if (Sscan::IpAddress(pLine, NetworkConst::PARAMS_DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
+	if (Sscan::IpAddress(pLine, NetworkParamsConst::DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nGatewayIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
 		return;
 	}
 
-	if (Sscan::IpAddress(pLine,  NetworkConst::PARAMS_NAME_SERVER, nValue32) == Sscan::OK) {
+	if (Sscan::IpAddress(pLine,  NetworkParamsConst::NAME_SERVER, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNameServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NAME_SERVER;
 		return;
 	}
 
 	nLength = 34 - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_SSID, m_tNetworkParams.aSsid, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, NetworkParamsConst::SSID, m_tNetworkParams.aSsid, nLength) == Sscan::OK) {
 		m_tNetworkParams.aSsid[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::SSID;
 		return;
 	}
 
 	nLength = 34 - 1;
-	if (Sscan::Char(pLine, NetworkConst::PARAMS_PASSWORD, m_tNetworkParams.aPassword, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, NetworkParamsConst::PASSWORD, m_tNetworkParams.aPassword, nLength) == Sscan::OK) {
 		m_tNetworkParams.aPassword[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::PASSWORD;
 		return;

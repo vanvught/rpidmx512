@@ -1,8 +1,8 @@
 /**
- * @file networkconst.h
+ * @file networkparamsconst.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,29 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKCONST_H_
-#define NETWORKCONST_H_
+#ifndef NETWORKPARAMSCONST_H_
+#define NETWORKPARAMSCONST_H_
 
-struct NetworkConst {
-	static const char MSG_NETWORK_INIT[];
+struct NetworkParamsConst {
+	static const char FILE_NAME[];
+
+	static const char USE_DHCP[];
+	static const char DHCP_RETRY_TIME[];
+
+	static const char IP_ADDRESS[];
+	static const char NET_MASK[];
+	static const char HOSTNAME[];
+
+	static const char NTP_SERVER[];
+	static const char NTP_UTC_OFFSET[];
+
+#if defined (ESP8266)
+	static const char DEFAULT_GATEWAY[];
+	static const char NAME_SERVER[];
+
+	static const char SSID[];
+	static const char PASSWORD[];
+#endif
 };
 
-#endif /* NETWORKCONST_H_ */
+#endif /* NETWORKPARAMSCONST_H_ */

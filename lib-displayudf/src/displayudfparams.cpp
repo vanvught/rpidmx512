@@ -38,7 +38,7 @@
 #include "displayudfparams.h"
 #include "displayudfparamsconst.h"
 
-#include "networkconst.h"
+#include "networkparamsconst.h"
 #include "lightsetconst.h"
 #include "artnetparamsconst.h"
 
@@ -58,17 +58,17 @@ using namespace displayudf;
 static constexpr const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		DisplayUdfParamsConst::TITLE,
 		DisplayUdfParamsConst::BOARD_NAME,
-		NetworkConst::PARAMS_IP_ADDRESS,
+		NetworkParamsConst::IP_ADDRESS,
 		DisplayUdfParamsConst::VERSION,
 		LightSetConst::PARAMS_UNIVERSE,
 		DisplayUdfParamsConst::ACTIVE_PORTS,
 		ArtNetParamsConst::NODE_SHORT_NAME,
-		NetworkConst::PARAMS_HOSTNAME,
+		NetworkParamsConst::HOSTNAME,
 		LightSetConst::PARAMS_UNIVERSE_PORT[0],
 		LightSetConst::PARAMS_UNIVERSE_PORT[1],
 		LightSetConst::PARAMS_UNIVERSE_PORT[2],
 		LightSetConst::PARAMS_UNIVERSE_PORT[3],
-		NetworkConst::PARAMS_NET_MASK,
+		NetworkParamsConst::NET_MASK,
 		LightSetConst::PARAMS_DMX_START_ADDRESS,
 		ArtNetParamsConst::DESTINATION_IP_PORT[0],
 		ArtNetParamsConst::DESTINATION_IP_PORT[1],
