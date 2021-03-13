@@ -88,31 +88,31 @@ public:
 
 	void Dump();
 
-	uint16_t GetDmxMode() {
+	uint16_t GetDmxMode() const {
 		return m_tModeParams.nDmxMode;
 	}
 
-	uint16_t GetDmxStartAddress() {
+	uint16_t GetDmxStartAddress() const {
 		return m_tModeParams.nDmxStartAddress;
 	}
 
-	uint32_t GetMaxSteps() {
+	uint32_t GetMaxSteps() const {
 		return m_tModeParams.nMaxSteps;
 	}
 
-	TL6470Action GetSwitchAction() {
+	TL6470Action GetSwitchAction() const {
 		return m_tModeParams.tSwitchAction;
 	}
 
-	TL6470Direction GetSwitchDir() {
+	TL6470Direction GetSwitchDir() const {
 		return m_tModeParams.tSwitchDir;
 	}
 
-	float GetSwitchStepsPerSec() {
+	float GetSwitchStepsPerSec() const {
 		return m_tModeParams.fSwitchStepsPerSec;
 	}
 
-	bool HasSwitch() {
+	bool HasSwitch() const {
 		return m_tModeParams.bSwitch;
 	}
 
@@ -120,7 +120,7 @@ public:
 
 private:
     void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tModeParams.nSetList & nMask) == nMask;
     }
 

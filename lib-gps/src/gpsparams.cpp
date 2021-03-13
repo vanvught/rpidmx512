@@ -2,7 +2,7 @@
  * @file gpsparams.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,15 +111,18 @@ void GPSParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, GPSParamsConst::ENABLE, nValue8) == Sscan::OK) {
-		m_tTGPSParams.nEnable = !(nValue8 == 0);
-		m_tTGPSParams.nSetList |= GPSParamsMask::ENABLE;
+		if (nValue8 != 0) {
+			m_tTGPSParams.nSetList |= GPSParamsMask::ENABLE;
+		} else {
+			m_tTGPSParams.nSetList &= ~GPSParamsMask::ENABLE;
+		}
 		return;
 	}
 
 	float f;
 
 	if (Sscan::Float(pLine, GPSParamsConst::UTC_OFFSET, f) == Sscan::OK) {
-		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14)) {
+		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14) && (static_cast<int32_t>(f) != 0)) {
 			m_tTGPSParams.fUtcOffset = f;
 			m_tTGPSParams.nSetList |= GPSParamsMask::UTC_OFFSET;
 			return;
@@ -143,7 +146,7 @@ void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint
 	PropertiesBuilder builder(GPSParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.Add(GPSParamsConst::MODULE, GPS::GetModuleName(static_cast<GPSModule>(m_tTGPSParams.nModule)), isMaskSet(GPSParamsMask::MODULE));
-	builder.Add(GPSParamsConst::ENABLE, m_tTGPSParams.nEnable, isMaskSet(GPSParamsMask::ENABLE));
+	builder.Add(GPSParamsConst::ENABLE, isMaskSet(GPSParamsMask::ENABLE));
 	builder.Add(GPSParamsConst::UTC_OFFSET, m_tTGPSParams.fUtcOffset, isMaskSet(GPSParamsMask::UTC_OFFSET));
 
 	nSize = builder.GetSize();

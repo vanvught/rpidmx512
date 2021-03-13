@@ -2,7 +2,7 @@
  * @file spiflashinstallparams.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,8 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UBOOT, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_bInstalluboot = true;
 			m_nSetList |= SpiFlashInstallParamsMask::INSTALL_UBOOT;
 		} else {
-			m_bInstalluboot = false;
 			m_nSetList &= ~SpiFlashInstallParamsMask::INSTALL_UBOOT;
 		}
 		return;
@@ -62,10 +60,8 @@ void SpiFlashInstallParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, SpiFlashInstallParamsConst::INSTALL_UIMAGE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_bInstalluImage = true;
 			m_nSetList |= SpiFlashInstallParamsMask::INSTALL_UIMAGE;
 		} else {
-			m_bInstalluImage = false;
 			m_nSetList &= ~SpiFlashInstallParamsMask::INSTALL_UIMAGE;
 		}
 		return;

@@ -2,7 +2,7 @@
  * @file remoteconfigparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,11 @@
 
 struct TRemoteConfigParams {
     uint32_t nSetList;
-	bool bDisable;
-	bool bDisableWrite;
-	bool bEnableReboot;
-	bool bEnableUptime;
+	uint8_t NotUsed0;
+	uint8_t NotUsed1;
+	uint8_t NotUsed2;
+	uint8_t NotUsed3;
 	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
-	bool bDisableRdmNetLlrpOnly;
 } __attribute__((packed));
 
 struct RemoteConfigParamsMask {
@@ -46,7 +45,6 @@ struct RemoteConfigParamsMask {
 	static constexpr auto ENABLE_REBOOT = (1U << 2);
 	static constexpr auto ENABLE_UPTIME = (1U << 3);
 	static constexpr auto DISPLAY_NAME = (1U << 4);
-	static constexpr auto DISABLE_NODE_RDMNET_LLRP_ONLY = (1U << 5);
 };
 
 class RemoteConfigParamsStore {
@@ -72,18 +70,14 @@ public:
 
 	void Dump();
 
-	bool IsDisableRdmNetLlrpOnly() const {
-		return m_tRemoteConfigParams.bDisableRdmNetLlrpOnly;
-	}
-
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *pLine);
-    void SetBool(const uint8_t nValue, bool& nProperty, const uint32_t nMask);
-    bool isMaskSet(uint32_t nMask) const {
-    	return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
-    }
+	void callbackFunction(const char *pLine);
+	void SetBool(const uint8_t nValue, const uint32_t nMask);
+	bool isMaskSet(uint32_t nMask) const {
+		return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
+	}
 
 private:
 	RemoteConfigParamsStore *m_pRemoteConfigParamsStore;

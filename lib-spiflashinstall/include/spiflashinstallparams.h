@@ -2,7 +2,7 @@
  * @file spiflashinstallparams.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,11 +39,11 @@ public:
 	void Dump();
 
 	 bool GetInstalluboot() const {
-		return m_bInstalluboot;
+		return isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT);
 	}
 
 	 bool GetInstalluImage() const {
-		return m_bInstalluImage;
+		return isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE);
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);
@@ -55,9 +55,7 @@ private:
 	}
 
 private:
-	uint32_t m_nSetList = 0;
-	bool m_bInstalluboot = false;
-	bool m_bInstalluImage = false;
+	uint32_t m_nSetList { 0 };
 };
 
 #endif /* SPIFLASHINSTALLPARAMS_H_ */

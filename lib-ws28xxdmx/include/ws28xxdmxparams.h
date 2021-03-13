@@ -43,11 +43,11 @@ struct TWS28xxDmxParams {
 	uint8_t tLedType;										///< 1	   5
 	uint16_t nLedCount;										///< 2	   7
 	uint16_t nDmxStartAddress;								///< 2	   9
-	bool bLedGrouping;										///< 1	  10
+	uint8_t NotUsed0;										///< 1	  10
 	uint32_t nSpiSpeedHz;									///< 4	  14
 	uint8_t nGlobalBrightness;								///< 1	  15
 	uint8_t nActiveOutputs;									///< 1	  16
-	bool bUseSI5351A;										///< 1	  17
+	uint8_t NotUsed1;										///< 1	  17
 	uint16_t nLedGroupCount;								///< 2	  19
 	uint8_t nRgbMapping;									///< 1	  20
 	uint8_t nLowCode;										///< 1	  21
@@ -129,7 +129,7 @@ public:
 	}
 
 	bool IsLedGrouping() const {
-		return m_tWS28xxParams.bLedGrouping;
+		return isMaskSet(WS28xxDmxParamsMask::LED_GROUPING);
 	}
 
 	uint8_t GetActivePorts() const {
@@ -137,7 +137,7 @@ public:
 	}
 
 	bool UseSI5351A() const {
-		return m_tWS28xxParams.bUseSI5351A;
+		return isMaskSet(WS28xxDmxParamsMask::USE_SI5351A);
 	}
 
 	uint16_t GetLedGroupCount() const {

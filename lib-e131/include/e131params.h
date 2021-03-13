@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,12 +45,11 @@ struct TE131Params {
 	uint8_t nMergeMode;
 	uint8_t nMergeModePort[E131_PARAMS::MAX_PORTS];
 	float nNetworkTimeout;
-	bool bDisableMergeTimeout;
-	bool bEnableNoChangeUpdate;
+	uint8_t NotUsed0;
+	uint8_t NotUsed1;
 	uint8_t nDirection;
 	uint8_t nPriority;
-};
-//} __attribute__((packed));
+} __attribute__((packed));
 
 static_assert(sizeof(struct TE131Params) <= 96, "struct TE131Params is too large");
 
@@ -68,7 +67,7 @@ struct E131ParamsMask {
 	static constexpr auto MERGE_MODE_C = (1U << 10);
 	static constexpr auto MERGE_MODE_D = (1U << 11);
 	static constexpr auto NETWORK_TIMEOUT = (1U << 12);
-	static constexpr auto MERGE_TIMEOUT = (1U << 13);
+	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 13);
 	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 14);
 	static constexpr auto DIRECTION = (1U << 15);
 	static constexpr auto PRIORITY = (1U << 16);
@@ -112,7 +111,7 @@ public:
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate() const {
-		return m_tE131Params.bEnableNoChangeUpdate;
+		return isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT);
 	}
 
 	TE131PortDir GetDirection() const {

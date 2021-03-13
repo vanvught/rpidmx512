@@ -1,7 +1,7 @@
 /**
  * @file midiparams.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,9 @@
 struct TMidiParams {
 	uint32_t nSetList;
 	uint32_t nBaudrate;
-	uint8_t nActiveSense;
 } __attribute__((packed));
+
+static_assert(sizeof(struct TMidiParams) <= 32, "struct TMidiParams is too large");
 
 struct MidiParamsMask {
 	static constexpr auto BAUDRATE = (1U << 0);
@@ -61,19 +62,19 @@ public:
 
 	void Dump();
 
-	uint32_t GetBaudrate() {
+	uint32_t GetBaudrate() const {
 		return m_tMidiParams.nBaudrate;
 	}
 
-	bool GetActiveSense() {
-		return (m_tMidiParams.nActiveSense != 0);
+	bool GetActiveSense() const {
+		return isMaskSet(MidiParamsMask::ACTIVE_SENSE);
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) {
+    bool isMaskSet(uint32_t nMask) const {
     	return (m_tMidiParams.nSetList & nMask) == nMask;
     }
 
