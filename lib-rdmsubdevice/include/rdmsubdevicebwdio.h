@@ -36,7 +36,7 @@ class RDMSubDeviceBwDio: public RDMSubDevice {
 public:
 	RDMSubDeviceBwDio(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::dio::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize() {
+	bool Initialize() override {
 		if (m_BwSpiDio.IsConnected()) {
 			m_BwSpiDio.SetDirection(0x7F);
 			m_BwSpiDio.Output(0x00);
@@ -45,15 +45,15 @@ public:
 		return false;
 	}
 
-	void Start() {
+	void Start() override {
 	}
 
-	void Stop() {
+	void Stop() override {
 		m_BwSpiDio.Output(0x00);
 		m_nData = 0;
 	}
 
-	void Data(const uint8_t *pData, uint16_t nLength);
+	void Data(const uint8_t *pData, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

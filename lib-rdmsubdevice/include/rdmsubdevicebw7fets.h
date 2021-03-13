@@ -36,7 +36,7 @@ class RDMSubDeviceBw7fets: public RDMSubDevice {
 public:
 	RDMSubDeviceBw7fets(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::fets::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize() {
+	bool Initialize() override {
 		if (m_BwSpi7fets.IsConnected()) {
 			m_BwSpi7fets.Output(0x00);
 			return true;
@@ -44,16 +44,16 @@ public:
 		return false;
 	}
 
-	void Start() {
+	void Start() override {
 
 	}
 
-	void Stop() {
+	void Stop() override {
 		m_BwSpi7fets.Output(0x00);
 		m_nData = 0;
 	}
 
-	void Data(const uint8_t *pData, uint16_t nLength);
+	void Data(const uint8_t *pData, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

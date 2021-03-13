@@ -46,11 +46,11 @@ public:
 		SetDescription(sensor::ina219::voltage::DESCRIPTION);
 	}
 
-	bool Initialize() {
+	bool Initialize() override {
 		return sensor::INA219::Initialize();
 	}
 
-	int16_t GetValue() {
+	int16_t GetValue() override {
 		return static_cast<int16_t>(sensor::INA219::GetBusVoltage() * 1000);
 	}
 };

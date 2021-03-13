@@ -46,11 +46,11 @@ public:
 		SetDescription(sensor::htu21d::temperature::DESCRIPTION);
 	}
 
-	bool Initialize() {
+	bool Initialize() override {
 		return sensor::HTU21D::Initialize();
 	}
 
-	int16_t GetValue() {
+	int16_t GetValue() override {
 		return static_cast<int16_t>(sensor::HTU21D::GetTemperature(	));
 	}
 };

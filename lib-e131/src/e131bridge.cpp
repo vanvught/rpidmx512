@@ -44,8 +44,6 @@
 
 #include "debug.h"
 
-static constexpr uint8_t SOFTWARE_VERSION[] = { 1, 21 };
-
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
 E131Bridge::E131Bridge() {
@@ -131,10 +129,6 @@ void E131Bridge::Stop() {
 	}
 
 	LedBlink::Get()->SetMode(ledblink::Mode::OFF_OFF);
-}
-
-const uint8_t *E131Bridge::GetSoftwareVersion() {
-	return SOFTWARE_VERSION;
 }
 
 void E131Bridge::SetSourceName(const char *pSourceName) {

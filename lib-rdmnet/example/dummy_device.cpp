@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
 	nw.Print();
 
-	lb.SetMode(LEDBLINK_MODE_NORMAL);
+	lb.SetMode(ledblink::Mode::NORMAL);
 
 	Identify identify;
 

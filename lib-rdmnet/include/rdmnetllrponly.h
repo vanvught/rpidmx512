@@ -35,7 +35,7 @@
 class RDMNetLLRPOnly: public RDMIdentify {
 public:
 	RDMNetLLRPOnly(const char *pLabel = nullptr);
-	~RDMNetLLRPOnly() {
+	~RDMNetLLRPOnly() override {
 	}
 
 	void Init();

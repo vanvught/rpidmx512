@@ -34,20 +34,20 @@ class RDMSubDeviceMCP4902: public RDMSubDevice {
 public:
 	RDMSubDeviceMCP4902(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = 0, uint32_t nSpiSpeed = 0);
 
-	bool Initialize() {
+	bool Initialize() override {
 		return true;
 	}
 
-	void Start() {
+	void Start() override {
 	}
 
-	void Stop() {
+	void Stop() override {
 		m_MCP4902.WriteDacAB(0, 0);
 		m_nDataA = 0;
 		m_nDataB = 0;
 	}
 
-	void Data(const uint8_t *pData, uint16_t nLength);
+	void Data(const uint8_t *pData, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

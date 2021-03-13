@@ -46,11 +46,11 @@ public:
 		SetDescription(sensor::bh1750::DESCRIPTION);
 	}
 
-	bool Initialize() {
+	bool Initialize() override {
 		return sensor::BH170::Initialize();
 	}
 
-	int16_t GetValue() {
+	int16_t GetValue() override {
 		return static_cast<int16_t>(sensor::BH170::Get() & 0x7FFF);
 	}
 };

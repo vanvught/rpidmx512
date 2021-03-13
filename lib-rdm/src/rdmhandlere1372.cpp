@@ -1,3 +1,4 @@
+#if defined (NODE_RDMNET_LLRP_ONLY)
 /**
  * @file rdmhandlere137.cpp
  *
@@ -496,3 +497,4 @@ void RDMHandler::SetDomainName(__attribute__((unused)) bool IsBroadcast, __attri
 
 	DEBUG_EXIT
 }
+#endif

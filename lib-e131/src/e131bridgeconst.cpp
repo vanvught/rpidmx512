@@ -1,8 +1,8 @@
 /**
- * @file rdmsubdevicebwrelay.h
+ * @file e131bridgeconst.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,43 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSUBDEVICEBWRELAY_H_
-#define RDMSUBDEVICEBWRELAY_H_
-
 #include <stdint.h>
 
-#include "rdmsubdevice.h"
+#include "e131bridgeconst.h"
 
-#include "bwspirelay.h"
-
-class RDMSubDeviceBwRelay: public RDMSubDevice {
-public:
-	RDMSubDeviceBwRelay(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::relay::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
-
-	bool Initialize() override {
-		if (m_BwSpiRelay.IsConnected()) {
-			m_BwSpiRelay.Output(0x00);
-			return true;
-		}
-		return false;
-	}
-
-	void Start() override {
-	}
-
-	void Stop() override {
-		m_BwSpiRelay.Output(0x00);
-		m_nData = 0;
-	}
-
-	void Data(const uint8_t *pData, uint16_t nLength) override;
-
-private:
-	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
-
-private:
-	BwSpiRelay m_BwSpiRelay;
-	uint8_t m_nData = 0;
-};
-
-#endif /* RDMSUBDEVICEBWRELAY_H_ */
+const uint8_t E131BridgeConst::VERSION[] = { 1, 21 };
