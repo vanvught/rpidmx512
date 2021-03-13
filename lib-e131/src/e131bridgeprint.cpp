@@ -2,7 +2,7 @@
  * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdio.h>
@@ -33,16 +33,16 @@
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"
+#include "e131bridgeconst.h"
 #include "e131.h"
 
 void E131Bridge::Print() {
-	const uint8_t *pSoftwareVersion = GetSoftwareVersion();
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
 	uuid_unparse(m_Cid, uuid_str);
 
 	printf("Bridge\n");
-	printf(" Firmware : %d.%d\n", pSoftwareVersion[0], pSoftwareVersion[1]);
+	printf(" Firmware : %d.%d\n", E131BridgeConst::VERSION[0], E131BridgeConst::VERSION[1]);
 
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");

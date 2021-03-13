@@ -1,8 +1,8 @@
 /**
- * @file e131const.cpp
+ * @file e131bridgeconst.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
+#ifndef E131BRIDGECONST_H_
+#define E131BRIDGECONST_H_
+
 #include <stdint.h>
 
-#include "e117const.h"
+struct E131BridgeConst {
+	static const uint8_t VERSION[];
+};
 
-#include "e117.h"
-
-const uint8_t E117Const::ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH] = { 0x41, 0x53, 0x43, 0x2d, 0x45, 0x31, 0x2e, 0x31, 0x37, 0x00, 0x00, 0x00 }; ///< 5.3 ACN Packet Identifier
-
-
+#endif /* E131BRIDGECONST_H_ */

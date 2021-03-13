@@ -2,7 +2,7 @@
  * @file e131paramsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,12 +61,12 @@ void E131Params::Dump() {
 		printf(" %s=%.1f [%s]\n", E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout != 0) ? "" : "Disabled");
 	}
 
-	if (isMaskSet(E131ParamsMask::MERGE_TIMEOUT)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::DISABLE_MERGE_TIMEOUT, m_tE131Params.bDisableMergeTimeout, BOOL2STRING::Get(m_tE131Params.bDisableMergeTimeout));
+	if (isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT)) {
+		printf(" %s=1 [Yes]\n", E131ParamsConst::DISABLE_MERGE_TIMEOUT);
 	}
 
 	if(isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=%d [%s]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tE131Params.bEnableNoChangeUpdate, BOOL2STRING::Get(m_tE131Params.bEnableNoChangeUpdate));
+		printf(" %s=1 [Yes]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE);
 	}
 
 	if(isMaskSet(E131ParamsMask::DIRECTION)) {

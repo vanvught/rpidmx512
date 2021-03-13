@@ -2,7 +2,7 @@
  * @file e131paramsset.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,12 +48,12 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
 	}
 
-	if (isMaskSet(E131ParamsMask::MERGE_TIMEOUT)) {
-		pE131Bridge->SetDisableMergeTimeout(m_tE131Params.bDisableMergeTimeout);
+	if (isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT)) {
+		pE131Bridge->SetDisableMergeTimeout(true);
 	}
 
 	if (isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		pE131Bridge->SetDirectUpdate(m_tE131Params.bEnableNoChangeUpdate);
+		pE131Bridge->SetDirectUpdate(true);
 	}
 
 	if (isMaskSet(E131ParamsMask::PRIORITY)) {

@@ -103,8 +103,6 @@ public:
 		m_pLightSet = pLightSet;
 	}
 
-	const uint8_t *GetSoftwareVersion();
-
 	void SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse);
 	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir = E131_OUTPUT_PORT) const;
 
