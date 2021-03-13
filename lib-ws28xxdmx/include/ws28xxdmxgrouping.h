@@ -2,7 +2,7 @@
  * @file ws28xxdmxgrouping.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,14 +34,15 @@
 class WS28xxDmxGrouping final: public WS28xxDmx {
 public:
 	WS28xxDmxGrouping();
-	~WS28xxDmxGrouping() {}
+	~WS28xxDmxGrouping() override {
+	}
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLenght) override;
 
 	void SetLEDType(ws28xx::Type tLedType) override;
 	void SetLEDCount(uint16_t nLedCount) override;
 	void SetLEDGroupCount(uint16_t nLedGroupCount);
-	uint32_t GetLEDGroupCount() {
+	uint32_t GetLEDGroupCount() const {
 		return m_nLEDGroupCount;
 	}
 
@@ -55,8 +56,8 @@ private:
 	void UpdateMembers();
 
 private:
-	uint32_t m_nLEDGroupCount{0};
-	uint32_t m_nGroups{0};
+	uint32_t m_nLEDGroupCount { 0 };
+	uint32_t m_nGroups { 0 };
 };
 
 #endif /* WS28XXDMXGROUPING_H_ */
