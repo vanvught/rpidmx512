@@ -24,12 +24,13 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
 
 #include "bcm2835.h"
 
-#include "display.h"
+#include "ssd1311.h"
 
 int main(int argc, char **argv) {
 	if (getuid() != 0) {
@@ -42,29 +43,34 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	bcm2835_gpio_fsel(4, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(4);
-	bcm2835_delayMicroseconds(100);
-
 	if (bcm2835_i2c_begin() != 1) {
 		fprintf(stderr, "bcm2835_i2c_begin() failed\n");
 		return -3;
 	}
 
-	bcm2835_gpio_clr(4);
-	bcm2835_delayMicroseconds(10);
-	bcm2835_gpio_set(4);
+	Ssd1311 display;
 
-	Display display(DisplayType::SSD1311);
+	const bool isDetected = display.Start();
 
-	const bool isDetected = display.isDetected();
-
-	display.PrintInfo();
+	printf("isDetected=%d\n", isDetected);
 
 	if (isDetected) {
-		for (unsigned i = 1; i <= display.getRows(); i++) {
-			display.Printf(i, "Line %u", i);
+		display.PrintInfo();
+		display.Cls();
+
+		if (argc == 2) {
+			const uint8_t nContrast = atoi(argv[1]);
+			printf("Set contrast=%d\n", nContrast);
+			display.SetContrast(nContrast);
 		}
+
+		display.TextLine(1, "Line 1", 6);
+		display.Text(" Text", 5);
+		display.TextLine(2, "Line 2", 6);
+		display.PutString(" String");
+		display.TextLine(3, "Line 3", 6);
+		display.PutChar('!');
+		display.TextLine(4, "Line 4", 6);
 	}
 
 	return 0;

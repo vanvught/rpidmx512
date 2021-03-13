@@ -34,7 +34,7 @@
 class Ssd1311 final: public DisplaySet {
 public:
 	Ssd1311 ();
-	~Ssd1311 () {}
+	~Ssd1311 () override {}
 
 	bool Start() override;
 
