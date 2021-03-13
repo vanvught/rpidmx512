@@ -2,7 +2,7 @@
  * @file remoteconfigparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,19 +40,19 @@ void RemoteConfigParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RemoteConfigConst::PARAMS_FILE_NAME);
 
 	if (isMaskSet(RemoteConfigParamsMask::DISABLE)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE, static_cast<int>(m_tRemoteConfigParams.bDisable), BOOL2STRING::Get(m_tRemoteConfigParams.bDisable));
+		printf(" %s=1 [Yes]\n", RemoteConfigConst::PARAMS_DISABLE);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_DISABLE_WRITE, static_cast<int>(m_tRemoteConfigParams.bDisableWrite), BOOL2STRING::Get(m_tRemoteConfigParams.bDisableWrite));
+		printf(" %s=1 [Yes]\n", RemoteConfigConst::PARAMS_DISABLE_WRITE);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_REBOOT, static_cast<int>(m_tRemoteConfigParams.bEnableReboot), BOOL2STRING::Get(m_tRemoteConfigParams.bEnableReboot));
+		printf(" %s=1 [Yes]\n", RemoteConfigConst::PARAMS_ENABLE_REBOOT);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME)) {
-		printf(" %s=%d [%s]\n", RemoteConfigConst::PARAMS_ENABLE_UPTIME, static_cast<int>(m_tRemoteConfigParams.bEnableUptime), BOOL2STRING::Get(m_tRemoteConfigParams.bEnableUptime));
+		printf(" %s=1 [Yes]\n", RemoteConfigConst::PARAMS_ENABLE_UPTIME);
 	}
 
 	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {

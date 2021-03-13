@@ -2,7 +2,7 @@
  * @file rdmhandler.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,11 +47,11 @@
 
 #include "debug.h"
 
-enum TPowerState {
-	POWER_STATE_FULL_OFF = 0x00,	///< Completely disengages power to device. Device can no longer respond.
-	POWER_STATE_SHUTDOWN = 0x01,	///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
-	POWER_STATE_STANDBY = 0x02,		///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
-	POWER_STATE_NORMAL = 0xFF,		///< Normal Operating Mode.
+enum class PowerState {
+	FULL_OFF = 0x00,	///< Completely disengages power to device. Device can no longer respond.
+	SHUTDOWN = 0x01,	///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
+	STANDBY = 0x02,		///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
+	NORMAL = 0xFF,		///< Normal Operating Mode.
 };
 
 RDMHandler::RDMHandler(bool bIsRdm): m_bIsRDM(bIsRdm) {
@@ -103,7 +103,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 		// Unreachable code: break;
 	}
 
-	const uint8_t *uid_device = RDMDeviceResponder::Get()->GetUID();
+	const auto *uid_device = RDMDeviceResponder::Get()->GetUID();
 
 	for (i = 0; i < RDM_UID_SIZE; i++) {
 		pRdmDataOut->destination_uid[i] = pRdmDataIn->source_uid[i];
@@ -137,14 +137,17 @@ void RDMHandler::RespondMessageNack(uint16_t nReason) {
 }
 
 const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
-//  {E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
-	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	nullptr,             				0, false, true , false},
 	{E120_DEVICE_INFO,                	&RDMHandler::GetDeviceInfo,               	nullptr,                			0, false, true , true },
-	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	nullptr,							0, true , true , false},
 	{E120_DEVICE_MODEL_DESCRIPTION,    	&RDMHandler::GetDeviceModelDescription,		nullptr,                 			0, true , true , true },
 	{E120_MANUFACTURER_LABEL,          	&RDMHandler::GetManufacturerLabel,         	nullptr,                        	0, true , true , true },
 	{E120_DEVICE_LABEL,                	&RDMHandler::GetDeviceLabel,               	&RDMHandler::SetDeviceLabel,		0, true , true , true },
 	{E120_FACTORY_DEFAULTS,            	&RDMHandler::GetFactoryDefaults,          	&RDMHandler::SetFactoryDefaults,	0, true , true , true },
+	{E120_IDENTIFY_DEVICE,		       	&RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,    	0, false, true , true },
+	{E120_RESET_DEVICE,			    	nullptr,                                	&RDMHandler::SetResetDevice,       	0, true , true , true },
+#if !defined (NODE_RDMNET_LLRP_ONLY)
+//  {E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
+	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	nullptr,             				0, false, true , false},
+	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	nullptr,							0, true , true , false},
 	{E120_LANGUAGE_CAPABILITIES,       	&RDMHandler::GetLanguage,			        nullptr,                 			0, true , true , false},
 	{E120_LANGUAGE,						&RDMHandler::GetLanguage,			        &RDMHandler::SetLanguage,           0, true , true , false},
 	{E120_SOFTWARE_VERSION_LABEL,		&RDMHandler::GetSoftwareVersionLabel,   	nullptr,                  			0, false, true , false},
@@ -160,10 +163,10 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E120_RECORD_SENSORS,			   	nullptr,									&RDMHandler::SetRecordSensors,	 	0, true , true , false},
 	{E120_DEVICE_HOURS,                	&RDMHandler::GetDeviceHours,    	      	&RDMHandler::SetDeviceHours,       	0, true , true , false},
 	{E120_REAL_TIME_CLOCK,		       	&RDMHandler::GetRealTimeClock,  			&RDMHandler::SetRealTimeClock,    	0, true , true , false},
-	{E120_IDENTIFY_DEVICE,		       	&RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,    	0, false, true , true },
-	{E120_RESET_DEVICE,			    	nullptr,                                	&RDMHandler::SetResetDevice,       	0, true , true , true },
 	{E120_POWER_STATE,					&RDMHandler::GetPowerState,					&RDMHandler::SetPowerState,			0, true , true , false},
 	{E137_1_IDENTIFY_MODE,			   	&RDMHandler::GetIdentifyMode,				&RDMHandler::SetIdentifyMode,		0, true , true , false},
+#endif
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	{E137_2_LIST_INTERFACES,			&RDMHandler::GetInterfaceList,				nullptr,							0, false, false, true },
 	{E137_2_INTERFACE_LABEL,			&RDMHandler::GetInterfaceName,				nullptr,							4, false, false, true },
 	{E137_2_INTERFACE_HARDWARE_ADDRESS_TYPE1,&RDMHandler::GetHardwareAddress,		nullptr,							4, false, false, true },
@@ -177,17 +180,20 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E137_2_IPV4_DEFAULT_ROUTE,			&RDMHandler::GetDefaultRoute,				&RDMHandler::SetDefaultRoute,		4, false, false, true },
 	{E137_2_DNS_HOSTNAME,               &RDMHandler::GetHostName,                   &RDMHandler::SetHostName,           0, false, false, true },
 	{E137_2_DNS_DOMAIN_NAME,			&RDMHandler::GetDomainName,					&RDMHandler::SetDomainName,			0, false, false, true }
+#endif
 };
 
 const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS_SUB_DEVICES[] {
-	{E120_SUPPORTED_PARAMETERS,        &RDMHandler::GetSupportedParameters,			nullptr,                   			0, true, true ,  false},
 	{E120_DEVICE_INFO,                 &RDMHandler::GetDeviceInfo,					nullptr,                   			0, true, true ,  false},
-	{E120_PRODUCT_DETAIL_ID_LIST, 	   &RDMHandler::GetProductDetailIdList,			nullptr,							0, true, true ,  false},
 	{E120_SOFTWARE_VERSION_LABEL,      &RDMHandler::GetSoftwareVersionLabel,		nullptr,                    		0, true, true ,  false},
+	{E120_IDENTIFY_DEVICE,		       &RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,		0, true, true ,  false},
+#if !defined (NODE_RDMNET_LLRP_ONLY)
+	{E120_SUPPORTED_PARAMETERS,        &RDMHandler::GetSupportedParameters,			nullptr,                   			0, true, true ,  false},
+	{E120_PRODUCT_DETAIL_ID_LIST, 	   &RDMHandler::GetProductDetailIdList,			nullptr,							0, true, true ,  false},
 	{E120_DMX_PERSONALITY,		       &RDMHandler::GetPersonality,            		&RDMHandler::SetPersonality,        0, true, true ,  false},
 	{E120_DMX_PERSONALITY_DESCRIPTION, &RDMHandler::GetPersonalityDescription,		nullptr,                        	1, true, true ,  false},
-	{E120_DMX_START_ADDRESS,           &RDMHandler::GetDmxStartAddress,          	&RDMHandler::SetDmxStartAddress,	0, true, true ,  false},
-	{E120_IDENTIFY_DEVICE,		       &RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,		0, true, true ,  false}
+	{E120_DMX_START_ADDRESS,           &RDMHandler::GetDmxStartAddress,          	&RDMHandler::SetDmxStartAddress,	0, true, true ,  false}
+#endif
 };
 
 /**
@@ -411,6 +417,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 	DEBUG1_EXIT
 }
 
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 void RDMHandler::GetQueuedMessage(__attribute__((unused)) uint16_t nSubDevice) {
 	m_RDMQueuedMessage.Handler(m_pRdmDataOut);
 	RespondMessageAck();
@@ -451,6 +458,7 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 
 	RespondMessageAck();
 }
+#endif
 
 void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 	const struct TRDMDeviceInfo *pRdmDeviceInfoRequested = RDMDeviceResponder::Get()->GetDeviceInfo(nSubDevice);
@@ -464,6 +472,36 @@ void RDMHandler::GetDeviceInfo(uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
+void RDMHandler::GetFactoryDefaults(__attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+
+	pRdmDataOut->param_data_length = 1;
+	pRdmDataOut->param_data[0] = RDMDeviceResponder::Get()->GetFactoryDefaults() ? 1 : 0;
+
+	RespondMessageAck();
+}
+
+void RDMHandler::SetFactoryDefaults(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+
+	if (pRdmDataIn->param_data_length != 0) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	RDMDeviceResponder::Get()->SetFactoryDefaults();
+
+	if(IsBroadcast) {
+		return;
+	}
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
+
+	RespondMessageAck();
+}
+
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 void RDMHandler::GetProductDetailIdList(__attribute__((unused)) uint16_t nSubDevice) {
 	const uint16_t product_detail = RDMDeviceResponder::Get()->GetProductDetail();
 
@@ -475,6 +513,7 @@ void RDMHandler::GetProductDetailIdList(__attribute__((unused)) uint16_t nSubDev
 
 	RespondMessageAck();
 }
+#endif
 
 void RDMHandler::GetDeviceModelDescription(__attribute__((unused)) uint16_t nSubDevice) {
 	uint8_t nBoardNameLength;
@@ -521,24 +560,56 @@ void RDMHandler::SetDeviceLabel(bool IsBroadcast, uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-void RDMHandler::GetFactoryDefaults(__attribute__((unused)) uint16_t nSubDevice) {
+void RDMHandler::GetSoftwareVersionLabel(__attribute__((unused)) uint16_t nSubDevice) {
+	const char *software_version = RDMDeviceResponder::Get()->GetSoftwareVersion();
+	const uint8_t software_version_length = RDMDeviceResponder::Get()->GetSoftwareVersionLength();
+
+	HandleString(software_version, software_version_length);
+	RespondMessageAck();
+}
+
+void RDMHandler::SetResetDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
+
+	if(IsBroadcast == false) {
+		RespondMessageAck();
+	}
+
+	if(!Hardware::Get()->Reboot()) {
+		RespondMessageNack(E120_NR_WRITE_PROTECT);
+	}
+}
+
+void RDMHandler::GetIdentifyDevice(__attribute__((unused)) uint16_t nSubDevice) {
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
-	pRdmDataOut->param_data[0] = RDMDeviceResponder::Get()->GetFactoryDefaults() ? 1 : 0;
+
+	assert(RDMIdentify::Get() != nullptr);
+	pRdmDataOut->param_data[0] = RDMIdentify::Get()->IsEnabled() ? 1 : 0;
 
 	RespondMessageAck();
 }
 
-void RDMHandler::SetFactoryDefaults(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+void RDMHandler::SetIdentifyDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (pRdmDataIn->param_data_length != 0) {
+	if (pRdmDataIn->param_data_length != 1) {
 		RespondMessageNack(E120_NR_FORMAT_ERROR);
 		return;
 	}
 
-	RDMDeviceResponder::Get()->SetFactoryDefaults();
+	if ((pRdmDataIn->param_data[0] != RDM_IDENTIFY_STATE_OFF) && (pRdmDataIn->param_data[0] != RDM_IDENTIFY_STATE_ON)) {
+		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	if (pRdmDataIn->param_data[0] == RDM_IDENTIFY_STATE_OFF) {
+		RDMIdentify::Get()->Off();
+	} else {
+		RDMIdentify::Get()->On();
+	}
 
 	if(IsBroadcast) {
 		return;
@@ -546,10 +617,10 @@ void RDMHandler::SetFactoryDefaults(bool IsBroadcast, __attribute__((unused)) ui
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	pRdmDataOut->param_data_length = 0;
-
 	RespondMessageAck();
 }
 
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 void RDMHandler::GetLanguage(__attribute__((unused)) uint16_t nSubDevice) {
 	const char *pLanguage = RDMDeviceResponder::Get()->GetLanguage();
 
@@ -579,14 +650,6 @@ void RDMHandler::SetLanguage(bool IsBroadcast, __attribute__((unused)) uint16_t 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	pRdmDataOut->param_data_length = 0;
 
-	RespondMessageAck();
-}
-
-void RDMHandler::GetSoftwareVersionLabel(__attribute__((unused)) uint16_t nSubDevice) {
-	const char *software_version = RDMDeviceResponder::Get()->GetSoftwareVersion();
-	const uint8_t software_version_length = RDMDeviceResponder::Get()->GetSoftwareVersionLength();
-
-	HandleString(software_version, software_version_length);
 	RespondMessageAck();
 }
 
@@ -807,7 +870,6 @@ void RDMHandler::GetSensorValue(__attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageAck();
 }
 
-
 void RDMHandler::SetSensorValue(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
@@ -919,45 +981,6 @@ void RDMHandler::SetDeviceHours(__attribute__((unused)) bool IsBroadcast, __attr
 	RespondMessageNack(E120_NR_WRITE_PROTECT);
 }
 
-void RDMHandler::GetIdentifyDevice(__attribute__((unused)) uint16_t nSubDevice) {
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-
-	pRdmDataOut->param_data_length = 1;
-
-	assert(RDMIdentify::Get() != nullptr);
-	pRdmDataOut->param_data[0] = RDMIdentify::Get()->IsEnabled() ? 1 : 0;
-
-	RespondMessageAck();
-}
-
-void RDMHandler::SetIdentifyDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
-	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
-
-	if (pRdmDataIn->param_data_length != 1) {
-		RespondMessageNack(E120_NR_FORMAT_ERROR);
-		return;
-	}
-
-	if ((pRdmDataIn->param_data[0] != RDM_IDENTIFY_STATE_OFF) && (pRdmDataIn->param_data[0] != RDM_IDENTIFY_STATE_ON)) {
-		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
-		return;
-	}
-
-	if (pRdmDataIn->param_data[0] == RDM_IDENTIFY_STATE_OFF) {
-		RDMIdentify::Get()->Off();
-	} else {
-		RDMIdentify::Get()->On();
-	}
-
-	if(IsBroadcast) {
-		return;
-	}
-
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	pRdmDataOut->param_data_length = 0;
-	RespondMessageAck();
-}
-
 void RDMHandler::GetRealTimeClock(__attribute__((unused)) uint16_t nSubDevice) {
 	struct tm local_time;
 	Hardware::Get()->GetTime(&local_time);
@@ -1010,19 +1033,6 @@ void RDMHandler::SetRealTimeClock(bool IsBroadcast, __attribute__((unused)) uint
 	RespondMessageAck();
 }
 
-void RDMHandler::SetResetDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
-	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	pRdmDataOut->param_data_length = 0;
-
-	if(IsBroadcast == false) {
-		RespondMessageAck();
-	}
-
-	if(!Hardware::Get()->Reboot()) {
-		RespondMessageNack(E120_NR_WRITE_PROTECT);
-	}
-}
-
 void RDMHandler::GetPowerState(__attribute__((unused)) uint16_t nSubDevice) {
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
@@ -1040,23 +1050,23 @@ void RDMHandler::SetPowerState(__attribute__((unused)) bool IsBroadcast, __attri
 		return;
 	}
 
-	const uint8_t nState = pRdmDataIn->param_data[0];
+	const auto nState = static_cast<PowerState>(pRdmDataIn->param_data[0]);
 
-	if ((nState != POWER_STATE_NORMAL) && (nState > POWER_STATE_STANDBY) ) {
+	if ((nState != PowerState::NORMAL) && (nState > PowerState::STANDBY) ) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	if (nState == POWER_STATE_NORMAL) {
+	if (nState == PowerState::NORMAL) {
 		pRdmDataOut->param_data_length = 0;
 		RespondMessageAck();
 		return;
 	}
 
 #if defined(ENABLE_POWER_STATE_FULL_OFF)
-	if (nState == POWER_STATE_FULL_OFF) {
+	if (nState == PowerState::FULL_OFF) {
 		assert(Hardware::Get() != 0);
 		if(!Hardware::Get()->PowerOff()) {
 			RespondMessageNack(E120_NR_WRITE_PROTECT);
@@ -1127,3 +1137,4 @@ void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 
 	RespondMessageAck();
 }
+#endif

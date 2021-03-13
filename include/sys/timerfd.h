@@ -1,5 +1,5 @@
 /**
- * @file rdmsensorina219current.h
+ * @file timerfd.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,36 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSENSORINA219CURRENT_H_
-#define RDMSENSORINA219CURRENT_H_
+#ifndef SYS_TIMERFD_H_
+#define SYS_TIMERFD_H_
 
-#include <stdint.h>
+#include <time.h>
 
-#include "rdmsensor.h"
-#include "ina219.h"
-
-#include "rdm_e120.h"
-
-class RDMSensorINA219Current: public RDMSensor, sensor::INA219 {
-public:
-	RDMSensorINA219Current(uint8_t nSensor, uint8_t nAddress = 0) : RDMSensor(nSensor), sensor::INA219(nAddress) {
-		SetType(E120_SENS_CURRENT);
-		SetUnit(E120_UNITS_AMPERE_DC);
-		SetPrefix(E120_PREFIX_MILLI);
-		SetRangeMin(rdm::sensor::safe_range_min(sensor::ina219::current::RANGE_MIN));
-		SetRangeMax(rdm::sensor::safe_range_max(sensor::ina219::current::RANGE_MAX));
-		SetNormalMin(rdm::sensor::safe_range_min(sensor::ina219::current::RANGE_MIN));
-		SetNormalMax(rdm::sensor::safe_range_max(sensor::ina219::current::RANGE_MAX));
-		SetDescription(sensor::ina219::current::DESCRIPTION);
-	}
-
-	bool Initialize() override {
-		return sensor::INA219::Initialize();
-	}
-
-	int16_t GetValue() override {
-		return static_cast<int16_t>(sensor::INA219::GetShuntCurrent() * 1000);
-	}
+/* Bits to be set in the FLAGS parameter of `timerfd_settime'.  */
+enum {
+	TFD_TIMER_ABSTIME = (1U << 0)
+#define TFD_TIMER_ABSTIME TFD_TIMER_ABSTIME
 };
 
-#endif /* RDMSENSORINA219CURRENT_H_ */
+struct itimerspec {
+	struct timespec it_interval;	/* Interval for periodic timer */
+	struct timespec it_value;		/* Initial expiration */
+};
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int timerfd_create(int clockid, int flags);
+int timerfd_settime(int fd, int flags, const struct itimerspec *new_value, struct itimerspec *old_value);
+int timerfd_gettime(int fd, struct itimerspec *curr_value);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* SYS_TIMERFD_H_ */

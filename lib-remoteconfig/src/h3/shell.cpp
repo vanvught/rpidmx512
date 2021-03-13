@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,8 +62,8 @@ namespace shell {
 static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
 namespace msg {
 static constexpr char CMD_PROMPT[] = "opi> ";
-static constexpr char CMD_NOT_FOUND[] = "Command not found\n";
-static constexpr char WRONG_ARGUMENTS[] = "Wrong arguments\n";
+static constexpr char CMD_NOT_FOUND[] = "Command not found: ";
+static constexpr char CMD_WRONG_ARGUMENTS[] = "Wrong arguments\n";
 }  // namespace msg
 }  // namespace shell
 
@@ -181,32 +181,34 @@ void Shell::CmdHelp() {
 	uart0_puts("http://www.orangepi-dmx.org/orange-pi-dmx512-rdm/uart0-shell\n");
 }
 
-void Shell::Run() {
-	uint32_t nLength;
-	
+void Shell::Run() {	
 	if (__builtin_expect((!m_bShownPrompt), 1)) {
 		uart0_puts(msg::CMD_PROMPT);
 		m_bShownPrompt = true;
 	}
+	
+	uint32_t nLength;
 
 	if (__builtin_expect((ReadLine(nLength) == nullptr), 1)) {
 		return;
 	}
 	
+	uart0_puts("\n");
+
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
 	uint32_t nOffset;
 	CmdIndex nCmdIndex;
 
 	if ((nOffset = ValidateCmd(nLength, nCmdIndex)) == 0) {
-		uart0_puts(msg::CMD_NOT_FOUND);
+		uart0_printf("%s %s\n", msg::CMD_NOT_FOUND, m_Buffer);
 		return;
 	}
 
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
-		uart0_puts(msg::WRONG_ARGUMENTS);
+		uart0_puts(msg::CMD_WRONG_ARGUMENTS);
 		return;
 	}
 
@@ -244,9 +246,6 @@ void Shell::Run() {
 			break;
 		case CmdIndex::NTP:
 			CmdNtp();
-			break;
-		case CmdIndex::PTP:
-			CmdPtp();
 			break;
 		case CmdIndex::GPS:
 			CmdGps();

@@ -1,5 +1,5 @@
 /**
- * @file rdmsensorina219current.h
+ * @file poll.h
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -22,37 +22,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef POLL_H_
+#define POLL_H_
 
-#ifndef RDMSENSORINA219CURRENT_H_
-#define RDMSENSORINA219CURRENT_H_
+#define POLLIN		0x001		/* There is data to read.  */
+#define POLLPRI		0x002		/* There is urgent data to read.  */
+#define POLLOUT		0x004		/* Writing now will not block.  */
+#define POLLERR		0x008		/* Error condition.  */
+#define POLLHUP		0x010		/* Hung up.  */
+#define POLLNVAL	0x020		/* Invalid polling request.  */
 
-#include <stdint.h>
+/* Type used for the number of file descriptors.  */
+typedef unsigned long int nfds_t;
 
-#include "rdmsensor.h"
-#include "ina219.h"
-
-#include "rdm_e120.h"
-
-class RDMSensorINA219Current: public RDMSensor, sensor::INA219 {
-public:
-	RDMSensorINA219Current(uint8_t nSensor, uint8_t nAddress = 0) : RDMSensor(nSensor), sensor::INA219(nAddress) {
-		SetType(E120_SENS_CURRENT);
-		SetUnit(E120_UNITS_AMPERE_DC);
-		SetPrefix(E120_PREFIX_MILLI);
-		SetRangeMin(rdm::sensor::safe_range_min(sensor::ina219::current::RANGE_MIN));
-		SetRangeMax(rdm::sensor::safe_range_max(sensor::ina219::current::RANGE_MAX));
-		SetNormalMin(rdm::sensor::safe_range_min(sensor::ina219::current::RANGE_MIN));
-		SetNormalMax(rdm::sensor::safe_range_max(sensor::ina219::current::RANGE_MAX));
-		SetDescription(sensor::ina219::current::DESCRIPTION);
-	}
-
-	bool Initialize() override {
-		return sensor::INA219::Initialize();
-	}
-
-	int16_t GetValue() override {
-		return static_cast<int16_t>(sensor::INA219::GetShuntCurrent() * 1000);
-	}
+struct pollfd {
+	int fd; 		/* file descriptor */
+	short events; 	/* requested events */
+	short revents; 	/* returned events */
 };
 
-#endif /* RDMSENSORINA219CURRENT_H_ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern int poll(struct pollfd *fds, nfds_t nfds, int timeout);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* POLL_H_ */

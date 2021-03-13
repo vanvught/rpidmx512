@@ -43,8 +43,8 @@
 RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin) :
 	DMXReceiver(nGpioPin),
 	RDMDeviceResponder(pRDMPersonality, pLightSet),
-	m_pRdmCommand(0),
-	m_pRDMHandler(0),
+	m_pRdmCommand(nullptr),
+	m_pRDMHandler(nullptr),
 	m_IsSubDeviceActive(false)
 {
 	m_pRdmCommand = new struct TRdmMessage;
@@ -54,7 +54,7 @@ RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet,
 	assert(m_pRDMHandler != nullptr);
 }
 
-RDMResponder::~RDMResponder(void) {
+RDMResponder::~RDMResponder() {
 	delete m_pRDMHandler;
 	m_pRDMHandler = nullptr;
 
@@ -62,7 +62,7 @@ RDMResponder::~RDMResponder(void) {
 	m_pRdmCommand = nullptr;
 }
 
-void RDMResponder::Init(void) {
+void RDMResponder::Init() {
 	RDMDeviceResponder::Init();
 }
 
@@ -85,7 +85,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	return nLength;
 }
 
-int RDMResponder::Run(void) {
+int RDMResponder::Run() {
 	int16_t nLength;
 
 	const auto *pDmxDataIn = DMXReceiver::Run(nLength);
@@ -96,7 +96,7 @@ int RDMResponder::Run(void) {
 				RDMSubDevices::Get()->Stop();
 				m_IsSubDeviceActive = false;
 			}
-		} else if (pDmxDataIn != 0) {
+		} else if (pDmxDataIn != nullptr) {
 			RDMSubDevices::Get()->SetData(pDmxDataIn, static_cast<uint16_t>(nLength));
 			if (!m_IsSubDeviceActive) {
 				RDMSubDevices::Get()->Start();
@@ -136,7 +136,7 @@ int RDMResponder::Run(void) {
 	return RDM_RESPONDER_DISCOVERY_RESPONSE;
 }
 
-void RDMResponder::Print(void) {
+void RDMResponder::Print() {
 	RDMDeviceResponder::Print();
 	DMXReceiver::Print();
 }

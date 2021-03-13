@@ -46,11 +46,11 @@ public:
 		SetDescription(sensor::si7021::humidity::DESCRIPTION);
 	}
 
-	bool Initialize() {
+	bool Initialize() override {
 		return sensor::SI7021::Initialize();
 	}
 
-	int16_t GetValue() {
+	int16_t GetValue() override {
 		return static_cast<int16_t>(sensor::SI7021::GetHumidity());
 	}
 };

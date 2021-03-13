@@ -41,7 +41,7 @@ RDMSubDevices::RDMSubDevices()  {
 
 #if defined(RDM_SUBDEVICES_ENABLE)
 	m_pRDMSubDevice = new RDMSubDevice*[rdm::subdevices::max];
-	assert(m_pRDMSubDevice != 0);
+	assert(m_pRDMSubDevice != nullptr);
 
 # ifndef NDEBUG
 	Add(new RDMSubDeviceDummy);

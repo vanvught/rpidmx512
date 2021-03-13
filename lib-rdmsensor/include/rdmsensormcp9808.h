@@ -46,11 +46,11 @@ public:
 		SetDescription(sensor::mcp9808::DESCRIPTION);
 	}
 
-	bool Initialize() {
+	bool Initialize() override {
 		return sensor::MCP9808::Initialize();
 	}
 
-	int16_t GetValue() {
+	int16_t GetValue() override {
 		return static_cast<int16_t>(sensor::MCP9808::Get());
 	}
 };

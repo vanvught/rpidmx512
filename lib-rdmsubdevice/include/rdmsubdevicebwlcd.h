@@ -34,11 +34,11 @@ class RDMSubDeviceBwLcd: public RDMSubDevice {
 public:
 	RDMSubDeviceBwLcd(uint16_t nDmxStartAddress = 1, char nChipSselect = 0, uint8_t nSlaveAddress = bw::lcd::address, uint32_t nSpiSpeed = bw::spi::speed::default_hz);
 
-	bool Initialize();
+	bool Initialize() override;
 
-	void Start();
-	void Stop();
-	void Data(const uint8_t *pData, uint16_t nLength);
+	void Start() override;
+	void Stop() override;
+	void Data(const uint8_t *pData, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

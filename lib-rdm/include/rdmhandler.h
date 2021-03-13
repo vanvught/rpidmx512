@@ -2,7 +2,7 @@
  * @file rdmhandler.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,10 +54,14 @@ private:
 	static const TPidDefinition PID_DEFINITIONS_SUB_DEVICES[];
 
 	// Get
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 	void GetQueuedMessage(uint16_t nSubDevice);
 	void GetSupportedParameters(uint16_t nSubDevice);
+#endif
 	void GetDeviceInfo(uint16_t nSubDevice);
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 	void GetProductDetailIdList(uint16_t nSubDevice);
+#endif
 	void GetDeviceModelDescription(uint16_t nSubDevice);
 	void GetManufacturerLabel(uint16_t nSubDevice);
 	void GetDeviceLabel(uint16_t nSubDevice);
@@ -79,6 +83,7 @@ private:
 	void GetPowerState(uint16_t nSubDevice);
 	// ANSI E1.37-1
 	void GetIdentifyMode(uint16_t nSubDevice);
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	// ANSI E1.37-2 – 2015
 	void GetInterfaceList(uint16_t nSubDevice);
 	void GetInterfaceName(uint16_t nSubDevice);
@@ -91,7 +96,7 @@ private:
 	void GetNameServers(uint16_t nSubDevice);
 	void GetHostName(uint16_t nSubDevice);
 	void GetDomainName(uint16_t nSubDevice);
-
+#endif
 	// Set
 	void SetDeviceLabel(bool IsBroadcast, uint16_t nSubDevice);
 	void SetFactoryDefaults(bool IsBroadcast, uint16_t nSubDevice);
@@ -107,6 +112,7 @@ private:
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-1
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	// ANSI E1.37-2 – 2015
 	void SetDHCPMode(bool IsBroadcast, uint16_t nSubDevice);
 	void SetZeroconf(bool IsBroadcast, uint16_t nSubDevice);
@@ -116,9 +122,9 @@ private:
 	void ApplyConfiguration(bool IsBroadcast, uint16_t nSubDevice);
 	void SetHostName(bool IsBroadcast, uint16_t nSubDevice);
 	void SetDomainName(bool IsBroadcast, uint16_t nSubDevice);
-
 	// ANSI E1.37-2 – 2015
 	bool CheckInterfaceID(const struct TRdmMessageNoSc *pRdmDataIn);
+#endif
 
 private:
 	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
