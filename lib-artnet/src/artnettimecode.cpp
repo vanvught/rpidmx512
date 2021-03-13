@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,36 +35,32 @@
 
 #include "network.h"
 
-void ArtNetNode::SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
-	assert(pArtNetTimeCode != nullptr);
-
-	if (pArtNetTimeCode != nullptr) {
-		m_pArtNetTimeCode = pArtNetTimeCode;
-
-		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != nullptr);
-
-		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
-		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
-		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
-	}
-}
+#include "debug.h"
 
 void ArtNetNode::HandleTimeCode() {
-	const struct TArtTimeCode *pArtTimeCode = &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
+	const auto *pArtTimeCode = &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
 
 	m_pArtNetTimeCode->Handler(reinterpret_cast<const struct TArtNetTimeCode*>(&pArtTimeCode->Frames));
+}
+
+void ArtNetNode::SetTimeCodeIp(uint32_t nDestinationIp) {
+	if (Network::Get()->IsValidIp(nDestinationIp)) {
+		m_Node.IPAddressTimeCode = nDestinationIp;
+	} else {
+		m_Node.IPAddressTimeCode = m_Node.IPAddressBroadcast;
+	}
+
+	DEBUG_PRINTF("m_Node.IPAddressTimeCode=" IPSTR, IP2STR(m_Node.IPAddressTimeCode));
 }
 
 void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	assert(pArtNetTimeCode != nullptr);
 
-	if (pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ) {
+	if (__builtin_expect((pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ), 0)) {
 		return;
 	}
 
-	if (m_pTimeCodeData == nullptr) {
+	if (__builtin_expect((m_pTimeCodeData == nullptr), 0)) {
 		m_pTimeCodeData = new TArtTimeCode;
 		assert(m_pTimeCodeData != nullptr);
 
@@ -76,6 +72,5 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 
 	memcpy(&m_pTimeCodeData->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, ArtNet::UDP_PORT);
 }
-

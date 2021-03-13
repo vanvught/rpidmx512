@@ -51,7 +51,7 @@ void LtcDisplayParams::Dump() {
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<TRGBMapping>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
+		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<rgbmapping::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {

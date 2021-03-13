@@ -45,6 +45,8 @@ const char LtcParamsConst::DAY[] = "day";
 const char LtcParamsConst::NTP_ENABLE[] = "ntp_enable";
 // LTC
 const char LtcParamsConst::VOLUME[] = "volume";
+// Art-Net
+const char LtcParamsConst::TIMECODE_IP[] = "timecode_ip";
 // Generator
 const char LtcParamsConst::FPS[] = "fps";
 const char LtcParamsConst::START_FRAME[] = "start_frame";

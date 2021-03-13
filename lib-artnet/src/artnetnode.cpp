@@ -59,18 +59,14 @@ union uip {
 	uint8_t u8[4];
 } static ip;
 
-#define NODE_DEFAULT_SHORT_NAME		"AvV Art-Net Node"
-#define NODE_DEFAULT_NET_SWITCH		0
-#define NODE_DEFAULT_SUBNET_SWITCH	0
-#define NODE_DEFAULT_UNIVERSE		1
-
-static const uint8_t DEVICE_SOFTWARE_VERSION[] = { 1, 49 };
+namespace defaults {
+static constexpr char SHORT_NAME[] = "AvV Art-Net Node";
+static constexpr auto NET_SWITCH = 0;
+static constexpr auto SUBNET_SWITCH = 0;
+static constexpr auto UNIVERSE = 1;
+}  // namespace defaults
 
 #define ARTNET_MIN_HEADER_SIZE			12
-#define ARTNET_MERGE_TIMEOUT_SECONDS	10
-
-#define NETWORK_DATA_LOSS_TIMEOUT		10	///< Seconds
-
 #define PORT_IN_STATUS_DISABLED_MASK	0x08
 
 ArtNetNode *ArtNetNode::s_pThis = nullptr;
@@ -85,14 +81,18 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 
 	s_pThis = this;
 
-	memset(&m_Node, 0, sizeof (struct TArtNetNode));
+	memset(&m_Node, 0, sizeof(struct TArtNetNode));
+	m_Node.IPAddressLocal = Network::Get()->GetIp();
+	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
+	m_Node.IPAddressTimeCode = m_Node.IPAddressBroadcast;
+	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
 	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (m_nVersion > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
 
-	memset(&m_State, 0, sizeof (struct TArtNetNodeState));
+	memset(&m_State, 0, sizeof(struct TArtNetNodeState));
 	m_State.reportCode = ARTNET_RCPOWEROK;
 	m_State.status = ARTNET_STANDBY;
-	m_State.nNetworkDataLossTimeoutMillis = NETWORK_DATA_LOSS_TIMEOUT * 1000;
+	m_State.nNetworkDataLossTimeoutMillis = artnet::NETWORK_DATA_LOSS_TIMEOUT * 1000;
 
 	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
 		m_IsLightSetRunning[i] = false;
@@ -101,11 +101,11 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 
 	for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
 		memset(&m_InputPorts[i], 0 , sizeof(struct TInputPort));
-		m_InputPorts[i].nDestinationIp = Network::Get()->GetIp() | ~(Network::Get()->GetNetmask());
+		m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
 		m_InputPorts[i].port.nStatus = PORT_IN_STATUS_DISABLED_MASK;
 	}
 
-	SetShortName(NODE_DEFAULT_SHORT_NAME);
+	SetShortName(defaults::SHORT_NAME);
 
 	uint8_t nBoardNameLength;
 	const auto *pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
@@ -138,11 +138,6 @@ ArtNetNode::~ArtNetNode() {
 }
 
 void ArtNetNode::Start() {
-	m_Node.IPAddressLocal = Network::Get()->GetIp();
-	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
-
-	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
-
 	m_Node.Status2 = (m_Node.Status2 & ~(ArtNetStatus2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY);
 	m_Node.Status2 = (m_Node.Status2 & ~(ArtNetStatus2::DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? ArtNetStatus2::DHCP_CAPABLE : 0);
 
@@ -159,9 +154,6 @@ void ArtNetNode::Start() {
 	if (m_pArtNetDmx != nullptr) {
 		for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
-				if (m_InputPorts[i].nDestinationIp == 0) {
-					m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
-				}
 				m_pArtNetDmx->Start(i);
 			}
 		}
@@ -194,10 +186,6 @@ void ArtNetNode::Stop() {
 	m_Node.Status1 = (m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE;
 
 	m_State.status = ARTNET_OFF;
-}
-
-const uint8_t *ArtNetNode::GetSoftwareVersion() {
-	return DEVICE_SOFTWARE_VERSION;
 }
 
 int ArtNetNode::SetUniverse(uint8_t nPortIndex, TArtNetPortDir dir, uint16_t nAddress) {
@@ -502,8 +490,8 @@ void ArtNetNode::FillPollReply() {
 
 	m_PollReply.Port = ArtNet::UDP_PORT;
 
-	m_PollReply.VersInfoH = DEVICE_SOFTWARE_VERSION[0];
-	m_PollReply.VersInfoL = DEVICE_SOFTWARE_VERSION[1];
+	m_PollReply.VersInfoH = ArtNetConst::VERSION[0];
+	m_PollReply.VersInfoL = ArtNetConst::VERSION[1];
 
 	m_PollReply.OemHi = m_Node.Oem[0];
 	m_PollReply.Oem = m_Node.Oem[1];
@@ -675,14 +663,14 @@ bool ArtNetNode::IsMergedDmxDataChanged(uint8_t nPortId, const uint8_t *pData, u
 void ArtNetNode::CheckMergeTimeouts(uint8_t nPortId) {
 	const uint32_t nTimeOutAMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortId].nMillisA;
 
-	if (nTimeOutAMillis > (ARTNET_MERGE_TIMEOUT_SECONDS * 1000)) {
+	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000)) {
 		m_OutputPorts[nPortId].ipA = 0;
 		m_OutputPorts[nPortId].port.nStatus &= (~GO_OUTPUT_IS_MERGING);
 	}
 
 	const uint32_t nTimeOutBMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortId].nMillisB;
 
-	if (nTimeOutBMillis > (ARTNET_MERGE_TIMEOUT_SECONDS * 1000)) {
+	if (nTimeOutBMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000)) {
 		m_OutputPorts[nPortId].ipB = 0;
 		m_OutputPorts[nPortId].port.nStatus &= (~GO_OUTPUT_IS_MERGING);
 	}
@@ -905,13 +893,13 @@ void ArtNetNode::HandleAddress() {
 	const uint8_t nPage = pArtAddress->BindIndex > 0 ? pArtAddress->BindIndex - 1 : 0;
 
 	if (pArtAddress->SubSwitch == PROGRAM_DEFAULTS) {
-		SetSubnetSwitch(NODE_DEFAULT_SUBNET_SWITCH, nPage);
+		SetSubnetSwitch(defaults::SUBNET_SWITCH, nPage);
 	} else if (pArtAddress->SubSwitch & PROGRAM_CHANGE_MASK) {
 		SetSubnetSwitch(pArtAddress->SubSwitch & ~PROGRAM_CHANGE_MASK, nPage);
 	}
 
 	if (pArtAddress->NetSwitch == PROGRAM_DEFAULTS) {
-		SetNetSwitch(NODE_DEFAULT_NET_SWITCH, nPage);
+		SetNetSwitch(defaults::NET_SWITCH, nPage);
 	} else if (pArtAddress->NetSwitch & PROGRAM_CHANGE_MASK) {
 		SetNetSwitch(pArtAddress->NetSwitch & ~PROGRAM_CHANGE_MASK, nPage);
 	}
@@ -921,14 +909,14 @@ void ArtNetNode::HandleAddress() {
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if (pArtAddress->SwOut[i] == PROGRAM_NO_CHANGE) {
 		} else if (pArtAddress->SwOut[i] == PROGRAM_DEFAULTS) {
-			SetUniverseSwitch(nPortIndex, ARTNET_OUTPUT_PORT, NODE_DEFAULT_UNIVERSE);
+			SetUniverseSwitch(nPortIndex, ARTNET_OUTPUT_PORT, defaults::UNIVERSE);
 		} else if (pArtAddress->SwOut[i] & PROGRAM_CHANGE_MASK) {
 			SetUniverseSwitch(nPortIndex, ARTNET_OUTPUT_PORT, pArtAddress->SwOut[i] & ~PROGRAM_CHANGE_MASK);
 		}
 
 		if (pArtAddress->SwIn[i] == PROGRAM_NO_CHANGE) {
 		} else if (pArtAddress->SwIn[i] == PROGRAM_DEFAULTS) {
-			SetUniverseSwitch(nPortIndex, ARTNET_INPUT_PORT, NODE_DEFAULT_UNIVERSE);
+			SetUniverseSwitch(nPortIndex, ARTNET_INPUT_PORT, defaults::UNIVERSE);
 		} else if (pArtAddress->SwIn[i] & PROGRAM_CHANGE_MASK) {
 			SetUniverseSwitch(nPortIndex, ARTNET_INPUT_PORT, pArtAddress->SwIn[i] & ~PROGRAM_CHANGE_MASK);
 		}

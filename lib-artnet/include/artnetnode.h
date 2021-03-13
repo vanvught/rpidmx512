@@ -107,25 +107,26 @@ struct TArtNetNodeState {
 };
 
 struct TArtNetNode {
-	uint32_t IPAddressLocal;						///< Local IP Address
-	uint32_t IPAddressBroadcast;					///< The broadcast IP Address
-	uint32_t IPSubnetMask;							///< The subnet mask
+	uint32_t IPAddressLocal;
+	uint32_t IPAddressBroadcast;
+	uint32_t IPSubnetMask;
 	uint32_t IPAddressRemote;						///< The remote IP Address
-	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];		///< The local MAC Address
+	uint32_t IPAddressTimeCode;
+	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];
 	uint8_t NetSwitch[ArtNet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
 	uint8_t SubSwitch[ArtNet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-	uint8_t Oem[2];									///< The Oem word describes the equipment vendor and the feature set available.
-	char ShortName[ArtNet::SHORT_NAME_LENGTH];		///< The array represents a null terminated short name for the Node.
-	char LongName[ArtNet::LONG_NAME_LENGTH];			///< The array represents a null terminated long name for the Node.
+	uint8_t Oem[2];
+	char ShortName[ArtNet::SHORT_NAME_LENGTH];
+	char LongName[ArtNet::LONG_NAME_LENGTH];
 	uint8_t TalkToMe;								///< Behavior of Node
-	uint8_t Status1;								///< General Status register
+	uint8_t Status1;
 	uint8_t Status2;
 };
 
 struct TGenericPort {
 	uint16_t nPortAddress;		///< One of the 32,768 possible addresses to which a DMX frame can be directed. The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 	uint8_t nDefaultAddress;	///< the address set by the hardware
-	uint8_t nStatus;			///<
+	uint8_t nStatus;
 };
 
 struct TOutputPort {
@@ -176,8 +177,6 @@ public:
 		return m_pLightSet;
 	}
 
-	const uint8_t *GetSoftwareVersion();
-
 	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
@@ -194,12 +193,12 @@ public:
 	}
 
 	void SetShortName(const char *);
-	const char *GetShortName() {
+	const char *GetShortName() const {
 		return m_Node.ShortName;
 	}
 
 	void SetLongName(const char *);
-	const char *GetLongName() {
+	const char *GetLongName() const {
 		return m_Node.LongName;
 	}
 
@@ -244,13 +243,13 @@ public:
 	void SendDiag(const char *, TPriorityCodes);
 	void SendTimeCode(const struct TArtNetTimeCode *);
 
-	void SetTimeCodeHandler(ArtNetTimeCode *);
+	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
+		m_pArtNetTimeCode = pArtNetTimeCode;
+	}
 
+	void SetTimeCodeIp(uint32_t nDestinationIp);
 	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
 		m_pArtNetTimeSync = pArtNetTimeSync;
-	}
-	ArtNetTimeSync *GetTimeSyncHandler() const {
-		return m_pArtNetTimeSync;
 	}
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
@@ -266,9 +265,6 @@ public:
 
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
-	}
-	ArtNetTrigger *GetArtNetTrigger() const {
-		return m_pArtNetTrigger;
 	}
 
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
@@ -330,19 +326,24 @@ private:
 private:
 	uint8_t m_nVersion;
 	uint8_t m_nPages;
-	int32_t m_nHandle{-1};
-	LightSet *m_pLightSet{nullptr};
+	int32_t m_nHandle { -1 };
+	LightSet *m_pLightSet { nullptr };
 
-	ArtNetTimeCode *m_pArtNetTimeCode{nullptr};
-	ArtNetTimeSync *m_pArtNetTimeSync{nullptr};
-	ArtNetRdm *m_pArtNetRdm{nullptr};
-	ArtNetIpProg *m_pArtNetIpProg{nullptr};	ArtNetDmx *m_pArtNetDmx{nullptr};
-	ArtNetTrigger *m_pArtNetTrigger{nullptr};
+	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
+	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
+	ArtNetRdm *m_pArtNetRdm { nullptr };
+	ArtNetIpProg *m_pArtNetIpProg { nullptr };
+	ArtNetDmx *m_pArtNetDmx { nullptr };
+	ArtNetTrigger *m_pArtNetTrigger { nullptr };
 
-	ArtNetStore *m_pArtNetStore{nullptr};
-	ArtNetDisplay *m_pArtNetDisplay{nullptr};
+	ArtNetStore *m_pArtNetStore { nullptr };
+	ArtNetDisplay *m_pArtNetDisplay { nullptr };
 
-	ArtNet4Handler *m_pArtNet4Handler{nullptr};
+	ArtNet4Handler *m_pArtNet4Handler { nullptr };
+
+	struct TArtTimeCode *m_pTimeCodeData { nullptr };
+	struct TArtTodData *m_pTodData { nullptr };
+	struct TArtIpProgReply *m_pIpProgReply { nullptr };
 
 	struct TArtNetNode m_Node;
 	struct TArtNetNodeState m_State;
@@ -352,22 +353,19 @@ private:
 #if defined ( ENABLE_SENDDIAG )
 	struct TArtDiagData m_DiagData;
 #endif
-	struct TArtTimeCode *m_pTimeCodeData{nullptr};
-	struct TArtTodData *m_pTodData{nullptr};
-	struct TArtIpProgReply *m_pIpProgReply{nullptr};
 
 	struct TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
 	struct TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
-	bool m_bDirectUpdate{false};
+	bool m_bDirectUpdate { false };
 
-	uint32_t m_nCurrentPacketMillis{0};
-	uint32_t m_nPreviousPacketMillis{0};
+	uint32_t m_nCurrentPacketMillis { 0 };
+	uint32_t m_nPreviousPacketMillis { 0 };
 
 	TOpCodes m_tOpCodePrevious;
 
 	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
-	bool m_IsRdmResponder{false};
+	bool m_IsRdmResponder { false };
 
 	char m_aSysName[16];
 	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];

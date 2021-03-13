@@ -1,7 +1,7 @@
 /**
  * @file ltcparamssave.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,19 +57,19 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::SOURCE, GetSourceType(static_cast<source>(m_tLtcParams.tSource)), isMaskSet(LtcParamsMask::SOURCE));
 
 	builder.AddComment("Disable outputs");
-	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY));
-	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219));
-	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC));
-	builder.Add(LtcParamsConst::DISABLE_MIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI));
-	builder.Add(LtcParamsConst::DISABLE_ARTNET, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET));
-	builder.Add(LtcParamsConst::DISABLE_RTPMIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI), isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI));
+	builder.Add(LtcParamsConst::DISABLE_DISPLAY, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::DISPLAY));
+	builder.Add(LtcParamsConst::DISABLE_MAX7219, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MAX7219));
+	builder.Add(LtcParamsConst::DISABLE_LTC, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::LTC));
+	builder.Add(LtcParamsConst::DISABLE_MIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::MIDI));
+	builder.Add(LtcParamsConst::DISABLE_ARTNET, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ARTNET));
+	builder.Add(LtcParamsConst::DISABLE_RTPMIDI, isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI));
 
 	builder.AddComment("System clock / RTC");
-	builder.Add(LtcParamsConst::SHOW_SYSTIME, m_tLtcParams.nShowSysTime, isMaskSet(LtcParamsMask::SHOW_SYSTIME));
-	builder.Add(LtcParamsConst::DISABLE_TIMESYNC, m_tLtcParams.nDisableTimeSync, isMaskSet(LtcParamsMask::DISABLE_TIMESYNC));
+	builder.Add(LtcParamsConst::SHOW_SYSTIME, isMaskSet(LtcParamsMask::SHOW_SYSTIME));
+	builder.Add(LtcParamsConst::DISABLE_TIMESYNC, isMaskSet(LtcParamsMask::DISABLE_TIMESYNC));
 
 	builder.AddComment("source=systime");
-	builder.Add(LtcParamsConst::AUTO_START, m_tLtcParams.nAutoStart, isMaskSet(LtcParamsMask::AUTO_START));
+	builder.Add(LtcParamsConst::AUTO_START, isMaskSet(LtcParamsMask::AUTO_START));
 
 	builder.AddComment("source=internal");
 	builder.Add(LtcParamsConst::FPS, m_tLtcParams.nFps, isMaskSet(LtcParamsMask::FPS));
@@ -83,20 +83,23 @@ void LtcParams::Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uin
 	builder.Add(LtcParamsConst::STOP_FRAME, m_tLtcParams.nStopFrame, isMaskSet(LtcParamsMask::STOP_FRAME));
 	builder.Add(LtcParamsConst::SKIP_FREE, m_tLtcParams.nSkipFree, isMaskSet(LtcParamsMask::SKIP_FREE));
 	builder.AddComment("MCP buttons");
-	builder.Add(LtcParamsConst::ALT_FUNCTION, m_tLtcParams.nAltFunction, isMaskSet(LtcParamsMask::ALT_FUNCTION));
+	builder.Add(LtcParamsConst::ALT_FUNCTION, isMaskSet(LtcParamsMask::ALT_FUNCTION));
 	builder.Add(LtcParamsConst::SKIP_SECONDS, m_tLtcParams.nSkipSeconds, isMaskSet(LtcParamsMask::SKIP_SECONDS));
+
+	builder.AddComment("Art-Net output");
+	builder.AddIpAddress(LtcParamsConst::TIMECODE_IP, m_tLtcParams.nTimeCodeIp, isMaskSet(LtcParamsMask::TIMECODE_IP));
 
 	builder.AddComment("LTC output");
 	builder.Add(LtcParamsConst::VOLUME, m_tLtcParams.nVolume, isMaskSet(LtcParamsMask::VOLUME));
 
 	builder.AddComment("NTP Server");
-	builder.Add(LtcParamsConst::NTP_ENABLE, m_tLtcParams.nEnableNtp, isMaskSet(LtcParamsMask::ENABLE_NTP));
+	builder.Add(LtcParamsConst::NTP_ENABLE, isMaskSet(LtcParamsMask::ENABLE_NTP));
 	builder.Add(LtcParamsConst::YEAR, m_tLtcParams.nYear, isMaskSet(LtcParamsMask::YEAR));
 	builder.Add(LtcParamsConst::MONTH, m_tLtcParams.nMonth, isMaskSet(LtcParamsMask::MONTH));
 	builder.Add(LtcParamsConst::DAY, m_tLtcParams.nDay, isMaskSet(LtcParamsMask::DAY));
 
 	builder.AddComment("OSC Server");
-	builder.Add(LtcParamsConst::OSC_ENABLE, m_tLtcParams.nEnableOsc, isMaskSet(LtcParamsMask::ENABLE_OSC));
+	builder.Add(LtcParamsConst::OSC_ENABLE, isMaskSet(LtcParamsMask::ENABLE_OSC));
 	builder.Add(LtcParamsConst::OSC_PORT, m_tLtcParams.nOscPort, isMaskSet(LtcParamsMask::OSC_PORT));
 
 	builder.AddComment("WS28xx display");

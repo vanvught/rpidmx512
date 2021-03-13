@@ -2,7 +2,7 @@
  * @file artnetparamsconst.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@ const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
 const char ArtNetParamsConst::NET[] = "net";
 const char ArtNetParamsConst::SUBNET[] = "subnet";
 
-const char ArtNetParamsConst::TIMECODE[] = "use_timecode";
-const char ArtNetParamsConst::TIMESYNC[] = "use_timesync";
+const char ArtNetParamsConst::USE_TIMECODE[] = "use_timecode";
+const char ArtNetParamsConst::USE_TIMESYNC[] = "use_timesync";
 
-const char ArtNetParamsConst::RDM[] = "enable_rdm";
+const char ArtNetParamsConst::ENABLE_RDM[] = "enable_rdm";
 const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";
 
 const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";

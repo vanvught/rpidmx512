@@ -2,7 +2,7 @@
  * @file artnet4paramssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ void ArtNet4Params::Builder(const struct TArtNet4Params *pArtNet4Params, char *p
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.AddComment("Art-Net 4");
-	builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, m_tArtNet4Params.bMapUniverse0, isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0));
+	builder.Add(ArtNet4ParamsConst::MAP_UNIVERSE0, isMaskSet(ArtNet4ParamsMask::MAP_UNIVERSE0));
 
 	nSize = builder.GetSize();
 

@@ -47,6 +47,8 @@ struct LtcParamsConst {
 	static const char NTP_ENABLE[];
 	// LTC
 	static const char VOLUME[];
+	// Art-Net
+	static const char TIMECODE_IP[];
 	// Generator
 	static const char FPS[];
 	static const char START_FRAME[];

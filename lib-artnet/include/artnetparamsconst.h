@@ -33,9 +33,9 @@ struct ArtNetParamsConst {
 
 	static const char NET[];
 	static const char SUBNET[];
-	static const char TIMECODE[];
-	static const char TIMESYNC[];
-	static const char RDM[];
+	static const char USE_TIMECODE[];
+	static const char USE_TIMESYNC[];
+	static const char ENABLE_RDM[];
 	static const char RDM_DISCOVERY[];
 	static const char NODE_SHORT_NAME[];
 	static const char NODE_LONG_NAME[];
