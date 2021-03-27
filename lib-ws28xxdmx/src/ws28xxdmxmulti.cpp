@@ -40,10 +40,16 @@
 using namespace ws28xxdmxmulti;
 using namespace ws28xx;
 
+static uint8_t s_StopBuffer[DMX_UNIVERSE_SIZE];
+
 WS28xxDmxMulti::WS28xxDmxMulti() {
 	DEBUG_ENTRY
 
 	UpdateMembers();
+
+	for (uint32_t i = 0; i < sizeof(s_StopBuffer); i++) {
+		s_StopBuffer[i] = 0;
+	}
 
 	m_pLEDStripe = new WS28xxMulti;
 
@@ -69,46 +75,29 @@ void WS28xxDmxMulti::Initialize() {
 	m_pLEDStripe->Blackout();
 }
 
-void WS28xxDmxMulti::Start(__attribute__((unused)) uint8_t nPort) {
-	assert(m_pLEDStripe != nullptr);
+void WS28xxDmxMulti::Start(uint8_t nPortId) {
+	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
 
-	DEBUG_PRINTF("%d", static_cast<int>(nPort));
-
-	if (m_bIsStarted) {
-		return;
+	if (m_bIsStarted == 0) {
+		if (m_pLightSetHandler != nullptr) {
+			m_pLightSetHandler->Start();
+		}
 	}
 
-	m_bIsStarted = true;
-
-	while (m_pLEDStripe->IsUpdating()) {
-		// wait for completion
-	}
-
-	m_pLEDStripe->Update();
-
-	if (m_pLightSetHandler != nullptr) {
-		m_pLightSetHandler->Start();
-	}
+	m_bIsStarted |= (1U << nPortId);
 }
 
-void WS28xxDmxMulti::Stop(__attribute__((unused)) uint8_t nPort) {
+void WS28xxDmxMulti::Stop(uint8_t nPortId) {
 	assert(m_pLEDStripe != nullptr);
 
-	DEBUG_PRINTF("%d", static_cast<int>(nPort));
+	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
 
-	if (!m_bIsStarted) {
-		return;
+	if (m_bIsStarted & (1U << nPortId)) {
+		SetData(nPortId, s_StopBuffer, sizeof(s_StopBuffer));
+		m_bIsStarted &= ~(1U << nPortId);
 	}
 
-	m_bIsStarted = false;
-
-	while (m_pLEDStripe->IsUpdating()) {
-		// wait for completion
-	}
-
-	m_pLEDStripe->Blackout();
-
-	if (m_pLightSetHandler != nullptr) {
+	if ((m_bIsStarted == 0) & (m_pLightSetHandler != nullptr)) {
 		m_pLightSetHandler->Stop();
 	}
 }

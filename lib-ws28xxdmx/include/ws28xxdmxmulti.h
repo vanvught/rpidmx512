@@ -135,7 +135,7 @@ private:
 
 	WS28xxMulti *m_pLEDStripe { nullptr };
 
-	bool m_bIsStarted { false };
+	uint32_t m_bIsStarted { 0 };
 	bool m_bBlackout { false };
 
 	uint32_t m_nUniverses { 1 };

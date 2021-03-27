@@ -31,7 +31,7 @@
 #include "ws28xx.h"
 
 #if defined (H3)
-# include "h3/ws28xxdma.h"
+# include "h3_spi.h"
 #endif
 
 #include "rgbmapping.h"
