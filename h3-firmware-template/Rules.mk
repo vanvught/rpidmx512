@@ -78,8 +78,12 @@ ifeq ($(findstring OUTPUT_DMXSEND,$(DEFINES)),OUTPUT_DMXSEND)
 	LIBS+=dmxsend dmx
 endif
 
-ifeq ($(findstring OUTPUT_PIXEL,$(DEFINES)),OUTPUT_PIXEL)
-	LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+ifeq ($(findstring OUTPUT_PIXEL_MULTI,$(DEFINES)),OUTPUT_PIXEL_MULTI)
+	LIBS+=ws28xxdmx ws28xx jamstapl
+else
+	ifeq ($(findstring OUTPUT_PIXEL,$(DEFINES)),OUTPUT_PIXEL)
+		LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+	endif
 endif
 
 ifdef COND
