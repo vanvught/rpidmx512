@@ -27,7 +27,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 
 #include "h3.h"
@@ -39,6 +39,8 @@
 #include "h3_board.h"
 
 #include "h3_spi_internal.h"
+
+#include "arm/synchronize.h"
 
 #define ALT_FUNCTION_CS		(EXT_SPI_NUMBER == 0 ? (H3_PC3_SELECT_SPI0_CS) : (H3_PA13_SELECT_SPI1_CS))
 #define ALT_FUNCTION_CLK	(EXT_SPI_NUMBER == 0 ? (H3_PC2_SELECT_SPI0_CLK) : (H3_PA14_SELECT_SPI1_CLK))
@@ -292,7 +294,7 @@ void __attribute__((cold)) h3_spi_begin(void) {
 	h3_spi_set_speed_hz((uint64_t) 1000000); // Default 1MHz SPI Clock
 
 #ifndef NDEBUG
-	printf("%s SPI%c\n", __FUNCTION__, '0' + EXT_SPI_NUMBER);
+	printf("SPI%c\n", '0' + EXT_SPI_NUMBER);
 	printf("H3_CCU->BUS_CLK_GATING0=%p\n", H3_CCU->BUS_CLK_GATING0);
 	printf("H3_CCU->BUS_SOFT_RESET0=%p\n", H3_CCU->BUS_SOFT_RESET0);
 	printf("EXT_SPI=%p\n", EXT_SPI);
@@ -551,11 +553,11 @@ bool h3_spi_dma_tx_is_active(void) {
 		return false;
 	}
 
-	const uint32_t intr = EXT_SPI->IS;
-
-	if (intr & IS_TC) {
-		EXT_SPI->IS = intr;
+	if (EXT_SPI->IS & IS_TC) {
+		EXT_SPI->IS = (uint32_t) ~0;
+		EXT_SPI->IE = 0;
 		is_running = false;
+		dmb();
 		return false;
 	}
 
@@ -594,7 +596,7 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	EXT_SPI->GC &= (uint32_t)~(1 << 7);
 	EXT_SPI->FC = ((1U << 31) | (1 << 15) );
 
-	EXT_SPI->IS = IE_TC;
+	EXT_SPI->IS = (uint32_t) ~0;
 	EXT_SPI->IE = IE_TC;
 
 	if (s_ws28xx_mode) {
@@ -616,4 +618,5 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	H3_DMA_CHL2->EN = DMA_CHAN_ENABLE_START;
 
 	is_running = true;
+	dmb();
 }

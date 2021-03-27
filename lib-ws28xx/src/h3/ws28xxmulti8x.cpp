@@ -53,7 +53,7 @@ void WS28xxMulti::SetupBuffers8x() {
 	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & static_cast<uint32_t>(~3));
 
 	memset(m_pBuffer8x, 0, m_nBufSize);
-	memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);
+	memset(m_pBlackoutBuffer8x, 0, m_nBufSize);
 
 	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer8x, m_pBlackoutBuffer8x);
 	DEBUG_EXIT
