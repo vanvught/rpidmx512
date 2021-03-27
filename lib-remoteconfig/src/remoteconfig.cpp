@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -708,6 +708,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t &nSize) {
 
 	bool bIsSetLedType = false;
 
+#if !defined (OUTPUT_PIXEL_MULTI)
 	TLC59711DmxParams tlc5911params(StoreTLC59711::Get());
 
 	if (tlc5911params.Load()) {
@@ -715,6 +716,7 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t &nSize) {
 			tlc5911params.Save(m_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 		}
 	}
+#endif
 
 	if (!bIsSetLedType) {
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
@@ -1184,6 +1186,8 @@ void RemoteConfig::HandleTxtFileParams() {
 #if defined (OUTPUT_PIXEL)
 void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_ENTRY
+
+#if !defined (OUTPUT_PIXEL_MULTI)
 	static_assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams), "");
 
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
@@ -1206,6 +1210,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_PRINTF("tlc5911params.IsSetLedType()=%d", tlc59711params.IsSetLedType());
 
 	if (!tlc59711params.IsSetLedType()) {
+#endif
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 
 		if (m_tHandleMode == HandleMode::BIN) {
@@ -1223,7 +1228,9 @@ void RemoteConfig::HandleTxtFileDevices() {
 #ifndef NDEBUG
 		ws28xxparms.Dump();
 #endif
+#if !defined (OUTPUT_PIXEL_MULTI)
 	}
+#endif
 
 	DEBUG_EXIT
 }

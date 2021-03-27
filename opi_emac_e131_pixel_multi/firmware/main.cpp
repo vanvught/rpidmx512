@@ -46,6 +46,7 @@
 #include "ws28xxdmxmulti.h"
 #include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
+#include "handleroled.h"
 #include "storews28xxdmx.h"
 
 // RDMNet LLRP Device Only
@@ -113,6 +114,7 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti ws28xxDmxMulti;
+	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
 	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -186,7 +188,7 @@ void notmain(void) {
 	bridge.Print();
 	ws28xxDmxMulti.Print();
 
-	display.SetTitle("Eth sACN Pixel %c", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '));
+	display.SetTitle("sACN Pixel %c:%dx%d", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '), ws28xxDmxMulti.GetActivePorts(), ws28xxDmxMulti.GetLEDCount());
 	display.Set(2, DISPLAY_UDF_LABEL_HOSTNAME);
 	display.Set(3, DISPLAY_UDF_LABEL_IP);
 	display.Set(4, DISPLAY_UDF_LABEL_VERSION);

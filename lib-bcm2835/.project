@@ -3,10 +3,6 @@
 	<name>lib-bcm2835</name>
 	<comment></comment>
 	<projects>
-		<project>include</project>
-		<project>lib-arm</project>
-		<project>lib-debug</project>
-		<project>lib-ff12c</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

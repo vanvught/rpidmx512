@@ -30,11 +30,11 @@
 
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
-
 #if defined (H3)
 # include "h3/ws28xxdma.h"
 #endif
+
+#include "rgbmapping.h"
 
 namespace ws28xxmulti {
 enum class Board {
@@ -44,6 +44,8 @@ namespace defaults {
 static constexpr auto BOARD = Board::X4;
 }  // namespace defaults
 }  // namespace ws28xxmulti
+
+struct JamSTAPLDisplay;
 
 class WS28xxMulti {
 public:
@@ -108,6 +110,11 @@ public:
 	void Update();
 	void Blackout();
 
+// 8x
+	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
+		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
+	}
+
 	static WS28xxMulti *Get() {
 		return s_pThis;
 	}
@@ -127,6 +134,7 @@ private:
 // 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
 	void SetupSPI();
+	void SetupCPLD();
 	void SetupBuffers8x();
 	void SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
@@ -144,6 +152,7 @@ private:
 	uint32_t *m_pBlackoutBuffer4x { nullptr };
 	uint8_t *m_pBuffer8x { nullptr };
 	uint8_t *m_pBlackoutBuffer8x { nullptr };
+	JamSTAPLDisplay *m_pJamSTAPLDisplay { nullptr };
 
 	static WS28xxMulti *s_pThis;
 };

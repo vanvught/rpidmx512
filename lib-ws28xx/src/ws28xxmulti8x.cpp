@@ -32,6 +32,8 @@
 #include "hal_gpio.h"
 #include "hal_spi.h"
 
+#include "jamstapl.h"
+
 #include "debug.h"
 
 using namespace ws28xx;
@@ -66,6 +68,33 @@ void WS28xxMulti::SetupSPI() {
 	FUNC_PREFIX (spi_begin());
 	FUNC_PREFIX(spi_chipSelect(SPI_CS0));
 	FUNC_PREFIX(spi_set_speed_hz(6400000));
+
+	DEBUG_EXIT
+}
+
+extern uint32_t PIXEL8X4_PROGRAM;
+
+extern "C" {
+uint32_t getPIXEL8X4_SIZE();
+}
+
+void WS28xxMulti::SetupCPLD() {
+	DEBUG_ENTRY
+
+	JamSTAPL jbc(reinterpret_cast<uint8_t*>(&PIXEL8X4_PROGRAM), getPIXEL8X4_SIZE(), true);
+	jbc.SetJamSTAPLDisplay(m_pJamSTAPLDisplay);
+
+	if (jbc.PrintInfo() == JBIC_SUCCESS) {
+		if ((jbc.CheckCRC() == JBIC_SUCCESS) && (jbc.GetCRC() == 0x9AB2)) {
+			jbc.CheckIdCode();
+			if (jbc.GetExitCode() == 0) {
+				jbc.ReadUsercode();
+				if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x00189ABC)) {
+					jbc.Program();
+				}
+			}
+		}
+	}
 
 	DEBUG_EXIT
 }

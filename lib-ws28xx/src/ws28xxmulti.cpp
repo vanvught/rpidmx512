@@ -116,6 +116,7 @@ void WS28xxMulti::Initialize(Type tWS28xxType, uint16_t nLedCount, rgbmapping::M
 		SetupGPIO();
 		SetupBuffers4x();
 	} else {
+		SetupCPLD();
 		SetupHC595(ReverseBits(m_nLowCode), ReverseBits(m_nHighCode));
 		SetupSPI();
 		m_nBufSize++;

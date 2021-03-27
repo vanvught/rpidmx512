@@ -50,6 +50,7 @@
 #include "ws28xxdmxmulti.h"
 #include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
+#include "handleroled.h"
 #include "storews28xxdmx.h"
 
 // RDMNet LLRP Device Only
@@ -107,6 +108,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	WS28xxDmxMulti ws28xxDmxMulti;
+	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
 	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
@@ -199,7 +201,7 @@ void notmain(void) {
 	node.Print();
 	ws28xxDmxMulti.Print();
 
-	display.SetTitle("Eth Art-Net 4 Pixel %c", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '));
+	display.SetTitle("ArtNet Pixel %c:%dx%d", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '), ws28xxDmxMulti.GetActivePorts(), ws28xxDmxMulti.GetLEDCount());
 	display.Set(2, DISPLAY_UDF_LABEL_VERSION);
 	display.Set(3, DISPLAY_UDF_LABEL_NODE_NAME);
 	display.Set(4, DISPLAY_UDF_LABEL_HOSTNAME);
