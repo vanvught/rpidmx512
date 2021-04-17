@@ -221,6 +221,15 @@ public class OrangePi {
 		return null;
 	}
 	
+	public String doDefaults(String txt) {
+		try {
+			doSave("#" + txt + "\n");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return getTxt(txt);
+	}
+	
 	private void sendUdpPacket(byte[]  buffer) {
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, PORT);
 		

@@ -115,7 +115,7 @@ public class LTCGenerator extends JDialog {
 				try {
 					LTCGenerator dialog = new LTCGenerator(InetAddress.getByName("192.168.2.120"));
 					dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-					dialog.Show();
+					dialog.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -139,10 +139,6 @@ public class LTCGenerator extends JDialog {
 			setTitle("Error: LTC Node " + IPAddressLtcNode.getHostAddress());
 			e.printStackTrace();
 		}
-	}
-	
-	public void Show() {
-		setVisible(true);
 	}
 	
 	private void InitComponents() {

@@ -1,7 +1,4 @@
 /**
- * 
- */
-/**
  * @author Arjan van Vught
  *
  */

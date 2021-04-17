@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,12 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -65,7 +68,9 @@ import javax.swing.tree.TreePath;
 
 public class RemoteConfig extends JFrame {
 	private static final long serialVersionUID = 8836780363465781413L;
-
+	//
+	TreeMap<Integer, OrangePi> treeMap = null;
+	//
 	private final int BUFFERSIZE = 1024;
 	private final int PORT = 0x2905;
 	private DatagramSocket socketReceive = null;
@@ -83,7 +88,7 @@ public class RemoteConfig extends JFrame {
 	private JTextArea textArea;
 	private JMenuItem mntmSave;
 	private JMenuItem mntmInterfaces;
-	
+
 	private InetAddress localAddress;
 	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 	private JMenu mnAction;
@@ -101,16 +106,19 @@ public class RemoteConfig extends JFrame {
 	private JMenu mnLTC;
 	private JMenuItem mntmSytemTime;
 	private JMenuItem mntmTCNet;
-	private JMenuItem mntmBroadcast;
+	private JMenuItem mntmGlobalControl;
 	private JMenu mnWorkflow;
 	private JMenuItem mntmFirmwareInstallation;
 	private JMenu mnBackup;
 	private JMenuItem mntmBackupSelected;
 	private JMenuItem mntmBackupAll;
-	
+
 	HashSet<OrangePi> h;
 	private JMenuItem mntmRestore;
 	private JMenuItem mntmMIDI;
+	private JMenuItem mntmPixelTextPatterns;
+
+	private OrangePi opi = null;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -128,9 +136,9 @@ public class RemoteConfig extends JFrame {
 
 	public RemoteConfig() {
 		System.out.println(System.getProperty("os.name"));
-		
+
 		NetworkInterface ifDefault = FirstNetworkInterface.get();
-		
+
 		if (ifDefault == null) {
 			try {
 				localAddress = InetAddress.getLocalHost();
@@ -149,31 +157,31 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		}
-		
-		setTitle("Remote Configuration Manager - " +  localAddress.getHostAddress());
-		
+
+		setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
+
 		System.out.println("Local ip: " + localAddress.getHostAddress());
-		
+
 		createReceiveSocket();
-				
+
 		InitComponents();
 		CreateEvents();
 	}
-	
+
 	private void CreateEvents() {
-		addWindowListener(new WindowAdapter() {		
+		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				doExit();
 			}
 		});
-		
+
 		mntmExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doExit();
 			}
 		});
-		
+
 		mntmExpandAll.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int row = tree.getRowCount() - 1;
@@ -183,7 +191,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmColl.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int row = tree.getRowCount() - 1;
@@ -193,26 +201,26 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				About about = new About();
 				about.setVisible(true);
 			}
 		});
-		
+
 		tree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				int x = e.getX();
 				int y = e.getY();
-								
+
 				TreePath path = tree.getPathForLocation(x, y);
-								
+
 				if (path != null) {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-					OrangePi opi = (OrangePi) node.getUserObject();
-					
+					opi = (OrangePi) node.getUserObject();
+
 					if (isRightClick(e)) {
 						final int cnt = path.getPathCount();
 						System.out.println("Right" + cnt);
@@ -224,9 +232,9 @@ public class RemoteConfig extends JFrame {
 					} else {
 						lblNodeId.setText(opi.getNodeId());
 						lblDisplayName.setText(opi.getNodeDisplayName());
-						
+
 						String text = opi.getTxt(path.getLastPathComponent().toString());
-												
+
 						if (text != null) {
 							textArea.setText(text);
 							textArea.setEditable(true);
@@ -240,18 +248,47 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
+		textArea.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (isRightClick(e)) {
+					final String text = textArea.getText();
+					if (text.startsWith("#")) {
+						final int index = text.indexOf('\n');
+						if (index > 1) {
+							final String txt = text.substring(1, index);
+							if (txt.endsWith(".txt")) {
+								if (txt.startsWith("rconfig")) {
+									doWizardRemoteConfig(opi);
+								}
+								if (txt.startsWith("display")) {
+									doWizardDisplay(opi);
+								}
+								if (txt.startsWith("network")) {
+									doWizardNetwork(opi);
+								}
+								if (txt.startsWith("devices")) {
+									doWizardUniverse(opi);
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
 		mntmRefresh.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				constructTree();
 			}
 		});
-		
+
 		mntmReboot.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
 				Boolean bRebooted = false;
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -259,17 +296,17 @@ public class RemoteConfig extends JFrame {
 						bRebooted = true;
 					}
 				}
-				
+
 				if (!bRebooted) {
 					JOptionPane.showMessageDialog(null, "No node selected for reboot action.");
 				}
 			}
 		});
-		
+
 		mntmDisplayOnoff.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -280,11 +317,11 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmTftp.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -295,11 +332,11 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmUptime.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -310,11 +347,11 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmVersion.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-			TreePath path = tree.getSelectionPath();
-				
+				TreePath path = tree.getSelectionPath();
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -325,11 +362,11 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 3) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -340,14 +377,14 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmInterfaces.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				NetworkInterfaces networkInterfaces = new NetworkInterfaces(localAddress);
 				InetAddress currentLocalAddress = localAddress;
-				
+
 				localAddress = networkInterfaces.Show();
-					
+
 				if (!localAddress.equals(currentLocalAddress)) {
 					setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
 					createReceiveSocket();
@@ -355,11 +392,11 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmTftpClient.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
@@ -371,51 +408,55 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
-		
-		mntmBroadcast.addActionListener(new ActionListener() {
+
+		mntmPixelTextPatterns.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				BroadcastSelect broadcastSelect = new BroadcastSelect(localAddress, socketReceive);
-				broadcastSelect.Show();
+				doPixelTestPattern();
 			}
 		});
-		
+
+		mntmGlobalControl.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				doBroadcastSelect();
+			}
+		});
+
 		mntmLtcGenerator.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
-						
+
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-						
+
 						OrangePi pi = (OrangePi) node.getUserObject();
-						
-						if (pi.getNodeType().contains("ltc")) {							
+
+						if (pi.getNodeType().contains("ltc")) {
 							LTCGenerator client = new LTCGenerator(pi.getAddress());
-							client.Show();
+							client.setVisible(true);
 						} else {
 							JOptionPane.showMessageDialog(null, "The node selected is not a LTC node");
 						}
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "No node selected for LTC Generator to run.");
-				}	
+				}
 			}
 		});
-		
+
 		mntmRgbDisplay.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
-						
+
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-						
+
 						OrangePi pi = (OrangePi) node.getUserObject();
-						
-						if (pi.getNodeType().contains("ltc")) {							
+
+						if (pi.getNodeType().contains("ltc")) {
 							RgbDisplay client = new RgbDisplay(pi.getAddress());
 							client.Show();
 						} else {
@@ -427,20 +468,19 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
-		
+
 		mntmSytemTime.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
-						
+
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-						
+
 						OrangePi pi = (OrangePi) node.getUserObject();
-						
-						if (pi.getNodeType().contains("ltc")) {							
+
+						if (pi.getNodeType().contains("ltc")) {
 							SystemTime client = new SystemTime(pi.getAddress());
 							client.setVisible(true);
 						} else {
@@ -452,19 +492,19 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmMIDI.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
-						
+
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-						
+
 						OrangePi pi = (OrangePi) node.getUserObject();
-						
-						if (pi.getNodeType().contains("ltc")) {							
+
+						if (pi.getNodeType().contains("ltc")) {
 							MIDI midi = new MIDI(pi.getAddress());
 							midi.setVisible(true);
 						} else {
@@ -476,19 +516,19 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmTCNet.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {	
+			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
-				
+
 				if (path != null) {
 					if (path.getPathCount() == 2) {
-						
+
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
-						
+
 						OrangePi pi = (OrangePi) node.getUserObject();
-						
-						if (pi.getNodeType().contains("ltc")) {							
+
+						if (pi.getNodeType().contains("ltc")) {
 							TCNet client = new TCNet(pi.getAddress());
 							client.setVisible(true);
 						} else {
@@ -500,7 +540,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmFirmwareInstallation.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -515,7 +555,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmBackupSelected.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -524,7 +564,7 @@ public class RemoteConfig extends JFrame {
 					if (path.getPathCount() == 2) {
 						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
 						BackupConfiguration backup = new BackupConfiguration();
-						HashSet <OrangePi> hOrangePi = new HashSet <OrangePi>();
+						HashSet<OrangePi> hOrangePi = new HashSet<OrangePi>();
 						hOrangePi.add((OrangePi) node.getUserObject());
 						backup.doSaveSelected(hOrangePi);
 						backup.setVisible(true);
@@ -534,7 +574,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-		
+
 		mntmBackupAll.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				BackupConfiguration backup = new BackupConfiguration();
@@ -542,7 +582,7 @@ public class RemoteConfig extends JFrame {
 				backup.setVisible(true);
 			}
 		});
-		
+
 		mntmRestore.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				TreePath path = tree.getSelectionPath();
@@ -563,130 +603,136 @@ public class RemoteConfig extends JFrame {
 
 	private void InitComponents() {
 		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-		setBounds(100, 100, 459, 325);
-		
+		setBounds(100, 100, 459, 337);
+
 		tree = new JTree();
 		tree.setToolTipText("Press ALT-R for refresh");
 		tree.setRootVisible(false);
 		tree.setModel(model);
-		
+
 		JMenuBar menuBar = new JMenuBar();
 		setJMenuBar(menuBar);
-		
+
 		JMenu mnFile = new JMenu("File");
 		menuBar.add(mnFile);
-		
+
 		mntmExit = new JMenuItem("Exit");
 
 		mntmExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.ALT_MASK));
 		mnFile.add(mntmExit);
-		
+
 		mnAction = new JMenu("Action");
 		menuBar.add(mnAction);
-		
+
 		mntmDisplayOnoff = new JMenuItem("Display On/Off");
 		mntmDisplayOnoff.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));
 		mnAction.add(mntmDisplayOnoff);
-		
+
 		mntmReboot = new JMenuItem("Reboot");
 		mntmReboot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK));
 		mnAction.add(mntmReboot);
-		
+
 		mntmSave = new JMenuItem("Save");
 		mnAction.add(mntmSave);
 		mntmSave.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
-		
+
 		mntmTftp = new JMenuItem("TFTP On/Off");
 		mntmTftp.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.CTRL_MASK));
 		mnAction.add(mntmTftp);
-		
+
 		mntmUptime = new JMenuItem("Uptime");
 		mntmUptime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_U, InputEvent.CTRL_MASK));
 		mnAction.add(mntmUptime);
-		
+
 		mntmVersion = new JMenuItem("Version");
 		mntmVersion.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK));
 		mnAction.add(mntmVersion);
-		
+
 		mnRun = new JMenu("Run");
 		menuBar.add(mnRun);
 		
+				mntmGlobalControl = new JMenuItem("Global control");
+				mntmGlobalControl.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
+				mnRun.add(mntmGlobalControl);
+		
+				mntmPixelTextPatterns = new JMenuItem("Pixel Controller Test Patterns");
+				
+						mntmPixelTextPatterns.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.ALT_MASK));
+						mnRun.add(mntmPixelTextPatterns);
+		
+				mnLTC = new JMenu("LTC");
+				mnRun.add(mnLTC);
+				
+						mntmLtcGenerator = new JMenuItem("Generator");
+						mnLTC.add(mntmLtcGenerator);
+						mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
+						
+								mntmSytemTime = new JMenuItem("System time");
+								mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
+								mnLTC.add(mntmSytemTime);
+								
+										mntmTCNet = new JMenuItem("TCNet");
+										mntmTCNet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
+										mnLTC.add(mntmTCNet);
+										
+												mntmRgbDisplay = new JMenuItem("RGB Display");
+												mntmRgbDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_MASK));
+												mnLTC.add(mntmRgbDisplay);
+												
+														mntmMIDI = new JMenuItem("MIDI");
+														mntmMIDI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_MASK));
+														mnLTC.add(mntmMIDI);
+
 		mntmTftpClient = new JMenuItem("TFTP Client");
 		mntmTftpClient.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, InputEvent.ALT_MASK));
 		mnRun.add(mntmTftpClient);
-		
-		mnLTC = new JMenu("LTC");
-		mnRun.add(mnLTC);
-		
-		mntmLtcGenerator = new JMenuItem("Generator");
-		mnLTC.add(mntmLtcGenerator);
-		mntmLtcGenerator.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
-		
-		mntmSytemTime = new JMenuItem("System time");
-		mntmSytemTime.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.ALT_MASK));
-		mnLTC.add(mntmSytemTime);
-		
-		mntmTCNet = new JMenuItem("TCNet");
-		mntmTCNet.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_MASK));
-		mnLTC.add(mntmTCNet);
-		
-		mntmRgbDisplay = new JMenuItem("RGB Display");
-		mntmRgbDisplay.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_MASK));
-		mnLTC.add(mntmRgbDisplay);
-		
-		mntmMIDI = new JMenuItem("MIDI");
-		mntmMIDI.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, InputEvent.ALT_MASK));
-		mnLTC.add(mntmMIDI);
-		
-		mntmBroadcast = new JMenuItem("Broadcast");
-		mnRun.add(mntmBroadcast);
-		
+
 		JMenu mnView = new JMenu("View");
 		menuBar.add(mnView);
-		
+
 		mntmExpandAll = new JMenuItem("Expand All");
 
 		mntmExpandAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.ALT_MASK));
 		mnView.add(mntmExpandAll);
-		
+
 		mntmColl = new JMenuItem("Collapse All");
 
 		mntmColl.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.ALT_MASK));
 		mnView.add(mntmColl);
-		
+
 		mntmRefresh = new JMenuItem("Refresh");
 
 		mntmRefresh.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_MASK));
 		mnView.add(mntmRefresh);
-		
+
 		JMenu mnNetwork = new JMenu("Network");
 		menuBar.add(mnNetwork);
-		
+
 		mntmInterfaces = new JMenuItem("Interfaces");
 		mntmInterfaces.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_MASK));
 		mnNetwork.add(mntmInterfaces);
-		
+
 		mnWorkflow = new JMenu("Workflow");
 		menuBar.add(mnWorkflow);
-		
+
 		mntmFirmwareInstallation = new JMenuItem("Firmware installation");
 		mnWorkflow.add(mntmFirmwareInstallation);
-		
+
 		mnBackup = new JMenu("Backup");
 		mnWorkflow.add(mnBackup);
-		
+
 		mntmBackupAll = new JMenuItem("All");
 		mnBackup.add(mntmBackupAll);
-		
+
 		mntmBackupSelected = new JMenuItem("Selected");
 		mnBackup.add(mntmBackupSelected);
-		
+
 		mntmRestore = new JMenuItem("Restore");
 		mnWorkflow.add(mntmRestore);
-		
+
 		JMenu mnHelp = new JMenu("Help");
 		menuBar.add(mnHelp);
-		
+
 		mntmAbout = new JMenuItem("About");
 		mntmAbout.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.ALT_MASK));
 
@@ -696,66 +742,62 @@ public class RemoteConfig extends JFrame {
 
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
-		
+
 		scrollPaneLeft = new JScrollPane();
-		
+
 		scrollPaneRight = new JScrollPane();
-		
+
 		lblDisplayName = new JLabel("");
-		
+
 		lblNodeId = new JLabel("");
-		
+
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
-		gl_contentPane.setHorizontalGroup(
-			gl_contentPane.createParallelGroup(Alignment.LEADING)
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-						.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
-						.addGroup(Alignment.TRAILING, gl_contentPane.createSequentialGroup()
-							.addGap(4)
-							.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)))
-					.addGap(0))
-		);
-		gl_contentPane.setVerticalGroup(
-			gl_contentPane.createParallelGroup(Alignment.TRAILING)
-				.addGroup(gl_contentPane.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
-						.addComponent(scrollPaneLeft, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 259, Short.MAX_VALUE)
+		gl_contentPane.setHorizontalGroup(gl_contentPane.createParallelGroup(Alignment.LEADING).addGroup(gl_contentPane
+				.createSequentialGroup().addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 240, Short.MAX_VALUE)
+				.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPane.createSequentialGroup().addPreferredGap(ComponentPlacement.RELATED)
+								.addGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING)
+										.addComponent(lblNodeId, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)
+										.addComponent(lblDisplayName, GroupLayout.DEFAULT_SIZE, 203, Short.MAX_VALUE)))
+						.addGroup(gl_contentPane.createSequentialGroup().addGap(10).addComponent(scrollPaneRight,
+								GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)))
+				.addGap(0)));
+		gl_contentPane.setVerticalGroup(gl_contentPane.createParallelGroup(Alignment.TRAILING).addGroup(gl_contentPane
+				.createSequentialGroup().addContainerGap()
+				.addGroup(gl_contentPane.createParallelGroup(Alignment.LEADING)
+						.addComponent(scrollPaneLeft, GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE)
 						.addGroup(gl_contentPane.createSequentialGroup()
-							.addComponent(lblDisplayName, GroupLayout.PREFERRED_SIZE, 25, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(lblNodeId, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
-							.addGap(18)
-							.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)))
-					.addContainerGap())
-		);
-		
+								.addComponent(lblDisplayName, GroupLayout.PREFERRED_SIZE, 25,
+										GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(lblNodeId, GroupLayout.PREFERRED_SIZE, 23, GroupLayout.PREFERRED_SIZE)
+								.addPreferredGap(ComponentPlacement.RELATED)
+								.addComponent(scrollPaneRight, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)))
+				.addGap(0)));
+
 		textArea = new JTextArea();
 		textArea.setEditable(false);
-		textArea.setToolTipText("Editor for .txt files ");
+		textArea.setToolTipText("Editor for .txt files\nMouse right-click for Wizard");
 		scrollPaneRight.setViewportView(textArea);
-		
+
 		scrollPaneLeft.setViewportView(tree);
 		contentPane.setLayout(gl_contentPane);
 	}
-	
+
 	private static boolean isRightClick(MouseEvent e) {
 		return (e.getButton() == MouseEvent.BUTTON3 || (System.getProperty("os.name").contains("Mac OS X")
 				&& (e.getModifiers() & InputEvent.BUTTON1_MASK) != 0
 				&& (e.getModifiers() & InputEvent.CTRL_MASK) != 0));
 	}
-	
+
 	private void doExit() {
 		System.exit(0);
 	}
-	
+
 	private void doReboot(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			int n = JOptionPane.showConfirmDialog(null, "Reboot", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+			int n = JOptionPane.showConfirmDialog(null, "Reboot", lblDisplayName.getText(),
+					JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.OK_OPTION) {
 				try {
 					opi.doReboot();
@@ -766,77 +808,129 @@ public class RemoteConfig extends JFrame {
 			}
 		}
 	}
-	
+
 	private void doSetDisplay(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			String s = opi.doGetDisplay();
-			
+
 			if (s.contains("On")) {
-				int n = JOptionPane.showConfirmDialog(null, "Display is On\nSet display Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "Display is On\nSet display Off? ",
+						lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetDisplay(n != JOptionPane.OK_OPTION);
 			} else {
-				int n = JOptionPane.showConfirmDialog(null, "Display is Off\nSet display On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
-				opi.doSetDisplay(n == JOptionPane.OK_OPTION);				
+				int n = JOptionPane.showConfirmDialog(null, "Display is Off\nSet display On? ",
+						lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetDisplay(n == JOptionPane.OK_OPTION);
 			}
 		}
 	}
-	
 
 	private void doSetTFTP(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			String s = opi.doGetTFTP();
-			
+
 			if (s.contains("On")) {
-				int n = JOptionPane.showConfirmDialog(null, "TFTP is On\nSet TFTP Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is On\nSet TFTP Off? ", lblDisplayName.getText(),
+						JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetTFTP(n != JOptionPane.OK_OPTION);
 			} else {
-				int n = JOptionPane.showConfirmDialog(null, "TFTP is Off\nSet TFTP On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
-				opi.doSetTFTP(n == JOptionPane.OK_OPTION);				
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is Off\nSet TFTP On? ", lblDisplayName.getText(),
+						JOptionPane.OK_CANCEL_OPTION);
+				opi.doSetTFTP(n == JOptionPane.OK_OPTION);
 			}
 		}
 	}
-	
+
+	private void doPixelTestPattern() {
+		PixelTestPattern pixelTestPattern = new PixelTestPattern(this, treeMap);
+		pixelTestPattern.setModal(true);
+		pixelTestPattern.setVisible(true);
+	}
+
+	private void doBroadcastSelect() {
+		BroadcastSelect broadcastSelect = new BroadcastSelect(this, socketReceive);
+		broadcastSelect.setVisible(true);
+	}
+
 	private void doFirmwareInstallation(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			FirmwareInstallation firmware = new FirmwareInstallation(opi, this); 
+			FirmwareInstallation firmware = new FirmwareInstallation(opi, this);
 			firmware.setVisible(true);
 		}
 	}
+
+	private void doWizardRemoteConfig(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardRconfigTxt wizard = new WizardRconfigTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
 	
+	private void doWizardDisplay(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardDisplayTxt wizard = new WizardDisplayTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+
+	private void doWizardNetwork(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardNetworkTxt wizard = new WizardNetworkTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+
+	private void doWizardUniverse(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardDevicesTxt wizard = new WizardDevicesTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+
 	private void doUptime(OrangePi opi) {
-		if (lblNodeId.getText().trim().length() != 0) {						
+		if (lblNodeId.getText().trim().length() != 0) {
 			try {
 				String uptime = opi.doUptime().trim();
 				uptime = uptime.substring(uptime.indexOf(' ') + 1, uptime.indexOf('s'));
-				
-				int nUptime = Integer.parseInt(uptime);		
+
+				int nUptime = Integer.parseInt(uptime);
 				int days = nUptime / (24 * 3600);
 				nUptime -= days * (24 * 3600);
 				int hours = nUptime / 3600;
 				nUptime -= hours * 3600;
 				int minutes = nUptime / 60;
 				int seconds = nUptime - minutes * 60;
-				
-				String output = String.format("uptime %d day%s, %02d:%02d:%02d", days, days == 1 ? "" : "s", hours, minutes, seconds);
-				
-				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + output);
-				
+
+				String output = String.format("uptime %d day%s, %02d:%02d:%02d", days, days == 1 ? "" : "s", hours,
+						minutes, seconds);
+
+				JOptionPane.showMessageDialog(null,
+						opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + output);
+
 			} catch (Exception e) {
 				System.out.println(e);
-				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
+				JOptionPane.showMessageDialog(null,
+						opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
 			}
 		}
 	}
-	
+
 	private void doVersion(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doVersion());
+			JOptionPane.showMessageDialog(null,
+					opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doVersion());
 		}
 	}
-	
+
 	private void doSave(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			int n = JOptionPane.showConfirmDialog(null, "Save " + textArea.getText().trim().substring(1, textArea.getText().indexOf('\n')) + " ?", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+			int n = JOptionPane.showConfirmDialog(null,
+					"Save " + textArea.getText().trim().substring(1, textArea.getText().indexOf('\n')) + " ?",
+					lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.OK_OPTION) {
 				try {
 					Boolean succes = opi.doSave(textArea.getText().trim());
@@ -849,129 +943,140 @@ public class RemoteConfig extends JFrame {
 			}
 		}
 	}
-	
-	public void refresh() {
-		constructTree();
+
+	public void setTextArea(String text) {
+		textArea.setText(text);
 	}
-	
-	private void constructTree() {			
+
+	public void constructTree() {
 		System.out.println("Interface address: " + localAddress.getHostAddress());
-		
+
 		Graphics g = getGraphics();
-		
+
 		lblDisplayName.setText("Searching ...");
 		lblDisplayName.setForeground(Color.RED);
 		lblNodeId.setText("");
 		textArea.setText("");
 		textArea.setEditable(false);
 		textArea.setEnabled(false);
-	
+
 		update(g);
-		
+
 		DefaultMutableTreeNode root = new MyDefaultMutableTreeNode("Root");
 		DefaultMutableTreeNode child = null;
 
-		h = new HashSet<OrangePi>();
+		treeMap = new TreeMap<Integer, OrangePi>();
 
 		byte[] buffer = new byte[BUFFERSIZE];
 		DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
-		int times = 0;
 
-		while (h.isEmpty() && times++ < 3) {
-
+		for (int i = 0; i < 2; i++) {
 			try {
-				broadcast("?list#", InetAddress.getByName("255.255.255.255"));
-
+				broadcast("?list#");
 				while (true) {
 					socketReceive.receive(dpack);
 
+					textArea.append(dpack.getAddress().toString() + "\n");
+					update(g);
+
 					String str = new String(dpack.getData());
-					String data[] = str.split("\n");
+					final String data[] = str.split("\n");
 
 					OrangePi opi = new OrangePi(data[0], localAddress, socketReceive);
+
 					if (opi.getIsValid()) {
-						h.add(opi);
+						treeMap.put(ByteBuffer.wrap(dpack.getAddress().getAddress()).getInt(), opi);
 					}
 				}
 			} catch (SocketTimeoutException e) {
-				System.out.println("No more messages.");
+				textArea.append("No replies\n");
+				update(g);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		
-/*
-		h.add(new OrangePi("192.168.2.150,Art-Net,Pixel,4", localAddress, socketReceive));
-		h.add(new OrangePi("192.168.2.151,Art-Net,Pixel,4", localAddress, socketReceive));
-		h.add(new OrangePi("192.168.2.152,Art-Net,Pixel,2", localAddress, socketReceive));
-		h.add(new OrangePi("192.168.2.153,Art-Net,Pixel,2", localAddress, socketReceive));
-*/		
 
-		Iterator<OrangePi> it = h.iterator();
+		/*
+		 * h.add(new OrangePi("192.168.2.150,Art-Net,Pixel,4", localAddress,
+		 * socketReceive)); h.add(new OrangePi("192.168.2.151,Art-Net,Pixel,4",
+		 * localAddress, socketReceive)); h.add(new
+		 * OrangePi("192.168.2.152,Art-Net,Pixel,2", localAddress, socketReceive));
+		 * h.add(new OrangePi("192.168.2.153,Art-Net,Pixel,2", localAddress,
+		 * socketReceive));
+		 */
 
-		while (it.hasNext()) {
-			child = new DefaultMutableTreeNode(it.next());
-			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeRemoteConfig()));
-			
-			String nodeDisplay = ((OrangePi) child.getUserObject()).getNodeDisplay();
-			
-			if (nodeDisplay != null) {
-				child.add(new DefaultMutableTreeNode(nodeDisplay));
+		if (!treeMap.isEmpty()) {
+			textArea.setText("");
+
+			Set<Map.Entry<Integer, OrangePi>> entries = treeMap.entrySet();
+
+			for (Map.Entry<Integer, OrangePi> entry : entries) {
+
+				child = new DefaultMutableTreeNode(entry.getValue());
+				child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeRemoteConfig()));
+
+				String nodeDisplay = ((OrangePi) child.getUserObject()).getNodeDisplay();
+
+				if (nodeDisplay != null) {
+					child.add(new DefaultMutableTreeNode(nodeDisplay));
+				}
+
+				child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
+
+				String nodeType = ((OrangePi) child.getUserObject()).getNodeType();
+
+				if (nodeType != null) {
+					child.add(new DefaultMutableTreeNode(nodeType));
+				}
+
+				String nodeRdm = ((OrangePi) child.getUserObject()).getNodeRDM();
+
+				if (nodeRdm != null) {
+					child.add(new DefaultMutableTreeNode(nodeRdm));
+				}
+
+				String nodeLtcDisplay = ((OrangePi) child.getUserObject()).getNodeLtcDisplay();
+
+				if (nodeLtcDisplay != null) {
+					child.add(new DefaultMutableTreeNode(nodeLtcDisplay));
+				}
+
+				String nodeMode = ((OrangePi) child.getUserObject()).getNodeMode();
+
+				if (nodeMode != null) {
+					child.add(new DefaultMutableTreeNode(nodeMode));
+				}
+
+				String nodeTCNet = ((OrangePi) child.getUserObject()).getNodeTCNet();
+
+				if (nodeTCNet != null) {
+					child.add(new DefaultMutableTreeNode(nodeTCNet));
+				}
+
+				String nodeSparkFun = ((OrangePi) child.getUserObject()).getNodeSparkFun();
+
+				if (nodeSparkFun != null) {
+					child.add(new DefaultMutableTreeNode(nodeSparkFun));
+				}
+
+				int nMotorIndex = 0;
+				String nodeMotor = null;
+
+				while ((nodeMotor = ((OrangePi) child.getUserObject()).getNodeMotor(nMotorIndex)) != null) {
+					child.add(new DefaultMutableTreeNode(nodeMotor));
+					nMotorIndex++;
+				}
+
+				String nodeGPS = ((OrangePi) child.getUserObject()).getNodeGPS();
+
+				if (nodeGPS != null) {
+					child.add(new DefaultMutableTreeNode(nodeGPS));
+				}
+
+				root.add(child);
 			}
-						
-			child.add(new DefaultMutableTreeNode(((OrangePi) child.getUserObject()).getNodeNetwork()));
-			
-			String nodeType = ((OrangePi) child.getUserObject()).getNodeType();
-			
-			if (nodeType != null) {
-				child.add(new DefaultMutableTreeNode(nodeType));
-			}
-			
-			String nodeRdm =  ((OrangePi) child.getUserObject()).getNodeRDM();
-			
-			if (nodeRdm != null) {
-				child.add(new DefaultMutableTreeNode(nodeRdm));
-			}
-			
-			String nodeLtcDisplay = ((OrangePi) child.getUserObject()).getNodeLtcDisplay();
-			
-			if (nodeLtcDisplay != null) {
-				child.add(new DefaultMutableTreeNode(nodeLtcDisplay));
-			}
-			
-			String nodeMode = ((OrangePi) child.getUserObject()).getNodeMode();
-			
-			if (nodeMode != null) {
-				child.add(new DefaultMutableTreeNode(nodeMode));
-			}
-						
-			String nodeTCNet =  ((OrangePi) child.getUserObject()).getNodeTCNet();
-			
-			if (nodeTCNet != null) {
-				child.add(new DefaultMutableTreeNode(nodeTCNet));
-			}
-			
-			String nodeSparkFun =  ((OrangePi) child.getUserObject()).getNodeSparkFun();
-			
-			if (nodeSparkFun != null) {
-				child.add(new DefaultMutableTreeNode(nodeSparkFun));
-			}
-			
-			int nMotorIndex = 0;
-			String nodeMotor = null;
-			
-			while (( nodeMotor = ((OrangePi) child.getUserObject()).getNodeMotor(nMotorIndex)) != null) {
-				child.add(new DefaultMutableTreeNode(nodeMotor));
-				nMotorIndex++;
-			}
-			
-			String nodeGPS =  ((OrangePi) child.getUserObject()).getNodeGPS();
-			
-			if (nodeGPS != null) {
-				child.add(new DefaultMutableTreeNode(nodeGPS));
-			}
-			
-			root.add(child);
+		} else {
+			textArea.setText("No Orange Pi's found\n");
 		}
 
 		if (tree == null) {
@@ -979,29 +1084,36 @@ public class RemoteConfig extends JFrame {
 		} else {
 			tree.setModel(new DefaultTreeModel(root));
 		}
-		
+
 		lblDisplayName.setText("");
 		lblDisplayName.setForeground(Color.BLACK);
 		textArea.setEditable(true);
 		textArea.setEnabled(true);
-		
+
 		update(g);
 	}
 
-	private void broadcast(String broadcastMessage, InetAddress address) throws IOException {
+	public void broadcast(String broadcastMessage) {
 		byte[] buffer = broadcastMessage.getBytes();
-
-		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, PORT);
-
-		DatagramSocket socketBroadcast = new DatagramSocket(null);
-		socketBroadcast.setReuseAddress(true);
-		SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
-		socketBroadcast.bind(sockaddr);
-		socketBroadcast.setBroadcast(true);
-		socketBroadcast.send(packet);
-		socketBroadcast.close();
+		try {
+			final DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
+					InetAddress.getByName("255.255.255.255"), PORT);
+			try {
+				final DatagramSocket socketBroadcast = new DatagramSocket(null);
+				socketBroadcast.setReuseAddress(true);
+				final SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
+				socketBroadcast.bind(sockaddr);
+				socketBroadcast.setBroadcast(true);
+				socketBroadcast.send(packet);
+				socketBroadcast.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		} catch (UnknownHostException u) {
+			u.printStackTrace();
+		}
 	}
-	
+
 	private void createReceiveSocket() {
 		if (socketReceive != null) {
 			socketReceive.close();
@@ -1011,10 +1123,9 @@ public class RemoteConfig extends JFrame {
 			socketReceive.setReuseAddress(true);
 			SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
 			socketReceive.bind(sockaddr);
-			socketReceive.setSoTimeout(1500);
+			socketReceive.setSoTimeout(1000);
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
 	}
-	
 }

@@ -32,11 +32,11 @@ import java.net.SocketException;
 import javax.swing.ButtonGroup;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JCheckBox;
 import javax.swing.JDialog;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.JCheckBox;
 
 public class TCNet extends JDialog {
 	private static final long serialVersionUID = -7775636436383674851L;
@@ -221,7 +221,7 @@ public class TCNet extends JDialog {
 		getContentPane().setLayout(groupLayout);
 	}
 	
-	private void CreateEvents() {
+	private void CreateEvents() {		
 		rdbtnLayer1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				SendUpd("tcnet!layer#1");

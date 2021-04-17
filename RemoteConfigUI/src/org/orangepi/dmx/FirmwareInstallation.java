@@ -112,7 +112,7 @@ public class FirmwareInstallation extends JDialog {
 									
 									textVersion.setForeground(Color.BLUE);
 									textVersion.setText(version.substring(version.indexOf("[")));
-									remoteConfig.refresh();
+									remoteConfig.constructTree();
 									
 								} catch (IOException e) {
 									e.printStackTrace();
