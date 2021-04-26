@@ -1,5 +1,5 @@
 #
-DEFINES = USE_SPI_DMA NDEBUG
+DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-rgbpanel/include ../lib-device/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 #

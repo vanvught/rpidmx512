@@ -1,4 +1,12 @@
 #!/bin/bash
+NPROC=1
+
+if [ "$(uname)" == "Darwin" ]; then
+     NPROC=$(sysctl -a | grep machdep.cpu.core_count | cut -d ':' -f 2)     
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+     NPROC=$(nproc)
+fi
+
 echo $1 $2 $3
 
 DIR=../opi_*
@@ -51,8 +59,7 @@ do
 				board=1
 			fi
 			echo $f $1 $2 $3 > build$board.txt
-			make -f Makefile.H3 $1 $2 $3 clean || exit
-			make -f Makefile.H3 $1 $2 $3 || exit
+			make -f Makefile.H3 $1 $2 $3 clean && make -f Makefile.H3 -j $NPROC $1 $2 $3
 		fi
 			
 		cd -
@@ -88,8 +95,7 @@ do
 					echo -e "\e[33mSkipping...\e[0m"
 				else
 					echo $1 $2 $3
-					make -f Makefile.H3 $1 $2 $3 clean || exit
-					make -f Makefile.H3 $1 $2 $3 || exit
+					make -f Makefile.H3 $1 $2 $3 clean && make -f Makefile.H3 -j $NPROC $1 $2 $3
 				fi
 			else
 				echo -e "\e[33mSkipping...\e[0m"

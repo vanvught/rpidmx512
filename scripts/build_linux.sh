@@ -1,5 +1,14 @@
 #!/bin/bash
 
+SECONDS=0
+NPROC=1
+
+if [ "$(uname)" == "Darwin" ]; then
+     NPROC=$(sysctl -a | grep machdep.cpu.core_count | cut -d ':' -f 2)     
+elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
+     NPROC=$(nproc)
+fi
+
 DIR=../linux_*
 
 for f in $DIR
@@ -12,8 +21,7 @@ do
 					cd "$f"
 					if [ -f Makefile ]
 						then
-							make -j3 clean $1 $2 || exit
-							make -j3 $1 $2 || exit
+							make clean $1 $2 && make -j $NPROC $1 $2 
 					fi
 					cd -
 				else
@@ -24,8 +32,7 @@ do
 			cd "$f"
 			if [ -f Makefile ]
 				then
-					make -j3 clean $1 $2 || exit
-					make $1 $2 || exit
+					make clean $1 $2 && make -j $NPROC $1 $2 
 			fi
 			cd -
 		fi
@@ -59,3 +66,5 @@ do
 		fi
 	fi
 done
+
+echo $SECONDS

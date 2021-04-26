@@ -103,6 +103,7 @@ endif
 
 ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
 	RDM=1
+	LIBS+=rdm rdmsensor rdmsubdevice
 endif
 
 # Output 
@@ -117,7 +118,7 @@ FIRMWARE_DIR = ./../h3-firmware-template/
 LINKER = $(FIRMWARE_DIR)memmap
 
 LIBS+=lightset properties display device hal c++ debug h3 c arm
-
+	
 DEFINES:=$(addprefix -D,$(DEFINES))
 
 ifneq ($(CONSOLE),)
@@ -129,8 +130,6 @@ DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell d
 # The variable for the firmware include directories
 INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
-
-$(info $$INCDIRS [${INCDIRS}])
 
 # The variable for the libraries include directory
 LIBINCDIRS:=$(addprefix -I../lib-,$(LIBS))
@@ -145,15 +144,14 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
-LIBSDEP=$(addsuffix /lib_h3/lib, $(LIBDEP))
-LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
-LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
+
+$(info [${LIBDEP}])
 
 COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
-#COPS+=-fstack-usage
+#COPS+=-fstack-usage -ffunction-sections -fdata-sections
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  #-Wconversion
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
@@ -183,27 +181,17 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@
 endef
 
-all : clearlibs builddirs prerequisites $(TARGET)
+all : builddirs prerequisites $(TARGET)
 	
 .PHONY: clean builddirs
-
-clearlibs:
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-display
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-h3
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-hal
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-remoteconfig
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-spiflashstore
-ifdef RDM
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdm
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsensor
-	$(MAKE) -f Makefile.H3 clean --directory=../lib-rdmsubdevice
-endif	
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
 	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
 
-clean:
+.PHONY:  clean
+
+clean: $(LIBDEP)
 	rm -rf $(BUILD)
 	rm -f $(TARGET)
 	rm -f $(TARGET).gz
@@ -212,19 +200,17 @@ clean:
 	rm -f $(SUFFIX).uImage
 	rm -f $(SUFFIX).uImage.gz
 	rm -f build$(BUILD_TXT).txt
-	for d in $(LIBDEP); \
-		do                               \
-			$(MAKE) -f Makefile.H3 clean --directory=$$d;       \
-		done
+	
+#
+# Libraries
+#
 
-#
-# Build libraries
-#
-$(LIBSDEP):
-	for d in $(LIBDEP); \
-		do                               \
-			$(MAKE) -f Makefile.H3 'PLATFORM=$(PLATFORM)' 'MAKE_FLAGS=$(DEFINES)' --directory=$$d;       \
-		done
+.PHONY: libdep $(LIBDEP)
+
+lisdep: $(LIBDEP)
+
+$(LIBDEP):
+	$(MAKE) -f Makefile.H3 $(MAKECMDGOALS) 'PLATFORM=$(PLATFORM)' 'MAKE_FLAGS=$(DEFINES)' -C $@ 
 
 # Build uImage
 
@@ -234,8 +220,8 @@ $(BUILD_DIRS) :
 $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
-$(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBSDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
+$(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBDEP)
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
 
