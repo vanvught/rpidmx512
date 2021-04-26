@@ -1,4 +1,3 @@
-#if defined (CONSOLE_FB) && defined (ORANGE_PI_ONE)
 /**
  * @file console_fb.c
  *
@@ -381,6 +380,4 @@ void console_clear_top_row(void) {
 void console_putpixel(uint32_t x, uint32_t y, uint32_t color) {
 	draw_pixel(x, y, color);
 }
-#else
- typedef int ISO_C_forbids_an_empty_translation_unit;
-#endif
+

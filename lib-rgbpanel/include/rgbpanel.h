@@ -29,7 +29,7 @@
 #include "rgbpanelconst.h"
 
 namespace rgbpanel {
-static constexpr auto PWM_WIDTH = 94;
+static constexpr auto PWM_WIDTH = 120;
 }  // namespace rgbpanel
 
 class RgbPanel {

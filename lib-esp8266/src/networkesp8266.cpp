@@ -232,7 +232,7 @@ bool NetworkESP8266::Start() {
 		fotaParams.Dump();
 
 		Display::Get()->TextStatus(WifiConst::MSG_FOTA_MODE);
-		console_newline();
+		console_putc('\n');
 		fota(fotaParams.GetServerIp());
 
 		for (;;)

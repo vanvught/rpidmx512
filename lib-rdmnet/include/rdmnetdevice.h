@@ -41,22 +41,21 @@ public:
 	RDMNetDevice(RDMPersonality *pRDMPersonality);
 	~RDMNetDevice() override;
 
+	void CopyUID(uint8_t *pUID) override;
+	void CopyCID(uint8_t *pCID) override;
+
+	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
+
 	void Start();
 	void Stop();
 	void Run();
 
 	void Print();
 
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
-
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
-
 private:
 	RDMHandler *m_RDMHandler { nullptr };
 	struct TRdmMessage *m_pRdmCommand { nullptr };
-	uint8_t m_Cid[E131_CID_LENGTH];
-	E131Uuid m_E131Uuid;
+	uint8_t m_Cid[E131::CID_LENGTH];
 };
 
 #endif /* RDMNETDEVICE_H_ */

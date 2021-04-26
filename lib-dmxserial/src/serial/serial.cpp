@@ -31,11 +31,11 @@
 
 #include "debug.h"
 
-Serial *Serial::s_pThis = 0;
+Serial *Serial::s_pThis = nullptr;
 
 using namespace serial;
 
-Serial::Serial(void) : m_tType(type::UART) {
+Serial::Serial()  {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -55,10 +55,10 @@ Serial::Serial(void) : m_tType(type::UART) {
 	DEBUG_EXIT
 }
 
-Serial::~Serial(void) {
+Serial::~Serial() {
 	DEBUG_ENTRY
 
-	s_pThis = 0;
+	s_pThis = nullptr;
 
 	DEBUG_EXIT
 }
@@ -82,7 +82,7 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void Serial::Print(void) {
+void Serial::Print() {
 	printf("Serial [%s]\n", GetType(m_tType));
 
 	if (m_tType == type::UART) {

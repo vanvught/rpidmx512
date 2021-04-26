@@ -30,17 +30,17 @@
 
 class KbLinux: public InputSet {
 public:
-	KbLinux(void);
-	~KbLinux(void);
+	KbLinux();
+	~KbLinux();
 
-	bool Start(void);
+	bool Start();
 
-	bool IsAvailable(void);
-	int GetChar(void);
+	bool IsAvailable();
+	int GetChar();
 
 private:
-	int m_nBytesWaiting;
-	int m_nState;
+	int m_nBytesWaiting{0};
+	int m_nState{0};
 
 };
 

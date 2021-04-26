@@ -43,7 +43,7 @@ void Widget::SendData(const uint8_t *pData, uint16_t nLength) {
 	}
 }
 
-void Widget::SendFooter(void) {
+void Widget::SendFooter() {
 	usb_send_byte(static_cast<uint8_t>(Amf::END_CODE));
 }
 

@@ -64,7 +64,7 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacing
 
 	m_nLastSendMicros[nPort] = H3_TIMER->AVS_CNT1;
 
-	uint8_t *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
+	auto *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
 	uint32_t i;
 	uint16_t rdm_checksum = 0;
 

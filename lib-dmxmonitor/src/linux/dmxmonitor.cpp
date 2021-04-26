@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,19 @@
 
 #include "dmxmonitor.h"
 
-DMXMonitor::DMXMonitor(void) {
-	for (uint32_t i = 0; i < DMXMONITOR_MAX_PORTS; i++) {
+using namespace dmxmonitor;
+
+DMXMonitor::DMXMonitor() {
+	for (uint32_t i = 0; i < sizeof(m_bIsStarted); i++) {
 		m_bIsStarted[i] = false;
 	}
 }
 
-DMXMonitor::~DMXMonitor(void) {
-}
-
 void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
-	assert(nPortId < DMXMONITOR_MAX_PORTS);
+	assert(nPortId < output::text::MAX_PORTS);
 
 	struct timeval tv;
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	struct tm tm = *localtime(&tv.tv_sec);
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%c\n", tm.tm_mday,
@@ -56,7 +55,7 @@ void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
 	m_nMaxChannels = nMaxChannels;
 }
 
-uint16_t DMXMonitor::GetDmxFootprint(void) {
+uint16_t DMXMonitor::GetDmxFootprint() {
 	return m_nMaxChannels;
 }
 
@@ -69,12 +68,16 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-uint16_t DMXMonitor::GetDmxStartAddress(void) {
+uint16_t DMXMonitor::GetDmxStartAddress() {
 	return m_nDmxStartAddress;
 }
 
+void DMXMonitor::Cls() {
+
+}
+
 void DMXMonitor::Start(uint8_t nPort) {
-	assert(nPort < DMXMONITOR_MAX_PORTS);
+	assert(nPort < output::text::MAX_PORTS);
 
 	if(m_bIsStarted[nPort]) {
 		return;
@@ -85,7 +88,7 @@ void DMXMonitor::Start(uint8_t nPort) {
 }
 
 void DMXMonitor::Stop(uint8_t nPort) {
-	assert(nPort < DMXMONITOR_MAX_PORTS);
+	assert(nPort < output::text::MAX_PORTS);
 
 	if(!m_bIsStarted[nPort]) {
 		return;
@@ -96,12 +99,12 @@ void DMXMonitor::Stop(uint8_t nPort) {
 }
 
 void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
-	assert(nPortId < DMXMONITOR_MAX_PORTS);
+	assert(nPortId < output::text::MAX_PORTS);
 
 	struct timeval tv;
 	uint32_t i, j;
 
-	gettimeofday(&tv, NULL);
+	gettimeofday(&tv, nullptr);
 	struct tm tm = *localtime(&tv.tv_sec);
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday,
@@ -113,10 +116,10 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 
 	for (i = static_cast<uint32_t>(m_nDmxStartAddress - 1), j = 0; (i < nLength) && (j < m_nMaxChannels); i++, j++) {
 		switch (m_tFormat) {
-		case DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT:
+		case Format::PCT:
 			printf("%3d ", ((pData[i] * 100)) / 255);
 			break;
-		case DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC:
+		case Format::DEC:
 			printf("%3d ", pData[i]);
 			break;
 		default:
@@ -131,4 +134,3 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 
 	printf("\n");
 }
-

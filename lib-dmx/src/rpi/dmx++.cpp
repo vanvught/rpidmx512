@@ -46,7 +46,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	const auto nMicros = BCM2835_ST->CLO;
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != 0) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ((BCM2835_ST->CLO - nMicros) < nTimeOut);

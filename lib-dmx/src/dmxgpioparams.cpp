@@ -2,7 +2,7 @@
  * @file dmxgpioparams.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -44,19 +44,17 @@
 #define DATA_DIRECTION_OUT_C_MASK	(1U << 3)
 #define DATA_DIRECTION_OUT_D_MASK	(1U << 4)
 
-DmxGpioParams::DmxGpioParams()
-		
-{
+DmxGpioParams::DmxGpioParams() {
 #if defined(H3)
- #if defined(ORANGE_PI_ONE)
+# if defined(ORANGE_PI_ONE)
 	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION_OUT_D;
 	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT_A;
 	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
 	m_nDmxDataDirectionOut[3] = GPIO_DMX_DATA_DIRECTION_OUT_C;
- #else
+# else
 	m_nDmxDataDirectionOut[1] = GPIO_DMX_DATA_DIRECTION_OUT_C;
 	m_nDmxDataDirectionOut[2] = GPIO_DMX_DATA_DIRECTION_OUT_B;
- #endif
+# endif
 #else
 	m_nDmxDataDirectionOut[0] = GPIO_DMX_DATA_DIRECTION;
 #endif
@@ -121,10 +119,6 @@ uint8_t DmxGpioParams::GetDataDirection(bool &bIsSet, uint8_t nUart) const {
 
 void DmxGpioParams::Dump() {
 #ifndef NDEBUG
-	if (m_nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DmxGpioParamsConst::FILE_NAME);
 
 	if (isMaskSet(DATA_DIRECTION_MASK)) {

@@ -30,11 +30,11 @@
 
 class Identify: public RDMIdentify {
 public:
-	Identify(void);
-	~Identify(void);
+	Identify();
+	~Identify();
 
 	void SetMode(TRdmIdentifyMode nMode);
-	void Run(void);
+	void Run();
 };
 
 #endif /* IDENTIFY_H_ */

@@ -27,17 +27,17 @@
 
 #include "debug.h"
 
-bool Serial::InitUart(void) {
+bool Serial::InitUart() {
 	DEBUG_PUTS("InitUart");
 	return true;
 }
 
-bool Serial::InitSpi(void) {
+bool Serial::InitSpi() {
 	DEBUG_PUTS("InitSpi");
 	return true;
 }
 
-bool Serial::InitI2c(void) {
+bool Serial::InitI2c() {
 	DEBUG_PUTS("InitI2c");
 	return true;
 }

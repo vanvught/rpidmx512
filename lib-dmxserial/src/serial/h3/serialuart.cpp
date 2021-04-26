@@ -86,7 +86,7 @@ void Serial::SetUartStopBits(uint8_t nStopBits) {
 	}
 }
 
-bool Serial::InitUart(void) {
+bool Serial::InitUart() {
 	DEBUG_ENTRY
 
 	uint32_t value = H3_PIO_PORTG->CFG0;

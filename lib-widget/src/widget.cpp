@@ -475,7 +475,7 @@ void Widget::GetNameReply() {
  *
  * This function is called from Run
  */
-void Widget::ReceiveDataFromHost(void) {
+void Widget::ReceiveDataFromHost() {
 	if (usb_read_is_byte_available()) {
 		const auto nByte = usb_read_byte();
 

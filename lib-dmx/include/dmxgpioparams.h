@@ -49,9 +49,9 @@ private:
     }
 
 private:
-    uint32_t m_nSetList{0};
-    uint8_t m_nDmxDataDirection{GPIO_DMX_DATA_DIRECTION};
-    uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
+	uint32_t m_nSetList { 0 };
+	uint8_t m_nDmxDataDirection { GPIO_DMX_DATA_DIRECTION };
+	uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
 };
 
 #endif /* DMXGPIOPARAMS_H_ */

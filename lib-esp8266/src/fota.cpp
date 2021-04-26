@@ -59,7 +59,7 @@ void fota(uint32_t server_ip_address) {
 		esp8266_fota_status(message, &nLength);
 		if (nLength != 0) {
 			console_puts(message);
-			console_newline();
+			console_putc('\n');
 			last_first_char = message[0];
 		}
 	} while (nLength != 0);

@@ -29,7 +29,7 @@
 
 using namespace serial;
 
-bool Serial::Init(void) {
+bool Serial::Init() {
 	DEBUG_ENTRY
 
 	if (m_tType == type::UART) {

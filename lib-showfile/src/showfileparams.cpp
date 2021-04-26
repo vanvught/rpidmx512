@@ -203,7 +203,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, ShowFileParamsConst::SACN_SYNC_UNIVERSE, nValue16) == Sscan::OK) {
-		if (nValue16 > E131_UNIVERSE_MAX) {
+		if (nValue16 > e131::universe::MAX) {
 			m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
 			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::SACN_UNIVERSE;
 		} else {

@@ -117,7 +117,7 @@ private:
 	void SendI2c(const uint8_t *pData, uint32_t nLength);
 
 private:
-	serial::type m_tType;
+	serial::type m_tType{serial::type::UART};
 	struct {
 		uint32_t nBaud;
 		uint8_t nBits;

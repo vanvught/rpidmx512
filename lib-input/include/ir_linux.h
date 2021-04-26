@@ -32,16 +32,16 @@
 
 class IrLinux: public InputSet {
 public:
-	IrLinux(void);
-	~IrLinux(void);
+	IrLinux();
+	~IrLinux();
 
-	bool Start(void);
+	bool Start();
 
-	bool IsAvailable(void);
-	int GetChar(void);
+	bool IsAvailable();
+	int GetChar();
 
 private:
-	int m_nFd;
+	int m_nFd{-1};
 	struct sockaddr_un m_Addr;
 	char m_Buffer[128];
 	char m_Code[32];

@@ -35,29 +35,29 @@
 
 #define STDIN	0
 
-KbLinux::KbLinux(void): m_nBytesWaiting(0), m_nState(0) {
+KbLinux::KbLinux() {
 }
 
-KbLinux::~KbLinux(void) {
+KbLinux::~KbLinux() {
 }
 
-bool KbLinux::Start(void) {
+bool KbLinux::Start() {
 	struct termios term;
 
 	tcgetattr(STDIN, &term);
     term.c_lflag &= static_cast<unsigned>(~ICANON);
     tcsetattr(STDIN, TCSANOW, &term);
-    setbuf(stdin, NULL);
+    setbuf(stdin, nullptr);
 
     return true;
 }
 
-bool KbLinux::IsAvailable(void) {
+bool KbLinux::IsAvailable() {
     ioctl(STDIN, FIONREAD, &m_nBytesWaiting);
     return m_nBytesWaiting > 0 ? true : false;
 }
 
-int KbLinux::GetChar(void) {
+int KbLinux::GetChar() {
 	if (IsAvailable()) {
 //printf("%d:%d:%d\n", __LINE__, m_nState, m_nBytesWaiting);
 		int c = getchar();

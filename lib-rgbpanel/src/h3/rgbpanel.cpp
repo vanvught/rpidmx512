@@ -174,11 +174,12 @@ void RgbPanel::Start() {
 		return;
 	}
 
-	h3_i2c_end();							// PA11, PA12
-
-	// DEBUG UART
-	h3_gpio_fsel(4, GPIO_FSEL_DISABLE);		// PA4
-	h3_gpio_fsel(5, GPIO_FSEL_DISABLE);		// PA5
+//	// I2C
+//	h3_i2c_end();							// PA11, PA12
+//
+//	// DEBUG UART
+//	h3_gpio_fsel(4, GPIO_FSEL_DISABLE);		// PA4
+//	h3_gpio_fsel(5, GPIO_FSEL_DISABLE);		// PA5
 
 	// Remaining
 	h3_gpio_fsel(8, GPIO_FSEL_DISABLE);		// PA8
@@ -299,8 +300,6 @@ void RgbPanel::Show() {
 void core1_task() {
 	const uint32_t nMultiplier = s_nColumns * PWM_WIDTH;
 
-	uint32_t nGPIO = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
-
 	for (;;) {
 		for (uint32_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
 
@@ -314,27 +313,19 @@ void core1_task() {
 				for (uint32_t i = 0; i < s_nColumns; i++) {
 					const uint32_t nValue = s_pFramebuffer2[nIndex++];
 					// Clock high with data
-					H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_CK) | nValue;
+					H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_CK) | nValue;
 					// Clock low
-					H3_PIO_PORTA->DAT = nGPIO | nValue;
+					H3_PIO_PORTA->DAT = nRow | nValue;
 				}
 
 				/* Blank the display */
-				H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_OE);
-
+				H3_PIO_PORTA->DAT = (1U << HUB75B_OE);
 				/* Latch the previous data */
-				H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_LA) | (1U << HUB75B_OE);
-				nGPIO |= (1U << HUB75B_OE);
-				H3_PIO_PORTA->DAT = nGPIO;
-
+				H3_PIO_PORTA->DAT = (1U << HUB75B_LA) | (1U << HUB75B_OE);
 				/* Update the row select */
-				nGPIO &= ~(0xFU);
-				nGPIO |= nRow;
-				H3_PIO_PORTA->DAT = nGPIO;
-
+				H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_LA) | (1U << HUB75B_OE);
 				/* Enable the display */
-				nGPIO &= ~(1U << HUB75B_OE);
-				H3_PIO_PORTA->DAT = nGPIO;
+				H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_LA);
 			}
 		}
 

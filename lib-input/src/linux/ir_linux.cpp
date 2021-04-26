@@ -37,17 +37,17 @@
 
 #include "input.h"
 
-IrLinux::IrLinux(void) : m_nFd(-1) {
+IrLinux::IrLinux()  {
 }
 
-IrLinux::~IrLinux(void) {
+IrLinux::~IrLinux() {
 	if (m_nFd != -1) {
 		close(m_nFd);
 	}
 	m_nFd = -1;
 }
 
-bool IrLinux::Start(void) {
+bool IrLinux::Start() {
 	memset(&m_Addr, '\0', sizeof(m_Addr));
 	strcpy(m_Addr.sun_path, "/var/run/lirc/lircd");
 
@@ -82,7 +82,7 @@ bool IrLinux::Start(void) {
 	return true;
 }
 
-bool IrLinux::IsAvailable(void) {
+bool IrLinux::IsAvailable() {
 	const bool b = read(m_nFd, m_Buffer, sizeof(m_Buffer)) > 0 ? true : false;
 
 	if (b) {
@@ -102,11 +102,11 @@ bool IrLinux::IsAvailable(void) {
 	return b;
 }
 
-int IrLinux::GetChar(void) {
+int IrLinux::GetChar() {
 	int ch;
 	char *p = strchr(m_Code,  '_');
 
-	if (p == NULL) {
+	if (p == nullptr) {
 		return INPUT_KEY_NOT_DEFINED;
 	}
 

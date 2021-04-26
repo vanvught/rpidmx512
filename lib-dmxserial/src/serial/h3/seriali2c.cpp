@@ -51,7 +51,7 @@ void Serial::SetI2cSpeedMode(i2c::speed tSpeedMode) {
 	m_I2cConfiguration.tMode = tSpeedMode;
 }
 
-bool Serial::InitI2c(void) {
+bool Serial::InitI2c() {
 	DEBUG_ENTRY
 
 	h3_i2c_begin();

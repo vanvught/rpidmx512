@@ -56,7 +56,7 @@ void Serial::SetSpiMode(spi::mode tMode) {
 	m_SpiConfiguration.nMode = static_cast<uint8_t>(tMode);
 }
 
-bool Serial::InitSpi(void) {
+bool Serial::InitSpi() {
 	DEBUG_ENTRY
 
 	h3_spi_begin();

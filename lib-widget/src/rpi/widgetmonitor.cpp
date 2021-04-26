@@ -202,7 +202,7 @@ void WidgetMonitor::Update() {
 }
 
 void WidgetMonitor::RdmData(int nLine, uint16_t nDataLength, const uint8_t *pData, bool isSent) {
-	uint8_t *p = (uint8_t *) pData;
+	auto *p = (uint8_t *) pData;
 	bool is_rdm_command = (*p == E120_SC_RDM);
 	const auto display_level = 1 ; // FIXME
 
@@ -225,7 +225,7 @@ void WidgetMonitor::RdmData(int nLine, uint16_t nDataLength, const uint8_t *pDat
 
 	if (is_rdm_command) {
 		if (nDataLength >= 24) {
-			struct _rdm_command *cmd = (struct _rdm_command *) (pData);
+			auto *cmd = (struct _rdm_command *) (pData);
 			WidgetMonitor::Line(nLine + 2, "tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number, (unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int) cmd->param_data_length);
 			console_clear_line(nLine + 4);
 			console_clear_line(nLine + 3);

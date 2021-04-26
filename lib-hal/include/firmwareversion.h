@@ -39,7 +39,9 @@ struct TFirmwareVersion {
 class FirmwareVersion {
 public:
 	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
-	~FirmwareVersion();
+	~FirmwareVersion() {
+
+	}
 
 	void Print(const char *pTitle = nullptr);
 
