@@ -31,14 +31,11 @@
 
 #include "ws28xxdisplaymatrix.h"
 
-#include "rgbmapping.h"
-
 class LtcDisplayWS28xxMatrix final: public LtcDisplayRgbSet {
 public:
-	LtcDisplayWS28xxMatrix();
+	LtcDisplayWS28xxMatrix(pixel::Type tLedType, pixel::Map tRGBMapping);
 	~LtcDisplayWS28xxMatrix() override;
 
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED) override;
 	void Print() override;
 
 	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;

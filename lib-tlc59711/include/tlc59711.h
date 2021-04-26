@@ -89,10 +89,10 @@ private:
 private:
 	uint8_t m_nBoards;
 	uint32_t m_nSpiSpeedHz;
-	uint32_t m_nFirst32;
-	uint16_t *m_pBuffer;
-	uint16_t *m_pBufferBlackout;
-	uint32_t m_nBufSize;
+	uint32_t m_nFirst32{0};
+	uint16_t *m_pBuffer{nullptr};
+	uint16_t *m_pBufferBlackout{nullptr};
+	uint32_t m_nBufSize{0};
 };
 
 #endif /* TLC59711_H_ */

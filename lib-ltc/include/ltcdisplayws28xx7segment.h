@@ -33,13 +33,9 @@
 
 #include "ltcdisplayrgbset.h"
 
-#include "rgbmapping.h"
-
 class LtcDisplayWS28xx7Segment final: public LtcDisplayRgbSet {
 public:
-	LtcDisplayWS28xx7Segment();
-
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED) override;
+	LtcDisplayWS28xx7Segment(pixel::Type tLedType, pixel::Map tRGBMapping);
 
 	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
 	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;

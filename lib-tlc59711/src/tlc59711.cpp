@@ -63,11 +63,8 @@
 
 TLC59711::TLC59711(uint8_t nBoards, uint32_t nSpiSpeedHz):
 	m_nBoards(nBoards),
-	m_nSpiSpeedHz(nSpiSpeedHz == 0 ? TLC59711SpiSpeed::DEFAULT : nSpiSpeedHz),
-	m_nFirst32(0),
-	m_pBuffer(0),
-	m_pBufferBlackout(0),
-	m_nBufSize(0)
+	m_nSpiSpeedHz(nSpiSpeedHz == 0 ? TLC59711SpiSpeed::DEFAULT : nSpiSpeedHz)
+	
 {
 	FUNC_PREFIX(spi_begin());
 

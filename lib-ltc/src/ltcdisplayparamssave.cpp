@@ -2,7 +2,7 @@
  * @file ltcdisplayparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,9 @@
 #include "devicesparamsconst.h"
 // Displays
 #include "ltcdisplaymax7219.h"
-#include <ltcdisplayrgb.h>
-#include "ws28xx.h"
-#include "ws28xxconst.h"
-#include "rgbmapping.h"
+#include "ltcdisplayrgb.h"
+#include "pixelconfiguration.h"
+#include "pixeltype.h"
 
 #include "propertiesbuilder.h"
 
@@ -76,13 +75,13 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 
 	builder.AddComment("WS28xx (specific)");
 	builder.Add(LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxDisplayType == static_cast<uint8_t>(ltcdisplayrgb::WS28xxType::SEGMENT) ? "7segment" : "matrix" , isMaskSet(LtcDisplayParamsMask::WS28XX_DISPLAY_TYPE));
-	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType)), isMaskSet(LtcDisplayParamsMask::WS28XX_LED_TYPE));
+	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)), isMaskSet(LtcDisplayParamsMask::WS28XX_TYPE));
 
 	builder.AddComment("Overwrite datasheet");
 	if (!isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(WS28xx::GetRgbMapping(static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType)));
+		m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(PixelConfiguration::GetRgbMapping(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)));
 	}
-	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<rgbmapping::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING));
+	builder.Add(DevicesParamsConst::MAP, PixelType::GetMap(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING));
 
 	builder.AddComment("RGB panel (specific)");
 	char aTemp[sizeof(m_tLtcDisplayParams.aInfoMessage) + 1];

@@ -33,8 +33,6 @@
 
 #include "ltc.h"
 
-#include "rgbmapping.h"
-
 #include "hardware.h"
 #include "network.h"
 //
@@ -42,6 +40,8 @@
 #include "ltcdisplayws28xxmatrix.h"
 //
 #include "ltcdisplayrgbpanel.h"
+
+#include "pixeltype.h"
 
 #include "debug.h"
 
@@ -97,7 +97,7 @@ LtcDisplayRgb::~LtcDisplayRgb() {
 	DEBUG_EXIT
 }
 
-void LtcDisplayRgb::Init(ws28xx::Type tLedType) {
+void LtcDisplayRgb::Init(pixel::Type tLedType) {
 	DEBUG_ENTRY
 
 	m_tLedType = tLedType;
@@ -110,13 +110,12 @@ void LtcDisplayRgb::Init(ws28xx::Type tLedType) {
 	} else {
 
 		if (m_tDisplayRgbWS28xxType == WS28xxType::SEGMENT) {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment;
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(tLedType, m_tMapping);
 		} else {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix;
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(tLedType, m_tMapping);
 		}
 
 		assert(m_pLtcDisplayRgbSet != nullptr);
-		m_pLtcDisplayRgbSet->Init(tLedType, m_tMapping);
 	}
 
 	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(ColourIndex::LAST); nIndex++) {
@@ -371,8 +370,8 @@ void LtcDisplayRgb::Print() {
 		printf("Display RGB panel\n");
 	} else {
 		printf("Display WS28xx\n");
-		printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), static_cast<int>(m_tLedType));
-		printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_tMapping), static_cast<int>(m_tMapping));
+		printf(" Type    : %s [%d]\n", PixelType::GetType(m_tLedType), static_cast<int>(m_tLedType));
+		printf(" Mapping : %s [%d]\n", PixelType::GetMap(m_tMapping), static_cast<int>(m_tMapping));
 	}
 	printf(" Master  : %d\n", m_nMaster);
 	printf(" RGB     : Character 0x%.6X, Colon 0x%.6X, Message 0x%.6X\n", m_aColour[static_cast<uint32_t>(ColourIndex::TIME)], m_aColour[static_cast<uint32_t>(ColourIndex::COLON)], m_aColour[static_cast<uint32_t>(ColourIndex::MESSAGE)]);

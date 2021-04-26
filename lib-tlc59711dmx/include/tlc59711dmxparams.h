@@ -40,8 +40,8 @@ struct TTLC59711DmxParams {
 //} __attribute__((packed));
 
 struct TLC59711DmxParamsMask {
-	static constexpr auto LED_TYPE = (1U << 0);
-	static constexpr auto LED_COUNT = (1U << 1);
+	static constexpr auto TYPE = (1U << 0);
+	static constexpr auto COUNT = (1U << 1);
 	static constexpr auto START_ADDRESS = (1U << 2);
 	static constexpr auto SPI_SPEED = (1U << 3);
 };
@@ -78,15 +78,15 @@ public:
 	}
 
 	bool IsSetLedType() {
-		return isMaskSet(TLC59711DmxParamsMask::LED_TYPE);
+		return isMaskSet(TLC59711DmxParamsMask::TYPE);
 	}
 
 	bool IsSetLedCount() {
-		return isMaskSet(TLC59711DmxParamsMask::LED_COUNT);
+		return isMaskSet(TLC59711DmxParamsMask::COUNT);
 	}
 
-	static const char *GetLedTypeString(TTLC59711Type tTLC59711Type);
-	static TTLC59711Type GetLedTypeString(const char *pValue);
+	static const char *GetType(TTLC59711Type tTLC59711Type);
+	static TTLC59711Type GetType(const char *pValue);
     static void staticCallbackFunction(void *p, const char *s);
 
 private:

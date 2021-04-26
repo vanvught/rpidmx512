@@ -31,14 +31,12 @@
 #include "ltcdisplaymax7219.h"
 
 #include "ltcdisplayrgb.h"
-#include "ws28xx.h"
-#include "rgbmapping.h"
 
 struct TLtcDisplayParams {
 	uint32_t nSetList;					//  4
 	uint8_t nMax7219Type;				//  5
 	uint8_t nMax7219Intensity;			//  6
-	uint8_t nWS28xxLedType;				//  7
+	uint8_t nWS28xxType;				//  7
 	uint8_t nGlobalBrightness;			//  8	// Not used
 	uint8_t nWS28xxRgbMapping;			//  9
 	uint8_t nDisplayRgbIntensity;		// 10
@@ -55,7 +53,7 @@ static_assert(sizeof(struct TLtcDisplayParams) <= 64, "struct TLtcDisplayParams 
 struct LtcDisplayParamsMask {
 	static constexpr auto MAX7219_TYPE = (1U << 0);
 	static constexpr auto MAX7219_INTENSITY = (1U << 1);
-	static constexpr auto WS28XX_LED_TYPE = (1U << 2);
+	static constexpr auto WS28XX_TYPE = (1U << 2);
 	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 3);		// Not used
 	static constexpr auto WS28XX_RGB_MAPPING = (1U << 4);
 	static constexpr auto DISPLAYRGB_INTENSITY = (1U << 5);
@@ -98,8 +96,8 @@ public:
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
 
-	ws28xx::Type GetWS28xxLedType() const {
-		return static_cast<ws28xx::Type>(m_tLtcDisplayParams.nWS28xxLedType);
+	pixel::Type GetWS28xxLedType() const {
+		return static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType);
 	}
 
 	ltcdisplayrgb::WS28xxType GetWS28xxDisplayType() const {

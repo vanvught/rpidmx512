@@ -31,11 +31,11 @@
 void TLC59711DmxParams::Set(TLC59711Dmx* pTLC59711Dmx) {
 	assert(pTLC59711Dmx != nullptr);
 
-	if(isMaskSet(TLC59711DmxParamsMask::LED_TYPE)) {
+	if(isMaskSet(TLC59711DmxParamsMask::TYPE)) {
 		pTLC59711Dmx->SetLEDType(m_tTLC59711Params.LedType);
 	}
 
-	if(isMaskSet(TLC59711DmxParamsMask::LED_COUNT)) {
+	if(isMaskSet(TLC59711DmxParamsMask::COUNT)) {
 		pTLC59711Dmx->SetLEDCount(m_tTLC59711Params.nLedCount);
 	}
 

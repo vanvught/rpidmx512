@@ -31,11 +31,6 @@
 
 using namespace ltcdisplayrgb;
 
-void LtcDisplayRgbSet::Init(__attribute__((unused)) ws28xx::Type tLedType, __attribute__((unused)) rgbmapping::Map tRGBMapping) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 void LtcDisplayRgbSet::Init() {
 	DEBUG_ENTRY

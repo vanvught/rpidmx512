@@ -30,16 +30,16 @@
 
 #include "ws28xxdisplaymatrix.h"
 
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 #include "debug.h"
 
 using namespace ltcdisplayrgb;
 
-LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix() {
+LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(pixel::Type tLedType, pixel::Map tRGBMapping) {
 	DEBUG1_ENTRY
 
-	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8);
+	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8, tLedType, tRGBMapping);
 	assert(m_pWS28xxDisplayMatrix != nullptr);
 
 	DEBUG1_EXIT
@@ -50,14 +50,6 @@ LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
 
 	delete m_pWS28xxDisplayMatrix;
 	m_pWS28xxDisplayMatrix = nullptr;
-
-	DEBUG1_EXIT
-}
-
-void LtcDisplayWS28xxMatrix::Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping) {
-	DEBUG1_ENTRY
-
-	m_pWS28xxDisplayMatrix->Init(tLedType, tRGBMapping);
 
 	DEBUG1_EXIT
 }

@@ -69,7 +69,7 @@ static volatile uint32_t nUpdatesPerSecond = 0;
 static volatile uint32_t nUpdatesPrevious = 0;
 static volatile uint32_t nUpdates = 0;
 
-static void arm_timer_handler(void) {
+static void arm_timer_handler() {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }
@@ -107,7 +107,7 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Waddress-of-packed-member"	// FIXME ignored "-Waddress-of-packed-member"
 #endif
-	const uint32_t *p = reinterpret_cast<const uint32_t*>(pTimeCode);
+	const auto *p = reinterpret_cast<const uint32_t*>(pTimeCode);
 #if __GNUC__ > 8
 #pragma GCC diagnostic pop
 #endif

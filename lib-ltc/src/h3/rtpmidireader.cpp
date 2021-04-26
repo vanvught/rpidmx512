@@ -47,7 +47,7 @@ static volatile uint32_t nUpdates = 0;
 
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static void irq_arm_handler(void) {
+static void irq_arm_handler() {
 	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
 	nUpdatesPrevious = nUpdates;
 }

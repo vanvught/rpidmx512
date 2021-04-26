@@ -32,25 +32,17 @@
 
 #include "ws28xxdisplay7segment.h"
 
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 #include "debug.h"
 
 using namespace ltcdisplayrgb;
 
-LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment() {
+LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment(pixel::Type tLedType, pixel::Map tRGBMapping) {
 	DEBUG1_ENTRY
 
-	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment;
+	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment(tLedType, tRGBMapping);
 	assert(m_pWS28xxDisplay7Segment != nullptr);
-
-	DEBUG1_EXIT
-}
-
-void LtcDisplayWS28xx7Segment::Init(ws28xx::Type tLedType, rgbmapping::Map tRGBMapping) {
-	DEBUG1_ENTRY
-
-	m_pWS28xxDisplay7Segment->Init(tLedType, tRGBMapping);
 
 	DEBUG1_EXIT
 }

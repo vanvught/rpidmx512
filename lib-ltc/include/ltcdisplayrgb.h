@@ -31,8 +31,7 @@
 
 #include "ltcdisplayrgbset.h"
 
-#include "ws28xx.h"
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 namespace ltcdisplayrgb {
 enum class Type {
@@ -52,7 +51,7 @@ enum class ColourIndex {
 };
 
 struct Defaults {
-	static constexpr auto LED_TYPE = ws28xx::Type::WS2812B;
+	static constexpr auto LED_TYPE = pixel::Type::WS2812B;
 	static constexpr auto COLOUR_TIME = 0x00FF0000;
 	static constexpr auto COLOUR_COLON = 0x00FFFC00;
 	static constexpr auto COLOUR_MESSAGE = 0x00FFFFFF;
@@ -70,7 +69,7 @@ public:
 	LtcDisplayRgb(ltcdisplayrgb::Type tRgbType, ltcdisplayrgb::WS28xxType tWS28xxType);
 	~LtcDisplayRgb();
 
-	void SetMapping(rgbmapping::Map tMapping) {
+	void SetMapping(pixel::Map tMapping) {
 		m_tMapping = tMapping;
 	}
 
@@ -89,7 +88,7 @@ public:
 		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
 	}
 
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B);
+	void Init(pixel::Type tLedType = pixel::Type::WS2812B);
 	void Print();
 
 	void Run();
@@ -121,8 +120,8 @@ private:
 	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
 	int32_t m_nHandle { -1 };
 	char m_Buffer[64];
-	rgbmapping::Map m_tMapping { rgbmapping::Map::UNDEFINED };
-	ws28xx::Type m_tLedType { ws28xx::Type::UNDEFINED };
+	pixel::Map m_tMapping { pixel::Map::UNDEFINED };
+	pixel::Type m_tLedType { pixel::Type::UNDEFINED };
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
 	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };
 	bool m_bShowMsg { false };

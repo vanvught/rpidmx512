@@ -40,9 +40,7 @@
 // Displays
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayrgb.h"
-#include "ws28xx.h"
-#include "ws28xxconst.h"
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -59,11 +57,11 @@ static constexpr auto ROTARY_FULLSTEP = 0x00;
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nSetList = 0;
-	m_tLtcDisplayParams.nWS28xxLedType = static_cast<uint8_t>(Defaults::LED_TYPE);
+	m_tLtcDisplayParams.nWS28xxType = static_cast<uint8_t>(Defaults::LED_TYPE);
 	m_tLtcDisplayParams.nGlobalBrightness = Defaults::GLOBAL_BRIGHTNESS;	// Not used
 	m_tLtcDisplayParams.nMax7219Type = LTCDISPLAYMAX7219_TYPE_MATRIX;
 	m_tLtcDisplayParams.nMax7219Intensity = defaults::MAX7219_INTENSITY;
-	m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(rgbmapping::Map::RGB);
+	m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(pixel::Map::RGB);
 	m_tLtcDisplayParams.nDisplayRgbIntensity = Defaults::MASTER;
 	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(Defaults::COLON_BLINK_MODE);
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(ColourIndex::TIME)] = Defaults::COLOUR_TIME;
@@ -170,6 +168,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = 8;
+
 	if (Sscan::Char(pLine, LtcDisplayParamsConst::WS28XX_TYPE, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
 		if (strncasecmp(aBuffer, "7segment", nLength) == 0) {
@@ -182,24 +181,27 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	nLength = 7;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, aBuffer, nLength) == Sscan::OK) {
+	nLength = pixel::TYPES_MAX_NAME_LENGTH;
+
+	if (Sscan::Char(pLine, DevicesParamsConst::TYPE, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
-		for (uint32_t i = 0; i < static_cast<uint32_t>(ws28xx::Type::UNDEFINED); i++) {
-			if (strcasecmp(aBuffer, WS28xxConst::TYPES[i]) == 0) {
-				m_tLtcDisplayParams.nWS28xxLedType = i;
-				m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::WS28XX_LED_TYPE;
-				return;
-			}
+		const auto type = PixelType::GetType(aBuffer);
+
+		if (type != pixel::Type::UNDEFINED) {
+			m_tLtcDisplayParams.nWS28xxType = static_cast<uint8_t>(type);
+			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::WS28XX_TYPE;
+		} else {
+			m_tLtcDisplayParams.nWS28xxType = static_cast<uint8_t>(pixel::defaults::TYPE);
+			m_tLtcDisplayParams.nSetList &= ~LtcDisplayParamsMask::WS28XX_TYPE;
 		}
 		return;
 	}
 
 	nLength = 3;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_RGB_MAPPING, aBuffer, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, DevicesParamsConst::MAP, aBuffer, nLength) == Sscan::OK) {
 		aBuffer[nLength] = '\0';
-		rgbmapping::Map tMapping;
-		if ((tMapping = RGBMapping::FromString(aBuffer)) != rgbmapping::Map::UNDEFINED) {
+		pixel::Map tMapping;
+		if ((tMapping = PixelType::GetMap(aBuffer)) != pixel::Map::UNDEFINED) {
 			m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(tMapping);
 			m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::WS28XX_RGB_MAPPING;
 		}
@@ -249,7 +251,7 @@ void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {
 	assert(pLtcDisplayRgb != nullptr);
 
 	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
-		pLtcDisplayRgb->SetMapping(static_cast<rgbmapping::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping));
+		pLtcDisplayRgb->SetMapping(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
 	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {
