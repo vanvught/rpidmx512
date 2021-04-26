@@ -30,17 +30,14 @@
 
 #include "ws28xxdisplay7segment.h"
 
-#if defined(USE_SPI_DMA)
- #include "h3/ws28xxdma.h"
-#else
- #include "ws28xx.h"
-#endif
+#include "pixelconfiguration.h"
+#include "pixeltype.h"
 
-#include "rgbmapping.h"
+#include "ws28xx.h"
 
 #include "debug.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
 
 /*
@@ -195,37 +192,34 @@ static constexpr uint8_t Seg7Array[] = {
 		0 //0b0000000, // 127 'DEL'  NO DISPLAY
 };
 
-WS28xxDisplay7Segment::WS28xxDisplay7Segment() {
-	DEBUG2_ENTRY
+WS28xxDisplay7Segment::WS28xxDisplay7Segment(Type tLedType, Map tRGBMapping) {
+	DEBUG_ENTRY
 
-	DEBUG2_EXIT
+	PixelConfiguration pixelConfiguration;
+
+	pixelConfiguration.SetType(tLedType);
+	pixelConfiguration.SetMap(tRGBMapping);
+
+	pixelConfiguration.SetCount(WS28xxDisplay7SegmentConfig::LED_COUNT);
+
+	m_pWS28xx = new WS28xx(pixelConfiguration);
+	assert(m_pWS28xx != nullptr);
+
+	m_pWS28xx->Blackout();
+
+	pixelConfiguration.Dump();
+	DEBUG_EXIT
 }
 
 WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
-	DEBUG2_ENTRY
+	DEBUG_ENTRY
 
 	if (m_pWS28xx != nullptr) {
 		delete m_pWS28xx;
 		m_pWS28xx = nullptr;
 	}
 
-	DEBUG2_EXIT
-}
-
-void WS28xxDisplay7Segment::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
-	DEBUG2_ENTRY
-
-	assert(m_pWS28xx == nullptr);
-#if defined(USE_SPI_DMA)
-	m_pWS28xx = new WS28xxDMA(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
-#else
-	m_pWS28xx = new WS28xx(tLedType, WS28xxDisplay7SegmentConfig::LED_COUNT, tRGBMapping);
-#endif
-	assert(m_pWS28xx != nullptr);
-
-	m_pWS28xx->Initialize();
-
-	DEBUG2_EXIT
+	DEBUG_EXIT
 }
 
 void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
@@ -262,9 +256,9 @@ void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, u
 
 	for (uint32_t nIndex = nCurrentDigitBase; nIndex < (nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++) {
 		if (OnOff) {
-			m_pWS28xx->SetLED(nIndex, nRed, nGreen, nBlue);
+			m_pWS28xx->SetPixel(nIndex, nRed, nGreen, nBlue);
 		} else {
-			m_pWS28xx->SetLED(nIndex, 0x00, 0x00, 0x00);
+			m_pWS28xx->SetPixel(nIndex, 0x00, 0x00, 0x00);
 		}
 	}
 }
@@ -290,9 +284,9 @@ void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBas
 
 	for (uint32_t nIndex = nCurrentSegmentBase; nIndex < (nCurrentSegmentBase + WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT); nIndex++) {
 		if (bOnOff) {
-			m_pWS28xx->SetLED(nIndex, nRed, nGreen, nBlue); // on
+			m_pWS28xx->SetPixel(nIndex, nRed, nGreen, nBlue); // on
 		} else {
-			m_pWS28xx->SetLED(nIndex, 0, 0, 0); // off
+			m_pWS28xx->SetPixel(nIndex, 0, 0, 0); // off
 		}
 	}
 }

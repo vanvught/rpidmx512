@@ -31,7 +31,7 @@
 
 #include "debug.h"
 
-void WS28xxMulti::SetupBuffers8x(void) {
+void WS28xxMulti::SetupBuffers8x() {
 	DEBUG_ENTRY
 
 	constexpr uint32_t nSize = 32 * 1024;

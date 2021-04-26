@@ -83,14 +83,14 @@ private:
 
 	void SetPixelColour(__attribute__((unused)) uint8_t nPort, uint32_t nIndex, uint32_t nColour) {
 #if defined (OUTPUT_PIXEL_MULTI)
-		m_pOutput->SetLED(nPort, nIndex, Red(nColour), Green(nColour), Blue(nColour));
+		m_pOutput->SetPixel(nPort, nIndex, Red(nColour), Green(nColour), Blue(nColour));
 #else
-		m_pOutput->SetLED(nIndex, Red(nColour), Green(nColour), Blue(nColour));
+		m_pOutput->SetPixel(nIndex, Red(nColour), Green(nColour), Blue(nColour));
 #endif
 	}
 
 	void ColourSet(uint8_t nPort, uint32_t nColour) {
-		for (uint32_t i = 0; i < m_nLedCount; i++) {
+		for (uint32_t i = 0; i < m_nCount; i++) {
 			SetPixelColour(nPort, i, nColour);
 		}
 	}
@@ -118,7 +118,7 @@ private:
 	WS28xx *m_pOutput { nullptr };
 #endif
 	uint32_t m_nActivePorts { pixelpatterns::MAX_PORTS };
-	uint32_t m_nLedCount { 0 };
+	uint32_t m_nCount { 0 };
 
 	struct PortConfig {
 		uint32_t nLastUpdate;

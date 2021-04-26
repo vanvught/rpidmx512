@@ -1,8 +1,8 @@
 /**
- * @file ws28xxstatic.cpp
+ * @file pixeltype.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,44 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <cassert>
 
-#include "ws28xx.h"
-#include "ws28xxconst.h"
+#include "pixeltype.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
-const char *WS28xx::GetLedTypeString(Type tType) {
+const char PixelType::TYPES[static_cast<uint32_t>(Type::UNDEFINED)][TYPES_MAX_NAME_LENGTH] =
+		{ "WS2801\0", 																// 1
+		  "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",				// 5
+		  "SK6812\0", "SK6812W",													// 2
+		  "APA102\0",																// 1
+		  "UCS1903", "UCS2903",														// 2
+		  "P9813",																	// 1
+		  "CS8812"																	// 1
+		};																			// = 13
+
+const char PixelType::MAPS[static_cast<uint32_t>(Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
+
+const char *PixelType::GetType(Type tType) {
 	if (tType < Type::UNDEFINED) {
-		return WS28xxConst::TYPES[static_cast<uint32_t>(tType)];
+		return TYPES[static_cast<uint32_t>(tType)];
 	}
 
 	return "Unknown";
 }
 
-Type WS28xx::GetLedTypeString(const char *pValue) {
-	assert(pValue != nullptr);
+Type PixelType::GetType(const char *pString) {
+	assert(pString != nullptr);
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Type::UNDEFINED); i++) {
-		if (strcasecmp(pValue, WS28xxConst::TYPES[i]) == 0) {
+		if (strcasecmp(pString, TYPES[i]) == 0) {
 			return static_cast<Type>(i);
 		}
 	}
@@ -52,34 +68,27 @@ Type WS28xx::GetLedTypeString(const char *pValue) {
 	return Type::UNDEFINED;
 }
 
-// TODO Update when a new chip is added
-void WS28xx::GetTxH(Type tType, uint8_t &nLowCode, uint8_t &nHighCode) {
-	nLowCode = 0xC0;
-	nHighCode = (
-			tType == Type::WS2812B ?
-					0xF8 :
-					(((tType == Type::UCS1903) || (tType == Type::UCS2903)
-							|| (tType == Type::CS8812)) ? 0xFC : 0xF0));
+Map PixelType::GetMap(const char *pString) {
+	assert(pString != nullptr);
+
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(Map::UNDEFINED); nIndex++) {
+		if (strncasecmp(MAPS[nIndex], pString, 3) == 0) {
+			return static_cast<Map>(nIndex);
+		}
+	}
+
+	return Map::UNDEFINED;
 }
 
-// TODO Update when a new chip is added
-rgbmapping::Map WS28xx::GetRgbMapping(Type tType) {
-	if ((tType == Type::WS2811) || (tType == Type::UCS2903)) {
-		return rgbmapping::Map::RGB;
+const char *PixelType::GetMap(Map tRGBMapping) {
+	if (tRGBMapping < Map::UNDEFINED) {
+		return MAPS[static_cast<uint32_t>(tRGBMapping)];
 	}
 
-	if (tType == Type::UCS1903) {
-		return rgbmapping::Map::BRG;
-	}
-
-	if (tType == Type::CS8812) {
-		return rgbmapping::Map::BGR;
-	}
-
-	return rgbmapping::Map::GRB;
+	return "Undefined";
 }
 
-float WS28xx::ConvertTxH(uint8_t nCode) {
+float PixelType::ConvertTxH(uint8_t nCode) {
 
 #define F_INTERVAL 0.15625f
 
@@ -113,7 +122,7 @@ float WS28xx::ConvertTxH(uint8_t nCode) {
 	__builtin_unreachable();
 }
 
-uint8_t WS28xx::ConvertTxH(float fTxH) {
+uint8_t PixelType::ConvertTxH(float fTxH) {
 	if (fTxH < 0.5f * F_INTERVAL) {
 		return 0x00;
 	}

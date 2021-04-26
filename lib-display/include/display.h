@@ -129,7 +129,7 @@ private:
 	DisplaySet *m_LcdDisplay { nullptr };
 	bool m_bIsSleep { false };
 #if !defined(NO_HAL)
-	uint32_t m_nMillis;
+	uint32_t m_nMillis{0};
 #endif
 	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
 

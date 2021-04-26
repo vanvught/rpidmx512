@@ -29,12 +29,9 @@
 
 #include <stdint.h>
 
-#if defined(USE_SPI_DMA)
-# include "h3/ws28xxdma.h"
-#endif
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 struct WS28xxDisplay7SegmentConfig {
 	static constexpr uint32_t NUM_OF_DIGITS = 8;
@@ -50,10 +47,8 @@ struct WS28xxDisplay7SegmentConfig {
 
 class WS28xxDisplay7Segment {
 public:
-	WS28xxDisplay7Segment();
+	WS28xxDisplay7Segment(pixel::Type tLedType, pixel::Map tRGBMapping);
 	~WS28xxDisplay7Segment();
-
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED);
 
 	void WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
@@ -68,11 +63,7 @@ private:
 	void RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 private:
-#if defined(USE_SPI_DMA)
-	WS28xxDMA *m_pWS28xx{nullptr};
-#else
-	WS28xx *m_pWS28xx{nullptr};
-#endif
+	WS28xx *m_pWS28xx { nullptr };
 };
 
 #endif /* WS28XXDISPLAY7SEGMENT_H_ */

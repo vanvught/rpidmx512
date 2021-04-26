@@ -62,8 +62,8 @@ void WS28xxMulti::Blackout(void) {
 }
 
 void WS28xxMulti::Generate800kHz(const uint32_t* pBuffer) {
-	for (uint32_t k = 0; k < m_nBufSize; k = k + ws28xx::single::RGB) {
-		printf("%.2d ", k / ws28xx::single::RGB);
+	for (uint32_t k = 0; k < m_nBufSize; k = k + pixel::single::RGB) {
+		printf("%.2d ", k / pixel::single::RGB);
 
 		for (uint32_t j = 0; j < 4; j++) {
 

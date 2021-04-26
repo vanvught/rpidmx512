@@ -34,6 +34,9 @@
 
 #include "debug.h"
 
+using namespace displayudf;
+using namespace artnet;
+
 void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 	DEBUG_ENTRY
 
@@ -43,31 +46,31 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 	ShowUniverse(pArtNetNode);
 	ShowDestinationIp(pArtNetNode);
 
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_AP], "AP: %d", pArtNetNode->GetActiveOutputPorts() + pArtNetNode->GetActiveInputPorts());
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::AP)], "AP: %d", pArtNetNode->GetActiveOutputPorts() + pArtNetNode->GetActiveInputPorts());
 
 	DEBUG_EXIT
 }
 
 void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
-	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_NODE_NAME]);
-	Write(m_aLabels[DISPLAY_UDF_LABEL_NODE_NAME], pArtNetNode->GetShortName());
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::NODE_NAME)]);
+	Write(m_aLabels[static_cast<uint32_t>(Labels::NODE_NAME)], pArtNetNode->GetShortName());
 }
 
 void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 	uint8_t nAddress;
-	if (pArtNetNode->GetUniverseSwitch(0, nAddress)) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(0), pArtNetNode->GetSubnetSwitch(0), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(0), true), pArtNetNode->GetPortProtocol(0) == PORT_ARTNET_ARTNET ? "    " : "sACN");
+	if (pArtNetNode->GetUniverseSwitch(0, nAddress, PortDir::OUTPUT)) {
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE)], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(0), pArtNetNode->GetSubnetSwitch(0), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(0), true), pArtNetNode->GetPortProtocol(0) == PortProtocol::ARTNET ? "    " : "sACN");
 	}
 
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
-		if (pArtNetNode->GetUniverseSwitch(i, nAddress)) {
-			Printf(m_aLabels[DISPLAY_UDF_LABEL_UNIVERSE_PORT_A + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(i), true), pArtNetNode->GetPortProtocol(i) == PORT_ARTNET_ARTNET ? "    " : "sACN");
+		if (pArtNetNode->GetUniverseSwitch(i, nAddress, PortDir::OUTPUT)) {
+			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(i), true), pArtNetNode->GetPortProtocol(i) == PortProtocol::ARTNET ? "    " : "sACN");
 		}
 	}
 }
 
 void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
 	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_DESTINATION_IP_PORT_A + i], "%c: " IPSTR, 'A' + i, IP2STR(pArtNetNode->GetDestinationIp(i)));
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::DESTINATION_IP_PORT_A) + i], "%c: " IPSTR, 'A' + i, IP2STR(pArtNetNode->GetDestinationIp(i)));
 	}
 }

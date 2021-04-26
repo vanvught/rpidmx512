@@ -50,7 +50,7 @@ PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX
 
 	assert(m_pOutput != nullptr);
 
-	m_nLedCount = m_pOutput->GetLEDCount();
+	m_nCount = m_pOutput->GetCount();
 	const auto nMillis = Hardware::Get()->Millis();
 
 	for (uint32_t i = 0; i < MAX_PORTS; i++) {
@@ -118,8 +118,8 @@ void PixelPatterns::RainbowCycle(uint8_t nPort, uint32_t nInterval, pixelpattern
 void PixelPatterns::RainbowCycleUpdate(uint8_t nPort) {
 	const auto nIndex = m_PortConfig[nPort].nIndex;
 
-	for (uint32_t i = 0; i < m_nLedCount; i++) {
-		SetPixelColour(nPort, i, Wheel(((i * 256 / m_nLedCount) + nIndex) & 255));
+	for (uint32_t i = 0; i < m_nCount; i++) {
+		SetPixelColour(nPort, i, Wheel(((i * 256 / m_nCount) + nIndex) & 255));
 	}
 
 	Increment(nPort);
@@ -128,7 +128,7 @@ void PixelPatterns::RainbowCycleUpdate(uint8_t nPort) {
 void PixelPatterns::TheaterChase(uint8_t nPort, uint32_t nColour1, uint32_t nColour2, uint8_t nInterval, pixelpatterns::Direction Direction){
 	m_PortConfig[nPort].ActivePattern = Pattern::THEATER_CHASE;
 	m_PortConfig[nPort].nInterval = nInterval;
-	m_PortConfig[nPort].nTotalSteps= m_nLedCount;
+	m_PortConfig[nPort].nTotalSteps= m_nCount;
 	m_PortConfig[nPort].nColour1 = nColour1;
 	m_PortConfig[nPort].nColour2 = nColour2;
     m_PortConfig[nPort].nIndex = 0;
@@ -140,7 +140,7 @@ void PixelPatterns::TheaterChaseUpdate(uint8_t nPort) {
 	const auto Colour2 = m_PortConfig[nPort].nColour2;
 	const auto Index = m_PortConfig[nPort].nIndex;
 
-	for (uint32_t i = 0; i < m_nLedCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if ((i + Index) % 3 == 0) {
 			SetPixelColour(nPort, i, Colour1);
 		} else {
@@ -154,7 +154,7 @@ void PixelPatterns::TheaterChaseUpdate(uint8_t nPort) {
 void PixelPatterns::ColourWipe(uint8_t nPort, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction Direction) {
 	m_PortConfig[nPort].ActivePattern = Pattern::COLOR_WIPE;
 	m_PortConfig[nPort].nInterval = nInterval;
-	m_PortConfig[nPort].nTotalSteps= m_nLedCount;
+	m_PortConfig[nPort].nTotalSteps= m_nCount;
     m_PortConfig[nPort].nColour1 = nColour;
     m_PortConfig[nPort].nIndex = 0;
     m_PortConfig[nPort].Direction = Direction;
@@ -171,15 +171,15 @@ void PixelPatterns::ColourWipeUpdate(uint8_t nPort) {
 void PixelPatterns::Scanner(uint8_t nPort, uint32_t nColour1, uint32_t nInterval) {
 	m_PortConfig[nPort].ActivePattern = Pattern::SCANNER;
 	m_PortConfig[nPort].nInterval = nInterval;
-	m_PortConfig[nPort].nTotalSteps= (m_nLedCount - 1U) * 2U;
+	m_PortConfig[nPort].nTotalSteps= (m_nCount - 1U) * 2U;
     m_PortConfig[nPort].nColour1 = nColour1;
     m_PortConfig[nPort].nIndex = 0;
 
 
     if (m_pScannerColours == nullptr) {
-    	m_pScannerColours = new uint32_t[m_nLedCount];
+    	m_pScannerColours = new uint32_t[m_nCount];
     	assert(m_pScannerColours != nullptr);
-    	for (uint32_t i = 0; i < m_nLedCount; i++) {
+    	for (uint32_t i = 0; i < m_nCount; i++) {
     		m_pScannerColours[i] = 0;
     	}
     }
@@ -190,7 +190,7 @@ void PixelPatterns::ScannerUpdate(uint8_t nPort) {
 	const auto nTotalSteps = m_PortConfig[nPort].nTotalSteps;
 	const auto nIndex = m_PortConfig[nPort].nIndex;
 
-	for (uint32_t i = 0; i < m_nLedCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (i == nIndex) {
 			SetPixelColour(nPort, i, nColour1);
 			m_pScannerColours[i] = nColour1;

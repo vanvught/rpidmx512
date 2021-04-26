@@ -30,9 +30,8 @@
 
 #include "ws28xx.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxmulti.h"
 
-#include "rgbmapping.h"
+#include "pixeldmxconfiguration.h"
 
 namespace ws28xxdmxparams {
 	static constexpr auto MAX_OUTPUTS = 8;
@@ -40,16 +39,16 @@ namespace ws28xxdmxparams {
 
 struct TWS28xxDmxParams {
     uint32_t nSetList;										///< 4	   4
-	uint8_t tLedType;										///< 1	   5
-	uint16_t nLedCount;										///< 2	   7
+	uint8_t nType;											///< 1	   5
+	uint16_t nCount;										///< 2	   7
 	uint16_t nDmxStartAddress;								///< 2	   9
 	uint8_t NotUsed0;										///< 1	  10
 	uint32_t nSpiSpeedHz;									///< 4	  14
 	uint8_t nGlobalBrightness;								///< 1	  15
 	uint8_t nActiveOutputs;									///< 1	  16
 	uint8_t NotUsed1;										///< 1	  17
-	uint16_t nLedGroupCount;								///< 2	  19
-	uint8_t nRgbMapping;									///< 1	  20
+	uint16_t nGroupingCount;								///< 2	  19
+	uint8_t nMap;											///< 1	  20
 	uint8_t nLowCode;										///< 1	  21
 	uint8_t nHighCode;										///< 1	  22
 	uint16_t nStartUniverse[ws28xxdmxparams::MAX_OUTPUTS];	///< 16   38
@@ -59,16 +58,16 @@ struct TWS28xxDmxParams {
 static_assert(sizeof(struct TWS28xxDmxParams) <= 64, "struct TWS28xxDmxParams is too large");
 
 struct WS28xxDmxParamsMask {
-	static constexpr auto LED_TYPE = (1U << 0);
-	static constexpr auto LED_COUNT = (1U << 1);
+	static constexpr auto TYPE = (1U << 0);
+	static constexpr auto COUNT = (1U << 1);
 	static constexpr auto DMX_START_ADDRESS = (1U << 2);
-	static constexpr auto LED_GROUPING = (1U << 3);
+	static constexpr auto GROUPING_ENABLED = (1U << 3);
 	static constexpr auto SPI_SPEED = (1U << 4);
 	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 5);
 	static constexpr auto ACTIVE_OUT = (1U << 6);
 	static constexpr auto USE_SI5351A = (1U << 7);
-	static constexpr auto LED_GROUP_COUNT = (1U << 8);
-	static constexpr auto RGB_MAPPING = (1U << 9);
+	static constexpr auto GROUPING_COUNT = (1U << 8);
+	static constexpr auto MAP = (1U << 9);
 	static constexpr auto LOW_CODE = (1U << 10);
 	static constexpr auto HIGH_CODE = (1U << 11);
 	static constexpr auto START_UNI_PORT_1 = (1U << 12);
@@ -103,58 +102,9 @@ public:
 	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
 
-	void Set(WS28xxDmx *pWS28xxDmx);
-	void Set(WS28xxDmxMulti *pWS28xxDmxMulti);
+	void Set(PixelDmxConfiguration *pPixelDmxConfiguration);
 
 	void Dump();
-
-	ws28xx::Type GetLedType() const {
-		return static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType);
-	}
-
-	uint16_t GetLedCount() const {
-		return m_tWS28xxParams.nLedCount;
-	}
-
-	uint32_t GetClockSpeedHz() const {
-		return m_tWS28xxParams.nSpiSpeedHz;
-	}
-
-	uint8_t GetGlobalBrightness() const {
-		return m_tWS28xxParams.nGlobalBrightness;
-	}
-
-	uint16_t GetDmxStartAddress() const {
-		return m_tWS28xxParams.nDmxStartAddress;
-	}
-
-	bool IsLedGrouping() const {
-		return isMaskSet(WS28xxDmxParamsMask::LED_GROUPING);
-	}
-
-	uint8_t GetActivePorts() const {
-		return m_tWS28xxParams.nActiveOutputs;
-	}
-
-	bool UseSI5351A() const {
-		return isMaskSet(WS28xxDmxParamsMask::USE_SI5351A);
-	}
-
-	uint16_t GetLedGroupCount() const {
-		return m_tWS28xxParams.nLedGroupCount;
-	}
-
-	rgbmapping::Map GetRgbMapping() const {
-		return static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping);
-	}
-
-	float GetLowCode() const {
-		return WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode);
-	}
-
-	float GetHighCode() const {
-		return WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode);
-	}
 
 	uint16_t GetStartUniversePort(uint32_t nOutputPortIndex, bool& isSet) const {
 		if (nOutputPortIndex < ws28xxdmxparams::MAX_OUTPUTS) {

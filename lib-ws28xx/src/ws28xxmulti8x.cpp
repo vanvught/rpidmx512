@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
+ 
 #include <stdint.h>
 #include <string.h>
 #include <cassert>
@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
 #define SPI_CS1		GPIO_EXT_26
 
@@ -85,11 +85,11 @@ void WS28xxMulti::SetupCPLD() {
 	jbc.SetJamSTAPLDisplay(m_pJamSTAPLDisplay);
 
 	if (jbc.PrintInfo() == JBIC_SUCCESS) {
-		if ((jbc.CheckCRC() == JBIC_SUCCESS) && (jbc.GetCRC() == 0x9AB2)) {
+		if ((jbc.CheckCRC() == JBIC_SUCCESS) && (jbc.GetCRC() == 0x1D3C)) {
 			jbc.CheckIdCode();
 			if (jbc.GetExitCode() == 0) {
 				jbc.ReadUsercode();
-				if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x00189ABC)) {
+				if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x0018ad81)) {
 					jbc.Program();
 				}
 			}
@@ -104,7 +104,7 @@ void WS28xxMulti::SetupCPLD() {
 
 void WS28xxMulti::SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
+	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
@@ -127,27 +127,27 @@ void WS28xxMulti::SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour
 	}
 }
 
-void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxMulti::SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 8);
-	assert(nLedIndex < m_nLedCount);
+	assert(nLedIndex < m_nCount);
 
-	switch (m_tRGBMapping) {
-	case rgbmapping::Map::RGB:
+	switch (m_Map) {
+	case Map::RGB:
 		SetColour8x(nPort, nLedIndex, nRed, nGreen, nBlue);
 		break;
-	case rgbmapping::Map::RBG:
+	case Map::RBG:
 		SetColour8x(nPort, nLedIndex, nRed, nBlue, nGreen);
 		break;
-	case rgbmapping::Map::GRB:
+	case Map::GRB:
 		SetColour8x(nPort, nLedIndex, nGreen, nRed, nBlue);
 		break;
-	case rgbmapping::Map::GBR:
+	case Map::GBR:
 		SetColour8x(nPort, nLedIndex, nGreen, nBlue, nRed);
 		break;
-	case rgbmapping::Map::BRG:
+	case Map::BRG:
 		SetColour8x(nPort, nLedIndex, nBlue, nRed, nGreen);
 		break;
-	case rgbmapping::Map::BGR:
+	case Map::BGR:
 		SetColour8x(nPort, nLedIndex, nBlue, nGreen, nRed);
 		break;
 	default:
@@ -156,13 +156,13 @@ void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	}
 }
 
-void WS28xxMulti::SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xxMulti::SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPort < 8);
-	assert(nLedIndex < m_nLedCount);
-	assert(m_tWS28xxType == Type::SK6812W);
+	assert(nLedIndex < m_nCount);
+	assert(m_Type == Type::SK6812W);
 
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGBW);
+	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

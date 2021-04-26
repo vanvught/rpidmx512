@@ -27,23 +27,11 @@
 
 #include "ws28xxdmx.h"
 
-#include "ws28xx.h"
-
-using namespace ws28xx;
+#include "pixeltype.h"
 
 void WS28xxDmx::Print() {
-	printf("Led parameters\n");
-	printf(" Type  : %s [%d]\n", WS28xx::GetLedTypeString(m_tLedType), m_tLedType);
-	printf(" Count : %d\n", m_nLedCount);
+	m_pWS28xx->Print();
 
-	if ((m_tLedType == Type::WS2801) || (m_tLedType == Type::APA102) || (m_tLedType == Type::P9813)) {
-		if (m_tLedType == Type::P9813) {
-			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::p9813::default_hz, spi::speed::p9813::max_hz);
-		} else {
-			printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nClockSpeedHz, (m_nClockSpeedHz == 0 ? "Default" : ""), spi::speed::ws2801::default_hz, spi::speed::ws2801::max_hz);
-		}
-		if (m_tLedType == Type::APA102) {
-			printf(" GlbBr : %d\n", m_nGlobalBrightness);
-		}
-	}
+	printf("Pixel DMX parameters\n");
+	printf(" Grouping count : %d [Groups : %d]\n", m_nGroupingCount, m_nGroups);
 }

@@ -29,7 +29,6 @@
 
 #include "ws28xxmulti.h"
 
-#include "h3/ws28xxdma.h"
 #include "h3_spi.h"
 
 #include "debug.h"

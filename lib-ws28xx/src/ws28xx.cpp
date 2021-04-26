@@ -25,110 +25,69 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
+#include "pixelconfiguration.h"
 
 #include "hal_spi.h"
 
 #include "debug.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
 WS28xx *WS28xx::s_pThis = nullptr;
 
-WS28xx::WS28xx(Type Type, uint16_t nLedCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, uint32_t nClockSpeed) :
-	m_tLEDType(Type),
-	m_nLedCount(nLedCount),
-	m_tRGBMapping(tRGBMapping),
-	m_nClockSpeedHz(nClockSpeed),
-	m_nLowCode(nT0H),
-	m_nHighCode(nT1H)
-{
+WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
+	DEBUG_ENTRY
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	assert(m_nLedCount != 0);
+	uint32_t nLedsPerPixel;
+	pixelConfiguration.Validate(nLedsPerPixel);
+	pixelConfiguration.Dump();
 
-	if ((m_tLEDType == Type::SK6812W) || (m_tLEDType == Type::APA102)) {
-		m_nBufSize = m_nLedCount * 4U;
+	m_Type = pixelConfiguration.GetType();
+	m_nCount = pixelConfiguration.GetCount();
+	m_Map = pixelConfiguration.GetMap();
+	m_nLowCode = pixelConfiguration.GetLowCode();
+	m_nHighCode = pixelConfiguration.GetHighCode();
+	m_bIsRTZProtocol = pixelConfiguration.IsRTZProtocol();
+	m_nGlobalBrightness = pixelConfiguration.GetGlobalBrightness();
+
+	if ((m_Type == Type::SK6812W) || (m_Type == Type::APA102)) {
+		m_nBufSize = m_nCount * 4U;
 	} else {
-		m_nBufSize = m_nLedCount * 3U;
+		m_nBufSize = m_nCount * 3U;
 	}
 
-	// TODO Update when new chip is added
-	if (m_tLEDType == Type::UNDEFINED || m_tLEDType == Type::WS2811
-			|| m_tLEDType == Type::WS2812 || m_tLEDType == Type::WS2812B
-			|| m_tLEDType == Type::WS2813 || m_tLEDType == Type::WS2815
-			|| m_tLEDType == Type::SK6812 || m_tLEDType == Type::SK6812W
-			|| m_tLEDType == Type::UCS1903 || m_tLEDType == Type::UCS2903
-			|| m_tLEDType == Type::CS8812) {
+	if (m_bIsRTZProtocol) {
 		m_nBufSize *= 8;
-		m_bIsRTZProtocol = true;
+#if defined( H3 )
+		h3_spi_set_ws28xx_mode(true);
+#endif
 	}
 
-	if ((m_tLEDType == Type::APA102) || (m_tLEDType == Type::P9813)) {
+	if ((m_Type == Type::APA102) || (m_Type == Type::P9813)) {
 		m_nBufSize += 8;
 	}
 
-#ifdef H3
-	if (m_bIsRTZProtocol) {
-		h3_spi_set_ws28xx_mode(true);
-	}
-#endif
-
-	if (m_bIsRTZProtocol) {
-		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tLEDType), WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
-		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
-
-		if (m_tRGBMapping == rgbmapping::Map::UNDEFINED) {
-			m_tRGBMapping = WS28xx::GetRgbMapping(m_tLEDType);
-		}
-
-		uint8_t nLowCode, nHighCode;
-
-		WS28xx::GetTxH(m_tLEDType, nLowCode, nHighCode);
-
-		if (m_nLowCode == 0) {
-			m_nLowCode = nLowCode;
-		}
-
-		if (m_nHighCode == 0) {
-			m_nHighCode = nHighCode;
-		}
-
-		DEBUG_PRINTF("m_tWS28xxType=%d (%s), m_nLedCount=%d, m_nBufSize=%d", static_cast<int>(m_tLEDType), WS28xx::GetLedTypeString(m_tLEDType), m_nLedCount, m_nBufSize);
-		DEBUG_PRINTF("m_tRGBMapping=%d (%s), m_nLowCode=0x%X, m_nHighCode=0x%X", static_cast<int>(m_tRGBMapping), RGBMapping::ToString(m_tRGBMapping), static_cast<int>(m_nLowCode), static_cast<int>(m_nHighCode));
-	}
-
 	FUNC_PREFIX (spi_begin());
+	FUNC_PREFIX(spi_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
 
-	if (m_bIsRTZProtocol) {
-		m_nClockSpeedHz = 6400000;	// 6.4MHz / 8 bits = 800Hz
-	} else {
-		if (m_tLEDType == Type::P9813) {
-			if (nClockSpeed == 0) {
-				m_nClockSpeedHz = spi::speed::p9813::default_hz;
-			} else if (nClockSpeed > spi::speed::p9813::max_hz) {
-				m_nClockSpeedHz = spi::speed::p9813::max_hz;
-			}
-		} else {
-			if (nClockSpeed == 0) {
-				m_nClockSpeedHz = spi::speed::ws2801::default_hz;
-			} else if (nClockSpeed > spi::speed::ws2801::max_hz) {
-				m_nClockSpeedHz = spi::speed::ws2801::max_hz;
-			}
-		}
-	}
+	SetupBuffers();
 
-	FUNC_PREFIX(spi_set_speed_hz(m_nClockSpeedHz));
-
-	DEBUG_PRINTF("m_bIsRTZProtocol=%d, m_nClockSpeedHz=%d", static_cast<int>(m_bIsRTZProtocol), m_nClockSpeedHz);
+	DEBUG_EXIT
 }
 
 WS28xx::~WS28xx() {
+#if defined( H3 )
+	m_pBlackoutBuffer = nullptr;
+	m_pBuffer = nullptr;
+#else
 	if (m_pBlackoutBuffer != nullptr) {
 		delete [] m_pBlackoutBuffer;
 		m_pBlackoutBuffer = nullptr;
@@ -138,46 +97,94 @@ WS28xx::~WS28xx() {
 		delete [] m_pBuffer;
 		m_pBuffer = nullptr;
 	}
+#endif
+
+	s_pThis = nullptr;
 }
 
-bool WS28xx::Initialize() {
+void WS28xx::SetupBuffers() {
+	DEBUG_ENTRY
+#if defined( H3 )
+	uint32_t nSize;
+
+	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
+	assert(m_pBuffer != nullptr);
+
+	const uint32_t nSizeHalf = nSize / 2;
+	assert(m_nBufSize <= nSizeHalf);
+
+	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
+
+	if (m_Type == Type::APA102) {
+		memset(m_pBuffer, 0, 4);
+		for (uint32_t i = 0; i < m_nCount; i++) {
+			SetPixel(i, 0, 0, 0);
+		}
+		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+	} else {
+		memset(m_pBuffer, m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
+	}
+#else
 	assert(m_pBuffer == nullptr);
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != nullptr);
 
-	if ((m_tLEDType == Type::APA102) || (m_tLEDType == Type::P9813)) {
+	if ((m_Type == Type::APA102) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
-		for (uint32_t i = 0; i < m_nLedCount; i++) {
-			SetLED(i, 0, 0, 0);
+		for (uint32_t i = 0; i < m_nCount; i++) {
+			SetPixel(i, 0, 0, 0);
 		}
 
-		if (m_tLEDType == Type::APA102) {
+		if (m_Type == Type::APA102) {
 			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 		} else
 			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
 		}
 	else {
-		memset(m_pBuffer, m_tLEDType == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
+		memset(m_pBuffer, m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
 	}
 
 	assert(m_pBlackoutBuffer == nullptr);
 	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBlackoutBuffer != nullptr);
+#endif
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
-
-	Blackout();
-
-	return true;
+	DEBUG_EXIT
 }
 
 void WS28xx::Update() {
 	assert (m_pBuffer != nullptr);
+#if defined( H3 )
+	assert(!IsUpdating());
+
+	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
+#else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
+#endif
 }
 
 void WS28xx::Blackout() {
 	assert (m_pBlackoutBuffer != nullptr);
+#if defined( H3 )
+	assert(!IsUpdating());
+
+	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
+#else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
+#endif
+}
+
+void WS28xx::Print() {
+	printf("Pixel parameters\n");
+	printf(" Type    : %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type));
+	printf(" Count   : %d\n", m_nCount);
+	if (m_bIsRTZProtocol) {
+		printf(" Mapping : %s [%d]\n", PixelType::GetMap(m_Map), static_cast<int>(m_Map));
+		printf(" T0H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nLowCode), m_nLowCode);
+		printf(" T1H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nHighCode), m_nHighCode);
+	} else {
+
+	}
 }

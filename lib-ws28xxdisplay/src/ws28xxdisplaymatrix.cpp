@@ -27,21 +27,20 @@
 
 #include "ws28xxdisplaymatrix.h"
 
-#if defined(USE_SPI_DMA)
-# include "h3/ws28xxdma.h"
-#else
-# include "ws28xx.h"
-#endif
+#include "pixelconfiguration.h"
+#include "pixeltype.h"
+
+#include "ws28xx.h"
 
 #include "../lib-device/src/font_cp437.h"
 
 #include "debug.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
 // FIXME Currently working for single row only
 
-WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
+WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows, Type tLedType, Map tRGBMapping):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
 	m_nOffset((nRows - FONT_CP437_CHAR_H) * 2),
@@ -49,7 +48,7 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
 	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
 {
-	DEBUG2_ENTRY
+	DEBUG_ENTRY
 
 	assert(nColumns % FONT_CP437_CHAR_W == 0);
 	assert(nRows % FONT_CP437_CHAR_H == 0);
@@ -59,12 +58,26 @@ WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows):
 
 	SetColonsOff();
 
+	PixelConfiguration pixelConfiguration;
+
+	pixelConfiguration.SetType(tLedType);
+	pixelConfiguration.SetMap(tRGBMapping);
+
+	pixelConfiguration.SetCount(m_nMaxLeds);
+
+	m_pWS28xx = new WS28xx(pixelConfiguration);
+	assert(m_pWS28xx != nullptr);
+
+	m_pWS28xx->Blackout();
+
+	pixelConfiguration.Dump();
+
 	DEBUG_PRINTF("m_nColumns=%u, m_nRows=%u, m_nOffset=%u, m_nMaxPosition=%u, m_nMaxLine=%u", m_nColumns, m_nRows, m_nOffset, m_nMaxPosition, m_nMaxLine);
-	DEBUG2_EXIT
+	DEBUG_EXIT
 }
 
 WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
-	DEBUG2_ENTRY
+	DEBUG_ENTRY
 
 	if (m_pWS28xx != nullptr) {
 		Cls();
@@ -76,23 +89,7 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 	delete[] m_ptColons;
 	m_ptColons = nullptr;
 
-	DEBUG2_EXIT
-}
-
-void WS28xxDisplayMatrix::Init(Type tLedType, rgbmapping::Map tRGBMapping) {
-	DEBUG2_ENTRY
-
-	assert(m_pWS28xx == nullptr);
-#if defined(USE_SPI_DMA)
-	m_pWS28xx = new WS28xxDMA(tLedType, m_nMaxLeds, tRGBMapping);
-#else
-	m_pWS28xx = new WS28xx(tLedType, m_nMaxLeds, tRGBMapping);
-#endif
-	assert(m_pWS28xx != nullptr);
-
-	m_pWS28xx->Initialize();
-
-	DEBUG2_EXIT
+	DEBUG_EXIT
 }
 
 void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
@@ -126,9 +123,9 @@ void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint
 
 		for (uint32_t nHeight = 0; nHeight < FONT_CP437_CHAR_H; nHeight++) {
 			if (nByte & (1 << nHeight)) {
-				m_pWS28xx->SetLED(nOffset, nRed, nGreen, nBlue);
+				m_pWS28xx->SetPixel(nOffset, nRed, nGreen, nBlue);
 			} else {
-				m_pWS28xx->SetLED(nOffset, 0x00, 0x00, 0x00);
+				m_pWS28xx->SetPixel(nOffset, 0x00, 0x00, 0x00);
 			}
 
 			nOffset++;
@@ -192,7 +189,7 @@ void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 	}
 
 	for (uint32_t i = 0; i < m_nMaxLeds; i++) {
-		m_pWS28xx->SetLED(i, 0, 0, 0); // FIXME Currently working for single row only
+		m_pWS28xx->SetPixel(i, 0, 0, 0); // FIXME Currently working for single row only
 	}
 
 	SetCursorPos(0, nLine - 1);

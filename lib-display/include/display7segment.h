@@ -2,7 +2,7 @@
  * @file display7segment.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,7 +152,6 @@ public:
 	void Status(uint8_t nValue, bool bHex);
 
 	uint16_t GetData(uint8_t nHexValue) {
-
 		switch (nHexValue) {
 		case 0:
 			return display7segment::CH_0;
@@ -215,7 +214,7 @@ public:
 
 private:
 	HAL_I2C m_I2C;
-	bool m_bHave7Segment{false};
+	bool m_bHave7Segment { false };
 
 	static Display7Segment *s_pThis;
 };

@@ -26,12 +26,9 @@
 
 #include <stdint.h>
 
-#if defined(USE_SPI_DMA)
-# include "h3/ws28xxdma.h"
-#endif
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
+#include "pixeltype.h"
 
 struct TWS28xxDisplayMatrixColon {
 	uint8_t nBits;
@@ -42,10 +39,8 @@ struct TWS28xxDisplayMatrixColon {
 
 class WS28xxDisplayMatrix {
 public:
-	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows);
+	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows, pixel::Type tLedType, pixel::Map tRGBMapping);
 	~WS28xxDisplayMatrix();
-
-	void Init(ws28xx::Type tLedType = ws28xx::Type::WS2812B, rgbmapping::Map tRGBMapping = rgbmapping::Map::UNDEFINED);
 
 	void PutChar(char nChar, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void PutString(const char *pString, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
@@ -81,11 +76,7 @@ private:
 	uint32_t m_nMaxLeds;
 	uint32_t m_nMaxPosition;
 	uint32_t m_nMaxLine;
-#if defined(USE_SPI_DMA)
-	WS28xxDMA *m_pWS28xx { nullptr };
-#else
 	WS28xx *m_pWS28xx { nullptr };
-#endif
 	bool m_bUpdateNeeded { false };
 	uint32_t m_nPosition { 0 };
 	uint32_t m_nLine { 0 };

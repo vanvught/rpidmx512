@@ -35,7 +35,7 @@
 
 #include "debug.h"
 
-using namespace ws28xx;
+using namespace pixel;
 
 bool WS28xxMulti::SetupSI5351A(	) {
 	DEBUG_ENTRY
@@ -89,7 +89,7 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 
 void  WS28xxMulti::SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGB);
+	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
@@ -112,27 +112,27 @@ void  WS28xxMulti::SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColou
 	}
 }
 
-void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxMulti::SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 4);
-	assert(nLedIndex < m_nLedCount);
+	assert(nLedIndex < m_nCount);
 
-	switch (m_tRGBMapping) {
-	case rgbmapping::Map::RGB:
+	switch (m_Map) {
+	case Map::RGB:
 		SetColour4x(nPort, nLedIndex, nRed, nGreen, nBlue);
 		break;
-	case rgbmapping::Map::RBG:
+	case Map::RBG:
 		SetColour4x(nPort, nLedIndex, nRed, nBlue, nGreen);
 		break;
-	case rgbmapping::Map::GRB:
+	case Map::GRB:
 		SetColour4x(nPort, nLedIndex, nGreen, nRed, nBlue);
 		break;
-	case rgbmapping::Map::GBR:
+	case Map::GBR:
 		SetColour4x(nPort, nLedIndex, nGreen, nBlue, nRed);
 		break;
-	case rgbmapping::Map::BRG:
+	case Map::BRG:
 		SetColour4x(nPort, nLedIndex, nBlue, nRed, nGreen);
 		break;
-	case rgbmapping::Map::BGR:
+	case Map::BGR:
 		SetColour4x(nPort, nLedIndex, nBlue, nGreen, nRed);
 		break;
 	default:
@@ -141,13 +141,13 @@ void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint
 	}
 }
 
-void WS28xxMulti::SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xxMulti::SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPort < 4);
-	assert(nLedIndex < m_nLedCount);
-	assert(m_tWS28xxType == Type::SK6812W);
+	assert(nLedIndex < m_nCount);
+	assert(m_Type == Type::SK6812W);
 
 	uint32_t j = 0;
-	auto k = static_cast<uint32_t>(nLedIndex * ws28xx::single::RGBW);
+	auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

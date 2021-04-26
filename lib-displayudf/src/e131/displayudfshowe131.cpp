@@ -1,5 +1,5 @@
 /**
- * @file ws28xxconst.cpp
+ * @file displayudfshowe131.cpp
  *
  */
 /* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,17 +23,38 @@
  * THE SOFTWARE.
  */
 
-#include "ws28xxconst.h"
+#include <stdint.h>
 
-#include "ws28xx.h"
+#include "displayudf.h"
 
-using namespace ws28xx;
+#include "e131bridge.h"
+#include "e131.h"
 
-const char WS28xxConst::TYPES[static_cast<unsigned>(Type::UNDEFINED)][WS28XX_TYPES_MAX_NAME_LENGTH] =
-		{ "WS2801\0", "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",	// 6
-		  "SK6812\0", "SK6812W",													// 2
-		  "APA102\0",																// 1
-		  "UCS1903", "UCS2903",														// 2
-		  "P9813",																	// 1
-		  "CS8812"																	// 1
-		};																			// = 13
+#include "debug.h"
+
+using namespace displayudf;
+using namespace e131;
+
+
+void DisplayUdf::Show(E131Bridge *pE131Bridge) {
+	DEBUG_ENTRY
+
+	Show();
+
+	uint16_t nUniverse;
+	if (pE131Bridge->GetUniverse(0, nUniverse, PortDir::OUTPUT)) {
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE)], "U: %d", nUniverse);
+	}
+
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
+
+	for (uint32_t i = 0; i < 4; i++) {
+		uint16_t nUniverse;
+
+		if (pE131Bridge->GetUniverse(i, nUniverse, PortDir::OUTPUT)) {
+			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "Port %c: %d %s", ('A' + i), nUniverse, E131::GetMergeMode(pE131Bridge->GetMergeMode(i), true));
+		}
+	}
+
+	DEBUG_EXIT
+}

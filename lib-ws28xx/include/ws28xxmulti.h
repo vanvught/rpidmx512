@@ -28,13 +28,11 @@
 
 #include <stdint.h>
 
-#include "ws28xx.h"
+#include "pixelconfiguration.h"
 
 #if defined (H3)
 # include "h3_spi.h"
 #endif
-
-#include "rgbmapping.h"
 
 namespace ws28xxmulti {
 enum class Board {
@@ -49,60 +47,36 @@ struct JamSTAPLDisplay;
 
 class WS28xxMulti {
 public:
-	WS28xxMulti();
+	WS28xxMulti(PixelConfiguration& pixelConfiguration);
 	~WS28xxMulti();
 
-	void Initialize(ws28xx::Type tWS28xxType, uint16_t nLedCount, rgbmapping::Map tRGBMapping, uint8_t nT0H, uint8_t nT1H, bool bUseSI5351A = false);
+	void Print();
 
-	ws28xx::Type GetLEDType() const {
-		return m_tWS28xxType;
-	}
-
-	rgbmapping::Map GetRgbMapping() const {
-		return m_tRGBMapping;
-	}
-
-	uint8_t GetLowCode() const {
-		return m_nLowCode;
-	}
-
-	uint8_t GetHighCode() const {
-		return m_nHighCode;
-	}
-
-	uint16_t GetLEDCount() const {
-		return m_nLedCount;
-	}
-
-	ws28xxmulti::Board GetBoard() const {
-		return m_tBoard;
-	}
-
-	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-		if (m_tBoard == ws28xxmulti::Board::X8) {
-			SetLED8x(nPort, nLedIndex, nRed, nGreen, nBlue);
+	void SetPixel(uint8_t nPort, uint16_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+		if (m_Board == ws28xxmulti::Board::X8) {
+			SetPixel8x(nPort, nIndex, nRed, nGreen, nBlue);
 		} else {
-			SetLED4x(nPort, nLedIndex, nRed, nGreen, nBlue);
+			SetPixel4x(nPort, nIndex, nRed, nGreen, nBlue);
 		}
 	}
-	void SetLED(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-		if (m_tBoard == ws28xxmulti::Board::X8) {
-			SetLED8x(nPort, nLedIndex, nRed, nGreen, nBlue, nWhite);
+	void SetPixel(uint8_t nPort, uint16_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+		if (m_Board == ws28xxmulti::Board::X8) {
+			SetPixel8x(nPort, nIndex, nRed, nGreen, nBlue, nWhite);
 		} else {
-			SetLED4x(nPort, nLedIndex, nRed, nGreen, nBlue, nWhite);
+			SetPixel4x(nPort, nIndex, nRed, nGreen, nBlue, nWhite);
 		}
 	}
 
 #if defined (H3)
 	bool IsUpdating() {
-		if (m_tBoard == ws28xxmulti::Board::X8) {
+		if (m_Board == ws28xxmulti::Board::X8) {
 			return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
 		} else {
 			return false;
 		}
 	}
 #else
-	bool IsUpdating(void) {
+	bool IsUpdating(void) const {
 		return false;
 	}
 #endif
@@ -110,10 +84,24 @@ public:
 	void Update();
 	void Blackout();
 
+	pixel::Type GetType() const {
+		return m_Type;
+	}
+
+	uint16_t GetCount() const {
+		return m_nCount;
+	}
+
+	pixel::Map GetMap() const {
+		return m_Map;
+	}
+
 // 8x
 	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
 		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
 	}
+
+	static ws28xxmulti::Board GetBoard();
 
 	static WS28xxMulti *Get() {
 		return s_pThis;
@@ -122,31 +110,29 @@ public:
 private:
 	uint8_t ReverseBits(uint8_t nBits);
 // 4x
-	bool IsMCP23017();
+	static bool IsMCP23017();
 	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
 	bool SetupSI5351A();
 	void SetupGPIO();
 	void SetupBuffers4x();
 	void Generate800kHz(const uint32_t *pBuffer);
 	void SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetLED4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 // 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
 	void SetupSPI();
 	void SetupCPLD();
 	void SetupBuffers8x();
 	void SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetLED8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 private:
-	ws28xxmulti::Board m_tBoard { ws28xxmulti::defaults::BOARD };
-	ws28xx::Type m_tWS28xxType { ws28xx::defaults::TYPE };
-	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
-	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
-	uint8_t m_nLowCode { 0 };
-	uint8_t m_nHighCode { 0 };
+	ws28xxmulti::Board m_Board { ws28xxmulti::defaults::BOARD };
+	pixel::Type m_Type { pixel::defaults::TYPE };
+	uint16_t m_nCount { pixel::defaults::COUNT };
+	pixel::Map m_Map { pixel::Map::UNDEFINED };
 	uint32_t m_nBufSize { 0 };
 	uint32_t *m_pBuffer4x { nullptr };
 	uint32_t *m_pBlackoutBuffer4x { nullptr };
