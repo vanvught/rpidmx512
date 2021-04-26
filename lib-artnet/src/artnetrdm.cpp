@@ -39,10 +39,12 @@
 
 #include "debug.h"
 
+using namespace artnet;
+
 void ArtNetNode::HandleTodControl() {
 	DEBUG_ENTRY
 
-	const struct TArtTodControl *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
+	const auto *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
@@ -69,7 +71,7 @@ void ArtNetNode::HandleTodControl() {
 void ArtNetNode::HandleTodRequest() {
 	DEBUG_ENTRY
 
-	const struct TArtTodRequest *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
+	const auto *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
@@ -141,7 +143,7 @@ void ArtNetNode::HandleRdm() {
 	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			if (!m_IsRdmResponder) {
-				if ((m_OutputPorts[i].tPortProtocol == PORT_ARTNET_SACN) && (m_pArtNet4Handler != nullptr)) {
+				if ((m_OutputPorts[i].tPortProtocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
 					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 					m_IsLightSetRunning[i] = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}

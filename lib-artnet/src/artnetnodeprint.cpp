@@ -40,6 +40,8 @@
 
 #include "network.h"
 
+using namespace artnet;
+
 void ArtNetNode::Print() {
 	printf("Node %d\n", m_nVersion);
 	printf(" Firmware   : %d.%d\n", ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
@@ -51,7 +53,7 @@ void ArtNetNode::Print() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::MAX_PORTS); nPortIndex++) {
 			uint8_t nAddress;
-			if (GetUniverseSwitch(nPortIndex, nAddress)) {
+			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::OUTPUT)) {
 				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ArtNet::MAX_PORTS];
 				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ArtNet::MAX_PORTS];
 
@@ -74,7 +76,7 @@ void ArtNetNode::Print() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < (ARTNET_NODE_MAX_PORTS_INPUT); nPortIndex++) {
 			uint8_t nAddress;
-			if (GetUniverseSwitch(nPortIndex, nAddress, ARTNET_INPUT_PORT)) {
+			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::INPUT)) {
 				const uint32_t nNet = m_Node.NetSwitch[nPortIndex];
 				const uint32_t nSubSwitch = m_Node.SubSwitch[nPortIndex];
 				const uint32_t nDestinationIp = (m_InputPorts[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[nPortIndex].nDestinationIp);

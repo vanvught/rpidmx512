@@ -72,4 +72,11 @@ enum TStatus1 {
 	STATUS1_UBEA_PRESENT = (1 << 0)				///< 1 = UBEA present
 };
 
+namespace defaults {
+static constexpr char SHORT_NAME[] = "AvV Art-Net Node";
+static constexpr auto NET_SWITCH = 0;
+static constexpr auto SUBNET_SWITCH = 0;
+static constexpr auto UNIVERSE = 1;
+}  // namespace defaults
+
 #endif /* ARTNETNODE_INTERNAL_H_ */

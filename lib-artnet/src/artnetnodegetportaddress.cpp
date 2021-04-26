@@ -1,11 +1,11 @@
 /**
- * @file artnetstore.h
+ * @file artnetnodegetportaddress.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETSTORE_H_
-#define ARTNETSTORE_H_
-
 #include <stdint.h>
+#include <cassert>
 
+#include "artnetnode.h"
 #include "artnet.h"
 
-class ArtNetStore {
-public:
-	virtual ~ArtNetStore() {}
+using namespace artnet;
 
-	virtual void SaveShortName(const char *pShortName)=0;
-	virtual void SaveLongName(const char *pLongName)=0;
-	virtual void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
-	virtual void SaveNetSwitch(uint8_t nAddress)=0;
-	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-	virtual void SaveMergeMode(uint8_t nPortIndex, artnet::Merge tMerge)=0;
-	virtual void SavePortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
-};
+bool ArtNetNode::GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
+	if (dir == PortDir::INPUT) {
+		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT);
 
-#endif /* ARTNETSTORE_H_ */
+		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+			nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
+			return m_InputPorts[nPortIndex].bIsEnabled;
+		}
+
+		return false;
+	}
+
+	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
+
+	nAddress = m_OutputPorts[nPortIndex].port.nPortAddress;
+	return m_OutputPorts[nPortIndex].bIsEnabled;
+}

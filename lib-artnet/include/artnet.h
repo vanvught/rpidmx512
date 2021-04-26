@@ -35,6 +35,20 @@ namespace artnet {
 static constexpr char NODE_ID[] = "Art-Net";			///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
 static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
 static constexpr auto NETWORK_DATA_LOSS_TIMEOUT = 10;	///< Seconds
+
+enum class Merge {
+	HTP, LTP
+};
+
+enum class PortDir {
+	INPUT, OUTPUT, DISABLE
+};
+
+enum class PortProtocol {
+	ARTNET,	///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
+	SACN	///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
+};
+
 }  // namespace artnet
 
 /**
@@ -73,15 +87,6 @@ enum TPriorityCodes {
 enum TArtNetPortSettings {
 	ARTNET_ENABLE_INPUT = 0x40,
 	ARTNET_ENABLE_OUTPUT = 0x80
-};
-
-/**
- * An enum for referring to a particular input or output port.
- */
-enum TArtNetPortDir{
-	ARTNET_INPUT_PORT,
-	ARTNET_OUTPUT_PORT,
-	ARTNET_DISABLE_PORT
 };
 
 /**
@@ -152,21 +157,10 @@ enum TGoodOutput {
 };
 
 enum TGoodInput {
-	GI_DATA_RECIEVED  = (1 << 7)				///< Bit 7 Set – Data received.
+	GI_DATA_RECIEVED  = (1 << 7),				///< Bit 7 Set – Data received.
+	GI_DISABLED  = (1 << 3)						///< Bit 3 Set – Input is disabled.
 };
 
-/**
- * Merge is implemented in either LTP or HTP mode as specified by the ArtAddress packet.
- */
-enum class ArtNetMerge {
-	HTP,	///< Highest Takes Precedence (HTP)
-	LTP		///< Latest Takes Precedence (LTP)
-};
-
-enum TPortProtocol {
-	PORT_ARTNET_ARTNET,		///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
-	PORT_ARTNET_SACN		///< Output DMX512 data from the sACN protocol and RDM data from the Art-Net protocol.
-};
 
 struct ArtNet {
 	static constexpr uint8_t PROTOCOL_REVISION = 14;
@@ -182,37 +176,37 @@ struct ArtNet {
 	static constexpr uint32_t IP_SIZE = 4;
 	static constexpr uint32_t ESTA_SIZE = 2;
 
-	static ArtNetMerge GetMergeMode(const char *pMergeMode) {
+	static artnet::Merge GetMergeMode(const char *pMergeMode) {
 		if (pMergeMode != nullptr) {
 			if (((pMergeMode[0] | 0x20) == 'l')
 					&& ((pMergeMode[1] | 0x20) == 't')
 					&& ((pMergeMode[2] | 0x20) == 'p')) {
-				return ArtNetMerge::LTP;
+				return artnet::Merge::LTP;
 			}
 		}
-		return ArtNetMerge::HTP;
+		return artnet::Merge::HTP;
 	}
 
-	static const char* GetMergeMode(ArtNetMerge m, bool bToUpper = false) {
+	static const char* GetMergeMode(artnet::Merge m, bool bToUpper = false) {
 		if (bToUpper) {
-			return (m == ArtNetMerge::HTP) ? "HTP" : "LTP";
+			return (m == artnet::Merge::HTP) ? "HTP" : "LTP";
 		}
-		return (m == ArtNetMerge::HTP) ? "htp" : "ltp";
+		return (m == artnet::Merge::HTP) ? "htp" : "ltp";
 	}
 
 	static const char* GetMergeMode(unsigned m, bool bToUpper = false) {
-		return GetMergeMode(static_cast<ArtNetMerge>(m), bToUpper);
+		return GetMergeMode(static_cast<artnet::Merge>(m), bToUpper);
 	}
 
-	static const char* GetProtocolMode(TPortProtocol p, bool bToUpper = false) {
+	static const char* GetProtocolMode(artnet::PortProtocol p, bool bToUpper = false) {
 		if (bToUpper) {
-			return (p == PORT_ARTNET_ARTNET) ? "Art-Net" : "sACN";
+			return (p == artnet::PortProtocol::ARTNET) ? "Art-Net" : "sACN";
 		}
-		return (p == PORT_ARTNET_ARTNET) ? "artnet" : "sacn";
+		return (p == artnet::PortProtocol::ARTNET) ? "artnet" : "sacn";
 	}
 
 	static const char* GetProtocolMode(unsigned p, bool bToUpper = false) {
-		return GetProtocolMode(static_cast<TPortProtocol>(p), bToUpper);
+		return GetProtocolMode(static_cast<artnet::PortProtocol>(p), bToUpper);
 	}
 };
 

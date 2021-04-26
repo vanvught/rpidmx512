@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ enum TOpCodes {
 	OP_SYNC = 0x5200,		///< This is an ArtSync data packet. It is used to force synchronous transfer of ArtDmx packets to a node’s output.
 	OP_ADDRESS = 0x6000,	///< This is an ArtAddress packet. It contains remote programming information for a Node.
 	OP_TODREQUEST = 0x8000,	///< This is an ArtTodRequest packet. It is used to request a Table of Devices (ToD) for RDM discovery.
-	OP_TODDATA = 0x8100,	 ///< This is an ArtTodData packet. It is used to send a Table of Devices (ToD) for RDM discovery.
+	OP_TODDATA = 0x8100,	///< This is an ArtTodData packet. It is used to send a Table of Devices (ToD) for RDM discovery.
 	OP_TODCONTROL = 0x8200,	///< This is an ArtTodControl packet. It is used to send RDM discovery control messages
 	OP_RDM = 0x8300, 		///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
 	OP_TIMECODE = 0x9700,	///< This is an ArtTimeCode packet. It is used to transport time code over the network.

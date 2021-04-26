@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,16 +39,14 @@ class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
 
-	void SetPort(uint8_t nPortId, TArtNetPortDir dir = ARTNET_OUTPUT_PORT) override;
-
-	void Print();
-
-	void Start();
-	void Stop();
-	void Run();
+	void SetPort(uint8_t nPortId, artnet::PortDir dir) override;
 
 	void HandleAddress(uint8_t nCommand) override;
 	uint8_t GetStatus(uint8_t nPortId) override;
+
+	bool IsStatusChanged() override {
+		return m_Bridge.IsStatusChanged();
+	}
 
 	void SetMapUniverse0(bool bMapUniverse0 = false) {
 		m_bMapUniverse0 = bMapUniverse0;
@@ -57,13 +55,15 @@ public:
 		return m_bMapUniverse0;
 	}
 
-	bool IsStatusChanged() override {
-		return m_Bridge.IsStatusChanged();
-	}
+	void Print();
+
+	void Start();
+	void Stop();
+	void Run();
 
 private:
 	E131Bridge m_Bridge;
-	bool m_bMapUniverse0{false};
+	bool m_bMapUniverse0 { false };
 };
 
 #endif /* ARTNET4NODE_H_ */

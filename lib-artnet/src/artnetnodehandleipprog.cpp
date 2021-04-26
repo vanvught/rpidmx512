@@ -1,11 +1,11 @@
 /**
- * @file artnetipprog.cpp
+ * @file artnetnodehandleipprog.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ union uip {
 void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 	assert(pArtNetIpProg != nullptr);
 
-	if(pArtNetIpProg != nullptr) {
+	if (pArtNetIpProg != nullptr) {
 		m_pArtNetIpProg = pArtNetIpProg;
 
 		m_pIpProgReply = new TArtIpProgReply;
@@ -50,7 +50,6 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 
 		if (m_pIpProgReply != nullptr) {
 			memset(m_pIpProgReply, 0, sizeof(struct TArtIpProgReply));
-
 			memcpy(m_pIpProgReply->Id, artnet::NODE_ID, sizeof(m_pIpProgReply->Id));
 			m_pIpProgReply->OpCode = OP_IPPROGREPLY;
 			m_pIpProgReply->ProtVerLo = ArtNet::PROTOCOL_REVISION;

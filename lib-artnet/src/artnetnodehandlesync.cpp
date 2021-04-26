@@ -1,11 +1,11 @@
 /**
- * @file artnetstore.h
+ * @file artnetnodehandlesync.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETSTORE_H_
-#define ARTNETSTORE_H_
-
 #include <stdint.h>
 
+#include "artnetnode.h"
 #include "artnet.h"
 
-class ArtNetStore {
-public:
-	virtual ~ArtNetStore() {}
+#include "hardware.h"
 
-	virtual void SaveShortName(const char *pShortName)=0;
-	virtual void SaveLongName(const char *pLongName)=0;
-	virtual void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
-	virtual void SaveNetSwitch(uint8_t nAddress)=0;
-	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-	virtual void SaveMergeMode(uint8_t nPortIndex, artnet::Merge tMerge)=0;
-	virtual void SavePortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
-};
+using namespace artnet;
 
-#endif /* ARTNETSTORE_H_ */
+void ArtNetNode::HandleSync() {
+	m_State.IsSynchronousMode = true;
+	m_State.nArtSyncMillis = Hardware::Get()->Millis();
+
+	for (uint32_t i = 0; i < (m_nPages * ArtNet::MAX_PORTS); i++) {
+		if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET)
+				&& ((m_OutputPorts[i].IsDataPending) || (m_OutputPorts[i].bIsEnabled && m_bDirectUpdate))) {
+#if defined ( ENABLE_SENDDIAG )
+			SendDiag("Send pending data", ARTNET_DP_LOW);
+#endif
+			m_pLightSet->SetData(i, m_OutputPorts[i].data, m_OutputPorts[i].nLength);
+
+			if (!m_IsLightSetRunning[i]) {
+				m_pLightSet->Start(i);
+				m_IsLightSetRunning[i] = true;
+			}
+
+			m_OutputPorts[i].IsDataPending = false;
+		}
+	}
+}

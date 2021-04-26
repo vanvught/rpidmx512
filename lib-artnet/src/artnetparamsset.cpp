@@ -26,12 +26,19 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <cassert>
 
 #include "artnetparams.h"
 
 #include "artnetnode.h"
 #include "artnet.h"
+
+using namespace artnet;
 
 void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	assert(pArtNetNode != nullptr);
@@ -72,15 +79,15 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 
 	for (i = 0; i < ArtNet::MAX_PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
-			pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeModePort[i]));
+			pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeModePort[i]));
 		} else {
-			pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeMode));
+			pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeMode));
 		}
 
 		if (isMaskSet(ArtnetParamsMask::PROTOCOL_A << i)) {
-			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocolPort[i]));
+			pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocolPort[i]));
 		} else {
-			pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
+			pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
 		}
 
 		if (isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
@@ -89,8 +96,8 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	}
 
 	for (;i < (ArtNet::MAX_PORTS * ArtNet::MAX_PAGES); i++) {
-		pArtNetNode->SetMergeMode(i, static_cast<ArtNetMerge>(m_tArtNetParams.nMergeMode));
-		pArtNetNode->SetPortProtocol(i, static_cast<TPortProtocol>(m_tArtNetParams.nProtocol));
+		pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeMode));
+		pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
 	}
 
 	if (isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
