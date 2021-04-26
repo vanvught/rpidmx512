@@ -2,7 +2,7 @@
  * @file tftpfileserver.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,6 @@
 
 #include "display.h"
 
-// Temporarily class. Only needed for the migration to compressed firmware
-#include "compressed.h"
-
 #include "debug.h"
 
 #if defined(ORANGE_PI)
@@ -47,24 +44,11 @@
 
 static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
-		m_pBuffer(pBuffer),
-		m_nSize(nSize),
-		m_nFileSize(0),
-		m_bDone(false)
-{
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
 	DEBUG_ENTRY
 
 	assert(m_pBuffer != nullptr);
-
-	m_bIsCompressedSupported = Compressed::IsSupported();
-	DEBUG_PRINTF("m_bIsCompressedSupported=%d", static_cast<int>(m_bIsCompressedSupported));
-
-	DEBUG_EXIT
-}
-
-TFTPFileServer::~TFTPFileServer() {
-	DEBUG_ENTRY
+	assert(nSize != 0);
 
 	DEBUG_EXIT
 }
@@ -144,12 +128,6 @@ size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nB
 			DEBUG_PUTS("uImage is not valid");
 			return 0;
 		}
-		// Temporarily code BEGIN
-		if (!m_bIsCompressedSupported && uImage.IsCompressed()) {
-			printf("Compressed uImage is not supported -> upgrade UBoot SPI");
-			return 0;
-		}
-		// Temporarily code END
 	}
 
 	uint32_t nOffset = (nBlockNumber - 1) * 512;

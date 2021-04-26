@@ -40,6 +40,7 @@
 #include "debug.h"
 
 using namespace spiflashstore;
+using namespace artnet;
 
 StoreArtNet *StoreArtNet::s_pThis = nullptr;
 
@@ -114,28 +115,28 @@ void StoreArtNet::SaveSubnetSwitch(uint8_t nAddress) {
 	DEBUG_EXIT
 }
 
-void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge) {
+void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, Merge tMerge) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::MAX_PORTS);
 
 	if (nPortIndex == 0) {
-		SpiFlashStore::Get()->Update(Store::ARTNET, __builtin_offsetof(struct TArtNetParams, nMergeMode), &tMerge, sizeof(ArtNetMerge), ArtnetParamsMask::MERGE_MODE);
+		SpiFlashStore::Get()->Update(Store::ARTNET, __builtin_offsetof(struct TArtNetParams, nMergeMode), &tMerge, sizeof(uint8_t), ArtnetParamsMask::MERGE_MODE);
 	}
 
-	SpiFlashStore::Get()->Update(Store::ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nMergeModePort), &tMerge, sizeof(ArtNetMerge), ArtnetParamsMask::MERGE_MODE_A << nPortIndex);
+	SpiFlashStore::Get()->Update(Store::ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nMergeModePort), &tMerge, sizeof(uint8_t), ArtnetParamsMask::MERGE_MODE_A << nPortIndex);
 
 	DEBUG_EXIT
 }
 
-void StoreArtNet::SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) {
+void StoreArtNet::SavePortProtocol(uint8_t nPortIndex, PortProtocol tPortProtocol) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::MAX_PORTS);
 
 	if (nPortIndex == 0) {
-		SpiFlashStore::Get()->Update(Store::ARTNET, __builtin_offsetof(struct TArtNetParams, nProtocol), &tPortProtocol, sizeof(TPortProtocol), ArtnetParamsMask::PROTOCOL);
+		SpiFlashStore::Get()->Update(Store::ARTNET, __builtin_offsetof(struct TArtNetParams, nProtocol), &tPortProtocol, sizeof(uint8_t), ArtnetParamsMask::PROTOCOL);
 	}
 
-	SpiFlashStore::Get()->Update(Store::ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nProtocolPort), &tPortProtocol, sizeof(TPortProtocol), ArtnetParamsMask::PROTOCOL_A << nPortIndex);
+	SpiFlashStore::Get()->Update(Store::ARTNET, nPortIndex + __builtin_offsetof(struct TArtNetParams, nProtocolPort), &tPortProtocol, sizeof(uint8_t), ArtnetParamsMask::PROTOCOL_A << nPortIndex);
 
 	DEBUG_EXIT
 }

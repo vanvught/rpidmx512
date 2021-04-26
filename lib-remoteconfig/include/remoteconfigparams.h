@@ -39,12 +39,15 @@ struct TRemoteConfigParams {
 	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 } __attribute__((packed));
 
+static_assert(sizeof(struct TRemoteConfigParams) <= 48, "struct TRemoteConfigParams is too large");
+
 struct RemoteConfigParamsMask {
 	static constexpr auto DISABLE = (1U << 0);
 	static constexpr auto DISABLE_WRITE = (1U << 1);
 	static constexpr auto ENABLE_REBOOT = (1U << 2);
 	static constexpr auto ENABLE_UPTIME = (1U << 3);
 	static constexpr auto DISPLAY_NAME = (1U << 4);
+	static constexpr auto ENABLE_FACTORY = (1U << 5);
 };
 
 class RemoteConfigParamsStore {

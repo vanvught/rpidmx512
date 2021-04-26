@@ -2,7 +2,7 @@
  * @file remoteconfigconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@ struct RemoteConfigConst {
 	static const char PARAMS_DISABLE_WRITE[];
 	static const char PARAMS_ENABLE_REBOOT[];
 	static const char PARAMS_ENABLE_UPTIME[];
+	static const char PARAMS_ENABLE_FACTORY[];
 
 	static const char PARAMS_DISPLAY_NAME[];
 

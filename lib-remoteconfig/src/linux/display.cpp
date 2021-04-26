@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  */
 
 #if defined(__clang__)
- #pragma GCC diagnostic ignored "-Wunused-private-field"
+# pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
 #include <stdint.h>
@@ -34,11 +34,10 @@
 
 #include "debug.h"
 
-Display *Display::s_pThis = 0;
+Display *Display::s_pThis = nullptr;
 
 Display::Display()
 #if !defined(NO_HAL)
-	: m_nMillis(0)
 #endif
 {
 	DEBUG_ENTRY
@@ -49,15 +48,7 @@ Display::Display()
 	DEBUG_EXIT
 }
 
-Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused)) uint32_t nRows):
-	m_tType(DisplayType::UNKNOWN),
-	m_LcdDisplay(0),
-	m_bIsSleep(false),
-#if !defined(NO_HAL)
-	m_nMillis(0),
-#endif
-	m_nSleepTimeout(0)
-{
+Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused)) uint32_t nRows) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -66,29 +57,21 @@ Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused))
 	DEBUG_EXIT
 }
 
-Display::Display(__attribute__((unused)) DisplayType tDisplayType):
-	m_nCols(0),
-	m_nRows(0),
-	m_LcdDisplay(0),
-	m_bIsSleep(false),
-#if !defined(NO_HAL)
-	m_nMillis(0),
-#endif
-	m_nSleepTimeout(0)
-{
+Display::Display(__attribute__((unused)) DisplayType tDisplayType) {
 	DEBUG_ENTRY
+
 	assert(s_pThis == 0);
 	s_pThis = this;
 
 	DEBUG_EXIT
 }
 
-Display::~Display(void) {
+Display::~Display() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void Display::Cls(void) {
+void Display::Cls() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
@@ -131,6 +114,6 @@ void Display::SetSleep(__attribute__((unused)) bool bSleep) {
 	DEBUG_EXIT
 }
 
-void Display::Run(void) {
+void Display::Run() {
 }
 #endif

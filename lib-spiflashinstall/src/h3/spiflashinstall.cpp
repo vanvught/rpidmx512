@@ -2,7 +2,7 @@
  * @file spiflashinstall.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,6 @@
 
 #include "hardware.h"
 
-// Temporarily classes. Only needed for the migration to compressed firmware
-#include "compressed.h"
-#include "ledblink.h"
-
 #include "debug.h"
 
 #define OFFSET_UBOOT_SPI	0x000000
@@ -57,19 +53,12 @@ constexpr char aCheckDifference[] = "Check difference";
 constexpr char aNoDifference[] = "No difference";
 constexpr char aDone[] = "Done";
 
-SpiFlashInstall *SpiFlashInstall::s_pThis = 0;
+SpiFlashInstall *SpiFlashInstall::s_pThis = nullptr;
 
-SpiFlashInstall::SpiFlashInstall(void):
-	m_bHaveFlashChip(false),
-	m_nEraseSize(0),
-	m_nFlashSize(0),
-	m_pFileBuffer(0),
-	m_pFlashBuffer(0),
-	m_pFile(0)
-{
+SpiFlashInstall::SpiFlashInstall() {
 	DEBUG_ENTRY
 
-	assert(s_pThis == 0);
+	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	Display::Get()->Cls();
@@ -98,65 +87,16 @@ SpiFlashInstall::SpiFlashInstall(void):
 				m_nEraseSize = spi_flash_get_sector_size();
 
 				m_pFileBuffer = new uint8_t[m_nEraseSize];
-				assert(m_pFileBuffer != 0);
+				assert(m_pFileBuffer != nullptr);
 
 				m_pFlashBuffer = new uint8_t[m_nEraseSize];
-				assert(m_pFlashBuffer != 0);
+				assert(m_pFlashBuffer != nullptr);
 
 				if (params.GetInstalluboot()) {
 					Process(aFileUbootSpi, OFFSET_UBOOT_SPI);
 				}
 
 				if (params.GetInstalluImage()) {
-					// Temporarily code BEGIN
-					const uint32_t code = Compressed::Check(aFileuImage);
-
-					DEBUG_PRINTF("code = %x", code);
-
-					Display::Get()->ClearLine(3);
-					Display::Get()->ClearLine(4);
-
-					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
-						puts("Update UBoot SPI");
-						Display::Get()->Write(3, "Update UBoot SPI");
-					}
-
-					if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
-						puts("uImage is compressed");
-						Display::Get()->Write(4, "uImage is compressed");
-					}
-
-					if ((code & CHECK_CODE_UIMAGE_TOO_BIG) == CHECK_CODE_UIMAGE_TOO_BIG) {
-						puts("uImage too big");
-						Display::Get()->Write(2, "uImage too big");
-						Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
-						LedBlink::Get()->SetMode(ledblink::Mode::FAST);
-						for (;;) {
-							LedBlink::Get()->Run();
-						}
-					}
-
-					if ((code & CHECK_CODE_SPI_UPDATE_NEEDED) == CHECK_CODE_SPI_UPDATE_NEEDED) {
-						Display::Get()->TextStatus("Update UBoot SPI", Display7SegmentMessage::INFO_SPI_UPDATE);
-						LedBlink::Get()->SetMode(ledblink::Mode::FAST);
-						const uint32_t now = Hardware::Get()->Millis();
-
-						while ((Hardware::Get()->Millis() - now) < 3000) {
-							LedBlink::Get()->Run();
-						}
-
-						if ((code & CHECK_CODE_UIMAGE_COMPRESSED) == CHECK_CODE_UIMAGE_COMPRESSED) {
-							Display::Get()->TextStatus("Halted!", Display7SegmentMessage::ERROR_SPI);
-							LedBlink::Get()->SetMode(ledblink::Mode::FAST);
-							for (;;) {
-								LedBlink::Get()->Run();
-							}
-						}
-
-					}
-					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-					// Temporarily code END
-
 					Process(aFileuImage, OFFSET_UIMAGE);
 				}
 			}
@@ -166,14 +106,14 @@ SpiFlashInstall::SpiFlashInstall(void):
 	DEBUG_EXIT
 }
 
-SpiFlashInstall::~SpiFlashInstall(void) {
+SpiFlashInstall::~SpiFlashInstall() {
 	DEBUG_ENTRY
 
-	if (m_pFileBuffer != 0) {
+	if (m_pFileBuffer != nullptr) {
 		delete[] m_pFileBuffer;
 	}
 
-	if (m_pFlashBuffer != 0) {
+	if (m_pFlashBuffer != nullptr) {
 		delete[] m_pFlashBuffer;
 	}
 
@@ -200,12 +140,12 @@ void SpiFlashInstall::Process(const char *pFileName, uint32_t nOffset) {
 bool SpiFlashInstall::Open(const char* pFileName) {
 	DEBUG_ENTRY
 
-	assert(pFileName != 0);
-	assert(m_pFile == 0);
+	assert(pFileName != nullptr);
+	assert(m_pFile == nullptr);
 
 	m_pFile = fopen(pFileName, "r");
 
-	if (m_pFile == NULL) {
+	if (m_pFile == nullptr) {
 		printf("Could not open file: %s\n", pFileName);
 		DEBUG_EXIT
 		return false;
@@ -219,11 +159,11 @@ bool SpiFlashInstall::Open(const char* pFileName) {
 	return true;
 }
 
-void SpiFlashInstall::Close(void) {
+void SpiFlashInstall::Close() {
 	DEBUG_ENTRY
 
 	static_cast<void>(fclose(m_pFile));
-	m_pFile = 0;
+	m_pFile = nullptr;
 
 	Display::Get()->TextStatus(aDone, Display7SegmentMessage::INFO_SPI_DONE);
 	puts(aDone);
@@ -250,8 +190,8 @@ bool SpiFlashInstall::BuffersCompare(uint32_t nSize) {
 		nSize -= 4;
 	}
 
-	const uint8_t *pSrc8 = reinterpret_cast<const uint8_t*>(pSrc32);
-	const uint8_t *pDst8 = reinterpret_cast<const uint8_t*>(pDst32);
+	const auto *pSrc8 = reinterpret_cast<const uint8_t*>(pSrc32);
+	const auto *pDst8 = reinterpret_cast<const uint8_t*>(pDst32);
 
 	while (nSize--) {
 		if (*pSrc8++ != *pDst8++) {
@@ -267,10 +207,10 @@ bool SpiFlashInstall::BuffersCompare(uint32_t nSize) {
 bool SpiFlashInstall::Diff(uint32_t nOffset) {
 	DEBUG_ENTRY
 
-	assert(m_pFile != 0);
+	assert(m_pFile != nullptr);
 	assert(nOffset < m_nFlashSize);
-	assert(m_pFileBuffer != 0);
-	assert(m_pFlashBuffer != 0);
+	assert(m_pFileBuffer != nullptr);
+	assert(m_pFlashBuffer != nullptr);
 
 	if (fseek(m_pFile, 0L, SEEK_SET) != 0) {
 		DEBUG_EXIT
@@ -299,9 +239,9 @@ bool SpiFlashInstall::Diff(uint32_t nOffset) {
 void SpiFlashInstall::Write(uint32_t nOffset) {
 	DEBUG_ENTRY
 
-	assert(m_pFile != 0);
+	assert(m_pFile != nullptr);
 	assert(nOffset < m_nFlashSize);
-	assert(m_pFileBuffer != 0);
+	assert(m_pFileBuffer != nullptr);
 
 	bool bSuccess __attribute__((unused)) = false;
 
@@ -311,7 +251,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 	static_cast<void>(fseek(m_pFile, 0L, SEEK_SET));
 
 	while (n_Address < m_nFlashSize) {
-		const size_t nBytes = fread(m_pFileBuffer, sizeof(uint8_t), m_nEraseSize, m_pFile);
+		const auto nBytes = fread(m_pFileBuffer, sizeof(uint8_t), m_nEraseSize, m_pFile);
 		nTotalBytes += nBytes;
 
 		if (spi_flash_cmd_erase(n_Address, m_nEraseSize) < 0) {
@@ -362,7 +302,7 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 	DEBUG_ENTRY
 
-	assert(pBuffer != 0);
+	assert(pBuffer != nullptr);
 	DEBUG_PRINTF("(%d + %d)=%d, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
 
 	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
@@ -371,7 +311,7 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 		return false;
 	}
 
-	const bool bWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bWatchdog = Hardware::Get()->IsWatchdog();
 
 	if (bWatchdog) {
 		Hardware::Get()->WatchdogStop();
@@ -379,7 +319,7 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 
 	puts("Write firmware");
 
-	const uint32_t nSectorSize = spi_flash_get_sector_size();
+	const auto nSectorSize = spi_flash_get_sector_size();
 	const uint32_t nEraseSize = (nSize + nSectorSize - 1) & ~(nSectorSize - 1);
 
 	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);

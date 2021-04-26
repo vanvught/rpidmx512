@@ -2,7 +2,7 @@
  * @file spiflashinstall.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,10 @@ public:
 
 	bool WriteFirmware(const uint8_t *pBuffer, uint32_t nSize);
 
+	static SpiFlashInstall* Get() {
+		return s_pThis;
+	}
+
 private:
 	bool Open(const char *pFileName);
 	void Close();
@@ -44,21 +48,15 @@ private:
 	void Write(uint32_t nOffset);
 	void Process(const char *pFileName, uint32_t nOffset);
 
-public:
-	static SpiFlashInstall* Get() {
-		return s_pThis;
-	}
-
 private:
+	bool m_bHaveFlashChip { false };
+	uint32_t m_nEraseSize { 0 };
+	uint32_t m_nFlashSize { 0 };
+	uint8_t *m_pFileBuffer { nullptr };
+	uint8_t *m_pFlashBuffer { nullptr };
+	FILE *m_pFile { nullptr };
+
 	static SpiFlashInstall *s_pThis;
-
-private:
-	bool m_bHaveFlashChip;
-	uint32_t m_nEraseSize;
-	uint32_t m_nFlashSize;
-	alignas(uintptr_t) uint8_t *m_pFileBuffer;
-	alignas(uintptr_t) uint8_t *m_pFlashBuffer;
-	FILE *m_pFile;
 };
 
 #endif /* SPIFLASHINSTALL_H_ */

@@ -33,15 +33,10 @@
 
 #include "debug.h"
 
-SpiFlashInstall *SpiFlashInstall::s_pThis = 0;
+SpiFlashInstall *SpiFlashInstall::s_pThis = nullptr;
 
-SpiFlashInstall::SpiFlashInstall(void):
-	m_bHaveFlashChip(false),
-	m_nEraseSize(0),
-	m_nFlashSize(0),
-	m_pFileBuffer(0),
-	m_pFlashBuffer(0),
-	m_pFile(0)
+SpiFlashInstall::SpiFlashInstall()
+	
 {
 	DEBUG_ENTRY
 	assert(s_pThis == 0);
@@ -50,7 +45,7 @@ SpiFlashInstall::SpiFlashInstall(void):
 	DEBUG_EXIT
 }
 
-SpiFlashInstall::~SpiFlashInstall(void) {
+SpiFlashInstall::~SpiFlashInstall() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
@@ -66,7 +61,7 @@ bool SpiFlashInstall::Open(__attribute__((unused)) const char* pFileName) {
 	return false;
 }
 
-void SpiFlashInstall::Close(void) {
+void SpiFlashInstall::Close() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -153,6 +153,13 @@ public:
 
 	void SetDisplayName(const char *pDisplayName);
 
+	void SetEnableFactory(bool bEnableFactory) {
+		m_bEnableFactory = bEnableFactory;
+	}
+	bool GetEnableFactory() const {
+		return m_bEnableFactory;
+	}
+
 	bool IsReboot() const {
 		return m_bIsReboot;
 	}
@@ -176,6 +183,7 @@ public:
 
 private:
 	void HandleReboot();
+	void HandleFactory();
 
 	void HandleList();
 	void HandleUptime();
@@ -318,23 +326,24 @@ private:
 	remoteconfig::Node m_tNode;
 	remoteconfig::Output m_tOutput;
 	uint32_t m_nOutputs;
-	bool m_bDisable{false};
-	bool m_bDisableWrite{false};
-	bool m_bEnableReboot{false};
-	bool m_bEnableUptime{false};
-	bool m_bEnableTFTP{false};
-	TFTPFileServer *m_pTFTPFileServer{nullptr};
-	uint8_t *m_pTFTPBuffer{nullptr};
+	bool m_bDisable { false };
+	bool m_bDisableWrite { false };
+	bool m_bEnableReboot { false };
+	bool m_bEnableUptime { false };
+	bool m_bEnableTFTP { false };
+	bool m_bEnableFactory { false };
+	TFTPFileServer *m_pTFTPFileServer { nullptr };
+	uint8_t *m_pTFTPBuffer { nullptr };
 	char m_aId[remoteconfig::ID_LENGTH];
-	int32_t m_nIdLength{0};
+	int32_t m_nIdLength { 0 };
 	struct remoteconfig::ListBin m_tRemoteConfigListBin;
-	int32_t m_nHandle{-1};
-	char *m_pUdpBuffer{nullptr};
-	uint32_t m_nIPAddressFrom{0};
-	uint16_t m_nBytesReceived{0};
-	remoteconfig::HandleMode m_tHandleMode{remoteconfig::HandleMode::TXT};
-	uint8_t *m_pStoreBuffer{nullptr};
-	bool m_bIsReboot{false};
+	int32_t m_nHandle { -1 };
+	char *m_pUdpBuffer { nullptr };
+	uint32_t m_nIPAddressFrom { 0 };
+	uint16_t m_nBytesReceived { 0 };
+	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
+	uint8_t *m_pStoreBuffer { nullptr };
+	bool m_bIsReboot { false };
 
 	static RemoteConfig *s_pThis;
 };

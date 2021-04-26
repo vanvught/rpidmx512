@@ -2,7 +2,7 @@
  * @file display7segment.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,9 @@
 
 #include "debug.h"
 
-Display7Segment *Display7Segment::s_pThis = 0;
+Display7Segment *Display7Segment::s_pThis = nullptr;
 
-Display7Segment::Display7Segment(void): m_I2C(0,0) {
+Display7Segment::Display7Segment(): m_I2C(0,0) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -42,12 +42,10 @@ Display7Segment::Display7Segment(void): m_I2C(0,0) {
 
 void Display7Segment::Status(__attribute__((unused)) Display7SegmentMessage msg) {
 	DEBUG_ENTRY
-
 	DEBUG_EXIT
 }
 
 void Display7Segment::Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {
 	DEBUG_ENTRY
-
 	DEBUG_EXIT
 }

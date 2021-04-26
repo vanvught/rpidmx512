@@ -2,7 +2,7 @@
  * @file storews28xxdmx.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define STOREWS28XXDMX_H_
 
 #include <stdint.h>
+#include <cassert>
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxstore.h"

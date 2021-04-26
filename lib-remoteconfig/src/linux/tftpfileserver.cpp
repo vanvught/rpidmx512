@@ -24,33 +24,22 @@
  */
 
 #if defined(__clang__)
- #pragma GCC diagnostic ignored "-Wunused-private-field"
+# pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
 #include "tftpfileserver.h"
 
 #include "debug.h"
 
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize):
-		m_pBuffer(pBuffer),
-		m_nSize(nSize),
-		m_nFileSize(0),
-		m_bDone(false)
-{
+TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-TFTPFileServer::~TFTPFileServer(void) {
+void TFTPFileServer::Exit() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
-
-void TFTPFileServer::Exit(void) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
 
 bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_ENTRY
@@ -64,7 +53,7 @@ bool TFTPFileServer::FileCreate(__attribute__((unused)) const char* pFileName, _
 	return false;
 }
 
-bool TFTPFileServer::FileClose(void) {
+bool TFTPFileServer::FileClose() {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 	return false;

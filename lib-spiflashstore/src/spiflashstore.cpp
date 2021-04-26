@@ -2,7 +2,7 @@
  * @file spiflashstore.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,8 +68,7 @@ SpiFlashStore::SpiFlashStore() {
 			m_nSpiFlashStoreSize += s_aStorSize[j];
 		}
 
-		DEBUG_PRINTF("OFFSET_STORES=%d", static_cast<int>(OFFSET_STORES));
-		DEBUG_PRINTF("m_nSpiFlashStoreSize=%d", m_nSpiFlashStoreSize);
+		DEBUG_PRINTF("OFFSET_STORES=%d, m_nSpiFlashStoreSize=%d", static_cast<int>(OFFSET_STORES), m_nSpiFlashStoreSize);
 
 		assert(m_nSpiFlashStoreSize <= FlashStore::SIZE);
 
@@ -89,7 +88,7 @@ SpiFlashStore::~SpiFlashStore() {
 }
 
 bool SpiFlashStore::Init() {
-	const uint32_t nEraseSize = spi_flash_get_sector_size();
+	const auto nEraseSize = spi_flash_get_sector_size();
 	assert(FlashStore::SIZE == nEraseSize);
 
 	if (FlashStore::SIZE != nEraseSize) {
@@ -121,8 +120,8 @@ bool SpiFlashStore::Init() {
 
 		// Clear nSetList
 		for (uint32_t j = 0; j < static_cast<uint32_t>(Store::LAST); j++) {
-			const uint32_t nOffset = GetStoreOffset(static_cast<Store>(j));
-			uint32_t k = nOffset;
+			const auto nOffset = GetStoreOffset(static_cast<Store>(j));
+			auto k = nOffset;
 			m_aSpiFlashData[k++] = 0x00;
 			m_aSpiFlashData[k++] = 0x00;
 			m_aSpiFlashData[k++] = 0x00;
@@ -173,7 +172,7 @@ uint32_t SpiFlashStore::GetStoreOffset(Store tStore) {
 void SpiFlashStore::ResetSetList(Store tStore) {
 	assert(tStore < Store::LAST);
 
-	uint8_t *pbSetList = &m_aSpiFlashData[GetStoreOffset(tStore)];
+	auto *pbSetList = &m_aSpiFlashData[GetStoreOffset(tStore)];
 
 	// Clear bSetList
 	*pbSetList++ = 0x00;
@@ -199,9 +198,9 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 
 	debug_dump(const_cast<void*>(pData), nDataLength);
 
-	bool bIsChanged = false;
+	auto bIsChanged = false;
 
-	const uint32_t nBase = nOffset + GetStoreOffset(tStore);
+	const auto nBase = nOffset + GetStoreOffset(tStore);
 
 	const auto *pSrc = static_cast<const uint8_t*>(pData);
 	auto *pDst = &m_aSpiFlashData[nBase];
@@ -310,9 +309,7 @@ bool SpiFlashStore::Flash() {
 			break;
 	}
 
-#ifndef NDEBUG
 	Dump();
-#endif
 
 	return false;
 }

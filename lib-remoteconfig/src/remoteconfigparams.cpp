@@ -112,6 +112,11 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, RemoteConfigConst::PARAMS_ENABLE_FACTORY, nValue8) == Sscan::OK) {
+		SetBool(nValue8, RemoteConfigParamsMask::ENABLE_FACTORY);
+		return;
+	}
+
 	uint32_t nLength = remoteconfig::DISPLAY_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, nLength) == Sscan::OK) {
 		m_tRemoteConfigParams.aDisplayName[nLength] = '\0';
@@ -137,6 +142,7 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	builder.Add(RemoteConfigConst::PARAMS_DISABLE_WRITE, isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE));
 	builder.Add(RemoteConfigConst::PARAMS_ENABLE_REBOOT, isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT));
 	builder.Add(RemoteConfigConst::PARAMS_ENABLE_UPTIME, isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
+	builder.Add(RemoteConfigConst::PARAMS_ENABLE_FACTORY, isMaskSet(RemoteConfigParamsMask::ENABLE_FACTORY));
 
 	builder.Add(RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName, isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME));
 
@@ -181,6 +187,10 @@ void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {
 
 	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {
 		pRemoteConfig->SetDisplayName(m_tRemoteConfigParams.aDisplayName);
+	}
+
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_FACTORY)) {
+		pRemoteConfig->SetEnableFactory(true);
 	}
 }
 

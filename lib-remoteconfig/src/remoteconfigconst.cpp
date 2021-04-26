@@ -2,7 +2,7 @@
  * @file remoteconfigconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@ const char RemoteConfigConst::PARAMS_DISABLE[] = "disable";
 const char RemoteConfigConst::PARAMS_DISABLE_WRITE[] = "disable_write";
 const char RemoteConfigConst::PARAMS_ENABLE_REBOOT[] = "enable_reboot";
 const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
+const char RemoteConfigConst::PARAMS_ENABLE_FACTORY[] = "enable_factory";
 
 const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";
 

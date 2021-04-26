@@ -2,7 +2,7 @@
  * @file tftpfileserver.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 class TFTPFileServer final: public TFTPDaemon {
 public:
 	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer () override;
+	~TFTPFileServer () override {}
 
 	bool FileOpen (const char *pFileName, TFTPMode tMode) override;
 	bool FileCreate (const char *pFileName, TFTPMode tMode) override;
@@ -52,10 +52,9 @@ public:
 	}
 
 private:
-	uint8_t* m_pBuffer;
+	uint8_t *m_pBuffer;
 	uint32_t m_nSize;
-	uint32_t m_nFileSize;
-	bool m_bIsCompressedSupported;
+	uint32_t m_nFileSize { 0 };
 	bool m_bDone;
 };
 

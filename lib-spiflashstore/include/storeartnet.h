@@ -2,7 +2,7 @@
  * @file storeartnet.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,8 +41,8 @@ public:
 	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) override;
 	void SaveNetSwitch(uint8_t nAddress) override;
 	void SaveSubnetSwitch(uint8_t nAddress) override;
-	void SaveMergeMode(uint8_t nPortIndex, ArtNetMerge tMerge) override;
-	void SavePortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol) override;
+	void SaveMergeMode(uint8_t nPortIndex, artnet::Merge tMerge) override;
+	void SavePortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
 
 	static StoreArtNet *Get() {
 		return s_pThis;

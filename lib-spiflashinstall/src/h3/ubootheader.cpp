@@ -62,7 +62,7 @@ enum TImageHeaderCompression {
 UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false) {
 	assert(pHeader != nullptr);
 
-	TImageHeader *pImageHeader = reinterpret_cast<TImageHeader*>(pHeader);
+	auto *pImageHeader = reinterpret_cast<TImageHeader*>(pHeader);
 
 	m_bIsValid =  (pImageHeader->ih_magic == __builtin_bswap32(IH_MAGIC));
 	m_bIsValid &= (pImageHeader->ih_load == __builtin_bswap32(IH_LOAD));
@@ -85,7 +85,7 @@ void UBootHeader::Dump() {
 		printf("* Not a valid header! *\n");
 	}
 
-	TImageHeader *pImageHeader = reinterpret_cast<TImageHeader*>(m_pHeader);
+	auto *pImageHeader = reinterpret_cast<TImageHeader*>(m_pHeader);
 	const time_t rawtime = __builtin_bswap32(pImageHeader->ih_time);
 	struct tm *info = localtime(&rawtime);
 

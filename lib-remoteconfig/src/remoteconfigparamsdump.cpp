@@ -58,5 +58,9 @@ void RemoteConfigParams::Dump() {
 	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {
 		printf(" %s=%s\n", RemoteConfigConst::PARAMS_DISPLAY_NAME, m_tRemoteConfigParams.aDisplayName);
 	}
+
+	if (isMaskSet(RemoteConfigParamsMask::ENABLE_FACTORY)) {
+		printf(" %s=1 [Yes]\n", RemoteConfigConst::PARAMS_ENABLE_FACTORY);
+	}
 #endif
 }

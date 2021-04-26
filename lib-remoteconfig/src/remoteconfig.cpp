@@ -182,6 +182,7 @@ static constexpr char VERSION[] = "?version#";
 static constexpr char STORE[] = "?store#";
 static constexpr char DISPLAY[] = "?display#";
 static constexpr char TFTP[] = "?tftp#";
+static constexpr char FACTORY[] = "?factory##";
 namespace length {
 static constexpr auto REBOOT = sizeof(cmd::get::REBOOT) - 1;
 static constexpr auto LIST = sizeof(cmd::get::LIST) - 1;
@@ -191,6 +192,7 @@ static constexpr auto VERSION = sizeof(cmd::get::VERSION) - 1;
 static constexpr auto STORE = sizeof(cmd::get::STORE) - 1;
 static constexpr auto DISPLAY = sizeof(cmd::get::DISPLAY) - 1;
 static constexpr auto TFTP = sizeof(cmd::get::TFTP) - 1;
+static constexpr auto FACTORY = sizeof(cmd::get::FACTORY) - 1;
 }  // namespace length
 }  // namespace get
 
@@ -354,6 +356,11 @@ void RemoteConfig::Run() {
 
 		if ((m_nBytesReceived >= udp::cmd::get::length::TFTP) && (memcmp(m_pUdpBuffer, udp::cmd::get::TFTP, udp::cmd::get::length::TFTP) == 0)) {
 			HandleTftpGet();
+			return;
+		}
+
+		if (m_bEnableFactory && (memcmp(m_pUdpBuffer, udp::cmd::get::FACTORY, udp::cmd::get::length::FACTORY) == 0)) {
+			HandleFactory();
 			return;
 		}
 

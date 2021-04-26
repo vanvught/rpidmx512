@@ -1,8 +1,8 @@
 /**
- * @file compressed.h
+ * @file remoteconfigfactory.cpp
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef COMPRESSED_H_
-#define COMPRESSED_H_
+#include "remoteconfig.h"
 
-/**
- * This is a temporarily class until everyone is using compressed firmware
- */
+#include "spiflashstore.h"
 
-#include <stdint.h>
+#include "debug.h"
 
-enum TCheckCodes {
-	CHECK_CODE_OK = 0,
-	CHECK_CODE_CHECK_ERROR = (1 << 0),
-	CHECK_CODE_UIMAGE_TOO_BIG = (1 << 1),
-	CHECK_CODE_INVALID_HEADER = (1 << 2),
-	CHECK_CODE_SPI_UPDATE_NEEDED = (1 << 3),
-	CHECK_CODE_UIMAGE_COMPRESSED = (1 << 4)
-};
+void RemoteConfig::HandleFactory() {
+	DEBUG_ENTRY
 
-class Compressed {
-public:
-	static uint32_t Check(const char *pFilename);
-	static bool IsSupported();
+	for (uint32_t i = 0; i < static_cast<uint32_t>(spiflashstore::Store::LAST); i++) {
+		SpiFlashStore::Get()->ResetSetList(static_cast<spiflashstore::Store>(i));
+	}
 
-private:
-	static int32_t GetFileSize(const char *pFilename);
-	static char *Find(const char *pBuffer, uint32_t nBufferLength, const char *pFind, uint32_t nFindLength);
-};
-
-#endif /* COMPRESSED_H_ */
+	DEBUG_EXIT
+}
