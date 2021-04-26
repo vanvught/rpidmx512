@@ -70,6 +70,9 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
+LIBSDEP=$(addsuffix /lib_linux/lib, $(LIBDEP))
+LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
+LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
 COPS=$(DEFINES) #-DNDEBUG
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
@@ -112,35 +115,41 @@ endef
 
 THISDIR = $(CURDIR)
 
-all : builddirs prerequisites $(TARGET)
+all : clearlibs builddirs prerequisites $(TARGET)
 	
 .PHONY: clean builddirs
+
+clearlibs:
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-remoteconfig
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-spiflashstore
+ifeq ($(findstring RDMNET_LLRP_ONLY,$(DEFINES)),RDMNET_LLRP_ONLY)
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdm
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdmsensor
+	$(MAKE) -f Makefile.Linux clean --directory=../lib-rdmsubdevice
+endif		
 
 builddirs:
 	@mkdir -p $(BUILD_DIRS)
 	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
 
-clean: $(LIBDEP)
+clean:
 	rm -rf $(BUILD)
 	rm -f $(TARGET)
-	
-#
-# Libraries
-#
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.Linux clean --directory=$$d;       \
+		done
 
-.PHONY: libdep $(LIBDEP)
-
-lisdep: $(LIBDEP)
-
-$(LIBDEP):
-	$(MAKE) -f Makefile.Linux $(MAKECMDGOALS) 'MAKE_FLAGS=$(DEFINES)' -C $@ 
-
-# Build uImage
+$(LIBSDEP):
+	for d in $(LIBDEP); \
+		do                               \
+			$(MAKE) -f Makefile.Linux 'MAKE_FLAGS=$(DEFINES)' --directory=$$d;       \
+		done
 
 $(BUILD_DIRS) :
 	mkdir -p $(BUILD_DIRS)
 		
-$(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
+$(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBSDEP)
 	$(info $$TARGET [${TARGET}])
 	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst

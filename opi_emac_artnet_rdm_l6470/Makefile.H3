@@ -1,7 +1,7 @@
 #
 DEFINES = NODE_ARTNET RDM_RESPONDER OUTPUT_STEPPER DISPLAY_UDF NDEBUG
 #
-LIBS = rdmresponder l6470dmx l6470 tlc59711dmx tlc59711
+LIBS = rdmresponder rdm rdmsensor rdmsubdevice l6470dmx l6470 tlc59711dmx tlc59711
 #
 SRCDIR = firmware lib
 

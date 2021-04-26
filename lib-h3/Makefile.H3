@@ -1,20 +1,8 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_SRCDIR = arm arm/aeabi device/mmc
+EXTRA_SRCDIR = arm arm/aeabi device/mmc device/emac device/fb net
 #
-EXTRA_INCLUDES =
-#
-ifneq ($(MAKE_FLAGS),)
-	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR += device/fb	
-	endif
-	ifneq (,$(findstring NO_EMAC,$(NO_EMAC)))
-	else
-		EXTRA_SRCDIR += device/emac net
-	endif
-else
-	EXTRA_SRCDIR += device/fb device/emac net
-endif
+EXTRA_INCLUDES = ../lib-ff12c/src
 #
 include ../h3-firmware-template/lib/Rules.mk

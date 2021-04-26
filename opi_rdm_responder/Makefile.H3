@@ -2,7 +2,7 @@ PLATFORM = ORANGE_PI
 #
 DEFINES = NO_EMAC RDM_RESPONDER OUTPUT_PIXEL NDEBUG
 #
-LIBS = dmxreceiver rdmresponder dmx 
+LIBS = dmxreceiver rdmresponder rdm dmx rdmsensor rdmsubdevice 
 #
 SRCDIR = firmware lib
 
