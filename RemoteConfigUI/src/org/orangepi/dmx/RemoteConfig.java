@@ -996,15 +996,6 @@ public class RemoteConfig extends JFrame {
 			}
 		}
 
-		/*
-		 * h.add(new OrangePi("192.168.2.150,Art-Net,Pixel,4", localAddress,
-		 * socketReceive)); h.add(new OrangePi("192.168.2.151,Art-Net,Pixel,4",
-		 * localAddress, socketReceive)); h.add(new
-		 * OrangePi("192.168.2.152,Art-Net,Pixel,2", localAddress, socketReceive));
-		 * h.add(new OrangePi("192.168.2.153,Art-Net,Pixel,2", localAddress,
-		 * socketReceive));
-		 */
-
 		if (!treeMap.isEmpty()) {
 			textArea.setText("");
 

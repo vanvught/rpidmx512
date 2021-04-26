@@ -114,6 +114,10 @@ public:
 		return m_tNetworkParams.nNetmask;
 	}
 
+	uint32_t GetDefaultGateway() const {
+		return m_tNetworkParams.nGatewayIp;
+	}
+
 	const char *GetHostName() const {
 		return m_tNetworkParams.aHostName;
 	}
@@ -133,10 +137,6 @@ public:
 	}
 
 #if defined (ESP8266)
-	uint32_t GetDefaultGateway() const {
-		return m_tNetworkParams.nGatewayIp;
-	}
-
 	uint32_t GetNameServer() const {
 		return m_tNetworkParams.nNameServerIp;
 	}

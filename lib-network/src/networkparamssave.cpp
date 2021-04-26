@@ -62,6 +62,10 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 		m_tNetworkParams.nNetmask = Network::Get()->GetNetmask();
 	}
 
+	if (!isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY)) {
+		m_tNetworkParams.nGatewayIp = Network::Get()->GetGatewayIp();
+	}
+
 	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
 		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);
 		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
@@ -73,8 +77,8 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	builder.AddComment("Static IP");
 	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NetworkParamsMask::IP_ADDRESS));
 	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NetworkParamsMask::NET_MASK));
-#if defined(ESP8266)
 	builder.AddIpAddress(NetworkParamsConst::DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY));
+#if defined(ESP8266)
 	builder.AddIpAddress(NetworkParamsConst::NAME_SERVER, m_tNetworkParams.nNameServerIp, isMaskSet(NetworkParamsMask::NAME_SERVER));
 #endif
 	builder.Add(NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
@@ -82,9 +86,6 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NetworkParamsMask::NTP_SERVER));
 	builder.Add(NetworkParamsConst::NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET));
-
-//	builder.AddComment("PTP Client");
-//	builder.Add(NetworkParamsConst::PTP_ENABLE, m_tNetworkParams.nPtpEnable, isMaskSet(NetworkParamsMask::PTP_ENABLE));
 
 	nSize = builder.GetSize();
 

@@ -274,7 +274,7 @@ void NetworkLinux::SetIp(__attribute__((unused)) uint32_t nIp) {
 	}
 
     struct ifreq ifr;
-    struct sockaddr_in* addr = (struct sockaddr_in*)&ifr.ifr_addr;
+    auto* addr = (struct sockaddr_in*)&ifr.ifr_addr;
     int fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 
     if (fd == -1) {

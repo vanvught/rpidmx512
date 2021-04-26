@@ -34,13 +34,13 @@ struct NetworkParamsConst {
 
 	static const char IP_ADDRESS[];
 	static const char NET_MASK[];
+	static const char DEFAULT_GATEWAY[];
 	static const char HOSTNAME[];
 
 	static const char NTP_SERVER[];
 	static const char NTP_UTC_OFFSET[];
 
 #if defined (ESP8266)
-	static const char DEFAULT_GATEWAY[];
 	static const char NAME_SERVER[];
 
 	static const char SSID[];

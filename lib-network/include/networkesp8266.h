@@ -71,8 +71,8 @@ typedef enum wifiphy_phy_mode {
 
 class NetworkESP8266 final : public Network {
 public:
-	NetworkESP8266(void);
-	~NetworkESP8266(void);
+	NetworkESP8266();
+	~NetworkESP8266();
 
 	void Init();
 
@@ -89,7 +89,7 @@ public:
 	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) override ;
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) override ;
 
-	void Print(void) {
+	void Print() {
 	}
 
 	_wifi_mode GetOpmode() const {

@@ -32,13 +32,13 @@ const char NetworkParamsConst::DHCP_RETRY_TIME[] = "dhcp_retry_time";
 
 const char NetworkParamsConst::IP_ADDRESS[] = "ip_address";
 const char NetworkParamsConst::NET_MASK[] = "net_mask";
+const char NetworkParamsConst::DEFAULT_GATEWAY[] = "default_gateway";
 const char NetworkParamsConst::HOSTNAME[] = "hostname";
 
 const char NetworkParamsConst::NTP_SERVER[] = "ntp_server";
 const char NetworkParamsConst::NTP_UTC_OFFSET[] = "ntp_utc_offset";
 
 #if defined (ESP8266)
- const char NetworkParamsConst::DEFAULT_GATEWAY[] = "default_gateway";
  const char NetworkParamsConst::NAME_SERVER[] = "name_server";
 
  const char NetworkParamsConst::SSID[] = "ssid";

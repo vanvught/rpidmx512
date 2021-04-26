@@ -123,6 +123,12 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::IpAddress(pLine, NetworkParamsConst::DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
+		m_tNetworkParams.nGatewayIp = nValue32;
+		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
+		return;
+	}
+
 	uint32_t nLength = NETWORK_HOSTNAME_SIZE - 1;
 	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
@@ -154,13 +160,9 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-#if defined (ESP8266)
-	if (Sscan::IpAddress(pLine, NetworkParamsConst::DEFAULT_GATEWAY, nValue32) == Sscan::OK) {
-		m_tNetworkParams.nGatewayIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::DEFAULT_GATEWAY;
-		return;
-	}
 
+
+#if defined (ESP8266)
 	if (Sscan::IpAddress(pLine,  NetworkParamsConst::NAME_SERVER, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNameServerIp = nValue32;
 		m_tNetworkParams.nSetList |= NetworkParamsMask::NAME_SERVER;

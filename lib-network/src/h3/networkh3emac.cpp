@@ -80,7 +80,7 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
-//	tIpInfo.gw.addr = params.GetDefaultGateway();
+	tIpInfo.gw.addr = params.GetDefaultGateway();
 
 	m_IsDhcpUsed = params.isDhcpUsed();
 	m_nNtpServerIp = params.GetNtpServer();
