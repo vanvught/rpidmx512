@@ -140,7 +140,7 @@ inline static void gic_set_priority(H3_IRQn_TypeDef IRQn, uint32_t priority) {
 /**
  * https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/Core_A/Source/irq_ctrl_gic.c#L239
  */
-inline static uint32_t gic_get_active_fiq(void) {
+inline static uint32_t gic_get_active_fiq() {
 	/* Dummy read to avoid GIC 390 errata 801120 */
 	(void) H3_GIC_CPUIF->HPPI;
 

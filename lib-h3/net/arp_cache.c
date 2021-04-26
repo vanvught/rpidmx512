@@ -2,7 +2,7 @@
  * @file arp_cache.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,7 +51,6 @@ typedef union pcast32 {
 
 static struct t_arp_record s_arp_records[MAX_RECORDS] ALIGNED;
 static uint16_t s_entry_current;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN] = {0x01, 0x00, 0x5E}; // Fixed part
 
 #ifndef NDEBUG
  #define TICKER_COUNT 100	///< 10 seconds
@@ -98,20 +97,6 @@ void arp_cache_update(uint8_t *mac_address, uint32_t ip) {
 
 uint32_t arp_cache_lookup(uint32_t ip, uint8_t *mac_address) {
 	DEBUG2_ENTRY
-
-	if ((ip & 0xE0) == 0xE0) { // Multicast, we know the MAC Address
-		_pcast32 multicast_ip;
-
-		multicast_ip.u32 = ip;
-
-		s_multicast_mac[3] = multicast_ip.u8[1] & 0x7F;
-		s_multicast_mac[4] = multicast_ip.u8[2];
-		s_multicast_mac[5] = multicast_ip.u8[3];
-
-		memcpy(mac_address, s_multicast_mac, ETH_ADDR_LEN);
-		return ip;
-	}
-
 	DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(ip), MAC2STR(mac_address));
 
 	uint16_t i;

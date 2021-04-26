@@ -2,7 +2,7 @@
  * @file udp.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -80,6 +80,9 @@ static struct queue s_recv_queue[MAX_PORTS_ALLOWED] ALIGNED;
 static struct t_udp s_send_packet ALIGNED;
 static uint16_t s_id ALIGNED;
 static uint32_t broadcast_mask;
+static uint32_t on_network_mask;
+static uint32_t gw_ip;
+static uint8_t s_multicast_mac[ETH_ADDR_LEN] = {0x01, 0x00, 0x5E}; // Fixed part
 
 void udp_set_ip(const struct ip_info *p_ip_info) {
 	_pcast32 src;
@@ -87,6 +90,8 @@ void udp_set_ip(const struct ip_info *p_ip_info) {
 	src.u32 = p_ip_info->ip.addr;
 	memcpy(s_send_packet.ip4.src, src.u8, IPv4_ADDR_LEN);
 	broadcast_mask = ~(p_ip_info->netmask.addr);
+	on_network_mask = p_ip_info->ip.addr & p_ip_info->netmask.addr;
+	gw_ip = p_ip_info->gw.addr;
 }
 
 void __attribute__((cold)) udp_init(const uint8_t *mac_address, const struct ip_info  *p_ip_info) {
@@ -254,12 +259,37 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 		dst.u32 = to_ip;
 		memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 	} else {
-		if (to_ip == arp_cache_lookup(to_ip, s_send_packet.ether.dst)) {
+		if ((to_ip & 0xE0) == 0xE0) { // Multicast, we know the MAC Address
+			_pcast32 multicast_ip;
+
+			multicast_ip.u32 = to_ip;
+
+			s_multicast_mac[3] = multicast_ip.u8[1] & 0x7F;
+			s_multicast_mac[4] = multicast_ip.u8[2];
+			s_multicast_mac[5] = multicast_ip.u8[3];
+
+			memcpy(s_send_packet.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
+
 			dst.u32 = to_ip;
 			memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 		} else {
-			DEBUG_PUTS("ARP lookup failed");
-			return -2;
+			if  (__builtin_expect((on_network_mask != (to_ip & on_network_mask)), 0)) {
+				if (gw_ip == arp_cache_lookup(gw_ip, s_send_packet.ether.dst)) {
+					dst.u32 = to_ip;
+					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+				} else {
+					DEBUG_PUTS("ARP lookup failed -> default gateway");
+					return -3;
+				}
+			} else {
+				if (to_ip == arp_cache_lookup(to_ip, s_send_packet.ether.dst)) {
+					dst.u32 = to_ip;
+					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
+				} else {
+					DEBUG_PUTS("ARP lookup failed");
+					return -2;
+				}
+			}
 		}
 	}
 
