@@ -48,11 +48,14 @@
 
 #include "debug.h"
 
+using namespace dmxmonitor;
+using namespace lightset;
+
 DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore): m_pDMXMonitorParamsStore(pDMXMonitorParamsStore) {
 	m_tDMXMonitorParams.nSetList = 0;
-	m_tDMXMonitorParams.nDmxStartAddress = DMX_START_ADDRESS_DEFAULT;
-	m_tDMXMonitorParams.nDmxMaxChannels = DMX_UNIVERSE_SIZE;
-	m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
+	m_tDMXMonitorParams.nDmxStartAddress = Dmx::START_ADDRESS_DEFAULT;
+	m_tDMXMonitorParams.nDmxMaxChannels = Dmx::UNIVERSE_SIZE;
+	m_tDMXMonitorParams.tFormat = static_cast<uint8_t>(Format::HEX);
 }
 
 bool DMXMonitorParams::Load() {
@@ -104,7 +107,7 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 
 	PropertiesBuilder builder(DMXMonitorParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DMXMonitorParamsConst::FORMAT, m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"), isMaskSet(DMXMonitorParamsMask::FORMAT));
+	builder.Add(DMXMonitorParamsConst::FORMAT, m_tDMXMonitorParams.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_tDMXMonitorParams.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"), isMaskSet(DMXMonitorParamsMask::FORMAT));
 
 	builder.AddComment("DMX");
 	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tDMXMonitorParams.nDmxStartAddress, isMaskSet(DMXMonitorParamsMask::START_ADDRESS));
@@ -142,7 +145,7 @@ void DMXMonitorParams::Set(DMXMonitor* pDMXMonitor) {
 	}
 
 	if (isMaskSet(DMXMonitorParamsMask::FORMAT)) {
-		pDMXMonitor->SetFormat(m_tDMXMonitorParams.tFormat);
+		pDMXMonitor->SetFormat(static_cast<Format>(m_tDMXMonitorParams.tFormat));
 	}
 }
 
@@ -172,13 +175,13 @@ void DMXMonitorParams::callbackFunction(const char* pLine) {
 	nLength = 3;
 	if (Sscan::Char(pLine, DMXMonitorParamsConst::FORMAT, value, nLength) == Sscan::OK) {
 		if (memcmp(value, "pct", 3) == 0) {
-			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT;
+			m_tDMXMonitorParams.tFormat = static_cast<uint8_t>(Format::PCT);
 			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::FORMAT;
 		} else if (memcmp(value, "dec", 3) == 0) {
-			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC;
+			m_tDMXMonitorParams.tFormat = static_cast<uint8_t>(Format::DEC);
 			m_tDMXMonitorParams.nSetList |= DMXMonitorParamsMask::FORMAT;
 		} else {
-			m_tDMXMonitorParams.tFormat = DMXMonitorFormat::DMX_MONITOR_FORMAT_HEX;
+			m_tDMXMonitorParams.tFormat = static_cast<uint8_t>(Format::HEX);
 			m_tDMXMonitorParams.nSetList &= ~DMXMonitorParamsMask::FORMAT;
 		}
 		return;
@@ -202,7 +205,7 @@ void DMXMonitorParams::Dump() {
 	}
 
 	if (isMaskSet(DMXMonitorParamsMask::FORMAT)) {
-		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_tDMXMonitorParams.tFormat), m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_PCT ? "pct" : (m_tDMXMonitorParams.tFormat == DMXMonitorFormat::DMX_MONITOR_FORMAT_DEC ? "dec" : "hex"));
+		printf(" %s=%d [%s]\n", DMXMonitorParamsConst::FORMAT, static_cast<int>(m_tDMXMonitorParams.tFormat), m_tDMXMonitorParams.tFormat == static_cast<uint8_t>(Format::PCT) ? "pct" : (m_tDMXMonitorParams.tFormat == static_cast<uint8_t>(Format::DEC) ? "dec" : "hex"));
 	}
 #endif
 }

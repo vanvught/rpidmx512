@@ -78,7 +78,7 @@ public:
 	void SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAddress);
 
 	// E120_SLOT_INFO				0x0120
-	bool GetSlotInfo(uint16_t nSubDevice,uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSubDevice,uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
 
 	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE);
 

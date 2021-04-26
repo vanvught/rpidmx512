@@ -37,6 +37,8 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+using namespace lightset;
+
 #define DMX_START_ADDRESS_MASK	(1 << 0)
 #define DMX_FOOTPRINT_MASK		(1 << 1)
 #define DMX_SLOT_INFO_MASK		(1 << 2)
@@ -94,7 +96,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint32_t nLength;
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
+		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
 		}

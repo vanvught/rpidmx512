@@ -2,7 +2,7 @@
  * @file displayudfhandler.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,10 +41,8 @@
 
 class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay, public NtpClientDisplay {
 public:
-	DisplayUdfHandler() {
-	}
-	~DisplayUdfHandler() {
-	}
+	DisplayUdfHandler() {}
+	~DisplayUdfHandler() {}
 
 	void ShowShortName(__attribute__((unused)) const char *pShortName) {
 		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
@@ -65,11 +63,11 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  ArtNetMerge tMerge) {
+	void ShowMergeMode(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowPortProtocol(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  TPortProtocol tPortProtocol) {
+	void ShowPortProtocol(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 

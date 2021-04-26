@@ -2,7 +2,7 @@
  * @file lightsetgetoutputtype.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,28 @@
  * THE SOFTWARE.
  */
 
+#include <stdint.h>
 #include <string.h>
 #include <cassert>
 
 #include "lightset.h"
 
-static constexpr char sOutput[LIGHTSET_OUTPUT_TYPE_UNDEFINED][4] = {"dmx", "spi", "mon"};
+using namespace lightset;
 
-const char *LightSet::GetOutputType(enum TLightSetOutputType type) {
-	assert(type < LIGHTSET_OUTPUT_TYPE_UNDEFINED);
+static constexpr char sOutput[static_cast<uint32_t>(OutputType::UNDEFINED)][4] = {"dmx", "spi", "mon"};
 
-	return sOutput[type];
+const char *LightSet::GetOutputType(OutputType type) {
+	assert(type < OutputType::UNDEFINED);
+
+	return sOutput[static_cast<uint32_t>(type)];
 }
 
-TLightSetOutputType LightSet::GetOutputType(const char *sType) {
+OutputType LightSet::GetOutputType(const char *sType) {
 	for (uint32_t i = 0; i < sizeof(sOutput) / sizeof(sOutput[0]); i++) {
 		if (strncasecmp(sOutput[i], sType, 3) == 0) {
-			return static_cast<TLightSetOutputType>(i);
+			return static_cast<OutputType>(i);
 		}
 	}
 
-	return LIGHTSET_OUTPUT_TYPE_DMX;
+	return OutputType::DMX;
 }

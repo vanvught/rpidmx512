@@ -2,7 +2,7 @@
  * @file dmxserial.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ namespace DmxSerialDefaults {
 namespace DmxSerialFile {
 	static constexpr auto NAME_LENGTH = sizeof(DMXSERIAL_FILE_PREFIX "NNN" DMXSERIAL_FILE_SUFFIX) - 1;
 	static constexpr auto MIN_NUMBER = 1;
-	static constexpr auto MAX_NUMBER = DMX_UNIVERSE_SIZE;
+	static constexpr auto MAX_NUMBER = lightset::Dmx::UNIVERSE_SIZE;
 }
 
 class DmxSerial: public LightSet {
@@ -97,14 +97,14 @@ private:
 
 private:
 	Serial m_Serial;
-	uint32_t m_nFilesCount{0};
+	uint32_t m_nFilesCount { 0 };
 	int16_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
-	int32_t m_nHandle{-1};
+	int32_t m_nHandle { -1 };
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
-	uint16_t m_nDmxLastSlot = DMX_UNIVERSE_SIZE;
-	uint8_t m_DmxData[DMX_UNIVERSE_SIZE];
-	bool m_bEnableTFTP{false};
-	DmxSerialTFTP *m_pDmxSerialTFTP{nullptr};
+	uint16_t m_nDmxLastSlot { lightset::Dmx::UNIVERSE_SIZE };
+	uint8_t m_DmxData[lightset::Dmx::UNIVERSE_SIZE];
+	bool m_bEnableTFTP { false };
+	DmxSerialTFTP *m_pDmxSerialTFTP { nullptr };
 
 	static DmxSerial *s_pThis;
 };

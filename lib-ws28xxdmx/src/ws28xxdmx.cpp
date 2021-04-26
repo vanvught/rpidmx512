@@ -38,10 +38,29 @@
 
 #include "lightset.h"
 
-using namespace ws28xx;
+#include "pixeldmxconfiguration.h"
 
-WS28xxDmx::WS28xxDmx() {
-	UpdateMembers();
+#include "debug.h"
+
+using namespace pixel;
+using namespace lightset;
+
+WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
+	DEBUG_ENTRY
+
+	pixelDmxConfiguration.Validate(1 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
+
+	DEBUG_PRINTF("m_nChannelsPerPixel=%u, m_nGroups=%u, m_nUniverses=%u", m_nChannelsPerPixel, m_nGroups, m_nUniverses);
+
+	m_pWS28xx = new WS28xx(pixelDmxConfiguration);
+	assert(m_pWS28xx != nullptr);
+
+	m_pWS28xx->Blackout();
+
+	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
+	pixelDmxConfiguration.Dump();
+
+	DEBUG_EXIT
 }
 
 WS28xxDmx::~WS28xxDmx() {
@@ -55,18 +74,6 @@ void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
 	}
 
 	m_bIsStarted = true;
-
-	if (m_pWS28xx == nullptr) {
-		m_pWS28xx = new WS28xx(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_nClockSpeedHz);
-		assert(m_pWS28xx != nullptr);
-		m_pWS28xx->SetGlobalBrightness(m_nGlobalBrightness);
-		m_pWS28xx->Initialize();
-	} else {
-		while (m_pWS28xx->IsUpdating()) {
-			// wait for completion
-		}
-		m_pWS28xx->Update();
-	}
 
 	if (m_pLightSetHandler != nullptr) {
 		m_pLightSetHandler->Start();
@@ -94,35 +101,30 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 
 void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	assert(pData != nullptr);
-	assert(nLength <= DMX_UNIVERSE_SIZE);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
-	uint32_t i = 0;
+	uint32_t d = 0;
 	uint32_t beginIndex, endIndex;
-
-	if (__builtin_expect((m_pWS28xx == nullptr), 0)) {
-		m_bIsStarted = false;
-		Start();
-	}
 
 	switch (nPortId & 0x03) {
 	case 0:
 		beginIndex = 0;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(nLength / m_nChannelsPerLed));
-		if (m_nLedCount < m_nBeginIndexPortId1) {
-			i = static_cast<uint32_t>(m_nDmxStartAddress - 1);
+		endIndex = std::min(m_nGroups, (nLength / m_nChannelsPerPixel));
+		if (m_nGroups < m_PortInfo.nBeginIndexPortId1) {
+			d = static_cast<uint32_t>(m_nDmxStartAddress - 1);
 		}
 		break;
 	case 1:
-		beginIndex = m_nBeginIndexPortId1;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId1;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	case 2:
-		beginIndex = m_nBeginIndexPortId2;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId2;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	case 3:
-		beginIndex = m_nBeginIndexPortId3;
-		endIndex = std::min(m_nLedCount, static_cast<uint16_t>(beginIndex + (nLength /  m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId3;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	default:
 		__builtin_unreachable();
@@ -139,56 +141,29 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 		// wait for completion
 	}
 
-	for (uint32_t j = beginIndex; j < endIndex; j++) {
-		__builtin_prefetch(&pData[i]);
-		if (m_tLedType == Type::SK6812W) {
-			if (i + 3 > nLength) {
-				break;
+	if (m_nChannelsPerPixel == 3) {
+		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+			auto const nPixelIndexStart = j * m_nGroupingCount;
+			__builtin_prefetch(&pData[d]);
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
-			m_pWS28xx->SetLED(j, pData[i], pData[i + 1], pData[i + 2], pData[i + 3]);
-			i = i + 4;
-		} else {
-			if (i + 2 > nLength) {
-				break;
+			d = d + 3;
+		}
+	} else {
+		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+			auto const nPixelIndexStart = j * m_nGroupingCount;
+			__builtin_prefetch(&pData[d]);
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
-			m_pWS28xx->SetLED(j, pData[i], pData[i + 1], pData[i + 2]);
-			i = i + 3;
+			d = d + 4;
 		}
 	}
 
-	if (nPortId == m_nPortIdLast) {
+	if (nPortId == m_PortInfo.nProtocolPortIdLast) {
 		m_pWS28xx->Update();
 	}
-}
-
-void WS28xxDmx::SetLEDType(Type type) {
-	m_tLedType = type;
-
-	if (type == Type::SK6812W) {
-		m_nBeginIndexPortId1 = 128;
-		m_nBeginIndexPortId2 = 256;
-		m_nBeginIndexPortId3 = 384;
-
-		m_nChannelsPerLed = 4;
-	}
-
-	UpdateMembers();
-}
-
-void WS28xxDmx::SetLEDCount(uint16_t nCount) {
-	m_nLedCount = nCount;
-
-	UpdateMembers();
-}
-
-void WS28xxDmx::UpdateMembers() {
-	m_nDmxFootprint = m_nLedCount * m_nChannelsPerLed;
-
-	if (m_nDmxFootprint > DMX_UNIVERSE_SIZE) {
-		m_nDmxFootprint = DMX_UNIVERSE_SIZE;
-	}
-
-	m_nPortIdLast = m_nLedCount / (1 + m_nBeginIndexPortId1);
 }
 
 void WS28xxDmx::Blackout(bool bBlackout) {
@@ -208,11 +183,11 @@ void WS28xxDmx::Blackout(bool bBlackout) {
 // DMX
 
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE));
 
 	//FIXME Footprint
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= DMX_UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
 		if (m_pWS28xxDmxStore != nullptr) {
@@ -233,7 +208,7 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 #define MOD(a,b)	(static_cast<unsigned>(a) - b * (static_cast<unsigned>(a)/b))
 
-bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	unsigned nIndex;
 
 	if (nSlotOffset >  m_nDmxFootprint) {
@@ -268,42 +243,3 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlo
 	return true;
 }
 
-void WS28xxDmx::SetTestPattern(pixelpatterns::Pattern TestPattern) {
-	if ((TestPattern != pixelpatterns::Pattern::NONE) && (TestPattern < pixelpatterns::Pattern::LAST)) {
-		if (m_pPixelPatterns == nullptr) {
-			m_pPixelPatterns = new PixelPatterns(1);
-			assert(m_pPixelPatterns != nullptr);
-		}
-
-		const auto nColour1 = m_pPixelPatterns->Colour(0, 0, 0);
-		const auto nColour2 = m_pPixelPatterns->Colour(100, 100, 100);
-		constexpr auto nInterval = 100;
-		constexpr auto nSteps = 10;
-
-		switch (TestPattern) {
-		case pixelpatterns::Pattern::RAINBOW_CYCLE:
-			m_pPixelPatterns->RainbowCycle(0, nInterval);
-			break;
-		case pixelpatterns::Pattern::THEATER_CHASE:
-			m_pPixelPatterns->TheaterChase(0, nColour1, nColour2, nInterval);
-			break;
-		case pixelpatterns::Pattern::COLOR_WIPE:
-			m_pPixelPatterns->ColourWipe(0, nColour2, nInterval);
-			break;
-		case pixelpatterns::Pattern::SCANNER:
-			m_pPixelPatterns->Scanner(0, m_pPixelPatterns->Colour(255, 255, 255), nInterval);
-			break;
-		case pixelpatterns::Pattern::FADE:
-			m_pPixelPatterns->Fade(0, nColour1, nColour2, nSteps, nInterval);
-			break;
-		default:
-			break;
-		}
-	}
-}
-
-void WS28xxDmx::RunTestPattern() {
-	if (m_pPixelPatterns != nullptr) {
-		m_pPixelPatterns->Run();
-	}
-}

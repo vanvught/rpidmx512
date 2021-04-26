@@ -47,6 +47,8 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 enum class PowerState {
 	FULL_OFF = 0x00,	///< Completely disengages power to device. Device can no longer respond.
 	SHUTDOWN = 0x01,	///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
@@ -771,7 +773,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const uint16_t nDmxStartAddress = (pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1];
 
-	if ((nDmxStartAddress == 0) || (nDmxStartAddress > DMX_UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress == 0) || (nDmxStartAddress > Dmx::UNIVERSE_SIZE)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -1081,7 +1083,7 @@ void RDMHandler::SetPowerState(__attribute__((unused)) bool IsBroadcast, __attri
 void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
     auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	const uint16_t nDmxFootPrint = RDMDeviceResponder::Get()->GetDmxFootPrint(nSubDevice);
-	struct TLightSetSlotInfo tSlotInfo;
+	SlotInfo tSlotInfo;
 
 	uint32_t j = 0;
 
@@ -1105,7 +1107,7 @@ void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
 void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 	const uint16_t nSlotOffset = (pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1];
-	struct TLightSetSlotInfo tSlotInfo;
+	SlotInfo tSlotInfo;
 
 	if(!RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, nSlotOffset, tSlotInfo)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);

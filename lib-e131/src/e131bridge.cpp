@@ -44,6 +44,8 @@
 
 #include "debug.h"
 
+using namespace e131;
+
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
 E131Bridge::E131Bridge() {
@@ -54,30 +56,29 @@ E131Bridge::E131Bridge() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(struct TE131OutputPort));
-		m_OutputPort[i].nUniverse = E131_UNIVERSE_DEFAULT;
-		m_OutputPort[i].mergeMode = E131Merge::HTP;
+		m_OutputPort[i].nUniverse = universe::DEFAULT;
+		m_OutputPort[i].mergeMode = Merge::HTP;
 	}
 
-	for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_UARTS; i++) {
 		memset(&m_InputPort[i], 0, sizeof(struct TE131InputPort));
 		m_InputPort[i].nPriority = 100;
 	}
 
 	memset(&m_State, 0, sizeof(struct TE131BridgeState));
-	m_State.nPriority = E131_PRIORITY_LOWEST;
+	m_State.nPriority = priority::LOWEST;
 
-	char aSourceName[E131_SOURCE_NAME_LENGTH];
+	char aSourceName[E131::SOURCE_NAME_LENGTH];
 	uint8_t nLength;
-	snprintf(aSourceName, E131_SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
+	snprintf(aSourceName, E131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	m_nHandle = Network::Get()->Begin(E131_DEFAULT_PORT); 	// This must be here (and not in Start) for Mac OS and Linux
-	assert(m_nHandle != -1);								// ToDO Rewrite SetUniverse
+	m_nHandle = Network::Get()->Begin(E131::UDP_PORT); 	// This must be here (and not in Start) for Mac OS and Linux
+	assert(m_nHandle != -1);							// ToDO Rewrite SetUniverse
 
-	E131Uuid e131UUID;
-	e131UUID.GetHardwareUuid(m_Cid);
+	E131Uuid::GetHardwareUuid(m_Cid);
 }
 
 E131Bridge::~E131Bridge() {
@@ -89,7 +90,7 @@ void E131Bridge::Start() {
 		if (m_pE131DataPacket == nullptr) {
 			struct in_addr addr;
 			static_cast<void>(inet_aton("239.255.0.0", &addr));
-			m_DiscoveryIpAddress = addr.s_addr | ((E131_UNIVERSE_DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((E131_UNIVERSE_DISCOVERY & 0xFF00) << 8);
+			m_DiscoveryIpAddress = addr.s_addr | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
 			// TE131DataPacket
 			m_pE131DataPacket = new struct TE131DataPacket;
 			assert(m_pE131DataPacket != nullptr);
@@ -99,7 +100,7 @@ void E131Bridge::Start() {
 			assert(m_pE131DiscoveryPacket != nullptr);
 			FillDiscoveryPacket();
 		}
-		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_UARTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Start(nPortIndex);
 			}
@@ -113,7 +114,7 @@ void E131Bridge::Stop() {
 	m_State.IsNetworkDataLoss = true;
 
 	if (m_pLightSet != nullptr) {
-		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 			m_pLightSet->Stop(i);
 			m_OutputPort[i].length = 0;
 			m_OutputPort[i].IsDataPending = false;
@@ -121,7 +122,7 @@ void E131Bridge::Stop() {
 	}
 
 	if (m_pE131DmxIn != nullptr) {
-		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_UARTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Stop(nPortIndex);
 			}
@@ -138,8 +139,8 @@ void E131Bridge::SetSourceName(const char *pSourceName) {
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wstringop-truncation"
 #endif
-	strncpy(m_SourceName, pSourceName, E131_SOURCE_NAME_LENGTH - 1);
-	m_SourceName[E131_SOURCE_NAME_LENGTH - 1] = '\0';
+	strncpy(m_SourceName, pSourceName, E131::SOURCE_NAME_LENGTH - 1);
+	m_SourceName[E131::SOURCE_NAME_LENGTH - 1] = '\0';
 #if (__GNUC__ > 8)
 # pragma GCC diagnostic pop
 #endif
@@ -177,8 +178,8 @@ void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_
 		*pSynchronizationAddressSource = nSynchronizationAddress;
 		DEBUG_PUTS("SynchronizationAddressSource == 0");
 	} else if (*pSynchronizationAddressSource != nSynchronizationAddress) {
-		// E131_MAX_PORTS forces to check all ports
-		LeaveUniverse(E131_MAX_PORTS, *pSynchronizationAddressSource);
+		// E131::MAX_PORTS forces to check all ports
+		LeaveUniverse(E131::MAX_PORTS, *pSynchronizationAddressSource);
 		*pSynchronizationAddressSource = nSynchronizationAddress;
 		DEBUG_PUTS("SynchronizationAddressSource != nSynchronizationAddress");
 	} else {
@@ -196,7 +197,7 @@ void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%d, nUniverse=%d", nPortIndex, nUniverse);
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		DEBUG_PRINTF("\tnm_OutputPort[%d].nUniverse=%d", i, m_OutputPort[i].nUniverse);
 
 		if (i == nPortIndex) {
@@ -213,19 +214,19 @@ void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_EXIT
 }
 
-void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUniverse) {
-	assert(nPortIndex < E131_MAX_PORTS);
-	assert(dir <= E131_DISABLE_PORT);
-	assert((nUniverse >= E131_UNIVERSE_DEFAULT) && (nUniverse <= E131_UNIVERSE_MAX));
+void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse) {
+	assert(nPortIndex < E131::MAX_PORTS);
+	assert(dir <= PortDir::DISABLE);
+	assert((nUniverse >= universe::DEFAULT) && (nUniverse <=universe::MAX));
 
-	if ((dir == E131_INPUT_PORT) && (nPortIndex < E131_MAX_UARTS)) {
+	if ((dir == PortDir::INPUT) && (nPortIndex < E131::MAX_UARTS)) {
 		if (m_InputPort[nPortIndex].bIsEnabled) {
 			if (m_InputPort[nPortIndex].nUniverse == nUniverse) {
 				return;
 			}
 		} else {
 			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
-			assert(m_State.nActiveInputPorts <= E131_MAX_UARTS);
+			assert(m_State.nActiveInputPorts <= E131::MAX_UARTS);
 			m_InputPort[nPortIndex].bIsEnabled = true;
 		}
 
@@ -235,8 +236,8 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 		return;
 	}
 
-	if (dir == E131_DISABLE_PORT) {
-		if (nPortIndex < E131_MAX_PORTS) {
+	if (dir == PortDir::DISABLE) {
+		if (nPortIndex < E131::MAX_PORTS) {
 			if (m_OutputPort[nPortIndex].bIsEnabled) {
 				m_OutputPort[nPortIndex].bIsEnabled = false;
 				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
@@ -244,7 +245,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 			}
 		}
 
-		if (nPortIndex < E131_MAX_UARTS) {
+		if (nPortIndex < E131::MAX_UARTS) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_InputPort[nPortIndex].bIsEnabled = false;
 				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
@@ -264,7 +265,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 		}
 	} else {
 		m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
-		assert(m_State.nActiveOutputPorts <= E131_MAX_PORTS);
+		assert(m_State.nActiveOutputPorts <= E131::MAX_PORTS);
 		m_OutputPort[nPortIndex].bIsEnabled = true;
 	}
 
@@ -273,9 +274,9 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, TE131PortDir dir, uint16_t nUni
 	m_OutputPort[nPortIndex].nUniverse = nUniverse;
 }
 
-bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortDir tDir) const {
-	if (tDir == E131_INPUT_PORT) {
-		if (nPortIndex < E131_MAX_UARTS) {
+bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const {
+	if (tDir == PortDir::INPUT) {
+		if (nPortIndex < E131::MAX_UARTS) {
 			nUniverse = m_InputPort[nPortIndex].nUniverse;
 
 			return m_InputPort[nPortIndex].bIsEnabled;
@@ -284,43 +285,42 @@ bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, TE131PortD
 		return false;
 	}
 
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	nUniverse = m_OutputPort[nPortIndex].nUniverse;
 
 	return m_OutputPort[nPortIndex].bIsEnabled;
 }
 
-void E131Bridge::SetMergeMode(uint8_t nPortIndex, E131Merge tE131Merge) {
-	assert(nPortIndex < E131_MAX_PORTS);
+void E131Bridge::SetMergeMode(uint8_t nPortIndex, Merge tE131Merge) {
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	m_OutputPort[nPortIndex].mergeMode = tE131Merge;
 }
 
-E131Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
-	assert(nPortIndex < E131_MAX_PORTS);
+Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	return m_OutputPort[nPortIndex].mergeMode;
 }
 
 bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 	assert(pData != nullptr);
 
 	bool isChanged = false;
-
 	const uint8_t *pSrc = pData;
-	uint8_t *pDst = m_OutputPort[nPortIndex].data;
+	auto *pDst = m_OutputPort[nPortIndex].data;
 
 	if (nLength != m_OutputPort[nPortIndex].length) {
 		m_OutputPort[nPortIndex].length = nLength;
-		for (unsigned i = 0 ; i < E131_DMX_LENGTH; i++) {
+		for (unsigned i = 0 ; i < E131::DMX_LENGTH; i++) {
 			*pDst++ = *pSrc++;
 		}
 		return true;
 	}
 
-	for (unsigned i = 0; i < E131_DMX_LENGTH; i++) {
+	for (unsigned i = 0; i < E131::DMX_LENGTH; i++) {
 		if (*pDst != *pSrc) {
 			*pDst = *pSrc;
 			isChanged = true;
@@ -333,10 +333,10 @@ bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint
 }
 
 bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 	assert(pData != nullptr);
 
-	bool isChanged = false;
+	auto isChanged = false;
 
 	if (!m_State.IsMergeMode) {
 		m_State.IsMergeMode = true;
@@ -345,7 +345,7 @@ bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData
 
 	m_OutputPort[nPortIndex].IsMerging = true;
 
-	if (m_OutputPort[nPortIndex].mergeMode == E131Merge::HTP) {
+	if (m_OutputPort[nPortIndex].mergeMode == Merge::HTP) {
 
 		if (nLength != m_OutputPort[nPortIndex].length) {
 			m_OutputPort[nPortIndex].length = nLength;
@@ -371,27 +371,27 @@ bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData
 }
 
 void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
 
-	if (timeOutA > (E131_MERGE_TIMEOUT_SECONDS * 1000)) {
+	if (timeOutA > (MERGE_TIMEOUT_SECONDS * 1000)) {
 		m_OutputPort[nPortIndex].sourceA.ip = 0;
-		memset(m_OutputPort[nPortIndex].sourceA.cid, 0, E131_CID_LENGTH);
+		memset(m_OutputPort[nPortIndex].sourceA.cid, 0, E131::CID_LENGTH);
 		m_OutputPort[nPortIndex].IsMerging = false;
 	}
 
 	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceB.time;
 
-	if (timeOutB > (E131_MERGE_TIMEOUT_SECONDS * 1000)) {
+	if (timeOutB > (MERGE_TIMEOUT_SECONDS * 1000)) {
 		m_OutputPort[nPortIndex].sourceB.ip = 0;
-		memset(m_OutputPort[nPortIndex].sourceB.cid, 0, E131_CID_LENGTH);
+		memset(m_OutputPort[nPortIndex].sourceB.cid, 0, E131::CID_LENGTH);
 		m_OutputPort[nPortIndex].IsMerging = false;
 	}
 
 	bool bIsMerging = false;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		bIsMerging |= m_OutputPort[i].IsMerging;
 	}
 
@@ -403,23 +403,23 @@ void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
 }
 
 bool E131Bridge::IsPriorityTimeOut(uint8_t nPortIndex) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
 	const uint32_t timeOutB = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceB.time;
 
 	if ( (m_OutputPort[nPortIndex].sourceA.ip != 0) && (m_OutputPort[nPortIndex].sourceB.ip != 0) ) {
-		if ( (timeOutA < (E131_PRIORITY_TIMEOUT_SECONDS * 1000)) || (timeOutB < (E131_PRIORITY_TIMEOUT_SECONDS * 1000)) ) {
+		if ( (timeOutA < (PRIORITY_TIMEOUT_SECONDS * 1000)) || (timeOutB < (PRIORITY_TIMEOUT_SECONDS * 1000)) ) {
 			return false;
 		} else {
 			return true;
 		}
 	} else if ( (m_OutputPort[nPortIndex].sourceA.ip != 0) && (m_OutputPort[nPortIndex].sourceB.ip == 0) ) {
-		if (timeOutA > (E131_PRIORITY_TIMEOUT_SECONDS * 1000)) {
+		if (timeOutA > (PRIORITY_TIMEOUT_SECONDS * 1000)) {
 			return true;
 		}
 	} else if ( (m_OutputPort[nPortIndex].sourceA.ip == 0) && (m_OutputPort[nPortIndex].sourceB.ip != 0) ) {
-		if (timeOutB > (E131_PRIORITY_TIMEOUT_SECONDS * 1000)) {
+		if (timeOutB > (PRIORITY_TIMEOUT_SECONDS * 1000)) {
 			return true;
 		}
 	}
@@ -432,7 +432,7 @@ bool E131Bridge::isIpCidMatch(const struct TSource *source) {
 		return false;
 	}
 
-	if (memcmp(source->cid, m_E131.E131Packet.Raw.RootLayer.Cid, E131_CID_LENGTH) != 0) {
+	if (memcmp(source->cid, m_E131.E131Packet.Raw.RootLayer.Cid, E131::CID_LENGTH) != 0) {
 		return false;
 	}
 
@@ -443,7 +443,7 @@ void E131Bridge::HandleDmx() {
 	const uint8_t *p = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
 	const uint16_t slots = __builtin_bswap16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - 1;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		if (!m_OutputPort[i].bIsEnabled) {
 			continue;
 		}
@@ -487,13 +487,13 @@ void E131Bridge::HandleDmx() {
 
 		// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
 		// server preview applications and shall not be used to generate live output.
-		if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_PREVIEW_DATA) != 0) {
+		if ((m_E131.E131Packet.Data.FrameLayer.Options & OptionsMask::PREVIEW_DATA) != 0) {
 			continue;
 		}
 
 		// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
 		// Any property values in these packets shall be ignored.
-		if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_STREAM_TERMINATED) != 0) {
+		if ((m_E131.E131Packet.Data.FrameLayer.Options & OptionsMask::STREAM_TERMINATED) != 0) {
 			if (isSourceA || isSourceB) {
 				SetNetworkDataLossCondition(isSourceA, isSourceB);
 			}
@@ -595,7 +595,7 @@ void E131Bridge::HandleDmx() {
 		// new packets until synchronization resumes. When set to 1, once synchronization has been lost,
 		// components that had been operating in a synchronized state need not wait for a new
 		// E1.31 Synchronization Packet in order to update to the next E1.31 Data Packet.
-		if ((m_E131.E131Packet.Data.FrameLayer.Options & E131_OPTIONS_MASK_FORCE_SYNCHRONIZATION) == 0) {
+		if ((m_E131.E131Packet.Data.FrameLayer.Options & OptionsMask::FORCE_SYNCHRONIZATION) == 0) {
 			// 6.3.3.1 Synchronization Address Usage in an E1.31 Synchronization Packet
 			// An E1.31 Synchronization Packet is sent to synchronize the E1.31 data on a specific universe number.
 			// A Synchronization Address of 0 is thus meaningless, and shall not be transmitted.
@@ -653,7 +653,7 @@ void E131Bridge::HandleSynchronization() {
 
 	m_State.SynchronizationTime = m_nCurrentPacketMillis;
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		if ((m_OutputPort[i].IsDataPending) || (m_OutputPort[i].bIsEnabled && m_bDirectUpdate)){
 
 			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].length);
@@ -683,15 +683,15 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 		m_State.IsMergeMode = false;
 		m_State.IsSynchronized = false;
 		m_State.IsForcedSynchronized = false;
-		m_State.nPriority = E131_PRIORITY_LOWEST;
+		m_State.nPriority = priority::LOWEST;
 
-		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 			if (m_OutputPort[i].IsTransmitting) {
 				m_pLightSet->Stop(i);
 				m_OutputPort[i].sourceA.ip = 0;
-				memset(m_OutputPort[i].sourceA.cid, 0, E131_CID_LENGTH);
+				memset(m_OutputPort[i].sourceA.cid, 0, E131::CID_LENGTH);
 				m_OutputPort[i].sourceB.ip = 0;
-				memset(m_OutputPort[i].sourceB.cid, 0, E131_CID_LENGTH);
+				memset(m_OutputPort[i].sourceB.cid, 0, E131::CID_LENGTH);
 				m_OutputPort[i].length = 0;
 				m_OutputPort[i].IsDataPending = false;
 				m_OutputPort[i].IsTransmitting = false;
@@ -700,18 +700,18 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 		}
 
 	} else {
-		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 			if (m_OutputPort[i].IsTransmitting) {
 
 				if ((bSourceA) && (m_OutputPort[i].sourceA.ip != 0)) {
 					m_OutputPort[i].sourceA.ip = 0;
-					memset(m_OutputPort[i].sourceA.cid, 0, E131_CID_LENGTH);
+					memset(m_OutputPort[i].sourceA.cid, 0, E131::CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
 
 				if ((bSourceB) && (m_OutputPort[i].sourceB.ip != 0)) {
 					m_OutputPort[i].sourceB.ip = 0;
-					memset(m_OutputPort[i].sourceB.cid, 0, E131_CID_LENGTH);
+					memset(m_OutputPort[i].sourceB.cid, 0, E131::CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
 
@@ -732,12 +732,12 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 }
 
 bool E131Bridge::IsTransmitting(uint8_t nPortIndex) const {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 	return m_OutputPort[nPortIndex].IsTransmitting;
 }
 
 bool E131Bridge::IsMerging(uint8_t nPortIndex) const {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 	return m_OutputPort[nPortIndex].IsMerging;
 }
 
@@ -751,15 +751,15 @@ bool E131Bridge::IsStatusChanged() {
 }
 
 void E131Bridge::Clear(uint8_t nPortIndex) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	uint8_t *pDst = m_OutputPort[nPortIndex].data;
 
-	for (uint32_t i = 0; i < E131_DMX_LENGTH; i++) {
+	for (uint32_t i = 0; i < E131::DMX_LENGTH; i++) {
 		*pDst++ = 0;
 	}
 
-	m_OutputPort[nPortIndex].length = E131_DMX_LENGTH;
+	m_OutputPort[nPortIndex].length = E131::DMX_LENGTH;
 
 	m_pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].length);
 
@@ -774,12 +774,12 @@ void E131Bridge::Clear(uint8_t nPortIndex) {
 bool E131Bridge::IsValidRoot() {
 	// 5 E1.31 use of the ACN Root Layer Protocol
 	// Receivers shall discard the packet if the ACN Packet Identifier is not valid.
-	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, E117_PACKET_IDENTIFIER_LENGTH) != 0) {
+	if (memcmp(m_E131.E131Packet.Raw.RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH) != 0) {
 		return false;
 	}
 	
-	if (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(E131_VECTOR_ROOT_DATA)
-			 && (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(E131_VECTOR_ROOT_EXTENDED)) ) {
+	if (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(vector::root::DATA)
+			 && (m_E131.E131Packet.Raw.RootLayer.Vector != __builtin_bswap32(vector::root::EXTENDED)) ) {
 		return false;
 	}
 
@@ -791,7 +791,7 @@ bool E131Bridge::IsValidDataPacket() {
 
 	// The DMP Layer's Vector shall be set to 0x02, which indicates a DMP Set Property message by
 	// transmitters. Receivers shall discard the packet if the received value is not 0x02.
-	if (m_E131.E131Packet.Data.DMPLayer.Vector != E131_VECTOR_DMP_SET_PROPERTY) {
+	if (m_E131.E131Packet.Data.DMPLayer.Vector != e131::vector::dmp::SET_PROPERTY) {
 		return false;
 	}
 
@@ -825,7 +825,7 @@ void E131Bridge::Run() {
 
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		if (m_State.nActiveOutputPorts != 0) {
-			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
+			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
 				if ((m_pLightSet != nullptr) && (!m_State.IsNetworkDataLoss)) {
 					SetNetworkDataLossCondition();
 					DEBUG_PUTS("");
@@ -866,7 +866,7 @@ void E131Bridge::Run() {
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
 
 	if (m_State.IsSynchronized && !m_State.IsForcedSynchronized) {
-		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
 			m_State.IsSynchronized = false;
 		}
 	}
@@ -874,13 +874,13 @@ void E131Bridge::Run() {
 	if (m_pLightSet != nullptr) {
 		const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
-		if (nRootVector == E131_VECTOR_ROOT_DATA) {
+		if (nRootVector == vector::root::DATA) {
 			if (IsValidDataPacket()) {
 				HandleDmx();
 			}
-		} else if (nRootVector == E131_VECTOR_ROOT_EXTENDED) {
+		} else if (nRootVector == vector::root::EXTENDED) {
 			const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
-				if (nFramingVector == E131_VECTOR_EXTENDED_SYNCHRONIZATION) {
+				if (nFramingVector == vector::extended::SYNCHRONIZATION) {
 				HandleSynchronization();
 			}
 		} else {

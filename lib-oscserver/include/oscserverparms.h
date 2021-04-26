@@ -36,7 +36,7 @@ struct TOSCServerParams {
 	uint32_t nSetList;
 	uint16_t nIncomingPort;
 	uint16_t nOutgoingPort;
-	TLightSetOutputType tOutputType;
+	uint8_t tOutputType;
 	bool bPartialTransmission;
 	char aPath[OscServerMax::PATH_LENGTH];
 	char aPathInfo[OscServerMax::PATH_LENGTH];
@@ -89,8 +89,8 @@ public:
 		return m_tOSCServerParams.bPartialTransmission;
 	}
 
-	TLightSetOutputType GetOutputType() const {
-		return m_tOSCServerParams.tOutputType;
+	lightset::OutputType GetOutputType() const {
+		return static_cast<lightset::OutputType>(m_tOSCServerParams.tOutputType);
 	}
 
 	bool IsEnableNoChangeUpdate() const {

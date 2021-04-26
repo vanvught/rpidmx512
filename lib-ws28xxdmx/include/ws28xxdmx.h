@@ -33,64 +33,34 @@
 #include "ws28xx.h"
 #include "ws28xxdmxstore.h"
 
+#include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
 
 class WS28xxDmx: public LightSet {
 public:
-	WS28xxDmx();
+	WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration);
 	~WS28xxDmx() override;
+
+	void Initialize();
 
 	void Start(uint8_t nPort = 0) override;
 	void Stop(uint8_t nPort = 0) override;
 
 	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
 
-	void Blackout(bool bBlackout);
-
-	virtual void SetLEDType(ws28xx::Type type);
-	ws28xx::Type GetLEDType() const {
-		return m_tLedType;
-	}
-
-	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
-		m_tRGBMapping = tRGBMapping;
-	}
-
-	void SetLowCode(uint8_t nLowCode) {
-		m_nLowCode = nLowCode;
-	}
-
-	void SetHighCode(uint8_t nHighCode) {
-		m_nHighCode = nHighCode;
-	}
-
-	virtual void SetLEDCount(uint16_t);
-	uint16_t GetLEDCount() const {
-		return m_nLedCount;
-	}
-
-	void SetClockSpeedHz(uint32_t nClockSpeedHz) {
-		m_nClockSpeedHz = nClockSpeedHz;
-	}
-
-	uint32_t GetClockSpeedHz() const {
-		return m_nClockSpeedHz;
-	}
-
-	void SetGlobalBrightness(uint8_t nGlobalBrightness) {
-		m_nGlobalBrightness = nGlobalBrightness;
-	}
-
-	uint8_t GetGlobalBrightness() const {
-		return m_nGlobalBrightness;
-	}
+	void Blackout(bool bBlackout) override;
 
 	void SetWS28xxDmxStore(WS28xxDmxStore *pWS28xxDmxStore) {
 		m_pWS28xxDmxStore = pWS28xxDmxStore;
 	}
 
-	void SetTestPattern(pixelpatterns::Pattern TestPattern);
-	void RunTestPattern();
+	uint32_t GetUniverses() const {
+		return m_nUniverses;
+	}
+
+	uint32_t GetGroups() const {
+		return m_nGroups;
+	}
 
 	void Print() override;
 
@@ -105,39 +75,32 @@ public: // RDM
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 private:
-	void UpdateMembers();
+	pixeldmxconfiguration::PortInfo m_PortInfo;
+	uint32_t m_nChannelsPerPixel;
+	uint32_t m_nGroups;
+	uint32_t m_nGroupingCount;
+	uint32_t m_nUniverses;
 
-protected:
-	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
-
-	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
+	pixel::Type m_tLedType { pixel::defaults::TYPE };
+	pixel::Map m_tRGBMapping { pixel::Map::UNDEFINED };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 
-	uint16_t m_nLedCount { ws28xx::defaults::LED_COUNT };
-	uint16_t m_nDmxStartAddress { DMX_START_ADDRESS_DEFAULT };
+	uint32_t m_nClockSpeedHz { 0 };
+	uint8_t m_nGlobalBrightness { 0xFF };
+
+	uint16_t m_nDmxStartAddress { lightset::Dmx::START_ADDRESS_DEFAULT };
 	uint16_t m_nDmxFootprint { 170 * 3 };
 
 	WS28xx *m_pWS28xx { nullptr };
-	bool m_bIsStarted { false };
-	bool m_bBlackout { false };
 
 	WS28xxDmxStore *m_pWS28xxDmxStore { nullptr };
 
-private:
-	uint32_t m_nClockSpeedHz { 0 };
-	uint8_t m_nGlobalBrightness { 0xFF };
-	uint32_t m_nBeginIndexPortId1 { 170 };
-	uint32_t m_nBeginIndexPortId2 { 340 };
-	uint32_t m_nBeginIndexPortId3 { 510 };
-	uint32_t m_nChannelsPerLed { 3 };
-
-	uint32_t m_nPortIdLast { 3 };
-
-	PixelPatterns *m_pPixelPatterns { nullptr };
+	bool m_bIsStarted { false };
+	bool m_bBlackout { false };
 };
 
 #endif /* WS28XXDMX_H_ */

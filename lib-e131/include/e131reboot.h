@@ -27,18 +27,17 @@
 #define E131REBOOT_H_
 
 #include "hardware.h"
-
 #include "e131bridge.h"
+#include "lightset.h"
 
 class E131Reboot: public RebootHandler {
 public:
-	E131Reboot() {
-	}
-	~E131Reboot() {
-	}
+	E131Reboot() {}
+	~E131Reboot() {}
 
 	void Run() {
 		E131Bridge::Get()->Stop();
+		LightSet::Get()->Blackout(true);
 	}
 };
 

@@ -33,12 +33,15 @@
 #include "display.h"
 #include "display7segment.h"
 
+#include "lightset.h"
 #include "network.h"
 
 #include "hardware.h"
 #include "firmwareversion.h"
 
 #include "debug.h"
+
+using namespace displayudf;
 
 DisplayUdf *DisplayUdf::s_pThis = nullptr;
 
@@ -48,7 +51,7 @@ DisplayUdf::DisplayUdf() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		m_aLabels[i] = i + 1;
 	}
 
@@ -59,7 +62,7 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	va_list arp;
 	va_start(arp, format);
 
-	const int i = vsnprintf(m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
+	const auto i = vsnprintf(m_aTitle, sizeof(m_aTitle) / sizeof(m_aTitle[0]) - 1, format, arp);
 
 	va_end(arp);
 
@@ -69,25 +72,23 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 }
 
 void DisplayUdf::Show() {
-	DEBUG1_ENTRY
-
 	uint8_t nHwTextLength;
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (m_aLabels[i] > DISPLAY_LABEL_MAX_ROWS) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
+		if (m_aLabels[i] > LABEL_MAX_ROWS) {
 			m_aLabels[i] = 0xFF;
 		}
 
 		DEBUG_PRINTF("m_aLabels[%d]=%d", i, m_aLabels[i]);
 	}
 
-	for (unsigned i = 1; i < DISPLAY_LABEL_MAX_ROWS; i++) {
+	for (uint32_t i = 1; i < LABEL_MAX_ROWS; i++) {
 		ClearLine(i);
 	}
 
-	Write(m_aLabels[DISPLAY_UDF_LABEL_TITLE], m_aTitle);
-	Write(m_aLabels[DISPLAY_UDF_LABEL_BOARDNAME], Hardware::Get()->GetBoardName(nHwTextLength));
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_VERSION], "Firmware V%.*s", SOFTWARE_VERSION_LENGTH, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
+	Write(m_aLabels[static_cast<uint32_t>(Labels::TITLE)], m_aTitle);
+	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", SOFTWARE_VERSION_LENGTH, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
 	// LightSet
 	ShowDmxStartAddress();
@@ -96,37 +97,29 @@ void DisplayUdf::Show() {
 	ShowIpAddress();
 	ShowNetmask();
 	ShowHostName();
-
-	DEBUG1_EXIT
 }
 
 void DisplayUdf::ShowDmxStartAddress() {
-	DEBUG_ENTRY
-
 	if (LightSet::Get() != nullptr) {
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_DMX_START_ADDRESS],
-				"DMX S:%3d F:%3d",
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::DMX_START_ADDRESS)], "DMX S:%3d F:%3d",
 				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
 				static_cast<int>(LightSet::Get()->GetDmxFootprint()));
 	}
-
-	DEBUG_EXIT
 }
 
 void DisplayUdf::ShowIpAddress() {
-	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }
 
 void DisplayUdf::ShowNetmask() {
-	DEBUG_PRINTF("%d " IPSTR, Network::Get()->GetNetmaskCIDR(), IP2STR(Network::Get()->GetNetmask()));
-	Printf(m_aLabels[DISPLAY_UDF_LABEL_NETMASK], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	ShowIpAddress();
 }
 
 void DisplayUdf::ShowHostName() {
-	ClearLine(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME]);
-	Write(m_aLabels[DISPLAY_UDF_LABEL_HOSTNAME], Network::Get()->GetHostName());
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)]);
+	Write(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)], Network::Get()->GetHostName());
 }
 
 void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
@@ -135,16 +128,16 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 		break;
 	case DhcpClientStatus::RENEW:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "DHCP renewing");
+		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP renewing");
 		break;
 	case DhcpClientStatus::GOT_IP:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
 	case DhcpClientStatus::RETRYING:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		ClearLine(m_aLabels[DISPLAY_UDF_LABEL_IP]);
-		Printf(m_aLabels[DISPLAY_UDF_LABEL_IP], "DHCP retrying");
+		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP retrying");
 		break;
 	case DhcpClientStatus::FAILED:
 		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
@@ -158,13 +151,17 @@ void DisplayUdf::ShowShutdown() {
 	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
-void DisplayUdf::Set(uint8_t nLine, TDisplayUdfLabels tLabel) {
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+void DisplayUdf::Set(uint32_t nLine, Labels tLabel) {
+	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
+		return;
+	}
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (m_aLabels[i] == nLine) {
-			m_aLabels[i] = m_aLabels[tLabel];
+			m_aLabels[i] = m_aLabels[static_cast<uint32_t>(tLabel)];
 			break;
 		}
 	}
 
-	m_aLabels[tLabel] = nLine;
+	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
 }

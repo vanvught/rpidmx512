@@ -25,13 +25,15 @@
 
 #include <stdint.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
 #include "pca9685dmxled.h"
 
 #include "parse.h"
+
+using namespace lightset;
 
 #define DMX_MAX_CHANNELS	512
 #define BOARD_INSTANCES_MAX	32
@@ -45,7 +47,6 @@ static unsigned long ceil(float f) {
 }
 
 PCA9685DmxLed::PCA9685DmxLed()
-	
 {
 }
 
@@ -134,7 +135,7 @@ void PCA9685DmxLed::SetSlotInfoRaw(const char *pSlotInfoRaw) {
 	m_pSlotInfoRaw = const_cast<char*>(pSlotInfoRaw);
 }
 
-bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
@@ -218,7 +219,7 @@ void PCA9685DmxLed::Initialize() {
 #endif
 	}
 
-	m_pSlotInfo = new struct TLightSetSlotInfo[m_nDmxFootprint];
+	m_pSlotInfo = new SlotInfo[m_nDmxFootprint];
 	assert(m_pSlotInfo != nullptr);
 
 	char *pSlotInfoRaw = m_pSlotInfoRaw;

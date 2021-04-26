@@ -2,7 +2,7 @@
  * @file lightsetchain.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,8 @@
 #include "lightset.h"
 
 #include "debug.h"
+
+using namespace lightset;
 
 #define LIGHTSET_CHAIN_MAX_ENTRIES	16
 
@@ -103,7 +105,7 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;;
 }
 
-bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) {
+bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, SlotInfo &tSlotInfo) {
 	DEBUG1_ENTRY
 
 	if (nSlotOffset > m_nDmxFootprint) {
@@ -160,7 +162,7 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 		const bool IsValidDmxStartAddress = (pLightSet->GetDmxStartAddress() > 0) && (pLightSet->GetDmxFootprint() - pLightSet->GetDmxStartAddress() < 512);
 
 		if (IsValidDmxStartAddress) {
-			if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+			if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 
 				m_pTable[0].pLightSet = pLightSet;
 				m_pTable[0].nType = nType;

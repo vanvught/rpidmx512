@@ -52,17 +52,22 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pModeParamsStore) {
 	DEBUG_ENTRY
 
 	memset(&m_tModeParams, 0, sizeof(struct TModeParams));
 	m_tModeParams.nDmxMode = L6470DMXMODE_UNDEFINED;
-	m_tModeParams.nDmxStartAddress = DMX_ADDRESS_INVALID;
+	m_tModeParams.nDmxStartAddress = Dmx::ADDRESS_INVALID;
 	m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
 	m_tModeParams.tSwitchDir = L6470_DIR_REV;
 	m_tModeParams.bSwitch = true;
 
-	m_pDmxSlotInfo = new DmxSlotInfo(m_tModeParams.tLightSetSlotInfo, MODE_PARAMS_MAX_DMX_FOOTPRINT);
+	auto *pSlotInfo = new SlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
+	memcpy(pSlotInfo, m_tModeParams.tLightSetSlotInfo, sizeof(m_tModeParams.tLightSetSlotInfo));
+
+	m_pDmxSlotInfo = new DmxSlotInfo(pSlotInfo, MODE_PARAMS_MAX_DMX_FOOTPRINT);
 	assert(m_pDmxSlotInfo != nullptr);
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
@@ -143,7 +148,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && (nValue16 <= DMX_UNIVERSE_SIZE)) {
+		if ((nValue16 != 0) && (nValue16 <= Dmx::UNIVERSE_SIZE)) {
 			m_tModeParams.nDmxStartAddress = nValue16;
 			m_tModeParams.nSetList |= ModeParamsMask::DMX_START_ADDRESS;
 		}
@@ -303,7 +308,7 @@ void ModeParams::Dump() {
 #endif
 }
 
-void ModeParams::GetSlotInfo(uint32_t nOffset, struct TLightSetSlotInfo &tLightSetSlotInfo) {
+void ModeParams::GetSlotInfo(uint32_t nOffset, SlotInfo &tLightSetSlotInfo) {
 	if (nOffset < MODE_PARAMS_MAX_DMX_FOOTPRINT) {
 		tLightSetSlotInfo.nType = m_tModeParams.tLightSetSlotInfo[nOffset].nType;
 		tLightSetSlotInfo.nCategory = m_tModeParams.tLightSetSlotInfo[nOffset].nCategory;

@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <stdio.h>
 
@@ -32,6 +37,8 @@
 #include "lightsetconst.h"
 
 #include "debug.h"
+
+using namespace e131;
 
 void E131Params::Dump() {
 #ifndef NDEBUG
@@ -70,7 +77,7 @@ void E131Params::Dump() {
 	}
 
 	if(isMaskSet(E131ParamsMask::DIRECTION)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION,	m_tE131Params.nDirection, m_tE131Params.nDirection == E131_INPUT_PORT ? "Input" : "Output");
+		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION,	m_tE131Params.nDirection, m_tE131Params.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
 	}
 
 	if (isMaskSet(E131ParamsMask::PRIORITY)) {

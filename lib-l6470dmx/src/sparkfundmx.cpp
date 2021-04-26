@@ -51,8 +51,10 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 SparkFunDmx::SparkFunDmx():
-	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
+	m_nDmxStartAddress(Dmx::ADDRESS_INVALID),
 	m_nDmxFootprint(0),
 	m_pModeStore(0)
 {
@@ -243,7 +245,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 				printf("\t=============================\n");
 #endif
 
-				if ((m_nDmxStartAddressMode <= DMX_UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+				if ((m_nDmxStartAddressMode <= Dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 					if (m_pAutoDriver[i]->IsConnected()) {
 						printf("Motor %d is connected\n", i);
 
@@ -266,7 +268,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pAutoDriver[i], m_pMotorParams[i], m_pModeParams[i]);
 						assert(m_pL6470DmxModes[i] != 0);
 
-						if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+						if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 							m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 							m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 						} else {
@@ -284,7 +286,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 #ifndef NDEBUG
 						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
 #endif
-						m_pSlotInfo[i] = new struct TLightSetSlotInfo[nMaxSlots];
+						m_pSlotInfo[i] = new SlotInfo[nMaxSlots];
 						assert(m_pSlotInfo[i] != 0);
 
 						for (uint32_t j = 0; j < nMaxSlots; j++) {
@@ -415,7 +417,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	DEBUG2_ENTRY;
 
 	if (nSlotOffset > m_nDmxFootprint) {

@@ -2,7 +2,7 @@
  * @file sparkfundmx.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,7 +78,7 @@ public:
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 //
 	void SetGlobalSpiCs(uint8_t nSpiCs) {
@@ -124,7 +124,7 @@ private:
 	MotorParams *m_pMotorParams[SPARKFUN_DMX_MAX_MOTORS];
 	ModeParams *m_pModeParams[SPARKFUN_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SPARKFUN_DMX_MAX_MOTORS];
-	struct TLightSetSlotInfo *m_pSlotInfo[SPARKFUN_DMX_MAX_MOTORS];
+	lightset::SlotInfo *m_pSlotInfo[SPARKFUN_DMX_MAX_MOTORS];
 
 	uint8_t m_nGlobalSpiCs;
 	uint8_t m_nGlobalResetPin;

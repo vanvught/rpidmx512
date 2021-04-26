@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,8 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 #define OSCSERVER_MAX_BUFFER 				4096
 
 #define OSCSERVER_DEFAULT_PATH_PRIMARY		"/dmx1"
@@ -67,14 +69,14 @@ OscServer::OscServer() {
 	m_pBuffer = new char[OSCSERVER_MAX_BUFFER];
 	assert(m_pBuffer != nullptr);
 
-	m_pData  = new uint8_t[DMX_UNIVERSE_SIZE];
+	m_pData  = new uint8_t[Dmx::UNIVERSE_SIZE];
 	assert(m_pData != nullptr);
 
-	for (unsigned i = 0; i < DMX_UNIVERSE_SIZE; i++) {
+	for (unsigned i = 0; i < Dmx::UNIVERSE_SIZE; i++) {
 		m_pData[i] = 0;
 	}
 
-	m_pOsc  = new uint8_t[DMX_UNIVERSE_SIZE];
+	m_pOsc  = new uint8_t[Dmx::UNIVERSE_SIZE];
 	assert(m_pOsc != nullptr);
 
 	snprintf(m_Os, sizeof(m_Os), "[V%s] %s", SOFTWARE_VERSION, __DATE__);
@@ -148,7 +150,7 @@ void  OscServer::SetOscServerHandler(OscServerHandler *pOscServerHandler) {
 
 void OscServer::SetPath(const char* pPath) {
 	if (*pPath == '/') {
-		unsigned length = sizeof(m_aPath) - 3; // We need space for '\0' and "/*"
+		auto length = sizeof(m_aPath) - 3; // We need space for '\0' and "/*"
 		strncpy(m_aPath, pPath, length);
 		length = strlen(m_aPath);
 
@@ -173,7 +175,7 @@ const char* OscServer::GetPath() {
 
 void OscServer::SetPathInfo(const char* pPathInfo) {
 	if (*pPathInfo == '/') {
-		unsigned length = sizeof(m_aPathInfo) - 1; // We need space for '\0'
+		auto length = sizeof(m_aPathInfo) - 1; // We need space for '\0'
 		strncpy(m_aPathInfo, pPathInfo, length);
 		length = strlen(m_aPathInfo);
 
@@ -191,7 +193,7 @@ const char* OscServer::GetPathInfo() {
 
 void OscServer::SetPathBlackOut(const char* pPathBlackOut) {
 	if (*pPathBlackOut == '/') {
-		unsigned length = sizeof(m_aPathInfo) - 1; // We need space for '\0'
+		auto length = sizeof(m_aPathInfo) - 1; // We need space for '\0'
 		strncpy(m_aPathBlackOut, pPathBlackOut, length);
 		length = strlen(m_aPathBlackOut);
 
@@ -218,7 +220,7 @@ void OscServer::SetPartialTransmission(bool bPartialTransmission) {
 int OscServer::GetChannel(const char* p) {
 	assert(p != nullptr);
 
-	char *s = const_cast<char *>(p) + strlen(m_aPath) + 1;
+	auto *s = const_cast<char *>(p) + strlen(m_aPath) + 1;
 	int nChannel = 0;
 	int i;
 
@@ -233,7 +235,7 @@ int OscServer::GetChannel(const char* p) {
 		s++;
 	}
 
-	if (nChannel > DMX_UNIVERSE_SIZE) {
+	if (nChannel > Dmx::UNIVERSE_SIZE) {
 		return -1;
 	}
 
@@ -242,16 +244,14 @@ int OscServer::GetChannel(const char* p) {
 
 bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint16_t nLength) {
 	assert(pData != nullptr);
-	assert(nLength <= DMX_UNIVERSE_SIZE);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
-	bool isChanged = false;
+	auto isChanged = false;
+	const auto *src = pData;
+	auto *dst = &m_pData[--nStartChannel];
+	const auto nEnd = static_cast<uint32_t>(nStartChannel + nLength);
 
-	const uint8_t *src = pData;
-	uint8_t *dst = &m_pData[--nStartChannel];
-
-	uint16_t nEnd = nStartChannel + nLength;
-
-	assert(nEnd <= DMX_UNIVERSE_SIZE);
+	assert(nEnd <= Dmx::UNIVERSE_SIZE);
 
 	for (uint32_t i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
@@ -275,7 +275,7 @@ void OscServer::Run() {
 		return;
 	}
 
-	bool bIsDmxDataChanged = false;
+	auto bIsDmxDataChanged = false;
 
 	OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
@@ -284,22 +284,22 @@ void OscServer::Run() {
 	DEBUG_PRINTF("[%d] path : %s", nBytesReceived, OSC::GetPath(m_pBuffer, nBytesReceived));
 
 	if (OSC::isMatch(m_pBuffer, m_aPath)) {
-		const int nArgc = Msg.GetArgc();
+		const auto nArgc = Msg.GetArgc();
 
 		if ((nArgc == 1) && (Msg.GetType(0) == osc::type::BLOB)) {
 			DEBUG_PUTS("Blob received");
 
 			OSCBlob blob = Msg.GetBlob(0);
-			const uint32_t size = blob.GetDataSize();
+			const auto size = blob.GetDataSize();
 
-			if (size <= DMX_UNIVERSE_SIZE) {
-				const uint8_t *ptr = blob.GetDataPtr();
+			if (size <= Dmx::UNIVERSE_SIZE) {
+				const auto *ptr = blob.GetDataPtr();
 
 				bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
 
 				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
-					if ((!m_bPartialTransmission) || (size == DMX_UNIVERSE_SIZE)) {
-						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
+					if ((!m_bPartialTransmission) || (size == Dmx::UNIVERSE_SIZE)) {
+						m_pLightSet->SetData(0, m_pData, Dmx::UNIVERSE_SIZE);
 					} else {
 						m_nLastChannel = size > m_nLastChannel ? size : m_nLastChannel;
 						m_pLightSet->SetData(0, m_pData, m_nLastChannel);
@@ -317,7 +317,7 @@ void OscServer::Run() {
 		} else if ((nArgc == 2) && (Msg.GetType(0) == osc::type::INT32)) {
 			uint16_t nChannel = (1 + Msg.GetInt(0));
 
-			if ((nChannel < 1) || (nChannel > DMX_UNIVERSE_SIZE)) {
+			if ((nChannel < 1) || (nChannel > Dmx::UNIVERSE_SIZE)) {
 				DEBUG_PRINTF("Invalid channel [%d]", nChannel);
 				return;
 			}
@@ -329,7 +329,7 @@ void OscServer::Run() {
 				nData = Msg.GetInt(1);
 			} else if (Msg.GetType(1) == osc::type::FLOAT) {
 				DEBUG_PUTS("if received");
-				nData = (Msg.GetFloat(1) * DMX_MAX_VALUE);
+				nData = (Msg.GetFloat(1) * Dmx::MAX_VALUE);
 			} else {
 				return;
 			}
@@ -340,7 +340,7 @@ void OscServer::Run() {
 
 			if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 				if (!m_bPartialTransmission) {
-					m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
+					m_pLightSet->SetData(0, m_pData, Dmx::UNIVERSE_SIZE);
 				} else {
 					m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 					m_pLightSet->SetData(0, m_pData, m_nLastChannel);
@@ -362,7 +362,7 @@ void OscServer::Run() {
 		if (nArgc == 1) { // /path/N 'i' or 'f'
 			const uint16_t nChannel = GetChannel(m_pBuffer);
 
-			if (nChannel >= 1 && nChannel <= DMX_UNIVERSE_SIZE) {
+			if (nChannel >= 1 && nChannel <= Dmx::UNIVERSE_SIZE) {
 				uint8_t nData;
 
 				if (Msg.GetType(0) == osc::type::INT32) {
@@ -370,7 +370,7 @@ void OscServer::Run() {
 					nData = Msg.GetInt(0);
 				} else if (Msg.GetType(0) == osc::type::FLOAT) {
 					DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
-					nData = (Msg.GetFloat(0) * DMX_MAX_VALUE);
+					nData = (Msg.GetFloat(0) * Dmx::MAX_VALUE);
 				} else {
 					return;
 				}
@@ -381,7 +381,7 @@ void OscServer::Run() {
 
 				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 					if (!m_bPartialTransmission) {
-						m_pLightSet->SetData(0, m_pData, DMX_UNIVERSE_SIZE);
+						m_pLightSet->SetData(0, m_pData, Dmx::UNIVERSE_SIZE);
 					} else {
 						m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 						m_pLightSet->SetData(0, m_pData, m_nLastChannel);

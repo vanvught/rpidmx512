@@ -45,7 +45,7 @@
 RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
 	DEBUG_ENTRY
 
-	m_E131Uuid.GetHardwareUuid(m_Cid);
+	E131Uuid::GetHardwareUuid(m_Cid);
 
 	m_pRdmCommand = new struct TRdmMessage;
 	assert(m_pRdmCommand != nullptr);

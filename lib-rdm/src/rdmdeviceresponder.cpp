@@ -45,6 +45,8 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 static constexpr char LANGUAGE[2] = { 'e', 'n' };
 
 #if defined(H3)
@@ -69,7 +71,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 		m_pLightSet(pLightSet),
 		m_IsFactoryDefaults(true),
 		m_nCheckSum(0),
-		m_nDmxStartAddressFactoryDefault(DMX_START_ADDRESS_DEFAULT),
+		m_nDmxStartAddressFactoryDefault(Dmx::START_ADDRESS_DEFAULT),
 		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY),
 		m_pRDMFactoryDefaults(nullptr)
 {
@@ -152,7 +154,7 @@ uint16_t RDMDeviceResponder::GetDmxStartAddress(uint16_t nSubDevice) {
 }
 
 void RDMDeviceResponder::SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAddress) {
-	if (nDmxStartAddress == 0 || nDmxStartAddress > DMX_UNIVERSE_SIZE)
+	if (nDmxStartAddress == 0 || nDmxStartAddress > Dmx::UNIVERSE_SIZE)
 		return;
 
 	if (nSubDevice != RDM_ROOT_DEVICE) {
@@ -199,7 +201,7 @@ RDMPersonality* RDMDeviceResponder::GetPersonality(uint16_t nSubDevice,  uint8_t
 	return m_pRDMPersonality;
 }
 
-bool RDMDeviceResponder::GetSlotInfo(uint16_t nSubDevice, uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool RDMDeviceResponder::GetSlotInfo(uint16_t nSubDevice, uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	if (nSubDevice != RDM_ROOT_DEVICE) {
 		return false; // TODO GetSlotInfo SubDevice
 	}

@@ -55,7 +55,7 @@ public: // RDM
 
 	void SetSlotInfoRaw(const char *pSlotInfoRaw);
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 public:
 	uint8_t GetI2cAddress() const;
@@ -83,18 +83,18 @@ private:
 	void Initialize();
 
 private:
-	uint16_t m_nDmxStartAddress{1};
-	uint16_t m_nDmxFootprint{PCA9685_PWM_CHANNELS};
-	uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
-	uint8_t m_nBoardInstances{1};
-	uint16_t m_nPwmFrequency{PWMLED_DEFAULT_FREQUENCY};
-	bool m_bOutputInvert{false};
-	bool m_bOutputDriver{true};
-	bool m_bIsStarted{false};
-	PCA9685PWMLed **m_pPWMLed{nullptr};
-	uint8_t *m_pDmxData{nullptr};
-	char *m_pSlotInfoRaw{nullptr};
-	struct TLightSetSlotInfo *m_pSlotInfo{nullptr};
+	uint16_t m_nDmxStartAddress { 1 };
+	uint16_t m_nDmxFootprint { PCA9685_PWM_CHANNELS };
+	uint8_t m_nI2cAddress { PCA9685_I2C_ADDRESS_DEFAULT };
+	uint8_t m_nBoardInstances { 1 };
+	uint16_t m_nPwmFrequency { PWMLED_DEFAULT_FREQUENCY };
+	bool m_bOutputInvert { false };
+	bool m_bOutputDriver { true };
+	bool m_bIsStarted { false };
+	PCA9685PWMLed **m_pPWMLed { nullptr };
+	uint8_t *m_pDmxData { nullptr };
+	char *m_pSlotInfoRaw { nullptr };
+	lightset::SlotInfo *m_pSlotInfo { nullptr };
 };
 
 #endif /* PCA9685DMXLED_H_ */

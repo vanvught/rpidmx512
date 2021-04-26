@@ -2,7 +2,7 @@
  * @file tlc59711dmxparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,8 +49,8 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, GetLedTypeString(m_tTLC59711Params.LedType), isMaskSet(TLC59711DmxParamsMask::LED_TYPE));
-	builder.Add(DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DmxParamsMask::LED_COUNT));
+	builder.Add(DevicesParamsConst::TYPE, GetType(m_tTLC59711Params.LedType), isMaskSet(TLC59711DmxParamsMask::TYPE));
+	builder.Add(DevicesParamsConst::COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DmxParamsMask::COUNT));
 	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DmxParamsMask::START_ADDRESS));
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DmxParamsMask::SPI_SPEED));
 

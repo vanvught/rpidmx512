@@ -40,6 +40,8 @@
 
 #include "network.h"
 
+using namespace artnet;
+
 void ArtNetParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
@@ -119,7 +121,7 @@ void ArtNetParams::Dump() {
 	}
 
 	if(isMaskSet(ArtnetParamsMask::DIRECTION)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, static_cast<int>(m_tArtNetParams.nDirection), m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "Input" : "Output");
+		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, static_cast<int>(m_tArtNetParams.nDirection), m_tArtNetParams.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
 	}
 
 	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {

@@ -2,7 +2,7 @@
  * @file artnetreboot.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,18 +27,17 @@
 #define ARTNETREBOOT_H_
 
 #include "hardware.h"
-
 #include "artnetnode.h"
+#include "lightset.h"
 
 class ArtNetReboot: public RebootHandler {
 public:
-	ArtNetReboot() {
-	}
-	~ArtNetReboot() {
-	}
+	ArtNetReboot() {}
+	~ArtNetReboot() {}
 
 	void Run() {
 		ArtNetNode::Get()->Stop();
+		LightSet::Get()->Blackout(true);
 	}
 };
 

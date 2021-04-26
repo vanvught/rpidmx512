@@ -32,8 +32,7 @@
 
 #include "ws28xxmulti.h"
 
-#include "rgbmapping.h"
-
+#include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
 
 namespace ws28xxdmxmulti {
@@ -42,68 +41,27 @@ namespace ws28xxdmxmulti {
 
 class WS28xxDmxMulti final: public LightSet {
 public:
-	WS28xxDmxMulti();
+	WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration);
 	~WS28xxDmxMulti() override;
-
-	void Initialize();
 
 	void Start(uint8_t nPort) override;
 	void Stop(uint8_t nPort) override;
 
 	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
-	void Blackout(bool bBlackout);
-
-	void SetLEDType(ws28xx::Type tWS28xxMultiType);
-	ws28xx::Type GetLEDType() const {
-		if (m_pLEDStripe != nullptr) {
-			return m_pLEDStripe->GetLEDType();
-		}
-		return m_tLedType;
-	}
-
-	void SetRgbMapping(rgbmapping::Map tRGBMapping) {
-		m_tRGBMapping = tRGBMapping;
-	}
-
-	void SetLowCode(uint8_t nLowCode) {
-		m_nLowCode = nLowCode;
-	}
-
-	void SetHighCode(uint8_t nHighCode) {
-		m_nHighCode = nHighCode;
-	}
-
-	void SetLEDCount(uint16_t nLedCount);
-	uint32_t GetLEDCount() const {
-		return m_nLedCount;
-	}
-
-	void SetActivePorts(uint8_t nActiveOutputs);
-	uint32_t GetActivePorts() const {
-		return m_nActiveOutputs;
-	}
+	void Blackout(bool bBlackout) override;
 
 	uint32_t GetUniverses() const {
 		return m_nUniverses;
 	}
 
-	void SetUseSI5351A(bool bUse) {
-		m_bUseSI5351A = bUse;
-	}
-	bool GetUseSI5351A() const {
-		return m_bUseSI5351A;
+	uint32_t GetGroups() const {
+		return m_nGroups;
 	}
 
-	ws28xxmulti::Board GetBoard() const {
-		if (m_pLEDStripe != nullptr) {
-			return m_pLEDStripe->GetBoard();
-		}
-		return ws28xxmulti::Board::UNKNOWN;
+	uint32_t GetOutputPorts() const {
+		return m_nOutputPorts;
 	}
-
-	void SetTestPattern(pixelpatterns::Pattern TestPattern);
-	void RunTestPattern();
 
 	void Print() override;
 
@@ -113,7 +71,7 @@ public:
 	}
 
 	uint16_t GetDmxStartAddress() override {
-		return DMX_ADDRESS_INVALID;
+		return lightset::Dmx::ADDRESS_INVALID;
 	}
 
 	uint16_t GetDmxFootprint() override {
@@ -121,34 +79,17 @@ public:
 	}
 
 private:
-	void UpdateMembers();
+	pixeldmxconfiguration::PortInfo m_PortInfo;
+	uint32_t m_nChannelsPerPixel;
+	uint32_t m_nGroups;
+	uint32_t m_nGroupingCount;
+	uint32_t m_nUniverses;
+	uint32_t m_nOutputPorts;
 
-private:
-	ws28xx::Type m_tLedType { ws28xx::defaults::TYPE };
-
-	rgbmapping::Map m_tRGBMapping { rgbmapping::Map::UNDEFINED };
-	uint8_t m_nLowCode { 0 };
-	uint8_t m_nHighCode { 0 };
-
-	uint32_t m_nLedCount { ws28xx::defaults::LED_COUNT };
-	uint32_t m_nActiveOutputs { ws28xx::defaults::ACTIVE_OUTPUTS };
-
-	WS28xxMulti *m_pLEDStripe { nullptr };
+	WS28xxMulti *m_pWS28xxMulti { nullptr };
 
 	uint32_t m_bIsStarted { 0 };
 	bool m_bBlackout { false };
-
-	uint32_t m_nUniverses { 1 };
-
-	uint32_t m_nBeginIndexPortId1 { 170 };
-	uint32_t m_nBeginIndexPortId2 { 340 };
-	uint32_t m_nBeginIndexPortId3 { 510 };
-	uint32_t m_nChannelsPerLed { 3 };
-
-	uint32_t m_nPortIdLast { 3 };
-	bool m_bUseSI5351A { false };
-
-	PixelPatterns *m_pPixelPatterns { nullptr };
 };
 
 #endif /* WS28XXDMXMULTI_H_ */

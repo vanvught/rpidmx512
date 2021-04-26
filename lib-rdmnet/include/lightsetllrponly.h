@@ -52,14 +52,14 @@ public:
 	}
 
 	uint16_t GetDmxStartAddress() override {
-		return DMX_ADDRESS_INVALID;
+		return lightset::Dmx::ADDRESS_INVALID;
 	}
 
 	uint16_t GetDmxFootprint() override {
 		return 0;
 	}
 
-	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) struct TLightSetSlotInfo &tSlotInfo) override {
+	bool GetSlotInfo(__attribute__((unused)) uint16_t nSlotOffset, __attribute__((unused)) lightset::SlotInfo &tSlotInfo) override {
 		return false;
 	}
 };

@@ -2,7 +2,7 @@
  * @file artnetparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -42,6 +42,8 @@
 
 #include "debug.h"
 
+using namespace artnet;
+
 void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
@@ -55,7 +57,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == ARTNET_INPUT_PORT ? "input" : "output" , isMaskSet(ArtnetParamsMask::DIRECTION));
+	builder.Add(ArtNetParamsConst::DIRECTION, m_tArtNetParams.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "input" : "output" , isMaskSet(ArtnetParamsMask::DIRECTION));
 
 	builder.Add(ArtNetParamsConst::NET, m_tArtNetParams.nNet, isMaskSet(ArtnetParamsMask::NET));
 	builder.Add(ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet, isMaskSet(ArtnetParamsMask::SUBNET));

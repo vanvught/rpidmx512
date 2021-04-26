@@ -2,7 +2,7 @@
  * @file dmxslotinfo.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +34,11 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 #define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
 
-DmxSlotInfo::DmxSlotInfo(struct TLightSetSlotInfo *ptLightSetSlotInfo, uint32_t nSize):
+DmxSlotInfo::DmxSlotInfo(SlotInfo *ptLightSetSlotInfo, uint32_t nSize):
 	m_ptLightSetSlotInfo(ptLightSetSlotInfo),
 	m_nSize(nSize),
 	m_pToString(nullptr)
@@ -74,7 +76,7 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		bool isSet = false;
-		struct TLightSetSlotInfo tLightSetSlotInfo;
+		SlotInfo tLightSetSlotInfo;
 
 		if (pSlotInfoRaw == nullptr) {
 			break;
@@ -143,7 +145,7 @@ void DmxSlotInfo::Dump() {
 	}
 }
 
-char *DmxSlotInfo::Parse(char *s, bool &isValid, struct TLightSetSlotInfo &tLightSetSlotInfo) {
+char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 	assert(s != nullptr);
 
 	char *b = s;

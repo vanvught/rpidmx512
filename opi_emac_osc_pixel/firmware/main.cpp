@@ -43,11 +43,11 @@
 #include "oscservermsgconst.h"
 
 // Addressable led
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
-#include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
 #include "handler.h"
 #include "storews28xxdmx.h"
@@ -114,7 +114,7 @@ void notmain(void) {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	LightSet *pSpi;
+	LightSet *pSpi = nullptr;
 	OscServerHandler *pHandler;
 
 	bool isLedTypeSet = false;
@@ -132,53 +132,47 @@ void notmain(void) {
 			pHandler = new HandlerTLC59711(pTLC59711Dmx);
 			assert(pHandler != nullptr);
 
-			display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 		}
 	}
 
 	if (!isLedTypeSet) {
-		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
+		assert(pSpi == nullptr);
+
+		PixelDmxConfiguration pixelDmxConfiguration;
+
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
-
-		if (ws28xxparms.IsLedGrouping()) {
-			auto *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != nullptr);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-
-			display.Printf(7, "%s:%d G", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
-
-			pHandler = new Handler(pWS28xxDmxGrouping);
-			assert(pHandler != nullptr);
-		} else  {
-			auto *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != nullptr);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
-
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
-
-			// For the time being, just 1 Universe
-			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
-				if (nLedCount > 128) {
-					pWS28xxDmx->SetLEDCount(128);
-				}
-			} else {
-				if (nLedCount > 170) {
-					pWS28xxDmx->SetLEDCount(170);
-				}
+		// For the time being, just 1 Universe
+		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
+			if (pixelDmxConfiguration.GetCount() > 128) {
+				pixelDmxConfiguration.SetCount(128);
 			}
-
-			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
-
-			pHandler = new Handler(pWS28xxDmx);
-			assert(pHandler != nullptr);
+		} else {
+			if (pixelDmxConfiguration.GetCount() > 170) {
+				pixelDmxConfiguration.SetCount(170);
+			}
 		}
+
+		auto *pPixelDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pPixelDmx != nullptr);
+		pSpi = pPixelDmx;
+
+		const auto nCount = pixelDmxConfiguration.GetCount();
+
+		if (pixelDmxConfiguration.GetGroupingEnabled()) {
+			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
+		} else {
+			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
+		}
+
+		pHandler = new Handler(pPixelDmx);
+		assert(pHandler != nullptr);
 	}
 
 	server.SetOutput(pSpi);

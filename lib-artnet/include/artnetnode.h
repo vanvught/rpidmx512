@@ -138,11 +138,11 @@ struct TOutputPort {
 	uint8_t dataB[ArtNet::DMX_LENGTH];	///< The data received from Port B
 	uint32_t nMillisB;					///< The latest time of the data received from Port B
 	uint32_t ipB;						///< The IP address for Port B
-	ArtNetMerge mergeMode;				///< \ref ArtNetMerge
+	artnet::Merge mergeMode;				///< \ref artnet::Merge
 	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
 	bool bIsEnabled;					///< Is the port enabled ?
 	TGenericPort port;					///< \ref TGenericPort
-	TPortProtocol tPortProtocol;		///< Art-Net 4
+	artnet::PortProtocol tPortProtocol;		///< Art-Net 4
 };
 
 struct TInputPort {
@@ -202,10 +202,10 @@ public:
 		return m_Node.LongName;
 	}
 
-	int SetUniverse(uint8_t nPortIndex, TArtNetPortDir dir, uint16_t nAddress);
+	int SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
 
-	int SetUniverseSwitch(uint8_t nPortIndex, TArtNetPortDir dir, uint8_t nAddress);
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
+	int SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
+	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
 
 	void SetNetSwitch(uint8_t nAddress, uint8_t nPage);
 	uint8_t GetNetSwitch(uint8_t nPage) const;
@@ -213,13 +213,13 @@ public:
 	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage);
 	uint8_t GetSubnetSwitch(uint8_t nPage) const;
 
-	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,TArtNetPortDir dir = ARTNET_OUTPUT_PORT) const;
+	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, ArtNetMerge tMergeMode);
-	ArtNetMerge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint8_t nPortIndex, artnet::Merge tMergeMode);
+	artnet::Merge GetMergeMode(uint8_t nPortIndex) const;
 
-	void SetPortProtocol(uint8_t nPortIndex, TPortProtocol tPortProtocol);
-	TPortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+	void SetPortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol);
+	artnet::PortProtocol GetPortProtocol(uint8_t nPortIndex) const;
 
 	void SetOemValue(const uint8_t *);
 	const uint8_t *GetOemValue() const {

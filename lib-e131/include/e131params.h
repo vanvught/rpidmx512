@@ -39,7 +39,7 @@ namespace E131_PARAMS {
 
 struct TE131Params {
     uint32_t nSetList;
-    TLightSetOutputType tOutputType;
+    uint8_t nOutputType;
     uint16_t nUniverse;
     uint16_t nUniversePort[E131_PARAMS::MAX_PORTS];
 	uint8_t nMergeMode;
@@ -96,16 +96,16 @@ public:
 
 	void Dump();
 
-	TLightSetOutputType GetOutputType() const {
-		return m_tE131Params.tOutputType;
+	lightset::OutputType GetOutputType() const {
+		return static_cast<lightset::OutputType>(m_tE131Params.nOutputType);
 	}
 
 	uint16_t GetUniverse() const {
 		return m_tE131Params.nUniverse;
 	}
 
-	E131Merge GetMergeMode() const {
-		return static_cast<E131Merge>(m_tE131Params.nMergeMode);
+	e131::Merge GetMergeMode() const {
+		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
 	}
 
 	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
@@ -114,8 +114,8 @@ public:
 		return isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT);
 	}
 
-	TE131PortDir GetDirection() const {
-		return static_cast<TE131PortDir>(m_tE131Params.nDirection);
+	e131::PortDir GetDirection() const {
+		return static_cast<e131::PortDir>(m_tE131Params.nDirection);
 	}
 
     static void staticCallbackFunction(void *p, const char *s);

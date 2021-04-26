@@ -41,7 +41,7 @@ struct TArtNetParams {
 	uint8_t nNet;											///< 1	  5
 	uint8_t nSubnet;										///< 1	  6
 	uint8_t nUniverse;										///< 1	  7
-	TLightSetOutputType tOutputType;						///< 1	  8
+	uint8_t nOutputType;									///< 1	  8
 	uint8_t NotUsed0;										///< 1	  9
 	uint8_t NotUsed1;										///< 1	 10
 	uint8_t NotUsed2;										///< 1	 11
@@ -147,8 +147,8 @@ public:
 		return m_tArtNetParams.aLongName;
 	}
 
-	TLightSetOutputType GetOutputType() const {
-		return m_tArtNetParams.tOutputType;
+	lightset::OutputType GetOutputType() const {
+		return static_cast<lightset::OutputType>(m_tArtNetParams.nOutputType);
 	}
 
 	time_t GetNetworkTimeout() const {
@@ -173,8 +173,8 @@ public:
 		return isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT);
 	}
 
-	TArtNetPortDir GetDirection() const {
-		return static_cast<TArtNetPortDir>(m_tArtNetParams.nDirection);
+	artnet::PortDir GetDirection() const {
+		return static_cast<artnet::PortDir>(m_tArtNetParams.nDirection);
 	}
 
 public:

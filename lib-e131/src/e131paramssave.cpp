@@ -24,8 +24,8 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
@@ -41,6 +41,8 @@
 
 #include "debug.h"
 
+using namespace e131;
+
 void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
 
@@ -52,7 +54,7 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, 
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == E131_INPUT_PORT ? "input" : "output" , isMaskSet(E131ParamsMask::DIRECTION));
+	builder.Add(E131ParamsConst::DIRECTION, m_tE131Params.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "input" : "output" , isMaskSet(E131ParamsMask::DIRECTION));
 
 	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tE131Params.nUniverse, isMaskSet(E131ParamsMask::UNIVERSE));
 

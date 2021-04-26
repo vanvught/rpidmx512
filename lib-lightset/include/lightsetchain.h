@@ -2,7 +2,7 @@
  * @file lightsetchain.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ public: // RDM
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 public:
 	bool Add(LightSet *, int nType = LIGHTSET_TYPE_UNDEFINED);
@@ -76,10 +76,10 @@ public:
 	void Dump();
 
 private:
-	uint8_t m_nSize{0};
+	uint8_t m_nSize { 0 };
 	TLightSetEntry *m_pTable;
-	uint16_t m_nDmxStartAddress{DMX_ADDRESS_INVALID};
-	uint16_t m_nDmxFootprint{0};
+	uint16_t m_nDmxStartAddress { lightset::Dmx::ADDRESS_INVALID };
+	uint16_t m_nDmxFootprint { 0 };
 };
 
 #endif /* LIGHTSETCHAIN_H_ */

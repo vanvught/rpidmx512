@@ -33,46 +33,43 @@
 #include "ws28xxdmxparams.h"
 #include "ws28xx.h"
 
-#include "rgbmapping.h"
+#include "pixeldmxconfiguration.h"
 
 #include "debug.h"
 
 using namespace ws28xxdmxmulti;
-using namespace ws28xx;
+using namespace pixel;
+using namespace lightset;
 
-static uint8_t s_StopBuffer[DMX_UNIVERSE_SIZE];
+static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE];
 
-WS28xxDmxMulti::WS28xxDmxMulti() {
+WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration) {
 	DEBUG_ENTRY
-
-	UpdateMembers();
 
 	for (uint32_t i = 0; i < sizeof(s_StopBuffer); i++) {
 		s_StopBuffer[i] = 0;
 	}
 
-	m_pLEDStripe = new WS28xxMulti;
+	pixelDmxConfiguration.Validate(WS28xxMulti::GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
+
+	DEBUG_PRINTF("m_nChannelsPerPixel=%u, m_nGroups=%u, m_nUniverses=%u", m_nChannelsPerPixel, m_nGroups, m_nUniverses);
+
+	m_pWS28xxMulti = new WS28xxMulti(pixelDmxConfiguration);
+	assert(m_pWS28xxMulti != nullptr);
+
+	m_pWS28xxMulti->Blackout();
+
+	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
+	m_nOutputPorts = pixelDmxConfiguration.GetOutputPorts();
+
+	pixelDmxConfiguration.Dump();
 
 	DEBUG_EXIT
 }
 
 WS28xxDmxMulti::~WS28xxDmxMulti() {
-	delete m_pLEDStripe;
-	m_pLEDStripe = nullptr;
-}
-
-void WS28xxDmxMulti::Initialize() {
-	assert(m_pLEDStripe != nullptr);
-
-	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_tRGBMapping=%d, m_nLowCode=%d, m_nHighCode=%d", m_tLedType, m_nLedCount, static_cast<int>(m_tRGBMapping), m_nLowCode, m_nHighCode);
-
-	m_pLEDStripe->Initialize(m_tLedType, m_nLedCount, m_tRGBMapping, m_nLowCode, m_nHighCode, m_bUseSI5351A);
-
-	while (m_pLEDStripe->IsUpdating()) {
-		// wait for completion
-	}
-
-	m_pLEDStripe->Blackout();
+	delete m_pWS28xxMulti;
+	m_pWS28xxMulti = nullptr;
 }
 
 void WS28xxDmxMulti::Start(uint8_t nPortId) {
@@ -88,8 +85,6 @@ void WS28xxDmxMulti::Start(uint8_t nPortId) {
 }
 
 void WS28xxDmxMulti::Stop(uint8_t nPortId) {
-	assert(m_pLEDStripe != nullptr);
-
 	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
 
 	if (m_bIsStarted & (1U << nPortId)) {
@@ -104,10 +99,8 @@ void WS28xxDmxMulti::Stop(uint8_t nPortId) {
 
 void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
 	assert(pData != nullptr);
-	assert(nLength <= DMX_UNIVERSE_SIZE);
-	assert(m_pLEDStripe != nullptr);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
-	uint32_t i = 0;
 	uint32_t beginIndex, endIndex;
 
 #if defined (NODE_ARTNET)
@@ -121,19 +114,19 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 	switch (nSwitch) {
 	case 0:
 		beginIndex = 0;
-		endIndex = std::min(m_nLedCount, (nLength / m_nChannelsPerLed));
+		endIndex = std::min(m_nGroups, (nLength / m_nChannelsPerPixel));
 		break;
 	case 1:
-		beginIndex = m_nBeginIndexPortId1;
-		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId1;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 		break;
 	case 2:
-		beginIndex = m_nBeginIndexPortId2;
-		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId2;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 		break;
 	case 3:
-		beginIndex = m_nBeginIndexPortId3;
-		endIndex = std::min(m_nLedCount, (beginIndex + (nLength / m_nChannelsPerLed)));
+		beginIndex = m_PortInfo.nBeginIndexPortId3;
+		endIndex = std::min(m_nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 		break;
 	default:
 		__builtin_unreachable();
@@ -146,152 +139,55 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 			static_cast<int>(nSwitch), static_cast<int>(beginIndex), static_cast<int>(endIndex));
 #endif
 
-	while (m_pLEDStripe->IsUpdating()) {
+	while (m_pWS28xxMulti->IsUpdating()) {
 		// wait for completion
 	}
 
-	for (uint32_t j = beginIndex; j < endIndex; j++) {
-		__builtin_prefetch(&pData[i]);
-		if (m_tLedType == Type::SK6812W) {
-			if (i + 3 > nLength) {
-				break;
+	uint32_t d = 0;
+
+	if (m_nChannelsPerPixel == 3) {
+		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+			auto const nPixelIndexStart = j * m_nGroupingCount;
+			__builtin_prefetch(&pData[d]);
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
-			m_pLEDStripe->SetLED(nOutIndex, j, pData[i], pData[i + 1], pData[i + 2], pData[i + 3]);
-			i = i + 4;
-		} else {
-			if (i + 2 > nLength) {
-				break;
+			d = d + 3;
+		}
+	} else {
+		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+			auto const nPixelIndexStart = j * m_nGroupingCount;
+			__builtin_prefetch(&pData[d]);
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
-			m_pLEDStripe->SetLED(nOutIndex, j, pData[i], pData[i + 1], pData[i + 2]);
-			i = i + 3;
+			d = d + 4;
 		}
 	}
 
-	if (nPortId == m_nPortIdLast) {
-		m_pLEDStripe->Update();
+	if (nPortId == m_PortInfo.nProtocolPortIdLast) {
+		m_pWS28xxMulti->Update();
 	}
 }
 
 void WS28xxDmxMulti::Blackout(bool bBlackout) {
 	m_bBlackout = bBlackout;
 
-	while (m_pLEDStripe->IsUpdating()) {
+	while (m_pWS28xxMulti->IsUpdating()) {
 		// wait for completion
 	}
 
 	if (bBlackout) {
-		m_pLEDStripe->Blackout();
+		m_pWS28xxMulti->Blackout();
 	} else {
-		m_pLEDStripe->Update();
+		m_pWS28xxMulti->Update();
 	}
-}
-
-void WS28xxDmxMulti::SetLEDType(Type tWS28xxMultiType) {
-	DEBUG_ENTRY
-
-	m_tLedType = tWS28xxMultiType;
-
-	if (tWS28xxMultiType == Type::SK6812W) {
-		m_nBeginIndexPortId1 = 128;
-		m_nBeginIndexPortId2 = 256;
-		m_nBeginIndexPortId3 = 384;
-
-		m_nChannelsPerLed = 4;
-	}
-
-	UpdateMembers();
-
-	DEBUG_EXIT
-}
-
-void WS28xxDmxMulti::SetLEDCount(uint16_t nLedCount) {
-	DEBUG_ENTRY
-
-	m_nLedCount = nLedCount;
-
-	UpdateMembers();
-
-	DEBUG_EXIT
-}
-
-void WS28xxDmxMulti::SetActivePorts(uint8_t nActiveOutputs) {
-	DEBUG_ENTRY
-
-	const uint8_t nMaxActiveOutputs = (m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8);
-
-	m_nActiveOutputs = std::min(nActiveOutputs, nMaxActiveOutputs);
-
-	UpdateMembers();
-
-	DEBUG_EXIT
-}
-
-void WS28xxDmxMulti::UpdateMembers() {
-	m_nUniverses = 1 + (m_nLedCount / (1 + m_nBeginIndexPortId1));
-
-#if defined (NODE_ARTNET)
-	m_nPortIdLast = ((m_nActiveOutputs - 1) * 4) + m_nUniverses - 1;
-#else
-	m_nPortIdLast = (m_nActiveOutputs * m_nUniverses)  - 1;
-#endif
-
-	DEBUG_PRINTF("m_tLedType=%d, m_nLedCount=%d, m_nUniverses=%d, m_nPortIndexLast=%d", static_cast<int>(m_tLedType), static_cast<int>(m_nLedCount), static_cast<int>(m_nUniverses), static_cast<int>(m_nPortIdLast));
 }
 
 void WS28xxDmxMulti::Print() {
-	assert(m_pLEDStripe != nullptr);
+	m_pWS28xxMulti->Print();
 
-	printf("Led parameters\n");
-	printf(" Type    : %s [%d]\n", WS28xx::GetLedTypeString(m_pLEDStripe->GetLEDType()), m_pLEDStripe->GetLEDType());
-	printf(" Mapping : %s [%d]\n", RGBMapping::ToString(m_pLEDStripe->GetRgbMapping()), m_pLEDStripe->GetRgbMapping());
-	printf(" T0H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(m_pLEDStripe->GetLowCode()), m_pLEDStripe->GetLowCode());
-	printf(" T1H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(m_pLEDStripe->GetHighCode()), m_pLEDStripe->GetHighCode());
-	printf(" Count   : %d\n", m_nLedCount);
-	printf(" Outputs : %d\n", m_nActiveOutputs);
-	printf(" Board   : %dx\n", m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8);
-	if (m_pLEDStripe->GetBoard() == ws28xxmulti::Board::X4) {
-		printf("  SI5351A : %c\n", m_bUseSI5351A ? 'Y' : 'N');
-	}
-}
-
-void WS28xxDmxMulti::SetTestPattern(pixelpatterns::Pattern TestPattern) {
-	if ((TestPattern != pixelpatterns::Pattern::NONE) && (TestPattern < pixelpatterns::Pattern::LAST)) {
-		if (m_pPixelPatterns == nullptr) {
-			m_pPixelPatterns = new PixelPatterns(m_nActiveOutputs);
-			assert(m_pPixelPatterns != nullptr);
-		}
-
-		const auto nColour1 = m_pPixelPatterns->Colour(0, 0, 0);
-		const auto nColour2 = m_pPixelPatterns->Colour(100, 100, 100);
-		constexpr auto nInterval = 100;
-		constexpr auto nSteps = 10;
-
-		for (uint32_t i = 0; i < m_nActiveOutputs; i++) {
-			switch (TestPattern) {
-			case pixelpatterns::Pattern::RAINBOW_CYCLE:
-				m_pPixelPatterns->RainbowCycle(i, nInterval);
-				break;
-			case pixelpatterns::Pattern::THEATER_CHASE:
-				m_pPixelPatterns->TheaterChase(i, nColour1, nColour2, nInterval);
-				break;
-			case pixelpatterns::Pattern::COLOR_WIPE:
-				m_pPixelPatterns->ColourWipe(i, nColour2, nInterval);
-				break;
-			case pixelpatterns::Pattern::SCANNER:
-				m_pPixelPatterns->Scanner(i, m_pPixelPatterns->Colour(255, 255, 255), nInterval);
-				break;
-			case pixelpatterns::Pattern::FADE:
-				m_pPixelPatterns->Fade(i, nColour1, nColour2, nSteps, nInterval);
-				break;
-			default:
-				break;
-			}
-		}
-	}
-}
-
-void WS28xxDmxMulti::RunTestPattern() {
-	if (m_pPixelPatterns != nullptr) {
-		m_pPixelPatterns->Run();
-	}
+	printf("Pixel DMX parameters\n");
+	printf(" Outputs : %d\n", m_nOutputPorts);
+	printf(" Grouping count : %d [Groups : %d]\n", m_nGroupingCount, m_nGroups);
 }

@@ -2,7 +2,7 @@
  * @file tlc59711dmxparams.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,14 +24,14 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -43,6 +43,8 @@
 
 #include "devicesparamsconst.h"
 #include "lightsetconst.h"
+
+using namespace lightset;
 
 #define TLC59711_TYPES_MAX_NAME_LENGTH 		10
 constexpr char sLedTypes[TTLC59711_TYPE_UNDEFINED][TLC59711_TYPES_MAX_NAME_LENGTH] = { "TLC59711\0", "TLC59711W" };
@@ -101,28 +103,28 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	char buffer[12];
 
 	uint32_t nLength = 9;
-	if (Sscan::Char(pLine, DevicesParamsConst::LED_TYPE, buffer, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, DevicesParamsConst::TYPE, buffer, nLength) == Sscan::OK) {
 		buffer[nLength] = '\0';
 		if (strcasecmp(buffer, sLedTypes[TTLC59711_TYPE_RGB]) == 0) {
 			m_tTLC59711Params.LedType = TTLC59711_TYPE_RGB;
-			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::LED_TYPE;
+			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::TYPE;
 		} else if (strcasecmp(buffer, sLedTypes[TTLC59711_TYPE_RGBW]) == 0) {
 			m_tTLC59711Params.LedType = TTLC59711_TYPE_RGBW;
-			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::LED_TYPE;
+			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::TYPE;
 		}
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::LED_COUNT, value8) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, DevicesParamsConst::COUNT, value8) == Sscan::OK) {
 		if ((value8 != 0) && (value8 <= 170)) {
 			m_tTLC59711Params.nLedCount = value8;
-			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::LED_COUNT;
+			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::COUNT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= DMX_UNIVERSE_SIZE)) {
+		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
 			m_tTLC59711Params.nDmxStartAddress = value16;
 			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::START_ADDRESS;
 		}
@@ -137,20 +139,16 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 
 void TLC59711DmxParams::Dump() {
 #ifndef NDEBUG
-	if (m_tTLC59711Params.nSetList == 0) {
-		return;
-	}
-
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DevicesParamsConst::FILE_NAME);
 
-	if(isMaskSet(TLC59711DmxParamsMask::LED_TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::LED_TYPE,
+	if(isMaskSet(TLC59711DmxParamsMask::TYPE)) {
+		printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE,
 				sLedTypes[m_tTLC59711Params.LedType],
 				static_cast<int>(m_tTLC59711Params.LedType));
 	}
 
-	if(isMaskSet(TLC59711DmxParamsMask::LED_COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::LED_COUNT, m_tTLC59711Params.nLedCount);
+	if(isMaskSet(TLC59711DmxParamsMask::COUNT)) {
+		printf(" %s=%d\n", DevicesParamsConst::COUNT, m_tTLC59711Params.nLedCount);
 	}
 
 	if(isMaskSet(TLC59711DmxParamsMask::START_ADDRESS)) {
@@ -174,14 +172,14 @@ void TLC59711DmxParams::staticCallbackFunction(void *p, const char *s) {
  * Static
  */
 
-const char *TLC59711DmxParams::GetLedTypeString(TTLC59711Type tTLC59711Type) {
+const char *TLC59711DmxParams::GetType(TTLC59711Type tTLC59711Type) {
 	assert (tTLC59711Type < TTLC59711_TYPE_UNDEFINED);
 
 	return sLedTypes[tTLC59711Type];
 }
 
 
-TTLC59711Type TLC59711DmxParams::GetLedTypeString(const char *pValue) {
+TTLC59711Type TLC59711DmxParams::GetType(const char *pValue) {
 	assert(pValue != nullptr);
 
 	if (strcasecmp(pValue, sLedTypes[TTLC59711_TYPE_RGB]) == 0) {

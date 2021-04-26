@@ -63,7 +63,7 @@ public: // RDM
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 public:
 	void SetUseSpiBusy(bool bUseSpiBusy) {
@@ -112,12 +112,12 @@ private: // MCP23017 Port A , Port B
 	uint16_t m_nDmxStartAddressPortA;
 	uint16_t m_nDmxFootprintPortA;
 	char *m_pSlotInfoRawPortA;
-	struct TLightSetSlotInfo *m_pSlotInfoPortA;
+	lightset::SlotInfo *m_pSlotInfoPortA;
 
 	uint16_t m_nDmxStartAddressPortB;
 	uint16_t m_nDmxFootprintPortB;
 	char *m_pSlotInfoRawPortB;
-	struct TLightSetSlotInfo *m_pSlotInfoPortB;
+	lightset::SlotInfo *m_pSlotInfoPortB;
 
 private:
 	SlushBoard *m_pBoard;
@@ -128,7 +128,7 @@ private:
 	MotorParams *m_pMotorParams[SLUSH_DMX_MAX_MOTORS];
 	ModeParams *m_pModeParams[SLUSH_DMX_MAX_MOTORS];
 	L6470DmxModes *m_pL6470DmxModes[SLUSH_DMX_MAX_MOTORS];
-	struct TLightSetSlotInfo *m_pSlotInfo[SLUSH_DMX_MAX_MOTORS];
+	lightset::SlotInfo *m_pSlotInfo[SLUSH_DMX_MAX_MOTORS];
 
 	uint8_t m_nDmxMode;
 	uint16_t m_nDmxStartAddressMode;

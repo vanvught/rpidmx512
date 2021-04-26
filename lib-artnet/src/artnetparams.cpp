@@ -54,6 +54,8 @@
 
 #include "debug.h"
 
+using namespace artnet;
+
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("sizeof(struct TArtNetParams)=%d", static_cast<int>(sizeof(struct TArtNetParams)));
@@ -68,7 +70,7 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 
 	m_tArtNetParams.aOemValue[0] = ArtNetConst::OEM_ID[1];
 	m_tArtNetParams.aOemValue[1] = ArtNetConst::OEM_ID[0];
-	m_tArtNetParams.nDirection = ARTNET_OUTPUT_PORT;
+	m_tArtNetParams.nDirection = static_cast<uint8_t>(PortDir::OUTPUT);
 
 	DEBUG_EXIT
 }
@@ -209,13 +211,13 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 	nLength = 3;
 	if (Sscan::Char(pLine, LightSetConst::PARAMS_MERGE_MODE, value, nLength) == Sscan::OK) {
-		if(ArtNet::GetMergeMode(value) == ArtNetMerge::LTP) {
-			m_tArtNetParams.nMergeMode = static_cast<uint8_t>(ArtNetMerge::LTP);
+		if(ArtNet::GetMergeMode(value) == Merge::LTP) {
+			m_tArtNetParams.nMergeMode = static_cast<uint8_t>(Merge::LTP);
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::MERGE_MODE;
 			return;
 		}
 
-		m_tArtNetParams.nMergeMode = static_cast<uint8_t>(ArtNetMerge::HTP);
+		m_tArtNetParams.nMergeMode = static_cast<uint8_t>(Merge::HTP);
 		m_tArtNetParams.nSetList &= ~ArtnetParamsMask::MERGE_MODE;
 		return;
 	}
@@ -223,10 +225,10 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	nLength = 4;
 	if (Sscan::Char(pLine, ArtNetParamsConst::PROTOCOL, value, nLength) == Sscan::OK) {
 		if(memcmp(value, "sacn", 4) == 0) {
-			m_tArtNetParams.nProtocol = PORT_ARTNET_SACN;
+			m_tArtNetParams.nProtocol = static_cast<uint8_t>(PortProtocol::SACN);
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::PROTOCOL;
 		} else {
-			m_tArtNetParams.nProtocol = PORT_ARTNET_ARTNET;
+			m_tArtNetParams.nProtocol = static_cast<uint8_t>(PortProtocol::ARTNET);
 			m_tArtNetParams.nSetList &= ~ArtnetParamsMask::PROTOCOL;
 		}
 		return;
@@ -246,11 +248,11 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 		nLength = 3;
 		if (Sscan::Char(pLine, LightSetConst::PARAMS_MERGE_MODE_PORT[i], value, nLength) == Sscan::OK) {
-			if(ArtNet::GetMergeMode(value) == ArtNetMerge::LTP) {
-				m_tArtNetParams.nMergeModePort[i] = static_cast<uint8_t>(ArtNetMerge::LTP);
+			if(ArtNet::GetMergeMode(value) == Merge::LTP) {
+				m_tArtNetParams.nMergeModePort[i] = static_cast<uint8_t>(Merge::LTP);
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::MERGE_MODE_A << i);
 			} else {
-				m_tArtNetParams.nMergeModePort[i] = static_cast<uint8_t>(ArtNetMerge::HTP);
+				m_tArtNetParams.nMergeModePort[i] = static_cast<uint8_t>(Merge::HTP);
 				m_tArtNetParams.nSetList &= ~(ArtnetParamsMask::MERGE_MODE_A << i);
 			}
 			return;
@@ -259,10 +261,10 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		nLength = 4;
 		if (Sscan::Char(pLine, ArtNetParamsConst::PROTOCOL_PORT[i], value, nLength) == Sscan::OK) {
 			if (memcmp(value, "sacn", 4) == 0) {
-				m_tArtNetParams.nProtocolPort[i] = PORT_ARTNET_SACN;
+				m_tArtNetParams.nProtocolPort[i] = static_cast<uint8_t>(PortProtocol::SACN);
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::PROTOCOL_A << i);
 			} else {
-				m_tArtNetParams.nProtocolPort[i] = PORT_ARTNET_ARTNET;
+				m_tArtNetParams.nProtocolPort[i] = static_cast<uint8_t>(PortProtocol::ARTNET);
 				m_tArtNetParams.nSetList &= ~(ArtnetParamsMask::PROTOCOL_A << i);
 			}
 			return;
@@ -287,10 +289,10 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	nLength = 5;
 	if (Sscan::Char(pLine, ArtNetParamsConst::DIRECTION, value, nLength) == Sscan::OK) {
 		if (memcmp(value, "input", 5) == 0) {
-			m_tArtNetParams.nDirection = ARTNET_INPUT_PORT;
+			m_tArtNetParams.nDirection = static_cast<uint8_t>(PortDir::INPUT);
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::DIRECTION;
 		} else {
-			m_tArtNetParams.nDirection = ARTNET_OUTPUT_PORT;
+			m_tArtNetParams.nDirection = static_cast<uint8_t>(PortDir::OUTPUT);
 			m_tArtNetParams.nSetList &= ~ArtnetParamsMask::DIRECTION;
 		}
 		return;

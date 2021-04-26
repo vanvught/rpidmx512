@@ -137,7 +137,7 @@ void notmain(void) {
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 
-			display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 
 			auto *pChain = new LightSetChain;
 			assert(pChain != nullptr);

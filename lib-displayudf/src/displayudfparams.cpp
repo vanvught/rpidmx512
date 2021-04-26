@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,34 +35,49 @@
 #endif
 #include <cassert>
 
+#if defined (NODE_ARTNET_MULTI)
+# define NODE_ARTNET
+#endif
+
+#if defined (NODE_E131_MULTI)
+# define NODE_E131
+#endif
+
 #include "displayudfparams.h"
 #include "displayudfparamsconst.h"
 
 #include "networkparamsconst.h"
 #include "lightsetconst.h"
-#include "artnetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 
 #include "propertiesbuilder.h"
 
-#include "artnetnode.h"
-#include "e131bridge.h"
 #include "display.h"
 
-#include "debug.h"
+#if defined (NODE_ARTNET)
+# include "artnetnode.h"
+# include "artnetparamsconst.h"
+#endif
+#if defined (NODE_E131)
+# include "e131bridge.h"
+#endif
 
 using namespace displayudf;
 
-static constexpr const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
+static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::TITLE,
 		DisplayUdfParamsConst::BOARD_NAME,
 		NetworkParamsConst::IP_ADDRESS,
 		DisplayUdfParamsConst::VERSION,
 		LightSetConst::PARAMS_UNIVERSE,
 		DisplayUdfParamsConst::ACTIVE_PORTS,
+#if defined (NODE_ARTNET)
 		ArtNetParamsConst::NODE_SHORT_NAME,
+#else
+		"",
+#endif
 		NetworkParamsConst::HOSTNAME,
 		LightSetConst::PARAMS_UNIVERSE_PORT[0],
 		LightSetConst::PARAMS_UNIVERSE_PORT[1],
@@ -70,16 +85,23 @@ static constexpr const char *pArray[DISPLAY_UDF_LABEL_UNKNOWN] = {
 		LightSetConst::PARAMS_UNIVERSE_PORT[3],
 		NetworkParamsConst::NET_MASK,
 		LightSetConst::PARAMS_DMX_START_ADDRESS,
+#if defined (NODE_ARTNET)
 		ArtNetParamsConst::DESTINATION_IP_PORT[0],
 		ArtNetParamsConst::DESTINATION_IP_PORT[1],
 		ArtNetParamsConst::DESTINATION_IP_PORT[2],
 		ArtNetParamsConst::DESTINATION_IP_PORT[3]
+#else
+		"",
+		"",
+		"",
+		""
+#endif
 };
 
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	memset(&m_tDisplayUdfParams, 0, sizeof(struct TDisplayUdfParams));
 	m_tDisplayUdfParams.nSleepTimeout = display::Defaults::SEEP_TIMEOUT;
-	m_tDisplayUdfParams.nIntensity = Defaults::INTENSITY;
+	m_tDisplayUdfParams.nIntensity = defaults::INTENSITY;
 }
 
 bool DisplayUdfParams::Load() {
@@ -127,7 +149,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::INTENSITY, value8) == Sscan::OK) {
 		m_tDisplayUdfParams.nIntensity = value8;
 
-		if (value8 != Defaults::INTENSITY) {
+		if (value8 != defaults::INTENSITY) {
 			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::INTENSITY;
 		} else {
 			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::INTENSITY;
@@ -146,18 +168,21 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (Sscan::Uint8(pLine, pArray[i], value8) == Sscan::OK) {
-			m_tDisplayUdfParams.nLabelIndex[i] = value8;
-			m_tDisplayUdfParams.nSetList |= (1U << i);
+			if ((value8 > 0) && (value8 <= LABEL_MAX_ROWS)) {
+				m_tDisplayUdfParams.nLabelIndex[i] = value8;
+				m_tDisplayUdfParams.nSetList |= (1U << i);
+			} else {
+				m_tDisplayUdfParams.nLabelIndex[i] = 0;
+				m_tDisplayUdfParams.nSetList &= ~(1U << i);
+			}
 			return;
 		}
 	}
 }
 
 void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	DEBUG_ENTRY
-
 	assert(pBuffer != nullptr);
 
 	if (ptDisplayUdfParams != nullptr) {
@@ -171,24 +196,18 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 	builder.Add(DisplayUdfParamsConst::INTENSITY, m_tDisplayUdfParams.nIntensity , isMaskSet(DisplayUdfParamsMask::INTENSITY));
 	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT));
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
-		if (!isMaskSet(1U << i)) {
-			m_tDisplayUdfParams.nLabelIndex[i] = DisplayUdf::Get()->GetLabel(i);
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
+		if (pArray[i][0] != '\0') {
+			builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1U << i));
 		}
-		builder.Add(pArray[i], m_tDisplayUdfParams.nLabelIndex[i] , isMaskSet(1U << i));
 	}
 
 	nSize = builder.GetSize();
-
-	DEBUG_EXIT
 }
 
 void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	DEBUG_ENTRY
-
 	if (m_pDisplayUdfParamsStore == nullptr) {
 		nSize = 0;
-		DEBUG_EXIT
 		return;
 	}
 
@@ -204,9 +223,9 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 		Display::Get()->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
 	}
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (isMaskSet(1U << i)) {
-			pDisplayUdf->Set(m_tDisplayUdfParams.nLabelIndex[i], static_cast<enum TDisplayUdfLabels>(i));
+			pDisplayUdf->Set(m_tDisplayUdfParams.nLabelIndex[i], static_cast<Labels>(i));
 		}
 	}
 }
@@ -230,7 +249,7 @@ void DisplayUdfParams::Dump() {
 		printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout);
 	}
 
-	for (uint32_t i = 0; i < DISPLAY_UDF_LABEL_UNKNOWN; i++) {
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (isMaskSet(1U << i)) {
 			printf(" %s=%d\n", pArray[i], m_tDisplayUdfParams.nLabelIndex[i]);
 		}

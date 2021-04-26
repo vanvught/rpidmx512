@@ -2,7 +2,7 @@
  * @file dmxserialchanneldata.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,10 +52,10 @@ private:
 	DmxSerialParseCode ParseSerialData(const char *pLine);
 
 private:
-	FILE *m_pFile = nullptr;
-	uint8_t m_nChannelValue = 0;
-	uint8_t m_nChannelDataLength[DMX_UNIVERSE_SIZE];
-	uint8_t *m_pChannelData[DMX_UNIVERSE_SIZE];
+	FILE *m_pFile { nullptr };
+	uint8_t m_nChannelValue { 0 };
+	uint8_t m_nChannelDataLength[lightset::Dmx::UNIVERSE_SIZE];
+	uint8_t *m_pChannelData[lightset::Dmx::UNIVERSE_SIZE];
 };
 
 #endif /* DMXSERIALCHANNELDATA_H_ */

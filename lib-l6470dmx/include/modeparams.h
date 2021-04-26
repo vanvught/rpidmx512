@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ struct TModeParams {
     float fSwitchStepsPerSec;
     bool bSwitch;
     //
-    alignas(uint32_t) struct TLightSetSlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
+    lightset::SlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
 } __attribute__((packed));
 
 struct ModeParamsMask {
@@ -116,7 +116,7 @@ public:
 		return m_tModeParams.bSwitch;
 	}
 
-	void GetSlotInfo(uint32_t nOffset, struct TLightSetSlotInfo &tLightSetSlotInfo);
+	void GetSlotInfo(uint32_t nOffset, lightset::SlotInfo &tLightSetSlotInfo);
 
 private:
     void callbackFunction(const char *s);

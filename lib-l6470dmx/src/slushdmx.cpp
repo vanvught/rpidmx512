@@ -47,8 +47,9 @@
 
 #include "debug.h"
 
+using namespace lightset;
+
 #define IO_PINS_IOPORT				8
-#define DMX_MAX_CHANNELS			512
 #define DMX_SLOT_INFO_RAW_LENGTH	128
 
 constexpr char PARAMS_SLUSH_USE_SPI[] = "use_spi_busy";
@@ -87,14 +88,14 @@ void SlushDmx::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A, nValue16) == Sscan::OK) {
-		if (nValue16 <= DMX_MAX_CHANNELS) {
+		if (nValue16 <= Dmx::UNIVERSE_SIZE) {
 			m_nDmxStartAddressPortA = nValue16;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B, nValue16) == Sscan::OK) {
-		if (nValue16 <= DMX_MAX_CHANNELS) {
+		if (nValue16 <= Dmx::UNIVERSE_SIZE) {
 			m_nDmxStartAddressPortB = nValue16;
 		}
 		return;
@@ -150,7 +151,7 @@ SlushDmx::SlushDmx(bool bUseSPI):
 	m_bSetPortB(false),
 	m_bUseSpiBusy(bUseSPI),
 	m_nMotorsConnected(0),
-	m_nDmxStartAddress(DMX_ADDRESS_INVALID),
+	m_nDmxStartAddress(Dmx::ADDRESS_INVALID),
 	m_nDmxFootprint(0)  // Invalidate DMX Start Address and DMX Footprint
 {
 	DEBUG_ENTRY;
@@ -298,7 +299,7 @@ void SlushDmx::ReadConfigFiles(void) {
 			m_nDmxStartAddress = m_nDmxStartAddressPortA;
 			m_nDmxFootprint = m_nDmxFootprintPortA;
 
-			m_pSlotInfoPortA = new struct TLightSetSlotInfo[m_nDmxFootprintPortA];
+			m_pSlotInfoPortA = new SlotInfo[m_nDmxFootprintPortA];
 			assert(m_pSlotInfoPortA != 0);
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortA;
@@ -329,7 +330,7 @@ void SlushDmx::ReadConfigFiles(void) {
 			}
 			m_bSetPortB = true;
 
-			if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+			if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 				m_nDmxStartAddress = m_nDmxStartAddressPortB;
 				m_nDmxFootprint = m_nDmxFootprintPortB;
 			} else {
@@ -340,7 +341,7 @@ void SlushDmx::ReadConfigFiles(void) {
 				m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 			}
 
-			m_pSlotInfoPortB = new struct TLightSetSlotInfo[m_nDmxFootprintPortB];
+			m_pSlotInfoPortB = new SlotInfo[m_nDmxFootprintPortB];
 			assert(m_pSlotInfoPortB != 0);
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortB;
@@ -380,7 +381,7 @@ void SlushDmx::ReadConfigFiles(void) {
 			printf("\t%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddressMode);
 			printf("\t=============================\n");
 #endif
-			if ((m_nDmxStartAddressMode <= DMX_MAX_CHANNELS) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+			if ((m_nDmxStartAddressMode <= Dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 				m_pSlushMotor[i] = new SlushMotor(i, m_bUseSpiBusy);
 				assert(m_pSlushMotor[i] != 0);
 
@@ -411,7 +412,7 @@ void SlushDmx::ReadConfigFiles(void) {
 						assert(m_pL6470DmxModes[i] != 0);
 
 						if (m_pL6470DmxModes[i] != 0) {
-							if (m_nDmxStartAddress == DMX_ADDRESS_INVALID) {
+							if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 								m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 								m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 							} else {
@@ -422,7 +423,7 @@ void SlushDmx::ReadConfigFiles(void) {
 								m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLastNew) - m_nDmxStartAddress;
 							}
 
-							m_pSlotInfo[i] = new struct TLightSetSlotInfo[m_pL6470DmxModes[i]->GetDmxFootPrint()];
+							m_pSlotInfo[i] = new SlotInfo[m_pL6470DmxModes[i]->GetDmxFootPrint()];
 							char *pSlotInfoRaw = m_pSlotInfoRaw;
 
 							for (uint32_t j = 0; j < m_pL6470DmxModes[i]->GetDmxFootPrint(); j++) {
@@ -493,7 +494,7 @@ void SlushDmx::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *p
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
-	assert(nLength <= DMX_MAX_CHANNELS);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	bool bIsDmxDataChanged[SLUSH_DMX_MAX_MOTORS];
 
@@ -534,7 +535,7 @@ void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
-	assert(nLength <= DMX_MAX_CHANNELS);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	uint8_t *p;
 	uint8_t nPortData;
@@ -640,7 +641,7 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return true;
 }
 
-bool SlushDmx::GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo& tSlotInfo) {
+bool SlushDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	DEBUG2_ENTRY;
 
 	if (nSlotOffset >  m_nDmxFootprint) {

@@ -34,7 +34,8 @@
 #include <cassert>
 
 #include "ws28xxdmxparams.h"
-#include "ws28xx.h"
+#include "pixeltype.h"
+#include "pixelconfiguration.h"
 
 #include "propertiesbuilder.h"
 
@@ -44,6 +45,7 @@
 #include "debug.h"
 
 using namespace ws28xxdmxparams;
+using namespace pixel;
 
 void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
 	DEBUG_ENTRY
@@ -58,20 +60,20 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DevicesParamsConst::LED_TYPE, WS28xx::GetLedTypeString(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType)), isMaskSet(WS28xxDmxParamsMask::LED_TYPE));
-	builder.Add(DevicesParamsConst::LED_COUNT, m_tWS28xxParams.nLedCount, isMaskSet(WS28xxDmxParamsMask::LED_COUNT));
+	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tWS28xxParams.nType)), isMaskSet(WS28xxDmxParamsMask::TYPE));
+	builder.Add(DevicesParamsConst::COUNT, m_tWS28xxParams.nCount, isMaskSet(WS28xxDmxParamsMask::COUNT));
 
 	builder.AddComment("Overwrite datasheet");
-	if (!isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING)) {
-		m_tWS28xxParams.nRgbMapping = static_cast<uint8_t>(WS28xx::GetRgbMapping(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType)));
+	if (!isMaskSet(WS28xxDmxParamsMask::MAP)) {
+		m_tWS28xxParams.nMap = static_cast<uint8_t>(PixelConfiguration::GetRgbMapping(static_cast<pixel::Type>(m_tWS28xxParams.nType)));
 	}
-	builder.Add(DevicesParamsConst::LED_RGB_MAPPING, RGBMapping::ToString(static_cast<rgbmapping::Map>(m_tWS28xxParams.nRgbMapping)), isMaskSet(WS28xxDmxParamsMask::RGB_MAPPING));
+	builder.Add(DevicesParamsConst::MAP, PixelType::GetMap(static_cast<Map>(m_tWS28xxParams.nMap)), isMaskSet(WS28xxDmxParamsMask::MAP));
 
 	if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE) || !isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
 		uint8_t nLowCode;
 		uint8_t nHighCode;
 
-		WS28xx::GetTxH(static_cast<ws28xx::Type>(m_tWS28xxParams.tLedType), nLowCode, nHighCode);
+		PixelConfiguration::GetTxH(static_cast<pixel::Type>(m_tWS28xxParams.nType), nLowCode, nHighCode);
 
 		if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
 			m_tWS28xxParams.nLowCode = nLowCode;
@@ -84,13 +86,14 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	}
 
 	builder.AddComment("Overwrite timing (us)");
-	builder.Add(DevicesParamsConst::LED_T0H, WS28xx::ConvertTxH(m_tWS28xxParams.nLowCode), isMaskSet(WS28xxDmxParamsMask::LOW_CODE), 2);
-	builder.Add(DevicesParamsConst::LED_T1H, WS28xx::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28xxDmxParamsMask::HIGH_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T0H, PixelType::ConvertTxH(m_tWS28xxParams.nLowCode), isMaskSet(WS28xxDmxParamsMask::LOW_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T1H, PixelType::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28xxDmxParamsMask::HIGH_CODE), 2);
 
 	builder.AddComment("Grouping");
-	builder.Add(DevicesParamsConst::LED_GROUPING, isMaskSet(WS28xxDmxParamsMask::LED_GROUPING));
-	builder.Add(DevicesParamsConst::LED_GROUP_COUNT, m_tWS28xxParams.nLedGroupCount, isMaskSet(WS28xxDmxParamsMask::LED_GROUP_COUNT));
+	builder.Add(DevicesParamsConst::GROUPING_ENABLED, isMaskSet(WS28xxDmxParamsMask::GROUPING_ENABLED));
+	builder.Add(DevicesParamsConst::GROUPING_COUNT, m_tWS28xxParams.nGroupingCount, isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT));
 
+#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
 	builder.AddComment("DMX");
 	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
 
@@ -99,14 +102,14 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 
 	builder.AddComment("APA102");
 	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS));
+#endif
 
-	builder.AddComment("Multi port");
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
 	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0])); i++) {
 		builder.Add(LightSetConst::PARAMS_START_UNI_PORT[i],m_tWS28xxParams.nStartUniverse[i], isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i));
 	}
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT));
-	builder.AddComment("4x only");
-	builder.Add(DevicesParamsConst::USE_SI5351A, isMaskSet(WS28xxDmxParamsMask::USE_SI5351A));
+#endif
 
 	builder.AddComment("Test pattern");
 	builder.Add(LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));

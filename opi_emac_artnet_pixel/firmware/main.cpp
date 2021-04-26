@@ -47,11 +47,12 @@
 #include "ipprog.h"
 
 // Addressable led
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
+#include "pixeltestpattern.h"
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
-#include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 // PWM Led
@@ -70,6 +71,8 @@
 
 #include "displayudfhandler.h"
 #include "displayhandler.h"
+
+using namespace artnet;
 
 extern "C" {
 
@@ -96,13 +99,7 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	fw.Print();
-
-	console_puts("Ethernet Art-Net 4 Node ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Pixel controller {1x 4 Universes}");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
+	fw.Print("Ethernet Art-Net 4 Node " "\x1b[32m" "Pixel controller {1x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new ArtNetReboot);
@@ -124,15 +121,12 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	const uint8_t nUniverse = artnetparams.GetUniverse();
+	const auto nStartUniverse = artnetparams.GetUniverse();
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
+	node.SetUniverseSwitch(0, PortDir::OUTPUT, nStartUniverse);
 
 	LightSet *pSpi = nullptr;
-
 	auto isLedTypeSet = false;
-	WS28xxDmx *pWS28xxDmx = nullptr;
-	auto bRunTestPattern = false;
 
 	TLC59711DmxParams pwmledparms(&storeTLC59711);
 
@@ -143,70 +137,50 @@ void notmain(void) {
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 			pSpi = pTLC59711Dmx;
-			display.Printf(7, "%s:%d", pwmledparms.GetLedTypeString(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 		}
 	}
 
+	PixelTestPattern *pPixelTestPattern = nullptr;
+
 	if (!isLedTypeSet) {
-		WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
+		assert(pSpi == nullptr);
+
+		PixelDmxConfiguration pixelDmxConfiguration;
+
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 
 		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
 			ws28xxparms.Dump();
 		}
 
-		const auto bIsLedGrouping = ws28xxparms.IsLedGrouping() && (ws28xxparms.GetLedGroupCount() > 1);
+		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pWS28xxDmx != nullptr);
+		pSpi = pWS28xxDmx;
 
-		if (bIsLedGrouping) {
-			auto *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != nullptr);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pWS28xxDmxGrouping->SetLEDGroupCount(ws28xxparms.GetLedGroupCount());
-			pSpi = pWS28xxDmxGrouping;
-			display.Printf(7, "%s:%d G%d", WS28xx::GetLedTypeString(pWS28xxDmxGrouping->GetLEDType()), pWS28xxDmxGrouping->GetLEDCount(), pWS28xxDmxGrouping->GetLEDGroupCount());
-		} else  {
-			pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != nullptr);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
-			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType()), pWS28xxDmx->GetLEDCount());
+		const auto nCount = pixelDmxConfiguration.GetCount();
 
-			const auto nLedCount = pWS28xxDmx->GetLEDCount();
+		if (pixelDmxConfiguration.GetGroupingEnabled()) {
+			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
+		} else {
+			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
+		}
 
-			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
-				if (nLedCount > 128) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1U);
-				}
-				if (nLedCount > 256) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2U);
-				}
-				if (nLedCount > 384) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3U);
-				}
-			} else {
-				if (nLedCount > 170) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1U);
-				}
-				if (nLedCount > 340) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2U);
-				}
-				if (nLedCount > 510) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3U);
-				}
-			}
+		const auto nUniverses = pWS28xxDmx->GetUniverses();
+		node.SetDirectUpdate(nUniverses != 1);
 
-			uint8_t nTestPattern;
-			if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-				bRunTestPattern = true;
-				pWS28xxDmx->Start(0);
-				pWS28xxDmx->Blackout(true);
-				pWS28xxDmx->SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
-			}
+		for (uint32_t u = 1; u < nUniverses; u++) {
+			node.SetUniverseSwitch(u, PortDir::OUTPUT, nStartUniverse + u);
+		}
+
+		uint8_t nTestPattern;
+		if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+			pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
 		}
 	}
 
-	if (bRunTestPattern) {
+	if (pPixelTestPattern != nullptr) {
 		node.SetOutput(nullptr);
 	} else {
 		node.SetOutput(pSpi);
@@ -218,11 +192,11 @@ void notmain(void) {
 	pSpi->Print();
 
 	display.SetTitle("Eth Art-Net 4 Pixel 1");
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.Set(2, displayudf::Labels::NODE_NAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -263,8 +237,8 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		if (__builtin_expect((bRunTestPattern), 0)) {
-			pWS28xxDmx->RunTestPattern();
+		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
+			pPixelTestPattern->Run();
 		}
 	}
 }

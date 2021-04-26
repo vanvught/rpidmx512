@@ -3,7 +3,7 @@
  * @file slushdmxparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,14 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
 #include <stdint.h>
 #include <string.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -51,8 +51,9 @@
 
 #include "debug.h"
 
-SlushDmxParams::SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore): m_pSlushDmxParamsStore(pSlushDmxParamsStore) {
+using namespace lightset;
 
+SlushDmxParams::SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore): m_pSlushDmxParamsStore(pSlushDmxParamsStore) {
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
@@ -107,7 +108,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, value16) == Sscan::OK) {
-		if (value16 <= DMX_UNIVERSE_SIZE) {
+		if (value16 <= Dmx::UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortA = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_A;
 		}
@@ -115,7 +116,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, value16) == Sscan::OK) {
-		if (value16 <= DMX_UNIVERSE_SIZE) {
+		if (value16 <= Dmx::UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortB = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_B;
 		}

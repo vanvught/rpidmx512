@@ -2,7 +2,7 @@
  * @file tlc59711dmx.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,9 @@ public:
 
 	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
 
-	void Blackout(bool bBlackout);
+	void Blackout(bool bBlackout) override;
+
+	void Print() override;
 
 	void SetLEDType(TTLC59711Type tTLC59711Type);
 	TTLC59711Type GetLEDType() {
@@ -57,12 +59,12 @@ public:
 	}
 
 	void SetLEDCount(uint8_t nLEDCount);
-	uint8_t GetLEDCount() {
+	uint8_t GetLEDCount() const {
 		return m_nLEDCount;
 	}
 
 	void SetSpiSpeedHz(uint32_t nSpiSpeedHz);
-	uint32_t GetSpiSpeedHz() {
+	uint32_t GetSpiSpeedHz() const {
 		return m_nSpiSpeedHz;
 	}
 
@@ -70,23 +72,21 @@ public:
 		m_pTLC59711DmxStore = pTLC59711Store;
 	}
 
-	void Print() override;
-
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
-	inline uint16_t GetDmxStartAddress() override {
+	uint16_t GetDmxStartAddress() override {
 		return m_nDmxStartAddress;
 	}
 
-	inline uint16_t GetDmxFootprint() override {
+	uint16_t GetDmxFootprint() override {
 		return m_nDmxFootprint;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, struct TLightSetSlotInfo &tSlotInfo) override;
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 public:
-	inline uint8_t GetBoardInstances() {
+	uint8_t GetBoardInstances() const {
 		return m_nBoardInstances;
 	}
 
@@ -95,17 +95,17 @@ private:
 	void UpdateMembers();
 
 private:
-	uint16_t m_nDmxStartAddress{1};
+	uint16_t m_nDmxStartAddress { 1 };
 	uint16_t m_nDmxFootprint;
-	uint8_t m_nBoardInstances{1};
-	bool m_bIsStarted{false};
-	bool m_bBlackout{false};
-	TLC59711 *m_pTLC59711{nullptr};
-	uint32_t m_nSpiSpeedHz{0};
-	TTLC59711Type m_LEDType{TTLC59711_TYPE_RGB};
+	uint8_t m_nBoardInstances { 1 };
+	bool m_bIsStarted { false };
+	bool m_bBlackout { false };
+	TLC59711 *m_pTLC59711 { nullptr };
+	uint32_t m_nSpiSpeedHz { 0 };
+	TTLC59711Type m_LEDType { TTLC59711_TYPE_RGB };
 	uint8_t m_nLEDCount;
 
-	TLC59711DmxStore *m_pTLC59711DmxStore{nullptr};
+	TLC59711DmxStore *m_pTLC59711DmxStore { nullptr };
 };
 
 #endif /* TLC59711DMX_H_ */

@@ -2,7 +2,7 @@
  * @file lightset.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,14 @@
 
 #include "lightset.h"
 
+using namespace lightset;
+
 uint16_t LightSet::GetDmxStartAddress() {
-	return DMX_START_ADDRESS_DEFAULT;
+	return Dmx::START_ADDRESS_DEFAULT;
 }
 
 uint16_t LightSet::GetDmxFootprint() {
-	return DMX_UNIVERSE_SIZE;
+	return Dmx::UNIVERSE_SIZE;
 }
 
 bool LightSet::SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
