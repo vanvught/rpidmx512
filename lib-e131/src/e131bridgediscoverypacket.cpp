@@ -2,7 +2,7 @@
  * @file e131bridgediscoverypacket
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 
 #include "network.h"
 
+using namespace e131;
+
 void E131Bridge::FillDiscoveryPacket() {
 	m_State.DiscoveryPacketLength = DISCOVERY_PACKET_SIZE(m_State.nActiveInputPorts);
 
@@ -41,38 +43,38 @@ void E131Bridge::FillDiscoveryPacket() {
 
 	// Root Layer (See Section 5)
 	m_pE131DiscoveryPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
-	memcpy(m_pE131DiscoveryPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, E117_PACKET_IDENTIFIER_LENGTH);
+	memcpy(m_pE131DiscoveryPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
 	m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveInputPorts)));
-	m_pE131DiscoveryPacket->RootLayer.Vector = __builtin_bswap32(E131_VECTOR_ROOT_EXTENDED);
-	memcpy(m_pE131DiscoveryPacket->RootLayer.Cid, m_Cid, E131_CID_LENGTH);
+	m_pE131DiscoveryPacket->RootLayer.Vector = __builtin_bswap32(vector::root::EXTENDED);
+	memcpy(m_pE131DiscoveryPacket->RootLayer.Cid, m_Cid, E131::CID_LENGTH);
 
 	// E1.31 Framing Layer (See Section 6)
 	m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveInputPorts)) );
-	m_pE131DiscoveryPacket->FrameLayer.Vector = __builtin_bswap32(E131_VECTOR_EXTENDED_DISCOVERY);
-	memcpy(m_pE131DiscoveryPacket->FrameLayer.SourceName, m_SourceName, E131_SOURCE_NAME_LENGTH);
+	m_pE131DiscoveryPacket->FrameLayer.Vector = __builtin_bswap32(vector::extended::DISCOVERY);
+	memcpy(m_pE131DiscoveryPacket->FrameLayer.SourceName, m_SourceName, E131::SOURCE_NAME_LENGTH);
 
 	// Universe Discovery Layer (See Section 8)
 	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveInputPorts));
-	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST);
+	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(vector::universe::DISCOVERY_UNIVERSE_LIST);
 }
 
 void E131Bridge::SendDiscoveryPacket() {
 	assert(m_DiscoveryIpAddress != 0);
 
-	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
+	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
 		m_State.DiscoveryTime = m_nCurrentPacketMillis;
 
 		uint32_t nListOfUniverses = 0;
 
 		if (m_State.nActiveInputPorts != 0) {
-			for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+			for (uint32_t i = 0; i < E131::MAX_UARTS; i++) {
 				uint16_t nUniverse;
-				if (GetUniverse(i, nUniverse, E131_INPUT_PORT)) {
+				if (GetUniverse(i, nUniverse, PortDir::INPUT)) {
 					m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
 				}
 			}
 		}
 
-		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, E131_DEFAULT_PORT);
+		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, E131::UDP_PORT);
 	}
 }

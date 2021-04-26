@@ -2,7 +2,7 @@
  * @file e131uuid.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,18 +36,6 @@
 
 static constexpr char EXT_UID[] = ".uid";
 static constexpr char DUMMY_UUID[] = "01234567-89ab-cdef-0134-567890abcedf";
-
-E131Uuid::E131Uuid() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-E131Uuid::~E131Uuid() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
 
 void E131Uuid::GetHardwareUuid(uuid_t out) {
 	bool bHaveUuid = false;

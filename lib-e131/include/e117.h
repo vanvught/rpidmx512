@@ -27,8 +27,8 @@
 #ifndef E117_H_
 #define E117_H_
 
-enum {
-	E117_PACKET_IDENTIFIER_LENGTH = 12
-};
+namespace e117 {
+static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
+}  // namespace e117
 
 #endif /* E117_H_ */

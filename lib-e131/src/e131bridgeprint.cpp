@@ -36,6 +36,10 @@
 #include "e131bridgeconst.h"
 #include "e131.h"
 
+static constexpr auto  UUID_STRING_LENGTH =	36;
+
+using namespace e131;
+
 void E131Bridge::Print() {
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
@@ -47,9 +51,9 @@ void E131Bridge::Print() {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
+			if (GetUniverse(nPortIndex, nUniverse, PortDir::OUTPUT)) {
 				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, E131::GetMergeMode(m_OutputPort[nPortIndex].mergeMode, true));
 			}
 		}
@@ -59,9 +63,9 @@ void E131Bridge::Print() {
 		printf(" CID      : %s\n", uuid_str);
 		printf(" Input\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131_MAX_UARTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_UARTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, E131_INPUT_PORT)) {
+			if (GetUniverse(nPortIndex, nUniverse, PortDir::INPUT)) {
 				printf("  Port %2d Universe %-3d [%d]\n", nPortIndex, nUniverse, GetPriority(nPortIndex));
 			}
 		}

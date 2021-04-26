@@ -23,11 +23,18 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
 #include <stdint.h>
 #include <cassert>
 
 #include "e131params.h"
 #include "e131.h"
+
+using namespace e131;
 
 void E131Params::Set(E131Bridge *pE131Bridge) {
 	assert(pE131Bridge != nullptr);
@@ -38,14 +45,14 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 
 	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
 		if (isMaskSet(E131ParamsMask::MERGE_MODE_A << i)) {
-			pE131Bridge->SetMergeMode(i, static_cast<E131Merge>(m_tE131Params.nMergeModePort[i]));
+			pE131Bridge->SetMergeMode(i, static_cast<Merge>(m_tE131Params.nMergeModePort[i]));
 		} else {
-			pE131Bridge->SetMergeMode(i, static_cast<E131Merge>(m_tE131Params.nMergeMode));
+			pE131Bridge->SetMergeMode(i, static_cast<Merge>(m_tE131Params.nMergeMode));
 		}
 	}
 
 	if (isMaskSet(E131ParamsMask::NETWORK_TIMEOUT)) {
-		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
+		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
 	}
 
 	if (isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT)) {

@@ -31,7 +31,7 @@
 #include "e117.h"
 
 struct E117Const {
-	static const uint8_t ACN_PACKET_IDENTIFIER[E117_PACKET_IDENTIFIER_LENGTH];
+	static const uint8_t ACN_PACKET_IDENTIFIER[e117::PACKET_IDENTIFIER_LENGTH];
 };
 
 #endif /* E131CONST_H_ */

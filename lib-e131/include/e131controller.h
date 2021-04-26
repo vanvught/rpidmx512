@@ -2,7 +2,7 @@
  * @file e131controller.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,16 +103,16 @@ private:
 	uint8_t GetSequenceNumber(uint16_t nUniverse, uint32_t &nMulticastIpAddress);
 
 private:
-	int32_t m_nHandle{-1};
-	uint32_t m_nCurrentPacketMillis{0};
+	int32_t m_nHandle { -1 };
+	uint32_t m_nCurrentPacketMillis { 0 };
 	struct TE131ControllerState m_State;
-	TE131DataPacket *m_pE131DataPacket{nullptr};
-	TE131DiscoveryPacket *m_pE131DiscoveryPacket{nullptr};
-	TE131SynchronizationPacket *m_pE131SynchronizationPacket{nullptr};
-	uint32_t m_DiscoveryIpAddress{0};
-	uint8_t m_Cid[E131_CID_LENGTH];
-	char m_SourceName[E131_SOURCE_NAME_LENGTH];
-	uint32_t m_nMaster{DMX_MAX_VALUE};
+	TE131DataPacket *m_pE131DataPacket { nullptr };
+	TE131DiscoveryPacket *m_pE131DiscoveryPacket { nullptr };
+	TE131SynchronizationPacket *m_pE131SynchronizationPacket { nullptr };
+	uint32_t m_DiscoveryIpAddress { 0 };
+	uint8_t m_Cid[E131::CID_LENGTH];
+	char m_SourceName[E131::SOURCE_NAME_LENGTH];
+	uint32_t m_nMaster { DMX_MAX_VALUE };
 
 	static E131Controller *s_pThis;
 };

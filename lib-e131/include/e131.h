@@ -2,8 +2,7 @@
  * @file e131.h
  *
  */
-
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,146 +28,86 @@
 
 #include <stdint.h>
 
-enum {
-	E131_MAX_PORTS = 32
+namespace e131 {
+static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
+static constexpr auto PRIORITY_TIMEOUT_SECONDS = 10;
+static constexpr auto UNIVERSE_DISCOVERY_INTERVAL_SECONDS = 10;
+static constexpr auto NETWORK_DATA_LOSS_TIMEOUT_SECONDS = 2.5f;
+
+enum class Merge {
+	HTP, LTP
 };
 
-enum TE131PortDir {
-	E131_INPUT_PORT,
-	E131_OUTPUT_PORT,
-	E131_DISABLE_PORT
+enum class PortDir {
+	INPUT, OUTPUT, DISABLE
 };
 
-///< ANSI E1.31 — 2016 Entertainment Technology
-///< Lightweight streaming protocol for transport of DMX512 using ACN
-
-// TODO Update section references to 2018
-
-/**
- * 3.2 Universe: A set of up to 512 data slots identified by universe number. 
- * Note: In E1.31 there may be multiple sources for a universe.
- */
-enum {
-	E131_DMX_LENGTH = 512
+struct OptionsMask {
+	static constexpr auto PREVIEW_DATA = (1 << 7);			///< Preview Data: Bit 7 (most significant bit)
+	static constexpr auto STREAM_TERMINATED = (1 << 6);		///< Stream Terminated: Bit 6
+	static constexpr auto FORCE_SYNCHRONIZATION = (1 << 5);	///< Force Synchronization: Bit 5
 };
 
-/**
- *
- */
-enum TVectorRoot {
-	E131_VECTOR_ROOT_DATA		= 0x00000004,	///< 
-	E131_VECTOR_ROOT_EXTENDED	= 0x00000008	///<
-};
-
-/**
- * All E1.31 data packets shall carry the vector VECTOR_E131_DATA_PACKET in the Framing Layer
- * in order to indicate that their payload is DMX512-A data.
- */
-enum TVectorData {
-	E131_VECTOR_DATA_PACKET = 0x00000002		///< E1.31 Data Packet
-};
-
-/**
- *
- */
-enum TVectorExtended {
-	E131_VECTOR_EXTENDED_SYNCHRONIZATION	= 0x00000001,	///< E1.31 Synchronization Packet
-	E131_VECTOR_EXTENDED_DISCOVERY			= 0x00000002	///< E1.31 Universe Discovery
-};
-
-/**
- *
- */
-enum TVectorDMP {
-	E131_VECTOR_DMP_SET_PROPERTY	= 0x02			///< (Informative)
-};
-
-#define VECTOR_UNIVERSE_DISCOVERY_UNIVERSE_LIST 0x00000001
-
-/**
- * When multicast addressing is used, the UDP destination Port shall be set to the standard ACN-SDT
- * multicast port (5568).
- */
-#define E131_DEFAULT_PORT		5568	///<
-
-/**
- * 6.4 Priority
- *
- * No priority outside the range of 0 to 200 shall be transmitted on the network.
- * Priority increases with numerical value, i.e., 200 is a higher priority than 100.
- */
-enum TPriority {
-	E131_PRIORITY_LOWEST	= 1,	///<
-	E131_PRIORITY_DEFAULT	= 100,	///<
-	E131_PRIORITY_HIGHEST	= 200	///<
-};
-
-/**
- * 6.2.6 Options
- */
-enum TOptions {
-	E131_OPTIONS_MASK_PREVIEW_DATA 			= (1 << 7),	///< Preview Data: Bit 7 (most significant bit)
-	E131_OPTIONS_MASK_STREAM_TERMINATED 	= (1 << 6),	///< Stream Terminated: Bit 6
-	E131_OPTIONS_MASK_FORCE_SYNCHRONIZATION = (1 << 5)	///< Force Synchronization: Bit 5
-};
-
-/**
- * 6.7 Universe
- * The Universe is a 16-bit field that defines the universe number of the data carried in the packet. Universe
- * values shall be limited to the range 1 to 63999. Universe value 0 and those between 64000 and 65535 are
- * reserved for future use. See Section 8 for more information.
- */
-/**
-  * 9.1 Association of Multicast Addresses and Universe
- *
- * Universe numbers between 64000 and 65535, excluding universe 64214 (which is used for E1.31 Universe Discovery),
- * are reserved for future use and shall not be used by E1.31 devices except as specified in future standards
- * designed to coexist with E1.31 when use of these universes is called for specifically.
- */
-
-enum TUniverse {
-	E131_UNIVERSE_DEFAULT		= 1,		///<
-	E131_UNIVERSE_MAX			= 63999,	///<
-	E131_UNIVERSE_DISCOVERY		= 64214		///< Universe Discovery
-};
-
-#define E131_MERGE_TIMEOUT_SECONDS					10	///<
-#define E131_PRIORITY_TIMEOUT_SECONDS				10	///<
-#define E131_UNIVERSE_DISCOVERY_INTERVAL_SECONDS	10	///<
-#define E131_NETWORK_DATA_LOSS_TIMEOUT_SECONDS		2.5	///<
-
-#define E131_CID_LENGTH					16
-#define E131_SOURCE_NAME_LENGTH			64
-#define E131_PACKET_IDENTIFIER_LENGTH	12
-
-/**
- * Merge is implemented in either LTP or HTP mode
- */
-enum class E131Merge {
-	HTP,	///< Highest Takes Precedence (HTP)
-	LTP		///< Latest Takes Precedence (LTP)
-};
+namespace universe {
+static constexpr auto DEFAULT = 1;
+static constexpr auto MAX = 63999;
+static constexpr auto DISCOVERY = 64214;
+}  // namespace universe
+namespace priority {
+static constexpr auto LOWEST = 1;
+static constexpr auto DEFAULT = 100;
+static constexpr auto HIGHEST = 200;
+}  // namespace priority
+namespace vector {
+namespace root {
+static constexpr auto DATA = 0x00000004;
+static constexpr auto EXTENDED = 0x00000008;
+}  // namespace root
+namespace data {
+static constexpr auto PACKET = 0x00000002;			///< E1.31 Data Packet
+}  // namespace data
+namespace extended {
+static constexpr auto SYNCHRONIZATION = 0x00000001;	///< E1.31 Synchronization Packet
+static constexpr auto DISCOVERY = 0x00000002;		///< E1.31 Universe Discovery
+}  // namespace extended
+namespace dmp {
+static constexpr auto SET_PROPERTY	= 0x02;			///< (Informative)
+}  // namespace dmp
+namespace universe {
+static constexpr auto DISCOVERY_UNIVERSE_LIST = 0x00000001;
+}  // namespace universe
+}  // namespace vector
+}  // namespace e131
 
 struct E131 {
-	static E131Merge GetMergeMode(const char *pMergeMode) {
+	static constexpr auto UDP_PORT = 5568;
+	static constexpr auto MAX_PORTS = 32;
+	static constexpr auto MAX_UARTS = 4;
+	static constexpr auto DMX_LENGTH = 512;
+	static constexpr auto CID_LENGTH = 16;
+	static constexpr auto SOURCE_NAME_LENGTH = 64;
+	static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
+
+	static e131::Merge GetMergeMode(const char *pMergeMode) {
 		if (pMergeMode != nullptr) {
 			if (((pMergeMode[0] | 0x20) == 'l')
 					&& ((pMergeMode[1] | 0x20) == 't')
 					&& ((pMergeMode[2] | 0x20) == 'p')) {
-				return E131Merge::LTP;
+				return e131::Merge::LTP;
 			}
 		}
-		return E131Merge::HTP;
+		return e131::Merge::HTP;
 	}
 
-	static const char* GetMergeMode(E131Merge m, bool bToUpper = false) {
+	static const char* GetMergeMode(e131::Merge m, bool bToUpper = false) {
 		if (bToUpper) {
-			return (m == E131Merge::HTP) ? "HTP" : "LTP";
+			return (m == e131::Merge::HTP) ? "HTP" : "LTP";
 		}
-		return (m == E131Merge::HTP) ? "htp" : "ltp";
+		return (m == e131::Merge::HTP) ? "htp" : "ltp";
 	}
+
 	static const char* GetMergeMode(uint8_t m, bool bToUpper = false) {
-		return GetMergeMode(static_cast<E131Merge>(m), bToUpper);
+		return GetMergeMode(static_cast<e131::Merge>(m), bToUpper);
 	}
 };
 

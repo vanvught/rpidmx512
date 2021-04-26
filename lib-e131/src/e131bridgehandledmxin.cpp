@@ -2,7 +2,7 @@
  * @file e131bridgehandledmxin.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,22 +37,24 @@
 
 #include "debug.h"
 
+using namespace e131;
+
 static uint32_t s_ReceivingMask = 0;
 
 void E131Bridge::FillDataPacket() {
 	// Root Layer (See Section 5)
 	m_pE131DataPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x0010);
 	m_pE131DataPacket->RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
-	memcpy(m_pE131DataPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, E117_PACKET_IDENTIFIER_LENGTH);
-	m_pE131DataPacket->RootLayer.Vector = __builtin_bswap32(E131_VECTOR_ROOT_DATA);
-	memcpy(m_pE131DataPacket->RootLayer.Cid, m_Cid, E131_CID_LENGTH);
+	memcpy(m_pE131DataPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
+	m_pE131DataPacket->RootLayer.Vector = __builtin_bswap32(vector::root::DATA);
+	memcpy(m_pE131DataPacket->RootLayer.Cid, m_Cid, E131::CID_LENGTH);
 	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.Vector = __builtin_bswap32(E131_VECTOR_DATA_PACKET);
-	memcpy(m_pE131DataPacket->FrameLayer.SourceName, m_SourceName, E131_SOURCE_NAME_LENGTH);
+	m_pE131DataPacket->FrameLayer.Vector = __builtin_bswap32(vector::data::PACKET);
+	memcpy(m_pE131DataPacket->FrameLayer.SourceName, m_SourceName, E131::SOURCE_NAME_LENGTH);
 	m_pE131DataPacket->FrameLayer.SynchronizationAddress = __builtin_bswap16(0); // Currently not supported
 	m_pE131DataPacket->FrameLayer.Options = 0;
 	// Data Layer
-	m_pE131DataPacket->DMPLayer.Vector = E131_VECTOR_DMP_SET_PROPERTY;
+	m_pE131DataPacket->DMPLayer.Vector = e131::vector::dmp::SET_PROPERTY;
 	m_pE131DataPacket->DMPLayer.Type = 0xa1;
 	m_pE131DataPacket->DMPLayer.FirstAddressProperty = __builtin_bswap16(0x0000);
 	m_pE131DataPacket->DMPLayer.AddressIncrement = __builtin_bswap16(0x0001);
@@ -61,7 +63,7 @@ void E131Bridge::FillDataPacket() {
 void E131Bridge::HandleDmxIn() {
 	assert(m_pE131DataPacket != nullptr);
 
-	for (uint32_t i = 0 ; i < E131_MAX_UARTS; i++) {
+	for (uint32_t i = 0 ; i < E131::MAX_UARTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPort[i].bIsEnabled) {
@@ -81,7 +83,7 @@ void E131Bridge::HandleDmxIn() {
 				memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
 				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(nLength);
 
-				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131_DEFAULT_PORT);
+				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
 
 				s_ReceivingMask = (1U << i);
 				m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
