@@ -1,6 +1,5 @@
-#if defined (BARE_METAL) || defined(RASPPI)
 /**
- * @file rdmsubdevicebw7fets.cpp
+ * @file rdmsubdevicemcp4902.cpp
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -25,41 +24,55 @@
  */
 
 #include <stdint.h>
-#include <string.h>
+#include <cassert>
 
-#include "rdmsubdevicebw7fets.h"
+/*
+ * MCP4902: Dual 8-Bit Voltage Output DAC
+ */
 
-#include "bwspi7fets.h"
+#include "rdmsubdevicemcp4902.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 7;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
+#include "mcp49x2.h"
 
-RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_7fets", nDmxStartAddress), m_BwSpi7fets(nChipSselect, nSlaveAddress)
+static constexpr uint32_t DMX_FOOTPRINT = 2;
+static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Analog output 2-lines", DMX_FOOTPRINT)};
+
+RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
+	RDMSubDevice("mcp4902",nDmxStartAddress), m_MCP4902(nChipSselect, nSpiSpeed)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceBw7fets::Data(const uint8_t *pData, uint16_t nLength) {
-	uint8_t nData = 0;
-	const uint32_t nDmxStartAddress = GetDmxStartAddress();
+void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
+	assert(nLength <= 512);
 
-	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = nData | (1 << j);
+	uint16_t nOffset = GetDmxStartAddress() - 1;
+
+	if (nOffset < nLength) {
+		const uint8_t nDataA = pData[nOffset];
+
+		if (nDataA != m_nDataA) {
+			m_MCP4902.WriteDacA(nDataA);
+			m_nDataA = nDataA;
 		}
-	}
 
-	if (m_nData != nData) {
-		m_BwSpi7fets.Output(nData);
-		m_nData = nData;
+		nOffset++;
+
+		if (nOffset < nLength) {
+			const uint8_t nDataB = pData[nOffset];
+
+			if (nDataB != m_nDataB) {
+				m_MCP4902.WriteDacB(nDataB);
+				m_nDataB = nDataB;
+			}
+		}
 	}
 }
 
-void RDMSubDeviceBw7fets::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+void RDMSubDeviceMCP4902::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		Stop();
 	}
 }
-#endif
+

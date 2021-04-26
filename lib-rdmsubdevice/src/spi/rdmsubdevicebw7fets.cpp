@@ -1,9 +1,8 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
- * @file rdmsubdevicebwdimmer.cpp
+ * @file rdmsubdevicebw7fets.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,35 +26,38 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "rdmsubdevicebwdimmer.h"
+#include "rdmsubdevicebw7fets.h"
 
-#include "bwspidimmer.h"
+#include "bwspi7fets.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 1;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dimmer", DMX_FOOTPRINT)};
+static constexpr uint32_t DMX_FOOTPRINT = 7;
+static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
-	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
+RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_7fets", nDmxStartAddress), m_BwSpi7fets(nChipSselect, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint16_t nLength) {
-	const uint16_t nDmxStartAddress = GetDmxStartAddress();
+void RDMSubDeviceBw7fets::Data(const uint8_t *pData, uint16_t nLength) {
+	uint8_t nData = 0;
+	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
-	if (nDmxStartAddress <= nLength) {
-		const uint8_t nData = pData[nDmxStartAddress - 1];
-		if (m_nData != nData) {
-			m_BwSpiDimmer.Output(nData);
-			m_nData = nData;
+	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+			nData = nData | (1 << j);
 		}
+	}
+
+	if (m_nData != nData) {
+		m_BwSpi7fets.Output(nData);
+		m_nData = nData;
 	}
 }
 
-void RDMSubDeviceBwDimmer::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+void RDMSubDeviceBw7fets::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		Stop();
 	}
 }
-#endif

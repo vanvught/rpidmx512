@@ -1,9 +1,8 @@
-#if defined (BARE_METAL) || defined(RASPPI)
 /**
- * @file rdmsubdevicemcp23s08.cpp
+ * @file rdmsubdevicebwdimmer.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,39 +26,35 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "rdmsubdevicemcp23s08.h"
+#include "rdmsubdevicebwdimmer.h"
 
-#include "mcp23s08.h"
+#include "bwspidimmer.h"
 
-static constexpr uint32_t DMX_FOOTPRINT = 8;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 8-lines", DMX_FOOTPRINT)};
+static constexpr uint32_t DMX_FOOTPRINT = 1;
+static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dimmer", DMX_FOOTPRINT)};
 
-RDMSubDeviceMCP23S08::RDMSubDeviceMCP23S08(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp23s08", nDmxStartAddress), m_MCP23S08(nChipSselect, nSpiSpeed, nSlaveAddress)
+RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+	RDMSubDevice("bw_spi_dimmer", nDmxStartAddress), m_BwSpiDimmer(nChipSselect, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceMCP23S08::Data(const uint8_t* pData, uint16_t nLength) {
-	uint8_t nData = 0;
-	const uint32_t nDmxStartAddress = GetDmxStartAddress();
+void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint16_t nLength) {
+	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
-	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
-		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = nData | (1U << j);
+	if (nDmxStartAddress <= nLength) {
+		const uint8_t nData = pData[nDmxStartAddress - 1];
+		if (m_nData != nData) {
+			m_BwSpiDimmer.Output(nData);
+			m_nData = nData;
 		}
-	}
-
-	if (m_nData != nData) {
-		m_MCP23S08.WriteRegister(gpio::mcp23s08::reg::GPIO, nData);
-		m_nData = nData;
 	}
 }
 
-void RDMSubDeviceMCP23S08::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+void RDMSubDeviceBwDimmer::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		Stop();
 	}
 }
-#endif
+

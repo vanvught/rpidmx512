@@ -1,4 +1,3 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicemcp4822.cpp
  *
@@ -76,4 +75,4 @@ void RDMSubDeviceMCP4822::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		Stop();
 	}
 }
-#endif
+

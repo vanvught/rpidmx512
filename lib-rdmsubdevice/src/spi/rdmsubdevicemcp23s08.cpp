@@ -1,6 +1,5 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
- * @file rdmsubdevicemcp4902.cpp
+ * @file rdmsubdevicemcp23s08.cpp
  *
  */
 /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -25,55 +24,40 @@
  */
 
 #include <stdint.h>
-#include <cassert>
+#include <string.h>
 
-/*
- * MCP4902: Dual 8-Bit Voltage Output DAC
- */
+#include "rdmsubdevicemcp23s08.h"
 
-#include "rdmsubdevicemcp4902.h"
+#include "mcp23s08.h"
 
-#include "mcp49x2.h"
+static constexpr uint32_t DMX_FOOTPRINT = 8;
+static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 8-lines", DMX_FOOTPRINT)};
 
-static constexpr uint32_t DMX_FOOTPRINT = 2;
-static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Analog output 2-lines", DMX_FOOTPRINT)};
-
-RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
-	RDMSubDevice("mcp4902",nDmxStartAddress), m_MCP4902(nChipSselect, nSpiSpeed)
+RDMSubDeviceMCP23S08::RDMSubDeviceMCP23S08(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, uint32_t nSpiSpeed) :
+	RDMSubDevice("mcp23s08", nDmxStartAddress), m_MCP23S08(nChipSselect, nSpiSpeed, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
-	assert(nLength <= 512);
+void RDMSubDeviceMCP23S08::Data(const uint8_t* pData, uint16_t nLength) {
+	uint8_t nData = 0;
+	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
-	uint16_t nOffset = GetDmxStartAddress() - 1;
-
-	if (nOffset < nLength) {
-		const uint8_t nDataA = pData[nOffset];
-
-		if (nDataA != m_nDataA) {
-			m_MCP4902.WriteDacA(nDataA);
-			m_nDataA = nDataA;
+	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
+			nData = nData | (1U << j);
 		}
+	}
 
-		nOffset++;
-
-		if (nOffset < nLength) {
-			const uint8_t nDataB = pData[nOffset];
-
-			if (nDataB != m_nDataB) {
-				m_MCP4902.WriteDacB(nDataB);
-				m_nDataB = nDataB;
-			}
-		}
+	if (m_nData != nData) {
+		m_MCP23S08.WriteRegister(gpio::mcp23s08::reg::GPIO, nData);
+		m_nData = nData;
 	}
 }
 
-void RDMSubDeviceMCP4902::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
+void RDMSubDeviceMCP23S08::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 	if (tUpdateEvent == RDM_SUBDEVICE_UPDATE_EVENT_DMX_STARTADDRESS) {
 		Stop();
 	}
 }
-#endif
