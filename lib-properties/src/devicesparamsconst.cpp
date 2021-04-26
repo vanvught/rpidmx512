@@ -2,7 +2,7 @@
  * @file devicesparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,21 +27,20 @@
 
 const char DevicesParamsConst::FILE_NAME[] = "devices.txt";
 
-const char DevicesParamsConst::LED_TYPE[] = "led_type";
+const char DevicesParamsConst::TYPE[] = "led_type";
 
-const char DevicesParamsConst::LED_RGB_MAPPING[] = "led_rgb_mapping";
+const char DevicesParamsConst::MAP[] = "led_rgb_mapping";
 
 const char DevicesParamsConst::LED_T0H[] = "led_t0h";
 const char DevicesParamsConst::LED_T1H[] = "led_t1h";
 
-const char DevicesParamsConst::LED_COUNT[] = "led_count";
+const char DevicesParamsConst::COUNT[] = "led_count";
 
-const char DevicesParamsConst::LED_GROUPING[] = "led_grouping";
-const char DevicesParamsConst::LED_GROUP_COUNT[] = "led_group_count";
+const char DevicesParamsConst::GROUPING_ENABLED[] = "led_grouping";
+const char DevicesParamsConst::GROUPING_COUNT[] = "led_group_count";
 
 const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
 
 const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
 
 const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
-const char DevicesParamsConst::USE_SI5351A[] = "use_si5351A";
