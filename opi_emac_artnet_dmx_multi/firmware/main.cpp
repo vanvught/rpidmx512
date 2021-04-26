@@ -69,6 +69,8 @@
 #include "displayudfhandler.h"
 #include "displayhandler.h"
 
+using namespace artnet;
+
 extern "C" {
 
 void notmain(void) {
@@ -94,13 +96,14 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	const TArtNetPortDir portDir = artnetparams.GetDirection();
+	const auto portDir = artnetparams.GetDirection();
 
 	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color(CONSOLE_GREEN);
-	if (portDir == ARTNET_INPUT_PORT) {
+
+	if (portDir == PortDir::INPUT) {
 		console_puts("DMX Input");
 	} else {
 		console_puts("DMX Output");
@@ -109,6 +112,7 @@ void notmain(void) {
 		console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
 		console_puts("RDM");
 	}
+
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
 	console_puts(" {2 Universes}\n");
@@ -185,7 +189,7 @@ void notmain(void) {
 	// DMX Input
 	DmxInput *pDmxInput;
 
-	if (portDir == ARTNET_INPUT_PORT) {
+	if (portDir == PortDir::INPUT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
@@ -224,7 +228,7 @@ void notmain(void) {
 
 			for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
 				uint8_t nAddress;
-				if (node.GetUniverseSwitch(i, nAddress)) {
+				if (node.GetUniverseSwitch(i, nAddress, PortDir::OUTPUT)) {
 					pDiscovery->Full(i);
 				}
 			}
@@ -235,12 +239,12 @@ void notmain(void) {
 
 	node.Print();
 
-	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == ARTNET_INPUT_PORT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
-	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE_PORT_B);
+	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == PortDir::INPUT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
+	display.Set(2, displayudf::Labels::NODE_NAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(6, displayudf::Labels::UNIVERSE_PORT_B);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -252,7 +256,7 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	const uint32_t nActivePorts = (artnetparams.GetDirection() == ARTNET_INPUT_PORT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (artnetparams.GetDirection() == PortDir::INPUT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetparams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 

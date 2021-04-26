@@ -2,7 +2,7 @@
  * @file artnetoutput.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 ArtNetOutput::ArtNetOutput() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
 		m_nUniverse[i] = 0;
 	}
 
@@ -54,10 +54,10 @@ void ArtNetOutput::Start(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%d", static_cast<int>(nPortIndex));
 
-	if (nPortIndex < E131_MAX_PORTS) {
+	if (nPortIndex < E131::MAX_PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
+		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT)) {
 			m_nUniverse[nPortIndex] = nUniverse;
 			DEBUG_PRINTF("m_nUniverse[%d]=%d", static_cast<int>(nPortIndex), static_cast<int>(m_nUniverse[nPortIndex]));
 		}
@@ -69,10 +69,10 @@ void ArtNetOutput::Start(uint8_t nPortIndex) {
 void ArtNetOutput::Stop(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (nPortIndex < E131_MAX_PORTS) {
+	if (nPortIndex < E131::MAX_PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, E131_OUTPUT_PORT)) {
+		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT)) {
 			m_nUniverse[nPortIndex] = 0;
 			DEBUG_PRINTF("m_nUniverse[%d]=0", static_cast<int>(nPortIndex));
 		}
@@ -82,7 +82,7 @@ void ArtNetOutput::Stop(uint8_t nPortIndex) {
 }
 
 void ArtNetOutput::SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength) {
-	assert(nPortIndex < E131_MAX_PORTS);
+	assert(nPortIndex < E131::MAX_PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
 		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, nPortIndex);

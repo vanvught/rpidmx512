@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,8 @@
 #include "identify.h"
 #include "factorydefaults.h"
 
+using namespace artnet;
+
 extern "C" {
 
 void notmain(void) {
@@ -122,7 +124,7 @@ void notmain(void) {
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
 
 	DmxSerial dmxSerial;
 	DmxSerialParams dmxSerialParams(new StoreDmxSerial);
@@ -139,11 +141,11 @@ void notmain(void) {
 	dmxSerial.Print();
 
 	display.SetTitle("Art-Net 4 %s", dmxSerial.GetSerialType());
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_HOSTNAME);
+	display.Set(2, displayudf::Labels::NODE_NAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(6, displayudf::Labels::HOSTNAME);
 
 	uint32_t nFilesCount = dmxSerial.GetFilesCount();
 	if (nFilesCount == 0) {

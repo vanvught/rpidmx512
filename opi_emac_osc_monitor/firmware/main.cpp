@@ -115,7 +115,7 @@ void notmain(void) {
 
 	MDNS mDns;
 	mDns.Start();
-	mDns.AddServiceRecord(0, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=monitor");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=monitor");
 	mDns.Print();
 
 	DMXMonitor monitor;

@@ -118,9 +118,9 @@ void notmain(void) {
 
 	bool bIsSetIndividual = false;
 
-	uint16_t nUniverse[E131_MAX_UARTS];
+	uint16_t nUniverse[E131::MAX_UARTS];
 
-	for (uint32_t i = 0; i < E131_MAX_UARTS; i++) {
+	for (uint32_t i = 0; i < E131::MAX_UARTS; i++) {
 		bool bIsSet;
 		nUniverse[i] = e131params.GetUniverse(i, bIsSet);
 
@@ -132,7 +132,7 @@ void notmain(void) {
 		}
 
 		if (bIsSet) {
-			bridge.SetUniverse(i, E131_OUTPUT_PORT, nUniverse[i]);
+			bridge.SetUniverse(i, e131::PortDir::OUTPUT, nUniverse[i]);
 			bIsSetIndividual = true;
 		}
 	}
@@ -140,8 +140,8 @@ void notmain(void) {
 	if (!bIsSetIndividual) {
 		const uint32_t nUniverse = e131params.GetUniverse();
 
-		for (uint32_t i = 0; i < E131_MAX_PORTS; i++) {
-			bridge.SetUniverse(i, E131_OUTPUT_PORT, i + nUniverse);
+		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
+			bridge.SetUniverse(i, e131::PortDir::OUTPUT, i + nUniverse);
 		}
 	}
 
@@ -149,11 +149,11 @@ void notmain(void) {
 	controller.Print();
 
 	display.SetTitle("sACN E1.31 Art-Net %d", bridge.GetActiveOutputPorts());
-	display.Set(2, DISPLAY_UDF_LABEL_IP);
-	display.Set(3, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
-	display.Set(4, DISPLAY_UDF_LABEL_UNIVERSE_PORT_B);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE_PORT_C);
-	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE_PORT_D);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_B);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_C);
+	display.Set(6, displayudf::Labels::UNIVERSE_PORT_D);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

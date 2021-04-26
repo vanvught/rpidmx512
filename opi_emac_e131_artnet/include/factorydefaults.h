@@ -2,7 +2,7 @@
  * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@
 
 #include "remoteconfig.h"
 #include "spiflashstore.h"
-
-#include "debug.h"
+#include "storenetwork.h"
 
 class FactoryDefaults: public RDMFactoryDefaults {
 public:
@@ -39,12 +38,9 @@ public:
 	~FactoryDefaults() {}
 
 	void Set() {
-		DEBUG_ENTRY
-
 		RemoteConfig::Get()->SetDisable(false);
 		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
-
-		DEBUG_EXIT
+		StoreNetwork::Get()->SaveDhcp(true);
 	}
 };
 

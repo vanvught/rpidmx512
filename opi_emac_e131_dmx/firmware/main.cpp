@@ -89,7 +89,7 @@ void notmain(void) {
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	if (e131params.GetDirection() == E131_INPUT_PORT) {
+	if (e131params.GetDirection() == e131::PortDir::INPUT) {
 		console_puts("DMX Input");
 	} else {
 		console_puts("DMX Output");
@@ -119,11 +119,11 @@ void notmain(void) {
 
 	const uint16_t nUniverse = e131params.GetUniverse();
 
-	if (e131params.GetDirection() == E131_INPUT_PORT) {
+	if (e131params.GetDirection() == e131::PortDir::INPUT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
-		bridge.SetUniverse(0, E131_INPUT_PORT, nUniverse);
+		bridge.SetUniverse(0, e131::PortDir::INPUT, nUniverse);
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
 		pDmxOutput = new DMXSend;
@@ -138,19 +138,19 @@ void notmain(void) {
 
 		pDmxOutput->Print();
 
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
+		bridge.SetUniverse(0, e131::PortDir::OUTPUT, nUniverse);
 		bridge.SetDirectUpdate(false);
 		bridge.SetOutput(pDmxOutput);
 	}
 
 	bridge.Print();
 
-	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == E131_INPUT_PORT ? "Input" : "Output");
-	display.Set(2, DISPLAY_UDF_LABEL_BOARDNAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == e131::PortDir::INPUT ? "Input" : "Output");
+	display.Set(2, displayudf::Labels::BOARDNAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -162,7 +162,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	const uint32_t nActivePorts = (e131params.GetDirection() == E131_INPUT_PORT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (e131params.GetDirection() == e131::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 

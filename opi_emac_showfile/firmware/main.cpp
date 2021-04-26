@@ -162,9 +162,9 @@ void notmain(void) {
 		;
 
 	display.SetTitle("Showfile player");
-	display.Set(2, DISPLAY_UDF_LABEL_HOSTNAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
+	display.Set(2, displayudf::Labels::HOSTNAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
 
 	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
 

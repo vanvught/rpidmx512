@@ -2,7 +2,7 @@
  * @file handler.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "handler.h"
 
-#include "ws28xx.h"
+#include "pixeltype.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxparams.h"
 
@@ -38,35 +38,15 @@
 
 Handler::Handler(WS28xxDmx *pWS28xxDmx):
 	m_pWS28xxDmx(pWS28xxDmx),
-	m_nLedCount(pWS28xxDmx->GetLEDCount()),
-	m_pLedTypeString(const_cast<char*>(WS28xx::GetLedTypeString(pWS28xxDmx->GetLEDType())))
+	m_nCount(WS28xx::Get()->GetCount()),
+	m_TypeString(const_cast<char*>(PixelType::GetType(WS28xx::Get()->GetType())))
 {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void Handler::Blackout() {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(true);
-
-	DEBUG_EXIT
-}
-
-void Handler::Update() {
-	DEBUG_ENTRY
-
-	m_pWS28xxDmx->Blackout(false);
-
-	DEBUG_EXIT
-}
-
 void Handler::Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) {
-	DEBUG_ENTRY
-
-	OscSimpleSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_pLedTypeString);
-	OscSimpleSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nLedCount);
-
-	DEBUG_EXIT
+	OscSimpleSend MsgSendLedType(nHandle, nRemoteIp, nPortOutgoing, "/info/ledtype", "s", m_TypeString);
+	OscSimpleSend MsgSendLedCount(nHandle, nRemoteIp, nPortOutgoing, "/info/ledcount", "i", m_nCount);
 }

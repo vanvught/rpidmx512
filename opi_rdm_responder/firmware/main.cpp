@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,7 +107,7 @@ void notmain(void) {
 
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
-			snprintf(aDescription, sizeof(aDescription) -1, "%s", TLC59711DmxParams::GetLedTypeString(pTLC59711Dmx->GetLEDType()));
+			snprintf(aDescription, sizeof(aDescription) -1, "%s", TLC59711DmxParams::GetType(pTLC59711Dmx->GetLEDType()));
 			pLightSet = pTLC59711Dmx;
 		}
 	}
@@ -115,19 +115,24 @@ void notmain(void) {
 	StoreWS28xxDmx storeWS28xxDmx;
 
 	if (!isLedTypeSet) {
-		auto *pSPISend = new WS28xxDmx;
-		assert(pSPISend != nullptr);
-		pSPISend->SetWS28xxDmxStore(&storeWS28xxDmx);
+		assert(pSpi == nullptr);
 
-		WS28xxDmxParams deviceparams(&storeWS28xxDmx);
+		PixelDmxConfiguration pixelDmxConfiguration;
 
-		if (deviceparams.Load()) {
-			deviceparams.Dump();
-			deviceparams.Set(pSPISend);
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
+
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
+			ws28xxparms.Dump();
 		}
 
-		snprintf(aDescription, sizeof(aDescription) -1, "%s", WS28xx::GetLedTypeString(pSPISend->GetLEDType()));
-		pLightSet = pSPISend;
+		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pWS28xxDmx != nullptr);
+
+		const auto nCount = pixelDmxConfiguration.GetCount();
+
+		snprintf(aDescription, sizeof(aDescription) -1, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
+		pLightSet = pWS28xxDmx;
 	}
 
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());

@@ -46,9 +46,10 @@
 
 #include "ipprog.h"
 
+#include "pixeltestpattern.h"
+#include "pixeltype.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "ws28xx.h"
 #include "h3/ws28xxdmxstartstop.h"
 #include "handleroled.h"
 #include "storews28xxdmx.h"
@@ -73,6 +74,8 @@
 #include "displayudfhandler.h"
 #include "displayhandler.h"
 
+using namespace artnet;
+
 extern "C" {
 
 void notmain(void) {
@@ -86,13 +89,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("Ethernet Art-Net 4 Node ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Pixel controller {4x/8x 4 Universes}");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
+	fw.Print("Ethernet Art-Net 4 Node " "\x1b[32m" "Pixel controller {4x/8x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new ArtNetReboot);
@@ -107,21 +104,21 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	WS28xxDmxMulti ws28xxDmxMulti;
-	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+	PixelDmxConfiguration pixelDmxConfiguration;
 
 	StoreWS28xxDmx storeWS28xxDmx;
 	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
 	if (ws28xxparms.Load()) {
-		ws28xxparms.Set(&ws28xxDmxMulti);
+		ws28xxparms.Set(&pixelDmxConfiguration);
 		ws28xxparms.Dump();
 	}
 
-	ws28xxDmxMulti.Initialize();
-	ws28xxDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
+	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+	pixelDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
 
-	const auto nActivePorts = ws28xxDmxMulti.GetActivePorts();
+	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
 	ArtNet4Node node(nActivePorts);
 
@@ -138,37 +135,31 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(&storeArtNet);
 	node.SetDirectUpdate(true);
-	node.SetOutput(&ws28xxDmxMulti);
+	node.SetOutput(&pixelDmxMulti);
 
-	const auto nUniverses = ws28xxDmxMulti.GetUniverses();
+	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
-	uint32_t nPortProtocolIndexMax = 0;
 
 	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		if (isSet) {
 			for (uint32_t u = 0; u < nUniverses; u++) {
-				node.SetUniverse(nPortProtocolIndex, ARTNET_OUTPUT_PORT, nStartUniversePort + u);
+				node.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, nStartUniversePort + u);
 				nPortProtocolIndex++;
 			}
 			nPortProtocolIndex += (ArtNet::MAX_PORTS - nUniverses);
-			nPortProtocolIndexMax = std::max(nPortProtocolIndexMax, nPortProtocolIndex);
 		} else {
 			nPortProtocolIndex += ArtNet::MAX_PORTS;
 		}
 	}
 
-	ws28xxDmxMulti.SetActivePorts((nPortProtocolIndexMax + 1) / 4);
-
-	auto bRunTestPattern = false;
 	uint8_t nTestPattern;
+	PixelTestPattern *pPixelTestPattern = nullptr;
+
 	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-		bRunTestPattern = true;
-		ws28xxDmxMulti.SetTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
-		ws28xxDmxMulti.Start(0);
-		ws28xxDmxMulti.Blackout(true);
+		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern), nActivePorts);
 		node.SetOutput(nullptr);
 	}
 
@@ -176,15 +167,15 @@ void notmain(void) {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
@@ -199,15 +190,17 @@ void notmain(void) {
 	llrpOnlyDevice.Print();
 
 	node.Print();
-	ws28xxDmxMulti.Print();
+	pixelDmxMulti.Print();
 
-	display.SetTitle("ArtNet Pixel %c:%dx%d", ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X8 ? '8' : (ws28xxDmxMulti.GetBoard() == ws28xxmulti::Board::X4 ? '4' : ' '), ws28xxDmxMulti.GetActivePorts(), ws28xxDmxMulti.GetLEDCount());
-	display.Set(2, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(3, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(4, DISPLAY_UDF_LABEL_HOSTNAME);
-	display.Set(5, DISPLAY_UDF_LABEL_IP);
-	display.Set(6, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Printf(7, "%d-%s:%d", ws28xxDmxMulti.GetActivePorts(), WS28xx::GetLedTypeString(ws28xxDmxMulti.GetLEDType()), ws28xxDmxMulti.GetLEDCount());
+	const auto board =  WS28xxMulti::GetBoard();
+
+	display.SetTitle("ArtNet Pixel %c:%dx%d", board == ws28xxmulti::Board::X8 ? '8' : (board == ws28xxmulti::Board::X4 ? '4' : ' '), nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(3, displayudf::Labels::NODE_NAME);
+	display.Set(4, displayudf::Labels::HOSTNAME);
+	display.Set(5, displayudf::Labels::IP);
+	display.Set(6, displayudf::Labels::UNIVERSE);
+	display.Printf(7, "%d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -249,8 +242,8 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		if (__builtin_expect((bRunTestPattern), 0)) {
-			ws28xxDmxMulti.RunTestPattern();
+		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
+			pPixelTestPattern->Run();
 		}
 	}
 }

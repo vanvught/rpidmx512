@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,8 @@
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
+using namespace artnet;
+
 extern "C" {
 
 void notmain(void) {
@@ -127,7 +129,7 @@ void notmain(void) {
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnetparams.GetUniverse());
+	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
 
 	TimeCode timecode;
 	if (artnetparams.IsUseTimeCode()) {
@@ -150,11 +152,11 @@ void notmain(void) {
 	node.Print();
 
 	display.SetTitle("Eth Art-Net 4 Monitor");
-	display.Set(2, DISPLAY_UDF_LABEL_NODE_NAME);
-	display.Set(3, DISPLAY_UDF_LABEL_IP);
-	display.Set(4, DISPLAY_UDF_LABEL_VERSION);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE);
-	display.Set(6, DISPLAY_UDF_LABEL_AP);
+	display.Set(2, displayudf::Labels::NODE_NAME);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

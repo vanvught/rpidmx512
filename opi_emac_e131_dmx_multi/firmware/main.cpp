@@ -82,13 +82,13 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const TE131PortDir portDir = e131params.GetDirection();
+	const auto portDir = e131params.GetDirection();
 
 	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	if (portDir == E131_INPUT_PORT) {
+	if (portDir == e131::PortDir::INPUT) {
 		console_puts("DMX Input");
 	} else {
 		console_puts("DMX Output");
@@ -162,7 +162,7 @@ void notmain(void) {
 	DMXSendMulti *pDmxOutput;
 	DmxInput *pDmxInput;
 
-	if (portDir == E131_INPUT_PORT) {
+	if (portDir == e131::PortDir::INPUT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
@@ -186,12 +186,12 @@ void notmain(void) {
 
 	bridge.Print();
 
-	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == E131_INPUT_PORT ? "Input" : "Output");
-	display.Set(2, DISPLAY_UDF_LABEL_IP);
-	display.Set(3, DISPLAY_UDF_LABEL_NETMASK);
-	display.Set(4, DISPLAY_UDF_LABEL_UNIVERSE_PORT_A);
-	display.Set(5, DISPLAY_UDF_LABEL_UNIVERSE_PORT_B);
-	display.Set(6, DISPLAY_UDF_LABEL_BOARDNAME);
+	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == e131::PortDir::INPUT ? "Input" : "Output");
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::NETMASK);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_B);
+	display.Set(6, displayudf::Labels::BOARDNAME);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -203,7 +203,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	const uint32_t nActivePorts = (e131params.GetDirection() == E131_INPUT_PORT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+	const uint32_t nActivePorts = (e131params.GetDirection() == e131::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 
