@@ -24,10 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstring>
+#include <cstdint>
+#include <cstdio>
+#include <cstdarg>
 
 #include "h3_uart0_debug.h"
 
@@ -96,7 +96,7 @@ const char* Shell::ReadLine(uint32_t &nLength) {
 					nLength = 0;
 				}
 			}
-			m_Buffer[m_nLength] = c;
+			m_Buffer[m_nLength] = static_cast<char>(c);
 			m_nLength++;
 		}
 	}

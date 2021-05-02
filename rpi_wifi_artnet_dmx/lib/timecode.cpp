@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ constexpr char types[4][8] = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 static uint8_t prev_type = 0xFF;	///< Invalid type. Force initial update.
 
 static void itoa_base10(int arg, char *pBuffer) {
-	char *n = pBuffer;
+	auto *n = pBuffer;
 
 	if (arg == 0) {
 		*n++ = '0';
@@ -50,14 +50,11 @@ static void itoa_base10(int arg, char *pBuffer) {
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*n++ = static_cast<char>('0' + (arg / 10));
+	*n = static_cast<char>('0' + (arg % 10));
 }
 
-TimeCode::TimeCode(void) {
-}
-
-void TimeCode::Start(void) {
+void TimeCode::Start() {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_CYAN);
@@ -65,7 +62,7 @@ void TimeCode::Start(void) {
 	console_restore_cursor();
 }
 
-void TimeCode::Stop(void) {
+void TimeCode::Stop() {
 	console_set_cursor(COLUMN, ROW);
 	console_puts("                 ");
 }

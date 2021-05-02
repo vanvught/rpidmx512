@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 
@@ -97,10 +97,9 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
+		m_PollReply.BindIndex = static_cast<uint8_t>(nPage + 1);
 
-		m_PollReply.BindIndex = nPage + 1;
-
-		const uint32_t nPortIndexStart = nPage * ArtNet::MAX_PORTS;
+		const auto nPortIndexStart = nPage * ArtNet::MAX_PORTS;
 
 		uint32_t NumPortsLo = 0;
 
@@ -108,7 +107,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			uint8_t nStatus = m_OutputPorts[nPortIndex].port.nStatus;
 
 			if (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) {
-				nStatus &= (~GO_DATA_IS_BEING_TRANSMITTED);
+				nStatus &= static_cast<uint8_t>(~GO_DATA_IS_BEING_TRANSMITTED);
 
 				if (m_OutputPorts[nPortIndex].ipA != 0) {
 					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA) < 1000) {
@@ -123,10 +122,10 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 				}
 			} else {
 				if (m_pArtNet4Handler != nullptr) {
-					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
+					const auto nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 
-					nStatus &= (~nMask);
-					nStatus |= (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask);
+					nStatus &= static_cast<uint8_t>(~nMask);
+					nStatus |= static_cast<uint8_t>((m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
 
 					if ((nStatus & GO_OUTPUT_IS_SACN) == 0) {
 						m_OutputPorts[nPortIndex].tPortProtocol = PortProtocol::ARTNET;
@@ -156,7 +155,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		}
 
-		m_PollReply.NumPortsLo = NumPortsLo;
+		m_PollReply.NumPortsLo = static_cast<uint8_t>(NumPortsLo);
 		assert(NumPortsLo <= 4);
 
 		snprintf(reinterpret_cast<char*>(m_PollReply.NodeReport), ArtNet::REPORT_LENGTH, "%04x [%04d] %s AvV", static_cast<int>(m_State.reportCode), static_cast<int>(m_State.ArtPollReplyCount), m_aSysName);

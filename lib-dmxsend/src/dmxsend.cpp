@@ -3,7 +3,7 @@
  * @file dmxsender.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxsend.h"
 
@@ -38,7 +38,7 @@ DMXSend::DMXSend(void) : m_bIsStarted(false) {
 DMXSend::~DMXSend(void) {
 }
 
-void DMXSend::Start(__attribute__((unused)) uint8_t nPort) {
+void DMXSend::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -52,7 +52,7 @@ void DMXSend::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(__attribute__((unused)) uint8_t nPort) {
+void DMXSend::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -66,7 +66,7 @@ void DMXSend::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void DMXSend::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 
 	if (__builtin_expect((nLength == 0), 0)) {
@@ -74,7 +74,7 @@ void DMXSend::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pD
 		return;
 	}
 
-	dmx_set_send_data_without_sc(pData, nLength);
+	dmx_set_send_data_without_sc(pData, static_cast<uint16_t>(nLength));
 
 	DEBUG_EXIT
 }

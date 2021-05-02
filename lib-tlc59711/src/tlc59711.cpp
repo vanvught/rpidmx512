@@ -2,7 +2,7 @@
  * @file tlc59711.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #if !defined(NDEBUG) || defined(__linux__)
-# include <stdio.h>
+# include <cstdio>
 #endif
-#include <string.h>
+#include <cstring>
 #include <cassert>
 
 #include "tlc59711.h"
@@ -107,7 +107,7 @@ TLC59711::~TLC59711() {
 	m_pBuffer = nullptr;
 }
 
-bool TLC59711::Get(uint8_t nChannel, uint16_t &nValue) {
+bool TLC59711::Get(uint32_t nChannel, uint16_t &nValue) {
 	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
@@ -119,7 +119,7 @@ bool TLC59711::Get(uint8_t nChannel, uint16_t &nValue) {
 	return false;
 }
 
-void TLC59711::Set(uint8_t nChannel, uint16_t nValue) {
+void TLC59711::Set(uint32_t nChannel, uint16_t nValue) {
 	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
@@ -147,12 +147,12 @@ bool TLC59711::GetRgb(uint8_t nOut, uint16_t& nRed, uint16_t& nGreen, uint16_t& 
 	return false;
 }
 
-void TLC59711::Set(uint8_t nChannel, uint8_t nValue) {
-	const uint32_t nBoardIndex = nChannel / TLC59711Channels::OUT;
+void TLC59711::Set(uint32_t nChannel, uint8_t nValue) {
+	const auto nBoardIndex = nChannel / TLC59711Channels::OUT;
 
 	if (nBoardIndex < m_nBoards) {
 		const uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + ((12 * nBoardIndex) + 11 - nChannel);
-		m_pBuffer[nIndex] = static_cast<uint16_t>(nValue) << 8 | static_cast<uint16_t>(nValue);
+		m_pBuffer[nIndex] = static_cast<uint16_t>((nValue << 8) | nValue);
 	}
 #ifndef NDEBUG
 	else {
@@ -186,9 +186,9 @@ void TLC59711::SetRgb(uint8_t nOut, uint8_t nRed, uint8_t nGreen, uint8_t nBlue)
 
 	if (nBoardIndex < m_nBoards) {
 		uint32_t nIndex = 2 + (nBoardIndex * TLC59711Channels::U16BIT) + (((4 * nBoardIndex) + 3 - nOut) * 3);
-		m_pBuffer[nIndex++] = static_cast<uint16_t>(nBlue) << 8 | static_cast<uint16_t>(nBlue);
-		m_pBuffer[nIndex++] = static_cast<uint16_t>(nGreen) << 8 | static_cast<uint16_t>(nGreen);
-		m_pBuffer[nIndex] = static_cast<uint16_t>(nRed) << 8 | static_cast<uint16_t>(nRed);
+		m_pBuffer[nIndex++] = static_cast<uint16_t>((nBlue << 8) | nBlue);
+		m_pBuffer[nIndex++] = static_cast<uint16_t>((nGreen << 8) | nGreen);
+		m_pBuffer[nIndex] = static_cast<uint16_t>((nRed << 8) | nRed);
 	}
 #ifndef NDEBUG
 	else {

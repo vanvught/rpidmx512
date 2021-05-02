@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "ws28xxdisplay7segment.h"
@@ -222,7 +222,7 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 	DEBUG_EXIT
 }
 
-void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplay7Segment::WriteChar(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nChar > sizeof(Seg7Array)) {
 		return;
 	}
@@ -246,7 +246,7 @@ void WS28xxDisplay7Segment::WriteChar(char nChar, uint8_t nPos, uint8_t nRed, ui
 	RenderSegment(chr & (1 << 0), nCurrentDigitBase, 6, nRed, nGreen, nBlue);
 }
 
-void WS28xxDisplay7Segment::WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplay7Segment::WriteColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	const uint32_t nCurrentDigitBase = (WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) + (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON);
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
@@ -292,9 +292,6 @@ void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBas
 }
 
 void WS28xxDisplay7Segment::Show() {
-//	if (m_bUpdateNeeded) {
-//		m_bUpdateNeeded = false;
-		m_pWS28xx->Update();
-//	}
+	m_pWS28xx->Update();
 }
 

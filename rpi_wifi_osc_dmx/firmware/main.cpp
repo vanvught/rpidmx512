@@ -41,20 +41,21 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #if defined(ORANGE_PI)
- #include "storedmxsend.h"
+# include "storedmxsend.h"
 #endif
 #ifndef H3
 // DMX real-time monitor
- #include "dmxmonitor.h"
+# include "dmxmonitor.h"
 #endif
 // Pixel Controller
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
-#include "ws28xx.h"
+
 #if defined(ORANGE_PI)
- #include "storews28xxdmx.h"
+# include "storews28xxdmx.h"
 #endif
 
 #include "handler.h"
@@ -66,6 +67,8 @@
 #endif
 
 #include "software_version.h"
+
+using namespace lightset;
 
 constexpr char NETWORK_INIT[] = "Network init ...";
 constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
@@ -104,23 +107,23 @@ void notmain(void) {
 		params.Set(&server);
 	}
 
-	const TLightSetOutputType tOutputType = params.GetOutputType();
+	const auto tOutputType = params.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi OSC Server ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {1 Universe}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -140,57 +143,50 @@ void notmain(void) {
 	display.TextStatus(BRIDGE_PARMAS);
 
 	DMXSend dmx;
-	LightSet *pSpi;
-	Handler *pHandler;
+	LightSet *pSpi = nullptr;
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
+		PixelDmxConfiguration pixelDmxConfiguration;
+
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 #else
 		WS28xxDmxParams ws28xxparms;
 #endif
+
 		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
-
-		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-			display.Printf(7, "%s:%d G", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount());
-			pHandler = new Handler(pWS28xxDmxGrouping);
-			assert(pHandler != 0);
-		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
-
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
-
-			// For the time being, just 1 Universe
-			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
-				if (nLedCount > 128) {
-					pWS28xxDmx->SetLEDCount(128);
-				}
-			} else {
-				if (nLedCount > 170) {
-					pWS28xxDmx->SetLEDCount(170);
-				}
+		// For the time being, just 1 Universe
+		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
+			if (pixelDmxConfiguration.GetCount() > 128) {
+				pixelDmxConfiguration.SetCount(128);
 			}
-			display.Printf(7, "%s:%d", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), nLedCount);
-			pHandler = new Handler(pWS28xxDmx);
-			assert(pHandler != 0);
+		} else {
+			if (pixelDmxConfiguration.GetCount() > 170) {
+				pixelDmxConfiguration.SetCount(170);
+			}
+		}
+
+		auto *pPixelDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pPixelDmx != nullptr);
+		pSpi = pPixelDmx;
+
+		const auto nCount = pixelDmxConfiguration.GetCount();
+
+		if (pixelDmxConfiguration.GetGroupingEnabled()) {
+			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
+		} else {
+			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
 		}
 
 		server.SetOutput(pSpi);
-		server.SetOscServerHandler(pHandler);
+		server.SetOscServerHandler(new Handler(pPixelDmx));
 	}
 #ifndef H3
-	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == OutputType::MONITOR) {
 		// There is support for HEX output only
 		server.SetOutput(&monitor);
 		monitor.Cls();
@@ -213,21 +209,20 @@ void notmain(void) {
 
 	server.Print();
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else 	if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	} else 	if (tOutputType == OutputType::MONITOR) {
 		printf(" Server ip-address    : " IPSTR "\n\n\n", IP2STR(nw.GetIp()));
 	} else {
 		dmx.Print();
-		console_newline();
 	}
 
 	for (unsigned i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Printf(1, "WiFi OSC %s", tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? "Pixel" : "DMX");
+	display.Printf(1, "WiFi OSC %s", tOutputType == OutputType::SPI ? "Pixel" : "DMX");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());

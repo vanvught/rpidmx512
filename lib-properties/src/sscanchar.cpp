@@ -28,7 +28,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "sscan.h"

@@ -52,14 +52,14 @@ public:
 
 	void Print();
 
-	void SetPixel(uint8_t nPort, uint16_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	void SetPixel(uint32_t nPort, uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 		if (m_Board == ws28xxmulti::Board::X8) {
 			SetPixel8x(nPort, nIndex, nRed, nGreen, nBlue);
 		} else {
 			SetPixel4x(nPort, nIndex, nRed, nGreen, nBlue);
 		}
 	}
-	void SetPixel(uint8_t nPort, uint16_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	void SetPixel(uint32_t nPort, uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 		if (m_Board == ws28xxmulti::Board::X8) {
 			SetPixel8x(nPort, nIndex, nRed, nGreen, nBlue, nWhite);
 		} else {
@@ -88,7 +88,7 @@ public:
 		return m_Type;
 	}
 
-	uint16_t GetCount() const {
+	uint32_t GetCount() const {
 		return m_nCount;
 	}
 
@@ -116,22 +116,22 @@ private:
 	void SetupGPIO();
 	void SetupBuffers4x();
 	void Generate800kHz(const uint32_t *pBuffer);
-	void SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetColour4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 // 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
 	void SetupSPI();
 	void SetupCPLD();
 	void SetupBuffers8x();
-	void SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetColour8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 private:
 	ws28xxmulti::Board m_Board { ws28xxmulti::defaults::BOARD };
 	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint16_t m_nCount { pixel::defaults::COUNT };
+	uint32_t m_nCount { pixel::defaults::COUNT };
 	pixel::Map m_Map { pixel::Map::UNDEFINED };
 	uint32_t m_nBufSize { 0 };
 	uint32_t *m_pBuffer4x { nullptr };

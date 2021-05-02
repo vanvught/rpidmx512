@@ -60,19 +60,19 @@ class L6470ParamsStore {
 public:
 	virtual ~L6470ParamsStore() {}
 
-	virtual void Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
-	virtual void Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
+	virtual void Update(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
+	virtual void Copy(uint32_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
 };
 
 class L6470Params {
 public:
 	L6470Params(L6470ParamsStore *pL6470ParamsStore=nullptr);
 
-	bool Load(uint8_t nMotorIndex);
-	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+	bool Load(uint32_t nMotorIndex);
+	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(L6470 *);
 

@@ -48,15 +48,11 @@ static void itoa_base10(int arg, char *pBuffer) {
 		return;
 	}
 
-	*n++ = '0' + (arg / 10);
-	*n = '0' + (arg % 10);
+	*n++ = static_cast<char>('0' + (arg / 10));
+	*n = static_cast<char>('0' + (arg % 10));
 }
 
-TimeSync::TimeSync(void) : m_nSecondsPrevious(60) {
-	// 60 : Force initial update for ShowSystemTime
-}
-
-void TimeSync::Start(void) {
+void TimeSync::Start() {
 	this->Show();
 }
 
@@ -82,7 +78,7 @@ void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
 	this->Show();
 }
 
-void TimeSync::Show(void) {
+void TimeSync::Show() {
 	console_save_cursor();
 	console_set_cursor(COLUMN, ROW);
 	console_set_fg_color(CONSOLE_BLUE);
@@ -90,12 +86,9 @@ void TimeSync::Show(void) {
 	console_restore_cursor();
 }
 
-void TimeSync::ShowSystemTime(void) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(NULL);
-	local_time = localtime(&ltime);
+void TimeSync::ShowSystemTime() {
+	auto ltime = time(nullptr);
+	auto *local_time = localtime(&ltime);
 
 	if (m_nSecondsPrevious == local_time->tm_sec) {
 		return;

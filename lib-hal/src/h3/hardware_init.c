@@ -69,7 +69,7 @@ uint32_t hardware_uptime_seconds(void) {
 	return (H3_TIMER->AVS_CNT0 / 1000) - s_hardware_init_startup_seconds;
 }
 
-int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
+int32_t hardware_get_mac_address(uint8_t *mac_address) {
 	const uint32_t mac_lo = H3_EMAC->ADDR[0].LOW;
 	const uint32_t mac_hi = H3_EMAC->ADDR[0].HIGH;
 
@@ -80,7 +80,7 @@ int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address) {
 	mac_address[0] = (mac_lo >> 0) & 0xff;
 	mac_address[1] = (mac_lo >> 8) & 0xff;
 	mac_address[2] = (mac_lo >> 16) & 0xff;
-	mac_address[3] = (mac_lo >> 24) & 0xff;
+	mac_address[3] = (uint8_t) ((mac_lo >> 24) & 0xff);
 	mac_address[4] = (mac_hi >> 0) & 0xff;
 	mac_address[5] = (mac_hi >> 8) & 0xff;
 

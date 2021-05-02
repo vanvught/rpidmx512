@@ -168,7 +168,7 @@ uint32_t dmx_get_output_period(void) {
 	return dmx_output_period;
 }
 
-uint16_t dmx_get_send_data_length(void) {
+uint32_t dmx_get_send_data_length(void) {
 	return dmx_send_data_length;
 }
 

@@ -35,13 +35,13 @@ public:
 	LightSetLLRPOnly() {
 	}
 
-	void Start(__attribute__((unused)) uint8_t nPort) override {
+	void Start(__attribute__((unused)) uint32_t nPort) override {
 	}
 
-	void Stop(__attribute__((unused)) uint8_t nPort) override {
+	void Stop(__attribute__((unused)) uint32_t nPort) override {
 	}
 
-	void SetData(__attribute__((unused)) uint8_t nPort, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint16_t nLength) override {
+	void SetData(__attribute__((unused)) uint32_t nPort, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) override {
 	}
 
 	void Print() override {

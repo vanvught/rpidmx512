@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include <cstring>
 #include <cassert>
 
 #include "artnetnode.h"

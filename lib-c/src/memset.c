@@ -20,7 +20,7 @@ void *memset(void *dst, int val, size_t count)
 
 	/* Handle the first part, until the pointer becomes 64-bit aligned. */
 	while (((uintptr_t)ptr & 7)) {
-		*ptr++ = val;
+		*ptr++ = (char)val;
 		if (--count == 0) {
 			return dst;
 		}
@@ -40,7 +40,7 @@ void *memset(void *dst, int val, size_t count)
 	/* Handle the remaining part byte-per-byte. */
 	ptr = (void *)ptr64;
 	while (count--) {
-		*ptr++ = val;
+		*ptr++ = (char)val;
 	}
 
 	return dst;

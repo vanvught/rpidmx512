@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "spiflashstore.h"

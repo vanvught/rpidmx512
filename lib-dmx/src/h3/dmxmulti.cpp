@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 
@@ -264,7 +264,7 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 #ifdef LOGIC_ANALYZER
 		h3_gpio_set(20);
 #endif
-		CONSOLE_ERROR[CONSOLE_ERROR_LENGTH - 3] = '0' + s_nUartsSending;
+		CONSOLE_ERROR[CONSOLE_ERROR_LENGTH - 3] = '0' + static_cast<char>(s_nUartsSending);
 		console_error(CONSOLE_ERROR);
 #ifdef LOGIC_ANALYZER
 		h3_gpio_clr(20);
@@ -288,7 +288,7 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 }
 
 static void fiq_rdm_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, __attribute__((unused))  const uint32_t nIIR) {
-	uint16_t nIndex;
+	uint32_t nIndex;
 
 	isb();
 
@@ -301,7 +301,7 @@ static void fiq_rdm_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUar
 	while(nRFL--) {
 		while ((pUart->LSR & UART_LSR_DR) != UART_LSR_DR)
 			;
-		const uint8_t nData = pUart->O00.RBR;
+		const auto nData = static_cast<uint8_t>(pUart->O00.RBR);
 
 		switch (s_tRdmReceiveState[nUart]) {
 		case TxRxState::IDLE:
@@ -350,8 +350,7 @@ static void fiq_rdm_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUar
 			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
 			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
-
-			s_pRdmDataCurrent[nUart]->nChecksum -= nData << 8;
+			s_pRdmDataCurrent[nUart]->nChecksum -= static_cast<uint16_t>(nData << 8);
 
 			s_tRdmReceiveState[nUart] = TxRxState::CHECKSUML;
 			break;
@@ -680,7 +679,7 @@ void DmxMulti::SetDmxPeriodTime(uint32_t nPeriod) {
 	DEBUG_PRINTF("nPeriod=%u, nLengthMax=%u, m_nDmxTransmitPeriod=%u", nPeriod, nLengthMax, m_nDmxTransmitPeriod);
 }
 
-void DmxMulti::SetPortSendDataWithoutSC(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+void DmxMulti::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint16_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 
@@ -706,7 +705,7 @@ void DmxMulti::SetPortSendDataWithoutSC(uint8_t nPort, const uint8_t *pData, uin
 	s_nDmxDataWriteIndex[nUart] = nNext;
 }
 
-void DmxMulti::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
+void DmxMulti::SetPortDirection(uint32_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData) {
 	assert(nPort < DMX_MAX_OUT);
 
 	DEBUG_PRINTF("nPort=%d, tPortDirection=%d, bEnableData=%d", nPort, tPortDirection, bEnableData);
@@ -737,7 +736,7 @@ void DmxMulti::SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirecti
 	}
 }
 
-void DmxMulti::RdmSendRaw(uint8_t nPort, const uint8_t* pRdmData, uint16_t nLength) {
+void DmxMulti::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint16_t nLength) {
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
@@ -765,7 +764,7 @@ void DmxMulti::RdmSendRaw(uint8_t nPort, const uint8_t* pRdmData, uint16_t nLeng
 	}
 }
 
-const uint8_t *DmxMulti::RdmReceive(uint8_t nPort) {
+const uint8_t *DmxMulti::RdmReceive(uint32_t nPort) {
 	assert(nPort < DMX_MAX_OUT);
 
 	const auto nUart = _port_to_uart(nPort);
@@ -780,7 +779,7 @@ const uint8_t *DmxMulti::RdmReceive(uint8_t nPort) {
 	}
 }
 
-const uint8_t *DmxMulti::RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+const uint8_t *DmxMulti::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	assert(nPort < DMX_MAX_OUT);
 
 	uint8_t *p = nullptr;

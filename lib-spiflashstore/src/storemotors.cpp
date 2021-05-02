@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "storemotors.h"
@@ -108,7 +108,7 @@ StoreMotors::StoreMotors() {
 	DEBUG_EXIT
 }
 
-void StoreMotors::Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams) {
+void StoreMotors::Update(uint32_t nMotorIndex, const struct TModeParams *ptModeParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -118,7 +118,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 	DEBUG_EXIT
 }
 
-void StoreMotors::Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams) {
+void StoreMotors::Copy(uint32_t nMotorIndex, struct TModeParams *ptModeParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -128,7 +128,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams) {
 	DEBUG_EXIT
 }
 
-void StoreMotors::Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams) {
+void StoreMotors::Update(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -138,7 +138,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotor
 	DEBUG_EXIT
 }
 
-void StoreMotors::Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams) {
+void StoreMotors::Copy(uint32_t nMotorIndex, struct TMotorParams *ptMotorParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -148,7 +148,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams) 
 	DEBUG_EXIT
 }
 
-void StoreMotors::Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params) {
+void StoreMotors::Update(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -158,7 +158,7 @@ void StoreMotors::Update(uint8_t nMotorIndex, const struct TL6470Params *ptL6470
 	DEBUG_EXIT
 }
 
-void StoreMotors::Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params) {
+void StoreMotors::Copy(uint32_t nMotorIndex, struct TL6470Params *ptL6470Params) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);
@@ -168,7 +168,7 @@ void StoreMotors::Copy(uint8_t nMotorIndex, struct TL6470Params *ptL6470Params) 
 	DEBUG_EXIT
 }
 
-void StoreMotors::SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress) {
+void StoreMotors::SaveDmxStartAddress(uint32_t nMotorIndex, uint16_t nDmxStartAddress) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_MOTORS_MAX_MOTORS);

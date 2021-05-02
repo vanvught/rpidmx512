@@ -53,10 +53,10 @@ public:
 	SparkFunDmx();
 	~SparkFunDmx() override;
 
-	void Start(uint8_t nPort) override;
-	void Stop(uint8_t nPort) override;
+	void Start(uint32_t nPort) override;
+	void Stop(uint32_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
+	void SetData(uint32_t nPort, const uint8_t *, uint32_t) override;
 
 	void Print() override;
 
@@ -144,7 +144,7 @@ private:
 	bool m_bIsLocalResetSet;
 	bool m_bIsLocalBusyPinSet;
 
-	uint8_t m_nDmxMode;
+	uint16_t m_nDmxMode;
 	uint16_t m_nDmxStartAddressMode;
 
 	uint16_t m_nDmxStartAddress;

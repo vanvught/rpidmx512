@@ -28,9 +28,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "rdmsubdevicesparams.h"

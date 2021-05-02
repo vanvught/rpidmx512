@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstddef>
+#include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #include "readconfigfile.h"

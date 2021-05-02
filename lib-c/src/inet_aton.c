@@ -1,4 +1,3 @@
-#if defined (BARE_METAL)
 /**
  * @file inet_aton.c
  *
@@ -55,7 +54,7 @@ int inet_aton(const char *cp, uint32_t *ip_address) {
 				b++;
 			}
 
-			cast32.u8[i] = k;
+			cast32.u8[i] = (uint8_t)k;
 			b++;
 
 		}
@@ -77,7 +76,7 @@ int inet_aton(const char *cp, uint32_t *ip_address) {
 			b++;
 		}
 
-		cast32.u8[i] = k;
+		cast32.u8[i] = (uint8_t)k;
 
 		if (ip_address != 0) {
 			*ip_address = cast32.u32;
@@ -85,4 +84,3 @@ int inet_aton(const char *cp, uint32_t *ip_address) {
 
 		return 1;
 }
-#endif

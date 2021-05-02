@@ -50,11 +50,11 @@
 # include "dmxmonitor.h"
 #endif
 // Pixel Controller
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
-#include "ws28xx.h"
 
 #if defined(ORANGE_PI)
 # include "spiflashinstall.h"
@@ -66,6 +66,9 @@
 #endif
 
 #include "software_version.h"
+
+using namespace artnet;
+using namespace lightset;
 
 constexpr char NETWORK_INIT[] = "Network init ...";
 constexpr char NODE_PARMAS[] = "Setting Node parameters ...";
@@ -98,27 +101,27 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	const TLightSetOutputType tOutputType = artnetparams.GetOutputType();
+	const auto tOutputType = artnetparams.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi Art-Net 3 Node ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == LIGHTSET_OUTPUT_TYPE_DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color((artnetparams.IsRdm() && (tOutputType == OutputType::DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -148,77 +151,60 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
-	if (artnetparams.IsUseTimeCode() || tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeCode() || tOutputType == OutputType::MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
 	}
 
-	if (artnetparams.IsUseTimeSync() || tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	if (artnetparams.IsUseTimeSync() || tOutputType == OutputType::MONITOR) {
 		timesync.Start();
 		node.SetTimeSyncHandler(&timesync);
 	}
 
-	const uint8_t nUniverse = artnetparams.GetUniverse();
+	const auto nStartUniverse = artnetparams.GetUniverse();
 
-	node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, nUniverse);
-	node.SetDirectUpdate(false);
+	node.SetUniverseSwitch(0, PortDir::OUTPUT, nStartUniverse);
 
 	DMXSend dmx;
-	LightSet *pSpi;
+	LightSet *pSpi = nullptr;
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
+		PixelDmxConfiguration pixelDmxConfiguration;
+
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 #else
 		WS28xxDmxParams ws28xxparms;
 #endif
+
 		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pWS28xxDmx != nullptr);
+		pSpi = pWS28xxDmx;
 
-		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
+		const auto nCount = pixelDmxConfiguration.GetCount();
 
-			const auto nLedCount = pWS28xxDmx->GetLEDCount();
-
-			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
-				if (nLedCount > 128) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 256) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 384) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-				}
-			} else {
-				if (nLedCount > 170) {
-					node.SetDirectUpdate(true);
-					node.SetUniverseSwitch(1, ARTNET_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 340) {
-					node.SetUniverseSwitch(2, ARTNET_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 510) {
-					node.SetUniverseSwitch(3, ARTNET_OUTPUT_PORT, nUniverse + 3);
-				}
-			}
+		if (pixelDmxConfiguration.GetGroupingEnabled()) {
+			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
+		} else {
+			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
 		}
+
+		const auto nUniverses = pWS28xxDmx->GetUniverses();
+		node.SetDirectUpdate(nUniverses != 1);
+
+		for (uint32_t u = 1; u < nUniverses; u++) {
+			node.SetUniverseSwitch(u, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + u));
+		}
+
 		node.SetOutput(pSpi);
 	}
 #ifndef H3
-	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == OutputType::MONITOR) {
 		// There is support for HEX output only
 		node.SetOutput(&monitor);
 		monitor.Cls();
@@ -262,10 +248,10 @@ void notmain(void) {
 
 	node.Print();
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	} else if (tOutputType == OutputType::MONITOR) {
 		// Nothing
 	} else {
 		dmx.Print();
@@ -278,10 +264,10 @@ void notmain(void) {
 	display.Write(1, "WiFi Art-Net 3 ");
 
 	switch (tOutputType) {
-	case LIGHTSET_OUTPUT_TYPE_SPI:
+	case OutputType::SPI:
 		display.PutString("Pixel");
 		break;
-	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+	case OutputType::MONITOR:
 		display.PutString("Monitor");
 		break;
 	default:
@@ -310,7 +296,7 @@ void notmain(void) {
 	}
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nUniverse);
+	display.Printf(5, "U: %d", nStartUniverse);
 	display.Printf(6, "Active ports: %d", node.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_NODE);
@@ -326,7 +312,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		node.Run();
-		if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+		if (tOutputType == OutputType::MONITOR) {
 			timesync.ShowSystemTime();
 		}
 		lb.Run();

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lcdbw.h"
 
@@ -71,7 +71,7 @@ void LcdBw::Cls() {
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
+void LcdBw::TextLine(uint32_t nLine, const char *data, uint32_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -94,7 +94,7 @@ void LcdBw::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
 void LcdBw::PutChar(int c) {
 	char data[2];
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
-	data[1] = c;
+	data[1] = static_cast<char>(c);
 
 	Write(data, 2);
 }
@@ -106,7 +106,7 @@ void LcdBw::PutString(const char *s) {
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
-	for (i = 1; (i < static_cast<uint32_t>(m_nCols * m_nRows)) && (*p != '\0'); i++) {
+	for (i = 1; (i < (m_nCols * m_nRows)) && (*p != '\0'); i++) {
 		data[i] = *p;
 		p++;
 	}
@@ -114,7 +114,7 @@ void LcdBw::PutString(const char *s) {
 	Write(data, i + 1);
 }
 
-void LcdBw::Text(const char *pText, uint8_t nLength) {
+void LcdBw::Text(const char *pText, uint32_t nLength) {
 	uint8_t i;
 	char data[32];
 
@@ -128,27 +128,27 @@ void LcdBw::Text(const char *pText, uint8_t nLength) {
 		data[i + 1] = pText[i];
 	}
 
-	Write(data, static_cast<uint32_t>(nLength + 1));
+	Write(data, (nLength + 1));
 }
 
-void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
+void LcdBw::SetCursorPos(uint32_t col, uint32_t line) {
 	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
 
-	cmd[1] = ((line & 0x03) << 5) | (col & 0x1f);
+	cmd[1] = static_cast<char>(((line & 0x03) << 5) | (col & 0x1f));
 
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
+void LcdBw::ClearLine(__attribute__((unused))uint32_t nLine) {
 	char data[32];
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
 
-	for (int i = 1; i < m_nCols; i++) {
+	for (uint32_t i = 1; i < m_nCols; i++) {
 		data[i] = ' ';
 	}
 
-	Write(data, static_cast<uint32_t>(m_nCols + 1));
+	Write(data, (m_nCols + 1));
 }
 
 

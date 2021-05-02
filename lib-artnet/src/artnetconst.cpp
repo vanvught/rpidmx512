@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetconst.h"
 #include "artnet.h"

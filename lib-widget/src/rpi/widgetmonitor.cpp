@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cctype>
+#include <cstdio>
 #include <algorithm>
 
 #include "widgetmonitor.h"

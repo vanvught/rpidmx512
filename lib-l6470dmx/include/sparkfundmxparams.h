@@ -53,8 +53,8 @@ public:
 	virtual void Update(const struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
 	virtual void Copy(struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
 
-	virtual void Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
-	virtual void Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
+	virtual void Update(uint32_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
+	virtual void Copy(uint32_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams)=0;
 };
 
 class SparkFunDmxParams {
@@ -62,17 +62,17 @@ public:
 	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore = nullptr);
 
 	bool Load();
-	bool Load(uint8_t nMotorIndex);
+	bool Load(uint32_t nMotorIndex);
 	void Load(const char *pBuffer, uint32_t nLength);
-	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex = 0xFF);
+	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex = 0xFF);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex = 0xFF);
 
 	void SetGlobal(SparkFunDmx *pSparkFunDmx);
 	void SetLocal(SparkFunDmx *pSparkFunDmx);
 
-	void Dump(uint8_t nMotorIndex = 0xFF);
+	void Dump(uint32_t nMotorIndex = 0xFF);
 public:
     static void staticCallbackFunction(void *p, const char *s);
 

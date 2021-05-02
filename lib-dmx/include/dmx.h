@@ -97,7 +97,7 @@ extern void dmx_set_output_mab_time(uint32_t);
 extern void dmx_reset_total_statistics(void);
 extern /*@shared@*/const volatile struct _total_statistics *dmx_get_total_statistics(void) __attribute__((assume_aligned(4)));
 extern uint32_t dmx_get_updates_per_seconde(void);
-extern uint16_t dmx_get_send_data_length(void);
+extern uint32_t dmx_get_send_data_length(void);
 extern uint32_t dmx_get_output_period(void);
 extern void dmx_set_output_period(uint32_t);
 extern /*@shared@*/const /*@null@*/uint8_t *rdm_get_available(void) __attribute__((assume_aligned(4)));
@@ -139,12 +139,12 @@ public:
 	virtual ~DmxSet() {
 	}
 
-	virtual void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData)=0;
+	virtual void SetPortDirection(uint32_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData)=0;
 
-	virtual void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength)=0;
+	virtual void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength)=0;
 
-	virtual const uint8_t *RdmReceive(uint8_t nPort)=0;
-	virtual const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut)=0;
+	virtual const uint8_t *RdmReceive(uint32_t nPort)=0;
+	virtual const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut)=0;
 
 	static DmxSet* Get() {
 		return s_pThis;
@@ -158,12 +158,12 @@ class Dmx: public DmxSet {
 public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
 
-	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
+	void SetPortDirection(uint32_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
 
-	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
-	const uint8_t *RdmReceive(uint8_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) override;
+	const uint8_t *RdmReceive(uint32_t nPort) override;
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) override;
 
 	void Init();
 

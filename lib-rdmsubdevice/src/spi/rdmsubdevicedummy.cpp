@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "rdmsubdevicedummy.h"
@@ -52,7 +52,7 @@ void RDMSubDeviceDummy::Stop() {
 	printf("RDMSubDeviceDummy::Stop()\n");
 }
 
-void RDMSubDeviceDummy::Data(const uint8_t* pData, uint16_t nLength) {
+void RDMSubDeviceDummy::Data(const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= 512);
 

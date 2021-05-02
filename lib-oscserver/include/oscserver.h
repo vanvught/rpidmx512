@@ -82,7 +82,7 @@ public:
 
 private:
 	int GetChannel(const char *p);
-	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint16_t nLength);
+	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nStartChannel, uint32_t nLength);
 
 private:
 	uint16_t m_nPortIncoming = OscServerDefaultPort::INCOMING;

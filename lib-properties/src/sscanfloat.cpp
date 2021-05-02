@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cctype>
 #include <cassert>
 
 #include "sscan.h"
@@ -44,7 +44,7 @@ Sscan::ReturnCode Sscan::Float(const char *pBuffer, const char *pName, float &fV
 		return Sscan::NAME_ERROR;
 	}
 
-	bool bIsNegatieve = false;
+	auto bIsNegatieve = false;
 
 	if (*p == '-') {
 		p++;
@@ -61,11 +61,11 @@ Sscan::ReturnCode Sscan::Float(const char *pBuffer, const char *pName, float &fV
 		if (isdigit(*p) == 0) {
 			return Sscan::VALUE_ERROR;
 		}
-		k = k * 10.0 + static_cast<uint32_t>(*p - '0');
+		k = k * 10 + static_cast<uint32_t>(*p - '0');
 		p++;
 	} while ((*p != '.') && (*p != ' ') && (*p != 0));
 
-	fValue = k;
+	fValue = static_cast<float>(k);
 
 	if (*p != '.') {
 		if (bIsNegatieve) {
@@ -82,12 +82,12 @@ Sscan::ReturnCode Sscan::Float(const char *pBuffer, const char *pName, float &fV
 		if (isdigit(*p) == 0) {
 			return Sscan::VALUE_ERROR;
 		}
-		k = k * 10.0 + static_cast<uint32_t>(*p - '0');
+		k = k * 10 + static_cast<uint32_t>(*p - '0');
 		div *= 10;
 		p++;
 	}
 
-	fValue += (static_cast<float>(k) / div);
+	fValue += (static_cast<float>(k) / static_cast<float>(div));
 
 	if (bIsNegatieve) {
 		fValue = -fValue;

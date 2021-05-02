@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "midi.h"
 
 void Midi::SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
-	uint8_t data = nMidiQuarterFramePiece << 4;
+	auto data = static_cast<uint8_t>(nMidiQuarterFramePiece << 4);
 
 	switch (nMidiQuarterFramePiece) {
 	case 0:
@@ -53,7 +53,7 @@ void Midi::SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQua
 		data = data | (tMidiTimeCode->nHours & 0x0F);
 		break;
 	case 7:
-		data = data | (tMidiTimeCode->nType << 1) | ((tMidiTimeCode->nHours & 0x10) >> 4);
+		data = static_cast<uint8_t>(data | (tMidiTimeCode->nType << 1) | ((tMidiTimeCode->nHours & 0x10) >> 4));
 		break;
 	default:
 		break;

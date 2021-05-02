@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "gps.h"
@@ -141,7 +141,7 @@ const char* GPS::UartGetSentence() {
 	uint32_t rfl = EXT_UART->RFL;
 
 	while (rfl--) {
-		const uint8_t nByte = EXT_UART->O00.RBR;
+		const auto nByte = static_cast<uint8_t>(EXT_UART->O00.RBR);
 
 		switch (s_State) {
 		case State::START_DELIMITER:

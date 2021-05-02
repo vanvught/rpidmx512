@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "rdmdeviceresponder.h"
@@ -67,15 +67,15 @@ void RDMResponder::Init() {
 }
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
-	int nLength = RDM_RESPONDER_INVALID_RESPONSE;
+	auto nLength = RDM_RESPONDER_INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
 		const auto *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
 		nLength = p->message_length + RDM_MESSAGE_CHECKSUM_SIZE;
-		Rdm::SendRawRespondMessage(0, pResponse, nLength);
+		Rdm::SendRawRespondMessage(0, pResponse, static_cast<uint16_t>(nLength));
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
-		Rdm::SendDiscoveryRespondMessage(0, pResponse, nLength);
+		Rdm::SendDiscoveryRespondMessage(0, pResponse, static_cast<uint16_t>(nLength));
 	}
 
 #ifndef NDEBUG

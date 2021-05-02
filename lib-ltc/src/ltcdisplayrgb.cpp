@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
@@ -163,14 +163,14 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 				nMaster = (m_nMaster * nMaster) / 255 ;
 			}
 
-			tColoursColons.nRed = (nMaster * m_tColoursColons.nRed) / 255;
-			tColoursColons.nGreen = (nMaster *  m_tColoursColons.nGreen) / 255;
-			tColoursColons.nBlue = (nMaster * m_tColoursColons.nBlue) / 255;
+			tColoursColons.nRed = static_cast<uint8_t>((nMaster * m_tColoursColons.nRed) / 255);
+			tColoursColons.nGreen = static_cast<uint8_t>((nMaster *  m_tColoursColons.nGreen) / 255);
+			tColoursColons.nBlue = static_cast<uint8_t>((nMaster * m_tColoursColons.nBlue) / 255);
 		} else {
 			if (!(m_nMaster == 0 || m_nMaster == 255)) {
-				tColoursColons.nRed = (m_nMaster * m_tColoursColons.nRed) / 255 ;
-				tColoursColons.nGreen = (m_nMaster * m_tColoursColons.nGreen) / 255 ;
-				tColoursColons.nBlue = (m_nMaster * m_tColoursColons.nBlue) / 255 ;
+				tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
+				tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
+				tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
 			} else {
 				tColoursColons.nRed = m_tColoursColons.nRed;
 				tColoursColons.nGreen = m_tColoursColons.nGreen;
@@ -179,9 +179,9 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 		}
 	} else {
 		if (!(m_nMaster == 0 || m_nMaster == 255)) {
-			tColoursColons.nRed = (m_nMaster * m_tColoursColons.nRed) / 255 ;
-			tColoursColons.nGreen = (m_nMaster * m_tColoursColons.nGreen) / 255 ;
-			tColoursColons.nBlue = (m_nMaster * m_tColoursColons.nBlue) / 255 ;
+			tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
+			tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
+			tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
 		} else {
 			tColoursColons.nRed = m_tColoursColons.nRed;
 			tColoursColons.nGreen = m_tColoursColons.nGreen;
@@ -192,9 +192,9 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 	struct Colours tColours;
 
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = (m_nMaster * m_tColoursTime.nRed) / 255 ;
-		tColours.nGreen = (m_nMaster * m_tColoursTime.nGreen) / 255 ;
-		tColours.nBlue = (m_nMaster * m_tColoursTime.nBlue) / 255 ;
+		tColours.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nRed) / 255);
+		tColours.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nGreen) / 255);
+		tColours.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nBlue) / 255);
 	} else {
 		tColours.nRed = m_tColoursTime.nRed;
 		tColours.nGreen = m_tColoursTime.nGreen;
@@ -218,13 +218,13 @@ void LtcDisplayRgb::ShowSysTime(const char *pSystemTime) {
 	struct Colours tColoursColons;
 
 	if (!(m_nMaster == 0 || m_nMaster == 255)) {
-		tColours.nRed = (m_nMaster * m_tColoursTime.nRed) / 255 ;
-		tColours.nGreen = (m_nMaster * m_tColoursTime.nGreen) / 255 ;
-		tColours.nBlue = (m_nMaster * m_tColoursTime.nBlue) / 255 ;
+		tColours.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nRed) / 255);
+		tColours.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nGreen) / 255);
+		tColours.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursTime.nBlue) / 255);
 		//
-		tColoursColons.nRed = (m_nMaster * m_tColoursColons.nRed) / 255 ;
-		tColoursColons.nGreen = (m_nMaster * m_tColoursColons.nGreen) / 255 ;
-		tColoursColons.nBlue = (m_nMaster * m_tColoursColons.nBlue) / 255 ;
+		tColoursColons.nRed = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nRed) / 255);
+		tColoursColons.nGreen = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nGreen) / 255);
+		tColoursColons.nBlue = static_cast<uint8_t>((m_nMaster * m_tColoursColons.nBlue) / 255);
 	} else {
 		tColours.nRed = m_tColoursTime.nRed;
 		tColours.nGreen = m_tColoursTime.nGreen;
@@ -266,9 +266,9 @@ void LtcDisplayRgb::ShowMessage() {
 
 	const auto nMillis = Hardware::Get()->Millis();
 
-	tColours.nRed = ((nMillis - m_nMsgTimer) * m_tColoursMessage.nRed) / MESSAGE_TIME_MS;
-	tColours.nGreen = ((nMillis - m_nMsgTimer) * m_tColoursMessage.nGreen) / MESSAGE_TIME_MS;
-	tColours.nBlue = ((nMillis - m_nMsgTimer) * m_tColoursMessage.nBlue) / MESSAGE_TIME_MS;
+	tColours.nRed = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nRed) / MESSAGE_TIME_MS);
+	tColours.nGreen = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nGreen) / MESSAGE_TIME_MS);
+	tColours.nBlue = static_cast<uint8_t>(((nMillis - m_nMsgTimer) * m_tColoursMessage.nBlue) / MESSAGE_TIME_MS);
 
 	m_pLtcDisplayRgbSet->ShowMessage(m_aMessage, tColours);
 }

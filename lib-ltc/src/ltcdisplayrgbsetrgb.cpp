@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cctype>
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
@@ -71,9 +71,9 @@ void LtcDisplayRgb::SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, ColourIn
 }
 
 void LtcDisplayRgb::SetRGB(uint32_t nRGB, ColourIndex tIndex) {
-	const auto nRed = ((nRGB & 0xFF0000) >> 16);
-	const auto nGreen = ((nRGB & 0xFF00) >> 8);
-	const auto nBlue = (nRGB & 0xFF);
+	const auto nRed = static_cast<uint8_t>((nRGB & 0xFF0000) >> 16);
+	const auto nGreen = static_cast<uint8_t>((nRGB & 0xFF00) >> 8);
+	const auto nBlue = static_cast<uint8_t>(nRGB & 0xFF);
 
 	SetRGB(nRed, nGreen, nBlue, tIndex);
 }

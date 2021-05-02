@@ -2,7 +2,7 @@
  * @file rdmddiscovery.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 
 class RDMDiscovery: public RDMTod {
 public:
-	RDMDiscovery(uint8_t nPort = 0);
+	RDMDiscovery(uint32_t nPort = 0);
 
 	void SetUid(const uint8_t *);
 	const uint8_t *GetUid();
@@ -54,7 +54,7 @@ private:
 	uint64_t ConvertUid(const uint8_t *);
 
 private:
-	uint8_t m_nPort;
+	uint32_t m_nPort;
 	uint8_t m_Uid[RDM_UID_SIZE];
 	RDMMessage m_UnMute;
 	RDMMessage m_Mute;

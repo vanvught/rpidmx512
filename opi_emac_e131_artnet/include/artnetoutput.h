@@ -39,10 +39,10 @@ public:
 
 	void Handler();
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
+	void Start(uint32_t nPortIndex);
+	void Stop(uint32_t nPortIndex);
 
-	void SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength);
+	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength);
 
 	void Print();
 

@@ -2,7 +2,7 @@
  * @file oscclientparamssave.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,12 @@
  */
 
 #if !defined(__clang__)	// Needed for compiling on MacOS
- #pragma GCC push_options
- #pragma GCC optimize ("Os")
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "oscclientparams.h"
@@ -60,13 +60,13 @@ void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 	builder.Add(OscClientParamsConst::PING_DELAY, m_tOscClientParams.nPingDelay, isMaskSet(OscClientParamsMask::PING_DELAY));
 
 	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
-		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
+		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = static_cast<char>(i + '0');
 		const char *cmd = reinterpret_cast<const char*>(&m_tOscClientParams.aCmd[i]);
 		builder.Add(m_aCmd, cmd, *cmd == '/');
 	}
 
 	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
-		m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
+		m_aLed[strlen(OscClientParamsConst::LED) - 1] = static_cast<char>(i + '0');
 		const char *led = reinterpret_cast<const char*>(&m_tOscClientParams.aLed[i]);
 		builder.Add(m_aLed, led, *led == '/');
 	}

@@ -108,7 +108,7 @@ public:
 		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
 	}
 
-	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
+	uint16_t GetUniverse(uint32_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate() const {
 		return isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT);

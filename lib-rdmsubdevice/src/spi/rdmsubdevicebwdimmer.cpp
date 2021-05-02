@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "rdmsubdevicebwdimmer.h"
 
@@ -40,7 +40,7 @@ RDMSubDeviceBwDimmer::RDMSubDeviceBwDimmer(uint16_t nDmxStartAddress, char nChip
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint16_t nLength) {
+void RDMSubDeviceBwDimmer::Data(const uint8_t* pData, uint32_t nLength) {
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 
 	if (nDmxStartAddress <= nLength) {

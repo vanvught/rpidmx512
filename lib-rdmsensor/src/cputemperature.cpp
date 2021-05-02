@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "cputemperature.h"
 
@@ -40,7 +40,7 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetRangeMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
 	SetRangeMax(RDM_SENSOR_RANGE_MAX);
 	SetNormalMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
-	SetNormalMax(Hardware::Get()->GetCoreTemperatureMax());
+	SetNormalMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
 	SetDescription("CPU");
 }
 
@@ -56,7 +56,7 @@ bool CpuTemperature::Initialize() {
 }
 
 int16_t CpuTemperature::GetValue() {
-	const int16_t nValue = Hardware::Get()->GetCoreTemperature();
+	const auto nValue = static_cast<int16_t>(Hardware::Get()->GetCoreTemperature());
 
 	DEBUG_PRINTF("nValue=%d", nValue);
 

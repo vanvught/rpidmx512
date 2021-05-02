@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "tc1602.h"
@@ -81,12 +81,12 @@ Tc1602::Tc1602(): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS) {
 	m_nRows = 2;
 }
 
-Tc1602::Tc1602(const uint8_t nCols, const uint8_t nRows): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS) {
+Tc1602::Tc1602(const uint32_t nCols, const uint32_t nRows): m_I2C(TC1602_I2C_DEFAULT_SLAVE_ADDRESS) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
 
-Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint8_t nCols, const uint8_t nRows): m_I2C(nSlaveAddress == 0 ? TC1602_I2C_DEFAULT_SLAVE_ADDRESS : nSlaveAddress) {
+Tc1602::Tc1602(const uint8_t nSlaveAddress, const uint32_t nCols, const uint32_t nRows): m_I2C(nSlaveAddress == 0 ? TC1602_I2C_DEFAULT_SLAVE_ADDRESS : nSlaveAddress) {
 	m_nCols = (nCols < MAX_COLS) ? ((nCols < MIN_COLS) ? MIN_COLS : nCols) : MAX_COLS;
 	m_nRows = (nRows < MAX_ROWS) ? ((nRows < MIN_ROWS) ? MIN_ROWS : nRows) : MAX_ROWS;
 }
@@ -114,7 +114,7 @@ void Tc1602::Cls() {
 }
 
 void Tc1602::PutChar(int c) {
-	WriteReg(c);
+	WriteReg(static_cast<uint8_t>(c));
 }
 
 void Tc1602::PutString(const char *pString) {
@@ -126,7 +126,7 @@ void Tc1602::PutString(const char *pString) {
 	}
 }
 
-void Tc1602::Text(const char *data, uint8_t nLength) {
+void Tc1602::Text(const char *data, uint32_t nLength) {
 	if (nLength > m_nCols) {
 		nLength = m_nCols;
 	}
@@ -136,7 +136,7 @@ void Tc1602::Text(const char *data, uint8_t nLength) {
 	}
 }
 
-void Tc1602::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
+void Tc1602::TextLine(uint32_t nLine, const char *data, uint32_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -145,7 +145,7 @@ void Tc1602::TextLine(uint8_t nLine, const char *data, uint8_t nLength) {
 	Tc1602::Text(data, nLength);
 }
 
-void Tc1602::ClearLine(uint8_t nLine) {
+void Tc1602::ClearLine(uint32_t nLine) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -159,29 +159,29 @@ void Tc1602::ClearLine(uint8_t nLine) {
 	Tc1602::SetCursorPos(0, nLine - 1);
 }
 
-void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
+void Tc1602::SetCursorPos(uint32_t col, uint32_t row) {
 	assert(row <= 3);
 
 	constexpr uint8_t row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
 
-	WriteCmd(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03]));
+	WriteCmd(static_cast<uint8_t>(LCD_SETDDRAMADDR | (col + row_offsets[row & 0x03])));
 }
 
 void Tc1602::Write4bits(uint8_t data) {
 	m_I2C.Write(data);
 	m_I2C.Write(data | TC1602_EN | TC1602_BACKLIGHT);
-	m_I2C.Write((data & ~TC1602_EN) | TC1602_BACKLIGHT);
+	m_I2C.Write(static_cast<uint8_t>((data & ~TC1602_EN) | TC1602_BACKLIGHT));
 }
 
 void Tc1602::WriteCmd(uint8_t cmd) {
 	Write4bits(cmd & 0xF0);
-	Write4bits((cmd << 4) & 0xF0);
+	Write4bits(static_cast<uint8_t>((cmd << 4) & 0xF0));
 	udelay(EXEC_TIME_CMD);
 }
 
 void Tc1602::WriteReg(const uint8_t reg) {
-	Write4bits(TC1602_RS | (reg & 0xF0));
-	Write4bits(TC1602_RS | ((reg << 4) & 0xF0));
+	Write4bits(static_cast<uint8_t>(TC1602_RS | (reg & 0xF0)));
+	Write4bits(static_cast<uint8_t>(TC1602_RS | ((reg << 4) & 0xF0)));
 	udelay(EXEC_TIME_REG);
 }
 

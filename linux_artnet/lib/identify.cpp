@@ -27,17 +27,17 @@
 
 #include "rdmidentify.h"
 
-Identify::Identify(void) {
+Identify::Identify() {
 }
 
-Identify::~Identify(void) {
+Identify::~Identify() {
 }
 
 void Identify::SetMode(TRdmIdentifyMode nMode) {
 	m_nMode = nMode;
 }
 
-void Identify::Run(void) {
+void Identify::Run() {
 	if(!m_bIsEnabled) {
 		return;
 	}

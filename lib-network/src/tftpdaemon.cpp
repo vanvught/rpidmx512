@@ -27,8 +27,8 @@
  * https://tools.ietf.org/html/rfc1350
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "tftpdaemon.h"
@@ -257,7 +257,7 @@ void TFTPDaemon::DoRead() {
 		pDataPacket->OpCode = __builtin_bswap16(OP_CODE_DATA);
 		pDataPacket->BlockNumber = __builtin_bswap16(m_nBlockNumber);
 
-		m_nPacketLength = sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength;
+		m_nPacketLength = static_cast<uint16_t>(sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength);
 		m_bIsLastBlock = m_nDataLength < max::DATA_LEN;
 
 		if (m_bIsLastBlock) {

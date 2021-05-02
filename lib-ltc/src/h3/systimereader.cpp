@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "h3/systimereader.h"
@@ -180,7 +180,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 void SystimeReader::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
 		memcpy(m_Buffer, pBuffer, nBufferLength);
-		m_nBytesReceived = nBufferLength;
+		m_nBytesReceived = static_cast<uint16_t>(nBufferLength);
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
@@ -245,11 +245,11 @@ void SystimeReader::Run() {
 			m_nTimePrevious = nTime;
 
 			m_tMidiTimeCode.nFrames = 0;
-			m_tMidiTimeCode.nSeconds = nTime % 60;
+			m_tMidiTimeCode.nSeconds = static_cast<uint8_t>(nTime % 60);
 			nTime /= 60;
-			m_tMidiTimeCode.nMinutes = nTime % 60;
+			m_tMidiTimeCode.nMinutes = static_cast<uint8_t>(nTime % 60);
 			nTime /= 60;
-			m_tMidiTimeCode.nHours = nTime % 24;
+			m_tMidiTimeCode.nHours = static_cast<uint8_t>(nTime % 24);
 
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 			bTimeCodeAvailable = true;

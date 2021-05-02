@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <sys/time.h>
 
 #include "gpstimeclient.h"

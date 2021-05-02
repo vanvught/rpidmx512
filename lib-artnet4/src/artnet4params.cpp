@@ -26,10 +26,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 

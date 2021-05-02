@@ -1,5 +1,5 @@
 #
-DEFINES= ARTNET_NODE ARTNET4_NODE DMX_MONITOR ENABLE_SPIFLASH #NDEBUG
+DEFINES= NODE_ARTNET OUTPUT_DMX_MONITOR ENABLE_SPIFLASH #NDEBUG
 #
 LIBS=dmxmonitor rdmresponder rdm rdmsensor rdmsubdevice artnet4 artnet artnethandlers e131 lightset
 #

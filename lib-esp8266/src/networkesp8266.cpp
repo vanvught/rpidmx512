@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <algorithm>
 #include <cassert>
 

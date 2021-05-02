@@ -47,10 +47,10 @@
  #include "dmxmonitor.h"
 #endif
 // Pixel Controller
+#include "pixeldmxconfiguration.h"
+#include "pixeltype.h"
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
-#include "ws28xxdmx.h"
-#include "ws28xxdmxgrouping.h"
 
 #if defined(ORANGE_PI)
 # include "spiflashinstall.h"
@@ -61,6 +61,8 @@
 #endif
 
 #include "software_version.h"
+
+using namespace lightset;
 
 constexpr char NETWORK_INIT[] = "Network init ...";
 constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
@@ -92,23 +94,23 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const TLightSetOutputType tOutputType = e131params.GetOutputType();
+	const auto tOutputType = e131params.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi sACN E1.31 ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == LIGHTSET_OUTPUT_TYPE_SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {4 Universes}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -134,68 +136,51 @@ void notmain(void) {
 	E131Bridge bridge;
 	e131params.Set(&bridge);
 
-	const uint8_t nUniverse = e131params.GetUniverse();
+	const auto nStartUniverse = e131params.GetUniverse();
 
-	bridge.SetUniverse(0, E131_OUTPUT_PORT, nUniverse);
+	bridge.SetUniverse(0, e131::PortDir::OUTPUT, nStartUniverse);
 	bridge.SetDirectUpdate(false);
 
 	DMXSend dmx;
-	LightSet *pSpi;
+	LightSet *pSpi = nullptr;
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
+		PixelDmxConfiguration pixelDmxConfiguration;
+
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms((WS28xxDmxParamsStore *) StoreWS28xxDmx::Get());
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 #else
 		WS28xxDmxParams ws28xxparms;
 #endif
+
 		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
 			ws28xxparms.Dump();
 		}
 
-		display.Printf(7, "%s:%d %c", WS28xx::GetLedTypeString(ws28xxparms.GetLedType()), ws28xxparms.GetLedCount(), ws28xxparms.IsLedGrouping() ? 'G' : ' ');
+		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pWS28xxDmx != nullptr);
+		pSpi = pWS28xxDmx;
 
-		if (ws28xxparms.IsLedGrouping()) {
-			WS28xxDmxGrouping *pWS28xxDmxGrouping = new WS28xxDmxGrouping;
-			assert(pWS28xxDmxGrouping != 0);
-			ws28xxparms.Set(pWS28xxDmxGrouping);
-			pSpi = pWS28xxDmxGrouping;
-		} else  {
-			WS28xxDmx *pWS28xxDmx = new WS28xxDmx;
-			assert(pWS28xxDmx != 0);
-			ws28xxparms.Set(pWS28xxDmx);
-			pSpi = pWS28xxDmx;
+		const auto nCount = pixelDmxConfiguration.GetCount();
 
-			const uint16_t nLedCount = pWS28xxDmx->GetLEDCount();
+		if (pixelDmxConfiguration.GetGroupingEnabled()) {
+			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
+		} else {
+			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
+		}
 
-			if (pWS28xxDmx->GetLEDType() == ws28xx::Type::SK6812W) {
-				if (nLedCount > 128) {
-					bridge.SetDirectUpdate(true);
-					bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 256) {
-					bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 384) {
-					bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse + 3);
-				}
-			} else {
-				if (nLedCount > 170) {
-					bridge.SetDirectUpdate(true);
-					bridge.SetUniverse(1, E131_OUTPUT_PORT, nUniverse + 1);
-				}
-				if (nLedCount > 340) {
-					bridge.SetUniverse(2, E131_OUTPUT_PORT, nUniverse + 2);
-				}
-				if (nLedCount > 510) {
-					bridge.SetUniverse(3, E131_OUTPUT_PORT, nUniverse + 3);
-				}
-			}
+		const auto nUniverses = pWS28xxDmx->GetUniverses();
+		bridge.SetDirectUpdate(nUniverses != 1);
+
+		for (uint32_t u = 1; u < nUniverses; u++) {
+			bridge.SetUniverse(u, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + u));
 		}
 
 		bridge.SetOutput(pSpi);
 	}
 #ifndef H3
-	else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	else if (tOutputType == OutputType::MONITOR) {
 		// There is support for HEX output only
 		bridge.SetOutput(&monitor);
 		monitor.Cls();
@@ -218,10 +203,10 @@ void notmain(void) {
 
 	bridge.Print();
 
-	if (tOutputType == LIGHTSET_OUTPUT_TYPE_SPI) {
+	if (tOutputType == OutputType::SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else if (tOutputType == LIGHTSET_OUTPUT_TYPE_MONITOR) {
+	} else if (tOutputType == OutputType::MONITOR) {
 		// Nothing to do
 	} else {
 		dmx.Print();
@@ -234,11 +219,11 @@ void notmain(void) {
 	display.Write(1, "WiFi sACN E1.31 ");
 
 	switch (tOutputType) {
-	case LIGHTSET_OUTPUT_TYPE_SPI:
+	case OutputType::SPI:
 		display.PutString("Pixel");
 		break;
 #ifndef H3
-	case LIGHTSET_OUTPUT_TYPE_MONITOR:
+	case OutputType::MONITOR:
 		display.PutString("Monitor");
 		break;
 #endif
@@ -264,7 +249,7 @@ void notmain(void) {
 	}
 
 	display.Printf(4, "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	display.Printf(5, "U: %d", nUniverse);
+	display.Printf(5, "U: %d", nStartUniverse);
 	display.Printf(6, "Active ports: %d", bridge.GetActiveOutputPorts());
 
 	console_status(CONSOLE_YELLOW, START_BRIDGE);

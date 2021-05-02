@@ -300,11 +300,11 @@ static void _format_float(struct context *ctx, float f) {
 
 	dest += _itostr(ipart, dest, 0);
 
-	f -= ipart;
+	f -= (float)ipart;
 
 	precision++;
 	*dest++ = '.';
-	dest += _itostr((int) (f * _pow10(precision)), dest, precision);
+	dest += _itostr((int)(f * (float)_pow10(precision)), dest, precision);
 	size = dest - buffer;
 	_round_float(buffer, &size);
 

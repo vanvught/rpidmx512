@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@
 # endif
 #endif
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #include "artnetpolltable.h"
@@ -89,9 +89,9 @@ ArtNetPollTable::~ArtNetPollTable() {
 
 uint16_t ArtNetPollTable::MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse) {
 	// PortAddress Bit 15 = 0
-	uint16_t nPortAddress = (nNetSwitch & 0x7F) << 8;	// Net : Bits 14-8
-	nPortAddress |= (nSubSwitch & 0x0F) << 4;			// Sub-Net : Bits 7-4
-	nPortAddress |= nUniverse & 0x0F;					// Universe : Bits 3-0
+	uint16_t nPortAddress = (nNetSwitch & 0x7F) << 8;					// Net : Bits 14-8
+	nPortAddress |= static_cast<uint16_t>((nSubSwitch & 0x0F) << 4);	// Sub-Net : Bits 7-4
+	nPortAddress |= static_cast<uint16_t>(nUniverse & 0x0F);			// Universe : Bits 3-0
 
 	return nPortAddress;
 }
@@ -115,7 +115,7 @@ const struct TArtNetPollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t n
 }
 
 
-void ArtNetPollTable::RemoveIpAddress(uint32_t nUniverse, uint32_t nIpAddress) {
+void ArtNetPollTable::RemoveIpAddress(uint16_t nUniverse, uint32_t nIpAddress) {
 	if (m_nTableUniversesEntries == 0) {
 		return;
 	}
@@ -409,7 +409,7 @@ void ArtNetPollTable::Dump() {
 	for (uint32_t i = 0; i < m_nPollTableEntries; i++) {
 		printf("\t" IPSTR " [" MACSTR "] |%-18s|%-64s|\n", IP2STR(m_pPollTable[i].IPAddress), MAC2STR(m_pPollTable[i].Mac), m_pPollTable[i].ShortName, m_pPollTable[i].LongName);
 
-		for (uint32_t nUniverse = 0; nUniverse < m_pPollTable[i].nUniversesCount; nUniverse++) {
+		for (uint16_t nUniverse = 0; nUniverse < m_pPollTable[i].nUniversesCount; nUniverse++) {
 			struct TArtNetNodeEntryUniverse *pArtNetNodeEntryUniverse = &m_pPollTable[i].Universe[nUniverse];
 			printf("\t %u [%u]\n", pArtNetNodeEntryUniverse->nUniverse, (Hardware::Get()->Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000);
 		}

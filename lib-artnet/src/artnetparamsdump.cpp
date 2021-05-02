@@ -31,7 +31,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "artnetparams.h"
 #include "artnetparamsconst.h"

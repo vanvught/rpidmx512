@@ -26,8 +26,8 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "artnetrdm.h"
@@ -83,7 +83,7 @@ void ArtNetNode::HandleTodRequest() {
 	DEBUG_EXIT
 }
 
-void ArtNetNode::SendTod(uint8_t nPortId) {
+void ArtNetNode::SendTod(uint32_t nPortId) {
 	DEBUG_ENTRY
 
 	assert(nPortId < ArtNet::MAX_PORTS);
@@ -97,13 +97,13 @@ void ArtNetNode::SendTod(uint8_t nPortId) {
 	m_pTodData->UidTotalLo = discovered;
 	m_pTodData->BlockCount = 0;
 	m_pTodData->UidCount = discovered;
-	m_pTodData->Port = 1 + nPortId;
+	m_pTodData->Port = static_cast<uint8_t>(1 + nPortId);
 
 	m_pArtNetRdm->Copy(nPortId, reinterpret_cast<uint8_t*>(m_pTodData->Tod));
 
 	const auto nLength = sizeof(struct TArtTodData) - (sizeof m_pTodData->Tod) + (discovered * 6U);
 
-	Network::Get()->SendTo(m_nHandle, m_pTodData, nLength, m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -164,7 +164,7 @@ void ArtNetNode::HandleRdm() {
 
 				const auto nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
 
-				Network::Get()->SendTo(m_nHandle, pArtRdm, nLength, m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, pArtRdm, static_cast<uint16_t>(nLength), m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
 			} else {
 				printf("No RDM response\n");
 			}

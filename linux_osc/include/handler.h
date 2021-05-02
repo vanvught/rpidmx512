@@ -32,11 +32,11 @@
 
 class Handler: public OscServerHandler  {
 public:
-	Handler(void);
-	~Handler(void);
+	Handler();
+	~Handler();
 
-	void Blackout(void);
-	void Update(void);
+	void Blackout();
+	void Update();
 
 	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
 };

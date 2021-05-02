@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <sys/types.h>
 #include <time.h>

@@ -2,7 +2,7 @@
  * @file ssd1311.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,9 @@
  */
 
 #include <cassert>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 
 #include "ssd1311.h"
 
@@ -118,7 +118,7 @@ void Ssd1311::PutString(const char *pString) {
 /**
  * nLine [1..4]
  */
-void Ssd1311::ClearLine(uint8_t nLine) {
+void Ssd1311::ClearLine(uint32_t nLine) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -128,7 +128,7 @@ void Ssd1311::ClearLine(uint8_t nLine) {
 	Ssd1311::SetCursorPos(0, nLine - 1);
 }
 
-void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
+void Ssd1311::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -143,7 +143,7 @@ void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint8_t nLength) {
 	SendData(_TextBuffer, 1U + nLength);
 }
 
-void Ssd1311::Text(const char *pData, uint8_t nLength) {
+void Ssd1311::Text(const char *pData, uint32_t nLength) {
 	if (nLength > MAX_COLUMNS) {
 		nLength = MAX_COLUMNS;
 	}
@@ -155,7 +155,7 @@ void Ssd1311::Text(const char *pData, uint8_t nLength) {
 /**
  * (0,0)
  */
-void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void Ssd1311::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	if  (__builtin_expect((!((nCol < MAX_COLUMNS) && (nRow < MAX_ROWS))), 0)) {
 		return;
 	}
@@ -163,7 +163,7 @@ void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	// In 4-line display mode (N=1, NW = 1), DDRAM address is from “00H” – “13H” in the 1st line, from
 	// “20H” to “33H” in the 2nd line, from “40H” – “53H” in the 3rd line and from “60H” – “73H” in the 4th line.
 
-	SetDDRAM((nCol + nRow * 0x20));
+	SetDDRAM(static_cast<uint8_t>((nCol + nRow * 0x20)));
 }
 
 /**
@@ -182,7 +182,7 @@ void Ssd1311::SelectRamRom(uint32_t nRam, uint32_t nRom) {
 	SetRE(FunctionSet::RE_ONE);
 
 	SendCommand(cmd::FUNCTION_SELECTION_B);
-	SendCommand(((nRom & 0x03) << 2) | (nRam & 0x03));
+	SendCommand(static_cast<uint8_t>(((nRom & 0x03) << 2) | (nRam & 0x03)));
 
 	SetRE(FunctionSet::RE_ZERO);
 
@@ -285,7 +285,7 @@ constexpr auto CURSOR_BLINK_ON_OFF = (1U << 0);
 
 void Ssd1311::SetSleep(bool bSleep) {
 	if (bSleep) {
-		m_nDisplayControl &= ~DISPLAY_ON_OFF;
+		m_nDisplayControl &= static_cast<uint8_t>(~DISPLAY_ON_OFF);
 	} else {
 		m_nDisplayControl |= DISPLAY_ON_OFF;
 	}
@@ -316,11 +316,11 @@ void Ssd1311::SetCursor(UNUSED uint32_t nMode) {
 #if defined(ENABLE_CURSOR_MODE)
 	switch (static_cast<int>(nMode)) {
 	case display::cursor::OFF:
-		m_nDisplayControl &= ~CURSOR_ON_OFF;
+		m_nDisplayControl &= static_cast<uint8_t>(~CURSOR_ON_OFF);
 		break;
 	case display::cursor::ON:
 		m_nDisplayControl |= CURSOR_ON_OFF;
-		m_nDisplayControl &= ~CURSOR_BLINK_ON_OFF;
+		m_nDisplayControl &= static_cast<uint8_t>(~CURSOR_BLINK_ON_OFF);
 		break;
 	case display::cursor::ON | display::cursor::BLINK_ON:
 		m_nDisplayControl |= CURSOR_ON_OFF;

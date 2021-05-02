@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "ws28xxdisplaymatrix.h"
@@ -154,7 +154,7 @@ void WS28xxDisplayMatrix::PutString(const char *pString, uint8_t nRed, uint8_t n
 	}
 }
 
-void WS28xxDisplayMatrix::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nLength > m_nMaxPosition) {
 		nLength = m_nMaxPosition;
 	}
@@ -167,7 +167,7 @@ void WS28xxDisplayMatrix::Text(const char *pText, uint8_t nLength, uint8_t nRed,
 /*
  * 1 is top line
  */
-void WS28xxDisplayMatrix::TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if ((nLine == 0) || (nLine > m_nMaxLine)) {
 		return;
 	}
@@ -179,7 +179,7 @@ void WS28xxDisplayMatrix::TextLine(uint8_t nLine, const char *pText, uint8_t nLe
 /*
  * 1 is top line
  */
-void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
+void WS28xxDisplayMatrix::ClearLine(uint32_t nLine) {
 	if ((nLine == 0) || (nLine > m_nMaxLine)) {
 		return;
 	}
@@ -198,7 +198,7 @@ void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 /**
  * 0,0 is top left
  */
-void WS28xxDisplayMatrix::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void WS28xxDisplayMatrix::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	if ((nCol >= m_nMaxPosition) || (nRow >= m_nMaxLine)) {
 		return;
 	}
@@ -221,7 +221,7 @@ void WS28xxDisplayMatrix::Show() {
 	}
 }
 
-void WS28xxDisplayMatrix::SetColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::SetColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (nPos >= m_nMaxPosition) {
 		return;
 	}

@@ -2,7 +2,7 @@
  * @file midibpm.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ public:
 				return false;
 			}
 
-			const float fBPM = static_cast<float>(25000 * nCount) / nDelta;	// 25000 = 600000 / 24
+			const auto fBPM = (25000.0f * static_cast<float>(nCount)) / static_cast<float>(nDelta);	// 25000 = 600000 / 24
 			nBPM = static_cast<uint32_t>(fBPM + .5);
 
 			if (nBPM != m_nBpmPrevious) {

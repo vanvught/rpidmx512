@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "rdmsubdevicemcp23s17.h"
 
@@ -41,13 +41,13 @@ RDMSubDeviceMCP23S17::RDMSubDeviceMCP23S17(uint16_t nDmxStartAddress, char nChip
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint16_t nLength) {
+void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint32_t nLength) {
 	uint16_t nData = 0;
 	const uint32_t nDmxStartAddress = GetDmxStartAddress();
 
 	for (uint32_t i = (nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		if ((pData[i] & 0x80) != 0) {	// 0-127 is off, 128-255 is on
-			nData = nData | (1 << i);
+			nData = static_cast<uint8_t>(nData | (1U << i));
 		}
 	}
 

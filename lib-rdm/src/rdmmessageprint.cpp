@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 
 #include "rdmmessage.h"
 
@@ -81,7 +81,7 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 			break;
 		}
 
-		const uint16_t nSubDevice = (pRdmMessage->sub_device[0] << 8) + pRdmMessage->sub_device[1];
+		const auto nSubDevice = static_cast<uint16_t>((pRdmMessage->sub_device[0] << 8) + pRdmMessage->sub_device[1]);
 
 		printf("sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", nSubDevice, pRdmMessage->transaction_number, pRdmMessage->param_id[0], pRdmMessage->param_id[1], pRdmMessage->param_data_length);
 

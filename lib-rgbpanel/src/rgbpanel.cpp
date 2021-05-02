@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
 
 #include <cassert>
 #include <algorithm>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "rgbpanel.h"
 
@@ -65,7 +65,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 	const auto nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
 	auto nRow = m_nLine * m_nMaxPosition;
 	const auto nColonIndex = m_nPosition + nRow;
-	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
+	const auto bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
 	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
 		uint32_t nWidth = 0;
@@ -117,7 +117,7 @@ void RgbPanel::PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint
 	}
 }
 
-void RgbPanel::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect((nLength > m_nMaxPosition), 0)) {
 		nLength = m_nMaxPosition;
 	}
@@ -130,7 +130,7 @@ void RgbPanel::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nG
 /**
  * 1 is top line
  */
-void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
 		return;
 	}
@@ -142,7 +142,7 @@ void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8
 /**
  * 1 is top line
  */
-void RgbPanel::ClearLine(uint8_t nLine) {
+void RgbPanel::ClearLine(uint32_t nLine) {
 	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
 		return;
 	}
@@ -161,7 +161,7 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 /**
  * 0,0 is top left
  */
-void RgbPanel::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void RgbPanel::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	if (__builtin_expect(((nCol >= m_nMaxPosition) || (nRow >= m_nMaxLine)), 0)) {
 		return;
 	}

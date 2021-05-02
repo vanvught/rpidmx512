@@ -56,8 +56,8 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = '0' + (nArg / 10);
-	*p = '0' + (nArg % 10);
+	*p++ = static_cast<char>('0' + (nArg / 10));
+	*p = static_cast<char>('0' + (nArg % 10));
 }
 
 MidiMonitor::MidiMonitor() :

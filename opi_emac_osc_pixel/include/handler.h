@@ -2,7 +2,7 @@
  * @file handler.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ public:
 
 private:
 	WS28xxDmx *m_pWS28xxDmx;
-	uint16_t m_nCount;
+	uint32_t m_nCount;
 	char *m_TypeString;
 };
 

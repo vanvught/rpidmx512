@@ -50,8 +50,8 @@ public:
 	WS28xxDisplay7Segment(pixel::Type tLedType, pixel::Map tRGBMapping);
 	~WS28xxDisplay7Segment();
 
-	void WriteChar(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void WriteColon(char nChar, uint8_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void WriteChar(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void WriteColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 	void WriteAll(const char *pChars, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 

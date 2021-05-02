@@ -2,7 +2,7 @@
  * @file sparkfundmx.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +24,8 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "sparkfundmx.h"
@@ -125,7 +125,7 @@ SparkFunDmx::~SparkFunDmx() {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Start(__attribute__((unused)) uint8_t nPort) {
+void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -137,7 +137,7 @@ void SparkFunDmx::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Stop(__attribute__((unused)) uint8_t nPort) {
+void SparkFunDmx::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -346,7 +346,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(__attribute__((unused)) uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
@@ -394,8 +394,8 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if (m_pL6470DmxModes[i] != 0) {
-			const uint16_t nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
-			const uint16_t nNewDmxStartAddress =  (nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress;
+			const auto nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
+			const auto nNewDmxStartAddress = static_cast<uint16_t>((nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress);
 #ifndef NDEBUG
 			printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, nCurrentDmxStartAddress, nNewDmxStartAddress);
 #endif
@@ -429,7 +429,7 @@ bool SparkFunDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 		if ((m_pL6470DmxModes[i] != 0) && (m_pSlotInfo[i] != 0)) {
-			const int16_t nOffset = nDmxAddress - m_pL6470DmxModes[i]->GetDmxStartAddress();
+			const auto nOffset = static_cast<int16_t>(nDmxAddress - m_pL6470DmxModes[i]->GetDmxStartAddress());
 
 			if ((nDmxAddress >= m_pL6470DmxModes[i]->GetDmxStartAddress()) && (nOffset < m_pL6470DmxModes[i]->GetDmxFootPrint())) {
 

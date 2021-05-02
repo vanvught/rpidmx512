@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "debug.h"
+using namespace e131;
 
 int main(int argc, char **argv) {
 	Hardware hw;
@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
 		e131Params.Set(&bridge);
 	}
 
-	if (fopen("direct.update", "r") != NULL) {
+	if (fopen("direct.update", "r") != nullptr) {
 		bridge.SetDirectUpdate(true);
 	}
 
@@ -103,16 +103,16 @@ int main(int argc, char **argv) {
 		nUniverse = e131Params.GetUniverse(i, bIsSet);
 
 		if (bIsSet) {
-			bridge.SetUniverse(i, E131_OUTPUT_PORT, nUniverse);
+			bridge.SetUniverse(i, PortDir::OUTPUT, nUniverse);
 			bIsSetIndividual = true;
 		}
 	}
 
 	if (!bIsSetIndividual) {
-		bridge.SetUniverse(0, E131_OUTPUT_PORT, 0 + e131Params.GetUniverse());
-		bridge.SetUniverse(1, E131_OUTPUT_PORT, 1 + e131Params.GetUniverse());
-		bridge.SetUniverse(2, E131_OUTPUT_PORT, 2 + e131Params.GetUniverse());
-		bridge.SetUniverse(3, E131_OUTPUT_PORT, 3 + e131Params.GetUniverse());
+		bridge.SetUniverse(0, PortDir::OUTPUT, 0 + e131Params.GetUniverse());
+		bridge.SetUniverse(1, PortDir::OUTPUT, 1 + e131Params.GetUniverse());
+		bridge.SetUniverse(2, PortDir::OUTPUT, 2 + e131Params.GetUniverse());
+		bridge.SetUniverse(3, PortDir::OUTPUT, 3 + e131Params.GetUniverse());
 	}
 
 	nw.Print();

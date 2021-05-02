@@ -30,19 +30,19 @@
 
 #include "debug.h"
 
-Handler::Handler(void) {
+Handler::Handler() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-Handler::~Handler(void) {
+Handler::~Handler() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void Handler::Blackout(void) {
+void Handler::Blackout() {
 	DEBUG_ENTRY
 
 	puts(">Blackout<");
@@ -50,7 +50,7 @@ void Handler::Blackout(void) {
 	DEBUG_EXIT
 }
 
-void Handler::Update(void) {
+void Handler::Update() {
 	DEBUG_ENTRY
 
 	puts(">Update<");

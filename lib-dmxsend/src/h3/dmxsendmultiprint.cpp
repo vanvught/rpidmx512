@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "h3/dmxsendmulti.h"
 

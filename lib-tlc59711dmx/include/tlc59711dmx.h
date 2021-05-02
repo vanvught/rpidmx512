@@ -44,10 +44,10 @@ public:
 	TLC59711Dmx();
 	~TLC59711Dmx() override;
 
-	void Start(uint8_t nPort = 0) override;
-	void Stop(uint8_t nPort = 0) override;
+	void Start(uint32_t nPort = 0) override;
+	void Stop(uint32_t nPort = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
+	void SetData(uint32_t nPort, const uint8_t *pDmxData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
 

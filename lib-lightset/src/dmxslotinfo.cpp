@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cstdio>
+#include <cctype>
 #include <cassert>
 
 #include "dmxslotinfo.h"
@@ -36,7 +36,7 @@
 
 using namespace lightset;
 
-#define TO_HEX(i)	((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
+#define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 
 DmxSlotInfo::DmxSlotInfo(SlotInfo *ptLightSetSlotInfo, uint32_t nSize):
 	m_ptLightSetSlotInfo(ptLightSetSlotInfo),
@@ -70,7 +70,7 @@ DmxSlotInfo::~DmxSlotInfo() {
 void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 	assert(pString != nullptr);
 
-	char *pSlotInfoRaw = const_cast<char*>(pString);
+	auto *pSlotInfoRaw = const_cast<char*>(pString);
 	nMask = 0;
 
 
@@ -109,12 +109,12 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 		return m_pToString;
 	}
 
-	char *p = m_pToString;
+	auto *p = m_pToString;
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		if ((nMask & 0x1) == 0x1) {
-			const uint8_t nType = m_ptLightSetSlotInfo[i].nType;
-			const uint16_t nCategory = m_ptLightSetSlotInfo[i].nCategory;
+			const auto nType = m_ptLightSetSlotInfo[i].nType;
+			const auto nCategory = m_ptLightSetSlotInfo[i].nCategory;
 
 			*p++ = TO_HEX((nType & 0xF0) >> 4);
 			*p++ = TO_HEX(nType & 0x0F);
@@ -148,7 +148,7 @@ void DmxSlotInfo::Dump() {
 char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 	assert(s != nullptr);
 
-	char *b = s;
+	auto *b = s;
 	uint8_t i = 0;
 
 	uint16_t nTmp = 0;
@@ -160,7 +160,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 		}
 
 		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
-		nTmp = (nTmp << 4) | nibble;
+		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;
 	}
@@ -170,7 +170,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 		return nullptr;
 	}
 
-	tLightSetSlotInfo.nType = nTmp;
+	tLightSetSlotInfo.nType = static_cast<uint8_t>(nTmp);
 
 	i = 0;
 	nTmp = 0;
@@ -184,7 +184,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 		}
 
 		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
-		nTmp = (nTmp << 4) | nibble;
+		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;
 	}

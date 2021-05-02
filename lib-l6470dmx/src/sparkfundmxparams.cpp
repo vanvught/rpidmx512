@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -109,11 +109,11 @@ void SparkFunDmxParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-bool SparkFunDmxParams::Load(uint8_t nMotorIndex) {
+bool SparkFunDmxParams::Load(uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 	assert(nMotorIndex < SPARKFUN_DMX_MAX_MOTORS);
 
-	m_aFileName[5] = nMotorIndex + '0';
+	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	m_tSparkFunDmxParams.nSetList = 0;
 
@@ -135,7 +135,7 @@ bool SparkFunDmxParams::Load(uint8_t nMotorIndex) {
 	return true;
 }
 
-void SparkFunDmxParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
+void SparkFunDmxParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -192,7 +192,7 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
+void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -202,7 +202,7 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 	} else {
 		if (nMotorIndex < SPARKFUN_DMX_MAX_MOTORS) {
 			m_pSparkFunDmxParamsStore->Copy(nMotorIndex, &m_tSparkFunDmxParams);
-			m_aFileName[5] = nMotorIndex + '0';
+			m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 		} else {
 			m_pSparkFunDmxParamsStore->Copy(&m_tSparkFunDmxParams);
 		}
@@ -228,7 +228,7 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 	DEBUG_EXIT
 }
 
-void SparkFunDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint8_t nMotorIndex) {
+void SparkFunDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	if (m_pSparkFunDmxParamsStore == nullptr) {
@@ -281,7 +281,7 @@ void SparkFunDmxParams::SetLocal(SparkFunDmx *pSparkFunDmx) {
 	}
 }
 
-void SparkFunDmxParams::Dump(__attribute__((unused)) uint8_t nMotorIndex) {
+void SparkFunDmxParams::Dump(__attribute__((unused)) uint32_t nMotorIndex) {
 #ifndef NDEBUG
 	assert(SPARKFUN_DMX_MAX_MOTORS <= 9);
 

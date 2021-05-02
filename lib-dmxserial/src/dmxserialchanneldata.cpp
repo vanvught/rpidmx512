@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
+#include <cstdint>
 
 #include "dmxserialchanneldata.h"
 
@@ -123,7 +123,7 @@ DmxSerialParseCode DmxSerialChannelData::GetNextLine() {
 }
 
 DmxSerialParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
-	char *p = const_cast<char *>(pLine);
+	auto *p = const_cast<char *>(pLine);
 	int32_t k = 0;
 
 	while (isdigit(*p) == 1) {
@@ -136,7 +136,7 @@ DmxSerialParseCode DmxSerialChannelData::ParseLine(const char *pLine) {
 	}
 
 	if (*p++ == ' ') {
-		m_nChannelValue = k;
+		m_nChannelValue = static_cast<uint8_t>(k);
 		m_pChannelData[m_nChannelValue] = new uint8_t[64];
 		return ParseSerialData(p);
 	}
@@ -166,7 +166,7 @@ DmxSerialParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 				return DmxSerialParseCode::FAILED;
 			}
 
-			m_pChannelData[m_nChannelValue][nLength] = k;
+			m_pChannelData[m_nChannelValue][nLength] = static_cast<uint8_t>(k);
 
 			if (nLength == 63) {
 				break;
@@ -178,7 +178,7 @@ DmxSerialParseCode DmxSerialChannelData::ParseSerialData(const char *pLine) {
 		}
 	}
 
-	m_nChannelDataLength[m_nChannelValue]  = nLength;
+	m_nChannelDataLength[m_nChannelValue]  = static_cast<uint8_t>(nLength);
 
 	return DmxSerialParseCode::SERIAL;
 }

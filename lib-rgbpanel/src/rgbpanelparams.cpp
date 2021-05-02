@@ -2,7 +2,7 @@
  * @file rgbpanelparams.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "rgbpanelparams.h"
@@ -97,7 +97,7 @@ void RgbPanelParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, RgbPanelParamsConst::COLS, nValue8) == Sscan::OK) {
-		if ((m_tRgbPanelParams.nCols = RgbPanel::ValidateColumns(nValue8)) != defaults::COLS) {
+		if ((m_tRgbPanelParams.nCols = static_cast<uint8_t>(RgbPanel::ValidateColumns(nValue8))) != defaults::COLS) {
 			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::COLS;
 		} else {
 			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::COLS;
@@ -107,7 +107,7 @@ void RgbPanelParams::callbackFunction(const char *pLine) {
 
 
 	if (Sscan::Uint8(pLine, RgbPanelParamsConst::ROWS, nValue8) == Sscan::OK) {
-		if ((m_tRgbPanelParams.nRows = RgbPanel::ValidateRows(nValue8)) != defaults::ROWS) {
+		if ((m_tRgbPanelParams.nRows = static_cast<uint8_t>(RgbPanel::ValidateRows(nValue8))) != defaults::ROWS) {
 			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::ROWS;
 		} else {
 			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::ROWS;

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cctype>
 #include <cassert>
 
 #include "parse.h"
@@ -44,7 +44,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 		}
 
 		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
-		nTmp = (nTmp << 4) | nibble;
+		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;
 	}
@@ -54,7 +54,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 		return nullptr;
 	}
 
-	nType = nTmp;
+	nType = static_cast<uint8_t>(nTmp);
 
 	i = 0;
 	nTmp = 0;
@@ -68,7 +68,7 @@ char *Parse::DmxSlotInfo(char *s, bool &isValid, uint8_t &nType, uint16_t &nCate
 		}
 
 		uint8_t nibble = *b > '9' ?  static_cast<uint8_t> ((*b | 0x20) - 'a' + 10) :  static_cast<uint8_t> (*b - '0');
-		nTmp = (nTmp << 4) | nibble;
+		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;
 	}
