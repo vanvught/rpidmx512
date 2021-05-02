@@ -39,11 +39,11 @@ public:
 
 	virtual void ShowShortName(const char *pShortName)= 0;
 	virtual void ShowLongName(const char *pLongName)= 0;
-	virtual void ShowUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress)=0;
+	virtual void ShowUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress)=0;
 	virtual void ShowNetSwitch(uint8_t nAddress)=0;
 	virtual void ShowSubnetSwitch(uint8_t nAddress)=0;
-	virtual void ShowMergeMode(uint32_t nPortIndex, artnet::Merge tMerge)=0;
-	virtual void ShowPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
+	virtual void ShowMergeMode(uint8_t nPortIndex, artnet::Merge tMerge)=0;
+	virtual void ShowPortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
 };
 
 #endif /* ARTNETDISPLAY_H_ */

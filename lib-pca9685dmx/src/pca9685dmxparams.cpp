@@ -21,9 +21,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #ifndef NDEBUG
- #include <cstdio>
+ #include <stdio.h>
 #endif
 #include <cassert>
 

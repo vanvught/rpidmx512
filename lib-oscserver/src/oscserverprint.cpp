@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "oscserver.h"
 

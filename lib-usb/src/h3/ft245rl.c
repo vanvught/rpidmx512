@@ -205,14 +205,14 @@ uint8_t FT245RL_read_data() {
 	}
 	// Read the data from the data port.
 	const uint32_t in_gpio = H3_PIO_PORTA->DAT;
-	uint8_t data = (uint8_t)(((in_gpio & (1U << D0)) ? 1 : 0)
-	 | ((in_gpio & (1U << D1)) ? 2 : 0)
-	 | ((in_gpio & (1U << D2)) ? 4 : 0)
-	 | ((in_gpio & (1U << D3)) ? 8 : 0)
-	 | ((in_gpio & (1U << D4)) ? 16 : 0)
-	 | ((in_gpio & (1U << D5)) ? 32 : 0)
-	 | ((in_gpio & (1U << D6)) ? 64 : 0)
-	 | ((in_gpio & (1U << D7)) ? 128 : 0));
+	uint8_t data = in_gpio & (1 << D0) ? 1 : 0;
+	data |= in_gpio & (1 << D1) ? 2 : 0;
+	data |= in_gpio & (1 << D2) ? 4 : 0;
+	data |= in_gpio & (1 << D3) ? 8 : 0;
+	data |= in_gpio & (1 << D4) ? 16 : 0;
+	data |= in_gpio & (1 << D5) ? 32 : 0;
+	data |= in_gpio & (1 << D6) ? 64 : 0;
+	data |= in_gpio & (1 << D7) ? 128 : 0;
 	// Bring RD# back up so the FT245 can let go of the data.
 	h3_gpio_set(_RD);
 	return data;

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "pca9685pwmled.h"
 
@@ -34,7 +34,11 @@ PCA9685PWMLed::PCA9685PWMLed(uint8_t nAddress): PCA9685(nAddress) {
 	SetFrequency(PWMLED_DEFAULT_FREQUENCY);
 }
 
+PCA9685PWMLed::~PCA9685PWMLed() {
+}
+
 void PCA9685PWMLed::Set(uint8_t nChannel, uint16_t nData) {
+
 	if (nData >= MAX_12BIT) {
 		SetFullOn(nChannel, true);
 	} else if (nData == 0) {
@@ -45,12 +49,13 @@ void PCA9685PWMLed::Set(uint8_t nChannel, uint16_t nData) {
 }
 
 void PCA9685PWMLed::Set(uint8_t nChannel, uint8_t nData) {
+
 	if (nData == MAX_8BIT) {
 		SetFullOn(nChannel, true);
 	} else if (nData == 0) {
 		SetFullOff(nChannel, true);
 	} else {
-		const auto nValue = static_cast<uint16_t>((nData << 4) | (nData >> 4));
+		const uint16_t nValue = (nData << 4) | (nData >> 4);
 		Write(nChannel, nValue);
 	}
 }

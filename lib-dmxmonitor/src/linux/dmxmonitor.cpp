@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
 #include <cassert>
@@ -76,7 +76,7 @@ void DMXMonitor::Cls() {
 
 }
 
-void DMXMonitor::Start(uint32_t nPort) {
+void DMXMonitor::Start(uint8_t nPort) {
 	assert(nPort < output::text::MAX_PORTS);
 
 	if(m_bIsStarted[nPort]) {
@@ -87,7 +87,7 @@ void DMXMonitor::Start(uint32_t nPort) {
 	DisplayDateTime(nPort, "Start");
 }
 
-void DMXMonitor::Stop(uint32_t nPort) {
+void DMXMonitor::Stop(uint8_t nPort) {
 	assert(nPort < output::text::MAX_PORTS);
 
 	if(!m_bIsStarted[nPort]) {
@@ -98,7 +98,7 @@ void DMXMonitor::Stop(uint32_t nPort) {
 	DisplayDateTime(nPort, "Stop");
 }
 
-void DMXMonitor::SetData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	assert(nPortId < output::text::MAX_PORTS);
 
 	struct timeval tv;

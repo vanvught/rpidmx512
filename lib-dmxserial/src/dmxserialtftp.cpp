@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "dmxserialtftp.h"
@@ -55,7 +55,7 @@ void DmxSerialTFTP::Exit() {
 bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	int32_t nFileNumber;
+	int16_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
 		DEBUG_EXIT
 		return false;
@@ -68,7 +68,7 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTP
 bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	int32_t nFileNumber;
+	int16_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
 		DEBUG_EXIT
 		return false;

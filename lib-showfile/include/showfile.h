@@ -72,17 +72,17 @@ public:
 		return m_pShowFileProtocolHandler;
 	}
 
-	void SetShowFile(uint32_t nShowFileNumber);
+	void SetShowFile(uint8_t nShowFileNumber);
 
 	const char *GetShowFileName() const {
 		return static_cast<const char *>(m_aShowFileName);
 	}
 
-	uint32_t GetShowFile() const {
+	uint8_t GetShowFile() const {
 		return m_nShowFileNumber;
 	}
 
-	bool DeleteShowFile(uint32_t nShowFileNumber);
+	bool DeleteShowFile(uint8_t nShowFileNumber);
 
 	void DoLoop(bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
@@ -120,8 +120,8 @@ public:
 
 	static ShowFileFormats GetFormat(const char *pString);
 	static const char *GetFormat(ShowFileFormats tFormat);
-	static bool CheckShowFileName(const char *pShowFileName, uint32_t& nShowFileNumber);
-	static bool ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_t nShowFileNumber);
+	static bool CheckShowFileName(const char *pShowFileName, uint8_t& nShowFileNumber);
+	static bool ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t nShowFileNumber);
 
 	static ShowFile* Get() {
 		return s_pThis;
@@ -135,17 +135,17 @@ protected:
 	virtual void ShowFilePrint()=0;
 
 protected:
-	uint32_t m_nShowFileNumber { ShowFileFile::MAX_NUMBER + 1 };
-	bool m_bDoLoop { false };
-	FILE *m_pShowFile { nullptr };
-	ShowFileProtocolHandler *m_pShowFileProtocolHandler { nullptr };
-	ShowFileDisplay *m_pShowFileDisplay { nullptr };
+	uint8_t m_nShowFileNumber{ShowFileFile::MAX_NUMBER + 1};
+	bool m_bDoLoop{false};
+	FILE *m_pShowFile{nullptr};
+	ShowFileProtocolHandler *m_pShowFileProtocolHandler{nullptr};
+	ShowFileDisplay *m_pShowFileDisplay{nullptr};
 
 private:
-	ShowFileStatus m_tShowFileStatus { ShowFileStatus::IDLE };
+	ShowFileStatus m_tShowFileStatus{ShowFileStatus::IDLE};
 	char m_aShowFileName[ShowFileFile::NAME_LENGTH + 1]; // Including '\0'
-	bool m_bEnableTFTP { false };
-	ShowFileTFTP *m_pShowFileTFTP { nullptr };
+	bool m_bEnableTFTP{false};
+	ShowFileTFTP *m_pShowFileTFTP{nullptr};
 
 	static ShowFile *s_pThis;
 };

@@ -2,7 +2,7 @@
  * @file sscanhexuint16.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cctype>
+#include <stdint.h>
+#include <ctype.h>
 #include <cassert>
 
 #include "sscan.h"
@@ -52,7 +52,7 @@ Sscan::ReturnCode Sscan::HexUint16(const char *pBuffer, const char *pName, uint1
 			return Sscan::NAME_ERROR;
 		}
 		const auto nNibble = *p > '9' ? static_cast<uint8_t>((*p | 0x20) - 'a' + 10) : static_cast<uint8_t>(*p - '0');
-		nValue = static_cast<uint16_t>((nValue << 4) | nNibble);
+		nValue = (nValue << 4) | nNibble;
 		k++;
 		p++;
 	}

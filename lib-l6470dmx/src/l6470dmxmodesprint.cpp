@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "l6470dmxmodes.h"
 

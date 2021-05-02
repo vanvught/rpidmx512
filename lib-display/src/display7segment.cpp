@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#include <stdint.h>
+#include <assert.h>
 
 #include "display7segment.h"
 
@@ -61,10 +61,10 @@ void Display7Segment::Status(uint8_t nValue, bool bHex) {
 
 		if (!bHex) {
 			nData = GetData(nValue / 10);
-			nData |= static_cast<uint16_t>(GetData(nValue % 10) << 8);
+			nData |= GetData(nValue % 10) << 8;
 		} else {
 			nData = GetData(nValue & 0x0F);
-			nData |= static_cast<uint16_t>(GetData((nValue >> 4) & 0x0F) << 8);
+			nData |= GetData((nValue >> 4) & 0x0F) << 8;
 		}
 
 		m_I2C.WriteRegister(MCP23X17_GPIOA, static_cast<uint16_t>(~nData));

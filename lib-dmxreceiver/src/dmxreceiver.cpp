@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "dmxreceiver.h"
@@ -123,7 +123,7 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 
 		if (pDmx != nullptr) {
 			const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-			nLength = static_cast<int16_t>(dmx_statistics->Statistics.SlotsInPacket);
+			nLength = dmx_statistics->Statistics.SlotsInPacket;
 
 			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE
 

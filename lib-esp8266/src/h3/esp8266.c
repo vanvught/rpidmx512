@@ -1,4 +1,4 @@
-#if defined(ORANGE_PI)
+#if defined(ORANGE_PI) || defined(NANO_PI)
 /**
  * @file esp8266.c
  *
@@ -45,14 +45,25 @@
  * 18	PA18	<- DATA ->	GPI014		CFG2
  * 22	PA2		<- DATA ->	GPI015		CFG0
  */
+/*
+ *      NanoPi NEO			ESP8266
+ *
+ * 11	PA0		--      ->	GPIO5
+ * 13	PA2		<-      --	GPIO4
+ *
+ * 15	PA3		<- DATA ->	GPI012		CFG0
+ * 16	PG8		<- DATA ->	GPI013		CFG1
+ * 18	PG9		<- DATA ->	GPI014		CFG1
+ * 22	PA1		<- DATA ->	GPI015		CFG0
+ */
 
 #define COUT	H3_GPIO_TO_NUMBER(GPIO_EXT_11)
 #define CIN		H3_GPIO_TO_NUMBER(GPIO_EXT_13)
 
 #if (H3_GPIO_TO_PORT(GPIO_EXT_13) == H3_GPIO_PORTA)
-# define PORT_CIN	H3_PIO_PORTA
+ #define PORT_CIN	H3_PIO_PORTA
 #else
-# error PORT_CIN not defined
+ #error PORT_CIN not defined
 #endif
 
 #define D0		H3_GPIO_TO_NUMBER(GPIO_EXT_15)
@@ -69,18 +80,35 @@ static void data_gpio_fsel_output(void) {
 	isb();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
+#if defined(NANO_PI)
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PA1_SELECT_CFG0_SHIFT);
+#endif
+#if defined(ORANGE_PI)
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PA2_SELECT_CFG0_SHIFT);
+#endif
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PA3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
+#if defined(ORANGE_PI)
 	value = H3_PIO_PORTA->CFG2;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PA18_SELECT_CFG2_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT);
 	value |= (GPIO_FSEL_OUTPUT << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
+#endif
+
+#if defined(NANO_PI)
+	value = H3_PIO_PORTG->CFG1;
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG8_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PG8_SELECT_CFG1_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG9_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_OUTPUT << PG9_SELECT_CFG1_SHIFT);
+	H3_PIO_PORTG->CFG1 = value;
+#endif
 
 	dmb();
 }
@@ -89,18 +117,35 @@ static void data_gpio_fsel_input(void) {
 	isb();
 
 	uint32_t value = H3_PIO_PORTA->CFG0;
+#if defined(NANO_PI)
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PA1_SELECT_CFG0_SHIFT);
+#endif
+#if defined(ORANGE_PI)
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA2_SELECT_CFG0_SHIFT);
 	value |= (GPIO_FSEL_INPUT << PA2_SELECT_CFG0_SHIFT);
+#endif
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA3_SELECT_CFG0_SHIFT);
 	value |= (GPIO_FSEL_INPUT << PA3_SELECT_CFG0_SHIFT);
 	H3_PIO_PORTA->CFG0 = value;
 
+#if defined(ORANGE_PI)
 	value = H3_PIO_PORTA->CFG2;
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA18_SELECT_CFG2_SHIFT);
 	value |= (GPIO_FSEL_INPUT << PA18_SELECT_CFG2_SHIFT);
 	value &= (uint32_t) ~(GPIO_SELECT_MASK << PA19_SELECT_CFG2_SHIFT);
 	value |= (GPIO_FSEL_INPUT << PA19_SELECT_CFG2_SHIFT);
 	H3_PIO_PORTA->CFG2 = value;
+#endif
+
+#if defined(NANO_PI)
+	value = H3_PIO_PORTG->CFG1;
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG8_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PG8_SELECT_CFG1_SHIFT);
+	value &= (uint32_t) ~(GPIO_SELECT_MASK << PG9_SELECT_CFG1_SHIFT);
+	value |= (GPIO_FSEL_INPUT << PG9_SELECT_CFG1_SHIFT);
+	H3_PIO_PORTG->CFG1 = value;
+#endif
 
 	dmb();
 }
@@ -121,12 +166,23 @@ void esp8266_write_4bits(const uint8_t data) {
 	data_gpio_fsel_output();
 
 	// Put the data on the bus.
+#if defined(ORANGE_PI)
 	uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
 	out_gpio |= (data & 1) ? (1 << D0) : 0;
 	out_gpio |= (data & 2) ? (1 << D1) : 0;
 	out_gpio |= (data & 4) ? (1 << D2) : 0;
 	out_gpio |= (data & 8) ? (1 << D3) : 0;
 	H3_PIO_PORTA->DAT = out_gpio;
+#elif defined(NANO_PI)
+	uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D3) );
+	out_gpio |= (data & 1) ? (1 << D0) : 0;
+	out_gpio |= (data & 8) ? (1 << D3) : 0;
+	H3_PIO_PORTA->DAT = out_gpio;
+	out_gpio = H3_PIO_PORTG->DAT & ~( (1 << D1) | (1 << D2) );
+	out_gpio |= (data & 2) ? (1 << D1) : 0;
+	out_gpio |= (data & 4) ? (1 << D2) : 0;
+	H3_PIO_PORTG->DAT = out_gpio;
+#endif
 
 	// tell that we have data available for read
 	h3_gpio_set(GPIO_EXT_11);
@@ -141,12 +197,23 @@ void esp8266_write_4bits(const uint8_t data) {
 
 inline static void _write_byte(const uint8_t data) {
 	// Put the data on the bus.
+#if defined(ORANGE_PI)
 	uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
 	out_gpio |= (data & 1) ? (1 << D0) : 0;
 	out_gpio |= (data & 2) ? (1 << D1) : 0;
 	out_gpio |= (data & 4) ? (1 << D2) : 0;
 	out_gpio |= (data & 8) ? (1 << D3) : 0;
 	H3_PIO_PORTA->DAT = out_gpio;
+#elif defined(NANO_PI)
+	uint32_t out_gpio = H3_PIO_PORTA->DAT & ~( (1 << D0) | (1 << D3) );
+	out_gpio |= (data & 1) ? (1 << D0) : 0;
+	out_gpio |= (data & 8) ? (1 << D3) : 0;
+	H3_PIO_PORTA->DAT = out_gpio;
+	out_gpio = H3_PIO_PORTG->DAT & ~( (1 << D1) | (1 << D2) );
+	out_gpio |= (data & 2) ? (1 << D1) : 0;
+	out_gpio |= (data & 4) ? (1 << D2) : 0;
+	H3_PIO_PORTG->DAT = out_gpio;
+#endif
 
 	// tell that we have data available for read
 	h3_gpio_set(GPIO_EXT_11);
@@ -157,12 +224,23 @@ inline static void _write_byte(const uint8_t data) {
 	while (PORT_CIN->DAT & (1 << CIN));
 
 	// Put the data on the bus.
+#if defined(ORANGE_PI)
 	out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
 	out_gpio |= (data & 16) ? (1 << D0) : 0;
 	out_gpio |= (data & 32) ? (1 << D1) : 0;
 	out_gpio |= (data & 64) ? (1 << D2) : 0;
 	out_gpio |= (data & 128) ? (1 << D3) : 0;
 	H3_PIO_PORTA->DAT = out_gpio;
+#elif defined(NANO_PI)
+	out_gpio = H3_PIO_PORTA->DAT & ~( (1 << D0) | (1 << D3) );
+	out_gpio |= (data & 16) ? (1 << D0) : 0;
+	out_gpio |= (data & 128) ? (1 << D3) : 0;
+	H3_PIO_PORTA->DAT = out_gpio;
+	out_gpio = H3_PIO_PORTG->DAT & ~( (1 << D1) | (1 << D2) );
+	out_gpio |= (data & 32) ? (1 << D1) : 0;
+	out_gpio |= (data & 64) ? (1 << D2) : 0;
+	H3_PIO_PORTG->DAT = out_gpio;
+#endif
 
 	// tell that we have data available for read
 	h3_gpio_set(GPIO_EXT_11);
@@ -238,35 +316,49 @@ inline static uint8_t _read_byte(void) {
 	uint8_t data;
 
 	h3_gpio_set(GPIO_EXT_11);
-	while (!(PORT_CIN->DAT & (1 << CIN)))
-		;
+	while (!(PORT_CIN->DAT & (1 << CIN)));
 
 	// Read the data from the data port.
+#if defined(ORANGE_PI)
 	uint32_t in_gpio = H3_PIO_PORTA->DAT;
-	uint8_t data_msb = (uint8_t)(((in_gpio & (1U << D0)) ? 1 : 0)
-	 | ((in_gpio & (1U << D1)) ? 2 : 0)
-	 | ((in_gpio & (1U << D2)) ? 4 : 0)
-	 | ((in_gpio & (1U << D3)) ? 8 : 0));
+	uint8_t data_msb = in_gpio & (1 << D0) ? 1 : 0;
+	data_msb |= in_gpio & (1 << D1) ? 2 : 0;
+	data_msb |= in_gpio & (1 << D2) ? 4 : 0;
+	data_msb |= in_gpio & (1 << D3) ? 8 : 0;
+#elif defined(NANO_PI)
+	uint32_t in_gpio = H3_PIO_PORTA->DAT;
+	uint8_t data_msb = in_gpio & (1 << D0) ? 1 : 0;
+	data_msb |= in_gpio & (1 << D3) ? 8 : 0;
+	in_gpio = H3_PIO_PORTG->DAT;
+	data_msb |= in_gpio & (1 << D1) ? 2 : 0;
+	data_msb |= in_gpio & (1 << D2) ? 4 : 0;
+#endif
 
 	h3_gpio_clr(GPIO_EXT_11);
-	while (PORT_CIN->DAT & (1 << CIN))
-		;
+	while (PORT_CIN->DAT & (1 << CIN));
 
 	h3_gpio_set(GPIO_EXT_11);
-	while (!(PORT_CIN->DAT & (1 << CIN)))
-		;
+	while (!(PORT_CIN->DAT & (1 << CIN)));
 
+#if defined(ORANGE_PI)
 	in_gpio = H3_PIO_PORTA->DAT;
-	uint8_t data_lsb = (uint8_t)(((in_gpio & (1 << D0)) ? 1 : 0)
-	 | ((in_gpio & (1 << D1)) ? 2 : 0)
-	 | ((in_gpio & (1 << D2)) ? 4 : 0)
-	 | ((in_gpio & (1 << D3)) ? 8 : 0));
+	uint8_t data_lsb = in_gpio & (1 << D0) ? 1 : 0;
+	data_lsb |= in_gpio & (1 << D1) ? 2 : 0;
+	data_lsb |= in_gpio & (1 << D2) ? 4 : 0;
+	data_lsb |= in_gpio & (1 << D3) ? 8 : 0;
+#elif defined(NANO_PI)
+	in_gpio = H3_PIO_PORTA->DAT;
+	uint8_t data_lsb = in_gpio & (1 << D0) ? 1 : 0;
+	data_lsb |= in_gpio & (1 << D3) ? 8 : 0;
+	in_gpio = H3_PIO_PORTG->DAT;
+	data_lsb |= in_gpio & (1 << D1) ? 2 : 0;
+	data_lsb |= in_gpio & (1 << D2) ? 4 : 0;
+#endif
 
-	data = (uint8_t) (data_msb | ((data_lsb & 0x0F) << 4));
+	data = data_msb | ((uint8_t)(data_lsb & 0x0F) << 4);
 
 	h3_gpio_clr(GPIO_EXT_11);
-	while (PORT_CIN->DAT & (1 << CIN))
-		;
+	while (PORT_CIN->DAT & (1 << CIN));
 
 	return data;
 }
@@ -303,7 +395,7 @@ uint16_t esp8266_read_halfword(void) {
 	data_gpio_fsel_input();
 
 	data = _read_byte();
-	data |= (uint16_t) (_read_byte() << 8);
+	data |= (_read_byte() << 8);
 
 	dmb();
 
@@ -355,8 +447,15 @@ bool esp8266_detect(void) {
 	data_gpio_fsel_output();
 
 	// send a CMD_NOP
+#if defined(ORANGE_PI)
 	const uint32_t out_gpio = H3_PIO_PORTA->DAT & (uint32_t)~( (1 << D0) | (1 << D1) | (1 << D2) | (1 << D3) );
 	H3_PIO_PORTA->DAT = out_gpio;
+#elif defined(NANO_PI)
+	uint32_t out_gpio = H3_PIO_PORTA->DAT & ~( (1 << D0) | (1 << D3) );
+	H3_PIO_PORTA->DAT = out_gpio;
+	out_gpio = H3_PIO_PORTG->DAT & ~( (1 << D1) | (1 << D2) );
+	H3_PIO_PORTG->DAT = out_gpio;
+#endif
 
 	h3_gpio_set(GPIO_EXT_11);// Tell that we have data available. Wait for ack, wait for 0 -> 1
 

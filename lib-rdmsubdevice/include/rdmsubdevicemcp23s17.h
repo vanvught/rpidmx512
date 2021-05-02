@@ -50,7 +50,7 @@ public:
 		m_nData = 0;
 	}
 
-	void Data(const uint8_t *pData, uint32_t nLength) override;
+	void Data(const uint8_t *pData, uint16_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

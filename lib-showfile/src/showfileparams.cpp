@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
- #include <cstdio>
+ #include <stdio.h>
 #endif
 #include <cassert>
 
@@ -121,7 +121,7 @@ void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint
 			m_tShowFileParams.nOptions |= nMask;
 			m_tShowFileParams.nSetList |= ShowFileParamsMask::OPTIONS;
 		} else {
-			m_tShowFileParams.nOptions &= static_cast<uint16_t>(~nMask);
+			m_tShowFileParams.nOptions &= ~nMask;
 		}
 
 		if (m_tShowFileParams.nOptions == 0) {

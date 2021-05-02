@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <cstring>
+#include <string.h>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -352,7 +352,7 @@ uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, 
 
 
 	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) == -1) {
-		if (1 && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { // EAGAIN and EWOULDBLOCK can be equal
+		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
 			perror("recvfrom");
 		}
 		return 0;

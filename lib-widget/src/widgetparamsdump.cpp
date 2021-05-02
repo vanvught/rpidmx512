@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "widgetparams.h"
 #include "widgetparamsconst.h"

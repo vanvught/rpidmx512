@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <time.h>
 
 #include "h3/showsystime.h"
@@ -36,7 +36,7 @@ static constexpr auto COLUMN = 80;
 static char systime[] __attribute__ ((aligned (4))) = "--:--:-- --/--/--";
 
 static void itoa_base10(int nArg, char *pBuffer) {
-	auto *p = pBuffer;
+	char *p = pBuffer;
 
 	if (nArg == 0) {
 		*p++ = '0';
@@ -44,13 +44,13 @@ static void itoa_base10(int nArg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + static_cast<char>(nArg % 10));
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
 void ShowSystime::Run() {
-	const auto ltime = time(nullptr);
-	const auto *pLocalTime = localtime(&ltime);
+	const time_t ltime = time(nullptr);
+	const struct tm *pLocalTime = localtime(&ltime);
 
 	if (__builtin_expect((m_nSecondsPrevious == pLocalTime->tm_sec), 0)) {
 		return;

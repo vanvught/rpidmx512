@@ -27,9 +27,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <stdbool.h>
-#include <cstddef>
+#include <stddef.h>
 #include <cassert>
 
 #include "widget.h"
@@ -158,9 +158,9 @@ void Widget::ReceivedDmxPacket() {
 	WidgetMonitor::Line(MonitorLine::INFO, "Send DMX data to HOST, %d", nLength);
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	SendHeader(RECEIVED_DMX_PACKET, static_cast<uint16_t>(nLength + 1));
+	SendHeader(RECEIVED_DMX_PACKET, nLength + 1);
 	usb_send_byte(0); 	// DMX Receive status
-	SendData(pDmxData, static_cast<uint16_t>(nLength));
+	SendData(pDmxData, nLength);
 	SendFooter();
 }
 
@@ -200,7 +200,7 @@ void Widget::ReceivedRdmPacket() {
 		SendData(pRdmData, nMessageLength);
 		SendFooter();
 
-		const auto param_id = static_cast<uint16_t>((p->param_id[0] << 8) + p->param_id[1]);
+		const uint16_t param_id = (p->param_id[0] << 8) + p->param_id[1];
 
 		if ((command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (param_id != E120_DISC_MUTE)) {
 			RdmTimeOutMessage();
@@ -483,7 +483,7 @@ void Widget::ReceiveDataFromHost() {
 			const auto nLabel = usb_read_byte();
 			const auto nLsb = usb_read_byte();
 			const auto nMsb = usb_read_byte();
-			const auto nDataLength = static_cast<uint16_t>((nMsb << 8) | nLsb);
+			const uint16_t nDataLength = (nMsb << 8) | nLsb;
 
 			uint32_t i;
 

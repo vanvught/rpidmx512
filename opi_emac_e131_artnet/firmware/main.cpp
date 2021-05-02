@@ -141,7 +141,7 @@ void notmain(void) {
 		const uint32_t nUniverse = e131params.GetUniverse();
 
 		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
-			bridge.SetUniverse(i, e131::PortDir::OUTPUT, static_cast<uint16_t>(i + nUniverse));
+			bridge.SetUniverse(i, e131::PortDir::OUTPUT, i + nUniverse);
 		}
 	}
 

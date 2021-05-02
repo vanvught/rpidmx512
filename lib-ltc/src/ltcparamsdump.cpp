@@ -27,7 +27,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "ltcparams.h"
 #include "ltcparamsconst.h"

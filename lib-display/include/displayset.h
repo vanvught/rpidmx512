@@ -2,7 +2,7 @@
  * @file dislpayset.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,25 +41,25 @@ class DisplaySet {
 public:
 	virtual ~DisplaySet() {}
 
-	uint32_t GetColumns() {
+	uint8_t GetColumns() {
 		return m_nCols;
 	}
 
-	uint32_t GetRows() {
+	uint8_t GetRows() {
 		return m_nRows;
 	}
 
 	virtual bool Start()= 0;
 
 	virtual void Cls()= 0;
-	virtual void ClearLine(uint32_t)= 0;
+	virtual void ClearLine(uint8_t)= 0;
 
 	virtual void PutChar(int)= 0;
 	virtual void PutString(const char*)= 0;
 
-	virtual void TextLine(uint32_t nLine, const char *pData, uint32_t nLength)= 0;
+	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
 
-	virtual void SetCursorPos(uint32_t, uint32_t)= 0;
+	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
 	virtual void SetCursor(uint32_t)= 0;
 
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
@@ -68,8 +68,8 @@ public:
 	virtual void PrintInfo() {}
 
 protected:
-	uint32_t m_nCols;
-	uint32_t m_nRows;
+	uint8_t m_nCols;
+	uint8_t m_nRows;
 };
 
 #endif /* DISPLAYSET_H_ */

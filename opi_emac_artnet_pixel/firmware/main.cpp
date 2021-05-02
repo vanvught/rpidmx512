@@ -171,7 +171,7 @@ void notmain(void) {
 		node.SetDirectUpdate(nUniverses != 1);
 
 		for (uint32_t u = 1; u < nUniverses; u++) {
-			node.SetUniverseSwitch(u, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + u));
+			node.SetUniverseSwitch(u, PortDir::OUTPUT, nStartUniverse + u);
 		}
 
 		uint8_t nTestPattern;

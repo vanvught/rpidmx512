@@ -77,7 +77,7 @@ public:
 	}
 
 	void WriteRegister(uint32_t nRegister, uint32_t nData, const bool bSpiSetup = true) {
-		const auto nSpiData = static_cast<uint8_t>(((nRegister & 0xFF) << 8) | (nData & 0xFF));
+		const uint16_t nSpiData = ((nRegister & 0xFF) << 8) | (nData & 0xFF);
 		Write(nSpiData, bSpiSetup);
 	}
 };

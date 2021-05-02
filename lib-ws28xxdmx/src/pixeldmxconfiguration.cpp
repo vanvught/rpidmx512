@@ -28,7 +28,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
+#include <stdint.h>
 #include <algorithm>
 
 #include "pixeldmxconfiguration.h"
@@ -44,11 +44,8 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 	PixelConfiguration::Validate(nLedsPerPixel);
 
 	if ((nPortsMax != 1) && (!IsRTZProtocol())) {
-		if (nPortsMax == 4) {
-			SetType(Type::WS2812B);
-		} else {
-			SetType(Type::WS2801);
-		}
+//		SetType(Type::WS2812B);
+		SetType(Type::WS2801);
 		PixelConfiguration::Validate(nLedsPerPixel);
 	}
 

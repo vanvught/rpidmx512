@@ -27,8 +27,8 @@
 
 #include <cassert>
 #include <algorithm>
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "rgbpanel.h"
 
@@ -147,7 +147,7 @@ void RgbPanel::PlatformInit() {
 	assert(s_pTablePWM != nullptr);
 
 	for (uint32_t i = 0; i < 256; i++) {
-		s_pTablePWM[i] = static_cast<uint8_t>((i * PWM_WIDTH) / 255);
+		s_pTablePWM[i] = (i * PWM_WIDTH) / 255;
 	}
 }
 

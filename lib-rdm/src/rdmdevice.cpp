@@ -24,8 +24,8 @@
  */
 
 #include <algorithm>
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "rdmdevice.h"
@@ -57,9 +57,9 @@
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
-	const auto nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
+	const uint8_t nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(nLength);
+	m_tRDMDevice.nDdeviceManufacturerNameLength = nLength;
 
 	m_tRDMDevice.aDeviceUID[0] = RDMConst::MANUFACTURER_ID[0];
 	m_tRDMDevice.aDeviceUID[1] = RDMConst::MANUFACTURER_ID[1];
@@ -77,10 +77,10 @@ RDMDevice::RDMDevice() {
 	m_tRDMDevice.aDeviceSN[2] = m_tRDMDevice.aDeviceUID[3];
 	m_tRDMDevice.aDeviceSN[3] = m_tRDMDevice.aDeviceUID[2];
 
-	const auto* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	const auto length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
+	const char* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
+	const uint8_t length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, WebsiteUrl, length);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(length);
+	m_tRDMDevice.nDdeviceManufacturerNameLength = length;
 
 	m_tRDMDevice.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
 	m_tRDMDevice.nProductDetail = E120_PRODUCT_DETAIL_OTHER;

@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <uuid/uuid.h>
 
 #include "e131uuid.h"

@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "rdmdeviceresponder.h"
@@ -87,7 +87,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
 
 	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
-	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
+	m_nSoftwareVersionLength = RDMSoftwareVersion::GetVersionLength();
 	m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
 
 	struct TRDMDeviceInfoData info;
@@ -112,22 +112,22 @@ void RDMDeviceResponder::Init() {
 
 	m_tRDMDeviceInfo.protocol_major = (E120_PROTOCOL_VERSION >> 8);
 	m_tRDMDeviceInfo.protocol_minor = static_cast<uint8_t>(E120_PROTOCOL_VERSION);
-	m_tRDMDeviceInfo.device_model[0] = static_cast<uint8_t>(nDeviceModel >> 8);
-	m_tRDMDeviceInfo.device_model[1] = static_cast<uint8_t>(nDeviceModel);
-	m_tRDMDeviceInfo.product_category[0] =static_cast<uint8_t>( nProductCategory >> 8);
-	m_tRDMDeviceInfo.product_category[1] = static_cast<uint8_t>(nProductCategory);
-	m_tRDMDeviceInfo.software_version[0] = static_cast<uint8_t>(nSoftwareVersionId >> 24);
-	m_tRDMDeviceInfo.software_version[1] = static_cast<uint8_t>(nSoftwareVersionId >> 16);
-	m_tRDMDeviceInfo.software_version[2] = static_cast<uint8_t>(nSoftwareVersionId >> 8);
-	m_tRDMDeviceInfo.software_version[3] = static_cast<uint8_t>(nSoftwareVersionId);
-	m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(m_pLightSet->GetDmxFootprint() >> 8);
-	m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>( m_pLightSet->GetDmxFootprint());
-	m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault >> 8);
-	m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault);
+	m_tRDMDeviceInfo.device_model[0] = nDeviceModel >> 8;
+	m_tRDMDeviceInfo.device_model[1] = nDeviceModel;
+	m_tRDMDeviceInfo.product_category[0] = nProductCategory >> 8;
+	m_tRDMDeviceInfo.product_category[1] = nProductCategory;
+	m_tRDMDeviceInfo.software_version[0] = nSoftwareVersionId >> 24;
+	m_tRDMDeviceInfo.software_version[1] = nSoftwareVersionId >> 16;
+	m_tRDMDeviceInfo.software_version[2] = nSoftwareVersionId >> 8;
+	m_tRDMDeviceInfo.software_version[3] = nSoftwareVersionId;
+	m_tRDMDeviceInfo.dmx_footprint[0] = (m_pLightSet->GetDmxFootprint() >> 8);
+	m_tRDMDeviceInfo.dmx_footprint[1] = m_pLightSet->GetDmxFootprint();
+	m_tRDMDeviceInfo.dmx_start_address[0] = (m_nDmxStartAddressFactoryDefault >> 8);
+	m_tRDMDeviceInfo.dmx_start_address[1] = m_nDmxStartAddressFactoryDefault;
 	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
 	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == nullptr ? 0 : 1;
-	m_tRDMDeviceInfo.sub_device_count[0] = static_cast<uint8_t>(nSubDevices >> 8);
-	m_tRDMDeviceInfo.sub_device_count[1] = static_cast<uint8_t>(nSubDevices);
+	m_tRDMDeviceInfo.sub_device_count[0] = (nSubDevices >> 8);
+	m_tRDMDeviceInfo.sub_device_count[1] = nSubDevices;
 	m_tRDMDeviceInfo.sensor_count = m_RDMSensors.GetCount();
 
 	memcpy(&m_tRDMSubDeviceInfo, &m_tRDMDeviceInfo, sizeof(struct TRDMDeviceInfo));
@@ -142,7 +142,7 @@ uint16_t RDMDeviceResponder::GetDmxFootPrint(uint16_t nSubDevice) {
 		return m_RDMSubDevices.GetDmxFootPrint(nSubDevice);
 	}
 
-	return static_cast<uint16_t>((m_tRDMSubDeviceInfo.dmx_footprint[0] << 8) + m_tRDMSubDeviceInfo.dmx_footprint[1]);
+	return (m_tRDMSubDeviceInfo.dmx_footprint[0] << 8) + m_tRDMSubDeviceInfo.dmx_footprint[1];
 }
 
 uint16_t RDMDeviceResponder::GetDmxStartAddress(uint16_t nSubDevice) {
@@ -150,7 +150,7 @@ uint16_t RDMDeviceResponder::GetDmxStartAddress(uint16_t nSubDevice) {
 		return m_RDMSubDevices.GetDmxStartAddress(nSubDevice);
 	}
 
-	return static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] << 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
+	return (m_tRDMDeviceInfo.dmx_start_address[0] << 8) + m_tRDMDeviceInfo.dmx_start_address[1];
 }
 
 void RDMDeviceResponder::SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAddress) {
@@ -163,8 +163,8 @@ void RDMDeviceResponder::SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxSt
 	}
 
 	if (m_pLightSet->SetDmxStartAddress(nDmxStartAddress)) {
-		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
-		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
+		m_tRDMDeviceInfo.dmx_start_address[0] = (nDmxStartAddress >> 8);
+		m_tRDMDeviceInfo.dmx_start_address[1] = nDmxStartAddress;
 	}
 }
 
@@ -211,15 +211,15 @@ bool RDMDeviceResponder::GetSlotInfo(uint16_t nSubDevice, uint16_t nSlotOffset, 
 
 struct TRDMDeviceInfo* RDMDeviceResponder::GetDeviceInfo(uint16_t nSubDevice) {
 	if (nSubDevice != RDM_ROOT_DEVICE) {
-		const auto *sub_device_info = m_RDMSubDevices.GetInfo(nSubDevice);
+		const struct TRDMSubDevicesInfo *sub_device_info = m_RDMSubDevices.GetInfo(nSubDevice);
 
 		if (sub_device_info != nullptr) {
-			m_tRDMSubDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(sub_device_info->dmx_footprint >> 8);
-			m_tRDMSubDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(sub_device_info->dmx_footprint);
+			m_tRDMSubDeviceInfo.dmx_footprint[0] = (sub_device_info->dmx_footprint >> 8);
+			m_tRDMSubDeviceInfo.dmx_footprint[1] = sub_device_info->dmx_footprint;
 			m_tRDMSubDeviceInfo.current_personality = sub_device_info->current_personality;
 			m_tRDMSubDeviceInfo.personality_count = sub_device_info->personality_count;
-			m_tRDMSubDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(sub_device_info->dmx_start_address >> 8);
-			m_tRDMSubDeviceInfo.dmx_start_address[1] =  static_cast<uint8_t>(sub_device_info->dmx_start_address);
+			m_tRDMSubDeviceInfo.dmx_start_address[0] = (sub_device_info->dmx_start_address >> 8);
+			m_tRDMSubDeviceInfo.dmx_start_address[1] =  sub_device_info->dmx_start_address;
 			m_tRDMSubDeviceInfo.sensor_count = sub_device_info->sensor_count;
 		}
 
@@ -263,7 +263,7 @@ void RDMDeviceResponder::SetLanguage(const char aLanguage[2]) {
 }
 
 uint16_t RDMDeviceResponder::CalculateChecksum() {
-	uint16_t nChecksum = static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
+	uint16_t nChecksum = (m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1];
 	nChecksum += m_tRDMDeviceInfo.current_personality;
 
 	return nChecksum;

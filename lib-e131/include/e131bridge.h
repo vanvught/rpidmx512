@@ -53,8 +53,8 @@ struct TE131BridgeState {
 	uint16_t DiscoveryPacketLength;
 	uint16_t nSynchronizationAddressSourceA;
 	uint16_t nSynchronizationAddressSourceB;
-	uint32_t nActiveInputPorts;
-	uint32_t nActiveOutputPorts;
+	uint8_t nActiveInputPorts;
+	uint8_t nActiveOutputPorts;
 	uint8_t nPriority;
 };
 
@@ -68,7 +68,7 @@ struct TSource {
 
 struct TE131OutputPort {
 	uint8_t data[E131::DMX_LENGTH];
-	uint32_t length;
+	uint16_t length;
 	uint16_t nUniverse;
 	e131::Merge mergeMode;
 	bool IsDataPending;
@@ -97,17 +97,17 @@ public:
 		m_pLightSet = pLightSet;
 	}
 
-	void SetUniverse(uint32_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
-	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
+	void SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
+	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
 
-	void SetMergeMode(uint32_t nPortIndex, e131::Merge tE131Merge);
-	e131::Merge GetMergeMode(uint32_t nPortIndex) const;
+	void SetMergeMode(uint8_t nPortIndex, e131::Merge tE131Merge);
+	e131::Merge GetMergeMode(uint8_t nPortIndex) const;
 
-	uint32_t GetActiveOutputPorts() const {
+	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
-	uint32_t GetActiveInputPorts() const {
+	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
@@ -118,8 +118,8 @@ public:
 		return m_bDirectUpdate;
 	}
 
-	bool IsTransmitting(uint32_t nPortIndex) const;
-	bool IsMerging(uint32_t nPortIndex) const;
+	bool IsTransmitting(uint8_t nPortIndex) const;
+	bool IsMerging(uint8_t nPortIndex) const;
 	bool IsStatusChanged();
 
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
@@ -167,19 +167,19 @@ public:
 		return m_SourceName;
 	}
 
-	void SetPriority(uint8_t nPriority, uint32_t nPortIndex = 0) {
+	void SetPriority(uint8_t nPriority, uint8_t nPortIndex = 0) {
 		assert(nPortIndex < E131::MAX_UARTS);
 		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
 			m_InputPort[nPortIndex].nPriority = nPriority;
 		}
 	}
 
-	uint8_t GetPriority(uint32_t nPortIndex = 0) const {
+	uint8_t GetPriority(uint8_t nPortIndex = 0) const {
 		assert(nPortIndex < E131::MAX_UARTS);
 		return m_InputPort[nPortIndex].nPriority;
 	}
 
-	void Clear(uint32_t nPortIndex);
+	void Clear(uint8_t nPortIndex);
 
 	void Start();
 	void Stop();
@@ -200,17 +200,17 @@ private:
 
 	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
 
-	void CheckMergeTimeouts(uint32_t nPortIndex);
-	bool IsPriorityTimeOut(uint32_t nPortIndex);
+	void CheckMergeTimeouts(uint8_t nPortIndex);
+	bool IsPriorityTimeOut(uint8_t nPortIndex);
 	bool isIpCidMatch(const struct TSource *);
-	bool IsDmxDataChanged(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	bool IsMergedDmxDataChanged(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
+	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();
 
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
-	void LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse);
+	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
 
 	// Input
 	void HandleDmxIn();

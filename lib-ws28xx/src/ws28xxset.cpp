@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "ws28xx.h"
@@ -106,7 +106,7 @@ void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t 
 		uint32_t nOffset = 4 + (nLEDIndex * 4);
 		assert(nOffset + 3 < m_nBufSize);
 
-		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
+		const uint8_t nFlag = 0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6);
 
 		m_pBuffer[nOffset] = nFlag;
 		m_pBuffer[nOffset + 1] = nBlue;

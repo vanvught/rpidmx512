@@ -24,7 +24,7 @@
  */
 
 #include <stdlib.h>
-#include <cstdio>
+#include <stdio.h>
 
 #include "jbiport.h"
 #include "jamstapl.h"

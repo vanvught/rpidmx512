@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "e131params.h"
 #include "e131paramsconst.h"

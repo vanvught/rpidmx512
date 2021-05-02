@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstring>
+#include <stdio.h>
+#include <string.h>
 #include <errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>

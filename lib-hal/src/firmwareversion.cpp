@@ -28,9 +28,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "firmwareversion.h"

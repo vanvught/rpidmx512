@@ -25,8 +25,8 @@
  */
 
 #include <stdlib.h>
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 #include <sys/sysctl.h>
 #include <sys/socket.h>
 #include <net/if.h>

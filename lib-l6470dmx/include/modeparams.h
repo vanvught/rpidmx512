@@ -71,8 +71,8 @@ class ModeParamsStore {
 public:
 	virtual ~ModeParamsStore() {}
 
-	virtual void Update(uint32_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
-	virtual void Copy(uint32_t nMotorIndex, struct TModeParams *ptModeParams)=0;
+	virtual void Update(uint8_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
+	virtual void Copy(uint8_t nMotorIndex, struct TModeParams *ptModeParams)=0;
 };
 
 class ModeParams {
@@ -80,11 +80,11 @@ public:
 	ModeParams(ModeParamsStore *pModeParamsStore=nullptr);
 	~ModeParams();
 
-	bool Load(uint32_t nMotorIndex);
-	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+	bool Load(uint8_t nMotorIndex);
+	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 

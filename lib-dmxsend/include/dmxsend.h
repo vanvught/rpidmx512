@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,10 @@ public:
 	DMXSend();
 	~DMXSend() override;
 
-	void Start(uint32_t nPort) override;
-	void Stop(uint32_t nPort) override;
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint32_t nPort, const uint8_t *, uint32_t) override;
+	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
 
 	void Print() override;
 

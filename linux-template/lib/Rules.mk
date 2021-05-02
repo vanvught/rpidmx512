@@ -46,13 +46,11 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion #-Wconversion
 
-ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
-else
-	COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
-	CCPOPS+=-Wuseless-cast -Wold-style-cast
-endif
-
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
+ifeq ($(detected_OS),Darwin) 
+else
+CCPOPS+=-Wuseless-cast -Wold-style-cast
+endif
 
 ifeq ($(detected_OS),Cygwin)
 	CCPOPS+=-std=gnu++11

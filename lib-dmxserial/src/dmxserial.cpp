@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <dirent.h>
 #include <unistd.h>
 #include <cassert>
@@ -75,15 +75,15 @@ void DmxSerial::Init() {
 	m_Serial.Init();
 }
 
-void DmxSerial::Start(__attribute__((unused)) uint32_t nPort) {
+void DmxSerial::Start(__attribute__((unused)) uint8_t nPort) {
 	// No actions here
 }
 
-void DmxSerial::Stop(__attribute__((unused)) uint32_t nPort) {
+void DmxSerial::Stop(__attribute__((unused)) uint8_t nPort) {
 	// No actions here
 }
 
-void DmxSerial::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
+void DmxSerial::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pData, __attribute__((unused)) uint16_t nLength) {
 
 	for (uint32_t nIndex = 0; nIndex < m_nFilesCount; nIndex++) {
 		const int32_t nOffset = m_aFileIndex[nIndex] - 1;
@@ -140,7 +140,7 @@ void DmxSerial::ScanDirectory() {
         		continue;
         	}
 
-          	int32_t nFileNumber;
+          	int16_t nFileNumber;
         	if (!CheckFileName(dp->d_name, nFileNumber)) {
                 continue;
             }
@@ -161,7 +161,7 @@ void DmxSerial::ScanDirectory() {
 	for (uint32_t i = 0; i < m_nFilesCount; i++) {
 		for (uint32_t j = 0; j < m_nFilesCount; j++) {
 			if (m_aFileIndex[j] > m_aFileIndex[i]) {
-				auto tmp = m_aFileIndex[i];
+				int16_t tmp = m_aFileIndex[i];
 				m_aFileIndex[i] = m_aFileIndex[j];
 				m_aFileIndex[j] = tmp;
 			}
@@ -237,7 +237,7 @@ void DmxSerial::Run() {
 	m_pDmxSerialTFTP->Run();
 }
 
-bool DmxSerial::DeleteFile(int32_t nFileNumber) {
+bool DmxSerial::DeleteFile(int16_t nFileNumber) {
 	DEBUG_PRINTF("nFileNumber=%u", nFileNumber);
 
 	char aFileName[DmxSerialFile::NAME_LENGTH + 1];
@@ -254,15 +254,13 @@ bool DmxSerial::DeleteFile(int32_t nFileNumber) {
 }
 
 bool DmxSerial::DeleteFile(const char *pFileNumber) {
-	assert(pFileNumber != nullptr);
-
 	DEBUG_PUTS(pFileNumber);
 
 	if (strlen(pFileNumber) != 3) {
 		return false;
 	}
 
-	auto nFileNumber = (pFileNumber[0] - '0') * 100;
+	int16_t nFileNumber = (pFileNumber[0] - '0') * 100;
 	nFileNumber += (pFileNumber[1] - '0') * 10;
 	nFileNumber += (pFileNumber[2] - '0');
 

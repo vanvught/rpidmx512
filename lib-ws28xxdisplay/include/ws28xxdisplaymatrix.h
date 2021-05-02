@@ -42,18 +42,18 @@ public:
 	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows, pixel::Type tLedType, pixel::Map tRGBMapping);
 	~WS28xxDisplayMatrix();
 
-	void PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void PutChar(char nChar, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void PutString(const char *pString, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
-	void Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void Text(const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
+	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 
-	void SetColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetColon(char nChar, uint8_t nPos, uint8_t nRed = 0x10, uint8_t nGreen = 0x10, uint8_t nBlue = 0x10);
 	void SetColonsOff();
 
-	void ClearLine(uint32_t nLine);
+	void ClearLine(uint8_t nLine);
 
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void Cls();
 	void Show();

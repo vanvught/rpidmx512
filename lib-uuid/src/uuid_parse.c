@@ -36,7 +36,7 @@
  * DAMAGE.
  * %End-Header%
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -152,9 +152,9 @@ int uuid_parse(const char *in, uuid_t uu) {
 	}
 
 	uuid.time_low = hex_uint32(in);
-	uuid.time_mid = (uint16_t)(hex_uint32(in + 9));
-	uuid.time_hi_and_version = (uint16_t)(hex_uint32(in + 14));
-	uuid.clock_seq = (uint16_t)(hex_uint32(in + 19));
+	uuid.time_mid = hex_uint32(in + 9);
+	uuid.time_hi_and_version = hex_uint32(in + 14);
+	uuid.clock_seq = hex_uint32(in + 19);
 
 	cp = in + 24;
 	buf[2] = 0;
@@ -162,7 +162,7 @@ int uuid_parse(const char *in, uuid_t uu) {
 	for (i = 0; i < 6; i++) {
 		buf[0] = *cp++;
 		buf[1] = *cp++;
-		uuid.node[i] = (uint8_t)(hex_uint32(buf));
+		uuid.node[i] = hex_uint32(buf);
 	}
 
 	uuid_pack(&uuid, uu);

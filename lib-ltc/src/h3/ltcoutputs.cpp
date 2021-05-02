@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <time.h>
 #include <cassert>
 
@@ -190,17 +190,17 @@ void LtcOutputs::ShowBPM(uint32_t nBPM) {
 		m_cBPM[6] = '-';
 		m_cBPM[7] = '-';
 	} else {
-		m_cBPM[7] = static_cast<char>(nBPM % 10 + '0');
+		m_cBPM[7] = nBPM % 10 + '0';
 		nBPM /= 10;
 		const uint32_t nDigit = nBPM % 10;
 
 		if (nBPM != 0) {
-			m_cBPM[6] = static_cast<char>(nDigit + '0');
+			m_cBPM[6] = nDigit + '0';
 			nBPM /= 10;
 			const uint32_t nDigit = nBPM % 10;
 
 			if (nBPM != 0) {
-				m_cBPM[5] = static_cast<char>(nDigit + '0');
+				m_cBPM[5] = nDigit + '0';
 			} else {
 				m_cBPM[5] = ' ';
 			}

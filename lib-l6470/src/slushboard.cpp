@@ -6,7 +6,7 @@
 /*
  * Based on https://github.com/Roboteurs/slushengine/tree/master/Slush
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "hal_gpio.h"
@@ -195,10 +195,10 @@ void SlushBoard::IOFSel(TSlushIOPorts nPort, TSlushIOPins nPinNumber, TSlushIOFS
 	assert(fsel <= SLUSH_IO_FSEL_INPT);
 
 	uint8_t data = Mcp23017ReadReg(MCP23017_IODIRA + nPort);
-	auto pin = static_cast<uint8_t>(1U << nPinNumber);
+	uint8_t pin = 1 << (nPinNumber % 8);
 
 	if (fsel == SLUSH_IO_FSEL_OUTP) {
-		data &= static_cast<uint8_t>(~(pin));
+		data &= (~(pin));
 	} else {
 		data |= pin;
 	}
@@ -212,7 +212,7 @@ void SlushBoard::IOClr(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 
 	uint8_t data = IORead(nPort);
 
-	data &= static_cast<uint8_t>(~(1U << nPinNumber));
+	data &= (~(1 << (nPinNumber % 8)));
 
 	IOWrite(nPort, data);
 }
@@ -223,7 +223,7 @@ void SlushBoard::IOSet(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 
 	uint8_t data = IORead(nPort);
 
-	data |= static_cast<uint8_t>(1U << nPinNumber);
+	data |= 1 << (nPinNumber % 8);
 
 	IOWrite(nPort, data);
 }
@@ -233,7 +233,7 @@ uint8_t SlushBoard::IOLev(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 	assert(nPinNumber <= SLUSH_IO_PIN7);
 
 	uint8_t data = IORead(nPort);
-	uint8_t pin = static_cast<uint8_t>(1U << nPinNumber);
+	uint8_t pin = 1 << (nPinNumber % 8);
 
 	if ((data & pin) == pin) {
 		return 1;

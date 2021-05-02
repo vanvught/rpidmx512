@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
  
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "ws28xxmulti.h"
@@ -56,7 +56,7 @@ void WS28xxMulti::SetupHC595(uint8_t nT0H, uint8_t nT1H) {
 	FUNC_PREFIX(spi_set_speed_hz(1000000));
 
 	FUNC_PREFIX(gpio_clr(SPI_CS1));
-	FUNC_PREFIX(spi_write(static_cast<uint16_t>((nT1H << 8) | nT0H)));
+	FUNC_PREFIX(spi_write((nT1H << 8) | nT0H));
 	FUNC_PREFIX(gpio_set(SPI_CS1));
 
 	DEBUG_EXIT
@@ -99,12 +99,12 @@ void WS28xxMulti::SetupCPLD() {
 	DEBUG_EXIT
 }
 
-#define BIT_SET(a,b) 	((a) |= static_cast<uint8_t>((1<<(b))))
-#define BIT_CLEAR(a,b) 	((a) &= static_cast<uint8_t>(~(1<<(b))))
+#define BIT_SET(a,b) 	((a) |= (1<<(b)))
+#define BIT_CLEAR(a,b) 	((a) &= ~(1<<(b)))
 
-void WS28xxMulti::SetColour8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+void WS28xxMulti::SetColour8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = nLedIndex * pixel::single::RGB;
+	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGB);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
@@ -127,7 +127,7 @@ void WS28xxMulti::SetColour8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColou
 	}
 }
 
-void WS28xxMulti::SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxMulti::SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 8);
 	assert(nLedIndex < m_nCount);
 
@@ -156,13 +156,13 @@ void WS28xxMulti::SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, u
 	}
 }
 
-void WS28xxMulti::SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xxMulti::SetPixel8x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPort < 8);
 	assert(nLedIndex < m_nCount);
 	assert(m_Type == Type::SK6812W);
 
 	uint32_t j = 0;
-	const auto k = nLedIndex * pixel::single::RGBW;
+	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGBW);
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

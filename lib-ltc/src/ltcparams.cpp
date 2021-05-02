@@ -27,8 +27,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <time.h>
 #include <cassert>
 
@@ -55,9 +55,9 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 
 	m_tLtcParams.tSource = source::LTC;
 	m_tLtcParams.nVolume = VOLUME_0DBV;
-	m_tLtcParams.nYear = static_cast<uint8_t>(tm->tm_year - 100);
-	m_tLtcParams.nMonth = static_cast<uint8_t>(tm->tm_mon + 1);
-	m_tLtcParams.nDay = static_cast<uint8_t>(tm->tm_mday);
+	m_tLtcParams.nYear = tm->tm_year - 100;
+	m_tLtcParams.nMonth = tm->tm_mon + 1;
+	m_tLtcParams.nDay = tm->tm_mday;
 	m_tLtcParams.nFps = 25;
 	m_tLtcParams.nStopFrame = m_tLtcParams.nFps - 1;
 	m_tLtcParams.nStopSecond = 59;
@@ -105,7 +105,7 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 	m_pLTcParamsStore->Update(&m_tLtcParams);
 }
 
-void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, uint8_t nMaskDisabledOutputs) {
+void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, unsigned nMaskDisabledOutputs) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, pKeyword, nValue8) == Sscan::OK) {
@@ -113,7 +113,7 @@ void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, ui
 			m_tLtcParams.nDisabledOutputs |= nMaskDisabledOutputs;
 			m_tLtcParams.nSetList |= LtcParamsMask::DISABLED_OUTPUTS;
 		} else {
-			m_tLtcParams.nDisabledOutputs &= static_cast<uint8_t>(~nMaskDisabledOutputs);
+			m_tLtcParams.nDisabledOutputs &= ~(nMaskDisabledOutputs);
 		}
 	}
 }
@@ -290,7 +290,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nRgbLedType = static_cast<uint8_t>(TLtcParamsRgbLedType::WS28XX);
 			m_tLtcParams.nSetList |= LtcParamsMask::RGBLEDTYPE;
 		} else {
-			m_tLtcParams.nRgbLedType &= static_cast<uint8_t>(~TLtcParamsRgbLedType::WS28XX);
+			m_tLtcParams.nRgbLedType &= ~static_cast<uint8_t>(TLtcParamsRgbLedType::WS28XX);
 
 			if (m_tLtcParams.nRgbLedType == 0) {
 				m_tLtcParams.nSetList &= ~LtcParamsMask::RGBLEDTYPE;
@@ -304,7 +304,7 @@ void LtcParams::callbackFunction(const char* pLine) {
 			m_tLtcParams.nRgbLedType = static_cast<uint8_t>(TLtcParamsRgbLedType::RGBPANEL);
 			m_tLtcParams.nSetList |= LtcParamsMask::RGBLEDTYPE;
 		} else {
-			m_tLtcParams.nRgbLedType &= static_cast<uint8_t>(~TLtcParamsRgbLedType::RGBPANEL);
+			m_tLtcParams.nRgbLedType &= ~static_cast<uint8_t>(TLtcParamsRgbLedType::RGBPANEL);
 
 			if (m_tLtcParams.nRgbLedType == 0) {
 				m_tLtcParams.nSetList &= ~LtcParamsMask::RGBLEDTYPE;

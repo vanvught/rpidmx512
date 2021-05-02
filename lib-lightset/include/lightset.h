@@ -70,10 +70,10 @@ public:
 	LightSet();
 	virtual ~LightSet() {}
 
-	virtual void Start(uint32_t nPort)= 0;
-	virtual void Stop(uint32_t nPort)= 0;
+	virtual void Start(uint8_t nPort)= 0;
+	virtual void Stop(uint8_t nPort)= 0;
 
-	virtual void SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength)= 0;
+	virtual void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength)= 0;
 
 	virtual void Blackout(__attribute__((unused)) bool bBlackout) {}
 

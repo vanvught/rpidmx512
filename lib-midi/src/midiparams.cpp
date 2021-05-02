@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <cassert>
 
 #include "midiparams.h"

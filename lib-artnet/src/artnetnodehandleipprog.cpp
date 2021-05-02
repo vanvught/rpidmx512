@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstring>
+#include <string.h>
 #include <cassert>
 
 #include "artnetipprog.h"
@@ -60,7 +60,7 @@ void ArtNetNode::SetIpProgHandler(ArtNetIpProg *pArtNetIpProg) {
 }
 
 void ArtNetNode::HandleIpProg() {
-	auto *packet = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
+	struct TArtIpProg *packet = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
 
 	m_pArtNetIpProg->Handler(reinterpret_cast<const TArtNetIpProg*>(&packet->Command), reinterpret_cast<TArtNetIpProgReply*>(&m_pIpProgReply->ProgIpHi));
 
@@ -72,7 +72,7 @@ void ArtNetNode::HandleIpProg() {
 		// Update Node network details
 		m_Node.IPAddressLocal = Network::Get()->GetIp();
 		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
-		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(ArtNetStatus2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
+		m_Node.Status2 = (m_Node.Status2 & (~(ArtNetStatus2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY);
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &m_pIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
 		if (m_nVersion > 3) {

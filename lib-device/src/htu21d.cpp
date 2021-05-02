@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "htu21d.h"
 
@@ -50,13 +50,13 @@ HTU21D::HTU21D(uint8_t nAddress): HAL_I2C(nAddress == 0  ? I2C_ADDRESS : nAddres
 }
 
 float HTU21D::GetTemperature() {
-	const auto temp = static_cast<float>(ReadRaw(reg::TRIGGER_TEMP_MEASURE_NOHOLD)) / 65536.0f;
-	return -46.85f + (175.72f * temp);
+	const float temp = static_cast<float>(ReadRaw(reg::TRIGGER_TEMP_MEASURE_NOHOLD)) / 65536.0f;
+	return -46.85 + (175.72 * temp);
 }
 
 float HTU21D::GetHumidity() {
-	const auto humd = static_cast<float>(ReadRaw(reg::TRIGGER_HUMD_MEASURE_NOHOLD)) / 65536.0f;
-	return -6.0f + (125.0f * humd);
+	const float humd = static_cast<float>(ReadRaw(reg::TRIGGER_HUMD_MEASURE_NOHOLD)) / 65536.0f;
+	return -6.0 + (125.0 * humd);
 }
 
 
@@ -74,7 +74,7 @@ uint16_t HTU21D::ReadRaw(uint8_t nCmd) {
 		}
 	}
 
-	const auto nRawValue = static_cast<uint16_t>((buf[0] << 8) | buf[1]);
+	const uint16_t nRawValue = (buf[0] << 8) | buf[1];
 
 	return nRawValue & 0xFFFC;
 }

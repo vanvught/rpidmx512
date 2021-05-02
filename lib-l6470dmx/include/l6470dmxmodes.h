@@ -46,8 +46,8 @@ public:
 	void HandleBusy();
 	bool BusyCheck();
 
-	bool IsDmxDataChanged(const uint8_t *, uint32_t);
-	void DmxData(const uint8_t *, uint32_t);
+	bool IsDmxDataChanged(const uint8_t *, uint16_t);
+	void DmxData(const uint8_t *, uint16_t);
 
 	void Start();
 	void Stop();
@@ -72,7 +72,7 @@ public: // RDM
 	}
 
 public:
-	static uint16_t GetDmxFootPrintMode(uint32_t);
+	static uint16_t GetDmxFootPrintMode(uint8_t);
 
 private:
 	bool IsDmxDataChanged(const uint8_t *);

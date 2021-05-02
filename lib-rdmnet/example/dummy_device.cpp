@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstdint>
-#include <cstring>
+#include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 
 #include "hardware.h"

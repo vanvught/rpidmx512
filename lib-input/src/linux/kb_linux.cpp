@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstddef>
+#include <stddef.h>
 #include <termios.h>
-#include <cstdio>
+#include <stdio.h>
 #include <sys/ioctl.h>
 #ifndef FIONREAD    // cygwin defines FIONREAD in  socket.h  instead of  ioctl.h
 #include <sys/socket.h>

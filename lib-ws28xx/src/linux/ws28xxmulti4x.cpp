@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "ws28xxmulti.h"

@@ -136,7 +136,7 @@ void notmain(void) {
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		for (uint32_t u = 0; u < nUniverses; u++) {
 			if (isSet) {
-				bridge.SetUniverse(nPortProtocolIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
+				bridge.SetUniverse(nPortProtocolIndex, e131::PortDir::OUTPUT, nStartUniversePort + u);
 			} else {
 				bridge.SetUniverse(nPortProtocolIndex, e131::PortDir::OUTPUT, nUniverseStart + nPortProtocolIndex);
 			}
@@ -164,7 +164,7 @@ void notmain(void) {
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);

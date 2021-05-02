@@ -70,15 +70,15 @@ public:
 #endif
 
 	void Cls();
-	void ClearLine(uint32_t nLine);
+	void ClearLine(uint8_t nLine);
 
 	void PutChar(int c);
 	void PutString(const char *pText);
 
-	int Write(uint32_t, const char *);
-	int Printf(uint32_t, const char *, ...);
+	int Write(uint8_t, const char *);
+	int Printf(uint8_t, const char *, ...);
 
-	void TextLine(uint32_t, const char *, uint8_t);
+	void TextLine(uint8_t, const char *, uint8_t);
 
 	void TextStatus(const char *pText);
 	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
@@ -93,7 +93,7 @@ public:
 	}
 
 	void SetCursor(uint32_t nMode);
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;

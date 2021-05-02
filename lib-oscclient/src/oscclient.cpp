@@ -24,9 +24,9 @@
  */
 
 #include <algorithm>
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <cassert>
 
 #include "oscclient.h"
@@ -213,7 +213,7 @@ void OscClient::SetLedHandler(OscClientLed *pOscClientLed) {
 bool OscClient::HandleLedMessage() {
 	DEBUG_ENTRY
 
-	uint8_t i;
+	uint32_t i;
 
 	for (i = 0; i < OscClientMax::LED_COUNT; i++) {
 		const char *src = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
@@ -238,10 +238,10 @@ bool OscClient::HandleLedMessage() {
 	}
 
 	if (Msg.GetType(0) == osc::type::INT32) {
-		m_pOscClientLed->SetLed(i, static_cast<uint8_t>(Msg.GetInt(0)) != 0);
+		m_pOscClientLed->SetLed(i, Msg.GetInt(0) != 0);
 		DEBUG_PRINTF("%d", Msg.GetInt(0));
 	} else if (Msg.GetType(0) == osc::type::FLOAT) {
-		m_pOscClientLed->SetLed(i, static_cast<uint8_t>(Msg.GetFloat(0)) != 0);
+		m_pOscClientLed->SetLed(i, Msg.GetFloat(0) != 0);
 		DEBUG_PRINTF("%f", Msg.GetFloat(0));
 	} else {
 		return false;

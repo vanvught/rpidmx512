@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
-# include <cstdio>
+# include <stdio.h>
 #endif
 
 #include "rdm.h"
@@ -50,7 +50,7 @@ static _cast uuid_cast;
 
 #define RECEIVE_TIME_OUT (2800U)
 
-RDMDiscovery::RDMDiscovery(uint32_t nPort) : m_nPort(nPort) {
+RDMDiscovery::RDMDiscovery(uint8_t nPort) : m_nPort(nPort) {
 	m_UnMute.SetDstUid(UID_ALL);
 	m_UnMute.SetCc(E120_DISCOVERY_COMMAND);
 	m_UnMute.SetPid(E120_DISC_UN_MUTE);

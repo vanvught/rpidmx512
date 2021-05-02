@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "h3/midireader.h"
@@ -50,7 +50,7 @@ using namespace midi;
 static uint8_t qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };	///<
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
-	auto *p = pBuffer;
+	char *p = pBuffer;
 
 	if (nArg == 0) {
 		*p++ = '0';
@@ -58,8 +58,8 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + (nArg % 10));
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
 MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
@@ -98,7 +98,7 @@ void MidiReader::HandleMtcQf() {
 
 	Midi::Get()->GetMessageData(nData1, nData2);
 
-	const uint8_t nPart = (nData1 & 0x70) >> 4;
+	const auto nPart = (nData1 & 0x70) >> 4;
 
 	qf[nPart] = nData1 & 0x0F;
 
@@ -115,10 +115,10 @@ void MidiReader::HandleMtcQf() {
 		itoa_base10(qf[2] | (qf[3] << 4), &m_aTimeCode[6]);
 		itoa_base10(qf[0] | (qf[1] << 4), &m_aTimeCode[9]);
 
-		m_MidiTimeCode.nHours = static_cast<uint8_t>(qf[6] | ((qf[7] & 0x1) << 4));
-		m_MidiTimeCode.nMinutes = static_cast<uint8_t>(qf[4] | (qf[5] << 4));
-		m_MidiTimeCode.nSeconds = static_cast<uint8_t>(qf[2] | (qf[3] << 4));
-		m_MidiTimeCode.nFrames = static_cast<uint8_t>(qf[0] | (qf[1] << 4));
+		m_MidiTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
+		m_MidiTimeCode.nMinutes = qf[4] | (qf[5] << 4);
+		m_MidiTimeCode.nSeconds = qf[2] | (qf[3] << 4);
+		m_MidiTimeCode.nFrames = qf[0] | (qf[1] << 4);
 		m_MidiTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 		Update();

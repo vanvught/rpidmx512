@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <algorithm>
 #include <cassert>
 
@@ -70,7 +70,7 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 		const auto nDiff = ((nStartUniverse + 4) & 0xF) - (nStartUniverse & 0xF);
 
 		if (nDiff != 4) {
-			nStartUniverse = static_cast<uint16_t>(nStartUniverse + nDiff + 15);
+			nStartUniverse = nStartUniverse + nDiff + 15;
 		}
 #endif
 		m_tWS28xxParams.nStartUniverse[i] = nStartUniverse;
@@ -255,7 +255,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 				m_tWS28xxParams.nSetList |= (WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
 #if !defined (NODE_ARTNET)
 			} else {
-				m_tWS28xxParams.nStartUniverse[i] = static_cast<uint16_t>(1 + (i * 4));
+				m_tWS28xxParams.nStartUniverse[i] = 1 + (i * 4);
 				m_tWS28xxParams.nSetList &= ~(WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
 			}
 #endif

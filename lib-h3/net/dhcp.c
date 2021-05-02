@@ -2,7 +2,7 @@
  * @file dhcp.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -140,7 +140,7 @@ static void _send_discover(int idx, const uint8_t *mac_address) {
 	s_dhcp_message.options[k++] = OPTIONS_DHCP_T2_VALUE;
 	s_dhcp_message.options[k++] = OPTIONS_END_OPTION;
 
-	udp_send((uint8_t) idx, (uint8_t *)&s_dhcp_message, (uint16_t) (k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE), IP_BROADCAST, DHCP_PORT_SERVER);
+	udp_send(idx, (uint8_t *)&s_dhcp_message, k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE, IP_BROADCAST, DHCP_PORT_SERVER);
 
 	DEBUG_EXIT
 }
@@ -182,7 +182,7 @@ static void _send_request(int idx, const uint8_t *mac_address, const uint8_t *ho
 	for (i = 0; hostname[i] != 0; i++) {
 		s_dhcp_message.options[k++] = hostname[i];
 	}
-	s_dhcp_message.options[k - (i + 1)] = (uint8_t) i; // length of hostname
+	s_dhcp_message.options[k - (i + 1)] = i; // length of hostname
 
 	s_dhcp_message.options[k++] = OPTIONS_PARAM_REQUEST;
 	s_dhcp_message.options[k++] = 0x06;	// length of request
@@ -194,7 +194,7 @@ static void _send_request(int idx, const uint8_t *mac_address, const uint8_t *ho
 	s_dhcp_message.options[k++] = OPTIONS_DHCP_T2_VALUE;
 	s_dhcp_message.options[k++] = OPTIONS_END_OPTION;
 
-	udp_send((uint8_t) idx, (uint8_t *)&s_dhcp_message, (uint16_t) (k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE), IP_BROADCAST, DHCP_PORT_SERVER);
+	udp_send(idx, (uint8_t *)&s_dhcp_message, k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE, IP_BROADCAST, DHCP_PORT_SERVER);
 
 	DEBUG_EXIT
 }
@@ -211,7 +211,7 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 		uint32_t from_ip;
 		uint16_t from_port;
 
-		size = udp_recv((uint8_t) idx, (uint8_t *)&response, sizeof(struct t_dhcp_message), &from_ip, &from_port);
+		size = udp_recv(idx, (uint8_t *)&response, sizeof(struct t_dhcp_message), &from_ip, &from_port);
 
 		if ((size > 0) && (from_port == DHCP_PORT_SERVER)) {
 			if (memcmp(response.chaddr, mac_address, ETH_ADDR_LEN) == 0) {
@@ -373,7 +373,7 @@ void dhcp_client_release(void) {
 
 	s_dhcp_message.options[k++] = OPTIONS_END_OPTION;
 
-	udp_send((uint8_t) idx, (uint8_t *)&s_dhcp_message, (uint16_t) (k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE), IP_BROADCAST, DHCP_PORT_SERVER);
+	udp_send(idx, (uint8_t *)&s_dhcp_message, k + sizeof(struct t_dhcp_message) - DHCP_OPT_SIZE, IP_BROADCAST, DHCP_PORT_SERVER);
 
 	udp_unbind(DHCP_PORT_CLIENT);
 

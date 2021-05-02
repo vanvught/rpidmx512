@@ -59,7 +59,7 @@ int gettimeofday(struct timeval *tv, __attribute__((unused))  struct timezone *t
 	set_timer = timer;
 	s_micros += (timer_elapsed * 1000);
 
-	tv->tv_sec = (time_t)(s_micros / MICROS_SECONDS);
+	tv->tv_sec = s_micros / MICROS_SECONDS;
 	tv->tv_usec = (suseconds_t) (s_micros - ((uint64_t) tv->tv_sec * MICROS_SECONDS));
 
 	return 0;

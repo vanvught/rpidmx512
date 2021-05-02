@@ -2,7 +2,7 @@
  * @file dmxinput.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(uint32_t nPort) {
+void DmxInput::Start(uint8_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
@@ -60,7 +60,7 @@ void DmxInput::Start(uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(uint32_t nPort) {
+void DmxInput::Stop(uint8_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
@@ -76,8 +76,8 @@ void DmxInput::Stop(uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const auto *pDmx = m_DmxMultiInput.GetDmxAvailable(nPort);
+const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
+	const uint8_t *pDmx = m_DmxMultiInput.GetDmxAvailable(nPort);
 
 	nUpdatesPerSecond = m_DmxMultiInput.GetUpdatesPerSeconde(nPort);
 

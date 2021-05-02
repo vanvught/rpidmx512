@@ -19,7 +19,7 @@ while(1):
 	time.sleep(1)
 */
 
-#include <cstdio>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "slushboard.h"

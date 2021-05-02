@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <time.h>
 #include <cassert>
 
@@ -74,8 +74,8 @@ static void itoa_base10(int arg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (arg / 10));
-	*p = static_cast<char>('0' + (arg % 10));
+	*p++ = ('0' + (arg / 10));
+	*p = ('0' + (arg % 10));
 }
 
 void Ltc::ItoaBase10(const struct TLtcTimeCode *ptLtcTimeCode, char *pTimeCode) {
@@ -98,7 +98,7 @@ void Ltc::ItoaBase10(const struct tm *pLocalTime, char *pSystemTime) {
 }
 
 #define DIGIT(x)	((x) - '0')
-#define VALUE(x,y)	static_cast<uint8_t>(((x) * 10) + (y))
+#define VALUE(x,y)	(((x) * 10) + (y))
 
 bool Ltc::ParseTimeCode(const char *pTimeCode, uint8_t nFps, struct TLtcTimeCode *ptLtcTimeCode) {
 	assert(pTimeCode != nullptr);

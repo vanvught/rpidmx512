@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cctype>
-#include <cstring>
+#include <stdint.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
 #include <stdlib.h>
 #include <time.h>
 #include <sys/time.h>

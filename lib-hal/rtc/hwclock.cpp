@@ -24,8 +24,8 @@
  */
 
 #include <cassert>
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 #include "hwclock.h"

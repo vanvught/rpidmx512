@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "hardware.h"
@@ -68,7 +68,7 @@ void ArtNetRdmController::Print() {
 	RDMDeviceController::Print();
 }
 
-void ArtNetRdmController::Full(uint32_t nPort) {
+void ArtNetRdmController::Full(uint8_t nPort) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
@@ -78,7 +78,7 @@ void ArtNetRdmController::Full(uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-uint8_t ArtNetRdmController::GetUidCount(uint32_t nPort) {
+uint8_t ArtNetRdmController::GetUidCount(uint8_t nPort) {
 	assert(nPort < DMX_MAX_UARTS);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
@@ -86,7 +86,7 @@ uint8_t ArtNetRdmController::GetUidCount(uint32_t nPort) {
 	return m_Discovery[nPort]->GetUidCount();
 }
 
-void ArtNetRdmController::Copy(uint32_t nPort, uint8_t *pTod) {
+void ArtNetRdmController::Copy(uint8_t nPort, uint8_t *pTod) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
@@ -96,7 +96,7 @@ void ArtNetRdmController::Copy(uint32_t nPort, uint8_t *pTod) {
 	DEBUG_EXIT
 }
 
-void ArtNetRdmController::DumpTod(uint32_t nPort) {
+void ArtNetRdmController::DumpTod(uint8_t nPort) {
 	DEBUG_ENTRY
 	assert(nPort < DMX_MAX_UARTS);
 
@@ -106,7 +106,7 @@ void ArtNetRdmController::DumpTod(uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmData) {
+const uint8_t *ArtNetRdmController::Handler(uint8_t nPort, const uint8_t *pRdmData) {
 	assert(nPort < DMX_MAX_UARTS);
 
 	if (pRdmData == nullptr) {

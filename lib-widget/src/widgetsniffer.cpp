@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstddef>
+#include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #include "widget.h"
@@ -119,7 +119,7 @@ void Widget::SnifferDmx() {
 	}
 
 	WidgetMonitor::Line(MonitorLine::INFO, "Send DMX data to HOST -> %d", nDataLength);
-	UsbSendPackage(pDmxData, 0, static_cast<uint16_t>(nDataLength));
+	UsbSendPackage(pDmxData, 0, nDataLength);
 }
 
 /**

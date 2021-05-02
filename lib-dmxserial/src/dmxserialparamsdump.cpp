@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "dmxserialparams.h"
 #include "dmxserialparamsconst.h"

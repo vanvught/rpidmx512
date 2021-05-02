@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <cstddef>
+#include <stddef.h>
 #ifndef NDEBUG
- #include <cstdio>
+ #include <stdio.h>
 #endif
-#include <cstring>
+#include <string.h>
 #include <cassert>
 
 #include "artnetipprog.h"

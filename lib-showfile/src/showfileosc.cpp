@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <dirent.h>
 #include <cassert>
 
@@ -150,7 +150,7 @@ void ShowFileOSC::Run() {
 		if (memcmp(&m_pBuffer[length::PATH], cmd::SHOW, length::SHOW) == 0) {
 			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-			const auto nValue = static_cast<uint32_t>(Msg.GetInt(0));
+			const int nValue = Msg.GetInt(0);
 
 			if (nValue <= ShowFileFile::MAX_NUMBER) {
 				ShowFile::Get()->SetShowFile(nValue);
@@ -169,7 +169,7 @@ void ShowFileOSC::Run() {
 			if (Msg.GetType(0) == osc::type::INT32) {
 				nValue = Msg.GetInt(0);
 			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-				nValue = static_cast<int>(Msg.GetFloat(0));
+				nValue = Msg.GetFloat(0);
 			} else {
 				return;
 			}
@@ -197,7 +197,7 @@ void ShowFileOSC::Run() {
 			if (Msg.GetType(0) == osc::type::INT32) {
 				nValue = Msg.GetInt(0);
 			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-				nValue = static_cast<int>(Msg.GetFloat(0));
+				nValue = Msg.GetFloat(0);
 			} else {
 				return;
 			}
@@ -218,7 +218,7 @@ void ShowFileOSC::Run() {
 			if (Msg.GetType(0) == osc::type::INT32) {
 				nValue = Msg.GetInt(0);
 			} else if (Msg.GetType(0) == osc::type::FLOAT) { // TouchOSC
-				nValue = static_cast<int>(Msg.GetFloat(0));
+				nValue = Msg.GetFloat(0);
 			} else {
 				return;
 			}
@@ -234,10 +234,10 @@ void ShowFileOSC::Run() {
 		if (memcmp(&m_pBuffer[length::PATH], cmd::DELETE, length::DELETE) == 0) {
 			OscSimpleMessage Msg(m_pBuffer, nBytesReceived);
 
-			uint32_t nValue = 255;
+			int nValue = 255;
 
 			if (Msg.GetType(0) == osc::type::INT32){
-				nValue = static_cast<uint32_t>(Msg.GetInt(0));
+				nValue = Msg.GetInt(0);
 			} else {
 				return;
 			}
@@ -294,7 +294,7 @@ void ShowFileOSC::Run() {
 			}
 
 			if (nShow <= ShowFileFile::MAX_NUMBER) {
-				ShowFile::Get()->SetShowFile(static_cast<uint32_t>(nShow));
+				ShowFile::Get()->SetShowFile(nShow);
 				SendStatus();
 			}
 
@@ -337,12 +337,12 @@ void ShowFileOSC::Reload() {
         		continue;
         	}
 
-          	uint32_t nShowFileNumber;
+          	uint8_t nShowFileNumber;
         	if (!ShowFile::CheckShowFileName(dp->d_name, nShowFileNumber)) {
                 continue;
             }
 
-        	m_aFileIndex[nIndex] = static_cast<int32_t>(nShowFileNumber);
+        	m_aFileIndex[nIndex] = nShowFileNumber;
 
             DEBUG_PRINTF("[%d] found %s", nIndex, dp->d_name);
 

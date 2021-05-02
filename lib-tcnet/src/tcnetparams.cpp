@@ -28,9 +28,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cctype>
-#include <cstring>
+#include <stdint.h>
+#include <ctype.h>
+#include <string.h>
 #include <cassert>
 
 #include "tcnetparams.h"

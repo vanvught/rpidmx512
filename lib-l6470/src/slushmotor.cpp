@@ -28,7 +28,7 @@
  */
 
 #if defined (__linux__)
- #include <cstdio>
+ #include <stdio.h>
 #endif
 #include <cassert>
 

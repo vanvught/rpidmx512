@@ -36,7 +36,7 @@
  * DAMAGE.
  * %End-Header%
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,15 +93,15 @@ static void uuid_unpack(const uuid_t in, struct uuid *uu) {
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
-	uu->time_mid = (uint16_t)(tmp);
+	uu->time_mid = tmp;
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
-	uu->time_hi_and_version = (uint16_t)(tmp);
+	uu->time_hi_and_version = tmp;
 
 	tmp = *ptr++;
 	tmp = (tmp << 8) | *ptr++;
-	uu->clock_seq = (uint16_t)(tmp);
+	uu->clock_seq = tmp;
 
 	memcpy(uu->node, ptr, 6);
 }
@@ -131,3 +131,6 @@ void uuid_unparse_upper(const uuid_t uu, char *out) {
 void uuid_unparse(const uuid_t uu, char *out) {
 	uuid_unparse_x(uu, out, FMT_DEFAULT);
 }
+
+
+

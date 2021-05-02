@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "e131bridge.h"
@@ -37,24 +37,24 @@
 using namespace e131;
 
 void E131Bridge::FillDiscoveryPacket() {
-	m_State.DiscoveryPacketLength = static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nActiveInputPorts));
+	m_State.DiscoveryPacketLength = DISCOVERY_PACKET_SIZE(m_State.nActiveInputPorts);
 
 	memset(m_pE131DiscoveryPacket, 0, sizeof(struct TE131DiscoveryPacket));
 
 	// Root Layer (See Section 5)
 	m_pE131DiscoveryPacket->RootLayer.PreAmbleSize = __builtin_bswap16(0x10);
 	memcpy(m_pE131DiscoveryPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
-	m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveInputPorts))));
+	m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveInputPorts)));
 	m_pE131DiscoveryPacket->RootLayer.Vector = __builtin_bswap32(vector::root::EXTENDED);
 	memcpy(m_pE131DiscoveryPacket->RootLayer.Cid, m_Cid, E131::CID_LENGTH);
 
 	// E1.31 Framing Layer (See Section 6)
-	m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveInputPorts))));
+	m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveInputPorts)) );
 	m_pE131DiscoveryPacket->FrameLayer.Vector = __builtin_bswap32(vector::extended::DISCOVERY);
 	memcpy(m_pE131DiscoveryPacket->FrameLayer.SourceName, m_SourceName, E131::SOURCE_NAME_LENGTH);
 
 	// Universe Discovery Layer (See Section 8)
-	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveInputPorts)));
+	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveInputPorts));
 	m_pE131DiscoveryPacket->UniverseDiscoveryLayer.Vector = __builtin_bswap32(vector::universe::DISCOVERY_UNIVERSE_LIST);
 }
 

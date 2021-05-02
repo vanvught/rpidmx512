@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "bcm2835.h"
@@ -37,15 +37,15 @@
 uint8_t Rdm::m_TransactionNumber = 0;
 uint32_t Rdm::m_nLastSendMicros = 0;
 
-const uint8_t *Rdm::Receive(uint32_t nPort) {
+const uint8_t *Rdm::Receive(uint8_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }
 
-void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
+void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(pRdmCommand != 0);
 
 	if (nSpacingMicros != 0) {
@@ -78,7 +78,7 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 	m_TransactionNumber++;
 }
 
-void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != 0);
 	assert(nLength != 0);
 
@@ -105,7 +105,7 @@ void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
 }
 
-void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != 0);
 	assert(nLength != 0);
 
@@ -119,7 +119,7 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_
 	SendRaw(nPort, pRdmData, nLength);
 }
 
-void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	const uint32_t nDelay = BCM2835_ST->CLO - rdm_get_data_receive_end();
 
 	// 3.2.2 Responder Packet spacing

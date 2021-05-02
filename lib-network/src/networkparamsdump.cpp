@@ -28,7 +28,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "networkparams.h"
 #include "network.h"

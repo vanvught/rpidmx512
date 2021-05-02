@@ -38,16 +38,16 @@ extern unsigned char FONT[] __attribute__((aligned(4)));
 #define FB_CHAR_W	8
 #define FB_CHAR_H	16
 
-static uint32_t current_x = 0;
-static uint32_t current_y = 0;
-static uint32_t saved_x = 0;
-static uint32_t saved_y = 0;
+static uint16_t current_x = 0;
+static uint16_t current_y = 0;
+static uint16_t saved_x = 0;
+static uint16_t saved_y = 0;
 static uint16_t cur_fore = CONSOLE_WHITE;
 static uint16_t cur_back = CONSOLE_BLACK;
 static uint16_t saved_fore = CONSOLE_WHITE;
 static uint16_t saved_back = CONSOLE_BLACK;
 
-static uint32_t top_row = 0;
+static uint16_t top_row = 0;
 
 #if defined (ARM_ALLOW_MULTI_CORE)
 static volatile int lock = 0;
@@ -57,11 +57,11 @@ int console_init(void) {
 	return fb_init();
 }
 
-uint32_t console_get_line_width(void) {
+uint16_t console_get_line_width(void) {
 	return FB_WIDTH / FB_CHAR_W;
 }
 
-void console_set_top_row(uint32_t row) {
+void console_set_top_row(uint16_t row) {
 	if (row > FB_HEIGHT / FB_CHAR_H) {
 		top_row = 0;
 	} else {
@@ -312,7 +312,7 @@ void console_clear(void) {
 	current_y = 0;
 }
 
-void console_set_cursor(uint32_t x, uint32_t y) {
+void console_set_cursor(uint16_t x, uint16_t y) {
 #if defined (ARM_ALLOW_MULTI_CORE)
 	while (__sync_lock_test_and_set(&lock, 1) == 1);
 #endif
@@ -369,7 +369,7 @@ void console_set_fg_bg_color(uint16_t fore, uint16_t back) {
 	cur_back = back;
 }
 
-void console_clear_line(uint32_t line) {
+void console_clear_line(uint16_t line) {
 	uint32_t *address;
 
 	if (line > FB_HEIGHT / FB_CHAR_H) {

@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
- #include <cstdio>
+ #include <stdio.h>
 #endif
 #include <cassert>
 

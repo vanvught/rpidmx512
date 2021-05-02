@@ -2,9 +2,9 @@
  * https://github.com/sparkfun/L6470-AutoDriver/blob/master/Libraries/Arduino/examples/SparkFunGetSetParamTest/SparkFunGetSetParamTest.ino
  */
 
-#include <cstdio>
+#include <stdio.h>
 #include <stdlib.h>
-#include <cstring>
+#include <string.h>
 #include <unistd.h>
 #include <math.h>
 

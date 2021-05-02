@@ -47,10 +47,10 @@ public:
 		return m_nDmxFootprint;
 	}
 
-	void Start(uint32_t nPort = 0) override;
-	void Stop(uint32_t nPort = 0) override;
+	void Start(uint8_t nPort = 0) override;
+	void Stop(uint8_t nPort = 0) override;
 
-	void SetData(uint32_t nPort, const uint8_t *pDmxData, uint32_t nLength) override;
+	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
 
 public:
 	void SetI2cAddress(uint8_t nI2cAddress);

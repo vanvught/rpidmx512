@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#include <stdint.h>
+#include <assert.h>
 
 #include "h3/dmxmulti.h"
 

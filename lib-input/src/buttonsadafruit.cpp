@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "bcm2835.h"
 #if defined(__linux__)

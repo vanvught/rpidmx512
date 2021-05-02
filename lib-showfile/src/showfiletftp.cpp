@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "showfiletftp.h"
 #include "showfile.h"
@@ -48,7 +48,7 @@ void ShowFileTFTP::Exit() {
 bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	uint32_t nShowFileNumber;
+	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
 		DEBUG_EXIT
 		return false;
@@ -61,7 +61,7 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPM
 bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
 
-	uint32_t nShowFileNumber;
+	uint8_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
 		DEBUG_EXIT
 		return false;

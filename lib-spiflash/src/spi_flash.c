@@ -105,9 +105,9 @@ const char *spi_flash_get_name(void) {
 
 static void spi_flash_addr(uint32_t addr, uint8_t *cmd) {
 	/* cmd[0] is actual command */
-	cmd[1] = (uint8_t)(addr >> 16);
-	cmd[2] = (uint8_t)(addr >> 8);
-	cmd[3] = (uint8_t)(addr >> 0);
+	cmd[1] = addr >> 16;
+	cmd[2] = addr >> 8;
+	cmd[3] = addr >> 0;
 }
 
 static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_t *data_out, uint8_t *data_in, size_t data_len) {

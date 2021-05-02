@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "h3/rtpmidireader.h"
@@ -53,7 +53,7 @@ static void irq_arm_handler() {
 }
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
-	auto *p = pBuffer;
+	char *p = pBuffer;
 
 	if (nArg == 0) {
 		*p++ = '0';
@@ -61,8 +61,8 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 		return;
 	}
 
-	*p++ = static_cast<char>('0' + (nArg / 10));
-	*p = static_cast<char>('0' + (nArg % 10));
+	*p++ = '0' + (nArg / 10);
+	*p = '0' + (nArg % 10);
 }
 
 RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
@@ -134,7 +134,7 @@ void RtpMidiReader::HandleMtc(const struct midi::Message *ptMidiMessage) {
 
 void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 	const auto nData1 = ptMidiMessage->nData1;
-	const uint8_t nPart = (nData1 & 0x70) >> 4;
+	const auto nPart = (nData1 & 0x70) >> 4;
 
 	qf[nPart] = nData1 & 0x0F;
 
@@ -155,10 +155,10 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 		itoa_base10(qf[2] | (qf[3] << 4), &m_aTimeCode[6]);
 		itoa_base10(qf[0] | (qf[1] << 4), &m_aTimeCode[9]);
 
-		m_tLtcTimeCode.nFrames = static_cast<uint8_t>(qf[0] | (qf[1] << 4));
-		m_tLtcTimeCode.nSeconds = static_cast<uint8_t>(qf[2] | (qf[3] << 4));
-		m_tLtcTimeCode.nMinutes = static_cast<uint8_t>(qf[4] | (qf[5] << 4));
-		m_tLtcTimeCode.nHours = static_cast<uint8_t>(qf[6] | ((qf[7] & 0x1) << 4));
+		m_tLtcTimeCode.nFrames = qf[0] | (qf[1] << 4);
+		m_tLtcTimeCode.nSeconds = qf[2] | (qf[3] << 4);
+		m_tLtcTimeCode.nMinutes = qf[4] | (qf[5] << 4);
+		m_tLtcTimeCode.nHours = qf[6] | ((qf[7] & 0x1) << 4);
 		m_tLtcTimeCode.nType = static_cast<uint8_t>(m_nTimeCodeType);
 
 		Update();

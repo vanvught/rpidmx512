@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "widgetconfiguration.h"
@@ -56,12 +56,12 @@ void WidgetConfiguration::SetRefreshRate(uint8_t nRefreshRate) {
 
 void WidgetConfiguration::SetBreakTime(uint8_t nBreakTime) {
 	s_nBreakTime = nBreakTime;
-	Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(nBreakTime * 10.67f));
+	Dmx::Get()->SetDmxBreakTime((static_cast<float>(nBreakTime) * 10.67));
 }
 
 void WidgetConfiguration::SetMabTime(uint8_t nMabTime) {
 	s_nMabTime = nMabTime;
-	Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(nMabTime * 10.67f));
+	Dmx::Get()->SetDmxMabTime((static_cast<float>(nMabTime) * 10.67));
 }
 
 void WidgetConfiguration::SetMode(Mode tMode) {

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #include "rdmnetllrponly.h"
@@ -54,7 +54,7 @@ void RDMNetLLRPOnly::Init() {
 	if (m_pLabel == nullptr) {
 		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, LABEL, LABEL_LENGTH);
 	} else {
-		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, static_cast<uint8_t>(strlen(m_pLabel)));
+		m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, strlen(m_pLabel));
 	}
 	m_RDMNetDevice.Init();
 

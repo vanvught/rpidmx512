@@ -62,10 +62,10 @@ public:
 
 	void Init();
 
-	void Start(uint32_t nPort) override;
-	void Stop(uint32_t nPort) override;
+	void Start(uint8_t nPort) override;
+	void Stop(uint8_t nPort) override;
 
-	void SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) override;
 
 	void Run();
 
@@ -81,11 +81,11 @@ public:
 
 	void EnableTFTP(bool bEnableTFTP);
 
-	bool DeleteFile(int32_t nFileNumber);
+	bool DeleteFile(int16_t nFileNumber);
 	bool DeleteFile(const char *pFileNumber);
 
-	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber);
-	static bool CheckFileName(const char *pFileName, int32_t &nFileNumber);
+	static bool FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileNumber);
+	static bool CheckFileName(const char *pFileName, int16_t &nFileNumber);
 
 	static DmxSerial *Get() {
 		return s_pThis;
@@ -98,7 +98,7 @@ private:
 private:
 	Serial m_Serial;
 	uint32_t m_nFilesCount { 0 };
-	int32_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
+	int16_t m_aFileIndex[DmxSerialFile::MAX_NUMBER];
 	int32_t m_nHandle { -1 };
 	DmxSerialChannelData *m_pDmxSerialChannelData[DmxSerialFile::MAX_NUMBER];
 	uint16_t m_nDmxLastSlot { lightset::Dmx::UNIVERSE_SIZE };

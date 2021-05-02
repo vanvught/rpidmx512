@@ -28,7 +28,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "remoteconfigparams.h"
 #include "remoteconfigconst.h"

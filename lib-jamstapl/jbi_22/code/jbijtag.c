@@ -1,7 +1,3 @@
-#pragma GCC push_options
-#pragma GCC optimize ("Os")
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
 /****************************************************************************/
 /*																			*/
 /*	Module:			jbijtag.c												*/

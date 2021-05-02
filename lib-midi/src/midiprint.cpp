@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 
 #include "midi.h"
 

@@ -2,7 +2,7 @@
  * @file dmxinput.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,10 @@ class DmxInput: public Dmx, public E131Dmx {
 public:
 	DmxInput();
 
-	void Start(uint32_t nPort);
-	void Stop(uint32_t nPort);
+	void Start(uint8_t nPort);
+	void Stop(uint8_t nPort);
 
-	const uint8_t *Handler(uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond);
+	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
 
 private:
 	bool m_bIsStarted{false};

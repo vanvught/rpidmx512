@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cctype>
+#include <stdint.h>
+#include <ctype.h>
 #include <cassert>
 
 #include "sscan.h"
@@ -54,7 +54,7 @@ Sscan::ReturnCode Sscan::Spi(const char *pBuffer, char &nChipSelect, char *pName
 		pName[k++] = *b++;
 	}
 
-	nLength = static_cast<uint8_t>(k);
+	nLength = k;
 	pName[k] = 0;
 
 	if (*b != ',') {
@@ -88,7 +88,7 @@ Sscan::ReturnCode Sscan::Spi(const char *pBuffer, char &nChipSelect, char *pName
 		if (!isdigit(*b)) {
 			return Sscan::VALUE_ERROR;
 		}
-		uint16 = static_cast<uint16_t>((uint16 * 10) + (*b - '0'));
+		uint16 = (uint16 * 10) + static_cast<uint16_t>(*b - '0');
 		k++;
 		b++;
 	}

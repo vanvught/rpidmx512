@@ -61,7 +61,7 @@ public:
 		return m_Type;
 	}
 
-	uint32_t GetCount() const {
+	uint16_t GetCount() const {
 		return m_nCount;
 	}
 
@@ -79,7 +79,7 @@ private:
 
 private:
 	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint32_t m_nCount { pixel::defaults::COUNT };
+	uint16_t m_nCount { pixel::defaults::COUNT };
 	pixel::Map m_Map { pixel::Map::UNDEFINED };
 	uint32_t m_nClockSpeedHz;
 	uint32_t m_nBufSize;

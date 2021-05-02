@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef HAL_GPIO_H_
 #define HAL_GPIO_H_
 
-#if defined(__linux__) || defined (__APPLE__)
+#if defined(__linux__)
 # include "linux/hal_gpio.h"
 # include "linux/hal_api.h"
 #elif defined(H3)

@@ -2,7 +2,7 @@
  * @file utc.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "utc.h"
 
@@ -38,7 +38,7 @@ int32_t Utc::Validate(float fOffset) {
 		} else {
 			for (uint32_t i = 0; i < sizeof(s_ValidOffets) / sizeof(s_ValidOffets[0]); i++) {
 				if (fOffset == s_ValidOffets[i]) {
-					return static_cast<int32_t>(fOffset * 3600.0f);
+					return (fOffset * 3600);
 				}
 			}
 		}

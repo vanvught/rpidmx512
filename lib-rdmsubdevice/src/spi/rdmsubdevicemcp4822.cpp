@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 /*
@@ -44,13 +44,13 @@ RDMSubDeviceMCP4822::RDMSubDeviceMCP4822(uint16_t nDmxStartAddress, char nChipSs
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint16_t nLength) {
 	assert(nLength <= 512);
 
 	uint16_t nOffset = GetDmxStartAddress() - 1;
 
 	if (nOffset < nLength) {
-		const auto nDataA = static_cast<uint16_t>((pData[nOffset] << 4) | (pData[nOffset] >> 4));
+		const uint16_t nDataA = ((pData[nOffset] << 4) | (pData[nOffset] >> 4));
 
 		if (nDataA != m_nDataA) {
 			m_MCP4822.WriteDacA(nDataA);
@@ -60,7 +60,7 @@ void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint32_t nLength) {
 		nOffset++;
 
 		if (nOffset < nLength) {
-			const auto nDataB = static_cast<uint16_t>((pData[nOffset] << 4) | (pData[nOffset] >> 4));
+			const uint16_t nDataB = ((pData[nOffset] << 4) | (pData[nOffset] >> 4));
 
 			if (nDataB != m_nDataB) {
 				m_MCP4822.WriteDacB(nDataB);

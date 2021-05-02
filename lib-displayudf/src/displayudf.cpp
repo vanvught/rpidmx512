@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdarg>
-#include <cstdio>
+#include <stdint.h>
+#include <stdarg.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "displayudf.h"
@@ -52,7 +52,7 @@ DisplayUdf::DisplayUdf() {
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
-		m_aLabels[i] = static_cast<uint8_t>(i + 1);
+		m_aLabels[i] = i + 1;
 	}
 
 	DEBUG_EXIT
@@ -163,5 +163,5 @@ void DisplayUdf::Set(uint32_t nLine, Labels tLabel) {
 		}
 	}
 
-	m_aLabels[static_cast<uint32_t>(tLabel)] = static_cast<uint8_t>(nLine);
+	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
 }

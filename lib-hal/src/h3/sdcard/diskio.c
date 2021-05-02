@@ -125,7 +125,7 @@ static inline int sdcard_write(const uint8_t* buf, int sector, int count) {
 
 DSTATUS __attribute__((cold)) disk_initialize(BYTE drv) {
 	if (drv == (BYTE) 0 && sdcard_init() == 0) {
-		diskio_status &= (BYTE)(~STA_NOINIT);
+		diskio_status &= ~STA_NOINIT;
 	}
 
 	return diskio_status;

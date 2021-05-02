@@ -25,9 +25,9 @@
  * https://gpsd.gitlab.io/gpsd/NMEA.html
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include <time.h>
 	#if !defined (BARE_METAL)
 # include <unistd.h>

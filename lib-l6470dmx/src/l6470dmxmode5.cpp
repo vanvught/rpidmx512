@@ -25,9 +25,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #ifndef NDEBUG
- #include <cstdio>
+ #include <stdio.h>
 #endif
 #include <cassert>
 
@@ -119,8 +119,8 @@ bool L6470DmxMode5::BusyCheck() {
 void L6470DmxMode5::Data(const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 	
-	const auto nData = static_cast<uint16_t>(pDmxData[1] | (pDmxData[0] << 8));
-	const auto nSteps = static_cast<uint32_t>(static_cast<float>(nData) * m_fSteps);
+	const uint32_t nData = pDmxData[1] | (static_cast<uint32_t>(pDmxData[0]) << 8);
+	const uint32_t nSteps = nData * m_fSteps;
 	bool isRev;
 #ifndef NDEBUG
 	int32_t nDifference;

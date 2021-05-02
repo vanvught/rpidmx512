@@ -26,7 +26,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "gpsparams.h"
 #include "gpsparamsconst.h"

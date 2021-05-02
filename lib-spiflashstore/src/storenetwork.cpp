@@ -24,7 +24,7 @@
  */
 
 #include <algorithm>
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "storenetwork.h"

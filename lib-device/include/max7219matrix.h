@@ -39,12 +39,12 @@ public:
 
 	void Cls();
 
-	void Write(const char *pBuffer, uint32_t nLength);
+	void Write(const char *pBuffer, uint8_t nLength);
 
-	void UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]);
+	void UpdateCharacter(uint8_t nChar, const uint8_t pBytes[8]);
 
 private:
-	uint8_t Rotate(uint32_t r, uint32_t x);
+	uint8_t Rotate(uint8_t r, uint8_t x);
 	void WriteAll(uint8_t nRegister, uint8_t nData);
 
 private:

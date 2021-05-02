@@ -53,7 +53,7 @@ static constexpr uint8_t CH_DP = 0x80;		// 0b10000000
 static constexpr uint8_t CH_BLANK = 0x00;	// 0b00000000
 
 static constexpr uint16_t Msg(uint8_t nDigitRight, uint8_t nDigitLeft) {
-	return static_cast<uint16_t>((nDigitLeft << 8) | nDigitRight);
+	return (nDigitLeft << 8) | nDigitRight;
 }
 }  // namespace display7segment
 

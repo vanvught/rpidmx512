@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "bh1750.h"
 
@@ -57,7 +57,7 @@ BH170::BH170(uint8_t nAddress) : HAL_I2C(nAddress == 0 ? I2C_ADDRESS : nAddress)
 }
 
 uint16_t BH170::Get() {
-	const auto nLevel = static_cast<uint16_t>(static_cast<float>(HAL_I2C::Read16()) / 1.2f);
+	const uint16_t nLevel = static_cast<float>(HAL_I2C::Read16()) / 1.2f;
 	return nLevel;
 }
 

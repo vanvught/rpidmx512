@@ -55,7 +55,7 @@ public:
 	int Run();
 
 	void Send(const char *pPath);
-	void SendCmd(uint32_t nCmd);
+	void SendCmd(uint8_t nCmd);
 
 	void Print();
 
@@ -84,7 +84,7 @@ public:
 	}
 
 	void SetPingDelay(uint32_t nPingDelay = OscClientDefault::PING_DELAY_SECONDS);
-	uint32_t GetPingDelay() {
+	uint8_t GetPingDelay() {
 		return m_nPingDelayMillis / 1000;
 	}
 

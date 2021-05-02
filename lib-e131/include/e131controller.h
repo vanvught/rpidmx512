@@ -62,7 +62,7 @@ public:
 
 	void Print();
 
-	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength);
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
 	void HandleSync();
 	void HandleBlackout();
 

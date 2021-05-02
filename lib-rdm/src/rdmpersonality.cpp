@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #include <cassert>
 
 #ifndef ALIGNED
@@ -55,8 +55,8 @@ void RDMPersonality::SetDescription(const char *pDescription) {
 
 	m_nDescriptionLength = 0;
 
-	const auto *pSrc = pDescription;
-	auto *pDst = m_aDescription;
+	const char *pSrc = pDescription;
+	char *pDst = m_aDescription;
 
 	for (unsigned i = 0; (*pSrc != 0) && (i < RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH); i++) {
 		*pDst = *pSrc;
@@ -74,9 +74,9 @@ uint8_t RDMPersonality::GetDescriptionLength() const {
 void RDMPersonality::DescriptionCopyTo(char *p, uint8_t &nLength) {
 	assert(p != nullptr);
 
-	const auto *pSrc = m_aDescription;
-	auto *pDst = p;
-	uint8_t i;
+	char *pSrc = m_aDescription;
+	char *pDst = p;
+	uint32_t i;
 
 	for (i = 0; (i < m_nDescriptionLength) && (i < nLength); i++) {
 		*pDst = *pSrc;

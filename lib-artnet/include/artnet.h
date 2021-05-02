@@ -153,8 +153,7 @@ enum TGoodOutput {
 	GO_OUTPUT_IS_MERGING = (1 << 3),			///< Bit 3 Set – Output is merging ArtNet data.
 	GO_DMX_SHORT_DETECTED = (1 << 2),			///< Bit 2 Set – DMX output short detected on power up
 	GO_MERGE_MODE_LTP = (1 << 1),				///< Bit 1 Set – Merge Mode is LTP.
-	GO_OUTPUT_IS_SACN  = (1 << 0),				///< Bit 0 Set – Output is selected to transmit sACN.
-	GO_OUTPUT_NONE = 0
+	GO_OUTPUT_IS_SACN  = (1 << 0)				///< Bit 0 Set – Output is selected to transmit sACN.
 };
 
 enum TGoodInput {

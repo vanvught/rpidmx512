@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "rdmsensor.h"
 
 void RDMSensor::Print() {
-	printf("%d [%.*s]\n", m_tRDMSensorDefintion.sensor, m_tRDMSensorDefintion.nLength, m_tRDMSensorDefintion.description);
+	printf("%d [%.*s]\n", m_tRDMSensorDefintion.sensor, m_tRDMSensorDefintion.len, m_tRDMSensorDefintion.description);
 	printf(" RangeMin  %d\n", m_tRDMSensorDefintion.range_min);
 	printf(" RangeMax  %d\n", m_tRDMSensorDefintion.range_max);
 	printf(" NormalMin %d\n", m_tRDMSensorDefintion.normal_min);

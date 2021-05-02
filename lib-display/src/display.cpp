@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "displayset.h"
@@ -222,7 +222,7 @@ void Display::Cls() {
 	m_LcdDisplay->Cls();
 }
 
-void Display::TextLine(uint32_t nLine, const char *pText, uint8_t nLength) {
+void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
@@ -230,7 +230,7 @@ void Display::TextLine(uint32_t nLine, const char *pText, uint8_t nLength) {
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
-int Display::Printf(uint32_t nLine, const char *format, ...) {
+int Display::Printf(uint8_t nLine, const char *format, ...) {
 	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
@@ -241,21 +241,21 @@ int Display::Printf(uint32_t nLine, const char *format, ...) {
 
 	va_start(arp, format);
 
-	auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+	int i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
 
 	va_end(arp);
 
-	m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint32_t>(i));
+	m_LcdDisplay->TextLine(nLine, buffer, i);
 
 	return i;
 }
 
-int Display::Write(uint32_t nLine, const char *pText) {
+int Display::Write(uint8_t nLine, const char *pText) {
 	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
 
-	const auto *p = pText;
+	const char *p = pText;
 	int nCount = 0;
 
 	while ((*p != 0) && (nCount++ < static_cast<int>(m_nCols))) {
@@ -267,7 +267,7 @@ int Display::Write(uint32_t nLine, const char *pText) {
 	return nCount;
 }
 
-void Display::SetCursorPos(uint32_t nCol, uint32_t nRow) {
+void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
@@ -291,7 +291,7 @@ void Display::PutString(const char *pText) {
 	m_LcdDisplay->PutString(pText);
 }
 
-void Display::ClearLine(uint32_t nLine) {
+void Display::ClearLine(uint8_t nLine) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}

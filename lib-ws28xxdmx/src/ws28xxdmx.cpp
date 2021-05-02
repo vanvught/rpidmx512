@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <algorithm>
 #include <cassert>
 
 #ifndef NDEBUG
 #if (__linux__)
-# include <cstdio>
+# include <stdio.h>
 #endif
 #endif
 
@@ -68,7 +68,7 @@ WS28xxDmx::~WS28xxDmx() {
 	m_pWS28xx = nullptr;
 }
 
-void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPort) {
+void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -80,7 +80,7 @@ void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPort) {
+void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -99,7 +99,7 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void WS28xxDmx::SetData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 

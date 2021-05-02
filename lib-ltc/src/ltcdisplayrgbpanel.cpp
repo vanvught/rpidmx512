@@ -25,9 +25,9 @@
 
 #include <cassert>
 #include <algorithm>
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "ltcdisplayrgbpanel.h"
 #include "ltc.h"

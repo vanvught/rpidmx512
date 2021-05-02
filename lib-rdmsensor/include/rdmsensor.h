@@ -39,7 +39,7 @@ struct TRDMSensorDefintion {
 	int16_t normal_max;
 	uint8_t recorded_supported;
 	char description[32];
-	uint8_t nLength;
+	uint8_t len;
 };
 
 struct TRDMSensorValues {

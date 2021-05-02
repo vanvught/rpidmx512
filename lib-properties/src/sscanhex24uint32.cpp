@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdint>
-#include <cctype>
+#include <stdint.h>
+#include <ctype.h>
 #include <cassert>
 
 #include "sscan.h"

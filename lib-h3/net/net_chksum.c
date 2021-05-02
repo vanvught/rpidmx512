@@ -2,7 +2,7 @@
  * @file net_chksum.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,5 +48,5 @@ uint16_t net_chksum(void *data, uint32_t len) {
 		sum = (sum >> 16) + (sum & 0xFFFF);
 	}
 
-	return (uint16_t) (~sum);
+	return (~sum);
 }

@@ -58,7 +58,7 @@ while(Motor.isBusy()):
 Motor.free()
 */
 
-#include <cstdio>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "slushboard.h"

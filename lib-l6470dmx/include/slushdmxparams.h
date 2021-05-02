@@ -55,8 +55,8 @@ public:
 	virtual void Update(const struct TSlushDmxParams *ptSlushDmxParams)=0;
 	virtual void Copy(struct TSlushDmxParams *ptSlushDmxParams)=0;
 
-	virtual void Update(uint32_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams)=0;
-	virtual void Copy(uint32_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams)=0;
+	virtual void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams)=0;
+	virtual void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams)=0;
 };
 
 class SlushDmxParams {

@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"

@@ -2,7 +2,7 @@
  * @file uuid.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@ void uuid_generate_random(uuid_t out) {
 
 	h3_sid_get_rootkey(&cast.u8[0]);
 
-	cast.uuid[6] = (char)(0x40 | (cast.uuid[6] & 0xf));
-	cast.uuid[8] = (char)(0x80 | (cast.uuid[8] & 0x3f));
+	cast.uuid[6] = 0x40 | (cast.uuid[6] & 0xf);
+	cast.uuid[8] = 0x80 | (cast.uuid[8] & 0x3f);
 
 	memcpy(out, cast.uuid, sizeof(uuid_t));
 }

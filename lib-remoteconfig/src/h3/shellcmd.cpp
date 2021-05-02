@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cctype>
+#include <stdint.h>
+#include <string.h>
+#include <ctype.h>
 #include <time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>

@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #ifndef NDEBUG
-#include <cstdio>
+#include <stdio.h>
 #endif
 
 #include "l6470.h"
@@ -50,7 +50,7 @@ static unsigned long ceil(float f) {
 // Multiply desired steps/s/s by .137438 to get an appropriate value for this register.
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
 unsigned long L6470::accCalc(float stepsPerSecPerSec) {
-	float temp = stepsPerSecPerSec * 0.137438f;
+	float temp = stepsPerSecPerSec * 0.137438;
 
 	if (static_cast<unsigned long>(long(temp)) > 0x00000FFF) {
 		return 0x00000FFF;
@@ -60,13 +60,13 @@ unsigned long L6470::accCalc(float stepsPerSecPerSec) {
 }
 
 float L6470::accParse(unsigned long stepsPerSecPerSec) {
-	return static_cast<float>(stepsPerSecPerSec & 0x00000FFF) / 0.137438f;
+	return (stepsPerSecPerSec & 0x00000FFF) / 0.137438;
 }
 
 // The calculation for DEC is the same as for ACC. Value is 0x08A on boot.
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
 unsigned long L6470::decCalc(float stepsPerSecPerSec) {
-	float temp = stepsPerSecPerSec * 0.137438f;
+	float temp = stepsPerSecPerSec * 0.137438;
 
 	if (static_cast<unsigned long>(long(temp)) > 0x00000FFF) {
 		return 0x00000FFF;
@@ -76,7 +76,7 @@ unsigned long L6470::decCalc(float stepsPerSecPerSec) {
 }
 
 float L6470::decParse(unsigned long stepsPerSecPerSec) {
-	return static_cast<float>(stepsPerSecPerSec & 0x00000FFF) / 0.137438f;
+	return (stepsPerSecPerSec & 0x00000FFF) / 0.137438;
 }
 
 // The value in the MAX_SPD register is [(steps/s)*(tick)]/(2^-18) where tick is 
@@ -84,7 +84,7 @@ float L6470::decParse(unsigned long stepsPerSecPerSec) {
 // Multiply desired steps/s by .065536 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure it remains at or below 0x3FF
 unsigned long L6470::maxSpdCalc(float stepsPerSec) {
-	unsigned long temp = ceil(stepsPerSec * .065536f);
+	unsigned long temp = ceil(stepsPerSec * .065536);
 
 	if (temp > 0x000003FF) {
 		return 0x000003FF;
@@ -94,7 +94,7 @@ unsigned long L6470::maxSpdCalc(float stepsPerSec) {
 }
 
 float L6470::maxSpdParse(unsigned long stepsPerSec) {
-	return static_cast<float>(stepsPerSec & 0x000003FF) / 0.065536f;
+	return (stepsPerSec & 0x000003FF) / 0.065536;
 }
 
 // The value in the MIN_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is 
@@ -102,7 +102,7 @@ float L6470::maxSpdParse(unsigned long stepsPerSec) {
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
 unsigned long L6470::minSpdCalc(float stepsPerSec) {
-	float temp = stepsPerSec / 0.238f;
+	float temp = stepsPerSec / 0.238;
 
 	if (static_cast<unsigned long>(long(temp)) > 0x00000FFF) {
 		return 0x00000FFF;
@@ -112,7 +112,7 @@ unsigned long L6470::minSpdCalc(float stepsPerSec) {
 }
 
 float L6470::minSpdParse(unsigned long stepsPerSec) {
-	return static_cast<float>(stepsPerSec & 0x00000FFF) * 0.238f;
+	return ((stepsPerSec & 0x00000FFF) * 0.238);
 }
 
 // The value in the FS_SPD register is ([(steps/s)*(tick)]/(2^-18))-0.5 where tick is 
@@ -120,7 +120,7 @@ float L6470::minSpdParse(unsigned long stepsPerSec) {
 // Multiply desired steps/s by .065536 and subtract .5 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure the value is at or below 0x3FF.
 unsigned long L6470::FSCalc(float stepsPerSec) {
-	float temp = (stepsPerSec * .065536f) - .5f;
+	float temp = (stepsPerSec * .065536) - .5;
 
 	if (static_cast<unsigned long>(long(temp)) > 0x000003FF) {
 		return 0x000003FF;
@@ -130,7 +130,7 @@ unsigned long L6470::FSCalc(float stepsPerSec) {
 }
 
 float L6470::FSParse(unsigned long stepsPerSec) {
-	return ((static_cast<float>(stepsPerSec & 0x000003FF)) + 0.5f) / 0.065536f;
+	return (((stepsPerSec & 0x000003FF)) + 0.5) / 0.065536;
 }
 
 // The value in the INT_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is 
@@ -138,7 +138,7 @@ float L6470::FSParse(unsigned long stepsPerSec) {
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 14-bit value, so we need to make sure the value is at or below 0x3FFF.
 unsigned long L6470::intSpdCalc(float stepsPerSec) {
-	float temp = stepsPerSec * 4.1943f;
+	float temp = stepsPerSec * 4.1943;
 
 	if (static_cast<unsigned long>(long(temp)) > 0x00003FFF) {
 		return 0x00003FFF;
@@ -148,7 +148,7 @@ unsigned long L6470::intSpdCalc(float stepsPerSec) {
 }
 
 float L6470::intSpdParse(unsigned long stepsPerSec) {
-	return static_cast<float>(stepsPerSec & 0x00003FFF) / 4.1943f;
+	return (stepsPerSec & 0x00003FFF) / 4.1943;
 }
 
 // When issuing RUN command, the 20-bit speed is [(steps/s)*(tick)]/(2^-28) where tick is 
@@ -156,7 +156,7 @@ float L6470::intSpdParse(unsigned long stepsPerSec) {
 // Multiply desired steps/s by 67.106 to get an appropriate value for this register
 // This is a 20-bit value, so we need to make sure the value is at or below 0xFFFFF.
 unsigned long L6470::spdCalc(float stepsPerSec) {
-	auto temp = static_cast<unsigned long>(stepsPerSec * 67.106f);
+	unsigned long temp = stepsPerSec * 67.106;
 
 	if (temp > 0x000FFFFF)
 		return 0x000FFFFF;
@@ -165,7 +165,7 @@ unsigned long L6470::spdCalc(float stepsPerSec) {
 }
 
 float L6470::spdParse(unsigned long stepsPerSec) {
-	return static_cast<float>(stepsPerSec & 0x000FFFFF) / 67.106f;
+	return (stepsPerSec & 0x000FFFFF) / 67.106;
 }
 
 // Much of the functionality between "get parameter" and "set parameter" is
@@ -329,7 +329,7 @@ long L6470::paramHandler(uint8_t param, unsigned long value) {
 		retVal = xferParam(0, 16);
 		break;
 	default:
-		SPIXfer(static_cast<uint8_t>(value));
+		SPIXfer(value);
 		break;
 	}
 	return retVal;

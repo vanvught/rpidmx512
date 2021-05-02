@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstring>
+#include <string.h>
 #include <cassert>
 
 #include "rdmsubdevices.h"

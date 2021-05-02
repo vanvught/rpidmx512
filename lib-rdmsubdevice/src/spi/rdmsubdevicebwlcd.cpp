@@ -25,10 +25,10 @@
  */
 
 #include <algorithm>
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 
-#include "cstdio"
+#include "stdio.h"
 
 #include "rdmsubdevicebwlcd.h"
 
@@ -87,14 +87,14 @@ void RDMSubDeviceBwLcd::Stop() {
 	m_BwSpiLcd.TextLine(1, s_aLine, bw::lcd::max_characters - 1); // Leave H, D, % at the end
 }
 
-void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint16_t nLength) {
 	const uint16_t nDmxStartAddress = GetDmxStartAddress();
 	bool IsDataChanged = false;
 
-	nLength = std::min(nLength, static_cast<uint32_t>(DMX_FOOTPRINT));
-	nLength = std::min(nLength, static_cast<uint32_t>(513 - nDmxStartAddress));
+	nLength = std::min(nLength, static_cast<uint16_t>(DMX_FOOTPRINT));
+	nLength = std::min(nLength, static_cast<uint16_t>(513 - nDmxStartAddress));
 
-	const auto* p = &pData[nDmxStartAddress-1];
+	const uint8_t* p = &pData[nDmxStartAddress-1];
 
 	for (uint32_t i = 0; (i < sizeof(m_Data)) && (i < nLength); i++) {
 		if (m_Data[i] != p[i]) {
@@ -138,7 +138,7 @@ void RDMSubDeviceBwLcd::DisplayChannels() {
 		text[nOffset + 2] = ' ';
 		text[nOffset + 3] = ' ';
 
-		itoaBase10(static_cast<uint16_t>(nDmxStartAddress + i), &text[nOffset]);
+		itoaBase10(nDmxStartAddress + i, &text[nOffset]);
 	}
 
 	for (; i < DMX_FOOTPRINT; i++) {
@@ -152,7 +152,7 @@ void RDMSubDeviceBwLcd::DisplayChannels() {
 	m_BwSpiLcd.TextLine(0, text, bw::lcd::max_characters);
 }
 
-void RDMSubDeviceBwLcd::DataHex(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceBwLcd::DataHex(const uint8_t* pData, uint16_t nLength) {
 	unsigned j;
 
 	for (j = 0; j < nLength ; j++) {
@@ -171,7 +171,7 @@ void RDMSubDeviceBwLcd::DataHex(const uint8_t* pData, uint32_t nLength) {
 	}
 }
 
-void RDMSubDeviceBwLcd::DataDec(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceBwLcd::DataDec(const uint8_t* pData, uint16_t nLength) {
 	unsigned j;
 
 	for (j = 0; j < nLength ; j++) {
@@ -189,14 +189,14 @@ void RDMSubDeviceBwLcd::DataDec(const uint8_t* pData, uint32_t nLength) {
 	}
 }
 
-void RDMSubDeviceBwLcd::DataPct(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceBwLcd::DataPct(const uint8_t* pData, uint16_t nLength) {
 	unsigned j;
 
 	for (j = 0; j < nLength ; j++) {
 		unsigned nOffset = j * 4;
 		m_aText[nOffset] = ' ';
 		m_aText[nOffset + 1] = ' ';
-		const auto pct = static_cast<uint16_t>((pData[j] / 255) * 100);
+		const uint16_t pct = (static_cast<float>(pData[j]) / 255) * 100;
 		itoaBase10(pct , &m_aText[nOffset]);
 	}
 
@@ -214,7 +214,7 @@ void RDMSubDeviceBwLcd::itoaBase10(uint16_t arg, char buf[]) {
 	if (arg == 0) *n = '0';
 
 	while (arg != 0) {
-		*n = '0' + static_cast<char>(arg % 10);
+		*n = '0' + (arg % 10);
 		n--;
 		arg /= 10;
 	}

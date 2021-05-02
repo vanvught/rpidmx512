@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #ifndef NDEBUG
-# include <cstdio>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -66,7 +66,7 @@ PCA9685DmxLed::~PCA9685DmxLed() {
 	m_pSlotInfo = nullptr;
 }
 
-void PCA9685DmxLed::Start(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxLed::Start(__attribute__((unused)) uint8_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -78,7 +78,7 @@ void PCA9685DmxLed::Start(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void PCA9685DmxLed::Stop(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxLed::Stop(__attribute__((unused)) uint8_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -86,7 +86,7 @@ void PCA9685DmxLed::Stop(__attribute__((unused)) uint32_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxLed::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t *pDmxData, uint32_t nLength) {
+void PCA9685DmxLed::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -183,7 +183,7 @@ void PCA9685DmxLed::SetOutDriver(bool bOutputDriver) {
 
 void PCA9685DmxLed::SetDmxFootprint(uint16_t nDmxFootprint) {
 	m_nDmxFootprint = nDmxFootprint;
-	m_nBoardInstances = static_cast<uint8_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
+	m_nBoardInstances = static_cast<uint16_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
 }
 
 void PCA9685DmxLed::Initialize() {
@@ -205,7 +205,7 @@ void PCA9685DmxLed::Initialize() {
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
 		assert(m_pPWMLed[i] == nullptr);
-		m_pPWMLed[i] = new PCA9685PWMLed(static_cast<uint8_t>(m_nI2cAddress + i));
+		m_pPWMLed[i] = new PCA9685PWMLed(m_nI2cAddress + i);
 		assert(m_pPWMLed[i] != nullptr);
 
 		m_pPWMLed[i]->SetInvert(m_bOutputInvert);

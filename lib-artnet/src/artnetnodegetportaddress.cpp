@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 #include "artnetnode.h"
@@ -34,7 +34,7 @@
 
 using namespace artnet;
 
-bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
+bool ArtNetNode::GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
 	if (dir == PortDir::INPUT) {
 		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT);
 

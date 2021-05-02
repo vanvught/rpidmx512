@@ -29,33 +29,33 @@
 #include "h3.h"
 
 #if defined(ORANGE_PI)
-# include "board/h3_opi_zero.h"
+ #include "board/h3_opi_zero.h"
 #elif defined(ORANGE_PI_ONE)
-# include "board/h3_opi_one.h"
+ #include "board/h3_opi_one.h"
 #elif defined(NANO_PI)
-# include "board/h3_nanopi_neo.h"
+ #include "board/h3_nanopi_neo.h"
 #else
-# error Board configuration error
+ #error Board configuration error
 #endif
 
 #ifndef H3_BOARD_NAME
-# error Board configuration error
+ #error Board configuration error
 #endif
 
 #ifndef H3_BOARD_STATUS_LED
-# error Status LED not defined
+ #error Status LED not defined
 #endif
 
 #if !defined(EXT_UART_BASE)
-# error EXT_UART_BASE not defined
+ #error EXT_UART_BASE not defined
 #endif
 
 #if !defined(EXT_I2C_BASE)
-# error EXT_I2C_BASE not defined
+ #error EXT_I2C_BASE not defined
 #endif
 
 #if !defined(EXT_SPI_BASE)
-# error EXT_SPI_BASE not defined
+ #error EXT_SPI_BASE not defined
 #endif
 
 #ifdef __cplusplus
@@ -65,6 +65,7 @@
 #endif
 
 #define EXT_UART_NUMBER		((EXT_UART_BASE - H3_UART_BASE) / 0x400)
+//#define EXT_UART			((H3_UART_TypeDef *) EXT_UART_BASE)
 #define EXT_UART			(_CAST(H3_UART_TypeDef *)(EXT_UART_BASE))
 
 #define EXT_UART_TX			GPIO_EXT_8

@@ -2,7 +2,7 @@
  * @file rgbpanel.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,10 +54,10 @@ public:
 	// Text
 	void PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
-	void ClearLine(uint32_t nLine);
+	void Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
+	void ClearLine(uint8_t nLine);
 	void SetColon(char nChar, uint8_t nCol, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetColonsOff();
 

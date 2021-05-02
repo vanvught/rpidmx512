@@ -24,8 +24,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "ltcdisplayws28xx7segment.h"

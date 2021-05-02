@@ -22,8 +22,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "ltcencoder.h"
@@ -126,24 +126,24 @@ LtcEncoder::~LtcEncoder() {
 void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock) {
 	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
-	uint8_t nTens = pLtcTimeCode->nFrames / 10;
+	uint32_t nTens = pLtcTimeCode->nFrames / 10;
 
-	p->Format.bytes[0] = ReverseBits(static_cast<uint8_t>(pLtcTimeCode->nFrames - (10 * nTens)));
+	p->Format.bytes[0] = ReverseBits(pLtcTimeCode->nFrames - (10 * nTens));
 	p->Format.bytes[1] = ReverseBits(nTens);
 
 	nTens = pLtcTimeCode->nSeconds / 10;
 
-	p->Format.bytes[2] = ReverseBits(static_cast<uint8_t>(pLtcTimeCode->nSeconds - (10 * nTens)));
+	p->Format.bytes[2] = ReverseBits(pLtcTimeCode->nSeconds - (10 * nTens));
 	p->Format.bytes[3] = ReverseBits(nTens);
 
 	nTens = pLtcTimeCode->nMinutes / 10;
 
-	p->Format.bytes[4] = ReverseBits(static_cast<uint8_t>(pLtcTimeCode->nMinutes - (10 * nTens)));
+	p->Format.bytes[4] = ReverseBits(pLtcTimeCode->nMinutes - (10 * nTens));
 	p->Format.bytes[5] = ReverseBits(nTens);
 
 	nTens = pLtcTimeCode->nHours / 10;
 
-	p->Format.bytes[6] = ReverseBits(static_cast<uint8_t>(pLtcTimeCode->nHours - (10 * nTens)));
+	p->Format.bytes[6] = ReverseBits(pLtcTimeCode->nHours - (10 * nTens));
 	p->Format.bytes[7] = ReverseBits(nTens);
 
 	m_nType = pLtcTimeCode->nType & 0x3;
@@ -180,12 +180,12 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	if (nType == ltc::type::EBU) {
-		auto b = p->Format.bytes[7];
-		b &= static_cast<uint8_t>(~(1U << 4));
+		uint8_t b = p->Format.bytes[7];
+		b &= ~(1 << 4);
 		p->Format.bytes[7] = b;
 	} else {
-		auto b = p->Format.bytes[3];
-		b &= static_cast<uint8_t>(~(1U << 4));
+		uint8_t b = p->Format.bytes[3];
+		b &= ~(1 << 4);
 		p->Format.bytes[3] = b;
 	}
 
@@ -193,11 +193,11 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 
 	if (!bParityOnes) {
 		if (nType == ltc::type::EBU) {
-			auto b = p->Format.bytes[7];
+			uint8_t b = p->Format.bytes[7];
 			b |= (1 << 4);
 			p->Format.bytes[7] = b;
 		} else {
-			auto b = p->Format.bytes[3];
+			uint8_t b = p->Format.bytes[3];
 			b |= (1 << 4);
 			p->Format.bytes[3] = b;
 		}
@@ -301,7 +301,7 @@ uint8_t LtcEncoder::ReverseBits(uint8_t nBits) {
 	const auto input = static_cast<uint32_t>(nBits);
 	uint32_t output;
 	asm("rbit %0, %1" : "=r"(output) : "r"(input));
-	return (static_cast<uint8_t>(output >> 24));
+	return (output >> 24);
 #else
 	// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64Bits
 	const uint8_t nResult = ((nBits * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;

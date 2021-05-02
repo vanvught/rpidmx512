@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cstdio>
-#include <cctype>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
 #include <cassert>
 
 #include "showfile.h"
@@ -54,7 +54,7 @@ const char *ShowFile::GetFormat(ShowFileFormats tFormat) {
 	return "Unknown";
 }
 
-bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_t nShowFileNumber) {
+bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint8_t nShowFileNumber) {
 	assert(nLength == ShowFileFile::NAME_LENGTH + 1);
 
 	if (nShowFileNumber < ShowFileFile::MAX_NUMBER) {
@@ -65,7 +65,7 @@ bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_
 	return false;
 }
 
-bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileNumber) {
+bool ShowFile::CheckShowFileName(const char *pShowFileName, uint8_t &nShowFileNumber) {
 	DEBUG_PRINTF("pShowFileName=[%s]", pShowFileName);
 
 	if ((pShowFileName == nullptr) || (strlen(pShowFileName) != ShowFileFile::NAME_LENGTH)) {
@@ -91,7 +91,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileN
 		return false;
 	}
 
-	nShowFileNumber = static_cast<uint32_t>(10 * (cDigit - '0'));
+	nShowFileNumber = 10 * static_cast<uint8_t>(cDigit - '0');
 
 	cDigit = pShowFileName[sizeof(SHOWFILE_PREFIX)];
 	DEBUG_PRINTF("cDigit=%c", cDigit);
@@ -101,7 +101,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileN
 		return false;
 	}
 
-	nShowFileNumber += static_cast<uint32_t>(cDigit - '0');
+	nShowFileNumber += (cDigit - '0');
 
 	DEBUG_EXIT
 	return true;

@@ -34,14 +34,14 @@ class DmxMulti: public DmxSet {
 public:
 	DmxMulti();
 
-	void SetPortDirection(uint32_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
+	void SetPortDirection(uint8_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
 
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
+	void RdmSendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
-	const uint8_t *RdmReceive(uint32_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) override;
+	const uint8_t *RdmReceive(uint8_t nPort) override;
+	const uint8_t *RdmReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) override;
 
-	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetPortSendDataWithoutSC(uint8_t nPort, const uint8_t *pData, uint16_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {

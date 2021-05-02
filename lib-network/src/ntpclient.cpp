@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/time.h>
 #include <cassert>
 
@@ -178,8 +178,8 @@ int NtpClient::SetTimeOfDay() {
 	m_nOffsetSeconds = nDiffSeconds1 + nDiffSeconds2;
 	m_nOffsetMicros = nDiffFraction1 + nDiffFraction2;
 
-	if (m_nOffsetMicros >= 1000000u) {
-		m_nOffsetMicros -= 1000000u;
+	if (m_nOffsetMicros >= 1E6) {
+		m_nOffsetMicros -= 1E6	;
 		m_nOffsetSeconds += 1;
 	}
 
@@ -191,9 +191,9 @@ int NtpClient::SetTimeOfDay() {
 	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970)  + m_nOffsetSeconds + m_nUtcOffset;
 	tv.tv_usec = static_cast<suseconds_t>(static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
 
-	if (tv.tv_usec >= 1000000) {
+	if (tv.tv_usec >= 1E6) {
 		tv.tv_sec++;
-		tv.tv_usec = 1000000 - tv.tv_usec;
+		tv.tv_usec = 1E6 - tv.tv_usec;
 	}
 
 	DEBUG_PRINTF("(%ld, %d) %s ", tv.tv_sec, static_cast<int>(tv.tv_usec) , tv.tv_usec  >= 1E6 ? "!" : "");

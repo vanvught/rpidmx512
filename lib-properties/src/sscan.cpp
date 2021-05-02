@@ -2,7 +2,7 @@
  * @file sscan.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "sscan.h"
 
@@ -31,7 +31,7 @@ uint8_t Sscan::fromHex(const char Hex[2]) {
 		if (Hex[1] != 0) {
 			const int nLow = (Hex[1] > '9' ? (Hex[1] | 0x20) - 'a' + 10 : Hex[1] - '0');
 			const int nHigh = (Hex[0] > '9' ? (Hex[0] | 0x20) - 'a' + 10 : Hex[0] - '0');
-			return static_cast<uint8_t>((nHigh << 4) | nLow);
+			return (nHigh << 4) | nLow;
 		} else {
 			return static_cast<uint8_t>(Hex[0] > '9' ? (Hex[0] | 0x20) - 'a' + 10 : Hex[0] - '0');
 		}

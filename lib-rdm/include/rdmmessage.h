@@ -43,7 +43,7 @@ public:
 
 	void SetPd(const uint8_t *, const uint8_t);
 
-	void Send(uint32_t nPort = 0, uint32_t nSpacingMicros = 0);
+	void Send(uint8_t nPort = 0, uint32_t nSpacingMicros = 0);
 
 public:
 	static void Print(const uint8_t *pRdmData);

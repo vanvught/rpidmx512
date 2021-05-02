@@ -39,15 +39,15 @@ public:
 	bool Start() override;
 
 	void Cls() override;
-	void ClearLine(uint32_t) override;
+	void ClearLine(uint8_t) override;
 
 	void PutChar(int) override;
 	void PutString(const char *) override;
 
-	void Text(const char *, uint32_t);
-	void TextLine(uint32_t nLine, const char *pData, uint32_t nLength) override;
+	void Text(const char *, uint8_t);
+	void TextLine(uint8_t, const char *, uint8_t) override;
 
-	void SetCursorPos(uint32_t, uint32_t) override;
+	void SetCursorPos(uint8_t, uint8_t) override;
 	void SetCursor(uint32_t) override;
 
 	void SetSleep(bool bSleep) override;

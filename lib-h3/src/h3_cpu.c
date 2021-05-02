@@ -204,7 +204,7 @@ void h3_cpu_set_clock(uint64_t clock) {
 		value &= (uint32_t) ~(PLL_FACTOR_K_MASK << PLL_FACTOR_K_SHIFT);
 		value &= (uint32_t) ~(PLL_FACTOR_M_MASK << PLL_FACTOR_M_SHIFT);
 		value &= (uint32_t) ~(PLL_FACTOR_P_MASK << PLL_FACTOR_P_SHIFT);
-		value |= (uint32_t) PLL_CTRL_N(clock / (24000000 * k / m));
+		value |= PLL_CTRL_N(clock / (24000000 * k / m));
 		value |= PLL_CTRL_K(k);
 		value |= PLL_CTRL_M(m);
 		value |= PLL_CTRL_P(p);

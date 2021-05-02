@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include "cassert"
+#include "assert.h"
 
 #include "display7segment.h"
 

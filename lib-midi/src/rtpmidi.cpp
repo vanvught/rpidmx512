@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <stdio.h>
 #include <cassert>
 
 #include "rtpmidi.h"
@@ -187,9 +187,9 @@ int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
 			}
 		}
 		nSize++;
-		m_tMidiMessage.nData1 = static_cast<uint8_t>(nSize & 0xFF); // LSB
-		m_tMidiMessage.nData2 = static_cast<uint8_t>(nSize >> 8);   // MSB
-		m_tMidiMessage.nBytesCount = static_cast<uint8_t>(nSize);
+		m_tMidiMessage.nData1 = nSize & 0xFF; // LSB
+		m_tMidiMessage.nData2 = nSize >> 8;   // MSB
+		m_tMidiMessage.nBytesCount = nSize;
 	}
 		break;
 	default:
@@ -274,7 +274,7 @@ void RtpMidi::SendTimeCode(const midi::Timecode *tTimeCode) {
 	data[2] = 0x7F;
 	data[3] = 0x01;
 	data[4] = 0x01;
-	data[5] = static_cast<uint8_t>(((tTimeCode->nType) & 0x03) << 5) | (tTimeCode->nHours & 0x1F);
+	data[5] = (((tTimeCode->nType) & 0x03) << 5) | (tTimeCode->nHours & 0x1F);
 	data[6] = tTimeCode->nMinutes & 0x3F;
 	data[7] = tTimeCode->nSeconds & 0x3F;
 	data[8] = tTimeCode->nFrames & 0x1F;
@@ -289,7 +289,7 @@ void  RtpMidi::Send(uint32_t nLength) {
 	pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
 	pHeader->nTimestamp = __builtin_bswap32(Now());
 
-	m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET] = static_cast<uint8_t>(nLength); //FIXME BUG works now only
+	m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET] = nLength; //FIXME BUG works now only
 
 	AppleMidi::Send(m_pSendBuffer, 1 + sizeof(struct TRtpHeader) + nLength);
 }

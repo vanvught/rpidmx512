@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
+#include <stdint.h>
+#include <string.h>
 #ifndef NDEBUG
-# include <cstdio>
+# include <stdio.h>
 #endif
 #include <cassert>
 
@@ -159,10 +159,10 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 
 			bTimeCodeValid = false;
 
-			s_tMidiTimeCode.nFrames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
-			s_tMidiTimeCode.nSeconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
-			s_tMidiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
-			s_tMidiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
+			s_tMidiTimeCode.nFrames  = (10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F);
+			s_tMidiTimeCode.nSeconds = (10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F);
+			s_tMidiTimeCode.nMinutes = (10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F);
+			s_tMidiTimeCode.nHours   = (10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F);
 
 			aTimeCode[10] = (aTimeCodeBits[0] & 0x0F) + '0';	// frames
 			aTimeCode[9]  = (aTimeCodeBits[1] & 0x03) + '0';	// 10's of frames

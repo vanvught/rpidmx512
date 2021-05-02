@@ -32,7 +32,7 @@ class ModeStore {
 public:
 	virtual ~ModeStore() {}
 
-	virtual void SaveDmxStartAddress(uint32_t nMotorIndex, uint16_t nDmxStartAddress)=0;
+	virtual void SaveDmxStartAddress(uint8_t nMotorIndex, uint16_t nDmxStartAddress)=0;
 };
 
 #endif /* MODESTORE_H_ */

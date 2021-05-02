@@ -38,9 +38,9 @@ public:
 	virtual ~ArtNet4Handler() {
 	}
 
-	virtual void SetPort(uint32_t nPortIndex, artnet::PortDir dir)=0;
+	virtual void SetPort(uint8_t nPortId, artnet::PortDir dir)=0;
 	virtual void HandleAddress(uint8_t nCommand)=0;
-	virtual uint8_t GetStatus(uint32_t nPortIndex)=0;
+	virtual uint8_t GetStatus(uint8_t nPortId)=0;
 	virtual bool IsStatusChanged()=0;
 };
 

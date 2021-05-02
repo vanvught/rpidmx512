@@ -26,7 +26,7 @@
  * Inspired by http://www.buxtronix.net/2011/10/rotary-encoders-done-properly.html
  */
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "rotaryencoder.h"
 

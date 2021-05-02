@@ -238,24 +238,24 @@ enum TL6470StatusMotStatus {
  * 9.2 Application commands
  */
 
-static constexpr uint8_t L6470_CMD_NOP = 0x00;
-static constexpr uint8_t L6470_CMD_SET_PARAM = 0x00;
-static constexpr uint8_t L6470_CMD_GET_PARAM = 0x20;
-static constexpr uint8_t L6470_CMD_RUN = 0x50;
-static constexpr uint8_t L6470_CMD_STEP_CLOCK = 0x58;
-static constexpr uint8_t L6470_CMD_MOVE = 0x40;
-static constexpr uint8_t L6470_CMD_GOTO = 0x60;
-static constexpr uint8_t L6470_CMD_GOTO_DIR = 0x68;
-static constexpr uint8_t L6470_CMD_GO_UNTIL = 0x82;
-static constexpr uint8_t L6470_CMD_RELEASE_SW = 0x92;
-static constexpr uint8_t L6470_CMD_GO_HOME = 0x70;
-static constexpr uint8_t L6470_CMD_GO_MARK = 0x78;
-static constexpr uint8_t L6470_CMD_RESET_POS = 0xD8;
-static constexpr uint8_t L6470_CMD_RESET_DEVICE = 0xC0;
-static constexpr uint8_t L6470_CMD_SOFT_STOP = 0xB0;
-static constexpr uint8_t L6470_CMD_HARD_STOP = 0xB8;
-static constexpr uint8_t L6470_CMD_SOFT_HIZ = 0xA0;
-static constexpr uint8_t L6470_CMD_HARD_HIZ = 0xA8;
-static constexpr uint8_t L6470_CMD_GET_STATUS = 0xD0;
+#define L6470_CMD_NOP			0x00
+#define L6470_CMD_SET_PARAM		0x00
+#define L6470_CMD_GET_PARAM		0x20
+#define L6470_CMD_RUN			0x50
+#define L6470_CMD_STEP_CLOCK	0x58
+#define L6470_CMD_MOVE			0x40
+#define L6470_CMD_GOTO			0x60
+#define L6470_CMD_GOTO_DIR		0x68
+#define L6470_CMD_GO_UNTIL		0x82
+#define L6470_CMD_RELEASE_SW	0x92
+#define L6470_CMD_GO_HOME		0x70
+#define L6470_CMD_GO_MARK		0x78
+#define L6470_CMD_RESET_POS		0xD8
+#define L6470_CMD_RESET_DEVICE	0xC0
+#define L6470_CMD_SOFT_STOP		0xB0
+#define L6470_CMD_HARD_STOP		0xB8
+#define L6470_CMD_SOFT_HIZ		0xA0
+#define L6470_CMD_HARD_HIZ		0xA8
+#define L6470_CMD_GET_STATUS	0xD0
 
 #endif /* L6470CONSTANTS_H_ */

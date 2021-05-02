@@ -2,7 +2,7 @@
  * @file servo.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
+#include <stdint.h>
+#include <stdio.h>
 #include <cassert>
 
 #include "pca9685servo.h"
@@ -33,7 +33,7 @@
 #define MAX_8BIT	(0xFF)
 #define MAX_ANGLE	(180)
 
-#define MID_COUNT	static_cast<uint16_t>(.5f + ((204.8f * SERVO_CENTER_DEFAULT_US) / 1000))
+#define MID_COUNT	static_cast<uint16_t>(.5 + ((204.8 * SERVO_CENTER_DEFAULT_US) / 1000))
 
 PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress) {
 	SetInvert(false);
@@ -42,6 +42,9 @@ PCA9685Servo::PCA9685Servo(uint8_t nAddress): PCA9685(nAddress) {
 	CalcLeftCount();
 	CalcRightCount();
 	CalcCenterCount();
+}
+
+PCA9685Servo::~PCA9685Servo() {
 }
 
 void PCA9685Servo::SetLeftUs(uint16_t nLeftUs) {
@@ -81,18 +84,19 @@ uint16_t PCA9685Servo::GetCenterUs() const {
 }
 
 void PCA9685Servo::CalcLeftCount() {
-	m_nLeftCount = static_cast<uint16_t>((.5f + ((204.8f * m_nLeftUs) / 1000)));
+	m_nLeftCount = (.5 + ((204.8 * m_nLeftUs) / 1000));
 }
 
 void PCA9685Servo::CalcRightCount() {
-	m_nRightCount = static_cast<uint16_t>((.5f + ((204.8f * m_nRightUs) / 1000)));
+	m_nRightCount = (.5 + ((204.8 * m_nRightUs) / 1000));
 }
 
 void PCA9685Servo::CalcCenterCount() {
-	m_nCenterCount = static_cast<uint16_t>((.5f + ((204.8f * m_nCenterUs) / 1000)));
+	m_nCenterCount = (.5 + ((204.8 * m_nCenterUs) / 1000));
 }
 
 void PCA9685Servo::Set(uint8_t nChannel, uint16_t nData) {
+
 	if (nData > m_nRightCount) {
 		nData = m_nRightCount;
 	} else if (nData < m_nLeftCount) {
@@ -103,6 +107,7 @@ void PCA9685Servo::Set(uint8_t nChannel, uint16_t nData) {
 }
 
 void PCA9685Servo::Set(uint8_t nChannel, uint8_t nData) {
+
 	if (nData == 0) {
 		Write(nChannel, m_nLeftCount);
 	} else if (nData == (MAX_8BIT + 1) / 2) {
@@ -110,12 +115,13 @@ void PCA9685Servo::Set(uint8_t nChannel, uint8_t nData) {
 	}  else if (nData == MAX_8BIT) {
 		Write(nChannel, m_nRightCount);
 	} else {
-		const auto nCount = static_cast<uint16_t>(m_nLeftCount + (.5f + (static_cast<float>((m_nRightCount - m_nLeftCount)) / MAX_8BIT) * nData));
+		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((m_nRightCount - m_nLeftCount)) / MAX_8BIT) * nData);
 		Write(nChannel, nCount);
 	}
 }
 
 void PCA9685Servo::SetAngle(uint8_t nChannel, uint8_t nAngle) {
+
 	if (nAngle == 0) {
 		Write(nChannel, m_nLeftCount);
 	} else if (nAngle == 90) {
@@ -123,10 +129,11 @@ void PCA9685Servo::SetAngle(uint8_t nChannel, uint8_t nAngle) {
 	}  else if (nAngle >= 180) {
 		Write(nChannel, m_nRightCount);
 	} else if (nAngle < 90) {
-		const auto nCount = static_cast<uint16_t>(m_nLeftCount + (.5f + (static_cast<float>((m_nCenterCount - m_nLeftCount)) / 90) * nAngle));
+		const uint16_t nCount = m_nLeftCount + (.5 + (static_cast<float>((m_nCenterCount - m_nLeftCount)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	} else {
-		const auto nCount = static_cast<uint16_t>((2.0f * m_nCenterCount) - m_nRightCount + (.5f + (static_cast<float>((m_nRightCount - m_nCenterCount)) / 90) * nAngle));
+		const uint16_t nCount = (2 * m_nCenterCount) - m_nRightCount + (.5 + (static_cast<float>((m_nRightCount - m_nCenterCount)) / 90) * nAngle);
 		Write(nChannel, nCount);
 	}
 }
+

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include <stdint.h>
 #include <cassert>
 
 /*
@@ -44,7 +44,7 @@ RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSs
 	SetPersonalities(s_RDMPersonalities, 1);
 }
 
-void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint32_t nLength) {
+void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint16_t nLength) {
 	assert(nLength <= 512);
 
 	uint16_t nOffset = GetDmxStartAddress() - 1;
@@ -75,3 +75,4 @@ void RDMSubDeviceMCP4902::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		Stop();
 	}
 }
+

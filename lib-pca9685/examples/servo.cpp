@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <cstdint>
+#include <stdio.h>
+#include <stdint.h>
 #include <unistd.h>
 
 #include "bcm2835.h"
