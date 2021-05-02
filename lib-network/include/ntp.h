@@ -26,9 +26,8 @@
 #ifndef NTP_H_
 #define NTP_H_
 
-#define LOCAL_TIME_YEAR_OFFSET	1900
-
-#define NTP_TIMESTAMP_DELTA 2208988800
+static constexpr auto LOCAL_TIME_YEAR_OFFSET = 1900;
+static constexpr auto NTP_TIMESTAMP_DELTA = 2208988800u;
 
 enum TNtpUdpPort {
 	NTP_UDP_PORT = 123

@@ -58,7 +58,7 @@ public:
 
 	void Print();
 
-	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength, uint8_t nPortIndex = 0);
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength, uint32_t nPortIndex = 0);
 	void HandleSync();
 	void HandleBlackout();
 
@@ -101,6 +101,10 @@ public:
 
 	const uint8_t *GetSoftwareVersion();
 
+	static ArtNetController *Get() {
+		return s_pThis;
+	}
+
 private:
 	void HandlePoll();
 	void HandlePollReply();
@@ -110,26 +114,20 @@ private:
 
 private:
 	struct TArtNetController m_tArtNetController;
-	bool m_bSynchronization{true};
-	bool m_bUnicast{true};
-	int32_t m_nHandle{-1};
+	bool m_bSynchronization { true };
+	bool m_bUnicast { true };
+	int32_t m_nHandle { -1 };
 	struct TArtNetPacket *m_pArtNetPacket;
 	struct TArtPoll m_ArtNetPoll;
 	struct TArtDmx *m_pArtDmx;
 	struct TArtSync *m_pArtSync;
-	ArtNetTrigger *m_pArtNetTrigger{nullptr}; // Trigger handler
-	uint32_t m_nLastPollMillis{0};
-	bool m_bDoTableCleanup{true};
-	bool m_bDmxHandled{false};
-	uint32_t m_nActiveUniverses{0};
-	uint32_t m_nMaster{DMX_MAX_VALUE};
+	ArtNetTrigger *m_pArtNetTrigger { nullptr }; // Trigger handler
+	uint32_t m_nLastPollMillis { 0 };
+	bool m_bDoTableCleanup { true };
+	bool m_bDmxHandled { false };
+	uint32_t m_nActiveUniverses { 0 };
+	uint32_t m_nMaster { DMX_MAX_VALUE };
 
-public:
-	static ArtNetController *Get() {
-		return s_pThis;
-	}
-
-private:
 	static ArtNetController *s_pThis;
 };
 

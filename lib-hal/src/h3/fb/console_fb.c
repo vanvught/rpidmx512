@@ -2,7 +2,7 @@
  * @file console_fb.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,12 +37,12 @@ extern unsigned char FONT[] __attribute__((aligned(4)));
 static const uint32_t FB_CHAR_W = 8;
 static const uint32_t FB_CHAR_H	= 16;
 
-static uint16_t current_x = 0;
-static uint16_t current_y = 0;
-static uint16_t saved_x = 0;
-static uint16_t saved_y = 0;
+static uint32_t current_x = 0;
+static uint32_t current_y = 0;
+static uint32_t saved_x = 0;
+static uint32_t saved_y = 0;
 
-static uint16_t top_row = 0;
+static uint32_t top_row = 0;
 
 static uint32_t cur_fore = CONSOLE_WHITE;
 static uint32_t cur_back = CONSOLE_BLACK;
@@ -73,11 +73,11 @@ int __attribute__((cold)) console_init(void) {
 	return r;
 }
 
-uint16_t console_get_line_width(void) {
+uint32_t console_get_line_width(void) {
 	return FB_WIDTH / FB_CHAR_W;
 }
 
-void console_set_top_row(uint16_t row) {
+void console_set_top_row(uint32_t row) {
 	if (row > FB_HEIGHT / FB_CHAR_H) {
 		top_row = 0;
 	} else {
@@ -185,13 +185,13 @@ void console_write(const char *s, unsigned int n) {
 	char c;
 
 	while (((c = *s++) != (char) 0) && (n-- != 0)) {
-		(void) console_putc((int) c);
+		console_putc((int) c);
 	}
 }
 
 void console_error(const char *s) {
-	uint16_t fore_current = cur_fore;
-	uint16_t back_current = cur_back;
+	uint32_t fore_current = cur_fore;
+	uint32_t back_current = cur_back;
 
 	cur_fore = CONSOLE_RED;
 	cur_back = CONSOLE_BLACK;
@@ -205,11 +205,11 @@ void console_error(const char *s) {
 }
 
 void console_status(uint32_t color, const char *s) {
-	const uint16_t fore_current = cur_fore;
-	const uint16_t back_current = cur_back;
+	const uint32_t fore_current = cur_fore;
+	const uint32_t back_current = cur_back;
 
-	const uint16_t s_y = current_y;
-	const uint16_t s_x = current_x;
+	const uint32_t s_y = current_y;
+	const uint32_t s_x = current_x;
 
 	console_clear_line(29);
 
@@ -228,13 +228,13 @@ void console_status(uint32_t color, const char *s) {
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)
 
 void console_puthex(uint8_t data) {
-	(void) console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
-	(void) console_putc((int) (TO_HEX(data & 0x0F)));
+	console_putc((int) (TO_HEX(((data & 0xF0) >> 4))));
+	console_putc((int) (TO_HEX(data & 0x0F)));
 }
 
 void console_puthex_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint16_t fore_current = cur_fore;
-	uint16_t back_current = cur_back;
+	uint32_t fore_current = cur_fore;
+	uint32_t back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
@@ -247,17 +247,17 @@ void console_puthex_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 }
 
 void console_putpct_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint16_t fore_current = cur_fore;
-	uint16_t back_current = cur_back;
+	uint32_t fore_current = cur_fore;
+	uint32_t back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
 
 	if (data < 100) {
-		(void) console_putc((int) ((char) '0' + (char) (data / 10)));
-		(void) console_putc((int) ((char) '0' + (char) (data % 10)));
+		console_putc((int) ((char) '0' + (char) (data / 10)));
+		console_putc((int) ((char) '0' + (char) (data % 10)));
 	} else {
-		(void) console_puts("%%");
+		console_puts("%%");
 	}
 
 	cur_fore = fore_current;
@@ -265,8 +265,8 @@ void console_putpct_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 }
 
 void console_put3dec_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
-	uint16_t fore_current = cur_fore;
-	uint16_t back_current = cur_back;
+	uint32_t fore_current = cur_fore;
+	uint32_t back_current = cur_back;
 
 	cur_fore = fore;
 	cur_back = back;
@@ -275,10 +275,10 @@ void console_put3dec_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 
 	(void) console_putc((int) ((char) '0' + (char) i));
 
-	data -= (i * 100);
+	data -= (uint8_t) (i * 100);
 
-	(void) console_putc((int) ((char) '0' + (char) (data / 10)));
-	(void) console_putc((int) ((char) '0' + (char) (data % 10)));
+	console_putc((int) ((char) '0' + (char) (data / 10)));
+	console_putc((int) ((char) '0' + (char) (data % 10)));
 
 	cur_fore = fore_current;
 	cur_back = back_current;
@@ -300,7 +300,7 @@ void console_clear(void) {
 	current_y = 0;
 }
 
-void console_set_cursor(uint16_t x, uint16_t y) {
+void console_set_cursor(uint32_t x, uint32_t y) {
 	if (x > FB_WIDTH / FB_CHAR_W)
 		current_x = 0;
 	else
@@ -349,7 +349,7 @@ void console_set_fg_bg_color(uint32_t fore, uint32_t back) {
 	cur_back = back;
 }
 
-void console_clear_line(uint16_t line) {
+void console_clear_line(uint32_t line) {
 	uint32_t *address;
 
 	if (line > FB_HEIGHT / FB_CHAR_H) {

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "h3/ltcsender.h"
@@ -40,7 +40,7 @@ LtcSender::LtcSender(uint32_t nVolume) {
 	s_pThis = this;
 
 	if ((nVolume > 1) && (nVolume < 32)) {	// TODO constexpr
-		h3_codec_set_volume(nVolume);
+		h3_codec_set_volume(static_cast<uint8_t>(nVolume));
 	}
 }
 

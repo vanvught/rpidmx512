@@ -38,7 +38,7 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
+void DmxInput::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -52,7 +52,7 @@ void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
+void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -66,8 +66,8 @@ void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const uint8_t *pDmx = GetDmxAvailable();
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
+	const auto *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 

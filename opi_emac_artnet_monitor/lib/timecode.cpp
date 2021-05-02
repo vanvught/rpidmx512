@@ -2,7 +2,7 @@
  * @file timecode.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
 static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = { "Film ", "EBU  ", "DF   ", "SMPTE" };
 
 inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
-	char *nDst = pBuffer;
+	auto *nDst = pBuffer;
 
 	if (nArg == 0) {
 		*nDst++ = '0';
@@ -48,11 +48,8 @@ inline static void itoa_base10(uint32_t nArg, char *pBuffer) {
 		return;
 	}
 
-	*nDst++ = '0' + (nArg / 10);
-	*nDst = '0' + (nArg % 10);
-}
-
-TimeCode::TimeCode() {
+	*nDst++ = static_cast<char>('0' + (nArg / 10));
+	*nDst = static_cast<char>('0' + (nArg % 10));
 }
 
 void TimeCode::Start() {

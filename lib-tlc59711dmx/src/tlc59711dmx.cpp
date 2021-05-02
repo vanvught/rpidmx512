@@ -2,7 +2,7 @@
  * @file tlc59711dmx.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "tlc59711dmx.h"
@@ -52,7 +52,7 @@ TLC59711Dmx::~TLC59711Dmx() {
 	m_pTLC59711 = nullptr;
 }
 
-void TLC59711Dmx::Start(__attribute__((unused)) uint8_t nPort) {
+void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -64,7 +64,7 @@ void TLC59711Dmx::Start(__attribute__((unused)) uint8_t nPort) {
 	}
 }
 
-void TLC59711Dmx::Stop(__attribute__((unused)) uint8_t nPort) {
+void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -72,7 +72,7 @@ void TLC59711Dmx::Stop(__attribute__((unused)) uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void TLC59711Dmx::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
+void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t* pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
@@ -80,16 +80,15 @@ void TLC59711Dmx::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* 
 		Start();
 	}
 
-	uint8_t *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
-
-	unsigned nDmxAddress = m_nDmxStartAddress;
+	auto *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
+	auto nDmxAddress = m_nDmxStartAddress;
 
 	for (unsigned i = 0; i < m_nDmxFootprint; i++) {
 		if (nDmxAddress > nLength) {
 			break;
 		}
 
-		const uint16_t nValue = (static_cast<uint16_t>(*p) << 8) | static_cast<uint16_t>(*p);
+		const auto nValue = static_cast<uint16_t>((*p << 8) | *p);
 
 		m_pTLC59711->Set(i, nValue);
 
@@ -134,7 +133,7 @@ void TLC59711Dmx::UpdateMembers() {
 		m_nDmxFootprint = m_nLEDCount * 4;
 	}
 
-	m_nBoardInstances = ceil(static_cast<float>(m_nDmxFootprint) / TLC59711Channels::OUT);
+	m_nBoardInstances = static_cast<uint8_t>(ceil(static_cast<float>(m_nDmxFootprint) / TLC59711Channels::OUT));
 }
 
 void TLC59711Dmx::Blackout(bool bBlackout) {

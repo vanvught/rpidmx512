@@ -22,7 +22,7 @@
  */
 
 #include <cassert>
-#include <string.h>
+#include <cstring>
 
 #include "rgbpanel.h"
 #include "rgbpanelconst.h"

@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "storesparkfundmx.h"
@@ -92,7 +92,7 @@ void StoreSparkFunDmx::Copy(struct TSparkFunDmxParams *pSparkFunDmxParams) {
 	DEBUG_EXIT
 }
 
-void StoreSparkFunDmx::Update(uint8_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams) {
+void StoreSparkFunDmx::Update(uint32_t nMotorIndex, const struct TSparkFunDmxParams *ptSparkFunDmxParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);
@@ -102,7 +102,7 @@ void StoreSparkFunDmx::Update(uint8_t nMotorIndex, const struct TSparkFunDmxPara
 	DEBUG_EXIT
 }
 
-void StoreSparkFunDmx::Copy(uint8_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams) {
+void StoreSparkFunDmx::Copy(uint32_t nMotorIndex, struct TSparkFunDmxParams *ptSparkFunDmxParams) {
 	DEBUG_ENTRY
 
 	assert(nMotorIndex < STORE_SPARKFUN_MAX_MOTORS);

@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -63,7 +63,7 @@ bool PCA9685DmxServo::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PCA9685DmxServo::Start(__attribute__((unused)) uint8_t nPort) {
+void PCA9685DmxServo::Start(__attribute__((unused)) uint32_t nPort) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -75,7 +75,7 @@ void PCA9685DmxServo::Start(__attribute__((unused)) uint8_t nPort) {
 	}
 }
 
-void PCA9685DmxServo::Stop(__attribute__((unused)) uint8_t nPort) {
+void PCA9685DmxServo::Stop(__attribute__((unused)) uint32_t nPort) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -83,7 +83,7 @@ void PCA9685DmxServo::Stop(__attribute__((unused)) uint8_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxServo::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t* pDmxData, uint16_t nLength) {
+void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t* pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 
@@ -138,7 +138,7 @@ void PCA9685DmxServo::SetRightUs(uint16_t nRightUs) {
 
 void PCA9685DmxServo::SetDmxFootprint(uint16_t nDmxFootprint) {
 	m_nDmxFootprint = nDmxFootprint;
-	m_nBoardInstances = static_cast<uint16_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
+	m_nBoardInstances = static_cast<uint8_t>(ceil(static_cast<float>((nDmxFootprint)) / PCA9685_PWM_CHANNELS));
 }
 
 void PCA9685DmxServo::Initialize() {
@@ -160,7 +160,7 @@ void PCA9685DmxServo::Initialize() {
 
 	for (unsigned i = 0; i < m_nBoardInstances; i++) {
 		assert(m_pServo[i] == nullptr);
-		m_pServo[i] = new PCA9685Servo(m_nI2cAddress + i);
+		m_pServo[i] = new PCA9685Servo(static_cast<uint8_t>(m_nI2cAddress + i));
 		assert(m_pServo[i] != nullptr);
 
 		m_pServo[i]->SetLeftUs(m_nLeftUs);
@@ -172,5 +172,3 @@ void PCA9685DmxServo::Initialize() {
 #endif
 	}
 }
-
-

@@ -43,10 +43,10 @@ public:
 
 	void Initialize();
 
-	void Start(uint8_t nPort = 0) override;
-	void Stop(uint8_t nPort = 0) override;
+	void Start(uint32_t nPort = 0) override;
+	void Stop(uint32_t nPort = 0) override;
 
-	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
+	void SetData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
 

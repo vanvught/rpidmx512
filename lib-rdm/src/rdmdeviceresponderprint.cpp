@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "rdmdeviceresponder.h"
 #include "rdmdevice.h"

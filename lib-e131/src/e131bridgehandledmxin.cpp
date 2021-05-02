@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "e131bridge.h"
@@ -67,23 +67,23 @@ void E131Bridge::HandleDmxIn() {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPort[i].bIsEnabled) {
-			uint16_t nLength;
+			uint32_t nLength;
 			const auto *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
 				// Root Layer (See Section 5)
-				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength)));
+				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength))));
 				// E1.31 Framing Layer (See Section 6)
-				m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength)));
+				m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength))));
 				m_pE131DataPacket->FrameLayer.Priority = m_InputPort[i].nPriority;
 				m_pE131DataPacket->FrameLayer.SequenceNumber = m_InputPort[i].nSequenceNumber++;
 				m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(m_InputPort[i].nUniverse);
 				// Data Layer
-				m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(nLength)));
+				m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(nLength))));
 				memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
-				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(nLength);
+				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(nLength));
 
-				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(nLength), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
 
 				s_ReceivingMask = (1U << i);
 				m_State.bIsReceivingDmx = (s_ReceivingMask != 0);

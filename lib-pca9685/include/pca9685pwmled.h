@@ -2,7 +2,7 @@
  * @file pwmled.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 class PCA9685PWMLed: public PCA9685 {
 public:
 	PCA9685PWMLed(uint8_t nAddress = PCA9685_I2C_ADDRESS_DEFAULT);
-	~PCA9685PWMLed();
+	~PCA9685PWMLed() {};
 
 	void Set(uint8_t nChannel, uint16_t nData);
 	void Set(uint8_t nChannel, uint8_t nData);

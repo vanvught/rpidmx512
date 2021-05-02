@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstring>
+#include <cassert>
 
 #include "h3/dmxmultiinput.h"
 #include "h3/dmxmulti.h"
@@ -112,7 +112,8 @@ void fiq_dmx_in_handler(uint32_t uart, const H3_UART_TypeDef *u, uint32_t iir) {
 #endif
 		while ((u->LSR & UART_LSR_DR) != UART_LSR_DR)
 			;
-		uint8_t data = u->O00.RBR;
+
+		auto data = static_cast<uint8_t>(u->O00.RBR);
 
 		switch (s_DmxReceiveState[uart]) {
 		case DmxState::IDLE:

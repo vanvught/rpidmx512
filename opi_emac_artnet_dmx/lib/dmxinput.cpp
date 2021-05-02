@@ -2,7 +2,7 @@
  * @file dmxinput.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
+void DmxInput::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -52,7 +52,7 @@ void DmxInput::Start(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
+void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -66,14 +66,14 @@ void DmxInput::Stop(__attribute__((unused)) uint8_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const uint8_t *pDmx = GetDmxAvailable();
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
+	const auto *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != nullptr) {
 		const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-		nLength = static_cast<uint16_t>(dmx_statistics->Statistics.SlotsInPacket);
+		nLength = dmx_statistics->Statistics.SlotsInPacket;
 		return (pDmx + 1);
 	}
 

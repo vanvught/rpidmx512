@@ -2,7 +2,7 @@
  * @file servo.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 class PCA9685Servo: public PCA9685 {
 public:
 	PCA9685Servo(uint8_t nAddress = 0x40);
-	~PCA9685Servo();
+	~PCA9685Servo() {};
 
 	void SetLeftUs(uint16_t);
 	uint16_t GetLeftUs() const;

@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
-#include <string.h>
+#include <cstdint>
+#include <cstddef>
+#include <cstring>
 #include <cassert>
 
 #include "widgetconfiguration.h"

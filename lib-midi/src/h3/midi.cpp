@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 
 #include "midi.h"
@@ -446,7 +446,7 @@ bool Midi::Read(uint8_t nChannel) {
 void Midi::SendTimeCode(const struct midi::Timecode *tc) {
 	uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
-	data[5] = (((tc->nType) & 0x03) << 5) | (tc->nHours & 0x1F);
+	data[5] = static_cast<uint8_t>((((tc->nType) & 0x03) << 5) | (tc->nHours & 0x1F));
 	data[6] = tc->nMinutes & 0x3F;
 	data[7] = tc->nSeconds & 0x3F;
 	data[8] = tc->nFrames & 0x1F;

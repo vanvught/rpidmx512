@@ -62,14 +62,14 @@ private:
 	OlaParseCode ParseDmxData(const char *pLine);
 
 private:
-	OlaParseCode m_tParseCode{OlaParseCode::FAILED};
-	OlaState m_tState{OlaState::IDLE};
+	OlaParseCode m_tParseCode { OlaParseCode::FAILED };
+	OlaState m_tState { OlaState::IDLE };
 	char s_buffer[2048];
-	uint32_t m_nDelayMillis{0};
-	uint32_t m_nLastMillis{0};
-	uint32_t m_nUniverse{0};
+	uint32_t m_nDelayMillis { 0 };
+	uint32_t m_nLastMillis { 0 };
+	uint16_t m_nUniverse { 0 };
 	uint8_t m_DmxData[512];
-	uint32_t m_nDmxDataLength{0};
+	uint32_t m_nDmxDataLength { 0 };
 };
 
 #endif /* OLASHOWFILE_H_ */

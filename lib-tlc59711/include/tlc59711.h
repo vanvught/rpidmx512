@@ -68,10 +68,10 @@ public:
 	uint8_t GetGbcBlue() const;
 	void SetGbcBlue(uint8_t nValue = 0x7F);
 
-	bool Get(uint8_t nChannel, uint16_t &nValue);
-	void Set(uint8_t nChannel, uint16_t nValue);
+	bool Get(uint32_t nChannel, uint16_t &nValue);
+	void Set(uint32_t nChannel, uint16_t nValue);
 
-	void Set(uint8_t nChannel, uint8_t nValue);
+	void Set(uint32_t nChannel, uint8_t nValue);
 
 	bool GetRgb(uint8_t nOut, uint16_t &nRed, uint16_t &nGreen, uint16_t &nBlue);
 	void SetRgb(uint8_t nOut, uint16_t nRed, uint16_t nGreen, uint16_t nBlue);
@@ -89,10 +89,10 @@ private:
 private:
 	uint8_t m_nBoards;
 	uint32_t m_nSpiSpeedHz;
-	uint32_t m_nFirst32{0};
-	uint16_t *m_pBuffer{nullptr};
-	uint16_t *m_pBufferBlackout{nullptr};
-	uint32_t m_nBufSize{0};
+	uint32_t m_nFirst32 { 0 };
+	uint16_t *m_pBuffer { nullptr };
+	uint16_t *m_pBufferBlackout { nullptr };
+	uint32_t m_nBufSize { 0 };
 };
 
 #endif /* TLC59711_H_ */

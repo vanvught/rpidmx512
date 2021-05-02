@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <algorithm>
 #include <cassert>
 
@@ -72,8 +72,8 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 	m_pWS28xxMulti = nullptr;
 }
 
-void WS28xxDmxMulti::Start(uint8_t nPortId) {
-	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
+void WS28xxDmxMulti::Start(uint32_t nPortId) {
+	DEBUG_PRINTF("%u", nPortId);
 
 	if (m_bIsStarted == 0) {
 		if (m_pLightSetHandler != nullptr) {
@@ -84,8 +84,8 @@ void WS28xxDmxMulti::Start(uint8_t nPortId) {
 	m_bIsStarted |= (1U << nPortId);
 }
 
-void WS28xxDmxMulti::Stop(uint8_t nPortId) {
-	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
+void WS28xxDmxMulti::Stop(uint32_t nPortId) {
+	DEBUG_PRINTF("%u", nPortId);
 
 	if (m_bIsStarted & (1U << nPortId)) {
 		SetData(nPortId, s_StopBuffer, sizeof(s_StopBuffer));
@@ -97,18 +97,18 @@ void WS28xxDmxMulti::Stop(uint8_t nPortId) {
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
+void WS28xxDmxMulti::SetData(uint32_t nPortId, const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	uint32_t beginIndex, endIndex;
 
 #if defined (NODE_ARTNET)
-	const uint32_t nOutIndex = nPortId / 4;
-	const uint8_t nSwitch = nPortId - (nOutIndex * 4);
+	const auto nOutIndex = nPortId / 4;
+	const auto nSwitch = nPortId - (nOutIndex * 4);
 #else
-	const uint32_t nOutIndex = nPortId / m_nUniverses;
-	const uint8_t nSwitch = nPortId - (nOutIndex * m_nUniverses);
+	const auto nOutIndex = nPortId / m_nUniverses;
+	const auto nSwitch = nPortId - (nOutIndex * m_nUniverses);
 #endif
 
 	switch (nSwitch) {

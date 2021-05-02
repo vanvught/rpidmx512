@@ -2,7 +2,7 @@
  * @file max7219matrix.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <algorithm>
 
 #include "max7219matrix.h"
@@ -93,7 +93,7 @@ void Max7219Matrix::Cls() {
 	DEBUG_EXIT
 }
 
-void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
+void Max7219Matrix::Write(const char *pBuffer, uint32_t nCount) {
 	DEBUG_PRINTF("nByte=%d", nCount);
 
 	if (nCount > m_nCount) {
@@ -103,7 +103,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
 	int32_t k;
 
 	for (uint32_t i = 1; i < 9; i++) {
-		k = nCount;
+		k = static_cast<int32_t>(nCount);
 
 		uint32_t j;
 
@@ -121,7 +121,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
 
 			const auto p = &m_pFont[c * 8];
 
-			spi_data[j++] = i;
+			spi_data[j++] = static_cast<uint8_t>(i);
 			spi_data[j++] = p[i - 1];
 		}
 
@@ -129,7 +129,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint8_t nCount) {
 	}
 }
 
-void Max7219Matrix::UpdateCharacter(uint8_t nChar, const uint8_t pBytes[8]) {
+void Max7219Matrix::UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]) {
 	if (nChar > m_nFontSize) {
 		return;
 	}
@@ -141,7 +141,7 @@ void Max7219Matrix::UpdateCharacter(uint8_t nChar, const uint8_t pBytes[8]) {
 
 		for (uint8_t y = 0; y < 8; y++) {
 			const auto set = pBytes[y] & (1U << (7U - j));
-			b |= (set != 0) ? (1U << y) : 0;
+			b |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
 		}
 
 		pFont[j] = b;
@@ -161,12 +161,12 @@ void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 	DEBUG_EXIT
 }
 
-uint8_t Max7219Matrix::Rotate(uint8_t r, uint8_t x) {
+uint8_t Max7219Matrix::Rotate(uint32_t r, uint32_t x) {
 	uint8_t nByte = 0;
 
 	for (uint8_t y = 0; y < 8; y++) {
 		const auto set = cp437_font[r][y] & (1U << x);
-		nByte |= (set != 0) ? (1U << y) : 0;
+		nByte |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
 	}
 
 	return nByte;

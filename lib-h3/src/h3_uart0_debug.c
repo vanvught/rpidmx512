@@ -2,7 +2,7 @@
  * @file h3_uart0_debug.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,10 +79,10 @@ void __attribute__((cold)) uart0_init(void) {
 	}
 }
 
-void uart0_putc(char c) {
+void uart0_putc(int c) {
 	while (!(H3_UART0->LSR & UART_LSR_THRE))
 		;
-	H3_UART0->O00.THR = c;
+	H3_UART0->O00.THR = (uint32_t) (c);
 }
 
 void uart0_puts(char *s) {
@@ -99,12 +99,12 @@ int uart0_getc(void) {
 		return EOF;
 	}
 
-	const char c = H3_UART0->O00.RBR;
+	const int c = (int) H3_UART0->O00.RBR;
 
 #if defined (UART0_ECHO)
 	uart0_putc(c);
 #endif
 
-	return (int) c;
+	return c;
 }
 

@@ -24,9 +24,9 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cassert>
@@ -193,7 +193,7 @@ void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_
 	DEBUG_EXIT
 }
 
-void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
+void E131Bridge::LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%d, nUniverse=%d", nPortIndex, nUniverse);
 
@@ -214,7 +214,7 @@ void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_EXIT
 }
 
-void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse) {
+void E131Bridge::SetUniverse(uint32_t nPortIndex, e131::PortDir dir, uint16_t nUniverse) {
 	assert(nPortIndex < E131::MAX_PORTS);
 	assert(dir <= PortDir::DISABLE);
 	assert((nUniverse >= universe::DEFAULT) && (nUniverse <=universe::MAX));
@@ -274,7 +274,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 	m_OutputPort[nPortIndex].nUniverse = nUniverse;
 }
 
-bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const {
+bool E131Bridge::GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const {
 	if (tDir == PortDir::INPUT) {
 		if (nPortIndex < E131::MAX_UARTS) {
 			nUniverse = m_InputPort[nPortIndex].nUniverse;
@@ -292,35 +292,35 @@ bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::Port
 	return m_OutputPort[nPortIndex].bIsEnabled;
 }
 
-void E131Bridge::SetMergeMode(uint8_t nPortIndex, Merge tE131Merge) {
+void E131Bridge::SetMergeMode(uint32_t nPortIndex, Merge tE131Merge) {
 	assert(nPortIndex < E131::MAX_PORTS);
 
 	m_OutputPort[nPortIndex].mergeMode = tE131Merge;
 }
 
-Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
+Merge E131Bridge::GetMergeMode(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::MAX_PORTS);
 
 	return m_OutputPort[nPortIndex].mergeMode;
 }
 
-bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
+bool E131Bridge::IsDmxDataChanged(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < E131::MAX_PORTS);
 	assert(pData != nullptr);
 
-	bool isChanged = false;
-	const uint8_t *pSrc = pData;
+	auto isChanged = false;
+	const auto *pSrc = pData;
 	auto *pDst = m_OutputPort[nPortIndex].data;
 
 	if (nLength != m_OutputPort[nPortIndex].length) {
 		m_OutputPort[nPortIndex].length = nLength;
-		for (unsigned i = 0 ; i < E131::DMX_LENGTH; i++) {
+		for (uint32_t i = 0 ; i < E131::DMX_LENGTH; i++) {
 			*pDst++ = *pSrc++;
 		}
 		return true;
 	}
 
-	for (unsigned i = 0; i < E131::DMX_LENGTH; i++) {
+	for (uint32_t i = 0; i < E131::DMX_LENGTH; i++) {
 		if (*pDst != *pSrc) {
 			*pDst = *pSrc;
 			isChanged = true;
@@ -332,7 +332,7 @@ bool E131Bridge::IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint
 	return isChanged;
 }
 
-bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength) {
+bool E131Bridge::IsMergedDmxDataChanged(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < E131::MAX_PORTS);
 	assert(pData != nullptr);
 
@@ -356,7 +356,7 @@ bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData
 			return true;
 		}
 
-		for (unsigned i = 0; i < nLength; i++) {
+		for (uint32_t i = 0; i < nLength; i++) {
 			uint8_t data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
 			if (data != m_OutputPort[nPortIndex].data[i]) {
 				m_OutputPort[nPortIndex].data[i] = data;
@@ -370,7 +370,7 @@ bool E131Bridge::IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData
 	}
 }
 
-void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
+void E131Bridge::CheckMergeTimeouts(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::MAX_PORTS);
 
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
@@ -402,7 +402,7 @@ void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
 
 }
 
-bool E131Bridge::IsPriorityTimeOut(uint8_t nPortIndex) {
+bool E131Bridge::IsPriorityTimeOut(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::MAX_PORTS);
 
 	const uint32_t timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
@@ -731,12 +731,12 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	DEBUG_EXIT
 }
 
-bool E131Bridge::IsTransmitting(uint8_t nPortIndex) const {
+bool E131Bridge::IsTransmitting(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::MAX_PORTS);
 	return m_OutputPort[nPortIndex].IsTransmitting;
 }
 
-bool E131Bridge::IsMerging(uint8_t nPortIndex) const {
+bool E131Bridge::IsMerging(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::MAX_PORTS);
 	return m_OutputPort[nPortIndex].IsMerging;
 }
@@ -750,7 +750,7 @@ bool E131Bridge::IsStatusChanged() {
 	return false;
 }
 
-void E131Bridge::Clear(uint8_t nPortIndex) {
+void E131Bridge::Clear(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::MAX_PORTS);
 
 	uint8_t *pDst = m_OutputPort[nPortIndex].data;
@@ -825,7 +825,7 @@ void E131Bridge::Run() {
 
 	if (__builtin_expect((nBytesReceived == 0), 1)) {
 		if (m_State.nActiveOutputPorts != 0) {
-			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
+			if (!m_State.bDisableNetworkDataLossTimeout && ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= static_cast<uint32_t>(NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000))) {
 				if ((m_pLightSet != nullptr) && (!m_State.IsNetworkDataLoss)) {
 					SetNetworkDataLossCondition();
 					DEBUG_PUTS("");
@@ -866,7 +866,7 @@ void E131Bridge::Run() {
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
 
 	if (m_State.IsSynchronized && !m_State.IsForcedSynchronized) {
-		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= (NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
+		if ((m_nCurrentPacketMillis - m_State.SynchronizationTime) >= static_cast<uint32_t>(NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
 			m_State.IsSynchronized = false;
 		}
 	}

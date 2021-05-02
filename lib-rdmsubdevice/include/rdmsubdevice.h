@@ -2,7 +2,7 @@
  * @file rdmsubdevice.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ struct TRDMSubDevicesInfo {
 	uint8_t personality_count;
 	uint16_t dmx_start_address;
 	uint8_t sensor_count;
-	char device_label[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t device_label_length;
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t nLabelLength;
 };
 
 enum TRDMSubDeviceUpdateEvent {
@@ -74,7 +74,7 @@ public:
 
 	virtual void Start()= 0;
 	virtual void Stop()= 0;
-	virtual void Data(const uint8_t *pDdata, uint16_t nLength)=0;
+	virtual void Data(const uint8_t *pDdata, uint32_t nLength)=0;
 
 protected:
 	void SetDmxFootprint(uint16_t nDmxFootprint);

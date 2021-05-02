@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "h3/ltcgenerator.h"
@@ -510,7 +510,7 @@ void LtcGenerator::HandleButtons() {
 void LtcGenerator::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
 	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
 		memcpy(m_Buffer, pBuffer, nBufferLength);
-		m_nBytesReceived = nBufferLength;
+		m_nBytesReceived = static_cast<uint16_t>(nBufferLength);
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
@@ -707,10 +707,10 @@ void LtcGenerator::Decrement() {
 }
 
 bool LtcGenerator::PitchControl() {
-	const uint32_t p = (m_fPitchControl * m_nPitchTicker); // / 100;
-	const uint32_t r = (p - m_nPitchPrevious);
+	const auto nPitch = static_cast<uint32_t>(m_fPitchControl * static_cast<float>(m_nPitchTicker)); // / 100;
+	const auto r = (nPitch - m_nPitchPrevious);
 
-	m_nPitchPrevious = p;
+	m_nPitchPrevious = nPitch;
 	m_nPitchTicker++;
 
 	return (r != 0);

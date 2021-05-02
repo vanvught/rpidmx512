@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -108,7 +108,7 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 
 	uint32_t nLength = RDM_DEVICE_LABEL_MAX_LENGTH;
 	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, nLength) == Sscan::OK) {
-		m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
+		m_tRDMDeviceParams.nDeviceRootLabelLength = static_cast<uint8_t>(nLength);
 		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::LABEL;
 		return;
 	}

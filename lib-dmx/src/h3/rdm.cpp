@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "dmx.h"
@@ -40,23 +40,23 @@
 uint8_t Rdm::m_TransactionNumber[DMX_MAX_OUT] = {0, };
 uint32_t Rdm::m_nLastSendMicros[DMX_MAX_OUT] = {0, };
 
-const uint8_t *Rdm::Receive(uint8_t nPort) {
+const uint8_t *Rdm::Receive(uint32_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint8_t nPort, uint32_t nTimeOut) {
+const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }
 
-void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
+void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmCommand != nullptr);
 
 	if (nSpacingMicros != 0) {
-		const uint32_t nMicros = H3_TIMER->AVS_CNT1;
-		const uint32_t nDeltaMicros = nMicros - m_nLastSendMicros[nPort];
+		const auto nMicros = H3_TIMER->AVS_CNT1;
+		const auto nDeltaMicros = nMicros - m_nLastSendMicros[nPort];
 		if (nDeltaMicros < nSpacingMicros) {
-			const uint32_t nWait = nSpacingMicros - nDeltaMicros;
+			const auto nWait = nSpacingMicros - nDeltaMicros;
 			do {
 			} while ((H3_TIMER->AVS_CNT1 - nMicros) < nWait);
 		}
@@ -74,15 +74,15 @@ void Rdm::Send(uint8_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacing
 		rdm_checksum += rdm_data[i];
 	}
 
-	rdm_data[i++] = rdm_checksum >> 8;
-	rdm_data[i] = rdm_checksum & 0XFF;
+	rdm_data[i++] = static_cast<uint8_t>(rdm_checksum >> 8);
+	rdm_data[i] = static_cast<uint8_t>(rdm_checksum & 0XFF);
 
 	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
 	m_TransactionNumber[nPort]++;
 }
 
-void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(nPort < DMX_MAX_OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
@@ -96,11 +96,11 @@ void Rdm::SendRaw(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	DmxSet::Get()->SetPortDirection(nPort, DMXRDM_PORT_DIRECTION_INP, true);
 }
 
-void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const uint32_t nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
+	const auto nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
@@ -110,8 +110,8 @@ void Rdm::SendRawRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t
 	SendRaw(nPort, pRdmData, nLength);
 }
 
-void Rdm::SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
-	const uint32_t nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
+void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	const auto nDelay = h3_hs_timer_lo_us() - rdm_get_data_receive_end();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
@@ -123,7 +123,7 @@ void Rdm::SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *pRdmData, ui
 	auto *p = _get_uart(_port_to_uart(nPort));
 	p->LCR = UART_LCR_8_N_2;
 
-	for (uint16_t i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		while (!(p->LSR & UART_LSR_THRE))
 				;
 		EXT_UART->O00.THR = pRdmData[i];

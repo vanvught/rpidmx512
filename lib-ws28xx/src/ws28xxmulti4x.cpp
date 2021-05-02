@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #include "ws28xxmulti.h"
@@ -87,9 +87,9 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 #define BIT_SET(a,b) 	((a) |= (1U<<(b)))
 #define BIT_CLEAR(a,b) 	((a) &= ~(1U<<(b)))
 
-void  WS28xxMulti::SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+void  WS28xxMulti::SetColour4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGB);
+	const auto k = nLedIndex * pixel::single::RGB;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
@@ -112,7 +112,7 @@ void  WS28xxMulti::SetColour4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nColou
 	}
 }
 
-void WS28xxMulti::SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxMulti::SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(nPort < 4);
 	assert(nLedIndex < m_nCount);
 
@@ -141,13 +141,13 @@ void WS28xxMulti::SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, ui
 	}
 }
 
-void WS28xxMulti::SetPixel4x(uint8_t nPort, uint16_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xxMulti::SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPort < 4);
 	assert(nLedIndex < m_nCount);
 	assert(m_Type == Type::SK6812W);
 
 	uint32_t j = 0;
-	auto k = static_cast<uint32_t>(nLedIndex * pixel::single::RGBW);
+	auto k = nLedIndex * pixel::single::RGBW;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW

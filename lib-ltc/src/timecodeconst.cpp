@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "timecodeconst.h"
 

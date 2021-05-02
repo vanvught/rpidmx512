@@ -24,8 +24,8 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "remoteconfig.h"

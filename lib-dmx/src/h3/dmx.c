@@ -2,7 +2,7 @@
  * @file dmx.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -193,7 +193,7 @@ uint32_t dmx_get_output_period(void) {
 	return dmx_output_period;
 }
 
-uint16_t dmx_get_send_data_length(void) {
+uint32_t dmx_get_send_data_length(void) {
 	return dmx_send_data_length;
 }
 
@@ -316,7 +316,7 @@ static void fiq_dmx_in_handler(void) {
 		dmx_receive_state = PRE_BREAK;
 		dmx_break_to_break_latest = dmx_fiq_micros_current;
 	} else if (EXT_UART->O08.IIR & UART_IIR_IID_RD) {
-		const uint8_t data = EXT_UART->O00.RBR;
+		const uint8_t data = (uint8_t)(EXT_UART->O00.RBR);
 
 		switch (dmx_receive_state) {
 		case IDLE:
@@ -389,7 +389,7 @@ static void fiq_dmx_in_handler(void) {
 			break;
 		case CHECKSUMH:
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	data;
-			rdm_checksum -= data << 8;
+			rdm_checksum -= (uint16_t)(data << 8);
 			dmx_receive_state = CHECKSUML;
 			break;
 		case CHECKSUML:

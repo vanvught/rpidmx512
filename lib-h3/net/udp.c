@@ -61,7 +61,7 @@ struct queue_entry {
 	uint8_t data[FRAME_BUFFER_SIZE];
 	uint32_t from_ip;
 	uint16_t from_port;
-	uint16_t size;
+	uint32_t size;
 }ALIGNED;
 
 struct queue {
@@ -222,10 +222,10 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 		return 0;
 	}
 
-	const uint8_t entry = s_recv_queue[idx].queue_tail;
+	const uint32_t entry = s_recv_queue[idx].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[idx].entries[entry];
 
-	const uint16_t i = MIN(size, p_queue_entry->size);
+	const uint32_t i = MIN(size, p_queue_entry->size);
 
 	h3_memcpy(packet, p_queue_entry->data, i);
 
@@ -236,7 +236,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	DEBUG_PRINTF("[%d] %d[%d]: %d " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], i, IP2STR(*from_ip));
 
-	return i;
+	return (uint16_t) i;
 }
 
 int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
@@ -300,7 +300,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.ip4.chksum = net_chksum((void *) &s_send_packet.ip4, (uint32_t) sizeof(s_send_packet.ip4));
 
 	//UDP
-	s_send_packet.udp.source_port = __builtin_bswap16(s_ports_allowed[idx]);
+	s_send_packet.udp.source_port = __builtin_bswap16((uint16_t) s_ports_allowed[idx]);
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16(size + UDP_HEADER_SIZE);
 

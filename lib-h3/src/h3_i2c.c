@@ -2,7 +2,7 @@
  * @file h3_i2c.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -215,10 +215,7 @@ static int32_t _getdata(uint8_t *data_addr, uint32_t data_count) {
 			return -H3_I2C_NOK_TOUT;
 		}
 
-//		for (time_out = 0; time_out < 100; time_out++)
-//			;
-
-		*data_addr = EXT_I2C->DATA;;
+		*data_addr = (uint8_t) EXT_I2C->DATA;;
 
 		tmp_val = EXT_I2C->STAT;
 
@@ -239,13 +236,10 @@ static int32_t _getdata(uint8_t *data_addr, uint32_t data_count) {
 			if (time_out <= 0) {
 				return -H3_I2C_NOK_TOUT;
 			}
-//
-//			for (time_out = 0; time_out < 100; time_out++)
-//				;
 
 			time_out = TIMEOUT;
 
-			data_addr[i] = EXT_I2C->DATA;
+			data_addr[i] = (uint8_t) EXT_I2C->DATA;
 
 			while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_ACK))
 				;
@@ -266,10 +260,7 @@ static int32_t _getdata(uint8_t *data_addr, uint32_t data_count) {
 			return -H3_I2C_NOK_TOUT;
 		}
 
-//		for (time_out = 0; time_out < 100; time_out++)
-//			;
-
-		data_addr[data_count - 1] = EXT_I2C->DATA;
+		data_addr[data_count - 1] = (uint8_t) EXT_I2C->DATA;
 
 		while ((time_out--) && (EXT_I2C->STAT != STAT_DATAREAD_NACK))
 			;

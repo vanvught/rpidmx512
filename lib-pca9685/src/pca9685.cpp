@@ -2,7 +2,7 @@
  * @file pca9685.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #if !defined(NDEBUG) || defined(__linux__)
- #include <stdio.h>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -91,23 +91,20 @@ PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
 	Sleep(false);
 }
 
-PCA9685::~PCA9685() {
-}
-
 void PCA9685::Sleep(bool bMode) {
-	uint8_t Data = I2cReadReg(PCA9685_REG_MODE1);
+	auto nData = I2cReadReg(PCA9685_REG_MODE1);
 
-	Data &= ~PCA9685_MODE1_SLEEP;
+	nData &= static_cast<uint8_t>(~PCA9685_MODE1_SLEEP);
 
 	if (bMode) {
-		Data |= PCA9685_MODE1_SLEEP;
+		nData |= PCA9685_MODE1_SLEEP;
 	}
 
-	I2cWriteReg(PCA9685_REG_MODE1, Data);
+	I2cWriteReg(PCA9685_REG_MODE1, nData);
 
-	if (Data & ~PCA9685_MODE1_RESTART) {
+	if (nData & ~PCA9685_MODE1_RESTART) {
 		udelay(500);
-		Data |= PCA9685_MODE1_RESTART;
+		nData |= PCA9685_MODE1_RESTART;
 	}
 }
 
@@ -132,27 +129,27 @@ uint16_t PCA9685::GetFrequency() {
 }
 
 void PCA9685::SetOCH(TPCA9685Och enumTPCA9685Och) {
-	uint8_t Data = I2cReadReg(PCA9685_REG_MODE2);
+	auto nData = I2cReadReg(PCA9685_REG_MODE2);
 
-	Data &= ~PCA9685_MODE2_OCH;
+	nData &= static_cast<uint8_t>(~PCA9685_MODE2_OCH);
 
 	if (enumTPCA9685Och == PCA9685_OCH_ACK) {
-		Data |= PCA9685_OCH_ACK;
+		nData |= PCA9685_OCH_ACK;
 	} // else, default Outputs change on STOP command
 
-	I2cWriteReg(PCA9685_REG_MODE2, Data);
+	I2cWriteReg(PCA9685_REG_MODE2, nData);
 }
 
 TPCA9685Och PCA9685::GetOCH() {
-	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH;
+	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH;
 
-	return static_cast<TPCA9685Och>(Data);
+	return static_cast<TPCA9685Och>(nData);
 }
 
 void PCA9685::SetInvert(bool bInvert) {
 	uint8_t Data = I2cReadReg(PCA9685_REG_MODE2);
 
-	Data &= ~PCA9685_MODE2_INVRT;
+	Data &= static_cast<uint8_t>(~PCA9685_MODE2_INVRT);
 
 	if (bInvert) {
 		Data |= PCA9685_MODE2_INVRT;
@@ -162,34 +159,34 @@ void PCA9685::SetInvert(bool bInvert) {
 }
 
 bool PCA9685::GetInvert() {
-	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_INVRT;
+	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_INVRT;
 
-	return (Data == PCA9685_MODE2_INVRT);
+	return (nData == PCA9685_MODE2_INVRT);
 }
 
 void PCA9685::SetOutDriver(bool bOutDriver) {
-	uint8_t Data = I2cReadReg(PCA9685_REG_MODE2);
+	auto nData = I2cReadReg(PCA9685_REG_MODE2);
 
-	Data &= ~PCA9685_MODE2_OUTDRV;
+	nData &= static_cast<uint8_t>(~PCA9685_MODE2_OUTDRV);
 
 	if (bOutDriver) {
-		Data |= PCA9685_MODE2_OUTDRV;
+		nData |= PCA9685_MODE2_OUTDRV;
 	}
 
-	I2cWriteReg(PCA9685_REG_MODE2, Data);
+	I2cWriteReg(PCA9685_REG_MODE2, nData);
 }
 
 bool PCA9685::GetOutDriver() {
-	const uint8_t Data = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OUTDRV;
+	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OUTDRV;
 
-	return (Data == PCA9685_MODE2_OUTDRV);
+	return (nData == PCA9685_MODE2_OUTDRV);
 }
 
 void PCA9685::Write(uint8_t nChannel, uint16_t nOn, uint16_t nOff) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
-		reg = PCA9685_REG_LED0_ON_L + (nChannel << 2);
+		reg = static_cast<uint8_t>(PCA9685_REG_LED0_ON_L + (nChannel << 2));
 	} else {
 		reg = PCA9685_REG_ALL_LED_ON_L;
 	}
@@ -216,7 +213,7 @@ void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
-		reg = PCA9685_REG_LED0_ON_L + (nChannel << 2);
+		reg = static_cast<uint8_t>(PCA9685_REG_LED0_ON_L + (nChannel << 2));
 	} else {
 		reg = PCA9685_REG_ALL_LED_ON_L;
 	}
@@ -238,7 +235,7 @@ void PCA9685::SetFullOn(uint8_t nChannel, bool bMode) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
-		reg = PCA9685_REG_LED0_ON_H + (nChannel << 2);
+		reg = static_cast<uint8_t>(PCA9685_REG_LED0_ON_H + (nChannel << 2));
 	} else {
 		reg = PCA9685_REG_ALL_LED_ON_H;
 	}
@@ -259,7 +256,7 @@ void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
-		reg = PCA9685_REG_LED0_OFF_H + (nChannel << 2);
+		reg = static_cast<uint8_t>(PCA9685_REG_LED0_OFF_H + (nChannel << 2));
 	} else {
 		reg = PCA9685_REG_ALL_LED_OFF_H;
 	}
@@ -274,18 +271,17 @@ void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
 uint8_t PCA9685::CalcPresScale(uint16_t nFreq) {
 	nFreq = (nFreq > TPCA9685FrequencyRange::MAX ? TPCA9685FrequencyRange::MAX : (nFreq < TPCA9685FrequencyRange::MIN ? TPCA9685FrequencyRange::MIN : nFreq));
 
-	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
+	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
+	const auto nData = static_cast<uint8_t>(DIV_ROUND_UP(f, nFreq) - 1);
 
-	const uint8_t Data = DIV_ROUND_UP(f, nFreq) - 1;
-
-	return Data;
+	return nData;
 }
 
 uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
+	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
+	const auto Data =static_cast<uint16_t>(DIV_ROUND_UP(f, (static_cast<uint16_t>(nPreScale) + 1)));
+
 	uint16_t f_min;
-	uint16_t f_max;
-	const float f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
-	const uint16_t Data = DIV_ROUND_UP(f, (static_cast<uint16_t>(nPreScale) + 1));
 
 	for (f_min = Data; f_min > TPCA9685FrequencyRange::MIN; f_min--) {
 		if (CalcPresScale(f_min) != nPreScale) {
@@ -293,13 +289,15 @@ uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
 		}
 	}
 
+	uint16_t f_max;
+
 	for (f_max = Data; f_max < TPCA9685FrequencyRange::MAX; f_max++) {
 		if (CalcPresScale(f_max) != nPreScale) {
 			break;
 		}
 	}
 
-	return (f_max + f_min) / 2;
+	return static_cast<uint16_t>(f_max + f_min) / 2;
 }
 
 void PCA9685::Dump() {
@@ -349,15 +347,15 @@ void PCA9685::Dump() {
 }
 
 void PCA9685::AutoIncrement(bool bMode) {
-	uint8_t Data = I2cReadReg(PCA9685_REG_MODE1);
+	auto nData = I2cReadReg(PCA9685_REG_MODE1);
 
-	Data &= ~PCA9685_MODE1_AI;	// 0 Register Auto-Increment disabled. {default}
+	nData &= static_cast<uint8_t>(~PCA9685_MODE1_AI);	// 0 Register Auto-Increment disabled. {default}
 
 	if (bMode) {
-		Data |= PCA9685_MODE1_AI;	// 1 Register Auto-Increment enabled.
+		nData |= PCA9685_MODE1_AI;	// 1 Register Auto-Increment enabled.
 	}
 
-	I2cWriteReg(PCA9685_REG_MODE1, Data);
+	I2cWriteReg(PCA9685_REG_MODE1, nData);
 }
 
 void PCA9685::I2cSetup() {
@@ -391,8 +389,8 @@ void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data) {
 	char buffer[3];
 
 	buffer[0] = reg;
-	buffer[1] = (data & 0xFF);
-	buffer[2] = (data >> 8);
+	buffer[1] = static_cast<char>(data & 0xFF);
+	buffer[2] = static_cast<char>(data >> 8);
 
 	I2cSetup();
 
@@ -408,20 +406,19 @@ uint16_t PCA9685::I2cReadReg16(uint8_t reg) {
 	FUNC_PREFIX(i2c_write(&data, 1));
 	FUNC_PREFIX(i2c_read(reinterpret_cast<char *>(&buffer), 2));
 
-	return (buffer[1] << 8) | buffer[0];
+	return static_cast<uint16_t>((buffer[1] << 8) | buffer[0]);
 }
 
 void PCA9685::I2cWriteReg(uint8_t reg, uint16_t data, uint16_t data2) {
 	char buffer[5];
 
 	buffer[0] = reg;
-	buffer[1] = (data & 0xFF);
-	buffer[2] = (data >> 8);
-	buffer[3] = (data2 & 0xFF);
-	buffer[4] = (data2 >> 8);
+	buffer[1] = static_cast<char>(data & 0xFF);
+	buffer[2] = static_cast<char>(data >> 8);
+	buffer[3] = static_cast<char>(data2 & 0xFF);
+	buffer[4] = static_cast<char>(data2 >> 8);
 
 	I2cSetup();
 
 	FUNC_PREFIX(i2c_write(buffer, 5));
 }
-

@@ -28,10 +28,10 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <algorithm>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 
 #include "ws28xxdmxparams.h"

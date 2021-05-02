@@ -460,7 +460,7 @@ void LtcOscServer::Run() {
 						return;
 					}
 
-					const auto nValue = Msg.GetInt(0);
+					const auto nValue = static_cast<uint8_t>(Msg.GetInt(0));
 
 					LtcDisplayRgb::Get()->SetMaster(nValue);
 
@@ -553,9 +553,9 @@ void LtcOscServer::SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tInde
 	OscSimpleMessage Msg(m_pBuffer, nSize);
 
 	if (Msg.GetArgc() == 3) {
-		const auto nRed = Msg.GetInt(0);
-		const auto nGreen = Msg.GetInt(1);
-		const auto nBlue = Msg.GetInt(2);
+		const auto nRed = static_cast<uint8_t>(Msg.GetInt(0));
+		const auto nGreen = static_cast<uint8_t>(Msg.GetInt(1));
+		const auto nBlue = static_cast<uint8_t>(Msg.GetInt(2));
 
 		LtcDisplayRgb::Get()->SetRGB(nRed, nGreen, nBlue, tIndex);
 

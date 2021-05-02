@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include <cstring>
 
 #include "rdmhandler.h"
 

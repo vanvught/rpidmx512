@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <errno.h>
 #include <cassert>
 
@@ -58,7 +58,7 @@ void DmxSerial::HandleUdp() {
 	uint16_t nForeignPort;
 	uint32_t nIPAddressFrom;
 
-	uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, s_UdpBuffer, UDP::BUFFER_SIZE, &nIPAddressFrom, &nForeignPort);
+	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, s_UdpBuffer, UDP::BUFFER_SIZE, &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((nBytesReceived < 6), 1)) {
 		return;
@@ -74,16 +74,16 @@ void DmxSerial::HandleUdp() {
 
 	if (memcmp(s_UdpBuffer, cmd::REQUEST_FILES, length::REQUEST_FILES) == 0) {
 		for (uint32_t i = 0; i < m_nFilesCount; i++) {
-			int nLength = snprintf(s_UdpBuffer, sizeof(s_UdpBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
+			const auto nLength = snprintf(s_UdpBuffer, sizeof(s_UdpBuffer) - 1, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX "\n", m_aFileIndex[i]);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}
 
 	if ((nBytesReceived >= length::GET_TFTP) && (memcmp(s_UdpBuffer, cmd::GET_TFTP, length::GET_TFTP) == 0)) {
 		if (nBytesReceived == length::GET_TFTP) {
-			const int nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, nLength, nIPAddressFrom, UDP::PORT);
+			const auto nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
 			return;
 		}
 
@@ -111,9 +111,9 @@ void DmxSerial::HandleUdp() {
 		if (DmxSerial::Get()->DeleteFile(&s_UdpBuffer[length::REQUEST_DELETE])) {
 			Network::Get()->SendTo(m_nHandle, "Success\n",  8, nIPAddressFrom, UDP::PORT);
 		} else {
-			const char *pError = strerror(errno);
-			const int nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "%s\n", pError);
-			Network::Get()->SendTo(m_nHandle, s_UdpBuffer,  nLength, nIPAddressFrom, UDP::PORT);
+			const auto *pError = strerror(errno);
+			const auto nLength = snprintf(s_UdpBuffer, UDP::BUFFER_SIZE - 1, "%s\n", pError);
+			Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), nIPAddressFrom, UDP::PORT);
 		}
 		return;
 	}

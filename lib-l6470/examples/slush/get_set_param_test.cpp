@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <math.h>
 #include <unistd.h>
 
@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
 	strcpy(name, "LoSpdOpt");
 	tempBool = board.getLoSpdOpt();
 	pv(tempBool);
-	tempBool = ~tempBool;
+	tempBool = !tempBool;
 	board.setLoSpdOpt(tempBool);
 	test(tempBool, board.getLoSpdOpt());
 

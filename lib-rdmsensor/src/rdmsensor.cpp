@@ -24,7 +24,7 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "rdmsensor.h"
@@ -57,7 +57,7 @@ void RDMSensor::SetDescription(const char *pDescription) {
 		m_tRDMSensorDefintion.description[i] = pDescription[i];
 	}
 
-	m_tRDMSensorDefintion.len = i;
+	m_tRDMSensorDefintion.nLength = static_cast<uint8_t>(i);
 
 	DEBUG1_EXIT
 }
@@ -65,7 +65,7 @@ void RDMSensor::SetDescription(const char *pDescription) {
 const struct TRDMSensorValues* RDMSensor::GetValues() {
 	DEBUG1_ENTRY
 
-	const int16_t nValue = this->GetValue();
+	const auto nValue = this->GetValue();
 
 	m_tRDMSensorValues.present = nValue;
 	m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, nValue);
@@ -79,7 +79,7 @@ const struct TRDMSensorValues* RDMSensor::GetValues() {
 void RDMSensor::SetValues() {
 	DEBUG1_ENTRY
 
-	const int16_t nValue = this->GetValue();
+	const auto nValue = this->GetValue();
 
 	m_tRDMSensorValues.present = nValue;
 	m_tRDMSensorValues.lowest_detected = nValue;
@@ -92,7 +92,7 @@ void RDMSensor::SetValues() {
 void RDMSensor::Record() {
 	DEBUG1_ENTRY
 
-	const int16_t nValue = this->GetValue();
+	const auto nValue = this->GetValue();
 
 	m_tRDMSensorValues.present = nValue;
 	m_tRDMSensorValues.recorded = nValue;

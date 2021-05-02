@@ -35,13 +35,13 @@ void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params
 
 	if (widget_params->nBreakTime != s_nBreakTime) {
 		s_nBreakTime = widget_params->nBreakTime;
-		Dmx::Get()->SetDmxBreakTime((static_cast<float>((s_nBreakTime)) * 10.67));
+		Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_nBreakTime * 10.67));
 		StoreWidget::Get()->UpdateBreakTime(widget_params->nBreakTime);
 	}
 
 	if (widget_params->nMabTime != s_nMabTime) {
 		s_nMabTime = widget_params->nMabTime;
-		Dmx::Get()->SetDmxMabTime((static_cast<float>((s_nMabTime)) * 10.67));
+		Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_nMabTime * 10.67));
 		StoreWidget::Get()->UpdateMabTime(widget_params->nMabTime);
 	}
 

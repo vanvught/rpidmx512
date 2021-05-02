@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "e131params.h"
@@ -51,7 +51,7 @@ E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE1
 	m_tE131Params.nUniverse = universe::DEFAULT;
 
 	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
-		m_tE131Params.nUniversePort[i] = i + 1;
+		m_tE131Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
 	}
 
 	m_tE131Params.nNetworkTimeout = NETWORK_DATA_LOSS_TIMEOUT_SECONDS;
@@ -132,7 +132,7 @@ void E131Params::callbackFunction(const char *pLine) {
 	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, LightSetConst::PARAMS_UNIVERSE_PORT[i], value16) == Sscan::OK) {
 			if ((value16 == 0) || (value16 == (i + 1)) || (value16 > universe::MAX)) {
-				m_tE131Params.nUniversePort[i] = i + 1;
+				m_tE131Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
 				m_tE131Params.nSetList &= ~(E131ParamsMask::UNIVERSE_A << i);
 			} else {
 				m_tE131Params.nUniversePort[i] = value16;
@@ -207,7 +207,7 @@ void E131Params::callbackFunction(const char *pLine) {
 
 }
 
-uint16_t E131Params::GetUniverse(uint8_t nPort, bool &IsSet) {
+uint16_t E131Params::GetUniverse(uint32_t nPort, bool &IsSet) {
 	assert(nPort < E131_PARAMS::MAX_PORTS);
 
 	IsSet = isMaskSet(E131ParamsMask::UNIVERSE_A << nPort);

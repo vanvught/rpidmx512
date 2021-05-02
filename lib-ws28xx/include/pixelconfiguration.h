@@ -40,11 +40,11 @@ public:
 		return m_Type;
 	}
 
-	void SetCount(uint16_t nCount) {
+	void SetCount(uint32_t nCount) {
 		m_nCount = nCount == 0 ? pixel::defaults::COUNT : nCount;
 	}
 
-	uint16_t GetCount() const {
+	uint32_t GetCount() const {
 		return m_nCount;
 	}
 
@@ -101,7 +101,7 @@ public:
 
 private:
 	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint16_t m_nCount { pixel::defaults::COUNT };
+	uint32_t m_nCount { pixel::defaults::COUNT };
 	pixel::Map m_tRGBMapping { pixel::Map::UNDEFINED };
 	uint32_t m_nClockSpeedHz { 0 };
 	uint8_t m_nLowCode { 0 };

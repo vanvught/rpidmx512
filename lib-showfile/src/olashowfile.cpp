@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <ctype.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cctype>
+#include <cstdint>
 #include <cassert>
 
 #include "olashowfile.h"
@@ -123,7 +123,7 @@ OlaParseCode OlaShowFile::ParseDmxData(const char *pLine) {
 				return OlaParseCode::FAILED;
 			}
 
-			m_DmxData[nLength] = k;
+			m_DmxData[nLength] = static_cast<uint8_t>(k);
 
 			k = 0;
 			nLength++;
@@ -151,7 +151,7 @@ OlaParseCode OlaShowFile::ParseLine(const char *pLine) {
 
 	if (*p++ == ' ') {
 		m_nDelayMillis = 0;
-		m_nUniverse = static_cast<uint32_t>(k);
+		m_nUniverse = static_cast<uint16_t>(k);
 		return ParseDmxData(p);
 	}
 

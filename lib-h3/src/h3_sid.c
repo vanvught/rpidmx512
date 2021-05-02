@@ -2,7 +2,7 @@
  * @file h3_sid.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <stdio.h>
 #endif
 
 #include "h3.h"
@@ -43,7 +43,7 @@
 static inline void be32enc(void *pp, uint32_t u) {
 	uint8_t *p = (uint8_t *) pp;
 
-	p[0] = (u >> 24) & 0xff;
+	p[0] = (uint8_t) ((u >> 24) & 0xff);
 	p[1] = (u >> 16) & 0xff;
 	p[2] = (u >> 8) & 0xff;
 	p[3] = u & 0xff;

@@ -76,9 +76,11 @@ COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-O2 -Wall -Werror -Wextra -pedantic -Wunused -Wsign-conversion #-Wconversion
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
-ifeq ($(detected_OS),Darwin) 
+
+ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
 else
-CCPOPS+=-Wuseless-cast -Wold-style-cast
+	COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
+	CCPOPS+=-Wuseless-cast -Wold-style-cast
 endif
 
 ifeq ($(detected_OS),Cygwin)

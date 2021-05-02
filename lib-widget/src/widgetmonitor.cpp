@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stddef.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstddef>
 
 #include "widgetmonitor.h"
 

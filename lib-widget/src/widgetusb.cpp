@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "widget.h"
 #include "usb.h"
@@ -33,8 +33,8 @@ using namespace widget;
 void Widget::SendHeader(uint8_t nLabel, uint16_t nLength) {
 	usb_send_byte(static_cast<uint8_t>(Amf::START_CODE));
 	usb_send_byte(nLabel);
-	usb_send_byte((nLength & 0x00FF));
-	usb_send_byte((nLength >> 8));
+	usb_send_byte(static_cast<uint8_t>(nLength & 0x00FF));
+	usb_send_byte(static_cast<uint8_t>(nLength >> 8));
 }
 
 void Widget::SendData(const uint8_t *pData, uint16_t nLength) {

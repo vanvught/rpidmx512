@@ -337,7 +337,7 @@ void _autonegotiation(void) {
 
 	value = (uint32_t)phy_read (PHY_ADDR, MII_BMCR);
 	value |= BMCR_ANRESTART;
-	phy_write(PHY_ADDR, MII_BMCR, value);
+	phy_write(PHY_ADDR, MII_BMCR, (uint16_t) value);
 
 	const uint32_t micros_timeout = H3_TIMER->AVS_CNT1 + (5 * 1000 * 1000);
 

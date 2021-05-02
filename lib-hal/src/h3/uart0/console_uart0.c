@@ -103,7 +103,7 @@ void console_error(const char *s) {
 }
 
 void console_status(uint32_t color, const char *s) {
-	console_set_fg_color(color);
+	console_set_fg_color((uint16_t) color);
 	console_set_bg_color(CONSOLE_BLACK);
 
 	uart0_puts(s);

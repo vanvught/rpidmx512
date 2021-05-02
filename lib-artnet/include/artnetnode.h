@@ -101,8 +101,8 @@ struct TArtNetNodeState {
 	bool IsChanged;
 	bool bDisableMergeTimeout;
 	bool bIsReceivingDmx;
-	uint8_t nActiveOutputPorts;
-	uint8_t nActiveInputPorts;
+	uint32_t nActiveOutputPorts;
+	uint32_t nActiveInputPorts;
 	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 };
 
@@ -131,7 +131,7 @@ struct TGenericPort {
 
 struct TOutputPort {
 	uint8_t data[ArtNet::DMX_LENGTH];	///< Data sent
-	uint16_t nLength;					///< Length of sent DMX data
+	uint32_t nLength;					///< Length of sent DMX data
 	uint8_t dataA[ArtNet::DMX_LENGTH];	///< The data received from Port A
 	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
@@ -154,7 +154,7 @@ struct TInputPort {
 
 class ArtNetNode {
 public:
-	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
+	ArtNetNode(uint8_t nVersion = 3, uint32_t nPages = 1);
 	~ArtNetNode();
 
 	void Start();
@@ -166,7 +166,7 @@ public:
 		return m_nVersion;
 	}
 
-	uint8_t GetPages() const {
+	uint32_t GetPages() const {
 		return m_nPages;
 	}
 
@@ -177,11 +177,11 @@ public:
 		return m_pLightSet;
 	}
 
-	uint8_t GetActiveInputPorts() const {
+	uint32_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
-	uint8_t GetActiveOutputPorts() const {
+	uint32_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
@@ -202,24 +202,24 @@ public:
 		return m_Node.LongName;
 	}
 
-	int SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
+	int SetUniverse(uint32_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
 
-	int SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
+	int SetUniverseSwitch(uint32_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
+	bool GetUniverseSwitch(uint32_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
 
-	void SetNetSwitch(uint8_t nAddress, uint8_t nPage);
-	uint8_t GetNetSwitch(uint8_t nPage) const;
+	void SetNetSwitch(uint8_t nAddress, uint32_t nPage);
+	uint8_t GetNetSwitch(uint32_t nPage) const;
 
-	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage);
-	uint8_t GetSubnetSwitch(uint8_t nPage) const;
+	void SetSubnetSwitch(uint8_t nAddress, uint32_t nPage);
+	uint8_t GetSubnetSwitch(uint32_t nPage) const;
 
-	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
+	bool GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, artnet::Merge tMergeMode);
-	artnet::Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, artnet::Merge tMergeMode);
+	artnet::Merge GetMergeMode(uint32_t nPortIndex) const;
 
-	void SetPortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol);
-	artnet::PortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+	void SetPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol);
+	artnet::PortProtocol GetPortProtocol(uint32_t nPortIndex) const;
 
 	void SetOemValue(const uint8_t *);
 	const uint8_t *GetOemValue() const {
@@ -274,8 +274,8 @@ public:
 		return m_pArtNetDmx;
 	}
 
-	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
+	void SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp);
+	uint32_t GetDestinationIp(uint32_t nPortIndex) const {
 		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}
@@ -312,20 +312,20 @@ private:
 	void HandleDmxIn();
 	void HandleTrigger();
 
-	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
+	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	bool IsMergedDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
-	void CheckMergeTimeouts(uint8_t);
-	bool IsDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
+	bool IsMergedDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
+	void CheckMergeTimeouts(uint32_t nPortId);
+	bool IsDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
 
 	void SendPollRelply(bool);
-	void SendTod(uint8_t nPortId = 0);
+	void SendTod(uint32_t nPortId = 0);
 
 	void SetNetworkDataLossCondition();
 
 private:
 	uint8_t m_nVersion;
-	uint8_t m_nPages;
+	uint32_t m_nPages;
 	int32_t m_nHandle { -1 };
 	LightSet *m_pLightSet { nullptr };
 

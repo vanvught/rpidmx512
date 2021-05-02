@@ -2,7 +2,7 @@
  * @file rdmsubdevice.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "rdmsubdevice.h"
@@ -81,8 +81,8 @@ RDMPersonality* RDMSubDevice::GetPersonality(uint8_t nPersonality) {
 void RDMSubDevice::GetLabel(struct TRDMDeviceInfoData* pInfoData) {
 	assert(pInfoData != nullptr);
 
-	pInfoData->data = m_tSubDevicesInfo.device_label;
-	pInfoData->length = m_tSubDevicesInfo.device_label_length;
+	pInfoData->data = m_tSubDevicesInfo.aLabel;
+	pInfoData->length = m_tSubDevicesInfo.nLabelLength;
 }
 
 void RDMSubDevice::SetLabel(const char *pLabel) {
@@ -90,10 +90,10 @@ void RDMSubDevice::SetLabel(const char *pLabel) {
 	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (pLabel[i] != 0); i++) {
-		m_tSubDevicesInfo.device_label[i] = pLabel[i];
+		m_tSubDevicesInfo.aLabel[i] = pLabel[i];
 	}
 
-	m_tSubDevicesInfo.device_label_length = i;
+	m_tSubDevicesInfo.nLabelLength = static_cast<uint8_t>(i);
 }
 
 void RDMSubDevice::SetLabel(const char *pLabel, uint8_t nLabelLength) {
@@ -101,10 +101,10 @@ void RDMSubDevice::SetLabel(const char *pLabel, uint8_t nLabelLength) {
 	uint32_t i;
 
 	for (i = 0; (i < RDM_DEVICE_LABEL_MAX_LENGTH) && (i < nLabelLength); i++) {
-		m_tSubDevicesInfo.device_label[i] = pLabel[i];
+		m_tSubDevicesInfo.aLabel[i] = pLabel[i];
 	}
 
-	m_tSubDevicesInfo.device_label_length = i;
+	m_tSubDevicesInfo.nLabelLength = static_cast<uint8_t>(i);
 }
 
 void RDMSubDevice::SetPersonalityCurrent(uint8_t nCurrent) {
@@ -138,8 +138,8 @@ uint16_t RDMSubDevice::CalculateChecksum() {
 	uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
 	nChecksum += m_tSubDevicesInfo.current_personality;
 
-	for (uint32_t i = 0; i < m_tSubDevicesInfo.device_label_length; i++) {
-		nChecksum += static_cast<uint16_t>(m_tSubDevicesInfo.device_label[i]);
+	for (uint32_t i = 0; i < m_tSubDevicesInfo.nLabelLength; i++) {
+		nChecksum += static_cast<uint16_t>(m_tSubDevicesInfo.aLabel[i]);
 	}
 
 	return nChecksum;

@@ -44,10 +44,10 @@ public:
 	SlushDmx(bool bUseSPI = false);
 	~SlushDmx() override;
 
-	void Start(uint8_t nPort) override;
-	void Stop(uint8_t nPort) override;
+	void Start(uint32_t nPort) override;
+	void Stop(uint32_t nPort) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
+	void SetData(uint32_t nPort, const uint8_t *, uint32_t) override;
 
 	uint32_t GetMotorsConnected() {
 		return m_nMotorsConnected;
