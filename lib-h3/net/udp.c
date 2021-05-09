@@ -125,7 +125,7 @@ void __attribute__((cold)) udp_shutdown(void) {
 	DEBUG1_EXIT
 }
 
-void udp_handle(struct t_udp *p_udp) {
+__attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	uint32_t port_index;
 	_pcast32 src;
 	uint32_t i;

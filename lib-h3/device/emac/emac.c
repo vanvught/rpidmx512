@@ -102,7 +102,7 @@ static struct coherent_region *p_coherent_region = 0;
 
 #define PHY_ADDR		1
 
-void emac_shutdown(void) {
+__attribute__((cold)) void emac_shutdown(void) {
 	uint32_t value;
 
 	value = H3_EMAC->RX_CTL0;
@@ -184,7 +184,7 @@ void _adjust_link(bool duplex, uint32_t speed) {
 	H3_EMAC->CTL0 = value;
 }
 
-void emac_init(void) {
+__attribute__((cold)) void emac_init(void) {
 	DEBUG_PRINTF("PHY{%d} ID = %08x", PHY_ADDR, phy_get_id(PHY_ADDR));
 
 	uint8_t mac_address[6];
@@ -246,7 +246,7 @@ static void _tx_descs_init(void) {
 	p_coherent_region->tx_currdescnum = 0;
 }
 
-int emac_eth_recv(uint8_t **packetp) {
+__attribute__((hot)) int emac_eth_recv(uint8_t **packetp) {
 	uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
 	struct emac_dma_desc *desc_p = &p_coherent_region->rx_chain[desc_num];
 	int length;

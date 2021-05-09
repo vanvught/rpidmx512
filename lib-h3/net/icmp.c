@@ -74,7 +74,7 @@ void __attribute__((cold)) icmp_shutdown(void) {
 	DEBUG1_EXIT
 }
 
-void icmp_handle(struct t_icmp *p_icmp) {
+__attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 	DEBUG2_ENTRY
 
 	if (p_icmp->icmp.type == ICMP_TYPE_ECHO) {
