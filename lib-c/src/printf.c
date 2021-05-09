@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2016-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -427,7 +427,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			/*@fallthrough@*/
 			/* no break */
 		case 'i':
-			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, int64_t) : (long int) va_arg(va, int32_t);
+			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, int64_t) : (int64_t) va_arg(va, int32_t);
 			if (l < 0) {
 				ctx.flag |= FLAG_NEGATIVE;
 				l = -l;
@@ -447,7 +447,6 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			break;
 		case 'u':
 			lu = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, uint64_t) : va_arg(va,uint32_t);
-			//l = (long int) va_arg(va, unsigned int);
 			_format_int(&ctx, lu);
 			break;
 		case 'X':

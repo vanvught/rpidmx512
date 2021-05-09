@@ -109,12 +109,12 @@ void WidgetMonitor::Sniffer() {
 
 	DmxData(dmx_data, MonitorLine::DMX_DATA);
 
-	WidgetMonitor::Line(MonitorLine::PACKETS, "Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
+	WidgetMonitor::Line(MonitorLine::PACKETS, "Packets : %u, DMX %u, RDM %u\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
 
-	printf("Discovery          : %ld\n", rdm_statistics->nDiscoveryPackets);
-	printf("Discovery response : %ld\n", rdm_statistics->nDiscoveryResponsePackets);
-	printf("GET Requests       : %ld\n", rdm_statistics->nGetRequests);
-	printf("SET Requests       : %ld\n", rdm_statistics->nSetRequests);
+	printf("Discovery          : %u\n", rdm_statistics->nDiscoveryPackets);
+	printf("Discovery response : %u\n", rdm_statistics->nDiscoveryResponsePackets);
+	printf("GET Requests       : %u\n", rdm_statistics->nGetRequests);
+	printf("SET Requests       : %u\n", rdm_statistics->nSetRequests);
 
 	if ((int)dmx_updates_per_seconde != (int)0) {
 		s_nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, s_nUpdatesPerSecondeMin);
