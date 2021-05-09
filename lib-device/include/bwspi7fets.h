@@ -26,7 +26,7 @@
 #ifndef BWSPI7FETS_H_
 #define BWSPI7FETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bw.h"
 

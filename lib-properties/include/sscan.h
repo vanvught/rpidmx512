@@ -26,7 +26,7 @@
 #ifndef SSCAN_H_
 #define SSCAN_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class Sscan {
 public:

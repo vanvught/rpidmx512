@@ -30,7 +30,7 @@
 #define ARTNETCONTROLLER_H_
 
 #include <time.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include "packets.h"
 #include "artnettrigger.h"

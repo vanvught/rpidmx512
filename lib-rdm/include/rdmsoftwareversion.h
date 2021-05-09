@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifndef RDMSOFTWAREVERSION_H_
 #define RDMSOFTWAREVERSION_H_

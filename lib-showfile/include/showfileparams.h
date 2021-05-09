@@ -26,7 +26,7 @@
 #ifndef SHOWFILEPARAMS_H_
 #define SHOWFILEPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "showfile.h"
 

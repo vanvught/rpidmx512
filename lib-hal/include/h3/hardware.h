@@ -26,7 +26,7 @@
 #ifndef H3_HARDWARE_H_
 #define H3_HARDWARE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "hwclock.h"

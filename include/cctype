@@ -26,6 +26,8 @@
 #ifndef CCTYPE_
 #define CCTYPE_
 
-#include <ctype.h>
+#ifdef __cplusplus
+# include <ctype.h>
+#endif
 
 #endif /* CCTYPE_ */

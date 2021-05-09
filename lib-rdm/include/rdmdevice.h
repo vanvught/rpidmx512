@@ -26,7 +26,7 @@
 #ifndef RDMDEVICE_H_
 #define RDMDEVICE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmdevicestore.h"
 

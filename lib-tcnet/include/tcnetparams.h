@@ -26,7 +26,7 @@
 #ifndef TCNETPARAMS_H_
 #define TCNETPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tcnet.h"
 #include "tcnetpackets.h"

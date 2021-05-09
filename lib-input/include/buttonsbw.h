@@ -26,7 +26,7 @@
 #ifndef BUTTONSBW_H_
 #define BUTTONSBW_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "inputset.h"
 #include "hal_i2c.h"

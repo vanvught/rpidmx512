@@ -26,7 +26,7 @@
 #ifndef OSCSERVERHANDLER_H_
 #define OSCSERVERHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class OscServerHandler {
 public:

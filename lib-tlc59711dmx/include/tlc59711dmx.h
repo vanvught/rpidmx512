@@ -26,7 +26,7 @@
 #ifndef TLC59711DMX_H_
 #define TLC59711DMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

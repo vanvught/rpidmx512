@@ -26,7 +26,7 @@
 #ifndef ARTNETRDMRESPONDER_H_
 #define ARTNETRDMRESPONDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetrdm.h"
 

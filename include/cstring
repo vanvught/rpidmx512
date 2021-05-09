@@ -26,6 +26,8 @@
 #ifndef CSTRING_
 #define CSTRING_
 
-#include <string.h>
+#ifdef __cplusplus
+# include <string.h>
+#endif
 
 #endif /* CSTRING_ */

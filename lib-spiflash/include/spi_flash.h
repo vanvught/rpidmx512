@@ -26,7 +26,7 @@
 #ifndef SPI_FLASH_H_
 #define SPI_FLASH_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stddef.h>
 
 #ifdef __cplusplus

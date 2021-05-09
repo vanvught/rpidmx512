@@ -26,7 +26,7 @@
 #ifndef RDMNETDEVICE_H_
 #define RDMNETDEVICE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmdeviceresponder.h"
 #include "llrpdevice.h"

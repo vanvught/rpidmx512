@@ -26,7 +26,7 @@
 #ifndef FOTAPARAMS_H_
 #define FOTAPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TFotaParams {
 	uint32_t nSetList;

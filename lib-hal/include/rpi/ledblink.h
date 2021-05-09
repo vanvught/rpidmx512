@@ -26,7 +26,7 @@
 #ifndef RPI_LEDBLINK_H_
 #define RPI_LEDBLINK_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bcm2835.h"
 

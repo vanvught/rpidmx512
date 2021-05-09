@@ -26,7 +26,7 @@
 #ifndef BWSPIDIMMER_H_
 #define BWSPIDIMMER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bw.h"
 

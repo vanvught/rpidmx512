@@ -26,7 +26,7 @@
 #ifndef SLUSHDMXPARAMS_H_
 #define SLUSHDMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "slushdmx.h"
 

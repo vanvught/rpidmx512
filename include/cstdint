@@ -26,6 +26,8 @@
 #ifndef CSTDINT_
 #define CSTDINT_
 
-#include <stdint.h>
+#ifdef __cplusplus
+# include <stdint.h>
+#endif
 
 #endif /* CSTDINT_ */

@@ -29,7 +29,7 @@
 #ifndef ARTNETRDM_H_
 #define ARTNETRDM_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ArtNetRdm {
 public:

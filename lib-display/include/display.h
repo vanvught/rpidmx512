@@ -27,7 +27,7 @@
 #define DISPLAY_H_
 
 #include <stdarg.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 

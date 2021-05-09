@@ -25,7 +25,7 @@
 #ifndef LTCDISPLAYWS28XXMATRIX_H_
 #define LTCDISPLAYWS28XXMATRIX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplayrgbset.h"
 

@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICESPARAMS_H_
 #define RDMSUBDEVICESPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevices.h"
 

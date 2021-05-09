@@ -26,7 +26,7 @@
 #ifndef DEVICE_MAX7219_H_
 #define DEVICE_MAX7219_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_spi.h"
 

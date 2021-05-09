@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEMCP23S08_H_
 #define RDMSUBDEVICEMCP23S08_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

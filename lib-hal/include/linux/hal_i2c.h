@@ -33,7 +33,7 @@
 #else
 
 # define FUNC_PREFIX(x) x
-# include <stdint.h>
+# include <cstdint>
 # ifdef __cplusplus
 extern "C" {
 # endif

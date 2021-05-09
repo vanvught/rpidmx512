@@ -27,7 +27,7 @@
 #define TFTPFILESERVER_H_
 
 #include <cstddef>
-#include <stdint.h>
+#include <cstdint>
 
 #include "tftpdaemon.h"
 

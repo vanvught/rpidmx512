@@ -26,7 +26,7 @@
 #ifndef ARTNETDISCOVERY_H_
 #define ARTNETDISCOVERY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetrdm.h"
 

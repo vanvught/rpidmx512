@@ -26,7 +26,7 @@
 #ifndef TC1602_H_
 #define TC1602_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 

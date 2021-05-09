@@ -24,7 +24,7 @@
 #ifndef GPSPARAMS_H_
 #define GPSPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "gpsconst.h"
 

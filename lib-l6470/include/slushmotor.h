@@ -29,7 +29,7 @@
 #ifndef SLUSHMOTOR_H_
 #define SLUSHMOTOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 

@@ -26,7 +26,7 @@
 #ifndef C_RPI_HARDWARE_H_
 #define C_RPI_HARDWARE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bcm2835.h"
 #include "bcm2835_wdog.h"

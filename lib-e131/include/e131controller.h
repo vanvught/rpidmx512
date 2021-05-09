@@ -26,7 +26,7 @@
 #ifndef E131CONTROLLER_H_
 #define E131CONTROLLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "e131.h"
 #include "e131packets.h"

@@ -29,7 +29,7 @@
 #ifndef PACKETS_H_
 #define PACKETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnet.h"
 

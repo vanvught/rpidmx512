@@ -26,7 +26,7 @@
 #ifndef APPARAMS_H_
 #define APPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TApParams {
 	uint32_t nSetList;

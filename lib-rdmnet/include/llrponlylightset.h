@@ -26,7 +26,7 @@
 #ifndef LLRPONLYLIGHTSET_H_
 #define LLRPONLYLIGHTSET_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <assert.h>
 
 #include "lightset.h"

@@ -29,7 +29,7 @@
 #ifndef ARTNETPOLLTABLE_H_
 #define ARTNETPOLLTABLE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "packets.h"
 

@@ -26,7 +26,7 @@
 #ifndef RGBPANELPARAMS_H_
 #define RGBPANELPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rgbpanelconst.h"
 

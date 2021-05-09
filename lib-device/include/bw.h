@@ -26,7 +26,7 @@
 #ifndef BW_H_
 #define BW_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <string.h>
 #include <algorithm>
 

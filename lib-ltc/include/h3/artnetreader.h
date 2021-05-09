@@ -26,7 +26,7 @@
 #ifndef H3_ARTNETREADER_H_
 #define H3_ARTNETREADER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnettimecode.h"
 

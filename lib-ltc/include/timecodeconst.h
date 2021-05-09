@@ -25,7 +25,7 @@
 #ifndef TIMECODECONST_H_
 #define TIMECODECONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TimeCodeConst {
 	static const uint8_t FPS[4];

@@ -26,7 +26,7 @@
 #ifndef RDMSENSOR_H_
 #define RDMSENSOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TRDMSensorDefintion {
 	uint8_t sensor;

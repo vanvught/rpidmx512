@@ -26,7 +26,7 @@
 #ifndef NTPCLIENT_H_
 #define NTPCLIENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "ntp.h"

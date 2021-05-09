@@ -26,7 +26,7 @@
 #ifndef DMXSERIALPARAMS_H_
 #define DMXSERIALPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxserial.h"
 

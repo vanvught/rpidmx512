@@ -29,7 +29,7 @@
 #ifndef ARTNETDMX_H_
 #define ARTNETDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ArtNetDmx {
 public:

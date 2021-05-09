@@ -26,7 +26,7 @@
 #ifndef REMOTECONFIGPARAMS_H_
 #define REMOTECONFIGPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "remoteconfig.h"
 

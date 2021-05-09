@@ -26,7 +26,7 @@
 #ifndef SLUSHDMX_H_
 #define SLUSHDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "slushboard.h"
 #include "slushmotor.h"

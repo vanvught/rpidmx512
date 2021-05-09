@@ -26,7 +26,7 @@
 #ifndef NETWORK_H_
 #define NETWORK_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <net/if.h>
 
 #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)

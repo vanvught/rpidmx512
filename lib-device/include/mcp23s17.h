@@ -26,7 +26,7 @@
 #ifndef MCP23S17_H_
 #define MCP23S17_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_spi.h"
 

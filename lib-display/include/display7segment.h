@@ -26,7 +26,7 @@
 #ifndef DISPLAY7SEGMENT_H_
 #define DISPLAY7SEGMENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 

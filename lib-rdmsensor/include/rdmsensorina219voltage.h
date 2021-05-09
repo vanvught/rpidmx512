@@ -26,7 +26,7 @@
 #ifndef RDMSENSORINA219VOLTAGE_H_
 #define RDMSENSORINA219VOLTAGE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "ina219.h"

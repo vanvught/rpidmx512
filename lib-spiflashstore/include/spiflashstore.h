@@ -26,7 +26,7 @@
 #ifndef SPIFLASHSTORE_H_
 #define SPIFLASHSTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if !defined( NO_EMAC )
 # include "storenetwork.h"

@@ -26,7 +26,7 @@
 #ifndef DMXGPIOPARAMS_H_
 #define DMXGPIOPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 

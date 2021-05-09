@@ -26,7 +26,7 @@
 #ifndef DMXPARAMS_H_
 #define DMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxsend.h"
 #if defined (H3)

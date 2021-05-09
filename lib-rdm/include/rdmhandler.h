@@ -26,7 +26,7 @@
 #ifndef RDMHANDLER_H_
 #define RDMHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmmessage.h"
 #include "rdmqueuedmessage.h"

@@ -26,7 +26,7 @@
 #ifndef SHOWFILEDISPLAY_H_
 #define SHOWFILEDISPLAY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ShowFileDisplay {
 public:

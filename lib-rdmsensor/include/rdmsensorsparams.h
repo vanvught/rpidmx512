@@ -26,7 +26,7 @@
 #ifndef RDMSENSORSPARAMS_H_
 #define RDMSENSORSPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensors.h"
 

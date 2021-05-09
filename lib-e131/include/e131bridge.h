@@ -26,7 +26,7 @@
 #ifndef E131BRIDGE_H_
 #define E131BRIDGE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <assert.h>
 
 #include "e131.h"

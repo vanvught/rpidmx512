@@ -26,7 +26,7 @@
 #ifndef SPIFLASHINSTALL_H_
 #define SPIFLASHINSTALL_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 class SpiFlashInstall {

@@ -26,7 +26,7 @@
 #ifndef MIDIBPM_H_
 #define MIDIBPM_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class MidiBPM {
 public:

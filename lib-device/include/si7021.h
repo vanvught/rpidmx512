@@ -26,7 +26,7 @@
 #ifndef SI7021_H_
 #define SI7021_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 

@@ -26,7 +26,7 @@
 #ifndef PROPERTIESBUILDER_H_
 #define PROPERTIESBUILDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 class PropertiesBuilder {

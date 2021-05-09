@@ -26,7 +26,7 @@
 #ifndef LIGHTSETCHAIN_H_
 #define LIGHTSETCHAIN_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

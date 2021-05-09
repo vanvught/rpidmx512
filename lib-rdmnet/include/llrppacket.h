@@ -28,7 +28,7 @@
 
 #include "llrp.h"
 
-#include <stdint.h>
+#include <cstdint>
 
 #if  ! defined (PACKED)
 #define PACKED __attribute__((packed))

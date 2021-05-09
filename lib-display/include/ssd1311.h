@@ -26,7 +26,7 @@
 #ifndef SDD1311_H_
 #define SDD1311_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 #include "hal_i2c.h"

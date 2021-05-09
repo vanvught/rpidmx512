@@ -26,7 +26,7 @@
 #ifndef RDMTOD_H_
 #define RDMTOD_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdm.h"
 

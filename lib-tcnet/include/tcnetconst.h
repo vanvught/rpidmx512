@@ -26,7 +26,7 @@
 #ifndef TCNETCONST_H_
 #define TCNETCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TCNetConst {
 	static const uint8_t FPS[4];

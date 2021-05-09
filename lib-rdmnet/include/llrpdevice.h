@@ -26,7 +26,7 @@
 #ifndef LLRPDEVICE_H_
 #define LLRPDEVICE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "llrppacket.h"
 

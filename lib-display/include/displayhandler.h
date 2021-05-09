@@ -26,7 +26,7 @@
 #ifndef DISPLAYHANDLER_H_
 #define DISPLAYHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ledblink.h"
 #include "display.h"

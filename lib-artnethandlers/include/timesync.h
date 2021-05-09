@@ -26,7 +26,7 @@
 #ifndef TIMESYNC_H_
 #define TIMESYNC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnettimesync.h"
 

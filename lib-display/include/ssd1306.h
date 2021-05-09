@@ -26,7 +26,7 @@
 #ifndef SSD1306_H_
 #define SSD1306_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 

@@ -26,7 +26,7 @@
 #ifndef PCA9685SERVO_H_
 #define PCA9685SERVO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "pca9685.h"
 

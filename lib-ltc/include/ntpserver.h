@@ -26,7 +26,7 @@
 #ifndef NTPSERVER_H_
 #define NTPSERVER_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "ltc.h"

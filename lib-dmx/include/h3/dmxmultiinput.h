@@ -26,7 +26,7 @@
 #ifndef DMX_MULTI_INPUT_H_
 #define DMX_MULTI_INPUT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class DmxMultiInput {
 public:

@@ -26,7 +26,7 @@
 #ifndef SPARKFUNDMX_H_
 #define SPARKFUNDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 #include "l6470dmxmodes.h"

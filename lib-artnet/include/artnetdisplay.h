@@ -29,7 +29,7 @@
 #ifndef ARTNETDISPLAY_H_
 #define ARTNETDISPLAY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnet.h"
 

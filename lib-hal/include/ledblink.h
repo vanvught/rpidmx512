@@ -26,7 +26,7 @@
 #ifndef LEDBLINK_H
 #define LEDBLINK_H
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace ledblink {
 enum class Mode {

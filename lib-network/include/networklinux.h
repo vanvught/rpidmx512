@@ -26,7 +26,7 @@
 #ifndef NETWORKLINUX_H_
 #define NETWORKLINUX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 

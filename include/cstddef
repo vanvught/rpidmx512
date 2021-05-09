@@ -26,6 +26,8 @@
 #ifndef CSTDDEF_
 #define CSTDDEF_
 
-#include <stddef.h>
+#ifdef __cplusplus
+# include <stddef.h>
+#endif
 
 #endif /* CSTDDEF_ */

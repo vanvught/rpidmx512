@@ -26,7 +26,7 @@
 #ifndef REMOTECONFIG_H_
 #define REMOTECONFIG_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined (NODE_ARTNET_MULTI)
 # define NODE_ARTNET

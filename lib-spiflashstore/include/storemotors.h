@@ -26,7 +26,7 @@
 #ifndef STOREMOTORS_H_
 #define STOREMOTORS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "modeparams.h"
 #include "motorparams.h"

@@ -26,7 +26,7 @@
 #ifndef RDMQUEUEDMESSAGE_H_
 #define RDMQUEUEDMESSAGE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmmessage.h"
 

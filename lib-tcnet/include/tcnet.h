@@ -26,7 +26,7 @@
 #ifndef TCNET_H_
 #define TCNET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tcnetpackets.h"
 

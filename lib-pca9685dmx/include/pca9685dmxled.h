@@ -26,7 +26,7 @@
 #ifndef PCA9685DMXLED_H_
 #define PCA9685DMXLED_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

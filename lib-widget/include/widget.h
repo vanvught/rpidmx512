@@ -30,7 +30,7 @@
 #ifndef WIDGET_H_
 #define WIDGET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 #include "rdmdevice.h"

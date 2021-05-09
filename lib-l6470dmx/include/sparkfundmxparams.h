@@ -26,7 +26,7 @@
 #ifndef SPARKFUNDMXPARAMS_H_
 #define SPARKFUNDMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "sparkfundmx.h"
 

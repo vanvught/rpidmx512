@@ -26,7 +26,7 @@
 #ifndef DMXSERIALCHANNELDATA_H_
 #define DMXSERIALCHANNELDATA_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include "lightset.h"

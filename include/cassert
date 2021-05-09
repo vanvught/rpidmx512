@@ -26,6 +26,8 @@
 #ifndef CASSERT_
 #define CASSERT_
 
-#include <assert.h>
+#ifdef __cplusplus
+# include <assert.h>
+#endif
 
 #endif /* CASSERT_ */

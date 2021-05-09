@@ -26,7 +26,7 @@
 #ifndef H3_LTCGENERATOR_H_
 #define H3_LTCGENERATOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltc.h"
 

@@ -24,7 +24,7 @@
 #ifndef PCA9685DMXPARAMS_H_
 #define PCA9685DMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class PCA9685DmxParams {
 public:

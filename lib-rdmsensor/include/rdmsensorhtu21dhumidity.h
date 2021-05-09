@@ -26,7 +26,7 @@
 #ifndef RDMSENSORHTU21DHUMIDITY_H_
 #define RDMSENSORHTU21DHUMIDITY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "htu21d.h"

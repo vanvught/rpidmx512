@@ -26,7 +26,7 @@
 #ifndef DMXSLOTINFO_H_
 #define DMXSLOTINFO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

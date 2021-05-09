@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifndef RDMPERSONALITY_H_
 #define RDMPERSONALITY_H_

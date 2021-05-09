@@ -26,7 +26,7 @@
 #ifndef LTCDISPLAYPARAMS_H_
 #define LTCDISPLAYPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplaymax7219.h"
 

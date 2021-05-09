@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEBW7FETS_H_
 #define RDMSUBDEVICEBW7FETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

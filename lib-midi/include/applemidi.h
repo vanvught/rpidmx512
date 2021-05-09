@@ -30,7 +30,7 @@
 #ifndef APPLEMIDI_H_
 #define APPLEMIDI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "midi.h"
 

@@ -26,7 +26,7 @@
 #ifndef UBOOTHEADER_H_
 #define UBOOTHEADER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class UBootHeader {
 public:

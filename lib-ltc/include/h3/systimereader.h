@@ -26,7 +26,7 @@
 #ifndef H3_SYSTIMEREADER_H_
 #define H3_SYSTIMEREADER_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "ltc.h"

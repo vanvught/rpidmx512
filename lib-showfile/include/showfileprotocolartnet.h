@@ -29,7 +29,7 @@
 #ifndef SHOWFILEPROTOCOLARTNET_H_
 #define SHOWFILEPROTOCOLARTNET_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include "artnetcontroller.h"

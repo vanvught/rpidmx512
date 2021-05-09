@@ -26,7 +26,7 @@
 #ifndef BWLCD_H_
 #define BWLCD_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 

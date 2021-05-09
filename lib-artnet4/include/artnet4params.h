@@ -29,7 +29,7 @@
 #ifndef ARTNET4PARAMS_H_
 #define ARTNET4PARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetparams.h"
 #include "artnet4node.h"

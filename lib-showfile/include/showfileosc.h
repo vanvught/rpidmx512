@@ -26,7 +26,7 @@
 #ifndef SHOWFILEOSC_H_
 #define SHOWFILEOSC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "showfiledisplay.h"
 

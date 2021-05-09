@@ -26,7 +26,7 @@
 #ifndef NETWORKH3EMAC_H_
 #define NETWORKH3EMAC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 

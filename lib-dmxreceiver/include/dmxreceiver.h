@@ -25,7 +25,7 @@
 #ifndef DMXCONTROLLER_H_
 #define DMXCONTROLLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 

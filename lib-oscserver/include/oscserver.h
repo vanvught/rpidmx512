@@ -26,7 +26,7 @@
 #ifndef OSCSERVER_H_
 #define OSCSERVER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "oscserverhandler.h"
 #include "lightset.h"

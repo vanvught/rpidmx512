@@ -26,7 +26,7 @@
 #ifndef RDM_H_
 #define RDM_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define RDM_DATA_BUFFER_SIZE					512									///<
 #define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<

@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEMCP4822_H_
 #define RDMSUBDEVICEMCP4822_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

@@ -26,7 +26,7 @@
 #ifndef RPI_HARDWARE_H_
 #define RPI_HARDWARE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "c/hardware.h"

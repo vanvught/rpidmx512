@@ -26,7 +26,7 @@
 #ifndef OSCSIMPLEMESSAGE_H_
 #define OSCSIMPLEMESSAGE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "osc.h"
 #include "oscblob.h"

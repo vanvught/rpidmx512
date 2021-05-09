@@ -26,7 +26,7 @@
 #ifndef CPUTEMPERATURE_H_
 #define CPUTEMPERATURE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 

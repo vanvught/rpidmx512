@@ -24,7 +24,7 @@
 #ifndef UTC_H_
 #define UTC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TUtcOffset {
 	UTC_OFFSET_MIN = -12,

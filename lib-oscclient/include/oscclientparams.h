@@ -26,7 +26,7 @@
 #ifndef OSCCLIENTPARAMS_H_
 #define OSCCLIENTPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "oscclient.h"
 

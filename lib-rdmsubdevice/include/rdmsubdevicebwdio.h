@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEBWDIO_H_
 #define RDMSUBDEVICEBWDIO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

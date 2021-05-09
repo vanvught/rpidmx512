@@ -26,7 +26,7 @@
 #ifndef RDMDEVICESTORE_H_
 #define RDMDEVICESTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class RDMDeviceStore {
 public:

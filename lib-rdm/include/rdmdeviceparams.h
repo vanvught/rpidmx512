@@ -26,7 +26,7 @@
 #ifndef RDMDEVICEPARAMS_H_
 #define RDMDEVICEPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmdevice.h"
 #include "rdm.h"

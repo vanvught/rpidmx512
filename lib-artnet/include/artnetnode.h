@@ -29,7 +29,7 @@
 #ifndef ARTNETNODE_H_
 #define ARTNETNODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "artnet.h"

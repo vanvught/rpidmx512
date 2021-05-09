@@ -26,7 +26,7 @@
 #ifndef C_HARDWARE_H_
 #define C_HARDWARE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 #include <time.h>
 

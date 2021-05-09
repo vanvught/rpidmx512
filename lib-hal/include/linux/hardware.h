@@ -27,7 +27,7 @@
 #define LINUX_HARDWARE_H_
 
 #include <time.h>
-#include <stdint.h>
+#include <cstdint>
 #include <sys/utsname.h>
 
 class Hardware {

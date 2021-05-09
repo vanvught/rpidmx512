@@ -26,7 +26,7 @@
 #ifndef NETWORKBAREMETALMACADDRESS_H_
 #define NETWORKBAREMETALMACADDRESS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 

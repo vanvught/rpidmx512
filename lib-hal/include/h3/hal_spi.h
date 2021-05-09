@@ -26,7 +26,7 @@
 #ifndef H3_HAL_SPI_H_
 #define H3_HAL_SPI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "h3_spi.h"
 

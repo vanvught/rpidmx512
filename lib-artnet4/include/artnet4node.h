@@ -29,7 +29,7 @@
 #ifndef ARTNET4NODE_H_
 #define ARTNET4NODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetnode.h"
 #include "artnet4handler.h"

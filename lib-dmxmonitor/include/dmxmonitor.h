@@ -26,7 +26,7 @@
 #ifndef DMXMONITOR_H_
 #define DMXMONITOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

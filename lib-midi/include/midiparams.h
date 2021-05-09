@@ -25,7 +25,7 @@
 #ifndef MIDIPARAMS_H_
 #define MIDIPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TMidiParams {
 	uint32_t nSetList;

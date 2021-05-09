@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEBWRELAY_H_
 #define RDMSUBDEVICEBWRELAY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

@@ -26,7 +26,7 @@
 #ifndef H3_RTPMIDIREADER_H_
 #define H3_RTPMIDIREADER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rtpmidihandler.h"
 #include "ltc.h"

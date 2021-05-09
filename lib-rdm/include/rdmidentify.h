@@ -26,7 +26,7 @@
 #ifndef RDMIDENTIFY_H_
 #define RDMIDENTIFY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TRdmIdentifyMode {
   IDENTIFY_MODE_QUIET = 0x00,

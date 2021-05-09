@@ -26,7 +26,7 @@
 #ifndef NETWORKPARAMS_H_
 #define NETWORKPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 

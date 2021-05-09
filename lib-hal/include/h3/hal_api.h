@@ -26,7 +26,7 @@
 #ifndef H3_HAL_API_H_
 #define H3_HAL_API_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define FUNC_PREFIX(x) h3_##x
 

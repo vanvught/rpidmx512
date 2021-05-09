@@ -26,7 +26,7 @@
 #ifndef MDNS_H_
 #define MDNS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TmDNSFlags {
 	uint32_t qr;

@@ -26,7 +26,7 @@
 #ifndef RDMDEVICERESPONDER_H_
 #define RDMDEVICERESPONDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdm.h"
 #include "rdmdevice.h"

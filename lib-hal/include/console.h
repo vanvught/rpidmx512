@@ -26,7 +26,7 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define CONSOLE_OK	0	///< Call console_init() OK
 

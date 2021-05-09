@@ -26,7 +26,7 @@
 #ifndef E131_H_
 #define E131_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace e131 {
 static constexpr auto MERGE_TIMEOUT_SECONDS = 10;

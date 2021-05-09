@@ -26,7 +26,7 @@
 #ifndef BUTTONSADAFRUIT_H_
 #define BUTTONSADAFRUIT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "inputset.h"
 

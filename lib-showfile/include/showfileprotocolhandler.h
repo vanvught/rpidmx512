@@ -26,7 +26,7 @@
 #ifndef SHOWFILEPROTOCOLHANDLER_H_
 #define SHOWFILEPROTOCOLHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ShowFileProtocolHandler {
 public:

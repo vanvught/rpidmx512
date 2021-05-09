@@ -26,7 +26,7 @@
 #ifndef LIGHTSET_H_
 #define LIGHTSET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace lightset {
 struct Dmx {

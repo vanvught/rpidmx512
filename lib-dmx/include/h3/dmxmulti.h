@@ -26,7 +26,7 @@
 #ifndef H3_DMXMULTI_H_
 #define H3_DMXMULTI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 

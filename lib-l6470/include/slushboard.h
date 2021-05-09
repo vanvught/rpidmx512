@@ -29,7 +29,7 @@
 #ifndef SLUSHBOARD_H_
 #define SLUSHBOARD_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TSlushIOPorts {
 	SLUSH_IO_PORTA,

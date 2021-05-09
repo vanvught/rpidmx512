@@ -26,7 +26,7 @@
 #ifndef SHOWFILEPROTOCOLE131_H_
 #define SHOWFILEPROTOCOLE131_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include "e131controller.h"

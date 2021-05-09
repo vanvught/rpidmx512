@@ -26,7 +26,7 @@
 #ifndef RDMSLOTINFO_H_
 #define RDMSLOTINFO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class RDMSlotInfo {
 public:

@@ -174,13 +174,6 @@ void RgbPanel::Start() {
 		return;
 	}
 
-//	// I2C
-//	h3_i2c_end();							// PA11, PA12
-//
-//	// DEBUG UART
-//	h3_gpio_fsel(4, GPIO_FSEL_DISABLE);		// PA4
-//	h3_gpio_fsel(5, GPIO_FSEL_DISABLE);		// PA5
-
 	// Remaining
 	h3_gpio_fsel(8, GPIO_FSEL_DISABLE);		// PA8
 	h3_gpio_fsel(9, GPIO_FSEL_DISABLE);		// PA9

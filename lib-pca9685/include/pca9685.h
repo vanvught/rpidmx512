@@ -26,7 +26,7 @@
 #ifndef PCA9685_H_
 #define PCA9685_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define PCA9685_I2C_ADDRESS_DEFAULT	0x40
 #define PCA9685_I2C_ADDRESS_FIXED	0x70

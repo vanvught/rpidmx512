@@ -26,7 +26,7 @@
 #ifndef TLC59711DMXPARAMS_H_
 #define TLC59711DMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tlc59711dmx.h"
 

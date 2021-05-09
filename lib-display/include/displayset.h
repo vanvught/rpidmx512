@@ -26,7 +26,7 @@
 #ifndef DISPLAYSET_H_
 #define DISPLAYSET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace display {
 namespace cursor {

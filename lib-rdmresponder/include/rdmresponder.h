@@ -26,7 +26,7 @@
 #ifndef RDMRESPONDER_H_
 #define RDMRESPONDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxreceiver.h"
 #include "gpio.h"

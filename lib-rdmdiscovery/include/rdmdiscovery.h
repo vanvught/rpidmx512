@@ -26,7 +26,7 @@
 #ifndef RDMDISCOVERY_H_
 #define RDMDISCOVERY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdm.h"
 

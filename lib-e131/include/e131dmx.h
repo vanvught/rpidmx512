@@ -26,7 +26,7 @@
 #ifndef E131DMX_H_
 #define E131DMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class E131Dmx {
 public:

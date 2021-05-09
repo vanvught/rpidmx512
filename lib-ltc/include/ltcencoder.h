@@ -25,7 +25,7 @@
 #ifndef LTCENCODER_H_
 #define LTCENCODER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltc.h"
 

@@ -26,7 +26,7 @@
 #ifndef DMXSERIAL_H_
 #define DMXSERIAL_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxserialchanneldata.h"
 #include "dmxserialtftp.h"

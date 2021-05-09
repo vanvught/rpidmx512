@@ -26,7 +26,7 @@
 #ifndef MIDI_H_
 #define MIDI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace midi {
 

@@ -26,7 +26,7 @@
 #ifndef TCNETTIMECODE_H_
 #define TCNETTIMECODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TTCNetTimeCodeType {
 	TCNET_TIMECODE_TYPE_FILM,

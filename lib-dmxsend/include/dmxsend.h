@@ -26,7 +26,7 @@
 #ifndef DMXSENDER_H_
 #define DMXSENDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 #include "lightset.h"

@@ -26,7 +26,7 @@
 #ifndef DEVICE_MAX7219MATRIX_H_
 #define DEVICE_MAX7219MATRIX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "max7219.h"
 

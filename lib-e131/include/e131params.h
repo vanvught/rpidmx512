@@ -26,7 +26,7 @@
 #ifndef E131PARAMS_H_
 #define E131PARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"

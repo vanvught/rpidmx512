@@ -26,7 +26,7 @@
 #ifndef UUID_INTERNAL_H_
 #define UUID_INTERNAL_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct uuid {
 	uint32_t time_low;

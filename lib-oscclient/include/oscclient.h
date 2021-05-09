@@ -26,7 +26,7 @@
 #ifndef OSCCLIENT_H_
 #define OSCCLIENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "oscclientled.h"

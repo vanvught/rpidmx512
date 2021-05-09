@@ -27,7 +27,7 @@
 #ifndef H3_SHELL_H_
 #define H3_SHELL_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)

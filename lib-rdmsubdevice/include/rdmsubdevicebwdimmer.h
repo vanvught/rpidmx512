@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEBWDIMMER_H_
 #define RDMSUBDEVICEBWDIMMER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 

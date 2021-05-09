@@ -26,7 +26,7 @@
 #ifndef HAL_SPI_H_
 #define HAL_SPI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined(__linux__) || defined (__APPLE__)
 # include "linux/hal_api.h"

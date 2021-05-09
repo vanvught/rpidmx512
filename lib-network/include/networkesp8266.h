@@ -26,7 +26,7 @@
 #ifndef NETWORKESP8266_H_
 #define NETWORKESP8266_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 

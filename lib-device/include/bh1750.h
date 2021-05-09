@@ -26,7 +26,7 @@
 #ifndef BH1750_H_
 #define BH1750_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 

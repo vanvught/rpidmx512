@@ -27,7 +27,7 @@
 #define WIDGET_MONITOR_H_
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace widgetmonitor {
 struct MonitorLine {

@@ -26,7 +26,7 @@
 #ifndef E131CONST_H_
 #define E131CONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "e117.h"
 

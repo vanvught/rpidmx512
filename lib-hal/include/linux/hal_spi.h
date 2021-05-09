@@ -40,7 +40,7 @@
 # define SPI_CS_NONE			0
 
 # define FUNC_PREFIX(x) x
-# include <stdint.h>
+# include <cstdint>
 # ifdef __cplusplus
 extern "C" {
 # endif

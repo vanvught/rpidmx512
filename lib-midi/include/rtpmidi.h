@@ -26,7 +26,7 @@
 #ifndef RTPMIDI_H_
 #define RTPMIDI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "applemidi.h"
 #include "midi.h"

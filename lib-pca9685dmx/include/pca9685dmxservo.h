@@ -26,7 +26,7 @@
 #ifndef PWMDMXPCA9685SERVO_H_
 #define PWMDMXPCA9685SERVO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

@@ -26,6 +26,8 @@
 #ifndef CSTDIO_
 #define CSTDIO_
 
-#include <stdio.h>
+#ifdef __cplusplus
+# include <stdio.h>
+#endif
 
 #endif /* CSTDIO_ */

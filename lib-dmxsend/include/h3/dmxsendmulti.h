@@ -26,7 +26,7 @@
 #ifndef DMXSENDMULTI_H_
 #define DMXSENDMULTI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "h3/dmxmulti.h"
 

@@ -26,7 +26,7 @@
 #ifndef TFTPDAEMON_H_
 #define TFTPDAEMON_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum class TFTPMode {
 	BINARY,

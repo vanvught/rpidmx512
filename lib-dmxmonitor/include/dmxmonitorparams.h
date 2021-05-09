@@ -26,7 +26,7 @@
 #ifndef DMXMONITORPARAMS_H_
 #define DMXMONITORPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxmonitor.h"
 

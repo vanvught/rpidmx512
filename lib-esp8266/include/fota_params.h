@@ -27,7 +27,7 @@
 #define FOTA_PARAMS_H_
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 
 #ifdef __cplusplus
 extern "C" {

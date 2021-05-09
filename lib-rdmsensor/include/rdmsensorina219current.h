@@ -26,7 +26,7 @@
 #ifndef RDMSENSORINA219CURRENT_H_
 #define RDMSENSORINA219CURRENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "ina219.h"

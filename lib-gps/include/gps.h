@@ -28,7 +28,7 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "gpsconst.h"

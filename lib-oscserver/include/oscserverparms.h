@@ -26,7 +26,7 @@
 #ifndef OSCSERVERPARAMS_H_
 #define OSCSERVERPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "oscserver.h"
 

@@ -29,7 +29,7 @@
 #ifndef ARTNET_H_
 #define ARTNET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace artnet {
 static constexpr char NODE_ID[] = "Art-Net";			///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00

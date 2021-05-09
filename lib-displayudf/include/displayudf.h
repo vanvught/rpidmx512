@@ -26,7 +26,7 @@
 #ifndef DISPLAYUDF_H_
 #define DISPLAYUDF_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdarg.h>
 
 #if defined (NODE_ARTNET_MULTI)

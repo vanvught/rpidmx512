@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICES_H_
 #define RDMSUBDEVICES_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 #include "rdmsubdevicesconst.h"

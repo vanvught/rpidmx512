@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #ifndef TLC59711_H_
 #define TLC59711_H_

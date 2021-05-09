@@ -29,7 +29,7 @@
 #ifndef ARTNETSTORE_H_
 #define ARTNETSTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnet.h"
 

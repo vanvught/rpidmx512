@@ -26,7 +26,7 @@
 #ifndef MODESTORE_H_
 #define MODESTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ModeStore {
 public:

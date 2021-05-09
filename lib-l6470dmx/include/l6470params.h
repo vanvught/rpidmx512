@@ -26,7 +26,7 @@
 #ifndef L6470PARAMS_H_
 #define L6470PARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 

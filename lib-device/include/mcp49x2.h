@@ -26,7 +26,7 @@
 #ifndef MCP49X2_H_
 #define MCP49X2_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_spi.h"
 

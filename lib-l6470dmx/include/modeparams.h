@@ -26,7 +26,7 @@
 #ifndef MODEPARAMS_H_
 #define MODEPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 #include "lightset.h"
