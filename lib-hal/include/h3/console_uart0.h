@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 
 #ifndef H3_CONSOLE_H_
 #define H3_CONSOLE_H_
+
+#include <stdint.h>
 
 // ANSI colors
 typedef enum {

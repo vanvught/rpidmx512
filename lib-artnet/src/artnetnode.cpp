@@ -269,7 +269,7 @@ void ArtNetNode::Run() {
 		}
 
 		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (1 * 1000)) {
-			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+			if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
 				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 				m_State.bIsReceivingDmx = false;
 			}
@@ -278,7 +278,7 @@ void ArtNetNode::Run() {
 		if (m_pArtNetDmx != nullptr) {
 			HandleDmxIn();
 
-			if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+			if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
 				if (m_State.bIsReceivingDmx) {
 					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 				} else {
@@ -363,7 +363,7 @@ void ArtNetNode::Run() {
 		HandleDmxIn();
 	}
 
-	if (((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) {
+	if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
 		if (m_State.bIsReceivingDmx) {
 			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {

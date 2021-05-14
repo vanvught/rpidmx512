@@ -111,4 +111,3 @@ void console_status(uint32_t color, const char *s) {
 
 	console_set_fg_color(CONSOLE_WHITE);
 }
-
