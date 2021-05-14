@@ -1,4 +1,3 @@
-#if !defined (__linux__)
 /**
  * @file dmxsender.cpp
  *
@@ -62,15 +61,10 @@ void DMXSend::Stop(__attribute__((unused)) uint32_t nPort) {
 }
 
 void DMXSend::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
-//	DEBUG_ENTRY
-
 	if (__builtin_expect((nLength == 0), 0)) {
 		DEBUG_EXIT
 		return;
 	}
 
 	SetSendDataWithoutSC(pData, static_cast<uint16_t>(nLength));
-
-//	DEBUG_EXIT
 }
-#endif

@@ -140,7 +140,7 @@ void Widget::SnifferRdm() {
 	uint8_t nMessageLength = 0;
 
 	if (pRdmData[0] == E120_SC_RDM) {
-		const auto *p = reinterpret_cast<const struct _rdm_command *>(pRdmData);
+		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 		nMessageLength = p->message_length + 2;
 		switch (p->command_class) {
 		case E120_DISCOVERY_COMMAND:

@@ -287,7 +287,7 @@ static void fiq_dmx_in_handler(void) {
 				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 				rdm_checksum += data;
 
-				const auto *p = reinterpret_cast<struct _rdm_command *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
+				const auto *p = reinterpret_cast<struct TRdmMessage *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 				if (dmx_data_index == p->message_length) {
 					dmx_receive_state = CHECKSUMH;
 				}
@@ -301,7 +301,7 @@ static void fiq_dmx_in_handler(void) {
 		case CHECKSUML: {
 			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
 			rdm_checksum -= data;
-			const auto *p = reinterpret_cast<struct _rdm_command *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
+			const auto *p = reinterpret_cast<struct TRdmMessage *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
 
 			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;

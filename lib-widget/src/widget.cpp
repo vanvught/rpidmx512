@@ -190,7 +190,7 @@ void Widget::ReceivedRdmPacket() {
 	uint8_t nMessageLength = 0;
 
 	if (pRdmData[0] == E120_SC_RDM) {
-		const auto *p = reinterpret_cast<const struct _rdm_command *>(pRdmData);
+		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 		const auto command_class = p->command_class;
 		nMessageLength = p->message_length + 2;
 
@@ -269,7 +269,7 @@ void Widget::SendRdmPacketRequest(uint16_t nDataLength) {
 	WidgetMonitor::Line(MonitorLine::INFO, "SEND_RDM_PACKET_REQUEST");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	const auto *pData = reinterpret_cast<const struct _rdm_command *>(m_aData);
+	const auto *pData = reinterpret_cast<const struct TRdmMessage *>(m_aData);
 
 	m_isRdmDiscoveryRunning = (pData->command_class == E120_DISCOVERY_COMMAND);
 

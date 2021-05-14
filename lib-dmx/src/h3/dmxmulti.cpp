@@ -364,7 +364,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 
 				s_pRdmDataCurrent[nUart]->nChecksum += nData;
 
-				const auto *p = reinterpret_cast<struct _rdm_command *>(&s_pRdmDataCurrent[nUart]->data[0]);
+				const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_pRdmDataCurrent[nUart]->data[0]);
 
 				if (s_pRdmDataCurrent[nUart]->nIndex == p->message_length) {
 					s_tReceiveState[nUart] = TxRxState::CHECKSUMH;
@@ -386,7 +386,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 
 			s_pRdmDataCurrent[nUart]->nChecksum -= nData;
 
-			const auto *p = reinterpret_cast<struct _rdm_command *>(&s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].data[0]);
+			const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].data[0]);
 
 			if ((s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].nChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
