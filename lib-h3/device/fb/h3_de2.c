@@ -42,6 +42,9 @@
 #include <string.h>
 #include <stdbool.h>
 
+extern int uart0_printf(const char* fmt, ...);
+#define printf uart0_printf
+
 #include "h3_de2.h"
 
 #include "h3.h"
@@ -169,7 +172,9 @@ extern int h3_hdmi_probe(void);
 extern int h3_hdmi_enable(uint32_t panel_bpp, const struct display_timing *edid);
 
 void __attribute__((cold)) h3_de2_init(struct display_timing *timing, uint32_t fbbase) {
-	h3_hdmi_probe();
+	if (h3_hdmi_probe() < 0) {
+		return;
+	}
 
 	de2_composer_init();
 	de2_mode_set(timing, 1 << VIDEO_BPP32, fbbase);

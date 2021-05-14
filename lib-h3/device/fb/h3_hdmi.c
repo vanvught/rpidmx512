@@ -43,6 +43,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 
+extern void uart0_puts(const char *);
+
 #include "h3.h"
 #include "h3_ccu.h"
 #include "h3_hs_timer.h"
@@ -413,7 +415,7 @@ int __attribute__((cold)) h3_hdmi_probe(void) {
 	ret = hdmi_wait_for_hpd();
 
 	if (ret < 0) {
-		printf("hdmi can not get hpd signal\n");
+		uart0_puts("hdmi can not get hpd signal\n");
 		return -1;
 	}
 
