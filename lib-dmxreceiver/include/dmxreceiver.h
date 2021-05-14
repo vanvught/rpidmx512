@@ -2,7 +2,7 @@
  * @file dmxreceiver.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,39 +22,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 #ifndef DMXCONTROLLER_H_
 #define DMXCONTROLLER_H_
 
 #include <cstdint>
 
 #include "dmx.h"
+#include "dmxgpio.h"
 
 #include "lightset.h"
-
-#include "gpio.h"
 
 class DMXReceiver: public Dmx {
 public:
 	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
 	~DMXReceiver() override;
 
-	void SetOutput(LightSet *pLightSet);
+	void SetOutput(LightSet *pLightSet) {
+		m_pLightSet = pLightSet;
+	}
 
 	void Start();
 	void Stop();
 
 	const uint8_t* Run(int16_t &nLength);
 
-	void Print();
+	void Print() {}
 
 private:
 	bool IsDmxDataChanged(const uint8_t *pData, uint16_t nLength);
 
 private:
-	LightSet *m_pLightSet{nullptr};
-	bool m_IsActive{false};
-	alignas(uint32_t) uint8_t m_Data[DMX_DATA_BUFFER_SIZE]; // With DMX Start Code
-	uint16_t m_nLength{0};
+	LightSet *m_pLightSet { nullptr };
+	bool m_IsActive { false };
+	uint8_t m_Data[dmx::buffer::SIZE]; // With DMX Start Code
+	uint16_t m_nLength { 0 };
 };
 
 #endif /* DMXCONTROLLER_H_ */

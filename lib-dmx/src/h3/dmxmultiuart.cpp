@@ -2,7 +2,7 @@
  * @file dmxmultiuart.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "h3/dmxmulti.h"
+#include "dmxmulti.h"
 
 #include "h3.h"
 #include "h3_gpio.h"

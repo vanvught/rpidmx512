@@ -23,22 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "dmxinput.h"
-
-#include "h3/dmxmultiinput.h"
+#include "dmxmulti.h"
 #include "dmx.h"
 
 #include "debug.h"
+
+using namespace dmxmulti;
+using namespace dmx;
 
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]); i++) {
-		m_bIsStarted[i] = false;
+		Stop(i);
 	}
 
 	DEBUG_EXIT
@@ -53,7 +54,7 @@ void DmxInput::Start(uint32_t nPort) {
 		return;
 	}
 
-	m_DmxMultiInput.StartData(nPort);
+	SetPortDirection(nPort, PortDirection::INP, true);
 
 	m_bIsStarted[nPort] = true;
 
@@ -69,7 +70,7 @@ void DmxInput::Stop(uint32_t nPort) {
 		return;
 	}
 
-	m_DmxMultiInput.StopData(nPort);
+	SetPortDirection(nPort, PortDirection::INP, false);
 
 	m_bIsStarted[nPort] = false;
 
@@ -77,13 +78,13 @@ void DmxInput::Stop(uint32_t nPort) {
 }
 
 const uint8_t *DmxInput::Handler(uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const auto *pDmx = m_DmxMultiInput.GetDmxAvailable(nPort);
+	const auto *pDmx = GetDmxAvailable(nPort);
 
-	nUpdatesPerSecond = m_DmxMultiInput.GetUpdatesPerSeconde(nPort);
+	nUpdatesPerSecond = GetUpdatesPerSeconde(nPort);
 
 	if (pDmx != nullptr) {
-		const auto *dmx_data = reinterpret_cast<const struct _dmx_data*>(pDmx);
-		nLength = 1 + dmx_data->statistics.slots_in_packet; // Add 1 for SC
+		const auto *pDmxData = reinterpret_cast<const struct Data*>(pDmx);
+		nLength = 1 + pDmxData->nSlotsInPacket; // Add 1 for SC
 		return pDmx;
 	}
 

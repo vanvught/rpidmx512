@@ -32,8 +32,13 @@
 
 #include "debug.h"
 
+using namespace dmx;
+using namespace dmxsingle;
+
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
+
+	Stop(0);
 
 	DEBUG_EXIT
 }
@@ -48,7 +53,7 @@ void DmxInput::Start(__attribute__((unused)) uint32_t nPort) {
 
 	m_bIsStarted = true;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 	DEBUG_EXIT
 }
 
@@ -62,7 +67,7 @@ void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
 
 	m_bIsStarted = false;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 	DEBUG_EXIT
 }
 
@@ -72,8 +77,8 @@ const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != nullptr) {
-		const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-		nLength = dmx_statistics->Statistics.SlotsInPacket;
+		const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);
+		nLength = dmx_statistics->Statistics.nSlotsInPacket;
 		return (pDmx + 1);
 	}
 

@@ -37,14 +37,6 @@
 uint8_t Rdm::m_TransactionNumber = 0;
 uint32_t Rdm::m_nLastSendMicros = 0;
 
-const uint8_t *Rdm::Receive(uint32_t nPort) {
-	return DmxSet::Get()->RdmReceive(nPort);
-}
-
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
-	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
-}
-
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(pRdmCommand != 0);
 

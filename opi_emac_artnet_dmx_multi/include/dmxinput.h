@@ -26,15 +26,14 @@
 #ifndef DMXINPUT_H_
 #define DMXINPUT_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
 #include "artnetdmx.h"
 
-#include "h3/dmxmultiinput.h"
+#include "dmxmulti.h"
 #include "dmx_uarts.h"
 
-class DmxInput: public ArtNetDmx {
+class DmxInput: public ArtNetDmx, public DmxMulti {
 public:
 	DmxInput();
 
@@ -44,7 +43,6 @@ public:
 	const uint8_t *Handler(uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond);
 
 private:
-	DmxMultiInput m_DmxMultiInput;
 	bool m_bIsStarted[DMX_MAX_UARTS];
 };
 

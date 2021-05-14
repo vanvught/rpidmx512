@@ -37,7 +37,9 @@ public:
 
 	void Run() {
 		E131Bridge::Get()->Stop();
-		LightSet::Get()->Blackout(true);
+		if (LightSet::Get() != nullptr) {
+			LightSet::Get()->Blackout(true);
+		}
 	}
 };
 

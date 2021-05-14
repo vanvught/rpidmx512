@@ -2,7 +2,7 @@
  * @file dmxsendmulti.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,16 @@
 #include <cstdint>
 #include <cassert>
 
-#include "h3/dmxsendmulti.h"
+#include "dmxsendmulti.h"
 
 #include "debug.h"
 
-#define MAX_PORTS (sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]))
+using namespace dmx;
 
 DMXSendMulti::DMXSendMulti() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < MAX_PORTS ; i++) {
+	for (uint32_t i = 0; i < max::OUT ; i++) {
 		m_bIsStarted[i] = false;
 	}
 
@@ -45,7 +45,7 @@ DMXSendMulti::DMXSendMulti() {
 void DMXSendMulti::Start(uint32_t nPort) {
 	DEBUG_ENTRY
 
-	assert(nPort < MAX_PORTS);
+	assert(nPort < max::OUT);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
 
@@ -56,7 +56,7 @@ void DMXSendMulti::Start(uint32_t nPort) {
 
 	m_bIsStarted[nPort] = true;
 
-	SetPortDirection(static_cast<uint8_t>(nPort), DMXRDM_PORT_DIRECTION_OUTP, true);
+	SetPortDirection(nPort, PortDirection::OUTP, true);
 
 	DEBUG_EXIT
 }
@@ -64,7 +64,7 @@ void DMXSendMulti::Start(uint32_t nPort) {
 void DMXSendMulti::Stop(uint32_t nPort) {
 	DEBUG_ENTRY
 
-	assert(nPort < MAX_PORTS);
+	assert(nPort < max::OUT);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
 
@@ -75,13 +75,13 @@ void DMXSendMulti::Stop(uint32_t nPort) {
 
 	m_bIsStarted[nPort] = false;
 
-	SetPortDirection(static_cast<uint8_t>(nPort), DMXRDM_PORT_DIRECTION_OUTP, false);
+	SetPortDirection(nPort, PortDirection::OUTP, false);
 
 	DEBUG_EXIT
 }
 
 void DMXSendMulti::SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
-	assert(nPort < MAX_PORTS);
+	assert(nPort < max::OUT);
 	assert(pData != nullptr);
 	assert(nLength != 0);
 
@@ -90,5 +90,5 @@ void DMXSendMulti::SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLengt
 		return;
 	}
 
-	SetPortSendDataWithoutSC(static_cast<uint8_t>(nPort), pData, static_cast<uint16_t>(nLength));
+	SetPortSendDataWithoutSC(nPort, pData, static_cast<uint16_t>(nLength));
 }

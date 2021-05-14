@@ -1,8 +1,8 @@
 /**
- * @file dmx.cpp
+ * @file rdm.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,33 +24,15 @@
  */
 
 #include <cstdint>
-#ifndef NDEBUG
-# include <cstdio>
-#endif
 #include <cassert>
 
+#include "rdm.h"
 #include "dmx.h"
 
-Dmx *Dmx::s_pThis = nullptr;
-
-Dmx::Dmx(uint8_t nGpioPin, bool DoInit): m_IsInitDone(DoInit) {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-#ifndef NDEBUG
-	printf("Dmx::Dmx nGpioPin=%d, DoInit=%d\n", nGpioPin, DoInit);
-#endif
-	dmx_init_set_gpiopin(nGpioPin);
-
-	if (DoInit) {
-		dmx_init();
-	}
+const uint8_t *Rdm::Receive(uint32_t nPort) {
+	return DmxSet::Get()->RdmReceive(nPort);
 }
 
-void Dmx::Init() {
-	assert(!m_IsInitDone);
-
-	if (!m_IsInitDone) {
-		dmx_init();
-		m_IsInitDone = true;
-	}
+const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }

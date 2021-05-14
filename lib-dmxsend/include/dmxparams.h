@@ -30,7 +30,7 @@
 
 #include "dmxsend.h"
 #if defined (H3)
-# include "h3/dmxsendmulti.h"
+# include "dmxsendmulti.h"
 #endif
 
 struct TDMXParams {

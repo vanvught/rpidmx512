@@ -2,7 +2,7 @@
  * @file gpioparamsconst.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,11 +25,6 @@
 
 #include "dmxgpioparamsconst.h"
 
-#include "dmx.h"
-
 const char DmxGpioParamsConst::FILE_NAME[] = "gpio.txt";
-
 const char DmxGpioParamsConst::DATA_DIRECTION[] = "data_direction";
-const char DmxGpioParamsConst::DATA_DIRECTION_OUT[DMX_MAX_OUT][DATA_DIRECTION_OUT_MAX_LENGTH] =
-		{ "data_direction_out_a", "data_direction_out_b", "data_direction_out_c", "data_direction_out_d" };
 

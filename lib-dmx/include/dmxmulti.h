@@ -28,18 +28,36 @@
 
 #include <cstdint>
 
-#include "dmx.h"
+#include "dmxset.h"
+#include "dmxconst.h"
+
+namespace dmxmulti {
+struct Data {
+	uint8_t data[dmx::buffer::SIZE];
+	uint32_t nSlotsInPacket;
+};
+}  // namespace dmxmulti
 
 class DmxMulti: public DmxSet {
 public:
 	DmxMulti();
 
-	void SetPortDirection(uint32_t nPort, TDmxRdmPortDirection tPortDirection, bool bEnableData = false) override;
+	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false) override;
+
+	// RDM Send
 
 	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
 
+	// RDM Receive
+
 	const uint8_t *RdmReceive(uint32_t nPort) override;
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) override;
+
+	 uint32_t RdmGetDateReceivedEnd() override {
+		 return 0;
+	 }
+
+	// DMX Send
 
 	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint16_t nLength);
 
@@ -58,6 +76,11 @@ public:
 		return m_nDmxTransmitPeriod;
 	}
 
+	// DMX Receive
+
+	const uint8_t* GetDmxAvailable(uint32_t port);
+	uint32_t GetUpdatesPerSeconde(uint32_t port);
+
 	static void UartInit(uint32_t nUart);
 
 private:
@@ -68,13 +91,13 @@ private:
 	void StopData(uint32_t uart);
 
 private:
-	uint32_t m_nDmxTransmitBreakTime { DMX_TRANSMIT_BREAK_TIME_MIN };
-	uint32_t m_nDmxTransmitMabTime { DMX_TRANSMIT_MAB_TIME_MIN };
-	uint32_t m_nDmxTransmitPeriod { DMX_TRANSMIT_PERIOD_DEFAULT };
-	uint32_t m_nDmxTransmitPeriodRequested { DMX_TRANSMIT_PERIOD_DEFAULT };
-	uint8_t m_nDmxDataDirectionGpioPin[DMX_MAX_OUT];
-	TDmxRdmPortDirection m_tDmxPortDirection[DMX_MAX_OUT];
-	uint32_t m_nDmxTransmissionLength[DMX_MAX_OUT];
+	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
+	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
+	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
+	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
+	uint8_t m_nDmxDataDirectionGpioPin[dmx::max::OUT];
+	dmx::PortDirection m_tDmxPortDirection[dmx::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmx::max::OUT];
 };
 
 #endif /* H3_DMXMULTI_H_ */

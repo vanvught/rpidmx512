@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "h3/dmxmulti.h"
+#include "dmxmulti.h"
 
 #include "lightset.h"
 
@@ -44,7 +44,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted[4];
+	bool m_bIsStarted[dmx::max::OUT];
 };
 
 #endif /* DMXSENDMULTI_H_ */

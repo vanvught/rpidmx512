@@ -1,5 +1,5 @@
 /**
- * @file gpio.h
+ * @file dmxgpio.h
  *
  */
 /* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl

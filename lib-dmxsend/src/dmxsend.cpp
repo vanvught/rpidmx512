@@ -27,16 +27,11 @@
 #include <cstdint>
 
 #include "dmxsend.h"
-
 #include "dmx.h"
 
 #include "debug.h"
 
-DMXSend::DMXSend(void) : m_bIsStarted(false) {
-}
-
-DMXSend::~DMXSend(void) {
-}
+using namespace dmx;
 
 void DMXSend::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_ENTRY
@@ -48,7 +43,7 @@ void DMXSend::Start(__attribute__((unused)) uint32_t nPort) {
 
 	m_bIsStarted = true;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
+	SetPortDirection(0, PortDirection::OUTP, true);
 	DEBUG_EXIT
 }
 
@@ -62,20 +57,20 @@ void DMXSend::Stop(__attribute__((unused)) uint32_t nPort) {
 
 	m_bIsStarted = false;
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
+	SetPortDirection(0, PortDirection::OUTP, false);
 	DEBUG_EXIT
 }
 
 void DMXSend::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
+//	DEBUG_ENTRY
 
 	if (__builtin_expect((nLength == 0), 0)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	dmx_set_send_data_without_sc(pData, static_cast<uint16_t>(nLength));
+	SetSendDataWithoutSC(pData, static_cast<uint16_t>(nLength));
 
-	DEBUG_EXIT
+//	DEBUG_EXIT
 }
 #endif

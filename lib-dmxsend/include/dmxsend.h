@@ -33,8 +33,8 @@
 
 class DMXSend: public Dmx, public LightSet  {
 public:
-	DMXSend();
-	~DMXSend() override;
+	DMXSend() {};
+	~DMXSend() override {};
 
 	void Start(uint32_t nPort) override;
 	void Stop(uint32_t nPort) override;
@@ -44,7 +44,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted;
+	bool m_bIsStarted {false};
 };
 
 #endif /* DMXSENDER_H_ */

@@ -49,7 +49,7 @@
 
 // DMX/RDM Output
 #include "dmxparams.h"
-#include "h3/dmxsendmulti.h"
+#include "dmxsendmulti.h"
 #include "storedmxsend.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
