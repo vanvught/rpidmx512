@@ -147,13 +147,7 @@ void notmain(void) {
 		assert(pWS28xxDmx != nullptr);
 		pSpi = pWS28xxDmx;
 
-		const auto nCount = pixelDmxConfiguration.GetCount();
-
-		if (pixelDmxConfiguration.GetGroupingEnabled()) {
-			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
-		} else {
-			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
-		}
+		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 		bridge.SetDirectUpdate(nUniverses != 1);

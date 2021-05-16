@@ -26,7 +26,7 @@
 #ifndef PIXELDMXCONFIGURATION_H_
 #define PIXELDMXCONFIGURATION_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "pixelconfiguration.h"
 
@@ -49,14 +49,6 @@ public:
 		return m_nOutputPorts;
 	}
 
-	void SetGroupingEnabled(bool isEnabled) {
-		m_isGroupingEnabled = isEnabled;
-	}
-
-	bool GetGroupingEnabled() const {
-		return m_isGroupingEnabled;
-	}
-
 	void SetGroupingCount(uint32_t nGroupingCount) {
 		m_nGroupingCount = nGroupingCount;
 	}
@@ -71,7 +63,6 @@ public:
 
 private:
 	uint32_t m_nOutputPorts { 1 };
-	bool m_isGroupingEnabled { false };
 	uint32_t m_nGroupingCount { 1 };
 };
 

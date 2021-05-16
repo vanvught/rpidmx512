@@ -200,7 +200,7 @@ void notmain(void) {
 	display.Set(4, displayudf::Labels::HOSTNAME);
 	display.Set(5, displayudf::Labels::IP);
 	display.Set(6, displayudf::Labels::UNIVERSE);
-	display.Printf(7, "%d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	display.Printf(7, "%d-%s:%d G%d", nActivePorts, PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

@@ -26,7 +26,7 @@
 #ifndef PIXELPATTERNS_H_
 #define PIXELPATTERNS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined (OUTPUT_PIXEL_MULTI)
 # include "ws28xxmulti.h"
@@ -56,11 +56,11 @@ public:
 	PixelPatterns(uint32_t nActivePorts);
 	~PixelPatterns() {}
 
-	void RainbowCycle(uint32_t nPort, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void TheaterChase(uint32_t nPort, uint32_t nColour1, uint32_t nColour2, uint8_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void ColourWipe(uint32_t nPort, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void Scanner(uint32_t nPort, uint32_t nColour1, uint32_t nInterval) ;
-	void Fade(uint32_t nPort, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint8_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) ;
+	void Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 
 	void Run();
 
@@ -69,29 +69,29 @@ public:
 	}
 
 private:
-	void RainbowCycleUpdate(uint32_t nPort);
-	void TheaterChaseUpdate(uint32_t nPort);
-	void ColourWipeUpdate(uint32_t nPort);
-	void ScannerUpdate(uint32_t nPort);
-	void FadeUpdate(uint32_t nPort);
+	void RainbowCycleUpdate(uint32_t nPortIndex);
+	void TheaterChaseUpdate(uint32_t nPortIndex);
+	void ColourWipeUpdate(uint32_t nPortIndex);
+	void ScannerUpdate(uint32_t nPortIndex);
+	void FadeUpdate(uint32_t nPortIndex);
 
-	bool PortUpdate(uint32_t nPort, uint32_t nMillis);
+	bool PortUpdate(uint32_t nPortIndex, uint32_t nMillis);
 
 	uint32_t Wheel(uint8_t nWheelPos);
-	void Increment(uint32_t nPort);
-	void Reverse(uint32_t nPort);
+	void Increment(uint32_t nPortIndex);
+	void Reverse(uint32_t nPortIndex);
 
-	void SetPixelColour(__attribute__((unused)) uint32_t nPort, uint32_t nIndex, uint32_t nColour) {
+	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nIndex, uint32_t nColour) {
 #if defined (OUTPUT_PIXEL_MULTI)
-		m_pOutput->SetPixel(nPort, nIndex, Red(nColour), Green(nColour), Blue(nColour));
+		m_pOutput->SetPixel(nPortIndex, nIndex, Red(nColour), Green(nColour), Blue(nColour));
 #else
 		m_pOutput->SetPixel(nIndex, Red(nColour), Green(nColour), Blue(nColour));
 #endif
 	}
 
-	void ColourSet(uint32_t nPort, uint32_t nColour) {
+	void ColourSet(uint32_t nPortIndex, uint32_t nColour) {
 		for (uint32_t i = 0; i < m_nCount; i++) {
-			SetPixelColour(nPort, i, nColour);
+			SetPixelColour(nPortIndex, i, nColour);
 		}
 	}
 

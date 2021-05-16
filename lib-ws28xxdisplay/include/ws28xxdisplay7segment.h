@@ -27,7 +27,7 @@
 #ifndef WS28XXDISPLAY7SEGMENT_H_
 #define WS28XXDISPLAY7SEGMENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ws28xx.h"
 

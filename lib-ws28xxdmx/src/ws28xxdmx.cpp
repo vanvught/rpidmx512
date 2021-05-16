@@ -151,6 +151,7 @@ void WS28xxDmx::SetData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength
 			d = d + 3;
 		}
 	} else {
+		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = j * m_nGroupingCount;
 			__builtin_prefetch(&pData[d]);
@@ -206,24 +207,14 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-#define MOD(a,b)	(static_cast<unsigned>(a) - b * (static_cast<unsigned>(a)/b))
-
 bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
-	unsigned nIndex;
-
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
 
-	if (m_tLedType == Type::SK6812W) {
-		nIndex = MOD(nSlotOffset, 4);
-	} else {
-		nIndex = MOD(nSlotOffset, 3);
-	}
-
 	tSlotInfo.nType = 0x00;	// ST_PRIMARY
 
-	switch (nIndex) {
+	switch (nSlotOffset % m_nChannelsPerPixel) {
 		case 0:
 			tSlotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
 			break;
@@ -237,9 +228,9 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 			tSlotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
 			break;
 		default:
+			__builtin_unreachable();
 			break;
 	}
 
 	return true;
 }
-

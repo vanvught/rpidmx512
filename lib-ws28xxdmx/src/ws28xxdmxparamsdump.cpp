@@ -77,10 +77,6 @@ void WS28xxDmxParams::Dump() {
 		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs);
 	}
 
-	if(isMaskSet(WS28xxDmxParamsMask::GROUPING_ENABLED)) {
-		printf(" %s=1 [Yes]\n", DevicesParamsConst::GROUPING_ENABLED);
-	}
-
 	if (isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT)) {
 		printf(" %s=%d\n", DevicesParamsConst::GROUPING_COUNT, m_tWS28xxParams.nGroupingCount);
 	}

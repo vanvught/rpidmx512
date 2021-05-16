@@ -26,7 +26,7 @@
 #ifndef PIXELCONFIGURATION_H_
 #define PIXELCONFIGURATION_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "pixeltype.h"
 

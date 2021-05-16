@@ -31,7 +31,6 @@
 #include <cstdint>
 
 #include "pixelconfiguration.h"
-
 #include "pixeltype.h"
 
 #include "debug.h"
@@ -49,7 +48,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		nLedsPerPixel = 3;
 	}
 
-	if (m_Type == Type::APA102) {
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)){
 		if (m_nGlobalBrightness > 0x1F) {
 			m_nGlobalBrightness = 0xFF;
 		} else {
@@ -57,8 +56,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		}
 	}
 
-
-	if ((m_Type == Type::WS2801) || (m_Type == Type::APA102) || (m_Type == Type::P9813)) {
+	if ((m_Type == Type::WS2801) || (m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		m_bIsRTZProtocol = false;
 		m_nLowCode = 0x00;
 		m_nHighCode = 0xFF;
@@ -135,15 +133,10 @@ void PixelConfiguration::GetTxH(Type tType, uint8_t &nLowCode, uint8_t &nHighCod
 void PixelConfiguration::Dump() {
 #ifndef NDEBUG
 	printf("Type=%s [%u], Count=%u\n", PixelType::GetType(m_Type), static_cast<uint32_t>(m_Type), m_nCount);
-
-	if (m_bIsRTZProtocol) {
-		printf(" [%.2X,%.2X], Mapping=%s [%u]\n", m_nLowCode, m_nHighCode, PixelType::GetMap(m_tRGBMapping), static_cast<uint32_t>(m_tRGBMapping));
+	printf(" [%.2X,%.2X], Mapping=%s [%u]\n", m_nLowCode, m_nHighCode, PixelType::GetMap(m_tRGBMapping), static_cast<uint32_t>(m_tRGBMapping));
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)){
+		printf(" GlobalBrightness=%u\n", m_nGlobalBrightness);
 	}
-
-	printf("nClockSpeedHz=%u\n", m_nClockSpeedHz);
-
-	if (m_Type == Type::APA102) {
-		printf("GlobalBrightness=%u\n", m_nGlobalBrightness);
-	}
+	printf(" Clock=%u Hz\n", m_nClockSpeedHz);
 #endif
 }

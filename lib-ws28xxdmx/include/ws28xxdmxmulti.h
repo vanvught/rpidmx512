@@ -26,7 +26,7 @@
 #ifndef WS28XXDMXMULTI_H_
 #define WS28XXDMXMULTI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 

@@ -36,11 +36,12 @@ enum class Type {
 	WS2815,
 	SK6812,
 	SK6812W,
-	APA102,
 	UCS1903,
 	UCS2903,
-	P9813,
 	CS8812,
+	APA102,
+	SK9822,
+	P9813,
 	UNDEFINED
 };
 enum class Map {

@@ -174,13 +174,7 @@ void notmain(void) {
 		assert(pPixelDmx != nullptr);
 		pSpi = pPixelDmx;
 
-		const auto nCount = pixelDmxConfiguration.GetCount();
-
-		if (pixelDmxConfiguration.GetGroupingEnabled()) {
-			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
-		} else {
-			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
-		}
+		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		server.SetOutput(pSpi);
 		server.SetOscServerHandler(new Handler(pPixelDmx));

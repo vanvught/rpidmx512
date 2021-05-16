@@ -189,15 +189,6 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint8(pLine, DevicesParamsConst::GROUPING_ENABLED, nValue8) == Sscan::OK) {
-		if (nValue8 != 0) {
-			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::GROUPING_ENABLED;
-		} else {
-			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::GROUPING_ENABLED;
-		}
-		return;
-	}
-
 	if (Sscan::Uint16(pLine, DevicesParamsConst::GROUPING_COUNT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1 && nValue16 <= std::max(max::ledcount::RGB, max::ledcount::RGBW)) {
 			m_tWS28xxParams.nGroupingCount = nValue16;
@@ -205,18 +196,6 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		} else {
 			m_tWS28xxParams.nGroupingCount = 1;
 			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::GROUPING_COUNT;
-		}
-		return;
-	}
-
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && nValue16 <= (Dmx::UNIVERSE_SIZE) && (nValue16 != Dmx::START_ADDRESS_DEFAULT)) {
-			m_tWS28xxParams.nDmxStartAddress = nValue16;
-			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
-		} else {
-			m_tWS28xxParams.nDmxStartAddress = Dmx::START_ADDRESS_DEFAULT;
-			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::DMX_START_ADDRESS;
 		}
 		return;
 	}
@@ -240,6 +219,18 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		} else {
 			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS;
 			m_tWS28xxParams.nGlobalBrightness = 0xFF;
+		}
+		return;
+	}
+
+#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
+	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && nValue16 <= (Dmx::UNIVERSE_SIZE) && (nValue16 != Dmx::START_ADDRESS_DEFAULT)) {
+			m_tWS28xxParams.nDmxStartAddress = nValue16;
+			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
+		} else {
+			m_tWS28xxParams.nDmxStartAddress = Dmx::START_ADDRESS_DEFAULT;
+			m_tWS28xxParams.nSetList &= ~WS28xxDmxParamsMask::DMX_START_ADDRESS;
 		}
 		return;
 	}

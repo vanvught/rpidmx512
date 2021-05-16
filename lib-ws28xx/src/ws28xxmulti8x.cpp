@@ -22,7 +22,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
- 
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -62,13 +62,14 @@ void WS28xxMulti::SetupHC595(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_EXIT
 }
 
-void WS28xxMulti::SetupSPI() {
+void WS28xxMulti::SetupSPI(uint32_t nSpeedHz) {
 	DEBUG_ENTRY
 
-	FUNC_PREFIX (spi_begin());
+	FUNC_PREFIX(spi_begin());
 	FUNC_PREFIX(spi_chipSelect(SPI_CS0));
-	FUNC_PREFIX(spi_set_speed_hz(6400000));
+	FUNC_PREFIX(spi_set_speed_hz(nSpeedHz));
 
+	DEBUG_PRINTF("nSpeedHz=%u", nSpeedHz);
 	DEBUG_EXIT
 }
 
@@ -78,7 +79,7 @@ extern "C" {
 uint32_t getPIXEL8X4_SIZE();
 }
 
-void WS28xxMulti::SetupCPLD() {
+bool WS28xxMulti::SetupCPLD() {
 	DEBUG_ENTRY
 
 	JamSTAPL jbc(reinterpret_cast<uint8_t*>(&PIXEL8X4_PROGRAM), getPIXEL8X4_SIZE(), true);
@@ -92,102 +93,123 @@ void WS28xxMulti::SetupCPLD() {
 				if ((jbc.GetExitCode() == 0) && (jbc.GetExportIntegerInt() != 0x0018ad81)) {
 					jbc.Program();
 				}
+				DEBUG_EXIT
+				return true;
 			}
 		}
 	}
 
 	DEBUG_EXIT
+	return false;
 }
 
 #define BIT_SET(a,b) 	((a) |= static_cast<uint8_t>((1<<(b))))
 #define BIT_CLEAR(a,b) 	((a) &= static_cast<uint8_t>(~(1<<(b))))
 
-void WS28xxMulti::SetColour8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+void WS28xxMulti::SetColour8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = nLedIndex * pixel::single::RGB;
+	const auto k = nPixelIndex * pixel::single::RGB;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
-			BIT_SET(m_pBuffer8x[k + j], nPort);
+			BIT_SET(m_pBuffer8x[k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[k + j], nPortIndex);
 		}
 		if (mask & nColour2) {
-			BIT_SET(m_pBuffer8x[8 + k + j], nPort);
+			BIT_SET(m_pBuffer8x[8 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[8 + k + j], nPortIndex);
 		}
 		if (mask & nColour3) {
-			BIT_SET(m_pBuffer8x[16 + k + j], nPort);
+			BIT_SET(m_pBuffer8x[16 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[16 + k + j], nPortIndex);
 		}
 
 		j++;
 	}
 }
 
-void WS28xxMulti::SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(nPort < 8);
-	assert(nLedIndex < m_nCount);
+void WS28xxMulti::SetPixel8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	assert(nPortIndex < 8);
+	assert(nPixelIndex < m_nBufSize / 8);
 
-	switch (m_Map) {
-	case Map::RGB:
-		SetColour8x(nPort, nLedIndex, nRed, nGreen, nBlue);
-		break;
-	case Map::RBG:
-		SetColour8x(nPort, nLedIndex, nRed, nBlue, nGreen);
-		break;
-	case Map::GRB:
-		SetColour8x(nPort, nLedIndex, nGreen, nRed, nBlue);
-		break;
-	case Map::GBR:
-		SetColour8x(nPort, nLedIndex, nGreen, nBlue, nRed);
-		break;
-	case Map::BRG:
-		SetColour8x(nPort, nLedIndex, nBlue, nRed, nGreen);
-		break;
-	case Map::BGR:
-		SetColour8x(nPort, nLedIndex, nBlue, nGreen, nRed);
-		break;
-	default:
-		SetColour8x(nPort, nLedIndex, nGreen, nRed, nBlue);
-		break;
+	if ((m_bIsRTZProtocol) || (m_Type == Type::WS2801)) {
+		switch (m_Map) {
+		case Map::RGB:
+			SetColour8x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+			break;
+		case Map::RBG:
+			SetColour8x(nPortIndex, nPixelIndex, nRed, nBlue, nGreen);
+			break;
+		case Map::GRB:
+			SetColour8x(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
+			break;
+		case Map::GBR:
+			SetColour8x(nPortIndex, nPixelIndex, nGreen, nBlue, nRed);
+			break;
+		case Map::BRG:
+			SetColour8x(nPortIndex, nPixelIndex, nBlue, nRed, nGreen);
+			break;
+		case Map::BGR:
+			SetColour8x(nPortIndex, nPixelIndex, nBlue, nGreen, nRed);
+			break;
+		default:
+			SetColour8x(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
+			break;
+		}
+
+		return;
 	}
+
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+		SetPixel8x(nPortIndex, 1 + nPixelIndex, nBlue, m_nGlobalBrightness, nGreen, nRed);
+		return;
+	}
+
+	if (m_Type == Type::P9813) {
+		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
+		SetPixel8x(nPortIndex, 1+ nPixelIndex, nRed, nFlag, nGreen, nBlue);
+		return;
+	}
+
+	assert(0);
+	__builtin_unreachable();
 }
 
-void WS28xxMulti::SetPixel8x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(nPort < 8);
-	assert(nLedIndex < m_nCount);
-	assert(m_Type == Type::SK6812W);
+void WS28xxMulti::SetPixel8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	assert(nPortIndex < 8);
+	assert(nPixelIndex < m_nBufSize / 8);
+	assert((m_Type == Type::SK6812W) || (m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813));
 
 	uint32_t j = 0;
-	const auto k = nLedIndex * pixel::single::RGBW;
+	const auto k = nPixelIndex * pixel::single::RGBW;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW
 		if (mask & nGreen) {
-			BIT_SET(m_pBuffer8x[k + j], nPort);
+			BIT_SET(m_pBuffer8x[k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[k + j], nPortIndex);
 		}
 
 		if (mask & nRed) {
-			BIT_SET(m_pBuffer8x[8 + k + j], nPort);
+			BIT_SET(m_pBuffer8x[8 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[8 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[8 + k + j], nPortIndex);
 		}
 
 		if (mask & nBlue) {
-			BIT_SET(m_pBuffer8x[16 + k + j], nPort);
+			BIT_SET(m_pBuffer8x[16 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[16 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[16 + k + j], nPortIndex);
 		}
 
 		if (mask & nWhite) {
-			BIT_SET(m_pBuffer8x[24 + k + j], nPort);
+			BIT_SET(m_pBuffer8x[24 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer8x[24 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer8x[24 + k + j], nPortIndex);
 		}
 
 		j++;

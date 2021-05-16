@@ -47,7 +47,10 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 		if (nPortsMax == 4) {
 			SetType(Type::WS2812B);
 		} else {
-			SetType(Type::WS2801);
+			const auto type = GetType();
+			if (!((type == Type::WS2801) || (type == Type::APA102) || (type == Type::SK9822))) {
+				SetType(Type::WS2801);
+			}
 		}
 		PixelConfiguration::Validate(nLedsPerPixel);
 	}
@@ -62,12 +65,8 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 		portInfo.nBeginIndexPortId3 = 510;
 	}
 
-	if (m_isGroupingEnabled) {
-		if ((m_nGroupingCount == 0) || (m_nGroupingCount > GetCount())) {
-			m_nGroupingCount = GetCount();
-		}
-	} else {
-		m_nGroupingCount = 1;
+	if ((m_nGroupingCount == 0) || (m_nGroupingCount > GetCount())) {
+		m_nGroupingCount = GetCount();
 	}
 
 	nGroups = GetCount() / m_nGroupingCount;
@@ -92,8 +91,6 @@ void PixelDmxConfiguration::Dump() {
 #ifndef NDEBUG
 	PixelConfiguration::Dump();
 	printf("nOuputPorts=%u\n", m_nOutputPorts);
-	if (m_isGroupingEnabled) {
-		printf(" nGroupingCount=%u\n", m_nGroupingCount);
-	}
+	printf("nGroupingCount=%u\n", m_nGroupingCount);
 #endif
 }

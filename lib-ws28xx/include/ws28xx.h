@@ -26,7 +26,7 @@
 #ifndef WS28XX_H_
 #define WS28XX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "pixelconfiguration.h"
 

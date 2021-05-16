@@ -41,14 +41,10 @@ using namespace ws28xxdmxmulti;
 using namespace pixel;
 using namespace lightset;
 
-static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE];
+static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE] = {0};
 
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration) {
 	DEBUG_ENTRY
-
-	for (uint32_t i = 0; i < sizeof(s_StopBuffer); i++) {
-		s_StopBuffer[i] = 0;
-	}
 
 	pixelDmxConfiguration.Validate(WS28xxMulti::GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
 
@@ -155,6 +151,7 @@ void WS28xxDmxMulti::SetData(uint32_t nPortId, const uint8_t* pData, uint32_t nL
 			d = d + 3;
 		}
 	} else {
+		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = j * m_nGroupingCount;
 			__builtin_prefetch(&pData[d]);

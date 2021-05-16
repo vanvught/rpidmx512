@@ -26,7 +26,7 @@
 #ifndef WS28XXDMXPARAMS_H_
 #define WS28XXDMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ws28xx.h"
 #include "ws28xxdmx.h"
@@ -61,7 +61,7 @@ struct WS28xxDmxParamsMask {
 	static constexpr auto TYPE = (1U << 0);
 	static constexpr auto COUNT = (1U << 1);
 	static constexpr auto DMX_START_ADDRESS = (1U << 2);
-	static constexpr auto GROUPING_ENABLED = (1U << 3);
+	static constexpr auto _NOT_USED_ = (1U << 3);
 	static constexpr auto SPI_SPEED = (1U << 4);
 	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 5);
 	static constexpr auto ACTIVE_OUT = (1U << 6);
@@ -120,7 +120,6 @@ public:
 		return m_tWS28xxParams.nTestPattern;
 	}
 
-public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
