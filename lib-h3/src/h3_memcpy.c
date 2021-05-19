@@ -2,7 +2,7 @@
  * @file h3_memcpy.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,22 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <assert.h>
+
+//#include <stdio.h>
 
 void* h3_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {
+//	assert(((uint32_t )((uint32_t* ) src) & 0x3) == 0);
+//	assert(((uint32_t )((uint32_t* ) dest) & 0x3) == 0);
+
+//	if (((uint32_t )((uint32_t* ) src) & 0x3) != 0) {
+//		printf("src=%p\n", (void *)src);
+//	}
+//
+//	if (((uint32_t )((uint32_t* ) dest) & 0x3) != 0) {
+//		printf("dest=%p\n", (void *)dest);
+//	}
+
 	uint32_t *plDst = (uint32_t*) dest;
 	uint32_t const *plSrc = (uint32_t const*) src;
 

@@ -108,3 +108,4 @@ uint32_t h3_ccu_get_pll_rate(ccu_pll_t pll) {
 
 	return freq;
 }
+
