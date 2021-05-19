@@ -29,10 +29,26 @@
 #include "rdm.h"
 #include "dmx.h"
 
+using namespace dmx;
+
 const uint8_t *Rdm::Receive(uint32_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
 }
 
 const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
+}
+
+void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort < max::OUT);
+	assert(pRdmData != nullptr);
+	assert(nLength != 0);
+
+	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+
+	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
+
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
+	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
 }

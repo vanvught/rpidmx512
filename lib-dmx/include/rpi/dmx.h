@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_H_
-#define DMX_H_
-
-#include <cstdint>
-
-#include "dmxgpio.h"
-#include "dmxset.h"
-#include "dmxconst.h"
-
-namespace dmxsingle {
-struct TotalStatistics {
-	uint32_t nDmxPackets;
-	uint32_t nRdmPackets;
-};
-
-struct Statistics {
-	uint32_t nSlotsInPacket;
-	uint32_t nMarkAfterBreak;
-	uint32_t nBreakToBreak;
-	uint32_t nSlotToSlot;
-};
-
-struct Data {
-	uint8_t Data[dmx::buffer::SIZE];
-	struct Statistics Statistics;
-};
-}  // namespace dmxsingle
-
-#if defined(RPI1) || defined (RPI2)	// TODO Subject for removal
-# include "rpi/dmx.h"
-#else
+#ifndef RPI_DMX_H_
+#define RPI_DMX_H_
 
 class Dmx: public DmxSet {
 public:
@@ -80,19 +51,17 @@ public:
 	uint32_t GetUpdatesPerSecond();
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
-	uint32_t GetDmxBreakTime() const {
-		return m_nDmxTransmitBreakTime;
-	}
+	uint32_t GetDmxBreakTime();
 
 	void SetDmxMabTime(uint32_t nMabTime);
-	uint32_t GetDmxMabTime() const {
-		return m_nDmxTransmitMabTime;
-	}
+	uint32_t GetDmxMabTime();
 
 	void SetDmxPeriodTime(uint32_t nPeriodTime);
-	uint32_t GetDmxPeriodTime() const {
-		return m_nDmxTransmitPeriod;
-	}
+	uint32_t GetDmxPeriodTime();
+
+	uint32_t GetSendDataLength() ;
+
+	const volatile struct dmxsingle::TotalStatistics *GetTotalStatistics();
 
 	static Dmx* Get() {
 		return s_pThis;
@@ -108,15 +77,10 @@ private:
 
 private:
 	bool m_IsInitDone {false};
-	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
-	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
-	uint32_t m_nDmxTransmitPeriod = { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint8_t m_nDataDirectionGpio { GPIO_DMX_DATA_DIRECTION };
 
 	static Dmx *s_pThis;
 };
 
-#endif
-
-#endif /* DMX_H_ */
+#endif /* RPI_DMX_H_ */
