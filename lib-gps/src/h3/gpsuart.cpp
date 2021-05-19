@@ -31,9 +31,8 @@
 
 #include "h3.h"
 #include "h3_gpio.h"
+#include "h3_uart.h"
 #include "h3_ccu.h"
-#include "uart.h"
-
 #include "arm/synchronize.h"
 
 #include "debug.h"

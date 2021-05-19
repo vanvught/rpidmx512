@@ -27,52 +27,10 @@
 #include <stdio.h>
 
 #include "h3.h"
-#include "h3_ccu.h"
-#include "h3_gpio.h"
-
-#include "arm/synchronize.h"
-
-#include "uart.h"
-
-#define BUS_CLK_GATING3_UART0	(1U << 16)
-#define BUS_SOFT_RESET4_UART0	(1U << 16)
-
-static void uart_gpio_init(void) {
-	uint32_t value = H3_PIO_PORTA->CFG0;
-	// PA4, TX
-	value &= (uint32_t)~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT);
-	value |= H3_PA4_SELECT_UART0_TX << PA4_SELECT_CFG0_SHIFT;
-	// PA5, RX
-	value &= (uint32_t)~(GPIO_SELECT_MASK << PA5_SELECT_CFG0_SHIFT);
-	value |= H3_PA5_SELECT_UART0_RX << PA5_SELECT_CFG0_SHIFT;
-	H3_PIO_PORTA->CFG0 = value;
-	// Pin RX, Pull-up
-	value = H3_PIO_PORTA->PUL0;
-	value &= (uint32_t)~(GPIO_PULL_MASK << H3_PA5_PULL0_SHIFT);
-	value |= GPIO_PULL_UP << H3_PA5_PULL0_SHIFT;
-	H3_PIO_PORTA->PUL0 = value;
-}
-
-static void uart_clock_init(void) {
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART0;
-	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING3 &= ~CCU_BUS_CLK_GATING3_UART0;
-	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
-}
+#include "h3_uart.h"
 
 void __attribute__((cold)) uart0_init(void) {
-	uart_gpio_init();
-	uart_clock_init();
-
-	H3_UART0->LCR = UART_LCR_DLAB;
-	H3_UART0->O00.DLL = BAUD_115200_L;
-	H3_UART0->O04.DLH = BAUD_115200_H;
-	H3_UART0->LCR = UART_LCR_8_N_1;
-	H3_UART0->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
-	H3_UART0->O04.IER = 0;
-
-	dmb();
+	h3_uart_begin(0, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		(void) H3_UART0->O00.RBR;
@@ -107,4 +65,3 @@ int uart0_getc(void) {
 
 	return c;
 }
-

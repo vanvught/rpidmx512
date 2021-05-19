@@ -37,13 +37,13 @@
 namespace DmxSerialDefaults {
 	static constexpr auto TYPE = serial::type::UART;
 	static constexpr auto UART_BAUD = 115200;
-	static constexpr auto UART_BITS = 8;
-	static constexpr auto UART_PARITY = serial::uart::parity::NONE;
-	static constexpr auto UART_STOPBITS = 1;
+	static constexpr auto UART_BITS = hal::UART_BITS_8;
+	static constexpr auto UART_PARITY = hal::UART_PARITY_NONE;
+	static constexpr auto UART_STOPBITS = hal::UART_STOP_1BIT;
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;
 	static constexpr auto I2C_ADDRESS = 0x30;
-	static constexpr auto I2C_SPEED_MODE = serial::i2c::speed::FAST;
+	static constexpr auto I2C_SPEED_MODE = hal::i2c::FULL_SPEED;
 }
 
 #define DMXSERIAL_FILE_PREFIX	"chl"

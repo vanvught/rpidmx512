@@ -1,8 +1,8 @@
 /**
- * @file serialinit.cpp
+ * @file hal_uart.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,32 @@
  * THE SOFTWARE.
  */
 
-#include "../src/serial/serial.h"
+#ifndef LINUX_HAL_UART_H_
+#define LINUX_HAL_UART_H_
 
-#include "debug.h"
+#define UART_BITS_5			5
+#define UART_BITS_6			6
+#define UART_BITS_7			7
+#define UART_BITS_8			8
 
-bool Serial::InitUart() {
-	DEBUG_PUTS("InitUart");
-	return true;
+#define UART_PARITY_NONE	0
+#define UART_PARITY_ODD		1
+#define UART_PARITY_EVEN	2
+
+#define UART_STOP_1BIT		1
+#define UART_STOP_2BITS		2
+
+#define FUNC_PREFIX(x) x
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+inline static void uart_begin(__attribute__((unused)) uint32_t uart, __attribute__((unused)) uint32_t baudrate, __attribute__((unused)) uint32_t bits, __attribute__((unused)) uint32_t parity, __attribute__((unused)) uint32_t stop_bits) {}
+inline static void uart_transmit(__attribute__((unused)) uint32_t uart, __attribute__((unused)) const uint8_t *data, __attribute__((unused)) uint32_t length) {}
+
+#ifdef __cplusplus
 }
+#endif
 
-bool Serial::InitSpi() {
-	DEBUG_PUTS("InitSpi");
-	return true;
-}
-
-bool Serial::InitI2c() {
-	DEBUG_PUTS("InitI2c");
-	return true;
-}
+#endif /* LINUX_HAL_UART_H_ */

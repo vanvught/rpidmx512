@@ -26,16 +26,13 @@
 #include <cstdint>
 #include <cassert>
 
+#include "rdm.h"
 #include "dmx.h"
 #include "dmx_multi_internal.h"
-#include "rdm.h"
 
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
-
-#include "uart.h"
-
-#include "debug.h"
+#include "h3_uart.h"
 
 using namespace dmx;
 
@@ -76,21 +73,8 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 	m_TransactionNumber[nPort]++;
 }
 
-void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
-	assert(nPort < max::OUT);
-	assert(pRdmData != nullptr);
-	assert(nLength != 0);
-
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
-
-	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
-
-	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
-
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
-}
-
 void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -105,6 +89,10 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_
 }
 
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+	assert(nPort < max::OUT);
+	assert(pRdmData != nullptr);
+	assert(nLength != 0);
+
 	const auto nDelay = h3_hs_timer_lo_us() - DmxSet::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing

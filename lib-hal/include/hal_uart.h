@@ -1,8 +1,8 @@
 /**
- * @file serialsend.cpp
+ * @file hal_uart.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#ifndef HAL_UART_H_
+#define HAL_UART_H_
 
-#include "../src/serial/serial.h"
+#if defined(__linux__) || defined (__APPLE__)
+# include "linux/hal_api.h"
+# include "linux/hal_uart.h"
+#elif defined(H3)
+# include "h3/hal_api.h"
+# include "h3/hal_uart.h"
+#else
+# error "Not implemented"
+#endif
 
-#include "debug.h"
-
-void Serial::SendUart(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
-	assert(pData != 0);
-	assert(nLength != 0);
-
-	DEBUG_PUTS("SendUart");
-}
-
-void Serial::SendSpi(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
-	assert(pData != 0);
-	assert(nLength != 0);
-
-	DEBUG_PUTS("SendSpi");
-}
-
-void Serial::SendI2c(__attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
-	assert(pData != 0);
-	assert(nLength != 0);
-
-	DEBUG_PUTS("SendI2c");
-}
+#endif /* HAL_UART_H_ */

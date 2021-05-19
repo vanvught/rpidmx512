@@ -2,7 +2,7 @@
  * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,24 +27,20 @@
 #define LINUX_HAL_I2C_H_
 
 #if defined (RASPPI)
-
-#define bcm2835_i2c_set_address bcm2835_i2c_setSlaveAddress
-
+# define bcm2835_i2c_set_address bcm2835_i2c_setSlaveAddress
 #else
-
 # define FUNC_PREFIX(x) x
 # include <cstdint>
 # ifdef __cplusplus
-extern "C" {
+  extern "C" {
 # endif
   inline static void i2c_set_baudrate(__attribute__((unused)) uint32_t _q) {}
   inline static void i2c_set_address(__attribute__((unused)) uint32_t _q) {}
   inline static uint8_t i2c_write(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
   inline static uint8_t i2c_read(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
 # ifdef __cplusplus
-}
+  }
 # endif
-
 #endif
 
 #endif /* LINUX_HAL_I2C_H_ */

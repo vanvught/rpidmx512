@@ -1,8 +1,8 @@
 /**
- * @file serialspi.cpp
+ * @file hal_uart.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,55 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cassert>
+#ifndef H3_HAL_UART_H_
+#define H3_HAL_UART_H_
 
-#include "../src/serial/serial.h"
+#include "h3_uart.h"
 
-#include "h3_spi.h"	// TODO Replace with hal_spi.h ?
+namespace hal {
+static constexpr auto UART_BITS_5 = H3_UART_BITS_5;
+static constexpr auto UART_BITS_6 = H3_UART_BITS_6;
+static constexpr auto UART_BITS_7 = H3_UART_BITS_7;
+static constexpr auto UART_BITS_8 = H3_UART_BITS_8;
 
-#include "debug.h"
+static constexpr auto UART_PARITY_NONE = H3_UART_PARITY_NONE;
+static constexpr auto UART_PARITY_ODD = H3_UART_PARITY_ODD;
+static constexpr auto UART_PARITY_EVEN = H3_UART_PARITY_EVEN;
 
-using namespace serial;
+static constexpr auto UART_STOP_1BIT = H3_UART_STOP_1BIT;
+static constexpr auto UART_STOP_2BITS = H3_UART_STOP_2BITS;
+}  // namespace hal
 
-void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
-	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
-
-	if (nSpeedHz == 0) {
-		return;
-
-	}
-
-	m_SpiConfiguration.nSpeed = nSpeedHz;
-}
-
-void Serial::SetSpiMode(spi::mode tMode) {
-	DEBUG_PRINTF("tMode=%d", tMode);
-
-	if (static_cast<int>(tMode) > 3) {
-		return;
-	}
-
-	m_SpiConfiguration.nMode = static_cast<uint8_t>(tMode);
-}
-
-bool Serial::InitSpi() {
-	DEBUG_ENTRY
-
-	h3_spi_begin();
-	h3_spi_set_speed_hz(m_SpiConfiguration.nSpeed);
-	h3_spi_chipSelect(H3_SPI_CS0);
-	h3_spi_setDataMode(static_cast<h3_spi_mode_t>(m_SpiConfiguration.nMode));
-
-	DEBUG_EXIT
-	return true;
-}
-
-void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
-	DEBUG_ENTRY
-
-	h3_spi_writenb(reinterpret_cast<const char *>(pData), nLength);
-
-	DEBUG_EXIT
-}
+#endif /* H3_HAL_UART_H_ */

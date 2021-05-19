@@ -70,9 +70,13 @@ uart::parity Serial::GetUartParity(const char *pParity) {
 	return uart::parity::NONE;
 }
 
-const char* Serial::GetI2cSpeed(i2c::speed tSpeed) {
-	if (tSpeed < i2c::speed::UNDEFINED) {
-		return aI2cSpeed[tSpeed];
+const char* Serial::GetI2cSpeed(uint32_t nSpeed) {
+	if (nSpeed == hal::i2c::NORMAL_SPEED) {
+		return aI2cSpeed[0];
+	}
+
+	if (nSpeed == hal::i2c::FULL_SPEED) {
+		return aI2cSpeed[1];
 	}
 
 	return "Undefined";

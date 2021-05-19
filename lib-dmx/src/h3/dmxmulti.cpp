@@ -35,6 +35,7 @@
 #include "arm/gic.h"
 
 #include "h3.h"
+#include "h3_uart.h"
 #include "h3_hs_timer.h"
 #include "h3_dma.h"
 #include "h3_ccu.h"
@@ -49,8 +50,6 @@
 
 #include "rdm.h"
 #include "rdm_e120.h"
-
-#include "uart.h"
 
 #include "debug.h"
 

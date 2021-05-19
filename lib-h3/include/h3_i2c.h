@@ -33,7 +33,7 @@ typedef enum H3_I2C_BAUDRATE {
 	H3_I2C_FULL_SPEED = 400000
 } h3_i2c_baudrate_t;
 
-typedef enum H2_I2C_RC {
+typedef enum H3_I2C_RC {
 	H3_I2C_OK = 0,
 	H3_I2C_NOK = 1,
 	H3_I2C_NACK = 2,

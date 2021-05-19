@@ -36,10 +36,10 @@
 #include "arm/arm.h"
 #include "arm/synchronize.h"
 #include "arm/gic.h"
-#include "uart.h"
 #include "irq_timer.h"
 
 #include "h3_gpio.h"
+#include "h3_uart.h"
 #include "h3_ccu.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
@@ -85,46 +85,46 @@ typedef enum {
 using namespace dmxsingle;
 using namespace dmx;
 
-static PortDirection dmx_port_direction = dmx::PortDirection::INP;
+static PortDirection s_nPortDirection = dmx::PortDirection::INP;
 
 // DMX
 
-static volatile uint32_t dmx_data_buffer_index_head ;
-static volatile uint32_t dmx_data_buffer_index_tail;
-static struct Data dmx_data[buffer::INDEX_ENTRIES] ALIGNED;
-static uint8_t dmx_data_previous[buffer::SIZE] ALIGNED;
-static volatile _dmx_state dmx_receive_state = IDLE;
-static volatile uint32_t dmx_data_index;
+static volatile uint32_t sv_nDmxDataBufferIndexHead;
+static volatile uint32_t sv_nDmxDataBufferIndexTail;
+static struct Data s_DmxData[buffer::INDEX_ENTRIES] ALIGNED;
+static uint8_t s_DmxDataPrevious[buffer::SIZE] ALIGNED;
+static volatile _dmx_state sv_DmxReceiveState = IDLE;
+static volatile uint32_t sv_nDmxDataIndex;
 
-static uint32_t dmx_output_break_time_intv = (transmit::BREAK_TIME_MIN * 12);
-static uint32_t dmx_output_mab_time_intv = (transmit::MAB_TIME_MIN * 12);
-static uint32_t dmx_output_period_intv = (transmit::PERIOD_DEFAULT * 12) - (transmit::MAB_TIME_MIN * 12) - (transmit::BREAK_TIME_MIN * 12);
+static uint32_t s_DmxTransmitBreakTimeIntv = (transmit::BREAK_TIME_MIN * 12);
+static uint32_t s_DmxTransmitMabTimeIntv = (transmit::MAB_TIME_MIN * 12);
+static uint32_t s_DmxTransmitPeriodIntv = (transmit::PERIOD_DEFAULT * 12) - (transmit::MAB_TIME_MIN * 12) - (transmit::BREAK_TIME_MIN * 12);
 
-static uint32_t dmx_send_data_length = (max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
-static volatile uint32_t dmx_fiq_micros_current;
-static volatile uint32_t dmx_fiq_micros_previous;
-static volatile bool dmx_is_previous_break_dmx = false;
-static volatile uint32_t dmx_break_to_break_latest;
-static volatile uint32_t dmx_break_to_break_previous;
-static volatile uint32_t dmx_slots_in_packet_previous;
-static volatile _dmx_state dmx_send_state = IDLE;
-static volatile bool dmx_send_always = false;
-static volatile uint32_t dmx_send_break_micros;
-static volatile uint32_t dmx_send_current_slot;
-static bool is_stopped = true;
+static uint32_t s_nDmxSendDataLength = (max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
+static volatile uint32_t sv_nFiqMicrosCurrent;
+static volatile uint32_t sv_nFiqMicrosPrevious;
+static volatile bool sv_isDmxPreviousBreak = false;
+static volatile uint32_t sv_DmxBreakToBreakLatest;
+static volatile uint32_t sv_DmxBreakToBreakPrevious;
+static volatile uint32_t sv_DmxSlotsInPacketPrevious;
+static volatile _dmx_state sv_DmxTransmitState = IDLE;
+static volatile bool sv_doDmxTransmitAlways = false;
+static volatile uint32_t sv_DmxTransmitBreakMicros;
+static volatile uint32_t sv_DmxTransmitCurrentSlot;
+static bool s_IsStopped = true;
 
-static volatile uint32_t dmx_updates_per_seconde;
-static uint32_t dmx_packets_previous;
-static volatile struct TotalStatistics total_statistics ALIGNED;
+static volatile uint32_t sv_nDmxUpdatesPerSecond;
+static volatile uint32_t sv_nDmxPacketsPrevious;
+static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
 
 // RDM
 
-static volatile uint32_t rdm_data_buffer_index_head;
-static volatile uint32_t rdm_data_buffer_index_tail;
-static uint8_t rdm_data_buffer[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
-static volatile uint16_t rdm_checksum;							///< This must be uint16_t
-static volatile uint32_t rdm_data_receive_end;
-static volatile uint32_t rdm_disc_index;
+static volatile uint32_t sv_nRdmDataBufferIndexHead;
+static volatile uint32_t sv_nRdmDataBufferIndexTail;
+static uint8_t s_RdmData[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
+static volatile uint16_t sv_nRdmChecksum;	///< This must be uint16_t
+static volatile uint32_t sv_RdmDataReceiveEnd;
+static volatile uint32_t sv_RdmDiscIndex;
 
 /**
  * Timer 0 interrupt DMX Receiver
@@ -132,14 +132,14 @@ static volatile uint32_t rdm_disc_index;
  */
 static void irq_timer0_dmx_receive(uint32_t clo) {
 	dmb();
-	if (dmx_receive_state == DMXDATA) {
-		if (clo - dmx_fiq_micros_current > dmx_data[0].Statistics.nSlotToSlot) {
+	if (sv_DmxReceiveState == DMXDATA) {
+		if (clo - sv_nFiqMicrosCurrent > s_DmxData[0].Statistics.nSlotToSlot) {
 			dmb();
-			dmx_receive_state = IDLE;
-			dmx_data[dmx_data_buffer_index_head].Statistics.nSlotsInPacket = dmx_data_index - 1;
-			dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & buffer::INDEX_MASK;
+			sv_DmxReceiveState = IDLE;
+			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = sv_nDmxDataIndex - 1;
+			sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 		} else {
-			H3_TIMER->TMR0_INTV = dmx_data[dmx_data_buffer_index_head].Statistics.nSlotToSlot * 12;
+			H3_TIMER->TMR0_INTV = s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		}
 	}
@@ -149,51 +149,51 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
  * Timer 0 interrupt DMX Sender
  */
 static void irq_timer0_dmx_sender(uint32_t clo) {
-	switch (dmx_send_state) {
+	switch (sv_DmxTransmitState) {
 	case IDLE:
 	case DMXINTER:
-		H3_TIMER->TMR0_INTV = dmx_output_break_time_intv;
+		H3_TIMER->TMR0_INTV = s_DmxTransmitBreakTimeIntv;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		EXT_UART->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
-		dmx_send_break_micros = clo;
+		sv_DmxTransmitBreakMicros = clo;
 		dmb();
-		dmx_send_state = BREAK;
+		sv_DmxTransmitState = BREAK;
 		break;
 	case BREAK:
-		H3_TIMER->TMR0_INTV = dmx_output_mab_time_intv;
+		H3_TIMER->TMR0_INTV = s_DmxTransmitMabTimeIntv;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		EXT_UART->LCR = UART_LCR_8_N_2;
 		dmb();
-		dmx_send_state = MAB;
+		sv_DmxTransmitState = MAB;
 		break;
 	case MAB: {
-		H3_TIMER->TMR0_INTV = dmx_output_period_intv;
+		H3_TIMER->TMR0_INTV = s_DmxTransmitPeriodIntv;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
 		uint32_t fifo_cnt = 16;
 
-		for (dmx_send_current_slot = 0; fifo_cnt-- > 0; dmx_send_current_slot++) {
-			if (dmx_send_current_slot >= dmx_send_data_length) {
+		for (sv_DmxTransmitCurrentSlot = 0; fifo_cnt-- > 0; sv_DmxTransmitCurrentSlot++) {
+			if (sv_DmxTransmitCurrentSlot >= s_nDmxSendDataLength) {
 				break;
 			}
 
-			EXT_UART->O00.THR = dmx_data[0].Data[dmx_send_current_slot];
+			EXT_UART->O00.THR = s_DmxData[0].Data[sv_DmxTransmitCurrentSlot];
 		}
 
-		if (dmx_send_current_slot < dmx_send_data_length) {
+		if (sv_DmxTransmitCurrentSlot < s_nDmxSendDataLength) {
 			dmb();
-			dmx_send_state = DMXDATA;
+			sv_DmxTransmitState = DMXDATA;
 			EXT_UART->O04.IER = UART_IER_ETBEI;
 		} else {
 			dmb();
-			dmx_send_state = DMXINTER;
+			sv_DmxTransmitState = DMXINTER;
 		}
 	}
 		break;
 	case DMXDATA:
-		printf("Output period too short (dlen %d, slot %d)\n", dmx_send_data_length, dmx_send_current_slot);
+		printf("Output period too short (dlen %d, slot %d)\n", s_nDmxSendDataLength, sv_DmxTransmitCurrentSlot);
 		assert(0);
 		break;
 	default:
@@ -208,147 +208,146 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
  */
 static void irq_timer1_dmx_receive(__attribute__((unused)) uint32_t clo) {
 	dmb();
-	dmx_updates_per_seconde = total_statistics.nDmxPackets - dmx_packets_previous;
-	dmx_packets_previous = total_statistics.nDmxPackets;
+	sv_nDmxUpdatesPerSecond = sv_TotalStatistics.nDmxPackets - sv_nDmxPacketsPrevious;
+	sv_nDmxPacketsPrevious = sv_TotalStatistics.nDmxPackets;
 }
 
 /**
  * Interrupt handler for continues receiving DMX512 data.
  */
 static void fiq_dmx_in_handler(void) {
-	dmx_fiq_micros_current = h3_hs_timer_lo_us();
+	sv_nFiqMicrosCurrent = h3_hs_timer_lo_us();
 
 	if (EXT_UART->LSR & UART_LSR_BI) {
-		dmx_receive_state = PRE_BREAK;
-		dmx_break_to_break_latest = dmx_fiq_micros_current;
+		sv_DmxReceiveState = PRE_BREAK;
+		sv_DmxBreakToBreakLatest = sv_nFiqMicrosCurrent;
 	} else if (EXT_UART->O08.IIR & UART_IIR_IID_RD) {
 		const auto data = static_cast<uint8_t>(EXT_UART->O00.RBR);
 
-		switch (dmx_receive_state) {
+		switch (sv_DmxReceiveState) {
 		case IDLE:
 			if (data == 0xFE) {
-				dmx_receive_state = RDMDISCFE;
-				rdm_data_buffer[rdm_data_buffer_index_head][0] = 0xFE;
-				dmx_data_index = 1;
+				sv_DmxReceiveState = RDMDISCFE;
+				s_RdmData[sv_nRdmDataBufferIndexHead][0] = 0xFE;
+				sv_nDmxDataIndex = 1;
 			}
 			break;
 		case PRE_BREAK:
-			dmx_receive_state = BREAK;
+			sv_DmxReceiveState = BREAK;
 			break;
 		case BREAK:
 			switch (data) {
 			case START_CODE:
-				dmx_receive_state = DMXDATA;
-				dmx_data[dmx_data_buffer_index_head].Data[0] = START_CODE;
-				dmx_data_index = 1;
-				total_statistics.nDmxPackets = total_statistics.nDmxPackets + 1;
+				sv_DmxReceiveState = DMXDATA;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Data[0] = START_CODE;
+				sv_nDmxDataIndex = 1;
+				sv_TotalStatistics.nDmxPackets = sv_TotalStatistics.nDmxPackets + 1;
 
-				if (dmx_is_previous_break_dmx) {
-					dmx_data[dmx_data_buffer_index_head].Statistics.nBreakToBreak = dmx_break_to_break_latest - dmx_break_to_break_previous;
-					dmx_break_to_break_previous = dmx_break_to_break_latest;
+				if (sv_isDmxPreviousBreak) {
+					s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nBreakToBreak = sv_DmxBreakToBreakLatest - sv_DmxBreakToBreakPrevious;
+					sv_DmxBreakToBreakPrevious = sv_DmxBreakToBreakLatest;
 
 				} else {
-					dmx_is_previous_break_dmx = true;
-					dmx_break_to_break_previous = dmx_break_to_break_latest;
+					sv_isDmxPreviousBreak = true;
+					sv_DmxBreakToBreakPrevious = sv_DmxBreakToBreakLatest;
 				}
 				break;
 			case E120_SC_RDM:
-				dmx_receive_state = RDMDATA;
-				rdm_data_buffer[rdm_data_buffer_index_head][0] = E120_SC_RDM;
-				rdm_checksum = E120_SC_RDM;
-				dmx_data_index = 1;
-				total_statistics.nRdmPackets = total_statistics.nRdmPackets + 1;
-				dmx_is_previous_break_dmx = false;
+				sv_DmxReceiveState = RDMDATA;
+				s_RdmData[sv_nRdmDataBufferIndexHead][0] = E120_SC_RDM;
+				sv_nRdmChecksum = E120_SC_RDM;
+				sv_nDmxDataIndex = 1;
+				sv_TotalStatistics.nRdmPackets = sv_TotalStatistics.nRdmPackets + 1;
+				sv_isDmxPreviousBreak = false;
 				break;
 			default:
-				dmx_receive_state = IDLE;
-				dmx_is_previous_break_dmx = false;
+				sv_DmxReceiveState = IDLE;
+				sv_isDmxPreviousBreak = false;
 				break;
 			}
 			break;
 		case DMXDATA:
-			dmx_data[dmx_data_buffer_index_head].Statistics.nSlotToSlot = dmx_fiq_micros_current - dmx_fiq_micros_previous;
-			dmx_data[dmx_data_buffer_index_head].Data[dmx_data_index++] = data;
+			s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot = sv_nFiqMicrosCurrent - sv_nFiqMicrosPrevious;
+			s_DmxData[sv_nDmxDataBufferIndexHead].Data[sv_nDmxDataIndex++] = data;
 
-			H3_TIMER->TMR0_INTV = (dmx_data[0].Statistics.nSlotToSlot + 12) * 12;
+			H3_TIMER->TMR0_INTV = (s_DmxData[0].Statistics.nSlotToSlot + 12) * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-			if (dmx_data_index > max::CHANNELS) {
-				dmx_receive_state = IDLE;
-				dmx_data[dmx_data_buffer_index_head].Statistics.nSlotsInPacket = max::CHANNELS;
-				dmx_data_buffer_index_head = (dmx_data_buffer_index_head + 1) & buffer::INDEX_MASK;
+			if (sv_nDmxDataIndex > max::CHANNELS) {
+				sv_DmxReceiveState = IDLE;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = max::CHANNELS;
+				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
 			break;
 		case RDMDATA:
-			if (dmx_data_index > RDM_DATA_BUFFER_SIZE) {
-				dmx_receive_state = IDLE;
+			if (sv_nDmxDataIndex > RDM_DATA_BUFFER_SIZE) {
+				sv_DmxReceiveState = IDLE;
 			} else {
-				rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-				rdm_checksum += data;
+				s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+				sv_nRdmChecksum += data;
 
-				const auto *p = reinterpret_cast<struct TRdmMessage *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
-				if (dmx_data_index == p->message_length) {
-					dmx_receive_state = CHECKSUMH;
+				const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_RdmData[sv_nRdmDataBufferIndexHead][0]);
+				if (sv_nDmxDataIndex == p->message_length) {
+					sv_DmxReceiveState = CHECKSUMH;
 				}
 			}
 			break;
 		case CHECKSUMH:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] =	data;
-			rdm_checksum -= static_cast<uint16_t>(data << 8);
-			dmx_receive_state = CHECKSUML;
+			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] =	data;
+			sv_nRdmChecksum -= static_cast<uint16_t>(data << 8);
+			sv_DmxReceiveState = CHECKSUML;
 			break;
 		case CHECKSUML: {
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-			rdm_checksum -= data;
-			const auto *p = reinterpret_cast<struct TRdmMessage *>(&rdm_data_buffer[rdm_data_buffer_index_head][0]);
+			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+			sv_nRdmChecksum -= data;
+			const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_RdmData[sv_nRdmDataBufferIndexHead][0]);
 
-			if ((rdm_checksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
-				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				rdm_data_receive_end = h3_hs_timer_lo_us();;
+			if ((sv_nRdmChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
+				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;
 				dmb();
 			}
-			dmx_receive_state = IDLE;
+			sv_DmxReceiveState = IDLE;
 		}
 			break;
 		case RDMDISCFE:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
+			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
 
-			if ((data == 0xAA) || (dmx_data_index == 9 )) {
-				dmx_receive_state = RDMDISCEUID;
-				rdm_disc_index = 0;
+			if ((data == 0xAA) || (sv_nDmxDataIndex == 9 )) {
+				sv_DmxReceiveState = RDMDISCEUID;
+				sv_RdmDiscIndex = 0;
 			}
 			break;
 		case RDMDISCEUID:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-			rdm_disc_index++;
+			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+			sv_RdmDiscIndex++;
 
-			if (rdm_disc_index == 2 * RDM_UID_SIZE) {
-				dmx_receive_state = RDMDISCECS;
-				rdm_disc_index = 0;
+			if (sv_RdmDiscIndex == 2 * RDM_UID_SIZE) {
+				sv_DmxReceiveState = RDMDISCECS;
+				sv_RdmDiscIndex = 0;
 			}
 			break;
 		case RDMDISCECS:
-			rdm_data_buffer[rdm_data_buffer_index_head][dmx_data_index++] = data;
-			rdm_disc_index++;
+			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+			sv_RdmDiscIndex++;
 
-			if (rdm_disc_index == 4) {
-				rdm_data_buffer_index_head = (rdm_data_buffer_index_head + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				dmx_receive_state = IDLE;
-				rdm_data_receive_end = h3_hs_timer_lo_us();;
+			if (sv_RdmDiscIndex == 4) {
+				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+				sv_DmxReceiveState = IDLE;
+				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;
 				dmb();
 			}
-
 			break;
 		default:
-			dmx_receive_state = IDLE;
-			dmx_is_previous_break_dmx = false;
+			sv_DmxReceiveState = IDLE;
+			sv_isDmxPreviousBreak = false;
 			break;
 		}
 	} else {
 	}
 
-	dmx_fiq_micros_previous = dmx_fiq_micros_current;
+	sv_nFiqMicrosPrevious = sv_nFiqMicrosCurrent;
 }
 
 /**
@@ -357,18 +356,18 @@ static void fiq_dmx_in_handler(void) {
 static void fiq_dmx_out_handler(void) {
 	uint32_t fifo_cnt = 16;
 
-	for (; fifo_cnt-- > 0; dmx_send_current_slot++) {
-		if (dmx_send_current_slot >= dmx_send_data_length) {
+	for (; fifo_cnt-- > 0; sv_DmxTransmitCurrentSlot++) {
+		if (sv_DmxTransmitCurrentSlot >= s_nDmxSendDataLength) {
 			break;
 		}
 
-		EXT_UART->O00.THR = dmx_data[0].Data[dmx_send_current_slot];
+		EXT_UART->O00.THR = s_DmxData[0].Data[sv_DmxTransmitCurrentSlot];
 	}
 
-	if (dmx_send_current_slot >= dmx_send_data_length) {
-		EXT_UART->O04.IER &= static_cast<uint32_t>(~UART_IER_ETBEI);
+	if (sv_DmxTransmitCurrentSlot >= s_nDmxSendDataLength) {
+		EXT_UART->O04.IER &= ~UART_IER_ETBEI;
 		dmb();
-		dmx_send_state = DMXINTER;
+		sv_DmxTransmitState = DMXINTER;
 	}
 }
 
@@ -378,7 +377,7 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 	if (gic_get_active_fiq() == UART_IRQN) {
 		const uint32_t iir = EXT_UART->O08.IIR ;
 
-		if (dmx_port_direction == PortDirection::INP) {
+		if (s_nPortDirection == PortDirection::INP) {
 			fiq_dmx_in_handler();
 		} else {
 			if ((iir & 0xF) == UART_IIR_IID_THRE) {
@@ -464,34 +463,34 @@ void Dmx::Init() {
 	h3_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
 
 #ifdef LOGIC_ANALYZER
-	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH1);
-	h3_gpio_fsel(GPIO_ANALYZER_CH2, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH2, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH2);
-	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH3);
-	h3_gpio_fsel(GPIO_ANALYZER_CH4, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH4, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH4);
-	h3_gpio_fsel(GPIO_ANALYZER_CH5, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH5, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH5);
-	h3_gpio_fsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH6);
-	h3_gpio_fsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);	///<
+	h3_gpio_fsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH7);
 #endif
 
 	ClearData();
 
-	dmx_data_buffer_index_head = 0;
-	dmx_data_buffer_index_tail = 0;
+	sv_nDmxDataBufferIndexHead = 0;
+	sv_nDmxDataBufferIndexTail = 0;
 
-	rdm_data_buffer_index_head = 0;
-	rdm_data_buffer_index_tail = 0;
+	sv_nRdmDataBufferIndexHead = 0;
+	sv_nRdmDataBufferIndexTail = 0;
 
-	dmx_receive_state = IDLE;
+	sv_DmxReceiveState = IDLE;
 
-	dmx_send_state = IDLE;
-	dmx_send_always = false;
+	sv_DmxTransmitState = IDLE;
+	sv_doDmxTransmitAlways = false;
 
 	irq_timer_init();
 
@@ -521,10 +520,10 @@ void Dmx::UartDisableFifo() {	// DMX Input
 }
 
 void Dmx::StartData() {
-	switch (dmx_port_direction) {
+	switch (s_nPortDirection) {
 	case PortDirection::OUTP: {
-		dmx_send_always = true;
-		dmx_send_state = IDLE;
+		sv_doDmxTransmitAlways = true;
+		sv_DmxTransmitState = IDLE;
 
 		UartEnableFifo();
 		__enable_fiq();
@@ -533,7 +532,7 @@ void Dmx::StartData() {
 
 		const auto clo = h3_hs_timer_lo_us();
 
-		if (clo - dmx_send_break_micros > m_nDmxTransmitPeriod) {
+		if (clo - sv_DmxTransmitBreakMicros > m_nDmxTransmitPeriod) {
 			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
 			H3_TIMER->TMR0_INTV = 4 * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
@@ -547,7 +546,7 @@ void Dmx::StartData() {
 	}
 		break;
 	case PortDirection::INP:
-		dmx_receive_state = IDLE;
+		sv_DmxReceiveState = IDLE;
 
 		irq_timer_set(IRQ_TIMER_0, irq_timer0_dmx_receive);
 		H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
@@ -566,93 +565,89 @@ void Dmx::StartData() {
 		break;
 	}
 
-	is_stopped = false;
+	s_IsStopped = false;
 }
 
 void Dmx::StopData() {
-	uint32_t i;
-
-	if (is_stopped) {
+	if (s_IsStopped) {
 		return;
 	}
 
-	if (dmx_send_always) {
+	if (sv_doDmxTransmitAlways) {
 		do {
 			dmb();
-			if (dmx_send_state == DMXINTER) {
+			if (sv_DmxTransmitState == DMXINTER) {
 				while (!(EXT_UART->USR & UART_USR_TFE))
 					;
-				dmx_send_state = IDLE;
+				sv_DmxTransmitState = IDLE;
 			}
 			dmb();
-		} while (dmx_send_state != IDLE);
+		} while (sv_DmxTransmitState != IDLE);
 	}
 
-	irq_timer_set(IRQ_TIMER_0, NULL);
+	irq_timer_set(IRQ_TIMER_0, nullptr);
 
 	__disable_fiq();
 	isb();
 
-	dmx_send_always = false;
-	dmx_receive_state = IDLE;
+	sv_doDmxTransmitAlways = false;
+	sv_DmxReceiveState = IDLE;
 
-	for (i = 0; i < buffer::INDEX_ENTRIES; i++) {
-		dmx_data[i].Statistics.nSlotsInPacket = 0;
+	for (uint32_t i = 0; i < buffer::INDEX_ENTRIES; i++) {
+		s_DmxData[i].Statistics.nSlotsInPacket = 0;
 	}
 
-	is_stopped = true;
+	s_IsStopped = true;
 }
 
 void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
-	DEBUG_PRINTF("tPortDirection=%d, bEnableData=%d", static_cast<int>(tPortDirection), bEnableData);
-
 	assert(nPort == 0);
 
-		if (tPortDirection != dmx_port_direction) {
-			StopData();
+	if (tPortDirection != s_nPortDirection) {
+		StopData();
 
-			switch (tPortDirection) {
-			case  PortDirection::OUTP:
-				h3_gpio_set(m_nDataDirectionGpio);// 0 = input, 1 = output
-				dmx_port_direction = PortDirection::OUTP;
-				break;
-			case  PortDirection::INP:
-			default:
-				h3_gpio_clr(m_nDataDirectionGpio);// 0 = input, 1 = output
-				dmx_port_direction =  PortDirection::INP;
-				break;
-			}
-		} else if (!bEnableData) {
-			StopData();
+		switch (tPortDirection) {
+		case PortDirection::OUTP:
+			h3_gpio_set(m_nDataDirectionGpio); // 0 = input, 1 = output
+			s_nPortDirection = PortDirection::OUTP;
+			break;
+		case PortDirection::INP:
+		default:
+			h3_gpio_clr(m_nDataDirectionGpio); // 0 = input, 1 = output
+			s_nPortDirection = PortDirection::INP;
+			break;
 		}
+	} else if (!bEnableData) {
+		StopData();
+	}
 
-		if (bEnableData) {
-			StartData();
-		}
+	if (bEnableData) {
+		StartData();
+	}
 }
 
-dmx::PortDirection Dmx::GetPortDirection() {
-	return dmx_port_direction;
+PortDirection Dmx::GetPortDirection() {
+	return s_nPortDirection;
 }
 
 // DMX
 
 void Dmx::SetDmxBreakTime(uint32_t nBreakTime) {
 	m_nDmxTransmitBreakTime = std::max(transmit::BREAK_TIME_MIN, nBreakTime);
-	dmx_output_break_time_intv = m_nDmxTransmitBreakTime * 12;
+	s_DmxTransmitBreakTimeIntv = m_nDmxTransmitBreakTime * 12;
 
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
 void Dmx::SetDmxMabTime(uint32_t nMabTime) {
 	m_nDmxTransmitMabTime = std::max(transmit::MAB_TIME_MIN, nMabTime);
-	dmx_output_mab_time_intv = m_nDmxTransmitMabTime * 12;
+	s_DmxTransmitMabTimeIntv = m_nDmxTransmitMabTime * 12;
 
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
 void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
-	const auto package_length_us = m_nDmxTransmitBreakTime + m_nDmxTransmitMabTime + (dmx_send_data_length * 44);
+	const auto package_length_us = m_nDmxTransmitBreakTime + m_nDmxTransmitMabTime + (s_nDmxSendDataLength * 44);
 
 	m_nDmxTransmitPeriodRequested = nPeriodTime;
 
@@ -663,23 +658,23 @@ void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
 			m_nDmxTransmitPeriod = nPeriodTime;
 		}
 	} else {
-		m_nDmxTransmitPeriod =  std::max(transmit::BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
+		m_nDmxTransmitPeriod = std::max(transmit::BREAK_TO_BREAK_TIME_MIN, package_length_us + 44);
 	}
 
-	dmx_output_period_intv = (m_nDmxTransmitPeriod * 12) - dmx_output_break_time_intv - dmx_output_mab_time_intv;
+	s_DmxTransmitPeriodIntv = (m_nDmxTransmitPeriod * 12) - s_DmxTransmitBreakTimeIntv - s_DmxTransmitMabTimeIntv;
 }
 
 const uint8_t* Dmx::GetDmxCurrentData() {
-	return dmx_data[dmx_data_buffer_index_tail].Data;
+	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
 const uint8_t* Dmx::GetDmxAvailable() {
 	dmb();
-	if (dmx_data_buffer_index_head == dmx_data_buffer_index_tail) {
+	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
 	} else {
-		const auto *p = dmx_data[dmx_data_buffer_index_tail].Data;
-		dmx_data_buffer_index_tail = (dmx_data_buffer_index_tail + 1) & buffer::INDEX_MASK;
+		const auto *p = s_DmxData[sv_nDmxDataBufferIndexTail].Data;
+		sv_nDmxDataBufferIndexTail = (sv_nDmxDataBufferIndexTail + 1) & buffer::INDEX_MASK;
 		return p;
 	}
 }
@@ -692,11 +687,11 @@ const uint8_t* Dmx::GetDmxChanged() {
 		return nullptr;
 	}
 
-	auto *dst = reinterpret_cast<uint32_t *>(dmx_data_previous);
+	auto *dst = reinterpret_cast<uint32_t *>(s_DmxDataPrevious);
 	const auto *dmx_statistics = reinterpret_cast<const struct Data *>(p);
 
-	if (dmx_statistics->Statistics.nSlotsInPacket != dmx_slots_in_packet_previous) {
-		dmx_slots_in_packet_previous = dmx_statistics->Statistics.nSlotsInPacket;
+	if (dmx_statistics->Statistics.nSlotsInPacket != sv_DmxSlotsInPacketPrevious) {
+		sv_DmxSlotsInPacketPrevious = dmx_statistics->Statistics.nSlotsInPacket;
 		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
 			*dst= *src;
 			dst++;
@@ -720,42 +715,42 @@ const uint8_t* Dmx::GetDmxChanged() {
 }
 
 void Dmx::SetSendDataLength(uint16_t nLength) {
-	dmx_send_data_length = nLength;
+	s_nDmxSendDataLength = nLength;
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
 void Dmx::SetSendData(const uint8_t *pData, uint16_t nLength) {
 	do {
 		dmb();
-	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
+	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
 
 	__builtin_prefetch(pData);
-	memcpy(dmx_data[0].Data, pData, nLength);
+	memcpy(s_DmxData[0].Data, pData, nLength);
 
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *data, uint16_t nLength) {
+void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint16_t nLength) {
 	do {
 		dmb();
-	} while (dmx_send_state != IDLE && dmx_send_state != DMXINTER);
+	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
 
-	dmx_data[0].Data[0] = START_CODE;
+	s_DmxData[0].Data[0] = START_CODE;
 
-	__builtin_prefetch(data);
-	memcpy(&dmx_data[0].Data[1], data, nLength);
+	__builtin_prefetch(pData);
+	memcpy(&s_DmxData[0].Data[1], pData, nLength);
 
 	SetSendDataLength(nLength + 1);
 }
 
 uint32_t Dmx::GetUpdatesPerSecond() {
 	dmb();
-	return dmx_updates_per_seconde;
+	return sv_nDmxUpdatesPerSecond;
 }
 
 void Dmx::ClearData() {
-	auto i = sizeof(dmx_data) / sizeof(uint32_t);
-	auto *p = reinterpret_cast<uint32_t *>(dmx_data);
+	auto i = sizeof(s_DmxData) / sizeof(uint32_t);
+	auto *p = reinterpret_cast<uint32_t *>(s_DmxData);
 
 	while (i-- != 0) {
 		*p++ = 0;
@@ -765,18 +760,18 @@ void Dmx::ClearData() {
 // RDM
 
 uint32_t Dmx::RdmGetDateReceivedEnd() {
-	return rdm_data_receive_end;
+	return sv_RdmDataReceiveEnd;
 }
 
 const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
 	assert(nPort == 0);
 
 	dmb();
-	if (rdm_data_buffer_index_head == rdm_data_buffer_index_tail) {
+	if (sv_nRdmDataBufferIndexHead == sv_nRdmDataBufferIndexTail) {
 		return nullptr;
 	} else {
-		const auto *p = &rdm_data_buffer[rdm_data_buffer_index_tail][0];
-		rdm_data_buffer_index_tail = (rdm_data_buffer_index_tail + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+		const auto *p = &s_RdmData[sv_nRdmDataBufferIndexTail][0];
+		sv_nRdmDataBufferIndexTail = (sv_nRdmDataBufferIndexTail + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 		return p;
 	}
 }
@@ -789,7 +784,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 
 	do {
 		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
-			return p;
+			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ((H3_TIMER->AVS_CNT1 - nMicros) < nTimeOut);
 

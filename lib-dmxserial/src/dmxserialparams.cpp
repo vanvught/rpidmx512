@@ -2,7 +2,7 @@
  * @file dmxserialparams.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -299,7 +299,7 @@ void DmxSerialParams::Set() {
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::SPI_MODE)) {
-		Serial::Get()->SetSpiMode(static_cast<spi::mode>(m_tDmxSerialParams.nSpiMode));
+		Serial::Get()->SetSpiMode(m_tDmxSerialParams.nSpiMode);
 	}
 
 	if (isMaskSet(DmxSerialParamsMask::I2C_ADDRESS)) {

@@ -2,7 +2,7 @@
  * @file dmxserialtftp.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@
 #ifndef DMXSERIALTFTP_H_
 #define DMXSERIALTFTP_H_
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "tftpdaemon.h"
 
-class DmxSerialTFTP: public TFTPDaemon {
+class DmxSerialTFTP final: public TFTPDaemon {
 public:
-	DmxSerialTFTP();
-	~DmxSerialTFTP() override;
+	DmxSerialTFTP() {}
+	~DmxSerialTFTP() override {}
 
 	bool FileOpen(const char *pFileName, TFTPMode tMode) override;
 	bool FileCreate(const char *pFileName, TFTPMode tMode) override;
@@ -44,7 +44,7 @@ public:
 	void Exit() override;
 
 private:
-	FILE *m_pFile = nullptr;
+	FILE *m_pFile { nullptr };
 };
 
 #endif /* DMXSERIALTFTP_H_ */

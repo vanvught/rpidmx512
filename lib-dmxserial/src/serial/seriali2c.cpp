@@ -1,8 +1,8 @@
 /**
- * @file serial.cpp
+ * @file seriali2c.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,55 +27,45 @@
 #include <cstdio>
 #include <cassert>
 
-#include "../src/serial/serial.h"
+#include "./serial.h"
+
+#include "hal_i2c.h"
 
 #include "debug.h"
 
-/*
- * UART
- */
-void Serial::SetUartBaud(uint32_t nBaud) {
-	DEBUG_PRINTF("nBaud=%d", nBaud);
+using namespace serial;
 
-	m_UartConfiguration.nBaud = nBaud;
-}
-
-void Serial::SetUartBits(__attribute__((unused)) uint8_t nBits) {
-	DEBUG_PRINTF("nBits=%d", nBits);
-
-}
-
-void Serial::SetUartParity(__attribute__((unused)) serial::uart::parity tParity) {
-	DEBUG_PRINTF("tParity=%d", static_cast<int>(tParity));
-
-}
-
-void Serial::SetUartStopBits(__attribute__((unused)) uint8_t nStopBits) {
-	DEBUG_PRINTF("nStopBits=%d", nStopBits);
-
-}
-
-/*
- * SPI
- */
-void Serial::SetSpiSpeedHz(__attribute__((unused)) uint32_t nSpeedHz) {
-	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
-}
-
-void Serial::SetSpiMode(__attribute__((unused)) serial::spi::mode tMode) {
-	DEBUG_PRINTF("tMode=%d", static_cast<int>(tMode));
-}
-
-/*
- * I2C
- */
-void Serial::SetI2cAddress(__attribute__((unused)) uint8_t nAddress) {
+void Serial::SetI2cAddress(uint8_t nAddress) {
 	DEBUG_PRINTF("nAddress=%.x", nAddress);
+
+	m_I2cConfiguration.nAddress = nAddress;
 }
 
-void Serial::SetI2cSpeedMode(__attribute__((unused)) serial::i2c::speed tSpeedMode) {
-	DEBUG_PRINTF("tSpeedMode=%.x", static_cast<int>(tSpeedMode));
+void Serial::SetI2cSpeedMode(i2c::speed tSpeedMode) {
+	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
+
+	if (tSpeedMode == i2c::speed::NORMAL) {
+		m_I2cConfiguration.nSpeed = hal::i2c::NORMAL_SPEED;
+	} else {
+		m_I2cConfiguration.nSpeed = hal::i2c::FULL_SPEED;
+	}
 }
 
+bool Serial::InitI2c() {
+	DEBUG_ENTRY
 
+	FUNC_PREFIX (i2c_begin());
+	FUNC_PREFIX (i2c_set_baudrate(m_I2cConfiguration.nSpeed));
 
+	DEBUG_EXIT
+	return true;
+}
+
+void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	FUNC_PREFIX (i2c_set_slave_address(m_I2cConfiguration.nAddress));
+	FUNC_PREFIX (i2c_write(reinterpret_cast<const char*>(pData), nLength));
+
+	DEBUG_EXIT
+}

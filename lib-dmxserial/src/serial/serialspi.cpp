@@ -1,8 +1,8 @@
 /**
- * @file seriali2c.cpp
+ * @file serialspi.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,45 +27,51 @@
 #include <cstdio>
 #include <cassert>
 
-#include "../src/serial/serial.h"
+#include "serial.h"
 
-#include "h3_i2c.h"	// TODO Replace with hal_i2c.h ?
+#include "hal_spi.h"
 
 #include "debug.h"
 
 using namespace serial;
 
-void Serial::SetI2cAddress(uint8_t nAddress) {
-	DEBUG_PRINTF("nAddress=%.x", nAddress);
+void Serial::SetSpiSpeedHz(uint32_t nSpeedHz) {
+	DEBUG_PRINTF("nSpeedHz=%d", nSpeedHz);
 
-	m_I2cConfiguration.nAddress = nAddress;
+	if (nSpeedHz == 0) {
+		return;
+
+	}
+
+	m_SpiConfiguration.nSpeed = nSpeedHz;
 }
 
-void Serial::SetI2cSpeedMode(i2c::speed tSpeedMode) {
-	DEBUG_PRINTF("tSpeedMode=%.x", tSpeedMode);
+void Serial::SetSpiMode(uint32_t nMode) {
+	DEBUG_PRINTF("tMode=%d", nMode);
 
-	if (tSpeedMode >= i2c::speed::UNDEFINED) {
+	if (nMode > 3) {
 		return;
 	}
 
-	m_I2cConfiguration.tMode = tSpeedMode;
+	m_SpiConfiguration.nMode = static_cast<uint8_t>(nMode);
 }
 
-bool Serial::InitI2c() {
+bool Serial::InitSpi() {
 	DEBUG_ENTRY
 
-	h3_i2c_begin();
-	h3_i2c_set_baudrate(m_I2cConfiguration.tMode == i2c::speed::NORMAL ? H3_I2C_NORMAL_SPEED : H3_I2C_FULL_SPEED);
+	FUNC_PREFIX (spi_begin());
+	FUNC_PREFIX (spi_set_speed_hz(m_SpiConfiguration.nSpeed));
+	FUNC_PREFIX (spi_chipSelect(SPI_CS0));
+	FUNC_PREFIX (spi_setDataMode(static_cast<h3_spi_mode_t>(m_SpiConfiguration.nMode)));
 
 	DEBUG_EXIT
 	return true;
 }
 
-void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
+void Serial::SendSpi(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	h3_i2c_set_slave_address(m_I2cConfiguration.nAddress);
-	h3_i2c_write(reinterpret_cast<const char*>(pData), nLength);
+	FUNC_PREFIX (spi_writenb(reinterpret_cast<const char *>(pData), nLength));
 
 	DEBUG_EXIT
 }

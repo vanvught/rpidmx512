@@ -2,7 +2,7 @@
  * @file serial.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,15 +42,15 @@ Serial::Serial()  {
 	s_pThis = this;
 
 	m_UartConfiguration.nBaud = 115200;
-	m_UartConfiguration.nBits = 8;
-	m_UartConfiguration.tParity = uart::parity::NONE;
-	m_UartConfiguration.nStopBits = 1;
+	m_UartConfiguration.nBits = hal::UART_BITS_8;
+	m_UartConfiguration.nParity = hal::UART_PARITY_NONE;
+	m_UartConfiguration.nStopBits = hal::UART_STOP_1BIT;
 
 	m_SpiConfiguration.nSpeed = 1000000; // 1MHz
 	m_SpiConfiguration.nMode = 0;
 
 	m_I2cConfiguration.nAddress = 0x30;
-	m_I2cConfiguration.tMode = i2c::speed::FAST;
+	m_I2cConfiguration.nSpeed = hal::i2c::FULL_SPEED;
 
 	DEBUG_EXIT
 }
@@ -69,14 +69,17 @@ void Serial::Send(const uint8_t *pData, uint32_t nLength) {
 
 	if (m_tType == type::UART) {
 		SendUart(pData, nLength);
+		return;
 	}
 
 	if (m_tType == type::SPI) {
 		SendSpi(pData, nLength);
+		return;
 	}
 
 	if (m_tType == type::I2C) {
 		SendI2c(pData, nLength);
+		return;
 	}
 
 	DEBUG_EXIT
@@ -88,7 +91,7 @@ void Serial::Print() {
 	if (m_tType == type::UART) {
 		printf(" Baud     : %d\n", m_UartConfiguration.nBaud);
 		printf(" Bits     : %d\n", m_UartConfiguration.nBits);
-		printf(" Parity   : %s\n", GetUartParity(m_UartConfiguration.tParity));
+		printf(" Parity   : %s\n", GetUartParity(m_UartConfiguration.nParity));
 		printf(" StopBits : %d\n", m_UartConfiguration.nStopBits);
 		return;
 	}
@@ -101,7 +104,7 @@ void Serial::Print() {
 
 	if (m_tType == type::I2C) {
 		printf(" Address    : %.2x\n", m_I2cConfiguration.nAddress);
-		printf(" Speed mode : %s\n", GetI2cSpeed(m_I2cConfiguration.tMode));
+		printf(" Speed mode : %s\n", GetI2cSpeed(m_I2cConfiguration.nSpeed));
 		return;
 	}
 }
