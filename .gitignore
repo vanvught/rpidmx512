@@ -61,6 +61,7 @@ lcd1602
 lcd2004
 oled128x32
 ssd1306
+ssd1311
 
 # lib-l6470
 get_set_param_test

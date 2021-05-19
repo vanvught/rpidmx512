@@ -148,7 +148,7 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 	p->O00.DLL = divisor & 0xFF;
 	p->O04.DLH = (divisor >> 8);
 	p->LCR = lcr;
-	p->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET;
+	p->O08.FCR = UART_FCR_EFIFO | UART_FCR_TRESET | UART_FCR_RRESET;
 	p->O04.IER = 0;
 	isb();
 }
