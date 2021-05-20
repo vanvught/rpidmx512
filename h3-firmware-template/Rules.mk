@@ -153,7 +153,7 @@ COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
-#COPS+=-fstack-usage -fcallgraph-info
+#COPS+=-fstack-usage
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 
@@ -224,7 +224,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBDEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
-	$(PREFIX)size -A $(BUILD)main.elf
+	$(PREFIX)size -A -x $(BUILD)main.elf
 
 $(TARGET) : $(BUILD)main.elf 
 	$(PREFIX)objcopy $(BUILD)main.elf -O binary $(TARGET)	
