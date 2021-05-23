@@ -85,4 +85,7 @@ int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode);
 #define CONFIG_SPI_FLASH_WINBOND
 extern int spi_flash_probe_winbond(struct spi_flash *spi, uint8_t *idcode);
 
+#define CONFIG_SPI_FLASH_GIGADEVICE
+extern int spi_flash_probe_gigadevice(struct spi_flash *spi, uint8_t *idcode);
+
 #endif /* SPI_FLASH_INTERNAL_H_ */

@@ -3,6 +3,11 @@
  *
  */
 /*
+ * Copyright 2008, Network Appliance Inc.
+ * Author: Jason McMullan <mcmullan <at> netapp.com>
+ * Licensed under the GPL-2 or later.
+ */
+/*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/winbond.c
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl

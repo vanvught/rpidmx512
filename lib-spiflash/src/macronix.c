@@ -3,6 +3,20 @@
  *
  */
 /*
+ * Copyright 2009(C) Marvell International Ltd. and its affiliates
+ * Prafulla Wadaskar <prafulla@marvell.com>
+ *
+ * Based on drivers/mtd/spi/stmicro.c
+ *
+ * Copyright 2008, Network Appliance Inc.
+ * Jason McMullan <mcmullan@netapp.com>
+ *
+ * Copyright (C) 2004-2007 Freescale Semiconductor, Inc.
+ * TsiChung Liew (Tsi-Chung.Liew@freescale.com)
+ *
+ * SPDX-License-Identifier:	GPL-2.0+
+ */
+/*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/macronix.c
  */
 /* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
