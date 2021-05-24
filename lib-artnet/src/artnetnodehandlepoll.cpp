@@ -38,6 +38,7 @@
 
 #include "artnetnode_internal.h"
 
+#include "hardware.h"
 #include "network.h"
 
 using namespace artnet;
@@ -82,8 +83,11 @@ void ArtNetNode::FillPollReply() {
 	}
 
 	m_PollReply.Status2 = m_Node.Status2;
+	m_PollReply.Status3 = m_Node.Status3;
 
 	m_PollReply.NumPortsLo = 4; // Default
+
+	memcpy(m_PollReply.DefaultUidResponder, m_Node.DefaultUidResponder, sizeof m_PollReply.DefaultUidResponder);
 }
 
 void ArtNetNode::SendPollRelply(bool bResponse) {

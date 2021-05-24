@@ -131,18 +131,23 @@ struct ArtNetTalkToMe {
 };
 
 /**
- * ArtPollReply packet, Field 40
+ * ArtPollReply packet
  */
 struct ArtNetStatus2 {
-	static constexpr auto WEB_BROWSER_SUPPORT = (1 << 0);	///< Bit 0, Set = Product supports web browser configuration
+	static constexpr auto WEB_BROWSER_SUPPORT = (1U << 0);	///< Bit 0, Set = Product supports web browser configuration
 	static constexpr auto IP_MANUALY = (0 << 1);			///< Bit 1, Clr = Node’s IP is manually configured.
-	static constexpr auto IP_DHCP = (1 << 1);				///< Bit 1, Set = Node’s IP is DHCP configured.
+	static constexpr auto IP_DHCP = (1U << 1);				///< Bit 1, Set = Node’s IP is DHCP configured.
 	static constexpr auto DHCP_NOT_CAPABLE = (0 << 2);		///< Bit 2, Clr = Node is not DHCP capable.
-	static constexpr auto DHCP_CAPABLE = (1 << 2);			///< Bit 2, Set = Node is DHCP capable.
+	static constexpr auto DHCP_CAPABLE = (1U << 2);			///< Bit 2, Set = Node is DHCP capable.
 	static constexpr auto PORT_ADDRESS_8BIT = (0 << 3);		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
-	static constexpr auto PORT_ADDRESS_15BIT = (1 << 3);	///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
+	static constexpr auto PORT_ADDRESS_15BIT = (1U << 3);	///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
 	static constexpr auto SACN_NO_SWITCH = (0 << 4);		///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
-	static constexpr auto SACN_ABLE_TO_SWITCH = (1 << 4);	///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+	static constexpr auto SACN_ABLE_TO_SWITCH = (1U << 4);	///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+};
+
+struct ArtNetStatus3 {
+	static constexpr auto NETWORKLOSS_OFF_STATE = (1U << 6);	///< bit 76 = 01 If network data is lost, it will set all outputs to off state
+	static constexpr auto SUPPORTS_LLRP = (1U << 4);			///< bit 4 = 1 Node supports LLRP (Low Level Recovery Protocol
 };
 
 enum TGoodOutput {

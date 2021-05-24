@@ -464,6 +464,8 @@ void notmain(void) {
 	rdmNetLLRPOnly.Start();
 	rdmNetLLRPOnly.Print();
 
+	node.SetRdmUID(rdmNetLLRPOnly.GetRDMNetDevice()->GetUID(), true);
+
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + ltcSource);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 

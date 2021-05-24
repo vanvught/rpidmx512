@@ -121,6 +121,8 @@ struct TArtNetNode {
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;
 	uint8_t Status2;
+	uint8_t Status3;
+	uint8_t DefaultUidResponder[6];					///< //RDMnet & LLRP UID
 };
 
 struct TGenericPort {
@@ -284,6 +286,8 @@ public:
 	}
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
+
+	void SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP = false);
 
 	void Print();
 

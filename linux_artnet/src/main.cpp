@@ -126,6 +126,8 @@ int main(int argc, char **argv) {
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
+	node.SetRdmUID(RdmResponder.GetUID());
+
 	if(artnet4Params.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams;
 		if (rdmDeviceParams.Load()) {
@@ -163,6 +165,7 @@ int main(int argc, char **argv) {
 
 	Identify identify;
 
+	hw.Print();
 	nw.Print();
 	node.Print();
 

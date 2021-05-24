@@ -110,7 +110,6 @@ void ArtNetNode::SendTod(uint32_t nPortId) {
 
 void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 	DEBUG_ENTRY
-
 	assert(pArtNetTRdm != nullptr);
 
 	if (pArtNetTRdm != nullptr) {
@@ -176,4 +175,13 @@ void ArtNetNode::HandleRdm() {
 	}
 
 	DEBUG_EXIT
+}
+
+void ArtNetNode::SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP) {
+	memcpy(m_Node.DefaultUidResponder, pUid, sizeof(m_Node.DefaultUidResponder));
+	if (bSupportsLLRP) {
+		m_Node.Status3 |= ArtNetStatus3::SUPPORTS_LLRP;
+	} else {
+		m_Node.Status3 &= static_cast<uint8_t>(~ArtNetStatus3::SUPPORTS_LLRP);
+	}
 }

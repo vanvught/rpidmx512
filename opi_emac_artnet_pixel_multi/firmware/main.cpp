@@ -185,6 +185,8 @@ void notmain(void) {
 		rdmDeviceParams.Dump();
 	}
 
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
 	llrpOnlyDevice.Init();
 	llrpOnlyDevice.Start();
 	llrpOnlyDevice.Print();

@@ -66,6 +66,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint32_t nPages) :
 	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
 	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (m_nVersion > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
+	m_Node.Status3 = ArtNetStatus3::NETWORKLOSS_OFF_STATE;
 
 	memset(&m_State, 0, sizeof(struct TArtNetNodeState));
 	m_State.reportCode = ARTNET_RCPOWEROK;
@@ -240,7 +241,7 @@ void ArtNetNode::GetType() {
 	}
 
 	if (memcmp(pPacket, "Art-Net\0", 8) == 0) {
-		m_ArtNetPacket.OpCode = static_cast<TOpCodes>(((pPacket[9] << 8)) + pPacket[8]);
+		m_ArtNetPacket.OpCode = static_cast<TOpCodes>((static_cast<uint16_t>(pPacket[9] << 8)) + pPacket[8]);
 	} else {
 		m_ArtNetPacket.OpCode = OP_NOT_DEFINED;
 	}
