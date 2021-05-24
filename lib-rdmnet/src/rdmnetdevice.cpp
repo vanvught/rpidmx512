@@ -36,7 +36,8 @@
 #include "lightset.h"
 #include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
-#include "e131uuid.h"
+
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -45,7 +46,7 @@
 RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
 	DEBUG_ENTRY
 
-	E131Uuid::GetHardwareUuid(m_Cid);
+	Hardware::Get()->GetUuid(m_Cid);
 
 	m_pRdmCommand = new struct TRdmMessage;
 	assert(m_pRdmCommand != nullptr);

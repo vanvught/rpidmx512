@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <cstddef>
+#include <string.h>
 #include <time.h>
 #include <cassert>
 
@@ -32,6 +33,7 @@
 #include "ledblink.h"
 
 #include "h3_watchdog.h"
+#include "h3_sid.h"
 #include "h3_board.h"
 
 #include "arm/synchronize.h"
@@ -159,4 +161,20 @@ bool Hardware::Reboot() {
 
 	__builtin_unreachable();
 	return true;
+}
+
+typedef union pcast32 {
+	uuid_t uuid;
+	uint8_t u8[16];
+} _pcast32;
+
+void Hardware::GetUuid(uuid_t out) {
+	_pcast32 cast;
+
+	h3_sid_get_rootkey(&cast.u8[0]);
+
+	cast.uuid[6] = static_cast<char>(0x40 | (cast.uuid[6] & 0xf));
+	cast.uuid[8] = static_cast<char>(0x80 | (cast.uuid[8] & 0x3f));
+
+	memcpy(out, cast.uuid, sizeof(uuid_t));
 }

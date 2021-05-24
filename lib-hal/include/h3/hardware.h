@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <time.h>
+#include <uuid/uuid.h>
 
 #include "hwclock.h"
 
@@ -44,6 +45,7 @@ class Hardware {
 public:
 	Hardware();
 
+	void GetUuid(uuid_t out);
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
 	const char *GetBoardName(uint8_t &nLength);

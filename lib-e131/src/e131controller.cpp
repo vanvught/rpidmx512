@@ -34,7 +34,6 @@
 
 #include "e131.h"
 #include "e131packets.h"
-#include "e131uuid.h"
 
 #include "e117const.h"
 
@@ -72,7 +71,7 @@ E131Controller::E131Controller() {
 	snprintf(aSourceName, E131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	E131Uuid::GetHardwareUuid(m_Cid);
+	Hardware::Get()->GetUuid(m_Cid);
 
 	for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++) {
 		memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));

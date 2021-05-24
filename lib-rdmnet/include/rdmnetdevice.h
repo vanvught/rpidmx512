@@ -34,7 +34,6 @@
 #include "rdmhandler.h"
 
 #include "e131.h"
-#include "e131uuid.h"
 
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:

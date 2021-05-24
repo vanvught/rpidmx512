@@ -1,7 +1,7 @@
 #
-DEFINES = DMX_WORKSHOP_DEFECT NDEBUG
+DEFINES=DMX_WORKSHOP_DEFECT NDEBUG
 #
-EXTRA_INCLUDES = ../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES=../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 #
 include Rules.mk
 include ../linux-template/lib/Rules.mk

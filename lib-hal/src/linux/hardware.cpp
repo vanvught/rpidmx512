@@ -2,7 +2,7 @@
  * @file hardware.c
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -420,7 +420,7 @@ bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
 		return false;
 	}
 
-	size_t nLength = strlen(Result);
+	auto nLength = strlen(Result);
 
 	if (Result[nLength - 1] < ' ') {
 		Result[nLength - 1] = '\0';
@@ -444,4 +444,58 @@ uint32_t Hardware::Millis() {
 #else
 	return static_cast<uint32_t>(tv.tv_sec * static_cast<__time_t >(1000) + (tv.tv_usec / static_cast<__suseconds_t >(1000)));
 #endif
+}
+
+static constexpr auto  UUID_STRING_LENGTH =	36;
+
+void Hardware::GetUuid(uuid_t out) {
+	char uuid_str[UUID_STRING_LENGTH + 2];
+
+#if defined (__APPLE__)
+	constexpr char cmd[] = "sysctl -n kern.uuid";
+#else
+	constexpr char cmd[] = "cat /etc/machine-id";
+#endif
+	ExecCmd(cmd, uuid_str, sizeof(uuid_str));
+
+#if defined (__APPLE__)
+#else
+	for (uint32_t i = 13; i > 0; i--) {
+		uuid_str[36 - 13 + i] = uuid_str[36 - 13 + i - 4];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[23 - 5 + i] = uuid_str[23 - 5 + i - 3];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[18 - 5 + i] = uuid_str[18 - 5 + i - 2];
+	}
+
+	for (uint32_t i = 5; i > 0; i--) {
+		uuid_str[13 - 5 + i] = uuid_str[13 - 5 + i - 1];
+	}
+
+	uuid_str[23] = '-';
+	uuid_str[18] = '-';
+	uuid_str[13] = '-';
+	uuid_str[8] = '-';
+#endif
+
+	uuid_parse(uuid_str, out);
+}
+
+void Hardware::Print() {
+	char uuid_str[UUID_STRING_LENGTH + 1];
+	uuid_str[UUID_STRING_LENGTH] = '\0';
+
+	uuid_t out;
+	GetUuid(out);
+
+	uuid_unparse(out, uuid_str);
+
+	printf("CPU  : %s\n", m_aCpuName);
+	printf("SoC  : %s\n", m_aSocName);
+	printf("Board: %s\n", m_aBoardName);
+	printf("UUID : %s\n", uuid_str);
 }

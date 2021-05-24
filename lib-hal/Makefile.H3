@@ -3,7 +3,7 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES =
 #
-EXTRA_SRCDIR = posix rtc ff12c ff12c/option src/h3/sdcard debug
+EXTRA_SRCDIR = posix rtc rtc/i2c ff12c ff12c/option src/h3/sdcard debug
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))

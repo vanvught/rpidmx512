@@ -26,17 +26,19 @@
 #ifndef LINUX_HAL_UART_H_
 #define LINUX_HAL_UART_H_
 
-#define UART_BITS_5			5
-#define UART_BITS_6			6
-#define UART_BITS_7			7
-#define UART_BITS_8			8
+namespace hal {
+static constexpr auto UART_BITS_5 = 5;
+static constexpr auto UART_BITS_6 = 6;
+static constexpr auto UART_BITS_7 = 7;
+static constexpr auto UART_BITS_8 = 8;
 
-#define UART_PARITY_NONE	0
-#define UART_PARITY_ODD		1
-#define UART_PARITY_EVEN	2
+static constexpr auto UART_PARITY_NONE = 0;
+static constexpr auto UART_PARITY_ODD = 1;
+static constexpr auto UART_PARITY_EVEN = 2;
 
-#define UART_STOP_1BIT		1
-#define UART_STOP_2BITS		2
+static constexpr auto UART_STOP_1BIT = 1;
+static constexpr auto UART_STOP_2BITS = 2;
+}  // namespace hal
 
 #define FUNC_PREFIX(x) x
 

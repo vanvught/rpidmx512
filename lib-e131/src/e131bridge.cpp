@@ -32,7 +32,6 @@
 #include <cassert>
 
 #include "e131bridge.h"
-#include "e131uuid.h"
 
 #include "e117const.h"
 
@@ -78,7 +77,7 @@ E131Bridge::E131Bridge() {
 	m_nHandle = Network::Get()->Begin(E131::UDP_PORT); 	// This must be here (and not in Start) for Mac OS and Linux
 	assert(m_nHandle != -1);							// ToDO Rewrite SetUniverse
 
-	E131Uuid::GetHardwareUuid(m_Cid);
+	Hardware::Get()->GetUuid(m_Cid);
 }
 
 E131Bridge::~E131Bridge() {
