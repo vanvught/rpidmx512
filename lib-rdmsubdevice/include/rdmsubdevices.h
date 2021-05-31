@@ -37,7 +37,7 @@
 # define RDM_SUBDEVICES_ENABLE
 #endif
 
-#if defined (RDMNET_LLRP_ONLY)
+#if defined (NODE_RDMNET_LLRP_ONLY)
 # undef RDM_SUBDEVICES_ENABLE
 #endif
 
@@ -81,7 +81,7 @@ public:
 
 	void Start();
 	void Stop();
-	void SetData(const uint8_t *pData, uint16_t nLength);
+	void SetData(const uint8_t *pData, uint32_t nLength);
 
 	static const char *GetTypeString(rdm::subdevices::type tType);
 	static rdm::subdevices::type GetTypeString(const char *pValue);

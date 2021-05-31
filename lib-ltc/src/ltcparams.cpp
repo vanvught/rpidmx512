@@ -71,6 +71,7 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 bool LtcParams::Load() {
 	m_tLtcParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
@@ -78,7 +79,9 @@ bool LtcParams::Load() {
 		if (m_pLTcParamsStore != nullptr) {
 			m_pLTcParamsStore->Update(&m_tLtcParams);
 		}
-	} else if (m_pLTcParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pLTcParamsStore != nullptr) {
 		m_pLTcParamsStore->Copy(&m_tLtcParams);
 	} else {
 		return false;

@@ -39,7 +39,7 @@ public:
 	void Start(uint32_t nPort);
 	void Stop(uint32_t nPort);
 
-	const uint8_t *Handler(uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond);
+	const uint8_t *Handler(uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
 
 private:
 	bool m_bIsStarted{false};

@@ -286,7 +286,7 @@ void LtcDisplayRgb::ShowInfo(const char *pInfo) {
 		return;
 	}
 
-	m_pLtcDisplayRgbSet->ShowInfo(pInfo, strlen(pInfo), m_tColoursInfo);
+	m_pLtcDisplayRgbSet->ShowInfo(pInfo, static_cast<uint16_t>(strlen(pInfo)), m_tColoursInfo);
 }
 
 void LtcDisplayRgb::ShowSource(ltc::source tSource) {

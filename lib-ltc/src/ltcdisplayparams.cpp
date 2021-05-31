@@ -79,6 +79,7 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 bool LtcDisplayParams::Load() {
 	m_tLtcDisplayParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(LtcDisplayParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcDisplayParamsConst::FILE_NAME)) {
@@ -86,7 +87,9 @@ bool LtcDisplayParams::Load() {
 		if (m_pLtcDisplayParamsStore != nullptr) {
 			m_pLtcDisplayParamsStore->Update(&m_tLtcDisplayParams);
 		}
-	} else if (m_pLtcDisplayParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pLtcDisplayParamsStore != nullptr) {
 		m_pLtcDisplayParamsStore->Copy(&m_tLtcDisplayParams);
 	} else {
 		return false;

@@ -117,7 +117,7 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t nPortId) {
 
 	bool bIsMerging = false;
 
-	for (uint32_t i = 0; i < (ArtNet::MAX_PORTS * m_nPages); i++) {
+	for (uint32_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
 		bIsMerging |= ((m_OutputPorts[i].port.nStatus & GO_OUTPUT_IS_MERGING) != 0);
 	}
 
@@ -133,10 +133,10 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t nPortId) {
 void ArtNetNode::HandleDmx() {
 	const auto *pArtDmx = &(m_ArtNetPacket.ArtPacket.ArtDmx);
 
-	auto data_length = (static_cast<uint32_t>(pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length;
+	auto data_length = static_cast<uint16_t>( ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
 	data_length = std::min(data_length, ArtNet::DMX_LENGTH);
 
-	for (uint32_t i = 0; i < (ArtNet::MAX_PORTS * m_nPages); i++) {
+	for (uint8_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
 
 		if (m_OutputPorts[i].bIsEnabled && (m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (pArtDmx->PortAddress == m_OutputPorts[i].port.nPortAddress)) {
 

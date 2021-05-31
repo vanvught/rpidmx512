@@ -134,9 +134,9 @@ private:
 	void SnifferRdm();
 	void SnifferDmx();
 	// USB
-	void SendMessage(uint8_t nLabel, const uint8_t *pData, uint16_t nLength);
-	void SendHeader(uint8_t nLabel, uint16_t nLength);
-	void SendData(const uint8_t *pData, uint16_t nLength);
+	void SendMessage(uint8_t nLabel, const uint8_t *pData, uint32_t nLength);
+	void SendHeader(uint8_t nLabel, uint32_t nLength);
+	void SendData(const uint8_t *pData, uint32_t nLength);
 	void SendFooter();
 	//
 	void UsbSendPackage(const uint8_t *pData, uint16_t nStart, uint16_t nDdataLength);

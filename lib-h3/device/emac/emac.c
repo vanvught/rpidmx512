@@ -26,9 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#ifndef NDEBUG
+//#ifndef NDEBUG
 # include <stdio.h>
-#endif
+//#endif
 #include <assert.h>
 
 #include "device/emac.h"
@@ -289,7 +289,7 @@ void emac_eth_send(void *packet, int len) {
 
 	h3_memcpy((void *) data_start, packet, (size_t)len);
 #ifdef DEBUG_DUMP
-	debug_dump( data_start, (uint16_t) len);
+	debug_dump((void *) data_start, (uint16_t) len);
 #endif
 	/* frame end */
 	desc_p->st |= (1 << 30);
@@ -417,6 +417,8 @@ void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
 	value = H3_EMAC->TX_CTL0;
 	value |= TX_CTL0_TX_EN;
 	H3_EMAC->TX_CTL0 = value;
+
+//	H3_EMAC->INT_EN = (uint32_t)(~0);
 
 #ifndef NDEBUG
 	printf("================\n");

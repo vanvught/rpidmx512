@@ -1,11 +1,8 @@
-#
-PLATFORM = ORANGE_PI
-#
-DEFINES = NODE_E131_MULTI DISPLAY_UDF NODE_RDMNET_LLRP_ONLY DISABLE_RTC NDEBUG
-#
-LIBS = rdmnet rdm rdmsensor rdmsubdevice
-#
-SRCDIR = firmware lib
+PLATFORM=ORANGE_PI
+DEFINES=NODE_E131_MULTI E131_PORTS=32 ARTNET_PAGES=4
+DEFINES+=DISPLAY_UDF NODE_RDMNET_LLRP_ONLY DISABLE_RTC NDEBUG
+LIBS=rdmnet rdm rdmsensor rdmsubdevice
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

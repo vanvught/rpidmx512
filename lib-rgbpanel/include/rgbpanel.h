@@ -34,7 +34,7 @@ static constexpr auto PWM_WIDTH = 120;
 
 class RgbPanel {
 public:
-	RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, rgbpanel::Types type = rgbpanel::defaults::TYPE);
+	RgbPanel(uint8_t nColumns, uint8_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, rgbpanel::Types type = rgbpanel::defaults::TYPE);
 	~RgbPanel() {
 		PlatformCleanUp();
 	}
@@ -42,7 +42,7 @@ public:
 	void Start();
 	void Stop();
 
-	void SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel(uint8_t nColumn, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void Cls();
 	void Show();
 
@@ -55,9 +55,9 @@ public:
 	void PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
-	void ClearLine(uint32_t nLine);
+	void TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
+	void ClearLine(uint8_t nLine);
 	void SetColon(char nChar, uint8_t nCol, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetColonsOff();
 
@@ -71,8 +71,8 @@ public:
 
 	void Print();
 
-	static uint32_t ValidateColumns(uint32_t nColumns);
-	static uint32_t ValidateRows(uint32_t nRows);
+	static uint32_t ValidateColumns(uint8_t nColumns);
+	static uint32_t ValidateRows(uint8_t nRows);
 	static rgbpanel::Types GetType(const char *pType);
 	static const char *GetType(rgbpanel::Types tType);
 
@@ -82,24 +82,24 @@ private:
 
 protected:
 	uint32_t m_nColumns;
-	uint32_t m_nRows;
+	uint8_t m_nRows;
 
 private:
 	uint32_t m_nChain;
 	rgbpanel::Types m_tType;
-	bool m_bIsStarted{false};
+	bool m_bIsStarted { false };
 	// Text
-	uint32_t m_nMaxPosition;
-	uint32_t m_nMaxLine;
-	uint32_t m_nPosition{0};
-	uint32_t m_nLine{0};
+	uint32_t m_nPosition { 0 };
+	uint8_t m_nMaxPosition;
+	uint8_t m_nMaxLine;
+	uint8_t m_nLine { 0 };
 	struct TColon {
 		uint8_t nBits;
 		uint8_t nRed;
 		uint8_t nGreen;
 		uint8_t nBlue;
 	};
-	TColon *m_ptColons{nullptr};
+	TColon *m_ptColons { nullptr };
 };
 
 #endif /* RGBPANEL_H_ */

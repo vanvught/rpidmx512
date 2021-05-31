@@ -41,7 +41,7 @@
 
 #include "debug.h"
 
-void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -93,7 +93,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	DEBUG_EXIT
 }
 
-void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pNetworkParamsStore == nullptr) {

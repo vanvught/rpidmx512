@@ -40,7 +40,7 @@
 
 #include "debug.h"
 
-void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -76,7 +76,7 @@ void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, 
 	DEBUG_EXIT
 }
 
-void OscClientParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void OscClientParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOscClientParamsStore == nullptr) {

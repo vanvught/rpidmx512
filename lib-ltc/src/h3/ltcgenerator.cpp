@@ -507,10 +507,10 @@ void LtcGenerator::HandleButtons() {
 	}
 }
 
-void LtcGenerator::HandleRequest(void *pBuffer, uint32_t nBufferLength) {
+void LtcGenerator::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
 	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
 		memcpy(m_Buffer, pBuffer, nBufferLength);
-		m_nBytesReceived = static_cast<uint16_t>(nBufferLength);
+		m_nBytesReceived = nBufferLength;
 	}
 
 	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {

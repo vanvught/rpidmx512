@@ -27,6 +27,7 @@
 #define NETWORK_H_
 
 #include <cstdint>
+#include <cstring>
 #include <net/if.h>
 
 #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
@@ -57,15 +58,12 @@ enum class DhcpClientStatus {
 };
 
 struct NetworkDisplay {
-	virtual ~NetworkDisplay() {
-	}
+	virtual ~NetworkDisplay() {}
 
 	virtual void ShowIp()=0;
 	virtual void ShowNetMask()=0;
 	virtual void ShowHostName()=0;
-
 	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
-
 	virtual void ShowShutdown()=0;
 };
 
@@ -82,12 +80,11 @@ public:
 class Network {
 public:
 	Network();
-	virtual ~Network() {
-	}
+	virtual ~Network() {}
 
 	void Print();
 
-	virtual void Shutdown();
+	virtual void Shutdown() {}
 
 	virtual int32_t Begin(uint16_t nPort)=0;
 	virtual int32_t End(uint16_t nPort)=0;
@@ -105,8 +102,15 @@ public:
 	virtual bool SetZeroconf()=0;
 	virtual bool EnableDhcp()=0;
 
-	virtual void SetHostName(const char *pHostName);
-	virtual void SetDomainName(const char *pDomainName);
+	virtual void SetHostName(const char *pHostName) {
+		strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE - 1);
+		m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+	}
+
+	virtual void SetDomainName(const char *pDomainName) {
+		strncpy(m_aDomainName, pDomainName, NETWORK_DOMAINNAME_SIZE - 1);
+		m_aDomainName[NETWORK_DOMAINNAME_SIZE - 1] = '\0';
+	}
 
 	uint32_t GetIp() const {
 		return m_nLocalIp;
@@ -121,8 +125,13 @@ public:
 	}
 
 	void SetQueuedStaticIp(uint32_t nLocalIp = 0, uint32_t nNetmask = 0);
-	void SetQueuedDhcp();
-	void SetQueuedZeroconf();
+	void SetQueuedDhcp() {
+		m_QueuedConfig.nMask |= QueuedConfig::DHCP;
+	}
+	void SetQueuedZeroconf() {
+		m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
+	}
+
 	bool ApplyQueuedConfig();
 
 	uint32_t GetGatewayIp() const {
@@ -219,27 +228,36 @@ public:
 		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
 	}
 
+	static uint32_t CIDRToNetmask(uint8_t nCDIR) {
+		if (nCDIR != 0) {
+			const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
+			return nNetmask;
+		}
+
+		return 0;
+	}
+
 	static Network *Get() {
 		return s_pThis;
 	}
 
-	static uint32_t CIDRToNetmask(uint8_t nCDIR);
-
 protected:
-	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
-	uint32_t m_nLocalIp { 0 };
-	uint32_t m_nGatewayIp { 0 };
-	uint32_t m_nNetmask { 0 };
 	bool m_IsDhcpCapable { true };
 	bool m_IsDhcpUsed { false };
 	bool m_IsZeroconfCapable { true };
 	bool m_IsZeroconfUsed { false };
-	char m_aHostName[NETWORK_HOSTNAME_SIZE];
-	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
-	char m_aIfName[IFNAMSIZ];
 	uint32_t m_nIfIndex { 1 };
 	uint32_t m_nNtpServerIp { 0 };
 	float m_fNtpUtcOffset { 0 };
+
+	uint32_t m_nLocalIp { 0 };
+	uint32_t m_nGatewayIp { 0 };
+	uint32_t m_nNetmask { 0 };
+
+	char m_aHostName[NETWORK_HOSTNAME_SIZE];
+	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
+	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
+	char m_aIfName[IFNAMSIZ];
 
 	NetworkDisplay *m_pNetworkDisplay { nullptr };
 	NetworkStore *m_pNetworkStore { nullptr };

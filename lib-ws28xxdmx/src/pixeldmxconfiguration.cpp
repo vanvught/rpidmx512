@@ -72,15 +72,15 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 	nGroups = GetCount() / m_nGroupingCount;
 
 	m_nOutputPorts = std::min(nPortsMax, m_nOutputPorts);
-	nUniverses = 1 + (nGroups  / (1 + portInfo.nBeginIndexPortId1));
+	nUniverses = (1 + (nGroups  / (1 + portInfo.nBeginIndexPortId1)));
 
 	if (nPortsMax == 1) {
-		portInfo.nProtocolPortIdLast = nGroups / (1 + portInfo.nBeginIndexPortId1);
+		portInfo.nProtocolPortIndexLast = (nGroups / (1 + portInfo.nBeginIndexPortId1));
 	} else {
 #if defined (NODE_ARTNET)
-		portInfo.nProtocolPortIdLast = ((m_nOutputPorts - 1) * 4) + nUniverses - 1;
+		portInfo.nProtocolPortIndexLast = (((m_nOutputPorts - 1) * 4) + nUniverses - 1);
 #else
-		portInfo.nProtocolPortIdLast = (m_nOutputPorts * nUniverses)  - 1;
+		portInfo.nProtocolPortIndexLast = ((m_nOutputPorts * nUniverses)  - 1);
 #endif
 	}
 

@@ -71,7 +71,7 @@ void LcdBw::Cls() {
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::TextLine(uint32_t nLine, const char *data, uint32_t nLength) {
+void LcdBw::TextLine(uint8_t nLine, const char *data, uint32_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -100,11 +100,12 @@ void LcdBw::PutChar(int c) {
 }
 
 void LcdBw::PutString(const char *s) {
-	uint32_t i;
 	char data[(4 * 20)];
 	const char *p = s;
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
+
+	uint8_t i;
 
 	for (i = 1; (i < (m_nCols * m_nRows)) && (*p != '\0'); i++) {
 		data[i] = *p;
@@ -128,10 +129,10 @@ void LcdBw::Text(const char *pText, uint32_t nLength) {
 		data[i + 1] = pText[i];
 	}
 
-	Write(data, (nLength + 1));
+	Write(data, static_cast<uint8_t>(nLength + 1));
 }
 
-void LcdBw::SetCursorPos(uint32_t col, uint32_t line) {
+void LcdBw::SetCursorPos(uint8_t col, uint8_t line) {
 	char cmd[] = { BW_PORT_WRITE_MOVE_CURSOR, 0x00 };
 
 	cmd[1] = static_cast<char>(((line & 0x03) << 5) | (col & 0x1f));
@@ -139,7 +140,7 @@ void LcdBw::SetCursorPos(uint32_t col, uint32_t line) {
 	Write(cmd, sizeof(cmd) / sizeof(cmd[0]));
 }
 
-void LcdBw::ClearLine(__attribute__((unused))uint32_t nLine) {
+void LcdBw::ClearLine(__attribute__((unused))uint8_t nLine) {
 	char data[32];
 
 	data[0] = BW_PORT_WRITE_DISPLAY_DATA;
@@ -157,7 +158,7 @@ void LcdBw::SetCursor(__attribute__((unused))const uint32_t constEnumTCursorOnOf
 #endif
 }
 
-void LcdBw::Write(const char *buffer, uint32_t size) {
+void LcdBw::Write(const char *buffer, uint8_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;
 
 	if (elapsed < BW_LCD_I2C_BYTE_WAIT_US) {

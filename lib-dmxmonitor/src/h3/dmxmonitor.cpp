@@ -59,7 +59,7 @@ uint16_t DMXMonitor::GetDmxFootprint(void) {
 	return Dmx::UNIVERSE_SIZE;
 }
 
-void DMXMonitor::Start(__attribute__((unused)) uint32_t nPort) {
+void DMXMonitor::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if(m_bIsStarted) {
 		return;
 	}
@@ -101,7 +101,7 @@ void DMXMonitor::Start(__attribute__((unused)) uint32_t nPort) {
 	Update();
 }
 
-void DMXMonitor::Stop(__attribute__((unused)) uint32_t nPort) {
+void DMXMonitor::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if(!m_bIsStarted) {
 		return;
 	}
@@ -138,7 +138,7 @@ void DMXMonitor::Cls(void) {
 	}
 }
 
-void DMXMonitor::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
+void DMXMonitor::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	m_nSlots = nLength;
 
 	memcpy(m_Data, pData, nLength);

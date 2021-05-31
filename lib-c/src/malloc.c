@@ -32,6 +32,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wpointer-arith" 	// FIXME ignored "-Wpointer-arith"
 #pragma GCC diagnostic ignored "-Wpedantic" 		// FIXME ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 #include <stdint.h>
 #include <stddef.h>
@@ -40,6 +41,8 @@
 #ifdef MEM_DEBUG
 #include <stdio.h>
 #endif
+
+extern int console_error(const char *);
 
 extern unsigned char heap_low; /* Defined by the linker */
 extern unsigned char heap_top; /* Defined by the linker */
@@ -117,6 +120,7 @@ void *malloc(size_t size) {
 		assert(((unsigned)next & (unsigned)3) == 0);
 
 		if (next > block_limit) {
+			console_error("next > block_limit\n");
 			return NULL;
 		} else {
 			next_block = next;

@@ -60,6 +60,7 @@ TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStor
 bool TLC59711DmxParams::Load() {
 	m_tTLC59711Params.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(TLC59711DmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
@@ -67,7 +68,9 @@ bool TLC59711DmxParams::Load() {
 		if (m_pLC59711ParamsStore != nullptr) {
 			m_pLC59711ParamsStore->Update(&m_tTLC59711Params);
 		}
-	} else if (m_pLC59711ParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pLC59711ParamsStore != nullptr) {
 		m_pLC59711ParamsStore->Copy(&m_tTLC59711Params);
 	} else {
 		return false;

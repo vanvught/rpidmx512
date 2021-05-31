@@ -42,7 +42,7 @@ class LLRPOnlyLightSet: public LightSet {
 		assert(0);
 	}
 
-	void SetData(uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+	void SetData(uint8_t nPort, const uint8_t *pData, uint32_t nLength) {
 		assert(0);
 	}
 

@@ -70,40 +70,39 @@ public:
 	LightSet();
 	virtual ~LightSet() {}
 
-	virtual void Start(uint32_t nPort)= 0;
-	virtual void Stop(uint32_t nPort)= 0;
-
-	virtual void SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength)= 0;
-
+	virtual void Start(uint32_t nPortIndex)= 0;
+	virtual void Stop(uint32_t nPortIndex)= 0;
+	virtual void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength)= 0;
+	// Optional
 	virtual void Blackout(__attribute__((unused)) bool bBlackout) {}
-
 	virtual void Print() {}
-
-	void SetLightSetDisplay(LightSetDisplay *pLightSetDisplay) {
-		m_pLightSetDisplay = pLightSetDisplay;
-	}
-
-	void SetLightSetHandler(LightSetHandler *pLightSetHandler) {
-		m_pLightSetHandler = pLightSetHandler;
-	}
-
 	// RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);
 	virtual uint16_t GetDmxStartAddress();
 	virtual uint16_t GetDmxFootprint();
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
 
+#if defined (ESP8266)
 	// WiFi solutions only
 	static const char *GetOutputType(lightset::OutputType type);
 	static lightset::OutputType GetOutputType(const char *sType);
+#endif
+
+	void SetLightSetDisplay(LightSetDisplay *pLightSetDisplay) {
+		s_pLightSetDisplay = pLightSetDisplay;
+	}
+
+	void SetLightSetHandler(LightSetHandler *pLightSetHandler) {
+		s_pLightSetHandler = pLightSetHandler;
+	}
 
 	static LightSet *Get() {
 		return s_pThis;
 	}
 
 protected:
-	LightSetDisplay *m_pLightSetDisplay { nullptr };
-	LightSetHandler *m_pLightSetHandler { nullptr };
+	static LightSetDisplay *s_pLightSetDisplay;
+	static LightSetHandler *s_pLightSetHandler;
 
 private:
 	static LightSet *s_pThis;

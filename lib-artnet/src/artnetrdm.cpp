@@ -47,7 +47,7 @@ void ArtNetNode::HandleTodControl() {
 	const auto *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {
 				m_pLightSet->Stop(i);
@@ -74,7 +74,7 @@ void ArtNetNode::HandleTodRequest() {
 	const auto *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			SendTod(i);
 		}
@@ -86,7 +86,7 @@ void ArtNetNode::HandleTodRequest() {
 void ArtNetNode::SendTod(uint32_t nPortId) {
 	DEBUG_ENTRY
 
-	assert(nPortId < ArtNet::MAX_PORTS);
+	assert(nPortId < ArtNet::PORTS);
 
 	m_pTodData->Net = m_Node.NetSwitch[0];
 	m_pTodData->Address = m_OutputPorts[nPortId].port.nDefaultAddress;
@@ -139,7 +139,7 @@ void ArtNetNode::HandleRdm() {
 	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			if (!m_IsRdmResponder) {
 				if ((m_OutputPorts[i].tPortProtocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {

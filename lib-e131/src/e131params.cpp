@@ -64,12 +64,15 @@ bool E131Params::Load() {
 
 	ReadConfigFile configfile(E131Params::staticCallbackFunction, this);
 
+#if !defined(DISABLE_FS)
 	if (configfile.Read(E131ParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pE131ParamsStore != nullptr) {
 			m_pE131ParamsStore->Update(&m_tE131Params);
 		}
-	} else if (m_pE131ParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pE131ParamsStore != nullptr) {
 		m_pE131ParamsStore->Copy(&m_tE131Params);
 	} else {
 		return false;

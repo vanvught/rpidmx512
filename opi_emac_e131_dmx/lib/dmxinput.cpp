@@ -71,14 +71,14 @@ void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
 	const auto *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();
 
 	if (pDmx != nullptr) {
 		const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);
-		nLength = 1 + dmx_statistics->Statistics.nSlotsInPacket; // Add 1 for SC
+		nLength = (1U + dmx_statistics->Statistics.nSlotsInPacket); // Add 1 for SC
 		return pDmx;
 	}
 

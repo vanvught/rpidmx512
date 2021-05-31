@@ -51,7 +51,7 @@ void E131Bridge::Print() {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_PORTS; nPortIndex++) {
+		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetUniverse(nPortIndex, nUniverse, PortDir::OUTPUT)) {
 				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, E131::GetMergeMode(m_OutputPort[nPortIndex].mergeMode, true));
@@ -63,7 +63,7 @@ void E131Bridge::Print() {
 		printf(" CID      : %s\n", uuid_str);
 		printf(" Input\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131::MAX_UARTS; nPortIndex++) {
+		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetUniverse(nPortIndex, nUniverse, PortDir::INPUT)) {
 				printf("  Port %2d Universe %-3d [%d]\n", nPortIndex, nUniverse, GetPriority(nPortIndex));

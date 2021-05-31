@@ -2,7 +2,7 @@
  * @file rdmtod.h
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,33 +27,128 @@
 #define RDMTOD_H_
 
 #include <cstdint>
+#include <cstring>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 
 #include "rdm.h"
 
-#define TOD_TABLE_SIZE	200
-
+namespace rdmtod {
+static constexpr uint8_t TOD_TABLE_SIZE = 200;
 struct TRdmTod {
 	uint8_t uid[RDM_UID_SIZE];
 };
+}  // namespace rdmtod
 
 class RDMTod {
 public:
-	 RDMTod();
-	 ~RDMTod();
+	RDMTod() {
+		m_pTable = new rdmtod::TRdmTod[rdmtod::TOD_TABLE_SIZE];
 
-	 void Reset();
-	 bool AddUid(const uint8_t *pUid);
-	 uint8_t GetUidCount() const;
-	 void Copy(uint8_t *pTable);
+		for (uint32_t i = 0; i < rdmtod::TOD_TABLE_SIZE; i++) {
+			memcpy(&m_pTable[i], UID_ALL, RDM_UID_SIZE);
+		}
+	}
 
-	 bool Delete(const uint8_t *pUid);
-	 bool Exist(const uint8_t *pUid);
+	~RDMTod() {
+		m_nEntries = 0;
+		delete[] m_pTable;
+	}
 
-	 void Dump();
-	 void Dump(uint8_t nCount);
+	void Reset() {
+		for (uint32_t i = 0; i < m_nEntries; i++) {
+			memcpy(&m_pTable[i], UID_ALL, RDM_UID_SIZE);
+		}
+
+		m_nEntries = 0;
+	}
+
+	bool AddUid(const uint8_t *pUid) {
+		if (m_nEntries == rdmtod::TOD_TABLE_SIZE) {
+			return false;
+		}
+
+		if (Exist(pUid)) {
+			return false;
+		}
+
+		memcpy(&m_pTable[m_nEntries++], pUid, RDM_UID_SIZE);
+
+		return true;
+	}
+
+	uint8_t GetUidCount() const {
+		return m_nEntries;
+	}
+
+	void Copy(uint8_t *pTable) {
+		const auto *pSrc = reinterpret_cast<const uint8_t*>(m_pTable);
+		uint8_t *pDst = pTable;
+
+		for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {
+			*pDst++ = *pSrc++;
+		}
+	}
+
+	bool Delete(const uint8_t *pUid) {
+		bool found = false;
+		uint32_t i;
+
+		for (i = 0; i < m_nEntries; i++) {
+			if (memcmp(&m_pTable[i], pUid, RDM_UID_SIZE) == 0) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			return false;
+		}
+
+		if (i == rdmtod::TOD_TABLE_SIZE - 1) {
+			memcpy(&m_pTable[i], UID_ALL, RDM_UID_SIZE);
+		} else {
+			for (; i < m_nEntries; i++) {
+				memcpy(&m_pTable[i], &m_pTable[i + 1], RDM_UID_SIZE);
+			}
+		}
+
+		m_nEntries--;
+
+		return true;
+	}
+
+	bool Exist(const uint8_t *pUid) {
+		for (uint32_t i = 0 ; i < m_nEntries; i++) {
+			if (memcmp(&m_pTable[i], pUid, RDM_UID_SIZE) == 0) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	void Dump(__attribute__((unused)) uint8_t nCount) {
+#ifndef NDEBUG
+	if (nCount > rdmtod::TOD_TABLE_SIZE) {
+		nCount = rdmtod::TOD_TABLE_SIZE;
+	}
+
+	for (uint32_t i = 0 ; i < nCount; i++) {
+		printf("%.2x%.2x:%.2x%.2x%.2x%.2x\n", m_pTable[i].uid[0], m_pTable[i].uid[1], m_pTable[i].uid[2], m_pTable[i].uid[3], m_pTable[i].uid[4], m_pTable[i].uid[5]);
+	}
+#endif
+	}
+	void Dump() {
+#ifndef NDEBUG
+		Dump(m_nEntries);
+#endif
+	}
+
 private:
-	 uint8_t m_nEntries{0};
-	 TRdmTod *m_pTable;
+	uint8_t m_nEntries { 0 };
+	rdmtod::TRdmTod *m_pTable;
 };
 
 #endif /* RDMTOD_H_ */

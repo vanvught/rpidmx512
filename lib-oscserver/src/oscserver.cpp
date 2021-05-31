@@ -253,7 +253,7 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 
 	assert(nEnd <= Dmx::UNIVERSE_SIZE);
 
-	for (uint32_t i = nStartChannel; i < nEnd; i++) {
+	for (uint16_t i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
 			*dst = *src;
 			isChanged = true;
@@ -290,7 +290,7 @@ void OscServer::Run() {
 			DEBUG_PUTS("Blob received");
 
 			OSCBlob blob = Msg.GetBlob(0);
-			const auto size = blob.GetDataSize();
+			const auto size = static_cast<uint16_t>(blob.GetDataSize());
 
 			if (size <= Dmx::UNIVERSE_SIZE) {
 				const auto *ptr = blob.GetDataPtr();

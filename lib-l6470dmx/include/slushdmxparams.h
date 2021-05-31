@@ -68,8 +68,8 @@ public:
 
 	void Set(SlushDmx *pSlushDmx);
 
-	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 

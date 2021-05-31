@@ -40,10 +40,10 @@ using namespace pixel;
 
 // FIXME Currently working for single row only
 
-WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows, Type tLedType, Map tRGBMapping):
+WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type tLedType, Map tRGBMapping):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
-	m_nOffset((nRows - FONT_CP437_CHAR_H) * 2),
+	m_nOffset((nRows - FONT_CP437_CHAR_H) * 2U),
 	m_nMaxLeds(nColumns * nRows),
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
 	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
@@ -101,7 +101,7 @@ void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint
 		// wait for completion
 	}
 
-	uint32_t nOffset = (FONT_CP437_CHAR_W * FONT_CP437_CHAR_H) * m_nPosition;
+	auto nOffset = static_cast<uint16_t>((FONT_CP437_CHAR_W * FONT_CP437_CHAR_H) * m_nPosition);
 
 	for (uint32_t nWidth = 0; nWidth < FONT_CP437_CHAR_W; nWidth++) {
 		uint8_t nByte = cp437_font[static_cast<int>(nChar)][nWidth];
@@ -167,7 +167,7 @@ void WS28xxDisplayMatrix::Text(const char *pText, uint32_t nLength, uint8_t nRed
 /*
  * 1 is top line
  */
-void WS28xxDisplayMatrix::TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xxDisplayMatrix::TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if ((nLine == 0) || (nLine > m_nMaxLine)) {
 		return;
 	}
@@ -179,7 +179,7 @@ void WS28xxDisplayMatrix::TextLine(uint32_t nLine, const char *pText, uint32_t n
 /*
  * 1 is top line
  */
-void WS28xxDisplayMatrix::ClearLine(uint32_t nLine) {
+void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 	if ((nLine == 0) || (nLine > m_nMaxLine)) {
 		return;
 	}
@@ -188,7 +188,7 @@ void WS28xxDisplayMatrix::ClearLine(uint32_t nLine) {
 		// wait for completion
 	}
 
-	for (uint32_t i = 0; i < m_nMaxLeds; i++) {
+	for (uint16_t i = 0; i < m_nMaxLeds; i++) {
 		m_pWS28xx->SetPixel(i, 0, 0, 0); // FIXME Currently working for single row only
 	}
 
@@ -198,7 +198,7 @@ void WS28xxDisplayMatrix::ClearLine(uint32_t nLine) {
 /**
  * 0,0 is top left
  */
-void WS28xxDisplayMatrix::SetCursorPos(uint32_t nCol, uint32_t nRow) {
+void WS28xxDisplayMatrix::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if ((nCol >= m_nMaxPosition) || (nRow >= m_nMaxLine)) {
 		return;
 	}

@@ -62,7 +62,7 @@ bool Serial::InitSpi() {
 	FUNC_PREFIX (spi_begin());
 	FUNC_PREFIX (spi_set_speed_hz(m_SpiConfiguration.nSpeed));
 	FUNC_PREFIX (spi_chipSelect(SPI_CS0));
-	FUNC_PREFIX (spi_setDataMode(static_cast<h3_spi_mode_t>(m_SpiConfiguration.nMode)));
+	FUNC_PREFIX (spi_setDataMode(m_SpiConfiguration.nMode));
 
 	DEBUG_EXIT
 	return true;

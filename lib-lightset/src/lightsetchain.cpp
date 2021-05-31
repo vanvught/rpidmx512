@@ -52,23 +52,23 @@ LightSetChain::~LightSetChain() {
 	m_nSize = 0;
 }
 
-void LightSetChain::Start(uint32_t nPort) {
+void LightSetChain::Start(uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->Start(nPort);
+		m_pTable[i].pLightSet->Start(nPortIndex);
 	}
 }
 
-void LightSetChain::Stop(uint32_t nPort) {
+void LightSetChain::Stop(uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->Stop(nPort);
+		m_pTable[i].pLightSet->Stop(nPortIndex);
 	}
 }
 
-void LightSetChain::SetData(uint32_t nPort, const uint8_t *pData, uint32_t nSize) {
+void LightSetChain::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->SetData(nPort, pData, nSize);
+		m_pTable[i].pLightSet->SetData(nPortIndex, pData, nLength);
 	}
 }
 
@@ -95,10 +95,10 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	DEBUG_PRINTF("m_pLightSetDisplay=%p", m_pLightSetDisplay);
+	DEBUG_PRINTF("s_pLightSetDisplay=%p", reinterpret_cast<void *>(s_pLightSetDisplay));
 
-	if (m_pLightSetDisplay != nullptr) {
-		m_pLightSetDisplay->ShowDmxStartAddress();
+	if (s_pLightSetDisplay != nullptr) {
+		s_pLightSetDisplay->ShowDmxStartAddress();
 	}
 
 	DEBUG1_EXIT
@@ -254,7 +254,7 @@ void LightSetChain::Dump(__attribute__((unused)) uint8_t nEntries) {
 	printf("Index\tPointer\t\tType\n");
 
 	for (uint32_t i = 0; i < nEntries ; i++) {
-		printf("%d\t%p\t%d\n", i, m_pTable[i].pLightSet, m_pTable[i].nType);
+		printf("%d\t%p\t%d\n", i, reinterpret_cast<void *>(m_pTable[i].pLightSet), m_pTable[i].nType);
 	}
 
 	printf("\n");

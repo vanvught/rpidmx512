@@ -39,7 +39,7 @@
 
 #include "debug.h"
 
-void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -68,7 +68,7 @@ void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, 
 	DEBUG_EXIT
 }
 
-void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRDMDeviceParamsStore == nullptr) {

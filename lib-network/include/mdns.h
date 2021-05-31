@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,10 @@
 #define MDNS_H_
 
 #include <cstdint>
+#include "network.h"
 
-struct TmDNSFlags {
+namespace mdns {
+struct Flags {
 	uint32_t qr;
 	uint32_t opcode;
 	uint32_t aa;
@@ -39,29 +41,35 @@ struct TmDNSFlags {
 	uint32_t ad;
 	uint32_t cd;
 	uint32_t rcode;
-} ;
+};
 
-struct TMDNSServiceRecord {
+struct ServiceRecord {
 	uint16_t nPort;
 	char *pName;
 	char *pServName;
 	char *pTextContent;
 };
 
-struct TMDNSRecordData {
+struct RecordData {
 	uint32_t nSize;
 	uint8_t aBuffer[512];
 };
 
-#define SERVICE_RECORDS_MAX		4
+#define MDNS_PORT 				5353
+static constexpr auto BUFFER_SIZE = 1024;
+static constexpr auto SERVICE_RECORDS_MAX = 8;
+}  // namespace mdns
 
 class MDNS {
 public:
 	MDNS();
-	~MDNS();
+	~MDNS() {}
 
 	void Start();
-	void Stop();
+	void Stop() {
+		Network::Get()->End(MDNS_PORT);
+		s_nHandle = -1;
+	}
 
 	void Run();
 
@@ -94,19 +102,21 @@ private:
 #endif
 
 private:
-	uint32_t m_nMulticastIp;
-	int32_t m_nHandle{-1};
-	uint8_t *m_pBuffer{nullptr};
-	uint8_t *m_pOutBuffer{nullptr};
-	uint32_t m_nRemoteIp{0};
-	uint16_t m_nRemotePort{0};
-	uint16_t m_nBytesReceived{0};
-	char *m_pName{nullptr};
-	uint32_t m_nLastAnnounceMillis{0};
-	TMDNSServiceRecord m_aServiceRecords[SERVICE_RECORDS_MAX];
-	TMDNSRecordData m_aServiceRecordsData[SERVICE_RECORDS_MAX];
-	uint32_t m_nDNSServiceRecords{0};
-	TMDNSRecordData m_tAnswerLocalIp;
+	static uint32_t s_nMulticastIp;
+	static int32_t s_nHandle;
+	static uint32_t s_nRemoteIp;
+	static uint16_t s_nRemotePort;
+	static uint16_t s_nBytesReceived;
+	static char *s_pName;
+	static uint32_t s_nLastAnnounceMillis;
+	static uint32_t s_nDNSServiceRecords;
+	static mdns::RecordData s_AnswerLocalIp;
+
+	static uint8_t s_Buffer[mdns::BUFFER_SIZE];
+	static uint8_t s_OutBuffer[mdns::BUFFER_SIZE];
+
+	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
+	static mdns::RecordData s_ServiceRecordsData[mdns::SERVICE_RECORDS_MAX];
 };
 
 #endif /* MDNS_H_ */

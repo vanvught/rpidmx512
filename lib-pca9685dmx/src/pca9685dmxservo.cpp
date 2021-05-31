@@ -63,7 +63,7 @@ bool PCA9685DmxServo::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	return false;
 }
 
-void PCA9685DmxServo::Start(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxServo::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -75,7 +75,7 @@ void PCA9685DmxServo::Start(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void PCA9685DmxServo::Stop(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxServo::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -83,7 +83,7 @@ void PCA9685DmxServo::Stop(__attribute__((unused)) uint32_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t* pDmxData, uint32_t nLength) {
+void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 

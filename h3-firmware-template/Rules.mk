@@ -107,15 +107,15 @@ ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
 endif
 
 # Output 
-TARGET = $(SUFFIX).img
-LIST = $(SUFFIX).list
-MAP = $(SUFFIX).map
+TARGET=$(SUFFIX).img
+LIST=$(SUFFIX).list
+MAP=$(SUFFIX).map
 BUILD=build_h3/
 
 # Input
-SOURCE = ./
-FIRMWARE_DIR = ./../h3-firmware-template/
-LINKER = $(FIRMWARE_DIR)memmap
+SOURCE=./
+FIRMWARE_DIR=./../h3-firmware-template/
+LINKER=$(FIRMWARE_DIR)memmap
 
 LIBS+=lightset properties display device hal c++ debug h3 c arm
 	
@@ -158,8 +158,8 @@ COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 
 # Why does gcc not automatically select the correct path based on -m options?
-PLATFORM_LIBGCC:= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
-PLATFORM_LIBGCC+= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)
+PLATFORM_LIBGCC:=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
+PLATFORM_LIBGCC+=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)
 
 $(info $$PLATFORM_LIBGCC [${PLATFORM_LIBGCC}])
 

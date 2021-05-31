@@ -66,8 +66,8 @@ public:
 	void Load(const char *pBuffer, uint32_t nLength);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex = 0xFF);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex = 0xFF);
+	void Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize, uint32_t nMotorIndex = 0xFF);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize, uint32_t nMotorIndex = 0xFF);
 
 	void SetGlobal(SparkFunDmx *pSparkFunDmx);
 	void SetLocal(SparkFunDmx *pSparkFunDmx);

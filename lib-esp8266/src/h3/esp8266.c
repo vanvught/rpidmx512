@@ -201,7 +201,7 @@ void esp8266_write_word(const uint32_t word) {
 	dmb();
 }
 
-void esp8266_write_bytes(const uint8_t *data, const uint16_t len) {
+void esp8266_write_bytes(const uint8_t *data, const uint32_t len) {
 	uint8_t *p = (uint8_t *)data;
 	uint8_t d;
 	uint16_t i;
@@ -283,9 +283,9 @@ uint8_t esp8266_read_byte(void) {
 	return data;
 }
 
-void esp8266_read_bytes(const uint8_t *data, const uint16_t len){
+void esp8266_read_bytes(const uint8_t *data, const uint32_t len){
 	uint8_t *p = (uint8_t *)data;
-	uint16_t i;
+	uint32_t i;
 
 	data_gpio_fsel_input();
 

@@ -38,9 +38,9 @@
 
 namespace pixelpatterns {
 #if defined (OUTPUT_PIXEL_MULTI)
-static constexpr uint32_t MAX_PORTS = 8;
+static constexpr auto MAX_PORTS = 8U;
 #else
-static constexpr uint32_t MAX_PORTS = 1;
+static constexpr auto MAX_PORTS = 1U;
 #endif
 enum class Pattern {
 	NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE, LAST
@@ -57,7 +57,7 @@ public:
 	~PixelPatterns() {}
 
 	void RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
-	void TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint8_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) ;
 	void Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
@@ -81,11 +81,11 @@ private:
 	void Increment(uint32_t nPortIndex);
 	void Reverse(uint32_t nPortIndex);
 
-	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nIndex, uint32_t nColour) {
+	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nPixelIndex, uint32_t nColour) {
 #if defined (OUTPUT_PIXEL_MULTI)
-		m_pOutput->SetPixel(nPortIndex, nIndex, Red(nColour), Green(nColour), Blue(nColour));
+		m_pOutput->SetPixel(nPortIndex, nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
 #else
-		m_pOutput->SetPixel(nIndex, Red(nColour), Green(nColour), Blue(nColour));
+		m_pOutput->SetPixel(nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
 #endif
 	}
 
@@ -126,7 +126,7 @@ private:
 		uint32_t nColour1;
 		uint32_t nColour2;
 		uint32_t nTotalSteps;
-		uint32_t nIndex;
+		uint32_t nPixelIndex;
 		pixelpatterns::Direction Direction;
 		pixelpatterns::Pattern ActivePattern;
 	};

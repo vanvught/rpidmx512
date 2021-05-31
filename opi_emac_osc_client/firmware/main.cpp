@@ -136,7 +136,7 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	for (unsigned i = 1; i < 7 ; i++) {
+	for (uint8_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 

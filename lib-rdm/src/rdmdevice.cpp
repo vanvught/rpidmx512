@@ -42,7 +42,7 @@
 #if defined(H3)
  #include "h3_board.h"
  static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
-#elif defined (RASPPI) || defined (BARE_METAL)
+#elif defined (RASPPI)
  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
 #elif defined (__CYGWIN__)
  static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";

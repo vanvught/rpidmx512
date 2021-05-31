@@ -48,7 +48,7 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
-	for (uint32_t i = 0; i < 4; i++) {
+	for (uint8_t i = 0; i < 4; i++) {
 		uint16_t nUniverse;
 
 		if (pE131Bridge->GetUniverse(i, nUniverse, PortDir::OUTPUT)) {

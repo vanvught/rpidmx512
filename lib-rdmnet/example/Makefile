@@ -26,7 +26,8 @@ LIBSDEP=$(addsuffix /lib_linux/lib, $(LIBDEP))
 LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
 LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
-COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 -DNDEBUG
+COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 #-DNDEBUG
+COPS+=-fstack-usage
 OBJECTS=$(foreach sdir,$(SOURCE),$(patsubst $(sdir)/%.cpp,$(BUILD)%.o,$(wildcard $(sdir)/*.cpp)))
 BUILD_DIRS=build_linux
 TARGET=dummy_device
@@ -57,7 +58,7 @@ prerequisites:
 $(LIBSDEP):
 	for d in $(LIBDEP); \
 		do                               \
-			$(MAKE) -f Makefile.Linux 'DEFINES=-DDMX_WORKSHOP_DEFECT -DRDMNET_LLRP_ONLY -DNDEBUG' --directory=$$d;       \
+			$(MAKE) -f Makefile.Linux 'DEFINES=-DDMX_WORKSHOP_DEFECT -DRDMNET_LLRP_ONLY' --directory=$$d;       \
 		done
 
 $(TARGET) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP) $(LIBSDEP)

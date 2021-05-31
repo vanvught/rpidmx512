@@ -86,7 +86,7 @@ bool DmxSerialChannelData::Parse(const char *pFileName) {
 	return true;
 }
 
-const uint8_t *DmxSerialChannelData::GetData(uint8_t nChannelValue, uint32_t &nLength) {
+const uint8_t *DmxSerialChannelData::GetData(uint8_t nChannelValue, uint32_t& nLength) {
 	if (m_pChannelData[nChannelValue] != nullptr) {
 		nLength = m_nChannelDataLength[nChannelValue];
 		return m_pChannelData[nChannelValue];

@@ -247,14 +247,14 @@ void WS28xxDisplay7Segment::WriteChar(char nChar, uint32_t nPos, uint8_t nRed, u
 }
 
 void WS28xxDisplay7Segment::WriteColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const uint32_t nCurrentDigitBase = (WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) + (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON);
+	const auto nCurrentDigitBase = static_cast<uint16_t>((WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT) + (nPos * WS28xxDisplay7SegmentConfig::LEDS_PER_COLON));
 	const bool OnOff = (nChar == ':' || nChar == '.' || nChar == ';') ? 1 : 0;
 
 	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion
 	}
 
-	for (uint32_t nIndex = nCurrentDigitBase; nIndex < (nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++) {
+	for (uint32_t nIndex = nCurrentDigitBase; nIndex < static_cast<uint16_t>(nCurrentDigitBase + WS28xxDisplay7SegmentConfig::LEDS_PER_COLON); nIndex++) {
 		if (OnOff) {
 			m_pWS28xx->SetPixel(nIndex, nRed, nGreen, nBlue);
 		} else {
@@ -276,7 +276,7 @@ void WS28xxDisplay7Segment::WriteAll(const char *pChars, uint8_t nRed, uint8_t n
 }
 
 void WS28xxDisplay7Segment::RenderSegment(bool bOnOff, uint32_t nCurrentDigitBase, uint32_t nCurrentSegment, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const uint32_t nCurrentSegmentBase = nCurrentDigitBase + (nCurrentSegment * WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT);
+	const auto nCurrentSegmentBase = static_cast<uint16_t>(nCurrentDigitBase + (nCurrentSegment * WS28xxDisplay7SegmentConfig::LEDS_PER_SEGMENT));
 
 	while (m_pWS28xx->IsUpdating()) {
 		// wait for completion

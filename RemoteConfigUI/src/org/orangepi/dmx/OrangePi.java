@@ -343,6 +343,15 @@ public class OrangePi {
 		sendUdpPacket(buffer);
 	}
 	
+	public void doFactory() throws IOException {
+		String p = new String("?factory##");
+		System.out.println(address + ":" + PORT + " " + p);
+
+		byte[] buffer = p.getBytes();
+		
+		sendUdpPacket(buffer);	
+	}
+	
 	public void doSetDisplay(Boolean bOnOff) {
 		String p = new String("!display#");
 		if (bOnOff) {

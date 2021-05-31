@@ -49,23 +49,33 @@ public:
 	RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress = 1, uint8_t PersonalitynCurrent = 1);
 	virtual ~RDMSubDevice();
 
-	inline uint16_t GetDmxStartAddress() { return m_tSubDevicesInfo.dmx_start_address;}
 	void SetDmxStartAddress(uint16_t nDmxStartAddress);
+	uint16_t GetDmxStartAddress() const {
+		return m_tSubDevicesInfo.dmx_start_address;
+	}
 
-	inline uint8_t GetPersonalityCurrent() { return m_tSubDevicesInfo.current_personality;}
+	uint8_t GetPersonalityCurrent() const {
+		return m_tSubDevicesInfo.current_personality;
+	}
 	void SetPersonalityCurrent(uint8_t nCurrent);
 
 	void GetLabel(struct TRDMDeviceInfoData *pInfoData);
-	void SetLabel(const char* pLabel);
-	void SetLabel(const char* pLabel, uint8_t nLabelLength);
+	void SetLabel(const char *pLabel);
+	void SetLabel(const char *pLabel, uint8_t nLabelLength);
 
-	inline struct TRDMSubDevicesInfo *GetInfo() { return &m_tSubDevicesInfo; }
+	struct TRDMSubDevicesInfo* GetInfo() {
+		return &m_tSubDevicesInfo;
+	}
 
 	RDMPersonality* GetPersonality(uint8_t nPersonality);
 
-	inline uint8_t GetPersonalityCount() { return m_tSubDevicesInfo.personality_count;}
+	uint8_t GetPersonalityCount() const {
+		return m_tSubDevicesInfo.personality_count;
+	}
 
-	inline uint16_t GetDmxFootPrint() { return m_tSubDevicesInfo.dmx_footprint;}
+	uint16_t GetDmxFootPrint() const {
+		return m_tSubDevicesInfo.dmx_footprint;
+	}
 
 	bool GetFactoryDefaults();
 	void SetFactoryDefaults();

@@ -188,7 +188,7 @@ void RgbPanel::Start() {
 }
 
 void RgbPanel::Dump() {
-	for (uint32_t nRow = 0; nRow < (m_nRows / 2); nRow++) {
+	for (uint8_t nRow = 0; nRow < (m_nRows / 2); nRow++) {
 		printf("[");
 		for (uint32_t i = 0; i < m_nColumns; i++) {
 			const uint32_t nIndex = (nRow * m_nColumns) + i;
@@ -224,7 +224,7 @@ uint32_t RgbPanel::GetUpdatesCounter() {
 	return s_nUpdatesCounter;
 }
 
-void RgbPanel::SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::SetPixel(uint8_t nColumn, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect(((nColumn >= m_nColumns) || (nRow >= m_nRows)), 0)) {
 		return;
 	}
@@ -294,7 +294,7 @@ void core1_task() {
 	const uint32_t nMultiplier = s_nColumns * PWM_WIDTH;
 
 	for (;;) {
-		for (uint32_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
+		for (uint8_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
 
 			const uint32_t nBaseIndex = nRow * nMultiplier;
 

@@ -60,6 +60,7 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 bool RDMDeviceParams::Load() {
 	DEBUG_ENTRY
 
+#if !defined(DISABLE_FS)
 	m_tRDMDeviceParams.nSetList = 0;
 
 	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
@@ -69,7 +70,9 @@ bool RDMDeviceParams::Load() {
 		if (m_pRDMDeviceParamsStore != nullptr) {
 			m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
 		}
-	} else if (m_pRDMDeviceParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRDMDeviceParamsStore != nullptr) {
 		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
 	} else {
 		DEBUG_EXIT

@@ -112,12 +112,12 @@ private:
 
 private:
 	struct TRDMDevice m_tRDMDevice;
-	bool m_IsInit{false};
+	bool m_IsInit { false };
 	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t m_nDeviceRootLabelLength{0};
-	uint16_t m_nCheckSum{0};
+	uint8_t m_nDeviceRootLabelLength { 0 };
+	uint16_t m_nCheckSum { 0 };
 
-	RDMDeviceStore *m_pRDMDeviceStore{nullptr};
+	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
 };
 
 #endif /* RDMDEVICE_H_ */

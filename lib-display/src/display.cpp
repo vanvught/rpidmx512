@@ -76,7 +76,7 @@ Display::Display()
 	PrintInfo();
 }
 
-Display::Display(uint32_t nCols, uint32_t nRows)
+Display::Display(uint8_t nCols, uint8_t nRows)
 #if !defined(NO_HAL)
 	: m_nMillis(Hardware::Get()->Millis())
 #endif
@@ -152,7 +152,7 @@ void Display::Detect(DisplayType tDisplayType) {
 	}
 }
 
-void Display::Detect(__attribute__((unused)) uint32_t nCols, uint32_t nRows) {
+void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
 #if defined(ENABLE_SSD1311)
@@ -222,7 +222,7 @@ void Display::Cls() {
 	m_LcdDisplay->Cls();
 }
 
-void Display::TextLine(uint32_t nLine, const char *pText, uint8_t nLength) {
+void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
@@ -230,7 +230,7 @@ void Display::TextLine(uint32_t nLine, const char *pText, uint8_t nLength) {
 	m_LcdDisplay->TextLine(nLine, pText, nLength);
 }
 
-int Display::Printf(uint32_t nLine, const char *format, ...) {
+int Display::Printf(uint8_t nLine, const char *format, ...) {
 	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
@@ -245,12 +245,12 @@ int Display::Printf(uint32_t nLine, const char *format, ...) {
 
 	va_end(arp);
 
-	m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint32_t>(i));
+	m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint16_t>(i));
 
 	return i;
 }
 
-int Display::Write(uint32_t nLine, const char *pText) {
+int Display::Write(uint8_t nLine, const char *pText) {
 	if (m_LcdDisplay == nullptr) {
 		return 0;
 	}
@@ -267,7 +267,7 @@ int Display::Write(uint32_t nLine, const char *pText) {
 	return nCount;
 }
 
-void Display::SetCursorPos(uint32_t nCol, uint32_t nRow) {
+void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
@@ -291,7 +291,7 @@ void Display::PutString(const char *pText) {
 	m_LcdDisplay->PutString(pText);
 }
 
-void Display::ClearLine(uint32_t nLine) {
+void Display::ClearLine(uint8_t nLine) {
 	if (m_LcdDisplay == nullptr) {
 		return;
 	}
@@ -322,7 +322,7 @@ void Display::TextStatus(const char *pText) {
 
 	SetCursorPos(0, m_nRows - 1);
 
-	for (uint32_t i = 0; i < m_nCols - 1; i++) {
+	for (uint8_t i = 0; i < m_nCols - 1; i++) {
 		PutChar(' ');
 	}
 

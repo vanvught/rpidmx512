@@ -43,7 +43,7 @@
 
 using namespace e131;
 
-void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (ptE131Params != nullptr) {
@@ -84,7 +84,7 @@ void E131Params::Builder(const struct TE131Params *ptE131Params, char *pBuffer, 
 	DEBUG_EXIT
 }
 
-void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pE131ParamsStore == nullptr) {

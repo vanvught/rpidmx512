@@ -49,6 +49,7 @@ RemoteConfigParams::RemoteConfigParams(RemoteConfigParamsStore* pTRemoteConfigPa
 bool RemoteConfigParams::Load() {
 	m_tRemoteConfigParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RemoteConfigParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RemoteConfigConst::PARAMS_FILE_NAME)) {
@@ -56,7 +57,9 @@ bool RemoteConfigParams::Load() {
 		if (m_pRemoteConfigParamsStore != nullptr) {
 			m_pRemoteConfigParamsStore->Update(&m_tRemoteConfigParams);
 		}
-	} else if (m_pRemoteConfigParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRemoteConfigParamsStore != nullptr) {
 		m_pRemoteConfigParamsStore->Copy(&m_tRemoteConfigParams);
 	} else {
 		return false;
@@ -125,7 +128,7 @@ void RemoteConfigParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -152,7 +155,7 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	return;
 }
 
-void RemoteConfigParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RemoteConfigParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRemoteConfigParamsStore == nullptr) {

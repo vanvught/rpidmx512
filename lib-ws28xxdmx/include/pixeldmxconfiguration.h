@@ -35,7 +35,7 @@ struct PortInfo {
 	uint32_t nBeginIndexPortId1;
 	uint32_t nBeginIndexPortId2;
 	uint32_t nBeginIndexPortId3;
-	uint32_t nProtocolPortIdLast;
+	uint32_t nProtocolPortIndexLast;
 };
 }  // namespace pixeldmxconfiguration
 
@@ -49,7 +49,7 @@ public:
 		return m_nOutputPorts;
 	}
 
-	void SetGroupingCount(uint32_t nGroupingCount) {
+	void SetGroupingCount(uint16_t nGroupingCount) {
 		m_nGroupingCount = nGroupingCount;
 	}
 

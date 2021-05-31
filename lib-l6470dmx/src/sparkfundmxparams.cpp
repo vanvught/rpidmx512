@@ -68,6 +68,7 @@ bool SparkFunDmxParams::Load() {
 
 	m_tSparkFunDmxParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(SparkFunDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(SparkFunDmxParamsConst::FILE_NAME)) {
@@ -75,7 +76,9 @@ bool SparkFunDmxParams::Load() {
 		if (m_pSparkFunDmxParamsStore != nullptr) {
 			m_pSparkFunDmxParamsStore->Update(&m_tSparkFunDmxParams);
 		}
-	} else if (m_pSparkFunDmxParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pSparkFunDmxParamsStore != nullptr) {
 		m_pSparkFunDmxParamsStore->Copy(&m_tSparkFunDmxParams);
 	} else {
 		DEBUG_EXIT
@@ -192,7 +195,7 @@ void SparkFunDmxParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex) {
+void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize, uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -228,7 +231,7 @@ void SparkFunDmxParams::Builder(const struct TSparkFunDmxParams *ptSparkFunDmxPa
 	DEBUG_EXIT
 }
 
-void SparkFunDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize, uint32_t nMotorIndex) {
+void SparkFunDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize, uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 
 	if (m_pSparkFunDmxParamsStore == nullptr) {

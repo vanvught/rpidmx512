@@ -108,7 +108,7 @@ bool WS28xxMulti::SetupCPLD() {
 
 void WS28xxMulti::SetColour8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = nPixelIndex * pixel::single::RGB;
+	const uint32_t k = nPixelIndex * pixel::single::RGB;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {

@@ -30,18 +30,15 @@
 #include "networkbaremetalmacaddress.h"
 
 extern "C" {
-	int32_t hardware_get_mac_address(uint8_t *mac_address);
+void enet_mac_address_get(uint32_t, uint8_t paddr[]);
 }
 
 NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
 	strcpy(m_aIfName, "lo");
 }
 
-NetworkBaremetalMacAddress::~NetworkBaremetalMacAddress() {
-}
-
 void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
 	assert(pMacAddress != nullptr);
 
-	hardware_get_mac_address(pMacAddress);
+	enet_mac_address_get(0, pMacAddress);
 }

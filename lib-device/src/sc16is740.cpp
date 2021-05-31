@@ -174,7 +174,7 @@ void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
 	}
 }
 
-void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t &nSize, uint32_t nTimeOut) {
+void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut) {
 	uint8_t *Destination = pBytes;
 	uint32_t nRemaining = nSize;
 
@@ -196,7 +196,7 @@ void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t &nSize, uint32_t nTimeOut) {
 		}
 	}
 
-	nSize = static_cast<uint32_t>(Destination - pBytes);
+	nSize = static_cast<uint16_t>(Destination - pBytes);
 }
 
 void SC16IS740::FlushRead(uint32_t nTimeOut) {

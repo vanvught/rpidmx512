@@ -64,7 +64,7 @@ bool Serial::InitI2c() {
 void Serial::SendI2c(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	FUNC_PREFIX (i2c_set_slave_address(m_I2cConfiguration.nAddress));
+	FUNC_PREFIX (i2c_set_address(m_I2cConfiguration.nAddress));
 	FUNC_PREFIX (i2c_write(reinterpret_cast<const char*>(pData), nLength));
 
 	DEBUG_EXIT

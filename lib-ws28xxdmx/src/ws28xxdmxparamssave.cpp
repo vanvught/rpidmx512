@@ -47,7 +47,7 @@
 using namespace ws28xxdmxparams;
 using namespace pixel;
 
-void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -119,7 +119,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	DEBUG_EXIT
 }
 
-void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pWS28xxParamsStore == nullptr) {

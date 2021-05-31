@@ -107,6 +107,7 @@ DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore
 bool DisplayUdfParams::Load() {
 	m_tDisplayUdfParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(DisplayUdfParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DisplayUdfParamsConst::FILE_NAME)) {
@@ -114,7 +115,9 @@ bool DisplayUdfParams::Load() {
 		if (m_pDisplayUdfParamsStore != nullptr) {
 			m_pDisplayUdfParamsStore->Update(&m_tDisplayUdfParams);
 		}
-	} else if (m_pDisplayUdfParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pDisplayUdfParamsStore != nullptr) {
 		m_pDisplayUdfParamsStore->Copy(&m_tDisplayUdfParams);
 	} else {
 		return false;
@@ -182,7 +185,7 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (ptDisplayUdfParams != nullptr) {
@@ -205,7 +208,7 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 	nSize = builder.GetSize();
 }
 
-void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pDisplayUdfParamsStore == nullptr) {
 		nSize = 0;
 		return;

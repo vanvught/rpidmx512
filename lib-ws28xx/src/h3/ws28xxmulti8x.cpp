@@ -63,9 +63,9 @@ void WS28xxMulti::SetupBuffers8x() {
 			}
 
 			if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
-				SetPixel8x(nPortIndex, 1 + m_nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+				SetPixel8x(nPortIndex, 1U + m_nCount, 0xFF, 0xFF, 0xFF, 0xFF);
 			} else {
-				SetPixel8x(nPortIndex, 1 + m_nCount, 0, 0, 0, 0);
+				SetPixel8x(nPortIndex, 1U + m_nCount, 0, 0, 0, 0);
 			}
 		}
 		memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);

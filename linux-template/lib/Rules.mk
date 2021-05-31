@@ -45,6 +45,7 @@ $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
  
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion #-Wconversion
+#COPS+=-fstack-usage
 
 ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
 else

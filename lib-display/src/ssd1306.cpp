@@ -311,7 +311,7 @@ bool Ssd1306::Start() {
 }
 
 void Ssd1306::Cls() {
-	uint32_t nColumnAdd = 0;
+	uint8_t nColumnAdd = 0;
 
 	if (m_bHaveSH1106) {
 		nColumnAdd = 4;
@@ -377,7 +377,7 @@ void Ssd1306::PutString(const char *pString) {
 /**
  * nLine [1..4]
  */
-void Ssd1306::ClearLine(uint32_t nLine) {
+void Ssd1306::ClearLine(uint8_t nLine) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= m_nRows))), 0)) {
 		return;
 	}
@@ -387,7 +387,7 @@ void Ssd1306::ClearLine(uint32_t nLine) {
 	Ssd1306::SetCursorPos(0, nLine - 1);
 }
 
-void Ssd1306::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
+void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= m_nRows))), 0)) {
 		return;
 	}
@@ -409,7 +409,7 @@ void Ssd1306::Text(const char *pData, uint32_t nLength) {
 /**
  * (0,0)
  */
-void Ssd1306::SetCursorPos(uint32_t nCol, uint32_t nRow) {
+void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if  (__builtin_expect((!((nCol < oled::font8x6::COLS) && (nRow < m_nRows))), 0)) {
 		return;
 	}

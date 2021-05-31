@@ -42,10 +42,10 @@ public:
 	LightSetChain();
 	~LightSetChain() override;
 
-	void Start(uint32_t nPort) override;
-	void Stop(uint32_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPort, const uint8_t *, uint32_t) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Print() override;
 

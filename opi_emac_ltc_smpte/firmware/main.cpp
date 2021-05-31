@@ -107,7 +107,6 @@
 #endif
 
 extern "C" {
-
 void h3_cpu_off(uint8_t);
 
 void notmain(void) {
@@ -326,7 +325,6 @@ void notmain(void) {
 	if (bRunRtpMidi) {
 		rtpMidi.Start();
 		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-		rtpMidi.Print();
 	}
 
 	/**
@@ -357,7 +355,9 @@ void notmain(void) {
 
 		oscServer.Start();
 		oscServer.Print();
-		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
+		if (bRunRtpMidi) {
+			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
+		}
 	}
 
 	/**
@@ -398,7 +398,13 @@ void notmain(void) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
-		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
+		if (bRunRtpMidi) {
+			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
+		}
+	}
+
+	if (bRunRtpMidi) {
+		rtpMidi.Print();
 	}
 
 	/**

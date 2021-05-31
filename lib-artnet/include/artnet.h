@@ -171,9 +171,13 @@ enum TGoodInput {
 struct ArtNet {
 	static constexpr uint8_t PROTOCOL_REVISION = 14;
 	static constexpr uint16_t UDP_PORT = 0x1936;
-	static constexpr uint32_t MAX_PORTS = 4;
-	static constexpr uint32_t MAX_PAGES = 8;
-	static constexpr uint32_t DMX_LENGTH = 512;
+	static constexpr uint8_t PORTS = 4;
+#if !defined(ARTNET_PAGES)
+	static constexpr uint8_t PAGES = 1;
+#else
+	static constexpr uint8_t PAGES = ARTNET_PAGES;
+#endif
+	static constexpr uint16_t DMX_LENGTH = 512;
 	static constexpr uint32_t SHORT_NAME_LENGTH = 18;
 	static constexpr uint32_t LONG_NAME_LENGTH = 64;
 	static constexpr uint32_t REPORT_LENGTH = 64;

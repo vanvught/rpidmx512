@@ -75,9 +75,9 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		pArtNetNode->SetDisableMergeTimeout(true);
 	}
 
-	unsigned i;
+	uint8_t i;
 
-	for (i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (i = 0; i < ArtNet::PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
 			pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeModePort[i]));
 		} else {
@@ -95,7 +95,7 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		}
 	}
 
-	for (;i < (ArtNet::MAX_PORTS * ArtNet::MAX_PAGES); i++) {
+	for (;i < (ArtNet::PORTS * ArtNet::PAGES); i++) {
 		pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeMode));
 		pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
 	}

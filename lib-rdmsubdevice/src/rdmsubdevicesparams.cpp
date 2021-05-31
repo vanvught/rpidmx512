@@ -63,10 +63,9 @@ RDMSubDevicesParams::RDMSubDevicesParams(RDMSubDevicesParamsStore *pRDMSubDevice
 }
 
 bool RDMSubDevicesParams::Load() {
-	DEBUG_ENTRY
-
 	m_tRDMSubDevicesParams.nCount = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RDMSubDevicesParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RDMSubDevicesConst::PARAMS_FILE_NAME)) {
@@ -74,14 +73,14 @@ bool RDMSubDevicesParams::Load() {
 		if (m_pRDMSubDevicesParamsStore != nullptr) {
 			m_pRDMSubDevicesParamsStore->Update(&m_tRDMSubDevicesParams);
 		}
-	} else if (m_pRDMSubDevicesParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRDMSubDevicesParamsStore != nullptr) {
 		m_pRDMSubDevicesParamsStore->Copy(&m_tRDMSubDevicesParams);
 	} else {
-		DEBUG_EXIT
 		return false;
 	}
 
-	DEBUG_EXIT
 	return true;
 }
 
@@ -108,7 +107,7 @@ void RDMSubDevicesParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void RDMSubDevicesParams::Builder(const struct TRDMSubDevicesParams *pRDMSubDevicesParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMSubDevicesParams::Builder(const struct TRDMSubDevicesParams *pRDMSubDevicesParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -128,7 +127,7 @@ void RDMSubDevicesParams::Builder(const struct TRDMSubDevicesParams *pRDMSubDevi
 	DEBUG_EXIT
 }
 
-void RDMSubDevicesParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMSubDevicesParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRDMSubDevicesParamsStore == nullptr) {

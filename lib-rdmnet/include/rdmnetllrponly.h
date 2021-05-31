@@ -26,31 +26,49 @@
 #ifndef RDMNETLLRPONLY_H_
 #define RDMNETLLRPONLY_H_
 
+#include <cstring>
+
 #include "rdmnetdevice.h"
 #include "rdmidentify.h"
 #include "rdmfactorydefaults.h"
 
 #include "lightsetllrponly.h"
 
+namespace rdmnetllrponly {
+static constexpr char LABEL[] = "RDMNet LLRP Only";
+static constexpr auto LABEL_LENGTH = sizeof(LABEL) - 1;
+}  // namespace rdmnetllrponly
+
 class RDMNetLLRPOnly: public RDMIdentify {
 public:
-	RDMNetLLRPOnly(const char *pLabel = nullptr);
-	~RDMNetLLRPOnly() override {
+	RDMNetLLRPOnly(const char *pLabel = nullptr) :
+			m_pLabel(const_cast<char*>(pLabel)),
+			m_RDMNetDevice(new RDMPersonality(rdmnetllrponly::LABEL, LightSet::Get()->GetDmxFootprint())) {}
+
+	~RDMNetLLRPOnly() override {}
+
+	void Init() {
+		if (m_pLabel == nullptr) {
+			m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, rdmnetllrponly::LABEL, rdmnetllrponly::LABEL_LENGTH);
+		} else {
+			m_RDMNetDevice.SetLabel(RDM_ROOT_DEVICE, m_pLabel, static_cast<uint8_t>(strlen(m_pLabel)));
+		}
+		m_RDMNetDevice.Init();
 	}
-
-	void Init();
-	void Start();
-	void Stop();
-
+	void Start() {
+		m_RDMNetDevice.Start();
+	}
+	void Stop() {
+		m_RDMNetDevice.Stop();
+	}
 	void Run() {
 		m_RDMNetDevice.Run();
 	}
-
 	void Print() {
 		m_RDMNetDevice.Print();
 	}
 
-	void SetMode(TRdmIdentifyMode nMode) override;
+	void SetMode(__attribute__((unused)) TRdmIdentifyMode nMode) override {}
 
 	RDMNetDevice* GetRDMNetDevice() {
 		return &m_RDMNetDevice;

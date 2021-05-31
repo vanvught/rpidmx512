@@ -44,7 +44,7 @@
 #define HOST_NAME_PREFIX	"allwinner_"
 
 extern "C" {
-int32_t hardware_get_mac_address(/*@out@*/uint8_t *mac_address);
+void enet_mac_address_get(uint32_t, uint8_t paddr[]);
 // MAC-PHY
 int emac_start(bool reset_emac);
 }
@@ -52,13 +52,7 @@ int emac_start(bool reset_emac);
 NetworkH3emac::NetworkH3emac() {
 	DEBUG_ENTRY
 
-	strcpy(m_aIfName, "wlan0");
-
-	DEBUG_EXIT
-}
-
-NetworkH3emac::~NetworkH3emac() {
-	DEBUG_ENTRY
+	strcpy(m_aIfName, "eth0");
 
 	DEBUG_EXIT
 }
@@ -76,7 +70,7 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 	emac_start(true);
 
-	hardware_get_mac_address(m_aNetMacaddr);
+	enet_mac_address_get(0, m_aNetMacaddr);
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
@@ -323,7 +317,7 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 	net_set_hostname(pHostName);
 
 	if (m_pNetworkStore != nullptr) {
-		m_pNetworkStore->SaveHostName(pHostName, strlen(pHostName));
+		m_pNetworkStore->SaveHostName(pHostName, static_cast<uint16_t>(strlen(pHostName)));
 	}
 }
 

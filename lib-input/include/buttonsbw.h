@@ -44,7 +44,7 @@ public:
 	int GetChar() override;
 
 private:
-	void Write(const char *, uint32_t);
+	void Write(const char *buffer, uint8_t size);
 
 private:
 	HAL_I2C m_I2C;

@@ -167,8 +167,8 @@ void notmain(void) {
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 		bridge.SetDirectUpdate(nUniverses != 1);
 
-		for (uint32_t u = 1; u < nUniverses; u++) {
-			bridge.SetUniverse(u, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + u));
+		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 		}
 
 		bridge.SetOutput(pSpi);
@@ -206,7 +206,7 @@ void notmain(void) {
 		dmx.Print();
 	}
 
-	for (unsigned i = 0; i < 7 ; i++) {
+	for (uint8_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 

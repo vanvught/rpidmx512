@@ -39,21 +39,21 @@ struct TWS28xxDisplayMatrixColon {
 
 class WS28xxDisplayMatrix {
 public:
-	WS28xxDisplayMatrix(uint32_t nColumns, uint32_t nRows, pixel::Type tLedType, pixel::Map tRGBMapping);
+	WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, pixel::Type tLedType, pixel::Map tRGBMapping);
 	~WS28xxDisplayMatrix();
 
 	void PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 	void Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 	void SetColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetColonsOff();
 
-	void ClearLine(uint32_t nLine);
+	void ClearLine(uint8_t nLine);
 
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void Cls();
 	void Show();
@@ -70,16 +70,16 @@ private:
 	uint8_t ReverseBits(uint8_t nBits);
 
 private:
-	uint32_t m_nColumns;
-	uint32_t m_nRows;
+	uint8_t m_nColumns;
+	uint8_t m_nRows;
 	uint32_t m_nOffset;
-	uint32_t m_nMaxLeds;
-	uint32_t m_nMaxPosition;
-	uint32_t m_nMaxLine;
+	uint16_t m_nMaxLeds;
+	uint16_t m_nMaxPosition;
+	uint8_t m_nMaxLine;
 	WS28xx *m_pWS28xx { nullptr };
 	bool m_bUpdateNeeded { false };
 	uint32_t m_nPosition { 0 };
-	uint32_t m_nLine { 0 };
+	uint8_t m_nLine { 0 };
 	struct TWS28xxDisplayMatrixColon *m_ptColons { nullptr };
 };
 

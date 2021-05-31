@@ -63,6 +63,7 @@ DMXParams::DMXParams(DMXParamsStore *pDMXParamsStore) : m_pDMXParamsStore(pDMXPa
 bool DMXParams::Load() {
 	m_tDMXParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(DMXParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DMXSendConst::PARAMS_FILE_NAME)) {
@@ -70,7 +71,9 @@ bool DMXParams::Load() {
 		if (m_pDMXParamsStore != nullptr) {
 			m_pDMXParamsStore->Update(&m_tDMXParams);
 		}
-	} else if (m_pDMXParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pDMXParamsStore != nullptr) {
 		m_pDMXParamsStore->Copy(&m_tDMXParams);
 	} else {
 		return false;

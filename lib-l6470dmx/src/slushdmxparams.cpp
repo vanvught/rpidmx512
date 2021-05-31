@@ -164,7 +164,7 @@ void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
 	}
 }
 
-void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != 0);
 
 	if (ptSlushDmxParams != 0) {
@@ -186,7 +186,7 @@ void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, cha
 	nSize = builder.GetSize();
 }
 
-void SlushDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void SlushDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pSlushDmxParamsStore == 0) {
 		nSize = 0;
 		return;

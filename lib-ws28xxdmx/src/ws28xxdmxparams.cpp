@@ -82,6 +82,7 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 bool WS28xxDmxParams::Load() {
 	m_tWS28xxParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(WS28xxDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
@@ -89,7 +90,9 @@ bool WS28xxDmxParams::Load() {
 		if (m_pWS28xxParamsStore != nullptr) {
 			m_pWS28xxParamsStore->Update(&m_tWS28xxParams);
 		}
-	} else if (m_pWS28xxParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pWS28xxParamsStore != nullptr) {
 		m_pWS28xxParamsStore->Copy(&m_tWS28xxParams);
 	} else {
 		return false;

@@ -104,7 +104,7 @@ void Serial::Print() {
 
 	if (m_tType == type::I2C) {
 		printf(" Address    : %.2x\n", m_I2cConfiguration.nAddress);
-		printf(" Speed mode : %s\n", GetI2cSpeed(m_I2cConfiguration.nSpeed));
+		printf(" Speed mode : %s\n", GetI2cSpeedMode(m_I2cConfiguration.nSpeed));
 		return;
 	}
 }

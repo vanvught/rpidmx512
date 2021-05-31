@@ -2,7 +2,7 @@
  * @file spi_flash.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef SPI_FLASH_H_
 #define SPI_FLASH_H_
 
-#include <cstdint>
+#include <stdint.h>
 #include <stddef.h>
 
 #ifdef __cplusplus

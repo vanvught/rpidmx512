@@ -42,6 +42,7 @@ ReadConfigFile::~ReadConfigFile() {
     m_p = nullptr;
 }
 
+#if !defined(DISABLE_FS)
 bool ReadConfigFile::Read(const char *pFileName) {
 	assert(pFileName != nullptr);
 
@@ -76,6 +77,7 @@ bool ReadConfigFile::Read(const char *pFileName) {
 
 	return true;
 }
+#endif
 
 void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(pBuffer != nullptr);
@@ -86,10 +88,6 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 
 	memcpy(pSrc, pBuffer, nLength);
 	pSrc[nLength] = '\0';
-
-#ifndef NDEBUG
-		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, pSrc);
-#endif
 
 	while (nLength != 0) {
 		char *pLine = pSrc;
@@ -103,10 +101,6 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 			*pSrc++ = '\0';
 			nLength--;
 		}
-
-#ifndef NDEBUG
-		printf("%s:%d [%s]\n", __FUNCTION__, __LINE__, pLine);
-#endif
 
 		if (*pLine >= 'a') {
 			m_cb(m_p, pLine);

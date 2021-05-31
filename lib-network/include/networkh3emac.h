@@ -39,7 +39,7 @@ extern "C" {
 class NetworkH3emac final : public Network {
 public:
 	NetworkH3emac();
-	~NetworkH3emac();
+	~NetworkH3emac() override {}
 
 	void Init(NetworkParamsStore *pNetworkParamsStore = nullptr);
 

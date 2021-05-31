@@ -103,7 +103,7 @@ void Ssd1311::PutChar(int c) {
 void Ssd1311::PutString(const char *pString) {
 	assert(pString != nullptr);
 
-	uint32_t n = MAX_COLUMNS;
+	uint16_t n = MAX_COLUMNS;
 	auto *pSrc = pString;
 	auto *s = reinterpret_cast<char *>(&_TextBuffer[1]);
 
@@ -118,7 +118,7 @@ void Ssd1311::PutString(const char *pString) {
 /**
  * nLine [1..4]
  */
-void Ssd1311::ClearLine(uint32_t nLine) {
+void Ssd1311::ClearLine(uint8_t nLine) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -128,7 +128,7 @@ void Ssd1311::ClearLine(uint32_t nLine) {
 	Ssd1311::SetCursorPos(0, nLine - 1);
 }
 
-void Ssd1311::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
+void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -155,7 +155,7 @@ void Ssd1311::Text(const char *pData, uint32_t nLength) {
 /**
  * (0,0)
  */
-void Ssd1311::SetCursorPos(uint32_t nCol, uint32_t nRow) {
+void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	if  (__builtin_expect((!((nCol < MAX_COLUMNS) && (nRow < MAX_ROWS))), 0)) {
 		return;
 	}

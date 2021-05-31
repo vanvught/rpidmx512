@@ -53,7 +53,7 @@ static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U'
 static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
 extern "C" {
-	int32_t hardware_get_mac_address(uint8_t *mac_address);
+void enet_mac_address_get(uint32_t, uint8_t paddr[]);
 }
 
 NetworkESP8266::NetworkESP8266() {
@@ -98,7 +98,7 @@ void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
 	if (m_IsInitDone) {
 		memcpy(pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
 	} else {
-		hardware_get_mac_address(pMacAddress);
+		enet_mac_address_get(0, pMacAddress);
 	}
 }
 
@@ -134,7 +134,7 @@ void NetworkESP8266::SendTo(__attribute__((unused)) int32_t nHandle, const void 
 
 	esp8266_write_4bits(CMD_WIFI_UDP_SEND);
 
-	esp8266_write_halfword(nLength);
+	esp8266_write_halfword((nLength));
 	esp8266_write_word(to_ip);
 	esp8266_write_halfword(remote_port);
 	esp8266_write_bytes(reinterpret_cast<const uint8_t *>(pBuffer), nLength);
@@ -197,7 +197,7 @@ bool NetworkESP8266::Start() {
 
 	printf(" MAC address : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 
-	uint16_t nLength = HOST_NAME_MAX;
+	uint32_t nLength = HOST_NAME_MAX;
 
 	esp8266_write_4bits(CMD_WIFI_HOST_NAME);
 	esp8266_read_str(m_aHostName, &nLength);
@@ -331,7 +331,7 @@ void NetworkESP8266::ApCreate(const char *pPassword) {
  */
 
 const char *NetworkESP8266::GetSystemSdkVersion() {
-	uint16_t nLength = SDK_VERSION_MAX;
+	uint32_t nLength = SDK_VERSION_MAX;
 
 	esp8266_write_4bits(CMD_SYSTEM_SDK_VERSION);
 	esp8266_read_str(sdk_version, &nLength);
@@ -340,7 +340,7 @@ const char *NetworkESP8266::GetSystemSdkVersion() {
 }
 
 const char *NetworkESP8266::GetFirmwareVersion() {
-	uint16_t nLength = FIRMWARE_VERSION_MAX;
+	uint32_t nLength = FIRMWARE_VERSION_MAX;
 
 	esp8266_write_4bits(CMD_SYSTEM_FIRMWARE_VERSION);
 	esp8266_read_str(firmware_version, &nLength);

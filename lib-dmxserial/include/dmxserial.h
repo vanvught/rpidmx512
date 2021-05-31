@@ -43,7 +43,7 @@ namespace DmxSerialDefaults {
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;
 	static constexpr auto I2C_ADDRESS = 0x30;
-	static constexpr auto I2C_SPEED_MODE = hal::i2c::FULL_SPEED;
+	static constexpr auto I2C_SPEED_MODE = serial::i2c::FAST;
 }
 
 #define DMXSERIAL_FILE_PREFIX	"chl"
@@ -62,10 +62,10 @@ public:
 
 	void Init();
 
-	void Start(uint32_t nPort) override;
-	void Stop(uint32_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Run();
 

@@ -55,11 +55,11 @@ private:
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bShowSysTime;
-	ltc::type m_tTimeCodeTypePrevious{ltc::type::INVALID};
-	uint32_t m_nMidiQuarterFramePiece {0};
+	ltc::type m_tTimeCodeTypePrevious { ltc::type::INVALID };
+	uint32_t m_nMidiQuarterFramePiece { 0 };
 	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
-	int32_t m_nSecondsPrevious{60};
+	int32_t m_nSecondsPrevious { 60 };
 	char m_cBPM[9];
 
 	static LtcOutputs *s_pThis;

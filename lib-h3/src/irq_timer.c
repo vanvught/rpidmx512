@@ -39,10 +39,10 @@
 /**
  * Generic ARM Timer
  */
-static thunk_irq_timer_arm_t arm_physical_timer_func = NULL;
-static thunk_irq_timer_arm_t arm_virtual_timer_func = NULL;
+static volatile thunk_irq_timer_arm_t arm_physical_timer_func = NULL;
+static volatile thunk_irq_timer_arm_t arm_virtual_timer_func = NULL;
 
-static uint32_t timer_value;
+static volatile uint32_t timer_value;
 
 #define ARM_TIMER_ENABLE			(1U<<0)
 #define ARM_PHYSICAL_TIMER_IRQ		H3_PPI13_IRQn

@@ -63,8 +63,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 

@@ -71,9 +71,9 @@ public:
 
 private:
 	// shell.cpp
-	const char *ReadLine(uint32_t &nLength);
-	uint32_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
-	void ValidateArg(uint32_t nOffset, uint32_t nLength);
+	const char *ReadLine(uint32_t& nLength);
+	uint16_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
+	void ValidateArg(uint16_t nOffset, uint32_t nLength);
 	// shellcmd.cpp
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength);
 	void CmdReboot();
@@ -93,13 +93,13 @@ private:
 	void CmdHelp();
 
 private:
-	bool m_bIsEndOfLine{false};		
-	uint32_t m_nLength{0};
+	bool m_bIsEndOfLine { false };
+	uint16_t m_nLength { 0 };
 	char m_Buffer[shell::BUFLEN];
-	uint32_t m_Argc{0};
-	char *m_Argv[shell::MAXARG]{nullptr};
-	uint32_t m_nArgvLength[shell::MAXARG];
-	bool m_bShownPrompt{false};
+	uint32_t m_Argc { 0 };
+	char *m_Argv[shell::MAXARG] { nullptr };
+	uint16_t m_nArgvLength[shell::MAXARG];
+	bool m_bShownPrompt { false };
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)

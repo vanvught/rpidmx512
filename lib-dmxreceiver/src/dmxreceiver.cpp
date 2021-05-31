@@ -75,7 +75,7 @@ void DMXReceiver::Stop() {
 	DEBUG1_EXIT
 }
 
-bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
+bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint32_t nLength) {
 	auto isChanged = false;
 
 	const auto *pSrc = pData;

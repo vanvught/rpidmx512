@@ -44,7 +44,7 @@
 
 using namespace artnet;
 
-void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -64,7 +64,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	builder.Add(LightSetConst::PARAMS_UNIVERSE, m_tArtNetParams.nUniverse, isMaskSet(ArtnetParamsMask::UNIVERSE));
 
 	builder.AddComment("Multi port configuration");
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 		builder.Add(LightSetConst::PARAMS_UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i], isMaskSet(ArtnetParamsMask::UNIVERSE_A << i));
 	}
 
@@ -84,7 +84,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	builder.Add(LightSetConst::PARAMS_MERGE_MODE, ArtNet::GetMergeMode(m_tArtNetParams.nMergeMode), isMaskSet(ArtnetParamsMask::MERGE_MODE));
 	builder.Add(ArtNetParamsConst::PROTOCOL, ArtNet::GetProtocolMode(m_tArtNetParams.nProtocol), isMaskSet(ArtnetParamsMask::PROTOCOL));
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 		builder.Add(LightSetConst::PARAMS_MERGE_MODE_PORT[i], ArtNet::GetMergeMode(m_tArtNetParams.nMergeModePort[i]), isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i));
 		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], ArtNet::GetProtocolMode(m_tArtNetParams.nProtocolPort[i]), isMaskSet(ArtnetParamsMask::PROTOCOL_A << i));
 	}
@@ -95,7 +95,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT));
 
 	builder.AddComment("DMX Input");
-	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
+	for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
 		if (!isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			m_tArtNetParams.nDestinationIpPort[i] = ArtNetNode::Get()->GetDestinationIp(i);
 		}
@@ -108,7 +108,7 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	DEBUG_EXIT
 }
 
-void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pArtNetParamsStore == nullptr) {
 		nSize = 0;
 		return;

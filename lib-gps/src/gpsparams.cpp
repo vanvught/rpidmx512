@@ -55,6 +55,7 @@ GPSParams::GPSParams(GPSParamsStore *pGPSParamsStore): m_pGPSParamsStore(pGPSPar
 bool GPSParams::Load() {
 	m_tTGPSParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(GPSParams::staticCallbackFunction, this);
 
 	if (configfile.Read(GPSParamsConst::FILE_NAME)) {
@@ -62,7 +63,9 @@ bool GPSParams::Load() {
 		if (m_pGPSParamsStore != nullptr) {
 			m_pGPSParamsStore->Update(&m_tTGPSParams);
 		}
-	} else if (m_pGPSParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pGPSParamsStore != nullptr) {
 		m_pGPSParamsStore->Copy(&m_tTGPSParams);
 	} else {
 		return false;
@@ -134,7 +137,7 @@ void GPSParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (pGPSParams != nullptr) {
@@ -152,7 +155,7 @@ void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint
 	nSize = builder.GetSize();
 }
 
-void GPSParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void GPSParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pGPSParamsStore == nullptr) {

@@ -35,15 +35,15 @@ public:
 	dmx::PortDirection GetPortDirection();
 
 	// RDM
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) override;
 	const uint8_t *RdmReceive(uint32_t nPort) override;
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) override;
 	uint32_t RdmGetDateReceivedEnd() override;
 
 	// DMX
 	void ClearData();
-	void SetSendData(const uint8_t *pData, uint16_t nLength);
-	void SetSendDataWithoutSC(const uint8_t *pData, uint16_t nLength);
+	void SetSendData(const uint8_t *pData, uint32_t nLength);
+	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
 
 	const uint8_t* GetDmxCurrentData();
 	const uint8_t* GetDmxAvailable();
@@ -69,7 +69,7 @@ public:
 
 private:
 	void UartInit();
-	void SetSendDataLength(uint16_t send_data_length);
+	void SetSendDataLength(uint32_t nLength);
 	void UartEnableFifo();
 	void UartDisableFifo();
 	void StopData();

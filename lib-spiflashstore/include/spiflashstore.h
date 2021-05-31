@@ -63,15 +63,23 @@ enum class Store {
 	RGBPANEL,
 	LAST
 };
+
+enum class State {
+	IDLE, CHANGED, ERASED
+};
+
 }  // namespace spiflashstore
 
 class SpiFlashStore {
 public:
 	SpiFlashStore();
-	~SpiFlashStore();
+	~SpiFlashStore() {
+		while (Flash())
+			;
+	}
 
 	 bool HaveFlashChip() const {
-		return m_bHaveFlashChip;
+		return s_bHaveFlashChip;
 	}
 
 	void Update(spiflashstore::Store tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList = 0, uint32_t nOffsetSetList = 0);
@@ -96,22 +104,22 @@ private:
 	uint32_t GetStoreOffset(spiflashstore::Store tStore);
 
 private:
-	bool m_bHaveFlashChip { false };
-	bool m_bIsNew { false };
-	enum class State {
-		IDLE, CHANGED, ERASED
-	};
-	State m_tState { State::IDLE };
-	uint32_t m_nStartAddress { 0 };
 	struct FlashStore {
 		static constexpr auto SIZE = 4096;
 	};
-	uint32_t m_nSpiFlashStoreSize { FlashStore::SIZE };
-	uint8_t m_aSpiFlashData[FlashStore::SIZE];
 
 #if !defined( NO_EMAC )
 	StoreNetwork m_StoreNetwork;
 #endif
+
+	static bool s_bHaveFlashChip;
+	static bool s_bIsNew;
+
+	static spiflashstore::State s_State;
+	static uint32_t s_nStartAddress;
+
+	static uint32_t s_nSpiFlashStoreSize;
+	static uint8_t s_SpiFlashData[FlashStore::SIZE];
 
 	static SpiFlashStore *s_pThis;
 };

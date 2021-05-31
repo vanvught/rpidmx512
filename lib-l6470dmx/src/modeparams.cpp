@@ -218,7 +218,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void ModeParams::Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG1_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -253,7 +253,7 @@ void ModeParams::Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeP
 	DEBUG1_EXIT
 }
 
-void ModeParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pModeParamsStore == nullptr) {

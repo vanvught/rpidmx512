@@ -52,7 +52,7 @@ public:
 
 private:
 	RDMDiscovery *m_Discovery[DMX_MAX_UARTS];
-	struct TRdmMessage *m_pRdmCommand{nullptr};
+	struct TRdmMessage *m_pRdmCommand { nullptr };
 };
 
 #endif /* ARTNETDISCOVERY_H_ */

@@ -103,7 +103,7 @@ int ButtonsBw::GetChar() {
 	return INPUT_KEY_NOT_DEFINED;
 }
 
-void ButtonsBw::Write(const char *buffer, uint32_t size) {
+void ButtonsBw::Write(const char *buffer, uint8_t size) {
 	const uint32_t elapsed = micros() - m_nWriteMicros;
 
 	if (elapsed < BW_UI_I2C_BYTE_WAIT_US) {

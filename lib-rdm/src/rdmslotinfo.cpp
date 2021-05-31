@@ -110,20 +110,20 @@ struct TTableC2 {
 		// Undefined
 		{ SD_UNDEFINED, "No definition" } };
 
-const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint32_t &nLength) {
+const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint32_t& nLength) {
 
 	for (uint32_t i = 0; i < TABLE_C1_SIZE; i++) {
 		if (nId == s_tTableC1[i].nId) {
-			nLength = strlen(s_tTableC1[i].pDescription);
+			nLength = static_cast<uint16_t>(strlen(s_tTableC1[i].pDescription));
 			return s_tTableC1[i].pDescription;
 		}
 	}
 
-	nLength = strlen(s_tTableC1[TABLE_C1_SIZE - 1].pDescription);
+	nLength = static_cast<uint16_t>(strlen(s_tTableC1[TABLE_C1_SIZE - 1].pDescription));
 	return s_tTableC1[TABLE_C1_SIZE - 1].pDescription;
 }
 
-const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint32_t &nLength) {
+const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint32_t& nLength) {
 	int nIndex = bsearch(nId);
 
 	if (nIndex < 0) {
@@ -131,7 +131,7 @@ const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint32_t &nLength) {
 		return nullptr;
 	}
 
-	nLength = strlen(s_tTableC2[nIndex].pDescription);
+	nLength = static_cast<uint16_t>(strlen(s_tTableC2[nIndex].pDescription));
 	return s_tTableC2[nIndex].pDescription;
 }
 

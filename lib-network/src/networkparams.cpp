@@ -50,6 +50,7 @@ NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetwor
 bool NetworkParams::Load() {
 	m_tNetworkParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
 	if (configfile.Read(NetworkParamsConst::FILE_NAME)) {
@@ -57,7 +58,9 @@ bool NetworkParams::Load() {
 		if (m_pNetworkParamsStore != nullptr) {
 			m_pNetworkParamsStore->Update(&m_tNetworkParams);
 		}
-	} else if (m_pNetworkParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pNetworkParamsStore != nullptr) {
 		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
 	} else {
 		return false;

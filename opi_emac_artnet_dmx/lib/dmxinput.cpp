@@ -71,7 +71,7 @@ void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t &nLength, uint32_t &nUpdatesPerSecond) {
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
 	const auto *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();

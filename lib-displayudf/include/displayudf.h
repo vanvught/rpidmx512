@@ -102,7 +102,7 @@ public:
 	void ShowDhcpStatus(DhcpClientStatus nStatus);
 	void ShowShutdown();
 
-	void Set(uint32_t nLine, displayudf::Labels tLabel);
+	void Set(uint8_t nLine, displayudf::Labels tLabel);
 
 	uint8_t GetLabel(uint32_t nIndex) const {
 		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {

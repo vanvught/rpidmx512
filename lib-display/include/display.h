@@ -56,7 +56,7 @@ enum class DisplayType {
 class Display {
 public:
 	Display();
-	Display(uint32_t nCols, uint32_t nRows);
+	Display(uint8_t nCols, uint8_t nRows);
 	Display(DisplayType tDisplayType);
 	~Display();
 
@@ -70,15 +70,15 @@ public:
 #endif
 
 	void Cls();
-	void ClearLine(uint32_t nLine);
+	void ClearLine(uint8_t nLine);
 
 	void PutChar(int c);
 	void PutString(const char *pText);
 
-	int Write(uint32_t, const char *);
-	int Printf(uint32_t, const char *, ...);
+	int Write(uint8_t nLine, const char *);
+	int Printf(uint8_t nLine, const char *, ...);
 
-	void TextLine(uint32_t, const char *, uint8_t);
+	void TextLine(uint8_t nLine, const char *, uint8_t);
 
 	void TextStatus(const char *pText);
 	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
@@ -93,7 +93,7 @@ public:
 	}
 
 	void SetCursor(uint32_t nMode);
-	void SetCursorPos(uint32_t nCol, uint32_t nRow);
+	void SetCursorPos(uint8_t nCol, uint8_t nRow);
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
@@ -104,11 +104,11 @@ public:
 
 	void SetContrast(uint8_t nContrast);
 
-	uint32_t getCols() {
+	uint8_t getCols() {
 		return m_nCols;
 	}
 
-	uint32_t getRows() {
+	uint8_t getRows() {
 		return m_nRows;
 	}
 
@@ -120,11 +120,11 @@ public:
 
 private:
 	void Detect(DisplayType tDisplayType);
-	void Detect(uint32_t nCols, uint32_t nRows);
+	void Detect(uint8_t nCols, uint8_t nRows);
 
 private:
-	uint32_t m_nCols { 0 };
-	uint32_t m_nRows { 0 };
+	uint8_t m_nCols { 0 };
+	uint8_t m_nRows { 0 };
 	DisplayType m_tType { DisplayType::UNKNOWN };
 	DisplaySet *m_LcdDisplay { nullptr };
 	bool m_bIsSleep { false };

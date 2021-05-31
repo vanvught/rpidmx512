@@ -71,7 +71,7 @@ public:
 	bool Load(uint32_t nMotorIndex);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(L6470 *);

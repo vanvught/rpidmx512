@@ -84,95 +84,95 @@ bool WS28xxMulti::SetupMCP23017(uint8_t nT0H, uint8_t nT1H) {
 	return true;
 }
 
-#define BIT_SET(a,b) 	((a) |= (1U<<(b)))
-#define BIT_CLEAR(a,b) 	((a) &= ~(1U<<(b)))
+#define BIT_SET(a,b) 	((a) |= static_cast<uint8_t>(1U<<(b)))
+#define BIT_CLEAR(a,b) 	((a) &= static_cast<uint8_t>(~(1U<<(b))))
 
-void  WS28xxMulti::SetColour4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
+void  WS28xxMulti::SetColour4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3) {
 	uint32_t j = 0;
-	const auto k = nLedIndex * pixel::single::RGB;
+	const auto k = nPixelIndex * pixel::single::RGB;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		if (mask & nColour1) {
-			BIT_SET(m_pBuffer4x[k + j], nPort);
+			BIT_SET(m_pBuffer4x[k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[k + j], nPortIndex);
 		}
 		if (mask & nColour2) {
-			BIT_SET(m_pBuffer4x[8 + k + j], nPort);
+			BIT_SET(m_pBuffer4x[8 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[8 + k + j], nPortIndex);
 		}
 		if (mask & nColour3) {
-			BIT_SET(m_pBuffer4x[16 + k + j], nPort);
+			BIT_SET(m_pBuffer4x[16 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[16 + k + j], nPortIndex);
 		}
 
 		j++;
 	}
 }
 
-void WS28xxMulti::SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(nPort < 4);
-	assert(nLedIndex < m_nCount);
+void WS28xxMulti::SetPixel4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	assert(nPortIndex < 4);
+	assert(nPixelIndex < m_nCount);
 
 	switch (m_Map) {
 	case Map::RGB:
-		SetColour4x(nPort, nLedIndex, nRed, nGreen, nBlue);
+		SetColour4x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 		break;
 	case Map::RBG:
-		SetColour4x(nPort, nLedIndex, nRed, nBlue, nGreen);
+		SetColour4x(nPortIndex, nPixelIndex, nRed, nBlue, nGreen);
 		break;
 	case Map::GRB:
-		SetColour4x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		SetColour4x(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
 		break;
 	case Map::GBR:
-		SetColour4x(nPort, nLedIndex, nGreen, nBlue, nRed);
+		SetColour4x(nPortIndex, nPixelIndex, nGreen, nBlue, nRed);
 		break;
 	case Map::BRG:
-		SetColour4x(nPort, nLedIndex, nBlue, nRed, nGreen);
+		SetColour4x(nPortIndex, nPixelIndex, nBlue, nRed, nGreen);
 		break;
 	case Map::BGR:
-		SetColour4x(nPort, nLedIndex, nBlue, nGreen, nRed);
+		SetColour4x(nPortIndex, nPixelIndex, nBlue, nGreen, nRed);
 		break;
 	default:
-		SetColour4x(nPort, nLedIndex, nGreen, nRed, nBlue);
+		SetColour4x(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
 		break;
 	}
 }
 
-void WS28xxMulti::SetPixel4x(uint32_t nPort, uint32_t nLedIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(nPort < 4);
-	assert(nLedIndex < m_nCount);
+void WS28xxMulti::SetPixel4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	assert(nPortIndex < 4);
+	assert(nPixelIndex < m_nCount);
 	assert(m_Type == Type::SK6812W);
 
 	uint32_t j = 0;
-	auto k = nLedIndex * pixel::single::RGBW;
+	auto k = nPixelIndex * pixel::single::RGBW;
 
 	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
 		// GRBW
 		if (mask & nGreen) {
-			BIT_SET(m_pBuffer4x[k + j], nPort);
+			BIT_SET(m_pBuffer4x[k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[k + j], nPortIndex);
 		}
 
 		if (mask & nRed) {
-			BIT_SET(m_pBuffer4x[8 + k + j], nPort);
+			BIT_SET(m_pBuffer4x[8 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[8 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[8 + k + j], nPortIndex);
 		}
 
 		if (mask & nBlue) {
-			BIT_SET(m_pBuffer4x[16 + k + j], nPort);
+			BIT_SET(m_pBuffer4x[16 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[16 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[16 + k + j], nPortIndex);
 		}
 
 		if (mask & nWhite) {
-			BIT_SET(m_pBuffer4x[24 + k + j], nPort);
+			BIT_SET(m_pBuffer4x[24 + k + j], nPortIndex);
 		} else {
-			BIT_CLEAR(m_pBuffer4x[24 + k + j], nPort);
+			BIT_CLEAR(m_pBuffer4x[24 + k + j], nPortIndex);
 		}
 
 		j++;

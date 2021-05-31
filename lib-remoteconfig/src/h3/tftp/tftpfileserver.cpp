@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "tftpfileserver.h"
+#include "tftp/tftpfileserver.h"
 #include "ubootheader.h"
 #include "remoteconfig.h"
 

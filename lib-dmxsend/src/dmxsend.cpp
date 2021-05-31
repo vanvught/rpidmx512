@@ -32,7 +32,7 @@
 
 using namespace dmx;
 
-void DMXSend::Start(__attribute__((unused)) uint32_t nPort) {
+void DMXSend::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -46,7 +46,7 @@ void DMXSend::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(__attribute__((unused)) uint32_t nPort) {
+void DMXSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -60,11 +60,11 @@ void DMXSend::Stop(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void DMXSend::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
 	if (__builtin_expect((nLength == 0), 0)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	SetSendDataWithoutSC(pData, static_cast<uint16_t>(nLength));
+	SetSendDataWithoutSC(pData, nLength);
 }

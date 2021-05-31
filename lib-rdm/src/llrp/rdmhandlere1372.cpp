@@ -450,7 +450,7 @@ void RDMHandler::GetHostName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	const auto *pHostName = Network::Get()->GetHostName();
-	HandleString(pHostName, strlen(pHostName));
+	HandleString(pHostName, static_cast<uint16_t>(strlen(pHostName)));
 
 	RespondMessageAck();
 
@@ -482,7 +482,7 @@ void RDMHandler::GetDomainName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	const auto *pDomainName = Network::Get()->GetDomainName();
-	HandleString(pDomainName, strlen(pDomainName));
+	HandleString(pDomainName, static_cast<uint16_t>(strlen(pDomainName)));
 
 	RespondMessageAck();
 

@@ -49,10 +49,10 @@ public:
 	DMXMonitor();
 	~DMXMonitor() override {}
 
-	void Start(uint32_t nPortId) override;
-	void Stop(uint32_t nPortId) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 	uint16_t GetDmxStartAddress() override;

@@ -93,7 +93,7 @@ uint32_t GPS::GetTag(const char *pTag) {
 	return static_cast<uint32_t>(nmea::UNDEFINED);
 }
 
-int32_t GPS::ParseDecimal(const char *p, uint32_t &nLength) {
+int32_t GPS::ParseDecimal(const char *p, uint32_t& nLength) {
 	const auto bIsNegative = (*p == '-');
 
 	nLength = bIsNegative ? 1 : 0;

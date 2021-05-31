@@ -84,7 +84,7 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 			SetupSPI(pixelConfiguration.GetClockSpeedHz());
 		} else {
 			if(m_hasCPLD) {
-				SetupSPI(pixelConfiguration.GetClockSpeedHz() * 8);
+				SetupSPI(pixelConfiguration.GetClockSpeedHz() * 6);
 			} else {
 				SetupSPI(pixelConfiguration.GetClockSpeedHz() * 4);
 			}

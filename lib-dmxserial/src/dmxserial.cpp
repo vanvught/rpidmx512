@@ -75,15 +75,15 @@ void DmxSerial::Init() {
 	m_Serial.Init();
 }
 
-void DmxSerial::Start(__attribute__((unused)) uint32_t nPort) {
+void DmxSerial::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::Stop(__attribute__((unused)) uint32_t nPort) {
+void DmxSerial::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
+void DmxSerial::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
 
 	for (uint32_t nIndex = 0; nIndex < m_nFilesCount; nIndex++) {
 		const int32_t nOffset = m_aFileIndex[nIndex] - 1;

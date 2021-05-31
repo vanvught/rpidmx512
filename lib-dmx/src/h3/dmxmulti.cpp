@@ -850,7 +850,7 @@ void DmxMulti::SetDmxPeriodTime(uint32_t nPeriod) {
 	DEBUG_PRINTF("nPeriod=%u, nLengthMax=%u, m_nDmxTransmitPeriod=%u", nPeriod, nLengthMax, m_nDmxTransmitPeriod);
 }
 
-void DmxMulti::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint16_t nLength) {
+void DmxMulti::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 
@@ -900,7 +900,7 @@ uint32_t DmxMulti::GetUpdatesPerSeconde(uint32_t nPort) {
 
 // RDM Send
 
-void DmxMulti::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint16_t nLength) {
+void DmxMulti::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLength) {
 	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);

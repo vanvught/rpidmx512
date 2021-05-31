@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -60,7 +60,7 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 	DEBUG_EXIT
 }
 
-void TLC59711DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TLC59711DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pLC59711ParamsStore == nullptr) {

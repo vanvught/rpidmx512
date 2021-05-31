@@ -97,17 +97,17 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 	m_PollReply.Status1 = m_Node.Status1;
 
-	for (uint32_t nPage = 0; nPage < m_nPages; nPage++) {
+	for (uint8_t nPage = 0; nPage < m_nPages; nPage++) {
 
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
-		m_PollReply.BindIndex = static_cast<uint8_t>(nPage + 1);
+		m_PollReply.BindIndex = nPage + 1;
 
-		const auto nPortIndexStart = nPage * ArtNet::MAX_PORTS;
+		const auto nPortIndexStart = static_cast<uint8_t>(nPage * ArtNet::PORTS);
 
 		uint32_t NumPortsLo = 0;
 
-		for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::MAX_PORTS); nPortIndex++) {
+		for (uint8_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::PORTS); nPortIndex++) {
 			uint8_t nStatus = m_OutputPorts[nPortIndex].port.nStatus;
 
 			if (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) {
@@ -147,7 +147,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;
 			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nDefaultAddress;
 
-			if (nPortIndex < ArtNet::MAX_PORTS) {
+			if (nPortIndex < ArtNet::PORTS) {
 				if (m_InputPorts[nPortIndex].bIsEnabled) {
 					m_PollReply.PortTypes[nPortIndex - nPortIndexStart] |= ARTNET_ENABLE_INPUT | ARTNET_PORT_DMX;
 					NumPortsLo++;

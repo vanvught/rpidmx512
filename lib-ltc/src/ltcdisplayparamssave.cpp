@@ -44,7 +44,7 @@
 
 #include "propertiesbuilder.h"
 
-void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (ptLtcDisplayParams != nullptr) {
@@ -92,7 +92,7 @@ void LtcDisplayParams::Builder(const struct TLtcDisplayParams *ptLtcDisplayParam
 	nSize = builder.GetSize();
 }
 
-void LtcDisplayParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void LtcDisplayParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pLtcDisplayParamsStore == nullptr) {
 		nSize = 0;
 		return;

@@ -506,7 +506,7 @@ static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 	dmb();
 }
 
-void Midi::SendUart2(const uint8_t *pData, uint16_t nLength) {
+void Midi::SendUart2(const uint8_t *pData, uint32_t nLength) {
 	const uint8_t *p = pData;
 
 	while (nLength > 0) {

@@ -25,7 +25,7 @@ SRCDIR+=src/debug
 
 $(info [${SRCDIR}])
 
-INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-h3/include/firmware -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
@@ -66,7 +66,7 @@ CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloade
 CURR_DIR:=$(notdir $(patsubst %/,%,$(CURDIR)))
 LIB_NAME:=$(patsubst lib-%,%,$(CURR_DIR))
 
-BUILD = build_h3/
+BUILD=build_h3/
 BUILD_DIRS:=$(addprefix build_h3/,$(SRCDIR))
 $(info $$BUILD_DIRS [${BUILD_DIRS}])
 

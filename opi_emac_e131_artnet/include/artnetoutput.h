@@ -44,10 +44,10 @@ public:
 
 	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength);
 
-	void Print();
+	void Print() {};
 
 private:
-	uint16_t m_nUniverse[E131::MAX_PORTS];
+	uint16_t m_nUniverse[E131::PORTS];
 };
 
 #endif /* ARTNETOUTPUT_H_ */

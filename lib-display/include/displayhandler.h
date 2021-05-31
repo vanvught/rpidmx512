@@ -61,7 +61,7 @@ struct DisplayHandler: public LedBlinkDisplay {
 				break;
 			}
 
-			Display::Get()->SetCursorPos(Display::Get()->getCols() - 1, Display::Get()->getRows() - 1);
+			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 1U), static_cast<uint8_t>(Display::Get()->getRows() - 1U));
 			Display::Get()->PutChar(c);
 		}
 	}

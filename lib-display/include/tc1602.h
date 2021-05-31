@@ -37,21 +37,21 @@
 class Tc1602 final: public DisplaySet {
 public:
 	Tc1602 ();
-	Tc1602 (uint32_t, uint32_t);
-	Tc1602 (uint8_t, uint32_t, uint32_t);
+	Tc1602 (uint8_t nCols, uint8_t nRows);
+	Tc1602 (uint8_t nSlaveAddress, uint8_t nCols, uint8_t nRows);
 
 	bool Start() override;
 
 	void Cls() override;
-	void ClearLine(uint32_t) override;
+	void ClearLine(uint8_t nLine) override;
 
 	void PutChar(int) override;
 	void PutString(const char *) override;
 
-	void Text(const char *, uint32_t);
-	void TextLine(uint32_t, const char *, uint32_t) override;
+	void Text(const char *pData, uint32_t nLength);
+	void TextLine(uint8_t nLine, const char *pData, uint32_t nLength) override;
 
-	void SetCursorPos(uint32_t, uint32_t) override;
+	void SetCursorPos(uint8_t nCol, uint8_t nRow) override;
 	void SetCursor(uint32_t) override;
 
 private:

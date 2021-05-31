@@ -27,41 +27,56 @@
 #define LLRPDEVICE_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "llrppacket.h"
+#include "network.h"
 
 class LLRPDevice {
 public:
 	LLRPDevice();
-	virtual ~LLRPDevice() {
-	}
+	virtual ~LLRPDevice() {}
 
-	void Start();
-	void Stop();
+	void Start() {
+		m_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
+		assert(m_nHandleLLRP != -1);
+		Network::Get()->JoinGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
+	}
+	void Stop() {
+		Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
+		Network::Get()->End(LLRP_PORT);
+	}
 	void Run();
 
 	void Print();
 
 protected:
-	virtual void CopyUID(uint8_t *pUID);
-	virtual void CopyCID(uint8_t *pCID);
-	virtual uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC);
+	virtual void CopyUID(__attribute__((unused)) uint8_t *pUID) {
+		// Override
+	}
+
+	virtual void CopyCID(__attribute__((unused)) uint8_t *pCID) {
+		// Override
+	}
+
+	virtual uint8_t *LLRPHandleRdmCommand(__attribute__((unused)) const uint8_t *pRDMCommand) {
+		// Override
+		return nullptr;
+	}
 
 private:
 	void HandleRequestMessage();
 	void HandleRdmCommand();
-
 	// DEBUG subject for deletions
 	void DumpCommon();
 	void DumpLLRP();
 	void DumpRdmMessageInNoSc();
 
 private:
-	int32_t m_nHandleLLRP { -1 };
-	uint32_t m_nIpAddresLLRPRequest { 0 };
-	uint32_t m_nIpAddressLLRPResponse { 0 };
-
-	struct TLLRP m_tLLRP;
+	static int32_t m_nHandleLLRP;
+	static uint32_t m_nIpAddresLLRPRequest;
+	static uint32_t m_nIpAddressLLRPResponse;
+	static TLLRP m_tLLRP;
 };
 
 #endif /* LLRPDEVICE_H_ */

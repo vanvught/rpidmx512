@@ -44,10 +44,10 @@ public:
 	WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration);
 	~WS28xxDmxMulti() override;
 
-	void Start(uint32_t nPort) override;
-	void Stop(uint32_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
 
@@ -80,10 +80,10 @@ public:
 
 private:
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint32_t m_nChannelsPerPixel;
 	uint32_t m_nGroups;
 	uint32_t m_nGroupingCount;
 	uint32_t m_nUniverses;
+	uint32_t m_nChannelsPerPixel;
 	uint32_t m_nOutputPorts;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };

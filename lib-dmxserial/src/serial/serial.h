@@ -101,8 +101,10 @@ public:
 	}
 	static serial::uart::parity GetUartParity(const char *pParity);
 
-	static const char *GetI2cSpeed(uint32_t nSpeed);
-	static serial::i2c::speed GetI2cSpeed(const char *pSpeed);
+	static const char *GetI2cSpeedMode(serial::i2c::speed tSpeed);
+	static serial::i2c::speed GetI2cSpeedMode(const char *pSpeed);
+
+	static const char *GetI2cSpeedMode(uint32_t nSpeed);
 
 	static Serial *Get() {
 		return s_pThis;

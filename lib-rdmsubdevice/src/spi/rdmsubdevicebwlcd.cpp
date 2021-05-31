@@ -92,7 +92,7 @@ void RDMSubDeviceBwLcd::Data(const uint8_t* pData, uint32_t nLength) {
 	bool IsDataChanged = false;
 
 	nLength = std::min(nLength, static_cast<uint32_t>(DMX_FOOTPRINT));
-	nLength = std::min(nLength, static_cast<uint32_t>(513 - nDmxStartAddress));
+	nLength = std::min(nLength, (513U - nDmxStartAddress));
 
 	const auto* p = &pData[nDmxStartAddress-1];
 

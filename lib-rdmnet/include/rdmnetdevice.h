@@ -27,6 +27,7 @@
 #define RDMNETDEVICE_H_
 
 #include <cstdint>
+#include <cstring>
 
 #include "rdmdeviceresponder.h"
 #include "llrpdevice.h"
@@ -35,25 +36,42 @@
 
 #include "e131.h"
 
+#include "hardware.h"
+
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality);
-	~RDMNetDevice() override;
+	RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
+		Hardware::Get()->GetUuid(m_Cid);
+	}
+	~RDMNetDevice() override {};
 
-	void CopyUID(uint8_t *pUID) override;
-	void CopyCID(uint8_t *pCID) override;
+	void CopyUID(uint8_t *pUID) override {
+		memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
+	}
+	void CopyCID(uint8_t *pCID) override {
+		memcpy(pCID, m_Cid, sizeof(m_Cid));
+	}
 
-	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override;
+	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override {
+		m_RDMHandler.HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&m_RdmCommand));
+		return reinterpret_cast<uint8_t*>(&m_RdmCommand);
+	}
 
-	void Start();
-	void Stop();
-	void Run();
+	void Start() {
+		LLRPDevice::Start();
+	}
+	void Stop() {
+		LLRPDevice::Stop();
+	}
+	void Run() {
+		LLRPDevice::Run();
+	}
 
 	void Print();
 
 private:
-	RDMHandler *m_RDMHandler { nullptr };
-	struct TRdmMessage *m_pRdmCommand { nullptr };
+	RDMHandler m_RDMHandler{false};
+	struct TRdmMessage m_RdmCommand;
 	uint8_t m_Cid[E131::CID_LENGTH];
 };
 

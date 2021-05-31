@@ -191,8 +191,8 @@ void notmain(void) {
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 		node.SetDirectUpdate(nUniverses != 1);
 
-		for (uint32_t u = 1; u < nUniverses; u++) {
-			node.SetUniverseSwitch(u, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + u));
+		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
 		node.SetOutput(pSpi);
@@ -251,7 +251,7 @@ void notmain(void) {
 		dmx.Print();
 	}
 
-	for (unsigned i = 0; i < 7; i++) {
+	for (uint8_t i = 0; i < 7; i++) {
 		display.ClearLine(i);
 	}
 

@@ -212,7 +212,7 @@ void notmain(void) {
 		dmx.Print();
 	}
 
-	for (unsigned i = 0; i < 7 ; i++) {
+	for (uint8_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 

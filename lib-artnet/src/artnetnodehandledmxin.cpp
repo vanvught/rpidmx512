@@ -41,7 +41,7 @@
 
 static uint32_t s_ReceivingMask = 0;
 
-void ArtNetNode::SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp) {
+void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
 	if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
 		if (Network::Get()->IsValidIp(nDestinationIp)) {
 			m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
@@ -61,7 +61,7 @@ void ArtNetNode::HandleDmxIn() {
 	tArtDmx.ProtVerHi = 0;
 	tArtDmx.ProtVerLo = ArtNet::PROTOCOL_REVISION;
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPorts[i].bIsEnabled){

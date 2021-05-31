@@ -45,13 +45,13 @@
 
 using namespace artnet;
 
-#define ARTNET_MIN_HEADER_SIZE			12
+static constexpr auto ARTNET_MIN_HEADER_SIZE = 12;
 
 ArtNetNode *ArtNetNode::s_pThis = nullptr;
 
-ArtNetNode::ArtNetNode(uint8_t nVersion, uint32_t nPages) :
+ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_nVersion(nVersion),
-	m_nPages(nPages <= ArtNet::MAX_PAGES ? nPages : ArtNet::MAX_PAGES)
+	m_nPages(nPages <= ArtNet::PAGES ? nPages : ArtNet::PAGES)
 {
 	assert(Hardware::Get() != nullptr);
 	assert(Network::Get() != nullptr);
@@ -131,7 +131,7 @@ void ArtNetNode::Start() {
 	m_State.status = ARTNET_ON;
 
 	if (m_pArtNetDmx != nullptr) {
-		for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
 				m_pArtNetDmx->Start(i);
 			}
@@ -145,7 +145,7 @@ void ArtNetNode::Start() {
 
 void ArtNetNode::Stop() {
 	if (m_pArtNetDmx != nullptr) {
-		for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+		for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
 				m_pArtNetDmx->Stop(i);
 			}
@@ -153,7 +153,7 @@ void ArtNetNode::Stop() {
 	}
 
 	if (m_pLightSet != nullptr) {
-		for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
+		for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (m_IsLightSetRunning[i])) {
 				m_pLightSet->Stop(i);
 				m_IsLightSetRunning[i] = false;
@@ -214,7 +214,7 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 	m_State.IsMergeMode = false;
 	m_State.IsSynchronousMode = false;
 
-	for (uint32_t i = 0; i < (ArtNet::MAX_PORTS * m_nPages); i++) {
+	for (uint8_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
 		if  ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (m_IsLightSetRunning[i])) {
 			m_pLightSet->Stop(i);
 			m_IsLightSetRunning[i] = false;

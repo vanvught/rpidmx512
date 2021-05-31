@@ -56,6 +56,7 @@ RgbPanelParams::RgbPanelParams(RgbPanelParamsStore *pRgbPanelParamsStore): m_pRg
 bool RgbPanelParams::Load() {
 	m_tRgbPanelParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RgbPanelParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RgbPanelParamsConst::FILE_NAME)) {
@@ -63,7 +64,9 @@ bool RgbPanelParams::Load() {
 		if (m_pRgbPanelParamsStore != nullptr) {
 			m_pRgbPanelParamsStore->Update(&m_tRgbPanelParams);
 		}
-	} else if (m_pRgbPanelParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRgbPanelParamsStore != nullptr) {
 		m_pRgbPanelParamsStore->Copy(&m_tRgbPanelParams);
 	} else {
 		return false;
@@ -140,7 +143,7 @@ void RgbPanelParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void RgbPanelParams::Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RgbPanelParams::Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (pRgbPanelParams != nullptr) {
@@ -159,7 +162,7 @@ void RgbPanelParams::Builder(const struct TRgbPanelParams *pRgbPanelParams, char
 	nSize = builder.GetSize();
 }
 
-void RgbPanelParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RgbPanelParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pRgbPanelParamsStore == nullptr) {
 		nSize = 0;
 		return;

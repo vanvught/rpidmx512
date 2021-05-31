@@ -58,10 +58,10 @@ Max7219Matrix::~Max7219Matrix() {
 	DEBUG_EXIT
 }
 
-void Max7219Matrix::Init(uint32_t nCount, uint8_t nIntensity) {
+void Max7219Matrix::Init(uint16_t nCount, uint8_t nIntensity) {
 	DEBUG_ENTRY
 
-	constexpr uint32_t sf = sizeof(spi_data) / 2;
+	constexpr uint16_t sf = sizeof(spi_data) / 2;
 	m_nCount = std::min(nCount, sf);
 
 	DEBUG_PRINTF("m_nCount=%d", m_nCount);
@@ -93,7 +93,7 @@ void Max7219Matrix::Cls() {
 	DEBUG_EXIT
 }
 
-void Max7219Matrix::Write(const char *pBuffer, uint32_t nCount) {
+void Max7219Matrix::Write(const char *pBuffer, uint16_t nCount) {
 	DEBUG_PRINTF("nByte=%d", nCount);
 
 	if (nCount > m_nCount) {
@@ -105,7 +105,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint32_t nCount) {
 	for (uint32_t i = 1; i < 9; i++) {
 		k = static_cast<int32_t>(nCount);
 
-		uint32_t j;
+		uint16_t j;
 
 		for (j = 0; j < (m_nCount * 2U) - (nCount * 2U); j = j + 2) {
 			spi_data[j] = max7219::reg::NOOP;

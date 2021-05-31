@@ -714,12 +714,12 @@ const uint8_t* Dmx::GetDmxChanged() {
 	return (is_changed ? p : nullptr);
 }
 
-void Dmx::SetSendDataLength(uint16_t nLength) {
+void Dmx::SetSendDataLength(uint32_t nLength) {
 	s_nDmxSendDataLength = nLength;
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
-void Dmx::SetSendData(const uint8_t *pData, uint16_t nLength) {
+void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -730,7 +730,7 @@ void Dmx::SetSendData(const uint8_t *pData, uint16_t nLength) {
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint16_t nLength) {
+void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -791,7 +791,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	while (!(EXT_UART->LSR & UART_LSR_TEMT))

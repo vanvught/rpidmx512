@@ -81,8 +81,11 @@ static constexpr auto DISCOVERY_UNIVERSE_LIST = 0x00000001;
 
 struct E131 {
 	static constexpr auto UDP_PORT = 5568;
-	static constexpr auto MAX_PORTS = 32;
-	static constexpr auto MAX_UARTS = 4;
+#if !defined(E131_PORTS)
+	static constexpr auto PORTS = 4;
+#else
+	static constexpr auto PORTS = E131_PORTS;
+#endif
 	static constexpr auto DMX_LENGTH = 512;
 	static constexpr auto CID_LENGTH = 16;
 	static constexpr auto SOURCE_NAME_LENGTH = 64;

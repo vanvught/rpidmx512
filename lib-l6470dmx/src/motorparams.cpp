@@ -104,7 +104,7 @@ void MotorParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLeng
 	m_pMotorParamsStore->Update(nMotorIndex, &m_tMotorParams);
 }
 
-void MotorParams::Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
@@ -128,7 +128,7 @@ void MotorParams::Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMot
 	return;
 }
 
-void MotorParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void MotorParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pMotorParamsStore == nullptr) {
 		nSize = 0;
 		return;

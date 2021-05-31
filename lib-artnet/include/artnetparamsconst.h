@@ -44,9 +44,9 @@ struct ArtNetParamsConst {
 	static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
 	static const char NODE_DISABLE_MERGE_TIMEOUT[];
 	static const char PROTOCOL[];
-	static const char PROTOCOL_PORT[ArtNet::MAX_PORTS][16];
+	static const char PROTOCOL_PORT[ArtNet::PORTS][16];
 	static const char DIRECTION[];
-	static const char DESTINATION_IP_PORT[ArtNet::MAX_PORTS][24];
+	static const char DESTINATION_IP_PORT[ArtNet::PORTS][24];
 };
 
 #endif /* ARTNETPARAMSCONST_H_ */

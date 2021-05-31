@@ -33,7 +33,7 @@
 class NetworkBaremetalMacAddress final : public Network {
 public:
 	NetworkBaremetalMacAddress();
-	~NetworkBaremetalMacAddress() override;
+	~NetworkBaremetalMacAddress() override {};
 
 	void MacAddressCopyTo(uint8_t *pMacAddress) override;
 

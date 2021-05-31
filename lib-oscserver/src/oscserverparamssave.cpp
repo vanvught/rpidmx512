@@ -69,7 +69,7 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 	DEBUG_EXIT
 }
 
-void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pOSCServerParamsStore == nullptr) {

@@ -42,46 +42,46 @@ DMXSendMulti::DMXSendMulti() {
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::Start(uint32_t nPort) {
+void DMXSendMulti::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPortIndex < max::OUT);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPort=%d", nPortIndex);
 
-	if (m_bIsStarted[nPort]) {
+	if (m_bIsStarted[nPortIndex]) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted[nPort] = true;
+	m_bIsStarted[nPortIndex] = true;
 
-	SetPortDirection(nPort, PortDirection::OUTP, true);
+	SetPortDirection(nPortIndex, PortDirection::OUTP, true);
 
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::Stop(uint32_t nPort) {
+void DMXSendMulti::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPortIndex < max::OUT);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPort=%d", nPortIndex);
 
-	if (!m_bIsStarted[nPort]) {
+	if (!m_bIsStarted[nPortIndex]) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted[nPort] = false;
+	m_bIsStarted[nPortIndex] = false;
 
-	SetPortDirection(nPort, PortDirection::OUTP, false);
+	SetPortDirection(nPortIndex, PortDirection::OUTP, false);
 
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
-	assert(nPort < max::OUT);
+void DMXSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+	assert(nPortIndex < max::OUT);
 	assert(pData != nullptr);
 	assert(nLength != 0);
 
@@ -90,5 +90,5 @@ void DMXSendMulti::SetData(uint32_t nPort, const uint8_t *pData, uint32_t nLengt
 		return;
 	}
 
-	SetPortSendDataWithoutSC(nPort, pData, static_cast<uint16_t>(nLength));
+	SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
 }

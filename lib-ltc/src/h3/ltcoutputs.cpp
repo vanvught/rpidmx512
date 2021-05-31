@@ -211,7 +211,7 @@ void LtcOutputs::ShowBPM(uint32_t nBPM) {
 	}
 
 	if (!m_ptLtcDisabledOutputs->bOled) {
-		Display::Get()->SetCursorPos(Display::Get()->getCols() - 3, 1);
+		Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 3U), 1);
 		Display::Get()->PutString(&m_cBPM[5]);
 	}
 

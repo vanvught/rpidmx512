@@ -2,7 +2,7 @@
  * @file mdnsprint.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,18 @@
 
 #include "mdns.h"
 
+using namespace mdns;
+
 void MDNS::Print() {
 	printf("mDNS\n");
-	if (m_nHandle == -1) {
+	if (s_nHandle == -1) {
 		printf(" Not running\n");
 		return;
 	}
-	printf(" Name : %s\n", m_pName);
+	printf(" Name : %s\n", s_pName);
 	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
-		if (m_aServiceRecords[i].pName != nullptr) {
-			printf(" %s %d %s\n", m_aServiceRecords[i].pServName, m_aServiceRecords[i].nPort, m_aServiceRecords[i].pTextContent == nullptr ? "" : m_aServiceRecords[i].pTextContent);
+		if (s_ServiceRecords[i].pName != nullptr) {
+			printf(" %s %d %s\n", s_ServiceRecords[i].pServName, s_ServiceRecords[i].nPort, s_ServiceRecords[i].pTextContent == nullptr ? "" : s_ServiceRecords[i].pTextContent);
 		}
 	}
 }

@@ -82,7 +82,7 @@ void DisplayUdf::Show() {
 		DEBUG_PRINTF("m_aLabels[%d]=%d", i, m_aLabels[i]);
 	}
 
-	for (uint32_t i = 1; i < LABEL_MAX_ROWS; i++) {
+	for (uint8_t i = 1; i < LABEL_MAX_ROWS; i++) {
 		ClearLine(i);
 	}
 
@@ -151,7 +151,7 @@ void DisplayUdf::ShowShutdown() {
 	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
-void DisplayUdf::Set(uint32_t nLine, Labels tLabel) {
+void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
 	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
 		return;
 	}
@@ -163,5 +163,5 @@ void DisplayUdf::Set(uint32_t nLine, Labels tLabel) {
 		}
 	}
 
-	m_aLabels[static_cast<uint32_t>(tLabel)] = static_cast<uint8_t>(nLine);
+	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
 }

@@ -34,7 +34,7 @@ public:
 		OK, NAME_ERROR, VALUE_ERROR
 	};
 
-	static ReturnCode Char(const char *pBuffer, const char *pName, char *pValue, uint32_t &nLength);
+	static ReturnCode Char(const char *pBuffer, const char *pName, char *pValue, uint32_t& nLength);
 
 	static ReturnCode Uint8(const char *pBuffer, const char *pName, uint8_t &nValue);
 	static ReturnCode Uint16(const char *pBuffer, const char *pName, uint16_t &nValue);

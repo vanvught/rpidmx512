@@ -52,18 +52,18 @@ public:
 
 	void Print();
 
-	void SetPixel(uint32_t nPortIndex, uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 		if (m_Board == ws28xxmulti::Board::X8) {
-			SetPixel8x(nPortIndex, nIndex, nRed, nGreen, nBlue);
+			SetPixel8x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 		} else {
-			SetPixel4x(nPortIndex, nIndex, nRed, nGreen, nBlue);
+			SetPixel4x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 		}
 	}
-	void SetPixel(uint32_t nPortIndex, uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 		if (m_Board == ws28xxmulti::Board::X8) {
-			SetPixel8x(nPortIndex, nIndex, nRed, nGreen, nBlue, nWhite);
+			SetPixel8x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, nWhite);
 		} else {
-			SetPixel4x(nPortIndex, nIndex, nRed, nGreen, nBlue, nWhite);
+			SetPixel4x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, nWhite);
 		}
 	}
 

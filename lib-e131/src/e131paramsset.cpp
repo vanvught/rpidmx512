@@ -43,7 +43,7 @@ void E131Params::Set(E131Bridge *pE131Bridge) {
 		return;
 	}
 
-	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
+	for (uint8_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
 		if (isMaskSet(E131ParamsMask::MERGE_MODE_A << i)) {
 			pE131Bridge->SetMergeMode(i, static_cast<Merge>(m_tE131Params.nMergeModePort[i]));
 		} else {

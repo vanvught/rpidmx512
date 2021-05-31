@@ -52,7 +52,7 @@ TLC59711Dmx::~TLC59711Dmx() {
 	m_pTLC59711 = nullptr;
 }
 
-void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPort) {
+void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -64,7 +64,7 @@ void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPort) {
+void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -72,7 +72,7 @@ void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPort) {
 	m_bIsStarted = false;
 }
 
-void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t* pDmxData, uint32_t nLength) {
+void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
@@ -160,8 +160,8 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != nullptr) {
-			m_pLightSetDisplay->ShowDmxStartAddress();
+		if (s_pLightSetDisplay != nullptr) {
+			s_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
 		return true;

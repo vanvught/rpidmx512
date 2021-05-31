@@ -123,7 +123,7 @@ void WS28xx::SetupBuffers() {
 	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
-		for (uint32_t i = 0; i < m_nCount; i++) {
+		for (uint16_t i = 0; i < m_nCount; i++) {
 			SetPixel(i, 0, 0, 0);
 		}
 

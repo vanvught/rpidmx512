@@ -46,7 +46,7 @@ public:
 
 	// RDM Send
 
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) override;
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) override;
 
 	// RDM Receive
 
@@ -59,7 +59,7 @@ public:
 
 	// DMX Send
 
-	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint16_t nLength);
+	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {

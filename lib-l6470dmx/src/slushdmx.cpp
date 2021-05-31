@@ -255,7 +255,7 @@ SlushDmx::~SlushDmx(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Start(__attribute__((unused)) uint32_t nPort) {
+void SlushDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -267,7 +267,7 @@ void SlushDmx::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::Stop(__attribute__((unused)) uint32_t nPort) {
+void SlushDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
@@ -490,7 +490,7 @@ void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
@@ -531,7 +531,7 @@ void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *
 	DEBUG_EXIT;
 }
 
-void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint16_t nLength) {
+void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
@@ -633,8 +633,8 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	if (m_pLightSetDisplay != 0) {
-		m_pLightSetDisplay->ShowDmxStartAddress();
+	if (s_pLightSetDisplay != 0) {
+		s_pLightSetDisplay->ShowDmxStartAddress();
 	}
 
 	DEBUG_EXIT

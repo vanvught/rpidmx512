@@ -67,7 +67,7 @@ void PixelPatterns::Run() {
 	auto bIsUpdated = false;
 	const auto nMillis = Hardware::Get()->Millis();
 
-	for (uint32_t i = 0; i < m_nActivePorts; i++) {
+	for (uint8_t i = 0; i < m_nActivePorts; i++) {
 		bIsUpdated |= PortUpdate(i, nMillis);
 	}
 
@@ -111,36 +111,36 @@ void PixelPatterns::RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelp
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::RAINBOW_CYCLE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= 255;
-	m_PortConfig[nPortIndex].nIndex = 0;
+	m_PortConfig[nPortIndex].nPixelIndex = 0;
 	m_PortConfig[nPortIndex].Direction = Direction;
 }
 
 void PixelPatterns::RainbowCycleUpdate(uint32_t nPortIndex) {
-	const auto nIndex = m_PortConfig[nPortIndex].nIndex;
+	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < m_nCount; i++) {
-		SetPixelColour(nPortIndex, i, Wheel(((i * 256 / m_nCount) + nIndex) & 255));
+	for (uint16_t i = 0; i < m_nCount; i++) {
+		SetPixelColour(nPortIndex, i, Wheel(static_cast<uint8_t>((i * 256 / m_nCount) + nIndex) & 0xFF));
 	}
 
 	Increment(nPortIndex);
 }
 
-void PixelPatterns::TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint8_t nInterval, pixelpatterns::Direction Direction){
+void PixelPatterns::TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nInterval, pixelpatterns::Direction Direction){
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::THEATER_CHASE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= m_nCount;
 	m_PortConfig[nPortIndex].nColour1 = nColour1;
 	m_PortConfig[nPortIndex].nColour2 = nColour2;
-    m_PortConfig[nPortIndex].nIndex = 0;
+    m_PortConfig[nPortIndex].nPixelIndex = 0;
     m_PortConfig[nPortIndex].Direction = Direction;
 }
 
 void PixelPatterns::TheaterChaseUpdate(uint32_t nPortIndex) {
 	const auto Colour1 = m_PortConfig[nPortIndex].nColour1;
 	const auto Colour2 = m_PortConfig[nPortIndex].nColour2;
-	const auto Index = m_PortConfig[nPortIndex].nIndex;
+	const auto Index = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < m_nCount; i++) {
+	for (uint16_t i = 0; i < m_nCount; i++) {
 		if ((i + Index) % 3 == 0) {
 			SetPixelColour(nPortIndex, i, Colour1);
 		} else {
@@ -156,13 +156,13 @@ void PixelPatterns::ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t n
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= m_nCount;
     m_PortConfig[nPortIndex].nColour1 = nColour;
-    m_PortConfig[nPortIndex].nIndex = 0;
+    m_PortConfig[nPortIndex].nPixelIndex = 0;
     m_PortConfig[nPortIndex].Direction = Direction;
 }
 
 void PixelPatterns::ColourWipeUpdate(uint32_t nPortIndex) {
 	const auto nColour1 = m_PortConfig[nPortIndex].nColour1;
-	const auto nIndex = m_PortConfig[nPortIndex].nIndex;
+	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
 	SetPixelColour(nPortIndex, nIndex, nColour1);
 	Increment(nPortIndex);
@@ -171,9 +171,9 @@ void PixelPatterns::ColourWipeUpdate(uint32_t nPortIndex) {
 void PixelPatterns::Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) {
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::SCANNER;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
-	m_PortConfig[nPortIndex].nTotalSteps= (m_nCount - 1U) * 2U;
+	m_PortConfig[nPortIndex].nTotalSteps= static_cast<uint16_t>((m_nCount - 1U) * 2);
     m_PortConfig[nPortIndex].nColour1 = nColour1;
-    m_PortConfig[nPortIndex].nIndex = 0;
+    m_PortConfig[nPortIndex].nPixelIndex = 0;
 
 
     if (m_pScannerColours == nullptr) {
@@ -188,9 +188,9 @@ void PixelPatterns::Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nIn
 void PixelPatterns::ScannerUpdate(uint32_t nPortIndex) {
 	const auto nColour1 = m_PortConfig[nPortIndex].nColour1;
 	const auto nTotalSteps = m_PortConfig[nPortIndex].nTotalSteps;
-	const auto nIndex = m_PortConfig[nPortIndex].nIndex;
+	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint32_t i = 0; i < m_nCount; i++) {
+	for (uint16_t i = 0; i < m_nCount; i++) {
 		if (i == nIndex) {
 			SetPixelColour(nPortIndex, i, nColour1);
 			m_pScannerColours[i] = nColour1;
@@ -213,7 +213,7 @@ void PixelPatterns::Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColou
 	m_PortConfig[nPortIndex].nTotalSteps= nSteps;
 	m_PortConfig[nPortIndex].nColour1 = nColour1;
 	m_PortConfig[nPortIndex].nColour2 = nColour2;
-    m_PortConfig[nPortIndex].nIndex = 0;
+    m_PortConfig[nPortIndex].nPixelIndex = 0;
     m_PortConfig[nPortIndex].Direction = Direction;
 }
 
@@ -221,7 +221,7 @@ void PixelPatterns::FadeUpdate(uint32_t nPortIndex) {
 	const auto nColour1 = m_PortConfig[nPortIndex].nColour1;
 	const auto nColour2 = m_PortConfig[nPortIndex].nColour2;
 	const auto nTotalSteps = m_PortConfig[nPortIndex].nTotalSteps;
-	const auto nIndex =  m_PortConfig[nPortIndex].nIndex;
+	const auto nIndex =  m_PortConfig[nPortIndex].nPixelIndex;
 
 	const auto nRed = static_cast<uint8_t>(((Red(nColour1) * (nTotalSteps - nIndex)) + (Red(nColour2) * nIndex)) / nTotalSteps);
 	const auto nGreen = static_cast<uint8_t>(((Green(nColour1) * (nTotalSteps - nIndex)) + (Green(nColour2) * nIndex)) / nTotalSteps);
@@ -247,16 +247,16 @@ uint32_t PixelPatterns::Wheel(uint8_t nWheelPos) {
 
 void PixelPatterns::Increment(uint32_t nPortIndex) {
 	if (m_PortConfig[nPortIndex].Direction == Direction::FORWARD) {
-		m_PortConfig[nPortIndex].nIndex++;
-		if (m_PortConfig[nPortIndex].nIndex == m_PortConfig[nPortIndex].nTotalSteps) {
-			m_PortConfig[nPortIndex].nIndex = 0;
+		m_PortConfig[nPortIndex].nPixelIndex++;
+		if (m_PortConfig[nPortIndex].nPixelIndex == m_PortConfig[nPortIndex].nTotalSteps) {
+			m_PortConfig[nPortIndex].nPixelIndex = 0;
 		}
 	} else {
-		if (m_PortConfig[nPortIndex].nIndex > 0) {
-			--m_PortConfig[nPortIndex].nIndex;
+		if (m_PortConfig[nPortIndex].nPixelIndex > 0) {
+			--m_PortConfig[nPortIndex].nPixelIndex;
 		}
-		if (m_PortConfig[nPortIndex].nIndex == 0) {
-			m_PortConfig[nPortIndex].nIndex = m_PortConfig[nPortIndex].nTotalSteps - 1;
+		if (m_PortConfig[nPortIndex].nPixelIndex == 0) {
+			m_PortConfig[nPortIndex].nPixelIndex = static_cast<uint16_t>(m_PortConfig[nPortIndex].nTotalSteps - 1);
 		}
 	}
 }
@@ -264,9 +264,9 @@ void PixelPatterns::Increment(uint32_t nPortIndex) {
 void PixelPatterns::Reverse(uint32_t nPortIndex) {
 	if (m_PortConfig[nPortIndex].Direction == Direction::FORWARD) {
 		m_PortConfig[nPortIndex].Direction = Direction::REVERSE;
-		m_PortConfig[nPortIndex].nIndex = m_PortConfig[nPortIndex].nTotalSteps - 1;
+		m_PortConfig[nPortIndex].nPixelIndex = static_cast<uint16_t>(m_PortConfig[nPortIndex].nTotalSteps - 1);
 	} else {
 		m_PortConfig[nPortIndex].Direction = Direction::FORWARD;
-		m_PortConfig[nPortIndex].nIndex = 0;
+		m_PortConfig[nPortIndex].nPixelIndex = 0;
 	}
 }

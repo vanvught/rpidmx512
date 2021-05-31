@@ -66,7 +66,7 @@ PCA9685DmxLed::~PCA9685DmxLed() {
 	m_pSlotInfo = nullptr;
 }
 
-void PCA9685DmxLed::Start(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxLed::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if (m_bIsStarted) {
 		return;
 	}
@@ -78,7 +78,7 @@ void PCA9685DmxLed::Start(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void PCA9685DmxLed::Stop(__attribute__((unused)) uint32_t nPort) {
+void PCA9685DmxLed::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -86,7 +86,7 @@ void PCA9685DmxLed::Stop(__attribute__((unused)) uint32_t nPort) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxLed::SetData(__attribute__((unused)) uint32_t nPort, const uint8_t *pDmxData, uint32_t nLength) {
+void PCA9685DmxLed::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 

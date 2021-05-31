@@ -35,11 +35,11 @@ public:
 	Max7219Matrix();
 	~Max7219Matrix();
 
-	void Init(uint32_t nCount, uint8_t nIntensity);
+	void Init(uint16_t nCount, uint8_t nIntensity);
 
 	void Cls();
 
-	void Write(const char *pBuffer, uint32_t nLength);
+	void Write(const char *pBuffer, uint16_t nCount);
 
 	void UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]);
 
@@ -50,7 +50,7 @@ private:
 private:
 	uint32_t m_nFontSize;
 	uint8_t *m_pFont;
-	uint32_t m_nCount{4};
+	uint16_t m_nCount { 4 };
 };
 
 #endif /* DEVICE_MAX7219MATRIX_H_ */

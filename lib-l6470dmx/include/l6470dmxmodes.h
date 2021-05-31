@@ -46,8 +46,8 @@ public:
 	void HandleBusy();
 	bool BusyCheck();
 
-	bool IsDmxDataChanged(const uint8_t *, uint32_t);
-	void DmxData(const uint8_t *, uint32_t);
+	bool IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength);
+	void DmxData(const uint8_t *pDmxData, uint32_t nLength);
 
 	void Start();
 	void Stop();

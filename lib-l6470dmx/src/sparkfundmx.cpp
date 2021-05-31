@@ -125,7 +125,7 @@ SparkFunDmx::~SparkFunDmx() {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPort) {
+void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -137,7 +137,7 @@ void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPort) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Stop(__attribute__((unused)) uint32_t nPort) {
+void SparkFunDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -346,7 +346,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);
@@ -409,8 +409,8 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	if (m_pLightSetDisplay != 0) {
-		m_pLightSetDisplay->ShowDmxStartAddress();
+	if (s_pLightSetDisplay != 0) {
+		s_pLightSetDisplay->ShowDmxStartAddress();
 	}
 
 	DEBUG_EXIT;

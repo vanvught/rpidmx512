@@ -79,6 +79,7 @@ ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pSh
 bool ShowFileParams::Load() {
 	m_tShowFileParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(ShowFileParams::staticCallbackFunction, this);
 
 	if (configfile.Read(ShowFileParamsConst::FILE_NAME)) {
@@ -86,7 +87,9 @@ bool ShowFileParams::Load() {
 		if (m_pShowFileParamsStore != nullptr) {
 			m_pShowFileParamsStore->Update(&m_tShowFileParams);
 		}
-	} else if (m_pShowFileParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pShowFileParamsStore != nullptr) {
 		m_pShowFileParamsStore->Copy(&m_tShowFileParams);
 	} else {
 		return false;
@@ -240,7 +243,7 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	HandleOptions(pLine, ShowFileParamsConst::OPTION_DISABLE_SYNC, ShowFileOptions::DISABLE_SYNC);
 }
 
-void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (ptShowFileParamss != nullptr) {
@@ -279,7 +282,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 	DEBUG_EXIT
 }
 
-void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pShowFileParamsStore == nullptr) {

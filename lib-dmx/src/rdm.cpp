@@ -39,7 +39,7 @@ const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }
 
-void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint16_t nLength) {
+void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);

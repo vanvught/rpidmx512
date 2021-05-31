@@ -164,8 +164,8 @@ void notmain(void) {
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 		node.SetDirectUpdate(nUniverses != 1);
 
-		for (uint32_t u = 1; u < nUniverses; u++) {
-			node.SetUniverseSwitch(u, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + u));
+		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
 		uint8_t nTestPattern;
