@@ -2,7 +2,7 @@
  * @file rdmdevice.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,12 @@
 #define RDMDEVICE_H_
 
 #include <cstdint>
+#include <cstring>
+#include <cassert>
+#include <algorithm>
 
 #include "rdmdevicestore.h"
+#include "rdmconst.h"
 
 struct TRDMDeviceInfoData {
 	char *data;
@@ -69,15 +73,34 @@ class RDMDevice {
 public:
 	RDMDevice();
 
-	void Init();
+	void Init() {
+		assert(!m_IsInit);
+
+		m_IsInit = true;
+
+		SetFactoryDefaults();
+
+		m_nCheckSum = CalculateChecksum();
+	}
+
 	void Print();
 
 	void SetRDMDeviceStore(RDMDeviceStore *pRDMDeviceStore) {
 		m_pRDMDeviceStore = pRDMDeviceStore;
 	}
 
-	void SetFactoryDefaults();
-	bool GetFactoryDefaults();
+	void SetFactoryDefaults() {
+		struct TRDMDeviceInfoData info;
+
+		info.data = m_aDeviceRootLabel;
+		info.length = m_nDeviceRootLabelLength;
+
+		SetLabel(&info);
+	}
+
+	bool GetFactoryDefaults() {
+		return (m_nCheckSum == CalculateChecksum());
+	}
 
 	const uint8_t* GetUID() const {
 		return m_tRDMDevice.aDeviceUID;
@@ -87,11 +110,36 @@ public:
 		return m_tRDMDevice.aDeviceSN;
 	}
 
-	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo);
-	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo);
+	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
+		pInfo->data = m_ManufacturerId;
+		pInfo->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
+	}
 
-	void SetLabel(const struct TRDMDeviceInfoData *pInfo);
-	void GetLabel(struct TRDMDeviceInfoData *pInfo);
+	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo) {
+		pInfo->data = m_tRDMDevice.aDeviceManufacturerName;
+		pInfo->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
+	}
+
+	void SetLabel(const struct TRDMDeviceInfoData *pInfo) {
+		const uint8_t nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
+
+		if (m_IsInit) {
+			memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
+			m_tRDMDevice.nDeviceRootLabelLength = nLength;
+
+			if (m_pRDMDeviceStore != nullptr) {
+				m_pRDMDeviceStore->SaveLabel(m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
+			}
+		} else {
+			memcpy(m_aDeviceRootLabel, pInfo->data, nLength);
+			m_nDeviceRootLabelLength = nLength;
+		}
+	}
+
+	void GetLabel(struct TRDMDeviceInfoData *pInfo) {
+		pInfo->data = m_tRDMDevice.aDeviceRootLabel;
+		pInfo->length = m_tRDMDevice.nDeviceRootLabelLength;
+	}
 
 	void SetProductCategory(uint16_t nProductCategory) {
 		m_tRDMDevice.nProductCategory = nProductCategory;
@@ -108,10 +156,19 @@ public:
 	}
 
 private:
-	uint16_t CalculateChecksum();
+	uint16_t CalculateChecksum() {
+		uint16_t nChecksum = m_nDeviceRootLabelLength;
+
+		for (uint32_t i = 0; i < m_tRDMDevice.nDeviceRootLabelLength; i++) {
+			nChecksum += static_cast<uint16_t>(m_tRDMDevice.aDeviceRootLabel[i]);
+		}
+
+		return nChecksum;
+	}
 
 private:
-	struct TRDMDevice m_tRDMDevice;
+	TRDMDevice m_tRDMDevice;
+	char m_ManufacturerId[RDM_DEVICE_MANUFACTURER_ID_LENGTH] {static_cast<char>(RDMConst::MANUFACTURER_ID[1]), static_cast<char>(RDMConst::MANUFACTURER_ID[0])};
 	bool m_IsInit { false };
 	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t m_nDeviceRootLabelLength { 0 };

@@ -38,8 +38,9 @@ enum TRdmIdentifyMode {
 class RDMIdentify {
 public:
 	RDMIdentify();
-	virtual ~RDMIdentify() {
-	}
+	virtual ~RDMIdentify() {}
+
+	virtual void SetMode(TRdmIdentifyMode nMode)=0;
 
 	void On() {
 		m_bIsEnabled = true;
@@ -58,7 +59,6 @@ public:
 	TRdmIdentifyMode GetMode() {
 		return m_nMode;
 	}
-	virtual void SetMode(TRdmIdentifyMode nMode)=0;
 
 	static RDMIdentify* Get() {
 		return s_pThis;

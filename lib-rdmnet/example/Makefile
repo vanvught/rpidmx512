@@ -58,7 +58,7 @@ prerequisites:
 $(LIBSDEP):
 	for d in $(LIBDEP); \
 		do                               \
-			$(MAKE) -f Makefile.Linux 'DEFINES=-DDMX_WORKSHOP_DEFECT -DRDMNET_LLRP_ONLY' --directory=$$d;       \
+			$(MAKE) -f Makefile.Linux 'DEFINES=-DDMX_WORKSHOP_DEFECT -DNODE_RDMNET_LLRP_ONLY' --directory=$$d;       \
 		done
 
 $(TARGET) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP) $(LIBSDEP)

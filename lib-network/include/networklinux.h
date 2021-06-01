@@ -42,8 +42,9 @@ public:
 
 	void MacAddressCopyTo(uint8_t *pMacAddress);
 
-	void SetIp(uint32_t nIp);
-	void SetNetmask(uint32_t nNetmask);
+	void SetIp(uint32_t nIp) override;
+	void SetNetmask(uint32_t nNetmask) override;
+	void SetGatewayIp(uint32_t nGatewayIp) override;
 	bool SetZeroconf() {
 		return false;
 	}

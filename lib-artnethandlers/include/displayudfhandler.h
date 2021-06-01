@@ -83,6 +83,10 @@ public:
 		DisplayUdf::Get()->ShowNetmask();
 	}
 
+	void ShowGatewayIp() {
+		DisplayUdf::Get()->ShowGatewayIp();
+	}
+
 	void ShowHostName() {
 		DisplayUdf::Get()->ShowHostName();
 	}

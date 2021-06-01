@@ -62,6 +62,7 @@ struct NetworkDisplay {
 
 	virtual void ShowIp()=0;
 	virtual void ShowNetMask()=0;
+	virtual void ShowGatewayIp()=0;
 	virtual void ShowHostName()=0;
 	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
 	virtual void ShowShutdown()=0;
@@ -73,6 +74,7 @@ public:
 
 	virtual void SaveIp(uint32_t nIp)=0;
 	virtual void SaveNetMask(uint32_t nNetMask)=0;
+	virtual void SaveGatewayIp(uint32_t nGatewayIp)=0;
 	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
 	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
 };
@@ -99,6 +101,7 @@ public:
 
 	virtual void SetIp(uint32_t nIp)=0;
 	virtual void SetNetmask(uint32_t nNetmask)=0;
+	virtual void SetGatewayIp(uint32_t nGatewayIp)=0;
 	virtual bool SetZeroconf()=0;
 	virtual bool EnableDhcp()=0;
 

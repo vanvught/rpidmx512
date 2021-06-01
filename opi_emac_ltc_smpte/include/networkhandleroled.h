@@ -38,8 +38,7 @@ public:
 		s_pThis = this;
 	}
 
-	~NetworkHandlerOled() {
-	}
+	~NetworkHandlerOled() {}
 
 	void ShowIp() {
 		Display::Get()->ClearLine(3);
@@ -50,12 +49,11 @@ public:
 		ShowIp();
 	}
 
-	void ShowHostName() {
-	}
+	void ShowGatewayIp() {}
 
-	void ShowShutdown() {
+	void ShowHostName() {}
 
-	}
+	void ShowShutdown() {}
 
 	// DHCP Client
 	void ShowDhcpStatus(DhcpClientStatus nStatus) {

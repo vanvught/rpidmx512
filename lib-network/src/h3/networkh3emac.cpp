@@ -311,6 +311,25 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_EXIT
 }
 
+void NetworkH3emac::SetGatewayIp(uint32_t nGatewayIp) {
+	DEBUG_ENTRY
+
+	if (m_nGatewayIp == nGatewayIp) {
+		DEBUG_EXIT
+		return;
+	}
+
+	if (m_pNetworkStore != nullptr) {
+		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
+	}
+
+	if (m_pNetworkDisplay != nullptr) {
+		m_pNetworkDisplay->ShowGatewayIp();
+	}
+
+	DEBUG_EXIT
+}
+
 void NetworkH3emac::SetHostName(const char *pHostName) {
 	Network::SetHostName(pHostName);
 

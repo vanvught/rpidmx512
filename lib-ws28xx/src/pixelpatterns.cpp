@@ -119,7 +119,7 @@ void PixelPatterns::RainbowCycleUpdate(uint32_t nPortIndex) {
 	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
 	for (uint16_t i = 0; i < m_nCount; i++) {
-		SetPixelColour(nPortIndex, i, Wheel(static_cast<uint8_t>((i * 256 / m_nCount) + nIndex) & 0xFF));
+		SetPixelColour(nPortIndex, i, Wheel(((i * 256U / m_nCount) + nIndex) & 0xFF));
 	}
 
 	Increment(nPortIndex);

@@ -62,7 +62,10 @@ public:
 	void SetIp(__attribute__((unused)) uint32_t nIp) override {
 	}
 
-	void SetNetmask(__attribute__((unused))  uint32_t nNetmask) override {
+	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) override {
+	}
+
+	void SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) override {
 	}
 
 	bool SetZeroconf() override {

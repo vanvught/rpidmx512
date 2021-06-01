@@ -2,7 +2,7 @@
  * @file storenetwork.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,6 +77,14 @@ void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
 	DEBUG_ENTRY
 
 	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
+
+	DEBUG_EXIT
+}
+
+void StoreNetwork::SaveGatewayIp(uint32_t nGatewayIp) {
+	DEBUG_ENTRY
+
+	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nGatewayIp), &nGatewayIp, sizeof(uint32_t), NetworkParamsMask::DEFAULT_GATEWAY);
 
 	DEBUG_EXIT
 }

@@ -98,6 +98,7 @@ public:
 	// Network
 	void ShowIpAddress();
 	void ShowNetmask();
+	void ShowGatewayIp();
 	void ShowHostName();
 	void ShowDhcpStatus(DhcpClientStatus nStatus);
 	void ShowShutdown();

@@ -117,6 +117,10 @@ void DisplayUdf::ShowNetmask() {
 	ShowIpAddress();
 }
 
+void DisplayUdf::ShowGatewayIp() {
+
+}
+
 void DisplayUdf::ShowHostName() {
 	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)]);
 	Write(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)], Network::Get()->GetHostName());

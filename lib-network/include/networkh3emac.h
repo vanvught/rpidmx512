@@ -58,6 +58,7 @@ public:
 
 	void SetIp(uint32_t nIp) override;
 	void SetNetmask(uint32_t nNetmask) override;
+	void SetGatewayIp(uint32_t nGatewayIp) override;
 	void SetHostName(const char *pHostName) override;
 	bool SetZeroconf() override;
 

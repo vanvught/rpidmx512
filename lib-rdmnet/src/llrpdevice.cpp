@@ -85,7 +85,7 @@ void LLRPDevice::HandleRequestMessage() {
 	pReply->ProbeReplyPDU.Vector = VECTOR_PROBE_REPLY_DATA;
 	CopyUID(pReply->ProbeReplyPDU.UID);
 	Network::Get()->MacAddressCopyTo(pReply->ProbeReplyPDU.HardwareAddress);
-#if defined (RDMNET_LLRP_ONLY)
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;
 #else
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;

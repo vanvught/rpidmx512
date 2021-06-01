@@ -319,6 +319,12 @@ void NetworkLinux::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 #endif
 }
 
+void NetworkLinux::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
+#if defined(__linux__)
+	m_nGatewayIp = nGatewayIp;
+#endif
+}
+
 void NetworkLinux::JoinGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 

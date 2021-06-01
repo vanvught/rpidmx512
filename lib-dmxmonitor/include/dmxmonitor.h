@@ -73,7 +73,7 @@ public:
 	void SetMaxDmxChannels(uint16_t nMaxChannels);
 
 private:
-	void DisplayDateTime(uint8_t nPortId, const char *pString);
+	void DisplayDateTime(uint32_t nPortId, const char *pString);
 #endif
 
 private:

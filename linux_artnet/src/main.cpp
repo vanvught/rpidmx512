@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 		bool bIsSetIndividual = false;
 		bool bIsSet;
 
-		for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 			nAddress = artnet4Params.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
@@ -157,7 +157,7 @@ int main(int argc, char **argv) {
 		}
 
 		if (!bIsSetIndividual) {
-			for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+			for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 				node.SetUniverseSwitch(i, PortDir::OUTPUT, i + artnet4Params.GetUniverse());
 			}
 		}

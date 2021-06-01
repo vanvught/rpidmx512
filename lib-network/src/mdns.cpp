@@ -273,7 +273,7 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 
 	CreateMDNSMessage(i);
 
-	DEBUG_PRINTF("%d:%d %p -> %d " IPSTR, i, s_nHandle, &s_ServiceRecordsData[i].aBuffer, s_ServiceRecordsData[i].nSize, IP2STR(s_nMulticastIp));
+	DEBUG_PRINTF("%d:%d %p -> %d " IPSTR, i, s_nHandle, reinterpret_cast<void *>(&s_ServiceRecordsData[i].aBuffer), s_ServiceRecordsData[i].nSize, IP2STR(s_nMulticastIp));
 
 	Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData[i].aBuffer, static_cast<uint16_t>(s_ServiceRecordsData[i].nSize), s_nMulticastIp, MDNS_PORT);
 
