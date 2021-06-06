@@ -26,7 +26,7 @@
 #ifndef DMXMONITOR_H_
 #define DMXMONITOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 
@@ -49,10 +49,10 @@ public:
 	DMXMonitor();
 	~DMXMonitor() override {}
 
-	void Start(uint8_t nPortId) override;
-	void Stop(uint8_t nPortId) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 	uint16_t GetDmxStartAddress() override;
@@ -73,7 +73,7 @@ public:
 	void SetMaxDmxChannels(uint16_t nMaxChannels);
 
 private:
-	void DisplayDateTime(uint8_t nPortId, const char *pString);
+	void DisplayDateTime(uint32_t nPortId, const char *pString);
 #endif
 
 private:
@@ -81,7 +81,7 @@ private:
 
 private:
 	dmxmonitor::Format m_tFormat = dmxmonitor::Format::HEX;
-	uint16_t m_nSlots { 0 };
+	uint32_t m_nSlots { 0 };
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	enum {
 		DMX_DEFAULT_MAX_CHANNELS = 32,

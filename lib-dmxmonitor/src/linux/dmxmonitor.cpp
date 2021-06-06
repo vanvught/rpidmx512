@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <time.h>
 #include <sys/time.h>
 #include <cassert>
@@ -39,8 +39,8 @@ DMXMonitor::DMXMonitor() {
 	}
 }
 
-void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
-	assert(nPortId < output::text::MAX_PORTS);
+void DMXMonitor::DisplayDateTime(uint32_t nPortIndex, const char *pString) {
+	assert(nPortIndex < output::text::MAX_PORTS);
 
 	struct timeval tv;
 	gettimeofday(&tv, nullptr);
@@ -48,7 +48,7 @@ void DMXMonitor::DisplayDateTime(uint8_t nPortId, const char *pString) {
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d %s:%c\n", tm.tm_mday,
 			tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec,
-			static_cast<int>(tv.tv_usec), pString, nPortId + 'A');
+			static_cast<int>(tv.tv_usec), pString, nPortIndex + 'A');
 }
 
 void DMXMonitor::SetMaxDmxChannels(uint16_t nMaxChannels) {
@@ -76,29 +76,29 @@ void DMXMonitor::Cls() {
 
 }
 
-void DMXMonitor::Start(uint8_t nPort) {
+void DMXMonitor::Start(uint32_t nPortIndex) {
 	assert(nPort < output::text::MAX_PORTS);
 
-	if(m_bIsStarted[nPort]) {
+	if(m_bIsStarted[nPortIndex]) {
 		return;
 	}
 
-	m_bIsStarted[nPort] = true;
-	DisplayDateTime(nPort, "Start");
+	m_bIsStarted[nPortIndex] = true;
+	DisplayDateTime(nPortIndex, "Start");
 }
 
-void DMXMonitor::Stop(uint8_t nPort) {
+void DMXMonitor::Stop(uint32_t nPortIndex) {
 	assert(nPort < output::text::MAX_PORTS);
 
-	if(!m_bIsStarted[nPort]) {
+	if(!m_bIsStarted[nPortIndex]) {
 		return;
 	}
 
-	m_bIsStarted[nPort] = false;
-	DisplayDateTime(nPort, "Stop");
+	m_bIsStarted[nPortIndex] = false;
+	DisplayDateTime(nPortIndex, "Stop");
 }
 
-void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void DMXMonitor::SetData(uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortId < output::text::MAX_PORTS);
 
 	struct timeval tv;
@@ -109,7 +109,7 @@ void DMXMonitor::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday,
 			tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec,
-			static_cast<int>(tv.tv_usec), nPortId + 'A',
+			static_cast<int>(tv.tv_usec), nPortIndexId + 'A',
 			static_cast<int>(nLength),
 			static_cast<int>(m_nMaxChannels),
 			static_cast<int>(m_nDmxStartAddress));

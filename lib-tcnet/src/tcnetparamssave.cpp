@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "tcnetparams.h"
@@ -40,7 +40,7 @@
 
 #include "debug.h"
 
-void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -70,7 +70,7 @@ void TCNetParams::Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffe
 	DEBUG_EXIT
 }
 
-void TCNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void TCNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pTCNetParamsStore == nullptr) {

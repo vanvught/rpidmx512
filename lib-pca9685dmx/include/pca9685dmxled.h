@@ -26,7 +26,7 @@
 #ifndef PCA9685DMXLED_H_
 #define PCA9685DMXLED_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 
@@ -37,10 +37,10 @@ public:
 	PCA9685DmxLed();
 	~PCA9685DmxLed() override;
 
-	void Start(uint8_t nPort = 0) override;
-	void Stop(uint8_t nPort = 0) override;
+	void Start(uint32_t nPortIndex = 0) override;
+	void Stop(uint32_t nPortIndex = 0) override;
 
-	void SetData(uint8_t nPort, const uint8_t *pDmxData, uint16_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) override;
 
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;

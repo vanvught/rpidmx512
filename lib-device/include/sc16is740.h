@@ -26,7 +26,7 @@
 #ifndef SC16IS740_H_
 #define SC16IS740_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 #include "hardware.h"
@@ -107,7 +107,7 @@ public:
 	// Multiple read/write
 
 	void WriteBytes(const uint8_t *pBytes, uint32_t nSize);
-	void ReadBytes(uint8_t *pBytes, uint32_t &nSize, uint32_t nTimeOut);
+	void ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut);
 	void FlushRead(uint32_t nTimeOut);
 
 private:

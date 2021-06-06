@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -93,7 +93,7 @@ L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6
 	assert(m_pDmxMode != nullptr);
 
 	if (m_pDmxMode != nullptr) {
-		m_nMotorNumber = pL6470->GetMotorNumber();
+		m_nMotorNumber = static_cast<uint8_t>(pL6470->GetMotorNumber());
 		m_nMode = tMode;
 
 		m_pDmxData = new uint8_t[m_DmxFootPrint];
@@ -135,7 +135,7 @@ void L6470DmxModes::InitPos() {
 	DEBUG1_EXIT
 }
 
-uint16_t L6470DmxModes::GetDmxFootPrintMode(uint8_t tMode) {
+uint16_t L6470DmxModes::GetDmxFootPrintMode(uint32_t tMode) {
 	switch (tMode) {
 		case L6470DMXMODE0:
 			return L6470DmxMode0::GetDmxFootPrint();
@@ -210,9 +210,9 @@ bool L6470DmxModes::BusyCheck() {
 bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 	DEBUG1_ENTRY;
 
-	bool isChanged = false;
-	uint16_t lastDmxChannel = m_nDmxStartAddress + m_DmxFootPrint - 1;
-	uint8_t *q = m_pDmxData;
+	auto isChanged = false;
+	const auto lastDmxChannel = static_cast<uint16_t>(m_nDmxStartAddress + m_DmxFootPrint - 1);
+	auto *q = m_pDmxData;
 
 #ifndef NDEBUG
 	printf("\t\tDmxStartAddress = %d, LastDmxChannel = %d\n", m_nDmxStartAddress, lastDmxChannel);
@@ -231,7 +231,7 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 	return isChanged;
 }
 
-bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint16_t nLength) {
+bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength) {
 	DEBUG1_ENTRY;
 
 	assert(m_pDmxMode != nullptr);
@@ -252,7 +252,7 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *pDmxData, uint16_t nLength) 
 	return IsDmxDataChanged(p);
 }
 
-void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
+void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
 	DEBUG1_ENTRY;
 
 	assert(m_pDmxMode != nullptr);
@@ -262,7 +262,7 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint16_t nLength) {
 		return;
 	}
 
-	const uint8_t *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
+	const auto *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
 
 #ifndef NDEBUG
 	printf("\tMotor : %d\n", m_nMotorNumber);

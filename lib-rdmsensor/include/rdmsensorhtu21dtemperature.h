@@ -26,7 +26,7 @@
 #ifndef RDMSENSORHTU21DTEMPERATURE_H_
 #define RDMSENSORHTU21DTEMPERATURE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "htu21d.h"

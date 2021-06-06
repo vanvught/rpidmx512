@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <algorithm>
 #include <cassert>
 
@@ -41,14 +41,10 @@ using namespace ws28xxdmxmulti;
 using namespace pixel;
 using namespace lightset;
 
-static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE];
+static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE] = {0};
 
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration) {
 	DEBUG_ENTRY
-
-	for (uint32_t i = 0; i < sizeof(s_StopBuffer); i++) {
-		s_StopBuffer[i] = 0;
-	}
 
 	pixelDmxConfiguration.Validate(WS28xxMulti::GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
 
@@ -72,43 +68,43 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 	m_pWS28xxMulti = nullptr;
 }
 
-void WS28xxDmxMulti::Start(uint8_t nPortId) {
-	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
+void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
+	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted == 0) {
-		if (m_pLightSetHandler != nullptr) {
-			m_pLightSetHandler->Start();
+		if (s_pLightSetHandler != nullptr) {
+			s_pLightSetHandler->Start();
 		}
 	}
 
-	m_bIsStarted |= (1U << nPortId);
+	m_bIsStarted |= (1U << nPortIndex);
 }
 
-void WS28xxDmxMulti::Stop(uint8_t nPortId) {
-	DEBUG_PRINTF("%d", static_cast<int>(nPortId));
+void WS28xxDmxMulti::Stop(uint32_t nPortIndex) {
+	DEBUG_PRINTF("%u", nPortIndex);
 
-	if (m_bIsStarted & (1U << nPortId)) {
-		SetData(nPortId, s_StopBuffer, sizeof(s_StopBuffer));
-		m_bIsStarted &= ~(1U << nPortId);
+	if (m_bIsStarted & (1U << nPortIndex)) {
+		SetData(nPortIndex, s_StopBuffer, sizeof(s_StopBuffer));
+		m_bIsStarted &= ~(1U << nPortIndex);
 	}
 
-	if ((m_bIsStarted == 0) & (m_pLightSetHandler != nullptr)) {
-		m_pLightSetHandler->Stop();
+	if ((m_bIsStarted == 0) & (s_pLightSetHandler != nullptr)) {
+		s_pLightSetHandler->Stop();
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLength) {
+void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	uint32_t beginIndex, endIndex;
 
 #if defined (NODE_ARTNET)
-	const uint32_t nOutIndex = nPortId / 4;
-	const uint8_t nSwitch = nPortId - (nOutIndex * 4);
+	const auto nOutIndex = (nPortIndex / 4);
+	const auto nSwitch = nPortIndex - (nOutIndex * 4);
 #else
-	const uint32_t nOutIndex = nPortId / m_nUniverses;
-	const uint8_t nSwitch = nPortId - (nOutIndex * m_nUniverses);
+	const auto nOutIndex = (nPortIndex / m_nUniverses);
+	const auto nSwitch = nPortIndex - (nOutIndex * m_nUniverses);
 #endif
 
 	switch (nSwitch) {
@@ -135,7 +131,7 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 #if 0
 	DEBUG_PRINTF("nPort=%d, nLength=%d, nOutIndex=%d, nSwitch=%d, beginIndex=%d, endIndex=%d",
-			static_cast<int>(nPortId), static_cast<int>(nLength), static_cast<int>(nOutIndex),
+			static_cast<int>(nPortIndex), static_cast<int>(nLength), static_cast<int>(nOutIndex),
 			static_cast<int>(nSwitch), static_cast<int>(beginIndex), static_cast<int>(endIndex));
 #endif
 
@@ -147,25 +143,26 @@ void WS28xxDmxMulti::SetData(uint8_t nPortId, const uint8_t* pData, uint16_t nLe
 
 	if (m_nChannelsPerPixel == 3) {
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = j * m_nGroupingCount;
+			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
 			d = d + 3;
 		}
 	} else {
+		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = j * m_nGroupingCount;
+			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
 			d = d + 4;
 		}
 	}
 
-	if (nPortId == m_PortInfo.nProtocolPortIdLast) {
+	if (nPortIndex == m_PortInfo.nProtocolPortIndexLast) {
 		m_pWS28xxMulti->Update();
 	}
 }

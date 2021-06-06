@@ -26,7 +26,7 @@
 #ifndef PARSE_H_
 #define PARSE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class Parse {
 public:

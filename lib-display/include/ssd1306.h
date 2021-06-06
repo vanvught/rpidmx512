@@ -2,7 +2,7 @@
  * @file ssd1306.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef SSD1306_H_
 #define SSD1306_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 
@@ -50,15 +50,15 @@ public:
 	bool Start() override;
 
 	void Cls() override;
-	void ClearLine(uint8_t) override;
+	void ClearLine(uint8_t nLine) override;
 
 	void PutChar(int) override;
 	void PutString(const char *) override;
 
-	void Text(const char *, uint8_t);
-	void TextLine(uint8_t, const char *, uint8_t) override;
+	void Text(const char *pData, uint32_t nLength);
+	void TextLine(uint8_t nLine, const char *pData, uint32_t nLength) override;
 
-	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetCursorPos(uint8_t nCol, uint8_t nRow) override;
 	void SetCursor(uint32_t) override;
 
 	void SetSleep(bool bSleep) override;
@@ -78,7 +78,7 @@ private:
 	void CheckSH1106();
 	void InitMembers();
 	void SendCommand(uint8_t);
-	void SendData(const uint8_t *, uint32_t);
+	void SendData(const uint8_t *pData, uint32_t nLength);
 
 	void SetCursorOn();
 	void SetCursorOff();
@@ -89,12 +89,12 @@ private:
 
 private:
 	HAL_I2C m_I2C;
-	TOledPanel m_OledPanel{OLED_PANEL_128x64_8ROWS};
-	bool m_bHaveSH1106{false};
+	TOledPanel m_OledPanel { OLED_PANEL_128x64_8ROWS };
+	bool m_bHaveSH1106 { false };
 	uint32_t m_nPages;
-	uint32_t m_tCursorMode{display::cursor::OFF};
-	char *m_pShadowRam{nullptr};
-	uint16_t m_nShadowRamIndex{0};
+	uint32_t m_tCursorMode { display::cursor::OFF };
+	char *m_pShadowRam { nullptr };
+	uint16_t m_nShadowRamIndex { 0 };
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;

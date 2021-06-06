@@ -2,7 +2,7 @@
  * @file dmxreceiver.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "dmxreceiver.h"
 #include "dmx.h"
 
 #include "debug.h"
+
+using namespace dmxsingle;
+using namespace dmx;
 
 DMXReceiver::DMXReceiver(uint8_t nGpioPin) : Dmx(nGpioPin, false) {
 	DEBUG1_ENTRY
@@ -54,20 +57,11 @@ DMXReceiver::~DMXReceiver() {
 	DEBUG1_EXIT
 }
 
-void DMXReceiver::SetOutput(LightSet *pLightSet) {
-	DEBUG1_ENTRY
-
-	assert(pLightSet != nullptr);
-	m_pLightSet = pLightSet;
-
-	DEBUG1_EXIT
-}
-
 void DMXReceiver::Start() {
 	DEBUG1_ENTRY
 
 	Init();
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	DEBUG1_EXIT
 }
@@ -75,16 +69,16 @@ void DMXReceiver::Start() {
 void DMXReceiver::Stop() {
 	DEBUG1_ENTRY
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 	m_pLightSet->Stop(0);
 
 	DEBUG1_EXIT
 }
 
-bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint16_t nLength) {
-	bool isChanged = false;
+bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint32_t nLength) {
+	auto isChanged = false;
 
-	const uint8_t *pSrc = pData;
+	const auto *pSrc = pData;
 	auto *pDst = const_cast<uint8_t*>(m_Data);
 
 	if (nLength != m_nLength) {
@@ -119,11 +113,11 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 		nLength = -1;
 		return nullptr;
 	} else {
-		const uint8_t *pDmx = GetDmxAvailable();
+		const auto *pDmx = GetDmxAvailable();
 
 		if (pDmx != nullptr) {
-			const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(pDmx);
-			nLength = dmx_statistics->Statistics.SlotsInPacket;
+			const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);
+			nLength = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
 
 			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE
 
@@ -144,8 +138,4 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 
 	nLength = 0;
 	return nullptr;
-}
-
-void DMXReceiver::Print() {
-
 }

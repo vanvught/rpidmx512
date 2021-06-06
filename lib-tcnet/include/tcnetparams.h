@@ -26,7 +26,7 @@
 #ifndef TCNETPARAMS_H_
 #define TCNETPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tcnet.h"
 #include "tcnetpackets.h"
@@ -62,8 +62,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(TCNet *pTCNet);
 

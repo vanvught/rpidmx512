@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "network.h"
@@ -43,12 +43,6 @@ Network::Network() {
 	m_aIfName[0] = '\0';
 }
 
-void Network::Shutdown() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
 void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nLocalIp), IP2STR(nNetmask));
@@ -63,22 +57,6 @@ void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
 
 	m_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
 	m_QueuedConfig.nMask |= QueuedConfig::NET_MASK;
-
-	DEBUG_EXIT
-}
-
-void Network::SetQueuedDhcp() {
-	DEBUG_ENTRY
-
-	m_QueuedConfig.nMask |= QueuedConfig::DHCP;
-
-	DEBUG_EXIT
-}
-
-void Network::SetQueuedZeroconf() {
-	DEBUG_ENTRY
-
-	m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
 
 	DEBUG_EXIT
 }
@@ -118,32 +96,3 @@ bool Network::ApplyQueuedConfig() {
 	return true;
 }
 
-uint32_t Network::CIDRToNetmask(uint8_t nCDIR) {
-	if (nCDIR != 0) {
-		const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
-		DEBUG_PRINTF("%d " IPSTR, nCDIR, IP2STR(nNetmask));
-		return nNetmask;
-	}
-
-	return 0;
-}
-
-void Network::SetHostName(const char *pHostName) {
-	DEBUG_ENTRY
-
-	strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE - 1);
-	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-
-	DEBUG_PUTS(m_aHostName);
-	DEBUG_EXIT
-}
-
-void Network::SetDomainName(const char *pDomainName) {
-	DEBUG_ENTRY
-
-	strncpy(m_aDomainName, pDomainName, NETWORK_DOMAINNAME_SIZE - 1);
-	m_aDomainName[NETWORK_DOMAINNAME_SIZE - 1] = '\0';
-
-	DEBUG_PUTS(m_aDomainName);
-	DEBUG_EXIT
-}

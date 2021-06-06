@@ -23,21 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "widget.h"
 #include "usb.h"
 
 using namespace widget;
 
-void Widget::SendHeader(uint8_t nLabel, uint16_t nLength) {
+void Widget::SendHeader(uint8_t nLabel, uint32_t nLength) {
 	usb_send_byte(static_cast<uint8_t>(Amf::START_CODE));
 	usb_send_byte(nLabel);
-	usb_send_byte((nLength & 0x00FF));
-	usb_send_byte((nLength >> 8));
+	usb_send_byte(static_cast<uint8_t>(nLength & 0x00FF));
+	usb_send_byte(static_cast<uint8_t>(nLength >> 8));
 }
 
-void Widget::SendData(const uint8_t *pData, uint16_t nLength) {
+void Widget::SendData(const uint8_t *pData, uint32_t nLength) {
 	for (uint32_t i = 0; i < nLength; i++) {
 		usb_send_byte(pData[i]);
 	}
@@ -47,7 +47,7 @@ void Widget::SendFooter() {
 	usb_send_byte(static_cast<uint8_t>(Amf::END_CODE));
 }
 
-void Widget::SendMessage(uint8_t nLabel, const uint8_t *pData, uint16_t nLength) {
+void Widget::SendMessage(uint8_t nLabel, const uint8_t *pData, uint32_t nLength) {
 	SendHeader(nLabel, nLength);
 	SendData(pData, nLength);
 	SendFooter();

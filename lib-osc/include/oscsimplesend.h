@@ -26,7 +26,7 @@
 #ifndef OSCSIMPLESEND_H_
 #define OSCSIMPLESEND_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class OscSimpleSend {
 public:

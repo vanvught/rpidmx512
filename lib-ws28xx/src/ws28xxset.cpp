@@ -23,20 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "ws28xx.h"
 
 using namespace pixel;
 
-void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	assert(m_pBuffer != nullptr);
-	assert(nLEDIndex < m_nCount);
+	assert(nPixelIndex < m_nCount);
 
-	if (__builtin_expect((m_bIsRTZProtocol), 1)) {
-		uint32_t nOffset = nLEDIndex * 3;
-		nOffset *= 8;
+	if (m_bIsRTZProtocol) {
+		uint32_t nOffset = nPixelIndex * 3U;
+		nOffset *= 8U;
 
 		switch (m_Map) {
 		case Map::RGB:
@@ -79,9 +79,9 @@ void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t 
 		return;
 	}
 
-	if (m_Type == Type::APA102) {
-		uint32_t nOffset = 4 + (nLEDIndex * 4);
-		assert(nOffset + 3 < m_nBufSize);
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+		uint32_t nOffset = 4U + (nPixelIndex * 4U);
+		assert(nOffset + 3U < m_nBufSize);
 
 		m_pBuffer[nOffset] = m_nGlobalBrightness;
 		m_pBuffer[nOffset + 1] = nRed;
@@ -92,8 +92,8 @@ void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t 
 	}
 
 	if (m_Type == Type::WS2801) {
-		uint32_t nOffset = nLEDIndex * 3;
-		assert(nOffset + 2 < m_nBufSize);
+		uint32_t nOffset = nPixelIndex * 3U;
+		assert(nOffset + 2U < m_nBufSize);
 
 		m_pBuffer[nOffset] = nRed;
 		m_pBuffer[nOffset + 1] = nGreen;
@@ -103,10 +103,10 @@ void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t 
 	}
 
 	if (m_Type == Type::P9813) {
-		uint32_t nOffset = 4 + (nLEDIndex * 4);
+		uint32_t nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3 < m_nBufSize);
 
-		const uint8_t nFlag = 0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6);
+		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
 
 		m_pBuffer[nOffset] = nFlag;
 		m_pBuffer[nOffset + 1] = nBlue;
@@ -115,14 +115,17 @@ void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t 
 
 		return;
 	}
+
+	assert(0);
+	__builtin_unreachable();
 }
 
-void WS28xx::SetPixel(uint32_t nLEDIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(m_pBuffer != nullptr);
-	assert(nLEDIndex < m_nCount);
+	assert(nPixelIndex < m_nCount);
 	assert(m_Type == Type::SK6812W);
 
-	uint32_t nOffset = nLEDIndex * 4;
+	uint32_t nOffset = nPixelIndex * 4U;
 
 	if (m_Type == Type::SK6812W) {
 		nOffset *= 8;

@@ -26,7 +26,7 @@
 #ifndef RDMCONST_H_
 #define RDMCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct RDMConst {
 	static const char MANUFACTURER_NAME[];

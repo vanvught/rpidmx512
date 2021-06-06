@@ -2,7 +2,7 @@
  * @file storeslushdmx.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ public:
 	void Update(const struct TSlushDmxParams *pSlushDmxParams) override;
 	void Copy(struct TSlushDmxParams *pSlushDmxParams) override;
 
-	void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams) override;
-	void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams) override;
+	void Update(uint32_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams) override;
+	void Copy(uint32_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams) override;
 
 	static StoreSlushDmx *Get() {
 		return s_pThis;

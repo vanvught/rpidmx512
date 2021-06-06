@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "artnetcontroller.h"
@@ -47,9 +47,7 @@ static uint16_t s_ActiveUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES] __attribute_
 
 ArtNetController *ArtNetController::s_pThis = nullptr;
 
-ArtNetController::ArtNetController()
-	
-{
+ArtNetController::ArtNetController() {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
@@ -119,12 +117,12 @@ void ArtNetController::Stop() {
 	DEBUG_EXIT
 }
 
-void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength, uint8_t nPortIndex) {
+void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength, uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	ActiveUniversesAdd(nUniverse);
 
-	m_pArtDmx->Physical = nPortIndex;
+	m_pArtDmx->Physical = static_cast<uint8_t>(nPortIndex);
 	m_pArtDmx->PortAddress = nUniverse;
 	m_pArtDmx->LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 	m_pArtDmx->Length = static_cast<uint8_t>(nLength & 0xFF);
@@ -198,7 +196,7 @@ void ArtNetController::HandleBlackout() {
 		m_pArtDmx->PortAddress = s_ActiveUniverses[nIndex];
 
 		uint32_t nCount = 0;
-		const struct TArtNetPollTableUniverses *IpAddresses = GetIpAddress(s_ActiveUniverses[nIndex]);
+		const auto *IpAddresses = GetIpAddress(s_ActiveUniverses[nIndex]);
 
 		if (m_bUnicast) {
 			if (IpAddresses != nullptr) {
@@ -256,16 +254,9 @@ void ArtNetController::HandleTrigger() {
 }
 
 void ArtNetController::HandlePoll() {
-	const uint32_t nCurrentMillis = Hardware::Get()->Millis();
+	const auto nCurrentMillis = Hardware::Get()->Millis();
 
 	if (__builtin_expect((nCurrentMillis - m_nLastPollMillis > ARTNET_POLL_INTERVAL_MILLIS), 0)) {
-#ifndef NDEBUG
-		time_t ltime = time(nullptr);
-		struct tm tm = *localtime(&ltime);
-
-		DEBUG_PRINTF("SendPoll - %.2d:%.2d:%.2d", tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif
-
 		Network::Get()->SendTo(m_nHandle, &m_ArtNetPoll, sizeof(struct TArtPoll), m_tArtNetController.nIPAddressBroadcast, ArtNet::UDP_PORT);
 		m_nLastPollMillis= nCurrentMillis;
 
@@ -282,13 +273,6 @@ void ArtNetController::HandlePoll() {
 
 void ArtNetController::HandlePollReply() {
 	DEBUG_ENTRY
-
-#ifndef NDEBUG
-	time_t ltime = time(nullptr);
-	struct tm tm = *localtime(&ltime);
-
-	printf("ArtPollReply - %.2d:%.2d:%.2d\n", tm.tm_hour, tm.tm_min, tm.tm_sec);
-#endif
 
 	Add(&m_pArtNetPacket->ArtPacket.ArtPollReply);
 

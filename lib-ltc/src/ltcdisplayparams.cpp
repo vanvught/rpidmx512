@@ -28,9 +28,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "ltcdisplayparams.h"
@@ -79,6 +79,7 @@ LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore
 bool LtcDisplayParams::Load() {
 	m_tLtcDisplayParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(LtcDisplayParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcDisplayParamsConst::FILE_NAME)) {
@@ -86,7 +87,9 @@ bool LtcDisplayParams::Load() {
 		if (m_pLtcDisplayParamsStore != nullptr) {
 			m_pLtcDisplayParamsStore->Update(&m_tLtcDisplayParams);
 		}
-	} else if (m_pLtcDisplayParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pLtcDisplayParamsStore != nullptr) {
 		m_pLtcDisplayParamsStore->Copy(&m_tLtcDisplayParams);
 	} else {
 		return false;
@@ -221,7 +224,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		aBuffer[nLength] = '\0';
 		for (uint32_t i = 0; i < (sizeof(aColonBlinkMode) / sizeof(aColonBlinkMode[0])); i++) {
 			if (strcasecmp(aBuffer, aColonBlinkMode[i]) == 0) {
-				m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = i;
+				m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(i);
 				m_tLtcDisplayParams.nSetList |= LtcDisplayParamsMask::DISPLAYRGB_COLON_BLINK_MODE;
 				return;
 			}

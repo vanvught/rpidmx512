@@ -26,7 +26,11 @@
 #ifndef SERIAL_H_
 #define SERIAL_H_
 
-#include <stdint.h>
+#include <cstdint>
+
+#include "hal_uart.h"
+#include "hal_spi.h"
+#include "hal_i2c.h"
 
 namespace serial {
 enum type : uint8_t {
@@ -37,11 +41,6 @@ enum parity : uint8_t {
 	NONE, ODD, EVEN, UNDEFINED
 };
 }  // namespace uart
-namespace spi {
-enum mode : uint8_t {
-	MODE0, MODE1, MODE2, MODE3
-};
-}  // namespace spi
 namespace i2c {
 enum speed : uint8_t {
 	NORMAL, FAST, UNDEFINED
@@ -68,21 +67,21 @@ public:
 	 * UART
 	 */
 	void SetUartBaud(uint32_t nBaud);
-	void SetUartBits(uint8_t nBits = 8);
+	void SetUartBits(uint32_t nBits);
 	void SetUartParity(serial::uart::parity tParity = serial::uart::parity::NONE);
-	void SetUartStopBits(uint8_t nStopBits = 1);
+	void SetUartStopBits(uint32_t nStopBits);
 
 	/*
 	 * SPI
 	 */
 	void SetSpiSpeedHz(uint32_t nSpeedHz);
-	void SetSpiMode(serial::spi::mode tMode);
+	void SetSpiMode(uint32_t nMode = SPI_MODE0);
 
 	/*
 	 * I2C
 	 */
 	void SetI2cAddress(uint8_t nAddress);
-	void SetI2cSpeedMode(serial::i2c::speed tSpeedMode = serial::i2c::speed::FAST);
+	void SetI2cSpeedMode(serial::i2c::speed tSpeedMode);
 
 	bool Init();
 
@@ -97,10 +96,15 @@ public:
 	static serial::type GetType(const char *pType);
 
 	static const char *GetUartParity(serial::uart::parity tParity);
-	static enum serial::uart::parity GetUartParity(const char *pParity);
+	static const char *GetUartParity(uint8_t nParity) {
+		return GetUartParity(static_cast<serial::uart::parity>(nParity));
+	}
+	static serial::uart::parity GetUartParity(const char *pParity);
 
-	static const char *GetI2cSpeed(serial::i2c::speed tSpeed);
-	static serial::i2c::speed GetI2cSpeed(const char *pSpeed);
+	static const char *GetI2cSpeedMode(serial::i2c::speed tSpeed);
+	static serial::i2c::speed GetI2cSpeedMode(const char *pSpeed);
+
+	static const char *GetI2cSpeedMode(uint32_t nSpeed);
 
 	static Serial *Get() {
 		return s_pThis;
@@ -121,7 +125,7 @@ private:
 	struct {
 		uint32_t nBaud;
 		uint8_t nBits;
-		serial::uart::parity tParity;
+		uint8_t nParity;
 		uint8_t nStopBits;
 	} m_UartConfiguration;
 	struct {
@@ -129,8 +133,8 @@ private:
 		uint8_t nMode;
 	} m_SpiConfiguration;
 	struct {
+		uint32_t nSpeed;
 		uint8_t nAddress;
-		serial::i2c::speed tMode;
 	} m_I2cConfiguration;
 
 	static Serial *s_pThis;

@@ -26,9 +26,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
-#ifndef NDEBUG
+//#ifndef NDEBUG
 # include <stdio.h>
-#endif
+//#endif
 #include <assert.h>
 
 #include "device/emac.h"
@@ -102,7 +102,7 @@ static struct coherent_region *p_coherent_region = 0;
 
 #define PHY_ADDR		1
 
-void emac_shutdown(void) {
+__attribute__((cold)) void emac_shutdown(void) {
 	uint32_t value;
 
 	value = H3_EMAC->RX_CTL0;
@@ -184,7 +184,7 @@ void _adjust_link(bool duplex, uint32_t speed) {
 	H3_EMAC->CTL0 = value;
 }
 
-void emac_init(void) {
+__attribute__((cold)) void emac_init(void) {
 	DEBUG_PRINTF("PHY{%d} ID = %08x", PHY_ADDR, phy_get_id(PHY_ADDR));
 
 	uint8_t mac_address[6];
@@ -246,7 +246,7 @@ static void _tx_descs_init(void) {
 	p_coherent_region->tx_currdescnum = 0;
 }
 
-int emac_eth_recv(uint8_t **packetp) {
+__attribute__((hot)) int emac_eth_recv(uint8_t **packetp) {
 	uint32_t status, desc_num = p_coherent_region->rx_currdescnum;
 	struct emac_dma_desc *desc_p = &p_coherent_region->rx_chain[desc_num];
 	int length;
@@ -289,7 +289,7 @@ void emac_eth_send(void *packet, int len) {
 
 	h3_memcpy((void *) data_start, packet, (size_t)len);
 #ifdef DEBUG_DUMP
-	debug_dump( data_start, (uint16_t) len);
+	debug_dump((void *) data_start, (uint16_t) len);
 #endif
 	/* frame end */
 	desc_p->st |= (1 << 30);
@@ -337,7 +337,7 @@ void _autonegotiation(void) {
 
 	value = (uint32_t)phy_read (PHY_ADDR, MII_BMCR);
 	value |= BMCR_ANRESTART;
-	phy_write(PHY_ADDR, MII_BMCR, value);
+	phy_write(PHY_ADDR, MII_BMCR, (uint16_t) value);
 
 	const uint32_t micros_timeout = H3_TIMER->AVS_CNT1 + (5 * 1000 * 1000);
 
@@ -417,6 +417,8 @@ void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
 	value = H3_EMAC->TX_CTL0;
 	value |= TX_CTL0_TX_EN;
 	H3_EMAC->TX_CTL0 = value;
+
+//	H3_EMAC->INT_EN = (uint32_t)(~0);
 
 #ifndef NDEBUG
 	printf("================\n");

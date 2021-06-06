@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetnode.h"
 #include "artnet.h"
@@ -39,7 +39,7 @@ void ArtNetNode::HandleSync() {
 	m_State.IsSynchronousMode = true;
 	m_State.nArtSyncMillis = Hardware::Get()->Millis();
 
-	for (uint32_t i = 0; i < (m_nPages * ArtNet::MAX_PORTS); i++) {
+	for (uint8_t i = 0; i < (m_nPages * ArtNet::PORTS); i++) {
 		if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET)
 				&& ((m_OutputPorts[i].IsDataPending) || (m_OutputPorts[i].bIsEnabled && m_bDirectUpdate))) {
 #if defined ( ENABLE_SENDDIAG )

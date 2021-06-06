@@ -27,7 +27,7 @@
 # pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
-#include "tftpfileserver.h"
+#include "tftp/tftpfileserver.h"
 
 #include "debug.h"
 

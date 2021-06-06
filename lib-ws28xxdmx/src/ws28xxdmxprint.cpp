@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "ws28xxdmx.h"
 

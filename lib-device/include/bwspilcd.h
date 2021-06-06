@@ -26,7 +26,7 @@
 #ifndef BWSPILCD_H_
 #define BWSPILCD_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hardware.h"
 

@@ -26,7 +26,7 @@
 #ifndef SLUSHDMX_H_
 #define SLUSHDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "slushboard.h"
 #include "slushmotor.h"
@@ -44,10 +44,10 @@ public:
 	SlushDmx(bool bUseSPI = false);
 	~SlushDmx() override;
 
-	void Start(uint8_t nPort) override;
-	void Stop(uint8_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	uint32_t GetMotorsConnected() {
 		return m_nMotorsConnected;
@@ -100,7 +100,7 @@ private:
     void callbackFunction(const char *s);
 
 private: // MCP23017 Port A , Port B
-	void UpdateIOPorts(const uint8_t *, const uint16_t);
+	void UpdateIOPorts(const uint8_t *pData, uint32_t nLength);
 
 private: // MCP23017 Port A , Port B
 	bool m_bSetPortA;

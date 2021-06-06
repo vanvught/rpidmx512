@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cassert>
@@ -34,7 +34,6 @@
 
 #include "e131.h"
 #include "e131packets.h"
-#include "e131uuid.h"
 
 #include "e117const.h"
 
@@ -72,7 +71,7 @@ E131Controller::E131Controller() {
 	snprintf(aSourceName, E131::SOURCE_NAME_LENGTH, "%.48s %s", Network::Get()->GetHostName(), Hardware::Get()->GetBoardName(nLength));
 	SetSourceName(aSourceName);
 
-	E131Uuid::GetHardwareUuid(m_Cid);
+	Hardware::Get()->GetUuid(m_Cid);
 
 	for (uint32_t nIndex = 0; nIndex < sizeof(s_SequenceNumbers) / sizeof(s_SequenceNumbers[0]); nIndex++) {
 		memset(&s_SequenceNumbers[nIndex], 0, sizeof(s_SequenceNumbers[0]));
@@ -201,19 +200,19 @@ void E131Controller::FillSynchronizationPacket() {
 	m_pE131SynchronizationPacket->FrameLayer.UniverseNumber = __builtin_bswap16(m_State.SynchronizationPacket.nUniverseNumber);
 }
 
-void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
+void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
 	uint32_t nIp;
 
 	// Root Layer (See Section 5)
-	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(1U + nLength)));
+	m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(1U + nLength))));
 
 	// E1.31 Framing Layer (See Section 6)
-	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(1U + nLength)));
+	m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(1U + nLength))));
 	m_pE131DataPacket->FrameLayer.SequenceNumber = GetSequenceNumber(nUniverse, nIp);
 	m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(nUniverse);
 
 	// Data Layer
-	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DATA_LAYER_LENGTH(1U + nLength)));
+	m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(1U + nLength))));
 
 	if (__builtin_expect((m_nMaster == DMX_MAX_VALUE), 1)) {
 		memcpy(&m_pE131DataPacket->DMPLayer.PropertyValues[1], pDmxData, nLength);
@@ -221,13 +220,13 @@ void E131Controller::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, u
 		memset(&m_pE131DataPacket->DMPLayer.PropertyValues[1], 0, nLength);
 	} else {
 		for (uint32_t i = 0; i < nLength; i++) {
-			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = (m_nMaster * static_cast<uint32_t>(pDmxData[i])) / DMX_MAX_VALUE;
+			m_pE131DataPacket->DMPLayer.PropertyValues[1 + i] = static_cast<uint8_t>((m_nMaster * pDmxData[i]) / DMX_MAX_VALUE);
 		}
 	}
 
-	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(1 + nLength);
+	m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(1 + nLength));
 
-	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, DATA_PACKET_SIZE(1U + nLength), nIp, E131::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(1U + nLength)), nIp, E131::UDP_PORT);
 }
 
 void E131Controller::HandleSync() {
@@ -302,15 +301,15 @@ void E131Controller::SendDiscoveryPacket() {
 	if (m_nCurrentPacketMillis - m_State.DiscoveryTime >= (UNIVERSE_DISCOVERY_INTERVAL_SECONDS * 1000)) {
 		m_State.DiscoveryTime = m_nCurrentPacketMillis;
 
-		m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveUniverses)));
-		m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveUniverses)) );
-		m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveUniverses));
+		m_pE131DiscoveryPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_ROOT_LAYER_LENGTH(m_State.nActiveUniverses))));
+		m_pE131DiscoveryPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DISCOVERY_FRAME_LAYER_LENGTH(m_State.nActiveUniverses))));
+		m_pE131DiscoveryPacket->UniverseDiscoveryLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | DISCOVERY_LAYER_LENGTH(m_State.nActiveUniverses)));
 
 		for (uint32_t i = 0; i < m_State.nActiveUniverses; i++) {
 			m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[i] = __builtin_bswap16(s_SequenceNumbers[i].nUniverse);
 		}
 
-		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, DISCOVERY_PACKET_SIZE(m_State.nActiveUniverses), m_DiscoveryIpAddress, E131::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, static_cast<uint16_t>(DISCOVERY_PACKET_SIZE(m_State.nActiveUniverses)), m_DiscoveryIpAddress, E131::UDP_PORT);
 
 		DEBUG_PUTS("Discovery sent");
 	}

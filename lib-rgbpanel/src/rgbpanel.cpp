@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
 
 #include <cassert>
 #include <algorithm>
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "rgbpanel.h"
 
@@ -34,7 +34,7 @@
 
 using namespace rgbpanel;
 
-RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, Types tType):
+RgbPanel::RgbPanel(uint8_t nColumns, uint8_t nRows, uint32_t nChain, Types tType):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
 	m_nChain(nChain != 0 ? nChain : 1),
@@ -62,15 +62,15 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		nChar = ' ';
 	}
 
-	const auto nStartColumn = m_nPosition * FONT_CP437_CHAR_W;
-	auto nRow = m_nLine * m_nMaxPosition;
+	const auto nStartColumn = static_cast<uint8_t>(m_nPosition * FONT_CP437_CHAR_W);
+	auto nRow = static_cast<uint8_t>(m_nLine * m_nMaxPosition);
 	const auto nColonIndex = m_nPosition + nRow;
-	const bool bShowColon = (m_ptColons[nColonIndex].nBits != 0);
+	const auto bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
 	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
 		uint32_t nWidth = 0;
 
-		for (uint32_t nColumn = nStartColumn; nColumn < (FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
+		for (uint8_t nColumn = nStartColumn; nColumn < static_cast<uint8_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
 
 			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
 				const uint8_t nByte = m_ptColons[nColonIndex].nBits >> i;
@@ -117,7 +117,7 @@ void RgbPanel::PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint
 	}
 }
 
-void RgbPanel::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::Text(const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect((nLength > m_nMaxPosition), 0)) {
 		nLength = m_nMaxPosition;
 	}
@@ -130,7 +130,7 @@ void RgbPanel::Text(const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nG
 /**
  * 1 is top line
  */
-void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint8_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect(((nLine == 0) || (nLine > m_nMaxLine)), 0)) {
 		return;
 	}
@@ -147,10 +147,10 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
+	const auto nStartRow = static_cast<uint8_t>((nLine - 1U) * m_nMaxPosition);
 
-	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
-		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
+	for (uint8_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
+		for (uint8_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
 			SetPixel(nColumn, nRow, 0, 0, 0);
 		}
 	}

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+using namespace artnet;
+
 int main(int argc, char **argv) {
 	Hardware hw;
 	NetworkLinux nw;
@@ -101,7 +103,7 @@ int main(int argc, char **argv) {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	if (fopen("direct.update", "r") != NULL) {
+	if (fopen("direct.update", "r") != nullptr) {
 		node.SetDirectUpdate(true);
 	} // No worries about closing this file pointer
 
@@ -124,6 +126,8 @@ int main(int argc, char **argv) {
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, &monitor);
 
+	node.SetRdmUID(RdmResponder.GetUID());
+
 	if(artnet4Params.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams;
 		if (rdmDeviceParams.Load()) {
@@ -133,7 +137,7 @@ int main(int argc, char **argv) {
 
 		RdmResponder.Init();
 
-		node.SetUniverseSwitch(0, ARTNET_OUTPUT_PORT, artnet4Params.GetUniverse());
+		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnet4Params.GetUniverse());
 
 		RdmResponder.Full(0);
 
@@ -143,24 +147,25 @@ int main(int argc, char **argv) {
 		bool bIsSetIndividual = false;
 		bool bIsSet;
 
-		for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 			nAddress = artnet4Params.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
-				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, nAddress);
+				node.SetUniverseSwitch(i, PortDir::OUTPUT, nAddress);
 				bIsSetIndividual = true;
 			}
 		}
 
 		if (!bIsSetIndividual) {
-			for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
-				node.SetUniverseSwitch(i, ARTNET_OUTPUT_PORT, i + artnet4Params.GetUniverse());
+			for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+				node.SetUniverseSwitch(i, PortDir::OUTPUT, i + artnet4Params.GetUniverse());
 			}
 		}
 	}
 
 	Identify identify;
 
+	hw.Print();
 	nw.Print();
 	node.Print();
 

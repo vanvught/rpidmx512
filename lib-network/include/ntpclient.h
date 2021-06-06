@@ -26,7 +26,7 @@
 #ifndef NTPCLIENT_H_
 #define NTPCLIENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "ntp.h"
@@ -86,20 +86,20 @@ private:
 private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
-	int32_t m_nHandle{-1};
-	NtpClientStatus m_tStatus{NtpClientStatus::IDLE};
+	int32_t m_nHandle { -1 };
+	NtpClientStatus m_tStatus { NtpClientStatus::IDLE };
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
-	uint32_t m_MillisRequest{0};
-	uint32_t m_MillisLastPoll{0};
+	uint32_t m_MillisRequest { 0 };
+	uint32_t m_MillisLastPoll { 0 };
 
-	struct TimeStamp T1{0,0};	// time request sent by client
-	struct TimeStamp T2{0,0};	// time request received by server
-	struct TimeStamp T3{0,0};	// time reply sent by server
-	struct TimeStamp T4{0,0};	// time reply received by client
+	struct TimeStamp T1 { 0, 0 };	// time request sent by client
+	struct TimeStamp T2 { 0, 0 };	// time request received by server
+	struct TimeStamp T3 { 0, 0 };	// time reply sent by server
+	struct TimeStamp T4 { 0, 0 };	// time reply received by client
 
-	int32_t m_nOffsetSeconds{0};
-	uint32_t m_nOffsetMicros{0};
+	int32_t m_nOffsetSeconds { 0 };
+	uint32_t m_nOffsetMicros { 0 };
 
 	NtpClientDisplay *m_pNtpClientDisplay = nullptr;
 

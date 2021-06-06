@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cassert>
@@ -40,14 +40,17 @@
 #include "e133.h"
 #include "rdm_e120.h"
 
-#include "network.h"
-
 #include "debug.h"
 
 #if !defined(BARE_METAL)
- #define SHOW_LLRP_MESSAGE
- #define SHOW_RDM_MESSAGE
+# define SHOW_LLRP_MESSAGE
+# define SHOW_RDM_MESSAGE
 #endif
+
+int32_t LLRPDevice::m_nHandleLLRP { -1 };
+uint32_t LLRPDevice::m_nIpAddresLLRPRequest;
+uint32_t LLRPDevice::m_nIpAddressLLRPResponse;
+TLLRP LLRPDevice::m_tLLRP;
 
 LLRPDevice::LLRPDevice() {
 	DEBUG_ENTRY
@@ -60,27 +63,7 @@ LLRPDevice::LLRPDevice() {
 	static_cast<void>(inet_aton(LLRP_MULTICAST_IPV4_ADDRESS_RESPONSE, &addr));
 	m_nIpAddressLLRPResponse = addr.s_addr;
 
-	DEBUG_PRINTF("sizeof(m_tLLRP.LLRPPacket)=%d", sizeof(m_tLLRP.LLRPPacket));
-	DEBUG_EXIT
-}
-
-void LLRPDevice::Start() {
-	DEBUG_ENTRY
-
-	m_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
-	assert(m_nHandleLLRP != -1);
-
-	Network::Get()->JoinGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
-
-	DEBUG_EXIT
-}
-
-void LLRPDevice::Stop() {
-	DEBUG_ENTRY
-
-	Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
-	Network::Get()->End(LLRP_PORT);
-
+	DEBUG_PRINTF("sizeof(m_tLLRP.LLRPPacket)=%ld", sizeof(m_tLLRP.LLRPPacket));
 	DEBUG_EXIT
 }
 
@@ -102,7 +85,7 @@ void LLRPDevice::HandleRequestMessage() {
 	pReply->ProbeReplyPDU.Vector = VECTOR_PROBE_REPLY_DATA;
 	CopyUID(pReply->ProbeReplyPDU.UID);
 	Network::Get()->MacAddressCopyTo(pReply->ProbeReplyPDU.HardwareAddress);
-#if defined (RDMNET_LLRP_ONLY)
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;
 #else
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;
@@ -149,9 +132,9 @@ void LLRPDevice::HandleRdmCommand() {
 	assert(E120_SC_RDM == VECTOR_RDM_CMD_RDM_DATA);
 	memcpy(pRDMCommand->RDMCommandPDU.RDMData, &pReply[1], nMessageLength);
 
-	const uint16_t nLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(nMessageLength);
+	const uint32_t nLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(nMessageLength);
 
-	Network::Get()->SendTo(m_nHandleLLRP, pRDMCommand, nLength	, m_nIpAddressLLRPResponse, LLRP_PORT);
+	Network::Get()->SendTo(m_nHandleLLRP, pRDMCommand, static_cast<uint16_t>(nLength) , m_nIpAddressLLRPResponse, LLRP_PORT);
 
 #ifdef SHOW_RDM_MESSAGE
 	RDMMessage::Print(pReply);
@@ -211,17 +194,4 @@ void LLRPDevice::Print() {
 	printf(" Port UDP               : %d\n", LLRP_PORT);
 	printf(" Multicast join Request : " IPSTR "\n", IP2STR(m_nIpAddresLLRPRequest));
 	printf(" Multicast Response     : " IPSTR "\n", IP2STR(m_nIpAddressLLRPResponse));
-}
-
-void LLRPDevice::CopyUID(__attribute__((unused)) uint8_t *pUID) {
-	// Override
-}
-
-void LLRPDevice::CopyCID(__attribute__((unused)) uint8_t *pCID) {
-	// Override
-}
-
-uint8_t *LLRPDevice::LLRPHandleRdmCommand(__attribute__((unused)) const uint8_t *pRDMCommand) {
-	// Override
-	return nullptr;
 }

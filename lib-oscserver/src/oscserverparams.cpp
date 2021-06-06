@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -55,6 +55,7 @@ OSCServerParams::OSCServerParams(OSCServerParamsStore *pOSCServerParamsStore): m
 bool OSCServerParams::Load() {
 	m_tOSCServerParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(OSCServerParams::staticCallbackFunction, this);
 
 	if (configfile.Read(OSCServerConst::PARAMS_FILE_NAME)) {
@@ -62,7 +63,9 @@ bool OSCServerParams::Load() {
 		if (m_pOSCServerParamsStore != nullptr) {
 			m_pOSCServerParamsStore->Update(&m_tOSCServerParams);
 		}
-	} else if (m_pOSCServerParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pOSCServerParamsStore != nullptr) {
 		m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
 	} else {
 		return false;

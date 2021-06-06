@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "ws28xx.h"
@@ -57,12 +57,7 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 	m_nHighCode = pixelConfiguration.GetHighCode();
 	m_bIsRTZProtocol = pixelConfiguration.IsRTZProtocol();
 	m_nGlobalBrightness = pixelConfiguration.GetGlobalBrightness();
-
-	if ((m_Type == Type::SK6812W) || (m_Type == Type::APA102)) {
-		m_nBufSize = m_nCount * 4U;
-	} else {
-		m_nBufSize = m_nCount * 3U;
-	}
+	m_nBufSize = m_nCount * nLedsPerPixel;
 
 	if (m_bIsRTZProtocol) {
 		m_nBufSize *= 8;
@@ -71,7 +66,8 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 #endif
 	}
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::P9813)) {
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		m_nBufSize += m_nCount;
 		m_nBufSize += 8;
 	}
 
@@ -114,41 +110,31 @@ void WS28xx::SetupBuffers() {
 	assert(m_nBufSize <= nSizeHalf);
 
 	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
-
-	if (m_Type == Type::APA102) {
-		memset(m_pBuffer, 0, 4);
-		for (uint32_t i = 0; i < m_nCount; i++) {
-			SetPixel(i, 0, 0, 0);
-		}
-		memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
-	} else {
-		memset(m_pBuffer, m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
-	}
 #else
 	assert(m_pBuffer == nullptr);
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != nullptr);
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::P9813)) {
-		memset(m_pBuffer, 0, 4);
-
-		for (uint32_t i = 0; i < m_nCount; i++) {
-			SetPixel(i, 0, 0, 0);
-		}
-
-		if (m_Type == Type::APA102) {
-			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
-		} else
-			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
-		}
-	else {
-		memset(m_pBuffer, m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
-	}
-
 	assert(m_pBlackoutBuffer == nullptr);
 	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBlackoutBuffer != nullptr);
 #endif
+
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		memset(m_pBuffer, 0, 4);
+
+		for (uint16_t i = 0; i < m_nCount; i++) {
+			SetPixel(i, 0, 0, 0);
+		}
+
+		if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
+		} else {
+			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
+		}
+	} else {
+		memset(m_pBuffer, m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
+	}
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 	DEBUG_EXIT
@@ -171,6 +157,11 @@ void WS28xx::Blackout() {
 	assert(!IsUpdating());
 
 	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
+
+	// A blackout may not be interrupted.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (h3_spi_dma_tx_is_active());
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 #endif

@@ -26,7 +26,7 @@
 #ifndef RDMSENSORSI7021TEMPERATURE_H_
 #define RDMSENSORSI7021TEMPERATURE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "si7021.h"

@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
+#include <cstring>
 #include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -319,6 +319,12 @@ void NetworkLinux::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 #endif
 }
 
+void NetworkLinux::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
+#if defined(__linux__)
+	m_nGatewayIp = nGatewayIp;
+#endif
+}
+
 void NetworkLinux::JoinGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
@@ -352,7 +358,7 @@ uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, 
 
 
 	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) == -1) {
-		if ((errno != EAGAIN) && (errno != EWOULDBLOCK)) {
+		if (1 && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { // EAGAIN and EWOULDBLOCK can be equal
 			perror("recvfrom");
 		}
 		return 0;

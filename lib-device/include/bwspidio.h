@@ -26,7 +26,7 @@
 #ifndef BWSPIDIO_H_
 #define BWSPIDIO_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bw.h"
 

@@ -26,7 +26,7 @@
 #ifndef E131PARAMS_H_
 #define E131PARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <uuid/uuid.h>
 
 #include "e131bridge.h"
@@ -89,8 +89,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(E131Bridge *);
 
@@ -108,7 +108,7 @@ public:
 		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
 	}
 
-	uint16_t GetUniverse(uint8_t nPort, bool &IsSet);
+	uint16_t GetUniverse(uint32_t nPort, bool &IsSet);
 
 	bool IsEnableNoChangeUpdate() const {
 		return isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT);

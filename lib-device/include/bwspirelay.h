@@ -26,7 +26,7 @@
 #ifndef BWSPIRELAY_H_
 #define BWSPIRELAY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "bw.h"
 

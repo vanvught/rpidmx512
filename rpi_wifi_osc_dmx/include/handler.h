@@ -2,7 +2,7 @@
  * @file handler.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,15 +36,20 @@ class Handler: public OscServerHandler  {
 public:
 	Handler(WS28xxDmx *pWS28xxDmx);
 
-	void Blackout(void);
-	void Update(void);
+	void Blackout() {
+		m_pWS28xxDmx->Blackout(true);
+	}
+
+	void Update() {
+		m_pWS28xxDmx->Blackout(false);
+	}
 
 	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
 
 private:
 	WS28xxDmx *m_pWS28xxDmx;
-	uint16_t m_nLedCount;
-	char *m_pLedTypeString;
+	uint32_t m_nCount;
+	char *m_TypeString;
 };
 
 #endif /* HANDLER_H_ */

@@ -25,7 +25,7 @@
 #ifndef MIDIDESCRIPTION_H_
 #define MIDIDESCRIPTION_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "midi.h"
 

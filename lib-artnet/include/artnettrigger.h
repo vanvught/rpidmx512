@@ -29,7 +29,7 @@
 #ifndef ARTNETTRIGGER_H_
 #define ARTNETTRIGGER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 // When the Oem field = ffff16 the meaning of the SubKey field is defined by enum TArtTriggerKey
 

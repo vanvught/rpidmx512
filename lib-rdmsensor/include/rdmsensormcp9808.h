@@ -26,7 +26,7 @@
 #ifndef RDMSENSORMCP9808_H_
 #define RDMSENSORMCP9808_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "mcp9808.h"

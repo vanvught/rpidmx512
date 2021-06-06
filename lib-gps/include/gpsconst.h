@@ -24,7 +24,7 @@
 #ifndef GPSCONST_H_
 #define GPSCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace gps {
 namespace nmea {

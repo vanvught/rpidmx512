@@ -67,7 +67,7 @@ void __attribute__((cold)) ip_shutdown(void) {
 	udp_shutdown();
 }
 
-void ip_handle(struct t_ip4 *p_ip4) {
+__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 	if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
 		if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
 			igmp_handle((struct t_igmp *) p_ip4);

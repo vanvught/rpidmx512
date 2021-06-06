@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cstring>
+#include <cctype>
 #include <cassert>
 
 #include "ltcmidisystemrealtime.h"

@@ -2,7 +2,7 @@
  * @file serialstatic.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "serial.h"
 
@@ -70,15 +70,19 @@ uart::parity Serial::GetUartParity(const char *pParity) {
 	return uart::parity::NONE;
 }
 
-const char* Serial::GetI2cSpeed(i2c::speed tSpeed) {
-	if (tSpeed < i2c::speed::UNDEFINED) {
-		return aI2cSpeed[tSpeed];
+const char* Serial::GetI2cSpeedMode(i2c::speed tSpeed) {
+	if (tSpeed == i2c::speed::NORMAL) {
+		return aI2cSpeed[0];
+	}
+
+	if (tSpeed == i2c::speed::FAST) {
+		return aI2cSpeed[1];
 	}
 
 	return "Undefined";
 }
 
-i2c::speed Serial::GetI2cSpeed(const char *pSpeed) {
+i2c::speed Serial::GetI2cSpeedMode(const char *pSpeed) {
 	for (uint32_t i = 0; i < i2c::speed::UNDEFINED; i++) {
 		if (strcasecmp(aI2cSpeed[i], pSpeed) == 0) {
 			return static_cast<i2c::speed>(i);
@@ -86,4 +90,16 @@ i2c::speed Serial::GetI2cSpeed(const char *pSpeed) {
 	}
 
 	return i2c::speed::FAST;
+}
+
+const char* Serial::GetI2cSpeedMode(uint32_t nSpeed) {
+	if (nSpeed == hal::i2c::NORMAL_SPEED) {
+		return aI2cSpeed[0];
+	}
+
+	if (nSpeed == hal::i2c::FULL_SPEED) {
+		return aI2cSpeed[1];
+	}
+
+	return "Undefined";
 }

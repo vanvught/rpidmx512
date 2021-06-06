@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <time.h>
 #include <cassert>
 
@@ -190,17 +190,17 @@ void LtcOutputs::ShowBPM(uint32_t nBPM) {
 		m_cBPM[6] = '-';
 		m_cBPM[7] = '-';
 	} else {
-		m_cBPM[7] = nBPM % 10 + '0';
+		m_cBPM[7] = static_cast<char>(nBPM % 10 + '0');
 		nBPM /= 10;
 		const uint32_t nDigit = nBPM % 10;
 
 		if (nBPM != 0) {
-			m_cBPM[6] = nDigit + '0';
+			m_cBPM[6] = static_cast<char>(nDigit + '0');
 			nBPM /= 10;
 			const uint32_t nDigit = nBPM % 10;
 
 			if (nBPM != 0) {
-				m_cBPM[5] = nDigit + '0';
+				m_cBPM[5] = static_cast<char>(nDigit + '0');
 			} else {
 				m_cBPM[5] = ' ';
 			}
@@ -211,7 +211,7 @@ void LtcOutputs::ShowBPM(uint32_t nBPM) {
 	}
 
 	if (!m_ptLtcDisabledOutputs->bOled) {
-		Display::Get()->SetCursorPos(Display::Get()->getCols() - 3, 1);
+		Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 3U), 1);
 		Display::Get()->PutString(&m_cBPM[5]);
 	}
 

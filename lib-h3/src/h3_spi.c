@@ -2,7 +2,7 @@
  * @file h3_spi.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -126,13 +126,13 @@ void _setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
 	uint32_t ccr, ccr1, ccr2;
 
 #ifndef NDEBUG
-	printf("pll_clock=%ld, spi_clock=%ld\n", (long int)pll_clock, (long int) spi_clock);
+	printf("pll_clock=%u, spi_clock=%u\n", pll_clock, spi_clock);
 #endif
 
 	best_ccr1 = _clock_test_cdr1(pll_clock, spi_clock, &ccr1);
 	best_ccr2 = _clock_test_cdr2(pll_clock, spi_clock, &ccr2);
 #ifndef NDEBUG
-	printf("best_ccr1=%ld, best_ccr2=%ld\n", (long int)best_ccr1, (long int) best_ccr2);
+	printf("best_ccr1=%u, best_ccr2=%u\n", best_ccr1, best_ccr2);
 #endif
 
 	if (best_ccr1 == spi_clock) {
@@ -143,7 +143,7 @@ void _setup_clock(uint32_t pll_clock, uint32_t spi_clock) {
 		const uint32_t d1 = (spi_clock > best_ccr1) ? (spi_clock - best_ccr1) : (best_ccr1 - spi_clock);
 		const uint32_t d2 = (spi_clock > best_ccr2) ? (spi_clock - best_ccr2) : (best_ccr2 - spi_clock);
 #ifndef NDEBUG
-		printf("d1=%ld, d2=%ld\n", (long int)d1, (long int) d2);
+		printf("d1=%u, d2=%u\n", d1, d2);
 #endif
 		if (d1 < d2) {
 			ccr = ccr1;
@@ -281,8 +281,8 @@ void __attribute__((cold)) h3_spi_begin(void) {
 	EXT_SPI->IE = 0; // Disable interrupts
 
 #ifndef NDEBUG
-	const uint64_t pll_frequency = h3_ccu_get_pll_rate(CCU_PLL_PERIPH0);
-	printf("pll_frequency=%ld\n", (long int) pll_frequency);
+	const uint32_t pll_frequency = h3_ccu_get_pll_rate(CCU_PLL_PERIPH0);
+	printf("pll_frequency=%u\n", pll_frequency);
 	assert(CCU_PERIPH0_CLOCK_HZ == pll_frequency);
 #endif
 

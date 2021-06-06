@@ -2,7 +2,7 @@
  * @file dmxserialstatic.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstring>
+#include <cctype>
+#include <cstdint>
 #include <cassert>
 
 #include "dmxserial.h"
 
 #include "debug.h"
 
-bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileNumber) {
+bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber) {
 	assert(nLength == DmxSerialFile::NAME_LENGTH + 1);
 
 	if ((nFileNumber >= DmxSerialFile::MIN_NUMBER) && (nFileNumber <= DmxSerialFile::MAX_NUMBER)) {
@@ -43,7 +43,7 @@ bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int16_t nFileN
 	return false;
 }
 
-bool DmxSerial::CheckFileName(const char *pFileName, int16_t &nFileNumber) {
+bool DmxSerial::CheckFileName(const char *pFileName, int32_t &nFileNumber) {
 	DEBUG_PRINTF("pFileName=[%s]", pFileName);
 
 	if ((pFileName == nullptr) || (strlen(pFileName) != DmxSerialFile::NAME_LENGTH)) {

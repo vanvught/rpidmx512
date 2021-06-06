@@ -35,7 +35,7 @@
 ArtNetOutput::ArtNetOutput() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::PORTS; i++) {
 		m_nUniverse[i] = 0;
 	}
 
@@ -50,29 +50,29 @@ void ArtNetOutput::Handler() {
 	DEBUG_EXIT
 }
 
-void ArtNetOutput::Start(uint8_t nPortIndex) {
+void ArtNetOutput::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nPortIndex=%d", static_cast<int>(nPortIndex));
+	DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
 
-	if (nPortIndex < E131::MAX_PORTS) {
+	if (nPortIndex < E131::PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, e131::PortDir::OUTPUT)) {
 			m_nUniverse[nPortIndex] = nUniverse;
-			DEBUG_PRINTF("m_nUniverse[%d]=%d", static_cast<int>(nPortIndex), static_cast<int>(m_nUniverse[nPortIndex]));
+			DEBUG_PRINTF("m_nUniverse[%u]=%d", nPortIndex, static_cast<int>(m_nUniverse[nPortIndex]));
 		}
 	}
 
 	DEBUG_EXIT
 }
 
-void ArtNetOutput::Stop(uint8_t nPortIndex) {
+void ArtNetOutput::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (nPortIndex < E131::MAX_PORTS) {
+	if (nPortIndex < E131::PORTS) {
 		uint16_t nUniverse;
 
-		if (E131Bridge::Get()->GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT)) {
+		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, e131::PortDir::OUTPUT)) {
 			m_nUniverse[nPortIndex] = 0;
 			DEBUG_PRINTF("m_nUniverse[%d]=0", static_cast<int>(nPortIndex));
 		}
@@ -81,14 +81,11 @@ void ArtNetOutput::Stop(uint8_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void ArtNetOutput::SetData(uint8_t nPortIndex, const uint8_t *pDmxData, uint16_t nLength) {
-	assert(nPortIndex < E131::MAX_PORTS);
+void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) {
+	assert(nPortIndex < E131::PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
 		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, nPortIndex);
 	}
 }
 
-void ArtNetOutput::Print() {
-
-}

@@ -28,7 +28,7 @@
 #ifndef GPS_H_
 #define GPS_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "gpsconst.h"
@@ -101,7 +101,7 @@ private:
 	void UartSend(const char *pSentence);
 	//
 	uint32_t GetTag(const char *p);
-	int32_t ParseDecimal(const char *p, uint32_t &nLength);
+	int32_t ParseDecimal(const char *p, uint32_t& nLength);
 	void SetTime(int32_t nTime);
 	void SetDate(int32_t nDate);
 

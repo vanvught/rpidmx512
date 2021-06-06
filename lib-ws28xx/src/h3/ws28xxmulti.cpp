@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "ws28xxmulti.h"
@@ -57,10 +57,17 @@ void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
 	if (m_Board == Board::X8) {
+		DEBUG_PUTS("");
+
 		assert(m_pBlackoutBuffer8x != nullptr);
 		assert(!h3_spi_dma_tx_is_active());
 
 		h3_spi_dma_tx_start(m_pBlackoutBuffer8x, m_nBufSize);
+
+		// A blackout may not be interrupted.
+		do {
+			asm volatile ("isb" ::: "memory");
+		} while (h3_spi_dma_tx_is_active());
 	} else {
 		Generate800kHz(m_pBlackoutBuffer4x);
 	}

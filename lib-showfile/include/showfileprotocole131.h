@@ -2,7 +2,7 @@
  * @file showfileprotocole131.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef SHOWFILEPROTOCOLE131_H_
 #define SHOWFILEPROTOCOLE131_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include "e131controller.h"
@@ -53,7 +53,7 @@ public:
 		m_E131Controller.Stop();
 	}
 
-	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) {
+	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) {
 		m_E131Controller.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
 

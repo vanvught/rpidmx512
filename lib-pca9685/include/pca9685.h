@@ -26,7 +26,7 @@
 #ifndef PCA9685_H_
 #define PCA9685_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define PCA9685_I2C_ADDRESS_DEFAULT	0x40
 #define PCA9685_I2C_ADDRESS_FIXED	0x70
@@ -53,7 +53,7 @@ enum TPCA9685Och {
 class PCA9685 {
 public:
 	PCA9685(uint8_t nAddress = PCA9685_I2C_ADDRESS_DEFAULT);
-	~PCA9685();
+	~PCA9685() {};
 
 	void SetPreScaller(uint8_t);
 	uint8_t GetPreScaller();

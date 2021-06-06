@@ -26,7 +26,7 @@
 #ifndef DISPLAYUDFHANDLER_H_
 #define DISPLAYUDFHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayudf.h"
 
@@ -51,7 +51,7 @@ public:
 	void ShowLongName(__attribute__((unused)) const char *pLongName) {
 	}
 
-	void ShowUniverseSwitch(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
+	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
@@ -63,11 +63,11 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
+	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowPortProtocol(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
@@ -81,6 +81,10 @@ public:
 
 	void ShowNetMask() {
 		DisplayUdf::Get()->ShowNetmask();
+	}
+
+	void ShowGatewayIp() {
+		DisplayUdf::Get()->ShowGatewayIp();
 	}
 
 	void ShowHostName() {

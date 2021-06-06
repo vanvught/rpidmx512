@@ -26,7 +26,7 @@
 #ifndef NETWORKESP8266_H_
 #define NETWORKESP8266_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 
@@ -108,6 +108,9 @@ public:
 	}
 
 	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+	}
+
+	void SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) override {
 	}
 
 	bool SetZeroconf() {

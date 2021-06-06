@@ -29,18 +29,17 @@
 #ifndef ARTNET4HANDLER_H_
 #define ARTNET4HANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnet.h"
 
 class ArtNet4Handler {
 public:
-	virtual ~ArtNet4Handler() {
-	}
+	virtual ~ArtNet4Handler() {}
 
-	virtual void SetPort(uint8_t nPortId, artnet::PortDir dir)=0;
+	virtual void SetPort(uint8_t nPortIndex, artnet::PortDir dir)=0;
 	virtual void HandleAddress(uint8_t nCommand)=0;
-	virtual uint8_t GetStatus(uint8_t nPortId)=0;
+	virtual uint8_t GetStatus(uint8_t nPortIndex)=0;
 	virtual bool IsStatusChanged()=0;
 };
 

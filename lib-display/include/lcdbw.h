@@ -2,7 +2,7 @@
  * @file lcdbw.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef BWLCD_H_
 #define BWLCD_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayset.h"
 
@@ -44,19 +44,19 @@ public:
 	bool Start() override;
 
 	void Cls() override;
-	void ClearLine(uint8_t) override;
+	void ClearLine(uint8_t nLine) override;
 
 	void PutChar(int) override;
 	void PutString(const char *) override;
 
-	void Text(const char *, uint8_t);
-	void TextLine(uint8_t, const char *, uint8_t) override;
+	void Text(const char *, uint32_t nLength);
+	void TextLine(uint8_t nLine, const char *pData, uint32_t nLength) override;
 
-	void SetCursorPos(uint8_t, uint8_t) override;
+	void SetCursorPos(uint8_t nCol, uint8_t nRow) override;
 	void SetCursor(uint32_t) override;
 
 private:
-	void Write(const char *, uint32_t);
+	void Write(const char *, uint8_t);
 
 private:
 	HAL_I2C m_I2C;

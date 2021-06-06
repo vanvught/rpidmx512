@@ -26,7 +26,7 @@
 #ifndef LIGHTSETCHAIN_H_
 #define LIGHTSETCHAIN_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 
@@ -42,10 +42,10 @@ public:
 	LightSetChain();
 	~LightSetChain() override;
 
-	void Start(uint8_t nPort) override;
-	void Stop(uint8_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Print() override;
 

@@ -26,7 +26,7 @@
 #ifndef RDMSUBDEVICEDUMMY_H_
 #define RDMSUBDEVICEDUMMY_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsubdevice.h"
 
@@ -38,7 +38,7 @@ public:
 
 	void Start() override;
 	void Stop() override;
-	void Data(const uint8_t *pDdata, uint16_t nLength) override;
+	void Data(const uint8_t *pDdata, uint32_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;

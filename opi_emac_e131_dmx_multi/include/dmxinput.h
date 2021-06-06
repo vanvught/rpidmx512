@@ -2,7 +2,7 @@
  * @file dmxinput.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,25 +26,23 @@
 #ifndef DMXINPUT_H_
 #define DMXINPUT_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
 #include "e131dmx.h"
 
-#include "h3/dmxmultiinput.h"
+#include "dmxmulti.h"
 #include "dmx_uarts.h"
 
-class DmxInput: public E131Dmx {
+class DmxInput: public E131Dmx, public DmxMulti {
 public:
 	DmxInput();
 
-	void Start(uint8_t nPort);
-	void Stop(uint8_t nPort);
+	void Start(uint32_t nPort);
+	void Stop(uint32_t nPort);
 
-	const uint8_t *Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond);
+	const uint8_t *Handler(uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
 
 private:
-	DmxMultiInput m_DmxMultiInput;
 	bool m_bIsStarted[DMX_MAX_UARTS];
 };
 

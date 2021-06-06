@@ -115,20 +115,23 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
+
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+
 	pixelDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
 
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
-	ArtNet4Node node(nActivePorts);
-
+	ArtNet4Node node(static_cast<uint8_t>(nActivePorts));
 	StoreArtNet storeArtNet;
 	StoreArtNet4 storeArtNet4;
+
 	ArtNet4Params artnetparams(&storeArtNet4);
 
 	if (artnetparams.Load()) {
 		artnetparams.Set(&node);
 		artnetparams.Dump();
+
 	}
 
 	node.SetIpProgHandler(new IpProg);
@@ -139,19 +142,19 @@ void notmain(void) {
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
-	uint32_t nPortProtocolIndex = 0;
+	uint8_t nPortProtocolIndex = 0;
 
-	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
+	for (uint8_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		if (isSet) {
-			for (uint32_t u = 0; u < nUniverses; u++) {
-				node.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, nStartUniversePort + u);
+			for (uint16_t u = 0; u < nUniverses; u++) {
+				node.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 				nPortProtocolIndex++;
 			}
-			nPortProtocolIndex += (ArtNet::MAX_PORTS - nUniverses);
+			nPortProtocolIndex += static_cast<uint8_t>(ArtNet::PORTS - nUniverses);
 		} else {
-			nPortProtocolIndex += ArtNet::MAX_PORTS;
+			nPortProtocolIndex += ArtNet::PORTS;
 		}
 	}
 
@@ -175,7 +178,7 @@ void notmain(void) {
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 
-	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
@@ -184,6 +187,8 @@ void notmain(void) {
 		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
+
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
 
 	llrpOnlyDevice.Init();
 	llrpOnlyDevice.Start();
@@ -200,7 +205,7 @@ void notmain(void) {
 	display.Set(4, displayudf::Labels::HOSTNAME);
 	display.Set(5, displayudf::Labels::IP);
 	display.Set(6, displayudf::Labels::UNIVERSE);
-	display.Printf(7, "%d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	display.Printf(7, "%d-%s:%d G%d", nActivePorts, PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

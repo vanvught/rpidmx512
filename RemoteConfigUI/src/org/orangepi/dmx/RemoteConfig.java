@@ -119,6 +119,7 @@ public class RemoteConfig extends JFrame {
 	private JMenuItem mntmPixelTextPatterns;
 
 	private OrangePi opi = null;
+	private JMenuItem mntmFactoryDefaults;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -299,6 +300,21 @@ public class RemoteConfig extends JFrame {
 
 				if (!bRebooted) {
 					JOptionPane.showMessageDialog(null, "No node selected for reboot action.");
+				}
+			}
+		});
+		
+		mntmFactoryDefaults.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+						doSetFactoryDefaults((OrangePi) node.getUserObject());
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for factory defaults action.");
 				}
 			}
 		});
@@ -627,6 +643,10 @@ public class RemoteConfig extends JFrame {
 		mntmDisplayOnoff = new JMenuItem("Display On/Off");
 		mntmDisplayOnoff.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_MASK));
 		mnAction.add(mntmDisplayOnoff);
+		
+		mntmFactoryDefaults = new JMenuItem("Factory defaults");
+		mntmFactoryDefaults.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_MASK));
+		mnAction.add(mntmFactoryDefaults);
 
 		mntmReboot = new JMenuItem("Reboot");
 		mntmReboot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_MASK));
@@ -796,8 +816,7 @@ public class RemoteConfig extends JFrame {
 
 	private void doReboot(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			int n = JOptionPane.showConfirmDialog(null, "Reboot", lblDisplayName.getText(),
-					JOptionPane.OK_CANCEL_OPTION);
+			int n = JOptionPane.showConfirmDialog(null, "Reboot", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 			if (n == JOptionPane.OK_OPTION) {
 				try {
 					opi.doReboot();
@@ -808,18 +827,30 @@ public class RemoteConfig extends JFrame {
 			}
 		}
 	}
-
+	
+	private void doSetFactoryDefaults(OrangePi userObject) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			int n = JOptionPane.showConfirmDialog(null, "Factory defaults", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+			if (n == JOptionPane.OK_OPTION) {
+				try {
+					opi.doFactory();
+					JOptionPane.showMessageDialog(null, "Factory defaults message has been sent.");
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	private void doSetDisplay(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			String s = opi.doGetDisplay();
 
 			if (s.contains("On")) {
-				int n = JOptionPane.showConfirmDialog(null, "Display is On\nSet display Off? ",
-						lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "Display is On\nSet display Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetDisplay(n != JOptionPane.OK_OPTION);
 			} else {
-				int n = JOptionPane.showConfirmDialog(null, "Display is Off\nSet display On? ",
-						lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "Display is Off\nSet display On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetDisplay(n == JOptionPane.OK_OPTION);
 			}
 		}
@@ -830,12 +861,10 @@ public class RemoteConfig extends JFrame {
 			String s = opi.doGetTFTP();
 
 			if (s.contains("On")) {
-				int n = JOptionPane.showConfirmDialog(null, "TFTP is On\nSet TFTP Off? ", lblDisplayName.getText(),
-						JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is On\nSet TFTP Off? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetTFTP(n != JOptionPane.OK_OPTION);
 			} else {
-				int n = JOptionPane.showConfirmDialog(null, "TFTP is Off\nSet TFTP On? ", lblDisplayName.getText(),
-						JOptionPane.OK_CANCEL_OPTION);
+				int n = JOptionPane.showConfirmDialog(null, "TFTP is Off\nSet TFTP On? ", lblDisplayName.getText(), JOptionPane.OK_CANCEL_OPTION);
 				opi.doSetTFTP(n == JOptionPane.OK_OPTION);
 			}
 		}
@@ -905,24 +934,20 @@ public class RemoteConfig extends JFrame {
 				int minutes = nUptime / 60;
 				int seconds = nUptime - minutes * 60;
 
-				String output = String.format("uptime %d day%s, %02d:%02d:%02d", days, days == 1 ? "" : "s", hours,
-						minutes, seconds);
+				String output = String.format("uptime %d day%s, %02d:%02d:%02d", days, days == 1 ? "" : "s", hours, minutes, seconds);
 
-				JOptionPane.showMessageDialog(null,
-						opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + output);
+				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + output);
 
 			} catch (Exception e) {
 				System.out.println(e);
-				JOptionPane.showMessageDialog(null,
-						opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
+				JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doUptime());
 			}
 		}
 	}
 
 	private void doVersion(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
-			JOptionPane.showMessageDialog(null,
-					opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doVersion());
+			JOptionPane.showMessageDialog(null, opi.getNodeDisplayName() + "\n" + opi.getNodeId() + "\n\n" + opi.doVersion());
 		}
 	}
 

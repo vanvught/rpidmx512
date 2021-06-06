@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include <cstring>
 
 #include "rdmhandler.h"
 
@@ -65,10 +65,10 @@ void RDMHandler::GetInterfaceList(__attribute__((unused)) uint16_t nSubDevice) {
 
 	const uint32_t nNetworkInterfaceId = Network::Get()->GetIfIndex();
 
-	pRdmDataOut->param_data[0] = (nNetworkInterfaceId >> 24);
-	pRdmDataOut->param_data[1] = (nNetworkInterfaceId >> 16);
-	pRdmDataOut->param_data[2] = (nNetworkInterfaceId >> 8);
-	pRdmDataOut->param_data[3] = nNetworkInterfaceId;
+	pRdmDataOut->param_data[0] = static_cast<uint8_t>(nNetworkInterfaceId >> 24);
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(nNetworkInterfaceId >> 16);
+	pRdmDataOut->param_data[2] = static_cast<uint8_t>(nNetworkInterfaceId >> 8);
+	pRdmDataOut->param_data[3] = static_cast<uint8_t>(nNetworkInterfaceId);
 	pRdmDataOut->param_data[4] = (nInterfaceHardwareType >> 8);
 	pRdmDataOut->param_data[5] = nInterfaceHardwareType;
 
@@ -95,7 +95,7 @@ void RDMHandler::GetInterfaceName(__attribute__((unused)) uint16_t nSubDevice) {
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	strcpy(reinterpret_cast<char*>(&pRdmDataOut->param_data[4]), Network::Get()->GetIfName());
 
-	pRdmDataOut->param_data_length = 4 + strlen(Network::Get()->GetIfName());
+	pRdmDataOut->param_data_length = static_cast<uint8_t>(4 + strlen(Network::Get()->GetIfName()));
 
 	RespondMessageAck();
 
@@ -325,7 +325,7 @@ void RDMHandler::GetAddressNetmask(__attribute__((unused)) uint16_t nSubDevice) 
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
-	pRdmDataOut->param_data[8] = Network::Get()->GetNetmaskCIDR();
+	pRdmDataOut->param_data[8] = static_cast<uint8_t>(Network::Get()->GetNetmaskCIDR());
 	pRdmDataOut->param_data[9] = static_cast<uint8_t>(Network::Get()->GetDhcpMode());
 
 	pRdmDataOut->param_data_length = 10;
@@ -353,7 +353,7 @@ void RDMHandler::GetStaticAddress(__attribute__((unused)) uint16_t nSubDevice) {
 
 	memcpy(&pRdmDataOut->param_data[0], &pRdmDataIn->param_data[0], 4);
 	memcpy(&pRdmDataOut->param_data[4], p, 4);
-	pRdmDataOut->param_data[8] = Network::Get()->GetNetmaskCIDR();
+	pRdmDataOut->param_data[8] = static_cast<uint8_t>(Network::Get()->GetNetmaskCIDR());
 
 	pRdmDataOut->param_data_length = 9;
 
@@ -450,7 +450,7 @@ void RDMHandler::GetHostName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	const auto *pHostName = Network::Get()->GetHostName();
-	HandleString(pHostName, strlen(pHostName));
+	HandleString(pHostName, static_cast<uint16_t>(strlen(pHostName)));
 
 	RespondMessageAck();
 
@@ -482,7 +482,7 @@ void RDMHandler::GetDomainName(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	const auto *pDomainName = Network::Get()->GetDomainName();
-	HandleString(pDomainName, strlen(pDomainName));
+	HandleString(pDomainName, static_cast<uint16_t>(strlen(pDomainName)));
 
 	RespondMessageAck();
 

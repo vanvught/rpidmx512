@@ -2,7 +2,7 @@
  * @file ntpserver.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef DEBUG
+
 /*
  * https://tools.ietf.org/html/rfc5905
  */
@@ -32,9 +34,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <time.h>
 #include <cassert>
 
@@ -46,6 +48,8 @@
 #include "debug.h"
 
 NtpServer *NtpServer::s_pThis = nullptr;
+TNtpPacket NtpServer::s_Request;
+TNtpPacket NtpServer::s_Reply;
 
 NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
 	DEBUG_ENTRY
@@ -66,7 +70,7 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
 
 	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 
-	m_tDate += NTP_TIMESTAMP_DELTA;
+	m_tDate += static_cast<time_t>(NTP_TIMESTAMP_DELTA);
 
 	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 	DEBUG_EXIT
@@ -82,14 +86,14 @@ void NtpServer::Start() {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	m_Reply.LiVnMode = NTP_VERSION | NTP_MODE_SERVER;
+	s_Reply.LiVnMode = NTP_VERSION | NTP_MODE_SERVER;
 
-	m_Reply.Stratum = NTP_STRATUM;
-	m_Reply.Poll = NTP_MINPOLL;
-	m_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
-	m_Reply.RootDelay = 0;
-	m_Reply.RootDispersion = 0;
-	m_Reply.ReferenceID = Network::Get()->GetIp();
+	s_Reply.Stratum = NTP_STRATUM;
+	s_Reply.Poll = NTP_MINPOLL;
+	s_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
+	s_Reply.RootDelay = 0;
+	s_Reply.RootDispersion = 0;
+	s_Reply.ReferenceID = Network::Get()->GetIp();
 
 	DEBUG_EXIT
 }
@@ -120,32 +124,34 @@ void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
 
 //	DEBUG_PRINTF("m_timeDate=%.8x %ld", static_cast<unsigned int>(m_tTimeDate), m_tTimeDate);
 
-	m_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	m_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
-	m_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	m_Reply.ReceiveTimestamp_f = __builtin_bswap32(m_nFraction);
-	m_Reply.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
-	m_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
+	s_Reply.ReferenceTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
+	s_Reply.ReferenceTimestamp_f = __builtin_bswap32(m_nFraction);
+	s_Reply.ReceiveTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
+	s_Reply.ReceiveTimestamp_f = __builtin_bswap32(m_nFraction);
+	s_Reply.TransmitTimestamp_s = __builtin_bswap32(static_cast<uint32_t>(m_tTimeDate));
+	s_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
 }
 
 void NtpServer::Run() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Request, sizeof(struct TNtpPacket), &nIPAddressFrom, &nForeignPort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &s_Request, sizeof(struct TNtpPacket), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((nBytesReceived < sizeof(struct TNtpPacket)), 1)) {
+		DEBUG_PUTS("");
 		return;
 	}
 
-	if (__builtin_expect(((m_Request.LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
+	if (__builtin_expect(((s_Request.LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
+		DEBUG_PUTS("");
 		return;
 	}
 
-	m_Reply.OriginTimestamp_s = m_Request.TransmitTimestamp_s;
-	m_Reply.OriginTimestamp_f = m_Request.TransmitTimestamp_f;
+	s_Reply.OriginTimestamp_s = s_Request.TransmitTimestamp_s;
+	s_Reply.OriginTimestamp_f = s_Request.TransmitTimestamp_f;
 
-	Network::Get()->SendTo(m_nHandle, &m_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
+	Network::Get()->SendTo(m_nHandle, &s_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
 }
 
 void NtpServer::Print() {
@@ -153,7 +159,7 @@ void NtpServer::Print() {
 	printf(" Port : %d\n", NTP_UDP_PORT);
 	printf(" Stratum : %d\n", NTP_STRATUM);
 
-	const time_t t = m_tDate - NTP_TIMESTAMP_DELTA;
+	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_tDate) - NTP_TIMESTAMP_DELTA);
 
 	printf(" %s", asctime(localtime(&t)));
 }

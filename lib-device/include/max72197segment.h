@@ -30,9 +30,7 @@
 
 class Max72197Segment: public MAX7219 {
 public:
-	Max72197Segment() {
-
-	}
+	Max72197Segment() {}
 
 	void Init(uint8_t nIntensity) {
 		WriteRegister(max7219::reg::SHUTDOWN, max7219::reg::shutdown::NORMAL_OP);

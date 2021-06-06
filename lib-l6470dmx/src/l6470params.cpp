@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -49,8 +49,8 @@ L6470Params::L6470Params(L6470ParamsStore *pL6470ParamsStore): m_pL6470ParamsSto
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
-bool L6470Params::Load(uint8_t nMotorIndex) {
-	m_aFileName[5] = nMotorIndex + '0';
+bool L6470Params::Load(uint32_t nMotorIndex) {
+	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	m_tL6470Params.nSetList = 0;
 
@@ -70,7 +70,7 @@ bool L6470Params::Load(uint8_t nMotorIndex) {
 	return true;
 }
 
-void L6470Params::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
+void L6470Params::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 	assert(m_pL6470ParamsStore != nullptr);
@@ -88,10 +88,10 @@ void L6470Params::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLengt
 	m_pL6470ParamsStore->Update(nMotorIndex, &m_tL6470Params);
 }
 
-void L6470Params::Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void L6470Params::Builder(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
-	m_aFileName[5] = nMotorIndex + '0';
+	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	if (ptL6470Params != nullptr) {
 		memcpy(&m_tL6470Params, ptL6470Params, sizeof(struct TL6470Params));
@@ -116,7 +116,7 @@ void L6470Params::Builder(uint8_t nMotorIndex, const struct TL6470Params *ptL647
 	return;
 }
 
-void L6470Params::Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void L6470Params::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	if (m_pL6470ParamsStore == nullptr) {
 		nSize = 0;
 		return;

@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,17 @@
 #define LINUX_HARDWARE_H_
 
 #include <time.h>
-#include <stdint.h>
+#include <cstdint>
+#include <uuid/uuid.h>
 #include <sys/utsname.h>
 
 class Hardware {
 public:
 	Hardware();
 
+	void Print();
+
+	void GetUuid(uuid_t out);
 	const char *GetMachine(uint8_t &nLength);
 	const char *GetSysName(uint8_t &nLength);
 	const char *GetBoardName(uint8_t &nLength);

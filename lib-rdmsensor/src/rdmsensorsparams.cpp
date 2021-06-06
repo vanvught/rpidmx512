@@ -28,9 +28,9 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "rdmsensorsparams.h"
@@ -61,10 +61,9 @@ RDMSensorsParams::RDMSensorsParams(RDMSensorsParamsStore *pRDMSensorsParamsStore
 }
 
 bool RDMSensorsParams::Load() {
-	DEBUG_ENTRY
-
 	m_tRDMSensorsParams.nCount = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RDMSensorsParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RDMSensorsConst::PARAMS_FILE_NAME)) {
@@ -72,14 +71,14 @@ bool RDMSensorsParams::Load() {
 		if (m_pRDMSensorsParamsStore != nullptr) {
 			m_pRDMSensorsParamsStore->Update(&m_tRDMSensorsParams);
 		}
-	} else if (m_pRDMSensorsParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRDMSensorsParamsStore != nullptr) {
 		m_pRDMSensorsParamsStore->Copy(&m_tRDMSensorsParams);
 	} else {
-		DEBUG_EXIT
 		return false;
 	}
 
-	DEBUG_EXIT
 	return true;
 }
 
@@ -106,7 +105,7 @@ void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_EXIT
 }
 
-void RDMSensorsParams::Builder(const struct TRDMSensorsParams *pRDMSensorsParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMSensorsParams::Builder(const struct TRDMSensorsParams *pRDMSensorsParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -126,7 +125,7 @@ void RDMSensorsParams::Builder(const struct TRDMSensorsParams *pRDMSensorsParams
 	DEBUG_EXIT
 }
 
-void RDMSensorsParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void RDMSensorsParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pRDMSensorsParamsStore == nullptr) {

@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdarg.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdarg>
+#include <cstdio>
 #include <cassert>
 
 #include "displayudf.h"
@@ -52,7 +52,7 @@ DisplayUdf::DisplayUdf() {
 	s_pThis = this;
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
-		m_aLabels[i] = i + 1;
+		m_aLabels[i] = static_cast<uint8_t>(i + 1);
 	}
 
 	DEBUG_EXIT
@@ -82,7 +82,7 @@ void DisplayUdf::Show() {
 		DEBUG_PRINTF("m_aLabels[%d]=%d", i, m_aLabels[i]);
 	}
 
-	for (uint32_t i = 1; i < LABEL_MAX_ROWS; i++) {
+	for (uint8_t i = 1; i < LABEL_MAX_ROWS; i++) {
 		ClearLine(i);
 	}
 
@@ -115,6 +115,10 @@ void DisplayUdf::ShowIpAddress() {
 void DisplayUdf::ShowNetmask() {
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 	ShowIpAddress();
+}
+
+void DisplayUdf::ShowGatewayIp() {
+
 }
 
 void DisplayUdf::ShowHostName() {
@@ -151,7 +155,7 @@ void DisplayUdf::ShowShutdown() {
 	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
-void DisplayUdf::Set(uint32_t nLine, Labels tLabel) {
+void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
 	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
 		return;
 	}

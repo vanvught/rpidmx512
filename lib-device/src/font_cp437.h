@@ -26,7 +26,7 @@
 #ifndef FONT_CP437_H_
 #define FONT_CP437_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define FONT_CP437_CHAR_W	8
 #define FONT_CP437_CHAR_H	8

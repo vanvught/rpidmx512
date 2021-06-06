@@ -23,15 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "ws28xxmulti.h"
+#include "pixeltype.h"
 
 #include "h3_spi.h"
 
 #include "debug.h"
+
+using namespace pixel;
 
 void WS28xxMulti::SetupBuffers8x() {
 	DEBUG_ENTRY
@@ -44,15 +50,29 @@ void WS28xxMulti::SetupBuffers8x() {
 	const uint32_t nSizeHalf = nSize / 2;
 	assert(m_nBufSize <= nSizeHalf);
 
-	if (m_nBufSize > nSizeHalf) {
-		// FIXME Handle internal error
-		return;
-	}
-
 	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & static_cast<uint32_t>(~3));
 
-	memset(m_pBuffer8x, 0, m_nBufSize);
-	memset(m_pBlackoutBuffer8x, 0, m_nBufSize);
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		DEBUG_PUTS("SPI");
+
+		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
+			SetPixel8x(nPortIndex, 0, 0, 0, 0, 0);
+
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= m_nCount; nPixelIndex++) {
+				SetPixel8x(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
+			}
+
+			if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+				SetPixel8x(nPortIndex, 1U + m_nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			} else {
+				SetPixel8x(nPortIndex, 1U + m_nCount, 0, 0, 0, 0);
+			}
+		}
+		memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);
+	} else {
+		memset(m_pBuffer8x, 0, m_nBufSize);
+		memset(m_pBlackoutBuffer8x, 0, m_nBufSize);
+	}
 
 	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer8x, m_pBlackoutBuffer8x);
 	DEBUG_EXIT

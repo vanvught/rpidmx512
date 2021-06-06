@@ -29,7 +29,7 @@
 #ifndef ARTNETPARAMS_H_
 #define ARTNETPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "artnetnode.h"
@@ -52,14 +52,14 @@ struct TArtNetParams {
 	uint8_t aOemValue[2];									///< 2	 98
 	time_t nNetworkTimeout;									///< 4	102
 	uint8_t NotUsed4;										///< 1	103
-	uint8_t nUniversePort[ArtNet::MAX_PORTS];				///< 4	107
+	uint8_t nUniversePort[ArtNet::PORTS];				///< 4	107
 	uint8_t nMergeMode;										///< 1	108
-	uint8_t nMergeModePort[ArtNet::MAX_PORTS];				///< 4	112
+	uint8_t nMergeModePort[ArtNet::PORTS];				///< 4	112
 	uint8_t nProtocol;										///< 1	113
-	uint8_t nProtocolPort[ArtNet::MAX_PORTS];				///< 4	117
+	uint8_t nProtocolPort[ArtNet::PORTS];				///< 4	117
 	uint8_t NotUsed5;										///< 1	118
 	uint8_t nDirection;										///< 1	119
-	uint32_t nDestinationIpPort[ArtNet::MAX_PORTS];			///< 16	135
+	uint32_t nDestinationIpPort[ArtNet::PORTS];			///< 16	135
 }__attribute__((packed));
 
 
@@ -120,8 +120,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TArtNetParams *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(ArtNetNode *);
 

@@ -26,7 +26,7 @@
 #ifndef WS28XXDMX_H_
 #define WS28XXDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 
@@ -43,10 +43,10 @@ public:
 
 	void Initialize();
 
-	void Start(uint8_t nPort = 0) override;
-	void Stop(uint8_t nPort = 0) override;
+	void Start(uint32_t nPortIndex = 0) override;
+	void Stop(uint32_t nPortIndex = 0) override;
 
-	void SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) override;
+	void SetData(uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
 
@@ -79,10 +79,10 @@ public: // RDM
 
 private:
 	pixeldmxconfiguration::PortInfo m_PortInfo;
-	uint32_t m_nChannelsPerPixel;
 	uint32_t m_nGroups;
 	uint32_t m_nGroupingCount;
 	uint32_t m_nUniverses;
+	uint32_t m_nChannelsPerPixel;
 
 	pixel::Type m_tLedType { pixel::defaults::TYPE };
 	pixel::Map m_tRGBMapping { pixel::Map::UNDEFINED };

@@ -28,7 +28,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <algorithm>
 
 #include "pixeldmxconfiguration.h"
@@ -44,8 +44,14 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 	PixelConfiguration::Validate(nLedsPerPixel);
 
 	if ((nPortsMax != 1) && (!IsRTZProtocol())) {
-//		SetType(Type::WS2812B);
-		SetType(Type::WS2801);
+		if (nPortsMax == 4) {
+			SetType(Type::WS2812B);
+		} else {
+			const auto type = GetType();
+			if (!((type == Type::WS2801) || (type == Type::APA102) || (type == Type::SK9822))) {
+				SetType(Type::WS2801);
+			}
+		}
 		PixelConfiguration::Validate(nLedsPerPixel);
 	}
 
@@ -59,26 +65,22 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 		portInfo.nBeginIndexPortId3 = 510;
 	}
 
-	if (m_isGroupingEnabled) {
-		if ((m_nGroupingCount == 0) || (m_nGroupingCount > GetCount())) {
-			m_nGroupingCount = GetCount();
-		}
-	} else {
-		m_nGroupingCount = 1;
+	if ((m_nGroupingCount == 0) || (m_nGroupingCount > GetCount())) {
+		m_nGroupingCount = GetCount();
 	}
 
 	nGroups = GetCount() / m_nGroupingCount;
 
 	m_nOutputPorts = std::min(nPortsMax, m_nOutputPorts);
-	nUniverses = 1 + (nGroups  / (1 + portInfo.nBeginIndexPortId1));
+	nUniverses = (1 + (nGroups  / (1 + portInfo.nBeginIndexPortId1)));
 
 	if (nPortsMax == 1) {
-		portInfo.nProtocolPortIdLast = nGroups / (1 + portInfo.nBeginIndexPortId1);
+		portInfo.nProtocolPortIndexLast = (nGroups / (1 + portInfo.nBeginIndexPortId1));
 	} else {
 #if defined (NODE_ARTNET)
-		portInfo.nProtocolPortIdLast = ((m_nOutputPorts - 1) * 4) + nUniverses - 1;
+		portInfo.nProtocolPortIndexLast = (((m_nOutputPorts - 1) * 4) + nUniverses - 1);
 #else
-		portInfo.nProtocolPortIdLast = (m_nOutputPorts * nUniverses)  - 1;
+		portInfo.nProtocolPortIndexLast = ((m_nOutputPorts * nUniverses)  - 1);
 #endif
 	}
 
@@ -89,8 +91,6 @@ void PixelDmxConfiguration::Dump() {
 #ifndef NDEBUG
 	PixelConfiguration::Dump();
 	printf("nOuputPorts=%u\n", m_nOutputPorts);
-	if (m_isGroupingEnabled) {
-		printf(" nGroupingCount=%u\n", m_nGroupingCount);
-	}
+	printf("nGroupingCount=%u\n", m_nGroupingCount);
 #endif
 }

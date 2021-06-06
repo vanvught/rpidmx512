@@ -29,7 +29,7 @@
 #ifndef ARTNETPOLLTABLE_H_
 #define ARTNETPOLLTABLE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "packets.h"
 
@@ -54,7 +54,7 @@ struct TArtNetNodeEntry {
 	uint8_t Mac[ArtNet::MAC_SIZE];
 	uint8_t ShortName[ArtNet::SHORT_NAME_LENGTH];
 	uint8_t LongName[ArtNet::LONG_NAME_LENGTH];
-	uint32_t nUniversesCount;
+	uint16_t nUniversesCount;
 	struct TArtNetNodeEntryUniverse Universe[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES];
 };
 
@@ -66,7 +66,7 @@ struct TArtNetPollTableUniverses {
 
 struct TArtNetPollTableClean {
 	uint32_t nTableIndex;
-	uint32_t nUniverseIndex;
+	uint16_t nUniverseIndex;
 	bool bOffLine;
 };
 
@@ -90,7 +90,7 @@ public:
 private:
 	uint16_t MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse);
 	void ProcessUniverse(uint32_t nIpAddress, uint16_t nUniverse);
-	void RemoveIpAddress(uint32_t nEntry, uint32_t nIpAddressIndex);
+	void RemoveIpAddress(uint16_t nUniverse, uint32_t nIpAddress);
 
 private:
 	TArtNetNodeEntry *m_pPollTable;

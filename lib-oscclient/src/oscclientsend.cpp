@@ -2,7 +2,7 @@
  * @file oscclient.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "oscclient.h"
@@ -45,7 +45,7 @@ void OscClient::Send(const char *pPath) {
 	DEBUG_EXIT
 }
 
-void OscClient::SendCmd(uint8_t nCmd) {
+void OscClient::SendCmd(uint32_t nCmd) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nCmd=%d", nCmd);
 

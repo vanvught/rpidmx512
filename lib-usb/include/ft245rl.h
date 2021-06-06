@@ -26,7 +26,7 @@
 #ifndef FT245RL_H_
 #define FT245RL_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 
 #ifdef __cplusplus

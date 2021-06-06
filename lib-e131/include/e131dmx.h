@@ -2,7 +2,7 @@
  * @file e131dmx.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,16 @@
 #ifndef E131DMX_H_
 #define E131DMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class E131Dmx {
 public:
 	virtual ~E131Dmx() {}
 
-	virtual void Start(uint8_t nPort)=0;
-	virtual void Stop(uint8_t nPort)=0;
+	virtual void Start(uint32_t nPortIndex)=0;
+	virtual void Stop(uint32_t nPortIndex)=0;
 
-	virtual const uint8_t *Handler(uint8_t nPort, uint16_t& nLength, uint32_t &nUpdatesPerSecond)=0;
+	virtual const uint8_t* Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond)=0;
 };
 
 #endif /* E131DMX_H_ */

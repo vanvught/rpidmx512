@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdarg.h>
-#include <stddef.h>
+#include <cstdio>
+#include <cstdarg>
+#include <cstddef>
 
 #include "widgetmonitor.h"
 
 #include "hardware.h"
 #include "console.h"
 
-void WidgetMonitor::Uptime(uint32_t nLine) {
+void WidgetMonitor::Uptime(uint8_t nLine) {
 	auto nUptime = Hardware::Get()->GetUpTime();
 	auto ltime = time(nullptr);
 	auto *pLocalTime = localtime(&ltime);

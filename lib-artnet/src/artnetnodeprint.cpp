@@ -31,8 +31,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "artnetnode.h"
 #include "artnetconst.h"
@@ -51,11 +51,11 @@ void ArtNetNode::Print() {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::MAX_PORTS); nPortIndex++) {
+		for (uint8_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::PORTS); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::OUTPUT)) {
-				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ArtNet::MAX_PORTS];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ArtNet::MAX_PORTS];
+				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ArtNet::PORTS];
+				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ArtNet::PORTS];
 
 				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
 				if (m_nVersion == 4) {
@@ -74,7 +74,7 @@ void ArtNetNode::Print() {
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < (ARTNET_NODE_MAX_PORTS_INPUT); nPortIndex++) {
+		for (uint8_t nPortIndex = 0; nPortIndex < (ARTNET_NODE_MAX_PORTS_INPUT); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::INPUT)) {
 				const uint32_t nNet = m_Node.NetSwitch[nPortIndex];

@@ -31,7 +31,7 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "artnetparams.h"
 #include "artnetparamsconst.h"
@@ -94,7 +94,7 @@ void ArtNetParams::Dump() {
 		printf(" %s=1 [Yes]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT);
 	}
 
-	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::UNIVERSE_A << i)) {
 			printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i]);
 		}
@@ -104,13 +104,13 @@ void ArtNetParams::Dump() {
 		printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE, ArtNet::GetMergeMode(m_tArtNetParams.nMergeMode));
 	}
 
-	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
 			printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE_PORT[i], ArtNet::GetMergeMode(m_tArtNetParams.nMergeModePort[i]));
 		}
 	}
 
-	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (isMaskSet(ArtnetParamsMask::PROTOCOL_A << i)) {
 			printf(" %s=%s\n", ArtNetParamsConst::PROTOCOL_PORT[i], ArtNet::GetProtocolMode(m_tArtNetParams.nProtocolPort[i], true));
 		}
@@ -124,7 +124,7 @@ void ArtNetParams::Dump() {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, static_cast<int>(m_tArtNetParams.nDirection), m_tArtNetParams.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
 	}
 
-	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			printf(" %s=" IPSTR "\n", ArtNetParamsConst::DESTINATION_IP_PORT[i], IP2STR(m_tArtNetParams.nDestinationIpPort[i]));
 		}

@@ -167,7 +167,7 @@ bool net_set_zeroconf(struct ip_info *p_ip_info) {
 	return false;
 }
 
-void net_handle(void) {
+__attribute__((hot)) void net_handle(void) {
 	const int length = emac_eth_recv(&s_p);
 
 	if (__builtin_expect((length > 0), 0)) {

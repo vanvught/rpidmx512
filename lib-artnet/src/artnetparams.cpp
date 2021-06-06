@@ -31,10 +31,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <ctype.h>
-#include <string.h>
-#include <time.h>
+#include <cstring>
+#include <cstdint>
 #include <cassert>
 
 #include "artnetparams.h"
@@ -64,8 +62,8 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 
 	m_tArtNetParams.nUniverse = 1;
 
-	for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
-		m_tArtNetParams.nUniversePort[i] = 1 + i;
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		m_tArtNetParams.nUniversePort[i] = static_cast<uint8_t>(1 + i);
 	}
 
 	m_tArtNetParams.aOemValue[0] = ArtNetConst::OEM_ID[1];
@@ -79,6 +77,7 @@ bool ArtNetParams::Load() {
 	m_tArtNetParams.nSetList = 0;
 	m_tArtNetParams.nMultiPortOptions = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(ArtNetParams::staticCallbackFunction, this);
 
 	if (configfile.Read(ArtNetParamsConst::FILE_NAME)) {
@@ -86,7 +85,9 @@ bool ArtNetParams::Load() {
 		if (m_pArtNetParamsStore != nullptr) {
 			m_pArtNetParamsStore->Update(&m_tArtNetParams);
 		}
-	} else if (m_pArtNetParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pArtNetParamsStore != nullptr) {
 		m_pArtNetParamsStore->Copy(&m_tArtNetParams);
 	} else {
 		return false;
@@ -161,8 +162,8 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::HexUint16(pLine, ArtNetParamsConst::NODE_OEM_VALUE, nValue16) == Sscan::OK) {
-		m_tArtNetParams.aOemValue[0] = (nValue16 >> 8);
-		m_tArtNetParams.aOemValue[1] = (nValue16 & 0xFF);
+		m_tArtNetParams.aOemValue[0] = static_cast<uint8_t>(nValue16 >> 8);
+		m_tArtNetParams.aOemValue[1] = static_cast<uint8_t>(nValue16 & 0xFF);
 		m_tArtNetParams.nSetList |= ArtnetParamsMask::OEM_VALUE;
 		return;
 	}
@@ -234,13 +235,13 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (unsigned i = 0; i < ArtNet::MAX_PORTS; i++) {
+	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (Sscan::Uint8(pLine, LightSetConst::PARAMS_UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
 			if ((nValue8 != (i + 1)) && (nValue8 <= 0xF)) {
 				m_tArtNetParams.nUniversePort[i] = nValue8;
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::UNIVERSE_A << i);
 			} else {
-				m_tArtNetParams.nUniversePort[i] = i + 1;
+				m_tArtNetParams.nUniversePort[i] = static_cast<uint8_t>(i + 1);
 				m_tArtNetParams.nSetList &= ~(ArtnetParamsMask::UNIVERSE_A << i);
 			}
 			return;
@@ -274,9 +275,9 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			m_tArtNetParams.nDestinationIpPort[i] = nValue32;
 
 			if (nValue32 != 0) {
-				m_tArtNetParams.nMultiPortOptions |= (ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i);
+				m_tArtNetParams.nMultiPortOptions |= static_cast<uint16_t>(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i);
 			} else {
-				m_tArtNetParams.nMultiPortOptions &= ~(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i);
+				m_tArtNetParams.nMultiPortOptions &= static_cast<uint16_t>(~(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i));
 			}
 		}
 	}
@@ -300,7 +301,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 }
 
 uint8_t ArtNetParams::GetUniverse(uint8_t nPort, bool& IsSet) {
-	assert(nPort < ArtNet::MAX_PORTS);
+	assert(nPort < ArtNet::PORTS);
 
 	IsSet = isMaskSet(ArtnetParamsMask::UNIVERSE_A << nPort);
 

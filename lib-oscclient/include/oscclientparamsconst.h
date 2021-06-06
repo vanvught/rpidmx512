@@ -26,7 +26,7 @@
 #ifndef OSCCLIENTPARAMSCONST_H_
 #define OSCCLIENTPARAMSCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct OscClientParamsConst {
 	static const char FILE_NAME[];

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "tlc59711dmx.h"
 #include "tlc59711dmxparams.h"

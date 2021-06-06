@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -61,6 +61,7 @@ DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore
 bool DMXMonitorParams::Load() {
 	m_tDMXMonitorParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(DMXMonitorParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DMXMonitorParamsConst::FILE_NAME)) {
@@ -68,7 +69,9 @@ bool DMXMonitorParams::Load() {
 		if (m_pDMXMonitorParamsStore != nullptr) {
 			m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
 		}
-	} else if (m_pDMXMonitorParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pDMXMonitorParamsStore != nullptr) {
 		m_pDMXMonitorParamsStore->Copy(&m_tDMXMonitorParams);
 	} else {
 		return false;
@@ -95,7 +98,7 @@ void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
 	m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
 }
 
-void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 	assert(pBuffer != nullptr);
 
@@ -117,7 +120,7 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 	DEBUG_EXIT
 }
 
-void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pDMXMonitorParamsStore == nullptr) {

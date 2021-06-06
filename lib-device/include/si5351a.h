@@ -26,7 +26,7 @@
 #ifndef SI5351A_H_
 #define SI5351A_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 

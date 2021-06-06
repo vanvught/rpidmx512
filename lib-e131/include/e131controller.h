@@ -26,7 +26,7 @@
 #ifndef E131CONTROLLER_H_
 #define E131CONTROLLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "e131.h"
 #include "e131packets.h"
@@ -62,7 +62,7 @@ public:
 
 	void Print();
 
-	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength);
+	void HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength);
 	void HandleSync();
 	void HandleBlackout();
 

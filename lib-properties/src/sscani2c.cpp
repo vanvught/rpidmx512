@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cctype>
 #include <cassert>
 
 #include "sscan.h"
@@ -48,7 +48,7 @@ Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength,
 		k++;
 	}
 
-	nLength = k;
+	nLength = static_cast<uint8_t>(k);
 
 	if ((*b != 0) && (*b != ',')) {
 		return Sscan::NAME_ERROR;

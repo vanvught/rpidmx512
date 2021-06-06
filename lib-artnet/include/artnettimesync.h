@@ -29,7 +29,7 @@
 #ifndef ARTTIMESYNC_H_
 #define ARTTIMESYNC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TArtNetTimeSync {
 	uint8_t tm_sec;

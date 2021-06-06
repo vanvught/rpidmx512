@@ -26,7 +26,7 @@
 #ifndef E131BRIDGECONST_H_
 #define E131BRIDGECONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct E131BridgeConst {
 	static const uint8_t VERSION[];

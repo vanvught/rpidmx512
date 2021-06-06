@@ -22,14 +22,14 @@
  */
 
 #include <cassert>
-#include <string.h>
+#include <cstring>
 
 #include "rgbpanel.h"
 #include "rgbpanelconst.h"
 
 using namespace rgbpanel;
 
-uint32_t RgbPanel::ValidateColumns(uint32_t nColumns) {
+uint32_t RgbPanel::ValidateColumns(uint8_t nColumns) {
 	for (uint32_t i = 0; i < config::COLS; i++) {
 		if (nColumns == RgbPanelConst::COLS[i]) {
 			return nColumns;
@@ -39,7 +39,7 @@ uint32_t RgbPanel::ValidateColumns(uint32_t nColumns) {
 	return defaults::COLS;
 }
 
-uint32_t RgbPanel::ValidateRows(uint32_t nRows) {
+uint32_t RgbPanel::ValidateRows(uint8_t nRows) {
 	for (uint32_t i = 0; i < config::ROWS; i++) {
 		if (nRows == RgbPanelConst::ROWS[i]) {
 			return nRows;

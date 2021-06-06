@@ -63,7 +63,7 @@ extern void h3_spi_chipSelect(uint8_t chip_select);
 extern void h3_spi_setChipSelectPolarity(uint8_t chip_select, uint8_t polarity);
 
 extern uint8_t h3_spi_transfer(uint8_t data);
-extern void h3_spi_transfernb(char *tx_buffer, /*@null@*/char *rx_buffer, uint32_t data_length);
+extern void h3_spi_transfernb(char *tx_buffer, char *rx_buffer, uint32_t data_length);
 extern void h3_spi_transfern(char *tx_buffer, uint32_t data_length);
 
 extern void h3_spi_write(uint16_t data);

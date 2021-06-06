@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,8 @@
 
 #ifndef H3_CONSOLE_H_
 #define H3_CONSOLE_H_
+
+#include <stdint.h>
 
 // ANSI colors
 typedef enum {
@@ -54,9 +56,9 @@ extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
 extern void console_status(uint32_t, const char *);
 
 // The following functions are not supported with debug UART
-inline static void console_set_top_row(__attribute__((unused)) uint16_t __d) {}
-inline static void console_clear_line(__attribute__((unused)) uint16_t __d) {}
-inline static void console_set_cursor(__attribute__((unused)) uint16_t __d, __attribute__((unused)) uint16_t __e) {}
+inline static void console_set_top_row(__attribute__((unused)) uint32_t __d) {}
+inline static void console_clear_line(__attribute__((unused)) uint32_t __d) {}
+inline static void console_set_cursor(__attribute__((unused)) uint32_t __d, __attribute__((unused)) uint32_t __e) {}
 inline static void console_save_cursor() {}
 inline static void console_restore_cursor() {}
 

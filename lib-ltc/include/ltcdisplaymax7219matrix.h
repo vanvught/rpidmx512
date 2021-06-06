@@ -26,7 +26,7 @@
 #ifndef LTCDISPLAYMAX7219MATRIX_H_
 #define LTCDISPLAYMAX7219MATRIX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplaymax7219set.h"
 

@@ -26,7 +26,7 @@
 #ifndef H3_LTCGENERATOR_H_
 #define H3_LTCGENERATOR_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltc.h"
 
@@ -54,7 +54,7 @@ public:
 	void Print();
 
 	//
-	void HandleRequest(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
+	void HandleRequest(void *pBuffer = nullptr, uint16_t nBufferLength = 0);
 
 	// Control
 	void ActionStart(bool bDoReset = true);

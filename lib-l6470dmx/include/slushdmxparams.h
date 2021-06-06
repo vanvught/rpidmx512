@@ -26,7 +26,7 @@
 #ifndef SLUSHDMXPARAMS_H_
 #define SLUSHDMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "slushdmx.h"
 
@@ -55,8 +55,8 @@ public:
 	virtual void Update(const struct TSlushDmxParams *ptSlushDmxParams)=0;
 	virtual void Copy(struct TSlushDmxParams *ptSlushDmxParams)=0;
 
-	virtual void Update(uint8_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams)=0;
-	virtual void Copy(uint8_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams)=0;
+	virtual void Update(uint32_t nMotorIndex, const struct TSlushDmxParams *ptSlushDmxParams)=0;
+	virtual void Copy(uint32_t nMotorIndex, struct TSlushDmxParams *ptSlushDmxParams)=0;
 };
 
 class SlushDmxParams {
@@ -68,8 +68,8 @@ public:
 
 	void Set(SlushDmx *pSlushDmx);
 
-	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 

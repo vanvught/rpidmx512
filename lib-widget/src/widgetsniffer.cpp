@@ -2,7 +2,7 @@
  * @file widgetsniffer.cpp
  *
  */
-/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
 #include <stdbool.h>
 
 #include "widget.h"
@@ -51,6 +51,7 @@
 
 using namespace widget;
 using namespace widgetmonitor;
+using namespace dmxsingle;
 
 void Widget::UsbSendPackage(const uint8_t *pData, uint16_t Start, uint16_t nDataLength) {
 	uint32_t i;
@@ -105,21 +106,21 @@ void Widget::SnifferDmx() {
 		return;
 	}
 
-	const auto *pDmxData = dmx_is_data_changed();
+	const auto *pDmxData = GetDmxChanged();
 
 	if (pDmxData == nullptr) {
 		return;
 	}
 
-	const auto *pDmxStatistics = reinterpret_cast<const struct _dmx_data *>(pDmxData);
-	const auto nDataLength = pDmxStatistics->statistics.slots_in_packet + 1;
+	const auto *pDmxStatistics = reinterpret_cast<const struct Data *>(pDmxData);
+	const auto nDataLength = pDmxStatistics->Statistics.nSlotsInPacket + 1;
 
 	if (!UsbCanSend()) {
 		return;
 	}
 
 	WidgetMonitor::Line(MonitorLine::INFO, "Send DMX data to HOST -> %d", nDataLength);
-	UsbSendPackage(pDmxData, 0, nDataLength);
+	UsbSendPackage(pDmxData, 0, static_cast<uint16_t>(nDataLength));
 }
 
 /**
@@ -130,7 +131,7 @@ void Widget::SnifferRdm() {
 		return;
 	}
 
-	const auto *pRdmData = rdm_get_available();
+	const auto *pRdmData = Rdm::Receive(0);
 
 	if (pRdmData == nullptr) {
 		return;
@@ -139,7 +140,7 @@ void Widget::SnifferRdm() {
 	uint8_t nMessageLength = 0;
 
 	if (pRdmData[0] == E120_SC_RDM) {
-		const auto *p = reinterpret_cast<const struct _rdm_command *>(pRdmData);
+		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 		nMessageLength = p->message_length + 2;
 		switch (p->command_class) {
 		case E120_DISCOVERY_COMMAND:

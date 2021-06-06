@@ -24,7 +24,7 @@
 #ifndef GPSTIMECLIENT_H_
 #define GPSTIMECLIENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "gps.h"
 

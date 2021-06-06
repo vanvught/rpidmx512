@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 
 #include "dmxmonitor.h"
 #include "console.h"
@@ -59,7 +59,7 @@ uint16_t DMXMonitor::GetDmxFootprint(void) {
 	return Dmx::UNIVERSE_SIZE;
 }
 
-void DMXMonitor::Start(__attribute__((unused)) uint8_t nPort) {
+void DMXMonitor::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if(m_bIsStarted) {
 		return;
 	}
@@ -101,7 +101,7 @@ void DMXMonitor::Start(__attribute__((unused)) uint8_t nPort) {
 	Update();
 }
 
-void DMXMonitor::Stop(__attribute__((unused)) uint8_t nPort) {
+void DMXMonitor::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if(!m_bIsStarted) {
 		return;
 	}
@@ -138,7 +138,7 @@ void DMXMonitor::Cls(void) {
 	}
 }
 
-void DMXMonitor::SetData(__attribute__((unused)) uint8_t nPort, const uint8_t *pData, uint16_t nLength) {
+void DMXMonitor::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	m_nSlots = nLength;
 
 	memcpy(m_Data, pData, nLength);
@@ -167,7 +167,7 @@ void DMXMonitor::Update(void) {
 						console_puthex_fg_bg(d, (d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE), RGB(d, d, d));
 					} else {
 						console_putpct_fg_bg(
-								(static_cast<uint32_t>(d) * 100) / 255,
+								static_cast<uint8_t>((d * 100) / 255),
 								(d > 92 ? CONSOLE_BLACK : CONSOLE_WHITE),
 								RGB(d, d, d));
 					}

@@ -28,9 +28,9 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <ctype.h>
-#include <string.h>
+#include <cstdint>
+#include <cctype>
+#include <cstring>
 #include <cassert>
 
 #include "tcnetparams.h"
@@ -52,6 +52,7 @@ TCNetParams::TCNetParams(TCNetParamsStore* pTCNetParamsStore): m_pTCNetParamsSto
 bool TCNetParams::Load() {
 	m_tTTCNetParams.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(TCNetParams::staticCallbackFunction, this);
 
 	if (configfile.Read(TCNetParamsConst::FILE_NAME)) {
@@ -59,7 +60,9 @@ bool TCNetParams::Load() {
 		if (m_pTCNetParamsStore != nullptr) {
 			m_pTCNetParamsStore->Update(&m_tTTCNetParams);
 		}
-	} else if (m_pTCNetParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pTCNetParamsStore != nullptr) {
 		m_pTCNetParamsStore->Copy(&m_tTTCNetParams);
 	} else {
 		return false;

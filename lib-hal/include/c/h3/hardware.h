@@ -26,7 +26,7 @@
 #ifndef C_H3_HARDWARE_H_
 #define C_H3_HARDWARE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 
 #include "h3_hs_timer.h"

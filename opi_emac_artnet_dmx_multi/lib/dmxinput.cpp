@@ -2,7 +2,7 @@
  * @file dmxinput.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,28 +23,29 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
-#include <h3/dmxmultiinput.h>
+#include <cstdint>
+#include <cassert>
 
 #include "dmxinput.h"
-
+#include "dmxmulti.h"
 #include "dmx.h"
 
 #include "debug.h"
+
+using namespace dmxmulti;
+using namespace dmx;
 
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < sizeof(m_bIsStarted) / sizeof(m_bIsStarted[0]); i++) {
-		m_bIsStarted[i] = false;
+		Stop(i);
 	}
 
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(uint8_t nPort) {
+void DmxInput::Start(uint32_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
@@ -53,14 +54,14 @@ void DmxInput::Start(uint8_t nPort) {
 		return;
 	}
 
-	m_DmxMultiInput.StartData(nPort);
+	SetPortDirection(nPort, PortDirection::INP, true);
 
 	m_bIsStarted[nPort] = true;
 
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(uint8_t nPort) {
+void DmxInput::Stop(uint32_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort=%d", static_cast<int>(nPort));
 
@@ -69,21 +70,21 @@ void DmxInput::Stop(uint8_t nPort) {
 		return;
 	}
 
-	m_DmxMultiInput.StopData(nPort);
+	SetPortDirection(nPort, PortDirection::INP, false);
 
 	m_bIsStarted[nPort] = false;
 
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint8_t nPort, uint16_t &nLength, uint32_t &nUpdatesPerSecond) {
-	const uint8_t *pDmx = m_DmxMultiInput.GetDmxAvailable(nPort);
+const uint8_t *DmxInput::Handler(uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
+	const auto *pDmx = GetDmxAvailable(nPort);
 
-	nUpdatesPerSecond = m_DmxMultiInput.GetUpdatesPerSeconde(nPort);
+	nUpdatesPerSecond = GetUpdatesPerSeconde(nPort);
 
 	if (pDmx != nullptr) {
-		const auto *dmx_data = reinterpret_cast<const struct _dmx_data*>(pDmx);
-		nLength = dmx_data->statistics.slots_in_packet;
+		const auto *pDmxData = reinterpret_cast<const struct Data*>(pDmx);
+		nLength = pDmxData->nSlotsInPacket;
 		return (pDmx + 1);
 	}
 

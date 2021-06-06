@@ -2,7 +2,7 @@
  * @file max7219.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef DEVICE_MAX7219_H_
 #define DEVICE_MAX7219_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_spi.h"
 
@@ -77,7 +77,7 @@ public:
 	}
 
 	void WriteRegister(uint32_t nRegister, uint32_t nData, const bool bSpiSetup = true) {
-		const uint16_t nSpiData = ((nRegister & 0xFF) << 8) | (nData & 0xFF);
+		const auto nSpiData = static_cast<uint16_t>(((nRegister & 0xFF) << 8) | (nData & 0xFF));
 		Write(nSpiData, bSpiSetup);
 	}
 };

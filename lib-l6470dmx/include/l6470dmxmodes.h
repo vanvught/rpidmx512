@@ -26,7 +26,7 @@
 #ifndef L6470DMXMODES_H_
 #define L6470DMXMODES_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 #include "l6470dmxmode.h"
@@ -46,8 +46,8 @@ public:
 	void HandleBusy();
 	bool BusyCheck();
 
-	bool IsDmxDataChanged(const uint8_t *, uint16_t);
-	void DmxData(const uint8_t *, uint16_t);
+	bool IsDmxDataChanged(const uint8_t *pDmxData, uint32_t nLength);
+	void DmxData(const uint8_t *pDmxData, uint32_t nLength);
 
 	void Start();
 	void Stop();
@@ -72,7 +72,7 @@ public: // RDM
 	}
 
 public:
-	static uint16_t GetDmxFootPrintMode(uint8_t);
+	static uint16_t GetDmxFootPrintMode(uint32_t);
 
 private:
 	bool IsDmxDataChanged(const uint8_t *);

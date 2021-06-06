@@ -2,7 +2,7 @@
  * @file ltcdisplaymax7219matrix.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <time.h>
 #include <cassert>
 
@@ -124,11 +124,11 @@ void LtcDisplayMax7219Matrix::Show(const char *pTimecode) {
 	const auto nSeconds = pTimecode[LTC_TC_INDEX_SECONDS_UNITS];
 
 	m_aBuffer[0] = pTimecode[0];
-	m_aBuffer[1] = Offset(pTimecode[LTC_TC_INDEX_COLON_1], nSeconds) + pTimecode[1];
+	m_aBuffer[1] = static_cast<char>(Offset(pTimecode[LTC_TC_INDEX_COLON_1], nSeconds) + pTimecode[1]);
 	m_aBuffer[2] = pTimecode[3];
-	m_aBuffer[3] = Offset(pTimecode[LTC_TC_INDEX_COLON_2], nSeconds) + pTimecode[4];
+	m_aBuffer[3] = static_cast<char>(Offset(pTimecode[LTC_TC_INDEX_COLON_2], nSeconds) + pTimecode[4]);
 	m_aBuffer[4] = pTimecode[6];
-	m_aBuffer[5] = Offset(pTimecode[LTC_TC_INDEX_COLON_3], nSeconds) + pTimecode[7];
+	m_aBuffer[5] = static_cast<char>(Offset(pTimecode[LTC_TC_INDEX_COLON_3], nSeconds) + pTimecode[7]);
 	m_aBuffer[6] = pTimecode[9];
 	m_aBuffer[7] = pTimecode[10];
 
@@ -142,9 +142,9 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 
 	m_aBuffer[0] = ' ';
 	m_aBuffer[1] = pSystemTime[0];
-	m_aBuffer[2] = Offset(pSystemTime[LTC_ST_INDEX_COLON_1], nSeconds) + pSystemTime[1];
+	m_aBuffer[2] = static_cast<char>(Offset(pSystemTime[LTC_ST_INDEX_COLON_1], nSeconds) + pSystemTime[1]);
 	m_aBuffer[3] = pSystemTime[3];
-	m_aBuffer[4] = Offset(pSystemTime[LTC_ST_INDEX_COLON_2], nSeconds) + pSystemTime[4];
+	m_aBuffer[4] = static_cast<char>(Offset(pSystemTime[LTC_ST_INDEX_COLON_2], nSeconds) + pSystemTime[4]);
 	m_aBuffer[5] = pSystemTime[6];
 	m_aBuffer[6] = pSystemTime[7];
 	m_aBuffer[7] = ' ';

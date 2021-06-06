@@ -126,7 +126,7 @@ void notmain(void) {
 
 	server.Print();
 
-	for (unsigned i = 1; i < 7 ; i++) {
+	for (uint8_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 

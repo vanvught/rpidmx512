@@ -3,6 +3,9 @@
 	<name>lib-rdmnet</name>
 	<comment></comment>
 	<projects>
+		<project>lib-rdm</project>
+		<project>lib-rdmsensor</project>
+		<project>lib-rdmsubdevice</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

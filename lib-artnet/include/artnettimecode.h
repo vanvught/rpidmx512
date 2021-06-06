@@ -29,7 +29,7 @@
 #ifndef ARTNETTIMECODE_H_
 #define ARTNETTIMECODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TArtNetTimeCode {
 	uint8_t Frames;			///< Frames time. 0 – 29 depending on mode.

@@ -26,7 +26,7 @@
 #ifndef OSCBLOB_H_
 #define OSCBLOB_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 /*
  * OSC-blob

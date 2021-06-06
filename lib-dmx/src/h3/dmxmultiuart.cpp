@@ -2,7 +2,7 @@
  * @file dmxmultiuart.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
-#include "h3/dmxmulti.h"
+#include "dmxmulti.h"
 
 #include "h3.h"
+#include "h3_uart.h"
 #include "h3_gpio.h"
 #include "h3_ccu.h"
-
-#include "uart.h"
 
 #include "arm/synchronize.h"
 
 void DmxMulti::UartInit(uint32_t nUart) {
-	assert(nUart < DMX_MAX_OUT);
+//	assert(nUart < DMX_MAX_OUT);
 
 	H3_UART_TypeDef *p = nullptr;
 

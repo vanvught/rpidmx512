@@ -26,7 +26,7 @@
 #ifndef OSCCLIENT_H_
 #define OSCCLIENT_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "oscclientled.h"
@@ -55,7 +55,7 @@ public:
 	int Run();
 
 	void Send(const char *pPath);
-	void SendCmd(uint8_t nCmd);
+	void SendCmd(uint32_t nCmd);
 
 	void Print();
 
@@ -84,7 +84,7 @@ public:
 	}
 
 	void SetPingDelay(uint32_t nPingDelay = OscClientDefault::PING_DELAY_SECONDS);
-	uint8_t GetPingDelay() {
+	uint32_t GetPingDelay() {
 		return m_nPingDelayMillis / 1000;
 	}
 

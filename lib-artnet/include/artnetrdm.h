@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +29,17 @@
 #ifndef ARTNETRDM_H_
 #define ARTNETRDM_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ArtNetRdm {
 public:
 	virtual ~ArtNetRdm() {}
 
-	virtual void Full(uint8_t nPort)=0;
-	virtual uint8_t GetUidCount(uint8_t nPort)=0;
-	virtual void Copy(uint8_t nPort, uint8_t *)=0;
+	virtual void Full(uint32_t nPort)=0;
+	virtual uint8_t GetUidCount(uint32_t nPort)=0;
+	virtual void Copy(uint32_t nPort, uint8_t *)=0;
 
-	virtual const uint8_t *Handler(uint8_t nPort, const uint8_t *)=0;
+	virtual const uint8_t *Handler(uint32_t nPort, const uint8_t *)=0;
 };
 
 #endif /* ARTNETRDM_H_ */

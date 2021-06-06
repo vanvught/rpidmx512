@@ -26,7 +26,7 @@
 #ifndef WIDGETCONFIGURATION_H_
 #define WIDGETCONFIGURATION_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "widget.h"
 

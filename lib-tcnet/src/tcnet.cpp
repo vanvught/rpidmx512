@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "tcnet.h"
@@ -125,20 +125,20 @@ void TCNet::HandlePort60001Incoming() {
 			struct TTCNetTimeCode TimeCode;
 
 			if (!m_bUseTimeCode) {
-				uint32_t nTime = *m_pLTime;
+				auto nTime = *m_pLTime;
 
-				const uint32_t nHours = nTime / 3600000;
+				const auto nHours = nTime / 3600000;
 				nTime -= nHours * 3600000;
-				const uint32_t nMinutes = nTime / 60000;
+				const auto nMinutes = nTime / 60000;
 				nTime -= nMinutes * 60000;
-				const uint32_t nSeconds = nTime / 1000;
-				const uint32_t nMillis = nTime - nSeconds * 1000;
-				const uint32_t nFrames = static_cast<float>(nMillis) / m_fTypeDivider;
+				const auto nSeconds = nTime / 1000;
+				const auto nMillis = nTime - nSeconds * 1000;
+				const auto nFrames = static_cast<uint32_t>(static_cast<float>(nMillis) / m_fTypeDivider);
 
-				TimeCode.nFrames = nFrames;
-				TimeCode.nSeconds = nSeconds;
-				TimeCode.nMinutes = nMinutes;
-				TimeCode.nHours = nHours;
+				TimeCode.nFrames = static_cast<uint8_t>(nFrames);
+				TimeCode.nSeconds = static_cast<uint8_t>(nSeconds);
+				TimeCode.nMinutes = static_cast<uint8_t>(nMinutes);
+				TimeCode.nHours = static_cast<uint8_t>(nHours);
 				TimeCode.nType = m_tTimeCodeType;
 			} else {
 				TimeCode.nFrames = m_pLTimeCode->Frames;
@@ -190,7 +190,7 @@ void TCNet::HandlePortUnicastIncoming() {
 void TCNet::HandleOptInOutgoing() {
 	m_tOptIn.ManagementHeader.SEQ += 1;
 	m_tOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
-	m_tOptIn.Uptime = Hardware::Get()->GetUpTime();
+	m_tOptIn.Uptime = static_cast<uint16_t>(Hardware::Get()->GetUpTime());
 
 	Network::Get()->SendTo(m_aHandles[0], &m_tOptIn, sizeof(struct TTCNetPacketOptIn), m_tNode.nIPAddressBroadcast, TCNetBroadcast::PORT_0);
 }
@@ -317,16 +317,16 @@ TCNetLayer TCNet::GetLayer(char nChar) {
 void TCNet::SetTimeCodeType(TTCNetTimeCodeType tType) {
 	switch (tType) {
 	case TCNET_TIMECODE_TYPE_FILM:
-		m_fTypeDivider = 1000.0F / 24;
+		m_fTypeDivider = 1000.0f / 24;
 		break;
 	case TCNET_TIMECODE_TYPE_EBU_25FPS:
-		m_fTypeDivider = 1000.0F / 25;
+		m_fTypeDivider = 1000.0f / 25;
 		break;
 	case TCNET_TIMECODE_TYPE_DF:
-		m_fTypeDivider = 1000.0F / 29.97;
+		m_fTypeDivider = 1000.0f / 29.97f;
 		break;
 	case TCNET_TIMECODE_TYPE_SMPTE_30FPS:
-		m_fTypeDivider = 1000.0F / 30;
+		m_fTypeDivider = 1000.0f / 30;
 		break;
 	default:
 		return;

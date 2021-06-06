@@ -2,7 +2,7 @@
  * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <ctype.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cctype>
+#include <cstdio>
 #include <algorithm>
 
 #include "widgetmonitor.h"
@@ -53,16 +53,17 @@ uint32_t WidgetMonitor::s_nBreakToBreakMax { 0 };
 
 using namespace widget;
 using namespace widgetmonitor;
+using namespace dmxsingle;
+using namespace dmx;
 
 void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
-	uint16_t i;
-	uint16_t slots;
+	uint32_t slots;
 
-	if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
-		const struct _dmx_data *dmx_statistics = (struct _dmx_data *)pDmxData;
-		slots = dmx_statistics->statistics.slots_in_packet + 1;
+	if (PortDirection::INP == Dmx::Get()->GetPortDirection()) {
+		const struct Data *dmx_statistics = (struct Data *)pDmxData;
+		slots = dmx_statistics->Statistics.nSlotsInPacket + 1;
 	} else {
-		slots = dmx_get_send_data_length();
+		slots = Dmx::Get()->GetSendDataLength();
 	}
 
 	console_set_cursor(0, nLine);
@@ -73,7 +74,9 @@ void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
 		slots = 33;
 	}
 
-	for (i = (uint16_t)1; i < slots; i++) {
+	uint32_t i;
+
+	for (i = 1; i < slots; i++) {
 		uint8_t d = pDmxData[i];
 		if (d == 0) {
 			console_puts(" 0");
@@ -99,24 +102,23 @@ void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
 }
 
 void WidgetMonitor::Sniffer() {
-	const volatile auto *total_statistics = dmx_get_total_statistics();
-	const auto total_packets = total_statistics->dmx_packets + total_statistics->rdm_packets;
-	const auto *dmx_data = dmx_get_current_data();
-	const struct _dmx_data *dmx_statistics = (struct _dmx_data *)dmx_data;
-	const auto dmx_updates_per_seconde = dmx_get_updates_per_seconde();
-
+	const volatile auto *total_statistics = Dmx::Get()->GetTotalStatistics();
+	const auto total_packets = total_statistics->nDmxPackets + total_statistics->nRdmPackets;
+	const auto *dmx_data = Dmx::Get()->GetDmxCurrentData();
+	const auto *dmx_statistics = (struct Data *)dmx_data;
+	const auto dmx_updates_per_seconde = Dmx::Get()->GetUpdatesPerSecond();
 	const volatile auto *rdm_statistics = Widget::Get()->RdmStatisticsGet();
 
 	DmxData(dmx_data, MonitorLine::DMX_DATA);
 
-	WidgetMonitor::Line(MonitorLine::PACKETS, "Packets : %ld, DMX %ld, RDM %ld\n\n", total_packets, total_statistics->dmx_packets, total_statistics->rdm_packets);
+	WidgetMonitor::Line(MonitorLine::PACKETS, "Packets : %u, DMX %u, RDM %u\n\n", total_packets, total_statistics->nDmxPackets, total_statistics->nRdmPackets);
 
-	printf("Discovery          : %ld\n", rdm_statistics->nDiscoveryPackets);
-	printf("Discovery response : %ld\n", rdm_statistics->nDiscoveryResponsePackets);
-	printf("GET Requests       : %ld\n", rdm_statistics->nGetRequests);
-	printf("SET Requests       : %ld\n", rdm_statistics->nSetRequests);
+	printf("Discovery          : %u\n", rdm_statistics->nDiscoveryPackets);
+	printf("Discovery response : %u\n", rdm_statistics->nDiscoveryResponsePackets);
+	printf("GET Requests       : %u\n", rdm_statistics->nGetRequests);
+	printf("SET Requests       : %u\n", rdm_statistics->nSetRequests);
 
-	if ((int)dmx_updates_per_seconde != (int)0) {
+	if (dmx_updates_per_seconde != 0) {
 		s_nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, s_nUpdatesPerSecondeMin);
 		s_nUpdatesPerSecondeMax = std::max(dmx_updates_per_seconde, s_nUpdatesPerSecondeMax);
 		printf("\nDMX updates/sec     %3d     %3d / %d\n\n", (int)dmx_updates_per_seconde, (int)s_nUpdatesPerSecondeMin , (int)s_nUpdatesPerSecondeMax);
@@ -125,16 +127,16 @@ void WidgetMonitor::Sniffer() {
 	}
 
 	if (dmx_updates_per_seconde != 0) {
-		s_nSlotsInPacketMin = std::min(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMin);
-		s_nSlotsInPacketMax = std::max(dmx_statistics->statistics.slots_in_packet, s_nSlotsInPacketMax);
-		s_nSlotToSlotMin = std::min(dmx_statistics->statistics.slot_to_slot, s_nSlotToSlotMin);
-		s_nSlotToSlotMax = std::max(dmx_statistics->statistics.slot_to_slot, s_nSlotToSlotMax);
-		s_nBreakToBreakMin = std::min(dmx_statistics->statistics.break_to_break, s_nBreakToBreakMin);
-		s_nBreakToBreakMax = std::max(dmx_statistics->statistics.break_to_break, s_nBreakToBreakMax);
+		s_nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, s_nSlotsInPacketMin);
+		s_nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, s_nSlotsInPacketMax);
+		s_nSlotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, s_nSlotToSlotMin);
+		s_nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, s_nSlotToSlotMax);
+		s_nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, s_nBreakToBreakMin);
+		s_nBreakToBreakMax = std::max(dmx_statistics->Statistics.nBreakToBreak, s_nBreakToBreakMax);
 
-		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->statistics.slots_in_packet, (int)s_nSlotsInPacketMin, (int)s_nSlotsInPacketMax);
-		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->statistics.slot_to_slot, (int)s_nSlotToSlotMin, (int)s_nSlotToSlotMax);
-		printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->statistics.break_to_break, (int)s_nBreakToBreakMin, (int)s_nBreakToBreakMax);
+		printf("Slots in packet     %3d     %3d / %d\n", (int)dmx_statistics->Statistics.nSlotsInPacket, (int)s_nSlotsInPacketMin, (int)s_nSlotsInPacketMax);
+		printf("Slot to slot        %3d     %3d / %d\n", (int)dmx_statistics->Statistics.nSlotToSlot, (int)s_nSlotToSlotMin, (int)s_nSlotToSlotMax);
+		printf("Break to break   %6d  %6d / %d\n", (int)dmx_statistics->Statistics.nBreakToBreak, (int)s_nBreakToBreakMin, (int)s_nBreakToBreakMax);
 	} else {
 		console_puts("Slots in packet --     \n");
 		console_puts("Slot to slot    --     \n");
@@ -166,13 +168,13 @@ void WidgetMonitor::Update() {
 
 		printf("Firmware %d.%d BreakTime %d(%d) MaBTime %d(%d) RefreshRate %d(%d)",
 				widget_params.nFirmwareMsb, widget_params.nFirmwareLsb,
-				widget_params.nBreakTime, dmx_get_output_break_time(),
-				widget_params.nMabTime, dmx_get_output_mab_time(),
-				widget_params.nRefreshRate, (1000000 / dmx_get_output_period()));
+				widget_params.nBreakTime, Dmx::Get()->GetDmxBreakTime(),
+				widget_params.nMabTime, Dmx::Get()->GetDmxMabTime(),
+				widget_params.nRefreshRate, (1000000 / Dmx::Get()->GetDmxPeriodTime()));
 
 		console_clear_line(MonitorLine::PORT_DIRECTION);
 
-		if (DMX_PORT_DIRECTION_INP == dmx_get_port_direction()) {
+		if (PortDirection::INP == Dmx::Get()->GetPortDirection()) {
 			const auto receive_dmx_on_change =  Widget::Get()->GetReceiveDmxOnChange();
 
 			if (receive_dmx_on_change == SendState::ALWAYS) {
@@ -196,7 +198,7 @@ void WidgetMonitor::Update() {
 			console_clear_line(MonitorLine::STATS);
 		}
 
-		const auto *dmx_data = dmx_get_current_data();
+		const auto *dmx_data = Dmx::Get()->GetDmxCurrentData();
 		DmxData(dmx_data, MonitorLine::DMX_DATA);
 	}
 }
@@ -225,7 +227,7 @@ void WidgetMonitor::RdmData(int nLine, uint16_t nDataLength, const uint8_t *pDat
 
 	if (is_rdm_command) {
 		if (nDataLength >= 24) {
-			auto *cmd = (struct _rdm_command *) (pData);
+			auto *cmd = (struct TRdmMessage *) (pData);
 			WidgetMonitor::Line(nLine + 2, "tn:%d, cc:%.2x, pid:%d, l:%d", (int)cmd->transaction_number, (unsigned int)cmd->command_class, (int)((cmd->param_id[0] << 8) + cmd->param_id[1]), (int) cmd->param_data_length);
 			console_clear_line(nLine + 4);
 			console_clear_line(nLine + 3);

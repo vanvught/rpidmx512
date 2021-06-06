@@ -2,7 +2,7 @@
  * @file rdmsubdevice.h
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ struct TRDMSubDevicesInfo {
 	uint8_t personality_count;
 	uint16_t dmx_start_address;
 	uint8_t sensor_count;
-	char device_label[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t device_label_length;
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t nLabelLength;
 };
 
 enum TRDMSubDeviceUpdateEvent {
@@ -49,23 +49,33 @@ public:
 	RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress = 1, uint8_t PersonalitynCurrent = 1);
 	virtual ~RDMSubDevice();
 
-	inline uint16_t GetDmxStartAddress() { return m_tSubDevicesInfo.dmx_start_address;}
 	void SetDmxStartAddress(uint16_t nDmxStartAddress);
+	uint16_t GetDmxStartAddress() const {
+		return m_tSubDevicesInfo.dmx_start_address;
+	}
 
-	inline uint8_t GetPersonalityCurrent() { return m_tSubDevicesInfo.current_personality;}
+	uint8_t GetPersonalityCurrent() const {
+		return m_tSubDevicesInfo.current_personality;
+	}
 	void SetPersonalityCurrent(uint8_t nCurrent);
 
 	void GetLabel(struct TRDMDeviceInfoData *pInfoData);
-	void SetLabel(const char* pLabel);
-	void SetLabel(const char* pLabel, uint8_t nLabelLength);
+	void SetLabel(const char *pLabel);
+	void SetLabel(const char *pLabel, uint8_t nLabelLength);
 
-	inline struct TRDMSubDevicesInfo *GetInfo() { return &m_tSubDevicesInfo; }
+	struct TRDMSubDevicesInfo* GetInfo() {
+		return &m_tSubDevicesInfo;
+	}
 
 	RDMPersonality* GetPersonality(uint8_t nPersonality);
 
-	inline uint8_t GetPersonalityCount() { return m_tSubDevicesInfo.personality_count;}
+	uint8_t GetPersonalityCount() const {
+		return m_tSubDevicesInfo.personality_count;
+	}
 
-	inline uint16_t GetDmxFootPrint() { return m_tSubDevicesInfo.dmx_footprint;}
+	uint16_t GetDmxFootPrint() const {
+		return m_tSubDevicesInfo.dmx_footprint;
+	}
 
 	bool GetFactoryDefaults();
 	void SetFactoryDefaults();
@@ -74,7 +84,7 @@ public:
 
 	virtual void Start()= 0;
 	virtual void Stop()= 0;
-	virtual void Data(const uint8_t *pDdata, uint16_t nLength)=0;
+	virtual void Data(const uint8_t *pDdata, uint32_t nLength)=0;
 
 protected:
 	void SetDmxFootprint(uint16_t nDmxFootprint);

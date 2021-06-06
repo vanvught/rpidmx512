@@ -26,7 +26,7 @@
 #ifndef E131PACKETS_H_
 #define E131PACKETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "e131.h"
 #include "e117.h"

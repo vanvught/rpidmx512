@@ -26,7 +26,7 @@
 #ifndef REMOTECONFIG_H_
 #define REMOTECONFIG_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if defined (NODE_ARTNET_MULTI)
 # define NODE_ARTNET
@@ -45,10 +45,14 @@
 #endif
 
 #include "spiflashstore.h"
-
-#include "tftpfileserver.h"
+#if !defined(DISABLE_TFTP)
+# include "tftp/tftpfileserver.h"
+#endif
 
 namespace remoteconfig {
+namespace udp {
+static constexpr auto BUFFER_SIZE = 1024;
+} // namespace udp
 
 enum class Node {
 	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, LAST
@@ -170,12 +174,14 @@ public:
 
 	void Run();
 
+#if !defined(DISABLE_TFTP)
 	void TftpExit();
+#endif
 
 	uint32_t HandleGet(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
 	void HandleTxtFile(void *pBuffer = nullptr, uint32_t nBufferLength = 0);
 
-	static remoteconfig::TxtFile GetIndex(const void *p, uint32_t &nLength);
+	static remoteconfig::TxtFile GetIndex(const void *p, uint32_t& nLength);
 	static spiflashstore::Store GetStore(remoteconfig::TxtFile tTxtFile);
 	static RemoteConfig *Get() {
 		return s_pThis;
@@ -330,20 +336,25 @@ private:
 	bool m_bDisableWrite { false };
 	bool m_bEnableReboot { false };
 	bool m_bEnableUptime { false };
-	bool m_bEnableTFTP { false };
 	bool m_bEnableFactory { false };
-	TFTPFileServer *m_pTFTPFileServer { nullptr };
-	uint8_t *m_pTFTPBuffer { nullptr };
-	char m_aId[remoteconfig::ID_LENGTH];
 	int32_t m_nIdLength { 0 };
-	struct remoteconfig::ListBin m_tRemoteConfigListBin;
 	int32_t m_nHandle { -1 };
-	char *m_pUdpBuffer { nullptr };
 	uint32_t m_nIPAddressFrom { 0 };
 	uint16_t m_nBytesReceived { 0 };
 	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
-	uint8_t *m_pStoreBuffer { nullptr };
+
 	bool m_bIsReboot { false };
+
+#if !defined(DISABLE_TFTP)
+	bool m_bEnableTFTP { false };
+	TFTPFileServer *m_pTFTPFileServer { nullptr };
+	uint8_t *m_pTFTPBuffer { nullptr };
+#endif
+
+	static struct remoteconfig::ListBin s_RemoteConfigListBin;
+	static char s_aId[remoteconfig::ID_LENGTH];
+	static char s_UdpBuffer[remoteconfig::udp::BUFFER_SIZE];
+	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
 
 	static RemoteConfig *s_pThis;
 };

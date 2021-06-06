@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
-#include <stddef.h>
+#include <cstddef>
 #include <cassert>
 
 #include "widget.h"
@@ -64,6 +64,8 @@ enum {
 
 using namespace widget;
 using namespace widgetmonitor;
+using namespace dmxsingle;
+using namespace dmx;
 
 Widget *Widget::s_pThis = nullptr;
 
@@ -104,14 +106,14 @@ void Widget::SetParams() {
 	WidgetMonitor::Line(MonitorLine::INFO, "SET_WIDGET_PARAMS");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 
 	widgetConfiguration.nBreakTime = m_aData[2];
 	widgetConfiguration.nMabTime = m_aData[3];
 	widgetConfiguration.nRefreshRate = m_aData[4];
 	WidgetConfiguration::Store(&widgetConfiguration);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
 }
@@ -131,7 +133,7 @@ void Widget::ReceivedDmxPacket() {
 	}
 
 	if (m_isRdmDiscoveryRunning
-			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
+			|| (PortDirection::INP != GetPortDirection())
 			|| (SendState::ON_DATA_CHANGE_ONLY == m_tReceiveDmxOnChange)) {
 		return;
 	}
@@ -151,16 +153,16 @@ void Widget::ReceivedDmxPacket() {
 	m_nReceivedDmxPacketStartMillis = nMillis;
 	m_nReceivedDmxPacketCount++;
 
-	const auto *pDmxStatistics = reinterpret_cast<const struct _dmx_data *>(pDmxData);
-	const auto nLength = pDmxStatistics->statistics.slots_in_packet + 1;
+	const auto *pDmxStatistics = reinterpret_cast<const struct Data *>(pDmxData);
+	const auto nLength = pDmxStatistics->Statistics.nSlotsInPacket + 1;
 
 	WidgetMonitor::Line(MonitorLine::LABEL, "RECEIVED_DMX_PACKET");
 	WidgetMonitor::Line(MonitorLine::INFO, "Send DMX data to HOST, %d", nLength);
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	SendHeader(RECEIVED_DMX_PACKET, nLength + 1);
+	SendHeader(RECEIVED_DMX_PACKET, static_cast<uint16_t>(nLength + 1));
 	usb_send_byte(0); 	// DMX Receive status
-	SendData(pDmxData, nLength);
+	SendData(pDmxData, static_cast<uint16_t>(nLength));
 	SendFooter();
 }
 
@@ -188,7 +190,7 @@ void Widget::ReceivedRdmPacket() {
 	uint8_t nMessageLength = 0;
 
 	if (pRdmData[0] == E120_SC_RDM) {
-		const auto *p = reinterpret_cast<const struct _rdm_command *>(pRdmData);
+		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 		const auto command_class = p->command_class;
 		nMessageLength = p->message_length + 2;
 
@@ -200,7 +202,7 @@ void Widget::ReceivedRdmPacket() {
 		SendData(pRdmData, nMessageLength);
 		SendFooter();
 
-		const uint16_t param_id = (p->param_id[0] << 8) + p->param_id[1];
+		const auto param_id = static_cast<uint16_t>((p->param_id[0] << 8) + p->param_id[1]);
 
 		if ((command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (param_id != E120_DISC_MUTE)) {
 			RdmTimeOutMessage();
@@ -247,11 +249,11 @@ void Widget::SendDmxPacketRequestOutputOnly(uint16_t nDataLength) {
 	WidgetMonitor::Line(MonitorLine::INFO, "OUTPUT_ONLY_SEND_DMX_PACKET_REQUEST");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, false);
+	SetPortDirection(0, PortDirection::OUTP, false);
 
 	SetSendData(m_aData, nDataLength);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_OUTP, true);
+	SetPortDirection(0, PortDirection::OUTP, true);
 }
 
 /**
@@ -267,7 +269,7 @@ void Widget::SendRdmPacketRequest(uint16_t nDataLength) {
 	WidgetMonitor::Line(MonitorLine::INFO, "SEND_RDM_PACKET_REQUEST");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	const auto *pData = reinterpret_cast<const struct _rdm_command *>(m_aData);
+	const auto *pData = reinterpret_cast<const struct TRdmMessage *>(m_aData);
 
 	m_isRdmDiscoveryRunning = (pData->command_class == E120_DISCOVERY_COMMAND);
 
@@ -320,11 +322,11 @@ void Widget::ReceiveDmxOnChange() {
 
 	m_tReceiveDmxOnChange = static_cast<SendState>(m_aData[0]);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 
 	ClearData();
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
 }
@@ -343,12 +345,12 @@ void Widget::ReceivedDmxChangeOfStatePacket() {
 	}
 
 	if (m_isRdmDiscoveryRunning
-			|| (DMX_PORT_DIRECTION_INP != dmx_get_port_direction())
+			|| (PortDirection::INP != GetPortDirection())
 			|| (SendState::ALWAYS == m_tReceiveDmxOnChange)) {
 		return;
 	}
 
-	if (dmx_is_data_changed()) {
+	if (nullptr != GetDmxChanged()) {
 		WidgetMonitor::Line(MonitorLine::INFO, "RECEIVED_DMX_COS_TYPE");
 		WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 		// TODO widget_received_dmx_change_of_state_packet
@@ -365,11 +367,11 @@ void Widget::GetSnReply() {
 	WidgetMonitor::Line(MonitorLine::INFO, "GET_WIDGET_PARAMS_REPLY");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 
 	SendMessage(GET_WIDGET_SN_REPLY, GetSN(), DEVICE_SN_LENGTH);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
 }
@@ -429,14 +431,14 @@ void Widget::GetManufacturerReply() {
 	struct TRDMDeviceInfoData tManufacturerId;
 	GetManufacturerId(&tManufacturerId);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 
 	SendHeader(MANUFACTURER_LABEL, tManufacturerId.length + tManufacturerName.length);
 	SendData(reinterpret_cast<uint8_t *>(tManufacturerId.data), tManufacturerId.length);
 	SendData(reinterpret_cast<uint8_t *>(tManufacturerName.data), tManufacturerName.length);
 	SendFooter();
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
 }
@@ -457,14 +459,14 @@ void Widget::GetNameReply() {
 	struct TWidgetConfigurationData widgetTypeId;
 	WidgetConfiguration::GetTypeId(&widgetTypeId);
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, false);
+	SetPortDirection(0, PortDirection::INP, false);
 
 	SendHeader(GET_WIDGET_NAME_LABEL, widgetTypeId.nLength + widgetLabel.length);
 	SendData(widgetTypeId.pData, widgetTypeId.nLength);
 	SendData(reinterpret_cast<uint8_t *>(widgetLabel.data), widgetLabel.length);
 	SendFooter();
 
-	SetPortDirection(0, DMXRDM_PORT_DIRECTION_INP, true);
+	SetPortDirection(0, PortDirection::INP, true);
 
 	m_nReceivedDmxPacketStartMillis = Hardware::Get()->Millis();
 }
@@ -483,7 +485,7 @@ void Widget::ReceiveDataFromHost() {
 			const auto nLabel = usb_read_byte();
 			const auto nLsb = usb_read_byte();
 			const auto nMsb = usb_read_byte();
-			const uint16_t nDataLength = (nMsb << 8) | nLsb;
+			const auto nDataLength = static_cast<uint16_t>((nMsb << 8) | nLsb);
 
 			uint32_t i;
 

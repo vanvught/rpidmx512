@@ -23,13 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <algorithm>
 #include <cassert>
 
 #ifndef NDEBUG
 #if (__linux__)
-# include <stdio.h>
+# include <cstdio>
 #endif
 #endif
 
@@ -68,19 +68,19 @@ WS28xxDmx::~WS28xxDmx() {
 	m_pWS28xx = nullptr;
 }
 
-void WS28xxDmx::Start(__attribute__((unused)) uint8_t nPort) {
+void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	if (m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = true;
 
-	if (m_pLightSetHandler != nullptr) {
-		m_pLightSetHandler->Start();
+	if (s_pLightSetHandler != nullptr) {
+		s_pLightSetHandler->Start();
 	}
 }
 
-void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
+void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	if (!m_bIsStarted) {
 		return;
 	}
@@ -94,19 +94,19 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint8_t nPort) {
 		m_pWS28xx->Blackout();
 	}
 
-	if (m_pLightSetHandler != nullptr) {
-		m_pLightSetHandler->Stop();
+	if (s_pLightSetHandler != nullptr) {
+		s_pLightSetHandler->Stop();
 	}
 }
 
-void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength) {
+void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	uint32_t d = 0;
 	uint32_t beginIndex, endIndex;
 
-	switch (nPortId & 0x03) {
+	switch (nPortIndex & 0x03) {
 	case 0:
 		beginIndex = 0;
 		endIndex = std::min(m_nGroups, (nLength / m_nChannelsPerPixel));
@@ -133,7 +133,7 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 
 #ifndef NDEBUG
 #if defined (__linux__)
-	printf("%d-%d:%x %x %x-%d", nPortId, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength);
+	printf("%d-%d:%x %x %x-%d", nPortIndex, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength);
 #endif
 #endif
 
@@ -143,25 +143,26 @@ void WS28xxDmx::SetData(uint8_t nPortId, const uint8_t *pData, uint16_t nLength)
 
 	if (m_nChannelsPerPixel == 3) {
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = j * m_nGroupingCount;
+			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
 			d = d + 3;
 		}
 	} else {
+		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = j * m_nGroupingCount;
+			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
 			d = d + 4;
 		}
 	}
 
-	if (nPortId == m_PortInfo.nProtocolPortIdLast) {
+	if (nPortIndex == m_PortInfo.nProtocolPortIndexLast) {
 		m_pWS28xx->Update();
 	}
 }
@@ -194,8 +195,8 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (m_pLightSetDisplay != nullptr) {
-			m_pLightSetDisplay->ShowDmxStartAddress();
+		if (s_pLightSetDisplay != nullptr) {
+			s_pLightSetDisplay->ShowDmxStartAddress();
 		}
 
 		return true;
@@ -206,24 +207,14 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-#define MOD(a,b)	(static_cast<unsigned>(a) - b * (static_cast<unsigned>(a)/b))
-
 bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
-	unsigned nIndex;
-
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
 
-	if (m_tLedType == Type::SK6812W) {
-		nIndex = MOD(nSlotOffset, 4);
-	} else {
-		nIndex = MOD(nSlotOffset, 3);
-	}
-
 	tSlotInfo.nType = 0x00;	// ST_PRIMARY
 
-	switch (nIndex) {
+	switch (nSlotOffset % m_nChannelsPerPixel) {
 		case 0:
 			tSlotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
 			break;
@@ -237,9 +228,9 @@ bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 			tSlotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
 			break;
 		default:
+			__builtin_unreachable();
 			break;
 	}
 
 	return true;
 }
-

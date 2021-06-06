@@ -26,32 +26,30 @@
 #ifndef DMXGPIOPARAMS_H_
 #define DMXGPIOPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmx.h"
 
 class DmxGpioParams {
 public:
-	DmxGpioParams();
+	DmxGpioParams() {}
 
 	bool Load();
 	void Dump();
 
 	uint8_t GetDataDirection(bool &bIsSet) const;
-	uint8_t GetDataDirection(bool &bIsSet, uint8_t nUart) const;
 
-    static void staticCallbackFunction(void *p, const char *s);
+	static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) const {
-    	return (m_nSetList & nMask) == nMask;
-    }
+	void callbackFunction(const char *pLine);
+	bool isMaskSet(uint32_t nMask) const {
+		return (m_nSetList & nMask) == nMask;
+	}
 
 private:
 	uint32_t m_nSetList { 0 };
 	uint8_t m_nDmxDataDirection { GPIO_DMX_DATA_DIRECTION };
-	uint8_t m_nDmxDataDirectionOut[DMX_MAX_OUT];
 };
 
 #endif /* DMXGPIOPARAMS_H_ */

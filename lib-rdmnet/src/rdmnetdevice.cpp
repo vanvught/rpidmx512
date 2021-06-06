@@ -23,11 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <uuid/uuid.h>
-#include <cassert>
 
 #include "rdmnetdevice.h"
 
@@ -36,57 +34,8 @@
 #include "lightset.h"
 #include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
-#include "e131uuid.h"
-
-#include "debug.h"
 
 #define UUID_STRING_LENGTH	36
-
-RDMNetDevice::RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
-	DEBUG_ENTRY
-
-	E131Uuid::GetHardwareUuid(m_Cid);
-
-	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != nullptr);
-
-	m_RDMHandler = new RDMHandler(false);
-	assert(m_RDMHandler != nullptr);
-
-	DEBUG_EXIT
-}
-
-RDMNetDevice::~RDMNetDevice() {
-	DEBUG_ENTRY
-
-	delete m_RDMHandler;
-	m_RDMHandler = nullptr;
-
-	delete m_pRdmCommand;
-	m_pRdmCommand = nullptr;
-
-	DEBUG_EXIT
-}
-
-void RDMNetDevice::Start() {
-	DEBUG_ENTRY
-
-	LLRPDevice::Start();
-
-	DEBUG_EXIT
-}
-
-void RDMNetDevice::Stop() {
-	DEBUG_ENTRY
-
-	LLRPDevice::Stop();
-
-	DEBUG_EXIT
-}
-
-void RDMNetDevice::Run() {
-	LLRPDevice::Run();
-}
 
 void RDMNetDevice::Print() {
 	char uuid_str[UUID_STRING_LENGTH + 1];
@@ -98,20 +47,4 @@ void RDMNetDevice::Print() {
 
 	LLRPDevice::Print();
 	RDMDeviceResponder::Print();
-}
-
-void RDMNetDevice::CopyUID(uint8_t *pUID) {
-	assert(pUID != nullptr);
-	memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
-}
-
-void RDMNetDevice::CopyCID(uint8_t *pCID) {
-	assert(pCID != nullptr);
-	memcpy(pCID, m_Cid, sizeof(m_Cid));
-}
-
-uint8_t *RDMNetDevice::LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) {
-	m_RDMHandler->HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(m_pRdmCommand));
-
-	return reinterpret_cast<uint8_t*>(m_pRdmCommand);
 }

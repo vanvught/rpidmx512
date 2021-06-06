@@ -2,7 +2,7 @@
  * @file lightset.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,9 @@
 
 #include "lightset.h"
 
-LightSet *LightSet::s_pThis = nullptr;
+LightSetDisplay *LightSet::s_pLightSetDisplay { nullptr };
+LightSetHandler *LightSet::s_pLightSetHandler { nullptr };
+LightSet *LightSet::s_pThis { nullptr };
 
 LightSet::LightSet()  {
 	assert(s_pThis == nullptr);

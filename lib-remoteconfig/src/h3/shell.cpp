@@ -24,10 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstring>
+#include <cstdint>
+#include <cstdio>
+#include <cstdarg>
 
 #include "h3_uart0_debug.h"
 
@@ -73,7 +73,7 @@ Shell::Shell() {
 	DEBUG_PRINTF("TABLE_SIZE=%d", TABLE_SIZE);
 }
 
-const char* Shell::ReadLine(uint32_t &nLength) {
+const char* Shell::ReadLine(uint32_t& nLength) {
 	int c;
 
 	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {	
@@ -96,7 +96,7 @@ const char* Shell::ReadLine(uint32_t &nLength) {
 					nLength = 0;
 				}
 			}
-			m_Buffer[m_nLength] = c;
+			m_Buffer[m_nLength] = static_cast<char>(c);
 			m_nLength++;
 		}
 	}
@@ -104,8 +104,8 @@ const char* Shell::ReadLine(uint32_t &nLength) {
 	return nullptr;
 }
 
-uint32_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
-	uint32_t i;
+uint16_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
+	uint16_t i;
 
 	m_Argc = 0;
 
@@ -126,7 +126,7 @@ uint32_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
 	return 0;
 }
 
-void Shell::ValidateArg(uint32_t nOffset, uint32_t nLength) {
+void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 	if (nOffset > nLength) {
 		return;
 	}
@@ -139,11 +139,11 @@ void Shell::ValidateArg(uint32_t nOffset, uint32_t nLength) {
 		return;
 	}
 
-	uint32_t nArgvStart = nOffset;
+	uint16_t nArgvStart = nOffset;
 	m_Argv[0] = &m_Buffer[nOffset++];
 	m_Argc = 1;
 
-	uint32_t i, j = 1;
+	uint16_t i, j = 1;
 
 	for (i = nOffset; i < nLength; i++) {
 		if ((m_Buffer[i] > ' ') && (m_Buffer[i] < 127)) {
@@ -197,7 +197,7 @@ void Shell::Run() {
 
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
-	uint32_t nOffset;
+	uint16_t nOffset;
 	CmdIndex nCmdIndex;
 
 	if ((nOffset = ValidateCmd(nLength, nCmdIndex)) == 0) {

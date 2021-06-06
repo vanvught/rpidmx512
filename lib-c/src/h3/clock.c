@@ -72,7 +72,7 @@ int clock_gettime(clockid_t clockid, struct timespec *tp) {
 		set_timer = timer;
 		s_micros += (timer_elapsed * 1000);
 
-		tp->tv_sec = s_micros / MICROS_SECONDS;
+		tp->tv_sec = (time_t)(s_micros / MICROS_SECONDS);
 		tp->tv_nsec = 1000 * (suseconds_t) (s_micros - ((uint64_t) tp->tv_sec * MICROS_SECONDS));
 
 		return 0;

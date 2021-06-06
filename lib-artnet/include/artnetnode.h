@@ -29,7 +29,7 @@
 #ifndef ARTNETNODE_H_
 #define ARTNETNODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 #include "artnet.h"
@@ -50,8 +50,8 @@
 #include "artnet4handler.h"
 
 enum TArtNetNodeMaxPorts {
-	ARTNET_NODE_MAX_PORTS_OUTPUT = ArtNet::MAX_PORTS * ArtNet::MAX_PAGES,
-	ARTNET_NODE_MAX_PORTS_INPUT = ArtNet::MAX_PORTS
+	ARTNET_NODE_MAX_PORTS_OUTPUT = ArtNet::PORTS * ArtNet::PAGES,
+	ARTNET_NODE_MAX_PORTS_INPUT = ArtNet::PORTS
 };
 
 
@@ -113,14 +113,16 @@ struct TArtNetNode {
 	uint32_t IPAddressRemote;						///< The remote IP Address
 	uint32_t IPAddressTimeCode;
 	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];
-	uint8_t NetSwitch[ArtNet::MAX_PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch[ArtNet::MAX_PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t NetSwitch[ArtNet::PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[ArtNet::PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
 	uint8_t Oem[2];
 	char ShortName[ArtNet::SHORT_NAME_LENGTH];
 	char LongName[ArtNet::LONG_NAME_LENGTH];
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;
 	uint8_t Status2;
+	uint8_t Status3;
+	uint8_t DefaultUidResponder[6];					///< //RDMnet & LLRP UID
 };
 
 struct TGenericPort {
@@ -131,7 +133,7 @@ struct TGenericPort {
 
 struct TOutputPort {
 	uint8_t data[ArtNet::DMX_LENGTH];	///< Data sent
-	uint16_t nLength;					///< Length of sent DMX data
+	uint32_t nLength;					///< Length of sent DMX data
 	uint8_t dataA[ArtNet::DMX_LENGTH];	///< The data received from Port A
 	uint32_t nMillisA;					///< The latest time of the data received from Port A
 	uint32_t ipA;						///< The IP address for port A
@@ -207,11 +209,11 @@ public:
 	int SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
 	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
 
-	void SetNetSwitch(uint8_t nAddress, uint8_t nPage);
-	uint8_t GetNetSwitch(uint8_t nPage) const;
+	void SetNetSwitch(uint8_t nAddress, uint32_t nPage);
+	uint8_t GetNetSwitch(uint32_t nPage) const;
 
-	void SetSubnetSwitch(uint8_t nAddress, uint8_t nPage);
-	uint8_t GetSubnetSwitch(uint8_t nPage) const;
+	void SetSubnetSwitch(uint8_t nAddress, uint32_t nPage);
+	uint8_t GetSubnetSwitch(uint32_t nPage) const;
 
 	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
 
@@ -285,6 +287,8 @@ public:
 
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
+	void SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP = false);
+
 	void Print();
 
 	static ArtNetNode* Get() {
@@ -312,14 +316,14 @@ private:
 	void HandleDmxIn();
 	void HandleTrigger();
 
-	uint16_t MakePortAddress(uint16_t, uint8_t nPage = 0);
+	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	bool IsMergedDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
-	void CheckMergeTimeouts(uint8_t);
-	bool IsDmxDataChanged(uint8_t, const uint8_t *, uint16_t);
+	bool IsMergedDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
+	void CheckMergeTimeouts(uint32_t nPortId);
+	bool IsDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
 
 	void SendPollRelply(bool);
-	void SendTod(uint8_t nPortId = 0);
+	void SendTod(uint32_t nPortId = 0);
 
 	void SetNetworkDataLossCondition();
 
@@ -327,7 +331,6 @@ private:
 	uint8_t m_nVersion;
 	uint8_t m_nPages;
 	int32_t m_nHandle { -1 };
-	LightSet *m_pLightSet { nullptr };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
 	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
@@ -335,27 +338,26 @@ private:
 	ArtNetIpProg *m_pArtNetIpProg { nullptr };
 	ArtNetDmx *m_pArtNetDmx { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
+	TArtTimeCode *m_pTimeCodeData { nullptr };
+	TArtTodData *m_pTodData { nullptr };
+	TArtIpProgReply *m_pIpProgReply { nullptr };
 
+	LightSet *m_pLightSet { nullptr };
+	ArtNet4Handler *m_pArtNet4Handler { nullptr };
 	ArtNetStore *m_pArtNetStore { nullptr };
 	ArtNetDisplay *m_pArtNetDisplay { nullptr };
 
-	ArtNet4Handler *m_pArtNet4Handler { nullptr };
+	TArtNetNode m_Node;
+	TArtNetNodeState m_State;
 
-	struct TArtTimeCode *m_pTimeCodeData { nullptr };
-	struct TArtTodData *m_pTodData { nullptr };
-	struct TArtIpProgReply *m_pIpProgReply { nullptr };
+	TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
+	TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
-	struct TArtNetNode m_Node;
-	struct TArtNetNodeState m_State;
-
-	struct TArtNetPacket m_ArtNetPacket;
-	struct TArtPollReply m_PollReply;
+	TArtNetPacket m_ArtNetPacket;
+	TArtPollReply m_PollReply;
 #if defined ( ENABLE_SENDDIAG )
-	struct TArtDiagData m_DiagData;
+	TArtDiagData m_DiagData;
 #endif
-
-	struct TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
-	struct TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
 
 	bool m_bDirectUpdate { false };
 

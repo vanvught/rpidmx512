@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 #include <algorithm>
 
 #include "hardware.h"
@@ -36,10 +36,13 @@
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
+#include "dmx.h"
 
 #include "software_version.h"
 
 static constexpr auto TOP_ROW_STATS = 26;
+
+using namespace dmxsingle;
 
 extern "C" {
 
@@ -109,28 +112,28 @@ void notmain(void) {
 				console_puts("-------");
 			} else {
 				const auto *dmx_data = dmxreceiver.GetDmxCurrentData();
-				const auto *dmx_statistics = reinterpret_cast<const struct TDmxData*>(dmx_data);
+				const auto *dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data);
 
 				nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
 				nUpdatesPerSecondeMax = std::max(dmx_updates_per_seconde, nUpdatesPerSecondeMax);
 
-				nSlotsInPacketMin = std::min(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin);
-				nSlotsInPacketMax = std::max(dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMax);
+				nSlotsInPacketMin = std::min(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin);
+				nSlotsInPacketMax = std::max(dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMax);
 
-				nSotToSlotMin = std::min(dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin);
-				nSlotToSlotMax = std::max(dmx_statistics->Statistics.SlotToSlot, nSlotToSlotMax);
+				nSotToSlotMin = std::min(dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin);
+				nSlotToSlotMax = std::max(dmx_statistics->Statistics.nSlotToSlot, nSlotToSlotMax);
 
-				nBreakToBreakMin = std::min(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin);
-				nBreakToBreakMax = std::max(dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMax);
+				nBreakToBreakMin = std::min(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin);
+				nBreakToBreakMax = std::max(dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMax);
 
 				console_set_cursor(20, TOP_ROW_STATS);
 				printf("%3d     %3d / %d", dmx_updates_per_seconde, nUpdatesPerSecondeMin, nUpdatesPerSecondeMax);
 				console_set_cursor(20, TOP_ROW_STATS + 1);
-				printf("%3d     %3d / %d", dmx_statistics->Statistics.SlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
+				printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotsInPacket, nSlotsInPacketMin, nSlotsInPacketMax);
 				console_set_cursor(20, TOP_ROW_STATS + 2);
-				printf("%3d     %3d / %d", dmx_statistics->Statistics.SlotToSlot, nSotToSlotMin, nSlotToSlotMax);
+				printf("%3d     %3d / %d", dmx_statistics->Statistics.nSlotToSlot, nSotToSlotMin, nSlotToSlotMax);
 				console_set_cursor(17, TOP_ROW_STATS + 3);
-				printf("%6d  %6d / %d", dmx_statistics->Statistics.BreakToBreak, nBreakToBreakMin, nBreakToBreakMax);
+				printf("%6d  %6d / %d", dmx_statistics->Statistics.nBreakToBreak, nBreakToBreakMin, nBreakToBreakMax);
 			}
 
 			console_restore_cursor();

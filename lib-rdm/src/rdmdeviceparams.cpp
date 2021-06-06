@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,10 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
+
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -60,6 +65,7 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 bool RDMDeviceParams::Load() {
 	DEBUG_ENTRY
 
+#if !defined(DISABLE_FS)
 	m_tRDMDeviceParams.nSetList = 0;
 
 	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
@@ -69,7 +75,9 @@ bool RDMDeviceParams::Load() {
 		if (m_pRDMDeviceParamsStore != nullptr) {
 			m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
 		}
-	} else if (m_pRDMDeviceParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pRDMDeviceParamsStore != nullptr) {
 		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
 	} else {
 		DEBUG_EXIT
@@ -108,7 +116,7 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 
 	uint32_t nLength = RDM_DEVICE_LABEL_MAX_LENGTH;
 	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, nLength) == Sscan::OK) {
-		m_tRDMDeviceParams.nDeviceRootLabelLength = nLength;
+		m_tRDMDeviceParams.nDeviceRootLabelLength = static_cast<uint8_t>(nLength);
 		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::LABEL;
 		return;
 	}

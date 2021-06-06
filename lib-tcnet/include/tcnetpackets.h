@@ -30,7 +30,7 @@
 #ifndef TCNETPACKETS_H_
 #define TCNETPACKETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TTCNetMessageType {
 	TCNET_MESSAGE_TYPE_OPTIN = 2,

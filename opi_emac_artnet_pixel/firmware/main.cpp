@@ -159,19 +159,13 @@ void notmain(void) {
 		assert(pWS28xxDmx != nullptr);
 		pSpi = pWS28xxDmx;
 
-		const auto nCount = pixelDmxConfiguration.GetCount();
-
-		if (pixelDmxConfiguration.GetGroupingEnabled()) {
-			display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount, pixelDmxConfiguration.GetGroupingCount());
-		} else {
-			display.Printf(7, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
-		}
+		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 		node.SetDirectUpdate(nUniverses != 1);
 
-		for (uint32_t u = 1; u < nUniverses; u++) {
-			node.SetUniverseSwitch(u, PortDir::OUTPUT, nStartUniverse + u);
+		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
 		uint8_t nTestPattern;

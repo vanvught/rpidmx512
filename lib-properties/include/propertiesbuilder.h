@@ -26,7 +26,7 @@
 #ifndef PROPERTIESBUILDER_H_
 #define PROPERTIESBUILDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 class PropertiesBuilder {
@@ -52,7 +52,7 @@ public:
 			return false;
 		}
 
-		m_nSize += static_cast<uint32_t>(i);
+		m_nSize += static_cast<uint16_t>(i);
 
 		return true;
 	}
@@ -76,7 +76,7 @@ public:
 	}
 
 	bool AddHex16(const char *pProperty, const uint8_t nValue[2], bool bIsSet = true) {
-		const uint16_t v = (static_cast<uint16_t>(nValue[0]) << 8) | nValue[1];
+		const auto v = static_cast<uint16_t>((nValue[0] << 8) | nValue[1]);
 		return AddHex16(pProperty, v, bIsSet);
 	}
 
@@ -86,7 +86,7 @@ public:
 
 	bool AddComment(const char *pComment);
 
-	uint32_t GetSize() {
+	uint16_t GetSize() {
 		return m_nSize;
 	}
 
@@ -96,7 +96,7 @@ private:
 private:
 	char *m_pBuffer;
 	uint32_t m_nLength;
-	uint32_t m_nSize{0};
+	uint16_t m_nSize { 0 };
 };
 
 template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, uint32_t nPrecision) {

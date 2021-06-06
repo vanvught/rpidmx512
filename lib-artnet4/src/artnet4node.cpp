@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "artnet4node.h"
@@ -42,20 +42,20 @@ using namespace artnet;
 
 ArtNet4Node::ArtNet4Node(uint8_t nPages) : ArtNetNode(4, nPages) {
 	DEBUG_ENTRY
-	assert((ArtNet::MAX_PORTS * nPages) <= E131_MAX_PORTS);
+	assert((ArtNet::PORTS * nPages) <= E131::PORTS);
 
 	ArtNetNode::SetArtNet4Handler(static_cast<ArtNet4Handler*>(this));
 
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::SetPort(uint8_t nPortId, PortDir dir) {
+void ArtNet4Node::SetPort(uint8_t nPortIndex, PortDir dir) {
 	DEBUG_ENTRY
 
 	uint16_t nUniverse;
-	const bool isActive = GetPortAddress(nPortId, nUniverse, dir);
+	const bool isActive = GetPortAddress(nPortIndex, nUniverse, dir);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d, [%s]", static_cast<int>(nPortId), isActive ? 'Y' : 'N', nUniverse, dir == PortDir::OUTPUT ? "Output" : "Input");
+	DEBUG_PRINTF("Port %u, Active %c, Universe %d, [%s]", nPortIndex, isActive ? 'Y' : 'N', nUniverse, dir == PortDir::OUTPUT ? "Output" : "Input");
 
 	if (dir == PortDir::INPUT) {
 		DEBUG_PUTS("Input is not supported");
@@ -63,7 +63,7 @@ void ArtNet4Node::SetPort(uint8_t nPortId, PortDir dir) {
 	}
 
 	if (isActive) {
-		const auto tPortProtocol = GetPortProtocol(nPortId);
+		const auto tPortProtocol = GetPortProtocol(nPortIndex);
 
 		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 
@@ -74,11 +74,11 @@ void ArtNet4Node::SetPort(uint8_t nPortId, PortDir dir) {
 			}
 
 			if (nUniverse == 0) {
-				SetUniverseSwitch(nPortId, PortDir::DISABLE, 0);
+				SetUniverseSwitch(nPortIndex, PortDir::DISABLE, 0);
 				return;
 			}
 
-			m_Bridge.SetUniverse(nPortId, dir == PortDir::OUTPUT ? e131::PortDir::OUTPUT : e131::PortDir::INPUT, nUniverse);
+			m_Bridge.SetUniverse(nPortIndex, dir == PortDir::OUTPUT ? e131::PortDir::OUTPUT : e131::PortDir::INPUT, nUniverse);
 		}
 	}
 
@@ -89,7 +89,7 @@ void ArtNet4Node::Start() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::MAX_PORTS * GetPages()); nPortIndex++) {
+	for (uint8_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(nPortIndex, nUniverse, PortDir::OUTPUT);
 		
@@ -140,7 +140,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint32_t i = 0; i < (ArtNet::MAX_PORTS * GetPages()); i++) {
+	for (uint8_t i = 0; i < (ArtNet::PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse, PortDir::OUTPUT);
 
@@ -206,18 +206,18 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_EXIT
 }
 
-uint8_t ArtNet4Node::GetStatus(uint8_t nPortId) {
-	assert(nPortId < E131_MAX_PORTS);
+uint8_t ArtNet4Node::GetStatus(uint8_t nPortIndex) {
+	assert(nPortIndex < E131::PORTS);
 
 	uint16_t nUniverse;
-	const auto isActive = m_Bridge.GetUniverse(nPortId, nUniverse, e131::PortDir::OUTPUT);
+	const auto isActive = m_Bridge.GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT);
 
-	DEBUG_PRINTF("Port %d, Active %c, Universe %d", nPortId, isActive ? 'Y' : 'N', nUniverse);
+	DEBUG_PRINTF("Port %u, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 
 	if (isActive) {
 		uint8_t nStatus = GO_OUTPUT_IS_SACN;
-		nStatus |= m_Bridge.IsTransmitting(nPortId) ? GO_DATA_IS_BEING_TRANSMITTED : 0;
-		nStatus |= m_Bridge.IsMerging(nPortId) ? GO_OUTPUT_IS_MERGING : 0;
+		nStatus |= m_Bridge.IsTransmitting(nPortIndex) ? GO_DATA_IS_BEING_TRANSMITTED : GO_OUTPUT_NONE;
+		nStatus |= m_Bridge.IsMerging(nPortIndex) ? GO_OUTPUT_IS_MERGING : GO_OUTPUT_NONE;
 		return nStatus;
 	}
 

@@ -23,7 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+
+#include <cstdint>
 #include <cassert>
 
 #include "ws28xxmulti.h"

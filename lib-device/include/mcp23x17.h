@@ -24,7 +24,7 @@
 #ifndef MCP23X17_H_
 #define MCP23X17_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace mcp23x17 {
 namespace reg {

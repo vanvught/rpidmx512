@@ -26,7 +26,7 @@
 #ifndef SPARKFUNDMX_H_
 #define SPARKFUNDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 #include "l6470dmxmodes.h"
@@ -53,10 +53,10 @@ public:
 	SparkFunDmx();
 	~SparkFunDmx() override;
 
-	void Start(uint8_t nPort) override;
-	void Stop(uint8_t nPort) override;
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint8_t nPort, const uint8_t *, uint16_t) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Print() override;
 
@@ -144,7 +144,7 @@ private:
 	bool m_bIsLocalResetSet;
 	bool m_bIsLocalBusyPinSet;
 
-	uint8_t m_nDmxMode;
+	uint16_t m_nDmxMode;
 	uint16_t m_nDmxStartAddressMode;
 
 	uint16_t m_nDmxStartAddress;

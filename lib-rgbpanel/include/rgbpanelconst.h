@@ -26,7 +26,7 @@
 #ifndef RGBPANELCONST_H_
 #define RGBPANELCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace rgbpanel {
 enum class Types {

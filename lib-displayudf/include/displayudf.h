@@ -26,7 +26,7 @@
 #ifndef DISPLAYUDF_H_
 #define DISPLAYUDF_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdarg.h>
 
 #if defined (NODE_ARTNET_MULTI)
@@ -98,11 +98,12 @@ public:
 	// Network
 	void ShowIpAddress();
 	void ShowNetmask();
+	void ShowGatewayIp();
 	void ShowHostName();
 	void ShowDhcpStatus(DhcpClientStatus nStatus);
 	void ShowShutdown();
 
-	void Set(uint32_t nLine, displayudf::Labels tLabel);
+	void Set(uint8_t nLine, displayudf::Labels tLabel);
 
 	uint8_t GetLabel(uint32_t nIndex) const {
 		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {

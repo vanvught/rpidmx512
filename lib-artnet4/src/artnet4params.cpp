@@ -26,10 +26,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -54,12 +54,11 @@ ArtNet4Params::ArtNet4Params(ArtNet4ParamsStore *pArtNet4ParamsStore):
 }
 
 bool ArtNet4Params::Load() {
-	DEBUG_ENTRY
-
 	ArtNetParams::Load();
 
 	m_tArtNet4Params.nSetList = 0;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(ArtNet4Params::staticCallbackFunction, this);
 
 	if (configfile.Read(ArtNetParamsConst::FILE_NAME)) {
@@ -67,14 +66,14 @@ bool ArtNet4Params::Load() {
 		if (m_pArtNet4ParamsStore != nullptr) {
 			m_pArtNet4ParamsStore->Update(&m_tArtNet4Params);
 		}
-	} else if (m_pArtNet4ParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pArtNet4ParamsStore != nullptr) {
 		m_pArtNet4ParamsStore->Copy(&m_tArtNet4Params);
 	} else {
-		DEBUG_EXIT
 		return false;
 	}
 
-	DEBUG_EXIT
 	return true;
 }
 

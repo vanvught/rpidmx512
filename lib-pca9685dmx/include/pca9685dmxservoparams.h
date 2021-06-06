@@ -26,7 +26,7 @@
 #ifndef PCA9685DMXSERVOPARAMS_H_
 #define PCA9685DMXSERVOPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "pca9685dmxparams.h"
 #include "pca9685dmxservo.h"

@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 
 #include "midi.h"
@@ -36,12 +36,12 @@
 #include "arm/gic.h"
 
 #include "h3.h"
+#include "h3_uart.h"
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 
-#include "uart.h"
 
 /**
  * NoteOn with 0 velocity should be handled as NoteOf.
@@ -84,12 +84,12 @@ static volatile uint32_t nUpdates = 0;
 static volatile uint16_t nActiveSenseTimeout = 0;
 static volatile ActiveSenseState midi_active_sense_state = ActiveSenseState::NOT_ENABLED;
 
-uint32_t Midi::GetUpdatesPerSeconde(void) {
+uint32_t Midi::GetUpdatesPerSeconde() {
 	dmb();
 	return nUpdatesPerSecond;
 }
 
-void Midi::ResetInput(void) {
+void Midi::ResetInput() {
 	m_nPendingMessageIndex = 0;
 	m_nPendingMessageExpectedLenght = 0;
 	m_nRunningStatusRx = static_cast<uint8_t>(Types::INVALIDE_TYPE);
@@ -107,7 +107,7 @@ bool Midi::ReadRaw(uint8_t *pByte, uint32_t *pTimestamp) {
 	}
 }
 
-ActiveSenseState Midi::GetActiveSenseState(void) {
+ActiveSenseState Midi::GetActiveSenseState() {
 	dmb();
 	return midi_active_sense_state;
 }
@@ -446,7 +446,7 @@ bool Midi::Read(uint8_t nChannel) {
 void Midi::SendTimeCode(const struct midi::Timecode *tc) {
 	uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
 
-	data[5] = (((tc->nType) & 0x03) << 5) | (tc->nHours & 0x1F);
+	data[5] = static_cast<uint8_t>((((tc->nType) & 0x03) << 5) | (tc->nHours & 0x1F));
 	data[6] = tc->nMinutes & 0x3F;
 	data[7] = tc->nSeconds & 0x3F;
 	data[8] = tc->nFrames & 0x1F;
@@ -463,7 +463,7 @@ void Midi::SendQf(uint8_t nValue) {
 	SendUart2(data, 2);
 }
 
-static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler(void) {
+static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 	dmb();
 
 	const uint32_t timestamp = h3_hs_timer_lo_us();
@@ -506,7 +506,7 @@ static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler(void) {
 	dmb();
 }
 
-void Midi::SendUart2(const uint8_t *pData, uint16_t nLength) {
+void Midi::SendUart2(const uint8_t *pData, uint32_t nLength) {
 	const uint8_t *p = pData;
 
 	while (nLength > 0) {
@@ -521,33 +521,8 @@ void Midi::SendUart2(const uint8_t *pData, uint16_t nLength) {
 	}
 }
 
-void Midi::InitUart2(void) {
-	uint32_t nValue = H3_PIO_PORTA->CFG0;
-	// PA0, TX
-	nValue &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT));
-	nValue |= H3_PA0_SELECT_UART2_TX << PA0_SELECT_CFG0_SHIFT;
-	// PA1, RX
-	nValue &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA1_SELECT_CFG0_SHIFT));
-	nValue |= H3_PA1_SELECT_UART2_RX << PA1_SELECT_CFG0_SHIFT;
-	H3_PIO_PORTA->CFG0 = nValue;
-
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART2;
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART2;
-
-	H3_UART2->O08.FCR = 0;
-	H3_UART2->LCR = UART_LCR_DLAB;
-
-	if (m_nBaudrate == 0) {
-		H3_UART2->O00.DLL = BAUD_31250_L;
-	} else {
-		H3_UART2->O00.DLL = (24000000 / 16) / m_nBaudrate;
-	}
-
-	H3_UART2->O04.DLH = 0;
-	H3_UART2->O04.IER = 0;
-	H3_UART2->LCR = UART_LCR_8_N_1;
-
-	dmb();
+void Midi::InitUart2() {
+	h3_uart_begin(2, m_nBaudrate == 0 ? 31250 : m_nBaudrate, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART2->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		static_cast<void>(H3_UART2->O00.RBR);

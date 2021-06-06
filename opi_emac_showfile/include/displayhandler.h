@@ -40,11 +40,11 @@ public:
 	DisplayHandler() {}
 	~DisplayHandler() {}
 
-	void ShowFileName(const char *pFileName, uint8_t nShow) {
+	void ShowFileName(const char *pFileName, uint32_t nShow) {
 		assert(pFileName != nullptr);
 
 		if (pFileName[0] != 0) {
-			Display::Get()->TextStatus(pFileName, nShow);
+			Display::Get()->TextStatus(pFileName, static_cast<uint8_t>(nShow));
 		} else {
 			Display::Get()->TextStatus("No showfile", Display7SegmentMessage::ERROR_PLAYER);
 		}

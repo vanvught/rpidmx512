@@ -29,7 +29,7 @@
 #ifndef ARTNETIPPROG_H_
 #define ARTNETIPPROG_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if  !defined (PACKED)
 #define PACKED __attribute__((packed))

@@ -174,7 +174,7 @@ void arp_send_request(uint32_t ip) {
 	DEBUG2_EXIT
 }
 
-void arp_handle(struct t_arp *p_arp) {
+__attribute__((hot)) void arp_handle(struct t_arp *p_arp) {
 	DEBUG1_ENTRY
 
 	switch (p_arp->arp.opcode) {

@@ -27,7 +27,7 @@
 #define WIDGET_MONITOR_H_
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 
 namespace widgetmonitor {
 struct MonitorLine {
@@ -48,7 +48,7 @@ struct MonitorLine {
 class WidgetMonitor {
 public:
 	static void Line(int, const char *, ...);
-	static void Uptime(uint32_t nLine);
+	static void Uptime(uint8_t nLine);
 	static void RdmData(int, uint16_t, const uint8_t *, bool);
 	static void Update();
 

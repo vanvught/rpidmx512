@@ -27,7 +27,7 @@
 #ifndef HWCLOCK_H_
 #define HWCLOCK_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <sys/time.h>
 
 namespace rtc {

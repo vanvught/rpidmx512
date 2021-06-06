@@ -1,3 +1,5 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
 /**
  * @file l6470.h
  *
@@ -26,7 +28,7 @@
 #ifndef L6470_H_
 #define L6470_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 /**
  * Direction options: functions that accept dir as an argument can be

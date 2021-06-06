@@ -26,7 +26,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 #include "l6470constants.h"

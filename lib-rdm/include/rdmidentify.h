@@ -26,7 +26,9 @@
 #ifndef RDMIDENTIFY_H_
 #define RDMIDENTIFY_H_
 
-#include <stdint.h>
+#include <cstdint>
+
+#include "ledblink.h"
 
 enum TRdmIdentifyMode {
   IDENTIFY_MODE_QUIET = 0x00,
@@ -36,28 +38,35 @@ enum TRdmIdentifyMode {
 class RDMIdentify {
 public:
 	RDMIdentify();
-	virtual ~RDMIdentify() {
+	virtual ~RDMIdentify() {}
+
+	virtual void SetMode(TRdmIdentifyMode nMode)=0;
+
+	void On() {
+		m_bIsEnabled = true;
+		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 	}
 
-	void On();
-	void Off();
+	void Off() {
+		m_bIsEnabled = false;
+		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+	}
 
-	bool IsEnabled();
+	bool IsEnabled() const {
+		return m_bIsEnabled;
+	}
 
-	//
 	TRdmIdentifyMode GetMode() {
 		return m_nMode;
 	}
-	virtual void SetMode(TRdmIdentifyMode nMode)=0;
 
-	//
 	static RDMIdentify* Get() {
 		return s_pThis;
 	}
 
 protected:
-	bool m_bIsEnabled{false};
-	TRdmIdentifyMode m_nMode{IDENTIFY_MODE_QUIET};
+	bool m_bIsEnabled { false };
+	TRdmIdentifyMode m_nMode { IDENTIFY_MODE_QUIET };
 
 private:
 	static RDMIdentify *s_pThis;

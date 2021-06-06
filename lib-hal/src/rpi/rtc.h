@@ -26,7 +26,7 @@
 #ifndef RTC_H_
 #define RTC_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
 #include <time.h>
 

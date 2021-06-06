@@ -23,7 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
 #include <cassert>
 
 #include "ws28xxdmxparams.h"
@@ -57,7 +56,6 @@ void WS28xxDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
 		pPixelDmxConfiguration->SetHighCode(m_tWS28xxParams.nHighCode);
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
 	if (isMaskSet(WS28xxDmxParamsMask::SPI_SPEED)) {
 		pPixelDmxConfiguration->SetClockSpeedHz(m_tWS28xxParams.nSpiSpeedHz);
 	}
@@ -65,13 +63,8 @@ void WS28xxDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
 	if (isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS)) {
 		pPixelDmxConfiguration->SetGlobalBrightness(m_tWS28xxParams.nGlobalBrightness);
 	}
-#endif
 
 	// Dmx
-
-	if (isMaskSet(WS28xxDmxParamsMask::GROUPING_ENABLED)) {
-		pPixelDmxConfiguration->SetGroupingEnabled(true);
-	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT)) {
 		pPixelDmxConfiguration->SetGroupingCount(m_tWS28xxParams.nGroupingCount);

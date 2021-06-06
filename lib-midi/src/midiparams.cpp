@@ -22,9 +22,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #include "midiparams.h"
@@ -48,6 +48,7 @@ MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pM
 bool MidiParams::Load() {
 	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
 
+#if !defined(DISABLE_FS)
 	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
 
 	if (configfile.Read(MidiParamsConst::FILE_NAME)) {
@@ -55,7 +56,9 @@ bool MidiParams::Load() {
 		if (m_pMidiParamsStore != nullptr) {
 			m_pMidiParamsStore->Update(&m_tMidiParams);
 		}
-	} else if (m_pMidiParamsStore != nullptr) {
+	} else
+#endif
+	if (m_pMidiParamsStore != nullptr) {
 		m_pMidiParamsStore->Copy(&m_tMidiParams);
 	} else {
 		return false;

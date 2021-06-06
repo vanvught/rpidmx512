@@ -27,9 +27,9 @@
  * https://developer.apple.com/library/archive/documentation/Audio/Conceptual/MIDINetworkDriverProtocol/MIDI/MIDI.html
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #ifndef ALIGNED
@@ -135,7 +135,7 @@ void AppleMidi::SetPort(uint16_t nPort) {
 void AppleMidi::SetSessionName(const char *pSessionName) {
 	strncpy(reinterpret_cast<char*>(&m_ExchangePacketReply.aName), pSessionName, APPLE_MIDI_SESSION_NAME_LENGTH_MAX);
 	m_ExchangePacketReply.aName[APPLE_MIDI_SESSION_NAME_LENGTH_MAX] = '\0';
-	m_nExchangePacketReplySize = APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH + 1 + strlen(reinterpret_cast<const char*>(m_ExchangePacketReply.aName));
+	m_nExchangePacketReplySize = static_cast<uint16_t>(APPLE_MIDI_EXCHANGE_PACKET_MIN_LENGTH + 1 + strlen(reinterpret_cast<const char*>(m_ExchangePacketReply.aName)));
 }
 
 void AppleMidi::HandleControlMessage() {
@@ -317,7 +317,7 @@ bool AppleMidi::Send(const uint8_t *pBuffer, uint32_t nLength) {
 		return false;
 	}
 
-	Network::Get()->SendTo(m_nHandleMidi, pBuffer, nLength, m_tSessionStatus.nRemoteIp, m_tSessionStatus.nRemotePortMidi);
+	Network::Get()->SendTo(m_nHandleMidi, pBuffer, static_cast<uint16_t>(nLength), m_tSessionStatus.nRemoteIp, m_tSessionStatus.nRemotePortMidi);
 
 	debug_dump(&pBuffer, nLength);
 

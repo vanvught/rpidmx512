@@ -2,7 +2,7 @@
  * @file rdmsubdevicebwlcd.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@ public:
 
 	void Start() override;
 	void Stop() override;
-	void Data(const uint8_t *pData, uint16_t nLength) override;
+	void Data(const uint8_t *pData, uint32_t nLength) override;
 
 private:
 	void UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) override;
@@ -47,9 +47,9 @@ private:
 
 	void DisplayChannels();
 
-	void DataHex(const uint8_t *pData, uint16_t nLength);
-	void DataDec(const uint8_t *pData, uint16_t nLength);
-	void DataPct(const uint8_t *pData, uint16_t nLength);
+	void DataHex(const uint8_t *pData, uint32_t nLength);
+	void DataDec(const uint8_t *pData, uint32_t nLength);
+	void DataPct(const uint8_t *pData, uint32_t nLength);
 
 	void DisplayUpdatePersonality();
 

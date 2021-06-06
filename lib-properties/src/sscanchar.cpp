@@ -28,12 +28,12 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "sscan.h"
 
-Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pValue, uint32_t &nLength) {
+Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pValue, uint32_t& nLength) {
 	assert(pBuffer != nullptr);
 	assert(pName != nullptr);
 	assert(pValue != nullptr);
@@ -44,7 +44,7 @@ Sscan::ReturnCode Sscan::Char(const char *pBuffer, const char *pName, char *pVal
 		return Sscan::NAME_ERROR;
 	}
 
-	uint32_t k = 0;
+	uint16_t k = 0;
 
 	while ((*p != 0) && (k < nLength)) {
 		*pValue++ = *p++;

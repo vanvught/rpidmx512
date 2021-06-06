@@ -26,7 +26,7 @@
 #ifndef STORETLC59711_H_
 #define STORETLC59711_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmxstore.h"

@@ -26,7 +26,7 @@
 #ifndef LTCDISPLAYPARAMSCONST_H_
 #define LTCDISPLAYPARAMSCONST_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplayrgb.h"
 

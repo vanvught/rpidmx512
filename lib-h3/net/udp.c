@@ -61,7 +61,7 @@ struct queue_entry {
 	uint8_t data[FRAME_BUFFER_SIZE];
 	uint32_t from_ip;
 	uint16_t from_port;
-	uint16_t size;
+	uint32_t size;
 }ALIGNED;
 
 struct queue {
@@ -125,7 +125,7 @@ void __attribute__((cold)) udp_shutdown(void) {
 	DEBUG1_EXIT
 }
 
-void udp_handle(struct t_udp *p_udp) {
+__attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	uint32_t port_index;
 	_pcast32 src;
 	uint32_t i;
@@ -147,7 +147,7 @@ void udp_handle(struct t_udp *p_udp) {
 	}
 
 	if (__builtin_expect ((port_index == MAX_PORTS_ALLOWED), 0)) {
-		DEBUG_PRINTF(IPSTR ":%d", p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port);
+		DEBUG_PRINTF(IPSTR ":%d[%x]", p_udp->ip4.src[0],p_udp->ip4.src[1],p_udp->ip4.src[2],p_udp->ip4.src[3], dest_port, dest_port);
 		return;
 	}
 
@@ -156,7 +156,7 @@ void udp_handle(struct t_udp *p_udp) {
 
 	const uint32_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;
 
-	// debug_dump(p_udp->udp.data, data_length);
+//	debug_dump(p_udp->udp.data, data_length);
 
 	i = MIN(FRAME_BUFFER_SIZE, data_length);
 
@@ -194,13 +194,12 @@ int udp_bind(uint16_t local_port) {
 
 	s_ports_allowed[i] = local_port;
 
-	DEBUG_PRINTF("i=%d, local_port=%d", i, local_port);
-
+	DEBUG_PRINTF("i=%d, local_port=%d[%x]", i, local_port, local_port);
 	return i;
 }
 
 int udp_unbind(uint16_t local_port) {
-	DEBUG_PRINTF("local_port=%u", local_port);
+	DEBUG_PRINTF("local_port=%u[%x]", local_port, local_port);
 
 	for (uint32_t i = 0; i < MAX_PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == local_port) {
@@ -211,7 +210,7 @@ int udp_unbind(uint16_t local_port) {
 		}
 	}
 
-	console_error("unbind");
+	console_error("unbind\n");
 	return -1;
 }
 
@@ -222,10 +221,10 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 		return 0;
 	}
 
-	const uint8_t entry = s_recv_queue[idx].queue_tail;
+	const uint32_t entry = s_recv_queue[idx].queue_tail;
 	struct queue_entry *p_queue_entry = &s_recv_queue[idx].entries[entry];
 
-	const uint16_t i = MIN(size, p_queue_entry->size);
+	const uint32_t i = MIN(size, p_queue_entry->size);
 
 	h3_memcpy(packet, p_queue_entry->data, i);
 
@@ -236,7 +235,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	DEBUG_PRINTF("[%d] %d[%d]: %d " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], i, IP2STR(*from_ip));
 
-	return i;
+	return (uint16_t) i;
 }
 
 int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, uint16_t remote_port) {
@@ -278,7 +277,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 					dst.u32 = to_ip;
 					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 				} else {
-					DEBUG_PUTS("ARP lookup failed -> default gateway");
+					console_error("ARP lookup failed -> default gateway\n");
 					return -3;
 				}
 			} else {
@@ -286,7 +285,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 					dst.u32 = to_ip;
 					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 				} else {
-					DEBUG_PUTS("ARP lookup failed");
+					console_error("ARP lookup failed\n");
 					return -2;
 				}
 			}
@@ -300,13 +299,13 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.ip4.chksum = net_chksum((void *) &s_send_packet.ip4, (uint32_t) sizeof(s_send_packet.ip4));
 
 	//UDP
-	s_send_packet.udp.source_port = __builtin_bswap16(s_ports_allowed[idx]);
+	s_send_packet.udp.source_port = __builtin_bswap16((uint16_t) s_ports_allowed[idx]);
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16(size + UDP_HEADER_SIZE);
 
 	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 
-	// debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+	debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
 	emac_eth_send((void *) &s_send_packet, (int) (size + UDP_PACKET_HEADERS_SIZE));
 

@@ -26,9 +26,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 
@@ -38,6 +38,7 @@
 
 #include "artnetnode_internal.h"
 
+#include "hardware.h"
 #include "network.h"
 
 using namespace artnet;
@@ -82,8 +83,11 @@ void ArtNetNode::FillPollReply() {
 	}
 
 	m_PollReply.Status2 = m_Node.Status2;
+	m_PollReply.Status3 = m_Node.Status3;
 
 	m_PollReply.NumPortsLo = 4; // Default
+
+	memcpy(m_PollReply.DefaultUidResponder, m_Node.DefaultUidResponder, sizeof m_PollReply.DefaultUidResponder);
 }
 
 void ArtNetNode::SendPollRelply(bool bResponse) {
@@ -93,22 +97,21 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 	m_PollReply.Status1 = m_Node.Status1;
 
-	for (uint32_t nPage = 0; nPage < m_nPages; nPage++) {
+	for (uint8_t nPage = 0; nPage < m_nPages; nPage++) {
 
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
-
 		m_PollReply.BindIndex = nPage + 1;
 
-		const uint32_t nPortIndexStart = nPage * ArtNet::MAX_PORTS;
+		const auto nPortIndexStart = static_cast<uint8_t>(nPage * ArtNet::PORTS);
 
 		uint32_t NumPortsLo = 0;
 
-		for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::MAX_PORTS); nPortIndex++) {
+		for (uint8_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::PORTS); nPortIndex++) {
 			uint8_t nStatus = m_OutputPorts[nPortIndex].port.nStatus;
 
 			if (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) {
-				nStatus &= (~GO_DATA_IS_BEING_TRANSMITTED);
+				nStatus &= static_cast<uint8_t>(~GO_DATA_IS_BEING_TRANSMITTED);
 
 				if (m_OutputPorts[nPortIndex].ipA != 0) {
 					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA) < 1000) {
@@ -123,10 +126,10 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 				}
 			} else {
 				if (m_pArtNet4Handler != nullptr) {
-					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
+					const auto nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 
-					nStatus &= (~nMask);
-					nStatus |= (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask);
+					nStatus &= static_cast<uint8_t>(~nMask);
+					nStatus |= static_cast<uint8_t>((m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
 
 					if ((nStatus & GO_OUTPUT_IS_SACN) == 0) {
 						m_OutputPorts[nPortIndex].tPortProtocol = PortProtocol::ARTNET;
@@ -144,7 +147,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;
 			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nDefaultAddress;
 
-			if (nPortIndex < ArtNet::MAX_PORTS) {
+			if (nPortIndex < ArtNet::PORTS) {
 				if (m_InputPorts[nPortIndex].bIsEnabled) {
 					m_PollReply.PortTypes[nPortIndex - nPortIndexStart] |= ARTNET_ENABLE_INPUT | ARTNET_PORT_DMX;
 					NumPortsLo++;
@@ -156,7 +159,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		}
 
-		m_PollReply.NumPortsLo = NumPortsLo;
+		m_PollReply.NumPortsLo = static_cast<uint8_t>(NumPortsLo);
 		assert(NumPortsLo <= 4);
 
 		snprintf(reinterpret_cast<char*>(m_PollReply.NodeReport), ArtNet::REPORT_LENGTH, "%04x [%04d] %s AvV", static_cast<int>(m_State.reportCode), static_cast<int>(m_State.ArtPollReplyCount), m_aSysName);

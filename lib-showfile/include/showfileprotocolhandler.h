@@ -2,7 +2,7 @@
  * @file showfileprotocolhandler.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,14 @@
 #ifndef SHOWFILEPROTOCOLHANDLER_H_
 #define SHOWFILEPROTOCOLHANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class ShowFileProtocolHandler {
 public:
 	virtual ~ShowFileProtocolHandler() {
 	}
 
-	virtual void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength)=0;
+	virtual void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength)=0;
 	virtual void DmxSync()=0;
 	virtual void DmxBlackout()=0;
 	virtual void DmxMaster(uint32_t nMaster)=0;

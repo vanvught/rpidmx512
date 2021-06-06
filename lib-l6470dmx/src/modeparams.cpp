@@ -28,10 +28,10 @@
  #pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+ #include <cstdio>
 #endif
 #include <cassert>
 
@@ -81,10 +81,10 @@ ModeParams::~ModeParams() {
 	m_pDmxSlotInfo = nullptr;
 }
 
-bool ModeParams::Load(uint8_t nMotorIndex) {
+bool ModeParams::Load(uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 
-	m_aFileName[5] = nMotorIndex + '0';
+	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	m_tModeParams.nSetList = 0;
 
@@ -106,7 +106,7 @@ bool ModeParams::Load(uint8_t nMotorIndex) {
 	return true;
 }
 
-void ModeParams::Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
+void ModeParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -218,12 +218,12 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG1_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	m_aFileName[5] = nMotorIndex + '0';
+	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	if (ptModeParams != nullptr) {
 		memcpy(&m_tModeParams, ptModeParams, sizeof(struct TModeParams));
@@ -253,7 +253,7 @@ void ModeParams::Builder(uint8_t nMotorIndex, const struct TModeParams *ptModePa
 	DEBUG1_EXIT
 }
 
-void ModeParams::Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void ModeParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pModeParamsStore == nullptr) {

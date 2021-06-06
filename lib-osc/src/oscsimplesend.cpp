@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
+#include <cstring>
 #include <cassert>
 
 #include "oscsimplesend.h"
@@ -115,5 +115,5 @@ void OscSimpleSend::UpdateMessage(const char *pPath, uint32_t nPathLength, char 
 void OscSimpleSend::Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort) {
 	debug_dump(m_Message, nMessageLength);
 
-	Network::Get()->SendTo(nHandle, m_Message, nMessageLength, nIpAddress, nPort);
+	Network::Get()->SendTo(nHandle, m_Message, static_cast<uint16_t>(nMessageLength), nIpAddress, nPort);
 }

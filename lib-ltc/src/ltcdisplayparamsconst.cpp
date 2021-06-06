@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplayparamsconst.h"
 #include "ltcdisplayrgb.h"

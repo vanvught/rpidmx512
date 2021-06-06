@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "ws28xxmulti.h"
@@ -52,7 +52,16 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	m_Type = pixelConfiguration.GetType();
 	m_nCount = pixelConfiguration.GetCount();
 	m_Map = pixelConfiguration.GetMap();
-	m_nBufSize = m_nCount * nLedsPerPixel * 8;
+	m_bIsRTZProtocol = pixelConfiguration.IsRTZProtocol();
+	m_nGlobalBrightness = pixelConfiguration.GetGlobalBrightness();
+	m_nBufSize = m_nCount * nLedsPerPixel;
+
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		m_nBufSize += m_nCount;
+		m_nBufSize += 8;
+	}
+
+	m_nBufSize *= 8;
 
 	DEBUG_PRINTF("m_nBufSize=%d", m_nBufSize);
 
@@ -69,9 +78,17 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 		SetupGPIO();
 		SetupBuffers4x();
 	} else {
-		SetupCPLD();
+		m_hasCPLD = SetupCPLD();
 		SetupHC595(ReverseBits(nLowCode), ReverseBits(nHighCode));
-		SetupSPI();
+		if (pixelConfiguration.IsRTZProtocol()) {
+			SetupSPI(pixelConfiguration.GetClockSpeedHz());
+		} else {
+			if(m_hasCPLD) {
+				SetupSPI(pixelConfiguration.GetClockSpeedHz() * 6);
+			} else {
+				SetupSPI(pixelConfiguration.GetClockSpeedHz() * 4);
+			}
+		}
 		m_nBufSize++;
 		SetupBuffers8x();
 	}
@@ -98,9 +115,7 @@ void WS28xxMulti::Print() {
 	printf("Pixel parameters\n");
 	printf(" Type    : %s [%d] - %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type), PixelType::GetMap(m_Map), static_cast<int>(m_Map));
 	printf(" Count   : %d\n", m_nCount);
-//	printf(" T0H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(pixelConfiguration.GetLowCode()), pixelConfiguration.GetLowCode());
-//	printf(" T1H     : %.2f [0x%X]\n", WS28xx::ConvertTxH(pixelConfiguration.GetHighCode()), pixelConfiguration.GetHighCode());
-	printf(" Board   : %dx\n", m_Board == ws28xxmulti::Board::X4 ? 4 : 8);
+	printf(" Board   : %dx (%s)\n", m_Board == ws28xxmulti::Board::X4 ? 4 : 8, m_hasCPLD ? "CPLD" : "74-logic");
 }
 
 ws28xxmulti::Board WS28xxMulti::GetBoard() {

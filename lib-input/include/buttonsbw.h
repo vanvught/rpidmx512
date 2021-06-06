@@ -26,7 +26,7 @@
 #ifndef BUTTONSBW_H_
 #define BUTTONSBW_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "inputset.h"
 #include "hal_i2c.h"
@@ -44,7 +44,7 @@ public:
 	int GetChar() override;
 
 private:
-	void Write(const char *, uint32_t);
+	void Write(const char *buffer, uint8_t size);
 
 private:
 	HAL_I2C m_I2C;

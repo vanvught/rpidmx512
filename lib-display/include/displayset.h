@@ -2,7 +2,7 @@
  * @file dislpayset.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef DISPLAYSET_H_
 #define DISPLAYSET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace display {
 namespace cursor {
@@ -52,14 +52,14 @@ public:
 	virtual bool Start()= 0;
 
 	virtual void Cls()= 0;
-	virtual void ClearLine(uint8_t)= 0;
+	virtual void ClearLine(uint8_t nLine)= 0;
 
 	virtual void PutChar(int)= 0;
 	virtual void PutString(const char*)= 0;
 
-	virtual void TextLine(uint8_t, const char*, uint8_t)= 0;
+	virtual void TextLine(uint8_t nLine, const char *pData, uint32_t nLength)= 0;
 
-	virtual void SetCursorPos(uint8_t, uint8_t)= 0;
+	virtual void SetCursorPos(uint8_t nCol, uint8_t nRow)= 0;
 	virtual void SetCursor(uint32_t)= 0;
 
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}

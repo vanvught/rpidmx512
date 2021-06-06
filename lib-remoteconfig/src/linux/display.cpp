@@ -27,7 +27,7 @@
 # pragma GCC diagnostic ignored "-Wunused-private-field"
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "display.h"
@@ -48,7 +48,7 @@ Display::Display()
 	DEBUG_EXIT
 }
 
-Display::Display(__attribute__((unused)) uint32_t nCols, __attribute__((unused)) uint32_t nRows) {
+Display::Display(__attribute__((unused)) uint8_t nCols, __attribute__((unused)) uint8_t nRows) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == 0);
@@ -98,7 +98,7 @@ int Display::Write(__attribute__((unused)) uint8_t nLine, __attribute__((unused)
 	return 0;
 }
 
-void Display::ClearLine(__attribute__((unused)) unsigned char){
+void Display::ClearLine(__attribute__((unused)) uint8_t nLine){
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

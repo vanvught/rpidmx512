@@ -24,7 +24,7 @@
  */
 
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "si5351a.h"
@@ -40,7 +40,7 @@ static constexpr auto REGS = 57;
 }  // namespace si5351a
 
 struct TRegister {
-	uint16_t nAddress;
+	uint8_t nAddress;
 	uint8_t nValue;
 };
 
@@ -141,7 +141,7 @@ void SI5351A::Pre() {
 	 * Powerdown all output drivers Reg. 16, 17, 18, 19, 20, 21, 22, 23 = 0x80
 	 */
 	for (uint32_t i = 16 ; i <= 23; i++) {
-		HAL_I2C::WriteRegister(i, static_cast<uint8_t>(0x80));
+		HAL_I2C::WriteRegister(static_cast<uint8_t>(i), static_cast<uint8_t>(0x80));
 	}
 }
 

@@ -26,7 +26,7 @@ while(axis1.isBusy()):
 axis1.free()
 */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "slushboard.h"
 #include "slushmotor.h"

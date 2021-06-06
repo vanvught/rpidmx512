@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "esp8266.h"
@@ -37,7 +37,7 @@ static void esp8266_fota_start(const uint32_t server_ip_address) {
 	esp8266_write_word(server_ip_address);
 }
 
-static void esp8266_fota_status(char *status, uint16_t *len) {
+static void esp8266_fota_status(char *status, uint32_t *len) {
 	assert(status != nullptr);
 	assert(len != nullptr);
 
@@ -47,7 +47,7 @@ static void esp8266_fota_status(char *status, uint16_t *len) {
 
 void fota(uint32_t server_ip_address) {
 	char message[80];
-	uint16_t nLength;
+	uint32_t nLength;
 	char last_first_char = ' ';
 
 	console_status(CONSOLE_YELLOW, "Starting FOTA ...");

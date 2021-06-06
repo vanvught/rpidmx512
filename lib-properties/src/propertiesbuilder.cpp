@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "propertiesbuilder.h"
@@ -48,7 +48,7 @@ PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint3
 		*pBuffer = '#';
 		memcpy(&pBuffer[1], pFileName, l);
 		pBuffer[l + 1] = '\n';
-		m_nSize = l + 2;
+		m_nSize = static_cast<uint16_t>(l + 2);
 	}
 
 	DEBUG_EXIT
@@ -74,7 +74,7 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		return false;
 	}
 
-	m_nSize += static_cast<uint32_t>(i);
+	m_nSize += static_cast<uint16_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
 
@@ -95,7 +95,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 		return false;
 	}
 
-	m_nSize += static_cast<uint32_t>(i);
+	m_nSize += static_cast<uint16_t>(i);
 
 	DEBUG_PRINTF("pComment=%s, m_nLength=%d, m_nSize=%d", pComment, m_nLength, m_nSize);
 

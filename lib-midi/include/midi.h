@@ -26,7 +26,7 @@
 #ifndef MIDI_H_
 #define MIDI_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace midi {
 
@@ -194,7 +194,7 @@ public:
 	void SendQf(uint8_t nData);
 	void SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
 
-	void SendRaw(const uint8_t *pData, uint16_t nLength) {
+	void SendRaw(const uint8_t *pData, uint32_t nLength) {
 		SendUart2(pData, nLength);
 	}
 	void SendRaw(uint8_t nByte) {
@@ -239,7 +239,7 @@ public:
 
 private:
 	void InitUart2();
-	void SendUart2(const uint8_t *data, uint16_t length);
+	void SendUart2(const uint8_t *pData, uint32_t nLength);
 	bool InputFilter(uint8_t nChannel) const;
 	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) const;
 	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte) const;

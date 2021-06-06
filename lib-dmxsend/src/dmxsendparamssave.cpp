@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "dmxparams.h"
@@ -59,7 +59,7 @@ bool DMXParams::Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uin
 	return isAdded;
 }
 
-bool DMXParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+bool DMXParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);

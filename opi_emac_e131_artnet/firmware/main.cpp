@@ -118,21 +118,21 @@ void notmain(void) {
 
 	bool bIsSetIndividual = false;
 
-	uint16_t nUniverse[E131::MAX_UARTS];
+	uint16_t nUniverse[E131::PORTS];
 
-	for (uint32_t i = 0; i < E131::MAX_UARTS; i++) {
+	for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 		bool bIsSet;
-		nUniverse[i] = e131params.GetUniverse(i, bIsSet);
+		nUniverse[nPortIndex] = e131params.GetUniverse(nPortIndex, bIsSet);
 
-		for (uint32_t j = 0; j < i; j++) {
-			if (nUniverse[i] == nUniverse[j]) {
+		for (uint32_t j = 0; j < nPortIndex; j++) {
+			if (nUniverse[nPortIndex] == nUniverse[j]) {
 				bIsSet = false;
 				break;
 			}
 		}
 
 		if (bIsSet) {
-			bridge.SetUniverse(i, e131::PortDir::OUTPUT, nUniverse[i]);
+			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, nUniverse[nPortIndex]);
 			bIsSetIndividual = true;
 		}
 	}
@@ -140,8 +140,8 @@ void notmain(void) {
 	if (!bIsSetIndividual) {
 		const uint32_t nUniverse = e131params.GetUniverse();
 
-		for (uint32_t i = 0; i < E131::MAX_PORTS; i++) {
-			bridge.SetUniverse(i, e131::PortDir::OUTPUT, i + nUniverse);
+		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + nUniverse));
 		}
 	}
 

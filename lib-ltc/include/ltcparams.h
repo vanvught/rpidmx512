@@ -25,7 +25,7 @@
 #ifndef LTCPARAMS_H_
 #define LTCPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplaymax7219.h"
 
@@ -116,7 +116,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
@@ -220,7 +220,7 @@ private:
     	static constexpr auto RTPMIDI = (1U << 7);
     };
 
-	void HandleDisabledOutput(const char *pLine, const char *pKeyword, unsigned nMaskDisabledOutputs);
+	void HandleDisabledOutput(const char *pLine, const char *pKeyword, uint8_t nMaskDisabledOutputs);
 	void SetBool(const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 

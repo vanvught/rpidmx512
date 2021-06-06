@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <unistd.h>
 #include <cassert>
 
@@ -47,7 +47,7 @@ ShowFile::ShowFile() {
 	DEBUG_EXIT
 }
 
-void ShowFile::SetShowFile(uint8_t nShowFileNumber) {
+void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
@@ -90,7 +90,7 @@ void ShowFile::BlackOut() {
 	}
 }
 
-bool ShowFile::DeleteShowFile(uint8_t nShowFileNumber) {
+bool ShowFile::DeleteShowFile(uint32_t nShowFileNumber) {
 	DEBUG_PRINTF("nShowFileNumber=%u, m_bEnableTFTP=%d", nShowFileNumber, m_bEnableTFTP);
 
 	if (!m_bEnableTFTP) {

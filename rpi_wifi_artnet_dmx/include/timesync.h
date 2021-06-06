@@ -32,19 +32,19 @@
 
 class TimeSync: public ArtNetTimeSync {
 public:
-	TimeSync(void);
+	TimeSync() {}
 
-	void Start(void);
+	void Start();
 
-	void Handler(const struct TArtNetTimeSync *);
+	void Handler(const struct TArtNetTimeSync*);
 
-	void ShowSystemTime(void);
-
-private:
-	void Show(void);
+	void ShowSystemTime();
 
 private:
-	uint8_t m_nSecondsPrevious;
+	void Show();
+
+private:
+	int m_nSecondsPrevious { 60 };
 };
 
 #endif /* TIMESYNC_H_ */

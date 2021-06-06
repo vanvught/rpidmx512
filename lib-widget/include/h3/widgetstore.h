@@ -25,7 +25,7 @@
 #ifndef H3_WIDGETSTORE_H_
 #define H3_WIDGETSTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class WidgetStore {
 public:

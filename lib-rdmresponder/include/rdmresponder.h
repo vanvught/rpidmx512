@@ -2,7 +2,7 @@
  * @file rdmresponder.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,10 @@
 #ifndef RDMRESPONDER_H_
 #define RDMRESPONDER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxreceiver.h"
-#include "gpio.h"
+#include "dmxgpio.h"
 
 #include "rdmhandler.h"
 #include "rdmdeviceresponder.h"

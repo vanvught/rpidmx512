@@ -25,9 +25,9 @@
 
 #include <cassert>
 #include <algorithm>
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 
 #include "ltcdisplayrgbpanel.h"
 #include "ltc.h"
@@ -95,7 +95,7 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct Colours &tColours, s
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	for (uint32_t i = 0; i < 4; i++) {
+	for (uint8_t i = 0; i < 4; i++) {
 		m_pRgbPanel->TextLine(1 + i, m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
 	}
 

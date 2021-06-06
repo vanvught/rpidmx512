@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef RDMDEVICEPARAMS_H_
 #define RDMDEVICEPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmdevice.h"
 #include "rdm.h"
@@ -47,8 +47,7 @@ struct RDMDeviceParamsMask {
 
 class RDMDeviceParamsStore {
 public:
-	virtual ~RDMDeviceParamsStore() {
-	}
+	virtual ~RDMDeviceParamsStore() {}
 
 	virtual void Update(const struct TRDMDeviceParams *pRDMDeviceParams)=0;
 	virtual void Copy(struct TRDMDeviceParams *pRDMDeviceParams)=0;
@@ -61,8 +60,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(RDMDevice *pRDMDevice);
 

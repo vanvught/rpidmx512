@@ -26,7 +26,7 @@
 #ifndef TLC59711DMXSTORE_H_
 #define TLC59711DMXSTORE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class TLC59711DmxStore {
 public:

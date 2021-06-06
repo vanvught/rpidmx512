@@ -25,9 +25,9 @@
  * https://gpsd.gitlab.io/gpsd/NMEA.html
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdio>
 #include <time.h>
 	#if !defined (BARE_METAL)
 # include <unistd.h>
@@ -93,7 +93,7 @@ uint32_t GPS::GetTag(const char *pTag) {
 	return static_cast<uint32_t>(nmea::UNDEFINED);
 }
 
-int32_t GPS::ParseDecimal(const char *p, uint32_t &nLength) {
+int32_t GPS::ParseDecimal(const char *p, uint32_t& nLength) {
 	const auto bIsNegative = (*p == '-');
 
 	nLength = bIsNegative ? 1 : 0;

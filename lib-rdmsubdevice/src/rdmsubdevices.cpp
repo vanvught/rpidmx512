@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "rdmsubdevices.h"
@@ -157,10 +157,10 @@ void RDMSubDevices::Stop() {
 	DEBUG_ENTRY
 }
 
-void RDMSubDevices::SetData(const uint8_t* pData, uint16_t nLength) {
+void RDMSubDevices::SetData(const uint8_t* pData, uint32_t nLength) {
 	for (unsigned i = 0; i < m_nCount; i++) {
 		if (m_pRDMSubDevice[i] != nullptr) {
-			if (nLength >= m_pRDMSubDevice[i]->GetDmxStartAddress() + m_pRDMSubDevice[i]->GetDmxFootPrint() - 1) {
+			if (nLength >= (static_cast<uint16_t>(m_pRDMSubDevice[i]->GetDmxStartAddress() + m_pRDMSubDevice[i]->GetDmxFootPrint()) - 1U)) {
 				m_pRDMSubDevice[i]->Data(pData, nLength);
 			}
 		}

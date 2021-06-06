@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "displayset.h"
@@ -76,7 +76,7 @@ Display::Display()
 	PrintInfo();
 }
 
-Display::Display(uint32_t nCols, uint32_t nRows)
+Display::Display(uint8_t nCols, uint8_t nRows)
 #if !defined(NO_HAL)
 	: m_nMillis(Hardware::Get()->Millis())
 #endif
@@ -152,7 +152,7 @@ void Display::Detect(DisplayType tDisplayType) {
 	}
 }
 
-void Display::Detect(__attribute__((unused)) uint32_t nCols, uint32_t nRows) {
+void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
 #if defined(ENABLE_SSD1311)
@@ -241,11 +241,11 @@ int Display::Printf(uint8_t nLine, const char *format, ...) {
 
 	va_start(arp, format);
 
-	int i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+	auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
 
 	va_end(arp);
 
-	m_LcdDisplay->TextLine(nLine, buffer, i);
+	m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint16_t>(i));
 
 	return i;
 }
@@ -255,7 +255,7 @@ int Display::Write(uint8_t nLine, const char *pText) {
 		return 0;
 	}
 
-	const char *p = pText;
+	const auto *p = pText;
 	int nCount = 0;
 
 	while ((*p != 0) && (nCount++ < static_cast<int>(m_nCols))) {
@@ -322,7 +322,7 @@ void Display::TextStatus(const char *pText) {
 
 	SetCursorPos(0, m_nRows - 1);
 
-	for (uint32_t i = 0; i < m_nCols - 1; i++) {
+	for (uint8_t i = 0; i < m_nCols - 1; i++) {
 		PutChar(' ');
 	}
 

@@ -54,9 +54,9 @@ void __attribute__((cold)) arm_dump_memmap(void) {
 	printf("memmap\n");
 	printf("__ram_start = %p\n", &__ram_start);
 	printf("  __data_start = %p\n", &__data_start);
-	printf("   __data_end = %p\n", &__data_end);
-	printf("  __bss_start = %p\n", &__bss_start);
-	printf("   __bss_end = %p\n", &__bss_end);
+	printf("  __data_end   = %p\n", &__data_end);
+	printf("   __bss_start = %p\n", &__bss_start);
+	printf("   __bss_end   = %p\n", &__bss_end);
 	printf("  __stack_start = %p\n", &__stack_start);
 	printf("    __und_stack_top = %p\n", &__und_stack_top);
 	printf("    __abt_stack_top = %p\n", &__abt_stack_top);

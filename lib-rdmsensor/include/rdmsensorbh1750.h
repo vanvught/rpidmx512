@@ -26,7 +26,7 @@
 #ifndef RDMSENSORBH1750_H_
 #define RDMSENSORBH1750_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "rdmsensor.h"
 #include "bh1750.h"

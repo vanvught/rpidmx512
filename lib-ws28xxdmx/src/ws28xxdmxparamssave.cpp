@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <algorithm>
 #include <cassert>
 
@@ -47,7 +47,7 @@
 using namespace ws28xxdmxparams;
 using namespace pixel;
 
-void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
@@ -90,18 +90,17 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	builder.Add(DevicesParamsConst::LED_T1H, PixelType::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28xxDmxParamsMask::HIGH_CODE), 2);
 
 	builder.AddComment("Grouping");
-	builder.Add(DevicesParamsConst::GROUPING_ENABLED, isMaskSet(WS28xxDmxParamsMask::GROUPING_ENABLED));
 	builder.Add(DevicesParamsConst::GROUPING_COUNT, m_tWS28xxParams.nGroupingCount, isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT));
-
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
-	builder.AddComment("DMX");
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
 
 	builder.AddComment("Clock based chips");
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz, isMaskSet(WS28xxDmxParamsMask::SPI_SPEED));
 
-	builder.AddComment("APA102");
+	builder.AddComment("APA102/SK9822");
 	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS));
+
+#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
+	builder.AddComment("DMX");
+	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
 #endif
 
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
@@ -120,7 +119,7 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	DEBUG_EXIT
 }
 
-void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
+void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (m_pWS28xxParamsStore == nullptr) {

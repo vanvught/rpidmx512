@@ -26,7 +26,7 @@
 #ifndef DISPLAYUDFPARAMS_H_
 #define DISPLAYUDFPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "displayudf.h"
 

@@ -29,7 +29,7 @@
 #ifndef ARTNET4NODE_H_
 #define ARTNET4NODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "artnetnode.h"
 #include "artnet4handler.h"
@@ -39,10 +39,10 @@ class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
 
-	void SetPort(uint8_t nPortId, artnet::PortDir dir) override;
+	void SetPort(uint8_t nPortIndex, artnet::PortDir dir) override;
 
 	void HandleAddress(uint8_t nCommand) override;
-	uint8_t GetStatus(uint8_t nPortId) override;
+	uint8_t GetStatus(uint8_t nPortIndex) override;
 
 	bool IsStatusChanged() override {
 		return m_Bridge.IsStatusChanged();

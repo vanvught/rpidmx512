@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
+#include <cstring>
 #include <time.h>
 #include <cassert>
 
@@ -189,3 +190,21 @@ bool Hardware::Reboot() {
 	return true;
 }
 
+typedef union pcast32 {
+	uuid_t uuid;
+	uint32_t u32[4];
+} _pcast32;
+
+void Hardware::GetUuid(uuid_t out) {
+	_pcast32 cast;
+
+	cast.u32[0] = bcm2835_rng_get_number();
+	cast.u32[1] = bcm2835_rng_get_number();
+	cast.u32[2] = bcm2835_rng_get_number();
+	cast.u32[3] = bcm2835_rng_get_number();
+
+	cast.uuid[6] = 0x40 | (cast.uuid[6] & 0xf);
+	cast.uuid[8] = 0x80 | (cast.uuid[8] & 0x3f);
+
+	memcpy(out, cast.uuid, sizeof(uuid_t));
+}

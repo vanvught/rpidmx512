@@ -2,7 +2,7 @@
  * @file h3_dma_dump.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ void __attribute__((cold)) h3_dma_dump_common(void) {
 	printf("\n");
 }
 
-void h3_dma_dump_chl(uint32_t base) {
+void __attribute__((cold)) h3_dma_dump_chl(uint32_t base) {
 	const uint32_t chl = (base - H3_DMA_CHL0_BASE) / 0x40;
 	H3_DMA_CHL_TypeDef *p = (H3_DMA_CHL_TypeDef *)base;
 

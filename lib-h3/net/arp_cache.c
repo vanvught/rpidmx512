@@ -119,7 +119,7 @@ uint32_t arp_cache_lookup(uint32_t ip, uint8_t *mac_address) {
 	while (retries--) {
 		arp_send_request(ip);
 
-		timeout = 0xFFFF;
+		timeout = 0x1FFFF;
 
 		while ((timeout-- > 0) && (current_entry == s_entry_current)) {
 			net_handle();

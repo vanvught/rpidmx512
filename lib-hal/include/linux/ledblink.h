@@ -26,7 +26,7 @@
 #ifndef LINUX_LEDBLINK_H_
 #define LINUX_LEDBLINK_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class LedBlink {
 public:

@@ -21,8 +21,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "gps.h"
 #include "gpsconst.h"

@@ -2,7 +2,7 @@
  * @file rdmpersonality.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
+#include <cassert>
 
 #ifndef RDMPERSONALITY_H_
 #define RDMPERSONALITY_H_
@@ -34,14 +35,49 @@ class RDMPersonality {
 public:
 	RDMPersonality(const char *pDescription, uint16_t nSlots);
 
-	uint16_t GetSlots() const;
+	uint16_t GetSlots() const {
+		return m_nSlots;
+	}
 
-	const char *GetDescription() const;
-	void SetDescription(const char *pDescription);
+	void SetDescription(const char *pDescription) {
+		assert(pDescription != nullptr);
 
-	uint8_t GetDescriptionLength() const;
+		m_nDescriptionLength = 0;
 
-	void DescriptionCopyTo(char* p, uint8_t &nLength);
+		const auto *pSrc = pDescription;
+		auto *pDst = m_aDescription;
+
+		for (uint32_t i = 0; (*pSrc != 0) && (i < RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH); i++) {
+			*pDst = *pSrc;
+			pSrc++;
+			pDst++;
+			m_nDescriptionLength++;
+		}
+	}
+
+	const char *GetDescription() const {
+		return m_aDescription;
+	}
+
+	uint8_t GetDescriptionLength() const {
+		return m_nDescriptionLength;
+	}
+
+	void DescriptionCopyTo(char* p, uint8_t &nLength) {
+		assert(p != nullptr);
+
+		const auto *pSrc = m_aDescription;
+		auto *pDst = p;
+		uint8_t i;
+
+		for (i = 0; (i < m_nDescriptionLength) && (i < nLength); i++) {
+			*pDst = *pSrc;
+			pSrc++;
+			pDst++;
+		}
+
+		nLength = i;
+	}
 
 private:
 	uint16_t m_nSlots;

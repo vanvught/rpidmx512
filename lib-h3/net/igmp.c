@@ -211,8 +211,7 @@ static void _send_leave(uint32_t group_address) {
 	DEBUG2_EXIT
 }
 
-
-void igmp_handle(struct t_igmp *p_igmp) {
+__attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
 	DEBUG2_ENTRY
 
 	uint32_t i;

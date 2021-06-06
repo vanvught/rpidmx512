@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,12 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define CONSOLE_OK	0	///< Call console_init() OK
 
 #ifdef __cplusplus
- #define RGB(r, g, b) (((static_cast<uint32_t>(r) & 0xFF) << 16) | ((static_cast<uint32_t>(g) & 0xFF) << 8) | ((static_cast<uint32_t>(b) & 0xFF)))
+ #define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
 #else
  #define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
 #endif
@@ -53,7 +53,7 @@ extern "C" {
 extern int console_init(void);
 extern void console_clear(void);
 
-extern void console_set_top_row(uint16_t);
+extern void console_set_top_row(uint32_t);
 
 extern void console_putc(int);
 extern void console_puts(const char*);
@@ -66,9 +66,9 @@ extern void console_newline(void);
 
 extern void console_write(const char*, unsigned int);
 
-extern void console_clear_line(uint16_t);
+extern void console_clear_line(uint32_t);
 
-extern void console_set_cursor(uint16_t, uint16_t);
+extern void console_set_cursor(uint32_t, uint32_t);
 
 extern void console_save_cursor();
 extern void console_restore_cursor();
@@ -76,7 +76,7 @@ extern void console_restore_cursor();
 extern void console_save_color(void);
 extern void console_restore_color(void);
 
-extern uint16_t console_get_line_width(void);
+extern uint32_t console_get_line_width(void);
 
 #ifdef __cplusplus
 }

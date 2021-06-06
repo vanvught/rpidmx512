@@ -26,7 +26,7 @@
 #ifndef STOREWS28XXDMX_H_
 #define STOREWS28XXDMX_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <cassert>
 
 #include "ws28xxdmxparams.h"

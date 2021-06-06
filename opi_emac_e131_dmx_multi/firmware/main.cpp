@@ -44,7 +44,7 @@
 
 // DMX Output
 #include "dmxparams.h"
-#include "h3/dmxsendmulti.h"
+#include "dmxsendmulti.h"
 #include "storedmxsend.h"
 // DMX Input
 #include "dmxinput.h"

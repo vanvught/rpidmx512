@@ -26,7 +26,7 @@
 #ifndef SPIFLASHINSTALLPARAMS_H_
 #define SPIFLASHINSTALLPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct SpiFlashInstallParamsMask {
 	static constexpr auto INSTALL_UBOOT = (1U << 0);

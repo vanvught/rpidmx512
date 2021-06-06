@@ -26,11 +26,11 @@
 #ifndef DMXPARAMS_H_
 #define DMXPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "dmxsend.h"
 #if defined (H3)
-# include "h3/dmxsendmulti.h"
+# include "dmxsendmulti.h"
 #endif
 
 struct TDMXParams {
@@ -64,8 +64,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	bool Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	bool Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	bool Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	bool Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(DMXSend *);
 #if defined (H3)

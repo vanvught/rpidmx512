@@ -26,7 +26,7 @@
 #ifndef L6470DMXMODE_H_
 #define L6470DMXMODE_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 enum TL6470DmxModes {
 	L6470DMXMODE0 = 0,

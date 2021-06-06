@@ -29,7 +29,7 @@
 #ifndef SHOWFILEPROTOCOLARTNET_H_
 #define SHOWFILEPROTOCOLARTNET_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdio.h>
 
 #include "artnetcontroller.h"
@@ -55,7 +55,7 @@ public:
 		m_ArtNetController.Stop();
 	}
 
-	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint16_t nLength) override {
+	void DmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength) override {
 		m_ArtNetController.HandleDmxOut(nUniverse, pDmxData, nLength);
 	}
 

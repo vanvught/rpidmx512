@@ -28,10 +28,10 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
+#include <cstdint>
 #include <algorithm>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 
 #include "ws28xxdmxparams.h"
@@ -75,10 +75,6 @@ void WS28xxDmxParams::Dump() {
 
 	if (isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT)) {
 		printf(" %s=%d\n", DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs);
-	}
-
-	if(isMaskSet(WS28xxDmxParamsMask::GROUPING_ENABLED)) {
-		printf(" %s=1 [Yes]\n", DevicesParamsConst::GROUPING_ENABLED);
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT)) {

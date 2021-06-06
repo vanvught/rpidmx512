@@ -1,0 +1,13 @@
+# Sources
+*.c     text diff=c
+*.cpp   text diff=cpp
+*.h     text diff=c
+
+# Compiled Object files
+*.o     binary
+*.obj   binary
+
+# Compiled Static libraries
+*.a     binary
+*.lib   binary
+

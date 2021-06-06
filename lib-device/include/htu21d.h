@@ -26,7 +26,7 @@
 #ifndef HTU21D_H_
 #define HTU21D_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "hal_i2c.h"
 

@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
-# include <stdio.h>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -46,9 +46,9 @@
 #include "arm/synchronize.h"
 #include "arm/gic.h"
 
-#ifndef NDEBUG
+//#ifndef NDEBUG
 # include "console.h"
-#endif
+//#endif
 
 // Output
 #include "artnetnode.h"
@@ -58,7 +58,7 @@
 #include "h3/ltcoutputs.h"
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #define ONE_TIME_MIN        150	///< 417us/2 = 208us
@@ -72,7 +72,7 @@
 
 static volatile char aTimeCode[TC_CODE_MAX_LENGTH] ALIGNED;
 
-static volatile bool IsMidiQuarterFrameMessage = false;
+static volatile bool IsMidiQuarterFrameMessage;
 static uint32_t nMidiQuarterFramePiece = 0;
 
 static volatile uint32_t nFiqUsPrevious = 0;
@@ -89,7 +89,7 @@ static volatile bool bTimeCodeValid = false;
 static volatile uint8_t aTimeCodeBits[8] ALIGNED;
 static volatile bool bIsDropFrameFlagSet = false;
 
-static volatile bool bTimeCodeAvailable = false;
+static volatile bool bTimeCodeAvailable;
 static volatile struct midi::Timecode s_tMidiTimeCode = { 0, 0, 0, 0, static_cast<uint8_t>(midi::TimecodeType::EBU) };
 
 // ARM Generic Timer
@@ -159,10 +159,10 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 
 			bTimeCodeValid = false;
 
-			s_tMidiTimeCode.nFrames  = (10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F);
-			s_tMidiTimeCode.nSeconds = (10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F);
-			s_tMidiTimeCode.nMinutes = (10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F);
-			s_tMidiTimeCode.nHours   = (10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F);
+			s_tMidiTimeCode.nFrames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
+			s_tMidiTimeCode.nSeconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
+			s_tMidiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
+			s_tMidiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
 
 			aTimeCode[10] = (aTimeCodeBits[0] & 0x0F) + '0';	// frames
 			aTimeCode[9]  = (aTimeCodeBits[1] & 0x03) + '0';	// 10's of frames
@@ -200,6 +200,9 @@ LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
 }
 
 void LtcReader::Start() {
+	bTimeCodeAvailable = false;
+	IsMidiQuarterFrameMessage = false;
+
 	/**
 	 * IRQ
 	 */
@@ -229,43 +232,22 @@ void LtcReader::Start() {
 
 void LtcReader::Run() {
 	uint8_t TimeCodeType;
-#ifndef NDEBUG
-	char aLimitWarning[16] ALIGNED;
-	uint32_t nLimitUs = 0;
-	uint32_t nNowUs =  0;
-#endif
 
 	dmb();
 	if (bTimeCodeAvailable) {
 		dmb();
 		bTimeCodeAvailable = false;
-
-#ifndef NDEBUG
-		nNowUs =  h3_hs_timer_lo_us();
-#endif
 		TimeCodeType = ltc::type::UNKNOWN;
 
 		dmb();
 		if (bIsDropFrameFlagSet) {
 			TimeCodeType = ltc::type::DF;
-#ifndef NDEBUG
-			nLimitUs = (1000000.0 / 30);
-#endif
 		} else {
 			if (nUpdatesPerSecond == 24) {
 				TimeCodeType = ltc::type::FILM;
-#ifndef NDEBUG
-				nLimitUs = (1000000.0 / 24);
-#endif
 			} else if (nUpdatesPerSecond == 25) {
 				TimeCodeType = ltc::type::EBU;
-#ifndef NDEBUG
-				nLimitUs = 1000000 / 25;
-#endif
 			} else if (nUpdatesPerSecond == 30) {
-#ifndef NDEBUG
-				nLimitUs = (1000000.0 / 30);
-#endif
 				TimeCodeType = ltc::type::SMPTE;
 			}
 		}
@@ -300,23 +282,6 @@ void LtcReader::Run() {
 		}
 
 		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&tLtcTimeCode));
-
-#ifndef NDEBUG
-		const uint32_t delta_us = h3_hs_timer_lo_us() - nNowUs;
-
-		if (nLimitUs == 0) {
-			sprintf(aLimitWarning, "%.2d:-----:%.5d",
-					static_cast<int>(nUpdatesPerSecond),
-					static_cast<int>(delta_us));
-			console_status(CONSOLE_CYAN, aLimitWarning);
-		} else {
-			sprintf(aLimitWarning, "%.2d:%.5d:%.5d",
-					static_cast<int>(nUpdatesPerSecond),
-					static_cast<int>(nLimitUs),
-					static_cast<int>(delta_us));
-			console_status(delta_us < nLimitUs ? CONSOLE_YELLOW : CONSOLE_RED, aLimitWarning);
-		}
-#endif
 	}
 
 	dmb();

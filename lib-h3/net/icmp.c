@@ -74,7 +74,7 @@ void __attribute__((cold)) icmp_shutdown(void) {
 	DEBUG1_EXIT
 }
 
-void icmp_handle(struct t_icmp *p_icmp) {
+__attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 	DEBUG2_ENTRY
 
 	if (p_icmp->icmp.type == ICMP_TYPE_ECHO) {
@@ -97,7 +97,7 @@ void icmp_handle(struct t_icmp *p_icmp) {
 			s_reply.icmp.checksum = 0;
 			s_reply.icmp.checksum = net_chksum((void *)&s_reply.ip4, (uint32_t)__builtin_bswap16(p_icmp->ip4.len));
 
-			debug_dump(&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
+//			debug_dump(&s_reply, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
 
 			emac_eth_send((void *)&s_reply, (int) (sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len)));
 		}

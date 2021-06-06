@@ -2,7 +2,7 @@
  * @file ipprog.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#include <cstddef>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <cstdio>
 #endif
-#include <string.h>
+#include <cstring>
 #include <cassert>
 
 #include "artnetipprog.h"
@@ -41,9 +41,6 @@ union uip {
 	uint32_t u32;
 	uint8_t u8[4];
 } static ip_union;
-
-IpProg::IpProg() {
-}
 
 void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIpProgReply *pArtNetIpProgReply) {
 	// Ip
@@ -67,10 +64,6 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	printf("\tNetmask : " IPSTR "\n", IP2STR(Network::Get()->GetNetmask()));
 	printf("\tGateway : " IPSTR "\n", IP2STR(Network::Get()->GetGatewayIp()));
 #endif
-
-	if (pArtNetIpProg->Command == 0) {
-		// Nothing to do
-	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_ENABLE_DHCP) == IPPROG_COMMAND_ENABLE_DHCP) {
 		if (!Network::Get()->EnableDhcp()) {
@@ -122,7 +115,13 @@ void IpProg::Handler(const struct TArtNetIpProg *pArtNetIpProg, struct TArtNetIp
 	}
 
 	if ((pArtNetIpProg->Command & IPPROG_COMMAND_PROGRAM_GATEWAY) == IPPROG_COMMAND_PROGRAM_GATEWAY) {
-		// FIXME Remove when Gateway supported
+		// Get Default Gateway Ip from IpProg
+		memcpy(ip_union.u8, &pArtNetIpProg->ProgGwHi, ArtNet::IP_SIZE);
+
+		Network::Get()->SetGatewayIp(ip_union.u32);
+
+		// Set Default Gateway Ip in IpProgReply
+		memcpy(&pArtNetIpProgReply->ProgGwHi, &pArtNetIpProg->ProgGwHi, ArtNet::IP_SIZE);
 	}
 
 #ifndef NDEBUG

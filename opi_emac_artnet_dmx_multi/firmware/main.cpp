@@ -49,7 +49,7 @@
 
 // DMX/RDM Output
 #include "dmxparams.h"
-#include "h3/dmxsendmulti.h"
+#include "dmxsendmulti.h"
 #include "storedmxsend.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
@@ -144,14 +144,14 @@ void notmain(void) {
 	uint8_t nAddress;
 	bool bIsSetIndividual = false;
 	bool bIsSet;
-
+printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(0, bIsSet);
-
+printf("%d\n", __LINE__);
 	if (bIsSet) {
 		node.SetUniverseSwitch(0, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
-
+printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(1, portDir, nAddress);
@@ -189,22 +189,26 @@ void notmain(void) {
 	// DMX Input
 	DmxInput *pDmxInput;
 
+printf("%d\n", __LINE__);
+
 	if (portDir == PortDir::INPUT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
+printf("%d\n", __LINE__);
 		pDmxOutput = new DMXSendMulti;
 		assert(pDmxOutput != nullptr);
-
+printf("%d\n", __LINE__);
 		DMXParams dmxParams(&storeDmxSend);
-
+printf("%d\n", __LINE__);
 		if (dmxParams.Load()) {
+printf("%d\n", __LINE__);
 			dmxParams.Dump();
 			dmxParams.Set(pDmxOutput);
 		}
-
+printf("%d\n", __LINE__);
 		node.SetOutput(pDmxOutput);
 		node.SetDirectUpdate(false);
 
@@ -214,19 +218,20 @@ void notmain(void) {
 		assert(pDiscovery != nullptr);
 
 		if(artnetparams.IsRdm()) {
+printf("%d\n", __LINE__);
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
 				rdmDeviceParams.Set(pDiscovery);
 				rdmDeviceParams.Dump();
 			}
-
+printf("%d\n", __LINE__);
 			pDiscovery->Init();
 			pDiscovery->Print();
 
 			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-			for (uint32_t i = 0; i < ArtNet::MAX_PORTS; i++) {
+			for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 				uint8_t nAddress;
 				if (node.GetUniverseSwitch(i, nAddress, PortDir::OUTPUT)) {
 					pDiscovery->Full(i);

@@ -26,7 +26,7 @@
 #ifndef E131BRIDGE_H_
 #define E131BRIDGE_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <assert.h>
 
 #include "e131.h"
@@ -38,7 +38,8 @@
 #include "e131dmx.h"
 #include "e131sync.h"
 
-struct TE131BridgeState {
+namespace e131bridge {
+struct State {
 	bool IsNetworkDataLoss;
 	bool IsMergeMode;				///< Is the Bridge in merging mode?
 	bool IsSynchronized;			///< “Synchronized” or an “Unsynchronized” state.
@@ -58,7 +59,7 @@ struct TE131BridgeState {
 	uint8_t nPriority;
 };
 
-struct TSource {
+struct Source {
 	uint32_t time;
 	uint32_t ip;
 	uint8_t data[E131::DMX_LENGTH];
@@ -66,20 +67,20 @@ struct TSource {
 	uint8_t sequenceNumberData;
 };
 
-struct TE131OutputPort {
+struct OutputPort {
 	uint8_t data[E131::DMX_LENGTH];
-	uint16_t length;
+	uint32_t length;
 	uint16_t nUniverse;
 	e131::Merge mergeMode;
 	bool IsDataPending;
 	bool bIsEnabled;
 	bool IsTransmitting;
 	bool IsMerging;
-	struct TSource sourceA;
-	struct TSource sourceB;
+	struct Source sourceA;
+	struct Source sourceB;
 };
 
-struct TE131InputPort {
+struct InputPort {
 	uint16_t nUniverse;
 	bool bIsEnabled;
 	bool IsTransmitting;
@@ -87,11 +88,14 @@ struct TE131InputPort {
 	uint8_t nPriority;
 	uint32_t nMulticastIp;
 };
+}  // namespace e131bridge
 
 class E131Bridge {
 public:
 	E131Bridge();
-	~E131Bridge();
+	~E131Bridge() {
+		Stop();
+	}
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
@@ -168,14 +172,14 @@ public:
 	}
 
 	void SetPriority(uint8_t nPriority, uint8_t nPortIndex = 0) {
-		assert(nPortIndex < E131::MAX_UARTS);
+		assert(nPortIndex < E131::PORTS);
 		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
 			m_InputPort[nPortIndex].nPriority = nPriority;
 		}
 	}
 
 	uint8_t GetPriority(uint8_t nPortIndex = 0) const {
-		assert(nPortIndex < E131::MAX_UARTS);
+		assert(nPortIndex < E131::PORTS);
 		return m_InputPort[nPortIndex].nPriority;
 	}
 
@@ -202,9 +206,9 @@ private:
 
 	void CheckMergeTimeouts(uint8_t nPortIndex);
 	bool IsPriorityTimeOut(uint8_t nPortIndex);
-	bool isIpCidMatch(const struct TSource *);
-	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
-	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint16_t nLength);
+	bool isIpCidMatch(const struct e131bridge::Source *);
+	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();
@@ -229,11 +233,6 @@ private:
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
 
-	struct TE131BridgeState m_State;
-	struct TE131OutputPort m_OutputPort[E131::MAX_PORTS];
-	struct TE131InputPort m_InputPort[E131::MAX_UARTS];
-	struct TE131 m_E131;
-
 	// Input
 	E131Dmx *m_pE131DmxIn { nullptr };
 	TE131DataPacket *m_pE131DataPacket { nullptr };
@@ -244,6 +243,12 @@ private:
 
 	// Synchronization handler
 	E131Sync *m_pE131Sync { nullptr };
+
+	struct TE131 m_E131;
+
+	e131bridge::State m_State;
+	e131bridge::OutputPort m_OutputPort[E131::PORTS];
+	e131bridge::InputPort m_InputPort[E131::PORTS];
 
 	static E131Bridge *s_pThis;
 };

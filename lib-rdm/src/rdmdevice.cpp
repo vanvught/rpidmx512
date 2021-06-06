@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,12 +24,11 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "rdmdevice.h"
-
 #include "rdmconst.h"
 #include "rdm.h"
 #include "rdm_e120.h"
@@ -42,7 +41,7 @@
 #if defined(H3)
  #include "h3_board.h"
  static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
-#elif defined (RASPPI) || defined (BARE_METAL)
+#elif defined (RASPPI)
  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
 #elif defined (__CYGWIN__)
  static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
@@ -57,9 +56,9 @@
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
-	const uint8_t nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
+	const auto nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = nLength;
+	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(nLength);
 
 	m_tRDMDevice.aDeviceUID[0] = RDMConst::MANUFACTURER_ID[0];
 	m_tRDMDevice.aDeviceUID[1] = RDMConst::MANUFACTURER_ID[1];
@@ -77,10 +76,10 @@ RDMDevice::RDMDevice() {
 	m_tRDMDevice.aDeviceSN[2] = m_tRDMDevice.aDeviceUID[3];
 	m_tRDMDevice.aDeviceSN[3] = m_tRDMDevice.aDeviceUID[2];
 
-	const char* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	const uint8_t length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
+	const auto* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
+	const auto length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
 	memcpy(m_tRDMDevice.aDeviceManufacturerName, WebsiteUrl, length);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = length;
+	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(length);
 
 	m_tRDMDevice.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
 	m_tRDMDevice.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
@@ -89,77 +88,4 @@ RDMDevice::RDMDevice() {
 	memcpy(m_aDeviceRootLabel, DEVICE_LABEL, m_nDeviceRootLabelLength);
 
 	DEBUG_EXIT
-}
-
-uint16_t RDMDevice::CalculateChecksum() {
-	uint16_t nChecksum = m_nDeviceRootLabelLength;
-
-	for (uint32_t i = 0; i < m_tRDMDevice.nDeviceRootLabelLength; i++) {
-		nChecksum += static_cast<uint16_t>(m_tRDMDevice.aDeviceRootLabel[i]);
-	}
-
-	return nChecksum;
-}
-
-void RDMDevice::Init() {
-	DEBUG_ENTRY
-
-	assert(!m_IsInit);
-
-	m_IsInit = true;
-
-	SetFactoryDefaults();
-
-	m_nCheckSum = CalculateChecksum();
-
-	DEBUG_EXIT
-}
-
-void RDMDevice::SetFactoryDefaults() {
-	DEBUG_ENTRY
-
-	struct TRDMDeviceInfoData info;
-
-	info.data = m_aDeviceRootLabel;
-	info.length = m_nDeviceRootLabelLength;
-
-	SetLabel(&info);
-
-	DEBUG_EXIT
-}
-
-bool RDMDevice::GetFactoryDefaults() {
-	return (m_nCheckSum == CalculateChecksum());
-}
-
-void RDMDevice::SetLabel(const struct TRDMDeviceInfoData *pInfo) {
-	const uint8_t nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
-
-	if (m_IsInit) {
-		memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
-		m_tRDMDevice.nDeviceRootLabelLength = nLength;
-
-		if (m_pRDMDeviceStore != nullptr) {
-			m_pRDMDeviceStore->SaveLabel(m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
-		}
-	} else {
-		memcpy(m_aDeviceRootLabel, pInfo->data, nLength);
-		m_nDeviceRootLabelLength = nLength;
-	}
-}
-
-void RDMDevice::GetLabel(struct TRDMDeviceInfoData *pInfo) {
-	pInfo->data = m_tRDMDevice.aDeviceRootLabel;
-	pInfo->length = m_tRDMDevice.nDeviceRootLabelLength;
-}
-
-void RDMDevice::GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
-	pInfo->data[0] = static_cast<char>(RDMConst::MANUFACTURER_ID[1]);
-	pInfo->data[1] = static_cast<char>(RDMConst::MANUFACTURER_ID[0]);
-	pInfo->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
-}
-
-void RDMDevice::GetManufacturerName(struct TRDMDeviceInfoData *pInfo) {
-	pInfo->data = m_tRDMDevice.aDeviceManufacturerName;
-	pInfo->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
 }

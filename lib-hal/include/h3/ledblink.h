@@ -26,7 +26,7 @@
 #ifndef H3_LEDBLINK_H_
 #define H3_LEDBLINK_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "h3.h"
 

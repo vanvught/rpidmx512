@@ -24,9 +24,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdint>
+#include <cstring>
+#include <cctype>
 #include <time.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -135,7 +135,7 @@ static constexpr auto PRINT = sizeof(arg::PRINT) - 1;
 namespace file {
 static constexpr char EXT[] = ".txt";
 namespace length {
-static constexpr char EXT = sizeof(file::EXT) - 1;
+static constexpr uint16_t EXT = sizeof(file::EXT) - 1;
 }  // namespace length
 }  // namespace file
 
@@ -413,7 +413,7 @@ void Shell::CmdMem() {
 	const auto pAddress = reinterpret_cast<const char *>(hexadecimalToDecimal(m_Argv[0], m_nArgvLength[0]));
 	const auto nSize = hexadecimalToDecimal(m_Argv[1], m_nArgvLength[1]);
 
-	debug_dump(pAddress, nSize);
+	debug_dump(pAddress, static_cast<uint16_t>(nSize));
 }
 
 void Shell::CmdNtp() {

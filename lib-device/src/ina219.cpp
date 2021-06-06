@@ -23,7 +23,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ina219.h"
 
@@ -104,13 +104,13 @@ void INA219::Calibrate(float r_shunt_value, float i_max_expected) {
 
 	m_Info.current_lsb = (static_cast<uint16_t>(minimum_lsb * 100000000));
 	m_Info.current_lsb /= 100000000;
-	m_Info.current_lsb /= 0.0001;
+	m_Info.current_lsb /= 0.0001f;
 	m_Info.current_lsb = CEILING_POS(m_Info.current_lsb);
-	m_Info.current_lsb *= 0.0001;
+	m_Info.current_lsb *= 0.0001f;
 
 	m_Info.power_lsb = m_Info.current_lsb * 20;
 
-	const uint16_t nCalibrationValue = (0.04096f / (m_Info.current_lsb * m_Info.r_shunt));
+	const auto nCalibrationValue = static_cast<uint16_t>((0.04096f / (m_Info.current_lsb * m_Info.r_shunt)));
 
 	DEBUG_PRINTF("nCalibrationValue=%x", nCalibrationValue);
 
@@ -123,10 +123,10 @@ float INA219::GetShuntCurrent() {
 }
 
 int16_t INA219::GetBusVoltageRaw() {
-	uint16_t voltage = HAL_I2C::ReadRegister16DelayUs(reg::BUSVOLTAGE, reg::value::READ_DELAY_US);
+	auto voltage = HAL_I2C::ReadRegister16DelayUs(reg::BUSVOLTAGE, reg::value::READ_DELAY_US);
 	voltage >>= 3;
 
-	return voltage * 4;
+	return static_cast<int16_t>(voltage * 4);
 }
 
 float INA219::GetBusVoltage() {

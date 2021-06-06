@@ -27,8 +27,8 @@
  * https://tools.ietf.org/html/rfc1350
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "tftpdaemon.h"
@@ -102,7 +102,7 @@ TFTPDaemon::TFTPDaemon()
 		
 {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+	DEBUG_PRINTF("s_pThis=%p", reinterpret_cast<void *>(s_pThis));
 
 	if (s_pThis != nullptr) {
 		s_pThis->Exit();
@@ -110,7 +110,7 @@ TFTPDaemon::TFTPDaemon()
 
 	s_pThis = this;
 
-	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+	DEBUG_PRINTF("s_pThis=%p", reinterpret_cast<void *>(s_pThis));
 
 	assert(Network::Get() != nullptr);
 	memset(m_Buffer, 0, sizeof(m_Buffer));
@@ -120,7 +120,7 @@ TFTPDaemon::TFTPDaemon()
 
 TFTPDaemon::~TFTPDaemon() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("s_pThis=%p", s_pThis);
+	DEBUG_PRINTF("s_pThis=%p", reinterpret_cast<void *>(s_pThis));
 
 	Network::Get()->End(TFTP_UDP_PORT);
 
@@ -257,14 +257,14 @@ void TFTPDaemon::DoRead() {
 		pDataPacket->OpCode = __builtin_bswap16(OP_CODE_DATA);
 		pDataPacket->BlockNumber = __builtin_bswap16(m_nBlockNumber);
 
-		m_nPacketLength = sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength;
+		m_nPacketLength = static_cast<uint16_t>(sizeof pDataPacket->OpCode + sizeof pDataPacket->BlockNumber + m_nDataLength);
 		m_bIsLastBlock = m_nDataLength < max::DATA_LEN;
 
 		if (m_bIsLastBlock) {
 			FileClose();
 		}
 
-		DEBUG_PRINTF("m_nDataLength=%d, m_nPacketLength=%d, m_bIsLastBlock=%d", m_nDataLength, m_nPacketLength, m_bIsLastBlock);
+		DEBUG_PRINTF("m_nDataLength=%ld, m_nPacketLength=%d, m_bIsLastBlock=%d", m_nDataLength, m_nPacketLength, m_bIsLastBlock);
 	}
 
 	DEBUG_PRINTF("Sending to " IPSTR ":%d", IP2STR(m_nFromIp), m_nFromPort);
@@ -294,7 +294,7 @@ void TFTPDaemon::DoWriteAck() {
 	pAckPacket->BlockNumber =  __builtin_bswap16(m_nBlockNumber);
 	m_nState = m_bIsLastBlock ? TFTPState::INIT : TFTPState::WRQ_RECV_PACKET;
 
-	DEBUG_PRINTF("Sending to " IPSTR ":%d, m_nState=%d", IP2STR(m_nFromIp), m_nFromPort, m_nState);
+	DEBUG_PRINTF("Sending to " IPSTR ":%d, m_nState=%d", IP2STR(m_nFromIp), m_nFromPort, static_cast<int>(m_nState));
 
 	Network::Get()->SendTo(m_nIdx, &m_Buffer, sizeof(struct TTFTPAckPacket), m_nFromIp, m_nFromPort);
 }
@@ -306,7 +306,7 @@ void TFTPDaemon::HandleRecvData() {
 		m_nDataLength = m_nLength - 4;
 		m_nBlockNumber = __builtin_bswap16(pDataPacket->BlockNumber);
 
-		DEBUG_PRINTF("Incoming from " IPSTR ", m_nLength=%d, m_nBlockNumber=%d, m_nDataLength=%d", IP2STR(m_nFromIp), m_nLength, m_nBlockNumber,m_nDataLength);
+		DEBUG_PRINTF("Incoming from " IPSTR ", m_nLength=%ld, m_nBlockNumber=%d, m_nDataLength=%ld", IP2STR(m_nFromIp), m_nLength, m_nBlockNumber,m_nDataLength);
 
 		if (m_nDataLength == FileWrite(pDataPacket->Data, m_nDataLength, m_nBlockNumber)) {
 

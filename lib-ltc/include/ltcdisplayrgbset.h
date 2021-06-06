@@ -25,7 +25,7 @@
 #ifndef LTCDISPLAYRGBSET_H_
 #define LTCDISPLAYRGBSET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltc.h"
 

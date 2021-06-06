@@ -29,7 +29,7 @@
 #ifndef ARTNET_H_
 #define ARTNET_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 namespace artnet {
 static constexpr char NODE_ID[] = "Art-Net";			///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
@@ -131,18 +131,23 @@ struct ArtNetTalkToMe {
 };
 
 /**
- * ArtPollReply packet, Field 40
+ * ArtPollReply packet
  */
 struct ArtNetStatus2 {
-	static constexpr auto WEB_BROWSER_SUPPORT = (1 << 0);	///< Bit 0, Set = Product supports web browser configuration
+	static constexpr auto WEB_BROWSER_SUPPORT = (1U << 0);	///< Bit 0, Set = Product supports web browser configuration
 	static constexpr auto IP_MANUALY = (0 << 1);			///< Bit 1, Clr = Node’s IP is manually configured.
-	static constexpr auto IP_DHCP = (1 << 1);				///< Bit 1, Set = Node’s IP is DHCP configured.
+	static constexpr auto IP_DHCP = (1U << 1);				///< Bit 1, Set = Node’s IP is DHCP configured.
 	static constexpr auto DHCP_NOT_CAPABLE = (0 << 2);		///< Bit 2, Clr = Node is not DHCP capable.
-	static constexpr auto DHCP_CAPABLE = (1 << 2);			///< Bit 2, Set = Node is DHCP capable.
+	static constexpr auto DHCP_CAPABLE = (1U << 2);			///< Bit 2, Set = Node is DHCP capable.
 	static constexpr auto PORT_ADDRESS_8BIT = (0 << 3);		///< Bit 3, Clr = Node supports 8 bit Port-Address (Art-Net II).
-	static constexpr auto PORT_ADDRESS_15BIT = (1 << 3);	///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
+	static constexpr auto PORT_ADDRESS_15BIT = (1U << 3);	///< Bit 3, Set = Node supports 15 bit Port-Address (Art-Net 3 or 4).
 	static constexpr auto SACN_NO_SWITCH = (0 << 4);		///< Bit 4, Clr = Node not able to switch between Art-Net and sACN.
-	static constexpr auto SACN_ABLE_TO_SWITCH = (1 << 4);	///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+	static constexpr auto SACN_ABLE_TO_SWITCH = (1U << 4);	///< Bit 4, Set = Node is able to switch between Art-Net and sACN.
+};
+
+struct ArtNetStatus3 {
+	static constexpr auto NETWORKLOSS_OFF_STATE = (1U << 6);	///< bit 76 = 01 If network data is lost, it will set all outputs to off state
+	static constexpr auto SUPPORTS_LLRP = (1U << 4);			///< bit 4 = 1 Node supports LLRP (Low Level Recovery Protocol
 };
 
 enum TGoodOutput {
@@ -153,7 +158,8 @@ enum TGoodOutput {
 	GO_OUTPUT_IS_MERGING = (1 << 3),			///< Bit 3 Set – Output is merging ArtNet data.
 	GO_DMX_SHORT_DETECTED = (1 << 2),			///< Bit 2 Set – DMX output short detected on power up
 	GO_MERGE_MODE_LTP = (1 << 1),				///< Bit 1 Set – Merge Mode is LTP.
-	GO_OUTPUT_IS_SACN  = (1 << 0)				///< Bit 0 Set – Output is selected to transmit sACN.
+	GO_OUTPUT_IS_SACN  = (1 << 0),				///< Bit 0 Set – Output is selected to transmit sACN.
+	GO_OUTPUT_NONE = 0
 };
 
 enum TGoodInput {
@@ -165,9 +171,13 @@ enum TGoodInput {
 struct ArtNet {
 	static constexpr uint8_t PROTOCOL_REVISION = 14;
 	static constexpr uint16_t UDP_PORT = 0x1936;
-	static constexpr uint32_t MAX_PORTS = 4;
-	static constexpr uint32_t MAX_PAGES = 8;
-	static constexpr uint32_t DMX_LENGTH = 512;
+	static constexpr uint8_t PORTS = 4;
+#if !defined(ARTNET_PAGES)
+	static constexpr uint8_t PAGES = 1;
+#else
+	static constexpr uint8_t PAGES = ARTNET_PAGES;
+#endif
+	static constexpr uint16_t DMX_LENGTH = 512;
 	static constexpr uint32_t SHORT_NAME_LENGTH = 18;
 	static constexpr uint32_t LONG_NAME_LENGTH = 64;
 	static constexpr uint32_t REPORT_LENGTH = 64;

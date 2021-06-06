@@ -26,7 +26,7 @@
 #ifndef ROTARYENCODER_H_
 #define ROTARYENCODER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 class RotaryEncoder {
 public:

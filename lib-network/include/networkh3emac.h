@@ -26,7 +26,7 @@
 #ifndef NETWORKH3EMAC_H_
 #define NETWORKH3EMAC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 
@@ -39,7 +39,7 @@ extern "C" {
 class NetworkH3emac final : public Network {
 public:
 	NetworkH3emac();
-	~NetworkH3emac();
+	~NetworkH3emac() override {}
 
 	void Init(NetworkParamsStore *pNetworkParamsStore = nullptr);
 
@@ -58,6 +58,7 @@ public:
 
 	void SetIp(uint32_t nIp) override;
 	void SetNetmask(uint32_t nNetmask) override;
+	void SetGatewayIp(uint32_t nGatewayIp) override;
 	void SetHostName(const char *pHostName) override;
 	bool SetZeroconf() override;
 

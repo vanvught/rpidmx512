@@ -26,7 +26,7 @@
 #ifndef LTC_H_
 #define LTC_H_
 
-#include <stdint.h>
+#include <cstdint>
 #include <time.h>
 
 namespace ltc {

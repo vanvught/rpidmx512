@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "propertiesbuilder.h"
@@ -51,7 +51,7 @@ bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const boo
 		return false;
 	}
 
-	m_nSize += static_cast<uint32_t>(i);
+	m_nSize += static_cast<uint16_t>(i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
 

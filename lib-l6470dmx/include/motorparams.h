@@ -26,7 +26,7 @@
 #ifndef MOTORPARAMS_H_
 #define MOTORPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "l6470.h"
 
@@ -52,19 +52,19 @@ public:
 	virtual ~MotorParamsStore() {
 	}
 
-	virtual void Update(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams)=0;
-	virtual void Copy(uint8_t nMotorIndex, struct TMotorParams *ptMotorParams)=0;
+	virtual void Update(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams)=0;
+	virtual void Copy(uint32_t nMotorIndex, struct TMotorParams *ptMotorParams)=0;
 };
 
 class MotorParams {
 public:
 	MotorParams(MotorParamsStore *pMotorParamsStore=nullptr);
 
-	bool Load(uint8_t nMotorIndex);
-	void Load(uint8_t nMotorIndex, const char *pBuffer, uint32_t nLength);
+	bool Load(uint32_t nMotorIndex);
+	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint8_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(uint8_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(L6470 *pL6470);
 

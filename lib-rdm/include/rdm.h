@@ -2,7 +2,7 @@
  * @file rdm.h
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef RDM_H_
 #define RDM_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #define RDM_DATA_BUFFER_SIZE					512									///<
 #define RDM_DATA_BUFFER_INDEX_ENTRIES			(1 << 4)							///<
@@ -90,7 +90,7 @@
 #define	RDM_IDENTIFY_STATE_ON				1
 
 #if  ! defined (PACKED)
- #define PACKED __attribute__((packed))
+# define PACKED __attribute__((packed))
 #endif
 
 struct TRdmMessage {
@@ -137,44 +137,19 @@ struct TRdmDiscoveryMsg {
 	uint8_t checksum[4];					///<
 }PACKED;
 
-struct _rdm_command {
-	uint8_t start_code;						///< 1	SC_RDM
-	uint8_t sub_start_code;					///< 2	SC_SUB_MESSAGE
-	uint8_t message_length;					///< 3	Range 24 to 255
-	uint8_t destination_uid[RDM_UID_SIZE];	///< 4,5,6,7,8,9
-	uint8_t source_uid[RDM_UID_SIZE];		///< 10,11,12,13,14,15
-	uint8_t transaction_number;				///< 16
-	union {
-		uint8_t port_id;					///< 17
-		uint8_t response_type;				///< 17
-	} slot16;
-	uint8_t message_count;					///< 18
-	uint8_t sub_device[2];					///< 19, 20
-	uint8_t command_class;					///< 21
-	uint8_t param_id[2];					///< 22, 23
-	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
-	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
-};
-
 // Unique identifier (UID) which consists of a 2 byte ESTA manufacturer ID, and a 4 byte device ID.
 static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
 
-/*
- * C++ only
- */
-
-#ifdef __cplusplus
-
 class Rdm {
 public:
-	static void Send(uint8_t nPort, struct TRdmMessage *, uint32_t nSpacingMicros = 0);
-	static void SendRaw(uint8_t nPort, const uint8_t *, uint16_t);
+	static void Send(uint32_t nPort, struct TRdmMessage *, uint32_t nSpacingMicros = 0);
+	static void SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
 
-	static void SendRawRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
-	static void SendDiscoveryRespondMessage(uint8_t nPort, const uint8_t *, uint16_t);
+	static void SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	static void SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
 
-	static const uint8_t *Receive(uint8_t nPort);
-	static const uint8_t *ReceiveTimeOut(uint8_t nPort, uint32_t);
+	static const uint8_t *Receive(uint32_t nPort);
+	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint32_t);
 
 public:
 #if defined(H3)
@@ -185,7 +160,5 @@ public:
 	static uint32_t m_nLastSendMicros;
 #endif
 };
-
-#endif
 
 #endif /* RDM_H_ */

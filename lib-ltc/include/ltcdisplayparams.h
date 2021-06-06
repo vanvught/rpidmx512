@@ -26,7 +26,7 @@
 #ifndef LTCDISPLAYPARAMS_H_
 #define LTCDISPLAYPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "ltcdisplaymax7219.h"
 
@@ -81,8 +81,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(LtcDisplayRgb *pLtcDisplayWS28xx);
 
@@ -104,7 +104,7 @@ public:
 		return static_cast<ltcdisplayrgb::WS28xxType>(m_tLtcDisplayParams.nWS28xxDisplayType);
 	}
 
-	const char *GetInfoMessage(uint32_t &nLength) const {
+	const char *GetInfoMessage(uint32_t& nLength) const {
 		nLength = sizeof(m_tLtcDisplayParams.aInfoMessage);
 		return m_tLtcDisplayParams.aInfoMessage;
 	}

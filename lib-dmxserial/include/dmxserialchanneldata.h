@@ -26,8 +26,8 @@
 #ifndef DMXSERIALCHANNELDATA_H_
 #define DMXSERIALCHANNELDATA_H_
 
-#include <stdint.h>
-#include <stdio.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "lightset.h"
 
@@ -42,7 +42,7 @@ public:
 
 	void Clear();
 	bool Parse(const char *pFileName);
-	const uint8_t *GetData(uint8_t nChannelValue, uint32_t &nLength);
+	const uint8_t *GetData(uint8_t nChannelValue, uint32_t& nLength);
 
 	void Dump();
 

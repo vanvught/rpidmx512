@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,19 @@
 #endif
 
 #ifdef __cplusplus
-extern "C" {
+ extern "C" {
 #endif
 
 extern uint32_t micros(void);
 
 #if defined (RASPPI)
-inline void udelay(uint32_t d) { bcm2835_delayMicroseconds(d); }
+ inline void udelay(uint32_t d) { bcm2835_delayMicroseconds(d); }
 #else
-inline void udelay(__attribute__((unused)) uint32_t _q) {}
+ inline void udelay(__attribute__((unused)) uint32_t _q) {}
 #endif
 
 #ifdef __cplusplus
-}
+ }
 #endif
 
 #endif /* LINUX_HAL_API_H_ */

@@ -26,7 +26,7 @@
 #ifndef FOTAPARAMS_H_
 #define FOTAPARAMS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 struct TFotaParams {
 	uint32_t nSetList;
@@ -55,8 +55,8 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TFotaParams *ptFotaParams, char *pBuffer, uint32_t nLength, uint32_t &nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t &nSize);
+	void Builder(const struct TFotaParams *ptFotaParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 

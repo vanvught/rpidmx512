@@ -28,8 +28,8 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "pixeltype.h"
@@ -40,11 +40,11 @@ const char PixelType::TYPES[static_cast<uint32_t>(Type::UNDEFINED)][TYPES_MAX_NA
 		{ "WS2801\0", 																// 1
 		  "WS2811\0", "WS2812\0", "WS2812B", "WS2813\0", "WS2815\0",				// 5
 		  "SK6812\0", "SK6812W",													// 2
-		  "APA102\0",																// 1
 		  "UCS1903", "UCS2903",														// 2
+		  "CS8812",																	// 1
+		  "APA102\0", "SK9822\0",													// 2
 		  "P9813",																	// 1
-		  "CS8812"																	// 1
-		};																			// = 13
+		};																			// = 14
 
 const char PixelType::MAPS[static_cast<uint32_t>(Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
@@ -88,10 +88,9 @@ const char *PixelType::GetMap(Map tRGBMapping) {
 	return "Undefined";
 }
 
+static constexpr auto F_INTERVAL = 0.15625f;
+
 float PixelType::ConvertTxH(uint8_t nCode) {
-
-#define F_INTERVAL 0.15625f
-
 	switch (nCode) {
 	case 0x80:
 		return F_INTERVAL * 1;

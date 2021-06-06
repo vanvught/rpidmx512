@@ -26,14 +26,14 @@
 #ifndef NETWORKBAREMETALMACADDRESS_H_
 #define NETWORKBAREMETALMACADDRESS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "network.h"
 
 class NetworkBaremetalMacAddress final : public Network {
 public:
 	NetworkBaremetalMacAddress();
-	~NetworkBaremetalMacAddress() override;
+	~NetworkBaremetalMacAddress() override {};
 
 	void MacAddressCopyTo(uint8_t *pMacAddress) override;
 
@@ -62,7 +62,10 @@ public:
 	void SetIp(__attribute__((unused)) uint32_t nIp) override {
 	}
 
-	void SetNetmask(__attribute__((unused))  uint32_t nNetmask) override {
+	void SetNetmask(__attribute__((unused)) uint32_t nNetmask) override {
+	}
+
+	void SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) override {
 	}
 
 	bool SetZeroconf() override {

@@ -2,7 +2,7 @@
  * @file rdmslotinfo.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <cstdio>
 #endif
 
 #ifndef ALIGNED
- #define ALIGNED __attribute__ ((aligned (4)))
+# define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
 #include "rdmslotinfo.h"
@@ -110,20 +110,20 @@ struct TTableC2 {
 		// Undefined
 		{ SD_UNDEFINED, "No definition" } };
 
-const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint8_t &nLength) {
+const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint32_t& nLength) {
 
-	for (uint8_t i = 0; i < TABLE_C1_SIZE; i++) {
+	for (uint32_t i = 0; i < TABLE_C1_SIZE; i++) {
 		if (nId == s_tTableC1[i].nId) {
-			nLength = strlen(s_tTableC1[i].pDescription);
+			nLength = static_cast<uint16_t>(strlen(s_tTableC1[i].pDescription));
 			return s_tTableC1[i].pDescription;
 		}
 	}
 
-	nLength = strlen(s_tTableC1[TABLE_C1_SIZE - 1].pDescription);
+	nLength = static_cast<uint16_t>(strlen(s_tTableC1[TABLE_C1_SIZE - 1].pDescription));
 	return s_tTableC1[TABLE_C1_SIZE - 1].pDescription;
 }
 
-const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint8_t &nLength) {
+const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint32_t& nLength) {
 	int nIndex = bsearch(nId);
 
 	if (nIndex < 0) {
@@ -131,7 +131,7 @@ const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint8_t &nLength) {
 		return nullptr;
 	}
 
-	nLength = strlen(s_tTableC2[nIndex].pDescription);
+	nLength = static_cast<uint16_t>(strlen(s_tTableC2[nIndex].pDescription));
 	return s_tTableC2[nIndex].pDescription;
 }
 
