@@ -45,7 +45,13 @@ public:
 	Ssd1306 ();
 	Ssd1306 (TOledPanel);
 	Ssd1306 (uint8_t, TOledPanel);
-	~Ssd1306 () override;
+	~Ssd1306() override {
+#if defined(ENABLE_CURSOR_MODE)
+		delete[] m_pShadowRam;
+		m_pShadowRam = nullptr;
+#endif
+	}
+
 
 	bool Start() override;
 
@@ -63,6 +69,8 @@ public:
 
 	void SetSleep(bool bSleep) override;
 	void SetContrast(uint8_t nContrast) override;
+
+	void DoFlipVertically() override;
 
 	void PrintInfo() override;
 

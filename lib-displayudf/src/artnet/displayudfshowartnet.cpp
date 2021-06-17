@@ -48,6 +48,8 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::AP)], "AP: %d", pArtNetNode->GetActiveOutputPorts() + pArtNetNode->GetActiveInputPorts());
 
+	ShowDmxInfo();
+
 	DEBUG_EXIT
 }
 
@@ -70,7 +72,7 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 }
 
 void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
-	for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::DESTINATION_IP_PORT_A) + i], "%c: " IPSTR, 'A' + i, IP2STR(pArtNetNode->GetDestinationIp(i)));
 	}
 }

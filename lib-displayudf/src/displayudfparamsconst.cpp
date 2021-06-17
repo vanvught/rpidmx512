@@ -2,7 +2,7 @@
  * @file displayudfparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,10 @@ const char DisplayUdfParamsConst::FILE_NAME[] = "display.txt";
 
 const char DisplayUdfParamsConst::INTENSITY[] = "intensity";
 const char DisplayUdfParamsConst::SLEEP_TIMEOUT[] = "sleep_timeout";
+const char DisplayUdfParamsConst::FLIP_VERTICALLY[] = "flip_vertically";
 
 const char DisplayUdfParamsConst::TITLE[] = "title";
 const char DisplayUdfParamsConst::BOARD_NAME[] = "board_name";
 const char DisplayUdfParamsConst::VERSION[] = "version";
 const char DisplayUdfParamsConst::ACTIVE_PORTS[] = "active_ports";
+const char DisplayUdfParamsConst::DMX_DIRECTION[] = "dmx_direction";

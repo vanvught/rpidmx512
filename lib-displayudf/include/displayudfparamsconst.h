@@ -2,7 +2,7 @@
  * @file displayudfparamsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,14 @@ struct DisplayUdfParamsConst {
 
 	static const char INTENSITY[];
 	static const char SLEEP_TIMEOUT[];
+	static const char FLIP_VERTICALLY[];
 
 	static const char TITLE[];
 	static const char BOARD_NAME[];
 	static const char VERSION[];
+
 	static const char ACTIVE_PORTS[];
+	static const char DMX_DIRECTION[];
 };
 
 #endif /* DISPLAYUDFPARAMSCONST_H_ */

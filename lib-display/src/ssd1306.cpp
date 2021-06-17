@@ -232,13 +232,6 @@ Ssd1306::Ssd1306(uint8_t nSlaveAddress, TOledPanel tOledPanel) : m_I2C(nSlaveAdd
 	InitMembers();
 }
 
-Ssd1306::~Ssd1306() {
-#if defined(ENABLE_CURSOR_MODE)
-	delete[] m_pShadowRam;
-	m_pShadowRam = nullptr;
-#endif
-}
-
 void Ssd1306::PrintInfo() {
 	printf("%s (%d,%d)\n", m_bHaveSH1106 ? "SH1106" : "SSD1306", m_nRows, m_nCols);
 }
@@ -306,6 +299,8 @@ bool Ssd1306::Start() {
 	Ssd1306::Cls();
 
 	SendCommand(cmd::DISPLAY_ON);
+
+	m_bIsFlippedVertically = true;
 
 	return true;
 }
@@ -448,6 +443,19 @@ void Ssd1306::SetSleep(bool bSleep) {
 void Ssd1306::SetContrast(uint8_t nContrast) {
 	SendCommand(cmd::SET_CONTRAST);
 	SendCommand(nContrast);
+}
+
+
+void Ssd1306::DoFlipVertically()  {
+	if (m_bIsFlippedVertically) {
+		SendCommand(cmd::COMSCAN_INC);
+		SendCommand(cmd::SEGREMAP);
+	} else {
+		SendCommand(cmd::COMSCAN_DEC);
+		SendCommand(cmd::SEGREMAP | 0x01);
+	}
+
+	m_bIsFlippedVertically = !m_bIsFlippedVertically;
 }
 
 void Ssd1306::InitMembers() {

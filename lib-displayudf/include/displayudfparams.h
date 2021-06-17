@@ -43,6 +43,7 @@ static_assert(sizeof(struct TDisplayUdfParams) <= 48, "struct TDisplayUdfParams 
 struct DisplayUdfParamsMask {
 	static constexpr auto SLEEP_TIMEOUT = (1U << 28);
 	static constexpr auto INTENSITY = (1U << 29);
+	static constexpr auto FLIP_VERTICALLY = (1U << 30);
 };
 
 class DisplayUdfParamsStore {

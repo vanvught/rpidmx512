@@ -64,12 +64,14 @@ public:
 
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
 	virtual void SetContrast(__attribute__((unused)) uint8_t nContrast) {}
+	virtual void DoFlipVertically() {}
 
 	virtual void PrintInfo() {}
 
 protected:
 	uint8_t m_nCols;
 	uint8_t m_nRows;
+	bool m_bIsFlippedVertically { false };
 };
 
 #endif /* DISPLAYSET_H_ */
