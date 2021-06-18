@@ -19,44 +19,20 @@
 
 package org.orangepi.dmx;
 
-public class Properties {
-	static String getString(String line) {
-		final int index = line.indexOf('=') + 1;
-		if ((index > 0) && (index < line.length())) {
-			return line.substring(index);
+public class ArtNet {
+	static int getStartUniverse(int universe) {
+		final int net = universe & (0x7F << 8);
+		final int sub = universe & (0x0F << 4);
+
+		final int calculated = universe + 3;
+
+		final int net2 = calculated & (0x7F << 8);
+		final int sub2 = calculated & (0x0F << 4);
+
+		if ((net == net2) && (sub == sub2)) {
+			return universe;
 		}
-		return "";
-	}
-	
-	static int getInt(String line) {
-		final int index = line.indexOf('=') + 1;
-		if ((index > 0) && (index < line.length())) {
-			final int value = Integer.parseInt(line.substring(index));
-			return value;
-		}
-		return 0;
-	}
-	
-	static Boolean getBool(String line) {
-		if (getInt(line) != 0) {
-			return true;
-		}
-		return false;
-	}
-	
-	static String removeComments(String s) {
-		final String[] lines = s.split("\n");
-		
-		StringBuffer out = new StringBuffer(lines[0] + "\n");
-		
-		for (int i = 1; i < lines.length; i++) {
-			final String line = lines[i];
-			if (line.startsWith("#")) {
-				continue;
-			}
-			out.append(lines[i] + "\n");
-		}
-		
-		return out.toString();
+
+		return net2 + sub2;
 	}
 }
