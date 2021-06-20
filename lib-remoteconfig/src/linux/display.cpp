@@ -66,16 +66,6 @@ Display::Display(__attribute__((unused)) DisplayType tDisplayType) {
 	DEBUG_EXIT
 }
 
-Display::~Display() {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
-void Display::Cls() {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
 void Display::TextStatus(__attribute__((unused)) const char *pText) {
 	DEBUG_PUTS(pText);
 }
@@ -96,16 +86,6 @@ int Display::Printf(__attribute__((unused)) uint8_t nLine, __attribute__((unused
 int Display::Write(__attribute__((unused)) uint8_t nLine, __attribute__((unused)) const char *pText) {
 	DEBUG_PUTS(pText);
 	return 0;
-}
-
-void Display::ClearLine(__attribute__((unused)) uint8_t nLine){
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
-void Display::SetContrast(__attribute__((unused)) uint8_t nContrast) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
 }
 
 #if !defined(NO_HAL)

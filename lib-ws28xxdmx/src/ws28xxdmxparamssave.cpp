@@ -48,8 +48,6 @@ using namespace ws28xxdmxparams;
 using namespace pixel;
 
 void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
 	assert(pBuffer != nullptr);
 
 	if (ptWS28xxParams != nullptr) {
@@ -104,9 +102,15 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 #endif
 
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
-	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0])); i++) {
+	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0]));
+#else
+	constexpr uint32_t nPortsMax = 1;
+#endif
+
+	for (uint32_t i = 0; i < nPortsMax; i++) {
 		builder.Add(LightSetConst::PARAMS_START_UNI_PORT[i],m_tWS28xxParams.nStartUniverse[i], isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i));
 	}
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT));
 #endif
 
@@ -116,17 +120,14 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-	DEBUG_EXIT
 }
 
 void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
 	if (m_pWS28xxParamsStore == nullptr) {
 		nSize = 0;
-		DEBUG_EXIT
 		return;
 	}
 
 	Builder(nullptr, pBuffer, nLength, nSize);
 }
+

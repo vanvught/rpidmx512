@@ -218,7 +218,7 @@ void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
 		reg = PCA9685_REG_ALL_LED_ON_L;
 	}
 
-	if (pOn != 0) {
+	if (pOn != nullptr) {
 		*pOn = I2cReadReg16(reg);
 	}
 

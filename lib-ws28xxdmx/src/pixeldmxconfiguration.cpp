@@ -84,6 +84,7 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 #endif
 	}
 
+	DEBUG_PRINTF("portInfo.nProtocolPortIndexLast=%u", portInfo.nProtocolPortIndexLast);
 	DEBUG_EXIT
 }
 

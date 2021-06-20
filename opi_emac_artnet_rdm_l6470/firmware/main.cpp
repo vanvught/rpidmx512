@@ -243,7 +243,6 @@ void notmain(void) {
 
 	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetDirectUpdate(false);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore(StoreArtNet::Get());
 #endif

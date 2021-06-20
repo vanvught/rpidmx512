@@ -24,15 +24,56 @@
  */
 
 #include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "ws28xxmulti.h"
+#include "pixeltype.h"
 
 #include "h3_spi.h"
 
 #include "debug.h"
 
-using namespace ws28xxmulti;
+using namespace pixel;
+
+void WS28xxMulti::SetupBuffers() {
+	DEBUG_ENTRY
+
+	uint32_t nSize;
+
+	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
+	assert(m_pBuffer != nullptr);
+
+	const uint32_t nSizeHalf = nSize / 2;
+	assert(m_nBufSize <= nSizeHalf);
+
+	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
+
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		DEBUG_PUTS("SPI");
+
+		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
+			SetPixel(nPortIndex, 0, 0, 0, 0, 0);
+
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= m_nCount; nPixelIndex++) {
+				SetPixel(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
+			}
+
+			if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
+				SetPixel(nPortIndex, 1U + m_nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			} else {
+				SetPixel(nPortIndex, 1U + m_nCount, 0, 0, 0, 0);
+			}
+		}
+		memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
+	} else {
+		memset(m_pBuffer, 0, m_nBufSize);
+		memset(m_pBlackoutBuffer, 0, m_nBufSize);
+	}
+
+	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer, m_pBlackoutBuffer);
+	DEBUG_EXIT
+}
 
 uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 	const uint32_t input = nBits;
@@ -42,35 +83,25 @@ uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 }
 
 void WS28xxMulti::Update() {
-	if (m_Board == Board::X8) {
-		assert(m_pBuffer8x != nullptr);
-		assert(!h3_spi_dma_tx_is_active());
+	assert(m_pBuffer != nullptr);
+	assert(!h3_spi_dma_tx_is_active());
 
-		h3_spi_dma_tx_start(m_pBuffer8x, m_nBufSize);
-	} else {
-		assert(m_pBuffer4x != nullptr);
-		Generate800kHz(m_pBuffer4x);
-	}
+	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
+
 }
 
 void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
-	if (m_Board == Board::X8) {
-		DEBUG_PUTS("");
+	assert(m_pBlackoutBuffer != nullptr);
+	assert(!h3_spi_dma_tx_is_active());
 
-		assert(m_pBlackoutBuffer8x != nullptr);
-		assert(!h3_spi_dma_tx_is_active());
+	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
 
-		h3_spi_dma_tx_start(m_pBlackoutBuffer8x, m_nBufSize);
-
-		// A blackout may not be interrupted.
-		do {
-			asm volatile ("isb" ::: "memory");
-		} while (h3_spi_dma_tx_is_active());
-	} else {
-		Generate800kHz(m_pBlackoutBuffer4x);
-	}
+	// A blackout may not be interrupted.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (h3_spi_dma_tx_is_active());
 
 	DEBUG_EXIT
 }

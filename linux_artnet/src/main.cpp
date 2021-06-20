@@ -103,10 +103,6 @@ int main(int argc, char **argv) {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	if (fopen("direct.update", "r") != nullptr) {
-		node.SetDirectUpdate(true);
-	} // No worries about closing this file pointer
-
 	DMXMonitor monitor;
 	DMXMonitorParams monitorParams(new StoreMonitor);
 

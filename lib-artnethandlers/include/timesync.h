@@ -30,11 +30,24 @@
 
 #include "artnettimesync.h"
 
+#include "hardware.h"
+
 class TimeSync: public ArtNetTimeSync {
 public:
 	TimeSync() {}
 
-	void Handler(const struct TArtNetTimeSync*) override;
+	void Handler(const struct TArtNetTimeSync *pArtNetTimeSync) override {
+		struct tm tmTime;
+
+		tmTime.tm_sec = pArtNetTimeSync->tm_sec;
+		tmTime.tm_min = pArtNetTimeSync->tm_min;
+		tmTime.tm_hour = pArtNetTimeSync->tm_hour;
+		tmTime.tm_mday = pArtNetTimeSync->tm_mday;
+		tmTime.tm_mon = pArtNetTimeSync->tm_mon;
+		tmTime.tm_year = ((pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
+
+		Hardware::Get()->SetTime(&tmTime);
+	}
 };
 
 #endif /* TIMESYNC_H_ */

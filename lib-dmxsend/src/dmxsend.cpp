@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <cassert>
 
 #include "dmxsend.h"
 #include "dmx.h"
@@ -61,8 +62,11 @@ void DMXSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 }
 
 void DMXSend::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
+	assert(pData != nullptr);
+//	assert(nLength != 0);
+
 	if (__builtin_expect((nLength == 0), 0)) {
-		DEBUG_EXIT
+//		DEBUG_EXIT
 		return;
 	}
 

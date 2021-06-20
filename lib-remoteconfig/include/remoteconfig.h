@@ -70,6 +70,7 @@ enum class Output {
 	ARTNET,
 	SERIAL,
 	RGBPANEL,
+	DMX_PIXEL,
 	LAST
 };
 

@@ -615,8 +615,8 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	EXT_SPI->TC |= (1U << 31);
 	EXT_SPI->FC |= (1 << 24);
 
-	H3_DMA_CHL2->DESC_ADDR = (uint32_t) &p_dma_tx->lli;
-	H3_DMA_CHL2->EN = DMA_CHAN_ENABLE_START;
+	H3_DMA_CHL4->DESC_ADDR = (uint32_t) &p_dma_tx->lli;
+	H3_DMA_CHL4->EN = DMA_CHAN_ENABLE_START;
 
 	is_running = true;
 }

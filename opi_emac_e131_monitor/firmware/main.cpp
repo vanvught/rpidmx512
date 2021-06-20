@@ -124,7 +124,6 @@ void notmain(void) {
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
-	bridge.SetDirectUpdate(false);
 	bridge.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);

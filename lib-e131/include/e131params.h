@@ -57,7 +57,7 @@ struct E131ParamsMask {
 	static constexpr auto UNIVERSE = (1U << 0);
 	static constexpr auto MERGE_MODE = (1U << 1);
 	static constexpr auto OUTPUT = (1U << 2);
-	static constexpr auto CID = (1U << 3);
+	static constexpr auto NOT_USED = (1U << 3);
 	static constexpr auto UNIVERSE_A = (1U << 4);
 	static constexpr auto UNIVERSE_B = (1U << 5);
 	static constexpr auto UNIVERSE_C = (1U << 6);
@@ -68,7 +68,7 @@ struct E131ParamsMask {
 	static constexpr auto MERGE_MODE_D = (1U << 11);
 	static constexpr auto NETWORK_TIMEOUT = (1U << 12);
 	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 13);
-	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 14);
+	//static constexpr auto NOT_USED1 = (1U << 14); //WAS: ENABLE_NO_CHANGE_OUTPUT
 	static constexpr auto DIRECTION = (1U << 15);
 	static constexpr auto PRIORITY = (1U << 16);
 };
@@ -104,14 +104,25 @@ public:
 		return m_tE131Params.nUniverse;
 	}
 
+	uint16_t GetUniverse(bool &IsSet) const {
+		IsSet = isMaskSet(E131ParamsMask::UNIVERSE);
+		return m_tE131Params.nUniverse;
+	}
+
 	e131::Merge GetMergeMode() const {
 		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
 	}
 
-	uint16_t GetUniverse(uint32_t nPort, bool &IsSet);
+	uint16_t GetUniverse(uint32_t nPort, bool &IsSet) const {
+		if (nPort < E131_PARAMS::MAX_PORTS) {
 
-	bool IsEnableNoChangeUpdate() const {
-		return isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT);
+			IsSet = isMaskSet(E131ParamsMask::UNIVERSE_A << nPort);
+
+			return m_tE131Params.nUniversePort[nPort];
+		}
+
+		IsSet = false;
+		return 0;
 	}
 
 	e131::PortDir GetDirection() const {
@@ -129,7 +140,6 @@ private:
 private:
     E131ParamsStore *m_pE131ParamsStore;
     struct TE131Params m_tE131Params;
-    uuid_t m_uuid;
 };
 
 #endif /* E131PARAMS_H_ */

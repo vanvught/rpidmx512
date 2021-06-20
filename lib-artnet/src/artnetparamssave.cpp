@@ -92,10 +92,8 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	builder.Add(ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, m_tArtNetParams.nNetworkTimeout, isMaskSet(ArtnetParamsMask::NETWORK_TIMEOUT));
 	builder.Add(ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT, isMaskSet(ArtnetParamsMask::DISABLE_MERGE_TIMEOUT));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT));
-
 	builder.AddComment("DMX Input");
-	for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_INPUT; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		if (!isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			m_tArtNetParams.nDestinationIpPort[i] = ArtNetNode::Get()->GetDestinationIp(i);
 		}

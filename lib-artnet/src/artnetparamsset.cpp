@@ -99,8 +99,4 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 		pArtNetNode->SetMergeMode(i, static_cast<Merge>(m_tArtNetParams.nMergeMode));
 		pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
 	}
-
-	if (isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		pArtNetNode->SetDirectUpdate(true);
-	}
 }

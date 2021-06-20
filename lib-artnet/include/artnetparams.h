@@ -37,28 +37,28 @@
 #include "lightset.h"
 
 struct TArtNetParams {
-	uint32_t nSetList;										///< 4	  4
-	uint8_t nNet;											///< 1	  5
-	uint8_t nSubnet;										///< 1	  6
-	uint8_t nUniverse;										///< 1	  7
-	uint8_t nOutputType;									///< 1	  8
-	uint8_t NotUsed0;										///< 1	  9
-	uint8_t NotUsed1;										///< 1	 10
-	uint8_t NotUsed2;										///< 1	 11
-	uint8_t NotUsed3;										///< 1	 12
-	uint8_t aShortName[ArtNet::SHORT_NAME_LENGTH];			///< 18	 30
-	uint8_t aLongName[ArtNet::LONG_NAME_LENGTH];			///< 64	 94
-	uint16_t nMultiPortOptions;								///< 2	 96
-	uint8_t aOemValue[2];									///< 2	 98
-	time_t nNetworkTimeout;									///< 4	102
-	uint8_t NotUsed4;										///< 1	103
+	uint32_t nSetList;									///< 4	  4
+	uint8_t nNet;										///< 1	  5
+	uint8_t nSubnet;									///< 1	  6
+	uint8_t nUniverse;									///< 1	  7
+	uint8_t nOutputType;								///< 1	  8
+	uint8_t NotUsed0;									///< 1	  9
+	uint8_t NotUsed1;									///< 1	 10
+	uint8_t NotUsed2;									///< 1	 11
+	uint8_t NotUsed3;									///< 1	 12
+	uint8_t aShortName[ArtNet::SHORT_NAME_LENGTH];		///< 18	 30
+	uint8_t aLongName[ArtNet::LONG_NAME_LENGTH];		///< 64	 94
+	uint16_t nMultiPortOptions;							///< 2	 96
+	uint8_t aOemValue[2];								///< 2	 98
+	time_t nNetworkTimeout;								///< 4	102
+	uint8_t NotUsed4;									///< 1	103
 	uint8_t nUniversePort[ArtNet::PORTS];				///< 4	107
-	uint8_t nMergeMode;										///< 1	108
+	uint8_t nMergeMode;									///< 1	108
 	uint8_t nMergeModePort[ArtNet::PORTS];				///< 4	112
-	uint8_t nProtocol;										///< 1	113
+	uint8_t nProtocol;									///< 1	113
 	uint8_t nProtocolPort[ArtNet::PORTS];				///< 4	117
-	uint8_t NotUsed5;										///< 1	118
-	uint8_t nDirection;										///< 1	119
+	uint8_t NotUsed5;									///< 1	118
+	uint8_t nDirection;									///< 1	119
 	uint32_t nDestinationIpPort[ArtNet::PORTS];			///< 16	135
 }__attribute__((packed));
 
@@ -82,7 +82,7 @@ struct ArtnetParamsMask {
 	static constexpr auto TIMECODE = (1U << 6);
 	static constexpr auto TIMESYNC = (1U << 7);
 	static constexpr auto OUTPUT = (1U << 8);
-	//static constexpr auto NOT_USED = (1U << 9); // WAS: aManufacturerId
+	//static constexpr auto NOT_USED1 = (1U << 9); // WAS: aManufacturerId
 	static constexpr auto OEM_VALUE = (1U << 10);
 	static constexpr auto NETWORK_TIMEOUT = (1U << 11);
 	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 12);
@@ -100,14 +100,13 @@ struct ArtnetParamsMask {
 	static constexpr auto PROTOCOL_B = (1U << 24);
 	static constexpr auto PROTOCOL_C = (1U << 25);
 	static constexpr auto PROTOCOL_D = (1U << 26);
-	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 27);
+	//static constexpr auto NOT_USED2 = (1U << 27); //WAS: ENABLE_NO_CHANGE_OUTPUT
 	static constexpr auto DIRECTION = (1U << 28);
 };
 
 class ArtNetParamsStore {
 public:
-	virtual ~ArtNetParamsStore() {
-	}
+	virtual ~ArtNetParamsStore() {}
 
 	virtual void Update(const struct TArtNetParams *pArtNetParams)=0;
 	virtual void Copy(struct TArtNetParams *pArtNetParams)=0;
@@ -133,6 +132,11 @@ public:
 
 	uint8_t GetSubnet() const {
 		return m_tArtNetParams.nSubnet;
+	}
+
+	uint8_t GetUniverse(bool &IsSet) const {
+		IsSet = isMaskSet(ArtnetParamsMask::UNIVERSE);
+		return m_tArtNetParams.nUniverse;
 	}
 
 	uint8_t GetUniverse() const {
@@ -168,10 +172,6 @@ public:
 	}
 
 	uint8_t GetUniverse(uint8_t nPort, bool &IsSet);
-
-	bool IsEnableNoChangeUpdate() const {
-		return isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT);
-	}
 
 	artnet::PortDir GetDirection() const {
 		return static_cast<artnet::PortDir>(m_tArtNetParams.nDirection);

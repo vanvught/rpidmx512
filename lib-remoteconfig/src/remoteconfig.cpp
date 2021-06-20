@@ -498,7 +498,7 @@ void RemoteConfig::HandleStoreGet() {
 	}
 
 #ifndef NDEBUG
-	debug_dump(s_UdpBuffer, nLength);
+	debug_dump(s_UdpBuffer, static_cast<uint16_t>(nLength));
 #endif
 	Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
 
@@ -620,7 +620,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 	}
 
 #ifndef NDEBUG
-	debug_dump(s_UdpBuffer, nSize);
+	debug_dump(s_UdpBuffer, static_cast<uint16_t>(nSize));
 #endif
 
 	if (pBuffer == nullptr) {
@@ -721,9 +721,9 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
+# if defined (RDM_RESPONDER)
 	bool bIsSetLedType = false;
 
-#if !defined (OUTPUT_PIXEL_MULTI)
 	TLC59711DmxParams tlc5911params(StoreTLC59711::Get());
 
 	if (tlc5911params.Load()) {
@@ -731,12 +731,14 @@ void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 			tlc5911params.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 		}
 	}
-#endif
 
 	if (!bIsSetLedType) {
+# endif
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 		ws28xxparms.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
+# if defined (RDM_RESPONDER)
 	}
+#endif
 
 	DEBUG_EXIT
 }
@@ -1202,7 +1204,7 @@ void RemoteConfig::HandleTxtFileParams() {
 void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_ENTRY
 
-#if !defined (OUTPUT_PIXEL_MULTI)
+# if defined (RDM_RESPONDER)
 	static_assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams), "");
 
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
@@ -1219,13 +1221,13 @@ void RemoteConfig::HandleTxtFileDevices() {
 	}
 
 	tlc59711params.Load(s_UdpBuffer, m_nBytesReceived);
-#ifndef NDEBUG
+#  ifndef NDEBUG
 	tlc59711params.Dump();
-#endif
+#  endif
 	DEBUG_PRINTF("tlc5911params.IsSetLedType()=%d", tlc59711params.IsSetLedType());
 
 	if (!tlc59711params.IsSetLedType()) {
-#endif
+# endif
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 
 		if (m_tHandleMode == HandleMode::BIN) {
@@ -1240,12 +1242,12 @@ void RemoteConfig::HandleTxtFileDevices() {
 		}
 
 		ws28xxparms.Load(s_UdpBuffer, m_nBytesReceived);
-#ifndef NDEBUG
+# ifndef NDEBUG
 		ws28xxparms.Dump();
-#endif
-#if !defined (OUTPUT_PIXEL_MULTI)
+# endif
+# if defined (RDM_RESPONDER)
 	}
-#endif
+# endif
 
 	DEBUG_EXIT
 }

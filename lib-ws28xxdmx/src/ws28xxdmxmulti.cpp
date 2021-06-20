@@ -46,7 +46,7 @@ static uint8_t s_StopBuffer[Dmx::UNIVERSE_SIZE] = {0};
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration) {
 	DEBUG_ENTRY
 
-	pixelDmxConfiguration.Validate(WS28xxMulti::GetBoard() == ws28xxmulti::Board::X4 ? 4 : 8 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
+	pixelDmxConfiguration.Validate(8 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
 
 	DEBUG_PRINTF("m_nChannelsPerPixel=%u, m_nGroups=%u, m_nUniverses=%u", m_nChannelsPerPixel, m_nGroups, m_nUniverses);
 
@@ -72,11 +72,10 @@ void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted == 0) {
-		if (s_pLightSetHandler != nullptr) {
-			s_pLightSetHandler->Start();
+		if (m_pPixelDmxHandler != nullptr) {
+			m_pPixelDmxHandler->Start();
 		}
 	}
-
 	m_bIsStarted |= (1U << nPortIndex);
 }
 
@@ -88,8 +87,10 @@ void WS28xxDmxMulti::Stop(uint32_t nPortIndex) {
 		m_bIsStarted &= ~(1U << nPortIndex);
 	}
 
-	if ((m_bIsStarted == 0) & (s_pLightSetHandler != nullptr)) {
-		s_pLightSetHandler->Stop();
+	if (m_bIsStarted == 0)  {
+		if (m_pPixelDmxHandler != nullptr) {
+			m_pPixelDmxHandler->Stop();
+		}
 	}
 }
 
@@ -99,7 +100,7 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 
 	uint32_t beginIndex, endIndex;
 
-#if defined (NODE_ARTNET)
+#if defined (NODE_ARTNET_MULTI)
 	const auto nOutIndex = (nPortIndex / 4);
 	const auto nSwitch = nPortIndex - (nOutIndex * 4);
 #else

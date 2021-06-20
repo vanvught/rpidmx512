@@ -72,10 +72,6 @@ void E131Params::Dump() {
 		printf(" %s=1 [Yes]\n", E131ParamsConst::DISABLE_MERGE_TIMEOUT);
 	}
 
-	if(isMaskSet(E131ParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=1 [Yes]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE);
-	}
-
 	if(isMaskSet(E131ParamsMask::DIRECTION)) {
 		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION,	m_tE131Params.nDirection, m_tE131Params.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
 	}

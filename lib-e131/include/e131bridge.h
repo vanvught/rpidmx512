@@ -115,13 +115,6 @@ public:
 		return m_State.nActiveInputPorts;
 	}
 
-	void SetDirectUpdate(bool bDirectUpdate) {
-		m_bDirectUpdate = bDirectUpdate;
-	}
-	bool GetDirectUpdate() const {
-		return m_bDirectUpdate;
-	}
-
 	bool IsTransmitting(uint8_t nPortIndex) const;
 	bool IsMerging(uint8_t nPortIndex) const;
 	bool IsStatusChanged();
@@ -207,8 +200,8 @@ private:
 	void CheckMergeTimeouts(uint8_t nPortIndex);
 	bool IsPriorityTimeOut(uint8_t nPortIndex);
 	bool isIpCidMatch(const struct e131bridge::Source *);
-	bool IsDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	bool IsMergedDmxDataChanged(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
+	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();
@@ -227,7 +220,6 @@ private:
 
 	LightSet *m_pLightSet { nullptr };
 
-	bool m_bDirectUpdate { false };
 	bool m_bEnableDataIndicator { true };
 
 	uint32_t m_nCurrentPacketMillis { 0 };

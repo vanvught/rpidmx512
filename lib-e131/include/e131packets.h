@@ -159,10 +159,8 @@ union UE131Packet {
  *
  */
 struct TE131 {
-	int length;						///<
-	uint32_t IPAddressFrom;			///<
-	uint32_t IPAddressTo;			///<
-	union UE131Packet E131Packet;	///<
+	uint32_t IPAddressFrom;
+	union UE131Packet E131Packet;
 };
 
 #define ROOT_LAYER_SIZE						sizeof(struct TRootLayer)

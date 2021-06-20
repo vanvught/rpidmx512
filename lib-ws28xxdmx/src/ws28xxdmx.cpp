@@ -75,8 +75,8 @@ void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 
 	m_bIsStarted = true;
 
-	if (s_pLightSetHandler != nullptr) {
-		s_pLightSetHandler->Start();
+	if (m_pPixelDmxHandler != nullptr) {
+		m_pPixelDmxHandler->Start();
 	}
 }
 
@@ -94,8 +94,8 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 		m_pWS28xx->Blackout();
 	}
 
-	if (s_pLightSetHandler != nullptr) {
-		s_pLightSetHandler->Stop();
+	if (m_pPixelDmxHandler != nullptr) {
+		m_pPixelDmxHandler->Stop();
 	}
 }
 

@@ -156,7 +156,6 @@ void notmain(void) {
 		pDmxOutput->Print();
 
 		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
-		node.SetDirectUpdate(false);
 		node.SetOutput(pDmxOutput);
 
 		if (artnetparams.IsRdm()) {

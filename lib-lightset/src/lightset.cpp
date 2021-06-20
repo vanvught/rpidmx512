@@ -28,10 +28,9 @@
 #include "lightset.h"
 
 LightSetDisplay *LightSet::s_pLightSetDisplay { nullptr };
-LightSetHandler *LightSet::s_pLightSetHandler { nullptr };
 LightSet *LightSet::s_pThis { nullptr };
 
 LightSet::LightSet()  {
-	assert(s_pThis == nullptr);
+//	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

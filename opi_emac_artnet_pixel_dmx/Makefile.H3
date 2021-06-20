@@ -1,0 +1,10 @@
+PLATFORM=ORANGE_PI
+DEFINES=NODE_ARTNET ARTNET_PAGES=2 E131_PORTS=8
+DEFINES+=OUTPUT_PIXEL OUTPUT_DMXSEND DISPLAY_UDF DISABLE_RTC ENABLE_SSD1311 NDEBUG
+LIBS=rdmnet rdm rdmsensor rdmsubdevice
+SRCDIR=firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
+	./generate_sofware_version_id.sh

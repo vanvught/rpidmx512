@@ -81,10 +81,6 @@ int main(int argc, char **argv) {
 		e131Params.Set(&bridge);
 	}
 
-	if (fopen("direct.update", "r") != nullptr) {
-		bridge.SetDirectUpdate(true);
-	}
-
 	DMXMonitor monitor;
 	DMXMonitorParams monitorParams(new StoreMonitor);
 

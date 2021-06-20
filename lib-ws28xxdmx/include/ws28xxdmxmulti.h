@@ -35,6 +35,8 @@
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
 
+#include "pixeldmxhandler.h"
+
 namespace ws28xxdmxmulti {
 
 }  // namespace ws28xxdmxmulti
@@ -65,6 +67,10 @@ public:
 
 	void Print() override;
 
+	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
+		m_pPixelDmxHandler = pPixelDmxHandler;
+	}
+
 	// RDMNet LLRP Device Only
 	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
 		return false;
@@ -87,6 +93,7 @@ private:
 	uint32_t m_nOutputPorts;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };
+	PixelDmxHandler *m_pPixelDmxHandler { nullptr };
 
 	uint32_t m_bIsStarted { 0 };
 	bool m_bBlackout { false };

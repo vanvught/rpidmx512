@@ -181,9 +181,7 @@ void notmain(void) {
 	bridge.Print();
 	pixelDmxMulti.Print();
 
-	const auto board =  WS28xxMulti::GetBoard();
-
-	display.SetTitle("sACN Pixel %c:%dx%d", board == ws28xxmulti::Board::X8 ? '8' : (board == ws28xxmulti::Board::X4 ? '4' : ' '), nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::HOSTNAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);

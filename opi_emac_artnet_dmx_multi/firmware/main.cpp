@@ -189,28 +189,21 @@ printf("%d\n", __LINE__);
 	// DMX Input
 	DmxInput *pDmxInput;
 
-printf("%d\n", __LINE__);
-
 	if (portDir == PortDir::INPUT) {
 		pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-printf("%d\n", __LINE__);
 		pDmxOutput = new DMXSendMulti;
 		assert(pDmxOutput != nullptr);
-printf("%d\n", __LINE__);
 		DMXParams dmxParams(&storeDmxSend);
-printf("%d\n", __LINE__);
+
 		if (dmxParams.Load()) {
-printf("%d\n", __LINE__);
 			dmxParams.Dump();
 			dmxParams.Set(pDmxOutput);
 		}
-printf("%d\n", __LINE__);
 		node.SetOutput(pDmxOutput);
-		node.SetDirectUpdate(false);
 
 		pDmxOutput->Print();
 
@@ -218,14 +211,13 @@ printf("%d\n", __LINE__);
 		assert(pDiscovery != nullptr);
 
 		if(artnetparams.IsRdm()) {
-printf("%d\n", __LINE__);
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
 				rdmDeviceParams.Set(pDiscovery);
 				rdmDeviceParams.Dump();
 			}
-printf("%d\n", __LINE__);
+
 			pDiscovery->Init();
 			pDiscovery->Print();
 

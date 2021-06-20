@@ -30,14 +30,16 @@
 #include "artnetnode.h"
 #include "lightset.h"
 
-class ArtNetReboot: public RebootHandler {
+class ArtNetReboot final : public RebootHandler {
 public:
 	ArtNetReboot() {}
-	~ArtNetReboot() {}
+	~ArtNetReboot() override {}
 
-	void Run() {
+	void Run() override {
 		ArtNetNode::Get()->Stop();
-		LightSet::Get()->Blackout(true);
+		if (LightSet::Get() != nullptr) {
+			LightSet::Get()->Blackout(true);
+		}
 	}
 };
 

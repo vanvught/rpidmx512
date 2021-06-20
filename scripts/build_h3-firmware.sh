@@ -35,6 +35,11 @@ for i in "${array[@]}"
 do
 	echo $i
 	./makeall_firmware_h3.sh $i
+	retVal=$?
+	if [ $retVal -ne 0 ]; then
+    	echo "Error"
+		exit $retVal
+	fi
 done
 
 cd ..

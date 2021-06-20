@@ -457,15 +457,11 @@ union UArtPacket {
 	struct TArtDirectoryReply ArtDirectoryReply;///< ArtDirectoryReply packet
 };
 
-/**
- * a packet, containing data, length, type and a src/dst address
- */
 struct TArtNetPacket {
-	int length;						///<
-	uint32_t IPAddressFrom;			///<
-	uint32_t IPAddressTo;			///<
-	TOpCodes OpCode;				///<
-	union UArtPacket ArtPacket;		///<
+	int length;
+	uint32_t IPAddressFrom;
+	TOpCodes OpCode;
+	union UArtPacket ArtPacket;
 };
 
 #endif /* PACKETS_H_ */

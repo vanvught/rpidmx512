@@ -110,7 +110,6 @@ void ArtNet4Node::Start() {
 
 	m_Bridge.SetDisableNetworkDataLossTimeout(ArtNetNode::GetNetworkTimeout() == 0);
 	m_Bridge.SetDisableMergeTimeout(ArtNet4Node::GetDisableMergeTimeout());
-	m_Bridge.SetDirectUpdate(ArtNetNode::GetDirectUpdate());
 	m_Bridge.SetOutput(ArtNetNode::GetOutput());
 
 	ArtNetNode::Start();

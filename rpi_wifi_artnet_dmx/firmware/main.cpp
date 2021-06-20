@@ -189,7 +189,6 @@ void notmain(void) {
 		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
-		node.SetDirectUpdate(nUniverses != 1);
 
 		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));

@@ -71,10 +71,6 @@ void E131Bridge::Print() {
 		}
 	}
 
-	if (m_bDirectUpdate) {
-		printf(" Direct update : Yes\n");
-	}
-
 	if (m_State.bDisableSynchronize) {
 		printf(" Synchronize is disabled\n");
 	}

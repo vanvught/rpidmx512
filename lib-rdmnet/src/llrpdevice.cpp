@@ -141,7 +141,7 @@ void LLRPDevice::HandleRdmCommand() {
 #endif
 
 #ifndef NDEBUG
-	debug_dump(pRDMCommand, nLength);
+	debug_dump(pRDMCommand, static_cast<uint16_t>(nLength));
 	DumpCommon();
 #endif
 

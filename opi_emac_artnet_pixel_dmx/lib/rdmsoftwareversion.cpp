@@ -1,8 +1,8 @@
 /**
- * @file timesync.cpp
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <time.h>
+#include <stdint.h>
 
-#include "timesync.h"
+#include "rdmsoftwareversion.h"
 
-#include "artnettimesync.h"
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-#include "hardware.h"
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
+}
 
-#include "debug.h"
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-void TimeSync::Handler(const struct TArtNetTimeSync *pArtNetTimeSync) {
-	DEBUG_ENTRY
-
-	struct tm tmTime;
-
-	tmTime.tm_sec = pArtNetTimeSync->tm_sec;
-	tmTime.tm_min = pArtNetTimeSync->tm_min;
-	tmTime.tm_hour = pArtNetTimeSync->tm_hour;
-	tmTime.tm_mday = pArtNetTimeSync->tm_mday;
-	tmTime.tm_mon = pArtNetTimeSync->tm_mon;
-	tmTime.tm_year = ((pArtNetTimeSync->tm_year_hi) << 8) + pArtNetTimeSync->tm_year_lo;
-
-	Hardware::Get()->SetTime(&tmTime);
-
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmTime.tm_year, 1 + tmTime.tm_mon, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
-	DEBUG_EXIT
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
 }

@@ -36,6 +36,8 @@
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
 
+#include "pixeldmxhandler.h"
+
 class WS28xxDmx: public LightSet {
 public:
 	WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration);
@@ -52,6 +54,10 @@ public:
 
 	void SetWS28xxDmxStore(WS28xxDmxStore *pWS28xxDmxStore) {
 		m_pWS28xxDmxStore = pWS28xxDmxStore;
+	}
+
+	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
+		m_pPixelDmxHandler = pPixelDmxHandler;
 	}
 
 	uint32_t GetUniverses() const {
@@ -96,8 +102,8 @@ private:
 	uint16_t m_nDmxFootprint { 170 * 3 };
 
 	WS28xx *m_pWS28xx { nullptr };
-
 	WS28xxDmxStore *m_pWS28xxDmxStore { nullptr };
+	PixelDmxHandler *m_pPixelDmxHandler { nullptr };
 
 	bool m_bIsStarted { false };
 	bool m_bBlackout { false };

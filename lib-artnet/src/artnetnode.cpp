@@ -43,6 +43,8 @@
 
 #include "artnetnode_internal.h"
 
+#include "debug.h"
+
 using namespace artnet;
 
 static constexpr auto ARTNET_MIN_HEADER_SIZE = 12;
@@ -73,12 +75,11 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_State.status = ARTNET_STANDBY;
 	m_State.nNetworkDataLossTimeoutMillis = artnet::NETWORK_DATA_LOSS_TIMEOUT * 1000;
 
-	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		m_IsLightSetRunning[i] = false;
+		// Output
 		memset(&m_OutputPorts[i], 0 , sizeof(struct TOutputPort));
-	}
-
-	for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
+		// Input
 		memset(&m_InputPorts[i], 0 , sizeof(struct TInputPort));
 		m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
 		m_InputPorts[i].port.nStatus = GI_DISABLED;
@@ -144,6 +145,8 @@ void ArtNetNode::Start() {
 }
 
 void ArtNetNode::Stop() {
+	DEBUG_ENTRY
+
 	if (m_pArtNetDmx != nullptr) {
 		for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
@@ -153,7 +156,7 @@ void ArtNetNode::Stop() {
 	}
 
 	if (m_pLightSet != nullptr) {
-		for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
+		for (uint8_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (m_IsLightSetRunning[i])) {
 				m_pLightSet->Stop(i);
 				m_IsLightSetRunning[i] = false;
@@ -165,6 +168,8 @@ void ArtNetNode::Stop() {
 
 	m_Node.Status1 = static_cast<uint8_t>((m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE);
 	m_State.status = ARTNET_OFF;
+
+	DEBUG_EXIT
 }
 
 void ArtNetNode::SetShortName(const char *pShortName) {

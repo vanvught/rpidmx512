@@ -57,14 +57,6 @@ public:
 	virtual void ShowDmxStartAddress()=0;
 };
 
-class LightSetHandler {
-public:
-	virtual ~LightSetHandler() {}
-
-	virtual void Start()=0;
-	virtual void Stop()=0;
-};
-
 class LightSet {
 public:
 	LightSet();
@@ -92,17 +84,12 @@ public:
 		s_pLightSetDisplay = pLightSetDisplay;
 	}
 
-	void SetLightSetHandler(LightSetHandler *pLightSetHandler) {
-		s_pLightSetHandler = pLightSetHandler;
-	}
-
 	static LightSet *Get() {
 		return s_pThis;
 	}
 
 protected:
 	static LightSetDisplay *s_pLightSetDisplay;
-	static LightSetHandler *s_pLightSetHandler;
 
 private:
 	static LightSet *s_pThis;

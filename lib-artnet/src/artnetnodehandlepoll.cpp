@@ -142,6 +142,8 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			if (m_OutputPorts[nPortIndex].bIsEnabled) {
 				m_PollReply.PortTypes[nPortIndex - nPortIndexStart] = ARTNET_ENABLE_OUTPUT | ARTNET_PORT_DMX;
 				NumPortsLo++;
+			} else {
+				m_PollReply.PortTypes[nPortIndex - nPortIndexStart] = 0;
 			}
 
 			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;

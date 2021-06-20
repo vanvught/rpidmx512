@@ -41,6 +41,8 @@
 
 using namespace pixelpatterns;
 
+static constexpr char s_patternName[static_cast<uint32_t>(Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Scanner", "Fade" };
+
 PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX_PORTS, nActivePorts)) {
 #if defined (OUTPUT_PIXEL_MULTI)
 	m_pOutput = WS28xxMulti::Get();
@@ -58,6 +60,14 @@ PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX
 		m_PortConfig[i].nLastUpdate = nMillis;
 		m_PortConfig[i].Direction = Direction::FORWARD;
 	}
+}
+
+const char* PixelPatterns::GetName(Pattern pattern) {
+	if (pattern < Pattern::LAST) {
+		return s_patternName[static_cast<uint32_t>(pattern)];
+	}
+
+	return "Unknown";
 }
 
 void PixelPatterns::Run() {
