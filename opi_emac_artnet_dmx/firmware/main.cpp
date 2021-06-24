@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 // DMX/RDM Output
 #include "dmxparams.h"
 #include "dmxsend.h"
@@ -129,7 +127,6 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 

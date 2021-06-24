@@ -108,10 +108,6 @@ ArtNetNode::~ArtNetNode() {
 		delete m_pTodData;
 	}
 
-	if (m_pIpProgReply != nullptr) {
-		delete m_pIpProgReply;
-	}
-
 	if (m_pTimeCodeData != nullptr) {
 		delete m_pTimeCodeData;
 	}
@@ -350,9 +346,7 @@ void ArtNetNode::Run() {
 		}
 		break;
 	case OP_IPPROG:
-		if (m_pArtNetIpProg != nullptr) {
-			HandleIpProg();
-		}
+		HandleIpProg();
 		break;
 	case OP_TRIGGER:
 		if (m_pArtNetTrigger != nullptr) {

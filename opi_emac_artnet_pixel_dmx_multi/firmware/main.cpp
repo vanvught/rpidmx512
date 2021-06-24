@@ -42,8 +42,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 // Pixel
 #include "pixeltestpattern.h"
 #include "pixeltype.h"
@@ -230,7 +228,6 @@ void notmain(void) {
 	lightSet.Print();
 
 	node.SetOutput(&lightSet);
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(&storeArtNet);
 	node.Print();

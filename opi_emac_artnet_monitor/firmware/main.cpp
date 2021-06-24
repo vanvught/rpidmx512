@@ -46,7 +46,6 @@
 #include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
 #include "timecode.h"
 #include "timesync.h"
 
@@ -126,7 +125,6 @@ void notmain(void) {
 		artnetparams.Set(&node);
 	}
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());

@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 // Addressable led
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
@@ -196,7 +194,6 @@ void notmain(void) {
 	lightSet.Print();
 
 	node.SetOutput(&lightSet);
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(&storeArtNet);
 	node.Print();

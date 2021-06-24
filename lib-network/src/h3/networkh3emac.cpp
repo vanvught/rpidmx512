@@ -247,7 +247,7 @@ void NetworkH3emac::SetDefaultIp() {
 void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
-	if (nIp == m_nLocalIp) {
+	if ((nIp == m_nLocalIp) && !m_IsDhcpUsed) {
 		DEBUG_EXIT
 		return;
 	}

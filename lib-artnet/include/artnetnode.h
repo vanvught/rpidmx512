@@ -246,7 +246,6 @@ public:
 	}
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
-	void SetIpProgHandler(ArtNetIpProg *);
 
 	void SetArtNetStore(ArtNetStore *pArtNetStore) {
 		m_pArtNetStore = pArtNetStore;
@@ -325,14 +324,14 @@ private:
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
 	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
 	ArtNetRdm *m_pArtNetRdm { nullptr };
-	ArtNetIpProg *m_pArtNetIpProg { nullptr };
 	ArtNetDmx *m_pArtNetDmx { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
+
 	TArtTimeCode *m_pTimeCodeData { nullptr };
 	TArtTodData *m_pTodData { nullptr };
-	TArtIpProgReply *m_pIpProgReply { nullptr };
 
 	LightSet *m_pLightSet { nullptr };
+
 	ArtNet4Handler *m_pArtNet4Handler { nullptr };
 	ArtNetStore *m_pArtNetStore { nullptr };
 	ArtNetDisplay *m_pArtNetDisplay { nullptr };

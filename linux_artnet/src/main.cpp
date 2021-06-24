@@ -50,10 +50,6 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 
-#if defined (__linux__)
-# include "ipprog.h"
-#endif
-
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -112,11 +108,6 @@ int main(int argc, char **argv) {
 	}
 
 	node.SetOutput(&monitor);
-#if defined (__linux__)
-	if (getuid() == 0) {
-		node.SetIpProgHandler(new IpProg);
-	}
-#endif
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());

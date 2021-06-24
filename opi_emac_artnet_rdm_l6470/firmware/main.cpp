@@ -46,8 +46,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 #include "identify.h"
 
 #include "rdmdeviceresponder.h"
@@ -241,7 +239,6 @@ void notmain(void) {
 
 	Identify identify;
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore(StoreArtNet::Get());

@@ -343,7 +343,7 @@ struct TArtIpProg {
 	uint8_t Filler1;	///< Pad length to match ArtPoll.
 	uint8_t Filler2;	///< Pad length to match ArtPoll.
 	uint8_t Command;	///< Defines the how this packet is processed.
-	uint8_t Filler4;	///< Set to zero. Pads data structure for word alignment.
+	uint8_t Filler;		///< Set to zero. Pads data structure for word alignment.
 	uint8_t ProgIpHi;	///< IP Address to be programmed into Node if enabled by Command Field
 	uint8_t ProgIp2;
 	uint8_t ProgIp1;
@@ -353,8 +353,11 @@ struct TArtIpProg {
 	uint8_t ProgSm1;
 	uint8_t ProgSmLo;
 	uint8_t ProgPortHi;	///< PortAddress to be programmed into Node if enabled by Command Field
-	uint8_t ProgPortlo;
-	uint8_t Spare1_8[8];///< Transmit as zero, receivers don’t test.
+	uint8_t ProgPortLo;
+	uint8_t ProgGwHi;	///< Gateway to be programmed into Node if enabled by Command Field
+	uint8_t ProgGw2;
+	uint8_t ProgGw1;
+	uint8_t ProgGwtLo;
 }PACKED;
 
 /**
@@ -369,18 +372,24 @@ struct TArtIpProgReply {
 	uint8_t Filler2;	///< Pad length to match ArtPoll.
 	uint8_t Filler3;	///< Pad length to match ArtIpProg.
 	uint8_t Filler4;	///< Pad length to match ArtIpProg.
-	uint8_t ProgIpHi;	///< IP Address to be programmed into Node if enabled by Command Field
+	uint8_t ProgIpHi;	///< IP Address of Node
 	uint8_t ProgIp2;
 	uint8_t ProgIp1;
 	uint8_t ProgIpLo;
-	uint8_t ProgSmHi;	///< Subnet mask to be programmed into Node if enabled by Command Field
+	uint8_t ProgSmHi;	///< Subnet mask of Node
 	uint8_t ProgSm2;
 	uint8_t ProgSm1;
 	uint8_t ProgSmLo;
-	uint8_t ProgPortHi;	///< PortAddress to be programmed into Node if enabled by Command Field
-	uint8_t ProgPortlo;
+	uint8_t ProgPortHi;	///< Port Address of Node
+	uint8_t ProgPortLo;
 	uint8_t Status;		///< Bit 6 DHCP enabled.
-	uint8_t Spare2_8[7];///< Transmit as zero, receivers don’t test.
+	uint8_t Spare2;
+	uint8_t ProgGwHi;	///< Gateway of Node
+	uint8_t ProgGw2;
+	uint8_t ProgGw1;
+	uint8_t ProgGwtLo;
+	uint8_t Spare7;
+	uint8_t Spare8;
 }PACKED;
 
 /**
