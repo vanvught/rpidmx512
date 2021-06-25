@@ -1,8 +1,8 @@
 /**
- * @file displayudfnetworkhandler.h
+ * @file displayudfhandler.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,58 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYUDFNETWORKHANDLER_H_
-#define DISPLAYUDFNETWORKHANDLER_H_
+#ifndef DISPLAYUDFHANDLER_H_
+#define DISPLAYUDFHANDLER_H_
+
+#include <cstdint>
 
 #include "displayudf.h"
+
+#include "artnetnode.h"
+#include "artnet.h"
+
+#include "artnetdisplay.h"
+#include "lightset.h"
 
 #include "network.h"
 #include "ntpclient.h"
 
-class DisplayUdfNetworkHandler: public NetworkDisplay, public NtpClientDisplay {
+class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay, public NtpClientDisplay {
 public:
-	DisplayUdfNetworkHandler() {}
-	~DisplayUdfNetworkHandler() {}
+	DisplayUdfHandler() {}
+	~DisplayUdfHandler() {}
 
+	void ShowShortName(__attribute__((unused)) const char *pShortName) {
+		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
+	}
+
+	void ShowLongName(__attribute__((unused)) const char *pLongName) {
+	}
+
+	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowNetSwitch(__attribute__((unused))  uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowSubnetSwitch(__attribute__((unused))  uint8_t nAddress) {
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowDmxStartAddress() {
+		DisplayUdf::Get()->ShowDmxStartAddress();
+	}
+	
 	void ShowEmacStart() {
 		DisplayUdf::Get()->ShowEmacStart();
 	}
@@ -79,4 +118,4 @@ public:
 	}
 };
 
-#endif /* DISPLAYUDFNETWORKHANDLER_H_ */
+#endif /* DISPLAYUDFHANDLER_H_ */

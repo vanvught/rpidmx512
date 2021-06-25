@@ -108,6 +108,11 @@ void DisplayUdf::ShowDmxStartAddress() {
 	}
 }
 
+void DisplayUdf::ShowEmacStart() {
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "Ethernet start");	
+}
+
 void DisplayUdf::ShowIpAddress() {
 	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());

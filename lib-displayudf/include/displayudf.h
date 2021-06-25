@@ -122,6 +122,7 @@ public:
 	void ShowDmxStartAddress();
 
 	// Network
+	void ShowEmacStart();
 	void ShowIpAddress();
 	void ShowNetmask();
 	void ShowGatewayIp();

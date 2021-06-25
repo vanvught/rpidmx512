@@ -39,6 +39,11 @@ public:
 	}
 
 	~NetworkHandlerOled() {}
+	
+	void ShowEmacStart() {
+		Display::Get()->ClearLine(3);
+		Display::Get()->Printf(3, "Ethernet start");
+	}	
 
 	void ShowIp() {
 		Display::Get()->ClearLine(3);
