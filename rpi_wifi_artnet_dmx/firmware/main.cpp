@@ -38,7 +38,6 @@
 #include "artnetparams.h"
 
 #include "timecode.h"
-#include "timesync.h"
 
 // DMX output / RDM
 #include "dmxparams.h"
@@ -143,7 +142,6 @@ void notmain(void) {
 	DMXMonitor monitor;
 #endif
 	TimeCode timecode;
-	TimeSync timesync;
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
@@ -154,11 +152,6 @@ void notmain(void) {
 	if (artnetparams.IsUseTimeCode() || tOutputType == OutputType::MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
-	}
-
-	if (artnetparams.IsUseTimeSync() || tOutputType == OutputType::MONITOR) {
-		timesync.Start();
-		node.SetTimeSyncHandler(&timesync);
 	}
 
 	const auto nStartUniverse = artnetparams.GetUniverse();
@@ -305,9 +298,6 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		node.Run();
-		if (tOutputType == OutputType::MONITOR) {
-			timesync.ShowSystemTime();
-		}
 		lb.Run();
 #if defined (ORANGE_PI)
 		spiFlashStore.Flash();

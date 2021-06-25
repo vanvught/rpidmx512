@@ -56,7 +56,7 @@
 
 #include "artnetrdmresponder.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"

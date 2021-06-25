@@ -42,7 +42,6 @@
 #include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
-#include "timesync.h"
 
 #include "artnetconst.h"
 #include "networkconst.h"
@@ -253,7 +252,6 @@ void notmain(void) {
 	const auto bRunArtNet = ((ltcSource == ltc::source::ARTNET) || (!tLtcDisabledOutputs.bArtNet));
 
 	ArtNetNode node;
-	TimeSync timeSync;
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams(new StoreArtNet);
@@ -269,7 +267,7 @@ void notmain(void) {
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
 
 		if (!ltcParams.IsTimeSyncDisabled()) {
-			node.SetTimeSyncHandler(&timeSync);
+			//TODO Send ArtTimeSync
 		}
 
 		node.Start();

@@ -1,11 +1,11 @@
 /**
- * @file artnettimesync.h
+ * @file artnetnodehandletimesync.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +26,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTTIMESYNC_H_
-#define ARTTIMESYNC_H_
+#include <cassert>
 
-#include <cstdint>
+#include "artnetnode.h"
 
-struct TArtNetTimeSync {
-	uint8_t tm_sec;
-	uint8_t tm_min;
-	uint8_t tm_hour;
-	uint8_t tm_mday;
-	uint8_t tm_mon;
-	uint8_t tm_year_hi;
-	uint8_t tm_year_lo;
-	uint8_t tm_wday;
-	uint8_t tm_isdst;
-}__attribute__((packed));
+#include "hardware.h"
 
-class ArtNetTimeSync {
-public:
-	virtual ~ArtNetTimeSync() {
+#include "debug.h"
 
-	}
+void ArtNetNode::HandleTimeSync() {
+	DEBUG_ENTRY
+	const auto *pArtTimeSync = &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
+	struct tm tmTime;
 
-	virtual void Handler(const struct TArtNetTimeSync *)= 0;
-};
+	tmTime.tm_sec = pArtTimeSync->tm_sec;
+	tmTime.tm_min = pArtTimeSync->tm_min;
+	tmTime.tm_hour = pArtTimeSync->tm_hour;
+	tmTime.tm_mday = pArtTimeSync->tm_mday;
+	tmTime.tm_mon = pArtTimeSync->tm_mon;
+	tmTime.tm_year = ((pArtTimeSync->tm_year_hi) << 8) + pArtTimeSync->tm_year_lo;
 
-#endif /* ARTTIMESYNC_H_ */
+	Hardware::Get()->SetTime(&tmTime);
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmTime.tm_year, 1 + tmTime.tm_mon, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
+	DEBUG_EXIT
+}

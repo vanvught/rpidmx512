@@ -47,7 +47,6 @@
 #include "artnetmsgconst.h"
 
 #include "timecode.h"
-#include "timesync.h"
 
 // Monitor Output
 #include "dmxmonitor.h"
@@ -55,7 +54,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 #include "spiflashinstall.h"
@@ -133,11 +132,6 @@ void notmain(void) {
 	if (artnetparams.IsUseTimeCode()) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
-	}
-
-	TimeSync timesync;
-	if (artnetparams.IsUseTimeSync()) {
-		node.SetTimeSyncHandler(&timesync);
 	}
 
 	DMXMonitor monitor;

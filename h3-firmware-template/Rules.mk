@@ -44,7 +44,7 @@ endif
 
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	ifdef COND
-		LIBS+=artnet4 artnethandlers artnet e131 uuid
+		LIBS+=artnet4 artnet e131 uuid
 	endif
 endif
 

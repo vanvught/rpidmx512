@@ -326,9 +326,7 @@ void ArtNetNode::Run() {
 		}
 		break;
 	case OP_TIMESYNC:
-		if (m_pArtNetTimeSync != nullptr) {
-			HandleTimeSync();
-		}
+		HandleTimeSync();
 		break;
 	case OP_TODREQUEST:
 		if (m_pArtNetRdm != nullptr) {

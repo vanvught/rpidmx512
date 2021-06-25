@@ -39,9 +39,7 @@
 #include "ledblink.h"
 
 #include "artnettimecode.h"
-#include "artnettimesync.h"
 #include "artnetrdm.h"
-#include "artnetipprog.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnetdmx.h"
@@ -234,16 +232,12 @@ public:
 	}
 
 	void SendDiag(const char *, TPriorityCodes);
-	void SendTimeCode(const struct TArtNetTimeCode *);
 
+	void SendTimeCode(const struct TArtNetTimeCode *);
 	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 	}
-
 	void SetTimeCodeIp(uint32_t nDestinationIp);
-	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
-		m_pArtNetTimeSync = pArtNetTimeSync;
-	}
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 
@@ -322,7 +316,6 @@ private:
 	int32_t m_nHandle { -1 };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
-	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
 	ArtNetRdm *m_pArtNetRdm { nullptr };
 	ArtNetDmx *m_pArtNetDmx { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
