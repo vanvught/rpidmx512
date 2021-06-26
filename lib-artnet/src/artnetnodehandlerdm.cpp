@@ -83,27 +83,39 @@ void ArtNetNode::HandleTodRequest() {
 	DEBUG_EXIT
 }
 
-void ArtNetNode::SendTod(uint32_t nPortId) {
+void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	DEBUG_ENTRY
-
 	assert(nPortId < ArtNet::PORTS);
 
-	m_pTodData->Net = m_Node.NetSwitch[0];
-	m_pTodData->Address = m_OutputPorts[nPortId].port.nDefaultAddress;
+	auto pTodData = &(m_ArtNetPacket.ArtPacket.ArtTodData);
+	const auto nPage = nPortIndex / ArtNet::PORTS;
 
-	const auto discovered = m_pArtNetRdm->GetUidCount(nPortId);
+	pTodData->OpCode = OP_TODDATA;
+	pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
-	m_pTodData->UidTotalHi = 0;
-	m_pTodData->UidTotalLo = discovered;
-	m_pTodData->BlockCount = 0;
-	m_pTodData->UidCount = discovered;
-	m_pTodData->Port = static_cast<uint8_t>(1 + nPortId);
+	const auto discovered = m_pArtNetRdm->GetUidCount(nPortIndex);
 
-	m_pArtNetRdm->Copy(nPortId, reinterpret_cast<uint8_t*>(m_pTodData->Tod));
+	pTodData->Port = static_cast<uint8_t>(1U + (nPortIndex & 0x3));
+	pTodData->Spare1 = 0;
+	pTodData->Spare2 = 0;
+	pTodData->Spare3 = 0;
+	pTodData->Spare4 = 0;
+	pTodData->Spare5 = 0;
+	pTodData->Spare6 = 0;
+	pTodData->BindIndex = static_cast<uint8_t>(nPage + 1U);
+	pTodData->Net = m_Node.NetSwitch[nPage];
+	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
+	pTodData->Address = m_OutputPorts[nPortIndex].port.nDefaultAddress;
+	pTodData->UidTotalHi = 0;
+	pTodData->UidTotalLo = discovered;
+	pTodData->BlockCount = 0;
+	pTodData->UidCount = discovered;
 
-	const auto nLength = sizeof(struct TArtTodData) - (sizeof m_pTodData->Tod) + (discovered * 6U);
+	m_pArtNetRdm->Copy(nPortIndex, reinterpret_cast<uint8_t*>(pTodData->Tod));
 
-	Network::Get()->SendTo(m_nHandle, m_pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
+	const auto nLength = sizeof(struct TArtTodData) - (sizeof pTodData->Tod) + (discovered * 6U);
+
+	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -115,19 +127,7 @@ void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 	if (pArtNetTRdm != nullptr) {
 		m_pArtNetRdm = pArtNetTRdm;
 		m_IsRdmResponder = IsResponder;
-
-		m_pTodData = new TArtTodData;
-		assert(m_pTodData != nullptr);
-
-		if (m_pTodData != nullptr) {
-			m_Node.Status1 |= STATUS1_RDM_CAPABLE;
-			memset(m_pTodData, 0, sizeof(struct TArtTodData));
-
-			memcpy(m_pTodData->Id, artnet::NODE_ID, sizeof(m_pTodData->Id));
-			m_pTodData->OpCode = OP_TODDATA;
-			m_pTodData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
-			m_pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
-		}
+		m_Node.Status1 |= STATUS1_RDM_CAPABLE;
 	}
 
 	DEBUG_EXIT

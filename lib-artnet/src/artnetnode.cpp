@@ -104,10 +104,6 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 ArtNetNode::~ArtNetNode() {
 	Stop();
 
-	if (m_pTodData != nullptr) {
-		delete m_pTodData;
-	}
-
 	if (m_pTimeCodeData != nullptr) {
 		delete m_pTimeCodeData;
 	}

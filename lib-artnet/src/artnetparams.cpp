@@ -200,7 +200,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_UNIVERSE, nValue8) == Sscan::OK) {
-		if ((nValue8 != 1) && (nValue8 <= 0xF)) {
+		if (nValue8 <= 0xF) {
 			m_tArtNetParams.nUniverse = nValue8;
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::UNIVERSE;
 		} else {

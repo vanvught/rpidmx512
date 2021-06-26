@@ -321,7 +321,6 @@ private:
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
 
 	TArtTimeCode *m_pTimeCodeData { nullptr };
-	TArtTodData *m_pTodData { nullptr };
 
 	LightSet *m_pLightSet { nullptr };
 
