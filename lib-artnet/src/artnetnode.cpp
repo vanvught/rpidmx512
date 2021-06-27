@@ -101,14 +101,6 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_aSysName[(sizeof m_aSysName) - 1] = '\0';
 }
 
-ArtNetNode::~ArtNetNode() {
-	Stop();
-
-	if (m_pTimeCodeData != nullptr) {
-		delete m_pTimeCodeData;
-	}
-}
-
 void ArtNetNode::Start() {
 	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(ArtNetStatus2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
 	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(ArtNetStatus2::DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? ArtNetStatus2::DHCP_CAPABLE : 0));

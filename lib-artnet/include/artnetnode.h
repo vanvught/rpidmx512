@@ -153,7 +153,9 @@ struct TInputPort {
 class ArtNetNode {
 public:
 	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
-	~ArtNetNode();
+	~ArtNetNode() {
+		Stop();
+	}
 
 	void Start();
 	void Stop();
@@ -319,14 +321,11 @@ private:
 	ArtNetRdm *m_pArtNetRdm { nullptr };
 	ArtNetDmx *m_pArtNetDmx { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
-
-	TArtTimeCode *m_pTimeCodeData { nullptr };
-
-	LightSet *m_pLightSet { nullptr };
-
 	ArtNet4Handler *m_pArtNet4Handler { nullptr };
 	ArtNetStore *m_pArtNetStore { nullptr };
 	ArtNetDisplay *m_pArtNetDisplay { nullptr };
+
+	LightSet *m_pLightSet { nullptr };
 
 	TArtNetNode m_Node;
 	TArtNetNodeState m_State;

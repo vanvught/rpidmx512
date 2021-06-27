@@ -1,5 +1,5 @@
 /**
- * @file artnettimecode.cpp
+ * @file artnetnodetimecode.cpp
  *
  */
 /**
@@ -55,22 +55,22 @@ void ArtNetNode::SetTimeCodeIp(uint32_t nDestinationIp) {
 
 void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	assert(pArtNetTimeCode != nullptr);
+	assert(pArtNetTimeCode->Frames < 30);
+	assert(pArtNetTimeCode->Hours < 60);
+	assert(pArtNetTimeCode->Minutes < 60);
+	assert(pArtNetTimeCode->Seconds < 60);
+	assert(pArtNetTimeCode->Type < 4);
 
-	if (__builtin_expect((pArtNetTimeCode->Frames > 29 || pArtNetTimeCode->Hours > 59 || pArtNetTimeCode->Minutes > 59 || pArtNetTimeCode->Seconds > 59 || pArtNetTimeCode->Type > 3 ), 0)) {
-		return;
-	}
+	auto *pArtTimeCode = &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
 
-	if (__builtin_expect((m_pTimeCodeData == nullptr), 0)) {
-		m_pTimeCodeData = new TArtTimeCode;
-		assert(m_pTimeCodeData != nullptr);
+	memcpy(pArtTimeCode->Id, artnet::NODE_ID, sizeof pArtTimeCode->Id);
+	pArtTimeCode->OpCode = OP_TIMECODE;
+	pArtTimeCode->ProtVerHi = 0;
+	pArtTimeCode->ProtVerLo = ArtNet::PROTOCOL_REVISION;
+	pArtTimeCode->Filler1 = 0;
+	pArtTimeCode->Filler2 = 0;
 
-		memset(m_pTimeCodeData, 0, sizeof (struct TArtTimeCode));
-		memcpy(m_pTimeCodeData->Id, artnet::NODE_ID, sizeof m_pTimeCodeData->Id );
-		m_pTimeCodeData->OpCode = OP_TIMECODE;
-		m_pTimeCodeData->ProtVerLo = ArtNet::PROTOCOL_REVISION;
-	}
+	memcpy(&pArtTimeCode->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	memcpy(&m_pTimeCodeData->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
-
-	Network::Get()->SendTo(m_nHandle, m_pTimeCodeData, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pArtTimeCode, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, ArtNet::UDP_PORT);
 }

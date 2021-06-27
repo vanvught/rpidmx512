@@ -60,12 +60,12 @@ void ArtNetNode::HandleIpProg() {
 	}
 #endif
 
-	const auto artIpProg = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
-	const auto nCommand = artIpProg->Command;
-	auto artIpProgReply = &(m_ArtNetPacket.ArtPacket.ArtIpProgReply);
+	const auto *pArtIpProg = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
+	const auto nCommand = pArtIpProg->Command;
+	auto *pArtIpProgReply = &(m_ArtNetPacket.ArtPacket.ArtIpProgReply);
 	const auto isDhcp = Network::Get()->IsDhcpUsed();
 
-	artIpProgReply->OpCode = OP_IPPROGREPLY;
+	pArtIpProgReply->OpCode = OP_IPPROGREPLY;
 
 	if ((nCommand & IPPROG_COMMAND_ENABLE_DHCP) == IPPROG_COMMAND_ENABLE_DHCP) {
 		Network::Get()->EnableDhcp();
@@ -76,44 +76,44 @@ void ArtNetNode::HandleIpProg() {
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
-		memcpy(ip.u8, &artIpProg->ProgIpHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgIpHi, ArtNet::IP_SIZE);
 		Network::Get()->SetIp(ip.u32);
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_SUBNETMASK) == IPPROG_COMMAND_PROGRAM_SUBNETMASK) {
-		memcpy(ip.u8, &artIpProg->ProgSmHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgSmHi, ArtNet::IP_SIZE);
 		Network::Get()->SetNetmask(ip.u32);
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_GATEWAY) == IPPROG_COMMAND_PROGRAM_GATEWAY) {
-		memcpy(ip.u8, &artIpProg->ProgGwHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgGwHi, ArtNet::IP_SIZE);
 		Network::Get()->SetGatewayIp(ip.u32);
 	}
 
 	if (Network::Get()->IsDhcpUsed()) {
-		artIpProgReply->Status = (1 << 6);
+		pArtIpProgReply->Status = (1 << 6);
 	} else {
-		artIpProgReply->Status = 0;
+		pArtIpProgReply->Status = 0;
 	}
 
-	artIpProgReply->Spare2 = 0;
+	pArtIpProgReply->Spare2 = 0;
 
 	auto isChanged = (isDhcp != Network::Get()->IsDhcpUsed());
 
 	ip.u32 = Network::Get()->GetIp();
-	isChanged |= (memcmp(&artIpProg->ProgIpHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&artIpProgReply->ProgIpHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgIpHi, ip.u8, ArtNet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgIpHi, ip.u8, ArtNet::IP_SIZE);
 
 	ip.u32 = Network::Get()->GetNetmask();
-	isChanged |= (memcmp(&artIpProg->ProgSmHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&artIpProgReply->ProgSmHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgSmHi, ip.u8, ArtNet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgSmHi, ip.u8, ArtNet::IP_SIZE);
 
 	ip.u32 = Network::Get()->GetGatewayIp();
-	isChanged |= (memcmp(&artIpProg->ProgGwHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&artIpProgReply->ProgGwHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgGwHi, ip.u8, ArtNet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgGwHi, ip.u8, ArtNet::IP_SIZE);
 
-	artIpProgReply->Spare7 = 0;
-	artIpProgReply->Spare8 = 0;
+	pArtIpProgReply->Spare7 = 0;
+	pArtIpProgReply->Spare8 = 0;
 
 	Network::Get()->SendTo(m_nHandle, &(m_ArtNetPacket.ArtPacket.ArtIpProgReply), sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
 
@@ -123,9 +123,9 @@ void ArtNetNode::HandleIpProg() {
 		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
 		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(ArtNetStatus2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
 		// Update PollReply for new IPAddress
-		memcpy(m_PollReply.IPAddress, &artIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
+		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
 		if (m_nVersion > 3) {
-			memcpy(m_PollReply.BindIp, &artIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
+			memcpy(m_PollReply.BindIp, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
 		}
 
 		if (m_State.SendArtPollReplyOnChange) {
