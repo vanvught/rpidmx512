@@ -2,7 +2,7 @@
  * @file displayedittimecode.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,12 +41,12 @@ private:
 	void KeyRight();
 
 private:
-	uint8_t m_nFrames{0};
+	uint8_t m_nFrames { 0 };
 	enum State {
 		IDLE, EDIT
-	} m_State {IDLE};
-	uint32_t m_nCursorPositionIndex{0};
-	bool m_bCursorOn {false};
+	} m_State { IDLE };
+	uint32_t m_nCursorPositionIndex { 0 };
+	bool m_bCursorOn { false };
 };
 
 #endif /* DISPLAYEDITTIMECODE_H_ */

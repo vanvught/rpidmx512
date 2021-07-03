@@ -41,6 +41,7 @@
 									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
 									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
+									<listOptionValue builtIn="false" value="LTC_READER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1698677010" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -94,6 +95,7 @@
 									<listOptionValue builtIn="false" value="NODE_OSC_CLIENT"/>
 									<listOptionValue builtIn="false" value="NODE_LTC_SMPTE"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_MONITOR"/>
+									<listOptionValue builtIn="false" value="LTC_READER"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

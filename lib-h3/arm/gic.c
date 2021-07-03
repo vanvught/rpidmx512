@@ -2,7 +2,7 @@
  * @file gic.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,8 +57,8 @@ static uint8_t impemented_cpu_interfaces;
 void __attribute__((cold)) gic_init(void) {
 	unsigned i;
 
-	max_interrupts = (uint16_t) ((H3_GIC_DIST->TYPE & 0x1F) + 1) * 32;
-	impemented_cpu_interfaces = (uint8_t) 1 + (uint8_t) ((H3_GIC_DIST->TYPE >> 5) & 0x7);
+	max_interrupts = (uint16_t) (((H3_GIC_DIST->TYPE & 0x1F) + 1) * 32);
+	impemented_cpu_interfaces = (uint8_t) (1 + (uint8_t) ((H3_GIC_DIST->TYPE >> 5) & 0x7));
 
 	/* Initialize Distributor */
 

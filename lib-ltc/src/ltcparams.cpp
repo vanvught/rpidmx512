@@ -59,7 +59,7 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_tLtcParams.nMonth = static_cast<uint8_t>(tm->tm_mon + 1);
 	m_tLtcParams.nDay = static_cast<uint8_t>(tm->tm_mday);
 	m_tLtcParams.nFps = 25;
-	m_tLtcParams.nStopFrame = m_tLtcParams.nFps - 1;
+	m_tLtcParams.nStopFrame = static_cast<uint8_t>(m_tLtcParams.nFps - 1);
 	m_tLtcParams.nStopSecond = 59;
 	m_tLtcParams.nStopMinute = 59;
 	m_tLtcParams.nStopHour = 23;

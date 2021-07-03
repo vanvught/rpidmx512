@@ -2,7 +2,7 @@
  * @file llrppacket.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -118,8 +118,8 @@ struct TLLRP {
 #define LLRP_PDU_SIZE				sizeof(struct TLlrpPDU)
 #define RDM_COMMAND_PDU_SIZE		sizeof(struct TRDMCommandPDU)
 
-#define RDM_COMMAND_PDU_LENGTH(x)	(RDM_COMMAND_PDU_SIZE - 232 + (x))
-#define RDM_LLRP_PDU_LENGHT(x)		(LLRP_PDU_SIZE + RDM_COMMAND_PDU_LENGTH(x))
-#define RDM_ROOT_LAYER_LENGTH(x)	(LLRP_ROOT_LAYER_SIZE + RDM_LLRP_PDU_LENGHT(x))
+#define RDM_COMMAND_PDU_LENGTH(x)	static_cast<uint8_t>((RDM_COMMAND_PDU_SIZE - 232 + (x)))
+#define RDM_LLRP_PDU_LENGHT(x)		static_cast<uint8_t>((LLRP_PDU_SIZE + RDM_COMMAND_PDU_LENGTH(x)))
+#define RDM_ROOT_LAYER_LENGTH(x)	static_cast<uint8_t>((LLRP_ROOT_LAYER_SIZE + RDM_LLRP_PDU_LENGHT(x)))
 
 #endif /* LLRPPACKET_H_ */

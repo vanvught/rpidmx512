@@ -129,12 +129,12 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 			}
 
 			if (nTotalBits <= END_DATA_POSITION) {
-				aTimeCodeBits[0] = aTimeCodeBits[0] >> 1;
+				aTimeCodeBits[0] = static_cast<uint8_t>(aTimeCodeBits[0] >> 1);
 				for (uint32_t n = 1; n < 8; n++) {
 					if (aTimeCodeBits[n] & 1) {
 						aTimeCodeBits[n - 1] |= 0x80;
 					}
-					aTimeCodeBits[n] = aTimeCodeBits[n] >> 1;
+					aTimeCodeBits[n] = static_cast<uint8_t>(aTimeCodeBits[n] >> 1);
 				}
 
 				if (nCurrentBit == 1) {

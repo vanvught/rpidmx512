@@ -141,7 +141,7 @@ void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
 	assert(m_Type != Type::WS2801);
 	assert(nOffset + 7 < m_nBufSize);
 
-	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		if (nValue & mask) {
 			m_pBuffer[nOffset] = m_nHighCode;
 		} else {

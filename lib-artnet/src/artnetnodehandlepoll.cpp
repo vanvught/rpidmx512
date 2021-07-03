@@ -101,7 +101,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
-		m_PollReply.BindIndex = nPage + 1;
+		m_PollReply.BindIndex = static_cast<uint8_t>(nPage + 1);
 
 		const auto nPortIndexStart = static_cast<uint8_t>(nPage * ArtNet::PORTS);
 
@@ -129,7 +129,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 					const auto nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
 
 					nStatus &= static_cast<uint8_t>(~nMask);
-					nStatus |= static_cast<uint8_t>((m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
+					nStatus = static_cast<uint8_t>(nStatus | (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
 
 					if ((nStatus & GO_OUTPUT_IS_SACN) == 0) {
 						m_OutputPorts[nPortIndex].tPortProtocol = PortProtocol::ARTNET;

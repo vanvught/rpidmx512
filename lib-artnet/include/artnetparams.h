@@ -177,7 +177,6 @@ public:
 		return static_cast<artnet::PortDir>(m_tArtNetParams.nDirection);
 	}
 
-public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:

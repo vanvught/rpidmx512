@@ -3,7 +3,7 @@
  * @file rdmsubdevicebwlcd.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include "bwspilcd.h"
 
 #ifndef TO_HEX
- #define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
+# define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 #endif
 
 static constexpr uint32_t DMX_FOOTPRINT = 4;
@@ -214,7 +214,7 @@ void RDMSubDeviceBwLcd::itoaBase10(uint16_t arg, char buf[]) {
 	if (arg == 0) *n = '0';
 
 	while (arg != 0) {
-		*n = '0' + static_cast<char>(arg % 10);
+		*n = static_cast<char>('0' + (arg % 10));
 		n--;
 		arg /= 10;
 	}

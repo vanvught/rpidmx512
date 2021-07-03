@@ -242,16 +242,16 @@ void PixelPatterns::FadeUpdate(uint32_t nPortIndex) {
 }
 
 uint32_t PixelPatterns::Wheel(uint8_t nWheelPos) {
-	nWheelPos = 255 - nWheelPos;
+	nWheelPos = static_cast<uint8_t>(255 - nWheelPos);
 
 	if (nWheelPos < 85) {
-		return Colour(static_cast<uint8_t>(255 - nWheelPos * 3), 0, nWheelPos * 3);
+		return Colour(static_cast<uint8_t>(255 - nWheelPos * 3), 0, static_cast<uint8_t>(nWheelPos * 3));
 	} else if (nWheelPos < 170) {
-		nWheelPos -= 85;
-		return Colour(0, nWheelPos * 3, static_cast<uint8_t>(255 - nWheelPos * 3));
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 85);
+		return Colour(0, static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3));
 	} else {
-		nWheelPos -= 170;
-		return Colour(nWheelPos * 3, static_cast<uint8_t>(255 - nWheelPos * 3), 0);
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 170);
+		return Colour(static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3), 0);
 	}
 }
 

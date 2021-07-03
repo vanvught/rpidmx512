@@ -107,8 +107,8 @@ void WS28xxMulti::Print() {
 void WS28xxMulti::SetupHC595(uint8_t nT0H, uint8_t nT1H) {
 	DEBUG_ENTRY
 
-	nT0H = (nT0H << 1);
-	nT1H = (nT1H << 1);
+	nT0H = static_cast<uint8_t>(nT0H << 1);
+	nT1H = static_cast<uint8_t>(nT1H << 1);
 
 	DEBUG_PRINTF("nT0H=%.2x nT1H=%.2x", nT0H, nT1H);
 
@@ -174,7 +174,7 @@ void WS28xxMulti::SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t n
 	uint32_t j = 0;
 	const uint32_t k = nPixelIndex * pixel::single::RGB;
 
-	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		if (mask & nColour1) {
 			BIT_SET(m_pBuffer[k + j], nPortIndex);
 		} else {
@@ -250,7 +250,7 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 	uint32_t j = 0;
 	const auto k = nPixelIndex * pixel::single::RGBW;
 
-	for (uint8_t mask = 0x80; mask != 0; mask >>= 1) {
+	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		// GRBW
 		if (mask & nGreen) {
 			BIT_SET(m_pBuffer[k + j], nPortIndex);

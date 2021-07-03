@@ -119,7 +119,7 @@ void LLRPDevice::HandleRdmCommand() {
 	uint8_t DestinationCid[16];
 	memcpy(DestinationCid, pRDMCommand->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
 
-	const uint8_t nMessageLength = pReply[2] + 1;	// RDM Command length without SC
+	const auto nMessageLength = static_cast<uint8_t>(pReply[2] + 1);	// RDM Command length without SC
 
 	// Root Layer PDU
 	pRDMCommand->Common.RootLayerPDU.FlagsLength[2] = RDM_ROOT_LAYER_LENGTH(nMessageLength);

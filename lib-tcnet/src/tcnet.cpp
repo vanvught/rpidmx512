@@ -2,7 +2,7 @@
  * @file tcnet.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -188,7 +188,7 @@ void TCNet::HandlePortUnicastIncoming() {
 }
 
 void TCNet::HandleOptInOutgoing() {
-	m_tOptIn.ManagementHeader.SEQ += 1;
+	m_tOptIn.ManagementHeader.SEQ++;
 	m_tOptIn.ManagementHeader.TimeStamp = Hardware::Get()->Micros();
 	m_tOptIn.Uptime = static_cast<uint16_t>(Hardware::Get()->GetUpTime());
 
@@ -266,7 +266,7 @@ char TCNet::GetLayerName(TCNetLayer tLayer) {
 	case TCNetLayer::LAYER_2:
 	case TCNetLayer::LAYER_3:
 	case TCNetLayer::LAYER_4:
-		return static_cast<char>(tLayer) + '1';
+		return static_cast<char>(static_cast<char>(tLayer) + '1');
 		break;
 	case TCNetLayer::LAYER_A:
 		return 'A';

@@ -2,7 +2,7 @@
  * @file icmp.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 			memcpy(s_reply.ether.dst, p_icmp->ether.src, ETH_ADDR_LEN);
 			// IPv4
 			s_reply.ip4.len = p_icmp->ip4.len;
-			s_reply.ip4.id = ~p_icmp->ip4.id;
+			s_reply.ip4.id = (uint16_t)(~p_icmp->ip4.id);
 			memcpy(s_reply.ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
 			s_reply.ip4.chksum = 0;
 			s_reply.ip4.chksum = net_chksum((void *)&s_reply.ip4, 20); //TODO

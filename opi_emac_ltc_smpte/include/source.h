@@ -2,7 +2,7 @@
  * @file source.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ public:
 		Display::Get()->PutString(SourceConst::SOURCE[ltcSource]);
 
 		if (ltcSource == ltc::source::SYSTIME) {
-			Display::Get()->SetCursorPos(Display::Get()->getCols() - 3, 3);
+			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 3U), 3);
 			if (bRunGpsTimeClient) {
 				Display::Get()->PutString("GPS");
 			} else if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED) && (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {

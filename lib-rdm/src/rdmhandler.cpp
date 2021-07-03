@@ -82,18 +82,18 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 	pRdmDataOut->message_count = 0;	//rdm_queued_message_get_count(); //FIXME rdm_queued_message_get_count
 	pRdmDataOut->sub_device[0] = pRdmDataIn->sub_device[0];
 	pRdmDataOut->sub_device[1] = pRdmDataIn->sub_device[1];
-	pRdmDataOut->command_class = pRdmDataIn->command_class + 1;
+	pRdmDataOut->command_class = static_cast<uint8_t>(pRdmDataIn->command_class + 1);
 	pRdmDataOut->param_id[0] = pRdmDataIn->param_id[0];
 	pRdmDataOut->param_id[1] = pRdmDataIn->param_id[1];
 
 	switch (nResponseType) {
 	case E120_RESPONSE_TYPE_ACK:
-		pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + pRdmDataOut->param_data_length;
+		pRdmDataOut->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + pRdmDataOut->param_data_length);
 		pRdmDataOut->slot16.response_type = E120_RESPONSE_TYPE_ACK;
 		break;
 	case E120_RESPONSE_TYPE_NACK_REASON:
 	case E120_RESPONSE_TYPE_ACK_TIMER:
-		pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 2;
+		pRdmDataOut->message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + 2);
 		pRdmDataOut->slot16.response_type = nResponseType;
 		pRdmDataOut->param_data_length = 2;
 		pRdmDataOut->param_data[0] = static_cast<uint8_t>(nReason >> 8);
@@ -115,7 +115,7 @@ void RDMHandler::CreateRespondMessage(uint8_t nResponseType, uint16_t nReason) {
 	uint16_t rdm_checksum = 0;
 
 	for (i = 0; i < pRdmDataOut->message_length; i++) {
-		rdm_checksum += m_pRdmDataOut[i];
+		rdm_checksum = static_cast<uint16_t>(rdm_checksum + m_pRdmDataOut[i]);
 	}
 
 	m_pRdmDataOut[i++] = static_cast<uint8_t>(rdm_checksum >> 8);
@@ -260,7 +260,7 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 					for (i = 0; i < 6; i++) {
 						p->masked_device_id[i + i] = uid_device[i] | 0xAA;
 						p->masked_device_id[i + i + 1] = uid_device[i] | 0x55;
-						rdm_checksum += uid_device[i];
+						rdm_checksum = static_cast<uint16_t>(rdm_checksum + uid_device[i]);
 					}
 
 					p->checksum[0] = static_cast<uint8_t>((rdm_checksum >> 8) | 0xAA);

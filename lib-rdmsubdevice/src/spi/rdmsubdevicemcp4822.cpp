@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp4822.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ RDMSubDeviceMCP4822::RDMSubDeviceMCP4822(uint16_t nDmxStartAddress, char nChipSs
 void RDMSubDeviceMCP4822::Data(const uint8_t* pData, uint32_t nLength) {
 	assert(nLength <= 512);
 
-	uint16_t nOffset = GetDmxStartAddress() - 1;
+	auto nOffset = static_cast<uint16_t>(GetDmxStartAddress() - 1);
 
 	if (nOffset < nLength) {
 		const auto nDataA = static_cast<uint16_t>((pData[nOffset] << 4) | (pData[nOffset] >> 4));

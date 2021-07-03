@@ -119,7 +119,7 @@ uint16_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
 	for (uint32_t j = 0; j < TABLE_SIZE; j++) {
 		if (0 == strcmp(m_Buffer, cmd_table[j].pName)) {
 			nCmdIndex = static_cast<CmdIndex>(j);
-			return i + 1;
+			return static_cast<uint16_t>(i + 1);
 		}
 	}
 
@@ -152,7 +152,7 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 
 		if ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t')) {
 			if (j < MAXARG) {
-				m_nArgvLength[j - 1] = i - nArgvStart;
+				m_nArgvLength[j - 1] = static_cast<uint16_t>(i - nArgvStart);
 			}
 			while (i < nLength && ((m_Buffer[i] == ' ') || (m_Buffer[i] == '\t'))) {
 				m_Buffer[i++] = '\0';
@@ -166,7 +166,7 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 	}
 
 	if (j < MAXARG) {
-		m_nArgvLength[j - 1] = i - nArgvStart;
+		m_nArgvLength[j - 1] = static_cast<uint16_t>(i - nArgvStart);
 	}
 
 #ifndef NDEBUG

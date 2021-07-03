@@ -2,7 +2,7 @@
  * @file ltcgenerator.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -151,11 +151,11 @@ LtcGenerator::LtcGenerator(const struct TLtcTimeCode* pStartLtcTimeCode, const s
 	m_nTimer0Interval = TimeCodeConst::TMR_INTV[pStartLtcTimeCode->nType];
 
 	if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
-		m_pStartLtcTimeCode->nFrames = m_nFps - 1;
+		m_pStartLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 	}
 
 	if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
-		m_pStopLtcTimeCode->nFrames = m_nFps - 1;
+		m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 	}
 }
 
@@ -309,11 +309,11 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 			//
 			m_pStartLtcTimeCode->nType = tType;
 			if (m_pStartLtcTimeCode->nFrames >= m_nFps) {
-				m_pStartLtcTimeCode->nFrames = m_nFps - 1;
+				m_pStartLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
 			m_pStopLtcTimeCode->nType = tType;
 			if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
-				m_pStopLtcTimeCode->nFrames = m_nFps - 1;
+				m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 			}
 			//
 			//
@@ -676,7 +676,7 @@ void LtcGenerator::Decrement() {
 	if (s_tLtcTimeCode.nFrames > 0) {
 		s_tLtcTimeCode.nFrames--;
 	} else {
-		s_tLtcTimeCode.nFrames = m_nFps - 1;
+		s_tLtcTimeCode.nFrames = static_cast<uint8_t>(m_nFps - 1);
 	}
 
 	if (s_tLtcTimeCode.nFrames == m_nFps - 1) {

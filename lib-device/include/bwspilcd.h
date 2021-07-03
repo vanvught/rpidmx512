@@ -89,7 +89,7 @@ public:
 			data[i + 2] = pText[i];
 		}
 
-		nLength += 2;
+		nLength = static_cast<uint8_t>(nLength + 2);
 
 		SpiWrite(data, nLength);
 	}

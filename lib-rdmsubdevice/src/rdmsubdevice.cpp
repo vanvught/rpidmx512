@@ -136,10 +136,10 @@ void RDMSubDevice::SetFactoryDefaults() {
 
 uint16_t RDMSubDevice::CalculateChecksum() {
 	uint16_t nChecksum = m_tSubDevicesInfo.dmx_start_address;
-	nChecksum += m_tSubDevicesInfo.current_personality;
+	nChecksum = static_cast<uint16_t>(nChecksum + m_tSubDevicesInfo.current_personality);
 
 	for (uint32_t i = 0; i < m_tSubDevicesInfo.nLabelLength; i++) {
-		nChecksum += static_cast<uint16_t>(m_tSubDevicesInfo.aLabel[i]);
+		nChecksum = static_cast<uint16_t>(nChecksum + m_tSubDevicesInfo.aLabel[i]);
 	}
 
 	return nChecksum;

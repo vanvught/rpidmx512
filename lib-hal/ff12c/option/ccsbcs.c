@@ -1,3 +1,9 @@
+#pragma GCC push_options
+#pragma GCC optimize ("Os")
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wimplicit-fallthrough"
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
 /*------------------------------------------------------------------------*/
 /* Unicode - Local code bidirectional converter  (C)ChaN, 2015            */
 /* (SBCS code pages)                                                      */

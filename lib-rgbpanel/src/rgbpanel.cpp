@@ -34,7 +34,7 @@
 
 using namespace rgbpanel;
 
-RgbPanel::RgbPanel(uint8_t nColumns, uint8_t nRows, uint32_t nChain, Types tType):
+RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, Types tType):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
 	m_nChain(nChain != 0 ? nChain : 1),
@@ -73,7 +73,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		for (uint8_t nColumn = nStartColumn; nColumn < static_cast<uint8_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
 
 			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
-				const uint8_t nByte = m_ptColons[nColonIndex].nBits >> i;
+				const uint8_t nByte = static_cast<uint8_t>(m_ptColons[nColonIndex].nBits >> i);
 
 				if ((nByte & 0x1) != 0) {
 					SetPixel(nColumn, nRow, m_ptColons[nColonIndex].nRed, m_ptColons[nColonIndex].nGreen, m_ptColons[nColonIndex].nBlue);
@@ -135,7 +135,7 @@ void RgbPanel::TextLine(uint8_t nLine, const char *pText, uint32_t nLength, uint
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
+	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	Text(pText, nLength, nRed, nGreen, nBlue);
 }
 
@@ -155,7 +155,7 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 		}
 	}
 
-	SetCursorPos(0, nLine - 1);
+	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
 /**

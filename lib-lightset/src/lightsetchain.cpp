@@ -185,11 +185,11 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 #ifndef NDEBUG
 			printf("pLightSet->GetDmxStartAddress()=%d, pLightSet->GetDmxFootprint()=%d\n", pLightSet->GetDmxStartAddress(), pLightSet->GetDmxFootprint());
 #endif
-			const uint16_t nDmxChannelLastCurrent = m_nDmxStartAddress + m_nDmxFootprint;
+			const auto nDmxChannelLastCurrent = static_cast<uint16_t>(m_nDmxStartAddress + m_nDmxFootprint);
 			m_nDmxStartAddress = std::min(m_nDmxStartAddress, pLightSet->GetDmxStartAddress());
 
-			const uint16_t nDmxChannelLast = pLightSet->GetDmxStartAddress() + pLightSet->GetDmxFootprint();
-			m_nDmxFootprint = std::max(nDmxChannelLastCurrent, nDmxChannelLast) - m_nDmxStartAddress;
+			const auto nDmxChannelLast = static_cast<uint16_t>(pLightSet->GetDmxStartAddress() + pLightSet->GetDmxFootprint());
+			m_nDmxFootprint = static_cast<uint16_t>(std::max(nDmxChannelLastCurrent, nDmxChannelLast) - m_nDmxStartAddress);
 
 #ifndef NDEBUG
 			printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", m_nDmxStartAddress, m_nDmxFootprint);

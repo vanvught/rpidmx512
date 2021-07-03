@@ -35,19 +35,19 @@ void Midi::SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQua
 		data = data | (tMidiTimeCode->nFrames & 0x0F);
 		break;
 	case 1:
-		data = data | ((tMidiTimeCode->nFrames & 0x10) >> 4);
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nFrames & 0x10) >> 4);
 		break;
 	case 2:
 		data = data | (tMidiTimeCode->nSeconds & 0x0F);
 		break;
 	case 3:
-		data = data | ((tMidiTimeCode->nSeconds & 0x30) >> 4);
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nSeconds & 0x30) >> 4);
 		break;
 	case 4:
 		data = data | (tMidiTimeCode->nMinutes & 0x0F);
 		break;
 	case 5:
-		data = data | ((tMidiTimeCode->nMinutes & 0x30) >> 4);
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nMinutes & 0x30) >> 4);
 		break;
 	case 6:
 		data = data | (tMidiTimeCode->nHours & 0x0F);

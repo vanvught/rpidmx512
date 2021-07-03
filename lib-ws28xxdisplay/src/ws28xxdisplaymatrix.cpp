@@ -43,8 +43,8 @@ using namespace pixel;
 WS28xxDisplayMatrix::WS28xxDisplayMatrix(uint8_t nColumns, uint8_t nRows, Type tLedType, Map tRGBMapping):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
-	m_nOffset((nRows - FONT_CP437_CHAR_H) * 2U),
-	m_nMaxLeds(nColumns * nRows),
+	m_nOffset(static_cast<uint32_t>(nRows - FONT_CP437_CHAR_H) * 2U),
+	m_nMaxLeds(static_cast<uint8_t>(nColumns * nRows)),
 	m_nMaxPosition(nColumns / FONT_CP437_CHAR_W),
 	m_nMaxLine(nRows / FONT_CP437_CHAR_H)
 {
@@ -172,7 +172,7 @@ void WS28xxDisplayMatrix::TextLine(uint8_t nLine, const char *pText, uint32_t nL
 		return;
 	}
 
-	SetCursorPos(0, nLine - 1);
+	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	Text(pText, nLength, nRed, nGreen, nBlue);
 }
 
@@ -192,7 +192,7 @@ void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 		m_pWS28xx->SetPixel(i, 0, 0, 0); // FIXME Currently working for single row only
 	}
 
-	SetCursorPos(0, nLine - 1);
+	SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
 /**

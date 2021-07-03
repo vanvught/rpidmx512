@@ -65,19 +65,19 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8
 	if (dir == PortDir::DISABLE) {
 		if (m_OutputPorts[nPortIndex].bIsEnabled) {
 			m_OutputPorts[nPortIndex].bIsEnabled = false;
-			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+			m_State.nActiveOutputPorts = static_cast<uint8_t>(m_State.nActiveOutputPorts - 1);
 		}
 		if (m_InputPorts[nPortIndex].bIsEnabled) {
 			m_InputPorts[nPortIndex].bIsEnabled = false;
 			m_InputPorts[nPortIndex].port.nStatus = GI_DISABLED;
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+			m_State.nActiveInputPorts = static_cast<uint8_t>(m_State.nActiveInputPorts - 1);
 		}
 		return ARTNET_EOK;
 	}
 
 	if (dir == PortDir::INPUT) {
 		if (!m_InputPorts[nPortIndex].bIsEnabled) {
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
+			m_State.nActiveInputPorts = static_cast<uint8_t>(m_State.nActiveInputPorts + 1);
 			assert(m_State.nActiveInputPorts <= ArtNet::PORTS);
 		}
 
@@ -89,14 +89,14 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8
 		if (nPortIndex < artnetnode::MAX_PORTS) {
 			if (m_OutputPorts[nPortIndex].bIsEnabled) {
 				m_OutputPorts[nPortIndex].bIsEnabled = false;
-				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+				m_State.nActiveOutputPorts = static_cast<uint8_t>(m_State.nActiveOutputPorts - 1);
 			}
 		}
 	}
 
 	if (dir == PortDir::OUTPUT) {
 		if (!m_OutputPorts[nPortIndex].bIsEnabled) {
-			m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
+			m_State.nActiveOutputPorts = static_cast<uint8_t>(m_State.nActiveOutputPorts + 1);
 			assert(m_State.nActiveOutputPorts <= (ArtNet::PORTS * m_nPages));
 		}
 
@@ -108,7 +108,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8
 			if (m_InputPorts[nPortIndex].bIsEnabled) {
 				m_InputPorts[nPortIndex].bIsEnabled = false;
 				m_InputPorts[nPortIndex].port.nStatus = GI_DISABLED;
-				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+				m_State.nActiveInputPorts = static_cast<uint8_t>(m_State.nActiveInputPorts - 1);
 			}
 		}
 	}

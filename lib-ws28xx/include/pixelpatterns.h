@@ -98,7 +98,7 @@ private:
 	}
 
     uint32_t DimColour(uint32_t nColour) {
-        return Colour(Red(nColour) >> 1, Green(nColour) >> 1, Blue(nColour) >> 1);
+        return Colour(static_cast<uint8_t>(Red(nColour) >> 1), static_cast<uint8_t>(Green(nColour) >> 1), static_cast<uint8_t>(Blue(nColour) >> 1));
     }
 
     uint8_t Red(uint32_t nColour) {

@@ -903,7 +903,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 			nLength = udp::BUFFER_SIZE - udp::cmd::set::length::STORE;
 			i = GetIndex(&s_UdpBuffer[udp::cmd::set::length::STORE], nLength);
 			if (i < TxtFile::LAST) {
-				m_nBytesReceived = m_nBytesReceived - static_cast<uint16_t>(nLength - udp::cmd::set::length::STORE);
+				m_nBytesReceived = static_cast<uint16_t>(m_nBytesReceived - nLength - udp::cmd::set::length::STORE);
 				memcpy(s_StoreBuffer, &s_UdpBuffer[nLength + udp::cmd::set::length::STORE], udp::BUFFER_SIZE);
 				debug_dump(s_StoreBuffer, m_nBytesReceived);
 			} else {

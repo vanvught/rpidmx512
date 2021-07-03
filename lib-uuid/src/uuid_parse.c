@@ -77,7 +77,7 @@ static uint32_t hex_uint32(const char *s) {
 			break;
 		}
 
-		nibble = d > '9' ? ((uint8_t) d | (uint8_t) 0x20) - (uint8_t) 'a' + (uint8_t) 10 : (uint8_t) (d - '0');
+		nibble = d > '9' ? (uint8_t)((uint8_t)( d | 0x20) - 'a' + 10) : (uint8_t) (d - '0');
 		ret = (ret << 4) | nibble;
 		s++;
 	}

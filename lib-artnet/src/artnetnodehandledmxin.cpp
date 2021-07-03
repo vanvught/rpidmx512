@@ -69,7 +69,7 @@ void ArtNetNode::HandleDmxIn() {
 			const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
-				tArtDmx.Sequence = 1 + m_InputPorts[i].nSequence++;
+				tArtDmx.Sequence = static_cast<uint8_t>(1 + m_InputPorts[i].nSequence++);
 				tArtDmx.Physical = static_cast<uint8_t>(i);
 				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
 				tArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
