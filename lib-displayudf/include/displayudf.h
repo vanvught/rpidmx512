@@ -46,6 +46,10 @@
 # include "e131bridge.h"
 #endif
 
+#if defined (NODE_ARTNET) || defined (NODE_E131)
+# define DISPLAYUDF_DMX_INFO
+#endif
+
 #include "network.h"
 
 namespace displayudf {
@@ -69,11 +73,18 @@ enum class Labels {
 	DESTINATION_IP_PORT_B,
 	DESTINATION_IP_PORT_C,
 	DESTINATION_IP_PORT_D,
+	DEFAULT_GATEWAY,
+	DMX_DIRECTION,
 	UNKNOWN
 };
 namespace defaults {
 static constexpr auto INTENSITY = 0x7F;
 }  // namespace defaults
+namespace dmx {
+enum class PortDir {
+	INPUT, OUTPUT, DISABLE
+};
+}  // namespace dmx
 }  // namespace displayudf
 
 class DisplayUdf: public Display {
@@ -91,11 +102,27 @@ public:
 #if defined (NODE_E131)
 	void Show(E131Bridge *pE131Bridge);
 #endif
+#if defined (DISPLAYUDF_DMX_INFO)
+	void SetDmxInfo(displayudf::dmx::PortDir portDir, uint32_t nPorts) {
+		m_dmxInfo.portDir = portDir;
+		m_dmxInfo.nPorts = nPorts;
+	}
+
+	void ShowDmxInfo() {
+		if ((m_dmxInfo.portDir == displayudf::dmx::PortDir::DISABLE) || (m_dmxInfo.nPorts == 0)) {
+			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_DIRECTION)], "No DMX");
+			return;
+		}
+
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_DIRECTION)], "DMX %s %d", m_dmxInfo.portDir == displayudf::dmx::PortDir::INPUT ? "Input" : "Output",  m_dmxInfo.nPorts);
+	}
+#endif
 
 	// LightSet
 	void ShowDmxStartAddress();
 
 	// Network
+	void ShowEmacStart();
 	void ShowIpAddress();
 	void ShowNetmask();
 	void ShowGatewayIp();
@@ -121,6 +148,14 @@ public:
 private:
 	char m_aTitle[32];
 	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];
+
+#if defined (DISPLAYUDF_DMX_INFO)
+	struct DmxInfo {
+		displayudf::dmx::PortDir portDir;
+		uint32_t nPorts;
+	};
+	struct DmxInfo m_dmxInfo {displayudf::dmx::PortDir::DISABLE, 0};
+#endif
 
 	static DisplayUdf *s_pThis;
 };

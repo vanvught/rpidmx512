@@ -56,5 +56,7 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 		}
 	}
 
+	ShowDmxInfo();
+
 	DEBUG_EXIT
 }

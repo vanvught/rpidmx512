@@ -269,6 +269,9 @@ public class RemoteConfig extends JFrame {
 								if (txt.startsWith("network")) {
 									doWizardNetwork(opi);
 								}
+								if (txt.startsWith("artnet")) {
+									doWizardArtnet(opi);
+								}
 								if (txt.startsWith("devices")) {
 									doWizardUniverse(opi);
 								}
@@ -919,6 +922,14 @@ public class RemoteConfig extends JFrame {
 			wizard.setVisible(true);
 		}
 	}
+	
+	private void doWizardArtnet(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardArtnetTxt wizard = new WizardArtnetTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
 
 	private void doUptime(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
@@ -970,6 +981,7 @@ public class RemoteConfig extends JFrame {
 	}
 
 	public void setTextArea(String text) {
+		System.out.println("textArea > [" + text + "]");
 		textArea.setText(text);
 	}
 

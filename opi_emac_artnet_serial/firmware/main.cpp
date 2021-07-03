@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 #include "dmxserial.h"
 #include "dmxserialparams.h"
 #include "storedmxserial.h"
@@ -59,7 +57,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 // RDMNet LLRP Device Only
@@ -121,7 +119,6 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());

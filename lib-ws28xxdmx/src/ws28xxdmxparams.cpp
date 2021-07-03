@@ -52,6 +52,22 @@ using namespace ws28xxdmxparams;
 using namespace pixel;
 using namespace lightset;
 
+#if defined (NODE_ARTNET)
+static uint16_t getStartUniverse(uint16_t universe) {
+	const auto net = universe & (0x7F << 8);
+	const auto sub = universe & (0x0F << 4);
+	const auto calculated = universe + 3;
+	const auto net2 = static_cast<uint16_t>(calculated & (0x7F << 8));
+	const auto sub2 = static_cast<uint16_t>(calculated & (0x0F << 4));
+
+	if ((net == net2) && (sub == sub2)) {
+		return universe;
+	}
+
+	return net2 + sub2;
+}
+#endif
+
 WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore): m_pWS28xxParamsStore(pWS28XXStripeParamsStore) {
 	m_tWS28xxParams.nSetList = 0;
 	m_tWS28xxParams.nType = static_cast<uint8_t>(pixel::defaults::TYPE);
@@ -66,15 +82,14 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 	m_tWS28xxParams.nHighCode = 0;
 	uint16_t nStartUniverse = 1;
 	for (uint32_t i = 0; i < MAX_OUTPUTS; i++) {
-#if defined (NODE_ARTNET)
-		const auto nDiff = ((nStartUniverse + 4) & 0xF) - (nStartUniverse & 0xF);
-
-		if (nDiff != 4) {
-			nStartUniverse = static_cast<uint16_t>(nStartUniverse + nDiff + 15);
-		}
-#endif
 		m_tWS28xxParams.nStartUniverse[i] = nStartUniverse;
+#if defined (NODE_ARTNET)
+		if (i > 0) {
+			m_tWS28xxParams.nStartUniverse[i] = getStartUniverse(4 + m_tWS28xxParams.nStartUniverse[i-1]);
+		}
+#else
 		nStartUniverse += 4;
+#endif
 	}
 	m_tWS28xxParams.nTestPattern = 0;
 }
@@ -240,22 +255,28 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 #endif
 
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
-	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0])); i++) {
-		if (Sscan::Uint16(pLine, LightSetConst::PARAMS_START_UNI_PORT[i], nValue16) == Sscan::OK) {
-#if !defined (NODE_ARTNET)
-			if (nValue16 > 0) {
+	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0]));
+#else
+	constexpr uint32_t nPortsMax = 1;
 #endif
+
+	for (uint32_t i = 0; i < nPortsMax; i++) {
+		if (Sscan::Uint16(pLine, LightSetConst::PARAMS_START_UNI_PORT[i], nValue16) == Sscan::OK) {
+# if !defined (NODE_ARTNET)
+			if (nValue16 > 0) {
+# endif
 				m_tWS28xxParams.nStartUniverse[i] = nValue16;
 				m_tWS28xxParams.nSetList |= (WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
-#if !defined (NODE_ARTNET)
+# if !defined (NODE_ARTNET)
 			} else {
 				m_tWS28xxParams.nStartUniverse[i] = static_cast<uint16_t>(1 + (i * 4));
 				m_tWS28xxParams.nSetList &= ~(WS28xxDmxParamsMask::START_UNI_PORT_1 << i);
 			}
-#endif
+# endif
 		}
 	}
 
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
 		if ((nValue8 > 0) &&  (nValue8 <= 8) &&  (nValue8 != pixel::defaults::OUTPUT_PORTS)) {
 			m_tWS28xxParams.nActiveOutputs = nValue8;

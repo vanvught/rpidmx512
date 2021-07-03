@@ -36,83 +36,42 @@
 
 using namespace artnet;
 
-bool ArtNetNode::IsDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
+void ArtNetNode::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
-
-	auto isChanged = false;
-	const auto *pSrc = pData;
-	auto *pDst = m_OutputPorts[nPortId].data;
-
-	if (nLength != m_OutputPorts[nPortId].nLength) {
-		m_OutputPorts[nPortId].nLength = nLength;
-
-		for (uint32_t i = 0; i < nLength; i++) {
-			*pDst++ = *pSrc++;
-		}
-
-		return true;
-	}
-
-	for (uint32_t i = 0; i < nLength; i++) {
-		if (*pDst != *pSrc) {
-			isChanged = true;
-		}
-		*pDst++ = *pSrc++;
-	}
-
-	return isChanged;
-}
-
-bool ArtNetNode::IsMergedDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength) {
-	assert(pData != nullptr);
-
-	auto isChanged = false;
 
 	if (!m_State.IsMergeMode) {
 		m_State.IsMergeMode = true;
 		m_State.IsChanged = true;
 	}
 
-	m_OutputPorts[nPortId].port.nStatus |= GO_OUTPUT_IS_MERGING;
+	m_OutputPorts[nPortIndex].port.nStatus |= GO_OUTPUT_IS_MERGING;
+	m_OutputPorts[nPortIndex].nLength = nLength;
 
-	if (m_OutputPorts[nPortId].mergeMode == Merge::HTP) {
-
-		if (nLength != m_OutputPorts[nPortId].nLength) {
-			m_OutputPorts[nPortId].nLength = nLength;
-			for (uint32_t i = 0; i < nLength; i++) {
-				uint8_t data = std::max(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
-				m_OutputPorts[nPortId].data[i] = data;
-			}
-			return true;
-		}
-
+	if (m_OutputPorts[nPortIndex].mergeMode == Merge::HTP) {
 		for (uint32_t i = 0; i < nLength; i++) {
-			uint8_t data = std::max(m_OutputPorts[nPortId].dataA[i], m_OutputPorts[nPortId].dataB[i]);
-			if (data != m_OutputPorts[nPortId].data[i]) {
-				m_OutputPorts[nPortId].data[i] = data;
-				isChanged = true;
-			}
+			auto data = std::max(m_OutputPorts[nPortIndex].dataA[i], m_OutputPorts[nPortIndex].dataB[i]);
+			m_OutputPorts[nPortIndex].data[i] = data;
 		}
 
-		return isChanged;
-	} else {
-		return IsDmxDataChanged(nPortId, pData, nLength);
+		return;
 	}
+
+	memcpy(m_OutputPorts[nPortIndex].data, pData, nLength);
 }
 
-void ArtNetNode::CheckMergeTimeouts(uint32_t nPortId) {
-	const uint32_t nTimeOutAMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortId].nMillisA;
+void ArtNetNode::CheckMergeTimeouts(uint32_t nPortIndex) {
+	const uint32_t nTimeOutAMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA;
 
-	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000)) {
-		m_OutputPorts[nPortId].ipA = 0;
-		m_OutputPorts[nPortId].port.nStatus &= static_cast<uint8_t>(~GO_OUTPUT_IS_MERGING);
+	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
+		m_OutputPorts[nPortIndex].ipA = 0;
+		m_OutputPorts[nPortIndex].port.nStatus &= static_cast<uint8_t>(~GO_OUTPUT_IS_MERGING);
 	}
 
-	const uint32_t nTimeOutBMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortId].nMillisB;
+	const uint32_t nTimeOutBMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisB;
 
-	if (nTimeOutBMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000)) {
-		m_OutputPorts[nPortId].ipB = 0;
-		m_OutputPorts[nPortId].port.nStatus &= static_cast<uint8_t>(~GO_OUTPUT_IS_MERGING);
+	if (nTimeOutBMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
+		m_OutputPorts[nPortIndex].ipB = 0;
+		m_OutputPorts[nPortIndex].port.nStatus &= static_cast<uint8_t>(~GO_OUTPUT_IS_MERGING);
 	}
 
 	bool bIsMerging = false;
@@ -133,23 +92,21 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t nPortId) {
 void ArtNetNode::HandleDmx() {
 	const auto *pArtDmx = &(m_ArtNetPacket.ArtPacket.ArtDmx);
 
-	auto data_length = static_cast<uint16_t>( ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
-	data_length = std::min(data_length, ArtNet::DMX_LENGTH);
+	auto nDmxSlots = static_cast<uint16_t>( ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
+	nDmxSlots = std::min(nDmxSlots, ArtNet::DMX_LENGTH);
 
-	for (uint8_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
+	for (uint8_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * m_nPages); nPortIndex++) {
 
-		if (m_OutputPorts[i].bIsEnabled && (m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (pArtDmx->PortAddress == m_OutputPorts[i].port.nPortAddress)) {
+		if (m_OutputPorts[nPortIndex].bIsEnabled && (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) && (pArtDmx->PortAddress == m_OutputPorts[nPortIndex].port.nPortAddress)) {
 
-			uint32_t ipA = m_OutputPorts[i].ipA;
-			uint32_t ipB = m_OutputPorts[i].ipB;
+			auto ipA = m_OutputPorts[nPortIndex].ipA;
+			auto ipB = m_OutputPorts[nPortIndex].ipB;
 
-			bool sendNewData = false;
-
-			m_OutputPorts[i].port.nStatus = m_OutputPorts[i].port.nStatus | GO_DATA_IS_BEING_TRANSMITTED;
+			m_OutputPorts[nPortIndex].port.nStatus = m_OutputPorts[nPortIndex].port.nStatus | GO_DATA_IS_BEING_TRANSMITTED;
 
 			if (m_State.IsMergeMode) {
 				if (__builtin_expect((!m_State.bDisableMergeTimeout), 1)) {
-					CheckMergeTimeouts(i);
+					CheckMergeTimeouts(nPortIndex);
 				}
 			}
 
@@ -157,55 +114,60 @@ void ArtNetNode::HandleDmx() {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("1. first packet recv on this port", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].ipA = m_ArtNetPacket.IPAddressFrom;
-				m_OutputPorts[i].nMillisA = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataA, pArtDmx->Data, data_length);
-				sendNewData = IsDmxDataChanged(i, pArtDmx->Data, data_length);
+				m_OutputPorts[nPortIndex].ipA = m_ArtNetPacket.IPAddressFrom;
+				m_OutputPorts[nPortIndex].nMillisA = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataA, pArtDmx->Data, nDmxSlots);
+				m_OutputPorts[nPortIndex].nLength = nDmxSlots;
+				memcpy(m_OutputPorts[nPortIndex].data, pArtDmx->Data, nDmxSlots);
 			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB == 0) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("2. continued transmission from the same ip (source A)", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].nMillisA = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataA, pArtDmx->Data, data_length);
-				sendNewData = IsDmxDataChanged(i, pArtDmx->Data, data_length);
+				m_OutputPorts[nPortIndex].nMillisA = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataA, pArtDmx->Data, nDmxSlots);
+				m_OutputPorts[nPortIndex].nLength = nDmxSlots;
+				memcpy(m_OutputPorts[nPortIndex].data, pArtDmx->Data, nDmxSlots);
 			} else if (ipA == 0 && ipB == m_ArtNetPacket.IPAddressFrom) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("3. continued transmission from the same ip (source B)", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].nMillisB = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataB, pArtDmx->Data, data_length);
-				sendNewData = IsDmxDataChanged(i, pArtDmx->Data, data_length);
+				m_OutputPorts[nPortIndex].nMillisB = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataB, pArtDmx->Data, nDmxSlots);
+				m_OutputPorts[nPortIndex].nLength = nDmxSlots;
+				memcpy(m_OutputPorts[nPortIndex].data, pArtDmx->Data, nDmxSlots);
 			} else if (ipA != m_ArtNetPacket.IPAddressFrom && ipB == 0) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("4. new source, start the merge", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].ipB = m_ArtNetPacket.IPAddressFrom;
-				m_OutputPorts[i].nMillisB = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataB, pArtDmx->Data, data_length);
-				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataB, data_length);
+				m_OutputPorts[nPortIndex].ipB = m_ArtNetPacket.IPAddressFrom;
+				m_OutputPorts[nPortIndex].nMillisB = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataB, pArtDmx->Data, nDmxSlots);
+				MergeDmxData(nPortIndex, m_OutputPorts[nPortIndex].dataB, nDmxSlots);
 			} else if (ipA == 0 && ipB != m_ArtNetPacket.IPAddressFrom) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("5. new source, start the merge", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].ipA = m_ArtNetPacket.IPAddressFrom;
-				m_OutputPorts[i].nMillisA = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataA, pArtDmx->Data, data_length);
-				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataA, data_length);
+				m_OutputPorts[nPortIndex].ipA = m_ArtNetPacket.IPAddressFrom;
+				m_OutputPorts[nPortIndex].nMillisA = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataA, pArtDmx->Data, nDmxSlots);
+				MergeDmxData(nPortIndex, m_OutputPorts[nPortIndex].dataA, nDmxSlots);
 			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB != m_ArtNetPacket.IPAddressFrom) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("6. continue merge", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].nMillisA = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataA, pArtDmx->Data, data_length);
-				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataA, data_length);
+				m_OutputPorts[nPortIndex].nMillisA = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataA, pArtDmx->Data, nDmxSlots);
+				MergeDmxData(nPortIndex, m_OutputPorts[nPortIndex].dataA, nDmxSlots);
 			} else if (ipA != m_ArtNetPacket.IPAddressFrom && ipB == m_ArtNetPacket.IPAddressFrom) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("7. continue merge", ARTNET_DP_LOW);
 #endif
-				m_OutputPorts[i].nMillisB = m_nCurrentPacketMillis;
-				memcpy(&m_OutputPorts[i].dataB, pArtDmx->Data, data_length);
-				sendNewData = IsMergedDmxDataChanged(i, m_OutputPorts[i].dataB, data_length);
-			} else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB == m_ArtNetPacket.IPAddressFrom) {
+				m_OutputPorts[nPortIndex].nMillisB = m_nCurrentPacketMillis;
+				memcpy(&m_OutputPorts[nPortIndex].dataB, pArtDmx->Data, nDmxSlots);
+				MergeDmxData(nPortIndex, m_OutputPorts[nPortIndex].dataB, nDmxSlots);
+			}
+#ifndef NDEBUG
+			else if (ipA == m_ArtNetPacket.IPAddressFrom && ipB == m_ArtNetPacket.IPAddressFrom) {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("8. Source matches both buffers, this shouldn't be happening!", ARTNET_DP_LOW);
 #endif
@@ -215,35 +177,26 @@ void ArtNetNode::HandleDmx() {
 				SendDiag("9. More than two sources, discarding data", ARTNET_DP_LOW);
 #endif
 				return;
-			} else {
+			}
+#endif
+			else {
 #if defined ( ENABLE_SENDDIAG )
 				SendDiag("0. No cases matched, this shouldn't happen!", ARTNET_DP_LOW);
 #endif
 				return;
 			}
 
-			if (sendNewData || m_bDirectUpdate) {
-				if (!m_State.IsSynchronousMode) {
+			if (!m_State.IsSynchronousMode) {
 #if defined ( ENABLE_SENDDIAG )
-					SendDiag("Send new data", ARTNET_DP_LOW);
+				SendDiag("Send data", ARTNET_DP_LOW);
 #endif
-					m_pLightSet->SetData(i, m_OutputPorts[i].data, m_OutputPorts[i].nLength);
+				m_pLightSet->SetData(nPortIndex, m_OutputPorts[nPortIndex].data, m_OutputPorts[nPortIndex].nLength);
 
-					if(!m_IsLightSetRunning[i]) {
-						m_pLightSet->Start(i);
-						m_State.IsChanged |= (!m_IsLightSetRunning[i]);
-						m_IsLightSetRunning[i] = true;
-					}
-				} else {
-#if defined ( ENABLE_SENDDIAG )
-					SendDiag("DMX data pending", ARTNET_DP_LOW);
-#endif
-					m_OutputPorts[i].IsDataPending = sendNewData;
+				if (!m_IsLightSetRunning[nPortIndex]) {
+					m_pLightSet->Start(nPortIndex);
+					m_State.IsChanged |= (!m_IsLightSetRunning[nPortIndex]);
+					m_IsLightSetRunning[nPortIndex] = true;
 				}
-			} else {
-#if defined ( ENABLE_SENDDIAG )
-				SendDiag("Data not changed", ARTNET_DP_LOW);
-#endif
 			}
 
 			m_State.bIsReceivingDmx = true;

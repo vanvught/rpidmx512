@@ -37,28 +37,28 @@ public:
 
 	int Init(const char *s);
 
-	int32_t Begin(uint16_t nPort);
-	int32_t End(uint16_t nPort);
+	int32_t Begin(uint16_t nPort) override;
+	int32_t End(uint16_t nPort) override;
 
-	void MacAddressCopyTo(uint8_t *pMacAddress);
+	void MacAddressCopyTo(uint8_t *pMacAddress) override;
 
 	void SetIp(uint32_t nIp) override;
 	void SetNetmask(uint32_t nNetmask) override;
 	void SetGatewayIp(uint32_t nGatewayIp) override;
-	bool SetZeroconf() {
+	bool SetZeroconf() override {
 		return false;
 	}
-	bool EnableDhcp() {
+	bool EnableDhcp() override {
 		return false;
 	}
 
-	void SetHostName(const char *pHostName);
+	void SetHostName(const char *pHostName) override;
 
-	void JoinGroup(int32_t nHandle, uint32_t nIp);
-	void LeaveGroup(int32_t nHandle, uint32_t nIp);
+	void JoinGroup(int32_t nHandle, uint32_t nIp) override;
+	void LeaveGroup(int32_t nHandle, uint32_t nIp) override;
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort) override;
+	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort) override;
 
 private:
 	uint32_t GetDefaultGateway();

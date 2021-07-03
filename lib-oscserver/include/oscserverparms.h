@@ -52,7 +52,7 @@ struct OSCServerParamsMask {
 	static constexpr auto OUTPUT = (1U << 4);
 	static constexpr auto PATH_INFO = (1U << 5);
 	static constexpr auto PATH_BLACKOUT = (1U << 6);
-	static constexpr auto ENABLE_NO_CHANGE_OUTPUT = (1U << 7);
+	//static constexpr auto NOT_USED1 = (1U << 7); //WAS: ENABLE_NO_CHANGE_OUTPUT
 };
 
 class OSCServerParamsStore {

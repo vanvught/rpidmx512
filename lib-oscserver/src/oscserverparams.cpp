@@ -138,12 +138,6 @@ void OSCServerParams::callbackFunction(const char *pLine) {
 		m_tOSCServerParams.nSetList |= OSCServerParamsMask::PATH_BLACKOUT;
 		return;
 	}
-
-	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, nValue8) == Sscan::OK) {
-		m_tOSCServerParams.bEnableNoChangeUpdate = (nValue8 != 0);
-		m_tOSCServerParams.nSetList |= OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT;
-		return;
-	}
 }
 
 void OSCServerParams::Dump() {
@@ -172,10 +166,6 @@ void OSCServerParams::Dump() {
 
 	if (isMaskSet(OSCServerParamsMask::TRANSMISSION)) {
 		printf(" %s=%d\n", OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission);
-	}
-
-	if(isMaskSet(OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate);
 	}
 #endif
 }

@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,10 @@ public:
 	Display();
 	Display(uint8_t nCols, uint8_t nRows);
 	Display(DisplayType tDisplayType);
-	~Display();
+	~Display() {
+		s_pThis = nullptr;
+		delete m_LcdDisplay;
+	}
 
 #if !defined(NO_HAL)
 	void SetSleep(bool bSleep);
@@ -69,16 +72,48 @@ public:
 	void Run();
 #endif
 
-	void Cls();
-	void ClearLine(uint8_t nLine);
+	void Cls() {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
 
-	void PutChar(int c);
-	void PutString(const char *pText);
+		m_LcdDisplay->Cls();
+	}
+
+	void ClearLine(uint8_t nLine) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->ClearLine(nLine);
+	}
+
+	void PutChar(int c) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->PutChar(c);
+	}
+
+	void PutString(const char *pText) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->PutString(pText);
+	}
 
 	int Write(uint8_t nLine, const char *);
 	int Printf(uint8_t nLine, const char *, ...);
 
-	void TextLine(uint8_t nLine, const char *, uint8_t);
+	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->TextLine(nLine, pText, nLength);
+	}
 
 	void TextStatus(const char *pText);
 	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
@@ -102,7 +137,21 @@ public:
 		return m_nSleepTimeout / 1000 / 60;
 	}
 
-	void SetContrast(uint8_t nContrast);
+	void SetContrast(uint8_t nContrast) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->SetContrast(nContrast);
+	}
+
+	void DoFlipVertically() {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->DoFlipVertically();
+	}
 
 	uint8_t getCols() {
 		return m_nCols;

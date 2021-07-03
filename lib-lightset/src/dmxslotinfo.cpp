@@ -132,9 +132,7 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 	p--;
 	*p = '\0';
 
-	DEBUG_PRINTF("%u %u", static_cast<unsigned>(p - m_pToString), static_cast<unsigned>(m_nSize * 7));
-
-	assert(static_cast<uint32_t>(p - m_pToString) <= static_cast<uint32_t>(m_nSize * 7));
+	assert(static_cast<uint32_t>(p - m_pToString) <= (m_nSize * 7U));
 
 	return m_pToString;
 }

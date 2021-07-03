@@ -60,6 +60,7 @@ enum class DhcpClientStatus {
 struct NetworkDisplay {
 	virtual ~NetworkDisplay() {}
 
+	virtual void ShowEmacStart()=0;
 	virtual void ShowIp()=0;
 	virtual void ShowNetMask()=0;
 	virtual void ShowGatewayIp()=0;

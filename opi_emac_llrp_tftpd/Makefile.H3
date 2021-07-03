@@ -1,11 +1,7 @@
-#
-DEFINES = NODE_RDMNET_LLRP_ONLY DISPLAY_UDF ENABLE_SSD1311 NDEBUG
-#
-LIBS = rdmnet rdm rdmsensor rdmsubdevice
-#
-SRCDIR = firmware lib
+DEFINES=NODE_RDMNET_LLRP_ONLY DISPLAY_UDF ENABLE_SSD1311 NDEBUG
+LIBS=rdmnet rdm rdmsensor rdmsubdevice
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
-
 prerequisites:
 	./generate_sofware_version_id.sh

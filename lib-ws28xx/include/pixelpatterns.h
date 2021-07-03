@@ -56,6 +56,8 @@ public:
 	PixelPatterns(uint32_t nActivePorts);
 	~PixelPatterns() {}
 
+	static const char* GetName(pixelpatterns::Pattern pattern);
+
 	void RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);

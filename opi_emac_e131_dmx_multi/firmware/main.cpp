@@ -178,7 +178,6 @@ void notmain(void) {
 			dmxparams.Set(pDmxOutput);
 		}
 
-		bridge.SetDirectUpdate(false);
 		bridge.SetOutput(pDmxOutput);
 
 		pDmxOutput->Print();

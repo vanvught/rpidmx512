@@ -37,7 +37,7 @@ public class OrangePi {
 	private static final String NETWORK_TXT = "network.txt";
 	private static final String[] NODE_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
 	private static final String[] NODEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
-	private static final String[] OUTPUT_TXT = {"params.txt", "devices.txt", "mon.txt", "artnet.txt", "serial.txt", "rgbpanel.txt", ""};
+	private static final String[] OUTPUT_TXT = {"params.txt", "devices.txt", "mon.txt", "serial.txt", "rgbpanel.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String GPS_TXT = "gps.txt";
@@ -289,7 +289,7 @@ public class OrangePi {
 		String txt = data.substring(1, nIndex + 4);
 		
 		Boolean bDoSave = false;
-
+		
 		if (isRemoteConfigTxt(txt)) {
 			sbRemoteConfig = null;
 			bDoSave = true;

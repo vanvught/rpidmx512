@@ -240,7 +240,7 @@ public:
 
 private:
 	uint16_t CalculateChecksum() {
-		uint16_t nChecksum = static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
+		auto nChecksum = static_cast<uint16_t>((m_tRDMDeviceInfo.dmx_start_address[0] >> 8) + m_tRDMDeviceInfo.dmx_start_address[1]);
 		nChecksum += m_tRDMDeviceInfo.current_personality;
 		return nChecksum;
 	}

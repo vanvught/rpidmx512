@@ -89,13 +89,15 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		ArtNetParamsConst::DESTINATION_IP_PORT[0],
 		ArtNetParamsConst::DESTINATION_IP_PORT[1],
 		ArtNetParamsConst::DESTINATION_IP_PORT[2],
-		ArtNetParamsConst::DESTINATION_IP_PORT[3]
+		ArtNetParamsConst::DESTINATION_IP_PORT[3],
 #else
 		"",
 		"",
 		"",
-		""
+		"",
 #endif
+		NetworkParamsConst::DEFAULT_GATEWAY,
+		DisplayUdfParamsConst::DMX_DIRECTION
 };
 
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
@@ -111,7 +113,6 @@ bool DisplayUdfParams::Load() {
 	ReadConfigFile configfile(DisplayUdfParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DisplayUdfParamsConst::FILE_NAME)) {
-		// There is a configuration file
 		if (m_pDisplayUdfParamsStore != nullptr) {
 			m_pDisplayUdfParamsStore->Update(&m_tDisplayUdfParams);
 		}
@@ -171,6 +172,15 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::FLIP_VERTICALLY, value8) == Sscan::OK) {
+		if (value8 != 0) {
+			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::FLIP_VERTICALLY;
+		} else {
+			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::FLIP_VERTICALLY;
+		}
+		return;
+	}
+
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (Sscan::Uint8(pLine, pArray[i], value8) == Sscan::OK) {
 			if ((value8 > 0) && (value8 <= LABEL_MAX_ROWS)) {
@@ -198,6 +208,7 @@ void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParam
 
 	builder.Add(DisplayUdfParamsConst::INTENSITY, m_tDisplayUdfParams.nIntensity , isMaskSet(DisplayUdfParamsMask::INTENSITY));
 	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT));
+	builder.Add(DisplayUdfParamsConst::FLIP_VERTICALLY, isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY) , isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (pArray[i][0] != '\0') {
@@ -219,11 +230,15 @@ void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	if (isMaskSet(DisplayUdfParamsMask::INTENSITY)) {
-		Display::Get()->SetContrast(m_tDisplayUdfParams.nIntensity);
+		pDisplayUdf->SetContrast(m_tDisplayUdfParams.nIntensity);
 	}
 
 	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
-		Display::Get()->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
+		pDisplayUdf->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
+	}
+
+	if (isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY)) {
+		pDisplayUdf->DoFlipVertically();
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
@@ -250,6 +265,10 @@ void DisplayUdfParams::Dump() {
 
 	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
 		printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout);
+	}
+
+	if (isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY)) {
+		printf(" Flip vertically\n");
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {

@@ -88,6 +88,7 @@ public:
 	static float ConvertTxH(uint8_t nCode);
 	static uint8_t ConvertTxH(float fTxH);
 
+private:
 	static const char TYPES[static_cast<uint32_t>(pixel::Type::UNDEFINED)][pixel::TYPES_MAX_NAME_LENGTH];
 	static const char MAPS[static_cast<uint32_t>(pixel::Map::UNDEFINED)][4];
 };

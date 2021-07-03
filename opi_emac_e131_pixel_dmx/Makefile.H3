@@ -1,0 +1,10 @@
+PLATFORM=ORANGE_PI
+DEFINES=NODE_E131 E131_PORTS=5
+DEFINES+=OUTPUT_DMXSEND OUTPUT_PIXEL NODE_RDMNET_LLRP_ONLY DISPLAY_UDF DISABLE_RTC ENABLE_SSD1311 NDEBUG
+LIBS=rdmnet rdm rdmsensor rdmsubdevice
+SRCDIR=firmware lib
+
+include ../h3-firmware-template/Rules.mk
+
+prerequisites:
+	./generate_sofware_version_id.sh

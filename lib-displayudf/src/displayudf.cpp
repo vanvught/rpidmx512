@@ -95,6 +95,7 @@ void DisplayUdf::Show() {
 
 	// Network
 	ShowIpAddress();
+	ShowGatewayIp();
 	ShowNetmask();
 	ShowHostName();
 }
@@ -105,6 +106,11 @@ void DisplayUdf::ShowDmxStartAddress() {
 				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
 				static_cast<int>(LightSet::Get()->GetDmxFootprint()));
 	}
+}
+
+void DisplayUdf::ShowEmacStart() {
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "Ethernet start");	
 }
 
 void DisplayUdf::ShowIpAddress() {
@@ -118,7 +124,8 @@ void DisplayUdf::ShowNetmask() {
 }
 
 void DisplayUdf::ShowGatewayIp() {
-
+	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::DEFAULT_GATEWAY)]);
+	Printf(m_aLabels[static_cast<uint32_t>(Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
 }
 
 void DisplayUdf::ShowHostName() {
@@ -152,7 +159,7 @@ void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
 }
 
 void DisplayUdf::ShowShutdown() {
-	Display::Get()->TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
+	TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 
 void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {

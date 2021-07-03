@@ -81,7 +81,7 @@ SpiFlashStore::SpiFlashStore() {
 
 		assert(s_nSpiFlashStoreSize <= FlashStore::SIZE);
 
-		Dump();
+//		Dump();
 	}
 
 	DEBUG_EXIT
@@ -196,7 +196,7 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 	assert(pData != nullptr);
 	assert((nOffset + nDataLength) <= s_aStorSize[static_cast<uint32_t>(tStore)]);
 
-	debug_dump(const_cast<void*>(pData), nDataLength);
+	debug_dump(const_cast<void*>(pData), static_cast<uint16_t>(nDataLength));
 
 	auto bIsChanged = false;
 
@@ -309,7 +309,7 @@ bool SpiFlashStore::Flash() {
 			break;
 	}
 
-	Dump();
+//	Dump();
 
 	return false;
 }
@@ -333,7 +333,7 @@ void SpiFlashStore::Dump() {
 		printf("Store [%s]:%d\n", s_aStoreName[j], j);
 
 		auto *p = &s_SpiFlashData[GetStoreOffset(static_cast<Store>(j))];
-		debug_dump(p, s_aStorSize[j]);
+		debug_dump(p, static_cast<uint16_t>(s_aStorSize[j]));
 
 		printf("\n");
 	}

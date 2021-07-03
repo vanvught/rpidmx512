@@ -34,7 +34,7 @@
 // D/C# – Data / Command Selection bit
 // A control byte mainly consists of Co and D/C# bits following by six “0”’s.
 
-namespace sdd1311 {
+namespace ssd1311 {
 static constexpr uint8_t DEFAULT_I2C_ADDRESS = 0x3C;
 static constexpr auto MAX_COLUMNS = 20;
 static constexpr auto MAX_ROWS = 4;
@@ -52,7 +52,7 @@ static constexpr uint8_t DDRAM_ADDRESS = 0x80;
 static constexpr uint8_t CONTRAST = 0x81;
 }  // namespace cmd
 
-using namespace sdd1311;
+using namespace ssd1311;
 
 static uint8_t _ClearBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
 static uint8_t _TextBuffer[1 + MAX_COLUMNS] __attribute__((aligned(4)));
@@ -82,7 +82,19 @@ bool Ssd1311::Start() {
 
 	_ClearBuffer[0] = MODE_DATA;
 	_TextBuffer[0] = MODE_DATA;
-
+	
+	SendCommand(0x3A);
+	SendCommand(0x09);
+	SendCommand(0x05);
+	SendCommand(0x1C);
+	SendCommand(0x3C);
+	SendCommand(0x3A);
+	SendCommand(0x72);
+	SendData(0x00);
+	SendCommand(0x3C);
+	SendCommand(0x0C);
+	SendCommand(0x01);
+	
 	SelectRamRom(0, static_cast<uint8_t>(Rom::A));
 
 	return true;

@@ -43,4 +43,20 @@ public class Properties {
 		}
 		return false;
 	}
+	
+	static String removeComments(String s) {
+		final String[] lines = s.split("\n");
+		
+		StringBuffer out = new StringBuffer(lines[0] + "\n");
+		
+		for (int i = 1; i < lines.length; i++) {
+			final String line = lines[i];
+			if (line.startsWith("#")) {
+				continue;
+			}
+			out.append(lines[i] + "\n");
+		}
+		
+		return out.toString();
+	}
 }

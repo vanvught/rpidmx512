@@ -33,7 +33,6 @@
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
 
-#include "dmx_uarts.h"
 #include "rdm.h"
 
 class ArtNetRdmController: public RDMDeviceController, public ArtNetRdm {
@@ -51,7 +50,7 @@ public:
 	void DumpTod(uint32_t nPort = 0);
 
 private:
-	RDMDiscovery *m_Discovery[DMX_MAX_UARTS];
+	RDMDiscovery *m_Discovery[artnetnode::MAX_PORTS];
 	struct TRdmMessage *m_pRdmCommand { nullptr };
 };
 

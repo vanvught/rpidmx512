@@ -446,12 +446,10 @@ public class WizardDevicesTxt extends JDialog {
 		int universeStart = (int) formattedTextFieldStartUniverse.getValue();
 		int universes;
 		
-		if (getTitle().toLowerCase().contains("art")) {
-			final int diff = ((universeStart + 4) & 0xF) - (universeStart & 0xF);
-			if (diff != 4) {
-				universeStart = universeStart + diff + 16;
-				formattedTextFieldStartUniverse.setValue(universeStart);
-			}
+		final boolean isArtNet = getTitle().toLowerCase().contains("art");
+		
+		if (isArtNet) {
+			universeStart = ArtNet.getStartUniverse(universeStart);
 			universes = 4;
 		} else {
 			universes = 1 + (groups/ (512 / ledsPerPixel));
@@ -471,25 +469,59 @@ public class WizardDevicesTxt extends JDialog {
 		final int outputs = (int) spinnerActiveOutput.getValue();
 		
 		if (outputs >= 2) {
-			lblUniversePort2.setText(String.valueOf(universeStart + 1 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort1.getText());
+			if (isArtNet) 
+				lblUniversePort2.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort2.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs >= 3) {
-			lblUniversePort3.setText(String.valueOf(universeStart + 2 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort2.getText());
+			if (isArtNet) 
+				lblUniversePort3.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort3.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs >= 4) {
-			lblUniversePort4.setText(String.valueOf(universeStart + 3 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort3.getText());
+			if (isArtNet) 
+				lblUniversePort4.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort4.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs >= 5) {
-			lblUniversePort5.setText(String.valueOf(universeStart + 4 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort4.getText());
+			if (isArtNet) 
+				lblUniversePort5.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort5.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs >= 6) {
-			lblUniversePort6.setText(String.valueOf(universeStart + 5 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort5.getText());
+			if (isArtNet) 
+				lblUniversePort6.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort6.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs >= 7) {
-			lblUniversePort7.setText(String.valueOf(universeStart + 6 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort6.getText());
+			if (isArtNet) 
+				lblUniversePort7.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort7.setText(String.valueOf(universePrevious + universes));
 		}
+		
 		if (outputs == 8) {
-			lblUniversePort8.setText(String.valueOf(universeStart + 7 * universes));
+			final int universePrevious = Integer.parseInt(lblUniversePort7.getText());
+			if (isArtNet) 
+				lblUniversePort8.setText(String.valueOf(ArtNet.getStartUniverse(universePrevious + universes)));
+			else 
+				lblUniversePort8.setText(String.valueOf(universePrevious + universes));
 		}
 	}
 	

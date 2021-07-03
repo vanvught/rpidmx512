@@ -1,8 +1,5 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-device/include ../lib-jamstapl/include ../lib-hal/include
-#
-EXTRA_SRCDIR = jbc
-#
+DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include ../lib-hal/include
+EXTRA_SRCDIR=jbc
+
 include ../h3-firmware-template/lib/Rules.mk

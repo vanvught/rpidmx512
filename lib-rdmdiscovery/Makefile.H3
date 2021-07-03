@@ -1,6 +1,6 @@
 #
 DEFINES = NDEBUG
 #
-EXTRA_INCLUDES = ../lib-dmx/include ../lib-rdm/include ../lib-artnet/include ../lib-lightset/include ../lib-hal/include
+EXTRA_INCLUDES = ../lib-rdm/include ../lib-artnet/include ../lib-lightset/include ../lib-hal/include
 #
 include ../h3-firmware-template/lib/Rules.mk

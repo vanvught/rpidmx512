@@ -67,6 +67,10 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	if (params.Load()) {
 		params.Dump();
 	}
+	
+	if (m_pNetworkDisplay != nullptr) {
+		m_pNetworkDisplay->ShowEmacStart();
+	}
 
 	emac_start(true);
 
@@ -246,11 +250,6 @@ void NetworkH3emac::SetDefaultIp() {
 
 void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
-
-	if (nIp == m_nLocalIp) {
-		DEBUG_EXIT
-		return;
-	}
 
 	if (m_IsDhcpUsed) {
 		m_IsDhcpUsed = false;

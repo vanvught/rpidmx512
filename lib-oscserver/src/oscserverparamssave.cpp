@@ -62,8 +62,6 @@ void OSCServerParams::Builder(const struct TOSCServerParams *ptOSCServerParams, 
 	builder.Add(OSCServerConst::PARAMS_PATH_BLACKOUT, m_tOSCServerParams.aPathBlackOut, isMaskSet(OSCServerParamsMask::PATH_BLACKOUT));
 	builder.Add(OSCServerConst::PARAMS_TRANSMISSION, m_tOSCServerParams.bPartialTransmission, isMaskSet(OSCServerParamsMask::TRANSMISSION));
 
-	builder.Add(LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, m_tOSCServerParams.bEnableNoChangeUpdate, isMaskSet(OSCServerParamsMask::ENABLE_NO_CHANGE_OUTPUT));
-
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT

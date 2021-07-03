@@ -209,27 +209,6 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	}
 }
 
-Display::~Display() {
-	s_pThis = nullptr;
-	delete m_LcdDisplay;
-}
-
-void Display::Cls() {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->Cls();
-}
-
-void Display::TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->TextLine(nLine, pText, nLength);
-}
-
 int Display::Printf(uint8_t nLine, const char *format, ...) {
 	if (m_LcdDisplay == nullptr) {
 		return 0;
@@ -273,30 +252,6 @@ void Display::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	}
 
 	m_LcdDisplay->SetCursorPos(nCol, nRow);
-}
-
-void Display::PutChar(int c) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->PutChar(c);
-}
-
-void Display::PutString(const char *pText) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->PutString(pText);
-}
-
-void Display::ClearLine(uint8_t nLine) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->ClearLine(nLine);
 }
 
 #if defined(ENABLE_CURSOR_MODE)
@@ -345,14 +300,6 @@ void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData
 void Display::TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex) {
 	TextStatus(pText);
 	m_Display7Segment.Status(nValue7Segment, bHex);
-}
-
-void Display::SetContrast(uint8_t nContrast) {
-	if (m_LcdDisplay == nullptr) {
-		return;
-	}
-
-	m_LcdDisplay->SetContrast(nContrast);
 }
 
 void Display::PrintInfo() {

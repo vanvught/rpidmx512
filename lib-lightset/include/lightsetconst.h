@@ -37,8 +37,6 @@ struct LightSetConst {
 
 	static const char PARAMS_START_UNI_PORT[8][18];
 
-	static const char PARAMS_ENABLE_NO_CHANGE_UPDATE[];
-
 	static const char PARAMS_DMX_START_ADDRESS[];
 	static const char PARAMS_DMX_SLOT_INFO[];
 

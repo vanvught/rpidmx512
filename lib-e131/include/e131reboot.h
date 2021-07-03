@@ -30,12 +30,12 @@
 #include "e131bridge.h"
 #include "lightset.h"
 
-class E131Reboot: public RebootHandler {
+class E131Reboot final : public RebootHandler {
 public:
 	E131Reboot() {}
-	~E131Reboot() {}
+	~E131Reboot() override {}
 
-	void Run() {
+	void Run() override {
 		E131Bridge::Get()->Stop();
 		if (LightSet::Get() != nullptr) {
 			LightSet::Get()->Blackout(true);

@@ -25,11 +25,19 @@ do
 			do_build=1
 		elif [[ $f = '../opi_emac_artnet_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
-		elif [[ $f = '../opi_emac_artnet_pixel' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
+		elif [[ $f = "../opi_emac_artnet_dmx_multi" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_artnet_pixel_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_artnet_pixel_dmx_multi' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
 		elif [[ $f = '../opi_emac_e131_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
-		elif [[ $f = '../opi_emac_e131_pixel' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
+		elif [[ $f = "../opi_emac_e131_dmx_multi" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_e131_pixel_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_e131_pixel_dmx_multi' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
 		elif [[ $f = '../opi_emac_osc_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
@@ -40,8 +48,6 @@ do
 		elif [[ $f = '../opi_emac_llrp_tftpd' ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
 			do_build=1
 		elif [[ $f = "../opi_"*"monitor" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
-			do_build=1
-		elif [[ $f = "../opi_emac_"*"dmx_multi" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
 			do_build=1
 		elif [[ $f = "../opi_emac_"* ]] && [[ $f != "../opi_"*"monitor" ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1

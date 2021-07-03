@@ -29,6 +29,10 @@
 #include "rdm.h"
 #include "dmx.h"
 
+extern "C" {
+void udelay(uint32_t);
+}
+
 using namespace dmx;
 
 const uint8_t *Rdm::Receive(uint32_t nPort) {

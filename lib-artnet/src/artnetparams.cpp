@@ -200,7 +200,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_UNIVERSE, nValue8) == Sscan::OK) {
-		if ((nValue8 != 1) && (nValue8 <= 0xF)) {
+		if (nValue8 <= 0xF) {
 			m_tArtNetParams.nUniverse = nValue8;
 			m_tArtNetParams.nSetList |= ArtnetParamsMask::UNIVERSE;
 		} else {
@@ -237,7 +237,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
 		if (Sscan::Uint8(pLine, LightSetConst::PARAMS_UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
-			if ((nValue8 != (i + 1)) && (nValue8 <= 0xF)) {
+			if (nValue8 <= 0xF) {
 				m_tArtNetParams.nUniversePort[i] = nValue8;
 				m_tArtNetParams.nSetList |= (ArtnetParamsMask::UNIVERSE_A << i);
 			} else {
@@ -280,11 +280,6 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 				m_tArtNetParams.nMultiPortOptions &= static_cast<uint16_t>(~(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i));
 			}
 		}
-	}
-
-	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE, nValue8) == Sscan::OK) {
-		SetBool(nValue8, ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT);
-		return;
 	}
 
 	nLength = 5;

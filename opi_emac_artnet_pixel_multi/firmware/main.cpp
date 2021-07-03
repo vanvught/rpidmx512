@@ -197,9 +197,7 @@ void notmain(void) {
 	node.Print();
 	pixelDmxMulti.Print();
 
-	const auto board =  WS28xxMulti::GetBoard();
-
-	display.SetTitle("ArtNet Pixel %c:%dx%d", board == ws28xxmulti::Board::X8 ? '8' : (board == ws28xxmulti::Board::X4 ? '4' : ' '), nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(3, displayudf::Labels::NODE_NAME);
 	display.Set(4, displayudf::Labels::HOSTNAME);

@@ -46,9 +46,7 @@
 #include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
 #include "timecode.h"
-#include "timesync.h"
 
 // Monitor Output
 #include "dmxmonitor.h"
@@ -56,7 +54,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 #include "spiflashinstall.h"
@@ -126,7 +124,6 @@ void notmain(void) {
 		artnetparams.Set(&node);
 	}
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
@@ -137,14 +134,8 @@ void notmain(void) {
 		node.SetTimeCodeHandler(&timecode);
 	}
 
-	TimeSync timesync;
-	if (artnetparams.IsUseTimeSync()) {
-		node.SetTimeSyncHandler(&timesync);
-	}
-
 	DMXMonitor monitor;
 	// There is support for HEX output only
-	node.SetDirectUpdate(false);
 	node.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);

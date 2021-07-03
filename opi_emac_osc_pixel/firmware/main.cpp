@@ -161,6 +161,8 @@ void notmain(void) {
 
 		auto *pPixelDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pPixelDmx != nullptr);
+
+		pPixelDmx->SetPixelDmxHandler(new PixelDmxStartStop);
 		pSpi = pPixelDmx;
 
 		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
@@ -173,7 +175,6 @@ void notmain(void) {
 	server.SetOscServerHandler(pHandler);
 	server.Print();
 
-	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC,  remoteconfig::Output::PIXEL, 1);

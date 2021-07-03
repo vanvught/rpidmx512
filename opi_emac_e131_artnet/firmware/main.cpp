@@ -107,7 +107,6 @@ void notmain(void) {
 		e131params.Set(&bridge);
 	}
 
-	bridge.SetDirectUpdate(true);
 	bridge.SetDisableSynchronize(true);
 
 	ArtNetController controller;

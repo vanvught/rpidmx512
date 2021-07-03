@@ -35,19 +35,17 @@
 using namespace artnet;
 
 bool ArtNetNode::GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
 	if (dir == PortDir::INPUT) {
-		assert(nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT);
-
-		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
-			nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
-			return m_InputPorts[nPortIndex].bIsEnabled;
-		}
-
-		return false;
+		nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
+		return m_InputPorts[nPortIndex].bIsEnabled;
 	}
 
-	assert(nPortIndex < ARTNET_NODE_MAX_PORTS_OUTPUT);
+	if (dir == PortDir::OUTPUT) {
+		nAddress = m_OutputPorts[nPortIndex].port.nPortAddress;
+		return m_OutputPorts[nPortIndex].bIsEnabled;
+	}
 
-	nAddress = m_OutputPorts[nPortIndex].port.nPortAddress;
-	return m_OutputPorts[nPortIndex].bIsEnabled;
+	return false;
 }

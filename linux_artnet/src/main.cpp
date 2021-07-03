@@ -50,10 +50,6 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 
-#if defined (__linux__)
-# include "ipprog.h"
-#endif
-
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -103,10 +99,6 @@ int main(int argc, char **argv) {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	if (fopen("direct.update", "r") != nullptr) {
-		node.SetDirectUpdate(true);
-	} // No worries about closing this file pointer
-
 	DMXMonitor monitor;
 	DMXMonitorParams monitorParams(new StoreMonitor);
 
@@ -116,11 +108,6 @@ int main(int argc, char **argv) {
 	}
 
 	node.SetOutput(&monitor);
-#if defined (__linux__)
-	if (getuid() == 0) {
-		node.SetIpProgHandler(new IpProg);
-	}
-#endif
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());

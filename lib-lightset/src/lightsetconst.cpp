@@ -40,8 +40,6 @@ const char LightSetConst::PARAMS_START_UNI_PORT[8][18] = { "start_uni_port_1",
 		"start_uni_port_5", "start_uni_port_6", "start_uni_port_7",
 		"start_uni_port_8" };
 
-const char LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE[] = "enable_no_change_update";
-
 const char LightSetConst::PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
 const char LightSetConst::PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";
 

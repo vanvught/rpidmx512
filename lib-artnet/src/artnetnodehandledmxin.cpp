@@ -42,7 +42,7 @@
 static uint32_t s_ReceivingMask = 0;
 
 void ArtNetNode::SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp) {
-	if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+	if (nPortIndex < artnetnode::MAX_PORTS) {
 		if (Network::Get()->IsValidIp(nDestinationIp)) {
 			m_InputPorts[nPortIndex].nDestinationIp = nDestinationIp;
 		} else {

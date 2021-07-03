@@ -116,10 +116,6 @@ void ArtNetParams::Dump() {
 		}
 	}
 
-	if(isMaskSet(ArtnetParamsMask::ENABLE_NO_CHANGE_OUTPUT)) {
-		printf(" %s=1 [Yes]\n", LightSetConst::PARAMS_ENABLE_NO_CHANGE_UPDATE);
-	}
-
 	if(isMaskSet(ArtnetParamsMask::DIRECTION)) {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, static_cast<int>(m_tArtNetParams.nDirection), m_tArtNetParams.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
 	}

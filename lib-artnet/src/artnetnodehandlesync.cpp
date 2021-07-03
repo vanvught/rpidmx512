@@ -40,8 +40,7 @@ void ArtNetNode::HandleSync() {
 	m_State.nArtSyncMillis = Hardware::Get()->Millis();
 
 	for (uint8_t i = 0; i < (m_nPages * ArtNet::PORTS); i++) {
-		if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET)
-				&& ((m_OutputPorts[i].IsDataPending) || (m_OutputPorts[i].bIsEnabled && m_bDirectUpdate))) {
+		if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (m_OutputPorts[i].bIsEnabled)) {
 #if defined ( ENABLE_SENDDIAG )
 			SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
@@ -52,7 +51,7 @@ void ArtNetNode::HandleSync() {
 				m_IsLightSetRunning[i] = true;
 			}
 
-			m_OutputPorts[i].IsDataPending = false;
+			m_OutputPorts[i].nLength = 0;
 		}
 	}
 }

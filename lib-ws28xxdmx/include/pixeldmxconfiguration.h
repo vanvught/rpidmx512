@@ -28,6 +28,10 @@
 
 #include <cstdint>
 
+#if defined (NODE_ARTNET_MULTI)
+# define NODE_ARTNET
+#endif
+
 #include "pixelconfiguration.h"
 
 namespace pixeldmxconfiguration {

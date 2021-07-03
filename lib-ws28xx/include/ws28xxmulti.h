@@ -34,15 +34,6 @@
 # include "h3_spi.h"
 #endif
 
-namespace ws28xxmulti {
-enum class Board {
-	X4, X8, UNKNOWN
-};
-namespace defaults {
-static constexpr auto BOARD = Board::X4;
-}  // namespace defaults
-}  // namespace ws28xxmulti
-
 struct JamSTAPLDisplay;
 
 class WS28xxMulti {
@@ -52,28 +43,12 @@ public:
 
 	void Print();
 
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-		if (m_Board == ws28xxmulti::Board::X8) {
-			SetPixel8x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-		} else {
-			SetPixel4x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-		}
-	}
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-		if (m_Board == ws28xxmulti::Board::X8) {
-			SetPixel8x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, nWhite);
-		} else {
-			SetPixel4x(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, nWhite);
-		}
-	}
+	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 #if defined (H3)
 	bool IsUpdating() {
-		if (m_Board == ws28xxmulti::Board::X8) {
-			return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
-		} else {
-			return false;
-		}
+		return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
 	}
 #else
 	bool IsUpdating(void) const {
@@ -96,12 +71,9 @@ public:
 		return m_Map;
 	}
 
-// 8x
 	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
 		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
 	}
-
-	static ws28xxmulti::Board GetBoard();
 
 	static WS28xxMulti *Get() {
 		return s_pThis;
@@ -109,27 +81,13 @@ public:
 
 private:
 	uint8_t ReverseBits(uint8_t nBits);
-// 4x
-	static bool IsMCP23017();
-	bool SetupMCP23017(uint8_t nT0H, uint8_t nT1H);
-	bool SetupSI5351A();
-	void SetupGPIO();
-	void SetupBuffers4x();
-	void Generate800kHz(const uint32_t *pBuffer);
-	void SetColour4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetPixel4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel4x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
-// 8x
 	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
 	void SetupSPI(uint32_t nSpeedHz);
 	bool SetupCPLD();
-	void SetupBuffers8x();
-	void SetColour8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetPixel8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel8x(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetupBuffers();
+	void SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 
 private:
-	ws28xxmulti::Board m_Board { ws28xxmulti::defaults::BOARD };
 	bool m_hasCPLD { false };
 	pixel::Type m_Type { pixel::defaults::TYPE };
 	uint32_t m_nCount { pixel::defaults::COUNT };
@@ -137,10 +95,8 @@ private:
 	bool m_bIsRTZProtocol { true };
 	uint8_t m_nGlobalBrightness { 0xFF };
 	uint32_t m_nBufSize { 0 };
-	uint32_t *m_pBuffer4x { nullptr };
-	uint32_t *m_pBlackoutBuffer4x { nullptr };
-	uint8_t *m_pBuffer8x { nullptr };
-	uint8_t *m_pBlackoutBuffer8x { nullptr };
+	uint8_t *m_pBuffer { nullptr };
+	uint8_t *m_pBlackoutBuffer { nullptr };
 	JamSTAPLDisplay *m_pJamSTAPLDisplay { nullptr };
 
 	static WS28xxMulti *s_pThis;

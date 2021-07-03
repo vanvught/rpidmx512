@@ -46,8 +46,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 #include "identify.h"
 
 #include "rdmdeviceresponder.h"
@@ -58,7 +56,7 @@
 
 #include "artnetrdmresponder.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
@@ -241,9 +239,7 @@ void notmain(void) {
 
 	Identify identify;
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetDirectUpdate(false);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore(StoreArtNet::Get());
 #endif

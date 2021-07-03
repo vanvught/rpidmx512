@@ -37,6 +37,8 @@ import javax.swing.JLabel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
 
 public class WizardDisplayTxt extends JDialog {
 	private static final long serialVersionUID = 1L;
@@ -48,7 +50,7 @@ public class WizardDisplayTxt extends JDialog {
 	final static String propertieKeys[] = { "#", "title", "board_name", "ip_address", "version", "universe", "active_ports",
 			"short_name", "hostname", "universe_port_a", "universe_port_b", "universe_port_c", "universe_port_d",
 			"net_mask", "dmx_start_address", "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c",
-			"destination_ip_port_d" };
+			"destination_ip_port_d", "default_gateway", "dmx_direction" };
 	//
 	private JButton btnCancel;
 	private JButton btnSave;
@@ -62,6 +64,7 @@ public class WizardDisplayTxt extends JDialog {
 	private JFormattedTextField formattedTextFieldSleepTimeout;
 	private JLabel lblMinutes;
 	private JButton btnSetDefaults;
+	private JCheckBox chckbxNewCheckBox;
 
 	public static void main(String[] args) {
 		try {
@@ -95,7 +98,7 @@ public class WizardDisplayTxt extends JDialog {
 	}
 
 	private void initComponents() {
-		setBounds(100, 100, 308, 300);
+		setBounds(100, 100, 308, 334);
 
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -141,79 +144,92 @@ public class WizardDisplayTxt extends JDialog {
 		formattedTextFieldSleepTimeout.setColumns(2);
 
 		lblMinutes = new JLabel("Minutes");
+		
+		chckbxNewCheckBox = new JCheckBox("Flip vertically");
+		chckbxNewCheckBox.setHorizontalAlignment(SwingConstants.RIGHT);
 
 		GroupLayout groupLayout = new GroupLayout(contentPanel);
-		groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.TRAILING).addGroup(groupLayout
-				.createSequentialGroup().addContainerGap()
-				.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addGroup(groupLayout.createSequentialGroup()
-								.addComponent(lblLine2, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(comboBoxLine2, 0, 390, Short.MAX_VALUE))
-						.addGroup(groupLayout.createSequentialGroup().addComponent(lblLine6)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(comboBoxLine6, 0, 390, Short.MAX_VALUE))
-						.addGroup(groupLayout.createSequentialGroup()
-								.addComponent(lblLine1, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(comboBoxLine1, 0, 390, Short.MAX_VALUE))
-						.addGroup(groupLayout.createSequentialGroup().addGroup(groupLayout
-								.createParallelGroup(Alignment.LEADING)
-								.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-										.addComponent(lblLine4, GroupLayout.PREFERRED_SIZE, 38,
-												GroupLayout.PREFERRED_SIZE)
-										.addComponent(lblLine3, GroupLayout.PREFERRED_SIZE, 38,
-												GroupLayout.PREFERRED_SIZE))
-								.addComponent(lblLine5, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-										.addComponent(comboBoxLine4, 0, 390, Short.MAX_VALUE)
-										.addComponent(comboBoxLine3, 0, 390, Short.MAX_VALUE)
-										.addComponent(comboBoxLine5, 0, 390, Short.MAX_VALUE)))
-						.addGroup(groupLayout.createSequentialGroup().addComponent(lblIntensity)
-								.addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(formattedTextFieldIntensity, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addGap(18).addComponent(lblSleepTimeout).addPreferredGap(ComponentPlacement.RELATED)
-								.addComponent(formattedTextFieldSleepTimeout, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addPreferredGap(ComponentPlacement.RELATED).addComponent(lblMinutes)))
-				.addGap(0)));
-		groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+		groupLayout.setHorizontalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
 				.addGroup(groupLayout.createSequentialGroup()
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(lblIntensity)
-								.addComponent(formattedTextFieldIntensity, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblSleepTimeout)
-								.addComponent(formattedTextFieldSleepTimeout, GroupLayout.PREFERRED_SIZE,
-										GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblMinutes))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(lblLine1)
-								.addComponent(comboBoxLine1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(comboBoxLine2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblLine2))
-						.addGap(8)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(comboBoxLine3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblLine3))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
-								.addComponent(comboBoxLine4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-										GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblLine4))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(comboBoxLine5)
-								.addComponent(lblLine5))
-						.addPreferredGap(ComponentPlacement.RELATED)
-						.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE).addComponent(lblLine6)
-								.addComponent(comboBoxLine6))
-						.addGap(0)));
+					.addContainerGap()
+					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblLine2, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboBoxLine2, 0, 248, Short.MAX_VALUE))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblLine6)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboBoxLine6, 0, 248, Short.MAX_VALUE))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblLine1, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(comboBoxLine1, 0, 248, Short.MAX_VALUE))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+											.addComponent(lblLine4, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
+											.addComponent(lblLine3, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
+										.addComponent(lblLine5, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+										.addComponent(comboBoxLine4, 0, 248, Short.MAX_VALUE)
+										.addComponent(comboBoxLine3, 0, 248, Short.MAX_VALUE)
+										.addComponent(comboBoxLine5, 0, 248, Short.MAX_VALUE)))
+								.addGroup(groupLayout.createSequentialGroup()
+									.addComponent(lblIntensity)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(formattedTextFieldIntensity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addGap(18)
+									.addComponent(lblSleepTimeout)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(formattedTextFieldSleepTimeout, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(lblMinutes)))
+							.addGap(0))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addComponent(chckbxNewCheckBox)
+							.addContainerGap(176, Short.MAX_VALUE))))
+		);
+		groupLayout.setVerticalGroup(
+			groupLayout.createParallelGroup(Alignment.TRAILING)
+				.addGroup(groupLayout.createSequentialGroup()
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblIntensity)
+						.addComponent(formattedTextFieldIntensity, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblSleepTimeout)
+						.addComponent(formattedTextFieldSleepTimeout, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblMinutes))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblLine1)
+						.addComponent(comboBoxLine1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(comboBoxLine2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblLine2))
+					.addGap(8)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(comboBoxLine3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblLine3))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(comboBoxLine4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblLine4))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(comboBoxLine5, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblLine5))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblLine6)
+						.addComponent(comboBoxLine6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(8)
+					.addComponent(chckbxNewCheckBox))
+		);
 
 		contentPanel.setLayout(groupLayout);
 
@@ -275,6 +291,10 @@ public class WizardDisplayTxt extends JDialog {
 						formattedTextFieldIntensity.setValue(Properties.getInt(line));
 						continue;
 					}
+					if (line.contains("flip_vertically")) {
+						chckbxNewCheckBox.setSelected(Properties.getBool(line));
+						continue;
+					}
 					for (int j = 1; j < propertieKeys.length; j++) {
 						if (line.contains(propertieKeys[j])) {
 							final int displayLine = Properties.getInt(line);
@@ -313,7 +333,8 @@ public class WizardDisplayTxt extends JDialog {
 
 			displayTxt.append(String.format("sleep_timeout=%d\n", formattedTextFieldSleepTimeout.getValue()));
 			displayTxt.append(String.format("intensity=%d\n", formattedTextFieldIntensity.getValue()));
-
+			displayTxt.append(String.format("flip_vertically=%d\n", chckbxNewCheckBox.isSelected()));
+			
 			displayTxt.append(String.format("%s=1\n", comboBoxLine1.getSelectedObjects()));
 			displayTxt.append(String.format("%s=2\n", comboBoxLine2.getSelectedObjects()));
 			displayTxt.append(String.format("%s=3\n", comboBoxLine3.getSelectedObjects()));

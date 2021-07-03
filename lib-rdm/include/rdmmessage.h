@@ -2,7 +2,7 @@
  * @file rdmmessage.h
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,17 +31,17 @@
 class RDMMessage: public Rdm {
 public:
 	RDMMessage();
-	~RDMMessage();
+	~RDMMessage(){};
 
-	void SetSrcUid(const uint8_t *);
-	void SetDstUid(const uint8_t *);
+	void SetSrcUid(const uint8_t *SrcUid);
+	void SetDstUid(const uint8_t *DstUid);
 
-	void SetCc(uint8_t);
-	void SetPid(uint16_t);
+	void SetCc(uint8_t nCc);
+	void SetPid(uint16_t nPid);
 
-	void SetSubDevice(uint16_t);
+	void SetSubDevice(uint16_t nSubDevice);
 
-	void SetPd(const uint8_t *, const uint8_t);
+	void SetPd(const uint8_t *pParamData, uint8_t nLength);
 
 	void Send(uint32_t nPort = 0, uint32_t nSpacingMicros = 0);
 
@@ -50,7 +50,7 @@ public:
 	static void PrintNoSc(const uint8_t *pRdmDataNoSc);
 
 private:
-	struct TRdmMessage *m_pRdmCommand;
+	TRdmMessage m_message;
 };
 
 #endif /* RDMMESSAGE_H_ */

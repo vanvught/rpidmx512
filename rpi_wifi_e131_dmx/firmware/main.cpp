@@ -139,7 +139,6 @@ void notmain(void) {
 	const auto nStartUniverse = e131params.GetUniverse();
 
 	bridge.SetUniverse(0, e131::PortDir::OUTPUT, nStartUniverse);
-	bridge.SetDirectUpdate(false);
 
 	DMXSend dmx;
 	LightSet *pSpi = nullptr;
@@ -165,7 +164,6 @@ void notmain(void) {
 		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
-		bridge.SetDirectUpdate(nUniverses != 1);
 
 		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));

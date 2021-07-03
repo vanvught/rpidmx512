@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
 #include "rdmmessage.h"
 
@@ -33,53 +34,50 @@
 #include "rdm_e120.h"
 
 RDMMessage::RDMMessage()  {
-	m_pRdmCommand = new struct TRdmMessage;
-
-	m_pRdmCommand->start_code = E120_SC_RDM;
-	m_pRdmCommand->sub_start_code = E120_SC_SUB_MESSAGE;
-	m_pRdmCommand->message_length = RDM_MESSAGE_MINIMUM_SIZE;
-	memcpy(m_pRdmCommand->source_uid, UID_ALL, RDM_UID_SIZE);
-	memcpy(m_pRdmCommand->destination_uid, UID_ALL, RDM_UID_SIZE);
-	m_pRdmCommand->slot16.port_id = 1;
-	m_pRdmCommand->message_count = 0;
-	m_pRdmCommand->sub_device[0] = 0;
-	m_pRdmCommand->sub_device[1] = 0;
-	m_pRdmCommand->param_data_length = 0;
-}
-
-RDMMessage::~RDMMessage() {
-	delete m_pRdmCommand;
+	m_message.start_code = E120_SC_RDM;
+	m_message.sub_start_code = E120_SC_SUB_MESSAGE;
+	m_message.message_length = RDM_MESSAGE_MINIMUM_SIZE;
+	memcpy(m_message.source_uid, UID_ALL, RDM_UID_SIZE);
+	memcpy(m_message.destination_uid, UID_ALL, RDM_UID_SIZE);
+	m_message.slot16.port_id = 1;
+	m_message.message_count = 0;
+	m_message.sub_device[0] = 0;
+	m_message.sub_device[1] = 0;
+	m_message.param_data_length = 0;
 }
 
 void RDMMessage::SetSrcUid(const uint8_t *SrcUid){
-	memcpy(m_pRdmCommand->source_uid, SrcUid, RDM_UID_SIZE);
+	memcpy(m_message.source_uid, SrcUid, RDM_UID_SIZE);
 }
 
 void RDMMessage::SetDstUid(const uint8_t *DstUid){
-	memcpy(m_pRdmCommand->destination_uid, DstUid, RDM_UID_SIZE);
+	memcpy(m_message.destination_uid, DstUid, RDM_UID_SIZE);
 }
 
-void RDMMessage::SetSubDevice(uint16_t SubDevice) {
-	m_pRdmCommand->sub_device[0] = static_cast<uint8_t>(SubDevice >> 8);
-	m_pRdmCommand->sub_device[1] = static_cast<uint8_t>(SubDevice);
+void RDMMessage::SetSubDevice(uint16_t nSubDevice) {
+	m_message.sub_device[0] = static_cast<uint8_t>(nSubDevice >> 8);
+	m_message.sub_device[1] = static_cast<uint8_t>(nSubDevice);
 }
 
-void RDMMessage::SetCc(uint8_t cc) {
-	m_pRdmCommand->command_class = cc;
+void RDMMessage::SetCc(uint8_t nCc) {
+	m_message.command_class = nCc;
 }
 
-void RDMMessage::SetPid(uint16_t pid) {
-	m_pRdmCommand->param_id[0] = static_cast<uint8_t>(pid >> 8);
-	m_pRdmCommand->param_id[1] = static_cast<uint8_t>(pid);
+void RDMMessage::SetPid(uint16_t nPid) {
+	m_message.param_id[0] = static_cast<uint8_t>(nPid >> 8);
+	m_message.param_id[1] = static_cast<uint8_t>(nPid);
 }
 
-void RDMMessage::SetPd(const uint8_t *pd, uint8_t length) {
-	m_pRdmCommand->message_length -= m_pRdmCommand->param_data_length;
-	m_pRdmCommand->param_data_length = length;
-	memcpy(m_pRdmCommand->param_data, pd, length);
-	m_pRdmCommand->message_length += length;
+void RDMMessage::SetPd(const uint8_t *pParamData, uint8_t nLength) {
+	m_message.message_length -= m_message.param_data_length;
+	m_message.param_data_length = nLength;
+	memcpy(m_message.param_data, pParamData, nLength);
+	m_message.message_length += nLength;
 }
 
 void RDMMessage::Send(uint32_t nPort, uint32_t nSpacingMicros) {
-	Rdm::Send(nPort, m_pRdmCommand, nSpacingMicros);
+#ifndef NDEBUG
+	RDMMessage::Print(reinterpret_cast<const uint8_t *>(&m_message));
+#endif
+	Rdm::Send(nPort, &m_message, nSpacingMicros);
 }

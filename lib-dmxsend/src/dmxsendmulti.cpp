@@ -47,7 +47,7 @@ void DMXSendMulti::Start(uint32_t nPortIndex) {
 
 	assert(nPortIndex < max::OUT);
 
-	DEBUG_PRINTF("nPort=%d", nPortIndex);
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
 	if (m_bIsStarted[nPortIndex]) {
 		DEBUG_EXIT
@@ -66,7 +66,7 @@ void DMXSendMulti::Stop(uint32_t nPortIndex) {
 
 	assert(nPortIndex < max::OUT);
 
-	DEBUG_PRINTF("nPort=%d", nPortIndex);
+	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, m_bIsStarted[nPortIndex]);
 
 	if (!m_bIsStarted[nPortIndex]) {
 		DEBUG_EXIT
@@ -83,10 +83,10 @@ void DMXSendMulti::Stop(uint32_t nPortIndex) {
 void DMXSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < max::OUT);
 	assert(pData != nullptr);
-	assert(nLength != 0);
+//	assert(nLength != 0);
 
 	if (__builtin_expect((nLength == 0), 0)) {
-		DEBUG_EXIT
+//		DEBUG_EXIT
 		return;
 	}
 

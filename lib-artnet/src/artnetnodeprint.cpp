@@ -54,10 +54,14 @@ void ArtNetNode::Print() {
 		for (uint8_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::PORTS); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::OUTPUT)) {
-				const uint8_t nNet = m_Node.NetSwitch[nPortIndex / ArtNet::PORTS];
-				const uint8_t nSubSwitch = m_Node.SubSwitch[nPortIndex / ArtNet::PORTS];
+				const auto nPage = nPortIndex / ArtNet::PORTS;
+				const auto nNet = m_Node.NetSwitch[nPage];
+				const auto nSubSwitch = m_Node.SubSwitch[nPage];
 
-				printf("  Port %2d %d:%-3d[%2x] [%s]", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
+				uint16_t nUniverse;
+				GetPortAddress(nPortIndex, nUniverse, PortDir::OUTPUT);
+
+				printf("  Port %2d %d:[%-2d:%-2d:%-2d]:%4u [%s]", nPortIndex, nPage, nNet, nSubSwitch, nAddress, nUniverse, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
 				if (m_nVersion == 4) {
 					printf(" {%s}\n", ArtNet::GetProtocolMode(m_OutputPorts[nPortIndex].tPortProtocol, true));
 				} else {
@@ -65,23 +69,23 @@ void ArtNetNode::Print() {
 				}
 			}
 		}
-
-		if (m_bDirectUpdate) {
-			printf(" Direct update : Yes\n");
-		}
 	}
 
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
 
-		for (uint8_t nPortIndex = 0; nPortIndex < (ARTNET_NODE_MAX_PORTS_INPUT); nPortIndex++) {
+		for (uint8_t nPortIndex = 0; nPortIndex < (m_nPages * ArtNet::PORTS); nPortIndex++) {
 			uint8_t nAddress;
 			if (GetUniverseSwitch(nPortIndex, nAddress, PortDir::INPUT)) {
-				const uint32_t nNet = m_Node.NetSwitch[nPortIndex];
-				const uint32_t nSubSwitch = m_Node.SubSwitch[nPortIndex];
-				const uint32_t nDestinationIp = (m_InputPorts[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[nPortIndex].nDestinationIp);
+				const auto nPage = nPortIndex / ArtNet::PORTS;
+				const auto nNet = m_Node.NetSwitch[nPage];
+				const auto nSubSwitch = m_Node.SubSwitch[nPage];
+				const auto nDestinationIp = (m_InputPorts[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[nPortIndex].nDestinationIp);
 
-				printf("  Port %2d %d:%-3d[%2x] -> " IPSTR "\n", nPortIndex, nNet, nSubSwitch * 16 + nAddress, nSubSwitch * 16 + nAddress, IP2STR(nDestinationIp));
+				uint16_t nUniverse;
+				GetPortAddress(nPortIndex, nUniverse, PortDir::INPUT);
+
+				printf("  Port %2d %d:[%-2d:%-2d:%-2d]:%4u -> " IPSTR "\n", nPortIndex, nPage, nNet, nSubSwitch, nAddress, nUniverse, IP2STR(nDestinationIp));
 			}
 		}
 	}

@@ -39,9 +39,7 @@
 #include "ledblink.h"
 
 #include "artnettimecode.h"
-#include "artnettimesync.h"
 #include "artnetrdm.h"
-#include "artnetipprog.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnetdmx.h"
@@ -49,11 +47,9 @@
 
 #include "artnet4handler.h"
 
-enum TArtNetNodeMaxPorts {
-	ARTNET_NODE_MAX_PORTS_OUTPUT = ArtNet::PORTS * ArtNet::PAGES,
-	ARTNET_NODE_MAX_PORTS_INPUT = ArtNet::PORTS
-};
-
+namespace artnetnode {
+static constexpr auto MAX_PORTS = ArtNet::PORTS * ArtNet::PAGES;
+}  // namespace artnetnode
 
 /**
  * Table 3 – NodeReport Codes
@@ -157,7 +153,9 @@ struct TInputPort {
 class ArtNetNode {
 public:
 	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
-	~ArtNetNode();
+	~ArtNetNode() {
+		Stop();
+	}
 
 	void Start();
 	void Stop();
@@ -185,13 +183,6 @@ public:
 
 	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
-	}
-
-	void SetDirectUpdate(bool bDirectUpdate) {
-		m_bDirectUpdate = bDirectUpdate;
-	}
-	bool GetDirectUpdate() const {
-		return m_bDirectUpdate;
 	}
 
 	void SetShortName(const char *);
@@ -243,19 +234,14 @@ public:
 	}
 
 	void SendDiag(const char *, TPriorityCodes);
-	void SendTimeCode(const struct TArtNetTimeCode *);
 
+	void SendTimeCode(const struct TArtNetTimeCode *);
 	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 	}
-
 	void SetTimeCodeIp(uint32_t nDestinationIp);
-	void SetTimeSyncHandler(ArtNetTimeSync *pArtNetTimeSync) {
-		m_pArtNetTimeSync = pArtNetTimeSync;
-	}
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
-	void SetIpProgHandler(ArtNetIpProg *);
 
 	void SetArtNetStore(ArtNetStore *pArtNetStore) {
 		m_pArtNetStore = pArtNetStore;
@@ -278,7 +264,7 @@ public:
 
 	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
 	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
-		if (nPortIndex < ARTNET_NODE_MAX_PORTS_INPUT) {
+		if (nPortIndex < artnetnode::MAX_PORTS) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}
 
@@ -318,9 +304,8 @@ private:
 
 	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	bool IsMergedDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
+	void MergeDmxData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
 	void CheckMergeTimeouts(uint32_t nPortId);
-	bool IsDmxDataChanged(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
 
 	void SendPollRelply(bool);
 	void SendTod(uint32_t nPortId = 0);
@@ -333,25 +318,21 @@ private:
 	int32_t m_nHandle { -1 };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
-	ArtNetTimeSync *m_pArtNetTimeSync { nullptr };
 	ArtNetRdm *m_pArtNetRdm { nullptr };
-	ArtNetIpProg *m_pArtNetIpProg { nullptr };
 	ArtNetDmx *m_pArtNetDmx { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
-	TArtTimeCode *m_pTimeCodeData { nullptr };
-	TArtTodData *m_pTodData { nullptr };
-	TArtIpProgReply *m_pIpProgReply { nullptr };
-
-	LightSet *m_pLightSet { nullptr };
 	ArtNet4Handler *m_pArtNet4Handler { nullptr };
 	ArtNetStore *m_pArtNetStore { nullptr };
 	ArtNetDisplay *m_pArtNetDisplay { nullptr };
 
+	LightSet *m_pLightSet { nullptr };
+
 	TArtNetNode m_Node;
 	TArtNetNodeState m_State;
 
-	TOutputPort m_OutputPorts[ARTNET_NODE_MAX_PORTS_OUTPUT];
-	TInputPort m_InputPorts[ARTNET_NODE_MAX_PORTS_INPUT];
+	TOutputPort m_OutputPorts[artnetnode::MAX_PORTS];
+	TInputPort m_InputPorts[artnetnode::MAX_PORTS];
+	bool m_IsLightSetRunning[artnetnode::MAX_PORTS];
 
 	TArtNetPacket m_ArtNetPacket;
 	TArtPollReply m_PollReply;
@@ -359,14 +340,11 @@ private:
 	TArtDiagData m_DiagData;
 #endif
 
-	bool m_bDirectUpdate { false };
-
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
 
 	TOpCodes m_tOpCodePrevious;
 
-	bool m_IsLightSetRunning[ARTNET_NODE_MAX_PORTS_OUTPUT];
 	bool m_IsRdmResponder { false };
 
 	char m_aSysName[16];

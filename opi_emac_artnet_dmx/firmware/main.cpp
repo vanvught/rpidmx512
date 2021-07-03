@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 // DMX/RDM Output
 #include "dmxparams.h"
 #include "dmxsend.h"
@@ -65,7 +63,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 using namespace artnet;
@@ -129,7 +127,6 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
@@ -156,7 +153,6 @@ void notmain(void) {
 		pDmxOutput->Print();
 
 		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
-		node.SetDirectUpdate(false);
 		node.SetOutput(pDmxOutput);
 
 		if (artnetparams.IsRdm()) {

@@ -43,6 +43,8 @@
 
 #include "artnetnode_internal.h"
 
+#include "debug.h"
+
 using namespace artnet;
 
 static constexpr auto ARTNET_MIN_HEADER_SIZE = 12;
@@ -73,12 +75,11 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_State.status = ARTNET_STANDBY;
 	m_State.nNetworkDataLossTimeoutMillis = artnet::NETWORK_DATA_LOSS_TIMEOUT * 1000;
 
-	for (uint32_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		m_IsLightSetRunning[i] = false;
+		// Output
 		memset(&m_OutputPorts[i], 0 , sizeof(struct TOutputPort));
-	}
-
-	for (uint32_t i = 0; i < (ARTNET_NODE_MAX_PORTS_INPUT); i++) {
+		// Input
 		memset(&m_InputPorts[i], 0 , sizeof(struct TInputPort));
 		m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
 		m_InputPorts[i].port.nStatus = GI_DISABLED;
@@ -98,22 +99,6 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	const auto *pSysName = Hardware::Get()->GetSysName(nSysNameLenght);
 	strncpy(m_aSysName, pSysName, (sizeof m_aSysName) - 1);
 	m_aSysName[(sizeof m_aSysName) - 1] = '\0';
-}
-
-ArtNetNode::~ArtNetNode() {
-	Stop();
-
-	if (m_pTodData != nullptr) {
-		delete m_pTodData;
-	}
-
-	if (m_pIpProgReply != nullptr) {
-		delete m_pIpProgReply;
-	}
-
-	if (m_pTimeCodeData != nullptr) {
-		delete m_pTimeCodeData;
-	}
 }
 
 void ArtNetNode::Start() {
@@ -144,6 +129,8 @@ void ArtNetNode::Start() {
 }
 
 void ArtNetNode::Stop() {
+	DEBUG_ENTRY
+
 	if (m_pArtNetDmx != nullptr) {
 		for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
@@ -153,7 +140,7 @@ void ArtNetNode::Stop() {
 	}
 
 	if (m_pLightSet != nullptr) {
-		for (uint8_t i = 0; i < ARTNET_NODE_MAX_PORTS_OUTPUT; i++) {
+		for (uint8_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 			if ((m_OutputPorts[i].tPortProtocol == PortProtocol::ARTNET) && (m_IsLightSetRunning[i])) {
 				m_pLightSet->Stop(i);
 				m_IsLightSetRunning[i] = false;
@@ -165,6 +152,8 @@ void ArtNetNode::Stop() {
 
 	m_Node.Status1 = static_cast<uint8_t>((m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE);
 	m_State.status = ARTNET_OFF;
+
+	DEBUG_EXIT
 }
 
 void ArtNetNode::SetShortName(const char *pShortName) {
@@ -325,9 +314,7 @@ void ArtNetNode::Run() {
 		}
 		break;
 	case OP_TIMESYNC:
-		if (m_pArtNetTimeSync != nullptr) {
-			HandleTimeSync();
-		}
+		HandleTimeSync();
 		break;
 	case OP_TODREQUEST:
 		if (m_pArtNetRdm != nullptr) {
@@ -345,9 +332,7 @@ void ArtNetNode::Run() {
 		}
 		break;
 	case OP_IPPROG:
-		if (m_pArtNetIpProg != nullptr) {
-			HandleIpProg();
-		}
+		HandleIpProg();
 		break;
 	case OP_TRIGGER:
 		if (m_pArtNetTrigger != nullptr) {

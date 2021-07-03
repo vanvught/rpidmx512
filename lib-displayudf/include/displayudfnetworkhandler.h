@@ -36,6 +36,10 @@ public:
 	DisplayUdfNetworkHandler() {}
 	~DisplayUdfNetworkHandler() {}
 
+	void ShowEmacStart() {
+		DisplayUdf::Get()->ShowEmacStart();
+	}
+
 	void ShowIp() {
 		DisplayUdf::Get()->ShowIpAddress();
 	}

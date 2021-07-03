@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,9 +67,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("RDMNet LLRP device only\n");
+	fw.Print("RDMNet LLRP device only");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new Reboot);
@@ -125,10 +123,11 @@ void notmain(void) {
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
 	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
+	display.Set(5, displayudf::Labels::VERSION);
 	display.Show();
 
-	display.Write(5, "mDNS enabled");
+	display.Write(6, "mDNS enabled");
 
 	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 

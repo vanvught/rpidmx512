@@ -1,5 +1,5 @@
 /**
- * @file ws28xxdmxstartstop.h
+ * @file pixeldmxstartstop.h
  *
  */
 /* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -26,22 +26,21 @@
 #ifndef H3_WS28XXDMXSTARTSTOP_H_
 #define H3_WS28XXDMXSTARTSTOP_H_
 
-#include "lightset.h"
+#include "pixeldmxhandler.h"
 
 #include "h3_gpio.h"
 #include "board/h3_opi_zero.h"
 
 #define GPIO_START_STOP		GPIO_EXT_12
 
-class WS28xxDmxStartSop final: public LightSetHandler {
+class PixelDmxStartStop final: public PixelDmxHandler {
 public:
-	WS28xxDmxStartSop() {
+	PixelDmxStartStop() {
 		h3_gpio_fsel(GPIO_START_STOP, GPIO_FSEL_OUTPUT);
 		h3_gpio_clr(GPIO_START_STOP);
 	}
 
-	~WS28xxDmxStartSop() override {
-	}
+	~PixelDmxStartStop() override {}
 
 	void Start() override {
 		h3_gpio_set(GPIO_START_STOP);
