@@ -29,30 +29,65 @@
 #include "rdm.h"
 #include "dmx.h"
 
+#include "debug.h"
+
 extern "C" {
 void udelay(uint32_t);
 }
 
 using namespace dmx;
 
-const uint8_t *Rdm::Receive(uint32_t nPort) {
-	return DmxSet::Get()->RdmReceive(nPort);
+uint8_t Rdm::m_TransactionNumber[max::OUT] = {0, };
+
+void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
+	assert(nPort < max::OUT);
+	assert(pRdmCommand != nullptr);
+
+
+	auto *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
+	uint32_t i;
+	uint16_t rdm_checksum = 0;
+
+	pRdmCommand->transaction_number = m_TransactionNumber[nPort];
+
+	for (i = 0; i < pRdmCommand->message_length; i++) {
+		rdm_checksum += rdm_data[i];
+	}
+
+	rdm_data[i++] = static_cast<uint8_t>(rdm_checksum >> 8);
+	rdm_data[i] = static_cast<uint8_t>(rdm_checksum & 0XFF);
+
+	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+
+	m_TransactionNumber[nPort]++;
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
-	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
+void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	assert(nPort < max::OUT);
+	assert(pRdmData != nullptr);
+	assert(nLength != 0);
+
+	SendRaw(nPort, pRdmData, nLength);
+
+	DEBUG_EXIT
 }
 
-void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
 	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
 
-	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
+	SendRaw(nPort, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
 	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+
+	DEBUG_EXIT
 }

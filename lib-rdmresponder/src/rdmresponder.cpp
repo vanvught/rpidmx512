@@ -1,4 +1,3 @@
-#if defined (BARE_METAL)
 /**
  * @file rdmresponder.cpp
  *
@@ -71,7 +70,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 
 	if (pResponse[0] == E120_SC_RDM) {
 		const auto *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
-		nLength = p->message_length + RDM_MESSAGE_CHECKSUM_SIZE;
+		nLength = static_cast<int>(p->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 		Rdm::SendRawRespondMessage(0, pResponse, static_cast<uint16_t>(nLength));
 	} else if (pResponse[0] == 0xFE) {
 		nLength = sizeof(struct TRdmDiscoveryMsg);
@@ -79,7 +78,9 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	}
 
 #ifndef NDEBUG
-	RDMMessage::Print(pResponse);
+	if (nLength != RDM_RESPONDER_INVALID_RESPONSE) {
+		RDMMessage::Print(pResponse);
+	}
 #endif
 
 	return nLength;
@@ -140,4 +141,3 @@ void RDMResponder::Print() {
 	RDMDeviceResponder::Print();
 	DMXReceiver::Print();
 }
-#endif

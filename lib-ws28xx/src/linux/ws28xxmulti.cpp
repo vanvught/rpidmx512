@@ -1,8 +1,8 @@
 /**
- * @file artnetdiscovery.h
+ * @file ws28xxmulti8x.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETDISCOVERY_H_
-#define ARTNETDISCOVERY_H_
-
 #include <cstdint>
+#include <cstring>
+#include <cassert>
 
-#include "artnetrdm.h"
+#include "ws28xxmulti.h"
 
-#include "rdmdiscovery.h"
-#include "rdmdevicecontroller.h"
+#include "debug.h"
 
-#include "rdm.h"
+void WS28xxMulti::SetupBuffers() {
+	DEBUG_ENTRY
 
-class ArtNetRdmController: public RDMDeviceController, public ArtNetRdm {
-public:
-	ArtNetRdmController();
-	~ArtNetRdmController() override;
+	constexpr uint32_t nSize = 32 * 1024;
 
-	void Print();
+	m_pBuffer = new uint8_t[nSize];
+	assert(m_pBuffer != 0);
 
-	void Full(uint32_t nPort = 0) override;
-	uint8_t GetUidCount(uint32_t nPort = 0) override;
-	void Copy(uint32_t nPort, uint8_t *pTod) override;
-	const uint8_t *Handler(uint32_t nPort, const uint8_t *pRdmData) override;
+	const uint32_t nSizeHalf = nSize / 2;
+	assert(m_nBufSize <= nSizeHalf);
 
-	void DumpTod(uint32_t nPort = 0);
+	if (m_nBufSize > nSizeHalf) {
+		// FIXME Handle internal error
+		return;
+	}
 
-private:
-	RDMDiscovery *m_Discovery[artnetnode::MAX_PORTS];
-	struct TRdmMessage *m_pRdmCommand { nullptr };
-};
+	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
-#endif /* ARTNETDISCOVERY_H_ */
+	memset(m_pBuffer, 0, m_nBufSize);
+	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
+
+	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, reinterpret_cast<void *>(m_pBuffer), reinterpret_cast<void *>(m_pBlackoutBuffer));
+	DEBUG_EXIT
+}

@@ -273,7 +273,7 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 			}
 		} else if (param_id == E120_DISC_UN_MUTE) {
 
-			DEBUG_PUTS("E120_DISC_UN_MUTE\n");
+			DEBUG_PUTS("E120_DISC_UN_MUTE");
 
 			if (pRdmRequest->param_data_length != 0) {
 				/* The response RESPONSE_TYPE_NACK_REASON shall only be used in conjunction

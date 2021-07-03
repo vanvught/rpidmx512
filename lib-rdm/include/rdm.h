@@ -47,9 +47,9 @@
 #define RDM_UID_SIZE  							6		///< 48-bit
 
 ///< 6.2.3 Message Length
-#define RDM_MESSAGE_MINIMUM_SIZE				24		///< Minimum size of RDM message without the checksum
-#define RDM_MESSAGE_CHECKSUM_SIZE				2		///< Size of the checksum
-#define RDM_MESSAGE_COUNT_MAX					255		///< Message Count field for Responder Generated Messages
+#define RDM_MESSAGE_MINIMUM_SIZE				24U		///< Minimum size of RDM message without the checksum
+#define RDM_MESSAGE_CHECKSUM_SIZE				2U		///< Size of the checksum
+#define RDM_MESSAGE_COUNT_MAX					255U	///< Message Count field for Responder Generated Messages
 
 ///< 7.6 Discovery Mute/Un-Mute Messages
 ///< 7.6.1 Control Field
@@ -152,12 +152,12 @@ public:
 	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint32_t);
 
 public:
-#if defined(H3)
-	static uint8_t m_TransactionNumber[4];
-	static uint32_t m_nLastSendMicros[4];
-#else
+#if defined(RPI1) || defined (RPI2)	// TODO Subject for removal
 	static uint8_t m_TransactionNumber;
 	static uint32_t m_nLastSendMicros;
+#else
+	static uint8_t m_TransactionNumber[4];
+	static uint32_t m_nLastSendMicros[4];
 #endif
 };
 

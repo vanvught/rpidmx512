@@ -2,7 +2,7 @@
  * @file artnetdiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,6 @@
 #include "artnetnode.h"
 #include "artnetdiscovery.h"
 
-#include "dmx_uarts.h"
-
 #include "rdm.h"
 #include "rdm_e120.h"
 #include "rdmdevicecontroller.h"
@@ -43,7 +41,7 @@
 #include "debug.h"
 
 ArtNetRdmController::ArtNetRdmController()  {
-	for (uint32_t i = 0 ; i < DMX_MAX_UARTS; i++) {
+	for (uint32_t i = 0 ; i < artnetnode::MAX_PORTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != nullptr);
 		m_Discovery[i]->SetUid(GetUID());
@@ -56,7 +54,7 @@ ArtNetRdmController::ArtNetRdmController()  {
 }
 
 ArtNetRdmController::~ArtNetRdmController() {
-	for (uint32_t i = 0; i < DMX_MAX_UARTS; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		if (m_Discovery[i] != nullptr) {
 			delete m_Discovery[i];
 			m_Discovery[i] = nullptr;
@@ -70,7 +68,7 @@ void ArtNetRdmController::Print() {
 
 void ArtNetRdmController::Full(uint32_t nPort) {
 	DEBUG_ENTRY
-	assert(nPort < DMX_MAX_UARTS);
+	assert(nPort < artnetnode::MAX_PORTS);
 
 	m_Discovery[nPort]->Full();
 
@@ -79,7 +77,7 @@ void ArtNetRdmController::Full(uint32_t nPort) {
 }
 
 uint8_t ArtNetRdmController::GetUidCount(uint32_t nPort) {
-	assert(nPort < DMX_MAX_UARTS);
+	assert(nPort < artnetnode::MAX_PORTS);
 
 	DEBUG_PRINTF("nPort=%d", nPort);
 
@@ -88,7 +86,7 @@ uint8_t ArtNetRdmController::GetUidCount(uint32_t nPort) {
 
 void ArtNetRdmController::Copy(uint32_t nPort, uint8_t *pTod) {
 	DEBUG_ENTRY
-	assert(nPort < DMX_MAX_UARTS);
+	assert(nPort < artnetnode::MAX_PORTS);
 
 	m_Discovery[nPort]->Copy(pTod);
 
@@ -98,7 +96,7 @@ void ArtNetRdmController::Copy(uint32_t nPort, uint8_t *pTod) {
 
 void ArtNetRdmController::DumpTod(uint32_t nPort) {
 	DEBUG_ENTRY
-	assert(nPort < DMX_MAX_UARTS);
+	assert(nPort < artnetnode::MAX_PORTS);
 
 	m_Discovery[nPort]->Dump();
 
@@ -107,7 +105,7 @@ void ArtNetRdmController::DumpTod(uint32_t nPort) {
 }
 
 const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmData) {
-	assert(nPort < DMX_MAX_UARTS);
+	assert(nPort < artnetnode::MAX_PORTS);
 
 	if (pRdmData == nullptr) {
 		return nullptr;
@@ -129,7 +127,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmD
 	RDMMessage::Print(pRdmCommand);
 #endif
 
-	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2);
+	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
 
 	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 200000);
 

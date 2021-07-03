@@ -1,8 +1,8 @@
 /**
- * @file ws28xxmulti8x.cpp
+ * @file config.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-#include <cassert>
+#ifndef CONFIG_H_
+#define CONFIG_H_
 
-#include "ws28xxmulti.h"
+namespace dmxsingle {
+static constexpr auto MAX_PORTS = 1;
+}  // namespace dmxsingle
 
-#include "debug.h"
+namespace dmxmulti {
+static constexpr auto MAX_PORTS = 4;
+}  // namespace dmxmulti
 
-void WS28xxMulti::SetupBuffers8x() {
-	DEBUG_ENTRY
+namespace dmx {
+static constexpr auto UDP_PORT_DMX_START = 50000U;
+static constexpr auto UDP_PORT_RDM_START = 51000U;
+}  // namespace dmx
 
-	constexpr uint32_t nSize = 32 * 1024;
-
-	m_pBuffer8x = new uint8_t[nSize];
-	assert(m_pBuffer8x != 0);
-
-	const uint32_t nSizeHalf = nSize / 2;
-	assert(m_nBufSize <= nSizeHalf);
-
-	if (m_nBufSize > nSizeHalf) {
-		// FIXME Handle internal error
-		return;
-	}
-
-	m_pBlackoutBuffer8x = m_pBuffer8x + (nSizeHalf & static_cast<uint32_t>(~3));
-
-	memset(m_pBuffer8x, 0, m_nBufSize);
-	memcpy(m_pBlackoutBuffer8x, m_pBuffer8x, m_nBufSize);
-
-	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, reinterpret_cast<void *>(m_pBuffer8x), reinterpret_cast<void *>(m_pBlackoutBuffer8x));
-	DEBUG_EXIT
-}
+#endif /* CONFIG_H_ */

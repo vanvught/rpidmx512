@@ -2,7 +2,7 @@
  * @file rdmddiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -94,13 +94,13 @@ void RDMDiscovery::Full() {
 	udelay(100000);
 	Hardware::Get()->WatchdogFeed();
 
-	m_UnMute.Send(m_nPort);
-
-	const auto *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
-
-	if (pResponse != nullptr) {
-		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
-	}
+//	m_UnMute.Send(m_nPort);
+//
+//	const auto *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+//
+//	if (pResponse != nullptr) {
+//		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
+//	}
 
 	FindDevices(0x000000000000, 0xfffffffffffe);
 
@@ -267,7 +267,7 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 
 	if ((pResponse != nullptr) && (IsValidDiscoveryResponse(pResponse, r_uid))) {
 		QuickFind(r_uid);
-	} else {
+	} else if ((pResponse != nullptr) && (!IsValidDiscoveryResponse(pResponse, r_uid))) {
 		return true;
 	}
 

@@ -121,7 +121,7 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 
 			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE
 
-				DEBUG_PRINTF("\tDMX Data Changed", __FILE__, __FUNCTION__, __LINE__);
+				DEBUG_PUTS("\tDMX Data Changed");
 
 				m_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
 				p = const_cast<uint8_t*>(pDmx);

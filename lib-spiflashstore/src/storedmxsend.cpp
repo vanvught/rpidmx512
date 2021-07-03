@@ -1,4 +1,3 @@
-#if defined(RASPPI) || (!(defined(__linux__) || defined(__CYGWIN__) || defined (__APPLE__)))
 /**
  * @file storedmxsend.cpp
  *
@@ -41,4 +40,3 @@ StoreDmxSend::StoreDmxSend() {
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }
-#endif
