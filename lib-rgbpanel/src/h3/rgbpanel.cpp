@@ -224,7 +224,7 @@ uint32_t RgbPanel::GetUpdatesCounter() {
 	return s_nUpdatesCounter;
 }
 
-void RgbPanel::SetPixel(uint8_t nColumn, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
+void RgbPanel::SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	if (__builtin_expect(((nColumn >= m_nColumns) || (nRow >= m_nRows)), 0)) {
 		return;
 	}
@@ -293,8 +293,10 @@ void RgbPanel::Show() {
 void core1_task() {
 	const uint32_t nMultiplier = s_nColumns * PWM_WIDTH;
 
+	uint32_t nGPIO = H3_PIO_PORTA->DAT & ~((1U << HUB75B_R1) | (1U << HUB75B_G1) | (1U << HUB75B_B1) | (1U << HUB75B_R2) | (1U << HUB75B_G2) | (1U << HUB75B_B2));
+
 	for (;;) {
-		for (uint8_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
+		for (uint32_t nRow = 0; nRow < (s_nRows / 2); nRow++) {
 
 			const uint32_t nBaseIndex = nRow * nMultiplier;
 
@@ -306,19 +308,27 @@ void core1_task() {
 				for (uint32_t i = 0; i < s_nColumns; i++) {
 					const uint32_t nValue = s_pFramebuffer2[nIndex++];
 					// Clock high with data
-					H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_CK) | nValue;
+					H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_CK) | nValue;
 					// Clock low
-					H3_PIO_PORTA->DAT = nRow | nValue;
+					H3_PIO_PORTA->DAT = nGPIO | nValue;
 				}
 
 				/* Blank the display */
-				H3_PIO_PORTA->DAT = (1U << HUB75B_OE);
+				H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_OE);
+
 				/* Latch the previous data */
-				H3_PIO_PORTA->DAT = (1U << HUB75B_LA) | (1U << HUB75B_OE);
+				H3_PIO_PORTA->DAT = nGPIO | (1U << HUB75B_LA) | (1U << HUB75B_OE);
+				nGPIO |= (1U << HUB75B_OE);
+				H3_PIO_PORTA->DAT = nGPIO;
+
 				/* Update the row select */
-				H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_LA) | (1U << HUB75B_OE);
+				nGPIO &= ~(0xFU);
+				nGPIO |= nRow;
+				H3_PIO_PORTA->DAT = nGPIO;
+
 				/* Enable the display */
-				H3_PIO_PORTA->DAT = nRow | (1U << HUB75B_LA);
+				nGPIO &= ~(1U << HUB75B_OE);
+				H3_PIO_PORTA->DAT = nGPIO;
 			}
 		}
 

@@ -34,7 +34,7 @@
 
 using namespace rgbpanel;
 
-RgbPanel::RgbPanel(uint8_t nColumns, uint8_t nRows, uint32_t nChain, Types tType):
+RgbPanel::RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain, Types tType):
 	m_nColumns(nColumns),
 	m_nRows(nRows),
 	m_nChain(nChain != 0 ? nChain : 1),

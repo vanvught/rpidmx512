@@ -29,12 +29,12 @@
 #include "rgbpanelconst.h"
 
 namespace rgbpanel {
-static constexpr auto PWM_WIDTH = 120;
+static constexpr auto PWM_WIDTH = 84;
 }  // namespace rgbpanel
 
 class RgbPanel {
 public:
-	RgbPanel(uint8_t nColumns, uint8_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, rgbpanel::Types type = rgbpanel::defaults::TYPE);
+	RgbPanel(uint32_t nColumns, uint32_t nRows, uint32_t nChain = rgbpanel::defaults::CHAIN, rgbpanel::Types type = rgbpanel::defaults::TYPE);
 	~RgbPanel() {
 		PlatformCleanUp();
 	}
@@ -42,7 +42,7 @@ public:
 	void Start();
 	void Stop();
 
-	void SetPixel(uint8_t nColumn, uint8_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void Cls();
 	void Show();
 
@@ -82,7 +82,7 @@ private:
 
 protected:
 	uint32_t m_nColumns;
-	uint8_t m_nRows;
+	uint32_t m_nRows;
 
 private:
 	uint32_t m_nChain;
@@ -90,9 +90,9 @@ private:
 	bool m_bIsStarted { false };
 	// Text
 	uint32_t m_nPosition { 0 };
-	uint8_t m_nMaxPosition;
-	uint8_t m_nMaxLine;
-	uint8_t m_nLine { 0 };
+	uint32_t m_nMaxPosition;
+	uint32_t m_nMaxLine;
+	uint32_t m_nLine { 0 };
 	struct TColon {
 		uint8_t nBits;
 		uint8_t nRed;
