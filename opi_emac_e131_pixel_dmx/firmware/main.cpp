@@ -139,20 +139,20 @@ void notmain(void) {
 	auto isPixelUniverseSet = false;
 	const auto nStartPixelUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
 
-	PixelTestPattern *pPixelTestPattern = nullptr;
-
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmx.GetUniverses();
 
 		for (uint8_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
 		}
+	}
 
-		uint8_t nTestPattern;
-		if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-			pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
-			hw.SetRebootHandler(new PixelReboot);
-		}
+	uint8_t nTestPattern;
+	PixelTestPattern *pPixelTestPattern = nullptr;
+
+	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+		hw.SetRebootHandler(new PixelReboot);
 	}
 
 	// LightSet B - DMX - 1 Universe
