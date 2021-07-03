@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,10 +46,6 @@
 #include "arm/synchronize.h"
 #include "arm/gic.h"
 
-//#ifndef NDEBUG
-# include "console.h"
-//#endif
-
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
@@ -69,8 +65,6 @@
 #define END_DATA_POSITION	63
 #define END_SYNC_POSITION	77
 #define END_SMPTE_POSITION	80
-
-static volatile char aTimeCode[TC_CODE_MAX_LENGTH] ALIGNED;
 
 static volatile bool IsMidiQuarterFrameMessage;
 static uint32_t nMidiQuarterFramePiece = 0;
@@ -104,7 +98,14 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 
 	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
 
-	nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+	if (nFiqUsPrevious >= nFiqUsCurrent) {
+		nBitTime = nFiqUsPrevious - nFiqUsCurrent;
+		nBitTime = 42949672 - nBitTime;
+	} else {
+		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
+	}
+
+	nFiqUsPrevious = nFiqUsCurrent;
 
 	if ((nBitTime < ONE_TIME_MIN) || (nBitTime > ZERO_TIME_MAX)) {
 		nTotalBits = 0;
@@ -164,22 +165,12 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 			s_tMidiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
 			s_tMidiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
 
-			aTimeCode[10] = (aTimeCodeBits[0] & 0x0F) + '0';	// frames
-			aTimeCode[9]  = (aTimeCodeBits[1] & 0x03) + '0';	// 10's of frames
-			aTimeCode[7]  = (aTimeCodeBits[2] & 0x0F) + '0';	// seconds
-			aTimeCode[6]  = (aTimeCodeBits[3] & 0x07) + '0';	// 10's of seconds
-			aTimeCode[4]  = (aTimeCodeBits[4] & 0x0F) + '0';	// minutes
-			aTimeCode[3]  = (aTimeCodeBits[5] & 0x07) + '0';	// 10's of minutes
-			aTimeCode[1]  = (aTimeCodeBits[6] & 0x0F) + '0';	// hours
-			aTimeCode[0]  = (aTimeCodeBits[7] & 0x03) + '0';	// 10's of hours
-
 			bIsDropFrameFlagSet = (aTimeCodeBits[1] & (1 << 2));
 
 			bTimeCodeAvailable = true;
+			dmb();
 		}
 	}
-
-	nFiqUsPrevious = nFiqUsCurrent;
 
 	dmb();
 }
@@ -193,10 +184,7 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs):
-	m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_tTimeCodeTypePrevious(ltc::type::INVALID)
-{
-	Ltc::InitTimeCode(const_cast<char*>(aTimeCode));
+LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_tTimeCodeTypePrevious(ltc::type::INVALID) {
 }
 
 void LtcReader::Start() {
@@ -243,12 +231,13 @@ void LtcReader::Run() {
 		if (bIsDropFrameFlagSet) {
 			TimeCodeType = ltc::type::DF;
 		} else {
-			if (nUpdatesPerSecond == 24) {
+			if (nUpdatesPerSecond <= 24) {
 				TimeCodeType = ltc::type::FILM;
-			} else if (nUpdatesPerSecond == 25) {
+			} else if (nUpdatesPerSecond <= 26) {
 				TimeCodeType = ltc::type::EBU;
-			} else if (nUpdatesPerSecond == 30) {
+			} else if (nUpdatesPerSecond >= 28) {
 				TimeCodeType = ltc::type::SMPTE;
+			} else {
 			}
 		}
 
