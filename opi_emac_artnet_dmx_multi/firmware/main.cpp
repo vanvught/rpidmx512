@@ -172,11 +172,11 @@ printf("%d\n", __LINE__);
 
 	if (!bIsSetIndividual) { // Backwards compatibility
 		node.SetUniverseSwitch(0, portDir, 0 + artnetparams.GetUniverse());
-		node.SetUniverseSwitch(1, portDir, 1 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(1, portDir, static_cast<uint8_t>(1 + artnetparams.GetUniverse()));
 #if defined (ORANGE_PI_ONE)
-		node.SetUniverseSwitch(2, portDir, 2 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(2, portDir, static_cast<uint8_t>(2 + artnetparams.GetUniverse()));
 #ifndef DO_NOT_USE_UART0
-		node.SetUniverseSwitch(3, portDir, 3 + artnetparams.GetUniverse());
+		node.SetUniverseSwitch(3, portDir, static_cast<uint8_t>(3 + artnetparams.GetUniverse()));
 #endif
 #endif
 	}

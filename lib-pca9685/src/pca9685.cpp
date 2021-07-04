@@ -34,7 +34,7 @@
 
 #include "pca9685.h"
 
-#define DIV_ROUND_UP(n,d)	(((n) + (d) - 1) / (d))
+#define DIV_ROUND_UP(n,d)	(((n) + static_cast<float>(d) - 1) / static_cast<float>(d))
 
 #define PCA9685_OSC_FREQ 25000000L
 
@@ -223,7 +223,7 @@ void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
 	}
 
 	if (pOff) {
-		*pOff = I2cReadReg16(reg + 2);
+		*pOff = I2cReadReg16(static_cast<uint8_t>(reg + 2));
 	}
 }
 

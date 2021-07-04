@@ -64,7 +64,7 @@ static uint16_t getStartUniverse(uint16_t universe) {
 		return universe;
 	}
 
-	return net2 + sub2;
+	return static_cast<uint16_t>(net2 + sub2);
 }
 #endif
 
@@ -85,10 +85,10 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 		m_tWS28xxParams.nStartUniverse[i] = nStartUniverse;
 #if defined (NODE_ARTNET)
 		if (i > 0) {
-			m_tWS28xxParams.nStartUniverse[i] = getStartUniverse(4 + m_tWS28xxParams.nStartUniverse[i-1]);
+			m_tWS28xxParams.nStartUniverse[i] = getStartUniverse(static_cast<uint16_t>(4 + m_tWS28xxParams.nStartUniverse[i-1]));
 		}
 #else
-		nStartUniverse += 4;
+		nStartUniverse = static_cast<uint16_t>(nStartUniverse + 4);
 #endif
 	}
 	m_tWS28xxParams.nTestPattern = 0;

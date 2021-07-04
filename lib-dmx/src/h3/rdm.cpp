@@ -62,7 +62,7 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 	pRdmCommand->transaction_number = m_TransactionNumber[nPort];
 
 	for (i = 0; i < pRdmCommand->message_length; i++) {
-		rdm_checksum += rdm_data[i];
+		rdm_checksum = static_cast<uint16_t>(rdm_checksum + rdm_data[i]);
 	}
 
 	rdm_data[i++] = static_cast<uint8_t>(rdm_checksum >> 8);

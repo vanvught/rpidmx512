@@ -192,12 +192,12 @@ void Widget::ReceivedRdmPacket() {
 	if (pRdmData[0] == E120_SC_RDM) {
 		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
 		const auto command_class = p->command_class;
-		nMessageLength = p->message_length + 2;
+		nMessageLength = static_cast<uint8_t>(p->message_length + 2);
 
 		WidgetMonitor::Line(MonitorLine::INFO, "Send RDM data to HOST, l:%d", nMessageLength);
 		WidgetMonitor::Line(MonitorLine::STATUS, "RECEIVED_RDM_PACKET SC:0xCC");
 
-		SendHeader(RECEIVED_DMX_PACKET, 1 + nMessageLength);
+		SendHeader(RECEIVED_DMX_PACKET, static_cast<uint32_t>(1 + nMessageLength));
 		usb_send_byte(0); 	// RDM Receive status
 		SendData(pRdmData, nMessageLength);
 		SendFooter();
@@ -215,7 +215,7 @@ void Widget::ReceivedRdmPacket() {
 		WidgetMonitor::Line(MonitorLine::INFO, "Send RDM data to HOST, l:%d", nMessageLength);
 		WidgetMonitor::Line(MonitorLine::STATUS, "RECEIVED_RDM_PACKET SC:0xFE");
 
-		SendHeader(RECEIVED_DMX_PACKET, 1 + nMessageLength);
+		SendHeader(RECEIVED_DMX_PACKET, static_cast<uint32_t>(1 + nMessageLength));
 		usb_send_byte(0); 	// RDM Receive status
 		SendData(pRdmData, nMessageLength);
 		SendFooter();
@@ -433,7 +433,7 @@ void Widget::GetManufacturerReply() {
 
 	SetPortDirection(0, PortDirection::INP, false);
 
-	SendHeader(MANUFACTURER_LABEL, tManufacturerId.length + tManufacturerName.length);
+	SendHeader(MANUFACTURER_LABEL, static_cast<uint32_t>(tManufacturerId.length + tManufacturerName.length));
 	SendData(reinterpret_cast<uint8_t *>(tManufacturerId.data), tManufacturerId.length);
 	SendData(reinterpret_cast<uint8_t *>(tManufacturerName.data), tManufacturerName.length);
 	SendFooter();
@@ -461,7 +461,7 @@ void Widget::GetNameReply() {
 
 	SetPortDirection(0, PortDirection::INP, false);
 
-	SendHeader(GET_WIDGET_NAME_LABEL, widgetTypeId.nLength + widgetLabel.length);
+	SendHeader(GET_WIDGET_NAME_LABEL, static_cast<uint32_t>(widgetTypeId.nLength + widgetLabel.length));
 	SendData(widgetTypeId.pData, widgetTypeId.nLength);
 	SendData(reinterpret_cast<uint8_t *>(widgetLabel.data), widgetLabel.length);
 	SendFooter();

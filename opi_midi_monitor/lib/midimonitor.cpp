@@ -1,7 +1,7 @@
 /**
  * @file midimonitor.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,7 +98,7 @@ void MidiMonitor::Update(uint8_t nType) {
 }
 
 void MidiMonitor::HandleMtc() {
-	const uint8_t type = m_pMidiMessage->aSystemExclusive[5] >> 5;
+	const auto type = static_cast<uint8_t>(m_pMidiMessage->aSystemExclusive[5] >> 5);
 
 	itoa_base10((m_pMidiMessage->aSystemExclusive[5] & 0x1F), &s_aTimecode[0]);
 	itoa_base10(m_pMidiMessage->aSystemExclusive[6], &s_aTimecode[3]);
@@ -125,7 +125,7 @@ void MidiMonitor::HandleQf() {
 		itoa_base10(s_Qf[2] | (s_Qf[3] << 4) , &s_aTimecode[6]);
 		itoa_base10(s_Qf[0] | (s_Qf[1] << 4) , &s_aTimecode[9]);
 
-		const uint8_t nType = s_Qf[7] >> 1;
+		const auto nType = static_cast<uint8_t>(s_Qf[7] >> 1);
 
 		Update(nType);
 	}

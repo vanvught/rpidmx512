@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,7 +124,7 @@ void PCA9685DmxServo::SetI2cAddress(uint8_t nI2cAddress) {
 void PCA9685DmxServo::SetBoardInstances(uint8_t nBoardInstances) {
 	if ((nBoardInstances != 0) && (nBoardInstances <= BOARD_INSTANCES_MAX)) {
 		m_nBoardInstances = nBoardInstances;
-		m_nDmxFootprint = nBoardInstances * PCA9685_PWM_CHANNELS;
+		m_nDmxFootprint = static_cast<uint16_t>(nBoardInstances * PCA9685_PWM_CHANNELS);
 	}
 }
 

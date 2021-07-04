@@ -446,7 +446,7 @@ void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
-	pRdmDataOut->param_data_length = (2 * nSupportedParams);
+	pRdmDataOut->param_data_length = static_cast<uint8_t>(2 * nSupportedParams);
 
 	uint32_t j = 0;
 
@@ -739,12 +739,12 @@ void RDMHandler::GetPersonalityDescription(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[1] = static_cast<uint8_t>(nSlots >> 8);
 	pRdmDataOut->param_data[2] = static_cast<uint8_t>(nSlots);
 
-	char *pDst = reinterpret_cast<char*>(&pRdmDataOut->param_data[3]);
+	auto *pDst = reinterpret_cast<char*>(&pRdmDataOut->param_data[3]);
 	uint8_t nLength = RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH;
 
 	RDMDeviceResponder::Get()->GetPersonality(nSubDevice, nPersonality)->DescriptionCopyTo(pDst, nLength);
 
-	pRdmDataOut->param_data_length = 3 + nLength;
+	pRdmDataOut->param_data_length = static_cast<uint8_t>(3 + nLength);
 
 	RespondMessageAck();
 }

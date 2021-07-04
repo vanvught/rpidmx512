@@ -165,9 +165,9 @@ void notmain(void) {
 				node.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 				nPortProtocolIndex++;
 			}
-			nPortProtocolIndex += static_cast<uint8_t>(ArtNet::PORTS - nUniverses);
+			nPortProtocolIndex = static_cast<uint8_t>(nPortProtocolIndex + ArtNet::PORTS - nUniverses);
 		} else {
-			nPortProtocolIndex += ArtNet::PORTS;
+			nPortProtocolIndex = static_cast<uint8_t>(nPortProtocolIndex + ArtNet::PORTS);
 		}
 	}
 
