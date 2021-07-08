@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file storeddpdisplay.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,31 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef STOREDDPDISPLAY_H_
+#define STOREDDPDISPLAY_H_
 
-constexpr char SOFTWARE_VERSION[] = "3.5";
+#include "ddpdisplayparams.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "spiflashstore.h"
+
+class StoreDdpDisplay final: public DdpDisplayParamsStore {
+public:
+	StoreDdpDisplay();
+
+	void Update(const struct TDdpDisplayParams *pDdpDisplayParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
+	}
+
+	void Copy(struct TDdpDisplayParams *pDdpDisplayParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
+	}
+
+	static StoreDdpDisplay *Get() {
+		return s_pThis;
+	}
+
+private:
+	static StoreDdpDisplay *s_pThis;
+};
+
+#endif /* STOREDDPDISPLAY_H_ */

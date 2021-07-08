@@ -120,9 +120,8 @@ void notmain(void) {
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
-	pixelDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
+	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
-	bridge.SetDirectUpdate(true);
 	bridge.SetOutput(&pixelDmxMulti);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();

@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 #include "pixeltestpattern.h"
 #include "pixeltype.h"
 #include "ws28xxdmxparams.h"
@@ -71,7 +69,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 using namespace artnet;
@@ -115,10 +113,8 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
-
+	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
-
-	pixelDmxMulti.SetLightSetHandler(new WS28xxDmxStartSop);
 
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
@@ -134,10 +130,8 @@ void notmain(void) {
 
 	}
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(&storeArtNet);
-	node.SetDirectUpdate(true);
 	node.SetOutput(&pixelDmxMulti);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();

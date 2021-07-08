@@ -31,7 +31,7 @@
 
 #include "pixelpatterns.h"
 
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 # include "ws28xxmulti.h"
 #else
 # include "ws28xx.h"
@@ -44,7 +44,7 @@ using namespace pixelpatterns;
 static constexpr char s_patternName[static_cast<uint32_t>(Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Scanner", "Fade" };
 
 PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX_PORTS, nActivePorts)) {
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 	m_pOutput = WS28xxMulti::Get();
 #else
 	m_pOutput = WS28xx::Get();

@@ -1,10 +1,10 @@
-PLATFORM = ORANGE_PI
-#
-DEFINES = NO_EMAC RDM_RESPONDER OUTPUT_PIXEL NDEBUG
-#
-LIBS = dmxreceiver rdmresponder dmx 
-#
-SRCDIR = firmware lib
+PLATFORM=ORANGE_PI
+
+DEFINES=NO_EMAC RDM_RESPONDER OUTPUT_DMX_PIXEL NDEBUG
+
+LIBS=dmxreceiver rdmresponder dmx 
+
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

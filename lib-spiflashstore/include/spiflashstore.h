@@ -61,6 +61,7 @@ enum class Store {
 	RDMSUBDEVICES,
 	GPS,
 	RGBPANEL,
+	DDPDISP,
 	LAST
 };
 

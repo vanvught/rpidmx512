@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file storeddpdisplay.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#include <cassert>
 
-constexpr char SOFTWARE_VERSION[] = "3.5";
+#include "storeddpdisplay.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "debug.h"
+
+StoreDdpDisplay *StoreDdpDisplay::s_pThis = nullptr;
+
+StoreDdpDisplay::StoreDdpDisplay() {
+	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_EXIT
+}

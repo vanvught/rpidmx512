@@ -25,10 +25,6 @@ ifeq ($(findstring ORANGE_PI,$(PLATFORM)),ORANGE_PI)
 	COND=1
 endif
 
-ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	COND=1
-endif
-
 ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
 else
 	ifdef COND
@@ -60,12 +56,10 @@ ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
 	endif
 endif
 
-RDM=
 ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	ifneq ($(findstring e131,$(LIBS)),e131)
 		LIBS+=e131
 	endif
-	RDM=1
 	ifneq ($(findstring uuid,$(LIBS)),uuid)
 		LIBS+=uuid
 	endif
@@ -74,15 +68,23 @@ ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	endif
 endif
 
-ifeq ($(findstring OUTPUT_DMXSEND,$(DEFINES)),OUTPUT_DMXSEND)
+ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
 	LIBS+=dmxsend dmx
 endif
 
-ifeq ($(findstring OUTPUT_PIXEL_MULTI,$(DEFINES)),OUTPUT_PIXEL_MULTI)
+ifeq ($(findstring OUTPUT_DMX_SEND_MULTI,$(DEFINES)),OUTPUT_DMX_SEND_MULTI)
+	LIBS+=dmxsend dmx
+endif
+
+ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)
 	LIBS+=ws28xxdmx ws28xx jamstapl
 else
-	ifeq ($(findstring OUTPUT_PIXEL,$(DEFINES)),OUTPUT_PIXEL)
-		LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+	ifeq ($(findstring OUTPUT_DMX_PIXEL_MULTI,$(DEFINES)),OUTPUT_DMX_PIXEL_MULTI)
+		LIBS+=ws28xxdmx ws28xx jamstapl
+	else
+		ifeq ($(findstring OUTPUT_DMX_PIXEL,$(DEFINES)),OUTPUT_DMX_PIXEL)
+			LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+		endif
 	endif
 endif
 
@@ -102,7 +104,6 @@ ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 endif
 
 ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
-	RDM=1
 	LIBS+=rdm rdmsensor rdmsubdevice
 endif
 

@@ -1,9 +1,12 @@
-#
-DEFINES = NODE_OSC_SERVER OUTPUT_PIXEL DISABLE_RTC NDEBUG
-#
-LIBS = oscserver osc
+PLATFORM=ORANGE_PI
 
-SRCDIR = firmware lib
+DEFINES=NODE_OSC_SERVER
+DEFINES+=OUTPUT_DMX_PIXEL
+DEFINES+=DISPLAY_UDF DISABLE_RTC NDEBUG
+
+LIBS=oscserver osc
+
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

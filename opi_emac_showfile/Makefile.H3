@@ -1,10 +1,10 @@
-PLATFORM = ORANGE_PI
-#
-DEFINES = NODE_SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT SD_EXFAT_SUPPORT NODE_RDMNET_LLRP_ONLY DISABLE_RTC NDEBUG
-#
-LIBS = showfile osc rdmnet rdm rdmsensor rdmsubdevice
-#
-SRCDIR = firmware lib
+PLATFORM=ORANGE_PI
+
+DEFINES=NODE_SHOWFILE DISPLAY_UDF SD_WRITE_SUPPORT SD_EXFAT_SUPPORT NODE_RDMNET_LLRP_ONLY DISABLE_RTC NDEBUG
+
+LIBS=showfile osc rdmnet rdm rdmsensor rdmsubdevice
+
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
 
