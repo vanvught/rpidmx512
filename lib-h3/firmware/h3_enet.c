@@ -28,7 +28,8 @@
 
 #include "h3_enet.h"
 #include "h3.h"
-#include "h3_uart0_debug.h"
+
+extern int uart0_printf(const char* fmt, ...);
 
 void enet_mac_address_get(__attribute__((unused)) enet_macaddress_enum mac_addr, uint8_t paddr[]) {
 	assert(mac_addr == ENET_MAC_ADDRESS0);

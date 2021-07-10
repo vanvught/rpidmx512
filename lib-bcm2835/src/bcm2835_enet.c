@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_debug.h
+ * @file bcm2835_enet.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+/* ENET MAC addresses */
+typedef enum {
+	ENET_MAC_ADDRESS0	 ///< MAC address0
+} enet_macaddress_enum;
 
-extern void uart0_init(void);
-extern void uart0_putc(int);
-extern void uart0_puts(const char *);
-extern int uart0_getc(void);
-extern int uart0_printf(const char* fmt, ...);
+extern int32_t bcm2835_vc_get_board_mac_address(uint8_t *);
 
-#ifdef __cplusplus
+void enet_mac_address_get(__attribute__((unused)) enet_macaddress_enum mac_addr, uint8_t paddr[]) {
+	bcm2835_vc_get_board_mac_address(paddr);
 }
-#endif
 
-#endif /* H3_UART_DEBUG_H_ */

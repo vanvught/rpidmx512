@@ -26,7 +26,7 @@
 #include <stdint.h>
 
 #include "console.h"
-#include "h3_uart0_debug.h"
+#include "uart0_debug.h"
 
 int __attribute__((cold)) console_init(void) {
 	uart0_init();

@@ -37,8 +37,6 @@ struct RemoteConfigConst {
 	static const char PARAMS_ENABLE_FACTORY[];
 
 	static const char PARAMS_DISPLAY_NAME[];
-
-	static const char PARAMS_DISABLE_NODE_RDMNET_LLRP_ONLY[];
 };
 
 #endif /* REMOTECONFIGCONST_H_ */

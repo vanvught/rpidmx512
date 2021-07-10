@@ -1,8 +1,8 @@
 /**
- * @file display7segment.cpp
+ * @file uart0_debug.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include "cassert"
+#ifndef H3_UART_DEBUG_H_
+#define H3_UART_DEBUG_H_
 
-#include "display7segment.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "debug.h"
+extern void uart0_init(void);
+extern void uart0_putc(int);
+extern void uart0_puts(const char *);
+extern int uart0_getc(void);
+extern int uart0_printf(const char* fmt, ...);
 
-Display7Segment *Display7Segment::s_pThis = nullptr;
-
-Display7Segment::Display7Segment(): m_I2C(0,0) {
-	DEBUG_ENTRY
-
-	assert(s_pThis == 0);
-	s_pThis = this;
-
-	DEBUG_EXIT
+#ifdef __cplusplus
 }
+#endif
 
-void Display7Segment::Status(__attribute__((unused)) Display7SegmentMessage msg) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
-void Display7Segment::Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
+#endif /* H3_UART_DEBUG_H_ */

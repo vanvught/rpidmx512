@@ -29,9 +29,10 @@
 
 #include "hal_i2c.h"
 
-#if defined(H3)
-# include "h3_uart0_debug.h"
+#if defined(BARE_METAL)
+# include "uart0_debug.h"
 # define printf uart0_printf
+# define puts uart0_puts
 #endif
 
 inline static bool i2c_is_connected(uint8_t address) {

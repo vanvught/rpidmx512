@@ -32,7 +32,7 @@
 #include <netinet/in.h>
 
 #include "h3/shell.h"
-#include "h3_uart0_debug.h"
+#include "uart0_debug.h"
 
 #include "remoteconfig.h"
 #include "network.h"

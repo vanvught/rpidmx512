@@ -26,10 +26,11 @@
 #include <stdint.h>
 
 #include "h3_ccu.h"
-#include "h3_uart0_debug.h"
+
+extern int uart0_printf(const char* fmt, ...);
 
 void __attribute__((cold)) h3_ccu_pll_dump(void) {
-	uart0_puts("PLL (Hz)\n");
+	uart0_printf("PLL (Hz)\n");
 	uart0_printf("CPUX=%u\n", h3_ccu_get_pll_rate(CCU_PLL_CPUX));
 	uart0_printf("AUDIO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_AUDIO));
 	uart0_printf("VIDEO=%u\n", h3_ccu_get_pll_rate(CCU_PLL_VIDEO));

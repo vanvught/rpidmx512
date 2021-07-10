@@ -2,7 +2,7 @@
  * @file h3_dump_memory_mapping.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,7 +24,8 @@
  */
 
 #include "h3.h"
-#include "h3_uart0_debug.h"
+
+extern int uart0_printf(const char* fmt, ...);
 
 void __attribute__((cold)) h3_dump_memory_mapping(void) {
 	uart0_printf("4.1 Memory Mapping\n");
