@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include "uart0_debug.h"
+#include "h3_uart0_debug.h"
 
 #include <h3/shell.h>
 

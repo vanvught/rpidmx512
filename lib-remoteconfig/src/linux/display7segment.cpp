@@ -1,8 +1,8 @@
 /**
- * @file remoteconfigconst.cpp
+ * @file display7segment.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,29 @@
  * THE SOFTWARE.
  */
 
-#include "remoteconfigconst.h"
+#include "cassert"
 
-const char RemoteConfigConst::PARAMS_FILE_NAME[] = "rconfig.txt";
+#include "display7segment.h"
 
-const char RemoteConfigConst::PARAMS_DISABLE[] = "disable";
+#include "debug.h"
 
-const char RemoteConfigConst::PARAMS_DISABLE_WRITE[] = "disable_write";
-const char RemoteConfigConst::PARAMS_ENABLE_REBOOT[] = "enable_reboot";
-const char RemoteConfigConst::PARAMS_ENABLE_UPTIME[] = "enable_uptime";
-const char RemoteConfigConst::PARAMS_ENABLE_FACTORY[] = "enable_factory";
+Display7Segment *Display7Segment::s_pThis = nullptr;
 
-const char RemoteConfigConst::PARAMS_DISPLAY_NAME[] = "display_name";
+Display7Segment::Display7Segment(): m_I2C(0,0) {
+	DEBUG_ENTRY
 
-const char RemoteConfigConst::PARAMS_DISABLE_NODE_RDMNET_LLRP_ONLY[] = "disable_rdmnet_llrp_only";
+	assert(s_pThis == 0);
+	s_pThis = this;
 
+	DEBUG_EXIT
+}
+
+void Display7Segment::Status(__attribute__((unused)) Display7SegmentMessage msg) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void Display7Segment::Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
