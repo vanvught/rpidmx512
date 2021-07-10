@@ -30,7 +30,6 @@
 #include <cstdint>
 
 #include "displayset.h"
-
 #include "display7segment.h"
 
 #if defined (BARE_METAL)
@@ -44,8 +43,6 @@ struct Defaults {
 }  // namespace display
 
 enum class DisplayType {
-	BW_UI_1602,
-	BW_LCD_1602,
 	PCF8574T_1602,
 	PCF8574T_2004,
 	SSD1306,
@@ -119,11 +116,11 @@ public:
 	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
 	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false);
 
-	bool isDetected() {
+	bool isDetected() const {
 		return m_LcdDisplay == nullptr ? false : true;
 	}
 
-	DisplayType GetDetectedType() {
+	DisplayType GetDetectedType() const {
 		return m_tType;
 	}
 
@@ -133,7 +130,7 @@ public:
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
 	}
-	uint32_t GetSleepTimeout() {
+	uint32_t GetSleepTimeout() const {
 		return m_nSleepTimeout / 1000 / 60;
 	}
 
@@ -153,11 +150,11 @@ public:
 		m_LcdDisplay->DoFlipVertically();
 	}
 
-	uint8_t getCols() {
+	uint8_t getCols() const {
 		return m_nCols;
 	}
 
-	uint8_t getRows() {
+	uint8_t getRows() const {
 		return m_nRows;
 	}
 
@@ -178,7 +175,7 @@ private:
 	DisplaySet *m_LcdDisplay { nullptr };
 	bool m_bIsSleep { false };
 #if !defined(NO_HAL)
-	uint32_t m_nMillis{0};
+	uint32_t m_nMillis { 0 };
 #endif
 	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
 

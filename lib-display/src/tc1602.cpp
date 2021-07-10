@@ -132,7 +132,7 @@ void Tc1602::Text(const char *data, uint32_t nLength) {
 	}
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		WriteReg(data[i]);
+		WriteReg(static_cast<uint8_t>(data[i]));
 	}
 }
 
@@ -168,9 +168,9 @@ void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
 }
 
 void Tc1602::Write4bits(uint8_t data) {
-	m_I2C.Write(data);
-	m_I2C.Write(data | TC1602_EN | TC1602_BACKLIGHT);
-	m_I2C.Write(static_cast<uint8_t>((data & ~TC1602_EN) | TC1602_BACKLIGHT));
+	m_I2C.Write(static_cast<char>(data));
+	m_I2C.Write(static_cast<char>(data | TC1602_EN | TC1602_BACKLIGHT));
+	m_I2C.Write(static_cast<char>((data & ~TC1602_EN) | TC1602_BACKLIGHT));
 }
 
 void Tc1602::WriteCmd(uint8_t cmd) {

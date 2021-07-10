@@ -1,6 +1,5 @@
-#
-DEFINES = RASPPI ENABLE_TC1602 ENABLE_LCDBW NDEBUG #ENABLE_CURSOR_MODE
-#
-EXTRA_INCLUDES = ../lib-hal/include
-#
+DEFINES=
+
+EXTRA_INCLUDES=../lib-hal/include
+
 include ../linux-template/lib/Rules.mk
