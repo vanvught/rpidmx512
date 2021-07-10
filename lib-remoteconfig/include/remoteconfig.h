@@ -36,12 +36,12 @@
 # define NODE_E131
 #endif
 
-#if defined (OUTPUT_PIXEL_MULTI)
-# define OUTPUT_PIXEL
+#if defined (OUTPUT_DMX_PIXEL_MULTI)
+# define OUTPUT_DMX_PIXEL
 #endif
 
-#if defined (OUTPUT_DMXSEND_MULTI)
-# define OUTPUT_DMXSEND
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# define OUTPUT_DMX_SEND
 #endif
 
 #include "spiflashstore.h"
@@ -55,7 +55,7 @@ static constexpr auto BUFFER_SIZE = 1024;
 } // namespace udp
 
 enum class Node {
-	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, LAST
+	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, DDP, LAST
 };
 enum class Output {
 	DMX,
@@ -70,7 +70,6 @@ enum class Output {
 	ARTNET,
 	SERIAL,
 	RGBPANEL,
-	DMX_PIXEL,
 	LAST
 };
 
@@ -97,7 +96,7 @@ enum class TxtFile {
 	DISPLAY,
 	LTCDISPLAY,
 	MONITOR,
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 	SPARKFUN,
 	MOTOR0,
 	MOTOR1,
@@ -112,6 +111,7 @@ enum class TxtFile {
 	SERIAL,
 	GPS,
 	RGBPANEL,
+	DDPDISP,
 	LAST
 };
 
@@ -211,11 +211,11 @@ private:
 	void HandleGetOscTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 	void HandleGetParamsTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 	void HandleGetDevicesTxt(uint32_t& nSize);
 #endif
 
@@ -238,7 +238,7 @@ private:
 	void HandleGetDisplayTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_STEPPER)
+#if defined (OUTPUT_DMX_STEPPER)
 	void HandleGetSparkFunTxt(uint32_t& nSize);
 	void HandleGetMotorTxt(uint32_t nMotorIndex, uint32_t& nSize);
 #endif
@@ -247,7 +247,7 @@ private:
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 	void HandleGetSerialTxt(uint32_t& nSize);
 #endif
 
@@ -256,6 +256,10 @@ private:
 #endif
 
 #if defined (RDM_RESPONDER)
+#endif
+
+#if defined (NODE_DDP_DISPLAY)
+	void HandleGetDdpDisplayTxt(uint32_t& nSize);
 #endif
 
 	void HandleTxtFileRconfig();
@@ -273,11 +277,11 @@ private:
 	void HandleTxtFileOsc();
 #endif
 
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 	void HandleTxtFileParams();
 #endif
 
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 	void HandleTxtFileDevices();
 #endif
 
@@ -300,7 +304,7 @@ private:
 	void HandleTxtFileDisplay();
 #endif
 
-#if defined (OUTPUT_STEPPER)
+#if defined (OUTPUT_DMX_STEPPER)
 	void HandleTxtFileSparkFun();
 	void HandleTxtFileMotor(uint32_t nMotorIndex);
 #endif
@@ -309,7 +313,7 @@ private:
 	void HandleTxtFileShow();
 #endif
 
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 	void HandleTxtFileSerial();
 #endif
 
@@ -318,6 +322,10 @@ private:
 #endif
 
 #if defined (RDM_RESPONDER)
+#endif
+
+#if defined (NODE_DDP_DISPLAY)
+	void HandleTxtFileDdpDisplay();
 #endif
 
 	void HandleDisplaySet();

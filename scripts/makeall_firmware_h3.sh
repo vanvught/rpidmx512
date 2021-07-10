@@ -69,7 +69,7 @@ do
 			make -f Makefile.H3 -j $NPROC $1 $2 $3
 			retVal=$?
 			if [ $retVal -ne 0 ]; then
-    			echo "Error"
+    			echo "Error : " "$f"
 				exit $retVal
 			fi
 		fi

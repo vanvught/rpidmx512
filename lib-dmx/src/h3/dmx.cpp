@@ -285,7 +285,7 @@ static void fiq_dmx_in_handler(void) {
 				sv_DmxReceiveState = IDLE;
 			} else {
 				s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
-				sv_nRdmChecksum += data;
+				sv_nRdmChecksum = static_cast<uint16_t>(sv_nRdmChecksum + data);
 
 				const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_RdmData[sv_nRdmDataBufferIndexHead][0]);
 				if (sv_nDmxDataIndex == p->message_length) {
@@ -295,12 +295,12 @@ static void fiq_dmx_in_handler(void) {
 			break;
 		case CHECKSUMH:
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] =	data;
-			sv_nRdmChecksum -= static_cast<uint16_t>(data << 8);
+			sv_nRdmChecksum = static_cast<uint16_t>(sv_nRdmChecksum - static_cast<uint16_t>(data << 8));
 			sv_DmxReceiveState = CHECKSUML;
 			break;
 		case CHECKSUML: {
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
-			sv_nRdmChecksum -= data;
+			sv_nRdmChecksum = static_cast<uint16_t>(sv_nRdmChecksum - data);
 			const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_RdmData[sv_nRdmDataBufferIndexHead][0]);
 
 			if ((sv_nRdmChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {

@@ -222,7 +222,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 				return;
 			}
 		} else {
-			m_State.nActiveInputPorts = m_State.nActiveInputPorts + 1;
+			m_State.nActiveInputPorts = static_cast<uint8_t>(m_State.nActiveInputPorts + 1);
 			assert(m_State.nActiveInputPorts <= E131::PORTS);
 			m_InputPort[nPortIndex].bIsEnabled = true;
 		}
@@ -237,7 +237,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 		if (nPortIndex < E131::PORTS) {
 			if (m_OutputPort[nPortIndex].bIsEnabled) {
 				m_OutputPort[nPortIndex].bIsEnabled = false;
-				m_State.nActiveOutputPorts = m_State.nActiveOutputPorts - 1;
+				m_State.nActiveOutputPorts = static_cast<uint8_t>(m_State.nActiveOutputPorts - 1);
 				LeaveUniverse(nPortIndex, nUniverse);
 			}
 		}
@@ -245,7 +245,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 		if (nPortIndex < E131::PORTS) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_InputPort[nPortIndex].bIsEnabled = false;
-				m_State.nActiveInputPorts = m_State.nActiveInputPorts - 1;
+				m_State.nActiveInputPorts = static_cast<uint8_t>(m_State.nActiveInputPorts - 1);
 			}
 		}
 
@@ -261,7 +261,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 			LeaveUniverse(nPortIndex, nUniverse);
 		}
 	} else {
-		m_State.nActiveOutputPorts = m_State.nActiveOutputPorts + 1;
+		m_State.nActiveOutputPorts = static_cast<uint8_t>(m_State.nActiveOutputPorts + 1);
 		assert(m_State.nActiveOutputPorts <= E131::PORTS);
 		m_OutputPort[nPortIndex].bIsEnabled = true;
 	}

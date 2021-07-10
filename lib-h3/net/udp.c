@@ -294,14 +294,14 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	//IPv4
 	s_send_packet.ip4.id = s_id;
-	s_send_packet.ip4.len = __builtin_bswap16(size + IPv4_UDP_HEADERS_SIZE);
+	s_send_packet.ip4.len = __builtin_bswap16((uint16_t)(size + IPv4_UDP_HEADERS_SIZE));
 	s_send_packet.ip4.chksum = 0;
 	s_send_packet.ip4.chksum = net_chksum((void *) &s_send_packet.ip4, (uint32_t) sizeof(s_send_packet.ip4));
 
 	//UDP
 	s_send_packet.udp.source_port = __builtin_bswap16((uint16_t) s_ports_allowed[idx]);
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
-	s_send_packet.udp.len = __builtin_bswap16(size + UDP_HEADER_SIZE);
+	s_send_packet.udp.len = __builtin_bswap16((uint16_t)(size + UDP_HEADER_SIZE));
 
 	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
 

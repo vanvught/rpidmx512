@@ -95,7 +95,7 @@ static int _itostr(int x, /*@out@*/char *s, int d) {
 		p--;
 	} else {
 		do {
-			*p = (char) (x % 10) + (char) '0';
+			*p = (char)((x % 10) + '0');
 			p--;
 			x = x / 10;
 		} while ((x != 0) && (p > buffer));
@@ -136,7 +136,7 @@ static void _round_float(/*@out@*/char *dest, int *size) {
 				*w-- = '0';
 			}
 			if (*w != '.') {
-				*w += (char) 1;
+				*w = (char)(*w + 1);
 			} else {
 				round_int = true;
 			}
@@ -152,7 +152,7 @@ static void _round_float(/*@out@*/char *dest, int *size) {
 			}
 
 			if (w >= dest && *w != '-') {
-				*w += (char) 1;
+				*w = (char)(*w + 1);
 			} else {
 				w++;
 				q++;
@@ -188,7 +188,7 @@ static void _format_hex(struct context *ctx, unsigned int arg) {
 
 		do {
 			u = (char) arg & (char) 0x0F;
-			*p = (u < (char) 10) ? ((char) '0' + u) : (alpha + u);
+			*p = (u < 10) ? (char)('0' + u) : (char)(alpha + u);
 			p--;
 			arg = arg >> 4;
 		} while ((arg != 0) && (p > buffer));
@@ -236,7 +236,7 @@ static void _format_int(struct context *ctx, uint64_t arg) {
 		p--;
 	} else {
 		do {
-			*p = (char) (arg % 10) + (char) '0';
+			*p = (char)((arg % 10) + '0');
 			p--;
 			arg = arg / 10;
 		} while ((arg != 0) && (p > buffer));

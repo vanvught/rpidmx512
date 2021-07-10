@@ -2,7 +2,7 @@
  * @file displayedittimecode.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,7 +85,7 @@ void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTi
 		}
 	}
 
-	const TLtcTimeCode *pTimeCode = &timecode;
+	const auto *pTimeCode = &timecode;
 	Ltc::ItoaBase10(pTimeCode, m_aTimeCode);
 	Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);
 
@@ -96,57 +96,54 @@ void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTi
 	}
 
 	Display::Get()->SetCursorPos(s_Index[m_nCursorPositionIndex], 0);
-
-	DEBUG_PRINTF("m_State=%d, s_Index[m_nCursorPositionIndex]=%d, m_bCursorOn=%d", m_State, s_Index[m_nCursorPositionIndex], m_bCursorOn);
-	DEBUG_PRINTF("%.2d:%.2d:%.2d.%.2d", timecode.nHours, timecode.nMinutes, timecode.nSeconds, timecode.nFrames);
 }
 
 void DisplayEditTimeCode::KeyUp(TLtcTimeCode& timecode) {
 	switch (s_Index[m_nCursorPositionIndex]) {
 		case LTC_TC_INDEX_HOURS_TENS:
 			if (timecode.nHours < 20) {
-				timecode.nHours += 10;
+				timecode.nHours = static_cast<uint8_t>(timecode.nHours + 10U);
 			}
 			break;
 		case LTC_TC_INDEX_HOURS_UNITS:
 			if (timecode.nHours < 23) {
-				timecode.nHours += 1;
+				timecode.nHours++;
 				return;
 			}
 			timecode.nHours = 0;
 			break;
 		case LTC_TC_INDEX_MINUTES_TENS:
 			if (timecode.nMinutes < 50) {
-				timecode.nMinutes += 10;
+				timecode.nMinutes = static_cast<uint8_t>(timecode.nMinutes + 10U);
 			}
 			break;
 		case LTC_TC_INDEX_MINUTES_UNITS:
 			if (timecode.nMinutes < 59) {
-				timecode.nMinutes += 1;
+				timecode.nMinutes++;
 				return;
 			}
 			timecode.nMinutes = 0;
 			break;
 		case LTC_TC_INDEX_SECONDS_TENS:
 			if (timecode.nSeconds < 50) {
-				timecode.nSeconds += 10;
+				timecode.nSeconds = static_cast<uint8_t>(timecode.nSeconds + 10U);
 			}
 			break;
 		case LTC_TC_INDEX_SECONDS_UNITS:
 			if (timecode.nSeconds < 59) {
-				timecode.nSeconds += 1;
+				timecode.nSeconds++;
 				return;
 			}
 			timecode.nSeconds = 0;
 			break;
 		case LTC_TC_INDEX_FRAMES_TENS:
 			if (timecode.nFrames < ((m_nFrames / 10) * 10)) {
-				timecode.nFrames += 10;
+				timecode.nFrames = static_cast<uint8_t>(timecode.nFrames + 10U);
 			}
 			break;
 		case LTC_TC_INDEX_FRAMES_UNITS:
 			if (timecode.nFrames < (m_nFrames - 1)) {
-				timecode.nFrames += 1;
+				timecode.nFrames++;
 				return;
 			}
 			timecode.nFrames = 0;
@@ -160,52 +157,52 @@ void DisplayEditTimeCode::KeyDown(TLtcTimeCode& timecode) {
 	switch (s_Index[m_nCursorPositionIndex]) {
 		case LTC_TC_INDEX_HOURS_TENS:
 			if (timecode.nHours > 9) {
-				timecode.nHours -= 10;
+				timecode.nHours = static_cast<uint8_t>(timecode.nHours - 10U);
 				return;
 			}
 			break;
 		case LTC_TC_INDEX_HOURS_UNITS:
 			if (timecode.nHours > 0) {
-				timecode.nHours -= 1;
+				timecode.nHours--;
 				return;
 			}
 			timecode.nHours = 23;
 			break;
 		case LTC_TC_INDEX_MINUTES_TENS:
 			if (timecode.nMinutes > 9) {
-				timecode.nMinutes -= 10;
+				timecode.nMinutes = static_cast<uint8_t>(timecode.nMinutes - 10U);
 			}
 			break;
 		case LTC_TC_INDEX_MINUTES_UNITS:
 			if (timecode.nMinutes > 0) {
-				timecode.nMinutes -= 1;
+				timecode.nMinutes--;
 				return;
 			}
 			timecode.nMinutes = 59;
 			break;
 		case LTC_TC_INDEX_SECONDS_TENS:
 			if (timecode.nSeconds > 9) {
-				timecode.nSeconds -= 10;
+				timecode.nSeconds = static_cast<uint8_t>(timecode.nSeconds - 10U);
 			}
 			break;
 		case LTC_TC_INDEX_SECONDS_UNITS:
 			if (timecode.nSeconds > 0) {
-				timecode.nSeconds -= 1;
+				timecode.nSeconds--;
 				return;
 			}
 			timecode.nSeconds = 59;
 			break;
 		case LTC_TC_INDEX_FRAMES_TENS:
 			if (timecode.nFrames > 9) {
-				timecode.nFrames -= 10;
+				timecode.nFrames = static_cast<uint8_t>(timecode.nFrames - 10U);
 			}
 			break;
 		case LTC_TC_INDEX_FRAMES_UNITS:
 			if (timecode.nFrames > 0) {
-				timecode.nFrames -= 1;
+				timecode.nFrames--;
 				return;
 			}
-			timecode.nFrames = m_nFrames - 1;
+			timecode.nFrames = static_cast<uint8_t>(m_nFrames - 1U);
 			break;
 		default:
 			break;

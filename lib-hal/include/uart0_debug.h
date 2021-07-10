@@ -1,8 +1,8 @@
 /**
- * @file displayhandler.h
+ * @file uart0_debug.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,51 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYHANDLER_H_
-#define DISPLAYHANDLER_H_
+#ifndef H3_UART_DEBUG_H_
+#define H3_UART_DEBUG_H_
 
-#include <cstdint>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "ledblink.h"
-#include "display.h"
+extern void uart0_init(void);
+extern void uart0_putc(int);
+extern void uart0_puts(const char *);
+extern int uart0_getc(void);
+extern int uart0_printf(const char* fmt, ...);
 
-struct DisplayHandler: public LedBlinkDisplay {
-	DisplayHandler() : m_bHaveDisplay(Display::Get() != nullptr) {
-	}
-	~DisplayHandler() {
-	}
+#ifdef __cplusplus
+}
+#endif
 
-	void Print(uint32_t nMode) {
-		if (m_bHaveDisplay) {
-			char c;
-			switch (static_cast<ledblink::Mode>(nMode)) {
-			case ledblink::Mode::OFF_OFF:
-				c = 'O';
-				break;
-			case ledblink::Mode::OFF_ON:
-				c = 'O';
-				break;
-			case ledblink::Mode::NORMAL:
-				c = 'N';
-				break;
-			case ledblink::Mode::DATA:
-				c = 'D';
-				break;
-			case ledblink::Mode::FAST:
-				c = 'F';
-				break;
-			default:
-				c = 'U';
-				break;
-			}
-
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 1U), static_cast<uint8_t>(Display::Get()->getRows() - 1U));
-			Display::Get()->PutChar(c);
-		}
-	}
-
-private:
-	bool m_bHaveDisplay;
-};
-
-#endif /* DISPLAYHANDLER_H_ */
+#endif /* H3_UART_DEBUG_H_ */

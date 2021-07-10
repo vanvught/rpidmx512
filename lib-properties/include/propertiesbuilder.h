@@ -52,7 +52,7 @@ public:
 			return false;
 		}
 
-		m_nSize += static_cast<uint16_t>(i);
+		m_nSize = static_cast<uint16_t>(m_nSize + i);
 
 		return true;
 	}

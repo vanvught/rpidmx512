@@ -31,7 +31,7 @@
 
 #include "pixelpatterns.h"
 
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 # include "ws28xxmulti.h"
 #else
 # include "ws28xx.h"
@@ -44,7 +44,7 @@ using namespace pixelpatterns;
 static constexpr char s_patternName[static_cast<uint32_t>(Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Scanner", "Fade" };
 
 PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX_PORTS, nActivePorts)) {
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 	m_pOutput = WS28xxMulti::Get();
 #else
 	m_pOutput = WS28xx::Get();
@@ -242,16 +242,16 @@ void PixelPatterns::FadeUpdate(uint32_t nPortIndex) {
 }
 
 uint32_t PixelPatterns::Wheel(uint8_t nWheelPos) {
-	nWheelPos = 255 - nWheelPos;
+	nWheelPos = static_cast<uint8_t>(255 - nWheelPos);
 
 	if (nWheelPos < 85) {
-		return Colour(static_cast<uint8_t>(255 - nWheelPos * 3), 0, nWheelPos * 3);
+		return Colour(static_cast<uint8_t>(255 - nWheelPos * 3), 0, static_cast<uint8_t>(nWheelPos * 3));
 	} else if (nWheelPos < 170) {
-		nWheelPos -= 85;
-		return Colour(0, nWheelPos * 3, static_cast<uint8_t>(255 - nWheelPos * 3));
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 85);
+		return Colour(0, static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3));
 	} else {
-		nWheelPos -= 170;
-		return Colour(nWheelPos * 3, static_cast<uint8_t>(255 - nWheelPos * 3), 0);
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 170);
+		return Colour(static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3), 0);
 	}
 }
 

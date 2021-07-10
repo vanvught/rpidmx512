@@ -2,7 +2,7 @@
  * @file midi.c
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -128,7 +128,7 @@ Types Midi::GetTypeFromStatusByte(uint8_t nStatusByte) const {
 }
 
 uint8_t Midi::GetChannelFromStatusByte(uint8_t nStatusByte) const {
-	return (nStatusByte & 0x0F) + 1;
+	return static_cast<uint8_t>((nStatusByte & 0x0F) + 1);
 }
 
 bool Midi::isChannelMessage(Types nType) const {
@@ -332,7 +332,7 @@ bool Midi::Parse() {
 					m_Message.tType = Types::SYSTEM_EXCLUSIVE;
 					/* Get length */
 					m_Message.nData1 = m_nPendingMessageIndex & 0xFF; // LSB
-					m_Message.nData2 = m_nPendingMessageIndex >> 8;   // MSB
+					m_Message.nData2 = static_cast<uint8_t>(m_nPendingMessageIndex >> 8);   // MSB
 					m_Message.nChannel = 0;
 					m_Message.nBytesCount = m_nPendingMessageIndex;
 

@@ -2,7 +2,7 @@
  * @file tc1602.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -132,7 +132,7 @@ void Tc1602::Text(const char *data, uint32_t nLength) {
 	}
 
 	for (uint32_t i = 0; i < nLength; i++) {
-		WriteReg(data[i]);
+		WriteReg(static_cast<uint8_t>(data[i]));
 	}
 }
 
@@ -141,7 +141,7 @@ void Tc1602::TextLine(uint8_t nLine, const char *data, uint32_t nLength) {
 		return;
 	}
 
-	Tc1602::SetCursorPos(0, nLine - 1);
+	Tc1602::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	Tc1602::Text(data, nLength);
 }
 
@@ -150,13 +150,13 @@ void Tc1602::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	Tc1602::SetCursorPos(0, nLine - 1);
+	Tc1602::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 
 	for (uint32_t i = 0; i < m_nCols; i++) {
 		WriteReg(' ');
 	}
 
-	Tc1602::SetCursorPos(0, nLine - 1);
+	Tc1602::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
 void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
@@ -168,9 +168,9 @@ void Tc1602::SetCursorPos(uint8_t col, uint8_t row) {
 }
 
 void Tc1602::Write4bits(uint8_t data) {
-	m_I2C.Write(data);
-	m_I2C.Write(data | TC1602_EN | TC1602_BACKLIGHT);
-	m_I2C.Write(static_cast<uint8_t>((data & ~TC1602_EN) | TC1602_BACKLIGHT));
+	m_I2C.Write(static_cast<char>(data));
+	m_I2C.Write(static_cast<char>(data | TC1602_EN | TC1602_BACKLIGHT));
+	m_I2C.Write(static_cast<char>((data & ~TC1602_EN) | TC1602_BACKLIGHT));
 }
 
 void Tc1602::WriteCmd(uint8_t cmd) {

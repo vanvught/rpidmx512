@@ -64,7 +64,7 @@ static uint16_t getStartUniverse(uint16_t universe) {
 		return universe;
 	}
 
-	return net2 + sub2;
+	return static_cast<uint16_t>(net2 + sub2);
 }
 #endif
 
@@ -85,10 +85,10 @@ WS28xxDmxParams::WS28xxDmxParams(WS28xxDmxParamsStore *pWS28XXStripeParamsStore)
 		m_tWS28xxParams.nStartUniverse[i] = nStartUniverse;
 #if defined (NODE_ARTNET)
 		if (i > 0) {
-			m_tWS28xxParams.nStartUniverse[i] = getStartUniverse(4 + m_tWS28xxParams.nStartUniverse[i-1]);
+			m_tWS28xxParams.nStartUniverse[i] = getStartUniverse(static_cast<uint16_t>(4 + m_tWS28xxParams.nStartUniverse[i-1]));
 		}
 #else
-		nStartUniverse += 4;
+		nStartUniverse = static_cast<uint16_t>(nStartUniverse + 4);
 #endif
 	}
 	m_tWS28xxParams.nTestPattern = 0;
@@ -241,7 +241,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_PIXEL_MULTI)
+#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
 		if ((nValue16 != 0) && nValue16 <= (Dmx::UNIVERSE_SIZE) && (nValue16 != Dmx::START_ADDRESS_DEFAULT)) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
@@ -254,7 +254,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 #endif
 
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0]));
 #else
 	constexpr uint32_t nPortsMax = 1;
@@ -276,7 +276,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 		}
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (Sscan::Uint8(pLine, DevicesParamsConst::ACTIVE_OUT, nValue8) == Sscan::OK) {
 		if ((nValue8 > 0) &&  (nValue8 <= 8) &&  (nValue8 != pixel::defaults::OUTPUT_PORTS)) {
 			m_tWS28xxParams.nActiveOutputs = nValue8;

@@ -2,7 +2,7 @@
  * @file mcpbuttons.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -229,8 +229,8 @@ bool McpButtons::Check() {
 }
 
 bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode) {
-	if (__builtin_expect((LedBlink(1 << tLtcReaderSource) >= m_nLedTickerMax), 0)) {
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1 << tLtcReaderSource));
+	if (__builtin_expect((LedBlink(static_cast<uint8_t>(1U << tLtcReaderSource)) >= m_nLedTickerMax), 0)) {
+		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1U << tLtcReaderSource));
 		return false;
 	}
 
@@ -269,7 +269,7 @@ bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode
 			} else if (BUTTON_STATE(button::START)) {			// START
 				if (tLtcReaderSource == ltc::source::INTERNAL) {
 					if (m_State != EDIT_TIMECODE_START) {
-						Display::Get()->SetCursorPos(Display::Get()->getCols() - 7,0);
+						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 7U),0);
 						Display::Get()->PutString("[Start]");
 					}
 
@@ -293,7 +293,7 @@ bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode
 			} else if (BUTTON_STATE(button::STOP)) {			// STOP
 				if (tLtcReaderSource == ltc::source::INTERNAL) {
 					if (m_State != EDIT_TIMECODE_STOP) {
-						Display::Get()->SetCursorPos(Display::Get()->getCols() - 7,0);
+						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 7U),0);
 						Display::Get()->PutString("[Stop] ");
 					}
 					m_nKey = INPUT_KEY_ENTER;

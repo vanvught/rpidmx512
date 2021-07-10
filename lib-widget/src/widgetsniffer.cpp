@@ -80,7 +80,7 @@ void Widget::UsbSendPackage(const uint8_t *pData, uint16_t Start, uint16_t nData
 
 		SendFooter();
 
-		UsbSendPackage(pData, Start + SNIFFER_PACKET_SIZE / 2, nDataLength - SNIFFER_PACKET_SIZE / 2);
+		UsbSendPackage(pData, static_cast<uint16_t>(Start + SNIFFER_PACKET_SIZE / 2), static_cast<uint16_t>(nDataLength - SNIFFER_PACKET_SIZE / 2));
 	}
 }
 
@@ -141,7 +141,7 @@ void Widget::SnifferRdm() {
 
 	if (pRdmData[0] == E120_SC_RDM) {
 		const auto *p = reinterpret_cast<const struct TRdmMessage *>(pRdmData);
-		nMessageLength = p->message_length + 2;
+		nMessageLength = static_cast<uint8_t>(p->message_length + 2);
 		switch (p->command_class) {
 		case E120_DISCOVERY_COMMAND:
 			m_RdmStatistics.nDiscoveryPackets++;

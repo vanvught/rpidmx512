@@ -107,7 +107,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint16_t nCount) {
 
 		uint16_t j;
 
-		for (j = 0; j < (m_nCount * 2U) - (nCount * 2U); j = j + 2) {
+		for (j = 0; j < (m_nCount * 2U) - (nCount * 2U); j = static_cast<uint16_t>(j + 2)) {
 			spi_data[j] = max7219::reg::NOOP;
 			spi_data[j + 1] = 0;
 		}
@@ -156,7 +156,7 @@ void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 		spi_data[i+1] = nData;
 	}
 
-	HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), m_nCount * 2);
+	HAL_SPI::Write(reinterpret_cast<const char *>(spi_data), static_cast<uint32_t>(m_nCount * 2));
 
 	DEBUG_EXIT
 }

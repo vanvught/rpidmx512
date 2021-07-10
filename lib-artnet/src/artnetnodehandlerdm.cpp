@@ -158,7 +158,7 @@ void ArtNetNode::HandleRdm() {
 			if (pRdmResponse != nullptr) {
 				pArtRdm->RdmVer = 0x01;
 
-				const uint16_t nMessageLength = pRdmResponse[2] + 1;
+				const auto nMessageLength = static_cast<uint16_t>(pRdmResponse[2] + 1);
 				memcpy(pArtRdm->RdmPacket, &pRdmResponse[1], nMessageLength);
 
 				const auto nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;

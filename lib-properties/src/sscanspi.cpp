@@ -2,7 +2,7 @@
  * @file sscanspi.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ Sscan::ReturnCode Sscan::Spi(const char *pBuffer, char &nChipSelect, char *pName
 		return Sscan::VALUE_ERROR;
 	}
 
-	nChipSelect = c - '0';
+	nChipSelect = static_cast<char>(c - '0');
 
 	uint32_t k = 0;
 	b++;

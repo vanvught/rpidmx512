@@ -275,7 +275,7 @@ void console_put3dec_fg_bg(uint8_t data, uint32_t fore, uint32_t back) {
 
 	(void) console_putc((int) ((char) '0' + (char) i));
 
-	data -= (uint8_t) (i * 100);
+	data = (uint8_t)(data -  (i * 100));
 
 	console_putc((int) ((char) '0' + (char) (data / 10)));
 	console_putc((int) ((char) '0' + (char) (data % 10)));

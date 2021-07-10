@@ -234,11 +234,11 @@ __attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
 			if (is_general_request || ( memcmp(p_igmp->ip4.dst, group_address.u8, IPv4_ADDR_LEN) == 0)) {
 				if (s_groups[i].state == DELAYING_MEMBER) {
 					if (p_igmp->igmp.igmp.max_resp_time  < s_groups[i].timer) {
-						s_groups[i].timer = 1 + p_igmp->igmp.igmp.max_resp_time / 2;
+						s_groups[i].timer = (uint8_t)(1 + p_igmp->igmp.igmp.max_resp_time / 2);
 					}
 				} else { // s_groups[s_joins_allowed_index].state == IDLE_MEMBER
 					s_groups[i].state = DELAYING_MEMBER;
-					s_groups[i].timer = 1 + p_igmp->igmp.igmp.max_resp_time / 2;
+					s_groups[i].timer = (uint8_t)(1 + p_igmp->igmp.igmp.max_resp_time / 2);
 				}
 			}
 		}

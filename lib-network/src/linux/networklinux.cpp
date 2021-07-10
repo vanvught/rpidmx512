@@ -61,6 +61,11 @@ NetworkLinux::NetworkLinux() {
 }
 
 NetworkLinux::~NetworkLinux() {
+	for (unsigned i = 0; i < max::PORTS_ALLOWED; i++) {
+		if (s_ports_allowed[i] != 0) {
+			NetworkLinux::End(s_ports_allowed[i]);
+		}
+	}
 }
 
 int NetworkLinux::Init(const char *s) {
@@ -180,10 +185,6 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 		exit(EXIT_FAILURE);
 	}
 
-//	if (setsockopt(nSocket, SOL_SOCKET, SO_TIMESTAMPING, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
-//		perror("setsockopt(SO_TIMESTAMP)");
-//	}
-
 	if (setsockopt(nSocket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&true_flag), sizeof(int)) == -1) {
 		perror("setsockopt(SO_BROADCAST)");
 		exit(EXIT_FAILURE);
@@ -195,6 +196,18 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 
 	if (setsockopt(nSocket, SOL_SOCKET, SO_RCVTIMEO, static_cast<void*>(&recv_timeout), sizeof(recv_timeout)) == -1) {
 		perror("setsockopt(SO_RCVTIMEO)");
+		exit(EXIT_FAILURE);
+	}
+
+	int val = 1;
+	if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) == -1) {
+		perror("setsockopt(SO_REUSEADDR)");
+		exit(EXIT_FAILURE);
+	}
+
+	val = 1;
+	if (setsockopt(nSocket, SOL_SOCKET, SO_REUSEPORT, &val, sizeof(val)) == -1) {
+		perror("setsockopt(SO_REUSEPORT)");
 		exit(EXIT_FAILURE);
 	}
 

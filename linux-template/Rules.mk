@@ -10,7 +10,7 @@ AR	= $(PREFIX)ar
 $(info [${CURDIR}])
 
 ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	LIBS:=remoteconfig $(LIBS)
+	LIBS:=remoteconfig display $(LIBS)
 else
 	LIBS:=$(LIBS)
 endif

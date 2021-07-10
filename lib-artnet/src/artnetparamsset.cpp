@@ -90,7 +90,7 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 			pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
 		}
 
-		if (isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
+		if (isMaskMultiPortOptionsSet(static_cast<uint16_t>(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i))) {
 			pArtNetNode->SetDestinationIp(i, m_tArtNetParams.nDestinationIpPort[i]);
 		}
 	}

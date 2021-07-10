@@ -2,7 +2,7 @@
  * @file i2cdetect.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,10 @@
 
 #include "hal_i2c.h"
 
-#if defined(H3)
-# include "h3_uart0_debug.h"
+#if defined(BARE_METAL)
+# include "uart0_debug.h"
 # define printf uart0_printf
+# define puts uart0_puts
 #endif
 
 inline static bool i2c_is_connected(uint8_t address) {
@@ -58,7 +59,7 @@ I2cDetect::I2cDetect() {
 
 	puts("\n     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
 
-	for (i = 0; i < 128; i += 16) {
+	for (i = 0; i < 128; i = static_cast<uint8_t>(i + 16)) {
 		printf("%02x: ", i);
 		for (j = 0; j < 16; j++) {
 			/* Skip unwanted addresses */
@@ -67,7 +68,7 @@ I2cDetect::I2cDetect() {
 				continue;
 			}
 
-			if (i2c_is_connected((i + j))) {
+			if (i2c_is_connected(static_cast<uint8_t>(i + j))) {
 				printf("%02x ", (i + j));
 			} else {
 				printf("-- ");

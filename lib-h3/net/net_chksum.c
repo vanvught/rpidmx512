@@ -40,7 +40,7 @@ uint16_t net_chksum(void *data, uint32_t len) {
 
 	/* Add left-over byte, if any */
 	if (len > 0) {
-		sum += __builtin_bswap16((*((uint8_t *) ptr) << 8));
+		sum += __builtin_bswap16((uint16_t)(*((uint8_t *) ptr) << 8));
 	}
 
 	/* Fold 32-bit sum into 16 bits */

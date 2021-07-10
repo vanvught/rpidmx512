@@ -135,9 +135,9 @@ void Ssd1311::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	Ssd1311::SetCursorPos(0, nLine - 1);
+	Ssd1311::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	SendData(_ClearBuffer, sizeof(_ClearBuffer));
-	Ssd1311::SetCursorPos(0, nLine - 1);
+	Ssd1311::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
 void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
@@ -145,7 +145,7 @@ void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
 		return;
 	}
 
-	Ssd1311::SetCursorPos(0, nLine - 1);
+	Ssd1311::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 
 	if (nLength > MAX_COLUMNS) {
 		nLength = MAX_COLUMNS;

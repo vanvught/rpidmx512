@@ -1,9 +1,9 @@
-#
-DEFINES = NO_EMAC RDM_RESPONDER OUTPUT_STEPPER NDEBUG
-#
-LIBS = dmxreceiver rdmresponder dmx l6470dmx l6470 tlc59711dmx tlc59711
-#
-SRCDIR = firmware lib
+
+DEFINES=NO_EMAC RDM_RESPONDER OUTPUT_DMX_STEPPER NDEBUG
+
+LIBS=dmxreceiver rdmresponder dmx l6470dmx l6470 tlc59711dmx tlc59711
+
+SRCDIR=firmware lib
 
 include ../h3-firmware-template/Rules.mk
 

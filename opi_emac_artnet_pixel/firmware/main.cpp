@@ -44,8 +44,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "ipprog.h"
-
 // Addressable led
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
@@ -69,7 +67,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfhandler.h"
+#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 using namespace artnet;
@@ -117,7 +115,6 @@ void notmain(void) {
 	ArtNet4Node node;
 	artnetparams.Set(&node);
 
-	node.SetIpProgHandler(new IpProg);
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
@@ -159,10 +156,11 @@ void notmain(void) {
 		assert(pWS28xxDmx != nullptr);
 		pSpi = pWS28xxDmx;
 
+		pWS28xxDmx->SetPixelDmxHandler(new PixelDmxStartStop);
+
 		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
-		node.SetDirectUpdate(nUniverses != 1);
 
 		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
@@ -182,7 +180,6 @@ void notmain(void) {
 
 	node.Print();
 
-	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	display.SetTitle("Eth Art-Net 4 Pixel 1");

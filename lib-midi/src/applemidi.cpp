@@ -106,7 +106,7 @@ void AppleMidi::Start() {
 	m_nHandleControl = Network::Get()->Begin(m_nPort);
 	assert(m_nHandleControl != -1);
 
-	m_nHandleMidi = Network::Get()->Begin(m_nPort + 1);
+	m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1));
 	assert(m_nHandleMidi != -1);
 
 	DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
@@ -120,7 +120,7 @@ void AppleMidi::Stop() {
 	DEBUG_ENTRY
 
 	MDNS::Stop();
-	Network::Get()->End(m_nPort + 1);
+	Network::Get()->End(static_cast<uint16_t>(m_nPort + 1));
 	Network::Get()->End(m_nPort);
 
 	DEBUG_EXIT

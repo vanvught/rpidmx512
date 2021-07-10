@@ -1,8 +1,8 @@
 /**
- * @file display7segment.cpp
+ * @file storeddpdisplay.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,31 @@
  * THE SOFTWARE.
  */
 
-#include "cassert"
+#ifndef STOREDDPDISPLAY_H_
+#define STOREDDPDISPLAY_H_
 
-#include "display7segment.h"
+#include "ddpdisplayparams.h"
 
-#include "debug.h"
+#include "spiflashstore.h"
 
-Display7Segment *Display7Segment::s_pThis = nullptr;
+class StoreDdpDisplay final: public DdpDisplayParamsStore {
+public:
+	StoreDdpDisplay();
 
-Display7Segment::Display7Segment(): m_I2C(0,0) {
-	DEBUG_ENTRY
+	void Update(const struct TDdpDisplayParams *pDdpDisplayParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
+	}
 
-	assert(s_pThis == 0);
-	s_pThis = this;
+	void Copy(struct TDdpDisplayParams *pDdpDisplayParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
+	}
 
-	DEBUG_EXIT
-}
+	static StoreDdpDisplay *Get() {
+		return s_pThis;
+	}
 
-void Display7Segment::Status(__attribute__((unused)) Display7SegmentMessage msg) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
+private:
+	static StoreDdpDisplay *s_pThis;
+};
 
-void Display7Segment::Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
+#endif /* STOREDDPDISPLAY_H_ */

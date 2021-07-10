@@ -147,10 +147,11 @@ void notmain(void) {
 		assert(pWS28xxDmx != nullptr);
 		pSpi = pWS28xxDmx;
 
+		pWS28xxDmx->SetPixelDmxHandler(new PixelDmxStartStop);
+
 		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
-		bridge.SetDirectUpdate(nUniverses != 1);
 
 		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
@@ -170,7 +171,6 @@ void notmain(void) {
 
 	bridge.Print();
 
-	pSpi->SetLightSetHandler(new WS28xxDmxStartSop);
 	pSpi->Print();
 
 	display.SetTitle("Eth sACN Pixel 1");

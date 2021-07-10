@@ -157,7 +157,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 			return nullptr;
 		}
 
-		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
+		const auto nibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
 		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;
@@ -181,7 +181,7 @@ char *DmxSlotInfo::Parse(char *s, bool &isValid, SlotInfo &tLightSetSlotInfo) {
 			return nullptr;
 		}
 
-		const uint8_t nibble = *b > '9' ? static_cast<uint8_t>(*b | 0x20) - 'a' + 10 : static_cast<uint8_t>(*b - '0');
+		const auto nibble = *b > '9' ? static_cast<uint8_t>((*b | 0x20) - 'a' + 10) : static_cast<uint8_t>(*b - '0');
 		nTmp = static_cast<uint16_t>((nTmp << 4) | nibble);
 		b++;
 		i++;

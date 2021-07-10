@@ -160,7 +160,7 @@ private:
 		uint16_t nChecksum = m_nDeviceRootLabelLength;
 
 		for (uint32_t i = 0; i < m_tRDMDevice.nDeviceRootLabelLength; i++) {
-			nChecksum += static_cast<uint16_t>(m_tRDMDevice.aDeviceRootLabel[i]);
+			nChecksum = static_cast<uint16_t>(nChecksum + m_tRDMDevice.aDeviceRootLabel[i]);
 		}
 
 		return nChecksum;

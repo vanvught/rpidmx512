@@ -94,10 +94,10 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 
 	builder.AddComment("DMX Input");
 	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
-		if (!isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
+		if (!isMaskMultiPortOptionsSet(static_cast<uint16_t>(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i))) {
 			m_tArtNetParams.nDestinationIpPort[i] = ArtNetNode::Get()->GetDestinationIp(i);
 		}
-		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_tArtNetParams.nDestinationIpPort[i], isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i));
+		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_tArtNetParams.nDestinationIpPort[i], isMaskMultiPortOptionsSet(static_cast<uint16_t>(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)));
 	}
 
 	nSize = builder.GetSize();

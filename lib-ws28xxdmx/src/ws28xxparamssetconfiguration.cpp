@@ -70,7 +70,7 @@ void WS28xxDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
 		pPixelDmxConfiguration->SetGroupingCount(m_tWS28xxParams.nGroupingCount);
 	}
 
-#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_PIXEL_MULTI)
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 	if (isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT)) {
 		pPixelDmxConfiguration->SetOutputPorts(m_tWS28xxParams.nActiveOutputs);
 	}

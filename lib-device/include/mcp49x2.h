@@ -2,7 +2,7 @@
  * @file mcp49x2.h
  *
  */
-/* Copyright (C) 2014-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2014-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -68,7 +68,7 @@ static constexpr uint16_t shutdown_off = (1U << 12);
 
 class MCP4902: HAL_SPI {
 	uint16_t Data8Bit(const uint8_t nData) {
-		return (nData & mcp49x2::mask::data_8bit) << mcp49x2::shift::data_8bit;
+		return static_cast<uint16_t>((nData & mcp49x2::mask::data_8bit) << mcp49x2::shift::data_8bit);
 	}
 
 public:

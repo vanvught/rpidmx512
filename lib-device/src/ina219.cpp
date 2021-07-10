@@ -2,7 +2,7 @@
  * @file ina219.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,12 @@
 
 #include "debug.h"
 
-template<class T>
-T CEILING_POS(T &x) {
-	return ((x - static_cast<int>(x)) > 0 ? static_cast<int>(x + 1) : static_cast<int>(x));
+static float CEILING_POS(float f) {
+	const auto i = static_cast<int>(f);
+	if (f == static_cast<float>(i)) {
+		return static_cast<float>(i);
+	}
+	return static_cast<float>(i + 1);
 }
 
 namespace sensor {
@@ -124,7 +127,7 @@ float INA219::GetShuntCurrent() {
 
 int16_t INA219::GetBusVoltageRaw() {
 	auto voltage = HAL_I2C::ReadRegister16DelayUs(reg::BUSVOLTAGE, reg::value::READ_DELAY_US);
-	voltage >>= 3;
+	voltage = static_cast<uint16_t>(voltage >> 3);
 
 	return static_cast<int16_t>(voltage * 4);
 }

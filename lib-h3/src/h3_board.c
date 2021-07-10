@@ -2,7 +2,7 @@
  * @file h3_board.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,8 @@
 #include <stdio.h>
 
 #include "h3_board.h"
-#include "h3_uart0_debug.h"
+
+extern int uart0_printf(const char* fmt, ...);
 
 #define PORT_LETTER(gpio) 	('A' + H3_GPIO_TO_PORT(gpio))
 #define OUT_L(g)			g, PORT_LETTER(g), H3_GPIO_TO_NUMBER(g)

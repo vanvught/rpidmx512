@@ -2,7 +2,7 @@
  * @file propertiesbuilder.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
+#endif
 
 #include <cstring>
 #include <cstdio>
@@ -74,7 +79,7 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 		return false;
 	}
 
-	m_nSize += static_cast<uint16_t>(i);
+	m_nSize = static_cast<uint16_t>(m_nSize + i);
 
 	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
 
@@ -95,7 +100,7 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 		return false;
 	}
 
-	m_nSize += static_cast<uint16_t>(i);
+	m_nSize = static_cast<uint16_t>(m_nSize + i);
 
 	DEBUG_PRINTF("pComment=%s, m_nLength=%d, m_nSize=%d", pComment, m_nLength, m_nSize);
 

@@ -55,3 +55,21 @@ void WS28xxMulti::SetupBuffers() {
 	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, reinterpret_cast<void *>(m_pBuffer), reinterpret_cast<void *>(m_pBlackoutBuffer));
 	DEBUG_EXIT
 }
+
+void WS28xxMulti::Blackout() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void WS28xxMulti::Update() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
+	// http://graphics.stanford.edu/~seander/bithacks.html#ReverseByteWith64Bits
+	const uint8_t nResult = ((nBits * 0x80200802ULL) & 0x0884422110ULL) * 0x0101010101ULL >> 32;
+	return nResult;
+}

@@ -245,12 +245,12 @@ uint8_t SlushBoard::IOLev(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 uint8_t SlushBoard::IORead(TSlushIOPorts nPort) {
 	assert(nPort <= SLUSH_IO_PORTB);
 
-	return Mcp23017ReadReg(MCP23017_GPIOA + nPort);
+	return Mcp23017ReadReg(static_cast<uint8_t>(MCP23017_GPIOA + nPort));
 }
 
 void SlushBoard::IOWrite(TSlushIOPorts nPort, uint8_t data) {
 	assert(nPort <= SLUSH_IO_PORTB);
 
-	Mcp23017WriteReg(MCP23017_OLATA + nPort, data);
+	Mcp23017WriteReg(static_cast<uint8_t>(MCP23017_OLATA + nPort), data);
 }
 #endif

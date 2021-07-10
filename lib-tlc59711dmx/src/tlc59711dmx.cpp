@@ -128,9 +128,9 @@ void TLC59711Dmx::Initialize() {
 
 void TLC59711Dmx::UpdateMembers() {
 	if (m_LEDType == TTLC59711_TYPE_RGB) {
-		m_nDmxFootprint = m_nLEDCount * 3;
+		m_nDmxFootprint = static_cast<uint16_t>(m_nLEDCount * 3);
 	} else {
-		m_nDmxFootprint = m_nLEDCount * 4;
+		m_nDmxFootprint = static_cast<uint16_t>(m_nLEDCount * 4);
 	}
 
 	m_nBoardInstances = static_cast<uint8_t>(ceil(static_cast<float>(m_nDmxFootprint) / TLC59711Channels::OUT));

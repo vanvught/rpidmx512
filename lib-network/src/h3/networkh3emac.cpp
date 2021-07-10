@@ -39,7 +39,7 @@
 
 #include "debug.h"
 
-#define TO_HEX(i)		((i) < 10) ? '0' + (i) : 'A' + ((i) - 10)
+#define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 
 #define HOST_NAME_PREFIX	"allwinner_"
 

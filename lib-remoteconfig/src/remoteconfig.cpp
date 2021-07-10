@@ -103,17 +103,23 @@
 # include "storeshowfile.h"
 #endif
 
+#if defined(NODE_DDP_DISPLAY)
+/* ddpdisp.txt */
+# include "ddpdisplayparams.h"
+# include "storeddpdisplay.h"
+#endif
+
 /**
  * OUTPUT_
  */
 
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 /* params.txt */
 # include "dmxparams.h"
 # include "storedmxsend.h"
 #endif
 
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 /* devices.txt */
 # include "ws28xxdmxparams.h"
 # include "storews28xxdmx.h"
@@ -126,7 +132,7 @@
 # include "storemonitor.h"
 #endif
 
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 /* sparkfun.txt */
 # include "sparkfundmxparams.h"
 # include "storesparkfundmx.h"
@@ -137,7 +143,7 @@
 # include "storemotors.h"
 #endif
 
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 /* serial.txt */
 # include "dmxserialparams.h"
 # include "storedmxserial.h"
@@ -222,7 +228,7 @@ static constexpr auto TFTP = sizeof(cmd::set::TFTP) - 1;
 
 using namespace remoteconfig;
 
-static constexpr char s_Node[static_cast<uint32_t>(Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile" };
+static constexpr char s_Node[static_cast<uint32_t>(Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "DDP" };
 static constexpr char s_Output[static_cast<uint32_t>(Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel" };
 
 RemoteConfig *RemoteConfig::s_pThis = nullptr;
@@ -541,12 +547,12 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		HandleGetOscTxt(nSize);
 		break;
 #endif
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 	case TxtFile::PARAMS:
 		HandleGetParamsTxt(nSize);
 		break;
 #endif
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 	case TxtFile::DEVICES:
 		HandleGetDevicesTxt(nSize);
 		break;
@@ -580,7 +586,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		HandleGetDisplayTxt(nSize);
 		break;
 #endif
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 	case TxtFile::SPARKFUN:
 		HandleGetSparkFunTxt(nSize);
 		break;
@@ -596,7 +602,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		HandleGetShowTxt(nSize);
 		break;
 #endif
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 	case TxtFile::SERIAL:
 		HandleGetSerialTxt(nSize);
 		break;
@@ -604,6 +610,11 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 #if defined (OUTPUT_RGB_PANEL)
 	case TxtFile::RGBPANEL:
 		HandleGetRgbPanelTxt(nSize);
+		break;
+#endif
+#if defined (NODE_DDP_DISPLAY)
+	case TxtFile::DDPDISP:
+		HandleGetDdpDisplayTxt(nSize);
 		break;
 #endif
 	default:
@@ -706,7 +717,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -717,7 +728,7 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -804,7 +815,7 @@ void RemoteConfig::HandleGetDisplayTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 void RemoteConfig::HandleGetSparkFunTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -863,7 +874,7 @@ void RemoteConfig::HandleGetShowTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 void RemoteConfig::HandleGetSerialTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -880,6 +891,17 @@ void RemoteConfig::HandleGetRgbPanelTxt(uint32_t& nSize) {
 
 	RgbPanelParams rgbPanelParams(StoreRgbPanel::Get());
 	rgbPanelParams.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (NODE_DDP_DISPLAY)
+void RemoteConfig::HandleGetDdpDisplayTxt(uint32_t &nSize) {
+	DEBUG_ENTRY
+
+	DdpDisplayParams ddpDisplayParams(StoreDdpDisplay::Get());
+	ddpDisplayParams.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
 }
@@ -903,7 +925,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 			nLength = udp::BUFFER_SIZE - udp::cmd::set::length::STORE;
 			i = GetIndex(&s_UdpBuffer[udp::cmd::set::length::STORE], nLength);
 			if (i < TxtFile::LAST) {
-				m_nBytesReceived = m_nBytesReceived - static_cast<uint16_t>(nLength - udp::cmd::set::length::STORE);
+				m_nBytesReceived = static_cast<uint16_t>(m_nBytesReceived - nLength - udp::cmd::set::length::STORE);
 				memcpy(s_StoreBuffer, &s_UdpBuffer[nLength + udp::cmd::set::length::STORE], udp::BUFFER_SIZE);
 				debug_dump(s_StoreBuffer, m_nBytesReceived);
 			} else {
@@ -941,12 +963,12 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		HandleTxtFileOsc();
 		break;
 #endif
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 	case TxtFile::PARAMS:
 		HandleTxtFileParams();
 		break;
 #endif
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 	case TxtFile::DEVICES:
 		HandleTxtFileDevices();
 		break;
@@ -980,7 +1002,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		HandleTxtFileDisplay();
 		break;
 #endif
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 	case TxtFile::SPARKFUN:
 		HandleTxtFileSparkFun();
 		break;
@@ -996,7 +1018,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		HandleTxtFileShow();
 		break;
 #endif
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 	case TxtFile::SERIAL:
 		HandleTxtFileSerial();
 		break;
@@ -1004,6 +1026,11 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 #if defined (OUTPUT_RGB_PANEL)
 	case TxtFile::RGBPANEL:
 		HandleTxtFileRgbPanel();
+		break;
+#endif
+#if defined (NODE_DDP_DISPLAY)
+	case TxtFile::DDPDISP:
+		HandleTxtFileDdpDisplay();
 		break;
 #endif
 	default:
@@ -1174,7 +1201,7 @@ void RemoteConfig::HandleTxtFileOscClient() {
 }
 #endif
 
-#if defined (OUTPUT_DMXSEND)
+#if defined (OUTPUT_DMX_SEND)
 void RemoteConfig::HandleTxtFileParams() {
 	DEBUG_ENTRY
 
@@ -1200,7 +1227,7 @@ void RemoteConfig::HandleTxtFileParams() {
 }
 #endif
 
-#if defined (OUTPUT_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL)
 void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_ENTRY
 
@@ -1403,7 +1430,7 @@ void RemoteConfig::HandleTxtFileDisplay() {
 }
 #endif
 
-#if defined(OUTPUT_STEPPER)
+#if defined(OUTPUT_DMX_STEPPER)
 void RemoteConfig::HandleTxtFileSparkFun() {
 	DEBUG_ENTRY
 
@@ -1491,7 +1518,7 @@ void RemoteConfig::HandleTxtFileShow() {
 }
 #endif
 
-#if defined (OUTPUT_DMXSERIAL)
+#if defined (OUTPUT_DMX_SERIAL)
 void RemoteConfig::HandleTxtFileSerial() {
 	DEBUG_ENTRY
 
@@ -1537,6 +1564,32 @@ void RemoteConfig::HandleTxtFileRgbPanel() {
 	rgbPanelParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	rgbPanelParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (NODE_DDP_DISPLAY)
+void RemoteConfig::HandleTxtFileDdpDisplay() {
+	DEBUG_ENTRY
+
+	DdpDisplayParams ddpDisplayParams(StoreDdpDisplay::Get());
+
+	if (m_tHandleMode == HandleMode::BIN) {
+		if (m_nBytesReceived == sizeof(struct TDdpDisplayParams)) {
+			uint32_t nSize;
+			ddpDisplayParams.Builder(reinterpret_cast<const struct TDdpDisplayParams*>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
+			m_nBytesReceived = static_cast<uint16_t>(nSize);
+		} else {
+			DEBUG_EXIT
+			return;
+		}
+	}
+
+	ddpDisplayParams.Load(s_UdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	ddpDisplayParams.Dump();
 #endif
 
 	DEBUG_EXIT

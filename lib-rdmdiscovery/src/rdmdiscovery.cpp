@@ -212,7 +212,7 @@ bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_
 		checksum[1] = pDiscResponse[20] & pDiscResponse[21];
 
 		for (uint32_t i = 0; i < 6; i++) {
-			nRdmChecksum += pUid[i];
+			nRdmChecksum = static_cast<uint16_t>(nRdmChecksum + pUid[i]);
 		}
 
 		if (((nRdmChecksum >> 8) == checksum[1]) && ((nRdmChecksum & 0xFF) == checksum[0])) {

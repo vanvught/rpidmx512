@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -150,11 +150,11 @@ void notmain(void) {
 	if (!bIsSetIndividual) { // Backwards compatibility
 		nUniverse = e131params.GetUniverse();
 		bridge.SetUniverse(0, portDir, 0 + nUniverse);
-		bridge.SetUniverse(1, portDir, 1 + nUniverse);
+		bridge.SetUniverse(1, portDir, static_cast<uint16_t>(1 + nUniverse));
 #if defined (ORANGE_PI_ONE)
-		bridge.SetUniverse(2, portDir, 2 + nUniverse);
+		bridge.SetUniverse(2, portDir, static_cast<uint16_t>(2 + nUniverse));
 #ifndef DO_NOT_USE_UART0
-		bridge.SetUniverse(3, portDir, 3 + nUniverse);
+		bridge.SetUniverse(3, portDir, static_cast<uint16_t>(3 + nUniverse));
 #endif
 #endif
 	}

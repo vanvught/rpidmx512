@@ -1,8 +1,8 @@
 /**
- * @file lcdbw.h
+ * @file storeddpdisplay.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef BWLCD_H_
-#define BWLCD_H_
+#include <cassert>
 
-#include <cstdint>
+#include "storeddpdisplay.h"
 
-#include "displayset.h"
+#include "debug.h"
 
-#include "hal_i2c.h"
+StoreDdpDisplay *StoreDdpDisplay::s_pThis = nullptr;
 
-#define BW_LCD_DEFAULT_SLAVE_ADDRESS	0x82
-#define BW_UI_DEFAULT_SLAVE_ADDRESS		0x94
+StoreDdpDisplay::StoreDdpDisplay() {
+	DEBUG_ENTRY
 
-class LcdBw final: public DisplaySet {
-public:
-	LcdBw ();
-	LcdBw (uint8_t, uint8_t);
-	LcdBw (uint8_t, uint8_t, uint8_t);
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
-	bool Start() override;
-
-	void Cls() override;
-	void ClearLine(uint8_t nLine) override;
-
-	void PutChar(int) override;
-	void PutString(const char *) override;
-
-	void Text(const char *, uint32_t nLength);
-	void TextLine(uint8_t nLine, const char *pData, uint32_t nLength) override;
-
-	void SetCursorPos(uint8_t nCol, uint8_t nRow) override;
-	void SetCursor(uint32_t) override;
-
-private:
-	void Write(const char *, uint8_t);
-
-private:
-	HAL_I2C m_I2C;
-	uint32_t m_nWriteMicros{0};
-};
-
-#endif /* BWLCD_H_ */
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_EXIT
+}

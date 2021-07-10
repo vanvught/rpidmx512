@@ -274,7 +274,7 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 #ifdef LOGIC_ANALYZER
 		h3_gpio_set(20);
 #endif
-		CONSOLE_ERROR[CONSOLE_ERROR_LENGTH - 3] = '0' + static_cast<char>(s_nUartsSending);
+		CONSOLE_ERROR[CONSOLE_ERROR_LENGTH - 3] = static_cast<char>('0' + s_nUartsSending);
 		console_error(CONSOLE_ERROR);
 #ifdef LOGIC_ANALYZER
 		h3_gpio_clr(20);
@@ -361,7 +361,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 				s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 				s_pRdmDataCurrent[nUart]->nIndex++;
 
-				s_pRdmDataCurrent[nUart]->nChecksum += nData;
+				s_pRdmDataCurrent[nUart]->nChecksum = static_cast<uint16_t>(s_pRdmDataCurrent[nUart]->nChecksum + nData);
 
 				const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_pRdmDataCurrent[nUart]->data[0]);
 
@@ -374,7 +374,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
 			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
-			s_pRdmDataCurrent[nUart]->nChecksum -= static_cast<uint16_t>(nData << 8);
+			s_pRdmDataCurrent[nUart]->nChecksum = static_cast<uint16_t>(s_pRdmDataCurrent[nUart]->nChecksum - static_cast<uint16_t>(nData << 8));
 
 			s_tReceiveState[nUart] = TxRxState::CHECKSUML;
 			break;
@@ -383,7 +383,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex++;
 
-			s_pRdmDataCurrent[nUart]->nChecksum -= nData;
+			s_pRdmDataCurrent[nUart]->nChecksum = static_cast<uint16_t>(s_pRdmDataCurrent[nUart]->nChecksum - nData);
 
 			const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].data[0]);
 

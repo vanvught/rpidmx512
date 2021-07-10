@@ -2,7 +2,7 @@
  * @file rdmsubdevicemcp4902.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,7 +47,7 @@ RDMSubDeviceMCP4902::RDMSubDeviceMCP4902(uint16_t nDmxStartAddress, char nChipSs
 void RDMSubDeviceMCP4902::Data(const uint8_t* pData, uint32_t nLength) {
 	assert(nLength <= 512);
 
-	uint16_t nOffset = GetDmxStartAddress() - 1;
+	auto nOffset = static_cast<uint16_t>(GetDmxStartAddress() - 1);
 
 	if (nOffset < nLength) {
 		const uint8_t nDataA = pData[nOffset];

@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 # include "ws28xxmulti.h"
 #else
 # include "ws28xx.h"
@@ -37,7 +37,7 @@
 #include "hardware.h"
 
 namespace pixelpatterns {
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 static constexpr auto MAX_PORTS = 8U;
 #else
 static constexpr auto MAX_PORTS = 1U;
@@ -84,7 +84,7 @@ private:
 	void Reverse(uint32_t nPortIndex);
 
 	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nPixelIndex, uint32_t nColour) {
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 		m_pOutput->SetPixel(nPortIndex, nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
 #else
 		m_pOutput->SetPixel(nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
@@ -98,7 +98,7 @@ private:
 	}
 
     uint32_t DimColour(uint32_t nColour) {
-        return Colour(Red(nColour) >> 1, Green(nColour) >> 1, Blue(nColour) >> 1);
+        return Colour(static_cast<uint8_t>(Red(nColour) >> 1), static_cast<uint8_t>(Green(nColour) >> 1), static_cast<uint8_t>(Blue(nColour) >> 1));
     }
 
     uint8_t Red(uint32_t nColour) {
@@ -114,7 +114,7 @@ private:
 	}
 
 private:
-#if defined (OUTPUT_PIXEL_MULTI)
+#if defined (PIXELPATTERNS_MULTI)
 	WS28xxMulti *m_pOutput { nullptr };
 #else
 	WS28xx *m_pOutput { nullptr };

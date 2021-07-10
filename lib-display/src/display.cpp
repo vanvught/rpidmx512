@@ -30,9 +30,6 @@
 #include "displayset.h"
 #include "display.h"
 
-#if defined(ENABLE_LCDBW)
-# include "lcdbw.h"
-#endif
 #if defined(ENABLE_TC1602)
 # include "tc1602.h"
 #endif
@@ -104,14 +101,6 @@ Display::Display(DisplayType tDisplayType): m_tType(tDisplayType),
 
 void Display::Detect(DisplayType tDisplayType) {
 	switch (tDisplayType) {
-#if defined(ENABLE_LCDBW)
-		case DisplayType::BW_UI_1602:
-			m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, 16, 2);
-			break;
-		case DisplayType::BW_LCD_1602:
-			m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, 16, 2);
-			break;
-#endif
 #if defined(ENABLE_TC1602)
 		case DisplayType::PCF8574T_1602:
 			m_LcdDisplay = new Tc1602(16, 2);
@@ -180,23 +169,6 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::PCF8574T_1602;
 			Printf(1, "TC1602_PCF8574T");
-		}
-	}
-#endif
-#if defined(ENABLE_LCDBW)
-	else if (HAL_I2C::IsConnected(BW_LCD_DEFAULT_SLAVE_ADDRESS >> 1)) {
-		m_LcdDisplay = new LcdBw(BW_LCD_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
-
-		if (m_LcdDisplay->Start()) {
-			m_tType = DisplayType::BW_LCD_1602;
-			Printf(1, "BW_LCD");
-		}
-	} else if (HAL_I2C::IsConnected(BW_UI_DEFAULT_SLAVE_ADDRESS >> 1)) {
-		m_LcdDisplay = new LcdBw(BW_UI_DEFAULT_SLAVE_ADDRESS, m_nCols, m_nRows);
-
-		if (m_LcdDisplay->Start()) {
-			m_tType = DisplayType::BW_UI_1602;
-			Printf(1, "BW_UI");
 		}
 	}
 #endif
@@ -275,13 +247,13 @@ void Display::TextStatus(const char *pText) {
 		return;
 	}
 
-	SetCursorPos(0, m_nRows - 1);
+	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
 
-	for (uint8_t i = 0; i < m_nCols - 1; i++) {
+	for (uint8_t i = 0; i < static_cast<uint8_t>(m_nCols - 1); i++) {
 		PutChar(' ');
 	}
 
-	SetCursorPos(0, m_nRows - 1);
+	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
 
 	Write(m_nRows, pText);
 }

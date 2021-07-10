@@ -1,8 +1,5 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-hal/include
-#
-EXTRA_SRCDIR = jbi_22/code
-#
+DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-hal/include
+EXTRA_SRCDIR=jbi_22/code
+
 include ../h3-firmware-template/lib/Rules.mk

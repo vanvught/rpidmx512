@@ -32,7 +32,7 @@
 #include <netinet/in.h>
 
 #include "h3/shell.h"
-#include "h3_uart0_debug.h"
+#include "uart0_debug.h"
 
 #include "remoteconfig.h"
 #include "network.h"
@@ -173,7 +173,7 @@ uint32_t Shell::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {
 			break;
 		}
 
-		const uint8_t nNibble = c > '9' ? (c | 0x20) - 'a' + 10 : (c - '0');
+		const auto nNibble = c > '9' ? static_cast<uint8_t>((c | 0x20) - 'a' + 10) : static_cast<uint8_t>(c - '0');
 		nValue = (nValue << 4) | nNibble;
 		pSrc++;
 	}
@@ -232,7 +232,7 @@ void Shell::CmdSet() {
  			request[3] = '!';						
  			memcpy(&request[4], m_Argv[1], nArgv1Length);
 
- 			const auto nRequestLenght = 4 + nArgv1Length;
+ 			const auto nRequestLenght = static_cast<uint16_t>(4 + nArgv1Length);
 
  			DEBUG_PRINTF("Request: %.*s", nRequestLenght, request);
 
@@ -259,7 +259,7 @@ void Shell::CmdSet() {
 	memcpy(buffer, m_Argv[0], nArgv0Length);
 	memcpy(&buffer[nArgv0Length], file::EXT, file::length::EXT);
 	buffer[nArgv0Length + file::length::EXT] = '\0';
-	uint32_t nLength = nArgv0Length + file::length::EXT;
+	auto nLength = static_cast<uint32_t>(nArgv0Length + file::length::EXT);
 
 	if (RemoteConfig::GetIndex(buffer, nLength) < remoteconfig::TxtFile::LAST) {
 		DEBUG_PUTS(m_Argv[0]);

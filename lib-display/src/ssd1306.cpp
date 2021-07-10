@@ -319,12 +319,12 @@ void Ssd1306::Cls() {
 
 		switch (m_OledPanel) {
 		case OLED_PANEL_128x64_8ROWS:
-			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), nColumnAdd + SSD1306_LCD_WIDTH + 1);
+			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), static_cast<uint32_t>(nColumnAdd + SSD1306_LCD_WIDTH + 1));
 			break;
 		case OLED_PANEL_128x64_4ROWS:
 			/* no break */
 		case OLED_PANEL_128x32_4ROWS:
-			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), nColumnAdd + SSD1306_LCD_WIDTH + 1);
+			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), static_cast<uint32_t>(nColumnAdd + SSD1306_LCD_WIDTH + 1));
 			break;
 		default:
 			break;
@@ -337,7 +337,7 @@ void Ssd1306::Cls() {
 
 #if defined(ENABLE_CURSOR_MODE)
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', (m_nCols * m_nRows));
+	memset(m_pShadowRam, ' ', static_cast<size_t>(m_nCols * m_nRows));
 #endif
 }
 
@@ -377,9 +377,9 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	Ssd1306::SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), SSD1306_LCD_WIDTH + 1);
-	Ssd1306::SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
 void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
@@ -387,7 +387,7 @@ void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
 		return;
 	}
 
-	Ssd1306::SetCursorPos(0, nLine - 1);
+	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	Text(pData, nLength);
 }
 
@@ -409,10 +409,10 @@ void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 		return;
 	}
 
-	nCol = nCol * oled::font8x6::CHAR_W;
+	nCol = static_cast<uint8_t>(nCol * oled::font8x6::CHAR_W);
 
 	if (m_bHaveSH1106) {
-		nCol += 4;
+		nCol = static_cast<uint8_t>(nCol + 4);
 	}
 
 	SendCommand(cmd::SET_LOWCOLUMN | (nCol & 0XF));
@@ -481,7 +481,7 @@ void Ssd1306::InitMembers() {
 #if defined(ENABLE_CURSOR_MODE)
 	m_pShadowRam = new char[oled::font8x6::COLS * m_nRows];
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', (oled::font8x6::COLS * m_nRows));
+	memset(m_pShadowRam, ' ', static_cast<size_t>(oled::font8x6::COLS * m_nRows));
 #endif
 }
 
@@ -531,9 +531,9 @@ void Ssd1306::SetCursorOn() {
 #if defined(ENABLE_CURSOR_MODE)
 	m_nCursorOnCol = static_cast<uint8_t>(m_nShadowRamIndex % oled::font8x6::COLS);
 	m_nCursorOnRow =  static_cast<uint8_t>(m_nShadowRamIndex / oled::font8x6::COLS);
-	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
+	m_nCursorOnChar = static_cast<uint8_t>(m_pShadowRam[m_nShadowRamIndex] - 32);
 
-	const uint8_t *pBase = const_cast<uint8_t *>(_OledFont8x6) + 1 + (oled::font8x6::CHAR_W + 1) * m_nCursorOnChar;
+	const auto *pBase = const_cast<uint8_t *>(_OledFont8x6) + 1 + (oled::font8x6::CHAR_W + 1) * m_nCursorOnChar;
 
 	uint8_t data[oled::font8x6::CHAR_W + 1];
 	data[0] = 0x40;
@@ -552,7 +552,7 @@ void Ssd1306::SetCursorBlinkOn() {
 #if defined(ENABLE_CURSOR_MODE)
 	m_nCursorOnCol = static_cast<uint8_t>(m_nShadowRamIndex % oled::font8x6::COLS);
 	m_nCursorOnRow =  static_cast<uint8_t>(m_nShadowRamIndex / oled::font8x6::COLS);
-	m_nCursorOnChar = m_pShadowRam[m_nShadowRamIndex] - 32;
+	m_nCursorOnChar = static_cast<uint8_t>(m_pShadowRam[m_nShadowRamIndex] - 32);
 
 	const uint8_t *pBase = const_cast<uint8_t *>(_OledFont8x6) + 1 + (oled::font8x6::CHAR_W + 1) * m_nCursorOnChar;
 
@@ -560,11 +560,11 @@ void Ssd1306::SetCursorBlinkOn() {
 	data[0] = 0x40;
 
 	for (uint32_t i = 1 ; i <= oled::font8x6::CHAR_W; i++) {
-		data[i] = ~*pBase;
+		data[i] = static_cast<uint8_t>(~*pBase);
 		pBase++;
 	}
 
-	SendData(data, (oled::font8x6::CHAR_W + 1));
+	SendData(data, static_cast<uint32_t>(oled::font8x6::CHAR_W + 1));
 	SetColumnRow(m_nCursorOnCol, m_nCursorOnRow);
 #endif
 }
@@ -585,14 +585,14 @@ void Ssd1306::SetCursorOff() {
 
 void Ssd1306::SetColumnRow(UNUSED uint8_t nColumn, UNUSED uint8_t nRow) {
 #if defined(ENABLE_CURSOR_MODE)
-	uint8_t nColumnAdd = nColumn * oled::font8x6::CHAR_W;
+	auto nColumnAdd = static_cast<uint8_t>(nColumn * oled::font8x6::CHAR_W);
 
 	if (m_bHaveSH1106) {
-		nColumnAdd += 4;
+		nColumnAdd = static_cast<uint8_t>(nColumnAdd + 4);
 	}
 
 	SendCommand(cmd::SET_LOWCOLUMN | (nColumnAdd & 0xF));
-	SendCommand(cmd::SET_HIGHCOLUMN | (nColumnAdd >> 4));
+	SendCommand(cmd::SET_HIGHCOLUMN | static_cast<uint8_t>(nColumnAdd >> 4));
 	SendCommand(cmd::SET_STARTPAGE | nRow);
 #endif
 }
