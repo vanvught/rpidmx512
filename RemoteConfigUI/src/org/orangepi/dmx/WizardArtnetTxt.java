@@ -27,6 +27,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.NumberFormatter;
 
 public class WizardArtnetTxt extends JDialog {
+	private static final long serialVersionUID = 1L;
 	String nodeId = null;
 	OrangePi opi = null;
 	RemoteConfig remoteConfig = null;
@@ -370,21 +371,24 @@ public class WizardArtnetTxt extends JDialog {
 							.addComponent(chckbxMapUniverse0)))
 					.addGap(172))
 		);
+		
 		contentPanel.setLayout(gl_contentPanel);
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			
-			btnSave = new JButton("Save");
-			buttonPane.add(btnSave);
 			{
-				btnSetDefaults = new JButton("Set default");
-				buttonPane.add(btnSetDefaults);
+				btnSave = new JButton("Save");
+				buttonPane.add(btnSave);
 			}
 			{
 				btnCancel = new JButton("Cancel");
 				buttonPane.add(btnCancel);
+			}
+			{
+				btnSetDefaults = new JButton("Set default");
+				buttonPane.add(btnSetDefaults);
+				getRootPane().setDefaultButton(btnCancel);
 			}
 		}
 	}

@@ -330,14 +330,20 @@ public class WizardNetworkTxt extends JDialog {
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			btnSave = new JButton("Save");
-			buttonPane.add(btnSave);
-			
-			btnSetDefaults = new JButton("Set defaults");
-			buttonPane.add(btnSetDefaults);
-			
-			btnCancel = new JButton("Cancel");		
-			buttonPane.add(btnCancel);
+
+			{
+				btnSave = new JButton("Save");
+				buttonPane.add(btnSave);
+			}
+			{
+				btnSetDefaults = new JButton("Set defaults");
+				buttonPane.add(btnSetDefaults);
+			}
+			{
+				btnCancel = new JButton("Cancel");
+				buttonPane.add(btnCancel);
+				getRootPane().setDefaultButton(btnCancel);
+			}
 		}
 	}
 	
@@ -432,6 +438,16 @@ public class WizardNetworkTxt extends JDialog {
 							formattedStaticIP2.setValue(Integer.parseInt(parts[1]));
 							formattedStaticIP3.setValue(Integer.parseInt(parts[2]));
 							formattedStaticIP4.setValue(Integer.parseInt(parts[3]));
+						}
+					}
+					if (line.contains("default_gateway")) {
+						final String value = Properties.getString(line).replace('.', '\n');
+						final String parts[] = value.split("\n");
+						if (parts.length == 4) {
+							formattedGatewayIP1.setValue(Integer.parseInt(parts[0]));
+							formattedGatewayIP2.setValue(Integer.parseInt(parts[1]));
+							formattedGatewayIP3.setValue(Integer.parseInt(parts[2]));
+							formattedGatewayIP4.setValue(Integer.parseInt(parts[3]));
 						}
 					}
 					if (line.contains("net_mask")) {

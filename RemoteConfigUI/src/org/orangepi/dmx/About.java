@@ -121,7 +121,7 @@ public class About extends JDialog {
 		txtArjan = new JTextField();
 		txtArjan.setBorder(null);
 		txtArjan.setHorizontalAlignment(SwingConstants.CENTER);
-		txtArjan.setText("(C) 2019-2020 Arjan van Vught");
+		txtArjan.setText("(C) 2019-2021 Arjan van Vught");
 		txtArjan.setEditable(false);
 		txtArjan.setColumns(10);
 

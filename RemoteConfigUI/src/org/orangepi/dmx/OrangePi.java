@@ -23,8 +23,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
@@ -35,8 +33,8 @@ public class OrangePi {
 	private static final String RCONFIG_TXT = "rconfig.txt";
 	private static final String DISPLAY_TXT = "display.txt";
 	private static final String NETWORK_TXT = "network.txt";
-	private static final String[] NODE_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt"};
-	private static final String[] NODEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile"};
+	private static final String[] NODE_TXT = {"artnet.txt", "e131.txt", "osc.txt", "ltc.txt", "oscclnt.txt", "", "show.txt", "ddpdisp.txt"};
+	private static final String[] NODEVALUES = {"Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "DDP"};
 	private static final String[] OUTPUT_TXT = {"params.txt", "devices.txt", "mon.txt", "serial.txt", "rgbpanel.txt", ""};
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
@@ -45,7 +43,8 @@ public class OrangePi {
 	private static final String RDM_TXT = "rdm_device.txt";
 	private static final String SPARKFUN_TXT = "sparkfun.txt";
 	
-	private InetAddress localAddress;
+	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+	
 	private DatagramSocket socketReceive;
 	
 	private Boolean isValid = false;
@@ -80,12 +79,11 @@ public class OrangePi {
 	private String sbRDM = null;
 	private String sbSparkFun = null;
 	
-	public OrangePi(String arg, InetAddress localAddress, DatagramSocket socketReceive) {
+	public OrangePi(String arg, DatagramSocket socketReceive) {
 		super();
-		this.localAddress = localAddress;
 		this.socketReceive = socketReceive;
 		
-		System.out.println(arg);
+		System.out.println("arg [" + arg + "]");
 	
 		String[] values = arg.split(",");
 		
@@ -93,7 +91,7 @@ public class OrangePi {
 			String[] Mode = values[2].split("\n");
 			isValid = isMapTypeValues(values[1]);	
 			
-			System.out.println("Mode[0]=" + Mode[0]);
+			System.out.println("Mode[0]=" + Mode[0] + " nodeType=" + nodeType);
 			
 			if (isValid) {
 				if (Mode[0].equals("DMX") || Mode[0].equals("RDM")) {
@@ -101,7 +99,7 @@ public class OrangePi {
 					if (Mode[0].equals("RDM")) {
 						nodeRDM = RDM_TXT;
 					}
-				} else if (Mode[0].equals("Pixel")) {
+				} else if ((Mode[0].equals("Pixel")) && (!nodeType.contains("ddp"))){
 					nodeOutput = OUTPUT_TXT[1];
 				} else if (Mode[0].equals("Monitor")) {
 					nodeOutput = OUTPUT_TXT[2];
@@ -127,6 +125,8 @@ public class OrangePi {
 					nodeOutput = OUTPUT_TXT[4];
 				} else if (Mode[0].equals("RGB Panel")) {
 					nodeOutput = OUTPUT_TXT[5];	
+				} else if (Mode[0].equals("Pixel")) {
+					//
 				} else {
 					isValid = false;
 				}
@@ -135,12 +135,17 @@ public class OrangePi {
 			if (isValid) {
 				nodeRemoteConfig = RCONFIG_TXT;
 				nodeNetwork = NETWORK_TXT;
-				
-				try {
-					address = InetAddress.getByName(values[0]);
-				} catch (UnknownHostException e) {
+
+				if (values[0].matches(ipv4Pattern)) {
+					try {
+						System.out.println("=> " + values[0]);
+						address = InetAddress.getByName(values[0]);
+					} catch (UnknownHostException e) {
+						isValid = false;
+						e.printStackTrace();
+					}
+				} else {
 					isValid = false;
-					e.printStackTrace();
 				}
 			}
 			
@@ -234,12 +239,7 @@ public class OrangePi {
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, PORT);
 		
 		try {
-			DatagramSocket socketSend = new DatagramSocket(null);
-			socketSend.setReuseAddress(true);
-			SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
-			socketSend.bind(sockaddr);
-			socketSend.send(packet);
-			socketSend.close();
+			socketReceive.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -429,7 +429,7 @@ public class OrangePi {
 		for (int i = 0; i < NODEVALUES.length; i++) {
 			if (type.equals(NODEVALUES[i])) {
 				nodeType = NODE_TXT[i];
-				if ((i == 0) || (i == 1)) {
+				if ((i == 0) || (i == 1) || (i == 7)) {
 					nodeDisplay = DISPLAY_TXT;
 				}
 				return true;

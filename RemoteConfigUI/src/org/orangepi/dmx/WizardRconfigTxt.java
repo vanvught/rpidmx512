@@ -128,19 +128,25 @@ public class WizardRconfigTxt extends JDialog {
 		);
 		
 		contentPanel.setLayout(groupLayout);
-		
+
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
-			btnSave = new JButton("Save");
-			buttonPane.add(btnSave);
-			
-			btnSetDefaults = new JButton("Set defaults");
-			buttonPane.add(btnSetDefaults);
-			
-			btnCancel = new JButton("Cancel");		
-			buttonPane.add(btnCancel);
+
+			{
+				btnSave = new JButton("Save");
+				buttonPane.add(btnSave);
+			}
+			{
+				btnSetDefaults = new JButton("Set defaults");
+				buttonPane.add(btnSetDefaults);
+			}
+			{
+				btnCancel = new JButton("Cancel");
+				buttonPane.add(btnCancel);
+				getRootPane().setDefaultButton(btnCancel);
+			}
 		}
 	}
 	
