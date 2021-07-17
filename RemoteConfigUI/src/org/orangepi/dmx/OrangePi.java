@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ public class OrangePi {
 	
 	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 	
-	private DatagramSocket socketReceive;
+	private DatagramSocket socketUDP;
 	
 	private Boolean isValid = false;
 	
@@ -81,7 +81,7 @@ public class OrangePi {
 	
 	public OrangePi(String arg, DatagramSocket socketReceive) {
 		super();
-		this.socketReceive = socketReceive;
+		this.socketUDP = socketReceive;
 		
 		System.out.println("arg [" + arg + "]");
 	
@@ -236,18 +236,19 @@ public class OrangePi {
 	}
 	
 	private void sendUdpPacket(byte[]  buffer) {
+		System.out.println("sendUdpPacket " + address + ":" + PORT + " [" + new String(buffer) + "]");
+		
 		DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, PORT);
 		
 		try {
-			socketReceive.send(packet);
+			socketUDP.send(packet);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
 		
 	private String doGet(String message) {
-		String p = new String("?get#" + message);
-		System.out.println(address + ":" + PORT + " " + p);
+		final String p = new String("?get#" + message);
 
 		byte[] bufferSendReceive = p.getBytes();
 		
@@ -258,9 +259,10 @@ public class OrangePi {
 		
 		try {
 			while (true) {
-				socketReceive.receive(packetReceive);
-				System.out.println("Message received");
-				return new String(packetReceive.getData()).trim();
+				socketUDP.receive(packetReceive);
+				final String received = new String(packetReceive.getData()).trim();
+				System.out.println("Message received [" + received + "]");
+				return received;
 			}
 		} catch (SocketTimeoutException e) {
 			System.out.println("Timeout reached!");
@@ -368,20 +370,21 @@ public class OrangePi {
 	}
 	
 	private String doRequest(String p) {
-		System.out.println(address + ":" + PORT + " " + p);
+		System.out.println("doRequest " + address + ":" + PORT + " " + p);
 
 		byte[] bufferSendReceive = p.getBytes();
 		
 		sendUdpPacket(bufferSendReceive);
-			
+		
 		bufferSendReceive = new byte[BUFFERSIZE];
 		DatagramPacket packetReceive = new DatagramPacket(bufferSendReceive, bufferSendReceive.length);
-		
+					
 		try {
 			while (true) {
-				socketReceive.receive(packetReceive);
-				System.out.println("Message received");
-				return new String(packetReceive.getData()).trim();
+				socketUDP.receive(packetReceive);
+				final String received = new String(packetReceive.getData()).trim();
+				System.out.println("Message received [" + received + "]");
+				return received;
 			}
 		} catch (SocketTimeoutException e) {
 			System.out.println("Timeout reached!");
@@ -417,8 +420,6 @@ public class OrangePi {
 		} else {
 			p = p + '0';
 		}
-		
-		System.out.println(address + ":" + PORT + " " + p);
 		
 		byte[] buffer = p.getBytes();
 		

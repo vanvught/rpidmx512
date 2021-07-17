@@ -206,6 +206,8 @@ public class RemoteConfig extends JFrame {
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				About about = new About();
+				String buildNumber = RemoteConfig.class.getPackage().getImplementationVersion();
+				about.setBuildNumber(buildNumber);
 				about.setVisible(true);
 			}
 		});
@@ -999,7 +1001,11 @@ public class RemoteConfig extends JFrame {
 
 		for (int i = 0; i < 2; i++) {
 			try {
-				broadcast("?list#");
+				if (i == 0) {
+					broadcast("?list#*");
+				} else {
+					broadcast("?list#");
+				}
 				while (true) {
 					byte[] buffer = new byte[BUFFERSIZE];
 					DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
@@ -1116,8 +1122,7 @@ public class RemoteConfig extends JFrame {
 	public void broadcast(String broadcastMessage) {
 		byte[] buffer = broadcastMessage.getBytes();
 		try {
-			final DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-					InetAddress.getByName("255.255.255.255"), PORT);
+			final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), PORT);
 			try {
 				socketReceive.send(packet);
 			} catch (Exception e) {
