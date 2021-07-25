@@ -55,7 +55,7 @@ static constexpr auto BUFFER_SIZE = 1024;
 } // namespace udp
 
 enum class Node {
-	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, DDP, LAST
+	ARTNET, E131, OSC, LTC, OSC_CLIENT, RDMNET_LLRP_ONLY, SHOWFILE, MIDI, DDP, LAST
 };
 enum class Output {
 	DMX,
@@ -74,7 +74,10 @@ enum class Output {
 };
 
 enum class HandleMode {
-	TXT, BIN
+	TXT
+#if !defined(DISABLE_BIN)
+	, BIN
+#endif
 };
 
 enum {
@@ -363,8 +366,9 @@ private:
 	static struct remoteconfig::ListBin s_RemoteConfigListBin;
 	static char s_aId[remoteconfig::ID_LENGTH];
 	static char s_UdpBuffer[remoteconfig::udp::BUFFER_SIZE];
+#if !defined(DISABLE_BIN)
 	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
-
+#endif
 	static RemoteConfig *s_pThis;
 };
 

@@ -2,7 +2,7 @@
  * @file midi.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,6 +144,8 @@ static constexpr auto MIN = 8;
 static constexpr auto MAX = 300;
 }  // namespace bpm
 
+typedef void (*thunk_irq_timer_t)();
+
 }  // namespace midi
 
 class Midi {
@@ -173,7 +175,7 @@ public:
 		return m_bActiveSense;
 	}
 
-	uint32_t GetUpdatesPerSeconde();
+	uint32_t GetUpdatesPerSecond();
 
 	void SetChannel(uint8_t nChannel) {
 		m_nInputChannel = nChannel;
@@ -230,6 +232,8 @@ public:
 		nLength = m_Message.nBytesCount;
 		return reinterpret_cast<const uint8_t*>(m_Message.aSystemExclusive);
 	}
+
+	void SetIrqTimer1(midi::thunk_irq_timer_t pFunc);
 
 	static Midi* Get() {
 		return s_pThis;

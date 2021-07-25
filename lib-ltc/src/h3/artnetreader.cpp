@@ -65,7 +65,6 @@ void ArtNetReader::Start() {
 	irq_timer_init();
 
 	LtcOutputs::Get()->Init();
-
 	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 }
 
