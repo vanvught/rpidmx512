@@ -2,16 +2,17 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=
 
-EXTRA_SRCDIR =posix rtc rtc/i2c ff12c ff12c/option src/h3/sdcard debug
+EXTRA_SRCDIR=posix rtc rtc/i2c ff12c ff12c/option src/h3/sdcard debug
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=src/h3/fb
+		EXTRA_SRCDIR+=console/h3
 	else
-		EXTRA_SRCDIR+=src/uart0	
+		EXTRA_SRCDIR+=console/uart0	
 	endif
 else
-	EXTRA_SRCDIR+=src/uart0	
+	EXTRA_SRCDIR+=console/uart0	
 endif
+
 
 include ../h3-firmware-template/lib/Rules.mk
