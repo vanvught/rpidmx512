@@ -85,7 +85,7 @@ void ArtNetNode::HandleTodRequest() {
 
 void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	DEBUG_ENTRY
-	assert(nPortId < ArtNet::PORTS);
+	assert(nPortIndex < ArtNet::PORTS);
 
 	auto pTodData = &(m_ArtNetPacket.ArtPacket.ArtTodData);
 	const auto nPage = nPortIndex / ArtNet::PORTS;

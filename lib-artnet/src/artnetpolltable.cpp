@@ -66,8 +66,8 @@ ArtNetPollTable::ArtNetPollTable() {
 		assert(m_pTableUniverses[nIndex].pIpAddresses != nullptr);
 	}
 
-	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
-	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
+//	DEBUG_PRINTF("TArtNetNodeEntry[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_ENRIES, (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])), (sizeof(TArtNetNodeEntry[ARTNET_POLL_TABLE_SIZE_ENRIES])) / 1024);
+//	DEBUG_PRINTF("TArtNetPollTableUniverses[%d] = %u bytes [%u Kb]", ARTNET_POLL_TABLE_SIZE_UNIVERSES, (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])), (sizeof(TArtNetPollTableUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES])) / 1024);
 
 	m_tTableClean.nTableIndex = 0;
 	m_tTableClean.nUniverseIndex = 0;
