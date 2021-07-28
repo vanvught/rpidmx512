@@ -42,8 +42,7 @@ import javax.swing.JCheckBox;
 public class PixelTestPattern extends JDialog {
 	private static final long serialVersionUID = 1L;
 	private RemoteConfig remoteConfig;
-	private TreeMap<Integer, OrangePi> treeMap;
-	private static final String patterns[] = {"None (DMX)", "Rainbow", "Theater chase", "Colour wipe", "Scanner", "Fade"};
+	private static final String patterns[] = {"None (Data)", "Rainbow", "Theater chase", "Colour wipe", "Scanner", "Fade"};
 	//
 	private final JPanel contentPanel = new JPanel();
 	private JButton btnRefresh;
@@ -58,9 +57,8 @@ public class PixelTestPattern extends JDialog {
 	private JRadioButton rdbtnFade_5;
 	private JCheckBox chckbxReboot;
 
-	public PixelTestPattern(RemoteConfig remoteConfig, TreeMap<Integer, OrangePi> treeMap) {
+	public PixelTestPattern(RemoteConfig remoteConfig) {
 		this.remoteConfig = remoteConfig;
-		this.treeMap = treeMap;
 		
 		setTitle("Pixel Controller Test Pattern Selection");
 				
@@ -83,7 +81,7 @@ public class PixelTestPattern extends JDialog {
 		
 		btnApply = new JButton("Apply");
 		
-		rdbtnNone_0 = new JRadioButton("None (DMX)");
+		rdbtnNone_0 = new JRadioButton("None (Data)");
 		rdbtnNone_0.setSelected(true);
 		buttonGroup.add(rdbtnNone_0);
 		
@@ -179,7 +177,9 @@ public class PixelTestPattern extends JDialog {
 		});
 	}
 
-	private void Display() {				
+	private void Display() {	
+		TreeMap<Integer, OrangePi> treeMap = remoteConfig.getTreeMap();
+		
 		if (!treeMap.isEmpty()) {
 			textArea.setText("");
 
@@ -187,8 +187,17 @@ public class PixelTestPattern extends JDialog {
 			 
 			for (OrangePi entry : entries) {		
 				final String id = entry.getNodeId();
+				
+				System.out.println("id=" + id);
+				
+				String txtFile = "devices.txt";
+				
+				if (id.toLowerCase().contains("ddp")) {
+					txtFile = "ddpdisp.txt";
+				}
+				
 				if (id.toLowerCase().contains("pixel")) {
-					textArea.append(id + " - " + handleDevicesTxt(entry) + "\n");
+					textArea.append(id + " - " + handleDevicesTxt(entry, txtFile) + "\n");
 				}
 			}
 		} else {
@@ -196,8 +205,8 @@ public class PixelTestPattern extends JDialog {
 		}
 	}
 	
-	private String handleDevicesTxt(OrangePi OPi) {
-		final String txt = OPi.getTxt("devices.txt");
+	private String handleDevicesTxt(OrangePi OPi, String txtFile) {
+		final String txt = OPi.getTxt(txtFile);
 		final String lines[] = txt.split("\n");
 		
 		for (int i = 0; i < lines.length; i++) {
@@ -216,7 +225,9 @@ public class PixelTestPattern extends JDialog {
 		return patterns[0];
 	}
 	
-	private void ProcessApply() {		
+	private void ProcessApply() {
+		TreeMap<Integer, OrangePi> treeMap = remoteConfig.getTreeMap();
+		
 		if ((treeMap == null)||(treeMap.isEmpty())) {
 			return;
 		}
@@ -243,12 +254,21 @@ public class PixelTestPattern extends JDialog {
 		 
 		for (OrangePi value : values) {
 			final String id = value.getNodeId();
+			
+			System.out.println("id=" + id);
+			
+			String txtFile = "devices.txt";
+			
+			if (id.toLowerCase().contains("ddp")) {
+				txtFile = "ddpdisp.txt";
+			}
+		
 			if (id.toLowerCase().contains("pixel")) {
-				String devicesTxt = value.getTxt("devices.txt");
+				String devicesTxt = value.getTxt(txtFile);
 				devicesTxt = devicesTxt + "\n" + test_pattern;
 				try {
 					value.doSave(devicesTxt);
-					textArea.append(value + " - " + handleDevicesTxt(value) + "\n");
+					textArea.append(value + " - " + handleDevicesTxt(value, txtFile) + "\n");
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

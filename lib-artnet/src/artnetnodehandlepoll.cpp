@@ -41,6 +41,8 @@
 #include "hardware.h"
 #include "network.h"
 
+#include "debug.h"
+
 using namespace artnet;
 
 union uip {
@@ -127,7 +129,6 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 			} else {
 				if (m_pArtNet4Handler != nullptr) {
 					const auto nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
-
 					nStatus &= static_cast<uint8_t>(~nMask);
 					nStatus = static_cast<uint8_t>(nStatus | (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
 

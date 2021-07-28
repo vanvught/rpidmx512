@@ -1,13 +1,12 @@
-#
 DEFINES=NDEBUG
-#
-EXTRA_SRCDIR=arm arm/aeabi device/mmc firmware
-#
+
+EXTRA_SRCDIR=arm device/mmc firmware
+
 EXTRA_INCLUDES =
-#
+
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=device/fb	
+		EXTRA_SRCDIR+=device/fb
 	endif
 	ifneq (,$(findstring NO_EMAC,$(NO_EMAC)))
 	else
@@ -16,5 +15,5 @@ ifneq ($(MAKE_FLAGS),)
 else
 	EXTRA_SRCDIR+=device/fb device/emac net
 endif
-#
+
 include ../h3-firmware-template/lib/Rules.mk

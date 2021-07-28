@@ -188,9 +188,6 @@ public class BroadcastSelect extends JDialog {
 	}
 	
 	private void ProcessBroadcast(String cmd) {	
-		byte[] buffer = new byte[BUFFERSIZE];
-		DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
-
 		TreeMap<Integer, String> treeMap = new TreeMap<Integer, String>();
 		
 		Graphics g = getGraphics();
@@ -202,15 +199,20 @@ public class BroadcastSelect extends JDialog {
 			try {
 				remoteConfig.broadcast(cmd);
 				while (true) {
+					byte[] buffer = new byte[BUFFERSIZE];
+					DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
 					socketReceive.receive(dpack);
 
 					textArea.append(dpack.getAddress().toString() + "\n");
 					update(g);
-
-					StringBuilder str = new StringBuilder();
-					str.append(dpack.getAddress()).append(" ").append(new String(dpack.getData()));
-	
-					treeMap.put(ByteBuffer.wrap(dpack.getAddress().getAddress()).getInt(), str.toString());
+					
+					final String s = new String(dpack.getData());
+					
+					if (!s.startsWith("?")) {
+						StringBuilder str = new StringBuilder();
+						str.append(dpack.getAddress()).append(" ").append(s);
+						treeMap.put(ByteBuffer.wrap(dpack.getAddress().getAddress()).getInt(), str.toString());
+					}
 				}
 			} catch (SocketTimeoutException e) {
 				textArea.append("No replies\n");

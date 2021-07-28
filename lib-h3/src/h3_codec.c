@@ -27,11 +27,11 @@
  * THE SOFTWARE.
  */
 
+//#undef NDEBUG
+
 #include <stdint.h>
 #include <stdbool.h>
 #include <assert.h>
-
-#include "debug.h"
 
 #include "arm/arm.h"
 #include "arm/synchronize.h"
@@ -44,6 +44,8 @@
 #include "h3_dma.h"
 #include "h3_board.h"
 #include "h3_gpio.h"
+
+#include "debug.h"
 
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
@@ -126,19 +128,12 @@
 #define CONFIG_TX_DESCR_NUM			(1U << 1)		// INFO This cannot be changed without rewriting FIQ handler
 #define CONFIG_TX_DESCR_NUM_MASK    (CONFIG_TX_DESCR_NUM - 1)
 
-static volatile uint32_t circular_buffer_index_head;
-static volatile uint32_t circular_buffer_index_tail;
-static uint32_t circular_buffer_size;
-#ifndef NDEBUG
- static volatile bool circular_buffer_full;
-#endif
-
-#define CIRCULAR_BUFFER_INDEX_ENTRIES	(1U << 1)
-#define CIRCULAR_BUFFER_INDEX_MASK 		(CIRCULAR_BUFFER_INDEX_ENTRIES - 1)
-
-static int16_t circular_buffer[CIRCULAR_BUFFER_INDEX_ENTRIES][CONFIG_BUFSIZE] ALIGNED;
+static uint32_t buffer_size;
 
 static uint32_t s_volume;
+
+static volatile uint32_t update_counter;
+static volatile uint32_t index;
 
 struct coherent_region {
 	struct sunxi_dma_lli lli[CONFIG_TX_DESCR_NUM];
@@ -399,46 +394,33 @@ static void codec_hw_params(uint32_t rate, uint32_t channels) {
 	codec_prepare(rate);
 }
 
+#ifndef NDEBUG
+extern void uart0_putc(int c);
+#endif
+
 static void __attribute__((interrupt("FIQ"))) codec_fiq_handler(void) {
 	dmb();
-	clean_data_cache();
-	isb();
 
 #ifdef LOGIC_ANALYZER
 	h3_gpio_set(6);
 #endif
 
+	if (update_counter == 2) {
+		uint32_t i;
+		const int16_t *src = &p_coherent_region->txbuffer[index][0];
+		int16_t *dst = &p_coherent_region->txbuffer[1 - index][0];
 
-#if (CONFIG_TX_DESCR_NUM != 2)
- #error
-#endif
-	int16_t *txbuffs = &p_coherent_region->txbuffer[0][0];
-
-	if ((H3_DMA_CHL0->CUR_SRC & (2 * CONFIG_BUFSIZE)) == ((uint32_t) txbuffs & (2 * CONFIG_BUFSIZE))) {
-		txbuffs = &p_coherent_region->txbuffer[1][0];
-	}
-
-	int16_t *src;
-
-	if (circular_buffer_index_head != circular_buffer_index_tail) {
-		src = &circular_buffer[circular_buffer_index_tail][0];
-		circular_buffer_index_tail = (circular_buffer_index_tail + 1) & CIRCULAR_BUFFER_INDEX_MASK;
+		for (i = 0; i < buffer_size; i++) {
+			*dst = *src;
+			dst++;
+			src++;
+		}
 #ifndef NDEBUG
-		circular_buffer_full = false;
+		uart0_putc('1');
 #endif
-	} else {
-		src = &circular_buffer[1 - circular_buffer_index_head][0];
 	}
 
-	uint32_t i;
-
-	for (i = 0; i < circular_buffer_size; i++) {
-		*txbuffs = *src;
-		txbuffs++;
-		src++;
-	}
-
-	dmb();
+	update_counter++;
 
 	H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
 
@@ -459,13 +441,6 @@ void h3_codec_set_volume(uint8_t volume) {
 
 void h3_codec_begin(void) {
 	__disable_fiq();
-
-#ifdef LOGIC_ANALYZER
-	h3_gpio_fsel(1, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(1);
-	h3_gpio_fsel(6, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(6);
-#endif
 
 	/*
 	 * DMA setup
@@ -517,6 +492,7 @@ void h3_codec_begin(void) {
 
 	H3_DMA_CHL0->DESC_ADDR = (uint32_t) &p_coherent_region->lli[0];
 
+
 	isb();
 	__enable_fiq();
 
@@ -537,12 +513,6 @@ void h3_codec_begin(void) {
 	 * in our TX FIFO
 	 */
 	WR_CONTROL(H3_AC->DAC_FIFOC, 0x3, DAC_DRQ_CLR_CNT, 0x3);
-
-	circular_buffer_index_head = 0;
-	circular_buffer_index_tail = 0;
-#ifndef NDEBUG
-	circular_buffer_full = false;
-#endif
 }
 
 void __attribute__((cold)) h3_codec_start(void) {
@@ -612,7 +582,7 @@ void h3_codec_set_buffer_length(uint32_t length) {
 
 	H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_STOP;
 
-	circular_buffer_size = length;
+	buffer_size = length;
 
 	uint32_t i;
 
@@ -625,25 +595,29 @@ void h3_codec_set_buffer_length(uint32_t length) {
 	__enable_fiq();
 }
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+
 void h3_codec_push_data(const int16_t *src) {
-#ifndef NDEBUG
-	if (circular_buffer_full) {
-		printf("f");
-	}
-#endif
+	__disable_fiq();
+
 	uint32_t i;
+	int16_t *dst = &p_coherent_region->txbuffer[1][0];
 
-	int16_t *dst = &circular_buffer[circular_buffer_index_head][0];
+	if ((H3_DMA_CHL0->CUR_SRC & (2 * CONFIG_BUFSIZE)) == ((uint32_t) dst & (2 * CONFIG_BUFSIZE))) {
+		dst = &p_coherent_region->txbuffer[0][0];
+		index = 0;
+	} else {
+		index = 1;
+	}
 
-	for (i = 0; i < circular_buffer_size; i++) {
+	for (i = 0; i < buffer_size; i++) {
 		*dst = *src;
 		dst++;
 		src++;
 	}
 
-	circular_buffer_index_head = (circular_buffer_index_head + 1) & CIRCULAR_BUFFER_INDEX_MASK;
-
-#ifndef NDEBUG
-	circular_buffer_full = (circular_buffer_index_head == circular_buffer_index_tail);
-#endif
+	update_counter = 0;
+	dmb();
+	__enable_fiq();
 }

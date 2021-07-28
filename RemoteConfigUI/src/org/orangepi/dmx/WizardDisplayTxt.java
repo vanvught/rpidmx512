@@ -237,20 +237,20 @@ public class WizardDisplayTxt extends JDialog {
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
+			
 			{
 				btnSave = new JButton("Save");
-				btnSave.setActionCommand("OK");
 				buttonPane.add(btnSave);
 				getRootPane().setDefaultButton(btnSave);
 			}
-			
-			btnSetDefaults = new JButton("Set defaults");
-
-			buttonPane.add(btnSetDefaults);
+			{
+				btnSetDefaults = new JButton("Set defaults");
+				buttonPane.add(btnSetDefaults);
+			}
 			{
 				btnCancel = new JButton("Cancel");
-				btnCancel.setActionCommand("Cancel");
 				buttonPane.add(btnCancel);
+				getRootPane().setDefaultButton(btnCancel);
 			}
 		}
 	}

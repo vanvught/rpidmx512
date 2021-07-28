@@ -31,17 +31,16 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -87,10 +86,9 @@ public class RemoteConfig extends JFrame {
 	private JScrollPane scrollPaneRight;
 	private JTextArea textArea;
 	private JMenuItem mntmSave;
-	private JMenuItem mntmInterfaces;
 
-	private InetAddress localAddress;
-	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
+//	private InetAddress localAddress;
+//	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 	private JMenu mnAction;
 	private JMenuItem mntmReboot;
 	private JLabel lblNodeId;
@@ -138,30 +136,32 @@ public class RemoteConfig extends JFrame {
 	public RemoteConfig() {
 		System.out.println(System.getProperty("os.name"));
 
-		NetworkInterface ifDefault = FirstNetworkInterface.get();
-
-		if (ifDefault == null) {
-			try {
-				localAddress = InetAddress.getLocalHost();
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
-			}
-		} else {
-			Enumeration<InetAddress> enumIP = ifDefault.getInetAddresses();
-
-			while (enumIP.hasMoreElements()) {
-				InetAddress ip = (InetAddress) enumIP.nextElement();
-
-				if (ip.getHostAddress().matches(ipv4Pattern)) {
-					localAddress = ip;
-					break;
-				}
-			}
-		}
-
-		setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
-
-		System.out.println("Local ip: " + localAddress.getHostAddress());
+//		NetworkInterface ifDefault = FirstNetworkInterface.get();
+//
+//		if (ifDefault == null) {
+//			try {
+//				localAddress = InetAddress.getLocalHost();
+//			} catch (UnknownHostException e) {
+//				e.printStackTrace();
+//			}
+//		} else {
+//			Enumeration<InetAddress> enumIP = ifDefault.getInetAddresses();
+//
+//			while (enumIP.hasMoreElements()) {
+//				InetAddress ip = (InetAddress) enumIP.nextElement();
+//
+//				if (ip.getHostAddress().matches(ipv4Pattern)) {
+//					localAddress = ip;
+//					break;
+//				}
+//			}
+//		}
+//
+//		setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
+//
+//		System.out.println("Local ip: " + localAddress.getHostAddress());
+		
+		setTitle("Remote Configuration Manager");
 
 		createReceiveSocket();
 
@@ -206,6 +206,8 @@ public class RemoteConfig extends JFrame {
 		mntmAbout.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				About about = new About();
+				String buildNumber = RemoteConfig.class.getPackage().getImplementationVersion();
+				about.setBuildNumber(buildNumber);
 				about.setVisible(true);
 			}
 		});
@@ -274,6 +276,9 @@ public class RemoteConfig extends JFrame {
 								}
 								if (txt.startsWith("devices")) {
 									doWizardUniverse(opi);
+								}
+								if (txt.startsWith("ddpdisp")) {
+									doWizardDdpdisplay(opi);
 								}
 							}
 						}
@@ -393,21 +398,6 @@ public class RemoteConfig extends JFrame {
 					}
 				} else {
 					JOptionPane.showMessageDialog(null, "No txt file selected for save action.");
-				}
-			}
-		});
-
-		mntmInterfaces.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				NetworkInterfaces networkInterfaces = new NetworkInterfaces(localAddress);
-				InetAddress currentLocalAddress = localAddress;
-
-				localAddress = networkInterfaces.Show();
-
-				if (!localAddress.equals(currentLocalAddress)) {
-					setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
-					createReceiveSocket();
-					constructTree();
 				}
 			}
 		});
@@ -728,13 +718,6 @@ public class RemoteConfig extends JFrame {
 		mntmRefresh.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.ALT_MASK));
 		mnView.add(mntmRefresh);
 
-		JMenu mnNetwork = new JMenu("Network");
-		menuBar.add(mnNetwork);
-
-		mntmInterfaces = new JMenuItem("Interfaces");
-		mntmInterfaces.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.ALT_MASK));
-		mnNetwork.add(mntmInterfaces);
-
 		mnWorkflow = new JMenu("Workflow");
 		menuBar.add(mnWorkflow);
 
@@ -874,7 +857,7 @@ public class RemoteConfig extends JFrame {
 	}
 
 	private void doPixelTestPattern() {
-		PixelTestPattern pixelTestPattern = new PixelTestPattern(this, treeMap);
+		PixelTestPattern pixelTestPattern = new PixelTestPattern(this);
 		pixelTestPattern.setModal(true);
 		pixelTestPattern.setVisible(true);
 	}
@@ -926,6 +909,14 @@ public class RemoteConfig extends JFrame {
 	private void doWizardArtnet(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			WizardArtnetTxt wizard = new WizardArtnetTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+	
+	private void doWizardDdpdisplay(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardDdpdisplayTxt wizard = new WizardDdpdisplayTxt(lblNodeId.getText(), opi, this);
 			wizard.setModal(true);
 			wizard.setVisible(true);
 		}
@@ -984,9 +975,13 @@ public class RemoteConfig extends JFrame {
 		System.out.println("textArea > [" + text + "]");
 		textArea.setText(text);
 	}
+	
+	public TreeMap<Integer, OrangePi> getTreeMap() {
+		return treeMap;
+	}
 
 	public void constructTree() {
-		System.out.println("Interface address: " + localAddress.getHostAddress());
+//		System.out.println("Interface address: " + localAddress.getHostAddress());
 
 		Graphics g = getGraphics();
 
@@ -1004,13 +999,16 @@ public class RemoteConfig extends JFrame {
 
 		treeMap = new TreeMap<Integer, OrangePi>();
 
-		byte[] buffer = new byte[BUFFERSIZE];
-		DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
-
 		for (int i = 0; i < 2; i++) {
 			try {
-				broadcast("?list#");
+				if (i == 0) {
+					broadcast("?list#*");
+				} else {
+					broadcast("?list#");
+				}
 				while (true) {
+					byte[] buffer = new byte[BUFFERSIZE];
+					DatagramPacket dpack = new DatagramPacket(buffer, buffer.length);
 					socketReceive.receive(dpack);
 
 					textArea.append(dpack.getAddress().toString() + "\n");
@@ -1019,7 +1017,7 @@ public class RemoteConfig extends JFrame {
 					String str = new String(dpack.getData());
 					final String data[] = str.split("\n");
 
-					OrangePi opi = new OrangePi(data[0], localAddress, socketReceive);
+					OrangePi opi = new OrangePi(data[0], socketReceive);
 
 					if (opi.getIsValid()) {
 						treeMap.put(ByteBuffer.wrap(dpack.getAddress().getAddress()).getInt(), opi);
@@ -1124,16 +1122,9 @@ public class RemoteConfig extends JFrame {
 	public void broadcast(String broadcastMessage) {
 		byte[] buffer = broadcastMessage.getBytes();
 		try {
-			final DatagramPacket packet = new DatagramPacket(buffer, buffer.length,
-					InetAddress.getByName("255.255.255.255"), PORT);
+			final DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), PORT);
 			try {
-				final DatagramSocket socketBroadcast = new DatagramSocket(null);
-				socketBroadcast.setReuseAddress(true);
-				final SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
-				socketBroadcast.bind(sockaddr);
-				socketBroadcast.setBroadcast(true);
-				socketBroadcast.send(packet);
-				socketBroadcast.close();
+				socketReceive.send(packet);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1148,10 +1139,13 @@ public class RemoteConfig extends JFrame {
 		}
 		try {
 			socketReceive = new DatagramSocket(null);
-			socketReceive.setReuseAddress(true);
-			SocketAddress sockaddr = new InetSocketAddress(localAddress, PORT);
-			socketReceive.bind(sockaddr);
+			SocketAddress sockaddr = new InetSocketAddress(PORT);
+			socketReceive.setBroadcast(true);
 			socketReceive.setSoTimeout(1000);
+			socketReceive.bind(sockaddr);
+		} catch (BindException e) {
+			JOptionPane.showMessageDialog(null, "There is already an application running using the UDP port: " + PORT);
+			doExit();
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}

@@ -2,7 +2,7 @@
  * @file rtpmidireader.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,11 +36,9 @@
 class RtpMidiReader: public RtpMidiHandler {
 public:
 	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~RtpMidiReader();
 
 	void Start();
 	void Stop();
-
 	void Run();
 
 	void MidiMessage(const struct midi::Message *ptMidiMessage);
@@ -52,11 +50,11 @@ private:
 
 private:
 	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	midi::TimecodeType m_nTimeCodeType { midi::TimecodeType::UNKNOWN };
-	char m_aTimeCode[TC_CODE_MAX_LENGTH];
 	TLtcTimeCode m_tLtcTimeCode;
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };
+	uint32_t m_nMtcQfFramePrevious { 0 };
+	uint32_t m_nMtcQfFramesDelta { 0 };
 	MidiBPM m_MidiBPM;
 };
 

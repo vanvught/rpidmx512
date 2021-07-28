@@ -28,20 +28,19 @@ import java.net.URI;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JDialog;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
-import javax.swing.border.EmptyBorder;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.JLabel;
+import javax.swing.LayoutStyle.ComponentPlacement;
 
 public class About extends JDialog {
 	private static final long serialVersionUID = 989628609152233931L;
-	private final JPanel contentPanel = new JPanel();
 	private JTextField txtArjan;
 	private JTextField txtExample;
+	private JLabel lblBuildNumber;
 
 	public static void main(String[] args) {
 		try {
@@ -58,9 +57,7 @@ public class About extends JDialog {
 		setModal(true);
 		setResizable(false);
 		setTitle("About");
-		setBounds(100, 100, 385, 170);
-		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPanel.setLayout(null);
+		setBounds(100, 100, 439, 170);
 
 		JTextPane htmlURL = new JTextPane();
 		htmlURL.setEditable(false);
@@ -121,7 +118,7 @@ public class About extends JDialog {
 		txtArjan = new JTextField();
 		txtArjan.setBorder(null);
 		txtArjan.setHorizontalAlignment(SwingConstants.CENTER);
-		txtArjan.setText("(C) 2019-2020 Arjan van Vught");
+		txtArjan.setText("(C) 2019-2021 Arjan van Vught");
 		txtArjan.setEditable(false);
 		txtArjan.setColumns(10);
 
@@ -129,45 +126,61 @@ public class About extends JDialog {
 		txtExample.setBorder(null);
 		txtExample.setFont(new Font("Courier New", Font.PLAIN, 10));
 		txtExample.setEditable(false);
-		txtExample.setText("Example");
+		txtExample.setText("Example showing the capability of the remote configuration framework.");
 		txtExample.setColumns(10);
-
+		
+		lblBuildNumber = new JLabel("Build.Number");
+		
+		JLabel lblBuild = new JLabel("Build");
 		GroupLayout groupLayout = new GroupLayout(getContentPane());
 		groupLayout.setHorizontalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
-					.addContainerGap()
 					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(htmlURL, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 						.addGroup(groupLayout.createSequentialGroup()
-							.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, 388, GroupLayout.PREFERRED_SIZE)
-							.addGap(37)
-							.addComponent(contentPanel, GroupLayout.PREFERRED_SIZE, 457, GroupLayout.PREFERRED_SIZE))
-						.addComponent(htmlGitHub, GroupLayout.PREFERRED_SIZE, 365, GroupLayout.PREFERRED_SIZE)))
-				.addGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
-					.addGroup(Alignment.LEADING, groupLayout.createSequentialGroup()
-						.addContainerGap()
-						.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, 55, GroupLayout.PREFERRED_SIZE))
-					.addComponent(txtArjan, Alignment.LEADING, GroupLayout.PREFERRED_SIZE, 381, GroupLayout.PREFERRED_SIZE))
+							.addGap(6)
+							.addComponent(htmlURL, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addComponent(txtArjan, GroupLayout.PREFERRED_SIZE, 430, GroupLayout.PREFERRED_SIZE)
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(6)
+							.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, 424, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addGap(6)
+							.addComponent(htmlGitHub, GroupLayout.PREFERRED_SIZE, 365, GroupLayout.PREFERRED_SIZE))
+						.addGroup(groupLayout.createSequentialGroup()
+							.addContainerGap()
+							.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, 295, GroupLayout.PREFERRED_SIZE)))
+					.addGap(9))
+				.addGroup(groupLayout.createSequentialGroup()
+					.addContainerGap()
+					.addComponent(lblBuild)
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(lblBuildNumber, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+					.addGap(281))
 		);
 		groupLayout.setVerticalGroup(
 			groupLayout.createParallelGroup(Alignment.LEADING)
 				.addGroup(groupLayout.createSequentialGroup()
 					.addGap(7)
 					.addComponent(htmlURL, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGap(6)
 					.addComponent(htmlGitHub, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addGap(8)
-					.addGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-						.addComponent(contentPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE))
-					.addGap(18)
-					.addComponent(txtArjan, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(9)
+					.addComponent(htmlDonate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-					.addContainerGap())
+					.addGroup(groupLayout.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblBuild)
+						.addComponent(lblBuildNumber))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addComponent(txtArjan, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+					.addGap(6)
+					.addComponent(txtExample, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE))
 		);
 		getContentPane().setLayout(groupLayout);
 
+	}
+	
+	public void setBuildNumber(String buildNumber) {
+		lblBuildNumber.setText(buildNumber);
 	}
 }

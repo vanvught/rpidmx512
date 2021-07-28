@@ -208,13 +208,17 @@ static constexpr auto FACTORY = sizeof(cmd::get::FACTORY) - 1;
 }  // namespace get
 
 namespace set {
+#if !defined(DISABLE_BIN)
 static constexpr char STORE[] = "!store#";
+#endif
 static constexpr char DISPLAY[] = "!display#";
 #if !defined(DISABLE_TFTP)
 static constexpr char TFTP[] = "!tftp#";
 #endif
 namespace length {
+#if !defined(DISABLE_BIN)
 static constexpr auto STORE = sizeof(cmd::set::STORE) - 1;
+#endif
 static constexpr auto DISPLAY = sizeof(cmd::set::DISPLAY) - 1;
 #if !defined(DISABLE_TFTP)
 static constexpr auto TFTP = sizeof(cmd::set::TFTP) - 1;
@@ -228,14 +232,16 @@ static constexpr auto TFTP = sizeof(cmd::set::TFTP) - 1;
 
 using namespace remoteconfig;
 
-static constexpr char s_Node[static_cast<uint32_t>(Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "DDP" };
+static constexpr char s_Node[static_cast<uint32_t>(Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP" };
 static constexpr char s_Output[static_cast<uint32_t>(Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel" };
 
 RemoteConfig *RemoteConfig::s_pThis = nullptr;
 ListBin RemoteConfig::s_RemoteConfigListBin;
 char RemoteConfig::s_aId[remoteconfig::ID_LENGTH];
 char RemoteConfig::s_UdpBuffer[udp::BUFFER_SIZE];
+#if !defined(DISABLE_BIN)
 uint8_t RemoteConfig::s_StoreBuffer[udp::BUFFER_SIZE];
+#endif
 
 RemoteConfig::RemoteConfig(Node tNode, Output tMode, uint32_t nOutputs): m_tNode(tNode), m_tOutput(tMode), m_nOutputs(nOutputs) {
 	DEBUG_ENTRY
@@ -384,25 +390,31 @@ void RemoteConfig::Run() {
 			DEBUG_PUTS("#");
 			m_tHandleMode = HandleMode::TXT;
 			HandleTxtFile();
+			return;
 		} else if (s_UdpBuffer[0] == '!') {
 			DEBUG_PUTS("!");
 			if ((m_nBytesReceived >= udp::cmd::set::length::DISPLAY) && (memcmp(s_UdpBuffer, udp::cmd::set::DISPLAY, udp::cmd::set::length::DISPLAY) == 0)) {
 				DEBUG_PUTS(udp::cmd::set::DISPLAY);
 				HandleDisplaySet();
+				return;
 			}
 #if !defined(DISABLE_TFTP)
 			else if ((m_nBytesReceived == udp::cmd::set::length::TFTP + 1) && (memcmp(s_UdpBuffer, udp::cmd::set::TFTP, udp::cmd::set::length::TFTP) == 0)) {
 				DEBUG_PUTS(udp::cmd::set::TFTP);
 				HandleTftpSet();
+				return;
 			}
 #endif
+#if !defined(DISABLE_BIN)
 			else if ((m_nBytesReceived > udp::cmd::set::length::STORE) && (memcmp(s_UdpBuffer, udp::cmd::set::STORE, udp::cmd::set::length::STORE) == 0)) {
 				DEBUG_PUTS(udp::cmd::set::STORE);
 				m_tHandleMode = HandleMode::BIN;
 				HandleTxtFile();
-			} else {
-				Network::Get()->SendTo(m_nHandle, "!#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
+				return;
 			}
+#endif
+
+			Network::Get()->SendTo(m_nHandle, "!#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
 		}
 
 		return;
@@ -454,11 +466,25 @@ void RemoteConfig::HandleList() {
 
 	if (m_nBytesReceived == udp::cmd::get::length::LIST) {
 		Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), m_nIPAddressFrom, udp::PORT);
+		return;
+	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 1) {
+		if (s_UdpBuffer[udp::cmd::get::length::LIST] == '*') {
+			Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), NETWORK_IP4_BROADCAST, udp::PORT);
+			return;
+		}
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 3) {
 		if (memcmp(&s_UdpBuffer[udp::cmd::get::length::LIST], "bin", 3) == 0) {
 			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , m_nIPAddressFrom, udp::PORT);
+			return;
+		}
+	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 4) {
+		if (memcmp(&s_UdpBuffer[udp::cmd::get::length::LIST], "bin*", 4) == 0) {
+			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , NETWORK_IP4_BROADCAST, udp::PORT);
+			return;
 		}
 	}
+
+	Network::Get()->SendTo(m_nHandle, "?list#ERROR#\n", 13, m_nIPAddressFrom, udp::PORT);
 
 	DEBUG_EXIT
 }
@@ -918,9 +944,12 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 	uint32_t nLength;
 
 	if (pBuffer == nullptr) {
+#if !defined(DISABLE_BIN)
 		if (m_tHandleMode == HandleMode::TXT) {
+#endif
 			nLength = udp::BUFFER_SIZE - 1;
 			i = GetIndex(&s_UdpBuffer[1], nLength);
+#if !defined(DISABLE_BIN)
 		} else {
 			nLength = udp::BUFFER_SIZE - udp::cmd::set::length::STORE;
 			i = GetIndex(&s_UdpBuffer[udp::cmd::set::length::STORE], nLength);
@@ -932,6 +961,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 				return;
 			}
 		}
+#endif
 	} else if (nBufferLength <= udp::BUFFER_SIZE){
 		m_tHandleMode = HandleMode::TXT;
 		memcpy(s_UdpBuffer, pBuffer, nBufferLength);
@@ -1045,6 +1075,7 @@ void RemoteConfig::HandleTxtFileRconfig() {
 
 	RemoteConfigParams remoteConfigParams(StoreRemoteConfig::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 	        if (m_nBytesReceived == sizeof(struct TRemoteConfigParams)) {
 		        uint32_t nSize;
@@ -1055,6 +1086,7 @@ void RemoteConfig::HandleTxtFileRconfig() {
 			return;
 		}
 	}
+#endif
 
 	remoteConfigParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1069,8 +1101,8 @@ void RemoteConfig::HandleTxtFileNetwork() {
 
 	NetworkParams params(StoreNetwork::Get());
 
-	if (m_tHandleMode == HandleMode::BIN)
-	{
+#if !defined(DISABLE_BIN)
+	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TNetworkParams)) {
 			uint32_t nSize;
 			params.Builder(reinterpret_cast<const struct TNetworkParams*>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
@@ -1080,6 +1112,7 @@ void RemoteConfig::HandleTxtFileNetwork() {
 			return;
 		}
 	}
+#endif
 
 	params.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1097,6 +1130,7 @@ void RemoteConfig::HandleTxtFileArtnet() {
 	assert(StoreArtNet4::Get() != nullptr);
 	ArtNet4Params artnet4params(StoreArtNet4::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TArtNetParams)) {
 			ArtNetParams artnetparams(StoreArtNet::Get());
@@ -1112,6 +1146,7 @@ void RemoteConfig::HandleTxtFileArtnet() {
 			return;
 		}
 	}
+#endif
 
 	artnet4params.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1128,6 +1163,7 @@ void RemoteConfig::HandleTxtFileE131() {
 
 	E131Params e131params(StoreE131::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TE131Params)) {
 			uint32_t nSize;
@@ -1139,6 +1175,7 @@ void RemoteConfig::HandleTxtFileE131() {
 		}
 		
 	}
+#endif
 
 	e131params.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1154,6 +1191,7 @@ void RemoteConfig::HandleTxtFileOsc() {
 
 	OSCServerParams oscServerParams(StoreOscServer::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TOSCServerParams)) {
 			uint32_t nSize;
@@ -1163,8 +1201,8 @@ void RemoteConfig::HandleTxtFileOsc() {
 			DEBUG_EXIT
 			return;
 		}
-		
 	}
+#endif
 
 	oscServerParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1181,6 +1219,7 @@ void RemoteConfig::HandleTxtFileOscClient() {
 
 	OscClientParams oscClientParams(StoreOscClient::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TOscClientParams)) {
 			uint32_t nSize;
@@ -1191,6 +1230,7 @@ void RemoteConfig::HandleTxtFileOscClient() {
 			return;
 		}
 	}
+#endif
 
 	oscClientParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1207,6 +1247,7 @@ void RemoteConfig::HandleTxtFileParams() {
 
 	DMXParams dmxparams(StoreDmxSend::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TDMXParams)) {
 			uint32_t nSize;
@@ -1217,6 +1258,7 @@ void RemoteConfig::HandleTxtFileParams() {
 			return;
 		}
 	}
+#endif
 
 	dmxparams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1236,6 +1278,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TTLC59711DmxParams)) {
 			uint32_t nSize;
@@ -1246,6 +1289,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 			return;
 		}
 	}
+#endif
 
 	tlc59711params.Load(s_UdpBuffer, m_nBytesReceived);
 #  ifndef NDEBUG
@@ -1257,6 +1301,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 # endif
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 
+#if !defined(DISABLE_BIN)
 		if (m_tHandleMode == HandleMode::BIN) {
 			if (m_nBytesReceived == sizeof(struct TWS28xxDmxParams)) {
 				uint32_t nSize;
@@ -1267,6 +1312,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 				return;
 			}
 		}
+#endif
 
 		ws28xxparms.Load(s_UdpBuffer, m_nBytesReceived);
 # ifndef NDEBUG
@@ -1286,6 +1332,7 @@ void RemoteConfig::HandleTxtFileLtc() {
 
 	LtcParams ltcParams(StoreLtc::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TLtcParams)) {
 			uint32_t nSize;
@@ -1296,6 +1343,7 @@ void RemoteConfig::HandleTxtFileLtc() {
 			return;
 		}
 	}
+#endif
 
 	ltcParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1310,6 +1358,7 @@ void RemoteConfig::HandleTxtFileLtcDisplay() {
 
 	LtcDisplayParams ltcDisplayParams(StoreLtcDisplay::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TLtcDisplayParams)) {
 			uint32_t nSize;
@@ -1320,6 +1369,7 @@ void RemoteConfig::HandleTxtFileLtcDisplay() {
 			return;
 		}
 	}
+#endif
 
 	ltcDisplayParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1334,6 +1384,7 @@ void RemoteConfig::HandleTxtFileTCNet() {
 
 	TCNetParams tcnetParams(StoreTCNet::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TTCNetParams)) {
 			uint32_t nSize;
@@ -1344,6 +1395,7 @@ void RemoteConfig::HandleTxtFileTCNet() {
 			return;
 		}
 	}
+#endif
 
 	tcnetParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1358,6 +1410,7 @@ void RemoteConfig::HandleTxtFileGps() {
 
 	GPSParams gpsParams(StoreGPS::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TGPSParams)) {
 			uint32_t nSize;
@@ -1368,6 +1421,7 @@ void RemoteConfig::HandleTxtFileGps() {
 			return;
 		}
 	}
+#endif
 
 	gpsParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1384,6 +1438,7 @@ void RemoteConfig::HandleTxtFileMon() {
 
 	DMXMonitorParams monitorParams(StoreMonitor::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TDMXMonitorParams)) {
 			uint32_t nSize;
@@ -1394,6 +1449,7 @@ void RemoteConfig::HandleTxtFileMon() {
 			return;
 		}
 	}
+#endif
 
 	monitorParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1410,6 +1466,7 @@ void RemoteConfig::HandleTxtFileDisplay() {
 
 	DisplayUdfParams displayParams(StoreDisplayUdf::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TDisplayUdfParams)) {
 			uint32_t nSize;
@@ -1420,6 +1477,7 @@ void RemoteConfig::HandleTxtFileDisplay() {
 			return;
 		}
 	}
+#endif
 
 	displayParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1436,6 +1494,7 @@ void RemoteConfig::HandleTxtFileSparkFun() {
 
 	SparkFunDmxParams sparkFunDmxParams(StoreSparkFunDmx::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TSparkFunDmxParams)) {
 			uint32_t nSize;
@@ -1446,6 +1505,7 @@ void RemoteConfig::HandleTxtFileSparkFun() {
 			return;
 		}
 	}
+#endif
 
 	sparkFunDmxParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1459,10 +1519,12 @@ void RemoteConfig::HandleTxtFileMotor(uint32_t nMotorIndex) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nMotorIndex=%d", nMotorIndex);
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		// TODO HandleTxtFileMotor HandleMode::BIN
 		return;
 	}
+#endif
 
 	SparkFunDmxParams sparkFunDmxParams(StoreSparkFunDmx::Get());
 	sparkFunDmxParams.Load(nMotorIndex, s_UdpBuffer, m_nBytesReceived);
@@ -1498,6 +1560,7 @@ void RemoteConfig::HandleTxtFileShow() {
 
 	ShowFileParams showFileParams(StoreShowFile::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TShowFileParams)) {
 			uint32_t nSize;
@@ -1508,6 +1571,7 @@ void RemoteConfig::HandleTxtFileShow() {
 			return;
 		}
 	}
+#endif
 
 	showFileParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1524,6 +1588,7 @@ void RemoteConfig::HandleTxtFileSerial() {
 
 	DmxSerialParams dmxSerialParams(StoreDmxSerial::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TDmxSerialParams)) {
 			uint32_t nSize;
@@ -1534,6 +1599,7 @@ void RemoteConfig::HandleTxtFileSerial() {
 			return;
 		}
 	}
+#endif
 
 	dmxSerialParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1550,6 +1616,7 @@ void RemoteConfig::HandleTxtFileRgbPanel() {
 
 	RgbPanelParams rgbPanelParams(StoreRgbPanel::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TRgbPanelParams)) {
 			uint32_t nSize;
@@ -1560,6 +1627,7 @@ void RemoteConfig::HandleTxtFileRgbPanel() {
 			return;
 		}
 	}
+#endif
 
 	rgbPanelParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
@@ -1576,6 +1644,7 @@ void RemoteConfig::HandleTxtFileDdpDisplay() {
 
 	DdpDisplayParams ddpDisplayParams(StoreDdpDisplay::Get());
 
+#if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct TDdpDisplayParams)) {
 			uint32_t nSize;
@@ -1586,6 +1655,7 @@ void RemoteConfig::HandleTxtFileDdpDisplay() {
 			return;
 		}
 	}
+#endif
 
 	ddpDisplayParams.Load(s_UdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG

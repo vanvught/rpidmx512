@@ -32,7 +32,6 @@
 #include "midi.h"
 #include "mididescription.h"
 
-#include "hardware.h"
 #include "console.h"
 
 #include "h3_hs_timer.h"
@@ -42,8 +41,6 @@ using namespace midi;
 static char s_aTimecode[] __attribute__ ((aligned (4))) =  "--:--:--;-- -----";
 static uint8_t s_Qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-static constexpr auto ROW = 1;
-static constexpr auto COLUMN = 80;
 static constexpr auto TC_LENGTH = sizeof(s_aTimecode) - 1;
 static constexpr char TC_TYPES[4][8] __attribute__ ((aligned (4))) = {"Film " , "EBU  " , "DF   " , "SMPTE" };
 
@@ -61,11 +58,15 @@ inline static void itoa_base10(int nArg, char *pBuffer) {
 }
 
 MidiMonitor::MidiMonitor() :
-		m_nMillisPrevious(Hardware::Get()->Millis()),
+		m_nMillisPrevious(H3_TIMER->AVS_CNT0),
 		m_pMidiMessage(const_cast<struct Message *>(Midi::Get()->GetMessage())) {
 }
 
 void MidiMonitor::Init() {
+	console_set_cursor(70, 1);
+	console_puts("Timecode :");
+	console_set_cursor(75, 2);
+	console_puts("BPM :");
 	//                                       1         2         3         4
 	//                              1234567890123456789012345678901234567890
 	constexpr char aHeaderLine[] = "TIMESTAMP ST D1 D2 CHL NOTE EVENT";
@@ -81,12 +82,12 @@ void MidiMonitor::Init() {
 	console_set_fg_bg_color(CONSOLE_WHITE, CONSOLE_BLACK);
 	console_set_top_row(4);
 
-	m_nInitTimestamp = h3_hs_timer_lo_us();
+	m_nInitTimestamp = H3_TIMER->AVS_CNT0;
 }
 
-void MidiMonitor::Update(uint8_t nType) {
+void MidiMonitor::UpdateTimecode(uint8_t nType) {
 	console_save_cursor();
-	console_set_cursor(COLUMN, ROW);
+	console_set_cursor(81, 1);
 	console_set_fg_color(CONSOLE_CYAN);
 	console_write(s_aTimecode, TC_LENGTH);
 	console_restore_cursor();
@@ -98,14 +99,12 @@ void MidiMonitor::Update(uint8_t nType) {
 }
 
 void MidiMonitor::HandleMtc() {
-	const auto type = static_cast<uint8_t>(m_pMidiMessage->aSystemExclusive[5] >> 5);
-
 	itoa_base10((m_pMidiMessage->aSystemExclusive[5] & 0x1F), &s_aTimecode[0]);
 	itoa_base10(m_pMidiMessage->aSystemExclusive[6], &s_aTimecode[3]);
 	itoa_base10(m_pMidiMessage->aSystemExclusive[7], &s_aTimecode[6]);
 	itoa_base10(m_pMidiMessage->aSystemExclusive[8], &s_aTimecode[9]);
 
-	Update(type);
+	UpdateTimecode(static_cast<uint8_t>(m_pMidiMessage->aSystemExclusive[5] >> 5));
 }
 
 void MidiMonitor::HandleQf() {
@@ -127,7 +126,7 @@ void MidiMonitor::HandleQf() {
 
 		const auto nType = static_cast<uint8_t>(s_Qf[7] >> 1);
 
-		Update(nType);
+		UpdateTimecode(nType);
 	}
 
 	m_nPartPrevious = nPart;
@@ -142,8 +141,9 @@ void MidiMonitor::HandleMessage() {
 		}
 
 		// Time stamp
-		const uint32_t nDeltaUs = m_pMidiMessage->nTimestamp - m_nInitTimestamp;
-		uint32_t nTime = nDeltaUs / 1000;
+//		const uint32_t nDeltaUs = m_pMidiMessage->nTimestamp - m_nInitTimestamp;
+//		uint32_t nTime = nDeltaUs / 1000;
+		uint32_t nTime =  m_pMidiMessage->nTimestamp - m_nInitTimestamp;
 		const uint32_t nHours = nTime / 3600000;
 		nTime -= nHours * 3600000;
 		const uint32_t nMinutes = nTime /  60000;
@@ -241,10 +241,19 @@ void MidiMonitor::HandleMessage() {
 		} else {
 			switch (m_pMidiMessage->tType) {
 			// 1 byte message
+			case Types::CLOCK:
+				if (m_MidiBPM.Get(m_pMidiMessage->nTimestamp * 10, m_nBPM)) {
+					console_save_cursor();
+					console_set_cursor(81, 2);
+					console_set_fg_color(CONSOLE_CYAN);
+					printf("%3d", m_nBPM);
+					console_restore_cursor();
+				}
+				console_putc('\n');
+				break;
 			case Types::START:
 			case Types::CONTINUE:
 			case Types::STOP:
-			case Types::CLOCK:
 			case Types::ACTIVE_SENSING:
 			case Types::SYSTEM_RESET:
 			case Types::TUNE_REQUEST:
@@ -289,8 +298,8 @@ void MidiMonitor::HandleMessage() {
 	}
 }
 
-void MidiMonitor::ShowActiveSense() {
-	const auto nNow = Hardware::Get()->Millis();
+void MidiMonitor::ShowActiveSenseAndUpdatesPerSecond() {
+	const auto nNow = H3_TIMER->AVS_CNT0;
 
 	if (__builtin_expect(((nNow - m_nMillisPrevious) < 1000), 0)) {
 		return;
@@ -313,9 +322,18 @@ void MidiMonitor::ShowActiveSense() {
 		console_puts("ACTIVE SENSING - Failed!");
 		console_restore_cursor();
 	}
-}
 
-void MidiMonitor::Run() {
-	HandleMessage();
-	ShowActiveSense();
+	console_save_cursor();
+	console_set_cursor(96, 3);
+
+	const auto nUpdatePerSeconds = Midi::Get()->GetUpdatesPerSecond();
+	if (nUpdatePerSeconds != 0) {
+		console_set_fg_bg_color(CONSOLE_BLACK, CONSOLE_GREEN);
+		printf("%3d", nUpdatePerSeconds);
+	} else {
+		console_set_fg_bg_color(CONSOLE_GREEN, CONSOLE_WHITE);
+		console_puts("--");
+	}
+
+	console_restore_cursor();
 }

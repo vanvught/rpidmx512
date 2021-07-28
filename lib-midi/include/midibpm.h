@@ -71,9 +71,9 @@ public:
 	}
 
 private:
-	uint32_t m_nBpmPrevious{0};
-	uint32_t m_nBpmTimeStampPrevious{0};
-	uint32_t m_nBpmClockCounter{0};
+	uint32_t m_nBpmPrevious { 0 };
+	uint32_t m_nBpmTimeStampPrevious { 0 };
+	uint32_t m_nBpmClockCounter { 0 };
 	uint32_t m_nBpmDelta[24];
 };
 

@@ -1,5 +1,5 @@
 /**
- * @file midi.c
+ * @file midi.cpp
  *
  */
 /* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -40,21 +40,19 @@
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 #include "h3_timer.h"
-#include "h3_hs_timer.h"
-
 
 /**
  * NoteOn with 0 velocity should be handled as NoteOf.
  * Set to true  to get NoteOff events when receiving null-velocity NoteOn messages.
  * Set to false to get NoteOn  events when receiving null-velocity NoteOn messages.
  */
-#define HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF	true
+static constexpr auto HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF = true;
 /**
  * Setting this to true will make midi_read parse only one byte of data for each
  * call when data is available. This can speed up your application if receiving
  * a lot of traffic, but might induce MIDI Thru and treatment latency.
  */
-#define USE_1_BYTE_PARSING							true
+static constexpr auto USE_1_BYTE_PARSING = true;
 
 using namespace midi;
 
@@ -72,19 +70,33 @@ struct MidiReceive {
 static volatile struct MidiReceive midi_rx_buffer[MIDI_RX_BUFFER_INDEX_ENTRIES] __attribute__ ((aligned (4)));
 static volatile uint32_t midi_rx_buffer_index_head = 0;
 static volatile uint32_t midi_rx_buffer_index_tail = 0;
-/*
+/**
  * IRQ Timer0
  */
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
-/*
- * IRQ Timer1
- */
-static volatile uint16_t nActiveSenseTimeout = 0;
+static volatile uint32_t nTick100ms;
+static volatile uint32_t nUpdatesPerSecond;
+static volatile uint32_t nUpdatesPrevious;
+static volatile uint32_t nUpdates;
+static volatile uint32_t nActiveSenseTimeout;
 static volatile ActiveSenseState midi_active_sense_state = ActiveSenseState::NOT_ENABLED;
+/**
+ * IRQ Timer 1
+ */
+static volatile midi::thunk_irq_timer_t irq_handler_timer1_func;
 
-uint32_t Midi::GetUpdatesPerSeconde() {
+void Midi::SetIrqTimer1(midi::thunk_irq_timer_t pFunc) {
+	if (pFunc != nullptr) {
+		irq_handler_timer1_func = pFunc;
+		gic_irq_config(H3_TIMER1_IRQn, GIC_CORE0);
+
+		H3_TIMER->TMR1_CTRL = 0x14;	// Select continuous mode, 24MHz clock source, 2 pre-scale
+		H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR1;
+	} else {
+		H3_TIMER->IRQ_EN &= ~TIMER_IRQ_EN_TMR1;
+	}
+}
+
+uint32_t Midi::GetUpdatesPerSecond() {
 	dmb();
 	return nUpdatesPerSecond;
 }
@@ -191,7 +203,7 @@ bool Midi::Parse() {
 				m_aPendingMessage[1] = nSerialData;
 				m_nPendingMessageIndex = 1;
 			}
-			// Else: well, we received another status byte,
+			// We received another status byte,
 			// so the running status does not apply here.
 			// It will be updated upon completion of this message.
 		}
@@ -199,7 +211,6 @@ bool Midi::Parse() {
 		switch (GetTypeFromStatusByte(m_aPendingMessage[0])) {
 		// 1 byte messages
 		case Types::ACTIVE_SENSING:
-			dmb();
 			midi_active_sense_state = ActiveSenseState::ENABLED;
 			 __attribute__ ((fallthrough));
 			/* no break */
@@ -299,7 +310,6 @@ bool Midi::Parse() {
 			// are allowed only for interleaved Real Time message or EOX
 			switch (nSerialData) {
 			case static_cast<uint8_t>(Types::ACTIVE_SENSING):
-				dmb();
 				midi_active_sense_state = ActiveSenseState::ENABLED;
 				 __attribute__ ((fallthrough));
 				/* no break */
@@ -463,42 +473,47 @@ void Midi::SendQf(uint8_t nValue) {
 	SendUart2(data, 2);
 }
 
+#include "console.h"
+
 static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 	dmb();
 
-	const uint32_t timestamp = h3_hs_timer_lo_us();
-	const uint32_t irq = H3_GIC_CPUIF->AIA;
+	const auto irq = H3_GIC_CPUIF->AIA;
 
 	if (H3_UART2->O08.IIR & UART_IIR_IID_RD) {
 
 		midi_rx_buffer[midi_rx_buffer_index_head].nData = (H3_UART2->O00.RBR & 0xFF);
-		midi_rx_buffer[midi_rx_buffer_index_head].nTimestamp = timestamp;
+		midi_rx_buffer[midi_rx_buffer_index_head].nTimestamp = H3_TIMER->AVS_CNT0;
 		midi_rx_buffer_index_head = (midi_rx_buffer_index_head + 1) & MIDI_RX_BUFFER_INDEX_MASK;
 
 		H3_GIC_CPUIF->AEOI = H3_UART2_IRQn;
 		gic_unpend(H3_UART2_IRQn);
-	}
+	} else if (irq == H3_TIMER0_IRQn) {		// 100ms Tick
+		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	// Clear Timer 0 Pending bit
 
-	if (irq == H3_TIMER0_IRQn) {
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR0;	/* Clear Timer 0 Pending bit */
+		if (nTick100ms == 10) {
+			nTick100ms = 0;
+			nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
+			nUpdatesPrevious = nUpdates;
+		} else {
+			nTick100ms++;
+		}
 
-		nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
-		nUpdatesPrevious = nUpdates;
+		if (midi_active_sense_state == ActiveSenseState::ENABLED) {
+			nActiveSenseTimeout++;
+			if (nActiveSenseTimeout > 3) { // > 300 ms
+				midi_active_sense_state = ActiveSenseState::FAILED;	// Turn All Notes Off
+			}
+		}
 
 		H3_GIC_CPUIF->AEOI = H3_TIMER0_IRQn;
 		gic_unpend(H3_TIMER0_IRQn);
 	} else if (irq == H3_TIMER1_IRQn) {
-		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;	/* Clear Timer 1 Pending bit */
+		H3_TIMER->IRQ_STA = TIMER_IRQ_PEND_TMR1;
 
-		if (midi_active_sense_state == ActiveSenseState::ENABLED) {
-			nActiveSenseTimeout++;
-			if (nActiveSenseTimeout > 300) { /* > 300 ms */
-				/* Turn All Notes Off */
-				dmb();
-				midi_active_sense_state = ActiveSenseState::FAILED;
-			}
+		if (irq_handler_timer1_func != nullptr) {
+			irq_handler_timer1_func();
 		}
-
 		H3_GIC_CPUIF->AEOI = H3_TIMER1_IRQn;
 		gic_unpend(H3_TIMER1_IRQn);
 	}
@@ -507,10 +522,10 @@ static void __attribute__((interrupt("IRQ"))) irq_midi_in_handler() {
 }
 
 void Midi::SendUart2(const uint8_t *pData, uint32_t nLength) {
-	const uint8_t *p = pData;
+	const auto *p = pData;
 
 	while (nLength > 0) {
-		uint32_t nAvailable = 64 - H3_UART2->TFL;
+		auto nAvailable = 64U - H3_UART2->TFL;
 
 		while ((nLength > 0) && (nAvailable > 0)) {
 			H3_UART2->O00.THR = static_cast<uint32_t>(*p);
@@ -556,29 +571,13 @@ void Midi::Init(midi::Direction tDirection) {
 		midi_rx_buffer_index_head = 0;
 		midi_rx_buffer_index_tail = 0;
 
-		/*
-		 * Statistics
-		 */
 		gic_irq_config(H3_TIMER0_IRQn, GIC_CORE0);
 
-		H3_TIMER->TMR0_CTRL = 0x14;						/* Select continuous mode, 24MHz clock source, 2 pre-scale */
-		H3_TIMER->TMR0_INTV = 0xB71B00; 				/* 1 second */
+		H3_TIMER->TMR0_CTRL = 0x14;					/* Select continuous mode, 24MHz clock source, 2 pre-scale */
+		H3_TIMER->TMR0_INTV = 1200000; 				/* 100ms second */
 		H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 		H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR0;
-
-		/*
-		 * Active Sense
-		 */
-		if (m_bActiveSense) {
-			gic_irq_config(H3_TIMER1_IRQn, GIC_CORE0);
-
-			H3_TIMER->TMR1_CTRL = 0x14;					/* Select continuous mode, 24MHz clock source, 2 pre-scale */
-			H3_TIMER->TMR1_INTV = 12000; 				/*  1 ms TODO 10ms */
-			H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-			H3_TIMER->IRQ_EN |= TIMER_IRQ_EN_TMR1;
-		}
 
 		arm_install_handler(reinterpret_cast<unsigned>(irq_midi_in_handler), ARM_VECTOR(ARM_VECTOR_IRQ));
 

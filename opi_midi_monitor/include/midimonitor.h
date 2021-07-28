@@ -1,7 +1,7 @@
 /**
  * @file midimonitor.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,25 @@
 #include <stdint.h>
 
 #include "midi.h"
+#include "midibpm.h"
 
 class MidiMonitor {
 public:
 	MidiMonitor();
 
 	void Init();
-	void Run();
+
+	void Run() {
+		HandleMessage();
+		ShowActiveSenseAndUpdatesPerSecond();
+	}
 
 private:
 	void HandleMessage();
-	void ShowActiveSense();
+	void ShowActiveSenseAndUpdatesPerSecond();
 	void HandleMtc();
 	void HandleQf();
-	void Update(uint8_t nType);
+	void UpdateTimecode(uint8_t nType);
 
 private:
 	uint32_t m_nMillisPrevious { 0 };
@@ -50,6 +55,8 @@ private:
 	uint8_t m_nTypePrevious { 0xFF };
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };
+	MidiBPM m_MidiBPM;
+	uint32_t m_nBPM { 0 };
 };
 
 #endif /* MIDIMONITOR_H_ */

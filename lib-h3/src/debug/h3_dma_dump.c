@@ -24,56 +24,57 @@
  */
 
 #include <stdint.h>
-#include <stdio.h>
 
 #include "h3_dma.h"
 #include "h3.h"
 
+extern int uart0_printf(const char* fmt, ...);
+
 void __attribute__((cold)) h3_dma_dump_lli(const struct sunxi_dma_lli *lli) {
-	printf("DMA lli %p:\n", (void *)lli);
-	printf("\tcfg        0x%08x\n", lli->cfg);
-	printf("\tsrc        0x%08x\n", lli->src);
-	printf("\tdst        0x%08x\n", lli->dst);
-	printf("\tlen        0x%08x\n", lli->len);
-	printf("\tpara       0x%08x\n", lli->para);
-	printf("\tp_lli_next 0x%08x\n", lli->p_lli_next);
-	printf("\n");
+	uart0_printf("DMA lli %p:\n", (void *)lli);
+	uart0_printf("\tcfg        0x%08x\n", lli->cfg);
+	uart0_printf("\tsrc        0x%08x\n", lli->src);
+	uart0_printf("\tdst        0x%08x\n", lli->dst);
+	uart0_printf("\tlen        0x%08x\n", lli->len);
+	uart0_printf("\tpara       0x%08x\n", lli->para);
+	uart0_printf("\tp_lli_next 0x%08x\n", lli->p_lli_next);
+	uart0_printf("\n");
 }
 
 void __attribute__((cold)) h3_dma_dump_common(void) {
-	printf("DMA common registers:\n");
-	printf("\t[%p] IRQ_EN0    0x%08x\n", &H3_DMA->IRQ_EN0, H3_DMA->IRQ_EN0);
-	printf("\t[%p] IRQ_EN1    0x%08x\n", &H3_DMA->IRQ_EN1, H3_DMA->IRQ_EN1);
-	printf("\t[%p] IRQ_PEND0  0x%08x\n", &H3_DMA->IRQ_PEND0, H3_DMA->IRQ_PEND0);
-	printf("\t[%p] IRQ_PEND1  0x%08x\n", &H3_DMA->IRQ_PEND1, H3_DMA->IRQ_PEND1);
-	printf("\t[%p] SEC        0x%08x\n", &H3_DMA->SEC, H3_DMA->SEC);
-	printf("\t[%p] AUTO_GATE  0x%08x\n", &H3_DMA->AUTO_GATE, H3_DMA->AUTO_GATE);
-	printf("\t[%p] STA        0x%08x\n", &H3_DMA->STA, H3_DMA->STA);
-	printf("\n");
+	uart0_printf("DMA common registers:\n");
+	uart0_printf("\t[%p] IRQ_EN0    0x%08x\n", &H3_DMA->IRQ_EN0, H3_DMA->IRQ_EN0);
+	uart0_printf("\t[%p] IRQ_EN1    0x%08x\n", &H3_DMA->IRQ_EN1, H3_DMA->IRQ_EN1);
+	uart0_printf("\t[%p] IRQ_PEND0  0x%08x\n", &H3_DMA->IRQ_PEND0, H3_DMA->IRQ_PEND0);
+	uart0_printf("\t[%p] IRQ_PEND1  0x%08x\n", &H3_DMA->IRQ_PEND1, H3_DMA->IRQ_PEND1);
+	uart0_printf("\t[%p] SEC        0x%08x\n", &H3_DMA->SEC, H3_DMA->SEC);
+	uart0_printf("\t[%p] AUTO_GATE  0x%08x\n", &H3_DMA->AUTO_GATE, H3_DMA->AUTO_GATE);
+	uart0_printf("\t[%p] STA        0x%08x\n", &H3_DMA->STA, H3_DMA->STA);
+	uart0_printf("\n");
 }
 
 void __attribute__((cold)) h3_dma_dump_chl(uint32_t base) {
 	const uint32_t chl = (base - H3_DMA_CHL0_BASE) / 0x40;
 	H3_DMA_CHL_TypeDef *p = (H3_DMA_CHL_TypeDef *)base;
 
-	printf("DMA chl%d registers:\n", chl);
-	printf("\t[%p] EN         0x%08x\n", &p->EN, p->EN);
-	printf("\t[%p] PAU        0x%08x\n", &p->PAU, p->PAU);
-	printf("\t[%p] DESC_ADDR  0x%08x\n", &p->DESC_ADDR, p->DESC_ADDR);
-	printf("\t[%p] CFG        0x%08x\n", &p->CFG, p->CFG);
-	printf("\t\tSRC_DRQ=%d\n",  (p->CFG & (0xf <<  0)) >>  0);
-	printf("\t\tSRC_MODE=%d\n", (p->CFG & (0x1 <<  5)) >>  5);
-	printf("\t\tSRC_BURST=%d\n",(p->CFG & (0x3 <<  6)) >>  6);
-	printf("\t\tSRC_WIDTH=%d\n",(p->CFG & (0x3 <<  9)) >>  9);
-	printf("\t\tDST_DRQ=%d\n",  (p->CFG & (0xf << 16)) >> 16);
-	printf("\t\tDST_MODE=%d\n", (p->CFG & (0x1 << 21)) >> 21);
-	printf("\t\tDST_BURST=%d\n",(p->CFG & (0x3 << 22)) >> 22);
-	printf("\t\tDST_WIDTH=%d\n",(p->CFG & (0x3 << 25)) >> 25);
-	printf("\t[%p] CUR_SRC    0x%08x\n", &p->CUR_SRC, p->CUR_SRC);
-	printf("\t[%p] CUR_DST    0x%08x\n", &p->CUR_DST, p->CUR_DST);
-	printf("\t[%p] BCNT_LEFT  0x%08x\n", &p->BCNT_LEFT, p->BCNT_LEFT);
-	printf("\t[%p] PARA       0x%08x\n", &p->PARA, p->PARA);
-	printf("\t[%p] FDESC_ADDR 0x%08x\n", &p->FDESC_ADDR, p->FDESC_ADDR);
-	printf("\t[%p] PKG_NUM    0x%08x\n", &p->PKG_NUM, p->PKG_NUM);
-	printf("\n");
+	uart0_printf("DMA chl%d registers:\n", chl);
+	uart0_printf("\t[%p] EN         0x%08x\n", &p->EN, p->EN);
+	uart0_printf("\t[%p] PAU        0x%08x\n", &p->PAU, p->PAU);
+	uart0_printf("\t[%p] DESC_ADDR  0x%08x\n", &p->DESC_ADDR, p->DESC_ADDR);
+	uart0_printf("\t[%p] CFG        0x%08x\n", &p->CFG, p->CFG);
+	uart0_printf("\t\tSRC_DRQ=%d\n",  (p->CFG & (0xf <<  0)) >>  0);
+	uart0_printf("\t\tSRC_MODE=%d\n", (p->CFG & (0x1 <<  5)) >>  5);
+	uart0_printf("\t\tSRC_BURST=%d\n",(p->CFG & (0x3 <<  6)) >>  6);
+	uart0_printf("\t\tSRC_WIDTH=%d\n",(p->CFG & (0x3 <<  9)) >>  9);
+	uart0_printf("\t\tDST_DRQ=%d\n",  (p->CFG & (0xf << 16)) >> 16);
+	uart0_printf("\t\tDST_MODE=%d\n", (p->CFG & (0x1 << 21)) >> 21);
+	uart0_printf("\t\tDST_BURST=%d\n",(p->CFG & (0x3 << 22)) >> 22);
+	uart0_printf("\t\tDST_WIDTH=%d\n",(p->CFG & (0x3 << 25)) >> 25);
+	uart0_printf("\t[%p] CUR_SRC    0x%08x\n", &p->CUR_SRC, p->CUR_SRC);
+	uart0_printf("\t[%p] CUR_DST    0x%08x\n", &p->CUR_DST, p->CUR_DST);
+	uart0_printf("\t[%p] BCNT_LEFT  0x%08x\n", &p->BCNT_LEFT, p->BCNT_LEFT);
+	uart0_printf("\t[%p] PARA       0x%08x\n", &p->PARA, p->PARA);
+	uart0_printf("\t[%p] FDESC_ADDR 0x%08x\n", &p->FDESC_ADDR, p->FDESC_ADDR);
+	uart0_printf("\t[%p] PKG_NUM    0x%08x\n", &p->PKG_NUM, p->PKG_NUM);
+	uart0_printf("\n");
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project RemoteConfigUI">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="${dir.buildfile}/.."/>
+    <property name="dir.jarfile" value="/Users/arjanvanvught/Desktop"/>
+    <target name="create_run_jar">
+        <buildnumber file="build.num"/>
+    	<tstamp>
+    	     <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
+    	</tstamp>
+        <jar destfile="${dir.jarfile}/RemoteConfigUI.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="org.orangepi.dmx.RemoteConfig"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Implementation-Version" value="${TODAY}-b${build.number}"/> 
+            </manifest>
+            <fileset dir="${dir.buildfile}/bin"/>
+        </jar>
+    </target>
+</project>

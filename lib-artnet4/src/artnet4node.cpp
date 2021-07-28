@@ -215,8 +215,8 @@ uint8_t ArtNet4Node::GetStatus(uint8_t nPortIndex) {
 
 	if (isActive) {
 		uint8_t nStatus = GO_OUTPUT_IS_SACN;
-		nStatus = static_cast<uint8_t>(nStatus | m_Bridge.IsTransmitting(nPortIndex) ? GO_DATA_IS_BEING_TRANSMITTED : GO_OUTPUT_NONE);
-		nStatus = static_cast<uint8_t>(nStatus | m_Bridge.IsMerging(nPortIndex) ? GO_OUTPUT_IS_MERGING : GO_OUTPUT_NONE);
+		nStatus = nStatus | (m_Bridge.IsTransmitting(nPortIndex) ? GO_DATA_IS_BEING_TRANSMITTED : GO_OUTPUT_NONE);
+		nStatus = nStatus | (m_Bridge.IsMerging(nPortIndex) ? GO_OUTPUT_IS_MERGING : GO_OUTPUT_NONE);
 		return nStatus;
 	}
 
