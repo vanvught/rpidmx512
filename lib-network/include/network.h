@@ -46,7 +46,8 @@ enum TNetwork {
 	NETWORK_IP_SIZE = 4,
 	NETWORK_MAC_SIZE = 6,
 	NETWORK_HOSTNAME_SIZE = 64,		/* including a terminating null byte. */
-	NETWORK_DOMAINNAME_SIZE = 64	/* including a terminating null byte. */
+	NETWORK_DOMAINNAME_SIZE = 64,	/* including a terminating null byte. */
+	NETWORK_IP4_BROADCAST = 0xffffffff
 };
 
 enum class DhcpClientStatus {

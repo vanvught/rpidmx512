@@ -105,12 +105,21 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_aHostName[sizeof(m_aHostName) - 1] = '\0';
 	}
 
-	if (!m_IsDhcpUsed && (tIpInfo.ip.addr == 0)) {
-		SetDefaultIp();
+	if (!m_IsDhcpUsed) {
+		DEBUG_PUTS("");
+		if (tIpInfo.ip.addr == 0) {
+			DEBUG_PUTS("");
 
-		tIpInfo.ip.addr = m_nLocalIp;
-		tIpInfo.netmask.addr = m_nNetmask;
-		tIpInfo.gw.addr = m_nLocalIp;
+			SetDefaultIp();
+
+			tIpInfo.ip.addr = m_nLocalIp;
+			tIpInfo.netmask.addr = m_nNetmask;
+			tIpInfo.gw.addr = m_nLocalIp;
+		} else if (!IsValidIp(m_nGatewayIp)) {
+			DEBUG_PUTS("");
+
+			tIpInfo.gw.addr = m_nLocalIp;
+		}
 	}
 
 	if ((m_pNetworkDisplay != nullptr) && m_IsDhcpUsed) {
@@ -157,10 +166,6 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	m_nLocalIp = tIpInfo.ip.addr;
 	m_nNetmask = tIpInfo.netmask.addr;
 	m_nGatewayIp = tIpInfo.gw.addr;
-
-	if (m_nGatewayIp == 0) {
-		m_nGatewayIp = m_nLocalIp;
-	}
 
 	DEBUG_EXIT
 }
