@@ -110,6 +110,7 @@ void MDNS::Start() {
 	}
 
 	CreateAnswerLocalIpAddress();
+	Network::Get()->SendTo(s_nHandle, s_AnswerLocalIp.aBuffer, static_cast<uint16_t>(s_AnswerLocalIp.nSize), s_nMulticastIp, MDNS_PORT);
 
 	Network::Get()->SetDomainName(&MDNS_TLD[1]);
 }
@@ -471,6 +472,8 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 		DEBUG_PRINTF("%s ==> Type : %d, Class: %d", DnsName, nType, nClass);
 
 		if (nClass == DNSClassInternet) {
+			DEBUG_PRINTF("%s:%s", s_pName, DnsName);
+
 			if ((strcmp(s_pName, DnsName) == 0) && (nType == DNSRecordTypeA)) {
 				Network::Get()->SendTo(s_nHandle, s_AnswerLocalIp.aBuffer, static_cast<uint16_t>(s_AnswerLocalIp.nSize), s_nMulticastIp, MDNS_PORT);
 			}
@@ -498,7 +501,7 @@ void MDNS::Parse() {
 	const auto nFlags = __builtin_bswap16(pmDNSHeader->nFlags);
 
 #ifndef NDEBUG
-//	Dump(pmDNSHeader, nFlags);
+	Dump(pmDNSHeader, nFlags);
 #endif
 
 	if ((((nFlags >> 15) & 1) == 0) && (((nFlags >> 14) & 0xf) == DNSOpQuery)) {
@@ -518,8 +521,6 @@ void MDNS::Run() {
 	s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, s_Buffer, BUFFER_SIZE, &s_nRemoteIp, &s_nRemotePort);
 
 	if ((s_nRemotePort == MDNS_PORT) && (s_nBytesReceived > sizeof(struct TmDNSHeader))) {
-//		DEBUG_dump(s_Buffer, s_nBytesReceived);
-
 		if (s_nBytesReceived < BUFFER_SIZE) {
 			Parse();
 		} else {
