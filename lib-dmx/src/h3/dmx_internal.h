@@ -1,8 +1,8 @@
 /**
- * @file gpioparams.h
+ * @file dmx_internal.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,34 +22,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+#ifndef H3_DMX_INTERNAL_H_
+#define H3_DMX_INTERNAL_H_
 
-#ifndef DMXGPIOPARAMS_H_
-#define DMXGPIOPARAMS_H_
+#include <cassert>
 
-#include <cstdint>
+/*
+ * PORT
+ * 0	UART1
+ * 1	UART2
+ * 2	UART3
+ * 3	UART0
+ */
 
-#include "dmx.h"
-
-class DmxGpioParams {
-public:
-	DmxGpioParams() {}
-
-	bool Load();
-	void Dump();
-
-	uint8_t GetDataDirection(bool &bIsSet) const;
-
-	static void staticCallbackFunction(void *p, const char *s);
-
-private:
-	void callbackFunction(const char *pLine);
-	bool isMaskSet(uint32_t nMask) const {
-		return (m_nSetList & nMask) == nMask;
+inline static uint32_t _port_to_uart(const uint32_t nPort) {
+	if (nPort < 3) {
+		return nPort + 1;
 	}
 
-private:
-	uint32_t m_nSetList { 0 };
-	uint8_t m_nDmxDataDirection { GPIO_DMX_DATA_DIRECTION };
-};
+	return 0;
+}
 
-#endif /* DMXGPIOPARAMS_H_ */
+#include "h3.h"
+
+inline static H3_UART_TypeDef * _get_uart(const uint32_t nUart) {
+	switch (nUart) {
+	case 0:
+		return H3_UART0;
+		break;
+	case 1:
+		return H3_UART1;
+		break;
+	case 2:
+		return H3_UART2;
+		break;
+	case 3:
+		return H3_UART3;
+		break;
+	default:
+		assert(0);
+		break;
+	}
+
+	return nullptr;
+}
+
+#endif /* H3_DMX_INTERNAL_H_ */

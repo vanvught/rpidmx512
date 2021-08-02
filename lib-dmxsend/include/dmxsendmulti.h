@@ -44,7 +44,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted[dmx::max::OUT];
+	bool m_bIsStarted[dmxmulti::max::OUT];
 };
 
 #endif /* DMXSENDMULTI_H_ */

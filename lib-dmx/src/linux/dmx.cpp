@@ -70,7 +70,7 @@ static uint8_t dmxSendBuffer[513];
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(__attribute__((unused)) uint8_t nGpioPin, bool DoInit) {
+Dmx::Dmx(bool DoInit) {
 	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
 
 	assert(s_pThis == nullptr);
@@ -89,9 +89,6 @@ Dmx::Dmx(__attribute__((unused)) uint8_t nGpioPin, bool DoInit) {
 	DEBUG_EXIT
 }
 
-void  Dmx::UartInit() {
-}
-
 void Dmx::Init() {
 	assert(!m_IsInitDone);
 
@@ -102,12 +99,6 @@ void Dmx::Init() {
 	m_IsInitDone = true;
 
 
-}
-
-void Dmx::UartEnableFifo() {	// DMX Output
-}
-
-void Dmx::UartDisableFifo() {	// DMX Input
 }
 
 void Dmx::StartData() {
@@ -167,7 +158,7 @@ const uint8_t* Dmx::GetDmxAvailable() {
 	uint16_t nBytesReceived;
 
 	do {
-		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx, &dmxDataRx, sizeof(dmx::buffer::SIZE), &fromIp, &fromPort);
+		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx, &dmxDataRx, sizeof(buffer::SIZE), &fromIp, &fromPort);
 		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == UDP_PORT_DMX_START)) {
 			nPackets++;
 		}

@@ -150,15 +150,6 @@ public:
 
 	static const uint8_t *Receive(uint32_t nPort);
 	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint32_t);
-
-public:
-#if defined(RPI1) || defined (RPI2)	// TODO Subject for removal
-	static uint8_t m_TransactionNumber;
-	static uint32_t m_nLastSendMicros;
-#else
-	static uint8_t m_TransactionNumber[4];
-	static uint32_t m_nLastSendMicros[4];
-#endif
 };
 
 #endif /* RDM_H_ */

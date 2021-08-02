@@ -142,14 +142,11 @@ void notmain(void) {
 	uint8_t nAddress;
 	bool bIsSetIndividual = false;
 	bool bIsSet;
-printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(0, bIsSet);
-printf("%d\n", __LINE__);
 	if (bIsSet) {
 		node.SetUniverseSwitch(0, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
-printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(1, portDir, nAddress);

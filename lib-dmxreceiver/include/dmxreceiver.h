@@ -23,19 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXCONTROLLER_H_
-#define DMXCONTROLLER_H_
+#ifndef DMXRECEIVER_H
+#define DMXRECEIVER_H
 
 #include <cstdint>
 
 #include "dmx.h"
-#include "dmxgpio.h"
 
 #include "lightset.h"
 
 class DMXReceiver: public Dmx {
 public:
-	DMXReceiver(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION);
+	DMXReceiver();
 	~DMXReceiver() override;
 
 	void SetOutput(LightSet *pLightSet) {
@@ -59,4 +58,4 @@ private:
 	uint32_t m_nLength { 0 };
 };
 
-#endif /* DMXCONTROLLER_H_ */
+#endif /* DMXRECEIVER_H */

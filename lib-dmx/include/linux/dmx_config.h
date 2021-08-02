@@ -1,8 +1,8 @@
 /**
- * @file gpioparamsconst.h
+ * @file dmx_config.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include "dmxgpioparamsconst.h"
+#ifndef LINUX_DMX_CONFIG_H_
+#define LINUX_DMX_CONFIG_H_
 
-const char DmxGpioParamsConst::FILE_NAME[] = "gpio.txt";
-const char DmxGpioParamsConst::DATA_DIRECTION[] = "data_direction";
+namespace dmx {
+namespace buffer {
+static constexpr auto SIZE = 516;
+}  // namespace buffer
+}  // namespace dmx
 
+
+
+#endif /* LINUX_DMX_CONFIG_H_ */

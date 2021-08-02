@@ -29,18 +29,18 @@
 #include "rdm.h"
 #include "dmx.h"
 
+#include "dmxconst.h"
+
 #include "debug.h"
 
 extern "C" {
 void udelay(uint32_t);
 }
 
-using namespace dmx;
-
-uint8_t Rdm::m_TransactionNumber[max::OUT] = {0, };
+uint8_t s_TransactionNumber[dmxmulti::max::OUT] = {0, };
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmCommand != nullptr);
 
 
@@ -48,7 +48,7 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((u
 	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
-	pRdmCommand->transaction_number = m_TransactionNumber[nPort];
+	pRdmCommand->transaction_number = s_TransactionNumber[nPort];
 
 	for (i = 0; i < pRdmCommand->message_length; i++) {
 		rdm_checksum += rdm_data[i];
@@ -59,13 +59,13 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((u
 
 	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-	m_TransactionNumber[nPort]++;
+	s_TransactionNumber[nPort]++;
 }
 
 void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -77,17 +77,17 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 
 	SendRaw(nPort, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
 
 	DEBUG_EXIT
 }

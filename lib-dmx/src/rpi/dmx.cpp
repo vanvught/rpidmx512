@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "dmx.h"
+#include "dmxconst.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 
@@ -68,8 +69,8 @@ typedef enum {
 	DMXINTER
 } _dmx_state;
 
-using namespace dmxsingle;
 using namespace dmx;
+using namespace dmxsingle;
 
 static PortDirection s_nPortDirection = dmx::PortDirection::INP;
 
@@ -101,7 +102,7 @@ static bool s_IsStopped = true;
 
 static volatile uint32_t sv_nDmxUpdatesPerSecond;
 static volatile uint32_t sv_nDmxPacketsPrevious;
-static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
+static volatile struct dmxsingle::TotalStatistics sv_TotalStatistics ALIGNED;
 
 // RDM
 

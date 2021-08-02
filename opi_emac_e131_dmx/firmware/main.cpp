@@ -139,7 +139,6 @@ void notmain(void) {
 		pDmxOutput->Print();
 
 		bridge.SetUniverse(0, e131::PortDir::OUTPUT, nUniverse);
-		bridge.SetDirectUpdate(false);
 		bridge.SetOutput(pDmxOutput);
 	}
 

@@ -72,10 +72,6 @@ ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
 	LIBS+=dmxsend dmx
 endif
 
-ifeq ($(findstring OUTPUT_DMX_SEND_MULTI,$(DEFINES)),OUTPUT_DMX_SEND_MULTI)
-	LIBS+=dmxsend dmx
-endif
-
 ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)
 	LIBS+=ws28xxdmx ws28xx jamstapl
 else
@@ -118,7 +114,7 @@ SOURCE=./
 FIRMWARE_DIR=./../h3-firmware-template/
 LINKER=$(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display device hal c++ debug h3 c arm
+LIBS+=lightset properties display device hal c++ h3 debug c arm
 	
 DEFINES:=$(addprefix -D,$(DEFINES))
 

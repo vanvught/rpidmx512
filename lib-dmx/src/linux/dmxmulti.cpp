@@ -2,7 +2,7 @@
  * @file dmxmulti.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,12 +81,6 @@ DmxMulti::DmxMulti() {
 void DmxMulti::SetPortDirection(__attribute__((unused)) uint32_t nPort, __attribute__((unused)) PortDirection tPortDirection, __attribute__((unused)) bool bEnableData) {
 }
 
-void DmxMulti::UartEnableFifoTx(__attribute__((unused)) uint32_t nUart) {	// DMX TX
-}
-
-void DmxMulti::UartEnableFifoRx(__attribute__((unused)) uint32_t nUart) {	// RDM RX
-}
-
 void DmxMulti::ClearData(__attribute__((unused)) uint32_t nUart) {
 }
 
@@ -131,7 +125,7 @@ const uint8_t *DmxMulti::GetDmxAvailable(__attribute__((unused)) uint32_t nPort)
 	uint16_t nBytesReceived;
 
 	do {
-		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx[nPort], &dmxDataRx, sizeof(dmx::buffer::SIZE), &fromIp, &fromPort);
+		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx[nPort], &dmxDataRx, sizeof(buffer::SIZE), &fromIp, &fromPort);
 		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_DMX_START + nPort))) {
 			nPackets++;
 		}

@@ -34,7 +34,7 @@
 using namespace dmxsingle;
 using namespace dmx;
 
-DMXReceiver::DMXReceiver(uint8_t nGpioPin) : Dmx(nGpioPin, false) {
+DMXReceiver::DMXReceiver() : Dmx(false) {
 	DEBUG1_ENTRY
 
 	auto *p = reinterpret_cast<uint32_t*>(m_Data);

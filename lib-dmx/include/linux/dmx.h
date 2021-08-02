@@ -23,29 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef RPI_DMX_H_
-#define RPI_DMX_H_
-
-#include "bcm2835.h"
-#define GPIO_DMX_DATA_DIRECTION			RPI_V2_GPIO_P1_12
-
-#ifdef LOGIC_ANALYZER
-# define GPIO_ANALYZER_CH0
-# define GPIO_ANALYZER_CH1					RPI_V2_GPIO_P1_23	///< CLK
-# define GPIO_ANALYZER_CH2					RPI_V2_GPIO_P1_21	///< MISO
-# define GPIO_ANALYZER_CH3					RPI_V2_GPIO_P1_19	///< MOSI
-# define GPIO_ANALYZER_CH4					RPI_V2_GPIO_P1_24	///< CE0
-# define GPIO_ANALYZER_CH5					RPI_V2_GPIO_P1_26	///< CE1
-# define GPIO_ANALYZER_CH6
-# define GPIO_ANALYZER_CH7
-#endif
+#ifndef LINUX_DMX_H_
+#define LINUX_DMX_H_
 
 #include "dmxset.h"
 #include "dmxconst.h"
 
 class Dmx: public DmxSet {
 public:
-	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
+	Dmx(bool DoInit = true);
 	void Init();
 
 	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false) override;
@@ -68,36 +54,37 @@ public:
 	uint32_t GetUpdatesPerSecond();
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
-	uint32_t GetDmxBreakTime();
+	uint32_t GetDmxBreakTime() const {
+		return m_nDmxTransmitBreakTime;
+	}
 
 	void SetDmxMabTime(uint32_t nMabTime);
-	uint32_t GetDmxMabTime();
+	uint32_t GetDmxMabTime() const {
+		return m_nDmxTransmitMabTime;
+	}
 
 	void SetDmxPeriodTime(uint32_t nPeriodTime);
-	uint32_t GetDmxPeriodTime();
-
-	uint32_t GetSendDataLength() ;
-
-	const volatile struct dmxsingle::TotalStatistics *GetTotalStatistics();
+	uint32_t GetDmxPeriodTime() const {
+		return m_nDmxTransmitPeriod;
+	}
 
 	static Dmx* Get() {
 		return s_pThis;
 	}
 
 private:
-	void UartInit();
 	void SetSendDataLength(uint32_t nLength);
-	void UartEnableFifo();
-	void UartDisableFifo();
 	void StopData();
 	void StartData();
 
 private:
 	bool m_IsInitDone {false};
+	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
+	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
+	uint32_t m_nDmxTransmitPeriod = { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
-	uint8_t m_nDataDirectionGpio { GPIO_DMX_DATA_DIRECTION };
 
 	static Dmx *s_pThis;
 };
 
-#endif /* RPI_DMX_H_ */
+#endif /* LINUX_DMX_H_ */

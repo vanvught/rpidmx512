@@ -31,12 +31,18 @@
 #include "dmxset.h"
 #include "dmxconst.h"
 
-namespace dmxmulti {
+#if defined (H3)
+#include "h3/dmx_config.h"
+#elif defined(RPI1) || defined (RPI2)
+#include "rpi/dmx_config.h"
+#else
+#include "linux/dmx_config.h"
+#endif
+
 struct Data {
 	uint8_t data[dmx::buffer::SIZE];
 	uint32_t nSlotsInPacket;
 };
-}  // namespace dmxmulti
 
 class DmxMulti: public DmxSet {
 public:
@@ -85,8 +91,6 @@ public:
 
 private:
 	void ClearData(uint32_t uart);
-	void UartEnableFifoTx(uint32_t uart);
-	void UartEnableFifoRx(uint32_t uart);
 	void StartData(uint32_t uart);
 	void StopData(uint32_t uart);
 
@@ -95,9 +99,8 @@ private:
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
-	uint8_t m_nDmxDataDirectionGpioPin[dmx::max::OUT];
-	dmx::PortDirection m_tDmxPortDirection[dmx::max::OUT];
-	uint32_t m_nDmxTransmissionLength[dmx::max::OUT];
+	dmx::PortDirection m_tDmxPortDirection[dmxmulti::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmxmulti::max::OUT];
 };
 
 #endif /* H3_DMXMULTI_H_ */

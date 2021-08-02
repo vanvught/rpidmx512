@@ -34,8 +34,8 @@
 
 using namespace dmx;
 
-uint8_t Rdm::m_TransactionNumber = 0;
-uint32_t Rdm::m_nLastSendMicros = 0;
+uint8_t m_TransactionNumber = 0;
+uint32_t m_nLastSendMicros = 0;
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(nPort < max::OUT);

@@ -30,7 +30,7 @@
 
 #include "debug.h"
 
-using namespace dmx;
+using namespace dmxmulti;
 
 DMXSendMulti::DMXSendMulti() {
 	DEBUG_ENTRY
@@ -56,7 +56,7 @@ void DMXSendMulti::Start(uint32_t nPortIndex) {
 
 	m_bIsStarted[nPortIndex] = true;
 
-	SetPortDirection(nPortIndex, PortDirection::OUTP, true);
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
 
 	DEBUG_EXIT
 }
@@ -75,7 +75,7 @@ void DMXSendMulti::Stop(uint32_t nPortIndex) {
 
 	m_bIsStarted[nPortIndex] = false;
 
-	SetPortDirection(nPortIndex, PortDirection::OUTP, false);
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
 	DEBUG_EXIT
 }
@@ -83,10 +83,8 @@ void DMXSendMulti::Stop(uint32_t nPortIndex) {
 void DMXSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < max::OUT);
 	assert(pData != nullptr);
-//	assert(nLength != 0);
 
 	if (__builtin_expect((nLength == 0), 0)) {
-//		DEBUG_EXIT
 		return;
 	}
 

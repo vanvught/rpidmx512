@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,8 +37,6 @@
 
 #include "identify.h"
 
-#include "dmxgpioparams.h"
-
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
 
@@ -50,27 +48,19 @@
 
 #include "lightsetchain.h"
 
-#if defined (ORANGE_PI)
-# include "spiflashinstall.h"
-# include "spiflashstore.h"
-# include "storerdmdevice.h"
-# include "storetlc59711.h"
-# include "storerdmdevice.h"
-# include "storerdmsensors.h"
-#endif
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storerdmdevice.h"
+#include "storetlc59711.h"
+#include "storerdmdevice.h"
+#include "storerdmsensors.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#if defined (ORANGE_PI_ONE)
- #include "slushdmx.h"
- #define BOARD_NAME	"Slushengine"
-#else
- #include "sparkfundmx.h"
- #define BOARD_NAME "Sparkfun"
- #include "storesparkfundmx.h"
- #include "storemotors.h"
-#endif
+#include "sparkfundmx.h"
+#include "storesparkfundmx.h"
+#include "storemotors.h"
 
 extern "C" {
 
@@ -81,10 +71,8 @@ void notmain(void) {
 	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-#if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-#endif
 
 	fw.Print();
 
@@ -93,13 +81,6 @@ void notmain(void) {
 
 	hw.SetLed(hardware::LedStatus::ON);
 
-#if defined (ORANGE_PI_ONE)
-	SlushDmx *pSlushDmx = new SlushDmx(false);	// Do not use SPI busy check
-	assert(pSlushDmx != 0);
-	pSlushDmx->ReadConfigFiles();
-	pBoard = pSlushDmx;
-
-#else
 	StoreSparkFunDmx storeSparkFunDmx;
 	StoreMotors storeMotors;
 
@@ -116,14 +97,9 @@ void notmain(void) {
 	pSparkFunDmx->SetModeStore(&storeMotors);
 
 	pBoard = pSparkFunDmx;
-#endif
 
-#if defined (ORANGE_PI)
 	StoreTLC59711 storeTLC59711;
 	TLC59711DmxParams pwmledparms(&storeTLC59711);
-#else
-	TLC59711DmxParams pwmledparms;
-#endif
 
 	bool isLedTypeSet = false;
 
@@ -131,9 +107,7 @@ void notmain(void) {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
 			auto *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != nullptr);
-#if defined (ORANGE_PI)
 			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
-#endif
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 
@@ -151,37 +125,17 @@ void notmain(void) {
 	}
 
 	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "%s%s", BOARD_NAME, isLedTypeSet ? " with TLC59711" : "");
-
-	DmxGpioParams dmxgpioparams;
-
-	if (dmxgpioparams.Load()) {
-		dmxgpioparams.Dump();
-	}
-
-	bool isSet;
-	uint8_t nGpioDataDirection = dmxgpioparams.GetDataDirection(isSet); // Returning default GPIO18
-
-#if defined (ORANGE_PI_ONE)
-	if (!isSet) {
-		nGpioDataDirection = GPIO_EXT_24;
-	}
-#endif
+	snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun%s", isLedTypeSet ? " with TLC59711" : "");
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
-	RDMResponder dmxrdm(&personality, pBoard, nGpioDataDirection);
+	RDMResponder dmxrdm(&personality, pBoard);
 
-#if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 	dmxrdm.SetRDMDeviceStore(&storeRdmDevice);
 
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-#else
-	RDMDeviceParams rdmDeviceParams;
-	RDMSensorsParams rdmSensorsParams;
-#endif
 
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&dmxrdm);
@@ -205,9 +159,7 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		dmxrdm.Run();
 		identify.Run();
-#if defined (ORANGE_PI)
 		spiFlashStore.Flash();
-#endif
 		lb.Run();
 	}
 }

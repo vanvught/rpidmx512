@@ -36,8 +36,6 @@
 
 #include "identify.h"
 
-#include "dmxgpioparams.h"
-
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
 
@@ -85,15 +83,6 @@ void notmain(void) {
 
 	hw.SetLed(hardware::LedStatus::ON);
 
-	DmxGpioParams dmxgpioparams;
-
-	if (dmxgpioparams.Load()) {
-		dmxgpioparams.Dump();
-	}
-
-	bool isSet;
-	uint8_t nGpioDataDirection = dmxgpioparams.GetDataDirection(isSet); // Returning default GPIO18
-
 	bool isLedTypeSet = false;
 
 	StoreTLC59711 storeTLC59711;
@@ -137,7 +126,7 @@ void notmain(void) {
 
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
 
-	RDMResponder rdmResponder(&personality, pLightSet, nGpioDataDirection);
+	RDMResponder rdmResponder(&personality, pLightSet);
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);

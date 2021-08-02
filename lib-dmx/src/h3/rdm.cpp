@@ -27,25 +27,25 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmx.h"
-#include "dmx_multi_internal.h"
+#include "dmxset.h"
+#include "dmxconst.h"
+#include "dmx_internal.h"
 
+#include "h3_board.h"
 #include "h3_timer.h"
 #include "h3_hs_timer.h"
 #include "h3_uart.h"
 
-using namespace dmx;
-
-uint8_t Rdm::m_TransactionNumber[max::OUT] = {0, };
-uint32_t Rdm::m_nLastSendMicros[max::OUT] = {0, };
+uint8_t s_TransactionNumber[dmxmulti::max::OUT];
+uint32_t s_nLastSendMicros[dmxmulti::max::OUT];
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmCommand != nullptr);
 
 	if (nSpacingMicros != 0) {
 		const auto nMicros = H3_TIMER->AVS_CNT1;
-		const auto nDeltaMicros = nMicros - m_nLastSendMicros[nPort];
+		const auto nDeltaMicros = nMicros - s_nLastSendMicros[nPort];
 		if (nDeltaMicros < nSpacingMicros) {
 			const auto nWait = nSpacingMicros - nDeltaMicros;
 			do {
@@ -53,13 +53,13 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 		}
 	}
 
-	m_nLastSendMicros[nPort] = H3_TIMER->AVS_CNT1;
+	s_nLastSendMicros[nPort] = H3_TIMER->AVS_CNT1;
 
 	auto *rdm_data = reinterpret_cast<uint8_t*>(pRdmCommand);
 	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
-	pRdmCommand->transaction_number = m_TransactionNumber[nPort];
+	pRdmCommand->transaction_number = s_TransactionNumber[nPort];
 
 	for (i = 0; i < pRdmCommand->message_length; i++) {
 		rdm_checksum = static_cast<uint16_t>(rdm_checksum + rdm_data[i]);
@@ -70,11 +70,11 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 
 	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-	m_TransactionNumber[nPort]++;
+	s_TransactionNumber[nPort]++;
 }
 
 void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -89,7 +89,7 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 }
 
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < max::OUT);
+	assert(nPort < dmxmulti::max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -100,7 +100,7 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 
 	auto *p = _get_uart(_port_to_uart(nPort));
 	p->LCR = UART_LCR_8_N_2;
@@ -116,5 +116,5 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
 }

@@ -27,13 +27,11 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmx.h"
+#include "dmxset.h"
 
 extern "C" {
 void udelay(uint32_t);
 }
-
-using namespace dmx;
 
 const uint8_t *Rdm::Receive(uint32_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
@@ -44,15 +42,14 @@ const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 }
 
 void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 
 	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
 }

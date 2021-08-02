@@ -29,9 +29,7 @@
 #include <cstdint>
 
 #include "artnetdmx.h"
-
 #include "dmxmulti.h"
-#include "dmx_uarts.h"
 
 class DmxInput: public ArtNetDmx, public DmxMulti {
 public:

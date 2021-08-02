@@ -1,5 +1,5 @@
 /**
- * @file dmx_multi_internal.h
+ * @file dmx_config.h
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,53 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_MULTI_INTERNAL_H_
-#define DMX_MULTI_INTERNAL_H_
+#ifndef H3_DMX_CONFIG_H_
+#define H3_DMX_CONFIG_H_
 
 #include <assert.h>
 
-#include "dmx_uarts.h"
+#include "h3_board.h"
 
-/*
- * PORT
- * 0	UART1
- * 1	UART2
- * 2	UART3
- * 3	UART0
- */
+#define GPIO_DMX_DATA_DIRECTION			GPIO_EXT_12	///< UART1 or UART2 , single output
 
-inline static uint32_t _port_to_uart(uint32_t nPort) {
-	assert(nPort < DMX_MAX_UARTS);
+#if defined(ORANGE_PI_ONE)
+# define DMX_MAX_UARTS	4
+# define GPIO_DMX_DATA_DIRECTION_OUT_A 	GPIO_EXT_32	///< UART1
+# define GPIO_DMX_DATA_DIRECTION_OUT_B 	GPIO_EXT_22	///< UART2
+# define GPIO_DMX_DATA_DIRECTION_OUT_C 	GPIO_EXT_12	///< UART3
+# define GPIO_DMX_DATA_DIRECTION_OUT_D 	GPIO_EXT_31	///< UART0
+#else
+# define DMX_MAX_UARTS	2
+# define GPIO_DMX_DATA_DIRECTION_OUT_B	GPIO_EXT_22	///< UART2
+# define GPIO_DMX_DATA_DIRECTION_OUT_C	GPIO_EXT_12	///< UART1
+#endif
 
-	if (nPort < 3) {
-		return nPort + 1;
-	}
+namespace dmx {
+namespace buffer {
+static constexpr auto SIZE = 516;
+static constexpr auto INDEX_ENTRIES = (1U << 1);
+static constexpr auto INDEX_MASK = (INDEX_ENTRIES - 1);
+}  // namespace buffer
+}  // namespace dmx
 
-	return 0;
-}
-
-#include "h3.h"
-
-inline static H3_UART_TypeDef * _get_uart(uint32_t nUart) {
-	switch (nUart) {
-	case 0:
-		return H3_UART0;
-		break;
-	case 1:
-		return H3_UART1;
-		break;
-	case 2:
-		return H3_UART2;
-		break;
-	case 3:
-		return H3_UART3;
-		break;
-	default:
-		assert(0);
-		break;
-	}
-
-	return nullptr;
-}
-
-#endif /* DMX_MULTI_INTERNAL_H_ */
+#endif /* H3_DMX_CONFIG_H_ */

@@ -1,8 +1,8 @@
 /**
- * @file dmx_uarts.h
+ * @file dmx_config.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_UARTS_H_
-#define DMX_UARTS_H_
+#ifndef RPI_DMX_CONFIG_H_
+#define RPI_DMX_CONFIG_H_
 
-#if defined(H3)
-# if defined(ORANGE_PI_ONE)
-#  define DMX_MAX_UARTS	4	///< Orange Pi One
-# else
-#  define DMX_MAX_UARTS	2	///< Orange Pi Zero
-# endif
-#else
-# define DMX_MAX_UARTS	1	///< All Raspberry Pi's
-#endif
+namespace dmx {
+namespace buffer {
+static constexpr auto SIZE = 516;
+static constexpr auto INDEX_ENTRIES = (1U << 1);
+static constexpr auto INDEX_MASK = (INDEX_ENTRIES - 1);
+}  // namespace buffer
+}  // namespace dmx
 
-#endif /* DMX_UARTS_H_ */
+#endif /* RPI_DMX_CONFIG_H_ */

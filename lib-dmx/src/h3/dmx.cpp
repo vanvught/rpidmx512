@@ -51,10 +51,6 @@ extern "C" {
 void console_error(const char*);
 }
 
-#if (GPIO_DMX_DATA_DIRECTION != GPIO_EXT_12)
-# error GPIO_DMX_DATA_DIRECTION
-#endif
-
 #if (EXT_UART_NUMBER == 1)
 # define UART_IRQN 		H3_UART1_IRQn
 #elif (EXT_UART_NUMBER == 3)
@@ -398,13 +394,11 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(uint8_t nGpioPin, bool DoInit) {
+Dmx::Dmx(bool DoInit) {
 	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	m_nDataDirectionGpio = nGpioPin;
 
 	if (DoInit) {
 		Init();
@@ -459,8 +453,8 @@ void Dmx::Init() {
 
 	m_IsInitDone = true;
 
-	h3_gpio_fsel(m_nDataDirectionGpio, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
+	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
 
 #ifdef LOGIC_ANALYZER
 	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
@@ -608,12 +602,12 @@ void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection
 
 		switch (tPortDirection) {
 		case PortDirection::OUTP:
-			h3_gpio_set(m_nDataDirectionGpio); // 0 = input, 1 = output
+			h3_gpio_set(GPIO_EXT_12); // 0 = input, 1 = output
 			s_nPortDirection = PortDirection::OUTP;
 			break;
 		case PortDirection::INP:
 		default:
-			h3_gpio_clr(m_nDataDirectionGpio); // 0 = input, 1 = output
+			h3_gpio_clr(GPIO_EXT_12); // 0 = input, 1 = output
 			s_nPortDirection = PortDirection::INP;
 			break;
 		}

@@ -23,21 +23,14 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_INTERNAL_H_
-#define DMX_INTERNAL_H_
+#ifndef DMX_CONST_H_
+#define DMX_CONST_H_
 
 namespace dmx {
 static constexpr auto START_CODE = 0U;				///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
 static constexpr auto CHANNELS = 512U;
 }  // namespace max
-namespace buffer {
-static constexpr auto SIZE = 516;					///< including SC, aligned 4
-static constexpr auto INDEX_ENTRIES = (1U << 1);
-static constexpr auto INDEX_MASK = (INDEX_ENTRIES - 1);
-}  // namespace buffer
 namespace transmit {
 static constexpr auto BREAK_TIME_MIN = 92U;			///< 92 us
 static constexpr auto BREAK_TIME_TYPICAL = 176U;	///< 176 us
@@ -49,4 +42,25 @@ static constexpr auto BREAK_TO_BREAK_TIME_MIN = 1204U;	///< us
 }  // namespace transmit
 }  // namespace dmx
 
-#endif /* DMX_INTERNAL_H_ */
+#if defined(H3)
+namespace dmxmulti {
+namespace max {
+static constexpr auto OUT = 4U;
+static constexpr auto IN = 4U;
+}  // namespace max
+}  // namespace dmxmulti
+# if defined(ORANGE_PI_ONE)
+#  define DMX_MAX_UARTS	4	///< Orange Pi One
+# else
+#  define DMX_MAX_UARTS	2	///< Orange Pi Zero
+# endif
+#else
+namespace dmxmulti {
+namespace max {
+static constexpr auto OUT = 8U;
+static constexpr auto IN = 8U;
+}  // namespace max
+}  // namespace dmxmulti
+#endif
+
+#endif /* DMX_CONST_H_ */

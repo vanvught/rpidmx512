@@ -88,7 +88,11 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 
 	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
 	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
-	m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
+	if (m_pLightSet == nullptr) {
+		m_nDmxStartAddressFactoryDefault = lightset::Dmx::ADDRESS_INVALID;
+	} else {
+		m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
+	}
 
 	struct TRDMDeviceInfoData info;
 
@@ -120,8 +124,13 @@ void RDMDeviceResponder::Init() {
 	m_tRDMDeviceInfo.software_version[1] = static_cast<uint8_t>(nSoftwareVersionId >> 16);
 	m_tRDMDeviceInfo.software_version[2] = static_cast<uint8_t>(nSoftwareVersionId >> 8);
 	m_tRDMDeviceInfo.software_version[3] = static_cast<uint8_t>(nSoftwareVersionId);
-	m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(m_pLightSet->GetDmxFootprint() >> 8);
-	m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>( m_pLightSet->GetDmxFootprint());
+	if (m_pLightSet == nullptr) {
+		m_tRDMDeviceInfo.dmx_footprint[0] = 0;
+		m_tRDMDeviceInfo.dmx_footprint[1] = 0;
+	} else {
+		m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(m_pLightSet->GetDmxFootprint() >> 8);
+		m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>( m_pLightSet->GetDmxFootprint());
+	}
 	m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault >> 8);
 	m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault);
 	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
