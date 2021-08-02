@@ -1,8 +1,8 @@
 /**
- * @file hardware.h
+ * @file millis.h
  *
  */
-/* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef C_RPI_HARDWARE_H_
-#define C_RPI_HARDWARE_H_
+#ifndef C_MILLIS_H_
+#define C_MILLIS_H_
 
-#include <cstdint>
+#include <stdint.h>
 
-#include "bcm2835.h"
-#include "bcm2835_wdog.h"
-#include "bcm2835_rng.h"
-
-#ifdef __cplusplus
-extern "C" {
+#if defined (BARE_METAL)
+# if defined (H3)
+	#include "h3.h"
+	static inline uint32_t millis(void) {
+		return H3_TIMER->AVS_CNT0;
+	}
+# elif defined (GD32)
+	extern volatile uint32_t s_nSysTickMillis;
+	static inline uint32_t millis(void) {
+		return s_nSysTickMillis;
+	}
+# else
+#  error
+# endif
 #endif
 
-inline static uint32_t hardware_micros(void) {
-	return BCM2835_ST->CLO;
-}
-
-inline static void hardware_watchdog_init(void) {
-	bcm2835_watchdog_init();
-}
-
-inline static void hardware_watchdog_feed(void) {
-	bcm2835_watchdog_feed();
-}
-
-inline static void hardware_watchdog_stop(void) {
-	bcm2835_watchdog_stop();
-}
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* C_RPI_HARDWARE_H_ */
+#endif /* C_MILLIS_H_ */

@@ -31,17 +31,17 @@
 #define CONSOLE_OK	0	///< Call console_init() OK
 
 #ifdef __cplusplus
- #define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
+# define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
 #else
- #define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
+# define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
 #endif
 
 #if defined(H3)
- #if defined(CONSOLE_FB)
-  #include "h3/console_fb.h"
- #else
-  #include "h3/console_uart0.h"
- #endif
+# if defined(CONSOLE_FB)
+	#include "h3/console_fb.h"
+# else
+	#include "h3/console_uart0.h"
+# endif
 #else
  #include "rpi/console_fb.h"
 #endif

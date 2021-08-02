@@ -26,4 +26,4 @@
 .align 4
 .global FONT
 FONT:
-	.incbin "../console/h3/font.bin"
+	.incbin "../console/font.bin"
