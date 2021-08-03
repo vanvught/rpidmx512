@@ -31,7 +31,7 @@
 #include <limits.h>
 #include <stdint.h>
 
-#include "console.h"
+extern int console_putc(int);
 
 struct context {
 	int flag;
@@ -51,9 +51,9 @@ enum {
 	FLAG_LEFT_JUSTIFIED =	(1 << 6 )
 };
 
-/*@null@*/static char *outptr = NULL;
+static char *outptr = NULL;
 
-inline static void _xputch(/*@out@*/struct context *ctx, int c) {
+inline static void _xputch(struct context *ctx, int c) {
 	ctx->total++;
 
 	if (outptr != NULL) {
@@ -63,7 +63,7 @@ inline static void _xputch(/*@out@*/struct context *ctx, int c) {
 		return;
 	}
 
-	(void) console_putc(c);
+	console_putc(c);
 }
 
 static int _pow10(int n) {

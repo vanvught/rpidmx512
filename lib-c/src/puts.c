@@ -2,7 +2,7 @@
  * @file puts.c
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include "console.h"
+extern int console_puts(const char *);
+extern int console_putc(int);
 
 int puts(const char *s) {
 	console_puts(s);
