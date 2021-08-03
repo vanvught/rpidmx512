@@ -1,10 +1,10 @@
 #!/bin/bash
 
-./makeall_firmware-lib.sh clean 
-./makeall_firmware-lib.sh
+./makeall_firmware_bcm-lib.sh clean 
+./makeall_firmware_bcm-lib.sh
 
-./makeall_firmware.sh clean 
-./makeall_firmware.sh 
+./makeall_firmware_bcm.sh clean 
+./makeall_firmware_bcm.sh 
 
 cd ..
 

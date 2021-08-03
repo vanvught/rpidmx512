@@ -1,4 +1,4 @@
 DEFINES=NDEBUG
 
 include Rules.mk
-include ../h3-firmware-template/lib/Rules.mk
+include ../firmware-template-h3/lib/Rules.mk

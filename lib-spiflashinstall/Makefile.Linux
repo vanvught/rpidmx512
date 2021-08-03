@@ -3,4 +3,4 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-hal/include  ../lib-spiflash/include ../lib-display/include ../lib-properties/include
 #
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

@@ -5,6 +5,6 @@ LIBS = oscserver osc dmxmonitor lightset artnet artnet4 e131
 #
 SRCDIR = src lib
 
-include ../linux-template/Rules.mk
+include ../firmware-template-linux/Rules.mk
 
 prerequisites:

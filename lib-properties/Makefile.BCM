@@ -1,0 +1,6 @@
+#
+DEFINES = NDEBUG
+#
+EXTRA_INCLUDES = ../lib-network/include 
+#
+include ../firmware-template-bcm/lib/Rules.mk

@@ -10,10 +10,10 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 	ifneq (,$(findstring NO_EMAC,$(NO_EMAC)))
 	else
-		EXTRA_SRCDIR+=device/emac net
+		EXTRA_SRCDIR+=device/emac
 	endif
 else
-	EXTRA_SRCDIR+=device/fb device/emac net
+	EXTRA_SRCDIR+=device/fb device/emac
 endif
 
-include ../h3-firmware-template/lib/Rules.mk
+include ../firmware-template-h3/lib/Rules.mk
