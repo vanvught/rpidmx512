@@ -1,5 +1,0 @@
-DEFINES=NDEBUG
-EXTRA_INCLUDES=
-EXTRA_SRCDIR=
-
-include ../firmware-template-bcm/lib/Rules.mk

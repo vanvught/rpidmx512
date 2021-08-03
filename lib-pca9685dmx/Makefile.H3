@@ -3,4 +3,4 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-pca9685/include ../lib-lightset/include ../lib-properties/include
 #
-include ../firmware-template-h3/lib/Rules.mk
+include ../h3-firmware-template/lib/Rules.mk

@@ -3,4 +3,4 @@ DEFINES = #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-network/include
 #
-include ../firmware-template-linux/lib/Rules.mk
+include ../linux-template/lib/Rules.mk

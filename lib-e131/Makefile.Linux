@@ -3,4 +3,4 @@ DEFINES = #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-lightset/include ../lib-properties/include ../lib-hal/include ../lib-network/include
 #
-include ../firmware-template-linux/lib/Rules.mk
+include ../linux-template/lib/Rules.mk

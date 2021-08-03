@@ -3,4 +3,4 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-device/include ../lib-hal/include
 #
-include ../firmware-template-h3/lib/Rules.mk
+include ../h3-firmware-template/lib/Rules.mk

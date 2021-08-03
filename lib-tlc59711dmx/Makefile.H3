@@ -3,5 +3,5 @@ DEFINES = NDEBUG
 #
 EXTRA_INCLUDES = ../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include 
 #
-include ../firmware-template-h3/lib/Rules.mk
+include ../h3-firmware-template/lib/Rules.mk
 	

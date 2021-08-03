@@ -5,6 +5,6 @@ LIBS = e131 dmxmonitor lightset artnet artnet4
 #
 SRCDIR = src
 
-include ../firmware-template-linux/Rules.mk
+include ../linux-template/Rules.mk
 
 prerequisites:

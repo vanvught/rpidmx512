@@ -1,4 +1,0 @@
-#
-EXTRA_SRCDIR = src/aeabi
-#
-include ../firmware-template-bcm/lib/Rules.mk

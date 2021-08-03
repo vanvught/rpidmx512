@@ -1,7 +1,4 @@
 DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-properties/include ../lib-hal/include
 
-EXTRA_INCLUDES=../lib-hal/include ../lib-properties/include
-
-EXTRA_SRCDIR=net src/emac
-
-include ../firmware-template-h3/lib/Rules.mk
+include ../h3-firmware-template/lib/Rules.mk

@@ -2,4 +2,4 @@ DEFINES=NDEBUG
 EXTRA_INCLUDES=
 EXTRA_SRCDIR=
 
-include ../firmware-template-h3/lib/Rules.mk
+include ../h3-firmware-template/lib/Rules.mk

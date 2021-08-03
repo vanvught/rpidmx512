@@ -7,6 +7,6 @@ LIBS=dmxmonitor
 
 SRCDIR=firmware lib
 
-include ../firmware-template-h3/Rules.mk
+include ../h3-firmware-template/Rules.mk
 
 prerequisites:

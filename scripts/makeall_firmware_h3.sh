@@ -53,7 +53,7 @@ do
 			do_build=1
 		elif [[ $f = "../opi_"*"l6470" ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
-		elif [[ $f = "../opi_emac_"*"l6470" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
+		elif [[ $f = "../opi_"*"l6470" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
 			do_build=1
 		fi
 				
