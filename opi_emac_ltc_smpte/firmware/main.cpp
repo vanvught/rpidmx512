@@ -23,14 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "networkemac.h"
 #include "ledblink.h"
+#include "display.h"
 
 #include "ltcparams.h"
 #include "ltcdisplayparams.h"
@@ -59,7 +60,6 @@
 
 #include "ntpserver.h"
 
-#include "display.h"
 #include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
@@ -109,7 +109,7 @@ void h3_cpu_off(uint8_t);
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

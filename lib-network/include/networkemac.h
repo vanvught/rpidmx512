@@ -36,10 +36,10 @@ extern "C" {
 	void net_handle(void);
 }
 
-class NetworkH3emac final : public Network {
+class NetworkEmac final : public Network {
 public:
-	NetworkH3emac();
-	~NetworkH3emac() override {}
+	NetworkEmac();
+	~NetworkEmac() override {}
 
 	void Init(NetworkParamsStore *pNetworkParamsStore = nullptr);
 

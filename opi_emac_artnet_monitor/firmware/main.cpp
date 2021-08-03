@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "networkemac.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "h3/showsystime.h"
@@ -37,8 +38,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -70,7 +69,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	LedBlink lb;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;

@@ -2,7 +2,7 @@
  * @file mdnsservices.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,5 +31,6 @@
 #define MDNS_SERVICE_CONFIG		"._config"
 #define MDNS_SERVICE_TFTP		"._tftp"
 #define MDNS_SERVICE_NTP		"._ntp"
+#define MDNS_SERVICE_DDP		"._ddp"
 
-#endif /* INCLUDE_MDNSSERVICES_H_ */
+#endif /* MDNSSERVICES_H_ */

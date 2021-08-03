@@ -30,12 +30,11 @@
 
 #include "dhcp_internal.h"
 
-#include "net/net.h"
-
+#include "net.h"
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "h3.h"
+#include "c/millis.h"
 
 #ifndef ALIGNED
  #define ALIGNED __attribute__ ((aligned (4)))
@@ -203,7 +202,7 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 	struct t_dhcp_message response;
 	uint16_t size = 0;
 
-	const uint32_t micros_stamp = H3_TIMER->AVS_CNT1;
+	const uint32_t millis_now = millis();
 
 	do {
 		net_handle();
@@ -218,9 +217,9 @@ static int _parse_response(int idx, const uint8_t *mac_address) {
 				break;
 			}
 		}
-	} while ((H3_TIMER->AVS_CNT1 - micros_stamp) < (500 * 1000));
+	} while ((millis() - millis_now) < 500);
 
-	DEBUG_PRINTF("timeout %u", H3_TIMER->AVS_CNT1 - micros_stamp);
+	DEBUG_PRINTF("timeout %u", millis() - millis_now);
 
 	uint8_t type = 0;
 	uint8_t opt_len = 0;

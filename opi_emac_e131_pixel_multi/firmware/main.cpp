@@ -23,12 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "hardware.h"
-
-#include "networkh3emac.h"
+#include "networkemac.h"
 #include "networkconst.h"
 #include "ledblink.h"
 
@@ -75,7 +74,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "networkemac.h"
 #include "ledblink.h"
 
 #include "console.h"
@@ -67,7 +67,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

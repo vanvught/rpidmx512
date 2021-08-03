@@ -23,18 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "networkemac.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -65,7 +63,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -208,20 +206,15 @@ void notmain(void) {
 
 	StoreRemoteConfig storeRemoteConfig;
 
-	if (SpiFlashStore::Get()->HaveFlashChip()) {
-		RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-		if (remoteConfigParams.Load()) {
-			remoteConfigParams.Set(&remoteConfig);
-			remoteConfigParams.Dump();
-		}
-
-		while (spiFlashStore.Flash())
-			;
-	} else {
-		remoteConfig.SetDisable(true);
-		printf("Remote configuration is disabled\n");
+	if (remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 

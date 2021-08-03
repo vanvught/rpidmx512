@@ -27,8 +27,7 @@
 #include <string.h>
 #include <assert.h>
 
-#include "net/net.h"
-
+#include "net.h"
 #include "net_packets.h"
 #include "net_debug.h"
 

@@ -23,19 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "networkemac.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -73,7 +71,7 @@ extern "C" {
 void notmain(void) {
 	Hardware hw;
 	LedBlink lb;
-	NetworkH3emac nw;
+	NetworkEmac nw;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

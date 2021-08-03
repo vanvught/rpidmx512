@@ -2,7 +2,7 @@
  * @file net_timers.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#include "h3.h"
+#include "c/millis.h"
 
 extern void igmp_timer(void);
 #ifndef NDEBUG
@@ -34,17 +34,13 @@ extern void igmp_timer(void);
 
 static volatile uint32_t s_ticker;
 
-#define INTERVAL_US (100*1000)	// 100 msec, 1/10 second
-
-void __attribute__((cold)) net_timers_init(void) {
-	s_ticker = 0;
-}
+#define INTERVAL_MS (100)	// 100 msec, 1/10 second
 
 void net_timers_run(void) {
-	const uint32_t micros_now = H3_TIMER->AVS_CNT1;
+	const uint32_t millis_now = millis();
 
-	if (__builtin_expect((micros_now >= s_ticker), 0)) {
-		s_ticker = micros_now + INTERVAL_US;
+	if (__builtin_expect((millis_now >= s_ticker), 0)) {
+		s_ticker = millis_now + INTERVAL_MS;
 		igmp_timer();
 #ifndef NDEBUG
 		arp_cache_timer();

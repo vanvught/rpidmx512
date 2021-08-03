@@ -32,8 +32,7 @@
 #include "tftp_internal.h"
 #include "ntp_internal.h"
 
-#include "net/net.h"
-
+#include "net.h"
 #include "net_packets.h"
 #include "net_debug.h"
 

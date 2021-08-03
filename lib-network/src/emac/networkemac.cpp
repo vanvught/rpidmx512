@@ -29,13 +29,13 @@
 #include <time.h>
 #include <cassert>
 
-#include "networkh3emac.h"
+#include "networkemac.h"
 #include "networkparams.h"
 
 #include "hardware.h"
 #include "ledblink.h"
 
-#include "./../lib-h3/include/net/net.h"
+#include "./../net/net.h"
 
 #include "debug.h"
 
@@ -49,7 +49,7 @@ void enet_mac_address_get(uint32_t, uint8_t paddr[]);
 int emac_start(bool reset_emac);
 }
 
-NetworkH3emac::NetworkH3emac() {
+NetworkEmac::NetworkEmac() {
 	DEBUG_ENTRY
 
 	strcpy(m_aIfName, "eth0");
@@ -57,7 +57,7 @@ NetworkH3emac::NetworkH3emac() {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
+void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
@@ -170,7 +170,7 @@ void NetworkH3emac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::Shutdown() {
+void NetworkEmac::Shutdown() {
 	DEBUG_ENTRY
 
 	if (m_pNetworkDisplay != nullptr) {
@@ -182,7 +182,7 @@ void NetworkH3emac::Shutdown() {
 	DEBUG_EXIT
 }
 
-int32_t NetworkH3emac::Begin(uint16_t nPort) {
+int32_t NetworkEmac::Begin(uint16_t nPort) {
 	DEBUG_ENTRY
 
 	const int32_t nIdx = udp_bind(nPort);
@@ -194,7 +194,7 @@ int32_t NetworkH3emac::Begin(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-int32_t NetworkH3emac::End(uint16_t nPort) {
+int32_t NetworkEmac::End(uint16_t nPort) {
 	DEBUG_ENTRY
 
 	const int32_t n = udp_unbind(nPort);
@@ -206,7 +206,7 @@ int32_t NetworkH3emac::End(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::MacAddressCopyTo(uint8_t *pMacAddress) {
+void NetworkEmac::MacAddressCopyTo(uint8_t *pMacAddress) {
 	DEBUG_ENTRY
 
 	for (uint32_t i =  0; i < NETWORK_MAC_SIZE; i++) {
@@ -216,7 +216,7 @@ void NetworkH3emac::MacAddressCopyTo(uint8_t *pMacAddress) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void NetworkEmac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_join(nIp);
@@ -224,7 +224,7 @@ void NetworkH3emac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t 
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void NetworkEmac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_leave(nIp);
@@ -232,15 +232,15 @@ void NetworkH3emac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t
 	DEBUG_EXIT
 }
 
-uint16_t NetworkH3emac::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+uint16_t NetworkEmac::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
 	return udp_recv(static_cast<uint8_t>(nHandle), reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkH3emac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void NetworkEmac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
-void NetworkH3emac::SetDefaultIp() {
+void NetworkEmac::SetDefaultIp() {
 	DEBUG_ENTRY
 
 	m_nLocalIp = 2
@@ -253,7 +253,7 @@ void NetworkH3emac::SetDefaultIp() {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::SetIp(uint32_t nIp) {
+void NetworkEmac::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
 	if (m_IsDhcpUsed) {
@@ -290,7 +290,7 @@ void NetworkH3emac::SetIp(uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
+void NetworkEmac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_ENTRY
 
 	if (m_nNetmask == nNetmask) {
@@ -315,13 +315,15 @@ void NetworkH3emac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::SetGatewayIp(uint32_t nGatewayIp) {
+void NetworkEmac::SetGatewayIp(uint32_t nGatewayIp) {
 	DEBUG_ENTRY
 
 	if (m_nGatewayIp == nGatewayIp) {
 		DEBUG_EXIT
 		return;
 	}
+
+	net_set_gw(nGatewayIp);
 
 	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
@@ -334,7 +336,7 @@ void NetworkH3emac::SetGatewayIp(uint32_t nGatewayIp) {
 	DEBUG_EXIT
 }
 
-void NetworkH3emac::SetHostName(const char *pHostName) {
+void NetworkEmac::SetHostName(const char *pHostName) {
 	Network::SetHostName(pHostName);
 
 	net_set_hostname(pHostName);
@@ -344,7 +346,7 @@ void NetworkH3emac::SetHostName(const char *pHostName) {
 	}
 }
 
-bool NetworkH3emac::SetZeroconf() {
+bool NetworkEmac::SetZeroconf() {
 	struct ip_info tIpInfo;
 
 	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
@@ -372,7 +374,7 @@ bool NetworkH3emac::SetZeroconf() {
 	return m_IsZeroconfUsed;
 }
 
-bool NetworkH3emac::EnableDhcp() {
+bool NetworkEmac::EnableDhcp() {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;

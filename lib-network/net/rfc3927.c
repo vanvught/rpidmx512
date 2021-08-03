@@ -2,7 +2,7 @@
  * @file rfc3927.c
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@
 #include <string.h>
 #include <assert.h>
 
-#include "net/net.h"
+#include "net.h"
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "h3.h"
+#include "c/millis.h"
 
 extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 
@@ -65,7 +65,7 @@ bool rfc3927(struct ip_info *p_ip_info) {
 
 	uint16_t count = 0;
 
-	const uint32_t micros_stamp = H3_TIMER->AVS_CNT1;
+	const uint32_t millis_now = millis();
 
 	do  {
 		DEBUG_PRINTF(IPSTR, IP2STR(ip));
@@ -85,7 +85,7 @@ bool rfc3927(struct ip_info *p_ip_info) {
 		}
 
 		count++;
-	} while ((count < 0xFF) && ((H3_TIMER->AVS_CNT1 - micros_stamp) < (500 * 1000)));
+	} while ((count < 0xFF) && ((millis() - millis_now) < 500));
 
 	p_ip_info->ip.addr = 0;
 	p_ip_info->gw.addr = 0;

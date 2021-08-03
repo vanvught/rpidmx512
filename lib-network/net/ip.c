@@ -25,8 +25,7 @@
 
 #include <stdint.h>
 
-#include "net/net.h"
-
+#include "net.h"
 #include "net_packets.h"
 #include "net_debug.h"
 
@@ -44,25 +43,20 @@ extern void igmp_set_ip(const struct ip_info  *);
 extern void igmp_handle(struct t_igmp *);
 extern void igmp_shutdown(void);
 
-extern void icmp_init(const uint8_t *, const struct ip_info  *);
-extern void icmp_set_ip(const struct ip_info  *);
 extern void icmp_handle(struct t_icmp *);
 extern void icmp_shutdown(void);
 
 void ip_set_ip(const struct ip_info *p_ip_info) {
 	udp_set_ip(p_ip_info);
 	igmp_set_ip(p_ip_info);
-	icmp_set_ip(p_ip_info);
 }
 
 void __attribute__((cold)) ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
 	udp_init(mac_address, p_ip_info);
 	igmp_init(mac_address, p_ip_info);
-	icmp_init(mac_address, p_ip_info);
 }
 
 void __attribute__((cold)) ip_shutdown(void) {
-	icmp_shutdown();
 	igmp_shutdown();
 	udp_shutdown();
 }
