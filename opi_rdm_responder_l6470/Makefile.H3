@@ -5,7 +5,7 @@ LIBS=dmxreceiver rdmresponder dmx l6470dmx l6470 tlc59711dmx tlc59711
 
 SRCDIR=firmware lib
 
-include ../h3-firmware-template/Rules.mk
+include ../firmware-template-h3/Rules.mk
 
 prerequisites:
 	./generate_sofware_version_id.sh

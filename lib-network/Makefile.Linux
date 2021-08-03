@@ -1,4 +1,4 @@
 DEFINES=NDEBUG
 EXTRA_INCLUDES=../lib-properties/include ../lib-hal/include
 
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

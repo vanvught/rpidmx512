@@ -65,7 +65,6 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/fb"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/mmc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="firmware"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="net"/>
 						<entry excluding="debug" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/debug"/>
 					</sourceEntries>

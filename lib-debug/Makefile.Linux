@@ -2,4 +2,4 @@
 DEFINES = NDEBUG
 #
 #
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

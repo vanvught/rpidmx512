@@ -3,4 +3,4 @@ DEFINES = PARAMS_INLCUDE_ALL #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-ws28xx/include ../lib-lightset/include ../lib-properties/include
 #
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

@@ -3,4 +3,4 @@ DEFINES = RASPPI #NDEBUG
 #
 EXTRA_INCLUDES = ../lib-ws28xx/include
 #
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk
