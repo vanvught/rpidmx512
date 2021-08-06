@@ -221,12 +221,15 @@ public class WizardParamsTxt extends JDialog {
 					final String line = lines[i];
 					if (line.contains("break_time")) {
 						formattedTextFieldBreakTime.setText(Properties.getString(line));
+						continue;
 					}
 					if (line.contains("mab_time")) {
 						formattedTextFieldMaBTime.setText(Properties.getString(line));
+						continue;
 					}
 					if (line.contains("refresh_rate")) {
 						formattedTextFieldRefreshRate.setText(Properties.getString(line));
+						continue;
 					}
 				}
 			}
