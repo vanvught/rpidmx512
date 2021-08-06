@@ -1,9 +1,9 @@
 /**
- * @file dmxsendconst.h
+ * @file dmxparamsconst.h
  *
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXSENDCONST_H_
-#define DMXSENDCONST_H_
+#ifndef DMXPARAMSCONST_H_
+#define DMXPARAMSCONST_H_
 
-struct DMXSendConst {
-	static const char PARAMS_FILE_NAME[];
+struct DmxParamsConst {
+	static const char FILE_NAME[];
 
-	static const char PARAMS_BREAK_TIME[];
-	static const char PARAMS_MAB_TIME[];
-	static const char PARAMS_REFRESH_RATE[];
+	static const char BREAK_TIME[];
+	static const char MAB_TIME[];
+	static const char REFRESH_RATE[];
 };
 
-#endif /* DMXSENDCONST_H_ */
+#endif /* DMXPARAMSCONST_H_ */

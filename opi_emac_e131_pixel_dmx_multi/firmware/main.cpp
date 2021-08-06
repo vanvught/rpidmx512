@@ -180,7 +180,7 @@ void notmain(void) {
 	}
 
 	StoreDmxSend storeDmxSend;
-	DMXSendMulti *pDmxOutput = nullptr;
+	DmxSendMulti *pDmxOutput = nullptr;
 
 	if (nDmxPorts != 0) {
 		if (portDir == PortDir::INPUT) {
@@ -190,10 +190,10 @@ void notmain(void) {
 			bridge.SetE131Dmx(pDmxInput);
 			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT , nDmxPorts);
 		} else {
-			pDmxOutput = new DMXSendMulti;
+			pDmxOutput = new DmxSendMulti;
 			assert(pDmxOutput != nullptr);
 
-			DMXParams dmxparams(&storeDmxSend);
+			DmxParams dmxparams(&storeDmxSend);
 
 			if (dmxparams.Load()) {
 				dmxparams.Dump();

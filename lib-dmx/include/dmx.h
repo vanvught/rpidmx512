@@ -32,6 +32,8 @@
 
 #if defined (H3)
 # include "h3/dmx_config.h"
+#elif defined (GD32)
+# include "gd32/dmx_config.h"
 #elif defined(RPI1) || defined (RPI2)
 # include "rpi/dmx_config.h"
 #else
@@ -59,6 +61,8 @@ struct Data {
 
 #if defined (H3)
 # include "h3/dmx.h"
+#elif defined(GD32)
+# include "gd32/dmx.h"
 #elif defined(RPI1) || defined (RPI2)
 # include "rpi/dmx.h"
 #else

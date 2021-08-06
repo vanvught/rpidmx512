@@ -157,7 +157,7 @@ void notmain(void) {
 #endif
 	}
 
-	DMXSendMulti *pDmxOutput;
+	DmxSendMulti *pDmxOutput;
 	DmxInput *pDmxInput;
 
 	if (portDir == e131::PortDir::INPUT) {
@@ -166,10 +166,10 @@ void notmain(void) {
 
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSendMulti;
+		pDmxOutput = new DmxSendMulti;
 		assert(pDmxOutput != nullptr);
 
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Dump();

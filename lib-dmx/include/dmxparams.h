@@ -28,19 +28,20 @@
 
 #include <cstdint>
 
-#include "dmxsend.h"
-#if defined (H3)
-# include "dmxsendmulti.h"
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# include "dmxmulti.h"
+#else
+# include "dmx.h"
 #endif
 
-struct TDMXParams {
+struct TDmxParams {
     uint32_t nSetList;
-	uint8_t nBreakTime;		///< DMX output break time in 10.67 microsecond units. Valid range is 9 to 127.
-	uint8_t nMabTime;		///< DMX output Mark After Break time in 10.67 microsecond units. Valid range is 1 to 127.
-	uint8_t nRefreshRate;	///< DMX output rate in packets per second. Valid range is 1 to 40.
+	uint16_t nBreakTime;
+	uint16_t nMabTime;
+	uint8_t nRefreshRate;
 }__attribute__((packed));
 
-static_assert(sizeof(struct TDMXParams) <= 32, "struct TDMXParams is too large");
+static_assert(sizeof(struct TDmxParams) <= 32, "struct TDmxParams is too large");
 
 struct DmxSendParamsMask {
 	static constexpr auto BREAK_TIME = (1U << 0);
@@ -48,55 +49,43 @@ struct DmxSendParamsMask {
 	static constexpr auto REFRESH_RATE = (1U << 2);
 };
 
-class DMXParamsStore {
+class DmxParamsStore {
 public:
-	virtual ~DMXParamsStore() {
-	}
+	virtual ~DmxParamsStore() {}
 
-	virtual void Update(const struct TDMXParams *pDmxParams)=0;
-	virtual void Copy(struct TDMXParams *pDmxParams)=0;
+	virtual void Update(const struct TDmxParams *pDmxParams)=0;
+	virtual void Copy(struct TDmxParams *pDmxParams)=0;
 };
 
-class DMXParams {
+class DmxParams {
 public:
-	DMXParams(DMXParamsStore *pDMXParamsStore = nullptr);
+	DmxParams(DmxParamsStore *pDMXParamsStore = nullptr);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TDMXParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TDmxParams *ptDMXParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
-	void Set(DMXSend *);
-#if defined (H3)
-	void Set(DMXSendMulti *);
+#if defined (OUTPUT_DMX_SEND_MULTI)
+	void Set(DmxMulti *);
+#else
+	void Set(Dmx *);
 #endif
 
 	void Dump();
-
-	uint8_t GetBreakTime() const {
-		return m_tDMXParams.nBreakTime;
-	}
-
-	uint8_t GetMabTime() const {
-		return m_tDMXParams.nMabTime;
-	}
-
-	uint8_t GetRefreshRate() const {
-		return m_tDMXParams.nRefreshRate;
-	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const  {
-    	return (m_tDMXParams.nSetList & nMask) == nMask;
+    	return (m_tDmxParams.nSetList & nMask) == nMask;
     }
 
 private:
-    DMXParamsStore *m_pDMXParamsStore;
-    struct TDMXParams m_tDMXParams;
+    DmxParamsStore *m_pDmxParamsStore;
+    struct TDmxParams m_tDmxParams;
 };
 
 #endif /* DMXPARAMS_H_ */

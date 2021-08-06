@@ -178,7 +178,7 @@ void notmain(void) {
 	}
 
 	// DMX/RDM Output
-	DMXSendMulti *pDmxOutput;
+	DmxSendMulti *pDmxOutput;
 	ArtNetRdmController *pDiscovery;
 	// DMX Input
 	DmxInput *pDmxInput;
@@ -189,9 +189,9 @@ void notmain(void) {
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSendMulti;
+		pDmxOutput = new DmxSendMulti;
 		assert(pDmxOutput != nullptr);
-		DMXParams dmxParams(&storeDmxSend);
+		DmxParams dmxParams(&storeDmxSend);
 
 		if (dmxParams.Load()) {
 			dmxParams.Dump();

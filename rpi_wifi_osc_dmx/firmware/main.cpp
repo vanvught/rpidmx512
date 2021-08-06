@@ -142,7 +142,7 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	DMXSend dmx;
+	DmxSend dmx;
 	LightSet *pSpi = nullptr;
 
 	if (tOutputType == OutputType::SPI) {
@@ -189,9 +189,9 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+		DmxParams dmxparams((DmxParamsStore *)&storeDmxSend);
 #else
-		DMXParams dmxparams;
+		DmxParams dmxparams;
 #endif
 		if (dmxparams.Load()) {
 			dmxparams.Dump();

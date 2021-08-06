@@ -1,8 +1,9 @@
 /**
- * @file dmxsendparamsset.cpp
+ * @file dmxparamsconst.cpp
+ *
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +24,10 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#include "dmxparamsconst.h"
 
-#include "dmxparams.h"
+const char DmxParamsConst::FILE_NAME[] = "params.txt";
 
-void DMXParams::Set(DMXSend *pDMXSend) {
-	assert(pDMXSend != nullptr);
-
-	if (isMaskSet(DmxSendParamsMask::BREAK_TIME)) {
-		pDMXSend->SetDmxBreakTime(m_tDMXParams.nBreakTime);
-	}
-
-	if (isMaskSet(DmxSendParamsMask::MAB_TIME)) {
-		pDMXSend->SetDmxMabTime(m_tDMXParams.nMabTime);
-	}
-
-	if (isMaskSet(DmxSendParamsMask::REFRESH_RATE)) {
-		uint32_t period = 0;
-		if (m_tDMXParams.nRefreshRate != 0) {
-			period = static_cast<uint32_t>(1000000 / m_tDMXParams.nRefreshRate);
-		}
-		pDMXSend->SetDmxPeriodTime(period);
-	}
-}
+const char DmxParamsConst::BREAK_TIME[] = "break_time";
+const char DmxParamsConst::MAB_TIME[] = "mab_time";
+const char DmxParamsConst::REFRESH_RATE[] = "refresh_rate";

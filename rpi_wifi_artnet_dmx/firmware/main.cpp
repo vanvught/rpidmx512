@@ -158,7 +158,7 @@ void notmain(void) {
 
 	node.SetUniverseSwitch(0, PortDir::OUTPUT, nStartUniverse);
 
-	DMXSend dmx;
+	DmxSend dmx;
 	LightSet *pSpi = nullptr;
 
 	if (tOutputType == OutputType::SPI) {
@@ -199,9 +199,9 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 #else
-		DMXParams dmxparams;
+		DmxParams dmxparams;
 #endif
 		if (dmxparams.Load()) {
 			dmxparams.Dump();

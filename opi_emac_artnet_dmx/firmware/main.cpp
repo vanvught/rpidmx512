@@ -128,7 +128,7 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	DMXSend *pDmxOutput;
+	DmxSend *pDmxOutput;
 	DmxInput *pDmxInput;
 
 	if (artnetparams.GetDirection() == PortDir::INPUT) {
@@ -138,10 +138,10 @@ void notmain(void) {
 		node.SetUniverseSwitch(0, PortDir::INPUT, artnetparams.GetUniverse());
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSend;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Set(pDmxOutput);

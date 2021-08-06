@@ -32,9 +32,9 @@
 
 #include "lightset.h"
 
-class DMXSendMulti: public DmxMulti, public LightSet  {
+class DmxSendMulti: public DmxMulti, public LightSet  {
 public:
-	DMXSendMulti();
+	DmxSendMulti();
 
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;

@@ -32,7 +32,7 @@
 
 using namespace dmxmulti;
 
-DMXSendMulti::DMXSendMulti() {
+DmxSendMulti::DmxSendMulti() {
 	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < max::OUT ; i++) {
@@ -42,7 +42,7 @@ DMXSendMulti::DMXSendMulti() {
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::Start(uint32_t nPortIndex) {
+void DmxSendMulti::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < max::OUT);
@@ -61,7 +61,7 @@ void DMXSendMulti::Start(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::Stop(uint32_t nPortIndex) {
+void DmxSendMulti::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < max::OUT);
@@ -80,7 +80,7 @@ void DMXSendMulti::Stop(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DMXSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void DmxSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < max::OUT);
 	assert(pData != nullptr);
 

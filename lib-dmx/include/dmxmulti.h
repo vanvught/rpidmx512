@@ -32,11 +32,13 @@
 #include "dmxconst.h"
 
 #if defined (H3)
-#include "h3/dmx_config.h"
+# include "h3/dmx_config.h"
+#elif defined (GD32)
+# include "gd32/dmx_config.h"
 #elif defined(RPI1) || defined (RPI2)
-#include "rpi/dmx_config.h"
+# include "rpi/dmx_config.h"
 #else
-#include "linux/dmx_config.h"
+# include "linux/dmx_config.h"
 #endif
 
 struct Data {

@@ -747,7 +747,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams(StoreDmxSend::Get());
+	DmxParams dmxparams(StoreDmxSend::Get());
 	dmxparams.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
@@ -1245,13 +1245,13 @@ void RemoteConfig::HandleTxtFileOscClient() {
 void RemoteConfig::HandleTxtFileParams() {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams(StoreDmxSend::Get());
+	DmxParams dmxparams(StoreDmxSend::Get());
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TDMXParams)) {
+		if (m_nBytesReceived == sizeof(struct TDmxParams)) {
 			uint32_t nSize;
-			dmxparams.Builder(reinterpret_cast<const struct TDMXParams *>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
+			dmxparams.Builder(reinterpret_cast<const struct TDmxParams *>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT

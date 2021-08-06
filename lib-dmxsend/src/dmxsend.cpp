@@ -33,7 +33,7 @@
 
 using namespace dmx;
 
-void DMXSend::Start(__attribute__((unused)) uint32_t nPortIndex) {
+void DmxSend::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	if (m_bIsStarted) {
@@ -47,7 +47,7 @@ void DMXSend::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void DmxSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	if (!m_bIsStarted) {
@@ -61,12 +61,10 @@ void DMXSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
+void DmxSend::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
-//	assert(nLength != 0);
 
 	if (__builtin_expect((nLength == 0), 0)) {
-//		DEBUG_EXIT
 		return;
 	}
 

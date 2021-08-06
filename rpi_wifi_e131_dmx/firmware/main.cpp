@@ -140,7 +140,7 @@ void notmain(void) {
 
 	bridge.SetUniverse(0, e131::PortDir::OUTPUT, nStartUniverse);
 
-	DMXSend dmx;
+	DmxSend dmx;
 	LightSet *pSpi = nullptr;
 
 	if (tOutputType == OutputType::SPI) {
@@ -181,9 +181,9 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DMXParams dmxparams((DMXParamsStore *)&storeDmxSend);
+		DmxParams dmxparams((DmxParamsStore *)&storeDmxSend);
 #else
-		DMXParams dmxparams;
+		DmxParams dmxparams;
 #endif
 		if (dmxparams.Load()) {
 			dmxparams.Dump();

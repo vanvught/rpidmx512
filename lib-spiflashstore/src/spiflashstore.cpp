@@ -80,8 +80,6 @@ SpiFlashStore::SpiFlashStore() {
 		DEBUG_PRINTF("OFFSET_STORES=%d, m_nSpiFlashStoreSize=%d", static_cast<int>(OFFSET_STORES), s_nSpiFlashStoreSize);
 
 		assert(s_nSpiFlashStoreSize <= FlashStore::SIZE);
-
-//		Dump();
 	}
 
 	DEBUG_EXIT
@@ -184,7 +182,7 @@ void SpiFlashStore::ResetSetList(Store tStore) {
 }
 
 void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, uint32_t nDataLength, uint32_t nSetList, uint32_t nOffsetSetList) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (__builtin_expect((!s_bHaveFlashChip),0)) {
 		return;
@@ -225,15 +223,14 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 	}
 
 	DEBUG_PRINTF("m_tState=%u", static_cast<uint32_t>(s_State));
-
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void SpiFlashStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32_t nOffset) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (__builtin_expect((!s_bHaveFlashChip), 0)) {
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return;
 	}
 
@@ -247,7 +244,7 @@ void SpiFlashStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32
 
 	if ((__builtin_expect((s_bIsNew), 0)) || (__builtin_expect((*pSet == 0), 0))) {
 		Update(tStore, nOffset, pData, nDataLength);
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return;
 	}
 
@@ -258,11 +255,11 @@ void SpiFlashStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32
 		*pDst++ = *pSrc++;
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void SpiFlashStore::CopyTo(Store tStore, void* pData, uint32_t& nDataLength) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (__builtin_expect((tStore >= Store::LAST), 0)) {
 		nDataLength = 0;
@@ -278,7 +275,7 @@ void SpiFlashStore::CopyTo(Store tStore, void* pData, uint32_t& nDataLength) {
 		*pDst++ = *pSrc++;
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 bool SpiFlashStore::Flash() {

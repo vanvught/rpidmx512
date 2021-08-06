@@ -112,7 +112,7 @@ void notmain(void) {
 
 	e131params.Set(&bridge);
 
-	DMXSend *pDmxOutput;
+	DmxSend *pDmxOutput;
 	DmxInput *pDmxInput;
 
 	const uint16_t nUniverse = e131params.GetUniverse();
@@ -124,10 +124,10 @@ void notmain(void) {
 		bridge.SetUniverse(0, e131::PortDir::INPUT, nUniverse);
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSend;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Set(pDmxOutput);

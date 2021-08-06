@@ -157,7 +157,7 @@ void notmain(void) {
 	// LightSet B - DMX - 1 Universe
 
 	StoreDmxSend storeDmxSend;
-	DMXSend *pDmxOutput = nullptr;
+	DmxSend *pDmxOutput = nullptr;
 	const auto portDir = e131params.GetDirection();
 
 	auto isDmxUniverseSet = false;
@@ -173,10 +173,10 @@ void notmain(void) {
 			bridge.SetE131Dmx(pDmxInput);
 			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT, 1);
 		} else {
-			pDmxOutput = new DMXSend;
+			pDmxOutput = new DmxSend;
 			assert(pDmxOutput != nullptr);
 
-			DMXParams dmxparams(&storeDmxSend);
+			DmxParams dmxparams(&storeDmxSend);
 
 			if (dmxparams.Load()) {
 				dmxparams.Set(pDmxOutput);

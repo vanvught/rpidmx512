@@ -27,7 +27,7 @@
 
 #include "dmxsendmulti.h"
 
-void DMXSendMulti::Print() {
+void DmxSendMulti::Print() {
 	printf("DMX Send configuration\n");
 	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
 	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));
