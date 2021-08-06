@@ -429,7 +429,7 @@ public class WizardArtnetTxt extends JDialog {
 		
 		btnSetDefaults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				remoteConfig.setTextArea(opi.doDefaults("artnet.txt"));
+				remoteConfig.setTextArea(opi.doDefaults(TXT_FILE));
 				load();
 			}
 		});
@@ -460,6 +460,32 @@ public class WizardArtnetTxt extends JDialog {
 			}
 		});
 		
+		formattedTextFieldUniverseC.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					formattedTextFieldUniverseC.commitEdit();
+					artnetAdressPortC = setNetSubNet((int)formattedTextFieldUniverseC.getValue());
+					update('C');
+				} catch (ParseException e1) {
+					formattedTextFieldUniverseC.setValue(getUniverseFromAddress(artnetAdressPortC));
+				}
+			}
+		});
+		
+		formattedTextFieldUniverseD.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					formattedTextFieldUniverseD.commitEdit();
+					artnetAdressPortD = setNetSubNet((int)formattedTextFieldUniverseD.getValue());
+					update('D');
+				} catch (ParseException e1) {
+					formattedTextFieldUniverseD.setValue(getUniverseFromAddress(artnetAdressPortD));
+				}
+			}
+		});
+		
 		rdbtnOutput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -478,6 +504,15 @@ public class WizardArtnetTxt extends JDialog {
 				final String[] lines = txt.split("\n");
 				for (int i = 0; i < lines.length; i++) {
 					final String line = lines[i];
+					if (line.contains("direction")) {
+						if (Properties.getString(line).equals("input")) {
+							rdbtnInput.setSelected(true);
+							rdbtnOutput.setSelected(false);
+						} else {
+							rdbtnOutput.setSelected(true);
+							rdbtnInput.setSelected(false);
+						}
+					}
 					if ((line.contains("net") && (!line.contains("subnet")) && (!line.contains("artnet")))) {
 						artnetNet = Properties.getInt(line);
 						continue;
@@ -675,6 +710,7 @@ public class WizardArtnetTxt extends JDialog {
 			txtAppend.append(String.format("map_universe0=%d\n", chckbxMapUniverse0.isSelected() ? 1 : 0));
 			
 			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
+			txt = txt.replaceAll("direction", "#direction");
 			txt = txt.replaceAll("universe_port_", "#universe_port_");
 			txt = txt.replaceAll("destination_ip_port", "#destination_ip_port");
 					
