@@ -91,9 +91,18 @@ public class FirmwareInstallation extends JDialog {
 						System.out.println("TFTP Client Closed with result " + frame.result());
 						
 						Node.doSetTFTP(false);
-						chckbxTFTPOff.setSelected(!Node.doGetTFTP().contains("On"));
 						
-						if (Node.doGetTFTP().contains("On")) {
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e1) {
+							e1.printStackTrace();
+						}
+						
+						final String getTFTP = Node.doGetTFTP();
+						
+						chckbxTFTPOff.setSelected(!getTFTP.contains("On"));
+						
+						if (getTFTP.contains("On")) {
 							// Error
 						} else {
 							if (frame.result() > 0) {
