@@ -1,5 +1,5 @@
 /**
- * @file h3_enet.c
+ * @file mac_address.c
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -26,12 +26,11 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include "h3_enet.h"
 #include "h3.h"
 
 extern int uart0_printf(const char* fmt, ...);
 
-void enet_mac_address_get(__attribute__((unused)) enet_macaddress_enum mac_addr, uint8_t paddr[]) {
+void mac_address_get(uint8_t paddr[]) {
 	assert(mac_addr == ENET_MAC_ADDRESS0);
 
 	const uint32_t mac_lo = H3_EMAC->ADDR[0].LOW;

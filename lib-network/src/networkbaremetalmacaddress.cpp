@@ -30,7 +30,7 @@
 #include "networkbaremetalmacaddress.h"
 
 extern "C" {
-void enet_mac_address_get(uint32_t, uint8_t paddr[]);
+void mac_address_get(uint8_t paddr[]);
 }
 
 NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
@@ -40,5 +40,5 @@ NetworkBaremetalMacAddress::NetworkBaremetalMacAddress() {
 void NetworkBaremetalMacAddress::MacAddressCopyTo(uint8_t *pMacAddress) {
 	assert(pMacAddress != nullptr);
 
-	enet_mac_address_get(0, pMacAddress);
+	mac_address_get(pMacAddress);
 }

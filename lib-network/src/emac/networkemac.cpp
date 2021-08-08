@@ -1,5 +1,5 @@
 /**
- * networkh3emac.h
+ * networkemac.h
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -44,9 +44,8 @@
 #define HOST_NAME_PREFIX	"allwinner_"
 
 extern "C" {
-void enet_mac_address_get(uint32_t, uint8_t paddr[]);
 // MAC-PHY
-int emac_start(bool reset_emac);
+int emac_start(uint8_t paddr[]);
 }
 
 NetworkEmac::NetworkEmac() {
@@ -72,9 +71,7 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_pNetworkDisplay->ShowEmacStart();
 	}
 
-	emac_start(true);
-
-	enet_mac_address_get(0, m_aNetMacaddr);
+	emac_start(m_aNetMacaddr);
 
 	tIpInfo.ip.addr = params.GetIpAddress();
 	tIpInfo.netmask.addr = params.GetNetMask();
