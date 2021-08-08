@@ -35,10 +35,12 @@
 
 class RDMDiscovery: public RDMTod {
 public:
-	RDMDiscovery(uint32_t nPort = 0);
+	RDMDiscovery(uint32_t nPort = 0) : m_nPort(nPort) {}
 
 	void SetUid(const uint8_t *);
-	const uint8_t *GetUid();
+	const uint8_t *GetUid() const {
+		return m_Uid;
+	}
 
 	void Full();
 
@@ -56,9 +58,8 @@ private:
 private:
 	uint32_t m_nPort;
 	uint8_t m_Uid[RDM_UID_SIZE];
-	RDMMessage m_UnMute;
-	RDMMessage m_Mute;
-	RDMMessage m_DiscUniqueBranch;
+	RDMMessage m_Message;
+	uint8_t m_Pdl[2][RDM_UID_SIZE];
 };
 
 #endif /* RDMDISCOVERY_H_ */

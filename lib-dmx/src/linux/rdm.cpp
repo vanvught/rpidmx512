@@ -37,7 +37,7 @@ extern "C" {
 void udelay(uint32_t);
 }
 
-uint8_t s_TransactionNumber[dmxmulti::max::OUT] = {0, };
+static uint8_t s_TransactionNumber[dmxmulti::max::OUT] = {0, };
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
 	assert(nPort < dmxmulti::max::OUT);

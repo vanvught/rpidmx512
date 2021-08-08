@@ -59,7 +59,7 @@ public:
 	// RDM Receive
 
 	const uint8_t *RdmReceive(uint32_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) override;
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) override;
 
 	 uint32_t RdmGetDateReceivedEnd() override {
 		 return 0;
@@ -93,8 +93,8 @@ public:
 
 private:
 	void ClearData(uint32_t uart);
-	void StartData(uint32_t uart);
-	void StopData(uint32_t uart);
+	void StartData(uint32_t nUart, uint32_t nPort);
+	void StopData(uint32_t nUart, uint32_t nPort);
 
 private:
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };

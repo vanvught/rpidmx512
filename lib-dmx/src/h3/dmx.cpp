@@ -222,11 +222,9 @@ static void fiq_dmx_in_handler(void) {
 
 		switch (sv_DmxReceiveState) {
 		case IDLE:
-			if (data == 0xFE) {
-				sv_DmxReceiveState = RDMDISCFE;
-				s_RdmData[sv_nRdmDataBufferIndexHead][0] = 0xFE;
-				sv_nDmxDataIndex = 1;
-			}
+			sv_DmxReceiveState = RDMDISCFE;
+			s_RdmData[sv_nRdmDataBufferIndexHead][0] = data;
+			sv_nDmxDataIndex = 1;
 			break;
 		case PRE_BREAK:
 			sv_DmxReceiveState = BREAK;
@@ -770,7 +768,7 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = nullptr;

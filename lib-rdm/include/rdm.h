@@ -149,7 +149,7 @@ public:
 	static void SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
 
 	static const uint8_t *Receive(uint32_t nPort);
-	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint32_t);
+	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint16_t);
 };
 
 #endif /* RDM_H_ */

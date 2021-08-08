@@ -37,7 +37,7 @@ const uint8_t *Rdm::Receive(uint32_t nPort) {
 	return DmxSet::Get()->RdmReceive(nPort);
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
 	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
 }
 

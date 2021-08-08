@@ -1086,7 +1086,7 @@ void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
 
 	uint32_t j = 0;
 
-	for (uint16_t i = 0; i < nDmxFootPrint; i++) { // FIXME PDL
+	for (uint16_t i = 0; i < std::min(nDmxFootPrint, static_cast<uint16_t>(46)); i++) {
 		if (RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, i, tSlotInfo)) {
 			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(i >> 8);
 			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(i);

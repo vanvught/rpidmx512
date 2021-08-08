@@ -71,7 +71,9 @@ void RDMMessage::SetPid(uint16_t nPid) {
 void RDMMessage::SetPd(const uint8_t *pParamData, uint8_t nLength) {
 	m_message.message_length = static_cast<uint8_t>(m_message.message_length - m_message.param_data_length);
 	m_message.param_data_length = nLength;
-	memcpy(m_message.param_data, pParamData, nLength);
+	if ((pParamData != nullptr) && (nLength != 0)) {
+		memcpy(m_message.param_data, pParamData, nLength);
+	}
 	m_message.message_length = static_cast<uint8_t>(m_message.message_length + nLength);
 }
 

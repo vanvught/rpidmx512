@@ -129,7 +129,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmD
 
 	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
 
-	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 200000);
+	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 60000);
 
 #ifndef NDEBUG
 	RDMMessage::Print(pResponse);

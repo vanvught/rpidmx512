@@ -237,7 +237,7 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
 	return rdmReceiveBuffer;
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint32_t nPort, uint16_t nTimeOut) {
 	uint8_t *p = nullptr;
 	const auto nMicros = micros();
 

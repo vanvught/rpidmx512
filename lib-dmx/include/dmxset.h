@@ -45,7 +45,7 @@ public:
 	virtual void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength)=0;
 
 	virtual const uint8_t *RdmReceive(uint32_t nPort)=0;
-	virtual const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut)=0;
+	virtual const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut)=0;
 
 	virtual uint32_t RdmGetDateReceivedEnd()=0;
 

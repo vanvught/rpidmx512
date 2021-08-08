@@ -180,7 +180,7 @@ const uint8_t *DmxMulti::RdmReceive(uint32_t nPort) {
 	return rdmReceiveBuffer;
 }
 
-const uint8_t *DmxMulti::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t *DmxMulti::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
 	assert(nPort < MAX_PORTS);
 
 	uint8_t *p = nullptr;
