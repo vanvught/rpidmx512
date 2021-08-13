@@ -35,7 +35,7 @@
 class DMXReceiver: public Dmx {
 public:
 	DMXReceiver();
-	~DMXReceiver() override;
+	~DMXReceiver();
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;

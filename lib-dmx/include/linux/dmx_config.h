@@ -32,6 +32,4 @@ static constexpr auto SIZE = 516;
 }  // namespace buffer
 }  // namespace dmx
 
-
-
 #endif /* LINUX_DMX_CONFIG_H_ */

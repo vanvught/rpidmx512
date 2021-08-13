@@ -26,22 +26,47 @@
 #ifndef LINUX_DMX_H_
 #define LINUX_DMX_H_
 
-#include "dmxset.h"
 #include "dmxconst.h"
 
-class Dmx: public DmxSet {
+#include "../dmx_config.h"
+
+namespace dmxsingle {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+
+struct TotalStatistics {
+	uint32_t nDmxPackets;
+	uint32_t nRdmPackets;
+};
+
+struct Statistics {
+	uint32_t nSlotsInPacket;
+	uint32_t nMarkAfterBreak;
+	uint32_t nBreakToBreak;
+	uint32_t nSlotToSlot;
+};
+
+struct Data {
+	uint8_t Data[dmx::buffer::SIZE];
+	struct Statistics Statistics;
+};
+}  // namespace dmxsingle
+
+class Dmx {
 public:
 	Dmx(bool DoInit = true);
 	void Init();
 
-	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false) override;
+	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false);
 	dmx::PortDirection GetPortDirection();
 
 	// RDM
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) override;
-	const uint8_t *RdmReceive(uint32_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) override;
-	uint32_t RdmGetDateReceivedEnd() override;
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	const uint8_t *RdmReceive(uint32_t nPort);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut);
+	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX
 	void ClearData();
@@ -68,6 +93,11 @@ public:
 		return m_nDmxTransmitPeriod;
 	}
 
+	void SetDmxSlots(uint16_t nSlots = dmx::max::CHANNELS);
+	uint16_t GetDmxSlots() const {
+		return m_nDmxTransmitSlots;
+	}
+
 	static Dmx* Get() {
 		return s_pThis;
 	}
@@ -83,6 +113,7 @@ private:
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod = { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
+	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
 
 	static Dmx *s_pThis;
 };

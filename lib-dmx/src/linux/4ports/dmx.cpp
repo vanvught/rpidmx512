@@ -51,7 +51,7 @@ static uint32_t micros(void) {
 	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
-#include "config.h"
+#include "../config.h"
 
 using namespace dmxmulti;
 using namespace dmx;
@@ -64,8 +64,13 @@ struct Data dmxDataRx;
 
 static uint8_t dmxSendBuffer[513];
 
-DmxMulti::DmxMulti() {
+Dmx *Dmx::s_pThis = nullptr;
+
+Dmx::Dmx() {
 	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	for (uint32_t i = 0; i < MAX_PORTS; i++) {
 		s_nHandePortDmx[i] = Network::Get()->Begin(UDP_PORT_DMX_START + i);
@@ -78,30 +83,33 @@ DmxMulti::DmxMulti() {
 	DEBUG_EXIT
 }
 
-void DmxMulti::SetPortDirection(__attribute__((unused)) uint32_t nPort, __attribute__((unused)) PortDirection tPortDirection, __attribute__((unused)) bool bEnableData) {
+void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, __attribute__((unused)) PortDirection tPortDirection, __attribute__((unused)) bool bEnableData) {
 }
 
-void DmxMulti::ClearData(__attribute__((unused)) uint32_t nUart) {
+void Dmx::ClearData(__attribute__((unused)) uint32_t nUart) {
 }
 
-void DmxMulti::StartData(__attribute__((unused)) uint32_t nUart) {
+void Dmx::StartData(__attribute__((unused)) uint32_t nUart, __attribute__((unused)) uint32_t nPort) {
 }
 
-void DmxMulti::StopData(__attribute__((unused)) uint32_t nUart) {
+void Dmx::StopData(__attribute__((unused)) uint32_t nUart, __attribute__((unused)) uint32_t nPort) {
 }
 
 // DMX Send
 
-void DmxMulti::SetDmxBreakTime(__attribute__((unused)) uint32_t nBreakTime) {
+void Dmx::SetDmxBreakTime(__attribute__((unused)) uint32_t nBreakTime) {
 }
 
-void DmxMulti::SetDmxMabTime(__attribute__((unused)) uint32_t nMabTime) {
+void Dmx::SetDmxMabTime(__attribute__((unused)) uint32_t nMabTime) {
 }
 
-void DmxMulti::SetDmxPeriodTime(__attribute__((unused)) uint32_t nPeriod) {
+void Dmx::SetDmxPeriodTime(__attribute__((unused)) uint32_t nPeriod) {
 }
 
-void DmxMulti::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetDmxSlots(__attribute__((unused)) uint16_t nSlots) {
+}
+
+void Dmx::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
 	assert(nPort < MAX_PORTS);
 	assert(pData != 0);
 	assert(nLength != 0);
@@ -115,7 +123,7 @@ void DmxMulti::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, ui
 
 // DMX Receive
 
-const uint8_t *DmxMulti::GetDmxAvailable(__attribute__((unused)) uint32_t nPort)  {
+const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPort)  {
 	assert(nPort < MAX_PORTS);
 
 	uint32_t fromIp;
@@ -139,13 +147,13 @@ const uint8_t *DmxMulti::GetDmxAvailable(__attribute__((unused)) uint32_t nPort)
 	return const_cast<const uint8_t *>(dmxDataRx.data);
 }
 
-uint32_t DmxMulti::GetUpdatesPerSeconde(__attribute__((unused)) uint32_t nPort) {
+uint32_t Dmx::GetUpdatesPerSeconde(__attribute__((unused)) uint32_t nPort) {
 	return 0;
 }
 
 // RDM Send
 
-void DmxMulti::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLength) {
 	assert(nPort < MAX_PORTS);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
@@ -155,7 +163,7 @@ void DmxMulti::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLen
 
 // RDM Receive
 
-const uint8_t *DmxMulti::RdmReceive(uint32_t nPort) {
+const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
 	assert(nPort < MAX_PORTS);
 
 	uint32_t fromIp;
@@ -180,7 +188,7 @@ const uint8_t *DmxMulti::RdmReceive(uint32_t nPort) {
 	return rdmReceiveBuffer;
 }
 
-const uint8_t *DmxMulti::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
+const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
 	assert(nPort < MAX_PORTS);
 
 	uint8_t *p = nullptr;

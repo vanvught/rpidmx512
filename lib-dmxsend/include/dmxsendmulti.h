@@ -29,10 +29,9 @@
 #include <cstdint>
 
 #include "dmxmulti.h"
-
 #include "lightset.h"
 
-class DmxSendMulti: public DmxMulti, public LightSet  {
+class DmxSendMulti: public Dmx, public LightSet  {
 public:
 	DmxSendMulti();
 

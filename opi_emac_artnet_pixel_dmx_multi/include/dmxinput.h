@@ -33,7 +33,7 @@
 #include "dmxmulti.h"
 #include "h3/dmx_config.h"
 
-class DmxInput: public ArtNetDmx, public DmxMulti {
+class DmxInput: public ArtNetDmx, public Dmx {
 public:
 	DmxInput();
 

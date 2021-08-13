@@ -31,3 +31,4 @@ const char DmxParamsConst::FILE_NAME[] = "params.txt";
 const char DmxParamsConst::BREAK_TIME[] = "break_time";
 const char DmxParamsConst::MAB_TIME[] = "mab_time";
 const char DmxParamsConst::REFRESH_RATE[] = "refresh_rate";
+const char DmxParamsConst::SLOTS_COUNT[] = "slots_count";

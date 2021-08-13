@@ -2,4 +2,5 @@
 DEFINES=
 EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include ../lib-dmx/include
 
+include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

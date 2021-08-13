@@ -57,6 +57,7 @@ public class WizardParamsTxt extends JDialog {
 	private JFormattedTextField formattedTextFieldBreakTime;
 	private JFormattedTextField formattedTextFieldMaBTime;
 	private JFormattedTextField formattedTextFieldRefreshRate;
+	private JFormattedTextField formattedTextFieldSlots;
 
 	public static void main(String[] args) {
 		try {
@@ -81,7 +82,7 @@ public class WizardParamsTxt extends JDialog {
 	}
 	
 	private void InitComponents() {
-		setBounds(100, 100, 294, 199);
+		setBounds(100, 100, 294, 214);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -117,38 +118,48 @@ public class WizardParamsTxt extends JDialog {
 		formattedTextFieldRefreshRate.setColumns(4);
 		formattedTextFieldRefreshRate.setText("40");
 		
-		JLabel lblNewLabel = new JLabel("0 = as fast as possible");
-		lblNewLabel.setForeground(Color.GRAY);
+		JLabel lblRefreshRateTip = new JLabel("0 = as fast as possible");
+		lblRefreshRateTip.setForeground(Color.GRAY);
+		JLabel lblUsBreak = new JLabel("μs");
+		JLabel lblusMab = new JLabel("μs");	
+		JLabel lblSlots = new JLabel("Slots");
 		
-		JLabel lblNewLabel_1 = new JLabel("μs");
-		
-		JLabel lblNewLabel_1_1 = new JLabel("μs");
+		formattedTextFieldSlots = new JFormattedTextField();
+		formattedTextFieldSlots.setText("512");
+		formattedTextFieldSlots.setColumns(6);
 		
 		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
 		gl_contentPanel.setHorizontalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
 					.addContainerGap()
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.TRAILING)
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblMabTime)
+								.addComponent(lblBreakTime))
+							.addGap(4))
+						.addComponent(lbRefreshRate, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(lblSlots, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(lbRefreshRate)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(formattedTextFieldRefreshRate, GroupLayout.PREFERRED_SIZE, 35, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.UNRELATED)
-							.addComponent(lblNewLabel))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblBreakTime)
-								.addComponent(lblMabTime))
-							.addGap(18)
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING, false)
-								.addComponent(formattedTextFieldMaBTime)
-								.addComponent(formattedTextFieldBreakTime, GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE))
+							.addComponent(formattedTextFieldMaBTime, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblNewLabel_1_1, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
-								.addComponent(lblNewLabel_1))))
-					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+							.addComponent(lblusMab, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addComponent(formattedTextFieldBreakTime, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(lblUsBreak))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addComponent(formattedTextFieldRefreshRate, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(lblRefreshRateTip))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addComponent(formattedTextFieldSlots, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addComponent(lblRefreshRateTip)))
+					.addContainerGap(7, Short.MAX_VALUE))
 		);
 		gl_contentPanel.setVerticalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
@@ -157,17 +168,21 @@ public class WizardParamsTxt extends JDialog {
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
 						.addComponent(lblBreakTime)
 						.addComponent(formattedTextFieldBreakTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNewLabel_1))
-					.addGap(18)
+						.addComponent(lblUsBreak))
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblMabTime)
 						.addComponent(formattedTextFieldMaBTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNewLabel_1_1))
-					.addGap(18)
+						.addComponent(lblMabTime)
+						.addComponent(lblusMab))
+					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lbRefreshRate)
 						.addComponent(formattedTextFieldRefreshRate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblNewLabel))
+						.addComponent(lbRefreshRate)
+						.addComponent(lblRefreshRateTip))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(formattedTextFieldSlots, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+						.addComponent(lblSlots))
 					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		contentPanel.setLayout(gl_contentPanel);

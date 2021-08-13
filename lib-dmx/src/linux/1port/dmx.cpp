@@ -52,7 +52,7 @@ static uint32_t micros(void) {
 	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
-#include "config.h"
+#include "../config.h"
 
 using namespace dmxsingle;
 using namespace dmx;

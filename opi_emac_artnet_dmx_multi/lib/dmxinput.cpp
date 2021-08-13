@@ -28,7 +28,6 @@
 
 #include "dmxinput.h"
 #include "dmxmulti.h"
-#include "dmx.h"
 
 #include "debug.h"
 

@@ -1,8 +1,8 @@
 /**
- * @file dmx.h
+ * @file dmxmulti.h
  *
  */
-/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,73 +23,95 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_DMX_H_
-#define H3_DMX_H_
+#ifndef H3_DMXMULTI_H_
+#define H3_DMXMULTI_H_
 
 #include <cstdint>
 
-#include "dmxset.h"
 #include "dmxconst.h"
+#include "../dmx_config.h"
 
-class Dmx: public DmxSet {
+namespace dmxmulti {
+namespace max {
+static constexpr auto OUT = 4U;
+static constexpr auto IN = 4U;
+}  // namespace max
+}  // namespace dmxmulti
+
+struct Data {
+	uint8_t data[dmx::buffer::SIZE];
+	uint32_t nSlotsInPacket;
+};
+
+class Dmx {
 public:
-	Dmx(bool DoInit = true);
-	void Init();
+	Dmx();
 
-	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false) override;
-	dmx::PortDirection GetPortDirection();
+	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false);
 
-	// RDM
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) override;
-	const uint8_t *RdmReceive(uint32_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) override;
-	uint32_t RdmGetDateReceivedEnd() override;
+	// RDM Send
 
-	// DMX
-	void ClearData();
-	void SetSendData(const uint8_t *pData, uint32_t nLength);
-	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
 
-	const uint8_t* GetDmxCurrentData();
-	const uint8_t* GetDmxAvailable();
-	const uint8_t* GetDmxChanged();
-	uint32_t GetUpdatesPerSecond();
+	// RDM Receive
+
+	const uint8_t *RdmReceive(uint32_t nPort);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut);
+
+	 uint32_t RdmGetDateReceivedEnd() {
+		 return 0;
+	 }
+
+	// DMX Send
+
+	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {
-		return m_nDmxTransmitBreakTime;
+		return m_nDmxTransmitMabTime;
 	}
 
 	void SetDmxMabTime(uint32_t nMabTime);
 	uint32_t GetDmxMabTime() const {
 		return m_nDmxTransmitMabTime;
 	}
-
-	void SetDmxPeriodTime(uint32_t nPeriodTime);
+	
+	void SetDmxPeriodTime(uint32_t nPeriod);
 	uint32_t GetDmxPeriodTime() const {
 		return m_nDmxTransmitPeriod;
 	}
+
+	void SetDmxSlots(uint16_t nSlots = dmx::max::CHANNELS);
+	uint16_t GetDmxSlots() const {
+		return m_nDmxTransmitSlots;
+	}
+
+	// DMX Receive
+
+	const uint8_t* GetDmxAvailable(uint32_t port);
+	uint32_t GetUpdatesPerSeconde(uint32_t port);
+
+	static void UartInit(uint32_t nUart);
 
 	static Dmx* Get() {
 		return s_pThis;
 	}
 
 private:
-	void UartInit();
-	void SetSendDataLength(uint32_t nLength);
-	void UartEnableFifo();
-	void UartDisableFifo();
-	void StopData();
-	void StartData();
+	void ClearData(uint32_t uart);
+	void StartData(uint32_t nUart, uint32_t nPort);
+	void StopData(uint32_t nUart, uint32_t nPort);
 
 private:
-	bool m_IsInitDone {false};
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
-	uint32_t m_nDmxTransmitPeriod = { dmx::transmit::PERIOD_DEFAULT };
+	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
+	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
+	dmx::PortDirection m_tDmxPortDirection[dmxmulti::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmxmulti::max::OUT];
 
 	static Dmx *s_pThis;
 };
 
-#endif /* H3_DMX_H_ */
+#endif /* H3_DMXMULTI_H_ */

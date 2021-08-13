@@ -51,6 +51,7 @@
 #include "storedmxsend.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -178,8 +179,9 @@ void notmain(void) {
 	}
 
 	// DMX/RDM Output
-	DmxSendMulti *pDmxOutput;
-	ArtNetRdmController *pDiscovery;
+	DmxSendMulti *pDmxOutput = nullptr;
+	ArtNetRdmController *pDiscovery = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 	// DMX Input
 	DmxInput *pDmxInput;
 
@@ -200,6 +202,9 @@ void notmain(void) {
 		node.SetOutput(pDmxOutput);
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 
 		pDiscovery = new ArtNetRdmController;
 		assert(pDiscovery != nullptr);
@@ -284,6 +289,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

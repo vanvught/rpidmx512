@@ -35,7 +35,7 @@
 
 #include "arm/synchronize.h"
 
-void DmxMulti::UartInit(uint32_t nUart) {
+void Dmx::UartInit(uint32_t nUart) {
 //	assert(nUart < DMX_MAX_OUT);
 
 	H3_UART_TypeDef *p = nullptr;

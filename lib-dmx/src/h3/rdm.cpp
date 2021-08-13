@@ -27,7 +27,13 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmxset.h"
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# include "dmxmulti.h"
+using namespace dmxmulti;
+#else
+# include "dmx.h"
+using namespace dmxsingle;
+#endif
 #include "dmxconst.h"
 #include "dmx_internal.h"
 
@@ -36,11 +42,11 @@
 #include "h3_hs_timer.h"
 #include "h3_uart.h"
 
-uint8_t s_TransactionNumber[dmxmulti::max::OUT];
-uint32_t s_nLastSendMicros[dmxmulti::max::OUT];
+uint8_t s_TransactionNumber[max::OUT];
+uint32_t s_nLastSendMicros[max::OUT];
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmCommand != nullptr);
 
 	if (nSpacingMicros != 0) {
@@ -74,11 +80,11 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 }
 
 void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = h3_hs_timer_lo_us() - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = h3_hs_timer_lo_us() - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
@@ -89,18 +95,18 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 }
 
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = h3_hs_timer_lo_us() - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = h3_hs_timer_lo_us() - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
-	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 
 	auto *p = _get_uart(_port_to_uart(nPort));
 	p->LCR = UART_LCR_8_N_2;
@@ -116,5 +122,5 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
 }

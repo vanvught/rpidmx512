@@ -44,7 +44,7 @@
 class RDMResponder: public DMXReceiver, public RDMDeviceResponder  {
 public:
 	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
-	~RDMResponder() override;
+	~RDMResponder();
 
 	void Init();
 

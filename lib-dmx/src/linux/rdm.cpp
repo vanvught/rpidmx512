@@ -27,9 +27,16 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmx.h"
-
+#include "rdm.h"
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# include "dmxmulti.h"
+using namespace dmxmulti;
+#else
+# include "dmx.h"
+using namespace dmxsingle;
+#endif
 #include "dmxconst.h"
+#include "config.h"
 
 #include "debug.h"
 
@@ -37,10 +44,10 @@ extern "C" {
 void udelay(uint32_t);
 }
 
-static uint8_t s_TransactionNumber[dmxmulti::max::OUT] = {0, };
+static uint8_t s_TransactionNumber[max::OUT] = {0, };
 
 void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmCommand != nullptr);
 
 
@@ -65,7 +72,7 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((u
 void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -77,17 +84,17 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < dmxmulti::max::OUT);
+	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPort, dmx::PortDirection::OUTP, false);
 
 	SendRaw(nPort, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPort, dmx::PortDirection::INP, true);
 
 	DEBUG_EXIT
 }

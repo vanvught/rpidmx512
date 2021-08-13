@@ -31,7 +31,7 @@
 #include "e131dmx.h"
 #include "dmxmulti.h"
 
-class DmxInput: public E131Dmx, public DmxMulti {
+class DmxInput: public E131Dmx, public Dmx {
 public:
 	DmxInput();
 

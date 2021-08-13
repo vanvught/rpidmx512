@@ -33,6 +33,7 @@ struct DmxParamsConst {
 	static const char BREAK_TIME[];
 	static const char MAB_TIME[];
 	static const char REFRESH_RATE[];
+	static const char SLOTS_COUNT[];
 };
 
 #endif /* DMXPARAMSCONST_H_ */

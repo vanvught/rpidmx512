@@ -96,7 +96,7 @@ static uint32_t s_DmxTransmitBreakTimeIntv = (transmit::BREAK_TIME_MIN * 12);
 static uint32_t s_DmxTransmitMabTimeIntv = (transmit::MAB_TIME_MIN * 12);
 static uint32_t s_DmxTransmitPeriodIntv = (transmit::PERIOD_DEFAULT * 12) - (transmit::MAB_TIME_MIN * 12) - (transmit::BREAK_TIME_MIN * 12);
 
-static uint32_t s_nDmxSendDataLength = (max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
+static uint32_t s_nDmxSendDataLength = (dmx::max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
 static volatile uint32_t sv_nFiqMicrosCurrent;
 static volatile uint32_t sv_nFiqMicrosPrevious;
 static volatile bool sv_isDmxPreviousBreak = false;
@@ -267,9 +267,9 @@ static void fiq_dmx_in_handler(void) {
 			H3_TIMER->TMR0_INTV = (s_DmxData[0].Statistics.nSlotToSlot + 12) * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-			if (sv_nDmxDataIndex > max::CHANNELS) {
+			if (sv_nDmxDataIndex > dmx::max::CHANNELS) {
 				sv_DmxReceiveState = IDLE;
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = max::CHANNELS;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::max::CHANNELS;
 				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
@@ -654,6 +654,13 @@ void Dmx::SetDmxPeriodTime(uint32_t nPeriodTime) {
 	}
 
 	s_DmxTransmitPeriodIntv = (m_nDmxTransmitPeriod * 12) - s_DmxTransmitBreakTimeIntv - s_DmxTransmitMabTimeIntv;
+}
+
+void Dmx::SetDmxSlots(uint16_t nSlots) {
+	if ((nSlots >= 2) && (nSlots <= dmx::max::CHANNELS)) {
+		m_nDmxTransmitSlots = nSlots;
+		SetSendDataLength(1U + m_nDmxTransmitSlots);
+	}
 }
 
 const uint8_t* Dmx::GetDmxCurrentData() {

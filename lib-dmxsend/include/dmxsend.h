@@ -31,10 +31,9 @@
 #include "dmx.h"
 #include "lightset.h"
 
-class DmxSend: public Dmx, public LightSet  {
+class DmxSend: public Dmx, public LightSet {
 public:
-	DmxSend() {};
-	~DmxSend() override {};
+	DmxSend() {}
 
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
@@ -44,7 +43,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted {false};
+	bool m_bIsStarted { false };
 };
 
 #endif /* DMXSENDER_H_ */
