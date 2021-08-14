@@ -33,7 +33,7 @@
 
 class DmxSendMulti: public Dmx, public LightSet  {
 public:
-	DmxSendMulti();
+	DmxSendMulti() {}
 
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
@@ -43,7 +43,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted[dmxmulti::max::OUT];
+	static uint8_t s_nStarted;
 };
 
 #endif /* DMXSENDMULTI_H_ */

@@ -24,37 +24,32 @@
  */
 
 #include <cstdint>
+#include <climits>
 #include <cassert>
 
 #include "dmxsendmulti.h"
 
 #include "debug.h"
 
-using namespace dmxmulti;
+uint8_t DmxSendMulti::s_nStarted;
 
-DmxSendMulti::DmxSendMulti() {
-	DEBUG_ENTRY
-
-	for (uint32_t i = 0; i < max::OUT ; i++) {
-		m_bIsStarted[i] = false;
-	}
-
-	DEBUG_EXIT
+static constexpr bool is_started(const uint8_t v, const uint8_t p) {
+	return (v & (1U << p)) == (1U << p);
 }
 
 void DmxSendMulti::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	assert(nPortIndex < max::OUT);
+	assert(nPortIndex < CHAR_BIT);
 
 	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
-	if (m_bIsStarted[nPortIndex]) {
+	if (is_started(s_nStarted, static_cast<uint8_t>(nPortIndex))) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted[nPortIndex] = true;
+	s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
 
 	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
 
@@ -64,16 +59,16 @@ void DmxSendMulti::Start(uint32_t nPortIndex) {
 void DmxSendMulti::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	assert(nPortIndex < max::OUT);
+	assert(nPortIndex < CHAR_BIT);
 
-	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, m_bIsStarted[nPortIndex]);
+	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, static_cast<uint8_t>(nPortIndex)));
 
-	if (!m_bIsStarted[nPortIndex]) {
+	if (!is_started(s_nStarted, static_cast<uint8_t>(nPortIndex))) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted[nPortIndex] = false;
+	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
 	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
@@ -81,7 +76,7 @@ void DmxSendMulti::Stop(uint32_t nPortIndex) {
 }
 
 void DmxSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-	assert(nPortIndex < max::OUT);
+	assert(nPortIndex < CHAR_BIT);
 	assert(pData != nullptr);
 
 	if (__builtin_expect((nLength == 0), 0)) {
@@ -89,4 +84,14 @@ void DmxSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t n
 	}
 
 	SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
+}
+
+#include <cstdio>
+
+void DmxSendMulti::Print() {
+	printf("DMX Send\n");
+	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
+	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));
+	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / GetDmxPeriodTime()));
+	printf(" Slots        : %d\n", static_cast<int>(GetDmxSlots()));
 }
