@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#undef NDEBUG //TODO Remove #undef NDEBUG
-
 #include <cstdint>
 #include <cstring>
 #include <algorithm>
@@ -151,12 +149,14 @@ static volatile uint32_t s_nRdmDataWriteIndex[dmxmulti::max::OUT];
 static volatile uint32_t s_nRdmDataReadIndex[dmxmulti::max::OUT];
 
 static volatile UartState s_UartState[dmxmulti::max::OUT] ALIGNED;
-static volatile uint32_t s_nUartsSending;
 
 static char CONSOLE_ERROR[] ALIGNED = "DMXDATA %\n";
 static constexpr auto CONSOLE_ERROR_LENGTH = (sizeof(CONSOLE_ERROR) / sizeof(CONSOLE_ERROR[0]));
 
 static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
+#ifdef LOGIC_ANALYZER
+	h3_gpio_set(6);
+#endif
 	switch (s_tDmxSendState) {
 	case TxRxState::IDLE:
 	case TxRxState::DMXINTER:
@@ -170,12 +170,10 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		if (s_UartState[2] == UartState::TX) {
 			H3_UART2->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
-
 #if defined (ORANGE_PI_ONE)
 		if (s_UartState[3] == UartState::TX) {
 			H3_UART3->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
-
 # ifndef DO_NOT_USE_UART0
 		if (s_UartState[0] == UartState::TX) {
 			H3_UART0->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
@@ -196,7 +194,6 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 			s_pCoherentRegion->lli[2].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].data[0]);
 			s_pCoherentRegion->lli[2].len = s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].nLength;
 		}
-
 #if defined (ORANGE_PI_ONE)
 		if (s_nDmxDataWriteIndex[3] != s_nDmxDataReadIndex[3]) {
 			s_nDmxDataReadIndex[3] = (s_nDmxDataReadIndex[3] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -204,7 +201,6 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 			s_pCoherentRegion->lli[3].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].data[0]);
 			s_pCoherentRegion->lli[3].len = s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].nLength;
 		}
-
 # ifndef DO_NOT_USE_UART0
 		if (s_nDmxDataWriteIndex[0] != s_nDmxDataReadIndex[0]) {
 			s_nDmxDataReadIndex[0] = (s_nDmxDataReadIndex[0] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -214,8 +210,6 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		}
 # endif
 #endif
-
-		dmb();
 		s_tDmxSendState = TxRxState::BREAK;
 		break;
 	case TxRxState::BREAK:
@@ -233,14 +227,12 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		if (s_UartState[3] == UartState::TX) {
 			H3_UART3->LCR = UART_LCR_8_N_2;
 		}
- #ifndef DO_NOT_USE_UART0
+# ifndef DO_NOT_USE_UART0
 		if (s_UartState[0] == UartState::TX) {
 			H3_UART0->LCR = UART_LCR_8_N_2;
 		}
- #endif
+# endif
 #endif
-
-		dmb();
 		s_tDmxSendState = TxRxState::MAB;
 		break;
 	case TxRxState::MAB:
@@ -250,67 +242,43 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		if (s_UartState[1] == UartState::TX) {
 			H3_DMA_CHL1->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[1]);
 			H3_DMA_CHL1->EN = DMA_CHAN_ENABLE_START;
-			s_nUartsSending |= (1 << 1);
 		}
 
 		if (s_UartState[2] == UartState::TX) {
 			H3_DMA_CHL2->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[2]);
 			H3_DMA_CHL2->EN = DMA_CHAN_ENABLE_START;
-			s_nUartsSending |= (1 << 2);
 		}
 #if defined (ORANGE_PI_ONE)
 		if (s_UartState[3] == UartState::TX) {
 			H3_DMA_CHL3->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[3]);
 			H3_DMA_CHL3->EN = DMA_CHAN_ENABLE_START;
-			s_nUartsSending |= (1 << 3);
 		}
 # ifndef DO_NOT_USE_UART0
 		if (s_UartState[0] == UartState::TX) {
 			H3_DMA_CHL0->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[0]);
 			H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_START;
-			s_nUartsSending |= (1 << 0);
 		}
 # endif
 #endif
 		isb();
 
-		if (s_nUartsSending == 0) {
-			dmb();
-			s_tDmxSendState = TxRxState::DMXINTER;
-		} else {
-			dmb();
-			s_tDmxSendState = TxRxState::DMXDATA;
-		}
-		break;
-	case TxRxState::DMXDATA:
-//		assert(0);
-#ifdef LOGIC_ANALYZER
-		h3_gpio_set(20);
-#endif
-		CONSOLE_ERROR[CONSOLE_ERROR_LENGTH - 3] = static_cast<char>('0' + s_nUartsSending);
-		console_error(CONSOLE_ERROR);
-#ifdef LOGIC_ANALYZER
-		h3_gpio_clr(20);
-#endif
-		// Recover from this internal error.
-		s_nUartsSending = 0;
-		dmb();
 		s_tDmxSendState = TxRxState::DMXINTER;
-
-		H3_TIMER->TMR0_INTV = 12;
-		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		break;
 	default:
 		assert(0);
 		break;
 	}
+#ifdef LOGIC_ANALYZER
+	h3_gpio_clr(6);
+#endif
 }
 
 #include <cstdio>
 
 static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, const uint32_t nIIR) {
+#ifdef LOGIC_ANALYZER
 	h3_gpio_set(3);
-
+#endif
 	uint32_t nIndex;
 
 	isb();
@@ -469,47 +437,16 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			h3_gpio_clr(10);
 		}
 	}
-
+#ifdef LOGIC_ANALYZER
 	h3_gpio_clr(3);
+#endif
 }
 
 static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 	dmb();
-
-	// UART1
-	if (H3_DMA->IRQ_PEND0 & (DMA_IRQ_PEND0_DMA1_HALF_IRQ_EN | DMA_IRQ_PEND0_DMA1_PKG_IRQ_EN)) {
-		s_nUartsSending &= ~(1U << 1);
-	}
-	// UART2
-	if (H3_DMA->IRQ_PEND0 & (DMA_IRQ_PEND0_DMA2_HALF_IRQ_EN | DMA_IRQ_PEND0_DMA2_PKG_IRQ_EN)) {
-		s_nUartsSending &= ~(1U << 2);
-	}
-#if defined (ORANGE_PI_ONE)
-	// UART3
-	if (H3_DMA->IRQ_PEND0 & (DMA_IRQ_PEND0_DMA3_HALF_IRQ_EN | DMA_IRQ_PEND0_DMA3_PKG_IRQ_EN)) {
-		s_nUartsSending &= ~(1U << 3);
-	}
-# ifndef DO_NOT_USE_UART0
-	// UART0
-	if (H3_DMA->IRQ_PEND0 & (DMA_IRQ_PEND0_DMA0_HALF_IRQ_EN | DMA_IRQ_PEND0_DMA0_PKG_IRQ_EN)) {
-		s_nUartsSending &= ~(1U << 0);
-	}
-# endif
+#ifdef LOGIC_ANALYZER
+	h3_gpio_set(3);
 #endif
-
-	if (gic_get_active_fiq() == H3_DMA_IRQn) {
-		H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
-
-		H3_GIC_CPUIF->EOI = H3_DMA_IRQn;
-		gic_unpend(H3_DMA_IRQn);
-		isb();
-
-		if (s_nUartsSending == 0) {
-			dmb();
-			s_tDmxSendState = TxRxState::DMXINTER;
-		}
-	}
-
 	auto nIIR = H3_UART1->O08.IIR;
 	if (nIIR & UART_IIR_IID_RD) {
 		fiq_in_handler(1, reinterpret_cast<H3_UART_TypeDef *>(H3_UART1_BASE), nIIR);
@@ -523,7 +460,6 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 		H3_GIC_CPUIF->EOI = H3_UART2_IRQn;
 		gic_unpend(H3_UART2_IRQn);
 	}
-
 #if defined (ORANGE_PI_ONE)
 	nIIR = H3_UART3->O08.IIR;
 	if (nIIR & UART_IIR_IID_RD) {
@@ -540,6 +476,9 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx_multi(void) {
 		gic_unpend(H3_UART0_IRQn);
 	}
 # endif
+#endif
+#ifdef LOGIC_ANALYZER
+	h3_gpio_clr(3);
 #endif
 	dmb();
 }
@@ -590,7 +529,6 @@ Dmx::Dmx() {
 	s_nDmxTransmitPeriodINTV = (transmit::PERIOD_DEFAULT * 12) - (transmit::MAB_TIME_MIN * 12) - (transmit::BREAK_TIME_MIN * 12);
 
 	s_tDmxSendState = TxRxState::IDLE;
-	s_nUartsSending = 0;
 
 	for (uint32_t i = 0; i < dmxmulti::max::OUT; i++) {
 		// DMX TX
@@ -656,8 +594,6 @@ Dmx::Dmx() {
 	h3_gpio_clr(s_nDmxDataDirectionGpioPin[0]);	// 0 = input, 1 = output
 #endif
 
-	s_nUartsSending = 0;
-
 	UartInit(1);
 	UartInit(2);
 #if defined (ORANGE_PI_ONE)
@@ -670,8 +606,6 @@ Dmx::Dmx() {
 	__disable_fiq();
 
 	arm_install_handler(reinterpret_cast<unsigned>(fiq_dmx_multi), ARM_VECTOR(ARM_VECTOR_FIQ));
-
-	gic_fiq_config(H3_DMA_IRQn, GIC_CORE0);
 
 	gic_fiq_config(H3_UART1_IRQn, GIC_CORE0);
 	gic_fiq_config(H3_UART2_IRQn, GIC_CORE0);
@@ -706,12 +640,13 @@ Dmx::Dmx() {
 	H3_CCU->BUS_SOFT_RESET0 |= CCU_BUS_SOFT_RESET0_DMA;
 	H3_CCU->BUS_CLK_GATING0 |= CCU_BUS_CLK_GATING0_DMA;
 
+#if 0
 	H3_DMA->IRQ_PEND0 |= H3_DMA->IRQ_PEND0;
 	H3_DMA->IRQ_PEND1 |= H3_DMA->IRQ_PEND1;
 
 	H3_DMA->IRQ_EN0 = DMA_IRQ_EN0_DMA0_PKG_IRQ_EN | DMA_IRQ_EN0_DMA1_PKG_IRQ_EN
 			| DMA_IRQ_EN0_DMA2_PKG_IRQ_EN | DMA_IRQ_EN0_DMA3_PKG_IRQ_EN;
-
+#endif
 	isb();
 
 	__enable_fiq();
