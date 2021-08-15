@@ -40,22 +40,21 @@
 # define GPIO_ANALYZER_CH7
 #endif
 
-#include "dmxset.h"
 #include "dmxconst.h"
 
-class Dmx: public DmxSet {
+class Dmx {
 public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
 	void Init();
 
-	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false) override;
+	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false);
 	dmx::PortDirection GetPortDirection();
 
 	// RDM
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) override;
-	const uint8_t *RdmReceive(uint32_t nPort) override;
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) override;
-	uint32_t RdmGetDateReceivedEnd() override;
+	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	const uint8_t *RdmReceive(uint32_t nPort);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut);
+	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX
 	void ClearData();
@@ -78,7 +77,7 @@ public:
 
 	uint32_t GetSendDataLength() ;
 
-	const volatile struct dmxsingle::TotalStatistics *GetTotalStatistics();
+	const volatile struct TotalStatistics *GetTotalStatistics();
 
 	static Dmx* Get() {
 		return s_pThis;

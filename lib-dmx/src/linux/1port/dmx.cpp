@@ -146,6 +146,9 @@ void Dmx::SetDmxMabTime(__attribute__((unused)) uint32_t nMabTime) {
 void Dmx::SetDmxPeriodTime(__attribute__((unused)) uint32_t nPeriodTime) {
 }
 
+void Dmx::SetDmxSlots(__attribute__((unused)) uint16_t nSlots) {
+}
+
 const uint8_t* Dmx::GetDmxCurrentData() {
 	return const_cast<const uint8_t *>(dmxDataRx.Data);
 }

@@ -1,5 +1,5 @@
 /**
- * @file dmxsendmulti.cpp
+ * @file dmxsend.cpp
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -27,17 +27,17 @@
 #include <climits>
 #include <cassert>
 
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 
 #include "debug.h"
 
-uint8_t DmxSendMulti::s_nStarted;
+uint8_t DmxSend::s_nStarted;
 
 static constexpr bool is_started(const uint8_t v, const uint8_t p) {
 	return (v & (1U << p)) == (1U << p);
 }
 
-void DmxSendMulti::Start(uint32_t nPortIndex) {
+void DmxSend::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -56,7 +56,7 @@ void DmxSendMulti::Start(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DmxSendMulti::Stop(uint32_t nPortIndex) {
+void DmxSend::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -75,7 +75,7 @@ void DmxSendMulti::Stop(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DmxSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < CHAR_BIT);
 	assert(pData != nullptr);
 
@@ -88,7 +88,7 @@ void DmxSendMulti::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t n
 
 #include <cstdio>
 
-void DmxSendMulti::Print() {
+void DmxSend::Print() {
 	printf("DMX Send\n");
 	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
 	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));

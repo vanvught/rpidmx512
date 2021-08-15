@@ -42,7 +42,7 @@
 
 // DMX Output
 #include "dmxparams.h"
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 #include "storedmxsend.h"
 // DMX Input
 #include "dmxinput.h"
@@ -157,7 +157,7 @@ void notmain(void) {
 #endif
 	}
 
-	DmxSendMulti *pDmxOutput;
+	DmxSend *pDmxOutput;
 	DmxInput *pDmxInput;
 
 	if (portDir == e131::PortDir::INPUT) {
@@ -166,7 +166,7 @@ void notmain(void) {
 
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
-		pDmxOutput = new DmxSendMulti;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 
 		DmxParams dmxparams(&storeDmxSend);

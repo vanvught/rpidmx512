@@ -47,7 +47,7 @@
 
 // DMX/RDM Output
 #include "dmxparams.h"
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 #include "storedmxsend.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
@@ -179,7 +179,7 @@ void notmain(void) {
 	}
 
 	// DMX/RDM Output
-	DmxSendMulti *pDmxOutput = nullptr;
+	DmxSend *pDmxOutput = nullptr;
 	ArtNetRdmController *pDiscovery = nullptr;
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 	// DMX Input
@@ -191,7 +191,7 @@ void notmain(void) {
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-		pDmxOutput = new DmxSendMulti;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 		DmxParams dmxParams(&storeDmxSend);
 

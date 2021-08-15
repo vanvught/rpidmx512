@@ -53,7 +53,7 @@
 #include "pixelreboot.h"
 // DMX Output
 #include "dmxparams.h"
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 #include "storedmxsend.h"
 // DMX Input
 #include "dmxinput.h"
@@ -180,7 +180,7 @@ void notmain(void) {
 	}
 
 	StoreDmxSend storeDmxSend;
-	DmxSendMulti *pDmxOutput = nullptr;
+	DmxSend *pDmxOutput = nullptr;
 
 	if (nDmxPorts != 0) {
 		if (portDir == PortDir::INPUT) {
@@ -190,7 +190,7 @@ void notmain(void) {
 			bridge.SetE131Dmx(pDmxInput);
 			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT , nDmxPorts);
 		} else {
-			pDmxOutput = new DmxSendMulti;
+			pDmxOutput = new DmxSend;
 			assert(pDmxOutput != nullptr);
 
 			DmxParams dmxparams(&storeDmxSend);

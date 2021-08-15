@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXSENDER_H_
-#define DMXSENDER_H_
+#ifndef DMXSEND_H_
+#define DMXSEND_H_
 
 #include <cstdint>
 
 #include "dmx.h"
 #include "lightset.h"
 
-class DmxSend: public Dmx, public LightSet {
+class DmxSend: public Dmx, public LightSet  {
 public:
-	DmxSend() {}
-
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
 
@@ -43,7 +41,7 @@ public:
 	void Print() override;
 
 private:
-	bool m_bIsStarted { false };
+	static uint8_t s_nStarted;
 };
 
-#endif /* DMXSENDER_H_ */
+#endif /* DMXSEND_H_ */

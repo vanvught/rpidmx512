@@ -43,7 +43,6 @@
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-using namespace dmxsingle;
 using namespace dmx;
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
