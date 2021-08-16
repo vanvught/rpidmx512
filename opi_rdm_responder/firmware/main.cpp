@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "hardware.h"
-#include "networkbaremetalmacaddress.h"
+#include "noemac/network.h"
 #include "ledblink.h"
 
 #include "console.h"
@@ -66,7 +66,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkBaremetalMacAddress nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

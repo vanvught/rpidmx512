@@ -6,10 +6,6 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
-	LIBS += esp8266 network
-endif
-
 # Output
 TARGET= kernel.img
 LIST = kernel.list
@@ -26,7 +22,7 @@ SOURCE = ./
 FIRMWARE_DIR = ./../firmware-template-bcm/
 LINKER = $(FIRMWARE_DIR)memmap
 
-LIBS += properties device hal c++ debug c bcm2835 arm
+LIBS+=network properties device hal c++ debug c bcm2835 arm
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -56,7 +52,10 @@ LIB7DEP=$(addsuffix /lib7/lib, $(LIBDEP))
 LIB7DEP:=$(join $(LIB7DEP), $(LIBS))
 LIB7DEP:=$(addsuffix .a, $(LIB7DEP))
 
-COPS_COMMON=-DBARE_METAL -DSD_WRITE_SUPPORT $(DEFINES)
+$(info [${LIB6DEP}])
+$(info [${LIB7DEP}])
+
+COPS_COMMON=-DBARE_METAL -DNO_EMAC -DSD_WRITE_SUPPORT $(DEFINES)
 COPS_COMMON+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
 
@@ -105,24 +104,32 @@ all : builddirs prerequisites $(TARGET) $(TARGET7)
 	
 .PHONY: clean builddirs
 
-buildlibs:
-	cd .. && ./makeall-lib.sh && cd $(THISDIR)
-
 builddirs:
 	@mkdir -p $(BUILD_DIRS) $(BUILD7_DIRS)
 
-clean:
+clean: $(LIBDEP)
 	rm -rf $(BUILD) $(BUILD7)
 	rm -f $(TARGET) $(TARGET7)
 	rm -f $(MAP) $(MAP7)
 	rm -f $(LIST) $(LIST7)
+	
+#
+# Libraries
+#
 
+.PHONY: libdep $(LIBDEP) 
+
+libdep: $(LIBDEP) 	
+
+$(LIBDEP):
+	$(MAKE) -f Makefile.BCM $(MAKECMDGOALS) 'MAKE_FLAGS=$(DEFINES)' -C $@ 
+	
 # Build kernel.img
 
 $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
-$(BUILD)main.elf : Makefile.BCM $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIB6DEP)
+$(BUILD)main.elf : Makefile.BCM $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBDEP)
 	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIB6) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A $(BUILD)main.elf
@@ -135,7 +142,7 @@ $(TARGET) : $(BUILD)main.elf
 $(BUILD7)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS7) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD7)vectors.o
 	
-$(BUILD7)main.elf : Makefile.BCM $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIB7DEP)
+$(BUILD7)main.elf : Makefile.BCM $(LINKER) $(BUILD7)vectors.o $(OBJECTS7) $(LIBDEP)
 	$(LD) $(BUILD7)vectors.o $(OBJECTS7) -Map $(MAP7) -T $(LINKER) -o $(BUILD7)main.elf $(LIB7) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc
 	$(PREFIX)objdump -D $(BUILD7)main.elf | $(PREFIX)c++filt > $(LIST7)
 	$(PREFIX)size -A $(BUILD7)main.elf

@@ -1,5 +1,5 @@
 /**
- * @file networkesp8266.cpp
+ * @file network.cpp
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -28,19 +28,19 @@
 #include <algorithm>
 #include <cassert>
 
-#include "networkesp8266.h"
+#include "network.h"
 
 #include "networkparams.h"
 
 #include "apparams.h"
 #include "networkparams.h"
 #include "fotaparams.h"
-
-#include "display.h"
 #include "wificonst.h"
 
 #include "esp8266.h"
 #include "esp8266_cmd.h"
+
+#include "./../../lib-display/include/display.h"
 
 #include "debug.h"
 
@@ -53,25 +53,25 @@ static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U'
 static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
 extern "C" {
-void enet_mac_address_get(uint32_t, uint8_t paddr[]);
+void mac_address_get(uint8_t paddr[]);
 }
 
-NetworkESP8266::NetworkESP8266() {
-	DEBUG_ENTRY
+Network *Network::s_pThis = nullptr;
+
+Network::Network() {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	strcpy(m_aIfName, "wlan0");
-
-	DEBUG_EXIT
 }
 
-NetworkESP8266::~NetworkESP8266() {
+Network::~Network() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-
-void NetworkESP8266::Init() {
+void Network::Init() {
 	if (!Start()) {
 		for (;;)
 			;
@@ -80,7 +80,7 @@ void NetworkESP8266::Init() {
 	m_IsInitDone = true;
 }
 
-int32_t NetworkESP8266::Begin(uint16_t nPort) {
+int32_t Network::Begin(uint16_t nPort) {
 	esp8266_write_4bits(CMD_WIFI_UDP_BEGIN);
 
 	esp8266_write_halfword(nPort);
@@ -88,27 +88,27 @@ int32_t NetworkESP8266::Begin(uint16_t nPort) {
 	return 0;
 }
 
-int32_t NetworkESP8266::End(__attribute__((unused)) uint16_t nPort) {
+int32_t Network::End(__attribute__((unused)) uint16_t nPort) {
 	return 0;
 }
 
-void NetworkESP8266::MacAddressCopyTo(uint8_t* pMacAddress) {
+void Network::MacAddressCopyTo(uint8_t* pMacAddress) {
 	assert(pMacAddress != 0);
 
 	if (m_IsInitDone) {
-		memcpy(pMacAddress, m_aNetMacaddr , NETWORK_MAC_SIZE);
+		memcpy(pMacAddress, m_aNetMacaddr , network::MAC_SIZE);
 	} else {
-		enet_mac_address_get(0, pMacAddress);
+		mac_address_get(pMacAddress);
 	}
 }
 
-void NetworkESP8266::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void Network::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	esp8266_write_4bits(CMD_WIFI_UDP_JOIN_GROUP);
 
 	esp8266_write_word(nIp);
 }
 
-uint16_t NetworkESP8266::RecvFrom(__attribute__((unused)) int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t* from_port) {
+uint16_t Network::RecvFrom(__attribute__((unused)) int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t* from_port) {
 	assert(pBuffer != nullptr);
 	assert(from_ip != nullptr);
 	assert(from_port != nullptr);
@@ -129,7 +129,7 @@ uint16_t NetworkESP8266::RecvFrom(__attribute__((unused)) int32_t nHandle, void 
 	return nBytesReceived;
 }
 
-void NetworkESP8266::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void Network::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	assert(pBuffer != nullptr);
 
 	esp8266_write_4bits(CMD_WIFI_UDP_SEND);
@@ -140,7 +140,7 @@ void NetworkESP8266::SendTo(__attribute__((unused)) int32_t nHandle, const void 
 	esp8266_write_bytes(reinterpret_cast<const uint8_t *>(pBuffer), nLength);
 }
 
-bool NetworkESP8266::Start() {
+bool Network::Start() {
 	struct ip_info ip_config;
 
 	if (!esp8266_detect()){
@@ -193,7 +193,7 @@ bool NetworkESP8266::Start() {
 	}
 
 	esp8266_write_4bits(CMD_WIFI_MAC_ADDRESS);
-	esp8266_read_bytes(m_aNetMacaddr, NETWORK_MAC_SIZE);
+	esp8266_read_bytes(m_aNetMacaddr, network::MAC_SIZE);
 
 	printf(" MAC address : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 
@@ -248,7 +248,7 @@ bool NetworkESP8266::Start() {
  * Wifi Station functions
  */
 
-void NetworkESP8266::StationCreate(const char *pSsid, const char *pPassword) {
+void Network::StationCreate(const char *pSsid, const char *pPassword) {
 	assert(pSsid != nullptr);
 	assert(pPassword != nullptr);
 
@@ -260,7 +260,7 @@ void NetworkESP8266::StationCreate(const char *pSsid, const char *pPassword) {
 	m_IsDhcpUsed = true;
 }
 
-void NetworkESP8266::StationCreate(const char *pSsid, const char *pPassword, const struct ip_info *pInfo) {
+void Network::StationCreate(const char *pSsid, const char *pPassword, const struct ip_info *pInfo) {
 	assert(pSsid != nullptr);
 	assert(pPassword != nullptr);
 	assert(pInfo != nullptr);
@@ -276,12 +276,12 @@ void NetworkESP8266::StationCreate(const char *pSsid, const char *pPassword, con
 }
 
 
-_wifi_station_status NetworkESP8266::StationGetConnectStatus() {
+_wifi_station_status Network::StationGetConnectStatus() {
 	esp8266_write_4bits(CMD_WIFI_MODE_STA_STATUS);
 	return static_cast<_wifi_station_status>(esp8266_read_byte());
 }
 
-const char *NetworkESP8266::StationStatus(_wifi_station_status status) {
+const char *Network::StationStatus(_wifi_station_status status) {
 	switch (status) {
 	case WIFI_STATION_IDLE:
 		return "ESP8266 station idle";
@@ -311,7 +311,7 @@ const char *NetworkESP8266::StationStatus(_wifi_station_status status) {
  * WiFi AP function
  */
 
-void NetworkESP8266::ApCreate(const char *pPassword) {
+void Network::ApCreate(const char *pPassword) {
 	esp8266_init();
 
 	esp8266_write_4bits(CMD_WIFI_MODE_AP);
@@ -330,7 +330,7 @@ void NetworkESP8266::ApCreate(const char *pPassword) {
  * Getter's
  */
 
-const char *NetworkESP8266::GetSystemSdkVersion() {
+const char *Network::GetSystemSdkVersion() {
 	uint32_t nLength = SDK_VERSION_MAX;
 
 	esp8266_write_4bits(CMD_SYSTEM_SDK_VERSION);
@@ -339,7 +339,7 @@ const char *NetworkESP8266::GetSystemSdkVersion() {
 	return sdk_version;
 }
 
-const char *NetworkESP8266::GetFirmwareVersion() {
+const char *Network::GetFirmwareVersion() {
 	uint32_t nLength = FIRMWARE_VERSION_MAX;
 
 	esp8266_write_4bits(CMD_SYSTEM_FIRMWARE_VERSION);

@@ -26,8 +26,8 @@
 #ifndef STORENETWORK_H_
 #define STORENETWORK_H_
 
-#include "networkparams.h"
 #include "network.h"
+#include "networkparams.h"
 
 class StoreNetwork final: public NetworkParamsStore, public NetworkStore {
 public:

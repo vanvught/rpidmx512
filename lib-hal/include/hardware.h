@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,15 +26,10 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
-#ifdef __cplusplus
-
 namespace hardware {
 
 enum class LedStatus {
-	OFF,
-	ON,
-	HEARTBEAT,
-	FLASH
+	OFF, ON, HEARTBEAT, FLASH
 };
 
 enum class BootDevice {
@@ -49,22 +44,20 @@ enum class BootDevice {
 
 class RebootHandler {
 public:
-	virtual ~RebootHandler() {
-	}
-
+	virtual ~RebootHandler() {}
 	virtual void Run()=0;
 };
 
 #if defined (BARE_METAL)
 # if defined (H3)
 #  include "h3/hardware.h"
+# elif defined (GD32)
+#  include "gd32/hardware.h"
 # else
 #  include "rpi/hardware.h"
 # endif
 #else
 # include "linux/hardware.h"
-#endif
-
 #endif
 
 #endif /* HARDWARE_H_ */

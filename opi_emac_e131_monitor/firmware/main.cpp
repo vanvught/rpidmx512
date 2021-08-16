@@ -28,7 +28,7 @@
 #include <cassert>
 
 #include "hardware.h"
-#include "networkemac.h"
+#include "network.h"
 #include "ledblink.h"
 
 #include "console.h"
@@ -67,7 +67,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkEmac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

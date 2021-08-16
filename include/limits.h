@@ -35,4 +35,7 @@
 #   undef INT_MAX
 #   define INT_MAX __INT_MAX__
 
+#undef  CHAR_BIT
+#define CHAR_BIT        8
+
 #endif /* LIMITS_H_ */

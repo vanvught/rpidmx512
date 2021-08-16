@@ -1,6 +1,9 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-properties/include ../lib-hal/include
-#
+DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-properties/include ../lib-hal/include
+
+ifeq ($(findstring ESP8266,$(MAKE_FLAGS)), ESP8266)
+	EXTRA_SRCDIR+=src/esp8266 src/esp8266/rpi src/params
+endif
+
+include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

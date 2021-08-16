@@ -32,9 +32,9 @@
 #include <cstring>
 #include <cassert>
 
+#include "network.h"
 #include "networkparams.h"
 #include "networkparamsconst.h"
-#include "network.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -132,7 +132,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	uint32_t nLength = NETWORK_HOSTNAME_SIZE - 1;
+	uint32_t nLength = network::HOSTNAME_SIZE - 1;
 	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::HOSTNAME;

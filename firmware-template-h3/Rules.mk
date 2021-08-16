@@ -88,13 +88,6 @@ ifdef COND
 	LIBS+=spiflashinstall spiflashstore spiflash
 endif
 
-ifeq ($(findstring ESP8266,$(DEFINES)),ESP8266)
-	LIBS+=esp8266
-	INCDIRS=../lib-network/include
-endif
-
-LIBS+=network
-
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
 endif
@@ -114,7 +107,7 @@ SOURCE=./
 FIRMWARE_DIR=./../firmware-template-h3/
 LINKER=$(FIRMWARE_DIR)memmap
 
-LIBS+=lightset properties display device hal c++ h3 debug c arm
+LIBS+=lightset network properties display device hal c++ h3 debug c arm
 	
 DEFINES:=$(addprefix -D,$(DEFINES))
 
@@ -205,7 +198,7 @@ clean: $(LIBDEP)
 
 .PHONY: libdep $(LIBDEP)
 
-lisdep: $(LIBDEP)
+libdep: $(LIBDEP)
 
 $(LIBDEP):
 	$(MAKE) -f Makefile.H3 $(MAKECMDGOALS) 'PLATFORM=$(PLATFORM)' 'MAKE_FLAGS=$(DEFINES)' -C $@ 

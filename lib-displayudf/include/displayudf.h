@@ -127,7 +127,7 @@ public:
 	void ShowNetmask();
 	void ShowGatewayIp();
 	void ShowHostName();
-	void ShowDhcpStatus(DhcpClientStatus nStatus);
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
 	void ShowShutdown();
 
 	void Set(uint8_t nLine, displayudf::Labels tLabel);

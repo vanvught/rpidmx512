@@ -67,8 +67,8 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 	}
 
 	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
-		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), NETWORK_HOSTNAME_SIZE - 1);
-		m_tNetworkParams.aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), network::HOSTNAME_SIZE - 1);
+		m_tNetworkParams.aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 	}
 
 	builder.Add(NetworkParamsConst::USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NetworkParamsMask::DHCP));

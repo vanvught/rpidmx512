@@ -1,8 +1,8 @@
 /**
- * @file net_debug.h
+ * @file networkprint.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_DEBUG_H_
-#define NET_DEBUG_H_
+#include <cstdio>
 
-#include "debug.h"
+#include "network.h"
 
-#ifndef NDEBUG
- #include <stdio.h>
- #ifndef IP2STR
-  #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
- #define IPSTR "%d.%d.%d.%d"
- #endif
- #ifndef MAC2STR
-  #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
-  #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
- #endif
-#endif
-
-#include "h3_timer.h"
-
-#endif /* NET_DEBUG_H_ */
+void Network::Print() {
+	printf("Network\n");
+	printf(" Hostname  : %s\n", m_aHostName);
+	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
+	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
+	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
+	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
+	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
+	printf(" Mode      : %c\n", GetAddressingMode());
+}

@@ -6,7 +6,9 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
-SRCDIR = src src/rpi $(EXTRA_SRCDIR)
+$(info [${CURDIR}])
+
+SRCDIR=src src/rpi $(EXTRA_SRCDIR)
 
 #ifeq ($(findstring NDEBUG,$(DEFINES)),NDEBUG)
 #else
@@ -19,7 +21,10 @@ INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 
-COPS_COMMON=-DBARE_METAL -DSD_WRITE_SUPPORT $(DEFINES) $(INCLUDES)
+$(info $$DEFINES [${DEFINES}])
+$(info $$MAKE_FLAGS [${MAKE_FLAGS}])
+
+COPS_COMMON=-DBARE_METAL -DNO_EMAC -DSD_WRITE_SUPPORT $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
 
 COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s

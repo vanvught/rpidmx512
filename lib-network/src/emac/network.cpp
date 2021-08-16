@@ -1,5 +1,5 @@
 /**
- * networkemac.h
+ * network.cpp
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -29,7 +29,7 @@
 #include <time.h>
 #include <cassert>
 
-#include "networkemac.h"
+#include "network.h"
 #include "networkparams.h"
 
 #include "hardware.h"
@@ -48,15 +48,23 @@ extern "C" {
 int emac_start(uint8_t paddr[]);
 }
 
-NetworkEmac::NetworkEmac() {
+Network *Network::s_pThis = nullptr;
+
+Network::Network() {
 	DEBUG_ENTRY
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
+	m_aNetMacaddr[0] = '\0';
+	m_aHostName[0] = '\0';
+	m_aDomainName[0] = '\0';
 
 	strcpy(m_aIfName, "eth0");
 
 	DEBUG_EXIT
 }
 
-void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
+void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
@@ -86,7 +94,7 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	if (*p == '\0') {
 		unsigned k = 0;
 
-		for (unsigned i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < NETWORK_HOSTNAME_SIZE - 7); i++) {
+		for (unsigned i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < network::HOSTNAME_SIZE - 7); i++) {
 			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
 
@@ -120,13 +128,13 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	}
 
 	if ((m_pNetworkDisplay != nullptr) && m_IsDhcpUsed) {
-		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 	}
 
 	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
 	if ((m_pNetworkDisplay != nullptr) && m_IsZeroconfUsed) {
-		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
+		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
 	}
 
 	const auto nRetryTime = params.GetDhcpRetryTime();
@@ -136,7 +144,7 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 
 		if (m_pNetworkDisplay != nullptr) {
-			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RETRYING);
+			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
 		}
 		DEBUG_PUTS("");
 		auto nTime = time(nullptr);
@@ -145,7 +153,7 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 		}
 
 		if (m_pNetworkDisplay != nullptr) {
-			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 		}
 
 		LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
@@ -167,7 +175,7 @@ void NetworkEmac::Init(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::Shutdown() {
+void Network::Shutdown() {
 	DEBUG_ENTRY
 
 	if (m_pNetworkDisplay != nullptr) {
@@ -179,7 +187,7 @@ void NetworkEmac::Shutdown() {
 	DEBUG_EXIT
 }
 
-int32_t NetworkEmac::Begin(uint16_t nPort) {
+int32_t Network::Begin(uint16_t nPort) {
 	DEBUG_ENTRY
 
 	const int32_t nIdx = udp_bind(nPort);
@@ -191,7 +199,7 @@ int32_t NetworkEmac::Begin(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-int32_t NetworkEmac::End(uint16_t nPort) {
+int32_t Network::End(uint16_t nPort) {
 	DEBUG_ENTRY
 
 	const int32_t n = udp_unbind(nPort);
@@ -203,17 +211,17 @@ int32_t NetworkEmac::End(uint16_t nPort) {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::MacAddressCopyTo(uint8_t *pMacAddress) {
+void Network::MacAddressCopyTo(uint8_t *pMacAddress) {
 	DEBUG_ENTRY
 
-	for (uint32_t i =  0; i < NETWORK_MAC_SIZE; i++) {
+	for (uint32_t i =  0; i < network::MAC_SIZE; i++) {
 		pMacAddress[i] = m_aNetMacaddr[i];
 	}
 
 	DEBUG_EXIT
 }
 
-void NetworkEmac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void Network::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_join(nIp);
@@ -221,7 +229,7 @@ void NetworkEmac::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nI
 	DEBUG_EXIT
 }
 
-void NetworkEmac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
+void Network::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
 	DEBUG_ENTRY
 
 	igmp_leave(nIp);
@@ -229,15 +237,15 @@ void NetworkEmac::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t n
 	DEBUG_EXIT
 }
 
-uint16_t NetworkEmac::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+uint16_t Network::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
 	return udp_recv(static_cast<uint8_t>(nHandle), reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
-void NetworkEmac::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+void Network::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
-void NetworkEmac::SetDefaultIp() {
+void Network::SetDefaultIp() {
 	DEBUG_ENTRY
 
 	m_nLocalIp = 2
@@ -250,7 +258,7 @@ void NetworkEmac::SetDefaultIp() {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::SetIp(uint32_t nIp) {
+void Network::SetIp(uint32_t nIp) {
 	DEBUG_ENTRY
 
 	if (m_IsDhcpUsed) {
@@ -287,7 +295,7 @@ void NetworkEmac::SetIp(uint32_t nIp) {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::SetNetmask(uint32_t nNetmask) {
+void Network::SetNetmask(uint32_t nNetmask) {
 	DEBUG_ENTRY
 
 	if (m_nNetmask == nNetmask) {
@@ -312,7 +320,7 @@ void NetworkEmac::SetNetmask(uint32_t nNetmask) {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::SetGatewayIp(uint32_t nGatewayIp) {
+void Network::SetGatewayIp(uint32_t nGatewayIp) {
 	DEBUG_ENTRY
 
 	if (m_nGatewayIp == nGatewayIp) {
@@ -333,7 +341,7 @@ void NetworkEmac::SetGatewayIp(uint32_t nGatewayIp) {
 	DEBUG_EXIT
 }
 
-void NetworkEmac::SetHostName(const char *pHostName) {
+void Network::SetHostName(const char *pHostName) {
 	Network::SetHostName(pHostName);
 
 	net_set_hostname(pHostName);
@@ -343,7 +351,7 @@ void NetworkEmac::SetHostName(const char *pHostName) {
 	}
 }
 
-bool NetworkEmac::SetZeroconf() {
+bool Network::SetZeroconf() {
 	struct ip_info tIpInfo;
 
 	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
@@ -371,7 +379,7 @@ bool NetworkEmac::SetZeroconf() {
 	return m_IsZeroconfUsed;
 }
 
-bool NetworkEmac::EnableDhcp() {
+bool Network::EnableDhcp() {
 	DEBUG_ENTRY
 
 	struct ip_info tIpInfo;
@@ -383,16 +391,16 @@ bool NetworkEmac::EnableDhcp() {
 	}
 
 	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::RENEW);
+		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 	}
 
 	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
 
 	if (m_pNetworkDisplay != nullptr) {
 		if (m_IsZeroconfUsed) {
-			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::FAILED);
+			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
 		} else {
-			m_pNetworkDisplay->ShowDhcpStatus(DhcpClientStatus::GOT_IP);
+			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::GOT_IP);
 		}
 	}
 
@@ -421,3 +429,59 @@ bool NetworkEmac::EnableDhcp() {
 	DEBUG_EXIT
 	return m_IsDhcpUsed;
 }
+
+// COMMON
+
+void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nLocalIp), IP2STR(nNetmask));
+
+	if (nLocalIp != 0) {
+		m_QueuedConfig.nLocalIp = nLocalIp;
+	}
+
+	if (nNetmask != 0) {
+		m_QueuedConfig.nNetmask = nNetmask;
+	}
+
+	m_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
+	m_QueuedConfig.nMask |= QueuedConfig::NET_MASK;
+
+	DEBUG_EXIT
+}
+
+bool Network::ApplyQueuedConfig() {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("m_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, m_QueuedConfig.nMask, IP2STR(m_QueuedConfig.nLocalIp), IP2STR(m_QueuedConfig.nNetmask));
+
+	if (m_QueuedConfig.nMask == QueuedConfig::NONE) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if ((isQueuedMaskSet(QueuedConfig::STATIC_IP)) || (isQueuedMaskSet(QueuedConfig::NET_MASK))) {
+		if (isQueuedMaskSet(QueuedConfig::NET_MASK)) {
+			SetNetmask(m_QueuedConfig.nNetmask);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::NET_MASK);
+		}
+
+		if (isQueuedMaskSet(QueuedConfig::STATIC_IP)) {
+			SetIp(m_QueuedConfig.nLocalIp);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::STATIC_IP);
+		}
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::DHCP)) {
+		EnableDhcp();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::DHCP);
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::ZEROCONF)) {
+		SetZeroconf();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::ZEROCONF);
+	}
+
+	DEBUG_EXIT
+	return true;
+}
+

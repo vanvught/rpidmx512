@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYUDFHANDLER_H_
-#define DISPLAYUDFHANDLER_H_
+#ifndef ARTNET_DISPLAYUDFHANDLER_H_
+#define ARTNET_DISPLAYUDFHANDLER_H_
 
 #include <cstdint>
 
@@ -100,7 +100,7 @@ public:
 	}
 
 	// DHCP Client
-	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 
@@ -118,4 +118,4 @@ public:
 	}
 };
 
-#endif /* DISPLAYUDFHANDLER_H_ */
+#endif /* ARTNET_DISPLAYUDFHANDLER_H_ */

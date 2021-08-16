@@ -1,5 +1,5 @@
 /**
- * @file pixelreboot.h
+ * @file mac_address.c
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,29 +23,10 @@
  * THE SOFTWARE.
  */
 
-#ifndef PIXELREBOOT_H_
-#define PIXELREBOOT_H_
+#include <stdint.h>
 
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-# include "ws28xxmulti.h"
-#else
-# include "ws28xx.h"
-#endif
+#include "bcm2835_vc.h"
 
-#include "hardware.h"
-
-class PixelReboot final : public RebootHandler {
-public:
-	PixelReboot() {}
-	~PixelReboot() override {}
-
-	void Run() override {
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-		WS28xxMulti::Get()->Blackout();
-#else
-		WS28xx::Get()->Blackout();
-#endif
-	}
-};
-
-#endif /* PIXELREBOOT_H_ */
+void mac_address_get(uint8_t paddr[]) {
+	bcm2835_vc_get_board_mac_address(paddr);
+}

@@ -469,7 +469,7 @@ void RemoteConfig::HandleList() {
 		return;
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 1) {
 		if (s_UdpBuffer[udp::cmd::get::length::LIST] == '*') {
-			Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), NETWORK_IP4_BROADCAST, udp::PORT);
+			Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), network::IP4_BROADCAST, udp::PORT);
 			return;
 		}
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 3) {
@@ -479,7 +479,7 @@ void RemoteConfig::HandleList() {
 		}
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 4) {
 		if (memcmp(&s_UdpBuffer[udp::cmd::get::length::LIST], "bin*", 4) == 0) {
-			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , NETWORK_IP4_BROADCAST, udp::PORT);
+			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , network::IP4_BROADCAST, udp::PORT);
 			return;
 		}
 	}

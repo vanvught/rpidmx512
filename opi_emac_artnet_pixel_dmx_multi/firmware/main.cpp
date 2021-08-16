@@ -27,7 +27,7 @@
 #include <cstdio>
 
 #include "hardware.h"
-#include "networkemac.h"
+#include "network.h"
 #include "networkconst.h"
 #include "ledblink.h"
 
@@ -85,7 +85,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkEmac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;

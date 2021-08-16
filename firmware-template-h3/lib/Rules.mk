@@ -16,7 +16,7 @@ ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 else
 endif
 
-SRCDIR = src src/h3 $(EXTRA_SRCDIR)
+SRCDIR=src src/h3 $(EXTRA_SRCDIR)
 
 #ifeq ($(findstring NDEBUG,$(DEFINES)),NDEBUG)
 #else
@@ -25,7 +25,7 @@ SRCDIR+=src/debug
 
 $(info [${SRCDIR}])
 
-INCLUDES:= -I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-h3/include/firmware -I../lib-arm/include 
+INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-h3/include/firmware -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))

@@ -61,7 +61,7 @@ public:
 	}
 
 	// DHCP Client
-	void ShowDhcpStatus(DhcpClientStatus nStatus) {
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
 	}
 

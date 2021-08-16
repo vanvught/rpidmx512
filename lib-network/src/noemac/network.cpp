@@ -1,8 +1,8 @@
 /**
- * @file pixelreboot.h
+ * @file network.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef PIXELREBOOT_H_
-#define PIXELREBOOT_H_
+#include <cstdint>
+#include <cstring>
+#include <cassert>
 
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-# include "ws28xxmulti.h"
-#else
-# include "ws28xx.h"
-#endif
+#include "noemac/network.h"
 
-#include "hardware.h"
+extern "C" {
+void mac_address_get(uint8_t paddr[]);
+}
 
-class PixelReboot final : public RebootHandler {
-public:
-	PixelReboot() {}
-	~PixelReboot() override {}
+Network *Network::s_pThis = nullptr;
 
-	void Run() override {
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-		WS28xxMulti::Get()->Blackout();
-#else
-		WS28xx::Get()->Blackout();
-#endif
-	}
-};
+Network::Network() {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
-#endif /* PIXELREBOOT_H_ */
+	strcpy(m_aIfName, "lo");
+}
+
+void Network::MacAddressCopyTo(uint8_t *pMacAddress) {
+	assert(pMacAddress != nullptr);
+
+	mac_address_get(pMacAddress);
+}

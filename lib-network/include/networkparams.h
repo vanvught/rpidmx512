@@ -45,7 +45,7 @@ struct TNetworkParams {
 	uint32_t nGatewayIp;
 	uint32_t nNameServerIp;
 	bool bIsDhcpUsed;
-	char aHostName[NETWORK_HOSTNAME_SIZE];
+	char aHostName[network::HOSTNAME_SIZE];
 	uint32_t nNtpServerIp;
 	float fNtpUtcOffset;
 	uint8_t nDhcpRetryTime;
@@ -79,8 +79,7 @@ struct NetworkParamsMask {
 
 class NetworkParamsStore {
 public:
-	virtual ~NetworkParamsStore() {
-	}
+	virtual ~NetworkParamsStore() {}
 
 	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
 	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;

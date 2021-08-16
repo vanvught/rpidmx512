@@ -29,7 +29,7 @@
 #include <cassert>
 
 #include "hardware.h"
-#include "networkemac.h"
+#include "network.h"
 #include "ledblink.h"
 #include "display.h"
 
@@ -109,7 +109,7 @@ void h3_cpu_off(uint8_t);
 
 void notmain(void) {
 	Hardware hw;
-	NetworkEmac nw;
+	Network nw;
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

@@ -30,8 +30,8 @@
 
 #include <cstdio>
 
-#include "networkparams.h"
 #include "network.h"
+#include "networkparams.h"
 #include "networkparamsconst.h"
 
 #include "debug.h"

@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "hardware.h"
-#include "networkesp8266.h"
+#include "network.h"
 #include "ledblink.h"
 
 #include "console.h"
@@ -79,7 +79,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkESP8266 nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::SSD1306);
 

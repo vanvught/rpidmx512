@@ -28,7 +28,7 @@
 #include <assert.h>
 
 #include "hardware.h"
-#include "networkbaremetalmacaddress.h"
+#include "noemac/network.h"
 #include "ledblink.h"
 
 #include "display.h"
@@ -66,7 +66,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkBaremetalMacAddress nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

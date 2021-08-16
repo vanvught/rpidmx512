@@ -1,8 +1,8 @@
 /**
- * @file networklinux.h
+ * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 #include <errno.h>
 #include <cassert>
 
-#include "networklinux.h"
+#include "network.h"
 
 #include "debug.h"
 
@@ -57,18 +57,27 @@ static int snHandles[max::PORTS_ALLOWED];
  * END
  */
 
-NetworkLinux::NetworkLinux() {
+Network *Network::s_pThis = nullptr;
+
+Network::Network() {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
+	m_aNetMacaddr[0] = '\0';
+	m_aHostName[0] = '\0';
+	m_aDomainName[0] = '\0';
+	m_aIfName[0] = '\0';
 }
 
-NetworkLinux::~NetworkLinux() {
+Network::~Network() {
 	for (unsigned i = 0; i < max::PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] != 0) {
-			NetworkLinux::End(s_ports_allowed[i]);
+			Network::End(s_ports_allowed[i]);
 		}
 	}
 }
 
-int NetworkLinux::Init(const char *s) {
+int Network::Init(const char *s) {
 	int result;
 /**
  * BEGIN - needed H3 code compatibility
@@ -123,11 +132,11 @@ int NetworkLinux::Init(const char *s) {
 		perror("gethostname");
 	}
 
-	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 
 	i = 0;
 
-	while(i < NETWORK_HOSTNAME_SIZE && m_aHostName[i] != '.') {
+	while(i < network::HOSTNAME_SIZE && m_aHostName[i] != '.') {
 		i++;
 	}
 
@@ -135,7 +144,7 @@ int NetworkLinux::Init(const char *s) {
 
 	uint32_t j = 0;
 
-	while (j < NETWORK_DOMAINNAME_SIZE && i < NETWORK_HOSTNAME_SIZE && m_aHostName[i] != '\0') {
+	while (j < network::DOMAINNAME_SIZE && i < network::HOSTNAME_SIZE && m_aHostName[i] != '\0') {
 		m_aDomainName[j++] = m_aHostName[i++];
 	}
 
@@ -144,7 +153,7 @@ int NetworkLinux::Init(const char *s) {
 	return result;
 }
 
-int32_t NetworkLinux::Begin(uint16_t nPort) {
+int32_t Network::Begin(uint16_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("port = %d", nPort);
 
@@ -240,13 +249,13 @@ int32_t NetworkLinux::Begin(uint16_t nPort) {
 	return nSocket;
 }
 
-void NetworkLinux::MacAddressCopyTo(uint8_t* pMacAddress) {
-	for (unsigned i =  0; i < NETWORK_MAC_SIZE; i++) {
+void Network::MacAddressCopyTo(uint8_t* pMacAddress) {
+	for (unsigned i =  0; i < network::MAC_SIZE; i++) {
 		pMacAddress[i] = m_aNetMacaddr[i];
 	}
 }
 
-int32_t NetworkLinux::End(uint16_t nPort) {
+int32_t Network::End(uint16_t nPort) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPort = %d", nPort);
 /**
@@ -280,7 +289,7 @@ int32_t NetworkLinux::End(uint16_t nPort) {
  */
 }
 
-void NetworkLinux::SetIp(__attribute__((unused)) uint32_t nIp) {
+void Network::SetIp(__attribute__((unused)) uint32_t nIp) {
 #if defined(__linux__)
 	if (nIp == m_nLocalIp) {
 		return;
@@ -326,19 +335,19 @@ void NetworkLinux::SetIp(__attribute__((unused)) uint32_t nIp) {
 #endif
 }
 
-void NetworkLinux::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
+void Network::SetNetmask(__attribute__((unused)) uint32_t nNetmask) {
 #if defined(__linux__)
 	m_nNetmask = nNetmask;
 #endif
 }
 
-void NetworkLinux::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
+void Network::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
 #if defined(__linux__)
 	m_nGatewayIp = nGatewayIp;
 #endif
 }
 
-void NetworkLinux::JoinGroup(int32_t nHandle, uint32_t ip) {
+void Network::JoinGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
 	mreq.imr_multiaddr.s_addr = ip;
@@ -349,7 +358,7 @@ void NetworkLinux::JoinGroup(int32_t nHandle, uint32_t ip) {
 	}
 }
 
-void NetworkLinux::LeaveGroup(int32_t nHandle, uint32_t ip) {
+void Network::LeaveGroup(int32_t nHandle, uint32_t ip) {
 	struct ip_mreq mreq;
 
 	mreq.imr_multiaddr.s_addr = ip;
@@ -360,7 +369,7 @@ void NetworkLinux::LeaveGroup(int32_t nHandle, uint32_t ip) {
 	}
 }
 
-uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
+uint16_t Network::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint32_t *pFromIp, uint16_t *pFromPort) {
 	assert(pPacket != nullptr);
 	assert(pFromIp != nullptr);
 	assert(pFromPort != nullptr);
@@ -383,7 +392,7 @@ uint16_t NetworkLinux::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, 
 	return recv_len;
 }
 
-void NetworkLinux::SendTo(int32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
+void Network::SendTo(int32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {
 	struct sockaddr_in si_other;
 	socklen_t slen = sizeof(si_other);
 
@@ -403,7 +412,7 @@ void NetworkLinux::SendTo(int32_t nHandle, const void *pPacket, uint16_t nSize, 
 }
 
 #if defined(__linux__)
-bool NetworkLinux::IsDhclient(const char* if_name) {
+bool Network::IsDhclient(const char* if_name) {
 	char cmd[255];
 	char buf[1024];
 	FILE *fp;
@@ -430,7 +439,7 @@ bool NetworkLinux::IsDhclient(const char* if_name) {
 }
 #endif
 
-uint32_t NetworkLinux::GetDefaultGateway() {
+uint32_t Network::GetDefaultGateway() {
 	char cmd[255];
 	char buf[1024];
 	FILE *fp;
@@ -456,7 +465,7 @@ uint32_t NetworkLinux::GetDefaultGateway() {
 	return addr.s_addr;
 }
 
-int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
+int Network::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 	struct ifaddrs *addrs, *iap;
 	struct sockaddr_in *sa;
 	char buf[32];
@@ -479,7 +488,7 @@ int NetworkLinux::IfGetByAddress(const char* pIp, char* pName, size_t nLength) {
 	return -1;
 }
 
-int NetworkLinux::IfDetails(const char *pIfInterface) {
+int Network::IfDetails(const char *pIfInterface) {
     int fd;
     struct ifreq ifr;
 
@@ -526,7 +535,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     }
 
 	const uint8_t* mac = reinterpret_cast<uint8_t*>(ifr.ifr_ifru.ifru_hwaddr.sa_data);
-	memcpy(m_aNetMacaddr, mac, NETWORK_MAC_SIZE);
+	memcpy(m_aNetMacaddr, mac, network::MAC_SIZE);
 #endif
 
     close(fd);
@@ -534,7 +543,7 @@ int NetworkLinux::IfDetails(const char *pIfInterface) {
     return 0;
 }
 
-void NetworkLinux::SetHostName(const char *pHostName) {
+void Network::SetHostName(const char *pHostName) {
 	if(sethostname(pHostName, strlen(pHostName)) < 0) {
 		perror("sethostname");
 	}
@@ -543,6 +552,74 @@ void NetworkLinux::SetHostName(const char *pHostName) {
 		perror("gethostname");
 	}
 
-	m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
+	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 
+}
+
+// COMMON
+
+void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF(IPSTR ", nNetmask=" IPSTR, IP2STR(nLocalIp), IP2STR(nNetmask));
+
+	if (nLocalIp != 0) {
+		m_QueuedConfig.nLocalIp = nLocalIp;
+	}
+
+	if (nNetmask != 0) {
+		m_QueuedConfig.nNetmask = nNetmask;
+	}
+
+	m_QueuedConfig.nMask |= QueuedConfig::STATIC_IP;
+	m_QueuedConfig.nMask |= QueuedConfig::NET_MASK;
+
+	DEBUG_EXIT
+}
+
+bool Network::ApplyQueuedConfig() {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("m_QueuedConfig.nMask=%x, " IPSTR ", " IPSTR, m_QueuedConfig.nMask, IP2STR(m_QueuedConfig.nLocalIp), IP2STR(m_QueuedConfig.nNetmask));
+
+	if (m_QueuedConfig.nMask == QueuedConfig::NONE) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if ((isQueuedMaskSet(QueuedConfig::STATIC_IP)) || (isQueuedMaskSet(QueuedConfig::NET_MASK))) {
+		if (isQueuedMaskSet(QueuedConfig::NET_MASK)) {
+			SetNetmask(m_QueuedConfig.nNetmask);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::NET_MASK);
+		}
+
+		if (isQueuedMaskSet(QueuedConfig::STATIC_IP)) {
+			SetIp(m_QueuedConfig.nLocalIp);
+			m_QueuedConfig.nMask &= ~(QueuedConfig::STATIC_IP);
+		}
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::DHCP)) {
+		EnableDhcp();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::DHCP);
+	}
+
+	if (isQueuedMaskSet(QueuedConfig::ZEROCONF)) {
+		SetZeroconf();
+		m_QueuedConfig.nMask &= ~(QueuedConfig::ZEROCONF);
+	}
+
+	DEBUG_EXIT
+	return true;
+}
+
+void Network::Print() {
+	printf("Network\n");
+	printf(" Hostname  : %s\n", m_aHostName);
+	printf(" Domain    : %s\n", m_aDomainName);
+	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
+	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
+	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
+	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
+	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
+	printf(" Mode      : %c\n", GetAddressingMode());
 }

@@ -1,8 +1,8 @@
 /**
- * @file pixelreboot.h
+ * @file network.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,30 @@
  * THE SOFTWARE.
  */
 
-#ifndef PIXELREBOOT_H_
-#define PIXELREBOOT_H_
+#ifndef NOEMAC_NETWORK_H_
+#define NOEMAC_NETWORK_H_
 
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-# include "ws28xxmulti.h"
-#else
-# include "ws28xx.h"
+#if !defined(NO_EMAC)
+# error
 #endif
 
-#include "hardware.h"
+#include <cstdint>
+#include <net/if.h>
 
-class PixelReboot final : public RebootHandler {
+class Network {
 public:
-	PixelReboot() {}
-	~PixelReboot() override {}
+	Network();
 
-	void Run() override {
-#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
-		WS28xxMulti::Get()->Blackout();
-#else
-		WS28xx::Get()->Blackout();
-#endif
+	void MacAddressCopyTo(uint8_t *pMacAddress);
+
+	static Network *Get() {
+		return s_pThis;
 	}
+
+private:
+	char m_aIfName[IFNAMSIZ];
+
+	static Network *s_pThis;
 };
 
-#endif /* PIXELREBOOT_H_ */
+#endif /* NOEMAC_NETWORK_H_ */

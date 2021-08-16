@@ -30,7 +30,7 @@
 #include <unistd.h>
 
 #include "hardware.h"
-#include "networklinux.h"
+#include "network.h"
 #include "ledblink.h"
 
 #include "artnet4node.h"
@@ -63,7 +63,7 @@ using namespace artnet;
 
 int main(int argc, char **argv) {
 	Hardware hw;
-	NetworkLinux nw;
+	Network nw;
 	LedBlink lb;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
