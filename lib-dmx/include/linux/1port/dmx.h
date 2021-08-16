@@ -72,6 +72,9 @@ public:
 	void ClearData();
 	void SetSendData(const uint8_t *pData, uint32_t nLength);
 	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
+	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+		SetSendDataWithoutSC(pData, nLength);
+	}
 
 	const uint8_t* GetDmxCurrentData();
 	const uint8_t* GetDmxAvailable();

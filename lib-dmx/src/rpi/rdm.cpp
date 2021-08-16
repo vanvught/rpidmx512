@@ -76,7 +76,7 @@ void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = BCM2835_ST->CLO - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = BCM2835_ST->CLO - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
@@ -91,14 +91,14 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = BCM2835_ST->CLO - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = BCM2835_ST->CLO - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
@@ -114,5 +114,5 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPort, PortDirection::INP, true);
 }

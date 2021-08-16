@@ -69,8 +69,8 @@ typedef enum {
 	DMXINTER
 } _dmx_state;
 
-using namespace dmx;
 using namespace dmxsingle;
+using namespace dmx;
 
 static PortDirection s_nPortDirection = dmx::PortDirection::INP;
 
@@ -87,7 +87,7 @@ static uint32_t s_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
 static uint32_t s_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 static uint32_t s_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 
-static uint32_t s_nDmxSendDataLength = (max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
+static uint32_t s_nDmxSendDataLength = (dmx::max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
 static volatile uint32_t sv_nFiqMicrosCurrent;
 static volatile uint32_t sv_nFiqMicrosPrevious;
 static volatile bool sv_isDmxPreviousBreak = false;
@@ -258,9 +258,9 @@ static void fiq_dmx_in_handler(void) {
 			s_DmxData[sv_nDmxDataBufferIndexHead].Data[sv_nDmxDataIndex++] = data;
 		    BCM2835_ST->C1 = sv_nFiqMicrosCurrent + s_DmxData[0].Statistics.nSlotToSlot + (uint32_t)12;
 
-			if (sv_nDmxDataIndex > max::CHANNELS) {
+			if (sv_nDmxDataIndex > dmx::max::CHANNELS) {
 				sv_DmxReceiveState = IDLE;
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = max::CHANNELS;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::max::CHANNELS;
 				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
@@ -719,6 +719,14 @@ const uint8_t* Dmx::GetDmxChanged() {
 void Dmx::SetSendDataLength(uint32_t nLength) {
 	s_nDmxSendDataLength = nLength;
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
+}
+
+void Dmx::SetDmxSlots(uint16_t nSlots) {
+	SetSendDataLength(nSlots + 1U);
+}
+
+uint16_t Dmx::GetDmxSlots() {
+	return s_nDmxSendDataLength - 1U;
 }
 
 void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {

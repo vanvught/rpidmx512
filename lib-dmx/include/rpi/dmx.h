@@ -41,6 +41,31 @@
 #endif
 
 #include "dmxconst.h"
+#include "dmx_config.h"
+
+namespace dmxsingle {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+
+struct TotalStatistics {
+	uint32_t nDmxPackets;
+	uint32_t nRdmPackets;
+};
+
+struct Statistics {
+	uint32_t nSlotsInPacket;
+	uint32_t nMarkAfterBreak;
+	uint32_t nBreakToBreak;
+	uint32_t nSlotToSlot;
+};
+
+struct Data {
+	uint8_t Data[dmx::buffer::SIZE];
+	struct Statistics Statistics;
+};
+}  // namespace dmxsingle
 
 class Dmx {
 public:
@@ -53,13 +78,16 @@ public:
 	// RDM
 	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
 	const uint8_t *RdmReceive(uint32_t nPort);
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut);
 	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX
 	void ClearData();
 	void SetSendData(const uint8_t *pData, uint32_t nLength);
 	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
+	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+		SetSendDataWithoutSC(pData, nLength);
+	}
 
 	const uint8_t* GetDmxCurrentData();
 	const uint8_t* GetDmxAvailable();
@@ -75,9 +103,12 @@ public:
 	void SetDmxPeriodTime(uint32_t nPeriodTime);
 	uint32_t GetDmxPeriodTime();
 
+	void SetDmxSlots(uint16_t nSlots = dmx::max::CHANNELS);
+	uint16_t GetDmxSlots();
+
 	uint32_t GetSendDataLength() ;
 
-	const volatile struct TotalStatistics *GetTotalStatistics();
+	const volatile struct dmxsingle::TotalStatistics *GetTotalStatistics();
 
 	static Dmx* Get() {
 		return s_pThis;

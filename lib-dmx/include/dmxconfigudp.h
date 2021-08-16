@@ -1,3 +1,4 @@
+#if !defined(NO_EMAC)
 /**
  * @file dmxconfigudp.h
  *
@@ -140,3 +141,4 @@ private:
 };
 
 #endif /* DMXCONFIGUDP_H_ */
+#endif

@@ -1,3 +1,4 @@
+#if !defined (NO_EMAC)
 /**
  * @file dmxconfigudp.cpp
  *
@@ -29,3 +30,5 @@
 
 int32_t DmxConfigUdp::s_nHandle;
 uint8_t DmxConfigUdp::s_Buffer[dmxconfigudp::MAX_SIZE];
+
+#endif
