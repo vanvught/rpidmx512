@@ -206,12 +206,12 @@ void NtpClient::Start() {
 	DEBUG_ENTRY
 
 	if (m_nServerIp == 0) {
-		m_tStatus = NtpClientStatus::FAILED;
+		m_tStatus = ntpclient::Status::FAILED;
 		DEBUG_EXIT
 		return;
 	}
 
-	if ((m_tStatus != NtpClientStatus::IDLE) && (m_tStatus != NtpClientStatus::STOPPED)) {
+	if ((m_tStatus != ntpclient::Status::IDLE) && (m_tStatus != ntpclient::Status::STOPPED)) {
 		DEBUG_EXIT
 		return;
 	}
@@ -220,7 +220,7 @@ void NtpClient::Start() {
 	assert(m_nHandle != -1);
 
 	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::IDLE);
+		m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::IDLE);
 	}
 
 	const uint32_t nNow = Hardware::Get()->Millis();
@@ -240,7 +240,7 @@ void NtpClient::Start() {
 
 		if ((m_Reply.LiVnMode & NTP_MODE_SERVER) == NTP_MODE_SERVER) {
 			if (SetTimeOfDay() == 0) {
-				m_tStatus = NtpClientStatus::IDLE;
+				m_tStatus = ntpclient::Status::IDLE;
 			} else {
 				// Error
 			}
@@ -254,10 +254,10 @@ void NtpClient::Start() {
 	m_MillisLastPoll = Hardware::Get()->Millis();
 
 	if (nRetries == RETRIES) {
-		m_tStatus = NtpClientStatus::FAILED;
+		m_tStatus = ntpclient::Status::FAILED;
 
 		if (m_pNtpClientDisplay != nullptr) {
-			m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::FAILED);
+			m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::FAILED);
 		}
 	}
 
@@ -269,15 +269,15 @@ void NtpClient::Start() {
 void NtpClient::Stop() {
 	DEBUG_ENTRY
 
-	if (m_tStatus == NtpClientStatus::STOPPED) {
+	if (m_tStatus == ntpclient::Status::STOPPED) {
 		return;
 	}
 
 	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
-	m_tStatus = NtpClientStatus::STOPPED;
+	m_tStatus = ntpclient::Status::STOPPED;
 
 	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::STOPPED);
+		m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::STOPPED);
 	}
 
 	DEBUG_EXIT
@@ -288,26 +288,26 @@ void NtpClient::Run() {
 		return;
 	}
 
-	if ((m_tStatus == NtpClientStatus::IDLE) || (m_tStatus == NtpClientStatus::FAILED)) {
+	if ((m_tStatus == ntpclient::Status::IDLE) || (m_tStatus == ntpclient::Status::FAILED)) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisLastPoll) > (1000 * POLL_SECONDS)), 0)) {
 			Send();
 			m_MillisRequest = Hardware::Get()->Millis();
-			m_tStatus = NtpClientStatus::WAITING;
-			DEBUG_PUTS("NtpClientStatus::WAITING");
+			m_tStatus = ntpclient::Status::WAITING;
+			DEBUG_PUTS("ntpclient::Status::WAITING");
 		}
 
 		return;
 	}
 
-	if (m_tStatus == NtpClientStatus::WAITING) {
+	if (m_tStatus == ntpclient::Status::WAITING) {
 		if (!Receive()) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
-				m_tStatus = NtpClientStatus::FAILED;
+				m_tStatus = ntpclient::Status::FAILED;
 
 				if (m_pNtpClientDisplay != nullptr) {
-					m_pNtpClientDisplay->ShowNtpClientStatus(NtpClientStatus::FAILED);
+					m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::FAILED);
 				}
-				DEBUG_PUTS("NtpClientStatus::FAILED");
+				DEBUG_PUTS("ntpclient::Status::FAILED");
 			}
 
 			return;
@@ -329,8 +329,8 @@ void NtpClient::Run() {
 			DEBUG_PUTS("!>> Invalid reply <<!");
 		}
 
-		m_tStatus = NtpClientStatus::IDLE;
-		DEBUG_PUTS("NtpClientStatus::IDLE");
+		m_tStatus = ntpclient::Status::IDLE;
+		DEBUG_PUTS("ntpclient::Status::IDLE");
 	}
 }
 

@@ -95,16 +95,14 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 	}

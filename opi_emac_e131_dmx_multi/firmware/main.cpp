@@ -44,6 +44,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -56,7 +57,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
@@ -105,7 +105,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -158,10 +158,10 @@ void notmain(void) {
 	}
 
 	DmxSend *pDmxOutput;
-	DmxInput *pDmxInput;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
 	if (portDir == e131::PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		bridge.SetE131Dmx(pDmxInput);
@@ -179,6 +179,9 @@ void notmain(void) {
 		bridge.SetOutput(pDmxOutput);
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 	}
 
 	bridge.Print();
@@ -232,6 +235,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

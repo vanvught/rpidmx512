@@ -2,7 +2,7 @@
  * @file net_packets.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,12 @@
  #define PACKED __attribute__((packed))
 #endif
 
-enum FRAME_BUFFER {
-	FRAME_BUFFER_SIZE = 1600
+enum ETHERNET_MTU {
+	ETHERNET_MTU_SIZE = 1500
+};
+
+enum UDP_DATA {
+	UDP_DATA_SIZE = (ETHERNET_MTU_SIZE - 8 - 20)	/* 8 bytes UDP header, 20 bytes IPv4 header */
 };
 
 enum ETHER_TYPE {
@@ -136,7 +140,7 @@ struct t_udp_packet {
 	uint16_t destination_port;
 	uint16_t len;
 	uint16_t checksum;
-	uint8_t data[FRAME_BUFFER_SIZE];
+	uint8_t data[UDP_DATA_SIZE];
 }PACKED;
 
 struct t_igmp_packet {
@@ -188,7 +192,7 @@ struct t_icmp {
 	struct t_icmp_packet icmp;
 }PACKED;
 
-#define UDP_HEADER_SIZE					(sizeof(struct t_udp_packet) - FRAME_BUFFER_SIZE)
+#define UDP_HEADER_SIZE					(sizeof(struct t_udp_packet) - UDP_DATA_SIZE)
 #define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct t_ip4_packet) + UDP_HEADER_SIZE)
 #define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_packet) + IPv4_UDP_HEADERS_SIZE)
 

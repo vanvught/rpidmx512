@@ -51,7 +51,6 @@
 #include "ntpclient.h"
 
 // Handlers
-#include "displayudfnetworkhandler.h"
 #include "factorydefaults.h"
 #include "reboot.h"
 
@@ -76,19 +75,15 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	DisplayUdfNetworkHandler displayUdfNetworkHandler;
-
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&displayUdfNetworkHandler);
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 

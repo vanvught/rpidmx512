@@ -75,9 +75,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 		params.Dump();
 	}
 	
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowEmacStart();
-	}
+	m_NetworkDisplay.ShowEmacStart();
 
 	emac_start(m_aNetMacaddr);
 
@@ -127,14 +125,14 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 		}
 	}
 
-	if ((m_pNetworkDisplay != nullptr) && m_IsDhcpUsed) {
-		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
+	if (m_IsDhcpUsed) {
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 	}
 
 	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
-	if ((m_pNetworkDisplay != nullptr) && m_IsZeroconfUsed) {
-		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
+	if (m_IsZeroconfUsed) {
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
 	}
 
 	const auto nRetryTime = params.GetDhcpRetryTime();
@@ -143,18 +141,17 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
 		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 
-		if (m_pNetworkDisplay != nullptr) {
-			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
-		}
+			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
+
 		DEBUG_PUTS("");
 		auto nTime = time(nullptr);
 		while ((time(nullptr) - nTime) < (nRetryTime * 60)) {
 			LedBlink::Get()->Run();
 		}
 
-		if (m_pNetworkDisplay != nullptr) {
-			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
-		}
+
+			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
+
 
 		LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
 
@@ -172,15 +169,15 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	m_nNetmask = tIpInfo.netmask.addr;
 	m_nGatewayIp = tIpInfo.gw.addr;
 
+	m_NetworkDisplay.ShowIp();
+
 	DEBUG_EXIT
 }
 
 void Network::Shutdown() {
 	DEBUG_ENTRY
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowShutdown();
-	}
+	m_NetworkDisplay.ShowShutdown();
 
 	net_shutdown();
 
@@ -284,13 +281,8 @@ void Network::SetIp(uint32_t nIp) {
 		}
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowIp();
-	}
-
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowNetMask();
-	}
+	m_NetworkDisplay.ShowIp();
+	m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 }
@@ -309,13 +301,8 @@ void Network::SetNetmask(uint32_t nNetmask) {
 		m_pNetworkStore->SaveNetMask(nNetmask);
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowIp();
-	}
-
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowNetMask();
-	}
+		m_NetworkDisplay.ShowIp();
+		m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 }
@@ -334,9 +321,7 @@ void Network::SetGatewayIp(uint32_t nGatewayIp) {
 		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowGatewayIp();
-	}
+		m_NetworkDisplay.ShowGatewayIp();
 
 	DEBUG_EXIT
 }
@@ -368,13 +353,8 @@ bool Network::SetZeroconf() {
 		}
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowIp();
-	}
-
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowNetMask();
-	}
+		m_NetworkDisplay.ShowIp();
+		m_NetworkDisplay.ShowNetMask();
 
 	return m_IsZeroconfUsed;
 }
@@ -390,19 +370,15 @@ bool Network::EnableDhcp() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
-	}
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 
 	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
 
-	if (m_pNetworkDisplay != nullptr) {
 		if (m_IsZeroconfUsed) {
-			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
+			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
 		} else {
-			m_pNetworkDisplay->ShowDhcpStatus(network::dhcp::ClientStatus::GOT_IP);
+			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::GOT_IP);
 		}
-	}
 
 	DEBUG_PRINTF("m_IsDhcpUsed=%d, m_IsZeroconfUsed=%d", m_IsDhcpUsed, m_IsZeroconfUsed);
 
@@ -418,13 +394,9 @@ bool Network::EnableDhcp() {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowIp();
-	}
 
-	if (m_pNetworkDisplay != nullptr) {
-		m_pNetworkDisplay->ShowNetMask();
-	}
+	m_NetworkDisplay.ShowIp();
+	m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 	return m_IsDhcpUsed;
@@ -484,4 +456,19 @@ bool Network::ApplyQueuedConfig() {
 	DEBUG_EXIT
 	return true;
 }
+
+#include <cstdio>
+
+void Network::Print() {
+	printf("Network\n");
+	printf(" Hostname  : %s\n", m_aHostName);
+	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
+	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
+	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
+	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
+	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
+	printf(" Mode      : %c\n", GetAddressingMode());
+}
+
 

@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,19 +31,18 @@
 
 #include "ntp.h"
 
-enum class NtpClientStatus {
-	IDLE,
-	FAILED,
-	STOPPED,
-	WAITING
+namespace ntpclient {
+enum class Status {
+	IDLE, FAILED, STOPPED, WAITING
 };
+}  // namespace ntpclient
 
 struct NtpClientDisplay {
-	virtual ~NtpClientDisplay() {
-	}
+	virtual ~NtpClientDisplay() {}
 
-	virtual void ShowNtpClientStatus(NtpClientStatus nStatus)=0;
+	virtual void ShowNtpClientStatus(ntpclient::Status nStatus)=0;
 };
+
 
 class NtpClient {
 public:
@@ -55,7 +54,7 @@ public:
 
 	void Print();
 
-	NtpClientStatus GetStatus() {
+	ntpclient::Status GetStatus() {
 		return m_tStatus;
 	}
 
@@ -87,7 +86,7 @@ private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
 	int32_t m_nHandle { -1 };
-	NtpClientStatus m_tStatus { NtpClientStatus::IDLE };
+	ntpclient::Status m_tStatus { ntpclient::Status::IDLE };
 	struct TNtpPacket m_Request;
 	struct TNtpPacket m_Reply;
 	uint32_t m_MillisRequest { 0 };

@@ -53,7 +53,7 @@ void notmain(void) {
 	uint32_t nMicrosPrevious = 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
 	uint32_t nUpdatesPerSecondeMax = 0;
-	uint32_t nSlotsInPacketMin = UINT32_MAX;
+	uint32_t nSlotsInPacketMin = UINT16_MAX;
 	uint32_t nSlotsInPacketMax = 0;
 	uint32_t nSotToSlotMin = UINT32_MAX;
 	uint32_t nSlotToSlotMax = 0;

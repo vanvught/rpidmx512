@@ -38,11 +38,11 @@
 #include "oscserver.h"
 #include "oscserverparms.h"
 #include "oscservermsgconst.h"
-
 // DMX Out
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -101,6 +101,7 @@ void notmain(void) {
 
 	DmxSend dmx;
 	DmxParams dmxparams(&storeDmxSend);
+	DmxConfigUdp dmxConfigUdp;
 
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
@@ -155,6 +156,7 @@ void notmain(void) {
 		mDns.Run();
 		lb.Run();
 		display.Run();
+		dmxConfigUdp.Run();
 	}
 }
 }

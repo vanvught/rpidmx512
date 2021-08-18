@@ -1,11 +1,8 @@
-#
-PLATFORM = ORANGE_PI
-#
-DEFINES = NODE_OSC_SERVER OUTPUT_DMX_SEND DISABLE_RTC NDEBUG
-#
-LIBS = oscserver osc
+PLATFORM=ORANGE_PI
+DEFINES=NODE_OSC_SERVER OUTPUT_DMX_SEND DISABLE_RTC NDEBUG
+LIBS=oscserver osc
 
-SRCDIR = firmware lib
+SRCDIR=firmware lib
 
 include ../firmware-template-h3/Rules.mk
 

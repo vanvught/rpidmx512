@@ -47,6 +47,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -59,7 +60,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
@@ -102,7 +102,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -112,13 +112,13 @@ void notmain(void) {
 
 	e131params.Set(&bridge);
 
-	DmxSend *pDmxOutput;
-	DmxInput *pDmxInput;
+	DmxSend *pDmxOutput = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
 	const uint16_t nUniverse = e131params.GetUniverse();
 
 	if (e131params.GetDirection() == e131::PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		bridge.SetUniverse(0, e131::PortDir::INPUT, nUniverse);
@@ -135,6 +135,9 @@ void notmain(void) {
 		}
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 
 		bridge.SetUniverse(0, e131::PortDir::OUTPUT, nUniverse);
 		bridge.SetOutput(pDmxOutput);
@@ -190,6 +193,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

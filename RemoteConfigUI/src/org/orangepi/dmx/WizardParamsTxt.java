@@ -53,7 +53,10 @@ public class WizardParamsTxt extends JDialog {
 	private JButton btnCancel;
 	//
 	private NumberFormatter formatterBreakTime;
+	private NumberFormatter formatterMaBTime;
 	private NumberFormatter formatterRefreshRate;
+	private NumberFormatter formatterSlots;
+	
 	private JFormattedTextField formattedTextFieldBreakTime;
 	private JFormattedTextField formattedTextFieldMaBTime;
 	private JFormattedTextField formattedTextFieldRefreshRate;
@@ -90,8 +93,14 @@ public class WizardParamsTxt extends JDialog {
 		JLabel lblBreakTime = new JLabel("BREAK time");
 		JLabel lblMabTime = new JLabel("MAB time");
 		JLabel lbRefreshRate = new JLabel("Refresh rate");
+		JLabel lblRefreshRateTip = new JLabel("0 = as fast as possible");
+		lblRefreshRateTip.setForeground(Color.GRAY);
+		JLabel lblUsBreak = new JLabel("μs");
+		JLabel lblusMab = new JLabel("μs");	
+		JLabel lblSlots = new JLabel("Slots");
 		
 	    NumberFormat format = NumberFormat.getInstance();
+	    
 	    formatterBreakTime = new NumberFormatter(format);
 	    formatterBreakTime.setValueClass(Integer.class);
 	    formatterBreakTime.setMinimum(92);
@@ -100,10 +109,17 @@ public class WizardParamsTxt extends JDialog {
 	    formatterBreakTime.setCommitsOnValidEdit(true);
 		
 		formattedTextFieldBreakTime = new JFormattedTextField(formatterBreakTime);
-		formattedTextFieldBreakTime.setColumns(4);
 		formattedTextFieldBreakTime.setText("176");
+		formattedTextFieldBreakTime.setColumns(4);
 		
-		formattedTextFieldMaBTime = new JFormattedTextField();
+	    formatterMaBTime = new NumberFormatter(format);
+	    formatterMaBTime.setValueClass(Integer.class);
+	    formatterMaBTime.setMinimum(12);
+	    formatterMaBTime.setMaximum(1000000);
+	    formatterMaBTime.setAllowsInvalid(false);
+	    formatterMaBTime.setCommitsOnValidEdit(true);
+
+		formattedTextFieldMaBTime = new JFormattedTextField(formatterMaBTime);
 		formattedTextFieldMaBTime.setText("12");
 		formattedTextFieldMaBTime.setColumns(4);
 			
@@ -115,16 +131,17 @@ public class WizardParamsTxt extends JDialog {
 	    formatterRefreshRate.setCommitsOnValidEdit(true);
 		
 		formattedTextFieldRefreshRate = new JFormattedTextField(formatterRefreshRate);
-		formattedTextFieldRefreshRate.setColumns(4);
 		formattedTextFieldRefreshRate.setText("40");
+		formattedTextFieldRefreshRate.setColumns(4);
+				
+	    formatterSlots = new NumberFormatter(format);
+	    formatterSlots.setValueClass(Integer.class);
+	    formatterSlots.setMinimum(2);
+	    formatterSlots.setMaximum(512);
+	    formatterSlots.setAllowsInvalid(false);
+	    formatterSlots.setCommitsOnValidEdit(true);
 		
-		JLabel lblRefreshRateTip = new JLabel("0 = as fast as possible");
-		lblRefreshRateTip.setForeground(Color.GRAY);
-		JLabel lblUsBreak = new JLabel("μs");
-		JLabel lblusMab = new JLabel("μs");	
-		JLabel lblSlots = new JLabel("Slots");
-		
-		formattedTextFieldSlots = new JFormattedTextField();
+		formattedTextFieldSlots = new JFormattedTextField(formatterSlots);
 		formattedTextFieldSlots.setText("512");
 		formattedTextFieldSlots.setColumns(6);
 		
@@ -246,6 +263,10 @@ public class WizardParamsTxt extends JDialog {
 						formattedTextFieldRefreshRate.setText(Properties.getString(line));
 						continue;
 					}
+					if (line.contains("slots_count")) {
+						formattedTextFieldSlots.setText(Properties.getString(line));
+						continue;
+					}
 				}
 			}
 		}
@@ -258,6 +279,7 @@ public class WizardParamsTxt extends JDialog {
 			txtAppend.append(String.format("break_time=%s\n", formattedTextFieldBreakTime.getText()));
 			txtAppend.append(String.format("mab_time=%s\n", formattedTextFieldMaBTime.getText()));
 			txtAppend.append(String.format("refresh_rate=%s\n", formattedTextFieldRefreshRate.getText()));
+			txtAppend.append(String.format("slots_count=%s\n", formattedTextFieldSlots.getText()));
 			//
 			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
 			

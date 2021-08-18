@@ -60,8 +60,6 @@
 
 #include "ntpserver.h"
 
-#include "networkhandleroled.h"
-
 #include "mcpbuttons.h"
 #include "ltcoscserver.h"
 
@@ -131,21 +129,15 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	NetworkHandlerOled networkHandlerOled;
-
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&networkHandlerOled);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
-	networkHandlerOled.ShowIp();
-
 	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 
@@ -520,7 +512,7 @@ void notmain(void) {
 				if (bRunNtpServer) {
 					HwClock::Get()->Run(true);
 				} else {
-					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == NtpClientStatus::FAILED); // No need to check for STOPPED
+					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ntpclient::Status::FAILED); // No need to check for STOPPED
 				}
 			} else {
 				gpsTimeClient.Run();

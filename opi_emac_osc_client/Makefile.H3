@@ -1,11 +1,8 @@
-#
-DEFINES = NODE_OSC_CLIENT ENABLE_SPIFLASH DISABLE_RTC NDEBUG
-#
-LIBS = oscclient osc
-#
-PLATFORM = ORANGE_PI
+PLATFORM=ORANGE_PI
+DEFINES=NODE_OSC_CLIENT ENABLE_SPIFLASH DISABLE_RTC NDEBUG
+LIBS=oscclient osc
 
-SRCDIR = firmware lib
+SRCDIR=firmware lib
 
 include ../firmware-template-h3/Rules.mk
 

@@ -52,20 +52,14 @@
 // LLRP Only Device
 #include "rdmnetllrponly.h"
 #include "rdm_e120.h"
-
 // LLRP Handlers
 #include "factorydefaults.h"
-#include "displayudfnetworkhandler.h"
-
 // Reboot handler
 #include "reboot.h"
-
 // Display
 #include "displayhandler.h"
-
 // Format handlers
 #include "olashowfile.h"
-
 // Protocol handlers
 #include "showfileprotocole131.h"
 #include "showfileprotocolartnet.h"
@@ -90,7 +84,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 

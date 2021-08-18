@@ -126,7 +126,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -182,11 +182,9 @@ void notmain(void) {
 	DmxSend *pDmxOutput = nullptr;
 	ArtNetRdmController *pDiscovery = nullptr;
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
-	// DMX Input
-	DmxInput *pDmxInput;
 
 	if (portDir == PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetArtNetDmx(pDmxInput);

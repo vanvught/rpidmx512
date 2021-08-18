@@ -36,10 +36,7 @@
 #include "artnetdisplay.h"
 #include "lightset.h"
 
-#include "network.h"
-#include "ntpclient.h"
-
-class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay, public NetworkDisplay, public NtpClientDisplay {
+class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay {
 public:
 	DisplayUdfHandler() {}
 	~DisplayUdfHandler() {}
@@ -51,7 +48,7 @@ public:
 	void ShowLongName(__attribute__((unused)) const char *pLongName) {
 	}
 
-	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
+	void ShowUniverseSwitch(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
@@ -63,58 +60,16 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
+	void ShowMergeMode(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+	void ShowPortProtocol(__attribute__((unused))  uint8_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
 	void ShowDmxStartAddress() {
 		DisplayUdf::Get()->ShowDmxStartAddress();
-	}
-	
-	void ShowEmacStart() {
-		DisplayUdf::Get()->ShowEmacStart();
-	}
-
-	void ShowIp() {
-		DisplayUdf::Get()->ShowIpAddress();
-	}
-
-	void ShowNetMask() {
-		DisplayUdf::Get()->ShowNetmask();
-	}
-
-	void ShowGatewayIp() {
-		DisplayUdf::Get()->ShowGatewayIp();
-	}
-
-	void ShowHostName() {
-		DisplayUdf::Get()->ShowHostName();
-	}
-
-	void ShowShutdown() {
-		DisplayUdf::Get()->ShowShutdown();
-	}
-
-	// DHCP Client
-	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
-		DisplayUdf::Get()->ShowDhcpStatus(nStatus);
-	}
-
-	// NTP Client
-	void ShowNtpClientStatus(NtpClientStatus nStatus) {
-		if (nStatus == NtpClientStatus::IDLE) {
-			Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
-			return;
-		}
-
-		if (nStatus == NtpClientStatus::FAILED) {
-			Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
-			return;
-		}
 	}
 };
 

@@ -49,6 +49,7 @@
 #include "artnetdiscovery.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -114,7 +115,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -128,11 +129,12 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	DmxSend *pDmxOutput;
-	DmxInput *pDmxInput;
+	DmxSend *pDmxOutput = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
+
 
 	if (artnetparams.GetDirection() == PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetUniverseSwitch(0, PortDir::INPUT, artnetparams.GetUniverse());
@@ -149,6 +151,9 @@ void notmain(void) {
 		}
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 
 		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
 		node.SetOutput(pDmxOutput);
@@ -221,6 +226,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

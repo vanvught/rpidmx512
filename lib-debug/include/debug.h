@@ -49,7 +49,7 @@
  #define debug_dump(x,y)			((void)0)
  #define debug_print_bits(x)		((void)0)
 #else
- #include <cstdint>
+ #include <stdint.h>
  #ifdef __cplusplus
   extern "C" {
  #endif

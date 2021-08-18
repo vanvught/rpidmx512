@@ -36,7 +36,7 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
-#include "h3.h"
+#include "net_memcpy.h"
 
 extern int console_error(const char *);
 
@@ -53,11 +53,11 @@ extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 extern uint16_t net_chksum(void *, uint32_t);
 
 #define MAX_PORTS_ALLOWED	16
-#define MAX_ENTRIES			(1 << 2) // Must always be a power of 2
+#define MAX_ENTRIES			(1 << 1) // Must always be a power of 2
 #define MAX_ENTRIES_MASK	(MAX_ENTRIES - 1)
 
 struct queue_entry {
-	uint8_t data[FRAME_BUFFER_SIZE];
+	uint8_t data[UDP_DATA_SIZE];
 	uint32_t from_ip;
 	uint16_t from_port;
 	uint32_t size;
@@ -157,9 +157,9 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 
 //	debug_dump(p_udp->udp.data, data_length);
 
-	i = MIN(FRAME_BUFFER_SIZE, data_length);
+	i = MIN(UDP_DATA_SIZE, data_length);
 
-	h3_memcpy(p_queue_entry->data, p_udp->udp.data, i);
+	net_memcpy(p_queue_entry->data, p_udp->udp.data, i);
 
 	memcpy(src.u8, p_udp->ip4.src, IPv4_ADDR_LEN);
 	p_queue_entry->from_ip = src.u32;
@@ -225,14 +225,12 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	const uint32_t i = MIN(size, p_queue_entry->size);
 
-	h3_memcpy(packet, p_queue_entry->data, i);
+	net_memcpy(packet, p_queue_entry->data, i);
 
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
 
 	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1) & MAX_ENTRIES_MASK;
-
-	DEBUG_PRINTF("[%d] %d[%d]: %d " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], i, IP2STR(*from_ip));
 
 	return (uint16_t) i;
 }
@@ -246,8 +244,6 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 		DEBUG_PUTS("ports_allowed[idx] == 0");
 		return -1;
 	}
-
-	DEBUG_PRINTF("[%d] %d[%d]: %d %p " IPSTR, H3_TIMER->AVS_CNT0, idx, s_ports_allowed[idx], size, to_ip, IP2STR(to_ip));
 
 	if (to_ip == IPv4_BROADCAST) {
 		memset(s_send_packet.ether.dst, 0xFF, ETH_ADDR_LEN);
@@ -291,6 +287,8 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 		}
 	}
 
+	size = MIN(UDP_DATA_SIZE, size);
+
 	//IPv4
 	s_send_packet.ip4.id = s_id;
 	s_send_packet.ip4.len = __builtin_bswap16((uint16_t)(size + IPv4_UDP_HEADERS_SIZE));
@@ -302,7 +300,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16((uint16_t)(size + UDP_HEADER_SIZE));
 
-	h3_memcpy(s_send_packet.udp.data, packet, MIN(FRAME_BUFFER_SIZE, size));
+	net_memcpy(s_send_packet.udp.data, packet, size);
 
 	debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 

@@ -48,7 +48,7 @@
 namespace dmxconfigudp {
 static constexpr auto MIN_SIZE = 11U;
 static constexpr auto MAX_SIZE = 16U;
-static constexpr uint16_t PORT = 5120U;
+static constexpr uint16_t UDP_PORT = 5120U;
 template<class T>
 static constexpr bool validate(const T& n, const T& min, const T& max) {
 	return (n >= min) && (n <= max);
@@ -73,12 +73,12 @@ class DmxConfigUdp {
 public:
 	DmxConfigUdp() {
 		assert(s_nHandle == -1);
-		s_nHandle = Network::Get()->Begin(dmxconfigudp::PORT);
+		s_nHandle = Network::Get()->Begin(dmxconfigudp::UDP_PORT);
 	}
 
 	~DmxConfigUdp() {
 		assert(s_nHandle != -1);
-		s_nHandle = Network::Get()->End(dmxconfigudp::PORT);
+		s_nHandle = Network::Get()->End(dmxconfigudp::UDP_PORT);
 	}
 
 	void Run() {

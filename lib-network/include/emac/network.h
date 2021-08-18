@@ -179,10 +179,6 @@ public:
 		return m_fNtpUtcOffset;
 	}
 
-	void SetNetworkDisplay(NetworkDisplay *pNetworkDisplay) {
-		m_pNetworkDisplay = pNetworkDisplay;
-	}
-
 	void SetNetworkStore(NetworkStore *pNetworkStore) {
 		m_pNetworkStore = pNetworkStore;
 	}
@@ -226,10 +222,11 @@ protected:
 	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
 
-	NetworkDisplay *m_pNetworkDisplay { nullptr };
 	NetworkStore *m_pNetworkStore { nullptr };
 
 private:
+	NetworkDisplay m_NetworkDisplay;
+
 	void SetDefaultIp();
 
 	struct QueuedConfig {

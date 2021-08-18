@@ -55,6 +55,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 //
@@ -103,7 +104,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -201,6 +202,7 @@ void notmain(void) {
 
 	StoreDmxSend storeDmxSend;
 	DmxSend *pDmxOutput = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
 	if (nDmxPorts != 0) {
 		if (portDir == PortDir::INPUT) {
@@ -219,6 +221,9 @@ void notmain(void) {
 				dmxparams.Dump();
 				dmxparams.Set(pDmxOutput);
 			}
+
+			pDmxConfigUdp = new DmxConfigUdp;
+			assert(pDmxConfigUdp != nullptr);
 
 			display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT , nDmxPorts);
 		}
@@ -316,6 +321,9 @@ void notmain(void) {
 		display.Run();
 		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
 			pPixelTestPattern->Run();
+		}
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
 		}
 	}
 }

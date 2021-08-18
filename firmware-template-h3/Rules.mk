@@ -32,12 +32,6 @@ else
 	endif
 endif
 
-ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
-	ifdef COND
-		LIBS+=displayudf
-	endif
-endif
-
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	ifdef COND
 		LIBS+=artnet4 artnet e131 uuid
@@ -96,6 +90,16 @@ ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
 	LIBS+=rdm rdmsensor rdmsubdevice
 endif
 
+LIBS+=network properties
+
+ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
+	ifdef COND
+		LIBS+=displayudf
+	endif
+endif
+
+LIBS+=lightset display device hal c++ h3 debug c arm
+
 # Output 
 TARGET=$(SUFFIX).img
 LIST=$(SUFFIX).list
@@ -106,8 +110,6 @@ BUILD=build_h3/
 SOURCE=./
 FIRMWARE_DIR=./../firmware-template-h3/
 LINKER=$(FIRMWARE_DIR)memmap
-
-LIBS+=lightset network properties display device hal c++ h3 debug c arm
 	
 DEFINES:=$(addprefix -D,$(DEFINES))
 

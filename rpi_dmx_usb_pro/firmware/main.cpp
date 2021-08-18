@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "networkbaremetalmacaddress.h"
+#include "noemac/network.h"
 #include "ledblink.h"
 
 #include "display.h"
@@ -53,7 +53,7 @@ extern "C" {
 void notmain(void) {
 	// Do not change order
 	Hardware hw;
-	NetworkBaremetalMacAddress nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 

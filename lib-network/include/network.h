@@ -68,15 +68,16 @@ public:
 };
 
 struct NetworkDisplay {
-	virtual ~NetworkDisplay() {}
+	NetworkDisplay() {}
+	~NetworkDisplay() {}
 
-	virtual void ShowEmacStart()=0;
-	virtual void ShowIp()=0;
-	virtual void ShowNetMask()=0;
-	virtual void ShowGatewayIp()=0;
-	virtual void ShowHostName()=0;
-	virtual void ShowDhcpStatus(network::dhcp::ClientStatus nStatus)=0;
-	virtual void ShowShutdown()=0;
+	void ShowEmacStart();
+	void ShowIp();
+	void ShowNetMask();
+	void ShowGatewayIp();
+	void ShowHostName();
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
+	void ShowShutdown();
 };
 
 #if defined (BARE_METAL)

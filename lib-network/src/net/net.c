@@ -190,4 +190,3 @@ __attribute__((hot)) void net_handle(void) {
 
 	net_timers_run();
 }
-
