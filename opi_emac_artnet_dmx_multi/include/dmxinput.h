@@ -35,13 +35,13 @@ class DmxInput: public ArtNetDmx, public Dmx {
 public:
 	DmxInput();
 
-	void Start(uint32_t nPort);
-	void Stop(uint32_t nPort);
+	void Start(uint8_t nPortIndex);
+	void Stop(uint8_t nPortIndex);
 
-	const uint8_t *Handler(uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
+	const uint8_t *Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
 
 private:
-	bool m_bIsStarted[DMX_MAX_UARTS];
+	static uint8_t s_nStarted;
 };
 
 #endif /* DMXINPUT_H_ */

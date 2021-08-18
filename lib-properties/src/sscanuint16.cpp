@@ -34,7 +34,7 @@
 
 #include "sscan.h"
 
-Sscan::ReturnCode Sscan::Uint16(const char *pBuffer, const char *pName, uint16_t &nValue) {
+Sscan::ReturnCode Sscan::Uint16(const char *pBuffer, const char *pName, uint16_t& nValue) {
 	assert(pBuffer != nullptr);
 	assert(pName != nullptr);
 

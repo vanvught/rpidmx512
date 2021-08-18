@@ -77,9 +77,9 @@ void RDMMessage::SetPd(const uint8_t *pParamData, uint8_t nLength) {
 	m_message.message_length = static_cast<uint8_t>(m_message.message_length + nLength);
 }
 
-void RDMMessage::Send(uint32_t nPort, uint32_t nSpacingMicros) {
+void RDMMessage::Send(uint32_t nPortIndex, uint32_t nSpacingMicros) {
 #ifndef NDEBUG
 	RDMMessage::Print(reinterpret_cast<const uint8_t *>(&m_message));
 #endif
-	Rdm::Send(nPort, &m_message, nSpacingMicros);
+	Rdm::Send(nPortIndex, &m_message, nSpacingMicros);
 }

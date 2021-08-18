@@ -117,12 +117,12 @@ void ArtNetController::Stop() {
 	DEBUG_EXIT
 }
 
-void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength, uint32_t nPortIndex) {
+void ArtNetController::HandleDmxOut(uint16_t nUniverse, const uint8_t *pDmxData, uint32_t nLength, uint8_t nPortIndex) {
 	DEBUG_ENTRY
 
 	ActiveUniversesAdd(nUniverse);
 
-	m_pArtDmx->Physical = static_cast<uint8_t>(nPortIndex);
+	m_pArtDmx->Physical = nPortIndex & 0xFF;
 	m_pArtDmx->PortAddress = nUniverse;
 	m_pArtDmx->LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 	m_pArtDmx->Length = static_cast<uint8_t>(nLength & 0xFF);

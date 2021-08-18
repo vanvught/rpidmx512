@@ -116,7 +116,7 @@ void ArtNetNode::Start() {
 	m_State.status = ARTNET_ON;
 
 	if (m_pArtNetDmx != nullptr) {
-		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 			if (m_InputPorts[i].bIsEnabled) {
 				m_pArtNetDmx->Start(i);
 			}

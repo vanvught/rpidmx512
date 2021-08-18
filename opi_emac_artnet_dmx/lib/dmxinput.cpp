@@ -23,9 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "dmxinput.h"
 #include "dmx.h"
@@ -35,6 +34,12 @@
 using namespace dmx;
 using namespace dmxsingle;
 
+uint8_t DmxInput::s_nStarted;
+
+static constexpr bool is_started(const uint8_t v, const uint8_t p) {
+	return (v & (1U << p)) == (1U << p);
+}
+
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
@@ -43,35 +48,45 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(__attribute__((unused)) uint32_t nPort) {
+void DmxInput::Start(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+	assert(nPortIndex < CHAR_BIT);
+
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+
+	if (is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = true;
+	s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
 
 	SetPortDirection(0, PortDirection::INP, true);
+
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(__attribute__((unused)) uint32_t nPort) {
+void DmxInput::Stop(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (!m_bIsStarted) {
+	assert(nPortIndex < CHAR_BIT);
+
+	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, nPortIndex));
+
+	if (!is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = false;
+	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
 	SetPortDirection(0, PortDirection::INP, false);
+
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPort, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
 	const auto *pDmx = GetDmxAvailable();
 
 	nUpdatesPerSecond = GetUpdatesPerSecond();

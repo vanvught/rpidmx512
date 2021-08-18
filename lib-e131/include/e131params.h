@@ -113,12 +113,12 @@ public:
 		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
 	}
 
-	uint16_t GetUniverse(uint32_t nPort, bool &IsSet) const {
-		if (nPort < E131_PARAMS::MAX_PORTS) {
+	uint16_t GetUniverse(uint8_t nPortIndex, bool &IsSet) const {
+		if (nPortIndex < E131_PARAMS::MAX_PORTS) {
 
-			IsSet = isMaskSet(E131ParamsMask::UNIVERSE_A << nPort);
+			IsSet = isMaskSet(E131ParamsMask::UNIVERSE_A << nPortIndex);
 
-			return m_tE131Params.nUniversePort[nPort];
+			return m_tE131Params.nUniversePort[nPortIndex];
 		}
 
 		IsSet = false;

@@ -592,7 +592,7 @@ void Dmx::StopData() {
 	s_IsStopped = true;
 }
 
-void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
 	assert(nPort == 0);
 
 	if (tPortDirection != s_nPortDirection) {
@@ -734,6 +734,8 @@ void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
 
+	nLength = std::min(nLength, static_cast<uint32_t>(m_nDmxTransmitSlots));
+
 	s_DmxData[0].Data[0] = START_CODE;
 
 	__builtin_prefetch(pData);
@@ -762,7 +764,7 @@ uint32_t Dmx::RdmGetDateReceivedEnd() {
 	return sv_RdmDataReceiveEnd;
 }
 
-const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
+const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
 	assert(nPort == 0);
 
 	dmb();
@@ -775,14 +777,14 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = nullptr;
 	const auto nMicros = H3_TIMER->AVS_CNT1;
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ((H3_TIMER->AVS_CNT1 - nMicros) < nTimeOut);
@@ -790,7 +792,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	while (!(EXT_UART->LSR & UART_LSR_TEMT))

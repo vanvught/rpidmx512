@@ -654,15 +654,15 @@ Dmx::Dmx() {
 	DEBUG_EXIT
 }
 
-void Dmx::SetPortDirection(uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
-	assert(nPort < dmxmulti::max::OUT);
+void Dmx::SetPortDirection(uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
+	assert(nPortIndex < dmxmulti::max::OUT);
 
-	DEBUG_PRINTF("nPort=%d, tPortDirection=%d, bEnableData=%d", nPort, tPortDirection, bEnableData);
+	DEBUG_PRINTF("nPort=%d, tPortDirection=%d, bEnableData=%d", nPortIndex, tPortDirection, bEnableData);
 
-	const auto nUart = _port_to_uart(nPort);
+	const auto nUart = _port_to_uart(nPortIndex);
 
 	if (tPortDirection != m_tDmxPortDirection[nUart]) {
-		StopData(nUart, nPort);
+		StopData(nUart, nPortIndex);
 		switch (tPortDirection) {
 		case PortDirection::OUTP:
 			h3_gpio_set(s_nDmxDataDirectionGpioPin[nUart]);	// 0 = input, 1 = output
@@ -677,11 +677,11 @@ void Dmx::SetPortDirection(uint32_t nPort, PortDirection tPortDirection, bool bE
 			break;
 		}
 	} else if (!bEnableData) {
-		StopData(nUart, nPort);
+		StopData(nUart, nPortIndex);
 	}
 
 	if (bEnableData) {
-		StartData(nUart, nPort);
+		StartData(nUart, nPortIndex);
 	}
 }
 
@@ -698,7 +698,7 @@ void Dmx::ClearData(uint32_t nUart) {
 	}
 }
 
-void Dmx::StartData(uint32_t nUart, __attribute__((unused)) uint32_t nPort) {
+void Dmx::StartData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
 	assert(s_UartState[nUart] == UartState::IDLE);
 
 	switch (m_tDmxPortDirection[nUart]) {
@@ -728,7 +728,7 @@ void Dmx::StartData(uint32_t nUart, __attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-void Dmx::StopData(uint32_t nUart, __attribute__((unused)) uint32_t nPort) {
+void Dmx::StopData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
 	assert(nUart < dmxmulti::max::OUT);
 
 	dmb();
@@ -835,11 +835,11 @@ void Dmx::SetDmxSlots(uint16_t nSlots) {
 	DEBUG_EXIT
 }
 
-void Dmx::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != 0);
 	assert(nLength != 0);
 
-	const auto nUart = _port_to_uart(nPort);
+	const auto nUart = _port_to_uart(nPortIndex);
 	assert(nUart < dmxmulti::max::OUT);
 
 	const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -864,8 +864,8 @@ void Dmx::SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_
 
 // DMX Receive
 
-const uint8_t *Dmx::GetDmxAvailable(uint32_t nPort)  {
-	const auto nUart = _port_to_uart(nPort);
+const uint8_t *Dmx::GetDmxAvailable(uint32_t nPortIndex)  {
+	const auto nUart = _port_to_uart(nPortIndex);
 
 	dmb();
 	if (s_nDmxDataBufferIndexHead[nUart] == s_nDmxDataBufferIndexTail[nUart]) {
@@ -877,8 +877,8 @@ const uint8_t *Dmx::GetDmxAvailable(uint32_t nPort)  {
 	}
 }
 
-uint32_t Dmx::GetUpdatesPerSeconde(uint32_t nPort) {
-	const auto uart = _port_to_uart(nPort);
+uint32_t Dmx::GetUpdatesPerSeconde(uint32_t nPortIndex) {
+	const auto uart = _port_to_uart(nPortIndex);
 
 	dmb();
 	return s_nDmxUpdatesPerSecond[uart];
@@ -886,12 +886,12 @@ uint32_t Dmx::GetUpdatesPerSeconde(uint32_t nPort) {
 
 // RDM Send
 
-void Dmx::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLength) {
-	assert(nPort < dmxmulti::max::OUT);
+void Dmx::RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength) {
+	assert(nPortIndex < dmxmulti::max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	auto *p = _get_uart(_port_to_uart(nPort));
+	auto *p = _get_uart(_port_to_uart(nPortIndex));
 	assert(p != nullptr);
 
 	while (!(p->LSR & UART_LSR_TEMT))
@@ -916,10 +916,10 @@ void Dmx::RdmSendRaw(uint32_t nPort, const uint8_t* pRdmData, uint32_t nLength) 
 
 // RDM Receive
 
-const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
-	assert(nPort < dmxmulti::max::OUT);
+const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
+	assert(nPortIndex < dmxmulti::max::OUT);
 
-	const auto nUart = _port_to_uart(nPort);
+	const auto nUart = _port_to_uart(nPortIndex);
 
 	dmb();
 	if (s_nRdmDataWriteIndex[nUart] == s_nRdmDataReadIndex[nUart]) {
@@ -931,14 +931,14 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
 	}
 }
 
-const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut) {
-	assert(nPort < dmxmulti::max::OUT);
+const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
+	assert(nPortIndex < dmxmulti::max::OUT);
 
 	uint8_t *p = nullptr;
 	const auto nMicros = H3_TIMER->AVS_CNT1;
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return p;
 		}
 	} while ((H3_TIMER->AVS_CNT1 - nMicros) < nTimeOut);

@@ -67,19 +67,19 @@ ArtNetRdmResponder::~ArtNetRdmResponder() {
 	DEBUG_EXIT
 }
 
-void ArtNetRdmResponder::Full(__attribute__((unused)) uint32_t nPort) {
+void ArtNetRdmResponder::Full(__attribute__((unused)) uint8_t nPortIndex) {
 	// We are a Responder - no code needed
 }
 
-uint8_t ArtNetRdmResponder::GetUidCount(__attribute__((unused)) uint32_t nPort) {
+uint8_t ArtNetRdmResponder::GetUidCount(__attribute__((unused)) uint8_t nPortIndex) {
 	return 1; // We are a Responder
 }
 
-void ArtNetRdmResponder::Copy(__attribute__((unused)) uint32_t nPort, unsigned char *tod) {
+void ArtNetRdmResponder::Copy(__attribute__((unused)) uint8_t nPortIndex, unsigned char *tod) {
 	memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 }
 
-const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmDataNoSC) {
+const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint8_t nPortIndex, const uint8_t *pRdmDataNoSC) {
 	DEBUG_ENTRY
 
 	if (pRdmDataNoSC == nullptr) {

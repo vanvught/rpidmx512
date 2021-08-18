@@ -107,8 +107,8 @@ void Dmx::StartData() {
 void Dmx::StopData() {
 }
 
-void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
-	assert(nPort == 0);
+void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
+	assert(nPortIndex == 0);
 
 	if (tPortDirection != s_nPortDirection) {
 		StopData();
@@ -212,8 +212,8 @@ uint32_t Dmx::RdmGetDateReceivedEnd() {
 	return 0;
 }
 
-const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
-	assert(nPort < MAX_PORTS);
+const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
+	assert(nPortIndex < MAX_PORTS);
 
 	uint32_t fromIp;
 	uint16_t fromPort;
@@ -240,12 +240,12 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPort) {
 	return rdmReceiveBuffer;
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint32_t nPort, uint16_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint32_t nPortIndex, uint16_t nTimeOut) {
 	uint8_t *p = nullptr;
 	const auto nMicros = micros();
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while (( micros() - nMicros) < nTimeOut);
@@ -253,7 +253,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(__attribute__((unused)) uint32_t nPort, ui
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 

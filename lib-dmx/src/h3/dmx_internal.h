@@ -35,9 +35,9 @@
  * 3	UART0
  */
 
-inline static uint32_t _port_to_uart(const uint32_t nPort) {
-	if (nPort < 3) {
-		return nPort + 1;
+inline static uint32_t _port_to_uart(const uint32_t nPortIndex) {
+	if (nPortIndex < 3) {
+		return nPortIndex + 1;
 	}
 
 	return 0;

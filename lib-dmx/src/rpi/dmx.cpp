@@ -586,7 +586,7 @@ void Dmx::StopData() {
 	s_IsStopped = true;
 }
 
-void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
 	assert(nPort == 0);
 
 	if (tPortDirection != s_nPortDirection) {
@@ -773,7 +773,7 @@ uint32_t Dmx::RdmGetDateReceivedEnd() {
 	return sv_RdmDataReceiveEnd;
 }
 
-const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
+const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
 	assert(nPort == 0);
 
 	dmb();
@@ -786,14 +786,14 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = nullptr;
 	const auto nMicros = BCM2835_ST->CLO;
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ((BCM2835_ST->CLO - nMicros) < nTimeOut);
@@ -801,7 +801,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;

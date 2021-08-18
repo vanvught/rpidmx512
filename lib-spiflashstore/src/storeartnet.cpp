@@ -86,7 +86,7 @@ void StoreArtNet::SaveLongName(const char* pLongName) {
 	DEBUG_EXIT
 }
 
-void StoreArtNet::SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress) {
+void StoreArtNet::SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 
@@ -115,7 +115,7 @@ void StoreArtNet::SaveSubnetSwitch(uint8_t nAddress) {
 	DEBUG_EXIT
 }
 
-void StoreArtNet::SaveMergeMode(uint32_t nPortIndex, Merge tMerge) {
+void StoreArtNet::SaveMergeMode(uint8_t nPortIndex, Merge tMerge) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 
@@ -128,7 +128,7 @@ void StoreArtNet::SaveMergeMode(uint32_t nPortIndex, Merge tMerge) {
 	DEBUG_EXIT
 }
 
-void StoreArtNet::SavePortProtocol(uint32_t nPortIndex, PortProtocol tPortProtocol) {
+void StoreArtNet::SavePortProtocol(uint8_t nPortIndex, PortProtocol tPortProtocol) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 

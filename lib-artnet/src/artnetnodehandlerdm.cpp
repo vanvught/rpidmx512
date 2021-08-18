@@ -74,7 +74,7 @@ void ArtNetNode::HandleTodRequest() {
 	const auto *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
 			SendTod(i);
 		}
@@ -83,12 +83,12 @@ void ArtNetNode::HandleTodRequest() {
 	DEBUG_EXIT
 }
 
-void ArtNetNode::SendTod(uint32_t nPortIndex) {
+void ArtNetNode::SendTod(uint8_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 
 	auto pTodData = &(m_ArtNetPacket.ArtPacket.ArtTodData);
-	const auto nPage = nPortIndex / ArtNet::PORTS;
+	const auto nPage = static_cast<uint8_t>(nPortIndex / ArtNet::PORTS);
 
 	pTodData->OpCode = OP_TODDATA;
 	pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
@@ -102,7 +102,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->Spare4 = 0;
 	pTodData->Spare5 = 0;
 	pTodData->Spare6 = 0;
-	pTodData->BindIndex = static_cast<uint8_t>(nPage + 1U);
+	pTodData->BindIndex = nPage + 1U;
 	pTodData->Net = m_Node.NetSwitch[nPage];
 	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
 	pTodData->Address = m_OutputPorts[nPortIndex].port.nDefaultAddress;

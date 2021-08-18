@@ -255,7 +255,7 @@ void RgbPanel::SetPixel(uint32_t nColumn, uint32_t nRow, uint8_t nRed, uint8_t n
 			s_pFramebuffer1[nIndex] = nValue;
 		}
 	} else {
-		const uint32_t nBaseIndex = ((nRow - (m_nRows / 2)) * m_nColumns * PWM_WIDTH) + nColumn;
+		const uint32_t nBaseIndex = ((nRow - (m_nRows / 2U)) * m_nColumns * PWM_WIDTH) + nColumn;
 
 		for (uint32_t nPWM = 0; nPWM < PWM_WIDTH; nPWM++) {
 

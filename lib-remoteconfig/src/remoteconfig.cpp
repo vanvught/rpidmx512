@@ -648,7 +648,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 			Network::Get()->SendTo(m_nHandle, "?get#ERROR#\n", 12, m_nIPAddressFrom, udp::PORT);
 		} else {
 			DEBUG_PUTS("");
-			memcpy(pBuffer, "?get#ERROR#\n", std::min((12U), nBufferLength));
+			memcpy(pBuffer, "?get#ERROR#\n", std::min(12U, nBufferLength));
 		}
 		DEBUG_EXIT
 		return 12;
@@ -923,7 +923,7 @@ void RemoteConfig::HandleGetRgbPanelTxt(uint32_t& nSize) {
 #endif
 
 #if defined (NODE_DDP_DISPLAY)
-void RemoteConfig::HandleGetDdpDisplayTxt(uint32_t &nSize) {
+void RemoteConfig::HandleGetDdpDisplayTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	DdpDisplayParams ddpDisplayParams(StoreDdpDisplay::Get());

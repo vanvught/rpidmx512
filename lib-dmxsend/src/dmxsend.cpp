@@ -33,7 +33,7 @@
 
 uint8_t DmxSend::s_nStarted;
 
-static constexpr bool is_started(const uint8_t v, const uint8_t p) {
+static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 	return (v & (1U << p)) == (1U << p);
 }
 
@@ -44,7 +44,7 @@ void DmxSend::Start(uint32_t nPortIndex) {
 
 	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
-	if (is_started(s_nStarted, static_cast<uint8_t>(nPortIndex))) {
+	if (is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}
@@ -63,7 +63,7 @@ void DmxSend::Stop(uint32_t nPortIndex) {
 
 	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, static_cast<uint8_t>(nPortIndex)));
 
-	if (!is_started(s_nStarted, static_cast<uint8_t>(nPortIndex))) {
+	if (!is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}

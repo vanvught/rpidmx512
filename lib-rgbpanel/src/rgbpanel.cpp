@@ -73,7 +73,7 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 		for (uint8_t nColumn = nStartColumn; nColumn < static_cast<uint8_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
 
 			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
-				const uint8_t nByte = static_cast<uint8_t>(m_ptColons[nColonIndex].nBits >> i);
+				const auto nByte = static_cast<uint8_t>(m_ptColons[nColonIndex].nBits >> i);
 
 				if ((nByte & 0x1) != 0) {
 					SetPixel(nColumn, nRow, m_ptColons[nColonIndex].nRed, m_ptColons[nColonIndex].nGreen, m_ptColons[nColonIndex].nBlue);

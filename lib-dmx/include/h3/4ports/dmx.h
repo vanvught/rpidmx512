@@ -47,16 +47,16 @@ class Dmx {
 public:
 	Dmx();
 
-	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false);
+	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
 
 	// RDM Send
 
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
 
 	// RDM Receive
 
-	const uint8_t *RdmReceive(uint32_t nPort);
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint16_t nTimeOut);
+	const uint8_t *RdmReceive(uint32_t nPortIndex);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
 
 	 uint32_t RdmGetDateReceivedEnd() {
 		 return 0;
@@ -64,11 +64,11 @@ public:
 
 	// DMX Send
 
-	void SetPortSendDataWithoutSC(uint32_t nPort, const uint8_t *pData, uint32_t nLength);
+	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {
-		return m_nDmxTransmitMabTime;
+		return m_nDmxTransmitBreakTime;
 	}
 
 	void SetDmxMabTime(uint32_t nMabTime);
@@ -88,8 +88,8 @@ public:
 
 	// DMX Receive
 
-	const uint8_t* GetDmxAvailable(uint32_t port);
-	uint32_t GetUpdatesPerSeconde(uint32_t port);
+	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
+	uint32_t GetUpdatesPerSeconde(uint32_t nPortIndex);
 
 	static void UartInit(uint32_t nUart);
 
@@ -99,8 +99,8 @@ public:
 
 private:
 	void ClearData(uint32_t uart);
-	void StartData(uint32_t nUart, uint32_t nPort);
-	void StopData(uint32_t nUart, uint32_t nPort);
+	void StartData(uint32_t nUart, uint32_t nPortIndex);
+	void StopData(uint32_t nUart, uint32_t nPortIndex);
 
 private:
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };

@@ -72,13 +72,13 @@ public:
 	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
 	void Init();
 
-	void SetPortDirection(uint32_t nPort, dmx::PortDirection portDirection, bool bEnableData = false);
+	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
 	dmx::PortDirection GetPortDirection();
 
 	// RDM
-	void RdmSendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
-	const uint8_t *RdmReceive(uint32_t nPort);
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut);
+	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+	const uint8_t *RdmReceive(uint32_t nPortIndex);
+	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut);
 	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX

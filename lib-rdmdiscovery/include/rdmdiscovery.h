@@ -35,7 +35,7 @@
 
 class RDMDiscovery: public RDMTod {
 public:
-	RDMDiscovery(uint32_t nPort = 0) : m_nPort(nPort) {}
+	RDMDiscovery(uint8_t nPortIndex = 0) : m_nPortIndex(nPortIndex) {}
 
 	void SetUid(const uint8_t *);
 	const uint8_t *GetUid() const {
@@ -45,20 +45,20 @@ public:
 	void Full();
 
 private:
-	bool FindDevices(uint64_t, uint64_t);
-	bool QuickFind(const uint8_t *);
+	bool FindDevices(uint64_t LowerBound, uint64_t UpperBound);
+	bool QuickFind(const uint8_t *uid);
 
-	bool IsValidDiscoveryResponse(const uint8_t *, uint8_t *);
+	bool IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_t *pUid);
 
-	void PrintUid(uint64_t);
-	void PrintUid(const uint8_t *);
-	const uint8_t *ConvertUid(uint64_t);
-	uint64_t ConvertUid(const uint8_t *);
+	void PrintUid(uint64_t nUid);
+	void PrintUid(const uint8_t *pUid);
+	const uint8_t *ConvertUid(uint64_t nUid);
+	uint64_t ConvertUid(const uint8_t *pUid);
 
 private:
-	uint32_t m_nPort;
-	uint8_t m_Uid[RDM_UID_SIZE];
+	uint8_t m_nPortIndex;
 	RDMMessage m_Message;
+	uint8_t m_Uid[RDM_UID_SIZE];
 	uint8_t m_Pdl[2][RDM_UID_SIZE];
 };
 

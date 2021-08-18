@@ -85,7 +85,7 @@ void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_
 	assert(nPortIndex < E131::PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
-		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, nPortIndex);
+		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, static_cast<uint8_t>(nPortIndex));
 	}
 }
 

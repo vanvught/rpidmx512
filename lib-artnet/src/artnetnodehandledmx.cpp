@@ -36,7 +36,7 @@
 
 using namespace artnet;
 
-void ArtNetNode::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void ArtNetNode::MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
 
 	if (!m_State.IsMergeMode) {
@@ -59,7 +59,7 @@ void ArtNetNode::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_
 	memcpy(m_OutputPorts[nPortIndex].data, pData, nLength);
 }
 
-void ArtNetNode::CheckMergeTimeouts(uint32_t nPortIndex) {
+void ArtNetNode::CheckMergeTimeouts(uint8_t nPortIndex) {
 	const uint32_t nTimeOutAMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA;
 
 	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
