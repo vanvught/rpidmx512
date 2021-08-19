@@ -26,17 +26,17 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.text.NumberFormat;
 
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.text.NumberFormatter;
-import javax.swing.JLabel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import java.awt.Color;
+import javax.swing.border.EmptyBorder;
+import javax.swing.text.NumberFormatter;
 
 public class WizardParamsTxt extends JDialog {
 	//
@@ -52,15 +52,11 @@ public class WizardParamsTxt extends JDialog {
 	private JButton btnSave;
 	private JButton btnCancel;
 	//
-	private NumberFormatter formatterBreakTime;
 	private NumberFormatter formatterMaBTime;
-	private NumberFormatter formatterRefreshRate;
-	private NumberFormatter formatterSlots;
-	
-	private JFormattedTextField formattedTextFieldBreakTime;
 	private JFormattedTextField formattedTextFieldMaBTime;
-	private JFormattedTextField formattedTextFieldRefreshRate;
-	private JFormattedTextField formattedTextFieldSlots;
+	private JComboBox<Integer> comboBoxBreakTime;
+	private JComboBox<Integer> comboBoxRefreshRate;
+	private JComboBox<Integer> comboBoxSlots;
 
 	public static void main(String[] args) {
 		try {
@@ -93,25 +89,11 @@ public class WizardParamsTxt extends JDialog {
 		JLabel lblBreakTime = new JLabel("BREAK time");
 		JLabel lblMabTime = new JLabel("MAB time");
 		JLabel lbRefreshRate = new JLabel("Refresh rate");
-		JLabel lblRefreshRateTip = new JLabel("0 = as fast as possible");
-		lblRefreshRateTip.setForeground(Color.GRAY);
 		JLabel lblUsBreak = new JLabel("μs");
 		JLabel lblusMab = new JLabel("μs");	
 		JLabel lblSlots = new JLabel("Slots");
 		
-	    NumberFormat format = NumberFormat.getInstance();
-	    
-	    formatterBreakTime = new NumberFormatter(format);
-	    formatterBreakTime.setValueClass(Integer.class);
-	    formatterBreakTime.setMinimum(92);
-	    formatterBreakTime.setMaximum(176);
-	    formatterBreakTime.setAllowsInvalid(false);
-	    formatterBreakTime.setCommitsOnValidEdit(true);
-		
-		formattedTextFieldBreakTime = new JFormattedTextField(formatterBreakTime);
-		formattedTextFieldBreakTime.setText("176");
-		formattedTextFieldBreakTime.setColumns(4);
-		
+	    NumberFormat format = NumberFormat.getInstance();		
 	    formatterMaBTime = new NumberFormatter(format);
 	    formatterMaBTime.setValueClass(Integer.class);
 	    formatterMaBTime.setMinimum(12);
@@ -123,83 +105,72 @@ public class WizardParamsTxt extends JDialog {
 		formattedTextFieldMaBTime.setText("12");
 		formattedTextFieldMaBTime.setColumns(4);
 			
-	    formatterRefreshRate = new NumberFormatter(format);
-	    formatterRefreshRate.setValueClass(Integer.class);
-	    formatterRefreshRate.setMinimum(0);
-	    formatterRefreshRate.setMaximum(44);
-	    formatterRefreshRate.setAllowsInvalid(false);
-	    formatterRefreshRate.setCommitsOnValidEdit(true);
+		comboBoxRefreshRate = new JComboBox<Integer>();
+		comboBoxRefreshRate.setToolTipText("0 = as fast as possible");
+		for (int refreshRate = 0; refreshRate <=44; refreshRate++) {
+			comboBoxRefreshRate.addItem(refreshRate);
+		}
+		comboBoxRefreshRate.setSelectedIndex(40);
 		
-		formattedTextFieldRefreshRate = new JFormattedTextField(formatterRefreshRate);
-		formattedTextFieldRefreshRate.setText("40");
-		formattedTextFieldRefreshRate.setColumns(4);
-				
-	    formatterSlots = new NumberFormatter(format);
-	    formatterSlots.setValueClass(Integer.class);
-	    formatterSlots.setMinimum(2);
-	    formatterSlots.setMaximum(512);
-	    formatterSlots.setAllowsInvalid(false);
-	    formatterSlots.setCommitsOnValidEdit(true);
+		comboBoxBreakTime = new JComboBox<Integer>();
+		comboBoxBreakTime.setToolTipText("92 - 176");
+		for (int breakTime = 92; breakTime <=176; breakTime++) {
+			comboBoxBreakTime.addItem(breakTime);
+		}
+		comboBoxBreakTime.setSelectedItem(176);
 		
-		formattedTextFieldSlots = new JFormattedTextField(formatterSlots);
-		formattedTextFieldSlots.setText("512");
-		formattedTextFieldSlots.setColumns(6);
+		comboBoxSlots = new JComboBox<Integer>();
+		comboBoxSlots.setToolTipText("2 - 512 (even slots only)");
+		for (int slots = 2; slots <=512; slots = slots + 2) {
+			comboBoxSlots.addItem(slots);
+		}
+		comboBoxSlots.setSelectedItem(512);
 		
 		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
 		gl_contentPanel.setHorizontalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.TRAILING)
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-								.addComponent(lblMabTime)
-								.addComponent(lblBreakTime))
-							.addGap(4))
-						.addComponent(lbRefreshRate, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-						.addComponent(lblSlots, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addComponent(lblBreakTime)
+						.addComponent(lblSlots, Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, 75, Short.MAX_VALUE)
+						.addComponent(lbRefreshRate, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(lblMabTime))
+					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING, false)
+						.addComponent(formattedTextFieldMaBTime, GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
+						.addComponent(comboBoxRefreshRate, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(comboBoxSlots, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+						.addComponent(comboBoxBreakTime, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 					.addPreferredGap(ComponentPlacement.RELATED)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldMaBTime, GroupLayout.PREFERRED_SIZE, 70, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(lblusMab, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldBreakTime, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(lblUsBreak))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldRefreshRate, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(lblRefreshRateTip))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldSlots, GroupLayout.PREFERRED_SIZE, 36, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(lblRefreshRateTip)))
-					.addContainerGap(7, Short.MAX_VALUE))
+						.addComponent(lblUsBreak)
+						.addComponent(lblusMab, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+					.addContainerGap(100, Short.MAX_VALUE))
 		);
 		gl_contentPanel.setVerticalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
 					.addContainerGap()
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblBreakTime)
-						.addComponent(formattedTextFieldBreakTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblUsBreak))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(formattedTextFieldMaBTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblMabTime)
-						.addComponent(lblusMab))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(formattedTextFieldRefreshRate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lbRefreshRate)
-						.addComponent(lblRefreshRateTip))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(formattedTextFieldSlots, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblSlots))
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addComponent(comboBoxBreakTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(formattedTextFieldMaBTime, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblMabTime)
+								.addComponent(lblusMab))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(comboBoxRefreshRate, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lbRefreshRate))
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(comboBoxSlots, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblSlots)))
+						.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+							.addComponent(lblUsBreak)
+							.addComponent(lblBreakTime)))
 					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		contentPanel.setLayout(gl_contentPanel);
@@ -252,7 +223,7 @@ public class WizardParamsTxt extends JDialog {
 				for (int i = 0; i < lines.length; i++) {
 					final String line = lines[i];
 					if (line.contains("break_time")) {
-						formattedTextFieldBreakTime.setText(Properties.getString(line));
+						comboBoxBreakTime.setSelectedItem(Properties.getInt(line));
 						continue;
 					}
 					if (line.contains("mab_time")) {
@@ -260,11 +231,11 @@ public class WizardParamsTxt extends JDialog {
 						continue;
 					}
 					if (line.contains("refresh_rate")) {
-						formattedTextFieldRefreshRate.setText(Properties.getString(line));
+						comboBoxRefreshRate.setSelectedItem(Properties.getInt(line));
 						continue;
 					}
 					if (line.contains("slots_count")) {
-						formattedTextFieldSlots.setText(Properties.getString(line));
+						comboBoxSlots.setSelectedItem(Properties.getInt(line));
 						continue;
 					}
 				}
@@ -276,10 +247,10 @@ public class WizardParamsTxt extends JDialog {
 		if (opi != null) {
 			StringBuffer txtAppend = new StringBuffer();
 			//
-			txtAppend.append(String.format("break_time=%s\n", formattedTextFieldBreakTime.getText()));
+			txtAppend.append(String.format("break_time=%s\n", comboBoxBreakTime.getSelectedObjects()));
 			txtAppend.append(String.format("mab_time=%s\n", formattedTextFieldMaBTime.getText()));
-			txtAppend.append(String.format("refresh_rate=%s\n", formattedTextFieldRefreshRate.getText()));
-			txtAppend.append(String.format("slots_count=%s\n", formattedTextFieldSlots.getText()));
+			txtAppend.append(String.format("refresh_rate=%s\n", comboBoxRefreshRate.getSelectedObjects()));
+			txtAppend.append(String.format("slots_count=%s\n", comboBoxSlots.getSelectedObjects()));
 			//
 			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
 			

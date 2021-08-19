@@ -115,6 +115,7 @@ public class RemoteConfig extends JFrame {
 
 	private OrangePi opi = null;
 	private JMenuItem mntmFactoryDefaults;
+	private JMenuItem mntmDmxTransmit;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -395,7 +396,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-
+		
 		mntmPixelTextPatterns.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doPixelTestPattern();
@@ -429,6 +430,30 @@ public class RemoteConfig extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(null, "No node selected for LTC Generator to run.");
 				}
+			}
+		});
+		
+		mntmDmxTransmit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getTxt("params.txt").contains("params.txt")) {
+							UdpDmxTransmit client = new UdpDmxTransmit(pi.getAddress());
+							client.setVisible(true);
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a DMX node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for DMX Transmit to run.");
+				}			
 			}
 		});
 
@@ -645,6 +670,10 @@ public class RemoteConfig extends JFrame {
 				mntmGlobalControl = new JMenuItem("Global control");
 				mntmGlobalControl.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
 				mnRun.add(mntmGlobalControl);
+				
+				mntmDmxTransmit = new JMenuItem("DMX Transmit");
+				mntmDmxTransmit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_MASK));
+				mnRun.add(mntmDmxTransmit);
 		
 				mntmPixelTextPatterns = new JMenuItem("Pixel Controller Test Patterns");
 				
@@ -728,11 +757,8 @@ public class RemoteConfig extends JFrame {
 		setContentPane(contentPane);
 
 		scrollPaneLeft = new JScrollPane();
-
 		scrollPaneRight = new JScrollPane();
-
 		lblDisplayName = new JLabel("");
-
 		lblNodeId = new JLabel("");
 
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
