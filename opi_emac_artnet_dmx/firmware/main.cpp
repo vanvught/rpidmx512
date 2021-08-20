@@ -23,19 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -51,6 +49,7 @@
 #include "artnetdiscovery.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -73,7 +72,7 @@ extern "C" {
 void notmain(void) {
 	Hardware hw;
 	LedBlink lb;
-	NetworkH3emac nw;
+	Network nw;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -116,7 +115,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -130,20 +129,21 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	DMXSend *pDmxOutput;
-	DmxInput *pDmxInput;
+	DmxSend *pDmxOutput = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
+
 
 	if (artnetparams.GetDirection() == PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetUniverseSwitch(0, PortDir::INPUT, artnetparams.GetUniverse());
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSend;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Set(pDmxOutput);
@@ -151,6 +151,9 @@ void notmain(void) {
 		}
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 
 		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
 		node.SetOutput(pDmxOutput);
@@ -223,6 +226,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

@@ -63,7 +63,7 @@ RDMDevice::RDMDevice() {
 	m_tRDMDevice.aDeviceUID[0] = RDMConst::MANUFACTURER_ID[0];
 	m_tRDMDevice.aDeviceUID[1] = RDMConst::MANUFACTURER_ID[1];
 
-	uint8_t aMacAddress[NETWORK_MAC_SIZE];
+	uint8_t aMacAddress[network::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
 	m_tRDMDevice.aDeviceUID[2] = aMacAddress[2];

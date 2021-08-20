@@ -27,32 +27,33 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmx.h"
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# include "dmxmulti.h"
+#else
+# include "dmx.h"
+#endif
 
 extern "C" {
 void udelay(uint32_t);
 }
 
-using namespace dmx;
-
-const uint8_t *Rdm::Receive(uint32_t nPort) {
-	return DmxSet::Get()->RdmReceive(nPort);
+const uint8_t *Rdm::Receive(uint32_t nPortIndex) {
+	return Dmx::Get()->RdmReceive(nPortIndex);
 }
 
-const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
-	return DmxSet::Get()->RdmReceiveTimeOut(nPort, nTimeOut);
+const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
+	return Dmx::Get()->RdmReceiveTimeOut(nPortIndex, nTimeOut);
 }
 
-void Rdm::SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
-	assert(nPort < max::OUT);
+void Rdm::SendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
-	DmxSet::Get()->RdmSendRaw(nPort, pRdmData, nLength);
+	Dmx::Get()->RdmSendRaw(nPortIndex, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
 }

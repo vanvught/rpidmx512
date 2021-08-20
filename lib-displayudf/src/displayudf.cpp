@@ -133,24 +133,24 @@ void DisplayUdf::ShowHostName() {
 	Write(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)], Network::Get()->GetHostName());
 }
 
-void DisplayUdf::ShowDhcpStatus(DhcpClientStatus nStatus) {
+void DisplayUdf::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 	switch (nStatus) {
-	case DhcpClientStatus::IDLE:
+	case network::dhcp::ClientStatus::IDLE:
 		break;
-	case DhcpClientStatus::RENEW:
+	case network::dhcp::ClientStatus::RENEW:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP renewing");
 		break;
-	case DhcpClientStatus::GOT_IP:
+	case network::dhcp::ClientStatus::GOT_IP:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
-	case DhcpClientStatus::RETRYING:
+	case network::dhcp::ClientStatus::RETRYING:
 		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP retrying");
 		break;
-	case DhcpClientStatus::FAILED:
+	case network::dhcp::ClientStatus::FAILED:
 		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 		break;
 	default:

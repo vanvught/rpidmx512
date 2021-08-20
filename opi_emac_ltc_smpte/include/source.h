@@ -42,7 +42,7 @@ public:
 			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 3U), 3);
 			if (bRunGpsTimeClient) {
 				Display::Get()->PutString("GPS");
-			} else if ((NtpClient::Get()->GetStatus() != NtpClientStatus::FAILED) && (NtpClient::Get()->GetStatus() != NtpClientStatus::STOPPED)) {
+			} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
 				Display::Get()->PutString("NTP");
 			} else if (HwClock::Get()->IsConnected()) {
 				Display::Get()->PutString("RTC");

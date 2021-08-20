@@ -38,11 +38,11 @@ public:
 
 	void SaveShortName(const char *pShortName) override;
 	void SaveLongName(const char *pLongName) override;
-	void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress) override;
+	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) override;
 	void SaveNetSwitch(uint8_t nAddress) override;
 	void SaveSubnetSwitch(uint8_t nAddress) override;
-	void SaveMergeMode(uint32_t nPortIndex, artnet::Merge tMerge) override;
-	void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
+	void SaveMergeMode(uint8_t nPortIndex, artnet::Merge tMerge) override;
+	void SavePortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
 
 	static StoreArtNet *Get() {
 		return s_pThis;

@@ -122,7 +122,7 @@ private:
 	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
 	void RespondMessageAck();
 	void RespondMessageNack(uint16_t nReason);
-	void HandleString(const char *pString, uint32_t nLenght);
+	void HandleString(const char *pString, uint32_t nLength);
 
 private:
 	bool m_bIsRDM;

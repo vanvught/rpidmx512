@@ -28,15 +28,13 @@
 #include <assert.h>
 
 #include "hardware.h"
-#include "networkbaremetalmacaddress.h"
+#include "noemac/network.h"
 #include "ledblink.h"
 
 #include "console.h"
 #include "display.h"
 
 #include "identify.h"
-
-#include "dmxgpioparams.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -68,7 +66,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkBaremetalMacAddress nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -84,15 +82,6 @@ void notmain(void) {
 	fw.Print();
 
 	hw.SetLed(hardware::LedStatus::ON);
-
-	DmxGpioParams dmxgpioparams;
-
-	if (dmxgpioparams.Load()) {
-		dmxgpioparams.Dump();
-	}
-
-	bool isSet;
-	uint8_t nGpioDataDirection = dmxgpioparams.GetDataDirection(isSet); // Returning default GPIO18
 
 	bool isLedTypeSet = false;
 
@@ -137,7 +126,7 @@ void notmain(void) {
 
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
 
-	RDMResponder rdmResponder(&personality, pLightSet, nGpioDataDirection);
+	RDMResponder rdmResponder(&personality, pLightSet);
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);

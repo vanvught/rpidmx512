@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "dmx.h"
+#include "dmxconst.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 
@@ -86,7 +87,7 @@ static uint32_t s_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
 static uint32_t s_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 static uint32_t s_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 
-static uint32_t s_nDmxSendDataLength = (max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
+static uint32_t s_nDmxSendDataLength = (dmx::max::CHANNELS + 1);		///< SC + UNIVERSE SIZE
 static volatile uint32_t sv_nFiqMicrosCurrent;
 static volatile uint32_t sv_nFiqMicrosPrevious;
 static volatile bool sv_isDmxPreviousBreak = false;
@@ -101,7 +102,7 @@ static bool s_IsStopped = true;
 
 static volatile uint32_t sv_nDmxUpdatesPerSecond;
 static volatile uint32_t sv_nDmxPacketsPrevious;
-static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
+static volatile struct dmxsingle::TotalStatistics sv_TotalStatistics ALIGNED;
 
 // RDM
 
@@ -257,9 +258,9 @@ static void fiq_dmx_in_handler(void) {
 			s_DmxData[sv_nDmxDataBufferIndexHead].Data[sv_nDmxDataIndex++] = data;
 		    BCM2835_ST->C1 = sv_nFiqMicrosCurrent + s_DmxData[0].Statistics.nSlotToSlot + (uint32_t)12;
 
-			if (sv_nDmxDataIndex > max::CHANNELS) {
+			if (sv_nDmxDataIndex > dmx::max::CHANNELS) {
 				sv_DmxReceiveState = IDLE;
-				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = max::CHANNELS;
+				s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotsInPacket = dmx::max::CHANNELS;
 				sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 				dmb();
 			}
@@ -585,7 +586,7 @@ void Dmx::StopData() {
 	s_IsStopped = true;
 }
 
-void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPort, PortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
 	assert(nPort == 0);
 
 	if (tPortDirection != s_nPortDirection) {
@@ -720,6 +721,14 @@ void Dmx::SetSendDataLength(uint32_t nLength) {
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
+void Dmx::SetDmxSlots(uint16_t nSlots) {
+	SetSendDataLength(nSlots + 1U);
+}
+
+uint16_t Dmx::GetDmxSlots() {
+	return s_nDmxSendDataLength - 1U;
+}
+
 void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
@@ -764,7 +773,7 @@ uint32_t Dmx::RdmGetDateReceivedEnd() {
 	return sv_RdmDataReceiveEnd;
 }
 
-const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
+const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
 	assert(nPort == 0);
 
 	dmb();
@@ -777,14 +786,14 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPort) {
 	}
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	assert(nPort == 0);
 
 	uint8_t *p = nullptr;
 	const auto nMicros = BCM2835_ST->CLO;
 
 	do {
-		if ((p = const_cast<uint8_t*>(RdmReceive(nPort))) != nullptr) {
+		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
 	} while ((BCM2835_ST->CLO - nMicros) < nTimeOut);
@@ -792,7 +801,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPort, uint32_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;

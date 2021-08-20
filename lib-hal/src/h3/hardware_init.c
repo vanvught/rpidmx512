@@ -2,7 +2,7 @@
  * @file hardware_init.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,6 @@
 #include "arm/gic.h"
 #include "arm/synchronize.h"
 
-#include "device/emac.h"
-
 #include "console.h"
 #include "../ff12c/ff.h"
 
@@ -60,6 +58,7 @@
 
 static uint32_t s_hardware_init_startup_seconds = 0;
 
+extern void emac_init(void);
 extern void sys_time_init(void);
 extern void h3_timer_init(void);
 extern void h3_hs_timer_init(void);

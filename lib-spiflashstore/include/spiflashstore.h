@@ -88,7 +88,7 @@ public:
 		Update(tStore, 0, pData, nDataLength);
 	}
 	void Copy(spiflashstore::Store tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
-	void CopyTo(spiflashstore::Store tStore, void *pData, uint32_t &nDataLength);
+	void CopyTo(spiflashstore::Store tStore, void *pData, uint32_t& nDataLength);
 
 	void ResetSetList(spiflashstore::Store tStore);
 

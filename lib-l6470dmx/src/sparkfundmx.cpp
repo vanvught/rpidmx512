@@ -346,7 +346,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
+void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
 	assert(pData != 0);

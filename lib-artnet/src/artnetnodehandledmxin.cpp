@@ -61,7 +61,7 @@ void ArtNetNode::HandleDmxIn() {
 	tArtDmx.ProtVerHi = 0;
 	tArtDmx.ProtVerLo = ArtNet::PROTOCOL_REVISION;
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPorts[i].bIsEnabled){
@@ -69,8 +69,8 @@ void ArtNetNode::HandleDmxIn() {
 			const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
-				tArtDmx.Sequence = static_cast<uint8_t>(1 + m_InputPorts[i].nSequence++);
-				tArtDmx.Physical = static_cast<uint8_t>(i);
+				tArtDmx.Sequence = static_cast<uint8_t>(1U + m_InputPorts[i].nSequence++);
+				tArtDmx.Physical = i;
 				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
 				tArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 				tArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);

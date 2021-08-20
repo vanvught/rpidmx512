@@ -1,9 +1,9 @@
 PLATFORM=ORANGE_PI
 DEFINES=NODE_E131 E131_PORTS=1
-DEFINES+=OUTPUT_DMXSEND DISPLAY_UDF DISABLE_RTC NDEBUG
+DEFINES+=OUTPUT_DMX_SEND DISPLAY_UDF DISABLE_RTC NDEBUG
 LIBS=
 SRCDIR=firmware lib
 
-include ../h3-firmware-template/Rules.mk
+include ../firmware-template-h3/Rules.mk
 
 prerequisites:

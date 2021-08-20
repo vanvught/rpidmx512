@@ -37,14 +37,14 @@ public:
 	static ReturnCode Char(const char *pBuffer, const char *pName, char *pValue, uint32_t& nLength);
 
 	static ReturnCode Uint8(const char *pBuffer, const char *pName, uint8_t &nValue);
-	static ReturnCode Uint16(const char *pBuffer, const char *pName, uint16_t &nValue);
+	static ReturnCode Uint16(const char *pBuffer, const char *pName, uint16_t& nValue);
 	static ReturnCode Uint32(const char *pBuffer, const char *pName, uint32_t &nValue);
 
 	static ReturnCode Float(const char *pBuffer, const char *pName, float &fValue);
 
 	static ReturnCode IpAddress(const char *pBuffer, const char *pName, uint32_t& nIpAddress);
 
-	static ReturnCode HexUint16(const char *pBuffer, const char *pName, uint16_t &nValue);
+	static ReturnCode HexUint16(const char *pBuffer, const char *pName, uint16_t& nValue);
 	static ReturnCode Hex24Uint32(const char *pBuffer, const char *pName, uint32_t &nValue);
 
 	static ReturnCode I2cAddress(const char *pBuffer, const char *pName, uint8_t &nAddress);

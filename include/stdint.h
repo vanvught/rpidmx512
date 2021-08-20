@@ -47,6 +47,14 @@ typedef unsigned int 		uintptr_t;
  #endif
 #endif
 
+#if !defined(UINT16_MAX)
+ #ifdef __cplusplus
+  #define UINT16_MAX	(static_cast<uint16_t>(-1))
+ #else
+  #define UINT16_MAX	((uint16_t)-1)
+ #endif
+#endif
+
 
 #define INT16_MIN   (-0x7fff - 1)
 

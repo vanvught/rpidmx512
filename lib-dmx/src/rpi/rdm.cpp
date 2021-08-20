@@ -34,10 +34,10 @@
 
 using namespace dmx;
 
-uint8_t Rdm::m_TransactionNumber = 0;
-uint32_t Rdm::m_nLastSendMicros = 0;
+uint8_t m_TransactionNumber = 0;
+uint32_t m_nLastSendMicros = 0;
 
-void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
+void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(nPort < max::OUT);
 	assert(pRdmCommand != nullptr);
 
@@ -71,34 +71,34 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, uint32_t nSpacin
 	m_TransactionNumber++;
 }
 
-void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Rdm::SendRawRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = BCM2835_ST->CLO - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = BCM2835_ST->CLO - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
-	SendRaw(nPort, pRdmData, nLength);
+	SendRaw(nPortIndex, pRdmData, nLength);
 }
 
-void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Rdm::SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	const auto nDelay = BCM2835_ST->CLO - DmxSet::Get()->RdmGetDateReceivedEnd();
+	const auto nDelay = BCM2835_ST->CLO - Dmx::Get()->RdmGetDateReceivedEnd();
 
 	// 3.2.2 Responder Packet spacing
 	if (nDelay < RDM_RESPONDER_PACKET_SPACING) {
 		udelay(RDM_RESPONDER_PACKET_SPACING - nDelay);
 	}
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPortIndex, PortDirection::OUTP, false);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
@@ -114,5 +114,5 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, u
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPortIndex, PortDirection::INP, true);
 }

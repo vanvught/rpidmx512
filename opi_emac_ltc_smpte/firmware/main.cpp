@@ -23,14 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
 #include "ledblink.h"
+#include "display.h"
 
 #include "ltcparams.h"
 #include "ltcdisplayparams.h"
@@ -58,9 +59,6 @@
 #include "tcnetdisplay.h"
 
 #include "ntpserver.h"
-
-#include "display.h"
-#include "networkhandleroled.h"
 
 #include "mcpbuttons.h"
 #include "ltcoscserver.h"
@@ -109,7 +107,7 @@ void h3_cpu_off(uint8_t);
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	Display display(0,4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -131,21 +129,15 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	NetworkHandlerOled networkHandlerOled;
-
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&networkHandlerOled);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
-	networkHandlerOled.ShowIp();
-
 	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&networkHandlerOled);
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 
@@ -520,7 +512,7 @@ void notmain(void) {
 				if (bRunNtpServer) {
 					HwClock::Get()->Run(true);
 				} else {
-					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == NtpClientStatus::FAILED); // No need to check for STOPPED
+					HwClock::Get()->Run(NtpClient::Get()->GetStatus() == ntpclient::Status::FAILED); // No need to check for STOPPED
 				}
 			} else {
 				gpsTimeClient.Run();

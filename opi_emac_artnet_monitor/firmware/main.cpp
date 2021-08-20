@@ -23,11 +23,12 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "h3/showsystime.h"
@@ -37,8 +38,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -70,7 +69,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
@@ -96,16 +95,14 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	NtpClient ntpClient;
-	ntpClient.SetNtpClientDisplay(&displayUdfHandler);
 	ntpClient.Start();
 	ntpClient.Print();
 
-	if (ntpClient.GetStatus() != NtpClientStatus::FAILED) {
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
 	}

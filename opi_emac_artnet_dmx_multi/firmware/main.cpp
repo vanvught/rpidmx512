@@ -23,19 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -48,10 +47,11 @@
 
 // DMX/RDM Output
 #include "dmxparams.h"
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 #include "storedmxsend.h"
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -75,7 +75,7 @@ extern "C" {
 void notmain(void) {
 	Hardware hw;
 	LedBlink lb;
-	NetworkH3emac nw;
+	Network nw;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -126,7 +126,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -142,14 +142,11 @@ void notmain(void) {
 	uint8_t nAddress;
 	bool bIsSetIndividual = false;
 	bool bIsSet;
-printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(0, bIsSet);
-printf("%d\n", __LINE__);
 	if (bIsSet) {
 		node.SetUniverseSwitch(0, portDir, nAddress);
 		bIsSetIndividual = true;
 	}
-printf("%d\n", __LINE__);
 	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
 		node.SetUniverseSwitch(1, portDir, nAddress);
@@ -182,20 +179,19 @@ printf("%d\n", __LINE__);
 	}
 
 	// DMX/RDM Output
-	DMXSendMulti *pDmxOutput;
-	ArtNetRdmController *pDiscovery;
-	// DMX Input
-	DmxInput *pDmxInput;
+	DmxSend *pDmxOutput = nullptr;
+	ArtNetRdmController *pDiscovery = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
 	if (portDir == PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		node.SetArtNetDmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSendMulti;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
-		DMXParams dmxParams(&storeDmxSend);
+		DmxParams dmxParams(&storeDmxSend);
 
 		if (dmxParams.Load()) {
 			dmxParams.Dump();
@@ -204,6 +200,9 @@ printf("%d\n", __LINE__);
 		node.SetOutput(pDmxOutput);
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 
 		pDiscovery = new ArtNetRdmController;
 		assert(pDiscovery != nullptr);
@@ -288,6 +287,9 @@ printf("%d\n", __LINE__);
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

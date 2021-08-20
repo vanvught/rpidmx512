@@ -39,8 +39,6 @@ extern "C" {
  void udelay(uint32_t us);
 }
 
-static uint8_t pdl[2][RDM_UID_SIZE];
-
 typedef union cast {
 	uint64_t uint;
 	uint8_t uid[RDM_UID_SIZE];
@@ -50,29 +48,9 @@ static _cast uuid_cast;
 
 #define RECEIVE_TIME_OUT (2800U)
 
-RDMDiscovery::RDMDiscovery(uint32_t nPort) : m_nPort(nPort) {
-	m_UnMute.SetDstUid(UID_ALL);
-	m_UnMute.SetCc(E120_DISCOVERY_COMMAND);
-	m_UnMute.SetPid(E120_DISC_UN_MUTE);
-
-	m_Mute.SetCc(E120_DISCOVERY_COMMAND);
-	m_Mute.SetPid(E120_DISC_MUTE);
-
-	m_DiscUniqueBranch.SetDstUid(UID_ALL);
-	m_DiscUniqueBranch.SetCc(E120_DISCOVERY_COMMAND);
-	m_DiscUniqueBranch.SetPid(E120_DISC_UNIQUE_BRANCH);
-}
-
 void RDMDiscovery::SetUid(const uint8_t *uid) {
 	memcpy(m_Uid, uid, RDM_UID_SIZE);
-
-	m_UnMute.SetSrcUid(uid);
-	m_Mute.SetSrcUid(uid);
-	m_DiscUniqueBranch.SetSrcUid(uid);
-}
-
-const uint8_t *RDMDiscovery::GetUid() {
-	return m_Uid;
+	m_Message.SetSrcUid(uid);
 }
 
 void RDMDiscovery::Full() {
@@ -80,27 +58,23 @@ void RDMDiscovery::Full() {
 
 	Hardware::Get()->WatchdogFeed();
 
-	m_UnMute.Send(m_nPort);
-	m_UnMute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+	m_Message.SetDstUid(UID_ALL);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_UN_MUTE);
+	m_Message.SetPd(nullptr, 0);
+	m_Message.Send(m_nPortIndex);
+	m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
-	udelay(100000);
+	udelay(RECEIVE_TIME_OUT);
 	Hardware::Get()->WatchdogFeed();
 
-	m_UnMute.Send(m_nPort);
-	m_UnMute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT);
+	m_Message.Send(m_nPortIndex);
+	m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
-	udelay(100000);
+	udelay(RECEIVE_TIME_OUT);
 	Hardware::Get()->WatchdogFeed();
-
-//	m_UnMute.Send(m_nPort);
-//
-//	const auto *pResponse = reinterpret_cast<const struct TRdmMessage*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
-//
-//	if (pResponse != nullptr) {
-//		FindDevices(ConvertUid(pResponse->source_uid), ConvertUid(pResponse->source_uid));
-//	}
 
 	FindDevices(0x000000000000, 0xfffffffffffe);
 
@@ -126,10 +100,13 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 	if (LowerBound == UpperBound) {
 		memcpy(uid, ConvertUid(LowerBound), RDM_UID_SIZE);
 
-		m_Mute.SetDstUid(uid);
-		m_Mute.Send(m_nPort);
+		m_Message.SetCc(E120_DISCOVERY_COMMAND);
+		m_Message.SetPid(E120_DISC_MUTE);
+		m_Message.SetDstUid(uid);
+		m_Message.SetPd(nullptr, 0);
+		m_Message.Send(m_nPortIndex, 5800);
 
-		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT)));
 
 		if (pRdmMessage != nullptr) {
 			if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
@@ -139,13 +116,16 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 			return true;
 		}
 	} else {
-		memcpy(pdl[0], ConvertUid(LowerBound), RDM_UID_SIZE);
-		memcpy(pdl[1], ConvertUid(UpperBound), RDM_UID_SIZE);
+		memcpy(m_Pdl[0], ConvertUid(LowerBound), RDM_UID_SIZE);
+		memcpy(m_Pdl[1], ConvertUid(UpperBound), RDM_UID_SIZE);
 
-		m_DiscUniqueBranch.SetPd(reinterpret_cast<const uint8_t*>(pdl), 2 * RDM_UID_SIZE);
-		m_DiscUniqueBranch.Send(m_nPort);
+		m_Message.SetDstUid(UID_ALL);
+		m_Message.SetCc(E120_DISCOVERY_COMMAND);
+		m_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
+		m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Pdl), 2 * RDM_UID_SIZE);
+		m_Message.Send(m_nPortIndex, 5800);
 
-		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT)));
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT)));
 
 		if (pRdmMessage != nullptr) {
 			bDeviceFound = true;
@@ -244,10 +224,13 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 	printf("\n");
 #endif
 
-	m_Mute.SetDstUid(uid);
-	m_Mute.Send(m_nPort, 5800);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_MUTE);
+	m_Message.SetDstUid(uid);
+	m_Message.SetPd(nullptr, 0);
+	m_Message.Send(m_nPortIndex, 5800);
 
-	auto *pResponse = const_cast<uint8_t*>(m_Mute.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+	auto *pResponse = const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT));
 
 	if (pResponse != nullptr) {
 		auto *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
@@ -259,9 +242,13 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 
 	Hardware::Get()->WatchdogFeed();
 
-	m_DiscUniqueBranch.Send(m_nPort);
+	m_Message.SetDstUid(UID_ALL);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
+	m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Pdl), 2 * RDM_UID_SIZE);
+	m_Message.Send(m_nPortIndex, 5800);
 
-	pResponse = const_cast<uint8_t *>(m_DiscUniqueBranch.ReceiveTimeOut(m_nPort, RECEIVE_TIME_OUT));
+	pResponse = const_cast<uint8_t *>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT));
 
 	Hardware::Get()->WatchdogFeed();
 

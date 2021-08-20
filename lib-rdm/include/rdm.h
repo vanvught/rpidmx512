@@ -142,23 +142,14 @@ static const uint8_t UID_ALL[RDM_UID_SIZE] __attribute__((aligned(4))) = { 0xFF,
 
 class Rdm {
 public:
-	static void Send(uint32_t nPort, struct TRdmMessage *, uint32_t nSpacingMicros = 0);
-	static void SendRaw(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	static void Send(uint32_t nPortIndex, struct TRdmMessage *, uint32_t nSpacingMicros = 0);
+	static void SendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
 
-	static void SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
-	static void SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength);
+	static void SendRawRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+	static void SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
 
-	static const uint8_t *Receive(uint32_t nPort);
-	static const uint8_t *ReceiveTimeOut(uint32_t nPort, uint32_t);
-
-public:
-#if defined(RPI1) || defined (RPI2)	// TODO Subject for removal
-	static uint8_t m_TransactionNumber;
-	static uint32_t m_nLastSendMicros;
-#else
-	static uint8_t m_TransactionNumber[4];
-	static uint32_t m_nLastSendMicros[4];
-#endif
+	static const uint8_t *Receive(uint32_t nPortIndex);
+	static const uint8_t *ReceiveTimeOut(uint32_t nPortIndex, uint16_t);
 };
 
 #endif /* RDM_H_ */

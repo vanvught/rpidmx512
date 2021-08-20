@@ -39,8 +39,7 @@
 
 #include "debug.h"
 
-RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet, uint8_t nGpioPin) :
-	DMXReceiver(nGpioPin),
+RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
 	RDMDeviceResponder(pRDMPersonality, pLightSet),
 	m_pRdmCommand(nullptr),
 	m_pRDMHandler(nullptr),

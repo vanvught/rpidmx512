@@ -27,7 +27,7 @@
 #include <stdint.h>
 
 #include "hardware.h"
-#include "networkbaremetalmacaddress.h"
+#include "noemac/network.h"
 #include "ledblink.h"
 
 #include "display.h"
@@ -43,7 +43,6 @@
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-using namespace dmxsingle;
 using namespace dmx;
 
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
@@ -54,7 +53,7 @@ extern "C" {
 void notmain(void) {
 	// Do not change order
 	Hardware hw;
-	NetworkBaremetalMacAddress nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 

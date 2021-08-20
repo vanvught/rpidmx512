@@ -5,4 +5,4 @@ EXTRA_INCLUDES = ../lib-display/include ../lib-properties/include ../lib-network
 #
 include Rules.mk
 #
-include ../linux-template/lib/Rules.mk
+include ../firmware-template-linux/lib/Rules.mk

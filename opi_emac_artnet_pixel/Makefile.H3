@@ -8,6 +8,6 @@ LIBS=
 
 SRCDIR=firmware lib
 
-include ../h3-firmware-template/Rules.mk
+include ../firmware-template-h3/Rules.mk
 
 prerequisites:

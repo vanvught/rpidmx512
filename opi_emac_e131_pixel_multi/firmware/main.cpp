@@ -23,12 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 
 #include "hardware.h"
-
-#include "networkh3emac.h"
+#include "network.h"
 #include "networkconst.h"
 #include "ledblink.h"
 
@@ -68,14 +67,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -92,7 +90,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 

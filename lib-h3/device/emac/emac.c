@@ -31,8 +31,6 @@
 //#endif
 #include <assert.h>
 
-#include "device/emac.h"
-
 #include "h3.h"
 #include "h3_sid.h"
 
@@ -352,7 +350,11 @@ void _autonegotiation(void) {
 
 }
 
-void __attribute__((cold)) emac_start(__attribute__((unused)) bool reset_emac) {
+extern void mac_address_get(uint8_t paddr[]);
+
+void __attribute__((cold)) emac_start(uint8_t paddr[]) {
+	mac_address_get(paddr);
+
 	uint32_t value;
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;

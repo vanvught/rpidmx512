@@ -63,7 +63,7 @@ void E131Bridge::FillDataPacket() {
 void E131Bridge::HandleDmxIn() {
 	assert(m_pE131DataPacket != nullptr);
 
-	for (uint32_t i = 0 ; i < E131::PORTS; i++) {
+	for (uint8_t i = 0 ; i < E131::PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
 		if (m_InputPort[i].bIsEnabled) {
@@ -96,4 +96,3 @@ void E131Bridge::HandleDmxIn() {
 		}
 	}
 }
-

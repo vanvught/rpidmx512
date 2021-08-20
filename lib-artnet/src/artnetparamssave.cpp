@@ -69,7 +69,15 @@ void ArtNetParams::Builder(const struct TArtNetParams *pArtNetParams, char *pBuf
 	}
 
 	builder.AddComment("Node");
+	if (!isMaskSet(ArtnetParamsMask::LONG_NAME)) {
+		strncpy(reinterpret_cast<char *>(m_tArtNetParams.aLongName), ArtNetNode::Get()->GetLongName(), sizeof(m_tArtNetParams.aLongName) - 1);
+		m_tArtNetParams.aLongName[sizeof(m_tArtNetParams.aLongName) - 1] = '\0';
+	}
 	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aLongName), isMaskSet(ArtnetParamsMask::LONG_NAME));
+	if (!isMaskSet(ArtnetParamsMask::SHORT_NAME)) {
+		strncpy(reinterpret_cast<char *>(m_tArtNetParams.aShortName), ArtNetNode::Get()->GetShortName(), sizeof(m_tArtNetParams.aShortName) - 1);
+		m_tArtNetParams.aShortName[sizeof(m_tArtNetParams.aShortName) - 1] = '\0';
+	}
 	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<const char*>(m_tArtNetParams.aShortName), isMaskSet(ArtnetParamsMask::SHORT_NAME));
 
 	builder.AddHex16(ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue, isMaskSet(ArtnetParamsMask::OEM_VALUE));

@@ -304,11 +304,11 @@ private:
 
 	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	void MergeDmxData(uint32_t nPortId, const uint8_t *pData, uint32_t nLength);
-	void CheckMergeTimeouts(uint32_t nPortId);
+	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void CheckMergeTimeouts(uint8_t nPortIndex);
 
 	void SendPollRelply(bool);
-	void SendTod(uint32_t nPortId = 0);
+	void SendTod(uint8_t nPortIndex = 0);
 
 	void SetNetworkDataLossCondition();
 

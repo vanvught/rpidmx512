@@ -1,11 +1,9 @@
-PLATFORM = ORANGE_PI_ONE
-#
-DEFINES = NODE_OSC_SERVER ENABLE_SPIFLASH CONSOLE_FB NDEBUG
-#
-LIBS = oscserver osc dmxmonitor
+PLATFORM=ORANGE_PI_ONE
+DEFINES=NODE_OSC_SERVER ENABLE_SPIFLASH CONSOLE_FB NDEBUG
+LIBS=oscserver osc dmxmonitor
 
-SRCDIR = firmware
+SRCDIR=firmware lib
 
-include ../h3-firmware-template/Rules.mk
+include ../firmware-template-h3/Rules.mk
 
 prerequisites:

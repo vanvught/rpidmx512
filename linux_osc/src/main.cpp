@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 #include "hardware.h"
-#include "networklinux.h"
+#include "network.h"
 
 #include "handler.h"
 
@@ -52,7 +52,7 @@
 
 int main(int argc, char **argv) {
 	Hardware hw;
-	NetworkLinux nw;
+	Network nw;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {

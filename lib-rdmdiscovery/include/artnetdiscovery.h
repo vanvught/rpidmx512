@@ -32,22 +32,21 @@
 
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
-
 #include "rdm.h"
 
-class ArtNetRdmController: public RDMDeviceController, public ArtNetRdm {
+class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm {
 public:
 	ArtNetRdmController();
 	~ArtNetRdmController() override;
 
 	void Print();
 
-	void Full(uint32_t nPort = 0) override;
-	uint8_t GetUidCount(uint32_t nPort = 0) override;
-	void Copy(uint32_t nPort, uint8_t *pTod) override;
-	const uint8_t *Handler(uint32_t nPort, const uint8_t *pRdmData) override;
+	void Full(uint8_t nPortIndex = 0) override;
+	uint8_t GetUidCount(uint8_t nPortIndex = 0) override;
+	void Copy(uint8_t nPortIndex, uint8_t *pTod) override;
+	const uint8_t *Handler(uint8_t nPortIndex, const uint8_t *pRdmData) override;
 
-	void DumpTod(uint32_t nPort = 0);
+	void DumpTod(uint8_t nPortIndex = 0);
 
 private:
 	RDMDiscovery *m_Discovery[artnetnode::MAX_PORTS];

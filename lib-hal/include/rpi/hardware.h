@@ -30,7 +30,7 @@
 #include <time.h>
 #include <uuid/uuid.h>
 
-#include "c/hardware.h"
+//#include "c/hardware.h"
 
 #include "bcm2835.h"
 #include "bcm2835_vc.h"
@@ -43,6 +43,11 @@ uint32_t millis(void);
 enum TSocType {
 	SOC_TYPE_BCM2835, SOC_TYPE_BCM2836, SOC_TYPE_BCM2837, SOC_TYPE_UNKNOWN
 };
+
+extern "C" {
+uint32_t hardware_uptime_seconds(void);
+void hardware_led_set(int);
+}
 
 class Hardware {
 public:

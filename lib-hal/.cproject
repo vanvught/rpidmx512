@@ -251,6 +251,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="console|rtc|debug|device|ff12c|posix|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3|uart0" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>

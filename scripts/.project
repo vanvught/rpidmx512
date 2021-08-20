@@ -12,6 +12,5 @@
 		</buildCommand>
 	</buildSpec>
 	<natures>
-		<nature>org.eclipse.dltk.sh.core.nature</nature>
 	</natures>
 </projectDescription>

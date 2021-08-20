@@ -1,3 +1,22 @@
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package org.orangepi.dmx;
 
 import java.awt.BorderLayout;
@@ -27,6 +46,9 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.text.NumberFormatter;
 
 public class WizardArtnetTxt extends JDialog {
+	//
+	private static final String TXT_FILE = "artnet.txt";
+	//
 	private static final long serialVersionUID = 1L;
 	String nodeId = null;
 	OrangePi opi = null;
@@ -171,7 +193,6 @@ public class WizardArtnetTxt extends JDialog {
 		
 		chckbxMapUniverse0 = new JCheckBox("Art-Net 4 Map Universe 0");
 		
-//		NumberFormat format = NumberFormat.getInstance();
 		NumberFormatter formatterIP = new NumberFormatter(format);
 		formatterIP.setValueClass(Integer.class);
 		formatterIP.setMinimum(0);
@@ -382,14 +403,14 @@ public class WizardArtnetTxt extends JDialog {
 				buttonPane.add(btnSave);
 			}
 			{
+				btnSetDefaults = new JButton("Set default");
+				buttonPane.add(btnSetDefaults);
+			}
+			{
 				btnCancel = new JButton("Cancel");
 				buttonPane.add(btnCancel);
 			}
-			{
-				btnSetDefaults = new JButton("Set default");
-				buttonPane.add(btnSetDefaults);
-				getRootPane().setDefaultButton(btnCancel);
-			}
+			getRootPane().setDefaultButton(btnCancel);
 		}
 	}
 	
@@ -408,7 +429,7 @@ public class WizardArtnetTxt extends JDialog {
 		
 		btnSetDefaults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				remoteConfig.setTextArea(opi.doDefaults("artnet.txt"));
+				remoteConfig.setTextArea(opi.doDefaults(TXT_FILE));
 				load();
 			}
 		});
@@ -439,6 +460,32 @@ public class WizardArtnetTxt extends JDialog {
 			}
 		});
 		
+		formattedTextFieldUniverseC.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					formattedTextFieldUniverseC.commitEdit();
+					artnetAdressPortC = setNetSubNet((int)formattedTextFieldUniverseC.getValue());
+					update('C');
+				} catch (ParseException e1) {
+					formattedTextFieldUniverseC.setValue(getUniverseFromAddress(artnetAdressPortC));
+				}
+			}
+		});
+		
+		formattedTextFieldUniverseD.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					formattedTextFieldUniverseD.commitEdit();
+					artnetAdressPortD = setNetSubNet((int)formattedTextFieldUniverseD.getValue());
+					update('D');
+				} catch (ParseException e1) {
+					formattedTextFieldUniverseD.setValue(getUniverseFromAddress(artnetAdressPortD));
+				}
+			}
+		});
+		
 		rdbtnOutput.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 			}
@@ -452,11 +499,20 @@ public class WizardArtnetTxt extends JDialog {
 	
 	private void load() {
 		if (opi != null) {
-			final String txt = opi.getTxt("artnet.txt");
+			final String txt = opi.getTxt(TXT_FILE);
 			if (txt != null) {
 				final String[] lines = txt.split("\n");
 				for (int i = 0; i < lines.length; i++) {
 					final String line = lines[i];
+					if (line.contains("direction")) {
+						if (Properties.getString(line).equals("input")) {
+							rdbtnInput.setSelected(true);
+							rdbtnOutput.setSelected(false);
+						} else {
+							rdbtnOutput.setSelected(true);
+							rdbtnInput.setSelected(false);
+						}
+					}
 					if ((line.contains("net") && (!line.contains("subnet")) && (!line.contains("artnet")))) {
 						artnetNet = Properties.getInt(line);
 						continue;
@@ -487,6 +543,40 @@ public class WizardArtnetTxt extends JDialog {
 						artnetAdressPortD = Properties.getInt(line);
 						formattedTextFieldUniverseD.setValue(getUniverseFromAddress(artnetAdressPortD));
 						chckbxEnablePortD.setSelected(!line.startsWith("#"));
+						continue;
+					}
+					//
+					if (line.contains("merge_mode_port_a")) {
+						comboBoxMergePortA.setSelectedIndex(Properties.getString(line).equals("ltp") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("merge_mode_port_b")) {
+						comboBoxMergePortB.setSelectedIndex(Properties.getString(line).equals("ltp") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("merge_mode_port_c")) {
+						comboBoxMergePortC.setSelectedIndex(Properties.getString(line).equals("ltp") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("merge_mode_port_d")) {
+						comboBoxMergePortD.setSelectedIndex(Properties.getString(line).equals("ltp") ? 1 : 0);
+						continue;
+					}
+					//
+					if (line.contains("protocol_port_a")) {
+						comboBoxProtocolPortA.setSelectedIndex(Properties.getString(line).equals("sacn") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("protocol_port_b")) {
+						comboBoxProtocolPortB.setSelectedIndex(Properties.getString(line).equals("sacn") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("protocol_port_c")) {
+						comboBoxProtocolPortC.setSelectedIndex(Properties.getString(line).equals("sacn") ? 1 : 0);
+						continue;
+					}
+					if (line.contains("protocol_port_d")) {
+						comboBoxProtocolPortD.setSelectedIndex(Properties.getString(line).equals("sacn") ? 1 : 0);
 						continue;
 					}
 					// Input
@@ -586,51 +676,52 @@ public class WizardArtnetTxt extends JDialog {
 	
 	private void save() {
 		if (opi != null) {
-			StringBuffer artnetTxt = new StringBuffer("#artnet.txt\n");
+			StringBuffer txtAppend = new StringBuffer();
 			
-			artnetTxt.append(String.format("direction=%s\n", rdbtnInput.isSelected() ? "input" : "output"));
+			txtAppend.append(String.format("direction=%s\n", rdbtnInput.isSelected() ? "input" : "output"));
 			
-			artnetTxt.append(String.format("net=%d\n", artnetNet));
-			artnetTxt.append(String.format("subnet=%d\n", artnetSubnet));
+			txtAppend.append(String.format("net=%d\n", artnetNet));
+			txtAppend.append(String.format("subnet=%d\n", artnetSubnet));
 			
-			artnetTxt.append(String.format("%suniverse_port_a=%s\n", getComment(chckbxEnablePortA), artnetAdressPortA));
-			artnetTxt.append(String.format("%suniverse_port_b=%s\n", getComment(chckbxEnablePortB), artnetAdressPortB));
-			artnetTxt.append(String.format("%suniverse_port_c=%s\n", getComment(chckbxEnablePortC), artnetAdressPortC));
-			artnetTxt.append(String.format("%suniverse_port_d=%s\n", getComment(chckbxEnablePortD), artnetAdressPortD));
+			txtAppend.append(String.format("%suniverse_port_a=%s\n", getComment(chckbxEnablePortA), artnetAdressPortA));
+			txtAppend.append(String.format("%suniverse_port_b=%s\n", getComment(chckbxEnablePortB), artnetAdressPortB));
+			txtAppend.append(String.format("%suniverse_port_c=%s\n", getComment(chckbxEnablePortC), artnetAdressPortC));
+			txtAppend.append(String.format("%suniverse_port_d=%s\n", getComment(chckbxEnablePortD), artnetAdressPortD));
 			
-			artnetTxt.append(String.format("%sprotocol_port_a=%s\n", getComment(chckbxEnablePortA), getProtocol(comboBoxProtocolPortA)));
-			artnetTxt.append(String.format("%sprotocol_port_b=%s\n", getComment(chckbxEnablePortB), getProtocol(comboBoxProtocolPortB)));
-			artnetTxt.append(String.format("%sprotocol_port_c=%s\n", getComment(chckbxEnablePortC), getProtocol(comboBoxProtocolPortC)));
-			artnetTxt.append(String.format("%sprotocol_port_d=%s\n", getComment(chckbxEnablePortD), getProtocol(comboBoxProtocolPortD)));
+			txtAppend.append(String.format("protocol_port_a=%s\n", getProtocol(comboBoxProtocolPortA)));
+			txtAppend.append(String.format("protocol_port_b=%s\n", getProtocol(comboBoxProtocolPortB)));
+			txtAppend.append(String.format("protocol_port_c=%s\n", getProtocol(comboBoxProtocolPortC)));
+			txtAppend.append(String.format("protocol_port_d=%s\n", getProtocol(comboBoxProtocolPortD)));
 
-			artnetTxt.append(String.format("%smerge_mode_port_a=%s\n", getComment(chckbxEnablePortA), getMergeMode(comboBoxMergePortA)));
-			artnetTxt.append(String.format("%smerge_mode_port_b=%s\n", getComment(chckbxEnablePortB), getMergeMode(comboBoxMergePortB)));
-			artnetTxt.append(String.format("%smerge_mode_port_c=%s\n", getComment(chckbxEnablePortC), getMergeMode(comboBoxMergePortC)));
-			artnetTxt.append(String.format("%smerge_mode_port_d=%s\n", getComment(chckbxEnablePortD), getMergeMode(comboBoxMergePortD)));
+			txtAppend.append(String.format("merge_mode_port_a=%s\n", getMergeMode(comboBoxMergePortA)));
+			txtAppend.append(String.format("merge_mode_port_b=%s\n", getMergeMode(comboBoxMergePortB)));
+			txtAppend.append(String.format("merge_mode_port_c=%s\n", getMergeMode(comboBoxMergePortC)));
+			txtAppend.append(String.format("merge_mode_port_d=%s\n", getMergeMode(comboBoxMergePortD)));
 				
 			// Input
 			if (rdbtnInput.isSelected()) {
-				artnetTxt.append(String.format("%sdestination_ip_port_a=%d.%d.%d.%d\n", getComment(chckbxEnablePortA), formattedIP1PortA.getValue(),formattedIP2PortA.getValue(),formattedIP3PortA.getValue(),formattedIP4PortA.getValue()));
-				artnetTxt.append(String.format("%sdestination_ip_port_b=%d.%d.%d.%d\n", getComment(chckbxEnablePortB), formattedIP1PortB.getValue(),formattedIP2PortB.getValue(),formattedIP3PortB.getValue(),formattedIP4PortB.getValue()));
-				artnetTxt.append(String.format("%sdestination_ip_port_c=%d.%d.%d.%d\n", getComment(chckbxEnablePortC), formattedIP1PortC.getValue(),formattedIP2PortC.getValue(),formattedIP3PortC.getValue(),formattedIP4PortC.getValue()));
-				artnetTxt.append(String.format("%sdestination_ip_port_d=%d.%d.%d.%d\n", getComment(chckbxEnablePortD), formattedIP1PortD.getValue(),formattedIP2PortD.getValue(),formattedIP3PortD.getValue(),formattedIP4PortD.getValue()));
+				txtAppend.append(String.format("%sdestination_ip_port_a=%d.%d.%d.%d\n", getComment(chckbxEnablePortA), formattedIP1PortA.getValue(),formattedIP2PortA.getValue(),formattedIP3PortA.getValue(),formattedIP4PortA.getValue()));
+				txtAppend.append(String.format("%sdestination_ip_port_b=%d.%d.%d.%d\n", getComment(chckbxEnablePortB), formattedIP1PortB.getValue(),formattedIP2PortB.getValue(),formattedIP3PortB.getValue(),formattedIP4PortB.getValue()));
+				txtAppend.append(String.format("%sdestination_ip_port_c=%d.%d.%d.%d\n", getComment(chckbxEnablePortC), formattedIP1PortC.getValue(),formattedIP2PortC.getValue(),formattedIP3PortC.getValue(),formattedIP4PortC.getValue()));
+				txtAppend.append(String.format("%sdestination_ip_port_d=%d.%d.%d.%d\n", getComment(chckbxEnablePortD), formattedIP1PortD.getValue(),formattedIP2PortD.getValue(),formattedIP3PortD.getValue(),formattedIP4PortD.getValue()));
 			}
 			
 			//
-			artnetTxt.append(String.format("map_universe0=%d\n", chckbxMapUniverse0.isSelected() ? 1 : 0));
+			txtAppend.append(String.format("map_universe0=%d\n", chckbxMapUniverse0.isSelected() ? 1 : 0));
 			
-			String txt = Properties.removeComments(opi.getTxt("artnet.txt"));
+			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
+			txt = txt.replaceAll("direction", "#direction");
 			txt = txt.replaceAll("universe_port_", "#universe_port_");
 			txt = txt.replaceAll("destination_ip_port", "#destination_ip_port");
 					
 			try {
-				opi.doSave(txt + "\n" + artnetTxt.toString());
+				opi.doSave(txt + "\n" + txtAppend.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
 			if (remoteConfig != null) {
-				remoteConfig.setTextArea(opi.getTxt("artnet.txt"));
+				remoteConfig.setTextArea(opi.getTxt(TXT_FILE));
 			}
 		}
 	}

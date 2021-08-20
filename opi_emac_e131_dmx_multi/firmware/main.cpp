@@ -23,18 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -44,8 +42,9 @@
 
 // DMX Output
 #include "dmxparams.h"
-#include "dmxsendmulti.h"
+#include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 
@@ -58,14 +57,13 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -107,7 +105,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -159,19 +157,19 @@ void notmain(void) {
 #endif
 	}
 
-	DMXSendMulti *pDmxOutput;
-	DmxInput *pDmxInput;
+	DmxSend *pDmxOutput;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
 	if (portDir == e131::PortDir::INPUT) {
-		pDmxInput = new DmxInput;
+		auto *pDmxInput = new DmxInput;
 		assert(pDmxInput != nullptr);
 
 		bridge.SetE131Dmx(pDmxInput);
 	} else {
-		pDmxOutput = new DMXSendMulti;
+		pDmxOutput = new DmxSend;
 		assert(pDmxOutput != nullptr);
 
-		DMXParams dmxparams(&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 
 		if (dmxparams.Load()) {
 			dmxparams.Dump();
@@ -181,6 +179,9 @@ void notmain(void) {
 		bridge.SetOutput(pDmxOutput);
 
 		pDmxOutput->Print();
+
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 	}
 
 	bridge.Print();
@@ -208,20 +209,15 @@ void notmain(void) {
 
 	StoreRemoteConfig storeRemoteConfig;
 
-	if (SpiFlashStore::Get()->HaveFlashChip()) {
-		RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-		if (remoteConfigParams.Load()) {
-			remoteConfigParams.Set(&remoteConfig);
-			remoteConfigParams.Dump();
-		}
-
-		while (spiFlashStore.Flash())
-			;
-	} else {
-		remoteConfig.SetDisable(true);
-		printf("Remote configuration is disabled\n");
+	if (remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -239,6 +235,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
+		}
 	}
 }
 

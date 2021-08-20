@@ -11,7 +11,12 @@ do
 		
 		if [ $(grep -c RASPPI Makefile.Linux) -ne 0 ] ; then
 			if which /opt/vc/bin/vcgencmd ; then
-				make -f Makefile.Linux $1 $2 || exit
+				make -f Makefile.Linux $1 $2
+				retVal=$?
+				if [ $retVal -ne 0 ]; then
+		    		echo "Error : " "$f"
+					exit $retVal
+				fi
 			else
 				echo -e "\033[33mSkipping...\033[0m"
 				cd -
@@ -21,7 +26,12 @@ do
 		
 		if [[ $f = *"bcm"* ]] ; then
 			if which /opt/vc/bin/vcgencmd ; then
-				make -f Makefile.Linux $1 $2 || exit
+				make -f Makefile.Linux $1 $2
+				retVal=$?
+				if [ $retVal -ne 0 ]; then
+		    		echo "Error : " "$f"
+					exit $retVal
+				fi
 			else
 				echo -e "\033[33mSkipping...\033[0m"
 				cd -
@@ -29,7 +39,12 @@ do
 			fi
 		fi		
 		
-		make -f Makefile.Linux $1 $2 || exit	
+		make -f Makefile.Linux $1 $2
+		retVal=$?
+		if [ $retVal -ne 0 ]; then
+		   	echo "Error : " "$f"
+			exit $retVal
+		fi	
 	fi
 	
 	cd -

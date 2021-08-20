@@ -23,19 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdint>
+#include <cstdio>
 #include <algorithm>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "artnet4node.h"
 #include "artnet4params.h"
@@ -78,7 +77,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
@@ -97,7 +96,7 @@ void notmain(void) {
 
 	nw.Init(StoreNetwork::Get());
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(&displayUdfHandler);
+	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);

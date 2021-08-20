@@ -30,16 +30,16 @@
 
 #include "spiflashstore.h"
 
-class StoreDmxSend final: public DMXParamsStore {
+class StoreDmxSend final: public DmxParamsStore {
 public:
 	StoreDmxSend();
 
-	void Update(const struct TDMXParams *pDmxParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDMXParams));
+	void Update(const struct TDmxParams *pDmxParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDmxParams));
 	}
 
-	void Copy(struct TDMXParams *pDmxParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDMXParams));
+	void Copy(struct TDmxParams *pDmxParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DMXSEND, pDmxParams, sizeof(struct TDmxParams));
 	}
 
 	static StoreDmxSend *Get() {

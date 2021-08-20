@@ -41,7 +41,7 @@
 #include "debug.h"
 
 ArtNetRdmController::ArtNetRdmController()  {
-	for (uint32_t i = 0 ; i < artnetnode::MAX_PORTS; i++) {
+	for (uint8_t i = 0 ; i < artnetnode::MAX_PORTS; i++) {
 		m_Discovery[i] = new RDMDiscovery(i);
 		assert(m_Discovery[i] != nullptr);
 		m_Discovery[i]->SetUid(GetUID());
@@ -66,46 +66,46 @@ void ArtNetRdmController::Print() {
 	RDMDeviceController::Print();
 }
 
-void ArtNetRdmController::Full(uint32_t nPort) {
+void ArtNetRdmController::Full(uint8_t nPortIndex) {
 	DEBUG_ENTRY
-	assert(nPort < artnetnode::MAX_PORTS);
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	m_Discovery[nPort]->Full();
+	m_Discovery[nPortIndex]->Full();
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 	DEBUG_EXIT
 }
 
-uint8_t ArtNetRdmController::GetUidCount(uint32_t nPort) {
-	assert(nPort < artnetnode::MAX_PORTS);
+uint8_t ArtNetRdmController::GetUidCount(uint8_t nPortIndex) {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
-	return m_Discovery[nPort]->GetUidCount();
+	return m_Discovery[nPortIndex]->GetUidCount();
 }
 
-void ArtNetRdmController::Copy(uint32_t nPort, uint8_t *pTod) {
+void ArtNetRdmController::Copy(uint8_t nPortIndex, uint8_t *pTod) {
 	DEBUG_ENTRY
-	assert(nPort < artnetnode::MAX_PORTS);
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	m_Discovery[nPort]->Copy(pTod);
+	m_Discovery[nPortIndex]->Copy(pTod);
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 	DEBUG_EXIT
 }
 
-void ArtNetRdmController::DumpTod(uint32_t nPort) {
+void ArtNetRdmController::DumpTod(uint8_t nPortIndex) {
 	DEBUG_ENTRY
-	assert(nPort < artnetnode::MAX_PORTS);
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	m_Discovery[nPort]->Dump();
+	m_Discovery[nPortIndex]->Dump();
 
-	DEBUG_PRINTF("nPort=%d", nPort);
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 	DEBUG_EXIT
 }
 
-const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmData) {
-	assert(nPort < artnetnode::MAX_PORTS);
+const uint8_t *ArtNetRdmController::Handler(uint8_t nPortIndex, const uint8_t *pRdmData) {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if (pRdmData == nullptr) {
 		return nullptr;
@@ -113,7 +113,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmD
 
 	Hardware::Get()->WatchdogFeed();
 
-	while (nullptr != RDMMessage::Receive(nPort)) {
+	while (nullptr != RDMMessage::Receive(nPortIndex)) {
 		// Discard late responses
 		Hardware::Get()->WatchdogFeed();
 	}
@@ -127,9 +127,9 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPort, const uint8_t *pRdmD
 	RDMMessage::Print(pRdmCommand);
 #endif
 
-	RDMMessage::SendRaw(nPort, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
+	RDMMessage::SendRaw(nPortIndex, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
 
-	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPort, 200000);
+	const auto *pResponse = RDMMessage::ReceiveTimeOut(nPortIndex, 60000);
 
 #ifndef NDEBUG
 	RDMMessage::Print(pResponse);

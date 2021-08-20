@@ -23,19 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
+#include "networkconst.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -59,6 +58,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // DMX Input
 #include "dmxinput.h"
 //
@@ -80,7 +80,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayudfnetworkhandler.h"
 #include "displayhandler.h"
 
 using namespace e131;
@@ -89,7 +88,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -106,7 +105,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -158,7 +157,8 @@ void notmain(void) {
 	// LightSet B - DMX - 1 Universe
 
 	StoreDmxSend storeDmxSend;
-	DMXSend *pDmxOutput = nullptr;
+	DmxSend *pDmxOutput = nullptr;
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
 	const auto portDir = e131params.GetDirection();
 
 	auto isDmxUniverseSet = false;
@@ -174,15 +174,18 @@ void notmain(void) {
 			bridge.SetE131Dmx(pDmxInput);
 			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT, 1);
 		} else {
-			pDmxOutput = new DMXSend;
+			pDmxOutput = new DmxSend;
 			assert(pDmxOutput != nullptr);
 
-			DMXParams dmxparams(&storeDmxSend);
+			DmxParams dmxparams(&storeDmxSend);
 
 			if (dmxparams.Load()) {
 				dmxparams.Set(pDmxOutput);
 				dmxparams.Dump();
 			}
+
+			pDmxConfigUdp = new DmxConfigUdp;
+			assert(pDmxConfigUdp != nullptr);
 
 			display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, 1);
 		}
@@ -282,6 +285,9 @@ void notmain(void) {
 		display.Run();
 		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
 			pPixelTestPattern->Run();
+		}
+		if (pDmxConfigUdp != nullptr) {
+			pDmxConfigUdp->Run();
 		}
 	}
 }

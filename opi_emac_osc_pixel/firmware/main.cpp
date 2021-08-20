@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
-#include "ledblink.h"
-
-#include "display.h"
-
+#include "network.h"
 #include "networkconst.h"
+#include "ledblink.h"
+#include "display.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
@@ -74,7 +71,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);

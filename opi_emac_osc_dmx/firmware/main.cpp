@@ -23,17 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
-#include "networkh3emac.h"
 #include "ledblink.h"
-
-#include "display.h"
-
+#include "network.h"
 #include "networkconst.h"
+#include "display.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
@@ -41,11 +38,11 @@
 #include "oscserver.h"
 #include "oscserverparms.h"
 #include "oscservermsgconst.h"
-
 // DMX Out
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
+#include "dmxconfigudp.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -63,7 +60,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -102,8 +99,9 @@ void notmain(void) {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	DMXSend dmx;
-	DMXParams dmxparams(&storeDmxSend);
+	DmxSend dmx;
+	DmxParams dmxparams(&storeDmxSend);
+	DmxConfigUdp dmxConfigUdp;
 
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
@@ -158,6 +156,7 @@ void notmain(void) {
 		mDns.Run();
 		lb.Run();
 		display.Run();
+		dmxConfigUdp.Run();
 	}
 }
 }

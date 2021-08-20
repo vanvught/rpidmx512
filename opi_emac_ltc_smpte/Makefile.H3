@@ -6,7 +6,7 @@ LIBS=ltc tcnet midi input osc ws28xxdisplay ws28xx rgbpanel rdmnet rdm rdmsensor
 
 SRCDIR=firmware lib
 
-include ../h3-firmware-template/Rules.mk
+include ../firmware-template-h3/Rules.mk
 
 prerequisites:
 	./generate_sofware_version_id.sh	

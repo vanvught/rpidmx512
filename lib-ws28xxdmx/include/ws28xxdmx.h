@@ -48,7 +48,7 @@ public:
 	void Start(uint32_t nPortIndex = 0) override;
 	void Stop(uint32_t nPortIndex = 0) override;
 
-	void SetData(uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
 

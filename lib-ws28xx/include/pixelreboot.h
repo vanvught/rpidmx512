@@ -26,7 +26,7 @@
 #ifndef PIXELREBOOT_H_
 #define PIXELREBOOT_H_
 
-#if defined (OUTPUT_DMX_PIXEL_MULTI)
+#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
 # include "ws28xxmulti.h"
 #else
 # include "ws28xx.h"
@@ -40,7 +40,7 @@ public:
 	~PixelReboot() override {}
 
 	void Run() override {
-#if defined (OUTPUT_DMX_PIXEL_MULTI)
+#if defined (OUTPUT_DMX_PIXEL_MULTI) || defined (PIXELPATTERNS_MULTI)
 		WS28xxMulti::Get()->Blackout();
 #else
 		WS28xx::Get()->Blackout();

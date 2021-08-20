@@ -26,9 +26,7 @@
 #include <cstring>
 
 #include "rdmhandler.h"
-
 #include "rdm_e120.h"
-
 #include "network.h"
 
 #include "debug.h"
@@ -166,7 +164,7 @@ void RDMHandler::SetDHCPMode(__attribute__((unused)) bool IsBroadcast, __attribu
 		return;
 	}
 
-	if (pRdmDataIn->param_data[4] == static_cast<uint8_t>(TDhcpMode::ACTIVE)) {
+	if (pRdmDataIn->param_data[4] == static_cast<uint8_t>(network::dhcp::Mode::ACTIVE)) {
 		Network::Get()->SetQueuedDhcp();
 		RespondMessageAck();
 
@@ -174,7 +172,7 @@ void RDMHandler::SetDHCPMode(__attribute__((unused)) bool IsBroadcast, __attribu
 		return;
 	}
 
-	if (pRdmDataIn->param_data[4] == static_cast<uint8_t>(TDhcpMode::INACTIVE)) {
+	if (pRdmDataIn->param_data[4] == static_cast<uint8_t>(network::dhcp::Mode::INACTIVE)) {
 		Network::Get()->SetQueuedStaticIp();
 		RespondMessageAck();
 

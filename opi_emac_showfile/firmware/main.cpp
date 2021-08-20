@@ -23,12 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cassert>
-#include <stdio.h>
-#include <stdint.h>
 
 #include "hardware.h"
-#include "networkh3emac.h"
+#include "network.h"
 #include "networkconst.h"
 #include "ledblink.h"
 
@@ -53,20 +52,14 @@
 // LLRP Only Device
 #include "rdmnetllrponly.h"
 #include "rdm_e120.h"
-
 // LLRP Handlers
 #include "factorydefaults.h"
-#include "displayudfnetworkhandler.h"
-
 // Reboot handler
 #include "reboot.h"
-
 // Display
 #include "displayhandler.h"
-
 // Format handlers
 #include "olashowfile.h"
-
 // Protocol handlers
 #include "showfileprotocole131.h"
 #include "showfileprotocolartnet.h"
@@ -75,7 +68,7 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	NetworkH3emac nw;
+	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -91,7 +84,7 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
+	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 

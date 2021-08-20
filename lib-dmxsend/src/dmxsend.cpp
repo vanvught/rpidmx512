@@ -1,8 +1,8 @@
 /**
- * @file dmxsender.cpp
+ * @file dmxsend.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,51 +24,74 @@
  */
 
 #include <cstdint>
+#include <climits>
 #include <cassert>
 
 #include "dmxsend.h"
-#include "dmx.h"
 
 #include "debug.h"
 
-using namespace dmx;
+uint8_t DmxSend::s_nStarted;
 
-void DMXSend::Start(__attribute__((unused)) uint32_t nPortIndex) {
+static constexpr bool is_started(const uint8_t v, const uint32_t p) {
+	return (v & (1U << p)) == (1U << p);
+}
+
+void DmxSend::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (m_bIsStarted) {
+	assert(nPortIndex < CHAR_BIT);
+
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+
+	if (is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = true;
+	s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
 
-	SetPortDirection(0, PortDirection::OUTP, true);
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
+
 	DEBUG_EXIT
 }
 
-void DMXSend::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void DmxSend::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (!m_bIsStarted) {
+	assert(nPortIndex < CHAR_BIT);
+
+	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, static_cast<uint8_t>(nPortIndex)));
+
+	if (!is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_bIsStarted = false;
+	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
-	SetPortDirection(0, PortDirection::OUTP, false);
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+
 	DEBUG_EXIT
 }
 
-void DMXSend::SetData(__attribute__((unused)) uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
+void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+	assert(nPortIndex < CHAR_BIT);
 	assert(pData != nullptr);
-//	assert(nLength != 0);
 
 	if (__builtin_expect((nLength == 0), 0)) {
-//		DEBUG_EXIT
 		return;
 	}
 
-	SetSendDataWithoutSC(pData, nLength);
+	SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
+}
+
+#include <cstdio>
+
+void DmxSend::Print() {
+	printf("DMX Send\n");
+	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
+	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));
+	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / GetDmxPeriodTime()));
+	printf(" Slots        : %d\n", static_cast<int>(GetDmxSlots()));
 }

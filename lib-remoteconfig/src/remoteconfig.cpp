@@ -469,7 +469,7 @@ void RemoteConfig::HandleList() {
 		return;
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 1) {
 		if (s_UdpBuffer[udp::cmd::get::length::LIST] == '*') {
-			Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), NETWORK_IP4_BROADCAST, udp::PORT);
+			Network::Get()->SendTo(m_nHandle, s_aId, static_cast<uint16_t>(m_nIdLength), network::IP4_BROADCAST, udp::PORT);
 			return;
 		}
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 3) {
@@ -479,7 +479,7 @@ void RemoteConfig::HandleList() {
 		}
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 4) {
 		if (memcmp(&s_UdpBuffer[udp::cmd::get::length::LIST], "bin*", 4) == 0) {
-			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , NETWORK_IP4_BROADCAST, udp::PORT);
+			Network::Get()->SendTo(m_nHandle, &s_RemoteConfigListBin, sizeof(struct ListBin) , network::IP4_BROADCAST, udp::PORT);
 			return;
 		}
 	}
@@ -648,7 +648,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 			Network::Get()->SendTo(m_nHandle, "?get#ERROR#\n", 12, m_nIPAddressFrom, udp::PORT);
 		} else {
 			DEBUG_PUTS("");
-			memcpy(pBuffer, "?get#ERROR#\n", std::min((12U), nBufferLength));
+			memcpy(pBuffer, "?get#ERROR#\n", std::min(12U, nBufferLength));
 		}
 		DEBUG_EXIT
 		return 12;
@@ -747,7 +747,7 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams(StoreDmxSend::Get());
+	DmxParams dmxparams(StoreDmxSend::Get());
 	dmxparams.Save(s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
@@ -923,7 +923,7 @@ void RemoteConfig::HandleGetRgbPanelTxt(uint32_t& nSize) {
 #endif
 
 #if defined (NODE_DDP_DISPLAY)
-void RemoteConfig::HandleGetDdpDisplayTxt(uint32_t &nSize) {
+void RemoteConfig::HandleGetDdpDisplayTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	DdpDisplayParams ddpDisplayParams(StoreDdpDisplay::Get());
@@ -1245,13 +1245,13 @@ void RemoteConfig::HandleTxtFileOscClient() {
 void RemoteConfig::HandleTxtFileParams() {
 	DEBUG_ENTRY
 
-	DMXParams dmxparams(StoreDmxSend::Get());
+	DmxParams dmxparams(StoreDmxSend::Get());
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TDMXParams)) {
+		if (m_nBytesReceived == sizeof(struct TDmxParams)) {
 			uint32_t nSize;
-			dmxparams.Builder(reinterpret_cast<const struct TDMXParams *>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
+			dmxparams.Builder(reinterpret_cast<const struct TDmxParams *>(s_StoreBuffer), s_UdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT

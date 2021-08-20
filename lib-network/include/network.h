@@ -27,8 +27,6 @@
 #define NETWORK_H_
 
 #include <cstdint>
-#include <cstring>
-#include <net/if.h>
 
 #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
 #define IPSTR "%d.%d.%d.%d"
@@ -36,39 +34,27 @@
 #define MAC2STR(mac) static_cast<int>(mac[0]),static_cast<int>(mac[1]),static_cast<int>(mac[2]),static_cast<int>(mac[3]), static_cast<int>(mac[4]), static_cast<int>(mac[5])
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
-enum class TDhcpMode {
+namespace network {
+static constexpr auto IP_SIZE = 4U;
+static constexpr auto MAC_SIZE = 6U;
+static constexpr auto HOSTNAME_SIZE = 64U;		///< Including a terminating null byte.
+static constexpr auto DOMAINNAME_SIZE = 64U;	///< Including a terminating null byte.
+static constexpr auto IP4_BROADCAST = 0xffffffff;
+namespace dhcp {
+enum class Mode: uint8_t {
 	INACTIVE = 0x00,	///< The IP address was not obtained via DHCP
 	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
 	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
 };
-
-enum TNetwork {
-	NETWORK_IP_SIZE = 4,
-	NETWORK_MAC_SIZE = 6,
-	NETWORK_HOSTNAME_SIZE = 64,		/* including a terminating null byte. */
-	NETWORK_DOMAINNAME_SIZE = 64,	/* including a terminating null byte. */
-	NETWORK_IP4_BROADCAST = 0xffffffff
-};
-
-enum class DhcpClientStatus {
+enum class ClientStatus: uint8_t {
 	IDLE,
 	RENEW,
 	GOT_IP,
 	RETRYING,
 	FAILED
 };
-
-struct NetworkDisplay {
-	virtual ~NetworkDisplay() {}
-
-	virtual void ShowEmacStart()=0;
-	virtual void ShowIp()=0;
-	virtual void ShowNetMask()=0;
-	virtual void ShowGatewayIp()=0;
-	virtual void ShowHostName()=0;
-	virtual void ShowDhcpStatus(DhcpClientStatus nStatus)=0;
-	virtual void ShowShutdown()=0;
-};
+}  // namespace dhcp
+}  // namespace network
 
 class NetworkStore {
 public:
@@ -81,211 +67,29 @@ public:
 	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
 };
 
-class Network {
-public:
-	Network();
-	virtual ~Network() {}
+struct NetworkDisplay {
+	NetworkDisplay() {}
+	~NetworkDisplay() {}
 
-	void Print();
-
-	virtual void Shutdown() {}
-
-	virtual int32_t Begin(uint16_t nPort)=0;
-	virtual int32_t End(uint16_t nPort)=0;
-
-	virtual void MacAddressCopyTo(uint8_t *pMacAddress)=0;
-
-	virtual void JoinGroup(int32_t nHandle, uint32_t nIp)=0;
-	virtual void LeaveGroup(int32_t nHandle, uint32_t nIp)=0;
-
-	virtual uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort)=0;
-	virtual void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort)=0;
-
-	virtual void SetIp(uint32_t nIp)=0;
-	virtual void SetNetmask(uint32_t nNetmask)=0;
-	virtual void SetGatewayIp(uint32_t nGatewayIp)=0;
-	virtual bool SetZeroconf()=0;
-	virtual bool EnableDhcp()=0;
-
-	virtual void SetHostName(const char *pHostName) {
-		strncpy(m_aHostName, pHostName, NETWORK_HOSTNAME_SIZE - 1);
-		m_aHostName[NETWORK_HOSTNAME_SIZE - 1] = '\0';
-	}
-
-	virtual void SetDomainName(const char *pDomainName) {
-		strncpy(m_aDomainName, pDomainName, NETWORK_DOMAINNAME_SIZE - 1);
-		m_aDomainName[NETWORK_DOMAINNAME_SIZE - 1] = '\0';
-	}
-
-	uint32_t GetIp() const {
-		return m_nLocalIp;
-	}
-
-	const char *GetHostName() const {
-		return m_aHostName;
-	}
-
-	const char *GetDomainName() const {
-		return m_aDomainName;
-	}
-
-	void SetQueuedStaticIp(uint32_t nLocalIp = 0, uint32_t nNetmask = 0);
-	void SetQueuedDhcp() {
-		m_QueuedConfig.nMask |= QueuedConfig::DHCP;
-	}
-	void SetQueuedZeroconf() {
-		m_QueuedConfig.nMask |= QueuedConfig::ZEROCONF;
-	}
-
-	bool ApplyQueuedConfig();
-
-	uint32_t GetGatewayIp() const {
-		return m_nGatewayIp;
-	}
-
-	uint32_t GetNetmask() const {
-		return m_nNetmask;
-	}
-
-	uint32_t GetNetmaskCIDR() const {
-		return static_cast<uint32_t>(__builtin_popcount(m_nNetmask));
-	}
-
-	uint32_t GetBroadcastIp() const {
-		return m_nLocalIp | ~m_nNetmask;
-	}
-
-	bool IsDhcpCapable() const {
-		return m_IsDhcpCapable;
-	}
-
-	bool IsDhcpUsed() const {
-		return m_IsDhcpUsed;
-	}
-
-	bool IsZeroconfCapable() const {
-		return m_IsZeroconfCapable;
-	}
-
-	bool IsZeroconfUsed() const {
-		return m_IsZeroconfUsed;
-	}
-
-	char GetAddressingMode() {
-		if (Network::Get()->IsZeroconfUsed()) {
-			return  'Z';
-		} else if (Network::Get()->IsDhcpKnown()) {
-			if (Network::Get()->IsDhcpUsed()) {
-				return 'D';
-			} else {
-				return 'S';
-			}
-		}
-
-		return 'U';
-	}
-
-	 bool IsDhcpKnown() const {
-#if defined (__CYGWIN__) || defined (__APPLE__)
-		return false;
-#else
-		return true;
-#endif
-	}
-
-	TDhcpMode GetDhcpMode() const {
-		if (IsDhcpKnown()) {
-			if (m_IsDhcpUsed) {
-				return TDhcpMode::ACTIVE;
-			}
-
-			return TDhcpMode::INACTIVE;
-		}
-
-		return TDhcpMode::UNKNOWN;
-	}
-
-	const char *GetIfName() const {
-		return m_aIfName;
-	}
-
-	uint32_t GetIfIndex() const {
-		return m_nIfIndex;
-	}
-
-	uint32_t GetNtpServerIp() const {
-		return m_nNtpServerIp;
-	}
-
-	float GetNtpUtcOffset() const {
-		return m_fNtpUtcOffset;
-	}
-
-	void SetNetworkDisplay(NetworkDisplay *pNetworkDisplay) {
-		m_pNetworkDisplay = pNetworkDisplay;
-	}
-
-	void SetNetworkStore(NetworkStore *pNetworkStore) {
-		m_pNetworkStore = pNetworkStore;
-	}
-
-	bool IsValidIp(uint32_t nIp) {
-		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
-	}
-
-	static uint32_t CIDRToNetmask(uint8_t nCDIR) {
-		if (nCDIR != 0) {
-			const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
-			return nNetmask;
-		}
-
-		return 0;
-	}
-
-	static Network *Get() {
-		return s_pThis;
-	}
-
-protected:
-	bool m_IsDhcpCapable { true };
-	bool m_IsDhcpUsed { false };
-	bool m_IsZeroconfCapable { true };
-	bool m_IsZeroconfUsed { false };
-	uint32_t m_nIfIndex { 1 };
-	uint32_t m_nNtpServerIp { 0 };
-	float m_fNtpUtcOffset { 0 };
-
-	uint32_t m_nLocalIp { 0 };
-	uint32_t m_nGatewayIp { 0 };
-	uint32_t m_nNetmask { 0 };
-
-	char m_aHostName[NETWORK_HOSTNAME_SIZE];
-	char m_aDomainName[NETWORK_DOMAINNAME_SIZE];
-	uint8_t m_aNetMacaddr[NETWORK_MAC_SIZE];
-	char m_aIfName[IFNAMSIZ];
-
-	NetworkDisplay *m_pNetworkDisplay { nullptr };
-	NetworkStore *m_pNetworkStore { nullptr };
-
-private:
-	struct QueuedConfig {
-		static constexpr uint32_t NONE = 0;
-		static constexpr uint32_t STATIC_IP = (1U << 0);
-		static constexpr uint32_t NET_MASK = (1U << 1);
-		static constexpr uint32_t DHCP = (1U << 2);
-		static constexpr uint32_t ZEROCONF = (1U << 3);
-		uint32_t nMask = QueuedConfig::NONE;
-		uint32_t nLocalIp = 0;
-		uint32_t nNetmask = 0;
-	};
-
-	QueuedConfig m_QueuedConfig;
-
-    bool isQueuedMaskSet(uint32_t nMask) {
-    	return (m_QueuedConfig.nMask & nMask) == nMask;
-    }
-
-	static Network *s_pThis;
+	void ShowEmacStart();
+	void ShowIp();
+	void ShowNetMask();
+	void ShowGatewayIp();
+	void ShowHostName();
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
+	void ShowShutdown();
 };
+
+#if defined (BARE_METAL)
+# if defined (ESP8266)
+#  include "esp8266/network.h"
+# elif defined (NO_EMAC)
+#  include "noemac/network.h"
+# else
+#  include "emac/network.h"
+# endif
+#else
+# include "linux/network.h"
+#endif
 
 #endif /* NETWORK_H_ */

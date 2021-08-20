@@ -92,7 +92,7 @@ void StoreNetwork::SaveGatewayIp(uint32_t nGatewayIp) {
 void StoreNetwork::SaveHostName(const char *pHostName, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	nLength = std::min(nLength,static_cast<uint32_t>(NETWORK_HOSTNAME_SIZE));
+	nLength = std::min(nLength,static_cast<uint32_t>(network::HOSTNAME_SIZE));
 
 	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NetworkParamsMask::HOSTNAME);
 

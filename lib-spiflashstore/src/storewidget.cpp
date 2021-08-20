@@ -1,4 +1,4 @@
-#if defined (H3)
+#if defined (H3) && !defined (OUTPUT_DMX_SEND_MULTI)
 /**
  * @file storewidget.cpp
  *

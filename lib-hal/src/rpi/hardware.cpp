@@ -190,6 +190,10 @@ bool Hardware::Reboot() {
 	return true;
 }
 
+extern "C" {
+uint32_t bcm2835_rng_get_number(void);
+}
+
 typedef union pcast32 {
 	uuid_t uuid;
 	uint32_t u32[4];

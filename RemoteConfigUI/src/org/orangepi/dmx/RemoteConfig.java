@@ -86,9 +86,6 @@ public class RemoteConfig extends JFrame {
 	private JScrollPane scrollPaneRight;
 	private JTextArea textArea;
 	private JMenuItem mntmSave;
-
-//	private InetAddress localAddress;
-//	private static final String ipv4Pattern = "(([01]?\\d\\d?|2[0-4]\\d|25[0-5])\\.){3}([01]?\\d\\d?|2[0-4]\\d|25[0-5])";
 	private JMenu mnAction;
 	private JMenuItem mntmReboot;
 	private JLabel lblNodeId;
@@ -118,6 +115,7 @@ public class RemoteConfig extends JFrame {
 
 	private OrangePi opi = null;
 	private JMenuItem mntmFactoryDefaults;
+	private JMenuItem mntmDmxTransmit;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -135,31 +133,6 @@ public class RemoteConfig extends JFrame {
 
 	public RemoteConfig() {
 		System.out.println(System.getProperty("os.name"));
-
-//		NetworkInterface ifDefault = FirstNetworkInterface.get();
-//
-//		if (ifDefault == null) {
-//			try {
-//				localAddress = InetAddress.getLocalHost();
-//			} catch (UnknownHostException e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			Enumeration<InetAddress> enumIP = ifDefault.getInetAddresses();
-//
-//			while (enumIP.hasMoreElements()) {
-//				InetAddress ip = (InetAddress) enumIP.nextElement();
-//
-//				if (ip.getHostAddress().matches(ipv4Pattern)) {
-//					localAddress = ip;
-//					break;
-//				}
-//			}
-//		}
-//
-//		setTitle("Remote Configuration Manager - " + localAddress.getHostAddress());
-//
-//		System.out.println("Local ip: " + localAddress.getHostAddress());
 		
 		setTitle("Remote Configuration Manager");
 
@@ -271,8 +244,14 @@ public class RemoteConfig extends JFrame {
 								if (txt.startsWith("network")) {
 									doWizardNetwork(opi);
 								}
+								if (txt.startsWith("e131")) {
+									doWizardE131(opi);
+								}
 								if (txt.startsWith("artnet")) {
 									doWizardArtnet(opi);
+								}
+								if (txt.startsWith("params")) {
+									doWizardDmx(opi);
 								}
 								if (txt.startsWith("devices")) {
 									doWizardUniverse(opi);
@@ -417,7 +396,7 @@ public class RemoteConfig extends JFrame {
 				}
 			}
 		});
-
+		
 		mntmPixelTextPatterns.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				doPixelTestPattern();
@@ -451,6 +430,30 @@ public class RemoteConfig extends JFrame {
 				} else {
 					JOptionPane.showMessageDialog(null, "No node selected for LTC Generator to run.");
 				}
+			}
+		});
+		
+		mntmDmxTransmit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				TreePath path = tree.getSelectionPath();
+
+				if (path != null) {
+					if (path.getPathCount() == 2) {
+
+						DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getPathComponent(1);
+
+						OrangePi pi = (OrangePi) node.getUserObject();
+						
+						if (pi.getTxt("params.txt").contains("params.txt")) {
+							UdpDmxTransmit client = new UdpDmxTransmit(pi.getAddress());
+							client.setVisible(true);
+						} else {
+							JOptionPane.showMessageDialog(null, "The node selected is not a DMX node");
+						}
+					}
+				} else {
+					JOptionPane.showMessageDialog(null, "No node selected for DMX Transmit to run.");
+				}			
 			}
 		});
 
@@ -667,6 +670,10 @@ public class RemoteConfig extends JFrame {
 				mntmGlobalControl = new JMenuItem("Global control");
 				mntmGlobalControl.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, InputEvent.ALT_MASK));
 				mnRun.add(mntmGlobalControl);
+				
+				mntmDmxTransmit = new JMenuItem("DMX Transmit");
+				mntmDmxTransmit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.ALT_MASK));
+				mnRun.add(mntmDmxTransmit);
 		
 				mntmPixelTextPatterns = new JMenuItem("Pixel Controller Test Patterns");
 				
@@ -750,11 +757,8 @@ public class RemoteConfig extends JFrame {
 		setContentPane(contentPane);
 
 		scrollPaneLeft = new JScrollPane();
-
 		scrollPaneRight = new JScrollPane();
-
 		lblDisplayName = new JLabel("");
-
 		lblNodeId = new JLabel("");
 
 		GroupLayout gl_contentPane = new GroupLayout(contentPane);
@@ -906,9 +910,25 @@ public class RemoteConfig extends JFrame {
 		}
 	}
 	
+	private void doWizardE131(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardE131Txt wizard = new WizardE131Txt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+	
 	private void doWizardArtnet(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			WizardArtnetTxt wizard = new WizardArtnetTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+	
+	private void doWizardDmx(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardParamsTxt wizard = new WizardParamsTxt(lblNodeId.getText(), opi, this);
 			wizard.setModal(true);
 			wizard.setVisible(true);
 		}
@@ -981,8 +1001,6 @@ public class RemoteConfig extends JFrame {
 	}
 
 	public void constructTree() {
-//		System.out.println("Interface address: " + localAddress.getHostAddress());
-
 		Graphics g = getGraphics();
 
 		lblDisplayName.setText("Searching ...");
@@ -1002,6 +1020,7 @@ public class RemoteConfig extends JFrame {
 		for (int i = 0; i < 2; i++) {
 			try {
 				if (i == 0) {
+					broadcast("?list#*");
 					broadcast("?list#*");
 				} else {
 					broadcast("?list#");

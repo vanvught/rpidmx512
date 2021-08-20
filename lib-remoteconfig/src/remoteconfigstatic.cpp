@@ -70,7 +70,7 @@ static constexpr Store s_Map[static_cast<uint32_t>(TxtFile::LAST)] = {
 #endif
 		Store::SHOW, Store::SERIAL, Store::GPS, Store::RGBPANEL, Store::DDPDISP };
 
-TxtFile RemoteConfig::GetIndex(const void *p, uint32_t &nLength) {
+TxtFile RemoteConfig::GetIndex(const void *p, uint32_t& nLength) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nLength=%d", nLength);
 

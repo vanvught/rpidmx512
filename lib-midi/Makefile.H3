@@ -1,7 +1,6 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-properties/include ../lib-network/include ../lib-hal/include
-#
-include ../h3-firmware-template/lib/Rules.mk
+DEFINES	=NDEBUG
+EXTRA_INCLUDES=../lib-properties/include ../lib-network/include ../lib-hal/include
+
+include Rules.mk
+include ../firmware-template-h3/lib/Rules.mk
 

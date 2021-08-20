@@ -98,7 +98,7 @@ void DMXMonitor::Stop(uint32_t nPortIndex) {
 	DisplayDateTime(nPortIndex, "Stop");
 }
 
-void DMXMonitor::SetData(uint32_t nPortIndexId, const uint8_t *pData, uint32_t nLength) {
+void DMXMonitor::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortId < output::text::MAX_PORTS);
 
 	struct timeval tv;
@@ -109,7 +109,7 @@ void DMXMonitor::SetData(uint32_t nPortIndexId, const uint8_t *pData, uint32_t n
 
 	printf("%.2d-%.2d-%.4d %.2d:%.2d:%.2d.%.6d DMX:%c %d:%d:%d ", tm.tm_mday,
 			tm.tm_mon + 1, tm.tm_year + 1900, tm.tm_hour, tm.tm_min, tm.tm_sec,
-			static_cast<int>(tv.tv_usec), nPortIndexId + 'A',
+			static_cast<int>(tv.tv_usec), nPortIndex + 'A',
 			static_cast<int>(nLength),
 			static_cast<int>(m_nMaxChannels),
 			static_cast<int>(m_nDmxStartAddress));

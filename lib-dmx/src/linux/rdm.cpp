@@ -27,7 +27,16 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "dmx.h"
+#include "rdm.h"
+#if defined (OUTPUT_DMX_SEND_MULTI)
+# include "dmxmulti.h"
+using namespace dmxmulti;
+#else
+# include "dmx.h"
+using namespace dmxsingle;
+#endif
+#include "dmxconst.h"
+#include "config.h"
 
 #include "debug.h"
 
@@ -35,12 +44,10 @@ extern "C" {
 void udelay(uint32_t);
 }
 
-using namespace dmx;
+static uint8_t s_TransactionNumber[max::OUT] = {0, };
 
-uint8_t Rdm::m_TransactionNumber[max::OUT] = {0, };
-
-void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
-	assert(nPort < max::OUT);
+void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
+	assert(nPortIndex < max::OUT);
 	assert(pRdmCommand != nullptr);
 
 
@@ -48,7 +55,7 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((u
 	uint32_t i;
 	uint16_t rdm_checksum = 0;
 
-	pRdmCommand->transaction_number = m_TransactionNumber[nPort];
+	pRdmCommand->transaction_number = s_TransactionNumber[nPortIndex];
 
 	for (i = 0; i < pRdmCommand->message_length; i++) {
 		rdm_checksum += rdm_data[i];
@@ -57,37 +64,37 @@ void Rdm::Send(uint32_t nPort, struct TRdmMessage *pRdmCommand, __attribute__((u
 	rdm_data[i++] = static_cast<uint8_t>(rdm_checksum >> 8);
 	rdm_data[i] = static_cast<uint8_t>(rdm_checksum & 0XFF);
 
-	SendRaw(nPort, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
+	SendRaw(nPortIndex, reinterpret_cast<const uint8_t*>(pRdmCommand), pRdmCommand->message_length + RDM_MESSAGE_CHECKSUM_SIZE);
 
-	m_TransactionNumber[nPort]++;
+	s_TransactionNumber[nPortIndex]++;
 }
 
-void Rdm::SendRawRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Rdm::SendRawRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPortIndex < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	SendRaw(nPort, pRdmData, nLength);
+	SendRaw(nPortIndex, pRdmData, nLength);
 
 	DEBUG_EXIT
 }
 
-void Rdm::SendDiscoveryRespondMessage(uint32_t nPort, const uint8_t *pRdmData, uint32_t nLength) {
+void Rdm::SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPort < max::OUT);
+	assert(nPortIndex < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
-	SendRaw(nPort, pRdmData, nLength);
+	SendRaw(nPortIndex, pRdmData, nLength);
 
 	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
 
-	DmxSet::Get()->SetPortDirection(nPort, PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
 
 	DEBUG_EXIT
 }
