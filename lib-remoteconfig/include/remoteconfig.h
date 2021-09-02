@@ -45,8 +45,13 @@
 #endif
 
 #include "spiflashstore.h"
+
 #if !defined(DISABLE_TFTP)
 # include "tftp/tftpfileserver.h"
+#endif
+
+#if defined(ENABLE_HTTPD)
+# include "httpd/httpd.h"
 #endif
 
 namespace remoteconfig {
@@ -333,10 +338,9 @@ private:
 
 	void HandleDisplaySet();
 	void HandleDisplayGet();
-
-	void HandleStoreSet();
+#if !defined(DISABLE_BIN)
 	void HandleStoreGet();
-
+#endif
 	void HandleTftpSet();
 	void HandleTftpGet();
 
@@ -344,18 +348,21 @@ private:
 	remoteconfig::Node m_tNode;
 	remoteconfig::Output m_tOutput;
 	uint32_t m_nOutputs;
+
 	bool m_bDisable { false };
 	bool m_bDisableWrite { false };
 	bool m_bEnableReboot { false };
 	bool m_bEnableUptime { false };
 	bool m_bEnableFactory { false };
+
+	bool m_bIsReboot { false };
+
 	int32_t m_nIdLength { 0 };
 	int32_t m_nHandle { -1 };
 	uint32_t m_nIPAddressFrom { 0 };
 	uint16_t m_nBytesReceived { 0 };
-	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
 
-	bool m_bIsReboot { false };
+	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
 
 #if !defined(DISABLE_TFTP)
 	bool m_bEnableTFTP { false };
@@ -363,12 +370,17 @@ private:
 	uint8_t *m_pTFTPBuffer { nullptr };
 #endif
 
-	static struct remoteconfig::ListBin s_RemoteConfigListBin;
-	static char s_aId[remoteconfig::ID_LENGTH];
-	static char s_UdpBuffer[remoteconfig::udp::BUFFER_SIZE];
 #if !defined(DISABLE_BIN)
 	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
 #endif
+
+#if defined(ENABLE_HTTPD)
+	HttpDaemon m_HttpDaemon;
+#endif
+
+	static struct remoteconfig::ListBin s_RemoteConfigListBin;
+	static char s_UdpBuffer[remoteconfig::udp::BUFFER_SIZE];
+
 	static RemoteConfig *s_pThis;
 };
 

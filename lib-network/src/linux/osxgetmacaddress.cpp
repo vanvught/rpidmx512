@@ -3,7 +3,7 @@
  * @file osxgetmacaddress.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@
 #include <net/if.h>
 #include <net/if_dl.h>
 
-#include "networklinux.h"
+#include "network.h"
 
-bool NetworkLinux::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
+bool Network::OSxGetMacaddress(const char *pIfName, uint8_t *pMacAddress) {
 	int mib[6] = { CTL_NET, AF_ROUTE, 0, AF_LINK, NET_RT_IFLIST, 0 };
 	size_t len;
 	char *buf;

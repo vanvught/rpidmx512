@@ -1,8 +1,8 @@
 /**
- * @file propertiesbuilderaddhex.cpp
+ * @file propertiesconfig.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,8 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
+#include <cstdint>
 
-#include <cstring>
-#include <cstdio>
-#include <cassert>
+#include "propertiesconfig.h"
 
-#include "propertiesbuilder.h"
-
-#include "debug.h"
-
-bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const uint32_t nWidth) {
-	if (m_nSize >= m_nLength) {
-		return false;
-	}
-
-	auto *p = &m_pBuffer[m_nSize];
-	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
-
-	int i;
-
-	if (bIsSet || m_bJson) {
-		if (m_bJson) {
-			i = snprintf(p, nSize, "\"%s\":\"%.*x\",", pProperty, nWidth, nValue);
-		} else {
-			i = snprintf(p, nSize, "%s=%.*x\n", pProperty, nWidth, nValue);
-		}
-	} else {
-		i = snprintf(p, nSize, "#%s=%.*x\n", pProperty, nWidth, nValue);
-	}
-
-	if (i > static_cast<int>(nSize)) {
-		return false;
-	}
-
-	m_nSize = static_cast<uint16_t>(m_nSize + i);
-
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
-
-	return true;
-}
+uint8_t PropertiesConfig::s_Config = 0;

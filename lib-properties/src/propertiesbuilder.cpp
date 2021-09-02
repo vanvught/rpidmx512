@@ -33,6 +33,7 @@
 #include <cassert>
 
 #include "propertiesbuilder.h"
+#include "propertiesconfig.h"
 
 #include "network.h"
 
@@ -40,23 +41,32 @@
 
 PropertiesBuilder::PropertiesBuilder(const char *pFileName, char *pBuffer, uint32_t nLength):
 	m_pBuffer(pBuffer),
-	m_nLength(nLength)
+	m_nLength(static_cast<uint16_t>(nLength)),
+	m_bJson(PropertiesConfig::IsJSON())
 {
-	DEBUG_ENTRY
-
 	assert(pFileName != nullptr);
 	assert(pBuffer != nullptr);
 
 	const auto l = strlen(pFileName);
 
-	if ((l + 2) <= m_nLength) {
-		*pBuffer = '#';
+	if (m_bJson) {
+		if ((l + 4) <= m_nLength) {
+			pBuffer[0] = '{';
+			pBuffer[1] = '\"';
+			memcpy(&pBuffer[2], pFileName, l);
+			pBuffer[l + 2] = '\"';
+			pBuffer[l + 3] = ':';
+			pBuffer[l + 4] = '{';
+			m_nSize = static_cast<uint16_t>(l + 5);
+		}
+	} else if ((l + 2) <= m_nLength) {
+		pBuffer[0] = '#';
 		memcpy(&pBuffer[1], pFileName, l);
 		pBuffer[l + 1] = '\n';
 		m_nSize = static_cast<uint16_t>(l + 2);
 	}
 
-	DEBUG_EXIT
+	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
 }
 
 bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, bool bIsSet) {
@@ -65,12 +75,16 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 	}
 
 	auto *p = &m_pBuffer[m_nSize];
-	const auto nSize = m_nLength - m_nSize;
+	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
 
 	int i;
 
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
+	if (bIsSet || m_bJson) {
+		if (m_bJson) {
+			i = snprintf(p, nSize, "\"%s\":\"" IPSTR "\",", pProperty, IP2STR(nValue));
+		} else {
+			i = snprintf(p, nSize, "%s=" IPSTR "\n", pProperty, IP2STR(nValue));
+		}
 	} else {
 		i = snprintf(p, nSize, "#%s=" IPSTR "\n", pProperty, IP2STR(nValue));
 	}
@@ -87,12 +101,16 @@ bool PropertiesBuilder::AddIpAddress(const char *pProperty, uint32_t nValue, boo
 }
 
 bool PropertiesBuilder::AddComment(const char *pComment) {
+	if (m_bJson) {
+		return true;
+	}
+
 	if (m_nSize >= m_nLength) {
 		return false;
 	}
 
 	auto *p = &m_pBuffer[m_nSize];
-	const auto nSize = m_nLength - m_nSize;
+	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
 
 	const auto i = snprintf(p, nSize, "# %s #\n", pComment);
 

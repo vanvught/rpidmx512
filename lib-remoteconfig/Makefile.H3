@@ -6,14 +6,14 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/h3/tftp
 	endif
 	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=src/shell
+		EXTRA_SRCDIR+=src/shell src/uart
 	endif
 else
 	ifeq (,$(findstring DISABLE_TFTP,$(DEFINES)))
 		EXTRA_SRCDIR+=src/h3/tftp
 	endif
 	DEFINES+=LTC_READER
-	EXTRA_SRCDIR+=src/shell
+	EXTRA_SRCDIR+=src/shell src/uart
 endif
 
 include ../firmware-template-h3/lib/Rules.mk

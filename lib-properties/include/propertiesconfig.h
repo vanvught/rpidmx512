@@ -1,8 +1,8 @@
 /**
- * @file propertiesbuilderaddhex.cpp
+ * @file propertiesconfig.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,46 +23,38 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
+#ifndef PROPERTIESCONFIG_H_
+#define PROPERTIESCONFIG_H_
 
-#include <cstring>
-#include <cstdio>
-#include <cassert>
+#include <cstdint>
 
-#include "propertiesbuilder.h"
-
-#include "debug.h"
-
-bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const bool bIsSet, const uint32_t nWidth) {
-	if (m_nSize >= m_nLength) {
-		return false;
-	}
-
-	auto *p = &m_pBuffer[m_nSize];
-	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
-
-	int i;
-
-	if (bIsSet || m_bJson) {
-		if (m_bJson) {
-			i = snprintf(p, nSize, "\"%s\":\"%.*x\",", pProperty, nWidth, nValue);
+struct PropertiesConfig {
+public:
+	static void EnableJSON(bool enableJSON) {
+		if (enableJSON) {
+			s_Config |= Mask::ENABLE_JSON;
 		} else {
-			i = snprintf(p, nSize, "%s=%.*x\n", pProperty, nWidth, nValue);
+			s_Config &= static_cast<uint8_t>(~Mask::ENABLE_JSON);
 		}
-	} else {
-		i = snprintf(p, nSize, "#%s=%.*x\n", pProperty, nWidth, nValue);
 	}
 
-	if (i > static_cast<int>(nSize)) {
-		return false;
+	static bool IsJSON() {
+#if defined(ENABLE_JSON_ONLY)
+		return true;
+#else
+		return isMaskSet(Mask::ENABLE_JSON);
+#endif
 	}
 
-	m_nSize = static_cast<uint16_t>(m_nSize + i);
+private:
+	struct Mask {
+		static constexpr uint8_t ENABLE_JSON = (1U << 0);
+	};
+    static bool isMaskSet(uint8_t nMask) {
+    	return (s_Config & nMask) == nMask;
+    }
 
-	DEBUG_PRINTF("m_nLength=%d, m_nSize=%d", m_nLength, m_nSize);
+    static uint8_t s_Config;
+};
 
-	return true;
-}
+#endif /* PROPERTIESCONFIG_H_ */

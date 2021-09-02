@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,11 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_SHELL_H_
-#define H3_SHELL_H_
+#ifndef SHELL_H_
+#define SHELL_H_
 
 #include <cstdint>
+#include <cstdarg>
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)
@@ -70,6 +71,8 @@ public:
 #endif
 
 private:
+	void Puts(const char *pString);
+	int Printf(const char* fmt, ...);
 	// shell.cpp
 	const char *ReadLine(uint32_t& nLength);
 	uint16_t ValidateCmd(uint32_t nLength, shell::CmdIndex &nCmdIndex);
@@ -108,4 +111,4 @@ private:
 // Firmware specific END
 };
 
-#endif /* H3_SHELL_H_ */
+#endif /* SHELL_H_ */

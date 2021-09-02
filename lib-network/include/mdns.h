@@ -113,7 +113,6 @@ private:
 	static mdns::RecordData s_AnswerLocalIp;
 
 	static uint8_t s_Buffer[mdns::BUFFER_SIZE];
-	static uint8_t s_OutBuffer[mdns::BUFFER_SIZE];
 
 	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
 	static mdns::RecordData s_ServiceRecordsData[mdns::SERVICE_RECORDS_MAX];
