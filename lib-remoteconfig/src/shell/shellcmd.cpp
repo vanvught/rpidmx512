@@ -31,8 +31,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "h3/shell.h"
-#include "uart0_debug.h"
+#include "shell.h"
 
 #include "remoteconfig.h"
 #include "network.h"
@@ -186,11 +185,11 @@ void Shell::CmdReboot() {
 }
 
 void Shell::CmdInfo() {
-	uart0_printf("%s", FirmwareVersion::Get()->GetPrint());
-	uart0_printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
-	uart0_printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
-	uart0_printf("Hostname: %s\n", Network::Get()->GetHostName());
-	uart0_printf("IP " IPSTR "/%d %c\n", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
+	Printf("%s", FirmwareVersion::Get()->GetPrint());
+	Printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
+	Printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
+	Printf("Hostname: %s\n", Network::Get()->GetHostName());
+	Printf("IP " IPSTR "/%d %c\n", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 }
 
 void Shell::CmdSet() {
@@ -201,7 +200,7 @@ void Shell::CmdSet() {
 		if (inet_aton(m_Argv[1], &ip) != 0) {
 			Network::Get()->SetIp(ip.s_addr);
 		} else {
-			uart0_puts(msg::usage::IP);
+			Puts(msg::usage::IP);
 		}
 
 		return;
@@ -213,7 +212,7 @@ void Shell::CmdSet() {
 		if ((nArgv1Length != 0) && (nArgv1Length <= network::HOSTNAME_SIZE)) {
 			Network::Get()->SetHostName(m_Argv[1]);
 		} else {
-			uart0_puts(msg::usage::HOSTNAME);
+			Puts(msg::usage::HOSTNAME);
 		}
 
 		return;
@@ -234,8 +233,6 @@ void Shell::CmdSet() {
 
  			const auto nRequestLenght = static_cast<uint16_t>(4 + nArgv1Length);
 
- 			DEBUG_PRINTF("Request: %.*s", nRequestLenght, request);
-
 			switch (m_ltcSource) {
 			case ltc::source::INTERNAL:
 				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);;
@@ -244,11 +241,11 @@ void Shell::CmdSet() {
 				SystimeReader::Get()->HandleRequest(request, nRequestLenght);
 				break;
 			default:
-				uart0_puts(msg::error::LTC);
+				Puts(msg::error::LTC);
 				break;
 			}	
 		} else {
-			//uart0_puts(msg::usage::LTC);
+			//Puts(msg::usage::LTC);
 		}
 		return;
 	}
@@ -267,17 +264,17 @@ void Shell::CmdSet() {
 		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {
 			memcpy(&buffer[nLength], m_Argv[1], m_nArgvLength[1]);
 			RemoteConfig::Get()->HandleTxtFile(buffer, nLength + m_nArgvLength[1]);
-			uart0_puts(msg::info::STORED);
+			Puts(msg::info::STORED);
 			return;
 		} else {
-			uart0_puts(msg::error::INTERNAL);
+			Puts(msg::error::INTERNAL);
 			return;
 		}
 
 		return;
 	}
 
-	uart0_puts(msg::error::INVALID);
+	Puts(msg::error::INVALID);
 }
 
 void Shell::CmdGet() {
@@ -293,7 +290,7 @@ void Shell::CmdGet() {
 	if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - 1)) {
 
 		if (*buffer == '?') { // "?get#ERROR#\n"
-			uart0_puts(msg::error::TXT);
+			Puts(msg::error::TXT);
 			return;
 		}
 
@@ -318,7 +315,7 @@ void Shell::CmdGet() {
 				}
 
 				*++p = '\0';
-				uart0_puts(pValue);
+				Puts(pValue);
 
 				return;
 			}
@@ -330,19 +327,19 @@ void Shell::CmdGet() {
 			}
 		}
 	} else {
-		uart0_puts(msg::error::INTERNAL);
+		Puts(msg::error::INTERNAL);
 		return;
 	}
 
-	uart0_puts(msg::error::PROPERTY);
+	Puts(msg::error::PROPERTY);
 	return;
 }
 
 void Shell::CmdDhcp() {
 	if (Network::Get()->EnableDhcp()) {
-		uart0_puts(msg::info::DHCP);
+		Puts(msg::info::DHCP);
 	} else {
-		uart0_puts(msg::error::DHCP);
+		Puts(msg::error::DHCP);
 	}
 }
 
@@ -350,7 +347,7 @@ void Shell::CmdDate() {
 	time_t rawtime;
 	time(&rawtime);
 
-	uart0_puts(asctime(localtime(&rawtime)));
+	Puts(asctime(localtime(&rawtime)));
 }
 
 void Shell::CmdHwClock() {
@@ -371,7 +368,7 @@ void Shell::CmdHwClock() {
 		return;
 	}
 
-	uart0_puts(msg::error::INVALID);
+	Puts(msg::error::INVALID);
 }
 
 /*
@@ -406,7 +403,7 @@ void Shell::CmdDump() {
 		return;
 	}
 
-	uart0_puts(msg::error::INVALID);
+	Puts(msg::error::INVALID);
 }
 
 void Shell::CmdMem() {
@@ -424,7 +421,7 @@ void Shell::CmdNtp() {
 		return;
 	}
 
-	uart0_puts(msg::error::INVALID);
+	Puts(msg::error::INVALID);
 }
 
 void Shell::CmdGps() {
@@ -432,13 +429,13 @@ void Shell::CmdGps() {
 
 	if ((nArgv0Length == shell::gps::length::DATE) && (memcmp(m_Argv[0], shell::gps::arg::DATE, shell::gps::length::DATE) == 0)) {
 		const auto tm = GPS::Get()->GetDateTime();
-		uart0_printf("%.2d/%.2d/%.2d %.2d:%.2d:%.2d\n", tm->tm_mday, 1 + tm->tm_mon, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min, tm->tm_sec);
+		Printf("%.2d/%.2d/%.2d %.2d:%.2d:%.2d\n", tm->tm_mday, 1 + tm->tm_mon, 1900 + tm->tm_year, tm->tm_hour, tm->tm_min, tm->tm_sec);
 		return;
 	}
 
 	if ((nArgv0Length == shell::gps::length::LOCALTIME) && (memcmp(m_Argv[0], shell::gps::arg::LOCALTIME, shell::gps::length::LOCALTIME) == 0)) {
 		const auto t = GPS::Get()->GetLocalSeconds();
-		uart0_puts(asctime(localtime(&t)));
+		Puts(asctime(localtime(&t)));
 		return;
 	}
 
@@ -447,6 +444,6 @@ void Shell::CmdGps() {
 		return;
 	}
 
-	uart0_puts(msg::error::INVALID);
+	Puts(msg::error::INVALID);
 }
 #endif

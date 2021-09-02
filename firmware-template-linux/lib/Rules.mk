@@ -13,6 +13,7 @@ LIB_NAME :=$(patsubst lib-%,%,$(CURR_DIR))
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD
 
 INCLUDES:=-I./include -I../lib-hal/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))

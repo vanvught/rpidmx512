@@ -88,7 +88,6 @@ uint32_t MDNS::s_nDNSServiceRecords;
 mdns::RecordData MDNS::s_AnswerLocalIp;
 
 uint8_t MDNS::s_Buffer[BUFFER_SIZE];
-uint8_t MDNS::s_OutBuffer[BUFFER_SIZE];
 
 ServiceRecord MDNS::s_ServiceRecords[SERVICE_RECORDS_MAX];
 RecordData MDNS::s_ServiceRecordsData[SERVICE_RECORDS_MAX];

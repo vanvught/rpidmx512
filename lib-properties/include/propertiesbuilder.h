@@ -27,7 +27,7 @@
 #define PROPERTIESBUILDER_H_
 
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 
 class PropertiesBuilder {
 public:
@@ -44,7 +44,7 @@ public:
 		}
 
 		auto *p = &m_pBuffer[m_nSize];
-		const auto nSize = m_nLength - m_nSize;
+		const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
 
 		auto i = add_part(p, nSize, pProperty, x, bIsSet, nPrecision);
 
@@ -58,8 +58,12 @@ public:
 	}
 
 	template<typename T> int inline add_part(char *p, uint32_t nSize, const char *pProperty, const T x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
-		if (bIsSet) {
-			return snprintf(p, nSize, "%s=%d\n", pProperty, static_cast<int>(x));
+		if (bIsSet || m_bJson) {
+			if (m_bJson) {
+				return snprintf(p, nSize, "\"%s\":%d,", pProperty, static_cast<int>(x));
+			} else {
+				return snprintf(p, nSize, "%s=%d\n", pProperty, static_cast<int>(x));
+			}
 		}
 
 		return snprintf(p, nSize, "#%s=%d\n", pProperty, static_cast<int>(x));
@@ -87,6 +91,11 @@ public:
 	bool AddComment(const char *pComment);
 
 	uint16_t GetSize() {
+		if (m_bJson) {
+			m_pBuffer[m_nSize - 1] = '}';
+			m_pBuffer[m_nSize] = '}';
+			m_nSize++;
+		}
 		return m_nSize;
 	}
 
@@ -95,21 +104,30 @@ private:
 
 private:
 	char *m_pBuffer;
-	uint32_t m_nLength;
+	uint16_t m_nLength;
 	uint16_t m_nSize { 0 };
+	bool m_bJson;
 };
 
 template<> int inline PropertiesBuilder::add_part<float>(char *p, uint32_t nSize, const char *pProperty, const float x, bool bIsSet, uint32_t nPrecision) {
-	if (bIsSet) {
-		return snprintf(p, nSize, "%s=%.*f\n", pProperty, nPrecision, x);
+	if (bIsSet || m_bJson) {
+		if (m_bJson) {
+			return snprintf(p, nSize, "\"%s\":%.*f,", pProperty, nPrecision, x);
+		} else {
+			return snprintf(p, nSize, "%s=%.*f\n", pProperty, nPrecision, x);
+		}
 	}
 
 	return snprintf(p, nSize, "#%s=%.*f\n", pProperty, nPrecision, x);
 }
 
 template<> int inline PropertiesBuilder::add_part<char*>(char *p, uint32_t nSize, const char *pProperty, char* x, bool bIsSet, __attribute__((unused)) uint32_t nPrecision) {
-	if (bIsSet) {
-		return snprintf(p, nSize, "%s=%s\n", pProperty, x);
+	if (bIsSet || m_bJson) {
+		if (m_bJson) {
+			return snprintf(p, nSize, "\"%s\":\"%s\",", pProperty, x);
+		} else {
+			return snprintf(p, nSize, "%s=%s\n", pProperty, x);
+		}
 	}
 
 	return snprintf(p, nSize, "#%s=%s\n", pProperty, x);
