@@ -180,6 +180,7 @@ Status HttpDaemon::ParseRequest() {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
 					}
+
 					return Status::OK;
 				}
 				status = ParseHeaderField(pLine);
@@ -327,7 +328,7 @@ Status HttpDaemon::HandleGetJSON() {
 	}
 
 	m_nContentLength = nBytes;
-	memcpy(m_Content, reinterpret_cast<void *>(pFileName), nBytes); //TODO Remove memcpy
+	memcpy(m_Content, reinterpret_cast<void *>(pFileName), nBytes);
 	m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
 
 	return Status::OK;

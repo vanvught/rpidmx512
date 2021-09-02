@@ -522,9 +522,10 @@ void RemoteConfig::HandleVersion() {
 void RemoteConfig::HandleList() {
 	DEBUG_ENTRY
 
+	Network::Get()->Print();
+
 	auto *pListResponse = &s_UdpBuffer[udp::cmd::get::length::LIST + 1];
-	constexpr auto nListResponseBufferLength = udp::BUFFER_SIZE
-			- (udp::cmd::get::length::LIST + 1);
+	constexpr auto nListResponseBufferLength = udp::BUFFER_SIZE - (udp::cmd::get::length::LIST + 1);
 
 	if (s_RemoteConfigListBin.aDisplayName[0] != '\0') {
 		if (!PropertiesConfig::IsJSON()) {
@@ -532,7 +533,8 @@ void RemoteConfig::HandleList() {
 					"" IPSTR ",%s,%s,%d,%s\n",
 					IP2STR(Network::Get()->GetIp()),
 					s_Node[static_cast<uint32_t>(m_tNode)],
-					s_Output[static_cast<uint32_t>(m_tOutput)], m_nOutputs,
+					s_Output[static_cast<uint32_t>(m_tOutput)],
+					m_nOutputs,
 					s_RemoteConfigListBin.aDisplayName);
 		} else {
 			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
@@ -549,7 +551,8 @@ void RemoteConfig::HandleList() {
 					"" IPSTR ",%s,%s,%d\n",
 					IP2STR(Network::Get()->GetIp()),
 					s_Node[static_cast<uint32_t>(m_tNode)],
-					s_Output[static_cast<uint32_t>(m_tOutput)], m_nOutputs);
+					s_Output[static_cast<uint32_t>(m_tOutput)],
+					m_nOutputs);
 		} else {
 			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
 							"{\"list\"{\"ip\":\"" IPSTR "\",\"node\"{\"type\":\"%s\",\"port\"{\"type\":\"%s\",\"count\":%d}}}}",
@@ -561,12 +564,18 @@ void RemoteConfig::HandleList() {
 
 	}
 
+	DEBUG_PUTS("");
+	debug_dump(pListResponse, m_nIdLength);
+
+
 	if (m_nBytesReceived == udp::cmd::get::length::LIST) {
 		Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(m_nIdLength), m_nIPAddressFrom, udp::PORT);
+		DEBUG_EXIT
 		return;
 	} else if (m_nBytesReceived == udp::cmd::get::length::LIST + 1) {
 		if (s_UdpBuffer[udp::cmd::get::length::LIST] == '*') {
 			Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(m_nIdLength), network::IP4_BROADCAST, udp::PORT);
+			DEBUG_EXIT
 			return;
 		}
 	}
