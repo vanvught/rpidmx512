@@ -1,4 +1,4 @@
-DEFINES=NDEBUG
+DEFINES=#NDEBUG
 EXTRA_INCLUDES=../lib-hal/include ../lib-properties/include
 
 ifeq ($(findstring ESP8266,$(MAKE_FLAGS)), ESP8266)

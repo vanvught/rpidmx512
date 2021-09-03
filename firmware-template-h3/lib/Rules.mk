@@ -59,6 +59,7 @@ COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays # -nostdinc -ftree-vectorize -fdump-tree-vect-details
 COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion -Wconversion 
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
+COPS+=-ffunction-sections -fdata-sections
 #COPS+=-fstack-usage
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables

@@ -8,12 +8,15 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/shell src/uart
 	endif
+	ifneq (,$(findstring ENABLE_HTTPD,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=src/httpd
+	endif
 else
 	ifeq (,$(findstring DISABLE_TFTP,$(DEFINES)))
 		EXTRA_SRCDIR+=src/h3/tftp
 	endif
 	DEFINES+=LTC_READER
-	EXTRA_SRCDIR+=src/shell src/uart
+	EXTRA_SRCDIR+=src/shell src/uart src/httpd
 endif
 
 include ../firmware-template-h3/lib/Rules.mk

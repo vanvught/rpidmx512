@@ -98,7 +98,7 @@ ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 	endif
 endif
 
-LIBS+=lightset display device hal c++ h3 debug c arm
+LIBS+=lightset display device hal c++ debug h3 c arm
 
 # Output 
 TARGET=$(SUFFIX).img
@@ -145,9 +145,12 @@ COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
+COPS+=-ffunction-sections -fdata-sections
 #COPS+=-fstack-usage
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
+
+LDOPS=--gc-sections --print-gc-sections
 
 # Why does gcc not automatically select the correct path based on -m options?
 PLATFORM_LIBGCC:=-L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
@@ -214,7 +217,7 @@ $(BUILD)vectors.o : $(FIRMWARE_DIR)/vectors.S
 	$(AS) $(COPS) -D__ASSEMBLY__ -c $(FIRMWARE_DIR)/vectors.S -o $(BUILD)vectors.o
 	
 $(BUILD)main.elf: Makefile.H3 $(LINKER) $(BUILD)vectors.o $(OBJECTS) $(LIBDEP)
-	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
+	$(LD) $(BUILD)vectors.o $(OBJECTS) -Map $(MAP) -T $(LINKER) $(LDOPS) -o $(BUILD)main.elf $(LIBH3) $(LDLIBS) $(PLATFORM_LIBGCC) -lgcc 
 	$(PREFIX)objdump -D $(BUILD)main.elf | $(PREFIX)c++filt > $(LIST)
 	$(PREFIX)size -A -x $(BUILD)main.elf
 

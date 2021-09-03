@@ -34,6 +34,7 @@ extern "C" {
 #endif
 
 extern char *strerror(int errnum);
+extern char *strtok(char *str, const char *delim);
 
 inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;

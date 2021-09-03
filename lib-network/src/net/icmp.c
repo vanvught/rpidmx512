@@ -62,9 +62,9 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 			p_icmp->icmp.checksum = 0;
 			p_icmp->icmp.checksum = net_chksum((void *)&p_icmp->ip4, (uint32_t)__builtin_bswap16(p_icmp->ip4.len));
 
-//			debug_dump(p_icmp, sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len));
+			debug_dump(p_icmp, sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len));
 
-			emac_eth_send((void *)p_icmp, (int) (sizeof(struct ether_packet) + __builtin_bswap16(p_icmp->ip4.len)));
+			emac_eth_send((void *)p_icmp, (int) (sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len)));
 		}
 	}
 
