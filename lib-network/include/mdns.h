@@ -43,21 +43,21 @@ struct Flags {
 	uint32_t rcode;
 };
 
+enum class Protocol : uint8_t {
+	UDP, TCP
+};
+
 struct ServiceRecord {
 	uint16_t nPort;
 	char *pName;
 	char *pServName;
 	char *pTextContent;
+	Protocol nProtocol;
 };
 
 struct RecordData {
 	uint32_t nSize;
 	uint8_t aBuffer[512];
-};
-
-enum class Protocol:uint8_t {
-	UDP,
-	TCP
 };
 
 #define MDNS_PORT 				5353

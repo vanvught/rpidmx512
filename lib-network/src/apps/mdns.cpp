@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <netinet/in.h>
@@ -91,6 +95,10 @@ uint8_t MDNS::s_Buffer[BUFFER_SIZE];
 
 ServiceRecord MDNS::s_ServiceRecords[SERVICE_RECORDS_MAX];
 RecordData MDNS::s_ServiceRecordsData[SERVICE_RECORDS_MAX];
+
+static constexpr const char *get_protocol_name(Protocol nProtocol) {
+	return nProtocol == Protocol::TCP ? "_tcp" MDNS_TLD : "_udp" MDNS_TLD;
+}
 
 MDNS::MDNS() {
 	struct in_addr group_ip;
@@ -227,6 +235,7 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 	for (i = 0; i < SERVICE_RECORDS_MAX; i++) {
 		if (s_ServiceRecords[i].pName == nullptr) {
 			s_ServiceRecords[i].nPort = nPort;
+			s_ServiceRecords[i].nProtocol = nProtocol;
 
 			if (pName == nullptr) {
 				s_ServiceRecords[i].pName = new char[1 + strlen(Network::Get()->GetHostName() + strlen(pServName))];
@@ -248,7 +257,8 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 			assert(s_ServiceRecords[i].pServName != nullptr);
 
 			strcpy(s_ServiceRecords[i].pServName, p);
-			strcat(s_ServiceRecords[i].pServName, nProtocol == Protocol::TCP ? "._tcp" MDNS_TLD : "._udp" MDNS_TLD);
+			strcat(s_ServiceRecords[i].pServName, ".");
+			strcat(s_ServiceRecords[i].pServName, get_protocol_name(nProtocol));
 
 			if (pTextContent != nullptr) {
 				s_ServiceRecords[i].pTextContent = new char[1 + strlen(pTextContent)];
@@ -266,10 +276,11 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 		return false;
 	}
 
-	DEBUG_PRINTF("[%d].nPort = %d", i, s_ServiceRecords[i].nPort = nPort);
+	DEBUG_PRINTF("[%d].nPort = %d", i, s_ServiceRecords[i].nPort);
+	DEBUG_PRINTF("[%d].nProtocol = [%s]", i, s_ServiceRecords[i].nProtocol == Protocol::TCP ? "TCP" : "UDP");
 	DEBUG_PRINTF("[%d].pName = [%s]", i, s_ServiceRecords[i].pName);
 	DEBUG_PRINTF("[%d].pServName = [%s]", i, s_ServiceRecords[i].pServName);
-	DEBUG_PRINTF("[%d].pTextContent = [%s]", i, s_ServiceRecords[i].pTextContent);
+	DEBUG_PRINTF("[%d].pTextContent = [%s]", i, s_ServiceRecords[i].pTextContent != nullptr ? s_ServiceRecords[i].pTextContent : "><");
 
 	CreateMDNSMessage(i);
 
@@ -290,6 +301,8 @@ const char *MDNS::FindFirstDotFromRight(const char *pString) {
 }
 
 uint32_t MDNS::WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated) {
+	DEBUG_PUTS(pSource);
+
 	const auto *pSrc = pSource;
 	auto *pDst = pDestination;
 
@@ -355,7 +368,7 @@ uint32_t MDNS::CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination) {
 	auto *pDst = pDestination;
 
 	pDst += WriteDnsName(s_ServiceRecords[nIndex].pName, reinterpret_cast<char*>(pDst), false);
-	pDst += WriteDnsName("_udp" MDNS_TLD, reinterpret_cast<char*>(pDst));
+	pDst += WriteDnsName(get_protocol_name(s_ServiceRecords[nIndex].nProtocol), reinterpret_cast<char*>(pDst));
 
 	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16(DNSRecordTypeSRV);
 	pDst += 2;
@@ -381,7 +394,7 @@ uint32_t MDNS::CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination) {
 	auto *pDst = pDestination;
 
 	pDst += WriteDnsName(s_ServiceRecords[nIndex].pName, reinterpret_cast<char*>(pDst), false);
-	pDst += WriteDnsName("_udp" MDNS_TLD, reinterpret_cast<char*>(pDst));
+	pDst += WriteDnsName(get_protocol_name(s_ServiceRecords[nIndex].nProtocol), reinterpret_cast<char*>(pDst));
 
 	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16(DNSRecordTypeTXT);
 	pDst += 2;
@@ -425,7 +438,7 @@ uint32_t MDNS::CreateAnswerServicePtr(uint32_t nIndex, uint8_t *pDestination) {
 	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16(static_cast<uint16_t>(13 + strlen(s_ServiceRecords[nIndex].pName)));
 	pDst += 2;
 	pDst += WriteDnsName(s_ServiceRecords[nIndex].pName, reinterpret_cast<char*>(pDst), false);
-	pDst += WriteDnsName("_udp" MDNS_TLD, reinterpret_cast<char*>(pDst));
+	pDst += WriteDnsName(get_protocol_name(s_ServiceRecords[nIndex].nProtocol), reinterpret_cast<char*>(pDst));
 
 	DEBUG_EXIT
 	return static_cast<uint32_t>(pDst - pDestination);
@@ -500,7 +513,7 @@ void MDNS::Parse() {
 	const auto nFlags = __builtin_bswap16(pmDNSHeader->nFlags);
 
 #ifndef NDEBUG
-	Dump(pmDNSHeader, nFlags);
+//	Dump(pmDNSHeader, nFlags);
 #endif
 
 	if ((((nFlags >> 15) & 1) == 0) && (((nFlags >> 14) & 0xf) == DNSOpQuery)) {
@@ -540,6 +553,22 @@ void MDNS::Run() {
 		s_nLastAnnounceMillis = nNow;
 	}
 #endif
+}
+
+#include <cstdio>
+
+void MDNS::Print() {
+	printf("mDNS\n");
+	if (s_nHandle == -1) {
+		printf(" Not running\n");
+		return;
+	}
+	printf(" Name : %s\n", s_pName);
+	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
+		if (s_ServiceRecords[i].pName != nullptr) {
+			printf(" %s %d %s\n", s_ServiceRecords[i].pServName, s_ServiceRecords[i].nPort, s_ServiceRecords[i].pTextContent == nullptr ? "" : s_ServiceRecords[i].pTextContent);
+		}
+	}
 }
 
 #ifndef NDEBUG
