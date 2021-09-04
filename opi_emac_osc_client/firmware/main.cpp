@@ -93,7 +93,10 @@ void notmain(void) {
 
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, client.GetPortIncoming(), "type=client");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, client.GetPortIncoming(), mdns::Protocol::UDP, "type=client");
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Client");
+#endif
 	mDns.Print();
 
 	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);

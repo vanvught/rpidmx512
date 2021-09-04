@@ -32,5 +32,6 @@
 #define MDNS_SERVICE_TFTP		"._tftp"
 #define MDNS_SERVICE_NTP		"._ntp"
 #define MDNS_SERVICE_DDP		"._ddp"
+#define MDNS_SERVICE_HTTP		"._http"
 
 #endif /* MDNSSERVICES_H_ */

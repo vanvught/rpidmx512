@@ -31,6 +31,9 @@
 #include "hardware.h"
 #include "network.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "handler.h"
 
 #include "oscserver.h"
@@ -93,6 +96,13 @@ int main(int argc, char **argv) {
 
 	nw.Print();
 	server.Print();
+
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Server");
+	mDns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
 
