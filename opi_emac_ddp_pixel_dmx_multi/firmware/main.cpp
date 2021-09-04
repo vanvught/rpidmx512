@@ -110,7 +110,10 @@ void notmain(void) {
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_DDP, ddp::udp::PORT, "type=display");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_DDP, ddp::udp::PORT, mdns::Protocol::UDP, "type=display");
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=DDP");
+#endif
 	mDns.Print();
 
 	// DDP

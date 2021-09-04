@@ -32,6 +32,9 @@
 #include "network.h"
 #include "ledblink.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "e131bridge.h"
 #include "e131params.h"
 #include "storee131.h"
@@ -113,6 +116,12 @@ int main(int argc, char **argv) {
 
 	nw.Print();
 	bridge.Print();
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31");
+	mDns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);

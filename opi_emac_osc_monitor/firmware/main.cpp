@@ -113,7 +113,10 @@ void notmain(void) {
 
 	MDNS mDns;
 	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), "type=monitor");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=monitor");
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Monitor");
+#endif
 	mDns.Print();
 
 	DMXMonitor monitor;

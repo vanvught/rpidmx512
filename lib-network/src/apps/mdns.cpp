@@ -216,7 +216,7 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 	return 1 + nSize;
 }
 
-bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t nPort, const char *pTextContent) {
+bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t nPort, mdns::Protocol nProtocol, const char *pTextContent) {
 //	DEBUG1_ENTRY
 
 	assert(pServName != nullptr);
@@ -248,7 +248,7 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 			assert(s_ServiceRecords[i].pServName != nullptr);
 
 			strcpy(s_ServiceRecords[i].pServName, p);
-			strcat(s_ServiceRecords[i].pServName, "._udp" MDNS_TLD);
+			strcat(s_ServiceRecords[i].pServName, nProtocol == Protocol::TCP ? "._tcp" MDNS_TLD : "._udp" MDNS_TLD);
 
 			if (pTextContent != nullptr) {
 				s_ServiceRecords[i].pTextContent = new char[1 + strlen(pTextContent)];

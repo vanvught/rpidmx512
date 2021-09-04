@@ -85,10 +85,16 @@ static uint8_t _new_state(struct tcb *p_tcb, uint8_t state, const char *func, co
 	return p_tcb->state = state;
 }
 
+static void _unexpected_state(unsigned state, unsigned line) {
+	printf("Unexpected state %s at line %u\n", state_name[state], line);
+}
+
 # define NEW_STATE(state)		_new_state(l_tcb, state, __func__, __FILE__, __LINE__)
+# define UNEXPECTED_STATE()		_unexpected_state (l_tcb->state, __LINE__)
 # define CLIENT_NOT_IMPLEMENTED	assert(0)
 #else
 # define NEW_STATE(STATE)		(l_tcb->state = STATE)
+# define UNEXPECTED_STATE()		((void) 0)
 # define CLIENT_NOT_IMPLEMENTED	((void)0)
 #endif
 
@@ -173,19 +179,19 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-uint32_t _get_seqnum(struct t_tcp *p_tcp) {
+static uint32_t _get_seqnum(struct t_tcp *p_tcp) {
 	_pcast32 src;
 	memcpy(src.u8, &p_tcp->tcp.seqnum, 4);
 	return src.u32;
 }
 
-uint32_t _get_acknum(struct t_tcp *p_tcp) {
+static uint32_t _get_acknum(struct t_tcp *p_tcp) {
 	_pcast32 src;
 	memcpy(src.u8, &p_tcp->tcp.acknum, 4);
 	return src.u32;
 }
 
-void _bswap32(struct t_tcp *p_tcp) {
+static void _bswap32(struct t_tcp *p_tcp) {
 	_pcast32 src;
 
 	memcpy(src.u8, &p_tcp->tcp.acknum, 4);
@@ -577,21 +583,25 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 			case STATE_FIN_WAIT_1:
 			case STATE_FIN_WAIT_2:
 			case STATE_CLOSE_WAIT:
-				//TODO
+				/* If the RST bit is set then, any outstanding RECEIVEs and SEND
+				 * should receive "reset" responses.  All segment queues should be
+				 * flushed.  Users should also receive an unsolicited general
+				 * "connection reset" signal.  Enter the CLOSED state, delete the
+				 * TCB, and return. */
 				_init_tcb(l_tcb, l_tcb->local_port);
-				//l_tcb->state = STATE_CLOSED;
 				break;
 			case STATE_CLOSING:
 			case STATE_LAST_ACK:
 			case STATE_TIME_WAIT:
-				//TODO
+				/* If the RST bit is set then, enter the CLOSED state, delete the
+				 * TCB, and return. */
 				_init_tcb(l_tcb, l_tcb->local_port);
-				//l_tcb->state = STATE_CLOSED;
 				break;
 			default:
 				assert(0);
 				break;
 			}
+			return;
 		}
 
 		/* third check security and precedence */
@@ -701,7 +711,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 			}
 			break;
 		default:
-			assert(0);
+			UNEXPECTED_STATE();
 			break;
 		}
 

@@ -33,6 +33,9 @@
 #include "network.h"
 #include "ledblink.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "storeartnet.h"
@@ -159,6 +162,12 @@ int main(int argc, char **argv) {
 	if(artnet4Params.IsRdm()) {
 		RdmResponder.Print();
 	}
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4");
+	mDns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, node.GetActiveOutputPorts());
 

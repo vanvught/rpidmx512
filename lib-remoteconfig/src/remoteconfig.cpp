@@ -51,6 +51,8 @@
 # endif
 #endif
 
+#include "remoteconfigjson.h"
+
 #include "spiflashstore.h"
 
 /* rconfig.txt */
@@ -467,9 +469,9 @@ void RemoteConfig::HandleUptime() {
 		int nLength;
 
 		if (!PropertiesConfig::IsJSON()) {
-			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "uptime: %ds\n", static_cast<int>(nUptime));
+			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "uptime: %us\n", nUptime);
 		} else {
-			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "{\"uptime\":%d}\n", static_cast<int>(nUptime));
+			nLength = json_get_uptime(s_UdpBuffer, udp::BUFFER_SIZE - 1);
 		}
 
 		Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
@@ -493,16 +495,9 @@ void RemoteConfig::HandleVersion() {
 
 		if (!PropertiesConfig::IsJSON()) {
 			const auto *p = FirmwareVersion::Get()->GetPrint();
-			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE, "version:%s", p);
+			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "version:%s", p);
 		} else {
-			auto *pVersion = FirmwareVersion::Get()->GetVersion();
-			uint8_t nHwTextLength;
-			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE,
-							"{\"version\":\"%.*s\",\"board\":\"%s\",\"build\":{\"date\":\"%.*s\",\"time\":\"%.*s\"}}",
-							firmwareversion::length::SOFTWARE_VERSION, pVersion->SoftwareVersion,
-							Hardware::Get()->GetBoardName(nHwTextLength),
-							firmwareversion::length::GCC_DATE, pVersion->BuildDate,
-							firmwareversion::length::GCC_TIME, pVersion->BuildTime);
+			nLength = json_get_version(s_UdpBuffer, udp::BUFFER_SIZE - 1);
 		}
 
 		Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
@@ -612,7 +607,7 @@ void RemoteConfig::HandleDisplayGet() {
 		if (!PropertiesConfig::IsJSON()) {
 			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "display:%s\n", isOn ? "On" : "Off");
 		} else {
-			nLength = snprintf(s_UdpBuffer, udp::BUFFER_SIZE - 1, "{\"display\":%s}", isOn ? "true" : "false");
+			nLength = json_get_display(s_UdpBuffer, udp::BUFFER_SIZE - 1);
 		}
 
 		Network::Get()->SendTo(m_nHandle, s_UdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);

@@ -55,6 +55,11 @@ struct RecordData {
 	uint8_t aBuffer[512];
 };
 
+enum class Protocol:uint8_t {
+	UDP,
+	TCP
+};
+
 #define MDNS_PORT 				5353
 static constexpr auto BUFFER_SIZE = 1024;
 static constexpr auto SERVICE_RECORDS_MAX = 8;
@@ -77,7 +82,7 @@ public:
 
 	void SetName(const char *pName);
 
-	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = nullptr);
+	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, mdns::Protocol nProtocol = mdns::Protocol::UDP, const char* pTextContent = nullptr);
 
 private:
 	void Parse();

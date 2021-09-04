@@ -33,6 +33,7 @@
 
 #include "httpd/httpd.h"
 #include "remoteconfig.h"
+#include "remoteconfigjson.h"
 #include "propertiesconfig.h"
 
 #include "network.h"
@@ -280,7 +281,7 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
  */
 
 Status HttpDaemon::HandleGet() {
-	int nLength;
+	int nLength = 0;
 
 #if defined(ENABLE_CONTENT)
 	if ((strcmp(m_pUri, "/") == 0) || (strncmp(m_pUri, "/index.html", 11) == 0)) {
@@ -293,6 +294,16 @@ Status HttpDaemon::HandleGet() {
 #endif
 	if (memcmp(m_pUri, "/json/", 6) == 0) {
 		return HandleGetJSON();
+	} else if (memcmp(m_pUri, "/get/", 5) == 0) {
+		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
+		const auto *pGet = &m_pUri[5];
+		if (strncmp(pGet, "version", 7) == 0) {
+			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
+		} else 	if (strncmp(pGet, "uptime", 6) == 0) {
+			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
+		} else 	if (strncmp(pGet, "display", 7) == 0) {
+			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
+		}
 	} else {
 		return Status::NOT_FOUND;
 	}

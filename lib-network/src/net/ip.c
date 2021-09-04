@@ -63,7 +63,7 @@ void __attribute__((cold)) ip_shutdown(void) {
 	udp_shutdown();
 }
 
-__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4, __attribute__((unused)) int length) {
+__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 	if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
 		if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
 			igmp_handle((struct t_igmp *) p_ip4);
@@ -94,9 +94,11 @@ __attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4, __attribute__((unused))
 	case IPv4_PROTO_ICMP:
 		icmp_handle((struct t_icmp *) p_ip4);
 		break;
+#if defined (ENABLE_HTTPD)
 	case IPv4_PROTO_TCP:
 		tcp_handle((struct t_tcp *) p_ip4);
 		break;
+#endif
 	default:
 		DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);
 		break;

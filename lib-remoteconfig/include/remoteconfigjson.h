@@ -1,8 +1,8 @@
 /**
- * @file mdnsservices.h
+ * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef MDNSSERVICES_H_
-#define MDNSSERVICES_H_
+#ifndef REMOTECONFIGJSON_H_
+#define REMOTECONFIGJSON_H_
 
-#define MDNS_SERVICE_MIDI		"._apple-midi"
-#define MDNS_SERVICE_OSC		"._osc"
-#define MDNS_SERVICE_CONFIG		"._config"
-#define MDNS_SERVICE_TFTP		"._tftp"
-#define MDNS_SERVICE_NTP		"._ntp"
-#define MDNS_SERVICE_DDP		"._ddp"
-#define MDNS_SERVICE_HTTP		"._http"
+#include <cstdint>
 
-#endif /* MDNSSERVICES_H_ */
+namespace remoteconfig {
+uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize);
+uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize);
+uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize);
+}  // namespace remoteconfig
+
+#endif /* REMOTECONFIGJSON_H_ */
