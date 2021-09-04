@@ -238,6 +238,10 @@ uint16_t Network::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uin
 	return udp_recv(static_cast<uint8_t>(nHandle), reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
 }
 
+uint16_t Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+	return udp_recv2(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t **>(ppBuffer), pFromIp, pFromPort);
+}
+
 void Network::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
 	udp_send(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }

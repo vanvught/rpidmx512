@@ -44,6 +44,10 @@
  */
 #include "networkparams.h"
 
+#define MAX_SEGMENT_LENGTH		1400
+
+static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
+
 namespace max {
 	static constexpr auto PORTS_ALLOWED = 16;
 	static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
@@ -390,6 +394,11 @@ uint16_t Network::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint3
 	*pFromPort = ntohs(si_other.sin_port);
 
 	return recv_len;
+}
+
+uint16_t Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+	*ppBuffer = &s_ReadBuffer;
+	return RecvFrom(nHandle, s_ReadBuffer, MAX_SEGMENT_LENGTH, pFromIp, pFromPort);
 }
 
 void Network::SendTo(int32_t nHandle, const void *pPacket, uint16_t nSize, uint32_t nToIp, uint16_t nRemotePort) {

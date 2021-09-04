@@ -63,6 +63,7 @@ extern void net_dhcp_release(void);
 extern int udp_bind(uint16_t);
 extern int udp_unbind(uint16_t);
 extern uint16_t udp_recv(uint8_t, uint8_t *, uint16_t, uint32_t *, uint16_t *);
+extern uint16_t udp_recv2(uint8_t, const uint8_t **, uint32_t *, uint16_t *);
 extern int udp_send(uint8_t, const uint8_t *, uint16_t, uint32_t, uint16_t);
 
 extern int igmp_join(uint32_t group_address);

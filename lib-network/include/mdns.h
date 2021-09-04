@@ -60,8 +60,7 @@ struct RecordData {
 	uint8_t aBuffer[512];
 };
 
-#define MDNS_PORT 				5353
-static constexpr auto BUFFER_SIZE = 1024;
+static constexpr uint16_t UDP_PORT = 5353;
 static constexpr auto SERVICE_RECORDS_MAX = 8;
 }  // namespace mdns
 
@@ -72,7 +71,7 @@ public:
 
 	void Start();
 	void Stop() {
-		Network::Get()->End(MDNS_PORT);
+		Network::Get()->End(mdns::UDP_PORT);
 		s_nHandle = -1;
 	}
 
@@ -117,7 +116,7 @@ private:
 	static uint32_t s_nDNSServiceRecords;
 	static mdns::RecordData s_AnswerLocalIp;
 
-	static uint8_t s_Buffer[mdns::BUFFER_SIZE];
+	static uint8_t *s_pBuffer;
 
 	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
 	static mdns::RecordData s_ServiceRecordsData[mdns::SERVICE_RECORDS_MAX];
