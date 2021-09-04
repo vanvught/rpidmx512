@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <cstring>
 #include <cstdio>
 #include <cassert>
@@ -132,12 +136,12 @@ void HttpDaemon::Run() {
 			break;
 		}
 
-		m_nContentLength = snprintf(m_Content, BUFSIZE - 1,
+		m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
 				"<!DOCTYPE html>\n"
 				"<html>\n"
 				"<head><title>%u %s</title></head>\n"
 				"<body><h1>%s</h1></body>\n"
-				"</html>\n", static_cast<uint32_t>(m_Status), pStatusMsg, pStatusMsg);
+				"</html>\n", static_cast<uint32_t>(m_Status), pStatusMsg, pStatusMsg));
 	}
 
 	uint8_t nLength;
@@ -149,7 +153,7 @@ void HttpDaemon::Run() {
 			"Connection: close\r\n"
 			"\r\n", static_cast<uint32_t>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, m_nContentLength);
 
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), nHeaderLength);
+	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength));
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength);
 
 	m_Status = Status::UNKNOWN_ERROR;
@@ -165,7 +169,7 @@ Status HttpDaemon::ParseRequest() {
 	m_nFileDataLength = 0;
 	m_bContentTypeJson = false;
 
-	for (int32_t i = 0; i < m_nBytesReceicved; i++) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(m_nBytesReceicved); i++) {
 		if (m_RequestHeaderResponse[i] == '\n') {
 			assert(i > 1);
 			m_RequestHeaderResponse[i - 1] = '\0';
@@ -175,7 +179,7 @@ Status HttpDaemon::ParseRequest() {
 			} else {
 				if (pLine[0] == '\0') {
 					assert((i + 1) <= m_nBytesReceicved);
-					m_nFileDataLength = m_nBytesReceicved - 1 - i;
+					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceicved - 1) - i;
 					if (m_nFileDataLength > 0) {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
@@ -297,7 +301,7 @@ Status HttpDaemon::HandleGet() {
 		return Status::INTERNAL_SERVER_ERROR;
 	}
 
-	m_nContentLength = nLength;
+	m_nContentLength = static_cast<uint16_t>(nLength);
 
 	return Status::OK;
 }
@@ -327,7 +331,7 @@ Status HttpDaemon::HandleGetJSON() {
 		return Status::INTERNAL_SERVER_ERROR;
 	}
 
-	m_nContentLength = nBytes;
+	m_nContentLength = static_cast<uint16_t>(nBytes);
 	memcpy(m_Content, reinterpret_cast<void *>(pFileName), nBytes);
 	m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
 
@@ -351,7 +355,7 @@ Status HttpDaemon::HandlePost(bool bIsDataOnly) {
 
 	if (bIsDataOnly) {
 		m_pFileData = m_RequestHeaderResponse;
-		m_nFileDataLength = m_nBytesReceicved;
+		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceicved);
 	}
 
 	printf("[%s:%d] %d|%.*s|\n", __func__, __LINE__, m_nFileDataLength, m_nFileDataLength, m_pFileData);
@@ -363,12 +367,12 @@ Status HttpDaemon::HandlePost(bool bIsDataOnly) {
 
 	PropertiesConfig::EnableJSON(bIsJSON);
 
-	m_nContentLength = snprintf(m_Content, BUFSIZE - 1,
+	m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<head><title>Submit</title></head>\n"
 			"<body><h1>OK</h1></body>\n"
-			"</html>\n");
+			"</html>\n"));
 
 	return Status::OK;
 }

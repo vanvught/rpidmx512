@@ -32,12 +32,8 @@
  #define PACKED __attribute__((packed))
 #endif
 
-enum ETHERNET_MTU {
-	ETHERNET_MTU_SIZE = 1500
-};
-
-enum UDP_DATA {
-	UDP_DATA_SIZE = (ETHERNET_MTU_SIZE - 8 - 20)	/* 8 bytes UDP header, 20 bytes IPv4 header */
+enum MTU {
+	MTU_SIZE = 1500
 };
 
 enum ETHER_TYPE {
@@ -104,10 +100,10 @@ enum ICMP_CODE {
 	ICMP_CODE_ECHO = 0
 };
 
-struct ether_packet {
-	uint8_t dst[ETH_ADDR_LEN];
-	uint8_t src[ETH_ADDR_LEN];
-	uint16_t type;
+struct ether_header {
+	uint8_t dst[ETH_ADDR_LEN];		/*  6 */
+	uint8_t src[ETH_ADDR_LEN];		/* 12 */
+	uint16_t type;					/* 14 */
 }PACKED;
 
 struct arp_packet {
@@ -122,25 +118,17 @@ struct arp_packet {
 	uint32_t target_ip;
 }PACKED;
 
-struct t_ip4_packet {
-	uint8_t ver_ihl;
-	uint8_t tos;
-	uint16_t len;
-	uint16_t id;
-	uint16_t flags_froff;
-	uint8_t ttl;
-	uint8_t proto;
-	uint16_t chksum;
-	uint8_t src[IPv4_ADDR_LEN];
-	uint8_t dst[IPv4_ADDR_LEN];
-}PACKED;
-
-struct t_udp_packet {
-	uint16_t source_port;
-	uint16_t destination_port;
-	uint16_t len;
-	uint16_t checksum;
-	uint8_t data[UDP_DATA_SIZE];
+struct ip4_header {
+	uint8_t ver_ihl;				/*  1 */
+	uint8_t tos;					/*  2 */
+	uint16_t len;					/*  4 */
+	uint16_t id;					/*  6 */
+	uint16_t flags_froff;			/*  8 */
+	uint8_t ttl;					/*  9 */
+	uint8_t proto;					/* 10 */
+	uint16_t chksum;				/* 12 */
+	uint8_t src[IPv4_ADDR_LEN];		/* 16 */
+	uint8_t dst[IPv4_ADDR_LEN];		/* 20 */
 }PACKED;
 
 struct t_igmp_packet {
@@ -151,32 +139,53 @@ struct t_igmp_packet {
 }PACKED;
 
 struct t_icmp_packet {
-	uint8_t type;			///< 1
-	uint8_t code;			///< 1
-	uint16_t checksum;		///< 2
-	uint8_t parameter[4];	///< 4
-	uint8_t payload[1472];	///< + 1472 = 1500 (MTU)
+	uint8_t type;					/* 1 */
+	uint8_t code;					/* 2 */
+	uint16_t checksum;				/* 4 */
+	uint8_t parameter[4];			/* 8 */
+#define ICMP_HEADER_SIZE		8
+#define ICMP_PAYLOAD_SIZE		(MTU_SIZE - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
+	uint8_t payload[ICMP_PAYLOAD_SIZE];
 }PACKED;
 
+struct t_udp_packet {
+	uint16_t source_port;			/* 2 */
+	uint16_t destination_port;		/* 4 */
+	uint16_t len;					/* 6 */
+	uint16_t checksum;				/* 8 */
+#define UDP_HEADER_SIZE		8
+#define UDP_DATA_SIZE		(MTU_SIZE - UDP_HEADER_SIZE - sizeof(struct ip4_header))
+	uint8_t data[UDP_DATA_SIZE];
+}PACKED;
+
+struct t_tcp_packet {
+	uint16_t srcpt;					/*  2 */
+	uint16_t dstpt;					/*  4 */
+	uint32_t seqnum;				/*  8 */
+	uint32_t acknum;				/* 12 */
+	uint8_t offset;					/* 13 */
+	uint8_t control;				/* 14 */
+	uint16_t window;				/* 16 */
+	uint16_t checksum;				/* 18 */
+	uint16_t urgent;				/* 20 */
+#define TCP_HEADER_SIZE		20
+#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - (uint16_t) sizeof(struct ip4_header))
+	uint8_t data[TCP_DATA_SIZE];
+} PACKED;
+
 struct t_arp {
-	struct ether_packet ether;
+	struct ether_header ether;
 	struct arp_packet arp;
 }PACKED;
 
 struct t_ip4 {
-	struct ether_packet ether;
-	struct t_ip4_packet ip4;
-}PACKED;
-
-struct t_udp {
-	struct ether_packet ether;
-	struct t_ip4_packet ip4;
-	struct t_udp_packet udp;
+	struct ether_header ether;
+	struct ip4_header ip4;
 }PACKED;
 
 struct t_igmp {
-	struct ether_packet ether;
-	struct t_ip4_packet ip4;
+	struct ether_header ether;
+	struct ip4_header ip4;
 	union {
 		struct {
 			uint32_t ip4_options;
@@ -187,18 +196,29 @@ struct t_igmp {
 }PACKED;
 
 struct t_icmp {
-	struct ether_packet ether;
-	struct t_ip4_packet ip4;
+	struct ether_header ether;
+	struct ip4_header ip4;
 	struct t_icmp_packet icmp;
 }PACKED;
 
-#define UDP_HEADER_SIZE					(sizeof(struct t_udp_packet) - UDP_DATA_SIZE)
-#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct t_ip4_packet) + UDP_HEADER_SIZE)
-#define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_packet) + IPv4_UDP_HEADERS_SIZE)
+struct t_udp {
+	struct ether_header ether;
+	struct ip4_header ip4;
+	struct t_udp_packet udp;
+}PACKED;
 
-#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_packet))
+struct t_tcp {
+	struct ether_header ether;
+	struct ip4_header ip4;
+	struct t_tcp_packet tcp;
+}PACKED;
+
+#define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct ip4_header) + UDP_HEADER_SIZE)			/* IP | UDP */
+#define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_header) + IPv4_UDP_HEADERS_SIZE)	/* ETH | IP | UDP */
+
+#define IPv4_IGMP_REPORT_HEADERS_SIZE 	(sizeof(struct t_igmp) - sizeof(struct ether_header))
 #define IGMP_REPORT_PACKET_SIZE			(sizeof(struct t_igmp))
 
-#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct ether_packet))
+#define IPv4_ICMP_HEADERS_SIZE 			(sizeof(struct t_icmp) - sizeof(struct ether_header))
 
 #endif /* NET_PACKETS_H_ */

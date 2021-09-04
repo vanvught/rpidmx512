@@ -522,8 +522,6 @@ void RemoteConfig::HandleVersion() {
 void RemoteConfig::HandleList() {
 	DEBUG_ENTRY
 
-	Network::Get()->Print();
-
 	auto *pListResponse = &s_UdpBuffer[udp::cmd::get::length::LIST + 1];
 	constexpr auto nListResponseBufferLength = udp::BUFFER_SIZE - (udp::cmd::get::length::LIST + 1);
 
@@ -563,10 +561,6 @@ void RemoteConfig::HandleList() {
 		}
 
 	}
-
-	DEBUG_PUTS("");
-	debug_dump(pListResponse, m_nIdLength);
-
 
 	if (m_nBytesReceived == udp::cmd::get::length::LIST) {
 		Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(m_nIdLength), m_nIPAddressFrom, udp::PORT);

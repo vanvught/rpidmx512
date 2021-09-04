@@ -2,7 +2,7 @@
  * @file net.c
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,8 @@ extern void ip_set_ip(const struct ip_info  *);
 extern void ip_handle(struct t_ip4 *);
 extern void ip_shutdown(void);
 
+extern void tcp_init(void);
+
 extern int dhcp_client(const uint8_t *, struct ip_info *, const uint8_t *);
 extern void dhcp_client_release(void);
 
@@ -60,29 +62,37 @@ static bool s_is_dhcp = false;
 void __attribute__((cold)) net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
 	uint32_t i;
 
-	net_set_hostname((char *)hostname);
-	ip_init(mac_address, p_ip_info);
-	rfc3927_init(mac_address);
-
-	*is_zeroconf_used = false;
-
-	if (*use_dhcp) {
-		if (dhcp_client(mac_address, p_ip_info, (const uint8_t *)s_hostname) < 0) {
-			*use_dhcp = false;
-			DEBUG_PUTS("DHCP Client failed");
-			*is_zeroconf_used = rfc3927(p_ip_info);
-		}
-	}
-
-	arp_init(mac_address, p_ip_info);
-	ip_set_ip(p_ip_info);
-
 	for (i = 0; i < ETH_ADDR_LEN; i++) {
 		g_mac_address[i] = mac_address[i];
 	}
 
-	const uint8_t *src = (const uint8_t*) p_ip_info;
-	uint8_t *dst = (uint8_t*) &g_ip_info;
+	const uint8_t *src = (const uint8_t *) p_ip_info;
+	uint8_t *dst = (uint8_t *) &g_ip_info;
+
+	for (i = 0; i < sizeof(struct ip_info); i++) {
+		*dst++ = *src++;
+	}
+
+	net_set_hostname((char *)hostname);
+	ip_init(g_mac_address, &g_ip_info);
+	rfc3927_init(g_mac_address);
+
+	*is_zeroconf_used = false;
+
+	if (*use_dhcp) {
+		if (dhcp_client(g_mac_address, &g_ip_info, (const uint8_t *)s_hostname) < 0) {
+			*use_dhcp = false;
+			DEBUG_PUTS("DHCP Client failed");
+			*is_zeroconf_used = rfc3927(&g_ip_info);
+		}
+	}
+
+	arp_init(g_mac_address, &g_ip_info);
+	ip_set_ip(&g_ip_info);
+	tcp_init();
+
+	src = (const uint8_t*) &g_ip_info;
+	dst = (uint8_t*) p_ip_info;
 
 	for (i = 0; i < sizeof(struct ip_info); i++) {
 		*dst++ = *src++;
@@ -175,7 +185,7 @@ __attribute__((hot)) void net_handle(void) {
 	const int length = emac_eth_recv(&s_p);
 
 	if (__builtin_expect((length > 0), 0)) {
-		const struct ether_packet *eth = (struct ether_packet*) s_p;
+		const struct ether_header *eth = (struct ether_header *) s_p;
 
 		if (eth->type == __builtin_bswap16(ETHER_TYPE_IPv4)) {
 			ip_handle((struct t_ip4*) s_p);

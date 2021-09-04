@@ -2,7 +2,7 @@
  * @file ip.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,8 @@ extern void igmp_set_ip(const struct ip_info  *);
 extern void igmp_handle(struct t_igmp *);
 extern void igmp_shutdown(void);
 
+extern void tcp_handle(struct t_tcp *);
+
 extern void icmp_handle(struct t_icmp *);
 extern void icmp_shutdown(void);
 
@@ -61,7 +63,7 @@ void __attribute__((cold)) ip_shutdown(void) {
 	udp_shutdown();
 }
 
-__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
+__attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4, __attribute__((unused)) int length) {
 	if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
 		if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
 			igmp_handle((struct t_igmp *) p_ip4);
@@ -91,6 +93,9 @@ __attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 		break;
 	case IPv4_PROTO_ICMP:
 		icmp_handle((struct t_icmp *) p_ip4);
+		break;
+	case IPv4_PROTO_TCP:
+		tcp_handle((struct t_tcp *) p_ip4);
 		break;
 	default:
 		DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);
