@@ -32,10 +32,10 @@ class E131Dmx {
 public:
 	virtual ~E131Dmx() {}
 
-	virtual void Start(uint8_t nPortIndex)=0;
-	virtual void Stop(uint8_t nPortIndex)=0;
+	virtual void Start(uint32_t nPortIndex)=0;
+	virtual void Stop(uint32_t nPortIndex)=0;
 
-	virtual const uint8_t* Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond)=0;
+	virtual const uint8_t* Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond)=0;
 };
 
 #endif /* E131DMX_H_ */

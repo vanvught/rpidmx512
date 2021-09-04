@@ -36,7 +36,7 @@
 
 using namespace artnet;
 
-void ArtNetNode::MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void ArtNetNode::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
 
 	if (!m_State.IsMergeMode) {
@@ -59,7 +59,7 @@ void ArtNetNode::MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t
 	memcpy(m_OutputPorts[nPortIndex].data, pData, nLength);
 }
 
-void ArtNetNode::CheckMergeTimeouts(uint8_t nPortIndex) {
+void ArtNetNode::CheckMergeTimeouts(uint32_t nPortIndex) {
 	const uint32_t nTimeOutAMillis = m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA;
 
 	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
@@ -95,7 +95,7 @@ void ArtNetNode::HandleDmx() {
 	auto nDmxSlots = static_cast<uint16_t>( ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
 	nDmxSlots = std::min(nDmxSlots, ArtNet::DMX_LENGTH);
 
-	for (uint8_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * m_nPages); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * m_nPages); nPortIndex++) {
 
 		if (m_OutputPorts[nPortIndex].bIsEnabled && (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) && (pArtDmx->PortAddress == m_OutputPorts[nPortIndex].port.nPortAddress)) {
 

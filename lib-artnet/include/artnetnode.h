@@ -152,7 +152,7 @@ struct TInputPort {
 
 class ArtNetNode {
 public:
-	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
+	ArtNetNode(uint8_t nPages = 1);
 	~ArtNetNode() {
 		Stop();
 	}
@@ -162,8 +162,8 @@ public:
 
 	void Run();
 
-	uint8_t GetVersion() {
-		return m_nVersion;
+	uint8_t GetVersion() const {
+		return ArtNet::VERSION;
 	}
 
 	uint8_t GetPages() const {
@@ -195,10 +195,10 @@ public:
 		return m_Node.LongName;
 	}
 
-	int SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
+	int SetUniverse(uint32_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
 
-	int SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
+	int SetUniverseSwitch(uint32_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
+	bool GetUniverseSwitch(uint32_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
 
 	void SetNetSwitch(uint8_t nAddress, uint32_t nPage);
 	uint8_t GetNetSwitch(uint32_t nPage) const;
@@ -206,13 +206,13 @@ public:
 	void SetSubnetSwitch(uint8_t nAddress, uint32_t nPage);
 	uint8_t GetSubnetSwitch(uint32_t nPage) const;
 
-	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
+	bool GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, artnet::Merge tMergeMode);
-	artnet::Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, artnet::Merge tMergeMode);
+	artnet::Merge GetMergeMode(uint32_t nPortIndex) const;
 
-	void SetPortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol);
-	artnet::PortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+	void SetPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol);
+	artnet::PortProtocol GetPortProtocol(uint32_t nPortIndex) const;
 
 	void SetOemValue(const uint8_t *);
 	const uint8_t *GetOemValue() const {
@@ -262,8 +262,8 @@ public:
 		return m_pArtNetDmx;
 	}
 
-	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
+	void SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp);
+	uint32_t GetDestinationIp(uint32_t nPortIndex) const {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}
@@ -304,16 +304,15 @@ private:
 
 	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void CheckMergeTimeouts(uint8_t nPortIndex);
+	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void CheckMergeTimeouts(uint32_t nPortIndex);
 
 	void SendPollRelply(bool);
-	void SendTod(uint8_t nPortIndex = 0);
+	void SendTod(uint32_t nPortIndex = 0);
 
 	void SetNetworkDataLossCondition();
 
 private:
-	uint8_t m_nVersion;
 	uint8_t m_nPages;
 	int32_t m_nHandle { -1 };
 

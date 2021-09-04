@@ -43,7 +43,7 @@
 using namespace artnet;
 
 void ArtNetNode::Print() {
-	printf("Node %d\n", m_nVersion);
+	printf("Node %d\n", ArtNet::VERSION);
 	printf(" Firmware   : %d.%d\n", ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
@@ -62,7 +62,7 @@ void ArtNetNode::Print() {
 				GetPortAddress(nPortIndex, nUniverse, PortDir::OUTPUT);
 
 				printf("  Port %2d %d:[%-2d:%-2d:%-2d]:%4u [%s]", nPortIndex, nPage, nNet, nSubSwitch, nAddress, nUniverse, ArtNet::GetMergeMode(m_OutputPorts[nPortIndex].mergeMode, true));
-				if (m_nVersion == 4) {
+				if (ArtNet::VERSION == 4) {
 					printf(" {%s}\n", ArtNet::GetProtocolMode(m_OutputPorts[nPortIndex].tPortProtocol, true));
 				} else {
 					printf("\n");

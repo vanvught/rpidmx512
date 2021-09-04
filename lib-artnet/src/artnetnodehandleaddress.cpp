@@ -40,7 +40,7 @@
 
 using namespace artnet;
 
-int ArtNetNode::SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nUniverse) {
+int ArtNetNode::SetUniverse(uint32_t nPortIndex, artnet::PortDir dir, uint16_t nUniverse) {
 	const auto nPage = nPortIndex / ArtNet::PORTS;
 
 	// PortAddress Bit 15 = 0
@@ -54,7 +54,7 @@ int ArtNetNode::SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nU
 	return SetUniverseSwitch(nPortIndex, dir, nUniverse & 0x0F);
 }
 
-int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress) {
+int ArtNetNode::SetUniverseSwitch(uint32_t nPortIndex, artnet::PortDir dir, uint8_t nAddress) {
 	assert(nPortIndex < (ArtNet::PORTS * m_nPages));
 	assert(dir <= PortDir::DISABLE);
 
@@ -131,7 +131,7 @@ int ArtNetNode::SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8
 	return ARTNET_EOK;
 }
 
-bool ArtNetNode::GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress, artnet::PortDir dir) const {
+bool ArtNetNode::GetUniverseSwitch(uint32_t nPortIndex, uint8_t &nAddress, artnet::PortDir dir) const {
 	if (dir == PortDir::INPUT) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 
@@ -206,8 +206,8 @@ uint16_t ArtNetNode::MakePortAddress(uint16_t nCurrentAddress, uint32_t nPage) {
 	return newAddress;
 }
 
-void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, PortProtocol tPortProtocol) {
-	if (m_nVersion > 3) {
+void ArtNetNode::SetPortProtocol(uint32_t nPortIndex, PortProtocol tPortProtocol) {
+	if (ArtNet::VERSION > 3) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 
 		m_OutputPorts[nPortIndex].tPortProtocol = tPortProtocol;
@@ -231,13 +231,13 @@ void ArtNetNode::SetPortProtocol(uint8_t nPortIndex, PortProtocol tPortProtocol)
 	}
 }
 
-PortProtocol ArtNetNode::GetPortProtocol(uint8_t nPortIndex) const {
+PortProtocol ArtNetNode::GetPortProtocol(uint32_t nPortIndex) const {
 	assert(nPortIndex < (artnetnode::MAX_PORTS));
 
 	return m_OutputPorts[nPortIndex].tPortProtocol;
 }
 
-void ArtNetNode::SetMergeMode(uint8_t nPortIndex, Merge tMergeMode) {
+void ArtNetNode::SetMergeMode(uint32_t nPortIndex, Merge tMergeMode) {
 	assert(nPortIndex < (ArtNet::PORTS * ArtNet::PAGES));
 
 	m_OutputPorts[nPortIndex].mergeMode = tMergeMode;
@@ -260,7 +260,7 @@ void ArtNetNode::SetMergeMode(uint8_t nPortIndex, Merge tMergeMode) {
 	}
 }
 
-Merge ArtNetNode::GetMergeMode(uint8_t nPortIndex) const {
+Merge ArtNetNode::GetMergeMode(uint32_t nPortIndex) const {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	return m_OutputPorts[nPortIndex].mergeMode;

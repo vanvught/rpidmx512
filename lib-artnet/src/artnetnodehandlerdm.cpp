@@ -83,7 +83,7 @@ void ArtNetNode::HandleTodRequest() {
 	DEBUG_EXIT
 }
 
-void ArtNetNode::SendTod(uint8_t nPortIndex) {
+void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 

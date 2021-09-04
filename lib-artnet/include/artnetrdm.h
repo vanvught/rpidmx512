@@ -35,11 +35,11 @@ class ArtNetRdm {
 public:
 	virtual ~ArtNetRdm() {}
 
-	virtual void Full(uint8_t nPortIndex)=0;
-	virtual uint8_t GetUidCount(uint8_t nPortIndex)=0;
-	virtual void Copy(uint8_t nPortIndex, uint8_t *)=0;
+	virtual void Full(uint32_t nPortIndex)=0;
+	virtual uint8_t GetUidCount(uint32_t nPortIndex)=0;
+	virtual void Copy(uint32_t nPortIndex, uint8_t *)=0;
 
-	virtual const uint8_t *Handler(uint8_t nPortIndex, const uint8_t *)=0;
+	virtual const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *)=0;
 };
 
 #endif /* ARTNETRDM_H_ */

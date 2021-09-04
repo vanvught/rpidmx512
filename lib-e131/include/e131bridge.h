@@ -101,11 +101,11 @@ public:
 		m_pLightSet = pLightSet;
 	}
 
-	void SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
-	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
+	void SetUniverse(uint32_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
+	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, e131::Merge tE131Merge);
-	e131::Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, e131::Merge tE131Merge);
+	e131::Merge GetMergeMode(uint32_t nPortIndex) const;
 
 	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
@@ -115,8 +115,8 @@ public:
 		return m_State.nActiveInputPorts;
 	}
 
-	bool IsTransmitting(uint8_t nPortIndex) const;
-	bool IsMerging(uint8_t nPortIndex) const;
+	bool IsTransmitting(uint32_t nPortIndex) const;
+	bool IsMerging(uint32_t nPortIndex) const;
 	bool IsStatusChanged();
 
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
@@ -164,19 +164,19 @@ public:
 		return m_SourceName;
 	}
 
-	void SetPriority(uint8_t nPriority, uint8_t nPortIndex = 0) {
+	void SetPriority(uint8_t nPriority, uint32_t nPortIndex = 0) {
 		assert(nPortIndex < E131::PORTS);
 		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
 			m_InputPort[nPortIndex].nPriority = nPriority;
 		}
 	}
 
-	uint8_t GetPriority(uint8_t nPortIndex = 0) const {
+	uint8_t GetPriority(uint32_t nPortIndex = 0) const {
 		assert(nPortIndex < E131::PORTS);
 		return m_InputPort[nPortIndex].nPriority;
 	}
 
-	void Clear(uint8_t nPortIndex);
+	void Clear(uint32_t nPortIndex);
 
 	void Start();
 	void Stop();
@@ -197,17 +197,17 @@ private:
 
 	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
 
-	void CheckMergeTimeouts(uint8_t nPortIndex);
-	bool IsPriorityTimeOut(uint8_t nPortIndex);
+	void CheckMergeTimeouts(uint32_t nPortIndex);
+	bool IsPriorityTimeOut(uint32_t nPortIndex);
 	bool isIpCidMatch(const struct e131bridge::Source *);
 
-	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();
 
 	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
-	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
+	void LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse);
 
 	// Input
 	void HandleDmxIn();

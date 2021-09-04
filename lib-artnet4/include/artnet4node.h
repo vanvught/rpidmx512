@@ -31,6 +31,10 @@
 
 #include <cstdint>
 
+#if !defined(ARTNET_VERSION)
+# define ARTNET_VERSION	4
+#endif
+
 #include "artnetnode.h"
 #include "artnet4handler.h"
 #include "e131bridge.h"
@@ -39,10 +43,10 @@ class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
 
-	void SetPort(uint8_t nPortIndex, artnet::PortDir dir) override;
+	void SetPort(uint32_t nPortIndex, artnet::PortDir dir) override;
 
 	void HandleAddress(uint8_t nCommand) override;
-	uint8_t GetStatus(uint8_t nPortIndex) override;
+	uint8_t GetStatus(uint32_t nPortIndex) override;
 
 	bool IsStatusChanged() override {
 		return m_Bridge.IsStatusChanged();

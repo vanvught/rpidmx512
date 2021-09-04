@@ -34,7 +34,7 @@
 
 using namespace artnet;
 
-bool ArtNetNode::GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
+bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if (dir == PortDir::INPUT) {

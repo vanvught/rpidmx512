@@ -80,7 +80,7 @@ void ArtNetNode::FillPollReply() {
 
 	memcpy(m_PollReply.MAC, m_Node.MACAddressLocal, sizeof m_PollReply.MAC);
 
-	if (m_nVersion > 3) {
+	if (ArtNet::VERSION > 3) {
 		memcpy(m_PollReply.BindIp, ip.u8, sizeof m_PollReply.BindIp);
 	}
 
