@@ -100,20 +100,6 @@ struct LTRDMCommandPDUPacket {
 	struct TRDMCommandPDU RDMCommandPDU;
 }PACKED;
 
-union ULLRPPacket {
-	struct TLLRPCommonPacket Common;
-	struct TProbeRequestPDUPacket Request;
-	struct TTProbeReplyPDUPacket Reply;
-	struct LTRDMCommandPDUPacket Command;
-};
-
-struct TLLRP {
-	int nLength;
-	uint32_t nIPAddressFrom;
-	uint32_t nIPAddressTo;
-	union ULLRPPacket LLRPPacket;
-};
-
 #define LLRP_ROOT_LAYER_SIZE		sizeof(struct TRootLayerPDU)
 #define LLRP_PDU_SIZE				sizeof(struct TLlrpPDU)
 #define RDM_COMMAND_PDU_SIZE		sizeof(struct TRDMCommandPDU)

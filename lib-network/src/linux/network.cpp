@@ -250,6 +250,7 @@ int32_t Network::Begin(uint16_t nPort) {
 
 	snHandles[i] = nSocket;
 
+	DEBUG_EXIT
 	return nSocket;
 }
 

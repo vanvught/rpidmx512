@@ -2,7 +2,7 @@
  * @file dummy_device.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <stdlib.h>
 
 #include "hardware.h"
-#include "networklinux.h"
+#include "network.h"
 #include "ledblink.h"
 
 #include "firmwareversion.h"
@@ -45,7 +45,7 @@
 
 int main(int argc, char **argv) {
 	Hardware hw;
-	NetworkLinux nw;
+	Network nw;
 	LedBlink lb;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 

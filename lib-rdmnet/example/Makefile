@@ -26,7 +26,7 @@ LIBSDEP=$(addsuffix /lib_linux/lib, $(LIBDEP))
 LIBSDEP:=$(join $(LIBSDEP), $(LIBS))
 LIBSDEP:=$(addsuffix .a, $(LIBSDEP))
 
-COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 #-DNDEBUG
+COPS=$(DEFINES) $(LIBINCDIRS) -Wall -Werror -O2 -fno-rtti -std=c++11 -DNDEBUG
 COPS+=-fstack-usage
 OBJECTS=$(foreach sdir,$(SOURCE),$(patsubst $(sdir)/%.cpp,$(BUILD)%.o,$(wildcard $(sdir)/*.cpp)))
 BUILD_DIRS=build_linux
