@@ -52,6 +52,7 @@ uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize) {
 }
 
 uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	if (!Display::Get()) return 0;
 	const bool isOn = !(Display::Get()->isSleep());
 	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"display\":%s}", isOn ? "true" : "false"));
 	return nLength;
