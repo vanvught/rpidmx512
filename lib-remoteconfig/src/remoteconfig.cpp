@@ -144,6 +144,7 @@
 #endif
 
 #if defined (OUTPUT_DMX_MONITOR)
+/* mon.txt */
 # include "dmxmonitorparams.h"
 # include "storemonitor.h"
 #endif
@@ -416,25 +417,12 @@ void RemoteConfig::Run() {
 		}
 
 		Network::Get()->SendTo(m_nHandle, "?#ERROR#\n", 9, m_nIPAddressFrom, udp::PORT);
-
 		return;
 	}
 
 	if (!m_bDisableWrite) {
-		if (!PropertiesConfig::IsJSON() && (s_pUdpBuffer[0] == '#')) {
+		if (s_pUdpBuffer[0] == '#') {
 			DEBUG_PUTS("#");
-			m_tHandleMode = HandleMode::TXT;
-			HandleTxtFile();
-			return;
-		} else if (PropertiesConfig::IsJSON() && (s_pUdpBuffer[0] == '{')) {
-			DEBUG_PUTS("JSON");
-			int c;
-			if ((c = properties::convert_json_file(s_pUdpBuffer, udp::BUFFER_SIZE - 1)) <= 0) {
-				DEBUG_EXIT
-				return;
-			}
-			debug_dump(s_pUdpBuffer, c);
-			m_nBytesReceived = static_cast<uint16_t>(c);
 			m_tHandleMode = HandleMode::TXT;
 			HandleTxtFile();
 			return;
@@ -474,14 +462,7 @@ void RemoteConfig::HandleUptime() {
 	const auto nUptime = Hardware::Get()->GetUpTime();
 
 	if (m_nBytesReceived == udp::cmd::get::length::UPTIME) {
-		int nLength;
-
-		if (!PropertiesConfig::IsJSON()) {
-			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "uptime: %us\n", nUptime);
-		} else {
-			nLength = json_get_uptime(s_pUdpBuffer, udp::BUFFER_SIZE - 1);
-		}
-
+		const auto nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "uptime: %us\n", nUptime);
 		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
 	}
 #if !defined(DISABLE_BIN)
@@ -499,15 +480,8 @@ void RemoteConfig::HandleVersion() {
 	DEBUG_ENTRY
 
 	if (m_nBytesReceived == udp::cmd::get::length::VERSION) {
-		int nLength;
-
-		if (!PropertiesConfig::IsJSON()) {
-			const auto *p = FirmwareVersion::Get()->GetPrint();
-			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "version:%s", p);
-		} else {
-			nLength = json_get_version(s_pUdpBuffer, udp::BUFFER_SIZE - 1);
-		}
-
+		const auto *p = FirmwareVersion::Get()->GetPrint();
+		const auto nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "version:%s", p);
 		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
 	}
 #if !defined(DISABLE_BIN)
@@ -529,40 +503,18 @@ void RemoteConfig::HandleList() {
 	constexpr auto nListResponseBufferLength = udp::BUFFER_SIZE - (udp::cmd::get::length::LIST + 1);
 
 	if (s_RemoteConfigListBin.aDisplayName[0] != '\0') {
-		if (!PropertiesConfig::IsJSON()) {
-			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
-					"" IPSTR ",%s,%s,%d,%s\n",
-					IP2STR(Network::Get()->GetIp()),
-					s_Node[static_cast<uint32_t>(m_tNode)],
-					s_Output[static_cast<uint32_t>(m_tOutput)],
-					m_nOutputs,
-					s_RemoteConfigListBin.aDisplayName);
-		} else {
-			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
-							"{\"list\"{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\"{\"type\":\"%s\",\"port\"{\"type\":\"%s\",\"count\":%d}}}}",
-							IP2STR(Network::Get()->GetIp()),
-							s_RemoteConfigListBin.aDisplayName,
-							s_Node[static_cast<uint32_t>(m_tNode)],
-							s_Output[static_cast<uint32_t>(m_tOutput)],
-							m_nOutputs);
-		}
+		m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%d,%s\n",
+				IP2STR(Network::Get()->GetIp()),
+				s_Node[static_cast<uint32_t>(m_tNode)],
+				s_Output[static_cast<uint32_t>(m_tOutput)],
+				m_nOutputs,
+				s_RemoteConfigListBin.aDisplayName);
 	} else {
-		if (!PropertiesConfig::IsJSON()) {
-			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
-					"" IPSTR ",%s,%s,%d\n",
-					IP2STR(Network::Get()->GetIp()),
-					s_Node[static_cast<uint32_t>(m_tNode)],
-					s_Output[static_cast<uint32_t>(m_tOutput)],
-					m_nOutputs);
-		} else {
-			m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1,
-							"{\"list\"{\"ip\":\"" IPSTR "\",\"node\"{\"type\":\"%s\",\"port\"{\"type\":\"%s\",\"count\":%d}}}}",
-							IP2STR(Network::Get()->GetIp()),
-							s_Node[static_cast<uint32_t>(m_tNode)],
-							s_Output[static_cast<uint32_t>(m_tOutput)],
-							m_nOutputs);
-		}
-
+		m_nIdLength = snprintf(pListResponse, nListResponseBufferLength - 1, "" IPSTR ",%s,%s,%d\n",
+				IP2STR(Network::Get()->GetIp()),
+				s_Node[static_cast<uint32_t>(m_tNode)],
+				s_Output[static_cast<uint32_t>(m_tOutput)],
+				m_nOutputs);
 	}
 
 	if (m_nBytesReceived == udp::cmd::get::length::LIST) {
@@ -610,14 +562,7 @@ void RemoteConfig::HandleDisplayGet() {
 	const bool isOn = !(Display::Get()->isSleep());
 
 	if (m_nBytesReceived == udp::cmd::get::length::DISPLAY) {
-		int nLength;
-
-		if (!PropertiesConfig::IsJSON()) {
-			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "display:%s\n", isOn ? "On" : "Off");
-		} else {
-			nLength = json_get_display(s_pUdpBuffer, udp::BUFFER_SIZE - 1);
-		}
-
+		const auto nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "display:%s\n", isOn ? "On" : "Off");
 		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
 	}
 #if !defined(DISABLE_BIN)
@@ -636,7 +581,6 @@ void RemoteConfig::HandleStoreGet() {
 	DEBUG_ENTRY
 
 	uint32_t nLength = udp::BUFFER_SIZE - udp::cmd::get::length::STORE;
-
 	const auto nIndex = GetIndex(&s_pUdpBuffer[udp::cmd::get::length::STORE], nLength);
 
 	if (nIndex != TxtFile::LAST) {
@@ -1861,14 +1805,7 @@ void RemoteConfig::HandleTftpGet() {
 	DEBUG_ENTRY
 
 	if (m_nBytesReceived == udp::cmd::get::length::TFTP) {
-		int nLength;
-
-		if (!PropertiesConfig::IsJSON()) {
-			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
-		} else {
-			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "{\"tftp\":%s}", m_bEnableTFTP ? "true" : "false");
-		}
-
+		const auto nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "tftp:%s\n", m_bEnableTFTP ? "On" : "Off");
 		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
 	}
 #if !defined(DISABLE_BIN)

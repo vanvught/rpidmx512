@@ -71,4 +71,62 @@ uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	return nLength;
 }
 
+//TODO Duplicate files name definition -> remoteconfigstatic.cpp Line 37
+
+uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+			"{\"files\":["""
+#if defined (NODE_ARTNET)
+			"{\"file\":\"artnet.txt\"},"
+#endif
+#if defined (NODE_E131)
+			"{\"file\":\"e131.txt\"},"
+#endif
+#if defined (NODE_OSC_CLIENT)
+			"{\"file\":\"oscclnt.txt\"},"
+#endif
+#if defined (NODE_OSC_SERVER)
+			"{\"file\":\"osc.txt\"},"
+#endif
+#if defined (NODE_LTC_SMPTE)
+			"{\"file\":\"ltc.txt\"},"
+			"{\"file\":\"ldisplay.txt\"},"
+			"{\"file\":\"tcnet.txt\"},"
+			"{\"file\":\"gps.txt\"},"
+#endif
+#if defined(NODE_SHOWFILE)
+			"{\"file\":\"show.txt\"},"
+#endif
+#if defined(NODE_DDP_DISPLAY)
+			"{\"file\":\"ddpdisp.txt\"},"
+#endif
+#if defined (OUTPUT_DMX_SEND)
+			"{\"file\":\"params.txt\"},"
+#endif
+#if defined (OUTPUT_DMX_PIXEL)
+			"{\"file\":\"devices.txt\"},"
+#endif
+#if defined (OUTPUT_DMX_MONITOR)
+			"{\"file\":\"mon.txt\"},"
+#endif
+#if defined (OUTPUT_DMX_SERIAL)
+			"{\"file\":\"serial.txt\"},"
+#endif
+#if defined (OUTPUT_RGB_PANEL)
+			"{\"file\":\"rgbpanel.txt\"},"
+#endif
+#if defined (RDM_RESPONDER)
+			"{\"file\":\"sensors.txt\"},"
+			"{\"file\":\"subdev.txt\"},"
+#endif
+#if defined(DISPLAY_UDF)
+			"{\"file\":\"display.txt\"},"
+#endif
+			"{\"file\":\"network.txt\"},"
+			"{\"file\":\"rconfig.txt\"}"
+			"]};"
+			));
+	return nLength;
+}
+
 }
