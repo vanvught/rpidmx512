@@ -203,6 +203,7 @@ static constexpr char GET[] = "?get#";
 static constexpr char UPTIME[] = "?uptime#";
 static constexpr char VERSION[] = "?version#";
 static constexpr char DISPLAY[] = "?display#";
+static constexpr char DIRECTORY[] = "?dir#";
 #if !defined(DISABLE_BIN)
 static constexpr char STORE[] = "?store#";
 #endif
@@ -217,6 +218,7 @@ static constexpr auto GET = sizeof(cmd::get::GET) - 1;
 static constexpr auto UPTIME = sizeof(cmd::get::UPTIME) - 1;
 static constexpr auto VERSION = sizeof(cmd::get::VERSION) - 1;
 static constexpr auto DISPLAY = sizeof(cmd::get::DISPLAY) - 1;
+static constexpr auto DIRECTORY = sizeof(cmd::get::DIRECTORY) - 1;
 #if !defined(DISABLE_BIN)
 static constexpr auto STORE = sizeof(cmd::get::STORE) - 1;
 #endif
@@ -404,6 +406,12 @@ void RemoteConfig::Run() {
 			HandleDisplayGet();
 			return;
 		}
+		
+		if ((m_nBytesReceived == udp::cmd::get::length::DIRECTORY) && (memcmp(s_pUdpBuffer, udp::cmd::get::DIRECTORY, udp::cmd::get::length::DIRECTORY) == 0)) {
+			HandleDirectoryGet();
+			return;
+		}
+		
 #if !defined(DISABLE_TFTP)
 		if ((m_nBytesReceived == udp::cmd::get::length::TFTP) && (memcmp(s_pUdpBuffer, udp::cmd::get::TFTP, udp::cmd::get::length::TFTP) == 0)) {
 			HandleTftpGet();
@@ -630,6 +638,33 @@ void RemoteConfig::HandleDisplayGet() {
 
 	DEBUG_EXIT
 }
+
+
+void RemoteConfig::HandleDirectoryGet() {
+	DEBUG_ENTRY
+
+	if (m_nBytesReceived == udp::cmd::get::length::DIRECTORY) {
+		int nLength;
+
+		if (!PropertiesConfig::IsJSON()) {
+			nLength = snprintf(s_pUdpBuffer, udp::BUFFER_SIZE - 1, "directory:%s\n", FIRMWARE_DIRECTORY);
+		} else {
+			nLength = json_get_directory(s_pUdpBuffer, udp::BUFFER_SIZE - 1);
+		}
+
+		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, udp::PORT);
+	}
+#if !defined(DISABLE_BIN)
+	else if (m_nBytesReceived == udp::cmd::get::length::DIRECTORY + 3) {
+		if (memcmp(&s_pUdpBuffer[udp::cmd::get::length::DIRECTORY], "bin", 3) == 0) {
+			Network::Get()->SendTo(m_nHandle, &FIRMWARE_DIRECTORY, sizeof(FIRMWARE_DIRECTORY) , m_nIPAddressFrom, udp::PORT);
+		}
+	}
+#endif
+
+	DEBUG_EXIT
+}
+
 
 #if !defined(DISABLE_BIN)
 void RemoteConfig::HandleStoreGet() {

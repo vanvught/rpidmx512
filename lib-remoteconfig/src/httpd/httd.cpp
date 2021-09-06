@@ -303,7 +303,10 @@ Status HttpDaemon::HandleGet() {
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
 		} else if (strncmp(pGet, "display", 7) == 0) {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
-		} else {
+		} else if (strncmp(pGet, "directory", 9) == 0) {
+			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
+		}
+		 else {
 			return HandleGetJSON();
 		}
 	}

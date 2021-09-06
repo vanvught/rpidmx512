@@ -72,4 +72,10 @@ uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	return nLength;
 }
 
+uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {	
+	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "%s", FIRMWARE_DIRECTORY));
+	return nLength;
+}
+
+
 }

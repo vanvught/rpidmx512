@@ -33,6 +33,7 @@ uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize);
+uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize);
 }  // namespace remoteconfig
 
 #endif /* REMOTECONFIGJSON_H_ */

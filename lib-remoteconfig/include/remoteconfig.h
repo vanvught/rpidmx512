@@ -55,6 +55,10 @@
 #endif
 
 namespace remoteconfig {
+
+// should go in firmware specific place or a default that indivdual firmwares overrive?
+static constexpr char FIRMWARE_DIRECTORY[] = "{\"directory\": {\"network.txt\": \"Network\",\"e131.txt\": \"sACN (E1.31)\",\"rconfig.txt\": \"Remote Settings\",\"version\": \"Node Version\",\"uptime\": \"Node Uptime\" }}";
+
 namespace udp {
 static constexpr auto BUFFER_SIZE = 1024;
 } // namespace udp
@@ -216,6 +220,7 @@ private:
 	void HandleGetRconfigTxt(uint32_t& nSize);
 	void HandleGetNetworkTxt(uint32_t& nSize);
 
+	void HandleDirectoryGet();
 #if defined (NODE_ARTNET)
 	void HandleGetArtnetTxt(uint32_t& nSize);
 #endif
