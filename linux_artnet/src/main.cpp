@@ -62,12 +62,15 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "display.h"
+
 using namespace artnet;
 
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
+	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {

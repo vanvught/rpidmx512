@@ -100,13 +100,14 @@ private:
 	TOledPanel m_OledPanel { OLED_PANEL_128x64_8ROWS };
 	bool m_bHaveSH1106 { false };
 	uint32_t m_nPages;
+#if defined(ENABLE_CURSOR_MODE)
 	uint32_t m_tCursorMode { display::cursor::OFF };
 	char *m_pShadowRam { nullptr };
 	uint16_t m_nShadowRamIndex { 0 };
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;
-
+#endif
 	static Ssd1306 *s_pThis;
 };
 

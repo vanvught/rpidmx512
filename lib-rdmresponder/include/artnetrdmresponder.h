@@ -42,10 +42,10 @@ public:
 	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 	~ArtNetRdmResponder() override;
 
-	void Full(uint8_t nPortIndex) override;
-	uint8_t GetUidCount(uint8_t nPortIndex) override;
-	void Copy(uint8_t nPortIndex, uint8_t *) override;
-	const uint8_t *Handler(uint8_t nPortIndex, const uint8_t *) override;
+	void Full(uint32_t nPortIndex) override;
+	uint8_t GetUidCount(uint32_t nPortIndex) override;
+	void Copy(uint32_t nPortIndex, uint8_t *) override;
+	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
 
 private:
 	struct TRdmMessage *m_pRdmCommand;

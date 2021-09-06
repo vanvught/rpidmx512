@@ -50,7 +50,8 @@
 int32_t LLRPDevice::m_nHandleLLRP { -1 };
 uint32_t LLRPDevice::m_nIpAddresLLRPRequest;
 uint32_t LLRPDevice::m_nIpAddressLLRPResponse;
-TLLRP LLRPDevice::m_tLLRP;
+uint32_t LLRPDevice::s_nIpAddressFrom;
+uint8_t *LLRPDevice::m_pLLRP;
 
 LLRPDevice::LLRPDevice() {
 	DEBUG_ENTRY
@@ -63,12 +64,11 @@ LLRPDevice::LLRPDevice() {
 	static_cast<void>(inet_aton(LLRP_MULTICAST_IPV4_ADDRESS_RESPONSE, &addr));
 	m_nIpAddressLLRPResponse = addr.s_addr;
 
-	DEBUG_PRINTF("sizeof(m_tLLRP.LLRPPacket)=%ld", sizeof(m_tLLRP.LLRPPacket));
 	DEBUG_EXIT
 }
 
 void LLRPDevice::HandleRequestMessage() {
-	auto *pReply = &(m_tLLRP.LLRPPacket.Reply);
+	auto *pReply = reinterpret_cast<struct TTProbeReplyPDUPacket *>(m_pLLRP);
 
 	uint8_t DestinationCid[16];
 	memcpy(DestinationCid, pReply->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
@@ -102,7 +102,7 @@ void LLRPDevice::HandleRequestMessage() {
 void LLRPDevice::HandleRdmCommand() {
 	DEBUG_ENTRY
 
-	auto *pRDMCommand = &(m_tLLRP.LLRPPacket.Command);
+	auto *pRDMCommand = reinterpret_cast<struct LTRDMCommandPDUPacket *>(m_pLLRP);
 
 #ifdef SHOW_RDM_MESSAGE
 	const uint8_t *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData)	;
@@ -149,21 +149,20 @@ void LLRPDevice::HandleRdmCommand() {
 }
 
 void LLRPDevice::Run() {
-	auto *pPacket = reinterpret_cast<uint8_t *>(&(m_tLLRP.LLRPPacket));
 	uint16_t nForeignPort;
 
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandleLLRP, pPacket, sizeof(m_tLLRP.LLRPPacket), &m_tLLRP.nIPAddressFrom, &nForeignPort) ;
+	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&m_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
 
 	if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
 		return;
 	}
 
 #ifndef NDEBUG
-	debug_dump(pPacket, nBytesReceived);
+	debug_dump(m_pLLRP, nBytesReceived);
 	DumpCommon();
 #endif
 
-	const auto *pCommon = &(m_tLLRP.LLRPPacket.Common);
+	const auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(m_pLLRP);
 
 	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
 	case VECTOR_LLRP_PROBE_REQUEST:

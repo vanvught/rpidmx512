@@ -37,7 +37,7 @@ using namespace dmx;
 
 uint8_t DmxInput::s_nStarted;
 
-static constexpr bool is_started(const uint8_t v, const uint8_t p) {
+static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 	return (v & (1U << p)) == (1U << p);
 }
 
@@ -51,7 +51,7 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(uint8_t nPortIndex) {
+void DmxInput::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -70,7 +70,7 @@ void DmxInput::Start(uint8_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(uint8_t nPortIndex) {
+void DmxInput::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -89,7 +89,7 @@ void DmxInput::Stop(uint8_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
+const uint8_t *DmxInput::Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
 	assert(nPortIndex < CHAR_BIT);
 
 	const auto *pDmx = GetDmxAvailable(nPortIndex);

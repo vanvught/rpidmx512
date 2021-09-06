@@ -97,7 +97,7 @@ void E131Bridge::Start() {
 			FillDiscoveryPacket();
 		}
 
-		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Start(nPortIndex);
 			}
@@ -119,7 +119,7 @@ void E131Bridge::Stop() {
 	}
 
 	if (m_pE131DmxIn != nullptr) {
-		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			if (m_InputPort[nPortIndex].bIsEnabled) {
 				m_pE131DmxIn->Stop(nPortIndex);
 			}
@@ -190,7 +190,7 @@ void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_
 	DEBUG_EXIT
 }
 
-void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
+void E131Bridge::LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%d, nUniverse=%d", nPortIndex, nUniverse);
 
@@ -211,7 +211,7 @@ void E131Bridge::LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_EXIT
 }
 
-void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse) {
+void E131Bridge::SetUniverse(uint32_t nPortIndex, e131::PortDir dir, uint16_t nUniverse) {
 	assert(nPortIndex < E131::PORTS);
 	assert(dir <= PortDir::DISABLE);
 	assert((nUniverse >= universe::DEFAULT) && (nUniverse <=universe::MAX));
@@ -271,7 +271,7 @@ void E131Bridge::SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUn
 	m_OutputPort[nPortIndex].nUniverse = nUniverse;
 }
 
-bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const {
+bool E131Bridge::GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const {
 	if (tDir == PortDir::INPUT) {
 		if (nPortIndex < E131::PORTS) {
 			nUniverse = m_InputPort[nPortIndex].nUniverse;
@@ -289,19 +289,19 @@ bool E131Bridge::GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::Port
 	return m_OutputPort[nPortIndex].bIsEnabled;
 }
 
-void E131Bridge::SetMergeMode(uint8_t nPortIndex, Merge tE131Merge) {
+void E131Bridge::SetMergeMode(uint32_t nPortIndex, Merge tE131Merge) {
 	assert(nPortIndex < E131::PORTS);
 
 	m_OutputPort[nPortIndex].mergeMode = tE131Merge;
 }
 
-Merge E131Bridge::GetMergeMode(uint8_t nPortIndex) const {
+Merge E131Bridge::GetMergeMode(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::PORTS);
 
 	return m_OutputPort[nPortIndex].mergeMode;
 }
 
-void E131Bridge::MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void E131Bridge::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < E131::PORTS);
 	assert(pData != nullptr);
 
@@ -324,7 +324,7 @@ void E131Bridge::MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t
 	memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 }
 
-void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
+void E131Bridge::CheckMergeTimeouts(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::PORTS);
 
 	const auto timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
@@ -355,7 +355,7 @@ void E131Bridge::CheckMergeTimeouts(uint8_t nPortIndex) {
 	}
 }
 
-bool E131Bridge::IsPriorityTimeOut(uint8_t nPortIndex) {
+bool E131Bridge::IsPriorityTimeOut(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::PORTS);
 
 	const auto timeOutA = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.time;
@@ -396,7 +396,7 @@ void E131Bridge::HandleDmx() {
 	const auto *pDmxData = &m_E131.E131Packet.Data.DMPLayer.PropertyValues[1];
 	const auto nDmxSlots = __builtin_bswap16(m_E131.E131Packet.Data.DMPLayer.PropertyValueCount) - 1U;
 
-	for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 		if (!m_OutputPort[nPortIndex].bIsEnabled) {
 			continue;
 		}
@@ -638,12 +638,12 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	DEBUG_EXIT
 }
 
-bool E131Bridge::IsTransmitting(uint8_t nPortIndex) const {
+bool E131Bridge::IsTransmitting(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::PORTS);
 	return m_OutputPort[nPortIndex].IsTransmitting;
 }
 
-bool E131Bridge::IsMerging(uint8_t nPortIndex) const {
+bool E131Bridge::IsMerging(uint32_t nPortIndex) const {
 	assert(nPortIndex < E131::PORTS);
 	return m_OutputPort[nPortIndex].IsMerging;
 }
@@ -657,7 +657,7 @@ bool E131Bridge::IsStatusChanged() {
 	return false;
 }
 
-void E131Bridge::Clear(uint8_t nPortIndex) {
+void E131Bridge::Clear(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::PORTS);
 
 	uint8_t *pDst = m_OutputPort[nPortIndex].data;

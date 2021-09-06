@@ -169,6 +169,11 @@ enum TGoodInput {
 
 
 struct ArtNet {
+#if !defined(ARTNET_VERSION)
+	static constexpr uint8_t VERSION = 4;
+#else
+	static constexpr uint8_t VERSION = ARTNET_VERSION;
+#endif
 	static constexpr uint8_t PROTOCOL_REVISION = 14;
 	static constexpr uint16_t UDP_PORT = 0x1936;
 	static constexpr uint8_t PORTS = 4;

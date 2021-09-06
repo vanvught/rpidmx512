@@ -124,7 +124,7 @@ void ArtNetNode::HandleIpProg() {
 		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(ArtNetStatus2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
-		if (m_nVersion > 3) {
+		if (ArtNet::VERSION > 3) {
 			memcpy(m_PollReply.BindIp, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
 		}
 

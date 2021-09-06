@@ -137,6 +137,7 @@ void HttpDaemon::Run() {
 			break;
 		}
 
+		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
 		m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
 				"<!DOCTYPE html>\n"
 				"<html>\n"
@@ -292,24 +293,22 @@ Status HttpDaemon::HandleGet() {
 		 nLength = get_file_content("index.js", m_Content);
 	} else
 #endif
-	if (memcmp(m_pUri, "/json/", 6) == 0) {
-		return HandleGetJSON();
-	} else if (memcmp(m_pUri, "/get/", 5) == 0) {
+	if (memcmp(m_pUri, "/json/get/", 10) == 0) {
 		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
-		const auto *pGet = &m_pUri[5];
+		const auto *pGet = &m_pUri[10];
 		if (strncmp(pGet, "version", 7) == 0) {
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
-		} else 	if (strncmp(pGet, "uptime", 6) == 0) {
+		} else if (strncmp(pGet, "uptime", 6) == 0) {
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
-		} else 	if (strncmp(pGet, "display", 7) == 0) {
+		} else if (strncmp(pGet, "display", 7) == 0) {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
 		}
-	} else {
-		return Status::NOT_FOUND;
+	} else if (memcmp(m_pUri, "/json/", 6) == 0) {
+		return HandleGetJSON();
 	}
 
 	if (nLength <= 0) {
-		return Status::INTERNAL_SERVER_ERROR;
+		return Status::NOT_FOUND;
 	}
 
 	m_nContentLength = static_cast<uint16_t>(nLength);
@@ -355,7 +354,7 @@ Status HttpDaemon::HandleGetJSON() {
 
 Status HttpDaemon::HandlePost(bool bIsDataOnly) {
 	if (!bIsDataOnly) {
-		if (strcmp(m_pUri, "/submit") != 0) {
+		if (strcmp(m_pUri, "/json") != 0) {
 			return Status::NOT_FOUND;
 		}
 

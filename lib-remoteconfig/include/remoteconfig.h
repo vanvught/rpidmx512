@@ -379,7 +379,7 @@ private:
 #endif
 
 	static struct remoteconfig::ListBin s_RemoteConfigListBin;
-	static char s_UdpBuffer[remoteconfig::udp::BUFFER_SIZE];
+	static char *s_pUdpBuffer;
 
 	static RemoteConfig *s_pThis;
 };

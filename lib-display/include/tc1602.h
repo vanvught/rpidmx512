@@ -61,7 +61,6 @@ private:
 
 private:
 	HAL_I2C m_I2C;
-	bool bFastMode{true};
 };
 
 #endif /* TC1602_H_ */

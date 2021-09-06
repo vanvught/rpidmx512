@@ -32,19 +32,25 @@
 #include "llrppacket.h"
 #include "network.h"
 
+#include "debug.h"
+
 class LLRPDevice {
 public:
 	LLRPDevice();
 	virtual ~LLRPDevice() {}
 
 	void Start() {
+		DEBUG_ENTRY
 		m_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
 		assert(m_nHandleLLRP != -1);
 		Network::Get()->JoinGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
+		DEBUG_EXIT
 	}
 	void Stop() {
+		DEBUG_ENTRY
 		Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
 		Network::Get()->End(LLRP_PORT);
+		DEBUG_EXIT
 	}
 	void Run();
 
@@ -76,7 +82,8 @@ private:
 	static int32_t m_nHandleLLRP;
 	static uint32_t m_nIpAddresLLRPRequest;
 	static uint32_t m_nIpAddressLLRPResponse;
-	static TLLRP m_tLLRP;
+	static uint32_t s_nIpAddressFrom;
+	static uint8_t *m_pLLRP;
 };
 
 #endif /* LLRPDEVICE_H_ */

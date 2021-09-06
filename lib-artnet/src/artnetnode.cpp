@@ -51,10 +51,7 @@ static constexpr auto ARTNET_MIN_HEADER_SIZE = 12;
 
 ArtNetNode *ArtNetNode::s_pThis = nullptr;
 
-ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
-	m_nVersion(nVersion),
-	m_nPages(nPages <= ArtNet::PAGES ? nPages : ArtNet::PAGES)
-{
+ArtNetNode::ArtNetNode(uint8_t nPages) : m_nPages(nPages <= ArtNet::PAGES ? nPages : ArtNet::PAGES) {
 	assert(Hardware::Get() != nullptr);
 	assert(Network::Get() != nullptr);
 	assert(LedBlink::Get() != nullptr);
@@ -67,7 +64,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	m_Node.IPAddressTimeCode = m_Node.IPAddressBroadcast;
 	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
 	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (m_nVersion > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
+	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (ArtNet::VERSION > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
 	m_Node.Status3 = ArtNetStatus3::NETWORKLOSS_OFF_STATE;
 
 	memset(&m_State, 0, sizeof(struct TArtNetNodeState));
@@ -90,7 +87,7 @@ ArtNetNode::ArtNetNode(uint8_t nVersion, uint8_t nPages) :
 	uint8_t nBoardNameLength;
 	const auto *pBoardName = Hardware::Get()->GetBoardName(nBoardNameLength);
 	const auto *pWebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	snprintf(m_aDefaultNodeLongName, ArtNet::LONG_NAME_LENGTH, "%s %s %d %s", pBoardName, artnet::NODE_ID, m_nVersion, pWebsiteUrl);
+	snprintf(m_aDefaultNodeLongName, ArtNet::LONG_NAME_LENGTH, "%s %s %d %s", pBoardName, artnet::NODE_ID, ArtNet::VERSION, pWebsiteUrl);
 	SetLongName(m_aDefaultNodeLongName);
 
 	SetOemValue(ArtNetConst::OEM_ID);
