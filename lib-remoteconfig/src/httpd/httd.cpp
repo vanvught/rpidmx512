@@ -28,7 +28,6 @@
 #endif
 
 #include <cstring>
-#include <cstdio>
 #include <cassert>
 
 #include "httpd/httpd.h"
@@ -293,18 +292,20 @@ Status HttpDaemon::HandleGet() {
 		 nLength = get_file_content("index.js", m_Content);
 	} else
 #endif
-	if (memcmp(m_pUri, "/json/get/", 10) == 0) {
+	if (memcmp(m_pUri, "/json/", 6) == 0) {
 		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
-		const auto *pGet = &m_pUri[10];
-		if (strncmp(pGet, "version", 7) == 0) {
+		const auto *pGet = &m_pUri[6];
+		if (strncmp(pGet, "list", 4) == 0) {
+			nLength = remoteconfig::json_get_list(m_Content, sizeof(m_Content));
+		} else if (strncmp(pGet, "version", 7) == 0) {
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
 		} else if (strncmp(pGet, "uptime", 6) == 0) {
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
 		} else if (strncmp(pGet, "display", 7) == 0) {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
+		} else {
+			return HandleGetJSON();
 		}
-	} else if (memcmp(m_pUri, "/json/", 6) == 0) {
-		return HandleGetJSON();
 	}
 
 	if (nLength <= 0) {
@@ -335,15 +336,14 @@ Status HttpDaemon::HandleGetJSON() {
 
 	PropertiesConfig::EnableJSON(bIsJSON);
 
-	printf("%s:%d => nBytes=%d\n", __func__, __LINE__, nBytes);
+	DEBUG_PRINTF("nBytes=%d", nBytes);
 
 	if (nBytes <= 0) {
-		return Status::INTERNAL_SERVER_ERROR;
+		return Status::BAD_REQUEST;
 	}
 
 	m_nContentLength = static_cast<uint16_t>(nBytes);
 	memcpy(m_Content, reinterpret_cast<void *>(pFileName), nBytes);
-	m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
 
 	return Status::OK;
 }
@@ -368,7 +368,7 @@ Status HttpDaemon::HandlePost(bool bIsDataOnly) {
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceicved);
 	}
 
-	printf("[%s:%d] %d|%.*s|\n", __func__, __LINE__, m_nFileDataLength, m_nFileDataLength, m_pFileData);
+	DEBUG_PRINTF("%d|%.*s|\n", m_nFileDataLength, m_nFileDataLength, m_pFileData);
 
 	const auto bIsJSON = PropertiesConfig::IsJSON();
 
