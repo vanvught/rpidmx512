@@ -273,8 +273,8 @@ RemoteConfig::RemoteConfig(Node tNode, Output tMode, uint32_t nOutputs): m_tNode
 
 	Network::Get()->MacAddressCopyTo(s_RemoteConfigListBin.aMacAddress);
 	s_RemoteConfigListBin.nNode = static_cast<uint8_t>(tNode);
-	s_RemoteConfigListBin.nOutput = static_cast<uint8_t>(tMode);
-	s_RemoteConfigListBin.nActiveUniverses = static_cast<uint8_t>(nOutputs);
+	s_RemoteConfigListBin.nMode = static_cast<uint8_t>(tMode);
+	s_RemoteConfigListBin.nOutputs = static_cast<uint8_t>(nOutputs);
 	s_RemoteConfigListBin.aDisplayName[0] = '\0';
 
 #ifndef NDEBUG
@@ -299,6 +299,14 @@ RemoteConfig::~RemoteConfig() {
 	m_nHandle = -1;
 
 	DEBUG_EXIT
+}
+
+const char *RemoteConfig::GetStringNode() const {
+	return s_Node[s_RemoteConfigListBin.nNode];
+
+}
+const char *RemoteConfig::GetStringMode() const {
+	return s_Output[s_RemoteConfigListBin.nMode];
 }
 
 void RemoteConfig::SetDisable(bool bDisable) {

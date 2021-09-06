@@ -126,8 +126,8 @@ enum class TxtFile {
 struct ListBin {
 	uint8_t aMacAddress[6];
 	uint8_t nNode;
-	uint8_t nOutput;
-	uint8_t nActiveUniverses;
+	uint8_t nMode;
+	uint8_t nOutputs;
 	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 }__attribute__((packed));
 
@@ -137,6 +137,15 @@ class RemoteConfig {
 public:
 	RemoteConfig(remoteconfig::Node tType, remoteconfig::Output tMode, uint32_t nOutputs = 0);
 	~RemoteConfig();
+
+	const char *GetStringNode() const;
+	const char *GetStringMode() const;
+	uint8_t GetOutputs() const {
+		return s_RemoteConfigListBin.nOutputs;
+	}
+	const char *GetDisplayName() const {
+		return s_RemoteConfigListBin.aDisplayName;
+	}
 
 	void SetDisable(bool bDisable = true);
 	bool GetDisable() const {

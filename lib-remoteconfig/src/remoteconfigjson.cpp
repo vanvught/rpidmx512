@@ -29,8 +29,22 @@
 #include "hardware.h"
 #include "display.h"
 #include "firmwareversion.h"
+#include "network.h"
+#include "remoteconfig.h"
 
 namespace remoteconfig {
+
+uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+						"{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"port\":{\"type\":\"%s\",\"count\":%d}}}}",
+						IP2STR(Network::Get()->GetIp()),
+						RemoteConfig::Get()->GetDisplayName(),
+						RemoteConfig::Get()->GetStringNode(),
+						RemoteConfig::Get()->GetStringMode(),
+						RemoteConfig::Get()->GetOutputs()));
+
+	return nLength;
+}
 
 uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const auto *pVersion = FirmwareVersion::Get()->GetVersion();
