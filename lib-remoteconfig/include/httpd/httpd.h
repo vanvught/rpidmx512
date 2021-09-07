@@ -61,13 +61,13 @@ private:
 	http::Status ParseMethod(char *pLine);
 	http::Status ParseHeaderField(char *pLine);
 	http::Status HandleGet();
-	http::Status HandlePost(bool bPostHeaderWithData);
-	http::Status HandleGetJSON();
+	http::Status HandlePost(bool hasDataOnly);
+	http::Status HandleGetTxt();
 
 private:
 	int32_t m_nHandle { -1 };
 	char *m_RequestHeaderResponse { nullptr };
-	int m_nBytesReceicved { 0 };
+	int m_nBytesReceived { 0 };
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
 	char *m_pUri { nullptr };
@@ -75,8 +75,10 @@ private:
 	const char *m_pContentType;
 	uint16_t m_nContentLength { 0 };
 	bool m_bContentTypeJson { false };
+	bool m_IsAction { false };
 	char *m_pFileData { nullptr };
 	uint16_t m_nFileDataLength { 0 };
+	uint16_t m_nRequestContentLength { 0 };
 };
 
 #endif /* HTTPD_H_ */

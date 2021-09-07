@@ -29,7 +29,7 @@ typedef void (*CallbackFunctionPtr)(void *, const char *);
 
 class ReadConfigFile {
 public:
-	ReadConfigFile(CallbackFunctionPtr cb, void *p);
+	ReadConfigFile(CallbackFunctionPtr callBack, void *p);
 	~ReadConfigFile();
 
 #if !defined(DISABLE_FS)
@@ -38,7 +38,7 @@ public:
 	void Read(const char *pBuffer, unsigned nLength);
 
 private:
-    CallbackFunctionPtr m_cb;
+    CallbackFunctionPtr m_pCallBack;
     void *m_p;
 };
 

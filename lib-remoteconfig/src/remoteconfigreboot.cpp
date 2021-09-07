@@ -54,6 +54,7 @@ void RemoteConfig::HandleReboot() {
 	Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
 
 	Hardware::Get()->Reboot();
+	__builtin_unreachable() ;
 
 	DEBUG_EXIT
 }

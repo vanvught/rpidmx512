@@ -1,7 +1,7 @@
 /**
  * @file readconfigfile.cpp
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 
 #include "readconfigfile.h"
 
-ReadConfigFile::ReadConfigFile(CallbackFunctionPtr cb, void *p) {
-	assert(cb != nullptr);
+ReadConfigFile::ReadConfigFile(CallbackFunctionPtr callBack, void *p) {
+	assert(callBack != nullptr);
 	assert(p != nullptr);
 
-    m_cb = cb;
+    m_pCallBack = callBack;
     m_p = p;
 }
 
 ReadConfigFile::~ReadConfigFile() {
-    m_cb = nullptr;
+    m_pCallBack = nullptr;
     m_p = nullptr;
 }
 
@@ -66,7 +66,7 @@ bool ReadConfigFile::Read(const char *pFileName) {
 					q++;
 				}
 
-				m_cb(m_p, buffer);
+				m_pCallBack(m_p, buffer);
 			}
 		}
 
@@ -83,11 +83,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	char *pSrc = new char[nLength + 1];
-	char *pFree = pSrc;
-
-	memcpy(pSrc, pBuffer, nLength);
-	pSrc[nLength] = '\0';
+	auto *pSrc = const_cast<char *>(pBuffer);
 
 	while (nLength != 0) {
 		char *pLine = pSrc;
@@ -103,9 +99,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 		}
 
 		if (*pLine >= 'a') {
-			m_cb(m_p, pLine);
+			m_pCallBack(m_p, pLine);
 		}
 	}
-
-	delete [] pFree;
 }

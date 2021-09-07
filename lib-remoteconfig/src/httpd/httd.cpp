@@ -33,10 +33,13 @@
 #include "httpd/httpd.h"
 #include "remoteconfig.h"
 #include "remoteconfigjson.h"
+#include "properties.h"
+#include "sscan.h"
 #include "propertiesconfig.h"
 
 #include "network.h"
 #include "hardware.h"
+#include "display.h"
 
 #include "debug.h"
 
@@ -76,36 +79,34 @@ void HttpDaemon::Stop() {
 }
 
 void HttpDaemon::Run() {
-	m_nBytesReceicved = Network::Get()->TcpRead(m_nHandle, reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse));
+	m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse));
 
-	if (m_nBytesReceicved <= 0) {
+	if (m_nBytesReceived <= 0) {
 		return;
-	}
-
-	bool bIsDataOnly;
-
-	if ((m_RequestMethod == RequestMethod::POST) && (m_nFileDataLength == 0)) {
-		bIsDataOnly = true;
-	} else {
-		bIsDataOnly = false;
-		m_Status = ParseRequest();
 	}
 
 	const char *pStatusMsg = "OK";
-	m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
 
-	if (m_Status == Status::OK) {
-		if (m_RequestMethod == RequestMethod::GET) {
-			m_Status = HandleGet();
-		} else {
-			assert(m_RequestMethod == RequestMethod::POST);
-			m_Status = HandlePost(bIsDataOnly);
+	DEBUG_PRINTF("m_Status=%u, m_RequestMethod=%d", static_cast<uint32_t>(m_Status), m_RequestMethod);
+	debug_dump(m_RequestHeaderResponse, static_cast<uint16_t>(m_nBytesReceived));
+
+	if (m_Status == Status::UNKNOWN_ERROR) {
+		m_Status = ParseRequest();
+
+		if (m_Status == Status::OK) {
+			if (m_RequestMethod == RequestMethod::GET) {
+				m_Status = HandleGet();
+			} else if (m_RequestMethod == RequestMethod::POST) {
+				m_Status = HandlePost(false);
+
+				if ((m_Status == Status::OK) && (m_nFileDataLength == 0)) {
+					DEBUG_PUTS("There is a POST header only -> no data");
+					return;
+				}
+			}
 		}
-	}
-
-	// There is a POST header only -> no data
-	if ((m_Status == Status::OK) && (m_RequestMethod == RequestMethod::POST) && (m_nFileDataLength == 0)) {
-		return;
+	} else if ((m_Status == Status::OK) && (m_RequestMethod == RequestMethod::POST)) {
+		m_Status = HandlePost(true);
 	}
 
 	if (m_Status != Status::OK) {
@@ -146,7 +147,7 @@ void HttpDaemon::Run() {
 	}
 
 	uint8_t nLength;
-	const int nHeaderLength = snprintf(m_RequestHeaderResponse, BUFSIZE - 1,
+	const int nHeaderLength = snprintf(m_RequestHeaderResponse, BUFSIZE - 1U,
 			"HTTP/1.1 %u %s\r\n"
 			"Server: %s\r\n"
 			"Content-Type: %s\r\n"
@@ -159,6 +160,7 @@ void HttpDaemon::Run() {
 
 	m_Status = Status::UNKNOWN_ERROR;
 	m_RequestMethod = RequestMethod::UNKNOWN;
+	m_IsAction = false;
 	m_pFileData = nullptr;
 	m_nFileDataLength = 0;
 }
@@ -167,10 +169,11 @@ Status HttpDaemon::ParseRequest() {
 	char *pLine = m_RequestHeaderResponse;
 	uint32_t nLine = 0;
 	Status status = Status::UNKNOWN_ERROR;
-	m_nFileDataLength = 0;
 	m_bContentTypeJson = false;
+	m_nRequestContentLength = 0;
+	m_nFileDataLength = 0;
 
-	for (uint16_t i = 0; i < static_cast<uint16_t>(m_nBytesReceicved); i++) {
+	for (uint16_t i = 0; i < static_cast<uint16_t>(m_nBytesReceived); i++) {
 		if (m_RequestHeaderResponse[i] == '\n') {
 			assert(i > 1);
 			m_RequestHeaderResponse[i - 1] = '\0';
@@ -179,8 +182,8 @@ Status HttpDaemon::ParseRequest() {
 				status = ParseMethod(pLine);
 			} else {
 				if (pLine[0] == '\0') {
-					assert((i + 1) <= m_nBytesReceicved);
-					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceicved - 1) - i;
+					assert((i + 1) <= m_nBytesReceived);
+					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived - 1) - i;
 					if (m_nFileDataLength > 0) {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
@@ -270,7 +273,23 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		if ((pToken = strtok(0, " ")) == nullptr) {
 			return Status::BAD_REQUEST;
 		}
-		//TODO parse value OR just using m_nFileDataLength
+		uint16_t nAccu = 0;
+		while (*pToken != '\0') {
+			uint16_t nDigit = *pToken++ - '0';
+			if (nDigit > 9) {
+				return Status::BAD_REQUEST;;
+			}
+
+			nAccu *= 10;
+			nAccu += nDigit;
+
+			if (nAccu > BUFSIZE) {
+				return Status::REQUEST_ENTITY_TOO_LARGE;
+			}
+		}
+
+		m_nRequestContentLength = nAccu;
+		DEBUG_PRINTF("m_nRequestContentLength=%u", m_nRequestContentLength);
 	}
 
 	return Status::OK;
@@ -306,7 +325,7 @@ Status HttpDaemon::HandleGet() {
 		} else if (strncmp(pGet, "directory", 9) == 0) {
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 		} else {
-			return HandleGetJSON();
+			return HandleGetTxt();
 		}
 	}
 
@@ -319,7 +338,7 @@ Status HttpDaemon::HandleGet() {
 	return Status::OK;
 }
 
-Status HttpDaemon::HandleGetJSON() {
+Status HttpDaemon::HandleGetTxt() {
 	auto *pFileName = &m_pUri[6];
 	const auto nLength = strlen(pFileName);
 
@@ -334,7 +353,7 @@ Status HttpDaemon::HandleGetJSON() {
 	const auto bIsJSON = PropertiesConfig::IsJSON();
 
 	PropertiesConfig::EnableJSON(true);
-	const auto nBytes = RemoteConfig::Get()->HandleGet(reinterpret_cast<void *>(pFileName), 1440U - 5U); //TODO
+	const auto nBytes = RemoteConfig::Get()->HandleGet(reinterpret_cast<void *>(pFileName), BUFSIZE - 5U);
 
 	PropertiesConfig::EnableJSON(bIsJSON);
 
@@ -354,30 +373,67 @@ Status HttpDaemon::HandleGetJSON() {
  * POST
  */
 
-Status HttpDaemon::HandlePost(bool bIsDataOnly) {
-	if (!bIsDataOnly) {
-		if (strcmp(m_pUri, "/json") != 0) {
-			return Status::NOT_FOUND;
-		}
+Status HttpDaemon::HandlePost(bool hasDataOnly) {
+	DEBUG_PRINTF("m_nBytesReceived=%d, m_nFileDataLength=%u, m_nRequestContentLength=%u -> hasDataOnly=%c", m_nBytesReceived, m_nFileDataLength, m_nRequestContentLength, hasDataOnly ? 'Y' : 'N');
 
+	if (!hasDataOnly) {
 		if (!m_bContentTypeJson) {
 			return Status::BAD_REQUEST;
 		}
+
+		m_IsAction = (strcmp(m_pUri, "/json/action") == 0);
+
+		if (!m_IsAction && (strcmp(m_pUri, "/json") != 0)) {
+			return Status::NOT_FOUND;
+		}
 	}
 
-	if (bIsDataOnly) {
+	const auto hasHeadersOnly = (!hasDataOnly && ((m_nBytesReceived < m_nRequestContentLength) || m_nFileDataLength == 0));
+
+	if (hasHeadersOnly) {
+		DEBUG_PUTS("hasHeadersOnly");
+		return Status::OK;
+	}
+
+
+	if (hasDataOnly) {
 		m_pFileData = m_RequestHeaderResponse;
-		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceicved);
+		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
-	DEBUG_PRINTF("%d|%.*s|\n", m_nFileDataLength, m_nFileDataLength, m_pFileData);
+	DEBUG_PRINTF("%d|%.*s|->%d\n", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
 
-	const auto bIsJSON = PropertiesConfig::IsJSON();
+	if (m_IsAction) {
+		if (properties::convert_json_file(m_pFileData, m_nFileDataLength, true) <= 0) {
+			DEBUG_PUTS("");
+			return Status::BAD_REQUEST;
+		}
 
-	PropertiesConfig::EnableJSON(true);
-	RemoteConfig::Get()->HandleTxtFile(m_pFileData, m_nFileDataLength);
+		debug_dump(m_pFileData, m_nFileDataLength);
 
-	PropertiesConfig::EnableJSON(bIsJSON);
+		uint8_t value8;
+
+		if (Sscan::Uint8(m_pFileData, "reboot", value8) == Sscan::OK) {
+			if (value8 != 0) {
+				DEBUG_PUTS("Reboot!");
+				Hardware::Get()->Reboot();
+				__builtin_unreachable();
+			}
+		} else if (Sscan::Uint8(m_pFileData, "display", value8) == Sscan::OK) {
+			Display::Get()->SetSleep(value8 == 0);
+			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
+		} else {
+			DEBUG_PUTS("");
+			return Status::BAD_REQUEST;
+		}
+	} else {
+		const auto bIsJSON = PropertiesConfig::IsJSON();
+
+		PropertiesConfig::EnableJSON(true);
+		RemoteConfig::Get()->HandleTxtFile(m_pFileData, m_nFileDataLength);
+
+		PropertiesConfig::EnableJSON(bIsJSON);
+	}
 
 	m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
 			"<!DOCTYPE html>\n"

@@ -103,11 +103,11 @@ static void _unexpected_state(unsigned state, unsigned line) {
  */
 
 enum {
-	CONTROL_URG = 0x20, /* Urgent Pointer field significant */
-	CONTROL_ACK = 0x10, /* Acknowledgment field significant */
-	CONTROL_PSH = 0x08, /* Acknowledgment */
-	CONTROL_RST = 0x04, /* Reset the connection */
-	CONTROL_SYN = 0x02, /* Synchronize sequence numbers */
+	CONTROL_URG = 0x20,/* Urgent Pointer field significant */
+	CONTROL_ACK = 0x10,/* Acknowledgment field significant */
+	CONTROL_PSH = 0x08,/* Acknowledgment */
+	CONTROL_RST = 0x04,/* Reset the connection */
+	CONTROL_SYN = 0x02,/* Synchronize sequence numbers */
 	CONTROL_FIN = 0x01 /* No more data from sender */
 };
 
@@ -116,8 +116,8 @@ enum {
  */
 
 enum {
-	OPTION_KIND_END = 0, /* End of option list */
-	OPTION_KIND_NOP = 1, /* No-Operation */
+	OPTION_KIND_END = 0,/* End of option list */
+	OPTION_KIND_NOP = 1,/* No-Operation */
 	OPTION_KIND_MSS = 2 /* Maximum Segment Size */
 };
 
@@ -221,7 +221,7 @@ static void _init_tcb(struct tcb *l_tcb, uint16_t local_port) {
 	NEW_STATE(STATE_LISTEN);
 }
 
-void __attribute__((cold)) tcp_init(void) {
+__attribute__((cold)) void tcp_init(void) {
 	DEBUG_ENTRY
 
 	_pcast32 src;
