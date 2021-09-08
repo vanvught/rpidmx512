@@ -30,6 +30,10 @@
 #include <cstring>
 #include <cassert>
 
+#if defined ENABLE_CONTENT
+extern int get_file_content(const char *fileName, char *pDst);
+#endif
+
 #include "httpd/httpd.h"
 #include "remoteconfig.h"
 #include "remoteconfigjson.h"
@@ -46,11 +50,11 @@
 using namespace http;
 
 enum class contentTypes {
-	TEXT_HTML, APPLICATION_JSON, NOT_DEFINED
+	TEXT_HTML, TEXT_CSS, TEXT_JS, APPLICATION_JSON, NOT_DEFINED
 };
 
 static constexpr char contentType[static_cast<uint32_t>(contentTypes::NOT_DEFINED)][32] =
-	{ "text/html", "application/json" };
+	{ "text/html", "text/css", "text/javascript", "application/json" };
 
 HttpDaemon::HttpDaemon() : m_pContentType(contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)]) {
 	DEBUG_ENTRY
@@ -211,9 +215,9 @@ Status HttpDaemon::ParseRequest() {
  */
 
 Status HttpDaemon::ParseMethod(char *pLine) {
-	char *pToken;
-
 	assert(pLine != nullptr);
+
+	char *pToken;
 
 	if ((pToken = strtok(pLine, " ")) == 0) {
 		return Status::METHOD_NOT_IMPLEMENTED;
@@ -273,22 +277,22 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		if ((pToken = strtok(0, " ")) == nullptr) {
 			return Status::BAD_REQUEST;
 		}
-		uint16_t nAccu = 0;
+		uint32_t nTmp = 0;
 		while (*pToken != '\0') {
-			uint16_t nDigit = *pToken++ - '0';
+			uint32_t nDigit = static_cast<uint32_t>(*pToken++ - '0');
 			if (nDigit > 9) {
 				return Status::BAD_REQUEST;;
 			}
 
-			nAccu *= 10;
-			nAccu += nDigit;
+			nTmp *= 10;
+			nTmp += nDigit;
 
-			if (nAccu > BUFSIZE) {
+			if (nTmp > BUFSIZE) {
 				return Status::REQUEST_ENTITY_TOO_LARGE;
 			}
 		}
 
-		m_nRequestContentLength = nAccu;
+		m_nRequestContentLength = static_cast<uint16_t>(nTmp);
 		DEBUG_PRINTF("m_nRequestContentLength=%u", m_nRequestContentLength);
 	}
 
@@ -303,12 +307,15 @@ Status HttpDaemon::HandleGet() {
 	int nLength = 0;
 
 #if defined(ENABLE_CONTENT)
-	if ((strcmp(m_pUri, "/") == 0) || (strncmp(m_pUri, "/index.html", 11) == 0)) {
-		  nLength = get_file_content("index.html", m_Content);
+	if ((strcmp(m_pUri, "/") == 0) || (strcmp(m_pUri, "/index.html") == 0)) {
+		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
+		nLength = get_file_content("index.html", m_Content);
 	} else if (strcmp(m_pUri, "/styles.css") == 0) {
-		 nLength = get_file_content("styles.css", m_Content);
+		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_CSS)];
+		nLength = get_file_content("styles.css", m_Content);
 	} else if (strcmp(m_pUri, "/index.js") == 0) {
-		 nLength = get_file_content("index.js", m_Content);
+		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_JS)];
+		nLength = get_file_content("index.js", m_Content);
 	} else
 #endif
 	if (memcmp(m_pUri, "/json/", 6) == 0) {

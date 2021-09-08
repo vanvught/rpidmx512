@@ -1,5 +1,5 @@
 /**
- * @file properties.h
+ * @file get_file_content.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,13 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef PROPERTIES_H_
-#define PROPERTIES_H_
+#include <cstdio>
+#include <errno.h>
 
-#include <cstdint>
-
-namespace properties {
-int convert_json_file(char *pBuffer, uint16_t nLength, const bool bSkipFileName = false);
-}  // namespace properties
-
-#endif /* PROPERTIES_H_ */
+int get_file_content(const char *fileName, char *pDst) {
+	 FILE *fp = fopen(fileName, "r");
+	 if (fp == nullptr) {
+		 return -1;
+	 }
+	 const int nBytes = fread(pDst, sizeof(char), 1400, fp);
+	 if (nBytes <= 0) {
+		 perror("fread");
+	 }
+	 fclose(fp);
+	 printf("%s->%d\n", fileName, nBytes);
+	 return nBytes;
+}

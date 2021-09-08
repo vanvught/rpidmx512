@@ -30,6 +30,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "ledblink.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
@@ -55,9 +56,12 @@
 
 #include "display.h"
 
+#include "debug.h"
+
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
+	LedBlink lb;
 	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
@@ -111,6 +115,7 @@ int main(int argc, char **argv) {
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
 
 	if(remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);

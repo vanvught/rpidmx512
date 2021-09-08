@@ -71,59 +71,57 @@ uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	return nLength;
 }
 
-//TODO Duplicate files name definition -> remoteconfigstatic.cpp Line 37
-
 uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
-			"{\"files\":["""
+			"{\"files\":["
 #if defined (NODE_ARTNET)
-			"{\"file\":\"artnet.txt\"},"
+			"{\"name\":\"artnet.txt\",\"label\":\"Art-Net\"},"
 #endif
 #if defined (NODE_E131)
-			"{\"file\":\"e131.txt\"},"
+			"{\"name\":\"e131.txt\",\"label\":\"sACN E1.31\"},"
 #endif
 #if defined (NODE_OSC_CLIENT)
-			"{\"file\":\"oscclnt.txt\"},"
+			"{\"name\":\"oscclnt.txt\",\"label\":\"OSC Client\"},"
 #endif
 #if defined (NODE_OSC_SERVER)
-			"{\"file\":\"osc.txt\"},"
+			"{\"name\":\"osc.txt\",\"label\":\"OSC Server\"},"
 #endif
 #if defined (NODE_LTC_SMPTE)
-			"{\"file\":\"ltc.txt\"},"
-			"{\"file\":\"ldisplay.txt\"},"
-			"{\"file\":\"tcnet.txt\"},"
-			"{\"file\":\"gps.txt\"},"
+			"{\"name\":\"ltc.txt\",\"label\":\"LTC SMPTE\"},"
+			"{\"name\":\"ldisplay.txt\",\"label\":\"Display\"},"
+			"{\"name\":\"tcnet.txt\",\"label\":\"TCNet\"},"
+			"{\"name\":\"gps.txt\",\"label\":\"GPS\"},"
 #endif
 #if defined(NODE_SHOWFILE)
-			"{\"file\":\"show.txt\"},"
+			"{\"name\":\"show.txt\",\"label\":\"Showfile\"},"
 #endif
 #if defined(NODE_DDP_DISPLAY)
-			"{\"file\":\"ddpdisp.txt\"},"
+			"{\"name\":\"ddpdisp.txt\",\"label\":\"DDP Display\"},"
 #endif
 #if defined (OUTPUT_DMX_SEND)
-			"{\"file\":\"params.txt\"},"
+			"{\"name\":\"params.txt\",\"label\":\"DMX Transmit\"},"
 #endif
 #if defined (OUTPUT_DMX_PIXEL)
-			"{\"file\":\"devices.txt\"},"
+			"{\"name\":\"devices.txt\",\"label\":\"DMX Pixel\"},"
 #endif
 #if defined (OUTPUT_DMX_MONITOR)
-			"{\"file\":\"mon.txt\"},"
+			"{\"name\":\"mon.txt\",\"label\":\"DMX Monitor\"},"
 #endif
 #if defined (OUTPUT_DMX_SERIAL)
-			"{\"file\":\"serial.txt\"},"
+			"{\"name\":\"serial.txt\",\"label\":\"DMX Serial\"},"
 #endif
 #if defined (OUTPUT_RGB_PANEL)
-			"{\"file\":\"rgbpanel.txt\"},"
+			"{\"name\":\"rgbpanel.txt\",\"label\":\"RGB panel\"},"
 #endif
 #if defined (RDM_RESPONDER)
-			"{\"file\":\"sensors.txt\"},"
-			"{\"file\":\"subdev.txt\"},"
+			"{\"name\":\"sensors.txt\",\"label\":\"RDM Sensors\"},"
+			"{\"name\":\"subdev.txt\",\"label\":\"RDM Sub devices\"},"
 #endif
 #if defined(DISPLAY_UDF)
-			"{\"file\":\"display.txt\"},"
+			"{\"name\":\"display.txt\",\"label\":\"Display UDF\"},"
 #endif
-			"{\"file\":\"network.txt\"},"
-			"{\"file\":\"rconfig.txt\"}"
+			"{\"name\":\"network.txt\",\"label\":\"Network\"},"
+			"{\"name\":\"rconfig.txt\",\"label\":\"Remote configuration\"}"
 			"]};"
 			));
 	return nLength;

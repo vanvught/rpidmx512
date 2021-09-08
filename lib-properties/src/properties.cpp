@@ -29,7 +29,7 @@
 #include "debug.h"
 
 namespace properties {
-int convert_json_file(char *pBuffer, uint16_t nLength, bool bSkipFileName = false) {
+int convert_json_file(char *pBuffer, uint16_t nLength, const bool bSkipFileName = false) {
 	assert(pBuffer != nullptr);
 	assert(nLength > 1);
 
@@ -40,8 +40,8 @@ int convert_json_file(char *pBuffer, uint16_t nLength, bool bSkipFileName = fals
 		return -1;
 	}
 
-	uint16_t nNewLength = 1;
-	uint16_t i = 1;
+	uint32_t nNewLength = 1;
+	uint32_t i = 1;
 
 	if (!bSkipFileName) {
 		pDst[0] = '#';
@@ -126,7 +126,7 @@ int convert_json_file(char *pBuffer, uint16_t nLength, bool bSkipFileName = fals
 		pSrc++;
 	}
 
-	return nNewLength;
+	return static_cast<int>(nNewLength);
 }
 }  // namespace properties
 

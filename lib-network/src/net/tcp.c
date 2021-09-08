@@ -352,27 +352,22 @@ static void _send_reset(struct t_tcp *p_tcp, struct tcb *p_tcb) {
 	DEBUG_ENTRY
 
 	struct send_info info;
-	//uint16_t tcplen;
 	uint16_t datalen;
 
 	if (p_tcp->tcp.control & CONTROL_RST) {
 		return;
 	}
 
-	//tcplen = length - (int) sizeof(struct ip4_header) - (int) sizeof(struct ether_header);
-
 	info.ctrl = CONTROL_RST;
 
 	if (p_tcp->tcp.control & CONTROL_ACK) {
-			info.seq = _get_acknum(p_tcp);
+		info.seq = _get_acknum(p_tcp);
 	} else {
 		info.seq = 0;
 		info.ctrl |= CONTROL_ACK;
 	}
 
-	datalen = 0; //tcplen - (uint16_t) offset2octets(p_tcp->tcp.offset);
-
-	DEBUG_PRINTF("datalen=%u", datalen);
+	datalen = 0;
 
 	if (p_tcp->tcp.control & CONTROL_SYN) {
 		datalen++;
