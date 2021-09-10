@@ -89,10 +89,11 @@ void HttpDaemon::Run() {
 		return;
 	}
 
+	debug_dump(m_RequestHeaderResponse, m_nBytesReceived);
+
 	const char *pStatusMsg = "OK";
 
-	DEBUG_PRINTF("m_Status=%u, m_RequestMethod=%d", static_cast<uint32_t>(m_Status), m_RequestMethod);
-	debug_dump(m_RequestHeaderResponse, static_cast<uint16_t>(m_nBytesReceived));
+	DEBUG_PRINTF("m_Status=%u, m_RequestMethod=%u", static_cast<uint32_t>(m_Status), static_cast<uint32_t>(m_RequestMethod));
 
 	if (m_Status == Status::UNKNOWN_ERROR) {
 		m_Status = ParseRequest();
@@ -162,11 +163,11 @@ void HttpDaemon::Run() {
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength));
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength);
 
+	debug_dump(m_RequestHeaderResponse, static_cast<uint16_t>(nHeaderLength));
+	debug_dump(m_Content,m_nContentLength);
+
 	m_Status = Status::UNKNOWN_ERROR;
 	m_RequestMethod = RequestMethod::UNKNOWN;
-	m_IsAction = false;
-	m_pFileData = nullptr;
-	m_nFileDataLength = 0;
 }
 
 Status HttpDaemon::ParseRequest() {
@@ -321,15 +322,15 @@ Status HttpDaemon::HandleGet() {
 	if (memcmp(m_pUri, "/json/", 6) == 0) {
 		m_pContentType = contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
 		const auto *pGet = &m_pUri[6];
-		if (strncmp(pGet, "list", 4) == 0) {
+		if (strcmp(pGet, "list") == 0) {
 			nLength = remoteconfig::json_get_list(m_Content, sizeof(m_Content));
-		} else if (strncmp(pGet, "version", 7) == 0) {
+		} else if (strcmp(pGet, "version") == 0) {
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
-		} else if (strncmp(pGet, "uptime", 6) == 0) {
+		} else if (strcmp(pGet, "uptime") == 0) {
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
-		} else if (strncmp(pGet, "display", 7) == 0) {
+		} else if (strcmp(pGet, "display") == 0) {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
-		} else if (strncmp(pGet, "directory", 9) == 0) {
+		} else if (strcmp(pGet, "directory") == 0) {
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 		} else {
 			return HandleGetTxt();

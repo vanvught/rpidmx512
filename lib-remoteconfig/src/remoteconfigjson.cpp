@@ -73,56 +73,56 @@ uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
 
 uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
-			"{\"files\":["
+			"{\"files\":{"
 #if defined (NODE_ARTNET)
-			"{\"name\":\"artnet.txt\",\"label\":\"Art-Net\"},"
+			"\"artnet.txt\":\"Art-Net\","
 #endif
 #if defined (NODE_E131)
-			"{\"name\":\"e131.txt\",\"label\":\"sACN E1.31\"},"
+			"\"e131.txt\":\"sACN E1.31\","
 #endif
 #if defined (NODE_OSC_CLIENT)
-			"{\"name\":\"oscclnt.txt\",\"label\":\"OSC Client\"},"
+			"\"oscclnt.txt\":\"OSC Client\","
 #endif
 #if defined (NODE_OSC_SERVER)
-			"{\"name\":\"osc.txt\",\"label\":\"OSC Server\"},"
+			"\"osc.txt\":\"OSC Server\","
 #endif
 #if defined (NODE_LTC_SMPTE)
-			"{\"name\":\"ltc.txt\",\"label\":\"LTC SMPTE\"},"
-			"{\"name\":\"ldisplay.txt\",\"label\":\"Display\"},"
-			"{\"name\":\"tcnet.txt\",\"label\":\"TCNet\"},"
-			"{\"name\":\"gps.txt\",\"label\":\"GPS\"},"
+			"\"ltc.txt\":\"LTC SMPTE\","
+			"\"ldisplay.txt\":\"Display\","
+			"\"tcnet.txt\":\"TCNet\","
+			"\"gps.txt\":\"GPS\","
 #endif
 #if defined(NODE_SHOWFILE)
-			"{\"name\":\"show.txt\",\"label\":\"Showfile\"},"
+			"\"show.txt\":\"Showfile\","
 #endif
 #if defined(NODE_DDP_DISPLAY)
-			"{\"name\":\"ddpdisp.txt\",\"label\":\"DDP Display\"},"
+			"\"ddpdisp.txt\":\"DDP Display\","
 #endif
 #if defined (OUTPUT_DMX_SEND)
-			"{\"name\":\"params.txt\",\"label\":\"DMX Transmit\"},"
+			"\"params.txt\":\"DMX Transmit\","
 #endif
 #if defined (OUTPUT_DMX_PIXEL)
-			"{\"name\":\"devices.txt\",\"label\":\"DMX Pixel\"},"
+			"\"devices.txt\":\"DMX Pixel\","
 #endif
 #if defined (OUTPUT_DMX_MONITOR)
-			"{\"name\":\"mon.txt\",\"label\":\"DMX Monitor\"},"
+			"\"mon.txt\":\"DMX Monitor\","
 #endif
 #if defined (OUTPUT_DMX_SERIAL)
-			"{\"name\":\"serial.txt\",\"label\":\"DMX Serial\"},"
+			"\"serial.txt\":\"DMX Serial\","
 #endif
 #if defined (OUTPUT_RGB_PANEL)
-			"{\"name\":\"rgbpanel.txt\",\"label\":\"RGB panel\"},"
+			"\"rgbpanel.txt\":\"RGB panel\","
 #endif
 #if defined (RDM_RESPONDER)
-			"{\"name\":\"sensors.txt\",\"label\":\"RDM Sensors\"},"
-			"{\"name\":\"subdev.txt\",\"label\":\"RDM Sub devices\"},"
+			"\"sensors.txt\":\"RDM Sensors\","
+			"\"subdev.txt\":\"RDM Sub devices\","
 #endif
 #if defined(DISPLAY_UDF)
-			"{\"name\":\"display.txt\",\"label\":\"Display UDF\"},"
+			"\"display.txt\":\"Display UDF\","
 #endif
-			"{\"name\":\"network.txt\",\"label\":\"Network\"},"
-			"{\"name\":\"rconfig.txt\",\"label\":\"Remote configuration\"}"
-			"]};"
+			"\"network.txt\":\"Network\","
+			"\"rconfig.txt\":\"Remote configuration\""
+			"}}"
 			));
 	return nLength;
 }

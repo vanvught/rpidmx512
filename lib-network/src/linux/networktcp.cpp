@@ -106,28 +106,26 @@ uint16_t Network::TcpRead(const int32_t nHandle, uint8_t **ppBuffer) {
 			return clientfd;
 		}
 
-		if (pollfds[nHandle][1].fd == 0) {
-			pollfds[nHandle][1].fd = clientfd;
-			pollfds[nHandle][1].events = POLLIN | POLLPRI;
-		} else {
-			close(clientfd);
-		}
+		pollfds[nHandle][1].fd = clientfd;
+		pollfds[nHandle][1].events = POLLIN | POLLPRI;
+
 	}
 
-	 if ((pollfds[nHandle][1].fd > 0) && (pollfds[nHandle][1].revents & POLLIN)) {
-		 const int bytes = read(pollfds[nHandle][1].fd, s_ReadBuffer, MAX_SEGMENT_LENGTH);
+	if ((pollfds[nHandle][1].fd > 0) && (pollfds[nHandle][1].revents & POLLIN)) {
+		const int bytes = read(pollfds[nHandle][1].fd, s_ReadBuffer, MAX_SEGMENT_LENGTH);
 
-		 if (bytes <= 0) {
+		if (bytes <= 0) {
+			perror("read failed");
 			pollfds[nHandle][1].fd = 0;
 			pollfds[nHandle][1].events = 0;
 			pollfds[nHandle][1].revents = 0;
-		 } else {
-			 *ppBuffer = reinterpret_cast<uint8_t *>(&s_ReadBuffer);
-		 	 return static_cast<uint16_t>(bytes);
-		 }
-	 }
+		} else {
+			*ppBuffer = reinterpret_cast<uint8_t*>(&s_ReadBuffer);
+			return static_cast<uint16_t>(bytes);
+		}
+	}
 
-	 return 0;
+	return 0;
 }
 
 void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength) {

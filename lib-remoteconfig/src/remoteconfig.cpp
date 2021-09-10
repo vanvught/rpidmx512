@@ -719,7 +719,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 	}
 
 #ifndef NDEBUG
-	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(nSize));
+//	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(nSize));
 #endif
 
 	if (pBuffer == nullptr) {

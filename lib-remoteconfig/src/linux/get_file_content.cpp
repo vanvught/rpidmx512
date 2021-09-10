@@ -28,14 +28,20 @@
 
 int get_file_content(const char *fileName, char *pDst) {
 	 FILE *fp = fopen(fileName, "r");
+
 	 if (fp == nullptr) {
 		 return -1;
 	 }
-	 const int nBytes = fread(pDst, sizeof(char), 1400, fp);
+
+	 const int nBytes = fread(pDst, sizeof(char), 1440, fp);
+
 	 if (nBytes <= 0) {
 		 perror("fread");
 	 }
+
 	 fclose(fp);
+
 	 printf("%s->%d\n", fileName, nBytes);
+
 	 return nBytes;
 }

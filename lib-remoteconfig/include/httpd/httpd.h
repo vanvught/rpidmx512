@@ -43,8 +43,8 @@ enum class Status {
 	VERSION_NOT_SUPPORTED = 505,
 	UNKNOWN_ERROR = 520
 };
-enum RequestMethod {
-	GET, HEAD, POST, UNKNOWN
+enum class RequestMethod {
+	GET, POST, UNKNOWN
 };
 }  // namespace http
 

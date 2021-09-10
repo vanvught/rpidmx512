@@ -48,7 +48,7 @@ uint16_t Network::TcpRead(const int32_t nHandle, uint8_t **ppBuffer) {
 
 void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("nHandle=%d, pBuffer=%p, nLength=%u", nHandle, pBuffer, nLength);
+	DEBUG_PRINTF("nHandle=%d, pBuffer=%p, nLength=%u, doClose=%d", nHandle, pBuffer, nLength, doClose);
 
 	tcp_write(nHandle, pBuffer, nLength);
 
