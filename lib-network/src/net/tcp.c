@@ -57,6 +57,18 @@ extern uint16_t net_chksum(void*, uint32_t);
 extern struct ip_info g_ip_info;
 extern uint8_t g_mac_address[ETH_ADDR_LEN];
 
+struct queue_entry {
+	uint8_t data[TCP_RX_MSS];
+	uint16_t size;
+};
+
+struct queue {
+	uint16_t queue_head;
+	uint16_t queue_tail;
+	struct queue_entry entries[TCP_RX_MAX_ENTRIES];
+};
+
+static struct queue s_recv_queue[TCP_MAX_CONNECTIONS_ALLOWED];
 static struct tcb s_tcb[TCP_MAX_CONNECTIONS_ALLOWED];
 static uint16_t s_id;
 static 	struct t_tcp s_tcp;
@@ -94,7 +106,7 @@ static void _unexpected_state(unsigned state, unsigned line) {
 # define CLIENT_NOT_IMPLEMENTED	assert(0)
 #else
 # define NEW_STATE(STATE)		(l_tcb->state = STATE)
-# define UNEXPECTED_STATE()		((void) 0)
+# define UNEXPECTED_STATE()		((void)0)
 # define CLIENT_NOT_IMPLEMENTED	((void)0)
 #endif
 
@@ -715,36 +727,38 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 
 		/* seventh, process the segment text, */
 		switch (l_tcb->state) {
-			case STATE_ESTABLISHED:
-			case STATE_FIN_WAIT_1:
-			case STATE_FIN_WAIT_2:
-				if (data_length > 0) {
-					if (SEG_SEQ == l_tcb->RCV.NXT) {
-						memcpy(&l_tcb->RX[l_tcb->rx_queue_head].data, (uint8_t *)((uint8_t *)&p_tcp->tcp + data_offset), data_length);
-						l_tcb->RX[l_tcb->rx_queue_head].size = data_length;
+		case STATE_ESTABLISHED:
+		case STATE_FIN_WAIT_1:
+		case STATE_FIN_WAIT_2:
+			if (data_length > 0) {
+				if (SEG_SEQ == l_tcb->RCV.NXT) {
+					const uint32_t entry = s_recv_queue[connection_index].queue_head;
+					struct queue_entry *p_queue_entry = &s_recv_queue[connection_index].entries[entry];
+					memcpy(p_queue_entry->data, (uint8_t*) ((uint8_t*) &p_tcp->tcp + data_offset), data_length);
+					p_queue_entry->size = data_length;
 
-						l_tcb->RCV.NXT += data_length;
-						l_tcb->RCV.WND -= TCP_DATA_SIZE;
+					l_tcb->RCV.NXT += data_length;
+					l_tcb->RCV.WND -= TCP_DATA_SIZE;
 
-						info.seq = l_tcb->SND.NXT;
-						info.ack = l_tcb->RCV.NXT;
-						info.ctrl = CONTROL_ACK;
+					info.seq = l_tcb->SND.NXT;
+					info.ack = l_tcb->RCV.NXT;
+					info.ctrl = CONTROL_ACK;
 
-						_tcp_send_package(l_tcb, &info);
+					_tcp_send_package(l_tcb, &info);
 
-						l_tcb->rx_queue_head = (l_tcb->rx_queue_head + 1) & TCP_RX_MAX_ENTRIES_MASK;
-					} else {
-						info.seq = l_tcb->SND.NXT;
-						info.ack = l_tcb->RCV.NXT;
-						info.ctrl = CONTROL_ACK;
+					s_recv_queue[connection_index].queue_head = (s_recv_queue[connection_index].queue_head + 1) & TCP_RX_MAX_ENTRIES_MASK;
+				} else {
+					info.seq = l_tcb->SND.NXT;
+					info.ack = l_tcb->RCV.NXT;
+					info.ctrl = CONTROL_ACK;
 
-						_tcp_send_package(l_tcb, &info);
-						DEBUG_PUTS("Out of order");
-						return;
-					}
+					_tcp_send_package(l_tcb, &info);
+					DEBUG_PUTS("Out of order");
+					return;
 				}
+			}
 			break;
-			default:
+		default:
 			break;
 		}
 
@@ -880,7 +894,7 @@ void tcp_write(int handle, const uint8_t *buffer, uint16_t length) {
 	l_tcb->SND.NXT += length;
 }
 
-uint16_t tcp_read(int handle, uint8_t **p) {
+uint16_t tcp_read(int handle, const uint8_t **p) {
 	struct send_info info;
 	uint16_t size;
 	assert(handle >= 0);
@@ -901,16 +915,19 @@ uint16_t tcp_read(int handle, uint8_t **p) {
 		return 0;
 	}
 
-	if (l_tcb->rx_queue_head == l_tcb->rx_queue_tail) {
+	if (s_recv_queue[handle].queue_head == s_recv_queue[handle].queue_tail) {
 		return 0;
 	}
 
-	*p = l_tcb->RX[l_tcb->rx_queue_tail].data;
-	size = l_tcb->RX[l_tcb->rx_queue_tail].size;
+	const uint32_t entry = s_recv_queue[handle].queue_tail;
+	const struct queue_entry *p_queue_entry = &s_recv_queue[handle].entries[entry];
+
+	*p = p_queue_entry->data;
+	size = p_queue_entry->size;
 
 	l_tcb->RCV.WND += TCP_DATA_SIZE;
 
-	l_tcb->rx_queue_tail = (l_tcb->rx_queue_tail + 1) & TCP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[handle].queue_tail = (s_recv_queue[handle].queue_tail + 1) & TCP_RX_MAX_ENTRIES_MASK;
 
 	return size;
 }

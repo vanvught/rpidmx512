@@ -54,6 +54,8 @@ using namespace lightset;
 #define SOFTWARE_VERSION "1.0"
 
 OscServer::OscServer() {
+	DEBUG_ENTRY
+
 	memset(m_aPath, 0, sizeof(m_aPath));
 	strcpy(m_aPath, OSCSERVER_DEFAULT_PATH_PRIMARY);
 
@@ -87,9 +89,13 @@ OscServer::OscServer() {
 	if (m_pSoC[0] == '\0') {
 		m_pSoC = Hardware::Get()->GetCpuName(nHwTextLength);
 	}
+
+	DEBUG_EXIT
 }
 
 OscServer::~OscServer() {
+	DEBUG_ENTRY
+
 	if (m_pLightSet != nullptr) {
 		m_pLightSet->Stop(0);
 		m_pLightSet = nullptr;
@@ -103,15 +109,21 @@ OscServer::~OscServer() {
 
 	delete[] m_pOsc;
 	m_pOsc = nullptr;
+
+	DEBUG_EXIT
 }
 
 void OscServer::Start() {
+	DEBUG_ENTRY
+
 	m_nHandle = Network::Get()->Begin(m_nPortIncoming);
 	assert(m_nHandle != -1);
 
 	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
 	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+
+	DEBUG_EXIT
 }
 
 void OscServer::Stop() {

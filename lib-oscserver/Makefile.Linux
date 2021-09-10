@@ -1,6 +1,5 @@
-#
-#DEFINES = #NDEBUG
-#
+DEFINES=#NDEBUG
+
 EXTRA_INCLUDES = ../lib-properties/include ../lib-lightset/include ../lib-hal/include ../lib-network/include ../lib-osc/include
-#
+
 include ../firmware-template-linux/lib/Rules.mk

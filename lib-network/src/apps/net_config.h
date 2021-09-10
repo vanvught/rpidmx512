@@ -1,5 +1,5 @@
 /**
- * networktcp.cpp
+ * @file net_config
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,34 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef NET_CONFIG_H_
+#define NET_CONFIG_H_
 
-#include "network.h"
 
-#include "./../net/net.h"
 
-#include "debug.h"
 
-int32_t Network::TcpBegin(uint16_t nLocalPort) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-	const auto nHandle = tcp_begin(nLocalPort);
-
-	DEBUG_PRINTF("nHandle=%d", nHandle);
-	DEBUG_EXIT
-	return nHandle;
-}
-
-uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer) {
-	return tcp_read(nHandle, ppBuffer);
-}
-
-void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nHandle=%d, pBuffer=%p, nLength=%u, doClose=%d", nHandle, pBuffer, nLength);
-
-	tcp_write(nHandle, pBuffer, nLength);
-
-	DEBUG_EXIT
-}
+#endif /* NET_CONFIG_H_ */

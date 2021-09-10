@@ -51,7 +51,7 @@ extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 extern uint16_t net_chksum(void *, uint32_t);
 
 #define UDP_MAX_PORTS_ALLOWED	16
-#define UDP_RX_MAX_ENTRIES		(1U << 2) // Must always be a power of 2
+#define UDP_RX_MAX_ENTRIES		(1U << 1) // Must always be a power of 2
 #define UDP_RX_MAX_ENTRIES_MASK	(UDP_RX_MAX_ENTRIES - 1)
 
 struct queue_entry {
@@ -148,7 +148,7 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 		return;
 	}
 
-	const uint32_t entry = s_recv_queue[port_index].queue_tail;
+	const uint32_t entry = s_recv_queue[port_index].queue_head;
 	struct queue_entry *p_queue_entry = &s_recv_queue[port_index].entries[entry];
 
 	const uint16_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;

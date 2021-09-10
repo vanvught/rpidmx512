@@ -70,7 +70,7 @@ extern int igmp_join(uint32_t group_address);
 extern int igmp_leave(uint32_t group_address);
 
 extern int tcp_begin(uint16_t local_port);
-extern uint16_t tcp_read(int handle, uint8_t **p);
+extern uint16_t tcp_read(int handle, const uint8_t **p);
 extern void tcp_write(int handle, const uint8_t *buffer, uint16_t length);
 
 #ifdef __cplusplus

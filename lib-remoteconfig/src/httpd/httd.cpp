@@ -83,13 +83,11 @@ void HttpDaemon::Stop() {
 }
 
 void HttpDaemon::Run() {
-	m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse));
+	m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse)));
 
 	if (m_nBytesReceived <= 0) {
 		return;
 	}
-
-	debug_dump(m_RequestHeaderResponse, m_nBytesReceived);
 
 	const char *pStatusMsg = "OK";
 
@@ -162,9 +160,6 @@ void HttpDaemon::Run() {
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength));
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength);
-
-	debug_dump(m_RequestHeaderResponse, static_cast<uint16_t>(nHeaderLength));
-	debug_dump(m_Content,m_nContentLength);
 
 	m_Status = Status::UNKNOWN_ERROR;
 	m_RequestMethod = RequestMethod::UNKNOWN;

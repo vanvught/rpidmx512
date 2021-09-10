@@ -73,13 +73,6 @@ struct tcb {
 
 	uint32_t IRS;		/* initial receive sequence number */
 
-	uint8_t rx_queue_head;
-	uint8_t rx_queue_tail;
-	struct {
-		uint8_t data[TCP_RX_MSS];
-		uint16_t size;
-	} RX[TCP_RX_MAX_ENTRIES];
-
 	uint8_t state;
 };
 
