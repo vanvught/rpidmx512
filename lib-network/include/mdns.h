@@ -111,15 +111,15 @@ private:
 	static uint32_t s_nRemoteIp;
 	static uint16_t s_nRemotePort;
 	static uint16_t s_nBytesReceived;
-	static char *s_pName;
 	static uint32_t s_nLastAnnounceMillis;
 	static uint32_t s_nDNSServiceRecords;
-	static mdns::RecordData s_AnswerLocalIp;
-
-	static uint8_t *s_pBuffer;
 
 	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
-	static mdns::RecordData s_ServiceRecordsData[mdns::SERVICE_RECORDS_MAX];
+	static mdns::RecordData s_AnswerLocalIp;
+	static mdns::RecordData s_ServiceRecordsData;
+
+	static char *s_pName;
+	static uint8_t *s_pBuffer;
 };
 
 #endif /* MDNS_H_ */

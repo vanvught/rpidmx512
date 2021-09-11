@@ -26,8 +26,9 @@
 #ifndef NET_CONFIG_H_
 #define NET_CONFIG_H_
 
-
-
-
+#if defined(BARE_METAL)
+#else
+# error
+#endif
 
 #endif /* NET_CONFIG_H_ */

@@ -82,13 +82,13 @@ int32_t MDNS::s_nHandle = -1;
 uint32_t MDNS::s_nRemoteIp;
 uint16_t MDNS::s_nRemotePort;
 uint16_t MDNS::s_nBytesReceived;
-char *MDNS::s_pName;
 uint32_t MDNS::s_nLastAnnounceMillis;
 uint32_t MDNS::s_nDNSServiceRecords;
-uint8_t *MDNS::s_pBuffer;
 ServiceRecord MDNS::s_ServiceRecords[SERVICE_RECORDS_MAX];
 RecordData MDNS::s_AnswerLocalIp;
-RecordData MDNS::s_ServiceRecordsData[SERVICE_RECORDS_MAX];
+RecordData MDNS::s_ServiceRecordsData;
+char *MDNS::s_pName;
+uint8_t *MDNS::s_pBuffer;
 
 static constexpr const char *get_protocol_name(Protocol nProtocol) {
 	return nProtocol == Protocol::TCP ? "_tcp" MDNS_TLD : "_udp" MDNS_TLD;
@@ -136,7 +136,7 @@ void MDNS::SetName(const char *pName) {
 void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	DEBUG_ENTRY
 
-	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&s_ServiceRecordsData[nIndex].aBuffer);
+	auto *pHeader = reinterpret_cast<struct TmDNSHeader*>(&s_ServiceRecordsData.aBuffer);
 
 	pHeader->nFlags = __builtin_bswap16(0x8400);
 	pHeader->queryCount = 0;
@@ -144,7 +144,7 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	pHeader->authorityCount = __builtin_bswap16(1);
 	pHeader->additionalCount = __builtin_bswap16(0);
 
-	auto *pData = reinterpret_cast<uint8_t*>(&s_ServiceRecordsData[nIndex].aBuffer) + sizeof(struct TmDNSHeader);
+	auto *pData = reinterpret_cast<uint8_t*>(&s_ServiceRecordsData.aBuffer) + sizeof(struct TmDNSHeader);
 
 	pData += CreateAnswerServiceSrv(nIndex, pData);
 	pData += CreateAnswerServiceTxt(nIndex, pData);
@@ -154,9 +154,9 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	memcpy(pData, &s_AnswerLocalIp.aBuffer[sizeof (struct TmDNSHeader)], s_AnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 	pData += (s_AnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 
-	s_ServiceRecordsData[nIndex].nSize =  static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
+	s_ServiceRecordsData.nSize =  static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
 
-//	DEBUG_dump(&s_ServiceRecordsData[nIndex].aBuffer, static_cast<uint16_t>(s_ServiceRecordsData[nIndex].nSize));
+//	DEBUG_dump(&s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize));
 
 	DEBUG_EXIT
 }
@@ -214,6 +214,7 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 
 	*pDst = '\0';
 
+	DEBUG_PRINTF("pString=[%s]:%u", pString, 1 + nSize);
 	DEBUG_EXIT
 	return 1 + nSize;
 }
@@ -278,9 +279,9 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 
 	CreateMDNSMessage(i);
 
-	DEBUG_PRINTF("%d:%d %p -> %d " IPSTR, i, s_nHandle, reinterpret_cast<void *>(&s_ServiceRecordsData[i].aBuffer), s_ServiceRecordsData[i].nSize, IP2STR(s_nMulticastIp));
+	DEBUG_PRINTF("%d:%d %p -> %d " IPSTR, i, s_nHandle, reinterpret_cast<void *>(&s_ServiceRecordsData.aBuffer), s_ServiceRecordsData.nSize, IP2STR(s_nMulticastIp));
 
-	Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData[i].aBuffer, static_cast<uint16_t>(s_ServiceRecordsData[i].nSize), s_nMulticastIp, UDP_PORT);
+	Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize), s_nMulticastIp, UDP_PORT);
 
 	DEBUG1_EXIT
 	return true;
@@ -489,7 +490,8 @@ void MDNS::HandleRequest(uint16_t nQuestions) {
 			for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
 				if (s_ServiceRecords[i].pName != nullptr) {
 					if ((isDnsDs || (strcmp(s_ServiceRecords[i].pServName, DnsName) == 0)) && (nType == DNSRecordTypePTR) ) {
-						Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData[i].aBuffer, static_cast<uint16_t>(s_ServiceRecordsData[i].nSize), s_nMulticastIp, UDP_PORT);
+						CreateMDNSMessage(i);
+						Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize), s_nMulticastIp, UDP_PORT);
 					}
 				}
 			}
