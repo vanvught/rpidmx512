@@ -65,18 +65,18 @@ private:
 	http::Status HandleGetTxt();
 
 private:
-	int32_t m_nHandle { -1 };
+	const char *m_pContentType;
+	char *m_pUri { nullptr };
+	char *m_pFileData { nullptr };
 	char *m_RequestHeaderResponse { nullptr };
+	int32_t m_nHandle { -1 };
 	int m_nBytesReceived { 0 };
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
-	char *m_pUri { nullptr };
-	char m_Content[BUFSIZE];
-	const char *m_pContentType;
-	uint16_t m_nContentLength { 0 };
 	bool m_bContentTypeJson { false };
 	bool m_IsAction { false };
-	char *m_pFileData { nullptr };
+	char m_Content[BUFSIZE];
+	uint16_t m_nContentLength { 0 };
 	uint16_t m_nFileDataLength { 0 };
 	uint16_t m_nRequestContentLength { 0 };
 };

@@ -86,7 +86,7 @@ int32_t Network::TcpEnd(const int32_t nHandle) {
 	return -1;
 }
 
-uint16_t Network::TcpRead(const int32_t nHandle, uint8_t **ppBuffer) {
+uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
 	const int poll_result = poll(pollfds[nHandle], 2, 0);

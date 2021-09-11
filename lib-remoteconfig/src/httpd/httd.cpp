@@ -85,7 +85,7 @@ void HttpDaemon::Stop() {
 void HttpDaemon::Run() {
 	m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse)));
 
-	if (m_nBytesReceived <= 0) {
+	if (__builtin_expect((m_nBytesReceived <= 0), 1)) {
 		return;
 	}
 
@@ -160,6 +160,7 @@ void HttpDaemon::Run() {
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength));
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength);
+	DEBUG_PRINTF("m_nContentLength=%u", m_nContentLength);
 
 	m_Status = Status::UNKNOWN_ERROR;
 	m_RequestMethod = RequestMethod::UNKNOWN;
@@ -275,7 +276,7 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		}
 		uint32_t nTmp = 0;
 		while (*pToken != '\0') {
-			uint32_t nDigit = static_cast<uint32_t>(*pToken++ - '0');
+			auto nDigit = static_cast<uint32_t>(*pToken++ - '0');
 			if (nDigit > 9) {
 				return Status::BAD_REQUEST;;
 			}
@@ -412,8 +413,6 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 			return Status::BAD_REQUEST;
 		}
 
-		debug_dump(m_pFileData, m_nFileDataLength);
-
 		uint8_t value8;
 
 		if (Sscan::Uint8(m_pFileData, "reboot", value8) == Sscan::OK) {
@@ -438,6 +437,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 		PropertiesConfig::EnableJSON(bIsJSON);
 	}
 
+	m_pContentType = contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
 	m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"

@@ -62,7 +62,7 @@ public:
 	 */
 
 	int32_t TcpBegin(uint16_t nLocalPort);
-	uint16_t TcpRead(const int32_t nHandle, uint8_t **ppBuffer);
+	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer);
 	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength);
 	int32_t TcpEnd(const int32_t nHandle);
 

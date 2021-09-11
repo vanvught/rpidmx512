@@ -607,8 +607,10 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 
 	if (pBuffer == nullptr) {
 		nSize = udp::BUFFER_SIZE - udp::cmd::get::length::GET;
+		assert(s_pUdpBuffer != nullptr);
 		nIndex = GetIndex(&s_pUdpBuffer[udp::cmd::get::length::GET], nSize);
 	} else {
+		s_pUdpBuffer = reinterpret_cast<char *>(pBuffer);
 		nSize = nBufferLength;
 		nIndex = GetIndex(pBuffer, nSize);
 	}
@@ -1040,7 +1042,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		} else {
 			m_nBytesReceived = static_cast<uint16_t>(nBufferLength);
 		}
-		memcpy(s_pUdpBuffer, pBuffer, nBufferLength);
+		s_pUdpBuffer = reinterpret_cast<char *>(pBuffer);
 		i = GetIndex(&s_pUdpBuffer[1], nBufferLength);
 	} else {
 		return;
