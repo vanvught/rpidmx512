@@ -42,7 +42,6 @@
 #define MDNS_RESPONSE_TTL     	(120)    ///< (in seconds)
 #define ANNOUNCE_TIMEOUT 		((MDNS_RESPONSE_TTL / 2) + (MDNS_RESPONSE_TTL / 4))
 
-
 enum TDNSClasses {
 	DNSClassInternet = 1
 };
@@ -128,7 +127,7 @@ void MDNS::SetName(const char *pName) {
 	assert(s_pName != nullptr);
 
 	strcpy(s_pName, pName);
-	strcpy(s_pName + strlen(pName), MDNS_TLD);
+	strcat(s_pName, MDNS_TLD);
 
 	DEBUG_PUTS(s_pName);
 }
@@ -154,7 +153,7 @@ void MDNS::CreateMDNSMessage(uint32_t nIndex) {
 	memcpy(pData, &s_AnswerLocalIp.aBuffer[sizeof (struct TmDNSHeader)], s_AnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 	pData += (s_AnswerLocalIp.nSize - sizeof (struct TmDNSHeader));
 
-	s_ServiceRecordsData.nSize =  static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
+	s_ServiceRecordsData.nSize = static_cast<uint32_t>(pData - reinterpret_cast<uint8_t*>(pHeader));
 
 //	DEBUG_dump(&s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize));
 
@@ -283,12 +282,12 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 
 	Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize), s_nMulticastIp, UDP_PORT);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return true;
 }
 
 
-const char *MDNS::FindFirstDotFromRight(const char *pString) {
+const char *MDNS::FindFirstDotFromRight(const char *pString) const {
 	const char *p = pString + strlen(pString);
 	while (p > pString && *p-- != '.')
 		;

@@ -48,10 +48,10 @@ enum class Protocol : uint8_t {
 };
 
 struct ServiceRecord {
-	uint16_t nPort;
 	char *pName;
 	char *pServName;
 	char *pTextContent;
+	uint16_t nPort;
 	Protocol nProtocol;
 };
 
@@ -90,7 +90,7 @@ private:
 	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
 
 	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
-	const char *FindFirstDotFromRight(const char *pString);
+	const char *FindFirstDotFromRight(const char *pString) const;
 
 	void CreateAnswerLocalIpAddress();
 
