@@ -323,6 +323,10 @@ Status HttpDaemon::HandleGet() {
 		} else if (strcmp(pGet, "version") == 0) {
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
 		} else if (strcmp(pGet, "uptime") == 0) {
+			if (!RemoteConfig::Get()->IsEnableUptime()) {
+				DEBUG_EXIT
+				return Status::BAD_REQUEST;
+			}
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
 		} else if (strcmp(pGet, "display") == 0) {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
@@ -334,11 +338,13 @@ Status HttpDaemon::HandleGet() {
 	}
 
 	if (nLength <= 0) {
+		DEBUG_EXIT
 		return Status::NOT_FOUND;
 	}
 
 	m_nContentLength = static_cast<uint16_t>(nLength);
 
+	DEBUG_EXIT
 	return Status::OK;
 }
 

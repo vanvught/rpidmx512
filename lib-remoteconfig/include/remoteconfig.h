@@ -169,7 +169,7 @@ public:
 	void SetEnableUptime(bool bEnableUptime = true) {
 		m_bEnableUptime = bEnableUptime;
 	}
-	bool GetEnableUptime() const {
+	bool IsEnableUptime() const {
 		return m_bEnableUptime;
 	}
 
