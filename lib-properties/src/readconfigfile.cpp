@@ -29,6 +29,10 @@
 
 #include "readconfigfile.h"
 
+#include "debug.h"
+
+static constexpr auto MAX_LINE_LENGTH = 64;	// Including '\0'
+
 ReadConfigFile::ReadConfigFile(CallbackFunctionPtr callBack, void *p) {
 	assert(callBack != nullptr);
 	assert(p != nullptr);
@@ -46,7 +50,7 @@ ReadConfigFile::~ReadConfigFile() {
 bool ReadConfigFile::Read(const char *pFileName) {
 	assert(pFileName != nullptr);
 
-	char buffer[128];
+	char buffer[MAX_LINE_LENGTH];
 
 	FILE *fp = fopen(pFileName, "r");
 
@@ -84,22 +88,28 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(nLength != 0);
 
 	auto *pSrc = const_cast<char *>(pBuffer);
+	char buffer[MAX_LINE_LENGTH];
 
 	while (nLength != 0) {
-		char *pLine = pSrc;
+		char *pLine = &buffer[0];
 
 		while ((nLength != 0) && (*pSrc != '\r') && (*pSrc != '\n')) {
-			pSrc++;
+			*pLine++ = *pSrc++;
+			if ((pLine - buffer) >= MAX_LINE_LENGTH) {
+				assert(0);
+				return;
+			}
 			nLength--;
 		}
 
 		while ((nLength != 0) && ((*pSrc == '\r') || (*pSrc == '\n'))) {
-			*pSrc++ = '\0';
+			pSrc++;
 			nLength--;
 		}
 
-		if (*pLine >= 'a') {
-			m_pCallBack(m_p, pLine);
+		if (buffer[0] >= 'a') {
+			*pLine = '\0';
+			m_pCallBack(m_p, &buffer[0]);
 		}
 	}
 }

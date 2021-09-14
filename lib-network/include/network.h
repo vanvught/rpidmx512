@@ -54,6 +54,15 @@ enum class ClientStatus: uint8_t {
 	FAILED
 };
 }  // namespace dhcp
+
+inline static bool is_netmask_valid(uint32_t nNetMask) {
+	if (nNetMask == 0) {
+		return false;
+	}
+	nNetMask = __builtin_bswap32(nNetMask);
+	return !(nNetMask & (~nNetMask >> 1));
+
+}
 }  // namespace network
 
 class NetworkStore {
