@@ -35,7 +35,7 @@
 namespace remoteconfig {
 
 uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize) {
-	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
 						"{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"port\":{\"type\":\"%s\",\"count\":%d}}}}",
 						IP2STR(Network::Get()->GetIp()),
 						RemoteConfig::Get()->GetDisplayName(),
@@ -50,7 +50,7 @@ uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const auto *pVersion = FirmwareVersion::Get()->GetVersion();
 	uint8_t nHwTextLength;
 
-	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
 					"{\"version\":\"%.*s\",\"board\":\"%s\",\"build\":{\"date\":\"%.*s\",\"time\":\"%.*s\"}}",
 					firmwareversion::length::SOFTWARE_VERSION, pVersion->SoftwareVersion,
 					Hardware::Get()->GetBoardName(nHwTextLength),
@@ -61,18 +61,18 @@ uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize) {
 
 uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const auto nUptime = Hardware::Get()->GetUpTime();
-	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uptime\":%u}\n", nUptime));
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uptime\":%u}\n", nUptime));
 	return nLength;
 }
 
 uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	const bool isOn = !(Display::Get()->isSleep());
-	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"display\":%d}", isOn));
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"display\":%d}", isOn));
 	return nLength;
 }
 
 uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
-	const uint16_t nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"files\":{"
 #if defined (NODE_ARTNET)
 			"\"artnet.txt\":\"Art-Net\","

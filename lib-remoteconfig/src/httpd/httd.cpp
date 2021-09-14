@@ -263,14 +263,14 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		return Status::BAD_REQUEST;
 	}
 
-	if (strcmp(pToken, "Content-Type") == 0) {
+	if (strcasecmp(pToken, "Content-Type") == 0) {
 		if ((pToken = strtok(0, " ;")) == nullptr) {
 			return Status::BAD_REQUEST;
 		}
 		if (strcmp(pToken, "application/json") == 0) {
 			m_bContentTypeJson = true;
 		}
-	} else if (strcmp(pToken, "Content-Length") == 0) {
+	} else if (strcasecmp(pToken, "Content-Length") == 0) {
 		if ((pToken = strtok(0, " ")) == nullptr) {
 			return Status::BAD_REQUEST;
 		}
