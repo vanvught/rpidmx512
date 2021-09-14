@@ -162,7 +162,7 @@ public:
 	void SetEnableReboot(bool bEnableReboot = true) {
 		m_bEnableReboot = bEnableReboot;
 	}
-	bool GetEnableReboot() const {
+	bool IsEnableReboot() const {
 		return m_bEnableReboot;
 	}
 

@@ -324,7 +324,7 @@ Status HttpDaemon::HandleGet() {
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
 		} else if (strcmp(pGet, "uptime") == 0) {
 			if (!RemoteConfig::Get()->IsEnableUptime()) {
-				DEBUG_EXIT
+				DEBUG_PUTS("Status::BAD_REQUEST");
 				return Status::BAD_REQUEST;
 			}
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
@@ -415,7 +415,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 
 	if (m_IsAction) {
 		if (properties::convert_json_file(m_pFileData, m_nFileDataLength, true) <= 0) {
-			DEBUG_PUTS("");
+			DEBUG_PUTS("Status::BAD_REQUEST");
 			return Status::BAD_REQUEST;
 		}
 
@@ -423,6 +423,10 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 
 		if (Sscan::Uint8(m_pFileData, "reboot", value8) == Sscan::OK) {
 			if (value8 != 0) {
+				if (!RemoteConfig::Get()->IsEnableReboot()) {
+					DEBUG_PUTS("Status::BAD_REQUEST");
+					return Status::BAD_REQUEST;
+				}
 				DEBUG_PUTS("Reboot!");
 				Hardware::Get()->Reboot();
 				__builtin_unreachable();
@@ -431,7 +435,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 			Display::Get()->SetSleep(value8 == 0);
 			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
 		} else {
-			DEBUG_PUTS("");
+			DEBUG_PUTS("Status::BAD_REQUEST");
 			return Status::BAD_REQUEST;
 		}
 	} else {
