@@ -1,17 +1,20 @@
 #include <stddef.h>
 
-void *memmove(void *dest, const void *src, size_t len) {
-	char *d = dest;
-	const char *s = src;
+void *memmove(void *dst, const void *src, size_t n) {
+	char *dp = (char *) dst;
+	const char *sp = (const char *) src;
 
-	if (d < s)
-		while (len--)
-			*d++ = *s++;
-	else {
-		const char *lasts = s + (len - 1);
-		char *lastd = d + (len - 1);
-		while (len--)
-			*lastd-- = *lasts--;
+	if (dp < sp) {
+		while (n--) {
+			*dp++ = *sp++;
+		}
+	} else {
+		sp += n;
+		dp += n;
+		while (n--) {
+			*--dp = *--sp;
+		}
 	}
-	return dest;
+
+	return dst;
 }

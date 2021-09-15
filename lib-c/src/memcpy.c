@@ -1,19 +1,12 @@
-/*
- * Copyright (c) 2013-2019, ARM Limited and Contributors. All rights reserved.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
 #include <stddef.h>
-// #include <string.h>
 
-void *memcpy(void *dst, const void *src, size_t len)
-{
-	const char *s = src;
-	char *d = dst;
+void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+	char *dp = (char *) dest;
+	const char *sp = (const char *) src;
 
-	while (len--)
-		*d++ = *s++;
+	while (n--) {
+		*dp++ = *sp++;
+	}
 
-	return dst;
+	return dest;
 }
