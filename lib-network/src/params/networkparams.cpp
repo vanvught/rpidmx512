@@ -94,8 +94,6 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 void NetworkParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
-	DEBUG_PRINTF("|%s|", pLine);
-
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, NetworkParamsConst::USE_DHCP, nValue8) == Sscan::OK) {
@@ -121,8 +119,10 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	uint32_t nValue32;
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::IP_ADDRESS, nValue32) == Sscan::OK) {
-		m_tNetworkParams.nLocalIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
+		if ((network::is_private_ip(nValue32)) || (nValue32 == 0)) {
+			m_tNetworkParams.nLocalIp = nValue32;
+			m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
+		}
 		return;
 	}
 
@@ -141,6 +141,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 	uint32_t nLength = network::HOSTNAME_SIZE - 1;
+
 	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::HOSTNAME;
