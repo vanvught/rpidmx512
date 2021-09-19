@@ -87,7 +87,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	auto *pSrc = const_cast<char *>(pBuffer);
+	const auto *pSrc = const_cast<char *>(pBuffer);
 	char buffer[MAX_LINE_LENGTH];
 
 	while (nLength != 0) {

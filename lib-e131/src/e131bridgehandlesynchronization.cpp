@@ -50,15 +50,15 @@ void E131Bridge::HandleSynchronization() {
 	m_State.SynchronizationTime = m_nCurrentPacketMillis;
 
 	for (uint32_t i = 0; i < E131::PORTS; i++) {
-		if (m_OutputPort[i].bIsEnabled) {
-			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].length);
+		if (m_OutputPort[i].genericPort.bIsEnabled) {
+			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].nLength);
 
 			if (!m_OutputPort[i].IsTransmitting) {
 				m_pLightSet->Start(i);
 				m_OutputPort[i].IsTransmitting = true;
 			}
 
-			m_OutputPort[i].length = 0;
+			m_OutputPort[i].nLength = 0;
 		}
 	}
 

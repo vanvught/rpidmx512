@@ -39,7 +39,7 @@
 #include "ws28xxdmx.h"
 
 #include "lightset.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -242,7 +242,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 
 #if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
 		if ((nValue16 != 0) && nValue16 <= (Dmx::UNIVERSE_SIZE) && (nValue16 != Dmx::START_ADDRESS_DEFAULT)) {
 			m_tWS28xxParams.nDmxStartAddress = nValue16;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::DMX_START_ADDRESS;
@@ -255,13 +255,13 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 #endif
 
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
-	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0]));
+	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0]));
 #else
 	constexpr uint32_t nPortsMax = 1;
 #endif
 
 	for (uint32_t i = 0; i < nPortsMax; i++) {
-		if (Sscan::Uint16(pLine, LightSetConst::PARAMS_START_UNI_PORT[i], nValue16) == Sscan::OK) {
+		if (Sscan::Uint16(pLine, LightSetParamsConst::START_UNI_PORT[i], nValue16) == Sscan::OK) {
 # if !defined (NODE_ARTNET)
 			if (nValue16 > 0) {
 # endif
@@ -289,7 +289,7 @@ void WS28xxDmxParams::callbackFunction(const char *pLine) {
 	}
 #endif
 
-	if (Sscan::Uint8(pLine, LightSetConst::PARAMS_TEST_PATTERN, nValue8) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, LightSetParamsConst::TEST_PATTERN, nValue8) == Sscan::OK) {
 		if ((nValue8 != static_cast<uint8_t>(pixelpatterns::Pattern::NONE)) && (nValue8 < static_cast<uint8_t>(pixelpatterns::Pattern::LAST))) {
 			m_tWS28xxParams.nTestPattern = nValue8;
 			m_tWS28xxParams.nSetList |= WS28xxDmxParamsMask::TEST_PATTERN;

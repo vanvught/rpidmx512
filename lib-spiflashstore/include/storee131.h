@@ -2,7 +2,7 @@
  * @file storee131.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,19 +27,18 @@
 #define STOREE131_H_
 
 #include "e131params.h"
-
 #include "spiflashstore.h"
 
 class StoreE131 final: public E131ParamsStore {
 public:
 	StoreE131();
 
-	void Update(const struct TE131Params *pE131Params) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::E131, pE131Params, sizeof(struct TE131Params));
+	void Update(const struct e131params::Params *pParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::E131, pParams, sizeof(struct e131params::Params));
 	}
 
-	void Copy(struct TE131Params *pE131Params) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::E131, pE131Params, sizeof(struct TE131Params));
+	void Copy(struct e131params::Params *pParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::E131, pParams, sizeof(struct e131params::Params));
 	}
 
 	static StoreE131* Get() {

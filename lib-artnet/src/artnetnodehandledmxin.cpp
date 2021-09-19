@@ -56,7 +56,7 @@ void ArtNetNode::SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp) 
 void ArtNetNode::HandleDmxIn() {
 	struct TArtDmx tArtDmx;
 
-	memcpy(tArtDmx.Id, artnet::NODE_ID, sizeof m_PollReply.Id);
+	memcpy(tArtDmx.Id, artnet::NODE_ID, sizeof(m_PollReply.Id));
 	tArtDmx.OpCode = OP_DMX;
 	tArtDmx.ProtVerHi = 0;
 	tArtDmx.ProtVerLo = ArtNet::PROTOCOL_REVISION;
@@ -64,29 +64,29 @@ void ArtNetNode::HandleDmxIn() {
 	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
 		uint32_t nUpdatesPerSecond;
 
-		if (m_InputPorts[i].bIsEnabled){
+		if (m_InputPorts[i].genericPort.bIsEnabled){
 			uint32_t nLength;
 			const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
-				tArtDmx.Sequence = static_cast<uint8_t>(1U + m_InputPorts[i].nSequence++);
+				tArtDmx.Sequence = static_cast<uint8_t>(1U + m_InputPorts[i].nSequenceNumber++);
 				tArtDmx.Physical = i;
-				tArtDmx.PortAddress = m_InputPorts[i].port.nPortAddress;
+				tArtDmx.PortAddress = m_InputPorts[i].genericPort.nPortAddress;
 				tArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
 				tArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
 
 				memcpy(tArtDmx.Data, pDmxData, nLength);
 
-				m_InputPorts[i].port.nStatus = GI_DATA_RECIEVED;
+				m_InputPorts[i].genericPort.nStatus = GI_DATA_RECIEVED;
 
 				Network::Get()->SendTo(m_nHandle, &tArtDmx, sizeof(struct TArtDmx), m_InputPorts[i].nDestinationIp, ArtNet::UDP_PORT);
 
 				s_ReceivingMask = (1U << i);
 				m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 			} else {
-				if ((m_InputPorts[i].port.nStatus & GO_DATA_IS_BEING_TRANSMITTED) == GO_DATA_IS_BEING_TRANSMITTED) {
+				if ((m_InputPorts[i].genericPort.nStatus & GO_DATA_IS_BEING_TRANSMITTED) == GO_DATA_IS_BEING_TRANSMITTED) {
 					if (nUpdatesPerSecond == 0) {
-						m_InputPorts[i].port.nStatus = static_cast<uint8_t>(m_InputPorts[i].port.nStatus & ~GI_DATA_RECIEVED);
+						m_InputPorts[i].genericPort.nStatus = static_cast<uint8_t>(m_InputPorts[i].genericPort.nStatus & ~GI_DATA_RECIEVED);
 						s_ReceivingMask &= ~(1U << i);
 						m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
 					}

@@ -1,5 +1,5 @@
 /**
- * @file e131paramsset.cpp
+ * @file lightsetparamsconst.h
  *
  */
 /* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,43 +23,26 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
+#ifndef LIGHTSETPARAMSCONST_H_
+#define LIGHTSETPARAMSCONST_H_
 
-#include <cstdint>
-#include <cassert>
+struct LightSetParamsConst {
+	static const char PARAMS_OUTPUT[];
 
-#include "e131params.h"
-#include "e131.h"
+	static const char UNIVERSE[];
+	static const char UNIVERSE_PORT[4][16];
 
-using namespace e131;
+	static const char MERGE_MODE[];
+	static const char MERGE_MODE_PORT[4][18];
 
-void E131Params::Set(E131Bridge *pE131Bridge) {
-	assert(pE131Bridge != nullptr);
+	static const char DIRECTION[4][18];
 
-	if (m_tE131Params.nSetList == 0) {
-		return;
-	}
+	static const char START_UNI_PORT[8][18];
 
-	for (uint8_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
-		if (isMaskSet(E131ParamsMask::MERGE_MODE_A << i)) {
-			pE131Bridge->SetMergeMode(i, static_cast<Merge>(m_tE131Params.nMergeModePort[i]));
-		} else {
-			pE131Bridge->SetMergeMode(i, static_cast<Merge>(m_tE131Params.nMergeMode));
-		}
-	}
+	static const char DMX_START_ADDRESS[];
+	static const char DMX_SLOT_INFO[];
 
-	if (isMaskSet(E131ParamsMask::NETWORK_TIMEOUT)) {
-		pE131Bridge->SetDisableNetworkDataLossTimeout(m_tE131Params.nNetworkTimeout < NETWORK_DATA_LOSS_TIMEOUT_SECONDS);
-	}
+	static const char TEST_PATTERN[];
+};
 
-	if (isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT)) {
-		pE131Bridge->SetDisableMergeTimeout(true);
-	}
-
-	if (isMaskSet(E131ParamsMask::PRIORITY)) {
-		pE131Bridge->SetPriority(m_tE131Params.nPriority);
-	}
-}
+#endif /* LIGHTSETPARAMSCONST_H_ */

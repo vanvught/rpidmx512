@@ -60,19 +60,19 @@ void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
 
 void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 	uint8_t nAddress;
-	if (pArtNetNode->GetUniverseSwitch(0, nAddress, PortDir::OUTPUT)) {
-		Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE)], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(0), pArtNetNode->GetSubnetSwitch(0), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(0), true), pArtNetNode->GetPortProtocol(0) == PortProtocol::ARTNET ? "    " : "sACN");
+	if (pArtNetNode->GetUniverseSwitch(0, nAddress, lightset::PortDir::OUTPUT)) {
+		Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE)], "O: %.2d:%d:%d %c %s", pArtNetNode->GetNetSwitch(0), pArtNetNode->GetSubnetSwitch(0), nAddress, lightset::get_merge_mode(pArtNetNode->GetMergeMode(0), true), pArtNetNode->GetPortProtocol(0) == PortProtocol::ARTNET ? "    " : "sACN");
 	}
 
-	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
-		if (pArtNetNode->GetUniverseSwitch(i, nAddress, PortDir::OUTPUT)) {
-			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, ArtNet::GetMergeMode(pArtNetNode->GetMergeMode(i), true), pArtNetNode->GetPortProtocol(i) == PortProtocol::ARTNET ? "    " : "sACN");
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if (pArtNetNode->GetUniverseSwitch(i, nAddress, lightset::PortDir::OUTPUT)) {
+			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "O%d: %.2d:%d:%d %c %s", (i+1), pArtNetNode->GetNetSwitch(i), pArtNetNode->GetSubnetSwitch(i), nAddress, lightset::get_merge_mode(pArtNetNode->GetMergeMode(i), true), pArtNetNode->GetPortProtocol(i) == PortProtocol::ARTNET ? "    " : "sACN");
 		}
 	}
 }
 
 void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
-	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::DESTINATION_IP_PORT_A) + i], "%c: " IPSTR, 'A' + i, IP2STR(pArtNetNode->GetDestinationIp(i)));
 	}
 }

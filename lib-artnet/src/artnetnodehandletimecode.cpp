@@ -63,7 +63,7 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 
 	auto *pArtTimeCode = &(m_ArtNetPacket.ArtPacket.ArtTimeCode);
 
-	memcpy(pArtTimeCode->Id, artnet::NODE_ID, sizeof pArtTimeCode->Id);
+	memcpy(pArtTimeCode->Id, artnet::NODE_ID, sizeof(pArtTimeCode->Id));
 	pArtTimeCode->OpCode = OP_TIMECODE;
 	pArtTimeCode->ProtVerHi = 0;
 	pArtTimeCode->ProtVerLo = ArtNet::PROTOCOL_REVISION;

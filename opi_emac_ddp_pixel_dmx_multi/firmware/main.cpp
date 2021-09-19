@@ -51,6 +51,11 @@
 // Pixel Test pattern
 #include "pixeltestpattern.h"
 #include "pixelreboot.h"
+// DMX
+#include "dmxparams.h"
+#include "dmxmulti.h"
+#include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // RDMNet LLRP Only
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
@@ -139,6 +144,20 @@ void notmain(void) {
 		hw.SetRebootHandler(new PixelReboot);
 	}
 
+	// DMX
+
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
+	}
+
+	DmxConfigUdp dmxConfigUdp;
+
 	// RDMNet LLRP Only
 
 	StoreRDMDevice storeRdmDevice;
@@ -219,6 +238,7 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		dmxConfigUdp.Run();
 	}
 }
 

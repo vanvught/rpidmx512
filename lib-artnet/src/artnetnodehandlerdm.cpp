@@ -47,9 +47,9 @@ void ArtNetNode::HandleTodControl() {
 	const auto *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
-	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
-			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
+			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Stop(i);
 			}
 
@@ -59,7 +59,7 @@ void ArtNetNode::HandleTodControl() {
 
 			SendTod(i);
 
-			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {
+			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Start(i);
 			}
 		}
@@ -74,8 +74,8 @@ void ArtNetNode::HandleTodRequest() {
 	const auto *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
-	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
 			SendTod(i);
 		}
 	}
@@ -105,7 +105,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->BindIndex = nPage + 1U;
 	pTodData->Net = m_Node.NetSwitch[nPage];
 	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
-	pTodData->Address = m_OutputPorts[nPortIndex].port.nDefaultAddress;
+	pTodData->Address = m_OutputPorts[nPortIndex].genericPort.nDefaultAddress;
 	pTodData->UidTotalHi = 0;
 	pTodData->UidTotalLo = discovered;
 	pTodData->BlockCount = 0;
@@ -113,7 +113,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 
 	m_pArtNetRdm->Copy(nPortIndex, reinterpret_cast<uint8_t*>(pTodData->Tod));
 
-	const auto nLength = sizeof(struct TArtTodData) - (sizeof pTodData->Tod) + (discovered * 6U);
+	const auto nLength = sizeof(struct TArtTodData) - (sizeof(pTodData->Tod)) + (discovered * 6U);
 
 	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 
@@ -139,15 +139,15 @@ void ArtNetNode::HandleRdm() {
 	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
-	for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].port.nPortAddress) && m_OutputPorts[i].bIsEnabled) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
 			if (!m_IsRdmResponder) {
-				if ((m_OutputPorts[i].tPortProtocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
+				if ((m_OutputPorts[i].protocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
 					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
-					m_IsLightSetRunning[i] = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
+					m_OutputPorts[i].IsTransmitting = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
 
-				if (m_IsLightSetRunning[i]) {
+				if (m_OutputPorts[i].IsTransmitting) {
 					m_pLightSet->Stop(i); // Stop DMX if was running
 				}
 
@@ -168,7 +168,7 @@ void ArtNetNode::HandleRdm() {
 				printf("No RDM response\n");
 			}
 
-			if (m_IsLightSetRunning[i] && (!m_IsRdmResponder)) {
+			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Start(i); // Start DMX if was running
 			}
 		}

@@ -115,9 +115,18 @@ void notmain(void) {
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	const auto nStartUniverse = artnetparams.GetUniverse();
+	PixelDmxConfiguration pixelDmxConfiguration;
+	WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 
-	node.SetUniverseSwitch(0, PortDir::OUTPUT, nStartUniverse);
+	if (ws28xxparms.Load()) {
+		ws28xxparms.Set(&pixelDmxConfiguration);
+		ws28xxparms.Dump();
+	}
+
+	auto isPixelUniverseSet = false;
+	const auto nStartUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
+
+	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
 	LightSet *pSpi = nullptr;
 	auto isLedTypeSet = false;
@@ -131,6 +140,7 @@ void notmain(void) {
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 			pSpi = pTLC59711Dmx;
+
 			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 		}
 	}
@@ -139,15 +149,6 @@ void notmain(void) {
 
 	if (!isLedTypeSet) {
 		assert(pSpi == nullptr);
-
-		PixelDmxConfiguration pixelDmxConfiguration;
-
-		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
-
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Set(&pixelDmxConfiguration);
-			ws28xxparms.Dump();
-		}
 
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pWS28xxDmx != nullptr);
@@ -159,8 +160,8 @@ void notmain(void) {
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
-		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-			node.SetUniverseSwitch(nPortIndex, PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
+		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 		}
 
 		uint8_t nTestPattern;

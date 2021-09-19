@@ -123,13 +123,12 @@ void notmain(void) {
 
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
+	bool isSet;
+	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
 
 	TimeCode timecode;
-	if (artnetparams.IsUseTimeCode()) {
-		timecode.Start();
-		node.SetTimeCodeHandler(&timecode);
-	}
+	timecode.Start();
+	node.SetTimeCodeHandler(&timecode);
 
 	DMXMonitor monitor;
 	// There is support for HEX output only

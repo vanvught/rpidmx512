@@ -99,7 +99,6 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -119,7 +118,8 @@ void notmain(void) {
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
-	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
+	bool isSet;
+	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
 
 	DmxSerial dmxSerial;
 	DmxSerialParams dmxSerialParams(new StoreDmxSerial);

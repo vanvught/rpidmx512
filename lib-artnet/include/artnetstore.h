@@ -32,6 +32,7 @@
 #include <cstdint>
 
 #include "artnet.h"
+#include "lightset.h"
 
 class ArtNetStore {
 public:
@@ -42,7 +43,7 @@ public:
 	virtual void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress)=0;
 	virtual void SaveNetSwitch(uint8_t nAddress)=0;
 	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-	virtual void SaveMergeMode(uint32_t nPortIndex, artnet::Merge tMerge)=0;
+	virtual void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode tMerge)=0;
 	virtual void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
 };
 

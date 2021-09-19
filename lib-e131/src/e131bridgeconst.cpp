@@ -27,4 +27,4 @@
 
 #include "e131bridgeconst.h"
 
-const uint8_t E131BridgeConst::VERSION[] = { 1, 22 };
+const uint8_t E131BridgeConst::VERSION[] = { 1, 23 };

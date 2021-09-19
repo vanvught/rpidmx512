@@ -91,7 +91,6 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -105,9 +104,18 @@ void notmain(void) {
 		e131params.Dump();
 	}
 
-	const auto nStartUniverse = e131params.GetUniverse();
+	PixelDmxConfiguration pixelDmxConfiguration;
+	WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 
-	bridge.SetUniverse(0, e131::PortDir::OUTPUT, nStartUniverse);
+	if (ws28xxparms.Load()) {
+		ws28xxparms.Set(&pixelDmxConfiguration);
+		ws28xxparms.Dump();
+	}
+
+	auto isPixelUniverseSet = false;
+	const auto nStartUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
+
+	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
 	LightSet *pSpi = nullptr;
 	auto isLedTypeSet = false;
@@ -131,15 +139,6 @@ void notmain(void) {
 	if (!isLedTypeSet) {
 		assert(pSpi == nullptr);
 
-		PixelDmxConfiguration pixelDmxConfiguration;
-
-		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
-
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Set(&pixelDmxConfiguration);
-			ws28xxparms.Dump();
-		}
-
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pWS28xxDmx != nullptr);
 		pSpi = pWS28xxDmx;
@@ -150,8 +149,8 @@ void notmain(void) {
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
-		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
+		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 		}
 
 		uint8_t nTestPattern;
@@ -174,7 +173,7 @@ void notmain(void) {
 	display.Set(2, displayudf::Labels::BOARDNAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;

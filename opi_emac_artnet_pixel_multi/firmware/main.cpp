@@ -96,7 +96,6 @@ void notmain(void) {
 
 	nw.Init(StoreNetwork::Get());
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -142,7 +141,7 @@ void notmain(void) {
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		if (isSet) {
 			for (uint16_t u = 0; u < nUniverses; u++) {
-				node.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
+				node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 				nPortProtocolIndex++;
 			}
 			nPortProtocolIndex += static_cast<uint8_t>(ArtNet::PORTS - nUniverses);

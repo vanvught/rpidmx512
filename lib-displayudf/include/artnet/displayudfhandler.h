@@ -60,7 +60,7 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::Merge tMerge) {
+	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 

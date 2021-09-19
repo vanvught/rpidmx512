@@ -149,7 +149,6 @@ void OscClientParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
 		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = static_cast<char>(i + '0');
-		nValue16 = OscClientParamsMax::CMD_PATH_LENGTH;
 		if (Sscan::Char(pLine, m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]), nValue32) == Sscan::OK) {
 			if (m_tOscClientParams.aCmd[i][0] == '/') {
 				m_tOscClientParams.nSetList |= OscClientParamsMask::CMD;
@@ -161,7 +160,6 @@ void OscClientParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
 		m_aLed[strlen(OscClientParamsConst::LED) - 1] = static_cast<char>(i + '0');
-		nValue16 = OscClientParamsMax::LED_PATH_LENGTH;
 		if (Sscan::Char(pLine, m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]), nValue32) == Sscan::OK) {
 			if (m_tOscClientParams.aLed[i][0] == '/') {
 				m_tOscClientParams.nSetList |= OscClientParamsMask::LED;

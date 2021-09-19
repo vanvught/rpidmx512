@@ -96,7 +96,7 @@ uint16_t ArtNetPollTable::MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch
 	return nPortAddress;
 }
 
-const struct TArtNetPollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t nUniverse) {
+const struct TArtNetPollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t nUniverse) const {
 	if (m_nTableUniversesEntries == 0) {
 		return nullptr;
 	}

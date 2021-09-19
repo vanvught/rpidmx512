@@ -32,12 +32,13 @@
 #include <cstdint>
 
 #include "artnet.h"
+#include "lightset.h"
 
 class ArtNet4Handler {
 public:
 	virtual ~ArtNet4Handler() {}
 
-	virtual void SetPort(uint32_t nPortIndex, artnet::PortDir dir)=0;
+	virtual void SetPort(uint32_t nPortIndex, lightset::PortDir dir)=0;
 	virtual void HandleAddress(uint8_t nCommand)=0;
 	virtual uint8_t GetStatus(uint32_t nPortIndex)=0;
 	virtual bool IsStatusChanged()=0;

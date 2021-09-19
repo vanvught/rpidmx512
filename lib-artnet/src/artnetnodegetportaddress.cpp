@@ -34,17 +34,17 @@
 
 using namespace artnet;
 
-bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, PortDir dir) const {
+bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, lightset::PortDir dir) const {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	if (dir == PortDir::INPUT) {
-		nAddress = m_InputPorts[nPortIndex].port.nPortAddress;
-		return m_InputPorts[nPortIndex].bIsEnabled;
+	if (dir == lightset::PortDir::INPUT) {
+		nAddress = m_InputPorts[nPortIndex].genericPort.nPortAddress;
+		return m_InputPorts[nPortIndex].genericPort.bIsEnabled;
 	}
 
-	if (dir == PortDir::OUTPUT) {
-		nAddress = m_OutputPorts[nPortIndex].port.nPortAddress;
-		return m_OutputPorts[nPortIndex].bIsEnabled;
+	if (dir == lightset::PortDir::OUTPUT) {
+		nAddress = m_OutputPorts[nPortIndex].genericPort.nPortAddress;
+		return m_OutputPorts[nPortIndex].genericPort.bIsEnabled;
 	}
 
 	return false;

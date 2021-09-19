@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,8 +75,6 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreE131 storeE131;
-	StoreDmxSend storeDmxSend;
-
 	E131Params e131params(&storeE131);
 
 	if (e131params.Load()) {
@@ -87,7 +85,7 @@ void notmain(void) {
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	if (e131params.GetDirection() == e131::PortDir::INPUT) {
+	if (e131params.GetDirection() == lightset::PortDir::INPUT) {
 		console_puts("DMX Input");
 	} else {
 		console_puts("DMX Output");
@@ -102,54 +100,56 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	E131Bridge bridge;
-
 	e131params.Set(&bridge);
 
-	DmxSend *pDmxOutput = nullptr;
+	bool bIsSet;
+	auto const nUniverse = e131params.GetUniverse(0, bIsSet);
+
+	if (bIsSet) {
+		bridge.SetUniverse(0, e131params.GetDirection(0), nUniverse);
+	}
+
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
+	}
+
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	const uint16_t nUniverse = e131params.GetUniverse();
-
-	if (e131params.GetDirection() == e131::PortDir::INPUT) {
-		auto *pDmxInput = new DmxInput;
-		assert(pDmxInput != nullptr);
-
-		bridge.SetUniverse(0, e131::PortDir::INPUT, nUniverse);
-		bridge.SetE131Dmx(pDmxInput);
-	} else {
-		pDmxOutput = new DmxSend;
-		assert(pDmxOutput != nullptr);
-
-		DmxParams dmxparams(&storeDmxSend);
-
-		if (dmxparams.Load()) {
-			dmxparams.Set(pDmxOutput);
-			dmxparams.Dump();
-		}
-
-		pDmxOutput->Print();
-
+	if (bridge.GetActiveOutputPorts() != 0) {
+		bridge.SetOutput(&dmxSend);
 		pDmxConfigUdp = new DmxConfigUdp;
 		assert(pDmxConfigUdp != nullptr);
+	}
 
-		bridge.SetUniverse(0, e131::PortDir::OUTPUT, nUniverse);
-		bridge.SetOutput(pDmxOutput);
+	DmxInput dmxInput;
+
+	if (bridge.GetActiveInputPorts() != 0) {
+		bridge.SetE131Dmx(&dmxInput);
 	}
 
 	bridge.Print();
 
-	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == e131::PortDir::INPUT ? "Input" : "Output");
-	display.Set(2, displayudf::Labels::BOARDNAME);
-	display.Set(3, displayudf::Labels::IP);
+	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == lightset::PortDir::INPUT ? "Input" : "Output");
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;
@@ -162,7 +162,7 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	const uint32_t nActivePorts = (e131params.GetDirection() == e131::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+	const auto nActivePorts = (e131params.GetDirection() == lightset::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 

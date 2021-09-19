@@ -26,7 +26,6 @@
 #include <cstdint>
 
 #include "displayudf.h"
-
 #include "e131bridge.h"
 #include "e131.h"
 
@@ -40,19 +39,21 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 	DEBUG_ENTRY
 
 	Show();
-
+	
+#if defined (OUTPUT_DMX_ARTNET)
 	uint16_t nUniverse;
-	if (pE131Bridge->GetUniverse(0, nUniverse, PortDir::OUTPUT)) {
+	if (pE131Bridge->GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE)], "U: %d", nUniverse);
 	}
+#endif
 
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
-	for (uint8_t i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; i++) {
 		uint16_t nUniverse;
 
-		if (pE131Bridge->GetUniverse(i, nUniverse, PortDir::OUTPUT)) {
-			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "Port %c: %d %s", ('A' + i), nUniverse, E131::GetMergeMode(pE131Bridge->GetMergeMode(i), true));
+		if (pE131Bridge->GetUniverse(i, nUniverse, lightset::PortDir::OUTPUT)) {
+			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + i], "Port %c: %d %s", ('A' + i), nUniverse, lightset::get_merge_mode(pE131Bridge->GetMergeMode(i), true));
 		}
 	}
 

@@ -36,7 +36,7 @@
 
 #include "ws28xxdmxparams.h"
 #include "devicesparamsconst.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "pixeltype.h"
 #include "ws28xxdmx.h"
@@ -67,9 +67,9 @@ void WS28xxDmxParams::Dump() {
 		printf(" %s=%d\n", DevicesParamsConst::COUNT, m_tWS28xxParams.nCount);
 	}
 
-	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0])); i++) {
+	for (uint32_t i = 0; i < std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0])); i++) {
 		if (isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i)) {
-			printf(" %s=%d\n", LightSetConst::PARAMS_START_UNI_PORT[i], m_tWS28xxParams.nStartUniverse[i]);
+			printf(" %s=%d\n", LightSetParamsConst::START_UNI_PORT[i], m_tWS28xxParams.nStartUniverse[i]);
 		}
 	}
 
@@ -90,11 +90,11 @@ void WS28xxDmxParams::Dump() {
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress);
 	}
 
 	if (isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern);
+		printf(" %s=%d\n", LightSetParamsConst::TEST_PATTERN, m_tWS28xxParams.nTestPattern);
 	}
 #endif
 }

@@ -1166,6 +1166,7 @@ void RemoteConfig::HandleTxtFileRconfig() {
 #endif
 
 	remoteConfigParams.Load(s_pUdpBuffer, m_nBytesReceived);
+	SetDisplayName(remoteConfigParams.GetDisplayName());
 #ifndef NDEBUG
 	remoteConfigParams.Dump();
 #endif
@@ -1202,17 +1203,17 @@ void RemoteConfig::HandleTxtFileNetwork() {
 #if defined (NODE_ARTNET)
 void RemoteConfig::HandleTxtFileArtnet() {
 	DEBUG_ENTRY
-	static_assert(sizeof(struct TArtNet4Params) != sizeof(struct TArtNetParams), "");
+	static_assert(sizeof(struct TArtNet4Params) != sizeof(struct artnetparams::Params), "");
 
 	assert(StoreArtNet4::Get() != nullptr);
 	ArtNet4Params artnet4params(StoreArtNet4::Get());
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TArtNetParams)) {
+		if (m_nBytesReceived == sizeof(struct artnetparams::Params)) {
 			ArtNetParams artnetparams(StoreArtNet::Get());
 			uint32_t nSize;
-			artnetparams.Builder(reinterpret_cast<const struct TArtNetParams*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			artnetparams.Builder(reinterpret_cast<const struct artnetparams::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else if (m_nBytesReceived == sizeof(struct TArtNet4Params)) {
 			uint32_t nSize;
@@ -1242,9 +1243,9 @@ void RemoteConfig::HandleTxtFileE131() {
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TE131Params)) {
+		if (m_nBytesReceived == sizeof(struct e131params::Params)) {
 			uint32_t nSize;
-			e131params.Builder(reinterpret_cast<const struct TE131Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			e131params.Builder(reinterpret_cast<const struct e131params::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT

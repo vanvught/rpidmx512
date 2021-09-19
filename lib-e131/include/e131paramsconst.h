@@ -26,13 +26,15 @@
 #ifndef E131PARAMSCONST_H_
 #define E131PARAMSCONST_H_
 
+#include "e131params.h"
+
 struct E131ParamsConst {
 	static const char FILE_NAME[];
 
-	static const char NETWORK_DATA_LOSS_TIMEOUT[];
+	static const char PRIORITY[e131params::MAX_PORTS][18];
+
+	static const char DISABLE_NETWORK_DATA_LOSS_TIMEOUT[];
 	static const char DISABLE_MERGE_TIMEOUT[];
-	static const char DIRECTION[];
-	static const char PRIORITY[];
 };
 
 #endif /* E131PARAMSCONST_H_ */

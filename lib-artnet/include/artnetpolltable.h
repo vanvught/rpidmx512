@@ -75,14 +75,14 @@ public:
 	ArtNetPollTable();
 	~ArtNetPollTable();
 
-	uint32_t GetEntries() {
+	uint32_t GetEntries() const {
 		return m_nPollTableEntries;
 	}
 
 	void Add(const struct TArtPollReply *ptArtPollReply);
 	void Clean();
 
-	const struct TArtNetPollTableUniverses *GetIpAddress(uint16_t nUniverse);
+	const struct TArtNetPollTableUniverses *GetIpAddress(uint16_t nUniverse) const;
 
 	void Dump();
 	void DumpTableUniverses();

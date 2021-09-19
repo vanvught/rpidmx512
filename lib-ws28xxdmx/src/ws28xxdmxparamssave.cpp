@@ -40,7 +40,7 @@
 #include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "debug.h"
 
@@ -98,24 +98,24 @@ void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, cha
 
 #if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.AddComment("DMX");
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
+	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
 #endif
 
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
-	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetConst::PARAMS_START_UNI_PORT) / sizeof(LightSetConst::PARAMS_START_UNI_PORT[0]));
+	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0]));
 #else
 	constexpr uint32_t nPortsMax = 1;
 #endif
 
 	for (uint32_t i = 0; i < nPortsMax; i++) {
-		builder.Add(LightSetConst::PARAMS_START_UNI_PORT[i],m_tWS28xxParams.nStartUniverse[i], isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i));
+		builder.Add(LightSetParamsConst::START_UNI_PORT[i],m_tWS28xxParams.nStartUniverse[i], isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i));
 	}
 #if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
 	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT));
 #endif
 
 	builder.AddComment("Test pattern");
-	builder.Add(LightSetConst::PARAMS_TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));
+	builder.Add(LightSetParamsConst::TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));
 
 	nSize = builder.GetSize();
 

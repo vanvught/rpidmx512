@@ -69,7 +69,6 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreOscServer storeOscServer;
-	StoreDmxSend storeDmxSend;
 
 	OSCServerParams params(&storeOscServer);
 	OscServer server;
@@ -102,19 +101,26 @@ void notmain(void) {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	DmxSend dmx;
+	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
-	DmxConfigUdp dmxConfigUdp;
+
+	Dmx dmx;
 
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
 		dmxparams.Set(&dmx);
 	}
 
-	server.SetOutput(&dmx);
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
+	DmxConfigUdp dmxConfigUdp;
+
+	server.SetOutput(&dmxSend);
 	server.Print();
 
-	dmx.Print();
+	dmxSend.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::DMX, 1);
 

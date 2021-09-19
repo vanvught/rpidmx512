@@ -71,31 +71,16 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreE131 storeE131;
-	StoreDmxSend storeDmxSend;
-
-	E131Params e131params(&storeE131);
-
-	if (e131params.Load()) {
-		e131params.Dump();
-	}
-
-	const auto portDir = e131params.GetDirection();
-
 	fw.Print();
 
 	console_puts("Ethernet sACN E1.31 ");
 	console_set_fg_color(CONSOLE_GREEN);
-	if (portDir == e131::PortDir::INPUT) {
-		console_puts("DMX Input");
-	} else {
-		console_puts("DMX Output");
-	}
+	console_puts("DMX ");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
-	console_puts(" {2 Universes}\n");
+	console_puts("{2 Universes}\n");
 #else
-	console_puts(" {4 Universes}\n");
+	console_puts("{4 Universes}\n");
 #endif
 
 	hw.SetLed(hardware::LedStatus::ON);
@@ -105,88 +90,79 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
+	StoreE131 storeE131;
+	E131Params e131params(&storeE131);
+
 	E131Bridge bridge;
 
-	e131params.Set(&bridge);
+	if (e131params.Load()) {
+		e131params.Set(&bridge);
+		e131params.Dump();
+	}
 
 	uint16_t nUniverse;
-	bool bIsSetIndividual = false;
 	bool bIsSet;
 
 	nUniverse = e131params.GetUniverse(0, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(0, portDir, nUniverse);
-		bIsSetIndividual = true;
+		bridge.SetUniverse(0, e131params.GetDirection(0), nUniverse);
 	}
 
 	nUniverse = e131params.GetUniverse(1, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(1, portDir, nUniverse);
-		bIsSetIndividual = true;
+		bridge.SetUniverse(1, e131params.GetDirection(1), nUniverse);
 	}
 #if defined (ORANGE_PI_ONE)
 	nUniverse = e131params.GetUniverse(2, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(2, portDir, nUniverse);
-		bIsSetIndividual = true;
+		bridge.SetUniverse(2, e131params.GetDirection(2), nUniverse);
 	}
 #ifndef DO_NOT_USE_UART0
 	nUniverse = e131params.GetUniverse(3, bIsSet);
 	if (bIsSet) {
-		bridge.SetUniverse(3, portDir, nUniverse);
-		bIsSetIndividual = true;
+		bridge.SetUniverse(3, e131params.GetDirection(3), nUniverse);
 	}
 #endif
 #endif
 
-	if (!bIsSetIndividual) { // Backwards compatibility
-		nUniverse = e131params.GetUniverse();
-		bridge.SetUniverse(0, portDir, 0 + nUniverse);
-		bridge.SetUniverse(1, portDir, static_cast<uint16_t>(1 + nUniverse));
-#if defined (ORANGE_PI_ONE)
-		bridge.SetUniverse(2, portDir, static_cast<uint16_t>(2 + nUniverse));
-#ifndef DO_NOT_USE_UART0
-		bridge.SetUniverse(3, portDir, static_cast<uint16_t>(3 + nUniverse));
-#endif
-#endif
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
 	}
 
-	DmxSend *pDmxOutput;
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	if (portDir == e131::PortDir::INPUT) {
-		auto *pDmxInput = new DmxInput;
-		assert(pDmxInput != nullptr);
-
-		bridge.SetE131Dmx(pDmxInput);
-	} else {
-		pDmxOutput = new DmxSend;
-		assert(pDmxOutput != nullptr);
-
-		DmxParams dmxparams(&storeDmxSend);
-
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-			dmxparams.Set(pDmxOutput);
-		}
-
-		bridge.SetOutput(pDmxOutput);
-
-		pDmxOutput->Print();
-
+	if (bridge.GetActiveOutputPorts() != 0) {
+		bridge.SetOutput(&dmxSend);
 		pDmxConfigUdp = new DmxConfigUdp;
 		assert(pDmxConfigUdp != nullptr);
 	}
 
+	DmxInput dmxInput;
+
+	if (bridge.GetActiveInputPorts() != 0) {
+		bridge.SetE131Dmx(&dmxInput);
+	}
+
 	bridge.Print();
 
-	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == e131::PortDir::INPUT ? "Input" : "Output");
+	const uint32_t nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
+
+	display.SetTitle("sACN E1.31 DMX %u", nActivePorts);
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::NETMASK);
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
@@ -203,12 +179,9 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	const uint32_t nActivePorts = (e131params.GetDirection() == e131::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
-
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
-
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {

@@ -49,15 +49,15 @@ ArtNet4Node::ArtNet4Node(uint8_t nPages) : ArtNetNode(nPages) {
 	DEBUG_EXIT
 }
 
-void ArtNet4Node::SetPort(uint32_t nPortIndex, PortDir dir) {
+void ArtNet4Node::SetPort(uint32_t nPortIndex, lightset::PortDir dir) {
 	DEBUG_ENTRY
 
 	uint16_t nUniverse;
 	const bool isActive = GetPortAddress(nPortIndex, nUniverse, dir);
 
-	DEBUG_PRINTF("Port %u, Active %c, Universe %d, [%s]", nPortIndex, isActive ? 'Y' : 'N', nUniverse, dir == PortDir::OUTPUT ? "Output" : "Input");
+	DEBUG_PRINTF("Port %u, Active %c, Universe %d, [%s]", nPortIndex, isActive ? 'Y' : 'N', nUniverse, dir == lightset::PortDir::OUTPUT ? "Output" : "Input");
 
-	if (dir == PortDir::INPUT) {
+	if (dir == lightset::PortDir::INPUT) {
 		DEBUG_PUTS("Input is not supported");
 		return;
 	}
@@ -74,11 +74,11 @@ void ArtNet4Node::SetPort(uint32_t nPortIndex, PortDir dir) {
 			}
 
 			if (nUniverse == 0) {
-				SetUniverseSwitch(nPortIndex, PortDir::DISABLE, 0);
+				SetUniverseSwitch(nPortIndex, lightset::PortDir::DISABLE, 0);
 				return;
 			}
 
-			m_Bridge.SetUniverse(nPortIndex, dir == PortDir::OUTPUT ? e131::PortDir::OUTPUT : e131::PortDir::INPUT, nUniverse);
+			m_Bridge.SetUniverse(nPortIndex, dir == lightset::PortDir::OUTPUT ? lightset::PortDir::OUTPUT : lightset::PortDir::INPUT, nUniverse);
 		}
 	}
 
@@ -91,7 +91,7 @@ void ArtNet4Node::Start() {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * GetPages()); nPortIndex++) {
 		uint16_t nUniverse;
-		const bool isActive = GetPortAddress(nPortIndex, nUniverse, PortDir::OUTPUT);
+		const bool isActive = GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
 		
 		DEBUG_PRINTF("Port %d, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 		
@@ -101,9 +101,9 @@ void ArtNet4Node::Start() {
 			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
 			
 			if (tPortProtocol == PortProtocol::SACN) {
-				const auto tE131Merge = static_cast<e131::Merge>(ArtNetNode::GetMergeMode(nPortIndex));
-				m_Bridge.SetMergeMode(nPortIndex, tE131Merge);
-				DEBUG_PRINTF("\tMerge mode %s", E131::GetMergeMode(tE131Merge));
+				const auto mergeMode = ArtNetNode::GetMergeMode(nPortIndex);
+				m_Bridge.SetMergeMode(nPortIndex, mergeMode);
+				DEBUG_PRINTF("\tMerge mode %s", lightset::get_merge_mode(mergeMode));
 			}
 		}
 	}
@@ -141,7 +141,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 
 	for (uint8_t i = 0; i < (ArtNet::PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
-		const bool isActive = GetPortAddress(i, nUniverse, PortDir::OUTPUT);
+		const bool isActive = GetPortAddress(i, nUniverse, lightset::PortDir::OUTPUT);
 
 		if (isActive) {
 			if (m_bMapUniverse0) {
@@ -153,9 +153,9 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 			}
 
 			if (GetPortProtocol(i) == PortProtocol::SACN) {
-				m_Bridge.SetUniverse(i, e131::PortDir::OUTPUT, nUniverse);
+				m_Bridge.SetUniverse(i, lightset::PortDir::OUTPUT, nUniverse);
 			} else {
-				m_Bridge.SetUniverse(i, e131::PortDir::DISABLE, nUniverse);
+				m_Bridge.SetUniverse(i, lightset::PortDir::DISABLE, nUniverse);
 			}
 		}
 	}
@@ -179,14 +179,14 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	case ARTNET_PC_MERGE_LTP_1:
 	case ARTNET_PC_MERGE_LTP_2:
 	case ARTNET_PC_MERGE_LTP_3:
-		m_Bridge.SetMergeMode(nPort, e131::Merge::LTP);
+		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::LTP);
 		break;
 
 	case ARTNET_PC_MERGE_HTP_0:
 	case ARTNET_PC_MERGE_HTP_1:
 	case ARTNET_PC_MERGE_HTP_2:
 	case ARTNET_PC_MERGE_HTP_3:
-		m_Bridge.SetMergeMode(nPort, e131::Merge::HTP);
+		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::HTP);
 		break;
 
 	case ARTNET_PC_CLR_0:
@@ -209,7 +209,7 @@ uint8_t ArtNet4Node::GetStatus(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::PORTS);
 
 	uint16_t nUniverse;
-	const auto isActive = m_Bridge.GetUniverse(nPortIndex, nUniverse, e131::PortDir::OUTPUT);
+	const auto isActive = m_Bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
 
 	DEBUG_PRINTF("Port %u, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 

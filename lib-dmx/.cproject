@@ -80,8 +80,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src|src/rpi" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="h3/4ports|h3/1port|linux|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="src/rpi|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3/1port|linux|h3/4ports|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 					</sourceEntries>
 				</configuration>
@@ -178,10 +178,10 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="linux|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry excluding="4ports|1port" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/1port"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/4ports"/>
+						<entry excluding="h3|linux" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="single|multi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/multi"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/single"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -241,11 +241,11 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src|src/linux" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="h3/4ports|h3/1port|linux" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry excluding="4ports|1port" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/1port"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/4ports"/>
+						<entry excluding="src/linux|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3/1port|linux|h3/4ports" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="single|multi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/multi"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/single"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

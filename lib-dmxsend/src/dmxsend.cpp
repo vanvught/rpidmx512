@@ -28,6 +28,7 @@
 #include <cassert>
 
 #include "dmxsend.h"
+#include "dmx.h"
 
 #include "debug.h"
 
@@ -51,7 +52,7 @@ void DmxSend::Start(uint32_t nPortIndex) {
 
 	s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
 
-	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
 
 	DEBUG_EXIT
 }
@@ -70,7 +71,7 @@ void DmxSend::Stop(uint32_t nPortIndex) {
 
 	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
-	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
 	DEBUG_EXIT
 }
@@ -83,15 +84,15 @@ void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLengt
 		return;
 	}
 
-	SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
+	Dmx::Get()->SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
 }
 
 #include <cstdio>
 
 void DmxSend::Print() {
 	printf("DMX Send\n");
-	printf(" Break time   : %d\n", static_cast<int>(GetDmxBreakTime()));
-	printf(" MAB time     : %d\n", static_cast<int>(GetDmxMabTime()));
-	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / GetDmxPeriodTime()));
-	printf(" Slots        : %d\n", static_cast<int>(GetDmxSlots()));
+	printf(" Break time   : %d\n", static_cast<int>(Dmx::Get()->GetDmxBreakTime()));
+	printf(" MAB time     : %d\n", static_cast<int>(Dmx::Get()->GetDmxMabTime()));
+	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / Dmx::Get()->GetDmxPeriodTime()));
+	printf(" Slots        : %d\n", static_cast<int>(Dmx::Get()->GetDmxSlots()));
 }

@@ -149,6 +149,7 @@ COPS+=-ffunction-sections -fdata-sections
 #COPS+=-fstack-usage
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
+CPPOPS+=-fno-threadsafe-statics
 
 LDOPS=--gc-sections --print-gc-sections
 

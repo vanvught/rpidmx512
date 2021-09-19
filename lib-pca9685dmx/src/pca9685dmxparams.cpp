@@ -32,7 +32,7 @@
 #include "pca9685.h"
 
 #include "lightset.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -95,7 +95,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint16_t value16;
 	uint32_t nLength;
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
+	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
 		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
@@ -128,7 +128,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = DMX_SLOT_INFO_LENGTH;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, LightSetParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfoRaw, nLength) == Sscan::OK) {
 		if (nLength >= 7) { // 00:0000 at least one value set
 			m_bSetList |= DMX_SLOT_INFO_MASK;
 		}
@@ -167,7 +167,7 @@ void PCA9685DmxParams::Dump() {
 	}
 
 	if(isMaskSet(DMX_START_ADDRESS_MASK)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
+		printf(" %s=%d\n", LightSetParamsConst::PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
 	}
 
 	if(isMaskSet(DMX_FOOTPRINT_MASK)) {
@@ -183,7 +183,7 @@ void PCA9685DmxParams::Dump() {
 	}
 
 	if(isMaskSet(DMX_SLOT_INFO_MASK)) {
-		printf(" %s=%s\n", LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
+		printf(" %s=%s\n", LightSetParamsConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
 	}
 #endif
 }

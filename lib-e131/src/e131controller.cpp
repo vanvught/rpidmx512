@@ -108,14 +108,17 @@ E131Controller::~E131Controller() {
 
 	if (m_pE131SynchronizationPacket != nullptr) {
 		delete m_pE131SynchronizationPacket;
+		m_pE131SynchronizationPacket = nullptr;
 	}
 
 	if (m_pE131DiscoveryPacket != nullptr) {
 		delete m_pE131DiscoveryPacket;
+		m_pE131DiscoveryPacket = nullptr;
 	}
 
 	if (m_pE131DataPacket != nullptr) {
 		delete m_pE131DataPacket;
+		m_pE131DataPacket = nullptr;
 	}
 
 	DEBUG_EXIT

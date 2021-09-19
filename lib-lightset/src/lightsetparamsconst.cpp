@@ -1,5 +1,5 @@
 /**
- * @file dmxinput.h
+ * @file lightsetconst.cpp
  *
  */
 /* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,25 +23,41 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXINPUT_H_
-#define DMXINPUT_H_
+#include "lightsetparamsconst.h"
 
-#include <cstdint>
+const char LightSetParamsConst::PARAMS_OUTPUT[] = "output";
 
-#include "e131dmx.h"
-#include "dmxmulti.h"
+const char LightSetParamsConst::UNIVERSE[] = "universe";
+const char LightSetParamsConst::UNIVERSE_PORT[4][16] = {
+		"universe_port_a",
+		"universe_port_b",
+		"universe_port_c",
+		"universe_port_d" };
 
-class DmxInput: public E131Dmx, public Dmx {
-public:
-	DmxInput();
+const char LightSetParamsConst::MERGE_MODE[] = "merge_mode";
+const char LightSetParamsConst::MERGE_MODE_PORT[4][18] = {
+		"merge_mode_port_a",
+		"merge_mode_port_b",
+		"merge_mode_port_c",
+		"merge_mode_port_d" };
 
-	void Start(uint32_t nPortIndex);
-	void Stop(uint32_t nPortIndex);
+const char LightSetParamsConst::DIRECTION[4][18] = {
+		"direction_port_a",
+		"direction_port_b",
+		"direction_port_c",
+		"direction_port_d" };
 
-	const uint8_t *Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
+const char LightSetParamsConst::START_UNI_PORT[8][18] = {
+		"start_uni_port_1",
+		"start_uni_port_2",
+		"start_uni_port_3",
+		"start_uni_port_4",
+		"start_uni_port_5",
+		"start_uni_port_6",
+		"start_uni_port_7",
+		"start_uni_port_8" };
 
-private:
-	static uint8_t s_nStarted;
-};
+const char LightSetParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
+const char LightSetParamsConst::DMX_SLOT_INFO[] = "dmx_slot_info";
 
-#endif /* DMXINPUT_H_ */
+const char LightSetParamsConst::TEST_PATTERN[] = "test_pattern";

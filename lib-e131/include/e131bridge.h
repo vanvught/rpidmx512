@@ -60,33 +60,35 @@ struct State {
 };
 
 struct Source {
-	uint32_t time;
-	uint32_t ip;
-	uint8_t data[E131::DMX_LENGTH];
+	uint32_t nMillis;
+	uint32_t nIp;
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
 	uint8_t cid[E131::CID_LENGTH];
-	uint8_t sequenceNumberData;
+	uint8_t nSequenceNumberData;
+};
+
+struct GenericPort {
+	uint16_t nUniverse;
+	bool bIsEnabled;
 };
 
 struct OutputPort {
-	uint8_t data[E131::DMX_LENGTH];
-	uint32_t length;
-	uint16_t nUniverse;
-	e131::Merge mergeMode;
+	GenericPort genericPort;
+	Source sourceA;
+	Source sourceB;
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
+	uint32_t nLength;
+	lightset::MergeMode mergeMode;
 	bool IsDataPending;
-	bool bIsEnabled;
-	bool IsTransmitting;
 	bool IsMerging;
-	struct Source sourceA;
-	struct Source sourceB;
+	bool IsTransmitting;
 };
 
 struct InputPort {
-	uint16_t nUniverse;
-	bool bIsEnabled;
-	bool IsTransmitting;
+	GenericPort genericPort;
+	uint32_t nMulticastIp;
 	uint8_t nSequenceNumber;
 	uint8_t nPriority;
-	uint32_t nMulticastIp;
 };
 }  // namespace e131bridge
 
@@ -101,11 +103,11 @@ public:
 		m_pLightSet = pLightSet;
 	}
 
-	void SetUniverse(uint32_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
-	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
+	void SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse);
+	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir tDir) const;
 
-	void SetMergeMode(uint32_t nPortIndex, e131::Merge tE131Merge);
-	e131::Merge GetMergeMode(uint32_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode);
+	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const;
 
 	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
@@ -198,8 +200,8 @@ private:
 	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
 
 	void CheckMergeTimeouts(uint32_t nPortIndex);
-	bool IsPriorityTimeOut(uint32_t nPortIndex);
-	bool isIpCidMatch(const struct e131bridge::Source *);
+	bool IsPriorityTimeOut(uint32_t nPortIndex) const;
+	bool isIpCidMatch(const struct e131bridge::Source *) const;
 
 	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 

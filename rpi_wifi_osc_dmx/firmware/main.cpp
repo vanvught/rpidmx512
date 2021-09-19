@@ -38,6 +38,7 @@
 #include "oscserver.h"
 
 // DMX output
+#include "dmx.h"
 #include "dmxparams.h"
 #include "dmxsend.h"
 #if defined(ORANGE_PI)
@@ -67,8 +68,6 @@
 #endif
 
 #include "software_version.h"
-
-using namespace lightset;
 
 constexpr char NETWORK_INIT[] = "Network init ...";
 constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
@@ -113,17 +112,17 @@ void notmain(void) {
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
 
 	console_puts("WiFi OSC Server ");
-	console_set_fg_color(tOutputType == OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == lightset::OutputType::DMX ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == lightset::OutputType::MONITOR ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Real-time DMX Monitor");
 	console_set_fg_color(CONSOLE_WHITE);
 #endif
 	console_puts(" / ");
-	console_set_fg_color(tOutputType == OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color(tOutputType == lightset::OutputType::SPI ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("Pixel controller {1 Universe}");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifdef H3
@@ -142,10 +141,11 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	DmxSend dmx;
+	Dmx dmx;
+	DmxSend dmxSend;
 	LightSet *pSpi = nullptr;
 
-	if (tOutputType == OutputType::SPI) {
+	if (tOutputType == lightset::OutputType::SPI) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
 #if defined (ORANGE_PI)
@@ -180,7 +180,7 @@ void notmain(void) {
 		server.SetOscServerHandler(new Handler(pPixelDmx));
 	}
 #ifndef H3
-	else if (tOutputType == OutputType::MONITOR) {
+	else if (tOutputType == lightset::OutputType::MONITOR) {
 		// There is support for HEX output only
 		server.SetOutput(&monitor);
 		monitor.Cls();
@@ -198,25 +198,25 @@ void notmain(void) {
 			dmxparams.Set(&dmx);
 		}
 
-		server.SetOutput(&dmx);
+		server.SetOutput(&dmxSend);
 	}
 
 	server.Print();
 
-	if (tOutputType == OutputType::SPI) {
+	if (tOutputType == lightset::OutputType::SPI) {
 		assert(pSpi != 0);
 		pSpi->Print();
-	} else 	if (tOutputType == OutputType::MONITOR) {
+	} else 	if (tOutputType == lightset::OutputType::MONITOR) {
 		printf(" Server ip-address    : " IPSTR "\n\n\n", IP2STR(nw.GetIp()));
 	} else {
-		dmx.Print();
+		dmxSend.Print();
 	}
 
 	for (uint8_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
-	display.Printf(1, "WiFi OSC %s", tOutputType == OutputType::SPI ? "Pixel" : "DMX");
+	display.Printf(1, "WiFi OSC %s", tOutputType == lightset::OutputType::SPI ? "Pixel" : "DMX");
 
 	if (nw.GetOpmode() == WIFI_STA) {
 		display.Printf(2, "S: %s", nw.GetSsid());

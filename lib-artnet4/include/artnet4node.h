@@ -43,7 +43,7 @@ class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node(uint8_t nPages = 1);
 
-	void SetPort(uint32_t nPortIndex, artnet::PortDir dir) override;
+	void SetPort(uint32_t nPortIndex, lightset::PortDir dir) override;
 
 	void HandleAddress(uint8_t nCommand) override;
 	uint8_t GetStatus(uint32_t nPortIndex) override;

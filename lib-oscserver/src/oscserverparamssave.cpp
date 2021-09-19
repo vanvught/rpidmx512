@@ -36,7 +36,7 @@
 #include "oscserverconst.h"
 #include "oscparamsconst.h"
 
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "propertiesbuilder.h"
 
