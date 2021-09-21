@@ -391,9 +391,6 @@ void notmain(void) {
 	}
 
 	if (bRunRtpMidi) {
-#if defined (ENABLE_HTTPD)
-		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=RDMNet LLRP Only");
-#endif
 		rtpMidi.Print();
 	}
 
