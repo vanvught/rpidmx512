@@ -41,7 +41,6 @@
 #include "e131msgconst.h"
 #include "storee131.h"
 
-// Addressable led
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
@@ -50,10 +49,6 @@
 #include "ws28xxdmx.h"
 #include "h3/ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
-// PWM Led
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmx.h"
-#include "storetlc59711.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -78,10 +73,6 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreE131 storeE131;
-	StoreWS28xxDmx storeWS28xxDmx;
-	StoreTLC59711 storeTLC59711;
-
 	fw.Print("Ethernet sACN E1.31 " "\x1b[32m" "Pixel controller {1x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
@@ -96,8 +87,10 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	E131Bridge bridge;
+	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
+
+	E131Bridge bridge;
 
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
@@ -112,66 +105,44 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-	auto isPixelUniverseSet = false;
-	const auto nStartUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
-
-	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
-
-	LightSet *pSpi = nullptr;
-	auto isLedTypeSet = false;
-
-	TLC59711DmxParams pwmledparms(&storeTLC59711);
-
-	if (pwmledparms.Load()) {
-		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			auto *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != nullptr);
-			pwmledparms.Dump();
-			pwmledparms.Set(pTLC59711Dmx);
-			pSpi = pTLC59711Dmx;
-
-			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-		}
-	}
-
 	PixelTestPattern *pPixelTestPattern = nullptr;
 
-	if (!isLedTypeSet) {
-		assert(pSpi == nullptr);
+	WS28xxDmx pixelDmx(pixelDmxConfiguration);
+	pixelDmx.SetPixelDmxHandler(new PixelDmxStartStop);
 
-		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
-		assert(pWS28xxDmx != nullptr);
-		pSpi = pWS28xxDmx;
+	display.Printf(7, "%s:%d G%d",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount());
 
-		pWS28xxDmx->SetPixelDmxHandler(new PixelDmxStartStop);
+	uint8_t nTestPattern;
 
-		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
+		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+		assert(pPixelTestPattern != nullptr);
+		bridge.SetOutput(nullptr);
 
-		const auto nUniverses = pWS28xxDmx->GetUniverses();
+	} else {
+		auto isPixelUniverseSet = false;
+		const auto nStartUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
+
+		bridge.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
+
+		const auto nUniverses = pixelDmx.GetUniverses();
 
 		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 		}
 
-		uint8_t nTestPattern;
-		if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-			pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
-		}
-	}
-
-	if (pPixelTestPattern != nullptr) {
-		bridge.SetOutput(nullptr);
-	} else {
-		bridge.SetOutput(pSpi);
+		bridge.SetOutput(&pixelDmx);
 	}
 
 	bridge.Print();
-
-	pSpi->Print();
+	pixelDmx.Print();
 
 	display.SetTitle("Eth sACN Pixel 1");
-	display.Set(2, displayudf::Labels::BOARDNAME);
-	display.Set(3, displayudf::Labels::IP);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::AP);

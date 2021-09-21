@@ -232,7 +232,7 @@ private:
 	void HandleGetParamsTxt(uint32_t& nSize);
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || (OUTPUT_DMX_TLC59711)
 	void HandleGetDevicesTxt(uint32_t& nSize);
 #endif
 
@@ -298,7 +298,7 @@ private:
 	void HandleTxtFileParams();
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || (OUTPUT_DMX_TLC59711)
 	void HandleTxtFileDevices();
 #endif
 

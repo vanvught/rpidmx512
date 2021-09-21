@@ -139,6 +139,9 @@
 /* devices.txt */
 # include "ws28xxdmxparams.h"
 # include "storews28xxdmx.h"
+#endif
+#if defined (OUTPUT_DMX_TLC59711)
+/* devices.txt */
 # include "tlc59711dmxparams.h"
 # include "storetlc59711.h"
 #endif
@@ -642,7 +645,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		HandleGetParamsTxt(nSize);
 		break;
 #endif
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 	case TxtFile::DEVICES:
 		HandleGetDevicesTxt(nSize);
 		break;
@@ -818,26 +821,32 @@ void RemoteConfig::HandleGetParamsTxt(uint32_t& nSize) {
 }
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 void RemoteConfig::HandleGetDevicesTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-# if defined (RDM_RESPONDER)
+# if defined (OUTPUT_DMX_TLC59711)
 	bool bIsSetLedType = false;
 
 	TLC59711DmxParams tlc5911params(StoreTLC59711::Get());
 
 	if (tlc5911params.Load()) {
+#  if defined (OUTPUT_DMX_PIXEL)
 		if ((bIsSetLedType = tlc5911params.IsSetLedType()) == true) {
+#  endif
 			tlc5911params.Save(s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+#  if defined (OUTPUT_DMX_PIXEL)
 		}
+#  endif
 	}
 
 	if (!bIsSetLedType) {
 # endif
+#if defined (OUTPUT_DMX_PIXEL)
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 		ws28xxparms.Save(s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
-# if defined (RDM_RESPONDER)
+#endif
+# if defined (OUTPUT_DMX_TLC59711)
 	}
 #endif
 
@@ -1075,7 +1084,7 @@ void RemoteConfig::HandleTxtFile(void *pBuffer, uint32_t nBufferLength) {
 		HandleTxtFileParams();
 		break;
 #endif
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 	case TxtFile::DEVICES:
 		HandleTxtFileDevices();
 		break;
@@ -1347,13 +1356,14 @@ void RemoteConfig::HandleTxtFileParams() {
 }
 #endif
 
-#if defined (OUTPUT_DMX_PIXEL)
+#if defined (OUTPUT_DMX_PIXEL) || defined (OUTPUT_DMX_TLC59711)
 void RemoteConfig::HandleTxtFileDevices() {
 	DEBUG_ENTRY
 
-# if defined (RDM_RESPONDER)
+# if defined (OUTPUT_DMX_TLC59711)
+#  if defined (OUTPUT_DMX_PIXEL)
 	static_assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct TWS28xxDmxParams), "");
-
+#  endif
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
 
 #if !defined(DISABLE_BIN)
@@ -1377,6 +1387,7 @@ void RemoteConfig::HandleTxtFileDevices() {
 
 	if (!tlc59711params.IsSetLedType()) {
 # endif
+#if defined (OUTPUT_DMX_PIXEL)
 		WS28xxDmxParams ws28xxparms(StoreWS28xxDmx::Get());
 
 #if !defined(DISABLE_BIN)
@@ -1390,13 +1401,13 @@ void RemoteConfig::HandleTxtFileDevices() {
 				return;
 			}
 		}
-#endif
-
+#  endif
 		ws28xxparms.Load(s_pUdpBuffer, m_nBytesReceived);
-# ifndef NDEBUG
+#  ifndef NDEBUG
 		ws28xxparms.Dump();
+#  endif
 # endif
-# if defined (RDM_RESPONDER)
+# if defined (OUTPUT_DMX_TLC59711)
 	}
 # endif
 
