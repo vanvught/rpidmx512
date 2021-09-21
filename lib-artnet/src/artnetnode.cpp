@@ -257,21 +257,18 @@ void ArtNetNode::Run() {
 		}
 
 		if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= (1 * 1000)) {
-			if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
-				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-				m_State.bIsReceivingDmx = false;
-			}
+			m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
 		}
 
 		if (m_pArtNetDmx != nullptr) {
 			HandleDmxIn();
+		}
 
-			if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
-				if (m_State.bIsReceivingDmx) {
-					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
-				} else {
-					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-				}
+		if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
+			if (m_State.nReceivingDmx != 0) {
+				LedBlink::Get()->SetMode(ledblink::Mode::DATA);
+			} else {
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			}
 		}
 
@@ -348,7 +345,7 @@ void ArtNetNode::Run() {
 	}
 
 	if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
-		if (m_State.bIsReceivingDmx) {
+		if (m_State.nReceivingDmx != 0) {
 			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {
 			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);

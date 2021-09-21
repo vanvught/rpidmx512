@@ -30,7 +30,8 @@
 #define ARTNETPARAMS_H_
 
 #include <cstdint>
-#include <time.h>
+#include <climits>
+#include <cassert>
 
 #include "artnetnode.h"
 
@@ -160,21 +161,14 @@ public:
 	}
 
 	uint8_t GetUniverse(uint8_t nPortIndex, bool &IsSet) const {
-		if (nPortIndex < ArtNet::PORTS) {
-			IsSet = isMaskSet(artnetparams::Mask::UNIVERSE_A << nPortIndex);
-			return m_tArtNetParams.nUniversePort[nPortIndex];
-		}
-
-		IsSet = false;
-		return 0;
+		assert(nPortIndex < ArtNet::PORTS);
+		IsSet = isMaskSet(artnetparams::Mask::UNIVERSE_A << nPortIndex);
+		return m_tArtNetParams.nUniversePort[nPortIndex];
 	}
 
 	lightset::PortDir GetDirection(uint32_t nPortIndex = 0) const {
-		if (nPortIndex < ArtNet::PORTS) {
-			return static_cast<lightset::PortDir>((m_tArtNetParams.nDirection >> nPortIndex) & 0x1);
-		} else {
-			return lightset::PortDir::OUTPUT;
-		}
+		assert(nPortIndex < CHAR_BIT);
+		return static_cast<lightset::PortDir>((m_tArtNetParams.nDirection >> nPortIndex) & 0x1);
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);

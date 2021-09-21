@@ -27,7 +27,7 @@
 #define E131BRIDGE_H_
 
 #include <cstdint>
-#include <assert.h>
+#include <cassert>
 
 #include "e131.h"
 #include "e131packets.h"
@@ -47,7 +47,6 @@ struct State {
 	bool IsChanged;
 	bool bDisableNetworkDataLossTimeout;
 	bool bDisableMergeTimeout;
-	bool bIsReceivingDmx;
 	bool bDisableSynchronize;
 	uint32_t SynchronizationTime;
 	uint32_t DiscoveryTime;
@@ -57,6 +56,7 @@ struct State {
 	uint8_t nActiveInputPorts;
 	uint8_t nActiveOutputPorts;
 	uint8_t nPriority;
+	uint8_t nReceivingDmx;
 };
 
 struct Source {
@@ -106,8 +106,15 @@ public:
 	void SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse);
 	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir tDir) const;
 
-	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode);
-	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode) {
+		assert(nPortIndex < E131::PORTS);
+		m_OutputPort[nPortIndex].mergeMode = mergeMode;
+	}
+
+	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].mergeMode;
+	}
 
 	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
@@ -117,8 +124,16 @@ public:
 		return m_State.nActiveInputPorts;
 	}
 
-	bool IsTransmitting(uint32_t nPortIndex) const;
-	bool IsMerging(uint32_t nPortIndex) const;
+	bool IsTransmitting(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].IsTransmitting;
+	}
+
+	bool IsMerging(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].IsMerging;
+	}
+
 	bool IsStatusChanged();
 
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
@@ -208,7 +223,6 @@ private:
 	void HandleDmx();
 	void HandleSynchronization();
 
-	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
 	void LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse);
 
 	// Input

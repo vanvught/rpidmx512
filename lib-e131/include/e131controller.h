@@ -68,7 +68,7 @@ public:
 
 	void SetSynchronizationAddress(uint16_t nSynchronizationAddress = DEFAULT_SYNCHRONIZATION_ADDRESS) {
 		m_State.SynchronizationPacket.nUniverseNumber = nSynchronizationAddress;
-		m_State.SynchronizationPacket.nIpAddress = UniverseToMulticastIp(nSynchronizationAddress);
+		m_State.SynchronizationPacket.nIpAddress = e131::universe_to_multicast_ip(nSynchronizationAddress);
 	}
 	uint16_t GetSynchronizationAddress() const {
 		return m_State.SynchronizationPacket.nUniverseNumber;
@@ -95,7 +95,6 @@ public:
 	}
 
 private:
-	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
 	void FillDataPacket();
 	void FillDiscoveryPacket();
 	void FillSynchronizationPacket();

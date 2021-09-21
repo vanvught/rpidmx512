@@ -27,6 +27,8 @@
 #define E131_H_
 
 #include <cstdint>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 namespace e131 {
 static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
@@ -69,6 +71,14 @@ namespace universe {
 static constexpr auto DISCOVERY_UNIVERSE_LIST = 0x00000001;
 }  // namespace universe
 }  // namespace vector
+
+inline static uint32_t universe_to_multicast_ip(uint16_t nUniverse) {
+	struct in_addr group_ip;
+	inet_aton("239.255.0.0", &group_ip);
+	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
+	return nMulticastIp;
+}
+
 }  // namespace e131
 
 struct E131 {

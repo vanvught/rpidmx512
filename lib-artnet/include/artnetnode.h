@@ -93,7 +93,7 @@ struct State {
 	bool IsMergeMode;
 	bool IsChanged;
 	bool bDisableMergeTimeout;
-	bool bIsReceivingDmx;
+	uint8_t nReceivingDmx;
 	uint8_t nActiveOutputPorts;
 	uint8_t nActiveInputPorts;
 	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.

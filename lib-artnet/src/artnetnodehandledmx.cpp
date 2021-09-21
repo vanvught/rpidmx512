@@ -199,7 +199,7 @@ void ArtNetNode::HandleDmx() {
 				}
 			}
 
-			m_State.bIsReceivingDmx = true;
+			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
 		}
 	}
 }

@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -58,7 +60,6 @@ E131Bridge::E131Bridge() {
 
 	for (uint32_t i = 0; i < E131::PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(OutputPort));
-		m_OutputPort[i].mergeMode = lightset::MergeMode::HTP;
 		memset(&m_InputPort[i], 0, sizeof(InputPort));
 		m_InputPort[i].nPriority = 100;
 	}
@@ -139,17 +140,6 @@ void E131Bridge::SetSourceName(const char *pSourceName) {
 #endif
 }
 
-uint32_t E131Bridge::UniverseToMulticastIp(uint16_t nUniverse) const {
-	struct in_addr group_ip;
-	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
-
-	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
-
-	DEBUG_PRINTF(IPSTR, IP2STR(nMulticastIp));
-
-	return nMulticastIp;
-}
-
 void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("bSourceA=%d, bSourceB=%d, nSynchronizationAddress=%d", bSourceA, bSourceB, nSynchronizationAddress);
@@ -181,7 +171,7 @@ void E131Bridge::SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_
 		return;
 	}
 
-	Network::Get()->JoinGroup(m_nHandle, UniverseToMulticastIp(nSynchronizationAddress));
+	Network::Get()->JoinGroup(m_nHandle, universe_to_multicast_ip(nSynchronizationAddress));
 
 	DEBUG_EXIT
 }
@@ -202,7 +192,7 @@ void E131Bridge::LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 		}
 	}
 
-	Network::Get()->LeaveGroup(m_nHandle, UniverseToMulticastIp(nUniverse));
+	Network::Get()->LeaveGroup(m_nHandle, universe_to_multicast_ip(nUniverse));
 
 	DEBUG_EXIT
 }
@@ -224,7 +214,7 @@ void E131Bridge::SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_
 		}
 
 		m_InputPort[nPortIndex].genericPort.nUniverse = nUniverse;
-		m_InputPort[nPortIndex].nMulticastIp = UniverseToMulticastIp(nUniverse);
+		m_InputPort[nPortIndex].nMulticastIp = universe_to_multicast_ip(nUniverse);
 
 		return;
 	}
@@ -262,7 +252,7 @@ void E131Bridge::SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_
 		m_OutputPort[nPortIndex].genericPort.bIsEnabled = true;
 	}
 
-	Network::Get()->JoinGroup(m_nHandle, UniverseToMulticastIp(nUniverse));
+	Network::Get()->JoinGroup(m_nHandle, universe_to_multicast_ip(nUniverse));
 
 	m_OutputPort[nPortIndex].genericPort.nUniverse = nUniverse;
 }
@@ -283,18 +273,6 @@ bool E131Bridge::GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset:
 	nUniverse = m_OutputPort[nPortIndex].genericPort.nUniverse;
 
 	return m_OutputPort[nPortIndex].genericPort.bIsEnabled;
-}
-
-void E131Bridge::SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode) {
-	assert(nPortIndex < E131::PORTS);
-
-	m_OutputPort[nPortIndex].mergeMode = mergeMode;
-}
-
-lightset::MergeMode E131Bridge::GetMergeMode(uint32_t nPortIndex) const {
-	assert(nPortIndex < E131::PORTS);
-
-	return m_OutputPort[nPortIndex].mergeMode;
 }
 
 void E131Bridge::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
@@ -571,7 +549,7 @@ void E131Bridge::HandleDmx() {
 			}
 		}
 
-		m_State.bIsReceivingDmx = true;
+		m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
 	}
 }
 
@@ -629,19 +607,10 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	}
 
 	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-	m_State.bIsReceivingDmx = false;
+
+	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
 
 	DEBUG_EXIT
-}
-
-bool E131Bridge::IsTransmitting(uint32_t nPortIndex) const {
-	assert(nPortIndex < E131::PORTS);
-	return m_OutputPort[nPortIndex].IsTransmitting;
-}
-
-bool E131Bridge::IsMerging(uint32_t nPortIndex) const {
-	assert(nPortIndex < E131::PORTS);
-	return m_OutputPort[nPortIndex].IsMerging;
 }
 
 bool E131Bridge::IsStatusChanged() {
@@ -735,26 +704,22 @@ void E131Bridge::Run() {
 				}
 			}
 
-			// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
-				if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
-					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-					m_State.bIsReceivingDmx = false;
-				}
+			if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
+				m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
 			}
 		}
 
 		if (m_pE131DmxIn != nullptr) {
 			HandleDmxIn();
 			SendDiscoveryPacket();
+		}
 
-			// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
-			if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
-				if (m_State.bIsReceivingDmx) {
-					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
-				} else {
-					LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
-				}
+		// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
+		if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
+			if (m_State.nReceivingDmx != 0) {
+				LedBlink::Get()->SetMode(ledblink::Mode::DATA);
+			} else {
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			}
 		}
 
@@ -798,7 +763,7 @@ void E131Bridge::Run() {
 
 	// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
 	if (m_bEnableDataIndicator && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
-		if (m_State.bIsReceivingDmx) {
+		if (m_State.nReceivingDmx != 0) {
 			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {
 			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);

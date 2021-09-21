@@ -64,10 +64,9 @@ void E131Bridge::HandleDmxIn() {
 	assert(m_pE131DataPacket != nullptr);
 
 	for (uint32_t i = 0 ; i < E131::PORTS; i++) {
-		uint32_t nUpdatesPerSecond;
-
 		if (m_InputPort[i].genericPort.bIsEnabled) {
 			uint32_t nLength;
+			uint32_t nUpdatesPerSecond;
 			const auto *pDmxData = m_pE131DmxIn->Handler(i, nLength, nUpdatesPerSecond);
 
 			if (pDmxData != nullptr) {
@@ -85,12 +84,14 @@ void E131Bridge::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
 
-				s_ReceivingMask = (1U << i);
-				m_State.bIsReceivingDmx = true;
+				s_ReceivingMask |= (1U << i);
+				m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
 			} else {
 				if (nUpdatesPerSecond == 0) {
 					s_ReceivingMask &= ~(1U << i);
-					m_State.bIsReceivingDmx = (s_ReceivingMask != 0);
+					if (s_ReceivingMask == 0) {
+						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
+					}
 				}
 			}
 		}
