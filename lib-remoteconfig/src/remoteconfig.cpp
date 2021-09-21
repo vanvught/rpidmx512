@@ -1175,7 +1175,7 @@ void RemoteConfig::HandleTxtFileRconfig() {
 #endif
 
 	remoteConfigParams.Load(s_pUdpBuffer, m_nBytesReceived);
-	SetDisplayName(remoteConfigParams.GetDisplayName());
+	remoteConfigParams.Set(this);
 #ifndef NDEBUG
 	remoteConfigParams.Dump();
 #endif
