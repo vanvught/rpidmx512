@@ -30,6 +30,10 @@
 
 #include "pixelconfiguration.h"
 
+#if defined (H3)
+# include "h3_spi.h"
+#endif
+
 class WS28xx {
 public:
 	WS28xx(PixelConfiguration& pixelConfiguration);
@@ -40,10 +44,15 @@ public:
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
-
+#if defined ( H3 )
+	bool IsUpdating () {
+		return h3_spi_dma_tx_is_active();
+	}
+#else
 	bool IsUpdating() const {
 		return false;
 	}
+#endif
 
 	void Update();
 	void Blackout();
