@@ -33,6 +33,7 @@
 #include "ntp_internal.h"
 
 #include "net.h"
+#include "net_memcpy.h"
 #include "net_packets.h"
 #include "net_debug.h"
 
@@ -221,7 +222,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 
 	const uint32_t i = MIN(size, p_queue_entry->size);
 
-	memcpy(packet, p_queue_entry->data, i);
+	net_memcpy(packet, p_queue_entry->data, i);
 
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
@@ -313,7 +314,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 	s_send_packet.udp.destination_port = __builtin_bswap16(remote_port);
 	s_send_packet.udp.len = __builtin_bswap16((uint16_t)(size + UDP_HEADER_SIZE));
 
-	memcpy(s_send_packet.udp.data, packet, MIN(UDP_DATA_SIZE, size));
+	net_memcpy(s_send_packet.udp.data, packet, MIN(UDP_DATA_SIZE, size));
 
 	debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 

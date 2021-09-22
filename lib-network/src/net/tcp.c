@@ -339,7 +339,7 @@ static void _tcp_send_package(struct tcb *p_tcb, struct send_info *info) {
 
 	DEBUG_PRINTF("SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, p_tcb->TX.size=%u", s_tcp.tcp.seqnum, s_tcp.tcp.acknum, tcplen, data_offset, p_tcb->TX.size);
 
-	if ((p_tcb->TX.data != NULL) && (p_tcb->TX.size > 0)) {
+	if (p_tcb->TX.data != NULL) {
 		for (i = 0; i < p_tcb->TX.size; i++) {
 			*data++ = p_tcb->TX.data[i];
 		}
