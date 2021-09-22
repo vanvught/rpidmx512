@@ -80,10 +80,6 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 }
 
 WS28xx::~WS28xx() {
-#if defined( H3 )
-	m_pBlackoutBuffer = nullptr;
-	m_pBuffer = nullptr;
-#else
 	if (m_pBlackoutBuffer != nullptr) {
 		delete [] m_pBlackoutBuffer;
 		m_pBlackoutBuffer = nullptr;
@@ -93,24 +89,13 @@ WS28xx::~WS28xx() {
 		delete [] m_pBuffer;
 		m_pBuffer = nullptr;
 	}
-#endif
 
 	s_pThis = nullptr;
 }
 
 void WS28xx::SetupBuffers() {
 	DEBUG_ENTRY
-#if defined( H3 )
-	uint32_t nSize;
 
-	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
-	assert(m_pBuffer != nullptr);
-
-	const uint32_t nSizeHalf = nSize / 2;
-	assert(m_nBufSize <= nSizeHalf);
-
-	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
-#else
 	assert(m_pBuffer == nullptr);
 	m_pBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBuffer != nullptr);
@@ -118,7 +103,6 @@ void WS28xx::SetupBuffers() {
 	assert(m_pBlackoutBuffer == nullptr);
 	m_pBlackoutBuffer = new uint8_t[m_nBufSize];
 	assert(m_pBlackoutBuffer != nullptr);
-#endif
 
 	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
@@ -142,29 +126,12 @@ void WS28xx::SetupBuffers() {
 
 void WS28xx::Update() {
 	assert (m_pBuffer != nullptr);
-#if defined( H3 )
-	assert(!IsUpdating());
-
-	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
-#else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
-#endif
 }
 
 void WS28xx::Blackout() {
 	assert (m_pBlackoutBuffer != nullptr);
-#if defined( H3 )
-	assert(!IsUpdating());
-
-	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
-
-	// A blackout may not be interrupted.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (h3_spi_dma_tx_is_active());
-#else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
-#endif
 }
 
 void WS28xx::Print() {
