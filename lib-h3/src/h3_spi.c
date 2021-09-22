@@ -600,17 +600,9 @@ void h3_spi_dma_tx_start(const uint8_t *tx_buffer, uint32_t data_length) {
 	EXT_SPI->IS = (uint32_t) ~0;
 	EXT_SPI->IE = IE_TC;
 
-	if (s_ws28xx_mode) {
-		EXT_SPI->MBC = data_length + 1;
-		EXT_SPI->MTC = data_length + 1;
-		EXT_SPI->BCC = data_length + 1;
-
-		EXT_SPI->TX.byte = 0x00;
-	} else {
-		EXT_SPI->MBC = data_length;
-		EXT_SPI->MTC = data_length;
-		EXT_SPI->BCC = data_length;
-	}
+	EXT_SPI->MBC = data_length;
+	EXT_SPI->MTC = data_length;
+	EXT_SPI->BCC = data_length;
 
 	EXT_SPI->TC |= (1U << 31);
 	EXT_SPI->FC |= (1 << 24);
