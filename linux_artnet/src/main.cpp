@@ -180,6 +180,7 @@ int main(int argc, char **argv) {
 
 	for (;;) {
 		node.Run();
+		mDns.Run();
 		identify.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();

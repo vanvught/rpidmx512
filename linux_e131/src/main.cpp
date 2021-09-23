@@ -130,6 +130,7 @@ int main(int argc, char **argv) {
 
 	for (;;) {
 		bridge.Run();
+		mDns.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 	}
