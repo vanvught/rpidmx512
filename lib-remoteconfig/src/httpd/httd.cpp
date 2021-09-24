@@ -43,6 +43,7 @@ extern int get_file_content(const char *fileName, char *pDst);
 
 #include "network.h"
 #include "hardware.h"
+#include "ledblink.h"
 #include "display.h"
 
 #include "debug.h"
@@ -411,7 +412,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 		m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived);
 	}
 
-	DEBUG_PRINTF("%d|%.*s|->%d\n", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
+	DEBUG_PRINTF("%d|%.*s|->%d", m_nFileDataLength, m_nFileDataLength, m_pFileData, m_IsAction);
 
 	if (m_IsAction) {
 		if (properties::convert_json_file(m_pFileData, m_nFileDataLength, true) <= 0) {
@@ -434,6 +435,13 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 		} else if (Sscan::Uint8(m_pFileData, "display", value8) == Sscan::OK) {
 			Display::Get()->SetSleep(value8 == 0);
 			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
+		} else if (Sscan::Uint8(m_pFileData, "identify", value8) == Sscan::OK) {
+			if (value8 != 0) {
+				LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+			} else {
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+			}
+			DEBUG_PRINTF("identify=%d", value8 != 0);
 		} else {
 			DEBUG_PUTS("Status::BAD_REQUEST");
 			return Status::BAD_REQUEST;
