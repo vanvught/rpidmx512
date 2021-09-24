@@ -403,8 +403,8 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 	uint16_t SEG_LEN;
 
 	const uint16_t tcplen = __builtin_bswap16(p_tcp->ip4.len) - (uint16_t) sizeof(struct ip4_header);
-	const uint16_t data_offset = offset2octets(p_tcp->tcp.offset);
-	const uint16_t data_length = tcplen - data_offset;
+	const uint16_t data_offset = (uint16_t)(offset2octets(p_tcp->tcp.offset));
+	const uint16_t data_length = (uint16_t)(tcplen - data_offset);
 
 	/*
 	 * Page 65 SEGMENT ARRIVES
@@ -734,7 +734,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 					p_queue_entry->size = data_length;
 
 					l_tcb->RCV.NXT += data_length;
-					l_tcb->RCV.WND -= TCP_DATA_SIZE;
+					l_tcb->RCV.WND -= (uint16_t)TCP_DATA_SIZE;
 
 					info.seq = l_tcb->SND.NXT;
 					info.ack = l_tcb->RCV.NXT;
@@ -742,7 +742,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 
 					_tcp_send_package(l_tcb, &info);
 
-					s_recv_queue[connection_index].queue_head = (s_recv_queue[connection_index].queue_head + 1) & TCP_RX_MAX_ENTRIES_MASK;
+					s_recv_queue[connection_index].queue_head = (uint16_t)((s_recv_queue[connection_index].queue_head + 1) & TCP_RX_MAX_ENTRIES_MASK);
 				} else {
 					info.seq = l_tcb->SND.NXT;
 					info.ack = l_tcb->RCV.NXT;
@@ -921,9 +921,9 @@ uint16_t tcp_read(int handle, const uint8_t **p) {
 	*p = p_queue_entry->data;
 	size = p_queue_entry->size;
 
-	l_tcb->RCV.WND += TCP_DATA_SIZE;
+	l_tcb->RCV.WND += (uint16_t)TCP_DATA_SIZE;
 
-	s_recv_queue[handle].queue_tail = (s_recv_queue[handle].queue_tail + 1) & TCP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[handle].queue_tail = (uint16_t)((s_recv_queue[handle].queue_tail + 1) & TCP_RX_MAX_ENTRIES_MASK);
 
 	return size;
 }
