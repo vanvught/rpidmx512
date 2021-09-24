@@ -24,6 +24,7 @@
  */
 
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #if defined ENABLE_CONTENT
