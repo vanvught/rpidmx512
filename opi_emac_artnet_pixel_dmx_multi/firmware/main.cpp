@@ -153,9 +153,9 @@ void notmain(void) {
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
-	uint8_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndex = 0;
 
-	for (uint8_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
+	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		if (isSet) {
@@ -163,9 +163,9 @@ void notmain(void) {
 				node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 				nPortProtocolIndex++;
 			}
-			nPortProtocolIndex = static_cast<uint8_t>(nPortProtocolIndex + ArtNet::PORTS - nUniverses);
+			nPortProtocolIndex = nPortProtocolIndex + static_cast<uint8_t>(ArtNet::PORTS - nUniverses);
 		} else {
-			nPortProtocolIndex = static_cast<uint8_t>(nPortProtocolIndex + ArtNet::PORTS);
+			nPortProtocolIndex = nPortProtocolIndex + ArtNet::PORTS;
 		}
 	}
 

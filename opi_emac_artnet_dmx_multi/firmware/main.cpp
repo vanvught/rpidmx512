@@ -209,7 +209,7 @@ void notmain(void) {
 
 	node.Print();
 
-	const uint32_t nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
+	const auto nActivePorts = static_cast<uint32_t>(node.GetActiveInputPorts() + node.GetActiveOutputPorts());
 
 	display.SetTitle("Art-Net 4 %u", nActivePorts);
 	display.Set(2, displayudf::Labels::NODE_NAME);

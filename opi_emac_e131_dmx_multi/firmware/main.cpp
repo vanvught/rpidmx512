@@ -160,7 +160,7 @@ void notmain(void) {
 
 	bridge.Print();
 
-	const uint32_t nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
+	const auto nActivePorts = static_cast<uint32_t>(bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts());
 
 	display.SetTitle("sACN E1.31 DMX %u", nActivePorts);
 	display.Set(2, displayudf::Labels::IP);

@@ -136,7 +136,7 @@ void notmain(void) {
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
-	uint8_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndex = 0;
 
 	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
