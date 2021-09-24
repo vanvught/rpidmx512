@@ -83,32 +83,15 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-	}
-
-	const auto portDir = artnetparams.GetDirection();
-
 	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
+	console_set_fg_color (CONSOLE_GREEN);
+	console_puts("DMX");
+	console_set_fg_color (CONSOLE_WHITE);
+	console_puts(" / ");
 	console_set_fg_color(CONSOLE_GREEN);
-
-	if (portDir == lightset::PortDir::INPUT) {
-		console_puts("DMX Input");
-	} else {
-		console_puts("DMX Output");
-		console_set_fg_color(CONSOLE_WHITE);
-		console_puts(" / ");
-		console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
-		console_puts("RDM");
-	}
-
+	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
 	console_puts(" {2 Universes}\n");
@@ -126,11 +109,18 @@ void notmain(void) {
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
-	ArtNet4Node node;
-
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	artnetparams.Set(&node);
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+	ArtNet4Params artnetparams(&storeArtNet4);
+
+	ArtNet4Node node;
+
+	if (artnetparams.Load()) {
+		artnetparams.Set(&node);
+		artnetparams.Dump();
+	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
@@ -140,21 +130,21 @@ void notmain(void) {
 
 	nAddress = artnetparams.GetUniverse(0, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(0, portDir, nAddress);
+		node.SetUniverseSwitch(0, artnetparams.GetDirection(0), nAddress);
 	}
 	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(1, portDir, nAddress);
+		node.SetUniverseSwitch(1, artnetparams.GetDirection(1), nAddress);
 	}
 #if defined (ORANGE_PI_ONE)
 	nAddress = artnetparams.GetUniverse(2, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(2, portDir, nAddress);
+		node.SetUniverseSwitch(2, artnetparams.GetDirection(2), nAddress);
 	}
 #ifndef DO_NOT_USE_UART0
 	nAddress = artnetparams.GetUniverse(3, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(3, portDir, nAddress);
+		node.SetUniverseSwitch(3, artnetparams.GetDirection(3), nAddress);
 	}
 #endif
 #endif
