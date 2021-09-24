@@ -103,6 +103,8 @@ void MDNS::Start() {
 	assert(s_nHandle == -1);
 
 	s_nHandle = Network::Get()->Begin(UDP_PORT);
+	assert(s_nHandle != -1);
+
 	Network::Get()->JoinGroup(s_nHandle, s_nMulticastIp);
 
 	if (s_pName == nullptr) {

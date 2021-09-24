@@ -29,10 +29,6 @@
  * LISTEN -> ESTABLISHED -> CLOSE_WAIT -> LAST_ACK -> CLOSED:LISTEN
  */
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
