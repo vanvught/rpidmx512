@@ -102,7 +102,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->Spare4 = 0;
 	pTodData->Spare5 = 0;
 	pTodData->Spare6 = 0;
-	pTodData->BindIndex = nPage + 1U;
+	pTodData->BindIndex = static_cast<uint8_t>(nPage + 1);
 	pTodData->Net = m_Node.NetSwitch[nPage];
 	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
 	pTodData->Address = m_OutputPorts[nPortIndex].genericPort.nDefaultAddress;
