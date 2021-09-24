@@ -1,0 +1,22 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install arm-none-eabi
+      run: sudo apt install gcc-arm-none-eabi
+    - name: make
+      run: |
+        cd wip-c++
+        pwd
+        make
