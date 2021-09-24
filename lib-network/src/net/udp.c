@@ -152,7 +152,7 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	const uint32_t entry = s_recv_queue[port_index].queue_head;
 	struct queue_entry *p_queue_entry = &s_recv_queue[port_index].entries[entry];
 
-	const uint16_t data_length = __builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE;
+	const uint16_t data_length = (uint16_t)(__builtin_bswap16(p_udp->udp.len) - UDP_HEADER_SIZE);
 
 	i = MIN(UDP_DATA_SIZE, data_length);
 
@@ -163,7 +163,7 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	p_queue_entry->from_port = __builtin_bswap16(p_udp->udp.source_port);
 	p_queue_entry->size = i;
 
-	s_recv_queue[port_index].queue_head = (s_recv_queue[port_index].queue_head + 1) & UDP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[port_index].queue_head = (s_recv_queue[port_index].queue_head + 1U) & UDP_RX_MAX_ENTRIES_MASK;
 }
 
 // -->
@@ -227,7 +227,7 @@ uint16_t udp_recv(uint8_t idx, uint8_t *packet, uint16_t size, uint32_t *from_ip
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
 
-	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1) & UDP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1U) & UDP_RX_MAX_ENTRIES_MASK;
 
 	return (uint16_t) i;
 }
@@ -246,7 +246,7 @@ uint16_t udp_recv2(uint8_t idx, const uint8_t **packet, uint32_t *from_ip, uint1
 	*from_ip = p_queue_entry->from_ip;
 	*from_port = p_queue_entry->from_port;
 
-	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1) & UDP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[idx].queue_tail = (s_recv_queue[idx].queue_tail + 1U) & UDP_RX_MAX_ENTRIES_MASK;
 
 	return p_queue_entry->size;
 }

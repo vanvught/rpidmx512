@@ -182,7 +182,7 @@ Status HttpDaemon::ParseRequest() {
 			} else {
 				if (pLine[0] == '\0') {
 					assert((i + 1) <= m_nBytesReceived);
-					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived - 1) - i;
+					m_nFileDataLength = static_cast<uint16_t>(static_cast<uint16_t>(m_nBytesReceived) - 1U - i);
 					if (m_nFileDataLength > 0) {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
