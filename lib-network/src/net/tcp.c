@@ -29,6 +29,15 @@
  * LISTEN -> ESTABLISHED -> CLOSE_WAIT -> LAST_ACK -> CLOSED:LISTEN
  */
 
+#if (__GNUC__ < 9)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"
+#endif
+
+#ifdef NDEBUG
+#undef NDEBUG
+#endif
+
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
@@ -166,7 +175,7 @@ enum {
 	 termination request. */
 };
 
-#define offset2octets(x)  (uint16_t)(((x) >> 4) * 4)
+#define offset2octets(x)  (((x) >> 4) * 4)
 
 /* Modulo 32 sequence number arithmetic */
 /* Kindly copied from
@@ -302,14 +311,14 @@ static void _tcp_send_package(struct tcb *p_tcb, struct send_info *info) {
 		data_offset++;
 	}
 
-	header_length = (uint8_t)(data_offset * 4);
-	tcplen = (uint8_t)(header_length + p_tcb->TX.size);
+	header_length = data_offset * 4;
+	tcplen = header_length + p_tcb->TX.size;
 
 	/* Ethernet */
 	memcpy(s_tcp.ether.dst, p_tcb->remoteeth, ETH_ADDR_LEN);
 	/* IPv4 */
 	s_tcp.ip4.id = s_id++;
-	s_tcp.ip4.len = __builtin_bswap16((uint16_t)(tcplen + sizeof(struct ip4_header)));
+	s_tcp.ip4.len = __builtin_bswap16(tcplen + sizeof(struct ip4_header));
 	memcpy(s_tcp.ip4.dst, &p_tcb->remoteip, IPv4_ADDR_LEN);
 	s_tcp.ip4.chksum = 0;
 	s_tcp.ip4.chksum = net_chksum((void*) &s_tcp.ip4, 20);
@@ -318,7 +327,7 @@ static void _tcp_send_package(struct tcb *p_tcb, struct send_info *info) {
 	s_tcp.tcp.dstpt = p_tcb->remotept;
 	s_tcp.tcp.seqnum = info->seq;
 	s_tcp.tcp.acknum = info->ack;
-	s_tcp.tcp.offset = (uint8_t)(data_offset << 4);
+	s_tcp.tcp.offset = data_offset << 4;
 	s_tcp.tcp.control = info->ctrl;
 	s_tcp.tcp.window =  p_tcb->RCV.WND;
 	s_tcp.tcp.urgent = p_tcb->SND.UP;
@@ -349,7 +358,7 @@ static void _tcp_send_package(struct tcb *p_tcb, struct send_info *info) {
 
 	s_tcp.tcp.checksum = _chksum(&s_tcp, p_tcb, tcplen);
 
-	emac_eth_send((void*) &s_tcp, (int)(tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header)));
+	emac_eth_send((void*) &s_tcp, (int) tcplen + sizeof(struct ip4_header) + sizeof(struct ether_header));
 }
 
 /*
@@ -402,9 +411,9 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 	uint16_t SEG_WND;
 	uint16_t SEG_LEN;
 
-	const uint16_t tcplen = (uint16_t)(__builtin_bswap16(p_tcp->ip4.len) - (uint16_t) sizeof(struct ip4_header));
+	const uint16_t tcplen = __builtin_bswap16(p_tcp->ip4.len) - (uint16_t) sizeof(struct ip4_header);
 	const uint16_t data_offset = offset2octets(p_tcp->tcp.offset);
-	const uint16_t data_length = (uint16_t)(tcplen - data_offset);
+	const uint16_t data_length = tcplen - data_offset;
 
 	/*
 	 * Page 65 SEGMENT ARRIVES
@@ -734,7 +743,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 					p_queue_entry->size = data_length;
 
 					l_tcb->RCV.NXT += data_length;
-					l_tcb->RCV.WND = (uint16_t)(l_tcb->RCV.WND - TCP_DATA_SIZE);
+					l_tcb->RCV.WND -= TCP_DATA_SIZE;
 
 					info.seq = l_tcb->SND.NXT;
 					info.ack = l_tcb->RCV.NXT;
@@ -742,7 +751,7 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 
 					_tcp_send_package(l_tcb, &info);
 
-					s_recv_queue[connection_index].queue_head = (s_recv_queue[connection_index].queue_head + 1U) & TCP_RX_MAX_ENTRIES_MASK;
+					s_recv_queue[connection_index].queue_head = (s_recv_queue[connection_index].queue_head + 1) & TCP_RX_MAX_ENTRIES_MASK;
 				} else {
 					info.seq = l_tcb->SND.NXT;
 					info.ack = l_tcb->RCV.NXT;
@@ -921,9 +930,9 @@ uint16_t tcp_read(int handle, const uint8_t **p) {
 	*p = p_queue_entry->data;
 	size = p_queue_entry->size;
 
-	l_tcb->RCV.WND = (uint16_t)(l_tcb->RCV.WND + TCP_DATA_SIZE);
+	l_tcb->RCV.WND += TCP_DATA_SIZE;
 
-	s_recv_queue[handle].queue_tail = (s_recv_queue[handle].queue_tail + 1U) & TCP_RX_MAX_ENTRIES_MASK;
+	s_recv_queue[handle].queue_tail = (s_recv_queue[handle].queue_tail + 1) & TCP_RX_MAX_ENTRIES_MASK;
 
 	return size;
 }
