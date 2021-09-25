@@ -35,10 +35,6 @@
 # pragma GCC diagnostic ignored "-Wsign-conversion"
 #endif
 
-#ifdef NDEBUG
-#undef NDEBUG
-#endif
-
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
