@@ -49,46 +49,43 @@
 
 namespace artnetnode {
 static constexpr auto MAX_PORTS = ArtNet::PORTS * ArtNet::PAGES;
-}  // namespace artnetnode
 
 /**
  * Table 3 – NodeReport Codes
  * The NodeReport code defines generic error, advisory and status messages for both Nodes and Controllers.
  * The NodeReport is returned in ArtPollReply.
  */
-enum TArtNetNodeReportCode {
-	ARTNET_RCDEBUG,			///<
-	ARTNET_RCPOWEROK,		///<
-	ARTNET_RCPOWERFAIL,		///<
-	ARTNET_RCSOCKETWR1,		///<
-	ARTNET_RCPARSEFAIL,		///<
-	ARTNET_RCUDPFAIL,		///<
-	ARTNET_RCSHNAMEOK,		///<
-	ARTNET_RCLONAMEOK,		///<
-	ARTNET_RCDMXERROR,		///<
-	ARTNET_RCDMXUDPFULL,	///<
-	ARTNET_RCDMXRXFULL,		///<
-	ARTNET_RCSWITCHERR,		///<
-	ARTNET_RCCONFIGERR,		///<
-	ARTNET_RCDMXSHORT,		///<
-	ARTNET_RCFIRMWAREFAIL,	///<
-	ARTNET_RCUSERFAIL     	///<
+enum class ReportCode : uint8_t {
+	RCDEBUG,
+	RCPOWEROK,
+	RCPOWERFAIL,
+	RCSOCKETWR1,
+	RCPARSEFAIL,
+	RCUDPFAIL,
+	RCSHNAMEOK,
+	RCLONAMEOK,
+	RCDMXERROR,
+	RCDMXUDPFULL,
+	RCDMXRXFULL,
+	RCSWITCHERR,
+	RCCONFIGERR,
+	RCDMXSHORT,
+	RCFIRMWAREFAIL,
+	RCUSERFAIL
 };
 
-enum TNodeStatus {
-	ARTNET_OFF,		///<
-	ARTNET_STANDBY,	///<
-	ARTNET_ON		///<
+enum class Status : uint8_t {
+	OFF, STANDBY, ON
 };
 
-struct TArtNetNodeState {
+struct State {
 	uint32_t ArtPollReplyCount;			///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
 	uint32_t IPAddressDiagSend;			///< ArtPoll : Destination IPAddress for the ArtDiag
 	uint32_t IPAddressArtPoll;			///< ArtPoll : IPAddress for the ArtPoll package
-	TArtNetNodeReportCode reportCode;	///< See \ref TArtNetNodeReportCode
-	TNodeStatus status;					///< See \ref TNodeStatus
 	uint32_t nNetworkDataLossTimeoutMillis;
 	uint32_t nArtSyncMillis;			///< Latest ArtSync received time
+	ReportCode reportCode;
+	Status status;
 	bool SendArtPollReplyOnChange;		///< ArtPoll : TalkToMe Bit 1 : 1 = Send ArtPollReply whenever Node conditions change.
 	bool SendArtDiagData;				///< ArtPoll : TalkToMe Bit 2 : 1 = Send me diagnostics messages.
 	bool IsMultipleControllersReqDiag;	///< ArtPoll : Multiple controllers requesting diagnostics
@@ -96,17 +93,16 @@ struct TArtNetNodeState {
 	bool IsMergeMode;
 	bool IsChanged;
 	bool bDisableMergeTimeout;
-	bool bIsReceivingDmx;
+	uint8_t nReceivingDmx;
 	uint8_t nActiveOutputPorts;
 	uint8_t nActiveInputPorts;
 	uint8_t Priority;					///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
 };
 
-struct TArtNetNode {
+struct Node {
 	uint32_t IPAddressLocal;
 	uint32_t IPAddressBroadcast;
 	uint32_t IPSubnetMask;
-	uint32_t IPAddressRemote;						///< The remote IP Address
 	uint32_t IPAddressTimeCode;
 	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];
 	uint8_t NetSwitch[ArtNet::PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
@@ -121,38 +117,41 @@ struct TArtNetNode {
 	uint8_t DefaultUidResponder[6];					///< //RDMnet & LLRP UID
 };
 
-struct TGenericPort {
+struct Source {
+	uint32_t nMillis;	///< The latest time of the data received from port
+	uint32_t nIp;		///< The IP address for port
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
+};
+
+struct GenericPort {
 	uint16_t nPortAddress;		///< One of the 32,768 possible addresses to which a DMX frame can be directed. The Port-Address is a 15 bit number composed of Net+Sub-Net+Universe.
 	uint8_t nDefaultAddress;	///< the address set by the hardware
 	uint8_t nStatus;
-};
-
-struct TOutputPort {
-	uint8_t data[ArtNet::DMX_LENGTH];	///< Data sent
-	uint32_t nLength;					///< Length of sent DMX data
-	uint8_t dataA[ArtNet::DMX_LENGTH];	///< The data received from Port A
-	uint32_t nMillisA;					///< The latest time of the data received from Port A
-	uint32_t ipA;						///< The IP address for port A
-	uint8_t dataB[ArtNet::DMX_LENGTH];	///< The data received from Port B
-	uint32_t nMillisB;					///< The latest time of the data received from Port B
-	uint32_t ipB;						///< The IP address for Port B
-	artnet::Merge mergeMode;				///< \ref artnet::Merge
-	bool IsDataPending;					///< ArtDMX received and waiting for ArtSync
-	bool bIsEnabled;					///< Is the port enabled ?
-	TGenericPort port;					///< \ref TGenericPort
-	artnet::PortProtocol tPortProtocol;		///< Art-Net 4
-};
-
-struct TInputPort {
 	bool bIsEnabled;
-	TGenericPort port;
-	uint8_t nSequence;
-	uint32_t nDestinationIp;
 };
+
+struct OutputPort {
+	GenericPort genericPort;
+	Source sourceA;
+	Source sourceB;
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];	///< Data sent
+	uint32_t nLength;
+	lightset::MergeMode mergeMode;
+	artnet::PortProtocol protocol;			///< Art-Net 4
+	bool IsDataPending;							///< ArtDMX received and waiting for ArtSync
+	bool IsTransmitting;
+};
+
+struct InputPort {
+	GenericPort genericPort;
+	uint32_t nDestinationIp;
+	uint8_t nSequenceNumber;
+};
+}  // namespace artnetnode
 
 class ArtNetNode {
 public:
-	ArtNetNode(uint8_t nVersion = 3, uint8_t nPages = 1);
+	ArtNetNode(uint8_t nPages = 1);
 	~ArtNetNode() {
 		Stop();
 	}
@@ -162,8 +161,8 @@ public:
 
 	void Run();
 
-	uint8_t GetVersion() {
-		return m_nVersion;
+	uint8_t GetVersion() const {
+		return ArtNet::VERSION;
 	}
 
 	uint8_t GetPages() const {
@@ -186,19 +185,21 @@ public:
 	}
 
 	void SetShortName(const char *);
+
 	const char *GetShortName() const {
 		return m_Node.ShortName;
 	}
 
 	void SetLongName(const char *);
+
 	const char *GetLongName() const {
 		return m_Node.LongName;
 	}
 
-	int SetUniverse(uint8_t nPortIndex, artnet::PortDir dir, uint16_t nAddress);
+	int SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nAddress);
 
-	int SetUniverseSwitch(uint8_t nPortIndex, artnet::PortDir dir, uint8_t nAddress);
-	bool GetUniverseSwitch(uint8_t nPortIndex, uint8_t &nAddress,artnet::PortDir dir) const;
+	int SetUniverseSwitch(uint32_t nPortIndex, lightset::PortDir dir, uint8_t nAddress);
+	bool GetUniverseSwitch(uint32_t nPortIndex, uint8_t &nAddress,lightset::PortDir dir) const;
 
 	void SetNetSwitch(uint8_t nAddress, uint32_t nPage);
 	uint8_t GetNetSwitch(uint32_t nPage) const;
@@ -206,13 +207,13 @@ public:
 	void SetSubnetSwitch(uint8_t nAddress, uint32_t nPage);
 	uint8_t GetSubnetSwitch(uint32_t nPage) const;
 
-	bool GetPortAddress(uint8_t nPortIndex, uint16_t &nAddress,artnet::PortDir dir) const;
+	bool GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, lightset::PortDir dir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, artnet::Merge tMergeMode);
-	artnet::Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode tMergeMode);
+	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const;
 
-	void SetPortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol);
-	artnet::PortProtocol GetPortProtocol(uint8_t nPortIndex) const;
+	void SetPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol);
+	artnet::PortProtocol GetPortProtocol(uint32_t nPortIndex) const;
 
 	void SetOemValue(const uint8_t *);
 	const uint8_t *GetOemValue() const {
@@ -262,8 +263,8 @@ public:
 		return m_pArtNetDmx;
 	}
 
-	void SetDestinationIp(uint8_t nPortIndex, uint32_t nDestinationIp);
-	uint32_t GetDestinationIp(uint8_t nPortIndex) const {
+	void SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp);
+	uint32_t GetDestinationIp(uint32_t nPortIndex) const {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
 			return m_InputPorts[nPortIndex].nDestinationIp;
 		}
@@ -304,18 +305,19 @@ private:
 
 	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void CheckMergeTimeouts(uint8_t nPortIndex);
+	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void CheckMergeTimeouts(uint32_t nPortIndex);
 
 	void SendPollRelply(bool);
-	void SendTod(uint8_t nPortIndex = 0);
+	void SendTod(uint32_t nPortIndex = 0);
 
 	void SetNetworkDataLossCondition();
 
 private:
-	uint8_t m_nVersion;
 	uint8_t m_nPages;
 	int32_t m_nHandle { -1 };
+
+	LightSet *m_pLightSet { nullptr };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
 	ArtNetRdm *m_pArtNetRdm { nullptr };
@@ -325,14 +327,7 @@ private:
 	ArtNetStore *m_pArtNetStore { nullptr };
 	ArtNetDisplay *m_pArtNetDisplay { nullptr };
 
-	LightSet *m_pLightSet { nullptr };
-
-	TArtNetNode m_Node;
-	TArtNetNodeState m_State;
-
-	TOutputPort m_OutputPorts[artnetnode::MAX_PORTS];
-	TInputPort m_InputPorts[artnetnode::MAX_PORTS];
-	bool m_IsLightSetRunning[artnetnode::MAX_PORTS];
+	artnetnode::Node m_Node;
 
 	TArtNetPacket m_ArtNetPacket;
 	TArtPollReply m_PollReply;
@@ -349,6 +344,10 @@ private:
 
 	char m_aSysName[16];
 	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
+
+	artnetnode::State m_State;
+	artnetnode::OutputPort m_OutputPorts[artnetnode::MAX_PORTS];
+	artnetnode::InputPort m_InputPorts[artnetnode::MAX_PORTS];
 
 	static ArtNetNode *s_pThis;
 };

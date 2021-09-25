@@ -24,7 +24,7 @@ SECTIONS
     .init : 
     {
     . = ALIGN(4);
-     *(.init)
+    KEEP(*(.init))
     } > ram
     
     .text : 

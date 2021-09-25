@@ -23,6 +23,7 @@
  * THE SOFTWARE.
  */
 
+#include "lightsetparamsconst.h"
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -32,8 +33,6 @@
 #include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
-#include "lightsetconst.h"
-
 #include "debug.h"
 
 void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Params, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
@@ -51,7 +50,7 @@ void TLC59711DmxParams::Builder(const struct TTLC59711DmxParams *ptTLC59711Param
 
 	builder.Add(DevicesParamsConst::TYPE, GetType(m_tTLC59711Params.LedType), isMaskSet(TLC59711DmxParamsMask::TYPE));
 	builder.Add(DevicesParamsConst::COUNT, m_tTLC59711Params.nLedCount, isMaskSet(TLC59711DmxParamsMask::COUNT));
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DmxParamsMask::START_ADDRESS));
+	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress, isMaskSet(TLC59711DmxParamsMask::START_ADDRESS));
 	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tTLC59711Params.nSpiSpeedHz, isMaskSet(TLC59711DmxParamsMask::SPI_SPEED));
 
 	nSize = builder.GetSize();

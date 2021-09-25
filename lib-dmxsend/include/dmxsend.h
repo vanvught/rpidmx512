@@ -28,10 +28,9 @@
 
 #include <cstdint>
 
-#include "dmx.h"
 #include "lightset.h"
 
-class DmxSend: public Dmx, public LightSet  {
+class DmxSend: public LightSet  {
 public:
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;

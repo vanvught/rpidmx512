@@ -1,8 +1,9 @@
 /**
- * @file mdnsprint.cpp
+ * @file shell.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
+ * Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,21 +26,51 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstdarg>
 
-#include "mdns.h"
+#include "shell.h"
 
-using namespace mdns;
+#include "uart0_debug.h"
 
-void MDNS::Print() {
-	printf("mDNS\n");
-	if (s_nHandle == -1) {
-		printf(" Not running\n");
-		return;
-	}
-	printf(" Name : %s\n", s_pName);
-	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
-		if (s_ServiceRecords[i].pName != nullptr) {
-			printf(" %s %d %s\n", s_ServiceRecords[i].pServName, s_ServiceRecords[i].nPort, s_ServiceRecords[i].pTextContent == nullptr ? "" : s_ServiceRecords[i].pTextContent);
+using namespace shell;
+
+const char* Shell::ReadLine(uint32_t& nLength) {
+	int c;
+
+	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {
+		if (c == 127) {		// Backspace
+			if (m_nLength > 0) {
+				m_nLength--;
+				return nullptr;
+			}
+		}
+		if (m_nLength < BUFLEN) {
+			if ((c == '\r') || (c == '\n')){
+				m_bIsEndOfLine = true;
+				m_Buffer[m_nLength] = '\0';
+				nLength = m_nLength;
+				m_nLength = 0;
+				return m_Buffer;
+			} else {
+				if (m_bIsEndOfLine) {
+					m_bIsEndOfLine = false;
+					nLength = 0;
+				}
+			}
+			m_Buffer[m_nLength] = static_cast<char>(c);
+			m_nLength++;
 		}
 	}
+
+	return nullptr;
+}
+
+void Shell::Puts(const char *pString) {
+	while (*pString != '\0') {
+		if (*pString == '\n') {
+			uart0_putc('\r');
+		}
+		uart0_putc(*pString++);
+	}
+	//TODO Add additional '\r\n' at the end?
 }

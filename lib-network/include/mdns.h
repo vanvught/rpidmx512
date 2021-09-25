@@ -43,11 +43,16 @@ struct Flags {
 	uint32_t rcode;
 };
 
+enum class Protocol : uint8_t {
+	UDP, TCP
+};
+
 struct ServiceRecord {
-	uint16_t nPort;
 	char *pName;
 	char *pServName;
 	char *pTextContent;
+	uint16_t nPort;
+	Protocol nProtocol;
 };
 
 struct RecordData {
@@ -55,8 +60,7 @@ struct RecordData {
 	uint8_t aBuffer[512];
 };
 
-#define MDNS_PORT 				5353
-static constexpr auto BUFFER_SIZE = 1024;
+static constexpr uint16_t UDP_PORT = 5353;
 static constexpr auto SERVICE_RECORDS_MAX = 8;
 }  // namespace mdns
 
@@ -67,7 +71,7 @@ public:
 
 	void Start();
 	void Stop() {
-		Network::Get()->End(MDNS_PORT);
+		Network::Get()->End(mdns::UDP_PORT);
 		s_nHandle = -1;
 	}
 
@@ -77,7 +81,7 @@ public:
 
 	void SetName(const char *pName);
 
-	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, const char* pTextContent = nullptr);
+	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, mdns::Protocol nProtocol = mdns::Protocol::UDP, const char* pTextContent = nullptr);
 
 private:
 	void Parse();
@@ -86,7 +90,7 @@ private:
 	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
 
 	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
-	const char *FindFirstDotFromRight(const char *pString);
+	const char *FindFirstDotFromRight(const char *pString) const;
 
 	void CreateAnswerLocalIpAddress();
 
@@ -107,16 +111,15 @@ private:
 	static uint32_t s_nRemoteIp;
 	static uint16_t s_nRemotePort;
 	static uint16_t s_nBytesReceived;
-	static char *s_pName;
 	static uint32_t s_nLastAnnounceMillis;
 	static uint32_t s_nDNSServiceRecords;
-	static mdns::RecordData s_AnswerLocalIp;
-
-	static uint8_t s_Buffer[mdns::BUFFER_SIZE];
-	static uint8_t s_OutBuffer[mdns::BUFFER_SIZE];
 
 	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
-	static mdns::RecordData s_ServiceRecordsData[mdns::SERVICE_RECORDS_MAX];
+	static mdns::RecordData s_AnswerLocalIp;
+	static mdns::RecordData s_ServiceRecordsData;
+
+	static char *s_pName;
+	static uint8_t *s_pBuffer;
 };
 
 #endif /* MDNS_H_ */

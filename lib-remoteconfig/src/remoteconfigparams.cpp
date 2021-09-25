@@ -172,28 +172,14 @@ void RemoteConfigParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) 
 void RemoteConfigParams::Set(RemoteConfig* pRemoteConfig) {
 	assert(pRemoteConfig != nullptr);
 
-	if (isMaskSet(RemoteConfigParamsMask::DISABLE)) {
-		pRemoteConfig->SetDisable(true);
-	}
-
-	if (isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE)) {
-		pRemoteConfig->SetDisableWrite(true);
-	}
-
-	if (isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT)) {
-		pRemoteConfig->SetEnableReboot(true);
-	}
-
-	if (isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME)) {
-		pRemoteConfig->SetEnableUptime(true);
-	}
+	pRemoteConfig->SetDisable(isMaskSet(RemoteConfigParamsMask::DISABLE));
+	pRemoteConfig->SetDisableWrite(isMaskSet(RemoteConfigParamsMask::DISABLE_WRITE));
+	pRemoteConfig->SetEnableReboot(isMaskSet(RemoteConfigParamsMask::ENABLE_REBOOT));
+	pRemoteConfig->SetEnableUptime(isMaskSet(RemoteConfigParamsMask::ENABLE_UPTIME));
+	pRemoteConfig->SetEnableFactory(isMaskSet(RemoteConfigParamsMask::ENABLE_FACTORY));
 
 	if (isMaskSet(RemoteConfigParamsMask::DISPLAY_NAME)) {
 		pRemoteConfig->SetDisplayName(m_tRemoteConfigParams.aDisplayName);
-	}
-
-	if (isMaskSet(RemoteConfigParamsMask::ENABLE_FACTORY)) {
-		pRemoteConfig->SetEnableFactory(true);
 	}
 }
 

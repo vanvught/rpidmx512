@@ -54,6 +54,36 @@ enum class ClientStatus: uint8_t {
 	FAILED
 };
 }  // namespace dhcp
+
+inline static bool is_netmask_valid(uint32_t nNetMask) {
+	if (nNetMask == 0) {
+		return false;
+	}
+	nNetMask = __builtin_bswap32(nNetMask);
+	return !(nNetMask & (~nNetMask >> 1));
+
+}
+/**
+ * The private address ranges are defined in RFC1918.
+ */
+inline static bool is_private_ip(uint32_t nIp) {
+	const uint8_t n = (nIp >> 8) & 0xFF;
+
+	switch (nIp & 0xFF) {
+	case 10:
+		return true;
+		break;
+	case 172:
+		return (n >= 16) && (n < 32);
+	case 192:
+		return n == 168;
+	default:
+		break;
+	}
+
+	return false;
+}
+
 }  // namespace network
 
 class NetworkStore {

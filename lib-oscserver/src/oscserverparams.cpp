@@ -40,7 +40,7 @@
 #include "osc.h"
 #include "oscparamsconst.h"
 
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"

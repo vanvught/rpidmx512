@@ -32,9 +32,6 @@ const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
 const char ArtNetParamsConst::NET[] = "net";
 const char ArtNetParamsConst::SUBNET[] = "subnet";
 
-const char ArtNetParamsConst::USE_TIMECODE[] = "use_timecode";
-const char ArtNetParamsConst::USE_TIMESYNC[] = "use_timesync";
-
 const char ArtNetParamsConst::ENABLE_RDM[] = "enable_rdm";
 const char ArtNetParamsConst::RDM_DISCOVERY[] = "rdm_discovery_at_startup";
 
@@ -42,10 +39,13 @@ const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
 const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
 const char ArtNetParamsConst::NODE_MANUFACTURER_ID[] = "manufacturer_id";
 const char ArtNetParamsConst::NODE_OEM_VALUE[] = "oem_value";
+
 const char ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
-const char ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
+const char ArtNetParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
 
 const char ArtNetParamsConst::PROTOCOL[] = "protocol";
 const char ArtNetParamsConst::PROTOCOL_PORT[ArtNet::PORTS][16] = { "protocol_port_a", "protocol_port_b", "protocol_port_c", "protocol_port_d" };
-const char ArtNetParamsConst::DIRECTION[] = "direction";
+
 const char ArtNetParamsConst::DESTINATION_IP_PORT[ArtNet::PORTS][24] = { "destination_ip_port_a", "destination_ip_port_b", "destination_ip_port_c", "destination_ip_port_d" };
+
+const char ArtNetParamsConst::DIRECTION[] = "direction";

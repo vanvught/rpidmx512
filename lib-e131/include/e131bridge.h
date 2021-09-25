@@ -27,7 +27,7 @@
 #define E131BRIDGE_H_
 
 #include <cstdint>
-#include <assert.h>
+#include <cassert>
 
 #include "e131.h"
 #include "e131packets.h"
@@ -47,7 +47,6 @@ struct State {
 	bool IsChanged;
 	bool bDisableNetworkDataLossTimeout;
 	bool bDisableMergeTimeout;
-	bool bIsReceivingDmx;
 	bool bDisableSynchronize;
 	uint32_t SynchronizationTime;
 	uint32_t DiscoveryTime;
@@ -57,36 +56,39 @@ struct State {
 	uint8_t nActiveInputPorts;
 	uint8_t nActiveOutputPorts;
 	uint8_t nPriority;
+	uint8_t nReceivingDmx;
 };
 
 struct Source {
-	uint32_t time;
-	uint32_t ip;
-	uint8_t data[E131::DMX_LENGTH];
+	uint32_t nMillis;
+	uint32_t nIp;
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
 	uint8_t cid[E131::CID_LENGTH];
-	uint8_t sequenceNumberData;
+	uint8_t nSequenceNumberData;
+};
+
+struct GenericPort {
+	uint16_t nUniverse;
+	bool bIsEnabled;
 };
 
 struct OutputPort {
-	uint8_t data[E131::DMX_LENGTH];
-	uint32_t length;
-	uint16_t nUniverse;
-	e131::Merge mergeMode;
+	GenericPort genericPort;
+	Source sourceA;
+	Source sourceB;
+	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
+	uint32_t nLength;
+	lightset::MergeMode mergeMode;
 	bool IsDataPending;
-	bool bIsEnabled;
-	bool IsTransmitting;
 	bool IsMerging;
-	struct Source sourceA;
-	struct Source sourceB;
+	bool IsTransmitting;
 };
 
 struct InputPort {
-	uint16_t nUniverse;
-	bool bIsEnabled;
-	bool IsTransmitting;
+	GenericPort genericPort;
+	uint32_t nMulticastIp;
 	uint8_t nSequenceNumber;
 	uint8_t nPriority;
-	uint32_t nMulticastIp;
 };
 }  // namespace e131bridge
 
@@ -101,11 +103,18 @@ public:
 		m_pLightSet = pLightSet;
 	}
 
-	void SetUniverse(uint8_t nPortIndex, e131::PortDir dir, uint16_t nUniverse);
-	bool GetUniverse(uint8_t nPortIndex, uint16_t &nUniverse, e131::PortDir tDir) const;
+	void SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse);
+	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir tDir) const;
 
-	void SetMergeMode(uint8_t nPortIndex, e131::Merge tE131Merge);
-	e131::Merge GetMergeMode(uint8_t nPortIndex) const;
+	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode) {
+		assert(nPortIndex < E131::PORTS);
+		m_OutputPort[nPortIndex].mergeMode = mergeMode;
+	}
+
+	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].mergeMode;
+	}
 
 	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
@@ -115,8 +124,16 @@ public:
 		return m_State.nActiveInputPorts;
 	}
 
-	bool IsTransmitting(uint8_t nPortIndex) const;
-	bool IsMerging(uint8_t nPortIndex) const;
+	bool IsTransmitting(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].IsTransmitting;
+	}
+
+	bool IsMerging(uint32_t nPortIndex) const {
+		assert(nPortIndex < E131::PORTS);
+		return m_OutputPort[nPortIndex].IsMerging;
+	}
+
 	bool IsStatusChanged();
 
 	void SetDisableNetworkDataLossTimeout(bool bDisable = true) {
@@ -164,19 +181,19 @@ public:
 		return m_SourceName;
 	}
 
-	void SetPriority(uint8_t nPriority, uint8_t nPortIndex = 0) {
+	void SetPriority(uint8_t nPriority, uint32_t nPortIndex = 0) {
 		assert(nPortIndex < E131::PORTS);
 		if ((nPriority >= e131::priority::LOWEST) && (nPriority <= e131::priority::HIGHEST)) {
 			m_InputPort[nPortIndex].nPriority = nPriority;
 		}
 	}
 
-	uint8_t GetPriority(uint8_t nPortIndex = 0) const {
+	uint8_t GetPriority(uint32_t nPortIndex = 0) const {
 		assert(nPortIndex < E131::PORTS);
 		return m_InputPort[nPortIndex].nPriority;
 	}
 
-	void Clear(uint8_t nPortIndex);
+	void Clear(uint32_t nPortIndex);
 
 	void Start();
 	void Stop();
@@ -197,17 +214,16 @@ private:
 
 	void SetSynchronizationAddress(bool bSourceA, bool bSourceB, uint16_t nSynchronizationAddress);
 
-	void CheckMergeTimeouts(uint8_t nPortIndex);
-	bool IsPriorityTimeOut(uint8_t nPortIndex);
-	bool isIpCidMatch(const struct e131bridge::Source *);
+	void CheckMergeTimeouts(uint32_t nPortIndex);
+	bool IsPriorityTimeOut(uint32_t nPortIndex) const;
+	bool isIpCidMatch(const struct e131bridge::Source *) const;
 
-	void MergeDmxData(uint8_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();
 
-	uint32_t UniverseToMulticastIp(uint16_t nUniverse) const;
-	void LeaveUniverse(uint8_t nPortIndex, uint16_t nUniverse);
+	void LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse);
 
 	// Input
 	void HandleDmxIn();

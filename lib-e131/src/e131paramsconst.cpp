@@ -2,7 +2,7 @@
  * @file e131paramsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,10 +24,16 @@
  */
 
 #include "e131paramsconst.h"
+#include "e131params.h"
 
 const char E131ParamsConst::FILE_NAME[] = "e131.txt";
 
-const char E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT[] = "network_data_loss_timeout";
+const char E131ParamsConst::PRIORITY[e131params::MAX_PORTS][18] {
+	"priority_port_a",
+	"priority_port_b",
+	"priority_port_c",
+	"priority_port_d" };
+
+const char E131ParamsConst::DISABLE_NETWORK_DATA_LOSS_TIMEOUT[] = "disable_network_data_loss_timeout";
 const char E131ParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
-const char E131ParamsConst::DIRECTION[] = "direction";
-const char E131ParamsConst::PRIORITY[] = "priority";
+

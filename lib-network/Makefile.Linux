@@ -1,4 +1,4 @@
-DEFINES=NDEBUG
+DEFINES=#NDEBUG
 EXTRA_INCLUDES=../lib-properties/include ../lib-hal/include
 EXTRA_SRCDIR=src/apps src/params
 

@@ -54,7 +54,17 @@ public:
 	void LeaveGroup(int32_t nHandle, uint32_t nIp);
 
 	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
+	uint16_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+
+	/*
+	 * Experimental TCP
+	 */
+
+	int32_t TcpBegin(uint16_t nLocalPort);
+	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer);
+	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength);
+	int32_t TcpEnd(const int32_t nHandle);
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);

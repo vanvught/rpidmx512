@@ -33,6 +33,9 @@
 #include "network.h"
 #include "ledblink.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "artnet4node.h"
 #include "artnet4params.h"
 #include "storeartnet.h"
@@ -59,12 +62,15 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "display.h"
+
 using namespace artnet;
 
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
+	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
@@ -124,28 +130,19 @@ int main(int argc, char **argv) {
 
 		RdmResponder.Init();
 
-		node.SetUniverseSwitch(0, PortDir::OUTPUT, artnet4Params.GetUniverse());
+		bool isSet;
+		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnet4Params.GetUniverse(0, isSet));
 
 		RdmResponder.Full(0);
 
 		node.SetRdmHandler(&RdmResponder, true);
 	} else {
-		uint8_t nAddress;
-		bool bIsSetIndividual = false;
-		bool bIsSet;
-
 		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-			nAddress = artnet4Params.GetUniverse(i, bIsSet);
+			bool bIsSet;
+			const auto nAddress = artnet4Params.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
-				node.SetUniverseSwitch(i, PortDir::OUTPUT, nAddress);
-				bIsSetIndividual = true;
-			}
-		}
-
-		if (!bIsSetIndividual) {
-			for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-				node.SetUniverseSwitch(i, PortDir::OUTPUT, i + artnet4Params.GetUniverse());
+				node.SetUniverseSwitch(i, lightset::PortDir::OUTPUT, nAddress);
 			}
 		}
 	}
@@ -159,6 +156,12 @@ int main(int argc, char **argv) {
 	if(artnet4Params.IsRdm()) {
 		RdmResponder.Print();
 	}
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4");
+	mDns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, node.GetActiveOutputPorts());
 
@@ -177,6 +180,7 @@ int main(int argc, char **argv) {
 
 	for (;;) {
 		node.Run();
+		mDns.Run();
 		identify.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();

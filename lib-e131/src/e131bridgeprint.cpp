@@ -47,25 +47,25 @@ void E131Bridge::Print() {
 
 	printf("Bridge\n");
 	printf(" Firmware : %d.%d\n", E131BridgeConst::VERSION[0], E131BridgeConst::VERSION[1]);
+	printf(" CID      : %s\n", uuid_str);
 
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, PortDir::OUTPUT)) {
-				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, E131::GetMergeMode(m_OutputPort[nPortIndex].mergeMode, true));
+			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
+				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, lightset::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
 			}
 		}
 	}
 
 	if (m_State.nActiveInputPorts != 0) {
-		printf(" CID      : %s\n", uuid_str);
 		printf(" Input\n");
 
-		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			uint16_t nUniverse;
-			if (GetUniverse(nPortIndex, nUniverse, PortDir::INPUT)) {
+			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
 				printf("  Port %2d Universe %-3d [%d]\n", nPortIndex, nUniverse, GetPriority(nPortIndex));
 			}
 		}

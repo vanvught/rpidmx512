@@ -39,6 +39,10 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "propertiesbuilder.h"
+
+#include "debug.h"
+
 using namespace networkparams;
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
@@ -115,14 +119,18 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	uint32_t nValue32;
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::IP_ADDRESS, nValue32) == Sscan::OK) {
-		m_tNetworkParams.nLocalIp = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
+		if ((network::is_private_ip(nValue32)) || (nValue32 == 0)) {
+			m_tNetworkParams.nLocalIp = nValue32;
+			m_tNetworkParams.nSetList |= NetworkParamsMask::IP_ADDRESS;
+		}
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::NET_MASK, nValue32) == Sscan::OK) {
-		m_tNetworkParams.nNetmask = nValue32;
-		m_tNetworkParams.nSetList |= NetworkParamsMask::NET_MASK;
+		if (network::is_netmask_valid(nValue32)) {
+			m_tNetworkParams.nNetmask = nValue32;
+			m_tNetworkParams.nSetList |= NetworkParamsMask::NET_MASK;
+		}
 		return;
 	}
 
@@ -133,6 +141,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 	uint32_t nLength = network::HOSTNAME_SIZE - 1;
+
 	if (Sscan::Char(pLine, NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, nLength) == Sscan::OK) {
 		m_tNetworkParams.aHostName[nLength] = '\0';
 		m_tNetworkParams.nSetList |= NetworkParamsMask::HOSTNAME;
@@ -163,8 +172,6 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-
-
 #if defined (ESP8266)
 	if (Sscan::IpAddress(pLine,  NetworkParamsConst::NAME_SERVER, nValue32) == Sscan::OK) {
 		m_tNetworkParams.nNameServerIp = nValue32;
@@ -193,4 +200,68 @@ void NetworkParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<NetworkParams*>(p))->callbackFunction(s);
+}
+
+void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != nullptr);
+
+	if (ptNetworkParams != nullptr) {
+		memcpy(&m_tNetworkParams, ptNetworkParams, sizeof(struct TNetworkParams));
+	} else {
+		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
+	}
+
+	PropertiesBuilder builder(NetworkParamsConst::FILE_NAME, pBuffer, nLength);
+
+	if (!isMaskSet(NetworkParamsMask::IP_ADDRESS)) {
+		m_tNetworkParams.nLocalIp = Network::Get()->GetIp();
+	}
+
+	if (!isMaskSet(NetworkParamsMask::NET_MASK)) {
+		m_tNetworkParams.nNetmask = Network::Get()->GetNetmask();
+	}
+
+	if (!isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY)) {
+		m_tNetworkParams.nGatewayIp = Network::Get()->GetGatewayIp();
+	}
+
+	if (!isMaskSet(NetworkParamsMask::HOSTNAME)) {
+		strncpy(m_tNetworkParams.aHostName, Network::Get()->GetHostName(), network::HOSTNAME_SIZE - 1);
+		m_tNetworkParams.aHostName[network::HOSTNAME_SIZE - 1] = '\0';
+	}
+
+	builder.Add(NetworkParamsConst::USE_DHCP, m_tNetworkParams.bIsDhcpUsed, isMaskSet(NetworkParamsMask::DHCP));
+	builder.Add(NetworkParamsConst::DHCP_RETRY_TIME, m_tNetworkParams.nDhcpRetryTime, isMaskSet(NetworkParamsMask::DHCP_RETRY_TIME));
+
+	builder.AddComment("Static IP");
+	builder.AddIpAddress(NetworkParamsConst::IP_ADDRESS, m_tNetworkParams.nLocalIp, isMaskSet(NetworkParamsMask::IP_ADDRESS));
+	builder.AddIpAddress(NetworkParamsConst::NET_MASK, m_tNetworkParams.nNetmask, isMaskSet(NetworkParamsMask::NET_MASK));
+	builder.AddIpAddress(NetworkParamsConst::DEFAULT_GATEWAY, m_tNetworkParams.nGatewayIp, isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY));
+#if defined(ESP8266)
+	builder.AddIpAddress(NetworkParamsConst::NAME_SERVER, m_tNetworkParams.nNameServerIp, isMaskSet(NetworkParamsMask::NAME_SERVER));
+#endif
+	builder.Add(NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
+
+	builder.AddComment("NTP Server");
+	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NetworkParamsMask::NTP_SERVER));
+	builder.Add(NetworkParamsConst::NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("nSize=%d", nSize);
+	DEBUG_EXIT
+}
+
+void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pNetworkParamsStore == nullptr) {
+		nSize = 0;
+		DEBUG_EXIT
+		return;
+	}
+
+	Builder(nullptr, pBuffer, nLength, nSize);
 }

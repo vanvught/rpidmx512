@@ -1,8 +1,8 @@
 /**
- * @file dmxinput.h
+ * networktcp.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXINPUT_H_
-#define DMXINPUT_H_
-
 #include <cstdint>
 
-#include "e131dmx.h"
-#include "dmx.h"
+#include "network.h"
 
-class DmxInput: public E131Dmx, public Dmx {
-public:
-	DmxInput();
+#include "./../net/net.h"
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
+#include "debug.h"
 
-	const uint8_t *Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
+int32_t Network::TcpBegin(uint16_t nLocalPort) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-private:
-	static uint8_t s_nStarted;
-};
+	const auto nHandle = tcp_begin(nLocalPort);
 
-#endif /* DMXINPUT_H_ */
+	DEBUG_PRINTF("nHandle=%d", nHandle);
+	DEBUG_EXIT
+	return nHandle;
+}
+
+uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer) {
+	return tcp_read(nHandle, ppBuffer);
+}
+
+void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nHandle=%d, pBuffer=%p, nLength=%u, doClose=%d", nHandle, pBuffer, nLength);
+
+	tcp_write(nHandle, pBuffer, nLength);
+
+	DEBUG_EXIT
+}

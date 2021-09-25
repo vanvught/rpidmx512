@@ -90,7 +90,6 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -124,18 +123,15 @@ void notmain(void) {
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
-	const auto nUniverseStart = e131params.GetUniverse();
 
-	uint8_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndex = 0;
 
 	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		for (uint32_t u = 0; u < nUniverses; u++) {
 			if (isSet) {
-				bridge.SetUniverse(nPortProtocolIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
-			} else {
-				bridge.SetUniverse(nPortProtocolIndex, e131::PortDir::OUTPUT, nUniverseStart + nPortProtocolIndex);
+				bridge.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 			}
 			nPortProtocolIndex++;
 		}

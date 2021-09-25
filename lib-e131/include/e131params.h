@@ -27,37 +27,42 @@
 #define E131PARAMS_H_
 
 #include <cstdint>
-#include <uuid/uuid.h>
 
 #include "e131bridge.h"
-
 #include "lightset.h"
 
-namespace E131_PARAMS {
+namespace e131params {
 	constexpr auto MAX_PORTS = 4;
-}
 
-struct TE131Params {
+struct Params {
     uint32_t nSetList;
     uint8_t nOutputType;
+#if defined (OUTPUT_DMX_ARTNET)
     uint16_t nUniverse;
-    uint16_t nUniversePort[E131_PARAMS::MAX_PORTS];
+#else
+	uint16_t NotUsed0;
+#endif
+    uint16_t nUniversePort[e131params::MAX_PORTS];
+#if defined (OUTPUT_DMX_ARTNET)
 	uint8_t nMergeMode;
-	uint8_t nMergeModePort[E131_PARAMS::MAX_PORTS];
-	float nNetworkTimeout;
-	uint8_t NotUsed0;
+#else
 	uint8_t NotUsed1;
+#endif
+	uint8_t nMergeModePort[e131params::MAX_PORTS];
+	uint32_t NotUsed2;
+	uint8_t NotUsed3;
+	uint8_t NotUsed4;
 	uint8_t nDirection;
-	uint8_t nPriority;
+	uint8_t nPriority[e131params::MAX_PORTS];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TE131Params) <= 96, "struct TE131Params is too large");
+static_assert(sizeof(struct Params) <= 96, "struct Params is too large");
 
-struct E131ParamsMask {
+struct Mask {
 	static constexpr auto UNIVERSE = (1U << 0);
 	static constexpr auto MERGE_MODE = (1U << 1);
 	static constexpr auto OUTPUT = (1U << 2);
-	static constexpr auto NOT_USED = (1U << 3);
+	//static constexpr auto NOT_USED = (1U << 3);
 	static constexpr auto UNIVERSE_A = (1U << 4);
 	static constexpr auto UNIVERSE_B = (1U << 5);
 	static constexpr auto UNIVERSE_C = (1U << 6);
@@ -66,20 +71,23 @@ struct E131ParamsMask {
 	static constexpr auto MERGE_MODE_B = (1U << 9);
 	static constexpr auto MERGE_MODE_C = (1U << 10);
 	static constexpr auto MERGE_MODE_D = (1U << 11);
-	static constexpr auto NETWORK_TIMEOUT = (1U << 12);
+	static constexpr auto DISABLE_NETWORK_DATA_LOSS_TIMEOUT = (1U << 12);
 	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 13);
-	//static constexpr auto NOT_USED1 = (1U << 14); //WAS: ENABLE_NO_CHANGE_OUTPUT
+	//static constexpr auto NOT_USED1 = (1U << 14);
 	static constexpr auto DIRECTION = (1U << 15);
-	static constexpr auto PRIORITY = (1U << 16);
+	static constexpr auto PRIORITY_A = (1U << 16);
+	static constexpr auto PRIORITY_B = (1U << 17);
+	static constexpr auto PRIORITY_C = (1U << 18);
+	static constexpr auto PRIORITY_D = (1U << 19);
 };
+}
 
 class E131ParamsStore {
 public:
-	virtual ~E131ParamsStore() {
-	}
+	virtual ~E131ParamsStore() {}
 
-	virtual void Update(const struct TE131Params *pE131Params)=0;
-	virtual void Copy(struct TE131Params *pE131Params)=0;
+	virtual void Update(const struct e131params::Params *pParams)=0;
+	virtual void Copy(struct e131params::Params *pParams)=0;
 };
 
 class E131Params {
@@ -89,7 +97,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TE131Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct e131params::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(E131Bridge *);
@@ -97,36 +105,31 @@ public:
 	void Dump();
 
 	lightset::OutputType GetOutputType() const {
-		return static_cast<lightset::OutputType>(m_tE131Params.nOutputType);
+		return static_cast<lightset::OutputType>(m_Params.nOutputType);
 	}
-
+	
+#if defined (OUTPUT_DMX_ARTNET)
 	uint16_t GetUniverse() const {
-		return m_tE131Params.nUniverse;
+		return m_Params.nUniverse;
 	}
+#endif
 
-	uint16_t GetUniverse(bool &IsSet) const {
-		IsSet = isMaskSet(E131ParamsMask::UNIVERSE);
-		return m_tE131Params.nUniverse;
-	}
-
-	e131::Merge GetMergeMode() const {
-		return static_cast<e131::Merge>(m_tE131Params.nMergeMode);
-	}
-
-	uint16_t GetUniverse(uint8_t nPortIndex, bool &IsSet) const {
-		if (nPortIndex < E131_PARAMS::MAX_PORTS) {
-
-			IsSet = isMaskSet(E131ParamsMask::UNIVERSE_A << nPortIndex);
-
-			return m_tE131Params.nUniversePort[nPortIndex];
+	uint16_t GetUniverse(uint32_t nPortIndex, bool &IsSet) const {
+		if (nPortIndex < e131params::MAX_PORTS) {
+			IsSet = isMaskSet(e131params::Mask::UNIVERSE_A << nPortIndex);
+			return m_Params.nUniversePort[nPortIndex];
 		}
 
 		IsSet = false;
 		return 0;
 	}
 
-	e131::PortDir GetDirection() const {
-		return static_cast<e131::PortDir>(m_tE131Params.nDirection);
+	lightset::PortDir GetDirection(uint32_t nPortIndex = 0) const {
+		if (nPortIndex < e131params::MAX_PORTS) {
+			return static_cast<lightset::PortDir>((m_Params.nDirection >> nPortIndex) & 0x1);
+		} else {
+			return lightset::PortDir::OUTPUT;
+		}
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
@@ -134,12 +137,12 @@ public:
 private:
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tE131Params.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
     E131ParamsStore *m_pE131ParamsStore;
-    struct TE131Params m_tE131Params;
+    e131params::Params m_Params;
 };
 
 #endif /* E131PARAMS_H_ */

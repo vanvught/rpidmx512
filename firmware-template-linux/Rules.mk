@@ -71,7 +71,7 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
 
-COPS=$(DEFINES) #-DNDEBUG
+COPS=$(DEFINES) -DDISABLE_TFTP -DENABLE_HTTPD #-DNDEBUG
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-O2 -Wall -Werror -Wextra -pedantic -Wunused -Wsign-conversion #-Wconversion
 

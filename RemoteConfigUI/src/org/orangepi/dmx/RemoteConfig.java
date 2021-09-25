@@ -64,6 +64,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import javax.swing.border.EtchedBorder;
 
 public class RemoteConfig extends JFrame {
 	private static final long serialVersionUID = 8836780363465781413L;
@@ -757,6 +758,7 @@ public class RemoteConfig extends JFrame {
 		setContentPane(contentPane);
 
 		scrollPaneLeft = new JScrollPane();
+		scrollPaneLeft.setViewportBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		scrollPaneRight = new JScrollPane();
 		lblDisplayName = new JLabel("");
 		lblNodeId = new JLabel("");

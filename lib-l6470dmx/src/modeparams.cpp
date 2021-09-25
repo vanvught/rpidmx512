@@ -41,7 +41,7 @@
 #include "l6470dmxmode.h"
 #include "l6470dmxconst.h"
 
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "dmxslotinfo.h"
 
@@ -147,7 +147,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
 		if ((nValue16 != 0) && (nValue16 <= Dmx::UNIVERSE_SIZE)) {
 			m_tModeParams.nDmxStartAddress = nValue16;
 			m_tModeParams.nSetList |= ModeParamsMask::DMX_START_ADDRESS;
@@ -156,7 +156,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 
 	nLength = sizeof(value) - 1;
-	if (Sscan::Char(pLine, LightSetConst::PARAMS_DMX_SLOT_INFO, value, nLength) == Sscan::OK) {
+	if (Sscan::Char(pLine, LightSetParamsConst::DMX_SLOT_INFO, value, nLength) == Sscan::OK) {
 		value[nLength] = '\0';
 		uint32_t nMask = 0;
 		m_pDmxSlotInfo->FromString(value, nMask);
@@ -236,10 +236,10 @@ void ModeParams::Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeP
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
 	builder.Add(ModeParamsConst::DMX_MODE, m_tModeParams.nDmxMode, isMaskSet(ModeParamsMask::DMX_MODE));
-	builder.Add(LightSetConst::PARAMS_DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress, isMaskSet(ModeParamsMask::DMX_START_ADDRESS));
+	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress, isMaskSet(ModeParamsMask::DMX_START_ADDRESS));
 
 	const uint32_t nMask = (m_tModeParams.nSetList >> ModeParamsMask::SLOT_INFO_SHIFT);
-	builder.Add(LightSetConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfo->ToString(nMask), nMask != 0);
+	builder.Add(LightSetParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfo->ToString(nMask), nMask != 0);
 
 	builder.Add(ModeParamsConst::MAX_STEPS, m_tModeParams.nMaxSteps, isMaskSet(ModeParamsMask::MAX_STEPS));
 
@@ -277,7 +277,7 @@ void ModeParams::Dump() {
 	}
 
 	if (isMaskSet(ModeParamsMask::DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_tModeParams.nDmxStartAddress);
 	}
 
 	for (uint32_t i = 0; i < MODE_PARAMS_MAX_DMX_FOOTPRINT; i++) {

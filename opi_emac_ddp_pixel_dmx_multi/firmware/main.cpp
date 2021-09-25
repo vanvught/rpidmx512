@@ -51,6 +51,11 @@
 // Pixel Test pattern
 #include "pixeltestpattern.h"
 #include "pixelreboot.h"
+// DMX
+#include "dmxparams.h"
+#include "dmxmulti.h"
+#include "storedmxsend.h"
+#include "dmxconfigudp.h"
 // RDMNet LLRP Only
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
@@ -110,7 +115,10 @@ void notmain(void) {
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_DDP, ddp::udp::PORT, "type=display");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_DDP, ddp::udp::PORT, mdns::Protocol::UDP, "type=display");
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=DDP");
+#endif
 	mDns.Print();
 
 	// DDP
@@ -135,6 +143,20 @@ void notmain(void) {
 		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern), ddpDisplay.GetActivePorts());
 		hw.SetRebootHandler(new PixelReboot);
 	}
+
+	// DMX
+
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
+	}
+
+	DmxConfigUdp dmxConfigUdp;
 
 	// RDMNet LLRP Only
 
@@ -216,6 +238,7 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+		dmxConfigUdp.Run();
 	}
 }
 

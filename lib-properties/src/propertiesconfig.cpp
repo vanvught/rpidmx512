@@ -1,8 +1,8 @@
 /**
- * @file dmxinput.h
+ * @file propertiesconfig.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXINPUT_H_
-#define DMXINPUT_H_
-
 #include <cstdint>
 
-#include "artnetdmx.h"
-#include "dmx.h"
+#include "propertiesconfig.h"
 
-class DmxInput: public ArtNetDmx, public Dmx {
-public:
-	DmxInput();
-
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
-
-	const uint8_t *Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
-
-private:
-	static uint8_t s_nStarted;
-};
-
-#endif /* DMXINPUT_H_ */
+uint8_t PropertiesConfig::s_Config = 0;

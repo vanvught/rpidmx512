@@ -29,9 +29,7 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include "uart0_debug.h"
-
-#include <h3/shell.h>
+#include "shell.h"
 
 #include "debug.h"
 
@@ -61,7 +59,7 @@ static constexpr TCommands cmd_table[] = {
 namespace shell {
 static constexpr auto TABLE_SIZE = sizeof(cmd_table) / sizeof(cmd_table[0]);
 namespace msg {
-static constexpr char CMD_PROMPT[] = "opi> ";
+static constexpr char CMD_PROMPT[] = "> ";
 static constexpr char CMD_NOT_FOUND[] = "Command not found: ";
 static constexpr char CMD_WRONG_ARGUMENTS[] = "Wrong arguments\n";
 }  // namespace msg
@@ -73,35 +71,19 @@ Shell::Shell() {
 	DEBUG_PRINTF("TABLE_SIZE=%d", TABLE_SIZE);
 }
 
-const char* Shell::ReadLine(uint32_t& nLength) {
-	int c;
+int Shell::Printf(const char* fmt, ...) {
+	char s[128];
 
-	if (__builtin_expect(((c = uart0_getc()) != EOF), 0)) {	
-		if (c == 127) {		// Backspace
-			if (m_nLength > 0) {
-				m_nLength--;
-				return nullptr;
-			}
-		}
-		if (m_nLength < BUFLEN) {
-			if ((c == '\r') || (c == '\n')){
-				m_bIsEndOfLine = true;
-				m_Buffer[m_nLength] = '\0';
-				nLength = m_nLength;
-				m_nLength = 0;
-				return m_Buffer;
-			} else {
-				if (m_bIsEndOfLine) {
-					m_bIsEndOfLine = false;
-					nLength = 0;
-				}
-			}
-			m_Buffer[m_nLength] = static_cast<char>(c);
-			m_nLength++;
-		}
-	}
+	va_list arp;
 
-	return nullptr;
+	va_start(arp, fmt);
+
+	int i = vsnprintf(s, sizeof(s) -1, fmt, arp);
+	va_end(arp);
+
+	Puts(s);
+
+	return i;
 }
 
 uint16_t Shell::ValidateCmd(uint32_t nLength, CmdIndex &nCmdIndex) {
@@ -172,18 +154,18 @@ void Shell::ValidateArg(uint16_t nOffset, uint32_t nLength) {
 #ifndef NDEBUG
 	DEBUG_PRINTF("m_Argc=%d", m_Argc);
 	for (uint32_t i = 0; i < m_Argc; i++) {
-		uart0_printf("%d:[%s]{%d}\n", i, m_Argv[i], m_nArgvLength[i]);
+		Printf("%d:[%s]{%d}\n", i, m_Argv[i], m_nArgvLength[i]);
 	}
 #endif
 }
 
 void Shell::CmdHelp() {
-	uart0_puts("http://www.orangepi-dmx.org/orange-pi-dmx512-rdm/uart0-shell\n");
+	Puts("http://www.orangepi-dmx.org/orange-pi-dmx512-rdm/uart0-shell\n");
 }
 
 void Shell::Run() {	
 	if (__builtin_expect((!m_bShownPrompt), 1)) {
-		uart0_puts(msg::CMD_PROMPT);
+		Puts(msg::CMD_PROMPT);
 		m_bShownPrompt = true;
 	}
 	
@@ -193,7 +175,7 @@ void Shell::Run() {
 		return;
 	}
 	
-	uart0_puts("\n");
+	Puts("\n");
 
 	m_bShownPrompt = false; // next time round, we show the prompt.
 
@@ -201,14 +183,14 @@ void Shell::Run() {
 	CmdIndex nCmdIndex;
 
 	if ((nOffset = ValidateCmd(nLength, nCmdIndex)) == 0) {
-		uart0_printf("%s %s\n", msg::CMD_NOT_FOUND, m_Buffer);
+		Printf("%s %s\n", msg::CMD_NOT_FOUND, m_Buffer);
 		return;
 	}
 
 	ValidateArg(nOffset, nLength);
 
 	if (m_Argc != cmd_table[static_cast<uint32_t>(nCmdIndex)].nArgc) {
-		uart0_puts(msg::CMD_WRONG_ARGUMENTS);
+		Puts(msg::CMD_WRONG_ARGUMENTS);
 		return;
 	}
 

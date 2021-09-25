@@ -66,7 +66,7 @@ void ArtNetRdmController::Print() {
 	RDMDeviceController::Print();
 }
 
-void ArtNetRdmController::Full(uint8_t nPortIndex) {
+void ArtNetRdmController::Full(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
@@ -76,7 +76,7 @@ void ArtNetRdmController::Full(uint8_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-uint8_t ArtNetRdmController::GetUidCount(uint8_t nPortIndex) {
+uint8_t ArtNetRdmController::GetUidCount(uint32_t nPortIndex) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
@@ -84,7 +84,7 @@ uint8_t ArtNetRdmController::GetUidCount(uint8_t nPortIndex) {
 	return m_Discovery[nPortIndex]->GetUidCount();
 }
 
-void ArtNetRdmController::Copy(uint8_t nPortIndex, uint8_t *pTod) {
+void ArtNetRdmController::Copy(uint32_t nPortIndex, uint8_t *pTod) {
 	DEBUG_ENTRY
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
@@ -94,7 +94,7 @@ void ArtNetRdmController::Copy(uint8_t nPortIndex, uint8_t *pTod) {
 	DEBUG_EXIT
 }
 
-void ArtNetRdmController::DumpTod(uint8_t nPortIndex) {
+void ArtNetRdmController::DumpTod(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
@@ -104,7 +104,7 @@ void ArtNetRdmController::DumpTod(uint8_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-const uint8_t *ArtNetRdmController::Handler(uint8_t nPortIndex, const uint8_t *pRdmData) {
+const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *pRdmData) {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if (pRdmData == nullptr) {

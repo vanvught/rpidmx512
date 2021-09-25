@@ -108,14 +108,17 @@ E131Controller::~E131Controller() {
 
 	if (m_pE131SynchronizationPacket != nullptr) {
 		delete m_pE131SynchronizationPacket;
+		m_pE131SynchronizationPacket = nullptr;
 	}
 
 	if (m_pE131DiscoveryPacket != nullptr) {
 		delete m_pE131DiscoveryPacket;
+		m_pE131DiscoveryPacket = nullptr;
 	}
 
 	if (m_pE131DataPacket != nullptr) {
 		delete m_pE131DataPacket;
+		m_pE131DataPacket = nullptr;
 	}
 
 	DEBUG_EXIT
@@ -263,15 +266,6 @@ void E131Controller::HandleBlackout() {
 	}
 }
 
-uint32_t E131Controller::UniverseToMulticastIp(uint16_t nUniverse) const {
-	struct in_addr group_ip;
-	static_cast<void>(inet_aton("239.255.0.0", &group_ip));
-
-	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
-
-	return nMulticastIp;
-}
-
 const uint8_t *E131Controller::GetSoftwareVersion() {
 	return DEVICE_SOFTWARE_VERSION;
 }
@@ -349,7 +343,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 			p64[i + 1] = p64[i];
 		}
 
-		s_SequenceNumbers[nLow].nIpAddress = UniverseToMulticastIp(nUniverse);
+		s_SequenceNumbers[nLow].nIpAddress = universe_to_multicast_ip(nUniverse);
 		s_SequenceNumbers[nLow].nUniverse = nUniverse;
 		s_SequenceNumbers[nLow].nSequenceNumber = 0;
 
@@ -357,7 +351,7 @@ uint8_t E131Controller::GetSequenceNumber(uint16_t nUniverse, uint32_t &nMultica
 
 		DEBUG_PRINTF(">m< nUniverse=%u, nLow=%d", nUniverse, nLow);
 	} else {
-		s_SequenceNumbers[nMid].nIpAddress = UniverseToMulticastIp(nUniverse);
+		s_SequenceNumbers[nMid].nIpAddress = universe_to_multicast_ip(nUniverse);
 		s_SequenceNumbers[nMid].nUniverse = nUniverse;
 
 		nMulticastIpAddress = s_SequenceNumbers[nMid].nIpAddress;

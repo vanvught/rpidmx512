@@ -71,6 +71,10 @@ public:
 
 	void Set(RemoteConfig *);
 
+	const char *GetDisplayName() const {
+		return m_tRemoteConfigParams.aDisplayName;
+	}
+
 	void Dump();
 
     static void staticCallbackFunction(void *p, const char *s);

@@ -2,7 +2,7 @@
  * @file ip.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,6 +42,8 @@ extern void igmp_init(const uint8_t *, const struct ip_info  *);
 extern void igmp_set_ip(const struct ip_info  *);
 extern void igmp_handle(struct t_igmp *);
 extern void igmp_shutdown(void);
+
+extern void tcp_handle(struct t_tcp *);
 
 extern void icmp_handle(struct t_icmp *);
 extern void icmp_shutdown(void);
@@ -92,6 +94,11 @@ __attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 	case IPv4_PROTO_ICMP:
 		icmp_handle((struct t_icmp *) p_ip4);
 		break;
+#if defined (ENABLE_HTTPD)
+	case IPv4_PROTO_TCP:
+		tcp_handle((struct t_tcp *) p_ip4);
+		break;
+#endif
 	default:
 		DEBUG_PRINTF("proto %d not implemented", p_ip4->ip4.proto);
 		break;

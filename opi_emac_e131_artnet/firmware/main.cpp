@@ -77,9 +77,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("sACN E1.31 -> Art-Net\n");
+	fw.Print("sACN E1.31 -> Art-Net");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
@@ -111,12 +109,12 @@ void notmain(void) {
 
 	bridge.SetOutput(&artnetOutput);
 	bridge.SetE131Sync(&artnetOutput);
-
+	
 	bool bIsSetIndividual = false;
 
 	uint16_t nUniverse[E131::PORTS];
 
-	for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 		bool bIsSet;
 		nUniverse[nPortIndex] = e131params.GetUniverse(nPortIndex, bIsSet);
 
@@ -128,16 +126,16 @@ void notmain(void) {
 		}
 
 		if (bIsSet) {
-			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, nUniverse[nPortIndex]);
+			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nUniverse[nPortIndex]);
 			bIsSetIndividual = true;
 		}
 	}
-
+	
 	if (!bIsSetIndividual) {
-		const uint32_t nUniverse = e131params.GetUniverse();
+		const auto nUniverse = e131params.GetUniverse();
 
-		for (uint8_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, e131::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + nUniverse));
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + nUniverse));
 		}
 	}
 
@@ -154,7 +152,7 @@ void notmain(void) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}
@@ -214,10 +212,8 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		//
 		bridge.Run();
 		controller.Run();
-		//
 		device.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();

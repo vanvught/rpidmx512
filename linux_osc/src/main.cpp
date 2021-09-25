@@ -30,6 +30,10 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "ledblink.h"
+
+#include "mdns.h"
+#include "mdnsservices.h"
 
 #include "handler.h"
 
@@ -50,9 +54,15 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "display.h"
+
+#include "debug.h"
+
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
+	LedBlink lb;
+	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
@@ -94,10 +104,18 @@ int main(int argc, char **argv) {
 	nw.Print();
 	server.Print();
 
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Server");
+	mDns.Print();
+
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
 
 	if(remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);

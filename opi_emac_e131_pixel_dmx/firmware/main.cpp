@@ -59,8 +59,6 @@
 #include "dmxsend.h"
 #include "storedmxsend.h"
 #include "dmxconfigudp.h"
-// DMX Input
-#include "dmxinput.h"
 //
 #include "lightset4with4.h"
 // RDMNet LLRP Only
@@ -105,7 +103,6 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -141,8 +138,8 @@ void notmain(void) {
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmx.GetUniverses();
 
-		for (uint8_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
+		for (uint32_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
 		}
 	}
 
@@ -156,42 +153,35 @@ void notmain(void) {
 
 	// LightSet B - DMX - 1 Universe
 
-	StoreDmxSend storeDmxSend;
-	DmxSend *pDmxOutput = nullptr;
-	DmxConfigUdp *pDmxConfigUdp = nullptr;
-	const auto portDir = e131params.GetDirection();
+	bool bIsSet;
+	auto const nUniverse = e131params.GetUniverse(0, bIsSet);
 
-	auto isDmxUniverseSet = false;
-	const auto nUniverseDmx = e131params.GetUniverse(isDmxUniverseSet);
-
-	if (isDmxUniverseSet) {
-		bridge.SetUniverse(4, portDir, nUniverseDmx);
-
-		if (portDir == PortDir::INPUT) {
-			auto *pDmxInput = new DmxInput;
-			assert(pDmxInput != nullptr);
-
-			bridge.SetE131Dmx(pDmxInput);
-			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT, 1);
-		} else {
-			pDmxOutput = new DmxSend;
-			assert(pDmxOutput != nullptr);
-
-			DmxParams dmxparams(&storeDmxSend);
-
-			if (dmxparams.Load()) {
-				dmxparams.Set(pDmxOutput);
-				dmxparams.Dump();
-			}
-
-			pDmxConfigUdp = new DmxConfigUdp;
-			assert(pDmxConfigUdp != nullptr);
-
-			display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, 1);
-		}
+	if (bIsSet) {
+		bridge.SetUniverse(4, e131params.GetDirection(0), nUniverse);
 	}
 
-	LightSet4with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmx, pDmxOutput);
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
+	}
+
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
+	DmxConfigUdp *pDmxConfigUdp = nullptr;
+
+	if (bridge.GetActiveOutputPorts() != 0) {
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
+	}
+
+	LightSet4with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmx, bridge.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);

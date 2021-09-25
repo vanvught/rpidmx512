@@ -44,6 +44,7 @@
 #include "debug.h"
 
 using namespace artnet;
+using namespace artnetnode;
 
 union uip {
 	uint32_t u32;
@@ -53,12 +54,12 @@ union uip {
 void ArtNetNode::FillPollReply() {
 	memset(&m_PollReply, 0, sizeof(struct TArtPollReply));
 
-	memcpy(m_PollReply.Id, artnet::NODE_ID, sizeof m_PollReply.Id);
+	memcpy(m_PollReply.Id, artnet::NODE_ID, sizeof(m_PollReply.Id));
 
 	m_PollReply.OpCode = OP_POLLREPLY;
 
 	ip.u32 = m_Node.IPAddressLocal;
-	memcpy(m_PollReply.IPAddress, ip.u8, sizeof m_PollReply.IPAddress);
+	memcpy(m_PollReply.IPAddress, ip.u8, sizeof(m_PollReply.IPAddress));
 
 	m_PollReply.Port = ArtNet::UDP_PORT;
 
@@ -73,15 +74,15 @@ void ArtNetNode::FillPollReply() {
 	m_PollReply.EstaMan[0] = ArtNetConst::ESTA_ID[1];
 	m_PollReply.EstaMan[1] = ArtNetConst::ESTA_ID[0];
 
-	memcpy(m_PollReply.ShortName, m_Node.ShortName, sizeof m_PollReply.ShortName);
-	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof m_PollReply.LongName);
+	memcpy(m_PollReply.ShortName, m_Node.ShortName, sizeof(m_PollReply.ShortName));
+	memcpy(m_PollReply.LongName, m_Node.LongName, sizeof(m_PollReply.LongName));
 
 	m_PollReply.Style = ARTNET_ST_NODE;
 
-	memcpy(m_PollReply.MAC, m_Node.MACAddressLocal, sizeof m_PollReply.MAC);
+	memcpy(m_PollReply.MAC, m_Node.MACAddressLocal, sizeof(m_PollReply.MAC));
 
-	if (m_nVersion > 3) {
-		memcpy(m_PollReply.BindIp, ip.u8, sizeof m_PollReply.BindIp);
+	if (ArtNet::VERSION > 3) {
+		memcpy(m_PollReply.BindIp, ip.u8, sizeof(m_PollReply.BindIp));
 	}
 
 	m_PollReply.Status2 = m_Node.Status2;
@@ -89,17 +90,17 @@ void ArtNetNode::FillPollReply() {
 
 	m_PollReply.NumPortsLo = 4; // Default
 
-	memcpy(m_PollReply.DefaultUidResponder, m_Node.DefaultUidResponder, sizeof m_PollReply.DefaultUidResponder);
+	memcpy(m_PollReply.DefaultUidResponder, m_Node.DefaultUidResponder, sizeof(m_PollReply.DefaultUidResponder));
 }
 
 void ArtNetNode::SendPollRelply(bool bResponse) {
-	if (!bResponse && m_State.status == ARTNET_ON) {
+	if (!bResponse && m_State.status == Status::ON) {
 		m_State.ArtPollReplyCount++;
 	}
 
 	m_PollReply.Status1 = m_Node.Status1;
 
-	for (uint8_t nPage = 0; nPage < m_nPages; nPage++) {
+	for (auto nPage = 0; nPage < m_nPages; nPage++) {
 
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
@@ -109,20 +110,20 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		uint32_t NumPortsLo = 0;
 
-		for (uint8_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::PORTS); nPortIndex++) {
-			uint8_t nStatus = m_OutputPorts[nPortIndex].port.nStatus;
+		for (auto nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::PORTS); nPortIndex++) {
+			uint8_t nStatus = m_OutputPorts[nPortIndex].genericPort.nStatus;
 
-			if (m_OutputPorts[nPortIndex].tPortProtocol == PortProtocol::ARTNET) {
+			if (m_OutputPorts[nPortIndex].protocol == PortProtocol::ARTNET) {
 				nStatus &= static_cast<uint8_t>(~GO_DATA_IS_BEING_TRANSMITTED);
 
-				if (m_OutputPorts[nPortIndex].ipA != 0) {
-					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisA) < 1000) {
+				if (m_OutputPorts[nPortIndex].sourceA.nIp != 0) {
+					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].sourceA.nMillis) < 1000U) {
 						nStatus |= GO_DATA_IS_BEING_TRANSMITTED;
 					}
 				}
 
-				if (m_OutputPorts[nPortIndex].ipB != 0) {
-					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].nMillisB) < 1000) {
+				if (m_OutputPorts[nPortIndex].sourceB.nIp != 0) {
+					if ((m_nCurrentPacketMillis - m_OutputPorts[nPortIndex].sourceB.nMillis) < 1000U) {
 						nStatus |= GO_DATA_IS_BEING_TRANSMITTED;
 					}
 				}
@@ -133,31 +134,31 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 					nStatus = static_cast<uint8_t>(nStatus | (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
 
 					if ((nStatus & GO_OUTPUT_IS_SACN) == 0) {
-						m_OutputPorts[nPortIndex].tPortProtocol = PortProtocol::ARTNET;
+						m_OutputPorts[nPortIndex].protocol = PortProtocol::ARTNET;
 					}
 				}
 			}
 
-			m_OutputPorts[nPortIndex].port.nStatus = nStatus;
+			m_OutputPorts[nPortIndex].genericPort.nStatus = nStatus;
 
-			if (m_OutputPorts[nPortIndex].bIsEnabled) {
+			if (m_OutputPorts[nPortIndex].genericPort.bIsEnabled) {
 				m_PollReply.PortTypes[nPortIndex - nPortIndexStart] = ARTNET_ENABLE_OUTPUT | ARTNET_PORT_DMX;
 				NumPortsLo++;
 			} else {
 				m_PollReply.PortTypes[nPortIndex - nPortIndexStart] = 0;
 			}
 
-			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nStatus;
-			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].port.nDefaultAddress;
+			m_PollReply.GoodOutput[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].genericPort.nStatus;
+			m_PollReply.SwOut[nPortIndex - nPortIndexStart] = m_OutputPorts[nPortIndex].genericPort.nDefaultAddress;
 
 			if (nPortIndex < ArtNet::PORTS) {
-				if (m_InputPorts[nPortIndex].bIsEnabled) {
+				if (m_InputPorts[nPortIndex].genericPort.bIsEnabled) {
 					m_PollReply.PortTypes[nPortIndex - nPortIndexStart] |= ARTNET_ENABLE_INPUT | ARTNET_PORT_DMX;
 					NumPortsLo++;
 				}
 
-				m_PollReply.GoodInput[nPortIndex - nPortIndexStart] = m_InputPorts[nPortIndex].port.nStatus;
-				m_PollReply.SwIn[nPortIndex - nPortIndexStart] = m_InputPorts[nPortIndex].port.nDefaultAddress;
+				m_PollReply.GoodInput[nPortIndex - nPortIndexStart] = m_InputPorts[nPortIndex].genericPort.nStatus;
+				m_PollReply.SwIn[nPortIndex - nPortIndexStart] = m_InputPorts[nPortIndex].genericPort.nDefaultAddress;
 			}
 
 		}
@@ -167,7 +168,7 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 
 		snprintf(reinterpret_cast<char*>(m_PollReply.NodeReport), ArtNet::REPORT_LENGTH, "%04x [%04d] %s AvV", static_cast<int>(m_State.reportCode), static_cast<int>(m_State.ArtPollReplyCount), m_aSysName);
 
-		Network::Get()->SendTo(m_nHandle, &m_PollReply, sizeof(struct TArtPollReply), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
+		Network::Get()->SendTo(m_nHandle, &m_PollReply, sizeof(TArtPollReply), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 	}
 
 	m_State.IsChanged = false;

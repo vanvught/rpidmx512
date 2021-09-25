@@ -115,7 +115,8 @@ void notmain(void) {
 		e131params.Set(&bridge);
 	}
 
-	bridge.SetUniverse(0, e131::PortDir::OUTPUT, e131params.GetUniverse());
+	bool IsSet;
+	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, IsSet));
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
@@ -126,10 +127,10 @@ void notmain(void) {
 	bridge.Print();
 
 	display.SetTitle("Eth sACN E1.31 Monitor");
-	display.Set(2, displayudf::Labels::BOARDNAME);
-	display.Set(3, displayudf::Labels::IP);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;

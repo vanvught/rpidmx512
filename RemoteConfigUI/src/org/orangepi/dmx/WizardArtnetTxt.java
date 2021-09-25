@@ -21,6 +21,7 @@ package org.orangepi.dmx;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -29,7 +30,6 @@ import java.io.IOException;
 import java.text.NumberFormat;
 import java.text.ParseException;
 
-import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -40,7 +40,6 @@ import javax.swing.JDialog;
 import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.NumberFormatter;
@@ -58,10 +57,14 @@ public class WizardArtnetTxt extends JDialog {
 	private JButton btnCancel;
 	private JButton btnSetDefaults;
 	private JButton btnSave;
-	private JFormattedTextField formattedTextFieldUniverseA;
 	private JFormattedTextField formattedTextFieldUniverseB;
+	private JFormattedTextField formattedTextFieldUniverseA;
 	private JFormattedTextField formattedTextFieldUniverseC;
 	private JFormattedTextField formattedTextFieldUniverseD;
+	private JComboBox<String> comboBoxDirectionPortA;
+	private JComboBox<String> comboBoxDirectionPortB;
+	private JComboBox<String> comboBoxDirectionPortC;
+	private JComboBox<String> comboBoxDirectionPortD;
 	private JComboBox<String>  comboBoxMergePortA;
 	private JComboBox<String>  comboBoxMergePortB;
 	private JComboBox<String>  comboBoxMergePortC;
@@ -75,34 +78,43 @@ public class WizardArtnetTxt extends JDialog {
 	private JCheckBox chckbxEnablePortB;
 	private JCheckBox chckbxEnablePortA;
 	
-	//
 	private int artnetNet = 0;
 	private int artnetSubnet = 0;
+	
 	private int artnetAdressPortA;
 	private int artnetAdressPortB;
 	private int artnetAdressPortC;
 	private int artnetAdressPortD;
-	private JRadioButton rdbtnOutput;
-	private JRadioButton rdbtnInput;
-	private final ButtonGroup buttonGroup = new ButtonGroup();
+	
 	private JCheckBox chckbxMapUniverse0;
+	
+	private JLabel lblDirection;
+	
 	private JFormattedTextField formattedIP1PortA;
 	private JFormattedTextField formattedIP2PortA;
 	private JFormattedTextField formattedIP3PortA;
 	private JFormattedTextField formattedIP4PortA;
+	
 	private JFormattedTextField formattedIP1PortB;
-	private JFormattedTextField formattedIP1PortC;
-	private JFormattedTextField formattedIP1PortD;
 	private JFormattedTextField formattedIP2PortB;
 	private JFormattedTextField formattedIP3PortB;
 	private JFormattedTextField formattedIP4PortB;
+	
+	private JFormattedTextField formattedIP1PortC;
 	private JFormattedTextField formattedIP2PortC;
 	private JFormattedTextField formattedIP3PortC;
 	private JFormattedTextField formattedIP4PortC;
+	
+	private JFormattedTextField formattedIP1PortD;
 	private JFormattedTextField formattedIP2PortD;
 	private JFormattedTextField formattedIP3PortD;
 	private JFormattedTextField formattedIP4PortD;
-	//
+	
+	private JLabel lblUniversePortA;
+	private JLabel lblUniversePortB;
+	private JLabel lblUniversePortC;
+	private JLabel lblUniversePortD;
+	
 
 	public static void main(String[] args) {
 		try {
@@ -134,7 +146,7 @@ public class WizardArtnetTxt extends JDialog {
 	}
 	
 	private void initComponents() {
-		setBounds(100, 100, 573, 288);
+		setBounds(100, 100, 666, 280);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -147,10 +159,10 @@ public class WizardArtnetTxt extends JDialog {
 		formatterUniverse.setAllowsInvalid(false);
 		formatterUniverse.setCommitsOnValidEdit(true);
 		
-		JLabel lblUniversePortA = new JLabel("Port A");
-		JLabel lblUniversePortB = new JLabel("Port B");
-		JLabel lblUniversePortC = new JLabel("Port C");
-		JLabel lblUniversePortD = new JLabel("Port D");
+		lblUniversePortA = new JLabel("Port A");
+		lblUniversePortB = new JLabel("Port B");
+		lblUniversePortC = new JLabel("Port C");
+		lblUniversePortD = new JLabel("Port D");
 		
 		formattedTextFieldUniverseA = new JFormattedTextField(formatterUniverse);
 		formattedTextFieldUniverseA.setColumns(6);
@@ -160,6 +172,15 @@ public class WizardArtnetTxt extends JDialog {
 		formattedTextFieldUniverseC.setColumns(6);
 		formattedTextFieldUniverseD = new JFormattedTextField(formatterUniverse);
 		formattedTextFieldUniverseD.setColumns(6);
+		
+		comboBoxDirectionPortA = new JComboBox<String> ();
+		comboBoxDirectionPortA.setModel(new DefaultComboBoxModel<String>(new String[] {"Output", "Input"}));
+		comboBoxDirectionPortB = new JComboBox<String>();
+		comboBoxDirectionPortB.setModel(new DefaultComboBoxModel<String>(new String[] {"Output", "Input"}));
+		comboBoxDirectionPortC = new JComboBox<String>();
+		comboBoxDirectionPortC.setModel(new DefaultComboBoxModel<String>(new String[] {"Output", "Input"}));
+		comboBoxDirectionPortD = new JComboBox<String>();
+		comboBoxDirectionPortD.setModel(new DefaultComboBoxModel<String>(new String[] {"Output", "Input"}));
 		
 		comboBoxMergePortA = new JComboBox<String> ();
 		comboBoxMergePortA.setModel(new DefaultComboBoxModel<String> (new String[] {"HTP", "LTP"}));
@@ -178,18 +199,11 @@ public class WizardArtnetTxt extends JDialog {
 		comboBoxProtocolPortC.setModel(new DefaultComboBoxModel<String> (new String[] {"Art-Net", "sACN"}));		
 		comboBoxProtocolPortD = new JComboBox<String> ();
 		comboBoxProtocolPortD.setModel(new DefaultComboBoxModel<String> (new String[] {"Art-Net", "sACN"}));
-		
+				
 		chckbxEnablePortA = new JCheckBox("Enable");
 		chckbxEnablePortB = new JCheckBox("Enable");
 		chckbxEnablePortC = new JCheckBox("Enable");
 		chckbxEnablePortD = new JCheckBox("Enable");
-		
-		rdbtnOutput = new JRadioButton("Output");
-		rdbtnOutput.setSelected(true);
-		buttonGroup.add(rdbtnOutput);
-		
-		rdbtnInput = new JRadioButton("Input");
-		buttonGroup.add(rdbtnInput);
 		
 		chckbxMapUniverse0 = new JCheckBox("Art-Net 4 Map Universe 0");
 		
@@ -235,162 +249,198 @@ public class WizardArtnetTxt extends JDialog {
 		formattedIP3PortD.setColumns(2);
 		formattedIP4PortD = new JFormattedTextField(formatterIP);
 		formattedIP4PortD.setColumns(2);
-				
+		
+		JLabel lblMergeMode = new JLabel("Merge Mode");
+		lblMergeMode.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
+		
+		JLabel lblProtocol = new JLabel("Protocol");
+		lblProtocol.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
+		
+		JLabel lblDestinationIP = new JLabel("Destination IP Address");
+		lblDestinationIP.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
+		
+		lblDirection = new JLabel("Direction");
+		lblDirection.setFont(new Font("Lucida Grande", Font.PLAIN, 12));
+										
 		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
 		gl_contentPanel.setHorizontalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-						.addComponent(lblUniversePortB, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE)
-						.addComponent(lblUniversePortA)
-						.addComponent(lblUniversePortD)
-						.addComponent(lblUniversePortC, GroupLayout.PREFERRED_SIZE, 38, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.UNRELATED)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldUniverseD, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
+							.addContainerGap()
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblUniversePortA, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblUniversePortB, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblUniversePortC, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblUniversePortD, GroupLayout.PREFERRED_SIZE, 40, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.UNRELATED)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(formattedTextFieldUniverseD, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedTextFieldUniverseB, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedTextFieldUniverseC, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedTextFieldUniverseA, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE))
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxMergePortD, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(comboBoxDirectionPortD, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortC, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortB, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortA, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblDirection))
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxProtocolPortD, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldUniverseC, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxMergePortC, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxProtocolPortC, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldUniverseB, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxMergePortB, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxProtocolPortB, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedTextFieldUniverseA, GroupLayout.PREFERRED_SIZE, 39, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxMergePortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(comboBoxProtocolPortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-					.addGap(18)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedIP1PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP2PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP3PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP4PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedIP1PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP2PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP3PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP4PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addComponent(formattedIP1PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP2PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP3PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP4PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE))
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.TRAILING)
-								.addComponent(rdbtnInput)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addComponent(lblMergeMode)
+								.addComponent(comboBoxMergePortA, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxMergePortB, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxMergePortC, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxMergePortD, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
 								.addGroup(gl_contentPanel.createSequentialGroup()
+									.addGap(7)
+									.addComponent(comboBoxProtocolPortA, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(formattedIP1PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
 									.addComponent(formattedIP2PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
 									.addPreferredGap(ComponentPlacement.RELATED)
-									.addComponent(formattedIP3PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(formattedIP4PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)))
-					.addPreferredGap(ComponentPlacement.RELATED, 57, Short.MAX_VALUE)
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-						.addComponent(chckbxEnablePortA)
-						.addComponent(chckbxEnablePortD, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)
-						.addComponent(chckbxEnablePortC, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)
-						.addComponent(chckbxEnablePortB, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE))
-					.addGap(137))
-				.addGroup(gl_contentPanel.createSequentialGroup()
-					.addGap(147)
-					.addComponent(rdbtnOutput)
-					.addContainerGap(504, Short.MAX_VALUE))
-				.addGroup(gl_contentPanel.createSequentialGroup()
-					.addComponent(chckbxMapUniverse0)
-					.addContainerGap())
+									.addComponent(formattedIP3PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(formattedIP4PortA, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addComponent(chckbxEnablePortA, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE))
+								.addGroup(gl_contentPanel.createSequentialGroup()
+									.addPreferredGap(ComponentPlacement.RELATED)
+									.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+										.addGroup(gl_contentPanel.createSequentialGroup()
+											.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+												.addGroup(gl_contentPanel.createSequentialGroup()
+													.addGap(12)
+													.addComponent(lblProtocol, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE))
+												.addComponent(comboBoxProtocolPortD, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE))
+											.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+												.addGroup(gl_contentPanel.createSequentialGroup()
+													.addGap(6)
+													.addComponent(formattedIP1PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+													.addPreferredGap(ComponentPlacement.RELATED)
+													.addComponent(formattedIP2PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+													.addPreferredGap(ComponentPlacement.RELATED)
+													.addComponent(formattedIP3PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+													.addPreferredGap(ComponentPlacement.RELATED)
+													.addComponent(formattedIP4PortD, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+													.addPreferredGap(ComponentPlacement.RELATED)
+													.addComponent(chckbxEnablePortD, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE))
+												.addGroup(gl_contentPanel.createSequentialGroup()
+													.addGap(15)
+													.addComponent(lblDestinationIP, GroupLayout.PREFERRED_SIZE, 153, GroupLayout.PREFERRED_SIZE))))
+										.addGroup(gl_contentPanel.createSequentialGroup()
+											.addComponent(comboBoxProtocolPortC, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP1PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP2PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP3PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP4PortC, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(chckbxEnablePortC, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE))
+										.addGroup(gl_contentPanel.createSequentialGroup()
+											.addComponent(comboBoxProtocolPortB, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP1PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP2PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP3PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(formattedIP4PortB, GroupLayout.PREFERRED_SIZE, 34, GroupLayout.PREFERRED_SIZE)
+											.addPreferredGap(ComponentPlacement.RELATED)
+											.addComponent(chckbxEnablePortB, GroupLayout.PREFERRED_SIZE, 73, GroupLayout.PREFERRED_SIZE)))))
+							.addGap(210))
+						.addComponent(chckbxMapUniverse0))
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		gl_contentPanel.setVerticalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(rdbtnOutput)
-						.addComponent(rdbtnInput))
-					.addPreferredGap(ComponentPlacement.RELATED)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.TRAILING)
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addContainerGap()
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblProtocol, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE)
+								.addComponent(lblDestinationIP, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.RELATED, 12, Short.MAX_VALUE))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addContainerGap()
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblMergeMode)
+								.addComponent(lblDirection, GroupLayout.PREFERRED_SIZE, 15, GroupLayout.PREFERRED_SIZE))
+							.addPreferredGap(ComponentPlacement.UNRELATED)))
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+							.addComponent(lblUniversePortA)
+							.addComponent(formattedTextFieldUniverseA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(comboBoxDirectionPortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(comboBoxMergePortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(comboBoxProtocolPortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(formattedIP1PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(formattedIP2PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(formattedIP3PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+							.addComponent(formattedIP4PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addGap(2)
+							.addComponent(chckbxEnablePortA)))
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
 						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(formattedIP1PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP2PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP3PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP4PortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(formattedIP1PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP2PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP3PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP4PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(chckbxEnablePortB))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(formattedIP1PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP2PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP3PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP4PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(chckbxEnablePortC))
-							.addPreferredGap(ComponentPlacement.RELATED)
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(formattedIP1PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP2PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP3PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(formattedIP4PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(chckbxEnablePortD)))
-						.addComponent(chckbxEnablePortA)
-						.addGroup(gl_contentPanel.createSequentialGroup()
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-								.addComponent(lblUniversePortA)
-								.addComponent(formattedTextFieldUniverseA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(comboBoxMergePortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(comboBoxProtocolPortA, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
 								.addComponent(lblUniversePortB)
 								.addComponent(formattedTextFieldUniverseB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 								.addComponent(comboBoxMergePortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(comboBoxProtocolPortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-								.addGroup(gl_contentPanel.createSequentialGroup()
-									.addPreferredGap(ComponentPlacement.RELATED)
-									.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-										.addComponent(formattedTextFieldUniverseC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(comboBoxMergePortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-										.addComponent(comboBoxProtocolPortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-								.addGroup(gl_contentPanel.createSequentialGroup()
-									.addGap(11)
-									.addComponent(lblUniversePortC)))
+								.addComponent(comboBoxProtocolPortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP1PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP2PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP3PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP4PortB, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addGap(8)
+							.addComponent(chckbxEnablePortB)))
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addPreferredGap(ComponentPlacement.RELATED)
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+								.addComponent(lblUniversePortC)
+								.addComponent(formattedTextFieldUniverseC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxMergePortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxProtocolPortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP1PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP2PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP3PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP4PortC, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addGap(8)
+							.addComponent(chckbxEnablePortC)))
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+						.addGroup(gl_contentPanel.createSequentialGroup()
 							.addPreferredGap(ComponentPlacement.RELATED)
 							.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
 								.addComponent(lblUniversePortD)
 								.addComponent(formattedTextFieldUniverseD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(comboBoxDirectionPortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
 								.addComponent(comboBoxMergePortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-								.addComponent(comboBoxProtocolPortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addComponent(comboBoxProtocolPortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP1PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP2PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP3PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+								.addComponent(formattedIP4PortD, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
 							.addPreferredGap(ComponentPlacement.RELATED)
-							.addComponent(chckbxMapUniverse0)))
-					.addGap(172))
+							.addComponent(chckbxMapUniverse0))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addGap(8)
+							.addComponent(chckbxEnablePortD)))
+					.addGap(11))
 		);
 		
 		contentPanel.setLayout(gl_contentPanel);
@@ -434,28 +484,28 @@ public class WizardArtnetTxt extends JDialog {
 			}
 		});
 		
-		formattedTextFieldUniverseA.addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyReleased(KeyEvent e) {
-				try {
-					formattedTextFieldUniverseA.commitEdit();
-					artnetAdressPortA = setNetSubNet((int)formattedTextFieldUniverseA.getValue());
-					update('A');
-				} catch (ParseException e1) {
-					formattedTextFieldUniverseA.setValue(getUniverseFromAddress(artnetAdressPortA));
-				}
-			}
-		});
-		
 		formattedTextFieldUniverseB.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				try {
 					formattedTextFieldUniverseB.commitEdit();
-					artnetAdressPortB = setNetSubNet((int)formattedTextFieldUniverseB.getValue());
+					artnetAdressPortA = setNetSubNet((int)formattedTextFieldUniverseB.getValue());
+					update('A');
+				} catch (ParseException e1) {
+					formattedTextFieldUniverseB.setValue(getUniverseFromAddress(artnetAdressPortA));
+				}
+			}
+		});
+		
+		formattedTextFieldUniverseA.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				try {
+					formattedTextFieldUniverseA.commitEdit();
+					artnetAdressPortB = setNetSubNet((int)formattedTextFieldUniverseA.getValue());
 					update('B');
 				} catch (ParseException e1) {
-					formattedTextFieldUniverseB.setValue(getUniverseFromAddress(artnetAdressPortB));
+					formattedTextFieldUniverseA.setValue(getUniverseFromAddress(artnetAdressPortB));
 				}
 			}
 		});
@@ -486,13 +536,55 @@ public class WizardArtnetTxt extends JDialog {
 			}
 		});
 		
-		rdbtnOutput.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		comboBoxDirectionPortA.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				final Boolean isSelected = (comboBoxDirectionPortA.getSelectedIndex() == 1);
+				comboBoxMergePortA.setEnabled(!isSelected);
+				comboBoxProtocolPortA.setEnabled(!isSelected);
+				//
+				formattedIP1PortA.setEnabled(isSelected);
+				formattedIP2PortA.setEnabled(isSelected);
+				formattedIP3PortA.setEnabled(isSelected);
+				formattedIP4PortA.setEnabled(isSelected);
 			}
 		});
 		
-		rdbtnInput.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		comboBoxDirectionPortB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				final Boolean isSelected = (comboBoxDirectionPortB.getSelectedIndex() == 1);
+				comboBoxMergePortB.setEnabled(!isSelected);
+				comboBoxProtocolPortB.setEnabled(!isSelected);
+				//
+				formattedIP1PortB.setEnabled(isSelected);
+				formattedIP2PortB.setEnabled(isSelected);
+				formattedIP3PortB.setEnabled(isSelected);
+				formattedIP4PortB.setEnabled(isSelected);
+			}
+		});
+		
+		comboBoxDirectionPortC.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				final Boolean isSelected = (comboBoxDirectionPortC.getSelectedIndex() == 1);
+				comboBoxMergePortC.setEnabled(!isSelected);
+				comboBoxProtocolPortC.setEnabled(!isSelected);
+				//
+				formattedIP1PortC.setEnabled(isSelected);
+				formattedIP2PortC.setEnabled(isSelected);
+				formattedIP3PortC.setEnabled(isSelected);
+				formattedIP4PortC.setEnabled(isSelected);
+			}
+		});
+		
+		comboBoxDirectionPortD.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				final Boolean isSelected = (comboBoxDirectionPortD.getSelectedIndex() == 1);
+				comboBoxMergePortD.setEnabled(!isSelected);
+				comboBoxProtocolPortD.setEnabled(!isSelected);
+				//
+				formattedIP1PortD.setEnabled(isSelected);
+				formattedIP2PortD.setEnabled(isSelected);
+				formattedIP3PortD.setEnabled(isSelected);
+				formattedIP4PortD.setEnabled(isSelected);
 			}
 		});
 	}
@@ -504,21 +596,47 @@ public class WizardArtnetTxt extends JDialog {
 				final String[] lines = txt.split("\n");
 				for (int i = 0; i < lines.length; i++) {
 					final String line = lines[i];
-					if (line.contains("direction")) {
+					if (line.contains("direction_port_a")) {
 						if (Properties.getString(line).equals("input")) {
-							rdbtnInput.setSelected(true);
-							rdbtnOutput.setSelected(false);
+							comboBoxDirectionPortA.setSelectedIndex(1);
 						} else {
-							rdbtnOutput.setSelected(true);
-							rdbtnInput.setSelected(false);
+							comboBoxDirectionPortA.setSelectedIndex(0);
 						}
+						continue;
 					}
-					if ((line.contains("net") && (!line.contains("subnet")) && (!line.contains("artnet")))) {
+					if (line.contains("direction_port_b")) {
+						if (Properties.getString(line).equals("input")) {
+							comboBoxDirectionPortB.setSelectedIndex(1);
+						} else {
+							comboBoxDirectionPortB.setSelectedIndex(0);
+						}
+						continue;
+					}
+					if (line.contains("direction_port_c")) {
+						if (Properties.getString(line).equals("input")) {
+							comboBoxDirectionPortC.setSelectedIndex(1);
+						} else {
+							comboBoxDirectionPortC.setSelectedIndex(0);
+						}
+						continue;
+					}
+					if (line.contains("direction_port_d")) {
+						if (Properties.getString(line).equals("input")) {
+							comboBoxDirectionPortD.setSelectedIndex(1);
+						} else {
+							comboBoxDirectionPortD.setSelectedIndex(0);
+						}
+						continue;
+					}
+					//
+					if ((line.contains("net") && (!line.contains("subnet")) && (!line.contains("artnet") && (!line.contains("network"))))) {
 						artnetNet = Properties.getInt(line);
+						System.out.println("artnetNet->" + artnetNet);
 						continue;
 					}
 					if (line.contains("subnet")) {
 						artnetSubnet = Properties.getInt(line);
+						System.out.println("artnetSubnet->" + artnetSubnet);
 						continue;
 					}
 					if (line.contains("universe_port_a")) {
@@ -642,6 +760,9 @@ public class WizardArtnetTxt extends JDialog {
 		int universe = (artnetNet & 0x7F) << 8;		// Net : Bits 14-8
 		universe |= ((artnetSubnet & 0x0F) << 4);	// Sub-Net : Bits 7-4
 		universe |= address & 0x0F;	
+		
+		System.out.println("" + artnetNet + ":" +  artnetSubnet + "->" + universe);
+		
 		return universe;
 	}
 	
@@ -649,15 +770,26 @@ public class WizardArtnetTxt extends JDialog {
 		return checkBox.isSelected() ? "" : "#";
 	}
 	
+	private String getComment(JComboBox<String> comboBox) {
+		return comboBox.getSelectedItem().toString() == "Input" ? "" : "#";
+	}
+	
 	private void update(char port) {
 		if (port != 'A')
-			formattedTextFieldUniverseA.setValue(getUniverseFromAddress(artnetAdressPortA));
+			formattedTextFieldUniverseB.setValue(getUniverseFromAddress(artnetAdressPortA));
 		if (port != 'B')
-			formattedTextFieldUniverseB.setValue(getUniverseFromAddress(artnetAdressPortB));
+			formattedTextFieldUniverseA.setValue(getUniverseFromAddress(artnetAdressPortB));
 		if (port != 'C')
 			formattedTextFieldUniverseC.setValue(getUniverseFromAddress(artnetAdressPortC));
 		if (port != 'D')
 			formattedTextFieldUniverseD.setValue(getUniverseFromAddress(artnetAdressPortD));
+	}
+	
+	private String getDirection(JComboBox<String> comboBox) {
+		if (comboBox.getSelectedItem().toString().toLowerCase().equals("input")) {
+			return "input";
+		}
+		return "output";
 	}
 	
 	private String getProtocol(JComboBox<String> comboBox) {
@@ -677,16 +809,21 @@ public class WizardArtnetTxt extends JDialog {
 	private void save() {
 		if (opi != null) {
 			StringBuffer txtAppend = new StringBuffer();
-			
-			txtAppend.append(String.format("direction=%s\n", rdbtnInput.isSelected() ? "input" : "output"));
-			
+						
 			txtAppend.append(String.format("net=%d\n", artnetNet));
 			txtAppend.append(String.format("subnet=%d\n", artnetSubnet));
+			
+			txtAppend.append(String.format("direction_port_a=%s\n", getDirection(comboBoxDirectionPortA)));
+			txtAppend.append(String.format("direction_port_b=%s\n", getDirection(comboBoxDirectionPortB)));
+			txtAppend.append(String.format("direction_port_c=%s\n", getDirection(comboBoxDirectionPortC)));
+			txtAppend.append(String.format("direction_port_d=%s\n", getDirection(comboBoxDirectionPortD)));
 			
 			txtAppend.append(String.format("%suniverse_port_a=%s\n", getComment(chckbxEnablePortA), artnetAdressPortA));
 			txtAppend.append(String.format("%suniverse_port_b=%s\n", getComment(chckbxEnablePortB), artnetAdressPortB));
 			txtAppend.append(String.format("%suniverse_port_c=%s\n", getComment(chckbxEnablePortC), artnetAdressPortC));
 			txtAppend.append(String.format("%suniverse_port_d=%s\n", getComment(chckbxEnablePortD), artnetAdressPortD));
+			
+			// Output
 			
 			txtAppend.append(String.format("protocol_port_a=%s\n", getProtocol(comboBoxProtocolPortA)));
 			txtAppend.append(String.format("protocol_port_b=%s\n", getProtocol(comboBoxProtocolPortB)));
@@ -699,12 +836,10 @@ public class WizardArtnetTxt extends JDialog {
 			txtAppend.append(String.format("merge_mode_port_d=%s\n", getMergeMode(comboBoxMergePortD)));
 				
 			// Input
-			if (rdbtnInput.isSelected()) {
-				txtAppend.append(String.format("%sdestination_ip_port_a=%d.%d.%d.%d\n", getComment(chckbxEnablePortA), formattedIP1PortA.getValue(),formattedIP2PortA.getValue(),formattedIP3PortA.getValue(),formattedIP4PortA.getValue()));
-				txtAppend.append(String.format("%sdestination_ip_port_b=%d.%d.%d.%d\n", getComment(chckbxEnablePortB), formattedIP1PortB.getValue(),formattedIP2PortB.getValue(),formattedIP3PortB.getValue(),formattedIP4PortB.getValue()));
-				txtAppend.append(String.format("%sdestination_ip_port_c=%d.%d.%d.%d\n", getComment(chckbxEnablePortC), formattedIP1PortC.getValue(),formattedIP2PortC.getValue(),formattedIP3PortC.getValue(),formattedIP4PortC.getValue()));
-				txtAppend.append(String.format("%sdestination_ip_port_d=%d.%d.%d.%d\n", getComment(chckbxEnablePortD), formattedIP1PortD.getValue(),formattedIP2PortD.getValue(),formattedIP3PortD.getValue(),formattedIP4PortD.getValue()));
-			}
+			txtAppend.append(String.format("%sdestination_ip_port_a=%d.%d.%d.%d\n", getComment(comboBoxDirectionPortA), formattedIP1PortA.getValue(),formattedIP2PortA.getValue(),formattedIP3PortA.getValue(),formattedIP4PortA.getValue()));
+			txtAppend.append(String.format("%sdestination_ip_port_b=%d.%d.%d.%d\n", getComment(comboBoxDirectionPortB), formattedIP1PortB.getValue(),formattedIP2PortB.getValue(),formattedIP3PortB.getValue(),formattedIP4PortB.getValue()));
+			txtAppend.append(String.format("%sdestination_ip_port_c=%d.%d.%d.%d\n", getComment(comboBoxDirectionPortC), formattedIP1PortC.getValue(),formattedIP2PortC.getValue(),formattedIP3PortC.getValue(),formattedIP4PortC.getValue()));
+			txtAppend.append(String.format("%sdestination_ip_port_d=%d.%d.%d.%d\n", getComment(comboBoxDirectionPortD), formattedIP1PortD.getValue(),formattedIP2PortD.getValue(),formattedIP3PortD.getValue(),formattedIP4PortD.getValue()));
 			
 			//
 			txtAppend.append(String.format("map_universe0=%d\n", chckbxMapUniverse0.isSelected() ? 1 : 0));

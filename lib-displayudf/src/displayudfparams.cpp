@@ -47,7 +47,7 @@
 #include "displayudfparamsconst.h"
 
 #include "networkparamsconst.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -71,7 +71,7 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::BOARD_NAME,
 		NetworkParamsConst::IP_ADDRESS,
 		DisplayUdfParamsConst::VERSION,
-		LightSetConst::PARAMS_UNIVERSE,
+		LightSetParamsConst::UNIVERSE,
 		DisplayUdfParamsConst::ACTIVE_PORTS,
 #if defined (NODE_ARTNET)
 		ArtNetParamsConst::NODE_SHORT_NAME,
@@ -79,12 +79,12 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		"",
 #endif
 		NetworkParamsConst::HOSTNAME,
-		LightSetConst::PARAMS_UNIVERSE_PORT[0],
-		LightSetConst::PARAMS_UNIVERSE_PORT[1],
-		LightSetConst::PARAMS_UNIVERSE_PORT[2],
-		LightSetConst::PARAMS_UNIVERSE_PORT[3],
+		LightSetParamsConst::UNIVERSE_PORT[0],
+		LightSetParamsConst::UNIVERSE_PORT[1],
+		LightSetParamsConst::UNIVERSE_PORT[2],
+		LightSetParamsConst::UNIVERSE_PORT[3],
 		NetworkParamsConst::NET_MASK,
-		LightSetConst::PARAMS_DMX_START_ADDRESS,
+		LightSetParamsConst::DMX_START_ADDRESS,
 #if defined (NODE_ARTNET)
 		ArtNetParamsConst::DESTINATION_IP_PORT[0],
 		ArtNetParamsConst::DESTINATION_IP_PORT[1],

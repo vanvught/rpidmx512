@@ -1,8 +1,8 @@
 /**
- * @file dmxinput.h
+ * @file get_file_content.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXINPUT_H_
-#define DMXINPUT_H_
+#include <cstdio>
+#include <errno.h>
 
-#include <cstdint>
+int get_file_content(const char *fileName, char *pDst) {
+	 FILE *fp = fopen(fileName, "r");
 
-#include "artnetdmx.h"
-#include "dmxmulti.h"
+	 if (fp == nullptr) {
+		 return -1;
+	 }
 
-class DmxInput: public ArtNetDmx, public Dmx {
-public:
-	DmxInput();
+	 const int nBytes = fread(pDst, sizeof(char), 1440, fp);
 
-	void Start(uint8_t nPortIndex);
-	void Stop(uint8_t nPortIndex);
+	 if (nBytes <= 0) {
+		 perror("fread");
+	 }
 
-	const uint8_t *Handler(uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
+	 fclose(fp);
 
-private:
-	static uint8_t s_nStarted;
-};
+	 printf("%s->%d\n", fileName, nBytes);
 
-#endif /* DMXINPUT_H_ */
+	 return nBytes;
+}

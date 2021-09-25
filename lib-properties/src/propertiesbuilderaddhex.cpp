@@ -42,12 +42,16 @@ bool PropertiesBuilder::AddHex(const char *pProperty, uint32_t nValue, const boo
 	}
 
 	auto *p = &m_pBuffer[m_nSize];
-	const auto nSize = m_nLength - m_nSize;
+	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
 
 	int i;
 
-	if (bIsSet) {
-		i = snprintf(p, nSize, "%s=%.*x\n", pProperty, nWidth, nValue);
+	if (bIsSet || m_bJson) {
+		if (m_bJson) {
+			i = snprintf(p, nSize, "\"%s\":\"%.*x\",", pProperty, nWidth, nValue);
+		} else {
+			i = snprintf(p, nSize, "%s=%.*x\n", pProperty, nWidth, nValue);
+		}
 	} else {
 		i = snprintf(p, nSize, "#%s=%.*x\n", pProperty, nWidth, nValue);
 	}

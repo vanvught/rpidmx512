@@ -51,22 +51,27 @@ extern "C" {
 extern void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used);
 extern void net_shutdown(void);
 extern void net_handle(void);
-//
+
 extern void net_set_hostname(const char *name);
 extern void net_set_ip(uint32_t ip);
 extern void net_set_gw(uint32_t gw);
 extern bool net_set_zeroconf(struct ip_info *p_ip_info);
-//
+
 extern bool net_set_dhcp(struct ip_info *p_ip_info, bool *is_zeroconf_used);
 extern void net_dhcp_release(void);
-//
+
 extern int udp_bind(uint16_t);
 extern int udp_unbind(uint16_t);
 extern uint16_t udp_recv(uint8_t, uint8_t *, uint16_t, uint32_t *, uint16_t *);
+extern uint16_t udp_recv2(uint8_t, const uint8_t **, uint32_t *, uint16_t *);
 extern int udp_send(uint8_t, const uint8_t *, uint16_t, uint32_t, uint16_t);
-//
+
 extern int igmp_join(uint32_t group_address);
 extern int igmp_leave(uint32_t group_address);
+
+extern int tcp_begin(uint16_t local_port);
+extern uint16_t tcp_read(int handle, const uint8_t **p);
+extern void tcp_write(int handle, const uint8_t *buffer, uint16_t length);
 
 #ifdef __cplusplus
 }

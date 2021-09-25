@@ -2,7 +2,7 @@
  * @file storee131.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,9 @@
 #include <cassert>
 
 #include "storee131.h"
-
 #include "debug.h"
 
-StoreE131 *StoreE131::s_pThis = nullptr;
+StoreE131 *StoreE131::s_pThis;
 
 StoreE131::StoreE131() {
 	DEBUG_ENTRY

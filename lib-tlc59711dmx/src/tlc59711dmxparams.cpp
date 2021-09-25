@@ -42,7 +42,7 @@
 #include "sscan.h"
 
 #include "devicesparamsconst.h"
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 using namespace lightset;
 
@@ -126,7 +126,7 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 		return;
 	}
 
-	if (Sscan::Uint16(pLine, LightSetConst::PARAMS_DMX_START_ADDRESS, value16) == Sscan::OK) {
+	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
 		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
 			m_tTLC59711Params.nDmxStartAddress = value16;
 			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::START_ADDRESS;
@@ -155,7 +155,7 @@ void TLC59711DmxParams::Dump() {
 	}
 
 	if(isMaskSet(TLC59711DmxParamsMask::START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress);
+		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_tTLC59711Params.nDmxStartAddress);
 	}
 
 	if(isMaskSet(TLC59711DmxParamsMask::SPI_SPEED)) {

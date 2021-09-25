@@ -2,7 +2,7 @@
  * @file firmwareversion.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,26 @@
 #ifndef FIRMWAREVERSION_H_
 #define FIRMWAREVERSION_H_
 
-#define SOFTWARE_VERSION_LENGTH	3
-#define GCC_DATE_LENGTH			11
-#define GCC_TIME_LENGTH			8
-
-struct TFirmwareVersion {
-	char SoftwareVersion[SOFTWARE_VERSION_LENGTH];
-	char BuildDate[GCC_DATE_LENGTH];
-	char BuildTime[GCC_TIME_LENGTH];
+namespace firmwareversion {
+namespace length {
+static constexpr auto SOFTWARE_VERSION = 3;
+static constexpr auto GCC_DATE = 11;
+static constexpr auto GCC_TIME = 8;
+}  // namespace length
+struct Info {
+	char SoftwareVersion[length::SOFTWARE_VERSION];
+	char BuildDate[length::GCC_DATE];
+	char BuildTime[length::GCC_TIME];
 };
+}  // namespace firmwareversion
 
 class FirmwareVersion {
 public:
 	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
-	~FirmwareVersion() {
-
-	}
 
 	void Print(const char *pTitle = nullptr);
 
-	const struct TFirmwareVersion* GetVersion() {
+	const struct firmwareversion::Info* GetVersion() {
 		return &m_tFirmwareVersion;
 	}
 
@@ -62,7 +62,7 @@ public:
 	}
 
 private:
-	struct TFirmwareVersion m_tFirmwareVersion;
+	struct firmwareversion::Info m_tFirmwareVersion;
 	char m_aPrint[64];
 
 	static FirmwareVersion *s_pThis;

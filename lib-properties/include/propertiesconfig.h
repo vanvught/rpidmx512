@@ -1,8 +1,8 @@
 /**
- * @file lightsetconst.h
+ * @file propertiesconfig.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSETCONST_H_
-#define LIGHTSETCONST_H_
+#ifndef PROPERTIESCONFIG_H_
+#define PROPERTIESCONFIG_H_
 
-struct LightSetConst {
-	static const char PARAMS_OUTPUT[];
+#include <cstdint>
 
-	static const char PARAMS_UNIVERSE[];
-	static const char PARAMS_UNIVERSE_PORT[4][16];
+struct PropertiesConfig {
+public:
+	static void EnableJSON(bool enableJSON) {
+		if (enableJSON) {
+			s_Config |= Mask::ENABLE_JSON;
+		} else {
+			s_Config &= static_cast<uint8_t>(~Mask::ENABLE_JSON);
+		}
+	}
 
-	static const char PARAMS_MERGE_MODE[];
-	static const char PARAMS_MERGE_MODE_PORT[4][18];
+	static bool IsJSON() {
+#if defined(ENABLE_JSON_ONLY)
+		return true;
+#else
+		return isMaskSet(Mask::ENABLE_JSON);
+#endif
+	}
 
-	static const char PARAMS_START_UNI_PORT[8][18];
+private:
+	struct Mask {
+		static constexpr uint8_t ENABLE_JSON = (1U << 0);
+	};
+    static bool isMaskSet(uint8_t nMask) {
+    	return (s_Config & nMask) == nMask;
+    }
 
-	static const char PARAMS_DMX_START_ADDRESS[];
-	static const char PARAMS_DMX_SLOT_INFO[];
-
-	static const char PARAMS_TEST_PATTERN[];
+    static uint8_t s_Config;
 };
 
-#endif /* LIGHTSETCONST_H_ */
+#endif /* PROPERTIESCONFIG_H_ */

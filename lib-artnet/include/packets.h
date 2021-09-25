@@ -467,10 +467,10 @@ union UArtPacket {
 };
 
 struct TArtNetPacket {
-	int length;
-	uint32_t IPAddressFrom;
-	TOpCodes OpCode;
 	union UArtPacket ArtPacket;
+	uint32_t IPAddressFrom;
+	uint16_t nLength;
+	TOpCodes OpCode;
 };
 
 #endif /* PACKETS_H_ */

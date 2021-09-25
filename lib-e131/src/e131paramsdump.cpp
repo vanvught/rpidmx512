@@ -30,54 +30,63 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <algorithm>
 
 #include "e131params.h"
 #include "e131paramsconst.h"
 
-#include "lightsetconst.h"
+#include "lightset.h"
+#include "lightsetparamsconst.h"
 
 #include "debug.h"
 
 using namespace e131;
+using namespace e131params;
 
 void E131Params::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::FILE_NAME);
 
-	if (isMaskSet(E131ParamsMask::UNIVERSE)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE, m_tE131Params.nUniverse);
+#if defined (OUTPUT_DMX_ARTNET)
+	if (isMaskSet(Mask::UNIVERSE)) {
+		printf(" %s=%d\n", LightSetParamsConst::UNIVERSE, m_Params.nUniverse);
 	}
 
-	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
-		if (isMaskSet(E131ParamsMask::UNIVERSE_A << i)) {
-			printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE_PORT[i], m_tE131Params.nUniversePort[i]);
+	if (isMaskSet(Mask::MERGE_MODE)) {
+		printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE, lightset::get_merge_mode(m_Params.nMergeMode));
+	}
+#endif
+
+	const auto nPorts = static_cast<uint32_t>(std::min(e131params::MAX_PORTS, E131::PORTS));
+
+	for (uint32_t i = 0; i < nPorts; i++) {
+		if (isMaskSet(Mask::UNIVERSE_A << i)) {
+			printf(" %s=%d\n", LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniversePort[i]);
 		}
 	}
 
-	if (isMaskSet(E131ParamsMask::MERGE_MODE)) {
-		printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE, E131::GetMergeMode(m_tE131Params.nMergeMode));
-	}
-
-	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
-		if (isMaskSet(E131ParamsMask::MERGE_MODE_A << i)) {
-			printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE_PORT[i], E131::GetMergeMode(m_tE131Params.nMergeModePort[i]));
+	for (uint32_t i = 0; i < nPorts; i++) {
+		if (isMaskSet(Mask::MERGE_MODE_A << i)) {
+			printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_Params.nMergeModePort[i]));
 		}
 	}
 
-	if (isMaskSet(E131ParamsMask::NETWORK_TIMEOUT)) {
-		printf(" %s=%.1f [%s]\n", E131ParamsConst::NETWORK_DATA_LOSS_TIMEOUT, m_tE131Params.nNetworkTimeout, (m_tE131Params.nNetworkTimeout != 0) ? "" : "Disabled");
+	if (isMaskSet(Mask::DISABLE_NETWORK_DATA_LOSS_TIMEOUT)) {
+		printf(" %s=1 [Yes]\n", E131ParamsConst::DISABLE_NETWORK_DATA_LOSS_TIMEOUT);
 	}
 
-	if (isMaskSet(E131ParamsMask::DISABLE_MERGE_TIMEOUT)) {
+	if (isMaskSet(Mask::DISABLE_MERGE_TIMEOUT)) {
 		printf(" %s=1 [Yes]\n", E131ParamsConst::DISABLE_MERGE_TIMEOUT);
 	}
 
-	if(isMaskSet(E131ParamsMask::DIRECTION)) {
-		printf(" %s=%d [%s]\n", E131ParamsConst::DIRECTION,	m_tE131Params.nDirection, m_tE131Params.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
+	for (uint32_t i = 0; i < nPorts; i++) {
+		printf(" %s=%d [%s]\n", LightSetParamsConst::DIRECTION[i], (m_Params.nDirection >> i) & 0x1, lightset::get_direction(i, m_Params.nDirection));
 	}
 
-	if (isMaskSet(E131ParamsMask::PRIORITY)) {
-		printf(" %s=%d\n", E131ParamsConst::PRIORITY, m_tE131Params.nPriority);
+	for (uint32_t i = 0; i < nPorts; i++) {
+		if (isMaskSet(Mask::PRIORITY_A << i)) {
+			printf(" %s=%d\n", E131ParamsConst::PRIORITY[i], m_Params.nPriority[i]);
+		}
 	}
 #endif
 }

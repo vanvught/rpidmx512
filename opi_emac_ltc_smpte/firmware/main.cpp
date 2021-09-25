@@ -343,7 +343,7 @@ void notmain(void) {
 		oscServer.Start();
 		oscServer.Print();
 		if (bRunRtpMidi) {
-			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), "type=server");
+			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), mdns::Protocol::UDP, "type=server");
 		}
 	}
 
@@ -386,11 +386,14 @@ void notmain(void) {
 		ntpServer.Start();
 		ntpServer.Print();
 		if (bRunRtpMidi) {
-			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, "type=server");
+			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, mdns::Protocol::UDP, "type=server");
 		}
 	}
 
 	if (bRunRtpMidi) {
+#if defined (ENABLE_HTTPD)
+		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=LTC SMPTE");
+#endif
 		rtpMidi.Print();
 	}
 

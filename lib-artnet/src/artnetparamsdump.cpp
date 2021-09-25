@@ -36,92 +36,85 @@
 #include "artnetparams.h"
 #include "artnetparamsconst.h"
 
-#include "lightsetconst.h"
+#include "lightsetparamsconst.h"
 
 #include "network.h"
 
 using namespace artnet;
+using namespace artnetparams;
 
 void ArtNetParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ArtNetParamsConst::FILE_NAME);
 
-	if(isMaskSet(ArtnetParamsMask::UNIVERSE)) {
-		printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE, m_tArtNetParams.nUniverse);
-	}
+//	if(isMaskSet(Mask::UNIVERSE)) {
+//		printf(" %s=%d\n", LightSetParamsConst::UNIVERSE, m_tArtNetParams.nUniverse);
+//	}
 
-	if(isMaskSet(ArtnetParamsMask::SUBNET)) {
+	if(isMaskSet(Mask::SUBNET)) {
 		printf(" %s=%d\n", ArtNetParamsConst::SUBNET, m_tArtNetParams.nSubnet);
 	}
 
-	if(isMaskSet(ArtnetParamsMask::NET)) {
+	if(isMaskSet(Mask::NET)) {
 		printf(" %s=%d\n", ArtNetParamsConst::NET, m_tArtNetParams.nNet);
 	}
 
-	if(isMaskSet(ArtnetParamsMask::SHORT_NAME)) {
+	if(isMaskSet(Mask::SHORT_NAME)) {
 		printf(" %s=%s\n", ArtNetParamsConst::NODE_SHORT_NAME, m_tArtNetParams.aShortName);
 	}
 
-	if(isMaskSet(ArtnetParamsMask::LONG_NAME)) {
+	if(isMaskSet(Mask::LONG_NAME)) {
 		printf(" %s=%s\n", ArtNetParamsConst::NODE_LONG_NAME, m_tArtNetParams.aLongName);
 	}
 
-	if(isMaskSet(ArtnetParamsMask::PROTOCOL)) {
+	if(isMaskSet(Mask::PROTOCOL)) {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::PROTOCOL, m_tArtNetParams.nProtocol, ArtNet::GetProtocolMode(m_tArtNetParams.nProtocol, true));
 	}
 
-	if (isMaskSet(ArtnetParamsMask::RDM)) {
+	if (isMaskSet(Mask::RDM)) {
 		printf(" %s=1 [Yes]\n", ArtNetParamsConst::ENABLE_RDM);
 	}
 
-	if(isMaskSet(ArtnetParamsMask::TIMECODE)) {
-		printf(" %s=1 [Yes]\n", ArtNetParamsConst::USE_TIMECODE);
-	}
-
-	if(isMaskSet(ArtnetParamsMask::TIMESYNC)) {
-		printf(" %s=1 [Yes]\n", ArtNetParamsConst::USE_TIMESYNC);
-	}
-
-	if(isMaskSet(ArtnetParamsMask::OEM_VALUE)) {
+	if(isMaskSet(Mask::OEM_VALUE)) {
 		printf(" %s=0x%.2X%.2X\n", ArtNetParamsConst::NODE_OEM_VALUE, m_tArtNetParams.aOemValue[0], m_tArtNetParams.aOemValue[1]);
 	}
 
-	if (isMaskSet(ArtnetParamsMask::NETWORK_TIMEOUT)) {
+	if (isMaskSet(Mask::NETWORK_TIMEOUT)) {
 		printf(" %s=%d [%s]\n", ArtNetParamsConst::NODE_NETWORK_DATA_LOSS_TIMEOUT, static_cast<int>(m_tArtNetParams.nNetworkTimeout), (m_tArtNetParams.nNetworkTimeout == 0) ? "Disabled" : "");
 	}
 
-	if(isMaskSet(ArtnetParamsMask::DISABLE_MERGE_TIMEOUT)) {
-		printf(" %s=1 [Yes]\n", ArtNetParamsConst::NODE_DISABLE_MERGE_TIMEOUT);
+	if(isMaskSet(Mask::DISABLE_MERGE_TIMEOUT)) {
+		printf(" %s=1 [Yes]\n", ArtNetParamsConst::DISABLE_MERGE_TIMEOUT);
 	}
 
-	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
-		if (isMaskSet(ArtnetParamsMask::UNIVERSE_A << i)) {
-			printf(" %s=%d\n", LightSetConst::PARAMS_UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i]);
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if (isMaskSet(Mask::UNIVERSE_A << i)) {
+			printf(" %s=%d\n", LightSetParamsConst::UNIVERSE_PORT[i], m_tArtNetParams.nUniversePort[i]);
 		}
 	}
 
-	if (isMaskSet(ArtnetParamsMask::MERGE_MODE)) {
-		printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE, ArtNet::GetMergeMode(m_tArtNetParams.nMergeMode));
+	if (isMaskSet(Mask::MERGE_MODE)) {
+		printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE, lightset::get_merge_mode(m_tArtNetParams.nMergeMode));
 	}
 
-	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
-		if (isMaskSet(ArtnetParamsMask::MERGE_MODE_A << i)) {
-			printf(" %s=%s\n", LightSetConst::PARAMS_MERGE_MODE_PORT[i], ArtNet::GetMergeMode(m_tArtNetParams.nMergeModePort[i]));
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if (isMaskSet(Mask::MERGE_MODE_A << i)) {
+			printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_tArtNetParams.nMergeModePort[i]));
 		}
 	}
 
-	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
-		if (isMaskSet(ArtnetParamsMask::PROTOCOL_A << i)) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if (isMaskSet(Mask::PROTOCOL_A << i)) {
 			printf(" %s=%s\n", ArtNetParamsConst::PROTOCOL_PORT[i], ArtNet::GetProtocolMode(m_tArtNetParams.nProtocolPort[i], true));
 		}
 	}
 
-	if(isMaskSet(ArtnetParamsMask::DIRECTION)) {
-		printf(" %s=%d [%s]\n", ArtNetParamsConst::DIRECTION, static_cast<int>(m_tArtNetParams.nDirection), m_tArtNetParams.nDirection == static_cast<uint8_t>(PortDir::INPUT) ? "Input" : "Output");
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		printf(" %s=%d [%s]\n", LightSetParamsConst::DIRECTION[i], (m_tArtNetParams.nDirection >> i) & 0x1, lightset::get_direction(i, m_tArtNetParams.nDirection));
 	}
 
-	for (unsigned i = 0; i < ArtNet::PORTS; i++) {
-		if (isMaskMultiPortOptionsSet(ArtnetParamsMaskMultiPortOptions::DESTINATION_IP_A << i)) {
+	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+		if (isMaskMultiPortOptionsSet(MaskMultiPortOptions::DESTINATION_IP_A << i)) {
 			printf(" %s=" IPSTR "\n", ArtNetParamsConst::DESTINATION_IP_PORT[i], IP2STR(m_tArtNetParams.nDestinationIpPort[i]));
 		}
 	}

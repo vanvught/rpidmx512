@@ -1,5 +1,8 @@
-DEFINES=#NDEBUG
+DEFINES=ENABLE_CONTENT
+DEFINES+=#NDEBUG
 
 EXTRA_INCLUDES=../lib-display/include ../lib-properties/include ../lib-hal/include ../lib-network/include  ../lib-displayudf/include ../lib-display/include ../lib-spiflashinstall/include ../lib-spiflashstore/include ../lib-rdm/include ../lib-artnet/include ../lib-artnet4/include ../lib-e131/include ../lib-network/include ../lib-dmxsend/include ../lib-dmxserial/include ../lib-dmx/include ../lib-dmxmonitor/include ../lib-ws28xxdmx/include ../lib-ws28xx/include ../lib-tlc59711dmx/include ../lib-tlc59711/include ../lib-ltc/include ../lib-tcnet/include ../lib-midi/include ../lib-oscserver/include ../lib-oscclient/include ../lib-widget/include ../lib-l6470dmx/include ../lib-l6470/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include ../lib-showfile/include ../lib-gps/include ../lib-rgbpanel/include ../lib-ddp/include ../lib-lightset/include
+
+EXTRA_SRCDIR=src/httpd
 
 include ../firmware-template-linux/lib/Rules.mk

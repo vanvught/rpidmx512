@@ -27,14 +27,20 @@
 #define DMX_H_
 
 #if defined (OUTPUT_DMX_SEND_MULTI)
-# include "dmxmulti.h"
+# if defined (H3)
+#  include "h3/multi/dmx.h"
+# elif defined (GD32)
+#  include "gd32/multi/dmx.h"
+# else
+#  include "linux/multi/dmx.h"
+# endif
 #else
 # if defined (H3)
-#  include "h3/1port/dmx.h"
+#  include "h3/single/dmx.h"
 # elif defined(RPI1) || defined (RPI2)
 #  include "rpi/dmx.h"
 # else
-#  include "linux/1port/dmx.h"
+#  include "linux/single/dmx.h"
 # endif
 #endif
 

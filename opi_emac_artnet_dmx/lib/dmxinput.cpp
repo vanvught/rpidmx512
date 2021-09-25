@@ -36,7 +36,7 @@ using namespace dmxsingle;
 
 uint8_t DmxInput::s_nStarted;
 
-static constexpr bool is_started(const uint8_t v, const uint8_t p) {
+static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 	return (v & (1U << p)) == (1U << p);
 }
 
@@ -48,7 +48,7 @@ DmxInput::DmxInput() {
 	DEBUG_EXIT
 }
 
-void DmxInput::Start(uint8_t nPortIndex) {
+void DmxInput::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -62,12 +62,12 @@ void DmxInput::Start(uint8_t nPortIndex) {
 
 	s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
 
-	SetPortDirection(0, PortDirection::INP, true);
+	Dmx::Get()->SetPortDirection(0, PortDirection::INP, true);
 
 	DEBUG_EXIT
 }
 
-void DmxInput::Stop(uint8_t nPortIndex) {
+void DmxInput::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	assert(nPortIndex < CHAR_BIT);
@@ -81,15 +81,15 @@ void DmxInput::Stop(uint8_t nPortIndex) {
 
 	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
-	SetPortDirection(0, PortDirection::INP, false);
+	Dmx::Get()->SetPortDirection(0, PortDirection::INP, false);
 
 	DEBUG_EXIT
 }
 
-const uint8_t *DmxInput::Handler(__attribute__((unused)) uint8_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
-	const auto *pDmx = GetDmxAvailable();
+const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
+	const auto *pDmx = Dmx::Get()->GetDmxAvailable();
 
-	nUpdatesPerSecond = GetUpdatesPerSecond();
+	nUpdatesPerSecond = Dmx::Get()->GetUpdatesPerSecond();
 
 	if (pDmx != nullptr) {
 		const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);

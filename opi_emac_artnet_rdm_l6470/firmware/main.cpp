@@ -241,7 +241,8 @@ void notmain(void) {
 	node.SetArtNetStore(StoreArtNet::Get());
 #endif
 	node.SetOutput(pBoard);
-	node.SetUniverseSwitch(0, PortDir::OUTPUT, artnetparams.GetUniverse());
+	bool isSet;
+	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
 
 	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
 	ArtNetRdmResponder RdmResponder(&personality, pBoard);

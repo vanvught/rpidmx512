@@ -69,14 +69,14 @@ public:
 	void SetSynchronization(bool bSynchronization) {
 		m_bSynchronization = bSynchronization;
 	}
-	bool GetSynchronization() {
+	bool GetSynchronization() const {
 		return m_bSynchronization;
 	}
 
 	void SetUnicast(bool bUnicast) {
 		m_bUnicast = bUnicast;
 	}
-	bool GetUnicast() {
+	bool GetUnicast() const {
 		return m_bUnicast;
 	}
 
@@ -87,7 +87,7 @@ public:
 			m_nMaster = DMX_MAX_VALUE;
 		}
 	}
-	uint32_t GetMaster() {
+	uint32_t GetMaster() const {
 		return m_nMaster;
 	}
 
@@ -95,7 +95,7 @@ public:
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
-	ArtNetTrigger *GetArtNetTrigger() {
+	ArtNetTrigger *GetArtNetTrigger() const {
 		return m_pArtNetTrigger;
 	}
 

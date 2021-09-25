@@ -28,11 +28,11 @@
 
 #if defined (OUTPUT_DMX_SEND_MULTI)
 # if defined (H3)
-#  include "h3/4ports/dmx.h"
+#  include "h3/multi/dmx.h"
 # elif defined (GD32)
-#  include "gd32/4ports/dmx.h"
+#  include "gd32/multi/dmx.h"
 # else
-#  include "linux/4ports/dmx.h"
+#  include "linux/multi/dmx.h"
 # endif
 #else
 # error

@@ -83,35 +83,15 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreDmxSend storeDmxSend;
-	StoreRDMDevice storeRdmDevice;
-
-	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-	}
-
-	const auto portDir = artnetparams.GetDirection();
-
 	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
+	console_set_fg_color (CONSOLE_GREEN);
+	console_puts("DMX");
+	console_set_fg_color (CONSOLE_WHITE);
+	console_puts(" / ");
 	console_set_fg_color(CONSOLE_GREEN);
-
-	if (portDir == PortDir::INPUT) {
-		console_puts("DMX Input");
-	} else {
-		console_puts("DMX Output");
-		console_set_fg_color(CONSOLE_WHITE);
-		console_puts(" / ");
-		console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
-		console_puts("RDM");
-	}
-
+	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #if defined(ORANGE_PI)
 	console_puts(" {2 Universes}\n");
@@ -126,88 +106,84 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(&displayUdfHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
-	ArtNet4Node node;
-
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	artnetparams.Set(&node);
+	StoreArtNet storeArtNet;
+	StoreArtNet4 storeArtNet4;
+	ArtNet4Params artnetparams(&storeArtNet4);
+
+	ArtNet4Node node;
+
+	if (artnetparams.Load()) {
+		artnetparams.Set(&node);
+		artnetparams.Dump();
+	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	uint8_t nAddress;
-	bool bIsSetIndividual = false;
 	bool bIsSet;
+
 	nAddress = artnetparams.GetUniverse(0, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(0, portDir, nAddress);
-		bIsSetIndividual = true;
+		node.SetUniverseSwitch(0, artnetparams.GetDirection(0), nAddress);
 	}
 	nAddress = artnetparams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(1, portDir, nAddress);
-		bIsSetIndividual = true;
+		node.SetUniverseSwitch(1, artnetparams.GetDirection(1), nAddress);
 	}
 #if defined (ORANGE_PI_ONE)
 	nAddress = artnetparams.GetUniverse(2, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(2, portDir, nAddress);
-		bIsSetIndividual = true;
+		node.SetUniverseSwitch(2, artnetparams.GetDirection(2), nAddress);
 	}
 #ifndef DO_NOT_USE_UART0
 	nAddress = artnetparams.GetUniverse(3, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(3, portDir, nAddress);
-		bIsSetIndividual = true;
+		node.SetUniverseSwitch(3, artnetparams.GetDirection(3), nAddress);
 	}
 #endif
 #endif
 
-	if (!bIsSetIndividual) { // Backwards compatibility
-		node.SetUniverseSwitch(0, portDir, 0 + artnetparams.GetUniverse());
-		node.SetUniverseSwitch(1, portDir, static_cast<uint8_t>(1 + artnetparams.GetUniverse()));
-#if defined (ORANGE_PI_ONE)
-		node.SetUniverseSwitch(2, portDir, static_cast<uint8_t>(2 + artnetparams.GetUniverse()));
-#ifndef DO_NOT_USE_UART0
-		node.SetUniverseSwitch(3, portDir, static_cast<uint8_t>(3 + artnetparams.GetUniverse()));
-#endif
-#endif
+	StoreDmxSend storeDmxSend;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
 	}
 
-	// DMX/RDM Output
-	DmxSend *pDmxOutput = nullptr;
-	ArtNetRdmController *pDiscovery = nullptr;
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	if (portDir == PortDir::INPUT) {
-		auto *pDmxInput = new DmxInput;
-		assert(pDmxInput != nullptr);
-
-		node.SetArtNetDmx(pDmxInput);
-	} else {
-		pDmxOutput = new DmxSend;
-		assert(pDmxOutput != nullptr);
-		DmxParams dmxParams(&storeDmxSend);
-
-		if (dmxParams.Load()) {
-			dmxParams.Dump();
-			dmxParams.Set(pDmxOutput);
-		}
-		node.SetOutput(pDmxOutput);
-
-		pDmxOutput->Print();
-
+	if (node.GetActiveOutputPorts() != 0) {
+		node.SetOutput(&dmxSend);
 		pDmxConfigUdp = new DmxConfigUdp;
 		assert(pDmxConfigUdp != nullptr);
+	}
 
-		pDiscovery = new ArtNetRdmController;
-		assert(pDiscovery != nullptr);
+	DmxInput dmxInput;
 
+	if (node.GetActiveInputPorts() != 0) {
+		node.SetArtNetDmx(&dmxInput);
+	}
+
+	StoreRDMDevice storeRdmDevice;
+
+	if (node.GetActiveOutputPorts() != 0) {
 		if(artnetparams.IsRdm()) {
+			auto pDiscovery = new ArtNetRdmController;
+			assert(pDiscovery != nullptr);
+
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
@@ -220,9 +196,9 @@ void notmain(void) {
 
 			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-			for (uint8_t i = 0; i < ArtNet::PORTS; i++) {
+			for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 				uint8_t nAddress;
-				if (node.GetUniverseSwitch(i, nAddress, PortDir::OUTPUT)) {
+				if (node.GetUniverseSwitch(i, nAddress, lightset::PortDir::OUTPUT)) {
 					pDiscovery->Full(i);
 				}
 			}
@@ -233,7 +209,9 @@ void notmain(void) {
 
 	node.Print();
 
-	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == PortDir::INPUT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
+	const auto nActivePorts = static_cast<uint32_t>(node.GetActiveInputPorts() + node.GetActiveOutputPorts());
+
+	display.SetTitle("Art-Net 4 %u", nActivePorts);
 	display.Set(2, displayudf::Labels::NODE_NAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -249,8 +227,6 @@ void notmain(void) {
 	}
 
 	display.Show(&node);
-
-	const uint32_t nActivePorts = (artnetparams.GetDirection() == PortDir::INPUT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetparams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 

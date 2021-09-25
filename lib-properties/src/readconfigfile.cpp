@@ -1,7 +1,7 @@
 /**
  * @file readconfigfile.cpp
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,20 @@
 
 #include "readconfigfile.h"
 
-ReadConfigFile::ReadConfigFile(CallbackFunctionPtr cb, void *p) {
-	assert(cb != nullptr);
+#include "debug.h"
+
+static constexpr auto MAX_LINE_LENGTH = 64;	// Including '\0'
+
+ReadConfigFile::ReadConfigFile(CallbackFunctionPtr callBack, void *p) {
+	assert(callBack != nullptr);
 	assert(p != nullptr);
 
-    m_cb = cb;
+    m_pCallBack = callBack;
     m_p = p;
 }
 
 ReadConfigFile::~ReadConfigFile() {
-    m_cb = nullptr;
+    m_pCallBack = nullptr;
     m_p = nullptr;
 }
 
@@ -46,7 +50,7 @@ ReadConfigFile::~ReadConfigFile() {
 bool ReadConfigFile::Read(const char *pFileName) {
 	assert(pFileName != nullptr);
 
-	char buffer[128];
+	char buffer[MAX_LINE_LENGTH];
 
 	FILE *fp = fopen(pFileName, "r");
 
@@ -66,7 +70,7 @@ bool ReadConfigFile::Read(const char *pFileName) {
 					q++;
 				}
 
-				m_cb(m_p, buffer);
+				m_pCallBack(m_p, buffer);
 			}
 		}
 
@@ -83,29 +87,29 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	char *pSrc = new char[nLength + 1];
-	char *pFree = pSrc;
-
-	memcpy(pSrc, pBuffer, nLength);
-	pSrc[nLength] = '\0';
+	const auto *pSrc = const_cast<char *>(pBuffer);
+	char buffer[MAX_LINE_LENGTH];
 
 	while (nLength != 0) {
-		char *pLine = pSrc;
+		char *pLine = &buffer[0];
 
 		while ((nLength != 0) && (*pSrc != '\r') && (*pSrc != '\n')) {
-			pSrc++;
+			*pLine++ = *pSrc++;
+			if ((pLine - buffer) >= MAX_LINE_LENGTH) {
+				assert(0);
+				return;
+			}
 			nLength--;
 		}
 
 		while ((nLength != 0) && ((*pSrc == '\r') || (*pSrc == '\n'))) {
-			*pSrc++ = '\0';
+			pSrc++;
 			nLength--;
 		}
 
-		if (*pLine >= 'a') {
-			m_cb(m_p, pLine);
+		if (buffer[0] >= 'a') {
+			*pLine = '\0';
+			m_pCallBack(m_p, &buffer[0]);
 		}
 	}
-
-	delete [] pFree;
 }

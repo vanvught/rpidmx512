@@ -28,21 +28,27 @@
 
 #include "artnetparams.h"
 #include "artnetstore.h"
+#include "spiflashstore.h"
 
 class StoreArtNet final: public ArtNetParamsStore, public ArtNetStore {
 public:
 	StoreArtNet();
 
-	void Update(const struct TArtNetParams *pArtNetParams) override;
-	void Copy(struct TArtNetParams *pArtNetParams) override;
+	void Update(const struct artnetparams::Params* pArtNetParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::ARTNET, pArtNetParams, sizeof(struct artnetparams::Params));
+	}
+
+	void Copy(struct artnetparams::Params* pArtNetParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::ARTNET, pArtNetParams, sizeof(struct artnetparams::Params));
+	}
 
 	void SaveShortName(const char *pShortName) override;
 	void SaveLongName(const char *pLongName) override;
-	void SaveUniverseSwitch(uint8_t nPortIndex, uint8_t nAddress) override;
+	void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress) override;
 	void SaveNetSwitch(uint8_t nAddress) override;
 	void SaveSubnetSwitch(uint8_t nAddress) override;
-	void SaveMergeMode(uint8_t nPortIndex, artnet::Merge tMerge) override;
-	void SavePortProtocol(uint8_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
+	void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode tMerge) override;
+	void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
 
 	static StoreArtNet *Get() {
 		return s_pThis;

@@ -292,8 +292,10 @@ bool Ssd1311::CheckSSD1311() {
  */
 
 constexpr auto DISPLAY_ON_OFF = (1U << 2);
+#if defined(ENABLE_CURSOR_MODE)
 constexpr auto CURSOR_ON_OFF = (1U << 1);
 constexpr auto CURSOR_BLINK_ON_OFF = (1U << 0);
+#endif
 
 void Ssd1311::SetSleep(bool bSleep) {
 	if (bSleep) {

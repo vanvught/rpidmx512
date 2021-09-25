@@ -32,6 +32,9 @@
 #include "network.h"
 #include "ledblink.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "e131bridge.h"
 #include "e131params.h"
 #include "storee131.h"
@@ -49,12 +52,15 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "display.h"
+
 using namespace e131;
 
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
+	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need an object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
@@ -91,28 +97,23 @@ int main(int argc, char **argv) {
 
 	bridge.SetOutput(&monitor);
 
-	uint16_t nUniverse;
-	bool bIsSetIndividual = false;
-	bool bIsSet;
-
-	for (uint32_t i = 0; i < E131_PARAMS::MAX_PORTS; i++) {
-		nUniverse = e131Params.GetUniverse(i, bIsSet);
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		bool bIsSet;
+		const auto nUniverse = e131Params.GetUniverse(i, bIsSet);
 
 		if (bIsSet) {
-			bridge.SetUniverse(i, PortDir::OUTPUT, nUniverse);
-			bIsSetIndividual = true;
+			bridge.SetUniverse(i,lightset::PortDir::OUTPUT, nUniverse);
 		}
-	}
-
-	if (!bIsSetIndividual) {
-		bridge.SetUniverse(0, PortDir::OUTPUT, 0 + e131Params.GetUniverse());
-		bridge.SetUniverse(1, PortDir::OUTPUT, 1 + e131Params.GetUniverse());
-		bridge.SetUniverse(2, PortDir::OUTPUT, 2 + e131Params.GetUniverse());
-		bridge.SetUniverse(3, PortDir::OUTPUT, 3 + e131Params.GetUniverse());
 	}
 
 	nw.Print();
 	bridge.Print();
+
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31");
+	mDns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
@@ -129,6 +130,7 @@ int main(int argc, char **argv) {
 
 	for (;;) {
 		bridge.Run();
+		mDns.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 	}

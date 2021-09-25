@@ -56,8 +56,6 @@
 #include "dmxsend.h"
 #include "storedmxsend.h"
 #include "dmxconfigudp.h"
-// DMX Input
-#include "dmxinput.h"
 //
 #include "lightset32with4.h"
 // RDMNet LLRP Only
@@ -102,7 +100,6 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 	nw.SetNetworkStore(StoreNetwork::Get());
-	// nw.SetNetworkDisplay(new DisplayUdfNetworkHandler);
 	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
@@ -139,14 +136,14 @@ void notmain(void) {
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
-	uint8_t nPortProtocolIndex = 0;
+	uint32_t nPortProtocolIndex = 0;
 
 	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = ws28xxparms.GetStartUniversePort(nOutportIndex, isSet);
 		for (uint32_t u = 0; u < nUniverses; u++) {
 			if (isSet) {
-				bridge.SetUniverse(nPortProtocolIndex, PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
+				bridge.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
 			}
 			nPortProtocolIndex++;
 		}
@@ -162,53 +159,42 @@ void notmain(void) {
 
 	// LightSet B - DMX - 2 Universes
 
-	const auto portDir = e131params.GetDirection();
 	auto bIsSet = false;;
 	auto nUniverse = e131params.GetUniverse(0, bIsSet);
-	uint32_t nDmxPorts = 0;
 
 	if (bIsSet) {
-		bridge.SetUniverse(32, portDir, nUniverse);
-		nDmxPorts++;
+		bridge.SetUniverse(32, e131params.GetDirection(0), nUniverse);
 	}
 
 	nUniverse = e131params.GetUniverse(1, bIsSet);
 
 	if (bIsSet) {
-		bridge.SetUniverse(33, portDir, nUniverse);
-		nDmxPorts++;
+		bridge.SetUniverse(33, e131params.GetDirection(1), nUniverse);
 	}
 
 	StoreDmxSend storeDmxSend;
-	DmxSend *pDmxOutput = nullptr;
+	DmxParams dmxparams(&storeDmxSend);
+
+	Dmx dmx;
+
+	if (dmxparams.Load()) {
+		dmxparams.Dump();
+		dmxparams.Set(&dmx);
+	}
+
+	DmxSend dmxSend;
+
+	dmxSend.Print();
+
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	if (nDmxPorts != 0) {
-		if (portDir == PortDir::INPUT) {
-			auto *pDmxInput = new DmxInput;
-			assert(pDmxInput != nullptr);
-
-			bridge.SetE131Dmx(pDmxInput);
-			display.SetDmxInfo(displayudf::dmx::PortDir::INPUT , nDmxPorts);
-		} else {
-			pDmxOutput = new DmxSend;
-			assert(pDmxOutput != nullptr);
-
-			DmxParams dmxparams(&storeDmxSend);
-
-			if (dmxparams.Load()) {
-				dmxparams.Dump();
-				dmxparams.Set(pDmxOutput);
-			}
-
-			pDmxConfigUdp = new DmxConfigUdp;
-			assert(pDmxConfigUdp != nullptr);
-
-			display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT , nDmxPorts);
-		}
+	if (bridge.GetActiveOutputPorts() != 0) {
+		bridge.SetOutput(&dmxSend);
+		pDmxConfigUdp = new DmxConfigUdp;
+		assert(pDmxConfigUdp != nullptr);
 	}
 	
-	LightSet32with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmxMulti, pDmxOutput);
+	LightSet32with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmxMulti, bridge.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
 	lightSet.Print();
 	
 	bridge.SetOutput(&lightSet);

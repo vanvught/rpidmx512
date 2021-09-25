@@ -27,20 +27,14 @@
 #define E131_H_
 
 #include <cstdint>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 namespace e131 {
 static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
 static constexpr auto PRIORITY_TIMEOUT_SECONDS = 10;
 static constexpr auto UNIVERSE_DISCOVERY_INTERVAL_SECONDS = 10;
 static constexpr auto NETWORK_DATA_LOSS_TIMEOUT_SECONDS = 2.5f;
-
-enum class Merge {
-	HTP, LTP
-};
-
-enum class PortDir {
-	INPUT, OUTPUT, DISABLE
-};
 
 struct OptionsMask {
 	static constexpr auto PREVIEW_DATA = (1 << 7);			///< Preview Data: Bit 7 (most significant bit)
@@ -77,6 +71,14 @@ namespace universe {
 static constexpr auto DISCOVERY_UNIVERSE_LIST = 0x00000001;
 }  // namespace universe
 }  // namespace vector
+
+inline static uint32_t universe_to_multicast_ip(uint16_t nUniverse) {
+	struct in_addr group_ip;
+	inet_aton("239.255.0.0", &group_ip);
+	const uint32_t nMulticastIp = group_ip.s_addr | (static_cast<uint32_t>(nUniverse & 0xFF) << 24) | (static_cast<uint32_t>((nUniverse & 0xFF00) << 8));
+	return nMulticastIp;
+}
+
 }  // namespace e131
 
 struct E131 {
@@ -90,28 +92,6 @@ struct E131 {
 	static constexpr auto CID_LENGTH = 16;
 	static constexpr auto SOURCE_NAME_LENGTH = 64;
 	static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
-
-	static e131::Merge GetMergeMode(const char *pMergeMode) {
-		if (pMergeMode != nullptr) {
-			if (((pMergeMode[0] | 0x20) == 'l')
-					&& ((pMergeMode[1] | 0x20) == 't')
-					&& ((pMergeMode[2] | 0x20) == 'p')) {
-				return e131::Merge::LTP;
-			}
-		}
-		return e131::Merge::HTP;
-	}
-
-	static const char* GetMergeMode(e131::Merge m, bool bToUpper = false) {
-		if (bToUpper) {
-			return (m == e131::Merge::HTP) ? "HTP" : "LTP";
-		}
-		return (m == e131::Merge::HTP) ? "htp" : "ltp";
-	}
-
-	static const char* GetMergeMode(uint8_t m, bool bToUpper = false) {
-		return GetMergeMode(static_cast<e131::Merge>(m), bToUpper);
-	}
 };
 
 #endif /* E131_H_ */

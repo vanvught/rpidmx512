@@ -1,0 +1,4 @@
+ifneq ($(MAKE_FLAGS),)
+else
+	DEFINES+=OUTPUT_DMX_ARTNET
+endif
