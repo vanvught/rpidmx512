@@ -29,7 +29,7 @@
  * LISTEN -> ESTABLISHED -> CLOSE_WAIT -> LAST_ACK -> CLOSED:LISTEN
  */
 
-#if (__GNUC__ < 9)
+#if (__GNUC__ < 10)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wconversion"
 #endif
