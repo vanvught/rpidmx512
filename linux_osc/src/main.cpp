@@ -55,6 +55,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "debug.h"
 
@@ -80,6 +82,10 @@ int main(int argc, char **argv) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
 	StoreOscServer storeOscServer;
 
 	OSCServerParams oscparms(&storeOscServer);

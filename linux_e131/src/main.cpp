@@ -53,6 +53,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 using namespace e131;
 
@@ -78,6 +80,9 @@ int main(int argc, char **argv) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	E131Params e131Params(new StoreE131);
 	E131Bridge bridge;

@@ -63,6 +63,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 using namespace artnet;
 
@@ -86,6 +88,9 @@ int main(int argc, char **argv) {
 	}
 
 	SpiFlashStore spiFlashStore;
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	StoreArtNet storeArtNet;
 	StoreArtNet4 storeArtNet4;
