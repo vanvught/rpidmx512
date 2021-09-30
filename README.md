@@ -1,3 +1,7 @@
+| Main  | Development |
+| ------------- | ------------- |
+| ![Master](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=master) | ![Development](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=development)  |
+
 # Orange Pi baremetal Open Source
 ## DMX512 / RDM / Art-Net 4 / sACN E1.31 / OSC / SMPTE / Pixel controller / RDMNet LLRP Only
 
@@ -23,6 +27,9 @@
          *  4 Ports {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_dmx_multi.zip?raw=true)} {*Orange Pi One*}
       * **Real-time Monitor** 1 Universe {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_monitor.zip?raw=true)} {*Orange Pi One - HDMI output*}
       * **Art-Net** converter 4/32 Universes {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_e131_artnet.zip?raw=true)} {*Orange Pi Zero*}
+  * **Distributed Display Protocol (DDP)**
+      *  Pixel Controller **WS28xx/SK6812/APA102/UCSx903/P9813** with DMX [Orange Pi Zero]
+         * 8x 680 RGB or 8x 512 RGBW [2x DMX Out] {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_ddp_pixel_dmx_multi.zip?raw=true)}
   * **OSC** 
       * DMX Bridge / **Pixel Controller (WS28xx/SK6812/APA102/UCSx903/P9813)** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_dmx.zip?raw=true)}
       * **Client** with support for buttons {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_client.zip?raw=true)}
