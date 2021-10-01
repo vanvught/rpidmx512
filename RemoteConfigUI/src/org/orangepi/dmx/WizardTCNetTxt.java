@@ -24,7 +24,7 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.util.TimeZone;
+import java.text.ParseException;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
@@ -33,13 +33,15 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
+import javax.swing.JFormattedTextField;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.EmptyBorder;
+import javax.swing.text.MaskFormatter;
 
-public class WizardGpsTxt extends JDialog {
-	private static final String TXT_FILE = "gps.txt";
+public class WizardTCNetTxt extends JDialog {
+	private static final String TXT_FILE = "tcnet.txt";
 	//
 	private static final long serialVersionUID = 1L;
 	//
@@ -48,37 +50,36 @@ public class WizardGpsTxt extends JDialog {
 	//
 	private final JPanel contentPanel = new JPanel();
 	//
-	private JComboBox<String> comboBoxModule;
-	private JComboBox<String> comboBoxUtcOffset;
-	private JCheckBox chckbxEnable;
+	private JFormattedTextField formattedTextFieldNodeName;
+	private JComboBox<String> comboBoxLayer;
+	private JComboBox<String> comboBoxTimecodeType;
+	private JCheckBox chckbxUseTimecode;
 	//
-	private JButton btnSetDefaults;
 	private JButton btnCancel;
+	private JButton btnSetDefaults;
 	private JButton btnSave;
 	//
-	static final float UtcValidOffets[] = { -12.0f, -11.0f, -10.0f, -9.5f, -9.0f, -8.0f, -7.0f, -6.0f, -5.0f, -4.0f,
-			-3.5f, -3.0f, -2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f, 5.5f, 5.75f, 6.0f, 6.5f, 7.0f,
-			8.0f, 8.75f, 9.0f, 9.5f, 10.0f, 10.5f, 11.0f, 12.0f, 12.75f, 13.0f, 14.0f };
-	private JLabel lblModule;
+	static final String LAYER[] = { "1", "2", "3", "4", "A", "B", "M", "C" };
+	static final String TIMECODE_STRING[] = { "Film 24fps ", "EBU 25fps  ", "DF 29.97fps", "SMPTE 30fps" };
+	static final int TIMECODE_INT[] = { 24, 25, 29, 30 };
 
-	final static String MODULES[] = {"Generic", "ATGM336H", "ublox-NEO7", "MTK3339"};
-
+	
 	public static void main(String[] args) {
 		try {
-			WizardGpsTxt dialog = new WizardGpsTxt();
+			WizardTCNetTxt dialog = new WizardTCNetTxt();
 			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 			dialog.setVisible(true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public WizardGpsTxt() {
+
+	public WizardTCNetTxt() {
 		initComponents();
 		createEvents();
 	}
 	
-	public WizardGpsTxt(String nodeId, OrangePi opi, RemoteConfig remoteConfig) {
+	public WizardTCNetTxt(String nodeId, OrangePi opi, RemoteConfig remoteConfig) {
 		this.opi = opi;
 		this.remoteConfig = remoteConfig;
 
@@ -91,53 +92,72 @@ public class WizardGpsTxt extends JDialog {
 	}
 
 	private void initComponents() {
-		setBounds(100, 100, 291, 184);
+		setBounds(100, 100, 317, 222);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+	
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		
-		chckbxEnable = new JCheckBox("Enable");
+		JLabel lblNodeName = new JLabel("Node Name");
+		JLabel lblLayer = new JLabel("Layer");
+		JLabel lblTimecodeType = new JLabel("Timecode Type");
 		
-		JLabel lblUtcOffset = new JLabel("UTC offset");
+		chckbxUseTimecode = new JCheckBox("Use Timecode");
 		
-		comboBoxUtcOffset = new JComboBox<String>();
-		for (int i = 0; i < UtcValidOffets.length; i++) {
-			comboBoxUtcOffset.addItem(formatUtcOffset(UtcValidOffets[i]));
+		comboBoxLayer = new JComboBox<String>();
+		comboBoxLayer.setModel(new DefaultComboBoxModel<String>(LAYER));
+			
+		try {
+			formattedTextFieldNodeName = new JFormattedTextField(new MaskFormatter("********"));
+		} catch (ParseException e) {
+			e.printStackTrace();
 		}
-		lblModule = new JLabel("Module");
-		comboBoxModule = new JComboBox<String>();
-		comboBoxModule.setModel(new DefaultComboBoxModel<String>(MODULES));
+		
+		comboBoxTimecodeType = new JComboBox<String>();
+		comboBoxTimecodeType.setModel(new DefaultComboBoxModel<String>(TIMECODE_STRING));
+
 		
 		GroupLayout gl_contentPanel = new GroupLayout(contentPanel);
 		gl_contentPanel.setHorizontalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
-					.addContainerGap()
-					.addGroup(gl_contentPanel.createParallelGroup(Alignment.TRAILING)
-						.addComponent(chckbxEnable)
-						.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-							.addComponent(lblModule)
-							.addComponent(lblUtcOffset, GroupLayout.PREFERRED_SIZE, 67, GroupLayout.PREFERRED_SIZE)))
-					.addGap(18)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
-						.addComponent(comboBoxUtcOffset, GroupLayout.PREFERRED_SIZE, 105, GroupLayout.PREFERRED_SIZE)
-						.addComponent(comboBoxModule, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addContainerGap(55, Short.MAX_VALUE))
+						.addGroup(gl_contentPanel.createSequentialGroup()
+							.addContainerGap()
+							.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+								.addGroup(gl_contentPanel.createSequentialGroup()
+									.addComponent(lblTimecodeType)
+									.addPreferredGap(ComponentPlacement.UNRELATED)
+									.addComponent(comboBoxTimecodeType, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+								.addGroup(gl_contentPanel.createSequentialGroup()
+									.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+										.addComponent(lblNodeName)
+										.addComponent(lblLayer))
+									.addGap(32)
+									.addGroup(gl_contentPanel.createParallelGroup(Alignment.LEADING)
+										.addComponent(formattedTextFieldNodeName, GroupLayout.PREFERRED_SIZE, 77, GroupLayout.PREFERRED_SIZE)
+										.addComponent(comboBoxLayer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))))
+						.addComponent(chckbxUseTimecode))
+					.addContainerGap(119, Short.MAX_VALUE))
 		);
 		gl_contentPanel.setVerticalGroup(
 			gl_contentPanel.createParallelGroup(Alignment.LEADING)
 				.addGroup(gl_contentPanel.createSequentialGroup()
 					.addContainerGap()
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblModule)
-						.addComponent(comboBoxModule, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.RELATED)
+						.addComponent(lblNodeName)
+						.addComponent(formattedTextFieldNodeName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
 					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
-						.addComponent(lblUtcOffset)
-						.addComponent(comboBoxUtcOffset, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-					.addPreferredGap(ComponentPlacement.RELATED)
-					.addComponent(chckbxEnable)
-					.addContainerGap(35, Short.MAX_VALUE))
+						.addComponent(lblLayer)
+						.addComponent(comboBoxLayer, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addGap(18)
+					.addGroup(gl_contentPanel.createParallelGroup(Alignment.BASELINE)
+						.addComponent(lblTimecodeType)
+						.addComponent(comboBoxTimecodeType, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+					.addPreferredGap(ComponentPlacement.UNRELATED)
+					.addComponent(chckbxUseTimecode)
+					.addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
 		);
 		
 		contentPanel.setLayout(gl_contentPanel);
@@ -179,7 +199,7 @@ public class WizardGpsTxt extends JDialog {
 				remoteConfig.setTextArea(opi.doDefaults(TXT_FILE));
 				load();
 			}
-		});
+		});	
 	}
 	
 	private void load() {
@@ -189,29 +209,33 @@ public class WizardGpsTxt extends JDialog {
 				final String[] lines = txt.split("\n");
 				for (int i = 0; i < lines.length; i++) {
 					final String line = lines[i];
-					if (line.contains("module")) {
-						for (int j = 1; j < MODULES.length; j++) {
-							if (line.toUpperCase().contains(MODULES[j].toUpperCase())) {
-								comboBoxModule.setSelectedIndex(j);
+					//
+					if (line.contains("node_name")) {
+						formattedTextFieldNodeName.setText(Properties.getString(line).trim());
+						continue;
+					}
+					//
+					if (line.contains("layer")) {
+						for (int j = 1; j < LAYER.length; j++) {
+							if (Properties.getString(line).equals(LAYER[j].toUpperCase()) ) {
+								comboBoxLayer.setSelectedIndex(j);
 								break;
 							}
 						}
 						continue;
 					}
 					//
-					if (line.contains("utc_offset")) {
-						if (line.startsWith("#")) {
-							TimeZone timeZone = TimeZone.getDefault();
-							final float offsetUtc = (float) timeZone.getOffset(System.currentTimeMillis()) / 3600000;
-							comboBoxUtcOffset.setSelectedItem(formatUtcOffset(offsetUtc));
-						} else {
-							comboBoxUtcOffset.setSelectedItem(formatUtcOffset(Float.parseFloat(Properties.getString(line))));
+					if (line.contains("timecode_type")) {
+						for (int j = 1; j < TIMECODE_INT.length; j++) {
+							if (Properties.getInt(line) == TIMECODE_INT[j]) {
+								comboBoxTimecodeType.setSelectedIndex(j);
+								break;
+							}
 						}
-						continue;
 					}
 					//
-					if (line.contains("enable")) {
-						chckbxEnable.setSelected(Properties.getBool(line));
+					if (line.contains("use_timecode")) {
+						chckbxUseTimecode.setSelected(Properties.getBool(line));
 						continue;
 					}
 				}
@@ -219,27 +243,14 @@ public class WizardGpsTxt extends JDialog {
 		}
 	}
 	
-	private String formatUtcOffset(float f) {
-		if (f > 0) {
-			return String.format("+%1.2f", f);
-		}
-		return String.format("%1.2f", f);
-	}
-	
 	private void save() {
 		if (opi != null) {
 			StringBuffer txtAppend = new StringBuffer();
 			//
-			txtAppend.append(String.format("module=%s\n", comboBoxModule.getSelectedItem()));
-			//
-			String utcOffset = comboBoxUtcOffset.getSelectedItem().toString().replace(',', '.');
-			
-			if (utcOffset.startsWith("+")) {
-				utcOffset = utcOffset.substring(1);
-			}
-			txtAppend.append(String.format("utc_offset=%s\n", utcOffset));
-			//
-			txtAppend.append(String.format("enable=%d\n", chckbxEnable.isSelected() ? 1 : 0));
+			txtAppend.append(String.format("node_name=%s\n", formattedTextFieldNodeName.getText().trim()));
+			txtAppend.append(String.format("layer=%s\n", comboBoxLayer.getSelectedItem()));
+			txtAppend.append(String.format("timecode_type=%d\n", TIMECODE_INT[comboBoxTimecodeType.getSelectedIndex()]));
+			txtAppend.append(String.format("use_timecode=%d\n", chckbxUseTimecode.isSelected() ? 1 : 0));
 				
 			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
 					

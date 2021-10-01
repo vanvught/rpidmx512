@@ -1,6 +1,12 @@
 | Main  | Development |
 | ------------- | ------------- |
 | ![Master](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=master) | ![Development](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=development)  |
+![GitHub](https://img.shields.io/github/license/vanvught/rpidmx512)
+[![C++ Standard](https://img.shields.io/badge/C%2B%2B-11-blue.svg)](https://img.shields.io/badge/C%2B%2B-11%-blue.svg)
+![GitHub issues](https://img.shields.io/github/issues-raw/vanvught/rpidmx512)
+![GitHub contributors](https://img.shields.io/github/contributors/vanvught/rpidmx512)
+![GitHub Sponsors](https://img.shields.io/github/sponsors/vanvught)
+
 
 # Orange Pi baremetal Open Source
 ## DMX512 / RDM / Art-Net 4 / sACN E1.31 / OSC / SMPTE / Pixel controller / RDMNet LLRP Only

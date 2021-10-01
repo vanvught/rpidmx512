@@ -263,6 +263,9 @@ public class RemoteConfig extends JFrame {
 								if (txt.startsWith("gps")) {
 									doWizardGps(opi);
 								}
+								if (txt.startsWith("tcnet")) {
+									doWizardTCNet(opi);
+								}
 							}
 						}
 					}
@@ -950,6 +953,14 @@ public class RemoteConfig extends JFrame {
 	private void doWizardGps(OrangePi opi) {
 		if (lblNodeId.getText().trim().length() != 0) {
 			WizardGpsTxt wizard = new WizardGpsTxt(lblNodeId.getText(), opi, this);
+			wizard.setModal(true);
+			wizard.setVisible(true);
+		}
+	}
+	
+	private void doWizardTCNet(OrangePi opi) {
+		if (lblNodeId.getText().trim().length() != 0) {
+			WizardTCNetTxt wizard = new WizardTCNetTxt(lblNodeId.getText(), opi, this);
 			wizard.setModal(true);
 			wizard.setVisible(true);
 		}
