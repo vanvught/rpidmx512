@@ -39,6 +39,11 @@
 void RemoteConfig::HandleReboot() {
 	DEBUG_ENTRY
 
+	if (!m_bEnableReboot) {
+		DEBUG_EXIT
+		return;
+	}
+
 	m_bIsReboot = true;
 
 	Display::Get()->SetSleep(false);

@@ -61,6 +61,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-gps/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rgbpanel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ddp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.96528660" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
@@ -86,6 +87,7 @@
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_PIXEL_MULTI"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND_MULTI"/>
+									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -212,6 +214,7 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-gps/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-rgbpanel/include}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-ddp/include}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-dmx/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.cpp.compiler.option.preprocessor.def.872013502" name="Defined symbols (-D)" superClass="gnu.cpp.compiler.option.preprocessor.def" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="ENABLE_TFTP"/>

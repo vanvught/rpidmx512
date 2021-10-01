@@ -40,7 +40,7 @@ uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize) {
 						IP2STR(Network::Get()->GetIp()),
 						RemoteConfig::Get()->GetDisplayName(),
 						RemoteConfig::Get()->GetStringNode(),
-						RemoteConfig::Get()->GetStringMode(),
+						RemoteConfig::Get()->GetStringOutput(),
 						RemoteConfig::Get()->GetOutputs()));
 
 	return nLength;
