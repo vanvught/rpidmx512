@@ -258,12 +258,12 @@ void Shell::CmdSet() {
 	buffer[nArgv0Length + file::length::EXT] = '\0';
 	auto nLength = static_cast<uint32_t>(nArgv0Length + file::length::EXT);
 
-	if (RemoteConfig::Get()->GetIndex(buffer, nLength) >= 0) {
+	if (RemoteConfig::GetIndex(buffer, nLength) < remoteconfig::TxtFile::LAST) {
 		DEBUG_PUTS(m_Argv[0]);
 
 		if ((nLength = RemoteConfig::Get()->HandleGet(buffer, sizeof(buffer))) < (sizeof(buffer) - m_nArgvLength[1] - 1)) {
 			memcpy(&buffer[nLength], m_Argv[1], m_nArgvLength[1]);
-			RemoteConfig::Get()->HandleSet(buffer, nLength + m_nArgvLength[1]);
+			RemoteConfig::Get()->HandleTxtFile(buffer, nLength + m_nArgvLength[1]);
 			Puts(msg::info::STORED);
 			return;
 		} else {
