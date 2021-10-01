@@ -81,7 +81,6 @@ private:
 	pixel::Type m_Type { pixel::defaults::TYPE };
 	uint32_t m_nCount { pixel::defaults::COUNT };
 	pixel::Map m_Map { pixel::Map::UNDEFINED };
-	uint32_t m_nClockSpeedHz;
 	uint32_t m_nBufSize;
 	uint8_t m_nLowCode;
 	uint8_t m_nHighCode;

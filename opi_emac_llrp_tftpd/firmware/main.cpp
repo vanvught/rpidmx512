@@ -125,6 +125,15 @@ void notmain(void) {
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(5, displayudf::Labels::VERSION);
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if (displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
 	display.Show();
 
 	display.Write(6, "mDNS enabled");

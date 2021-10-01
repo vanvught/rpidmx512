@@ -61,7 +61,7 @@ COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wextra -Wpedantic -Wunused -Wsign-conversion -Wconversion 
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
-#COPS+=-fstack-usage
+#COPS+=-fstack-usage -fcallgraph-info=su
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 CPPOPS+=-fno-threadsafe-statics
