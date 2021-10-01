@@ -447,7 +447,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 		const auto bIsJSON = PropertiesConfig::IsJSON();
 
 		PropertiesConfig::EnableJSON(true);
-		RemoteConfig::Get()->HandleTxtFile(m_pFileData, m_nFileDataLength);
+		RemoteConfig::Get()->HandleSet(m_pFileData, m_nFileDataLength);
 
 		PropertiesConfig::EnableJSON(bIsJSON);
 	}
