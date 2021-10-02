@@ -141,7 +141,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
 		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 
-			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
 
 		DEBUG_PUTS("");
 		auto nTime = time(nullptr);
@@ -149,9 +149,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 			LedBlink::Get()->Run();
 		}
 
-
-			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
-
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 
 		LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
 
@@ -305,8 +303,8 @@ void Network::SetNetmask(uint32_t nNetmask) {
 		m_pNetworkStore->SaveNetMask(nNetmask);
 	}
 
-		m_NetworkDisplay.ShowIp();
-		m_NetworkDisplay.ShowNetMask();
+	m_NetworkDisplay.ShowIp();
+	m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 }
@@ -325,7 +323,7 @@ void Network::SetGatewayIp(uint32_t nGatewayIp) {
 		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
 	}
 
-		m_NetworkDisplay.ShowGatewayIp();
+	m_NetworkDisplay.ShowGatewayIp();
 
 	DEBUG_EXIT
 }
@@ -374,7 +372,7 @@ bool Network::EnableDhcp() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
+	m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 
 	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
 
@@ -397,7 +395,6 @@ bool Network::EnableDhcp() {
 	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
-
 
 	m_NetworkDisplay.ShowIp();
 	m_NetworkDisplay.ShowNetMask();
@@ -466,7 +463,7 @@ bool Network::ApplyQueuedConfig() {
 void Network::Print() {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" IfName    : %d: %s\n", m_nIfIndex, m_aIfName);
 	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
 	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
 	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));

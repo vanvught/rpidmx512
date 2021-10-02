@@ -214,7 +214,7 @@ public:
 		return s_pThis;
 	}
 
-protected:
+private:
 	bool m_IsDhcpCapable { true };
 	bool m_IsDhcpUsed { false };
 	bool m_IsZeroconfCapable { true };
@@ -233,8 +233,6 @@ protected:
 	char m_aIfName[IFNAMSIZ];
 
 	NetworkStore *m_pNetworkStore { nullptr };
-
-private:
 	NetworkDisplay m_NetworkDisplay;
 
 	void SetDefaultIp();

@@ -30,7 +30,7 @@
 
 #include "net_packets.h"
 
-#define TCP_MAX_CONNECTIONS_ALLOWED		1
+#include "../config/net_config.h"
 
 #define TCP_RX_MSS						(TCP_DATA_SIZE)
 #define TCP_RX_MAX_ENTRIES				(1U << 1) // Must always be a power of 2

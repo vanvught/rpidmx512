@@ -1,5 +1,5 @@
 /**
- * @file net_config
+ * @file apps_config
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,28 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_CONFIG_H_
-#define NET_CONFIG_H_
+#ifndef APPS_CONFIG_H_
+#define APPS_CONFIG_H_
 
 #if defined (BARE_METAL)
-#		define TCP_MAX_CONNECTIONS_ALLOWED	1
 # if defined (H3)
-#		define UDP_MAX_PORTS_ALLOWED		16
+#		define MDNS_SERVICE_RECORDS_MAX	8
 # elif defined (GD32)
-#   	define UDP_MAX_PORTS_ALLOWED		8
+#		define MDNS_SERVICE_RECORDS_MAX	2
 # else
 #  error
 # endif
 #else
+#		define MDNS_SERVICE_RECORDS_MAX	8
+#endif
+
+#if !defined (MDNS_SERVICE_RECORDS_MAX)
 # error
 #endif
 
-#if !defined (UDP_MAX_PORTS_ALLOWED)
-# error
-#endif
-
-#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
-# error
-#endif
-
-#endif /* NET_CONFIG_H_ */
+#endif /* APPS_CONFIG_H_ */
