@@ -6,7 +6,7 @@
 
 | Main  | Development |
 | ------------- | ------------- |
-| ![Master](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=master) | ![Development](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=development)  |
+|![Master](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=master)![Master](https://github.com/vanvught/rpidmx512/actions/workflows/linux.yml/badge.svg?branch=master)|![Development](https://github.com/vanvught/rpidmx512/actions/workflows/c-cpp.yml/badge.svg?branch=development)![Development](https://github.com/vanvught/rpidmx512/actions/workflows/linux.yml/badge.svg?branch=development)|
 
 
 
