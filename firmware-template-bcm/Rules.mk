@@ -87,7 +87,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS) -c $$< -o $$@	
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -nostdinc++ $(COPS) -c $$< -o $$@	
 endef
 
 define compile-objects7

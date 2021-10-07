@@ -131,7 +131,9 @@ void notmain(void) {
 
 	hw.SetLed(hardware::LedStatus::ON);
 
+#ifndef H3
 	console_set_top_row(3);
+#endif
 
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);

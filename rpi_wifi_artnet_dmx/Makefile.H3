@@ -6,7 +6,7 @@ DEFINES+=DO_NOT_USE_EXTERNAL_LED DISABLE_RTC NDEBUG
 
 LIBS=rdmdiscovery rdm
 
-SRCDIR=firmware lib
+SRCDIR=firmware
 
 include ../firmware-template-h3/Rules.mk
 

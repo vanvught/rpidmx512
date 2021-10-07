@@ -36,14 +36,14 @@
 # define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
 #endif
 
-#if defined(H3)
-# if defined(CONSOLE_FB)
-	#include "h3/console_fb.h"
+#if defined (CONSOLE_FB)
+# if defined (H3)
+#  include "h3/console_fb.h"
 # else
-	#include "h3/console_uart0.h"
+#  include "rpi/console_fb.h"
 # endif
 #else
- #include "rpi/console_fb.h"
+# include "console_uart0.h"
 #endif
 
 #ifdef __cplusplus
@@ -51,32 +51,13 @@ extern "C" {
 #endif
 
 extern int console_init(void);
-extern void console_clear(void);
-
-extern void console_set_top_row(uint32_t);
 
 extern void console_putc(int);
 extern void console_puts(const char*);
-
-extern void console_error(const char*);
-
-extern void console_puthex(uint8_t);
-
-extern void console_newline(void);
-
 extern void console_write(const char*, unsigned int);
 
-extern void console_clear_line(uint32_t);
-
-extern void console_set_cursor(uint32_t, uint32_t);
-
-extern void console_save_cursor();
-extern void console_restore_cursor();
-
-extern void console_save_color(void);
-extern void console_restore_color(void);
-
-extern uint32_t console_get_line_width(void);
+extern void console_status(uint32_t, const char *);
+extern void console_error(const char*);
 
 #ifdef __cplusplus
 }

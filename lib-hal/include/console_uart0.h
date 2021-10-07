@@ -1,5 +1,5 @@
 /**
- * @file console.h
+ * @file console_uart0.h
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,8 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_CONSOLE_H_
-#define H3_CONSOLE_H_
+#ifndef CONSOLE_UART0_H_
+#define CONSOLE_UART0_H_
+
+#if !defined (CONSOLE_H_)
+# error Should not be included directly
+#endif
 
 #include <stdint.h>
 
@@ -47,23 +51,9 @@ extern "C" {
 
 extern void console_set_fg_color(uint16_t);
 extern void console_set_bg_color(uint16_t);
-extern void console_set_fg_bg_color(uint16_t, uint16_t);
-
-extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
-extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
-
-extern void console_status(uint32_t, const char *);
-
-// The following functions are not supported with debug UART
-inline static void console_set_top_row(__attribute__((unused)) uint32_t __d) {}
-inline static void console_clear_line(__attribute__((unused)) uint32_t __d) {}
-inline static void console_set_cursor(__attribute__((unused)) uint32_t __d, __attribute__((unused)) uint32_t __e) {}
-inline static void console_save_cursor() {}
-inline static void console_restore_cursor() {}
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* H3_CONSOLE_H_ */
+#endif /* CONSOLE_UART0_H_ */

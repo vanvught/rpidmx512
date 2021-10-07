@@ -37,8 +37,6 @@
 #include "artnetnode.h"
 #include "artnetparams.h"
 
-#include "timecode.h"
-
 // DMX output / RDM
 #include "dmx.h"
 #include "dmxparams.h"
@@ -48,6 +46,7 @@
 #ifndef H3
  // Monitor Output
 # include "dmxmonitor.h"
+# include "timecode.h"
 #endif
 // Pixel Controller
 #include "pixeldmxconfiguration.h"
@@ -126,8 +125,9 @@ void notmain(void) {
 #ifdef H3
 	console_putc('\n');
 #endif
-
+#ifndef H3
 	console_set_top_row(3);
+#endif
 
 	hw.SetLed(hardware::LedStatus::ON);
 
@@ -140,8 +140,8 @@ void notmain(void) {
 
 #ifndef H3
 	DMXMonitor monitor;
-#endif
 	TimeCode timecode;
+#endif
 	ArtNetRdmController discovery;
 
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
@@ -149,10 +149,12 @@ void notmain(void) {
 
 	artnetparams.Set(&node);
 
+#ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
 		timecode.Start();
 		node.SetTimeCodeHandler(&timecode);
 	}
+#endif
 
 	bool isSet;
 	const auto nStartUniverse = artnetparams.GetUniverse(0, isSet);

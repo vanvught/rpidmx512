@@ -37,6 +37,8 @@
 #include "dmx.h"
 #include "rdm.h"
 
+#include "hardware.h"
+
 /* RDM START CODE (Slot 0)                                                                                                     */
 #define	E120_SC_RDM		0xCC
 
@@ -55,6 +57,28 @@ using namespace widget;
 using namespace widgetmonitor;
 using namespace dmxsingle;
 using namespace dmx;
+
+void WidgetMonitor::Uptime(uint8_t nLine) {
+	auto nUptime = Hardware::Get()->GetUpTime();
+	auto ltime = time(nullptr);
+	auto *pLocalTime = localtime(&ltime);
+
+	console_save_cursor();
+	console_set_cursor(0, nLine);
+
+	const uint32_t nDays = nUptime / (24 * 3600);
+	nUptime -= nDays * (24 * 3600);
+	const uint32_t nHours = nUptime / 3600;
+	nUptime -= nHours * 3600;
+	const uint32_t nMinutes = nUptime / 60;
+	const uint32_t nSeconds = nUptime - nMinutes * 60;
+
+	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d",
+			pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec, nDays,
+			nHours, nMinutes, nSeconds);
+
+	console_restore_cursor();
+}
 
 void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
 	uint32_t slots;

@@ -2,7 +2,7 @@
  * @file console_fb.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,24 @@ typedef enum {
 extern "C" {
 #endif
 
+extern uint32_t console_get_line_width(void);
+
+extern void console_clear(void);
+
+extern void console_set_top_row(uint32_t);
+
+extern void console_clear_line(uint32_t);
+
+extern void console_set_cursor(uint32_t, uint32_t);
+
+extern void console_save_cursor();
+extern void console_restore_cursor();
+
+extern void console_save_color(void);
+extern void console_restore_color(void);
+
+extern void console_puthex(uint8_t);
+
 extern void console_set_fg_color(uint32_t);
 extern void console_set_bg_color(uint32_t);
 extern void console_set_fg_bg_color(uint32_t, uint32_t);
@@ -54,12 +72,6 @@ extern void console_set_fg_bg_color(uint32_t, uint32_t);
 extern void console_puthex_fg_bg(uint8_t, uint32_t, uint32_t);
 extern void console_putpct_fg_bg(uint8_t, uint32_t, uint32_t);
 extern void console_put3dec_fg_bg(uint8_t, uint32_t, uint32_t);
-
-extern void console_status(uint32_t, const char *);
-
-extern void console_clear_top_row(void);
-
-extern void console_putpixel(uint32_t x, uint32_t y, uint32_t color);
 
 #ifdef __cplusplus
 }

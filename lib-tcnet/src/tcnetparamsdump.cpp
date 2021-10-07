@@ -2,7 +2,7 @@
  * @file tcnetparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ void TCNetParams::Dump() {
 		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_Params.aNodeName);
 	}
 
-	if (isMaskSet(TMask::LAYER)) {
+	if (isMaskSet(Mask::LAYER)) {
 		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_Params.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer)));
 	}
 
