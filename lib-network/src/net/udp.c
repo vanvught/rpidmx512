@@ -165,6 +165,8 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	p_queue_entry->size = i;
 
 	s_recv_queue[port_index].queue_head = (s_recv_queue[port_index].queue_head + 1U) & UDP_RX_MAX_ENTRIES_MASK;
+
+	DEBUG_PRINTF("port_index=%u, i=%u, queue_head=%u", port_index, i, s_recv_queue[port_index].queue_head);
 }
 
 // -->

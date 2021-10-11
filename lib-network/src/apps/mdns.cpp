@@ -112,8 +112,8 @@ void MDNS::Start() {
 	}
 
 	CreateAnswerLocalIpAddress();
-	Network::Get()->SendTo(s_nHandle, s_AnswerLocalIp.aBuffer, static_cast<uint16_t>(s_AnswerLocalIp.nSize), s_nMulticastIp, UDP_PORT);
 
+	Network::Get()->SendTo(s_nHandle, s_AnswerLocalIp.aBuffer, static_cast<uint16_t>(s_AnswerLocalIp.nSize), s_nMulticastIp, UDP_PORT);
 	Network::Get()->SetDomainName(&MDNS_TLD[1]);
 }
 
@@ -182,7 +182,7 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 			}
 
 			isCompressed = true;
-			const uint32_t nCompressedOffset = ((nLenght & static_cast<uint32_t>(~(0xC0))) << 8) | ((*pSrc & 0xFF));
+			const auto nCompressedOffset = ((nLenght & static_cast<uint32_t>(~(0xC0))) << 8) | ((*pSrc & 0xFF));
 			nLenght =  s_pBuffer[nCompressedOffset];
 
 //			DEBUG_PRINTF("--> nCompressedOffset=%.4x", (int) nCompressedOffset);
@@ -221,8 +221,6 @@ uint32_t MDNS::DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString
 }
 
 bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t nPort, mdns::Protocol nProtocol, const char *pTextContent) {
-//	DEBUG1_ENTRY
-
 	assert(pServName != nullptr);
 	assert(nPort != 0);
 
@@ -268,7 +266,7 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 	}
 
 	if (i == SERVICE_RECORDS_MAX) {
-		DEBUG1_EXIT
+		assert(0);
 		return false;
 	}
 
@@ -283,8 +281,6 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 	DEBUG_PRINTF("%d:%d %p -> %d " IPSTR, i, s_nHandle, reinterpret_cast<void *>(&s_ServiceRecordsData.aBuffer), s_ServiceRecordsData.nSize, IP2STR(s_nMulticastIp));
 
 	Network::Get()->SendTo(s_nHandle, &s_ServiceRecordsData.aBuffer, static_cast<uint16_t>(s_ServiceRecordsData.nSize), s_nMulticastIp, UDP_PORT);
-
-	DEBUG_EXIT
 	return true;
 }
 
