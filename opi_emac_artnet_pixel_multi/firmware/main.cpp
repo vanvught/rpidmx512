@@ -37,9 +37,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -117,14 +116,13 @@ void notmain(void) {
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
 	ArtNet4Node node(static_cast<uint8_t>(nActivePorts));
+
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
+	ArtNetParams artnetParams(&storeArtNet);
 
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
+		artnetParams.Dump();
 
 	}
 

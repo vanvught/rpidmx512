@@ -31,18 +31,17 @@
 
 #include "e131.h"
 #include "e131packets.h"
-
-#include "lightset.h"
-
 // Handlers
 #include "e131dmx.h"
 #include "e131sync.h"
 
+#include "lightset.h"
+
 namespace e131bridge {
 struct State {
 	bool IsNetworkDataLoss;
-	bool IsMergeMode;				///< Is the Bridge in merging mode?
-	bool IsSynchronized;			///< “Synchronized” or an “Unsynchronized” state.
+	bool IsMergeMode;
+	bool IsSynchronized;
 	bool IsForcedSynchronized;
 	bool IsChanged;
 	bool bDisableNetworkDataLossTimeout;
@@ -62,7 +61,6 @@ struct State {
 struct Source {
 	uint32_t nMillis;
 	uint32_t nIp;
-	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
 	uint8_t cid[E131::CID_LENGTH];
 	uint8_t nSequenceNumberData;
 };
@@ -76,8 +74,6 @@ struct OutputPort {
 	GenericPort genericPort;
 	Source sourceA;
 	Source sourceB;
-	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
-	uint32_t nLength;
 	lightset::MergeMode mergeMode;
 	bool IsDataPending;
 	bool IsMerging;
@@ -218,7 +214,8 @@ private:
 	bool IsPriorityTimeOut(uint32_t nPortIndex) const;
 	bool isIpCidMatch(const struct e131bridge::Source *) const;
 
-	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void UpdateMergeStatus(uint32_t nPortIndex);
+	//void UpdateMergeStatus(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void HandleDmx();
 	void HandleSynchronization();

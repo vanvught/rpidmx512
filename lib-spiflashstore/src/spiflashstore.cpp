@@ -43,16 +43,17 @@ static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for UUID
 static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        144,       32,    64,       96,      64,     32,     32,         480,           64,        32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          32};
 #ifndef NDEBUG
-static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
+static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "not-used", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
 #endif
 
 bool SpiFlashStore::s_bHaveFlashChip;
 bool SpiFlashStore::s_bIsNew;
 
 State SpiFlashStore::s_State;
-uint32_t SpiFlashStore::s_nStartAddress;
 
+uint32_t SpiFlashStore::s_nStartAddress;
 uint32_t SpiFlashStore::s_nSpiFlashStoreSize;
+
 uint8_t SpiFlashStore::s_SpiFlashData[FlashStore::SIZE];
 
 SpiFlashStore *SpiFlashStore::s_pThis = nullptr;

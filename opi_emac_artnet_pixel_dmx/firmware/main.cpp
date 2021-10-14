@@ -37,9 +37,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -110,11 +109,10 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-	ArtNet4Params artnetparams(&storeArtNet4);
+	ArtNetParams artnetParams(&storeArtNet);
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
 	// LightSet A - Pixel - 4 Universes
@@ -136,9 +134,10 @@ void notmain(void) {
 	const auto nStartPixelUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
 
 	auto isDmxUniverseSet = false;
+	const auto nDmxUniverse = artnetParams.GetUniverse(0, isDmxUniverseSet);
 
 	ArtNet4Node node(isDmxUniverseSet ? 2 : 1);
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmx.GetUniverses();
@@ -157,12 +156,10 @@ void notmain(void) {
 	}
 
 	// LightSet B - DMX - 1 Universe
-	const auto nAddress = static_cast<uint16_t>((artnetparams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetparams.GetSubnet() & 0x0F) << 4);
-	auto bIsSet = false;
-	const auto nUniverse = artnetparams.GetUniverse(0, bIsSet);
 
-	if (bIsSet) {
-		node.SetUniverse(4, artnetparams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
+	if (isDmxUniverseSet) {
+		const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
+		node.SetUniverse(4, artnetParams.GetDirection(0), static_cast<uint16_t>(nAddress | nDmxUniverse));
 	}
 
 	StoreDmxSend storeDmxSend;

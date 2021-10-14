@@ -41,7 +41,7 @@ enum class Store {
 	E131,
 	LTC,
 	MIDI,
-	ARTNET4,
+	_NOT_USED_,
 	OSC,
 	TLC5711DMX,
 	WIDGET,

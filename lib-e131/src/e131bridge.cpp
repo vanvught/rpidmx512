@@ -36,6 +36,7 @@
 #include "e117const.h"
 
 #include "lightset.h"
+#include "lightsetdata.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -108,7 +109,7 @@ void E131Bridge::Stop() {
 	if (m_pLightSet != nullptr) {
 		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 			m_pLightSet->Stop(nPortIndex);
-			m_OutputPort[nPortIndex].nLength = 0;
+			lightset::Data::ClearLength(nPortIndex);
 			m_OutputPort[nPortIndex].IsDataPending = false;
 		}
 	}
@@ -273,27 +274,13 @@ bool E131Bridge::GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset:
 	return m_OutputPort[nPortIndex].genericPort.bIsEnabled;
 }
 
-void E131Bridge::MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-	assert(nPortIndex < E131::PORTS);
-	assert(pData != nullptr);
-
+void E131Bridge::UpdateMergeStatus(uint32_t nPortIndex) {
 	if (!m_State.IsMergeMode) {
 		m_State.IsMergeMode = true;
 		m_State.IsChanged = true;
 	}
 
 	m_OutputPort[nPortIndex].IsMerging = true;
-	m_OutputPort[nPortIndex].nLength = nLength;
-
-	if (m_OutputPort[nPortIndex].mergeMode == lightset::MergeMode::HTP) {
-		for (uint32_t i = 0; i < nLength; i++) {
-			auto data = std::max(m_OutputPort[nPortIndex].sourceA.data[i], m_OutputPort[nPortIndex].sourceB.data[i]);
-			m_OutputPort[nPortIndex].data[i] = data;
-		}
-		return;
-	}
-
-	memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 }
 
 void E131Bridge::CheckMergeTimeouts(uint32_t nPortIndex) {
@@ -447,51 +434,45 @@ void E131Bridge::HandleDmx() {
 			pSourceA->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			memcpy(pSourceA->cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 			pSourceA->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceA->data, pDmxData, nDmxSlots);
-			m_OutputPort[nPortIndex].nLength = nDmxSlots;
-			memcpy(m_OutputPort[nPortIndex].data, pDmxData, nDmxSlots);
+			lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
 		} else if (isSourceA && (ipB == 0)) {
 			//printf("2. Continue package from SourceA\n");
 			pSourceA->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			pSourceA->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceA->data, pDmxData, nDmxSlots);
-			m_OutputPort[nPortIndex].nLength = nDmxSlots;
-			memcpy(m_OutputPort[nPortIndex].data, pDmxData, nDmxSlots);
+			lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
 		} else if ((ipA == 0) && isSourceB) {
 			//printf("3. Continue package from SourceB\n");
 			pSourceB->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			pSourceB->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceB->data, pDmxData, nDmxSlots);
-			m_OutputPort[nPortIndex].nLength = nDmxSlots;
-			memcpy(m_OutputPort[nPortIndex].data, pDmxData, nDmxSlots);
+			lightset::Data::SetSourceB(nPortIndex, pDmxData, nDmxSlots);
 		} else if (!isSourceA && (ipB == 0)) {
 			//printf("4. New ip, start merging\n");
 			pSourceB->nIp = m_E131.IPAddressFrom;
 			pSourceB->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			memcpy(pSourceB->cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 			pSourceB->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceB->data, pDmxData, nDmxSlots);
-			MergeDmxData(nPortIndex, pSourceB->data, nDmxSlots);
+			UpdateMergeStatus(nPortIndex);
+			lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 		} else if ((ipA == 0) && !isSourceB) {
 			//printf("5. New ip, start merging\n");
 			pSourceA->nIp = m_E131.IPAddressFrom;
 			pSourceA->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			memcpy(pSourceA->cid, m_E131.E131Packet.Data.RootLayer.Cid, 16);
 			pSourceA->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceA->data, pDmxData, nDmxSlots);
-			MergeDmxData(nPortIndex, pSourceA->data, nDmxSlots);
+			UpdateMergeStatus(nPortIndex);
+			lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 		} else if (isSourceA && !isSourceB) {
 			//printf("6. Continue merging\n");
 			pSourceA->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			pSourceA->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceA->data, pDmxData, nDmxSlots);
-			MergeDmxData(nPortIndex, pSourceA->data, nDmxSlots);
+			UpdateMergeStatus(nPortIndex);
+			lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 		} else if (!isSourceA && isSourceB) {
 			//printf("7. Continue merging\n");
 			pSourceB->nSequenceNumberData = m_E131.E131Packet.Data.FrameLayer.SequenceNumber;
 			pSourceB->nMillis = m_nCurrentPacketMillis;
-			memcpy(pSourceB->data, pDmxData, nDmxSlots);
-			MergeDmxData(nPortIndex, pSourceB->data, nDmxSlots);
+			UpdateMergeStatus(nPortIndex);
+			lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
 		}
 #ifndef NDEBUG
 		else if (isSourceA && isSourceB) {
@@ -537,8 +518,7 @@ void E131Bridge::HandleDmx() {
 		}
 
 		if ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize)) {
-
-			m_pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength);
+			lightset::Data::Output(m_pLightSet, nPortIndex);
 
 			if (!m_OutputPort[nPortIndex].IsTransmitting) {
 				m_pLightSet->Start(nPortIndex);
@@ -571,7 +551,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 				memset(m_OutputPort[i].sourceA.cid, 0, E131::CID_LENGTH);
 				m_OutputPort[i].sourceB.nIp = 0;
 				memset(m_OutputPort[i].sourceB.cid, 0, E131::CID_LENGTH);
-				m_OutputPort[i].nLength = 0;
+				lightset::Data::ClearLength(i);
 				m_OutputPort[i].IsDataPending = false;
 				m_OutputPort[i].IsTransmitting = false;
 				m_OutputPort[i].IsMerging = false;
@@ -596,7 +576,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 
 				if (!m_State.IsMergeMode) {
 					m_pLightSet->Stop(i);
-					m_OutputPort[i].nLength = 0;
+					lightset::Data::ClearLength(i);
 					m_OutputPort[i].IsDataPending = false;
 					m_OutputPort[i].IsTransmitting = false;
 				}
@@ -623,15 +603,7 @@ bool E131Bridge::IsStatusChanged() {
 void E131Bridge::Clear(uint32_t nPortIndex) {
 	assert(nPortIndex < E131::PORTS);
 
-	uint8_t *pDst = m_OutputPort[nPortIndex].data;
-
-	for (uint32_t i = 0; i < E131::DMX_LENGTH; i++) {
-		*pDst++ = 0;
-	}
-
-	m_OutputPort[nPortIndex].nLength = E131::DMX_LENGTH;
-
-	m_pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength);
+	lightset::Data::OutputClear(m_pLightSet, nPortIndex);
 
 	if (m_OutputPort[nPortIndex].genericPort.bIsEnabled && !m_OutputPort[nPortIndex].IsTransmitting) {
 		m_pLightSet->Start(nPortIndex);

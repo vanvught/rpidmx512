@@ -83,10 +83,10 @@ inline static uint32_t universe_to_multicast_ip(uint16_t nUniverse) {
 
 struct E131 {
 	static constexpr auto UDP_PORT = 5568;
-#if !defined(E131_PORTS)
+#if !defined(LIGHTSET_PORTS)
 	static constexpr auto PORTS = 4;
 #else
-	static constexpr auto PORTS = E131_PORTS;
+	static constexpr auto PORTS = LIGHTSET_PORTS;
 #endif
 	static constexpr auto DMX_LENGTH = 512;
 	static constexpr auto CID_LENGTH = 16;

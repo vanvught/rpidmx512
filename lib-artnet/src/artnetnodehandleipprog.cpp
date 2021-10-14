@@ -46,6 +46,8 @@
 #define IPPROG_COMMAND_PROGRAM_SUBNETMASK	((1 << 1) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
 #define IPPROG_COMMAND_PROGRAM_PORT			((1 << 0) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
 
+using namespace artnet;
+
 union uip {
 	uint32_t u32;
 	uint8_t u8[4];
@@ -121,7 +123,7 @@ void ArtNetNode::HandleIpProg() {
 		// Update Node network details
 		m_Node.IPAddressLocal = Network::Get()->GetIp();
 		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
-		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(ArtNetStatus2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
+		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(Status2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? Status2::IP_DHCP : Status2::IP_MANUALY));
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
 		if (ArtNet::VERSION > 3) {

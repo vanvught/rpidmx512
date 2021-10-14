@@ -37,9 +37,8 @@
 #include "mdnsservices.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
 #include "dmxmonitor.h"
@@ -93,18 +92,17 @@ int main(int argc, char **argv) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
 
-	ArtNet4Params artnet4Params(StoreArtNet4::Get());
+	ArtNetParams artnetParams(StoreArtNet::Get());
 
 	ArtNet4Node node;
 
-	if (artnet4Params.Load()) {
-		artnet4Params.Dump();
-		artnet4Params.Set(&node);
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(&node);
 	}
 
-	if(artnet4Params.IsRdm()) {
+	if(artnetParams.IsRdm()) {
 		printf("Art-Net %d Node - Real-time DMX Monitor / RDM Responder {1 Universe}\n", node.GetVersion());
 	} else {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
@@ -126,7 +124,7 @@ int main(int argc, char **argv) {
 
 	node.SetRdmUID(RdmResponder.GetUID());
 
-	if(artnet4Params.IsRdm()) {
+	if(artnetParams.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams;
 		if (rdmDeviceParams.Load()) {
 			rdmDeviceParams.Set(&RdmResponder);
@@ -136,7 +134,7 @@ int main(int argc, char **argv) {
 		RdmResponder.Init();
 
 		bool isSet;
-		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnet4Params.GetUniverse(0, isSet));
+		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
 
 		RdmResponder.Full(0);
 
@@ -144,7 +142,7 @@ int main(int argc, char **argv) {
 	} else {
 		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 			bool bIsSet;
-			const auto nAddress = artnet4Params.GetUniverse(i, bIsSet);
+			const auto nAddress = artnetParams.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
 				node.SetUniverseSwitch(i, lightset::PortDir::OUTPUT, nAddress);
@@ -158,7 +156,7 @@ int main(int argc, char **argv) {
 	nw.Print();
 	node.Print();
 
-	if(artnet4Params.IsRdm()) {
+	if(artnetParams.IsRdm()) {
 		RdmResponder.Print();
 	}
 

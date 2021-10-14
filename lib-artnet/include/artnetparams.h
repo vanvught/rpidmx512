@@ -104,7 +104,7 @@ struct Mask {
 	static constexpr auto PROTOCOL_B = (1U << 24);
 	static constexpr auto PROTOCOL_C = (1U << 25);
 	static constexpr auto PROTOCOL_D = (1U << 26);
-	//static constexpr auto NOT_USED2 = (1U << 27);
+	static constexpr auto MAP_UNIVERSE0 = (1U << 27);
 	//static constexpr auto DIRECTION = (1U << 28);
 };
 

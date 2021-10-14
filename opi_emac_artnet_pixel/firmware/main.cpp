@@ -36,9 +36,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -93,14 +92,13 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-	ArtNet4Params artnetparams(&storeArtNet4);
+	ArtNetParams artnetParams(&storeArtNet);
 
 	ArtNet4Node node;
 
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
+		artnetParams.Dump();
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);

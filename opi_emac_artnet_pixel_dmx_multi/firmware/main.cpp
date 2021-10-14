@@ -36,9 +36,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -108,12 +107,10 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
+	ArtNetParams artnetParams(&storeArtNet);
 
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
 	// LightSet A - Pixel - 32 Universes
@@ -137,19 +134,19 @@ void notmain(void) {
 	auto nPages = static_cast<uint8_t>(nActivePorts);
 
 	auto bIsSet = false;
-	artnetparams.GetUniverse(0, bIsSet);
+	artnetParams.GetUniverse(0, bIsSet);
 
 	if (bIsSet) {
 		nPages = 9;
 	} else {
-		artnetparams.GetUniverse(1, bIsSet);
+		artnetParams.GetUniverse(1, bIsSet);
 		if (bIsSet) {
 			nPages = 9;
 		}
 	}
 
 	ArtNet4Node node(nPages);
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
@@ -179,18 +176,18 @@ void notmain(void) {
 
 	// LightSet B - DMX - 2 Universes
 
-	const auto nAddress = static_cast<uint16_t>((artnetparams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetparams.GetSubnet() & 0x0F) << 4);
+	const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
 	bIsSet = false;
-	auto nUniverse = artnetparams.GetUniverse(0, bIsSet);
+	auto nUniverse = artnetParams.GetUniverse(0, bIsSet);
 
 	if (bIsSet) {
-		node.SetUniverse(32, artnetparams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
+		node.SetUniverse(32, artnetParams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
 	}
 
-	nUniverse = artnetparams.GetUniverse(1, bIsSet);
+	nUniverse = artnetParams.GetUniverse(1, bIsSet);
 
 	if (bIsSet) {
-		node.SetUniverse(33, artnetparams.GetDirection(1), static_cast<uint16_t>(nAddress | nUniverse));
+		node.SetUniverse(33, artnetParams.GetDirection(1), static_cast<uint16_t>(nAddress | nUniverse));
 	}
 
 	StoreDmxSend storeDmxSend;

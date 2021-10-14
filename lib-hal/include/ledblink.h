@@ -45,6 +45,8 @@ public:
 #if defined (BARE_METAL)
 # if defined (H3)
 #  include "h3/ledblink.h"
+# elif defined (GD32)
+#  include "gd32/ledblink.h"
 # else
 #  include "rpi/ledblink.h"
 # endif

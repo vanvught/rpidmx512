@@ -31,6 +31,7 @@
 #include "artnetnode.h"
 #include "artnet.h"
 
+#include "lightsetdata.h"
 #include "hardware.h"
 
 using namespace artnet;
@@ -40,18 +41,18 @@ void ArtNetNode::HandleSync() {
 	m_State.nArtSyncMillis = Hardware::Get()->Millis();
 
 	for (uint32_t i = 0; i < (m_nPages * ArtNet::PORTS); i++) {
-		if ((m_OutputPorts[i].protocol == PortProtocol::ARTNET) && (m_OutputPorts[i].genericPort.bIsEnabled)) {
+		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].genericPort.bIsEnabled)) {
 #if defined ( ENABLE_SENDDIAG )
 			SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
-			m_pLightSet->SetData(i, m_OutputPorts[i].data, m_OutputPorts[i].nLength);
+			lightset::Data::Output(m_pLightSet, i);
 
-			if (!m_OutputPorts[i].IsTransmitting) {
+			if (!m_OutputPort[i].IsTransmitting) {
 				m_pLightSet->Start(i);
-				m_OutputPorts[i].IsTransmitting = true;
+				m_OutputPort[i].IsTransmitting = true;
 			}
 
-			m_OutputPorts[i].nLength = 0;
+			lightset::Data::ClearLength(i);
 		}
 	}
 }

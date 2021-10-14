@@ -126,10 +126,12 @@ private:
 
 private:
 	bool m_bIsRDM;
-	RDMQueuedMessage m_RDMQueuedMessage;
 	bool m_IsMuted { false };
 	uint8_t *m_pRdmDataIn { nullptr };
 	uint8_t *m_pRdmDataOut { nullptr };
+#if !defined (NODE_RDMNET_LLRP_ONLY)
+	RDMQueuedMessage m_RDMQueuedMessage;
+#endif
 };
 
 #endif /* RDMHANDLER_H_ */

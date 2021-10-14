@@ -25,9 +25,10 @@
 
 #include <cstdint>
 
-#include "ledblink.h"
-
 #include "e131bridge.h"
+
+#include "lightsetdata.h"
+#include "ledblink.h"
 
 #include "debug.h"
 
@@ -51,14 +52,17 @@ void E131Bridge::HandleSynchronization() {
 
 	for (uint32_t i = 0; i < E131::PORTS; i++) {
 		if (m_OutputPort[i].genericPort.bIsEnabled) {
-			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].nLength);
+//			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].nLength);
+			lightset::Data::Output(m_pLightSet, i);
 
 			if (!m_OutputPort[i].IsTransmitting) {
 				m_pLightSet->Start(i);
 				m_OutputPort[i].IsTransmitting = true;
 			}
 
-			m_OutputPort[i].nLength = 0;
+//			m_OutputPort[i].nLength = 0;
+			lightset::Data::ClearLength(i);
+
 		}
 	}
 

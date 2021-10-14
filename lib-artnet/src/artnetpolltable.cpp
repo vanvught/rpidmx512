@@ -45,6 +45,8 @@
 
 #include "debug.h"
 
+using namespace artnet;
+
 union uip {
 	uint32_t u32;
 	uint8_t u8[4];
@@ -313,7 +315,7 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 	for (uint32_t nIndex = 0; nIndex < ArtNet::PORTS; nIndex++) {
 		const uint8_t nPortAddress = ptArtPollReply->SwOut[nIndex];
 
-		if (ptArtPollReply->PortTypes[nIndex] == ARTNET_ENABLE_OUTPUT) {
+		if (ptArtPollReply->PortTypes[nIndex] == static_cast<uint8_t>(PortSettings::ENABLE_OUTPUT)) {
 			const uint16_t nUniverse = MakePortAddress(ptArtPollReply->NetSwitch, ptArtPollReply->SubSwitch, nPortAddress);
 
 			uint32_t nIndexUniverse;

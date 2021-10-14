@@ -30,6 +30,8 @@
 
 #include "artnetnode.h"
 
+using namespace artnet;
+
 void ArtNetNode::SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler) {
 	if (ArtNet::VERSION >= 4) {
 		m_pArtNet4Handler = pArtNet4Handler;

@@ -104,18 +104,22 @@ void Display::Detect(DisplayType tDisplayType) {
 #if defined(ENABLE_TC1602)
 		case DisplayType::PCF8574T_1602:
 			m_LcdDisplay = new Tc1602(16, 2);
+			assert(m_LcdDisplay != nullptr);
 			break;
 		case DisplayType::PCF8574T_2004:
 			m_LcdDisplay = new Tc1602(20, 4);
+			assert(m_LcdDisplay != nullptr);
 			break;
 #endif
 #if defined(ENABLE_SSD1311)
 		case DisplayType::SSD1311:
 			m_LcdDisplay = new Ssd1311;
+			assert(m_LcdDisplay != nullptr);
 			break;
 #endif
 		case DisplayType::SSD1306:
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
+			assert(m_LcdDisplay != nullptr);
 			break;
 		case DisplayType::UNKNOWN:
 			m_tType = DisplayType::UNKNOWN;
@@ -146,6 +150,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 		if (nRows <= 4) {
 #if defined(ENABLE_SSD1311)
 			m_LcdDisplay = new Ssd1311;
+			assert(m_LcdDisplay != nullptr);
 
 			if (m_LcdDisplay->Start()) {
 				m_tType = DisplayType::SSD1311;
@@ -153,8 +158,10 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 			} else
 #endif
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_4ROWS);
+			assert(m_LcdDisplay != nullptr);
 		} else {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
+			assert(m_LcdDisplay != nullptr);
 		}
 
 		if (m_LcdDisplay->Start()) {
@@ -165,6 +172,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 #if defined(ENABLE_TC1602)
 	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
 		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
+		assert(m_LcdDisplay != nullptr);
 
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::PCF8574T_1602;

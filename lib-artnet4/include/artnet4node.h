@@ -52,13 +52,6 @@ public:
 		return m_Bridge.IsStatusChanged();
 	}
 
-	void SetMapUniverse0(bool bMapUniverse0 = false) {
-		m_bMapUniverse0 = bMapUniverse0;
-	}
-	bool IsMapUniverse0() {
-		return m_bMapUniverse0;
-	}
-
 	void Print();
 
 	void Start();
@@ -67,7 +60,6 @@ public:
 
 private:
 	E131Bridge m_Bridge;
-	bool m_bMapUniverse0 { false };
 };
 
 #endif /* ARTNET4NODE_H_ */

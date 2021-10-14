@@ -34,6 +34,9 @@
 #elif defined(H3)
 # include "h3/hal_api.h"
 # include "h3/hal_i2c.h"
+#elif defined(GD32)
+# include "gd32/hal_api.h"
+# include "gd32/hal_i2c.h"
 #else
 # include "rpi/hal_api.h"
 # include "rpi/hal_i2c.h"
