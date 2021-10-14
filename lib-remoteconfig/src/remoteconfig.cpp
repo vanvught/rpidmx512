@@ -76,8 +76,6 @@
 /* artnet.txt */
 # include "artnetparams.h"
 # include "storeartnet.h"
-# include "artnet4params.h"
-# include "storeartnet4.h"
 #endif
 
 #if defined (NODE_E131)
@@ -188,13 +186,7 @@
 # include "storerdmdevice.h"
 #endif
 
-#if !defined(DISABLE_TFTP)
-// nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
-// #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
-# define FIRMWARE_MAX_SIZE	0x22000
-# include "tftp/tftpfileserver.h"
-# include "spiflashinstall.h"
-#endif
+#include "tftp.h"
 
 #include "debug.h"
 
@@ -675,19 +667,9 @@ void RemoteConfig::HandleGetNetworkTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	uint32_t nSizeArtNet3 = 0;
-
 	assert(StoreArtNet::Get() != nullptr);
-	ArtNetParams artnetparams(StoreArtNet::Get());
-	artnetparams.Save(s_pUdpBuffer, udp::BUFFER_SIZE, nSizeArtNet3);
-
-	uint32_t nSizeArtNet4 = 0;
-
-	assert(StoreArtNet4::Get() != nullptr);
-	ArtNet4Params artnet4params(StoreArtNet4::Get());
-	artnet4params.Save(s_pUdpBuffer + nSizeArtNet3, udp::BUFFER_SIZE - nSizeArtNet3, nSizeArtNet4);
-
-	nSize = nSizeArtNet3 + nSizeArtNet4;
+	ArtNetParams artnetParams(StoreArtNet::Get());
+	artnetParams.Save(s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
 }
@@ -697,6 +679,7 @@ void RemoteConfig::HandleGetArtnetTxt(uint32_t& nSize) {
 void RemoteConfig::HandleGetE131Txt(uint32_t& nSize) {
 	DEBUG_ENTRY
 
+	assert(StoreE131::Get() != nullptr);
 	E131Params e131params(StoreE131::Get());
 	e131params.Save(s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 
@@ -1038,21 +1021,15 @@ void RemoteConfig::HandleSetNetworkTxt() {
 #if defined (NODE_ARTNET)
 void RemoteConfig::HandleSetArtnetTxt() {
 	DEBUG_ENTRY
-	static_assert(sizeof(struct TArtNet4Params) != sizeof(struct artnetparams::Params), "");
 
-	assert(StoreArtNet4::Get() != nullptr);
-	ArtNet4Params artnet4params(StoreArtNet4::Get());
+	assert(StoreArtNet::Get() != nullptr);
+	ArtNetParams artnetParams(StoreArtNet::Get());
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
 		if (m_nBytesReceived == sizeof(struct artnetparams::Params)) {
-			ArtNetParams artnetparams(StoreArtNet::Get());
 			uint32_t nSize;
-			artnetparams.Builder(reinterpret_cast<const struct artnetparams::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
-			m_nBytesReceived = static_cast<uint16_t>(nSize);
-		} else if (m_nBytesReceived == sizeof(struct TArtNet4Params)) {
-			uint32_t nSize;
-			artnet4params.Builder(reinterpret_cast<const struct TArtNet4Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			artnetParams.Builder(reinterpret_cast<const struct artnetparams::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT
@@ -1061,9 +1038,9 @@ void RemoteConfig::HandleSetArtnetTxt() {
 	}
 #endif
 
-	artnet4params.Load(s_pUdpBuffer, m_nBytesReceived);
+	artnetParams.Load(s_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
-	artnet4params.Dump();
+	artnetParams.Dump();
 #endif
 
 	DEBUG_EXIT
@@ -1074,6 +1051,7 @@ void RemoteConfig::HandleSetArtnetTxt() {
 void RemoteConfig::HandleSetE131Txt() {
 	DEBUG_ENTRY
 
+	assert(StoreE131::Get() != nullptr);
 	E131Params e131params(StoreE131::Get());
 
 #if !defined(DISABLE_BIN)

@@ -3,7 +3,7 @@ EXTRA_INCLUDES=../lib-display/include ../lib-properties/include ../lib-hal/inclu
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring DISABLE_TFTP,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=src/h3/tftp
+		EXTRA_SRCDIR+=src/tftp src/h3/tftp
 	endif
 	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/shell src/uart
@@ -13,7 +13,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 else
 	ifeq (,$(findstring DISABLE_TFTP,$(DEFINES)))
-		EXTRA_SRCDIR+=src/h3/tftp
+		EXTRA_SRCDIR+=src/tftp src/h3/tftp
 	endif
 	DEFINES+=LTC_READER
 	EXTRA_SRCDIR+=src/shell src/uart src/httpd

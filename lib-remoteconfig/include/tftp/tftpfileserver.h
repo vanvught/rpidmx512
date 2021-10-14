@@ -31,6 +31,19 @@
 
 #include "tftpdaemon.h"
 
+namespace tftpfileserver {
+	bool is_valid(const void *pBuffer);
+#if defined (BARE_METAL)
+# if defined (H3)
+#  if defined(ORANGE_PI)
+	static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
+#  else
+	static constexpr char FILE_NAME[] = "orangepi_one.uImage";
+#  endif
+# endif
+#endif
+}  // namespace tftpfileserver
+
 class TFTPFileServer final: public TFTPDaemon {
 public:
 	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
@@ -43,11 +56,11 @@ public:
 	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
 	void Exit() override;
 
-	uint32_t GetFileSize() {
+	uint32_t GetFileSize() const {
 		return m_nFileSize;
 	}
 
-	bool isDone()  {
+	bool isDone() const {
 		return m_bDone;
 	}
 
@@ -55,7 +68,7 @@ private:
 	uint8_t *m_pBuffer;
 	uint32_t m_nSize;
 	uint32_t m_nFileSize { 0 };
-	bool m_bDone;
+	bool m_bDone { false };
 };
 
 #endif /* TFTPFILESERVER_H_ */

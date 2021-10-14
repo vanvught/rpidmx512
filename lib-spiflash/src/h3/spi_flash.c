@@ -32,7 +32,7 @@
 
 #include "debug.h"
 
-#include "../spi_flash_internal.h"
+#include "../spi/spi_flash_internal.h"
 
 #include "h3.h"
 #include "h3_spi.h"

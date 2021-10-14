@@ -1,8 +1,8 @@
 /**
- * @file tftpfileserver.cpp
+ * @file tftp.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#ifndef REMOTECONFIG_TFTP_H_
+#define REMOTECONFIG_TFTP_H_
 
-#include "ubootheader.h"
-#include "remoteconfig.h"
+#if !defined(DISABLE_TFTP)
+# if defined (H3)
+// nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
+// #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
+#  define FIRMWARE_MAX_SIZE	0x22000
+# elif defined (GD32)
+# else
+#  error
+# endif
+# include "tftp/tftpfileserver.h"
+# include "spiflashinstall.h"
+#endif
 
-#include "debug.h"
-
-namespace tftpfileserver {
-bool is_valid(const void *pBuffer) {
-	UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
-	if (!uImage.IsValid()) {
-		DEBUG_PUTS("uImage is not valid");
-		return false;
-	}
-	return true;
-}
-}  // namespace tftpfileserver
+#endif /* REMOTECONFIG_TFTP_H_ */
