@@ -371,7 +371,7 @@ void ArtNetNode::HandleAddress() {
 	case PortCommand::PC_CLR_1:
 	case PortCommand::PC_CLR_2:
 	case PortCommand::PC_CLR_3:
-		nPort = static_cast<uint8_t>(nPage * ArtNet::PORTS) + (pArtAddress->Command & 0x3);
+		nPort = static_cast<uint8_t>((nPage * ArtNet::PORTS) + (pArtAddress->Command & 0x3));
 		assert(nPort < artnetnode::MAX_PORTS);
 		lightset::Data::OutputClear(m_pLightSet, nPort);
 		break;
