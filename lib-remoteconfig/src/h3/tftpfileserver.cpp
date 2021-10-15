@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "ubootheader.h"
+#include "h3/ubootheader.h"
 #include "remoteconfig.h"
 
 #include "debug.h"

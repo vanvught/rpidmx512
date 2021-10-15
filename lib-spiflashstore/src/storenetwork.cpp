@@ -23,19 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <algorithm>
-#include <cstdint>
 #include <cassert>
 
 #include "storenetwork.h"
-
-#include "networkparams.h"
-
-#include "spiflashstore.h"
-
 #include "debug.h"
-
-using namespace spiflashstore;
 
 StoreNetwork *StoreNetwork::s_pThis = nullptr;
 
@@ -46,63 +37,5 @@ StoreNetwork::StoreNetwork() {
 	s_pThis = this;
 
 	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}
-
-void StoreNetwork::Update(const struct TNetworkParams *pNetworkParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::Copy(struct TNetworkParams *pNetworkParams) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Copy(Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::SaveIp(uint32_t nIp) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NetworkParamsMask::IP_ADDRESS);
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::SaveNetMask(uint32_t nNetMask) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::SaveGatewayIp(uint32_t nGatewayIp) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nGatewayIp), &nGatewayIp, sizeof(uint32_t), NetworkParamsMask::DEFAULT_GATEWAY);
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::SaveHostName(const char *pHostName, uint32_t nLength) {
-	DEBUG_ENTRY
-
-	nLength = std::min(nLength,static_cast<uint32_t>(network::HOSTNAME_SIZE));
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NetworkParamsMask::HOSTNAME);
-
-	DEBUG_EXIT
-}
-
-void StoreNetwork::SaveDhcp(bool bIsDhcpUsed) {
-	DEBUG_ENTRY
-
-	SpiFlashStore::Get()->Update(Store::NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NetworkParamsMask::DHCP);
-
 	DEBUG_EXIT
 }

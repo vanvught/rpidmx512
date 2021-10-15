@@ -28,10 +28,6 @@
 
 #include <cstdint>
 
-#if !defined( NO_EMAC )
-# include "storenetwork.h"
-#endif
-
 namespace spiflashstore {
 enum class Store {
 	NETWORK,
@@ -108,10 +104,6 @@ private:
 	struct FlashStore {
 		static constexpr auto SIZE = 4096;
 	};
-
-#if !defined( NO_EMAC )
-	StoreNetwork m_StoreNetwork;
-#endif
 
 	static bool s_bHaveFlashChip;
 	static bool s_bIsNew;

@@ -42,6 +42,8 @@ extern "C" {
 	void net_handle(void);
 }
 
+#define HAVE_NET_HANDLE
+
 class Network {
 public:
 	Network();

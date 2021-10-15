@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 #include "display.h"
 
@@ -98,8 +99,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(StoreNetwork::Get());
-	nw.SetNetworkStore(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	MDNS mDns;

@@ -28,7 +28,7 @@
 #include <time.h>
 #include <cassert>
 
-#include "ubootheader.h"
+#include "h3/ubootheader.h"
 
 #define LZ4F_MAGIC			0x184D2204	/* LZ4 Magic Number		*/
 #define IH_MAGIC			0x27051956	/* Image Magic Number	*/

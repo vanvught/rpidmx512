@@ -75,10 +75,6 @@ void StoreArtNet::SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress) {
 	DEBUG_ENTRY
 	assert(nPortIndex < ArtNet::PORTS);
 
-//	if (nPortIndex == 0) {
-//		SpiFlashStore::Get()->Update(Store::ARTNET, __builtin_offsetof(struct Params, nUniverse), &nAddress, sizeof(uint8_t), Mask::UNIVERSE);
-//	}
-
 	SpiFlashStore::Get()->Update(Store::ARTNET, nPortIndex + __builtin_offsetof(struct Params, nUniversePort), &nAddress, sizeof(uint8_t), Mask::UNIVERSE_A << nPortIndex);
 
 	DEBUG_EXIT

@@ -30,6 +30,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "mdns.h"
@@ -80,6 +81,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
+
+	StoreNetwork storeNetwork;
 
 	SpiFlashStore spiFlashStore;
 

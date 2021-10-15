@@ -29,6 +29,9 @@
 #include <cstdint>
 #include <stdio.h>
 
+#define OFFSET_UBOOT_SPI	0x000000
+#define OFFSET_UIMAGE		0x180000
+
 class SpiFlashInstall {
 public:
 	SpiFlashInstall();
@@ -49,12 +52,13 @@ private:
 	void Process(const char *pFileName, uint32_t nOffset);
 
 private:
-	bool m_bHaveFlashChip { false };
 	uint32_t m_nEraseSize { 0 };
 	uint32_t m_nFlashSize { 0 };
 	uint8_t *m_pFileBuffer { nullptr };
 	uint8_t *m_pFlashBuffer { nullptr };
 	FILE *m_pFile { nullptr };
+
+	bool m_bHaveFlashChip { false };
 
 	static SpiFlashInstall *s_pThis;
 };

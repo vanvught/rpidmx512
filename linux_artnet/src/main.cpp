@@ -31,6 +31,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "mdns.h"
@@ -80,6 +81,8 @@ int main(int argc, char **argv) {
 	}
 
 	fw.Print();
+
+	StoreNetwork storeNetwork;
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
