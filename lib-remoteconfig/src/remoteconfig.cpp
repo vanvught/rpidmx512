@@ -186,7 +186,10 @@
 # include "storerdmdevice.h"
 #endif
 
-#include "tftp.h"
+#if !defined(DISABLE_TFTP)
+# include "tftp/tftpfileserver.h"
+# include "spiflashinstall.h"
+#endif
 
 #include "debug.h"
 

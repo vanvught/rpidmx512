@@ -40,6 +40,8 @@ namespace tftpfileserver {
 #  else
 	static constexpr char FILE_NAME[] = "orangepi_one.uImage";
 #  endif
+# elif defined (GD32)
+	static constexpr char FILE_NAME[] = "gd32.bin";
 # endif
 #endif
 }  // namespace tftpfileserver

@@ -2,7 +2,7 @@
  * @file  hwclockrtc.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <cassert>
 
 #include "hwclock.h"
-
+#include "hardware.h"
 #include "hal_i2c.h"
 
 #include "debug.h"
@@ -61,6 +61,8 @@ using namespace rtc;
 void HwClock::RtcProbe() {
 	DEBUG_ENTRY
 
+	m_nLastHcToSysMillis = Hardware::Get()->Millis();
+
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::NORMAL_SPEED));
 	FUNC_PREFIX(i2c_set_address(i2caddress::MCP7941X));
 
@@ -74,7 +76,7 @@ void HwClock::RtcProbe() {
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		m_bIsConnected = true;
-		m_nType = MCP7941X;
+		m_Type = Type::MCP7941X;
 		m_nAddress = i2caddress::MCP7941X;
 
 		registers[0] = reg::SECONDS;
@@ -110,7 +112,7 @@ void HwClock::RtcProbe() {
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
 		m_bIsConnected = true;
-		m_nType = DS3231;
+		m_Type = Type::DS3231;
 		m_nAddress = i2caddress::DS3231;
 
 		struct rtc_time tm;
@@ -149,7 +151,7 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	registers[reg::MONTH]   = DEC2BCD((pRtcTime->tm_mon + 1)    & 0x1f);
 	registers[reg::YEAR]    = DEC2BCD((pRtcTime->tm_year - 100) & 0xff);
 
-	if (m_nType == MCP7941X) {
+	if (m_Type == Type::MCP7941X) {
 		registers[reg::SECONDS] |= mcp7941x::bit::ST;
 		registers[reg::DAY] |=  mcp7941x::bit::VBATEN;
 	}

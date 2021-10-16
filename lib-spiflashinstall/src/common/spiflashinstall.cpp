@@ -40,7 +40,7 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 	assert(pBuffer != nullptr);
 	assert(nSize != 0);
 
-	DEBUG_PRINTF("(%d + %d)=%d, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
+	DEBUG_PRINTF("(%p + %p)=%p, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
 
 	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
 		printf("error: flash size %d > %d\n", (OFFSET_UIMAGE + nSize), m_nFlashSize);
@@ -81,7 +81,6 @@ bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
 
 	Display::Get()->TextStatus("Done", Display7SegmentMessage::INFO_SPI_DONE, CONSOLE_GREEN);
 
-	return true;
-
 	DEBUG_EXIT
+	return true;
 }

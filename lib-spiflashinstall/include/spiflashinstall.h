@@ -29,8 +29,18 @@
 #include <cstdint>
 #include <stdio.h>
 
-#define OFFSET_UBOOT_SPI	0x000000
-#define OFFSET_UIMAGE		0x180000
+#if defined (H3)
+// nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
+// #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
+# define FIRMWARE_MAX_SIZE	0x22000		// 136K
+# define OFFSET_UBOOT_SPI	0x000000
+# define OFFSET_UIMAGE		0x180000
+#elif defined (GD32)
+# define FIRMWARE_MAX_SIZE 	0x19800		// 102K
+# define OFFSET_UIMAGE		0x007800
+#else
+# error
+#endif
 
 class SpiFlashInstall {
 public:

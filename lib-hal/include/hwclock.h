@@ -3,7 +3,7 @@
  * @file hwclock.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,11 @@
 #include <sys/time.h>
 
 namespace rtc {
-enum {
+enum class Type: uint8_t {
 	MCP7941X,
-	DS3231
+	DS3231,
+	SOC_INTERNAL,
+	UNKNOWN
 };
 }  // namespace rtc
 
@@ -52,6 +54,7 @@ struct rtc_time {
 class HwClock {
 public:
 	HwClock();
+	void RtcProbe();
 
 	void HcToSys(); // Set the System Clock from the Hardware Clock
 	void SysToHc(); // Set the Hardware Clock from the System Clock
@@ -74,16 +77,15 @@ public:
 	}
 
 private:
-	void RtcProbe();
 	bool RtcSet(const struct rtc_time *pRtcTime);
 	bool RtcGet(struct rtc_time *pRtcTime);
 
 private:
-	bool m_bIsConnected{false};
-	uint32_t m_nType;
-	uint8_t m_nAddress;
-	uint32_t m_nSetDelayMicros;
-	uint32_t m_nLastHcToSysMillis;
+	uint32_t m_nSetDelayMicros { 0 };
+	uint32_t m_nLastHcToSysMillis { 0 };
+	uint8_t m_nAddress { 0 };
+	rtc::Type m_Type { rtc::Type::UNKNOWN };
+	bool m_bIsConnected { false };
 
 	static HwClock *s_pThis;
 };

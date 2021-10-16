@@ -80,6 +80,7 @@ Hardware::Hardware() {
 #endif
 
 #if !defined(DISABLE_RTC)
+	m_HwClock.RtcProbe();
 	m_HwClock.Print();
 	m_HwClock.HcToSys();
 #endif
