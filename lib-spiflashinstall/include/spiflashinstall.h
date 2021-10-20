@@ -36,11 +36,13 @@
 # define OFFSET_UBOOT_SPI	0x000000
 # define OFFSET_UIMAGE		0x180000
 #elif defined (GD32)
-# define FIRMWARE_MAX_SIZE 	0x19800		// 102K
-# define OFFSET_UIMAGE		0x007800
+# define FIRMWARE_MAX_SIZE 	0x1A000		// 104K
+# define OFFSET_UIMAGE		0x007000	// 28K
 #else
 # error
 #endif
+
+#ifdef __cplusplus
 
 class SpiFlashInstall {
 public:
@@ -72,5 +74,6 @@ private:
 
 	static SpiFlashInstall *s_pThis;
 };
+#endif
 
 #endif /* SPIFLASHINSTALL_H_ */

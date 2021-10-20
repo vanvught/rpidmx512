@@ -36,32 +36,32 @@ class StoreNetwork final: public NetworkParamsStore, public NetworkStore {
 public:
 	StoreNetwork();
 
-	void Update(const struct TNetworkParams *pNetworkParams) {
+	void Update(const struct TNetworkParams *pNetworkParams) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
 	}
 
-	void Copy(struct TNetworkParams *pNetworkParams) {
+	void Copy(struct TNetworkParams *pNetworkParams) override {
 		SpiFlashStore::Get()->Copy(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
 	}
 
-	void SaveIp(uint32_t nIp) {
+	void SaveIp(uint32_t nIp) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NetworkParamsMask::IP_ADDRESS);
 	}
 
-	void SaveNetMask(uint32_t nNetMask) {
+	void SaveNetMask(uint32_t nNetMask) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
 	}
 
-	void SaveGatewayIp(uint32_t nGatewayIp) {
+	void SaveGatewayIp(uint32_t nGatewayIp) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nGatewayIp), &nGatewayIp, sizeof(uint32_t), NetworkParamsMask::DEFAULT_GATEWAY);
 	}
 
-	void SaveHostName(const char *pHostName, uint32_t nLength) {
+	void SaveHostName(const char *pHostName, uint32_t nLength) override {
 		nLength = std::min(nLength,static_cast<uint32_t>(network::HOSTNAME_SIZE));
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NetworkParamsMask::HOSTNAME);
 	}
 
-	void SaveDhcp(bool bIsDhcpUsed) {
+	void SaveDhcp(bool bIsDhcpUsed) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NetworkParamsMask::DHCP);
 	}
 
