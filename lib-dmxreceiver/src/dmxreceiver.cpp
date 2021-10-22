@@ -35,7 +35,7 @@ using namespace dmxsingle;
 using namespace dmx;
 
 DMXReceiver::DMXReceiver() : Dmx(false) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	auto *p = reinterpret_cast<uint32_t*>(m_Data);
 
@@ -43,36 +43,36 @@ DMXReceiver::DMXReceiver() : Dmx(false) {
 		*p++ = 0;
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 DMXReceiver::~DMXReceiver() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	Stop();
 
 	m_pLightSet = nullptr;
 	m_IsActive = false;
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void DMXReceiver::Start() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	Init();
 	SetPortDirection(0, PortDirection::INP, true);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void DMXReceiver::Stop() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	SetPortDirection(0, PortDirection::INP, false);
 	m_pLightSet->Stop(0);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint32_t nLength) {

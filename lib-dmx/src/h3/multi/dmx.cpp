@@ -877,7 +877,7 @@ const uint8_t *Dmx::GetDmxAvailable(uint32_t nPortIndex)  {
 	}
 }
 
-uint32_t Dmx::GetUpdatesPerSeconde(uint32_t nPortIndex) {
+uint32_t Dmx::GetUpdatesPerSecond(uint32_t nPortIndex) {
 	const auto uart = _port_to_uart(nPortIndex);
 
 	dmb();

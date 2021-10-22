@@ -89,7 +89,7 @@ public:
 	// DMX Receive
 
 	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
-	uint32_t GetUpdatesPerSeconde(uint32_t nPortIndex);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
 
 	static void UartInit(uint32_t nUart);
 
