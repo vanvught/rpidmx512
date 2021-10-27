@@ -147,7 +147,9 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E120_IDENTIFY_DEVICE,		       	&RDMHandler::GetIdentifyDevice,		    	&RDMHandler::SetIdentifyDevice,    	0, false, true , true },
 	{E120_RESET_DEVICE,			    	nullptr,                                	&RDMHandler::SetResetDevice,       	0, true , true , true },
 #if !defined (NODE_RDMNET_LLRP_ONLY)
-//  {E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
+#if defined (ENABLE_RDM_QUEUED_MSG)
+	{E120_QUEUED_MESSAGE,              	&RDMHandler::GetQueuedMessage,           	nullptr,               				1, true , false},
+#endif
 	{E120_SUPPORTED_PARAMETERS,        	&RDMHandler::GetSupportedParameters,      	nullptr,             				0, false, true , false},
 	{E120_PRODUCT_DETAIL_ID_LIST, 	   	&RDMHandler::GetProductDetailIdList,     	nullptr,							0, true , true , false},
 	{E120_LANGUAGE_CAPABILITIES,       	&RDMHandler::GetLanguage,			        nullptr,                 			0, true , true , false},
@@ -346,7 +348,7 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 		return;
 	}
 
-	const uint16_t sub_device_count = RDMSubDevices::Get()->GetCount();
+	const auto sub_device_count = RDMSubDevices::Get()->GetCount();
 
 	if ((nSubDevice > sub_device_count) && (nSubDevice != E120_SUB_DEVICE_ALL_CALL)) {
 		RespondMessageNack(E120_NR_SUB_DEVICE_OUT_OF_RANGE);
@@ -419,12 +421,14 @@ void RDMHandler::Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nPa
 	DEBUG1_EXIT
 }
 
-#if !defined (NODE_RDMNET_LLRP_ONLY)
+#if defined (ENABLE_RDM_QUEUED_MSG)
 void RDMHandler::GetQueuedMessage(__attribute__((unused)) uint16_t nSubDevice) {
 	m_RDMQueuedMessage.Handler(m_pRdmDataOut);
 	RespondMessageAck();
 }
+#endif
 
+#if !defined (NODE_RDMNET_LLRP_ONLY)
 void RDMHandler::GetSupportedParameters(uint16_t nSubDevice) {
 	uint8_t nSupportedParams = 0;
 	TPidDefinition *pPidDefinitions;

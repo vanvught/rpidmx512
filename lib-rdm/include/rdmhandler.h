@@ -129,7 +129,7 @@ private:
 	bool m_IsMuted { false };
 	uint8_t *m_pRdmDataIn { nullptr };
 	uint8_t *m_pRdmDataOut { nullptr };
-#if !defined (NODE_RDMNET_LLRP_ONLY)
+#if defined (ENABLE_RDM_QUEUED_MSG)
 	RDMQueuedMessage m_RDMQueuedMessage;
 #endif
 };

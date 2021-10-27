@@ -90,12 +90,23 @@ ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
 	LIBS+=rdm rdmsensor rdmsubdevice
 endif
 
-LIBS+=network properties
+ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
+else
+	LIBS+=network properties
+endif
 
 ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
 	ifdef COND
 		LIBS+=displayudf
 	endif
+endif
+
+ifneq ($(findstring network,$(LIBS)),network)
+	LIBS+=network
+endif
+
+ifneq ($(findstring properties,$(LIBS)),properties)
+	LIBS+=properties
 endif
 
 LIBS+=lightset display device hal c++ debug h3 c arm

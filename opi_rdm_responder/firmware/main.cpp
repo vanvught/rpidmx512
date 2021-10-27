@@ -23,16 +23,16 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "noemac/network.h"
 #include "ledblink.h"
 
-#include "console.h"
-#include "display.h"
+#include "displayudf.h"
+#include "displayrdm.h"
 
 #include "identify.h"
 
@@ -58,6 +58,7 @@
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
 #include "storerdmsubdevices.h"
+#include "storedisplayudf.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -68,14 +69,13 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	Identify identify;
-	LightSet *pLightSet;
+	LightSet *pLightSet = nullptr;
 
 	char aDescription[32];
 
@@ -118,13 +118,20 @@ void notmain(void) {
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pWS28xxDmx != nullptr);
 
+		pWS28xxDmx->SetWS28xxDmxStore(StoreWS28xxDmx::Get());
+
 		const auto nCount = pixelDmxConfiguration.GetCount();
 
 		snprintf(aDescription, sizeof(aDescription) -1, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
 		pLightSet = pWS28xxDmx;
 	}
 
+	DisplayRdm displayRdm;
+	pLightSet->SetLightSetDisplay(&displayRdm);
+
 	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+
+	Identify identify;
 
 	RDMResponder rdmResponder(&personality, pLightSet);
 
@@ -161,6 +168,20 @@ void notmain(void) {
 
 	rdmResponder.SetOutput(pLightSet);
 	rdmResponder.Start();
+
+	display.SetTitle("RDM Responder");
+	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if (displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show();
 
 	for(;;) {
 		hw.WatchdogFeed();
