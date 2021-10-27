@@ -58,6 +58,9 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
 	m_pWS28xx->Blackout();
 
 	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
+	m_nDmxStartAddress = pixelDmxConfiguration.GetDmxStartAddress();
+	m_nDmxFootprint = static_cast<uint16_t>((m_nChannelsPerPixel * m_nGroups) / m_nGroupingCount);
+
 	pixelDmxConfiguration.Dump();
 
 	DEBUG_EXIT
@@ -186,7 +189,13 @@ void WS28xxDmx::Blackout(bool bBlackout) {
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE));
 
-	//FIXME Footprint
+	if (nDmxStartAddress == m_nDmxStartAddress) {
+		return true;
+	}
+
+	if ((nDmxStartAddress + m_nDmxFootprint) > Dmx::UNIVERSE_SIZE) {
+		return false;
+	}
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;

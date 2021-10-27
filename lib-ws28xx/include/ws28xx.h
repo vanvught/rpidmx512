@@ -30,8 +30,8 @@
 
 #include "pixelconfiguration.h"
 
-#if defined (H3)
-# include "h3_spi.h"
+#if defined (USE_SPI_DMA)
+# include "hal_spi.h"
 #endif
 
 class WS28xx {
@@ -44,9 +44,9 @@ public:
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
-#if defined ( H3 )
+#if defined ( USE_SPI_DMA )
 	bool IsUpdating () {
-		return h3_spi_dma_tx_is_active();
+		return FUNC_PREFIX (spi_dma_tx_is_active());
 	}
 #else
 	bool IsUpdating() const {

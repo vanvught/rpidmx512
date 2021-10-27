@@ -34,15 +34,17 @@
 #include <cassert>
 
 #include "ws28xxdmxparams.h"
+#include "ws28xxdmx.h"
 
 #include "pixeltype.h"
-#include "ws28xxdmx.h"
+#include "pixelconfiguration.h"
 
 #include "lightset.h"
 #include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
 #include "devicesparamsconst.h"
 
@@ -306,4 +308,138 @@ void WS28xxDmxParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<WS28xxDmxParams*>(p))->callbackFunction(s);
+}
+
+void WS28xxDmxParams::Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	assert(pBuffer != nullptr);
+
+	if (ptWS28xxParams != nullptr) {
+		memcpy(&m_tWS28xxParams, ptWS28xxParams, sizeof(struct TWS28xxDmxParams));
+	} else {
+		m_pWS28xxParamsStore->Copy(&m_tWS28xxParams);
+	}
+
+	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
+
+	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tWS28xxParams.nType)), isMaskSet(WS28xxDmxParamsMask::TYPE));
+	builder.Add(DevicesParamsConst::COUNT, m_tWS28xxParams.nCount, isMaskSet(WS28xxDmxParamsMask::COUNT));
+
+	builder.AddComment("Overwrite datasheet");
+	if (!isMaskSet(WS28xxDmxParamsMask::MAP)) {
+		m_tWS28xxParams.nMap = static_cast<uint8_t>(PixelConfiguration::GetRgbMapping(static_cast<pixel::Type>(m_tWS28xxParams.nType)));
+	}
+	builder.Add(DevicesParamsConst::MAP, PixelType::GetMap(static_cast<Map>(m_tWS28xxParams.nMap)), isMaskSet(WS28xxDmxParamsMask::MAP));
+
+	if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE) || !isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
+		uint8_t nLowCode;
+		uint8_t nHighCode;
+
+		PixelConfiguration::GetTxH(static_cast<pixel::Type>(m_tWS28xxParams.nType), nLowCode, nHighCode);
+
+		if (!isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
+			m_tWS28xxParams.nLowCode = nLowCode;
+		}
+
+
+		if (!isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
+			m_tWS28xxParams.nHighCode = nHighCode;
+		}
+	}
+
+	builder.AddComment("Overwrite timing (us)");
+	builder.Add(DevicesParamsConst::LED_T0H, PixelType::ConvertTxH(m_tWS28xxParams.nLowCode), isMaskSet(WS28xxDmxParamsMask::LOW_CODE), 2);
+	builder.Add(DevicesParamsConst::LED_T1H, PixelType::ConvertTxH(m_tWS28xxParams.nHighCode), isMaskSet(WS28xxDmxParamsMask::HIGH_CODE), 2);
+
+	builder.AddComment("Grouping");
+	builder.Add(DevicesParamsConst::GROUPING_COUNT, m_tWS28xxParams.nGroupingCount, isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT));
+
+	builder.AddComment("Clock based chips");
+	builder.Add(DevicesParamsConst::SPI_SPEED_HZ, m_tWS28xxParams.nSpiSpeedHz, isMaskSet(WS28xxDmxParamsMask::SPI_SPEED));
+
+	builder.AddComment("APA102/SK9822");
+	builder.Add(DevicesParamsConst::GLOBAL_BRIGHTNESS, m_tWS28xxParams.nGlobalBrightness, isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS));
+
+#if defined (PARAMS_INLCUDE_ALL) || !defined(OUTPUT_DMX_PIXEL_MULTI)
+	builder.AddComment("DMX");
+	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_tWS28xxParams.nDmxStartAddress, isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS));
+#endif
+
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+	const auto nPortsMax = std::min(static_cast<size_t>(MAX_OUTPUTS), sizeof(LightSetParamsConst::START_UNI_PORT) / sizeof(LightSetParamsConst::START_UNI_PORT[0]));
+#else
+	constexpr uint32_t nPortsMax = 1;
+#endif
+
+	for (uint32_t i = 0; i < nPortsMax; i++) {
+		builder.Add(LightSetParamsConst::START_UNI_PORT[i],m_tWS28xxParams.nStartUniverse[i], isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << i));
+	}
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+	builder.Add(DevicesParamsConst::ACTIVE_OUT, m_tWS28xxParams.nActiveOutputs, isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT));
+#endif
+
+	builder.AddComment("Test pattern");
+	builder.Add(LightSetParamsConst::TEST_PATTERN, m_tWS28xxParams.nTestPattern, isMaskSet(WS28xxDmxParamsMask::TEST_PATTERN));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("nSize=%d", nSize);
+}
+
+void WS28xxDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	if (m_pWS28xxParamsStore == nullptr) {
+		nSize = 0;
+		return;
+	}
+
+	Builder(nullptr, pBuffer, nLength, nSize);
+}
+
+void WS28xxDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {
+	assert(pPixelDmxConfiguration != nullptr);
+
+	// Pixel
+
+	if (isMaskSet(WS28xxDmxParamsMask::TYPE)) {
+		pPixelDmxConfiguration->SetType(static_cast<Type>(m_tWS28xxParams.nType));
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::COUNT)) {
+		pPixelDmxConfiguration->SetCount(m_tWS28xxParams.nCount);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::MAP)) {
+		pPixelDmxConfiguration->SetMap(static_cast<Map>(m_tWS28xxParams.nMap));
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::LOW_CODE)) {
+		pPixelDmxConfiguration->SetLowCode(m_tWS28xxParams.nLowCode);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::HIGH_CODE)) {
+		pPixelDmxConfiguration->SetHighCode(m_tWS28xxParams.nHighCode);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::SPI_SPEED)) {
+		pPixelDmxConfiguration->SetClockSpeedHz(m_tWS28xxParams.nSpiSpeedHz);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::GLOBAL_BRIGHTNESS)) {
+		pPixelDmxConfiguration->SetGlobalBrightness(m_tWS28xxParams.nGlobalBrightness);
+	}
+
+	// Dmx
+
+	if (isMaskSet(WS28xxDmxParamsMask::DMX_START_ADDRESS)) {
+		pPixelDmxConfiguration->SetDmxStartAddress(m_tWS28xxParams.nDmxStartAddress);
+	}
+
+	if (isMaskSet(WS28xxDmxParamsMask::GROUPING_COUNT)) {
+		pPixelDmxConfiguration->SetGroupingCount(m_tWS28xxParams.nGroupingCount);
+	}
+
+#if defined (PARAMS_INLCUDE_ALL) || defined(OUTPUT_DMX_PIXEL_MULTI)
+	if (isMaskSet(WS28xxDmxParamsMask::ACTIVE_OUT)) {
+		pPixelDmxConfiguration->SetOutputPorts(m_tWS28xxParams.nActiveOutputs);
+	}
+#endif
 }

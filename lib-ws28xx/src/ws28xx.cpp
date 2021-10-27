@@ -38,7 +38,7 @@
 
 using namespace pixel;
 
-WS28xx *WS28xx::s_pThis = nullptr;
+WS28xx *WS28xx::s_pThis;
 
 WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 	DEBUG_ENTRY
@@ -69,16 +69,21 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 		m_nBufSize += 8;
 	}
 
-	FUNC_PREFIX (spi_begin());
-	FUNC_PREFIX(spi_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
-
 	SetupBuffers();
+
+#if defined( USE_SPI_DMA )
+	FUNC_PREFIX(spi_dma_begin());
+	FUNC_PREFIX(spi_dma_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
+#else
+	FUNC_PREFIX(spi_begin());
+	FUNC_PREFIX(spi_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
+#endif
 
 	DEBUG_EXIT
 }
 
 WS28xx::~WS28xx() {
-#if defined( H3 )
+#if defined( USE_SPI_DMA )
 	m_pBlackoutBuffer = nullptr;
 	m_pBuffer = nullptr;
 #else
@@ -98,13 +103,13 @@ WS28xx::~WS28xx() {
 
 void WS28xx::SetupBuffers() {
 	DEBUG_ENTRY
-#if defined( H3 )
+#if defined( USE_SPI_DMA )
 	uint32_t nSize;
 
-	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
+	m_pBuffer = const_cast<uint8_t*>(FUNC_PREFIX (spi_dma_tx_prepare(&nSize)));
 	assert(m_pBuffer != nullptr);
 
-	const uint32_t nSizeHalf = nSize / 2;
+	const auto nSizeHalf = nSize / 2;
 	assert(m_nBufSize <= nSizeHalf);
 
 	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
@@ -121,7 +126,7 @@ void WS28xx::SetupBuffers() {
 	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
-		for (uint16_t i = 0; i < m_nCount; i++) {
+		for (uint32_t i = 0; i < m_nCount; i++) {
 			SetPixel(i, 0, 0, 0);
 		}
 
@@ -135,16 +140,28 @@ void WS28xx::SetupBuffers() {
 		memset(&m_pBuffer[1], m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
 	}
 
+#if defined ( GD32 )
+	auto tmp = m_nBufSize;
+	m_nBufSize = (m_nBufSize + 3) & ~3;
+
+	for (auto i = tmp; i < m_nBufSize; i++) {
+		m_pBuffer[i] = 0x00;
+	}
+
+	DEBUG_PRINTF("m_nBufSize=%u -> %d", m_nBufSize, m_nBufSize - tmp);
+#endif
+
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
+
 	DEBUG_EXIT
 }
 
 void WS28xx::Update() {
 	assert (m_pBuffer != nullptr);
-#if defined( H3 )
+#if defined( USE_SPI_DMA )
 	assert(!IsUpdating());
 
-	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
 #endif
@@ -152,15 +169,15 @@ void WS28xx::Update() {
 
 void WS28xx::Blackout() {
 	assert (m_pBlackoutBuffer != nullptr);
-#if defined( H3 )
+#if defined( USE_SPI_DMA )
 	assert(!IsUpdating());
 
-	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
 
 	// A blackout may not be interrupted.
 	do {
 		asm volatile ("isb" ::: "memory");
-	} while (h3_spi_dma_tx_is_active());
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 #endif
@@ -184,7 +201,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 	assert(nPixelIndex < m_nCount);
 
 	if (m_bIsRTZProtocol) {
-		uint32_t nOffset = nPixelIndex * 3U;
+		auto nOffset = nPixelIndex * 3U;
 		nOffset *= 8U;
 
 		switch (m_Map) {
@@ -229,7 +246,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 	}
 
 	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
-		uint32_t nOffset = 4U + (nPixelIndex * 4U);
+		auto nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3U < m_nBufSize);
 
 		m_pBuffer[nOffset] = m_nGlobalBrightness;
@@ -241,7 +258,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 	}
 
 	if (m_Type == Type::WS2801) {
-		uint32_t nOffset = nPixelIndex * 3U;
+		auto nOffset = nPixelIndex * 3U;
 		assert(nOffset + 2U < m_nBufSize);
 
 		m_pBuffer[nOffset] = nRed;
@@ -252,7 +269,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 	}
 
 	if (m_Type == Type::P9813) {
-		uint32_t nOffset = 4U + (nPixelIndex * 4U);
+		auto nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3 < m_nBufSize);
 
 		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
@@ -273,7 +290,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 	assert(nPixelIndex < m_nCount);
 	assert(m_Type == Type::SK6812W);
 
-	uint32_t nOffset = nPixelIndex * 4U;
+	auto nOffset = nPixelIndex * 4U;
 
 	if (m_Type == Type::SK6812W) {
 		nOffset *= 8;

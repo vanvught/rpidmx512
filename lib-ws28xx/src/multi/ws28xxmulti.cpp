@@ -30,7 +30,7 @@
 #include "ws28xxmulti.h"
 #include "pixeltype.h"
 
-#include "h3_spi.h"
+#include "hal_spi.h"
 
 #include "debug.h"
 
@@ -41,7 +41,7 @@ void WS28xxMulti::SetupBuffers() {
 
 	uint32_t nSize;
 
-	m_pBuffer = const_cast<uint8_t*>(h3_spi_dma_tx_prepare(&nSize));
+	m_pBuffer = const_cast<uint8_t*>(FUNC_PREFIX(spi_dma_tx_prepare(&nSize)));
 	assert(m_pBuffer != nullptr);
 
 	const uint32_t nSizeHalf = nSize / 2;
@@ -84,9 +84,9 @@ uint8_t WS28xxMulti::ReverseBits(uint8_t nBits) {
 
 void WS28xxMulti::Update() {
 	assert(m_pBuffer != nullptr);
-	assert(!h3_spi_dma_tx_is_active());
+	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
 
-	h3_spi_dma_tx_start(m_pBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
 
 }
 
@@ -94,14 +94,14 @@ void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
 	assert(m_pBlackoutBuffer != nullptr);
-	assert(!h3_spi_dma_tx_is_active());
+	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
 
-	h3_spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize);
+	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
 
 	// A blackout may not be interrupted.
 	do {
 		asm volatile ("isb" ::: "memory");
-	} while (h3_spi_dma_tx_is_active());
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
 
 	DEBUG_EXIT
 }

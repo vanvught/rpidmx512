@@ -28,13 +28,8 @@
 
 #include "h3_spi.h"
 
-namespace hal {
-namespace spi {
-
-
-
-}  // namespace spi
-}  // namespace hal
+#define h3_spi_dma_begin		h3_spi_begin
+#define h3_spi_dma_set_speed_hz	h3_spi_set_speed_hz
 
 #define SPI_BIT_ORDER_MSBFIRST	H3_SPI_BIT_ORDER_MSBFIRST
 #define SPI_MODE0				H3_SPI_MODE0
