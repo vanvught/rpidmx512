@@ -1,12 +1,13 @@
 PLATFORM=ORANGE_PI
+
 DEFINES=NO_EMAC RDM_RESPONDER 
 DEFINES+=OUTPUT_DMX_TLC59711 OUTPUT_DMX_PIXEL 
 DEFINES+=DISPLAY_UDF
 DEFINES+=NDEBUG
 
-LIBS=dmxreceiver rdmresponder dmx 
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 

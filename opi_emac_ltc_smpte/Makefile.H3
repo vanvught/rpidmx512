@@ -5,9 +5,9 @@ DEFINES+=NODE_ARTNET ARTNET_VERSION=3
 #DEFINES+=ENABLE_HTTPD
 DEFINES+=NDEBUG #ENABLE_SHELL
 
-LIBS=ltc tcnet midi input osc ws28xxdisplay ws28xx rgbpanel rdmnet rdm rdmsensor rdmsubdevice gps
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 

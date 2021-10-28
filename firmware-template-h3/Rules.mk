@@ -25,91 +25,9 @@ ifeq ($(findstring ORANGE_PI,$(PLATFORM)),ORANGE_PI)
 	COND=1
 endif
 
-ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
-else
-	ifdef COND
-		LIBS:=remoteconfig $(LIBS)
-	endif
-endif
+include ../firmware-template/libs.mk
 
-ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
-	ifdef COND
-		LIBS+=artnet4 artnet e131 uuid
-	endif
-endif
-
-ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
-	ifdef COND
-		ifneq ($(findstring e131,$(LIBS)),e131)
-			LIBS+=e131
-		endif
-		ifneq ($(findstring artnet,$(LIBS)),artnet)
-			LIBS+=artnet
-		endif
-		LIBS+=uuid
-	endif
-endif
-
-ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
-	ifneq ($(findstring e131,$(LIBS)),e131)
-		LIBS+=e131
-	endif
-	ifneq ($(findstring uuid,$(LIBS)),uuid)
-		LIBS+=uuid
-	endif
-	ifneq ($(findstring artnet,$(LIBS)),artnet)
-		LIBS+=artnet
-	endif
-endif
-
-ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
-	LIBS+=dmxsend dmx
-endif
-
-ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)
-	LIBS+=ws28xxdmx ws28xx jamstapl
-else
-	ifeq ($(findstring OUTPUT_DMX_PIXEL_MULTI,$(DEFINES)),OUTPUT_DMX_PIXEL_MULTI)
-		LIBS+=ws28xxdmx ws28xx jamstapl
-	else
-		ifeq ($(findstring OUTPUT_DMX_PIXEL,$(DEFINES)),OUTPUT_DMX_PIXEL)
-			LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
-		endif
-	endif
-endif
-
-ifdef COND
-	LIBS+=spiflashinstall spiflashstore spiflash
-endif
-
-ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
-	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
-endif
-
-ifeq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
-	LIBS+=rdm rdmsensor rdmsubdevice
-endif
-
-ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
-else
-	LIBS+=network properties
-endif
-
-ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
-	ifdef COND
-		LIBS+=displayudf
-	endif
-endif
-
-ifneq ($(findstring network,$(LIBS)),network)
-	LIBS+=network
-endif
-
-ifneq ($(findstring properties,$(LIBS)),properties)
-	LIBS+=properties
-endif
-
-LIBS+=lightset display device hal c++ debug h3 c arm
+LIBS+=c++ debug h3 c arm
 
 # Output 
 TARGET=$(SUFFIX).img

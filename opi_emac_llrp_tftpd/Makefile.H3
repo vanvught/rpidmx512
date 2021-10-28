@@ -1,8 +1,10 @@
 DEFINES=NODE_RDMNET_LLRP_ONLY DISPLAY_UDF ENABLE_SSD1311 
 DEFINES+=ENABLE_HTTPD
 DEFINES+=NDEBUG
-LIBS=rdmnet rdm rdmsensor rdmsubdevice
+
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 prerequisites:

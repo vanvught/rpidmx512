@@ -4,9 +4,9 @@ DEFINES=NODE_ARTNET
 DEFINES+=OUTPUT_DMX_PIXEL
 DEFINES+=DISPLAY_UDF DISABLE_RTC NDEBUG
 
-LIBS=
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 

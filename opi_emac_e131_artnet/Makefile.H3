@@ -5,9 +5,9 @@ DEFINES+=OUTPUT_DMX_ARTNET
 DEFINES+=DISPLAY_UDF NODE_RDMNET_LLRP_ONLY DISABLE_RTC
 DEFINES+=NDEBUG
 
-LIBS=rdmnet rdm rdmsensor rdmsubdevice
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 
