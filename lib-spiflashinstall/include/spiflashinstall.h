@@ -39,7 +39,7 @@
 # define FIRMWARE_MAX_SIZE 	0x1A000		// 104K
 # define OFFSET_UIMAGE		0x007000	// 28K
 #else
-# error
+# define OFFSET_UIMAGE		0x0
 #endif
 
 #ifdef __cplusplus

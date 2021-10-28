@@ -30,13 +30,15 @@
 # if defined (H3)
 #  include "h3/multi/dmx.h"
 # elif defined (GD32)
-#  include "gd32/multi/dmx.h"
+#  include "gd32/dmx.h"
 # else
 #  include "linux/multi/dmx.h"
 # endif
 #else
 # if defined (H3)
 #  include "h3/single/dmx.h"
+# elif defined (GD32)
+#  include "gd32/dmx.h"
 # elif defined(RPI1) || defined (RPI2)
 #  include "rpi/dmx.h"
 # else
