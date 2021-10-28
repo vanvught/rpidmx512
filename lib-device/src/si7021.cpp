@@ -61,7 +61,7 @@ float SI7021::GetHumidity() {
 
 
 uint16_t SI7021::ReadRaw(uint8_t nCmd) {
-	HAL_I2C::Write(nCmd);
+	HAL_I2C::Write(static_cast<char>(nCmd));
 
 	char buf[3] = {0};
 

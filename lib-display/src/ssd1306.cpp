@@ -420,7 +420,7 @@ void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
 	SendCommand(static_cast<uint8_t>(cmd::SET_STARTPAGE | nRow));
 
 #if defined(ENABLE_CURSOR_MODE)
-	m_nShadowRamIndex = static_cast<char>((nRow * oled::font8x6::COLS) + (nCol / oled::font8x6::CHAR_W));
+	m_nShadowRamIndex = static_cast<uint16_t>((nRow * oled::font8x6::COLS) + (nCol / oled::font8x6::CHAR_W));
 
 	if (m_tCursorMode == display::cursor::ON) {
 		SetCursorOff();

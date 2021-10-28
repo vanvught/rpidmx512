@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -122,7 +122,7 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 		dataPacket[i] = 0;
 	}
 
-	dataPacket[m_nPosition] = data;
+	dataPacket[m_nPosition] = static_cast<char>(data);
 
 	FUNC_PREFIX(spi_chipSelect(m_nSpiChipSelect));
 	FUNC_PREFIX(spi_set_speed_hz(4000000));
@@ -131,7 +131,7 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 
 	DEBUG_PRINTF("data=%x, dataPacket[%d]=%x", data, m_nPosition, dataPacket[m_nPosition]);
 	DEBUG_EXIT
-	return dataPacket[m_nPosition];
+	return static_cast<uint8_t>(dataPacket[m_nPosition]);
 }
 
 uint16_t AutoDriver::getNumBoards() {

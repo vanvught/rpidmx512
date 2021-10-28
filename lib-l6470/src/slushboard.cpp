@@ -125,7 +125,7 @@ void SlushBoard::InitI2c(void) {
 
 	I2cSetup(MAX1164_I2C_ADDRESS);
 
-	data = 0x8a;
+	data = static_cast<char>(0x8a);
 	FUNC_PREFIX(i2c_write(&data, 1));
 	data = 0x01;
 	FUNC_PREFIX(i2c_write(&data, 1));
@@ -137,21 +137,21 @@ void SlushBoard::I2cSetup(uint8_t address) {
 }
 
 uint8_t SlushBoard::Mcp23017ReadReg(uint8_t reg) {
-	char data = reg;
+	auto data = static_cast<char>(reg);
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 
 	FUNC_PREFIX(i2c_write(&data, 1));
 	FUNC_PREFIX(i2c_read(&data, 1));
 
-	return data;
+	return static_cast<uint8_t>(data);
 }
 
 void SlushBoard::Mcp23017WriteReg(uint8_t reg, uint8_t data) {
 	char buffer[2];
 
-	buffer[0] = reg;
-	buffer[1] = data;
+	buffer[0] = static_cast<char>(reg);
+	buffer[1] = static_cast<char>(data);
 
 	I2cSetup(MCP23017_I2C_ADDRESS);
 

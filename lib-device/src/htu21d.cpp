@@ -2,7 +2,7 @@
  * @file htu21d.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ float HTU21D::GetHumidity() {
 
 
 uint16_t HTU21D::ReadRaw(uint8_t nCmd) {
-	HAL_I2C::Write(nCmd);
+	HAL_I2C::Write(static_cast<char>(nCmd));
 
 	char buf[3] = {0};
 
