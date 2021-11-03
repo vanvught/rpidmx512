@@ -95,7 +95,7 @@ const uint8_t *DmxInput::Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_
 
 	if (pDmx != nullptr) {
 		const auto *pDmxData = reinterpret_cast<const struct Data*>(pDmx);
-		nLength = (1U + pDmxData->nSlotsInPacket); // Add 1 for SC
+		nLength = (1U + pDmxData->Statistics.nSlotsInPacket); // Add 1 for SC
 		return pDmx;
 	}
 

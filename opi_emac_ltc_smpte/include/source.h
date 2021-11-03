@@ -39,7 +39,7 @@ public:
 		Display::Get()->PutString(SourceConst::SOURCE[ltcSource]);
 
 		if (ltcSource == ltc::source::SYSTIME) {
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 3U), 3);
+			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
 			if (bRunGpsTimeClient) {
 				Display::Get()->PutString("GPS");
 			} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
