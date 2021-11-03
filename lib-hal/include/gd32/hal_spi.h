@@ -1,5 +1,5 @@
 /**
- * @file  systick.c
+ * @file hal_spi.h
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,23 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef GD32_HAL_SPI_H_
+#define GD32_HAL_SPI_H_
 
-#include "gd32f20x.h"
+#include "gd32_spi.h"
 
-volatile uint32_t s_nSysTickMillis;
+namespace hal {
+namespace spi {
 
-void systick_config(void) {
-	/* setup systick timer for 1000Hz interrupts */
-	if (SysTick_Config(SystemCoreClock / 1000U)) {
-		/* capture error */
-		while (1) {
-		}
-	}
-	/* configure the systick handler priority */
-	NVIC_SetPriority(SysTick_IRQn, 0x00U);
-}
 
-void SysTick_Handler(void) {
-	s_nSysTickMillis++;
-}
+
+}  // namespace spi
+}  // namespace hal
+
+#define SPI_CS0			GD32_SPI_CS0
+#define SPI_CS_NONE		GD32_SPI_CS_NONE
+
+#endif /* GD32_HAL_SPI_H_ */

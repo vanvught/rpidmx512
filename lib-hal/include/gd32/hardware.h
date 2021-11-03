@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@
 class Hardware {
 public:
 	Hardware();
+
+	uint32_t GetReleaseId() const {
+		return 0;	// TODO GetReleaseId
+	}
 
 	void GetUuid(uuid_t out);
 

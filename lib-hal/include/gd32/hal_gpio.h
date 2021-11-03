@@ -1,5 +1,5 @@
 /**
- * @file  systick.c
+ * @file hal_gpio.h
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,23 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#ifndef GD32_HAL_GPIO_H_
+#define GD32_HAL_GPIO_H_
 
-#include "gd32f20x.h"
+#include "gd32_gpio.h"
+#include "gd32_board.h"
 
-volatile uint32_t s_nSysTickMillis;
-
-void systick_config(void) {
-	/* setup systick timer for 1000Hz interrupts */
-	if (SysTick_Config(SystemCoreClock / 1000U)) {
-		/* capture error */
-		while (1) {
-		}
-	}
-	/* configure the systick handler priority */
-	NVIC_SetPriority(SysTick_IRQn, 0x00U);
-}
-
-void SysTick_Handler(void) {
-	s_nSysTickMillis++;
-}
+#endif /* GD32_HAL_GPIO_H_ */

@@ -31,6 +31,8 @@
 #include <uuid/uuid.h>
 #include <sys/utsname.h>
 
+#include "linux/hal_api.h"
+
 class Hardware {
 public:
 	Hardware();

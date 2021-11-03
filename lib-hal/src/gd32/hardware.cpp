@@ -2,7 +2,7 @@
  * @file hardware.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -136,6 +136,18 @@ bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
 #else
 	return false;
 #endif
+}
+
+void Hardware::GetTime(struct tm *pTime) {
+	auto ltime = time(nullptr);
+	const auto *local_time = localtime(&ltime);
+
+    pTime->tm_year = local_time->tm_year;
+    pTime->tm_mon = local_time->tm_mon ;
+    pTime->tm_mday = local_time->tm_mday;
+    pTime->tm_hour = local_time->tm_hour;
+    pTime->tm_min = local_time->tm_min;
+    pTime->tm_sec = local_time->tm_sec;
 }
 
 bool Hardware::Reboot() {

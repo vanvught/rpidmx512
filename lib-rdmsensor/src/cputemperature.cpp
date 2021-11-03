@@ -2,7 +2,7 @@
  * @file cputemperature.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ CpuTemperature::CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
 	SetPrefix(E120_PREFIX_NONE);
 	SetRangeMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
 	SetRangeMax(RDM_SENSOR_RANGE_MAX);
-	SetNormalMin(RDM_SENSOR_TEMPERATURE_ABS_ZERO);
+	SetNormalMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
 	SetNormalMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
 	SetDescription("CPU");
 }
