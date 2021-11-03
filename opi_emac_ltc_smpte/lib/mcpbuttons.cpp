@@ -269,7 +269,7 @@ bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode
 			} else if (BUTTON_STATE(button::START)) {			// START
 				if (tLtcReaderSource == ltc::source::INTERNAL) {
 					if (m_State != EDIT_TIMECODE_START) {
-						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 7U),0);
+						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U),0);
 						Display::Get()->PutString("[Start]");
 					}
 
@@ -293,7 +293,7 @@ bool McpButtons::Wait(ltc::source &tLtcReaderSource, TLtcTimeCode& StartTimeCode
 			} else if (BUTTON_STATE(button::STOP)) {			// STOP
 				if (tLtcReaderSource == ltc::source::INTERNAL) {
 					if (m_State != EDIT_TIMECODE_STOP) {
-						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->getCols() - 7U),0);
+						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U),0);
 						Display::Get()->PutString("[Stop] ");
 					}
 					m_nKey = INPUT_KEY_ENTER;

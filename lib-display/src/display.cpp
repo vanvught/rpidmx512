@@ -169,7 +169,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	}
 #if defined(ENABLE_TC1602)
 	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
-		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
+		m_LcdDisplay = new Tc1602(nCols, nRows);
 		assert(m_LcdDisplay != nullptr);
 
 		if (m_LcdDisplay->Start()) {
