@@ -142,20 +142,36 @@ public:
 		m_LcdDisplay->SetContrast(nContrast);
 	}
 
-	void DoFlipVertically() {
+	void SetFlipVertically(bool doFlipVertically) {
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
 
-		m_LcdDisplay->DoFlipVertically();
+		m_LcdDisplay->SetFlipVertically(doFlipVertically);
 	}
 
-	uint8_t getCols() const {
-		return m_nCols;
+	uint8_t GetColumns() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetColumns();
 	}
 
-	uint8_t getRows() const {
-		return m_nRows;
+	uint8_t GetRows() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetRows();
+	}
+
+	uint8_t GetContrast() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetContrast();
 	}
 
 	void PrintInfo();
@@ -169,8 +185,6 @@ private:
 	void Detect(uint8_t nCols, uint8_t nRows);
 
 private:
-	uint8_t m_nCols { 0 };
-	uint8_t m_nRows { 0 };
 	DisplayType m_tType { DisplayType::UNKNOWN };
 	DisplaySet *m_LcdDisplay { nullptr };
 	bool m_bIsSleep { false };

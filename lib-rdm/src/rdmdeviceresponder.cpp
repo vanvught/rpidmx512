@@ -88,6 +88,7 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 
 	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
 	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
+
 	if (m_pLightSet == nullptr) {
 		m_nDmxStartAddressFactoryDefault = lightset::Dmx::ADDRESS_INVALID;
 	} else {

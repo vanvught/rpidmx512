@@ -229,6 +229,8 @@ void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
+	assert(pDisplayUdf != nullptr);
+
 	if (isMaskSet(DisplayUdfParamsMask::INTENSITY)) {
 		pDisplayUdf->SetContrast(m_tDisplayUdfParams.nIntensity);
 	}
@@ -237,9 +239,7 @@ void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 		pDisplayUdf->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
 	}
 
-	if (isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY)) {
-		pDisplayUdf->DoFlipVertically();
-	}
+	pDisplayUdf->SetFlipVertically(isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (isMaskSet(1U << i)) {

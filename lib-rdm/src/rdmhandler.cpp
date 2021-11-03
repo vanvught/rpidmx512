@@ -44,6 +44,7 @@
 #include "rdm_e120.h"
 
 #include "hardware.h"
+#include "display.h"
 
 #include "debug.h"
 
@@ -166,6 +167,7 @@ const RDMHandler::TPidDefinition RDMHandler::PID_DEFINITIONS[] {
 	{E120_SENSOR_VALUE,				   	&RDMHandler::GetSensorValue,				&RDMHandler::SetSensorValue,		1, true , true , false},
 	{E120_RECORD_SENSORS,			   	nullptr,									&RDMHandler::SetRecordSensors,	 	0, true , true , false},
 	{E120_DEVICE_HOURS,                	&RDMHandler::GetDeviceHours,    	      	&RDMHandler::SetDeviceHours,       	0, true , true , false},
+	{E120_DISPLAY_LEVEL,				&RDMHandler::GetDisplayLevel,				&RDMHandler::SetDisplayLevel,		0, true , true , false},
 	{E120_REAL_TIME_CLOCK,		       	&RDMHandler::GetRealTimeClock,  			&RDMHandler::SetRealTimeClock,    	0, true , true , false},
 	{E120_POWER_STATE,					&RDMHandler::GetPowerState,					&RDMHandler::SetPowerState,			0, true , true , false},
 	{E137_1_IDENTIFY_MODE,			   	&RDMHandler::GetIdentifyMode,				&RDMHandler::SetIdentifyMode,		0, true , true , false},
@@ -984,6 +986,43 @@ void RDMHandler::GetDeviceHours(__attribute__((unused)) uint16_t nSubDevice) {
 
 void RDMHandler::SetDeviceHours(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	RespondMessageNack(E120_NR_WRITE_PROTECT);
+}
+
+void RDMHandler::GetDisplayLevel(__attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+
+	pRdmDataOut->param_data_length = 1;
+
+	assert(Display::Get() != nullptr);
+	pRdmDataOut->param_data[0] = Display::Get()->GetContrast();
+
+	RespondMessageAck();
+}
+
+void RDMHandler::SetDisplayLevel(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+
+	if (pRdmDataIn->param_data_length != 1) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	assert(Display::Get() != nullptr);
+
+	const auto nContrast = pRdmDataIn->param_data[0];
+
+	if (nContrast != 0) {
+		Display::Get()->SetSleep(false);
+	} else {
+		Display::Get()->SetSleep(true);
+	}
+
+	Display::Get()->SetContrast(nContrast);
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
+
+	RespondMessageAck();
 }
 
 void RDMHandler::GetRealTimeClock(__attribute__((unused)) uint16_t nSubDevice) {

@@ -135,8 +135,6 @@ void Display::Detect(DisplayType tDisplayType) {
 			m_tType = DisplayType::UNKNOWN;
 		} else {
 			m_LcdDisplay->Cls();
-			m_nCols = m_LcdDisplay->GetColumns();
-			m_nRows = m_LcdDisplay->GetRows();
 		}
 	}
 
@@ -181,10 +179,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	}
 #endif
 
-	if (m_LcdDisplay != nullptr) {
-		m_nCols = m_LcdDisplay->GetColumns();
-		m_nRows = m_LcdDisplay->GetRows();
-	} else {
+	if (m_LcdDisplay == nullptr) {
 		m_nSleepTimeout = 0;
 	}
 }
@@ -217,7 +212,9 @@ int Display::Write(uint8_t nLine, const char *pText) {
 	const auto *p = pText;
 	int nCount = 0;
 
-	while ((*p != 0) && (nCount++ < static_cast<int>(m_nCols))) {
+	const auto nColumns = static_cast<int>(m_LcdDisplay->GetColumns());
+
+	while ((*p != 0) && (nCount++ < nColumns)) {
 		++p;
 	}
 
@@ -255,15 +252,18 @@ void Display::TextStatus(const char *pText) {
 		return;
 	}
 
-	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
+	const auto nColumns = m_LcdDisplay->GetColumns();
+	const auto nRows = m_LcdDisplay->GetRows();
 
-	for (uint8_t i = 0; i < static_cast<uint8_t>(m_nCols - 1); i++) {
+	SetCursorPos(0, nRows - 1);
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(nColumns - 1); i++) {
 		PutChar(' ');
 	}
 
-	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
+	SetCursorPos(0, nRows - 1);
 
-	Write(m_nRows, pText);
+	Write(nRows, pText);
 }
 
 void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData, __attribute__((unused)) uint32_t nConsoleColor) {
