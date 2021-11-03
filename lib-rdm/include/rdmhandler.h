@@ -74,6 +74,7 @@ private:
 	void GetSensorDefinition(uint16_t nSubDevice);
 	void GetSensorValue(uint16_t nSubDevice);
 	void GetDeviceHours(uint16_t nSubDevice);
+	void GetDisplayInvert(uint16_t nSubDevice);
 	void GetDisplayLevel(uint16_t nSubDevice);
 	void GetIdentifyDevice(uint16_t nSubDevice);
 	void GetRealTimeClock(uint16_t nSubDevice);
@@ -101,6 +102,7 @@ private:
 	void SetSensorValue(bool IsBroadcast, uint16_t nSubDevice);
 	void SetRecordSensors(bool IsBroadcast, uint16_t nSubDevice);
 	void SetDeviceHours(bool IsBroadcast, uint16_t nSubDevice);
+	void SetDisplayInvert(bool IsBroadcast, uint16_t nSubDevice);
 	void SetDisplayLevel(bool IsBroadcast, uint16_t nSubDevice);
 	void SetIdentifyDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice);
