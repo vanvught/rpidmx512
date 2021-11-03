@@ -1,6 +1,4 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-artnet/include ../lib-lightset/include ../lib-hal/include
-#
+DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-rdm/include ../lib-artnet/include ../lib-lightset/include 
+
 include ../firmware-template-h3/lib/Rules.mk

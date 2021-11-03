@@ -35,10 +35,6 @@
 
 #include "hardware.h"
 
-extern "C" {
- void udelay(uint32_t us);
-}
-
 typedef union cast {
 	uint64_t uint;
 	uint8_t uid[RDM_UID_SIZE];
