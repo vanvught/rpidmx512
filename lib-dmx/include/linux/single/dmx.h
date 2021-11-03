@@ -27,14 +27,7 @@
 #define LINUX_DMX_H_
 
 #include "dmxconst.h"
-
 #include "../dmx_config.h"
-
-namespace dmxsingle {
-namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
-}  // namespace max
 
 struct TotalStatistics {
 	uint32_t nDmxPackets;
@@ -52,7 +45,6 @@ struct Data {
 	uint8_t Data[dmx::buffer::SIZE];
 	struct Statistics Statistics;
 };
-}  // namespace dmxsingle
 
 class Dmx {
 public:

@@ -32,12 +32,6 @@
 
 #include "../dmx_config.h"
 
-namespace dmxsingle {
-namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
-}  // namespace max
-
 struct TotalStatistics {
 	uint32_t nDmxPackets;
 	uint32_t nRdmPackets;
@@ -45,16 +39,15 @@ struct TotalStatistics {
 
 struct Statistics {
 	uint32_t nSlotsInPacket;
+	uint32_t nSlotToSlot;
 	uint32_t nMarkAfterBreak;
 	uint32_t nBreakToBreak;
-	uint32_t nSlotToSlot;
 };
 
 struct Data {
 	uint8_t Data[dmx::buffer::SIZE];
 	struct Statistics Statistics;
 };
-}  // namespace dmxsingle
 
 class Dmx {
 public:

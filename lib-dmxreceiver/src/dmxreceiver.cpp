@@ -31,9 +31,6 @@
 
 #include "debug.h"
 
-using namespace dmxsingle;
-using namespace dmx;
-
 DMXReceiver::DMXReceiver() : Dmx(false) {
 	DEBUG_ENTRY
 
@@ -61,7 +58,7 @@ void DMXReceiver::Start() {
 	DEBUG_ENTRY
 
 	Init();
-	SetPortDirection(0, PortDirection::INP, true);
+	SetPortDirection(0, dmx::PortDirection::INP, true);
 
 	DEBUG_EXIT
 }
@@ -69,36 +66,10 @@ void DMXReceiver::Start() {
 void DMXReceiver::Stop() {
 	DEBUG_ENTRY
 
-	SetPortDirection(0, PortDirection::INP, false);
+	SetPortDirection(0, dmx::PortDirection::INP, false);
 	m_pLightSet->Stop(0);
 
 	DEBUG_EXIT
-}
-
-bool DMXReceiver::IsDmxDataChanged(const uint8_t *pData, uint32_t nLength) {
-	auto isChanged = false;
-
-	const auto *pSrc = pData;
-	auto *pDst = const_cast<uint8_t*>(m_Data);
-
-	if (nLength != m_nLength) {
-		m_nLength = nLength;
-
-		for (uint32_t i = 0; i < nLength; i++) {
-			*pDst++ = *pSrc++;
-		}
-
-		return true;
-	}
-
-	for (uint32_t i = 0; i < nLength; i++) {
-		if (*pDst != *pSrc) {
-			isChanged = true;
-		}
-		*pDst++ = *pSrc++;
-	}
-
-	return isChanged;
 }
 
 const uint8_t* DMXReceiver::Run(int16_t &nLength) {
@@ -119,13 +90,8 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 			const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);
 			nLength = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
 
-			if (IsDmxDataChanged(++pDmx, static_cast<uint16_t>(nLength))) {  // Skip DMX START CODE
-
-				DEBUG_PUTS("\tDMX Data Changed");
-
-				m_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
-				p = const_cast<uint8_t*>(pDmx);
-			}
+			m_pLightSet->SetData(0, ++pDmx, static_cast<uint16_t>(nLength));
+			p = const_cast<uint8_t*>(pDmx);
 
 			if (!m_IsActive) {
 				m_pLightSet->Start(0);

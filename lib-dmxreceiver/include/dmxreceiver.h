@@ -47,15 +47,10 @@ public:
 	const uint8_t* Run(int16_t &nLength);
 
 	void Print() {}
-
-private:
-	bool IsDmxDataChanged(const uint8_t *pData, uint32_t nLength);
-
 private:
 	LightSet *m_pLightSet { nullptr };
 	bool m_IsActive { false };
 	uint8_t m_Data[dmx::buffer::SIZE]; // With DMX Start Code
-	uint32_t m_nLength { 0 };
 };
 
 #endif /* DMXRECEIVER_H */

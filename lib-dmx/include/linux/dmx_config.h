@@ -26,6 +26,20 @@
 #ifndef LINUX_DMX_CONFIG_H_
 #define LINUX_DMX_CONFIG_H_
 
+namespace dmxsingle {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+}  // namespace dmxsingle
+
+namespace dmxmulti {
+namespace max {
+static constexpr auto OUT = 4U;
+static constexpr auto IN = 4U;
+}  // namespace max
+}  // namespace dmxmulti
+
 namespace dmx {
 namespace buffer {
 static constexpr auto SIZE = 516;

@@ -31,16 +31,14 @@
 #include "dmxconst.h"
 #include "../dmx_config.h"
 
-namespace dmxmulti {
-namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
-}  // namespace max
-}  // namespace dmxmulti
+struct Statistics {
+	uint32_t nSlotsInPacket;
+	uint32_t nSlotToSlot;
+};
 
 struct Data {
 	uint8_t data[dmx::buffer::SIZE];
-	uint32_t nSlotsInPacket;
+	struct Statistics Statistics;
 };
 
 class Dmx {
