@@ -26,7 +26,7 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <cstdint>
 
 #include "displayset.h"
@@ -43,11 +43,7 @@ struct Defaults {
 }  // namespace display
 
 enum class DisplayType {
-	PCF8574T_1602,
-	PCF8574T_2004,
-	SSD1306,
-	SSD1311,
-	UNKNOWN
+	PCF8574T_1602, PCF8574T_2004, SSD1306, SSD1311, UNKNOWN
 };
 
 class Display {
@@ -164,6 +160,14 @@ public:
 		}
 
 		return m_LcdDisplay->GetRows();
+	}
+
+	bool GetFlipVertically() const {
+		if (m_LcdDisplay == nullptr) {
+			return false;
+		}
+
+		return m_LcdDisplay->GetFlipVertically();
 	}
 
 	uint8_t GetContrast() const {

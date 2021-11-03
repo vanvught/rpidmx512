@@ -44,7 +44,7 @@ namespace ina219 {
 static constexpr uint8_t I2C_ADDRESS = 0x40;
 namespace reg {
 static constexpr uint8_t CONFIG = 0x00;
-static constexpr uint8_t SHUNTVOLTAGE = 0x01;
+// static constexpr uint8_t SHUNTVOLTAGE = 0x01;
 static constexpr uint8_t BUSVOLTAGE = 0x02;
 static constexpr uint8_t POWER = 0x03;
 static constexpr uint8_t CURRENT = 0x04;

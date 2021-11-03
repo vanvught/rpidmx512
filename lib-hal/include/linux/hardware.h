@@ -53,6 +53,9 @@ public:
 	}
 
 	float GetCoreTemperature();
+	float GetCoreTemperatureMin() {
+		return -40.0f;
+	}
 	float GetCoreTemperatureMax();
 
 	void SetLed(hardware::LedStatus tLedStatus);

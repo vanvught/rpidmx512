@@ -33,13 +33,13 @@ namespace sensor {
 namespace htu21d {
 static constexpr uint8_t I2C_ADDRESS = 0x40;
 namespace reg {
-static constexpr uint8_t TRIGGER_TEMP_MEASURE_HOLD = 0xE3;
-static constexpr uint8_t TRIGGER_HUMD_MEASURE_HOLD = 0xE5;
+// static constexpr uint8_t TRIGGER_TEMP_MEASURE_HOLD = 0xE3;
+// static constexpr uint8_t TRIGGER_HUMD_MEASURE_HOLD = 0xE5;
 static constexpr uint8_t TRIGGER_TEMP_MEASURE_NOHOLD = 0xF3;
 static constexpr uint8_t TRIGGER_HUMD_MEASURE_NOHOLD = 0xF5;
-static constexpr uint8_t WRITE_USER_REG = 0xE6;
-static constexpr uint8_t READ_USER_REG = 0xE7;
-static constexpr uint8_t SOFT_RESET = 0xFE;
+// static constexpr uint8_t WRITE_USER_REG = 0xE6;
+// static constexpr uint8_t READ_USER_REG = 0xE7;
+// static constexpr uint8_t SOFT_RESET = 0xFE;
 }  // namespace reg
 }  // namespace htu21d
 
