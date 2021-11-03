@@ -255,13 +255,16 @@ void Display::TextStatus(const char *pText) {
 	const auto nColumns = m_LcdDisplay->GetColumns();
 	const auto nRows = m_LcdDisplay->GetRows();
 
-	SetCursorPos(0, nRows - 1);
+	assert((nColumns - 1) >= 0);
+	assert((nRows - 1) >= 0);
+
+	SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(nColumns - 1); i++) {
 		PutChar(' ');
 	}
 
-	SetCursorPos(0, nRows - 1);
+	SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
 
 	Write(nRows, pText);
 }
