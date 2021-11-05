@@ -1,8 +1,8 @@
 /**
- * @file storemonitor.h
+ * @file dmxmonitorstore.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef STOREMONITOR_H_
-#define STOREMONITOR_H_
+#ifndef DMXMONITORSTORE_H_
+#define DMXMONITORSTORE_H_
 
-#include "dmxmonitorparams.h"
-#include "dmxmonitorstore.h"
+#include <cstdint>
 
-#include "spiflashstore.h"
-
-class StoreMonitor final: public DMXMonitorParamsStore, public DmxMonitorStore {
+class DmxMonitorStore {
 public:
-	StoreMonitor();
+	virtual ~DmxMonitorStore() {}
 
-	void Update(const struct TDMXMonitorParams *pDMXMonitorParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-	}
-
-	void Copy(struct TDMXMonitorParams *pDMXMonitorParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-	}
-
-	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, __builtin_offsetof(struct TDMXMonitorParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), DMXMonitorParamsMask::START_ADDRESS);
-	}
-
-	static StoreMonitor* Get() {
-		return s_pThis;
-	}
-
-private:
-	static StoreMonitor *s_pThis;
+	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
 };
 
-#endif /* STOREMONITOR_H_ */
+#endif /* INCLUDE_DMXMONITORSTORE_H_ */

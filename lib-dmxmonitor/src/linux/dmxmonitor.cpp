@@ -65,6 +65,11 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	}
 
 	m_nDmxStartAddress = nDmxStartAddress;
+
+	if(m_pDmxMonitorStore != nullptr) {
+		m_pDmxMonitorStore->SaveDmxStartAddress(nDmxStartAddress);
+	}
+
 	return true;
 }
 
