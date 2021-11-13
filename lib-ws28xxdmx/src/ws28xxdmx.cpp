@@ -59,7 +59,7 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
 
 	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
 	m_nDmxStartAddress = pixelDmxConfiguration.GetDmxStartAddress();
-	m_nDmxFootprint = static_cast<uint16_t>((m_nChannelsPerPixel * m_nGroups) / m_nGroupingCount);
+	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_nGroups);
 
 	pixelDmxConfiguration.Dump();
 

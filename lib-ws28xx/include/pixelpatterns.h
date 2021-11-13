@@ -63,6 +63,14 @@ public:
 	void ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
 	void Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) ;
 	void Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction dir = pixelpatterns::Direction::FORWARD);
+	void None(uint32_t nPortIndex) {
+		m_PortConfig[nPortIndex].ActivePattern = pixelpatterns::Pattern::NONE;
+		Clear(nPortIndex);
+		while (m_pOutput->IsUpdating()) {
+
+		}
+		m_pOutput->Update();
+	}
 
 	void Run();
 
@@ -113,14 +121,18 @@ private:
 		return nColour & 0xFF;
 	}
 
+	void Clear(uint32_t nPortIndex) {
+		ColourSet(nPortIndex, 0);
+	}
+
 private:
 #if defined (PIXELPATTERNS_MULTI)
-	WS28xxMulti *m_pOutput { nullptr };
+	static WS28xxMulti *m_pOutput;
 #else
-	WS28xx *m_pOutput { nullptr };
+	static WS28xx *m_pOutput;
 #endif
-	uint32_t m_nActivePorts { pixelpatterns::MAX_PORTS };
-	uint32_t m_nCount { 0 };
+	static uint32_t m_nActivePorts;
+	static uint32_t m_nCount;
 
 	struct PortConfig {
 		uint32_t nLastUpdate;
@@ -133,9 +145,9 @@ private:
 		pixelpatterns::Pattern ActivePattern;
 	};
 
-	PortConfig m_PortConfig[pixelpatterns::MAX_PORTS];
+	static PortConfig m_PortConfig[pixelpatterns::MAX_PORTS];
 
-	uint32_t *m_pScannerColours { nullptr };
+	static uint32_t *m_pScannerColours;
 };
 
 #endif /* PIXELPATTERNS_H_ */

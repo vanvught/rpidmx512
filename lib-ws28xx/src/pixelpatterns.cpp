@@ -43,15 +43,25 @@ using namespace pixelpatterns;
 
 static constexpr char s_patternName[static_cast<uint32_t>(Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Scanner", "Fade" };
 
-PixelPatterns::PixelPatterns(uint32_t nActivePorts): m_nActivePorts(std::min(MAX_PORTS, nActivePorts)) {
+#if defined (PIXELPATTERNS_MULTI)
+WS28xxMulti *PixelPatterns::m_pOutput;
+#else
+WS28xx *PixelPatterns::m_pOutput;
+#endif
+uint32_t PixelPatterns::m_nActivePorts;
+uint32_t PixelPatterns::m_nCount;
+PixelPatterns::PortConfig PixelPatterns::m_PortConfig[pixelpatterns::MAX_PORTS];
+uint32_t *PixelPatterns::m_pScannerColours;
+
+PixelPatterns::PixelPatterns(uint32_t nActivePorts) {
 #if defined (PIXELPATTERNS_MULTI)
 	m_pOutput = WS28xxMulti::Get();
 #else
 	m_pOutput = WS28xx::Get();
 #endif
-
 	assert(m_pOutput != nullptr);
 
+	m_nActivePorts = std::min(MAX_PORTS, nActivePorts);
 	m_nCount = m_pOutput->GetCount();
 	const auto nMillis = Hardware::Get()->Millis();
 
@@ -118,6 +128,8 @@ bool PixelPatterns::PortUpdate(uint32_t nPortIndex, uint32_t nMillis) {
 }
 
 void PixelPatterns::RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelpatterns::Direction Direction) {
+	Clear(nPortIndex);
+
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::RAINBOW_CYCLE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= 255;
@@ -136,6 +148,8 @@ void PixelPatterns::RainbowCycleUpdate(uint32_t nPortIndex) {
 }
 
 void PixelPatterns::TheaterChase(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nInterval, pixelpatterns::Direction Direction){
+	Clear(nPortIndex);
+
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::THEATER_CHASE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= m_nCount;
@@ -162,6 +176,8 @@ void PixelPatterns::TheaterChaseUpdate(uint32_t nPortIndex) {
 }
 
 void PixelPatterns::ColourWipe(uint32_t nPortIndex, uint32_t nColour, uint32_t nInterval, pixelpatterns::Direction Direction) {
+	Clear(nPortIndex);
+
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::COLOR_WIPE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= m_nCount;
@@ -179,6 +195,8 @@ void PixelPatterns::ColourWipeUpdate(uint32_t nPortIndex) {
 }
 
 void PixelPatterns::Scanner(uint32_t nPortIndex, uint32_t nColour1, uint32_t nInterval) {
+	Clear(nPortIndex);
+
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::SCANNER;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= static_cast<uint16_t>((m_nCount - 1U) * 2);
@@ -218,6 +236,8 @@ void PixelPatterns::ScannerUpdate(uint32_t nPortIndex) {
 }
 
 void PixelPatterns::Fade(uint32_t nPortIndex, uint32_t nColour1, uint32_t nColour2, uint32_t nSteps, uint32_t nInterval, pixelpatterns::Direction Direction) {
+	Clear(nPortIndex);
+
 	m_PortConfig[nPortIndex].ActivePattern = Pattern::FADE;
 	m_PortConfig[nPortIndex].nInterval = nInterval;
 	m_PortConfig[nPortIndex].nTotalSteps= nSteps;
