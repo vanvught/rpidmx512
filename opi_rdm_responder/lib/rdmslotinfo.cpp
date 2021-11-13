@@ -1,5 +1,5 @@
 /**
- * @file displayrdm.h
+ * @file rdmslotinfo.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,19 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYRDM_H_
-#define DISPLAYRDM_H_
+#include <cstdint>
 
-#include "lightset.h"
-#include "displayudf.h"
+#include "rdmslotinfo.h"
+#include "pixeldmxparamsrdm.h"
 
-class DisplayRdm final: public LightSetDisplay {
-public:
-	DisplayRdm() {}
+using namespace pixeldmx::paramsdmx;
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
+const char *RDMSlotInfo::GetCategoryTextUndefined(uint16_t nSlotOffset, uint32_t& nLength) {
+	switch (static_cast<SlotInfo>(nSlotOffset)) {
+	case SlotInfo::TYPE:
+		nLength = 4;
+		return "Type";
+		break;
+	case SlotInfo::COUNT:
+		nLength = 5;
+		return "Count";
+		break;
+	case SlotInfo::GROUPING_COUNT:
+		nLength = 14;
+		return "Grouping Count";
+		break;
+	case SlotInfo::MAP:
+		nLength = 3;
+		return "Map";
+		break;
+	case SlotInfo::TEST_PATTERN:
+		nLength = 12;
+		return "Test Pattern";
+		break;
+	case SlotInfo::PROGRAM:
+		nLength = 7;
+		return "Program";
+		break;
+	default:
+		break;
 	}
-};
 
-#endif /* DISPLAYRDM_H_ */
+	nLength = 9;
+	return "Undefined";
+}

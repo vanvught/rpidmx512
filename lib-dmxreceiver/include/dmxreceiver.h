@@ -32,25 +32,28 @@
 
 #include "lightset.h"
 
-class DMXReceiver: public Dmx {
+class DMXReceiver: Dmx {
 public:
-	DMXReceiver();
+	DMXReceiver(LightSet *pLightSet);
 	~DMXReceiver();
-
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
-	}
 
 	void Start();
 	void Stop();
-
 	const uint8_t* Run(int16_t &nLength);
 
 	void Print() {}
+
+	uint32_t GetUpdatesPerSecond() {
+		return Dmx::GetUpdatesPerSecond();
+	}
+
+	const uint8_t* GetDmxCurrentData() {
+		return Dmx::GetDmxCurrentData();
+	}
+
 private:
-	LightSet *m_pLightSet { nullptr };
+	LightSet *m_pLightSet;
 	bool m_IsActive { false };
-	uint8_t m_Data[dmx::buffer::SIZE]; // With DMX Start Code
 };
 
 #endif /* DMXRECEIVER_H */

@@ -31,14 +31,11 @@
 
 #include "debug.h"
 
-DMXReceiver::DMXReceiver() : Dmx(false) {
+DMXReceiver::DMXReceiver(LightSet *pLightSet) :
+	Dmx(false),
+	m_pLightSet(pLightSet)
+{
 	DEBUG_ENTRY
-
-	auto *p = reinterpret_cast<uint32_t*>(m_Data);
-
-	for (uint32_t i = 0; i < (sizeof m_Data) / 4; i ++) {
-		*p++ = 0;
-	}
 
 	DEBUG_EXIT
 }
@@ -47,8 +44,6 @@ DMXReceiver::~DMXReceiver() {
 	DEBUG_ENTRY
 
 	Stop();
-
-	m_pLightSet = nullptr;
 	m_IsActive = false;
 
 	DEBUG_EXIT
@@ -73,8 +68,6 @@ void DMXReceiver::Stop() {
 }
 
 const uint8_t* DMXReceiver::Run(int16_t &nLength) {
-	uint8_t* p = nullptr;
-
 	if (GetUpdatesPerSecond() == 0) {
 		if (m_IsActive) {
 			m_pLightSet->Stop(0);
@@ -91,14 +84,13 @@ const uint8_t* DMXReceiver::Run(int16_t &nLength) {
 			nLength = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
 
 			m_pLightSet->SetData(0, ++pDmx, static_cast<uint16_t>(nLength));
-			p = const_cast<uint8_t*>(pDmx);
 
 			if (!m_IsActive) {
 				m_pLightSet->Start(0);
 				m_IsActive = true;
 			}
 
-			return p;
+			return const_cast<uint8_t*>(pDmx);
 		}
 	}
 

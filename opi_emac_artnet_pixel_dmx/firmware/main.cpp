@@ -195,9 +195,6 @@ void notmain(void) {
 
 	// RDMNet LLRP Only
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
 	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
 	if (WS28xx::Get() == nullptr) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net 4 Pixel-DMX");
@@ -210,21 +207,24 @@ void notmain(void) {
 
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
 
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
-
-	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
 	
-	llrpOnlyDevice.Init();
-	llrpOnlyDevice.Start();
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	display.SetTitle("Eth Art-Net 4 Pixel 1 - DMX");
@@ -263,6 +263,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
+	llrpOnlyDevice.Start();
 
 	if (pPixelTestPattern != nullptr) {
 		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());

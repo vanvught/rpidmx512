@@ -82,12 +82,10 @@ void notmain(void) {
 	console_puts("Slot to slot\n");
 	console_puts("Break to break");
 
-	hw.WatchdogInit();
-
-	DMXReceiver dmxreceiver;
-
-	dmxreceiver.SetOutput(&dmxmonitor);
+	DMXReceiver dmxreceiver(&dmxmonitor);
 	dmxreceiver.Start();
+
+	hw.WatchdogInit();
 
 	for(;;) {
 		hw.WatchdogFeed();

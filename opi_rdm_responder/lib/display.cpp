@@ -1,5 +1,5 @@
 /**
- * @file displayrdm.h
+ * @file display.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,19 +23,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYRDM_H_
-#define DISPLAYRDM_H_
+#include <cstdint>
 
-#include "lightset.h"
+#include "pixeltype.h"
+#include "pixelpatterns.h"
+#include "pixeldmxparamsrdm.h"
+
 #include "displayudf.h"
 
-class DisplayRdm final: public LightSetDisplay {
-public:
-	DisplayRdm() {}
+using namespace pixeldmx::paramsdmx;
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
+static constexpr auto nLastIndex = DMX_FOOTPRINT - 1U;
+static bool s_IsProgrammed;
+
+void PixelDmxParamsRdm::Display(const uint8_t *pData)  {
+	if (pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)] == 0x00) {
+		DisplayUdf::Get()->ClearLine(6);
+	} else {
+		DisplayUdf::Get()->Printf(6, "%-20s",
+				PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)])));
 	}
-};
 
-#endif /* DISPLAYRDM_H_ */
+	DisplayUdf::Get()->Printf(7, "%-8s %-2d G%-2d %-5s",
+			PixelType::GetType(static_cast<pixel::Type>(pData[static_cast<uint32_t>(SlotInfo::TYPE)])),
+			pData[static_cast<uint32_t>(SlotInfo::COUNT)],
+			pData[static_cast<uint32_t>(SlotInfo::GROUPING_COUNT)],
+			PixelType::GetMap(static_cast<pixel::Map>(pData[static_cast<uint32_t>(SlotInfo::MAP)])));
+
+	if (pData[nLastIndex] == 0xFF) {
+		if (!s_IsProgrammed) {
+			s_IsProgrammed = true;
+			DisplayUdf::Get()->TextStatus("Programmed");
+		}
+	} else {
+		s_IsProgrammed = false	;
+		DisplayUdf::Get()->ClearLine(8);
+	}
+}

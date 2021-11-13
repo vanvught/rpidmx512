@@ -1,5 +1,5 @@
 /**
- * @file displayrdm.h
+ * @file rdm_selftest.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,19 +23,51 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYRDM_H_
-#define DISPLAYRDM_H_
+#include <cstdint>
+#include <cstring>
 
-#include "lightset.h"
+#include "rdm_selftest.h"
+
+#include "pixelpatterns.h"
+#include "pixeltestpattern.h"
 #include "displayudf.h"
+#include "ws28xxdmx.h"
 
-class DisplayRdm final: public LightSetDisplay {
-public:
-	DisplayRdm() {}
+namespace rdm {
+namespace selftest {
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
+uint8_t Get() {
+	return static_cast<uint8_t>(PixelTestPattern::Get()->GetPattern());
+}
+
+bool Set(uint8_t nSelfTest) {
+	const auto isSet = PixelTestPattern::Get()->SetPattern(static_cast<pixelpatterns::Pattern>(nSelfTest));
+
+	if(!isSet) {
+		return false;
 	}
-};
 
-#endif /* DISPLAYRDM_H_ */
+	if (static_cast<pixelpatterns::Pattern>(nSelfTest) != pixelpatterns::Pattern::NONE) {
+		Display::Get()->ClearLine(6);
+		Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(nSelfTest)), nSelfTest);
+	} else {
+		DisplayUdf::Get()->Show();
+	}
+
+	return true;
+}
+
+const char* GetDescription(uint8_t nSelfTest, uint32_t& nLength) {
+	const auto *pText = PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(nSelfTest));
+	if (pText == nullptr) {
+		nLength = 0;
+		return nullptr;
+	}
+
+	nLength = strlen(pText);
+	return pText;
+}
+
+}  // namespace selftest
+}  // namespace rdm
+

@@ -1,8 +1,8 @@
 /**
- * @file displayrdm.h
+ * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYRDM_H_
-#define DISPLAYRDM_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-#include "lightset.h"
-#include "displayudf.h"
+#include "rdmfactorydefaults.h"
+#include "spiflashstore.h"
 
-class DisplayRdm final: public LightSetDisplay {
+class FactoryDefaults: public RDMFactoryDefaults {
 public:
-	DisplayRdm() {}
+	FactoryDefaults() {
+	}
+	~FactoryDefaults() {
+	}
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
+	void Set() {
+		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
 	}
 };
 
-#endif /* DISPLAYRDM_H_ */
+#endif /* FACTORYDEFAULTS_H_ */
