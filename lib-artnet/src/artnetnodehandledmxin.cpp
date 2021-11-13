@@ -73,10 +73,16 @@ void ArtNetNode::HandleDmxIn() {
 				artDmx.Sequence = static_cast<uint8_t>(1U + m_InputPort[i].nSequenceNumber++);
 				artDmx.Physical = static_cast<uint8_t>(i);
 				artDmx.PortAddress = m_InputPort[i].genericPort.nPortAddress;
-				artDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
-				artDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
 
 				memcpy(artDmx.Data, pDmxData, nLength);
+
+				if ((nLength & 0x1) == 0x1) {
+					artDmx.Data[nLength] = 0x00;
+					nLength++;
+				}
+
+				artDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
+				artDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
 
 				m_InputPort[i].genericPort.nStatus = GoodInput::GI_DATA_RECIEVED;
 
