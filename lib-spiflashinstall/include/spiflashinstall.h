@@ -29,6 +29,8 @@
 #include <cstdint>
 #include <stdio.h>
 
+#include "flashrom.h"
+
 #if defined (H3)
 // nuc-i5:~/uboot-spi/u-boot$ grep CONFIG_BOOTCOMMAND include/configs/sunxi-common.h
 // #define CONFIG_BOOTCOMMAND "sf probe; sf read 48000000 180000 22000; bootm 48000000"
@@ -44,7 +46,7 @@
 
 #ifdef __cplusplus
 
-class SpiFlashInstall {
+class SpiFlashInstall: FlashRom {
 public:
 	SpiFlashInstall();
 	~SpiFlashInstall();

@@ -62,7 +62,7 @@ enum class Store {
 };
 
 enum class State {
-	IDLE, CHANGED, ERASED
+	IDLE, CHANGED, CHANGED_WAITING, ERASING, ERASED, ERASED_WAITING, WRITING
 };
 
 }  // namespace spiflashstore
@@ -102,7 +102,7 @@ private:
 
 private:
 	struct FlashStore {
-		static constexpr auto SIZE = 4096;
+		static constexpr auto SIZE = 4096U;
 	};
 
 	static bool s_bHaveFlashChip;
@@ -113,6 +113,8 @@ private:
 
 	static uint32_t s_nSpiFlashStoreSize;
 	static uint8_t s_SpiFlashData[FlashStore::SIZE];
+
+	static uint32_t s_nWaitMillis;
 
 	static SpiFlashStore *s_pThis;
 };

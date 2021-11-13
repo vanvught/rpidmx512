@@ -1,8 +1,8 @@
 /**
- * @file spiflashinstallparamsdump.cpp
+ * @file flashrom.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,26 +23,41 @@
  * THE SOFTWARE.
  */
 
-#if !defined(__clang__)	// Needed for compiling on MacOS
-# pragma GCC push_options
-# pragma GCC optimize ("Os")
-#endif
+#ifndef FLASHROM_H_
+#define FLASHROM_H_
 
-#include <cstdio>
+#include <cstdint>
 
-#include "spiflashinstallparams.h"
-#include "spiflashinstallparamsconst.h"
+namespace flashrom {
+enum class result {
+	OK,
+	ERROR
+};
+}  // namespace flashrom
 
-void SpiFlashInstallParams::Dump() {
-#ifndef NDEBUG
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SpiFlashInstallParamsConst::FILE_NAME);
+class FlashRom {
+public:
+	FlashRom();
 
-	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT)) {
-		printf(" %s=1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT);
+	bool IsDetected() const {
+		return m_IsDetected;
 	}
 
-	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE)) {
-		printf(" %s=1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE);
+	const char* GetName();
+	uint32_t GetSize();
+	uint32_t GetSectorSize();
+
+	bool Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashrom::result& nResult);
+	bool Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResult);
+	bool Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, flashrom::result& nResult);
+
+	static FlashRom *Get() {
+		return s_pThis;
 	}
-#endif
-}
+
+private:
+	bool m_IsDetected { false };
+	static FlashRom *s_pThis;
+};
+
+#endif /* INCLUDE_FLASHROM_H_ */

@@ -35,13 +35,12 @@
 
 SpiFlashInstall *SpiFlashInstall::s_pThis = nullptr;
 
-SpiFlashInstall::SpiFlashInstall()
-	
-{
+SpiFlashInstall::SpiFlashInstall() {
 	DEBUG_ENTRY
 	assert(s_pThis == 0);
 	s_pThis = this;
 
+	DEBUG_PRINTF("%d", IsDetected());
 	DEBUG_EXIT
 }
 
