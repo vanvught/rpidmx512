@@ -39,18 +39,21 @@
 #include "debug.h"
 
 #if defined(H3)
- #include "h3_board.h"
- static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
+# include "h3_board.h"
+  static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
+#elif defined (GD32) 
+# include "gd32_board.h"
+  static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Device";
 #elif defined (RASPPI)
- static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
+  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
 #elif defined (__CYGWIN__)
- static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
+  static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
 #elif defined (__linux__)
- static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
+  static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
 #elif defined (__APPLE__)
- static constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
+  static constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
 #else
- static constexpr char DEVICE_LABEL[] = "RDM Device";
+  static constexpr char DEVICE_LABEL[] = "RDM Device";
 #endif
 
 RDMDevice::RDMDevice() {

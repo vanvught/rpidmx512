@@ -41,7 +41,7 @@
 #define RDM_RESPONDER_INVALID_DATA_RECEIVED	-2
 #define RDM_RESPONDER_INVALID_RESPONSE		-3
 
-class RDMResponder: public DMXReceiver, public RDMDeviceResponder  {
+class RDMResponder: DMXReceiver, public RDMDeviceResponder, RDMHandler  {
 public:
 	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 	~RDMResponder();
@@ -52,13 +52,20 @@ public:
 
 	void Print();
 
+	void Start() {
+		DMXReceiver::Start();
+	}
+
+	void DmxStop() {
+		DMXReceiver::Stop();
+	}
+
 private:
 	int HandleResponse(uint8_t *pResponse);
 
 private:
-	struct TRdmMessage *m_pRdmCommand;
-	RDMHandler *m_pRDMHandler;
-	bool m_IsSubDeviceActive;
+	static TRdmMessage s_RdmCommand;
+	static bool m_IsSubDeviceActive;
 };
 
 #endif /* RDMRESPONDER_H_ */

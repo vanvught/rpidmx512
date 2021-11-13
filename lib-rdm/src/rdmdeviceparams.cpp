@@ -46,6 +46,8 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "propertiesbuilder.h"
+
 #include "debug.h"
 
 RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(pRDMDeviceParamsStore) {
@@ -138,7 +140,7 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 	assert(pRDMDevice != nullptr);
 
-	struct TRDMDeviceInfoData Info;
+	TRDMDeviceInfoData Info;
 
 	if (isMaskSet(RDMDeviceParamsMask::LABEL)) {
 		Info.data = m_tRDMDeviceParams.aDeviceRootLabel;
@@ -180,3 +182,45 @@ void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<RDMDeviceParams*>(p))->callbackFunction(s);
 }
 
+void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != nullptr);
+
+	if (ptRDMDeviceParams != nullptr) {
+		DEBUG_PUTS("ptRDMDeviceParams != 0");
+		memcpy(&m_tRDMDeviceParams, ptRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+	} else {
+		DEBUG_PUTS("ptRDMDeviceParams == 0");
+		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
+	}
+
+	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
+
+	char aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	memcpy(aRootLabel, m_tRDMDeviceParams.aDeviceRootLabel, RDM_DEVICE_LABEL_MAX_LENGTH);
+	aRootLabel[m_tRDMDeviceParams.nDeviceRootLabelLength] = '\0';
+	builder.Add(RDMDeviceParamsConst::LABEL, aRootLabel, isMaskSet(RDMDeviceParamsMask::LABEL));
+
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory, isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail, isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("nSize=%d", nSize);
+	DEBUG_EXIT
+}
+
+void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	if (m_pRDMDeviceParamsStore == nullptr) {
+		nSize = 0;
+		DEBUG_EXIT
+		return;
+	}
+
+	Builder(nullptr, pBuffer, nLength, nSize);
+
+	DEBUG_EXIT
+}

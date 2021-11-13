@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cassert>
 
 #include "artnetrdmresponder.h"
 
@@ -35,34 +34,23 @@
 
 #include "lightset.h"
 
+#include "rdm.h"
 #include "rdm_e120.h"
 
 #include "debug.h"
 
+TRdmMessage ArtNetRdmResponder::s_RdmCommand;
+
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	RDMDeviceResponder(pRDMPersonality, pLightSet),
-	m_pRdmCommand(nullptr),
-	m_RDMHandler(nullptr)
+	RDMDeviceResponder(pRDMPersonality, pLightSet)
 {
 	DEBUG_ENTRY
-
-	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != nullptr);
-
-	m_RDMHandler = new RDMHandler;
-	assert(m_RDMHandler != nullptr);
 
 	DEBUG_EXIT
 }
 
 ArtNetRdmResponder::~ArtNetRdmResponder() {
 	DEBUG_ENTRY
-
-	delete m_RDMHandler;
-	m_RDMHandler = nullptr;
-
-	delete m_pRdmCommand;
-	m_pRdmCommand = nullptr;
 
 	DEBUG_EXIT
 }
@@ -91,17 +79,17 @@ const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint32_t nPor
 	RDMMessage::PrintNoSc(pRdmDataNoSC);
 #endif
 
-	m_RDMHandler->HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(m_pRdmCommand));
+	HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
 
-	if (m_pRdmCommand->start_code != E120_SC_RDM) {
+	if (s_RdmCommand.start_code != E120_SC_RDM) {
 		DEBUG_EXIT
 		return nullptr;
 	}
 
 #ifndef NDEBUG
-	RDMMessage::Print(reinterpret_cast<uint8_t*>(m_pRdmCommand));
+	RDMMessage::Print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
 #endif
 
 	DEBUG_EXIT
-	return reinterpret_cast<const uint8_t*>(m_pRdmCommand);
+	return reinterpret_cast<const uint8_t*>(&s_RdmCommand);
 }

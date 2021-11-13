@@ -31,7 +31,8 @@
 class RDMSlotInfo {
 public:
 	static const char *GetTypeText(uint8_t nId, uint32_t& nLength);
-	static const char *GetCategoryText(uint16_t nId, uint32_t& nLength);
+	static const char *GetCategoryText(uint16_t nSlotOffset, uint16_t nId, uint32_t& nLength);
+	static const char *GetCategoryTextUndefined(uint16_t nSlotOffset, uint32_t& nLength)  __attribute__((weak));
 
 private:
 	static int bsearch(uint16_t nKey);

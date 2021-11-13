@@ -2,7 +2,7 @@
  * @file rdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,13 +24,12 @@
  */
 
 #include <cstdint>
-#include <cassert>
-
-#include "rdmdeviceresponder.h"
-#include "dmxreceiver.h"
 
 #include "rdmresponder.h"
+#include "rdmdeviceresponder.h"
 #include "rdmsubdevices.h"
+
+#include "dmxreceiver.h"
 
 #include "lightset.h"
 
@@ -39,29 +38,29 @@
 
 #include "debug.h"
 
-RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	RDMDeviceResponder(pRDMPersonality, pLightSet),
-	m_pRdmCommand(nullptr),
-	m_pRDMHandler(nullptr),
-	m_IsSubDeviceActive(false)
-{
-	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != nullptr);
+TRdmMessage RDMResponder::s_RdmCommand;
+bool RDMResponder::m_IsSubDeviceActive;
 
-	m_pRDMHandler = new RDMHandler;
-	assert(m_pRDMHandler != nullptr);
+RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
+	DMXReceiver(pLightSet),
+	RDMDeviceResponder(pRDMPersonality, pLightSet) {
+DEBUG_ENTRY
+
+DEBUG_EXIT
 }
 
 RDMResponder::~RDMResponder() {
-	delete m_pRDMHandler;
-	m_pRDMHandler = nullptr;
+	DEBUG_ENTRY
 
-	delete m_pRdmCommand;
-	m_pRdmCommand = nullptr;
+	DEBUG_EXIT
 }
 
 void RDMResponder::Init() {
+	DEBUG_ENTRY
+
 	RDMDeviceResponder::Init();
+
+	DEBUG_EXIT
 }
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
@@ -122,8 +121,8 @@ int RDMResponder::Run() {
 		case E120_DISCOVERY_COMMAND:
 		case E120_GET_COMMAND:
 		case E120_SET_COMMAND:
-			m_pRDMHandler->HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(m_pRdmCommand));
-			return HandleResponse(reinterpret_cast<uint8_t*>(m_pRdmCommand));
+			HandleData(&pRdmDataIn[1], reinterpret_cast<uint8_t*>(&s_RdmCommand));
+			return HandleResponse(reinterpret_cast<uint8_t*>(&s_RdmCommand));
 			break;
 		default:
 			DEBUG_PUTS("RDM_RESPONDER_INVALID_DATA_RECEIVED");

@@ -1,8 +1,8 @@
 /**
- * @file artnetrdmresponder.h
+ * @file rdm_selftest.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,32 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETRDMRESPONDER_H_
-#define ARTNETRDMRESPONDER_H_
+#ifndef RDM_SELFTEST_H_
+#define RDM_SELFTEST_H_
 
-#include <cstdint>
+#include <stdint.h>
 
-#include "artnetrdm.h"
+namespace rdm {
+namespace selftest {
+	uint8_t Get();
+	bool Set(uint8_t nSelfTest);
+	const char* GetDescription(uint8_t nSelfTest, uint32_t& nLength);
+}  // namespace selftest
+}  // namespace rdm
 
-#include "rdmdeviceresponder.h"
-#include "rdmpersonality.h"
-#include "rdmhandler.h"
-#include "rdm.h"
-
-#include "lightset.h"
-
-class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm, RDMHandler {
-public:
-	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
-	~ArtNetRdmResponder() override;
-
-	void Full(uint32_t nPortIndex) override;
-	uint8_t GetUidCount(uint32_t nPortIndex) override;
-	void Copy(uint32_t nPortIndex, uint8_t *) override;
-	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
-
-private:
-	static TRdmMessage s_RdmCommand;
-};
-
-#endif /* ARTNETRDMRESPONDER_H_ */
+#endif /* RDM_SELFTEST_H_ */

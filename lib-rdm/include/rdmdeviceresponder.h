@@ -109,6 +109,7 @@ public:
 
 		m_RDMSubDevices.SetFactoryDefaults();
 
+		m_nCheckSum = CalculateChecksum();
 		m_IsFactoryDefaults = true;
 
 		if (m_pRDMFactoryDefaults != nullptr) {

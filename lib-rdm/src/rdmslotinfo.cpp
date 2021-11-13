@@ -123,14 +123,24 @@ const char *RDMSlotInfo::GetTypeText(uint8_t nId, uint32_t& nLength) {
 	return s_tTableC1[TABLE_C1_SIZE - 1].pDescription;
 }
 
-const char *RDMSlotInfo::GetCategoryText(uint16_t nId, uint32_t& nLength) {
-	int nIndex = bsearch(nId);
+const char *RDMSlotInfo::GetCategoryText(uint16_t nSlotOffset, uint16_t nId, uint32_t& nLength) {
+	if (nId == SD_UNDEFINED) {
+		return GetCategoryTextUndefined(nSlotOffset, nLength);
+	}
+
+	const auto nIndex = bsearch(nId);
 
 	if (nIndex < 0) {
 		nLength = 0;
 		return nullptr;
 	}
 
+	nLength = static_cast<uint16_t>(strlen(s_tTableC2[nIndex].pDescription));
+	return s_tTableC2[nIndex].pDescription;
+}
+
+const char *RDMSlotInfo::GetCategoryTextUndefined(__attribute__((unused)) uint16_t nSlotOffset, uint32_t& nLength) {
+	const auto nIndex = TABLE_C2_SIZE - 1;
 	nLength = static_cast<uint16_t>(strlen(s_tTableC2[nIndex].pDescription));
 	return s_tTableC2[nIndex].pDescription;
 }
