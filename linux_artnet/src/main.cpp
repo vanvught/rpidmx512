@@ -52,7 +52,11 @@
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
+#include "storerdmsensors.h"
+#include "storerdmsubdevices.h"
 
+#include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -82,14 +86,15 @@ int main(int argc, char **argv) {
 
 	fw.Print();
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
 	StoreNetwork storeNetwork;
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
-
-	SpiFlashStore spiFlashStore;
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -111,8 +116,10 @@ int main(int argc, char **argv) {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	DMXMonitor monitor;
 	DMXMonitorParams monitorParams(new StoreMonitor);
+
+	DMXMonitor monitor;
+	monitor.SetDmxMonitorStore(StoreMonitor::Get());
 
 	if (monitorParams.Load()) {
 		monitorParams.Dump();
@@ -128,7 +135,10 @@ int main(int argc, char **argv) {
 	node.SetRdmUID(RdmResponder.GetUID());
 
 	if(artnetParams.IsRdm()) {
-		RDMDeviceParams rdmDeviceParams;
+		RDMDeviceParams rdmDeviceParams(new StoreRDMDevice);
+
+		RdmResponder.SetRDMDeviceStore(StoreRDMDevice::Get());
+
 		if (rdmDeviceParams.Load()) {
 			rdmDeviceParams.Set(&RdmResponder);
 			rdmDeviceParams.Dump();

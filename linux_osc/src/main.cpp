@@ -46,6 +46,7 @@
 #include "dmxmonitorparams.h"
 #include "storemonitor.h"
 
+#include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -75,16 +76,17 @@ int main(int argc, char **argv) {
 
 	fw.Print();
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	StoreNetwork storeNetwork;
+
 	puts("OSC Real-time DMX Monitor");
 
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
-
-	StoreNetwork storeNetwork;
-
-	SpiFlashStore spiFlashStore;
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
