@@ -38,33 +38,14 @@
 
 #include "debug.h"
 
+RDMResponder *RDMResponder::s_pThis;
 TRdmMessage RDMResponder::s_RdmCommand;
 bool RDMResponder::m_IsSubDeviceActive;
 
-RDMResponder::RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	DMXReceiver(pLightSet),
-	RDMDeviceResponder(pRDMPersonality, pLightSet) {
-DEBUG_ENTRY
-
-DEBUG_EXIT
-}
-
-RDMResponder::~RDMResponder() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-void RDMResponder::Init() {
-	DEBUG_ENTRY
-
-	RDMDeviceResponder::Init();
-
-	DEBUG_EXIT
-}
+using namespace rdm::responder;
 
 int RDMResponder::HandleResponse(uint8_t *pResponse) {
-	auto nLength = RDM_RESPONDER_INVALID_RESPONSE;
+	auto nLength = INVALID_RESPONSE;
 
 	if (pResponse[0] == E120_SC_RDM) {
 		const auto *p = reinterpret_cast<const struct TRdmMessage*>(pResponse);
@@ -76,7 +57,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	}
 
 #ifndef NDEBUG
-	if (nLength != RDM_RESPONDER_INVALID_RESPONSE) {
+	if (nLength != INVALID_RESPONSE) {
 		RDMMessage::Print(pResponse);
 	}
 #endif
@@ -107,7 +88,7 @@ int RDMResponder::Run() {
 	const auto *pRdmDataIn = Rdm::Receive(0);
 
 	if (pRdmDataIn == nullptr) {
-		return RDM_RESPONDER_NO_DATA;
+		return NO_DATA;
 	}
 
 #ifndef NDEBUG
@@ -126,16 +107,12 @@ int RDMResponder::Run() {
 			break;
 		default:
 			DEBUG_PUTS("RDM_RESPONDER_INVALID_DATA_RECEIVED");
-			return RDM_RESPONDER_INVALID_DATA_RECEIVED;
+			return INVALID_DATA_RECEIVED;
 			break;
 		}
 	}
 
 	DEBUG_PUTS("RDM_RESPONDER_DISCOVERY_RESPONSE");
-	return RDM_RESPONDER_DISCOVERY_RESPONSE;
+	return DISCOVERY_RESPONSE;
 }
 
-void RDMResponder::Print() {
-	RDMDeviceResponder::Print();
-	DMXReceiver::Print();
-}

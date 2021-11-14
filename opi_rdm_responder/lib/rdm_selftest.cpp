@@ -32,6 +32,7 @@
 #include "pixeltestpattern.h"
 #include "displayudf.h"
 #include "ws28xxdmx.h"
+#include "rdmresponder.h"
 
 namespace rdm {
 namespace selftest {
@@ -48,9 +49,11 @@ bool Set(uint8_t nSelfTest) {
 	}
 
 	if (static_cast<pixelpatterns::Pattern>(nSelfTest) != pixelpatterns::Pattern::NONE) {
+		RDMResponder::Get()->DmxDisableOutput(true);
 		Display::Get()->ClearLine(6);
 		Display::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(nSelfTest)), nSelfTest);
 	} else {
+		RDMResponder::Get()->DmxDisableOutput(false);
 		DisplayUdf::Get()->Show();
 	}
 

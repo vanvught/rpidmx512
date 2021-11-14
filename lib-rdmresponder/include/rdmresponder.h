@@ -27,6 +27,7 @@
 #define RDMRESPONDER_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "dmxreceiver.h"
 
@@ -36,34 +37,54 @@
 
 #include "lightset.h"
 
-#define RDM_RESPONDER_NO_DATA				0
-#define RDM_RESPONDER_DISCOVERY_RESPONSE	-1
-#define RDM_RESPONDER_INVALID_DATA_RECEIVED	-2
-#define RDM_RESPONDER_INVALID_RESPONSE		-3
+namespace rdm {
+namespace responder {
+static constexpr auto NO_DATA = 0;
+static constexpr auto DISCOVERY_RESPONSE = -1;
+static constexpr auto INVALID_DATA_RECEIVED = -2;
+static constexpr auto INVALID_RESPONSE = -3;
+}  // namespace responder
+}  // namespace rdm
 
 class RDMResponder: DMXReceiver, public RDMDeviceResponder, RDMHandler  {
 public:
-	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
-	~RDMResponder();
+	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) : DMXReceiver(pLightSet), RDMDeviceResponder(pRDMPersonality, pLightSet) {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
 
-	void Init();
+	~RDMResponder() {}
+
+	void Init() {
+		RDMDeviceResponder::Init();
+		// There is no DMXReceiver::Init()
+	}
 
 	int Run();
 
-	void Print();
+	void Print() {
+		RDMDeviceResponder::Print();
+		DMXReceiver::Print();
+	}
 
 	void Start() {
+		// There is no RDMDeviceResponder::Start()
 		DMXReceiver::Start();
 	}
 
-	void DmxStop() {
-		DMXReceiver::Stop();
+	void DmxDisableOutput(bool bDisable) {
+		DMXReceiver::SetDisableOutput(bDisable);
+	}
+
+	static RDMResponder *Get() {
+		return s_pThis;
 	}
 
 private:
 	int HandleResponse(uint8_t *pResponse);
 
 private:
+	static RDMResponder *s_pThis;
 	static TRdmMessage s_RdmCommand;
 	static bool m_IsSubDeviceActive;
 };

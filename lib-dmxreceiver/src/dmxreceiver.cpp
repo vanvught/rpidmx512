@@ -23,77 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
-
 #include "dmxreceiver.h"
-#include "dmx.h"
 
-#include "debug.h"
-
-DMXReceiver::DMXReceiver(LightSet *pLightSet) :
-	Dmx(false),
-	m_pLightSet(pLightSet)
-{
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-DMXReceiver::~DMXReceiver() {
-	DEBUG_ENTRY
-
-	Stop();
-	m_IsActive = false;
-
-	DEBUG_EXIT
-}
-
-void DMXReceiver::Start() {
-	DEBUG_ENTRY
-
-	Init();
-	SetPortDirection(0, dmx::PortDirection::INP, true);
-
-	DEBUG_EXIT
-}
-
-void DMXReceiver::Stop() {
-	DEBUG_ENTRY
-
-	SetPortDirection(0, dmx::PortDirection::INP, false);
-	m_pLightSet->Stop(0);
-
-	DEBUG_EXIT
-}
-
-const uint8_t* DMXReceiver::Run(int16_t &nLength) {
-	if (GetUpdatesPerSecond() == 0) {
-		if (m_IsActive) {
-			m_pLightSet->Stop(0);
-			m_IsActive = false;
-		}
-
-		nLength = -1;
-		return nullptr;
-	} else {
-		const auto *pDmx = GetDmxAvailable();
-
-		if (pDmx != nullptr) {
-			const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);
-			nLength = static_cast<int16_t>(dmx_statistics->Statistics.nSlotsInPacket);
-
-			m_pLightSet->SetData(0, ++pDmx, static_cast<uint16_t>(nLength));
-
-			if (!m_IsActive) {
-				m_pLightSet->Start(0);
-				m_IsActive = true;
-			}
-
-			return const_cast<uint8_t*>(pDmx);
-		}
-	}
-
-	nLength = 0;
-	return nullptr;
-}
+LightSet *DMXReceiver::s_pLightSet;
+bool DMXReceiver::s_IsActive;
+bool DMXReceiver::s_bDisableOutput;

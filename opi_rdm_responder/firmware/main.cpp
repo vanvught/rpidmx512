@@ -165,6 +165,7 @@ void notmain(void) {
 	FactoryDefaults factoryDefaults;
 	rdmResponder.SetRDMFactoryDefaults(&factoryDefaults);
 	rdmResponder.Start();
+	rdmResponder.DmxDisableOutput(nTestPattern != pixelpatterns::Pattern::NONE);
 
 	rdmResponder.Print();
 	pLightSet->Print();
