@@ -65,7 +65,6 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -81,6 +80,15 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=RDMNet LLRP Only");
+#endif
+	mDns.Print();
+
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
@@ -92,16 +100,6 @@ void notmain(void) {
 		const auto rawtime = time(nullptr);
 		printf(asctime(localtime(&rawtime)));
 	}
-
-	MDNS mDns;
-
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=RDMNet LLRP Only");
-#endif
-	mDns.Print();
 
 	RDMNetLLRPOnly device;
 
@@ -137,9 +135,7 @@ void notmain(void) {
 	}
 
 	display.Show();
-
 	display.Write(6, "mDNS enabled");
-
 	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
 	lb.SetMode(ledblink::Mode::NORMAL);
