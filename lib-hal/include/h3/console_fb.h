@@ -52,6 +52,7 @@ extern uint32_t console_get_line_width(void);
 extern void console_clear(void);
 
 extern void console_set_top_row(uint32_t);
+extern void console_clear_top_row(void);
 
 extern void console_clear_line(uint32_t);
 

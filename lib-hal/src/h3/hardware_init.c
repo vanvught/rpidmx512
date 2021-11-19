@@ -109,6 +109,13 @@ void hardware_led_set(int state) {
 }
 
 void __attribute__((cold)) hardware_init(void) {
+	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
+	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
+	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
+
 	h3_watchdog_disable();
 	h3_usb_end();
 	h3_timer_init();
@@ -118,7 +125,6 @@ void __attribute__((cold)) hardware_init(void) {
 	gic_init();
 	h3_thermal_init();
 	emac_init();
-	h3_spi_begin();
 	h3_i2c_begin();
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;

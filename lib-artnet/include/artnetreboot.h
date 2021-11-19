@@ -37,6 +37,7 @@ public:
 
 	void Run() override {
 		ArtNetNode::Get()->Stop();
+
 		if (LightSet::Get() != nullptr) {
 			LightSet::Get()->Blackout(true);
 		}

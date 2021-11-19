@@ -31,6 +31,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include <cstdio>
+
 #include "lightset.h"
 
 namespace lightset {

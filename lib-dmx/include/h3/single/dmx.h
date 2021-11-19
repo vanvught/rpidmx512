@@ -29,7 +29,6 @@
 #include <cstdint>
 
 #include "dmxconst.h"
-
 #include "../dmx_config.h"
 
 struct TotalStatistics {
@@ -112,7 +111,7 @@ private:
 	bool m_IsInitDone { false };
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
-	uint32_t m_nDmxTransmitPeriod = { dmx::transmit::PERIOD_DEFAULT };
+	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
 

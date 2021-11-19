@@ -30,7 +30,7 @@
 #define SHOWFILEPROTOCOLARTNET_H_
 
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 
 #include "artnetcontroller.h"
 #include "artnettrigger.h"

@@ -194,6 +194,7 @@ static void irq_timer0_dmx_sender(uint32_t clo) {
 		break;
 	default:
 		assert(0);
+		__builtin_unreachable();
 		break;
 	}
 }

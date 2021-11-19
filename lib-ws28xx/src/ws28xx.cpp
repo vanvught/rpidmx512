@@ -142,7 +142,7 @@ void WS28xx::SetupBuffers() {
 
 #if defined ( GD32 )
 	auto tmp = m_nBufSize;
-	m_nBufSize = (m_nBufSize + 3) & ~3;
+	m_nBufSize = (m_nBufSize + 3) & static_cast<uint32_t>(~3);
 
 	for (auto i = tmp; i < m_nBufSize; i++) {
 		m_pBuffer[i] = 0x00;

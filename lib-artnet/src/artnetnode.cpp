@@ -44,8 +44,6 @@
 
 #include "artnetnode_internal.h"
 
-#include "debug.h"
-
 using namespace artnet;
 using namespace artnetnode;
 
@@ -127,16 +125,13 @@ void ArtNetNode::Start() {
 }
 
 void ArtNetNode::Stop() {
-	DEBUG_ENTRY
-
-	if (m_pLightSet != nullptr) {
-		for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
-			if (m_OutputPort[i].protocol == PortProtocol::ARTNET) {
-				m_pLightSet->Stop(i);
-//				m_OutputPorts[i].nLength = 0;
-				lightset::Data::ClearLength(i);
-				m_OutputPort[i].IsTransmitting = false;
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		if (m_OutputPort[nPortIndex].protocol == PortProtocol::ARTNET) {
+			if (m_pLightSet != nullptr) {
+				m_pLightSet->Stop(nPortIndex);
 			}
+			lightset::Data::ClearLength(nPortIndex);
+			m_OutputPort[nPortIndex].IsTransmitting = false;
 		}
 	}
 
@@ -152,8 +147,6 @@ void ArtNetNode::Stop() {
 
 	m_Node.Status1 = static_cast<uint8_t>((m_Node.Status1 & ~Status1::INDICATOR_MASK) | Status1::INDICATOR_MUTE_MODE);
 	m_State.status = Status::OFF;
-
-	DEBUG_EXIT
 }
 
 void ArtNetNode::SetShortName(const char *pShortName) {
@@ -205,7 +198,9 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 
 	for (uint32_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
 		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].IsTransmitting)) {
-			m_pLightSet->Stop(i);
+			if (m_pLightSet != nullptr) {
+				m_pLightSet->Stop(i);
+			}
 			m_OutputPort[i].IsTransmitting = false;
 		}
 

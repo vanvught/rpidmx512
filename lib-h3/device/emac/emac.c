@@ -59,7 +59,7 @@
 #define	ARM_DMA_ALIGN	64
 
 #define CONFIG_TX_DESCR_NUM	48
-#define CONFIG_RX_DESCR_NUM	48
+#define CONFIG_RX_DESCR_NUM 48
 #define CONFIG_ETH_BUFSIZE	2048 /* Note must be DMA aligned */
 /*
  * The datasheet says that each descriptor can transfers up to 4096 bytes

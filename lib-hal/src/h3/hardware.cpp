@@ -34,6 +34,7 @@
 
 #include "h3_watchdog.h"
 #include "h3_sid.h"
+#include "h3_gpio.h"
 #include "h3_board.h"
 
 #include "arm/synchronize.h"
@@ -155,6 +156,13 @@ bool Hardware::Reboot() {
 
 	clean_data_cache();
 	invalidate_data_cache();
+
+	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
+	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
+	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
+	h3_gpio_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
 	for (;;) {
 		LedBlink::Get()->Run();

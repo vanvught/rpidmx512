@@ -127,12 +127,12 @@ void DMXMonitor::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 void DMXMonitor::Cls(void) {
 	uint32_t i;
 
-	for (i = TOP_ROW; i < (TOP_ROW + HEX_ROWS + 1); i++) {
+	for (i = TOP_ROW; i < (TOP_ROW + HEX_ROWS + 2); i++) {
 		console_clear_line(i);
 	}
 
 	if (m_tFormat == Format::DEC) {
-		for (; i < (TOP_ROW + DEC_ROWS + 1); i++) {
+		for (; i < (TOP_ROW + DEC_ROWS + 2); i++) {
 			console_clear_line(i);
 		}
 	}

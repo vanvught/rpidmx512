@@ -193,6 +193,7 @@ void ArtNetNode::SetNetSwitch(uint8_t nAddress, uint32_t nPage) {
 }
 
 uint8_t ArtNetNode::GetNetSwitch(uint32_t nPage) const {
+	DEBUG_PRINTF("nPage=%u", nPage);
 	assert(nPage < ArtNet::PAGES);
 
 	return m_Node.NetSwitch[nPage];

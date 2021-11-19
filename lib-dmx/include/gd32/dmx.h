@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_DMX_H_
-#define H3_DMX_H_
+#ifndef GD32_DMX_H_
+#define GD32_DMX_H_
 
 #include <cstdint>
 
 #include "dmxconst.h"
-#include "../dmx_config.h"
-
-struct TotalStatistics {
-	uint32_t nDmxPackets;
-	uint32_t nRdmPackets;
-};
+#include "dmx_config.h"
 
 struct Statistics {
 	uint32_t nSlotsInPacket;
 	uint32_t nSlotToSlot;
-	uint32_t nMarkAfterBreak;
-	uint32_t nBreakToBreak;
 };
 
 struct Data {
@@ -53,20 +46,18 @@ public:
 	Dmx();
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
-	dmx::PortDirection GetPortDirection();
 
 	// RDM Send
-	
+
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
-	
+
 	// RDM Receive
-	
+
 	const uint8_t *RdmReceive(uint32_t nPortIndex);
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
-	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX Send
-	
+
 	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
@@ -78,7 +69,7 @@ public:
 	uint32_t GetDmxMabTime() const {
 		return m_nDmxTransmitMabTime;
 	}
-	
+
 	void SetDmxPeriodTime(uint32_t nPeriod);
 	uint32_t GetDmxPeriodTime() const {
 		return m_nDmxTransmitPeriod;
@@ -88,12 +79,12 @@ public:
 	uint16_t GetDmxSlots() const {
 		return m_nDmxTransmitSlots;
 	}
-	
+
 	// DMX Receive
-	
-	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
-	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
-	
+
+	const uint8_t* GetDmxAvailable(uint32_t nPortIndex = 0);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex = 0);
+
 	static Dmx* Get() {
 		return s_pThis;
 	}
@@ -109,10 +100,10 @@ private:
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
-	dmx::PortDirection m_tDmxPortDirection[dmxmulti::max::OUT];
-	uint32_t m_nDmxTransmissionLength[dmxmulti::max::OUT];
+	dmx::PortDirection m_tDmxPortDirection[dmxmulti::config::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmxmulti::config::max::OUT];
 
 	static Dmx *s_pThis;
 };
 
-#endif /* H3_DMX_H_ */
+#endif /* GD32_DMX_H_ */
