@@ -30,22 +30,19 @@
 #define ARTNETNODE_H_
 
 #include <cstdint>
-#include <time.h>
 
 #include "artnet.h"
 #include "packets.h"
-
-#include "lightset.h"
-#include "ledblink.h"
-
 #include "artnettimecode.h"
 #include "artnetrdm.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnetdmx.h"
 #include "artnettrigger.h"
-
 #include "artnet4handler.h"
+
+#include "lightset.h"
+#include "ledblink.h"
 
 namespace artnetnode {
 static constexpr auto MAX_PORTS = ArtNet::PORTS * ArtNet::PAGES;
@@ -115,12 +112,12 @@ struct Node {
 	uint8_t Status2;
 	uint8_t Status3;
 	uint8_t DefaultUidResponder[6];					///< //RDMnet & LLRP UID
+	bool bMapUniverse0;
 };
 
 struct Source {
 	uint32_t nMillis;	///< The latest time of the data received from port
 	uint32_t nIp;		///< The IP address for port
-	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];
 };
 
 struct GenericPort {
@@ -134,11 +131,9 @@ struct OutputPort {
 	GenericPort genericPort;
 	Source sourceA;
 	Source sourceB;
-	uint8_t data[lightset::Dmx::UNIVERSE_SIZE];	///< Data sent
-	uint32_t nLength;
 	lightset::MergeMode mergeMode;
-	artnet::PortProtocol protocol;			///< Art-Net 4
-	bool IsDataPending;							///< ArtDMX received and waiting for ArtSync
+	artnet::PortProtocol protocol;	///< Art-Net 4
+	bool IsDataPending;				///< ArtDMX received and waiting for ArtSync
 	bool IsTransmitting;
 };
 
@@ -234,7 +229,9 @@ public:
 		return m_State.bDisableMergeTimeout;
 	}
 
-	void SendDiag(const char *, TPriorityCodes);
+#if defined ( ENABLE_SENDDIAG )
+	void SendDiag(const char *, artnet::PriorityCodes);
+#endif
 
 	void SendTimeCode(const struct TArtNetTimeCode *);
 	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
@@ -266,7 +263,7 @@ public:
 	void SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp);
 	uint32_t GetDestinationIp(uint32_t nPortIndex) const {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
-			return m_InputPorts[nPortIndex].nDestinationIp;
+			return m_InputPort[nPortIndex].nDestinationIp;
 		}
 
 		return 0;
@@ -275,6 +272,16 @@ public:
 	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
 
 	void SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP = false);
+
+	/**
+	 * Art-Net 4
+	 */
+	void SetMapUniverse0(bool bMapUniverse0 = false) {
+		m_Node.bMapUniverse0 = bMapUniverse0;
+	}
+	bool IsMapUniverse0() {
+		return m_Node.bMapUniverse0;
+	}
 
 	void Print();
 
@@ -305,7 +312,7 @@ private:
 
 	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
-	void MergeDmxData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void UpdateMergeStatus(uint32_t nPortIndex);
 	void CheckMergeTimeouts(uint32_t nPortIndex);
 
 	void SendPollRelply(bool);
@@ -346,8 +353,8 @@ private:
 	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
 
 	artnetnode::State m_State;
-	artnetnode::OutputPort m_OutputPorts[artnetnode::MAX_PORTS];
-	artnetnode::InputPort m_InputPorts[artnetnode::MAX_PORTS];
+	artnetnode::OutputPort m_OutputPort[artnetnode::MAX_PORTS];
+	artnetnode::InputPort m_InputPort[artnetnode::MAX_PORTS];
 
 	static ArtNetNode *s_pThis;
 };

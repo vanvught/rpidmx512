@@ -45,7 +45,9 @@
 
 static uint16_t s_ActiveUniverses[ARTNET_POLL_TABLE_SIZE_UNIVERSES] __attribute__ ((aligned (4)));
 
-ArtNetController *ArtNetController::s_pThis = nullptr;
+ArtNetController *ArtNetController::s_pThis;
+
+using namespace artnet;
 
 ArtNetController::ArtNetController() {
 	DEBUG_ENTRY
@@ -60,7 +62,7 @@ ArtNetController::ArtNetController() {
 	memcpy(&m_ArtNetPoll, artnet::NODE_ID, 8);
 	m_ArtNetPoll.OpCode = OP_POLL;
 	m_ArtNetPoll.ProtVerLo = ArtNet::PROTOCOL_REVISION;
-	m_ArtNetPoll.TalkToMe = ArtNetTalkToMe::SEND_ARTP_ON_CHANGE;
+	m_ArtNetPoll.TalkToMe = TalkToMe::SEND_ARTP_ON_CHANGE;
 
 	m_pArtDmx = new struct TArtDmx;
 	assert(m_pArtDmx != nullptr);

@@ -38,11 +38,11 @@ void SpiFlashInstallParams::Dump() {
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SpiFlashInstallParamsConst::FILE_NAME);
 
 	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UBOOT)) {
-		printf(" %s=%1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT);
+		printf(" %s=1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UBOOT);
 	}
 
 	if(isMaskSet(SpiFlashInstallParamsMask::INSTALL_UIMAGE)) {
-		printf(" %s=%1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE);
+		printf(" %s=1 [Yes]\n", SpiFlashInstallParamsConst::INSTALL_UIMAGE);
 	}
 #endif
 }

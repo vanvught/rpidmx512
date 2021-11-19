@@ -348,9 +348,8 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 
 void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
-
 	assert(pData != 0);
-	assert(nLength <= DMX_UNIVERSE_SIZE);
+	assert(nLength <= lightset::Dmx::UNIVERSE_SIZE);
 
 	bool bIsDmxDataChanged[SPARKFUN_DMX_MAX_MOTORS];
 

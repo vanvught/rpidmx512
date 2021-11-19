@@ -46,15 +46,15 @@ public:
 	void Print(const char *pTitle = nullptr);
 
 	const struct firmwareversion::Info* GetVersion() {
-		return &m_tFirmwareVersion;
+		return &s_FirmwareVersion;
 	}
 
 	const char* GetPrint() {
-		return m_aPrint;
+		return s_Print;
 	}
 
 	const char* GetSoftwareVersion() {
-		return m_tFirmwareVersion.SoftwareVersion;
+		return s_FirmwareVersion.SoftwareVersion;
 	}
 
 	static FirmwareVersion* Get() {
@@ -62,9 +62,8 @@ public:
 	}
 
 private:
-	struct firmwareversion::Info m_tFirmwareVersion;
-	char m_aPrint[64];
-
+	static struct firmwareversion::Info s_FirmwareVersion;
+	static char s_Print[64];
 	static FirmwareVersion *s_pThis;
 };
 

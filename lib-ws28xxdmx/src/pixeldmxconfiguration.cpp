@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
@@ -91,7 +93,8 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 void PixelDmxConfiguration::Dump() {
 #ifndef NDEBUG
 	PixelConfiguration::Dump();
-	printf("nOuputPorts=%u\n", m_nOutputPorts);
-	printf("nGroupingCount=%u\n", m_nGroupingCount);
+	printf("OuputPorts=%u\n", m_nOutputPorts);
+	printf("GroupingCount=%u\n", m_nGroupingCount);
+	printf("DmxStartAddress=%u\n", m_nDmxStartAddress);
 #endif
 }

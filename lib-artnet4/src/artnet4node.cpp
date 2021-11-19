@@ -69,7 +69,7 @@ void ArtNet4Node::SetPort(uint32_t nPortIndex, lightset::PortDir dir) {
 
 		if (tPortProtocol == PortProtocol::SACN) {
 
-			if (m_bMapUniverse0) {
+			if (IsMapUniverse0()) {
 				nUniverse++;
 			}
 
@@ -139,12 +139,12 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("m_nPages=%d", GetPages());
 
-	for (uint8_t i = 0; i < (ArtNet::PORTS * GetPages()); i++) {
+	for (uint32_t i = 0; i < (ArtNet::PORTS * GetPages()); i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse, lightset::PortDir::OUTPUT);
 
 		if (isActive) {
-			if (m_bMapUniverse0) {
+			if (IsMapUniverse0()) {
 				nUniverse++;
 			}
 
@@ -165,34 +165,34 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 
 	switch (nCommand) {
 
-	case ARTNET_PC_LED_NORMAL:
+	case PortCommand::PC_LED_NORMAL:
 		m_Bridge.SetEnableDataIndicator(true);
 		break;
-	case ARTNET_PC_LED_MUTE:
+	case PortCommand::PC_LED_MUTE:
 		m_Bridge.SetEnableDataIndicator(false);
 		break;
-	case ARTNET_PC_LED_LOCATE:
+	case PortCommand::PC_LED_LOCATE:
 		m_Bridge.SetEnableDataIndicator(false);
 		break;
 
-	case ARTNET_PC_MERGE_LTP_O:
-	case ARTNET_PC_MERGE_LTP_1:
-	case ARTNET_PC_MERGE_LTP_2:
-	case ARTNET_PC_MERGE_LTP_3:
+	case PortCommand::PC_MERGE_LTP_O:
+	case PortCommand::PC_MERGE_LTP_1:
+	case PortCommand::PC_MERGE_LTP_2:
+	case PortCommand::PC_MERGE_LTP_3:
 		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::LTP);
 		break;
 
-	case ARTNET_PC_MERGE_HTP_0:
-	case ARTNET_PC_MERGE_HTP_1:
-	case ARTNET_PC_MERGE_HTP_2:
-	case ARTNET_PC_MERGE_HTP_3:
+	case PortCommand::PC_MERGE_HTP_0:
+	case PortCommand::PC_MERGE_HTP_1:
+	case PortCommand::PC_MERGE_HTP_2:
+	case PortCommand::PC_MERGE_HTP_3:
 		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::HTP);
 		break;
 
-	case ARTNET_PC_CLR_0:
-	case ARTNET_PC_CLR_1:
-	case ARTNET_PC_CLR_2:
-	case ARTNET_PC_CLR_3:
+	case PortCommand::PC_CLR_0:
+	case PortCommand::PC_CLR_1:
+	case PortCommand::PC_CLR_2:
+	case PortCommand::PC_CLR_3:
 		if (GetPortProtocol(nPort) == PortProtocol::SACN) {
 			m_Bridge.Clear(nPort);
 		}
@@ -214,9 +214,9 @@ uint8_t ArtNet4Node::GetStatus(uint32_t nPortIndex) {
 	DEBUG_PRINTF("Port %u, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 
 	if (isActive) {
-		uint8_t nStatus = GO_OUTPUT_IS_SACN;
-		nStatus = nStatus | (m_Bridge.IsTransmitting(nPortIndex) ? GO_DATA_IS_BEING_TRANSMITTED : GO_OUTPUT_NONE);
-		nStatus = nStatus | (m_Bridge.IsMerging(nPortIndex) ? GO_OUTPUT_IS_MERGING : GO_OUTPUT_NONE);
+		uint8_t nStatus = GoodOutput::GO_OUTPUT_IS_SACN;
+		nStatus = nStatus | (m_Bridge.IsTransmitting(nPortIndex) ? GoodOutput::GO_DATA_IS_BEING_TRANSMITTED : GoodOutput::GO_OUTPUT_NONE);
+		nStatus = nStatus | (m_Bridge.IsMerging(nPortIndex) ? GoodOutput::GO_OUTPUT_IS_MERGING : GoodOutput::GO_OUTPUT_NONE);
 		return nStatus;
 	}
 
@@ -227,7 +227,7 @@ void ArtNet4Node::Print() {
 	ArtNetNode::Print();
 
 	if (ArtNetNode::GetActiveOutputPorts() != 0) {
-		if (m_bMapUniverse0) {
+		if (IsMapUniverse0()) {
 			printf("  Universes are mappped +1\n");
 		}
 

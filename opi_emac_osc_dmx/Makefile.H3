@@ -3,9 +3,9 @@ PLATFORM=ORANGE_PI
 DEFINES=NODE_OSC_SERVER OUTPUT_DMX_SEND DISABLE_RTC NDEBUG
 DEFINES+=ENABLE_HTTPD
 
-LIBS=oscserver osc
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 

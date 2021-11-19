@@ -50,7 +50,9 @@
 # define DISPLAYUDF_DMX_INFO
 #endif
 
-#include "network.h"
+#if !defined (NO_EMAC)
+# include "network.h"
+#endif
 
 namespace displayudf {
 static constexpr auto LABEL_MAX_ROWS = 6;
@@ -121,7 +123,7 @@ public:
 	// LightSet
 	void ShowDmxStartAddress();
 
-	// Network
+#if !defined (NO_EMAC)
 	void ShowEmacStart();
 	void ShowIpAddress();
 	void ShowNetmask();
@@ -129,6 +131,7 @@ public:
 	void ShowHostName();
 	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
 	void ShowShutdown();
+#endif
 
 	void Set(uint8_t nLine, displayudf::Labels tLabel);
 

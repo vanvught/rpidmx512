@@ -26,8 +26,26 @@
 #ifndef NET_CONFIG_H_
 #define NET_CONFIG_H_
 
-#if defined(BARE_METAL)
+#if defined (BARE_METAL)
+#		define TCP_MAX_CONNECTIONS_ALLOWED	1
+# if defined (H3)
+#       define HOST_NAME_PREFIX				"allwinner_"
+#		define UDP_MAX_PORTS_ALLOWED		16
+# elif defined (GD32)
+#       define HOST_NAME_PREFIX				"gigadevice_"
+#   	define UDP_MAX_PORTS_ALLOWED		8
+# else
+#  error
+# endif
 #else
+# error
+#endif
+
+#if !defined (UDP_MAX_PORTS_ALLOWED)
+# error
+#endif
+
+#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
 # error
 #endif
 

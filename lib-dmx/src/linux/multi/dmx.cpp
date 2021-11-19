@@ -143,11 +143,11 @@ const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex)
 		return nullptr;
 	}
 
-	dmxDataRx.nSlotsInPacket = nBytesReceived;
+	dmxDataRx.Statistics.nSlotsInPacket = nBytesReceived;
 	return const_cast<const uint8_t *>(dmxDataRx.data);
 }
 
-uint32_t Dmx::GetUpdatesPerSeconde(__attribute__((unused)) uint32_t nPortIndex) {
+uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	return 0;
 }
 

@@ -40,7 +40,7 @@ public:
 private:
 	void Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t nSubDevice);
 
-	typedef struct {
+	struct PidDefinition {
 		const uint16_t nPid;
 		void (RDMHandler::*pGetHandler)(uint16_t nSubDevice);
 		void (RDMHandler::*pSetHandler)(bool IsBroadcast, uint16_t nSubDevice);
@@ -48,13 +48,15 @@ private:
 		const bool bIncludeInSupportedParams;
 		const bool bRDM;
 		const bool bRDMNet;
-	} TPidDefinition;
+	} ;
 
-	static const TPidDefinition PID_DEFINITIONS[];
-	static const TPidDefinition PID_DEFINITIONS_SUB_DEVICES[];
+	static const PidDefinition PID_DEFINITIONS[];
+	static const PidDefinition PID_DEFINITIONS_SUB_DEVICES[];
 
 	// Get
+#if defined (ENABLE_RDM_QUEUED_MSG)
 	void GetQueuedMessage(uint16_t nSubDevice);
+#endif
 	void GetSupportedParameters(uint16_t nSubDevice);
 	void GetDeviceInfo(uint16_t nSubDevice);
 	void GetProductDetailIdList(uint16_t nSubDevice);
@@ -74,9 +76,15 @@ private:
 	void GetSensorDefinition(uint16_t nSubDevice);
 	void GetSensorValue(uint16_t nSubDevice);
 	void GetDeviceHours(uint16_t nSubDevice);
+	void GetDisplayInvert(uint16_t nSubDevice);
+	void GetDisplayLevel(uint16_t nSubDevice);
 	void GetIdentifyDevice(uint16_t nSubDevice);
 	void GetRealTimeClock(uint16_t nSubDevice);
 	void GetPowerState(uint16_t nSubDevice);
+#if defined (ENABLE_RDM_SELF_TEST)
+	void GetPerformSelfTest(uint16_t nSubDevice);
+	void GetSelfTestDescription(uint16_t nSubDevice);
+#endif
 	// ANSI E1.37-1
 	void GetIdentifyMode(uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
@@ -100,10 +108,15 @@ private:
 	void SetSensorValue(bool IsBroadcast, uint16_t nSubDevice);
 	void SetRecordSensors(bool IsBroadcast, uint16_t nSubDevice);
 	void SetDeviceHours(bool IsBroadcast, uint16_t nSubDevice);
+	void SetDisplayInvert(bool IsBroadcast, uint16_t nSubDevice);
+	void SetDisplayLevel(bool IsBroadcast, uint16_t nSubDevice);
 	void SetIdentifyDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice);
 	void SetResetDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
+//#if defined (ENABLE_RDM_SELF_TEST)
+	void SetPerformSelfTest(bool IsBroadcast, uint16_t nSubDevice);
+//#endif
 	// ANSI E1.37-1
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
@@ -126,10 +139,12 @@ private:
 
 private:
 	bool m_bIsRDM;
-	RDMQueuedMessage m_RDMQueuedMessage;
 	bool m_IsMuted { false };
 	uint8_t *m_pRdmDataIn { nullptr };
 	uint8_t *m_pRdmDataOut { nullptr };
+#if defined (ENABLE_RDM_QUEUED_MSG)
+	RDMQueuedMessage m_RDMQueuedMessage;
+#endif
 };
 
 #endif /* RDMHANDLER_H_ */

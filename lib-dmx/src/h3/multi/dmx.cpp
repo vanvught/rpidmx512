@@ -331,7 +331,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 
 			if (s_nDmxDataIndex[nUart] > max::CHANNELS) {
 				s_tReceiveState[nUart] = TxRxState::IDLE;
-				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].nSlotsInPacket = max::CHANNELS;
+				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Statistics.nSlotsInPacket = max::CHANNELS;
 				s_nDmxDataBufferIndexHead[nUart] = (s_nDmxDataBufferIndexHead[nUart] + 1) & buffer::INDEX_MASK;
 				return;
 			}
@@ -426,7 +426,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 	if (((pUart->USR & UART_USR_BUSY) == 0) && ((nIIR & UART_IIR_IID_TIME_OUT) == UART_IIR_IID_TIME_OUT)) {
 		if (s_tReceiveState[nUart] == TxRxState::DMXDATA) {
 			s_tReceiveState[nUart] = TxRxState::IDLE;
-			s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].nSlotsInPacket = s_nDmxDataIndex[nUart] - 1;
+			s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Statistics.nSlotsInPacket = s_nDmxDataIndex[nUart] - 1;
 			s_nDmxDataBufferIndexHead[nUart] = (s_nDmxDataBufferIndexHead[nUart] + 1) & buffer::INDEX_MASK;
 		}
 
@@ -877,7 +877,7 @@ const uint8_t *Dmx::GetDmxAvailable(uint32_t nPortIndex)  {
 	}
 }
 
-uint32_t Dmx::GetUpdatesPerSeconde(uint32_t nPortIndex) {
+uint32_t Dmx::GetUpdatesPerSecond(uint32_t nPortIndex) {
 	const auto uart = _port_to_uart(nPortIndex);
 
 	dmb();

@@ -46,7 +46,7 @@ extern void ip_shutdown(void);
 
 extern void tcp_init(void);
 
-extern int dhcp_client(const uint8_t *, struct ip_info *, const uint8_t *);
+extern int dhcp_client(const uint8_t *mac_address, struct ip_info  *p_ip_info, const uint8_t *hostname);
 extern void dhcp_client_release(void);
 
 extern void rfc3927_init(const uint8_t *mac_address);
@@ -55,11 +55,10 @@ extern bool rfc3927(struct ip_info *p_ip_info);
 struct ip_info g_ip_info  __attribute__ ((aligned (4)));
 uint8_t g_mac_address[ETH_ADDR_LEN] __attribute__ ((aligned (4)));
 
-static char s_hostname[HOST_NAME_MAX] __attribute__ ((aligned (4))); /* including a terminating null byte. */
-static uint8_t *s_p __attribute__ ((aligned (4)));
+static uint8_t *s_p;
 static bool s_is_dhcp = false;
 
-void __attribute__((cold)) net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
+void __attribute__((cold)) net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const char *hostname, bool *use_dhcp, bool *is_zeroconf_used) {
 	uint32_t i;
 
 	for (i = 0; i < ETH_ADDR_LEN; i++) {
@@ -73,14 +72,13 @@ void __attribute__((cold)) net_init(const uint8_t *mac_address, struct ip_info *
 		*dst++ = *src++;
 	}
 
-	net_set_hostname((char *)hostname);
 	ip_init(g_mac_address, &g_ip_info);
 	rfc3927_init(g_mac_address);
 
 	*is_zeroconf_used = false;
 
 	if (*use_dhcp) {
-		if (dhcp_client(g_mac_address, &g_ip_info, (const uint8_t *)s_hostname) < 0) {
+		if (dhcp_client(g_mac_address, &g_ip_info, (const uint8_t *)hostname) < 0) {
 			*use_dhcp = false;
 			DEBUG_PUTS("DHCP Client failed");
 			*is_zeroconf_used = rfc3927(&g_ip_info);
@@ -109,11 +107,6 @@ void __attribute__((cold)) net_shutdown(void) {
 	}
 }
 
-void net_set_hostname(const char *name) {
-	strncpy(s_hostname, name, HOST_NAME_MAX);
-	s_hostname[HOST_NAME_MAX - 1] = '\0';
-}
-
 void net_set_ip(uint32_t ip) {
 	g_ip_info.ip.addr = ip;
 
@@ -127,11 +120,11 @@ void net_set_gw(uint32_t gw) {
 	ip_set_ip(&g_ip_info);
 }
 
-bool net_set_dhcp(struct ip_info *p_ip_info, bool *is_zeroconf_used) {
+bool net_set_dhcp(struct ip_info *p_ip_info, const char *hostname, bool *is_zeroconf_used) {
 	bool is_dhcp = false;
 	*is_zeroconf_used = false;
 
-	if (dhcp_client(g_mac_address, &g_ip_info, (const uint8_t *)s_hostname) < 0) {
+	if (dhcp_client(g_mac_address, &g_ip_info, (const uint8_t *)hostname) < 0) {
 		DEBUG_PUTS("DHCP Client failed");
 		*is_zeroconf_used = rfc3927(&g_ip_info);
 	} else {

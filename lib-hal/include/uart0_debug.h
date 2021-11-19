@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_UART_DEBUG_H_
-#define H3_UART_DEBUG_H_
+#ifndef UART0_DEBUG_H_
+#define UART0_DEBUG_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,4 +40,4 @@ extern int uart0_printf(const char* fmt, ...);
 }
 #endif
 
-#endif /* H3_UART_DEBUG_H_ */
+#endif /* UART0_DEBUG_H_ */

@@ -149,11 +149,9 @@ void notmain(void) {
 
 	dmxrdm.Init();
 	dmxrdm.Print();
+	dmxrdm.Start();
 
 	hw.WatchdogInit();
-
-	dmxrdm.SetOutput(pBoard);
-	dmxrdm.Start();
 
 	for(;;) {
 		hw.WatchdogFeed();

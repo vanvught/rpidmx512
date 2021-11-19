@@ -74,6 +74,10 @@ public:
 		return static_cast<float>(bcm2835_vc_get_temperature()) / 1000;
 	}
 
+	float GetCoreTemperatureMin() {
+		return -40.0f;
+	}
+
 	float GetCoreTemperatureMax() {
 		return static_cast<float>(85);
 	}

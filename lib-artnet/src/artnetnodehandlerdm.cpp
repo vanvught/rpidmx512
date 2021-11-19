@@ -48,8 +48,8 @@ void ArtNetNode::HandleTodControl() {
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
 	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
-			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
+		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
+			if (m_OutputPort[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Stop(i);
 			}
 
@@ -59,7 +59,7 @@ void ArtNetNode::HandleTodControl() {
 
 			SendTod(i);
 
-			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
+			if (m_OutputPort[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Start(i);
 			}
 		}
@@ -75,7 +75,7 @@ void ArtNetNode::HandleTodRequest() {
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
 	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
+		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			SendTod(i);
 		}
 	}
@@ -105,7 +105,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->BindIndex = static_cast<uint8_t>(nPage + 1);
 	pTodData->Net = m_Node.NetSwitch[nPage];
 	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
-	pTodData->Address = m_OutputPorts[nPortIndex].genericPort.nDefaultAddress;
+	pTodData->Address = m_OutputPort[nPortIndex].genericPort.nDefaultAddress;
 	pTodData->UidTotalHi = 0;
 	pTodData->UidTotalLo = discovered;
 	pTodData->BlockCount = 0;
@@ -127,7 +127,7 @@ void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 	if (pArtNetTRdm != nullptr) {
 		m_pArtNetRdm = pArtNetTRdm;
 		m_IsRdmResponder = IsResponder;
-		m_Node.Status1 |= STATUS1_RDM_CAPABLE;
+		m_Node.Status1 |= Status1::RDM_CAPABLE;
 	}
 
 	DEBUG_EXIT
@@ -140,14 +140,14 @@ void ArtNetNode::HandleRdm() {
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
 	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-		if ((portAddress == m_OutputPorts[i].genericPort.nPortAddress) && m_OutputPorts[i].genericPort.bIsEnabled) {
+		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			if (!m_IsRdmResponder) {
-				if ((m_OutputPorts[i].protocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
-					const uint8_t nMask = GO_OUTPUT_IS_MERGING | GO_DATA_IS_BEING_TRANSMITTED | GO_OUTPUT_IS_SACN;
-					m_OutputPorts[i].IsTransmitting = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
+				if ((m_OutputPort[i].protocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
+					const uint8_t nMask = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
+					m_OutputPort[i].IsTransmitting = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
 
-				if (m_OutputPorts[i].IsTransmitting) {
+				if (m_OutputPort[i].IsTransmitting) {
 					m_pLightSet->Stop(i); // Stop DMX if was running
 				}
 
@@ -168,7 +168,7 @@ void ArtNetNode::HandleRdm() {
 				printf("No RDM response\n");
 			}
 
-			if (m_OutputPorts[i].IsTransmitting && (!m_IsRdmResponder)) {
+			if (m_OutputPort[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Start(i); // Start DMX if was running
 			}
 		}
@@ -180,8 +180,8 @@ void ArtNetNode::HandleRdm() {
 void ArtNetNode::SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP) {
 	memcpy(m_Node.DefaultUidResponder, pUid, sizeof(m_Node.DefaultUidResponder));
 	if (bSupportsLLRP) {
-		m_Node.Status3 |= ArtNetStatus3::SUPPORTS_LLRP;
+		m_Node.Status3 |= Status3::SUPPORTS_LLRP;
 	} else {
-		m_Node.Status3 &= static_cast<uint8_t>(~ArtNetStatus3::SUPPORTS_LLRP);
+		m_Node.Status3 &= static_cast<uint8_t>(~Status3::SUPPORTS_LLRP);
 	}
 }

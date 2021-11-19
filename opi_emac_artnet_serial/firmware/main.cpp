@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -36,9 +37,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -98,28 +98,27 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
+	StoreArtNet storeArtNet;
+	ArtNetParams artnetParams(&storeArtNet);
+
 	ArtNet4Node node;
 
-	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
+		artnetParams.Dump();
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 	bool isSet;
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
+	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
 
 	DmxSerial dmxSerial;
 	DmxSerialParams dmxSerialParams(new StoreDmxSerial);
@@ -168,37 +167,34 @@ void notmain(void) {
 
 	Identify identify;
 
-	RDMNetDevice device(new RDMPersonality("RDMNet LLRP device only", 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", 0));
+
+	constexpr char aLabel[] = "Art-Net 4 Serial [UART/SPI/I2C]";
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
-
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-	device.SetRDMDeviceStore(&storeRdmDevice);
-
-	const char aLabel[] = "Art-Net 4 Serial [UART/SPI/I2C]";
-	device.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-
-	device.SetRDMFactoryDefaults(new FactoryDefaults);
-
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&device);
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
+
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
 
 	while (spiFlashStore.Flash())
 		;
 
-	device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-
-	device.Init();
-	device.Print();
-
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
-	device.Start();
+	llrpOnlyDevice.Start();
 
 	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
@@ -211,7 +207,7 @@ void notmain(void) {
 		node.Run();
 		dmxSerial.Run();
 		//
-		device.Run();
+		llrpOnlyDevice.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

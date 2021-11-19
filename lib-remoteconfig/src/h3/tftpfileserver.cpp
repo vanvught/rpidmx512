@@ -24,119 +24,20 @@
  */
 
 #include <cstdint>
-#include <cstring>
-#include <cstdio>
 #include <cassert>
 
-#include "tftp/tftpfileserver.h"
-#include "ubootheader.h"
+#include "h3/ubootheader.h"
 #include "remoteconfig.h"
-
-#include "display.h"
 
 #include "debug.h"
 
-#if defined(ORANGE_PI)
- static constexpr char FILE_NAME[] = "orangepi_zero.uImage";
-#else
- static constexpr char FILE_NAME[] = "orangepi_one.uImage";
-#endif
-
-static constexpr auto FILE_NAME_LENGTH = sizeof(FILE_NAME) - 1;
-
-TFTPFileServer::TFTPFileServer(uint8_t *pBuffer, uint32_t nSize): m_pBuffer(pBuffer), m_nSize(nSize) {
-	DEBUG_ENTRY
-
-	assert(m_pBuffer != nullptr);
-	assert(nSize != 0);
-
-	DEBUG_EXIT
-}
-
-void TFTPFileServer::Exit() {
-	DEBUG_ENTRY
-
-	RemoteConfig::Get()->TftpExit();
-
-	DEBUG_EXIT
-}
-
-
-bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-	return (false);
-}
-
-bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
-	DEBUG_ENTRY
-
-	assert(pFileName != nullptr);
-
-	if (tMode != TFTPMode::BINARY) {
-		DEBUG_EXIT
+namespace tftpfileserver {
+bool is_valid(const void *pBuffer) {
+	UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
+	if (!uImage.IsValid()) {
+		DEBUG_PUTS("uImage is not valid");
 		return false;
 	}
-
-	if (strncmp(FILE_NAME, pFileName, FILE_NAME_LENGTH) != 0) {
-		DEBUG_EXIT
-		return false;
-	}
-
-	printf("TFTP started\n");
-	Display::Get()->TextStatus("TFTP Started", Display7SegmentMessage::INFO_TFTP_STARTED);
-
-	m_nFileSize = 0;
-
-	DEBUG_EXIT
-	return (true);
-}
-
-bool TFTPFileServer::FileClose() {
-	DEBUG_ENTRY
-
-	m_bDone = true;
-
-	printf("TFTP ended\n");
-	Display::Get()->TextStatus("TFTP Ended", Display7SegmentMessage::INFO_TFTP_ENDED);
-
-	DEBUG_EXIT
 	return true;
 }
-
-size_t TFTPFileServer::FileRead(__attribute__((unused)) void* pBuffer, __attribute__((unused)) size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-	return 0;
-}
-
-size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) {
-	DEBUG_PRINTF("pBuffer=%p, nCount=%d, nBlockNumber=%d (%d)", pBuffer, nCount, nBlockNumber, m_nSize / 512);
-
-	if (nBlockNumber > (m_nSize / 512)) {
-		m_nFileSize = 0;
-		return 0;
-	}
-
-	assert(nBlockNumber != 0);
-
-	if (nBlockNumber == 1) {
-		UBootHeader uImage(reinterpret_cast<uint8_t *>(const_cast<void*>(pBuffer)));
-		if (!uImage.IsValid()) {
-			DEBUG_PUTS("uImage is not valid");
-			return 0;
-		}
-	}
-
-	uint32_t nOffset = (nBlockNumber - 1) * 512;
-
-	assert((nOffset + nCount) <= m_nSize);
-
-	memcpy(&m_pBuffer[nOffset], pBuffer, nCount);
-
-	m_nFileSize += nCount; //FIXME BUG When in retry ?
-
-	return nCount;
-}
+}  // namespace tftpfileserver

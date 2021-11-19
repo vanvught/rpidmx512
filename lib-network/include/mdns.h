@@ -27,7 +27,10 @@
 #define MDNS_H_
 
 #include <cstdint>
+
 #include "network.h"
+
+#include "../config/apps_config.h"
 
 namespace mdns {
 struct Flags {
@@ -61,7 +64,11 @@ struct RecordData {
 };
 
 static constexpr uint16_t UDP_PORT = 5353;
+#if !defined (MDNS_SERVICE_RECORDS_MAX)
 static constexpr auto SERVICE_RECORDS_MAX = 8;
+#else
+static constexpr auto SERVICE_RECORDS_MAX = MDNS_SERVICE_RECORDS_MAX;
+#endif
 }  // namespace mdns
 
 class MDNS {

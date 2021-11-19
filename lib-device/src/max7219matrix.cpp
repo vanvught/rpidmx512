@@ -113,7 +113,7 @@ void Max7219Matrix::Write(const char *pBuffer, uint16_t nCount) {
 		}
 
 		while (--k >= 0) {
-			auto c = pBuffer[k];
+			auto c = static_cast<uint32_t>(pBuffer[k]);
 
 			if (c >= m_nFontSize) {
 				c = ' ';

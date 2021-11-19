@@ -28,6 +28,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -75,8 +76,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -125,6 +127,15 @@ void notmain(void) {
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(5, displayudf::Labels::VERSION);
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if (displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
 	display.Show();
 
 	display.Write(6, "mDNS enabled");
@@ -138,6 +149,7 @@ void notmain(void) {
 		mDns.Run();
 		device.Run();
 		remoteConfig.Run();
+		ntpClient.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 	}

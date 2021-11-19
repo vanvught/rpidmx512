@@ -46,8 +46,28 @@ public:
 		SpiFlashStore::Get()->Copy(spiflashstore::Store::WS28XXDMX, pWS28xxDmxParams, sizeof(struct TWS28xxDmxParams));
 	}
 
+	void SaveType(uint8_t nType) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nType), &nType, sizeof(uint8_t), WS28xxDmxParamsMask::TYPE);
+	}
+
+	void SaveCount(uint16_t nCount) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nCount), &nCount, sizeof(uint16_t), WS28xxDmxParamsMask::COUNT);
+	}
+
+	void SaveGroupingCount(uint16_t nGroupingCount) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nGroupingCount), &nGroupingCount, sizeof(uint16_t), WS28xxDmxParamsMask::GROUPING_COUNT);
+	}
+
+	void SaveMap(uint8_t nMap) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nMap), &nMap, sizeof(uint8_t), WS28xxDmxParamsMask::MAP);
+	}
+
+	void SaveTestPattern(uint8_t nTestPattern) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nTestPattern), &nTestPattern, sizeof(uint8_t), WS28xxDmxParamsMask::TEST_PATTERN);
+	}
+
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WS28XXDMX, __builtin_offsetof(struct TWS28xxDmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), WS28xxDmxParamsMask::DMX_START_ADDRESS);
 	}
 
 	static StoreWS28xxDmx *Get() {

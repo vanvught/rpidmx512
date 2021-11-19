@@ -39,16 +39,8 @@ using namespace rtc;
 HwClock *HwClock::s_pThis = nullptr;
 
 HwClock::HwClock() {
-	DEBUG_ENTRY
-
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	RtcProbe();
-
-	m_nLastHcToSysMillis = Hardware::Get()->Millis();
-
-	DEBUG_EXIT
 }
 
 void HwClock::Print() {
@@ -57,8 +49,23 @@ void HwClock::Print() {
 		return;
 	}
 
-	printf("%s\n", m_nType == MCP7941X ? "MCP7941X" : (m_nType == DS3231 ? "DS3231" : "Unknown"));
+	const char *pType = "Unknown";
 
+	switch (m_Type) {
+	case Type::MCP7941X:
+		pType = "MCP7941X";
+		break;
+	case Type::DS3231:
+		pType = "DS3231";
+		break;
+	case Type::SOC_INTERNAL:
+		pType = "SOC_INTERNAL";
+		break;
+	default:
+		break;
+	}
+
+	printf("%s\n", pType);
 
 	struct rtc_time tm;
 	RtcGet(&tm);

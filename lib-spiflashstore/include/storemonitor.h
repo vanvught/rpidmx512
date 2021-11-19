@@ -27,10 +27,11 @@
 #define STOREMONITOR_H_
 
 #include "dmxmonitorparams.h"
+#include "dmxmonitorstore.h"
 
 #include "spiflashstore.h"
 
-class StoreMonitor final: public DMXMonitorParamsStore {
+class StoreMonitor final: public DMXMonitorParamsStore, public DmxMonitorStore {
 public:
 	StoreMonitor();
 
@@ -40,6 +41,10 @@ public:
 
 	void Copy(struct TDMXMonitorParams *pDMXMonitorParams) override {
 		SpiFlashStore::Get()->Copy(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
+	}
+
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, __builtin_offsetof(struct TDMXMonitorParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), DMXMonitorParamsMask::START_ADDRESS);
 	}
 
 	static StoreMonitor* Get() {

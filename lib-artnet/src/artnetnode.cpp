@@ -36,6 +36,7 @@
 #include "packets.h"
 
 #include "lightset.h"
+#include "lightsetdata.h"
 
 #include "hardware.h"
 #include "network.h"
@@ -64,9 +65,9 @@ ArtNetNode::ArtNetNode(uint8_t nPages) : m_nPages(nPages <= ArtNet::PAGES ? nPag
 	m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
 	m_Node.IPAddressTimeCode = m_Node.IPAddressBroadcast;
 	Network::Get()->MacAddressCopyTo(m_Node.MACAddressLocal);
-	m_Node.Status1 = STATUS1_INDICATOR_NORMAL_MODE | STATUS1_PAP_FRONT_PANEL;
-	m_Node.Status2 = ArtNetStatus2::PORT_ADDRESS_15BIT | (ArtNet::VERSION > 3 ? ArtNetStatus2::SACN_ABLE_TO_SWITCH : ArtNetStatus2::SACN_NO_SWITCH);
-	m_Node.Status3 = ArtNetStatus3::NETWORKLOSS_OFF_STATE;
+	m_Node.Status1 = Status1::INDICATOR_NORMAL_MODE | Status1::PAP_FRONT_PANEL;
+	m_Node.Status2 = Status2::PORT_ADDRESS_15BIT | (ArtNet::VERSION > 3 ? Status2::SACN_ABLE_TO_SWITCH : Status2::SACN_NO_SWITCH);
+	m_Node.Status3 = Status3::NETWORKLOSS_OFF_STATE;
 
 	memset(&m_State, 0, sizeof(struct State));
 	m_State.reportCode = ReportCode::RCPOWEROK;
@@ -75,11 +76,11 @@ ArtNetNode::ArtNetNode(uint8_t nPages) : m_nPages(nPages <= ArtNet::PAGES ? nPag
 
 	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		// Output
-		memset(&m_OutputPorts[i], 0 , sizeof(struct OutputPort));
+		memset(&m_OutputPort[i], 0 , sizeof(struct OutputPort));
 		// Input
-		memset(&m_InputPorts[i], 0 , sizeof(struct InputPort));
-		m_InputPorts[i].nDestinationIp = m_Node.IPAddressBroadcast;
-		m_InputPorts[i].genericPort.nStatus = GI_DISABLED;
+		memset(&m_InputPort[i], 0 , sizeof(struct InputPort));
+		m_InputPort[i].nDestinationIp = m_Node.IPAddressBroadcast;
+		m_InputPort[i].genericPort.nStatus = GoodInput::GI_DISABLED;
 	}
 
 	SetShortName(defaults::SHORT_NAME);
@@ -99,8 +100,8 @@ ArtNetNode::ArtNetNode(uint8_t nPages) : m_nPages(nPages <= ArtNet::PAGES ? nPag
 }
 
 void ArtNetNode::Start() {
-	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(ArtNetStatus2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? ArtNetStatus2::IP_DHCP : ArtNetStatus2::IP_MANUALY));
-	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(ArtNetStatus2::DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? ArtNetStatus2::DHCP_CAPABLE : 0));
+	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(Status2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? Status2::IP_DHCP : Status2::IP_MANUALY));
+	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(Status2::DHCP_CAPABLE)) | (Network::Get()->IsDhcpCapable() ? Status2::DHCP_CAPABLE : 0));
 
 	FillPollReply();
 #if defined ( ENABLE_SENDDIAG )
@@ -114,7 +115,7 @@ void ArtNetNode::Start() {
 
 	if (m_pArtNetDmx != nullptr) {
 		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-			if (m_InputPorts[i].genericPort.bIsEnabled) {
+			if (m_InputPort[i].genericPort.bIsEnabled) {
 				m_pArtNetDmx->Start(i);
 			}
 		}
@@ -130,17 +131,18 @@ void ArtNetNode::Stop() {
 
 	if (m_pLightSet != nullptr) {
 		for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
-			if (m_OutputPorts[i].protocol == PortProtocol::ARTNET) {
+			if (m_OutputPort[i].protocol == PortProtocol::ARTNET) {
 				m_pLightSet->Stop(i);
-				m_OutputPorts[i].nLength = 0;
-				m_OutputPorts[i].IsTransmitting = false;
+//				m_OutputPorts[i].nLength = 0;
+				lightset::Data::ClearLength(i);
+				m_OutputPort[i].IsTransmitting = false;
 			}
 		}
 	}
 
 	if (m_pArtNetDmx != nullptr) {
 		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-			if (m_InputPorts[i].genericPort.bIsEnabled) {
+			if (m_InputPort[i].genericPort.bIsEnabled) {
 				m_pArtNetDmx->Stop(i);
 			}
 		}
@@ -148,7 +150,7 @@ void ArtNetNode::Stop() {
 
 	LedBlink::Get()->SetMode(ledblink::Mode::OFF_OFF);
 
-	m_Node.Status1 = static_cast<uint8_t>((m_Node.Status1 & ~STATUS1_INDICATOR_MASK) | STATUS1_INDICATOR_MUTE_MODE);
+	m_Node.Status1 = static_cast<uint8_t>((m_Node.Status1 & ~Status1::INDICATOR_MASK) | Status1::INDICATOR_MUTE_MODE);
 	m_State.status = Status::OFF;
 
 	DEBUG_EXIT
@@ -202,15 +204,15 @@ void ArtNetNode::SetNetworkDataLossCondition() {
 	m_State.IsSynchronousMode = false;
 
 	for (uint32_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
-		if ((m_OutputPorts[i].protocol == PortProtocol::ARTNET) && (m_OutputPorts[i].IsTransmitting)) {
+		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].IsTransmitting)) {
 			m_pLightSet->Stop(i);
-			m_OutputPorts[i].IsTransmitting = false;
+			m_OutputPort[i].IsTransmitting = false;
 		}
 
-		m_OutputPorts[i].genericPort.nStatus &= static_cast<uint8_t>(~GO_DATA_IS_BEING_TRANSMITTED);
-		m_OutputPorts[i].nLength = 0;
-		m_OutputPorts[i].sourceA.nIp = 0;
-		m_OutputPorts[i].sourceB.nIp = 0;
+		m_OutputPort[i].genericPort.nStatus &= static_cast<uint8_t>(~GoodOutput::GO_DATA_IS_BEING_TRANSMITTED);
+		m_OutputPort[i].sourceA.nIp = 0;
+		m_OutputPort[i].sourceB.nIp = 0;
+		lightset::Data::ClearLength(i);
 	}
 }
 
@@ -264,7 +266,7 @@ void ArtNetNode::Run() {
 			HandleDmxIn();
 		}
 
-		if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
+		if ((((m_Node.Status1 & Status1::INDICATOR_MASK) == Status1::INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST))  {
 			if (m_State.nReceivingDmx != 0) {
 				LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 			} else {
@@ -344,7 +346,7 @@ void ArtNetNode::Run() {
 		HandleDmxIn();
 	}
 
-	if ((((m_Node.Status1 & STATUS1_INDICATOR_MASK) == STATUS1_INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
+	if ((((m_Node.Status1 & Status1::INDICATOR_MASK) == Status1::INDICATOR_NORMAL_MODE)) && (LedBlink::Get()->GetMode() != ledblink::Mode::FAST)) {
 		if (m_State.nReceivingDmx != 0) {
 			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 		} else {

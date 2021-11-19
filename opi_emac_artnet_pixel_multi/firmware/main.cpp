@@ -30,6 +30,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -37,9 +38,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -94,8 +94,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.Init(StoreNetwork::Get());
-	nw.SetNetworkStore(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -117,14 +118,13 @@ void notmain(void) {
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
 	ArtNet4Node node(static_cast<uint8_t>(nActivePorts));
+
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
+	ArtNetParams artnetParams(&storeArtNet);
 
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
+		artnetParams.Dump();
 
 	}
 
@@ -158,9 +158,6 @@ void notmain(void) {
 		node.SetOutput(nullptr);
 	}
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
 	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
@@ -168,22 +165,25 @@ void notmain(void) {
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
 
-	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
-
-	llrpOnlyDevice.Init();
-	llrpOnlyDevice.Start();
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	node.Print();
@@ -223,6 +223,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
+	llrpOnlyDevice.Start();
 
 	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 

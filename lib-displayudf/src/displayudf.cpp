@@ -93,11 +93,12 @@ void DisplayUdf::Show() {
 	// LightSet
 	ShowDmxStartAddress();
 
-	// Network
+#if !defined (NO_EMAC)
 	ShowIpAddress();
 	ShowGatewayIp();
 	ShowNetmask();
 	ShowHostName();
+#endif
 }
 
 void DisplayUdf::ShowDmxStartAddress() {
@@ -108,6 +109,7 @@ void DisplayUdf::ShowDmxStartAddress() {
 	}
 }
 
+#if !defined (NO_EMAC)
 void DisplayUdf::ShowEmacStart() {
 	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "Ethernet start");	
@@ -161,6 +163,7 @@ void DisplayUdf::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 void DisplayUdf::ShowShutdown() {
 	TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
+#endif
 
 void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
 	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {

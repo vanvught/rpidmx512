@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "h3/showsystime.h"
@@ -40,9 +41,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
 #include "timecode.h"
@@ -94,8 +94,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	NtpClient ntpClient;
@@ -109,22 +110,20 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
+	StoreArtNet storeArtNet;
+	ArtNetParams artnetParams(&storeArtNet);
+
 	ArtNet4Node node;
 
-	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-		artnetparams.Set(&node);
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(&node);
 	}
 
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
 	bool isSet;
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
+	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
 
 	TimeCode timecode;
 	timecode.Start();

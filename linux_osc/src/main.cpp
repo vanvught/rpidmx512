@@ -30,6 +30,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "mdns.h"
@@ -45,6 +46,7 @@
 #include "dmxmonitorparams.h"
 #include "storemonitor.h"
 
+#include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -55,6 +57,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 #include "debug.h"
 
@@ -72,6 +76,11 @@ int main(int argc, char **argv) {
 
 	fw.Print();
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	StoreNetwork storeNetwork;
+
 	puts("OSC Real-time DMX Monitor");
 
 	if (nw.Init(argv[1]) < 0) {
@@ -79,7 +88,9 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	SpiFlashStore spiFlashStore;
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
 	StoreOscServer storeOscServer;
 
 	OSCServerParams oscparms(&storeOscServer);

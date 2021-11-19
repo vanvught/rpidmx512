@@ -2,7 +2,7 @@
  * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,37 +29,18 @@
 
 #include "widgetmonitor.h"
 
-#include "hardware.h"
-#include "console.h"
-
-void WidgetMonitor::Uptime(uint8_t nLine) {
-	auto nUptime = Hardware::Get()->GetUpTime();
-	auto ltime = time(nullptr);
-	auto *pLocalTime = localtime(&ltime);
-
-	console_save_cursor();
-	console_set_cursor(0, nLine);
-
-	const uint32_t nDays = nUptime / (24 * 3600);
-	nUptime -= nDays * (24 * 3600);
-	const uint32_t nHours = nUptime / 3600;
-	nUptime -= nHours * 3600;
-	const uint32_t nMinutes = nUptime / 60;
-	const uint32_t nSeconds = nUptime - nMinutes * 60;
-
-	printf("Local time %.2d:%.2d:%.2d, uptime %d days, %02d:%02d:%02d",
-			pLocalTime->tm_hour, pLocalTime->tm_min, pLocalTime->tm_sec, nDays,
-			nHours, nMinutes, nSeconds);
-
-	console_restore_cursor();
-}
+#if !defined (H3)
+# include "console.h"
+#endif
 
 void WidgetMonitor::Line(__attribute__((unused)) int line, __attribute__((unused)) const char *fmt, ...) {
 	// For H3, only enabled when NDEBUG is not defined
 #if !(defined(NDEBUG) && defined(H3))
 	va_list va;
 
+#if !defined (H3)
 	console_clear_line(line);
+#endif
 
 	if (fmt != nullptr) {
 		va_start(va, fmt);

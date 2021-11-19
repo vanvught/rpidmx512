@@ -43,7 +43,7 @@
 using namespace artnet;
 
 void ArtNetNode::Print() {
-	printf("Node %d\n", ArtNet::VERSION);
+	printf("Node %d [%u]\n", ArtNet::VERSION, m_nPages);
 	printf(" Firmware   : %d.%d\n", ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
@@ -61,9 +61,9 @@ void ArtNetNode::Print() {
 				uint16_t nUniverse;
 				GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
 
-				printf("  Port %2d %d:[%-2d:%-2d:%-2d]:%4u [%s]", nPortIndex, nPage, nNet, nSubSwitch, nAddress, nUniverse, lightset::get_merge_mode(m_OutputPorts[nPortIndex].mergeMode, true));
+				printf("  Port %2d %d:[%-2d:%-2d:%-2d]:%4u [%s]", nPortIndex, nPage, nNet, nSubSwitch, nAddress, nUniverse, lightset::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
 				if (ArtNet::VERSION == 4) {
-					printf(" {%s}\n", ArtNet::GetProtocolMode(m_OutputPorts[nPortIndex].protocol, true));
+					printf(" {%s}\n", ArtNet::GetProtocolMode(m_OutputPort[nPortIndex].protocol, true));
 				} else {
 					printf("\n");
 				}
@@ -80,7 +80,7 @@ void ArtNetNode::Print() {
 				const auto nPage = nPortIndex / ArtNet::PORTS;
 				const auto nNet = m_Node.NetSwitch[nPage];
 				const auto nSubSwitch = m_Node.SubSwitch[nPage];
-				const auto nDestinationIp = (m_InputPorts[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPorts[nPortIndex].nDestinationIp);
+				const auto nDestinationIp = (m_InputPort[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPort[nPortIndex].nDestinationIp);
 
 				uint16_t nUniverse;
 				GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::INPUT);

@@ -41,12 +41,20 @@ class DisplaySet {
 public:
 	virtual ~DisplaySet() {}
 
-	uint8_t GetColumns() {
+	uint8_t GetColumns() const {
 		return m_nCols;
 	}
 
-	uint8_t GetRows() {
+	uint8_t GetRows() const {
 		return m_nRows;
+	}
+
+	uint8_t GetContrast() const {
+		return m_nContrast;
+	}
+
+	bool GetFlipVertically() const {
+		return m_bIsFlippedVertically;
 	}
 
 	virtual bool Start()= 0;
@@ -64,13 +72,14 @@ public:
 
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
 	virtual void SetContrast(__attribute__((unused)) uint8_t nContrast) {}
-	virtual void DoFlipVertically() {}
+	virtual void SetFlipVertically(__attribute__((unused)) bool doFlipVertically) {}
 
 	virtual void PrintInfo() {}
 
 protected:
 	uint8_t m_nCols;
 	uint8_t m_nRows;
+	uint8_t m_nContrast { 0x7F };
 	bool m_bIsFlippedVertically { false };
 };
 

@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 
 #include "lightset.h"
 
-class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm {
+class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm, RDMHandler {
 public:
 	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
 	~ArtNetRdmResponder() override;
@@ -48,8 +48,7 @@ public:
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
 
 private:
-	struct TRdmMessage *m_pRdmCommand;
-	RDMHandler *m_RDMHandler;
+	static TRdmMessage s_RdmCommand;
 };
 
 #endif /* ARTNETRDMRESPONDER_H_ */

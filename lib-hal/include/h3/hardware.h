@@ -70,6 +70,10 @@ public:
 		return static_cast<float>(h3_thermal_gettemp());
 	}
 
+	float GetCoreTemperatureMin() {
+		return -40.0f;
+	}
+
 	float GetCoreTemperatureMax() {
 		return static_cast<float>(h3_thermal_getalarm());
 	}

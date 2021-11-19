@@ -31,6 +31,8 @@
 #include <uuid/uuid.h>
 #include <sys/utsname.h>
 
+#include "linux/hal_api.h"
+
 class Hardware {
 public:
 	Hardware();
@@ -51,6 +53,9 @@ public:
 	}
 
 	float GetCoreTemperature();
+	float GetCoreTemperatureMin() {
+		return -40.0f;
+	}
 	float GetCoreTemperatureMax();
 
 	void SetLed(hardware::LedStatus tLedStatus);

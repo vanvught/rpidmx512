@@ -94,11 +94,11 @@ const uint8_t *DmxInput::Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_
 
 	const auto *pDmx = Dmx::Get()->GetDmxAvailable(nPortIndex);
 
-	nUpdatesPerSecond = Dmx::Get()->GetUpdatesPerSeconde(nPortIndex);
+	nUpdatesPerSecond = Dmx::Get()->GetUpdatesPerSecond(nPortIndex);
 
 	if (pDmx != nullptr) {
 		const auto *pDmxData = reinterpret_cast<const struct Data*>(pDmx);
-		nLength = pDmxData->nSlotsInPacket;
+		nLength = pDmxData->Statistics.nSlotsInPacket;
 		return (pDmx + 1);
 	}
 

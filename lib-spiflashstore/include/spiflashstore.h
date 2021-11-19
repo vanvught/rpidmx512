@@ -28,10 +28,6 @@
 
 #include <cstdint>
 
-#if !defined( NO_EMAC )
-# include "storenetwork.h"
-#endif
-
 namespace spiflashstore {
 enum class Store {
 	NETWORK,
@@ -41,7 +37,7 @@ enum class Store {
 	E131,
 	LTC,
 	MIDI,
-	ARTNET4,
+	_NOT_USED_,
 	OSC,
 	TLC5711DMX,
 	WIDGET,
@@ -66,7 +62,7 @@ enum class Store {
 };
 
 enum class State {
-	IDLE, CHANGED, ERASED
+	IDLE, CHANGED, CHANGED_WAITING, ERASING, ERASED, ERASED_WAITING, WRITING
 };
 
 }  // namespace spiflashstore
@@ -106,12 +102,8 @@ private:
 
 private:
 	struct FlashStore {
-		static constexpr auto SIZE = 4096;
+		static constexpr auto SIZE = 4096U;
 	};
-
-#if !defined( NO_EMAC )
-	StoreNetwork m_StoreNetwork;
-#endif
 
 	static bool s_bHaveFlashChip;
 	static bool s_bIsNew;
@@ -121,6 +113,8 @@ private:
 
 	static uint32_t s_nSpiFlashStoreSize;
 	static uint8_t s_SpiFlashData[FlashStore::SIZE];
+
+	static uint32_t s_nWaitMillis;
 
 	static SpiFlashStore *s_pThis;
 };

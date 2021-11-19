@@ -32,30 +32,83 @@
 
 #include "lightset.h"
 
-class DMXReceiver: public Dmx {
+class DMXReceiver: Dmx {
 public:
-	DMXReceiver();
-	~DMXReceiver();
-
-	void SetOutput(LightSet *pLightSet) {
-		m_pLightSet = pLightSet;
+	DMXReceiver(LightSet *pLightSet) : Dmx(false) {
+		s_pLightSet = pLightSet;
 	}
 
-	void Start();
-	void Stop();
+	~DMXReceiver() {
+		DMXReceiver::Stop();
+		s_IsActive = false;
+	}
 
-	const uint8_t* Run(int16_t &nLength);
+	void Start() {
+		Dmx::Init();
+		Dmx::SetPortDirection(0, dmx::PortDirection::INP, true);
+	}
+
+	void Stop() {
+		Dmx::SetPortDirection(0, dmx::PortDirection::INP, false);
+		s_pLightSet->Stop(0);
+	}
+
+	const uint8_t* Run(int16_t &nLength) {
+		if (__builtin_expect((s_bDisableOutput), 0)) {
+			nLength = 0;
+			return nullptr;
+		}
+
+		if (Dmx::GetUpdatesPerSecond() == 0) {
+			if (s_IsActive) {
+				s_pLightSet->Stop(0);
+				s_IsActive = false;
+			}
+
+			nLength = -1;
+			return nullptr;
+		} else {
+			const auto *pDmx = Dmx::GetDmxAvailable();
+
+			if (pDmx != nullptr) {
+				const auto *pDmxStatistics = reinterpret_cast<const struct Data*>(pDmx);
+				nLength = static_cast<int16_t>(pDmxStatistics->Statistics.nSlotsInPacket);
+
+				++pDmx;
+
+				s_pLightSet->SetData(0, pDmx, static_cast<uint16_t>(nLength));
+
+				if (!s_IsActive) {
+					s_pLightSet->Start(0);
+					s_IsActive = true;
+				}
+
+				return const_cast<uint8_t*>(pDmx);
+			}
+		}
+
+		nLength = 0;
+		return nullptr;
+	}
+
+	void SetDisableOutput(bool bDisable = true) {
+		s_bDisableOutput = bDisable;
+	}
 
 	void Print() {}
 
-private:
-	bool IsDmxDataChanged(const uint8_t *pData, uint32_t nLength);
+	uint32_t GetUpdatesPerSecond() {
+		return Dmx::GetUpdatesPerSecond();
+	}
+
+	const uint8_t* GetDmxCurrentData() {
+		return Dmx::GetDmxCurrentData();
+	}
 
 private:
-	LightSet *m_pLightSet { nullptr };
-	bool m_IsActive { false };
-	uint8_t m_Data[dmx::buffer::SIZE]; // With DMX Start Code
-	uint32_t m_nLength { 0 };
+	static LightSet *s_pLightSet;
+	static bool s_IsActive;
+	static bool s_bDisableOutput;
 };
 
 #endif /* DMXRECEIVER_H */

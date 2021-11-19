@@ -30,6 +30,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -37,9 +38,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -105,21 +105,21 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-	ArtNet4Params artnetparams(&storeArtNet4);
+	ArtNetParams artnetParams(&storeArtNet);
 
 	ArtNet4Node node;
 
-	if (artnetparams.Load()) {
-		artnetparams.Set(&node);
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
+		artnetParams.Dump();
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
@@ -128,23 +128,23 @@ void notmain(void) {
 	uint8_t nAddress;
 	bool bIsSet;
 
-	nAddress = artnetparams.GetUniverse(0, bIsSet);
+	nAddress = artnetParams.GetUniverse(0, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(0, artnetparams.GetDirection(0), nAddress);
+		node.SetUniverseSwitch(0, artnetParams.GetDirection(0), nAddress);
 	}
-	nAddress = artnetparams.GetUniverse(1, bIsSet);
+	nAddress = artnetParams.GetUniverse(1, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(1, artnetparams.GetDirection(1), nAddress);
+		node.SetUniverseSwitch(1, artnetParams.GetDirection(1), nAddress);
 	}
 #if defined (ORANGE_PI_ONE)
-	nAddress = artnetparams.GetUniverse(2, bIsSet);
+	nAddress = artnetParams.GetUniverse(2, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(2, artnetparams.GetDirection(2), nAddress);
+		node.SetUniverseSwitch(2, artnetParams.GetDirection(2), nAddress);
 	}
 #ifndef DO_NOT_USE_UART0
-	nAddress = artnetparams.GetUniverse(3, bIsSet);
+	nAddress = artnetParams.GetUniverse(3, bIsSet);
 	if (bIsSet) {
-		node.SetUniverseSwitch(3, artnetparams.GetDirection(3), nAddress);
+		node.SetUniverseSwitch(3, artnetParams.GetDirection(3), nAddress);
 	}
 #endif
 #endif
@@ -180,7 +180,7 @@ void notmain(void) {
 	StoreRDMDevice storeRdmDevice;
 
 	if (node.GetActiveOutputPorts() != 0) {
-		if(artnetparams.IsRdm()) {
+		if(artnetParams.IsRdm()) {
 			auto pDiscovery = new ArtNetRdmController;
 			assert(pDiscovery != nullptr);
 
@@ -228,7 +228,7 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetparams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetParams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 

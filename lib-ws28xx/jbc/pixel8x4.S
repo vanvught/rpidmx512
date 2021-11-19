@@ -25,7 +25,6 @@
 
  .macro FUNC name
 .text
-.code 32
 .global \name
 \name:
 .endm
@@ -40,5 +39,6 @@ PIXEL8X4_PROGRAM:
 PIXEL8X4_SIZE = . - PIXEL8X4_PROGRAM
 
 FUNC getPIXEL8X4_SIZE
-mov r0, #PIXEL8X4_SIZE
+movw r0, #PIXEL8X4_SIZE
+movt r0, #0
 bx lr

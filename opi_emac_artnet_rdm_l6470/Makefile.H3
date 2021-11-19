@@ -3,9 +3,9 @@ DEFINES+=RDM_RESPONDER
 DEFINES+=OUTPUT_DMX_TLC59711 OUTPUT_DMX_STEPPER
 DEFINES+=DISPLAY_UDF NDEBUG
 
-LIBS=rdmresponder l6470dmx l6470 tlc59711dmx tlc59711
-
 SRCDIR=firmware lib
+
+LIBS=
 
 include ../firmware-template-h3/Rules.mk
 

@@ -28,6 +28,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -86,8 +87,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
@@ -162,7 +164,6 @@ void notmain(void) {
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::ARTNET, bridge.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
-
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
@@ -172,38 +173,35 @@ void notmain(void) {
 
 	Identify identify;
 
-	RDMNetDevice device(new RDMPersonality("RDMNet LLRP device only", 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", 0));
+
+	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
-
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-	device.SetRDMDeviceStore(&storeRdmDevice);
-
-	const char aLabel[] = "sACN E1.31 to Art-Net";
-	device.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-
-	device.SetRDMFactoryDefaults(new FactoryDefaults);
-
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&device);
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
 
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
+
 	while (spiFlashStore.Flash())
 		;
-
-	device.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	device.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-
-	device.Init();
-	device.Print();
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
 	controller.Start();
-	device.Start();
+	llrpOnlyDevice.Start();
 
 	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
@@ -214,7 +212,7 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		controller.Run();
-		device.Run();
+		llrpOnlyDevice.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();

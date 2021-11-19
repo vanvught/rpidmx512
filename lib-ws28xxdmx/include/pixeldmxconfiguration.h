@@ -61,6 +61,14 @@ public:
 		return m_nGroupingCount;
 	}
 
+	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
+		m_nDmxStartAddress = nDmxStartAddress;
+	}
+
+	uint16_t GetDmxStartAddress() const {
+		return m_nDmxStartAddress;
+	}
+
 	void Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo, uint32_t& nGroups, uint32_t& nUniverses);
 
 	void Dump();
@@ -68,6 +76,7 @@ public:
 private:
 	uint32_t m_nOutputPorts { 1 };
 	uint32_t m_nGroupingCount { 1 };
+	uint16_t m_nDmxStartAddress { 1 };
 };
 
 #endif /* PIXELDMXCONFIGURATION_H_ */

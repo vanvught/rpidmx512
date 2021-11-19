@@ -78,9 +78,7 @@ public:
 
 		m_IsInit = true;
 
-		SetFactoryDefaults();
-
-		m_nCheckSum = CalculateChecksum();
+		RDMDevice::SetFactoryDefaults();
 	}
 
 	void Print();
@@ -90,16 +88,18 @@ public:
 	}
 
 	void SetFactoryDefaults() {
-		struct TRDMDeviceInfoData info;
+		TRDMDeviceInfoData info;
 
 		info.data = m_aDeviceRootLabel;
 		info.length = m_nDeviceRootLabelLength;
 
-		SetLabel(&info);
+		RDMDevice::SetLabel(&info);
+
+		m_nCheckSum = RDMDevice::CalculateChecksum();
 	}
 
 	bool GetFactoryDefaults() {
-		return (m_nCheckSum == CalculateChecksum());
+		return (m_nCheckSum == RDMDevice::CalculateChecksum());
 	}
 
 	const uint8_t* GetUID() const {

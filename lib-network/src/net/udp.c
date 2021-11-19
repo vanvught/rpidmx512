@@ -37,6 +37,8 @@
 #include "net_packets.h"
 #include "net_debug.h"
 
+#include "../../config/net_config.h"
+
 extern int console_error(const char *);
 
 #ifndef ALIGNED
@@ -51,7 +53,6 @@ extern void emac_eth_send(void *, int);
 extern uint32_t arp_cache_lookup(uint32_t, uint8_t *);
 extern uint16_t net_chksum(void *, uint32_t);
 
-#define UDP_MAX_PORTS_ALLOWED	16
 #define UDP_RX_MAX_ENTRIES		(1U << 1) // Must always be a power of 2
 #define UDP_RX_MAX_ENTRIES_MASK	(UDP_RX_MAX_ENTRIES - 1)
 
@@ -164,6 +165,8 @@ __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
 	p_queue_entry->size = i;
 
 	s_recv_queue[port_index].queue_head = (s_recv_queue[port_index].queue_head + 1U) & UDP_RX_MAX_ENTRIES_MASK;
+
+	DEBUG_PRINTF("port_index=%u, i=%u, queue_head=%u", port_index, i, s_recv_queue[port_index].queue_head);
 }
 
 // -->

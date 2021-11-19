@@ -30,6 +30,7 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "mdns.h"
@@ -43,6 +44,7 @@
 #include "dmxmonitorparams.h"
 #include "storemonitor.h"
 
+#include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -53,6 +55,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 using namespace e131;
 
@@ -70,6 +74,11 @@ int main(int argc, char **argv) {
 
 	fw.Print();
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	StoreNetwork storeNetwork;
+
 	puts("sACN E1.31 Real-time DMX Monitor {4 Universes}");
 
 	if (nw.Init(argv[1]) < 0) {
@@ -77,7 +86,8 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
-	SpiFlashStore spiFlashStore;
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	E131Params e131Params(new StoreE131);
 	E131Bridge bridge;

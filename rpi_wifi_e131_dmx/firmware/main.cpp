@@ -118,9 +118,9 @@ void notmain(void) {
 
 #ifndef H3
 	DMXMonitor monitor;
-#endif
 
 	console_set_top_row(3);
+#endif
 
 	hw.SetLed(hardware::LedStatus::ON);
 

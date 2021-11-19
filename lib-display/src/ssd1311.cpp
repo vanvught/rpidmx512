@@ -308,6 +308,8 @@ void Ssd1311::SetSleep(bool bSleep) {
 }
 
 void Ssd1311::SetContrast(uint8_t nContrast) {
+	m_nContrast = nContrast;
+
 	// [IS=X,RE=1,SD=1]
 	SetRE(FunctionSet::RE_ONE);
 	SetSD(CommandSet::ENABLED);

@@ -27,15 +27,9 @@
 #include <cassert>
 
 #include "rdm.h"
-#if defined (OUTPUT_DMX_SEND_MULTI)
-# include "dmxmulti.h"
-#else
-# include "dmx.h"
-#endif
+#include "dmx.h"
 
-extern "C" {
-void udelay(uint32_t);
-}
+#include "hardware.h"
 
 const uint8_t *Rdm::Receive(uint32_t nPortIndex) {
 	return Dmx::Get()->RdmReceive(nPortIndex);

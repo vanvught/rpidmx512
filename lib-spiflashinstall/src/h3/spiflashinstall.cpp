@@ -38,9 +38,6 @@
 
 #include "debug.h"
 
-#define OFFSET_UBOOT_SPI	0x000000
-#define OFFSET_UIMAGE		0x180000
-
 #define COMPARE_BYTES		1024
 
 #define FLASH_SIZE_MINIMUM	0x200000
@@ -295,56 +292,6 @@ void SpiFlashInstall::Write(uint32_t nOffset) {
 		Display::Get()->Printf(3, "%d", static_cast<int>(nTotalBytes));
 		printf("%d bytes written\n", static_cast<int>(nTotalBytes));
 	}
-
-	DEBUG_EXIT
-}
-
-bool SpiFlashInstall::WriteFirmware(const uint8_t* pBuffer, uint32_t nSize) {
-	DEBUG_ENTRY
-
-	assert(pBuffer != nullptr);
-	DEBUG_PRINTF("(%d + %d)=%d, m_nFlashSize=%d", OFFSET_UIMAGE, nSize, (OFFSET_UIMAGE + nSize), m_nFlashSize);
-
-	if ((OFFSET_UIMAGE + nSize) > m_nFlashSize) {
-		printf("error: flash size %d > %d\n", (OFFSET_UIMAGE + nSize), m_nFlashSize);
-		DEBUG_EXIT
-		return false;
-	}
-
-	const auto bWatchdog = Hardware::Get()->IsWatchdog();
-
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogStop();
-	}
-
-	puts("Write firmware");
-
-	const auto nSectorSize = spi_flash_get_sector_size();
-	const uint32_t nEraseSize = (nSize + nSectorSize - 1) & ~(nSectorSize - 1);
-
-	DEBUG_PRINTF("nSize=%x, nSectorSize=%x, nEraseSize=%x", nSize, nSectorSize, nEraseSize);
-
-	Display::Get()->TextStatus("Erase", Display7SegmentMessage::INFO_SPI_ERASE, CONSOLE_GREEN);
-
-	if (spi_flash_cmd_erase(OFFSET_UIMAGE, nEraseSize) < 0) {
-		puts("error: flash erase");
-		return false;
-	}
-
-	Display::Get()->TextStatus("Writing", Display7SegmentMessage::INFO_SPI_WRITING, CONSOLE_GREEN);
-
-	if (spi_flash_cmd_write_multi(OFFSET_UIMAGE, nSize, pBuffer) < 0) {
-		puts("error: flash write");
-		return false;
-	}
-
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogInit();
-	}
-
-	Display::Get()->TextStatus("Done", Display7SegmentMessage::INFO_SPI_DONE, CONSOLE_GREEN);
-
-	return true;
 
 	DEBUG_EXIT
 }

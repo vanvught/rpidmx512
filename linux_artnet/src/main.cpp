@@ -31,15 +31,15 @@
 
 #include "hardware.h"
 #include "network.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetmsgconst.h"
 
 #include "dmxmonitor.h"
@@ -52,7 +52,11 @@
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
+#include "storerdmdevice.h"
+#include "storerdmsensors.h"
+#include "storerdmsubdevices.h"
 
+#include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
@@ -63,6 +67,8 @@
 #include "software_version.h"
 
 #include "display.h"
+#include "displayudfparams.h"
+#include "storedisplayudf.h"
 
 using namespace artnet;
 
@@ -80,33 +86,40 @@ int main(int argc, char **argv) {
 
 	fw.Print();
 
+	SpiFlashInstall spiFlashInstall;
+	SpiFlashStore spiFlashStore;
+
+	StoreNetwork storeNetwork;
+
 	if (nw.Init(argv[1]) < 0) {
 		fprintf(stderr, "Not able to start the network\n");
 		return -1;
 	}
 
-	SpiFlashStore spiFlashStore;
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
 
-	ArtNet4Params artnet4Params(StoreArtNet4::Get());
+	ArtNetParams artnetParams(StoreArtNet::Get());
 
 	ArtNet4Node node;
 
-	if (artnet4Params.Load()) {
-		artnet4Params.Dump();
-		artnet4Params.Set(&node);
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(&node);
 	}
 
-	if(artnet4Params.IsRdm()) {
+	if(artnetParams.IsRdm()) {
 		printf("Art-Net %d Node - Real-time DMX Monitor / RDM Responder {1 Universe}\n", node.GetVersion());
 	} else {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	DMXMonitor monitor;
 	DMXMonitorParams monitorParams(new StoreMonitor);
+
+	DMXMonitor monitor;
+	monitor.SetDmxMonitorStore(StoreMonitor::Get());
 
 	if (monitorParams.Load()) {
 		monitorParams.Dump();
@@ -121,8 +134,11 @@ int main(int argc, char **argv) {
 
 	node.SetRdmUID(RdmResponder.GetUID());
 
-	if(artnet4Params.IsRdm()) {
-		RDMDeviceParams rdmDeviceParams;
+	if(artnetParams.IsRdm()) {
+		RDMDeviceParams rdmDeviceParams(new StoreRDMDevice);
+
+		RdmResponder.SetRDMDeviceStore(StoreRDMDevice::Get());
+
 		if (rdmDeviceParams.Load()) {
 			rdmDeviceParams.Set(&RdmResponder);
 			rdmDeviceParams.Dump();
@@ -131,7 +147,7 @@ int main(int argc, char **argv) {
 		RdmResponder.Init();
 
 		bool isSet;
-		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnet4Params.GetUniverse(0, isSet));
+		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
 
 		RdmResponder.Full(0);
 
@@ -139,7 +155,7 @@ int main(int argc, char **argv) {
 	} else {
 		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
 			bool bIsSet;
-			const auto nAddress = artnet4Params.GetUniverse(i, bIsSet);
+			const auto nAddress = artnetParams.GetUniverse(i, bIsSet);
 
 			if (bIsSet) {
 				node.SetUniverseSwitch(i, lightset::PortDir::OUTPUT, nAddress);
@@ -153,7 +169,7 @@ int main(int argc, char **argv) {
 	nw.Print();
 	node.Print();
 
-	if(artnet4Params.IsRdm()) {
+	if(artnetParams.IsRdm()) {
 		RdmResponder.Print();
 	}
 

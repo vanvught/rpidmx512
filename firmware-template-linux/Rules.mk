@@ -9,14 +9,6 @@ AR	= $(PREFIX)ar
 
 $(info [${CURDIR}])
 
-ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	LIBS:=remoteconfig display $(LIBS)
-else
-	LIBS:=$(LIBS)
-endif
-
-DEFINES:=$(addprefix -D,$(DEFINES))
-
 detected_OS := $(shell uname 2>/dev/null || echo Unknown)
 detected_OS := $(patsubst CYGWIN%,Cygwin,$(detected_OS))
 
@@ -26,10 +18,14 @@ ifeq ($(detected_OS),Darwin)
 endif
 
 ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	LIBS+=spiflashstore spiflashinstall spiflash
+	COND=1
 endif
 
-LIBS+=network properties hal debug
+include ../firmware-template/libs.mk
+TTT=uuid
+TMPVAR:=$(LIBS)
+LIBS=$(filter-out $(TTT), $(TMPVAR))
+LIBS+=debug
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
@@ -43,16 +39,11 @@ ifeq ($(detected_OS),Linux)
 	endif
 endif
 
-ifeq ($(findstring displayudf,$(LIBS)),displayudf)
-endif
+DEFINES:=$(addprefix -D,$(DEFINES))
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
-
-ifeq ($(findstring displayudf,$(LIBS)),displayudf)
-	INCDIRS+=-I../lib-display/include
-endif
 
 # The variable for the libraries include directory
 LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))

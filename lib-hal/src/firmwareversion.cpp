@@ -41,7 +41,9 @@
 
 using namespace firmwareversion;
 
-FirmwareVersion *FirmwareVersion::s_pThis = nullptr;
+struct firmwareversion::Info FirmwareVersion::s_FirmwareVersion;
+char FirmwareVersion::s_Print[64];
+FirmwareVersion *FirmwareVersion::s_pThis;
 
 FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime) {
 	DEBUG_ENTRY
@@ -53,23 +55,23 @@ FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	memcpy(m_tFirmwareVersion.SoftwareVersion, pVersion, length::SOFTWARE_VERSION);
-	memcpy(m_tFirmwareVersion.BuildDate, pDate, length::GCC_DATE);
-	memcpy(m_tFirmwareVersion.BuildTime, pTime, length::GCC_TIME);
+	memcpy(s_FirmwareVersion.SoftwareVersion, pVersion, length::SOFTWARE_VERSION);
+	memcpy(s_FirmwareVersion.BuildDate, pDate, length::GCC_DATE);
+	memcpy(s_FirmwareVersion.BuildTime, pTime, length::GCC_TIME);
 
 	uint8_t nHwTextLength;
 
-	snprintf(m_aPrint, sizeof m_aPrint - 1, "[V%.*s] %s Compiled on %.*s at %.*s",
-			length::SOFTWARE_VERSION, m_tFirmwareVersion.SoftwareVersion,
+	snprintf(s_Print, sizeof(s_Print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s",
+			length::SOFTWARE_VERSION, s_FirmwareVersion.SoftwareVersion,
 			Hardware::Get()->GetBoardName(nHwTextLength),
-			length::GCC_DATE, m_tFirmwareVersion.BuildDate,
-			length::GCC_TIME, m_tFirmwareVersion.BuildTime);
+			length::GCC_DATE, s_FirmwareVersion.BuildDate,
+			length::GCC_TIME, s_FirmwareVersion.BuildTime);
 
 	DEBUG_EXIT
 }
 
 void FirmwareVersion::Print(const char *pTitle) {
-	printf("%s\n", m_aPrint);
+	puts(s_Print);
 
 	if (pTitle != nullptr) {
 		puts(pTitle);

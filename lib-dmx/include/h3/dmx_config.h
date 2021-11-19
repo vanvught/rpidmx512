@@ -28,6 +28,20 @@
 
 #include <assert.h>
 
+namespace dmxsingle {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+}  // namespace dmxsingle
+
+namespace dmxmulti {
+namespace max {
+static constexpr auto OUT = 4U;
+static constexpr auto IN = 4U;
+}  // namespace max
+}  // namespace dmxmulti
+
 #include "h3_board.h"
 
 #define GPIO_DMX_DATA_DIRECTION			GPIO_EXT_12	///< UART1 or UART2 , single output

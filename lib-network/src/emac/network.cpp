@@ -35,13 +35,12 @@
 #include "hardware.h"
 #include "ledblink.h"
 
-#include "./../net/net.h"
+#include "../net/net.h"
+#include "../../config/net_config.h"
 
 #include "debug.h"
 
 #define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
-
-#define HOST_NAME_PREFIX	"allwinner_"
 
 extern "C" {
 // MAC-PHY
@@ -87,7 +86,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	m_nNtpServerIp = params.GetNtpServer();
 	m_fNtpUtcOffset = params.GetNtpUtcOffset();
 
-	const char *p = params.GetHostName();
+	const auto *p = params.GetHostName();
 
 	if (*p == '\0') {
 		unsigned k = 0;
@@ -129,7 +128,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 	}
 
-	net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
+	net_init(m_aNetMacaddr, &tIpInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
 	if (m_IsZeroconfUsed) {
 		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
@@ -141,7 +140,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 	while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
 		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
 
-			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RETRYING);
 
 		DEBUG_PUTS("");
 		auto nTime = time(nullptr);
@@ -149,16 +148,14 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 			LedBlink::Get()->Run();
 		}
 
-
-			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
-
+		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 
 		LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
 
 		m_IsDhcpUsed = true;
 		m_IsZeroconfUsed = false;
 
-		net_init(m_aNetMacaddr, &tIpInfo, reinterpret_cast<const uint8_t*>(m_aHostName), &m_IsDhcpUsed, &m_IsZeroconfUsed);
+		net_init(m_aNetMacaddr, &tIpInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
 		if (m_IsDhcpUsed) {
 			break;
@@ -187,7 +184,7 @@ void Network::Shutdown() {
 int32_t Network::Begin(uint16_t nPort) {
 	DEBUG_ENTRY
 
-	const int32_t nIdx = udp_bind(nPort);
+	const auto nIdx = udp_bind(nPort);
 
 	assert(nIdx != -1);
 
@@ -199,7 +196,7 @@ int32_t Network::Begin(uint16_t nPort) {
 int32_t Network::End(uint16_t nPort) {
 	DEBUG_ENTRY
 
-	const int32_t n = udp_unbind(nPort);
+	const auto n = udp_unbind(nPort);
 
 	assert(n == 0);
 
@@ -232,18 +229,6 @@ void Network::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) 
 	igmp_leave(nIp);
 
 	DEBUG_EXIT
-}
-
-uint16_t Network::RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
-	return udp_recv(static_cast<uint8_t>(nHandle), reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
-}
-
-uint16_t Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
-	return udp_recv2(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t **>(ppBuffer), pFromIp, pFromPort);
-}
-
-void Network::SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
-	udp_send(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
 }
 
 void Network::SetDefaultIp() {
@@ -305,8 +290,8 @@ void Network::SetNetmask(uint32_t nNetmask) {
 		m_pNetworkStore->SaveNetMask(nNetmask);
 	}
 
-		m_NetworkDisplay.ShowIp();
-		m_NetworkDisplay.ShowNetMask();
+	m_NetworkDisplay.ShowIp();
+	m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 }
@@ -325,22 +310,29 @@ void Network::SetGatewayIp(uint32_t nGatewayIp) {
 		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
 	}
 
-		m_NetworkDisplay.ShowGatewayIp();
+	m_NetworkDisplay.ShowGatewayIp();
 
 	DEBUG_EXIT
 }
 
 void Network::SetHostName(const char *pHostName) {
-	Network::SetHostName(pHostName);
+	DEBUG_ENTRY
 
-	net_set_hostname(pHostName);
+	strncpy(m_aHostName, pHostName, network::HOSTNAME_SIZE - 1);
+	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
 
 	if (m_pNetworkStore != nullptr) {
-		m_pNetworkStore->SaveHostName(pHostName, static_cast<uint16_t>(strlen(pHostName)));
+		m_pNetworkStore->SaveHostName(m_aHostName, static_cast<uint16_t>(strlen(m_aHostName)));
 	}
+
+	m_NetworkDisplay.ShowHostName();
+
+	DEBUG_EXIT
 }
 
 bool Network::SetZeroconf() {
+	DEBUG_ENTRY
+
 	struct ip_info tIpInfo;
 
 	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
@@ -353,13 +345,14 @@ bool Network::SetZeroconf() {
 		m_IsDhcpUsed = false;
 
 		if (m_pNetworkStore != nullptr) {
-			m_pNetworkStore->SaveDhcp(true);	// Zeroconf is enabled only when use_dhcp=1
+			m_pNetworkStore->SaveDhcp(true);// Zeroconf is enabled only when use_dhcp=1
 		}
 	}
 
-		m_NetworkDisplay.ShowIp();
-		m_NetworkDisplay.ShowNetMask();
+	m_NetworkDisplay.ShowIp();
+	m_NetworkDisplay.ShowNetMask();
 
+	DEBUG_EXIT
 	return m_IsZeroconfUsed;
 }
 
@@ -374,9 +367,9 @@ bool Network::EnableDhcp() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-		m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
+	m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::RENEW);
 
-	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, &m_IsZeroconfUsed);
+	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, m_aHostName, &m_IsZeroconfUsed);
 
 		if (m_IsZeroconfUsed) {
 			m_NetworkDisplay.ShowDhcpStatus(network::dhcp::ClientStatus::FAILED);
@@ -398,15 +391,12 @@ bool Network::EnableDhcp() {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
-
 	m_NetworkDisplay.ShowIp();
 	m_NetworkDisplay.ShowNetMask();
 
 	DEBUG_EXIT
 	return m_IsDhcpUsed;
 }
-
-// COMMON
 
 void Network::SetQueuedStaticIp(uint32_t nLocalIp, uint32_t nNetmask) {
 	DEBUG_ENTRY
@@ -466,7 +456,7 @@ bool Network::ApplyQueuedConfig() {
 void Network::Print() {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
-	printf(" If        : %d: %s\n", m_nIfIndex, m_aIfName);
+	printf(" IfName    : %d: %s\n", m_nIfIndex, m_aIfName);
 	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
 	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
 	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
@@ -474,5 +464,3 @@ void Network::Print() {
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	printf(" Mode      : %c\n", GetAddressingMode());
 }
-
-

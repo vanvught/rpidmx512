@@ -28,12 +28,9 @@
 #include <cassert>
 
 #include "spiflashstore.h"
+#include "flashrom.h"
 
-#include "spi_flash.h"
-
-#ifndef NDEBUG
-# include "hardware.h"
-#endif
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -43,17 +40,20 @@ static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for UUID
 static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        144,       32,    64,       96,      64,     32,     32,         480,           64,        32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          32};
 #ifndef NDEBUG
-static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "Art-Net4", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
+static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "not-used", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
 #endif
 
 bool SpiFlashStore::s_bHaveFlashChip;
 bool SpiFlashStore::s_bIsNew;
 
 State SpiFlashStore::s_State;
-uint32_t SpiFlashStore::s_nStartAddress;
 
+uint32_t SpiFlashStore::s_nStartAddress;
 uint32_t SpiFlashStore::s_nSpiFlashStoreSize;
+
 uint8_t SpiFlashStore::s_SpiFlashData[FlashStore::SIZE];
+
+uint32_t SpiFlashStore::s_nWaitMillis;
 
 SpiFlashStore *SpiFlashStore::s_pThis = nullptr;
 
@@ -63,10 +63,7 @@ SpiFlashStore::SpiFlashStore() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	if (spi_flash_probe(0, 0, 0) < 0) {
-		DEBUG_PUTS("No SPI flash chip");
-	} else {
-		printf("Detected %s with sector size %d total %d bytes\n", spi_flash_get_name(), spi_flash_get_sector_size(), spi_flash_get_size());
+	if (FlashRom::Get()->IsDetected()) {
 		s_bHaveFlashChip = Init();
 	}
 
@@ -86,21 +83,24 @@ SpiFlashStore::SpiFlashStore() {
 }
 
 bool SpiFlashStore::Init() {
-	const auto nEraseSize = spi_flash_get_sector_size();
+	const auto nEraseSize = FlashRom::Get()->GetSectorSize();
 	assert(FlashStore::SIZE == nEraseSize);
 
 	if (FlashStore::SIZE != nEraseSize) {
 		return false;
 	}
 
-	s_nStartAddress = spi_flash_get_size() - nEraseSize;
+	s_nStartAddress = FlashRom::Get()->GetSize() - nEraseSize;
+	assert(s_nStartAddress != 0);
 	assert(!(s_nStartAddress % nEraseSize));
 
 	if (s_nStartAddress % nEraseSize) {
 		return false;
 	}
 
-	spi_flash_cmd_read_fast(s_nStartAddress, FlashStore::SIZE, &s_SpiFlashData);
+	flashrom::result result;
+	FlashRom::Get()->Read(s_nStartAddress, FlashStore::SIZE, reinterpret_cast<uint8_t *>(&s_SpiFlashData), result);
+	assert(result == flashrom::result::OK);
 
 	bool bSignatureOK = true;
 
@@ -172,7 +172,6 @@ void SpiFlashStore::ResetSetList(Store tStore) {
 
 	auto *pbSetList = &s_SpiFlashData[GetStoreOffset(tStore)];
 
-	// Clear bSetList
 	*pbSetList++ = 0x00;
 	*pbSetList++ = 0x00;
 	*pbSetList++ = 0x00;
@@ -194,7 +193,7 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 	assert(pData != nullptr);
 	assert((nOffset + nDataLength) <= s_aStorSize[static_cast<uint32_t>(tStore)]);
 
-	debug_dump(const_cast<void*>(pData), static_cast<uint16_t>(nDataLength));
+//	debug_dump(const_cast<void*>(pData), static_cast<uint16_t>(nDataLength));
 
 	auto bIsChanged = false;
 
@@ -212,8 +211,11 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 		pSrc++;
 	}
 
-	if (bIsChanged && (s_State != State::ERASED)) {
-		s_State = State::CHANGED;
+	if (bIsChanged) {
+		if ((s_State == State::IDLE) || (s_State == State::WRITING))  {
+			s_State = State::CHANGED;
+		}
+		s_nWaitMillis = Hardware::Get()->Millis();
 	}
 
 	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
@@ -222,7 +224,7 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 		*pSet |= nSetList;
 	}
 
-	DEBUG_PRINTF("m_tState=%u", static_cast<uint32_t>(s_State));
+	DEBUG_PRINTF("s_State=%u", static_cast<uint32_t>(s_State));
 	DEBUG_EXIT
 }
 
@@ -283,31 +285,57 @@ bool SpiFlashStore::Flash() {
 		return false;
 	}
 
-	DEBUG_PRINTF("m_tState=%d", static_cast<uint32_t>(s_State));
-
-	assert(s_nStartAddress != 0);
-
-	if (s_nStartAddress == 0) {
-		printf("!*! m_nStartAddress == 0 !*!\n");
-		return false;
-	}
+	DEBUG_PRINTF("s_State=%d", static_cast<uint32_t>(s_State));
 
 	switch (s_State) {
-		case State::CHANGED:
-			spi_flash_cmd_erase(s_nStartAddress, FlashStore::SIZE);
-			s_State = State::ERASED;
+	case State::CHANGED:
+		s_nWaitMillis = Hardware::Get()->Millis();
+		s_State = State::CHANGED_WAITING;
+		return true;
+	case State::CHANGED_WAITING:
+		if ((Hardware::Get()->Millis() - s_nWaitMillis) < 100) {
 			return true;
-			break;
-		case State::ERASED:
-			spi_flash_cmd_write_multi(s_nStartAddress, s_nSpiFlashStoreSize, &s_SpiFlashData);
+		}
+		s_State = State::ERASING;
+		return true;
+		break;
+	case State::ERASING: {
+		flashrom::result result;
+		if (FlashRom::Get()->Erase(s_nStartAddress, FlashStore::SIZE, result)) {
+			s_nWaitMillis = Hardware::Get()->Millis();
+			s_State = State::ERASED_WAITING;
+		}
+		assert(result == flashrom::result::OK);
+		return true;
+	}
+		break;
+	case State::ERASED_WAITING:
+		if ((Hardware::Get()->Millis() - s_nWaitMillis) < 100) {
+			return true;
+		}
+		s_State = State::ERASED;
+		return true;
+		break;
+	case State::ERASED:
+		s_State = State::WRITING;
+		return true;
+		break;
+	case State::WRITING: {
+		flashrom::result result;
+		if (FlashRom::Get()->Write(s_nStartAddress, s_nSpiFlashStoreSize, reinterpret_cast<uint8_t*>(&s_SpiFlashData), result)) {
 			s_State = State::IDLE;
-			break;
-		default:
-			break;
+			return false;
+		}
+		assert(result == flashrom::result::OK);
+		return true;
+	}
+		break;
+	default:
+		assert(0);
+		break;
 	}
 
-//	Dump();
-
+	assert(0);
 	return false;
 }
 

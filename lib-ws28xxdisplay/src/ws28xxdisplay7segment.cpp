@@ -223,27 +223,27 @@ WS28xxDisplay7Segment::~WS28xxDisplay7Segment() {
 }
 
 void WS28xxDisplay7Segment::WriteChar(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (nChar > sizeof(Seg7Array)) {
+	if (static_cast<unsigned>(nChar) > sizeof(Seg7Array)) {
 		return;
 	}
 
-	const uint32_t nCurrentDigitBase = nPos * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT;
+	const auto nCurrentDigitBase = nPos * WS28xxDisplay7SegmentConfig::SEGMENTS_PER_DIGIT;
 
 	uint8_t chr;
 
-	if (nChar & (1U << 7)) {	// use custom bitmap
-		chr = nChar;
-	} else {				// use displayws28xx_font
+	if (static_cast<unsigned>(nChar) & (1U << 7)) {	// use custom bitmap
+		chr = static_cast<uint8_t>(nChar);
+	} else {										// use displayws28xx_font
 		chr = Seg7Array[static_cast<int>(nChar)];
 	}
 
-	RenderSegment(chr & (1 << 6), nCurrentDigitBase, 0, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 5), nCurrentDigitBase, 1, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 4), nCurrentDigitBase, 2, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 3), nCurrentDigitBase, 3, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 2), nCurrentDigitBase, 4, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 1), nCurrentDigitBase, 5, nRed, nGreen, nBlue);
-	RenderSegment(chr & (1 << 0), nCurrentDigitBase, 6, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 6), nCurrentDigitBase, 0, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 5), nCurrentDigitBase, 1, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 4), nCurrentDigitBase, 2, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 3), nCurrentDigitBase, 3, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 2), nCurrentDigitBase, 4, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 1), nCurrentDigitBase, 5, nRed, nGreen, nBlue);
+	RenderSegment(chr & (1U << 0), nCurrentDigitBase, 6, nRed, nGreen, nBlue);
 }
 
 void WS28xxDisplay7Segment::WriteColon(char nChar, uint32_t nPos, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {

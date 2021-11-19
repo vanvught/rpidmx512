@@ -2,7 +2,7 @@
  * @file ubootheader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <time.h>
 #include <cassert>
 
-#include "ubootheader.h"
+#include "h3/ubootheader.h"
 
 #define LZ4F_MAGIC			0x184D2204	/* LZ4 Magic Number		*/
 #define IH_MAGIC			0x27051956	/* Image Magic Number	*/
@@ -59,7 +59,7 @@ enum TImageHeaderCompression {
 	IH_COMP_GZIP		/* gzip	 Compression Used	*/
 };
 
-UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false) {
+UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader) {
 	assert(pHeader != nullptr);
 
 	auto *pImageHeader = reinterpret_cast<TImageHeader*>(pHeader);
@@ -75,10 +75,6 @@ UBootHeader::UBootHeader(uint8_t *pHeader): m_pHeader(pHeader), m_bIsValid(false
 	m_bIsCompressed = (pImageHeader->ih_comp == IH_COMP_GZIP);
 }
 
-UBootHeader::~UBootHeader() {
-	m_bIsValid = false;
-}
-
 void UBootHeader::Dump() {
 #ifndef NDEBUG
 	if (!m_bIsValid) {
@@ -87,7 +83,7 @@ void UBootHeader::Dump() {
 
 	auto *pImageHeader = reinterpret_cast<TImageHeader*>(m_pHeader);
 	const time_t rawtime = __builtin_bswap32(pImageHeader->ih_time);
-	struct tm *info = localtime(&rawtime);
+	auto *info = localtime(&rawtime);
 
 	printf("Magic Number        : %.8x\n", __builtin_bswap32(pImageHeader->ih_magic));
 	printf("CRC Checksum        : %.8x\n", __builtin_bswap32(pImageHeader->ih_hcrc));

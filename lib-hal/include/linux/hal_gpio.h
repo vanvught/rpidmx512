@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,22 @@
 
 #else
 
+#if !defined(LOW)
+# define LOW	0
+# define HIGH 	!LOW
+#endif
+
 enum GPIO_EXT {
+	GPIO_EXT_11,
+	GPIO_EXT_12,
+	GPIO_EXT_13,
+	GPIO_EXT_16,
+	GPIO_EXT_18,
+	GPIO_EXT_22,
 	GPIO_EXT_35,
 	GPIO_EXT_26,
+	GPIO_EXT_36,
+	GPIO_EXT_37,
 	GPIO_EXT_38
 };
 
@@ -48,11 +61,11 @@ extern "C" {
   inline static void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
   inline static void gpio_set(__attribute__((unused)) uint8_t _p) { }
   inline static void gpio_clr(__attribute__((unused)) uint8_t _p) { }
+  inline static uint8_t gpio_lev(__attribute__((unused)) uint8_t _p) { return 0; }
 # ifdef __cplusplus
 }
 # endif
 
 #endif
-
 
 #endif /* LINUX_HAL_GPIO_H_ */

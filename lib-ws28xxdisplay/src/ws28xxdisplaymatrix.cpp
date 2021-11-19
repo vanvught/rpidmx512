@@ -32,7 +32,7 @@
 
 #include "ws28xx.h"
 
-#include "../lib-device/src/font_cp437.h"
+#include "../../lib-device/src/font_cp437.h"
 
 #include "debug.h"
 
@@ -93,7 +93,7 @@ WS28xxDisplayMatrix::~WS28xxDisplayMatrix() {
 }
 
 void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	if (nChar >= cp437_font_size()) {
+	if (static_cast<uint32_t>(nChar) >= cp437_font_size()) {
 		nChar = ' ';
 	}
 
@@ -147,7 +147,7 @@ void WS28xxDisplayMatrix::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint
 }
 
 void WS28xxDisplayMatrix::PutString(const char *pString, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	uint8_t nChar;
+	char nChar;
 
 	while ((nChar = *pString++) != 0) {
 		PutChar(nChar, nRed, nGreen, nBlue);

@@ -37,12 +37,6 @@
 #include "network.h"
 #include "hardware.h"
 
-#if defined (H3)
-extern "C" {
- void net_handle(void);
-}
-#endif
-
 #include "debug.h"
 
 static constexpr auto RETRIES = 3;
@@ -230,7 +224,7 @@ void NtpClient::Start() {
 		Send();
 
 		while (!Receive()) {
-#if defined (H3)
+#if defined (HAVE_NET_HANDLE)
 			net_handle();
 #endif
 			if ((Hardware::Get()->Millis() - nNow) > TIMEOUT_MILLIS) {
@@ -337,7 +331,7 @@ void NtpClient::Run() {
 void NtpClient::PrintNtpTime(__attribute__((unused)) const char *pText, __attribute__((unused)) const struct TimeStamp *pNtpTime) {
 #ifndef NDEBUG
 	const auto nSeconds = static_cast<time_t>(pNtpTime->nSeconds - JAN_1970);
-	const struct tm *pTm = localtime(&nSeconds);
+	const auto *pTm = localtime(&nSeconds);
 	printf("%s %02d:%02d:%02d.%06d %04d [%u]\n", pText, pTm->tm_hour, pTm->tm_min,  pTm->tm_sec, USEC(pNtpTime->nFraction), pTm->tm_year + 1900, pNtpTime->nSeconds);
 #endif
 }

@@ -41,6 +41,9 @@ import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 
 public class WizardDisplayTxt extends JDialog {
+	//
+	private static final String TXT_FILE = "display.txt";
+	//
 	private static final long serialVersionUID = 1L;
 	private final JPanel contentPanel = new JPanel();
 	//
@@ -270,7 +273,7 @@ public class WizardDisplayTxt extends JDialog {
 		
 		btnSetDefaults.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				remoteConfig.setTextArea(opi.doDefaults("display.txt"));
+				remoteConfig.setTextArea(opi.doDefaults(TXT_FILE));
 				load();
 			}
 		});
@@ -278,7 +281,7 @@ public class WizardDisplayTxt extends JDialog {
 	
 	private void load() {
 		if (opi != null) {
-			final String txt = opi.getTxt("display.txt");
+			final String txt = opi.getTxt(TXT_FILE);
 			if (txt != null) {
 				final String[] lines = txt.split("\n");
 				for (int i = 0; i < lines.length; i++) {
@@ -329,30 +332,32 @@ public class WizardDisplayTxt extends JDialog {
 
 	private void save() {
 		if (opi != null) {
-			StringBuffer displayTxt = new StringBuffer("#display.txt\n");
-
-			displayTxt.append(String.format("sleep_timeout=%d\n", formattedTextFieldSleepTimeout.getValue()));
-			displayTxt.append(String.format("intensity=%d\n", formattedTextFieldIntensity.getValue()));
-			displayTxt.append(String.format("flip_vertically=%d\n", chckbxNewCheckBox.isSelected()));
-			
-			displayTxt.append(String.format("%s=1\n", comboBoxLine1.getSelectedObjects()));
-			displayTxt.append(String.format("%s=2\n", comboBoxLine2.getSelectedObjects()));
-			displayTxt.append(String.format("%s=3\n", comboBoxLine3.getSelectedObjects()));
-			displayTxt.append(String.format("%s=4\n", comboBoxLine4.getSelectedObjects()));
-			displayTxt.append(String.format("%s=5\n", comboBoxLine5.getSelectedObjects()));
-			displayTxt.append(String.format("%s=6\n", comboBoxLine6.getSelectedObjects()));
+			StringBuffer txtAppend = new StringBuffer();
+			//
+			txtAppend.append(String.format("sleep_timeout=%d\n", formattedTextFieldSleepTimeout.getValue()));
+			txtAppend.append(String.format("intensity=%d\n", formattedTextFieldIntensity.getValue()));
+			txtAppend.append(String.format("flip_vertically=%c\n", chckbxNewCheckBox.isSelected() ? '1' : '0'));
+			//
+			txtAppend.append(String.format("%s=1\n", comboBoxLine1.getSelectedObjects()));
+			txtAppend.append(String.format("%s=2\n", comboBoxLine2.getSelectedObjects()));
+			txtAppend.append(String.format("%s=3\n", comboBoxLine3.getSelectedObjects()));
+			txtAppend.append(String.format("%s=4\n", comboBoxLine4.getSelectedObjects()));
+			txtAppend.append(String.format("%s=5\n", comboBoxLine5.getSelectedObjects()));
+			txtAppend.append(String.format("%s=6\n", comboBoxLine6.getSelectedObjects()));
+			//
+			String txt = Properties.removeComments(opi.getTxt(TXT_FILE));
 
 			try {
-				opi.doSave(displayTxt.toString());
+				opi.doSave(txt + "\n" + txtAppend.toString());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
 			if (remoteConfig != null) {
-				remoteConfig.setTextArea(opi.getTxt("display.txt"));
+				remoteConfig.setTextArea(opi.getTxt(TXT_FILE));
 			}
-
-			System.out.println(displayTxt.toString());
+			
+			System.out.println(txtAppend.toString());
 		}
 	}
 }

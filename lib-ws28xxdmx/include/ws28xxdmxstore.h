@@ -32,6 +32,12 @@ class WS28xxDmxStore {
 public:
 	virtual ~WS28xxDmxStore() {}
 
+	virtual void SaveType(uint8_t nType)=0;
+	virtual void SaveCount(uint16_t nCount)=0;
+	virtual void SaveGroupingCount(uint16_t nGroupingCount)=0;
+	virtual void SaveMap(uint8_t nMap)=0;
+	virtual void SaveTestPattern(uint8_t nTestPattern)=0;
+
 	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
 };
 

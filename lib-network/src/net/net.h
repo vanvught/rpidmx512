@@ -48,16 +48,15 @@ struct ip_info {
 extern "C" {
 #endif
 
-extern void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const uint8_t *hostname, bool *use_dhcp, bool *is_zeroconf_used);
+extern void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const char *hostname, bool *use_dhcp, bool *is_zeroconf_used);
 extern void net_shutdown(void);
 extern void net_handle(void);
 
-extern void net_set_hostname(const char *name);
 extern void net_set_ip(uint32_t ip);
 extern void net_set_gw(uint32_t gw);
 extern bool net_set_zeroconf(struct ip_info *p_ip_info);
 
-extern bool net_set_dhcp(struct ip_info *p_ip_info, bool *is_zeroconf_used);
+extern bool net_set_dhcp(struct ip_info *p_ip_info, const char *hostname, bool *is_zeroconf_used);
 extern void net_dhcp_release(void);
 
 extern int udp_bind(uint16_t);

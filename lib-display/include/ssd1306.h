@@ -70,7 +70,7 @@ public:
 	void SetSleep(bool bSleep) override;
 	void SetContrast(uint8_t nContrast) override;
 
-	void DoFlipVertically() override;
+	void SetFlipVertically(bool doFlipVertically) override;
 
 	void PrintInfo() override;
 

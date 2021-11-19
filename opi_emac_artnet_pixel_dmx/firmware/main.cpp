@@ -30,6 +30,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -37,9 +38,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -103,18 +103,18 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
-	ArtNet4Params artnetparams(&storeArtNet4);
+	ArtNetParams artnetParams(&storeArtNet);
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
 	// LightSet A - Pixel - 4 Universes
@@ -136,9 +136,10 @@ void notmain(void) {
 	const auto nStartPixelUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
 
 	auto isDmxUniverseSet = false;
+	const auto nDmxUniverse = artnetParams.GetUniverse(0, isDmxUniverseSet);
 
 	ArtNet4Node node(isDmxUniverseSet ? 2 : 1);
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	if (isPixelUniverseSet) {
 		const auto nUniverses = pixelDmx.GetUniverses();
@@ -157,12 +158,10 @@ void notmain(void) {
 	}
 
 	// LightSet B - DMX - 1 Universe
-	const auto nAddress = static_cast<uint16_t>((artnetparams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetparams.GetSubnet() & 0x0F) << 4);
-	auto bIsSet = false;
-	const auto nUniverse = artnetparams.GetUniverse(0, bIsSet);
 
-	if (bIsSet) {
-		node.SetUniverse(4, artnetparams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
+	if (isDmxUniverseSet) {
+		const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
+		node.SetUniverse(4, artnetParams.GetDirection(0), static_cast<uint16_t>(nAddress | nDmxUniverse));
 	}
 
 	StoreDmxSend storeDmxSend;
@@ -196,9 +195,6 @@ void notmain(void) {
 
 	// RDMNet LLRP Only
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
 	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
 	if (WS28xx::Get() == nullptr) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net 4 Pixel-DMX");
@@ -211,21 +207,24 @@ void notmain(void) {
 
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
 
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
-
-	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
 	
-	llrpOnlyDevice.Init();
-	llrpOnlyDevice.Start();
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	display.SetTitle("Eth Art-Net 4 Pixel 1 - DMX");
@@ -264,6 +263,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
+	llrpOnlyDevice.Start();
 
 	if (pPixelTestPattern != nullptr) {
 		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());

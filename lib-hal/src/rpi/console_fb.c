@@ -208,9 +208,8 @@ void console_error(const char *s) {
 	cur_back = back_current;
 }
 
-int console_status(uint32_t color, const char *s) {
+void console_status(uint32_t color, const char *s) {
 	char c;
-	int i = 0;
 
 	const uint16_t fore_current = cur_fore;
 	const uint16_t back_current = cur_back;
@@ -224,7 +223,6 @@ int console_status(uint32_t color, const char *s) {
 	cur_back = CONSOLE_BLACK;
 
 	while ((c = *s++) != (char) 0) {
-		i++;
 		(void) console_putc((int) c);
 	}
 
@@ -233,8 +231,6 @@ int console_status(uint32_t color, const char *s) {
 
 	cur_fore = fore_current;
 	cur_back = back_current;
-
-	return i;
 }
 
 #define TO_HEX(i)	((i) < 10) ? (uint8_t)'0' + (i) : (uint8_t)'A' + ((i) - (uint8_t)10)

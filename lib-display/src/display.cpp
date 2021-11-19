@@ -104,18 +104,22 @@ void Display::Detect(DisplayType tDisplayType) {
 #if defined(ENABLE_TC1602)
 		case DisplayType::PCF8574T_1602:
 			m_LcdDisplay = new Tc1602(16, 2);
+			assert(m_LcdDisplay != nullptr);
 			break;
 		case DisplayType::PCF8574T_2004:
 			m_LcdDisplay = new Tc1602(20, 4);
+			assert(m_LcdDisplay != nullptr);
 			break;
 #endif
 #if defined(ENABLE_SSD1311)
 		case DisplayType::SSD1311:
 			m_LcdDisplay = new Ssd1311;
+			assert(m_LcdDisplay != nullptr);
 			break;
 #endif
 		case DisplayType::SSD1306:
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
+			assert(m_LcdDisplay != nullptr);
 			break;
 		case DisplayType::UNKNOWN:
 			m_tType = DisplayType::UNKNOWN;
@@ -131,8 +135,6 @@ void Display::Detect(DisplayType tDisplayType) {
 			m_tType = DisplayType::UNKNOWN;
 		} else {
 			m_LcdDisplay->Cls();
-			m_nCols = m_LcdDisplay->GetColumns();
-			m_nRows = m_LcdDisplay->GetRows();
 		}
 	}
 
@@ -146,6 +148,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 		if (nRows <= 4) {
 #if defined(ENABLE_SSD1311)
 			m_LcdDisplay = new Ssd1311;
+			assert(m_LcdDisplay != nullptr);
 
 			if (m_LcdDisplay->Start()) {
 				m_tType = DisplayType::SSD1311;
@@ -153,8 +156,10 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 			} else
 #endif
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_4ROWS);
+			assert(m_LcdDisplay != nullptr);
 		} else {
 			m_LcdDisplay = new Ssd1306(OLED_PANEL_128x64_8ROWS);
+			assert(m_LcdDisplay != nullptr);
 		}
 
 		if (m_LcdDisplay->Start()) {
@@ -164,7 +169,8 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	}
 #if defined(ENABLE_TC1602)
 	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
-		m_LcdDisplay = new Tc1602(m_nCols, m_nRows);
+		m_LcdDisplay = new Tc1602(nCols, nRows);
+		assert(m_LcdDisplay != nullptr);
 
 		if (m_LcdDisplay->Start()) {
 			m_tType = DisplayType::PCF8574T_1602;
@@ -173,10 +179,7 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 	}
 #endif
 
-	if (m_LcdDisplay != nullptr) {
-		m_nCols = m_LcdDisplay->GetColumns();
-		m_nRows = m_LcdDisplay->GetRows();
-	} else {
+	if (m_LcdDisplay == nullptr) {
 		m_nSleepTimeout = 0;
 	}
 }
@@ -209,7 +212,9 @@ int Display::Write(uint8_t nLine, const char *pText) {
 	const auto *p = pText;
 	int nCount = 0;
 
-	while ((*p != 0) && (nCount++ < static_cast<int>(m_nCols))) {
+	const auto nColumns = static_cast<int>(m_LcdDisplay->GetColumns());
+
+	while ((*p != 0) && (nCount++ < nColumns)) {
 		++p;
 	}
 
@@ -247,15 +252,21 @@ void Display::TextStatus(const char *pText) {
 		return;
 	}
 
-	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
+	const auto nColumns = m_LcdDisplay->GetColumns();
+	const auto nRows = m_LcdDisplay->GetRows();
 
-	for (uint8_t i = 0; i < static_cast<uint8_t>(m_nCols - 1); i++) {
+	assert((nColumns - 1) >= 0);
+	assert((nRows - 1) >= 0);
+
+	SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(nColumns - 1); i++) {
 		PutChar(' ');
 	}
 
-	SetCursorPos(0, static_cast<uint8_t>(m_nRows - 1));
+	SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
 
-	Write(m_nRows, pText);
+	Write(nRows, pText);
 }
 
 void Display::TextStatus(const char *pText, Display7SegmentMessage n7SegmentData, __attribute__((unused)) uint32_t nConsoleColor) {

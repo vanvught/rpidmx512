@@ -2,7 +2,7 @@
  * @file tcnetparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,28 +31,31 @@
 #include "tcnet.h"
 #include "tcnetpackets.h"
 
-struct TTCNetParams {
+namespace tcnetparams {
+
+struct Params {
 	uint32_t nSetList;
 	char aNodeName[TCNET_NODE_NAME_LENGTH];
 	uint8_t nLayer;
 	uint8_t nTimeCodeType;
-	uint8_t nUseTimeCode;
-};
-//} __attribute__((packed));
+} __attribute__((packed));
 
-struct TCNetParamsMask {
+static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+
+struct Mask {
 	static constexpr auto NODE_NAME = (1U << 0);
 	static constexpr auto LAYER = (1U << 1);
 	static constexpr auto TIMECODE_TYPE = (1U << 2);
 	static constexpr auto USE_TIMECODE = (1U << 3);
 };
+}  // namespace tcnetparams
 
 class TCNetParamsStore {
 public:
 	virtual ~TCNetParamsStore() {}
 
-	virtual void Update(const struct TTCNetParams *pTCNetParams)=0;
-	virtual void Copy(struct TTCNetParams *pTCNetParams)=0;
+	virtual void Update(const struct tcnetparams::Params *pTCNetParams)=0;
+	virtual void Copy(struct tcnetparams::Params *pTCNetParams)=0;
 };
 
 class TCNetParams {
@@ -62,7 +65,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TTCNetParams *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct tcnetparams::Params *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(TCNet *pTCNet);
@@ -74,11 +77,11 @@ public:
 private:
     void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) {
-		return (m_tTTCNetParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 
 	TCNetParamsStore *m_pTCNetParamsStore;
-    TTCNetParams	m_tTTCNetParams;
+    tcnetparams::Params	m_Params;
 };
 
 #endif /* TCNETPARAMS_H_ */

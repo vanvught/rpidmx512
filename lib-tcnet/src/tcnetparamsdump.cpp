@@ -2,7 +2,7 @@
  * @file tcnetparamsdump.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,20 +33,22 @@
 #include "tcnetparams.h"
 #include "tcnetparamsconst.h"
 
+using namespace tcnetparams;
+
 void TCNetParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, TCNetParamsConst::FILE_NAME);
 
-	if (isMaskSet(TCNetParamsMask::NODE_NAME)) {
-		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_tTTCNetParams.aNodeName);
+	if (isMaskSet(Mask::NODE_NAME)) {
+		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_Params.aNodeName);
 	}
 
-	if (isMaskSet(TCNetParamsMask::LAYER)) {
-		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_tTTCNetParams.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_tTTCNetParams.nLayer)));
+	if (isMaskSet(Mask::LAYER)) {
+		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_Params.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer)));
 	}
 
-	if (isMaskSet(TCNetParamsMask::TIMECODE_TYPE)) {
-		printf(" %s=%d\n", TCNetParamsConst::TIMECODE_TYPE, m_tTTCNetParams.nTimeCodeType);
+	if (isMaskSet(Mask::TIMECODE_TYPE)) {
+		printf(" %s=%d\n", TCNetParamsConst::TIMECODE_TYPE, m_Params.nTimeCodeType);
 	}
 #endif
 }

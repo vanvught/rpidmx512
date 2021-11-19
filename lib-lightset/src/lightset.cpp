@@ -31,6 +31,5 @@ LightSetDisplay *LightSet::s_pLightSetDisplay { nullptr };
 LightSet *LightSet::s_pThis { nullptr };
 
 LightSet::LightSet()  {
-//	assert(s_pThis == nullptr);
 	s_pThis = this;
 }

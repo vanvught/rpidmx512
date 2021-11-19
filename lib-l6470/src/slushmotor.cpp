@@ -125,7 +125,7 @@ int SlushMotor::busyCheck(void) {
 uint8_t SlushMotor::SPIXfer(uint8_t data) {
 	char dataPacket[1];
 
-	dataPacket[0] = data;
+	dataPacket[0] = static_cast<char>(data);
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(4000000));
@@ -135,7 +135,7 @@ uint8_t SlushMotor::SPIXfer(uint8_t data) {
 	FUNC_PREFIX(spi_transfern(dataPacket, 1));
 	FUNC_PREFIX(gpio_set(m_nSpiChipSelect));
 
-	return dataPacket[0];
+	return static_cast<uint8_t>(dataPacket[0]);
 }
 
 /*

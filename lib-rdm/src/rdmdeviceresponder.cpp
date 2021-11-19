@@ -52,6 +52,9 @@ static constexpr char LANGUAGE[2] = { 'e', 'n' };
 #if defined(H3)
 # include "h3_board.h"
   static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Responder";
+#elif defined (GD32)
+# include "gd32_board.h"
+  static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Responder";
 #elif defined (RASPPI)
   static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Responder";
 #elif defined (__CYGWIN__)
@@ -88,10 +91,9 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 
 	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
 	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
+
 	if (m_pLightSet == nullptr) {
 		m_nDmxStartAddressFactoryDefault = lightset::Dmx::ADDRESS_INVALID;
-	} else {
-		m_nDmxStartAddressFactoryDefault = m_pLightSet->GetDmxStartAddress();
 	}
 
 	struct TRDMDeviceInfoData info;
@@ -124,15 +126,19 @@ void RDMDeviceResponder::Init() {
 	m_tRDMDeviceInfo.software_version[1] = static_cast<uint8_t>(nSoftwareVersionId >> 16);
 	m_tRDMDeviceInfo.software_version[2] = static_cast<uint8_t>(nSoftwareVersionId >> 8);
 	m_tRDMDeviceInfo.software_version[3] = static_cast<uint8_t>(nSoftwareVersionId);
+
 	if (m_pLightSet == nullptr) {
 		m_tRDMDeviceInfo.dmx_footprint[0] = 0;
 		m_tRDMDeviceInfo.dmx_footprint[1] = 0;
+		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault >> 8);
+		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault);
 	} else {
 		m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(m_pLightSet->GetDmxFootprint() >> 8);
 		m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>( m_pLightSet->GetDmxFootprint());
+		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_pLightSet->GetDmxStartAddress() >> 8);
+		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_pLightSet->GetDmxStartAddress());
 	}
-	m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault >> 8);
-	m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault);
+
 	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
 	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == nullptr ? 0 : 1;
 	m_tRDMDeviceInfo.sub_device_count[0] = static_cast<uint8_t>(nSubDevices >> 8);

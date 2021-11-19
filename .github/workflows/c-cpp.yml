@@ -1,11 +1,12 @@
-name: C/C++ CI
+name: Build H3
 
 on:
   push:
-    branches: [ master ]
+    branches:  
+    - '*'
   pull_request:
-    branches: [ master ]
-
+    branches:  
+    - '*' 
 
 jobs:
   build:

@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -36,9 +37,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -81,25 +81,23 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
+	ArtNetParams artnetParams(&storeArtNet);
 
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
 	fw.Print();
 
 	console_puts("Ethernet Art-Net 4 Node ");
 	console_set_fg_color (CONSOLE_GREEN);
-	if (artnetparams.GetDirection() == lightset::PortDir::INPUT) {
+	if (artnetParams.GetDirection() == lightset::PortDir::INPUT) {
 		console_puts("DMX Input");
 	} else {
 		console_puts("DMX Output");
 		console_set_fg_color (CONSOLE_WHITE);
 		console_puts(" / ");
-		console_set_fg_color((artnetparams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
+		console_set_fg_color((artnetParams.IsRdm()) ? CONSOLE_GREEN : CONSOLE_WHITE);
 		console_puts("RDM");
 	}
 	console_set_fg_color (CONSOLE_WHITE);
@@ -111,8 +109,9 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -120,13 +119,13 @@ void notmain(void) {
 	ArtNet4Node node;
 	ArtNetRdmController discovery;
 
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	bool isSet;
-	node.SetUniverseSwitch(0, artnetparams.GetDirection(0), artnetparams.GetUniverse(0, isSet));
+	node.SetUniverseSwitch(0, artnetParams.GetDirection(0), artnetParams.GetUniverse(0, isSet));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -159,7 +158,7 @@ void notmain(void) {
 	StoreRDMDevice storeRdmDevice;
 
 	if (node.GetActiveOutputPorts() != 0) {
-		if (artnetparams.IsRdm()) {
+		if (artnetParams.IsRdm()) {
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if(rdmDeviceParams.Load()) {
@@ -179,7 +178,7 @@ void notmain(void) {
 
 	node.Print();
 
-	display.SetTitle("Art-Net 4 %s", artnetparams.GetDirection() == lightset::PortDir::INPUT ? "DMX Input" : (artnetparams.IsRdm() ? "RDM" : "DMX Output"));
+	display.SetTitle("Art-Net 4 %s", artnetParams.GetDirection() == lightset::PortDir::INPUT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
 	display.Set(2, displayudf::Labels::NODE_NAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -196,9 +195,9 @@ void notmain(void) {
 
 	display.Show(&node);
 
-	const auto nActivePorts = (artnetparams.GetDirection() == lightset::PortDir::INPUT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
+	const auto nActivePorts = (artnetParams.GetDirection() == lightset::PortDir::INPUT ? node.GetActiveInputPorts() : node.GetActiveOutputPorts());
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetparams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetParams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);

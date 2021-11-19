@@ -43,6 +43,22 @@ typedef enum {
 extern "C" {
 #endif
 
+extern void console_clear(void);
+
+extern void console_set_top_row(uint32_t);
+
+extern void console_clear_line(uint32_t);
+
+extern void console_set_cursor(uint32_t, uint32_t);
+
+extern void console_save_cursor();
+extern void console_restore_cursor();
+
+extern void console_save_color(void);
+extern void console_restore_color(void);
+
+extern void console_puthex(uint8_t);
+
 extern void console_set_fg_color(uint16_t);
 extern void console_set_bg_color(uint16_t);
 extern void console_set_fg_bg_color(uint16_t, uint16_t);
@@ -50,8 +66,6 @@ extern void console_set_fg_bg_color(uint16_t, uint16_t);
 extern void console_puthex_fg_bg(uint8_t, uint16_t, uint16_t);
 extern void console_putpct_fg_bg(uint8_t, uint16_t, uint16_t);
 extern void console_put3dec_fg_bg(uint8_t, uint16_t, uint16_t);
-
-extern int console_status(uint32_t, const char *);
 
 #ifdef __cplusplus
 }

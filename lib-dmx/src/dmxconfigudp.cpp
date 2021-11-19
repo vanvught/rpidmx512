@@ -28,7 +28,7 @@
 
 #include  "dmxconfigudp.h"
 
-int32_t DmxConfigUdp::s_nHandle;
+int32_t DmxConfigUdp::s_nHandle = -1;
 uint8_t DmxConfigUdp::s_Buffer[dmxconfigudp::MAX_SIZE];
 
 #endif

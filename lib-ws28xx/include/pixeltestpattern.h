@@ -27,52 +27,77 @@
 #define PIXELTESTPATTERN_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "pixelpatterns.h"
 
-class PixelTestPattern {
+class PixelTestPattern: PixelPatterns {
 public:
-	PixelTestPattern(pixelpatterns::Pattern Pattern, uint32_t OutputPorts = 1) {
-		if ((Pattern != pixelpatterns::Pattern::NONE) && (Pattern < pixelpatterns::Pattern::LAST)) {
-			m_pPixelPatterns = new PixelPatterns(OutputPorts);
+	PixelTestPattern(pixelpatterns::Pattern Pattern, uint32_t OutputPorts = 1):
+		PixelPatterns(OutputPorts)
+	{
+		s_Pattern = Pattern;
+		SetPattern(Pattern);
+	}
 
-			const auto nColour1 = m_pPixelPatterns->Colour(0, 0, 0);
-			const auto nColour2 = m_pPixelPatterns->Colour(100, 100, 100);
-			constexpr auto nInterval = 100;
-			constexpr auto nSteps = 10;
+	bool SetPattern(pixelpatterns::Pattern Pattern) {
+		if (Pattern >= pixelpatterns::Pattern::LAST)  {
+			return false;
+		}
 
-			for (uint32_t i = 0; i < OutputPorts; i++) {
-				switch (Pattern) {
-				case pixelpatterns::Pattern::RAINBOW_CYCLE:
-					m_pPixelPatterns->RainbowCycle(i, nInterval);
-					break;
-				case pixelpatterns::Pattern::THEATER_CHASE:
-					m_pPixelPatterns->TheaterChase(i, nColour1, nColour2, nInterval);
-					break;
-				case pixelpatterns::Pattern::COLOR_WIPE:
-					m_pPixelPatterns->ColourWipe(i, nColour2, nInterval);
-					break;
-				case pixelpatterns::Pattern::SCANNER:
-					m_pPixelPatterns->Scanner(i, m_pPixelPatterns->Colour(255, 255, 255), nInterval);
-					break;
-				case pixelpatterns::Pattern::FADE:
-					m_pPixelPatterns->Fade(i, nColour1, nColour2, nSteps, nInterval);
-					break;
-				default:
-					break;
-				}
+		s_Pattern = Pattern;
+
+		const auto nColour1 = PixelPatterns::Colour(0, 0, 0);
+		const auto nColour2 = PixelPatterns::Colour(100, 100, 100);
+		constexpr auto nInterval = 100;
+		constexpr auto nSteps = 10;
+
+		for (uint32_t i = 0; i < pixelpatterns::MAX_PORTS; i++) {
+			switch (Pattern) {
+			case pixelpatterns::Pattern::RAINBOW_CYCLE:
+				PixelPatterns::RainbowCycle(i, nInterval);
+				break;
+			case pixelpatterns::Pattern::THEATER_CHASE:
+				PixelPatterns::TheaterChase(i, nColour1, nColour2, nInterval);
+				break;
+			case pixelpatterns::Pattern::COLOR_WIPE:
+				PixelPatterns::ColourWipe(i, nColour2, nInterval);
+				break;
+			case pixelpatterns::Pattern::SCANNER:
+				PixelPatterns::Scanner(i, PixelPatterns::Colour(255, 255, 255), nInterval);
+				break;
+			case pixelpatterns::Pattern::FADE:
+				PixelPatterns::Fade(i, nColour1, nColour2, nSteps, nInterval);
+				break;
+			case pixelpatterns::Pattern::NONE:
+				PixelPatterns::None(i);
+				break;
+			default:
+				assert(0);
+				break;
 			}
 		}
+
+		return true;
 	}
 
 	void Run() {
-		if (m_pPixelPatterns != nullptr) {
-			m_pPixelPatterns->Run();
+		if (s_Pattern != pixelpatterns::Pattern::NONE) {
+			PixelPatterns::Run();
 		}
 	}
 
+	static pixelpatterns::Pattern GetPattern() {
+		return s_Pattern;
+	}
+
+	static PixelTestPattern* Get() {
+		return s_pThis;
+	}
+
 private:
-	PixelPatterns *m_pPixelPatterns { nullptr };
+	static pixelpatterns::Pattern s_Pattern;
+	static PixelTestPattern *s_pThis;
 };
 
 #endif /* PIXELTESTPATTERN_H_ */

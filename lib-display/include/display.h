@@ -26,7 +26,7 @@
 #ifndef DISPLAY_H_
 #define DISPLAY_H_
 
-#include <stdarg.h>
+#include <cstdarg>
 #include <cstdint>
 
 #include "displayset.h"
@@ -43,11 +43,7 @@ struct Defaults {
 }  // namespace display
 
 enum class DisplayType {
-	PCF8574T_1602,
-	PCF8574T_2004,
-	SSD1306,
-	SSD1311,
-	UNKNOWN
+	PCF8574T_1602, PCF8574T_2004, SSD1306, SSD1311, UNKNOWN
 };
 
 class Display {
@@ -142,20 +138,44 @@ public:
 		m_LcdDisplay->SetContrast(nContrast);
 	}
 
-	void DoFlipVertically() {
+	void SetFlipVertically(bool doFlipVertically) {
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
 
-		m_LcdDisplay->DoFlipVertically();
+		m_LcdDisplay->SetFlipVertically(doFlipVertically);
 	}
 
-	uint8_t getCols() const {
-		return m_nCols;
+	uint8_t GetColumns() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetColumns();
 	}
 
-	uint8_t getRows() const {
-		return m_nRows;
+	uint8_t GetRows() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetRows();
+	}
+
+	bool GetFlipVertically() const {
+		if (m_LcdDisplay == nullptr) {
+			return false;
+		}
+
+		return m_LcdDisplay->GetFlipVertically();
+	}
+
+	uint8_t GetContrast() const {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		return m_LcdDisplay->GetContrast();
 	}
 
 	void PrintInfo();
@@ -169,8 +189,6 @@ private:
 	void Detect(uint8_t nCols, uint8_t nRows);
 
 private:
-	uint8_t m_nCols { 0 };
-	uint8_t m_nRows { 0 };
 	DisplayType m_tType { DisplayType::UNKNOWN };
 	DisplaySet *m_LcdDisplay { nullptr };
 	bool m_bIsSleep { false };

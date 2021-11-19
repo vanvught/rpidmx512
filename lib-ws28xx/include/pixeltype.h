@@ -26,6 +26,8 @@
 #ifndef PIXELTYPE_H_
 #define PIXELTYPE_H_
 
+#include <stdint.h>
+
 namespace pixel {
 enum class Type {
 	WS2801,

@@ -2,7 +2,7 @@
  * @file mcp9808.cpp
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@ namespace sensor {
 namespace mcp9808 {
 static constexpr uint8_t I2C_ADDRESS = 0x18;
 namespace reg {
-static constexpr uint8_t UPPER_TEMP = 0x02;
-static constexpr uint8_t LOWER_TEMP = 0x03;
-static constexpr uint8_t CRIT_TEMP = 0x04;
+// static constexpr uint8_t UPPER_TEMP = 0x02;
+// static constexpr uint8_t LOWER_TEMP = 0x03;
+// static constexpr uint8_t CRIT_TEMP = 0x04;
 static constexpr uint8_t AMBIENT_TEMP = 0x05;
 static constexpr uint8_t MANUF_ID = 0x06;
 static constexpr uint8_t DEVICE_ID = 0x07;

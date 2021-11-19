@@ -1,6 +1,4 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-hal/include ../lib-spiflashstore/include ../lib-dmx/include ../lib-rdm/include ../lib-usb/include ../lib-properties/include
-#
+DEFINES=NDEBUG
+EXTRA_INCLUDES=../lib-hal/include ../lib-spiflashstore/include ../lib-dmx/include ../lib-rdm/include ../lib-usb/include ../lib-properties/include
+
 include ../firmware-template-h3/lib/Rules.mk

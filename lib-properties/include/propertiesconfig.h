@@ -28,6 +28,10 @@
 
 #include <cstdint>
 
+#if defined(ENABLE_JSON_ONLY) && defined(DISABLE_JSON)
+# error
+#endif
+
 struct PropertiesConfig {
 public:
 	static void EnableJSON(bool enableJSON) {
@@ -41,6 +45,8 @@ public:
 	static bool IsJSON() {
 #if defined(ENABLE_JSON_ONLY)
 		return true;
+#elif defined(DISABLE_JSON)
+        return false;
 #else
 		return isMaskSet(Mask::ENABLE_JSON);
 #endif

@@ -36,9 +36,13 @@
 
 #include "networkparams.h"
 
+#include "../src/net/net.h"
+
 extern "C" {
 	void net_handle(void);
 }
+
+#define HAVE_NET_HANDLE
 
 class Network {
 public:
@@ -59,9 +63,17 @@ public:
 	void JoinGroup(int32_t nHandle, uint32_t nIp);
 	void LeaveGroup(int32_t nHandle, uint32_t nIp);
 
-	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
-	uint16_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort);
-	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
+	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *from_ip, uint16_t *from_port) {
+		return udp_recv(static_cast<uint8_t>(nHandle), reinterpret_cast<uint8_t*>(pBuffer), nLength, from_ip, from_port);
+	}
+
+	uint16_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+		return udp_recv2(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t **>(ppBuffer), pFromIp, pFromPort);
+	}
+
+	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {
+		udp_send(static_cast<uint8_t>(nHandle), reinterpret_cast<const uint8_t*>(pBuffer), nLength, to_ip, remote_port);
+	}
 
 	/*
 	 * Experimental TCP
@@ -153,24 +165,16 @@ public:
 		return 'U';
 	}
 
-	 bool IsDhcpKnown() const {
-#if defined (__CYGWIN__) || defined (__APPLE__)
-		return false;
-#else
+	bool IsDhcpKnown() const {
 		return true;
-#endif
 	}
 
 	network::dhcp::Mode GetDhcpMode() const {
-		if (IsDhcpKnown()) {
-			if (m_IsDhcpUsed) {
-				return network::dhcp::Mode::ACTIVE;
-			}
-
-			return network::dhcp::Mode::INACTIVE;
+		if (m_IsDhcpUsed) {
+			return network::dhcp::Mode::ACTIVE;
 		}
 
-		return network::dhcp::Mode::UNKNOWN;
+		return network::dhcp::Mode::INACTIVE;
 	}
 
 	const char *GetIfName() const {
@@ -214,7 +218,7 @@ public:
 		return s_pThis;
 	}
 
-protected:
+private:
 	bool m_IsDhcpCapable { true };
 	bool m_IsDhcpUsed { false };
 	bool m_IsZeroconfCapable { true };
@@ -233,8 +237,6 @@ protected:
 	char m_aIfName[IFNAMSIZ];
 
 	NetworkStore *m_pNetworkStore { nullptr };
-
-private:
 	NetworkDisplay m_NetworkDisplay;
 
 	void SetDefaultIp();

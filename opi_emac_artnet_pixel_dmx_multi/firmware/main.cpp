@@ -29,6 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
@@ -36,9 +37,8 @@
 #include "storedisplayudf.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -101,19 +101,18 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
 	nw.Print();
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
+	ArtNetParams artnetParams(&storeArtNet);
 
-	ArtNet4Params artnetparams(&storeArtNet4);
-
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
 	// LightSet A - Pixel - 32 Universes
@@ -137,19 +136,19 @@ void notmain(void) {
 	auto nPages = static_cast<uint8_t>(nActivePorts);
 
 	auto bIsSet = false;
-	artnetparams.GetUniverse(0, bIsSet);
+	artnetParams.GetUniverse(0, bIsSet);
 
 	if (bIsSet) {
 		nPages = 9;
 	} else {
-		artnetparams.GetUniverse(1, bIsSet);
+		artnetParams.GetUniverse(1, bIsSet);
 		if (bIsSet) {
 			nPages = 9;
 		}
 	}
 
 	ArtNet4Node node(nPages);
-	artnetparams.Set(&node);
+	artnetParams.Set(&node);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
@@ -179,18 +178,18 @@ void notmain(void) {
 
 	// LightSet B - DMX - 2 Universes
 
-	const auto nAddress = static_cast<uint16_t>((artnetparams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetparams.GetSubnet() & 0x0F) << 4);
+	const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
 	bIsSet = false;
-	auto nUniverse = artnetparams.GetUniverse(0, bIsSet);
+	auto nUniverse = artnetParams.GetUniverse(0, bIsSet);
 
 	if (bIsSet) {
-		node.SetUniverse(32, artnetparams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
+		node.SetUniverse(32, artnetParams.GetDirection(0), static_cast<uint16_t>(nAddress | nUniverse));
 	}
 
-	nUniverse = artnetparams.GetUniverse(1, bIsSet);
+	nUniverse = artnetParams.GetUniverse(1, bIsSet);
 
 	if (bIsSet) {
-		node.SetUniverse(33, artnetparams.GetDirection(1), static_cast<uint16_t>(nAddress | nUniverse));
+		node.SetUniverse(33, artnetParams.GetDirection(1), static_cast<uint16_t>(nAddress | nUniverse));
 	}
 
 	StoreDmxSend storeDmxSend;
@@ -225,9 +224,6 @@ void notmain(void) {
 
 	// RDMNet LLRP Only
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
 	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
@@ -235,22 +231,25 @@ void notmain(void) {
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
 	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
 	}
 
-	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
-
-	llrpOnlyDevice.Init();
-	llrpOnlyDevice.Start();
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
@@ -264,7 +263,7 @@ void notmain(void) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}
@@ -287,6 +286,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
+	llrpOnlyDevice.Start();
 
 	if (pPixelTestPattern != nullptr) {
 		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());

@@ -280,6 +280,15 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			}
 		}
 	}
+
+	/**
+	 * Art-Net 4
+	 */
+
+	if (Sscan::Uint8(pLine, ArtNetParamsConst::MAP_UNIVERSE0, nValue8) == Sscan::OK) {
+		SetBool(nValue8, Mask::MAP_UNIVERSE0);
+		return;
+	}
 }
 
 void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
@@ -357,6 +366,9 @@ void ArtNetParams::Builder(const struct Params *pArtNetParams, char *pBuffer, ui
 		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_tArtNetParams.nDestinationIpPort[i], isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << i)));
 	}
 
+	builder.AddComment("Art-Net 4");
+	builder.Add(ArtNetParamsConst::MAP_UNIVERSE0, isMaskSet(Mask::MAP_UNIVERSE0));
+
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
@@ -430,5 +442,13 @@ void ArtNetParams::Set(ArtNetNode *pArtNetNode) {
 	for (;i < (ArtNet::PORTS * ArtNet::PAGES); i++) {
 		pArtNetNode->SetMergeMode(i, static_cast<lightset::MergeMode>(m_tArtNetParams.nMergeMode));
 		pArtNetNode->SetPortProtocol(i, static_cast<PortProtocol>(m_tArtNetParams.nProtocol));
+	}
+
+	/**
+	 * Art-Net 4
+	 */
+
+	if(isMaskSet(Mask::MAP_UNIVERSE0)) {
+		pArtNetNode->SetMapUniverse0(true);
 	}
 }

@@ -30,6 +30,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "ntpclient.h"
@@ -39,9 +40,8 @@
 #include "display7segment.h"
 
 #include "artnet4node.h"
-#include "artnet4params.h"
+#include "artnetparams.h"
 #include "storeartnet.h"
-#include "storeartnet4.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
@@ -123,8 +123,10 @@ void notmain(void) {
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
 #if defined (ORANGE_PI)
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
+	nw.Print();
 #else
 	nw.Init();
 #endif
@@ -220,11 +222,10 @@ void notmain(void) {
 	ArtNet4Node node;
 #if defined (ORANGE_PI)
 	StoreArtNet storeArtNet;
-	StoreArtNet4 storeArtNet4;
 
-	ArtNet4Params artnetparams(&storeArtNet4);
+	ArtNetParams artnetparams(&storeArtNet);
 #else
-	ArtNet4Params artnetparams;
+	ArtNetParams artnetparams;
 #endif
 
 	node.SetLongName(aDescription);

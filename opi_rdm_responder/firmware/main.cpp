@@ -23,18 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdint>
 
 #include "hardware.h"
-#include "noemac/network.h"
+#include "network.h"
 #include "ledblink.h"
 
-#include "console.h"
-#include "display.h"
+#include "displayudf.h"
+#include "displayrdm.h"
 
 #include "identify.h"
+#include "factorydefaults.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -43,99 +43,83 @@
 #include "rdmsensorsparams.h"
 #include "rdmsubdevicesparams.h"
 
-#include "tlc59711dmxparams.h"
-#include "tlc59711dmx.h"
-
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xx.h"
+#include "pixeldmxparamsrdm.h"
+#include "pixeltestpattern.h"
+
+#if !defined(NO_EMAC)
+# include "remoteconfig.h"
+# include "remoteconfigparams.h"
+# include "storeremoteconfig.h"
+# include "storenetwork.h"
+#endif
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 #include "storerdmdevice.h"
 #include "storews28xxdmx.h"
-#include "storetlc59711.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
 #include "storerdmsubdevices.h"
+#include "storedisplayudf.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
+#include "is_config_mode.h"
+
 extern "C" {
 
 void notmain(void) {
+	config_mode_init();
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	Identify identify;
-	LightSet *pLightSet;
-
-	char aDescription[32];
+	const auto isConfigMode = is_config_mode();
 
 	fw.Print();
 
-	hw.SetLed(hardware::LedStatus::ON);
+#if !defined(NO_EMAC)
+	StoreNetwork storeNetwork;
+	nw.SetNetworkStore(&storeNetwork);
+	nw.Init(&storeNetwork);
+	nw.Print();
+#endif
 
-	bool isLedTypeSet = false;
-
-	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms(&storeTLC59711);
-
-	if (pwmledparms.Load()) {
-		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			auto *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != nullptr);
-			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
-
-			pwmledparms.Dump();
-			pwmledparms.Set(pTLC59711Dmx);
-			snprintf(aDescription, sizeof(aDescription) -1, "%s", TLC59711DmxParams::GetType(pTLC59711Dmx->GetLEDType()));
-			pLightSet = pTLC59711Dmx;
-		}
-	}
+	PixelDmxConfiguration pixelDmxConfiguration;
 
 	StoreWS28xxDmx storeWS28xxDmx;
+	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
-	if (!isLedTypeSet) {
-		assert(pSpi == nullptr);
-
-		PixelDmxConfiguration pixelDmxConfiguration;
-
-		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
-
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Set(&pixelDmxConfiguration);
-			ws28xxparms.Dump();
-		}
-
-		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
-		assert(pWS28xxDmx != nullptr);
-
-		const auto nCount = pixelDmxConfiguration.GetCount();
-
-		snprintf(aDescription, sizeof(aDescription) -1, "%s:%d", PixelType::GetType(pixelDmxConfiguration.GetType()), nCount);
-		pLightSet = pWS28xxDmx;
+	if (ws28xxparms.Load()) {
+		ws28xxparms.Set(&pixelDmxConfiguration);
+		ws28xxparms.Dump();
 	}
 
-	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+	DisplayRdm displayRdm;
 
-	RDMResponder rdmResponder(&personality, pLightSet);
+	WS28xxDmx pixelDmx(pixelDmxConfiguration);
+	pixelDmx.SetLightSetDisplay(&displayRdm);
+	pixelDmx.SetWS28xxDmxStore(&storeWS28xxDmx);
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
+	PixelTestPattern pixelTestPattern(nTestPattern);
 
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+	LightSet *pLightSet;
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&rdmResponder);
-		rdmDeviceParams.Dump();
+	if (isConfigMode) {
+		auto *pPixelDmxParamsRdm = new PixelDmxParamsRdm(&storeWS28xxDmx);
+		assert(pPixelDmxParamsRdm != nullptr);
+
+		pLightSet = pPixelDmxParamsRdm;
+	} else {
+		pLightSet = &pixelDmx;
 	}
 
 	StoreRDMSensors storeRdmSensors;
@@ -154,20 +138,96 @@ void notmain(void) {
 		rdmSubDevicesParams.Dump();
 	}
 
+	Identify identify;
+
+	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH];
+	snprintf(aDescription, sizeof(aDescription) -1, "%s:%u G%u [%s]",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+
+	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+
+	RDMResponder rdmResponder(&personality, pLightSet);
 	rdmResponder.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&rdmResponder);
+		rdmDeviceParams.Dump();
+	}
+
+	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+
+	FactoryDefaults factoryDefaults;
+	rdmResponder.SetRDMFactoryDefaults(&factoryDefaults);
+	rdmResponder.Start();
+	rdmResponder.DmxDisableOutput(nTestPattern != pixelpatterns::Pattern::NONE);
+
 	rdmResponder.Print();
+	pLightSet->Print();
+
+#if !defined(NO_EMAC)
+	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::PIXEL);
+	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
+
+	while (spiFlashStore.Flash())
+		;
+#endif
+
+	display.SetTitle("RDM Responder Pixel 1");
+	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
+	display.Printf(7, "%s:%d G%d %s",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
+
+	StoreDisplayUdf storeDisplayUdf;
+	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+
+	if (displayUdfParams.Load()) {
+		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
+	}
+
+	display.Show();
+
+	if (isConfigMode) {
+		display.ClearLine(3);
+		display.ClearLine(4);
+		display.Write(4, "Config Mode");
+		display.ClearLine(5);
+	} else if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		display.ClearLine(6);
+		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
+	}
 
 	hw.WatchdogInit();
 
-	rdmResponder.SetOutput(pLightSet);
-	rdmResponder.Start();
-
-	for(;;) {
+	for (;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
 		spiFlashStore.Flash();
 		identify.Run();
+#if !defined(NO_EMAC)
+		nw.Run();
+		remoteConfig.Run();
+#endif
 		lb.Run();
+		display.Run();
+		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
+			pixelTestPattern.Run();
+		}
 	}
 }
 
