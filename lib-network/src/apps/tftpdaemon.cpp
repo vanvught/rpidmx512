@@ -169,6 +169,7 @@ bool TFTPDaemon::Run() {
 			break;
 		default:
 			assert(0);
+			__builtin_unreachable();
 			break;
 		}
 
@@ -234,6 +235,7 @@ void TFTPDaemon::HandleRequest() {
 			break;
 		default:
 			assert(0);
+			__builtin_unreachable();
 			break;
 	}
 }

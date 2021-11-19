@@ -28,10 +28,30 @@
 
 #include "lightset.h"
 
+#include "debug.h"
+
 class LightSet4with4 final: public LightSet {
 public:
-	LightSet4with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {}
+	LightSet4with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {
+		DEBUG_PRINTF("%p %p", m_pA, m_pB);
+	}
 	~LightSet4with4() override {}
+
+	void SetLightSetA(LightSet *pA) {
+		m_pA = pA;
+	}
+
+	LightSet *GetLightSetA() const {
+		return m_pA;
+	}
+
+	void SetLightSetB(LightSet *pB) {
+		m_pB = pB;
+	}
+
+	LightSet *GetLightSetB() const {
+		return m_pB;
+	}
 
 	void Start(uint32_t nPortIndex) override {
 		if ((nPortIndex < 4) && (m_pA != nullptr)) {

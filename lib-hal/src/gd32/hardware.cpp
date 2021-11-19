@@ -32,9 +32,10 @@
 
 #include "uart0_debug.h"
 
-#include "gd32_board.h"
-
+#include "gd32.h"
 #include "gd32_i2c.h"
+#include "gd32_adc.h"
+#include "gd32_board.h"
 
 #ifndef NDEBUG
 # include "../debug/i2cdetect.h"
@@ -44,10 +45,8 @@
 
 extern "C" {
 void systick_config(void);
-#include "gd32f20x_rcu.h"
-#include "gd32f20x_gpio.h"
-#include "gd32f20x_timer.h"
 }
+
 #define LED_PIN                         GPIO_PIN_0
 #define LED_GPIO_PORT                   GPIOC
 #define LED_GPIO_CLK                    RCU_GPIOC
@@ -74,6 +73,8 @@ Hardware::Hardware() {
 	timer_initpara.period = static_cast<uint32_t>(~0);
 	timer_init(TIMER5, &timer_initpara);
 	timer_enable(TIMER5);
+
+	gd32_adc_init();
 
 	struct tm tmbuf;
 
@@ -121,6 +122,7 @@ void Hardware::GetUuid(uuid_t out) {
 
 bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
 #if !defined(DISABLE_RTC)
+	DEBUG_ENTRY
 	rtc_time rtc_time;
 
 	rtc_time.tm_sec = pTime->tm_sec;
@@ -132,6 +134,7 @@ bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
 
 	m_HwClock.Set(&rtc_time);
 
+	DEBUG_EXIT
 	return true;
 #else
 	return false;
@@ -151,7 +154,7 @@ void Hardware::GetTime(struct tm *pTime) {
 }
 
 bool Hardware::Reboot() {
-	DEBUG_PUTS("Hardware::Reboot()");
+	DEBUG_PUTS("");
 
 	LedBlink::Get()->SetFrequency(8);
 
@@ -161,8 +164,6 @@ bool Hardware::Reboot() {
 	}
 
 	WatchdogInit();
-
-	DEBUG_PRINTF("m_bIsWatchdog=%d", m_bIsWatchdog);
 
 	for (;;) {
 		LedBlink::Get()->Run();

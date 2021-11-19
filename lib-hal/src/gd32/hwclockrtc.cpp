@@ -27,15 +27,8 @@
 #include <cstring>
 #include <time.h>
 
-#include "hwclock.h"
-extern "C" {
-#include "gd32f20x_bkp.h"
-#include "gd32f20x_pmu.h"
-#include "gd32f20x_rcu.h"
-#include "gd32f20x_rtc.h"
-}
-
 #include "hardware.h"
+#include "gd32.h"
 
 #include "debug.h"
 
@@ -84,6 +77,8 @@ void HwClock::RtcProbe() {
 		DEBUG_PUTS("No need to configure RTC");
 		/* wait for RTC registers synchronization */
 		rtc_register_sync_wait();
+        /* wait until last write operation on RTC registers has finished */
+        rtc_lwoff_wait();
 	}
 
     /* clear reset flags */
@@ -100,8 +95,9 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	DEBUG_ENTRY
 	assert(pRtcTime != nullptr);
 
-
+	rtc_lwoff_wait();
     rtc_counter_set(mktime(const_cast<struct tm *>(reinterpret_cast<const struct tm *>(pRtcTime))));
+    rtc_lwoff_wait();
 
 	DEBUG_EXIT
 	return true;

@@ -25,10 +25,10 @@
 
 #include <cstdint>
 #include <cstdio>
-#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
+#include "networkconst.h"
 #include "storenetwork.h"
 #include "ledblink.h"
 
@@ -37,24 +37,23 @@
 
 #include "ntpclient.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
-
-#include "networkconst.h"
+#include "displayhandler.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
 #include "storee131.h"
 #include "e131msgconst.h"
 
-// Monitor Output
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "displayhandler.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -72,11 +71,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
-
-	StoreE131 storeE131;
 
 	console_clear();
 
@@ -98,9 +94,21 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 Real-time DMX Monitor");
+#endif
+	mDns.Print();
+
+
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
+
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
 	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
@@ -109,8 +117,10 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	E131Bridge bridge;
+	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
+
+	E131Bridge bridge;
 
 	if (e131params.Load()) {
 		e131params.Dump();
@@ -125,6 +135,7 @@ void notmain(void) {
 	bridge.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
+	console_clear_top_row();
 
 	bridge.Print();
 
@@ -176,6 +187,7 @@ void notmain(void) {
 		lb.Run();
 		showSystime.Run();
 		display.Run();
+		mDns.Run();
 	}
 }
 

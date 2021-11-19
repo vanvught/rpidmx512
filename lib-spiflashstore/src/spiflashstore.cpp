@@ -332,10 +332,12 @@ bool SpiFlashStore::Flash() {
 		break;
 	default:
 		assert(0);
+		__builtin_unreachable();
 		break;
 	}
 
 	assert(0);
+	__builtin_unreachable();
 	return false;
 }
 

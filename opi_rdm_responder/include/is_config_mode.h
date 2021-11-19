@@ -26,8 +26,6 @@
 #ifndef IS_CONFIG_MODE_H_
 #define IS_CONFIG_MODE_H_
 
-#undef NDEBUG
-
 #include "board/h3_opi_zero.h"
 #include "h3_gpio.h"
 

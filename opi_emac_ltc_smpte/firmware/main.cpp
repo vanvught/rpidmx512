@@ -196,6 +196,7 @@ void notmain(void) {
 		}
 	}
 
+
 	/**
 	 * From here work with source selection
 	 */
@@ -208,6 +209,7 @@ void notmain(void) {
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, ltcSource, ltcParams.IsShowSysTime());
 
 	if (!tLtcDisabledOutputs.bMax7219) {
+		DEBUG_PUTS("");
 		ltcDdisplayMax7219.Init(ltcDisplayParams.GetMax7219Intensity());
 		ltcDdisplayMax7219.Print();
 	}

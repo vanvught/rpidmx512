@@ -106,12 +106,12 @@ void E131Bridge::Start() {
 void E131Bridge::Stop() {
 	m_State.IsNetworkDataLoss = true;
 
-	if (m_pLightSet != nullptr) {
-		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		if (m_pLightSet != nullptr) {
 			m_pLightSet->Stop(nPortIndex);
-			lightset::Data::ClearLength(nPortIndex);
-			m_OutputPort[nPortIndex].IsDataPending = false;
 		}
+		lightset::Data::ClearLength(nPortIndex);
+		m_OutputPort[nPortIndex].IsDataPending = false;
 	}
 
 	if (m_pE131DmxIn != nullptr) {

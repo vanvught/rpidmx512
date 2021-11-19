@@ -24,7 +24,6 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 #include <cassert>
 
 #include "hardware.h"
@@ -47,7 +46,6 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
-#include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "h3/ws28xxdmxstartstop.h"
@@ -79,6 +77,12 @@
 
 #include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
+#include "artnettriggerhandler.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 using namespace artnet;
 
@@ -89,9 +93,7 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -107,6 +109,16 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net Pixel");
+	mDns.Print();
+#endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
@@ -149,11 +161,10 @@ void notmain(void) {
 		}
 	}
 
-	uint8_t nTestPattern;
-	PixelTestPattern *pPixelTestPattern = nullptr;
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
+	PixelTestPattern pixelTestPattern(nTestPattern);
 
-	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		hw.SetRebootHandler(new PixelReboot);
 	}
 
@@ -180,17 +191,28 @@ void notmain(void) {
 
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	if (node.GetActiveOutputPorts() != 0) {
+	if (isDmxUniverseSet) {
 		pDmxConfigUdp = new DmxConfigUdp;
 		assert(pDmxConfigUdp != nullptr);
 	}
 
-	LightSet4with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmx, node.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
+	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, isDmxUniverseSet ? 1 : 0);
+
+	// Art-Net
+
+	DisplayUdfHandler displayUdfHandler;
+	node.SetArtNetDisplay(&displayUdfHandler);
+
+	node.SetArtNetStore(&storeArtNet);
+
+	// LightSet 4with4
+
+	LightSet4with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
 	lightSet.Print();
 
+	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmx);
+
 	node.SetOutput(&lightSet);
-	node.SetArtNetDisplay(&displayUdfHandler);
-	node.SetArtNetStore(&storeArtNet);
 	node.Print();
 
 	// RDMNet LLRP Only
@@ -227,13 +249,19 @@ void notmain(void) {
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
+	// Display
+
 	display.SetTitle("Eth Art-Net 4 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(3, displayudf::Labels::NODE_NAME);
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d %s",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -244,6 +272,11 @@ void notmain(void) {
 	}
 
 	display.Show(&node);
+
+	if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		display.ClearLine(6);
+		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
+	}
 
 	const auto nActivePorts = static_cast<uint32_t>(node.GetActiveInputPorts() + node.GetActiveOutputPorts());
 
@@ -262,14 +295,10 @@ void notmain(void) {
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
-	node.Start();
 	llrpOnlyDevice.Start();
-
-	if (pPixelTestPattern != nullptr) {
-		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());
-	} else {
-		display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
-	}
+	node.Start();
+	
+	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
@@ -282,12 +311,15 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
-			pPixelTestPattern->Run();
+		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
+			pixelTestPattern.Run();
 		}
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

@@ -42,7 +42,6 @@
 #include "e131reboot.h"
 #include "storee131.h"
 #include "e131msgconst.h"
-
 #include "e131.h"
 
 // Pixel
@@ -81,6 +80,11 @@
 
 #include "displayhandler.h"
 
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
+
 using namespace e131;
 
 extern "C" {
@@ -107,6 +111,16 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 Pixel");
+	mDns.Print();
+#endif
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
@@ -145,20 +159,19 @@ void notmain(void) {
 		}
 	}
 
-	uint8_t nTestPattern;
-	PixelTestPattern *pPixelTestPattern = nullptr;
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
+	PixelTestPattern pixelTestPattern(nTestPattern);
 
-	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern));
+	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		hw.SetRebootHandler(new PixelReboot);
 	}
 
 	// LightSet B - DMX - 1 Universe
 
-	bool bIsSet;
-	auto const nUniverse = e131params.GetUniverse(0, bIsSet);
+	bool isDmxUniverseSet;
+	auto const nUniverse = e131params.GetUniverse(0, isDmxUniverseSet);
 
-	if (bIsSet) {
+	if (isDmxUniverseSet) {
 		bridge.SetUniverse(4, e131params.GetDirection(0), nUniverse);
 	}
 
@@ -178,12 +191,16 @@ void notmain(void) {
 
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
 
-	if (bridge.GetActiveOutputPorts() != 0) {
+	if (isDmxUniverseSet) {
 		pDmxConfigUdp = new DmxConfigUdp;
 		assert(pDmxConfigUdp != nullptr);
 	}
 
-	LightSet4with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmx, bridge.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
+	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, isDmxUniverseSet ? 1 : 0);
+
+	// LightSet 4with4
+
+	LightSet4with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	bridge.SetOutput(&lightSet);
@@ -226,7 +243,11 @@ void notmain(void) {
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d %s",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -237,6 +258,11 @@ void notmain(void) {
 	}
 
 	display.Show(&bridge);
+
+	if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		display.ClearLine(6);
+		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
+	}
 
 	const auto nActivePorts = static_cast<uint32_t>(bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts());
 
@@ -255,14 +281,10 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
-	bridge.Start();
 	llrpOnlyDevice.Start();
+	bridge.Start();
 
-	if (pPixelTestPattern != nullptr) {
-		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());
-	} else {
-		display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
-	}
+	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
@@ -275,12 +297,15 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
-			pPixelTestPattern->Run();
+		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
+			pixelTestPattern.Run();
 		}
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

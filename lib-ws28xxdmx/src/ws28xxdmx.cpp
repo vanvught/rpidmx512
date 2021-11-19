@@ -27,12 +27,6 @@
 #include <algorithm>
 #include <cassert>
 
-#ifndef NDEBUG
-#if (__linux__)
-# include <cstdio>
-#endif
-#endif
-
 #include "ws28xxdmx.h"
 #include "ws28xx.h"
 
@@ -106,6 +100,10 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 	assert(pData != nullptr);
 	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
+	if (m_pWS28xx->IsUpdating()) {
+		return;
+	}
+
 	uint32_t d = 0;
 	uint32_t beginIndex, endIndex;
 
@@ -134,15 +132,9 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 		break;
 	}
 
-#ifndef NDEBUG
-#if defined (__linux__)
-	printf("%d-%d:%x %x %x-%d", nPortIndex, m_nDmxStartAddress, pData[0], pData[1], pData[2], nLength);
-#endif
-#endif
-
-	while (m_pWS28xx->IsUpdating()) {
-		// wait for completion
-	}
+//	while (m_pWS28xx->IsUpdating()) {
+//		// wait for completion
+//	}
 
 	if (m_nChannelsPerPixel == 3) {
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {

@@ -32,29 +32,31 @@
 #include "storenetwork.h"
 #include "ledblink.h"
 
+#include "console.h"
 #include "h3/showsystime.h"
 
 #include "ntpclient.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
+
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
+#include "artnet/displayudfhandler.h"
+#include "displayhandler.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
 #include "artnetmsgconst.h"
+#include "storeartnet.h"
 
 #include "timecode.h"
 
-// Monitor Output
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -75,7 +77,6 @@ void notmain(void) {
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -99,9 +100,20 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 Real-time DMX Monitor");
+#endif
+	mDns.Print();
+
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
+
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
 	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
@@ -134,6 +146,7 @@ void notmain(void) {
 	node.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
+	console_clear_top_row();
 
 	node.Print();
 
@@ -185,6 +198,7 @@ void notmain(void) {
 		lb.Run();
 		showSystime.Run();
 		display.Run();
+		mDns.Run();
 	}
 }
 

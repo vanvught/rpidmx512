@@ -32,7 +32,8 @@
 
 #include "hwclock.h"
 
-#include "gd32f20x_fwdgt.h"
+#include "gd32.h"
+#include "gd32_adc.h"
 
 class Hardware {
 public:
@@ -101,12 +102,16 @@ public:
 		m_pRebootHandler = pRebootHandler;
 	}
 
-	int16_t GetCoreTemperature() {
-		return 0;
+	float GetCoreTemperature() {
+		return gd32_adc_gettemp();
 	}
 
-	int16_t GetCoreTemperatureMax() {
-		return 0;
+	float GetCoreTemperatureMin() {
+		return -40.0f;
+	}
+
+	float GetCoreTemperatureMax() {
+		return 85.0f;
 	}
 
 	static Hardware *Get() {

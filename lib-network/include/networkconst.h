@@ -28,6 +28,7 @@
 
 struct NetworkConst {
 	static const char MSG_NETWORK_INIT[];
+	static const char MSG_NETWORK_STARTED[];
 };
 
 #endif /* NETWORKCONST_H_ */

@@ -113,7 +113,7 @@ void DmxSerial::Print() {
 	printf("Files : %d\n", m_nFilesCount);
 	printf("DMX\n");
 	printf(" First channel : %d\n", m_aFileIndex[0]);
-	printf(" Last channel  : %d\n", m_nDmxLastSlot);
+	printf(" Last channel  : %u\n", m_nDmxLastSlot);
 }
 
 void DmxSerial::ScanDirectory() {

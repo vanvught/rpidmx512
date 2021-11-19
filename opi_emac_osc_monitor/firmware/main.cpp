@@ -31,8 +31,8 @@
 #include "networkconst.h"
 #include "storenetwork.h"
 #include "ledblink.h"
-#include "display.h"
 
+#include "console.h"
 #include "h3/showsystime.h"
 
 #include "ntpclient.h"
@@ -40,18 +40,18 @@
 #include "mdns.h"
 #include "mdnsservices.h"
 
+#include "display.h"
+#include "displayhandler.h"
+
 #include "oscserver.h"
 #include "oscserverparms.h"
 #include "storeoscserver.h"
 #include "oscservermsgconst.h"
 
-// Monitor Output
 #include "dmxmonitor.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "displayhandler.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
@@ -69,7 +69,6 @@ void notmain(void) {
 	Display display(DisplayType::SSD1306);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -97,6 +96,8 @@ void notmain(void) {
 	ntpClient.Start();
 	ntpClient.Print();
 
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+
 	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
 		printf("Set RTC from System Clock\n");
 		HwClock::Get()->SysToHc();
@@ -115,10 +116,12 @@ void notmain(void) {
 
 	MDNS mDns;
 	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=monitor");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
 #if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Monitor");
 #endif
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=monitor");
 	mDns.Print();
 
 	DMXMonitor monitor;
@@ -126,12 +129,9 @@ void notmain(void) {
 	server.SetOutput(&monitor);
 	monitor.Cls();
 	console_set_top_row(20);
+	console_clear_top_row();
 
 	server.Print();
-
-	for (uint8_t i = 1; i < 7 ; i++) {
-		display.ClearLine(i);
-	}
 
 	uint8_t nHwTextLength;
 
@@ -172,6 +172,7 @@ void notmain(void) {
 		lb.Run();
 		showSystime.Run();
 		display.Run();
+		mDns.Run();
 	}
 }
 
