@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+# undef NDEBUG	//FIXME Remove # undef NDEBUG
+#endif
+
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 
@@ -37,23 +41,21 @@
 
 #include "arm/synchronize.h"
 
-#define DEFAUlT_BAUDRATE	115200
+#define DEFAUlT_BAUDRATE	115200U
 
-void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
-	assert(uart < 4);
+void __attribute__((cold)) h3_uart_begin(uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits) {
+	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(baudrate != 0);
 
-	if ((((24000000 / 16) / baudrate) > (uint16_t) (~0)) || (((24000000 / 16) / baudrate) == 0)) {
+	if ((((24000000U / 16U) / baudrate) > (uint16_t) (~0)) || (((24000000U / 16U) / baudrate) == 0)) {
 		baudrate = DEFAUlT_BAUDRATE;
 	}
 
-	const uint32_t divisor = (24000000 / 16) / baudrate;
-	H3_UART_TypeDef *p = NULL;
+	const uint32_t divisor = (24000000U / 16U) / baudrate;
+	H3_UART_TypeDef *p = (H3_UART_TypeDef*) (uart_base);
 	uint32_t lcr;
 
-	if (uart == 0) {
-		p = (H3_UART_TypeDef*) (H3_UART0_BASE);
-
+	if (uart_base == H3_UART0_BASE) {
 		uint32_t value = H3_PIO_PORTA->CFG0;
 		// PA4, TX
 		value &= (uint32_t) (~(GPIO_SELECT_MASK << PA4_SELECT_CFG0_SHIFT));
@@ -65,9 +67,7 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART0;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART0;
-	} else if (uart == 1) {
-		p = (H3_UART_TypeDef*) (H3_UART1_BASE);
-
+	} else if (uart_base == H3_UART1_BASE) {
 		uint32_t value = H3_PIO_PORTG->CFG0;
 		// PG6, TX
 		value &= (uint32_t) (~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT));
@@ -79,9 +79,7 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	} else if (uart == 2) {
-		p = (H3_UART_TypeDef*) (H3_UART2_BASE);
-
+	} else if (uart_base == H3_UART2_BASE) {
 		uint32_t value = H3_PIO_PORTA->CFG0;
 		// PA0, TX
 		value &= (uint32_t) (~(GPIO_SELECT_MASK << PA0_SELECT_CFG0_SHIFT));
@@ -93,9 +91,7 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART2;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART2;
-	} else if (uart == 3) {
-		p = (H3_UART_TypeDef*) (H3_UART3_BASE);
-
+	} else if (uart_base == H3_UART3_BASE) {
 		uint32_t value = H3_PIO_PORTA->CFG1;
 		// PA13, TX
 		value &= (uint32_t) (~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT));
@@ -107,9 +103,9 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 
 		H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
 		H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
+	} else {
+		assert(0);
 	}
-
-	assert(p != NULL);
 
 	switch (bits) {
 	case H3_UART_BITS_5:
@@ -153,33 +149,58 @@ void __attribute__((cold))  h3_uart_begin(uint32_t uart, uint32_t baudrate, uint
 	isb();
 }
 
-void h3_uart_transmit(uint32_t uart, const uint8_t *data, uint32_t length) {
-	H3_UART_TypeDef *p_uart = NULL;
-	const uint8_t *p = data;
+void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate) {
+	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
+	assert(baudrate != 0);
 
-	switch (uart) {
-	case 3:
-		p_uart = (H3_UART_TypeDef*) (H3_UART3_BASE);
-		break;
-	case 2:
-		p_uart = (H3_UART_TypeDef*) (H3_UART2_BASE);
-		break;
-	case 1:
-		p_uart = (H3_UART_TypeDef*) (H3_UART1_BASE);
-		break;
-	default:
-		p_uart = (H3_UART_TypeDef*) (H3_UART0_BASE);
-		break;
+	H3_UART_TypeDef *p = (H3_UART_TypeDef*) (uart_base);
+	const uint32_t lcr = p->LCR;
+
+	if ((((24000000 / 16) / baudrate) > (uint16_t) (~0)) || (((24000000 / 16) / baudrate) == 0)) {
+		baudrate = DEFAUlT_BAUDRATE;
 	}
+
+	const uint32_t divisor = (24000000 / 16) / baudrate;
+
+	dmb();
+	p->LCR = UART_LCR_DLAB;
+	p->O00.DLL = divisor & 0xFF;
+	p->O04.DLH = (divisor >> 8);
+	p->LCR = lcr;
+	isb();
+}
+
+void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length) {
+	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
+	assert(data != NULL);
+
+	H3_UART_TypeDef *p_uart = (H3_UART_TypeDef*) (uart_base);
 
 	while (length > 0) {
 		uint32_t available = 64U - p_uart->TFL;
 
 		while ((length > 0) && (available > 0)) {
-			p_uart->O00.THR = (uint32_t) (*p);
+			p_uart->O00.THR = (uint32_t) (*data);
 			length--;
 			available--;
-			p++;
+			data++;
+		}
+	}
+}
+
+void h3_uart_transmit_string(const uint32_t uart_base, const char *data) {
+	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
+	assert(data != NULL);
+
+	H3_UART_TypeDef *p_uart = (H3_UART_TypeDef*) (uart_base);
+
+	while (*data != '\0') {
+		uint32_t available = 64U - p_uart->TFL;
+
+		while ((*data != '\0') && (available > 0)) {
+			p_uart->O00.THR = (uint32_t) (*data);
+			available--;
+			data++;
 		}
 	}
 }

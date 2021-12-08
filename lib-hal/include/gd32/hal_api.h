@@ -34,8 +34,7 @@
 extern "C" {
 #endif
 
-extern void udelay(uint16_t);
-extern uint32_t micros();
+extern void udelay(uint32_t);
 
 #ifdef __cplusplus
 }

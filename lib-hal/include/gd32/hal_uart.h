@@ -1,5 +1,5 @@
 /**
- * @file ntpclientdisplay.cpp
+ * @file hal_uart.h
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,19 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include "ntpclient.h"
+#ifndef GD32_HAL_UART_H_
+#define GD32_HAL_UART_H_
 
-#include "display.h"
-#include "display7segment.h"
+#include "gd32_uart.h"
 
-void NtpClientDisplay::ShowNtpClientStatus(ntpclient::Status nStatus) {
-	if (nStatus == ntpclient::Status::IDLE) {
-		Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
-		return;
-	}
+namespace hal {
+namespace uart {
+static constexpr auto BITS_8 = GD32_UART_BITS_8;
+static constexpr auto BITS_9 = GD32_UART_BITS_9;
 
-	if (nStatus == ntpclient::Status::FAILED) {
-		Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
-		return;
-	}
-}
+static constexpr auto PARITY_NONE = GD32_UART_PARITY_NONE;
+static constexpr auto PARITY_ODD = GD32_UART_PARITY_ODD;
+static constexpr auto PARITY_EVEN = GD32_UART_PARITY_EVEN;
+
+static constexpr auto STOP_1BIT = GD32_UART_STOP_1BIT;
+static constexpr auto STOP_2BITS = GD32_UART_STOP_2BITS;
+}  // namespace uart
+}  // namespace hal
+
+#endif /* GD32_HAL_UART_H_ */

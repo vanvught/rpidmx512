@@ -29,7 +29,7 @@
 #include <cstring>
 #include <cstdio>
 #include <time.h>
-	#if !defined (BARE_METAL)
+#if !defined (BARE_METAL)
 # include <unistd.h>
 #endif
 #include <cassert>
@@ -175,10 +175,8 @@ void GPS::Start() {
 
 	m_tStatusCurrent = GPSStatus::IDLE;
 
-	if (m_pGPSDisplay != nullptr) {
-		m_pGPSDisplay->ShowSGpstatus(GPSStatus::IDLE);
-	}
 
+	Display(GPSStatus::IDLE);
 	DEBUG_EXIT
 }
 
@@ -187,7 +185,7 @@ void GPS::Run() {
 		return;
 	}
 
-	//DumpSentence(m_pSentence);
+//	DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 
@@ -231,8 +229,11 @@ void GPS::Run() {
 	if (m_tStatusCurrent != m_tStatusPrevious) {
 		m_tStatusPrevious = m_tStatusCurrent;
 
-		if (m_pGPSDisplay != nullptr) {
-			m_pGPSDisplay->ShowSGpstatus(m_tStatusCurrent);
-		}
+		Display(m_tStatusCurrent);
+
 	}
+}
+
+void GPS::Display(GPSStatus status) { // Weak
+	printf("GPS status=%u\n", static_cast<uint32_t>(status));
 }

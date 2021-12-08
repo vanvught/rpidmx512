@@ -32,7 +32,7 @@
 
 #include "debug.h"
 
-void rtc_configuration(void) {
+bool rtc_configuration(void) {
 	/* enable PMU and BKPI clocks */
 	rcu_periph_clock_enable (RCU_BKPI);
 	rcu_periph_clock_enable (RCU_PMU);
@@ -43,7 +43,9 @@ void rtc_configuration(void) {
 	/* enable LXTAL */
 	rcu_osci_on (RCU_LXTAL);
 	/* wait till LXTAL is ready */
-	rcu_osci_stab_wait(RCU_LXTAL);
+	if (SUCCESS != rcu_osci_stab_wait(RCU_LXTAL)) {
+		return false;
+	}
 	/* select RCU_LXTAL as RTC clock source */
 	rcu_rtc_clock_config (RCU_RTCSRC_LXTAL);
 	/* enable RTC Clock */
@@ -56,6 +58,8 @@ void rtc_configuration(void) {
 	rtc_prescaler_set(32767);
 	/* wait until last write operation on RTC registers has finished */
 	rtc_lwoff_wait();
+
+	return true;
 }
 
 using namespace rtc;
@@ -65,24 +69,23 @@ void HwClock::RtcProbe() {
 
 	if (bkp_data_read(BKP_DATA_0) != 0xA5A5) {
 		DEBUG_PUTS("RTC not yet configured");
-		rtc_configuration();
-		/* wait until last write operation on RTC registers has finished */
+
+		if (!rtc_configuration()) {
+			m_bIsConnected = false;
+			DEBUG_PUTS("RTC did not start");
+			DEBUG_EXIT
+			return;
+		}
+
 		rtc_lwoff_wait();
-		/* change the current time */
 		rtc_counter_set(time(nullptr));
-		/* wait until last write operation on RTC registers has finished */
 		rtc_lwoff_wait();
 		bkp_data_write(BKP_DATA_0, 0xA5A5);
 	} else {
 		DEBUG_PUTS("No need to configure RTC");
-		/* wait for RTC registers synchronization */
 		rtc_register_sync_wait();
-        /* wait until last write operation on RTC registers has finished */
         rtc_lwoff_wait();
 	}
-
-    /* clear reset flags */
-    rcu_all_reset_flag_clear();
 
 	m_Type = rtc::Type::SOC_INTERNAL;
 	m_bIsConnected = true;
@@ -96,8 +99,9 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	assert(pRtcTime != nullptr);
 
 	rtc_lwoff_wait();
-    rtc_counter_set(mktime(const_cast<struct tm *>(reinterpret_cast<const struct tm *>(pRtcTime))));
-    rtc_lwoff_wait();
+	DEBUG_PUTS("");
+
+	rtc_counter_set(mktime(const_cast<struct tm *>(reinterpret_cast<const struct tm *>(pRtcTime))));
 
 	DEBUG_EXIT
 	return true;

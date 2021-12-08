@@ -1,5 +1,5 @@
 /**
- * @file h3_uart0_debug.c
+ * @file h3_uart0.c
  *
  */
 /* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -25,12 +25,13 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <stdarg.h>
 
 #include "h3.h"
 #include "h3_uart.h"
 
 void __attribute__((cold)) uart0_init(void) {
-	h3_uart_begin(0, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
+	h3_uart_begin(H3_UART0_BASE, 115200, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART0->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		(void) H3_UART0->O00.RBR;
@@ -38,6 +39,12 @@ void __attribute__((cold)) uart0_init(void) {
 }
 
 void uart0_putc(int c) {
+	if (c == '\n') {
+		while (!(H3_UART0->LSR & UART_LSR_THRE))
+			;
+		H3_UART0->O00.THR = (uint32_t) '\r';
+	}
+
 	while (!(H3_UART0->LSR & UART_LSR_THRE))
 		;
 	H3_UART0->O00.THR = (uint32_t) (c);
@@ -50,6 +57,8 @@ void uart0_puts(char *s) {
 		}
 		uart0_putc(*s++);
 	}
+
+	uart0_putc('\n');
 }
 
 int uart0_getc(void) {
@@ -64,4 +73,27 @@ int uart0_getc(void) {
 #endif
 
 	return c;
+}
+
+static char s_buffer[128];
+
+int uart0_printf(const char *fmt, ...) {
+	va_list arp;
+
+	va_start(arp, fmt);
+
+	int i = vsnprintf(s_buffer, sizeof(s_buffer) - 1, fmt, arp);
+
+	va_end(arp);
+
+	char *s = s_buffer;
+
+	while (*s != '\0') {
+		if (*s == '\n') {
+			uart0_putc('\r');
+		}
+		uart0_putc(*s++);
+	}
+
+	return i;
 }

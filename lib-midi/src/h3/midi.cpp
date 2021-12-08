@@ -537,7 +537,7 @@ void Midi::SendUart2(const uint8_t *pData, uint32_t nLength) {
 }
 
 void Midi::InitUart2() {
-	h3_uart_begin(2, m_nBaudrate == 0 ? 31250 : m_nBaudrate, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
+	h3_uart_begin(H3_UART2_BASE, m_nBaudrate == 0 ? 31250 : m_nBaudrate, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART2->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		static_cast<void>(H3_UART2->O00.RBR);

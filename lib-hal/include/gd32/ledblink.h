@@ -29,11 +29,7 @@
 #include <cstdint>
 
 #include "gd32_board.h"
-#include "gd32f20x_gpio.h"
-
-#define LED_PIN                         GPIO_PIN_0
-#define LED_GPIO_PORT                   GPIOC
-#define LED_GPIO_CLK                    RCU_GPIOC
+#include "gd32.h"
 
 extern volatile uint32_t s_nSysTickMillis;
 
@@ -47,7 +43,7 @@ public:
 		switch (nFreqHz) {
 		case 0:
 			m_nTicksPerSecond = 0;
-			GPIO_BC(LED_GPIO_PORT) = LED_PIN;
+			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 			break;
 		case 1:
 			m_nTicksPerSecond = (1000 / 1);
@@ -60,7 +56,7 @@ public:
 			break;
 		case 255:
 			m_nTicksPerSecond = 0;
-			GPIO_BOP(LED_GPIO_PORT) = LED_PIN;
+			GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 			break;
 		default:
 			m_nTicksPerSecond = (1000 / nFreqHz);
@@ -92,9 +88,9 @@ public:
 
 		m_nToggleLed ^= 0x1;
 		if (m_nToggleLed != 0) {
-			GPIO_BOP(LED_GPIO_PORT) = LED_PIN;
+			GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 		} else {
-			GPIO_BC(LED_GPIO_PORT) = LED_PIN;
+			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 		}
 	}
 

@@ -2,7 +2,7 @@
  * @file gpsuart.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,29 +27,20 @@
 
 #include "gps.h"
 
-#include "h3_board.h"
-
-#include "h3.h"
-#include "h3_gpio.h"
-#include "h3_uart.h"
-#include "h3_ccu.h"
-#include "arm/synchronize.h"
+#include "hal_uart.h"
 
 #include "debug.h"
 
+namespace gps {
 enum class State {
-	START_DELIMITER,
-	DATA,
-	CHECKSUM_1,
-	CHECKSUM_2,
-	CR,
-	LF
+	START_DELIMITER, DATA, CHECKSUM_1, CHECKSUM_2, CR, LF
 };
-
-using namespace gps;
 
 static constexpr uint32_t RING_BUFFER_INDEX_ENTRIES = (1 << 4);
 static constexpr uint32_t RING_BUFFER_INDEX_MASK = (RING_BUFFER_INDEX_ENTRIES - 1);
+}  // namespace gps
+
+using namespace gps;
 
 static uint8_t s_RingBuffer[RING_BUFFER_INDEX_ENTRIES][nmea::MAX_SENTENCE_LENGTH];
 static uint32_t s_nRingBufferIndexHead;
@@ -59,61 +50,22 @@ static uint8_t s_nChecksum;
 static State s_State;
 
 void GPS::UartInit() {
-#if (EXT_UART_NUMBER == 1)
-	uint32_t value = H3_PIO_PORTG->CFG0;
-	// PG6, TX
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT));
-	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
-	// PG7, RX
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT));
-	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
-	H3_PIO_PORTG->CFG0 = value;
-
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
-#elif (EXT_UART_NUMBER == 3)
-	uint32_t value = H3_PIO_PORTA->CFG1;
-	// PA13, TX
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT));
-	value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
-	// PA14, RX
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT));
-	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
-	H3_PIO_PORTA->CFG1 = value;
-
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
-#else
-# error Unsupported UART device configured
-#endif
-
-	UartSetBaud();
-	isb();
+	DEBUG_ENTRY
 
 	s_nRingBufferIndexHead = 0;
 	s_nRingBufferIndexTail = 0;
 	s_State = State::START_DELIMITER;
+
+	FUNC_PREFIX (uart_begin(EXT_UART_BASE, 9600, hal::uart::BITS_8, hal::uart::PARITY_NONE, hal::uart::STOP_1BIT));
+
+	DEBUG_EXIT
 }
 
 void GPS::UartSetBaud(uint32_t nBaud) {
 	DEBUG_ENTRY
-
 	assert(nBaud != 0);
 
-	const uint32_t nDivisor = (24000000 / 16) / nBaud;
-
-	assert(nDivisor <= static_cast<uint16_t>(~0)); // too low
-	assert(nDivisor != 0); // too high
-
-	dmb();
-	EXT_UART->O08.FCR = 0;
-	EXT_UART->LCR = UART_LCR_DLAB;
-	EXT_UART->O00.DLL = nDivisor & 0xFF;
-	EXT_UART->O04.DLH = (nDivisor >> 8);
-	EXT_UART->O08.FCR = UART_FCR_EFIFO | UART_FCR_RRESET | UART_FCR_TRESET;
-	EXT_UART->LCR = UART_LCR_8_N_1;
-	isb();
-
+	FUNC_PREFIX (uart_set_baudrate(EXT_UART_BASE, nBaud));
 	m_nBaud = nBaud;
 
 	DEBUG_EXIT
@@ -122,25 +74,16 @@ void GPS::UartSetBaud(uint32_t nBaud) {
 void GPS::UartSend(const char *pSentence) {
 	DEBUG_ENTRY
 
-	const char *p = pSentence;
-
-	while (*p != '\0') {
-		while (!(EXT_UART->LSR & UART_LSR_THRE))
-			;
-
-		EXT_UART->O00.THR = static_cast<uint32_t>(*p);
-		p++;
-	}
+	FUNC_PREFIX (uart_transmit_string(EXT_UART_BASE, pSentence));
 
 	DEBUG_EXIT
 }
 
 const char* GPS::UartGetSentence() {
-	uint8_t nNibble;
-	uint32_t rfl = EXT_UART->RFL;
+	uint32_t rfl = FUNC_PREFIX (uart_get_rx_fifo_level(EXT_UART_BASE));
 
 	while (rfl--) {
-		const auto nByte = static_cast<uint8_t>(EXT_UART->O00.RBR);
+		const auto nByte = FUNC_PREFIX (uart_get_rx_data(EXT_UART_BASE));
 
 		switch (s_State) {
 		case State::START_DELIMITER:
@@ -157,21 +100,23 @@ const char* GPS::UartGetSentence() {
 				s_State = State::CHECKSUM_1;
 			}
 			break;
-		case State::CHECKSUM_1:
-			nNibble = nByte > '9' ? static_cast<uint8_t>(nByte - 'A' + 10) : static_cast<uint8_t>(nByte - '0');
+		case State::CHECKSUM_1: {
+			const auto nNibble = nByte > '9' ? static_cast<uint8_t>(nByte - 'A' + 10) : static_cast<uint8_t>(nByte - '0');
 			if (nNibble == ((s_nChecksum >> 4) & 0xF)) {
 				s_State = State::CHECKSUM_2;
 			} else {
 				s_State = State::START_DELIMITER;
 			}
+		}
 			break;
-		case State::CHECKSUM_2:
-			nNibble = nByte > '9' ? static_cast<uint8_t>(nByte - 'A' + 10) : static_cast<uint8_t>(nByte - '0');
+		case State::CHECKSUM_2: {
+			const auto nNibble = nByte > '9' ? static_cast<uint8_t>(nByte - 'A' + 10) : static_cast<uint8_t>(nByte - '0');
 			if (nNibble == (s_nChecksum & 0xF)) {
 				s_State = State::CR;
 			} else {
 				s_State = State::START_DELIMITER;
 			}
+		}
 			break;
 		case State::CR:
 			if (nByte == '\r') {
@@ -188,7 +133,8 @@ const char* GPS::UartGetSentence() {
 			s_State = State::START_DELIMITER;
 			break;
 		default:
-			s_State = State::START_DELIMITER;
+			assert(0);
+			__builtin_unreachable();
 			break;
 		}
 

@@ -1,8 +1,8 @@
 /**
- * @file h3_uart0_printf.c
+ * @file gpsdisplay.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,31 @@
  * THE SOFTWARE.
  */
 
-#include <stdarg.h>
-#include <stdio.h>
+#include <cassert>
 
-extern void uart0_puts(const char *);
+#include "gps.h"
 
-static char s[128];
+#include "display.h"
 
-int uart0_printf(const char* fmt, ...) {
-	va_list arp;
+void GPS::Display(GPSStatus status) {
+	Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 3);
+	Display::Get()->PutString("GPS ");
 
-	va_start(arp, fmt);
-
-	int i = vsnprintf(s, sizeof(s) -1, fmt, arp);
-	va_end(arp);
-
-	uart0_puts(s);
-
-	return i;
+	switch (status) {
+	case GPSStatus::IDLE:
+		Display::Get()->PutString("[I]");
+		break;
+	case GPSStatus::WARNING:
+		Display::Get()->PutString("[W]");
+		break;
+	case GPSStatus::VALID:
+		Display::Get()->PutString("[V]");
+		break;
+	case GPSStatus::UNDEFINED:
+		Display::Get()->PutString("[U]");
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }

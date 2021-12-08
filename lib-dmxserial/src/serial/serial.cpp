@@ -42,9 +42,9 @@ Serial::Serial()  {
 	s_pThis = this;
 
 	m_UartConfiguration.nBaud = 115200;
-	m_UartConfiguration.nBits = hal::UART_BITS_8;
-	m_UartConfiguration.nParity = hal::UART_PARITY_NONE;
-	m_UartConfiguration.nStopBits = hal::UART_STOP_1BIT;
+	m_UartConfiguration.nBits = hal::uart::BITS_8;
+	m_UartConfiguration.nParity = hal::uart::PARITY_NONE;
+	m_UartConfiguration.nStopBits = hal::uart::STOP_1BIT;
 
 	m_SpiConfiguration.nSpeed = 1000000; // 1MHz
 	m_SpiConfiguration.nMode = 0;

@@ -2,7 +2,7 @@
  * @file gpstimeclient.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,8 @@
 
 #include "gpstimeclient.h"
 
+#include "platform_gpio.h"
 #include "hardware.h"
-
-#include "h3_gpio.h"
-#include "h3_board.h"
 
 #include "debug.h"
 
@@ -49,19 +47,14 @@ GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module): GPS(fUtcOffset
 void GPSTimeClient::Start() {
 	GPS::Start();
 
-	h3_gpio_fsel(GPIO_EXT_18, GPIO_FSEL_EINT);
-
-	H3_PIO_PA_INT->CFG2 = (GPIO_INT_CFG_POS_EDGE << 8);
-	H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_18);
-	H3_PIO_PA_INT->STA = (1 << GPIO_EXT_18);
-	H3_PIO_PA_INT->DEB = 1;
+	platform_gpio_init();
 }
 
 void GPSTimeClient::Run() {
 	GPS::Run();
 
 	if (s_Status == Status::WAITING_TIMEOUT) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const auto nMillis = Hardware::Get()->Millis();
 
 		if (GPS::GetStatus() == GPSStatus::VALID) {
 			m_nWaitPPSMillis = nMillis;
@@ -75,7 +68,7 @@ void GPSTimeClient::Run() {
 		DEBUG_PUTS("No Fix");
 
 		if (GPS::IsTimeUpdated()) {
-			const uint32_t nElapsedMillis = nMillis - GetTimeTimestampMillis();
+			const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
 
 			if (nElapsedMillis < (1 * 1000)) {
 
@@ -99,9 +92,7 @@ void GPSTimeClient::Run() {
 	}
 
 	if (s_Status == Status::WAITING_PPS) {
-		if ((H3_PIO_PA_INT->STA & (1 << GPIO_EXT_18)) == (1 << GPIO_EXT_18)) {
-			H3_PIO_PA_INT->STA = (1 << GPIO_EXT_18);
-
+		if (platform_is_pps()) {
 			struct timeval tv;
 			tv.tv_sec = GetLocalSeconds();
 			tv.tv_usec = 0;
@@ -113,7 +104,7 @@ void GPSTimeClient::Run() {
 			return;
 		}
 
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const auto nMillis = Hardware::Get()->Millis();
 
 		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (1 * 1000)), 0)) {
 			// There is no PPS

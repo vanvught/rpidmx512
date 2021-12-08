@@ -2,7 +2,7 @@
  * @file gpsprint.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,12 +25,10 @@
 
 #include "gps.h"
 
-#if defined (H3)
-# include "h3_board.h"
-#endif
+#include "hal_uart.h"
 
 void GPS::Print() {
-	printf("GPS\n");
+	printf("GPS [UART%u]\n", EXT_UART_NUMBER);
 	printf(" Module : %s [%u]\n", GetModuleName(m_tModule), m_nBaud);
 	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 	switch (m_tStatusCurrent) {
@@ -46,7 +44,4 @@ void GPS::Print() {
 	default:
 		break;
 	}
-#if defined (H3)
-	printf(" UART: %d\n", EXT_UART_NUMBER);
-#endif
 }

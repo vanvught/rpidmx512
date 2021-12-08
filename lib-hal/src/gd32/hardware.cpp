@@ -45,11 +45,9 @@
 
 extern "C" {
 void systick_config(void);
+void udelay_init(void);
+void micros_init(void);
 }
-
-#define LED_PIN                         GPIO_PIN_0
-#define LED_GPIO_PORT                   GPIOC
-#define LED_GPIO_CLK                    RCU_GPIOC
 
 Hardware *Hardware::s_pThis = nullptr;
 
@@ -57,13 +55,15 @@ Hardware::Hardware() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-    rcu_periph_clock_enable(LED_GPIO_CLK);
-    gpio_init(GPIOC, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, LED_PIN);
-    GPIO_BC(LED_GPIO_PORT) = LED_PIN;
+    rcu_periph_clock_enable(LED_BLINK_GPIO_CLK);
+    gpio_init(LED_BLINK_GPIO_PORT, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, LED_BLINK_PIN);
+    GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 
 	uart0_init();
 
     systick_config();
+    udelay_init();
+    micros_init();
 
 	rcu_periph_clock_enable(RCU_TIMER5);
 

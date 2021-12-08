@@ -38,14 +38,11 @@ int __attribute__((cold)) console_init(void) {
 }
 
 void console_putc(int c) {
-	if (c == '\n') {
-		uart0_putc('\r');
-	}
 	uart0_putc(c);
 }
 
 void console_puts(const char *s) {
-	uart0_puts((char *)s);
+	uart0_puts(s);
 }
 
 void console_set_fg_color(uint16_t fg) {

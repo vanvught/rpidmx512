@@ -37,9 +37,9 @@
 namespace DmxSerialDefaults {
 	static constexpr auto TYPE = serial::type::UART;
 	static constexpr auto UART_BAUD = 115200;
-	static constexpr auto UART_BITS = hal::UART_BITS_8;
-	static constexpr auto UART_PARITY = hal::UART_PARITY_NONE;
-	static constexpr auto UART_STOPBITS = hal::UART_STOP_1BIT;
+	static constexpr auto UART_BITS = hal::uart::BITS_8;
+	static constexpr auto UART_PARITY = hal::uart::PARITY_NONE;
+	static constexpr auto UART_STOPBITS = hal::uart::STOP_1BIT;
 	static constexpr auto SPI_SPEED_HZ = 1000000; ///< 1 MHz
 	static constexpr auto SPI_MODE = 0;
 	static constexpr auto I2C_ADDRESS = 0x30;

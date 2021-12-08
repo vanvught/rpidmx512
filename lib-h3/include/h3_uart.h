@@ -103,12 +103,26 @@ typedef enum H3_UART_STOPBITS {
 
 #include <stdint.h>
 
+#include "h3.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern void h3_uart_begin(uint32_t uart, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
-extern void h3_uart_transmit(uint32_t uart, const uint8_t *data, uint32_t length);
+extern void h3_uart_begin(const uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
+extern void h3_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate);
+extern void h3_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length);
+extern void h3_uart_transmit_string(const uint32_t uart_base, const char *data);
+
+static inline uint32_t h3_uart_get_rx_fifo_level(const uint32_t uart_base) {
+	const H3_UART_TypeDef *p = (H3_UART_TypeDef*) (uart_base);
+	return p->RFL;
+}
+
+static inline uint8_t h3_uart_get_rx_data(const uint32_t uart_base) {
+	const H3_UART_TypeDef *p = (H3_UART_TypeDef*) (uart_base);
+	return (uint8_t) p->O00.RBR;
+}
 
 #ifdef __cplusplus
 }
