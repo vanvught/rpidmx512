@@ -27,14 +27,16 @@
 #define DMXRECEIVER_H
 
 #include <cstdint>
+#include <cstdio>
 
 #include "dmx.h"
 
 #include "lightset.h"
+#include "ledblink.h"
 
 class DMXReceiver: Dmx {
 public:
-	DMXReceiver(LightSet *pLightSet) : Dmx(false) {
+	DMXReceiver(LightSet *pLightSet): Dmx(false) {
 		s_pLightSet = pLightSet;
 	}
 
@@ -53,6 +55,15 @@ public:
 		s_pLightSet->Stop(0);
 	}
 
+	void SetLightSet(LightSet *pLightSet) {
+		if (pLightSet != s_pLightSet) {
+			s_pLightSet->Stop(0);
+			s_pLightSet = pLightSet;
+			s_IsActive = false;
+		}
+
+	}
+
 	const uint8_t* Run(int16_t &nLength) {
 		if (__builtin_expect((s_bDisableOutput), 0)) {
 			nLength = 0;
@@ -63,6 +74,7 @@ public:
 			if (s_IsActive) {
 				s_pLightSet->Stop(0);
 				s_IsActive = false;
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			}
 
 			nLength = -1;
@@ -81,6 +93,7 @@ public:
 				if (!s_IsActive) {
 					s_pLightSet->Start(0);
 					s_IsActive = true;
+					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 				}
 
 				return const_cast<uint8_t*>(pDmx);
@@ -95,7 +108,9 @@ public:
 		s_bDisableOutput = bDisable;
 	}
 
-	void Print() {}
+	void Print() {
+		printf(" Output %s\n", s_bDisableOutput ? "disabled" : "enabled");
+	}
 
 	uint32_t GetUpdatesPerSecond() {
 		return Dmx::GetUpdatesPerSecond();
