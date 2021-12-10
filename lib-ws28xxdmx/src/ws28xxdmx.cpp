@@ -39,8 +39,13 @@
 using namespace pixel;
 using namespace lightset;
 
+WS28xxDmx *WS28xxDmx::s_pThis = nullptr;
+
 WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
 	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	pixelDmxConfiguration.Validate(1 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
 
@@ -52,6 +57,7 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
 	m_pWS28xx->Blackout();
 
 	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
+
 	m_nDmxStartAddress = pixelDmxConfiguration.GetDmxStartAddress();
 	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_nGroups);
 

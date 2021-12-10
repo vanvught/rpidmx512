@@ -123,6 +123,8 @@ void WS28xx::SetupBuffers() {
 	assert(m_pBlackoutBuffer != nullptr);
 #endif
 
+	DEBUG_PRINTF("m_nBufSize=%u, m_pBuffer=%p, m_pBlackoutBuffer=%p", m_nBufSize, m_pBuffer, m_pBlackoutBuffer);
+
 	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
@@ -153,6 +155,14 @@ void WS28xx::SetupBuffers() {
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
 
+#if defined ( GD32 )
+	uint16_t *p = (uint16_t *)m_pBlackoutBuffer;
+
+	for (uint32_t i = 0; i < m_nBufSize; i++) {
+		p[i] = __builtin_bswap16(p[i]);
+	}
+#endif
+
 	DEBUG_EXIT
 }
 
@@ -161,6 +171,17 @@ void WS28xx::Update() {
 #if defined( USE_SPI_DMA )
 	assert(!IsUpdating());
 
+#if defined ( GD32 )
+	uint8_t *tx = (uint8_t *)m_pBuffer;
+	tx[0] = 0;
+
+	uint16_t *p = (uint16_t *)m_pBuffer;
+
+	for (uint32_t i = 0; i < m_nBufSize; i++) {
+		p[i] = __builtin_bswap16(p[i]);
+	}
+#endif
+
 	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBuffer), m_nBufSize));
@@ -168,6 +189,8 @@ void WS28xx::Update() {
 }
 
 void WS28xx::Blackout() {
+	DEBUG_ENTRY
+
 	assert (m_pBlackoutBuffer != nullptr);
 #if defined( USE_SPI_DMA )
 	assert(!IsUpdating());
@@ -181,6 +204,8 @@ void WS28xx::Blackout() {
 #else
 	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 #endif
+
+	DEBUG_EXIT
 }
 
 void WS28xx::Print() {

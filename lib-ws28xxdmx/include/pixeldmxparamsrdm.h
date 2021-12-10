@@ -34,13 +34,7 @@
 namespace pixeldmx {
 namespace paramsdmx {
 enum class SlotInfo {
-	TYPE,
-	COUNT,
-	GROUPING_COUNT,
-	MAP,
-	TEST_PATTERN,
-	PROGRAM,
-	LAST
+	TYPE, COUNT, GROUPING_COUNT, MAP, TEST_PATTERN, PROGRAM, LAST
 };
 static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
 }  // namespace paramsdmx
@@ -50,23 +44,23 @@ class PixelDmxParamsRdm: public LightSet {
 public:
 	PixelDmxParamsRdm(WS28xxDmxStore *pWS28xxDmxStore);
 
-	void Start(uint32_t nPortIndex);
-	void Stop(uint32_t nPortIndex);
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
-	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
+	bool SetDmxStartAddress( __attribute__((unused)) uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
-	uint16_t GetDmxStartAddress() {
+	uint16_t GetDmxStartAddress() override {
 		return 1;
 	}
 
-	uint16_t GetDmxFootprint() {
+	uint16_t GetDmxFootprint() override {
 		return pixeldmx::paramsdmx::DMX_FOOTPRINT;
 	}
 
-	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
+	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
 	void Display(const uint8_t *pData) __attribute__((weak));
 

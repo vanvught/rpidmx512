@@ -28,8 +28,7 @@
 
 #include "pixeldmxhandler.h"
 
-#include "h3_gpio.h"
-#include "board/h3_opi_zero.h"
+#include "hal_gpio.h"
 
 #define GPIO_START_STOP		GPIO_EXT_12
 

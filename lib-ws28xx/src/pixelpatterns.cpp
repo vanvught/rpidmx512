@@ -81,7 +81,8 @@ const char* PixelPatterns::GetName(Pattern pattern) {
 }
 
 void PixelPatterns::Run() {
-	while (m_pOutput->IsUpdating()) {
+	if (m_pOutput->IsUpdating()) {
+		return;
 	}
 
 	auto bIsUpdated = false;

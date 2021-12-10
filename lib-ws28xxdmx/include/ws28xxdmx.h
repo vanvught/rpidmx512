@@ -38,7 +38,7 @@
 
 #include "pixeldmxhandler.h"
 
-class WS28xxDmx: public LightSet {
+class WS28xxDmx final: public LightSet {
 public:
 	WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration);
 	~WS28xxDmx() override;
@@ -64,13 +64,29 @@ public:
 		return m_nUniverses;
 	}
 
+	pixel::Type GetType() const {
+		return m_pWS28xx->GetType();
+	}
+
+	uint32_t GetCount() const {
+		return m_nGroups * m_nGroupingCount;
+	}
+
+	pixel::Map GetMap() const {
+		return m_pWS28xx->GetMap();
+	}
+
 	uint32_t GetGroups() const {
 		return m_nGroups;
 	}
 
+	uint32_t GetGroupingCount() const {
+		return m_nGroupingCount;
+	}
+
 	void Print() override;
 
-public: // RDM
+// RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
 	uint16_t GetDmxStartAddress() override {
@@ -83,6 +99,10 @@ public: // RDM
 
 	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
+	static WS28xxDmx *Get() {
+		return s_pThis;
+	}
+
 private:
 	pixeldmxconfiguration::PortInfo m_PortInfo;
 	uint32_t m_nGroups;
@@ -90,8 +110,6 @@ private:
 	uint32_t m_nUniverses;
 	uint32_t m_nChannelsPerPixel;
 
-	pixel::Type m_tLedType { pixel::defaults::TYPE };
-	pixel::Map m_tRGBMapping { pixel::Map::UNDEFINED };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 
@@ -107,6 +125,8 @@ private:
 
 	bool m_bIsStarted { false };
 	bool m_bBlackout { false };
+
+	static WS28xxDmx *s_pThis;
 };
 
 #endif /* WS28XXDMX_H_ */
