@@ -46,7 +46,7 @@
 #include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "h3/ws28xxdmxstartstop.h"
+#include "ws28xxdmxstartstop.h"
 #include "handler.h"
 #include "storews28xxdmx.h"
 // PWM Led
