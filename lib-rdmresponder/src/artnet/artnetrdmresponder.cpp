@@ -41,8 +41,8 @@
 
 TRdmMessage ArtNetRdmResponder::s_RdmCommand;
 
-ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-	RDMDeviceResponder(pRDMPersonality, pLightSet)
+ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
+	RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
 {
 	DEBUG_ENTRY
 

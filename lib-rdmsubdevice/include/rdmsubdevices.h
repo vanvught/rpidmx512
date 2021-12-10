@@ -33,12 +33,8 @@
 
 #include "rdmpersonality.h"
 
-#if defined(BARE_METAL) && !( defined(ARTNET_NODE) && defined(RDM_RESPONDER) )
-# define RDM_SUBDEVICES_ENABLE
-#endif
-
 #if defined (NODE_RDMNET_LLRP_ONLY)
-# undef RDM_SUBDEVICES_ENABLE
+# undef ENABLE_RDM_SUBDEVICES
 #endif
 
 namespace rdm {

@@ -48,7 +48,7 @@
 #include "pixeltype.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "h3/ws28xxdmxstartstop.h"
+#include "ws28xxdmxstartstop.h"
 #include "handleroled.h"
 #include "storews28xxdmx.h"
 #include "pixelreboot.h"
@@ -204,13 +204,13 @@ void notmain(void) {
 
 	// RDMNet LLRP Only
 
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, nullptr));
 
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));

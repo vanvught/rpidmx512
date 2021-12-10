@@ -40,7 +40,7 @@
 
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
+	RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(&pRDMPersonality, 1) {
 		Hardware::Get()->GetUuid(m_Cid);
 	}
 	~RDMNetDevice() override {};
@@ -70,8 +70,8 @@ public:
 	void Print();
 
 private:
-	RDMHandler m_RDMHandler{false};
-	struct TRdmMessage m_RdmCommand;
+	RDMHandler m_RDMHandler { false };
+	TRdmMessage m_RdmCommand;
 	uint8_t m_Cid[E131::CID_LENGTH];
 };
 

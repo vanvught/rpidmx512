@@ -33,7 +33,6 @@
 #include "displayudf.h"
 #include "displayrdm.h"
 
-#include "identify.h"
 #include "factorydefaults.h"
 
 #include "rdmresponder.h"
@@ -138,18 +137,16 @@ void notmain(void) {
 		rdmSubDevicesParams.Dump();
 	}
 
-	Identify identify;
-
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH];
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	snprintf(aDescription, sizeof(aDescription) -1, "%s:%u G%u [%s]",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),
 			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
-	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pLightSet)};
 
-	RDMResponder rdmResponder(&personality, pLightSet);
+	RDMResponder rdmResponder(pRDMPersonalities, 1);
 	rdmResponder.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -218,7 +215,6 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
 		spiFlashStore.Flash();
-		identify.Run();
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();

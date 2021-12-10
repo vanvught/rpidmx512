@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "rdmdeviceresponder.h"
@@ -69,14 +70,8 @@ static constexpr char LANGUAGE[2] = { 'e', 'n' };
 
 RDMDeviceResponder *RDMDeviceResponder::s_pThis = nullptr;
 
-RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) :
-		m_pRDMPersonality(pRDMPersonality),
-		m_pLightSet(pLightSet),
-		m_IsFactoryDefaults(true),
-		m_nCheckSum(0),
-		m_nDmxStartAddressFactoryDefault(Dmx::START_ADDRESS_DEFAULT),
-		m_nCurrentPersonalityFactoryDefault(RDM_DEFAULT_CURRENT_PERSONALITY),
-		m_pRDMFactoryDefaults(nullptr)
+RDMDeviceResponder::RDMDeviceResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
+	m_pRDMPersonalities(pRDMPersonalities)
 {
 	DEBUG_ENTRY
 
@@ -89,14 +84,18 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality *pRDMPersonality, LightSet
 	memset(&m_tRDMDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
 	memset(&m_tRDMSubDeviceInfo, 0, sizeof (struct TRDMDeviceInfo));
 
+	m_tRDMDeviceInfo.personality_count = static_cast<uint8_t>(nPersonalityCount);
+
 	m_pSoftwareVersion = const_cast<char*>(RDMSoftwareVersion::GetVersion());
 	m_nSoftwareVersionLength = static_cast<uint8_t>(RDMSoftwareVersion::GetVersionLength());
 
-	if (m_pLightSet == nullptr) {
+	const auto *pLightSet = m_pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1]->GetLightSet();
+
+	if (pLightSet == nullptr) {
 		m_nDmxStartAddressFactoryDefault = lightset::Dmx::ADDRESS_INVALID;
 	}
 
-	struct TRDMDeviceInfoData info;
+	TRDMDeviceInfoData info;
 
 	info.data = const_cast<char*>(DEVICE_LABEL);
 	info.length = sizeof(DEVICE_LABEL) - 1;
@@ -127,20 +126,21 @@ void RDMDeviceResponder::Init() {
 	m_tRDMDeviceInfo.software_version[2] = static_cast<uint8_t>(nSoftwareVersionId >> 8);
 	m_tRDMDeviceInfo.software_version[3] = static_cast<uint8_t>(nSoftwareVersionId);
 
-	if (m_pLightSet == nullptr) {
+	auto *pLightSet = m_pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1]->GetLightSet();
+
+	if (pLightSet == nullptr) {
 		m_tRDMDeviceInfo.dmx_footprint[0] = 0;
 		m_tRDMDeviceInfo.dmx_footprint[1] = 0;
 		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault >> 8);
 		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_nDmxStartAddressFactoryDefault);
 	} else {
-		m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(m_pLightSet->GetDmxFootprint() >> 8);
-		m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>( m_pLightSet->GetDmxFootprint());
-		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(m_pLightSet->GetDmxStartAddress() >> 8);
-		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(m_pLightSet->GetDmxStartAddress());
+		m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(pLightSet->GetDmxFootprint() >> 8);
+		m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(pLightSet->GetDmxFootprint());
+		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress() >> 8);
+		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress());
 	}
 
-	m_tRDMDeviceInfo.current_personality = m_nCurrentPersonalityFactoryDefault;
-	m_tRDMDeviceInfo.personality_count = m_pRDMPersonality == nullptr ? 0 : 1;
+	m_tRDMDeviceInfo.current_personality = rdm::device::responder::DEFAULT_CURRENT_PERSONALITY;
 	m_tRDMDeviceInfo.sub_device_count[0] = static_cast<uint8_t>(nSubDevices >> 8);
 	m_tRDMDeviceInfo.sub_device_count[1] = static_cast<uint8_t>(nSubDevices);
 	m_tRDMDeviceInfo.sensor_count = m_RDMSensors.GetCount();
@@ -151,3 +151,22 @@ void RDMDeviceResponder::Init() {
 
 	DEBUG_EXIT
 }
+
+void RDMDeviceResponder::Print() {
+	RDMDevice::Print();
+
+	const TRDMDeviceInfo *pDeviceInfo = GetDeviceInfo();
+	const auto *pPersonality = m_pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1];
+	const char *pPersonalityDescription = pPersonality->GetDescription();
+	const uint8_t nPersonalityDescriptionLength =pPersonality->GetDescriptionLength();
+
+	printf("RDM Responder configuration\n");
+	printf(" Protocol Version %d.%d\n", pDeviceInfo->protocol_major, pDeviceInfo->protocol_minor);
+	printf(" DMX Address      : %d\n", (pDeviceInfo->dmx_start_address[0] << 8) + pDeviceInfo->dmx_start_address[1]);
+	printf(" DMX Footprint    : %d\n", (pDeviceInfo->dmx_footprint[0] << 8) + pDeviceInfo->dmx_footprint[1]);
+	printf(" Personality %d of %d [%.*s]\n", pDeviceInfo->current_personality, pDeviceInfo->personality_count, nPersonalityDescriptionLength, pPersonalityDescription);
+	printf(" Sub Devices      : %d\n", (pDeviceInfo->sub_device_count[0] << 8) + pDeviceInfo->sub_device_count[1]);
+	printf(" Sensors          : %d\n", pDeviceInfo->sensor_count);
+}
+
+void __attribute__((weak)) RDMDeviceResponder::PersonalityUpdate(__attribute__((unused)) LightSet *pLightSet) {}

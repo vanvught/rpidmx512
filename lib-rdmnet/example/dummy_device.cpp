@@ -41,8 +41,6 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 
-#include "identify.h"
-
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
@@ -64,8 +62,6 @@ int main(int argc, char **argv) {
 	nw.Print();
 
 	lb.SetMode(ledblink::Mode::NORMAL);
-
-	Identify identify;
 
 	LightSetDebug lighSetDebug;
 

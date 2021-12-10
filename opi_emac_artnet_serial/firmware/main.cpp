@@ -64,7 +64,6 @@
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
 
-#include "identify.h"
 #include "factorydefaults.h"
 
 #if defined (ENABLE_HTTPD)
@@ -177,9 +176,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	Identify identify;
-
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)));
 
 	constexpr char aLabel[] = "Art-Net 4 Serial [UART/SPI/I2C]";
 

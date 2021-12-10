@@ -33,7 +33,7 @@
 #include "rdmmessage.h"
 #include "rdmtod.h"
 
-class RDMDiscovery: public RDMTod {
+class RDMDiscovery final: public RDMTod {
 public:
 	RDMDiscovery(uint8_t nPortIndex = 0) : m_nPortIndex(nPortIndex) {}
 

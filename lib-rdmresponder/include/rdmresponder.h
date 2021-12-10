@@ -46,9 +46,12 @@ static constexpr auto INVALID_RESPONSE = -3;
 }  // namespace responder
 }  // namespace rdm
 
-class RDMResponder: DMXReceiver, public RDMDeviceResponder, RDMHandler  {
+class RDMResponder final : DMXReceiver, public RDMDeviceResponder, RDMHandler {
 public:
-	RDMResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet) : DMXReceiver(pLightSet), RDMDeviceResponder(pRDMPersonality, pLightSet) {
+	RDMResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
+			DMXReceiver(pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1]->GetLightSet()),
+			RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
+	{
 		assert(s_pThis == nullptr);
 		s_pThis = this;
 	}
@@ -76,12 +79,19 @@ public:
 		DMXReceiver::SetDisableOutput(bDisable);
 	}
 
-	static RDMResponder *Get() {
+	static RDMResponder* Get() {
 		return s_pThis;
 	}
 
+	void PersonalityUpdate(uint32_t nPersonality) __attribute__((weak));
+
 private:
 	int HandleResponse(uint8_t *pResponse);
+
+	void PersonalityUpdate(LightSet *pLightSet) override {
+		DMXReceiver::SetLightSet(pLightSet);
+		PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(RDM_ROOT_DEVICE)));
+	}
 
 private:
 	static RDMResponder *s_pThis;

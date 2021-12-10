@@ -39,13 +39,13 @@ static constexpr char LABEL[] = "RDMNet LLRP Only";
 static constexpr auto LABEL_LENGTH = sizeof(LABEL) - 1;
 }  // namespace rdmnetllrponly
 
-class RDMNetLLRPOnly: public RDMIdentify {
+class RDMNetLLRPOnly {
 public:
 	RDMNetLLRPOnly(const char *pLabel = nullptr) :
-			m_pLabel(const_cast<char*>(pLabel)),
-			m_RDMNetDevice(new RDMPersonality(rdmnetllrponly::LABEL, LightSet::Get()->GetDmxFootprint())) {}
-
-	~RDMNetLLRPOnly() override {}
+		m_pLabel(const_cast<char*>(pLabel)),
+		m_RDMNetDevice(new RDMPersonality(rdmnetllrponly::LABEL, nullptr))
+	{
+	}
 
 	void Init() {
 		if (m_pLabel == nullptr) {
@@ -68,15 +68,12 @@ public:
 		m_RDMNetDevice.Print();
 	}
 
-	void SetMode(__attribute__((unused)) TRdmIdentifyMode nMode) override {}
-
 	RDMNetDevice* GetRDMNetDevice() {
 		return &m_RDMNetDevice;
 	}
 
 private:
 	char *m_pLabel;
-	LightSetLLRPOnly m_LightSetLLRPOnly;
 	RDMNetDevice m_RDMNetDevice;
 };
 

@@ -39,7 +39,7 @@
 
 class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm, RDMHandler {
 public:
-	ArtNetRdmResponder(RDMPersonality *pRDMPersonality, LightSet *pLightSet);
+	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
 	~ArtNetRdmResponder() override;
 
 	void Full(uint32_t nPortIndex) override;

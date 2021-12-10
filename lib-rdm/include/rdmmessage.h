@@ -28,7 +28,7 @@
 
 #include "rdm.h"
 
-class RDMMessage: public Rdm {
+class RDMMessage final: public Rdm {
 public:
 	RDMMessage();
 	~RDMMessage(){};

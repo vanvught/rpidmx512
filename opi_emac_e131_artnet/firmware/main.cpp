@@ -55,7 +55,6 @@
 #include "rdmdeviceparams.h"
 #include "storerdmdevice.h"
 
-#include "identify.h"
 #include "factorydefaults.h"
 
 #include "spiflashinstall.h"
@@ -171,9 +170,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	Identify identify;
-
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)));
 
 	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
 

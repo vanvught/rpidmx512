@@ -35,8 +35,6 @@
 
 #include "console.h"
 
-#include "identify.h"
-
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
 
@@ -76,7 +74,6 @@ void notmain(void) {
 
 	fw.Print();
 
-	Identify identify;
 	LightSet *pBoard;
 
 	hw.SetLed(hardware::LedStatus::ON);
@@ -127,8 +124,8 @@ void notmain(void) {
 	char aDescription[64];
 	snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun%s", isLedTypeSet ? " with TLC59711" : "");
 
-	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
-	RDMResponder dmxrdm(&personality, pBoard);
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
+	RDMResponder dmxrdm(pRDMPersonalities, 1);
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
@@ -156,7 +153,6 @@ void notmain(void) {
 	for(;;) {
 		hw.WatchdogFeed();
 		dmxrdm.Run();
-		identify.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 	}

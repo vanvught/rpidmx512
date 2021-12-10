@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "rdmdevice.h"
@@ -92,3 +93,14 @@ RDMDevice::RDMDevice() {
 
 	DEBUG_EXIT
 }
+
+void RDMDevice::Print() {
+	printf("RDM Device configuration\n");
+	printf(" Manufacturer Name : %.*s\n", m_tRDMDevice.nDdeviceManufacturerNameLength, m_tRDMDevice.aDeviceManufacturerName);
+	printf(" Manufacturer ID   : %.2X%.2X\n", m_tRDMDevice.aDeviceUID[0], m_tRDMDevice.aDeviceUID[1]);
+	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", m_tRDMDevice.aDeviceSN[3], m_tRDMDevice.aDeviceSN[2], m_tRDMDevice.aDeviceSN[1], m_tRDMDevice.aDeviceSN[0]);
+	printf(" Root label        : %.*s\n", m_tRDMDevice.nDeviceRootLabelLength, m_tRDMDevice.aDeviceRootLabel);
+	printf(" Product Category  : %.2X%.2X\n", m_tRDMDevice.nProductCategory >> 8, m_tRDMDevice.nProductCategory & 0xFF);
+	printf(" Product Detail    : %.2X%.2X\n", m_tRDMDevice.nProductDetail >> 8, m_tRDMDevice.nProductDetail & 0xFF);
+}
+

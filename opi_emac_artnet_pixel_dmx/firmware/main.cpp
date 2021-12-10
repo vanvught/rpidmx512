@@ -48,7 +48,7 @@
 #include "pixeltestpattern.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "h3/ws28xxdmxstartstop.h"
+#include "ws28xxdmxstartstop.h"
 #include "storews28xxdmx.h"
 #include "pixelreboot.h"
 // DMX Output
@@ -217,7 +217,7 @@ void notmain(void) {
 
 	// RDMNet LLRP Only
 
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	if (WS28xx::Get() == nullptr) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net 4 Pixel-DMX");
 	} else {
@@ -227,7 +227,7 @@ void notmain(void) {
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, nullptr));
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
