@@ -23,13 +23,15 @@
  * THE SOFTWARE.
  */
 
+#ifndef RDMPERSONALITY_H_
+#define RDMPERSONALITY_H_
+
 #include <cstdint>
 #include <cassert>
 
 #include "lightset.h"
 
-#ifndef RDMPERSONALITY_H_
-#define RDMPERSONALITY_H_
+#include "debug.h"
 
 namespace rdm {
 namespace personality {
@@ -40,6 +42,8 @@ static constexpr auto DESCRIPTION_MAX_LENGTH = 32U;
 class RDMPersonality {
 public:
 	RDMPersonality(const char* pDescription, LightSet *pLightSet) {
+		DEBUG_ENTRY
+
 		assert(pDescription != nullptr);
 
 		if (pLightSet == nullptr) {
@@ -50,12 +54,17 @@ public:
 		}
 
 		SetDescription(pDescription);
+
+		DEBUG_EXIT
 	}
 
 	RDMPersonality(const char* pDescription, uint16_t nSlots): m_nSlots(nSlots) {
+		DEBUG_ENTRY
 		assert(pDescription != nullptr);
 
 		SetDescription(pDescription);
+
+		DEBUG_EXIT
 	}
 
 	uint16_t GetSlots() const {

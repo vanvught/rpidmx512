@@ -75,7 +75,6 @@ public:
 
 	void Init() {
 		assert(!m_IsInit);
-
 		m_IsInit = true;
 
 		RDMDevice::SetFactoryDefaults();

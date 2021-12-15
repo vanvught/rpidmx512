@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "noemac/network.h"

@@ -90,7 +90,7 @@ void DisplayUdf::Show() {
 	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", firmwareversion::length::SOFTWARE_VERSION, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
-	// LightSet
+	// RDM Responder
 	ShowDmxStartAddress();
 
 #if !defined (NO_EMAC)
@@ -99,14 +99,6 @@ void DisplayUdf::Show() {
 	ShowNetmask();
 	ShowHostName();
 #endif
-}
-
-void DisplayUdf::ShowDmxStartAddress() {
-	if (LightSet::Get() != nullptr) {
-		Printf(m_aLabels[static_cast<uint32_t>(Labels::DMX_START_ADDRESS)], "DMX S:%3d F:%3d",
-				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
-				static_cast<int>(LightSet::Get()->GetDmxFootprint()));
-	}
 }
 
 #if !defined (NO_EMAC)

@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -46,7 +46,6 @@
 #include "dmxmonitorparams.h"
 #include "storemonitor.h"
 
-#include "identify.h"
 #include "artnetrdmresponder.h"
 
 #include "rdmdeviceresponder.h"
@@ -129,8 +128,8 @@ int main(int argc, char **argv) {
 	node.SetOutput(&monitor);
 	node.SetArtNetStore(StoreArtNet::Get());
 
-	RDMPersonality personality("Real-time DMX Monitor", monitor.GetDmxFootprint());
-	ArtNetRdmResponder RdmResponder(&personality, &monitor);
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality("Real-time DMX Monitor", &monitor)};
+	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
 
 	node.SetRdmUID(RdmResponder.GetUID());
 
@@ -162,8 +161,6 @@ int main(int argc, char **argv) {
 			}
 		}
 	}
-
-	Identify identify;
 
 	hw.Print();
 	nw.Print();
@@ -197,7 +194,6 @@ int main(int argc, char **argv) {
 	for (;;) {
 		node.Run();
 		mDns.Run();
-		identify.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 	}

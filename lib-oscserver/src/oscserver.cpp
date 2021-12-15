@@ -247,7 +247,7 @@ int OscServer::GetChannel(const char* p) {
 		s++;
 	}
 
-	if (nChannel > Dmx::UNIVERSE_SIZE) {
+	if (nChannel > static_cast<int32_t>(Dmx::UNIVERSE_SIZE)) {
 		return -1;
 	}
 

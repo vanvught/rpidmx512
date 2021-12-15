@@ -43,7 +43,8 @@ class RDMNetLLRPOnly {
 public:
 	RDMNetLLRPOnly(const char *pLabel = nullptr) :
 		m_pLabel(const_cast<char*>(pLabel)),
-		m_RDMNetDevice(new RDMPersonality(rdmnetllrponly::LABEL, nullptr))
+		m_pRDMPersonality(new RDMPersonality(rdmnetllrponly::LABEL, nullptr)),
+		m_RDMNetDevice(&m_pRDMPersonality, 1)
 	{
 	}
 
@@ -74,6 +75,7 @@ public:
 
 private:
 	char *m_pLabel;
+	RDMPersonality *m_pRDMPersonality;
 	RDMNetDevice m_RDMNetDevice;
 };
 

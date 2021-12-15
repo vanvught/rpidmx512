@@ -37,7 +37,7 @@
 
 #include "lightset.h"
 
-class ArtNetRdmResponder: public RDMDeviceResponder, public ArtNetRdm, RDMHandler {
+class ArtNetRdmResponder: public ArtNetRdm, public RDMDeviceResponder, RDMHandler {
 public:
 	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
 	~ArtNetRdmResponder() override;
@@ -47,7 +47,20 @@ public:
 	void Copy(uint32_t nPortIndex, uint8_t *) override;
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
 
+	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
+		return RDMDeviceResponder::GetDmxStartAddress(nSubDevice);
+	}
+
+	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
+		return RDMDeviceResponder::GetDmxFootPrint(nSubDevice);
+	}
+
+	static ArtNetRdmResponder* Get() {
+		return s_pThis;
+	}
+
 private:
+	static ArtNetRdmResponder *s_pThis;
 	static TRdmMessage s_RdmCommand;
 };
 

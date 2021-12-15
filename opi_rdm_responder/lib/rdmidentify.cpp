@@ -1,8 +1,8 @@
 /**
- * @file displayrdm.h
+ * @file rdmidentify.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,37 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAYRDM_H_
-#define DISPLAYRDM_H_
+#include "rdmidentify.h"
+#include "pixeltestpattern.h"
 
-#include "lightset.h"
-#include "displayudf.h"
+#include "debug.h"
 
-class DisplayRdm final: public LightSetDisplay {
-public:
-	DisplayRdm() {}
+static bool s_isOn = false;
+static pixelpatterns::Pattern s_Pattern;
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
+using namespace rdm::identify;
+
+void RDMIdentify::On(__attribute__((unused)) rdm::identify::Mode nMode) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
+
+	if ((nMode == rdm::identify::Mode::LOUD) && (!s_isOn)) {
+		s_isOn = true;
+		s_Pattern = PixelTestPattern::Get()->GetPattern();
+		PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::FADE);
 	}
-};
 
-#endif /* DISPLAYRDM_H_ */
+	DEBUG_EXIT
+}
+
+void RDMIdentify::Off(__attribute__((unused)) rdm::identify::Mode nMode) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
+
+	if (s_isOn) {
+		s_isOn = false;
+		PixelTestPattern::Get()->SetPattern(s_Pattern);
+	}
+
+	DEBUG_EXIT
+}

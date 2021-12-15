@@ -41,8 +41,8 @@ RDMSensor::RDMSensor(uint8_t nSensor) : m_nSensor(nSensor) {
 	m_tRDMSensorDefintion.recorded_supported = RDM_SENSOR_RECORDED_SUPPORTED | RDM_SENSOR_LOW_HIGH_DETECT;
 
 	m_tRDMSensorValues.sensor_requested = m_nSensor;
-	m_tRDMSensorValues.lowest_detected = RDM_SENSOR_RANGE_MAX;
-	m_tRDMSensorValues.highest_detected = RDM_SENSOR_RANGE_MIN;
+	m_tRDMSensorValues.lowest_detected = rdm::sensor::RANGE_MAX;
+	m_tRDMSensorValues.highest_detected = rdm::sensor::RANGE_MIN;
 
 	DEBUG1_EXIT
 }
@@ -62,7 +62,7 @@ void RDMSensor::SetDescription(const char *pDescription) {
 	DEBUG1_EXIT
 }
 
-const struct TRDMSensorValues* RDMSensor::GetValues() {
+const struct rdm::sensor::Values* RDMSensor::GetValues() {
 	DEBUG1_ENTRY
 
 	const auto nValue = this->GetValue();

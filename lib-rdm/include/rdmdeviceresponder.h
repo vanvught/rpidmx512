@@ -179,6 +179,8 @@ public:
 			m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
 			m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
 		}
+
+		DmxStartAddressUpdate();
 	}
 
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
@@ -211,12 +213,14 @@ public:
 
 	// Personalities
 	RDMPersonality* GetPersonality(uint16_t nSubDevice, uint8_t nPersonality) {
+		assert(nPersonality >= 1);
+
 		if (nSubDevice != RDM_ROOT_DEVICE) {
 			return m_RDMSubDevices.GetPersonality(nSubDevice, nPersonality);
 		}
 
-		assert(nPersonality >= 1);
 		assert(nPersonality < m_tRDMDeviceInfo.personality_count);
+
 		return m_pRDMPersonalities[nPersonality - 1];
 	}
 
@@ -229,15 +233,16 @@ public:
 	}
 
 	void SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality) {
+		assert(nPersonality >= 1);
+
 		if (nSubDevice != RDM_ROOT_DEVICE) {
 			m_RDMSubDevices.SetPersonalityCurrent(nSubDevice, nPersonality);
 			return;
 		}
 
-		assert(nPersonality >= 1);
-		assert(nPersonality < m_tRDMDeviceInfo.personality_count);
-
 		m_tRDMDeviceInfo.current_personality = nPersonality;
+
+		assert(nPersonality < m_tRDMDeviceInfo.personality_count);
 
 		const auto *pPersonality = m_pRDMPersonalities[nPersonality - 1];
 		auto *pLightSet = pPersonality->GetLightSet();
@@ -275,6 +280,7 @@ private:
 	}
 
 	virtual void PersonalityUpdate(LightSet *pLightSet);
+	virtual void DmxStartAddressUpdate();
 
 private:
 	RDMIdentify m_RDMIdentify;

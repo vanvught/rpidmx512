@@ -1,8 +1,7 @@
-#
-DEFINES = #NDEBUG
-#
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-device/include
-#
+#DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-rdm/include ../lib-lightset/include ../lib-properties/include ../lib-device/include
+
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring RASPI,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR += src/spi

@@ -79,11 +79,20 @@ public:
 		DMXReceiver::SetDisableOutput(bDisable);
 	}
 
+	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
+		return RDMDeviceResponder::GetDmxStartAddress(nSubDevice);
+	}
+
+	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
+		return RDMDeviceResponder::GetDmxFootPrint(nSubDevice);
+	}
+
 	static RDMResponder* Get() {
 		return s_pThis;
 	}
 
 	void PersonalityUpdate(uint32_t nPersonality) __attribute__((weak));
+	void DmxStartAddressUpdate(uint16_t nDmxStartAddress) __attribute__((weak));
 
 private:
 	int HandleResponse(uint8_t *pResponse);
@@ -91,6 +100,10 @@ private:
 	void PersonalityUpdate(LightSet *pLightSet) override {
 		DMXReceiver::SetLightSet(pLightSet);
 		PersonalityUpdate(static_cast<uint32_t>(RDMDeviceResponder::GetPersonalityCurrent(RDM_ROOT_DEVICE)));
+	}
+
+	void DmxStartAddressUpdate() override {
+		DmxStartAddressUpdate(RDMDeviceResponder::GetDmxStartAddress(RDM_ROOT_DEVICE));
 	}
 
 private:

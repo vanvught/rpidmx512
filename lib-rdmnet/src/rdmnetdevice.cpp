@@ -35,14 +35,17 @@
 #include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
 
-#define UUID_STRING_LENGTH	36
+static constexpr auto UUID_STRING_LENGTH = 36;
+
+TRdmMessage RDMNetDevice::s_RdmCommand;
+uint8_t RDMNetDevice::s_Cid[E131::CID_LENGTH];
 
 void RDMNetDevice::Print() {
 	char uuid_str[UUID_STRING_LENGTH + 1];
 	uuid_str[UUID_STRING_LENGTH] = '\0';
-	uuid_unparse(m_Cid, uuid_str);
+	uuid_unparse(s_Cid, uuid_str);
 
-	printf("RDMNet configuration\n");
+	printf("RDMNet\n");
 	printf(" CID : %s\n", uuid_str);
 
 	LLRPDevice::Print();

@@ -34,9 +34,9 @@
 #include "artnet.h"
 
 #include "artnetdisplay.h"
-#include "lightset.h"
+//#include "lightset.h"
 
-class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay {
+class DisplayUdfHandler: public ArtNetDisplay {
 public:
 	DisplayUdfHandler() {}
 	~DisplayUdfHandler() {}
@@ -68,9 +68,9 @@ public:
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
-	}
+//	void ShowDmxStartAddress() {
+//		DisplayUdf::Get()->ShowDmxStartAddress();
+//	}
 };
 
 #endif /* ARTNET_DISPLAYUDFHANDLER_H_ */

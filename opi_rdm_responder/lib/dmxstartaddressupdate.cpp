@@ -1,8 +1,8 @@
 /**
- * @file lightset.cpp
+ * @file dmxstartaddressupdate.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
+#include <cstdint>
 
-#include "lightset.h"
+#include "rdmresponder.h"
 
-LightSetDisplay *LightSet::s_pLightSetDisplay { nullptr };
-LightSet *LightSet::s_pThis { nullptr };
+#include "displayudf.h"
 
-LightSet::LightSet()  {
-	s_pThis = this;
+#include "debug.h"
+
+void RDMResponder::DmxStartAddressUpdate(__attribute__((unused)) uint16_t nDmxStartAddress) {
+	DisplayUdf::Get()->Show();
 }

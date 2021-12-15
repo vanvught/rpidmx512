@@ -27,7 +27,6 @@
 #define REBOOT_H_
 
 #include "hardware.h"
-#include "lightset.h"
 #include "ws28xxmulti.h"
 
 class Reboot final : public RebootHandler {
@@ -38,10 +37,6 @@ public:
 	void Run() override {
 		if (WS28xxMulti::Get() != nullptr) {
 			WS28xxMulti::Get()->Blackout();
-		}
-
-		if (LightSet::Get() != nullptr) {
-			LightSet::Get()->Blackout(true);
 		}
 	}
 };

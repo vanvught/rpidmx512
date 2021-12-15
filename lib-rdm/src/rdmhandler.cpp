@@ -881,24 +881,24 @@ void RDMHandler::GetSensorValue(__attribute__((unused)) uint16_t nSubDevice) {
 	}
 
 	auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	const struct TRDMSensorValues* sensor_value = RDMSensors::Get()->GetValues(nSensorRequested);
+	const auto *pSensorValues = RDMSensors::Get()->GetValues(nSensorRequested);
 
-	if (nSensorRequested != sensor_value->sensor_requested) {
+	if (nSensorRequested != pSensorValues->sensor_requested) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
 	pRdmDataOut->param_data_length = 9;
 	pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
-	pRdmDataOut->param_data[0] = sensor_value->sensor_requested;
-	pRdmDataOut->param_data[1] = static_cast<uint8_t>(sensor_value->present >> 8);
-	pRdmDataOut->param_data[2] = static_cast<uint8_t>(sensor_value->present);
-	pRdmDataOut->param_data[3] = static_cast<uint8_t>(sensor_value->lowest_detected >> 8);
-	pRdmDataOut->param_data[4] = static_cast<uint8_t>(sensor_value->lowest_detected);
-	pRdmDataOut->param_data[5] = static_cast<uint8_t>(sensor_value->highest_detected >> 8);
-	pRdmDataOut->param_data[6] = static_cast<uint8_t>(sensor_value->highest_detected);
-	pRdmDataOut->param_data[7] = static_cast<uint8_t>(sensor_value->recorded >> 8);
-	pRdmDataOut->param_data[8] = static_cast<uint8_t>(sensor_value->recorded);
+	pRdmDataOut->param_data[0] = pSensorValues->sensor_requested;
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(pSensorValues->present >> 8);
+	pRdmDataOut->param_data[2] = static_cast<uint8_t>(pSensorValues->present);
+	pRdmDataOut->param_data[3] = static_cast<uint8_t>(pSensorValues->lowest_detected >> 8);
+	pRdmDataOut->param_data[4] = static_cast<uint8_t>(pSensorValues->lowest_detected);
+	pRdmDataOut->param_data[5] = static_cast<uint8_t>(pSensorValues->highest_detected >> 8);
+	pRdmDataOut->param_data[6] = static_cast<uint8_t>(pSensorValues->highest_detected);
+	pRdmDataOut->param_data[7] = static_cast<uint8_t>(pSensorValues->recorded >> 8);
+	pRdmDataOut->param_data[8] = static_cast<uint8_t>(pSensorValues->recorded);
 
 	RespondMessageAck();
 }

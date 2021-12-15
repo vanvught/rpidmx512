@@ -3,7 +3,7 @@
  * @file slushdmx.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -632,10 +632,6 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 #endif
 
 	m_nDmxStartAddress = nDmxStartAddress;
-
-	if (s_pLightSetDisplay != 0) {
-		s_pLightSetDisplay->ShowDmxStartAddress();
-	}
 
 	DEBUG_EXIT
 	return true;

@@ -80,11 +80,11 @@ public:
 		}
 
 
-		if (__builtin_expect ((s_nSysTickMillis - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+		if (__builtin_expect ((s_nSysTickMillis - m_nMillisPrevious < m_nTicksPerSecond), 0)) {
 			return;
 		}
 
-		m_nMicrosPrevious = s_nSysTickMillis;
+		m_nMillisPrevious = s_nSysTickMillis;
 
 		m_nToggleLed ^= 0x1;
 		if (m_nToggleLed != 0) {
@@ -109,7 +109,7 @@ private:
 	//
 	uint32_t m_nTicksPerSecond { 1000 / 2 };
 	int32_t m_nToggleLed { 0 };
-	uint32_t m_nMicrosPrevious { 0 };
+	uint32_t m_nMillisPrevious { 0 };
 
 	static LedBlink *s_pThis;
 };

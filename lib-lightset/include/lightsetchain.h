@@ -37,7 +37,7 @@ struct TLightSetEntry {
 	int	nType;
 };
 
-class LightSetChain: public LightSet {
+class LightSetChain final: public LightSet {
 public:
 	LightSetChain();
 	~LightSetChain() override;

@@ -39,12 +39,16 @@
 
 #include "debug.h"
 
+ArtNetRdmResponder *ArtNetRdmResponder::s_pThis;
 TRdmMessage ArtNetRdmResponder::s_RdmCommand;
 
 ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
 	RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
 {
 	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
 	DEBUG_EXIT
 }

@@ -170,7 +170,8 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)));
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
 

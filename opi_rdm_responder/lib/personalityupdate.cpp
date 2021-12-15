@@ -1,5 +1,5 @@
 /**
- * @file platform_gpio.h
+ * @file personalityupdate.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -10,8 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
+
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,47 +23,40 @@
  * THE SOFTWARE.
  */
 
-#ifndef PLATFORM_GPIO_H_
-#define PLATFORM_GPIO_H_
+#include <cstdint>
 
-#if defined (BARE_METAL)
-# if defined (H3)
-#  include "h3_gpio.h"
-#  include "h3_board.h"
-	void platform_gpio_init() {
-		h3_gpio_fsel(GPIO_EXT_18, GPIO_FSEL_EINT);
+#include "rdmresponder.h"
 
-		H3_PIO_PA_INT->CFG2 = (GPIO_INT_CFG_POS_EDGE << 8);
-		H3_PIO_PA_INT->CTL |= (1 << GPIO_EXT_18);
-		H3_PIO_PA_INT->STA = (1 << GPIO_EXT_18);
-		H3_PIO_PA_INT->DEB = 1;
-	}
+#include "ws28xxdmx.h"
+#include "pixeltestpattern.h"
+#include "pixelpatterns.h"
+#include "displayudf.h"
 
-	bool platform_is_pps() {
-		const auto isPPS = ((H3_PIO_PA_INT->STA & (1 << GPIO_EXT_18)) == (1 << GPIO_EXT_18));
-		if (!isPPS) {
-			return false;
+#include "debug.h"
+
+void RDMResponder::PersonalityUpdate(uint32_t nPersonality)  {
+	DEBUG_PRINTF("nPersonality=%u", nPersonality);
+
+	DisplayUdf::Get()->ClearLine(7);
+	DisplayUdf::Get()->Printf(7, "%s:%d G%d %s",
+					PixelType::GetType(WS28xxDmx::Get()->GetType()),
+					WS28xxDmx::Get()->GetCount(),
+					WS28xxDmx::Get()->GetGroupingCount(),
+					PixelType::GetMap(WS28xxDmx::Get()->GetMap()));
+	DisplayUdf::Get()->Show();
+
+	if (nPersonality == 1) {
+		const auto nTestPattern = PixelTestPattern::GetPattern();
+
+		if (nTestPattern == pixelpatterns::Pattern::NONE) {
+		} else {
+			DisplayUdf::Get()->ClearLine(6);
+			DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 		}
-		H3_PIO_PA_INT->STA = (1 << GPIO_EXT_18);
-		return true;
+	} else if (nPersonality == 2) {
+		DisplayUdf::Get()->ClearLine(3);
+		DisplayUdf::Get()->ClearLine(4);
+		DisplayUdf::Get()->Write(4, "Config Mode");
+		DisplayUdf::Get()->ClearLine(5);
 	}
-# elif defined (GD32)
-#  include "gd32_gpio.h"
-#  include "gd32_board.h"
-	void platform_gpio_init(void) {}
-
-	bool platform_is_pps(void) {
-		return false;
-	}
-# else
-#  error Platform is not supported
-# endif
-#else
-	void platform_gpio_init(void) {}
-
-	bool platform_is_pps(void) {
-		return false;
-	}
-#endif
-
-#endif /* PLATFORM_GPIO_H_ */
+}

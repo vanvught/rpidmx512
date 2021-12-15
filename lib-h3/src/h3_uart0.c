@@ -58,7 +58,7 @@ void uart0_puts(char *s) {
 		uart0_putc(*s++);
 	}
 
-	uart0_putc('\n');
+//	uart0_putc('\n');
 }
 
 int uart0_getc(void) {

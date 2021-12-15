@@ -206,7 +206,7 @@ void notmain(void) {
 		}
 	}
 
-	pBoard->SetLightSetDisplay(&displayUdfHandler);
+//	pBoard->SetLightSetDisplay(&displayUdfHandler);
 
 	char aDescription[64];
 	if (isLedTypeSet) {

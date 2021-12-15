@@ -202,10 +202,6 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (s_pLightSetDisplay != nullptr) {
-			s_pLightSetDisplay->ShowDmxStartAddress();
-		}
-
 		return true;
 	}
 

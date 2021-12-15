@@ -31,7 +31,6 @@
 #include "ledblink.h"
 
 #include "displayudf.h"
-#include "displayrdm.h"
 
 #include "factorydefaults.h"
 
@@ -101,10 +100,7 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-	DisplayRdm displayRdm;
-
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetLightSetDisplay(&displayRdm);
 	pixelDmx.SetWS28xxDmxStore(&storeWS28xxDmx);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());

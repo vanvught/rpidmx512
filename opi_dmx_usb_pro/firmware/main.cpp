@@ -34,7 +34,7 @@
 
 #include "widget.h"
 #include "widgetparams.h"
-#include "h3/widgetstore.h"
+#include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
 #include "spiflashinstall.h"
@@ -49,11 +49,8 @@
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-using namespace dmxsingle;
-using namespace dmx;
-
-static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
-static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
+static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
+static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
 extern "C" {
 
@@ -70,7 +67,7 @@ void notmain(void) {
 	StoreRDMDevice storeRDMDevice;
 
 	Widget widget;
-	widget.SetPortDirection(0, PortDirection::INP, false);
+	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
 	WidgetParams widgetParams(&storeWidget);
 
@@ -104,7 +101,7 @@ void notmain(void) {
 	hw.WatchdogInit();
 
 	if (tWidgetMode == widget::Mode::RDM_SNIFFER) {
-		widget.SetPortDirection(0, PortDirection::INP, true);
+		widget.SetPortDirection(0, dmx::PortDirection::INP, true);
 		widget.SnifferFillTransmitBuffer();	// Prevent missing first frame
 	}
 

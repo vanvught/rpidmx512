@@ -5,7 +5,7 @@
 
 #include "tftpdaemon.h"
 
-class TFTPFileServer: public TFTPDaemon {
+class TFTPFileServer final: public TFTPDaemon {
 public:
 	TFTPFileServer();
 	~TFTPFileServer();
