@@ -1,10 +1,11 @@
 /**
- * @file usb.c
- *
- * @brief
+ * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2015-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/*
+ * Stub - Monitor is not supported with boards which have no HDMI output
+ */
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -15,7 +16,7 @@
 
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
+#include "console.h"
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -25,19 +26,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
-#include "ft245rl.h"
+#include <widgetmonitor.h>
 
-uint8_t usb_read_byte(void) {
-	while (!FT245RL_data_available())
-		;
+void WidgetMonitor::RdmData(__attribute__((unused)) int line, __attribute__((unused)) uint16_t data_length, __attribute__((unused)) const uint8_t *data, __attribute__((unused)) bool is_sent) {
 
-	return FT245RL_read_data();
-}
-
-void usb_send_byte(uint8_t byte) {
-	while (!FT245RL_can_write())
-		;
-	FT245RL_write_data(byte);
 }

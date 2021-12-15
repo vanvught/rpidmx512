@@ -51,7 +51,6 @@
 
 using namespace widget;
 using namespace widgetmonitor;
-using namespace dmxsingle;
 
 void Widget::UsbSendPackage(const uint8_t *pData, uint16_t Start, uint16_t nDataLength) {
 	uint32_t i;

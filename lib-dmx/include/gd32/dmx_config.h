@@ -31,53 +31,11 @@
 namespace dmxmulti {
 namespace config {
 #if defined (BOARD_GD32F207C_EVAL)
-namespace max {
-static constexpr auto OUT = 2U;
-static constexpr auto IN = 2U;
-}  // namespace max
-# define DMX_MAX_PORTS  2
-//
-//# define DMX_USE_USART0
-//# define DMX_USE_USART1
-# define DMX_USE_USART2
-//# define DMX_USE_UART3
-//# define DMX_USE_UART4
-# define DMX_USE_USART5
-//# define DMX_USE_UART6
-//# define DMX_USE_UART7
-//
-//static constexpr auto USART0_PORT = 7;
-//static constexpr auto USART1_PORT = 6;
-static constexpr auto USART2_PORT = 1;
-//static constexpr auto UART3_PORT = 5;
-//static constexpr auto UART4_PORT = 2;
-static constexpr auto USART5_PORT = 0;
-//static constexpr auto UART6_PORT = 2;
-//static constexpr auto UART7_PORT = 3;
-//
-static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_9;
-
-static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_10;
-
-static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_2_GPIO_PIN = GPIO_PIN_11;
-
-static constexpr auto DIR_PORT_3_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_3_GPIO_PIN = GPIO_PIN_12;
-
-static constexpr auto DIR_PORT_4_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_4_GPIO_PIN = GPIO_PIN_13;
-
-static constexpr auto DIR_PORT_5_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_5_GPIO_PIN = GPIO_PIN_14;
-
-static constexpr auto DIR_PORT_6_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_6_GPIO_PIN = GPIO_PIN_15;
-
-static constexpr auto DIR_PORT_7_GPIO_PORT = GPIOB;
-static constexpr auto DIR_PORT_7_GPIO_PIN = GPIO_PIN_15;
+# include "board_gd32f207c_eval.h"
+#elif defined (BOARD_GD32F207R_ETH)
+# include "board_gd32f207r_eth.h"
+#elif defined (BOARD_GD32F103R)
+# include "board_gd32f103r.h"
 #else
 # error
 #endif
@@ -108,4 +66,4 @@ static_assert(DMX_MAX_PORTS <= dmxmulti::config::max::OUT, "OUT: DMX_MAX_PORTS")
 # endif
 #endif
 
-#endif /* INCLUDE_GD32_DMX_CONFIG_H_ */
+#endif /* GD32_DMX_CONFIG_H_ */

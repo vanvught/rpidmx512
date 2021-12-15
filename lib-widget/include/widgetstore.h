@@ -2,7 +2,7 @@
  * @file widgetstore.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,8 @@
 #ifndef WIDGETSTORE_H_
 #define WIDGETSTORE_H_
 
-#if defined (H3)
-# include "h3/widgetstore.h"
+#if defined (HAVE_FLASHROM)
+# include "flashrom/widgetstore.h"
 #else
 # error
 #endif

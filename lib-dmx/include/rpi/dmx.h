@@ -48,6 +48,7 @@ namespace max {
 static constexpr auto OUT = 1U;
 static constexpr auto IN = 1U;
 }  // namespace max
+}  // namespace dmxsingle
 
 struct TotalStatistics {
 	uint32_t nDmxPackets;
@@ -65,7 +66,6 @@ struct Data {
 	uint8_t Data[dmx::buffer::SIZE];
 	struct Statistics Statistics;
 };
-}  // namespace dmxsingle
 
 class Dmx {
 public:
@@ -82,8 +82,8 @@ public:
 	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX
-	void ClearData();
-	void SetSendData(const uint8_t *pData, uint32_t nLength);
+	void ClearData(uint32_t nPortIndex);
+	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
 	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 		SetSendDataWithoutSC(pData, nLength);
@@ -108,7 +108,7 @@ public:
 
 	uint32_t GetSendDataLength() ;
 
-	const volatile struct dmxsingle::TotalStatistics *GetTotalStatistics();
+	const volatile struct TotalStatistics *GetTotalStatistics();
 
 	static Dmx* Get() {
 		return s_pThis;

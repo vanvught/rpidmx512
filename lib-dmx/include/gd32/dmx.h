@@ -47,6 +47,12 @@ public:
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
 
+	dmx::PortDirection GetPortDirection(uint32_t nPortIndex = 0) const {
+		return m_tDmxPortDirection[nPortIndex];
+	}
+
+	void ClearData(uint32_t nPortIndex = 0);
+
 	// RDM Send
 
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
@@ -57,6 +63,8 @@ public:
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
 
 	// DMX Send
+
+	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
@@ -83,6 +91,8 @@ public:
 	// DMX Receive
 
 	const uint8_t* GetDmxAvailable(uint32_t nPortIndex = 0);
+	const uint8_t* GetDmxChanged(uint32_t nPortIndex = 0);
+
 	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex = 0);
 
 	static Dmx* Get() {
@@ -90,7 +100,6 @@ public:
 	}
 
 private:
-	void ClearData(uint32_t nUart);
 	void StartData(uint32_t nUart, uint32_t nPortIndex);
 	void StopData(uint32_t nUart, uint32_t nPortIndex);
 

@@ -69,7 +69,6 @@ typedef enum {
 	DMXINTER
 } _dmx_state;
 
-using namespace dmxsingle;
 using namespace dmx;
 
 static PortDirection s_nPortDirection = dmx::PortDirection::INP;
@@ -102,7 +101,7 @@ static bool s_IsStopped = true;
 
 static volatile uint32_t sv_nDmxUpdatesPerSecond;
 static volatile uint32_t sv_nDmxPacketsPrevious;
-static volatile struct dmxsingle::TotalStatistics sv_TotalStatistics ALIGNED;
+static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
 
 // RDM
 
@@ -461,7 +460,7 @@ void Dmx::Init() {
 	bcm2835_gpio_clr(GPIO_ANALYZER_CH7);
 #endif
 
-	ClearData();
+	ClearData(0);
 
 	sv_nDmxDataBufferIndexHead = 0;
 	sv_nDmxDataBufferIndexTail = 0;
@@ -729,7 +728,7 @@ uint16_t Dmx::GetDmxSlots() {
 	return s_nDmxSendDataLength - 1U;
 }
 
-void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -758,7 +757,7 @@ uint32_t Dmx::GetUpdatesPerSecond() {
 	return sv_nDmxUpdatesPerSecond;
 }
 
-void Dmx::ClearData() {
+void Dmx::ClearData(__attribute__((unused))uint32_t nPortIndex) {
 	auto i = sizeof(s_DmxData) / sizeof(uint32_t);
 	auto *p = reinterpret_cast<uint32_t *>(s_DmxData);
 

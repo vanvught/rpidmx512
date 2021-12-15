@@ -28,7 +28,6 @@
  */
 
 #include <cstdint>
-#include <stdbool.h>
 #include <cstddef>
 #include <cassert>
 
@@ -64,7 +63,6 @@ enum {
 
 using namespace widget;
 using namespace widgetmonitor;
-using namespace dmxsingle;
 using namespace dmx;
 
 Widget *Widget::s_pThis = nullptr;
@@ -89,7 +87,7 @@ void Widget::GetParamsReply() {
 	WidgetMonitor::Line(MonitorLine::INFO, "GET_WIDGET_PARAMS_REPLY");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
 
-	struct TWidgetConfiguration widgetConfiguration;
+	TWidgetConfiguration widgetConfiguration;
 	WidgetConfiguration::Get(&widgetConfiguration);
 	SendMessage(GET_WIDGET_PARAMS_REPLY, reinterpret_cast<uint8_t *>(&widgetConfiguration), sizeof(struct TWidgetConfiguration));
 }
@@ -101,7 +99,7 @@ void Widget::GetParamsReply() {
  *
  */
 void Widget::SetParams() {
-	struct TWidgetConfiguration widgetConfiguration;
+	TWidgetConfiguration widgetConfiguration;
 
 	WidgetMonitor::Line(MonitorLine::INFO, "SET_WIDGET_PARAMS");
 	WidgetMonitor::Line(MonitorLine::STATUS, nullptr);
@@ -251,7 +249,7 @@ void Widget::SendDmxPacketRequestOutputOnly(uint16_t nDataLength) {
 
 	SetPortDirection(0, PortDirection::OUTP, false);
 
-	SetSendData(m_aData, nDataLength);
+	SetSendData(0, m_aData, nDataLength);
 
 	SetPortDirection(0, PortDirection::OUTP, true);
 }
@@ -324,7 +322,7 @@ void Widget::ReceiveDmxOnChange() {
 
 	SetPortDirection(0, PortDirection::INP, false);
 
-	ClearData();
+	ClearData(0);
 
 	SetPortDirection(0, PortDirection::INP, true);
 

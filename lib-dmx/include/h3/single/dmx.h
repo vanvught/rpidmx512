@@ -63,8 +63,8 @@ public:
 	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX
-	void ClearData();
-	void SetSendData(const uint8_t *pData, uint32_t nLength);
+	void ClearData(uint32_t nPortIndex);
+	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);	//TODO Remove void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength)
 	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 		SetSendDataWithoutSC(pData, nLength);

@@ -1,8 +1,8 @@
 /**
- * @file widgetconfiguration.cpp
+ * @file usb.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
+#include <cstdint>
 
-#include "widgetconfiguration.h"
-#include "storewidget.h"
+#include "ft245rl.h"
 
-#include "dmx.h"
+uint8_t usb_read_byte() {
+	while (!FT245RL_data_available())
+		;
 
-void WidgetConfiguration::Store(const struct TWidgetConfiguration *widget_params) {
-	assert(StoreWidget::Get() != nullptr);
+	return FT245RL_read_data();
+}
 
-	if (widget_params->nBreakTime != s_nBreakTime) {
-		s_nBreakTime = widget_params->nBreakTime;
-		Dmx::Get()->SetDmxBreakTime(static_cast<uint32_t>(s_nBreakTime * 10.67));
-		StoreWidget::Get()->UpdateBreakTime(widget_params->nBreakTime);
-	}
-
-	if (widget_params->nMabTime != s_nMabTime) {
-		s_nMabTime = widget_params->nMabTime;
-		Dmx::Get()->SetDmxMabTime(static_cast<uint32_t>(s_nMabTime * 10.67));
-		StoreWidget::Get()->UpdateMabTime(widget_params->nMabTime);
-	}
-
-	if (widget_params->nRefreshRate != s_nRefreshRate) {
-		s_nRefreshRate = widget_params->nRefreshRate;
-		Dmx::Get()->SetDmxPeriodTime(widget_params->nRefreshRate == 0 ? 0 : (1000000U / widget_params->nRefreshRate));
-		StoreWidget::Get()->UpdateRefreshRate(widget_params->nRefreshRate);
-	}
+void usb_send_byte(uint8_t byte) {
+	while (!FT245RL_can_write())
+		;
+	FT245RL_write_data(byte);
 }
