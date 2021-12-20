@@ -436,37 +436,39 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *p_tcp) {
 				memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
 				if ((l_tcb->remotept == p_tcp->tcp.srcpt) && (l_tcb->remoteip == src.u32)) {
 					break;
-				} else {
-					memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
-					/* Do not use current TCB */
-					struct tcb t_tcb;
-					memset(&t_tcb, 0, sizeof(struct tcb));
-					t_tcb.local_port = p_tcp->tcp.dstpt;
-					t_tcb.remotept = p_tcp->tcp.srcpt;
-					memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
-					t_tcb.remoteip = src.u32;
-					memcpy(t_tcb.remoteeth, p_tcp->ether.src, ETH_ADDR_LEN);
-					_send_reset(p_tcp, &t_tcb);
-					return;
 				}
+//				else {
+//					memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
+//					/* Do not use current TCB */
+//					struct tcb t_tcb;
+//					memset(&t_tcb, 0, sizeof(struct tcb));
+//					t_tcb.local_port = p_tcp->tcp.dstpt;
+//					t_tcb.remotept = p_tcp->tcp.srcpt;
+//					memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
+//					t_tcb.remoteip = src.u32;
+//					memcpy(t_tcb.remoteeth, p_tcp->ether.src, ETH_ADDR_LEN);
+//					_send_reset(p_tcp, &t_tcb);
+//					return;
+//				}
 			}
 		}
 	}
 
 	if (connection_index == TCP_MAX_CONNECTIONS_ALLOWED) {
 		DEBUG_PUTS("/* There is no TCB */");
-		struct tcb t_tcb;
-		memset(&t_tcb, 0, sizeof(struct tcb));
-		t_tcb.local_port = p_tcp->tcp.dstpt;
-		t_tcb.remotept = p_tcp->tcp.srcpt;
-		memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
-		t_tcb.remoteip = src.u32;
-		memcpy(t_tcb.remoteeth, p_tcp->ether.src, ETH_ADDR_LEN);
-		_send_reset(p_tcp, &t_tcb);
+//		struct tcb t_tcb;
+//		memset(&t_tcb, 0, sizeof(struct tcb));
+//		t_tcb.local_port = p_tcp->tcp.dstpt;
+//		t_tcb.remotept = p_tcp->tcp.srcpt;
+//		memcpy(src.u8, p_tcp->ip4.src, IPv4_ADDR_LEN);
+//		t_tcb.remoteip = src.u32;
+//		memcpy(t_tcb.remoteeth, p_tcp->ether.src, ETH_ADDR_LEN);
+//		_send_reset(p_tcp, &t_tcb);
 		return;
 	}
 
-	DEBUG_PRINTF("[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u",
+	DEBUG_PRINTF("%u:[%s] %c%c%c%c%c%c SEQ=%u, ACK=%u, tcplen=%u, data_offset=%u, data_length=%u",
+			connection_index,
 			state_name[l_tcb->state],
 			p_tcp->tcp.control & CONTROL_URG ? 'U' : '-',
 			p_tcp->tcp.control & CONTROL_ACK ? 'A' : '-',

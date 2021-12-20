@@ -23,25 +23,29 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
-#include <errno.h>
+#include <cstdint>
+#include <cstring>
+
+#include "debug.h"
+
+#include "../http/content/content.h"
 
 int get_file_content(const char *fileName, char *pDst) {
-	 FILE *fp = fopen(fileName, "r");
+	for (uint32_t i = 0; i < sizeof(HttpContent) / sizeof(HttpContent[0]) ; i++) {
+		if (strcmp(fileName, HttpContent[i].pFileName) == 0) {
+			const auto *pSrc =  HttpContent[i].pContent;
+			auto *s = pDst;
 
-	 if (fp == nullptr) {
-		 return -1;
-	 }
+			while ((*s++ = *pSrc++) != '\0')
+				;
 
-	 const int nBytes = fread(pDst, sizeof(char), 1440, fp);
+			const int nBytes = s - pDst - 1;
 
-	 if (nBytes <= 0) {
-		 perror("fread");
-	 }
+			DEBUG_PRINTF("%s -> %d", HttpContent[i].pFileName, nBytes);
+			return nBytes;
+		}
+	}
 
-	 fclose(fp);
-
-	 printf("%s->%d\n", fileName, nBytes);
-
-	 return nBytes;
+	DEBUG_EXIT
+	return -1;
 }
