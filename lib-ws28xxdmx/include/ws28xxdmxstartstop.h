@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_WS28XXDMXSTARTSTOP_H_
-#define H3_WS28XXDMXSTARTSTOP_H_
+#ifndef WS28XXDMXSTARTSTOP_H_
+#define WS28XXDMXSTARTSTOP_H_
 
 #include "pixeldmxhandler.h"
 
@@ -35,19 +35,20 @@
 class PixelDmxStartStop final: public PixelDmxHandler {
 public:
 	PixelDmxStartStop() {
-		h3_gpio_fsel(GPIO_START_STOP, GPIO_FSEL_OUTPUT);
-		h3_gpio_clr(GPIO_START_STOP);
+		FUNC_PREFIX(gpio_fsel(GPIO_START_STOP, GPIO_FSEL_OUTPUT));
+		FUNC_PREFIX(gpio_clr(GPIO_START_STOP));
 	}
 
-	~PixelDmxStartStop() override {}
+	~PixelDmxStartStop() override {
+	}
 
 	void Start() override {
-		h3_gpio_set(GPIO_START_STOP);
+		FUNC_PREFIX(gpio_set(GPIO_START_STOP));
 	}
 
 	void Stop() override {
-		h3_gpio_clr(GPIO_START_STOP);
+		FUNC_PREFIX(gpio_clr(GPIO_START_STOP));
 	}
 };
 
-#endif /* H3_WS28XXDMXSTARTSTOP_H_ */
+#endif /* WS28XXDMXSTARTSTOP_H_ */

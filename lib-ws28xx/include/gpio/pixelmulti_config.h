@@ -1,8 +1,8 @@
 /**
- * @file ws28xxmulti.h
+ * @file pixelmulti_config.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXMULTI_H_
-#define WS28XXMULTI_H_
+#ifndef GPIO_PIXELMULTI_CONFIG_H_
+#define GPIO_PIXELMULTI_CONFIG_H_
 
-#if defined (H3)
-# include "spi/ws28xxmulti.h"
-#elif defined (GD32)
-# include "gpio/ws28xxmulti.h"
-#elif defined (__linux__)
-# include "linux/ws28xxmulti.h"
+#if defined (BOARD_GD32F207C_EVAL)
+# include "board_gd32f207c_eval.h"
+#elif defined (BOARD_GD32F207R_ETH)
+# include "board_gd32f207r_eth.h"
+#elif defined (BOARD_GD32F103R)
+# error Board is not supported
 #else
-# error
+# error Board is not supported
 #endif
 
-#endif /* WS28XXMULTI_H_ */
+#endif /* GPIO_PIXELMULTI_CONFIG_H_ */

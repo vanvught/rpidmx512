@@ -1,8 +1,8 @@
 /**
- * @file ws28xxmulti.h
+ * @file board_gd32f207c_eval.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,17 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXMULTI_H_
-#define WS28XXMULTI_H_
+#ifndef GPIO_BOARD_GD32F207C_EVAL_H_
+#define GPIO_BOARD_GD32F207C_EVAL_H_
 
-#if defined (H3)
-# include "spi/ws28xxmulti.h"
-#elif defined (GD32)
-# include "gpio/ws28xxmulti.h"
-#elif defined (__linux__)
-# include "linux/ws28xxmulti.h"
-#else
-# error
-#endif
+#include "gd32.h"
 
-#endif /* WS28XXMULTI_H_ */
+#define RCU_GPIOx			RCU_GPIOC
+#define GPIOx				GPIOC
+#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7)
+#define GPIO_PIN_OFFSET		6U
+
+#define MASTER_TIMER_CLOCK	120000000U
+
+#endif /* GPIO_BOARD_GD32F207C_EVAL_H_ */
