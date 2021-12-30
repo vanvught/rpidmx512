@@ -1,8 +1,8 @@
 /**
- * @file dmxmulti.h
+ * @file board_gd32f207r_eth.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMXMULTI_H_
-#define DMXMULTI_H_
+#ifndef GD32_BOARD_GD32F207R_ETH_H_
+#define GD32_BOARD_GD32F207R_ETH_H_
 
-#if defined (OUTPUT_DMX_SEND_MULTI)
-# if defined (H3)
-#  include "h3/multi/dmx.h"
-# elif defined (GD32)
-#  include "gd32/dmx.h"
-# else
-#  include "linux/multi/dmx.h"
-# endif
-#else
-# error
-#endif
+#include "gd32_board.h"
 
-#endif /* DMXMULTI_H_ */
+namespace max {
+static constexpr auto OUT = 2U;
+static constexpr auto IN = 2U;
+}
+
+#define DMX_MAX_PORTS  2
+
+#define DMX_USE_USART2
+//# define DMX_USE_UART4
+#define DMX_USE_USART5
+
+static constexpr auto USART2_PORT = 0;
+//static constexpr auto UART4_PORT = 2;
+static constexpr auto USART5_PORT = 1;
+
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
+
+static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOA;
+static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_11;
+
+//static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
+//static constexpr auto DIR_PORT_2_GPIO_PIN = GPIO_PIN_11;
+
+#endif /* IGD32_BOARD_GD32F207R_ETH_H_ */

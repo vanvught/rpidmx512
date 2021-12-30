@@ -26,29 +26,10 @@
 #ifndef RPI_DMX_H_
 #define RPI_DMX_H_
 
-#include "bcm2835.h"
-#define GPIO_DMX_DATA_DIRECTION			RPI_V2_GPIO_P1_12
-
-#ifdef LOGIC_ANALYZER
-# define GPIO_ANALYZER_CH0
-# define GPIO_ANALYZER_CH1					RPI_V2_GPIO_P1_23	///< CLK
-# define GPIO_ANALYZER_CH2					RPI_V2_GPIO_P1_21	///< MISO
-# define GPIO_ANALYZER_CH3					RPI_V2_GPIO_P1_19	///< MOSI
-# define GPIO_ANALYZER_CH4					RPI_V2_GPIO_P1_24	///< CE0
-# define GPIO_ANALYZER_CH5					RPI_V2_GPIO_P1_26	///< CE1
-# define GPIO_ANALYZER_CH6
-# define GPIO_ANALYZER_CH7
-#endif
+#include <cstdint>
 
 #include "dmxconst.h"
 #include "dmx_config.h"
-
-namespace dmxsingle {
-namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
-}  // namespace max
-}  // namespace dmxsingle
 
 struct TotalStatistics {
 	uint32_t nDmxPackets;
@@ -57,9 +38,9 @@ struct TotalStatistics {
 
 struct Statistics {
 	uint32_t nSlotsInPacket;
+	uint32_t nSlotToSlot;
 	uint32_t nMarkAfterBreak;
 	uint32_t nBreakToBreak;
-	uint32_t nSlotToSlot;
 };
 
 struct Data {
@@ -69,30 +50,27 @@ struct Data {
 
 class Dmx {
 public:
-	Dmx(uint8_t nGpioPin = GPIO_DMX_DATA_DIRECTION, bool DoInit = true);
-	void Init();
+	Dmx();
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
 	dmx::PortDirection GetPortDirection();
 
-	// RDM
+	// RDM Send
+	
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+
+	// RDM Receive
+
 	const uint8_t *RdmReceive(uint32_t nPortIndex);
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut);
 	uint32_t RdmGetDateReceivedEnd();
 
-	// DMX
+	// DMX Send
+	
+	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
 	void ClearData(uint32_t nPortIndex);
 	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);
-	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-		SetSendDataWithoutSC(pData, nLength);
-	}
-
-	const uint8_t* GetDmxCurrentData();
-	const uint8_t* GetDmxAvailable();
-	const uint8_t* GetDmxChanged();
-	uint32_t GetUpdatesPerSecond();
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime();
@@ -110,20 +88,27 @@ public:
 
 	const volatile struct TotalStatistics *GetTotalStatistics();
 
+	// DMX Receive
+	
+	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
+
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
+	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
+
 	static Dmx* Get() {
 		return s_pThis;
 	}
 
 private:
-	void UartInit();
+	void StartData();
+	void StopData();
 	void SetSendDataLength(uint32_t nLength);
+	void UartInit();
 	void UartEnableFifo();
 	void UartDisableFifo();
-	void StopData();
-	void StartData();
 
 private:
-	bool m_IsInitDone {false};
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint8_t m_nDataDirectionGpio { GPIO_DMX_DATA_DIRECTION };
 

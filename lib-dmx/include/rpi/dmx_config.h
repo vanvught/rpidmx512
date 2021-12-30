@@ -26,6 +26,27 @@
 #ifndef RPI_DMX_CONFIG_H_
 #define RPI_DMX_CONFIG_H_
 
+#include "bcm2835.h"
+#define GPIO_DMX_DATA_DIRECTION			RPI_V2_GPIO_P1_12
+
+#ifdef LOGIC_ANALYZER
+# define GPIO_ANALYZER_CH0
+# define GPIO_ANALYZER_CH1					RPI_V2_GPIO_P1_23	///< CLK
+# define GPIO_ANALYZER_CH2					RPI_V2_GPIO_P1_21	///< MISO
+# define GPIO_ANALYZER_CH3					RPI_V2_GPIO_P1_19	///< MOSI
+# define GPIO_ANALYZER_CH4					RPI_V2_GPIO_P1_24	///< CE0
+# define GPIO_ANALYZER_CH5					RPI_V2_GPIO_P1_26	///< CE1
+# define GPIO_ANALYZER_CH6
+# define GPIO_ANALYZER_CH7
+#endif
+
+namespace dmxsingle {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+}  // namespace dmxsingle
+
 namespace dmx {
 namespace buffer {
 static constexpr auto SIZE = 516;

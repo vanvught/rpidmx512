@@ -34,9 +34,11 @@
 #include "lightset.h"
 #include "ledblink.h"
 
+#include "debug.h"
+
 class DMXReceiver: Dmx {
 public:
-	DMXReceiver(LightSet *pLightSet): Dmx(false) {
+	DMXReceiver(LightSet *pLightSet) {
 		s_pLightSet = pLightSet;
 	}
 
@@ -46,7 +48,6 @@ public:
 	}
 
 	void Start() {
-		Dmx::Init();
 		Dmx::SetPortDirection(0, dmx::PortDirection::INP, true);
 	}
 
@@ -70,7 +71,7 @@ public:
 			return nullptr;
 		}
 
-		if (Dmx::GetUpdatesPerSecond() == 0) {
+		if (Dmx::GetUpdatesPerSecond(0) == 0) {
 			if (s_IsActive) {
 				s_pLightSet->Stop(0);
 				s_IsActive = false;
@@ -80,7 +81,7 @@ public:
 			nLength = -1;
 			return nullptr;
 		} else {
-			const auto *pDmx = Dmx::GetDmxAvailable();
+			const auto *pDmx = Dmx::GetDmxAvailable(0);
 
 			if (pDmx != nullptr) {
 				const auto *pDmxStatistics = reinterpret_cast<const struct Data*>(pDmx);
@@ -108,16 +109,16 @@ public:
 		s_bDisableOutput = bDisable;
 	}
 
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex) {
+		return Dmx::GetUpdatesPerSecond(nPortIndex);
+	}
+
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex) {
+		return Dmx::GetDmxCurrentData(nPortIndex);
+	}
+
 	void Print() {
 		printf(" Output %s\n", s_bDisableOutput ? "disabled" : "enabled");
-	}
-
-	uint32_t GetUpdatesPerSecond() {
-		return Dmx::GetUpdatesPerSecond();
-	}
-
-	const uint8_t* GetDmxCurrentData() {
-		return Dmx::GetDmxCurrentData();
 	}
 
 private:

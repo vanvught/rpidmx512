@@ -90,10 +90,11 @@ public:
 
 	// DMX Receive
 
-	const uint8_t* GetDmxAvailable(uint32_t nPortIndex = 0);
-	const uint8_t* GetDmxChanged(uint32_t nPortIndex = 0);
+	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
+	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
 
-	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex = 0);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
 
 	static Dmx* Get() {
 		return s_pThis;

@@ -393,64 +393,9 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(bool DoInit) {
-	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
-
+Dmx::Dmx() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	if (DoInit) {
-		Init();
-	}
-}
-
-void  Dmx::UartInit() {
-#if (EXT_UART_NUMBER == 1)
-	uint32_t value = H3_PIO_PORTG->CFG0;
-	// PG6, TX
-	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT));
-	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
-	// PG7, RX
-	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT));
-	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
-	H3_PIO_PORTG->CFG0 = value;
-
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
-#elif (EXT_UART_NUMBER == 3)
-	uint32_t value = H3_PIO_PORTA->CFG1;
-	// PA13, TX
-	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT));
-	value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
-	// PA14, RX
-	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT));
-	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
-	H3_PIO_PORTA->CFG1 = value;
-
-	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
-	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
-#else
-# error Unsupported UART device configured
-#endif
-
-	EXT_UART->O08.FCR = 0;
-
-	EXT_UART->LCR = UART_LCR_DLAB;
-	EXT_UART->O00.DLL = BAUD_250000_L;
-	EXT_UART->O04.DLH = BAUD_250000_H;
-	EXT_UART->LCR = UART_LCR_8_N_2;
-
-	isb();
-}
-
-void Dmx::Init() {
-	assert(!m_IsInitDone);
-
-	if (m_IsInitDone) {
-		return;
-	}
-
-	m_IsInitDone = true;
 
 	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
@@ -498,6 +443,45 @@ void Dmx::Init() {
 
 	__disable_fiq();
 	arm_install_handler(reinterpret_cast<unsigned>(fiq_dmx), ARM_VECTOR(ARM_VECTOR_FIQ));
+}
+
+void  Dmx::UartInit() {
+#if (EXT_UART_NUMBER == 1)
+	uint32_t value = H3_PIO_PORTG->CFG0;
+	// PG6, TX
+	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PG6_SELECT_CFG0_SHIFT));
+	value |= H3_PG6_SELECT_UART1_TX << PG6_SELECT_CFG0_SHIFT;
+	// PG7, RX
+	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PG7_SELECT_CFG0_SHIFT));
+	value |= H3_PG7_SELECT_UART1_RX << PG7_SELECT_CFG0_SHIFT;
+	H3_PIO_PORTG->CFG0 = value;
+
+	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART1;
+	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART1;
+#elif (EXT_UART_NUMBER == 3)
+	uint32_t value = H3_PIO_PORTA->CFG1;
+	// PA13, TX
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PA13_SELECT_CFG1_SHIFT));
+	value |= H3_PA13_SELECT_UART3_TX << PA13_SELECT_CFG1_SHIFT;
+	// PA14, RX
+	value &= static_cast<uint32_t> (~(GPIO_SELECT_MASK << PA14_SELECT_CFG1_SHIFT));
+	value |= H3_PA14_SELECT_UART3_RX << PA14_SELECT_CFG1_SHIFT;
+	H3_PIO_PORTA->CFG1 = value;
+
+	H3_CCU->BUS_CLK_GATING3 |= CCU_BUS_CLK_GATING3_UART3;
+	H3_CCU->BUS_SOFT_RESET4 |= CCU_BUS_SOFT_RESET4_UART3;
+#else
+# error Unsupported UART device configured
+#endif
+
+	EXT_UART->O08.FCR = 0;
+
+	EXT_UART->LCR = UART_LCR_DLAB;
+	EXT_UART->O00.DLL = BAUD_250000_L;
+	EXT_UART->O04.DLH = BAUD_250000_H;
+	EXT_UART->LCR = UART_LCR_8_N_2;
+
+	isb();
 }
 
 void Dmx::UartEnableFifo() {	// DMX Output
@@ -664,11 +648,11 @@ void Dmx::SetDmxSlots(uint16_t nSlots) {
 	}
 }
 
-const uint8_t* Dmx::GetDmxCurrentData() {
+const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused)) uint32_t nPortIndex) {
 	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
-const uint8_t* Dmx::GetDmxAvailable() {
+const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex) {
 	dmb();
 	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
@@ -679,8 +663,8 @@ const uint8_t* Dmx::GetDmxAvailable() {
 	}
 }
 
-const uint8_t* Dmx::GetDmxChanged() {
-	const auto *p = GetDmxAvailable();
+const uint8_t* Dmx::GetDmxChanged(__attribute__((unused)) uint32_t nPortIndex) {
+	const auto *p = GetDmxAvailable(0);
 	auto *src = reinterpret_cast<const uint32_t *>(p);
 
 	if (src == nullptr) {
@@ -732,7 +716,7 @@ void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t 
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetPortSendDataWithoutSC(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -747,12 +731,12 @@ void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength + 1);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond() {
+uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;
 }
 
-void Dmx::ClearData(__attribute__((unused))uint32_t nPortIndex) {
+void Dmx::ClearData(__attribute__((unused)) uint32_t nPortIndex) {
 	assert(nPort == 0);
 
 	auto i = sizeof(s_DmxData) / sizeof(uint32_t);

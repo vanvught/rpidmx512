@@ -32,7 +32,7 @@
 
 #include "ws28xxmulti.h"
 
-#include "dmxmulti.h"
+#include "dmx.h"
 
 #include "hardware.h"
 #include "network.h"

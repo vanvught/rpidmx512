@@ -27,12 +27,10 @@
 #include <cassert>
 
 #include "rdm.h"
-#include "rdm.h"
+#include "dmx.h"
 #if defined (OUTPUT_DMX_SEND_MULTI)
-# include "dmxmulti.h"
 using namespace dmxmulti;
 #else
-# include "dmx.h"
 using namespace dmxsingle;
 #endif
 #include "dmxconst.h"

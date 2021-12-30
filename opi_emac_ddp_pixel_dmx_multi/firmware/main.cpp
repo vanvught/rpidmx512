@@ -54,7 +54,7 @@
 #include "pixelreboot.h"
 // DMX
 #include "dmxparams.h"
-#include "dmxmulti.h"
+#include "dmx.h"
 #include "storedmxsend.h"
 #include "dmxconfigudp.h"
 // RDMNet LLRP Only

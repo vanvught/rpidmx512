@@ -44,7 +44,7 @@ struct Statistics {
 };
 
 struct Data {
-	uint8_t data[dmx::buffer::SIZE];
+	uint8_t Data[dmx::buffer::SIZE];
 	struct Statistics Statistics;
 };
 
@@ -56,17 +56,17 @@ public:
 	dmx::PortDirection GetPortDirection();
 
 	// RDM Send
-	
+
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
-	
+
 	// RDM Receive
-	
+
 	const uint8_t *RdmReceive(uint32_t nPortIndex);
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
 	uint32_t RdmGetDateReceivedEnd();
 
 	// DMX Send
-	
+
 	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
@@ -78,8 +78,8 @@ public:
 	uint32_t GetDmxMabTime() const {
 		return m_nDmxTransmitMabTime;
 	}
-	
-	void SetDmxPeriodTime(uint32_t nPeriod);
+
+	void SetDmxPeriodTime(uint32_t nPeriodTime);
 	uint32_t GetDmxPeriodTime() const {
 		return m_nDmxTransmitPeriod;
 	}
@@ -88,9 +88,9 @@ public:
 	uint16_t GetDmxSlots() const {
 		return m_nDmxTransmitSlots;
 	}
-	
+
 	// DMX Receive
-	
+
 	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
 	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
 	

@@ -50,30 +50,27 @@ struct Data {
 
 class Dmx {
 public:
-	Dmx(bool DoInit = true);
-	void Init();
+	Dmx();
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
 	dmx::PortDirection GetPortDirection();
 
-	// RDM
+	// RDM Send
+	
 	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+
+	// RDM Receive
+
 	const uint8_t *RdmReceive(uint32_t nPortIndex);
 	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
 	uint32_t RdmGetDateReceivedEnd();
 
-	// DMX
+	// DMX Send
+	
+	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
 	void ClearData(uint32_t nPortIndex);
 	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength);	//TODO Remove void SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength)
-	void SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-		SetSendDataWithoutSC(pData, nLength);
-	}
-
-	const uint8_t* GetDmxCurrentData();
-	const uint8_t* GetDmxAvailable();
-	const uint8_t* GetDmxChanged();
-	uint32_t GetUpdatesPerSecond();
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {
@@ -94,21 +91,28 @@ public:
 	uint16_t GetDmxSlots() const {
 		return m_nDmxTransmitSlots;
 	}
+	
+	// DMX Receive
+	
+	const uint8_t* GetDmxAvailable(uint32_t nPortIndex);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
+
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
+	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
 
 	static Dmx* Get() {
 		return s_pThis;
 	}
 
 private:
-	void UartInit();
+	void StartData();
+	void StopData();
 	void SetSendDataLength(uint32_t nLength);
+	void UartInit();
 	void UartEnableFifo();
 	void UartDisableFifo();
-	void StopData();
-	void StartData();
 
 private:
-	bool m_IsInitDone { false };
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };

@@ -379,66 +379,9 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(uint8_t nGpioPin, bool DoInit) {
-	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
-
+Dmx::Dmx() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
-
-	m_nDataDirectionGpio = nGpioPin;
-
-	if (DoInit) {
-		Init();
-	}
-}
-
-void Dmx::UartInit() {
-	uint32_t ibrd = 12;													// Default UART CLOCK 48Mhz
-
-	// Work around BROADCOM firmware bug
-	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) != 48000000) {
-		(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
-		ibrd = 1;
-	}
-
-	BCM2835_PL011->CR = 0;												// Disable everything
-
-	dmb();
-
-    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
-    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
-
-    // Disable pull-up/down
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
-    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
-
-    dmb();
-
-	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
-		;																// Poll the "flags register" to wait for the UART to stop transmitting or receiving
-
-	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;								// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
-	BCM2835_PL011->ICR = 0x7FF;											// Clear all interrupt status
-	BCM2835_PL011->IBRD = ibrd;											//
-	BCM2835_PL011->FBRD = 0;											//
-	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;			// Set 8, N, 2, FIFO disabled
-	BCM2835_PL011->CR = PL011_CR_TXE | PL011_CR_RXE | PL011_CR_UARTEN;	// Enable UART
-
-	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
-	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
-
-	isb();
-}
-
-void Dmx::Init() {
-	assert(!m_IsInitDone);
-
-	if (m_IsInitDone) {
-		return;
-	}
-
-	m_IsInitDone = true;
 
 	bcm2835_gpio_fsel(m_nDataDirectionGpio, BCM2835_GPIO_FSEL_OUTP);
 	bcm2835_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
@@ -483,6 +426,45 @@ void Dmx::Init() {
 
 	__disable_fiq();
 	arm_install_handler((unsigned) fiq_dmx, ARM_VECTOR(ARM_VECTOR_FIQ));
+}
+
+void Dmx::UartInit() {
+	uint32_t ibrd = 12;													// Default UART CLOCK 48Mhz
+
+	// Work around BROADCOM firmware bug
+	if (bcm2835_vc_get_clock_rate(BCM2835_VC_CLOCK_ID_UART) != 48000000) {
+		(void) bcm2835_vc_set_clock_rate(BCM2835_VC_CLOCK_ID_UART, 4000000);// Set UART clock rate to 4000000 (4MHz)
+		ibrd = 1;
+	}
+
+	BCM2835_PL011->CR = 0;												// Disable everything
+
+	dmb();
+
+    // Set the GPI0 pins to the Alt 0 function to enable PL011 access on them
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_08, BCM2835_GPIO_FSEL_ALT0);		// PL011_TXD
+    bcm2835_gpio_fsel(RPI_V2_GPIO_P1_10, BCM2835_GPIO_FSEL_ALT0);		// PL011_RXD
+
+    // Disable pull-up/down
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_08, BCM2835_GPIO_PUD_OFF);
+    bcm2835_gpio_set_pud(RPI_V2_GPIO_P1_10, BCM2835_GPIO_PUD_OFF);
+
+    dmb();
+
+	while ((BCM2835_PL011->FR & PL011_FR_BUSY) != 0)
+		;																// Poll the "flags register" to wait for the UART to stop transmitting or receiving
+
+	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;								// Flush the transmit FIFO by marking FIFOs as disabled in the "line control register"
+	BCM2835_PL011->ICR = 0x7FF;											// Clear all interrupt status
+	BCM2835_PL011->IBRD = ibrd;											//
+	BCM2835_PL011->FBRD = 0;											//
+	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;			// Set 8, N, 2, FIFO disabled
+	BCM2835_PL011->CR = PL011_CR_TXE | PL011_CR_RXE | PL011_CR_UARTEN;	// Enable UART
+
+	BCM2835_PL011->IMSC = PL011_IMSC_RXIM;
+	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
+
+	isb();
 }
 
 void Dmx::UartEnableFifo() {	// DMX Output
@@ -665,11 +647,11 @@ const volatile struct TotalStatistics *Dmx::GetTotalStatistics() {
 	return &sv_TotalStatistics;
 }
 
-const uint8_t* Dmx::GetDmxCurrentData() {
+const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused))uint32_t nPortIndex) {
 	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
-const uint8_t* Dmx::GetDmxAvailable() {
+const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused))uint32_t nPortIndex) {
 	dmb();
 	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
@@ -680,8 +662,8 @@ const uint8_t* Dmx::GetDmxAvailable() {
 	}
 }
 
-const uint8_t* Dmx::GetDmxChanged() {
-	const auto *p = GetDmxAvailable();
+const uint8_t* Dmx::GetDmxChanged(__attribute__((unused))uint32_t nPortIndex) {
+	const auto *p = GetDmxAvailable(0);
 	auto *src = reinterpret_cast<const uint32_t *>(p);
 
 	if (src == nullptr) {
@@ -739,7 +721,7 @@ void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t 
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -752,7 +734,7 @@ void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength + 1);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond() {
+uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused))uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;
 }

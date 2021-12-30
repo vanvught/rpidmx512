@@ -105,7 +105,7 @@ void Widget::SnifferDmx() {
 		return;
 	}
 
-	const auto *pDmxData = GetDmxChanged();
+	const auto *pDmxData = Dmx::GetDmxChanged(0);
 
 	if (pDmxData == nullptr) {
 		return;

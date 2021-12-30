@@ -28,7 +28,7 @@
 #include <algorithm>
 #include <cassert>
 
-#include "dmxmulti.h"
+#include "dmx.h"
 #include "h3/dmx_config.h"
 #include "./../dmx_internal.h"
 
@@ -310,7 +310,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			switch (nData) {
 			case START_CODE:
 				s_tReceiveState[nUart] = TxRxState::DMXDATA;
-				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].data[0] = START_CODE;
+				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Data[0] = START_CODE;
 				s_nDmxDataIndex[nUart] = 1;
 				s_nDmxPackets[nUart]++;
 				break;
@@ -327,7 +327,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			}
 			break;
 		case TxRxState::DMXDATA:
-			s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].data[s_nDmxDataIndex[nUart]] = nData;
+			s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Data[s_nDmxDataIndex[nUart]] = nData;
 			s_nDmxDataIndex[nUart]++;
 
 			if (s_nDmxDataIndex[nUart] > max::CHANNELS) {
@@ -955,7 +955,7 @@ const uint8_t *Dmx::GetDmxAvailable(uint32_t nPortIndex)  {
 	if (s_nDmxDataBufferIndexHead[nUart] == s_nDmxDataBufferIndexTail[nUart]) {
 		return nullptr;
 	} else {
-		const auto *p = const_cast<const uint8_t *>(s_aDmxData[nUart][s_nDmxDataBufferIndexTail[nUart]].data);
+		const auto *p = const_cast<const uint8_t *>(s_aDmxData[nUart][s_nDmxDataBufferIndexTail[nUart]].Data);
 		s_nDmxDataBufferIndexTail[nUart] = (s_nDmxDataBufferIndexTail[nUart] + 1) & buffer::INDEX_MASK;
 		return p;
 	}

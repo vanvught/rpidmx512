@@ -128,9 +128,9 @@ void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
 void WidgetMonitor::Sniffer() {
 	const volatile auto *total_statistics = Dmx::Get()->GetTotalStatistics();
 	const auto total_packets = total_statistics->nDmxPackets + total_statistics->nRdmPackets;
-	const auto *dmx_data = Dmx::Get()->GetDmxCurrentData();
+	const auto *dmx_data = Dmx::Get()->GetDmxCurrentData(0);
 	const auto *dmx_statistics = (struct Data *)dmx_data;
-	const auto dmx_updates_per_seconde = Dmx::Get()->GetUpdatesPerSecond();
+	const auto dmx_updates_per_seconde = Dmx::Get()->GetUpdatesPerSecond(0);
 	const volatile auto *rdm_statistics = Widget::Get()->RdmStatisticsGet();
 
 	DmxData(dmx_data, MonitorLine::DMX_DATA);
@@ -222,7 +222,7 @@ void WidgetMonitor::Update() {
 			console_clear_line(MonitorLine::STATS);
 		}
 
-		const auto *dmx_data = Dmx::Get()->GetDmxCurrentData();
+		const auto *dmx_data = Dmx::Get()->GetDmxCurrentData(0);
 		DmxData(dmx_data, MonitorLine::DMX_DATA);
 	}
 }
