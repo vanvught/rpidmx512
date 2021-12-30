@@ -42,7 +42,6 @@
 
 static constexpr auto TOP_ROW_STATS = 26;
 
-using namespace dmxsingle;
 
 extern "C" {
 
@@ -95,7 +94,7 @@ void notmain(void) {
 		const auto nMicrosNow = hw.Micros();
 
 		if (nMicrosNow - nMicrosPrevious > (1000000 / 2)) {
-			const auto dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond();
+			const auto dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond(0);
 
 			console_save_cursor();
 
@@ -109,7 +108,7 @@ void notmain(void) {
 				console_set_cursor(17, TOP_ROW_STATS + 3);
 				console_puts("-------");
 			} else {
-				const auto *dmx_data = dmxreceiver.GetDmxCurrentData();
+				const auto *dmx_data = dmxreceiver.GetDmxCurrentData(0);
 				const auto *dmx_statistics = reinterpret_cast<const struct Data*>(dmx_data);
 
 				nUpdatesPerSecondeMin = std::min(dmx_updates_per_seconde, nUpdatesPerSecondeMin);
