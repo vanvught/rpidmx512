@@ -35,6 +35,8 @@
 #include "network.h"
 #include "hardware.h"
 
+#include "panel_led.h"
+
 #include "debug.h"
 
 using namespace e131;
@@ -84,11 +86,15 @@ void E131Bridge::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
 
-				s_ReceivingMask |= (1U << i);
-				m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+				if ((s_ReceivingMask & (1U << i)) != (1U << i)) {
+					s_ReceivingMask |= (1U << i);
+					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+					hal::panel_led_on(hal::panelled::PORT_A_RX << i);
+				}
 			} else {
 				if (nUpdatesPerSecond == 0) {
 					s_ReceivingMask &= ~(1U << i);
+					hal::panel_led_off(hal::panelled::PORT_A_RX << i);
 					if (s_ReceivingMask == 0) {
 						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
 					}

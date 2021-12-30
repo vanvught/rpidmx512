@@ -40,6 +40,19 @@ class Hardware {
 public:
 	Hardware();
 
+	void SetLed(hardware::LedStatus tLedStatus) {
+		switch (tLedStatus) {
+			case hardware::LedStatus::OFF:
+				GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+				break;
+			case hardware::LedStatus::ON:
+				GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+				break;
+			default:
+				break;
+		}
+	}
+
 	uint32_t GetReleaseId() const {
 		return 0;	// FIXME GetReleaseId
 	}

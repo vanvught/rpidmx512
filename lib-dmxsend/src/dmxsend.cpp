@@ -30,6 +30,8 @@
 #include "dmxsend.h"
 #include "dmx.h"
 
+#include "panel_led.h"
+
 #include "debug.h"
 
 uint8_t DmxSend::s_nStarted;
@@ -54,6 +56,8 @@ void DmxSend::Start(uint32_t nPortIndex) {
 
 	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, true);
 
+	hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
+
 	DEBUG_EXIT
 }
 
@@ -72,6 +76,8 @@ void DmxSend::Stop(uint32_t nPortIndex) {
 	s_nStarted = static_cast<uint8_t>(s_nStarted & ~(1U << nPortIndex));
 
 	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+
+	hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
 
 	DEBUG_EXIT
 }

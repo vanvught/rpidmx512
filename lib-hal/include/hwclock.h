@@ -34,6 +34,7 @@ namespace rtc {
 enum class Type: uint8_t {
 	MCP7941X,
 	DS3231,
+	PCF8563,
 	SOC_INTERNAL,
 	UNKNOWN
 };

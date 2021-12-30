@@ -50,7 +50,24 @@ static constexpr uint8_t ST = 0x80;
 static constexpr uint8_t VBATEN = 0x08;
 }  // namespace bit
 }  // namespace mcp7941x
+namespace pcf8563 {
+namespace reg {
+static constexpr uint8_t CONTROL_STATUS1 = 0x00;
+static constexpr uint8_t CONTROL_STATUS2 = 0x01;
+static constexpr uint8_t SECONDS = 0x02;
+static constexpr uint8_t MINUTES = 0x03;
+static constexpr uint8_t HOURS = 0x04;
+static constexpr uint8_t DAY = 0x05;
+static constexpr uint8_t WEEKDAY = 0x06;
+static constexpr uint8_t MONTH = 0x07;
+static constexpr uint8_t YEAR = 0x08;
+}  // namespace reg
+namespace bit {
+static constexpr uint8_t SEC_VL	= (1U << 7);
+}  // namespace bit
+}  // namespace pcf8563
 namespace i2caddress {
+static constexpr uint8_t PCF8563 = 0x51;
 static constexpr uint8_t MCP7941X = 0x6F;
 static constexpr uint8_t DS3231 = 0x68;
 }  // namespace i2caddress
@@ -58,12 +75,26 @@ static constexpr uint8_t DS3231 = 0x68;
 
 using namespace rtc;
 
+static void write_register(uint8_t nRegister, uint8_t nValue) {
+	char buffer[2];
+
+	buffer[0] = static_cast<char>(nRegister);
+	buffer[1] = static_cast<char>(nValue);
+
+	FUNC_PREFIX(i2c_write(buffer, 2));
+}
+
 void HwClock::RtcProbe() {
 	DEBUG_ENTRY
 
 	m_nLastHcToSysMillis = Hardware::Get()->Millis();
 
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::NORMAL_SPEED));
+
+	/**
+	 * MCP7941X
+	 */
+
 	FUNC_PREFIX(i2c_set_address(i2caddress::MCP7941X));
 
 	char registers[1];
@@ -75,6 +106,8 @@ void HwClock::RtcProbe() {
 	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
+		DEBUG_PUTS("MCP7941X");
+
 		m_bIsConnected = true;
 		m_Type = Type::MCP7941X;
 		m_nAddress = i2caddress::MCP7941X;
@@ -103,6 +136,10 @@ void HwClock::RtcProbe() {
 		return;
 	}
 
+	/**
+	 * DS3231
+	 */
+
 	FUNC_PREFIX(i2c_set_address(i2caddress::DS3231));
 
 	registers[0] = reg::YEAR;
@@ -111,6 +148,8 @@ void HwClock::RtcProbe() {
 	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
 
 	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
+		DEBUG_PUTS("DS3231");
+
 		m_bIsConnected = true;
 		m_Type = Type::DS3231;
 		m_nAddress = i2caddress::DS3231;
@@ -132,12 +171,69 @@ void HwClock::RtcProbe() {
 		DEBUG_EXIT
 		return;
 	}
+
+	/**
+	 * PCF8563
+	 */
+
+	FUNC_PREFIX(i2c_set_address(i2caddress::PCF8563));
+
+	registers[0] = pcf8563::reg::YEAR;
+
+	FUNC_PREFIX(i2c_write(registers, 1));
+	FUNC_PREFIX(i2c_read(registers, sizeof(registers) / sizeof(registers[0])));
+
+	if (FUNC_PREFIX(i2c_write(nullptr, 0)) == 0) {
+		DEBUG_PUTS("PCF8563");
+
+		m_bIsConnected = true;
+		m_Type = Type::PCF8563;
+		m_nAddress = i2caddress::PCF8563;
+
+		write_register(pcf8563::reg::CONTROL_STATUS1, 0);
+		write_register(pcf8563::reg::CONTROL_STATUS2, 0);
+
+		registers[0] = pcf8563::reg::SECONDS;
+
+		FUNC_PREFIX(i2c_write(registers, 1));
+		FUNC_PREFIX(i2c_read(registers,1));
+
+		if (registers[0] & pcf8563::bit::SEC_VL) {
+			DEBUG_PUTS("Integrity of the clock information is not guaranteed");
+
+			struct rtc_time RtcTime;
+
+			RtcTime.tm_hour = 0;
+			RtcTime.tm_min = 0;
+			RtcTime.tm_sec = 0;
+			RtcTime.tm_mday = _TIME_STAMP_DAY_;
+			RtcTime.tm_mon = _TIME_STAMP_MONTH_ - 1;
+			RtcTime.tm_year = _TIME_STAMP_YEAR_ - 1900;
+
+			RtcSet(&RtcTime);
+		}
+
+		registers[0] = pcf8563::reg::SECONDS;
+
+		FUNC_PREFIX(i2c_write(registers, 1));
+		FUNC_PREFIX(i2c_read(registers,1));
+
+		if (registers[0] & pcf8563::bit::SEC_VL) {
+			DEBUG_PUTS("Clock is not running -> disconnected");
+			m_bIsConnected = false;
+		}
+
+		DEBUG_EXIT
+		return;
+	}
+
+	DEBUG_EXIT
 }
 
 bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 	assert(pRtcTime != nullptr);
 
-	if(!m_bIsConnected) {
+	if (!m_bIsConnected) {
 		return false;
 	}
 
@@ -158,7 +254,12 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 
 	char data[8];
 
-	data[0] = reg::SECONDS;
+	if (m_Type == Type::PCF8563) {
+		data[0] = pcf8563::reg::SECONDS;
+	} else {
+		data[0] = reg::SECONDS;
+	}
+
 	data[1] = registers[0];
 	data[2] = registers[1];
 	data[3] = registers[2];
@@ -178,13 +279,17 @@ bool HwClock::RtcSet(const struct rtc_time *pRtcTime) {
 bool HwClock::RtcGet(struct rtc_time *pRtcTime) {
 	assert(pRtcTime != nullptr);
 
-	if(!m_bIsConnected) {
+	if (!m_bIsConnected) {
 		return false;
 	}
 
 	char registers[7];
 
-	registers[0] = reg::SECONDS;
+	if (m_Type == Type::PCF8563) {
+		registers[0] = pcf8563::reg::SECONDS;
+	} else {
+		registers[0] = reg::SECONDS;
+	}
 
 	FUNC_PREFIX(i2c_set_address(m_nAddress));
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::FULL_SPEED));

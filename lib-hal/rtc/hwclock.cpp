@@ -2,7 +2,7 @@
  * @file hwclock.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,6 +57,9 @@ void HwClock::Print() {
 		break;
 	case Type::DS3231:
 		pType = "DS3231";
+		break;
+	case Type::PCF8563:
+		pType = "PCF8563";
 		break;
 	case Type::SOC_INTERNAL:
 		pType = "SOC_INTERNAL";

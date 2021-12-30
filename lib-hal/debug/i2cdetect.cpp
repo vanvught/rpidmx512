@@ -32,7 +32,7 @@
 #if defined(BARE_METAL)
 # include "uart0_debug.h"
 # define printf uart0_printf
-# define puts uart0_puts
+# define puts(s) uart0_puts(s);uart0_putc('\n')
 #endif
 
 inline static bool i2c_is_connected(uint8_t address) {
