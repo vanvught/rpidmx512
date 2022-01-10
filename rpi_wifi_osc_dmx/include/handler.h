@@ -26,9 +26,9 @@
 #ifndef HANDLER_H_
 #define HANDLER_H_
 
-#include <stdint.h>
+#include <cstdint>
 
-#include "oscserverhandler.h"
+#include "oscserver.h"
 
 #include "ws28xxdmx.h"
 

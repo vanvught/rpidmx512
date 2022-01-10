@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,6 +127,15 @@ uint16_t Network::RecvFrom(__attribute__((unused)) int32_t nHandle, void *pBuffe
 	}
 
 	return nBytesReceived;
+}
+
+#define MAX_SEGMENT_LENGTH		1400
+
+static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
+
+uint16_t  Network::RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort) {
+	*ppBuffer = &s_ReadBuffer;
+	return RecvFrom(nHandle, s_ReadBuffer, MAX_SEGMENT_LENGTH, pFromIp, pFromPort);
 }
 
 void Network::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t to_ip, uint16_t remote_port) {

@@ -92,7 +92,7 @@
 
 #if defined (NODE_OSC_SERVER)
 /* osc.txt */
-# include "oscserverparms.h"
+# include "oscserverparams.h"
 # include "storeoscserver.h"
 #endif
 
@@ -1087,9 +1087,9 @@ void RemoteConfig::HandleSetOscTxt() {
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TOSCServerParams)) {
+		if (m_nBytesReceived == sizeof(struct osc::server::Params)) {
 			uint32_t nSize;
-			oscServerParams.Builder(reinterpret_cast<const struct TOSCServerParams*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			oscServerParams.Builder(reinterpret_cast<const struct osc::server::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT

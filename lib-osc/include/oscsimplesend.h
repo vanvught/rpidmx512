@@ -2,7 +2,7 @@
  * @file oscsimplesend.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,14 @@
 
 #include <cstdint>
 
+namespace osc {
+namespace simple {
+namespace send {
+static constexpr auto BUFFER_SIZE = 512U;
+}  // namespace send
+}  // namespace simple
+}  // namespace osc
+
 class OscSimpleSend {
 public:
 	// Support for path only
@@ -44,7 +52,7 @@ private:
 	void Send(uint32_t nMessageLength, int32_t nHandle, uint32_t nIpAddress, uint16_t nPort);
 
 private:
-	char m_Message[1024];
+	static char s_Message[osc::simple::send::BUFFER_SIZE];
 };
 
 #endif /* OSCSIMPLESEND_H_ */

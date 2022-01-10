@@ -1,8 +1,8 @@
 /**
- * @file oscserverprint.cpp
+ * @file oscserverparamsconst.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,17 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#ifndef OSCSERVERPARAMSCONST_H_
+#define OSCSERVERPARAMSCONST_H_
 
-#include "oscserver.h"
+struct OscServerParamsConst {
+	static const char FILE_NAME[];
 
-void OscServer::Print() {
-	printf("OSC Server\n");
-	printf(" Incoming Port        : %d\n", m_nPortIncoming);
-	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
-	printf(" DMX Path             : [%s][%s]\n", m_aPath, m_aPathSecond);
-	printf("  Blackout Path       : [%s]\n", m_aPathBlackOut);
-	printf(" Partial Transmission : %s\n", m_bPartialTransmission ? "Yes" : "No");
-}
+	static const char PATH[];
+	static const char PATH_INFO[];
+	static const char PATH_BLACKOUT[];
+
+	static const char TRANSMISSION[];
+};
+
+#endif /* OSCSERVERPARAMSCONST_H_ */

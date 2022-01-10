@@ -2,7 +2,7 @@
  * @file oscserverparams.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,20 @@
 
 #include "lightset.h"
 
-struct TOSCServerParams {
+namespace osc {
+namespace server {
+struct Params {
 	uint32_t nSetList;
 	uint16_t nIncomingPort;
 	uint16_t nOutgoingPort;
 	uint8_t tOutputType;
 	bool bPartialTransmission;
-	char aPath[OscServerMax::PATH_LENGTH];
-	char aPathInfo[OscServerMax::PATH_LENGTH];
-	char aPathBlackOut[OscServerMax::PATH_LENGTH];
-	bool bEnableNoChangeUpdate;
+	char aPath[osc::server::Max::PATH_LENGTH];
+	char aPathInfo[osc::server::Max::PATH_LENGTH];
+	char aPathBlackOut[osc::server::Max::PATH_LENGTH];
 } __attribute__((packed));
 
-struct OSCServerParamsMask {
+struct ParamsMask {
 	static constexpr auto INCOMING_PORT = (1U << 0);
 	static constexpr auto OUTGOING_PORT = (1U << 1);
 	static constexpr auto PATH = (1U << 2);
@@ -52,15 +53,16 @@ struct OSCServerParamsMask {
 	static constexpr auto OUTPUT = (1U << 4);
 	static constexpr auto PATH_INFO = (1U << 5);
 	static constexpr auto PATH_BLACKOUT = (1U << 6);
-	//static constexpr auto NOT_USED1 = (1U << 7); //WAS: ENABLE_NO_CHANGE_OUTPUT
 };
+}  // namespace server
+}  // namespace osc
 
 class OSCServerParamsStore {
 public:
 	virtual ~OSCServerParamsStore() {}
 
-	virtual void Update(const struct TOSCServerParams *pOSCServerParams)=0;
-	virtual void Copy(struct TOSCServerParams *pOSCServerParams)=0;
+	virtual void Update(const osc::server::Params *pOSCServerParams)=0;
+	virtual void Copy(osc::server::Params *pOSCServerParams)=0;
 };
 
 class OSCServerParams {
@@ -70,7 +72,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TOSCServerParams *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const osc::server::Params *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(OscServer *pOscServer);
@@ -93,11 +95,6 @@ public:
 		return static_cast<lightset::OutputType>(m_tOSCServerParams.tOutputType);
 	}
 
-	bool IsEnableNoChangeUpdate() const {
-		return m_tOSCServerParams.bEnableNoChangeUpdate;
-	}
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
@@ -108,7 +105,7 @@ private:
 
 private:
 	OSCServerParamsStore *m_pOSCServerParamsStore;
-    struct TOSCServerParams m_tOSCServerParams;
+    osc::server::Params m_tOSCServerParams;
 };
 
 #endif /* OSCSERVERPARAMS_H_ */

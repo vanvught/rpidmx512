@@ -2,7 +2,7 @@
  * @file storeoscserver.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef STOREOSCSERVER_H_
 #define STOREOSCSERVER_H_
 
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 
 #include "spiflashstore.h"
 
@@ -34,12 +34,12 @@ class StoreOscServer final: public OSCServerParamsStore {
 public:
 	StoreOscServer();
 
-	void Update(const struct TOSCServerParams *pOSCServerParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+	void Update(const struct osc::server::Params *pOSCServerParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct osc::server::Params));
 	}
 
-	void Copy(struct TOSCServerParams *pOSCServerParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct TOSCServerParams));
+	void Copy(struct osc::server::Params *pOSCServerParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::OSC, pOSCServerParams, sizeof(struct osc::server::Params));
 	}
 
 	static StoreOscServer *Get() {

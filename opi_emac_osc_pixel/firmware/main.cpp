@@ -37,7 +37,7 @@
 #include "mdnsservices.h"
 
 #include "oscserver.h"
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 #include "oscservermsgconst.h"
 
 // Addressable led

@@ -2,7 +2,7 @@
  * @file oscsimplemessage.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,10 @@
 #include <cstring>
 
 #include "oscsimplemessage.h"
-
 #include "osc.h"
-#include "oscstring.h"
 
 OscSimpleMessage::OscSimpleMessage(void *pData, unsigned nLength) : m_pOscMessage(reinterpret_cast<uint8_t *>(pData)), m_nLength(nLength) {
-	auto nResult = OSCString::Validate(m_pOscMessage, m_nLength);
+	auto nResult = osc::string_validate(m_pOscMessage, m_nLength);
 
 	if (nResult < 0) {
 		return;
@@ -41,7 +39,7 @@ OscSimpleMessage::OscSimpleMessage(void *pData, unsigned nLength) : m_pOscMessag
 	m_pArg = &m_pOscMessage[nResult];
 	auto nDataOffset = static_cast<uint32_t>(nResult);
 
-	nResult = OSCString::Validate(m_pArg, m_nLength - static_cast<unsigned>(nResult));
+	nResult = osc::string_validate(m_pArg, m_nLength - static_cast<unsigned>(nResult));
 
 	if ((nResult < 0) || (m_pArg[0] != ',')) {
 		return;
@@ -86,7 +84,7 @@ int OscSimpleMessage::GetInt(unsigned argc) {
 }
 
 char* OscSimpleMessage::GetString(__attribute__ ((unused)) unsigned argc) {
-	if ((m_pArg[0] == osc::type::STRING) && (m_nOscMessageDataLength == OSCString::Size(reinterpret_cast<char*>(m_pOscMessageData)))) {
+	if ((m_pArg[0] == osc::type::STRING) && (m_nOscMessageDataLength == osc::string_size(reinterpret_cast<char*>(m_pOscMessageData)))) {
 		return reinterpret_cast<char *>(m_pOscMessageData);
 	}
 

@@ -34,7 +34,7 @@
 #include "console.h"
 #include "display.h"
 
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 #include "oscserver.h"
 
 // DMX output

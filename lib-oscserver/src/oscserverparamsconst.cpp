@@ -1,8 +1,8 @@
 /**
- * @file oscserverhandler.h
+ * @file oscserverparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef OSCSERVERHANDLER_H_
-#define OSCSERVERHANDLER_H_
+#include "oscserverparamsconst.h"
 
-#include <cstdint>
+const char OscServerParamsConst::FILE_NAME[] = "osc.txt";
 
-class OscServerHandler {
-public:
-	virtual ~OscServerHandler() {
+const char OscServerParamsConst::PATH[] = "path";
+const char OscServerParamsConst::PATH_INFO[] = "path_info";
+const char OscServerParamsConst::PATH_BLACKOUT[] = "path_blackout";
 
-	}
-
-	virtual void Blackout()=0;
-	virtual void Update()=0;
-
-	virtual void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing)=0;
-};
-
-#endif /* OSCSERVERHANDLER_H_ */
+const char OscServerParamsConst::TRANSMISSION[] = "partial_transmission";
