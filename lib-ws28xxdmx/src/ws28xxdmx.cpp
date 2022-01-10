@@ -2,7 +2,7 @@
  * @file ws28xxdmx.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,8 +67,12 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
 }
 
 WS28xxDmx::~WS28xxDmx() {
+	DEBUG_ENTRY
+
 	delete m_pWS28xx;
 	m_pWS28xx = nullptr;
+
+	DEBUG_EXIT
 }
 
 void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
@@ -91,9 +95,6 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	m_bIsStarted = false;
 
 	if (m_pWS28xx != nullptr) {
-		while (m_pWS28xx->IsUpdating()) {
-			// wait for completion
-		}
 		m_pWS28xx->Blackout();
 	}
 
@@ -138,25 +139,21 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 		break;
 	}
 
-//	while (m_pWS28xx->IsUpdating()) {
-//		// wait for completion
-//	}
-
 	if (m_nChannelsPerPixel == 3) {
-		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
 			d = d + 3;
 		}
 	} else {
 		assert(m_nChannelsPerPixel == 4);
-		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * m_nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint16_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
 			d = d + 4;
@@ -164,6 +161,9 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 	}
 
 	if (nPortIndex == m_PortInfo.nProtocolPortIndexLast) {
+		if (__builtin_expect((m_bBlackout), 0)) {
+			return;
+		}
 		m_pWS28xx->Update();
 	}
 }

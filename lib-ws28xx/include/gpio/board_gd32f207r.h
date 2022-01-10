@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f207r_eth.h
+ * @file board_gd32f207r.h
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F207R_ETH_H_
-#define GPIO_BOARD_GD32F207R_ETH_H_
+#ifndef GPIO_BOARD_GD32F207R_H_
+#define GPIO_BOARD_GD32F207R_H_
 
 #include "gd32.h"
 
@@ -35,4 +35,4 @@
 
 #define MASTER_TIMER_CLOCK	120000000U
 
-#endif /* GPIO_BOARD_GD32F207R_ETH_H_ */
+#endif /* GPIO_BOARD_GD32F207R_H_ */

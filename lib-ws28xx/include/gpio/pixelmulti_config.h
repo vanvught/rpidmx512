@@ -28,8 +28,8 @@
 
 #if defined (BOARD_GD32F207C_EVAL)
 # include "board_gd32f207c_eval.h"
-#elif defined (BOARD_GD32F207R_ETH)
-# include "board_gd32f207r_eth.h"
+#elif defined (BOARD_GD32F207R)
+# include "board_gd32f207r.h"
 #elif defined (BOARD_GD32F103R)
 # error Board is not supported
 #else
