@@ -2,7 +2,7 @@
  * @file storedisplayudf.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@ class StoreDisplayUdf final: public DisplayUdfParamsStore {
 public:
 	StoreDisplayUdf();
 
-	void Update(const struct TDisplayUdfParams *ptDisplayUdfParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	void Update(const struct displayudfparams::Params *pDisplayUdfParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::DISPLAYUDF, pDisplayUdfParams, sizeof(struct displayudfparams::Params));
 	}
 
-	void Copy(struct TDisplayUdfParams *ptDisplayUdfParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::DISPLAYUDF, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+	void Copy(struct displayudfparams::Params *pDisplayUdfParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::DISPLAYUDF, pDisplayUdfParams, sizeof(struct displayudfparams::Params));
 	}
 
 	static StoreDisplayUdf *Get() {

@@ -204,7 +204,7 @@ void notmain(void) {
 	Reboot reboot(ltcSource, &tLtcDisabledOutputs);
 	hw.SetRebootHandler(&reboot);
 
-	Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
+	Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 
 	LtcOutputs ltcOutputs(&tLtcDisabledOutputs, ltcSource, ltcParams.IsShowSysTime());
 

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 
 #include "hardware.h"
 #include "noemac/network.h"
@@ -58,7 +58,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Display display; 	// Display is not supported. We just need a pointer to object
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;

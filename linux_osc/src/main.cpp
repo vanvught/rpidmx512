@@ -39,7 +39,7 @@
 #include "handler.h"
 
 #include "oscserver.h"
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 #include "storeoscserver.h"
 
 #include "dmxmonitor.h"
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Display display; 	// Display is not supported. We just need a pointer to object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {

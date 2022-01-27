@@ -57,20 +57,20 @@ void NetworkDisplay::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 	case network::dhcp::ClientStatus::IDLE:
 		break;
 	case network::dhcp::ClientStatus::RENEW:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		Display::Get()->ClearLine(3);
 		Display::Get()->Printf(3, "DHCP renewing");
 		break;
 	case network::dhcp::ClientStatus::GOT_IP:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
+		Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
 	case network::dhcp::ClientStatus::RETRYING:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		Display::Get()->ClearLine(3);
 		Display::Get()->Printf(3, "DHCP retrying");
 		break;
 	case network::dhcp::ClientStatus::FAILED:
-		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 		break;
 	default:
 		break;

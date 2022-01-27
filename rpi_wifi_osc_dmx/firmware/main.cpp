@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 #include <assert.h>
 
 #include "hardware.h"
@@ -80,7 +80,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::SSD1306);
+	Display display;
 
 #ifndef H3
 	DMXMonitor monitor;

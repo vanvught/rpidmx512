@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,7 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 };
 
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
-	memset(&m_tDisplayUdfParams, 0, sizeof(struct TDisplayUdfParams));
+	memset(&m_tDisplayUdfParams, 0, sizeof(struct displayudfparams::Params));
 	m_tDisplayUdfParams.nSleepTimeout = display::Defaults::SEEP_TIMEOUT;
 	m_tDisplayUdfParams.nIntensity = defaults::INTENSITY;
 }
@@ -154,9 +154,9 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 		m_tDisplayUdfParams.nIntensity = value8;
 
 		if (value8 != defaults::INTENSITY) {
-			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::INTENSITY;
+			m_tDisplayUdfParams.nSetList |= displayudfparams::Mask::INTENSITY;
 		} else {
-			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::INTENSITY;
+			m_tDisplayUdfParams.nSetList &= ~displayudfparams::Mask::INTENSITY;
 		}
 		return;
 	}
@@ -165,18 +165,18 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 		m_tDisplayUdfParams.nSleepTimeout = value8;
 
 		if (value8 != display::Defaults::SEEP_TIMEOUT) {
-			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::SLEEP_TIMEOUT;
+			m_tDisplayUdfParams.nSetList |= displayudfparams::Mask::SLEEP_TIMEOUT;
 		} else {
-			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::SLEEP_TIMEOUT;
+			m_tDisplayUdfParams.nSetList &= ~displayudfparams::Mask::SLEEP_TIMEOUT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, DisplayUdfParamsConst::FLIP_VERTICALLY, value8) == Sscan::OK) {
 		if (value8 != 0) {
-			m_tDisplayUdfParams.nSetList |= DisplayUdfParamsMask::FLIP_VERTICALLY;
+			m_tDisplayUdfParams.nSetList |= displayudfparams::Mask::FLIP_VERTICALLY;
 		} else {
-			m_tDisplayUdfParams.nSetList &= ~DisplayUdfParamsMask::FLIP_VERTICALLY;
+			m_tDisplayUdfParams.nSetList &= ~displayudfparams::Mask::FLIP_VERTICALLY;
 		}
 		return;
 	}
@@ -195,20 +195,20 @@ void DisplayUdfParams::callbackFunction(const char *pLine) {
 	}
 }
 
-void DisplayUdfParams::Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void DisplayUdfParams::Builder(const struct displayudfparams::Params *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (ptDisplayUdfParams != nullptr) {
-		memcpy(&m_tDisplayUdfParams, ptDisplayUdfParams, sizeof(struct TDisplayUdfParams));
+		memcpy(&m_tDisplayUdfParams, ptDisplayUdfParams, sizeof(struct displayudfparams::Params));
 	} else {
 		m_pDisplayUdfParamsStore->Copy(&m_tDisplayUdfParams);
 	}
 
 	PropertiesBuilder builder(DisplayUdfParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(DisplayUdfParamsConst::INTENSITY, m_tDisplayUdfParams.nIntensity , isMaskSet(DisplayUdfParamsMask::INTENSITY));
-	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT));
-	builder.Add(DisplayUdfParamsConst::FLIP_VERTICALLY, isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY) , isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY));
+	builder.Add(DisplayUdfParamsConst::INTENSITY, m_tDisplayUdfParams.nIntensity , isMaskSet(displayudfparams::Mask::INTENSITY));
+	builder.Add(DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout , isMaskSet(displayudfparams::Mask::SLEEP_TIMEOUT));
+	builder.Add(DisplayUdfParamsConst::FLIP_VERTICALLY, isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY) , isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (pArray[i][0] != '\0') {
@@ -231,15 +231,15 @@ void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {
 	assert(pDisplayUdf != nullptr);
 
-	if (isMaskSet(DisplayUdfParamsMask::INTENSITY)) {
+	if (isMaskSet(displayudfparams::Mask::INTENSITY)) {
 		pDisplayUdf->SetContrast(m_tDisplayUdfParams.nIntensity);
 	}
 
-	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
+	if (isMaskSet(displayudfparams::Mask::SLEEP_TIMEOUT)) {
 		pDisplayUdf->SetSleepTimeout(m_tDisplayUdfParams.nSleepTimeout);
 	}
 
-	pDisplayUdf->SetFlipVertically(isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY));
+	pDisplayUdf->SetFlipVertically(isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY));
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (isMaskSet(1U << i)) {
@@ -259,15 +259,15 @@ void DisplayUdfParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DisplayUdfParamsConst::FILE_NAME);
 
-	if (isMaskSet(DisplayUdfParamsMask::INTENSITY)) {
+	if (isMaskSet(displayudfparams::Mask::INTENSITY)) {
 		printf(" %s=%d\n", DisplayUdfParamsConst::INTENSITY, m_tDisplayUdfParams.nIntensity);
 	}
 
-	if (isMaskSet(DisplayUdfParamsMask::SLEEP_TIMEOUT)) {
+	if (isMaskSet(displayudfparams::Mask::SLEEP_TIMEOUT)) {
 		printf(" %s=%d\n", DisplayUdfParamsConst::SLEEP_TIMEOUT, m_tDisplayUdfParams.nSleepTimeout);
 	}
 
-	if (isMaskSet(DisplayUdfParamsMask::FLIP_VERTICALLY)) {
+	if (isMaskSet(displayudfparams::Mask::FLIP_VERTICALLY)) {
 		printf(" Flip vertically\n");
 	}
 

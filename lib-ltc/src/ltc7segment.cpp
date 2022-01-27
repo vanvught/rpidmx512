@@ -47,9 +47,9 @@ Ltc7segment::Ltc7segment() {
 
 void Ltc7segment::Show(ltc::type tTimecodeType) {
 	if (tTimecodeType < ltc::type::UNKNOWN) {
-		Display7Segment::Get()->Status(msg[tTimecodeType]);
+		Display::Get()->Status(msg[tTimecodeType]);
 	} else {
-		Display7Segment::Get()->Status(Display7SegmentMessage::LTC_WAITING);
+		Display::Get()->Status(Display7SegmentMessage::LTC_WAITING);
 	}
 }
 

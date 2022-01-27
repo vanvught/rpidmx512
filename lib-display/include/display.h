@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,9 +28,14 @@
 
 #include <cstdarg>
 #include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "displayset.h"
 #include "display7segment.h"
+
+#include "hal_i2c.h"
+#include "hardware.h"
 
 #if defined (BARE_METAL)
 # include "console.h"
@@ -40,29 +45,58 @@ namespace display {
 struct Defaults {
 	static constexpr auto SEEP_TIMEOUT = 5;
 };
-}  // namespace display
-
-enum class DisplayType {
+enum class Type {
 	PCF8574T_1602, PCF8574T_2004, SSD1306, SSD1311, UNKNOWN
 };
+namespace segment7 {
+static constexpr uint8_t MCP23017_I2C_ADDRESS = 0x20;
+static constexpr uint8_t MCP23017_IODIRA = 0x00;	///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
+static constexpr uint8_t MCP23017_GPIOA = 0x12;		///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
+static constexpr uint8_t I2C_ADDRESS = (MCP23017_I2C_ADDRESS + 1);	///< It must be different from base address
+}  // namespace segment7
+}  // namespace display
 
 class Display {
 public:
 	Display();
 	Display(uint8_t nCols, uint8_t nRows);
-	Display(DisplayType tDisplayType);
+	Display(display::Type tDisplayType);
+
 	~Display() {
 		s_pThis = nullptr;
 		delete m_LcdDisplay;
 	}
 
 #if !defined(NO_HAL)
-	void SetSleep(bool bSleep);
-	bool isSleep() {
+	void SetSleep(bool bSleep) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_bIsSleep = bSleep;
+
+		m_LcdDisplay->SetSleep(bSleep);
+
+		if (!bSleep) {
+			m_nMillis = Hardware::Get()->Millis();
+		}
+	}
+
+	bool isSleep() const {
 		return m_bIsSleep;
 	}
 
-	void Run();
+	void Run() {
+		if (m_nSleepTimeout == 0) {
+			return;
+		}
+
+		if (!m_bIsSleep) {
+			if (__builtin_expect(((Hardware::Get()->Millis() - m_nMillis) > m_nSleepTimeout), 0)) {
+				SetSleep(true);
+			}
+		}
+	}
 #endif
 
 	void Cls() {
@@ -97,8 +131,44 @@ public:
 		m_LcdDisplay->PutString(pText);
 	}
 
-	int Write(uint8_t nLine, const char *);
-	int Printf(uint8_t nLine, const char *, ...);
+	int Write(uint8_t nLine, const char *pText) {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		const auto *p = pText;
+		int nCount = 0;
+
+		const auto nColumns = static_cast<int>(m_LcdDisplay->GetColumns());
+
+		while ((*p != 0) && (nCount++ < nColumns)) {
+			++p;
+		}
+
+		m_LcdDisplay->TextLine(nLine, pText, static_cast<uint8_t>(nCount));
+
+		return nCount;
+	}
+
+	int Printf(uint8_t nLine, const char *format, ...) {
+		if (m_LcdDisplay == nullptr) {
+			return 0;
+		}
+
+		char buffer[32];
+
+		va_list arp;
+
+		va_start(arp, format);
+
+		auto i = vsnprintf(buffer, sizeof(buffer) / sizeof(buffer[0]), format, arp);
+
+		va_end(arp);
+
+		m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint16_t>(i));
+
+		return i;
+	}
 
 	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
 		if (m_LcdDisplay == nullptr) {
@@ -108,26 +178,74 @@ public:
 		m_LcdDisplay->TextLine(nLine, pText, nLength);
 	}
 
-	void TextStatus(const char *pText);
-	void TextStatus(const char *pText, Display7SegmentMessage msg, uint32_t nConsoleColor = UINT32_MAX);
-	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false);
+	void TextStatus(const char *pText) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		const auto nColumns = m_LcdDisplay->GetColumns();
+		const auto nRows = m_LcdDisplay->GetRows();
+
+		assert((nColumns - 1) >= 0);
+		assert((nRows - 1) >= 0);
+
+		SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
+
+		for (uint32_t i = 0; i < static_cast<uint32_t>(nColumns - 1); i++) {
+			PutChar(' ');
+		}
+
+		SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
+
+		Write(nRows, pText);
+	}
+
+	void TextStatus(const char *pText, Display7SegmentMessage message, __attribute__((unused)) uint32_t nConsoleColor = UINT32_MAX) {
+		TextStatus(pText);
+		Status(message);
+#if defined (BARE_METAL)
+		if (nConsoleColor == UINT32_MAX) {
+			return;
+		}
+		console_status(nConsoleColor, pText);
+#endif
+	}
+
+	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false) {
+		TextStatus(pText);
+		Status(nValue7Segment, bHex);
+	}
 
 	bool isDetected() const {
 		return m_LcdDisplay == nullptr ? false : true;
 	}
 
-	DisplayType GetDetectedType() const {
+	display::Type GetDetectedType() const {
 		return m_tType;
 	}
 
-	void SetCursor(uint32_t nMode);
-	void SetCursorPos(uint8_t nCol, uint8_t nRow);
+	void SetCursor(uint32_t nMode) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->SetCursor(nMode);
+	}
+
+	void SetCursorPos(uint8_t nCol, uint8_t nRow) {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->SetCursorPos(nCol, nRow);
+	}
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
 		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
 	}
+
 	uint32_t GetSleepTimeout() const {
-		return m_nSleepTimeout / 1000 / 60;
+		return m_nSleepTimeout / 1000U / 60U;
 	}
 
 	void SetContrast(uint8_t nContrast) {
@@ -178,27 +296,119 @@ public:
 		return m_LcdDisplay->GetContrast();
 	}
 
-	void PrintInfo();
+	void Status(Display7SegmentMessage nData) {
+		if (m_bHave7Segment) {
+			m_I2C.WriteRegister(display::segment7::MCP23017_GPIOA, static_cast<uint16_t>(~static_cast<uint16_t>(nData)));
+		}
+	}
+
+	void Status(uint8_t nValue, bool bHex) {
+		if (m_bHave7Segment) {
+			uint16_t nData;
+
+			if (!bHex) {
+				nData = GetData(nValue / 10);
+				nData = static_cast<uint16_t>(nData | GetData(nValue % 10) << 8U);
+			} else {
+				nData = GetData(nValue & 0x0F);
+				nData = static_cast<uint16_t>(nData | GetData((nValue >> 4) & 0x0F) << 8U);
+			}
+
+			m_I2C.WriteRegister(display::segment7::MCP23017_GPIOA, static_cast<uint16_t>(~nData));
+		}
+	}
+
+	void PrintInfo() {
+		if (m_LcdDisplay == nullptr) {
+			puts("No display found");
+			return;
+		}
+
+		m_LcdDisplay->PrintInfo();
+	}
 
 	static Display* Get() {
 		return s_pThis;
 	}
 
 private:
-	void Detect(DisplayType tDisplayType);
+	void Detect(display::Type tDisplayType);
 	void Detect(uint8_t nCols, uint8_t nRows);
+	void Detect7Segment() {
+		m_bHave7Segment = m_I2C.IsConnected();
+
+		if (m_bHave7Segment) {
+			m_I2C.WriteRegister(display::segment7::MCP23017_IODIRA, static_cast<uint16_t>(0x0000)); // All output
+			Status(Display7SegmentMessage::INFO_STARTUP);
+		}
+	}
+
+	uint16_t GetData(const uint8_t nHexValue) const {
+		switch (nHexValue) {
+		case 0:
+			return display7segment::CH_0;
+			break;
+		case 1:
+			return display7segment::CH_1;
+			break;
+		case 2:
+			return display7segment::CH_2;
+			break;
+		case 3:
+			return display7segment::CH_3;
+			break;
+		case 4:
+			return display7segment::CH_4;
+			break;
+		case 5:
+			return display7segment::CH_5;
+			break;
+		case 6:
+			return display7segment::CH_6;
+			break;
+		case 7:
+			return display7segment::CH_7;
+			break;
+		case 8:
+			return display7segment::CH_8;
+			break;
+		case 9:
+			return display7segment::CH_9;
+			break;
+		case 0xa:
+			return display7segment::CH_A;
+			break;
+		case 0xb:
+			return display7segment::CH_B;
+			break;
+		case 0xc:
+			return display7segment::CH_C;
+			break;
+		case 0xd:
+			return display7segment::CH_D;
+			break;
+		case 0xe:
+			return display7segment::CH_E;
+			break;
+		case 0xf:
+			return display7segment::CH_F;
+			break;
+		default:
+			break;
+		}
+
+		return display7segment::CH_BLANK;
+	}
 
 private:
-	DisplayType m_tType { DisplayType::UNKNOWN };
-	DisplaySet *m_LcdDisplay { nullptr };
-	bool m_bIsSleep { false };
-#if !defined(NO_HAL)
+	display::Type m_tType { display::Type::UNKNOWN };
 	uint32_t m_nMillis { 0 };
-#endif
+	HAL_I2C m_I2C;
+	bool m_bIsSleep { false };
+	bool m_bHave7Segment { false };
 	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
 
-	Display7Segment m_Display7Segment;
-
+	DisplaySet *m_LcdDisplay { nullptr };
 	static Display *s_pThis;
 };
 
