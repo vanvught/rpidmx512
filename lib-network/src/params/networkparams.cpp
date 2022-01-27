@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,8 @@
 #include "debug.h"
 
 using namespace networkparams;
+
+TNetworkParams NetworkParams::m_tNetworkParams;
 
 NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	memset(&m_tNetworkParams, 0, sizeof(struct TNetworkParams));
@@ -148,6 +150,8 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+
+#if !defined(DISABLE_NETWORKPARAMS_NTP_SERVER)
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::NTP_SERVER, nValue32) == Sscan::OK) {
 		if (nValue32 != 0) {
 			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
@@ -171,6 +175,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		}
 		return;
 	}
+#endif
 
 #if defined (ESP8266)
 	if (Sscan::IpAddress(pLine,  NetworkParamsConst::NAME_SERVER, nValue32) == Sscan::OK) {
@@ -244,9 +249,11 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 #endif
 	builder.Add(NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
 
+#if !defined(DISABLE_NETWORKPARAMS_NTP_SERVER)
 	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NetworkParamsMask::NTP_SERVER));
 	builder.Add(NetworkParamsConst::NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET));
+#endif
 
 	nSize = builder.GetSize();
 
