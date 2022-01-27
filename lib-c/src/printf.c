@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,6 +66,7 @@ inline static void _xputch(struct context *ctx, int c) {
 	console_putc(c);
 }
 
+#if !defined (DISABLE_PRINTF_FLOAT)
 static int _pow10(int n) {
 	int r = 10;
 	n--;
@@ -171,6 +172,7 @@ static void _round_float(/*@out@*/char *dest, int *size) {
 
 	return;
 }
+#endif
 
 static void _format_hex(struct context *ctx, unsigned int arg) {
 	char buffer[64] __attribute__((aligned(4)));
@@ -277,6 +279,7 @@ static void _format_int(struct context *ctx, uint64_t arg) {
 	}
 }
 
+#if !defined (DISABLE_PRINTF_FLOAT)
 static void _format_float(struct context *ctx, float f) {
 	char buffer[64] __attribute__((aligned(4)));
 	char *dest = (char *) buffer;
@@ -320,6 +323,7 @@ static void _format_float(struct context *ctx, float f) {
 	}
 
 }
+#endif
 
 static void _format_string(struct context *ctx, const char *s) {
 	int j;
@@ -359,7 +363,9 @@ static void _format_pointer(struct context *ctx, unsigned int arg) {
 
 static int _vprintf(const int size, const char *fmt, va_list va) {
 	struct context ctx;
+#if !defined (DISABLE_PRINTF_FLOAT)
 	float f;
+#endif
 	int64_t l;
 	uint64_t lu;
 	const char *s;
@@ -434,10 +440,12 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			}
 			_format_int(&ctx, (uint64_t) l);
 			break;
+#if !defined (DISABLE_PRINTF_FLOAT)
 		case 'f':
 			f = (float) va_arg(va, double);
 			_format_float(&ctx, f);
 			break;
+#endif
 		case 'p':
 			_format_pointer(&ctx, va_arg(va, uint32_t));
 			break;
