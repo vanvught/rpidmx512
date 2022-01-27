@@ -80,9 +80,19 @@ public:
 		return GD32_BOARD_NAME;
 	}
 
-	const char *GetSysName(uint8_t &nLenght) {
-		nLenght = 8;
+	const char *GetSysName(uint8_t &nLength) {
+		nLength = 8;
 		return "Embedded";
+	}
+
+	const char *GetSocName(uint8_t &nLength) {
+		nLength = 5;
+		return "GD32F";
+	}
+
+	const char *GetCpuName(uint8_t &nLength) {
+		nLength = sizeof(GD32_MCU_NAME) - 1U;
+		return GD32_MCU_NAME;
 	}
 
 	uint32_t GetBoardId() {

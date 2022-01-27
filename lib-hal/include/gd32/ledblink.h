@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,8 @@
 # include "bitbanging595.h"
 #endif
 
+#include "panel_led.h"
+
 extern volatile uint32_t s_nSysTickMillis;
 
 class LedBlink {
@@ -47,7 +49,7 @@ public:
 		case 0:
 			m_nTicksPerSecond = 0;
 #if defined (USE_LEDBLINK_BITBANGING595)
-			bitBanging595.SetOff(static_cast<uint32_t>(~0));	//TODO Specify correct led
+			hal::panel_led_off(hal::panelled::ACTIVITY);
 #else
 			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif
@@ -64,7 +66,7 @@ public:
 		case 255:
 			m_nTicksPerSecond = 0;
 #if defined (USE_LEDBLINK_BITBANGING595)
-			bitBanging595.SetOn(static_cast<uint32_t>(~0));		//TODO Specify correct led
+			hal::panel_led_on(hal::panelled::ACTIVITY);
 #else
 			GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif
@@ -94,13 +96,13 @@ public:
 
 				if (m_nToggleLed != 0) {
 #if defined (USE_LEDBLINK_BITBANGING595)
-					bitBanging595.SetOn(static_cast<uint32_t>(~0));		//TODO Specify correct led
+					hal::panel_led_on(hal::panelled::ACTIVITY);
 #else
 					GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif
 				} else {
 #if defined (USE_LEDBLINK_BITBANGING595)
-					bitBanging595.SetOff(static_cast<uint32_t>(~0));	//TODO Specify correct led
+					hal::panel_led_off(hal::panelled::ACTIVITY);
 #else
 					GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 #endif

@@ -2,7 +2,7 @@
  * @file pixelmulti_config.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,12 @@
 #ifndef GPIO_PIXELMULTI_CONFIG_H_
 #define GPIO_PIXELMULTI_CONFIG_H_
 
-#if defined (BOARD_GD32F207C_EVAL)
-# include "board_gd32f207c_eval.h"
-#elif defined (BOARD_GD32F207R)
+#if defined (BOARD_GD32F207R)
 # include "board_gd32f207r.h"
-#elif defined (BOARD_GD32F103R)
-# error Board is not supported
+#elif defined (BOARD_GD32F207C_EVAL)
+# include "board_gd32f207c_eval.h"
+#elif defined (BOARD_GD32F407R)
+# include "board_gd32f407r.h"
 #else
 # error Board is not supported
 #endif
