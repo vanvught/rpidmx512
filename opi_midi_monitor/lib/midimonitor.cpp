@@ -23,9 +23,9 @@
  */
 
 #include <algorithm>
-#include <stdint.h>
+#include <cstdint>
 #include <string.h>
-#include <stdio.h>
+#include <cstdio>
 
 #include "midimonitor.h"
 

@@ -27,7 +27,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <netinet/in.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"

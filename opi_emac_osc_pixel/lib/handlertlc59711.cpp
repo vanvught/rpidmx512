@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#include <cstdint>
+#include <cassert>
 
 #include "handlertlc59711.h"
 

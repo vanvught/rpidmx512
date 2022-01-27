@@ -49,13 +49,13 @@
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
-#include "rdm_e120.h"
+#include "rdmdeviceparams.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
-
+#include "rdm_e120.h"
 #include "factorydefaults.h"
+
+#include "storerdmdevice.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"

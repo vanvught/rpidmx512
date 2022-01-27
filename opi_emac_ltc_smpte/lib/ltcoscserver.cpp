@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 
 #include "ltcdisplayrgb.h"
 #include "ltcoscserver.h"

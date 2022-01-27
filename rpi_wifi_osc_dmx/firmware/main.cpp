@@ -25,7 +25,7 @@
 
 #include <cstdio>
 #include <cstdint>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
