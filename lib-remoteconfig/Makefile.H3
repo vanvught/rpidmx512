@@ -1,9 +1,7 @@
-DEFINES=NDEBUG
+DEFINES=ENABLE_TFTP_SERVER
+DEFINES+=NDEBUG
 
 ifneq ($(MAKE_FLAGS),)
-	ifeq (,$(findstring DISABLE_TFTP,$(MAKE_FLAGS)))
-		EXTRA_SRCDIR+=src/tftp src/h3/tftp
-	endif
 	ifneq (,$(findstring ENABLE_SHELL,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/shell src/uart
 	endif
@@ -11,12 +9,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/httpd
 	endif
 else
-	ifeq (,$(findstring DISABLE_TFTP,$(DEFINES)))
-		EXTRA_SRCDIR+=src/tftp src/h3/tftp
-	endif
 	DEFINES+=LTC_READER
 	EXTRA_SRCDIR+=src/shell src/uart src/httpd
 endif
+
+EXTRA_SRCDIR+=src/tftp src/h3/tftp
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -186,11 +186,6 @@
 # include "storerdmdevice.h"
 #endif
 
-#if !defined(DISABLE_TFTP)
-# include "tftp/tftpfileserver.h"
-# include "spiflashinstall.h"
-#endif
-
 #include "debug.h"
 
 namespace remoteconfig {
@@ -208,9 +203,7 @@ enum class Command {
 #if !defined(DISABLE_BIN)
 	STORE,
 #endif
-#if !defined(DISABLE_TFTP)
 	TFTP,
-#endif
 	FACTORY
 };
 }  // namespace get
@@ -219,9 +212,7 @@ enum class Command {
 #if !defined(DISABLE_BIN)
 	STORE,
 #endif
-#if !defined(DISABLE_TFTP)
 	TFTP,
-#endif
 	DISPLAY
 };
 }  // namespace set
@@ -239,9 +230,7 @@ const struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 #if !defined(DISABLE_BIN)
 		{ &RemoteConfig::HandleStoreGet,    "store#",    6, true },
 #endif
-#if !defined(DISABLE_TFTP)
 		{ &RemoteConfig::HandleTftpGet,     "tftp#",     5, false },
-#endif
 		{ &RemoteConfig::HandleFactory,     "factory##", 9, false }
 };
 
@@ -249,9 +238,7 @@ const struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
 #if !defined(DISABLE_BIN)
 		{ &RemoteConfig::HandleStoreSet,   "store#",    6, true },
 #endif
-#if !defined(DISABLE_TFTP)
 		{ &RemoteConfig::HandleTftpSet,    "tftp#",     5, true },
-#endif
 		{ &RemoteConfig::HandleDisplaySet, "display#",  8, true }
 };
 
@@ -349,13 +336,13 @@ void RemoteConfig::Run() {
 		return;
 	}
 
-#if !defined(DISABLE_TFTP)
+#if defined (ENABLE_TFTP_SERVER)
 	if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
 		m_pTFTPFileServer->Run();
 	}
 #endif
 
-#if defined(ENABLE_HTTPD)
+#if defined (ENABLE_HTTPD)
 	m_HttpDaemon.Run();
 #endif
 
@@ -1364,9 +1351,9 @@ void RemoteConfig::HandleSetDisplayTxt() {
 
 #if !defined(DISABLE_BIN)
 	if (m_tHandleMode == HandleMode::BIN) {
-		if (m_nBytesReceived == sizeof(struct TDisplayUdfParams)) {
+		if (m_nBytesReceived == sizeof(struct displayudfparams::Params)) {
 			uint32_t nSize;
-			displayParams.Builder(reinterpret_cast<const struct TDisplayUdfParams*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
+			displayParams.Builder(reinterpret_cast<const struct displayudfparams::Params*>(s_StoreBuffer), s_pUdpBuffer, udp::BUFFER_SIZE, nSize);
 			m_nBytesReceived = static_cast<uint16_t>(nSize);
 		} else {
 			DEBUG_EXIT
@@ -1562,7 +1549,6 @@ void RemoteConfig::HandleSetDdpDisplayTxt() {
 }
 #endif
 
-#if !defined(DISABLE_TFTP)
 void RemoteConfig::TftpExit() {
 	DEBUG_ENTRY
 
@@ -1581,8 +1567,6 @@ void RemoteConfig::HandleTftpSet() {
 
 	const auto nCmdLength = s_SET[static_cast<uint32_t>(udp::set::Command::TFTP)].nLength;
 
-	DEBUG_PRINTF("m_nBytesReceived=%u, nCmdLength=%u|%c", m_nBytesReceived, nCmdLength, s_pUdpBuffer[nCmdLength + 1]);
-
 	if (m_nBytesReceived != (nCmdLength + 1)) {
 		DEBUG_EXIT
 		return;
@@ -1590,51 +1574,15 @@ void RemoteConfig::HandleTftpSet() {
 
 	m_bEnableTFTP = (s_pUdpBuffer[nCmdLength + 1] != '0');
 
-	if (m_bEnableTFTP) {
-		Display::Get()->SetSleep(false);
-	}
-
-	if (m_bEnableTFTP && (m_pTFTPFileServer == nullptr)) {
-		puts("Create TFTP Server");
-
-		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
-		assert(m_pTFTPBuffer != nullptr);
-
-		m_pTFTPFileServer = new TFTPFileServer(m_pTFTPBuffer, FIRMWARE_MAX_SIZE);
-		assert(m_pTFTPFileServer != nullptr);
-		Display::Get()->TextStatus("TFTP On", Display7SegmentMessage::INFO_TFTP_ON);
-	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != nullptr)) {
-		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
-		DEBUG_PRINTF("nFileSize=%d, %d", nFileSize, m_pTFTPFileServer->isDone());
-
-		bool bSucces = true;
-
-		if (m_pTFTPFileServer->isDone()) {
-			bSucces = SpiFlashInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
-
-			if (!bSucces) {
-				Display::Get()->TextStatus("Error: TFTP", Display7SegmentMessage::ERROR_TFTP);
-			}
-		}
-
-		puts("Delete TFTP Server");
-
-		delete m_pTFTPFileServer;
-		m_pTFTPFileServer = nullptr;
-
-		delete[] m_pTFTPBuffer;
-		m_pTFTPBuffer = nullptr;
-
-		if (bSucces) { // Keep error message
-			Display::Get()->TextStatus("TFTP Off", Display7SegmentMessage::INFO_TFTP_OFF);
-		}
-	}
+	PlatformHandleTftpSet();
 
 	DEBUG_EXIT
 }
 
 void RemoteConfig::HandleTftpGet() {
 	DEBUG_ENTRY
+
+	PlatformHandleTftpGet();
 
 	const auto nCmdLength = s_GET[static_cast<uint32_t>(udp::get::Command::TFTP)].nLength;
 
@@ -1656,4 +1604,3 @@ void RemoteConfig::HandleTftpGet() {
 
 	DEBUG_EXIT
 }
-#endif
