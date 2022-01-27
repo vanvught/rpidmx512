@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,48 +28,48 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
-
-#include "displayudf.h"
-#include "displayudfparams.h"
-#include "storedisplayudf.h"
-
-#include "artnet4node.h"
-#include "artnetparams.h"
-#include "storeartnet.h"
-#include "artnetreboot.h"
-#include "artnetmsgconst.h"
-
-#include "dmxserial.h"
-#include "dmxserialparams.h"
-#include "storedmxserial.h"
-
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-
-#include "firmwareversion.h"
-#include "software_version.h"
-
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
-
-// RDMNet LLRP Device Only
-#include "rdm_e120.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
-
-#include "factorydefaults.h"
 
 #if defined (ENABLE_HTTPD)
 # include "mdns.h"
 # include "mdnsservices.h"
 #endif
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "displayhandler.h"
+#include "artnet/displayudfhandler.h"
+
+#include "artnet4node.h"
+#include "artnetparams.h"
+#include "artnetreboot.h"
+#include "artnetmsgconst.h"
+
+#include "dmxserial.h"
+#include "dmxserialparams.h"
+
+#include "rdmdeviceparams.h"
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+
+#include "factorydefaults.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storeartnet.h"
+#include "storedisplayudf.h"
+#include "storedmxserial.h"
+#include "storenetwork.h"
+#include "storerdmdevice.h"
+#include "storeremoteconfig.h"
+
+#include "firmwareversion.h"
+#include "software_version.h"
 
 using namespace artnet;
 

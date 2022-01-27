@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,25 +24,27 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 #include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "artnet/displayudfhandler.h"
+#include "displayhandler.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
-
 #include "artnetdiscovery.h"
 
 // DMX/RDM Output
@@ -55,18 +57,18 @@
 // DMX Input
 #include "dmxinput.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-//
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storeartnet.h"
+#include "storedisplayudf.h"
+#include "storenetwork.h"
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
 
 using namespace artnet;
 
@@ -74,12 +76,11 @@ extern "C" {
 
 void notmain(void) {
 	Hardware hw;
-	LedBlink lb;
 	Network nw;
+	LedBlink lb;
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -109,6 +110,15 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 DMX/RDM");
+	mDns.Print();
+#endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
@@ -231,21 +241,15 @@ void notmain(void) {
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, artnetParams.IsRdm() ? remoteconfig::Output::RDM : remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if (SpiFlashStore::Get()->HaveFlashChip()) {
-		RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-		if (remoteConfigParams.Load()) {
-			remoteConfigParams.Set(&remoteConfig);
-			remoteConfigParams.Dump();
-		}
-
-		while (spiFlashStore.Flash())
-			;
-	} else {
-		remoteConfig.SetDisable(true);
-		printf("Remote configuration is disabled\n");
+	if (remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
+
+	while (spiFlashStore.Flash())
+		;
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -266,6 +270,9 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

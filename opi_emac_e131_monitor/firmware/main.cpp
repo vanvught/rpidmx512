@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,38 +29,38 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
-
-#include "console.h"
-#include "h3/showsystime.h"
-
-#include "ntpclient.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
 
+#include "ntpclient.h"
+
+#include "console.h"
+#include "h3/showsystime.h"
+
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
 #include "displayhandler.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
-#include "storee131.h"
 #include "e131msgconst.h"
 
 #include "dmxmonitor.h"
 
-#include "firmwareversion.h"
-#include "software_version.h"
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storedisplayudf.h"
+#include "storee131.h"
+#include "storenetwork.h"
 #include "storeremoteconfig.h"
+
+#include "firmwareversion.h"
+#include "software_version.h"
 
 extern "C" {
 
@@ -102,7 +102,6 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 Real-time DMX Monitor");
 #endif
 	mDns.Print();
-
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -161,7 +160,7 @@ void notmain(void) {
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}

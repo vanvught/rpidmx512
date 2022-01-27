@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,43 +33,47 @@
 #include "storenetwork.h"
 #include "ledblink.h"
 
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
+
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
+#include "artnet/displayudfhandler.h"
+#include "handleroled.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "pixeltestpattern.h"
 #include "pixeltype.h"
+#include "pixeltestpattern.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
 #include "ws28xxdmxstartstop.h"
-#include "handleroled.h"
-#include "storews28xxdmx.h"
 
-// RDMNet LLRP Device Only
+#include "rdmdeviceparams.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
 #include "factorydefaults.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storeartnet.h"
+#include "storedisplayudf.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
 
 using namespace artnet;
 
@@ -82,7 +86,6 @@ void notmain(void) {
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -98,6 +101,15 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net Pixel");
+	mDns.Print();
+#endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
@@ -125,7 +137,6 @@ void notmain(void) {
 	if (artnetParams.Load()) {
 		artnetParams.Set(&node);
 		artnetParams.Dump();
-
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
@@ -190,18 +201,24 @@ void notmain(void) {
 	node.Print();
 	pixelDmxMulti.Print();
 
+	// Display
+
 	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
-	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::HOSTNAME);
-	display.Set(5, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::HOSTNAME);
 	display.Set(6, displayudf::Labels::UNIVERSE);
-	display.Printf(7, "%d-%s:%d G%d", nActivePorts, PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Printf(7, "%s:%d G%d %s",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}
@@ -242,6 +259,9 @@ void notmain(void) {
 		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
 			pPixelTestPattern->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

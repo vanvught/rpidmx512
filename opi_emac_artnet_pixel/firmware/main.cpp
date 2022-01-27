@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,45 +29,51 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
+#include "artnet/displayudfhandler.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
+#include "artnettriggerhandler.h"
 
-// Addressable led
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxstartstop.h"
-#include "storews28xxdmx.h"
+
+#include "rdmdeviceparams.h"
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storeartnet.h"
+#include "storedisplayudf.h"
+#include "storenetwork.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
-#include "artnettriggerhandler.h"
-
-#if defined (ENABLE_HTTPD)
-# include "mdns.h"
-# include "mdnsservices.h"
-#endif
 
 using namespace artnet;
 
@@ -153,12 +159,41 @@ void notmain(void) {
 
 	ArtNetTriggerHandler triggerHandler(&pixelDmx);
 
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", node.GetActiveOutputPorts(), PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount());
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
+
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+
+	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
+
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
+
 	node.Print();
 	pixelDmx.Print();
 
 	// Display
 
-	display.SetTitle("Eth Art-Net 4 Pixel 1");
+	display.SetTitle("Art-Net 4 Pixel 1");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::NODE_NAME);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -201,6 +236,7 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
+	llrpOnlyDevice.Start();
 
 	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
@@ -211,6 +247,7 @@ void notmain(void) {
 		nw.Run();
 		node.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();

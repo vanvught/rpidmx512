@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,54 +29,57 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
-#include "storee131.h"
 #include "e131reboot.h"
 #include "e131msgconst.h"
-#include "lightset.h"
 
-// Pixel
-#include "pixeltestpattern.h"
 #include "pixeltype.h"
+#include "pixeltestpattern.h"
+#include "pixelreboot.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
 #include "ws28xxdmxstartstop.h"
 #include "handleroled.h"
-#include "storews28xxdmx.h"
-#include "pixelreboot.h"
-// DMX Output
+
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "storedmxsend.h"
 #include "dmxconfigudp.h"
-//
+
 #include "lightset32with4.h"
-// RDMNet LLRP Only
+
+#include "rdmdeviceparams.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
 #include "factorydefaults.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storedisplayudf.h"
+#include "storee131.h"
+#include "storedmxsend.h"
+#include "storenetwork.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "displayhandler.h"
 
 using namespace e131;
 

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,44 +28,41 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
-
-#include "displayudf.h"
-#include "displayudfparams.h"
-#include "storedisplayudf.h"
-
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131reboot.h"
-#include "storee131.h"
-#include "e131msgconst.h"
-
-#include "e131.h"
-
-// DMX Output
-#include "dmxparams.h"
-#include "dmxsend.h"
-#include "storedmxsend.h"
-#include "dmxconfigudp.h"
-// DMX Input
-#include "dmxinput.h"
-
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-
-#include "firmwareversion.h"
-#include "software_version.h"
-
-#include "displayhandler.h"
 
 #if defined (ENABLE_HTTPD)
 # include "mdns.h"
 # include "mdnsservices.h"
 #endif
+
+#include "displayudf.h"
+#include "displayudfparams.h"
+#include "displayhandler.h"
+
+#include "e131bridge.h"
+#include "e131params.h"
+#include "e131reboot.h"
+#include "e131msgconst.h"
+// DMX Output
+#include "dmxparams.h"
+#include "dmxsend.h"
+#include "dmxconfigudp.h"
+// DMX Input
+#include "dmxinput.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storedisplayudf.h"
+#include "storedmxsend.h"
+#include "storee131.h"
+#include "storenetwork.h"
+#include "storeremoteconfig.h"
+
+#include "firmwareversion.h"
+#include "software_version.h"
 
 extern "C" {
 
@@ -75,29 +72,11 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	StoreE131 storeE131;
-	E131Params e131params(&storeE131);
-
-	if (e131params.Load()) {
-		e131params.Dump();
-	}
-
-	fw.Print();
-
-	console_puts("Ethernet sACN E1.31 ");
-	console_set_fg_color(CONSOLE_GREEN);
-	if (e131params.GetDirection() == lightset::PortDir::INPUT) {
-		console_puts("DMX Input");
-	} else {
-		console_puts("DMX Output");
-	}
-	console_set_fg_color(CONSOLE_WHITE);
-	console_puts(" {1 Universe}\n");
-
+	fw.Print("Ethernet sACN E1.31 " "\x1b[32m" "DMX {1x Universe}" "\x1b[37m");
+	
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
@@ -120,9 +99,16 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	E131Bridge bridge;
-	e131params.Set(&bridge);
+	StoreE131 storeE131;
+	E131Params e131params(&storeE131);
 
+	E131Bridge bridge;
+
+	if (e131params.Load()) {
+		e131params.Set(&bridge);
+		e131params.Dump();
+	}
+	
 	bool bIsSet;
 	auto const nUniverse = e131params.GetUniverse(0, bIsSet);
 
@@ -160,6 +146,10 @@ void notmain(void) {
 
 	bridge.Print();
 
+	const auto nActivePorts = (e131params.GetDirection() == lightset::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
+
+	// Display
+
 	display.SetTitle("sACN E1.31 DMX %s", e131params.GetDirection() == lightset::PortDir::INPUT ? "Input" : "Output");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
@@ -177,14 +167,12 @@ void notmain(void) {
 
 	display.Show(&bridge);
 
-	const auto nActivePorts = (e131params.GetDirection() == lightset::PortDir::INPUT ? bridge.GetActiveInputPorts() : bridge.GetActiveOutputPorts());
-
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::DMX, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
