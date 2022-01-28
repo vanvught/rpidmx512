@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,7 +63,7 @@ void ArtNetRdmResponder::Full(__attribute__((unused)) uint32_t nPortIndex) {
 	// We are a Responder - no code needed
 }
 
-uint8_t ArtNetRdmResponder::GetUidCount(__attribute__((unused)) uint32_t nPortIndex) {
+uint32_t ArtNetRdmResponder::GetUidCount(__attribute__((unused)) uint32_t nPortIndex) {
 	return 1; // We are a Responder
 }
 

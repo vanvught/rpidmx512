@@ -2,7 +2,7 @@
  * @file artnetdiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,72 +40,34 @@
 
 #include "debug.h"
 
-ArtNetRdmController::ArtNetRdmController()  {
-	for (uint8_t i = 0 ; i < artnetnode::MAX_PORTS; i++) {
-		m_Discovery[i] = new RDMDiscovery(i);
-		assert(m_Discovery[i] != nullptr);
-		m_Discovery[i]->SetUid(GetUID());
+TRdmMessage ArtNetRdmController::s_rdmMessage;
+uint32_t ArtNetRdmController::s_nPorts;
+
+ArtNetRdmController::ArtNetRdmController(uint32_t nPorts)  {
+	assert(nPorts <= artnetnode::MAX_PORTS);
+
+	s_nPorts = nPorts;
+
+	for (uint32_t nPortIndex = 0 ; nPortIndex < nPorts; nPortIndex++) {
+		m_Discovery[nPortIndex] = new RDMDiscovery(nPortIndex);
+		assert(m_Discovery[nPortIndex] != nullptr);
+		m_Discovery[nPortIndex]->SetUid(GetUID());
 	}
 
-	m_pRdmCommand = new struct TRdmMessage;
-	assert(m_pRdmCommand != nullptr);
-
-	m_pRdmCommand->start_code = E120_SC_RDM;
+	s_rdmMessage.start_code = E120_SC_RDM;
 }
 
 ArtNetRdmController::~ArtNetRdmController() {
-	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
-		if (m_Discovery[i] != nullptr) {
-			delete m_Discovery[i];
-			m_Discovery[i] = nullptr;
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPorts; nPortIndex++) {
+		if (m_Discovery[nPortIndex] != nullptr) {
+			delete m_Discovery[nPortIndex];
+			m_Discovery[nPortIndex] = nullptr;
 		}
 	}
 }
 
-void ArtNetRdmController::Print() {
-	RDMDeviceController::Print();
-}
-
-void ArtNetRdmController::Full(uint32_t nPortIndex) {
-	DEBUG_ENTRY
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	m_Discovery[nPortIndex]->Full();
-
-	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-	DEBUG_EXIT
-}
-
-uint8_t ArtNetRdmController::GetUidCount(uint32_t nPortIndex) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-
-	return m_Discovery[nPortIndex]->GetUidCount();
-}
-
-void ArtNetRdmController::Copy(uint32_t nPortIndex, uint8_t *pTod) {
-	DEBUG_ENTRY
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	m_Discovery[nPortIndex]->Copy(pTod);
-
-	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-	DEBUG_EXIT
-}
-
-void ArtNetRdmController::DumpTod(uint32_t nPortIndex) {
-	DEBUG_ENTRY
-	assert(nPortIndex < artnetnode::MAX_PORTS);
-
-	m_Discovery[nPortIndex]->Dump();
-
-	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-	DEBUG_EXIT
-}
-
 const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *pRdmData) {
-	assert(nPortIndex < artnetnode::MAX_PORTS);
+	assert(nPortIndex < s_nPorts);
 
 	if (pRdmData == nullptr) {
 		return nullptr;
@@ -119,7 +81,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *
 	}
 
 	const auto *pRdmMessageNoSc = reinterpret_cast<const TRdmMessageNoSc*>(const_cast<uint8_t*>(pRdmData));
-	auto *pRdmCommand = reinterpret_cast<uint8_t*>(m_pRdmCommand);
+	auto *pRdmCommand = reinterpret_cast<uint8_t*>(&s_rdmMessage);
 
 	memcpy(&pRdmCommand[1], pRdmData, static_cast<size_t>(pRdmMessageNoSc->message_length + 2));
 

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 
 #include <cstring>
 #include <cstdint>
+#include <climits>
 #include <cassert>
 
 #include "artnetparams.h"
@@ -57,8 +58,6 @@ using namespace artnet;
 using namespace artnetparams;
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
-	DEBUG_PRINTF("sizeof(struct TArtNetParams)=%d", static_cast<int>(sizeof(struct Params)));
-
 	memset(&m_tArtNetParams, 0, sizeof(struct Params));
 
 	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {

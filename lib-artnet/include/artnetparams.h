@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -185,7 +185,7 @@ private:
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;
-	struct artnetparams::Params m_tArtNetParams;
+	artnetparams::Params m_tArtNetParams;
 };
 
 #endif /* ARTNETPARAMS_H_ */

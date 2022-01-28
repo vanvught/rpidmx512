@@ -43,7 +43,7 @@ public:
 	~ArtNetRdmResponder() override;
 
 	void Full(uint32_t nPortIndex) override;
-	uint8_t GetUidCount(uint32_t nPortIndex) override;
+	uint32_t GetUidCount(uint32_t nPortIndex) override;
 	void Copy(uint32_t nPortIndex, uint8_t *) override;
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
 

@@ -2,7 +2,7 @@
  * @file rdmtod.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,10 @@
 #include "rdm.h"
 
 namespace rdmtod {
-static constexpr uint8_t TOD_TABLE_SIZE = 200;
+#if !defined (RDM_DISCOVERY_TOD_TABLE_SIZE)
+# define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
+#endif
+static constexpr uint8_t TOD_TABLE_SIZE = RDM_DISCOVERY_TOD_TABLE_SIZE;
 struct TRdmTod {
 	uint8_t uid[RDM_UID_SIZE];
 };
@@ -78,7 +81,7 @@ public:
 		return true;
 	}
 
-	uint8_t GetUidCount() const {
+	uint32_t GetUidCount() const {
 		return m_nEntries;
 	}
 
@@ -147,7 +150,7 @@ public:
 	}
 
 private:
-	uint8_t m_nEntries { 0 };
+	uint32_t m_nEntries { 0 };
 	rdmtod::TRdmTod *m_pTable;
 };
 

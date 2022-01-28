@@ -78,7 +78,7 @@ private:
 
 private:
     RDMDeviceParamsStore *m_pRDMDeviceParamsStore;
-    struct TRDMDeviceParams m_tRDMDeviceParams;
+    TRDMDeviceParams m_tRDMDeviceParams;
 };
 
 #endif /* RDMDEVICEPARAMS_H_ */

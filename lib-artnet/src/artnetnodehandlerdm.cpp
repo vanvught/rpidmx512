@@ -93,7 +93,7 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->OpCode = OP_TODDATA;
 	pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
 
-	const auto discovered = m_pArtNetRdm->GetUidCount(nPortIndex);
+	const auto nDiscovered = static_cast<uint8_t>(m_pArtNetRdm->GetUidCount(nPortIndex));
 
 	pTodData->Port = static_cast<uint8_t>(1U + (nPortIndex & 0x3));
 	pTodData->Spare1 = 0;
@@ -107,13 +107,13 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	pTodData->CommandResponse = 0; // The packet contains the entire TOD or is the first packet in a sequence of packets that contains the entire TOD.
 	pTodData->Address = m_OutputPort[nPortIndex].genericPort.nDefaultAddress;
 	pTodData->UidTotalHi = 0;
-	pTodData->UidTotalLo = discovered;
+	pTodData->UidTotalLo = nDiscovered;
 	pTodData->BlockCount = 0;
-	pTodData->UidCount = discovered;
+	pTodData->UidCount = nDiscovered;
 
 	m_pArtNetRdm->Copy(nPortIndex, reinterpret_cast<uint8_t*>(pTodData->Tod));
 
-	const auto nLength = sizeof(struct TArtTodData) - (sizeof(pTodData->Tod)) + (discovered * 6U);
+	const auto nLength = sizeof(struct TArtTodData) - (sizeof(pTodData->Tod)) + (nDiscovered * 6U);
 
 	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
 
