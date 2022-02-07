@@ -40,6 +40,7 @@
 #include "displayudfparams.h"
 #include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
+#include "display_timeout.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
@@ -75,6 +76,7 @@ using namespace artnet;
 extern "C" {
 
 void notmain(void) {
+	display_timeout_init();
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
@@ -266,6 +268,8 @@ void notmain(void) {
 		remoteConfig.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+		if(display.isSleep() && renew_timeout())
+			display.SetSleep(false);
 		display.Run();
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
