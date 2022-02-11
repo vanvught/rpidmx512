@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -216,7 +216,7 @@ private:
     	static constexpr auto ARTNET = (1U << 3);
     	static constexpr auto TCNET = (1U << 4);
     	static constexpr auto LTC = (1U << 5);
-    	static constexpr auto NTP = (1U << 6);	// Not Used. TODO Subject for removal?
+    	static constexpr auto ETC = (1U << 6);
     	static constexpr auto RTPMIDI = (1U << 7);
     };
 

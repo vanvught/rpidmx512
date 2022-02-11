@@ -1,13 +1,13 @@
 # Library Network
-## Network Abstraction Layer (UDP/IP) implementation
+## Network Abstraction Layer (UDP/IP & TCP/IP) implementation
 
 Included is also a mDNS and TFTP implementation.
 
 Supported platforms:
 
-- Baremetal with EMAC/PHY
-- Linux
-- Mac OS X
+- Board's: Orange Pi Zero / One (baremetal) {Allwinner SoC H2+/H3}
+- MCU's: GD32F107R / GD32F207R / GD32F407R {GigaDevice ARM}
+- OS's: Mac OS / Linux
 
 For the baremetal environment, the follownig C functions *MUST* be implemented:
 
@@ -39,3 +39,5 @@ High-level
 	int igmp_leave(uint32_t group_address);
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
+
+[http://www.gd32-dmx.org](http://www.gd32-dmx.org)

@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsconst.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@ const char LtcParamsConst::DISABLE_MIDI[] = "disable_midi";
 const char LtcParamsConst::DISABLE_ARTNET[] = "disable_artnet";
 const char LtcParamsConst::DISABLE_LTC[] = "disable_ltc";
 const char LtcParamsConst::DISABLE_RTPMIDI[] = "disable_rtp-midi";
+const char LtcParamsConst::DISABLE_ETC[] = "disable_etc";
 const char LtcParamsConst::SHOW_SYSTIME[] = "show_systime";
 const char LtcParamsConst::DISABLE_TIMESYNC[] = "disable_timesync";
 // NTP

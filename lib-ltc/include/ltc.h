@@ -31,7 +31,7 @@
 
 namespace ltc {
 enum source : uint8_t {
-	LTC, ARTNET, MIDI, TCNET, INTERNAL, APPLEMIDI, SYSTIME, UNDEFINED
+	LTC, ARTNET, MIDI, TCNET, INTERNAL, APPLEMIDI, SYSTIME, ETC, UNDEFINED
 };
 enum type : uint8_t {
 	FILM, EBU, DF, SMPTE, UNKNOWN, INVALID = 255
@@ -61,6 +61,7 @@ struct TLtcDisabledOutputs {
 	bool bMidi;
 	bool bArtNet;
 	bool bLtc;
+	bool bEtc;
 	bool bNtp;
 	bool bRtpMidi;
 	bool bWS28xx;

@@ -2,7 +2,7 @@
  * @file ltcgenerator.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,7 @@
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
+#include "ltcetc.h"
 #include "h3/ltcsender.h"
 #include "h3/ltcoutputs.h"
 
@@ -209,6 +210,10 @@ void LtcGenerator::Start() {
 		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 	}
 
+	if (!s_ptLtcDisabledOutputs->bEtc) {
+		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
+	}
+
 	LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 
 	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
@@ -334,6 +339,10 @@ void LtcGenerator::ActionSetRate(const char *pTimeCodeRate) {
 				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 			}
 
+			if (!s_ptLtcDisabledOutputs->bEtc) {
+				LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
+			}
+
 			LtcOutputs::Get()->Update(const_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));
 		}
 	}
@@ -443,7 +452,7 @@ void LtcGenerator::ActionBackward(int32_t nSeconds) {
 
 void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 	DEBUG_ENTRY
-	debug_dump(const_cast<char*>(pTimeCodePitch), nSize);
+	debug_dump(const_cast<char*>(pTimeCodePitch), static_cast<uint16_t>(nSize));
 
 	const auto f = static_cast<float>(atoi(pTimeCodePitch, nSize)) / 100;
 
@@ -456,7 +465,7 @@ void LtcGenerator::SetPitch(const char *pTimeCodePitch, uint32_t nSize) {
 
 void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection) {
 	DEBUG_ENTRY
-	debug_dump(const_cast<char*>(pSeconds), nSize);
+	debug_dump(const_cast<char*>(pSeconds), static_cast<uint16_t>(nSize));
 
 	const auto nSeconds = atoi(pSeconds, nSize);
 
@@ -731,6 +740,10 @@ void LtcGenerator::Update() {
 
 		if (!s_ptLtcDisabledOutputs->bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
+		}
+
+		if (!s_ptLtcDisabledOutputs->bEtc) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&s_tLtcTimeCode));
 		}
 
 		LtcOutputs::Get()->Update(static_cast<const struct TLtcTimeCode*>(&s_tLtcTimeCode));

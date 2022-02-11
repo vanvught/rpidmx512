@@ -1,8 +1,8 @@
 /**
- * @file source.h
+ * @file ltcetcreader.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOURCE_H_
-#define SOURCE_H_
+#ifndef H3_LTCETCREADER_H_
+#define H3_LTCETCREADER_H_
 
+#include "ltcetc.h"
 #include "ltc.h"
-#include "sourceconst.h"
-#include "display.h"
-#include "gps.h"
-#include "ntpclient.h"
-#include "tcnetdisplay.h"
 
-class Source {
+class LtcEtcReader final : public LtcEtcHandler {
 public:
-	static void Show(ltc::source ltcSource, bool bRunGpsTimeClient) {
-		Display::Get()->ClearLine(4);
-		Display::Get()->PutString(SourceConst::SOURCE[ltcSource]);
+	LtcEtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+	~LtcEtcReader();
 
-		if (ltcSource == ltc::source::SYSTIME) {
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
-			if (bRunGpsTimeClient) {
-				GPS::Get()->Display(GPS::Get()->GetStatus());
-			} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
-				Display::Get()->PutString("NTP");
-			} else if (HwClock::Get()->IsConnected()) {
-				Display::Get()->PutString("RTC");
-			}
-		} else if (ltcSource == ltc::source::TCNET) {
-			TCNetDisplay::Show();
-		}
-	}
+	void Start();
+	void Stop();
+
+	void Run();
+
+	void Handler(const midi::Timecode *pTimeCode);
+
+private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct midi::Timecode m_tMidiTimeCode;
+	uint32_t m_nTimeCodePrevious { 0xFF };
 };
 
-#endif /* SOURCE_H_ */
+#endif /* H3_LTCETCREADER_H_ */

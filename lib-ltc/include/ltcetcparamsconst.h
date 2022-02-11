@@ -1,8 +1,8 @@
 /**
- * @file source.h
+ * @file ltcetcparamsconst.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOURCE_H_
-#define SOURCE_H_
 
-#include "ltc.h"
-#include "sourceconst.h"
-#include "display.h"
-#include "gps.h"
-#include "ntpclient.h"
-#include "tcnetdisplay.h"
+#ifndef LTCETCPARAMSCONST_H_
+#define LTCETCPARAMSCONST_H_
 
-class Source {
-public:
-	static void Show(ltc::source ltcSource, bool bRunGpsTimeClient) {
-		Display::Get()->ClearLine(4);
-		Display::Get()->PutString(SourceConst::SOURCE[ltcSource]);
+struct LtcEtcParamsConst {
+	static const char FILE_NAME[];
 
-		if (ltcSource == ltc::source::SYSTIME) {
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
-			if (bRunGpsTimeClient) {
-				GPS::Get()->Display(GPS::Get()->GetStatus());
-			} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
-				Display::Get()->PutString("NTP");
-			} else if (HwClock::Get()->IsConnected()) {
-				Display::Get()->PutString("RTC");
-			}
-		} else if (ltcSource == ltc::source::TCNET) {
-			TCNetDisplay::Show();
-		}
-	}
+	static const char DESTINATION_IP[];
+	static const char DESTINATION_PORT[];
+
+	static const char SOURCE_MULTICAST_IP[];
+	static const char SOURCE_PORT[];
+
+	static const char UDP_TERMINATOR[];
 };
 
-#endif /* SOURCE_H_ */
+#endif /* LTCETCPARAMSCONST_H_ */

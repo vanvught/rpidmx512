@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp;
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,6 +91,7 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 			"\"ldisplay.txt\":\"Display\","
 			"\"tcnet.txt\":\"TCNet\","
 			"\"gps.txt\":\"GPS\","
+			"\"etc.txt\":\"ETC gateway\","
 #endif
 #if defined(NODE_SHOWFILE)
 			"\"show.txt\":\"Showfile\","

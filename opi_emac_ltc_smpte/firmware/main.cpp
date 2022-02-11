@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@
 #include "ltcdisplaymax7219.h"
 #include "ltc7segment.h"
 #include "ltcmidisystemrealtime.h"
+#include "ltcetc.h"
+#include "ltcetcparams.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -74,6 +76,7 @@
 #include "spiflashstore.h"
 #include "storeltc.h"
 #include "storeltcdisplay.h"
+#include "storeltcetc.h"
 #include "storeartnet.h"
 #include "storetcnet.h"
 #include "storeremoteconfig.h"
@@ -167,6 +170,7 @@ void notmain(void) {
 	TCNetReader tcnetReader(&tLtcDisabledOutputs);
 	RtpMidiReader rtpMidiReader(&tLtcDisabledOutputs);
 	SystimeReader sysTimeReader(&tLtcDisabledOutputs, ltcParams.GetFps());
+	LtcEtcReader ltcEtcReader(&tLtcDisabledOutputs);
 
 	ltc::source ltcSource = ltcParams.GetSource();
 
@@ -248,9 +252,10 @@ void notmain(void) {
 	const auto bRunArtNet = ((ltcSource == ltc::source::ARTNET) || (!tLtcDisabledOutputs.bArtNet));
 
 	ArtNetNode node;
+	StoreArtNet storeArtnet;
 
 	if (bRunArtNet) {
-		ArtNetParams artnetparams(new StoreArtNet);
+		ArtNetParams artnetparams(&storeArtnet);
 
 		if (artnetparams.Load()) {
 			artnetparams.Set(&node);
@@ -319,6 +324,27 @@ void notmain(void) {
 	}
 
 	/**
+	 * ETC
+	 */
+
+	const auto bRunLtcEtc = (ltcSource == ltc::source::ETC);
+
+	LtcEtc ltcEtc;
+	StoreLtcEtc storeLtcEtc;
+
+	if (bRunLtcEtc || (!tLtcDisabledOutputs.bEtc)) {
+		LtcEtcParams ltcEtcParams(&storeLtcEtc);
+
+		if (ltcEtcParams.Load()) {
+			ltcEtcParams.Set();
+			ltcEtcParams.Dump();
+		}
+
+		ltcEtc.Start();
+		ltcEtc.Print();
+	}
+
+	/**
 	 * LTC Sender
 	 */
 
@@ -356,7 +382,8 @@ void notmain(void) {
 	 * The NTP Client is stopped.
 	 */
 
-	GPSParams gpsParams(new StoreGPS);
+	StoreGPS storeGPS;
+	GPSParams gpsParams(&storeGPS);
 
 	if (ltcSource == ltc::source::SYSTIME) {
 		if (gpsParams.Load()) {
@@ -448,6 +475,10 @@ void notmain(void) {
 		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidiReader.Start();
 		break;
+	case ltc::source::ETC:
+		ltcEtc.SetHandler(&ltcEtcReader);
+		ltcEtcReader.Start();
+		break;
 	case ltc::source::SYSTIME:
 		sysTimeReader.Start(ltcParams.IsAutoStart());
 		break;
@@ -460,6 +491,7 @@ void notmain(void) {
 
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 	rdmNetLLRPOnly.Init();
 	rdmNetLLRPOnly.Start();
 	rdmNetLLRPOnly.Print();
@@ -513,6 +545,9 @@ void notmain(void) {
 		case ltc::source::APPLEMIDI:
 			rtpMidiReader.Run();	// Handles status led
 			break;
+		case ltc::source::ETC:
+			ltcEtcReader.Run();		// Handles MIDI Quarter Frame output messages
+			break;
 		case ltc::source::SYSTIME:
 			sysTimeReader.Run();
 			if (!bRunGpsTimeClient) {
@@ -539,6 +574,10 @@ void notmain(void) {
 
 		if (bRunRtpMidi) {
 			rtpMidi.Run();
+		}
+
+		if (bRunLtcEtc) {
+			ltcEtc.Run();
 		}
 
 		if (bRunOSCServer) {

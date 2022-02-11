@@ -259,6 +259,10 @@ void LtcReader::Run() {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 		}
 
+		if (!m_ptLtcDisabledOutputs->bEtc) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
+		}
+
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {
 			m_tTimeCodeTypePrevious = TimeCodeType;
 

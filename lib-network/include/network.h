@@ -84,6 +84,22 @@ inline static bool is_private_ip(uint32_t nIp) {
 	return false;
 }
 
+inline static bool is_multicast_ip(uint32_t nIp) {
+	if ((nIp & 0xE0) != 0xE0) {
+		return false;
+	}
+
+	if ((nIp & 0xFFFFEF) == 0x0000E0) { // 224.0.0.0 to 224.0.0.255 Local subnetwork
+		return false;
+	}
+
+	if ((nIp & 0xFFFFEF) == 0x0100E0) { // 224.0.1.0 to 224.0.1.255 Internetwork control
+		return false;
+	}
+
+	return true;
+}
+
 }  // namespace network
 
 class NetworkStore {

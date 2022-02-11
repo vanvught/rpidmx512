@@ -3,7 +3,7 @@
  *
  */
 /* Copyright (C) 2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,10 @@
 
 #include "shell.h"
 
-#include "uart0_debug.h"
+extern "C" {
+extern void uart0_putc(int);
+extern int uart0_getc(void);
+}
 
 using namespace shell;
 

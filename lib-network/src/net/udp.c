@@ -2,7 +2,7 @@
  * @file udp.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,10 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static uint32_t s_ports_allowed[UDP_MAX_PORTS_ALLOWED] ;
-static struct queue s_recv_queue[UDP_MAX_PORTS_ALLOWED] ;
-static struct t_udp s_send_packet ;
-static uint16_t s_id ;
+static uint32_t s_ports_allowed[UDP_MAX_PORTS_ALLOWED] ALIGNED;
+static struct queue s_recv_queue[UDP_MAX_PORTS_ALLOWED] ALIGNED;
+static struct t_udp s_send_packet ALIGNED;
+static uint16_t s_id ALIGNED;
 static uint32_t broadcast_mask;
 static uint32_t on_network_mask;
 static uint32_t gw_ip;
@@ -319,7 +319,7 @@ int udp_send(uint8_t idx, const uint8_t *packet, uint16_t size, uint32_t to_ip, 
 
 	net_memcpy(s_send_packet.udp.data, packet, MIN(UDP_DATA_SIZE, size));
 
-	debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
+//	debug_dump( &s_send_packet, size + UDP_PACKET_HEADERS_SIZE);
 
 	emac_eth_send((void *) &s_send_packet, (int) (size + UDP_PACKET_HEADERS_SIZE));
 

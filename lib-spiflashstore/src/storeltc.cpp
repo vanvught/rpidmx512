@@ -2,7 +2,7 @@
  * @file storeltc.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,6 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
-
 #include "storeltc.h"
 
-#include "debug.h"
-
 StoreLtc *StoreLtc::s_pThis = nullptr;
-
-StoreLtc::StoreLtc() {
-	DEBUG_ENTRY
-
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}

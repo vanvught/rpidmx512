@@ -7,15 +7,10 @@
     <property name="dir.workspace" value="${dir.buildfile}/.."/>
     <property name="dir.jarfile" value="/Users/arjanvanvught/Desktop"/>
     <target name="create_run_jar">
-        <buildnumber file="build.num"/>
-    	<tstamp>
-    	     <format property="TODAY" pattern="yyyy-MM-dd HH:mm:ss" />
-    	</tstamp>
         <jar destfile="${dir.jarfile}/RemoteConfigUI.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="org.orangepi.dmx.RemoteConfig"/>
                 <attribute name="Class-Path" value="."/>
-                <attribute name="Implementation-Version" value="${TODAY}-b${build.number}"/> 
             </manifest>
             <fileset dir="${dir.buildfile}/bin"/>
         </jar>

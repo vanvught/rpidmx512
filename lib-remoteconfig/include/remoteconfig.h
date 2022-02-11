@@ -129,6 +129,7 @@ enum class TxtFile {
 	GPS,
 	RGBPANEL,
 	DDPDISP,
+	LTCETC,
 	LAST
 };
 }  // namespace remoteconfig
@@ -241,6 +242,7 @@ private:
 	void HandleGetLdisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 	void HandleGetGpsTxt(uint32_t& nSize);
+	void HandleGetLtcEtcTxt(uint32_t& nSize);
 #endif
 
 #if defined (NODE_OSC_CLIENT)
@@ -335,6 +337,7 @@ private:
 	void HandleSetLdisplayTxt();
 	void HandleSetTCNetTxt();
 	void HandleSetGpsTxt();
+	void HandleSetLtcEtcTxt();
 #endif
 
 #if defined (NODE_OSC_CLIENT)
@@ -414,6 +417,10 @@ private:
 	remoteconfig::Output m_tOutput;
 	uint32_t m_nActiveOutputs;
 
+#if defined (ENABLE_HTTPD)
+	HttpDaemon m_HttpDaemon;
+#endif
+
 	struct Commands {
 		void (RemoteConfig::*pHandler)();
 		const char *pCmd;
@@ -454,7 +461,7 @@ private:
 
 	int32_t m_nHandle { -1 };
 	uint32_t m_nIPAddressFrom { 0 };
-	uint16_t m_nBytesReceived { 0 };
+	uint32_t m_nBytesReceived { 0 };
 
 	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
 
@@ -466,10 +473,6 @@ private:
 
 #if !defined(DISABLE_BIN)
 	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
-#endif
-
-#if defined(ENABLE_HTTPD)
-	HttpDaemon m_HttpDaemon;
 #endif
 
 	static char *s_pUdpBuffer;
