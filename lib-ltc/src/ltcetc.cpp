@@ -141,7 +141,7 @@ void LtcEtc::Send(const midi::Timecode *pTimeCode) {
 		case ltc::etc::UdpTerminator::CRLF:
 			s_SendBuffer[ltc::etc::udp::MIN_MSG_LENGTH] = 0x0D;
 			s_SendBuffer[ltc::etc::udp::MIN_MSG_LENGTH + 1] = 0x0A;
-			nLength +=2;
+			nLength = nLength + 2U;
 			break;
 		default:
 			break;
@@ -229,7 +229,7 @@ void LtcEtc::ParseTimeCode() {
 		auto data = from_hex(p);
 
 		timeCode.nHours = data & 0x1F;
-		timeCode.nType = data >> 5;
+		timeCode.nType = static_cast<uint8_t>(data >> 5);
 
 		p += 3;
 
