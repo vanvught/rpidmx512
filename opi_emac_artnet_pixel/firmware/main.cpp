@@ -36,6 +36,7 @@
 # include "mdnsservices.h"
 #endif
 
+#include "display_timeout.h"
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"

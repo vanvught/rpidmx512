@@ -54,6 +54,10 @@ static constexpr uint8_t MCP23017_IODIRA = 0x00;	///< I/O DIRECTION (IODIRA) REG
 static constexpr uint8_t MCP23017_GPIOA = 0x12;		///< PORT (GPIOA) REGISTER, Value on the Port - Writing Sets Bits in the Output Latch
 static constexpr uint8_t I2C_ADDRESS = (MCP23017_I2C_ADDRESS + 1);	///< It must be different from base address
 }  // namespace segment7
+namespace timeout {
+void gpio_init();
+bool gpio_renew();
+}  // namespace timeout
 }  // namespace display
 
 class Display {
@@ -94,6 +98,10 @@ public:
 		if (!m_bIsSleep) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_nMillis) > m_nSleepTimeout), 0)) {
 				SetSleep(true);
+			}
+		} else {
+			if (__builtin_expect((display::timeout::gpio_renew()), 0)) {
+				SetSleep(false);
 			}
 		}
 	}

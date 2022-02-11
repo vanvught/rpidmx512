@@ -47,6 +47,7 @@ ifneq ($(CONSOLE),)
 endif
 
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+DEFINES+=-DENABLE_TFTP_SERVER
 
 # The variable for the firmware include directories
 INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)
@@ -75,7 +76,6 @@ COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
-#COPS+=-fstack-usage
 
 CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 CPPOPS+=-fno-threadsafe-statics

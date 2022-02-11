@@ -62,6 +62,10 @@ Display::Display() :
 
 	Detect7Segment();
 
+	if (m_LcdDisplay != nullptr) {
+		timeout::gpio_init();
+	}
+
 	PrintInfo();
 }
 
@@ -75,6 +79,10 @@ Display::Display(uint8_t nCols, uint8_t nRows) :
 	Detect(nCols, nRows);
 
 	Detect7Segment();
+
+	if (m_LcdDisplay != nullptr) {
+		timeout::gpio_init();
+	}
 
 	PrintInfo();
 }
@@ -90,6 +98,10 @@ Display::Display(display::Type tDisplayType):
 	Detect(tDisplayType);
 
 	Detect7Segment();
+
+	if (m_LcdDisplay != nullptr) {
+		timeout::gpio_init();
+	}
 
 	PrintInfo();
 }
@@ -178,3 +190,4 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 		m_nSleepTimeout = 0;
 	}
 }
+

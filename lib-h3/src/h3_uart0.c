@@ -47,6 +47,7 @@ void uart0_putc(int c) {
 
 	while (!(H3_UART0->LSR & UART_LSR_THRE))
 		;
+	
 	H3_UART0->O00.THR = (uint32_t) (c);
 }
 
@@ -58,7 +59,7 @@ void uart0_puts(char *s) {
 		uart0_putc(*s++);
 	}
 
-//	uart0_putc('\n');
+//	uart0_putc('\n'); //TODO Add '\n'
 }
 
 int uart0_getc(void) {

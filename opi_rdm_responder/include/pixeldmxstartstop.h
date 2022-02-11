@@ -1,8 +1,8 @@
 /**
- * @file factorydefaults.h
+ * @file pixeldmxstartstop.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef FACTORYDEFAULTS_H_
-#define FACTORYDEFAULTS_H_
+#ifndef PIXELDMXSTARTSTOP_H_
+#define PIXELDMXSTARTSTOP_H_
 
-#include "rdmfactorydefaults.h"
-#include "spiflashstore.h"
+#include "pixeldmxhandler.h"
 
-class FactoryDefaults: public RDMFactoryDefaults {
+#include "h3.h"
+#include "h3_gpio.h"
+
+class PixelDmxStartStop final: public PixelDmxHandler {
 public:
-	FactoryDefaults() {
-	}
-	~FactoryDefaults() {
+	PixelDmxStartStop() {
 	}
 
-	void Set() {
-		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
+	~PixelDmxStartStop() override {
+	}
+
+	void Start() override {
+	}
+
+	void Stop() override {
 	}
 };
 
-#endif /* FACTORYDEFAULTS_H_ */
+#endif /* PIXELDMXSTARTSTOP_H_ */

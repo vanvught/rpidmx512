@@ -2,7 +2,7 @@
  * @file h3_board.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,6 @@
 # include "board/h3_opi_zero.h"
 #elif defined(ORANGE_PI_ONE)
 # include "board/h3_opi_one.h"
-#elif defined(NANO_PI)
-# include "board/h3_nanopi_neo.h"
 #else
 # error Board configuration error
 #endif
@@ -81,6 +79,10 @@
 #define EXT_SPI_CLK			GPIO_EXT_23
 #define EXT_SPI_MOSI		GPIO_EXT_19
 #define EXT_SPI_MISO		GPIO_EXT_21
+
+#define KEY1_GPIO			GPIO_EXT_7
+#define KEY2_GPIO			GPIO_EXT_15
+#define KEY3_GPIO			GPIO_EXT_22
 
 #ifdef __cplusplus
 extern "C" {

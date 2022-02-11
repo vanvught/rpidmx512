@@ -30,8 +30,8 @@ SECTIONS
     .text : 
     {
     . = ALIGN(4);
-     *( .text.unlikely)
-     *( .text.hot)
+     *( .text.unlikely*)
+     *( .text.hot*)
      *(.text*)
     } > ram
     

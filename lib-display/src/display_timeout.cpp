@@ -1,8 +1,8 @@
 /**
- * @file factorydefaults.h
+ * @file display_timeout.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef FACTORYDEFAULTS_H_
-#define FACTORYDEFAULTS_H_
-
-#include "rdmfactorydefaults.h"
-#include "spiflashstore.h"
-
-class FactoryDefaults: public RDMFactoryDefaults {
-public:
-	FactoryDefaults() {
-	}
-	~FactoryDefaults() {
-	}
-
-	void Set() {
-		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
-	}
-};
-
-#endif /* FACTORYDEFAULTS_H_ */
+namespace display {
+namespace timeout {
+void __attribute__((weak)) gpio_init() {}
+bool __attribute__((weak)) gpio_renew() { return false;}
+}  // namespace timeout
+}  // namespace display

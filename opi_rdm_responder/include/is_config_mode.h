@@ -2,7 +2,7 @@
  * @file is_config_mode.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,21 @@
 #ifndef IS_CONFIG_MODE_H_
 #define IS_CONFIG_MODE_H_
 
-#include "board/h3_opi_zero.h"
+#include "h3_board.h"
 #include "h3_gpio.h"
 
 #include "debug.h"
 
-#define BUTTON_GPIO	GPIO_EXT_26
-
 void config_mode_init() {
-	h3_gpio_fsel(BUTTON_GPIO, GPIO_FSEL_INPUT);
-	h3_gpio_pud(BUTTON_GPIO, GPIO_PULL_UP);
+	h3_gpio_fsel(KEY1_GPIO, GPIO_FSEL_INPUT);
+	h3_gpio_pud(KEY1_GPIO, GPIO_PULL_UP);
 }
 
 bool is_config_mode() {
-	const auto nLevel = h3_gpio_lev(BUTTON_GPIO);
+	const auto nLevel = h3_gpio_lev(KEY1_GPIO);
     const auto isConfigMode = (nLevel == LOW);
 
-    DEBUG_PRINTF("isConfigMode=%s %u %u->%p", isConfigMode ? "Yes" : "No", BUTTON_GPIO, nLevel, H3_PIO_PORTA->DAT);
+    DEBUG_PRINTF("isConfigMode=%s %u %u->%p", isConfigMode ? "Yes" : "No", KEY1_GPIO, nLevel, H3_PIO_PORTA->DAT);
 
     return isConfigMode;
 }
