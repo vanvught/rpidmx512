@@ -8,7 +8,11 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONSOLE_FB,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=console console/h3
 	else
-		EXTRA_SRCDIR+=console/uart0	
+		ifneq (,$(findstring CONSOLE_I2C,$(MAKE_FLAGS)))
+			EXTRA_SRCDIR+=console/i2c	
+		else
+			EXTRA_SRCDIR+=console/uart0	
+		endif
 	endif
 else
 	EXTRA_SRCDIR+=console/uart0	

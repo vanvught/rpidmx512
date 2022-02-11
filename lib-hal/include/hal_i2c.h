@@ -42,6 +42,8 @@
 # include "rpi/hal_i2c.h"
 #endif
 
+#ifdef __cplusplus
+
 namespace hal {
 namespace i2c {
 static constexpr uint32_t NORMAL_SPEED = 100000;
@@ -187,5 +189,7 @@ private:
 	uint8_t m_nAddress;
 	uint32_t m_nBaudrate;
 };
+
+#endif
 
 #endif /* HAL_I2C_H_ */

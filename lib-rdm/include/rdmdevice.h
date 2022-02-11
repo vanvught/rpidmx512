@@ -34,6 +34,8 @@
 #include "rdmdevicestore.h"
 #include "rdmconst.h"
 
+#include "debug.h"
+
 struct TRDMDeviceInfoData {
 	char *data;
 	uint8_t length;
@@ -87,6 +89,7 @@ public:
 	}
 
 	void SetFactoryDefaults() {
+		DEBUG_ENTRY
 		TRDMDeviceInfoData info;
 
 		info.data = m_aDeviceRootLabel;
@@ -95,6 +98,7 @@ public:
 		RDMDevice::SetLabel(&info);
 
 		m_nCheckSum = RDMDevice::CalculateChecksum();
+		DEBUG_EXIT
 	}
 
 	bool GetFactoryDefaults() {

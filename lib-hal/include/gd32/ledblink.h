@@ -124,6 +124,20 @@ public:
 	}
 
 private:
+	void PlatformInit() {
+#if !defined(USE_LEDBLINK_BITBANGING595)
+		rcu_periph_clock_enable(LED_BLINK_GPIO_CLK);
+# if !defined (GD32F4XX)
+		gpio_init(LED_BLINK_GPIO_PORT, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, LED_BLINK_PIN);
+# else
+		gpio_mode_set(LED_BLINK_GPIO_PORT, GPIO_MODE_OUTPUT, GPIO_PUPD_NONE, LED_BLINK_PIN);
+		gpio_output_options_set(LED_BLINK_GPIO_PORT, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, LED_BLINK_PIN);
+# endif
+		GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#endif
+	}
+
+private:
 #if defined (USE_LEDBLINK_BITBANGING595)
 	BitBanging595 bitBanging595;
 #endif

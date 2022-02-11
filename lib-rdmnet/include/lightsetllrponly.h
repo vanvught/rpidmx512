@@ -26,6 +26,8 @@
 #ifndef LIGHTSETLLRPONLY_H_
 #define LIGHTSETLLRPONLY_H_
 
+#undef NDEBUG
+
 #include <cstdint>
 
 #include "lightset.h"
@@ -33,6 +35,9 @@
 class LightSetLLRPOnly final: public LightSet {
 public:
 	LightSetLLRPOnly() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
 	}
 
 	void Start(__attribute__((unused)) uint32_t nPortIndex) override {

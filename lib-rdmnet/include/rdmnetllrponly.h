@@ -46,6 +46,9 @@ public:
 		m_pRDMPersonality(new RDMPersonality(rdmnetllrponly::LABEL, nullptr)),
 		m_RDMNetDevice(&m_pRDMPersonality, 1)
 	{
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
 	}
 
 	void Init() {

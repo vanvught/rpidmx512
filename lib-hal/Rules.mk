@@ -1,8 +1,11 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_SRCDIR=console/uart0
-
 ifneq ($(MAKE_FLAGS),)
+	ifneq (,$(findstring CONSOLE_I2C,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=console/i2c
+	else
+		EXTRA_SRCDIR+=console/uart0
+	endif
 	ifneq ($(findstring NDEBUG,$(MAKE_FLAGS)), NDEBUG)
 		EXTRA_SRCDIR+=debug
 	endif
@@ -15,5 +18,5 @@ ifneq ($(MAKE_FLAGS),)
 		endif
 	endif
 else
-	EXTRA_SRCDIR+=rtc debug
+	EXTRA_SRCDIR+=console/uart0	rtc debug
 endif

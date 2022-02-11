@@ -1,6 +1,5 @@
-#
 DEFINES = NDEBUG
-#
+
 EXTRA_INCLUDES = ../lib-network/include
-#
+
 include ../firmware-template-h3/lib/Rules.mk

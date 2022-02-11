@@ -2,7 +2,7 @@
  * @file ws28xxmulti.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,17 @@
 #include "gd32.h"
 
 #include "debug.h"
+
+#if defined (GD32F4XX)
+# define DMA_PARAMETER_STRUCT				dma_multi_data_parameter_struct
+# define DMA_CHMADDR						DMA_CHM0ADDR
+# define DMA_MEMORY_TO_PERIPHERAL			DMA_MEMORY_TO_PERIPH
+# define DMA_PERIPHERAL_WIDTH_32BIT			DMA_PERIPH_WIDTH_32BIT
+# define dma_init							dma_multi_data_mode_init
+# define dma_memory_to_memory_disable(x,y)
+#else
+# define DMA_PARAMETER_STRUCT				dma_parameter_struct
+#endif
 
 static const uint32_t s_GPIO_PINs[] = { GPIO_PINx };
 static uint16_t s_T0H[(640 * 24)]__attribute__ ((aligned (4)));		//FIXME Use define's
@@ -99,7 +110,13 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	 */
 
 	rcu_periph_clock_enable(RCU_GPIOx);
+#if !defined (GD32F4XX)
 	gpio_init(GPIOx, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PINx);
+#else
+    gpio_mode_set(GPIOx, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN, GPIO_PINx);
+    gpio_output_options_set(GPIOx, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PINx);
+#endif
+
 	GPIO_BC(GPIOx) = GPIO_PINx;
 
 	/**
@@ -175,13 +192,17 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	 * START DMA configuration
 	 */
 
-	dma_parameter_struct dma_init_struct;
+	DMA_PARAMETER_STRUCT dma_init_struct;
 	rcu_periph_clock_enable(RCU_DMA1);
 
 	// Timer 7 Channel 0, DMA Channel 2
 	dma_deinit(DMA1, DMA_CH2);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
+#if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_GPIO_PINs;
+#else
+	dma_init_struct.memory0_addr = (uint32_t) s_GPIO_PINs;
+#endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_DISABLE;
 	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_32BIT;
 	dma_init_struct.periph_addr = GPIOx + 0x10U;
@@ -196,13 +217,16 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	// Timer 7 Channel 1, DMA Channel 4
 	dma_deinit(DMA1, DMA_CH4);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
+#if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_T0H;
+#else
+	dma_init_struct.memory0_addr = (uint32_t) s_T0H;
+#endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
 	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_16BIT;
 	dma_init_struct.periph_addr = GPIOx + 0x14U;
 	dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
 	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_32BIT;
-	dma_init_struct.priority = DMA_PRIORITY_HIGH;
 	dma_init(DMA1, DMA_CH4, &dma_init_struct);
 	/* configure DMA mode */
 	dma_circulation_disable(DMA1, DMA_CH4);
@@ -211,7 +235,11 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	// Timer 7 Channel 2, DMA Channel 0
 	dma_deinit(DMA1, DMA_CH0);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
+#if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_GPIO_PINs;
+#else
+	dma_init_struct.memory0_addr = (uint32_t) s_GPIO_PINs;
+#endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_DISABLE;
 	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_32BIT;
 	dma_init_struct.periph_addr = GPIOx + 0x14U;
@@ -253,17 +281,17 @@ void WS28xxMulti::Update() {
 
 	DMA_CHCTL(DMA1, DMA_CH2) &= ~DMA_CHXCTL_CHEN;
 	DMA_CHMADDR(DMA1, DMA_CH2) = (uint32_t) s_GPIO_PINs;
-	DMA_CHCNT(DMA1, DMA_CH2) = (m_nBufSize & DMA_CHANNEL_CNT_MASK);
+	DMA_CHCNT(DMA1, DMA_CH2) = (m_nBufSize & DMA_CHXCNT_CNT);
 	DMA_CHCTL(DMA1, DMA_CH2) |= DMA_CHXCTL_CHEN;
 
 	DMA_CHCTL(DMA1, DMA_CH4) &= ~DMA_CHXCTL_CHEN;
 	DMA_CHMADDR(DMA1, DMA_CH4) = (uint32_t) s_T0H;
-	DMA_CHCNT(DMA1, DMA_CH4) = ((m_nBufSize) & DMA_CHANNEL_CNT_MASK);
+	DMA_CHCNT(DMA1, DMA_CH4) = ((m_nBufSize) & DMA_CHXCNT_CNT);
 	DMA_CHCTL(DMA1, DMA_CH4) |= DMA_CHXCTL_CHEN;
 
 	DMA_CHCTL(DMA1, DMA_CH0) &= ~DMA_CHXCTL_CHEN;
 	DMA_CHMADDR(DMA1, DMA_CH0) = (uint32_t) s_GPIO_PINs;
-	DMA_CHCNT(DMA1, DMA_CH0) = ((m_nBufSize) & DMA_CHANNEL_CNT_MASK);
+	DMA_CHCNT(DMA1, DMA_CH0) = ((m_nBufSize) & DMA_CHXCNT_CNT);
 	DMA_CHCTL(DMA1, DMA_CH0) |= DMA_CHXCTL_CHEN;
 
 	timer_dma_enable(TIMER7, TIMER_DMA_CH0D);

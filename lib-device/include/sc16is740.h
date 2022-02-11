@@ -2,7 +2,7 @@
  * @file sc16is740.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,29 +41,23 @@ static constexpr uint32_t CRISTAL_HZ = 14745600UL;
 class SC16IS740: HAL_I2C {
 public:
 	enum class SerialParity {
-		NONE,
-		ODD,
-		EVEN,
-		FORCED0,
-		FORCED1
+		NONE, ODD, EVEN, FORCED0, FORCED1
 	};
 
 	enum class TriggerLevel {
-		LEVEL_TX,
-		LEVEL_RX
+		LEVEL_TX, LEVEL_RX
 	};
 
 	SC16IS740(uint8_t nAddress = sc16is740::I2C_ADDRESS, uint32_t nOnBoardCrystal = sc16is740::CRISTAL_HZ);
-	~SC16IS740();
+	~SC16IS740() {}
 
-	void SetOnBoardCrystal(uint32_t nHz) {
-		m_nOnBoardCrystal = nHz;
+	void SetOnBoardCrystal(uint32_t nOnBoardCrystalHz) {
+		m_nOnBoardCrystal = nOnBoardCrystalHz;
 	}
-	uint32_t GetOnBoardCrystal() {
+
+	uint32_t GetOnBoardCrystal() const {
 		return m_nOnBoardCrystal;
 	}
-
-	bool Init();
 
 	void SetFormat(uint32_t nBits, SerialParity tParity, uint32_t nStopBits);
 	void SetBaud(uint32_t nBaud);
@@ -73,8 +67,6 @@ public:
 
 		return ((nRegisterIIR & 0x1) != 0x1);
 	}
-
-	void Print();
 
 	// Read
 
@@ -112,15 +104,24 @@ public:
 
 private:
 	bool IsWritable() {
+		if (!m_IsConnected) {
+			return false;
+		}
 		return (ReadRegister(SC16IS7X0_TXLVL) != 0);
 	}
 
 	bool IsReadable() {
+		if (!m_IsConnected) {
+			return false;
+		}
 		return (ReadRegister(SC16IS7X0_RXLVL) != 0);
 	}
 
 	bool IsReadable(uint32_t nTimeOut) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		if (!m_IsConnected) {
+			return false;
+		}
+		const auto nMillis = Hardware::Get()->Millis();
 		do {
 			if (IsReadable()) {
 				return true;
@@ -132,6 +133,7 @@ private:
 
 private:
 	uint32_t m_nOnBoardCrystal;
+	bool m_IsConnected { false };
 };
 
 #endif /* SC16IS740_H_ */

@@ -24,7 +24,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include  "dmxconfigudp.h"
 

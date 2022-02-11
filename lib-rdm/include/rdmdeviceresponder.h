@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,6 +109,8 @@ public:
 	void SetFactoryDefaults() {
 		RDMDevice::SetFactoryDefaults();
 
+		assert(m_pRDMPersonalities != nullptr);
+
 		SetPersonalityCurrent(RDM_ROOT_DEVICE, rdm::device::responder::DEFAULT_CURRENT_PERSONALITY);
 		SetDmxStartAddress(RDM_ROOT_DEVICE, m_nDmxStartAddressFactoryDefault);
 
@@ -173,14 +175,18 @@ public:
 		}
 
 		const auto *pPersonality = m_pRDMPersonalities[m_tRDMDeviceInfo.current_personality - 1];
+		assert(pPersonality != nullptr);
+
 		auto *pLightSet = pPersonality->GetLightSet();
 
-		if (pLightSet->SetDmxStartAddress(nDmxStartAddress)) {
-			m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
-			m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
-		}
+		if (pLightSet != nullptr) {
+			if (pLightSet->SetDmxStartAddress(nDmxStartAddress)) {
+				m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(nDmxStartAddress >> 8);
+				m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(nDmxStartAddress);
+			}
 
-		DmxStartAddressUpdate();
+			DmxStartAddressUpdate();
+		}
 	}
 
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
@@ -242,17 +248,21 @@ public:
 
 		m_tRDMDeviceInfo.current_personality = nPersonality;
 
-		assert(nPersonality < m_tRDMDeviceInfo.personality_count);
+		assert(nPersonality <= m_tRDMDeviceInfo.personality_count);
 
 		const auto *pPersonality = m_pRDMPersonalities[nPersonality - 1];
+		assert(pPersonality != nullptr);
+
 		auto *pLightSet = pPersonality->GetLightSet();
 
-		m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(pLightSet->GetDmxFootprint() >> 8);
-		m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(pLightSet->GetDmxFootprint());
-		m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress() >> 8);
-		m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress());
+		if (pLightSet != nullptr) {
+			m_tRDMDeviceInfo.dmx_footprint[0] = static_cast<uint8_t>(pLightSet->GetDmxFootprint() >> 8);
+			m_tRDMDeviceInfo.dmx_footprint[1] = static_cast<uint8_t>(pLightSet->GetDmxFootprint());
+			m_tRDMDeviceInfo.dmx_start_address[0] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress() >> 8);
+			m_tRDMDeviceInfo.dmx_start_address[1] = static_cast<uint8_t>(pLightSet->GetDmxStartAddress());
 
-		PersonalityUpdate(pLightSet);
+			PersonalityUpdate(pLightSet);
+		}
 	}
 
 	uint8_t GetPersonalityCurrent(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
@@ -265,7 +275,9 @@ public:
 
 	// Handler
 	void SetRDMFactoryDefaults(RDMFactoryDefaults *pRDMFactoryDefaults) {
+		DEBUG_ENTRY
 		m_pRDMFactoryDefaults = pRDMFactoryDefaults;
+		DEBUG_EXIT
 	}
 
 	static RDMDeviceResponder* Get() {
