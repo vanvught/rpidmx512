@@ -2,7 +2,7 @@
  * @file httd.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -285,7 +285,6 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		}
 
 		m_nRequestContentLength = static_cast<uint16_t>(nTmp);
-		DEBUG_PRINTF("m_nRequestContentLength=%u:%p", m_nRequestContentLength, &m_nRequestContentLength);
 	}
 
 	DEBUG_EXIT

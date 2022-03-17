@@ -31,7 +31,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "shell.h"
+#include "shell/shell.h"
 
 #include "remoteconfig.h"
 #include "network.h"

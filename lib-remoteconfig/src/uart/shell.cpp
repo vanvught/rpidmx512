@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cstdarg>
 
-#include "shell.h"
+#include "shell/shell.h"
 
 extern "C" {
 extern void uart0_putc(int);

@@ -2,7 +2,7 @@
  * @file tftpfileserver.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,10 @@
 
 #include "tftpdaemon.h"
 
+#if defined (GD32)
+# include "gd32.h"
+#endif
+
 namespace tftpfileserver {
 	bool is_valid(const void *pBuffer);
 #if defined (BARE_METAL)
@@ -41,7 +45,15 @@ namespace tftpfileserver {
 	static constexpr char FILE_NAME[] = "orangepi_one.uImage";
 #  endif
 # elif defined (GD32)
-	static constexpr char FILE_NAME[] = "gd32.bin";
+#  if defined (GD32F10X)
+    static constexpr char FILE_NAME[] = "gd32f107.bin";
+#  elif defined (GD32F20X)
+    static constexpr char FILE_NAME[] = "gd32f207.bin";
+#  elif defined (GD32F4XX)
+    static constexpr char FILE_NAME[] = "gd32f4xx.bin";
+#  else
+#   error MCU is not defined
+#  endif
 # endif
 #endif
 }  // namespace tftpfileserver
