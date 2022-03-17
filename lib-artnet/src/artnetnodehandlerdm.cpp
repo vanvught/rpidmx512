@@ -143,7 +143,7 @@ void ArtNetNode::HandleRdm() {
 		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			if (!m_IsRdmResponder) {
 				if ((m_OutputPort[i].protocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
-					const uint8_t nMask = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
+					constexpr auto nMask = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
 					m_OutputPort[i].IsTransmitting = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
 

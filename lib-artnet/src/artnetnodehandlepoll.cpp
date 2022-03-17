@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -101,7 +101,6 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 	m_PollReply.Status1 = m_Node.Status1;
 
 	for (auto nPage = 0; nPage < m_nPages; nPage++) {
-
 		m_PollReply.NetSwitch = m_Node.NetSwitch[nPage];
 		m_PollReply.SubSwitch = m_Node.SubSwitch[nPage];
 		m_PollReply.BindIndex = static_cast<uint8_t>(nPage + 1);
@@ -111,31 +110,16 @@ void ArtNetNode::SendPollRelply(bool bResponse) {
 		uint32_t NumPortsLo = 0;
 
 		for (auto nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + ArtNet::PORTS); nPortIndex++) {
-			uint8_t nStatus = m_OutputPort[nPortIndex].genericPort.nStatus;
+			auto nStatus = m_OutputPort[nPortIndex].genericPort.nStatus;
 
-			if (m_OutputPort[nPortIndex].protocol == PortProtocol::ARTNET) {
-				nStatus &= static_cast<uint8_t>(~GoodOutput::GO_DATA_IS_BEING_TRANSMITTED);
+			if ((m_pArtNet4Handler != nullptr) && (m_OutputPort[nPortIndex].protocol == PortProtocol::SACN)) {
+				constexpr auto MASK = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
+				nStatus &= static_cast<uint8_t>(~MASK);
+				nStatus = static_cast<uint8_t>(nStatus | (m_pArtNet4Handler->GetStatus(nPortIndex) & MASK));
 
-				if (m_OutputPort[nPortIndex].sourceA.nIp != 0) {
-					if ((m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceA.nMillis) < 1000U) {
-						nStatus |= GoodOutput::GO_DATA_IS_BEING_TRANSMITTED;
-					}
-				}
+				if ((nStatus & GoodOutput::GO_OUTPUT_IS_SACN) == 0) {
+					m_OutputPort[nPortIndex].protocol = PortProtocol::ARTNET;
 
-				if (m_OutputPort[nPortIndex].sourceB.nIp != 0) {
-					if ((m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceB.nMillis) < 1000U) {
-						nStatus |= GoodOutput::GO_DATA_IS_BEING_TRANSMITTED;
-					}
-				}
-			} else {
-				if (m_pArtNet4Handler != nullptr) {
-					const auto nMask = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
-					nStatus &= static_cast<uint8_t>(~nMask);
-					nStatus = static_cast<uint8_t>(nStatus | (m_pArtNet4Handler->GetStatus(nPortIndex) & nMask));
-
-					if ((nStatus & GoodOutput::GO_OUTPUT_IS_SACN) == 0) {
-						m_OutputPort[nPortIndex].protocol = PortProtocol::ARTNET;
-					}
 				}
 			}
 
