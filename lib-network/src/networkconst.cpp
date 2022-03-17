@@ -2,7 +2,7 @@
  * @file networkconst.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,5 +25,8 @@
 
 #include "networkconst.h"
 
-const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
+const char NetworkConst::MSG_NETWORK_INIT[] = "Network initialization";
 const char NetworkConst::MSG_NETWORK_STARTED[] = "Network started";
+
+const char NetworkConst::MSG_MDNS_CONFIG[] = "Configuring MDNS";
+const char NetworkConst::MSG_MDNS_STARTED[] = "MDNS started";

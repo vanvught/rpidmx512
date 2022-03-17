@@ -1,8 +1,8 @@
 /**
- * @file networkconst.h
+ * @file net_platform.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKCONST_H_
-#define NETWORKCONST_H_
+#ifndef NET_PLATFORM_H_
+#define NET_PLATFORM_H_
 
-struct NetworkConst {
-	static const char MSG_NETWORK_INIT[];
-	static const char MSG_NETWORK_STARTED[];
+#if defined (GD32)
+# include "gd32.h"
+# if !defined (GD32F4XX)
+#  define SECTION_NETWORK
+# else
+#  define SECTION_NETWORK __attribute__ ((section (".network")))
+# endif
+#else
+# define SECTION_NETWORK
+#endif
 
-	static const char MSG_MDNS_CONFIG[];
-	static const char MSG_MDNS_STARTED[];
-};
-
-#endif /* NETWORKCONST_H_ */
+#endif /* NET_PLATFORM_H_ */

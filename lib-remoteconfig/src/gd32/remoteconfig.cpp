@@ -32,25 +32,15 @@
 
 #include "gd32.h"
 
-#include "display.h"
-
 #include "debug.h"
 
 void RemoteConfig::PlatformHandleTftpSet() {
 	DEBUG_ENTRY
 
 	if (m_bEnableTFTP) {
-#if !defined (GD32F4XX)
 		bkp_data_write(BKP_DATA_1, 0xA5A5);
-#else
-		//TODO F4xx
-#endif
 	} else {
-#if !defined (GD32F4XX)
 		bkp_data_write(BKP_DATA_1, 0x0);
-#else
-		//TODO F4xx
-#endif
 	}
 
 	DEBUG_EXIT
@@ -59,11 +49,8 @@ void RemoteConfig::PlatformHandleTftpSet() {
 void RemoteConfig::PlatformHandleTftpGet() {
 	DEBUG_ENTRY
 
-#if !defined (GD32F4XX)
 	m_bEnableTFTP = (bkp_data_read(BKP_DATA_1) == 0xA5A5);
-#else
-	//TODO F4xx
-#endif
 
+	DEBUG_PRINTF("m_bEnableTFTP=%d", m_bEnableTFTP);
 	DEBUG_EXIT
 }

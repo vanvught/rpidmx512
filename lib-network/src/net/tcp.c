@@ -2,7 +2,7 @@
  * @file tcp.c
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,9 +44,14 @@
 
 #include "net.h"
 #include "net_packets.h"
+#include "net_platform.h"
 #include "net_debug.h"
 
 #include "c/millis.h"
+
+#ifndef ALIGNED
+# define ALIGNED __attribute__ ((aligned (4)))
+#endif
 
 #ifndef MIN
 # define MIN(a, b) ((a) < (b) ? (a) : (b))
@@ -70,10 +75,10 @@ struct queue {
 	struct queue_entry entries[TCP_RX_MAX_ENTRIES];
 };
 
-static struct queue s_recv_queue[TCP_MAX_CONNECTIONS_ALLOWED];
-static struct tcb s_tcb[TCP_MAX_CONNECTIONS_ALLOWED];
-static uint16_t s_id;
-static 	struct t_tcp s_tcp;
+static struct queue s_recv_queue[TCP_MAX_CONNECTIONS_ALLOWED] SECTION_NETWORK ALIGNED;
+static struct tcb s_tcb[TCP_MAX_CONNECTIONS_ALLOWED] SECTION_NETWORK ALIGNED;
+static uint16_t s_id SECTION_NETWORK ALIGNED;
+static struct t_tcp s_tcp SECTION_NETWORK ALIGNED;
 
 #if !defined (NDEBUG)
 static const char *state_name[] = {

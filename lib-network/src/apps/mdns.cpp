@@ -2,7 +2,7 @@
  * @file mdns.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -232,7 +232,7 @@ bool MDNS::AddServiceRecord(const char *pName, const char *pServName, uint16_t n
 			s_ServiceRecords[i].nProtocol = nProtocol;
 
 			if (pName == nullptr) {
-				s_ServiceRecords[i].pName = new char[1 + strlen(Network::Get()->GetHostName() + strlen(pServName))];
+				s_ServiceRecords[i].pName = new char[1 + strlen(Network::Get()->GetHostName()) + strlen(pServName)];
 				assert(s_ServiceRecords[i].pName != nullptr);
 
 				strcpy(s_ServiceRecords[i].pName, Network::Get()->GetHostName());

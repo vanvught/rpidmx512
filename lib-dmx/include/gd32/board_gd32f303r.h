@@ -1,8 +1,8 @@
 /**
- * @file networkconst.h
+ * @file board_gd32f303r.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef NETWORKCONST_H_
-#define NETWORKCONST_H_
+#ifndef GD32_BOARD_GD32F303R_H_
+#define GD32_BOARD_GD32F303R_H_
 
-struct NetworkConst {
-	static const char MSG_NETWORK_INIT[];
-	static const char MSG_NETWORK_STARTED[];
+#include "gd32_board.h"
 
-	static const char MSG_MDNS_CONFIG[];
-	static const char MSG_MDNS_STARTED[];
-};
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}
 
-#endif /* NETWORKCONST_H_ */
+#define DMX_MAX_PORTS  1
+
+#define DMX_USE_USART2
+static constexpr auto USART2_PORT = 0;
+
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
+
+#endif /* GD32_BOARD_GD32F303R_H_ */

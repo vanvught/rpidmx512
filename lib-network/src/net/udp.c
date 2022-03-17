@@ -41,6 +41,8 @@
 
 extern int console_error(const char *);
 
+#define SECTION_NETWORK
+
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
@@ -74,13 +76,13 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static uint32_t s_ports_allowed[UDP_MAX_PORTS_ALLOWED] ALIGNED;
-static struct queue s_recv_queue[UDP_MAX_PORTS_ALLOWED] ALIGNED;
-static struct t_udp s_send_packet ALIGNED;
-static uint16_t s_id ALIGNED;
-static uint32_t broadcast_mask;
-static uint32_t on_network_mask;
-static uint32_t gw_ip;
+static uint32_t s_ports_allowed[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
+static struct queue s_recv_queue[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
+static struct t_udp s_send_packet SECTION_NETWORK ALIGNED;
+static uint16_t s_id SECTION_NETWORK ALIGNED;
+static uint32_t broadcast_mask SECTION_NETWORK;
+static uint32_t on_network_mask SECTION_NETWORK;
+static uint32_t gw_ip SECTION_NETWORK;
 static uint8_t s_multicast_mac[ETH_ADDR_LEN] = {0x01, 0x00, 0x5E}; // Fixed part
 
 void udp_set_ip(const struct ip_info *p_ip_info) {
@@ -119,9 +121,9 @@ void __attribute__((cold)) udp_init(const uint8_t *mac_address, const struct ip_
 }
 
 void __attribute__((cold)) udp_shutdown(void) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 __attribute__((hot)) void udp_handle(struct t_udp *p_udp) {
