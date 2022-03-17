@@ -2,7 +2,7 @@
  * @file dummy_device.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 
 #include "hardware.h"
 #include "network.h"
@@ -37,7 +37,6 @@
 #include "software_version.h"
 
 #include "rdmnetdevice.h"
-#include "lightsetdebug.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 
@@ -63,11 +62,9 @@ int main(int argc, char **argv) {
 
 	lb.SetMode(ledblink::Mode::NORMAL);
 
-	LightSetDebug lighSetDebug;
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality("LLRP Dummy device", nullptr) };
+	RDMNetDevice device(pPersonalities, 1);
 
-	RDMPersonality personality("LLRP Dummy device", lighSetDebug.GetDmxFootprint());
-
-	RDMNetDevice device(&personality);
 	RDMDeviceParams rdmDeviceParams;
 
 	if (rdmDeviceParams.Load()) {

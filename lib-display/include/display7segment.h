@@ -75,6 +75,8 @@ enum class Display7SegmentMessage {
 	INFO_NTP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
 	INFO_SPARKFUN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_5),
 	INFO_CPLD = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_MDNS_CONFIG = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_7),
+	INFO_RDMNET_CONFIG = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_8),
 	//
 	INFO_NETWORK_SHUTDOWN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_9),
 	//
@@ -86,11 +88,13 @@ enum class Display7SegmentMessage {
 	INFO_NODE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	INFO_BRIDGE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	INFO_OSCCLIENT_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_RDMNET_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	//
 	INFO_NONE = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_NODE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_BRIDGE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_OSCCLIENT_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	INFO_RDMNET_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	// SPI Flash messages
 	INFO_SPI_NONE = display7segment::Msg(display7segment::CH_C, display7segment::CH_MIN),
 	INFO_SPI_CHECK = display7segment::Msg(display7segment::CH_C, display7segment::CH_0),
