@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -119,17 +119,15 @@ public:
 			IsSet = isMaskSet(e131params::Mask::UNIVERSE_A << nPortIndex);
 			return m_Params.nUniversePort[nPortIndex];
 		}
-
 		IsSet = false;
 		return 0;
 	}
 
-	lightset::PortDir GetDirection(uint32_t nPortIndex = 0) const {
+	lightset::PortDir GetDirection(uint32_t nPortIndex) const {
 		if (nPortIndex < e131params::MAX_PORTS) {
 			return static_cast<lightset::PortDir>((m_Params.nDirection >> nPortIndex) & 0x1);
-		} else {
-			return lightset::PortDir::OUTPUT;
 		}
+		return lightset::PortDir::DISABLE;
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
