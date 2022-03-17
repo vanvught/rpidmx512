@@ -88,7 +88,7 @@ void GPSTimeClient::Run() {
 	if (s_Status == Status::WAITING_PPS) {
 		if (platform_is_pps()) {
 			struct timeval tv;
-			tv.tv_sec = GetLocalSeconds() + 1U;
+			tv.tv_sec = GetLocalSeconds() + 1;
 			tv.tv_usec = 0;
 			settimeofday(&tv, nullptr);
 
