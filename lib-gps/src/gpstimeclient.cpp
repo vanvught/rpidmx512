@@ -2,7 +2,7 @@
  * @file gpstimeclient.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,7 @@
 #include "debug.h"
 
 enum Status {
-	NOT_SET,
-	WAITING_TIMEOUT,
-	WAITING_PPS
+	NOT_SET, WAITING_TIMEOUT, WAITING_PPS
 };
 
 static Status s_Status;
@@ -70,17 +68,13 @@ void GPSTimeClient::Run() {
 		if (GPS::IsTimeUpdated()) {
 			const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
 
-			if (nElapsedMillis < (1 * 1000)) {
-
+			if (nElapsedMillis <= 1) {
 				struct timeval tv;
 				tv.tv_sec = GPS::GetLocalSeconds();
 				tv.tv_usec = 0;
 				settimeofday(&tv, nullptr);
 
-				s_Status = Status::WAITING_TIMEOUT;
-
 				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
-
 				return;
 			}
 		}
@@ -94,7 +88,7 @@ void GPSTimeClient::Run() {
 	if (s_Status == Status::WAITING_PPS) {
 		if (platform_is_pps()) {
 			struct timeval tv;
-			tv.tv_sec = GetLocalSeconds();
+			tv.tv_sec = GetLocalSeconds() + 1U;
 			tv.tv_usec = 0;
 			settimeofday(&tv, nullptr);
 
@@ -106,21 +100,24 @@ void GPSTimeClient::Run() {
 
 		const auto nMillis = Hardware::Get()->Millis();
 
-		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (1 * 1000)), 0)) {
+		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (10 * 1000)), 0)) {
 			// There is no PPS
 			if (GPS::IsTimeUpdated()) {
+				const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
 
-				struct timeval tv;
-				tv.tv_sec = GPS::GetLocalSeconds();
-				tv.tv_usec = 0;
-				settimeofday(&tv, nullptr);
+				if (nElapsedMillis <= 1) {
+					struct timeval tv;
+					tv.tv_sec = GPS::GetLocalSeconds();
+					tv.tv_usec = 0;
+					settimeofday(&tv, nullptr);
 
-				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nMillis - GetTimeTimestampMillis());
+					DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
+				}
 			}
 
 			s_Status = Status::WAITING_TIMEOUT;
 
-			DEBUG_PUTS("((tv.tv_sec - nWaitPPS) >= 1 * 1000)");
+			DEBUG_PUTS("((tv.tv_sec - nWaitPPS) >= 10 * 1000)");
 			return;
 		}
 

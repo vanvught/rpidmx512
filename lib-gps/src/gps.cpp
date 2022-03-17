@@ -2,7 +2,7 @@
  * @file gps.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -193,6 +193,8 @@ void GPS::Run() {
 		return;
 	}
 
+	DumpSentence(m_pSentence);
+
 	uint32_t nOffset = 1 + nmea::length::TALKER_ID + nmea::length::TAG + 1; // $ and ,
 	uint32_t nFieldIndex = 1;
 
@@ -236,4 +238,18 @@ void GPS::Run() {
 
 void GPS::Display(GPSStatus status) { // Weak
 	printf("GPS status=%u\n", static_cast<uint32_t>(status));
+}
+
+void GPS::DumpSentence(__attribute__((unused)) const char *pSentence) {
+#ifndef NDEBUG
+	printf("%p |", pSentence);
+
+	const char *p = pSentence;
+
+	while (*p != '\r') {
+		putchar(*p++);
+	}
+
+	puts("|");
+#endif
 }
