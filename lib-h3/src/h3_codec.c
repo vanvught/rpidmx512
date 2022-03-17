@@ -6,7 +6,7 @@
  * Based on https://github.com/allwinner-zh/linux-3.4-sunxi/blob/master/sound/soc/sunxi/audiocodec/sun8iw7_sndcodec.c
  * Based on https://elixir.bootlin.com/linux/latest/source/sound/soc/sunxi/sun4i-codec.c
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
  * THE SOFTWARE.
  */
 
-//#undef NDEBUG
+#pragma GCC target ("general-regs-only")
 
 #include <stdint.h>
 #include <stdbool.h>

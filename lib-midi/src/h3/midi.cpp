@@ -2,7 +2,7 @@
  * @file midi.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 #include "h3_timer.h"
+
+#pragma GCC target ("general-regs-only")
 
 /**
  * NoteOn with 0 velocity should be handled as NoteOf.

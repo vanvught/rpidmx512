@@ -2,7 +2,7 @@
  * @file dmx.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC target ("general-regs-only")
 
 #include <cstdint>
 #include <cstdio>
@@ -739,11 +741,12 @@ uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 void Dmx::ClearData(__attribute__((unused)) uint32_t nPortIndex) {
 	assert(nPort == 0);
 
-	auto i = sizeof(s_DmxData) / sizeof(uint32_t);
-	auto *p = reinterpret_cast<uint32_t *>(s_DmxData);
+	for (uint32_t j = 0; j < buffer::INDEX_ENTRIES; j++) {
+		auto *p = reinterpret_cast<uint32_t *>(s_DmxData[j].Data);
 
-	while (i-- != 0) {
-		*p++ = 0;
+		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+			*p++ = 0;
+		}
 	}
 }
 
