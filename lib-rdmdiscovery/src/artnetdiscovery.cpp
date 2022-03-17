@@ -43,15 +43,20 @@
 TRdmMessage ArtNetRdmController::s_rdmMessage;
 uint32_t ArtNetRdmController::s_nPorts;
 
-ArtNetRdmController::ArtNetRdmController(uint32_t nPorts)  {
+ArtNetRdmController::ArtNetRdmController(uint32_t nPorts) {
 	assert(nPorts <= artnetnode::MAX_PORTS);
 
 	s_nPorts = nPorts;
+	uint32_t nPortIndex;
 
-	for (uint32_t nPortIndex = 0 ; nPortIndex < nPorts; nPortIndex++) {
+	for (nPortIndex = 0; nPortIndex < nPorts; nPortIndex++) {
 		m_Discovery[nPortIndex] = new RDMDiscovery(nPortIndex);
 		assert(m_Discovery[nPortIndex] != nullptr);
 		m_Discovery[nPortIndex]->SetUid(GetUID());
+	}
+
+	for (; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		m_Discovery[nPortIndex] = nullptr;
 	}
 
 	s_rdmMessage.start_code = E120_SC_RDM;

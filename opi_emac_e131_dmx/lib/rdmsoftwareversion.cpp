@@ -1,8 +1,8 @@
 /**
- * @file board_gd32f207r.h
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F207R_H_
-#define GPIO_BOARD_GD32F207R_H_
+#include <cstdint>
 
-#include "gd32.h"
+#include "rdmsoftwareversion.h"
 
-#define RCU_GPIOx			RCU_GPIOC
-#define GPIOx				GPIOC
-#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
-#define GPIO_PIN_OFFSET		6U
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-#define MASTER_TIMER_CLOCK	120000000U
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
+}
 
-#endif /* GPIO_BOARD_GD32F207R_H_ */
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
+
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

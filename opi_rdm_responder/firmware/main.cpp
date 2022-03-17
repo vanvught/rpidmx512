@@ -30,8 +30,8 @@
 #include "network.h"
 #include "ledblink.h"
 
-#include "display_timeout.h"
 #include "displayudf.h"
+#include "display_timeout.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
@@ -87,6 +87,8 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
+	lb.SetMode(ledblink::Mode::OFF_ON);
+
 	const auto isConfigMode = is_config_mode();
 
 	fw.Print();
@@ -108,7 +110,7 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-		/*
+	/*
 	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
 	 * Groups = Led count / Grouping count
 	 *
@@ -135,11 +137,11 @@ void notmain(void) {
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
 	pixelDmx.SetWS28xxDmxStore(&storeWS28xxDmx);
 
-	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
-
 	PixelDmxStartStop pixelDmxStartStop;
 	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
+
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	PixelDmxParamsRdm pixelDmxParamsRdm(&storeWS28xxDmx);
 
@@ -160,7 +162,7 @@ void notmain(void) {
 	}
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
-	snprintf(aDescription, sizeof(aDescription) -1, "%s:%u G%u [%s]",
+	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),

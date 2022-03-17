@@ -41,6 +41,7 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
+#include "display_timeout.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
@@ -62,11 +63,14 @@
 
 #include "lightset4with4.h"
 
-#include "rdmdeviceparams.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -93,6 +97,7 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -110,6 +115,7 @@ void notmain(void) {
 	nw.Print();
 	
 #if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
@@ -157,7 +163,7 @@ void notmain(void) {
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		hw.SetRebootHandler(new PixelReboot);
@@ -203,7 +209,8 @@ void notmain(void) {
 	bridge.SetOutput(&lightSet);
 	bridge.Print();
 
-	// RDMNet LLRP Only
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	if (WS28xx::Get() == nullptr) {
@@ -234,6 +241,7 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+#endif	
 
 	display.SetTitle("sACN E1.31 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
@@ -277,10 +285,17 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
+
+	llrpOnlyDevice.Start();
+
+	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
+#endif
+
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
-	llrpOnlyDevice.Start();
 
 	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
@@ -291,7 +306,9 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)		
 		llrpOnlyDevice.Run();
+#endif		
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();

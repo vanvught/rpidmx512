@@ -161,7 +161,7 @@ void notmain(void) {
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		hw.SetRebootHandler(new PixelReboot);

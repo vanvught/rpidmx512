@@ -76,7 +76,7 @@ U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3
 
 > Special thanks to [@trebisky](https://github.com/trebisky/orangepi) (Thomas J. Trebisky), who helped me in understanding the H3 SoC.
 
-#  Mac OS X / Linux / Cygwin [debugging purpose only]
+#  Mac OS X / Linux [debugging purpose only]
 ## Art-Net 4 / sACN E1.31 / OSC
 - **Art-Net 4** Real-time DMX Monitor
 - sACN **E.131** Real-time DMX Monitor

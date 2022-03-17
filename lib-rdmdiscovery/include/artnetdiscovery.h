@@ -41,22 +41,29 @@ public:
 	ArtNetRdmController(uint32_t nPorts = artnetnode::MAX_PORTS);
 	~ArtNetRdmController() override;
 
-	void Full(uint32_t nPortIndex = 0) override {
+	void Full(uint32_t nPortIndex) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < s_nPorts);
-		m_Discovery[nPortIndex]->Full();
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Full();
+		}
 	}
 
-	uint32_t GetUidCount(uint32_t nPortIndex = 0) override {
+	uint32_t GetUidCount(uint32_t nPortIndex) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < s_nPorts);
-		return m_Discovery[nPortIndex]->GetUidCount();
+		if (m_Discovery[nPortIndex] != nullptr) {
+			return m_Discovery[nPortIndex]->GetUidCount();
+		}
+		return 0;
 	}
 
 	void Copy(uint32_t nPortIndex, uint8_t *pTod) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < s_nPorts);
-		m_Discovery[nPortIndex]->Copy(pTod);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Copy(pTod);
+		}
 	}
 
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData) override;
@@ -65,10 +72,12 @@ public:
 		RDMDeviceController::Print();
 	}
 
-	void DumpTod(uint32_t nPortIndex = 0) {
+	void DumpTod(uint32_t nPortIndex) {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < s_nPorts);
-		m_Discovery[nPortIndex]->Dump();
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Dump();
+		}
 	}
 
 private:

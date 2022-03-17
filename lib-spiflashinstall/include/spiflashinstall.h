@@ -38,14 +38,17 @@
 # define OFFSET_UBOOT_SPI	0x000000
 # define OFFSET_UIMAGE		0x180000
 #elif defined (GD32)
-# define OFFSET_UIMAGE		0x007000		// 28K
 # if defined (BOARD_GD32F107R)
+#  define OFFSET_UIMAGE		0x007000		// 28K
 #  define FIRMWARE_MAX_SIZE (74 * 1024)		// 74K
 # elif defined (BOARD_GD32F207R)
+#  define OFFSET_UIMAGE		0x007000		// 28K
 #  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
 # elif defined (BOARD_GD32F207C_EVAL)
+#  define OFFSET_UIMAGE		0x007000		// 28K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
 # elif defined (BOARD_GD32F407R)
+#  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
 # endif
 #else

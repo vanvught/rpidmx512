@@ -1,8 +1,8 @@
 /**
- * @file board_gd32f207r.h
+ * @file display_timeout.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F207R_H_
-#define GPIO_BOARD_GD32F207R_H_
+#ifndef DISPLAY_TIMEOUT_H_
+#define DISPLAY_TIMEOUT_H_
 
-#include "gd32.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
 
-#define RCU_GPIOx			RCU_GPIOC
-#define GPIOx				GPIOC
-#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
-#define GPIO_PIN_OFFSET		6U
+namespace display {
+namespace timeout {
 
-#define MASTER_TIMER_CLOCK	120000000U
+void gpio_init() {
+	h3_gpio_fsel(KEY2_GPIO, GPIO_FSEL_INPUT);
+	h3_gpio_pud(KEY2_GPIO, GPIO_PULL_UP);
+}
 
-#endif /* GPIO_BOARD_GD32F207R_H_ */
+bool gpio_renew() {
+    return (h3_gpio_lev(KEY2_GPIO) == LOW);
+}
+
+}  // namespace timeout
+}  // namespace display
+
+#endif /* DISPLAY_TIMEOUT_H_ */

@@ -39,7 +39,6 @@
 #include "display_timeout.h"
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 #include "artnet4node.h"
@@ -47,15 +46,13 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 #include "artnetdiscovery.h"
+#include "artnet/displayudfhandler.h"
 
-// DMX/RDM Output
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "storedmxsend.h"
 #include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
 #include "dmxconfigudp.h"
-// DMX Input
+
 #include "dmxinput.h"
 
 #include "remoteconfig.h"
@@ -65,7 +62,9 @@
 #include "spiflashstore.h"
 #include "storeartnet.h"
 #include "storedisplayudf.h"
+#include "storedmxsend.h"
 #include "storenetwork.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
@@ -80,14 +79,14 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
 	fw.Print();
 
-	console_puts("Ethernet Art-Net 4 Node ");
+	console_puts("Art-Net 4 Node ");
 	console_set_fg_color (CONSOLE_GREEN);
 	console_puts("DMX");
 	console_set_fg_color (CONSOLE_WHITE);
@@ -133,7 +132,9 @@ void notmain(void) {
 		artnetParams.Dump();
 	}
 
+	DisplayUdfHandler displayUdfHandler;
 	node.SetArtNetDisplay(&displayUdfHandler);
+
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	uint8_t nAddress;
@@ -191,13 +192,13 @@ void notmain(void) {
 	StoreRDMDevice storeRdmDevice;
 
 	if (node.GetActiveOutputPorts() != 0) {
-		if(artnetParams.IsRdm()) {
+		if (artnetParams.IsRdm()) {
 			auto pDiscovery = new ArtNetRdmController;
 			assert(pDiscovery != nullptr);
 
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-			if(rdmDeviceParams.Load()) {
+			if (rdmDeviceParams.Load()) {
 				rdmDeviceParams.Set(pDiscovery);
 				rdmDeviceParams.Dump();
 			}
@@ -232,7 +233,7 @@ void notmain(void) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}

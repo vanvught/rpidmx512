@@ -95,7 +95,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("Ethernet sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes} / DMX" "\x1b[37m");
+	fw.Print("sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes} / DMX" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
@@ -108,20 +108,29 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
-	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 DMX");
+	mDns.Print();
+#endif
 
-	E131Bridge bridge;
+	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
-
+	
+	E131Bridge bridge;
+	
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
 		e131params.Dump();
 	}
 
 	// LightSet A - Pixel - 32 Universes
-
+	
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	StoreWS28xxDmx storeWS28xxDmx;
@@ -133,8 +142,8 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
-	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
 	bridge.SetOutput(&pixelDmxMulti);
 
@@ -200,12 +209,8 @@ void notmain(void) {
 	}
 	
 	LightSet32with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmxMulti, bridge.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
-	lightSet.Print();
 	
 	bridge.SetOutput(&lightSet);
-	bridge.Print();
-
-	// RDMNet LLRP Only
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
@@ -232,6 +237,9 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+
+	bridge.Print();
+	lightSet.Print();
 
 	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::VERSION);
@@ -266,8 +274,8 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
-	bridge.Start();
 	llrpOnlyDevice.Start();
+	bridge.Start();
 
 	if (pPixelTestPattern != nullptr) {
 		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());
@@ -292,6 +300,9 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

@@ -49,6 +49,12 @@
 
 #include "dmxmonitor.h"
 
+#include "rdmdeviceparams.h"
+#include "rdmnetdevice.h"
+#include "rdmpersonality.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
@@ -57,6 +63,7 @@
 #include "storedisplayudf.h"
 #include "storee131.h"
 #include "storenetwork.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
@@ -71,6 +78,7 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -114,6 +122,32 @@ void notmain(void) {
 		HwClock::Get()->SysToHc();
 	}
 
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 Real-time DMX Monitor");
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero DMX");
+
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
+
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreE131 storeE131;
@@ -138,7 +172,7 @@ void notmain(void) {
 
 	bridge.Print();
 
-	display.SetTitle("Eth sACN E1.31 Monitor");
+	display.SetTitle("sACN E1.31 Monitor");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -170,6 +204,7 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
+	llrpOnlyDevice.Start();
 	bridge.Start();
 
 	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
@@ -181,6 +216,7 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		ntpClient.Run();
 		lb.Run();

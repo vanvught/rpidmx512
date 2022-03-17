@@ -1,8 +1,8 @@
 /**
- * @file board_gd32f207r.h
+ * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,26 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F207R_H_
-#define GPIO_BOARD_GD32F207R_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-#include "gd32.h"
+#include "rdmfactorydefaults.h"
 
-#define RCU_GPIOx			RCU_GPIOC
-#define GPIOx				GPIOC
-#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
-#define GPIO_PIN_OFFSET		6U
+#include "remoteconfig.h"
+#include "spiflashstore.h"
+#include "storenetwork.h"
 
-#define MASTER_TIMER_CLOCK	120000000U
+class FactoryDefaults: public RDMFactoryDefaults {
+public:
+	FactoryDefaults() {}
+	~FactoryDefaults() {}
 
-#endif /* GPIO_BOARD_GD32F207R_H_ */
+	void Set() {
+		RemoteConfig::Get()->SetDisable(false);
+		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
+		StoreNetwork::Get()->SaveDhcp(true);
+	}
+};
+
+
+#endif /* FACTORYDEFAULTS_H_ */

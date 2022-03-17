@@ -35,7 +35,7 @@
 .global PIXEL8X4_PROGRAM
 
 PIXEL8X4_PROGRAM:
-	.incbin "../jbc/PIXEL8x4.jbc"
+	.incbin "jbc/PIXEL8x4.jbc"
 PIXEL8X4_SIZE = . - PIXEL8X4_PROGRAM
 
 FUNC getPIXEL8X4_SIZE

@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
@@ -35,21 +36,31 @@
 # include "mdnsservices.h"
 #endif
 
-#include "display_timeout.h"
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
+#include "display_timeout.h"
 
+#include "e131.h"
 #include "e131bridge.h"
 #include "e131params.h"
-#include "e131reboot.h"
 #include "e131msgconst.h"
-// DMX Output
+#include "e131reboot.h"
+
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "dmxconfigudp.h"
-// DMX Input
+
 #include "dmxinput.h"
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -60,6 +71,9 @@
 #include "storedmxsend.h"
 #include "storee131.h"
 #include "storenetwork.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "storerdmdevice.h"
+#endif
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
@@ -73,20 +87,11 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("Ethernet sACN E1.31 ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("DMX ");
-	console_set_fg_color(CONSOLE_WHITE);
-#if defined(ORANGE_PI)
-	console_puts("{2 Universes}\n");
-#else
-	console_puts("{4 Universes}\n");
-#endif
+	fw.Print("sACN E1.31 " "\x1b[32m" "DMX" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
@@ -100,6 +105,7 @@ void notmain(void) {
 	nw.Print();
 
 #if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
@@ -173,15 +179,42 @@ void notmain(void) {
 		bridge.SetE131Dmx(&dmxInput);
 	}
 
-	bridge.Print();
-
 	const auto nActivePorts = static_cast<uint32_t>(bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts());
 
-	// Display
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %u", nActivePorts);
+
+	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero DMX");
+
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
+#endif
+
+	bridge.Print();
 
 	display.SetTitle("sACN E1.31 DMX %u", nActivePorts);
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::NETMASK);
+	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_B);
 	display.Set(6, displayudf::Labels::BOARDNAME);
@@ -209,6 +242,14 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
+
+	llrpOnlyDevice.Start();
+
+	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
+#endif
+
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
@@ -222,6 +263,9 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)
+		llrpOnlyDevice.Run();
+#endif
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();

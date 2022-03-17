@@ -230,7 +230,7 @@ void notmain(void) {
 
 			console_status(CONSOLE_YELLOW, RUN_RDM);
 			display.TextStatus(RUN_RDM);
-			discovery.Full();
+			discovery.Full(0);
 
 			node.SetRdmHandler((ArtNetRdm *)&discovery);
 		}

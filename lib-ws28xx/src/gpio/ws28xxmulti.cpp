@@ -38,17 +38,26 @@
 #include "debug.h"
 
 #if defined (GD32F4XX)
-# define DMA_PARAMETER_STRUCT				dma_multi_data_parameter_struct
+// DMA
+# define DMA_PARAMETER_STRUCT				dma_single_data_parameter_struct
 # define DMA_CHMADDR						DMA_CHM0ADDR
 # define DMA_MEMORY_TO_PERIPHERAL			DMA_MEMORY_TO_PERIPH
-# define DMA_PERIPHERAL_WIDTH_32BIT			DMA_PERIPH_WIDTH_32BIT
-# define dma_init							dma_multi_data_mode_init
+# define dma_init							dma_single_data_mode_init
+# define dma_struct_para_init				dma_single_data_para_struct_init
 # define dma_memory_to_memory_disable(x,y)
+// GPIO
+# define GPIOx_BOP_OFFSET					0x18U;
+# define GPIOx_BC_OFFSET					0x28U;
 #else
+// DMA
 # define DMA_PARAMETER_STRUCT				dma_parameter_struct
+# define dma_interrupt_flag_clear(x,y,z)
+// GPIO
+# define GPIOx_BOP_OFFSET					0x10U;
+# define GPIOx_BC_OFFSET					0x14U;
 #endif
 
-static const uint32_t s_GPIO_PINs[] = { GPIO_PINx };
+static const uint16_t s_GPIO_PINs[] = { GPIO_PINx };
 static uint16_t s_T0H[(640 * 24)]__attribute__ ((aligned (4)));		//FIXME Use define's
 
 static constexpr uint32_t MASTER_TIMER_PERIOD = (0.00000125f * MASTER_TIMER_CLOCK) - 1U;
@@ -113,6 +122,7 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 #if !defined (GD32F4XX)
 	gpio_init(GPIOx, GPIO_MODE_OUT_PP, GPIO_OSPEED_50MHZ, GPIO_PINx);
 #else
+	gpio_af_set(GPIOx, GPIO_AF_0, GPIO_PINx);
     gpio_mode_set(GPIOx, GPIO_MODE_OUTPUT, GPIO_PUPD_PULLDOWN, GPIO_PINx);
     gpio_output_options_set(GPIOx, GPIO_OTYPE_PP, GPIO_OSPEED_50MHZ, GPIO_PINx);
 #endif
@@ -193,10 +203,11 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	 */
 
 	DMA_PARAMETER_STRUCT dma_init_struct;
-	rcu_periph_clock_enable(RCU_DMA1);
+	rcu_periph_clock_enable(TIMER7_RCU_DMAx);
 
-	// Timer 7 Channel 0, DMA Channel 2
-	dma_deinit(DMA1, DMA_CH2);
+	// Timer 7 Channel 0
+	dma_deinit(TIMER7_DMAx, TIMER7_CH0_DMA_CHx);
+	dma_struct_para_init(&dma_init_struct);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
 #if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_GPIO_PINs;
@@ -204,18 +215,28 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	dma_init_struct.memory0_addr = (uint32_t) s_GPIO_PINs;
 #endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_DISABLE;
-	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_32BIT;
-	dma_init_struct.periph_addr = GPIOx + 0x10U;
+#if !defined (GD32F4XX)
+	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_16BIT;
+#endif
+	dma_init_struct.periph_addr = GPIOx + GPIOx_BOP_OFFSET;
 	dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
-	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_32BIT;
+#if !defined (GD32F4XX)
+	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_16BIT;
+#else
+	dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_16BIT;
+#endif
 	dma_init_struct.priority = DMA_PRIORITY_HIGH;
-	dma_init(DMA1, DMA_CH2, &dma_init_struct);
+	dma_init(TIMER7_DMAx, TIMER7_CH0_DMA_CHx, &dma_init_struct);
 	/* configure DMA mode */
-	dma_circulation_disable(DMA1, DMA_CH2);
-	dma_memory_to_memory_disable(DMA1, DMA_CH2);
+	dma_circulation_disable(TIMER7_DMAx, TIMER7_CH0_DMA_CHx);
+	dma_memory_to_memory_disable(TIMER7_DMAx, TIMER7_CH0_DMA_CHx);
+#if defined (GD32F4XX)
+	dma_channel_subperipheral_select(TIMER7_DMAx, TIMER7_CH0_DMA_CHx, TIMER7_CH0_DMA_SUBPERIx);
+#endif
 
-	// Timer 7 Channel 1, DMA Channel 4
-	dma_deinit(DMA1, DMA_CH4);
+	// Timer 7 Channel 1
+	dma_deinit(TIMER7_DMAx, TIMER7_CH1_DMA_CHx);
+	dma_struct_para_init(&dma_init_struct);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
 #if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_T0H;
@@ -223,17 +244,28 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	dma_init_struct.memory0_addr = (uint32_t) s_T0H;
 #endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_ENABLE;
+#if !defined (GD32F4XX)
 	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_16BIT;
-	dma_init_struct.periph_addr = GPIOx + 0x14U;
+#endif
+	dma_init_struct.periph_addr = GPIOx + GPIOx_BC_OFFSET;
 	dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
-	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_32BIT;
-	dma_init(DMA1, DMA_CH4, &dma_init_struct);
+#if !defined (GD32F4XX)
+	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_16BIT;
+#else
+	dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_16BIT;
+#endif
+	dma_init_struct.priority = DMA_PRIORITY_HIGH;
+	dma_init(TIMER7_DMAx, TIMER7_CH1_DMA_CHx, &dma_init_struct);
 	/* configure DMA mode */
-	dma_circulation_disable(DMA1, DMA_CH4);
-	dma_memory_to_memory_disable(DMA1, DMA_CH4);
+	dma_circulation_disable(TIMER7_DMAx, TIMER7_CH1_DMA_CHx);
+	dma_memory_to_memory_disable(TIMER7_DMAx, TIMER7_CH1_DMA_CHx);
+#if defined (GD32F4XX)
+	dma_channel_subperipheral_select(TIMER7_DMAx, TIMER7_CH1_DMA_CHx, TIMER7_CH1_DMA_SUBPERIx);
+#endif
 
-	// Timer 7 Channel 2, DMA Channel 0
-	dma_deinit(DMA1, DMA_CH0);
+	// Timer 7 Channel 2
+	dma_deinit(TIMER7_DMAx, TIMER7_CH2_DMA_CHx);
+	dma_struct_para_init(&dma_init_struct);
 	dma_init_struct.direction = DMA_MEMORY_TO_PERIPHERAL;
 #if !defined (GD32F4XX)
 	dma_init_struct.memory_addr = (uint32_t) s_GPIO_PINs;
@@ -241,15 +273,24 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 	dma_init_struct.memory0_addr = (uint32_t) s_GPIO_PINs;
 #endif
 	dma_init_struct.memory_inc = DMA_MEMORY_INCREASE_DISABLE;
-	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_32BIT;
-	dma_init_struct.periph_addr = GPIOx + 0x14U;
+#if !defined (GD32F4XX)
+	dma_init_struct.memory_width = DMA_MEMORY_WIDTH_16BIT;
+#endif
+	dma_init_struct.periph_addr = GPIOx + GPIOx_BC_OFFSET;
 	dma_init_struct.periph_inc = DMA_PERIPH_INCREASE_DISABLE;
-	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_32BIT;
+#if !defined (GD32F4XX)
+	dma_init_struct.periph_width = DMA_PERIPHERAL_WIDTH_16BIT;
+#else
+	dma_init_struct.periph_memory_width = DMA_PERIPH_WIDTH_16BIT;
+#endif
 	dma_init_struct.priority = DMA_PRIORITY_HIGH;
-	dma_init(DMA1, DMA_CH0, &dma_init_struct);
+	dma_init(TIMER7_DMAx, TIMER7_CH2_DMA_CHx, &dma_init_struct);
 	/* configure DMA mode */
-	dma_circulation_disable(DMA1, DMA_CH0);
-	dma_memory_to_memory_disable(DMA1, DMA_CH0);
+	dma_circulation_disable(TIMER7_DMAx, TIMER7_CH2_DMA_CHx);
+	dma_memory_to_memory_disable(TIMER7_DMAx, TIMER7_CH2_DMA_CHx);
+#if defined (GD32F4XX)
+	dma_channel_subperipheral_select(TIMER7_DMAx, TIMER7_CH2_DMA_CHx, TIMER7_CH2_DMA_SUBPERIx);
+#endif
 
 	/**
 	 * END DMA configuration
@@ -263,9 +304,9 @@ WS28xxMulti::~WS28xxMulti() {
 }
 
 void WS28xxMulti::Print() {
-	printf("Pixel parameters\n");
-	printf(" Type    : %s [%d] - %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type), PixelType::GetMap(m_Map), static_cast<int>(m_Map));
-	printf(" Count   : %d\n", m_nCount);
+	printf("Pixel\n");
+	printf(" Type  : %s [%d] - %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type), PixelType::GetMap(m_Map), static_cast<int>(m_Map));
+	printf(" Count : %d\n", m_nCount);
 }
 
 void WS28xxMulti::Update() {
@@ -279,20 +320,23 @@ void WS28xxMulti::Update() {
 	timer_disable(TIMER7);
 	TIMER_CNT(TIMER7) = 0;
 
-	DMA_CHCTL(DMA1, DMA_CH2) &= ~DMA_CHXCTL_CHEN;
-	DMA_CHMADDR(DMA1, DMA_CH2) = (uint32_t) s_GPIO_PINs;
-	DMA_CHCNT(DMA1, DMA_CH2) = (m_nBufSize & DMA_CHXCNT_CNT);
-	DMA_CHCTL(DMA1, DMA_CH2) |= DMA_CHXCTL_CHEN;
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH0_DMA_CHx) &= ~DMA_CHXCTL_CHEN;
+	dma_interrupt_flag_clear(TIMER7_DMAx, TIMER7_CH0_DMA_CHx, DMA_INTF_FTFIF);
+	DMA_CHMADDR(TIMER7_DMAx, TIMER7_CH0_DMA_CHx) = (uint32_t) s_GPIO_PINs;
+	DMA_CHCNT(TIMER7_DMAx, TIMER7_CH0_DMA_CHx) = (m_nBufSize & DMA_CHXCNT_CNT);
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH0_DMA_CHx) |= DMA_CHXCTL_CHEN;
 
-	DMA_CHCTL(DMA1, DMA_CH4) &= ~DMA_CHXCTL_CHEN;
-	DMA_CHMADDR(DMA1, DMA_CH4) = (uint32_t) s_T0H;
-	DMA_CHCNT(DMA1, DMA_CH4) = ((m_nBufSize) & DMA_CHXCNT_CNT);
-	DMA_CHCTL(DMA1, DMA_CH4) |= DMA_CHXCTL_CHEN;
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH1_DMA_CHx) &= ~DMA_CHXCTL_CHEN;
+	dma_interrupt_flag_clear(TIMER7_DMAx, TIMER7_CH1_DMA_CHx, DMA_INTF_FTFIF);
+	DMA_CHMADDR(TIMER7_DMAx, TIMER7_CH1_DMA_CHx) = (uint32_t) s_T0H;
+	DMA_CHCNT(TIMER7_DMAx, TIMER7_CH1_DMA_CHx) = ((m_nBufSize) & DMA_CHXCNT_CNT);
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH1_DMA_CHx) |= DMA_CHXCTL_CHEN;
 
-	DMA_CHCTL(DMA1, DMA_CH0) &= ~DMA_CHXCTL_CHEN;
-	DMA_CHMADDR(DMA1, DMA_CH0) = (uint32_t) s_GPIO_PINs;
-	DMA_CHCNT(DMA1, DMA_CH0) = ((m_nBufSize) & DMA_CHXCNT_CNT);
-	DMA_CHCTL(DMA1, DMA_CH0) |= DMA_CHXCTL_CHEN;
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH2_DMA_CHx) &= ~DMA_CHXCTL_CHEN;
+	dma_interrupt_flag_clear(TIMER7_DMAx, TIMER7_CH2_DMA_CHx, DMA_INTF_FTFIF);
+	DMA_CHMADDR(DMA1, TIMER7_CH2_DMA_CHx) = (uint32_t) s_GPIO_PINs;
+	DMA_CHCNT(TIMER7_DMAx, TIMER7_CH2_DMA_CHx) = ((m_nBufSize) & DMA_CHXCNT_CNT);
+	DMA_CHCTL(TIMER7_DMAx, TIMER7_CH2_DMA_CHx) |= DMA_CHXCTL_CHEN;
 
 	timer_dma_enable(TIMER7, TIMER_DMA_CH0D);
 	timer_dma_enable(TIMER7, TIMER_DMA_CH1D);
@@ -306,9 +350,9 @@ void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 	do {
 		__DMB();
-	}	while (sv_isRunning);
+	} while (sv_isRunning);
 
-	for (uint32_t i = 0;  i < sizeof(s_T0H) / sizeof(s_T0H[0]); i++) {
+	for (auto i = 0; i < sizeof(s_T0H) / sizeof(s_T0H[0]); i++) {
 		s_T0H[i] = GPIO_PINx;
 	}
 
@@ -316,7 +360,7 @@ void WS28xxMulti::Blackout() {
 
 	do {
 		__DMB();
-	}	while (sv_isRunning);
+	} while (sv_isRunning);
 	DEBUG_EXIT
 }
 
@@ -343,9 +387,6 @@ void WS28xxMulti::SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t n
 	uint32_t j = 0;
 	const auto k = nPixelIndex * pixel::single::RGB;
 	const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
-
-	assert(nBit < 8);
-
 	auto *p = &s_T0H[k];
 
 	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
@@ -408,9 +449,6 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 	uint32_t j = 0;
 	const auto k = nPixelIndex * pixel::single::RGBW;
 	const auto nBit = nPortIndex + GPIO_PIN_OFFSET;
-
-	assert(nBit < 8);
-
 	auto *p = &s_T0H[k];
 
 	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {

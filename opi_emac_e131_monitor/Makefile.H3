@@ -1,6 +1,7 @@
 PLATFORM=ORANGE_PI_ONE
 
 DEFINES =NODE_E131 LIGHTSET_PORTS=1
+DEFINES+=NODE_RDMNET_LLRP_ONLY
 DEFINES+=OUTPUT_DMX_MONITOR
 DEFINES+=CONSOLE_FB
 DEFINES+=ENABLE_SPIFLASH 
@@ -10,8 +11,9 @@ DEFINES+=NDEBUG
 
 LIBS=
 
-SRCDIR=firmware
+SRCDIR=firmware lib
 
 include ../firmware-template-h3/Rules.mk
 
 prerequisites:
+	./generate_sofware_version_id.sh

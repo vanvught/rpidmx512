@@ -2,7 +2,7 @@
  * @file spiflashstore.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,18 +83,25 @@ SpiFlashStore::SpiFlashStore() {
 }
 
 bool SpiFlashStore::Init() {
+	DEBUG_ENTRY
+
 	const auto nEraseSize = FlashRom::Get()->GetSectorSize();
 	assert(FlashStore::SIZE == nEraseSize);
 
 	if (FlashStore::SIZE != nEraseSize) {
+		DEBUG_EXIT
 		return false;
 	}
 
 	s_nStartAddress = FlashRom::Get()->GetSize() - nEraseSize;
+
+#if !defined (GD32F4XX)	//FIXME Remove #if !defined (GD32F4XX)
 	assert(s_nStartAddress != 0);
 	assert(!(s_nStartAddress % nEraseSize));
+#endif
 
 	if (s_nStartAddress % nEraseSize) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -133,6 +140,7 @@ bool SpiFlashStore::Init() {
 
 		s_State = State::CHANGED;
 
+		DEBUG_EXIT
 		return true;
 	}
 
@@ -150,6 +158,7 @@ bool SpiFlashStore::Init() {
 		}
 	}
 
+	DEBUG_EXIT
 	return true;
 }
 
@@ -192,8 +201,6 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 	assert(tStore < Store::LAST);
 	assert(pData != nullptr);
 	assert((nOffset + nDataLength) <= s_aStorSize[static_cast<uint32_t>(tStore)]);
-
-//	debug_dump(const_cast<void*>(pData), static_cast<uint16_t>(nDataLength));
 
 	auto bIsChanged = false;
 
@@ -244,7 +251,7 @@ void SpiFlashStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32
 
 	DEBUG_PRINTF("*pSet=0x%x", reinterpret_cast<uint32_t>(*pSet));
 
-	if ((__builtin_expect((s_bIsNew), 0)) || (__builtin_expect((*pSet == 0), 0))) {
+	if (__builtin_expect((*pSet == 0), 0)) {
 		Update(tStore, nOffset, pData, nDataLength);
 		DEBUG_EXIT
 		return;

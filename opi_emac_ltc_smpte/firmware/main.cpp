@@ -103,7 +103,7 @@
 #include "software_version.h"
 
 #if defined(ENABLE_SHELL)
-# include "h3/shell.h"
+# include "shell/shell.h"
 #endif
 
 extern "C" {

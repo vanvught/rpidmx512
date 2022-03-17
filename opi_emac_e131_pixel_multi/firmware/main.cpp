@@ -24,12 +24,10 @@
  */
 
 #include <cstdint>
-#include <cstdio>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
 
 #if defined (ENABLE_HTTPD)
@@ -39,40 +37,54 @@
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
+#include "display_timeout.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
-#include "e131reboot.h"
 #include "e131msgconst.h"
 
-#include "pixeltestpattern.h"
+#include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
+#include "pixeltestpattern.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
 #include "ws28xxdmxstartstop.h"
 #include "handleroled.h"
 
-#include "rdmdeviceparams.h"
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
+#include "storedisplayudf.h"
 #include "storee131.h"
-#include "storerdmdevice.h"
+#include "storenetwork.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "storerdmdevice.h"
+#endif
 #include "storeremoteconfig.h"
 #include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "displayhandler.h"
+class Reboot final: public RebootHandler {
+public:
+	void Run() override {
+		E131Bridge::Get()->Stop();
+		WS28xxMulti::Get()->Blackout();
+	}
+};
 
 extern "C" {
 
@@ -82,13 +94,14 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("Ethernet sACN E1.31 " "\x1b[32m" "Pixel controller {4x/8x 4 Universes}" "\x1b[37m");
+	fw.Print("sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new E131Reboot);
+	hw.SetRebootHandler(new Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -97,8 +110,9 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
-	
+
 #if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
@@ -111,7 +125,7 @@ void notmain(void) {
 
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
-	
+
 	E131Bridge bridge;
 
 	if (e131params.Load()) {
@@ -133,8 +147,6 @@ void notmain(void) {
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
-	bridge.SetOutput(&pixelDmxMulti);
-
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
 
@@ -151,14 +163,18 @@ void notmain(void) {
 		}
 	}
 
-	uint8_t nTestPattern;
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
 	PixelTestPattern *pPixelTestPattern = nullptr;
 
-	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern), nActivePorts);
+	if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		pPixelTestPattern = new PixelTestPattern(nTestPattern, nActivePorts);
 		bridge.SetOutput(nullptr);
+	} else {
+		bridge.SetOutput(&pixelDmxMulti);
 	}
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
@@ -184,6 +200,7 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+#endif
 
 	bridge.Print();
 	pixelDmxMulti.Print();
@@ -211,7 +228,7 @@ void notmain(void) {
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
 	}
@@ -219,10 +236,17 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
+
+	llrpOnlyDevice.Start();
+
+	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
+#endif
+
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	bridge.Start();
-	llrpOnlyDevice.Start();
 
 	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
@@ -233,7 +257,9 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
+#endif
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
