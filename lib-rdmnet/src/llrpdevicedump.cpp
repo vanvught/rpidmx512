@@ -38,7 +38,8 @@
 #include "debug.h"
 
 void LLRPDevice::DumpCommon() {
-#ifndef NDEBUG
+#if 0
+//#ifndef NDEBUG
 	auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(m_pLLRP);
 
 	printf("RootLayerPreAmble.PreAmbleSize=0x%.04x\n", __builtin_bswap16(pCommon->RootLayerPreAmble.PreAmbleSize));

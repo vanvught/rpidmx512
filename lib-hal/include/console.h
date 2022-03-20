@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,29 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#include <cstdint>
-
 #define CONSOLE_OK	0	///< Call console_init() OK
 
 #ifdef __cplusplus
+# include <cstdint>
 # define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
 #else
+# include <stdint.h>
 # define RGB(r, g, b) ((((uint32_t)(r) & 0xFF) << 16) | (((uint32_t)(g) & 0xFF) << 8) | (((uint32_t)(b) & 0xFF)))
+#endif
+
+#if defined (CONSOLE_NULL) || !defined (CONSOLE_FB)
+// ANSI colors
+typedef enum {
+	CONSOLE_BLACK = 0,
+	CONSOLE_RED = 1,
+	CONSOLE_GREEN = 2,
+	CONSOLE_YELLOW = 3,
+	CONSOLE_BLUE = 4,
+	CONSOLE_MAGENTA = 5
+,	CONSOLE_CYAN = 6,
+	CONSOLE_WHITE = 7,
+	CONSOLE_DEFAULT = 9
+} _console_colors;
 #endif
 
 #if defined (CONSOLE_FB)
@@ -42,8 +57,24 @@
 # else
 #  include "rpi/console_fb.h"
 # endif
+#elif defined (CONSOLE_NULL)
+inline static int console_init(void) {return CONSOLE_OK;}
+inline static console_putc(__attribute__((unused)) int i) {}
+inline static void console_puts(__attribute__((unused)) const char *p) {}
+inline static void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {}
+inline static void console_status(__attribute__((unused)) uint32_t i, __attribute__((unused)) const char *p) {}
+inline static void console_error(__attribute__((unused)) const char *p) {}
 #else
-# include "console_uart0.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+extern void console_set_fg_color(uint16_t);
+extern void console_set_bg_color(uint16_t);
+
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 #ifdef __cplusplus

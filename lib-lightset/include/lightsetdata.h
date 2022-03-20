@@ -2,7 +2,7 @@
  * @file lightsetdata.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,9 +31,18 @@
 #include <algorithm>
 #include <cassert>
 
-#include <cstdio>
-
 #include "lightset.h"
+
+#if defined (GD32)
+# include "gd32.h"
+# if !defined (GD32F4XX)
+#  define SECTION_LIGHTSET
+# else
+#  define SECTION_LIGHTSET __attribute__ ((section (".lightset")))
+# endif
+#else
+# define SECTION_LIGHTSET
+#endif
 
 namespace lightset {
 
@@ -42,7 +51,7 @@ public:
 	Data(const Data&) = delete;
 
 	static Data& Get() {
-		static Data instance;
+		static Data instance SECTION_LIGHTSET;
 		return instance;
 	}
 

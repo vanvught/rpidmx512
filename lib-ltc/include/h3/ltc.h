@@ -2,7 +2,7 @@
  * @file ltc.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "h3/ltcgenerator.h"
 #include "h3/rtpmidireader.h"
 #include "h3/systimereader.h"
+#include "h3/ltcetcreader.h"
 #include "h3/ltcoutputs.h"
 
 #endif /* H3_LTC_H_ */

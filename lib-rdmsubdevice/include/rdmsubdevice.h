@@ -31,12 +31,12 @@
 
 struct TRDMSubDevicesInfo {
 	uint16_t dmx_footprint;
+	uint16_t dmx_start_address;
 	uint8_t current_personality;
 	uint8_t personality_count;
-	uint16_t dmx_start_address;
-	uint8_t sensor_count;
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t nLabelLength;
+	uint8_t sensor_count;
 };
 
 enum TRDMSubDeviceUpdateEvent {
@@ -50,6 +50,7 @@ public:
 	virtual ~RDMSubDevice();
 
 	void SetDmxStartAddress(uint16_t nDmxStartAddress);
+
 	uint16_t GetDmxStartAddress() const {
 		return m_tSubDevicesInfo.dmx_start_address;
 	}
@@ -98,10 +99,10 @@ private:
 	RDMPersonality **m_pRDMPersonalities;
 	bool m_IsFactoryDefaults;
 	uint16_t m_nCheckSum;
-	char m_aLabelFactoryDefault[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint16_t m_nDmxStartAddressFactoryDefault;
 	uint8_t m_nCurrentPersonalityFactoryDefault;
-	struct TRDMSubDevicesInfo m_tSubDevicesInfo;
+	TRDMSubDevicesInfo m_tSubDevicesInfo;
+	char m_aLabelFactoryDefault[RDM_DEVICE_LABEL_MAX_LENGTH];
 };
 
 #endif /* RDMSUBDEVICE_H_ */

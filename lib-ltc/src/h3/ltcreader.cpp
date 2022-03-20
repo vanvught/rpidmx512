@@ -2,7 +2,7 @@
  * @file ltcreader.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,8 @@
 #include "midi.h"
 //
 #include "h3/ltcoutputs.h"
+
+#pragma GCC target ("general-regs-only")
 
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))
@@ -257,6 +259,10 @@ void LtcReader::Run() {
 
 		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
+		}
+
+		if (!m_ptLtcDisabledOutputs->bEtc) {
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 		}
 
 		if (m_tTimeCodeTypePrevious != TimeCodeType) {

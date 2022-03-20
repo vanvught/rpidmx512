@@ -116,3 +116,8 @@ int RDMResponder::Run() {
 	return DISCOVERY_RESPONSE;
 }
 
+void __attribute__((weak)) RDMResponder::PersonalityUpdate(__attribute__((unused)) uint32_t nPersonality)  {
+}
+
+void __attribute__((weak))DmxStartAddressUpdate(__attribute__((unused)) uint16_t nDmxStartAddress) {
+}

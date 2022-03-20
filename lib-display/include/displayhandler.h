@@ -31,7 +31,7 @@
 #include "ledblink.h"
 #include "display.h"
 
-struct DisplayHandler: public LedBlinkDisplay {
+struct DisplayHandler final: public LedBlinkDisplay {
 	DisplayHandler() : m_bHaveDisplay(Display::Get() != nullptr) {
 	}
 	~DisplayHandler() {

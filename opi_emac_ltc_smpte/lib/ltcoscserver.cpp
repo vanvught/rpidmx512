@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 
 #include "ltcdisplayrgb.h"
 #include "ltcoscserver.h"
@@ -176,7 +176,7 @@ void LtcOscServer::Run() {
 		return;
 	}
 
-	if (OSC::isMatch(m_pBuffer, m_aPath)) {
+	if (osc::is_match(m_pBuffer, m_aPath)) {
 		const auto nCommandLength = strlen(m_pBuffer);
 
 		DEBUG_PRINTF("[%s]:%d %d:|%s|", m_pBuffer, static_cast<int>(nCommandLength), m_nPathLength, &m_pBuffer[m_nPathLength]);

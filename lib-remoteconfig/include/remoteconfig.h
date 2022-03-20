@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@
 
 #include "spiflashstore.h"
 
-#if !defined(DISABLE_TFTP)
+#if defined(ENABLE_TFTP_SERVER)
 # include "tftp/tftpfileserver.h"
 #endif
 
@@ -129,6 +129,7 @@ enum class TxtFile {
 	GPS,
 	RGBPANEL,
 	DDPDISP,
+	LTCETC,
 	LAST
 };
 }  // namespace remoteconfig
@@ -193,9 +194,7 @@ public:
 		HandleReboot();
 	}
 
-#if !defined(DISABLE_TFTP)
 	void TftpExit();
-#endif
 
 	int32_t GetIndex(const void *p, uint32_t& nLength);
 
@@ -243,6 +242,7 @@ private:
 	void HandleGetLdisplayTxt(uint32_t& nSize);
 	void HandleGetTCNetTxt(uint32_t& nSize);
 	void HandleGetGpsTxt(uint32_t& nSize);
+	void HandleGetLtcEtcTxt(uint32_t& nSize);
 #endif
 
 #if defined (NODE_OSC_CLIENT)
@@ -337,6 +337,7 @@ private:
 	void HandleSetLdisplayTxt();
 	void HandleSetTCNetTxt();
 	void HandleSetGpsTxt();
+	void HandleSetLtcEtcTxt();
 #endif
 
 #if defined (NODE_OSC_CLIENT)
@@ -408,10 +409,17 @@ private:
 	void HandleTftpSet();
 	void HandleTftpGet();
 
+	void PlatformHandleTftpSet();
+	void PlatformHandleTftpGet();
+
 private:
 	remoteconfig::Node m_tNode;
 	remoteconfig::Output m_tOutput;
 	uint32_t m_nActiveOutputs;
+
+#if defined (ENABLE_HTTPD)
+	HttpDaemon m_HttpDaemon;
+#endif
 
 	struct Commands {
 		void (RemoteConfig::*pHandler)();
@@ -453,22 +461,18 @@ private:
 
 	int32_t m_nHandle { -1 };
 	uint32_t m_nIPAddressFrom { 0 };
-	uint16_t m_nBytesReceived { 0 };
+	uint32_t m_nBytesReceived { 0 };
 
 	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
 
-#if !defined(DISABLE_TFTP)
+#if defined(ENABLE_TFTP_SERVER)
 	TFTPFileServer *m_pTFTPFileServer { nullptr };
 	uint8_t *m_pTFTPBuffer { nullptr };
-	bool m_bEnableTFTP { false };
 #endif
+	bool m_bEnableTFTP { false };
 
 #if !defined(DISABLE_BIN)
 	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
-#endif
-
-#if defined(ENABLE_HTTPD)
-	HttpDaemon m_HttpDaemon;
 #endif
 
 	static char *s_pUdpBuffer;

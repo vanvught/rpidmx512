@@ -54,6 +54,14 @@
 # include "network.h"
 #endif
 
+#if defined (RDM_RESPONDER)
+# if defined (NODE_ARTNET)
+#   include "artnetrdmresponder.h"
+# else
+#   include "rdmresponder.h"
+# endif
+#endif
+
 namespace displayudf {
 static constexpr auto LABEL_MAX_ROWS = 6;
 enum class Labels {
@@ -89,7 +97,7 @@ enum class PortDir {
 }  // namespace dmx
 }  // namespace displayudf
 
-class DisplayUdf: public Display {
+class DisplayUdf final: public Display {
 public:
 	DisplayUdf();
 
@@ -120,8 +128,19 @@ public:
 	}
 #endif
 
-	// LightSet
-	void ShowDmxStartAddress();
+	// RDM Responder
+	void ShowDmxStartAddress() {
+#if defined (RDM_RESPONDER)
+# if defined (NODE_ARTNET)
+		const auto nDmxStartAddress = ArtNetRdmResponder::Get()->GetDmxStartAddress();
+		const auto nDmxFootprint = ArtNetRdmResponder::Get()->GetDmxFootPrint();
+# else
+		const auto nDmxStartAddress = RDMResponder::Get()->GetDmxStartAddress();
+		const auto nDmxFootprint = RDMResponder::Get()->GetDmxFootPrint();
+# endif
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_START_ADDRESS)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
+#endif
+	}
 
 #if !defined (NO_EMAC)
 	void ShowEmacStart();
@@ -148,6 +167,7 @@ public:
 	static DisplayUdf *Get() {
 		return s_pThis;
 	}
+
 private:
 	char m_aTitle[32];
 	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];

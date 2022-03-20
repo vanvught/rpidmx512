@@ -79,10 +79,10 @@ void LightSetChain::Print() {
 }
 
 bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (nDmxStartAddress == m_nDmxStartAddress) {
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return true;
 	}
 
@@ -95,18 +95,12 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	DEBUG_PRINTF("s_pLightSetDisplay=%p", reinterpret_cast<void *>(s_pLightSetDisplay));
-
-	if (s_pLightSetDisplay != nullptr) {
-		s_pLightSetDisplay->ShowDmxStartAddress();
-	}
-
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return true;;
 }
 
 bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, SlotInfo &tSlotInfo) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (nSlotOffset > m_nDmxFootprint) {
 		return false;
@@ -136,20 +130,20 @@ bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, SlotInfo &tSlotInfo) {
 		}
 
 		if (m_pTable[i].pLightSet->GetSlotInfo(static_cast<uint16_t>(nOffset), tSlotInfo)) {
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return true;
 		}
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return false;
 }
 
 bool LightSetChain::Add(LightSet *pLightSet, int nType) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	if (m_nSize == LIGHTSET_CHAIN_MAX_ENTRIES) {
-		DEBUG1_EXIT
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -174,7 +168,7 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 #ifndef NDEBUG
 				printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", m_nDmxStartAddress, m_nDmxFootprint);
 #endif
-				DEBUG1_EXIT
+				DEBUG_EXIT
 				return true;
 			}
 
@@ -194,15 +188,15 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 #ifndef NDEBUG
 			printf("m_nDmxStartAddress=%d, m_nDmxFootprint=%d\n", m_nDmxStartAddress, m_nDmxFootprint);
 #endif
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return true;
 		} else {
-			DEBUG1_EXIT
+			DEBUG_EXIT
 			return false;
 		}
 	}
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 	return false;
 }
 

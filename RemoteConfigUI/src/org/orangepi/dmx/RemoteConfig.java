@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1140,6 +1140,12 @@ public class RemoteConfig extends JFrame {
 
 				if (nodeGPS != null) {
 					child.add(new DefaultMutableTreeNode(nodeGPS));
+				}
+				
+				String nodeETC = ((OrangePi) child.getUserObject()).getNodeETC();
+
+				if (nodeETC != null) {
+					child.add(new DefaultMutableTreeNode(nodeETC));
 				}
 
 				root.add(child);

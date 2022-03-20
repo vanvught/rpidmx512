@@ -408,10 +408,6 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	if (s_pLightSetDisplay != 0) {
-		s_pLightSetDisplay->ShowDmxStartAddress();
-	}
-
 	DEBUG_EXIT;
 	return true;
 }

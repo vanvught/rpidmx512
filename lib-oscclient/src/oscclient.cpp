@@ -120,7 +120,7 @@ int OscClient::Run() {
 		}
 
 		if ((m_pOscClientLed != nullptr) && (!HandleLedMessage())) {
-			if (!OSC::isMatch(m_pBuffer, "/pong")) {
+			if (!osc::is_match(m_pBuffer, "/pong")) {
 				DEBUG_PUTS(m_pBuffer);
 				return 0;
 			}
@@ -217,7 +217,7 @@ bool OscClient::HandleLedMessage() {
 
 	for (i = 0; i < OscClientMax::LED_COUNT; i++) {
 		const char *src = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
-		if (OSC::isMatch(m_pBuffer, src)) {
+		if (osc::is_match(m_pBuffer, src)) {
 			DEBUG_PUTS("");
 			break;
 		}

@@ -2,7 +2,7 @@
  * @file artnetdiscovery.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,23 +34,56 @@
 #include "rdmdevicecontroller.h"
 #include "rdm.h"
 
+#include "debug.h"
+
 class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm {
 public:
-	ArtNetRdmController();
+	ArtNetRdmController(uint32_t nPorts = artnetnode::MAX_PORTS);
 	~ArtNetRdmController() override;
 
-	void Print();
+	void Full(uint32_t nPortIndex) override {
+		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Full();
+		}
+	}
 
-	void Full(uint32_t nPortIndex = 0) override;
-	uint8_t GetUidCount(uint32_t nPortIndex = 0) override;
-	void Copy(uint32_t nPortIndex, uint8_t *pTod) override;
+	uint32_t GetUidCount(uint32_t nPortIndex) override {
+		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			return m_Discovery[nPortIndex]->GetUidCount();
+		}
+		return 0;
+	}
+
+	void Copy(uint32_t nPortIndex, uint8_t *pTod) override {
+		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Copy(pTod);
+		}
+	}
+
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData) override;
 
-	void DumpTod(uint32_t nPortIndex = 0);
+	void Print() {
+		RDMDeviceController::Print();
+	}
+
+	void DumpTod(uint32_t nPortIndex) {
+		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Dump();
+		}
+	}
 
 private:
 	RDMDiscovery *m_Discovery[artnetnode::MAX_PORTS];
-	struct TRdmMessage *m_pRdmCommand { nullptr };
+	static TRdmMessage s_rdmMessage;
+	static uint32_t s_nPorts;
 };
 
 #endif /* ARTNETDISCOVERY_H_ */

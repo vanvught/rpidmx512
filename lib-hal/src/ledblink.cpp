@@ -2,7 +2,7 @@
  * @file ledblink.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,7 @@
 #include "debug.h"
 
 enum class FreqMode {
-	OFF_OFF = 0,
-	NORMAL = 1,
-	DATA = 3,
-	FAST = 5,
-	OFF_ON = 255
+	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, OFF_ON = 255
 };
 
 LedBlink *LedBlink::s_pThis = nullptr;
@@ -43,6 +39,8 @@ LedBlink *LedBlink::s_pThis = nullptr;
 LedBlink::LedBlink() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+
+	PlatformInit();
 }
 
 void LedBlink::SetMode(ledblink::Mode Mode) {

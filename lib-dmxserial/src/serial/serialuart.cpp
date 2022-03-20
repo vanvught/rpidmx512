@@ -54,13 +54,13 @@ void Serial::SetUartParity(uart::parity tParity) {
 
 	switch (tParity) {
 	case uart::parity::ODD:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::UART_PARITY_ODD);
+		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_ODD);
 		break;
 	case uart::parity::EVEN:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::UART_PARITY_EVEN);
+		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_EVEN);
 		break;
 	default:
-		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::UART_PARITY_NONE);
+		m_UartConfiguration.nParity = static_cast<uint8_t>(hal::uart::PARITY_NONE);
 		break;
 	}
 }
@@ -76,7 +76,7 @@ void Serial::SetUartStopBits(uint32_t nStopBits) {
 bool Serial::InitUart() {
 	DEBUG_ENTRY
 
-	FUNC_PREFIX (uart_begin(1, m_UartConfiguration.nBaud, m_UartConfiguration.nBits, m_UartConfiguration.nParity, m_UartConfiguration.nStopBits));
+	FUNC_PREFIX (uart_begin(EXT_UART_BASE, m_UartConfiguration.nBaud, m_UartConfiguration.nBits, m_UartConfiguration.nParity, m_UartConfiguration.nStopBits));
 
 	DEBUG_EXIT
 	return true;
@@ -85,7 +85,7 @@ bool Serial::InitUart() {
 void Serial::SendUart(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	FUNC_PREFIX (uart_transmit(1, pData, nLength));
+	FUNC_PREFIX (uart_transmit(EXT_UART_BASE, pData, nLength));
 
 	DEBUG_EXIT
 }

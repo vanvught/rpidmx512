@@ -34,13 +34,27 @@
 
 #include "gd32.h"
 #include "gd32_adc.h"
+#include "gd32_micros.h"
 
 class Hardware {
 public:
 	Hardware();
 
+	void SetLed(hardware::LedStatus tLedStatus) {
+		switch (tLedStatus) {
+			case hardware::LedStatus::OFF:
+				GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+				break;
+			case hardware::LedStatus::ON:
+				GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+				break;
+			default:
+				break;
+		}
+	}
+
 	uint32_t GetReleaseId() const {
-		return 0;	// TODO GetReleaseId
+		return 0;	// FIXME GetReleaseId
 	}
 
 	void GetUuid(uuid_t out);
@@ -50,6 +64,10 @@ public:
 		return s_nSysTickMillis;
 	}
 
+	uint32_t Micros() {
+		return micros();
+	}
+
 	uint32_t GetUpTime() {
 		return Millis() / 1000;
 	}
@@ -57,14 +75,24 @@ public:
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
-	const char *GetBoardName(uint8_t &nLenght) {
-		nLenght = 14;
-		return "GD32F207C_EVAL";
+	const char *GetBoardName(uint8_t &nLength) {
+		nLength = sizeof(GD32_BOARD_NAME) - 1U;
+		return GD32_BOARD_NAME;
 	}
 
-	const char *GetSysName(uint8_t &nLenght) {
-		nLenght = 8;
+	const char *GetSysName(uint8_t &nLength) {
+		nLength = 8;
 		return "Embedded";
+	}
+
+	const char *GetSocName(uint8_t &nLength) {
+		nLength = 5;
+		return "GD32F";
+	}
+
+	const char *GetCpuName(uint8_t &nLength) {
+		nLength = sizeof(GD32_MCU_NAME) - 1U;
+		return GD32_MCU_NAME;
 	}
 
 	uint32_t GetBoardId() {

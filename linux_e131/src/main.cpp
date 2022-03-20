@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdint>
+#include <cstring>
 #include <stdlib.h>
 
 #include "hardware.h"
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need an object
+	Display display; 	// Display is not supported. We just need an object
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {

@@ -87,9 +87,9 @@ void DmxInput::Stop(uint32_t nPortIndex) {
 }
 
 const uint8_t *DmxInput::Handler(__attribute__((unused)) uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) {
-	const auto *pDmx = Dmx::Get()->GetDmxAvailable();
+	const auto *pDmx = Dmx::Get()->GetDmxAvailable(0);
 
-	nUpdatesPerSecond = Dmx::Get()->GetUpdatesPerSecond();
+	nUpdatesPerSecond = Dmx::Get()->GetUpdatesPerSecond(0);
 
 	if (pDmx != nullptr) {
 		const auto *dmx_statistics = reinterpret_cast<const struct Data*>(pDmx);

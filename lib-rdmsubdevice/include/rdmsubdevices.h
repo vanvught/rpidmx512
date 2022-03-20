@@ -2,7 +2,7 @@
  * @file rdmsubdevices.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,8 @@
 
 #include "rdmpersonality.h"
 
-#if defined(BARE_METAL) && !( defined(ARTNET_NODE) && defined(RDM_RESPONDER) )
-# define RDM_SUBDEVICES_ENABLE
-#endif
-
 #if defined (NODE_RDMNET_LLRP_ONLY)
-# undef RDM_SUBDEVICES_ENABLE
+# undef ENABLE_RDM_SUBDEVICES
 #endif
 
 namespace rdm {
@@ -54,7 +50,8 @@ public:
 	~RDMSubDevices();
 
 	bool Add(RDMSubDevice *pRDMSubDevice);
-	uint16_t GetCount() {
+
+	uint16_t GetCount() const {
 		return m_nCount;
 	}
 
@@ -91,8 +88,8 @@ public:
 	}
 
 private:
-	RDMSubDevice **m_pRDMSubDevice;
-	uint16_t m_nCount{0};
+	RDMSubDevice **m_pRDMSubDevice { nullptr };
+	uint16_t m_nCount { 0 };
 
 	static RDMSubDevices *s_pThis;
 };

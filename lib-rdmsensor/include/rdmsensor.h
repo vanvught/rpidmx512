@@ -2,7 +2,7 @@
  * @file rdmsensor.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 
 #include <cstdint>
 
-struct TRDMSensorDefintion {
+namespace rdm {
+namespace sensor {
+struct Defintion {
 	uint8_t sensor;
 	uint8_t type;
 	uint8_t unit;
@@ -37,28 +39,23 @@ struct TRDMSensorDefintion {
 	int16_t range_max;
 	int16_t normal_min;
 	int16_t normal_max;
-	uint8_t recorded_supported;
 	char description[32];
 	uint8_t nLength;
+	uint8_t recorded_supported;
 };
 
-struct TRDMSensorValues {
-	uint8_t sensor_requested;
+struct Values {
 	int16_t present;
 	int16_t lowest_detected;
 	int16_t highest_detected;
 	int16_t recorded;
+	uint8_t sensor_requested;
 };
-
-#define RDM_SENSOR_RANGE_MIN	-32768		///<
-#define RDM_SENSOR_RANGE_MAX	+32767		///<
-#define RDM_SENSOR_NORMAL_MIN	-32768		///<
-#define RDM_SENSOR_NORMAL_MAX	+32767		///<
-
-static constexpr int16_t RDM_SENSOR_TEMPERATURE_ABS_ZERO	=	-273;
-
-namespace rdm {
-namespace sensor {
+static constexpr int16_t RANGE_MIN	= -32768;
+static constexpr int16_t RANGE_MAX	= +32767;
+static constexpr int16_t NORMAL_MIN	= -32768;
+static constexpr int16_t NORMAL_MAX = +32767;
+static constexpr int16_t TEMPERATURE_ABS_ZERO	=	-273;
 
 template<class T>
 constexpr int16_t safe_range_max(const T& a)
@@ -120,10 +117,10 @@ public:
 	void Print();
 
 public:
-	const struct TRDMSensorDefintion* GetDefintion() {
+	const struct rdm::sensor::Defintion* GetDefintion() {
 		return &m_tRDMSensorDefintion;
 	}
-	const struct TRDMSensorValues* GetValues();
+	const struct rdm::sensor::Values* GetValues();
 	void SetValues();
 	void Record();
 
@@ -133,8 +130,8 @@ public:
 
 private:
 	uint8_t m_nSensor;
-	struct TRDMSensorDefintion m_tRDMSensorDefintion;
-	struct TRDMSensorValues m_tRDMSensorValues;
+	rdm::sensor::Defintion m_tRDMSensorDefintion;
+	rdm::sensor::Values m_tRDMSensorValues;
 };
 
 #endif /* RDMSENSOR_H_ */

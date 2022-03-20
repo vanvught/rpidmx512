@@ -2,7 +2,7 @@
  * @file oscserverconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,6 @@ struct OSCServerConst {
 	static const char MSG_BRIDGE_PARAMS[];
 	static const char MSG_BRIDGE_START[];
 	static const char MSG_BRIDGE_STARTED[];
-
-	static const char PARAMS_FILE_NAME[];
-
-	static const char PARAMS_PATH[];
-	static const char PARAMS_TRANSMISSION[];
-	static const char PARAMS_PATH_INFO[];
-	static const char PARAMS_PATH_BLACKOUT[];
 };
 
 #endif /* OSCSERVERCONST_H_ */

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,41 +29,38 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
 
 #include "showfileparams.h"
-#include "storeshowfile.h"
 #include "showfileosc.h"
-
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-
-#include "firmwareversion.h"
-#include "software_version.h"
-
-// LLRP Only Device
-#include "rdmnetllrponly.h"
-#include "rdm_e120.h"
-// LLRP Handlers
-#include "factorydefaults.h"
-// Reboot handler
-#include "reboot.h"
-// Display
-#include "displayhandler.h"
-// Format handlers
-#include "olashowfile.h"
 // Protocol handlers
 #include "showfileprotocole131.h"
 #include "showfileprotocolartnet.h"
+// Format handlers
+#include "olashowfile.h"
+
+#include "reboot.h"
+
+#include "rdmnetllrponly.h"
+#include "rdm_e120.h"
+#include "factorydefaults.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+
+#include "spiflashinstall.h"
+#include "spiflashstore.h"
+#include "storedisplayudf.h"
+#include "storenetwork.h"
+#include "storeremoteconfig.h"
+#include "storeshowfile.h"
+
+#include "firmwareversion.h"
+#include "software_version.h"
 
 extern "C" {
 
@@ -73,7 +70,6 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -193,11 +189,9 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		nw.Run();
-		//
 		pShowFile->Run();
 		pShowFileProtocolHandler->Run();
 		oscServer.Run();
-		//
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();

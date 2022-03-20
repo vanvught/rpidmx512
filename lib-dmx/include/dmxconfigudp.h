@@ -32,12 +32,7 @@
 #include <cassert>
 
 #include "network.h"
-
-#if defined (OUTPUT_DMX_SEND_MULTI)
-# include "dmxmulti.h"
-#else
-# include "dmx.h"
-#endif
+#include "dmx.h"
 
 /**
  * Example's udp message: dmx!break#100  dmx!refresh#30 dmx!mab#20 dmx!slots#128

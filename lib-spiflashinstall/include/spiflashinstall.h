@@ -2,7 +2,7 @@
  * @file spiflashinstall.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define SPIFLASHINSTALL_H_
 
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 
 #include "flashrom.h"
 
@@ -38,8 +38,19 @@
 # define OFFSET_UBOOT_SPI	0x000000
 # define OFFSET_UIMAGE		0x180000
 #elif defined (GD32)
-# define FIRMWARE_MAX_SIZE 	0x1A000		// 104K
-# define OFFSET_UIMAGE		0x007000	// 28K
+# if defined (BOARD_GD32F107R)
+#  define OFFSET_UIMAGE		0x007000		// 28K
+#  define FIRMWARE_MAX_SIZE (74 * 1024)		// 74K
+# elif defined (BOARD_GD32F207R)
+#  define OFFSET_UIMAGE		0x007000		// 28K
+#  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
+# elif defined (BOARD_GD32F207C_EVAL)
+#  define OFFSET_UIMAGE		0x007000		// 28K
+#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+# elif defined (BOARD_GD32F407R)
+#  define OFFSET_UIMAGE		0x008000		// 32K
+#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+# endif
 #else
 # define OFFSET_UIMAGE		0x0
 #endif

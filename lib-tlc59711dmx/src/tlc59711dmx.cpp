@@ -160,10 +160,6 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
 		}
 
-		if (s_pLightSetDisplay != nullptr) {
-			s_pLightSetDisplay->ShowDmxStartAddress();
-		}
-
 		return true;
 	}
 

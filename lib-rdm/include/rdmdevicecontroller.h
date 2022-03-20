@@ -2,7 +2,7 @@
  * @file rdmdevicecontroller.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,12 +28,23 @@
 
 #include "rdmdevice.h"
 
+#include "debug.h"
+
 class RDMDeviceController: public RDMDevice  {
 public:
 	RDMDeviceController();
 
-	void Init();
-	void Print();
+	void Init() {
+		DEBUG_ENTRY
+		RDMDevice::Init();
+		DEBUG_EXIT
+	}
+
+	void Print() {
+		DEBUG_ENTRY
+		RDMDevice::Print();
+		DEBUG_EXIT
+	}
 };
 
 #endif /* RDMDEVICECONTROLLER_H_ */

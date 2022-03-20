@@ -2,7 +2,7 @@
  * @file midi.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,8 @@
 #include "h3_ccu.h"
 #include "h3_gpio.h"
 #include "h3_timer.h"
+
+#pragma GCC target ("general-regs-only")
 
 /**
  * NoteOn with 0 velocity should be handled as NoteOf.
@@ -537,7 +539,7 @@ void Midi::SendUart2(const uint8_t *pData, uint32_t nLength) {
 }
 
 void Midi::InitUart2() {
-	h3_uart_begin(2, m_nBaudrate == 0 ? 31250 : m_nBaudrate, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
+	h3_uart_begin(H3_UART2_BASE, m_nBaudrate == 0 ? 31250 : m_nBaudrate, H3_UART_BITS_8, H3_UART_PARITY_NONE, H3_UART_STOP_1BIT);
 
 	while ((H3_UART2->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		static_cast<void>(H3_UART2->O00.RBR);

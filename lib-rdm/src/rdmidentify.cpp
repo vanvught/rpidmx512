@@ -27,9 +27,19 @@
 
 #include "rdmidentify.h"
 
+using namespace rdm::identify;
+
+bool RDMIdentify::m_bIsEnabled = false;
+Mode RDMIdentify::m_nMode = Mode::QUIET;
 RDMIdentify *RDMIdentify::s_pThis = nullptr;
 
 RDMIdentify::RDMIdentify() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+}
+
+void __attribute__((weak)) RDMIdentify::On(__attribute__((unused)) rdm::identify::Mode nMode) {
+}
+
+void __attribute__((weak)) RDMIdentify::Off(__attribute__((unused)) rdm::identify::Mode nMode) {
 }

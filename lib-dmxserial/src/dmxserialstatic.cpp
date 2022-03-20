@@ -35,7 +35,7 @@
 bool DmxSerial::FileNameCopyTo(char *pFileName, uint32_t nLength, int32_t nFileNumber) {
 	assert(nLength == DmxSerialFile::NAME_LENGTH + 1);
 
-	if ((nFileNumber >= DmxSerialFile::MIN_NUMBER) && (nFileNumber <= DmxSerialFile::MAX_NUMBER)) {
+	if ((nFileNumber >= DmxSerialFile::MIN_NUMBER) && (nFileNumber <= static_cast<int32_t>(DmxSerialFile::MAX_NUMBER))) {
 		snprintf(pFileName, nLength, DMXSERIAL_FILE_PREFIX "%.3d" DMXSERIAL_FILE_SUFFIX, nFileNumber);
 		return true;
 	}
@@ -70,7 +70,7 @@ bool DmxSerial::CheckFileName(const char *pFileName, int32_t &nFileNumber) {
 
 	nFileNumber = 100 * (cDigit - '0');
 
-	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
+	if (nFileNumber > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -93,7 +93,7 @@ bool DmxSerial::CheckFileName(const char *pFileName, int32_t &nFileNumber) {
 
 	nFileNumber += (cDigit - '0');
 
-	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
+	if (nFileNumber > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
 		DEBUG_EXIT
 		return false;
 	}

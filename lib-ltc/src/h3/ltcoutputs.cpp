@@ -2,7 +2,7 @@
  * @file ltcoutputs.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,6 +76,7 @@ LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source t
 	pLtcDisabledOutputs->bArtNet |= (tSource == source::ARTNET);
 	pLtcDisabledOutputs->bLtc |= (tSource == source::LTC);
 	pLtcDisabledOutputs->bRtpMidi |= (tSource == source::APPLEMIDI);
+	pLtcDisabledOutputs->bEtc |= (tSource == source::ETC);
 	// Display's
 	pLtcDisabledOutputs->bRgbPanel |= ((tSource == source::LTC) || (tSource == source::MIDI));
 	pLtcDisabledOutputs->bMax7219 |= (!pLtcDisabledOutputs->bWS28xx || !pLtcDisabledOutputs->bRgbPanel);
@@ -231,6 +232,7 @@ void LtcOutputs::Print() {
 	PrintDisabled(m_ptLtcDisabledOutputs->bArtNet, "Art-Net");
 	PrintDisabled(m_ptLtcDisabledOutputs->bRtpMidi, "AppleMIDI");
 	PrintDisabled(m_ptLtcDisabledOutputs->bMidi, "MIDI");
+	PrintDisabled(m_ptLtcDisabledOutputs->bEtc, "ETC");
 	PrintDisabled(m_ptLtcDisabledOutputs->bNtp, "NTP");
 	PrintDisabled(m_ptLtcDisabledOutputs->bOled, "OLED");
 	PrintDisabled(m_ptLtcDisabledOutputs->bMax7219, "Max7219");

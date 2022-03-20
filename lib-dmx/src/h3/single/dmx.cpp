@@ -2,7 +2,7 @@
  * @file dmx.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC target ("general-regs-only")
 
 #include <cstdint>
 #include <cstdio>
@@ -393,15 +395,56 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(bool DoInit) {
-	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
-
+Dmx::Dmx() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	if (DoInit) {
-		Init();
-	}
+	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
+
+#ifdef LOGIC_ANALYZER
+	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH1);
+	h3_gpio_fsel(GPIO_ANALYZER_CH2, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH2);
+	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH3);
+	h3_gpio_fsel(GPIO_ANALYZER_CH4, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH4);
+	h3_gpio_fsel(GPIO_ANALYZER_CH5, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH5);
+	h3_gpio_fsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH6);
+	h3_gpio_fsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH7);
+#endif
+
+	ClearData(0);
+
+	sv_nDmxDataBufferIndexHead = 0;
+	sv_nDmxDataBufferIndexTail = 0;
+
+	sv_nRdmDataBufferIndexHead = 0;
+	sv_nRdmDataBufferIndexTail = 0;
+
+	sv_DmxReceiveState = IDLE;
+
+	sv_DmxTransmitState = IDLE;
+	sv_doDmxTransmitAlways = false;
+
+	irq_timer_init();
+
+	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
+	H3_TIMER->TMR1_INTV = 0xB71B00; // 1 second
+	H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
+
+	gic_fiq_config(UART_IRQN, GIC_CORE0);
+
+	UartInit();
+
+	__disable_fiq();
+	arm_install_handler(reinterpret_cast<unsigned>(fiq_dmx), ARM_VECTOR(ARM_VECTOR_FIQ));
 }
 
 void  Dmx::UartInit() {
@@ -441,63 +484,6 @@ void  Dmx::UartInit() {
 	EXT_UART->LCR = UART_LCR_8_N_2;
 
 	isb();
-}
-
-void Dmx::Init() {
-	assert(!m_IsInitDone);
-
-	if (m_IsInitDone) {
-		return;
-	}
-
-	m_IsInitDone = true;
-
-	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
-
-#ifdef LOGIC_ANALYZER
-	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH1);
-	h3_gpio_fsel(GPIO_ANALYZER_CH2, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH2);
-	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH3);
-	h3_gpio_fsel(GPIO_ANALYZER_CH4, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH4);
-	h3_gpio_fsel(GPIO_ANALYZER_CH5, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH5);
-	h3_gpio_fsel(GPIO_ANALYZER_CH6, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH6);
-	h3_gpio_fsel(GPIO_ANALYZER_CH7, GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(GPIO_ANALYZER_CH7);
-#endif
-
-	ClearData();
-
-	sv_nDmxDataBufferIndexHead = 0;
-	sv_nDmxDataBufferIndexTail = 0;
-
-	sv_nRdmDataBufferIndexHead = 0;
-	sv_nRdmDataBufferIndexTail = 0;
-
-	sv_DmxReceiveState = IDLE;
-
-	sv_DmxTransmitState = IDLE;
-	sv_doDmxTransmitAlways = false;
-
-	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_receive);
-	H3_TIMER->TMR1_INTV = 0xB71B00; // 1 second
-	H3_TIMER->TMR1_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
-	H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
-
-	gic_fiq_config(UART_IRQN, GIC_CORE0);
-
-	UartInit();
-
-	__disable_fiq();
-	arm_install_handler(reinterpret_cast<unsigned>(fiq_dmx), ARM_VECTOR(ARM_VECTOR_FIQ));
 }
 
 void Dmx::UartEnableFifo() {	// DMX Output
@@ -664,11 +650,11 @@ void Dmx::SetDmxSlots(uint16_t nSlots) {
 	}
 }
 
-const uint8_t* Dmx::GetDmxCurrentData() {
+const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused)) uint32_t nPortIndex) {
 	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
-const uint8_t* Dmx::GetDmxAvailable() {
+const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex) {
 	dmb();
 	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
@@ -679,8 +665,8 @@ const uint8_t* Dmx::GetDmxAvailable() {
 	}
 }
 
-const uint8_t* Dmx::GetDmxChanged() {
-	const auto *p = GetDmxAvailable();
+const uint8_t* Dmx::GetDmxChanged(__attribute__((unused)) uint32_t nPortIndex) {
+	const auto *p = GetDmxAvailable(0);
 	auto *src = reinterpret_cast<const uint32_t *>(p);
 
 	if (src == nullptr) {
@@ -719,7 +705,9 @@ void Dmx::SetSendDataLength(uint32_t nLength) {
 	SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 }
 
-void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+	assert(nPort == 0);
+
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -730,7 +718,7 @@ void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetPortSendDataWithoutSC(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -745,17 +733,20 @@ void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength + 1);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond() {
+uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;
 }
 
-void Dmx::ClearData() {
-	auto i = sizeof(s_DmxData) / sizeof(uint32_t);
-	auto *p = reinterpret_cast<uint32_t *>(s_DmxData);
+void Dmx::ClearData(__attribute__((unused)) uint32_t nPortIndex) {
+	assert(nPort == 0);
 
-	while (i-- != 0) {
-		*p++ = 0;
+	for (uint32_t j = 0; j < buffer::INDEX_ENTRIES; j++) {
+		auto *p = reinterpret_cast<uint32_t *>(s_DmxData[j].Data);
+
+		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
+			*p++ = 0;
+		}
 	}
 }
 

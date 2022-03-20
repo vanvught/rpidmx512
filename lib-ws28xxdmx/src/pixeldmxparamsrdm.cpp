@@ -23,12 +23,13 @@
  * THE SOFTWARE.
  */
 
-#include <pixeldmxparamsrdm.h>
 #include <cstdint>
 #include <cassert>
 
 #include "pixeltype.h"
 #include "lightset.h"
+
+#include "pixeldmxparamsrdm.h"
 
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxstore.h"

@@ -24,7 +24,7 @@
  */
 
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 #include <cassert>
 
 #include "flashrom.h"

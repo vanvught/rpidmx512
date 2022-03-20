@@ -1,6 +1,5 @@
-DEFINES=USE_SPI_DMA
-DEFINES+=#NDEBUG
- #DEFINES+=PARAMS_INLCUDE_ALL
+DEFINES =USE_SPI_DMA
+DEFINES+=NDEBUG
 
 EXTRA_INCLUDES=../lib-ws28xx/include ../lib-lightset/include ../lib-properties/include 
 

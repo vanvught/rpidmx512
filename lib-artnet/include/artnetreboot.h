@@ -32,14 +32,18 @@
 
 class ArtNetReboot final : public RebootHandler {
 public:
-	ArtNetReboot() {}
-	~ArtNetReboot() override {}
+	ArtNetReboot() {
+	}
+	~ArtNetReboot() override {
+	}
 
 	void Run() override {
 		ArtNetNode::Get()->Stop();
 
-		if (LightSet::Get() != nullptr) {
-			LightSet::Get()->Blackout(true);
+		auto *pLightSet = ArtNetNode::Get()->GetOutput();
+
+		if (pLightSet != nullptr) {
+			pLightSet->Blackout(true);
 		}
 	}
 };

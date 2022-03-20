@@ -26,13 +26,18 @@
 #ifndef STORELTC_H_
 #define STORELTC_H_
 
+#include <cassert>
+
 #include "ltcparams.h"
 
 #include "spiflashstore.h"
 
 class StoreLtc final: public LtcParamsStore {
 public:
-	StoreLtc();
+	StoreLtc() {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
+	}
 
 	void Update(const struct TLtcParams *pLtcParams) override {
 		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, pLtcParams, sizeof(struct TLtcParams));

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -161,14 +161,20 @@ public:
 	}
 
 	uint8_t GetUniverse(uint8_t nPortIndex, bool &IsSet) const {
-		assert(nPortIndex < ArtNet::PORTS);
-		IsSet = isMaskSet(artnetparams::Mask::UNIVERSE_A << nPortIndex);
-		return m_tArtNetParams.nUniversePort[nPortIndex];
+		if (nPortIndex < ArtNet::PORTS) {
+			IsSet = isMaskSet(artnetparams::Mask::UNIVERSE_A << nPortIndex);
+			return m_tArtNetParams.nUniversePort[nPortIndex];
+		}
+		IsSet = false;
+		return 0;
 	}
 
-	lightset::PortDir GetDirection(uint32_t nPortIndex = 0) const {
-		assert(nPortIndex < CHAR_BIT);
-		return static_cast<lightset::PortDir>((m_tArtNetParams.nDirection >> nPortIndex) & 0x1);
+
+	lightset::PortDir GetDirection(uint32_t nPortIndex) const {
+		if (nPortIndex < CHAR_BIT) {
+			return static_cast<lightset::PortDir>((m_tArtNetParams.nDirection >> nPortIndex) & 0x1);
+		}
+		return lightset::PortDir::DISABLE;
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);
@@ -185,7 +191,7 @@ private:
 
 private:
 	ArtNetParamsStore *m_pArtNetParamsStore;
-	struct artnetparams::Params m_tArtNetParams;
+	artnetparams::Params m_tArtNetParams;
 };
 
 #endif /* ARTNETPARAMS_H_ */

@@ -244,8 +244,6 @@
 						<entry excluding="src/linux|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="h3/1port|linux|h3/4ports" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry excluding="single|multi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/multi"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/single"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

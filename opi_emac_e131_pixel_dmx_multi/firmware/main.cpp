@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,54 +29,57 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
-#include "storee131.h"
 #include "e131reboot.h"
 #include "e131msgconst.h"
-#include "lightset.h"
 
-// Pixel
-#include "pixeltestpattern.h"
 #include "pixeltype.h"
+#include "pixeltestpattern.h"
+#include "pixelreboot.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "h3/ws28xxdmxstartstop.h"
+#include "ws28xxdmxstartstop.h"
 #include "handleroled.h"
-#include "storews28xxdmx.h"
-#include "pixelreboot.h"
-// DMX Output
+
 #include "dmxparams.h"
 #include "dmxsend.h"
-#include "storedmxsend.h"
 #include "dmxconfigudp.h"
-//
+
 #include "lightset32with4.h"
-// RDMNet LLRP Only
+
+#include "rdmdeviceparams.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
 #include "factorydefaults.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storedisplayudf.h"
+#include "storee131.h"
+#include "storedmxsend.h"
+#include "storenetwork.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "displayhandler.h"
 
 using namespace e131;
 
@@ -92,7 +95,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("Ethernet sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes} / DMX" "\x1b[37m");
+	fw.Print("sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes} / DMX" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
@@ -105,20 +108,29 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
-	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 DMX");
+	mDns.Print();
+#endif
 
-	E131Bridge bridge;
+	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
-
+	
+	E131Bridge bridge;
+	
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
 		e131params.Dump();
 	}
 
 	// LightSet A - Pixel - 32 Universes
-
+	
 	PixelDmxConfiguration pixelDmxConfiguration;
 
 	StoreWS28xxDmx storeWS28xxDmx;
@@ -130,8 +142,8 @@ void notmain(void) {
 	}
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
-	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
+	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 
 	bridge.SetOutput(&pixelDmxMulti);
 
@@ -197,21 +209,17 @@ void notmain(void) {
 	}
 	
 	LightSet32with4 lightSet((pPixelTestPattern != nullptr) ? nullptr : &pixelDmxMulti, bridge.GetActiveOutputPorts() != 0 ? &dmxSend : nullptr);
-	lightSet.Print();
 	
 	bridge.SetOutput(&lightSet);
-	bridge.Print();
 
-	// RDMNet LLRP Only
-
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
-
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
@@ -229,6 +237,9 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+
+	bridge.Print();
+	lightSet.Print();
 
 	display.SetTitle("sACN Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::VERSION);
@@ -263,8 +274,8 @@ void notmain(void) {
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
-	bridge.Start();
 	llrpOnlyDevice.Start();
+	bridge.Start();
 
 	if (pPixelTestPattern != nullptr) {
 		display.TextStatus(PixelPatterns::GetName(static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern())), ws28xxparms.GetTestPattern());
@@ -289,6 +300,9 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

@@ -2,7 +2,7 @@
  * @file usb.h
  *
  */
-/* Copyright (C) 2015-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,10 @@
 #define USB_H_
 
 #include <cstdint>
-#include <stdbool.h>
 
 #include "ft245rl.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern uint8_t usb_read_byte(void);
+extern uint8_t usb_read_byte();
 extern void usb_send_byte(uint8_t);
 
 inline static bool usb_read_is_byte_available() {
@@ -49,9 +44,5 @@ inline static void usb_init() {
 inline static bool usb_can_write() {
 	return FT245RL_can_write();
 }
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* USB_H_ */

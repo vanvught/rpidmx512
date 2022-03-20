@@ -2,7 +2,7 @@
  * @file osc.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,21 +74,20 @@ static constexpr uint16_t DEFAULT_OUTGOING = 9000;
 }  // namespace port
 }  // namespace osc
 
-#include "oscstring.h"
-
 extern "C" {
 int lo_pattern_match(const char *, const char *);
 }
 
-class OSC {
-public:
-	 static char *GetPath(void *pPath, unsigned nSize) {
-		return (OSCString::Validate(pPath, nSize) >= 4) ? reinterpret_cast<char *>(pPath) : nullptr;
-	}
+#include "oscstring.h"
 
-	 static bool isMatch(const char *str, const char *p) {
-		return lo_pattern_match(str, p) == 0 ? false : true;
-	}
-};
+namespace osc {
+inline static char *get_path(void *pPath, unsigned nSize) {
+	return (string_validate(pPath, nSize) >= 4) ? reinterpret_cast<char *>(pPath) : nullptr;
+}
+
+inline static bool is_match(const char *str, const char *p) {
+	return lo_pattern_match(str, p) == 0 ? false : true;
+}
+}  // namespace osc
 
 #endif /* OSC_H_ */

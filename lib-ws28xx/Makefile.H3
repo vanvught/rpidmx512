@@ -3,6 +3,6 @@ DEFINES+=NDEBUG
 
 EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include ../lib-hal/include
 
-EXTRA_SRCDIR=src/multi jbc
+EXTRA_SRCDIR=src/spi jbc
 
 include ../firmware-template-h3/lib/Rules.mk

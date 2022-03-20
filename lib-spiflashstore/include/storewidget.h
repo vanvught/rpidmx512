@@ -29,16 +29,31 @@
 #include "widgetparams.h"
 #include "widgetstore.h"
 
+#include "spiflashstore.h"
+
 class StoreWidget final: public WidgetParamsStore, public WidgetStore {
 public:
 	StoreWidget();
 
-	void Update(const struct TWidgetParams *pWidgetParams) override;
-	void Copy(struct TWidgetParams *pWidgetParams) override;
+	void Update(const struct TWidgetParams* pWidgetParams) {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
+	}
 
-	void UpdateBreakTime(uint8_t nBreakTime) override;
-	void UpdateMabTime(uint8_t nMabTime) override;
-	void UpdateRefreshRate(uint8_t nRefreshRate) override;
+	void Copy(struct TWidgetParams* pWidgetParams) {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::WIDGET, pWidgetParams, sizeof(struct TWidgetParams));
+	}
+
+	void UpdateBreakTime(uint8_t nBreakTime) {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nBreakTime), &nBreakTime, sizeof(uint8_t), WidgetParamsMask::BREAK_TIME);
+	}
+
+	void UpdateMabTime(uint8_t nMabTime) {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nMabTime), &nMabTime, sizeof(uint8_t), WidgetParamsMask::MAB_TIME);
+	}
+
+	void UpdateRefreshRate(uint8_t nRefreshRate) {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::WIDGET, __builtin_offsetof(struct TWidgetParams, nRefreshRate), &nRefreshRate, sizeof(uint8_t), WidgetParamsMask::REFRESH_RATE);
+	}
 
 	static StoreWidget* Get() {
 		return s_pThis;

@@ -42,8 +42,7 @@ void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 
 	pRdmDataOut->param_data_length = 1;
-
-	pRdmDataOut->param_data[0] = RDMIdentify::Get()->GetMode();
+	pRdmDataOut->param_data[0] = static_cast<uint8_t>(RDMIdentify::Get()->GetMode());
 
 	RespondMessageAck();
 
@@ -53,26 +52,23 @@ void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
-	const auto *rdm_command = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
+	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);
 
-	if (rdm_command->param_data_length != 1) {
+	if (pRdmDataIn->param_data_length != 1) {
 		RespondMessageNack(E120_NR_FORMAT_ERROR);
-
 		DEBUG_EXIT
 		return;
 	}
 
-	if ((rdm_command->param_data[0] != 0) && (rdm_command->param_data[0] != 0xFF)) {
+	if ((pRdmDataIn->param_data[0] != 0) && (pRdmDataIn->param_data[0] != 0xFF)) {
 		RespondMessageNack( E120_NR_DATA_OUT_OF_RANGE);
-
 		DEBUG_EXIT
 		return;
 	}
 
-	RDMIdentify::Get()->SetMode(static_cast<TRdmIdentifyMode>(rdm_command->param_data[0]));
+	RDMIdentify::Get()->SetMode(static_cast<rdm::identify::Mode>(pRdmDataIn->param_data[0]));
 
-	if(IsBroadcast) {
-
+	if (IsBroadcast) {
 		DEBUG_EXIT
 		return;
 	}

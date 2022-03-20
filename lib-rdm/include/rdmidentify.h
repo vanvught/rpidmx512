@@ -30,33 +30,58 @@
 
 #include "ledblink.h"
 
-enum TRdmIdentifyMode {
-  IDENTIFY_MODE_QUIET = 0x00,
-  IDENTIFY_MODE_LOUD = 0xFF,
-} ;
+namespace rdm {
+namespace identify {
+enum class Mode : uint8_t {
+	QUIET = 0x00, LOUD = 0xFF,
+};
+}  // namespace identify
+}  // namespace rdm
 
 class RDMIdentify {
 public:
 	RDMIdentify();
-	virtual ~RDMIdentify() {}
-
-	virtual void SetMode(TRdmIdentifyMode nMode)=0;
+	~RDMIdentify() {}
 
 	void On() {
 		m_bIsEnabled = true;
 		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+
+		if (m_nMode != rdm::identify::Mode::QUIET) {
+			On(m_nMode);
+		}
 	}
 
 	void Off() {
 		m_bIsEnabled = false;
 		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+
+		if (m_nMode != rdm::identify::Mode::QUIET) {
+			Off(m_nMode);
+		}
 	}
 
 	bool IsEnabled() const {
 		return m_bIsEnabled;
 	}
 
-	TRdmIdentifyMode GetMode() {
+	void SetMode(rdm::identify::Mode nMode) {
+		if ((nMode == rdm::identify::Mode::QUIET) || (nMode == rdm::identify::Mode::LOUD)) {
+			m_nMode = nMode;
+
+			if (m_bIsEnabled) {
+				if (nMode != rdm::identify::Mode::QUIET) {
+					On(m_nMode);
+				} else {
+					Off(m_nMode);
+				}
+			} else {
+				Off(m_nMode);
+			}
+		}
+	}
+
+	rdm::identify::Mode GetMode() const {
 		return m_nMode;
 	}
 
@@ -64,11 +89,13 @@ public:
 		return s_pThis;
 	}
 
-protected:
-	bool m_bIsEnabled { false };
-	TRdmIdentifyMode m_nMode { IDENTIFY_MODE_QUIET };
+private:
+	void On(rdm::identify::Mode nMode) __attribute__((weak));
+	void Off(rdm::identify::Mode nMode) __attribute__((weak));
 
 private:
+	static bool m_bIsEnabled;
+	static rdm::identify::Mode m_nMode;
 	static RDMIdentify *s_pThis;
 };
 

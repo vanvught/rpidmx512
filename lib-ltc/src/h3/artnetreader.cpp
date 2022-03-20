@@ -2,7 +2,7 @@
  * @file artnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,6 +43,7 @@
 
 // Output
 #include "rtpmidi.h"
+#include "ltcetc.h"
 #include "h3/ltcsender.h"
 #include "h3/ltcoutputs.h"
 
@@ -82,6 +83,10 @@ void ArtNetReader::Handler(const struct TArtNetTimeCode *ArtNetTimeCode) {
 	if (!m_ptLtcDisabledOutputs->bRtpMidi) {
 		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
 	}
+
+//	if (!m_ptLtcDisabledOutputs->bEtc) {
+//		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(ArtNetTimeCode));
+//	}
 
 	memcpy(&m_tMidiTimeCode, ArtNetTimeCode, sizeof(struct midi::Timecode));
 

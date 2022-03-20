@@ -2,7 +2,7 @@
  * @file rdmdevice.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 
 #include "rdmdevicestore.h"
 #include "rdmconst.h"
+
+#include "debug.h"
 
 struct TRDMDeviceInfoData {
 	char *data;
@@ -75,7 +77,6 @@ public:
 
 	void Init() {
 		assert(!m_IsInit);
-
 		m_IsInit = true;
 
 		RDMDevice::SetFactoryDefaults();
@@ -88,6 +89,7 @@ public:
 	}
 
 	void SetFactoryDefaults() {
+		DEBUG_ENTRY
 		TRDMDeviceInfoData info;
 
 		info.data = m_aDeviceRootLabel;
@@ -96,6 +98,7 @@ public:
 		RDMDevice::SetLabel(&info);
 
 		m_nCheckSum = RDMDevice::CalculateChecksum();
+		DEBUG_EXIT
 	}
 
 	bool GetFactoryDefaults() {
@@ -111,7 +114,7 @@ public:
 	}
 
 	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
-		pInfo->data = m_ManufacturerId;
+		pInfo->data = reinterpret_cast<char *>(const_cast<uint8_t *>(RDMConst::MANUFACTURER_ID));
 		pInfo->length = RDM_DEVICE_MANUFACTURER_ID_LENGTH;
 	}
 
@@ -121,7 +124,7 @@ public:
 	}
 
 	void SetLabel(const struct TRDMDeviceInfoData *pInfo) {
-		const uint8_t nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
+		const auto nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
 
 		if (m_IsInit) {
 			memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
@@ -168,7 +171,6 @@ private:
 
 private:
 	TRDMDevice m_tRDMDevice;
-	char m_ManufacturerId[RDM_DEVICE_MANUFACTURER_ID_LENGTH] {static_cast<char>(RDMConst::MANUFACTURER_ID[1]), static_cast<char>(RDMConst::MANUFACTURER_ID[0])};
 	bool m_IsInit { false };
 	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	uint8_t m_nDeviceRootLabelLength { 0 };

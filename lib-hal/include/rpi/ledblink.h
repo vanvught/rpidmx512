@@ -2,7 +2,7 @@
  * @file ledblink.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,10 +96,12 @@ public:
 		m_pLedBlinkDisplay = pLedBlinkDisplay;
 	}
 
-public:
 	static LedBlink* Get(void) {
 		return s_pThis;
 	}
+
+private:
+	void PlatformInit() {}
 
 private:
 	uint32_t m_nFreqHz { 0 };

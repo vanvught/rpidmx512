@@ -40,14 +40,6 @@ enum class GPSStatus {
 	UNDEFINED
 };
 
-class GPSDisplay {
-public:
-	virtual ~GPSDisplay() {
-	}
-
-	virtual void ShowSGpstatus(GPSStatus nStatus)=0;
-};
-
 class GPS {
 public:
 	GPS(float fUtcOffset = 0.0, GPSModule module = GPSModule::UNDEFINED);
@@ -83,9 +75,7 @@ public:
 		return m_tStatusCurrent;
 	}
 
-	void SetGPSDisplay(GPSDisplay *pGPSDisplay) {
-		 m_pGPSDisplay = pGPSDisplay;
-	}
+	void Display(GPSStatus status) __attribute__((weak));
 
 	static GPS *Get() {
 		return s_pThis;
@@ -111,20 +101,19 @@ private:
 	int32_t m_nUtcOffset;
 	GPSModule m_tModule;
 
-	uint32_t m_nBaud{9600};
-	char *m_pSentence{nullptr};
+	uint32_t m_nBaud { 9600 };
+	char *m_pSentence { nullptr };
 
 	struct tm m_Tm;
 
-	bool m_IsTimeUpdated{false};
-	bool m_IsDateUpdated{false};
+	bool m_IsTimeUpdated { false };
+	bool m_IsDateUpdated { false };
 
 	uint32_t m_nTimeTimestampMillis;
 	uint32_t m_nDateTimestampMillis;
 
-	GPSStatus m_tStatusCurrent{GPSStatus::UNDEFINED};
-	GPSStatus m_tStatusPrevious{GPSStatus::UNDEFINED};
-	GPSDisplay *m_pGPSDisplay{nullptr};
+	GPSStatus m_tStatusCurrent { GPSStatus::UNDEFINED };
+	GPSStatus m_tStatusPrevious { GPSStatus::UNDEFINED };
 
 	static GPS *s_pThis;
 };

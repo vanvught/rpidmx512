@@ -28,11 +28,7 @@
 
 #include <cstdint>
 
-#if defined (OUTPUT_DMX_SEND_MULTI)
-# include "dmxmulti.h"
-#else
-# include "dmx.h"
-#endif
+#include "dmx.h"
 
 struct TDmxParams {
     uint32_t nSetList;

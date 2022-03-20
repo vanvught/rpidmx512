@@ -5,7 +5,7 @@
  *
  */
 
-#include <stdio.h>
+#include <cstdio>
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include <assert.h>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
@@ -80,7 +80,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::SSD1306);
+	Display display;
 
 #if defined (ORANGE_PI)
 	SpiFlashInstall spiFlashInstall;
@@ -230,7 +230,7 @@ void notmain(void) {
 
 			console_status(CONSOLE_YELLOW, RUN_RDM);
 			display.TextStatus(RUN_RDM);
-			discovery.Full();
+			discovery.Full(0);
 
 			node.SetRdmHandler((ArtNetRdm *)&discovery);
 		}

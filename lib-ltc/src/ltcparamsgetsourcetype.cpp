@@ -2,7 +2,7 @@
  * @file ltcparamsgetsourcetype.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 using namespace ltc;
 
-static constexpr char sSource[source::UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime"};
+static constexpr char sSource[source::UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime", "etc"};
 
 const char* LtcParams::GetSourceType(ltc::source tSource) {
 	assert(tSource < ltc::source::UNDEFINED);

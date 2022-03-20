@@ -2,7 +2,7 @@
  * @file gps.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <cstring>
 #include <cstdio>
 #include <time.h>
-	#if !defined (BARE_METAL)
+#if !defined (BARE_METAL)
 # include <unistd.h>
 #endif
 #include <cassert>
@@ -175,10 +175,8 @@ void GPS::Start() {
 
 	m_tStatusCurrent = GPSStatus::IDLE;
 
-	if (m_pGPSDisplay != nullptr) {
-		m_pGPSDisplay->ShowSGpstatus(GPSStatus::IDLE);
-	}
 
+	Display(GPSStatus::IDLE);
 	DEBUG_EXIT
 }
 
@@ -187,13 +185,15 @@ void GPS::Run() {
 		return;
 	}
 
-	//DumpSentence(m_pSentence);
+//	DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 
 	if (__builtin_expect(((nTag = GetTag(&m_pSentence[1 + nmea::length::TALKER_ID])) == nmea::UNDEFINED), 0)) {
 		return;
 	}
+
+	DumpSentence(m_pSentence);
 
 	uint32_t nOffset = 1 + nmea::length::TALKER_ID + nmea::length::TAG + 1; // $ and ,
 	uint32_t nFieldIndex = 1;
@@ -231,8 +231,25 @@ void GPS::Run() {
 	if (m_tStatusCurrent != m_tStatusPrevious) {
 		m_tStatusPrevious = m_tStatusCurrent;
 
-		if (m_pGPSDisplay != nullptr) {
-			m_pGPSDisplay->ShowSGpstatus(m_tStatusCurrent);
-		}
+		Display(m_tStatusCurrent);
+
 	}
+}
+
+void GPS::Display(GPSStatus status) { // Weak
+	printf("GPS status=%u\n", static_cast<uint32_t>(status));
+}
+
+void GPS::DumpSentence(__attribute__((unused)) const char *pSentence) {
+#ifndef NDEBUG
+	printf("%p |", pSentence);
+
+	const char *p = pSentence;
+
+	while (*p != '\r') {
+		putchar(*p++);
+	}
+
+	puts("|");
+#endif
 }

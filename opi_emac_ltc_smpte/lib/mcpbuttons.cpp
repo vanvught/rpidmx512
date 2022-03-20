@@ -23,10 +23,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 #include <stdbool.h>
-#include <stdio.h>
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 
 #include "mcpbuttons.h"
 #include "hardware.h"

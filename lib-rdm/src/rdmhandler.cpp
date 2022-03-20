@@ -48,16 +48,22 @@
 
 #include "debug.h"
 
-using namespace lightset;
-
-enum class PowerState {
+enum class PowerState: uint8_t {
 	FULL_OFF = 0x00,	///< Completely disengages power to device. Device can no longer respond.
 	SHUTDOWN = 0x01,	///< Reduced power mode, may require device reset to return to normal operation. Device still responds to messages.
 	STANDBY = 0x02,		///< Reduced power mode. Device can return to NORMAL without a reset. Device still responds to messages.
 	NORMAL = 0xFF,		///< Normal Operating Mode.
 };
 
+enum class ResetMode: uint8_t {
+	WARM = 0x01,
+	COLD = 0xFF			///< A cold reset is the equivalent of removing and reapplying power to the device.
+};
+
 RDMHandler::RDMHandler(bool bIsRdm): m_bIsRDM(bIsRdm) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 void RDMHandler::HandleString(const char *pString, uint32_t nLength) {
@@ -581,12 +587,27 @@ void RDMHandler::GetSoftwareVersionLabel(__attribute__((unused)) uint16_t nSubDe
 	RespondMessageAck();
 }
 
-void RDMHandler::SetResetDevice(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+void RDMHandler::SetResetDevice(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+
+	if (pRdmDataIn->param_data_length != 1) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const auto nMode = static_cast<ResetMode>(pRdmDataIn->param_data[0]);
+
+	if ((nMode != ResetMode::WARM) && (nMode != ResetMode::COLD) ) {
+		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	pRdmDataOut->param_data_length = 0;
 
-	if(IsBroadcast == false) {
-		RespondMessageAck();
+	if (nMode == ResetMode::COLD) {
+		RespondMessageNack(E120_NR_WRITE_PROTECT);
+		return;
 	}
 
 	if(!Hardware::Get()->Reboot()) {
@@ -751,7 +772,7 @@ void RDMHandler::GetPersonalityDescription(uint16_t nSubDevice) {
 	pRdmDataOut->param_data[2] = static_cast<uint8_t>(nSlots);
 
 	auto *pDst = reinterpret_cast<char*>(&pRdmDataOut->param_data[3]);
-	uint8_t nLength = RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH;
+	uint8_t nLength = rdm::personality::DESCRIPTION_MAX_LENGTH;
 
 	RDMDeviceResponder::Get()->GetPersonality(nSubDevice, nPersonality)->DescriptionCopyTo(pDst, nLength);
 
@@ -784,7 +805,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const auto nDmxStartAddress = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
 
-	if ((nDmxStartAddress == 0) || (nDmxStartAddress > Dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress == 0) || (nDmxStartAddress > lightset::Dmx::UNIVERSE_SIZE)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -860,24 +881,24 @@ void RDMHandler::GetSensorValue(__attribute__((unused)) uint16_t nSubDevice) {
 	}
 
 	auto* pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
-	const struct TRDMSensorValues* sensor_value = RDMSensors::Get()->GetValues(nSensorRequested);
+	const auto *pSensorValues = RDMSensors::Get()->GetValues(nSensorRequested);
 
-	if (nSensorRequested != sensor_value->sensor_requested) {
+	if (nSensorRequested != pSensorValues->sensor_requested) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
 
 	pRdmDataOut->param_data_length = 9;
 	pRdmDataOut->message_length = RDM_MESSAGE_MINIMUM_SIZE + 9;
-	pRdmDataOut->param_data[0] = sensor_value->sensor_requested;
-	pRdmDataOut->param_data[1] = static_cast<uint8_t>(sensor_value->present >> 8);
-	pRdmDataOut->param_data[2] = static_cast<uint8_t>(sensor_value->present);
-	pRdmDataOut->param_data[3] = static_cast<uint8_t>(sensor_value->lowest_detected >> 8);
-	pRdmDataOut->param_data[4] = static_cast<uint8_t>(sensor_value->lowest_detected);
-	pRdmDataOut->param_data[5] = static_cast<uint8_t>(sensor_value->highest_detected >> 8);
-	pRdmDataOut->param_data[6] = static_cast<uint8_t>(sensor_value->highest_detected);
-	pRdmDataOut->param_data[7] = static_cast<uint8_t>(sensor_value->recorded >> 8);
-	pRdmDataOut->param_data[8] = static_cast<uint8_t>(sensor_value->recorded);
+	pRdmDataOut->param_data[0] = pSensorValues->sensor_requested;
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(pSensorValues->present >> 8);
+	pRdmDataOut->param_data[2] = static_cast<uint8_t>(pSensorValues->present);
+	pRdmDataOut->param_data[3] = static_cast<uint8_t>(pSensorValues->lowest_detected >> 8);
+	pRdmDataOut->param_data[4] = static_cast<uint8_t>(pSensorValues->lowest_detected);
+	pRdmDataOut->param_data[5] = static_cast<uint8_t>(pSensorValues->highest_detected >> 8);
+	pRdmDataOut->param_data[6] = static_cast<uint8_t>(pSensorValues->highest_detected);
+	pRdmDataOut->param_data[7] = static_cast<uint8_t>(pSensorValues->recorded >> 8);
+	pRdmDataOut->param_data[8] = static_cast<uint8_t>(pSensorValues->recorded);
 
 	RespondMessageAck();
 }
@@ -1226,7 +1247,7 @@ void RDMHandler::GetSelfTestDescription(__attribute__((unused)) uint16_t nSubDev
 void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
     auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	const auto nDmxFootPrint = RDMDeviceResponder::Get()->GetDmxFootPrint(nSubDevice);
-	SlotInfo tSlotInfo;
+	lightset::SlotInfo tSlotInfo;
 
 	uint32_t j = 0;
 
@@ -1250,7 +1271,7 @@ void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
 void RDMHandler::GetSlotDescription(uint16_t nSubDevice) {
 	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
 	const auto nSlotOffset = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
-	SlotInfo tSlotInfo;
+	lightset::SlotInfo tSlotInfo;
 
 	if(!RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, nSlotOffset, tSlotInfo)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);

@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,12 +57,13 @@ public:
 	~RDMSensors();
 
 	bool Add(RDMSensor *pRDMSensor);
-	uint8_t GetCount() {
+
+	uint8_t GetCount() const {
 		return m_nCount;
 	}
 
-	const struct TRDMSensorDefintion* GetDefintion(uint8_t nSensor);
-	const struct TRDMSensorValues* GetValues(uint8_t nSensor);
+	const struct rdm::sensor::Defintion* GetDefintion(uint8_t nSensor);
+	const struct rdm::sensor::Values* GetValues(uint8_t nSensor);
 	void SetValues(uint8_t nSensor);
 	void SetRecord(uint8_t nSensor);
 
@@ -74,8 +75,8 @@ public:
 	}
 
 private:
-	RDMSensor **m_pRDMSensor{nullptr};
-	uint8_t m_nCount{0};
+	RDMSensor **m_pRDMSensor { nullptr };
+	uint8_t m_nCount { 0 };
 
 	static RDMSensors *s_pThis;
 };

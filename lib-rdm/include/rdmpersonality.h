@@ -2,7 +2,7 @@
  * @file rdmpersonality.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,52 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
-
 #ifndef RDMPERSONALITY_H_
 #define RDMPERSONALITY_H_
 
-#define RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH		32
+#include <cstdint>
+#include <cassert>
+
+#include "lightset.h"
+
+#include "debug.h"
+
+namespace rdm {
+namespace personality {
+static constexpr auto DESCRIPTION_MAX_LENGTH = 32U;
+}  // namespace personality
+}  // namespace rdm
 
 class RDMPersonality {
 public:
-	RDMPersonality(const char *pDescription, uint16_t nSlots);
+	RDMPersonality(const char* pDescription, LightSet *pLightSet) {
+		assert(pDescription != nullptr);
+
+		if (pLightSet == nullptr) {
+			m_nSlots = 0;
+		} else {
+			m_nSlots = pLightSet->GetDmxFootprint();
+			m_pLightSet = pLightSet;
+		}
+
+		SetDescription(pDescription);
+	}
+
+	RDMPersonality(const char* pDescription, uint16_t nSlots): m_nSlots(nSlots) {
+		DEBUG_ENTRY
+		assert(pDescription != nullptr);
+
+		SetDescription(pDescription);
+
+		DEBUG_EXIT
+	}
 
 	uint16_t GetSlots() const {
 		return m_nSlots;
+	}
+
+	LightSet *GetLightSet() const {
+		return m_pLightSet;
 	}
 
 	void SetDescription(const char *pDescription) {
@@ -47,7 +79,7 @@ public:
 		const auto *pSrc = pDescription;
 		auto *pDst = m_aDescription;
 
-		for (uint32_t i = 0; (*pSrc != 0) && (i < RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH); i++) {
+		for (uint32_t i = 0; (*pSrc != 0) && (i < rdm::personality::DESCRIPTION_MAX_LENGTH); i++) {
 			*pDst = *pSrc;
 			pSrc++;
 			pDst++;
@@ -60,7 +92,7 @@ public:
 	}
 
 	uint8_t GetDescriptionLength() const {
-		return m_nDescriptionLength;
+		return static_cast<uint8_t>(m_nDescriptionLength);
 	}
 
 	void DescriptionCopyTo(char* p, uint8_t &nLength) {
@@ -81,8 +113,9 @@ public:
 
 private:
 	uint16_t m_nSlots;
-	char m_aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH];
-	uint8_t m_nDescriptionLength;
+	LightSet *m_pLightSet { nullptr };
+	char m_aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
+	uint32_t m_nDescriptionLength { 0 };
 };
 
 #endif /* RDMPERSONALITY_H_ */

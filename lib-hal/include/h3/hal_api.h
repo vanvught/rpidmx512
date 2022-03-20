@@ -37,6 +37,8 @@ extern "C" {
 extern void udelay(uint32_t);
 extern uint32_t micros();
 
+#include "h3_board.h"
+
 #ifdef __cplusplus
 }
 #endif

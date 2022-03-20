@@ -266,7 +266,7 @@ bool DmxSerial::DeleteFile(const char *pFileNumber) {
 	nFileNumber += (pFileNumber[1] - '0') * 10;
 	nFileNumber += (pFileNumber[2] - '0');
 
-	if (nFileNumber > DmxSerialFile::MAX_NUMBER) {
+	if (nFileNumber > static_cast<int32_t>(DmxSerialFile::MAX_NUMBER)) {
 		return false;
 	}
 

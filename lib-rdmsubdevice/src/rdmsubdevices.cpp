@@ -39,7 +39,7 @@ RDMSubDevices::RDMSubDevices()  {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-#if defined(RDM_SUBDEVICES_ENABLE)
+#if defined(ENABLE_RDM_SUBDEVICES)
 	m_pRDMSubDevice = new RDMSubDevice*[rdm::subdevices::max];
 	assert(m_pRDMSubDevice != nullptr);
 

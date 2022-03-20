@@ -69,7 +69,6 @@ typedef enum {
 	DMXINTER
 } _dmx_state;
 
-using namespace dmxsingle;
 using namespace dmx;
 
 static PortDirection s_nPortDirection = dmx::PortDirection::INP;
@@ -102,7 +101,7 @@ static bool s_IsStopped = true;
 
 static volatile uint32_t sv_nDmxUpdatesPerSecond;
 static volatile uint32_t sv_nDmxPacketsPrevious;
-static volatile struct dmxsingle::TotalStatistics sv_TotalStatistics ALIGNED;
+static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
 
 // RDM
 
@@ -380,17 +379,53 @@ static void __attribute__((interrupt("FIQ"))) fiq_dmx(void) {
 
 Dmx *Dmx::s_pThis = nullptr;
 
-Dmx::Dmx(uint8_t nGpioPin, bool DoInit) {
-	DEBUG_PRINTF("m_IsInitDone=%d", DoInit);
-
+Dmx::Dmx() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	m_nDataDirectionGpio = nGpioPin;
+	bcm2835_gpio_fsel(m_nDataDirectionGpio, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
 
-	if (DoInit) {
-		Init();
-	}
+#ifdef LOGIC_ANALYZER
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH2);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH3);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_set(GPIO_ANALYZER_CH4);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH6, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH6);
+	bcm2835_gpio_fsel(GPIO_ANALYZER_CH7, BCM2835_GPIO_FSEL_OUTP);
+	bcm2835_gpio_clr(GPIO_ANALYZER_CH7);
+#endif
+
+	ClearData(0);
+
+	sv_nDmxDataBufferIndexHead = 0;
+	sv_nDmxDataBufferIndexTail = 0;
+
+	sv_nRdmDataBufferIndexHead = 0;
+	sv_nRdmDataBufferIndexTail = 0;
+
+	sv_DmxReceiveState = IDLE;
+
+	sv_DmxTransmitState = IDLE;
+	sv_doDmxTransmitAlways = false;
+
+	irq_timer_init();
+
+	irq_timer_set(IRQ_TIMER_3, irq_timer3_dmx_receive);
+	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
+	dmb();
+
+	UartInit();
+
+	__disable_fiq();
+	arm_install_handler((unsigned) fiq_dmx, ARM_VECTOR(ARM_VECTOR_FIQ));
 }
 
 void Dmx::UartInit() {
@@ -430,60 +465,6 @@ void Dmx::UartInit() {
 	BCM2835_IRQ->FIQ_CONTROL = (uint32_t) BCM2835_FIQ_ENABLE | (uint32_t) INTERRUPT_VC_UART;
 
 	isb();
-}
-
-void Dmx::Init() {
-	assert(!m_IsInitDone);
-
-	if (m_IsInitDone) {
-		return;
-	}
-
-	m_IsInitDone = true;
-
-	bcm2835_gpio_fsel(m_nDataDirectionGpio, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(m_nDataDirectionGpio);	// 0 = input, 1 = output
-
-#ifdef LOGIC_ANALYZER
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH1, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH1);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH2, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH2);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH3, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH3);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH4, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_set(GPIO_ANALYZER_CH4);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH5, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH5);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH6, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH6);
-	bcm2835_gpio_fsel(GPIO_ANALYZER_CH7, BCM2835_GPIO_FSEL_OUTP);
-	bcm2835_gpio_clr(GPIO_ANALYZER_CH7);
-#endif
-
-	ClearData();
-
-	sv_nDmxDataBufferIndexHead = 0;
-	sv_nDmxDataBufferIndexTail = 0;
-
-	sv_nRdmDataBufferIndexHead = 0;
-	sv_nRdmDataBufferIndexTail = 0;
-
-	sv_DmxReceiveState = IDLE;
-
-	sv_DmxTransmitState = IDLE;
-	sv_doDmxTransmitAlways = false;
-
-	irq_timer_init();
-
-	irq_timer_set(IRQ_TIMER_3, irq_timer3_dmx_receive);
-	BCM2835_ST->C3 = BCM2835_ST->CLO + (uint32_t) 1000000;
-	dmb();
-
-	UartInit();
-
-	__disable_fiq();
-	arm_install_handler((unsigned) fiq_dmx, ARM_VECTOR(ARM_VECTOR_FIQ));
 }
 
 void Dmx::UartEnableFifo() {	// DMX Output
@@ -666,11 +647,11 @@ const volatile struct TotalStatistics *Dmx::GetTotalStatistics() {
 	return &sv_TotalStatistics;
 }
 
-const uint8_t* Dmx::GetDmxCurrentData() {
+const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused))uint32_t nPortIndex) {
 	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
-const uint8_t* Dmx::GetDmxAvailable() {
+const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused))uint32_t nPortIndex) {
 	dmb();
 	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
@@ -681,8 +662,8 @@ const uint8_t* Dmx::GetDmxAvailable() {
 	}
 }
 
-const uint8_t* Dmx::GetDmxChanged() {
-	const auto *p = GetDmxAvailable();
+const uint8_t* Dmx::GetDmxChanged(__attribute__((unused))uint32_t nPortIndex) {
+	const auto *p = GetDmxAvailable(0);
 	auto *src = reinterpret_cast<const uint32_t *>(p);
 
 	if (src == nullptr) {
@@ -729,7 +710,7 @@ uint16_t Dmx::GetDmxSlots() {
 	return s_nDmxSendDataLength - 1U;
 }
 
-void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -740,7 +721,7 @@ void Dmx::SetSendData(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -753,12 +734,12 @@ void Dmx::SetSendDataWithoutSC(const uint8_t *pData, uint32_t nLength) {
 	SetSendDataLength(nLength + 1);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond() {
+uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused))uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;
 }
 
-void Dmx::ClearData() {
+void Dmx::ClearData(__attribute__((unused))uint32_t nPortIndex) {
 	auto i = sizeof(s_DmxData) / sizeof(uint32_t);
 	auto *p = reinterpret_cast<uint32_t *>(s_DmxData);
 

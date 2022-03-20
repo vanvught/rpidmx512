@@ -2,7 +2,7 @@
  * @file displayudfparams.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,8 @@
 
 #include "displayudf.h"
 
-struct TDisplayUdfParams {
+namespace displayudfparams {
+struct Params {
     uint32_t nSetList;
     uint8_t nLabelIndex[28];
     uint8_t nSleepTimeout;
@@ -38,20 +39,21 @@ struct TDisplayUdfParams {
 }__attribute__((packed));
 
 static_assert(static_cast<int>(displayudf::Labels::UNKNOWN) <= 28, "too many labels");
-static_assert(sizeof(struct TDisplayUdfParams) <= 48, "struct TDisplayUdfParams is too large");
+static_assert(sizeof(struct displayudfparams::Params) <= 48, "struct Params is too large");
 
-struct DisplayUdfParamsMask {
+struct Mask {
 	static constexpr auto SLEEP_TIMEOUT = (1U << 28);
 	static constexpr auto INTENSITY = (1U << 29);
 	static constexpr auto FLIP_VERTICALLY = (1U << 30);
 };
+}  // namespace displayudfparams
 
 class DisplayUdfParamsStore {
 public:
 	virtual ~DisplayUdfParamsStore() {}
 
-	virtual void Update(const struct TDisplayUdfParams *ptDisplayUdfParams)=0;
-	virtual void Copy(struct TDisplayUdfParams *ptDisplayUdfParams)=0;
+	virtual void Update(const struct displayudfparams::Params *ptDisplayUdfParams)=0;
+	virtual void Copy(struct displayudfparams::Params *ptDisplayUdfParams)=0;
 };
 
 class DisplayUdfParams {
@@ -61,7 +63,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TDisplayUdfParams *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct displayudfparams::Params *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(DisplayUdf *pDisplayUdf);
@@ -78,7 +80,7 @@ private:
 
 private:
     DisplayUdfParamsStore *m_pDisplayUdfParamsStore;
-    struct TDisplayUdfParams m_tDisplayUdfParams;
+    displayudfparams::Params m_tDisplayUdfParams;
 };
 
 #endif /* DISPLAYUDFPARAMS_H_ */

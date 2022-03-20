@@ -2,7 +2,7 @@
  * @file spiflashstore.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@ static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
 static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for UUID
 static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        144,       32,    64,       96,      64,     32,     32,         480,           64,        32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,          32};
 #ifndef NDEBUG
-static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "not-used", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
+static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net3", "DMX", "WS28xx", "E1.31", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "DDP Display"};
 #endif
 
 bool SpiFlashStore::s_bHaveFlashChip;
@@ -83,18 +83,25 @@ SpiFlashStore::SpiFlashStore() {
 }
 
 bool SpiFlashStore::Init() {
+	DEBUG_ENTRY
+
 	const auto nEraseSize = FlashRom::Get()->GetSectorSize();
 	assert(FlashStore::SIZE == nEraseSize);
 
 	if (FlashStore::SIZE != nEraseSize) {
+		DEBUG_EXIT
 		return false;
 	}
 
 	s_nStartAddress = FlashRom::Get()->GetSize() - nEraseSize;
+
+#if !defined (GD32F4XX)	//FIXME Remove #if !defined (GD32F4XX)
 	assert(s_nStartAddress != 0);
 	assert(!(s_nStartAddress % nEraseSize));
+#endif
 
 	if (s_nStartAddress % nEraseSize) {
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -133,6 +140,7 @@ bool SpiFlashStore::Init() {
 
 		s_State = State::CHANGED;
 
+		DEBUG_EXIT
 		return true;
 	}
 
@@ -150,6 +158,7 @@ bool SpiFlashStore::Init() {
 		}
 	}
 
+	DEBUG_EXIT
 	return true;
 }
 
@@ -192,8 +201,6 @@ void SpiFlashStore::Update(Store tStore, uint32_t nOffset, const void *pData, ui
 	assert(tStore < Store::LAST);
 	assert(pData != nullptr);
 	assert((nOffset + nDataLength) <= s_aStorSize[static_cast<uint32_t>(tStore)]);
-
-//	debug_dump(const_cast<void*>(pData), static_cast<uint16_t>(nDataLength));
 
 	auto bIsChanged = false;
 
@@ -244,7 +251,7 @@ void SpiFlashStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32
 
 	DEBUG_PRINTF("*pSet=0x%x", reinterpret_cast<uint32_t>(*pSet));
 
-	if ((__builtin_expect((s_bIsNew), 0)) || (__builtin_expect((*pSet == 0), 0))) {
+	if (__builtin_expect((*pSet == 0), 0)) {
 		Update(tStore, nOffset, pData, nDataLength);
 		DEBUG_EXIT
 		return;

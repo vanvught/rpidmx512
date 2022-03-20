@@ -2,7 +2,7 @@
  * @file httd.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,13 +93,11 @@ void HttpDaemon::Run() {
 
 	if (m_Status == Status::UNKNOWN_ERROR) {
 		m_Status = ParseRequest();
-
 		if (m_Status == Status::OK) {
 			if (m_RequestMethod == RequestMethod::GET) {
 				m_Status = HandleGet();
 			} else if (m_RequestMethod == RequestMethod::POST) {
 				m_Status = HandlePost(false);
-
 				if ((m_Status == Status::OK) && (m_nFileDataLength == 0)) {
 					DEBUG_PUTS("There is a POST header only -> no data");
 					return;
@@ -187,7 +185,6 @@ Status HttpDaemon::ParseRequest() {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
 					}
-
 					return Status::OK;
 				}
 				status = ParseHeaderField(pLine);
@@ -211,7 +208,6 @@ Status HttpDaemon::ParseRequest() {
 
 Status HttpDaemon::ParseMethod(char *pLine) {
 	assert(pLine != nullptr);
-
 	char *pToken;
 
 	if ((pToken = strtok(pLine, " ")) == 0) {
@@ -272,6 +268,7 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		if ((pToken = strtok(0, " ")) == nullptr) {
 			return Status::BAD_REQUEST;
 		}
+
 		uint32_t nTmp = 0;
 		while (*pToken != '\0') {
 			auto nDigit = static_cast<uint32_t>(*pToken++ - '0');
@@ -288,9 +285,9 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		}
 
 		m_nRequestContentLength = static_cast<uint16_t>(nTmp);
-		DEBUG_PRINTF("m_nRequestContentLength=%u", m_nRequestContentLength);
 	}
 
+	DEBUG_EXIT
 	return Status::OK;
 }
 

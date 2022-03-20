@@ -2,7 +2,7 @@
  * @file igmp.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 
 #include "net.h"
 #include "net_packets.h"
+#include "net_platform.h"
 #include "net_debug.h"
 
 #ifndef ALIGNED
@@ -57,12 +58,12 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static struct t_igmp s_report ALIGNED;
-static struct t_igmp s_leave ALIGNED;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN] ALIGNED;
-static struct t_group_info s_groups[MAX_JOINS_ALLOWED] ALIGNED;
-static uint32_t s_joins_allowed_index;
-static uint16_t s_id ALIGNED;
+static struct t_igmp s_report SECTION_NETWORK ALIGNED;
+static struct t_igmp s_leave SECTION_NETWORK ALIGNED;
+static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
+static struct t_group_info s_groups[MAX_JOINS_ALLOWED] SECTION_NETWORK ALIGNED;
+static uint32_t s_joins_allowed_index SECTION_NETWORK;
+static uint16_t s_id SECTION_NETWORK ALIGNED;
 
 void igmp_set_ip(const struct ip_info  *p_ip_info) {
 	_pcast32 src;

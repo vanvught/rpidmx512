@@ -64,14 +64,14 @@ RDMSensors::~RDMSensors() {
 	delete [] m_pRDMSensor;
 }
 
-const struct TRDMSensorDefintion* RDMSensors::GetDefintion(uint8_t nSensor) {
+const struct rdm::sensor::Defintion* RDMSensors::GetDefintion(uint8_t nSensor) {
 	assert(nSensor < m_nCount);
 
 	assert(m_pRDMSensor[nSensor] != nullptr);
 	return m_pRDMSensor[nSensor]->GetDefintion();
 }
 
-const struct TRDMSensorValues* RDMSensors::GetValues(uint8_t nSensor) {
+const struct rdm::sensor::Values* RDMSensors::GetValues(uint8_t nSensor) {
 	assert(nSensor < m_nCount);
 
 	assert(m_pRDMSensor[nSensor] != nullptr);

@@ -2,7 +2,7 @@
  * @file rdmdevicecontroller.cpp
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,16 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstring>
-
 #include "rdmdevicecontroller.h"
-#include "rdmdevice.h"
 
 #include "debug.h"
 
 #if defined (H3)
  static constexpr char DEVICE_LABEL[] = "Orange Pi RDM Controller";
+#elif defined (GD32)
+ static constexpr char DEVICE_LABEL[] = "GigaDevice RDM Controller";
 #else
  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
 #endif
@@ -40,7 +38,7 @@
 RDMDeviceController::RDMDeviceController() {
 	DEBUG_ENTRY
 
-	struct TRDMDeviceInfoData info;
+	TRDMDeviceInfoData info;
 
 	info.data = const_cast<char*>(DEVICE_LABEL);
 	info.length = sizeof(DEVICE_LABEL) - 1;
@@ -48,16 +46,4 @@ RDMDeviceController::RDMDeviceController() {
 	SetLabel(&info);
 
 	DEBUG_EXIT
-}
-
-void RDMDeviceController::Init() {
-	DEBUG_ENTRY
-
-	RDMDevice::Init();
-
-	DEBUG_EXIT
-}
-
-void RDMDeviceController::Print() {
-	RDMDevice::Print();
 }

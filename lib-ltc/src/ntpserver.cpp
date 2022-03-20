@@ -23,8 +23,6 @@
  * THE SOFTWARE.
  */
 
-#undef DEBUG
-
 /*
  * https://tools.ietf.org/html/rfc5905
  */

@@ -31,8 +31,6 @@
 namespace hal {
 namespace spi {
 
-
-
 }  // namespace spi
 }  // namespace hal
 

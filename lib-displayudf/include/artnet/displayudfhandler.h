@@ -28,48 +28,42 @@
 
 #include <cstdint>
 
-#include "displayudf.h"
-
+#include "artnetdisplay.h"
 #include "artnetnode.h"
 #include "artnet.h"
-
-#include "artnetdisplay.h"
+#include "displayudf.h"
 #include "lightset.h"
 
-class DisplayUdfHandler: public ArtNetDisplay, public LightSetDisplay {
+class DisplayUdfHandler final: public ArtNetDisplay {
 public:
 	DisplayUdfHandler() {}
 	~DisplayUdfHandler() {}
 
-	void ShowShortName(__attribute__((unused)) const char *pShortName) {
+	void ShowShortName(__attribute__((unused)) const char *pShortName) override {
 		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
 	}
 
-	void ShowLongName(__attribute__((unused)) const char *pLongName) {
+	void ShowLongName(__attribute__((unused)) const char *pLongName) override {
 	}
 
-	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
+	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowNetSwitch(__attribute__((unused))  uint8_t nAddress) {
+	void ShowNetSwitch(__attribute__((unused))  uint8_t nAddress) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowSubnetSwitch(__attribute__((unused))  uint8_t nAddress) {
+	void ShowSubnetSwitch(__attribute__((unused))  uint8_t nAddress) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) {
+	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 	}
 
-	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
-	}
-
-	void ShowDmxStartAddress() {
-		DisplayUdf::Get()->ShowDmxStartAddress();
 	}
 };
 

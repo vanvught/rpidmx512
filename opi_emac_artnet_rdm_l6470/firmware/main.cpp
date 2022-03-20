@@ -45,8 +45,6 @@
 #include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
-#include "identify.h"
-
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 
@@ -208,7 +206,7 @@ void notmain(void) {
 		}
 	}
 
-	pBoard->SetLightSetDisplay(&displayUdfHandler);
+//	pBoard->SetLightSetDisplay(&displayUdfHandler);
 
 	char aDescription[64];
 	if (isLedTypeSet) {
@@ -235,8 +233,6 @@ void notmain(void) {
 		artnetparams.Dump();
 	}
 
-	Identify identify;
-
 	node.SetArtNetDisplay(&displayUdfHandler);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore(StoreArtNet::Get());
@@ -245,8 +241,9 @@ void notmain(void) {
 	bool isSet;
 	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
 
-	RDMPersonality personality(aDescription, pBoard->GetDmxFootprint());
-	ArtNetRdmResponder RdmResponder(&personality, pBoard);
+	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
+
+	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
 
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
@@ -327,7 +324,6 @@ void notmain(void) {
 		nw.Run();
 		node.Run();
 		ntpClient.Run();
-		identify.Run();
 #if defined (ORANGE_PI)
 		remoteConfig.Run();
 		spiFlashStore.Flash();

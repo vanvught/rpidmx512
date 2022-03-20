@@ -32,9 +32,9 @@
 namespace lightset {
 struct Dmx {
 	static constexpr auto ADDRESS_INVALID = 0xFFFF;
-	static constexpr auto START_ADDRESS_DEFAULT = 1;
-	static constexpr auto UNIVERSE_SIZE = 512;
-	static constexpr auto MAX_VALUE = 255;
+	static constexpr auto START_ADDRESS_DEFAULT = 1U;
+	static constexpr auto UNIVERSE_SIZE = 512U;
+	static constexpr auto MAX_VALUE = 255U;
 };
 
 enum class MergeMode {
@@ -99,16 +99,9 @@ inline static const char* get_direction(uint32_t nPortIndex, uint8_t nDirection)
 }
 }  // namespace lightset
 
-class LightSetDisplay {
-public:
-	virtual ~LightSetDisplay() {}
-
-	virtual void ShowDmxStartAddress()=0;
-};
-
 class LightSet {
 public:
-	LightSet();
+	LightSet() {}
 	virtual ~LightSet() {}
 
 	virtual void Start(uint32_t nPortIndex)= 0;
@@ -128,20 +121,6 @@ public:
 	static const char *GetOutputType(lightset::OutputType type);
 	static lightset::OutputType GetOutputType(const char *sType);
 #endif
-
-	void SetLightSetDisplay(LightSetDisplay *pLightSetDisplay) {
-		s_pLightSetDisplay = pLightSetDisplay;
-	}
-
-	static LightSet *Get() {
-		return s_pThis;
-	}
-
-protected:
-	static LightSetDisplay *s_pLightSetDisplay;
-
-private:
-	static LightSet *s_pThis;
 };
 
 #endif /* LIGHTSET_H_ */

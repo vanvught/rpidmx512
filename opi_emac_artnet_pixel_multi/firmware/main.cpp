@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,48 +30,64 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
+#include "handleroled.h"
+#include "display_timeout.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
-#include "artnetreboot.h"
 #include "artnetmsgconst.h"
+#include "artnet/displayudfhandler.h"
+#include "artnettriggerhandler.h"
 
-#include "pixeltestpattern.h"
 #include "pixeltype.h"
+#include "pixeltestpattern.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmxmulti.h"
-#include "h3/ws28xxdmxstartstop.h"
-#include "handleroled.h"
-#include "storews28xxdmx.h"
+#include "ws28xxdmxstartstop.h"
 
-// RDMNet LLRP Device Only
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storeartnet.h"
+#include "storedisplayudf.h"
+#include "storenetwork.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "storerdmdevice.h"
+#endif
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "artnet/displayudfhandler.h"
-#include "displayhandler.h"
-
-using namespace artnet;
+class Reboot final: public RebootHandler {
+public:
+	void Run() override {
+		ArtNet4Node::Get()->Stop();
+		WS28xxMulti::Get()->Blackout();
+	}
+};
 
 extern "C" {
 
@@ -80,16 +96,15 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("Ethernet Art-Net 4 Node " "\x1b[32m" "Pixel controller {4x/8x 4 Universes}" "\x1b[37m");
+	fw.Print("Art-Net 4 " "\x1b[32m" "Pixel controller {8x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new ArtNetReboot);
+	hw.SetRebootHandler(new Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -98,6 +113,16 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net Pixel");
+	mDns.Print();
+#endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
@@ -125,12 +150,12 @@ void notmain(void) {
 	if (artnetParams.Load()) {
 		artnetParams.Set(&node);
 		artnetParams.Dump();
-
 	}
-
-	node.SetArtNetDisplay(&displayUdfHandler);
+	
 	node.SetArtNetStore(&storeArtNet);
-	node.SetOutput(&pixelDmxMulti);
+
+	DisplayUdfHandler displayUdfHandler;
+	node.SetArtNetDisplay(&displayUdfHandler);
 
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
@@ -150,21 +175,27 @@ void notmain(void) {
 		}
 	}
 
-	uint8_t nTestPattern;
-	PixelTestPattern *pPixelTestPattern = nullptr;
-
-	if ((nTestPattern = ws28xxparms.GetTestPattern()) != 0) {
-		pPixelTestPattern = new PixelTestPattern(static_cast<pixelpatterns::Pattern>(nTestPattern), nActivePorts);
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
+	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
+	
+	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		node.SetOutput(nullptr);
+	} else {
+		node.SetOutput(&pixelDmxMulti);
 	}
 
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	ArtNetTriggerHandler triggerHandler(&pixelDmxMulti);
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
@@ -185,27 +216,37 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+#endif
 
 	node.Print();
 	pixelDmxMulti.Print();
 
 	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
-	display.Set(2, displayudf::Labels::VERSION);
+	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::HOSTNAME);
-	display.Set(5, displayudf::Labels::IP);
-	display.Set(6, displayudf::Labels::UNIVERSE);
-	display.Printf(7, "%d-%s:%d G%d", nActivePorts, PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+	display.Set(4, displayudf::Labels::VERSION);
+	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(6, displayudf::Labels::BOARDNAME);
+	display.Printf(7, "%s:%d G%d %s",
+		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixelDmxConfiguration.GetCount(),
+		pixelDmxConfiguration.GetGroupingCount(),
+		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if(displayUdfParams.Load()) {
+	if (displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
 	}
 
 	display.Show(&node);
+
+	if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		display.ClearLine(6);
+		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
+	}
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::PIXEL, node.GetActiveOutputPorts());
 
@@ -220,10 +261,17 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
+
+	llrpOnlyDevice.Start();
+
+	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
+#endif
+
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
-	llrpOnlyDevice.Start();
 
 	display.TextStatus(ArtNetMsgConst::STARTED, Display7SegmentMessage::INFO_NODE_STARTED, CONSOLE_GREEN);
 
@@ -234,13 +282,18 @@ void notmain(void) {
 		nw.Run();
 		node.Run();
 		remoteConfig.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
+#endif
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		if (__builtin_expect((pPixelTestPattern != nullptr), 0)) {
-			pPixelTestPattern->Run();
+		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
+			pixelTestPattern.Run();
 		}
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

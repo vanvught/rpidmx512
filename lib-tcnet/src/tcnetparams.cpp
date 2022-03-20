@@ -2,7 +2,7 @@
  * @file tcnetparams.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,6 +180,7 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	PropertiesBuilder builder(TCNetParamsConst::FILE_NAME, pBuffer, nLength);
 
 	if (!isMaskSet(Mask::NODE_NAME)) {
+		assert(TCNet::Get() != nullptr);
 		strncpy(m_Params.aNodeName, TCNet::Get()->GetNodeName(), TCNET_NODE_NAME_LENGTH);
 		m_Params.aNodeName[TCNET_NODE_NAME_LENGTH - 1] = '\0';
 	}
@@ -187,7 +188,6 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	char aName[2];
 	aName[0] = TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer));
 	aName[1] = '\0';
-
 
 	builder.Add(TCNetParamsConst::NODE_NAME, m_Params.aNodeName, isMaskSet(Mask::NODE_NAME));
 	builder.Add(TCNetParamsConst::LAYER, aName, isMaskSet(Mask::LAYER));

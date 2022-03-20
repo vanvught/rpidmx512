@@ -2,7 +2,7 @@
  * @file arp_cache.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "net_packets.h"
+#include "net_platform.h"
 #include "net_debug.h"
 
 #ifndef ALIGNED
@@ -49,12 +50,12 @@ typedef union pcast32 {
 	uint8_t u8[4];
 } _pcast32;
 
-static struct t_arp_record s_arp_records[MAX_RECORDS] ALIGNED;
-static uint16_t s_entry_current;
+static struct t_arp_record s_arp_records[MAX_RECORDS] SECTION_NETWORK ALIGNED;
+static uint16_t s_entry_current SECTION_NETWORK ALIGNED;
 
 #ifndef NDEBUG
- #define TICKER_COUNT 100	///< 10 seconds
- static volatile uint32_t s_ticker ;
+# define TICKER_COUNT 100	///< 10 seconds
+  static volatile uint32_t s_ticker ;
 #endif
 
 void __attribute__((cold)) arp_cache_init(void) {

@@ -2,7 +2,7 @@
  * @file cputemperature.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,39 @@
 #include <cstdint>
 
 #include "rdmsensor.h"
+#include "rdm_e120.h"
+#include "hardware.h"
+#include "debug.h"
 
-class CpuTemperature: public RDMSensor {
+class CpuTemperature final: public RDMSensor {
 public:
-	CpuTemperature(uint8_t nSensor);
+	CpuTemperature(uint8_t nSensor): RDMSensor(nSensor) {
+		SetType(E120_SENS_TEMPERATURE);
+		SetUnit(E120_UNITS_CENTIGRADE);
+		SetPrefix(E120_PREFIX_NONE);
+		SetRangeMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
+		SetRangeMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
+		SetNormalMin(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMin()));
+		SetNormalMax(static_cast<int16_t>(Hardware::Get()->GetCoreTemperatureMax()));
+		SetDescription("CPU");
+	}
 
-	bool Initialize() override;
-	int16_t GetValue() override;
+	bool Initialize() override {
+		DEBUG_ENTRY
+	#if defined (__CYGWIN__) || defined (__APPLE__)
+		DEBUG_EXIT
+		return false;
+	#else
+		DEBUG_EXIT
+		return true;
+	#endif
+	}
+
+	int16_t GetValue() override {
+		const auto nValue = static_cast<int16_t>(Hardware::Get()->GetCoreTemperature());
+		DEBUG_PRINTF("nValue=%d", nValue);
+		return nValue;
+	}
 };
 
 #endif /* CPUTEMPERATURE_H_ */

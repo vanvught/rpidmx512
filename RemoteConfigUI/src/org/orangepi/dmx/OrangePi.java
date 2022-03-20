@@ -1,4 +1,4 @@
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,7 @@ public class OrangePi {
 	private static final String LDISPLAY_TXT = "ldisplay.txt";
 	private static final String TCNET_TXT = "tcnet.txt";
 	private static final String GPS_TXT = "gps.txt";
+	private static final String ETC_TXT = "etc.txt";
 	private static final String MOTORS_TXT[] = {"motor0.txt", "motor1.txt", "motor2.txt", "motor3.txt", "motor4.txt", "motor5.txt", "motor6.txt", "motor7.txt" }; 
 	private static final String RDM_TXT = "rdm_device.txt";
 	private static final String SPARKFUN_TXT = "sparkfun.txt";
@@ -62,6 +63,7 @@ public class OrangePi {
 	private String nodeLtcDisplay = null;
 	private String nodeTCNet = null;
 	private String nodeGPS = null;
+	private String nodeETC = null;
 	private String nodeMotors[] = {null, null, null, null, null, null, null, null};
 	private String nodeRDM = null;
 	private String nodeSparkFun = null;
@@ -75,6 +77,7 @@ public class OrangePi {
 	private String sbLtcDisplay = null;
 	private String sbTCNet = null;
 	private String sbGPS = null;
+	private String sbETC = null;
 	private String sbMotors[] = {null, null, null, null, null, null, null, null};
 	private String sbRDM = null;
 	private String sbSparkFun = null;
@@ -107,6 +110,7 @@ public class OrangePi {
 					nodeLtcDisplay = LDISPLAY_TXT;
 					nodeTCNet = TCNET_TXT;
 					nodeGPS = GPS_TXT;
+					nodeETC = ETC_TXT;
 				} else if (Mode[0].equals("OSC")) {
 				} else if (Mode[0].equals("Config")) {
 					//
@@ -204,7 +208,12 @@ public class OrangePi {
 			if (sbGPS == null) {
 				sbGPS = doGet(txt);
 			}
-			return sbGPS.toString();	
+			return sbGPS.toString();
+		} else if (isETCTxt(txt)) {
+			if (sbETC == null) {
+				sbETC = doGet(txt);
+			}
+			return sbETC.toString();
 		} else if (isMotorTxt(txt)) {
 			int nIndex = txt.charAt(5) - '0';
 			if (sbMotors[nIndex] == null) {
@@ -315,6 +324,9 @@ public class OrangePi {
 			bDoSave = true;
 		} else if (isGPSTxt(txt)) {
 			sbGPS = null;
+			bDoSave = true;	
+		} else if (isETCTxt(txt)) {
+			sbETC = null;
 			bDoSave = true;	
 		} else if (isMotorTxt(txt)) {
 			int nMotorIndex = txt.charAt(5) - '0';
@@ -499,6 +511,13 @@ public class OrangePi {
 		return false;
 	}
 	
+	private Boolean isETCTxt(String etc) {
+		if (etc.equals(ETC_TXT)) {
+			return true;
+		}
+		return false;
+	}
+	
 	private Boolean isMotorTxt(String motor) {
 		for (int i = 0; i < MOTORS_TXT.length; i++) {
 			if (motor.equals(MOTORS_TXT[i])) {
@@ -567,6 +586,10 @@ public class OrangePi {
 	
 	public String getNodeGPS() {
 		return nodeGPS;
+	}
+	
+	public String getNodeETC() {
+		return nodeETC;
 	}
 	
 	public String getNodeMotor(int MotorIndex) {

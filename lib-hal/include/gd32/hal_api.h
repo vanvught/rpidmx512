@@ -30,12 +30,16 @@
 
 #define FUNC_PREFIX(x) gd32_##x
 
+#if defined  __cplusplus
+# if !defined(GD32_UDELAY)
+#  define GD32_UDELAY
+ void udelay(uint32_t us, uint32_t offset = 0);
+# endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-extern void udelay(uint16_t);
-extern uint32_t micros();
 
 #ifdef __cplusplus
 }

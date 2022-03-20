@@ -516,7 +516,7 @@ typedef struct T_H3_UART {
 	__I  uint32_t TFL;				///< 0x80
 	__I  uint32_t RFL;				///< 0x84
 	__I  uint32_t RES2[7]; 			///< unused UART registers
-	__I  uint32_t HALT; 				///< 0xA4 halt tx register
+	__I  uint32_t HALT; 			///< 0xA4 halt tx register
 } H3_UART_TypeDef;
 
 typedef struct T_H3_TWI {

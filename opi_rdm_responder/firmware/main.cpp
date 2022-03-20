@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,20 +31,19 @@
 #include "ledblink.h"
 
 #include "displayudf.h"
-#include "displayrdm.h"
-
-#include "identify.h"
-#include "factorydefaults.h"
+#include "display_timeout.h"
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
-
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
 #include "rdmsubdevicesparams.h"
 
+#include "factorydefaults.h"
+
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
+#include "pixeldmxstartstop.h"
 #include "pixeldmxparamsrdm.h"
 #include "pixeltestpattern.h"
 
@@ -69,6 +68,13 @@
 
 #include "is_config_mode.h"
 
+class Reboot final: public RebootHandler {
+public:
+	void Run() override {
+		WS28xx::Get()->Blackout();
+	}
+};
+
 extern "C" {
 
 void notmain(void) {
@@ -80,6 +86,8 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
+
+	lb.SetMode(ledblink::Mode::OFF_ON);
 
 	const auto isConfigMode = is_config_mode();
 
@@ -102,25 +110,40 @@ void notmain(void) {
 		ws28xxparms.Dump();
 	}
 
-	DisplayRdm displayRdm;
+	/*
+	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
+	 * Groups = Led count / Grouping count
+	 *
+	 * Channels per Pixel * (Led count / Grouping count) <= 512
+	 * Channels per Pixel * Led count <= 512 * Grouping count
+	 *
+	 * Led count <= (512 * Grouping count) / Channels per Pixel
+	 */
+
+	uint32_t nLedsPerPixel;
+	pixeldmxconfiguration::PortInfo portInfo;
+	uint32_t nGroups;
+	uint32_t nUniverses;
+
+	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo, nGroups, nUniverses);
+	pixelDmxConfiguration.Dump();
+
+	if (nUniverses > 1) {
+		const auto nCount = (512U * pixelDmxConfiguration.GetGroupingCount()) / nLedsPerPixel;
+		DEBUG_PRINTF("nCount=%u", nCount);
+		pixelDmxConfiguration.SetCount(nCount);
+	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetLightSetDisplay(&displayRdm);
 	pixelDmx.SetWS28xxDmxStore(&storeWS28xxDmx);
 
+	PixelDmxStartStop pixelDmxStartStop;
+	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
+
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	LightSet *pLightSet;
-
-	if (isConfigMode) {
-		auto *pPixelDmxParamsRdm = new PixelDmxParamsRdm(&storeWS28xxDmx);
-		assert(pPixelDmxParamsRdm != nullptr);
-
-		pLightSet = pPixelDmxParamsRdm;
-	} else {
-		pLightSet = &pixelDmx;
-	}
+	PixelDmxParamsRdm pixelDmxParamsRdm(&storeWS28xxDmx);
 
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
@@ -138,18 +161,16 @@ void notmain(void) {
 		rdmSubDevicesParams.Dump();
 	}
 
-	Identify identify;
-
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH];
-	snprintf(aDescription, sizeof(aDescription) -1, "%s:%u G%u [%s]",
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
+	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),
 			pixelDmxConfiguration.GetGroupingCount(),
 			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
-	RDMPersonality personality(aDescription, pLightSet->GetDmxFootprint());
+	RDMPersonality *personalities[2] = { new RDMPersonality(aDescription, &pixelDmx), new RDMPersonality("Config mode", &pixelDmxParamsRdm) };
 
-	RDMResponder rdmResponder(&personality, pLightSet);
+	RDMResponder rdmResponder(personalities, 2);
 	rdmResponder.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -165,10 +186,21 @@ void notmain(void) {
 	FactoryDefaults factoryDefaults;
 	rdmResponder.SetRDMFactoryDefaults(&factoryDefaults);
 	rdmResponder.Start();
-	rdmResponder.DmxDisableOutput(nTestPattern != pixelpatterns::Pattern::NONE);
+	rdmResponder.DmxDisableOutput(!isConfigMode && (nTestPattern != pixelpatterns::Pattern::NONE));
 
 	rdmResponder.Print();
-	pLightSet->Print();
+
+	if (isConfigMode) {
+		pixelDmxParamsRdm.Print();
+	} else {
+		pixelDmx.Print();
+	}
+
+	if (isConfigMode) {
+		puts("Config mode");
+	} else if (nTestPattern != pixelpatterns::Pattern::NONE) {
+		printf("Test pattern : %s [%u]\n", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
+	}
 
 #if !defined(NO_EMAC)
 	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::PIXEL);
@@ -212,13 +244,15 @@ void notmain(void) {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
+	lb.SetMode(ledblink::Mode::NORMAL);
+
+	hw.SetRebootHandler(new Reboot);
 	hw.WatchdogInit();
 
 	for (;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
 		spiFlashStore.Flash();
-		identify.Run();
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();

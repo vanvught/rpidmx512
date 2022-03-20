@@ -2,7 +2,7 @@
  * @file oscstring.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,9 @@
 #ifndef OSCSTRING_H_
 #define OSCSTRING_H_
 
-#include <string.h>
+#include <cstring>
+
+#include "osc.h"
 
 /*
  * OSC-string
@@ -34,13 +36,40 @@
  * followed by 0-3 additional null characters to make the total number of bits a multiple of 32.
  */
 
-class OSCString {
-public:
-	static int Validate(void *pData, unsigned nSize);
+namespace osc {
+inline static int string_validate(void *pData, unsigned nSize) {
+	unsigned nLength = 0;
+	char *pSrc = reinterpret_cast<char*>(pData);
 
-	static unsigned Size(const char *pString) {
-		return 4 * (strlen(pString) / 4 + 1);
+	unsigned i = 0;
+
+	for (i = 0; i < nSize; ++i) {
+		if (pSrc[i] == '\0') {
+			nLength = 4 * (i / 4 + 1);
+			break;
+		}
 	}
-};
+
+	if (0 == nLength) {
+		return -osc::validate::NOT_TERMINATED;
+	}
+
+	if (nLength > nSize) {
+		return -osc::validate::INVALID_SIZE;
+	}
+
+	for (; i < nLength; ++i) {
+		if (pSrc[i] != '\0') {
+			return -osc::validate::NONE_ZERO_IN_PADDING;
+		}
+	}
+
+	return static_cast<int>(nLength);
+}
+
+inline static unsigned string_size(const char *pString) {
+	return 4 * (strlen(pString) / 4 + 1);
+}
+}  // namespace osc
 
 #endif /* OSCSTRING_H_ */

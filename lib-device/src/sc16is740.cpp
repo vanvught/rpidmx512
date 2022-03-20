@@ -2,7 +2,7 @@
  * @file sc16is750.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,16 +32,14 @@
 #include "debug.h"
 
 SC16IS740::SC16IS740(uint8_t nAddress, uint32_t nOnBoardCrystal) :
-		HAL_I2C(nAddress, hal::i2c::FULL_SPEED), m_nOnBoardCrystal(nOnBoardCrystal) {
-}
+	HAL_I2C(nAddress, hal::i2c::FULL_SPEED),
+	m_nOnBoardCrystal(nOnBoardCrystal)
+{
+	m_IsConnected = IsConnected();
 
-SC16IS740::~SC16IS740() {
-}
-
-bool SC16IS740::Init() {
-	if (!IsConnected()) {
+	if (!m_IsConnected) {
 		DEBUG_PRINTF("Not connected at address %.2x", GetAddress());
-		return false;
+		return;
 	}
 
 	SetFormat(8, SerialParity::NONE, 1);
@@ -51,10 +49,11 @@ bool SC16IS740::Init() {
 	WriteRegister(SC16IS7X0_SPR, nTestCharacter);
 
 	if ((ReadRegister(SC16IS7X0_SPR) != nTestCharacter)) {
-		return false;
+		DEBUG_PUTS("Test character failed");
+		m_IsConnected = false;
+		return ;
 	}
 
-	//
 	auto nRegisterMCR = ReadRegister(SC16IS7X0_MCR);
 	nRegisterMCR |= MCR_ENABLE_TCR_TLR;
 	WriteRegister(SC16IS7X0_MCR, nRegisterMCR);
@@ -65,7 +64,6 @@ bool SC16IS740::Init() {
 	WriteRegister(SC16IS7X0_TLR, static_cast<uint8_t>(0x10));
 
 	WriteRegister(SC16IS7X0_EFR, nRegisterEFR);
-	//
 
 	WriteRegister(SC16IS7X0_FCR, static_cast<uint8_t>(FCR_RX_FIFO_RST | FCR_TX_FIFO_RST));
 	WriteRegister(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
@@ -79,8 +77,6 @@ bool SC16IS740::Init() {
 
 	DEBUG_PRINTF("IIR=%.2x", ReadRegister(SC16IS7X0_IIR));
 	debug_print_bits(ReadRegister(SC16IS7X0_IIR));
-
-	return true;
 }
 
 void SC16IS740::SetFormat(uint32_t nBits, SerialParity tParity,  uint32_t nStopBits) {
@@ -160,6 +156,10 @@ void SC16IS740::SetBaud(uint32_t nBaud) {
 }
 
 void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
+	if (!m_IsConnected) {
+		return;
+	}
+
 	auto *p = const_cast<uint8_t *>(pBytes);
 
 	while (nSize > 0) {
@@ -175,7 +175,12 @@ void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
 }
 
 void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut) {
-	uint8_t *Destination = pBytes;
+	if (!m_IsConnected) {
+		nSize = 0;
+		return;
+	}
+
+	auto *Destination = pBytes;
 	uint32_t nRemaining = nSize;
 
 	while (nRemaining > 0) {
@@ -203,7 +208,7 @@ void SC16IS740::FlushRead(uint32_t nTimeOut) {
 	bool bIsRemaining = true;
 
 	while (bIsRemaining) {
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const auto nMillis = Hardware::Get()->Millis();
 		uint32_t nAvailable;
 
 		while ((nAvailable = ReadRegister(SC16IS7X0_RXLVL)) == 0) {
@@ -219,4 +224,3 @@ void SC16IS740::FlushRead(uint32_t nTimeOut) {
 		}
 	}
 }
-

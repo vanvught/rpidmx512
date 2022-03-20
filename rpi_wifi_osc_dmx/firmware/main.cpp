@@ -23,9 +23,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
+#include <cstdio>
+#include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
@@ -34,7 +34,7 @@
 #include "console.h"
 #include "display.h"
 
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 #include "oscserver.h"
 
 // DMX output
@@ -80,7 +80,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::SSD1306);
+	Display display;
 
 #ifndef H3
 	DMXMonitor monitor;

@@ -1,8 +1,7 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-rdm/include ../lib-properties/include ../lib-device/include
-#
-EXTRA_SRCDIR = src/spi
-#
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-rdm/include ../lib-lightset/include ../lib-properties/include ../lib-device/include
+
+EXTRA_SRCDIR=src/spi
+
 include ../firmware-template-h3/lib/Rules.mk

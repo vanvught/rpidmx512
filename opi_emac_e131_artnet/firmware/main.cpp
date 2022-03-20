@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,43 +28,45 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
+#include "displayhandler.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
 #include "e131reboot.h"
-#include "storee131.h"
 #include "e131msgconst.h"
 #include "e131sync.h"
 
 #include "artnetcontroller.h"
 #include "artnetoutput.h"
 
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-
-#include "rdm_e120.h"
+#include "rdmdeviceparams.h"
 #include "rdmnetdevice.h"
 #include "rdmpersonality.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
-
-#include "identify.h"
+#include "rdm_e120.h"
 #include "factorydefaults.h"
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
+#include "storedisplayudf.h"
+#include "storerdmdevice.h"
+#include "storee131.h"
+#include "storenetwork.h"
+#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-#include "displayhandler.h"
 
 extern "C" {
 
@@ -74,7 +76,7 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
+	
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -82,7 +84,6 @@ void notmain(void) {
 
 	hw.SetLed(hardware::LedStatus::ON);
 	hw.SetRebootHandler(new E131Reboot);
-
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -91,6 +92,15 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
+
+#if defined (ENABLE_HTTPD)
+	MDNS mDns;
+	mDns.Start();
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 DMX");
+	mDns.Print();
+#endif
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
@@ -171,9 +181,8 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	Identify identify;
-
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality("RDMNet LLRP device only", 0));
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
 
@@ -212,11 +221,14 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		controller.Run();
-		llrpOnlyDevice.Run();
 		remoteConfig.Run();
+		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
+#if defined (ENABLE_HTTPD)
+		mDns.Run();
+#endif
 	}
 }
 

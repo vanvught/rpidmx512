@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-#include "oscserverhandler.h"
+#include "oscserver.h"
 
 #include "ws28xxdmx.h"
 

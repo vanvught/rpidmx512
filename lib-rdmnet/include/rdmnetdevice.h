@@ -40,8 +40,8 @@
 
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
-	RDMNetDevice(RDMPersonality *pRDMPersonality) : RDMDeviceResponder(pRDMPersonality, LightSet::Get()) {
-		Hardware::Get()->GetUuid(m_Cid);
+	RDMNetDevice(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) : RDMDeviceResponder(pRDMPersonalities, nPersonalityCount) {
+		Hardware::Get()->GetUuid(s_Cid);
 	}
 	~RDMNetDevice() override {};
 
@@ -49,12 +49,12 @@ public:
 		memcpy(pUID, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
 	}
 	void CopyCID(uint8_t *pCID) override {
-		memcpy(pCID, m_Cid, sizeof(m_Cid));
+		memcpy(pCID, s_Cid, sizeof(s_Cid));
 	}
 
 	uint8_t *LLRPHandleRdmCommand(const uint8_t *pRdmDataNoSC) override {
-		m_RDMHandler.HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&m_RdmCommand));
-		return reinterpret_cast<uint8_t*>(&m_RdmCommand);
+		m_RDMHandler.HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
+		return reinterpret_cast<uint8_t*>(&s_RdmCommand);
 	}
 
 	void Start() {
@@ -70,9 +70,10 @@ public:
 	void Print();
 
 private:
-	RDMHandler m_RDMHandler{false};
-	struct TRdmMessage m_RdmCommand;
-	uint8_t m_Cid[E131::CID_LENGTH];
+	RDMHandler m_RDMHandler { false };
+
+	static TRdmMessage s_RdmCommand;
+	static uint8_t s_Cid[E131::CID_LENGTH];
 };
 
 #endif /* RDMNETDEVICE_H_ */

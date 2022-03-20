@@ -2,7 +2,7 @@
  * @file display7segment.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,8 +27,6 @@
 #define DISPLAY7SEGMENT_H_
 
 #include <cstdint>
-
-#include "hal_i2c.h"
 
 namespace display7segment {
 static constexpr uint8_t CH_0 = 0x3F;		// 0b00111111
@@ -77,6 +75,8 @@ enum class Display7SegmentMessage {
 	INFO_NTP = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_4),
 	INFO_SPARKFUN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_5),
 	INFO_CPLD = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_MDNS_CONFIG = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_7),
+	INFO_RDMNET_CONFIG = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_8),
 	//
 	INFO_NETWORK_SHUTDOWN = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_9),
 	//
@@ -88,11 +88,13 @@ enum class Display7SegmentMessage {
 	INFO_NODE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	INFO_BRIDGE_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	INFO_OSCCLIENT_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
+	INFO_RDMNET_START = display7segment::Msg(display7segment::CH_BLANK, display7segment::CH_6),
 	//
 	INFO_NONE = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_NODE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_BRIDGE_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	INFO_OSCCLIENT_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
+	INFO_RDMNET_STARTED = display7segment::Msg(display7segment::CH_DP, display7segment::CH_DP),
 	// SPI Flash messages
 	INFO_SPI_NONE = display7segment::Msg(display7segment::CH_C, display7segment::CH_MIN),
 	INFO_SPI_CHECK = display7segment::Msg(display7segment::CH_C, display7segment::CH_0),
@@ -138,85 +140,6 @@ enum class Display7SegmentMessage {
 	INFO_PLAYER_STOPPED_LOOP = display7segment::Msg(display7segment::CH_P, display7segment::CH_4),
 	INFO_PLAYER_ENDED = display7segment::Msg(display7segment::CH_P, display7segment::CH_9),
 	ERROR_PLAYER = display7segment::Msg(display7segment::CH_P, display7segment::CH_E)
-};
-
-class Display7Segment {
-public:
-	Display7Segment();
-
-	bool Have7Segment() {
-		return m_bHave7Segment;
-	}
-
-	void Status(Display7SegmentMessage msg);
-	void Status(uint8_t nValue, bool bHex);
-
-	uint16_t GetData(uint8_t nHexValue) {
-		switch (nHexValue) {
-		case 0:
-			return display7segment::CH_0;
-			break;
-		case 1:
-			return display7segment::CH_1;
-			break;
-		case 2:
-			return display7segment::CH_2;
-			break;
-		case 3:
-			return display7segment::CH_3;
-			break;
-		case 4:
-			return display7segment::CH_4;
-			break;
-		case 5:
-			return display7segment::CH_5;
-			break;
-		case 6:
-			return display7segment::CH_6;
-			break;
-		case 7:
-			return display7segment::CH_7;
-			break;
-		case 8:
-			return display7segment::CH_8;
-			break;
-		case 9:
-			return display7segment::CH_9;
-			break;
-		case 0xa:
-			return display7segment::CH_A;
-			break;
-		case 0xb:
-			return display7segment::CH_B;
-			break;
-		case 0xc:
-			return display7segment::CH_C;
-			break;
-		case 0xd:
-			return display7segment::CH_D;
-			break;
-		case 0xe:
-			return display7segment::CH_E;
-			break;
-		case 0xf:
-			return display7segment::CH_F;
-			break;
-		default:
-			break;
-		}
-
-		return display7segment::CH_BLANK;
-	}
-
-	static Display7Segment* Get() {
-		return s_pThis;
-	}
-
-private:
-	HAL_I2C m_I2C;
-	bool m_bHave7Segment { false };
-
-	static Display7Segment *s_pThis;
 };
 
 #endif /* DISPLAY7SEGMENT_H_ */

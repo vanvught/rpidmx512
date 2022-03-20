@@ -40,7 +40,7 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
-#if defined(RDM_SUBDEVICES_ENABLE)
+#if defined(ENABLE_RDM_SUBDEVICES)
 # include "rdmsubdevicebw7fets.h"
 # include "rdmsubdevicebwdimmer.h"
 # include "rdmsubdevicebwdio.h"
@@ -167,7 +167,7 @@ bool RDMSubDevicesParams::Add(RDMSubDevice *pRDMSubDevice) {
 }
 
 void RDMSubDevicesParams::Set() {
-#if defined(RDM_SUBDEVICES_ENABLE)
+#if defined(ENABLE_RDM_SUBDEVICES)
 	for (uint32_t i = 0; i < m_tRDMSubDevicesParams.nCount; i++) {
 		const auto nChipSelect = m_tRDMSubDevicesParams.Entry[i].nChipSelect;
 		const auto nAddress = m_tRDMSubDevicesParams.Entry[i].nAddress;

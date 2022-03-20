@@ -2,7 +2,7 @@
  * @file displayudf.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ void DisplayUdf::Show() {
 	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", firmwareversion::length::SOFTWARE_VERSION, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
-	// LightSet
+	// RDM Responder
 	ShowDmxStartAddress();
 
 #if !defined (NO_EMAC)
@@ -99,14 +99,6 @@ void DisplayUdf::Show() {
 	ShowNetmask();
 	ShowHostName();
 #endif
-}
-
-void DisplayUdf::ShowDmxStartAddress() {
-	if (LightSet::Get() != nullptr) {
-		Printf(m_aLabels[static_cast<uint32_t>(Labels::DMX_START_ADDRESS)], "DMX S:%3d F:%3d",
-				static_cast<int>(LightSet::Get()->GetDmxStartAddress()),
-				static_cast<int>(LightSet::Get()->GetDmxFootprint()));
-	}
 }
 
 #if !defined (NO_EMAC)
@@ -140,20 +132,20 @@ void DisplayUdf::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 	case network::dhcp::ClientStatus::IDLE:
 		break;
 	case network::dhcp::ClientStatus::RENEW:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP renewing");
 		break;
 	case network::dhcp::ClientStatus::GOT_IP:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_NONE);
+		Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 		break;
 	case network::dhcp::ClientStatus::RETRYING:
-		Display7Segment::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
 		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP retrying");
 		break;
 	case network::dhcp::ClientStatus::FAILED:
-		Display7Segment::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
+		Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
 		break;
 	default:
 		break;

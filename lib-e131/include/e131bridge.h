@@ -98,6 +98,9 @@ public:
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
+	LightSet *GetOutput() const {
+		return m_pLightSet;
+	}
 
 	void SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse);
 	bool GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir tDir) const;

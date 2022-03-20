@@ -1,5 +1,5 @@
 DEFINES=#NDEBUG
-EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include ../lib-hal/include
-EXTRA_SRCDIR=jbc
+EXTRA_INCLUDES=../lib-device/include ../lib-hal/include
+EXTRA_SRCDIR=
 
 include ../firmware-template-linux/lib/Rules.mk

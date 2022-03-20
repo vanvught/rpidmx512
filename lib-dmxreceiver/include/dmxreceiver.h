@@ -27,14 +27,18 @@
 #define DMXRECEIVER_H
 
 #include <cstdint>
+#include <cstdio>
 
 #include "dmx.h"
 
 #include "lightset.h"
+#include "ledblink.h"
+
+#include "debug.h"
 
 class DMXReceiver: Dmx {
 public:
-	DMXReceiver(LightSet *pLightSet) : Dmx(false) {
+	DMXReceiver(LightSet *pLightSet) {
 		s_pLightSet = pLightSet;
 	}
 
@@ -44,7 +48,6 @@ public:
 	}
 
 	void Start() {
-		Dmx::Init();
 		Dmx::SetPortDirection(0, dmx::PortDirection::INP, true);
 	}
 
@@ -53,22 +56,32 @@ public:
 		s_pLightSet->Stop(0);
 	}
 
+	void SetLightSet(LightSet *pLightSet) {
+		if (pLightSet != s_pLightSet) {
+			s_pLightSet->Stop(0);
+			s_pLightSet = pLightSet;
+			s_IsActive = false;
+		}
+
+	}
+
 	const uint8_t* Run(int16_t &nLength) {
 		if (__builtin_expect((s_bDisableOutput), 0)) {
 			nLength = 0;
 			return nullptr;
 		}
 
-		if (Dmx::GetUpdatesPerSecond() == 0) {
+		if (Dmx::GetUpdatesPerSecond(0) == 0) {
 			if (s_IsActive) {
 				s_pLightSet->Stop(0);
 				s_IsActive = false;
+				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			}
 
 			nLength = -1;
 			return nullptr;
 		} else {
-			const auto *pDmx = Dmx::GetDmxAvailable();
+			const auto *pDmx = Dmx::GetDmxAvailable(0);
 
 			if (pDmx != nullptr) {
 				const auto *pDmxStatistics = reinterpret_cast<const struct Data*>(pDmx);
@@ -81,6 +94,7 @@ public:
 				if (!s_IsActive) {
 					s_pLightSet->Start(0);
 					s_IsActive = true;
+					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 				}
 
 				return const_cast<uint8_t*>(pDmx);
@@ -95,14 +109,16 @@ public:
 		s_bDisableOutput = bDisable;
 	}
 
-	void Print() {}
-
-	uint32_t GetUpdatesPerSecond() {
-		return Dmx::GetUpdatesPerSecond();
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex) {
+		return Dmx::GetUpdatesPerSecond(nPortIndex);
 	}
 
-	const uint8_t* GetDmxCurrentData() {
-		return Dmx::GetDmxCurrentData();
+	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex) {
+		return Dmx::GetDmxCurrentData(nPortIndex);
+	}
+
+	void Print() {
+		printf(" Output %s\n", s_bDisableOutput ? "disabled" : "enabled");
 	}
 
 private:

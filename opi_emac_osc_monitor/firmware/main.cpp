@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@
 #include "displayhandler.h"
 
 #include "oscserver.h"
-#include "oscserverparms.h"
+#include "oscserverparams.h"
 #include "storeoscserver.h"
 #include "oscservermsgconst.h"
 
@@ -66,7 +66,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::SSD1306);
+	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 	SpiFlashInstall spiFlashInstall;

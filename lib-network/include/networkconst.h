@@ -2,7 +2,7 @@
  * @file networkconst.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,9 @@
 struct NetworkConst {
 	static const char MSG_NETWORK_INIT[];
 	static const char MSG_NETWORK_STARTED[];
+
+	static const char MSG_MDNS_CONFIG[];
+	static const char MSG_MDNS_STARTED[];
 };
 
 #endif /* NETWORKCONST_H_ */

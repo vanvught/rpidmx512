@@ -152,7 +152,7 @@ private:
 	uint32_t m_nSendRdmPacketStartMillis { 0 };
 	bool m_isRdmDiscoveryRunning { false };
 	uint32_t m_nReceivedDmxPacketCount { 0 };
-	struct TRdmStatistics m_RdmStatistics;
+	TRdmStatistics m_RdmStatistics;
 
 	static Widget *s_pThis;
 };

@@ -37,6 +37,8 @@
 #include "network.h"
 #include "hardware.h"
 
+#include "panel_led.h"
+
 #include "debug.h"
 
 static uint32_t s_ReceivingMask = 0;
@@ -88,13 +90,17 @@ void ArtNetNode::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, &artDmx, sizeof(struct TArtDmx), m_InputPort[i].nDestinationIp, ArtNet::UDP_PORT);
 
-				s_ReceivingMask = (1U << i);
-				m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+				if ((s_ReceivingMask & (1U << i)) != (1U << i)) {
+					s_ReceivingMask |= (1U << i);
+					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+					hal::panel_led_on(hal::panelled::PORT_A_RX << i);
+				}
 			} else {
 				if ((m_InputPort[i].genericPort.nStatus & GoodInput::GI_DATA_RECIEVED) == GoodInput::GI_DATA_RECIEVED) {
 					if (nUpdatesPerSecond == 0) {
 						m_InputPort[i].genericPort.nStatus = static_cast<uint8_t>(m_InputPort[i].genericPort.nStatus & ~GoodInput::GI_DATA_RECIEVED);
 						s_ReceivingMask &= ~(1U << i);
+						hal::panel_led_off(hal::panelled::PORT_A_RX << i);
 						if (s_ReceivingMask == 0) {
 							m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
 						}

@@ -2,7 +2,7 @@
  * @file ws28xxmulti.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,80 +26,14 @@
 #ifndef WS28XXMULTI_H_
 #define WS28XXMULTI_H_
 
-#include <cstdint>
-
-#include "pixelconfiguration.h"
-
 #if defined (H3)
-# include "h3_spi.h"
-#endif
-
-struct JamSTAPLDisplay;
-
-class WS28xxMulti {
-public:
-	WS28xxMulti(PixelConfiguration& pixelConfiguration);
-	~WS28xxMulti();
-
-	void Print();
-
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
-
-#if defined (H3)
-	bool IsUpdating() {
-		return h3_spi_dma_tx_is_active();  // returns TRUE while DMA operation is active
-	}
+# include "spi/ws28xxmulti.h"
+#elif defined (GD32)
+# include "gpio/ws28xxmulti.h"
+#elif defined (__linux__)
+# include "linux/ws28xxmulti.h"
 #else
-	bool IsUpdating(void) const {
-		return false;
-	}
+# error
 #endif
-
-	void Update();
-	void Blackout();
-
-	pixel::Type GetType() const {
-		return m_Type;
-	}
-
-	uint32_t GetCount() const {
-		return m_nCount;
-	}
-
-	pixel::Map GetMap() const {
-		return m_Map;
-	}
-
-	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
-		m_pJamSTAPLDisplay = pJamSTAPLDisplay;
-	}
-
-	static WS28xxMulti *Get() {
-		return s_pThis;
-	}
-
-private:
-	uint8_t ReverseBits(uint8_t nBits);
-	void SetupHC595(uint8_t nT0H, uint8_t nT1H);
-	void SetupSPI(uint32_t nSpeedHz);
-	bool SetupCPLD();
-	void SetupBuffers();
-	void SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-
-private:
-	bool m_hasCPLD { false };
-	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint32_t m_nCount { pixel::defaults::COUNT };
-	pixel::Map m_Map { pixel::Map::UNDEFINED };
-	bool m_bIsRTZProtocol { true };
-	uint8_t m_nGlobalBrightness { 0xFF };
-	uint32_t m_nBufSize { 0 };
-	uint8_t *m_pBuffer { nullptr };
-	uint8_t *m_pBlackoutBuffer { nullptr };
-	JamSTAPLDisplay *m_pJamSTAPLDisplay { nullptr };
-
-	static WS28xxMulti *s_pThis;
-};
 
 #endif /* WS28XXMULTI_H_ */

@@ -710,14 +710,14 @@ void E131Bridge::Run() {
 	}
 
 	if (m_pLightSet != nullptr) {
-		const uint32_t nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
+		const auto nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
 		if (nRootVector == vector::root::DATA) {
 			if (IsValidDataPacket()) {
 				HandleDmx();
 			}
 		} else if (nRootVector == vector::root::EXTENDED) {
-			const uint32_t nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
+			const auto nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
 				if (nFramingVector == vector::extended::SYNCHRONIZATION) {
 				HandleSynchronization();
 			}

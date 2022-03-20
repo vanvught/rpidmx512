@@ -2,7 +2,7 @@
  * @file console_uart0.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,10 @@
 #include <stdint.h>
 
 #include "console.h"
-#include "uart0_debug.h"
+
+extern void uart0_init(void);
+extern void uart0_putc(int);
+extern void uart0_puts(const char *);
 
 int __attribute__((cold)) console_init(void) {
 	uart0_init();
@@ -38,14 +41,11 @@ int __attribute__((cold)) console_init(void) {
 }
 
 void console_putc(int c) {
-	if (c == '\n') {
-		uart0_putc('\r');
-	}
 	uart0_putc(c);
 }
 
 void console_puts(const char *s) {
-	uart0_puts((char *)s);
+	uart0_puts(s);
 }
 
 void console_set_fg_color(uint16_t fg) {

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,57 +33,59 @@
 #include "storenetwork.h"
 #include "ledblink.h"
 
+#if defined (ENABLE_HTTPD)
+# include "mdns.h"
+# include "mdnsservices.h"
+#endif
+
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
+#include "display_timeout.h"
 
 #include "e131bridge.h"
 #include "e131params.h"
 #include "e131reboot.h"
-#include "storee131.h"
 #include "e131msgconst.h"
-#include "e131.h"
 
-// Pixel
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
-#include "lightset.h"
 #include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
-#include "h3/ws28xxdmxstartstop.h"
-#include "storews28xxdmx.h"
+#include "ws28xxdmxstartstop.h"
 #include "pixelreboot.h"
-// DMX Output
+
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "storedmxsend.h"
 #include "dmxconfigudp.h"
-//
+
 #include "lightset4with4.h"
-// RDMNet LLRP Only
-#include "rdmnetdevice.h"
-#include "rdmpersonality.h"
-#include "rdm_e120.h"
-#include "factorydefaults.h"
-#include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmdeviceparams.h"
+# include "rdmnetdevice.h"
+# include "rdmnetconst.h"
+# include "rdmpersonality.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
+
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storee131.h"
+#include "storerdmdevice.h"
 #include "storeremoteconfig.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
-
-#if defined (ENABLE_HTTPD)
-# include "mdns.h"
-# include "mdnsservices.h"
-#endif
 
 using namespace e131;
 
@@ -111,22 +113,23 @@ void notmain(void) {
 	nw.SetNetworkStore(&storeNetwork);
 	nw.Init(&storeNetwork);
 	nw.Print();
-
+	
 #if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
-
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 Pixel");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 Pixel DMX");
 	mDns.Print();
 #endif
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	E131Bridge bridge;
 	StoreE131 storeE131;
 	E131Params e131params(&storeE131);
+	
+	E131Bridge bridge;
 
 	if (e131params.Load()) {
 		e131params.Set(&bridge);
@@ -160,7 +163,7 @@ void notmain(void) {
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern);
+	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		hw.SetRebootHandler(new PixelReboot);
@@ -206,9 +209,10 @@ void notmain(void) {
 	bridge.SetOutput(&lightSet);
 	bridge.Print();
 
-	// RDMNet LLRP Only
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 
-	char aDescription[RDM_PERSONALITY_DESCRIPTION_MAX_LENGTH + 1];
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	if (WS28xx::Get() == nullptr) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "sACN Pixel-DMX");
 	} else {
@@ -218,7 +222,8 @@ void notmain(void) {
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
-	RDMNetDevice llrpOnlyDevice(new RDMPersonality(aDescription, 0));
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
@@ -236,6 +241,7 @@ void notmain(void) {
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
+#endif	
 
 	display.SetTitle("sACN E1.31 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
@@ -279,9 +285,16 @@ void notmain(void) {
 	while (spiFlashStore.Flash())
 		;
 
-	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
 
 	llrpOnlyDevice.Start();
+
+	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
+#endif
+
+	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
+
 	bridge.Start();
 
 	display.TextStatus(E131MsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
@@ -293,7 +306,9 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)		
 		llrpOnlyDevice.Run();
+#endif		
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();

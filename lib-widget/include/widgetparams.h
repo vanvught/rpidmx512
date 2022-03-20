@@ -2,7 +2,7 @@
  * @file widgetparams.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@ struct WidgetParamsMask {
 	static constexpr auto THROTTLE = (1U << 4);
 };
 
-#if defined (H3)
+#if defined (HAVE_FLASHROM)
 class WidgetParamsStore {
 public:
 	virtual ~WidgetParamsStore() {}
@@ -58,7 +58,7 @@ public:
 
 class WidgetParams {
 public:
-#if defined (H3)
+#if defined (HAVE_FLASHROM)
 	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
 #else
 	WidgetParams();
@@ -69,23 +69,23 @@ public:
 
 	void Dump();
 
-	uint8_t GetBreakTime() {
+	uint8_t GetBreakTime() const {
 		return m_tWidgetParams.nBreakTime;
 	}
 
-	uint8_t GetMabTime() {
+	uint8_t GetMabTime() const {
 		return m_tWidgetParams.nMabTime;
 	}
 
-	uint8_t GetRefreshRate() {
+	uint8_t GetRefreshRate() const {
 		return m_tWidgetParams.nRefreshRate;
 	}
 
-	widget::Mode GetMode() {
+	widget::Mode GetMode() const {
 		return static_cast<widget::Mode>(m_tWidgetParams.tMode);
 	}
 
-	uint8_t GetThrottle() {
+	uint8_t GetThrottle() const {
 		return m_tWidgetParams.nThrottle;
 	}
 
@@ -99,10 +99,10 @@ private:
     }
 
 private:
-#if defined (H3)
+#if defined (HAVE_FLASHROM)
     WidgetParamsStore *m_pWidgetParamsStore;
 #endif
-    struct TWidgetParams m_tWidgetParams;
+    TWidgetParams m_tWidgetParams;
 };
 
 #endif /* WIDGETPARAMS_H_ */

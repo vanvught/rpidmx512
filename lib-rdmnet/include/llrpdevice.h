@@ -46,12 +46,14 @@ public:
 		Network::Get()->JoinGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
 		DEBUG_EXIT
 	}
+
 	void Stop() {
 		DEBUG_ENTRY
 		Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
 		Network::Get()->End(LLRP_PORT);
 		DEBUG_EXIT
 	}
+
 	void Run();
 
 	void Print();

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 
 #include "hardware.h"
 #include "noemac/network.h"
@@ -34,7 +34,7 @@
 
 #include "widget.h"
 #include "widgetparams.h"
-#include "h3/widgetstore.h"
+#include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
 #include "spiflashinstall.h"
@@ -49,11 +49,8 @@
 # define ALIGNED __attribute__ ((aligned (4)))
 #endif
 
-using namespace dmxsingle;
-using namespace dmx;
-
-static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
-static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
+static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
+static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
 extern "C" {
 
@@ -61,7 +58,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Display display; 	// Display is not supported. We just need a pointer to object
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -70,7 +67,7 @@ void notmain(void) {
 	StoreRDMDevice storeRDMDevice;
 
 	Widget widget;
-	widget.SetPortDirection(0, PortDirection::INP, false);
+	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
 	WidgetParams widgetParams(&storeWidget);
 
@@ -104,7 +101,7 @@ void notmain(void) {
 	hw.WatchdogInit();
 
 	if (tWidgetMode == widget::Mode::RDM_SNIFFER) {
-		widget.SetPortDirection(0, PortDirection::INP, true);
+		widget.SetPortDirection(0, dmx::PortDirection::INP, true);
 		widget.SnifferFillTransmitBuffer();	// Prevent missing first frame
 	}
 
