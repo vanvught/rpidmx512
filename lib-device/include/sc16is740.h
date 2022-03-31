@@ -63,7 +63,7 @@ public:
 	void SetBaud(uint32_t nBaud);
 
 	bool IsInterrupt() {
-		const uint32_t nRegisterIIR = ReadRegister(SC16IS7X0_IIR);
+		const uint32_t nRegisterIIR = _ReadRegister(SC16IS7X0_IIR);
 
 		return ((nRegisterIIR & 0x1) != 0x1);
 	}
@@ -75,7 +75,7 @@ public:
 			return -1;
 		}
 
-		return ReadRegister(SC16IS7X0_RHR);
+		return _ReadRegister(SC16IS7X0_RHR);
 	}
 
 	int GetChar(uint32_t nTimeOut) {
@@ -83,7 +83,7 @@ public:
 			return -1;
 		}
 
-		return ReadRegister(SC16IS7X0_RHR);
+		return _ReadRegister(SC16IS7X0_RHR);
 	}
 
 	// Write
@@ -91,7 +91,7 @@ public:
 		while (!IsWritable()) {
 		}
 
-		WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(nValue));
+		_WriteRegister(SC16IS7X0_THR, static_cast<uint8_t>(nValue));
 
 		return nValue;
 	}
@@ -103,18 +103,26 @@ public:
 	void FlushRead(uint32_t nTimeOut);
 
 private:
+	void _WriteRegister(const uint8_t nRegister, uint8_t nValue) {
+		WriteRegister(nRegister << 3, nValue);
+	}
+
+	uint8_t _ReadRegister(const uint8_t nRegister) {
+		return ReadRegister(nRegister << 3);
+	}
+
 	bool IsWritable() {
 		if (!m_IsConnected) {
 			return false;
 		}
-		return (ReadRegister(SC16IS7X0_TXLVL) != 0);
+		return (_ReadRegister(SC16IS7X0_TXLVL) != 0);
 	}
 
 	bool IsReadable() {
 		if (!m_IsConnected) {
 			return false;
 		}
-		return (ReadRegister(SC16IS7X0_RXLVL) != 0);
+		return (_ReadRegister(SC16IS7X0_RXLVL) != 0);
 	}
 
 	bool IsReadable(uint32_t nTimeOut) {

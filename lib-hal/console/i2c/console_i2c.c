@@ -24,6 +24,7 @@
  */
 
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 
 #include "console.h"
@@ -59,8 +60,8 @@ static bool s_isConnected;
 /** See section 8.3 of the datasheet for definitions
  * of bits in the FIFO Control Register (FCR)
  */
-#define FCR_TX_FIFO_RST		(1U << 2)
-#define FCR_ENABLE_FIFO		(1U << 0)
+#define FCR_TX_FIFO_RST	(1U << 2)
+#define FCR_ENABLE_FIFO	(1U << 0)
 
 /** See section 8.4 of the datasheet for definitions
  * of bits in the Line Control Register (LCR)
@@ -83,6 +84,20 @@ static bool s_isConnected;
  */
 #define	EFR_ENABLE_ENHANCED_FUNCTIONS	(1U << 4)
 
+static bool is_connected_(const uint8_t nAddress, uint32_t nBaudrate) {
+	char buf;
+
+	FUNC_PREFIX(i2c_set_address(nAddress));
+	FUNC_PREFIX(i2c_set_baudrate(nBaudrate));
+
+	if ((nAddress >= 0x30 && nAddress <= 0x37) || (nAddress >= 0x50 && nAddress <= 0x5F)) {
+		return FUNC_PREFIX(i2c_read(&buf, 1)) == 0;
+	}
+
+	/* This is known to corrupt the Atmel AT24RF08 EEPROM */
+	return FUNC_PREFIX(i2c_write(NULL, 0)) == 0;
+}
+
 static void setup() {
 	FUNC_PREFIX(i2c_set_address(CONSOLE_I2C_ADDRESS));
 	FUNC_PREFIX(i2c_set_baudrate(400000));
@@ -91,7 +106,7 @@ static void setup() {
 static void write_register(uint8_t nRegister, uint8_t nValue) {
 	char buffer[2];
 
-	buffer[0] = (char)(nRegister);
+	buffer[0] = (char)(nRegister << 3);
 	buffer[1] = (char)(nValue);
 
 	setup();
@@ -110,7 +125,7 @@ static uint8_t read_byte() {
 uint8_t read_register(uint8_t nRegister) {
 	char buf[2];
 
-	buf[0] = (char)(nRegister);
+	buf[0] = (char)(nRegister << 3);
 	buf[1] = 0;
 
 	setup();
@@ -120,9 +135,6 @@ uint8_t read_register(uint8_t nRegister) {
 }
 
 static bool is_writable() {
-	if (!s_isConnected) {
-		return false;
-	}
 	return (read_register(SC16IS7X0_TXLVL) != 0);
 }
 
@@ -145,6 +157,14 @@ static void set_baud(uint32_t nBaud) {
 }
 
 int __attribute__((cold)) console_init(void) {
+	FUNC_PREFIX(i2c_begin());
+
+	s_isConnected = is_connected_(CONSOLE_I2C_ADDRESS, 400000);
+
+	if (s_isConnected) {
+		return -1;
+	}
+
 	uint8_t LCR = LCR_BITS8;
 	LCR |= LCR_NONE;
 	LCR |= LCR_BITS1;
@@ -157,7 +177,7 @@ int __attribute__((cold)) console_init(void) {
 
 	if ((read_register(SC16IS7X0_SPR) != test_character)) {
 		s_isConnected = false;
-		return CONSOLE_OK;
+		return -2;
 	}
 
 	s_isConnected = true;
@@ -180,6 +200,17 @@ int __attribute__((cold)) console_init(void) {
 }
 
 void console_putc(int c) {
+	if (!s_isConnected) {
+		return;
+	}
+
+	if (c == '\n') {
+		while (!is_writable()) {
+		}
+
+		write_register(SC16IS7X0_THR, (uint8_t)('\r'));
+	}
+
 	while (!is_writable()) {
 	}
 
