@@ -37,7 +37,9 @@ enum class BootDevice {
 	FEL,	// H3 Only
 	MMC0,
 	SPI,	// H3 Only
-	HDD
+	HDD,
+	FLASH,
+	RAM
 };
 
 }  // namespace hardware

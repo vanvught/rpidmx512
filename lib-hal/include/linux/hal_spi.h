@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,16 @@
 #if defined (RASPPI)
 # define SPI_BIT_ORDER_MSBFIRST	BCM2835_SPI_BIT_ORDER_MSBFIRST
 # define SPI_MODE0				BCM2835_SPI_MODE0
+# define SPI_MODE1				BCM2835_SPI_MODE1
+# define SPI_MODE2				BCM2835_SPI_MODE2
 # define SPI_MODE3				BCM2835_SPI_MODE3
 # define SPI_CS0				BCM2835_SPI_CS0
 # define SPI_CS_NONE			BCM2835_SPI_CS_NONE
 #else
 # define SPI_BIT_ORDER_MSBFIRST	0
 # define SPI_MODE0				0
+# define SPI_MODE1				0
+# define SPI_MODE2				0
 # define SPI_MODE3				0
 # define SPI_CS0				0
 # define SPI_CS_NONE			0

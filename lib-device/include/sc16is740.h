@@ -71,6 +71,10 @@ public:
 	// Read
 
 	int GetChar() {
+		if (!m_IsConnected) {
+			return -1;
+		}
+
 		if (!IsReadable()) {
 			return -1;
 		}
@@ -79,6 +83,10 @@ public:
 	}
 
 	int GetChar(uint32_t nTimeOut) {
+		if (!m_IsConnected) {
+			return -1;
+		}
+
 		if (!IsReadable(nTimeOut)) {
 			return -1;
 		}
@@ -88,6 +96,10 @@ public:
 
 	// Write
 	int PutChar(int nValue) {
+		if (!m_IsConnected) {
+			return -1;
+		}
+
 		while (!IsWritable()) {
 		}
 
@@ -104,23 +116,14 @@ public:
 
 private:
 	bool IsWritable() {
-		if (!m_IsConnected) {
-			return false;
-		}
 		return (ReadRegister(SC16IS7X0_TXLVL) != 0);
 	}
 
 	bool IsReadable() {
-		if (!m_IsConnected) {
-			return false;
-		}
 		return (ReadRegister(SC16IS7X0_RXLVL) != 0);
 	}
 
 	bool IsReadable(uint32_t nTimeOut) {
-		if (!m_IsConnected) {
-			return false;
-		}
 		const auto nMillis = Hardware::Get()->Millis();
 		do {
 			if (IsReadable()) {

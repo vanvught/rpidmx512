@@ -44,8 +44,9 @@ static constexpr auto STOP_2BITS = 2;
 
 #define FUNC_PREFIX(x)	x
 
-#define EXT_UART_NUMBER	0
-#define EXT_UART_BASE	0
+#define EXT_UART_NUMBER		0
+#define EXT_UART_BASE		0
+#define EXT_MIDI_UART_BASE	0
 
 #ifdef __cplusplus
 extern "C" {

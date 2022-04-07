@@ -1,5 +1,5 @@
 /**
- * @file sc16is750.cpp
+ * @file sc16is740.cpp
  *
  */
 /* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
@@ -131,6 +131,8 @@ void SC16IS740::SetFormat(uint32_t nBits, SerialParity tParity,  uint32_t nStopB
 	}
 
 	WriteRegister(SC16IS7X0_LCR, nRegisterLCR);
+
+	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), nRegisterLCR);
 }
 
 void SC16IS740::SetBaud(uint32_t nBaud) {
@@ -153,6 +155,8 @@ void SC16IS740::SetBaud(uint32_t nBaud) {
 	DEBUG_PRINTF("nPrescaler=%u", nPrescaler);
 	DEBUG_PRINTF("nDivisor=%u", nDivisor);
 	DEBUG_PRINTF("m_nOnBoardCrystal=%u", m_nOnBoardCrystal);
+
+	DEBUG_PRINTF("LCR=%.2x:%.2x", ReadRegister(SC16IS7X0_LCR), nRegisterLCR);
 }
 
 void SC16IS740::WriteBytes(const uint8_t *pBytes, uint32_t nSize) {
@@ -205,6 +209,10 @@ void SC16IS740::ReadBytes(uint8_t *pBytes, uint32_t& nSize, uint32_t nTimeOut) {
 }
 
 void SC16IS740::FlushRead(uint32_t nTimeOut) {
+	if (!m_IsConnected) {
+		return;
+	}
+
 	bool bIsRemaining = true;
 
 	while (bIsRemaining) {
