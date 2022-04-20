@@ -22,10 +22,11 @@ ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
 endif
 
 include ../firmware-template/libs.mk
+
 TTT=uuid
 TMPVAR:=$(LIBS)
 LIBS=$(filter-out $(TTT), $(TMPVAR))
-LIBS+=debug
+LIBS+=debug hal
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
@@ -35,7 +36,7 @@ ifeq ($(detected_OS),Linux)
 		else
 			LIBS+=bcm2835
 		endif
-		DEFINES+=-DRASPPI
+		DEFINES+=RASPPI
 	endif
 endif
 
@@ -64,7 +65,8 @@ LIBDEP=$(addprefix ../lib-,$(LIBS))
 
 COPS=$(DEFINES) -DDISABLE_TFTP -DENABLE_HTTPD #-DNDEBUG
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-O2 -Wall -Werror -Wextra -pedantic -Wunused -Wsign-conversion #-Wconversion
+COPS+=-O2 -Wall -Werror -Wextra -pedantic 
+COPS+=-Wunused -Wsign-conversion #-Wconversion
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
 

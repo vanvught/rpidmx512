@@ -1,8 +1,8 @@
 /**
- * @file hal_spi.h
+ * @file platform_midi.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,32 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_HAL_SPI_H_
-#define GD32_HAL_SPI_H_
+#ifndef H3_PLATFORM_MIDI_H_
+#define H3_PLATFORM_MIDI_H_
 
-#include "gd32_spi.h"
+#if EXT_MIDI_UART_BASE != H3_UART2_BASE
+# error
+#endif
 
-namespace hal {
-namespace spi {
+/* ignore some GCC warnings */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
-}  // namespace spi
-}  // namespace hal
+#include "core_ca.h"
 
-#define SPI_MODE0		GD32_SPI_MODE0
-#define SPI_MODE1		GD32_SPI_MODE1
-#define SPI_MODE2		GD32_SPI_MODE2
-#define SPI_MODE3		GD32_SPI_MODE3
+#pragma GCC diagnostic pop
 
-#define SPI_CS0			GD32_SPI_CS0
-#define SPI_CS_NONE		GD32_SPI_CS_NONE
+#include "irq_timer.h"
 
-#endif /* GD32_HAL_SPI_H_ */
+#include "arm/gic.h"
+#include "arm/arm.h"
+
+#include "h3.h"
+#include "h3_uart.h"
+#include "h3_ccu.h"
+#include "h3_gpio.h"
+#include "h3_timer.h"
+
+#endif /* H3_PLATFORM_MIDI_H_ */

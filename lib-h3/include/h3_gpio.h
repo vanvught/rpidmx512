@@ -235,6 +235,14 @@ inline static uint8_t h3_gpio_lev(uint32_t pin) {
 	return (value & (1U << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
+inline static void h3_gpio_write(const uint32_t pin, const uint32_t value) {
+	if (value != 0) {
+		h3_gpio_set(pin);
+	} else {
+		h3_gpio_clr(pin);
+	}
+}
+
 #ifdef __cplusplus
 }
 #endif

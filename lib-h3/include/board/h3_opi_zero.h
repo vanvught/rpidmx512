@@ -2,7 +2,7 @@
  * @file h3_opi_zero.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,12 @@
 #define H3_BOARD_NAME		"Orange Pi Zero"
 #define H3_BOARD_STATUS_LED	H3_PORT_TO_GPIO(H3_GPIO_PORTA, 17)	///< PA17
 
-#define EXT_I2C_BASE	H3_TWI0_BASE
-#define EXT_SPI_BASE	H3_SPI1_BASE
-#define EXT_UART_BASE 	H3_UART1_BASE
+#define EXT_I2C_BASE		H3_TWI0_BASE
+#define EXT_SPI_BASE		H3_SPI1_BASE
+#define EXT_UART_BASE 		H3_UART1_BASE
+#define EXT_UART_NAME 		"UART1_BASE"
+#define EXT_MIDI_UART_BASE 	H3_UART2_BASE
+#define EXT_MIDI_UART_NAME 	"UART2"
 
 typedef enum H3_BOARD_OPI_ZERO {
 	GPIO_EXT_3 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 12),	///< I2C0 SCA, PA12

@@ -1,10 +1,28 @@
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
+/*
+ In file included from device/fb/h3_de2.c:44:
+In function 'memset',
+    inlined from 'de2_mode_set' at device/fb/h3_de2.c:123:3:
+../include/string.h:95:23: error: '__builtin_memset' offset [0, 255] is out of the bounds [0, 0] [-Werror=array-bounds]
+   95 |                 *dp++ = (char) c;
+      |                 ~~~~~~^~~~~~~~~~
+../include/string.h:95:23: error: '__builtin_memset' offset [0, 139] is out of the bounds [0, 0] [-Werror=array-bounds]
+../include/string.h:95:23: error: '__builtin_memset' offset [0, 139] is out of the bounds [0, 0] [-Werror=array-bounds]
+../include/string.h:95:23: error: '__builtin_memset' offset [0, 139] is out of the bounds [0, 0] [-Werror=array-bounds]
+In function 'memset',
+    inlined from 'de2_mode_set' at device/fb/h3_de2.c:126:2:
+../include/string.h:95:23: error: '__builtin_memset' offset [0, 255] is out of the bounds [0, 0] [-Werror=array-bounds]
+   95 |                 *dp++ = (char) c;
+      |                 ~~~~~~^~~~~~~~~~
+ */
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
 /**
  * @file h3_de2.c
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
