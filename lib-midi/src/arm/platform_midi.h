@@ -1,7 +1,8 @@
 /**
- * @file midi.cpp
+ * @file platform_midi.h
+ *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +23,15 @@
  * THE SOFTWARE.
  */
 
-#include "midi.h"
+#ifndef PLATFORM_MIDI_H_
+#define PLATFORM_MIDI_H_
 
-Midi *Midi::s_pThis = nullptr;
+#if defined (H3)
+# include "../src/h3/platform_midi.h"
+#elif  defined (GD32)
+# include "../src/gd32/platform_midi.h"
+#else
+#error platform midi
+#endif
 
-Midi::Midi()  {
-	s_pThis = this;
-}
-
+#endif /* PLATFORM_MIDI_H_ */
