@@ -1,8 +1,7 @@
 /**
- * @file platform_midi.h
- *
+ * @file midiprint.cpp
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +22,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_PLATFORM_MIDI_H_
-#define GD32_PLATFORM_MIDI_H_
+#include <cstdio>
+#include <cstdint>
 
-#include "gd32.h"
+#include "midi.h"
 
-#endif /* GD32_PLATFORM_MIDI_H_ */
+using namespace midi;
+
+void Midi::Print() {
+	const auto dir = GetDirection();
+	const auto nBaudrate = GetBaudrate();
+	const auto nChannel = GetChannel();
+
+	printf("MIDI [%s]\n", GetInterfaceDescription());
+	printf(" Direction    : %s\n", dir == Direction::INPUT ? "Input" : "Output");
+	if (dir == Direction::INPUT) {
+		printf(" Channel      : %d %s\n", nChannel, nChannel == 0 ? "(OMNI mode)" : "");
+	}
+	printf(" Active sense : %s\n", GetActiveSense() ? "Enabled" : "Disabled");
+	printf(" Baudrate     : %d %s\n", static_cast<int>(nBaudrate), nBaudrate == defaults::BAUDRATE ? "(Default)" : "");
+}
+

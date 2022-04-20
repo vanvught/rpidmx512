@@ -2,7 +2,7 @@
  * @file applemidi.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,126 +31,69 @@
 #define APPLEMIDI_H_
 
 #include <cstdint>
-#include <cstdio>
-#include <algorithm>
-#include <cassert>
 
 #include "midi.h"
-#include "hardware.h"
+
 #include "mdns.h"
-#include "mdnsservices.h"
 
-#include "debug.h"
+enum TAppleMidiUdpPort {
+	APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT	= 5004,
+	APPLE_MIDI_UPD_PORT_MIDI_DEFAULT	= (APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT + 1)
+};
 
-namespace applemidi {
-static constexpr auto UPD_PORT_CONTROL_DEFAULT = 5004U;
-static constexpr auto UPD_PORT_MIDI_DEFAULT = UPD_PORT_CONTROL_DEFAULT + 1U;
-static constexpr auto SESSION_NAME_LENGTH_MAX = 24;
-static constexpr auto VERSION = 2;
+enum TAppleMidiSessionName {
+	APPLE_MIDI_SESSION_NAME_LENGTH_MAX = 24
+};
 
-struct ExchangePacket {
+enum TAppleMidiVersion {
+	APPLE_MIDI_VERSION = 2
+};
+
+struct TExchangePacket {
 	uint16_t nSignature;
 	uint16_t nCommand;
 	uint32_t nProtocolVersion;
 	uint32_t nInitiatorToken;
 	uint32_t nSSRC;
-	uint8_t aName[SESSION_NAME_LENGTH_MAX + 1];
+	uint8_t aName[APPLE_MIDI_SESSION_NAME_LENGTH_MAX + 1];
 }__attribute__((packed));
 
-enum class SessionState {
-	WAITING_IN_CONTROL, WAITING_IN_MIDI, IN_SYNC, ESTABLISHED
+enum TSessionState {
+	SESSION_STATE_WAITING_IN_CONTROL,
+	SESSION_STATE_WAITING_IN_MIDI,
+	SESSION_STATE_IN_SYNC,
+	SESSION_STATE_ESTABLISHED
 };
 
-struct SessionStatus {
-	SessionState tSessionState;
+struct TSessionStatus {
+	TSessionState tSessionState;
 	uint32_t nRemoteIp;
 	uint16_t nRemotePortMidi;
 	uint32_t nSynchronizationTimestamp;
 };
 
-static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::ExchangePacket) - applemidi::SESSION_NAME_LENGTH_MAX - 1;
-}  // namespace applemidi
-
 class AppleMidi: public MDNS {
 public:
 	AppleMidi();
+	virtual ~AppleMidi();
 
-	virtual ~AppleMidi() {
-		Stop();
-	}
-
-	void Start() {
-		DEBUG_ENTRY
-
-		MDNS::Start();
-		MDNS::AddServiceRecord(nullptr, MDNS_SERVICE_MIDI, m_nPort);
-
-		m_nHandleControl = Network::Get()->Begin(m_nPort);
-		assert(m_nHandleControl != -1);
-
-		m_nHandleMidi = Network::Get()->Begin(static_cast<uint16_t>(m_nPort + 1));
-		assert(m_nHandleMidi != -1);
-
-		DEBUG_PRINTF("Session name: [%s]", m_ExchangePacketReply.aName);
-
-		m_nStartTime = Hardware::Get()->Millis();
-
-		DEBUG_EXIT
-	}
-
-	void Stop() {
-		DEBUG_ENTRY
-
-		MDNS::Stop();
-		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
-		Network::Get()->End(m_nPort);
-
-		DEBUG_EXIT
-	}
+	void Start();
+	void Stop();
 
 	void Run();
 
-	void SetPort(uint16_t nPort) {
-		assert(nPort > 1024);
-		m_nPort = nPort;
-	}
+	void SetPort(uint16_t nPort = APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT);
+	void SetSessionName(const char *pSessionName);
 
-	void SetSessionName(const char *pSessionName) {
-		const auto nLength = std::min(strlen(pSessionName), static_cast<size_t>(applemidi::SESSION_NAME_LENGTH_MAX));
-		memcpy(reinterpret_cast<char *>(&m_ExchangePacketReply.aName), pSessionName, nLength);
-		m_ExchangePacketReply.aName[nLength] = '\0';
-		m_nExchangePacketReplySize = static_cast<uint16_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH + 1 + nLength);
-	}
-
-	uint32_t GetSSRC() const {
+	uint32_t GetSSRC() {
 		return m_nSSRC;
 	}
 
-	void Print() {
-		MDNS::Print();
-		const auto nSSRC = __builtin_bswap32(m_nSSRC);
-		printf("AppleMIDI\n");
-		printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);
-		printf(" Session : %s\n", m_ExchangePacketReply.aName);
-	}
+	void Print();
 
 protected:
-	uint32_t Now() {
-		const auto nElapsed = Hardware::Get()->Millis() - m_nStartTime;
-		return (nElapsed * 10U);
-	}
-
-	bool Send(const uint8_t *pBuffer, uint32_t nLength) {
-		if (m_tSessionStatus.tSessionState != applemidi::SessionState::ESTABLISHED) {
-			return false;
-		}
-
-		Network::Get()->SendTo(m_nHandleMidi, pBuffer, static_cast<uint16_t>(nLength), m_tSessionStatus.nRemoteIp, m_tSessionStatus.nRemotePortMidi);
-
-		debug_dump(&pBuffer, static_cast<uint16_t>(nLength));
-
-		return true;
-	}
+	uint32_t Now();
+	bool Send(const uint8_t *pBuffer, uint32_t nLength);
 
 private:
 	void HandleControlMessage();
@@ -159,18 +102,18 @@ private:
 	virtual void HandleRtpMidi(const uint8_t *pBuffer);
 
 private:
-	uint32_t m_nStartTime { 0 };
+	uint32_t m_nStartTime{0};
 	uint32_t m_nSSRC;
-	int32_t m_nHandleControl { -1 };
-	int32_t m_nHandleMidi { -1 };
-	uint32_t m_nRemoteIp { 0 };
+	uint16_t m_nPort{APPLE_MIDI_UPD_PORT_CONTROL_DEFAULT};
+	int32_t m_nHandleControl{-1};
+	int32_t m_nHandleMidi{-1};
+	uint8_t *m_pBuffer{nullptr};
+	uint32_t m_nRemoteIp{0};
+	uint16_t m_nRemotePort{0};
+	uint16_t m_nBytesReceived{0};
+	TExchangePacket m_ExchangePacketReply;
 	uint16_t m_nExchangePacketReplySize;
-	uint16_t m_nPort { applemidi::UPD_PORT_CONTROL_DEFAULT };
-	uint16_t m_nRemotePort { 0 };
-	uint16_t m_nBytesReceived { 0 };
-	applemidi::ExchangePacket m_ExchangePacketReply;
-	applemidi::SessionStatus m_tSessionStatus;
-	uint8_t *m_pBuffer { nullptr };
+	TSessionStatus m_tSessionStatus;
 };
 
 #endif /* APPLEMIDI_H_ */

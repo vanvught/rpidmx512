@@ -2,7 +2,7 @@
  * @file midi.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,17 +27,8 @@
 #define MIDI_H_
 
 #include <cstdint>
-#include <cstdio>
-
-#include "hal_uart.h"
 
 namespace midi {
-/**
- * NoteOn with 0 velocity should be handled as NoteOf.
- * Set to true  to get NoteOff events when receiving null-velocity NoteOn messages.
- * Set to false to get NoteOn  events when receiving null-velocity NoteOn messages.
- */
-static constexpr auto HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF = true;
 
 namespace defaults {
 static constexpr auto BAUDRATE = 31250;
@@ -153,7 +144,7 @@ static constexpr auto MIN = 8;
 static constexpr auto MAX = 300;
 }  // namespace bpm
 
-typedef void (*thunk_irq_timer1_t)();
+typedef void (*thunk_irq_timer_t)();
 
 }  // namespace midi
 
@@ -184,6 +175,8 @@ public:
 		return m_bActiveSense;
 	}
 
+	uint32_t GetUpdatesPerSecond();
+
 	void SetChannel(uint8_t nChannel) {
 		m_nInputChannel = nChannel;
 	}
@@ -192,90 +185,28 @@ public:
 		return m_nInputChannel;
 	}
 
-	void SendTimeCode(const struct midi::Timecode *pTimeCode) {
-		uint8_t data[10] = {0xF0, 0x7F, 0x7F, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0xF7};
+	midi::ActiveSenseState GetActiveSenseState();
 
-		data[5] = static_cast<uint8_t>((((pTimeCode->nType) & 0x03) << 5) | (pTimeCode->nHours & 0x1F));
-		data[6] = pTimeCode->nMinutes & 0x3F;
-		data[7] = pTimeCode->nSeconds & 0x3F;
-		data[8] = pTimeCode->nFrames & 0x1F;
-
-		SendRaw(data, 10);
+	const char* GetInterfaceDescription() const {
+		return "UART2";
 	}
 
-	void SendQf(const uint8_t nValue) {
-		uint8_t data[2];
+	void SendTimeCode(const struct midi::Timecode *tTimeCode);
 
-		data[0] = 0xF1;
-		data[1] = nValue;
-
-		SendRaw(data, 2);
-	}
-
-	void SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
-		auto data = static_cast<uint8_t>(nMidiQuarterFramePiece << 4);
-
-		switch (nMidiQuarterFramePiece) {
-		case 0:
-			data = data | (tMidiTimeCode->nFrames & 0x0F);
-			break;
-		case 1:
-			data = data | static_cast<uint8_t>((tMidiTimeCode->nFrames & 0x10) >> 4);
-			break;
-		case 2:
-			data = data | (tMidiTimeCode->nSeconds & 0x0F);
-			break;
-		case 3:
-			data = data | static_cast<uint8_t>((tMidiTimeCode->nSeconds & 0x30) >> 4);
-			break;
-		case 4:
-			data = data | (tMidiTimeCode->nMinutes & 0x0F);
-			break;
-		case 5:
-			data = data | static_cast<uint8_t>((tMidiTimeCode->nMinutes & 0x30) >> 4);
-			break;
-		case 6:
-			data = data | (tMidiTimeCode->nHours & 0x0F);
-			break;
-		case 7:
-			data = static_cast<uint8_t>(data | (tMidiTimeCode->nType << 1) | ((tMidiTimeCode->nHours & 0x10) >> 4));
-			break;
-		default:
-			break;
-		}
-
-		SendQf(data);
-
-		nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
-	}
+	void SendQf(uint8_t nData);
+	void SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece);
 
 	void SendRaw(const uint8_t *pData, uint32_t nLength) {
-		FUNC_PREFIX (uart_transmit(EXT_MIDI_UART_BASE, pData, nLength));
+		SendUart2(pData, nLength);
 	}
-
 	void SendRaw(uint8_t nByte) {
 		SendRaw(&nByte, 1);
 	}
-
 	void SendRaw(midi::Types tType) {
 		SendRaw(static_cast<uint8_t>(tType));
 	}
 
-	bool Read(uint8_t nChannel) {
-		if (nChannel >= static_cast<uint8_t>(midi::Channel::OFF)) {
-			return false; // MIDI Input disabled.
-		}
-
-		if (!Parse()) {
-			return false;
-		}
-
-		HandleNullVelocityNoteOnAsNoteOff();
-		const auto isChannelMatch = InputFilter(nChannel);
-
-		return isChannelMatch;
-	}
-
+	bool Read(uint8_t nChannel);
 	bool Read() {
 		return Read(m_nInputChannel);
 	}
@@ -302,86 +233,24 @@ public:
 		return reinterpret_cast<const uint8_t*>(m_Message.aSystemExclusive);
 	}
 
-	void SetIrqTimer1(midi::thunk_irq_timer1_t pFunc);
-
-	uint32_t GetUpdatesPerSecond();
-
-	midi::ActiveSenseState GetActiveSenseState();
-
-	void Print() {
-		printf("MIDI\n");
-		printf(" Direction    : %s\n", m_tDirection == midi::Direction::INPUT ? "Input" : "Output");
-		if (m_tDirection == midi::Direction::INPUT) {
-			printf(" Channel      : %d %s\n", m_nInputChannel, m_nInputChannel == 0 ? "(OMNI mode)" : "");
-		}
-		printf(" Active sense : %s\n", m_bActiveSense ? "Enabled" : "Disabled");
-		printf(" Baudrate     : %d %s\n", static_cast<int>(m_nBaudrate), m_nBaudrate == midi::defaults::BAUDRATE ? "(Default)" : "");
-	}
+	void SetIrqTimer1(midi::thunk_irq_timer_t pFunc);
 
 	static Midi* Get() {
 		return s_pThis;
 	}
 
+	void Print();
+
 private:
-	bool InputFilter(uint8_t nChannel) const {
-		if (m_Message.tType == midi::Types::INVALIDE_TYPE)
-			return false;
-
-		// First, check if the received message is Channel
-		if (m_Message.tType >= midi::Types::NOTE_OFF && m_Message.tType <= midi::Types::PITCH_BEND) {
-			// Then we need to know if we listen to it
-			if ((m_Message.nChannel == nChannel) || (nChannel == static_cast<uint8_t>(midi::Channel::OMNI))) {
-				return true;
-			} else {
-				// We don't listen to this channel
-				return false;
-			}
-		} else {
-			// System messages are always received
-			return true;
-		}
-	}
-
-
-	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) const {
-		if ((nStatusByte < 0x80) || (nStatusByte == 0xf4) || (nStatusByte == 0xf5) || (nStatusByte == 0xf9) || (nStatusByte == 0xfD)) {
-			// Data bytes and undefined.
-			return midi::Types::INVALIDE_TYPE;
-		}
-
-		if (nStatusByte < 0xF0) {
-			// Channel message, remove channel nibble.
-			return static_cast<midi::Types>(nStatusByte & 0xF0);
-		}
-
-		return static_cast<midi::Types>(nStatusByte);
-	}
-
-	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte) const {
-		return static_cast<uint8_t>((nStatusByte & 0x0F) + 1);
-	}
-
-	bool isChannelMessage(const midi::Types nType) const {
-		return nType == midi::Types::NOTE_OFF || nType == midi::Types::NOTE_ON
-				|| nType == midi::Types::CONTROL_CHANGE
-				|| nType == midi::Types::AFTER_TOUCH_POLY
-				|| nType == midi::Types::AFTER_TOUCH_CHANNEL || nType == midi::Types::PITCH_BEND
-				|| nType == midi::Types::PROGRAM_CHANGE;
-	}
-
-	void HandleNullVelocityNoteOnAsNoteOff() {
-		if (midi::HANDLE_NULL_VELOCITY_NOTE_ON_AS_NOTE_OFF && (m_Message.tType == midi::Types::NOTE_ON) && (m_Message.nData2 == 0)) {
-			m_Message.tType = midi::Types::NOTE_OFF;
-		}
-	}
-
-	void ResetInput() {
-		m_nPendingMessageIndex = 0;
-		m_nPendingMessageExpectedLenght = 0;
-		m_nRunningStatusRx = static_cast<uint8_t>(midi::Types::INVALIDE_TYPE);
-	}
-
+	void InitUart2();
+	void SendUart2(const uint8_t *pData, uint32_t nLength);
+	bool InputFilter(uint8_t nChannel) const;
+	midi::Types GetTypeFromStatusByte(uint8_t nStatusByte) const;
+	uint8_t GetChannelFromStatusByte(uint8_t nStatusByte) const;
+	bool isChannelMessage(midi::Types tType) const;
+	void HandleNullVelocityNoteOnAsNoteOff();
 	bool Parse();
+	void ResetInput();
 	bool ReadRaw(uint8_t *byte, uint32_t *timestamp);
 
 private:

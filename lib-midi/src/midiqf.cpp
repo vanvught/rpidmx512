@@ -1,7 +1,8 @@
 /**
- * @file midi.cpp
+ * @file midiqf.h
+ *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,11 +23,43 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
 #include "midi.h"
 
-Midi *Midi::s_pThis = nullptr;
+void Midi::SendQf(const struct midi::Timecode *tMidiTimeCode, uint32_t& nMidiQuarterFramePiece) {
+	auto data = static_cast<uint8_t>(nMidiQuarterFramePiece << 4);
 
-Midi::Midi()  {
-	s_pThis = this;
+	switch (nMidiQuarterFramePiece) {
+	case 0:
+		data = data | (tMidiTimeCode->nFrames & 0x0F);
+		break;
+	case 1:
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nFrames & 0x10) >> 4);
+		break;
+	case 2:
+		data = data | (tMidiTimeCode->nSeconds & 0x0F);
+		break;
+	case 3:
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nSeconds & 0x30) >> 4);
+		break;
+	case 4:
+		data = data | (tMidiTimeCode->nMinutes & 0x0F);
+		break;
+	case 5:
+		data = data | static_cast<uint8_t>((tMidiTimeCode->nMinutes & 0x30) >> 4);
+		break;
+	case 6:
+		data = data | (tMidiTimeCode->nHours & 0x0F);
+		break;
+	case 7:
+		data = static_cast<uint8_t>(data | (tMidiTimeCode->nType << 1) | ((tMidiTimeCode->nHours & 0x10) >> 4));
+		break;
+	default:
+		break;
+	}
+
+	SendQf(data);
+
+	nMidiQuarterFramePiece = (nMidiQuarterFramePiece + 1) & 0x07;
 }
-
