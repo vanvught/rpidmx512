@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -90,7 +90,7 @@ void notmain(void) {
 
 	console_clear();
 	fw.Print();
-	printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), midi.GetInterfaceDescription());
+	printf("MIDI Monitor, baudrate : %d, interface : %s", midi.GetBaudrate(), EXT_MIDI_UART_NAME);
 
 	MidiMonitor monitor;
 	monitor.Init();
