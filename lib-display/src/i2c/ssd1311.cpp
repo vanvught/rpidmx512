@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "ssd1311.h"
+#include "i2c/ssd1311.h"
 
 // Co – Continuation bit
 // D/C# – Data / Command Selection bit
@@ -101,7 +101,7 @@ bool Ssd1311::Start() {
 }
 
 void Ssd1311::PrintInfo() {
-	printf("%s (%d,%d)\n", "SSD1311", m_nRows, m_nCols);
+	printf("SSD1311 (%d,%d)\n", m_nRows, m_nCols);
 }
 
 void Ssd1311::Cls() {
@@ -292,7 +292,7 @@ bool Ssd1311::CheckSSD1311() {
  */
 
 constexpr auto DISPLAY_ON_OFF = (1U << 2);
-#if defined(ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 constexpr auto CURSOR_ON_OFF = (1U << 1);
 constexpr auto CURSOR_BLINK_ON_OFF = (1U << 0);
 #endif
@@ -322,14 +322,14 @@ void Ssd1311::SetContrast(uint8_t nContrast) {
 	SetRE(FunctionSet::RE_ZERO);
 }
 
-#if defined(ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 # define UNUSED
 #else
 # define UNUSED __attribute__((unused))
 #endif
 
 void Ssd1311::SetCursor(UNUSED uint32_t nMode) {
-#if defined(ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 	switch (static_cast<int>(nMode)) {
 	case display::cursor::OFF:
 		m_nDisplayControl &= static_cast<uint8_t>(~CURSOR_ON_OFF);

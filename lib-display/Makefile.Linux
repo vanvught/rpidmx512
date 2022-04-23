@@ -1,5 +1,6 @@
-DEFINES=
+DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-hal/include
 
+include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

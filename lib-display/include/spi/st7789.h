@@ -1,5 +1,5 @@
 /**
- * @file display.h
+ * @file st7789.h
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,26 +23,44 @@
  * THE SOFTWARE.
  */
 
-#ifndef DISPLAY_H_
-#define DISPLAY_H_
+#ifndef ST7789_H
+#define ST7789_H
 
-#include "display7segment.h"
-#include "console.h"
+#include <cstdint>
 
-namespace display {
-struct Defaults {
-	static constexpr auto SEEP_TIMEOUT = 5;
-};
-namespace timeout {
-void gpio_init();
-bool gpio_renew();
-}  // namespace timeout
-}  // namespace display
+#include "spi/config.h"
+#include "spi/st77xx.h"
 
-#if defined (CONFIG_DISPLAY_USE_SPI)
-# include "spi/display.h"
-#else
-# include "i2c/display.h"
+namespace st7789 {
+#if defined (CONFIG_SPI_LCD_240X240)
+static constexpr auto ROTATION_0_SHIFT_X =  0;
+static constexpr auto ROTATION_0_SHIFT_Y = 80;
+static constexpr auto ROTATION_1_SHIFT_X = 80;
+static constexpr auto ROTATION_1_SHIFT_Y =  0;
+static constexpr auto ROTATION_2_SHIFT_X =  0;
+static constexpr auto ROTATION_2_SHIFT_Y =  0;
+static constexpr auto ROTATION_3_SHIFT_X =  0;
+static constexpr auto ROTATION_3_SHIFT_Y =  0;
+#elif defined (CONFIG_SPI_LCD_240X320)
+static constexpr auto ROTATION_0_SHIFT_X =  0;
+static constexpr auto ROTATION_0_SHIFT_Y =  0;
+static constexpr auto ROTATION_1_SHIFT_X =  0;
+static constexpr auto ROTATION_1_SHIFT_Y =  0;
+static constexpr auto ROTATION_2_SHIFT_X =  0;
+static constexpr auto ROTATION_2_SHIFT_Y =  0;
+static constexpr auto ROTATION_3_SHIFT_X =  0;
+static constexpr auto ROTATION_3_SHIFT_Y =  0;
 #endif
+}  // namespace st7789
 
-#endif /* DISPLAY_H_ */
+class ST7789 : public ST77XX {
+public:
+	ST7789();
+	~ST7789();
+
+	void Init();
+
+	void SetRotation(uint32_t nRotation);
+};
+
+#endif /* ST7789_H */

@@ -46,7 +46,7 @@ public:
 	Ssd1306 (TOledPanel);
 	Ssd1306 (uint8_t, TOledPanel);
 	~Ssd1306() override {
-#if defined(ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 		delete[] m_pShadowRam;
 		m_pShadowRam = nullptr;
 #endif
@@ -100,7 +100,7 @@ private:
 	TOledPanel m_OledPanel { OLED_PANEL_128x64_8ROWS };
 	bool m_bHaveSH1106 { false };
 	uint32_t m_nPages;
-#if defined(ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 	uint32_t m_tCursorMode { display::cursor::OFF };
 	char *m_pShadowRam { nullptr };
 	uint16_t m_nShadowRamIndex { 0 };

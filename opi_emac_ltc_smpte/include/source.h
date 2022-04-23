@@ -2,7 +2,7 @@
  * @file source.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,7 @@
 class Source {
 public:
 	static void Show(ltc::source ltcSource, bool bRunGpsTimeClient) {
-		Display::Get()->ClearLine(4);
-		Display::Get()->PutString(SourceConst::SOURCE[ltcSource]);
+		Display::Get()->TextStatus(SourceConst::SOURCE[ltcSource]);
 
 		if (ltcSource == ltc::source::SYSTIME) {
 			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);

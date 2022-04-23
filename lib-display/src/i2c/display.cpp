@@ -29,12 +29,12 @@
 #include "display.h"
 #include "displayset.h"
 
-#if defined(ENABLE_TC1602)
-# include "tc1602.h"
+#if defined(CONFIG_DISPLAY_ENABLE_HD44780)
+# include "i2c/hd44780.h"
 #endif
-#include "ssd1306.h"
-#if defined(ENABLE_SSD1311)
-# include "ssd1311.h"
+#include "i2c/ssd1306.h"
+#if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
+# include "i2c/ssd1311.h"
 #endif
 
 #include "display7segment.h"
@@ -45,14 +45,11 @@ using namespace display;
 
 Display *Display::s_pThis = nullptr;
 
-Display::Display() :
-	m_nMillis(Hardware::Get()->Millis()),
-	m_I2C(display::segment7::I2C_ADDRESS)
-{
+Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-#if defined(ENABLE_SSD1311)
+#if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
 	Detect(display::Type::SSD1311);
 #endif
 
@@ -69,14 +66,11 @@ Display::Display() :
 	PrintInfo();
 }
 
-Display::Display(uint8_t nCols, uint8_t nRows) :
-	m_nMillis(Hardware::Get()->Millis()),
-	m_I2C(display::segment7::I2C_ADDRESS)
-{
+Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	Detect(nCols, nRows);
+	Detect(nRows);
 
 	Detect7Segment();
 
@@ -87,11 +81,7 @@ Display::Display(uint8_t nCols, uint8_t nRows) :
 	PrintInfo();
 }
 
-Display::Display(display::Type tDisplayType):
-	m_tType(tDisplayType),
-	m_nMillis(Hardware::Get()->Millis()),
-	m_I2C(display::segment7::I2C_ADDRESS)
-{
+Display::Display(display::Type tDisplayType): m_tType(tDisplayType), m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -108,17 +98,17 @@ Display::Display(display::Type tDisplayType):
 
 void Display::Detect(display::Type tDisplayType) {
 	switch (tDisplayType) {
-#if defined(ENABLE_TC1602)
+#if defined(CONFIG_DISPLAY_ENABLE_HD44780)
 		case display::Type::PCF8574T_1602:
-			m_LcdDisplay = new Tc1602(16, 2);
+			m_LcdDisplay = new Hd44780(16, 2);
 			assert(m_LcdDisplay != nullptr);
 			break;
 		case display::Type::PCF8574T_2004:
-			m_LcdDisplay = new Tc1602(20, 4);
+			m_LcdDisplay = new Hd44780(20, 4);
 			assert(m_LcdDisplay != nullptr);
 			break;
 #endif
-#if defined(ENABLE_SSD1311)
+#if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
 		case display::Type::SSD1311:
 			m_LcdDisplay = new Ssd1311;
 			assert(m_LcdDisplay != nullptr);
@@ -150,10 +140,10 @@ void Display::Detect(display::Type tDisplayType) {
 	}
 }
 
-void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
+void Display::Detect(uint32_t nRows) {
 	if (HAL_I2C::IsConnected(OLED_I2C_SLAVE_ADDRESS_DEFAULT)) {
 		if (nRows <= 4) {
-#if defined(ENABLE_SSD1311)
+#if defined(CONFIG_DISPLAY_ENABLE_SSD1311)
 			m_LcdDisplay = new Ssd1311;
 			assert(m_LcdDisplay != nullptr);
 
@@ -174,9 +164,17 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 			Printf(1, "SSD1306");
 		}
 	}
-#if defined(ENABLE_TC1602)
-	else if (HAL_I2C::IsConnected(TC1602_I2C_DEFAULT_SLAVE_ADDRESS)) {
-		m_LcdDisplay = new Tc1602(nCols, nRows);
+#if defined(CONFIG_DISPLAY_ENABLE_HD44780)
+	else if (HAL_I2C::IsConnected(hd44780::pcf8574t::TC2004_ADDRESS)) {
+		m_LcdDisplay = new Hd44780(hd44780::pcf8574t::TC2004_ADDRESS, 20, 4);
+		assert(m_LcdDisplay != nullptr);
+
+		if (m_LcdDisplay->Start()) {
+			m_tType = display::Type::PCF8574T_2004;
+			Printf(1, "TC2004_PCF8574T");
+		}
+	} else if (HAL_I2C::IsConnected(hd44780::pcf8574t::TC1602_ADDRESS)) {
+		m_LcdDisplay = new Hd44780(hd44780::pcf8574t::TC1602_ADDRESS, 16, 2);
 		assert(m_LcdDisplay != nullptr);
 
 		if (m_LcdDisplay->Start()) {
@@ -190,4 +188,3 @@ void Display::Detect(__attribute__((unused)) uint8_t nCols, uint8_t nRows) {
 		m_nSleepTimeout = 0;
 	}
 }
-

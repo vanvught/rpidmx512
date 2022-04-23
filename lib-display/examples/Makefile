@@ -37,7 +37,7 @@ mircos.o	: Makefile micros.c
 	$(CC) -c micros.c
 	
 $(ROOT)/lib-display/lib_linux/libdisplay.a :
-	cd $(ROOT)/lib-display && make -f Makefile.Linux 'DEFINES=-DRASPPI -DENABLE_SSD1311 -DENABLE_TC1602 -DENABLE_LCDBW -DENABLE_CURSOR_MODE -DNO_HAL -DNDEBUG'
+	cd $(ROOT)/lib-display && make -f Makefile.Linux 'DEFINES=-DRASPPI -DCONFIG_DISPLAY_ENABLE_SSD1311 -DCONFIG_DISPLAY_ENABLE_HD44780 -DCONFIG_DISPLAY_ENABLE_CURSOR_MODE -DNO_HAL -DNDEBUG'
 
 $(ROOT)/lib-i2c/lib_linux/libi2c.a :
 	cd $(ROOT)/lib-i2c && make -f Makefile.Linux 'DEFINES=-DRASPPI -DNDEBUG'

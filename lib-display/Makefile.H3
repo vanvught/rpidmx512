@@ -1,7 +1,6 @@
-DEFINES=NDEBUG 
-#ENABLE_TC1602 #ENABLE_LCDBW
+#DEFINES=NDEBUG 
 
 EXTRA_INCLUDES=../lib-hal/include
 
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
-	
