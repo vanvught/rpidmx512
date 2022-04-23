@@ -1,8 +1,8 @@
 /**
- * @file ltcsender.cpp
+ * @file ltcetcreader.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,26 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#ifndef H3_LTCETCREADER_H_
+#define H3_LTCETCREADER_H_
 
-#include "ltcsender.h"
+#include "ltcetc.h"
 #include "ltc.h"
 
-#include "h3_codec.h"
+class LtcEtcReader final : public LtcEtcHandler {
+public:
+	LtcEtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
 
-#include "debug.h"
+	void Start();
+	void Stop();
 
-LtcSender *LtcSender::s_pThis = nullptr;
+	void Run();
 
-LtcSender::LtcSender(uint32_t nVolume) {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
+	void Handler(const midi::Timecode *pTimeCode);
 
-	if ((nVolume > 1) && (nVolume < 32)) {	// TODO constexpr
-		h3_codec_set_volume(static_cast<uint8_t>(nVolume));
-	}
-}
+private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	struct midi::Timecode m_tMidiTimeCode;
+};
 
-void LtcSender::Start() {
-	h3_codec_begin();
-}
-
-void LtcSender::SetTimeCode(const struct TLtcTimeCode* pLtcSenderTimeCode, bool nExternalClock) {
-	LtcEncoder::SetTimeCode(pLtcSenderTimeCode, nExternalClock);
-	LtcEncoder::Get()->Encode();
-
-	if (__builtin_expect((m_nTypePrevious != pLtcSenderTimeCode->nType), 0)) {
-		m_nTypePrevious = pLtcSenderTimeCode->nType;
-		h3_codec_set_buffer_length(LtcEncoder::Get()->GetBufferSize()); // This is an implicit stop
-		h3_codec_start();
-	}
-
-	h3_codec_push_data(LtcEncoder::Get()->GetBufferPointer());
-}
+#endif /* H3_LTCETCREADER_H_ */

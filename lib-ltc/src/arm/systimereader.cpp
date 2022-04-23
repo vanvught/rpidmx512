@@ -27,7 +27,7 @@
 #include <cstring>
 #include <cassert>
 
-#include "h3/systimereader.h"
+#include "systimereader.h"
 
 #include "ltc.h"
 #include "timecodeconst.h"
@@ -46,9 +46,9 @@
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
-#include "h3/ltcsender.h"
+#include "ltcsender.h"
 #include "display.h"
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
 
 #include "debug.h"
 

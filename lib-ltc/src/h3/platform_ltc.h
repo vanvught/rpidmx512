@@ -1,8 +1,8 @@
 /**
- * @file ltc.h
+ * @file platform_ltc.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTC_H_
-#define H3_LTC_H_
+#ifndef H3_PLATFORM_LTC_H_
+#define H3_PLATFORM_LTC_H_
 
-#include "h3/artnetreader.h"
-#include "h3/ltcreader.h"
-#include "h3/ltcsender.h"
-#include "h3/midireader.h"
-#include "h3/tcnetreader.h"
-#include "h3/ltcgenerator.h"
-#include "h3/rtpmidireader.h"
-#include "h3/systimereader.h"
-#include "h3/ltcetcreader.h"
-#include "h3/ltcoutputs.h"
+/* ignore some GCC warnings */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wconversion"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
-#endif /* H3_LTC_H_ */
+#include "core_ca.h"
+
+#pragma GCC diagnostic pop
+
+#include "arm/synchronize.h"
+#include "h3.h"
+#include "h3_timer.h"
+#include "irq_timer.h"
+
+#endif /* H3_PLATFORM_LTC_H_ */

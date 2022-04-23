@@ -27,64 +27,64 @@
 #include <cstring>
 #include <cassert>
 
-#include "h3/rtpmidireader.h"
+#include "rtpmidireader.h"
 
 #include "timecodeconst.h"
-
-#include "arm/synchronize.h"
-#include "h3.h"
-#include "h3_timer.h"
-#include "irq_timer.h"
-
 #include "ledblink.h"
 
 // Output
 #include "artnetnode.h"
 #include "midi.h"
 #include "ltcetc.h"
-#include "h3/ltcsender.h"
-#include "h3/ltcoutputs.h"
+#include "ltcsender.h"
+#include "ltcoutputs.h"
+
+#include "platform_ltc.h"
 
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-/**
- * ARM Generic Timer
- */
+#if defined (H3)
 static volatile uint32_t sv_nUpdatesPerSecond;
 static volatile uint32_t sv_nUpdatesPrevious;
 static volatile uint32_t sv_nUpdates;
-/**
- *  Timer0
- */
+
 static volatile bool sv_bTimeCodeAvailable;
 static volatile uint32_t sv_bTimeCodeCounter;
-
-static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
-	sv_bTimeCodeAvailable = true;
-	sv_bTimeCodeCounter++;
-}
 
 static void irq_arm_handler() {
 	sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
 	sv_nUpdatesPrevious = sv_nUpdates;
 }
 
+static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
+	sv_bTimeCodeAvailable = true;
+	sv_bTimeCodeCounter++;
+}
+#elif defined (GD32)
+#endif
+
 RtpMidiReader::RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
 void RtpMidiReader::Start() {
+#if defined (H3)
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(irq_arm_handler));
 	irq_timer_init();
+#elif defined (GD32)
+#endif
 
 	LtcOutputs::Get()->Init();
 	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 }
 
 void RtpMidiReader::Stop() {
+#if defined (H3)
 	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(nullptr));
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
+#elif defined (GD32)
+#endif
 }
 
 void RtpMidiReader::MidiMessage(const struct midi::Message *ptMidiMessage) {
@@ -122,8 +122,11 @@ void RtpMidiReader::HandleMtc(const struct midi::Message *ptMidiMessage) {
 
 	Update();
 
+#if defined (H3)
 	sv_bTimeCodeAvailable = false;
 	sv_bTimeCodeCounter = 0;
+#elif defined (GD32)
+#endif
 }
 
 void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
@@ -156,17 +159,23 @@ void RtpMidiReader::HandleMtcQf(const struct midi::Message *ptMidiMessage) {
 			m_nMtcQfFramesDelta = 2;
 		}
 
-		dmb();
+		__DMB();
+#if defined (H3)
 		if (sv_bTimeCodeCounter < m_nMtcQfFramesDelta) {
+#elif defined (GD32)
+#endif
 			Update();
 		}
 
+#if defined (H3)
 		H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
 		H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 		sv_bTimeCodeAvailable = false;
 		sv_bTimeCodeCounter = 0;
+#elif defined (GD32)
+#endif
 	}
 
 	m_nPartPrevious = nPart;
@@ -187,14 +196,19 @@ void RtpMidiReader::Update() {
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 
+#if defined (H3)
 	sv_nUpdates++;
+#elif defined (GD32)
+#endif
 }
 
 void RtpMidiReader::Run() {
-	dmb();
+	__DMB();
+#if defined (H3)
 	if (sv_bTimeCodeAvailable) {
 		sv_bTimeCodeAvailable = false;
-
+#elif defined (GD32)
+#endif
 		const auto nFps = TimeCodeConst::FPS[m_tLtcTimeCode.nType];
 
 		if (m_bDirection) {
@@ -247,15 +261,18 @@ void RtpMidiReader::Run() {
 
  		if (m_nMtcQfFramesDelta == 2) {
  			m_nMtcQfFramesDelta = 0;
+#if defined (H3)
  			H3_TIMER->TMR0_CTRL |= TIMER_CTRL_SINGLE_MODE;
  			H3_TIMER->TMR0_INTV = TimeCodeConst::TMR_INTV[m_tLtcTimeCode.nType];
  			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+#endif
  		}
 	}
 
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tLtcTimeCode));
 
-	dmb();
+	__DMB();
 	if (sv_nUpdatesPerSecond != 0) {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {

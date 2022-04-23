@@ -27,33 +27,28 @@
 #include <cstring>
 #include <cassert>
 
-#include "h3/midireader.h"
+#include "midireader.h"
 #include "ltc.h"
 
 #include "timecodeconst.h"
 
-#include "arm/synchronize.h"
-#include "h3.h"
-#include "h3_timer.h"
-
 // Input
 #include "midi.h"
-
 // Output
-#include "h3/ltcsender.h"
+#include "ltcsender.h"
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
 #include "ltcmidisystemrealtime.h"
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
+
+#include "platform_ltc.h"
 
 using namespace midi;
 
 static uint8_t s_qf[8] __attribute__ ((aligned (4))) = { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-/**
- * Timer 1
- */
+#if defined (H3)
 static volatile bool sv_bTimeCodeAvailable;
 static volatile uint32_t sv_bTimeCodeCounter;
 
@@ -61,6 +56,8 @@ static void irq_timer1_handler(void) {
 	sv_bTimeCodeAvailable = true;
 	sv_bTimeCodeCounter++;
 }
+#elif defined (GD32)
+#endif
 
 inline static void itoa_base10(int nArg, char *pBuffer) {
 	auto *p = pBuffer;
@@ -81,7 +78,10 @@ MidiReader::MidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtc
 }
 
 void MidiReader::Start() {
+#if defined (H3)
 	Midi::Get()->SetIrqTimer1(irq_timer1_handler);
+#elif defined (GD32)
+#endif
 	Midi::Get()->Init(midi::Direction::INPUT);
 }
 
@@ -131,17 +131,23 @@ void MidiReader::HandleMtcQf() {
 			m_nMtcQfFramesDelta = 2;
 		}
 
-		dmb();
+		__DMB();
+#if defined (H3)
 		if (sv_bTimeCodeCounter < m_nMtcQfFramesDelta) {
+#elif defined (GD32)
+#endif
 			Update();
 		}
 
+#if defined (H3)
 		H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 		sv_bTimeCodeAvailable = false;
 		sv_bTimeCodeCounter = 0;
+#elif defined (GD32)
+#endif
 	}
 
 	m_nPartPrevious = nPart;
@@ -194,10 +200,12 @@ void MidiReader::Run() {
 		}
 	}
 
-	dmb();
+	__DMB();
+#if defined (H3)
 	if (sv_bTimeCodeAvailable) {
 		sv_bTimeCodeAvailable = false;
-
+#elif defined (GD32)
+#endif
 		const auto nFps = TimeCodeConst::FPS[m_MidiTimeCode.nType];
 
 		if (m_bDirection) {
@@ -250,9 +258,12 @@ void MidiReader::Run() {
 
  		if (m_nMtcQfFramesDelta == 2) {
  			m_nMtcQfFramesDelta = 0;
+#if defined (H3)
  			H3_TIMER->TMR1_CTRL |= TIMER_CTRL_SINGLE_MODE;
  			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[m_MidiTimeCode.nType];
  			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+#endif
  		}
 	}
 

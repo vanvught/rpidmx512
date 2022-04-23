@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,13 @@
 #include "midi.h"
 #include "rtpmidi.h"
 
-#include "irq_timer.h"
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
+
+#include "platform_ltc.h"
 
 static struct TLtcDisabledOutputs *s_ptLtcDisabledOutputs;
 
+#if defined (H3)
 static void timer_handler() {
 	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
 		RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
@@ -45,6 +47,8 @@ static void timer_handler() {
 		Midi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 }
+#elif defined (GD32)
+#endif
 
 LtcMidiSystemRealtime *LtcMidiSystemRealtime::s_pThis = nullptr;
 
@@ -70,11 +74,18 @@ void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
 	if ((!s_ptLtcDisabledOutputs->bRtpMidi) || (!s_ptLtcDisabledOutputs->bMidi)) {
 		if (nBPM != m_nBPMPrevious) {
 			m_nBPMPrevious = nBPM;
+
 			if (nBPM == 0) {
+#if defined (H3)
 				irq_timer_arm_virtual_set(nullptr, 0);
+#elif defined (GD32)
+#endif
 			} else if ((nBPM >= midi::bpm::MIN) && (nBPM <= midi::bpm::MAX)) {
+#if defined (H3)
 				const uint32_t nValue =  60000000 / nBPM;
 				irq_timer_arm_virtual_set(reinterpret_cast<thunk_irq_timer_arm_t>(timer_handler), nValue);
+#elif defined (GD32)
+#endif
 			}
 		}
 	}

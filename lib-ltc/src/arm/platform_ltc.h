@@ -1,5 +1,5 @@
 /**
- * @file ltcetcreader.h
+ * @file platform_ltc.h
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,28 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef H3_LTCETCREADER_H_
-#define H3_LTCETCREADER_H_
+#ifndef PLATFORM_LTC_H_
+#define PLATFORM_LTC_H_
 
-#include "ltcetc.h"
-#include "ltc.h"
+#if defined (H3)
+# include "../src/h3/platform_ltc.h"
+#elif  defined (GD32)
+# include "../src/gd32/platform_ltc.h"
+#else
+#error platform ltc
+#endif
 
-class LtcEtcReader final : public LtcEtcHandler {
-public:
-	LtcEtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-	~LtcEtcReader();
-
-	void Start();
-	void Stop();
-
-	void Run();
-
-	void Handler(const midi::Timecode *pTimeCode);
-
-private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	struct midi::Timecode m_tMidiTimeCode;
-	uint32_t m_nTimeCodePrevious { 0xFF };
-};
-
-#endif /* H3_LTCETCREADER_H_ */
+#endif /* PLATFORM_LTC_H_ */

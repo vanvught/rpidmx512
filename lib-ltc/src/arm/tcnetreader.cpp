@@ -27,25 +27,22 @@
 #include <cstring>
 #include <cassert>
 
-#include "h3/tcnetreader.h"
-#include "tcnet.h"
+#include "tcnetreader.h"
+
 #include "timecodeconst.h"
+#include "network.h"
 
-#include "arm/synchronize.h"
-#include "h3.h"
-#include "h3_timer.h"
-#include "irq_timer.h"
-
+// Input
+#include "tcnet.h"
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
-#include "h3/ltcsender.h"
+#include "ltcsender.h"
 #include "tcnetdisplay.h"
-//
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
 
-#include "network.h"
+#include "platform_ltc.h"
 
 #include "debug.h"
 
@@ -65,43 +62,46 @@ namespace udp {
 static constexpr auto PORT = 0x0ACA;
 }
 
-// ARM Generic Timer
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
+#if defined (H3)
+static volatile uint32_t sv_nUpdatesPerSecond;
+static volatile uint32_t sv_nUpdatesPrevious;
+static volatile uint32_t sv_nUpdates;
 
 static void arm_timer_handler() {
-	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
-	nUpdatesPrevious = nUpdates;
+	sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
+	sv_nUpdatesPrevious = sv_nUpdates;
 }
+#elif defined (GD32)
+#endif
 
 TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
-TCNetReader::~TCNetReader() {
-	Stop();
-}
-
 void TCNetReader::Start() {
+#if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
+#elif defined (GD32)
+#endif
 
 	LtcOutputs::Get()->Init();
 
 	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 
-	// UDP Request
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
 }
 
 void TCNetReader::Stop() {
+#if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
+#elif defined (GD32)
+#endif
 }
 
 void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
-	nUpdates++;
+	sv_nUpdates++;
 
 	assert((reinterpret_cast<uint32_t>(pTimeCode) & 0x3) == 0); // Check if we can do 4-byte compare
 #if __GNUC__ > 8
@@ -222,8 +222,8 @@ void TCNetReader::HandleUdpRequest() {
 void TCNetReader::Run() {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
-	dmb();
-	if (nUpdatesPerSecond != 0) {
+	__DMB();
+	if (sv_nUpdatesPerSecond != 0) {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();

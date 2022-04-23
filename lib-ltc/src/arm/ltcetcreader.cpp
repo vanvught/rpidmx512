@@ -26,55 +26,56 @@
 #include <cstdint>
 #include <cassert>
 
-#include "h3/ltcetcreader.h"
-
-#include "arm/synchronize.h"
-#include "h3.h"
-#include "h3_timer.h"
-#include "irq_timer.h"
+#include "ltcetcreader.h"
 
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
-#include "h3/ltcsender.h"
+#include "ltcsender.h"
 #include "tcnetdisplay.h"
-//
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
 
-#include "debug.h"
+#include "platform_ltc.h"
 
-// ARM Generic Timer
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
+#if defined (H3)
+static volatile uint32_t sv_nUpdatesPerSecond;
+static volatile uint32_t sv_nUpdatesPrevious;
+static volatile uint32_t sv_nUpdates;
 
 static void arm_timer_handler() {
-	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
-	nUpdatesPrevious = nUpdates;
+	sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
+	sv_nUpdatesPrevious = sv_nUpdates;
 }
+#elif defined (GD32)
+#endif
 
 LtcEtcReader::LtcEtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
 	assert(m_ptLtcDisabledOutputs != nullptr);
 }
 
-LtcEtcReader::~LtcEtcReader() {
-	Stop();
-}
-
 void LtcEtcReader::Start() {
+#if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
+#elif defined (GD32)
+#endif
 
 	LtcOutputs::Get()->Init();
 	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
 }
 
 void LtcEtcReader::Stop() {
+#if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(nullptr));
+#elif defined (GD32)
+#endif
 }
 
 void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
-	nUpdates++;
+#if defined (H3)
+	sv_nUpdates++;
+#elif defined (GD32)
+#endif
 
 	if (!m_ptLtcDisabledOutputs->bLtc) {
 		LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
@@ -91,18 +92,16 @@ void LtcEtcReader::Handler(const midi::Timecode *pTimeCode) {
 	memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
 
 	LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
-
 }
 
 void LtcEtcReader::Run() {
 	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
 
-	dmb();
-	if (nUpdatesPerSecond != 0) {
+	__DMB();
+	if (sv_nUpdatesPerSecond != 0) {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
-		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 	}
 }

@@ -29,18 +29,13 @@
 #include <time.h>
 #include <cassert>
 
-#include "h3/ltcoutputs.h"
+#include "ltcoutputs.h"
 
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "h3.h"
-#include "h3_timer.h"
-#include "irq_timer.h"
-#include "arm/synchronize.h"
-
 // Outputs
-#include "h3/ltcsender.h"
+#include "ltcsender.h"
 #include "rtpmidi.h"
 #include "midi.h"
 #include "ntpserver.h"
@@ -49,12 +44,16 @@
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayrgb.h"
 
-// IRQ Timer1
-static volatile bool IsMidiQuarterFrameMessage = false;
+#include "platform_ltc.h"
+
+#if defined (H3)
+static volatile bool sv_isMidiQuarterFrameMessage;
 
 static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
-	IsMidiQuarterFrameMessage = true;
+	sv_isMidiQuarterFrameMessage = true;
 }
+#elif defined (GD32)
+#endif
 
 LtcOutputs *LtcOutputs::s_pThis = nullptr;
 
@@ -91,7 +90,10 @@ LtcOutputs::LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, source t
 
 void LtcOutputs::Init() {
 	if (!m_ptLtcDisabledOutputs->bMidi) {
+#if defined (H3)
 		irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
+#elif defined (GD32)
+#endif
 	}
 
 	if (!m_ptLtcDisabledOutputs->bOled) {
@@ -113,8 +115,11 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode));
 		}
 
+#if defined (H3)
 		H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[ptLtcTimeCode->nType] / 4;
 		H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+#endif
 
 		m_nMidiQuarterFramePiece = 0;
 
@@ -147,9 +152,12 @@ void LtcOutputs::Update(const struct TLtcTimeCode *ptLtcTimeCode) {
 }
 
 void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode) {
-	dmb();
-	if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
-		IsMidiQuarterFrameMessage = false;
+	__DMB();
+#if defined (H3)
+	if (__builtin_expect((sv_isMidiQuarterFrameMessage), 0)) {
+		sv_isMidiQuarterFrameMessage = false;
+#elif defined (GD32)
+#endif
 		Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode), m_nMidiQuarterFramePiece);
 	}
 }
