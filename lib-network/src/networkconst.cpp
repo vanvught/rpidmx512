@@ -25,7 +25,7 @@
 
 #include "networkconst.h"
 
-const char NetworkConst::MSG_NETWORK_INIT[] = "Network initialization";
+const char NetworkConst::MSG_NETWORK_INIT[] = "Network init";
 const char NetworkConst::MSG_NETWORK_STARTED[] = "Network started";
 
 const char NetworkConst::MSG_MDNS_CONFIG[] = "Configuring MDNS";

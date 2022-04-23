@@ -42,7 +42,6 @@
 
 static constexpr auto TOP_ROW_STATS = 26;
 
-
 extern "C" {
 
 void notmain(void) {
