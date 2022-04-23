@@ -1,8 +1,8 @@
 /**
- * @file spi_flash.h
+ * @file spi_flash.cpp
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast" // FIXME ignored "-Wold-style-cast"
+
+#include <cstdint>
 #ifndef NDEBUG
- #include <stdio.h>
+# include <cstdio>
 #endif
-#include <assert.h>
+#include <cassert>
 
 #include "debug.h"
 
@@ -306,7 +308,7 @@ int spi_init(void) {
 	return 0;
 }
 
-int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
+int spi_xfer(unsigned len, const uint8_t *dout, uint8_t *din, unsigned long flags) {
 
 	if (flags & SPI_XFER_BEGIN) {
 		h3_gpio_clr(H3_PORT_TO_GPIO(H3_GPIO_PORTC, 3));
@@ -316,7 +318,7 @@ int spi_xfer(unsigned len, const void *dout, void *din, unsigned long flags) {
 		if (din == 0) {
 			spi0_writenb((char *) dout, len);
 		} else if (dout == 0) {
-			spi0_transfern(din, len);
+			spi0_transfern(reinterpret_cast<char *>(din), len);
 		} else {
 			spi0_transfernb((char *) dout, (char *) din, len);
 		}

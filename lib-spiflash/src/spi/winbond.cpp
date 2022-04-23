@@ -1,5 +1,5 @@
 /**
- * @file winbond.c
+ * @file winbond.cpp
  *
  */
 /*
@@ -10,7 +10,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/winbond.c
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,94 +44,94 @@ struct winbond_spi_flash_params {
 
 static const struct winbond_spi_flash_params winbond_spi_flash_table[] = {
 	{
-		.id			= 0x2014,
-		.nr_blocks		= 16,
-		.name			= "W25P80",
+		0x2014,
+		16,
+		"W25P80",
 	},
 	{
-		.id			= 0x2015,
-		.nr_blocks		= 32,
-		.name			= "W25P16",
+		0x2015,
+		32,
+		"W25P16",
 	},
 	{
-		.id			= 0x2016,
-		.nr_blocks		= 64,
-		.name			= "W25P32",
+		0x2016,
+		64,
+		"W25P32",
 	},
 	{
-		.id			= 0x3013,
-		.nr_blocks		= 8,
-		.name			= "W25X40",
+		0x3013,
+		8,
+		"W25X40",
 	},
 	{
-		.id			= 0x3015,
-		.nr_blocks		= 32,
-		.name			= "W25X16",
+		0x3015,
+		32,
+		"W25X16",
 	},
 	{
-		.id			= 0x3016,
-		.nr_blocks		= 64,
-		.name			= "W25X32",
+		0x3016,
+		64,
+		"W25X32",
 	},
 	{
-		.id			= 0x3017,
-		.nr_blocks		= 128,
-		.name			= "W25X64",
+		0x3017,
+		128,
+		"W25X64",
 	},
 	{
-		.id			= 0x4014,
-		.nr_blocks		= 16,
-		.name			= "W25Q80BL/W25Q80BV",
+		0x4014,
+		16,
+		"W25Q80BL/W25Q80BV",
 	},
 	{
-		.id			= 0x4015,
-		.nr_blocks		= 32,
-		.name			= "W25Q16CL/W25Q16DV",
+		0x4015,
+		32,
+		"W25Q16CL/W25Q16DV",
 	},
 	{
-		.id			= 0x4016,
-		.nr_blocks		= 64,
-		.name			= "W25Q32BV/W25Q32FV_SPI",
+		0x4016,
+		64,
+		"W25Q32BV/W25Q32FV_SPI",
 	},
 	{
-		.id			= 0x4017,
-		.nr_blocks		= 128,
-		.name			= "W25Q64CV/W25Q64FV_SPI",
+		0x4017,
+		128,
+		"W25Q64CV/W25Q64FV_SPI",
 	},
 	{
-		.id			= 0x4018,
-		.nr_blocks		= 256,
-		.name			= "W25Q128BV/W25Q128FV_SPI",
+		0x4018,
+		256,
+		"W25Q128BV/W25Q128FV_SPI",
 	},
 	{
-		.id			= 0x4019,
-		.nr_blocks		= 512,
-		.name			= "W25Q256",
+		0x4019,
+		512,
+		"W25Q256",
 	},
 	{
-		.id			= 0x5014,
-		.nr_blocks		= 16,
-		.name			= "W25Q80BW",
+		0x5014,
+		16,
+		"W25Q80BW",
 	},
 	{
-		.id			= 0x6015,
-		.nr_blocks		= 32,
-		.name			= "W25Q16DW",
+		0x6015,
+		32,
+		"W25Q16DW",
 	},
 	{
-		.id			= 0x6016,
-		.nr_blocks		= 64,
-		.name			= "W25Q32DW/W25Q32FV_QPI",
+		0x6016,
+		64,
+		"W25Q32DW/W25Q32FV_QPI",
 	},
 	{
-		.id			= 0x6017,
-		.nr_blocks		= 128,
-		.name			= "W25Q64DW/W25Q64FV_QPI",
+		0x6017,
+		128,
+		"W25Q64DW/W25Q64FV_QPI",
 	},
 	{
-		.id			= 0x6018,
-		.nr_blocks		= 256,
-		.name			= "W25Q128FW/W25Q128FV_QPI",
+		0x6018,
+		256,
+		"W25Q128FW/W25Q128FV_QPI",
 	},
 };
 

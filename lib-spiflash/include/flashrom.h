@@ -2,7 +2,7 @@
  * @file flashrom.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,16 @@
 
 namespace flashrom {
 enum class result {
-	OK,
-	ERROR
+	OK, ERROR
 };
 }  // namespace flashrom
 
+#if defined (CONFIG_FLASHROM_USE_I2C)
+# include "i2c/at24cxx.h"
+class FlashRom: AT24C32 {
+#else
 class FlashRom {
+#endif
 public:
 	FlashRom();
 
@@ -43,9 +47,9 @@ public:
 		return m_IsDetected;
 	}
 
-	const char* GetName();
-	uint32_t GetSize();
-	uint32_t GetSectorSize();
+	const char* GetName() const;
+	uint32_t GetSize() const;
+	uint32_t GetSectorSize() const;
 
 	bool Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashrom::result& nResult);
 	bool Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResult);

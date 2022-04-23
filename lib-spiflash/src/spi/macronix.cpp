@@ -1,5 +1,5 @@
 /**
- * @file macronix.c
+ * @file macronix.cpp
  *
  */
 /*
@@ -19,7 +19,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/macronix.c
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "debug.h"
 #include "spi_flash_internal.h"
@@ -53,48 +53,48 @@ struct macronix_spi_flash_params {
 	const char *name;
 };
 
-static const struct macronix_spi_flash_params macronix_spi_flash_table[] = {
+static constexpr struct macronix_spi_flash_params macronix_spi_flash_table[] = {
 	{
-		.idcode = 0x2013,
-		.nr_blocks = 8,
-		.name = "MX25L4005",
+		0x2013,
+		8,
+		"MX25L4005",
 	},
 	{
-		.idcode = 0x2014,
-		.nr_blocks = 16,
-		.name = "MX25L8005",
+		0x2014,
+		16,
+		"MX25L8005",
 	},
 	{
-		.idcode = 0x2015,
-		.nr_blocks = 32,
-		.name = "MX25L1605D",
+		0x2015,
+		32,
+		"MX25L1605D",
 	},
 	{
-		.idcode = 0x2016,
-		.nr_blocks = 64,
-		.name = "MX25L3205D",
+		0x2016,
+		64,
+		"MX25L3205D",
 	},
 	{
-		.idcode = 0x2017,
-		.nr_blocks = 128,
-		.name = "MX25L6405D",
+		0x2017,
+		128,
+		"MX25L6405D",
 	},
 	{
-		.idcode = 0x2018,
-		.nr_blocks = 256,
-		.name = "MX25L12805D",
+		0x2018,
+		256,
+		"MX25L12805D",
 	},
 	{
-		.idcode = 0x2618,
-		.nr_blocks = 256,
-		.name = "MX25L12855E",
+		0x2618,
+		256,
+		"MX25L12855E",
 	},
 };
 
 int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode) {
 	const struct macronix_spi_flash_params *params;
 	unsigned int i;
-	uint32_t id = idcode[2] | (uint32_t)idcode[1] << 8;
+	uint32_t id = idcode[2] | static_cast<uint32_t>(idcode[1] << 8);
 
 	for (i = 0; i < ARRAY_SIZE(macronix_spi_flash_table); i++) {
 		params = &macronix_spi_flash_table[i];

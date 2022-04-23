@@ -1,8 +1,8 @@
 /**
- * @file spi_flash.c
+ * @file spi_flash.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,26 +26,18 @@
 #ifndef SPI_FLASH_H_
 #define SPI_FLASH_H_
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
 
-extern int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
+const char *spi_flash_get_name(void);
+uint32_t spi_flash_get_size(void);
+uint32_t spi_flash_get_sector_size(void);
 
-extern const char *spi_flash_get_name(void);
-extern uint32_t spi_flash_get_size(void);
-extern uint32_t spi_flash_get_sector_size(void);
-
-extern int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data);
-extern int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf);
-extern int spi_flash_cmd_erase(uint32_t offset, size_t len);
-extern int spi_flash_cmd_write_status(uint8_t sr);
-
-#ifdef __cplusplus
-}
-#endif
+int spi_flash_cmd_read_fast(uint32_t offset, size_t len, uint8_t *data);
+int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const uint8_t *buf);
+int spi_flash_cmd_erase(uint32_t offset, size_t len);
+int spi_flash_cmd_write_status(uint8_t sr);
 
 #endif /* SPI_FLASH_H_ */

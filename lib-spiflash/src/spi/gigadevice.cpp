@@ -1,5 +1,5 @@
 /**
- * @file winbond.c
+ * @file gigadevice.cpp
  *
  */
 /*
@@ -12,7 +12,7 @@
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/gigadevice.c
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "debug.h"
 #include "spi_flash_internal.h"
@@ -44,16 +44,16 @@ struct gigadevice_spi_flash_params {
 	const char	*name;
 };
 
-static const struct gigadevice_spi_flash_params gigadevice_spi_flash_table[] = {
+static constexpr struct gigadevice_spi_flash_params gigadevice_spi_flash_table[] = {
 	{
-		.id			= 0x6016,
-		.nr_blocks		= 64,
-		.name			= "GD25LQ",
+		0x6016,
+		64,
+		"GD25LQ",
 	},
 	{
-		.id			= 0x4017,
-		.nr_blocks		= 128,
-		.name			= "GD25Q64B",
+		0x4017,
+		128,
+		"GD25Q64B",
 	},
 };
 
@@ -72,11 +72,8 @@ int spi_flash_probe_gigadevice(struct spi_flash *flash, uint8_t *idcode) {
 		return -1;
 	}
 
-	/* page_size */
 	flash->page_size = 256;
-	/* sector_size = page_size * pages_per_sector */
 	flash->sector_size = flash->page_size * 16;
-	/* size = sector_size * sector_per_block * number of blocks */
 	flash->size = flash->sector_size * 16 * params->nr_blocks;
 
 	return 0;

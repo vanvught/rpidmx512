@@ -1,12 +1,11 @@
-#if defined (H3) || defined (RASPPI)
 /**
- * @file spi_flash.h
+ * @file spi_flash.cpp
  *
  */
 /*
  * Original code : https://github.com/martinezjavier/u-boot/blob/master/drivers/mtd/spi/spi_flash.c
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,13 +34,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-#include "spi_flash.h"
+#include "spi/spi_flash.h"
 
 #include "spi_flash_internal.h"
 
 #include "debug.h"
 
-static struct spi_flash s_flash = { .poll_cmd = CMD_READ_STATUS };
+static struct spi_flash s_flash = { "", 0, 0, 0, CMD_READ_STATUS };
 
 #define IDCODE_CONT_LEN 0
 #define IDCODE_PART_LEN 5
@@ -105,9 +104,9 @@ const char *spi_flash_get_name(void) {
 
 static void spi_flash_addr(uint32_t addr, uint8_t *cmd) {
 	/* cmd[0] is actual command */
-	cmd[1] = (uint8_t)(addr >> 16);
-	cmd[2] = (uint8_t)(addr >> 8);
-	cmd[3] = (uint8_t)(addr >> 0);
+	cmd[1] = static_cast<uint8_t>(addr >> 16);
+	cmd[2] = static_cast<uint8_t>(addr >> 8);
+	cmd[3] = static_cast<uint8_t>(addr >> 0);
 }
 
 static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_t *data_out, uint8_t *data_in, size_t data_len) {
@@ -118,7 +117,7 @@ static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_
 		flags |= SPI_XFER_END;
 	}
 
-	ret = spi_xfer(cmd_len, cmd, NULL, flags);
+	ret = spi_xfer(cmd_len, cmd, nullptr, flags);
 
 	if (data_len != 0) {
 		ret = spi_xfer(data_len, data_out, data_in, SPI_XFER_END);
@@ -127,20 +126,20 @@ static int spi_flash_read_write(const uint8_t *cmd, size_t cmd_len, const uint8_
 	return ret;
 }
 
-static inline int spi_flash_cmd_read(const uint8_t *cmd, size_t cmd_len, void *data, size_t data_len) {
-	return spi_flash_read_write(cmd, cmd_len, NULL, data, data_len);
+static inline int spi_flash_cmd_read(const uint8_t *cmd, size_t cmd_len, uint8_t *data, size_t data_len) {
+	return spi_flash_read_write(cmd, cmd_len, nullptr, data, data_len);
 }
 
-static inline int spi_flash_cmd(uint8_t cmd, void *response, size_t len) {
+static inline int spi_flash_cmd(uint8_t cmd, uint8_t *response, size_t len) {
 	return spi_flash_cmd_read(&cmd, 1, response, len);
 }
 
-static inline int spi_flash_cmd_write(const uint8_t *cmd, size_t cmd_len, const void *data, size_t data_len) {
-	return spi_flash_read_write(cmd, cmd_len, data, NULL, data_len);
+static inline int spi_flash_cmd_write(const uint8_t *cmd, size_t cmd_len, const uint8_t *data, size_t data_len) {
+	return spi_flash_read_write(cmd, cmd_len, data, nullptr, data_len);
 }
 
 static inline int spi_flash_cmd_write_enable(void) {
-	return spi_flash_cmd(CMD_WRITE_ENABLE, NULL, 0);
+	return spi_flash_cmd(CMD_WRITE_ENABLE, nullptr, 0);
 }
 
 static int spi_flash_cmd_wait_ready(unsigned long timeout) {
@@ -155,12 +154,12 @@ static int spi_flash_cmd_wait_ready(unsigned long timeout) {
 		check_status = poll_bit;
 	}
 
-	spi_xfer(1, &cmd, NULL, SPI_XFER_BEGIN);
+	spi_xfer(1, &cmd, nullptr, SPI_XFER_BEGIN);
 
 	timebase = get_timer(0);
 
 	do {
-		spi_xfer(1, NULL, &status, 0);
+		spi_xfer(1, nullptr, &status, 0);
 
 		if ((status & poll_bit) == check_status) {
 			break;
@@ -168,7 +167,7 @@ static int spi_flash_cmd_wait_ready(unsigned long timeout) {
 
 	} while (get_timer(timebase) < timeout);
 
-	spi_xfer(0, NULL, NULL, SPI_XFER_END);
+	spi_xfer(0, nullptr, nullptr, SPI_XFER_END);
 
 	if ((status & poll_bit) == check_status) {
 		return 0;
@@ -178,11 +177,11 @@ static int spi_flash_cmd_wait_ready(unsigned long timeout) {
 	return -1;
 }
 
-static int spi_flash_write_common(const uint8_t *cmd, size_t cmd_len, const void *buf, size_t buf_len, bool wait_ready) {
+static int spi_flash_write_common(const uint8_t *cmd, size_t cmd_len, const uint8_t *buf, size_t buf_len, bool wait_ready) {
 	unsigned long timeout = SPI_FLASH_PROG_TIMEOUT;
 	int ret;
 
-	if (buf == NULL) {
+	if (buf == nullptr) {
 		timeout = SPI_FLASH_PAGE_ERASE_TIMEOUT;
 	}
 
@@ -212,7 +211,7 @@ static int spi_flash_write_common(const uint8_t *cmd, size_t cmd_len, const void
 	return ret;
 }
 
-int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf) {
+int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const uint8_t *buf) {
 	DEBUG_ENTRY
 
 	unsigned long byte_addr, page_size;
@@ -249,7 +248,7 @@ int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const void *buf) {
 }
 
 
-int spi_flash_read_common(const uint8_t *cmd, size_t cmd_len, void *data, size_t data_len) {
+int spi_flash_read_common(const uint8_t *cmd, size_t cmd_len, uint8_t *data, size_t data_len) {
 	int ret;
 
 	ret = spi_flash_cmd_read(cmd, cmd_len, data, data_len);
@@ -257,7 +256,7 @@ int spi_flash_read_common(const uint8_t *cmd, size_t cmd_len, void *data, size_t
 	return ret;
 }
 
-int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
+int spi_flash_cmd_read_fast(uint32_t offset, size_t len, uint8_t *data) {
 	DEBUG_ENTRY
 
 	uint8_t cmd[5], bank_sel = 0;
@@ -270,7 +269,7 @@ int spi_flash_cmd_read_fast(uint32_t offset, size_t len, void *data) {
 	spi_flash_cmd_wait_ready(SPI_FLASH_PROG_TIMEOUT);
 
 	while (len) {
-		remain_len = (SPI_FLASH_16MB_BOUN * (uint32_t)(bank_sel + 1) - offset);
+		remain_len = (SPI_FLASH_16MB_BOUN * static_cast<uint32_t>(bank_sel + 1) - offset);
 
 		if (len < remain_len) {
 			read_len = len;
@@ -326,7 +325,7 @@ int spi_flash_cmd_erase(uint32_t offset, size_t len) {
 
 		DEBUG_PRINTF("erase %2x %2x %2x %2x (%x)", cmd[0], cmd[1], cmd[2], cmd[3], offset);
 
-		ret = spi_flash_write_common(cmd, sizeof(cmd), NULL, 0, (len != erase_size));
+		ret = spi_flash_write_common(cmd, sizeof(cmd), nullptr, 0, (len != erase_size));
 
 		if (ret < 0) {
 			DEBUG_PUTS("Erase failed");
@@ -395,6 +394,3 @@ int spi_flash_probe(__attribute__((unused)) unsigned int cs, __attribute__((unus
 
 	return 0;
 }
-#else
- typedef int ISO_C_forbids_an_empty_translation_unit;
-#endif

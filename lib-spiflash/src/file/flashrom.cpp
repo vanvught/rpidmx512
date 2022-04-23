@@ -2,7 +2,7 @@
  * @file flashrom.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,9 +41,7 @@ static constexpr auto BLOCK_WRITE_LENGTH = 1024;
 static FILE *pFile = nullptr;
 
 enum class State {
-	IDLE,
-	RUNNING,
-	ERROR
+	IDLE, RUNNING, ERROR
 };
 
 static State s_State = State::IDLE;
@@ -82,15 +80,15 @@ FlashRom::FlashRom() {
 	DEBUG_EXIT
 }
 
-const char *FlashRom::GetName() {
+const char *FlashRom::GetName() const  {
 	return "SPI Flash None Driver";
 }
 
-uint32_t FlashRom::GetSize() {
+uint32_t FlashRom::GetSize() const {
 	return FLASH_SIZE;
 }
 
-uint32_t FlashRom::GetSectorSize() {
+uint32_t FlashRom::GetSectorSize() const {
 	return FLASH_SECTOR_SIZE;
 }
 
@@ -99,7 +97,7 @@ bool FlashRom::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, result
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nOffset=%u, nLength=%u", nOffset, nLength);
 
-	if (fseek(pFile, nOffset, SEEK_SET) != 0) {
+	if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
 		nResult = result::ERROR;
 		perror("fseek");
 		DEBUG_EXIT
@@ -133,7 +131,7 @@ bool FlashRom::Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResu
 			return true;
 		}
 
-		if (fseek(pFile, nOffset, SEEK_SET) != 0) {
+		if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
 			s_State = State::ERROR;
 			nResult = result::ERROR;
 			perror("fseek");
@@ -180,7 +178,7 @@ bool FlashRom::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer,
 	assert(pFile != nullptr);
 
 	if (s_State == State::IDLE) {
-		if (fseek(pFile, nOffset, SEEK_SET) != 0) {
+		if (fseek(pFile, static_cast<long int>(nOffset), SEEK_SET) != 0) {
 			s_State = State::ERROR;
 			nResult = result::ERROR;
 			perror("fseek");

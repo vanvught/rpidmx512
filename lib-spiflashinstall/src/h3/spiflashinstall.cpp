@@ -32,7 +32,7 @@
 
 #include "display.h"
 
-#include "spi_flash.h"
+#include "spi/spi_flash.h"
 
 #include "hardware.h"
 

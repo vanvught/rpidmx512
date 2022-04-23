@@ -2,7 +2,7 @@
  * @file flashrom.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,73 +28,77 @@
 #include <cassert>
 
 #include "flashrom.h"
-#include "spi/spi_flash.h"
+#include "i2c/at24cxx.h"
 
 #include "debug.h"
+
+namespace flashrom {
+/* Backwards compatibility with SPI FLASH */
+static constexpr auto FLASH_SECTOR_SIZE = 4096U;
+static constexpr auto ROM_SIZE = 4096U;
+}  // namespace flashrom
 
 using namespace flashrom;
 
 FlashRom *FlashRom::s_pThis;
 
-FlashRom::FlashRom() {
+FlashRom::FlashRom(): AT24C32(7) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	if (spi_flash_probe(0, 0, 0) < 0) {
-		DEBUG_PUTS("No SPI flash chip");
+	m_IsDetected = AT24C32::IsConnected();
+
+	if (!m_IsDetected) {
+		DEBUG_PUTS("No AT24C32");
 	} else {
-		printf("Detected %s with sector size %d total %d bytes\n",
-				spi_flash_get_name(),
-				spi_flash_get_sector_size(),
-				spi_flash_get_size());
-		m_IsDetected = true;
+		printf("AT24Cxx: Detected %s with total %d bytes [%d kB]\n", GetName(), GetSize(), GetSize() / 1024U);
 	}
 
 	DEBUG_EXIT
 }
 
-const char *FlashRom::GetName() const {
-	return spi_flash_get_name();
+const char *FlashRom::GetName() const{
+	return "AT24Cxx";
 }
 
 uint32_t FlashRom::GetSize() const {
-	return spi_flash_get_size();
+	return ROM_SIZE;
 }
 
 uint32_t FlashRom::GetSectorSize() const {
-	return spi_flash_get_sector_size();
+	return FLASH_SECTOR_SIZE;
 }
 
 bool FlashRom::Read(uint32_t nOffset, uint32_t nLength, uint8_t *pBuffer, flashrom::result& nResult) {
 	DEBUG_ENTRY
+	assert((nOffset + nLength) <= ROM_SIZE);
 
-	const int nReturn = spi_flash_cmd_read_fast(nOffset, nLength, pBuffer);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	AT24C32::Read(nOffset, pBuffer, nLength);
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
+	nResult = result::OK;
+
 	DEBUG_EXIT
 	return true;
 }
 
-bool FlashRom::Erase(uint32_t nOffset, uint32_t nLength, flashrom::result& nResult) {
+bool FlashRom::Erase(__attribute__((unused)) uint32_t nOffset, __attribute__((unused)) uint32_t nLength, flashrom::result& nResult) {
 	DEBUG_ENTRY
 
-	const int nReturn = spi_flash_cmd_erase(nOffset, nLength);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	nResult = result::OK;
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
 	DEBUG_EXIT
 	return true;
 }
 
 bool FlashRom::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer, flashrom::result& nResult) {
 	DEBUG_ENTRY
+	assert((nOffset + nLength) <= ROM_SIZE);
 
-	const int nReturn = spi_flash_cmd_write_multi(nOffset, nLength, pBuffer);
-	nResult = (nReturn < 0) ? result::ERROR : result::OK;
+	AT24C32::Write(nOffset, pBuffer, nLength);
 
-	DEBUG_PRINTF("nResult=%d", static_cast<int>(nResult));
+	nResult = result::OK;
+
 	DEBUG_EXIT
 	return true;
 }

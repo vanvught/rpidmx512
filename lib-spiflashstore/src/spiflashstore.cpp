@@ -96,7 +96,9 @@ bool SpiFlashStore::Init() {
 	s_nStartAddress = FlashRom::Get()->GetSize() - nEraseSize;
 
 #if !defined (GD32F4XX)	//FIXME Remove #if !defined (GD32F4XX)
+# if !defined (CONFIG_FLASHROM_USE_I2C)
 	assert(s_nStartAddress != 0);
+# endif
 	assert(!(s_nStartAddress % nEraseSize));
 #endif
 

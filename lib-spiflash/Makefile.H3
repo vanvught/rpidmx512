@@ -1,6 +1,7 @@
 DEFINES=NDEBUG
-EXTRA_SRCDIR=src/spi
+
 EXTRA_INCLUDES=../lib-h3/include ../lib-h3/src
 
+EXTRA_SRCDIR=src/spi
+
 include ../firmware-template-h3/lib/Rules.mk
-	

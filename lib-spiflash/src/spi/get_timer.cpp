@@ -1,8 +1,8 @@
 /**
- * @file get_timer.c
+ * @file get_timer.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stddef.h>
+#include <cstdint>
+#include <cstddef>
 #include <time.h>
 
 uint32_t get_timer(uint32_t base) {
 	if (0 == base) {
-		return (uint32_t) time(NULL);
+		return static_cast<uint32_t>(time(nullptr));
 	}
 
-	return (uint32_t) time(NULL) - base;
+	return static_cast<uint32_t>(time(nullptr)) - base;
 }
