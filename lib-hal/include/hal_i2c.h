@@ -83,21 +83,21 @@ public:
 	}
 
 	void WriteRegister(uint8_t nRegister, uint8_t nValue) {
-		char buffer[2];
-
-		buffer[0] = static_cast<char>(nRegister);
-		buffer[1] = static_cast<char>(nValue);
+		const char buffer[] = {
+			static_cast<char>(nRegister),
+			static_cast<char>(nValue)
+		};
 
 		Setup();
 		FUNC_PREFIX(i2c_write(buffer, 2));
 	}
 
 	void WriteRegister(uint8_t nRegister, uint16_t nValue) {
-		char buffer[3];
-
-		buffer[0] = static_cast<char>(nRegister);
-		buffer[1] = static_cast<char>(nValue >> 8);
-		buffer[2] = static_cast<char>(nValue & 0xFF);
+		const char buffer[] = {
+			static_cast<char>(nRegister),
+			static_cast<char>(nValue >> 8),
+			static_cast<char>(nValue & 0xFF)
+		};
 
 		Setup();
 		FUNC_PREFIX(i2c_write(buffer, 3));
@@ -127,10 +127,7 @@ public:
 	}
 
 	uint8_t ReadRegister(uint8_t nRegister) {
-		char buf[2];
-
-		buf[0] = static_cast<char>(nRegister);
-		buf[1] = 0;
+		const char buf[] = { static_cast<char>(nRegister) };
 
 		Setup();
 		FUNC_PREFIX(i2c_write(&buf[0], 1));
@@ -139,11 +136,7 @@ public:
 	}
 
 	uint16_t ReadRegister16(uint8_t nRegister) {
-		char buf[2];
-
-		buf[0] = static_cast<char>(nRegister);
-		buf[1] = 0;
-		buf[1] = 1;
+		const char buf[] = { static_cast<char>(nRegister) };
 
 		Setup();
 		FUNC_PREFIX(i2c_write(&buf[0], 1));
@@ -164,6 +157,11 @@ public:
 		FUNC_PREFIX(i2c_read(buf, 2));
 
 		return static_cast<uint16_t>(static_cast<uint16_t>(buf[0]) << 8 | static_cast<uint16_t>(buf[1]));
+	}
+
+	bool AckRead() {
+		char buf;
+		return FUNC_PREFIX(i2c_read(&buf, 1)) == 0;
 	}
 
 private:

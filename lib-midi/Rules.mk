@@ -4,5 +4,5 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/net
 	endif
 else
-	EXTRA_SRCDIR+=
+	EXTRA_SRCDIR+=src/net
 endif

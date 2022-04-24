@@ -69,7 +69,16 @@
 #include "sourceconst.h"
 #include "source.h"
 
-#include "h3/ltc.h"
+#include "artnetreader.h"
+#include "ltcreader.h"
+#include "ltcsender.h"
+#include "midireader.h"
+#include "tcnetreader.h"
+#include "ltcgenerator.h"
+#include "rtpmidireader.h"
+#include "systimereader.h"
+#include "ltcetcreader.h"
+#include "ltcoutputs.h"
 
 #include "spiflashinstall.h"
 
@@ -113,7 +122,7 @@ void notmain(void) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(0,4);
+	Display display(4);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 #if defined(ENABLE_SHELL)
 	Shell shell;

@@ -2,7 +2,7 @@
  * @file kb_linux.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include "inputset.h"
 
-class KbLinux: public InputSet {
+class KbLinux : public InputSet {
 public:
 	KbLinux();
 	~KbLinux();
@@ -39,8 +39,8 @@ public:
 	int GetChar();
 
 private:
-	int m_nBytesWaiting{0};
-	int m_nState{0};
+	int m_nBytesWaiting { 0 };
+	int m_nState { 0 };
 
 };
 

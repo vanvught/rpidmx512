@@ -42,10 +42,14 @@ static constexpr auto STOP_2BITS = 2;
 }  // namespace uart
 }  // namespace hal
 
-#define FUNC_PREFIX(x)	x
+#if defined (RASPPI)
+#else
+# define FUNC_PREFIX(x)	x
+#endif
 
-#define EXT_UART_NUMBER	0
-#define EXT_UART_BASE	0
+#define EXT_UART_NUMBER		0
+#define EXT_UART_BASE		0
+#define EXT_MIDI_UART_BASE	0
 
 #ifdef __cplusplus
 extern "C" {

@@ -30,7 +30,7 @@
 #endif
 #include <cassert>
 
-#include "h3/ltcreader.h"
+#include "ltcreader.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
@@ -50,8 +50,8 @@
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "midi.h"
-//
-#include "h3/ltcoutputs.h"
+#include "ltcetc.h"
+#include "ltcoutputs.h"
 
 #pragma GCC target ("general-regs-only")
 

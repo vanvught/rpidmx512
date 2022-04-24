@@ -2,7 +2,7 @@
  * @file sc16is7x0.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,29 +28,31 @@
 
 static constexpr uint32_t SC16IS7X0_DEFAULT_BAUDRATE = 115200;
 
-static constexpr uint8_t SC16IS7X0_RHR = 0x00;	///< Receive Holding Register - Read only
-static constexpr uint8_t SC16IS7X0_THR = 0x00;
-static constexpr uint8_t SC16IS7X0_IER = 0x01;
-static constexpr uint8_t SC16IS7X0_FCR = 0x02;
-static constexpr uint8_t SC16IS7X0_IIR = 0x02;
-static constexpr uint8_t SC16IS7X0_LCR = 0x03;
-static constexpr uint8_t SC16IS7X0_MCR = 0x04;
-static constexpr uint8_t SC16IS7X0_LSR = 0x05;	///< Line status register - Read only
-static constexpr uint8_t SC16IS7X0_MSR = 0x06;
-static constexpr uint8_t SC16IS7X0_SPR = 0x07;
-static constexpr uint8_t SC16IS7X0_TCR = 0x06;
-static constexpr uint8_t SC16IS7X0_TLR = 0x07;
-static constexpr uint8_t SC16IS7X0_TXLVL = 0x08;
-static constexpr uint8_t SC16IS7X0_RXLVL = 0x09;
-static constexpr uint8_t SC16IS7X0_IODIR = 0x0A;
-static constexpr uint8_t SC16IS7X0_IOSTATE = 0x0B;
-static constexpr uint8_t SC16IS7X0_IOINTENA = 0x0C;
-static constexpr uint8_t SC16IS7X0_IOCONTROL = 0x0E;
-static constexpr uint8_t SC16IS7X0_EFCR = 0x0F;
+#define SC16IS7X0_REG_SHIFT		3
 
-static constexpr uint8_t SC16IS7X0_DLL = 0x00;
-static constexpr uint8_t SC16IS7X0_DLH = 0X01;
-static constexpr uint8_t SC16IS7X0_EFR = 0X02;
+static constexpr uint8_t SC16IS7X0_RHR = 0x00 << SC16IS7X0_REG_SHIFT;	///< Receive Holding Register - Read only
+static constexpr uint8_t SC16IS7X0_THR = 0x00 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IER = 0x01 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_FCR = 0x02 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IIR = 0x02 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_LCR = 0x03 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_MCR = 0x04 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_LSR = 0x05 << SC16IS7X0_REG_SHIFT;	///< Line status register - Read only
+static constexpr uint8_t SC16IS7X0_MSR = 0x06 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_SPR = 0x07 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_TCR = 0x06 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_TLR = 0x07 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_TXLVL = 0x08 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_RXLVL = 0x09 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IODIR = 0x0A << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IOSTATE = 0x0B << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IOINTENA = 0x0C << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_IOCONTROL = 0x0E << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_EFCR = 0x0F << SC16IS7X0_REG_SHIFT;
+
+static constexpr uint8_t SC16IS7X0_DLL = 0x00 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_DLH = 0X01 << SC16IS7X0_REG_SHIFT;
+static constexpr uint8_t SC16IS7X0_EFR = 0X02 << SC16IS7X0_REG_SHIFT;
 
 /** See section 8.3 of the datasheet for definitions
  * of bits in the FIFO Control Register (FCR)

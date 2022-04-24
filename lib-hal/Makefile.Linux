@@ -1,8 +1,7 @@
-#
-DEFINES = NDEBUG
-#
+#DEFINES=NDEBUG
+
 EXTRA_INCLUDES= 
-#
-EXTRA_SRCDIR = debug
-#
+
+EXTRA_SRCDIR=debug
+
 include ../firmware-template-linux/lib/Rules.mk

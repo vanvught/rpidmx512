@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "h3/ltcgenerator.h"
+#include "ltcgenerator.h"
 #include "ltc.h"
 #include "timecodeconst.h"
 
@@ -49,8 +49,8 @@
 #include "artnetnode.h"
 #include "rtpmidi.h"
 #include "ltcetc.h"
-#include "h3/ltcsender.h"
-#include "h3/ltcoutputs.h"
+#include "ltcsender.h"
+#include "ltcoutputs.h"
 
 #include "debug.h"
 

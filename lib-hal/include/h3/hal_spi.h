@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,8 @@
 
 #define SPI_BIT_ORDER_MSBFIRST	H3_SPI_BIT_ORDER_MSBFIRST
 #define SPI_MODE0				H3_SPI_MODE0
+#define SPI_MODE1				H3_SPI_MODE1
+#define SPI_MODE2				H3_SPI_MODE2
 #define SPI_MODE3				H3_SPI_MODE3
 #define SPI_CS0					H3_SPI_CS0
 #define SPI_CS_NONE				H3_SPI_CS_NONE

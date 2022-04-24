@@ -29,4 +29,9 @@
 #include "gd32_gpio.h"
 #include "gd32_board.h"
 
+#if !defined(LOW)
+# define LOW	0
+# define HIGH	(!LOW)
+#endif
+
 #endif /* GD32_HAL_GPIO_H_ */

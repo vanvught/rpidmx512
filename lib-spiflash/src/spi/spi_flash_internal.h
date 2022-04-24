@@ -2,7 +2,7 @@
  * @file spi_internal.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -77,7 +77,8 @@ struct spi_flash {
 extern uint32_t get_timer(uint32_t base);
 
 extern int spi_init(void);
-extern int spi_xfer(unsigned int bitlen, const void *dout, void *din, unsigned long flags);
+
+extern int spi_xfer(unsigned int bitlen, const uint8_t *dout, uint8_t *din, unsigned long flags);
 
 #define CONFIG_SPI_FLASH_MACRONIX
 int spi_flash_probe_macronix(struct spi_flash *flash, uint8_t *idcode);

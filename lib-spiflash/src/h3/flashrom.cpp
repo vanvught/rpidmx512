@@ -2,7 +2,7 @@
  * @file flashrom.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include <cassert>
 
 #include "flashrom.h"
-#include "spi_flash.h"
+#include "spi/spi_flash.h"
 
 #include "debug.h"
 
@@ -54,15 +54,15 @@ FlashRom::FlashRom() {
 	DEBUG_EXIT
 }
 
-const char *FlashRom::GetName() {
+const char *FlashRom::GetName() const {
 	return spi_flash_get_name();
 }
 
-uint32_t FlashRom::GetSize() {
+uint32_t FlashRom::GetSize() const {
 	return spi_flash_get_size();
 }
 
-uint32_t FlashRom::GetSectorSize() {
+uint32_t FlashRom::GetSectorSize() const {
 	return spi_flash_get_sector_size();
 }
 

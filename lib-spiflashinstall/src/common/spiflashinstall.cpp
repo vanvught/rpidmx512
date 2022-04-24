@@ -29,7 +29,7 @@
 #include "spiflashinstall.h"
 
 #include "display.h"
-#include "spi_flash.h"
+#include "spi/spi_flash.h"
 #include "hardware.h"
 
 #include "debug.h"

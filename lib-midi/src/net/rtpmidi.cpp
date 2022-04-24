@@ -2,7 +2,7 @@
  * @file rtpmidi.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,15 +35,6 @@
 
 #include "debug.h"
 
-struct TRtpHeader {
-	uint16_t nStatic;
-	uint16_t nSequenceNumber;
-	uint32_t nTimestamp;
-	uint32_t nSenderSSRC;
-}__attribute__((packed));
-
-#define RTP_MIDI_COMMAND_OFFSET			sizeof(struct TRtpHeader)
-
 #define RTP_MIDI_COMMAND_STATUS_FLAG 	0x80
 
 #define RTP_MIDI_DELTA_TIME_OCTET_MASK	0x7f
@@ -56,44 +47,7 @@ struct TRtpHeader {
 #define RTP_MIDI_CS_MASK_SHORTLEN 		0x0f
 #define RTP_MIDI_CS_MASK_LONGLEN 		0x0fff
 
-#define BUFFER_SIZE	512
-
 RtpMidi *RtpMidi::s_pThis = nullptr;
-
-RtpMidi::RtpMidi() {
-	DEBUG_ENTRY
-
-	s_pThis = this;
-
-	DEBUG_EXIT
-}
-
-void RtpMidi::Start() {
-	DEBUG_ENTRY
-
-	AppleMidi::Start();
-
-	m_pSendBuffer = new uint8_t[BUFFER_SIZE];
-	assert(m_pSendBuffer != nullptr);
-
-	auto *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
-	pHeader->nStatic = 0x6180;
-	pHeader->nSenderSSRC = AppleMidi::GetSSRC();
-
-	DEBUG_EXIT
-}
-
-void RtpMidi::Stop() {
-	DEBUG_ENTRY
-
-	AppleMidi::Stop();
-
-	DEBUG_EXIT
-}
-
-void RtpMidi::Run() {
-	AppleMidi::Run();
-}
 
 int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uint32_t nOffset) {
 	DEBUG_ENTRY
@@ -115,22 +69,6 @@ int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uin
 
 	DEBUG_EXIT
 	return nSize;
-}
-
-midi::Types RtpMidi::GetTypeFromStatusByte(uint8_t nStatusByte) {
-	if ((nStatusByte < 0x80) || (nStatusByte == 0xf4) || (nStatusByte == 0xf5) || (nStatusByte == 0xf9) || (nStatusByte == 0xfD)) {
-		return midi::Types::INVALIDE_TYPE;
-	}
-
-	if (nStatusByte < 0xF0) {
-		return static_cast<midi::Types>(nStatusByte & 0xF0);
-	}
-
-	return static_cast<midi::Types>(nStatusByte);
-}
-
-uint8_t RtpMidi::GetChannelFromStatusByte(uint8_t nStatusByte) {
-	return static_cast<uint8_t>((nStatusByte & 0x0F) + 1);
 }
 
 int32_t RtpMidi::DecodeMidi(uint32_t nCommandLength, uint32_t nOffset) {
@@ -212,17 +150,17 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 	m_pReceiveBuffer = const_cast<uint8_t *>(pBuffer);
 
-	const auto nFlags = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET];
+	const auto nFlags = m_pReceiveBuffer[rtpmidi::COMMAND_OFFSET];
 
 	int32_t nCommandLength = nFlags & RTP_MIDI_CS_MASK_SHORTLEN;
 	int32_t nOffset;
 
 	if (nFlags & RTP_MIDI_CS_FLAG_B) {
-		const uint8_t nOctet = m_pReceiveBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
+		const auto nOctet = m_pReceiveBuffer[rtpmidi::COMMAND_OFFSET + 1];
 		nCommandLength = (nCommandLength << 8) | nOctet;
-		nOffset = RTP_MIDI_COMMAND_OFFSET + 2;
+		nOffset = rtpmidi::COMMAND_OFFSET + 2;
 	} else {
-		nOffset = RTP_MIDI_COMMAND_OFFSET + 1;
+		nOffset = rtpmidi::COMMAND_OFFSET + 1;
 	}
 
 	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", nCommandLength, nOffset);
@@ -258,42 +196,4 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 	}
 
 	DEBUG_EXIT
-}
-
-void RtpMidi::SendRaw(uint8_t nByte) {
-	auto *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
-	data[0] = nByte;
-	Send(1);
-}
-
-void RtpMidi::SendTimeCode(const midi::Timecode *tTimeCode) {
-	auto *data = &m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET + 1];
-
-	data[0] = 0xF0;
-	data[1] = 0x7F;
-	data[2] = 0x7F;
-	data[3] = 0x01;
-	data[4] = 0x01;
-	data[5] = static_cast<uint8_t>(((tTimeCode->nType) & 0x03) << 5) | (tTimeCode->nHours & 0x1F);
-	data[6] = tTimeCode->nMinutes & 0x3F;
-	data[7] = tTimeCode->nSeconds & 0x3F;
-	data[8] = tTimeCode->nFrames & 0x1F;
-	data[9] = 0xF7;
-
-	Send(10);
-}
-
-void  RtpMidi::Send(uint32_t nLength) {
-	auto *pHeader = reinterpret_cast<TRtpHeader*>(m_pSendBuffer);
-
-	pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
-	pHeader->nTimestamp = __builtin_bswap32(Now());
-
-	m_pSendBuffer[RTP_MIDI_COMMAND_OFFSET] = static_cast<uint8_t>(nLength); //FIXME BUG works now only
-
-	AppleMidi::Send(m_pSendBuffer, 1 + sizeof(struct TRtpHeader) + nLength);
-}
-
-void RtpMidi::Print() {
-	AppleMidi::Print();
 }
