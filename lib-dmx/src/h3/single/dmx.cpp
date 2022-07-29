@@ -23,9 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
-#endif
+#pragma GCC target ("general-regs-only")
 
 #include <cstdint>
 #include <cstdio>

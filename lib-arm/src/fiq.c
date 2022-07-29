@@ -23,9 +23,7 @@
  * THE SOFTWARE.
  */
 
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
-#endif
+#pragma GCC target ("general-regs-only")
 
 void __attribute__((weak)) __attribute__((interrupt("FIQ"))) c_fiq_handler(void) {
 }

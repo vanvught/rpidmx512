@@ -104,25 +104,11 @@ void DdpDisplay::CalculateOffsets() {
 		s_nOffsetCompare[nPixelPortIndex] = nSum;
 	}
 
-/*
-  error: comparison of unsigned expression < 0 is always false [-Werror=type-limits]
-  for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
- */
-
-#if __GNUC__ < 9
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wtype-limits"	// FIXME ignored "-Wtype-limits"
-#endif
-
 	for (uint32_t nDmxPortIndex = 0; nDmxPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nDmxPortIndex++) {
 		nSum = nSum + lightset::dmx::UNIVERSE_SIZE;
 		const auto nIndexOffset = nDmxPortIndex + ddpdisplay::configuration::pixel::MAX_PORTS;
 		s_nOffsetCompare[nIndexOffset] = nSum;
 	}
-
-#if __GNUC__ < 9
-# pragma GCC diagnostic pop
-#endif
 
 }
 

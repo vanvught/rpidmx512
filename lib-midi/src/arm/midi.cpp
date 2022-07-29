@@ -60,9 +60,7 @@ static volatile uint32_t sv_nActiveSenseTimeout;
 static volatile midi::ActiveSenseState sv_ActiveSenseState = midi::ActiveSenseState::NOT_ENABLED;
 
 #if defined (H3)
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
-#endif
+#pragma GCC target ("general-regs-only")
 
 static volatile midi::thunk_irq_timer1_t irq_handler_timer1_func;
 
