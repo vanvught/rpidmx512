@@ -37,6 +37,10 @@
 
 #include "lightset.h"
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# error "Cannot be both RDMNet Device and RDM Responder"
+#endif
+
 class ArtNetRdmResponder: public ArtNetRdm, public RDMDeviceResponder, RDMHandler {
 public:
 	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
