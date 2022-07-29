@@ -1,8 +1,8 @@
 /**
- * @file storeddpdisplay.cpp
+ * @file platform_spiflashstore.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,18 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
+#ifndef PLATFORM_SPIFLASHSTORE_H_
+#define PLATFORM_SPIFLASHSTORE_H_
 
-#include "storeddpdisplay.h"
+#if defined (GD32)
+# include "gd32.h"
+# if !defined (GD32F4XX)
+#  define SECTION_FLASHSTORE
+# else
+#  define SECTION_FLASHSTORE __attribute__ ((section (".flashstore")))
+# endif
+#else
+# define SECTION_FLASHSTORE
+#endif
 
-#include "debug.h"
-
-StoreDdpDisplay *StoreDdpDisplay::s_pThis = nullptr;
-
-StoreDdpDisplay::StoreDdpDisplay() {
-	DEBUG_ENTRY
-
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
-	DEBUG_EXIT
-}
+#endif /* PLATFORM_SPIFLASHSTORE_H_ */

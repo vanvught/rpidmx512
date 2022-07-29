@@ -2,7 +2,7 @@
  * @file storeshowfile.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@ class StoreShowFile final: public ShowFileParamsStore {
 public:
 	StoreShowFile();
 
-	void Update(const struct TShowFileParams *ptShowFileParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+	void Update(const struct showfileparams::Params *ptShowFileParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
 	}
 
-	void Copy(struct TShowFileParams *ptShowFileParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct TShowFileParams));
+	void Copy(struct showfileparams::Params *ptShowFileParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
 	}
 
 	static StoreShowFile *Get() {

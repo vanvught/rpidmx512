@@ -1,8 +1,8 @@
 /**
- * @file storews28xxdmx.cpp
+ * @file storenode.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,20 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
-
-#include "storews28xxdmx.h"
+#include "storenode.h"
 
 #include "debug.h"
 
-StoreWS28xxDmx *StoreWS28xxDmx::s_pThis = nullptr;
+uint32_t StoreNode::s_nPortIndexOffset;
+StoreNode *StoreNode::s_pThis;
 
-StoreWS28xxDmx::StoreWS28xxDmx() {
+StoreNode::StoreNode(uint32_t nPortIndexOffset) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	s_nPortIndexOffset = nPortIndexOffset;
+
+	DEBUG_PRINTF("s_nPortIndexOffset=%u, %p", s_nPortIndexOffset, reinterpret_cast<void *>(s_pThis));
 	DEBUG_EXIT
 }

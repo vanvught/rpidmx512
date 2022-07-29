@@ -1,8 +1,8 @@
 /**
- * @file storeddpdisplay.h
+ * @file storewpixeldmx.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,20 @@
  * THE SOFTWARE.
  */
 
-#ifndef STOREDDPDISPLAY_H_
-#define STOREDDPDISPLAY_H_
+#include <cassert>
 
-#include "ddpdisplayparams.h"
+#include "storepixeldmx.h"
 
-#include "spiflashstore.h"
+#include "debug.h"
 
-class StoreDdpDisplay final: public DdpDisplayParamsStore {
-public:
-	StoreDdpDisplay();
+StorePixelDmx *StorePixelDmx::s_pThis;
 
-	void Update(const struct TDdpDisplayParams *pDdpDisplayParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
-	}
+StorePixelDmx::StorePixelDmx() {
+	DEBUG_ENTRY
 
-	void Copy(struct TDdpDisplayParams *pDdpDisplayParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::DDPDISP, pDdpDisplayParams, sizeof(struct TDdpDisplayParams));
-	}
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
-	static StoreDdpDisplay *Get() {
-		return s_pThis;
-	}
-
-private:
-	static StoreDdpDisplay *s_pThis;
-};
-
-#endif /* STOREDDPDISPLAY_H_ */
+	DEBUG_PRINTF("%p", reinterpret_cast<void *>(s_pThis));
+	DEBUG_EXIT
+}
