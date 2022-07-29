@@ -54,12 +54,6 @@
 #include "ws28xxdmxstartstop.h"
 #include "handleroled.h"
 
-#include "dmxparams.h"
-#include "dmxsend.h"
-#include "dmxconfigudp.h"
-
-#include "lightset32with4.h"
-
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
 # include "rdmnetdevice.h"
@@ -76,7 +70,6 @@
 #include "spiflashstore.h"
 
 #include "storedisplayudf.h"
-#include "storedmxsend.h"
 #include "storenetwork.h"
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "storerdmdevice.h"
@@ -104,7 +97,7 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("\x1b[32m" "DDP Pixel controller 8x 4U with 2x DMX" "\x1b[37m");
+	fw.Print("\x1b[32m" "DDP Pixel controller 8x 4U" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
@@ -122,7 +115,7 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_DDP, ddp::UDP_PORT, mdns::Protocol::UDP, "type=display");
 #if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=DDP Pixel DMX");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=DDP Pixel");
 #endif
 	mDns.Print();
 
@@ -130,8 +123,6 @@ void notmain(void) {
 	HttpDaemon httpDaemon;
 	httpDaemon.Start();
 #endif
-
-	// LightSet A - Pixel - 32 Universes
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -156,41 +147,17 @@ void notmain(void) {
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
 
-	// LightSet B - DMX - 2 Universes
-
-	StoreDmxSend storeDmxSend;
-	DmxParams dmxparams(&storeDmxSend);
-
-	Dmx dmx;
-
-	if (dmxparams.Load()) {
-		dmxparams.Dump();
-		dmxparams.Set(&dmx);
-	}
-
-	DmxSend dmxSend;
-
-	dmxSend.Print();
-
-	auto *pDmxConfigUdp = new DmxConfigUdp;
-	assert(pDmxConfigUdp != nullptr);
-
-	// LightSet 32with4
-
-	LightSet32with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmxMulti, &dmxSend);
-	lightSet.Print();
-
-	ddpDisplay.SetOutput(&lightSet);
+	ddpDisplay.SetOutput(&pixelDmxMulti);
 	ddpDisplay.Print();
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d DMX 2x", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "DDP Display %u-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
@@ -218,7 +185,7 @@ void notmain(void) {
 	display.Set(3, displayudf::Labels::HOSTNAME);
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(6, displayudf::Labels::DMX_DIRECTION);
+	display.Set(6, displayudf::Labels::BOARDNAME);
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
@@ -278,7 +245,6 @@ void notmain(void) {
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
-		pDmxConfigUdp->Run();
 		mDns.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();

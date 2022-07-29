@@ -1,5 +1,5 @@
 /**
- * @file ddppixelconfiguration.cpp
+ * @file rdmsoftwareversion.cpp
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,36 +23,21 @@
  * THE SOFTWARE.
  */
 
-#include <algorithm>
 #include <cstdint>
-#ifndef NDEBUG
-# include <cstdio>
-#endif
-#include <cassert>
 
-#include "ddpdisplaypixelconfiguration.h"
+#include "rdmsoftwareversion.h"
 
-void DdpDisplayPixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
-	auto nCountMax = m_nCount[0];
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-	for (uint32_t nPortIndex = 1; nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS; nPortIndex++) {
-		nCountMax = std::max(nCountMax, m_nCount[nPortIndex]);
-	}
-
-	PixelConfiguration::SetCount(nCountMax);
-	PixelConfiguration::Validate(nLedsPerPixel);
-
-	for (uint32_t nPortIndex = 0; nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS; nPortIndex++) {
-		m_nCount[nPortIndex] = std::min(PixelConfiguration::GetCount(), m_nCount[nPortIndex]);
-	}
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
 }
 
-void DdpDisplayPixelConfiguration::Dump() {
-#ifndef NDEBUG
-	PixelConfiguration::Dump();
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-	for (uint32_t nPortIndex = 0; nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS; nPortIndex++) {
-		printf("m_nCount[%u]=%u\n", nPortIndex, m_nCount[nPortIndex]);
-	}
-#endif
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
 }

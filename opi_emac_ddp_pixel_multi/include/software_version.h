@@ -1,8 +1,8 @@
 /**
- * @file ddpdisplaypixelconfiguration.h
+ * @file software_version.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,42 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef DDPDISPLAYPIXELCONFIGURATION_H_
-#define DDPDISPLAYPIXELCONFIGURATION_H_
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include <cstdint>
+constexpr char SOFTWARE_VERSION[] = "1.4";
 
-#include "pixelconfiguration.h"
-
-namespace ddpdisplay {
-namespace configuration {
-namespace pixel {
-static constexpr auto MAX_PORTS = 8;
-}  // namespace pixel
-}  // namespace configuration
-}  // namespace ddp
-
-class DdpDisplayPixelConfiguration: public PixelConfiguration {
-public:
-	void SetCountPort(uint32_t nPortIndex, uint32_t nCount) {
-		if (nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS) {
-			m_nCount[nPortIndex] = nCount;
-		}
-	}
-
-	uint32_t GetCountPort(uint32_t nPortIndex) const {
-		if (nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS) {
-			return m_nCount[nPortIndex];
-		}
-		return 0;
-	}
-
-	void Validate(uint32_t& nLedsPerPixel);
-
-	void Dump();
-
-private:
-	uint32_t m_nCount[ddpdisplay::configuration::pixel::MAX_PORTS];
-};
-
-#endif /* DDPDISPLAYPIXELCONFIGURATION_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

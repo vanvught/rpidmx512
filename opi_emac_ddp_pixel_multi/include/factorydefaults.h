@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef FACTORYDEFAULTS_H_
+#define FACTORYDEFAULTS_H_
 
-constexpr char SOFTWARE_VERSION[] = "1.4";
+#include "rdmfactorydefaults.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+#include "remoteconfig.h"
+#include "spiflashstore.h"
+#include "storenetwork.h"
+
+class FactoryDefaults: public RDMFactoryDefaults {
+public:
+	FactoryDefaults() {}
+	~FactoryDefaults() {}
+
+	void Set() {
+		RemoteConfig::Get()->SetDisable(false);
+		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
+		StoreNetwork::Get()->SaveDhcp(true);
+	}
+};
+
+#endif /* FACTORYDEFAULTS_H_ */

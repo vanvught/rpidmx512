@@ -1,4 +1,4 @@
-DEFINES=OUTPUT_DMX_SEND_MULTI NDEBUG
-EXTRA_INCLUDES=../lib-properties/include ../lib-lightset/include ../lib-hal/include ../lib-network/include ../lib-ws28xx/include ../lib-dmx/include
+#DEFINES=NDEBUG
 
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

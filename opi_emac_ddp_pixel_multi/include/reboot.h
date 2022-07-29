@@ -1,8 +1,8 @@
 /**
- * @file software_version.h
+ * @file reboot.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOFTWARE_VERSION_H_
-#define SOFTWARE_VERSION_H_
+#ifndef REBOOT_H_
+#define REBOOT_H_
 
-constexpr char SOFTWARE_VERSION[] = "1.4";
+#include "hardware.h"
+#include "ws28xxmulti.h"
 
-#endif /* SOFTWARE_VERSION_H_ */
+class Reboot final : public RebootHandler {
+public:
+	Reboot() {}
+	~Reboot() override {}
+
+	void Run() override {
+		if (WS28xxMulti::Get() != nullptr) {
+			WS28xxMulti::Get()->Blackout();
+		}
+	}
+};
+
+#endif /* REBOOT_H_ */

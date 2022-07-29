@@ -1,5 +1,5 @@
 /**
- * @file ddpdisplayparamsconst.cpp
+ * @file handleroled.h
  *
  */
 /* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,12 +23,37 @@
  * THE SOFTWARE.
  */
 
-#include "ddpdisplayparamsconst.h"
-#include "ddpdisplayparams.h"
+#ifndef HANDLEROLED_H_
+#define HANDLEROLED_H_
 
-const char DdpDisplayParamsConst::FILE_NAME[] = "ddpdisp.txt";
-const char DdpDisplayParamsConst::COUNT_PORT[ddpdisplayparams::MAX_PORTS][16] = { "count_port_1",
-		"count_port_2", "count_port_3", "count_port_4",
-		"count_port_5", "count_port_6", "count_port_7",
-		"count_port_8" };
-const char DdpDisplayParamsConst::TEST_PATTERN[] = "test_pattern";
+#include "jamstapl.h"
+
+struct HandlerOled: public JamSTAPLDisplay  {
+	HandlerOled(void) {
+		s_pThis = this;
+	}
+
+	~HandlerOled(void) {
+	}
+
+	// JamSTAPL
+	void JamShowInfo(const char *pInfo) {
+		Display::Get()->ClearLine(1);
+		Display::Get()->Write(1, pInfo);
+	}
+
+	void JamShowStatus(const char *pStatus, int ExitCode) {
+		Display::Get()->TextStatus(pStatus, Display7SegmentMessage::INFO_CPLD, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
+	}
+
+	static HandlerOled *Get(void) {
+		return s_pThis;
+	}
+
+private:
+	static HandlerOled *s_pThis;
+};
+
+HandlerOled *HandlerOled::s_pThis = 0;
+
+#endif /* HANDLEROLED_H_ */
