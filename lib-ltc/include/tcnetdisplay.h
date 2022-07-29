@@ -2,7 +2,7 @@
  * @file tcnetdisplay.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,10 @@
 #ifndef TCNETDISPLAY_H_
 #define TCNETDISPLAY_H_
 
-class TCNetDisplay {
-public:
-	static void Show();
-};
+namespace tcnet {
+namespace display {
+void show();
+}  // namespace display
+}  // namespace tcnet
 
 #endif /* TCNETDISPLAY_H_ */

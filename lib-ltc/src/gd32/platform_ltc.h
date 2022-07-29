@@ -1,8 +1,8 @@
 /**
- * @file ltcdisplaymax72197segment.h
+ * @file platform_ltc.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYMAX72197SEGMENT_H_
-#define LTCDISPLAYMAX72197SEGMENT_H_
+#ifndef GD32_PLATFORM_LTC_H_
+#define GD32_PLATFORM_LTC_H_
 
 #include <cstdint>
 
-#include "ltcdisplaymax7219set.h"
-#include "max72197segment.h"
+#include "gd32.h"
 
-class LtcDisplayMax72197Segment final: public LtcDisplayMax7219Set, public Max72197Segment {
-public:
-	LtcDisplayMax72197Segment();
+namespace platform {
+namespace ltc {
+void timer6_config();
+void timer11_config();
+}  // namespace ltc
+}  // namespace platform
 
-	void Init(uint8_t nIntensity) override;
-	void Show(const char *pTimecode) override;
-	void ShowSysTime(const char *pSystemTime) override;
-	void WriteChar(uint8_t nChar, uint8_t nPos) override;
 
-	static LtcDisplayMax72197Segment *Get() {
-		return s_pThis;
-	}
-
-private:
-	static LtcDisplayMax72197Segment *s_pThis;
-};
-
-#endif /* LTCDISPLAYMAX72197SEGMENT_H_ */
+#endif /* GD32_PLATFORM_LTC_H_ */

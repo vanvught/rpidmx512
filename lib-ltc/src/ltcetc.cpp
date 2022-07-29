@@ -39,25 +39,24 @@ char *LtcEtc::s_pUdpBuffer;
 LtcEtc::Config LtcEtc::s_Config;
 LtcEtc::Handle LtcEtc::s_Handle;
 
+static constexpr char UDP_TERMINATOR[static_cast<uint32_t>(ltc::etc::UdpTerminator::UNDEFINED)][5] = { "None", "CR", "LF", "CRLF" };
+
 namespace ltc {
 namespace etc {
-
-static constexpr char UDP_TERMINATOR[static_cast<uint32_t>(UdpTerminator::UNDEFINED)][5] = { "None", "CR", "LF", "CRLF" };
-
-UdpTerminator get_udp_terminator(const char *pString) {
+ltc::etc::UdpTerminator get_udp_terminator(const char *pString) {
 	assert(pString != nullptr);
 
 	for (uint32_t i = 0; i < sizeof(UDP_TERMINATOR)/ sizeof(UDP_TERMINATOR[0]); i++) {
 		if (strcasecmp(pString, UDP_TERMINATOR[i]) == 0) {
-			return static_cast<UdpTerminator>(i);
+			return static_cast<ltc::etc::UdpTerminator>(i);
 		}
 	}
 
-	return UdpTerminator::UNDEFINED;
+	return ltc::etc::UdpTerminator::UNDEFINED;
 }
 
-const char *get_udp_terminator(const UdpTerminator updTerminator) {
-	if (updTerminator < UdpTerminator::UNDEFINED) {
+const char *get_udp_terminator(const ltc::etc::UdpTerminator updTerminator) {
+	if (updTerminator < ltc::etc::UdpTerminator::UNDEFINED) {
 		return UDP_TERMINATOR[static_cast<uint32_t>(updTerminator)];
 	}
 
@@ -71,7 +70,6 @@ static constexpr char TIMECODE[] = { 'H', 'H', ' ', 'M', 'M', ' ', 'S', 'S', ' '
 static constexpr char END[] = { 'F', '7' };
 static constexpr auto MIN_MSG_LENGTH = sizeof(PREFIX) + sizeof(HEADER) + sizeof(TIMECODE) + sizeof(END);
 }  // namespace udp
-
 }  // namespace etc
 }  // namespace ltc
 
@@ -112,8 +110,7 @@ void LtcEtc::Send(const midi::Timecode *pTimeCode) {
 
 	auto *p = &s_SendBuffer[sizeof(ltc::etc::udp::PREFIX) + sizeof(ltc::etc::udp::HEADER)];
 
-//	const auto data5  = static_cast<uint8_t>(((pTimeCode->nType) & 0x03) << 5) | (pTimeCode->nHours & 0x1F); //TODO There is no Type?
-	const auto data5  = (pTimeCode->nHours & 0x1F);
+	const auto data5  = static_cast<uint8_t>(((pTimeCode->nType) & 0x03) << 5) | (pTimeCode->nHours & 0x1F);
 
 	*p++ = TO_HEX(data5 >> 4);
 	*p = TO_HEX(data5 & 0x0F);
@@ -267,5 +264,5 @@ void LtcEtc::Print() {
 		printf(" No input\n");
 	}
 
-	printf(" UDP Termination: %s\n", ltc::etc::get_udp_terminator(s_Config.terminator));
+	printf(" UDP Termination: %s\n", get_udp_terminator(s_Config.terminator));
 }

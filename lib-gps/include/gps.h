@@ -2,7 +2,7 @@
  * @file gps.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,11 @@
 
 #include "gpsconst.h"
 
-enum class GPSStatus {
-	IDLE,
-	WARNING,
-	VALID,
-	UNDEFINED
+namespace gps {
+enum class Status {
+	IDLE, WARNING, VALID, UNDEFINED
 };
+}  // namespace gps
 
 class GPS {
 public:
@@ -71,11 +70,11 @@ public:
 		return mktime(&m_Tm) + m_nUtcOffset;
 	}
 
-	GPSStatus GetStatus() const {
+	gps::Status GetStatus() const {
 		return m_tStatusCurrent;
 	}
 
-	void Display(GPSStatus status) __attribute__((weak));
+	void Display(gps::Status status);
 
 	static GPS *Get() {
 		return s_pThis;
@@ -112,8 +111,8 @@ private:
 	uint32_t m_nTimeTimestampMillis;
 	uint32_t m_nDateTimestampMillis;
 
-	GPSStatus m_tStatusCurrent { GPSStatus::UNDEFINED };
-	GPSStatus m_tStatusPrevious { GPSStatus::UNDEFINED };
+	gps::Status m_tStatusCurrent { gps::Status::UNDEFINED };
+	gps::Status m_tStatusPrevious { gps::Status::UNDEFINED };
 
 	static GPS *s_pThis;
 };

@@ -34,7 +34,7 @@ public:
 	LtcEncoder();
 	~LtcEncoder();
 
-	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
+	void SetTimeCode(const struct ltc::TimeCode* pLtcTimeCode, bool nExternalClock = true);
 	void Encode();
 	void Send();
 

@@ -48,7 +48,7 @@ struct Header {
 static constexpr auto COMMAND_OFFSET = sizeof(struct Header);
 }  // namespace rtpmidi
 
-class RtpMidi: public AppleMidi {
+class RtpMidi final: public AppleMidi {
 public:
 	RtpMidi() {
 		DEBUG_ENTRY
@@ -151,7 +151,7 @@ private:
 		auto *pHeader = reinterpret_cast<rtpmidi::Header*>(m_pSendBuffer);
 
 		pHeader->nSequenceNumber = __builtin_bswap16(m_nSequenceNumber++);
-		pHeader->nTimestamp = __builtin_bswap32(Now());
+		pHeader->nTimestamp = __builtin_bswap32(AppleMidi::Now());
 
 		m_pSendBuffer[rtpmidi::COMMAND_OFFSET] = static_cast<uint8_t>(nLength); //FIXME BUG works now only
 
@@ -159,7 +159,7 @@ private:
 	}
 
 private:
-	struct midi::Message m_tMidiMessage;
+	midi::Message m_tMidiMessage;
 	RtpMidiHandler *m_pRtpMidiHandler { nullptr };
 	uint8_t *m_pReceiveBuffer { nullptr };
 	uint8_t *m_pSendBuffer { nullptr };

@@ -1,8 +1,8 @@
 /**
- * @file ltcdisplaymax72197segment.h
+ * @file ltcsender.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,33 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYMAX72197SEGMENT_H_
-#define LTCDISPLAYMAX72197SEGMENT_H_
-
 #include <cstdint>
+#include <cassert>
 
-#include "ltcdisplaymax7219set.h"
-#include "max72197segment.h"
+#include "ltcsender.h"
+#include "ltc.h"
 
-class LtcDisplayMax72197Segment final: public LtcDisplayMax7219Set, public Max72197Segment {
-public:
-	LtcDisplayMax72197Segment();
+LtcSender *LtcSender::s_pThis;
 
-	void Init(uint8_t nIntensity) override;
-	void Show(const char *pTimecode) override;
-	void ShowSysTime(const char *pSystemTime) override;
-	void WriteChar(uint8_t nChar, uint8_t nPos) override;
+LtcSender::LtcSender(uint32_t nVolume) {
+	assert(s_pThis == nullptr);
+	s_pThis = this;
 
-	static LtcDisplayMax72197Segment *Get() {
-		return s_pThis;
+	//TODO
+}
+
+void LtcSender::Start() {
+	//TODO
+}
+
+void LtcSender::SetTimeCode(const struct ltc::TimeCode* pLtcSenderTimeCode, bool nExternalClock) {
+	LtcEncoder::SetTimeCode(pLtcSenderTimeCode, nExternalClock);
+	LtcEncoder::Get()->Encode();
+
+	if (__builtin_expect((m_nTypePrevious != pLtcSenderTimeCode->nType), 0)) {
+		m_nTypePrevious = pLtcSenderTimeCode->nType;
+		//TODO
 	}
 
-private:
-	static LtcDisplayMax72197Segment *s_pThis;
-};
-
-#endif /* LTCDISPLAYMAX72197SEGMENT_H_ */
+	//TODO
+}

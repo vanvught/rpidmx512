@@ -1,8 +1,8 @@
 /**
- * @file ltcdisplaymax72197segment.h
+ * @file platform_ltc.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,15 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYMAX72197SEGMENT_H_
-#define LTCDISPLAYMAX72197SEGMENT_H_
-
 #include <cstdint>
 
-#include "ltcdisplaymax7219set.h"
-#include "max72197segment.h"
+#include "ltc.h"
 
-class LtcDisplayMax72197Segment final: public LtcDisplayMax7219Set, public Max72197Segment {
-public:
-	LtcDisplayMax72197Segment();
+volatile uint32_t gv_ltc_nUpdatesPerSecond;
+volatile uint32_t gv_ltc_nUpdatesPrevious;
+volatile uint32_t gv_ltc_nUpdates;
 
-	void Init(uint8_t nIntensity) override;
-	void Show(const char *pTimecode) override;
-	void ShowSysTime(const char *pSystemTime) override;
-	void WriteChar(uint8_t nChar, uint8_t nPos) override;
+volatile bool gv_ltc_bTimeCodeAvailable;
+volatile uint32_t gv_ltc_nTimeCodeCounter;
 
-	static LtcDisplayMax72197Segment *Get() {
-		return s_pThis;
-	}
-
-private:
-	static LtcDisplayMax72197Segment *s_pThis;
-};
-
-#endif /* LTCDISPLAYMAX72197SEGMENT_H_ */
+struct ltc::TimeCode g_ltc_LtcTimeCode;
