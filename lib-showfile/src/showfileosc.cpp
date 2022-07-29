@@ -2,7 +2,7 @@
  * @file showfileosc.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,8 @@
 #include "showfile.h"
 
 #include "debug.h"
+
+static constexpr auto MAX_BUFFER_SIZE = ShowFileOSCMax::CMD_LENGTH;
 
 namespace cmd {
 	static constexpr char PATH[] = "/showfile/";
@@ -82,6 +84,9 @@ ShowFileOSC::ShowFileOSC() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
+	m_pBuffer = new char[MAX_BUFFER_SIZE];
+	assert(m_pBuffer != nullptr);
+
 	for (uint32_t i = 0; i < ShowFileOSCMax::FILES_ENTRIES; i++) {
 		m_aFileIndex[i] = -1;
 	}
@@ -90,9 +95,8 @@ ShowFileOSC::ShowFileOSC() {
 }
 
 ShowFileOSC::~ShowFileOSC() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
+	delete[] m_pBuffer;
+	m_pBuffer = nullptr;
 }
 
 void ShowFileOSC::Start() {
@@ -113,7 +117,7 @@ void ShowFileOSC::Stop() {
 }
 
 void ShowFileOSC::Run() {
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, MAX_BUFFER_SIZE, &m_nRemoteIp, &m_nRemotePort);
 
 	if (__builtin_expect((nBytesReceived <= length::PATH), 1)) {
 		return;
@@ -148,7 +152,7 @@ void ShowFileOSC::Run() {
 
 			const auto nValue = static_cast<uint32_t>(Msg.GetInt(0));
 
-			if (nValue <= showfile::File::MAX_NUMBER) {
+			if (nValue <= ShowFileFile::MAX_NUMBER) {
 				ShowFile::Get()->SetShowFile(nValue);
 				SendStatus();
 			}
@@ -240,8 +244,8 @@ void ShowFileOSC::Run() {
 
 			DEBUG_PRINTF("nValue=%d", nValue);
 
-			if (nValue <= showfile::File::MAX_NUMBER) {
-				char aShowFileName[showfile::File::NAME_LENGTH + 1];
+			if (nValue <= ShowFileFile::MAX_NUMBER) {
+				char aShowFileName[ShowFileFile::NAME_LENGTH + 1];
 
 				ShowFile::ShowFileNameCopyTo(aShowFileName, sizeof(aShowFileName), nValue);
 
@@ -289,7 +293,7 @@ void ShowFileOSC::Run() {
 				return;
 			}
 
-			if (nShow <= showfile::File::MAX_NUMBER) {
+			if (nShow <= ShowFileFile::MAX_NUMBER) {
 				ShowFile::Get()->SetShowFile(static_cast<uint32_t>(nShow));
 				SendStatus();
 			}
@@ -305,7 +309,7 @@ void ShowFileOSC::SendStatus() {
 	OscSimpleSend MsgName(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/name", "s", ShowFile::Get()->GetShowFileName());
 
 	const auto tStatus = ShowFile::Get()->GetStatus();
-	assert(tStatus != showfile::Status::UNDEFINED);
+	assert(tStatus != ShowFileStatus::UNDEFINED);
 
 	OscSimpleSend MsgStatus(m_nHandle, m_nRemoteIp, m_nPortOutgoing, "/showfile/status", "s", ShowFileConst::STATUS[static_cast<int>(tStatus)]);
 }

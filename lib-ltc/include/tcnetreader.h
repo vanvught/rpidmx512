@@ -33,6 +33,8 @@
 
 class TCNetReader : public TCNetTimeCode {
 public:
+	TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
 	void Start();
 	void Stop();
 
@@ -44,6 +46,7 @@ private:
 	void HandleUdpRequest();
 
 private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	struct midi::Timecode m_tMidiTimeCode;
 	uint32_t m_nTimeCodePrevious { 0xFF };
 	int m_nHandle { -1 };

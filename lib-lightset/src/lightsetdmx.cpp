@@ -30,11 +30,11 @@
 using namespace lightset;
 
 uint16_t LightSet::GetDmxStartAddress() {
-	return dmx::START_ADDRESS_DEFAULT;
+	return Dmx::START_ADDRESS_DEFAULT;
 }
 
 uint16_t LightSet::GetDmxFootprint() {
-	return dmx::UNIVERSE_SIZE;
+	return Dmx::UNIVERSE_SIZE;
 }
 
 bool LightSet::SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {

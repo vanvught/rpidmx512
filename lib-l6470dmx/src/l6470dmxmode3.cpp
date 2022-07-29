@@ -36,7 +36,7 @@
 
 #include "debug.h"
 
-L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams) {
+L6470DmxMode3::L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams): m_nPreviousData(0), m_bWasBusy(false) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != nullptr);

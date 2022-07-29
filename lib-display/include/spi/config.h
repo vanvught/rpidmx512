@@ -27,10 +27,10 @@
 #define CONFIG_H
 
 namespace config {
-#if defined (SPI_LCD_240X240)
+#if defined (CONFIG_SPI_LCD_240X240)
 static constexpr auto WIDTH = 240;
 static constexpr auto HEIGHT = 240;
-#elif defined (SPI_LCD_240X320)
+#elif defined (CONFIG_SPI_LCD_240X320)
 static constexpr auto WIDTH = 240;
 static constexpr auto HEIGHT = 320;
 #else
@@ -39,39 +39,35 @@ static constexpr auto HEIGHT = 320;
 }  // namespace config
 
 #if defined (H3)
-# define SPI_LCD_RST_PIN		GPIO_EXT_7			// GPIO6
-# define SPI_LCD_DC_PIN 		GPIO_EXT_26			// GPIO10
-# define SPI_LCD_BL_PIN			GPIO_EXT_22			// GPIO2
-# if defined(SPI_LCD_HAVE_CS_PIN)
-#  define SPI_LCD_CS_PIN		GPIO_EXT_24			// GPIO13 / SPI CS0
+# define DEV_RST_PIN		GPIO_EXT_7			// GPIO6
+# define DEV_DC_PIN 		GPIO_EXT_26			// GPIO10
+# define DEV_BL_PIN			GPIO_EXT_22			// GPIO2
+# if defined(DEV_HAVE_CS)
+#  define DEV_CS_PIN		GPIO_EXT_24			// GPIO13 / SPI CS0
 # endif
 #elif defined (GD32)		//TODO Move to board file
 # include "gd32.h"
 # if defined(BOARD_GD32F107R) || defined(BOARD_GD32F207R) || defined(BOARD_GD32F407R)
-#  define SPI_LCD_RST_PIN		GPIO_EXT_7
-#  define SPI_LCD_DC_PIN 		GPIO_EXT_26
-#  define SPI_LCD_BL_PIN		GPIO_EXT_22
-#  if defined(SPI_LCD_HAVE_CS_PIN)
-#   define SPI_LCD_CS_PIN		GPIO_EXT_24
+#  define DEV_RST_PIN		GPIO_EXT_7
+#  define DEV_DC_PIN 		GPIO_EXT_26
+#  define DEV_BL_PIN		GPIO_EXT_22
+#  if defined(DEV_HAVE_CS)
+#   define DEV_CS_PIN		GPIO_EXT_24
 #  endif
 # elif defined(BOARD_GD32F207C_EVAL) && defined(BOARD_CUSTOM)
-#  define SPI_LCD_DC_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
-#  define SPI_LCD_BL_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
-#  define SPI_LCD_CS_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
-# elif defined(BOARD_GD32F450VE) && defined(BOARD_CUSTOM)
-#  define SPI_LCD_DC_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
-#  define SPI_LCD_BL_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
-#  define SPI_LCD_CS_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
+#  define DEV_DC_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
+#  define DEV_BL_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
+#  define DEV_CS_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
 # else
 #  error
 # endif
 #else
 # include "bcm2835.h"
-# define SPI_LCD_RST_PIN		RPI_V2_GPIO_P1_07	// GPIO4
-# define SPI_LCD_DC_PIN 		RPI_V2_GPIO_P1_31	// GPIO6
-# define SPI_LCD_BL_PIN			RPI_V2_GPIO_P1_29	// GPIO5
-# if defined(SPI_LCD_HAVE_CS_PIN)
-#  define SPI_LCD_CS_PIN		RPI_V2_GPIO_P1_24	// GPIO8 / SPI CS0
+# define DEV_RST_PIN		RPI_V2_GPIO_P1_07	// GPIO4
+# define DEV_DC_PIN 		RPI_V2_GPIO_P1_31	// GPIO6
+# define DEV_BL_PIN			RPI_V2_GPIO_P1_29	// GPIO5
+# if defined(DEV_HAVE_CS)
+#  define DEV_CS_PIN		RPI_V2_GPIO_P1_24	// GPIO8 / SPI CS0
 # endif
 #endif
 

@@ -67,14 +67,14 @@ constexpr char PARAMS_DMX_START_ADDRESS[] = "dmx_start_address";
 constexpr char PARAMS_DMX_SLOT_INFO[] = "dmx_slot_info";
 
 void SlushDmx::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
+	assert(p != 0);
+	assert(s != 0);
 
 	(static_cast<SlushDmx*>(p))->callbackFunction(s);
 }
 
 void SlushDmx::callbackFunction(const char *pLine) {
-	assert(pLine != nullptr);
+	assert(pLine != 0);
 
 	uint8_t nValue8;
 	uint16_t nValue16;
@@ -88,14 +88,14 @@ void SlushDmx::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_A, nValue16) == Sscan::OK) {
-		if (nValue16 <= dmx::UNIVERSE_SIZE) {
+		if (nValue16 <= Dmx::UNIVERSE_SIZE) {
 			m_nDmxStartAddressPortA = nValue16;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, PARAMS_SLUSH_DMX_START_ADDRESS_PORT_B, nValue16) == Sscan::OK) {
-		if (nValue16 <= dmx::UNIVERSE_SIZE) {
+		if (nValue16 <= Dmx::UNIVERSE_SIZE) {
 			m_nDmxStartAddressPortB = nValue16;
 		}
 		return;
@@ -147,15 +147,17 @@ void SlushDmx::callbackFunction(const char *pLine) {
 }
 
 SlushDmx::SlushDmx(bool bUseSPI):
-	
+	m_bSetPortA(false),
+	m_bSetPortB(false),
 	m_bUseSpiBusy(bUseSPI),
-	
-	m_nDmxStartAddress(dmx::ADDRESS_INVALID)
+	m_nMotorsConnected(0),
+	m_nDmxStartAddress(Dmx::ADDRESS_INVALID),
+	m_nDmxFootprint(0)  // Invalidate DMX Start Address and DMX Footprint
 {
 	DEBUG_ENTRY;
 
 	m_pBoard = new SlushBoard;
-	assert(m_pBoard != nullptr);
+	assert(m_pBoard != 0);
 
 	m_nDmxMode = L6470DMXMODE_UNDEFINED;
 	m_nDmxStartAddressMode = 0;
@@ -163,21 +165,21 @@ SlushDmx::SlushDmx(bool bUseSPI):
 	m_nDmxStartAddressPortA = 0;
 	m_nDmxFootprintPortA = IO_PINS_IOPORT;
 	m_pSlotInfoRawPortA = new char[DMX_SLOT_INFO_RAW_LENGTH];
-	m_pSlotInfoPortA = nullptr;
+	m_pSlotInfoPortA = 0;
 	m_nDataPortA = 0;
 
 	m_nDmxStartAddressPortB = 0;
 	m_nDmxFootprintPortB = IO_PINS_IOPORT;
 	m_pSlotInfoRawPortB = new char[DMX_SLOT_INFO_RAW_LENGTH];
-	m_pSlotInfoPortB = nullptr;
+	m_pSlotInfoPortB = 0;
 	m_nDataPortB = 0;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		m_pSlushMotor[i] = nullptr;
-		m_pMotorParams[i] = nullptr;
-		m_pModeParams[i] = nullptr;
-		m_pL6470DmxModes[i] = nullptr;
-		m_pSlotInfo[i] = nullptr;
+		m_pSlushMotor[i] = 0;
+		m_pMotorParams[i] = 0;
+		m_pModeParams[i] = 0;
+		m_pL6470DmxModes[i] = 0;
+		m_pSlotInfo[i] = 0;
 	}
 
 	m_pSlotInfoRaw = new char[DMX_SLOT_INFO_RAW_LENGTH];
@@ -191,64 +193,64 @@ SlushDmx::SlushDmx(bool bUseSPI):
 	DEBUG_EXIT;
 }
 
-SlushDmx::~SlushDmx() {
+SlushDmx::~SlushDmx(void) {
 	DEBUG_ENTRY;
 
-	if (m_pSlotInfoRawPortA != nullptr) {
+	if (m_pSlotInfoRawPortA != 0) {
 		delete[] m_pSlotInfoRawPortA;
-		m_pSlotInfoRawPortA = nullptr;
+		m_pSlotInfoRawPortA = 0;
 	}
 
-	if (m_pSlotInfoPortA != nullptr) {
+	if (m_pSlotInfoPortA != 0) {
 		delete[] m_pSlotInfoPortA;
-		m_pSlotInfoPortA = nullptr;
+		m_pSlotInfoPortA = 0;
 	}
 
-	if (m_pSlotInfoRawPortB != nullptr) {
+	if (m_pSlotInfoRawPortB != 0) {
 		delete[] m_pSlotInfoRawPortB;
-		m_pSlotInfoRawPortB = nullptr;
+		m_pSlotInfoRawPortB = 0;
 	}
 
-	if (m_pSlotInfoPortB != nullptr) {
+	if (m_pSlotInfoPortB != 0) {
 		delete[] m_pSlotInfoPortB;
-		m_pSlotInfoPortB = nullptr;
+		m_pSlotInfoPortB = 0;
 	}
 
 	for (int i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
 
-		if (m_pSlushMotor[i] != nullptr) {
+		if (m_pSlushMotor[i] != 0) {
 			delete m_pSlushMotor[i];
-			m_pSlushMotor[i] = nullptr;
+			m_pSlushMotor[i] = 0;
 		}
 
-		if (m_pMotorParams[i] != nullptr) {
+		if (m_pMotorParams[i] != 0) {
 			delete m_pMotorParams[i];
-			m_pMotorParams[i] = nullptr;
+			m_pMotorParams[i] = 0;
 		}
 
-		if (m_pModeParams[i] != nullptr) {
+		if (m_pModeParams[i] != 0) {
 			delete m_pModeParams[i];
-			m_pModeParams[i] = nullptr;
+			m_pModeParams[i] = 0;
 		}
 
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			delete m_pL6470DmxModes[i];
-			m_pL6470DmxModes[i] = nullptr;
+			m_pL6470DmxModes[i] = 0;
 		}
 
-		if (m_pSlotInfo[i] != nullptr) {
+		if (m_pSlotInfo[i] != 0) {
 			delete[] m_pSlotInfo[i];
-			m_pSlotInfo[i] = nullptr;
+			m_pSlotInfo[i] = 0;
 		}
 	}
 
-	if (m_pSlotInfoRaw != nullptr) {
+	if (m_pSlotInfoRaw != 0) {
 		delete[] m_pSlotInfoRaw;
-		m_pSlotInfoRaw = nullptr;
+		m_pSlotInfoRaw = 0;
 	}
 
 	delete m_pBoard;
-	m_pBoard = nullptr;
+	m_pBoard = 0;
 
 	DEBUG_EXIT;
 }
@@ -257,7 +259,7 @@ void SlushDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->Start();
 		}
 	}
@@ -269,7 +271,7 @@ void SlushDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->Stop();
 		}
 	}
@@ -277,7 +279,7 @@ void SlushDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::ReadConfigFiles() {
+void SlushDmx::ReadConfigFiles(void) {
 	DEBUG_ENTRY;
 
 	ReadConfigFile configfile(SlushDmx::staticCallbackFunction, this);
@@ -298,14 +300,14 @@ void SlushDmx::ReadConfigFiles() {
 			m_nDmxFootprint = m_nDmxFootprintPortA;
 
 			m_pSlotInfoPortA = new SlotInfo[m_nDmxFootprintPortA];
-			assert(m_pSlotInfoPortA != nullptr);
+			assert(m_pSlotInfoPortA != 0);
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortA;
 
 			for (uint32_t i = 0; i < m_nDmxFootprintPortA; i++) {
 				bool isSet = false;
 
-				if (pSlotInfoRaw != nullptr) {
+				if (pSlotInfoRaw != 0) {
 					pSlotInfoRaw = Parse::DmxSlotInfo(pSlotInfoRaw, isSet, m_pSlotInfoPortA[i].nType, m_pSlotInfoPortA[i].nCategory);
 				}
 
@@ -328,7 +330,7 @@ void SlushDmx::ReadConfigFiles() {
 			}
 			m_bSetPortB = true;
 
-			if (m_nDmxStartAddress == dmx::ADDRESS_INVALID) {
+			if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 				m_nDmxStartAddress = m_nDmxStartAddressPortB;
 				m_nDmxFootprint = m_nDmxFootprintPortB;
 			} else {
@@ -340,14 +342,14 @@ void SlushDmx::ReadConfigFiles() {
 			}
 
 			m_pSlotInfoPortB = new SlotInfo[m_nDmxFootprintPortB];
-			assert(m_pSlotInfoPortB != nullptr);
+			assert(m_pSlotInfoPortB != 0);
 
 			char *pSlotInfoRaw = m_pSlotInfoRawPortB;
 
 			for (uint32_t i = 0; i < m_nDmxFootprintPortB; i++) {
 				bool isSet = false;
 
-				if (pSlotInfoRaw != nullptr) {
+				if (pSlotInfoRaw != 0) {
 					pSlotInfoRaw = Parse::DmxSlotInfo(pSlotInfoRaw, isSet, m_pSlotInfoPortB[i].nType, m_pSlotInfoPortB[i].nCategory);
 				}
 
@@ -379,17 +381,17 @@ void SlushDmx::ReadConfigFiles() {
 			printf("\t%s=%d\n", PARAMS_DMX_START_ADDRESS, m_nDmxStartAddressMode);
 			printf("\t=============================\n");
 #endif
-			if ((m_nDmxStartAddressMode <= dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
+			if ((m_nDmxStartAddressMode <= Dmx::UNIVERSE_SIZE) && (L6470DmxModes::GetDmxFootPrintMode(m_nDmxMode) != 0)) {
 				m_pSlushMotor[i] = new SlushMotor(i, m_bUseSpiBusy);
-				assert(m_pSlushMotor[i] != nullptr);
+				assert(m_pSlushMotor[i] != 0);
 
-				if (m_pSlushMotor[i] != nullptr) {
+				if (m_pSlushMotor[i] != 0) {
 					if (m_pSlushMotor[i]->IsConnected()) {
 						m_nMotorsConnected++;
 						m_pSlushMotor[i]->Dump();
 
 						m_pMotorParams[i] = new MotorParams;
-						assert(m_pMotorParams[i] != nullptr);
+						assert(m_pMotorParams[i] != 0);
 						m_pMotorParams[i]->Load(i);
 						m_pMotorParams[i]->Dump();
 						m_pMotorParams[i]->Set(m_pSlushMotor[i]);
@@ -402,15 +404,15 @@ void SlushDmx::ReadConfigFiles() {
 						m_pSlushMotor[i]->Dump();
 
 						m_pModeParams[i] = new ModeParams;
-						assert(m_pModeParams[i] != nullptr);
+						assert(m_pModeParams[i] != 0);
 						m_pModeParams[i]->Load(i);
 						m_pModeParams[i]->Dump();
 
 						m_pL6470DmxModes[i] = new L6470DmxModes(static_cast<TL6470DmxModes>(m_nDmxMode), m_nDmxStartAddressMode, m_pSlushMotor[i], m_pMotorParams[i], m_pModeParams[i]);
-						assert(m_pL6470DmxModes[i] != nullptr);
+						assert(m_pL6470DmxModes[i] != 0);
 
-						if (m_pL6470DmxModes[i] != nullptr) {
-							if (m_nDmxStartAddress == dmx::ADDRESS_INVALID) {
+						if (m_pL6470DmxModes[i] != 0) {
+							if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
 								m_nDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 								m_nDmxFootprint = m_pL6470DmxModes[i]->GetDmxFootPrint();
 							} else {
@@ -427,7 +429,7 @@ void SlushDmx::ReadConfigFiles() {
 							for (uint32_t j = 0; j < m_pL6470DmxModes[i]->GetDmxFootPrint(); j++) {
 								bool isSet = false;
 
-								if (pSlotInfoRaw != nullptr) {
+								if (pSlotInfoRaw != 0) {
 									pSlotInfoRaw = Parse::DmxSlotInfo(pSlotInfoRaw, isSet, m_pSlotInfo[i][j].nType, m_pSlotInfo[i][j].nCategory);
 								}
 
@@ -447,7 +449,7 @@ void SlushDmx::ReadConfigFiles() {
 #endif
 					} else {
 						delete m_pSlushMotor[i];
-						m_pSlushMotor[i] = nullptr;
+						m_pSlushMotor[i] = 0;
 					}
 				} else {
 					printf("Internal error!\n");
@@ -464,20 +466,20 @@ void SlushDmx::ReadConfigFiles() {
 	}
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->InitSwitch();
 		}
 	}
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pSlushMotor[i] != nullptr) {
+		if (m_pSlushMotor[i] != 0) {
 			while (m_pL6470DmxModes[i]->BusyCheck())
 				;
 		}
 	}
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			m_pL6470DmxModes[i]->InitPos();
 		}
 	}
@@ -491,13 +493,13 @@ void SlushDmx::ReadConfigFiles() {
 void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
-	assert(pData != nullptr);
-	assert(nLength <= dmx::UNIVERSE_SIZE);
+	assert(pData != 0);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	bool bIsDmxDataChanged[SLUSH_DMX_MAX_MOTORS];
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			bIsDmxDataChanged[i] = m_pL6470DmxModes[i]->IsDmxDataChanged(pData, nLength);
 
 			if(bIsDmxDataChanged[i]) {
@@ -532,8 +534,8 @@ void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_
 void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint32_t nLength) {
 	DEBUG_ENTRY;
 
-	assert(pData != nullptr);
-	assert(nLength <= dmx::UNIVERSE_SIZE);
+	assert(pData != 0);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	uint8_t *p;
 	uint8_t nPortData;
@@ -608,7 +610,7 @@ bool SlushDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	}
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if (m_pL6470DmxModes[i] != nullptr) {
+		if (m_pL6470DmxModes[i] != 0) {
 			const uint16_t nCurrentDmxStartAddress = m_pL6470DmxModes[i]->GetDmxStartAddress();
 			const uint16_t nNewDmxStartAddress =  (nCurrentDmxStartAddress - m_nDmxStartAddress) + nDmxStartAddress;
 #ifndef NDEBUG
@@ -646,7 +648,7 @@ bool SlushDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
 	const uint16_t nDmxAddress = m_nDmxStartAddress + nSlotOffset;
 
 	for (uint32_t i = 0; i < SLUSH_DMX_MAX_MOTORS; i++) {
-		if ((m_pL6470DmxModes[i] != nullptr) && (m_pSlotInfo[i] != nullptr)) {
+		if ((m_pL6470DmxModes[i] != 0) && (m_pSlotInfo[i] != 0)) {
 			const int16_t nOffset = nDmxAddress - m_pL6470DmxModes[i]->GetDmxStartAddress();
 
 			if ((nDmxAddress >= m_pL6470DmxModes[i]->GetDmxStartAddress()) && (nOffset < m_pL6470DmxModes[i]->GetDmxFootPrint())) {

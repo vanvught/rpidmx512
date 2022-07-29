@@ -58,17 +58,17 @@ SlushDmxParams::SlushDmxParams(SlushDmxParamsStore *pSlushDmxParamsStore): m_pSl
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
-bool SlushDmxParams::Load() {
+bool SlushDmxParams::Load(void) {
 	m_tSlushDmxParams.nSetList = 0;
 
 	ReadConfigFile configfile(SlushDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(SlushDmxParamsConst::FILE_NAME)) {
 		// There is a configuration file
-		if (m_pSlushDmxParamsStore != nullptr) {
+		if (m_pSlushDmxParamsStore != 0) {
 			m_pSlushDmxParamsStore->Update(&m_tSlushDmxParams);
 		}
-	} else if (m_pSlushDmxParamsStore != nullptr) {
+	} else if (m_pSlushDmxParamsStore != 0) {
 		m_pSlushDmxParamsStore->Copy(&m_tSlushDmxParams);
 	} else {
 		return false;
@@ -78,11 +78,11 @@ bool SlushDmxParams::Load() {
 }
 
 void SlushDmxParams::Load(const char *pBuffer, uint32_t nLength) {
-	assert(pBuffer != nullptr);
+	assert(pBuffer != 0);
 	assert(nLength != 0);
-	assert(m_pSlushDmxParamsStore != nullptr);
+	assert(m_pSlushDmxParamsStore != 0);
 
-	if (m_pSlushDmxParamsStore == nullptr) {
+	if (m_pSlushDmxParamsStore == 0) {
 		return;
 	}
 
@@ -108,7 +108,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_A, value16) == Sscan::OK) {
-		if (value16 <= dmx::UNIVERSE_SIZE) {
+		if (value16 <= Dmx::UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortA = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_A;
 		}
@@ -116,7 +116,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, SlushDmxParamsConst::DMX_START_ADDRESS_PORT_B, value16) == Sscan::OK) {
-		if (value16 <= dmx::UNIVERSE_SIZE) {
+		if (value16 <= Dmx::UNIVERSE_SIZE) {
 			m_tSlushDmxParams.nDmxStartAddressPortB = value16;
 			m_tSlushDmxParams.nSetList |= SlushDmxParamsMask::START_ADDRESS_PORT_B;
 		}
@@ -141,7 +141,7 @@ void SlushDmxParams::callbackFunction(const char *pLine) {
 }
 
 void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
-	assert(pSlushDmx != nullptr);
+	assert(pSlushDmx != 0);
 
 	if (isMaskSet(SlushDmxParamsMask::USE_SPI_BUSY)) {
 		pSlushDmx->SetUseSpiBusy(m_tSlushDmxParams.nUseSpiBusy == 1);
@@ -165,9 +165,9 @@ void SlushDmxParams::Set(SlushDmx *pSlushDmx) {
 }
 
 void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	assert(pBuffer != nullptr);
+	assert(pBuffer != 0);
 
-	if (ptSlushDmxParams != nullptr) {
+	if (ptSlushDmxParams != 0) {
 		memcpy(&m_tSlushDmxParams, ptSlushDmxParams, sizeof(struct TSlushDmxParams));
 	} else {
 		m_pSlushDmxParamsStore->Copy(&m_tSlushDmxParams);
@@ -187,15 +187,15 @@ void SlushDmxParams::Builder(const struct TSlushDmxParams *ptSlushDmxParams, cha
 }
 
 void SlushDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pSlushDmxParamsStore == nullptr) {
+	if (m_pSlushDmxParamsStore == 0) {
 		nSize = 0;
 		return;
 	}
 
-	Builder(nullptr, pBuffer, nLength, nSize);
+	Builder(0, pBuffer, nLength, nSize);
 }
 
-void SlushDmxParams::Dump() {
+void SlushDmxParams::Dump(void) {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, SlushDmxParamsConst::FILE_NAME);
 
@@ -222,8 +222,8 @@ void SlushDmxParams::Dump() {
 }
 
 void SlushDmxParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
+	assert(p != 0);
+	assert(s != 0);
 
 	(static_cast<SlushDmxParams*>(p))->callbackFunction(s);
 }

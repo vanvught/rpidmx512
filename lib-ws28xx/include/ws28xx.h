@@ -2,7 +2,7 @@
  * @file ws28xx.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,6 +39,8 @@ public:
 	WS28xx(PixelConfiguration& pixelConfiguration);
 	~WS28xx();
 
+	void Print();
+
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetPixel(uint32_t nIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
@@ -54,18 +56,17 @@ public:
 
 	void Update();
 	void Blackout();
-	void FullOn();
 
 	pixel::Type GetType() const {
-		return m_PixelConfiguration.GetType();
+		return m_Type;
 	}
 
 	uint32_t GetCount() const {
-		return m_PixelConfiguration.GetCount();
+		return m_nCount;
 	}
 
 	pixel::Map GetMap() const {
-		return m_PixelConfiguration.GetMap();
+		return m_Map;
 	}
 
 	static WS28xx *Get() {
@@ -77,8 +78,14 @@ private:
 	void SetColorWS28xx(uint32_t nOffset, uint8_t nValue);
 
 private:
-	PixelConfiguration m_PixelConfiguration;
+	pixel::Type m_Type { pixel::defaults::TYPE };
+	uint32_t m_nCount { pixel::defaults::COUNT };
+	pixel::Map m_Map { pixel::Map::UNDEFINED };
 	uint32_t m_nBufSize;
+	uint8_t m_nLowCode;
+	uint8_t m_nHighCode;
+	bool m_bIsRTZProtocol { false };
+	uint8_t m_nGlobalBrightness { 0xFF };
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };
 

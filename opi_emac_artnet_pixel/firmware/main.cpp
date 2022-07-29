@@ -30,10 +30,9 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "mdns.h"
-#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
+# include "mdns.h"
+# include "mdnsservices.h"
 #endif
 
 #include "displayudf.h"
@@ -50,7 +49,7 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "pixeltestpattern.h"
-#include "pixeldmxparams.h"
+#include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxstartstop.h"
 
@@ -75,15 +74,18 @@
 # include "storerdmdevice.h"
 #endif
 #include "storeremoteconfig.h"
-#include "storepixeldmx.h"
+#include "storews28xxdmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	WS28xx::Get()->Blackout();
-//	ArtNet4Node::Get()->Stop();
-}
+class Reboot final: public RebootHandler {
+public:
+	void Run() override {
+		ArtNet4Node::Get()->Stop();
+		WS28xx::Get()->Blackout();
+	}
+};
 
 extern "C" {
 
@@ -100,6 +102,7 @@ void notmain(void) {
 	fw.Print("Art-Net 4 " "\x1b[32m" "Pixel controller {1x 4 Universes}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
+	hw.SetRebootHandler(new Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -117,9 +120,6 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 Pixel");
 	mDns.Print();
-
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -130,7 +130,7 @@ void notmain(void) {
 	ArtNet4Node node;
 
 	if (artnetParams.Load()) {
-		artnetParams.Set();
+		artnetParams.Set(&node);
 		artnetParams.Dump();
 	}
 	
@@ -141,12 +141,12 @@ void notmain(void) {
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
+	StoreWS28xxDmx storeWS28xxDmx;
+	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-		pixelDmxParams.Dump();
+	if (ws28xxparms.Load()) {
+		ws28xxparms.Set(&pixelDmxConfiguration);
+		ws28xxparms.Dump();
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
@@ -157,7 +157,7 @@ void notmain(void) {
 	uint32_t nPortProtocolIndex = 0;
 
 	bool isPixelUniverseSet;
-	const auto nStartUniverse = pixelDmxParams.GetStartUniversePort(0, isPixelUniverseSet);
+	const auto nStartUniverse = ws28xxparms.GetStartUniversePort(0, isPixelUniverseSet);
 
 	for (uint32_t u = 0; u < nUniverses; u++) {
 		if (isPixelUniverseSet) {
@@ -166,7 +166,7 @@ void notmain(void) {
 		nPortProtocolIndex++;
 	}
 
-	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
 	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
@@ -284,7 +284,6 @@ void notmain(void) {
 		}
 #if defined (ENABLE_HTTPD)
 		mDns.Run();
-		httpDaemon.Run();
 #endif
 	}
 }

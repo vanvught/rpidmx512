@@ -2,7 +2,7 @@
  * @file ltcreader.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,14 @@
 
 class LtcReader {
 public:
+	LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
 	void Start();
 	void Run();
 
 private:
-	ltc::Type m_nTypePrevious { ltc::Type::INVALID };
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
+	uint8_t m_tTimeCodeTypePrevious;
 };
 
 #endif /* H3_LTC_READER_H_ */

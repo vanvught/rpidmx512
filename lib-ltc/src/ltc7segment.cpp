@@ -2,7 +2,7 @@
  * @file ltc7segment.cpp.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include "display.h"
 #include "display7segment.h"
 
-Ltc7segment *Ltc7segment::s_pThis;
+Ltc7segment *Ltc7segment::s_pThis = nullptr;
 
 static constexpr Display7SegmentMessage msg[4]  = {
 		Display7SegmentMessage::LTC_FILM,
@@ -45,9 +45,9 @@ Ltc7segment::Ltc7segment() {
 	s_pThis = this;
 }
 
-void Ltc7segment::Show(ltc::Type type) {
-	if (type < ltc::Type::UNKNOWN) {
-		Display::Get()->Status(msg[static_cast<uint32_t>(type)]);
+void Ltc7segment::Show(ltc::type tTimecodeType) {
+	if (tTimecodeType < ltc::type::UNKNOWN) {
+		Display::Get()->Status(msg[tTimecodeType]);
 	} else {
 		Display::Get()->Status(Display7SegmentMessage::LTC_WAITING);
 	}

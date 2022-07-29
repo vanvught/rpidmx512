@@ -60,10 +60,6 @@
 #include "storesparkfundmx.h"
 #include "storemotors.h"
 
-void Hardware::RebootHandler() {
-
-}
-
 extern "C" {
 
 void notmain(void) {

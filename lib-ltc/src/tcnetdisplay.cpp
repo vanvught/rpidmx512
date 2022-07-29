@@ -2,7 +2,7 @@
  * @file tcnetdisplay.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,9 @@
 
 #include "ltcdisplayrgb.h"
 
-namespace tcnet {
-namespace display {
 static constexpr char sFps[4][6] = { " T24", " T25", " T29", " T30" };
 
-void show() {
+void TCNetDisplay::Show() {
 	Display::Get()->SetCursorPos(6,3);
 
 	Display::Get()->PutChar('L');
@@ -50,5 +48,3 @@ void show() {
 	Info[6] = TCNet::GetLayerName(TCNet::Get()->GetLayer());
 	LtcDisplayRgb::Get()->ShowInfo(Info);
 }
-}  // namespace display
-}  // namespace tcnet

@@ -2,7 +2,7 @@
  * @file storeltc.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,16 +39,16 @@ public:
 		s_pThis = this;
 	}
 
-	void Update(const struct ltcparams::Params *pLtcParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, pLtcParams, sizeof(struct ltcparams::Params));
+	void Update(const struct TLtcParams *pLtcParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, pLtcParams, sizeof(struct TLtcParams));
 	}
 
-	void Copy(struct ltcparams::Params *pLtcParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::LTC, pLtcParams, sizeof(struct ltcparams::Params));
+	void Copy(struct TLtcParams *pLtcParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::LTC, pLtcParams, sizeof(struct TLtcParams));
 	}
 
 	void SaveSource(uint8_t nSource) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, __builtin_offsetof(struct ltcparams::Params, nSource), &nSource, sizeof(uint8_t), ltcparams::Mask::SOURCE);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::LTC, __builtin_offsetof(struct TLtcParams, tSource), &nSource, sizeof(uint8_t), LtcParamsMask::SOURCE);
 	}
 
 	static StoreLtc *Get() {

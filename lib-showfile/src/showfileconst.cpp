@@ -2,7 +2,7 @@
  * @file showfileconst.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,5 +26,5 @@
 #include "showfileconst.h"
 #include "showfile.h"
 
-const char ShowFileConst::FORMAT[static_cast<int>(showfile::Formats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH] = { "OLA", "dummy" };
-const char ShowFileConst::STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12] = { "Idle", "Running", "Stopped", "Ended" };
+const char ShowFileConst::FORMAT[static_cast<int>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH] = { "OLA", "dummy" };
+const char ShowFileConst::STATUS[static_cast<int>(ShowFileStatus::UNDEFINED)][12] = { "Idle", "Running", "Stopped", "Ended" };

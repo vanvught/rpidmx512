@@ -13,7 +13,7 @@ LIB_NAME :=$(patsubst lib-%,%,$(CURR_DIR))
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
-DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
+DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD
 
 INCLUDES:=-I./include -I../lib-hal/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
@@ -45,7 +45,7 @@ $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
  
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS+=-g -Wall -Werror -Wextra -Wpedantic 
+COPS+=-O2 -Wall -Werror -Wextra -Wpedantic 
 COPS+=-Wunused -Wsign-conversion #-Wconversion
 #COPS+=-fstack-usage
 

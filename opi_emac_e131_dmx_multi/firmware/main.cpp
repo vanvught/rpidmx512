@@ -24,16 +24,16 @@
  */
 
 #include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "mdns.h"
-#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
+# include "mdns.h"
+# include "mdnsservices.h"
 #endif
 
 #include "displayudf.h"
@@ -45,6 +45,7 @@
 #include "e131bridge.h"
 #include "e131params.h"
 #include "e131msgconst.h"
+#include "e131reboot.h"
 
 #include "dmxparams.h"
 #include "dmxsend.h"
@@ -78,11 +79,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	Dmx::Get()->Blackout();
-	E131Bridge::Get()->Stop();
-}
-
 extern "C" {
 
 void notmain(void) {
@@ -95,9 +91,10 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("sACN E1.31 DMX");
+	fw.Print("sACN E1.31 " "\x1b[32m" "DMX" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
+	hw.SetRebootHandler(new E131Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -107,19 +104,14 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+#if defined (ENABLE_HTTPD)
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-#if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 DMX");
-#endif
 	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
@@ -130,16 +122,34 @@ void notmain(void) {
 	E131Bridge bridge;
 
 	if (e131params.Load()) {
+		e131params.Set(&bridge);
 		e131params.Dump();
-		e131params.Set();
 	}
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		const auto portDirection = e131params.GetDirection(nPortIndex);
-		bool bIsSet;
-		const auto nUniverse = e131params.GetUniverse(nPortIndex, bIsSet);
-		bridge.SetUniverse(nPortIndex, portDirection, nUniverse);
+	uint16_t nUniverse;
+	bool bIsSet;
+
+	nUniverse = e131params.GetUniverse(0, bIsSet);
+	if (bIsSet) {
+		bridge.SetUniverse(0, e131params.GetDirection(0), nUniverse);
 	}
+
+	nUniverse = e131params.GetUniverse(1, bIsSet);
+	if (bIsSet) {
+		bridge.SetUniverse(1, e131params.GetDirection(1), nUniverse);
+	}
+#if defined (ORANGE_PI_ONE)
+	nUniverse = e131params.GetUniverse(2, bIsSet);
+	if (bIsSet) {
+		bridge.SetUniverse(2, e131params.GetDirection(2), nUniverse);
+	}
+#ifndef DO_NOT_USE_UART0
+	nUniverse = e131params.GetUniverse(3, bIsSet);
+	if (bIsSet) {
+		bridge.SetUniverse(3, e131params.GetDirection(3), nUniverse);
+	}
+#endif
+#endif
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -169,7 +179,7 @@ void notmain(void) {
 		bridge.SetE131Dmx(&dmxInput);
 	}
 
-	const auto nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
+	const auto nActivePorts = static_cast<uint32_t>(bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts());
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
@@ -177,7 +187,7 @@ void notmain(void) {
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %u", nActivePorts);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, H3_BOARD_NAME " DMX");
+	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero DMX");
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
@@ -192,8 +202,8 @@ void notmain(void) {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
 		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
@@ -212,9 +222,9 @@ void notmain(void) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
+	if(displayUdfParams.Load()) {
 		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
 	}
 
 	display.Show(&bridge);
@@ -225,8 +235,8 @@ void notmain(void) {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
 		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
 
 	while (spiFlashStore.Flash())
@@ -262,9 +272,8 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
-		mDns.Run();
 #if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
+		mDns.Run();
 #endif
 	}
 }

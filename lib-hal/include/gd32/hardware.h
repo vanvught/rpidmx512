@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@ class Hardware {
 public:
 	Hardware();
 
-	void SetLed(hardware::LedStatus ledStatus) {
-		switch (ledStatus) {
+	void SetLed(hardware::LedStatus tLedStatus) {
+		switch (tLedStatus) {
 			case hardware::LedStatus::OFF:
 				GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
 				break;
@@ -69,7 +69,7 @@ public:
 	}
 
 	uint32_t GetUpTime() {
-		return Millis() / 1000U;
+		return Millis() / 1000;
 	}
 
 	bool SetTime(const struct tm *pTime);
@@ -100,7 +100,7 @@ public:
 	}
 
 	const char *GetWebsiteUrl() {
-		return "https://gd32-dmx.org";
+		return "http://gd32-dmx.org";
 	}
 
 	void WatchdogInit() {
@@ -126,6 +126,10 @@ public:
 
 	bool Reboot();
 
+	void SetRebootHandler(RebootHandler *pRebootHandler) {
+		m_pRebootHandler = pRebootHandler;
+	}
+
 	float GetCoreTemperature() {
 		return gd32_adc_gettemp();
 	}
@@ -143,12 +147,10 @@ public:
 	}
 
 private:
-	void RebootHandler();
-
-private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
+	RebootHandler *m_pRebootHandler { nullptr };
 	bool m_bIsWatchdog { false };
 
 	static Hardware *s_pThis;

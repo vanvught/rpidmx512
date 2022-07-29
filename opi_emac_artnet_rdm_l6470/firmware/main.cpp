@@ -42,6 +42,7 @@
 #include "artnet4node.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
+#include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
 #include "rdmdeviceresponder.h"
@@ -87,9 +88,7 @@
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() {
-	ArtNet4Node::Get()->Stop();
-}
+using namespace artnet;
 
 extern "C" {
 
@@ -115,6 +114,7 @@ void notmain(void) {
 	console_putc('\n');
 
 	hw.SetLed(hardware::LedStatus::ON);
+	hw.SetRebootHandler(new ArtNetReboot);
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
@@ -133,6 +133,11 @@ void notmain(void) {
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
+
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
@@ -224,8 +229,8 @@ void notmain(void) {
 	node.SetLongName(aDescription);
 
 	if (artnetparams.Load()) {
+		artnetparams.Set(&node);
 		artnetparams.Dump();
-		artnetparams.Set();
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);

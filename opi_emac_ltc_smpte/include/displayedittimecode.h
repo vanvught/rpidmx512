@@ -2,7 +2,7 @@
  * @file displayedittimecode.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,11 +32,11 @@
 
 class DisplayEditTimeCode {
 public:
-	void HandleKey(int nKey, struct ltc::TimeCode& timecode, char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH]);
+	void HandleKey(int nKey, TLtcTimeCode& timecode, char m_aTimeCode[TC_CODE_MAX_LENGTH]);
 
 private:
-	void KeyUp(struct ltc::TimeCode& timecode);
-	void KeyDown(struct ltc::TimeCode& timecode);
+	void KeyUp(TLtcTimeCode &timecode);
+	void KeyDown(TLtcTimeCode &timecode);
 	void KeyLeft();
 	void KeyRight();
 

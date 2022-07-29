@@ -2,7 +2,7 @@
  * @file dmxmonitor.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "dmxmonitorstore.h"
 #include "lightset.h"
 
-#include "debug.h"
-
 namespace dmxmonitor {
 enum class Format {
 	HEX, PCT, DEC,
@@ -42,11 +40,7 @@ namespace hdmi {
 static constexpr char MAX_PORTS = 1;
 }  // namespace hdmi
 namespace text {
-#if !defined(LIGHTSET_PORTS)
- static constexpr char MAX_PORTS = 4;
-#else
- static constexpr char MAX_PORTS = LIGHTSET_PORTS;
-#endif
+static constexpr char MAX_PORTS = 4;
 }  // namespace text
 }  // namespace output
 }  // namespace dmxmonitor
@@ -56,25 +50,10 @@ public:
 	DMXMonitor();
 	~DMXMonitor() override {}
 
-	void Print() override {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
-
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
 
 	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
-
-	void Blackout(__attribute__((unused)) bool bBlackout) override {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
-
-	void FullOn() override {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
 
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 	uint16_t GetDmxStartAddress() override;
@@ -114,7 +93,7 @@ private:
 		DMX_DEFAULT_MAX_CHANNELS = 32,
 	};
 	bool m_bIsStarted[dmxmonitor::output::text::MAX_PORTS];
-	uint16_t m_nDmxStartAddress { lightset::dmx::START_ADDRESS_DEFAULT };
+	uint16_t m_nDmxStartAddress { lightset::Dmx::START_ADDRESS_DEFAULT };
 	uint16_t m_nMaxChannels { DMX_DEFAULT_MAX_CHANNELS };
 #else
 	bool m_bIsStarted { false };

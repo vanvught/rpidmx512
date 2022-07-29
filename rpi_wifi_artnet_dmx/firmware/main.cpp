@@ -52,7 +52,7 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "lightset.h"
-#include "pixeldmxparams.h"
+#include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 
 #if defined(ORANGE_PI)
@@ -61,7 +61,7 @@
 # include "storeartnet.h"
 # include "storerdmdevice.h"
 # include "storedmxsend.h"
-# include "storepixeldmx.h"
+# include "storews28xxdmx.h"
 #endif
 
 #include "software_version.h"
@@ -87,7 +87,7 @@ void notmain(void) {
 	SpiFlashStore spiFlashStore;
 
 	StoreDmxSend storeDmxSend;
-	StorePixelDmx storePixelDmx;
+	StoreWS28xxDmx storeWS28xxDmx;
 	StoreRDMDevice storeRdmDevice;
 
 	ArtNetParams artnetparams(StoreArtNet::Get());
@@ -147,7 +147,7 @@ void notmain(void) {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetparams.Set();
+	artnetparams.Set(&node);
 
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
@@ -169,14 +169,14 @@ void notmain(void) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
 #if defined (ORANGE_PI)
-		PixelDmxParams pixelDmxParams(new StorePixelDmx);
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 #else
-		PixelDmxParams pixelDmxParams;
+		WS28xxDmxParams ws28xxparms;
 #endif
 
-		if (pixelDmxParams.Load()) {
-			pixelDmxParams.Dump();
-			pixelDmxParams.Set(&pixelDmxConfiguration);
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
+			ws28xxparms.Dump();
 		}
 
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);

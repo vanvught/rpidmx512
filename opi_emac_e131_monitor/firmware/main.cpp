@@ -33,9 +33,6 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "ntpclient.h"
 
@@ -71,9 +68,6 @@
 
 #include "firmwareversion.h"
 #include "software_version.h"
-
-void Hardware::RebootHandler() {
-}
 
 extern "C" {
 
@@ -117,16 +111,16 @@ void notmain(void) {
 #endif
 	mDns.Print();
 
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
-
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
 	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 Real-time DMX Monitor");
@@ -147,8 +141,8 @@ void notmain(void) {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
 		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
@@ -163,7 +157,7 @@ void notmain(void) {
 
 	if (e131params.Load()) {
 		e131params.Dump();
-		e131params.Set();
+		e131params.Set(&bridge);
 	}
 
 	bool IsSet;
@@ -189,8 +183,8 @@ void notmain(void) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if(displayUdfParams.Load()) {
-		displayUdfParams.Dump();
 		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
 	}
 
 	display.Show(&bridge);
@@ -201,8 +195,8 @@ void notmain(void) {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
 		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
 
 	while (spiFlashStore.Flash())
@@ -229,9 +223,6 @@ void notmain(void) {
 		showSystime.Run();
 		display.Run();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 	}
 }
 

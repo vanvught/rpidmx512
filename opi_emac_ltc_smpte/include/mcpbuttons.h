@@ -2,7 +2,7 @@
  * @file mcpbuttons.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +44,10 @@ enum class RunStatus {
 
 class McpButtons {
 public:
-	McpButtons(ltc::Source tLtcReaderSource, bool bUseAltFunction, int32_t nSkipSeconds, bool bRotaryHalfStep);
+	McpButtons(ltc::source tLtcReaderSource, TLtcDisabledOutputs *ptLtcDisabledOutputs, bool bUseAltFunction, int32_t nSkipSeconds, bool bRotaryHalfStep);
 
 	bool Check();
-	bool Wait(ltc::Source& tLtcReaderSource, struct ltc::TimeCode& StartTimeCode, struct ltc::TimeCode& StopTimeCode);
+	bool Wait(ltc::source& tLtcReaderSource, TLtcTimeCode& StartTimeCode, TLtcTimeCode& StopTimeCode);
 
 	bool IsConnected() const {
 		return m_bIsConnected;
@@ -61,18 +61,18 @@ public:
 
 private:
 	uint32_t LedBlink(uint8_t nPortB);
-	void HandleActionLeft(ltc::Source& ltcSource);
-	void HandleActionRight(ltc::Source& ltcSource);
-	void HandleActionSelect(const ltc::Source& ltcSource);
-	void HandleRotary(uint8_t nInputAB, ltc::Source& ltcSource);
-	void UpdateDisplays(const ltc::Source ltcSource);
+	void HandleActionLeft(ltc::source& tLtcReaderSource);
+	void HandleActionRight(ltc::source& tLtcReaderSource);
+	void HandleActionSelect(const ltc::source& tLtcReaderSource);
+	void HandleRotary(uint8_t nInputAB, ltc::source& tLtcReaderSource);
+	void UpdateDisplays(const ltc::source& tLtcReaderSource);
 	// Running mode
 	void HandleRunActionSelect();
 	void SetRunState(RunStatus tRunState);
 	// Internal
-	void HandleInternalTimeCodeStart(struct ltc::TimeCode& timecode);
-	void HandleInternalTimeCodeStop(struct ltc::TimeCode& timecode);
-	void HandleInternalTimeCodeFps(struct ltc::TimeCode& timecode);
+	void HandleInternalTimeCodeStart(TLtcTimeCode &timecode);
+	void HandleInternalTimeCodeStop(TLtcTimeCode &timecode);
+	void HandleInternalTimeCodeFps(TLtcTimeCode &timecode);
 	void HandleInternalKeyEsc();
 
 private:
@@ -81,23 +81,24 @@ private:
 	DisplayEditFps displayEditFps;
 	enum {
 		SOURCE_SELECT, EDIT_TIMECODE_START, EDIT_TIMECODE_STOP, EDIT_FPS
-	} m_State { SOURCE_SELECT };
-	ltc::Source m_tLtcReaderSource;
+	} m_State {SOURCE_SELECT};
+	ltc::source m_tLtcReaderSource;
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bUseAltFunction;
 	int32_t m_nSkipSeconds;
-	bool m_bIsConnected { false };
-	uint8_t m_nPortAPrevious { 0 };
-	uint8_t m_nPortB { 0 };
-	uint32_t m_nMillisPrevious { 0 };
-	uint32_t m_nLedTicker { 0 };
-	uint32_t m_nLedTickerMax { 20 };	// 10 seconds
+	bool m_bIsConnected{false};
+	uint8_t m_nPortAPrevious{0};
+	uint8_t m_nPortB{0};
+	uint32_t m_nMillisPrevious{0};
+	uint32_t m_nLedTicker{0};
+	uint32_t m_nLedTickerMax{20};	// 10 seconds
 	RotaryEncoder m_RotaryEncoder;
-	uint8_t m_tRotaryDirection { RotaryEncoder::NONE };
-	RunStatus m_tRunStatus { RunStatus::IDLE };
-	uint32_t m_nSelectMillis { 0 };
-	int m_nKey { INPUT_KEY_NOT_DEFINED };
-	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
-	bool m_bRunGpsTimeClient { false };
+	uint8_t m_tRotaryDirection{RotaryEncoder::NONE};
+	RunStatus m_tRunStatus{RunStatus::IDLE};
+	uint32_t m_nSelectMillis{0};
+	int m_nKey{INPUT_KEY_NOT_DEFINED};
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	bool m_bRunGpsTimeClient{false};
 };
 
 #endif /* SOURCESELECT_H_ */

@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,8 +32,7 @@
 
 #include "ltcdisplayrgb.h"
 
-namespace ltcdisplayparams {
-struct Params {
+struct TLtcDisplayParams {
 	uint32_t nSetList;					//  4
 	uint8_t nMax7219Type;				//  5
 	uint8_t nMax7219Intensity;			//  6
@@ -49,9 +48,9 @@ struct Params {
 	uint8_t nRotaryFullStep;			// 46
 } __attribute__((packed));
 
-static_assert(sizeof(struct ltcdisplayparams::Params) <= 64, "struct ltcdisplayparams::Params is too large");
+static_assert(sizeof(struct TLtcDisplayParams) <= 64, "struct TLtcDisplayParams is too large");
 
-struct Mask {
+struct LtcDisplayParamsMask {
 	static constexpr auto MAX7219_TYPE = (1U << 0);
 	static constexpr auto MAX7219_INTENSITY = (1U << 1);
 	static constexpr auto WS28XX_TYPE = (1U << 2);
@@ -65,15 +64,14 @@ struct Mask {
 	static constexpr auto ROTARY_FULLSTEP = (1U << 10);
 	static constexpr auto DISLAYRGB_COLOUR_INDEX = (1U << 11);	// This must be the last one
 };
-}  // namespace ltcdisplayparams
 
 class LtcDisplayParamsStore {
 public:
 	virtual ~LtcDisplayParamsStore() {
 	}
 
-	virtual void Update(const struct ltcdisplayparams::Params *ptLtcDisplayParams)=0;
-	virtual void Copy(struct ltcdisplayparams::Params *ptLtcDisplayParams)=0;
+	virtual void Update(const struct TLtcDisplayParams *ptLtcDisplayParams)=0;
+	virtual void Copy(struct TLtcDisplayParams *ptLtcDisplayParams)=0;
 };
 
 class LtcDisplayParams {
@@ -83,15 +81,15 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct ltcdisplayparams::Params *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TLtcDisplayParams *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(LtcDisplayRgb *pLtcDisplayWS28xx);
 
 	void Dump();
 
-	ltc::display::max7219::Types GetMax7219Type() const {
-		return static_cast<ltc::display::max7219::Types>(m_tLtcDisplayParams.nMax7219Type);
+	TLtcDisplayMax7219Types GetMax7219Type() const {
+		return static_cast<TLtcDisplayMax7219Types>(m_tLtcDisplayParams.nMax7219Type);
 	}
 
 	uint8_t GetMax7219Intensity() const {
@@ -129,7 +127,7 @@ private:
 
 private:
 	LtcDisplayParamsStore *m_pLtcDisplayParamsStore;
-	struct ltcdisplayparams::Params m_tLtcDisplayParams;
+	struct TLtcDisplayParams m_tLtcDisplayParams;
 };
 
 #endif /* LTCDISPLAYPARAMS_H_ */

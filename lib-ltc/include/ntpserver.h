@@ -41,7 +41,7 @@ public:
 	void Start();
 	void Stop();
 
-	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode);
+	void SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode);
 
 	void Run();
 

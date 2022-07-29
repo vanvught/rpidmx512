@@ -1,8 +1,5 @@
-#DEFINES=NDEBUG
-
-EXTRA_INCLUDES=
-
+DEFINES=#NDEBUG
+EXTRA_INCLUDES=../lib-device/include ../lib-hal/include
 EXTRA_SRCDIR=
 
-include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

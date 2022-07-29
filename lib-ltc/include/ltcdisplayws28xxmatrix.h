@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayws28xxmatrix.h
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,13 +33,16 @@
 
 class LtcDisplayWS28xxMatrix final: public LtcDisplayRgbSet {
 public:
-	LtcDisplayWS28xxMatrix(pixel::Type type, pixel::Map map);
+	LtcDisplayWS28xxMatrix(pixel::Type tLedType, pixel::Map tRGBMapping);
+	~LtcDisplayWS28xxMatrix() override;
 
-	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) override;
-	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) override;
-	void ShowMessage(const char *pMessage , struct ltcdisplayrgb::Colours& colours) override;
-	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours& colours) override;
 	void Print() override;
+
+	void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
+	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
+	void ShowMessage(const char *pMessage , struct ltcdisplayrgb::Colours &tColours) override;
+
+	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours) override;
 
 private:
 	WS28xxDisplayMatrix *m_pWS28xxDisplayMatrix;

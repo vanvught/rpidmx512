@@ -31,12 +31,12 @@
 class KbLinux : public InputSet {
 public:
 	KbLinux();
-	~KbLinux() override;
+	~KbLinux();
 
-	bool Start() override;
+	bool Start();
 
-	bool IsAvailable() override;
-	int GetChar() override;
+	bool IsAvailable();
+	int GetChar();
 
 private:
 	int m_nBytesWaiting { 0 };

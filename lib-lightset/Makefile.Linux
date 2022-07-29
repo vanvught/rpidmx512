@@ -1,3 +1,5 @@
-#DEFINES=NDEBUG
-
+#
+DEFINES = NDEBUG
+#
+#
 include ../firmware-template-linux/lib/Rules.mk

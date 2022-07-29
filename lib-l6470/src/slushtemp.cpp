@@ -41,7 +41,7 @@
 #define THERMISTOR_REF_TEMP			298.15f
 #define THERMISTOR_REF_RESISTANCE	50000.0f
 
-uint16_t SlushBoard::getTempRaw() {
+uint16_t SlushBoard::getTempRaw(void) {
 	char buf[2] = { 0, 0 };
 
 	FUNC_PREFIX(i2c_set_address(MAX1164_I2C_ADDRESS));
@@ -51,7 +51,7 @@ uint16_t SlushBoard::getTempRaw() {
 	return static_cast<uint16_t>(buf[0] << 8 | buf[1]);
 }
 
-float SlushBoard::getTemprature() {
+float SlushBoard::getTemprature(void) {
 	return calcTemp(getTempRaw());
 }
 

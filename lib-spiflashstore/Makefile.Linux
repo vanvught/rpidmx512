@@ -1,5 +1,4 @@
-DEFINES =LIB_SPIFLASHSTORE
-#DEFINES+=NDEBUG
+DEFINES=LIB_SPIFLASHSTORE #NDEBUG
 
 include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

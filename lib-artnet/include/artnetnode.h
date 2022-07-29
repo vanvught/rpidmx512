@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@
 #define ARTNETNODE_H_
 
 #include <cstdint>
-#include <cassert>
 
 #include "artnet.h"
 #include "packets.h"
@@ -46,24 +45,7 @@
 #include "ledblink.h"
 
 namespace artnetnode {
-#if !defined(ARTNET_PAGE_SIZE)
- static constexpr uint32_t PAGE_SIZE = 4;
-#else
- static constexpr uint32_t PAGE_SIZE = ARTNET_PAGE_SIZE;
-#endif
-
-static_assert((PAGE_SIZE == 4) || (PAGE_SIZE == 1) , "ARTNET_PAGE_SIZE");
-
-#if !defined(LIGHTSET_PORTS)
-# error LIGHTSET_PORTS not defined
-#endif
-
-static constexpr uint32_t PAGES = ((LIGHTSET_PORTS + (PAGE_SIZE - 1)) / PAGE_SIZE);
-static constexpr auto MAX_PORTS = PAGE_SIZE * PAGES > LIGHTSET_PORTS ? LIGHTSET_PORTS : PAGE_SIZE * PAGES;
-
-enum class FailSafe : uint8_t {
-	LAST = 0x08, OFF= 0x09, ON = 0x0a, PLAYBACK = 0x0b, RECORD = 0x0c
-};
+static constexpr auto MAX_PORTS = ArtNet::PORTS * ArtNet::PAGES;
 
 /**
  * Table 3 – NodeReport Codes
@@ -97,6 +79,7 @@ struct State {
 	uint32_t ArtPollReplyCount;			///< ArtPollReply : NodeReport : decimal counter that increments every time the Node sends an ArtPollResponse.
 	uint32_t IPAddressDiagSend;			///< ArtPoll : Destination IPAddress for the ArtDiag
 	uint32_t IPAddressArtPoll;			///< ArtPoll : IPAddress for the ArtPoll package
+	uint32_t nNetworkDataLossTimeoutMillis;
 	uint32_t nArtSyncMillis;			///< Latest ArtSync received time
 	ReportCode reportCode;
 	Status status;
@@ -118,16 +101,17 @@ struct Node {
 	uint32_t IPAddressBroadcast;
 	uint32_t IPSubnetMask;
 	uint32_t IPAddressTimeCode;
-	uint8_t MACAddressLocal[artnet::MAC_SIZE];
-	uint8_t NetSwitch[artnetnode::PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
-	uint8_t SubSwitch[artnetnode::PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
-	char ShortName[artnet::SHORT_NAME_LENGTH];
-	char LongName[artnet::LONG_NAME_LENGTH];
+	uint8_t MACAddressLocal[ArtNet::MAC_SIZE];
+	uint8_t NetSwitch[ArtNet::PAGES];			///< Bits 14-8 of the 15 bit Port-Address are encoded into the bottom 7 bits of this field.
+	uint8_t SubSwitch[ArtNet::PAGES];			///< Bits 7-4 of the 15 bit Port-Address are encoded into the bottom 4 bits of this field.
+	uint8_t Oem[2];
+	char ShortName[ArtNet::SHORT_NAME_LENGTH];
+	char LongName[ArtNet::LONG_NAME_LENGTH];
 	uint8_t TalkToMe;								///< Behavior of Node
 	uint8_t Status1;
 	uint8_t Status2;
 	uint8_t Status3;
-	uint8_t DefaultUidResponder[6];					///< RDMnet & LLRP UID
+	uint8_t DefaultUidResponder[6];					///< //RDMnet & LLRP UID
 	bool bMapUniverse0;
 };
 
@@ -148,7 +132,6 @@ struct OutputPort {
 	Source sourceA;
 	Source sourceB;
 	lightset::MergeMode mergeMode;
-	bool isRdmEnabled;
 	artnet::PortProtocol protocol;	///< Art-Net 4
 	bool IsDataPending;				///< ArtDMX received and waiting for ArtSync
 	bool IsTransmitting;
@@ -163,8 +146,10 @@ struct InputPort {
 
 class ArtNetNode {
 public:
-	ArtNetNode();
-	~ArtNetNode();
+	ArtNetNode(uint8_t nPages = 1);
+	~ArtNetNode() {
+		Stop();
+	}
 
 	void Start();
 	void Stop();
@@ -172,49 +157,25 @@ public:
 	void Run();
 
 	uint8_t GetVersion() const {
-		return artnet::VERSION;
+		return ArtNet::VERSION;
 	}
 
-	void SetFailSafe(const artnetnode::FailSafe failsafe);
-
-	artnetnode::FailSafe GetFailSafe() {
-		const auto networkloss = (m_Node.Status3 & artnet::Status3::NETWORKLOSS_MASK);
-		switch (networkloss) {
-			case artnet::Status3::NETWORKLOSS_LAST_STATE:
-				return artnetnode::FailSafe::LAST;
-				break;
-			case artnet::Status3::NETWORKLOSS_OFF_STATE:
-				return artnetnode::FailSafe::OFF;
-				break;
-			case artnet::Status3::NETWORKLOSS_ON_STATE:
-				return artnetnode::FailSafe::ON;
-				break;
-			case artnet::Status3::NETWORKLOSS_PLAYBACK:
-				return artnetnode::FailSafe::PLAYBACK;
-				break;
-			default:
-				assert(0);
-				__builtin_unreachable();
-				break;
-		}
-
-		__builtin_unreachable();
-		return artnetnode::FailSafe::OFF;
+	uint8_t GetPages() const {
+		return m_nPages;
 	}
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
 	}
-
 	LightSet *GetOutput() const {
 		return m_pLightSet;
 	}
 
-	uint32_t GetActiveInputPorts() const {
+	uint8_t GetActiveInputPorts() const {
 		return m_State.nActiveInputPorts;
 	}
 
-	uint32_t GetActiveOutputPorts() const {
+	uint8_t GetActiveOutputPorts() const {
 		return m_State.nActiveOutputPorts;
 	}
 
@@ -230,57 +191,40 @@ public:
 		return m_Node.LongName;
 	}
 
-	int SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse);
+	int SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nAddress);
 
 	int SetUniverseSwitch(uint32_t nPortIndex, lightset::PortDir dir, uint8_t nAddress);
 	bool GetUniverseSwitch(uint32_t nPortIndex, uint8_t &nAddress,lightset::PortDir dir) const;
 
 	void SetNetSwitch(uint8_t nAddress, uint32_t nPage);
-
-	uint8_t GetNetSwitch(uint32_t nPage) const {
-		assert(nPage < artnetnode::PAGES);
-		return m_Node.NetSwitch[nPage];
-	}
+	uint8_t GetNetSwitch(uint32_t nPage) const;
 
 	void SetSubnetSwitch(uint8_t nAddress, uint32_t nPage);
+	uint8_t GetSubnetSwitch(uint32_t nPage) const;
 
-	uint8_t GetSubnetSwitch(uint32_t nPage) const {
-		assert(nPage < artnetnode::PAGES);
-		return m_Node.SubSwitch[nPage];
-	}
-
-	bool GetPortAddress(uint32_t nPortIndex, uint16_t& nAddress) const;
-	bool GetPortAddress(uint32_t nPortIndex, uint16_t& nAddress, lightset::PortDir dir) const;
-
-	bool GetOutputPort(const uint16_t nUniverse, uint32_t& nPortIndex) {
-		for (nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (!m_OutputPort[nPortIndex].genericPort.bIsEnabled) {
-				continue;
-			}
-			if ((m_OutputPort[nPortIndex].protocol == artnet::PortProtocol::ARTNET) && (nUniverse == m_OutputPort[nPortIndex].genericPort.nPortAddress)) {
-				return true;
-			}
-		}
-		return false;
-	}
+	bool GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, lightset::PortDir dir) const;
 
 	void SetMergeMode(uint32_t nPortIndex, lightset::MergeMode tMergeMode);
+	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const;
 
-	lightset::MergeMode GetMergeMode(uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_OutputPort[nPortIndex].mergeMode;
+	void SetPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol);
+	artnet::PortProtocol GetPortProtocol(uint32_t nPortIndex) const;
+
+	void SetOemValue(const uint8_t *);
+	const uint8_t *GetOemValue() const {
+		return m_Node.Oem;
 	}
 
-	void SetRmd(uint32_t nPortIndex, bool bEnable);
-	bool GetRdm(uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_OutputPort[nPortIndex].isRdmEnabled;
+	void SetNetworkTimeout(uint32_t nNetworkDataLossTimeout) {
+		m_State.nNetworkDataLossTimeoutMillis = nNetworkDataLossTimeout * 1000;
+	}
+	uint32_t GetNetworkTimeout() const {
+		return m_State.nNetworkDataLossTimeoutMillis / 1000;
 	}
 
 	void SetDisableMergeTimeout(bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
 	}
-
 	bool GetDisableMergeTimeout() const {
 		return m_State.bDisableMergeTimeout;
 	}
@@ -290,11 +234,9 @@ public:
 #endif
 
 	void SendTimeCode(const struct TArtNetTimeCode *);
-
 	void SetTimeCodeHandler(ArtNetTimeCode *pArtNetTimeCode) {
 		m_pArtNetTimeCode = pArtNetTimeCode;
 	}
-
 	void SetTimeCodeIp(uint32_t nDestinationIp);
 
 	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
@@ -314,13 +256,11 @@ public:
 	void SetArtNetDmx(ArtNetDmx *pArtNetDmx) {
 		m_pArtNetDmx = pArtNetDmx;
 	}
-
 	ArtNetDmx *GetArtNetDmx() const {
 		return m_pArtNetDmx;
 	}
 
 	void SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp);
-
 	uint32_t GetDestinationIp(uint32_t nPortIndex) const {
 		if (nPortIndex < artnetnode::MAX_PORTS) {
 			return m_InputPort[nPortIndex].nDestinationIp;
@@ -329,29 +269,16 @@ public:
 		return 0;
 	}
 
+	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler);
+
 	void SetRdmUID(const uint8_t *pUid, bool bSupportsLLRP = false);
 
 	/**
 	 * Art-Net 4
 	 */
-
-	void SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler) {
-		if (artnet::VERSION >= 4) {
-			m_pArtNet4Handler = pArtNet4Handler;
-		}
-	}
-
-	void SetPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol);
-
-	artnet::PortProtocol GetPortProtocol(uint32_t nPortIndex) const {
-		assert(nPortIndex < (artnetnode::MAX_PORTS));
-		return m_OutputPort[nPortIndex].protocol;
-	}
-
 	void SetMapUniverse0(bool bMapUniverse0 = false) {
 		m_Node.bMapUniverse0 = bMapUniverse0;
 	}
-
 	bool IsMapUniverse0() {
 		return m_Node.bMapUniverse0;
 	}
@@ -383,18 +310,18 @@ private:
 	void HandleDmxIn();
 	void HandleTrigger();
 
-	uint16_t MakePortAddress(uint16_t nUniverse, uint32_t nPage);
+	uint16_t MakePortAddress(uint16_t, uint32_t nPage = 0);
 
 	void UpdateMergeStatus(uint32_t nPortIndex);
 	void CheckMergeTimeouts(uint32_t nPortIndex);
 
-	void ProcessPollRelply(uint32_t nPortIndex, uint32_t nPortIndexStart, uint32_t& NumPortsLo);
 	void SendPollRelply(bool);
-	void SendTod(uint32_t nPortIndex);
+	void SendTod(uint32_t nPortIndex = 0);
 
 	void SetNetworkDataLossCondition();
 
 private:
+	uint8_t m_nPages;
 	int32_t m_nHandle { -1 };
 
 	LightSet *m_pLightSet { nullptr };
@@ -411,7 +338,6 @@ private:
 
 	TArtNetPacket m_ArtNetPacket;
 	TArtPollReply m_PollReply;
-	TArtDmx m_ArtDmx;
 #if defined ( ENABLE_SENDDIAG )
 	TArtDiagData m_DiagData;
 #endif
@@ -419,10 +345,12 @@ private:
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
 
+	TOpCodes m_tOpCodePrevious;
+
 	bool m_IsRdmResponder { false };
 
 	char m_aSysName[16];
-	char m_aDefaultNodeLongName[artnet::LONG_NAME_LENGTH];
+	char m_aDefaultNodeLongName[ArtNet::LONG_NAME_LENGTH];
 
 	artnetnode::State m_State;
 	artnetnode::OutputPort m_OutputPort[artnetnode::MAX_PORTS];

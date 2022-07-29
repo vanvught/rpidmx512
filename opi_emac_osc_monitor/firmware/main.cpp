@@ -39,9 +39,6 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "display.h"
 #include "displayhandler.h"
@@ -63,9 +60,6 @@
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
-void Hardware::RebootHandler() {
-}
-
 extern "C" {
 
 void notmain(void) {
@@ -75,7 +69,6 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -105,6 +98,11 @@ void notmain(void) {
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
+
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	StoreOscServer storeOscServer;
@@ -125,10 +123,6 @@ void notmain(void) {
 #endif
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=monitor");
 	mDns.Print();
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
 
 	DMXMonitor monitor;
 	// There is support for HEX output only

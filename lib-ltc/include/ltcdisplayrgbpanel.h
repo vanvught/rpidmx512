@@ -44,8 +44,8 @@ public:
 	void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons) override;
 	void ShowMessage(const char *pMessage , struct ltcdisplayrgb::Colours &tColours) override;
 	//
-	void ShowFPS(ltc::Type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours) override;
-	void ShowSource(ltc::Source tSource, struct ltcdisplayrgb::Colours &tColours) override;
+	void ShowFPS(ltc::type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours) override;
+	void ShowSource(ltc::source tSource, struct ltcdisplayrgb::Colours &tColours) override;
 	void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours) override;
 	//
 	void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours) override;

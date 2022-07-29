@@ -39,6 +39,8 @@
 
 #include "hardware.h"
 
+#include "debug.h"
+
 class Display {
 public:
 	Display();
@@ -49,13 +51,6 @@ public:
 	void Cls(void);
 	void SetCursorPos(uint32_t nCol, uint32_t nRow);
 	void PutChar(int c);
-
-	void PutString(const char *p) {
-		for (uint32_t i = 0; *p != '\0'; i++) {
-			PutChar(static_cast<int>(*p));
-			p++;
-		}
-	}
 
 	void ClearLine(uint32_t nLine) {
 		assert(nLine > 0);

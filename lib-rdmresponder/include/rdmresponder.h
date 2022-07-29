@@ -37,10 +37,6 @@
 
 #include "lightset.h"
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# error "Cannot be both RDMNet Device and RDM Responder"
-#endif
-
 namespace rdm {
 namespace responder {
 static constexpr auto NO_DATA = 0;
@@ -60,7 +56,7 @@ public:
 		s_pThis = this;
 	}
 
-	~RDMResponder() override {}
+	~RDMResponder() {}
 
 	void Init() {
 		RDMDeviceResponder::Init();

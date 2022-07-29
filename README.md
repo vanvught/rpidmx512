@@ -76,12 +76,7 @@ U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3
 
 > Special thanks to [@trebisky](https://github.com/trebisky/orangepi) (Thomas J. Trebisky), who helped me in understanding the H3 SoC.
 
-# GigaDevice GD32F Open Source
-## DMX512 / RDM / Art-Net 4 / sACN E1.31 / OSC / Pixel controller / RDMNet LLRP Only
-
-[https://www.gd32-dmx.org](https://www.gd32-dmx.org)
-
-# Mac OS X / Linux [debugging purpose only]
+#  Mac OS X / Linux [debugging purpose only]
 ## Art-Net 4 / sACN E1.31 / OSC
 - **Art-Net 4** Real-time DMX Monitor
 - sACN **E.131** Real-time DMX Monitor
@@ -108,8 +103,6 @@ The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 
 > Special thanks to [@rsta2](https://github.com/rsta2/circle) (Rene Stange), who helped me get the multi-core support working. 
 
-## Remote Configuration Manager
-[https://github.com/vanvught/Remote-Config-UI/releases](https://github.com/vanvught/Remote-Config-UI/releases)<br>
-<img alt="GitHub release" src="https://img.shields.io/github/v/release/vanvught/Remote-Config-UI">
+<br>
 
 [PayPal.Me Donate](https://paypal.me/AvanVught?locale.x=nl_NL)

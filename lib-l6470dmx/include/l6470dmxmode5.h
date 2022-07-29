@@ -60,8 +60,8 @@ private:
 	ModeParams *m_pModeParams;
 	L6470 *m_pL6470;
 	float m_fSteps;
-	uint16_t m_nPreviousData{0};
-	bool m_bWasBusy{false};
+	uint16_t m_nPreviousData;
+	bool m_bWasBusy;
 };
 
 #endif /* L6470DMXMODE5_H_ */

@@ -31,10 +31,9 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "mdns.h"
-#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
+# include "mdns.h"
+# include "mdnsservices.h"
 #endif
 
 #include "displayudf.h"
@@ -46,6 +45,7 @@
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnetdiscovery.h"
+#include "artnetreboot.h"
 #include "artnet/displayudfhandler.h"
 
 #include "dmxparams.h"
@@ -70,11 +70,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	Dmx::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
-}
-
 extern "C" {
 
 void notmain(void) {
@@ -87,9 +82,10 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("Art-Net 4 Node DMX/RDM");
+	fw.Print("Art-Net 4 Node " "\x1b[32m" "DMX/RDM controller {1 Universe}" "\x1b[37m");
 
 	hw.SetLed(hardware::LedStatus::ON);
+	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -99,19 +95,14 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+#if defined (ENABLE_HTTPD)
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-#if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 DMX/RDM");
-#endif
 	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -122,8 +113,8 @@ void notmain(void) {
 	ArtNet4Node node;
 
 	if (artnetParams.Load()) {
+		artnetParams.Set(&node);
 		artnetParams.Dump();
-		artnetParams.Set();
 	}
 
 	DisplayUdfHandler displayUdfHandler;
@@ -132,8 +123,7 @@ void notmain(void) {
 	node.SetArtNetStore(&storeArtNet);
 
 	bool isSet;
-	const auto direction = artnetParams.GetDirection(0);
-	node.SetUniverseSwitch(0, direction, artnetParams.GetUniverse(0, isSet));
+	node.SetUniverseSwitch(0, artnetParams.GetDirection(0), artnetParams.GetUniverse(0, isSet));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -173,8 +163,8 @@ void notmain(void) {
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if (rdmDeviceParams.Load()) {
-				rdmDeviceParams.Dump();
 				rdmDeviceParams.Set(pDiscovery);
+				rdmDeviceParams.Dump();
 			}
 
 			pDiscovery->Init();
@@ -190,9 +180,9 @@ void notmain(void) {
 
 	node.Print();
 
-	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
+	const auto nActivePorts = static_cast<uint32_t>(node.GetActiveInputPorts() + node.GetActiveOutputPorts());
 
-	display.SetTitle("Art-Net 4 %s", direction == lightset::PortDir::INPUT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
+	display.SetTitle("Art-Net 4 %s", artnetParams.GetDirection(0) == lightset::PortDir::INPUT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
 	display.Set(2, displayudf::Labels::NODE_NAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
@@ -203,8 +193,8 @@ void notmain(void) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
 		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
 	}
 
 	display.Show(&node);
@@ -215,8 +205,8 @@ void notmain(void) {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
 		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
 	}
 
 	while (spiFlashStore.Flash())
@@ -241,9 +231,8 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
-		mDns.Run();
 #if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
+		mDns.Run();
 #endif
 	}
 }

@@ -35,7 +35,7 @@
 
 #include "debug.h"
 
-#if defined (SPI_LCD_240X320)
+#if defined (CONFIG_SPI_LCD_240X320)
 static constexpr sFONT *s_pFont = &Font16x24;
 #else
 static constexpr sFONT *s_pFont = &Font12x12;
@@ -57,13 +57,13 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()) {
 	FUNC_PREFIX(spi_set_speed_hz(20000000));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE2));
 
-#if defined (SPI_LCD_RST_PIN)
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_RST_PIN, GPIO_FSEL_OUTPUT));
+#if defined (DEV_RST_PIN)
+	FUNC_PREFIX(gpio_fsel(DEV_RST_PIN, GPIO_FSEL_OUTPUT));
 #endif
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_DC_PIN, GPIO_FSEL_OUTPUT));
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_BL_PIN, GPIO_FSEL_OUTPUT));
-#if defined(SPI_LCD_HAVE_CS_PIN)
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_CS_PIN, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(DEV_DC_PIN, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(DEV_BL_PIN, GPIO_FSEL_OUTPUT));
+#if defined(DEV_HAVE_CS)
+	FUNC_PREFIX(gpio_fsel(DEV_CS_PIN, GPIO_FSEL_OUTPUT));
 #endif
 
 	SpiLcd.SetBackLight(1);

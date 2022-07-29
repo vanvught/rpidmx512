@@ -127,7 +127,7 @@ void TLC59711DmxParams::callbackFunction(const char* pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= dmx::UNIVERSE_SIZE)) {
+		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
 			m_tTLC59711Params.nDmxStartAddress = value16;
 			m_tTLC59711Params.nSetList |= TLC59711DmxParamsMask::START_ADDRESS;
 		}

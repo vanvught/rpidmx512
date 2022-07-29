@@ -32,8 +32,6 @@
 # include "board_gd32f207c_eval.h"
 #elif defined (BOARD_GD32F407R)
 # include "board_gd32f407r.h"
-#elif defined (BOARD_GD32F450VI)
-# include "board_gd32f450vi.h"
 #else
 # error Board is not supported
 #endif

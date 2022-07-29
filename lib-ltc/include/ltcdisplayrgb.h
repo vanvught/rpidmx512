@@ -66,26 +66,26 @@ struct Defaults {
 
 class LtcDisplayRgb {
 public:
-	LtcDisplayRgb(ltcdisplayrgb::Type type, ltcdisplayrgb::WS28xxType WS28xxType);
+	LtcDisplayRgb(ltcdisplayrgb::Type tRgbType, ltcdisplayrgb::WS28xxType tWS28xxType);
 	~LtcDisplayRgb();
 
-	void SetMapping(pixel::Map map) {
-		m_tMapping = map;
+	void SetMapping(pixel::Map tMapping) {
+		m_tMapping = tMapping;
 	}
 
 	void SetMaster(uint8_t nValue) {
 		m_nMaster = nValue;
 	}
 
-	void SetColonBlinkMode(ltcdisplayrgb::ColonBlinkMode colonBlinkMode) {
-		m_tColonBlinkMode = colonBlinkMode	;
+	void SetColonBlinkMode(ltcdisplayrgb::ColonBlinkMode tColonBlinkMode) {
+		m_tColonBlinkMode = tColonBlinkMode;
 	}
 
-	void SetColour(uint32_t nRGB, ltcdisplayrgb::ColourIndex colourIndex) {
-		if (colourIndex >= ltcdisplayrgb::ColourIndex::LAST) {
+	void SetColour(uint32_t nRGB, ltcdisplayrgb::ColourIndex tIndex) {
+		if (tIndex >= ltcdisplayrgb::ColourIndex::LAST) {
 			return;
 		}
-		m_aColour[static_cast<uint32_t>(colourIndex)] = nRGB;
+		m_aColour[static_cast<uint32_t>(tIndex)] = nRGB;
 	}
 
 	void Init(pixel::Type tLedType = pixel::Type::WS2812B);
@@ -95,8 +95,8 @@ public:
 
 	void Show(const char *pTimecode);
 	void ShowSysTime(const char *pSystemTime);
-	void ShowFPS(ltc::Type tTimeCodeType);
-	void ShowSource(ltc::Source source);
+	void ShowFPS(ltc::type tTimeCodeType);
+	void ShowSource(ltc::source tSource);
 	void ShowInfo(const char *pInfo);
 
 	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
@@ -106,10 +106,10 @@ public:
 	}
 
 	void SetMessage(const char *pMessage, uint32_t nSize);
-	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, ltcdisplayrgb::ColourIndex colourIndex);
+	void SetRGB(uint8_t nRed, uint8_t nGreen, uint8_t nBlue, ltcdisplayrgb::ColourIndex tIndex);
 
 private:
-	void SetRGB(uint32_t nRGB, ltcdisplayrgb::ColourIndex colourIndex);
+	void SetRGB(uint32_t nRGB, ltcdisplayrgb::ColourIndex tIndex);
 	void SetRGB(const char *pHexString);
 	uint32_t hexadecimalToDecimal(const char *pHexValue, uint32_t nLength = 6);
 	void ShowMessage();
@@ -119,15 +119,15 @@ private:
 	ltcdisplayrgb::WS28xxType m_tDisplayRgbWS28xxType;
 	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
 	int32_t m_nHandle { -1 };
+	char m_Buffer[64];
 	pixel::Map m_tMapping { pixel::Map::UNDEFINED };
 	pixel::Type m_tLedType { pixel::Type::UNDEFINED };
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
 	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };
+	bool m_bShowMsg { false };
+	char m_aMessage[ltcdisplayrgb::MAX_MESSAGE_SIZE];
 	uint32_t m_nMsgTimer { 0 };
 	uint32_t m_nColonBlinkMillis { 0 };
-	bool m_bShowMsg { false };
-	char m_Buffer[64];
-	char m_aMessage[ltcdisplayrgb::MAX_MESSAGE_SIZE];
 	char m_nSecondsPrevious { 60 };
 	ltcdisplayrgb::ColonBlinkMode m_tColonBlinkMode { ltcdisplayrgb::Defaults::COLON_BLINK_MODE };
 

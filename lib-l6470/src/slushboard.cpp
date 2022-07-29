@@ -57,7 +57,7 @@
 #define MCP23017_OLATB		0x15	///< OUTPUT LATCH REGISTER (OLATB), 1 = Latch High, 0 = Latch Low (default) Reading Returns Latch State, Not Port Value
 
 
-SlushBoard::SlushBoard() {
+SlushBoard::SlushBoard(void) {
 	FUNC_PREFIX(gpio_fsel(SLUSH_L6470_RESET, GPIO_FSEL_OUTPUT));
 	FUNC_PREFIX(gpio_set(SLUSH_L6470_RESET));
 
@@ -88,11 +88,11 @@ SlushBoard::SlushBoard() {
 	InitI2c();
 }
 
-SlushBoard::~SlushBoard() {
+SlushBoard::~SlushBoard(void) {
 
 }
 
-void SlushBoard::InitSpi() {
+void SlushBoard::InitSpi(void) {
 	FUNC_PREFIX(spi_begin());
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
@@ -100,7 +100,7 @@ void SlushBoard::InitSpi() {
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 }
 
-void SlushBoard::InitI2c() {
+void SlushBoard::InitI2c(void) {
 	char data;
 
 	FUNC_PREFIX(i2c_begin());
@@ -233,7 +233,7 @@ uint8_t SlushBoard::IOLev(TSlushIOPorts nPort, TSlushIOPins nPinNumber) {
 	assert(nPinNumber <= SLUSH_IO_PIN7);
 
 	uint8_t data = IORead(nPort);
-	auto pin = static_cast<uint8_t>(1U << nPinNumber);
+	uint8_t pin = static_cast<uint8_t>(1U << nPinNumber);
 
 	if ((data & pin) == pin) {
 		return 1;

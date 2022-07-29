@@ -81,12 +81,11 @@ static constexpr auto OUTPUT_PORTS = 1;
 
 class PixelType {
 public:
-	static const char *GetType(pixel::Type type);
+	static const char *GetType(pixel::Type tType);
 	static pixel::Type GetType(const char *pString);
 
-	static const char *GetMap(pixel::Map map);
+	static const char *GetMap(pixel::Map tMap);
 	static pixel::Map GetMap(const char *pString);
-	static pixel::Map GetMap(pixel::Type type);
 
 	static float ConvertTxH(uint8_t nCode);
 	static uint8_t ConvertTxH(float fTxH);

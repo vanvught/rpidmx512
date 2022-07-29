@@ -160,7 +160,7 @@ private:
 
 private:
 	NetworkParamsStore *m_pNetworkParamsStore;
-	TNetworkParams m_tNetworkParams;
+	static TNetworkParams m_tNetworkParams;
 };
 
 #endif /* NETWORKPARAMS_H_ */

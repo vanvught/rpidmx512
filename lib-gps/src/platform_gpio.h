@@ -57,9 +57,9 @@
 #  error Platform is not supported
 # endif
 #else
-	void platform_gpio_init() {}
+	void platform_gpio_init(void) {}
 
-	bool platform_is_pps() {
+	bool platform_is_pps(void) {
 		return false;
 	}
 #endif

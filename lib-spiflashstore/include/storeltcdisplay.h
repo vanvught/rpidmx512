@@ -34,12 +34,12 @@ class StoreLtcDisplay final: public LtcDisplayParamsStore {
 public:
 	StoreLtcDisplay();
 
-	void Update(const struct ltcdisplayparams::Params *ptLtcDisplayParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
+	void Update(const struct TLtcDisplayParams *ptLtcDisplayParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
 	}
 
-	void Copy(struct ltcdisplayparams::Params *ptLtcDisplayParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
+	void Copy(struct TLtcDisplayParams *ptLtcDisplayParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct TLtcDisplayParams));
 	}
 
 	static StoreLtcDisplay *Get() {

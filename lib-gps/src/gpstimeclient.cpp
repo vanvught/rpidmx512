@@ -54,12 +54,12 @@ void GPSTimeClient::Run() {
 	if (s_Status == Status::WAITING_TIMEOUT) {
 		const auto nMillis = Hardware::Get()->Millis();
 
-		if (GPS::GetStatus() == gps::Status::VALID) {
+		if (GPS::GetStatus() == GPSStatus::VALID) {
 			m_nWaitPPSMillis = nMillis;
 
 			s_Status = Status::WAITING_PPS;
 
-			DEBUG_PUTS("(GPS::GetStatus() == gps::Status::VALID)");
+			DEBUG_PUTS("(GPS::GetStatus() == GPSStatus::VALID)");
 			return;
 		}
 

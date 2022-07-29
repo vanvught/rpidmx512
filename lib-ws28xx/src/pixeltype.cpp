@@ -48,9 +48,9 @@ const char PixelType::TYPES[static_cast<uint32_t>(Type::UNDEFINED)][TYPES_MAX_NA
 
 const char PixelType::MAPS[static_cast<uint32_t>(Map::UNDEFINED)][4] = { "RGB", "RBG", "GRB", "GBR", "BRG", "BGR"};
 
-const char *PixelType::GetType(Type type) {
-	if (type < Type::UNDEFINED) {
-		return TYPES[static_cast<uint32_t>(type)];
+const char *PixelType::GetType(Type tType) {
+	if (tType < Type::UNDEFINED) {
+		return TYPES[static_cast<uint32_t>(tType)];
 	}
 
 	return "Unknown";
@@ -80,28 +80,12 @@ Map PixelType::GetMap(const char *pString) {
 	return Map::UNDEFINED;
 }
 
-const char *PixelType::GetMap(Map map) {
-	if (map < Map::UNDEFINED) {
-		return MAPS[static_cast<uint32_t>(map)];
+const char *PixelType::GetMap(Map tRGBMapping) {
+	if (tRGBMapping < Map::UNDEFINED) {
+		return MAPS[static_cast<uint32_t>(tRGBMapping)];
 	}
 
 	return "Undefined";
-}
-
-Map PixelType::GetMap(Type type) {
-	if ((type == Type::WS2811) || (type == Type::UCS2903)) {
-		return Map::RGB;
-	}
-
-	if (type == Type::UCS1903) {
-		return Map::BRG;
-	}
-
-	if (type == Type::CS8812) {
-		return Map::BGR;
-	}
-
-	return Map::GRB;
 }
 
 static constexpr auto F_INTERVAL = 0.15625f;
@@ -134,7 +118,6 @@ float PixelType::ConvertTxH(uint8_t nCode) {
 		break;
 	}
 
-	assert(0);
 	__builtin_unreachable();
 }
 

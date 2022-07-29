@@ -24,49 +24,49 @@
  */
 
 #include <cstdint>
+#include <cassert>
 
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
+#include "storenetwork.h"
 #include "ledblink.h"
+#include "display.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
-#include "display.h"
-#include "displayhandler.h"
 
 #include "oscserver.h"
 #include "oscserverparams.h"
 #include "oscservermsgconst.h"
 
+// Addressable led
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
-#include "pixeltestpattern.h"
-#include "pixeldmxparams.h"
+#include "lightset.h"
+#include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "ws28xxdmxstartstop.h"
 #include "handler.h"
-
-#include "remoteconfig.h"
-#include "remoteconfigparams.h"
+#include "storews28xxdmx.h"
+// PWM Led
+#include "tlc59711dmxparams.h"
+#include "tlc59711dmx.h"
+#include "handlertlc59711.h"
+#include "storetlc59711.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
-#include "storenetwork.h"
 #include "storeoscserver.h"
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
-#include "storepixeldmx.h"
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	WS28xx::Get()->Blackout();
-}
+#include "displayhandler.h"
 
 extern "C" {
 
@@ -76,24 +76,25 @@ void notmain(void) {
 	LedBlink lb;
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print("OSC Server " "\x1b[32m" "Pixel controller {1x Universe}" "\x1b[37m");
-	
-	hw.SetLed(hardware::LedStatus::ON);
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
 	StoreOscServer storeOscServer;
-	OSCServerParams params(&storeOscServer);
+	StoreWS28xxDmx storeWS28xxDmx;
+	StoreTLC59711 storeTLC59711;
 
+	OSCServerParams params(&storeOscServer);
 	OscServer server;
 
 	if (params.Load()) {
 		params.Dump();
 		params.Set(&server);
 	}
+
+	fw.Print();
+
+	hw.SetLed(hardware::LedStatus::ON);
+	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
@@ -102,8 +103,8 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
+
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=server");
@@ -112,59 +113,80 @@ void notmain(void) {
 #endif
 	mDns.Print();
 
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
-
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	PixelDmxConfiguration pixelDmxConfiguration;
+	LightSet *pSpi = nullptr;
+	OscServerHandler *pHandler;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
+	bool isLedTypeSet = false;
 
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-		pixelDmxParams.Dump();
+	TLC59711DmxParams pwmledparms(&storeTLC59711);
+
+	if (pwmledparms.Load()) {
+		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
+			auto *pTLC59711Dmx = new TLC59711Dmx;
+			assert(pTLC59711Dmx != nullptr);
+			pwmledparms.Dump();
+			pwmledparms.Set(pTLC59711Dmx);
+			pSpi = pTLC59711Dmx;
+
+			pHandler = new HandlerTLC59711(pTLC59711Dmx);
+			assert(pHandler != nullptr);
+
+			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+		}
 	}
 
-	/*
-	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
-	 * Groups = Led count / Grouping count
-	 *
-	 * Channels per Pixel * (Led count / Grouping count) <= 512
-	 * Channels per Pixel * Led count <= 512 * Grouping count
-	 *
-	 * Led count <= (512 * Grouping count) / Channels per Pixel
-	 */
+	if (!isLedTypeSet) {
+		assert(pSpi == nullptr);
 
-	uint32_t nLedsPerPixel;
-	pixeldmxconfiguration::PortInfo portInfo;
+		PixelDmxConfiguration pixelDmxConfiguration;
 
-	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo);
+		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
 
-	if (pixelDmxConfiguration.GetUniverses() > 1) {
-		const auto nCount = (512U * pixelDmxConfiguration.GetGroupingCount()) / nLedsPerPixel;
-		pixelDmxConfiguration.SetCount(nCount);
+		if (ws28xxparms.Load()) {
+			ws28xxparms.Set(&pixelDmxConfiguration);
+			ws28xxparms.Dump();
+		}
+
+		// For the time being, just 1 Universe
+		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
+			if (pixelDmxConfiguration.GetCount() > 128) {
+				pixelDmxConfiguration.SetCount(128);
+			}
+		} else {
+			if (pixelDmxConfiguration.GetCount() > 170) {
+				pixelDmxConfiguration.SetCount(170);
+			}
+		}
+
+		auto *pPixelDmx = new WS28xxDmx(pixelDmxConfiguration);
+		assert(pPixelDmx != nullptr);
+
+		pPixelDmx->SetPixelDmxHandler(new PixelDmxStartStop);
+		pSpi = pPixelDmx;
+
+		display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
+
+		pHandler = new Handler(pPixelDmx);
+		assert(pHandler != nullptr);
 	}
 
-	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetWS28xxDmxStore(&storePixelDmx);
-
-	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern, 1);
-
-	PixelDmxStartStop pixelDmxStartStop;
-	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
-
-	display.Printf(7, "%s:%d G%d", PixelType::GetType(pixelDmxConfiguration.GetType()), pixelDmxConfiguration.GetCount(), pixelDmxConfiguration.GetGroupingCount());
-
-	server.SetOutput(&pixelDmx);
-	server.SetOscServerHandler(new Handler(&pixelDmx));
-	
+	server.SetOutput(pSpi);
+	server.SetOscServerHandler(pHandler);
 	server.Print();
-	pixelDmx.Print();
+
+	pSpi->Print();
+
+	RemoteConfig remoteConfig(remoteconfig::Node::OSC,  remoteconfig::Output::PIXEL, 1);
+
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if(remoteConfigParams.Load()) {
+		remoteConfigParams.Set(&remoteConfig);
+		remoteConfigParams.Dump();
+	}
 
 	for (uint8_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -178,24 +200,16 @@ void notmain(void) {
 	display.Printf(4, "In: %d", server.GetPortIncoming());
 	display.Printf(5, "Out: %d", server.GetPortOutgoing());
 
-	RemoteConfig remoteConfig(remoteconfig::Node::OSC,  remoteconfig::Output::PIXEL, 1);
-
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
-
-	while (spiFlashStore.Flash())
-		;
-
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	server.Start();
 
 	display.TextStatus(OscServerMsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
+
+	while (spiFlashStore.Flash())
+		;
+
+	lb.SetMode(ledblink::Mode::NORMAL);
 
 	hw.WatchdogInit();
 
@@ -205,15 +219,9 @@ void notmain(void) {
 		server.Run();
 		remoteConfig.Run();
 		spiFlashStore.Flash();
-		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
-			pixelTestPattern.Run();
-		}
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
-		display.Run();
 		lb.Run();
+		display.Run();
 	}
 }
 }

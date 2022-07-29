@@ -2,7 +2,7 @@
  * @file hal_uart.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,14 +57,18 @@ extern "C" {
 
 #include <stdint.h>
 
-void uart_begin(const uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
-void uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate);
-void uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length);
-void uart_transmit_string(const uint32_t uart_base, const char *data);
+inline static void uart_begin(__attribute__((unused)) const uint32_t uart_base, __attribute__((unused)) uint32_t baudrate, __attribute__((unused)) uint32_t bits, __attribute__((unused)) uint32_t parity, __attribute__((unused)) uint32_t stop_bits) {}
+inline static void uart_set_baudrate(__attribute__((unused)) const uint32_t uart_base, __attribute__((unused)) uint32_t baudrate) {}
+inline static void uart_transmit(__attribute__((unused)) const uint32_t uart_base, __attribute__((unused)) const uint8_t *data, __attribute__((unused)) uint32_t length) {}
+inline static void uart_transmit_string(__attribute__((unused)) const uint32_t uart_base, __attribute__((unused)) const char *data) {}
 
-uint32_t uart_get_rx_fifo_level(const uint32_t uart_base);
-uint8_t uart_get_rx_data(const uint32_t uart_base);
-uint32_t uart_get_rx(const uint32_t uart_base, char *pData, uint32_t nLength);
+static inline uint32_t uart_get_rx_fifo_level(__attribute__((unused)) const uint32_t uart_base) {
+	return 0;
+}
+
+static inline uint8_t uart_get_rx_data(__attribute__((unused)) const uint32_t uart_base) {
+	return (uint8_t) ' ';
+}
 
 #ifdef __cplusplus
 }

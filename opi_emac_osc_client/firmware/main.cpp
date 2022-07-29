@@ -35,9 +35,6 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "oscclient.h"
 #include "oscclientparams.h"
@@ -59,10 +56,6 @@
 #include "software_version.h"
 
 #include "displayhandler.h"
-
-void Hardware::RebootHandler() {
-
-}
 
 extern "C" {
 
@@ -107,10 +100,6 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Client");
 #endif
 	mDns.Print();
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
 
 	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
 
@@ -180,9 +169,6 @@ void notmain(void) {
 		mDns.Run();
 		lb.Run();
 		display.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 	}
 }
 }

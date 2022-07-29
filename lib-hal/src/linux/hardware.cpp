@@ -136,7 +136,7 @@ Hardware::Hardware():
 		}
 	}
 
-	if (fp != nullptr) {
+	if (fp != 0) {
 		pclose(fp);
 	}
 #endif
@@ -389,17 +389,9 @@ float Hardware::GetCoreTemperatureMax() {
 #endif
 }
 
-#if defined (__linux__)
- static hardware::LedStatus s_ledStatus;
-#endif
-
 void Hardware::SetLed(__attribute__((unused)) hardware::LedStatus tLedStatus) {
 #if defined (__linux__)
 	if (m_tBoardType == BOARD_TYPE_RASPBIAN) {
-		if (s_ledStatus == tLedStatus) {
-			return;
-		}
-		s_ledStatus = tLedStatus;
 		char *p = 0;
 
 		switch (tLedStatus) {
@@ -442,7 +434,6 @@ bool Hardware::ExecCmd(const char *pCmd, char *Result, int nResultSize) {
 		Result[nLength - 1] = '\0';
 	}
 
-	pclose(fp);
 	return true;
 }
 

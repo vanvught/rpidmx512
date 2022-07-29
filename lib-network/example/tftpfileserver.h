@@ -8,11 +8,11 @@
 class TFTPFileServer final: public TFTPDaemon {
 public:
 	TFTPFileServer();
-	~TFTPFileServer() override;
+	~TFTPFileServer();
 
-	bool FileOpen(const char *pFileName, TFTPMode tMode) override;
-	bool FileCreate(const char *pFileName, TFTPMode tMode) override;
-	bool FileClose() override;
+	bool FileOpen(const char *pFileName, TFTPMode tMode);
+	bool FileCreate(const char *pFileName, TFTPMode tMode);
+	bool FileClose();
 	int FileRead(void *pBuffer, unsigned nCount);
 	int FileWrite(const void *pBuffer, unsigned nCount);
 

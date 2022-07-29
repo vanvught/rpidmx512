@@ -74,7 +74,7 @@ void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 
 void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
-	assert(nLength <= dmx::UNIVERSE_SIZE);
+	assert(nLength <= Dmx::UNIVERSE_SIZE);
 
 	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
 		Start();
@@ -151,9 +151,9 @@ void TLC59711Dmx::Blackout(bool bBlackout) {
 #define BOARD_INSTANCES_MAX	32
 
 bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE));
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
 		if (m_pTLC59711DmxStore != nullptr) {

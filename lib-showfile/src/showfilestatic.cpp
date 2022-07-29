@@ -2,7 +2,7 @@
  * @file showfilestatic.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,30 +34,30 @@
 
 #include "debug.h"
 
-showfile::Formats ShowFile::GetFormat(const char *pString) {
+ShowFileFormats ShowFile::GetFormat(const char *pString) {
 	assert(pString != nullptr);
 
-	for (auto i = 0; i < static_cast<int>(showfile::Formats::UNDEFINED); i++) {
+	for (uint32_t i = 0; i < static_cast<unsigned>(ShowFileFormats::UNDEFINED); i++) {
 		if (strcasecmp(pString, ShowFileConst::FORMAT[i]) == 0) {
-			return static_cast<showfile::Formats>(i);
+			return static_cast<ShowFileFormats>(i);
 		}
 	}
 
-	return showfile::Formats::UNDEFINED;
+	return ShowFileFormats::UNDEFINED;
 }
 
-const char *ShowFile::GetFormat(showfile::Formats Format) {
-	if (Format < showfile::Formats::UNDEFINED) {
-		return ShowFileConst::FORMAT[static_cast<unsigned>(Format)];
+const char *ShowFile::GetFormat(ShowFileFormats tFormat) {
+	if (tFormat < ShowFileFormats::UNDEFINED) {
+		return ShowFileConst::FORMAT[static_cast<unsigned>(tFormat)];
 	}
 
 	return "Unknown";
 }
 
 bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_t nShowFileNumber) {
-	assert(nLength == showfile::File::NAME_LENGTH + 1);
+	assert(nLength == ShowFileFile::NAME_LENGTH + 1);
 
-	if (nShowFileNumber < showfile::File::MAX_NUMBER) {
+	if (nShowFileNumber < ShowFileFile::MAX_NUMBER) {
 		snprintf(pShowFileName, nLength, "show%.2d.txt", nShowFileNumber);
 		return true;
 	}
@@ -68,7 +68,7 @@ bool ShowFile::ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_
 bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileNumber) {
 	DEBUG_PRINTF("pShowFileName=[%s]", pShowFileName);
 
-	if ((pShowFileName == nullptr) || (strlen(pShowFileName) != showfile::File::NAME_LENGTH)) {
+	if ((pShowFileName == nullptr) || (strlen(pShowFileName) != ShowFileFile::NAME_LENGTH)) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -78,7 +78,7 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileN
 		return false;
 	}
 
-	if (memcmp(&pShowFileName[showfile::File::NAME_LENGTH - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
+	if (memcmp(&pShowFileName[ShowFileFile::NAME_LENGTH - sizeof(SHOWFILE_SUFFIX) + 1], SHOWFILE_SUFFIX, sizeof(SHOWFILE_SUFFIX) - 1) != 0) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -106,3 +106,4 @@ bool ShowFile::CheckShowFileName(const char *pShowFileName, uint32_t &nShowFileN
 	DEBUG_EXIT
 	return true;
 }
+

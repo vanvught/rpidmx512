@@ -2,7 +2,7 @@
  * @file artnetoutput.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,7 +35,7 @@
 ArtNetOutput::ArtNetOutput() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
+	for (uint32_t i = 0; i < E131::PORTS; i++) {
 		m_nUniverse[i] = 0;
 	}
 
@@ -54,7 +54,7 @@ void ArtNetOutput::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
 
-	if (nPortIndex < e131bridge::MAX_PORTS) {
+	if (nPortIndex < E131::PORTS) {
 		uint16_t nUniverse;
 
 		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, lightset::PortDir::OUTPUT)) {
@@ -69,7 +69,7 @@ void ArtNetOutput::Start(uint32_t nPortIndex) {
 void ArtNetOutput::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
-	if (nPortIndex < e131bridge::MAX_PORTS) {
+	if (nPortIndex < E131::PORTS) {
 		uint16_t nUniverse;
 
 		if (E131Bridge::Get()->GetUniverse(static_cast<uint8_t>(nPortIndex), nUniverse, lightset::PortDir::OUTPUT)) {
@@ -82,9 +82,10 @@ void ArtNetOutput::Stop(uint32_t nPortIndex) {
 }
 
 void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) {
-	assert(nPortIndex < e131bridge::MAX_PORTS);
+	assert(nPortIndex < E131::PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
 		ArtNetController::Get()->HandleDmxOut(m_nUniverse[nPortIndex], pDmxData, nLength, static_cast<uint8_t>(nPortIndex));
 	}
 }
+

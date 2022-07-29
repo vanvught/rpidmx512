@@ -41,7 +41,7 @@
 
 #include "factorydefaults.h"
 
-#include "pixeldmxparams.h"
+#include "ws28xxdmxparams.h"
 #include "ws28xxdmx.h"
 #include "pixeldmxstartstop.h"
 #include "pixeldmxparamsrdm.h"
@@ -57,7 +57,7 @@
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 #include "storerdmdevice.h"
-#include "storepixeldmx.h"
+#include "storews28xxdmx.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
 #include "storerdmsubdevices.h"
@@ -68,9 +68,12 @@
 
 #include "is_config_mode.h"
 
-void Hardware::RebootHandler() {
-	WS28xx::Get()->Blackout();
-}
+class Reboot final: public RebootHandler {
+public:
+	void Run() override {
+		WS28xx::Get()->Blackout();
+	}
+};
 
 extern "C" {
 
@@ -81,7 +84,6 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -100,12 +102,12 @@ void notmain(void) {
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
+	StoreWS28xxDmx storeWS28xxDmx;
+	WS28xxDmxParams ws28xxparms(&storeWS28xxDmx);
 
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Dump();
-		pixelDmxParams.Set(&pixelDmxConfiguration);
+	if (ws28xxparms.Load()) {
+		ws28xxparms.Set(&pixelDmxConfiguration);
+		ws28xxparms.Dump();
 	}
 
 	/*
@@ -120,39 +122,43 @@ void notmain(void) {
 
 	uint32_t nLedsPerPixel;
 	pixeldmxconfiguration::PortInfo portInfo;
+	uint32_t nGroups;
+	uint32_t nUniverses;
 
-	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo);
+	pixelDmxConfiguration.Validate(1 , nLedsPerPixel, portInfo, nGroups, nUniverses);
+	pixelDmxConfiguration.Dump();
 
-	if (pixelDmxConfiguration.GetUniverses() > 1) {
+	if (nUniverses > 1) {
 		const auto nCount = (512U * pixelDmxConfiguration.GetGroupingCount()) / nLedsPerPixel;
+		DEBUG_PRINTF("nCount=%u", nCount);
 		pixelDmxConfiguration.SetCount(nCount);
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetWS28xxDmxStore(&storePixelDmx);
+	pixelDmx.SetWS28xxDmxStore(&storeWS28xxDmx);
 
 	PixelDmxStartStop pixelDmxStartStop;
 	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
 
-	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
+	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(ws28xxparms.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	PixelDmxParamsRdm pixelDmxParamsRdm(&storePixelDmx);
+	PixelDmxParamsRdm pixelDmxParamsRdm(&storeWS28xxDmx);
 
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
 
 	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
 		rdmSensorsParams.Set();
+		rdmSensorsParams.Dump();
 	}
 
 	StoreRDMSubDevices storeRdmSubDevices;
 	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
 
 	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
 		rdmSubDevicesParams.Set();
+		rdmSubDevicesParams.Dump();
 	}
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
@@ -222,8 +228,8 @@ void notmain(void) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
 		displayUdfParams.Set(&display);
+		displayUdfParams.Dump();
 	}
 
 	display.Show();
@@ -240,6 +246,7 @@ void notmain(void) {
 
 	lb.SetMode(ledblink::Mode::NORMAL);
 
+	hw.SetRebootHandler(new Reboot);
 	hw.WatchdogInit();
 
 	for (;;) {
@@ -250,11 +257,11 @@ void notmain(void) {
 		nw.Run();
 		remoteConfig.Run();
 #endif
+		lb.Run();
+		display.Run();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
-		display.Run();
-		lb.Run();
 	}
 }
 

@@ -26,7 +26,7 @@ include ../firmware-template/libs.mk
 TTT=uuid
 TMPVAR:=$(LIBS)
 LIBS=$(filter-out $(TTT), $(TMPVAR))
-LIBS+=debug
+LIBS+=debug hal
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
@@ -41,10 +41,9 @@ ifeq ($(detected_OS),Linux)
 endif
 
 DEFINES:=$(addprefix -D,$(DEFINES))
-DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
 
 # The variable for the firmware include directories
-INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include
+INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
@@ -64,16 +63,17 @@ LDLIBS:=$(addprefix -l,$(LIBS))
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
 
-COPS=$(DEFINES) $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS+=-g -Wall -Werror -Wextra -pedantic 
-COPS+=-Wunused #-Wsign-conversion #-Wconversion
+COPS=$(DEFINES) -DDISABLE_TFTP -DENABLE_HTTPD #-DNDEBUG
+COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
+COPS+=-O2 -Wall -Werror -Wextra -pedantic 
+COPS+=-Wunused -Wsign-conversion #-Wconversion
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
 
 ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
 else
 	COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
-#	CCPOPS+=-Wuseless-cast -Wold-style-cast
+	CCPOPS+=-Wuseless-cast -Wold-style-cast
 endif
 
 ifeq ($(detected_OS),Cygwin)
@@ -137,7 +137,7 @@ $(BUILD_DIRS) :
 		
 $(CURR_DIR) : Makefile $(LINKER) $(OBJECTS) $(LIBDEP)
 	$(info $$TARGET [${TARGET}])
-	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid -lpthread
+	$(CPP) $(OBJECTS) -o $(CURR_DIR) $(LIB) $(LDLIBS) -luuid
 	$(PREFIX)objdump -d $(TARGET) | $(PREFIX)c++filt > linux.lst
 
 $(foreach bdir,$(SRCDIR),$(eval $(call compile-objects,$(bdir))))

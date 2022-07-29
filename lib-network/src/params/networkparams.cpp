@@ -45,18 +45,15 @@
 
 using namespace networkparams;
 
-NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
-	DEBUG_ENTRY
+TNetworkParams NetworkParams::m_tNetworkParams;
 
+NetworkParams::NetworkParams(NetworkParamsStore *pNetworkParamsStore): m_pNetworkParamsStore(pNetworkParamsStore) {
 	memset(&m_tNetworkParams, 0, sizeof(struct TNetworkParams));
 	m_tNetworkParams.bIsDhcpUsed = defaults::IS_DHCP_USED;
 	m_tNetworkParams.nDhcpRetryTime = defaults::DHCP_RETRY_TIME;
-
-	DEBUG_EXIT
 }
 
 bool NetworkParams::Load() {
-	DEBUG_ENTRY
 	m_tNetworkParams.nSetList = 0;
 
 #if !defined(DISABLE_FS)
@@ -72,22 +69,18 @@ bool NetworkParams::Load() {
 	if (m_pNetworkParamsStore != nullptr) {
 		m_pNetworkParamsStore->Copy(&m_tNetworkParams);
 	} else {
-		DEBUG_EXIT
 		return false;
 	}
 
-	DEBUG_EXIT
 	return true;
 }
 
 void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
-	DEBUG_ENTRY
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 	assert(m_pNetworkParamsStore != nullptr);
 
 	if (m_pNetworkParamsStore == nullptr) {
-		DEBUG_EXIT
 		return;
 	}
 
@@ -98,8 +91,6 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 	config.Read(pBuffer, nLength);
 
 	m_pNetworkParamsStore->Update(&m_tNetworkParams);
-
-	DEBUG_EXIT
 }
 
 void NetworkParams::callbackFunction(const char *pLine) {
@@ -160,7 +151,7 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	}
 
 
-#if !defined(DISABLE_RTC)
+#if !defined(DISABLE_NETWORKPARAMS_NTP_SERVER)
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::NTP_SERVER, nValue32) == Sscan::OK) {
 		if (nValue32 != 0) {
 			m_tNetworkParams.nSetList |= NetworkParamsMask::NTP_SERVER;
@@ -258,7 +249,7 @@ void NetworkParams::Builder(const struct TNetworkParams *ptNetworkParams, char *
 #endif
 	builder.Add(NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName, isMaskSet(NetworkParamsMask::HOSTNAME));
 
-#if !defined(DISABLE_RTC)
+#if !defined(DISABLE_NETWORKPARAMS_NTP_SERVER)
 	builder.AddComment("NTP Server");
 	builder.AddIpAddress(NetworkParamsConst::NTP_SERVER, m_tNetworkParams.nNtpServerIp, isMaskSet(NetworkParamsMask::NTP_SERVER));
 	builder.Add(NetworkParamsConst::NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset, isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET));

@@ -36,49 +36,33 @@
 
 #include "debug.h"
 
-class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm, RDMDiscovery {
+class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm {
 public:
 	ArtNetRdmController(uint32_t nPorts = artnetnode::MAX_PORTS);
-
-	~ArtNetRdmController() override {
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (m_pRDMTod[nPortIndex] != nullptr) {
-				delete m_pRDMTod[nPortIndex];
-				m_pRDMTod[nPortIndex] = nullptr;
-			}
-		}
-	}
+	~ArtNetRdmController() override;
 
 	void Full(uint32_t nPortIndex) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		RDMDiscovery::Full(nPortIndex, m_pRDMTod[nPortIndex]);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Full();
+		}
 	}
 
 	uint32_t GetUidCount(uint32_t nPortIndex) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if (m_pRDMTod[nPortIndex] != nullptr) {
-			return m_pRDMTod[nPortIndex]->GetUidCount();
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			return m_Discovery[nPortIndex]->GetUidCount();
 		}
 		return 0;
 	}
 
-	bool CopyTodEntry(uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if (m_pRDMTod[nPortIndex] == nullptr) {
-			memcpy(uid, UID_ALL, RDM_UID_SIZE);
-			return false;
-		}
-
-		return m_pRDMTod[nPortIndex]->CopyUidEntry(nIndex, uid);
-	}
-
 	void Copy(uint32_t nPortIndex, uint8_t *pTod) override {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if (m_pRDMTod[nPortIndex] != nullptr) {
-			m_pRDMTod[nPortIndex]->Copy(pTod);
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Copy(pTod);
 		}
 	}
 
@@ -90,14 +74,14 @@ public:
 
 	void DumpTod(uint32_t nPortIndex) {
 		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if (m_pRDMTod[nPortIndex] != nullptr) {
-			m_pRDMTod[nPortIndex]->Dump();
+		assert(nPortIndex < s_nPorts);
+		if (m_Discovery[nPortIndex] != nullptr) {
+			m_Discovery[nPortIndex]->Dump();
 		}
 	}
 
 private:
-	static RDMTod *m_pRDMTod[artnetnode::MAX_PORTS];
+	RDMDiscovery *m_Discovery[artnetnode::MAX_PORTS];
 	static TRdmMessage s_rdmMessage;
 	static uint32_t s_nPorts;
 };

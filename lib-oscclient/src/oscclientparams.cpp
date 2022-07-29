@@ -47,9 +47,9 @@
 
 OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m_pOscClientParamsStore(pOscClientParamsStore) {
 	memset(&m_tOscClientParams, 0, sizeof(struct TOscClientParams));
-	m_tOscClientParams.nOutgoingPort = oscclient::defaults::PORT_OUTGOING;
-	m_tOscClientParams.nIncomingPort = oscclient::defaults::PORT_INCOMING;
-	m_tOscClientParams.nPingDelay = oscclient::defaults::PING_DELAY_SECONDS;
+	m_tOscClientParams.nOutgoingPort = OscClientDefault::PORT_OUTGOING;
+	m_tOscClientParams.nIncomingPort = OscClientDefault::PORT_INCOMING;
+	m_tOscClientParams.nPingDelay = OscClientDefault::PING_DELAY_SECONDS;
 
 	assert(sizeof(m_aCmd) > strlen(OscClientParamsConst::CMD));
 	strncpy(m_aCmd, OscClientParamsConst::CMD, sizeof(m_aCmd));

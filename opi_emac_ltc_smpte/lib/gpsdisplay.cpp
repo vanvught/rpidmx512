@@ -2,7 +2,7 @@
  * @file gpsdisplay.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,26 +29,25 @@
 
 #include "display.h"
 
-void GPS::Display(gps::Status status) {
+void GPS::Display(GPSStatus status) {
 	Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U), 3);
 	Display::Get()->PutString("GPS ");
 
 	switch (status) {
-	case gps::Status::IDLE:
-		Display::Get()->PutChar('I');
+	case GPSStatus::IDLE:
+		Display::Get()->PutString("[I]");
 		break;
-	case gps::Status::WARNING:
-		Display::Get()->PutChar('W');
+	case GPSStatus::WARNING:
+		Display::Get()->PutString("[W]");
 		break;
-	case gps::Status::VALID:
-		Display::Get()->PutChar('V');
+	case GPSStatus::VALID:
+		Display::Get()->PutString("[V]");
 		break;
-	case gps::Status::UNDEFINED:
-		Display::Get()->PutChar('U');
+	case GPSStatus::UNDEFINED:
+		Display::Get()->PutString("[U]");
 		break;
 	default:
 		assert(0);
-		__builtin_unreachable();
 		break;
 	}
 }

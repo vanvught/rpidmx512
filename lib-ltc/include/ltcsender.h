@@ -2,7 +2,7 @@
  * @file ltcsender.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,16 +33,17 @@ public:
 	LtcSender(uint32_t nVolume);
 
 	void Start();
-	void Stop() {}
+	void Stop() {
+	}
 
-	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode, bool nExternalClock = true);
+	void SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock = true);
 
 	static LtcSender* Get() {
 		return s_pThis;
 	}
 
 private:
-	uint32_t m_nTypePrevious { static_cast<uint32_t>(ltc::Type::INVALID) };
+	uint32_t m_nTypePrevious{ltc::type::INVALID};
 
 	static LtcSender *s_pThis;
 };

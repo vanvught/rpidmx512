@@ -31,34 +31,20 @@
 
 #include "spiflashstore.h"
 
-#include "debug.h"
-
 class StoreMonitor final: public DMXMonitorParamsStore, public DmxMonitorStore {
 public:
 	StoreMonitor();
 
 	void Update(const struct TDMXMonitorParams *pDMXMonitorParams) override {
-		DEBUG_ENTRY
-
 		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-
-		DEBUG_EXIT
 	}
 
 	void Copy(struct TDMXMonitorParams *pDMXMonitorParams) override {
-		DEBUG_ENTRY
-
 		SpiFlashStore::Get()->Copy(spiflashstore::Store::MONITOR, pDMXMonitorParams, sizeof(struct TDMXMonitorParams));
-
-		DEBUG_EXIT
 	}
 
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		DEBUG_ENTRY
-
 		SpiFlashStore::Get()->Update(spiflashstore::Store::MONITOR, __builtin_offsetof(struct TDMXMonitorParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), DMXMonitorParamsMask::START_ADDRESS);
-
-		DEBUG_EXIT
 	}
 
 	static StoreMonitor* Get() {

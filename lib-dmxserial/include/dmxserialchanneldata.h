@@ -54,8 +54,8 @@ private:
 private:
 	FILE *m_pFile { nullptr };
 	uint8_t m_nChannelValue { 0 };
-	uint8_t m_nChannelDataLength[lightset::dmx::UNIVERSE_SIZE];
-	uint8_t *m_pChannelData[lightset::dmx::UNIVERSE_SIZE];
+	uint8_t m_nChannelDataLength[lightset::Dmx::UNIVERSE_SIZE];
+	uint8_t *m_pChannelData[lightset::Dmx::UNIVERSE_SIZE];
 };
 
 #endif /* DMXSERIALCHANNELDATA_H_ */

@@ -31,11 +31,7 @@ static constexpr auto MAX_PORTS = 1;
 }  // namespace dmxsingle
 
 namespace dmxmulti {
-#if !defined(LIGHTSET_PORTS)
- static constexpr auto MAX_PORTS = 4;
-#else
- static constexpr auto MAX_PORTS = LIGHTSET_PORTS;
-#endif
+static constexpr auto MAX_PORTS = 4;
 }  // namespace dmxmulti
 
 namespace dmx {

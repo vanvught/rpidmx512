@@ -28,7 +28,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <cassert>
 #ifndef NDEBUG
 # include <cstdio>
 #endif
@@ -39,7 +38,7 @@ namespace rdmtod {
 #if !defined (RDM_DISCOVERY_TOD_TABLE_SIZE)
 # define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
 #endif
-static constexpr uint32_t TOD_TABLE_SIZE = RDM_DISCOVERY_TOD_TABLE_SIZE;
+static constexpr uint8_t TOD_TABLE_SIZE = RDM_DISCOVERY_TOD_TABLE_SIZE;
 struct TRdmTod {
 	uint8_t uid[RDM_UID_SIZE];
 };
@@ -49,7 +48,6 @@ class RDMTod {
 public:
 	RDMTod() {
 		m_pTable = new rdmtod::TRdmTod[rdmtod::TOD_TABLE_SIZE];
-		assert(m_pTable != nullptr);
 
 		for (uint32_t i = 0; i < rdmtod::TOD_TABLE_SIZE; i++) {
 			memcpy(&m_pTable[i], UID_ALL, RDM_UID_SIZE);
@@ -87,19 +85,9 @@ public:
 		return m_nEntries;
 	}
 
-	bool CopyUidEntry(uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
-		if (nIndex > m_nEntries) {
-			memcpy(uid, UID_ALL, RDM_UID_SIZE);
-			return false;
-		}
-
-		memcpy(uid, &m_pTable[nIndex], RDM_UID_SIZE);
-		return true;
-	}
-
 	void Copy(uint8_t *pTable) {
 		const auto *pSrc = reinterpret_cast<const uint8_t*>(m_pTable);
-		auto *pDst = pTable;
+		uint8_t *pDst = pTable;
 
 		for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {
 			*pDst++ = *pSrc++;
@@ -144,7 +132,7 @@ public:
 		return false;
 	}
 
-	void Dump(__attribute__((unused)) uint32_t nCount) {
+	void Dump(__attribute__((unused)) uint8_t nCount) {
 #ifndef NDEBUG
 	if (nCount > rdmtod::TOD_TABLE_SIZE) {
 		nCount = rdmtod::TOD_TABLE_SIZE;
@@ -155,7 +143,6 @@ public:
 	}
 #endif
 	}
-	
 	void Dump() {
 #ifndef NDEBUG
 		Dump(m_nEntries);

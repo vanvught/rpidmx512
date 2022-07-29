@@ -78,14 +78,14 @@ private:
 	bool IsDmxDataChanged(const uint8_t *);
 
 private:
-	bool m_bIsStarted{false};
+	bool m_bIsStarted;
 
 private:
-	uint8_t m_nMotorNumber{0};
-	TL6470DmxModes m_nMode{L6470DMXMODE_UNDEFINED};
+	uint8_t m_nMotorNumber;
+	TL6470DmxModes m_nMode;
 	uint16_t m_nDmxStartAddress;
-	L6470DmxMode *m_pDmxMode{nullptr};
-	uint16_t m_DmxFootPrint{0};
+	L6470DmxMode *m_pDmxMode;
+	uint16_t m_DmxFootPrint;
 	uint8_t *m_pDmxData;
 };
 

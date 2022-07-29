@@ -2,7 +2,7 @@
  * @file displayedittimecode.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,20 +34,20 @@
 
 #include "debug.h"
 
-static constexpr uint8_t s_Index[] = {
-		ltc::timecode::index::HOURS_TENS,
-		ltc::timecode::index::HOURS_UNITS,
-		ltc::timecode::index::MINUTES_TENS,
-		ltc::timecode::index::MINUTES_UNITS,
-		ltc::timecode::index::SECONDS_TENS,
-		ltc::timecode::index::SECONDS_UNITS,
-		ltc::timecode::index::FRAMES_TENS,
-		ltc::timecode::index::FRAMES_UNITS
+static constexpr TLtcTimeCodeIndex s_Index[] = {
+		LTC_TC_INDEX_HOURS_TENS,
+		LTC_TC_INDEX_HOURS_UNITS,
+		LTC_TC_INDEX_MINUTES_TENS,
+		LTC_TC_INDEX_MINUTES_UNITS,
+		LTC_TC_INDEX_SECONDS_TENS,
+		LTC_TC_INDEX_SECONDS_UNITS,
+		LTC_TC_INDEX_FRAMES_TENS,
+		LTC_TC_INDEX_FRAMES_UNITS
 };
 
 static constexpr auto s_IndexSize = sizeof(s_Index) / sizeof(s_Index[0]);
 
-void DisplayEditTimeCode::HandleKey(int nKey, struct ltc::TimeCode& timecode, char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH]) {
+void DisplayEditTimeCode::HandleKey(int nKey, TLtcTimeCode &timecode, char m_aTimeCode[TC_CODE_MAX_LENGTH]) {
 	DEBUG_PRINTF("%d %d", m_State, nKey);
 
 	m_nFrames = TimeCodeConst::FPS[timecode.nType];
@@ -86,8 +86,8 @@ void DisplayEditTimeCode::HandleKey(int nKey, struct ltc::TimeCode& timecode, ch
 	}
 
 	const auto *pTimeCode = &timecode;
-	ltc::itoa_base10(pTimeCode, m_aTimeCode);
-	Display::Get()->TextLine(1, m_aTimeCode, ltc::timecode::CODE_MAX_LENGTH);
+	Ltc::ItoaBase10(pTimeCode, m_aTimeCode);
+	Display::Get()->TextLine(1, m_aTimeCode, TC_CODE_MAX_LENGTH);
 
 	if (m_bCursorOn) {
 		Display::Get()->SetCursor(display::cursor::ON);
@@ -98,50 +98,50 @@ void DisplayEditTimeCode::HandleKey(int nKey, struct ltc::TimeCode& timecode, ch
 	Display::Get()->SetCursorPos(s_Index[m_nCursorPositionIndex], 0);
 }
 
-void DisplayEditTimeCode::KeyUp(struct ltc::TimeCode& timecode) {
+void DisplayEditTimeCode::KeyUp(TLtcTimeCode& timecode) {
 	switch (s_Index[m_nCursorPositionIndex]) {
-		case ltc::timecode::index::HOURS_TENS:
+		case LTC_TC_INDEX_HOURS_TENS:
 			if (timecode.nHours < 20) {
 				timecode.nHours = static_cast<uint8_t>(timecode.nHours + 10U);
 			}
 			break;
-		case ltc::timecode::index::HOURS_UNITS:
+		case LTC_TC_INDEX_HOURS_UNITS:
 			if (timecode.nHours < 23) {
 				timecode.nHours++;
 				return;
 			}
 			timecode.nHours = 0;
 			break;
-		case ltc::timecode::index::MINUTES_TENS:
+		case LTC_TC_INDEX_MINUTES_TENS:
 			if (timecode.nMinutes < 50) {
 				timecode.nMinutes = static_cast<uint8_t>(timecode.nMinutes + 10U);
 			}
 			break;
-		case ltc::timecode::index::MINUTES_UNITS:
+		case LTC_TC_INDEX_MINUTES_UNITS:
 			if (timecode.nMinutes < 59) {
 				timecode.nMinutes++;
 				return;
 			}
 			timecode.nMinutes = 0;
 			break;
-		case ltc::timecode::index::SECONDS_TENS:
+		case LTC_TC_INDEX_SECONDS_TENS:
 			if (timecode.nSeconds < 50) {
 				timecode.nSeconds = static_cast<uint8_t>(timecode.nSeconds + 10U);
 			}
 			break;
-		case ltc::timecode::index::SECONDS_UNITS:
+		case LTC_TC_INDEX_SECONDS_UNITS:
 			if (timecode.nSeconds < 59) {
 				timecode.nSeconds++;
 				return;
 			}
 			timecode.nSeconds = 0;
 			break;
-		case ltc::timecode::index::FRAMES_TENS:
+		case LTC_TC_INDEX_FRAMES_TENS:
 			if (timecode.nFrames < ((m_nFrames / 10) * 10)) {
 				timecode.nFrames = static_cast<uint8_t>(timecode.nFrames + 10U);
 			}
 			break;
-		case ltc::timecode::index::FRAMES_UNITS:
+		case LTC_TC_INDEX_FRAMES_UNITS:
 			if (timecode.nFrames < (m_nFrames - 1)) {
 				timecode.nFrames++;
 				return;
@@ -153,51 +153,51 @@ void DisplayEditTimeCode::KeyUp(struct ltc::TimeCode& timecode) {
 	}
 }
 
-void DisplayEditTimeCode::KeyDown(struct ltc::TimeCode& timecode) {
+void DisplayEditTimeCode::KeyDown(TLtcTimeCode& timecode) {
 	switch (s_Index[m_nCursorPositionIndex]) {
-		case ltc::timecode::index::HOURS_TENS:
+		case LTC_TC_INDEX_HOURS_TENS:
 			if (timecode.nHours > 9) {
 				timecode.nHours = static_cast<uint8_t>(timecode.nHours - 10U);
 				return;
 			}
 			break;
-		case ltc::timecode::index::HOURS_UNITS:
+		case LTC_TC_INDEX_HOURS_UNITS:
 			if (timecode.nHours > 0) {
 				timecode.nHours--;
 				return;
 			}
 			timecode.nHours = 23;
 			break;
-		case ltc::timecode::index::MINUTES_TENS:
+		case LTC_TC_INDEX_MINUTES_TENS:
 			if (timecode.nMinutes > 9) {
 				timecode.nMinutes = static_cast<uint8_t>(timecode.nMinutes - 10U);
 			}
 			break;
-		case ltc::timecode::index::MINUTES_UNITS:
+		case LTC_TC_INDEX_MINUTES_UNITS:
 			if (timecode.nMinutes > 0) {
 				timecode.nMinutes--;
 				return;
 			}
 			timecode.nMinutes = 59;
 			break;
-		case ltc::timecode::index::SECONDS_TENS:
+		case LTC_TC_INDEX_SECONDS_TENS:
 			if (timecode.nSeconds > 9) {
 				timecode.nSeconds = static_cast<uint8_t>(timecode.nSeconds - 10U);
 			}
 			break;
-		case ltc::timecode::index::SECONDS_UNITS:
+		case LTC_TC_INDEX_SECONDS_UNITS:
 			if (timecode.nSeconds > 0) {
 				timecode.nSeconds--;
 				return;
 			}
 			timecode.nSeconds = 59;
 			break;
-		case ltc::timecode::index::FRAMES_TENS:
+		case LTC_TC_INDEX_FRAMES_TENS:
 			if (timecode.nFrames > 9) {
 				timecode.nFrames = static_cast<uint8_t>(timecode.nFrames - 10U);
 			}
 			break;
-		case ltc::timecode::index::FRAMES_UNITS:
+		case LTC_TC_INDEX_FRAMES_UNITS:
 			if (timecode.nFrames > 0) {
 				timecode.nFrames--;
 				return;

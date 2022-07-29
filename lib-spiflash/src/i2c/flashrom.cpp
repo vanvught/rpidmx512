@@ -33,10 +33,6 @@
 #include "debug.h"
 
 namespace flashrom {
-#if !defined (CONFIG_FLASHROM_I2C_INDEX)
-# define CONFIG_FLASHROM_I2C_INDEX 0;
-static constexpr uint8_t I2C_INDEX = CONFIG_FLASHROM_I2C_INDEX;
-#endif
 /* Backwards compatibility with SPI FLASH */
 static constexpr auto FLASH_SECTOR_SIZE = 4096U;
 static constexpr auto ROM_SIZE = 4096U;
@@ -46,7 +42,7 @@ using namespace flashrom;
 
 FlashRom *FlashRom::s_pThis;
 
-FlashRom::FlashRom(): AT24C32(I2C_INDEX) {
+FlashRom::FlashRom(): AT24C32(7) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -54,22 +50,16 @@ FlashRom::FlashRom(): AT24C32(I2C_INDEX) {
 	m_IsDetected = AT24C32::IsConnected();
 
 	if (!m_IsDetected) {
-		printf("No %s at %2x", GetName(), AT24C32::GetAddress());
+		DEBUG_PUTS("No AT24C32");
 	} else {
-		printf("Detected %s with total %d bytes [%d kB]\n", GetName(), GetSize(), GetSize() / 1024U);
+		printf("AT24Cxx: Detected %s with total %d bytes [%d kB]\n", GetName(), GetSize(), GetSize() / 1024U);
 	}
 
 	DEBUG_EXIT
 }
 
-FlashRom::~FlashRom() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-const char* FlashRom::GetName() const {
-	return "AT24C32";
+const char *FlashRom::GetName() const{
+	return "AT24Cxx";
 }
 
 uint32_t FlashRom::GetSize() const {

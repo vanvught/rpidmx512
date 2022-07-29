@@ -54,8 +54,6 @@ RDMSensors::RDMSensors() {
 }
 
 RDMSensors::~RDMSensors() {
-	DEBUG_ENTRY
-
 	for (unsigned i = 0; i < m_nCount; i++) {
 		if (m_pRDMSensor[i] != nullptr) {
 			delete m_pRDMSensor[i];
@@ -64,8 +62,6 @@ RDMSensors::~RDMSensors() {
 	}
 
 	delete [] m_pRDMSensor;
-
-	DEBUG_EXIT
 }
 
 const struct rdm::sensor::Defintion* RDMSensors::GetDefintion(uint8_t nSensor) {

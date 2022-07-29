@@ -34,15 +34,17 @@
 
 class SystimeReader {
 public:
-	SystimeReader(uint8_t nFps);
+	SystimeReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs, uint8_t nFps);
 
 	void Start(bool bAutoStart = false);
 	void Run();
 
 	void Print();
 
+	//
 	void HandleRequest(void *pBuffer = nullptr, uint16_t nBufferLength = 0);
 
+	// Control
 	void ActionStart();
 	void ActionStop();
 	void ActionSetRate(const char *pTimeCodeRate);
@@ -55,6 +57,7 @@ private:
 	void HandleUdpRequest();
 
 private:
+	TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
 	time_t m_nTimePrevious{0};

@@ -33,6 +33,10 @@ public:
 	void HandleKey(int nKey, uint8_t &nFps);
 
 private:
+	void KeyLeft(uint8_t &nFps);
+	void KeyRight(uint8_t &nFps);
+
+private:
 	enum State {
 		IDLE, EDIT
 	} m_State{IDLE};

@@ -62,25 +62,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	ShowFile::Get()->Stop();
-	ShowFile::Get()->GetProtocolHandler()->Stop();
-
-	if (!RemoteConfig::Get()->IsReboot()) {
-		Display::Get()->SetSleep(false);
-
-		while (SpiFlashStore::Get()->Flash())
-			;
-
-		Network::Get()->Shutdown();
-
-		printf("Rebooting ...\n");
-
-		Display::Get()->Cls();
-		Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
-	}
-}
-
 extern "C" {
 
 void notmain(void) {
@@ -89,12 +70,12 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
 	fw.Print("Showfile player");
 
+	hw.SetRebootHandler(new Reboot);
 	hw.SetLed(hardware::LedStatus::ON);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -129,7 +110,7 @@ void notmain(void) {
 	ShowFileProtocolHandler *pShowFileProtocolHandler = nullptr;
 
 	switch (showFileParams.GetProtocol()) {
-	case showfile::Protocols::ARTNET:
+	case ShowFileProtocols::ARTNET:
 		pShowFileProtocolHandler = new ShowFileProtocolArtNet;
 		break;
 	default:
@@ -192,18 +173,15 @@ void notmain(void) {
 	}
 
 	// Fixed row 5, 6, 7
-	display.Printf(5, showFileParams.GetProtocol() == showfile::Protocols::ARTNET ? "Art-Net" : "sACN E1.31");
-
-	if (showFileParams.GetProtocol() == showfile::Protocols::ARTNET) {
+	display.Printf(5, showFileParams.GetProtocol() == ShowFileProtocols::ARTNET ? "Art-Net" : "sACN E1.31");
+	if (showFileParams.GetProtocol() == ShowFileProtocols::ARTNET) {
 		if (showFileParams.IsArtNetBroadcast()) {
 			Display::Get()->PutString(" <Broadcast>");
 		}
 	}
-
 	if (pShowFileProtocolHandler->IsSyncDisabled()) {
 		display.Printf(6, "<No synchronization>");
 	}
-
 	displayHandler.ShowShowFileStatus();
 
 	hw.WatchdogInit();

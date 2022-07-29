@@ -2,7 +2,7 @@
  * @file showfileconst.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,9 +30,9 @@
 
 struct ShowFileConst {
 	static constexpr auto SHOWFILECONST_FORMAT_NAME_LENGTH = 6;	///< Includes '\0'
-	static const char FORMAT[static_cast<unsigned>(showfile::Formats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
+	static const char FORMAT[static_cast<unsigned>(ShowFileFormats::UNDEFINED)][SHOWFILECONST_FORMAT_NAME_LENGTH];
 
-	static const char STATUS[static_cast<int>(showfile::Status::UNDEFINED)][12];
+	static const char STATUS[static_cast<int>(ShowFileStatus::UNDEFINED)][12];
 };
 
 #endif /* SHOWFILECONST_H_ */

@@ -30,7 +30,7 @@
 
 #include "pixeltype.h"
 #include "ws28xxdmx.h"
-#include "pixeldmxparams.h"
+#include "ws28xxdmxparams.h"
 
 #include "oscsimplesend.h"
 

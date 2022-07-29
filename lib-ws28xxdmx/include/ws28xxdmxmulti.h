@@ -52,43 +52,20 @@ public:
 	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
 
 	void Blackout(bool bBlackout) override;
-	void FullOn() override;
 
-	void Print() override {
-		m_pixelDmxConfiguration.Print();
-	}
-
-	pixel::Type GetType() const {
-		return m_pixelDmxConfiguration.GetType();
-	}
-
-	pixel::Map GetMap() const {
-		return m_pixelDmxConfiguration.GetMap();
-	}
-
-	uint32_t GetCount() const {
-		return m_pixelDmxConfiguration.GetCount();;
+	uint32_t GetUniverses() const {
+		return m_nUniverses;
 	}
 
 	uint32_t GetGroups() const {
-		return m_pixelDmxConfiguration.GetGroups();
-	}
-
-	uint32_t GetGroupingCount() const {
-		return m_pixelDmxConfiguration.GetGroupingCount();
-	}
-
-	uint32_t GetUniverses() const {
-		return m_pixelDmxConfiguration.GetUniverses();
+		return m_nGroups;
 	}
 
 	uint32_t GetOutputPorts() const {
-		return m_pixelDmxConfiguration.GetOutputPorts();
+		return m_nOutputPorts;
 	}
 
-	uint32_t GetChannelsPerPixel() const {
-		return m_nChannelsPerPixel;
-	}
+	void Print() override;
 
 	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
 		m_pPixelDmxHandler = pPixelDmxHandler;
@@ -100,7 +77,7 @@ public:
 	}
 
 	uint16_t GetDmxStartAddress() override {
-		return lightset::dmx::ADDRESS_INVALID;
+		return lightset::Dmx::ADDRESS_INVALID;
 	}
 
 	uint16_t GetDmxFootprint() override {
@@ -108,9 +85,12 @@ public:
 	}
 
 private:
-	PixelDmxConfiguration m_pixelDmxConfiguration;
 	pixeldmxconfiguration::PortInfo m_PortInfo;
+	uint32_t m_nGroups;
+	uint32_t m_nGroupingCount;
+	uint32_t m_nUniverses;
 	uint32_t m_nChannelsPerPixel;
+	uint32_t m_nOutputPorts;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };
 	PixelDmxHandler *m_pPixelDmxHandler { nullptr };

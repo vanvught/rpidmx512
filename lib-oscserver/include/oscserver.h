@@ -155,8 +155,8 @@ private:
 	static char s_aPathInfo[osc::server::Max::PATH_LENGTH];
 	static char s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
 
-	static uint8_t s_pData[lightset::dmx::UNIVERSE_SIZE];
-	static uint8_t s_pOsc[lightset::dmx::UNIVERSE_SIZE];
+	static uint8_t s_pData[lightset::Dmx::UNIVERSE_SIZE];
+	static uint8_t s_pOsc[lightset::Dmx::UNIVERSE_SIZE];
 
 	static char *s_pUdpBuffer;
 	static OscServer *s_pThis;

@@ -1,9 +1,6 @@
 DEFINES =USE_SPI_DMA
 DEFINES+=NDEBUG
 
-EXTRA_INCLUDES= 
+EXTRA_INCLUDES=../lib-ws28xx/include ../lib-lightset/include ../lib-properties/include 
 
-EXTRA_SRCDIR=src/dmx
-
-include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

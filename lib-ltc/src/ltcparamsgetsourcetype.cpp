@@ -25,27 +25,26 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cassert>
 
 #include "ltcparams.h"
 
-static constexpr char s_source[static_cast<uint32_t>(ltc::Source::UNDEFINED)][9] = {
-		"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime", "etc"
-};
+using namespace ltc;
 
-const char* LtcParams::GetSourceType(ltc::Source source) {
-	if (source < ltc::Source::UNDEFINED) {
-		return "Undefined";
-	}
+static constexpr char sSource[source::UNDEFINED][9] = {"ltc", "artnet", "midi", "tcnet", "internal", "rtp-midi", "systime", "etc"};
 
-	return s_source[static_cast<uint32_t>(source)];
+const char* LtcParams::GetSourceType(ltc::source tSource) {
+	assert(tSource < ltc::source::UNDEFINED);
+
+	return sSource[tSource];
 }
 
-ltc::Source LtcParams::GetSourceType(const char *pType) {
-	for (uint32_t i = 0; i < static_cast<uint32_t>(ltc::Source::UNDEFINED); i++) {
-		if (strcasecmp(s_source[i], pType) == 0) {
-			return static_cast<ltc::Source>(i);
+ltc::source LtcParams::GetSourceType(const char *pType) {
+	for (uint32_t i = 0; i < ltc::source::UNDEFINED; i++) {
+		if (strcasecmp(sSource[i], pType) == 0) {
+			return static_cast<source>(i);
 		}
 	}
 
-	return ltc::Source::LTC;
+	return ltc::source::LTC;
 }

@@ -166,9 +166,7 @@ public:
 
 	// E120_DMX_START_ADDRESS		0x00F0
 	void SetDmxStartAddress(uint16_t nSubDevice, uint16_t nDmxStartAddress) {
-		DEBUG_ENTRY
-
-		if (nDmxStartAddress == 0 || nDmxStartAddress > lightset::dmx::UNIVERSE_SIZE)
+		if (nDmxStartAddress == 0 || nDmxStartAddress > lightset::Dmx::UNIVERSE_SIZE)
 			return;
 
 		if (nSubDevice != RDM_ROOT_DEVICE) {
@@ -189,8 +187,6 @@ public:
 
 			DmxStartAddressUpdate();
 		}
-
-		DEBUG_EXIT
 	}
 
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
@@ -311,7 +307,7 @@ private:
 	//
 	bool m_IsFactoryDefaults { true };
 	uint16_t m_nCheckSum { 0 };
-	uint16_t m_nDmxStartAddressFactoryDefault { lightset::dmx::START_ADDRESS_DEFAULT };
+	uint16_t m_nDmxStartAddressFactoryDefault { lightset::Dmx::START_ADDRESS_DEFAULT };
 	// Handler
 	RDMFactoryDefaults *m_pRDMFactoryDefaults { nullptr };
 

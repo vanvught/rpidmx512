@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "ws28xx.h"
@@ -38,29 +39,32 @@ using namespace pixel;
 
 WS28xx *WS28xx::s_pThis;
 
-WS28xx::WS28xx(PixelConfiguration& pixelConfiguration): m_PixelConfiguration(pixelConfiguration) {
+WS28xx::WS28xx(PixelConfiguration& pixelConfiguration) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	uint32_t nLedsPerPixel;
-	m_PixelConfiguration.Validate(nLedsPerPixel);
-	m_PixelConfiguration.Dump();
+	pixelConfiguration.Validate(nLedsPerPixel);
+	pixelConfiguration.Dump();
 
-	const auto nCount = m_PixelConfiguration.GetCount();
+	m_Type = pixelConfiguration.GetType();
+	m_nCount = pixelConfiguration.GetCount();
+	m_Map = pixelConfiguration.GetMap();
+	m_nLowCode = pixelConfiguration.GetLowCode();
+	m_nHighCode = pixelConfiguration.GetHighCode();
+	m_bIsRTZProtocol = pixelConfiguration.IsRTZProtocol();
+	m_nGlobalBrightness = pixelConfiguration.GetGlobalBrightness();
+	m_nBufSize = m_nCount * nLedsPerPixel;
 
-	m_nBufSize = nCount * nLedsPerPixel;
-
-	if (m_PixelConfiguration.IsRTZProtocol()) {
+	if (m_bIsRTZProtocol) {
 		m_nBufSize *= 8;
 		m_nBufSize += 1;
 	}
 
-	const auto type = m_PixelConfiguration.GetType();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
-		m_nBufSize += nCount;
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+		m_nBufSize += m_nCount;
 		m_nBufSize += 8;
 	}
 
@@ -68,10 +72,10 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration): m_PixelConfiguration(pix
 
 #if defined( USE_SPI_DMA )
 	FUNC_PREFIX(spi_dma_begin());
-	FUNC_PREFIX(spi_dma_set_speed_hz(m_PixelConfiguration.GetClockSpeedHz()));
+	FUNC_PREFIX(spi_dma_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
 #else
 	FUNC_PREFIX(spi_begin());
-	FUNC_PREFIX(spi_set_speed_hz(m_PixelConfiguration.GetClockSpeedHz()));
+	FUNC_PREFIX(spi_set_speed_hz(pixelConfiguration.GetClockSpeedHz()));
 #endif
 
 	DEBUG_EXIT
@@ -121,24 +125,21 @@ void WS28xx::SetupBuffers() {
 
 	DEBUG_PRINTF("m_nBufSize=%u, m_pBuffer=%p, m_pBlackoutBuffer=%p", m_nBufSize, m_pBuffer, m_pBlackoutBuffer);
 
-	const auto type = m_PixelConfiguration.GetType();
-	const auto nCount = m_PixelConfiguration.GetCount();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
-		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
-			SetPixel(nPixelIndex, 0, 0, 0);
+		for (uint32_t i = 0; i < m_nCount; i++) {
+			SetPixel(i, 0, 0, 0);
 		}
 
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
+		if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
 			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 		} else {
 			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
 		}
 	} else {
 		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
+		memset(&m_pBuffer[1], m_Type == Type::WS2801 ? 0 : m_nLowCode, m_nBufSize);
 	}
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
@@ -159,86 +160,15 @@ void WS28xx::Blackout() {
 	DEBUG_ENTRY
 
 #if defined( USE_SPI_DMA )
-	// Can be called any time.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-#endif
+	assert(!IsUpdating());
+	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
 
-	auto *pBuffer = m_pBuffer;
-	m_pBuffer = m_pBlackoutBuffer;
-
-	const auto type = m_PixelConfiguration.GetType();
-	const auto nCount = m_PixelConfiguration.GetCount();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
-		memset(m_pBuffer, 0, 4);
-
-		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
-			SetPixel(nPixelIndex, 0, 0, 0);
-		}
-
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
-			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
-		} else {
-			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
-		}
-	} else {
-		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
-	}
-
-	Update();
-
-#if defined( USE_SPI_DMA )
 	// A blackout may not be interrupted.
 	do {
 		asm volatile ("isb" ::: "memory");
 	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-#endif
-
-	m_pBuffer = pBuffer;
-
-	DEBUG_EXIT
-}
-
-void WS28xx::FullOn() {
-	DEBUG_ENTRY
-
-#if defined( USE_SPI_DMA )
-	// Can be called any time.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
-#endif
-
-	const auto type = m_PixelConfiguration.GetType();
-	const auto nCount = m_PixelConfiguration.GetCount();
-
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
-		memset(m_pBuffer, 0xFF, 4);
-
-		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
-			SetPixel(nPixelIndex, 0xFF, 0xFF, 0xFF);
-		}
-
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
-			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
-		} else {
-			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
-		}
-	} else {
-		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0xFF : m_PixelConfiguration.GetHighCode(), m_nBufSize);
-	}
-
-	Update();
-
-#if defined( USE_SPI_DMA )
-	// May not be interrupted.
-	do {
-		asm volatile ("isb" ::: "memory");
-	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+#else
+	FUNC_PREFIX(spi_writenb(reinterpret_cast<char *>(m_pBlackoutBuffer), m_nBufSize));
 #endif
 
 	DEBUG_EXIT

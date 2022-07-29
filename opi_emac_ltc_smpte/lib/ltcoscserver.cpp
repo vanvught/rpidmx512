@@ -340,7 +340,7 @@ void LtcOscServer::Run() {
 					const auto tLayer = TCNet::GetLayer(m_pBuffer[nOffset]);
 
 					TCNet::Get()->SetLayer(tLayer);
-					tcnet::display::show();
+					TCNetDisplay::Show();
 
 					DEBUG_PRINTF("*/tcnet/layer/%c -> %d", m_pBuffer[nOffset], static_cast<int>(tLayer));
 					return;
@@ -360,19 +360,19 @@ void LtcOscServer::Run() {
 					switch (nValue) {
 					case 24:
 						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_FILM);
-						tcnet::display::show();
+						TCNetDisplay::Show();
 						break;
 					case 25:
 						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_EBU_25FPS);
-						tcnet::display::show();
+						TCNetDisplay::Show();
 						break;
 					case 29:
 						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_DF);
-						tcnet::display::show();
+						TCNetDisplay::Show();
 						break;
 					case 30:
 						TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
-						tcnet::display::show();
+						TCNetDisplay::Show();
 						break;
 					default:
 						break;
@@ -395,7 +395,7 @@ void LtcOscServer::Run() {
 					const auto bUseTimeCode = (nValue > 0);
 
 					TCNet::Get()->SetUseTimeCode(bUseTimeCode);
-					tcnet::display::show();
+					TCNetDisplay::Show();
 
 					DEBUG_PRINTF("*/tcnet/timecode -> %d", static_cast<int>(bUseTimeCode));
 					return;

@@ -28,19 +28,11 @@
 
 #include "gd32.h"
 
-#define RCU_GPIOx				RCU_GPIOC
-#define GPIOx					GPIOC
-#define GPIO_PINx				(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
-#define GPIO_PIN_OFFSET			6U
+#define RCU_GPIOx			RCU_GPIOC
+#define GPIOx				GPIOC
+#define GPIO_PINx			(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
+#define GPIO_PIN_OFFSET		6U
 
-#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ)
-
-/**
- * Implementation note: CLOCK is Timer 2 Channel 0 is GPIOA6
- */
-
-#define DEBUG_CS_RCU_GPIOx		RCU_GPIOA
-#define DEBUG_CS_GPIOx			GPIOA
-#define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
+#define MASTER_TIMER_CLOCK	120000000U
 
 #endif /* GPIO_BOARD_GD32F207R_H_ */

@@ -173,10 +173,10 @@ void GPS::Start() {
 		}
 	}
 
-	m_tStatusCurrent = gps::Status::IDLE;
+	m_tStatusCurrent = GPSStatus::IDLE;
 
 
-	Display(gps::Status::IDLE);
+	Display(GPSStatus::IDLE);
 	DEBUG_EXIT
 }
 
@@ -208,7 +208,7 @@ void GPS::Run() {
 			nOffset += nLenght;
 			break;
 		case nmea::RMC | (2 << 8):	// Status, A = Valid, V = Warning
-			m_tStatusCurrent = (m_pSentence[nOffset] == 'A' ? gps::Status::VALID : gps::Status::WARNING);
+			m_tStatusCurrent = (m_pSentence[nOffset] == 'A' ? GPSStatus::VALID : GPSStatus::WARNING);
 //			printf("(%c) : %d\n", m_pSentence[nOffset], nOffset	);
 			nOffset += 1;
 			break;
@@ -234,6 +234,10 @@ void GPS::Run() {
 		Display(m_tStatusCurrent);
 
 	}
+}
+
+void GPS::Display(GPSStatus status) { // Weak
+	printf("GPS status=%u\n", static_cast<uint32_t>(status));
 }
 
 void GPS::DumpSentence(__attribute__((unused)) const char *pSentence) {

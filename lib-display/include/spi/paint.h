@@ -29,6 +29,8 @@
 #include "spi/lcd_font.h"
 #include "spi/config.h"
 
+#include "debug.h"
+
 class Paint {
 public:
 	Paint();

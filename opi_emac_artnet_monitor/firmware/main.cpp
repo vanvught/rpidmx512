@@ -33,9 +33,6 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "ntpclient.h"
 
@@ -68,8 +65,7 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-}
+using namespace artnet;
 
 extern "C" {
 
@@ -81,7 +77,6 @@ void notmain(void) {
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
-
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
@@ -114,16 +109,16 @@ void notmain(void) {
 #endif
 	mDns.Print();
 
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
-
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+
+	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+	}
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
@@ -134,12 +129,11 @@ void notmain(void) {
 
 	if (artnetParams.Load()) {
 		artnetParams.Dump();
-		artnetParams.Set();
+		artnetParams.Set(&node);
 	}
 
 	node.SetArtNetStore(StoreArtNet::Get());
 	node.SetArtNetDisplay(&displayUdfHandler);
-
 	bool isSet;
 	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
 
@@ -205,9 +199,6 @@ void notmain(void) {
 		showSystime.Run();
 		display.Run();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 	}
 }
 

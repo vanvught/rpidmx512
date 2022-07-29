@@ -35,9 +35,6 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "oscserver.h"
 #include "oscserverparams.h"
@@ -59,10 +56,6 @@
 #include "software_version.h"
 
 #include "displayhandler.h"
-
-void Hardware::RebootHandler() {
-	Dmx::Get()->Blackout();
-}
 
 extern "C" {
 
@@ -107,10 +100,6 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Server DMX");
 #endif
 	mDns.Print();
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
-#endif
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
@@ -179,9 +168,6 @@ void notmain(void) {
 		lb.Run();
 		display.Run();
 		dmxConfigUdp.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 	}
 }
 }

@@ -30,17 +30,17 @@
 
 class LtcOutputs {
 public:
-	LtcOutputs(ltc::Source tSource, bool bShowSysTime);
+	LtcOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs, ltc::source tSource, bool bShowSysTime);
 
 	void Init();
-	void Update(const struct ltc::TimeCode *ptLtcTimeCode);
-	void UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *ptLtcTimeCode);
+	void Update(const struct TLtcTimeCode *ptLtcTimeCode);
+	void UpdateMidiQuarterFrameMessage(const struct TLtcTimeCode *ptLtcTimeCode);
 
 	void ShowSysTime();
 	void ShowBPM(uint32_t nBPM);
 
 	void ResetTimeCodeTypePrevious() {
-		m_tTimeCodeTypePrevious = ltc::Type::INVALID;
+		m_tTimeCodeTypePrevious = ltc::type::INVALID;
 	}
 
 	void Print();
@@ -50,11 +50,15 @@ public:
 	}
 
 private:
+	void PrintDisabled(bool IsDisabled, const char *p);
+
+private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	bool m_bShowSysTime;
-	ltc::Type m_tTimeCodeTypePrevious { ltc::Type::INVALID };
+	ltc::type m_tTimeCodeTypePrevious { ltc::type::INVALID };
 	uint32_t m_nMidiQuarterFramePiece { 0 };
-	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
-	char m_aSystemTime[ltc::timecode::SYSTIME_MAX_LENGTH];
+	char m_aTimeCode[TC_CODE_MAX_LENGTH];
+	char m_aSystemTime[TC_SYSTIME_MAX_LENGTH];
 	int32_t m_nSecondsPrevious { 60 };
 	char m_cBPM[9];
 

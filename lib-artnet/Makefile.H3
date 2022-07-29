@@ -2,5 +2,4 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include ../lib-hal/include ../lib-network/include
 
-include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

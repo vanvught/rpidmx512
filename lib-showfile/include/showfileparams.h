@@ -2,7 +2,7 @@
  * @file showfileparams.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,8 +30,7 @@
 
 #include "showfile.h"
 
-namespace showfileparams {
-struct Params {
+struct TShowFileParams {
 	uint32_t nSetList;
 	uint8_t nFormat;
 	uint8_t nShow;
@@ -44,13 +43,13 @@ struct Params {
 	uint8_t nDmxMaster;
 } __attribute__((packed));
 
-struct Options {
+struct ShowFileOptions {
 	static constexpr auto AUTO_START = (1U << 0);
 	static constexpr auto LOOP = (1U << 1);
 	static constexpr auto DISABLE_SYNC = (1U << 2);
 };
 
-struct Mask {
+struct ShowFileParamsMask {
 	static constexpr auto FORMAT = (1U << 0);
 	static constexpr auto SHOW = (1U << 1);
 	static constexpr auto OPTIONS = (1U << 2);
@@ -61,14 +60,14 @@ struct Mask {
 	static constexpr auto ARTNET_UNICAST_DISABLED = (1U << 7);
 	static constexpr auto DMX_MASTER = (1U << 8);
 };
-}  // namespace showfileparams
 
 class ShowFileParamsStore {
 public:
-	virtual ~ShowFileParamsStore() {}
+	virtual ~ShowFileParamsStore() {
+	}
 
-	virtual void Update(const struct showfileparams::Params *pShowFileParams)=0;
-	virtual void Copy(struct showfileparams::Params *pShowFileParams)=0;
+	virtual void Update(const struct TShowFileParams *pShowFileParams)=0;
+	virtual void Copy(struct TShowFileParams *pShowFileParams)=0;
 };
 
 class ShowFileParams {
@@ -85,24 +84,24 @@ public:
 
 	void Dump();
 
-	showfile::Formats GetFormat() const {
-		return static_cast<showfile::Formats>(m_showFileParams.nFormat);
+	ShowFileFormats GetFormat() const {
+		return static_cast<ShowFileFormats>(m_tShowFileParams.nFormat);
 	}
 
-	showfile::Protocols GetProtocol() const {
-		return static_cast<showfile::Protocols>(m_showFileParams.nProtocol);
+	ShowFileProtocols GetProtocol() const {
+		return static_cast<ShowFileProtocols>(m_tShowFileParams.nProtocol);
 	}
 
 	uint8_t GetShow() const {
-		return m_showFileParams.nShow;
+		return m_tShowFileParams.nShow;
 	}
 
 	bool IsAutoStart() const {
-		return isOptionSet(showfileparams::Options::AUTO_START);
+		return isOptionSet(ShowFileOptions::AUTO_START);
 	}
 
 	bool IsArtNetBroadcast() const {
-		return isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED);
+		return isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED);
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
@@ -111,15 +110,15 @@ private:
     void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_showFileParams.nSetList & nMask) == nMask;
+    	return (m_tShowFileParams.nSetList & nMask) == nMask;
     }
     bool isOptionSet(uint16_t nMask) const {
-    	return (m_showFileParams.nOptions & nMask) == nMask;
+    	return (m_tShowFileParams.nOptions & nMask) == nMask;
     }
 
 private:
     ShowFileParamsStore *m_pShowFileParamsStore;
-    showfileparams::Params m_showFileParams;
+    TShowFileParams m_tShowFileParams;
 };
 
 #endif /* SHOWFILEPARAMS_H_ */

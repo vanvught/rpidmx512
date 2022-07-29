@@ -31,6 +31,8 @@
 
 class LtcEtcReader final : public LtcEtcHandler {
 public:
+	LtcEtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
 	void Start();
 	void Stop();
 
@@ -39,6 +41,7 @@ public:
 	void Handler(const midi::Timecode *pTimeCode);
 
 private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	struct midi::Timecode m_tMidiTimeCode;
 };
 

@@ -84,7 +84,7 @@ AppleMidi::AppleMidi() : m_nSSRC(Network::Get()->GetIp()), m_nExchangePacketRepl
 
 	memset(&m_tSessionStatus, 0, sizeof (struct applemidi::SessionStatus));
 
-	DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %u", static_cast<uint32_t>(applemidi::EXCHANGE_PACKET_MIN_LENGTH));
+	DEBUG_PRINTF("applemidi::EXCHANGE_PACKET_MIN_LENGTH = %d", applemidi::EXCHANGE_PACKET_MIN_LENGTH);
 	DEBUG_EXIT
 }
 
@@ -94,7 +94,7 @@ void AppleMidi::HandleControlMessage() {
 	auto *pPacket = reinterpret_cast<struct applemidi::ExchangePacket*>(m_pBuffer);
 
 	debug_dump(m_pBuffer, m_nBytesReceived);
-	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%u", pPacket->nCommand, static_cast<uint32_t>(m_tSessionStatus.tSessionState));
+	DEBUG_PRINTF("Command: %.4x, m_nSessionState=%d", pPacket->nCommand, m_tSessionStatus.tSessionState);
 
 	if (m_tSessionStatus.tSessionState == applemidi::SessionState::WAITING_IN_CONTROL) {
 		DEBUG_PUTS("SESSION_STATE_WAITING_IN_CONTROL");
@@ -249,4 +249,8 @@ void AppleMidi::Run() {
 	}
 
 	MDNS::Run();
+}
+
+void AppleMidi::HandleRtpMidi(__attribute__((unused)) const uint8_t *pBuffer) {
+	// override
 }

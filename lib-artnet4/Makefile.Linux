@@ -1,6 +1,5 @@
-#DEFINES=NDEBUG
+DEFINES=#NDEBUG
 
 EXTRA_INCLUDES=../lib-artnet/include ../lib-e131/include ../lib-properties/include ../lib-spiflashstore/include ../lib-lightset/include ../lib-network/include
 
-include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

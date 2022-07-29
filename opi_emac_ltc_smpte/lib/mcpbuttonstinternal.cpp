@@ -2,7 +2,7 @@
  * @file mcpbuttonsinternal.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,31 +35,31 @@
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayrgb.h"
 
-void McpButtons::HandleInternalTimeCodeStart(struct ltc::TimeCode& StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeStart(TLtcTimeCode &StartTimeCode) {
 	displayEditTimeCode.HandleKey(m_nKey, StartTimeCode, m_aTimeCode);
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-	} else if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
+	} else if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 
 	HandleInternalKeyEsc();
 }
 
-void McpButtons::HandleInternalTimeCodeStop(struct ltc::TimeCode& StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeStop(TLtcTimeCode &StartTimeCode) {
 	displayEditTimeCode.HandleKey(m_nKey, StartTimeCode, m_aTimeCode);
 
-	if (!g_ltc_ptLtcDisabledOutputs.bMax7219) {
+	if (!m_ptLtcDisabledOutputs->bMax7219) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
-	} else if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
+	} else if ((!m_ptLtcDisabledOutputs->bWS28xx) || (!m_ptLtcDisabledOutputs->bRgbPanel)) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
 
 	HandleInternalKeyEsc();
 }
 
-void McpButtons::HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode) {
+void McpButtons::HandleInternalTimeCodeFps(TLtcTimeCode &StartTimeCode) {
 	displayEditFps.HandleKey(m_nKey, StartTimeCode.nType);
 
 	HandleInternalKeyEsc();

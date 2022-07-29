@@ -733,42 +733,6 @@ void Dmx::SetPortSendDataWithoutSC(__attribute__((unused)) uint32_t nPortIndex, 
 	SetSendDataLength(nLength + 1);
 }
 
-void Dmx::Blackout() {
-	DEBUG_ENTRY
-
-	do {
-		dmb();
-	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
-
-	auto *p = reinterpret_cast<uint32_t *>(s_DmxData[0].Data);
-
-	for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
-		*p++ = 0;
-	}
-
-	s_DmxData[0].Data[0] = START_CODE;
-
-	DEBUG_EXIT
-}
-
-void Dmx::FullOn() {
-	DEBUG_ENTRY
-
-	do {
-		dmb();
-	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
-
-	auto *p = reinterpret_cast<uint32_t *>(s_DmxData[0].Data);
-
-	for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
-		*p++ = static_cast<uint32_t>(~0);
-	}
-
-	s_DmxData[0].Data[0] = START_CODE;
-
-	DEBUG_EXIT
-}
-
 uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;

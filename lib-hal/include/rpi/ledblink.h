@@ -36,7 +36,7 @@ void hardware_led_set(const int);
 
 class LedBlink {
 public:
-	LedBlink();
+	LedBlink(void);
 
 	void SetFrequency(uint32_t nFreqHz) {
 		m_nFreqHz = nFreqHz;
@@ -65,17 +65,17 @@ public:
 		}
 	}
 
-	uint32_t GetFrequency() const {
+	uint32_t GetFrequency(void) const {
 		return m_nFreqHz;
 	}
 
 	void SetMode(ledblink::Mode tMode);
 
-	ledblink::Mode GetMode() const {
+	ledblink::Mode GetMode(void) const {
 		return m_tMode;
 	}
 
-	void Run() {
+	void Run(void) {
 		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
 			return;
 		}
@@ -96,7 +96,7 @@ public:
 		m_pLedBlinkDisplay = pLedBlinkDisplay;
 	}
 
-	static LedBlink* Get() {
+	static LedBlink* Get(void) {
 		return s_pThis;
 	}
 

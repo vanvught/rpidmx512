@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,69 +36,71 @@
 
 #include "debug.h"
 
-LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment(pixel::Type type, pixel::Map map) {
-	DEBUG_ENTRY
+using namespace ltcdisplayrgb;
 
-	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment(type, map);
+LtcDisplayWS28xx7Segment::LtcDisplayWS28xx7Segment(pixel::Type tLedType, pixel::Map tRGBMapping) {
+	DEBUG1_ENTRY
+
+	m_pWS28xxDisplay7Segment = new WS28xxDisplay7Segment(tLedType, tRGBMapping);
 	assert(m_pWS28xxDisplay7Segment != nullptr);
 
-	DEBUG_EXIT
+	DEBUG1_EXIT
 }
 
-void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) {
-	auto nRed = colours.nRed;
-	auto nGreen = colours.nGreen;
-	auto nBlue = colours.nBlue;
+void LtcDisplayWS28xx7Segment::Show(const char *pTimecode, struct Colours &tColours, struct Colours &tColoursColons) {
+	auto nRed = tColours.nRed;
+	auto nGreen = tColours.nGreen;
+	auto nBlue = tColours.nBlue;
 
 	const char aChars[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
 
-	nRed = coloursColons.nRed;
-	nGreen = coloursColons.nGreen;
-	nBlue = coloursColons.nBlue;
+	nRed = tColoursColons.nRed;
+	nGreen = tColoursColons.nGreen;
+	nBlue = tColoursColons.nBlue;
 
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[ltc::timecode::index::COLON_1], 0, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[ltc::timecode::index::COLON_2], 1, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[ltc::timecode::index::COLON_3], 2, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_1], 0, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_2], 1, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pTimecode[LTC_TC_INDEX_COLON_3], 2, nRed, nGreen, nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) {
-	auto nRed = colours.nRed;
-	auto nGreen = colours.nGreen;
-	auto nBlue = colours.nBlue;
+void LtcDisplayWS28xx7Segment::ShowSysTime(const char *pSystemTime, struct Colours &tColours, struct Colours &tColoursColons) {
+	auto nRed = tColours.nRed;
+	auto nGreen = tColours.nGreen;
+	auto nBlue = tColours.nBlue;
 
 	const char aChars[] = { ' ', ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7]};
 	assert(sizeof(aChars) <= WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS);
 
 	m_pWS28xxDisplay7Segment->WriteAll(aChars, nRed, nGreen, nBlue);
 
-	nRed = coloursColons.nRed;
-	nGreen = coloursColons.nGreen;
-	nBlue = coloursColons.nBlue;
+	nRed = tColoursColons.nRed;
+	nGreen = tColoursColons.nGreen;
+	nBlue = tColoursColons.nBlue;
 
 	m_pWS28xxDisplay7Segment->WriteColon(' ', 0, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[ltc::systemtime::index::COLON_1], 1, nRed, nGreen, nBlue);
-	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[ltc::systemtime::index::COLON_2], 2, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[LTC_ST_INDEX_COLON_1], 1, nRed, nGreen, nBlue);
+	m_pWS28xxDisplay7Segment->WriteColon(pSystemTime[LTC_ST_INDEX_COLON_2], 2, nRed, nGreen, nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct ltcdisplayrgb::Colours& colours) {
-	assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == ltcdisplayrgb::MAX_MESSAGE_SIZE);
+void LtcDisplayWS28xx7Segment::ShowMessage(const char *pMessage, struct Colours &tColours) {
+	assert(WS28xxDisplay7SegmentConfig::NUM_OF_DIGITS == MAX_MESSAGE_SIZE);
 
-	const auto nRed = colours.nRed;
-	const auto nGreen = colours.nGreen;
-	const auto nBlue = colours.nBlue;
+	const auto nRed = tColours.nRed;
+	const auto nGreen = tColours.nGreen;
+	const auto nBlue = tColours.nBlue;
 
 	m_pWS28xxDisplay7Segment->WriteAll(pMessage, nRed, nGreen, nBlue);
 	m_pWS28xxDisplay7Segment->SetColonsOff();
 	m_pWS28xxDisplay7Segment->Show();
 }
 
-void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours& colours) {
-	m_pWS28xxDisplay7Segment->WriteChar(static_cast<char>(nChar), nPos, colours.nRed, colours.nGreen, colours.nBlue);
+void LtcDisplayWS28xx7Segment::WriteChar(uint8_t nChar, uint8_t nPos, struct Colours &tColours) {
+	m_pWS28xxDisplay7Segment->WriteChar(static_cast<char>(nChar), nPos, tColours.nRed, tColours.nGreen, tColours.nBlue);
 	m_pWS28xxDisplay7Segment->Show();
 }
 

@@ -30,10 +30,9 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
-#include "mdns.h"
-#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
+# include "mdns.h"
+# include "mdnsservices.h"
 #endif
 
 #include "displayudf.h"
@@ -42,6 +41,7 @@
 
 #include "e131bridge.h"
 #include "e131params.h"
+#include "e131reboot.h"
 #include "e131msgconst.h"
 #include "e131sync.h"
 
@@ -68,10 +68,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-void Hardware::RebootHandler() {
-	E131Bridge::Get()->Stop();
-}
-
 extern "C" {
 
 void notmain(void) {
@@ -87,6 +83,7 @@ void notmain(void) {
 	fw.Print("sACN E1.31 -> Art-Net");
 
 	hw.SetLed(hardware::LedStatus::ON);
+	hw.SetRebootHandler(new E131Reboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -96,18 +93,13 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
+#if defined (ENABLE_HTTPD)
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-#if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31 DMX");
-#endif
 	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
@@ -119,7 +111,7 @@ void notmain(void) {
 
 	if (e131params.Load()) {
 		e131params.Dump();
-		e131params.Set();
+		e131params.Set(&bridge);
 	}
 
 	bridge.SetDisableSynchronize(true);
@@ -131,9 +123,10 @@ void notmain(void) {
 	bridge.SetE131Sync(&artnetOutput);
 	
 	bool bIsSetIndividual = false;
-	uint16_t nUniverse[e131params::MAX_PORTS];
 
-	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
+	uint16_t nUniverse[E131::PORTS];
+
+	for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
 		bool bIsSet;
 		nUniverse[nPortIndex] = e131params.GetUniverse(nPortIndex, bIsSet);
 
@@ -149,15 +142,16 @@ void notmain(void) {
 			bIsSetIndividual = true;
 		}
 	}
-
+	
 	if (!bIsSetIndividual) {
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + 1));
+		const auto nUniverse = e131params.GetUniverse();
+
+		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nPortIndex + nUniverse));
 		}
 	}
-	
+
 	bridge.Print();
-	artnetOutput.Print();
 	controller.Print();
 
 	display.SetTitle("sACN E1.31 Art-Net %d", bridge.GetActiveOutputPorts());
@@ -232,9 +226,8 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-		mDns.Run();
 #if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
+		mDns.Run();
 #endif
 	}
 }

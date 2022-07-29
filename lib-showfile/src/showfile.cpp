@@ -2,7 +2,7 @@
  * @file showfile.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-ShowFile *ShowFile::s_pThis;
+ShowFile *ShowFile::s_pThis = nullptr;
 
 ShowFile::ShowFile() {
 	DEBUG_ENTRY
@@ -51,7 +51,7 @@ void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nShowFileNumber=%u", nShowFileNumber);
 
-	if (nShowFileNumber <= showfile::File::MAX_NUMBER) {
+	if (nShowFileNumber <= ShowFileFile::MAX_NUMBER) {
 		ShowFileStop();
 
 		if (m_pShowFile != nullptr) {
@@ -83,9 +83,14 @@ void ShowFile::SetShowFile(uint32_t nShowFileNumber) {
 	DEBUG_EXIT
 }
 
-bool ShowFile::DeleteShowFile(__attribute__((unused)) uint32_t nShowFileNumber) {
-	DEBUG_ENTRY
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
+void ShowFile::BlackOut() {
+	if (m_pShowFileProtocolHandler != nullptr) {
+		Stop();
+		m_pShowFileProtocolHandler->DmxBlackout();
+	}
+}
+
+bool ShowFile::DeleteShowFile(uint32_t nShowFileNumber) {
 	DEBUG_PRINTF("nShowFileNumber=%u, m_bEnableTFTP=%d", nShowFileNumber, m_bEnableTFTP);
 
 	if (!m_bEnableTFTP) {
@@ -93,7 +98,7 @@ bool ShowFile::DeleteShowFile(__attribute__((unused)) uint32_t nShowFileNumber) 
 		return false;
 	}
 
-	char aFileName[showfile::File::NAME_LENGTH + 1];
+	char aFileName[ShowFileFile::NAME_LENGTH + 1];
 
 	if (ShowFileNameCopyTo(aFileName, sizeof(aFileName), nShowFileNumber)) {
 		const int nResult = unlink(aFileName);
@@ -101,14 +106,13 @@ bool ShowFile::DeleteShowFile(__attribute__((unused)) uint32_t nShowFileNumber) 
 		DEBUG_EXIT
 		return (nResult == 0);
 	}
-#endif
+
 	DEBUG_EXIT
 	return false;
 }
 
-void ShowFile::EnableTFTP(__attribute__((unused))bool bEnableTFTP) {
+void ShowFile::EnableTFTP(bool bEnableTFTP) {
 	DEBUG_ENTRY
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 
 	if (bEnableTFTP == m_bEnableTFTP) {
 		DEBUG_EXIT
@@ -138,35 +142,72 @@ void ShowFile::EnableTFTP(__attribute__((unused))bool bEnableTFTP) {
 		m_pShowFileTFTP = nullptr;
 
 		SetShowFile(m_nShowFileNumber);
-		SetStatus(showfile::Status::IDLE);
+		SetShowFileStatus(ShowFileStatus::IDLE);
 	}
 
 	UpdateDisplayStatus();
-#endif
+
 	DEBUG_EXIT
 }
 
-void ShowFile::SetStatus(showfile::Status Status) {
+void ShowFile::Start() {
 	DEBUG_ENTRY
 
-	if (Status == m_Status) {
+	EnableTFTP(false);
+
+	if (m_pShowFile != nullptr) {
+		ShowFileStart();
+		SetShowFileStatus(ShowFileStatus::RUNNING);
+	} else {
+		SetShowFileStatus(ShowFileStatus::STOPPED);
+	}
+
+	DEBUG_EXIT
+}
+
+void ShowFile::Stop() {
+	DEBUG_ENTRY
+
+	if (m_pShowFile != nullptr) {
+		ShowFileStop();
+		SetShowFileStatus(ShowFileStatus::STOPPED);
+	}
+
+	DEBUG_EXIT
+}
+
+void ShowFile::Resume() {
+	DEBUG_ENTRY
+
+	if (m_pShowFile != nullptr) {
+		ShowFileResume();
+		SetShowFileStatus(ShowFileStatus::RUNNING);
+	}
+
+	DEBUG_EXIT
+}
+
+void ShowFile::SetShowFileStatus(ShowFileStatus tShowFileStatus) {
+	DEBUG_ENTRY
+
+	if (tShowFileStatus == m_tShowFileStatus) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_Status = Status;
+	m_tShowFileStatus = tShowFileStatus;
 
-	switch (m_Status) {
-		case showfile::Status::IDLE:
+	switch (m_tShowFileStatus) {
+		case ShowFileStatus::IDLE:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
 			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			break;
-		case showfile::Status::RUNNING:
+		case ShowFileStatus::RUNNING:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
 			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
 			break;
-		case showfile::Status::STOPPED:
-		case showfile::Status::ENDED:
+		case ShowFileStatus::STOPPED:
+		case ShowFileStatus::ENDED:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
 			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 			break;
@@ -177,4 +218,21 @@ void ShowFile::SetStatus(showfile::Status Status) {
 	UpdateDisplayStatus();
 
 	DEBUG_EXIT
+}
+
+void ShowFile::Run() {
+	if (m_tShowFileStatus == ShowFileStatus::RUNNING) {
+		ShowFileRun();
+		return;
+	}
+
+	if (m_pShowFileTFTP != nullptr) {
+		m_pShowFileTFTP->Run();
+	}
+}
+
+void ShowFile::Print() {
+	printf("[%s]\n", m_aShowFileName);
+	printf("%s\n", m_bDoLoop ? "Looping" : "Not looping");
+	ShowFilePrint();
 }

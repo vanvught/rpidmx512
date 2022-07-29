@@ -2,7 +2,7 @@
  * @file showfile.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,106 +26,48 @@
 #ifndef SHOWFILE_H_
 #define SHOWFILE_H_
 
-#include <cstdio>
+#include <stdio.h>
 
 #include "showfileprotocolhandler.h"
 #include "showfiledisplay.h"
 #include "showfiletftp.h"
 
-#include "debug.h"
-
-namespace showfile {
-enum class Status {
+enum class ShowFileStatus : unsigned {
 	IDLE, RUNNING, STOPPED, ENDED, UNDEFINED
 };
 
-enum class Formats {
+enum class ShowFileFormats : unsigned {
 	OLA, DUMMY, UNDEFINED
 };
 
-enum class Protocols {
-	SACN, ARTNET, INTERNAL, UNDEFINED
+enum class ShowFileProtocols : unsigned {
+	SACN, ARTNET, UNDEFINED
 };
 
 #define SHOWFILE_PREFIX	"show"
 #define SHOWFILE_SUFFIX	".txt"
 
-struct File {
+struct ShowFileFile {
 	static constexpr auto NAME_LENGTH = sizeof(SHOWFILE_PREFIX "NN" SHOWFILE_SUFFIX) - 1;
 	static constexpr auto MAX_NUMBER = 99;
 };
-}  // namespace showfile
 
 class ShowFile {
 public:
 	ShowFile();
 	virtual ~ShowFile() {}
 
-	void Start() {
-		DEBUG_ENTRY
+	void Start();
+	void Stop();
+	void Resume();
+	void Run();
+	void Print();
 
-		EnableTFTP(false);
-
-		if (m_pShowFile != nullptr) {
-			ShowFileStart();
-			SetStatus(showfile::Status::RUNNING);
-		} else {
-			SetStatus(showfile::Status::STOPPED);
-		}
-
-		DEBUG_EXIT
-	}
-
-	void Stop() {
-		DEBUG_ENTRY
-
-		if (m_pShowFile != nullptr) {
-			ShowFileStop();
-			SetStatus(showfile::Status::STOPPED);
-		}
-
-		DEBUG_EXIT
-	}
-
-	void Resume() {
-		DEBUG_ENTRY
-
-		if (m_pShowFile != nullptr) {
-			ShowFileResume();
-			SetStatus(showfile::Status::RUNNING);
-		}
-
-		DEBUG_EXIT
-	}
-
-	void Run() {
-		if (m_Status == showfile::Status::RUNNING) {
-			ShowFileRun();
-			return;
-		}
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
-		if (m_pShowFileTFTP != nullptr) {
-			m_pShowFileTFTP->Run();
-		}
-#endif
-	}
-
-	void Print() {
-		printf("[%s]\n", m_aShowFileName);
-		printf("%s\n", m_bDoLoop ? "Looping" : "Not looping");
-		ShowFilePrint();
-	}
-
-	void SetStatus(showfile::Status Status);
-
-	showfile::Status GetStatus() const {
-		return m_Status;
-	}
+	void SetShowFileStatus(ShowFileStatus tShowFileStatus);
 
 	void SetProtocolHandler(ShowFileProtocolHandler *pShowFileProtocolHandler) {
 		m_pShowFileProtocolHandler = pShowFileProtocolHandler;
 	}
-
 	ShowFileProtocolHandler *GetProtocolHandler() const {
 		return m_pShowFileProtocolHandler;
 	}
@@ -145,17 +87,11 @@ public:
 	void DoLoop(bool bDoLoop) {
 		m_bDoLoop = bDoLoop;
 	}
-
 	bool GetDoLoop() const {
 		return m_bDoLoop;
 	}
 
-	void BlackOut() {
-		if (m_pShowFileProtocolHandler != nullptr) {
-			Stop();
-			m_pShowFileProtocolHandler->DmxBlackout();
-		}
-	}
+	void BlackOut();
 
 	void SetMaster(uint32_t nMaster) {
 		if (m_pShowFileProtocolHandler != nullptr) {
@@ -163,18 +99,17 @@ public:
 		}
 	}
 
+	enum ShowFileStatus GetStatus() const {
+		return m_tShowFileStatus;
+	}
+
 	void SetShowFileDisplay(ShowFileDisplay *pShowFileDisplay) {
 		m_pShowFileDisplay = pShowFileDisplay;
 	}
 
 	void EnableTFTP(bool bEnableTFTP);
-
 	bool IsTFTPEnabled() const 	{
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
 		return m_bEnableTFTP;
-#else
-		return false;
-#endif
 	}
 
 	void UpdateDisplayStatus() {
@@ -183,8 +118,8 @@ public:
 		}
 	}
 
-	static showfile::Formats GetFormat(const char *pString);
-	static const char *GetFormat(showfile::Formats Format);
+	static ShowFileFormats GetFormat(const char *pString);
+	static const char *GetFormat(ShowFileFormats tFormat);
 	static bool CheckShowFileName(const char *pShowFileName, uint32_t& nShowFileNumber);
 	static bool ShowFileNameCopyTo(char *pShowFileName, uint32_t nLength, uint32_t nShowFileNumber);
 
@@ -200,19 +135,18 @@ protected:
 	virtual void ShowFilePrint()=0;
 
 protected:
-	uint32_t m_nShowFileNumber { showfile::File::MAX_NUMBER + 1 };
+	uint32_t m_nShowFileNumber { ShowFileFile::MAX_NUMBER + 1 };
 	bool m_bDoLoop { false };
 	FILE *m_pShowFile { nullptr };
 	ShowFileProtocolHandler *m_pShowFileProtocolHandler { nullptr };
 	ShowFileDisplay *m_pShowFileDisplay { nullptr };
 
 private:
-	showfile::Status m_Status { showfile::Status::IDLE };
-	char m_aShowFileName[showfile::File::NAME_LENGTH + 1]; // Including '\0'
-#if !defined(CONFIG_SHOWFILE_DISABLE_TFTP)
+	ShowFileStatus m_tShowFileStatus { ShowFileStatus::IDLE };
+	char m_aShowFileName[ShowFileFile::NAME_LENGTH + 1]; // Including '\0'
 	bool m_bEnableTFTP { false };
 	ShowFileTFTP *m_pShowFileTFTP { nullptr };
-#endif
+
 	static ShowFile *s_pThis;
 };
 

@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
 namespace max {
-	static constexpr auto PORTS_ALLOWED = 32;
+	static constexpr auto PORTS_ALLOWED = 16;
 	static constexpr auto ENTRIES = (1 << 2); // Must always be a power of 2
 	static constexpr auto ENTRIES_MASK __attribute__((unused)) = (ENTRIES - 1);
 }
@@ -132,15 +132,15 @@ int Network::Init(const char *s) {
 	}
 #endif
 
-	memset(m_aHostName, 0, sizeof(m_aHostName));
-
 	if (gethostname(m_aHostName, sizeof(m_aHostName)) < 0) {
 		perror("gethostname");
 	}
 
+	m_aHostName[network::HOSTNAME_SIZE - 1] = '\0';
+
 	i = 0;
 
-	while((m_aHostName[i] != '\0') && (i < network::HOSTNAME_SIZE) && (m_aHostName[i] != '.') ) {
+	while(i < network::HOSTNAME_SIZE && m_aHostName[i] != '.') {
 		i++;
 	}
 
@@ -250,7 +250,6 @@ int32_t Network::Begin(uint16_t nPort) {
 
 	snHandles[i] = nSocket;
 
-	DEBUG_PRINTF("nSocket=%d", nSocket);
 	DEBUG_EXIT
 	return nSocket;
 }
@@ -354,9 +353,6 @@ void Network::SetGatewayIp(__attribute__((unused)) uint32_t nGatewayIp) {
 }
 
 void Network::JoinGroup(int32_t nHandle, uint32_t ip) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nHandle=%d, ip=%x", nHandle, ip);
-
 	struct ip_mreq mreq;
 
 	mreq.imr_multiaddr.s_addr = ip;
@@ -365,8 +361,6 @@ void Network::JoinGroup(int32_t nHandle, uint32_t ip) {
 	if (setsockopt(nHandle, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
 		perror("setsockopt(IP_ADD_MEMBERSHIP)");
 	}
-
-	DEBUG_EXIT
 }
 
 void Network::LeaveGroup(int32_t nHandle, uint32_t ip) {
@@ -392,7 +386,6 @@ uint16_t Network::RecvFrom(int32_t nHandle, void *pPacket, uint16_t nSize, uint3
 
 	if ((recv_len = recvfrom(nHandle, pPacket, nSize, 0, reinterpret_cast<struct sockaddr*>(&si_other), &slen)) == -1) {
 		if (1 && (errno != EAGAIN) && (errno != EWOULDBLOCK)) { // EAGAIN and EWOULDBLOCK can be equal
-			DEBUG_PRINTF("nHandle=%d", nHandle);
 			perror("recvfrom");
 		}
 		return 0;

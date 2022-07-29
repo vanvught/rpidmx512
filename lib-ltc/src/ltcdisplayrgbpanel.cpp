@@ -2,7 +2,7 @@
  * @file ltcdisplayrgbpanel.cpp
  */
 /*
- * Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@
 static constexpr char aTypes[5][8 + 1] =
 	{ "Film 24 ", "EBU 25  ", "DF 29.97", "SMPTE 30", "----- --" };
 
-static constexpr char aSources[static_cast<uint32_t>(ltc::Source::UNDEFINED)][8 + 1] =
-	{ "LTC", "Art-Net", "Midi", "TCNet", "Internal", "RtpMidi", "Systime", "ETC" };
+static constexpr char aSources[ltc::source::UNDEFINED][8 + 1] =
+	{ "LTC", "Art-Net", "Midi", "TCNet", "Internal", "RtpMidi", "Systime" };
 
 using namespace ltcdisplayrgb;
 
@@ -83,9 +83,9 @@ void LtcDisplayRgbPanel::Print() {
 
 void LtcDisplayRgbPanel::Show(const char *pTimecode, struct Colours &tColours, struct Colours &tColoursColons) {
 	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_1], 1, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_2], 3, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pTimecode[ltc::timecode::index::COLON_3], 5, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pRgbPanel->SetColon(pTimecode[LTC_TC_INDEX_COLON_1], 1, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pRgbPanel->SetColon(pTimecode[LTC_TC_INDEX_COLON_2], 3, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pRgbPanel->SetColon(pTimecode[LTC_TC_INDEX_COLON_3], 5, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
 
 	const char cLine[8] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 
@@ -104,8 +104,8 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct Colours &tColours, s
 
 void LtcDisplayRgbPanel::ShowSysTime(const char *pSystemTime, struct Colours &tColours, struct Colours &tColoursColons) {
 	m_pRgbPanel->SetColonsOff();
-	m_pRgbPanel->SetColon(pSystemTime[ltc::systemtime::index::COLON_1], 2, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pRgbPanel->SetColon(pSystemTime[ltc::systemtime::index::COLON_2], 4, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pRgbPanel->SetColon(pSystemTime[LTC_ST_INDEX_COLON_1], 2, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pRgbPanel->SetColon(pSystemTime[LTC_ST_INDEX_COLON_2], 4, 0, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
 
 	const char cLine[] = { ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7], ' '};
 
@@ -129,23 +129,23 @@ void LtcDisplayRgbPanel::ShowMessage(const char *pMessage, struct Colours &tColo
 	m_pRgbPanel->Show();
 }
 
-void LtcDisplayRgbPanel::ShowFPS(ltc::Type type, struct Colours& tColours) {
-	memcpy(m_Line[1], aTypes[static_cast<uint32_t>(type)], 8);
+void LtcDisplayRgbPanel::ShowFPS(ltc::type tTimeCodeType, struct Colours &tColours) {
+	memcpy(m_Line[1], aTypes[tTimeCodeType], 8);
 
 	m_LineColours[1].nRed = tColours.nRed;
 	m_LineColours[1].nGreen = tColours.nGreen;
 	m_LineColours[1].nBlue = tColours.nBlue;
 }
 
-void LtcDisplayRgbPanel::ShowSource(ltc::Source source, struct Colours& tColours) {
-	memcpy(m_Line[3], aSources[static_cast<uint32_t>(source)], 8);
+void LtcDisplayRgbPanel::ShowSource(ltc::source tSource, struct Colours &tColours) {
+	memcpy(m_Line[3], aSources[tSource], 8);
 
 	m_LineColours[3].nRed = tColours.nRed;
 	m_LineColours[3].nGreen = tColours.nGreen;
 	m_LineColours[3].nBlue = tColours.nBlue;
 }
 
-void LtcDisplayRgbPanel::ShowInfo(const char *pInfo, uint32_t nLength, struct Colours& tColours) {
+void LtcDisplayRgbPanel::ShowInfo(const char *pInfo, uint32_t nLength, struct Colours &tColours) {
 	nLength = std::min(8U, nLength);
 	uint32_t i;
 	for (i = 0; i < nLength; i++) {

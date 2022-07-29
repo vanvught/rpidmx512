@@ -48,7 +48,7 @@ void LtcSender::Start() {
 	h3_codec_begin();
 }
 
-void LtcSender::SetTimeCode(const struct ltc::TimeCode* pLtcSenderTimeCode, bool nExternalClock) {
+void LtcSender::SetTimeCode(const struct TLtcTimeCode* pLtcSenderTimeCode, bool nExternalClock) {
 	LtcEncoder::SetTimeCode(pLtcSenderTimeCode, nExternalClock);
 	LtcEncoder::Get()->Encode();
 

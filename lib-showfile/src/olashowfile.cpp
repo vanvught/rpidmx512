@@ -2,7 +2,7 @@
  * @file olashowfile.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,40 @@
 
 #include "debug.h"
 
+OlaShowFile::OlaShowFile() {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
+void OlaShowFile::ShowFileStart() {
+	DEBUG1_ENTRY
+
+	m_nDelayMillis = 0;
+	m_nLastMillis = 0;
+
+	fseek(m_pShowFile, 0L, SEEK_SET);
+
+	m_tState = OlaState::IDLE;
+
+	DEBUG1_EXIT
+}
+
+void OlaShowFile::ShowFileStop() {
+	DEBUG1_ENTRY
+
+	DEBUG1_EXIT
+}
+
+void OlaShowFile::ShowFileResume() {
+	DEBUG1_ENTRY
+
+	m_nDelayMillis = 0;
+	m_nLastMillis = 0;
+
+	DEBUG1_EXIT
+}
+
 void OlaShowFile::ShowFileRun() {
 	if (m_tState != OlaState::TIME_WAITING) {
 		m_tParseCode = GetNextLine();
@@ -54,7 +88,7 @@ void OlaShowFile::ShowFileRun() {
 			if (m_bDoLoop) {
 				fseek(m_pShowFile, 0L, SEEK_SET);
 			} else {
-				SetStatus(showfile::Status::ENDED);
+				SetShowFileStatus(ShowFileStatus::ENDED);
 			}
 		}
 	}

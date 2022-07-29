@@ -30,7 +30,8 @@
 
 class LtcMidiSystemRealtime {
 public:
-	LtcMidiSystemRealtime();
+	LtcMidiSystemRealtime(struct TLtcDisabledOutputs *ptLtcDisabledOutputs);
+	~LtcMidiSystemRealtime() {}
 
 	void Start();
 	void Stop();

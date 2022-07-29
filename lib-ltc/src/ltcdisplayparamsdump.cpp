@@ -37,53 +37,55 @@
 #include "pixeltype.h"
 #include "devicesparamsconst.h"
 
+using namespace ltcdisplayrgb;
+
 void LtcDisplayParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcDisplayParamsConst::FILE_NAME);
 
-	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_DISPLAY_TYPE)) {
-		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxDisplayType, m_tLtcDisplayParams.nWS28xxDisplayType == static_cast<uint8_t>(ltcdisplayrgb::WS28xxType::SEGMENT) ? "7segment" : "matrix");
+	if (isMaskSet(LtcDisplayParamsMask::WS28XX_DISPLAY_TYPE)) {
+		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxDisplayType, m_tLtcDisplayParams.nWS28xxDisplayType == static_cast<uint8_t>(WS28xxType::SEGMENT) ? "7segment" : "matrix");
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_TYPE)) {
+	if (isMaskSet(LtcDisplayParamsMask::WS28XX_TYPE)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxType));
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_RGB_MAPPING)) {
+	if (isMaskSet(LtcDisplayParamsMask::WS28XX_RGB_MAPPING)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::MAP, PixelType::GetMap(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::DISPLAYRGB_INTENSITY)) {
+	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::INTENSITY, m_tLtcDisplayParams.nDisplayRgbIntensity);
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::DISPLAYRGB_COLON_BLINK_MODE)) {
+	if (isMaskSet(LtcDisplayParamsMask::DISPLAYRGB_COLON_BLINK_MODE)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::COLON_BLINK_MODE, m_tLtcDisplayParams.nDisplayRgbColonBlinkMode);
 	}
 
-	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST); nIndex++) {
-		if (isMaskSet((ltcdisplayparams::Mask::DISLAYRGB_COLOUR_INDEX << nIndex))) {
+	for (uint32_t nIndex = 0; nIndex < static_cast<uint32_t>(ColourIndex::LAST); nIndex++) {
+		if (isMaskSet((LtcDisplayParamsMask::DISLAYRGB_COLOUR_INDEX << nIndex))) {
 			printf(" %s=%.6x\n", LtcDisplayParamsConst::COLOUR[nIndex], m_tLtcDisplayParams.aDisplayRgbColour[nIndex]);
 		}
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::GLOBAL_BRIGHTNESS)) {
+	if (isMaskSet(LtcDisplayParamsMask::GLOBAL_BRIGHTNESS)) {
 		printf(" %s=%d\n", DevicesParamsConst::GLOBAL_BRIGHTNESS, static_cast<int>(m_tLtcDisplayParams.nGlobalBrightness));
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::MAX7219_TYPE)) {
-		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type, m_tLtcDisplayParams.nMax7219Type == static_cast<uint8_t>(ltc::display::max7219::Types::SEGMENT) ? "7segment" : "matrix");
+	if (isMaskSet(LtcDisplayParamsMask::MAX7219_TYPE)) {
+		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::MAX7219_TYPE, m_tLtcDisplayParams.nMax7219Type, m_tLtcDisplayParams.nMax7219Type == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7segment" : "matrix");
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::MAX7219_INTENSITY)) {
+	if (isMaskSet(LtcDisplayParamsMask::MAX7219_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::MAX7219_INTENSITY, m_tLtcDisplayParams.nMax7219Intensity);
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::OLED_INTENSITY)) {
+	if (isMaskSet(LtcDisplayParamsMask::OLED_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::OLED_INTENSITY, m_tLtcDisplayParams.nOledIntensity);
 	}
 
-	if (isMaskSet(ltcdisplayparams::Mask::ROTARY_FULLSTEP)) {
+	if (isMaskSet(LtcDisplayParamsMask::ROTARY_FULLSTEP)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::ROTARY_FULLSTEP, m_tLtcDisplayParams.nRotaryFullStep);
 	}
 #endif

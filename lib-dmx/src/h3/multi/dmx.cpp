@@ -948,64 +948,6 @@ void Dmx::SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, ui
 	s_nDmxDataWriteIndex[nUart] = nNext;
 }
 
-void Dmx::Blackout() {
-	DEBUG_ENTRY
-
-	for (uint32_t nPortIndex = 0; nPortIndex < dmxmulti::max::OUT; nPortIndex++) {
-		const auto nUart = _port_to_uart(nPortIndex);
-
-		if (s_UartState[nUart] != UartState::TX) {
-			continue;
-		}
-
-		assert(nUart < dmxmulti::max::OUT);
-
-		const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
-		auto *p = &s_pCoherentRegion->dmx_data[nUart][nNext];
-
-		auto *p32 = reinterpret_cast<uint32_t *>(p->data);
-
-		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
-			*p32++ = 0;
-		}
-
-		p->data[0] = dmx::START_CODE;
-
-		s_nDmxDataWriteIndex[nUart] = nNext;
-	}
-
-	DEBUG_EXIT
-}
-
-void Dmx::FullOn() {
-	DEBUG_ENTRY
-
-	for (uint32_t nPortIndex = 0; nPortIndex < dmxmulti::max::OUT; nPortIndex++) {
-		const auto nUart = _port_to_uart(nPortIndex);
-
-		if (s_UartState[nUart] != UartState::TX) {
-			continue;
-		}
-
-		assert(nUart < dmxmulti::max::OUT);
-
-		const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
-		auto *p = &s_pCoherentRegion->dmx_data[nUart][nNext];
-
-		auto *p32 = reinterpret_cast<uint32_t *>(p->data);
-
-		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
-			*p32++ = static_cast<uint32_t>(~0);
-		}
-
-		p->data[0] = dmx::START_CODE;
-
-		s_nDmxDataWriteIndex[nUart] = nNext;
-	}
-
-	DEBUG_EXIT
-}
-
 // DMX Receive
 
 const uint8_t *Dmx::GetDmxAvailable(uint32_t nPortIndex)  {

@@ -2,7 +2,7 @@
  * @file artnetreader.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,8 @@
 
 class ArtNetReader: public ArtNetTimeCode {
 public:
+	ArtNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
+
 	void Start();
 	void Stop();
 
@@ -43,6 +45,7 @@ public:
 	void Handler(const struct TArtNetTimeCode *);
 
 private:
+	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	struct midi::Timecode m_tMidiTimeCode;
 };
 
