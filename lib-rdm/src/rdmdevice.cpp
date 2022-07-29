@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,22 +39,26 @@
 
 #include "debug.h"
 
-#if defined(H3)
-# include "h3_board.h"
-  static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
-#elif defined (GD32) 
-# include "gd32_board.h"
-  static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Device";
-#elif defined (RASPPI)
-  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
-#elif defined (__CYGWIN__)
-  static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
-#elif defined (__linux__)
-  static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
-#elif defined (__APPLE__)
-  static constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
+#if defined (CONFIG_RDM_DEVICE_ROOT_LABEL)
+ static constexpr char DEVICE_LABEL[] = CONFIG_RDM_DEVICE_ROOT_LABEL;
 #else
-  static constexpr char DEVICE_LABEL[] = "RDM Device";
+# if defined (H3)
+#  include "h3_board.h"
+   static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Device";
+# elif defined (GD32)
+#  include "gd32_board.h"
+   static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Device";
+# elif defined (RASPPI)
+   static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Device";
+# elif defined (__CYGWIN__)
+   static constexpr char DEVICE_LABEL[] = "Cygwin RDM Device";
+# elif defined (__linux__)
+   static constexpr char DEVICE_LABEL[] = "Linux RDM Device";
+# elif defined (__APPLE__)
+   static constexpr char DEVICE_LABEL[] = "MacOS RDM Device";
+# else
+   static constexpr char DEVICE_LABEL[] = "RDM Device";
+# endif
 #endif
 
 RDMDevice::RDMDevice() {
@@ -103,4 +107,3 @@ void RDMDevice::Print() {
 	printf(" Product Category  : %.2X%.2X\n", m_tRDMDevice.nProductCategory >> 8, m_tRDMDevice.nProductCategory & 0xFF);
 	printf(" Product Detail    : %.2X%.2X\n", m_tRDMDevice.nProductDetail >> 8, m_tRDMDevice.nProductDetail & 0xFF);
 }
-

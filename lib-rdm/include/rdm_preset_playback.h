@@ -1,8 +1,8 @@
 /**
- * @file rdmdevicecontroller.cpp
+ * @file rdm_preset_playback.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,27 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include "rdmdevicecontroller.h"
+#ifndef RDM_PRESET_PLAYBACK_H_
+#define RDM_PRESET_PLAYBACK_H_
 
-#include "debug.h"
+#include <cstdint>
 
-#if defined (H3)
- static constexpr char DEVICE_LABEL[] = "Orange Pi RDM Controller";
-#elif defined (GD32)
- static constexpr char DEVICE_LABEL[] = "GigaDevice RDM Controller";
-#else
- static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Controller";
-#endif
+namespace rdm {
+namespace preset_playback {
+static constexpr uint16_t OFF = 0x0000;
+static constexpr uint16_t ALL = 0xFFFF;
 
-RDMDeviceController::RDMDeviceController() {
-	DEBUG_ENTRY
+void Get(uint16_t& nMode, uint8_t& nLevel);
+bool Set(uint16_t nMode, uint8_t nLevel);
+}  // namespace preset_playback
+}  // namespace rdm
 
-	TRDMDeviceInfoData info;
-
-	info.data = const_cast<char*>(DEVICE_LABEL);
-	info.length = sizeof(DEVICE_LABEL) - 1;
-
-	SetLabel(&info);
-
-	DEBUG_EXIT
-}
+#endif /* RDM_PRESET_PLAYBACK_H_ */

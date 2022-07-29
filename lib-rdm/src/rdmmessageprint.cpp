@@ -2,7 +2,7 @@
  * @file rdmmessageprint.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#include "debug.h"
+
 void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
 	const auto *pData = reinterpret_cast<const struct TRdmMessage*>(pRdmDataNoSc);
 
@@ -44,7 +46,7 @@ void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
 
 void RDMMessage::Print(const uint8_t *pRdmData) {
 	if (pRdmData == nullptr) {
-		printf("No RDM data\n");
+		DEBUG_PUTS("No RDM data");
 		return;
 	}
 
