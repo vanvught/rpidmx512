@@ -1,8 +1,8 @@
 /**
- * @file source.h
+ * @file display_timeout.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOURCE_H_
-#define SOURCE_H_
+#ifndef DISPLAY_TIMEOUT_H_
+#define DISPLAY_TIMEOUT_H_
 
-#include "ltc.h"
-#include "sourceconst.h"
-#include "display.h"
-#include "gps.h"
-#include "ntpclient.h"
-#include "tcnetdisplay.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
 
-class Source {
-public:
-	static void Show(ltc::source ltcSource, bool bRunGpsTimeClient) {
-		Display::Get()->TextStatus(SourceConst::SOURCE[ltcSource]);
+namespace display {
+namespace timeout {
 
-		if (ltcSource == ltc::source::SYSTIME) {
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
-			if (bRunGpsTimeClient) {
-				GPS::Get()->Display(GPS::Get()->GetStatus());
-			} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
-				Display::Get()->PutString("NTP");
-			} else if (HwClock::Get()->IsConnected()) {
-				Display::Get()->PutString("RTC");
-			}
-		} else if (ltcSource == ltc::source::TCNET) {
-			TCNetDisplay::Show();
-		}
-	}
-};
+void gpio_init() {
+	h3_gpio_fsel(KEY2_GPIO, GPIO_FSEL_INPUT);
+	h3_gpio_pud(KEY2_GPIO, GPIO_PULL_UP);
+}
 
-#endif /* SOURCE_H_ */
+bool gpio_renew() {
+    return (h3_gpio_lev(KEY2_GPIO) == LOW);
+}
+
+}  // namespace timeout
+}  // namespace display
+
+#endif /* DISPLAY_TIMEOUT_H_ */

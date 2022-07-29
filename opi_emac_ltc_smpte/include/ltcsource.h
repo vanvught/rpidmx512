@@ -1,8 +1,8 @@
 /**
- * @file reboot.h
+ * @file ltcsource.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,44 +23,35 @@
  * THE SOFTWARE.
  */
 
-#ifndef REBOOT_H_
-#define REBOOT_H_
+#ifndef LTCSOURCE_H_
+#define LTCSOURCE_H_
 
-#include "remoteconfig.h"
+#include "ltc.h"
+#include "ltcsourceconst.h"
 #include "display.h"
+#include "gps.h"
+#include "ntpclient.h"
+#include "tcnetdisplay.h"
 
-#include "network.h"
+namespace ltc {
+namespace source {
+inline static void show(ltc::Source ltcSource, bool bRunGpsTimeClient) {
+	Display::Get()->TextStatus(LtcSourceConst::NAME[static_cast<uint32_t>(ltcSource)]);
 
-#include "debug.h"
-
-class Reboot: public RebootHandler {
-public:
-	Reboot() {
-	}
-	~Reboot() {
-	}
-
-	void Run() {
-		DEBUG_ENTRY
-
-		if (!RemoteConfig::Get()->IsReboot()) {
-			DEBUG_PUTS("");
-
-			Display::Get()->SetSleep(false);
-
-			while (SpiFlashStore::Get()->Flash())
-				;
-
-			Network::Get()->Shutdown();
-
-			printf("Rebooting ...\n");
-
-			Display::Get()->Cls();
-			Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
+	if (ltcSource == ltc::Source::SYSTIME) {
+		Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 3U), 3);
+		if (bRunGpsTimeClient) {
+			GPS::Get()->Display(GPS::Get()->GetStatus());
+		} else if ((NtpClient::Get()->GetStatus() != ntpclient::Status::FAILED) && (NtpClient::Get()->GetStatus() != ntpclient::Status::STOPPED)) {
+			Display::Get()->PutString("NTP");
+		} else if (HwClock::Get()->IsConnected()) {
+			Display::Get()->PutString("RTC");
 		}
-
-		DEBUG_EXIT
+	} else if (ltcSource == ltc::Source::TCNET) {
+		tcnet::display::show();
 	}
-};
+}
+}  // namespace source
+}  // namespace ltc
 
-#endif /* REBOOT_H_ */
+#endif /* SOURCE_H_ */

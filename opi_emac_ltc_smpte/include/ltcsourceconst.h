@@ -1,8 +1,8 @@
 /**
- * @file handlertlc59711.h
+ * @file ltcsourceconst.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,13 @@
  * THE SOFTWARE.
  */
 
-#ifndef HANDLERTLC59711_H_
-#define HANDLERTLC59711_H_
+#ifndef LTCSOURCESELECTCONST_H_
+#define LTCSOURCESELECTCONST_H_
 
-#include <stdint.h>
+#include "ltc.h"
 
-#include "oscserver.h"
-
-#include "tlc59711dmx.h"
-
-class HandlerTLC59711: public OscServerHandler  {
-public:
-	HandlerTLC59711(TLC59711Dmx *pTLC59711Dmx);
-
-	void Blackout() {
-		m_pTLC59711Dmx->Blackout(true);
-	}
-
-	void Update() {
-		m_pTLC59711Dmx->Blackout(false);
-	}
-
-	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
-
-private:
-	TLC59711Dmx *m_pTLC59711Dmx;
-	uint16_t m_nLedCount;
-	char *m_pLedTypeString;
+struct LtcSourceConst {
+	static const char NAME[static_cast<uint32_t>(ltc::Source::UNDEFINED)][12];
 };
 
-#endif /* HANDLERTLC59711_H_ */
+#endif /* SOURCESELECTCONST_H_ */

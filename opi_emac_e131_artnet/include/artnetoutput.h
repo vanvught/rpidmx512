@@ -2,7 +2,7 @@
  * @file artnetoutput.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,28 +26,28 @@
 #ifndef ARTNETOUTPUT_H_
 #define ARTNETOUTPUT_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "lightset.h"
 
-#include "e131.h"
+#include "e131bridge.h"
 #include "e131sync.h"
 
 class ArtNetOutput: public E131Sync, public LightSet {
 public:
 	ArtNetOutput();
 
-	void Handler();
+	void Handler() override;
 
-	void Start(uint32_t nPortIndex);
-	void Stop(uint32_t nPortIndex);
+	void Start(uint32_t nPortIndex) override;
+	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength);
+	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) override;
 
-	void Print() {};
+	void Print() override {};
 
 private:
-	uint16_t m_nUniverse[E131::PORTS];
+	uint16_t m_nUniverse[e131bridge::MAX_PORTS];
 };
 
 #endif /* ARTNETOUTPUT_H_ */

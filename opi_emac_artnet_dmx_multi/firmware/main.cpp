@@ -31,19 +31,19 @@
 #include "networkconst.h"
 #include "ledblink.h"
 
+#include "mdns.h"
+#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
-# include "mdns.h"
-# include "mdnsservices.h"
+# include "httpd/httpd.h"
 #endif
 
-#include "display_timeout.h"
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
+#include "display_timeout.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "artnetreboot.h"
 #include "artnetmsgconst.h"
 #include "artnetdiscovery.h"
 #include "artnet/displayudfhandler.h"
@@ -70,7 +70,10 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-using namespace artnet;
+void Hardware::RebootHandler() {
+	Dmx::Get()->Blackout();
+	ArtNet4Node::Get()->Stop();
+}
 
 extern "C" {
 
@@ -84,24 +87,9 @@ void notmain(void) {
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("Art-Net 4 Node ");
-	console_set_fg_color (CONSOLE_GREEN);
-	console_puts("DMX");
-	console_set_fg_color (CONSOLE_WHITE);
-	console_puts(" / ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("RDM");
-	console_set_fg_color(CONSOLE_WHITE);
-#if defined(ORANGE_PI)
-	console_puts(" {2 Universes}\n");
-#else
-	console_puts(" {4 Universes}\n");
-#endif
+	fw.Print("Art-Net 4 Node DMX/RDM");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new ArtNetReboot);
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
@@ -111,13 +99,19 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
-#if defined (ENABLE_HTTPD)
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+#if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 DMX/RDM");
+#endif
 	mDns.Print();
+
+#if defined (ENABLE_HTTPD)
+	HttpDaemon httpDaemon;
+	httpDaemon.Start();
 #endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -128,38 +122,21 @@ void notmain(void) {
 	ArtNet4Node node;
 
 	if (artnetParams.Load()) {
-		artnetParams.Set(&node);
 		artnetParams.Dump();
+		artnetParams.Set();
 	}
 
 	DisplayUdfHandler displayUdfHandler;
 	node.SetArtNetDisplay(&displayUdfHandler);
 
-	node.SetArtNetStore(StoreArtNet::Get());
+	node.SetArtNetStore(&storeArtNet);
 
-	uint8_t nAddress;
-	bool bIsSet;
-
-	nAddress = artnetParams.GetUniverse(0, bIsSet);
-	if (bIsSet) {
-		node.SetUniverseSwitch(0, artnetParams.GetDirection(0), nAddress);
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto portDirection = artnetParams.GetDirection(nPortIndex);
+		bool bIsSet;
+		const auto nAddress = artnetParams.GetUniverse(nPortIndex, bIsSet);
+		node.SetUniverseSwitch(nPortIndex, portDirection, nAddress);
 	}
-	nAddress = artnetParams.GetUniverse(1, bIsSet);
-	if (bIsSet) {
-		node.SetUniverseSwitch(1, artnetParams.GetDirection(1), nAddress);
-	}
-#if defined (ORANGE_PI_ONE)
-	nAddress = artnetParams.GetUniverse(2, bIsSet);
-	if (bIsSet) {
-		node.SetUniverseSwitch(2, artnetParams.GetDirection(2), nAddress);
-	}
-#ifndef DO_NOT_USE_UART0
-	nAddress = artnetParams.GetUniverse(3, bIsSet);
-	if (bIsSet) {
-		node.SetUniverseSwitch(3, artnetParams.GetDirection(3), nAddress);
-	}
-#endif
-#endif
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -199,8 +176,8 @@ void notmain(void) {
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 			if (rdmDeviceParams.Load()) {
-				rdmDeviceParams.Set(pDiscovery);
 				rdmDeviceParams.Dump();
+				rdmDeviceParams.Set(pDiscovery);
 			}
 
 			pDiscovery->Init();
@@ -208,10 +185,10 @@ void notmain(void) {
 
 			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
 
-			for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+			for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 				uint8_t nAddress;
-				if (node.GetUniverseSwitch(i, nAddress, lightset::PortDir::OUTPUT)) {
-					pDiscovery->Full(i);
+				if (node.GetUniverseSwitch(nPortIndex, nAddress, lightset::PortDir::OUTPUT)) {
+					pDiscovery->Full(nPortIndex);
 				}
 			}
 
@@ -221,7 +198,7 @@ void notmain(void) {
 
 	node.Print();
 
-	const auto nActivePorts = static_cast<uint32_t>(node.GetActiveInputPorts() + node.GetActiveOutputPorts());
+	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
 
 	display.SetTitle("Art-Net 4 %u", nActivePorts);
 	display.Set(2, displayudf::Labels::NODE_NAME);
@@ -234,8 +211,8 @@ void notmain(void) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if (displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
 	}
 
 	display.Show(&node);
@@ -246,8 +223,8 @@ void notmain(void) {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (spiFlashStore.Flash())
@@ -272,8 +249,9 @@ void notmain(void) {
 		if (pDmxConfigUdp != nullptr) {
 			pDmxConfigUdp->Run();
 		}
-#if defined (ENABLE_HTTPD)
 		mDns.Run();
+#if defined (ENABLE_HTTPD)
+		httpDaemon.Run();
 #endif
 	}
 }

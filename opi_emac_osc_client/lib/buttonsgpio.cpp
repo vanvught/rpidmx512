@@ -52,7 +52,7 @@
 #define LED2_GPIO			GPIO_EXT_26		// PA10
 #define LED3_GPIO			GPIO_EXT_18		// PA18
 
-ButtonsGpio::ButtonsGpio(OscClient *pOscClient) : m_pOscClient(pOscClient), m_nButtons(0) {
+ButtonsGpio::ButtonsGpio(OscClient *pOscClient) : m_pOscClient(pOscClient) {
 	assert(m_pOscClient != nullptr);
 }
 
@@ -82,13 +82,13 @@ bool ButtonsGpio::Start() {
 	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
 
 #ifndef NDEBUG
-	printf("H3_PIO_PORTA->PUL0=%p ", H3_PIO_PORTA->PUL0);
+	printf("H3_PIO_PORTA->PUL0=%u ", H3_PIO_PORTA->PUL0);
 	debug_print_bits(H3_PIO_PORTA->PUL0);
-	printf("H3_PIO_PA_INT->CFG0=%p ", H3_PIO_PA_INT->CFG0);
+	printf("H3_PIO_PA_INT->CFG0=%u ", H3_PIO_PA_INT->CFG0);
 	debug_print_bits(H3_PIO_PA_INT->CFG0);
-	printf("H3_PIO_PA_INT->CTL=%p ", H3_PIO_PA_INT->CTL);
+	printf("H3_PIO_PA_INT->CTL=%u ", H3_PIO_PA_INT->CTL);
 	debug_print_bits(H3_PIO_PA_INT->CTL);
-	printf("H3_PIO_PA_INT->DEB=%p ", H3_PIO_PA_INT->DEB);
+	printf("H3_PIO_PA_INT->DEB=%u ", H3_PIO_PA_INT->DEB);
 	debug_print_bits(H3_PIO_PA_INT->DEB);
 #endif
 

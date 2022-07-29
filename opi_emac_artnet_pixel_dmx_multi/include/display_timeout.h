@@ -1,8 +1,8 @@
 /**
- * @file sourceconst.h
+ * @file display_timeout.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,13 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef SOURCESELECTCONST_H_
-#define SOURCESELECTCONST_H_
+#ifndef DISPLAY_TIMEOUT_H_
+#define DISPLAY_TIMEOUT_H_
 
-#include "ltc.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
 
-struct SourceConst {
-	static const char SOURCE[ltc::source::UNDEFINED][12];
-};
+namespace display {
+namespace timeout {
 
-#endif /* SOURCESELECTCONST_H_ */
+void gpio_init() {
+	h3_gpio_fsel(KEY2_GPIO, GPIO_FSEL_INPUT);
+	h3_gpio_pud(KEY2_GPIO, GPIO_PULL_UP);
+}
+
+bool gpio_renew() {
+    return (h3_gpio_lev(KEY2_GPIO) == LOW);
+}
+
+}  // namespace timeout
+}  // namespace display
+
+#endif /* DISPLAY_TIMEOUT_H_ */

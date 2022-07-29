@@ -2,7 +2,7 @@
  * @file displayhandler.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,19 +54,19 @@ public:
 		Display::Get()->SetCursorPos(0, 6);
 
 		switch (ShowFile::Get()->GetStatus()) {
-			case ShowFileStatus::IDLE:
+			case showfile::Status::IDLE:
 				Display::Get()->PutString("Idle     ");
 				break;
-			case ShowFileStatus::RUNNING:
+			case showfile::Status::RUNNING:
 				Display::Get()->PutString("Running  ");
 				break;
-			case ShowFileStatus::STOPPED:
+			case showfile::Status::STOPPED:
 				Display::Get()->PutString("Stopped  ");
 				break;
-			case ShowFileStatus::ENDED:
+			case showfile::Status::ENDED:
 				Display::Get()->PutString("Ended    ");
 				break;
-			case ShowFileStatus::UNDEFINED:
+			case showfile::Status::UNDEFINED:
 			default:
 				Display::Get()->PutString("No Status");
 				break;

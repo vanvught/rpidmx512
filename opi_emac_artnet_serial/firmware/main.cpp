@@ -33,6 +33,7 @@
 #if defined (ENABLE_HTTPD)
 # include "mdns.h"
 # include "mdnsservices.h"
+# include "httpd/httpd.h"
 #endif
 
 #include "displayudf.h"
@@ -42,7 +43,6 @@
 
 #include "artnet4node.h"
 #include "artnetparams.h"
-#include "artnetreboot.h"
 #include "artnetmsgconst.h"
 
 #include "dmxserial.h"
@@ -71,7 +71,9 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-using namespace artnet;
+void Hardware::RebootHandler() {
+	ArtNet4Node::Get()->Stop();
+}
 
 extern "C" {
 
@@ -82,19 +84,13 @@ void notmain(void) {
 	DisplayUdf display;
 	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
 
-	fw.Print();
-
-	console_puts("Ethernet Art-Net 4 Node ");
-	console_set_fg_color (CONSOLE_GREEN);
-	console_puts("Serial [UART/SPI/I2C]");
-	console_set_fg_color (CONSOLE_WHITE);
-	console_puts(" {1 Universe}\n");
+	fw.Print("Art-Net 4 Node \x1b[32mSerial [UART/SPI/I2C] \x1b[37m{1 Universe}");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new ArtNetReboot);
 
 	lb.SetLedBlinkDisplay(new DisplayHandler);
 
@@ -105,13 +101,18 @@ void notmain(void) {
 	nw.Init(&storeNetwork);
 	nw.Print();
 
-#if defined (ENABLE_HTTPD)
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+#if defined (ENABLE_HTTPD)
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 [UART/SPI/I2C]");
+#endif
 	mDns.Print();
+
+#if defined (ENABLE_HTTPD)
+	HttpDaemon httpDaemon;
+	httpDaemon.Start();
 #endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
@@ -122,21 +123,28 @@ void notmain(void) {
 	ArtNet4Node node;
 
 	if (artnetParams.Load()) {
-		artnetParams.Set(&node);
 		artnetParams.Dump();
+		artnetParams.Set();
 	}
 
 	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
+
 	bool isSet;
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
+	const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
+	const auto nUniverse = artnetParams.GetUniverse(0, isSet);
+	const auto portDirection = artnetParams.GetDirection(0);
+
+	if (portDirection == lightset::PortDir::OUTPUT) {
+		node.SetUniverse(0, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nAddress | nUniverse));
+	}
 
 	DmxSerial dmxSerial;
 	DmxSerialParams dmxSerialParams(new StoreDmxSerial);
 
 	if (dmxSerialParams.Load()) {
-		dmxSerialParams.Set();
 		dmxSerialParams.Dump();
+		dmxSerialParams.Set();
 	}
 
 	node.SetOutput(&dmxSerial);
@@ -220,8 +228,9 @@ void notmain(void) {
 		spiFlashStore.Flash();
 		lb.Run();
 		display.Run();
-#if defined (ENABLE_HTTPD)
 		mDns.Run();
+#if defined (ENABLE_HTTPD)
+		httpDaemon.Run();
 #endif
 	}
 }
