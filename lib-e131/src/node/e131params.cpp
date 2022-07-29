@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,27 +47,42 @@
 
 #include "debug.h"
 
+static uint32_t s_nPortsMax;
+
+namespace e131params {
+static constexpr uint16_t portdir_shift_left(const lightset::PortDir portDir, const uint32_t i) {
+	return static_cast<uint16_t>((static_cast<uint32_t>(portDir) & 0x3) << (i * 2));
+}
+
+static constexpr uint16_t portdir_clear(const uint32_t i) {
+	return static_cast<uint16_t>(~(0x3 << (i * 2)));
+}
+}  // namespace e131params
+
 using namespace e131;
 using namespace e131params;
 
 E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE131ParamsStore) {
+	DEBUG_ENTRY
 	DEBUG_PRINTF("sizeof(struct Params)=%d", static_cast<int>(sizeof(struct Params)));
 
 	memset(&m_Params, 0, sizeof(struct Params));
 	
-#if defined (OUTPUT_DMX_ARTNET)
-	m_Params.nUniverse = universe::DEFAULT;
-#endif
-
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		m_Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
 		m_Params.nPriority[i] = priority::DEFAULT;
+		constexpr auto n = static_cast<uint32_t>(lightset::PortDir::OUTPUT) & 0x3;
+		m_Params.nDirection |= static_cast<uint16_t>(n << (i * 2));
 	}
 
-	for (uint32_t i = 0; i < CHAR_BIT; i++) {
-		const uint32_t n = static_cast<uint32_t>(lightset::PortDir::OUTPUT) & 0x1;
-		m_Params.nDirection |= static_cast<uint8_t>(n << i);
+	m_Params.nFailSafe = static_cast<uint8_t>(lightset::FailSafe::HOLD);
+
+	if (s_nPortsMax == 0) {
+		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS);
 	}
+
+	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
+	DEBUG_EXIT
 }
 
 bool E131Params::Load() {
@@ -123,12 +138,24 @@ void E131Params::callbackFunction(const char *pLine) {
 
 	uint8_t value8;
 	uint16_t value16;
-	uint32_t nLength;
 	char value[16];
 
-	const auto nPorts = static_cast<uint32_t>(std::min(e131params::MAX_PORTS, E131::PORTS));
+	uint32_t nLength = 8;
 
-	for (uint32_t i = 0; i < nPorts; i++) {
+	if (Sscan::Char(pLine, LightSetParamsConst::FAILSAFE, value, nLength) == Sscan::OK) {
+		const auto failsafe = lightset::get_failsafe(value);
+
+		if (failsafe == lightset::FailSafe::HOLD) {
+			m_Params.nSetList &= ~Mask::FAILSAFE;
+		} else {
+			m_Params.nSetList |= Mask::FAILSAFE;
+		}
+
+		m_Params.nFailSafe = static_cast<uint8_t>(failsafe);
+		return;
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, LightSetParamsConst::UNIVERSE_PORT[i], value16) == Sscan::OK) {
 			if ((value16 == 0) || (value16 > universe::MAX)) {
 				m_Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
@@ -153,20 +180,28 @@ void E131Params::callbackFunction(const char *pLine) {
 			return;
 		}
 
-		if (i < CHAR_BIT) {
-			nLength = 5;
 
-			if (Sscan::Char(pLine, LightSetParamsConst::DIRECTION[i], value, nLength) == Sscan::OK) {
-				m_Params.nDirection &= static_cast<uint8_t>(~(1U << i));
+		nLength = 7;
 
-				if (lightset::get_direction(value) == lightset::PortDir::INPUT) {
-					m_Params.nDirection |= static_cast<uint8_t>((static_cast<uint8_t>(lightset::PortDir::INPUT) & 0x1) << i);
-				} else {
-					m_Params.nDirection |= static_cast<uint8_t>((static_cast<uint8_t>(lightset::PortDir::OUTPUT) & 0x1) << i);
-				}
-				return;
+		if (Sscan::Char(pLine, LightSetParamsConst::DIRECTION[i], value, nLength) == Sscan::OK) {
+			const auto portDir = lightset::get_direction(value);
+			m_Params.nDirection &= e131params::portdir_clear(i);
+
+			DEBUG_PRINTF("%u portDir=%u, m_Params.nDirection=%x", i, static_cast<uint32_t>(portDir), m_Params.nDirection);
+
+			if (portDir == lightset::PortDir::INPUT) {
+				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::INPUT, i);
+			} else if (portDir == lightset::PortDir::DISABLE) {
+				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::DISABLE, i);
+			} else {
+				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::OUTPUT, i);
 			}
+
+			DEBUG_PRINTF("m_Params.nDirection=%x", m_Params.nDirection);
+
+			return;
 		}
+
 
 		if (Sscan::Uint8(pLine, E131ParamsConst::PRIORITY[i], value8) == Sscan::OK) {
 			if ((value8 >= priority::LOWEST) && (value8 <= priority::HIGHEST) && (value8 != priority::DEFAULT)) {
@@ -180,16 +215,7 @@ void E131Params::callbackFunction(const char *pLine) {
 		}
 	}
 
-	if (Sscan::Uint8(pLine, E131ParamsConst::DISABLE_NETWORK_DATA_LOSS_TIMEOUT, value8) == Sscan::OK) {
-		if (value8 != 0) {
-			m_Params.nSetList |= Mask::DISABLE_NETWORK_DATA_LOSS_TIMEOUT;
-		} else {
-			m_Params.nSetList &= ~Mask::DISABLE_NETWORK_DATA_LOSS_TIMEOUT;
-		}
-		return;
-	}
-
-	if (Sscan::Uint8(pLine, E131ParamsConst::DISABLE_MERGE_TIMEOUT, value8) == Sscan::OK) {
+	if (Sscan::Uint8(pLine, LightSetParamsConst::DISABLE_MERGE_TIMEOUT, value8) == Sscan::OK) {
 		if (value8 != 0) {
 			m_Params.nSetList |= Mask::DISABLE_MERGE_TIMEOUT;
 		} else {
@@ -197,30 +223,6 @@ void E131Params::callbackFunction(const char *pLine) {
 		}
 		return;
 	}
-
-#if defined (OUTPUT_DMX_ARTNET)
-	if (Sscan::Uint16(pLine, LightSetParamsConst::UNIVERSE, value16) == Sscan::OK) {
-		if ((value16 == 0) || (value16 > universe::MAX)) {
-			m_Params.nUniverse = universe::DEFAULT;
-			m_Params.nSetList &= ~Mask::UNIVERSE;
-		} else {
-			m_Params.nUniverse = value16;
-			m_Params.nSetList |= Mask::UNIVERSE;
-		}
-		return;
-	}
-
-	if (Sscan::Char(pLine, LightSetParamsConst::MERGE_MODE, value, nLength) == Sscan::OK) {
-		if (lightset::get_merge_mode(value) == lightset::MergeMode::LTP) {
-			m_Params.nMergeMode = static_cast<uint8_t>(lightset::MergeMode::LTP);
-			m_Params.nSetList |= Mask::MERGE_MODE;
-		} else {
-			m_Params.nMergeMode = static_cast<uint8_t>(lightset::MergeMode::HTP);
-			m_Params.nSetList &= ~Mask::MERGE_MODE;
-		}
-		return;
-	}
-#endif
 }
 
 void E131Params::staticCallbackFunction(void *p, const char *s) {
@@ -241,39 +243,28 @@ void E131Params::Builder(const struct Params *ptE131Params, char *pBuffer, uint3
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
-	const auto nPorts = static_cast<uint32_t>(std::min(e131params::MAX_PORTS, E131::PORTS));
-
-	for (uint32_t i = 0; i < nPorts; i++) {
-		const auto isDefault = (((m_Params.nDirection >> i) & 0x1)  == static_cast<uint8_t>(lightset::PortDir::OUTPUT));
-		builder.Add(LightSetParamsConst::DIRECTION[i], lightset::get_direction(i, m_Params.nDirection), !isDefault);
-	}
-
-#if defined (OUTPUT_DMX_ARTNET)
-	builder.Add(LightSetParamsConst::UNIVERSE, m_Params.nUniverse, isMaskSet(Mask::UNIVERSE));
-#endif
-
-	for (uint32_t i = 0; i < nPorts; i++) {
+	for (uint32_t i = 0; i < s_nPortsMax; i++) {
 		builder.Add(LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniversePort[i], isMaskSet(Mask::UNIVERSE_A << i));
+		const auto portDir = static_cast<lightset::PortDir>(e131params::portdir_shif_right(m_Params.nDirection, i));
+		const auto isDefault = (portDir == lightset::PortDir::OUTPUT);
+		builder.Add(LightSetParamsConst::DIRECTION[i], lightset::get_direction(portDir), !isDefault);
 	}
+
+	builder.Add(LightSetParamsConst::FAILSAFE, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)), isMaskSet(Mask::FAILSAFE));
 
 	builder.AddComment("DMX Output");
 
-#if defined (OUTPUT_DMX_ARTNET)
-	builder.Add(LightSetParamsConst::MERGE_MODE, lightset::get_merge_mode(m_Params.nMergeMode), isMaskSet(Mask::MERGE_MODE));
-#endif
-
-	for (uint32_t i = 0; i < nPorts; i++) {
+	for (uint32_t i = 0; i < s_nPortsMax; i++) {
 		builder.Add(LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_Params.nMergeModePort[i]), isMaskSet(Mask::MERGE_MODE_A << i));
 	}
 
 	builder.AddComment("DMX Input");
-	for (uint32_t i = 0; i < nPorts; i++) {
+	for (uint32_t i = 0; i < s_nPortsMax; i++) {
 		builder.Add(E131ParamsConst::PRIORITY[i], m_Params.nPriority[i], isMaskSet(Mask::PRIORITY_A << i));
 	}
 
-	builder.AddComment("Other");
-	builder.Add(E131ParamsConst::DISABLE_NETWORK_DATA_LOSS_TIMEOUT, isMaskSet(Mask::DISABLE_NETWORK_DATA_LOSS_TIMEOUT));
-	builder.Add(E131ParamsConst::DISABLE_MERGE_TIMEOUT, isMaskSet(Mask::DISABLE_MERGE_TIMEOUT));
+	builder.AddComment("#");
+	builder.Add(LightSetParamsConst::DISABLE_MERGE_TIMEOUT, isMaskSet(Mask::DISABLE_MERGE_TIMEOUT));
 
 	nSize = builder.GetSize();
 
@@ -293,34 +284,47 @@ void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
-void E131Params::Set(E131Bridge *pE131Bridge) {
-	assert(pE131Bridge != nullptr);
+void E131Params::Set(uint32_t nPortIndexOffset) {
+	DEBUG_ENTRY
+
+	if ((nPortIndexOffset != 0) && (nPortIndexOffset < e131bridge::MAX_PORTS)) {
+		s_nPortsMax = std::min(s_nPortsMax, (e131bridge::MAX_PORTS - nPortIndexOffset));
+	}
+
+	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
 
 	if (m_Params.nSetList == 0) {
 		return;
 	}
 
-	const auto nPorts = static_cast<uint32_t>(std::min(e131params::MAX_PORTS, E131::PORTS));
+	auto *p = E131Bridge::Get();
+	assert(p != nullptr);
 
-	for (uint32_t i = 0; i < nPorts; i++) {
-		if (isMaskSet(Mask::MERGE_MODE_A << i)) {
-			pE131Bridge->SetMergeMode(i, static_cast<lightset::MergeMode>(m_Params.nMergeModePort[i]));
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		const auto nOffset = nPortIndex + nPortIndexOffset;
+
+		if (nOffset >= e131bridge::MAX_PORTS) {
+			DEBUG_EXIT
+			break;
 		}
-#if defined (OUTPUT_DMX_ARTNET)
-		else {
-			pE131Bridge->SetMergeMode(i, static_cast<lightset::MergeMode>(m_Params.nMergeMode));
+
+		if (isMaskSet(Mask::MERGE_MODE_A << nPortIndex)) {
+			p->SetMergeMode(nOffset, static_cast<lightset::MergeMode>(m_Params.nMergeModePort[nPortIndex]));
 		}
-#endif
-		if (isMaskSet(Mask::PRIORITY_A << i)) {
-			pE131Bridge->SetPriority(m_Params.nPriority[i]);
+
+		if (isMaskSet(Mask::PRIORITY_A << nPortIndex)) {
+			p->SetPriority(m_Params.nPriority[nPortIndex], nPortIndex);
 		}
+
 	}
 
-	if (isMaskSet(Mask::DISABLE_NETWORK_DATA_LOSS_TIMEOUT)) {
-		pE131Bridge->SetDisableNetworkDataLossTimeout(true);
-	}
+	p->SetFailSafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe));
+
+	/**
+	 * Extra's
+	 */
 
 	if (isMaskSet(Mask::DISABLE_MERGE_TIMEOUT)) {
-		pE131Bridge->SetDisableMergeTimeout(true);
+		p->SetDisableMergeTimeout(true);
 	}
 }

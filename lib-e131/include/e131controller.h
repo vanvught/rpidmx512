@@ -2,7 +2,7 @@
  * @file e131controller.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -109,8 +109,8 @@ private:
 	TE131DiscoveryPacket *m_pE131DiscoveryPacket { nullptr };
 	TE131SynchronizationPacket *m_pE131SynchronizationPacket { nullptr };
 	uint32_t m_DiscoveryIpAddress { 0 };
-	uint8_t m_Cid[E131::CID_LENGTH];
-	char m_SourceName[E131::SOURCE_NAME_LENGTH];
+	uint8_t m_Cid[e131::CID_LENGTH];
+	char m_SourceName[e131::SOURCE_NAME_LENGTH];
 	uint32_t m_nMaster { DMX_MAX_VALUE };
 
 	static E131Controller *s_pThis;

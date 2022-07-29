@@ -2,7 +2,7 @@
  * @file e131bridgeprint.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,7 +52,7 @@ void E131Bridge::Print() {
 	if (m_State.nActiveOutputPorts != 0) {
 		printf(" Output\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 				printf("  Port %2d Universe %-3d [%s]\n", nPortIndex, nUniverse, lightset::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
@@ -63,7 +63,7 @@ void E131Bridge::Print() {
 	if (m_State.nActiveInputPorts != 0) {
 		printf(" Input\n");
 
-		for (uint32_t nPortIndex = 0; nPortIndex < E131::PORTS; nPortIndex++) {
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetUniverse(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
 				printf("  Port %2d Universe %-3d [%d]\n", nPortIndex, nUniverse, GetPriority(nPortIndex));

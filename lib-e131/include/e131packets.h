@@ -2,7 +2,7 @@
  * @file e131packets.h
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,14 +44,14 @@ struct TRootLayer {
 	uint8_t ACNPacketIdentifier[12];  			///< ACN Packet Identifier
 	uint16_t FlagsLength; 						///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
 	uint32_t Vector;							///< Identifies RLP Data as 1.31 Protocol PDU 0x00000004
-	uint8_t Cid[E131::CID_LENGTH];				///< Sender's CID. Sender's unique ID
+	uint8_t Cid[e131::CID_LENGTH];				///< Sender's CID. Sender's unique ID
 }PACKED;
 
 ///< E1.31 Framing Layer (See Section 6)
 struct TDataFrameLayer {
 	uint16_t FLagsLength;						///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
 	uint32_t Vector;							///< Identifies 1.31 data as DMP Protocol PDU. Fixed 0x00000002
-	uint8_t SourceName[E131::SOURCE_NAME_LENGTH];///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
+	uint8_t SourceName[e131::SOURCE_NAME_LENGTH];///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
 	uint8_t Priority;							///< Data priority if multiple sources. 0-200, default of 100
 	uint16_t SynchronizationAddress;			///< Universe on which synchronization packets are transmitted
 	uint8_t SequenceNumber;						///< Sequence Number. To detect duplicate or out of order packets
@@ -68,7 +68,7 @@ struct TDataDMPLayer {
 	uint16_t FirstAddressProperty;				///< Indicates DMX START Code is at DMP address 0. Fixed 0x0000
 	uint16_t AddressIncrement;					///< Indicates each property is 1 octet 0x0001
 	uint16_t PropertyValueCount;				///< Indicates 1+ the number of slots in packet. 0x0001 -- 0x0201
-	uint8_t PropertyValues[E131::DMX_LENGTH + 1];///< DMX512-A START Code + data. START Code + Data
+	uint8_t PropertyValues[e131::DMX_LENGTH + 1];///< DMX512-A START Code + data. START Code + Data
 }PACKED;
 
 /**
@@ -86,7 +86,7 @@ struct TE131DataPacket {
 struct TDiscoveryFrameLayer {
 	uint16_t FLagsLength;						///< Protocol flags and length. Low 12 bits = PDU length High 4 bits = 0x7
 	uint32_t Vector;							///< Identifies 1.31 data as Universe Discovery Data. \ref E131_VECTOR_EXTENDED_DISCOVERY
-	uint8_t SourceName[E131::SOURCE_NAME_LENGTH];///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
+	uint8_t SourceName[e131::SOURCE_NAME_LENGTH];///< User Assigned Name of Source. UTF-8 [UTF-8] encoded string, null-terminated
 	uint32_t Reserved;							///< Reserved
 }PACKED;
 

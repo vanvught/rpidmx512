@@ -1,8 +1,8 @@
 /**
- * @file e131reboot.h
+ * @file e131bridgeconst.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef E131REBOOT_H_
-#define E131REBOOT_H_
+#include <cstdint>
 
-#include "hardware.h"
-#include "e131bridge.h"
-#include "lightset.h"
+#include "e131bridgeconst.h"
 
-class E131Reboot final : public RebootHandler {
-public:
-	E131Reboot() {
-	}
-	~E131Reboot() override {
-	}
-
-	void Run() override {
-		E131Bridge::Get()->Stop();
-
-		auto *pLightSet = E131Bridge::Get()->GetOutput();
-
-		if (pLightSet != nullptr) {
-			pLightSet->Blackout(true);
-		}
-	}
-};
-
-#endif /* E131REBOOT_H_ */
+const uint8_t E131BridgeConst::VERSION[] = { 1, 25 };

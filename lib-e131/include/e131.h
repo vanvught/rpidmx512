@@ -2,7 +2,7 @@
  * @file e131.h
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,19 +79,11 @@ inline static uint32_t universe_to_multicast_ip(uint16_t nUniverse) {
 	return nMulticastIp;
 }
 
+static constexpr auto UDP_PORT = 5568;
+static constexpr auto DMX_LENGTH = 512;
+static constexpr auto CID_LENGTH = 16;
+static constexpr auto SOURCE_NAME_LENGTH = 64;
+static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
 }  // namespace e131
-
-struct E131 {
-	static constexpr auto UDP_PORT = 5568;
-#if !defined(LIGHTSET_PORTS)
-	static constexpr auto PORTS = 4;
-#else
-	static constexpr auto PORTS = LIGHTSET_PORTS;
-#endif
-	static constexpr auto DMX_LENGTH = 512;
-	static constexpr auto CID_LENGTH = 16;
-	static constexpr auto SOURCE_NAME_LENGTH = 64;
-	static constexpr auto PACKET_IDENTIFIER_LENGTH = 12;
-};
 
 #endif /* E131_H_ */

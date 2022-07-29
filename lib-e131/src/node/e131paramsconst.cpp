@@ -2,7 +2,7 @@
  * @file e131paramsconst.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,24 @@
 #include "e131paramsconst.h"
 #include "e131params.h"
 
+#if LIGHTSET_PORTS > 4
+# define MAX_ARRAY 4
+#else
+# define MAX_ARRAY LIGHTSET_PORTS
+#endif
+
 const char E131ParamsConst::FILE_NAME[] = "e131.txt";
 
 const char E131ParamsConst::PRIORITY[e131params::MAX_PORTS][18] {
 	"priority_port_a",
+#if MAX_ARRAY >= 2
 	"priority_port_b",
+#endif
+#if MAX_ARRAY >= 3
 	"priority_port_c",
-	"priority_port_d" };
-
-const char E131ParamsConst::DISABLE_NETWORK_DATA_LOSS_TIMEOUT[] = "disable_network_data_loss_timeout";
-const char E131ParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
+#endif
+#if MAX_ARRAY == 4
+	"priority_port_d"
+#endif
+};
 

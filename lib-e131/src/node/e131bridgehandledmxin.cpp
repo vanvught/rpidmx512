@@ -2,7 +2,7 @@
  * @file e131bridgehandledmxin.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,10 +49,10 @@ void E131Bridge::FillDataPacket() {
 	m_pE131DataPacket->RootLayer.PostAmbleSize = __builtin_bswap16(0x0000);
 	memcpy(m_pE131DataPacket->RootLayer.ACNPacketIdentifier, E117Const::ACN_PACKET_IDENTIFIER, e117::PACKET_IDENTIFIER_LENGTH);
 	m_pE131DataPacket->RootLayer.Vector = __builtin_bswap32(vector::root::DATA);
-	memcpy(m_pE131DataPacket->RootLayer.Cid, m_Cid, E131::CID_LENGTH);
+	memcpy(m_pE131DataPacket->RootLayer.Cid, m_Cid, e131::CID_LENGTH);
 	// E1.31 Framing Layer (See Section 6)
 	m_pE131DataPacket->FrameLayer.Vector = __builtin_bswap32(vector::data::PACKET);
-	memcpy(m_pE131DataPacket->FrameLayer.SourceName, m_SourceName, E131::SOURCE_NAME_LENGTH);
+	memcpy(m_pE131DataPacket->FrameLayer.SourceName, m_SourceName, e131::SOURCE_NAME_LENGTH);
 	m_pE131DataPacket->FrameLayer.SynchronizationAddress = __builtin_bswap16(0); // Currently not supported
 	m_pE131DataPacket->FrameLayer.Options = 0;
 	// Data Layer
@@ -65,7 +65,7 @@ void E131Bridge::FillDataPacket() {
 void E131Bridge::HandleDmxIn() {
 	assert(m_pE131DataPacket != nullptr);
 
-	for (uint32_t i = 0 ; i < E131::PORTS; i++) {
+	for (uint32_t i = 0 ; i < e131bridge::MAX_PORTS; i++) {
 		if (m_InputPort[i].genericPort.bIsEnabled) {
 			uint32_t nLength;
 			uint32_t nUpdatesPerSecond;
@@ -84,7 +84,7 @@ void E131Bridge::HandleDmxIn() {
 				memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
 				m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(nLength));
 
-				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[i].nMulticastIp, E131::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[i].nMulticastIp, e131::UDP_PORT);
 
 				if ((s_ReceivingMask & (1U << i)) != (1U << i)) {
 					s_ReceivingMask |= (1U << i);
