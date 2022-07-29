@@ -208,7 +208,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (uint16_t i = 0; i < artnet::PORTS; i++) {
+	for (unsigned i = 0; i < artnet::PORTS; i++) {
 		if (Sscan::Uint8(pLine, LightSetParamsConst::UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
 			if (nValue8 <= 0xF) {
 				m_Params.nUniversePort[i] = nValue8;
