@@ -148,9 +148,9 @@ private:
 	uint16_t m_nDmxStartAddressMode;
 
 	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
+	uint16_t m_nDmxFootprint{0};
 
-	ModeStore *m_pModeStore;
+	ModeStore *m_pModeStore{nullptr};
 };
 
 #endif /* SPARKFUNDMX_H_ */
