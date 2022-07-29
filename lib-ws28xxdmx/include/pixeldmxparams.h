@@ -2,7 +2,7 @@
  * @file ws28xxdmxparams.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -28,78 +28,70 @@
 
 #include <cstdint>
 
-#include "ws28xx.h"
-#include "ws28xxdmx.h"
-
 #include "pixeldmxconfiguration.h"
 
-namespace ws28xxdmxparams {
-	static constexpr auto MAX_OUTPUTS = 8;
-}  // ws28xxdmxparams name
+#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
+# error CONFIG_PIXELDMX_MAX_PORTS is not defined
+#endif
 
-struct TWS28xxDmxParams {
+namespace pixeldmxparams {
+static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+
+struct Params {
     uint32_t nSetList;										///< 4	   4
 	uint8_t nType;											///< 1	   5
 	uint16_t nCount;										///< 2	   7
 	uint16_t nDmxStartAddress;								///< 2	   9
-	uint8_t NotUsed0;										///< 1	  10
+	uint8_t nGammaValue;									///< 1	  10
 	uint32_t nSpiSpeedHz;									///< 4	  14
 	uint8_t nGlobalBrightness;								///< 1	  15
 	uint8_t nActiveOutputs;									///< 1	  16
-	uint8_t NotUsed1;										///< 1	  17
+	uint8_t nTestPattern;									///< 1	  17
 	uint16_t nGroupingCount;								///< 2	  19
 	uint8_t nMap;											///< 1	  20
 	uint8_t nLowCode;										///< 1	  21
 	uint8_t nHighCode;										///< 1	  22
-	uint16_t nStartUniverse[ws28xxdmxparams::MAX_OUTPUTS];	///< 16   38
-	uint8_t nTestPattern;									///< 1    39
+	uint16_t nStartUniverse[pixeldmxparams::MAX_PORTS];		///< 16   38
 }__attribute__((packed));
 
-static_assert(sizeof(struct TWS28xxDmxParams) <= 64, "struct TWS28xxDmxParams is too large");
+static_assert(sizeof(struct Params) <= 64, "struct Params is too large");
 
-struct WS28xxDmxParamsMask {
+struct Mask {
 	static constexpr auto TYPE = (1U << 0);
 	static constexpr auto COUNT = (1U << 1);
 	static constexpr auto DMX_START_ADDRESS = (1U << 2);
-	static constexpr auto _NOT_USED_ = (1U << 3);
+	static constexpr auto TEST_PATTERN = (1U << 3);
 	static constexpr auto SPI_SPEED = (1U << 4);
 	static constexpr auto GLOBAL_BRIGHTNESS = (1U << 5);
 	static constexpr auto ACTIVE_OUT = (1U << 6);
-	static constexpr auto USE_SI5351A = (1U << 7);
+	static constexpr auto GAMMA_CORRECTION = (1U << 7);
 	static constexpr auto GROUPING_COUNT = (1U << 8);
 	static constexpr auto MAP = (1U << 9);
 	static constexpr auto LOW_CODE = (1U << 10);
 	static constexpr auto HIGH_CODE = (1U << 11);
 	static constexpr auto START_UNI_PORT_1 = (1U << 12);
-	static constexpr auto START_UNI_PORT_2 = (1U << 13);
-	static constexpr auto START_UNI_PORT_3 = (1U << 14);
-	static constexpr auto START_UNI_PORT_4 = (1U << 15);
-	static constexpr auto START_UNI_PORT_5 = (1U << 16);
-	static constexpr auto START_UNI_PORT_6 = (1U << 17);
-	static constexpr auto START_UNI_PORT_7 = (1U << 18);
-	static constexpr auto START_UNI_PORT_8 = (1U << 19);
-	static constexpr auto TEST_PATTERN = (1U << 20);
 };
+}  // pixeldmxparams name
 
-class WS28xxDmxParamsStore {
+class PixelDmxParamsStore {
 public:
-	virtual ~WS28xxDmxParamsStore() {
+	virtual ~PixelDmxParamsStore() {
 	}
 
-	virtual void Update(const struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
-	virtual void Copy(struct TWS28xxDmxParams *pWS28xxDmxParams)=0;
+	virtual void Update(const struct pixeldmxparams::Params *pWS28xxDmxParams)=0;
+	virtual void Copy(struct pixeldmxparams::Params *pWS28xxDmxParams)=0;
 };
 
-class WS28xxDmxParams {
+class PixelDmxParams {
 public:
-	WS28xxDmxParams(WS28xxDmxParamsStore *pWS28xxParamsStore = nullptr);
-	~WS28xxDmxParams() {
+	PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore = nullptr);
+	~PixelDmxParams() {
 	}
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TWS28xxDmxParams *ptWS28xxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct pixeldmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(PixelDmxConfiguration *pPixelDmxConfiguration);
@@ -107,9 +99,9 @@ public:
 	void Dump();
 
 	uint16_t GetStartUniversePort(uint32_t nOutputPortIndex, bool& isSet) const {
-		if (nOutputPortIndex < ws28xxdmxparams::MAX_OUTPUTS) {
-			isSet = isMaskSet(WS28xxDmxParamsMask::START_UNI_PORT_1 << nOutputPortIndex);
-			return m_tWS28xxParams.nStartUniverse[nOutputPortIndex];
+		if (nOutputPortIndex < pixeldmxparams::MAX_PORTS) {
+			isSet = isMaskSet(pixeldmxparams::Mask::START_UNI_PORT_1 << nOutputPortIndex);
+			return m_pixelDmxParams.nStartUniverse[nOutputPortIndex];
 		}
 
 		isSet = false;
@@ -117,7 +109,7 @@ public:
 	}
 
 	uint8_t GetTestPattern() const {
-		return m_tWS28xxParams.nTestPattern;
+		return m_pixelDmxParams.nTestPattern;
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);
@@ -125,12 +117,12 @@ public:
 private:
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tWS28xxParams.nSetList & nMask) == nMask;
+    	return (m_pixelDmxParams.nSetList & nMask) == nMask;
     }
 
 private:
-    WS28xxDmxParamsStore *m_pWS28xxParamsStore;
-    struct TWS28xxDmxParams m_tWS28xxParams;
+    PixelDmxParamsStore *m_pPixelDmxParamsStore;
+    pixeldmxparams::Params m_pixelDmxParams;
 };
 
 #endif /* WS28XXDMXPARAMS_H_ */

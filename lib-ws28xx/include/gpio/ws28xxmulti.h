@@ -2,7 +2,7 @@
  * @file ws28xxmulti.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,17 +44,18 @@ public:
 
 	void Update();
 	void Blackout();
+	void FullOn();
 
 	pixel::Type GetType() const {
-		return m_Type;
+		return m_PixelConfiguration.GetType();
 	}
 
 	uint32_t GetCount() const {
-		return m_nCount;
+		return m_PixelConfiguration.GetCount();
 	}
 
 	pixel::Map GetMap() const {
-		return m_Map;
+		return m_PixelConfiguration.GetMap();
 	}
 
 	static WS28xxMulti *Get() {
@@ -62,12 +63,14 @@ public:
 	}
 
 private:
-	void SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void Setup(uint8_t nLowCode, uint8_t nHighCode);
+	void Setup(uint32_t nFrequency);
+	void SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetColourWS2801(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nCtrl, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 
 private:
-	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint32_t m_nCount { pixel::defaults::COUNT };
-	pixel::Map m_Map { pixel::Map::UNDEFINED };
+	PixelConfiguration m_PixelConfiguration;
 	uint32_t m_nBufSize { 0 };
 
 	static WS28xxMulti *s_pThis;

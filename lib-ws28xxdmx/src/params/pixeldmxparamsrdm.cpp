@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#include <pixeldmxparams.h>
+#include <pixeldmxstore.h>
 #include <cstdint>
 #include <cassert>
 
@@ -31,17 +33,14 @@
 
 #include "pixeldmxparamsrdm.h"
 
-#include "ws28xxdmxparams.h"
-#include "ws28xxdmxstore.h"
-
 #include "debug.h"
 
 using namespace pixeldmx::paramsdmx;
 
-WS28xxDmxStore *PixelDmxParamsRdm::s_pWS28xxDmxStore;
+PixelDmxStore *PixelDmxParamsRdm::s_pWS28xxDmxStore;
 uint8_t PixelDmxParamsRdm::s_Data;
 
-PixelDmxParamsRdm::PixelDmxParamsRdm(WS28xxDmxStore *pWS28xxDmxStore) {
+PixelDmxParamsRdm::PixelDmxParamsRdm(PixelDmxStore *pWS28xxDmxStore) {
 	DEBUG_ENTRY
 
 	s_pWS28xxDmxStore = pWS28xxDmxStore;

@@ -39,6 +39,8 @@
 
 #include "hardware.h"
 
+#include "debug.h"
+
 using namespace pixelpatterns;
 
 static constexpr char s_patternName[static_cast<uint32_t>(Pattern::LAST)][14] = { "None", "Rainbow cycle", "Theater chase", "Colour wipe", "Scanner", "Fade" };
@@ -54,6 +56,9 @@ PixelPatterns::PortConfig PixelPatterns::m_PortConfig[pixelpatterns::MAX_PORTS];
 uint32_t *PixelPatterns::m_pScannerColours;
 
 PixelPatterns::PixelPatterns(uint32_t nActivePorts) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nActivePorts=%u", nActivePorts);
+
 #if defined (PIXELPATTERNS_MULTI)
 	m_pOutput = WS28xxMulti::Get();
 #else
@@ -70,6 +75,8 @@ PixelPatterns::PixelPatterns(uint32_t nActivePorts) {
 		m_PortConfig[i].nLastUpdate = nMillis;
 		m_PortConfig[i].Direction = Direction::FORWARD;
 	}
+
+	DEBUG_EXIT
 }
 
 const char* PixelPatterns::GetName(Pattern pattern) {

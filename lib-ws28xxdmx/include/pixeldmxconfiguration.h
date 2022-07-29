@@ -28,10 +28,6 @@
 
 #include <cstdint>
 
-#if defined (NODE_ARTNET_MULTI)
-# define NODE_ARTNET
-#endif
-
 #include "pixelconfiguration.h"
 
 namespace pixeldmxconfiguration {
@@ -61,6 +57,14 @@ public:
 		return m_nGroupingCount;
 	}
 
+	uint32_t GetGroups() const {
+		return m_nGroups;
+	}
+
+	uint32_t GetUniverses() const {
+		return m_nUniverses;
+	}
+
 	void SetDmxStartAddress(uint16_t nDmxStartAddress) {
 		m_nDmxStartAddress = nDmxStartAddress;
 	}
@@ -69,13 +73,15 @@ public:
 		return m_nDmxStartAddress;
 	}
 
-	void Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo, uint32_t& nGroups, uint32_t& nUniverses);
+	void Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel, pixeldmxconfiguration::PortInfo& portInfo);
 
-	void Dump();
+	void Print();
 
 private:
 	uint32_t m_nOutputPorts { 1 };
 	uint32_t m_nGroupingCount { 1 };
+	uint32_t m_nGroups { pixel::defaults::COUNT };
+	uint32_t m_nUniverses;
 	uint16_t m_nDmxStartAddress { 1 };
 };
 

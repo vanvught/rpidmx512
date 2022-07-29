@@ -30,33 +30,28 @@
 #include "ws28xx.h"
 #include "pixeltype.h"
 
+#include "gamma/gamma_tables.h"
+
 using namespace pixel;
 
-void WS28xx::Print() {
-	printf("Pixel parameters\n");
-	printf(" Type    : %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type));
-	printf(" Count   : %d\n", m_nCount);
-	if (m_bIsRTZProtocol) {
-		printf(" Mapping : %s [%d]\n", PixelType::GetMap(m_Map), static_cast<int>(m_Map));
-		printf(" T0H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nLowCode), m_nLowCode);
-		printf(" T1H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nHighCode), m_nHighCode);
-	} else {
-
-	}
-}
-
-#pragma GCC push_options
-#pragma GCC optimize ("O3")
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+#endif
 
 void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(m_pBuffer != nullptr);
-	assert(nPixelIndex < m_nCount);
+	assert(nPixelIndex < m_PixelConfiguration.GetCount());
 
-	if (m_bIsRTZProtocol) {
-		auto nOffset = nPixelIndex * 3U;
-		nOffset *= 8U;
+	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
-		switch (m_Map) {
+	nRed = pGammaTable[nRed];
+	nGreen = pGammaTable[nGreen];
+	nBlue = pGammaTable[nBlue];
+
+	if (m_PixelConfiguration.IsRTZProtocol()) {
+		const auto nOffset = nPixelIndex * 24U;
+
+		switch (m_PixelConfiguration.GetMap()) {
 		case Map::RGB:
 			SetColorWS28xx(nOffset, nRed);
 			SetColorWS28xx(nOffset + 8, nGreen);
@@ -97,11 +92,15 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 		return;
 	}
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
-		auto nOffset = 4U + (nPixelIndex * 4U);
+	assert(m_pBuffer != nullptr);
+
+	const auto type = m_PixelConfiguration.GetType();
+
+	if ((type == Type::APA102) || (type == Type::SK9822)) {
+		const auto nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3U < m_nBufSize);
 
-		m_pBuffer[nOffset] = m_nGlobalBrightness;
+		m_pBuffer[nOffset] = m_PixelConfiguration.GetGlobalBrightness();
 		m_pBuffer[nOffset + 1] = nRed;
 		m_pBuffer[nOffset + 2] = nGreen;
 		m_pBuffer[nOffset + 3] = nBlue;
@@ -109,8 +108,8 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 		return;
 	}
 
-	if (m_Type == Type::WS2801) {
-		auto nOffset = nPixelIndex * 3U;
+	if (type == Type::WS2801) {
+		const auto nOffset = nPixelIndex * 3U;
 		assert(nOffset + 2U < m_nBufSize);
 
 		m_pBuffer[nOffset] = nRed;
@@ -120,8 +119,8 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 		return;
 	}
 
-	if (m_Type == Type::P9813) {
-		auto nOffset = 4U + (nPixelIndex * 4U);
+	if (type == Type::P9813) {
+		const auto nOffset = 4U + (nPixelIndex * 4U);
 		assert(nOffset + 3 < m_nBufSize);
 
 		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
@@ -139,33 +138,39 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 }
 
 void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(nPixelIndex < m_nCount);
-	assert(m_Type == Type::SK6812W);
+	assert(nPixelIndex < m_PixelConfiguration.GetCount());
+	assert(m_PixelConfiguration.GetType() == Type::SK6812W);
 
-	auto nOffset = nPixelIndex * 4U;
+	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
-	if (m_Type == Type::SK6812W) {
-		nOffset *= 8;
+	nRed = pGammaTable[nRed];
+	nGreen = pGammaTable[nGreen];
+	nBlue = pGammaTable[nBlue];
+	nWhite = pGammaTable[nWhite];
 
-		SetColorWS28xx(nOffset, nGreen);
-		SetColorWS28xx(nOffset + 8, nRed);
-		SetColorWS28xx(nOffset + 16, nBlue);
-		SetColorWS28xx(nOffset + 24, nWhite);
-	}
+	const auto nOffset = nPixelIndex * 32U;
+
+	SetColorWS28xx(nOffset, nGreen);
+	SetColorWS28xx(nOffset + 8, nRed);
+	SetColorWS28xx(nOffset + 16, nBlue);
+	SetColorWS28xx(nOffset + 24, nWhite);
 }
 
 void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
+	assert(m_PixelConfiguration.GetType() != Type::WS2801);
 	assert(m_pBuffer != nullptr);
-	assert(m_Type != Type::WS2801);
 	assert(nOffset + 7 < m_nBufSize);
 
 	nOffset += 1;
 
+	const auto nLowCode = m_PixelConfiguration.GetLowCode();
+	const auto nHighCode = m_PixelConfiguration.GetHighCode();
+
 	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		if (nValue & mask) {
-			m_pBuffer[nOffset] = m_nHighCode;
+			m_pBuffer[nOffset] = nHighCode;
 		} else {
-			m_pBuffer[nOffset] = m_nLowCode;
+			m_pBuffer[nOffset] = nLowCode;
 		}
 		nOffset++;
 	}

@@ -1,8 +1,8 @@
 /**
- * @file ws28xxdmxstore.h
+ * @file board_gd32f450vi.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMXSTORE_H_
-#define WS28XXDMXSTORE_H_
+#ifndef GPIO_BOARD_GD32F450VI_H_
+#define GPIO_BOARD_GD32F450VI_H_
 
-#include <cstdint>
+#include "gd32.h"
 
-class WS28xxDmxStore {
-public:
-	virtual ~WS28xxDmxStore() {}
+#define RCU_GPIOx				RCU_GPIOE
+#define GPIOx					GPIOE
+#define GPIO_PINx				GPIO_PIN_ALL
+#define GPIO_PIN_OFFSET			0U
 
-	virtual void SaveType(uint8_t nType)=0;
-	virtual void SaveCount(uint16_t nCount)=0;
-	virtual void SaveGroupingCount(uint16_t nGroupingCount)=0;
-	virtual void SaveMap(uint8_t nMap)=0;
-	virtual void SaveTestPattern(uint8_t nTestPattern)=0;
+#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ * 2)
 
-	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
-};
+/**
+ * Implementation note: CLOCK is Timer 2 Channel 0 is GPIOA6
+ */
 
-#endif /* WS28XXDMXSTORE_H_ */
+#define DEBUG_CS_RCU_GPIOx		RCU_GPIOA
+#define DEBUG_CS_GPIOx			GPIOA
+#define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
+
+#endif /* GPIO_BOARD_GD32F450VI_H_ */

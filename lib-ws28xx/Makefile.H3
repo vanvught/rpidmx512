@@ -1,8 +1,9 @@
-DEFINES=USE_SPI_DMA
+DEFINES =USE_SPI_DMA
 DEFINES+=NDEBUG
 
-EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include ../lib-hal/include
+EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include
 
-EXTRA_SRCDIR=src/spi jbc
+EXTRA_SRCDIR=src/patterns src/pixel src/spi jbc
 
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

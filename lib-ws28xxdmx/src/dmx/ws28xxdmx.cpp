@@ -39,29 +39,23 @@
 using namespace pixel;
 using namespace lightset;
 
-WS28xxDmx *WS28xxDmx::s_pThis = nullptr;
+WS28xxDmx *WS28xxDmx::s_pThis;
 
-WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration) {
+WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	pixelDmxConfiguration.Validate(1 , m_nChannelsPerPixel, m_PortInfo, m_nGroups, m_nUniverses);
+	m_pixelDmxConfiguration.Validate(1 , m_nChannelsPerPixel, m_PortInfo);
 
-	DEBUG_PRINTF("m_nChannelsPerPixel=%u, m_nGroups=%u, m_nUniverses=%u", m_nChannelsPerPixel, m_nGroups, m_nUniverses);
-
-	m_pWS28xx = new WS28xx(pixelDmxConfiguration);
+	m_pWS28xx = new WS28xx(m_pixelDmxConfiguration);
 	assert(m_pWS28xx != nullptr);
 
 	m_pWS28xx->Blackout();
 
-	m_nGroupingCount = pixelDmxConfiguration.GetGroupingCount();
-
-	m_nDmxStartAddress = pixelDmxConfiguration.GetDmxStartAddress();
-	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_nGroups);
-
-	pixelDmxConfiguration.Dump();
+	m_nDmxStartAddress = m_pixelDmxConfiguration.GetDmxStartAddress();
+	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_pixelDmxConfiguration.GetGroups());
 
 	DEBUG_EXIT
 }
@@ -94,10 +88,6 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 
 	m_bIsStarted = false;
 
-	if (m_pWS28xx != nullptr) {
-		m_pWS28xx->Blackout();
-	}
-
 	if (m_pPixelDmxHandler != nullptr) {
 		m_pPixelDmxHandler->Stop();
 	}
@@ -105,7 +95,7 @@ void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 
 void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(pData != nullptr);
-	assert(nLength <= Dmx::UNIVERSE_SIZE);
+	assert(nLength <= dmx::UNIVERSE_SIZE);
 
 	if (m_pWS28xx->IsUpdating()) {
 		return;
@@ -114,36 +104,40 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 	uint32_t d = 0;
 	uint32_t beginIndex, endIndex;
 
+	const auto nGroups = m_pixelDmxConfiguration.GetGroups();
+
 	switch (nPortIndex & 0x03) {
 	case 0:
 		beginIndex = 0;
-		endIndex = std::min(m_nGroups, (nLength / m_nChannelsPerPixel));
-		if (m_nGroups < m_PortInfo.nBeginIndexPortId1) {
-			d = static_cast<uint32_t>(m_nDmxStartAddress - 1);
+		endIndex = std::min(nGroups, (nLength / m_nChannelsPerPixel));
+		if (nGroups < m_PortInfo.nBeginIndexPortId1) {
+			d = static_cast<uint32_t>(m_pixelDmxConfiguration.GetDmxStartAddress() - 1);
 		}
 		break;
 	case 1:
 		beginIndex = m_PortInfo.nBeginIndexPortId1;
-		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
+		endIndex = std::min(nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	case 2:
 		beginIndex = m_PortInfo.nBeginIndexPortId2;
-		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
+		endIndex = std::min(nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	case 3:
 		beginIndex = m_PortInfo.nBeginIndexPortId3;
-		endIndex = std::min(m_nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
+		endIndex = std::min(nGroups, (beginIndex + (nLength /  m_nChannelsPerPixel)));
 		break;
 	default:
 		__builtin_unreachable();
 		break;
 	}
 
+	const auto nGroupingCount = m_pixelDmxConfiguration.GetGroupingCount();
+
 	if (m_nChannelsPerPixel == 3) {
 		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = (j * m_nGroupingCount);
+			auto const nPixelIndexStart = (j * nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
 			d = d + 3;
@@ -151,9 +145,9 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 	} else {
 		assert(m_nChannelsPerPixel == 4);
 		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = (j * m_nGroupingCount);
+			auto const nPixelIndexStart = (j * nGroupingCount);
 			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < m_nGroupingCount; k++) {
+			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
 			d = d + 4;
@@ -182,20 +176,28 @@ void WS28xxDmx::Blackout(bool bBlackout) {
 	}
 }
 
+void WS28xxDmx::FullOn() {
+	while (m_pWS28xx->IsUpdating()) {
+		// wait for completion
+	}
+
+	m_pWS28xx->FullOn();
+}
+
 // DMX
 
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE));
 
 	if (nDmxStartAddress == m_nDmxStartAddress) {
 		return true;
 	}
 
-	if ((nDmxStartAddress + m_nDmxFootprint) > Dmx::UNIVERSE_SIZE) {
+	if ((nDmxStartAddress + m_nDmxFootprint) > dmx::UNIVERSE_SIZE) {
 		return false;
 	}
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= Dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
 		if (m_pWS28xxDmxStore != nullptr) {
