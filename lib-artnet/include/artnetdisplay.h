@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,9 @@ public:
 	virtual void ShowNetSwitch(uint8_t nAddress)=0;
 	virtual void ShowSubnetSwitch(uint8_t nAddress)=0;
 	virtual void ShowMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode)=0;
-	virtual void ShowPortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
+	virtual void ShowPortProtocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol)=0;
+	virtual void ShowRdmEnabled(uint32_t nPortIndex, bool isEnabled)=0;
+	virtual void ShowFailSafe(uint8_t nFailsafe)=0;
 };
 
 #endif /* ARTNETDISPLAY_H_ */

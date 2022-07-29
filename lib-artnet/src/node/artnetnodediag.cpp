@@ -1,11 +1,12 @@
+#if defined ( ENABLE_SENDDIAG )
 /**
- * @file artnetnodehandlesync.cpp
+ * @file artnetnodediag.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,32 +28,38 @@
  */
 
 #include <cstdint>
+#include <cstring>
 
 #include "artnetnode.h"
-#include "artnet.h"
 
-#include "lightsetdata.h"
-#include "hardware.h"
+#include "network.h"
 
-using namespace artnet;
+void ArtNetNode::FillDiagData(void) {
+	memset(&m_DiagData, 0, sizeof (struct TArtDiagData));
 
-void ArtNetNode::HandleSync() {
-	m_State.IsSynchronousMode = true;
-	m_State.nArtSyncMillis = Hardware::Get()->Millis();
-
-	for (uint32_t i = 0; i < (m_nPages * ArtNet::PORTS); i++) {
-		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].genericPort.bIsEnabled)) {
-#if defined ( ENABLE_SENDDIAG )
-			SendDiag("Send pending data", ARTNET_DP_LOW);
-#endif
-			lightset::Data::Output(m_pLightSet, i);
-
-			if (!m_OutputPort[i].IsTransmitting) {
-				m_pLightSet->Start(i);
-				m_OutputPort[i].IsTransmitting = true;
-			}
-
-			lightset::Data::ClearLength(i);
-		}
-	}
+	memcpy(m_DiagData, NODE_ID, 8);
+	m_DiagData.OpCode = OP_DIAGDATA;
+	m_DiagData.ProtVerHi = 0;
+	m_DiagData.ProtVerLo = ARTNET_PROTOCOL_REVISION;
 }
+
+void ArtNetNode::SendDiag(const char *text, TPriorityCodes nPriority) {
+	if (!m_State.SendArtDiagData) {
+		return;
+	}
+
+	if (nPriority < m_State.Priority) {
+		return;
+	}
+
+	m_DiagData.Priority = nPriority;
+
+	strncpy(m_DiagData.Data, text, sizeof m_DiagData.Data - 1);
+	m_DiagData.Data[sizeof(m_DiagData.Data) - 1] = '\0';// Just be sure we have a last '\0'
+	m_DiagData.LengthLo = strlen(m_DiagData.Data) + 1;// Text length including the '\0'
+
+	const uint16_t nSize = sizeof(struct TArtDiagData) - sizeof(m_DiagData.Data) + m_DiagData.LengthLo;
+
+	Network::Get()->SendTo(m_nHandle, &m_DiagData, nSize, m_State.IPAddressDiagSend, ARTNET_UDP_PORT);
+}
+#endif

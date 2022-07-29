@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,11 +66,11 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 	memcpy(pArtTimeCode->Id, artnet::NODE_ID, sizeof(pArtTimeCode->Id));
 	pArtTimeCode->OpCode = OP_TIMECODE;
 	pArtTimeCode->ProtVerHi = 0;
-	pArtTimeCode->ProtVerLo = ArtNet::PROTOCOL_REVISION;
+	pArtTimeCode->ProtVerLo = artnet::PROTOCOL_REVISION;
 	pArtTimeCode->Filler1 = 0;
 	pArtTimeCode->Filler2 = 0;
 
 	memcpy(&pArtTimeCode->Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	Network::Get()->SendTo(m_nHandle, pArtTimeCode, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pArtTimeCode, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 }

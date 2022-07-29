@@ -1,11 +1,11 @@
 /**
- * @file artnet4handler.cpp
+ * @file artnetnodehandlesync.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,14 +26,33 @@
  * THE SOFTWARE.
  */
 
-#include "artnet4handler.h"
+#include <cstdint>
 
 #include "artnetnode.h"
+#include "artnet.h"
+
+#include "lightsetdata.h"
+#include "hardware.h"
 
 using namespace artnet;
 
-void ArtNetNode::SetArtNet4Handler(ArtNet4Handler *pArtNet4Handler) {
-	if (ArtNet::VERSION >= 4) {
-		m_pArtNet4Handler = pArtNet4Handler;
+void ArtNetNode::HandleSync() {
+	m_State.IsSynchronousMode = true;
+	m_State.nArtSyncMillis = Hardware::Get()->Millis();
+
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].genericPort.bIsEnabled)) {
+#if defined ( ENABLE_SENDDIAG )
+			SendDiag("Send pending data", ARTNET_DP_LOW);
+#endif
+			lightset::Data::Output(m_pLightSet, i);
+
+			if (!m_OutputPort[i].IsTransmitting) {
+				m_pLightSet->Start(i);
+				m_OutputPort[i].IsTransmitting = true;
+			}
+
+			lightset::Data::ClearLength(i);
+		}
 	}
 }

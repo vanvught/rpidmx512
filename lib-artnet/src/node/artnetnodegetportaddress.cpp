@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,26 @@
 #include <cassert>
 
 #include "artnetnode.h"
-#include "artnet.h"
 
-using namespace artnet;
+#include "lightset.h"
 
-bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t &nAddress, lightset::PortDir dir) const {
+bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t& nAddress) const {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
+		nAddress = m_InputPort[nPortIndex].genericPort.nPortAddress;
+		return true;
+	}
+
+	if (m_OutputPort[nPortIndex].genericPort.bIsEnabled) {
+		nAddress = m_OutputPort[nPortIndex].genericPort.nPortAddress;
+		return true;
+	}
+
+	return false;
+}
+
+bool ArtNetNode::GetPortAddress(uint32_t nPortIndex, uint16_t& nAddress, lightset::PortDir dir) const {
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	if (dir == lightset::PortDir::INPUT) {

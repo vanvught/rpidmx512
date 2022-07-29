@@ -1,11 +1,11 @@
 /**
- * @file artnetrdm.h
+ * @file artnetnodehandlerdm.h
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,13 +41,37 @@
 
 using namespace artnet;
 
+void ArtNetNode::SetRmd(uint32_t nPortIndex, bool bEnable) {
+	DEBUG_ENTRY
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	const auto isChanged = (m_OutputPort[nPortIndex].isRdmEnabled != bEnable);
+
+	m_OutputPort[nPortIndex].isRdmEnabled = bEnable;
+
+	if (isChanged && (m_State.status == artnetnode::Status::ON)) {
+		if (m_pArtNetStore != nullptr) {
+			m_pArtNetStore->SaveRdmEnabled(nPortIndex, bEnable);
+		}
+		if (m_pArtNetDisplay != nullptr) {
+			m_pArtNetDisplay->ShowRdmEnabled(nPortIndex, bEnable);
+		}
+	}
+
+	DEBUG_EXIT
+}
+
 void ArtNetNode::HandleTodControl() {
 	DEBUG_ENTRY
 
 	const auto *pArtTodControl =  &(m_ArtNetPacket.ArtPacket.ArtTodControl);
 	const auto portAddress = static_cast<uint16_t>((pArtTodControl->Net << 8)) | static_cast<uint16_t>((pArtTodControl->Address));
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		if (!m_OutputPort[i].isRdmEnabled) {
+			continue;
+		}
+
 		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			if (m_OutputPort[i].IsTransmitting && (!m_IsRdmResponder)) {
 				m_pLightSet->Stop(i);
@@ -74,7 +98,11 @@ void ArtNetNode::HandleTodRequest() {
 	const auto *pArtTodRequest = &(m_ArtNetPacket.ArtPacket.ArtTodRequest);
 	const auto portAddress = static_cast<uint16_t>((pArtTodRequest->Net << 8)) | static_cast<uint16_t>((pArtTodRequest->Address[0]));
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		if (!m_OutputPort[i].isRdmEnabled) {
+			continue;
+		}
+
 		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			SendTod(i);
 		}
@@ -85,10 +113,10 @@ void ArtNetNode::HandleTodRequest() {
 
 void ArtNetNode::SendTod(uint32_t nPortIndex) {
 	DEBUG_ENTRY
-	assert(nPortIndex < ArtNet::PORTS);
+	assert(nPortIndex < artnetnode::MAX_PORTS);
 
 	auto pTodData = &(m_ArtNetPacket.ArtPacket.ArtTodData);
-	const auto nPage = static_cast<uint8_t>(nPortIndex / ArtNet::PORTS);
+	const auto nPage = static_cast<uint8_t>(nPortIndex / artnetnode::PAGE_SIZE);
 
 	pTodData->OpCode = OP_TODDATA;
 	pTodData->RdmVer = 0x01; // Devices that support RDM STANDARD V1.0 set field to 0x01.
@@ -115,19 +143,21 @@ void ArtNetNode::SendTod(uint32_t nPortIndex) {
 
 	const auto nLength = sizeof(struct TArtTodData) - (sizeof(pTodData->Tod)) + (nDiscovered * 6U);
 
-	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, pTodData, static_cast<uint16_t>(nLength), m_Node.IPAddressBroadcast, artnet::UDP_PORT);
 
 	DEBUG_EXIT
 }
 
 void ArtNetNode::SetRdmHandler(ArtNetRdm *pArtNetTRdm, bool IsResponder) {
 	DEBUG_ENTRY
-	assert(pArtNetTRdm != nullptr);
+
+	m_pArtNetRdm = pArtNetTRdm;
 
 	if (pArtNetTRdm != nullptr) {
-		m_pArtNetRdm = pArtNetTRdm;
 		m_IsRdmResponder = IsResponder;
 		m_Node.Status1 |= Status1::RDM_CAPABLE;
+	} else {
+		m_Node.Status1 &= static_cast<uint8_t>(~Status1::RDM_CAPABLE);
 	}
 
 	DEBUG_EXIT
@@ -139,11 +169,15 @@ void ArtNetNode::HandleRdm() {
 	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
 	const auto portAddress = static_cast<uint16_t>((pArtRdm->Net << 8)) | static_cast<uint16_t>((pArtRdm->Address));
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		if (!m_OutputPort[i].isRdmEnabled) {
+			continue;
+		}
+
 		if ((portAddress == m_OutputPort[i].genericPort.nPortAddress) && m_OutputPort[i].genericPort.bIsEnabled) {
 			if (!m_IsRdmResponder) {
 				if ((m_OutputPort[i].protocol == PortProtocol::SACN) && (m_pArtNet4Handler != nullptr)) {
-					constexpr auto nMask = GoodOutput::GO_OUTPUT_IS_MERGING | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED | GoodOutput::GO_OUTPUT_IS_SACN;
+					constexpr auto nMask = GoodOutput::OUTPUT_IS_MERGING | GoodOutput::DATA_IS_BEING_TRANSMITTED | GoodOutput::OUTPUT_IS_SACN;
 					m_OutputPort[i].IsTransmitting = (m_pArtNet4Handler->GetStatus(i) & nMask) != 0;
 				}
 
@@ -163,9 +197,9 @@ void ArtNetNode::HandleRdm() {
 
 				const auto nLength = sizeof(struct TArtRdm) - sizeof(pArtRdm->RdmPacket) + nMessageLength;
 
-				Network::Get()->SendTo(m_nHandle, pArtRdm, static_cast<uint16_t>(nLength), m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
+				Network::Get()->SendTo(m_nHandle, pArtRdm, static_cast<uint16_t>(nLength), m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
 			} else {
-				printf("No RDM response\n");
+				DEBUG_PUTS("No RDM response");
 			}
 
 			if (m_OutputPort[i].IsTransmitting && (!m_IsRdmResponder)) {

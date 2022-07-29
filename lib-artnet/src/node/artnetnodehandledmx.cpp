@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ void ArtNetNode::UpdateMergeStatus(uint32_t nPortIndex) {
 		m_State.IsChanged = true;
 	}
 
-	m_OutputPort[nPortIndex].genericPort.nStatus |= GoodOutput::GO_OUTPUT_IS_MERGING;
+	m_OutputPort[nPortIndex].genericPort.nStatus |= GoodOutput::OUTPUT_IS_MERGING;
 }
 
 void ArtNetNode::CheckMergeTimeouts(uint32_t nPortIndex) {
@@ -52,20 +52,20 @@ void ArtNetNode::CheckMergeTimeouts(uint32_t nPortIndex) {
 
 	if (nTimeOutAMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
 		m_OutputPort[nPortIndex].sourceA.nIp = 0;
-		m_OutputPort[nPortIndex].genericPort.nStatus &= static_cast<uint8_t>(~GoodOutput::GO_OUTPUT_IS_MERGING);
+		m_OutputPort[nPortIndex].genericPort.nStatus &= static_cast<uint8_t>(~GoodOutput::OUTPUT_IS_MERGING);
 	}
 
 	const uint32_t nTimeOutBMillis = m_nCurrentPacketMillis - m_OutputPort[nPortIndex].sourceB.nMillis;
 
 	if (nTimeOutBMillis > (artnet::MERGE_TIMEOUT_SECONDS * 1000U)) {
 		m_OutputPort[nPortIndex].sourceB.nIp = 0;
-		m_OutputPort[nPortIndex].genericPort.nStatus &= static_cast<uint8_t>(~GoodOutput::GO_OUTPUT_IS_MERGING);
+		m_OutputPort[nPortIndex].genericPort.nStatus &= static_cast<uint8_t>(~GoodOutput::OUTPUT_IS_MERGING);
 	}
 
 	auto bIsMerging = false;
 
-	for (uint32_t i = 0; i < (ArtNet::PORTS * m_nPages); i++) {
-		bIsMerging |= ((m_OutputPort[i].genericPort.nStatus & GoodOutput::GO_OUTPUT_IS_MERGING) != 0);
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		bIsMerging |= ((m_OutputPort[i].genericPort.nStatus & GoodOutput::OUTPUT_IS_MERGING) != 0);
 	}
 
 	if (!bIsMerging) {
@@ -81,16 +81,16 @@ void ArtNetNode::HandleDmx() {
 	const auto *pArtDmx = &(m_ArtNetPacket.ArtPacket.ArtDmx);
 
 	auto nDmxSlots = static_cast<uint16_t>( ((pArtDmx->LengthHi << 8) & 0xff00) | pArtDmx->Length);
-	nDmxSlots = std::min(nDmxSlots, ArtNet::DMX_LENGTH);
+	nDmxSlots = std::min(nDmxSlots, artnet::DMX_LENGTH);
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * m_nPages); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 
 		if (m_OutputPort[nPortIndex].genericPort.bIsEnabled && (m_OutputPort[nPortIndex].protocol == PortProtocol::ARTNET) && (pArtDmx->PortAddress == m_OutputPort[nPortIndex].genericPort.nPortAddress)) {
 
 			auto ipA = m_OutputPort[nPortIndex].sourceA.nIp;
 			auto ipB = m_OutputPort[nPortIndex].sourceB.nIp;
 
-			m_OutputPort[nPortIndex].genericPort.nStatus = m_OutputPort[nPortIndex].genericPort.nStatus | GoodOutput::GO_DATA_IS_BEING_TRANSMITTED;
+			m_OutputPort[nPortIndex].genericPort.nStatus = m_OutputPort[nPortIndex].genericPort.nStatus | GoodOutput::DATA_IS_BEING_TRANSMITTED;
 
 			if (m_State.IsMergeMode) {
 				if (__builtin_expect((!m_State.bDisableMergeTimeout), 1)) {

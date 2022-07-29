@@ -1,8 +1,11 @@
 /**
- * @file artnetreboot.h
+ * @file artnettrigger.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,29 +26,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETREBOOT_H_
-#define ARTNETREBOOT_H_
+#include <cstdint>
 
-#include "hardware.h"
+#include "artnettrigger.h"
 #include "artnetnode.h"
-#include "lightset.h"
+#include "artnetconst.h"
 
-class ArtNetReboot final : public RebootHandler {
-public:
-	ArtNetReboot() {
+#include "debug.h"
+
+void ArtNetNode::HandleTrigger() {
+	DEBUG_ENTRY
+	const struct TArtTrigger *pArtTrigger = &(m_ArtNetPacket.ArtPacket.ArtTrigger);
+
+	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == ArtNetConst::OEM_ID[0] && pArtTrigger->OemCodeLo == ArtNetConst::OEM_ID[1])) {
+		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
+
+		m_pArtNetTrigger->Handler(reinterpret_cast<const struct TArtNetTrigger*>(&pArtTrigger->Key));
 	}
-	~ArtNetReboot() override {
-	}
 
-	void Run() override {
-		ArtNetNode::Get()->Stop();
-
-		auto *pLightSet = ArtNetNode::Get()->GetOutput();
-
-		if (pLightSet != nullptr) {
-			pLightSet->Blackout(true);
-		}
-	}
-};
-
-#endif /* ARTNETREBOOT_H_ */
+	DEBUG_EXIT
+}

@@ -1,11 +1,8 @@
 /**
- * @file artnettrigger.cpp
+ * @file artnetparamsconst.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +23,40 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#include "artnetparamsconst.h"
 
-#include "artnettrigger.h"
+#include "artnet.h"
 
-#include "artnetnode.h"
+const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
 
-#include "debug.h"
+const char ArtNetParamsConst::NET[] = "net";
+const char ArtNetParamsConst::SUBNET[] = "subnet";
 
-void ArtNetNode::HandleTrigger() {
-	DEBUG_ENTRY
-	const struct TArtTrigger *pArtTrigger = &(m_ArtNetPacket.ArtPacket.ArtTrigger);
+const char ArtNetParamsConst::ENABLE_RDM[] = "enable_rdm";
 
-	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == m_Node.Oem[0] && pArtTrigger->OemCodeLo == m_Node.Oem[1])) {
-		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
+const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
+const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
 
-		m_pArtNetTrigger->Handler(reinterpret_cast<const struct TArtNetTrigger*>(&pArtTrigger->Key));
-	}
+const char ArtNetParamsConst::DESTINATION_IP_PORT[artnet::PORTS][24] = {
+		"destination_ip_port_a",
+		"destination_ip_port_b",
+		"destination_ip_port_c",
+		"destination_ip_port_d" };
 
-	DEBUG_EXIT
-}
+const char ArtNetParamsConst::RDM_ENABLE_PORT[artnet::PORTS][18] = {
+		"rdm_enable_port_a",
+		"rdm_enable_port_b",
+		"rdm_enable_port_c",
+		"rdm_enable_port_d" };
+
+/**
+ * Art-Net 4
+ */
+
+const char ArtNetParamsConst::PROTOCOL_PORT[artnet::PORTS][16] = {
+		"protocol_port_a",
+		"protocol_port_b",
+		"protocol_port_c",
+		"protocol_port_d" };
+
+const char ArtNetParamsConst::MAP_UNIVERSE0[] = "map_universe0";

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -78,17 +78,17 @@ void ArtNetNode::HandleIpProg() {
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
-		memcpy(ip.u8, &pArtIpProg->ProgIpHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgIpHi, artnet::IP_SIZE);
 		Network::Get()->SetIp(ip.u32);
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_SUBNETMASK) == IPPROG_COMMAND_PROGRAM_SUBNETMASK) {
-		memcpy(ip.u8, &pArtIpProg->ProgSmHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgSmHi, artnet::IP_SIZE);
 		Network::Get()->SetNetmask(ip.u32);
 	}
 
 	if ((nCommand & IPPROG_COMMAND_PROGRAM_GATEWAY) == IPPROG_COMMAND_PROGRAM_GATEWAY) {
-		memcpy(ip.u8, &pArtIpProg->ProgGwHi, ArtNet::IP_SIZE);
+		memcpy(ip.u8, &pArtIpProg->ProgGwHi, artnet::IP_SIZE);
 		Network::Get()->SetGatewayIp(ip.u32);
 	}
 
@@ -103,21 +103,21 @@ void ArtNetNode::HandleIpProg() {
 	auto isChanged = (isDhcp != Network::Get()->IsDhcpUsed());
 
 	ip.u32 = Network::Get()->GetIp();
-	isChanged |= (memcmp(&pArtIpProg->ProgIpHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&pArtIpProgReply->ProgIpHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgIpHi, ip.u8, artnet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgIpHi, ip.u8, artnet::IP_SIZE);
 
 	ip.u32 = Network::Get()->GetNetmask();
-	isChanged |= (memcmp(&pArtIpProg->ProgSmHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&pArtIpProgReply->ProgSmHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgSmHi, ip.u8, artnet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgSmHi, ip.u8, artnet::IP_SIZE);
 
 	ip.u32 = Network::Get()->GetGatewayIp();
-	isChanged |= (memcmp(&pArtIpProg->ProgGwHi, ip.u8, ArtNet::IP_SIZE) != 0);
-	memcpy(&pArtIpProgReply->ProgGwHi, ip.u8, ArtNet::IP_SIZE);
+	isChanged |= (memcmp(&pArtIpProg->ProgGwHi, ip.u8, artnet::IP_SIZE) != 0);
+	memcpy(&pArtIpProgReply->ProgGwHi, ip.u8, artnet::IP_SIZE);
 
 	pArtIpProgReply->Spare7 = 0;
 	pArtIpProgReply->Spare8 = 0;
 
-	Network::Get()->SendTo(m_nHandle, &(m_ArtNetPacket.ArtPacket.ArtIpProgReply), sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, ArtNet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, &(m_ArtNetPacket.ArtPacket.ArtIpProgReply), sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
 
 	if (isChanged) {
 		// Update Node network details
@@ -125,9 +125,9 @@ void ArtNetNode::HandleIpProg() {
 		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
 		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(Status2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? Status2::IP_DHCP : Status2::IP_MANUALY));
 		// Update PollReply for new IPAddress
-		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
-		if (ArtNet::VERSION > 3) {
-			memcpy(m_PollReply.BindIp, &pArtIpProgReply->ProgIpHi, ArtNet::IP_SIZE);
+		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, artnet::IP_SIZE);
+		if (artnet::VERSION > 3) {
+			memcpy(m_PollReply.BindIp, &pArtIpProgReply->ProgIpHi, artnet::IP_SIZE);
 		}
 
 		if (m_State.SendArtPollReplyOnChange) {

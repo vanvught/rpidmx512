@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,52 +58,47 @@ void ArtNetNode::SetDestinationIp(uint32_t nPortIndex, uint32_t nDestinationIp) 
 }
 
 void ArtNetNode::HandleDmxIn() {
-	struct TArtDmx artDmx;
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
+		if (!m_InputPort[i].genericPort.bIsEnabled) {
+			continue;
+		}
 
-	memcpy(artDmx.Id, artnet::NODE_ID, sizeof(m_PollReply.Id));
-	artDmx.OpCode = OP_DMX;
-	artDmx.ProtVerHi = 0;
-	artDmx.ProtVerLo = ArtNet::PROTOCOL_REVISION;
+		uint32_t nLength;
+		uint32_t nUpdatesPerSecond;
+		const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
 
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-		if (m_InputPort[i].genericPort.bIsEnabled){
-			uint32_t nLength;
-			uint32_t nUpdatesPerSecond;
-			const auto *pDmxData = m_pArtNetDmx->Handler(i, nLength, nUpdatesPerSecond);
+		if (pDmxData != nullptr) {
+			m_ArtDmx.Sequence = static_cast<uint8_t>(1U + m_InputPort[i].nSequenceNumber++);
+			m_ArtDmx.Physical = static_cast<uint8_t>(i);
+			m_ArtDmx.PortAddress = m_InputPort[i].genericPort.nPortAddress;
 
-			if (pDmxData != nullptr) {
-				artDmx.Sequence = static_cast<uint8_t>(1U + m_InputPort[i].nSequenceNumber++);
-				artDmx.Physical = static_cast<uint8_t>(i);
-				artDmx.PortAddress = m_InputPort[i].genericPort.nPortAddress;
+			memcpy(m_ArtDmx.Data, pDmxData, nLength);
 
-				memcpy(artDmx.Data, pDmxData, nLength);
+			if ((nLength & 0x1) == 0x1) {
+				m_ArtDmx.Data[nLength] = 0x00;
+				nLength++;
+			}
 
-				if ((nLength & 0x1) == 0x1) {
-					artDmx.Data[nLength] = 0x00;
-					nLength++;
-				}
+			m_ArtDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
+			m_ArtDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
 
-				artDmx.LengthHi = static_cast<uint8_t>((nLength & 0xFF00) >> 8);
-				artDmx.Length = static_cast<uint8_t>(nLength & 0xFF);
+			m_InputPort[i].genericPort.nStatus = GoodInput::DATA_RECIEVED;
 
-				m_InputPort[i].genericPort.nStatus = GoodInput::GI_DATA_RECIEVED;
+			Network::Get()->SendTo(m_nHandle, &m_ArtDmx, sizeof(struct TArtDmx), m_InputPort[i].nDestinationIp, artnet::UDP_PORT);
 
-				Network::Get()->SendTo(m_nHandle, &artDmx, sizeof(struct TArtDmx), m_InputPort[i].nDestinationIp, ArtNet::UDP_PORT);
-
-				if ((s_ReceivingMask & (1U << i)) != (1U << i)) {
-					s_ReceivingMask |= (1U << i);
-					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
-					hal::panel_led_on(hal::panelled::PORT_A_RX << i);
-				}
-			} else {
-				if ((m_InputPort[i].genericPort.nStatus & GoodInput::GI_DATA_RECIEVED) == GoodInput::GI_DATA_RECIEVED) {
-					if (nUpdatesPerSecond == 0) {
-						m_InputPort[i].genericPort.nStatus = static_cast<uint8_t>(m_InputPort[i].genericPort.nStatus & ~GoodInput::GI_DATA_RECIEVED);
-						s_ReceivingMask &= ~(1U << i);
-						hal::panel_led_off(hal::panelled::PORT_A_RX << i);
-						if (s_ReceivingMask == 0) {
-							m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
-						}
+			if ((s_ReceivingMask & (1U << i)) != (1U << i)) {
+				s_ReceivingMask |= (1U << i);
+				m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
+				hal::panel_led_on(hal::panelled::PORT_A_RX << i);
+			}
+		} else {
+			if ((m_InputPort[i].genericPort.nStatus & GoodInput::DATA_RECIEVED) == GoodInput::DATA_RECIEVED) {
+				if (nUpdatesPerSecond == 0) {
+					m_InputPort[i].genericPort.nStatus = static_cast<uint8_t>(m_InputPort[i].genericPort.nStatus & ~GoodInput::DATA_RECIEVED);
+					s_ReceivingMask &= ~(1U << i);
+					hal::panel_led_off(hal::panelled::PORT_A_RX << i);
+					if (s_ReceivingMask == 0) {
+						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
 					}
 				}
 			}

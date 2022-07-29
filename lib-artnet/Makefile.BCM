@@ -1,6 +1,6 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-lightset/include ../lib-ledblink/include ../lib-properties/include ../lib-hal/include ../lib-network/include
-#
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-lightset/include ../lib-ledblink/include ../lib-properties/include ../lib-hal/include ../lib-network/include
+
+include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

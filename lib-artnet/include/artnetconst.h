@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@
 struct ArtNetConst {
 	static const uint8_t VERSION[];
 
-	static const uint8_t ESTA_ID[ArtNet::ESTA_SIZE];
+	static const uint8_t ESTA_ID[artnet::ESTA_SIZE];
 	static const uint8_t OEM_ID[];
 
 	static const char MSG_NODE_PARAMS[];

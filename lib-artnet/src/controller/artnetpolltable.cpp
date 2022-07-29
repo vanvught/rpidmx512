@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -87,15 +87,6 @@ ArtNetPollTable::~ArtNetPollTable() {
 
 	delete[] m_pPollTable;
 	m_pPollTable = nullptr;
-}
-
-uint16_t ArtNetPollTable::MakePortAddress(uint8_t nNetSwitch, uint8_t nSubSwitch, uint8_t nUniverse) {
-	// PortAddress Bit 15 = 0
-	uint16_t nPortAddress = (nNetSwitch & 0x7F) << 8;					// Net : Bits 14-8
-	nPortAddress |= static_cast<uint16_t>((nSubSwitch & 0x0F) << 4);	// Sub-Net : Bits 7-4
-	nPortAddress |= static_cast<uint16_t>(nUniverse & 0x0F);			// Universe : Bits 3-0
-
-	return nPortAddress;
 }
 
 const struct TArtNetPollTableUniverses *ArtNetPollTable::GetIpAddress(uint16_t nUniverse) const {
@@ -302,21 +293,21 @@ void ArtNetPollTable::Add(const struct TArtPollReply *ptArtPollReply) {
 
 #ifndef NDEBUG
 	if (ptArtPollReply->BindIndex <= 1) {
-		memcpy(m_pPollTable[i].Mac, ptArtPollReply->MAC, ArtNet::MAC_SIZE);
+		memcpy(m_pPollTable[i].Mac, ptArtPollReply->MAC, artnet::MAC_SIZE);
 
 		const uint8_t *pSrc = ptArtPollReply->ShortName;
 		uint8_t *pDst = m_pPollTable[i].ShortName;
-		memcpy(pDst, pSrc, ArtNet::SHORT_NAME_LENGTH + ArtNet::LONG_NAME_LENGTH);
+		memcpy(pDst, pSrc, artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
 	}
 #endif
 
 	const uint32_t nMillis = Hardware::Get()->Millis();
 
-	for (uint32_t nIndex = 0; nIndex < ArtNet::PORTS; nIndex++) {
+	for (uint32_t nIndex = 0; nIndex < artnet::PORTS; nIndex++) {
 		const uint8_t nPortAddress = ptArtPollReply->SwOut[nIndex];
 
 		if (ptArtPollReply->PortTypes[nIndex] == static_cast<uint8_t>(PortSettings::ENABLE_OUTPUT)) {
-			const uint16_t nUniverse = MakePortAddress(ptArtPollReply->NetSwitch, ptArtPollReply->SubSwitch, nPortAddress);
+			const auto nUniverse = artnet::make_port_address(ptArtPollReply->NetSwitch, ptArtPollReply->SubSwitch, nPortAddress);
 
 			uint32_t nIndexUniverse;
 
@@ -390,7 +381,7 @@ void ArtNetPollTable::Clean() {
 			pDst->nUniversesCount = 0;
 			memset(pDst->Universe, 0, sizeof(struct TArtNetNodeEntryUniverse[ARTNET_POLL_TABLE_SIZE_NODE_UNIVERSES]));
 #ifndef NDEBUG
-			memset(pDst->Mac, 0, ArtNet::MAC_SIZE + ArtNet::SHORT_NAME_LENGTH + ArtNet::LONG_NAME_LENGTH);
+			memset(pDst->Mac, 0, artnet::MAC_SIZE + artnet::SHORT_NAME_LENGTH + artnet::LONG_NAME_LENGTH);
 #endif
 		}
 
