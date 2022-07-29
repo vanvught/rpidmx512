@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,9 +39,7 @@
 
 #include "httpd/httpd.h"
 
-#include "e131bridge.h"
-#include "e131params.h"
-#include "e131msgconst.h"
+#include "pp.h"
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
@@ -60,7 +58,6 @@
 #include "remoteconfigparams.h"
 
 #include "storedisplayudf.h"
-#include "storee131.h"
 #include "storemonitor.h"
 #include "storenetwork.h"
 #include "storerdmdevice.h"
@@ -82,7 +79,7 @@ int main(int argc, char **argv) {
 	}
 
 	hw.Print();
-	fw.Print("sACN E1.31 Real-time DMX Monitor {4 Universes}");
+	fw.Print("DDP Display Real-time Monitor");
 
 	SpiFlashInstall spiFlashInstall;
 	SpiFlashStore spiFlashStore;
@@ -99,15 +96,11 @@ int main(int argc, char **argv) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	StoreE131 storeE131;
-	E131Params e131Params(&storeE131);
+	PixelPusher pp;
 
-	E131Bridge bridge;
+	const uint32_t nActivePorts = (argc == 3 ? atoi(argv[2]) : 2);
 
-	if (e131Params.Load()) {
-		e131Params.Dump();
-		e131Params.Set();
-	}
+	pp.SetCount(256, nActivePorts, true);
 
 	StoreMonitor storeMonitor;
 	DMXMonitorParams monitorParams(&storeMonitor);
@@ -119,21 +112,10 @@ int main(int argc, char **argv) {
 		monitorParams.Set(&monitor);
 	}
 
-	bridge.SetOutput(&monitor);
-
-	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
-		bool bIsSet;
-		const auto nUniverse = e131Params.GetUniverse(i, bIsSet);
-
-		if (bIsSet) {
-			bridge.SetUniverse(i,lightset::PortDir::OUTPUT, nUniverse);
-		}
-	}
-
-	const auto nActivePorts = bridge.GetActiveOutputPorts();
+	pp.SetOutput(&monitor);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "sACN E1.31 DMX %d", nActivePorts);
+	snprintf(aDescription, sizeof(aDescription) - 1, "PixelPusher");
 
 	uint8_t nLength;
 	const auto *aLabel = hw.GetBoardName(nLength);
@@ -162,15 +144,15 @@ int main(int argc, char **argv) {
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_RDMNET_LLRP, LLRP_PORT, mdns::Protocol::UDP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=sACN E1.31");
+	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=PixelPusher");
 	mDns.Print();
 
-	bridge.Print();
+	pp.Print();
 
 	HttpDaemon httpDaemon;
 	httpDaemon.Start();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
+	RemoteConfig remoteConfig(remoteconfig::Node::PP, remoteconfig::Output::MONITOR, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -184,10 +166,10 @@ int main(int argc, char **argv) {
 		;
 
 	llrpOnlyDevice.Start();
-	bridge.Start();
+	pp.Start();
 
 	for (;;) {
-		bridge.Run();
+		pp.Run();
 		mDns.Run();
 		httpDaemon.Run();
 		remoteConfig.Run();
