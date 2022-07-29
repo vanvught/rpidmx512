@@ -2,7 +2,7 @@
  * @file mdnsservices.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,14 @@
 #ifndef MDNSSERVICES_H_
 #define MDNSSERVICES_H_
 
-#define MDNS_SERVICE_MIDI		"._apple-midi"
-#define MDNS_SERVICE_OSC		"._osc"
-#define MDNS_SERVICE_CONFIG		"._config"
-#define MDNS_SERVICE_TFTP		"._tftp"
-#define MDNS_SERVICE_NTP		"._ntp"
-#define MDNS_SERVICE_DDP		"._ddp"
-#define MDNS_SERVICE_HTTP		"._http"
+#define MDNS_SERVICE_MIDI			"._apple-midi"
+#define MDNS_SERVICE_OSC			"._osc"
+#define MDNS_SERVICE_CONFIG			"._config"
+#define MDNS_SERVICE_TFTP			"._tftp"
+#define MDNS_SERVICE_NTP			"._ntp"
+#define MDNS_SERVICE_DDP			"._ddp"
+#define MDNS_SERVICE_PP				"._pp"
+#define MDNS_SERVICE_HTTP			"._http"
+#define MDNS_SERVICE_RDMNET_LLRP	"._rdmnet-llrp"
 
 #endif /* MDNSSERVICES_H_ */

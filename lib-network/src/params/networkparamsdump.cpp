@@ -38,44 +38,44 @@
 
 void NetworkParams::Dump() {
 #ifndef NDEBUG
-	if (m_tNetworkParams.nSetList == 0) {
+	if (m_Params.nSetList == 0) {
 		return;
 	}
 
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, NetworkParamsConst::FILE_NAME);
 
-	if (isMaskSet(NetworkParamsMask::DHCP)) {
-		printf(" %s=%d [%s]\n", NetworkParamsConst::USE_DHCP, static_cast<int>(m_tNetworkParams.bIsDhcpUsed), m_tNetworkParams.bIsDhcpUsed != 0 ? "Yes" : "No");
+	if (isMaskSet(networkparams::Mask::DHCP)) {
+		printf(" %s=%d [%s]\n", NetworkParamsConst::USE_DHCP, static_cast<int>(m_Params.bIsDhcpUsed), m_Params.bIsDhcpUsed != 0 ? "Yes" : "No");
 	}
 
-	if (isMaskSet(NetworkParamsMask::IP_ADDRESS)) {
-		printf(" %s=" IPSTR "\n", NetworkParamsConst::IP_ADDRESS, IP2STR(m_tNetworkParams.nLocalIp));
+	if (isMaskSet(networkparams::Mask::IP_ADDRESS)) {
+		printf(" %s=" IPSTR "\n", NetworkParamsConst::IP_ADDRESS, IP2STR(m_Params.nLocalIp));
 	}
 
-	if (isMaskSet(NetworkParamsMask::NET_MASK)) {
-		printf(" %s=" IPSTR "\n", NetworkParamsConst::NET_MASK, IP2STR(m_tNetworkParams.nNetmask));
+	if (isMaskSet(networkparams::Mask::NET_MASK)) {
+		printf(" %s=" IPSTR "\n", NetworkParamsConst::NET_MASK, IP2STR(m_Params.nNetmask));
 	}
 
 #if defined (ESP8266)
-	if (isMaskSet(NetworkParamsMask::DEFAULT_GATEWAY)) {
-		printf(" %s=" IPSTR "\n", NetworkParamsConst::DEFAULT_GATEWAY, IP2STR(m_tNetworkParams.nGatewayIp));
+	if (isMaskSet(networkparams::Mask::DEFAULT_GATEWAY)) {
+		printf(" %s=" IPSTR "\n", NetworkParamsConst::DEFAULT_GATEWAY, IP2STR(m_Params.nGatewayIp));
 	}
 
-	if (isMaskSet(NetworkParamsMask::NAME_SERVER)) {
-		printf(" %s=" IPSTR "\n",  NetworkParamsConst::NAME_SERVER, IP2STR(m_tNetworkParams.nNameServerIp));
+	if (isMaskSet(networkparams::Mask::NAME_SERVER)) {
+		printf(" %s=" IPSTR "\n",  NetworkParamsConst::NAME_SERVER, IP2STR(m_Params.nNameServerIp));
 	}
 #endif
 
-	if (isMaskSet(NetworkParamsMask::HOSTNAME)) {
-		printf(" %s=%s\n", NetworkParamsConst::HOSTNAME, m_tNetworkParams.aHostName);
+	if (isMaskSet(networkparams::Mask::HOSTNAME)) {
+		printf(" %s=%s\n", NetworkParamsConst::HOSTNAME, m_Params.aHostName);
 	}
 
-	if (isMaskSet(NetworkParamsMask::NTP_SERVER)) {
-		printf(" %s=" IPSTR "\n", NetworkParamsConst::NTP_SERVER, IP2STR(m_tNetworkParams.nNtpServerIp));
+	if (isMaskSet(networkparams::Mask::NTP_SERVER)) {
+		printf(" %s=" IPSTR "\n", NetworkParamsConst::NTP_SERVER, IP2STR(m_Params.nNtpServerIp));
 	}
 
-	if (isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
-		printf(" %s=%1.1f\n", NetworkParamsConst::NTP_UTC_OFFSET, m_tNetworkParams.fNtpUtcOffset);
+	if (isMaskSet(networkparams::Mask::NTP_UTC_OFFSET)) {
+		printf(" %s=%1.1f\n", NetworkParamsConst::NTP_UTC_OFFSET, m_Params.fNtpUtcOffset);
 	}
 #endif
 }
