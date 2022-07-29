@@ -1,8 +1,8 @@
 /**
- * @file lightset4with4.h
+ * @file lightset64with4.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef LIGHTSET4WITH4_H_
-#define LIGHTSET4WITH4_H_
+#ifndef LIGHTSET64WITH4_H_
+#define LIGHTSET64WITH4_H_
 
 #include "lightset.h"
 
 #include "debug.h"
 
-class LightSet4with4 final: public LightSet {
+class LightSet64with4 final: public LightSet {
 public:
-	LightSet4with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {
+	LightSet64with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {
 		DEBUG_PRINTF("%p %p", m_pA, m_pB);
 	}
-	~LightSet4with4() override {}
+	~LightSet64with4() override {}
 
 	void SetLightSetA(LightSet *pA) {
 		m_pA = pA;
@@ -54,7 +54,7 @@ public:
 	}
 
 	void Start(uint32_t nPortIndex) override {
-		if ((nPortIndex < 4) && (m_pA != nullptr)) {
+		if ((nPortIndex < 32) && (m_pA != nullptr)) {
 			return m_pA->Start(nPortIndex);
 		}
 		if (m_pB != nullptr) {
@@ -63,7 +63,7 @@ public:
 	}
 
 	void Stop(uint32_t nPortIndex) override {
-		if ((nPortIndex < 4) && (m_pA != nullptr)) {
+		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->Stop(nPortIndex);
 		}
 		if (m_pB != nullptr) {
@@ -72,7 +72,7 @@ public:
 	}
 
 	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override {
-		if ((nPortIndex < 4) && (m_pA != nullptr)) {
+		if ((nPortIndex < 64) && (m_pA != nullptr)) {
 			return m_pA->SetData(nPortIndex, pData, nLength);
 		}
 		if (m_pB != nullptr) {
@@ -119,4 +119,4 @@ private:
 	LightSet *m_pB;
 };
 
-#endif /* LIGHTSET4WITH4_H_ */
+#endif /* LIGHTSET64WITH4_H_ */

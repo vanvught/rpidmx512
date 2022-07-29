@@ -137,8 +137,8 @@ private:
 		assert(pLightSet != nullptr);
 		assert(nPortIndex < PORTS);
 
-		memset(m_OutputPort[nPortIndex].data, 0, Dmx::UNIVERSE_SIZE);
-		m_OutputPort[nPortIndex].nLength = Dmx::UNIVERSE_SIZE;
+		memset(m_OutputPort[nPortIndex].data, 0, dmx::UNIVERSE_SIZE);
+		m_OutputPort[nPortIndex].nLength = dmx::UNIVERSE_SIZE;
 		IOutput(pLightSet, nPortIndex);
 	}
 
@@ -155,13 +155,13 @@ private:
 	static constexpr auto PORTS = LIGHTSET_PORTS;
 #endif
 	struct Source {
-		uint8_t data[Dmx::UNIVERSE_SIZE];
+		uint8_t data[dmx::UNIVERSE_SIZE];
 	};
 
 	struct OutputPort {
 		Source sourceA;
 		Source sourceB;
-		uint8_t data[Dmx::UNIVERSE_SIZE];
+		uint8_t data[dmx::UNIVERSE_SIZE];
 		uint32_t nLength;
 	};
 

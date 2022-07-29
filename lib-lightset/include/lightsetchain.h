@@ -78,7 +78,7 @@ public:
 private:
 	uint8_t m_nSize { 0 };
 	TLightSetEntry *m_pTable;
-	uint16_t m_nDmxStartAddress { lightset::Dmx::ADDRESS_INVALID };
+	uint16_t m_nDmxStartAddress { lightset::dmx::ADDRESS_INVALID };
 	uint16_t m_nDmxFootprint { 0 };
 };
 
