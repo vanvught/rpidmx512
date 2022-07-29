@@ -75,10 +75,11 @@ private:
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
 	bool m_bContentTypeJson { false };
 	bool m_IsAction { false };
-	char m_Content[BUFSIZE];
 	uint16_t m_nContentLength { 0 };
 	uint16_t m_nFileDataLength { 0 };
 	uint16_t m_nRequestContentLength { 0 };
+
+	static char m_Content[BUFSIZE];
 };
 
 #endif /* HTTPD_H_ */

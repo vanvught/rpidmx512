@@ -32,7 +32,7 @@
 # define NODE_ARTNET
 #endif
 
-#if defined (NODE_E131_MULTI)
+#if defined (NODE_E131_MULTI) && !defined (NODE_ARTNET_MULTI)
 # define NODE_E131
 #endif
 
@@ -44,14 +44,14 @@
 # define OUTPUT_DMX_SEND
 #endif
 
+#if defined (NODE_NODE)
+# include "node.h"
+#endif
+
 #include "spiflashstore.h"
 
 #if defined(ENABLE_TFTP_SERVER)
 # include "tftp/tftpfileserver.h"
-#endif
-
-#if defined(ENABLE_HTTPD)
-# include "httpd/httpd.h"
 #endif
 
 #include "network.h"
@@ -71,6 +71,8 @@ enum class Node {
 	SHOWFILE,
 	MIDI,
 	DDP,
+	PP,
+	NODE,
 	LAST
 };
 enum class Output {
@@ -87,13 +89,6 @@ enum class Output {
 	SERIAL,
 	RGBPANEL,
 	LAST
-};
-
-enum class HandleMode {
-	TXT
-#if !defined(DISABLE_BIN)
-	, BIN
-#endif
 };
 
 enum {
@@ -128,8 +123,8 @@ enum class TxtFile {
 	SERIAL,
 	GPS,
 	RGBPANEL,
-	DDPDISP,
 	LTCETC,
+	NODE,
 	LAST
 };
 }  // namespace remoteconfig
@@ -253,8 +248,17 @@ private:
 	void HandleGetShowTxt(uint32_t& nSize);
 #endif
 
-#if defined (NODE_DDP_DISPLAY)
-	void HandleGetDdpDisplayTxt(uint32_t& nSize);
+#if defined (NODE_NODE)
+	void HandleGetNodeTxt(const node::Personality personality, uint32_t& nSize);
+	void HandleGetNodeNodeTxt(uint32_t& nSize) {
+		HandleGetNodeTxt(node::Personality::NODE, nSize);
+	}
+	void HandleGetNodeArtNetTxt(uint32_t& nSize) {
+		HandleGetNodeTxt(node::Personality::ARTNET, nSize);
+	}
+	void HandleGetNodeE131Txt(uint32_t& nSize) {
+		HandleGetNodeTxt(node::Personality::E131, nSize);
+	}
 #endif
 
 #if defined (OUTPUT_DMX_SEND)
@@ -306,13 +310,6 @@ private:
 	void HandleGetRgbPanelTxt(uint32_t& nSize);
 #endif
 
-#if !defined(DISABLE_BIN)
-	void HandleStoreSet() {
-		m_tHandleMode = remoteconfig::HandleMode::BIN;
-		HandleSet(nullptr, 0);
-	}
-#endif
-
 	void HandleSetRconfig();
 	void HandleSetNetworkTxt();
 
@@ -348,8 +345,17 @@ private:
 	void HandleSetShowTxt();
 #endif
 
-#if defined (NODE_DDP_DISPLAY)
-	void HandleSetDdpDisplayTxt();
+#if defined(NODE_NODE)
+	void HandleSetNodeTxt(const node::Personality personality);
+	void HandleSetNodeNodeTxt() {
+		HandleSetNodeTxt(node::Personality::NODE);
+	}
+	void HandleSetNodeArtNetTxt() {
+		HandleSetNodeTxt(node::Personality::ARTNET);
+	}
+	void HandleSetNodeE131Txt() {
+		HandleSetNodeTxt(node::Personality::E131);
+	}
 #endif
 
 #if defined (OUTPUT_DMX_SEND)
@@ -403,9 +409,6 @@ private:
 
 	void HandleDisplaySet();
 	void HandleDisplayGet();
-#if !defined(DISABLE_BIN)
-	void HandleStoreGet();
-#endif
 	void HandleTftpSet();
 	void HandleTftpGet();
 
@@ -416,10 +419,6 @@ private:
 	remoteconfig::Node m_tNode;
 	remoteconfig::Output m_tOutput;
 	uint32_t m_nActiveOutputs;
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon m_HttpDaemon;
-#endif
 
 	struct Commands {
 		void (RemoteConfig::*pHandler)();
@@ -447,7 +446,7 @@ private:
 		uint8_t nOutput;
 		uint8_t nActiveOutputs;
 		char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
-	}__attribute__((packed));
+	};
 
 	static ListBin s_RemoteConfigListBin;
 
@@ -463,17 +462,11 @@ private:
 	uint32_t m_nIPAddressFrom { 0 };
 	uint32_t m_nBytesReceived { 0 };
 
-	remoteconfig::HandleMode m_tHandleMode { remoteconfig::HandleMode::TXT };
-
 #if defined(ENABLE_TFTP_SERVER)
 	TFTPFileServer *m_pTFTPFileServer { nullptr };
 	uint8_t *m_pTFTPBuffer { nullptr };
 #endif
 	bool m_bEnableTFTP { false };
-
-#if !defined(DISABLE_BIN)
-	static uint8_t s_StoreBuffer[remoteconfig::udp::BUFFER_SIZE];
-#endif
 
 	static char *s_pUdpBuffer;
 

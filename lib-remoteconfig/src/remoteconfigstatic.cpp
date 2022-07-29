@@ -64,8 +64,10 @@ const RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 #if defined (NODE_SHOWFILE)
 		{ &RemoteConfig::HandleGetShowTxt,       &RemoteConfig::HandleSetShowTxt,       "show.txt",     8,  Store::SHOW },
 #endif
-#if defined (NODE_DDP_DISPLAY)
-		{ &RemoteConfig::HandleGetDdpDisplayTxt, &RemoteConfig::HandleSetDdpDisplayTxt, "ddpdisp.txt",  11, Store::DDPDISP },
+#if defined (NODE_NODE)
+		{ &RemoteConfig::HandleGetNodeNodeTxt,   &RemoteConfig::HandleSetNodeNodeTxt,   "node.txt",     8,  Store::NODE },
+		{ &RemoteConfig::HandleGetNodeArtNetTxt, &RemoteConfig::HandleSetNodeArtNetTxt, "artnet.txt",   10, Store::NODE },
+		{ &RemoteConfig::HandleGetNodeE131Txt,   &RemoteConfig::HandleSetNodeE131Txt,   "e131.txt",     8,  Store::NODE },
 #endif
 #if defined (OUTPUT_DMX_SEND)
 		{ &RemoteConfig::HandleGetParamsTxt,     &RemoteConfig::HandleSetParamsTxt,     "params.txt",   10, Store::DMXSEND },
