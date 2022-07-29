@@ -27,7 +27,9 @@
  * THE SOFTWARE.
  */
 
-#pragma GCC target ("general-regs-only")
+#if __GNUC__ > 8
+# pragma GCC target ("general-regs-only")
+#endif
 
 #include <stdint.h>
 #include <stdbool.h>

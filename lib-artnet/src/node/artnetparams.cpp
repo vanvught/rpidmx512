@@ -208,7 +208,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
-	for (unsigned i = 0; i < artnet::PORTS; i++) {
+	for (uint32_t i = 0; i < artnet::PORTS; i++) {
 		if (Sscan::Uint8(pLine, LightSetParamsConst::UNIVERSE_PORT[i], nValue8) == Sscan::OK) {
 			if (nValue8 <= 0xF) {
 				m_Params.nUniversePort[i] = nValue8;
@@ -244,6 +244,24 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			return;
 		}
 
+#if __GNUC__ < 9
+/*
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+    m_Params.nDirection &= artnetparams::portdir_clear(i);
+                                                        ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::INPUT, i);
+                                                                                        ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::DISABLE, i);
+                                                                                          ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::OUTPUT, i);
+ */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"	// FIXME ignored "-Wconversion"
+#endif
+
 		nLength = 7;
 
 		if (Sscan::Char(pLine, LightSetParamsConst::DIRECTION[i], value, nLength) == Sscan::OK) {
@@ -265,6 +283,10 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			return;
 		}
 
+#if __GNUC__ < 9
+# pragma GCC diagnostic pop
+#endif
+
 		if (Sscan::IpAddress(pLine, ArtNetParamsConst::DESTINATION_IP_PORT[i], nValue32) == Sscan::OK) {
 			m_Params.nDestinationIpPort[i] = nValue32;
 
@@ -276,6 +298,18 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			return;
 		}
 
+#if __GNUC__ < 9
+/*
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+    m_Params.nRdm &= artnetparams::clear_mask(i);
+                                               ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nRdm |= artnetparams::shift_left(1, i);
+ */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"	// FIXME ignored "-Wconversion"
+#endif
+
 		if (Sscan::Uint8(pLine, ArtNetParamsConst::RDM_ENABLE_PORT[i], nValue8) == Sscan::OK) {
 			m_Params.nRdm &= artnetparams::clear_mask(i);
 
@@ -285,6 +319,10 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 			}
 			return;
 		}
+
+#if __GNUC__ < 9
+# pragma GCC diagnostic pop
+#endif
 	}
 
 	/**
@@ -389,9 +427,15 @@ void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 	DEBUG_ENTRY
 
+/*
+   error: logical 'and' of mutually exclusive tests is always false [-Werror=logical-op]
+   if ((nPortIndexOffset != 0) && (nPortIndexOffset < artnetnode::MAX_PORTS)) {
+ */
+#if LIGHTSET_PORTS > 1
 	if ((nPortIndexOffset != 0) && (nPortIndexOffset < artnetnode::MAX_PORTS)) {
 		s_nPortsMax = std::min(s_nPortsMax, (artnetnode::MAX_PORTS - nPortIndexOffset));
 	}
+#endif
 
 	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
 
