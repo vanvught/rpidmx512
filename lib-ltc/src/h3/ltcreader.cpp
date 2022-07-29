@@ -53,7 +53,9 @@
 #include "ltcetc.h"
 #include "ltcoutputs.h"
 
-#pragma GCC target ("general-regs-only")
+#if __GNUC__ > 8
+# pragma GCC target ("general-regs-only")
+#endif
 
 #ifndef ALIGNED
 # define ALIGNED __attribute__ ((aligned (4)))

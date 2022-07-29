@@ -180,6 +180,24 @@ void E131Params::callbackFunction(const char *pLine) {
 			return;
 		}
 
+#if __GNUC__ < 10
+/*
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+    m_Params.nDirection &= e131params::portdir_clear(i);
+                                                      ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::INPUT, i);
+                                                                                      ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::DISABLE, i);
+                                                                                        ^
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+     m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::OUTPUT, i);
+ */
+
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"	// FIXME ignored "-Wconversion"
+#endif
 
 		nLength = 7;
 
@@ -202,6 +220,9 @@ void E131Params::callbackFunction(const char *pLine) {
 			return;
 		}
 
+#if __GNUC__ < 10
+# pragma GCC diagnostic pop
+#endif
 
 		if (Sscan::Uint8(pLine, E131ParamsConst::PRIORITY[i], value8) == Sscan::OK) {
 			if ((value8 >= priority::LOWEST) && (value8 <= priority::HIGHEST) && (value8 != priority::DEFAULT)) {
@@ -287,9 +308,15 @@ void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void E131Params::Set(uint32_t nPortIndexOffset) {
 	DEBUG_ENTRY
 
+/*
+   error: logical 'and' of mutually exclusive tests is always false [-Werror=logical-op]
+   if ((nPortIndexOffset != 0) && (nPortIndexOffset < e131bridge::MAX_PORTS)) {
+ */
+#if LIGHTSET_PORTS > 1
 	if ((nPortIndexOffset != 0) && (nPortIndexOffset < e131bridge::MAX_PORTS)) {
 		s_nPortsMax = std::min(s_nPortsMax, (e131bridge::MAX_PORTS - nPortIndexOffset));
 	}
+#endif
 
 	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
 

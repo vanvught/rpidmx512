@@ -172,12 +172,29 @@ void StoreArtNet::SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled) {
 	uint16_t nRdm;
 	SpiFlashStore::Get()->Copy(spiflashstore::Store::ARTNET, &nRdm, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nRdm), false);
 
+#if __GNUC__ < 10
+/*
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+  nRdm &= artnetparams::clear_mask(nPortIndex);
+ */
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wconversion"	// FIXME ignored "-Wconversion"
+#endif
+
 	nRdm &= artnetparams::clear_mask(nPortIndex);
 
 	if (isEnabled) {
+/*
+error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change value [-Werror=conversion]
+   nRdm |= artnetparams::shift_left(1, nPortIndex);
+ */
 		nRdm |= artnetparams::shift_left(1, nPortIndex);
 		nRdm |= static_cast<uint16_t>(1U << (nPortIndex + 8));
 	}
+
+#if __GNUC__ < 10
+# pragma GCC diagnostic pop
+#endif
 
 	SpiFlashStore::Get()->Update(spiflashstore::Store::ARTNET, __builtin_offsetof(struct artnetparams::Params, nRdm), &nRdm, sizeof(uint16_t));
 
