@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,9 @@ public:
 	void Stop(uint32_t nPortIndex) override;
 
 	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
+
+	void Blackout(bool bBlackout) override;
+	void FullOn() override;
 
 	void Print() override;
 

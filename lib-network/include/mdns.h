@@ -74,7 +74,7 @@ static constexpr auto SERVICE_RECORDS_MAX = MDNS_SERVICE_RECORDS_MAX;
 class MDNS {
 public:
 	MDNS();
-	~MDNS() {}
+	~MDNS();
 
 	void Start();
 	void Stop() {

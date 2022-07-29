@@ -2,7 +2,7 @@
  * @file e131paramsconst.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,6 @@ struct E131ParamsConst {
 	static const char FILE_NAME[];
 
 	static const char PRIORITY[e131params::MAX_PORTS][18];
-
-	static const char DISABLE_NETWORK_DATA_LOSS_TIMEOUT[];
-	static const char DISABLE_MERGE_TIMEOUT[];
 };
 
 #endif /* E131PARAMSCONST_H_ */

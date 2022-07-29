@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include <cassert>
 
 #include "ltcdisplayrgb.h"
-
 
 using namespace ltcdisplayrgb;
 
@@ -83,15 +82,15 @@ void LtcDisplayRgb::SetRGB(const char *pHexString) {
 		return;
 	}
 
-	const auto tIndex = static_cast<ColourIndex>((pHexString[0] - '0'));
+	const auto colourIndex = static_cast<ColourIndex>((pHexString[0] - '0'));
 
-	if (tIndex >= ColourIndex::LAST) {
+	if (colourIndex >= ColourIndex::LAST) {
 		return;
 	}
 
 	const auto nRGB = hexadecimalToDecimal(pHexString + 1);
 
-	SetRGB(nRGB, tIndex);
+	SetRGB(nRGB, colourIndex);
 }
 
 uint32_t LtcDisplayRgb::hexadecimalToDecimal(const char *pHexValue, uint32_t nLength) {

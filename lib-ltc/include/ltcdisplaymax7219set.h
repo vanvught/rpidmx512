@@ -2,7 +2,7 @@
  * @file ltcdisplaymax7219set.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,12 @@
 
 class LtcDisplayMax7219Set {
 public:
-	virtual ~LtcDisplayMax7219Set() {}
+	virtual ~LtcDisplayMax7219Set() {
+	}
 
 	virtual void Init(uint8_t nIntensity)=0;
-
 	virtual void Show(const char *pTimecode)=0;
 	virtual void ShowSysTime(const char *pSystemTime)=0;
-
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos)=0;
 };
 

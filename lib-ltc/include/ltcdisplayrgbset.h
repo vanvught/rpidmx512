@@ -50,8 +50,8 @@ public:
 
 	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours)=0;
 
-	virtual void ShowFPS(ltc::type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours);
-	virtual void ShowSource(ltc::source tSource, struct ltcdisplayrgb::Colours &tColours);
+	virtual void ShowFPS(ltc::Type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours);
+	virtual void ShowSource(ltc::Source tSource, struct ltcdisplayrgb::Colours &tColours);
 	virtual void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours);
 
 	virtual void Print()=0;

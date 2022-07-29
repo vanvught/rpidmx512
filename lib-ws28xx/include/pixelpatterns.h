@@ -2,7 +2,7 @@
  * @file pixelpatterns.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,14 @@
 
 namespace pixelpatterns {
 #if defined (PIXELPATTERNS_MULTI)
-static constexpr auto MAX_PORTS = 8U;
+# if !defined (CONFIG_PIXELDMX_MAX_PORTS)
+#  define CONFIG_PIXELDMX_MAX_PORTS	8U
+# endif
+ static constexpr uint32_t MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
 #else
-static constexpr auto MAX_PORTS = 1U;
+ static constexpr uint32_t MAX_PORTS = 1;
 #endif
+
 enum class Pattern {
 	NONE, RAINBOW_CYCLE, THEATER_CHASE, COLOR_WIPE, SCANNER, FADE, LAST
 };
@@ -49,7 +53,6 @@ enum class Direction {
 	FORWARD, REVERSE
 };
 }  // namespace pixelpatterns
-
 
 class PixelPatterns {
 public:
@@ -92,10 +95,29 @@ private:
 	void Reverse(uint32_t nPortIndex);
 
 	void SetPixelColour(__attribute__((unused)) uint32_t nPortIndex, uint32_t nPixelIndex, uint32_t nColour) {
+		const auto nRed = Red(nColour);
+		const auto nGreen = Green(nColour);
+		const auto nBlue = Blue(nColour);
 #if defined (PIXELPATTERNS_MULTI)
-		m_pOutput->SetPixel(nPortIndex, nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
+		if (m_pOutput->GetType() != pixel::Type::SK6812W) {
+			m_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
+		} else {
+			if ((nRed == nGreen) && (nGreen == nBlue)) {
+				m_pOutput->SetPixel(nPortIndex, nPixelIndex, 0x00, 0x00, 0x00, nRed);
+			} else {
+				m_pOutput->SetPixel(nPortIndex, nPixelIndex, nRed, nGreen, nBlue, 0x00);
+			}
+		}
 #else
-		m_pOutput->SetPixel(nPixelIndex, Red(nColour), Green(nColour), Blue(nColour));
+		if (m_pOutput->GetType() != pixel::Type::SK6812W) {
+			m_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue);
+		} else {
+			if ((nRed == nGreen) && (nGreen == nBlue)) {
+				m_pOutput->SetPixel(nPixelIndex, 0x00, 0x00, 0x00, nRed);
+			} else {
+				m_pOutput->SetPixel(nPixelIndex, nRed, nGreen, nBlue, 0x00);
+			}
+		}
 #endif
 	}
 

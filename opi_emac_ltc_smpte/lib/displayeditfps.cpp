@@ -2,7 +2,7 @@
  * @file displayeditfps.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,22 @@
 
 #include "debug.h"
 
+static void key_left(uint8_t &nType) {
+	if (nType > 0) {
+		nType--;
+		return;
+	}
+	nType = 3;
+}
+
+static void key_right(uint8_t &nType) {
+	if (nType < 3) {
+		nType++;
+		return;
+	}
+	nType = 0;
+}
+
 void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 	DEBUG_PRINTF("%d %d", m_State, nKey);
 
@@ -52,19 +68,19 @@ void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 			break;
 		case INPUT_KEY_DOWN:
 		case INPUT_KEY_LEFT:
-			KeyLeft(nType);
+			key_left(nType);
 			break;
 		case INPUT_KEY_UP:
 		case INPUT_KEY_RIGHT:
-			KeyRight(nType);
+			key_right(nType);
 			break;
 		default:
 			break;
 		}
 	}
 
-	Display::Get()->TextLine(2, Ltc::GetType(static_cast<ltc::type>(nType)), TC_TYPE_MAX_LENGTH);
-	Ltc7segment::Get()->Show(static_cast<ltc::type>(nType));
+	Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(nType)), ltc::timecode::TYPE_MAX_LENGTH);
+	Ltc7segment::Get()->Show(static_cast<ltc::Type>(nType));
 
 	if (m_bCursorOn) {
 		Display::Get()->SetCursor(display::cursor::ON);
@@ -72,20 +88,4 @@ void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 	} else {
 		Display::Get()->SetCursor(display::cursor::OFF);
 	}
-}
-
-void DisplayEditFps::KeyLeft(uint8_t &nType) {
-	if (nType > 0) {
-		nType--;
-		return;
-	}
-	nType = 3;
-}
-
-void DisplayEditFps::KeyRight(uint8_t &nType) {
-	if (nType < 3) {
-		nType++;
-		return;
-	}
-	nType = 0;
 }

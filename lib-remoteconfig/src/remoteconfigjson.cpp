@@ -77,7 +77,7 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 #if defined (NODE_ARTNET)
 			"\"artnet.txt\":\"Art-Net\","
 #endif
-#if defined (NODE_E131)
+#if defined (NODE_E131) && !defined (NODE_ARTNET)
 			"\"e131.txt\":\"sACN E1.31\","
 #endif
 #if defined (NODE_OSC_CLIENT)
@@ -96,8 +96,10 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 #if defined(NODE_SHOWFILE)
 			"\"show.txt\":\"Showfile\","
 #endif
-#if defined(NODE_DDP_DISPLAY)
-			"\"ddpdisp.txt\":\"DDP Display\","
+#if defined(NODE_NODE)
+			"\"node.txt\":\"Node\","
+			"\"artnet.txt\":\"Art-Net\","
+			"\"e131.txt\":\"sACN E1.31\","
 #endif
 #if defined (OUTPUT_DMX_SEND)
 			"\"params.txt\":\"DMX Transmit\","

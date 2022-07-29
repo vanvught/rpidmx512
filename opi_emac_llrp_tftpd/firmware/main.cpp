@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,15 +47,34 @@
 
 #include "mdns.h"
 #include "mdnsservices.h"
+#if defined (ENABLE_HTTPD)
+# include "httpd/httpd.h"
+#endif
 
 // System Time
 #include "ntpclient.h"
 
-// Handlers
+// Handler
 #include "factorydefaults.h"
-#include "reboot.h"
 
 #include "software_version.h"
+
+void Hardware::RebootHandler() {
+	if (!RemoteConfig::Get()->IsReboot()) {
+		Display::Get()->SetSleep(false);
+
+		while (SpiFlashStore::Get()->Flash())
+			;
+
+		Network::Get()->Shutdown();
+
+		printf("Rebooting ...\n");
+
+		Display::Get()->Cls();
+		Display::Get()->TextStatus("Rebooting ...",
+				Display7SegmentMessage::INFO_REBOOTING);
+	}
+}
 
 extern "C" {
 
@@ -71,7 +90,6 @@ void notmain(void) {
 	fw.Print("RDMNet LLRP device only");
 
 	hw.SetLed(hardware::LedStatus::ON);
-	hw.SetRebootHandler(new Reboot);
 
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
 
@@ -88,18 +106,14 @@ void notmain(void) {
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=RDMNet LLRP Only");
 #endif
 	mDns.Print();
+#if defined (ENABLE_HTTPD)
+	HttpDaemon httpDaemon;
+	httpDaemon.Start();
+#endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
-
-	if (ntpClient.GetStatus() != ntpclient::Status::FAILED) {
-		printf("Set RTC from System Clock\n");
-		HwClock::Get()->SysToHc();
-
-		const auto rawtime = time(nullptr);
-		printf(asctime(localtime(&rawtime)));
-	}
 
 	RDMNetLLRPOnly device;
 
@@ -148,6 +162,9 @@ void notmain(void) {
 		ntpClient.Run();
 		spiFlashStore.Flash();
 		lb.Run();
+#if defined (ENABLE_HTTPD)
+		httpDaemon.Run();
+#endif
 	}
 }
 

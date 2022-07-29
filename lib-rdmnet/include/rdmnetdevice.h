@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,10 @@
 #include "e131.h"
 
 #include "hardware.h"
+
+#if defined (RDM_RESPONDER)
+# error "Cannot be both RDMNet Device and RDM Responder"
+#endif
 
 class RDMNetDevice: public RDMDeviceResponder, public LLRPDevice {
 public:
@@ -73,7 +77,7 @@ private:
 	RDMHandler m_RDMHandler { false };
 
 	static TRdmMessage s_RdmCommand;
-	static uint8_t s_Cid[E131::CID_LENGTH];
+	static uint8_t s_Cid[e131::CID_LENGTH];
 };
 
 #endif /* RDMNETDEVICE_H_ */

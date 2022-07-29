@@ -46,7 +46,7 @@ private:
 private:
 	lightset::SlotInfo *m_ptLightSetSlotInfo;
 	uint32_t m_nSize;
-	char *m_pToString;
+	char *m_pToString{nullptr};
 };
 
 #endif /* DMXSLOTINFO_H_ */

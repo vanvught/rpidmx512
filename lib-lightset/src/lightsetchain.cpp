@@ -156,7 +156,7 @@ bool LightSetChain::Add(LightSet *pLightSet, int nType) {
 		const bool IsValidDmxStartAddress = (pLightSet->GetDmxStartAddress() > 0) && (pLightSet->GetDmxFootprint() - pLightSet->GetDmxStartAddress() < 512);
 
 		if (IsValidDmxStartAddress) {
-			if (m_nDmxStartAddress == Dmx::ADDRESS_INVALID) {
+			if (m_nDmxStartAddress == dmx::ADDRESS_INVALID) {
 
 				m_pTable[0].pLightSet = pLightSet;
 				m_pTable[0].nType = nType;

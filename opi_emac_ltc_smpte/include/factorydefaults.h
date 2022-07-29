@@ -32,14 +32,12 @@
 #include "spiflashstore.h"
 #include "storenetwork.h"
 
-class FactoryDefaults: public RDMFactoryDefaults {
+class FactoryDefaults final: public RDMFactoryDefaults {
 public:
-	FactoryDefaults() {
-	}
-	~FactoryDefaults() {
-	}
+	FactoryDefaults() {}
+	~FactoryDefaults() override {}
 
-	void Set() {
+	void Set() override {
 		RemoteConfig::Get()->SetDisable(false);
 		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
 		StoreNetwork::Get()->SaveDhcp(true);

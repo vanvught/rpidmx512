@@ -2,7 +2,7 @@
  * @file spiflashstore.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,7 +57,7 @@ enum class Store {
 	RDMSUBDEVICES,
 	GPS,
 	RGBPANEL,
-	DDPDISP,
+	NODE,
 	LAST
 };
 
@@ -83,7 +83,7 @@ public:
 	void Update(spiflashstore::Store tStore, const void *pData, uint32_t nDataLength) {
 		Update(tStore, 0, pData, nDataLength);
 	}
-	void Copy(spiflashstore::Store tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
+	void Copy(spiflashstore::Store tStore, void *pData, uint32_t nDataLength, uint32_t nOffset = 0, bool isSetList = true);
 	void CopyTo(spiflashstore::Store tStore, void *pData, uint32_t& nDataLength);
 
 	void ResetSetList(spiflashstore::Store tStore);

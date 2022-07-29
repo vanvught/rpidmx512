@@ -82,16 +82,26 @@ void Paint::Fill(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t nC
 	SetAddressWindow(x0, y0, x1, y1);
 
 	fill_framebuffer(nColour);
-	auto nPixels = static_cast<size_t>((y1 - y0) * (x1 - x0));
 
+	auto nPixels = static_cast<size_t>((1 + (y1 - y0)) * (1 + (x1 - x0)));
 	const auto nBufferSize = sizeof(s_FrameBuffer) / sizeof(s_FrameBuffer[0]);
 
-	while (nPixels > nBufferSize) {
-		WriteData(reinterpret_cast<uint8_t *>(s_FrameBuffer), sizeof(s_FrameBuffer));
-		nPixels = nPixels - nBufferSize;
-	}
+	if (nPixels > nBufferSize) {
+		WriteDataStart(reinterpret_cast<uint8_t *>(s_FrameBuffer), sizeof(s_FrameBuffer));
 
-	if (nPixels > 0) {
+		nPixels = nPixels - nBufferSize;
+
+		while (nPixels > nBufferSize) {
+			WriteDataContinue(reinterpret_cast<uint8_t *>(s_FrameBuffer), sizeof(s_FrameBuffer));
+			nPixels = nPixels - nBufferSize;
+		}
+
+		if (nPixels > 0) {
+			WriteDataEnd(reinterpret_cast<uint8_t *>(s_FrameBuffer), nPixels * 2);
+		} else {
+			CS_Set();
+		}
+	} else {
 		WriteData(reinterpret_cast<uint8_t *>(s_FrameBuffer), nPixels * 2);
 	}
 }

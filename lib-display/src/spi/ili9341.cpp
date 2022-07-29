@@ -50,7 +50,7 @@ ILI9341::~ILI9341() {
 void ILI9341::Init() {
 	DEBUG_ENTRY
 
-#if defined(DEV_RST_PIN)
+#if defined(SPI_LCD_RST_PIN)
 	HW_Reset();
 #endif
 
@@ -161,7 +161,7 @@ void ILI9341::SetRotation(uint32_t nRotation) {
 }
 
 void ILI9341::SetBackLight(uint32_t nValue) {
-	FUNC_PREFIX(gpio_write(DEV_BL_PIN, nValue == 0 ? LOW : HIGH));
+	FUNC_PREFIX(gpio_write(SPI_LCD_BL_PIN, nValue == 0 ? LOW : HIGH));
 }
 
 void ILI9341::EnableDisplay(bool bEnable) {

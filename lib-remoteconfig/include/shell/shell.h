@@ -65,7 +65,7 @@ public:
 	void Run();
 
 #if defined (LTC_READER)
-	void SetSource(ltc::source ltcSource) {
+	void SetSource(ltc::Source ltcSource) {
 		m_ltcSource = ltcSource;
 	}
 #endif
@@ -106,7 +106,7 @@ private:
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)
-	ltc::source m_ltcSource{ltc::UNDEFINED};
+	ltc::Source m_ltcSource{ltc::UNDEFINED};
 #endif
 // Firmware specific END
 };

@@ -33,7 +33,11 @@
 #include "rdm.h"
 #include "rdm_e120.h"
 
+#include "debug.h"
+
 RDMMessage::RDMMessage()  {
+	DEBUG_ENTRY
+
 	m_message.start_code = E120_SC_RDM;
 	m_message.sub_start_code = E120_SC_SUB_MESSAGE;
 	m_message.message_length = RDM_MESSAGE_MINIMUM_SIZE;
@@ -44,6 +48,8 @@ RDMMessage::RDMMessage()  {
 	m_message.sub_device[0] = 0;
 	m_message.sub_device[1] = 0;
 	m_message.param_data_length = 0;
+
+	DEBUG_EXIT
 }
 
 void RDMMessage::SetSrcUid(const uint8_t *SrcUid){

@@ -92,4 +92,9 @@
 			<resource resourceType="PROJECT" workspacePath="/opi_emac_ddp_pixel_dmx_multi"/>
 		</configuration>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+			<path value=""/>
+		</doc-comment-owner>
+	</storageModule>
 </cproject>

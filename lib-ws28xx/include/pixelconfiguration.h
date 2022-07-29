@@ -2,7 +2,7 @@
  * @file pixelconfiguration.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,15 +29,16 @@
 #include <cstdint>
 
 #include "pixeltype.h"
+#include "gamma/gamma_tables.h"
 
 class PixelConfiguration {
 public:
 	void SetType(pixel::Type Type) {
-		m_Type = Type;
+		m_type = Type;
 	}
 
 	pixel::Type GetType() const {
-		return m_Type;
+		return m_type;
 	}
 
 	void SetCount(uint32_t nCount) {
@@ -49,11 +50,11 @@ public:
 	}
 
 	void SetMap(pixel::Map tMap) {
-		m_tRGBMapping = tMap;
+		m_map = tMap;
 	}
 
 	pixel::Map GetMap() const {
-		return m_tRGBMapping;
+		return m_map;
 	}
 
 	void SetLowCode(uint8_t nLowCode) {
@@ -92,23 +93,46 @@ public:
 		return m_bIsRTZProtocol;
 	}
 
+	void SetEnableGammaCorrection(bool doEnable) {
+		m_bEnableGammaCorrection = doEnable;
+	}
+
+	bool IsEnableGammaCorrection() const {
+		return m_bEnableGammaCorrection;
+	}
+
+	void SetGammaTable(uint32_t nValue) {
+		m_nGammaValue = static_cast<uint8_t>(nValue);
+	}
+
+	const uint8_t *GetGammaTable() const {
+		return m_pGammaTable;
+	}
+
 	void Validate(uint32_t& nLedsPerPixel);
 
-	void Dump();
+	void Print();
 
-	static pixel::Map GetRgbMapping(pixel::Type tType);
+	void Dump() {
+#ifndef NDEBUG
+		Print();
+#endif
+	}
+
 	static void GetTxH(pixel::Type tType, uint8_t &nLowCode, uint8_t &nHighCode);
 
 private:
-	pixel::Type m_Type { pixel::defaults::TYPE };
+	pixel::Type m_type { pixel::defaults::TYPE };
 	uint32_t m_nCount { pixel::defaults::COUNT };
-	pixel::Map m_tRGBMapping { pixel::Map::UNDEFINED };
+	pixel::Map m_map { pixel::Map::UNDEFINED };
 	uint32_t m_nClockSpeedHz { 0 };
 	uint8_t m_nLowCode { 0 };
 	uint8_t m_nHighCode { 0 };
 	uint8_t m_nGlobalBrightness { 0xFF };
-	// Calculated
+	uint8_t m_nGammaValue { 0 };
+	bool m_bEnableGammaCorrection { false };
 	bool m_bIsRTZProtocol { true };
+	const uint8_t *m_pGammaTable { gamma10_0 };
 };
 
 #endif /* PIXELCONFIGURATION_H_ */

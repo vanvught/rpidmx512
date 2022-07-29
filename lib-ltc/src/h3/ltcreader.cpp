@@ -186,9 +186,6 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 	IsMidiQuarterFrameMessage = true;
 }
 
-LtcReader::LtcReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs): m_ptLtcDisabledOutputs(pLtcDisabledOutputs), m_tTimeCodeTypePrevious(ltc::type::INVALID) {
-}
-
 void LtcReader::Start() {
 	bTimeCodeAvailable = false;
 	IsMidiQuarterFrameMessage = false;
@@ -221,31 +218,31 @@ void LtcReader::Start() {
 }
 
 void LtcReader::Run() {
-	uint8_t TimeCodeType;
+	ltc::Type TimeCodeType;
 
 	dmb();
 	if (bTimeCodeAvailable) {
 		dmb();
 		bTimeCodeAvailable = false;
-		TimeCodeType = ltc::type::UNKNOWN;
+		TimeCodeType = ltc::Type::UNKNOWN;
 
 		dmb();
 		if (bIsDropFrameFlagSet) {
-			TimeCodeType = ltc::type::DF;
+			TimeCodeType = ltc::Type::DF;
 		} else {
 			if (nUpdatesPerSecond <= 24) {
-				TimeCodeType = ltc::type::FILM;
+				TimeCodeType = ltc::Type::FILM;
 			} else if (nUpdatesPerSecond <= 26) {
-				TimeCodeType = ltc::type::EBU;
+				TimeCodeType = ltc::Type::EBU;
 			} else if (nUpdatesPerSecond >= 28) {
-				TimeCodeType = ltc::type::SMPTE;
+				TimeCodeType = ltc::Type::SMPTE;
 			} else {
 			}
 		}
 
-		s_tMidiTimeCode.nType = TimeCodeType;
+		s_tMidiTimeCode.nType = static_cast<uint8_t>(TimeCodeType);
 
-		struct TLtcTimeCode tLtcTimeCode;
+		struct ltc::TimeCode tLtcTimeCode;
 
 		tLtcTimeCode.nFrames = s_tMidiTimeCode.nFrames;
 		tLtcTimeCode.nSeconds = s_tMidiTimeCode.nSeconds;
@@ -253,30 +250,30 @@ void LtcReader::Run() {
 		tLtcTimeCode.nHours = s_tMidiTimeCode.nHours;
 		tLtcTimeCode.nType = s_tMidiTimeCode.nType;
 
-		if (!m_ptLtcDisabledOutputs->bArtNet) {
+		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&tLtcTimeCode));
 		}
 
-		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 		}
 
-		if (!m_ptLtcDisabledOutputs->bEtc) {
+		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 		}
 
-		if (m_tTimeCodeTypePrevious != TimeCodeType) {
-			m_tTimeCodeTypePrevious = TimeCodeType;
+		if (m_nTypePrevious != TimeCodeType) {
+			m_nTypePrevious = TimeCodeType;
 
 			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
 
-			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[TimeCodeType] / 4;
+			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
 
 			nMidiQuarterFramePiece = 0;
 		}
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(&tLtcTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&tLtcTimeCode));
 	}
 
 	dmb();

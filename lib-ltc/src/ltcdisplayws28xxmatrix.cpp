@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplayws28xxmatrix.cpp
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,58 +34,47 @@
 
 #include "debug.h"
 
-using namespace ltcdisplayrgb;
+LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(pixel::Type type, pixel::Map map) {
+	DEBUG_ENTRY
 
-LtcDisplayWS28xxMatrix::LtcDisplayWS28xxMatrix(pixel::Type tLedType, pixel::Map tRGBMapping) {
-	DEBUG1_ENTRY
-
-	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8, tLedType, tRGBMapping);
+	m_pWS28xxDisplayMatrix = new WS28xxDisplayMatrix(64, 8, type, map);
 	assert(m_pWS28xxDisplayMatrix != nullptr);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
-LtcDisplayWS28xxMatrix::~LtcDisplayWS28xxMatrix() {
-	DEBUG1_ENTRY
-
-	delete m_pWS28xxDisplayMatrix;
-	m_pWS28xxDisplayMatrix = nullptr;
-
-	DEBUG1_EXIT
-}
-
-void LtcDisplayWS28xxMatrix::Show(const char *pTimecode, struct Colours &tColours, struct Colours &tColoursColons) {
+void LtcDisplayWS28xxMatrix::Show(const char *pTimecode, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) {
 	m_pWS28xxDisplayMatrix->SetColonsOff();
-	m_pWS28xxDisplayMatrix->SetColon(pTimecode[LTC_TC_INDEX_COLON_1], 1, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pWS28xxDisplayMatrix->SetColon(pTimecode[LTC_TC_INDEX_COLON_2], 3, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pWS28xxDisplayMatrix->SetColon(pTimecode[LTC_TC_INDEX_COLON_3], 5, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pWS28xxDisplayMatrix->SetColon(pTimecode[ltc::timecode::index::COLON_1], 1, coloursColons.nRed, coloursColons.nGreen, coloursColons.nBlue);
+	m_pWS28xxDisplayMatrix->SetColon(pTimecode[ltc::timecode::index::COLON_2], 3, coloursColons.nRed, coloursColons.nGreen, coloursColons.nBlue);
+	m_pWS28xxDisplayMatrix->SetColon(pTimecode[ltc::timecode::index::COLON_3], 5, coloursColons.nRed, coloursColons.nGreen, coloursColons.nBlue);
 
 	const char cLine[] = { pTimecode[0], pTimecode[1], pTimecode[3], pTimecode[4], pTimecode[6], pTimecode[7], pTimecode[9], pTimecode[10] };
 
-	m_pWS28xxDisplayMatrix->TextLine(1, cLine, sizeof(cLine), tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplayMatrix->TextLine(1, cLine, sizeof(cLine), colours.nRed, colours.nGreen, colours.nBlue);
 	m_pWS28xxDisplayMatrix->Show();
 }
 
-void LtcDisplayWS28xxMatrix::ShowSysTime(const char *pSystemTime, struct Colours &tColours, struct Colours &tColoursColons) {
+void LtcDisplayWS28xxMatrix::ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours& colours, struct ltcdisplayrgb::Colours& coloursColons) {
 	m_pWS28xxDisplayMatrix->SetColonsOff();
-	m_pWS28xxDisplayMatrix->SetColon(pSystemTime[LTC_ST_INDEX_COLON_1], 2, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
-	m_pWS28xxDisplayMatrix->SetColon(pSystemTime[LTC_ST_INDEX_COLON_2], 4, tColoursColons.nRed, tColoursColons.nGreen, tColoursColons.nBlue);
+	m_pWS28xxDisplayMatrix->SetColon(pSystemTime[ltc::systemtime::index::COLON_1], 2, coloursColons.nRed, coloursColons.nGreen, coloursColons.nBlue);
+	m_pWS28xxDisplayMatrix->SetColon(pSystemTime[ltc::systemtime::index::COLON_2], 4, coloursColons.nRed, coloursColons.nGreen, coloursColons.nBlue);
 
 	const char cLine[] = { ' ', pSystemTime[0], pSystemTime[1], pSystemTime[3], pSystemTime[4], pSystemTime[6], pSystemTime[7], ' '};
 
-	m_pWS28xxDisplayMatrix->TextLine(1, cLine, sizeof(cLine), tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplayMatrix->TextLine(1, cLine, sizeof(cLine), colours.nRed, colours.nGreen, colours.nBlue);
 	m_pWS28xxDisplayMatrix->Show();
 }
 
-void LtcDisplayWS28xxMatrix::ShowMessage(const char *pMessage, struct Colours &tColours) {
+void LtcDisplayWS28xxMatrix::ShowMessage(const char *pMessage, struct ltcdisplayrgb::Colours& colours) {
 	m_pWS28xxDisplayMatrix->SetColonsOff();
-	m_pWS28xxDisplayMatrix->TextLine(1, pMessage, MAX_MESSAGE_SIZE, tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplayMatrix->TextLine(1, pMessage, ltcdisplayrgb::MAX_MESSAGE_SIZE, colours.nRed, colours.nGreen, colours.nBlue);
 	m_pWS28xxDisplayMatrix->Show();
 }
 
-void LtcDisplayWS28xxMatrix::WriteChar(uint8_t nChar, uint8_t nPos, struct Colours &tColours) {
+void LtcDisplayWS28xxMatrix::WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours& colours) {
 	m_pWS28xxDisplayMatrix->SetCursorPos(nPos, 0);
-	m_pWS28xxDisplayMatrix->PutChar(static_cast<char>(nChar), tColours.nRed, tColours.nGreen, tColours.nBlue);
+	m_pWS28xxDisplayMatrix->PutChar(static_cast<char>(nChar), colours.nRed, colours.nGreen, colours.nBlue);
 	m_pWS28xxDisplayMatrix->Show();
 }
 

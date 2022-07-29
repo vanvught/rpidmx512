@@ -3,7 +3,7 @@
  *
  */
 
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,28 +49,24 @@ struct Packet {
 }__attribute__((packed));
 
 namespace flags1 {
-static constexpr auto VER_MASK = 0xc0;
-static constexpr auto VER1 = 0x40;
-static constexpr auto PUSH = 0x01;
-static constexpr auto QUERY = 0x02;
-static constexpr auto REPLY = 0x04;
-static constexpr auto STORAGE = 0x08;
-static constexpr auto TIME = 0x10;
+static constexpr uint8_t VER_MASK = 0xc0;
+static constexpr uint8_t VER1 = 0x40;
+static constexpr uint8_t PUSH = 0x01;
+static constexpr uint8_t QUERY = 0x02;
+static constexpr uint8_t REPLY = 0x04;
+static constexpr uint8_t STORAGE = 0x08;
+static constexpr uint8_t TIME = 0x10;
 }  // namespace flags1
 
 namespace id {
-static constexpr auto DISPLAY = 1;
-static constexpr auto CONTROL = 246;
-static constexpr auto CONFIG = 250;
-static constexpr auto STATUS = 251;
-static constexpr auto DMXTRANSIT = 254;
-static constexpr auto ALLDEVICES = 255;
+static constexpr uint8_t DISPLAY = 1;
+static constexpr uint8_t CONTROL = 246;
+static constexpr uint8_t CONFIG = 250;
+static constexpr uint8_t STATUS = 251;
+static constexpr uint8_t DMXTRANSIT = 254;
+static constexpr uint8_t ALLDEVICES = 255;
 }  // namespace id
-
-namespace udp {
-static constexpr uint16_t PORT = 4048;
-}  // namespace udp
-
+static constexpr uint16_t UDP_PORT = 4048;
 }  // namespace ddp
 
 #endif /* DDP_H_ */

@@ -2,7 +2,7 @@
  * @file dmxsend.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,10 +42,9 @@ static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 
 void DmxSend::Start(uint32_t nPortIndex) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
 	assert(nPortIndex < CHAR_BIT);
-
-	DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 
 	if (is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
@@ -63,10 +62,9 @@ void DmxSend::Start(uint32_t nPortIndex) {
 
 void DmxSend::Stop(uint32_t nPortIndex) {
 	DEBUG_ENTRY
+	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, static_cast<uint8_t>(nPortIndex)));
 
 	assert(nPortIndex < CHAR_BIT);
-
-	DEBUG_PRINTF("nPortIndex=%d -> %u", nPortIndex, is_started(s_nStarted, static_cast<uint8_t>(nPortIndex)));
 
 	if (!is_started(s_nStarted, nPortIndex)) {
 		DEBUG_EXIT
@@ -93,12 +91,28 @@ void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLengt
 	Dmx::Get()->SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
 }
 
+void DmxSend::Blackout(__attribute__((unused)) bool bBlackout){
+	DEBUG_ENTRY
+
+	Dmx::Get()->Blackout();
+
+	DEBUG_EXIT
+}
+
+void DmxSend::FullOn(){
+	DEBUG_ENTRY
+
+	Dmx::Get()->FullOn();
+
+	DEBUG_EXIT
+}
+
 #include <cstdio>
 
 void DmxSend::Print() {
 	printf("DMX Send\n");
-	printf(" Break time   : %d\n", static_cast<int>(Dmx::Get()->GetDmxBreakTime()));
-	printf(" MAB time     : %d\n", static_cast<int>(Dmx::Get()->GetDmxMabTime()));
-	printf(" Refresh rate : %d\n", static_cast<int>(1000000 / Dmx::Get()->GetDmxPeriodTime()));
-	printf(" Slots        : %d\n", static_cast<int>(Dmx::Get()->GetDmxSlots()));
+	printf(" Break time   : %u\n", Dmx::Get()->GetDmxBreakTime());
+	printf(" MAB time     : %u\n", Dmx::Get()->GetDmxMabTime());
+	printf(" Refresh rate : %u\n", 1000000U / Dmx::Get()->GetDmxPeriodTime());
+	printf(" Slots        : %u\n", Dmx::Get()->GetDmxSlots());
 }

@@ -103,8 +103,8 @@ private: // MCP23017 Port A , Port B
 	void UpdateIOPorts(const uint8_t *pData, uint32_t nLength);
 
 private: // MCP23017 Port A , Port B
-	bool m_bSetPortA;
-	bool m_bSetPortB;
+	bool m_bSetPortA{false};
+	bool m_bSetPortB{false};
 
 	uint8_t m_nDataPortA;
 	uint8_t m_nDataPortB;
@@ -122,7 +122,7 @@ private: // MCP23017 Port A , Port B
 private:
 	SlushBoard *m_pBoard;
 	bool m_bUseSpiBusy;
-	uint32_t m_nMotorsConnected;
+	uint32_t m_nMotorsConnected{0};
 
 	SlushMotor	*m_pSlushMotor[SLUSH_DMX_MAX_MOTORS];
 	MotorParams *m_pMotorParams[SLUSH_DMX_MAX_MOTORS];
@@ -134,7 +134,7 @@ private:
 	uint16_t m_nDmxStartAddressMode;
 
 	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint;
+	uint16_t m_nDmxFootprint{0};
 
 	char *m_pSlotInfoRaw;
 };

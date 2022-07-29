@@ -71,9 +71,9 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 				pArtNetNode->GetPortProtocol(0) == PortProtocol::ARTNET ? "    " : "sACN");
 	}
 
-	for (uint32_t nPortIndex = 0; nPortIndex < ArtNet::PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < artnet::PORTS; nPortIndex++) {
 		if (pArtNetNode->GetUniverseSwitch(nPortIndex, nAddress, lightset::PortDir::OUTPUT)) {
-			const auto nPage = nPortIndex / ArtNet::PORTS;
+			const auto nPage = nPortIndex / artnet::PORTS;
 			Printf(m_aLabels[static_cast<uint32_t>(Labels::UNIVERSE_PORT_A) + nPortIndex],
 					"O%d: %.2d:%d:%d %c %s", (nPortIndex + 1),
 					pArtNetNode->GetNetSwitch(nPage),
@@ -86,7 +86,7 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 }
 
 void DisplayUdf::ShowDestinationIp(ArtNetNode *pArtNetNode) {
-	for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
+	for (uint32_t i = 0; i < artnet::PORTS; i++) {
 		Printf(m_aLabels[static_cast<uint32_t>(Labels::DESTINATION_IP_PORT_A) + i], "%c: " IPSTR, 'A' + i, IP2STR(pArtNetNode->GetDestinationIp(i)));
 	}
 }

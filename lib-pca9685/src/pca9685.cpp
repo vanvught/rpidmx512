@@ -207,8 +207,8 @@ void PCA9685::Write(uint16_t nValue) {
 }
 
 void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
-	assert(pOn != 0);
-	assert(pOff != 0);
+	assert(pOn != nullptr);
+	assert(pOff != nullptr);
 
 	uint8_t reg;
 

@@ -2,7 +2,7 @@
  * @file devicesparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,3 +44,9 @@ const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";
 const char DevicesParamsConst::GLOBAL_BRIGHTNESS[] = "global_brightness";
 
 const char DevicesParamsConst::ACTIVE_OUT[] = "active_out";
+
+const char DevicesParamsConst::TEST_PATTERN[] = "test_pattern";
+
+const char DevicesParamsConst::GAMMA_CORRECTION[] = "gamma_correction";
+const char DevicesParamsConst::GAMMA_VALUE[] = "gamma_value";
+

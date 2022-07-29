@@ -32,7 +32,7 @@
 #include "spi/st77xx.h"
 
 namespace st7789 {
-#if defined (CONFIG_SPI_LCD_240X240)
+#if defined (SPI_LCD_240X240)
 static constexpr auto ROTATION_0_SHIFT_X =  0;
 static constexpr auto ROTATION_0_SHIFT_Y = 80;
 static constexpr auto ROTATION_1_SHIFT_X = 80;
@@ -41,7 +41,7 @@ static constexpr auto ROTATION_2_SHIFT_X =  0;
 static constexpr auto ROTATION_2_SHIFT_Y =  0;
 static constexpr auto ROTATION_3_SHIFT_X =  0;
 static constexpr auto ROTATION_3_SHIFT_Y =  0;
-#elif defined (CONFIG_SPI_LCD_240X320)
+#elif defined (SPI_LCD_240X320)
 static constexpr auto ROTATION_0_SHIFT_X =  0;
 static constexpr auto ROTATION_0_SHIFT_Y =  0;
 static constexpr auto ROTATION_1_SHIFT_X =  0;

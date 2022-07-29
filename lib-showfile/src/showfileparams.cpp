@@ -2,7 +2,7 @@
  * @file showfileparams.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 #include <cstdint>
 #include <cstring>
 #ifndef NDEBUG
- #include <cstdio>
+# include <cstdio>
 #endif
 #include <cassert>
 
@@ -48,36 +48,46 @@
 #include "oscparamsconst.h"
 
 // Protocols
-#include "e131controller.h"
-#include "artnetcontroller.h"
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+# include "e131controller.h"
+# include "artnetcontroller.h"
+#endif
+
+#ifndef DMX_MAX_VALUE
+# define DMX_MAX_VALUE 255
+#endif
 
 #include "debug.h"
 
 struct PROTOCOL2STRING {
 	static const char *Get(uint8_t p) {
-		return (p == static_cast<uint8_t>(ShowFileProtocols::SACN)) ? "sACN" : "Art-Net";
+		return (p == static_cast<uint8_t>(showfile::Protocols::SACN)) ? "sACN" : "Art-Net";
 	}
 };
 
 ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pShowFileParamsStore(pShowFileParamsStore) {
 	DEBUG_ENTRY
 
-	m_tShowFileParams.nSetList = 0;
-	m_tShowFileParams.nFormat = static_cast<uint8_t>(ShowFileFormats::OLA);
-	m_tShowFileParams.nShow = 0;
-	m_tShowFileParams.nOptions = 0;
-	m_tShowFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
-	m_tShowFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
-	m_tShowFileParams.nProtocol = static_cast<uint8_t>(ShowFileProtocols::SACN);
-	m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
-	m_tShowFileParams.nDisableUnicast = 0;
-	m_tShowFileParams.nDmxMaster = DMX_MAX_VALUE;
+	m_showFileParams.nSetList = 0;
+	m_showFileParams.nFormat = static_cast<uint8_t>(showfile::Formats::OLA);
+	m_showFileParams.nShow = 0;
+	m_showFileParams.nOptions = 0;
+	m_showFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
+	m_showFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+	m_showFileParams.nProtocol = static_cast<uint8_t>(showfile::Protocols::SACN);
+	m_showFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
+#else
+	m_showFileParams.nProtocol = static_cast<uint8_t>(showfile::Protocols::INTERNAL);
+#endif
+	m_showFileParams.nDisableUnicast = 0;
+	m_showFileParams.nDmxMaster = DMX_MAX_VALUE;
 
 	DEBUG_EXIT
 }
 
 bool ShowFileParams::Load() {
-	m_tShowFileParams.nSetList = 0;
+	m_showFileParams.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(ShowFileParams::staticCallbackFunction, this);
@@ -85,12 +95,12 @@ bool ShowFileParams::Load() {
 	if (configfile.Read(ShowFileParamsConst::FILE_NAME)) {
 		// There is a configuration file
 		if (m_pShowFileParamsStore != nullptr) {
-			m_pShowFileParamsStore->Update(&m_tShowFileParams);
+			m_pShowFileParamsStore->Update(&m_showFileParams);
 		}
 	} else
 #endif
 	if (m_pShowFileParamsStore != nullptr) {
-		m_pShowFileParamsStore->Copy(&m_tShowFileParams);
+		m_pShowFileParamsStore->Copy(&m_showFileParams);
 	} else {
 		return false;
 	}
@@ -107,13 +117,13 @@ void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 		return;
 	}
 
-	m_tShowFileParams.nSetList = 0;
+	m_showFileParams.nSetList = 0;
 
 	ReadConfigFile config(ShowFileParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pShowFileParamsStore->Update(&m_tShowFileParams);
+	m_pShowFileParamsStore->Update(&m_showFileParams);
 }
 
 void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask) {
@@ -121,14 +131,14 @@ void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint
 
 	if (Sscan::Uint8(pLine, pKeyword, value8) == Sscan::OK) {
 		if (value8 != 0) {
-			m_tShowFileParams.nOptions |= nMask;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::OPTIONS;
+			m_showFileParams.nOptions |= nMask;
+			m_showFileParams.nSetList |= showfileparams::Mask::OPTIONS;
 		} else {
-			m_tShowFileParams.nOptions &= static_cast<uint16_t>(~nMask);
+			m_showFileParams.nOptions &= static_cast<uint16_t>(~nMask);
 		}
 
-		if (m_tShowFileParams.nOptions == 0) {
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::OPTIONS;
+		if (m_showFileParams.nOptions == 0) {
+			m_showFileParams.nSetList &= ~showfileparams::Mask::OPTIONS;
 		}
 	}
 }
@@ -137,145 +147,155 @@ void ShowFileParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	char aValue[16];
-	uint32_t nLength;
-	uint8_t nValue8;
-	uint16_t nValue16;
+	uint32_t nLength = ShowFileConst::SHOWFILECONST_FORMAT_NAME_LENGTH - 1;
 
-	nLength = ShowFileConst::SHOWFILECONST_FORMAT_NAME_LENGTH - 1;
 	if (Sscan::Char(pLine, ShowFileParamsConst::FORMAT, aValue, nLength) == Sscan::OK) {
 		aValue[nLength] = '\0';
 
-		ShowFileFormats tFormat = ShowFile::GetFormat(aValue);
+		showfile::Formats tFormat = ShowFile::GetFormat(aValue);
 
-		if (tFormat != ShowFileFormats::UNDEFINED) {
-			m_tShowFileParams.nFormat = static_cast<uint8_t>(tFormat);
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::FORMAT;
+		if (tFormat != showfile::Formats::UNDEFINED) {
+			m_showFileParams.nFormat = static_cast<uint8_t>(tFormat);
+			m_showFileParams.nSetList |= showfileparams::Mask::FORMAT;
 		} else {
-			m_tShowFileParams.nFormat = static_cast<uint8_t>(ShowFileFormats::OLA);
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::FORMAT;
+			m_showFileParams.nFormat = static_cast<uint8_t>(showfile::Formats::OLA);
+			m_showFileParams.nSetList &= ~showfileparams::Mask::FORMAT;
 		}
 
 		return;
 	}
 
+	uint16_t nValue16;
+
 	if (Sscan::Uint16(pLine, OscParamsConst::INCOMING_PORT, nValue16) == Sscan::OK) {
 		if ((nValue16 != osc::port::DEFAULT_INCOMING) && (nValue16 > 1023)) {
-			m_tShowFileParams.nOscPortIncoming = nValue16;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_INCOMING;
+			m_showFileParams.nOscPortIncoming = nValue16;
+			m_showFileParams.nSetList |= showfileparams::Mask::OSC_PORT_INCOMING;
 		} else {
-			m_tShowFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::OSC_PORT_INCOMING;
+			m_showFileParams.nOscPortIncoming = osc::port::DEFAULT_INCOMING;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::OSC_PORT_INCOMING;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, OscParamsConst::OUTGOING_PORT, nValue16) == Sscan::OK) {
 		if ((nValue16 != osc::port::DEFAULT_OUTGOING) && (nValue16 > 1023)) {
-			m_tShowFileParams.nOscPortOutgoing = nValue16;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::OSC_PORT_OUTGOING;
+			m_showFileParams.nOscPortOutgoing = nValue16;
+			m_showFileParams.nSetList |= showfileparams::Mask::OSC_PORT_OUTGOING;
 		} else {
-			m_tShowFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::OSC_PORT_OUTGOING;
+			m_showFileParams.nOscPortOutgoing = osc::port::DEFAULT_OUTGOING;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::OSC_PORT_OUTGOING;
 		}
 		return;
 	}
+
+	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, ShowFileParamsConst::SHOW, nValue8) == Sscan::OK) {
-		if (nValue8 < ShowFileFile::MAX_NUMBER) {
-			m_tShowFileParams.nShow = nValue8;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::SHOW;
+		if (nValue8 < showfile::File::MAX_NUMBER) {
+			m_showFileParams.nShow = nValue8;
+			m_showFileParams.nSetList |= showfileparams::Mask::SHOW;
 		} else {
-			m_tShowFileParams.nShow = 0;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::SHOW;
+			m_showFileParams.nShow = 0;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::SHOW;
 		}
 		return;
 	}
 
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
 	nLength = 6;
+
 	if (Sscan::Char(pLine, ShowFileParamsConst::PROTOCOL, aValue, nLength) == Sscan::OK) {
 		aValue[nLength] = '\0';
 
 		if(strcasecmp(aValue, "artnet") == 0) {
-			m_tShowFileParams.nProtocol = static_cast<uint8_t>(ShowFileProtocols::ARTNET);
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::PROTOCOL;
+			m_showFileParams.nProtocol = static_cast<uint8_t>(showfile::Protocols::ARTNET);
+			m_showFileParams.nSetList |= showfileparams::Mask::PROTOCOL;
 		} else {
-			m_tShowFileParams.nProtocol = static_cast<uint8_t>(ShowFileProtocols::SACN);
-			m_tShowFileParams.nSetList &= ShowFileParamsMask::PROTOCOL;
+			m_showFileParams.nProtocol = static_cast<uint8_t>(showfile::Protocols::SACN);
+			m_showFileParams.nSetList &= showfileparams::Mask::PROTOCOL;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, ShowFileParamsConst::SACN_SYNC_UNIVERSE, nValue16) == Sscan::OK) {
 		if (nValue16 > e131::universe::MAX) {
-			m_tShowFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::SACN_UNIVERSE;
+			m_showFileParams.nUniverse = DEFAULT_SYNCHRONIZATION_ADDRESS;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::SACN_UNIVERSE;
 		} else {
-			m_tShowFileParams.nUniverse = nValue16;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::SACN_UNIVERSE;
+			m_showFileParams.nUniverse = nValue16;
+			m_showFileParams.nSetList |= showfileparams::Mask::SACN_UNIVERSE;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, ShowFileParamsConst::ARTNET_DISABLE_UNICAST, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_tShowFileParams.nDisableUnicast = 1;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::ARTNET_UNICAST_DISABLED;
+			m_showFileParams.nDisableUnicast = 1;
+			m_showFileParams.nSetList |= showfileparams::Mask::ARTNET_UNICAST_DISABLED;
 		} else {
-			m_tShowFileParams.nDisableUnicast = 0;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::ARTNET_UNICAST_DISABLED;
+			m_showFileParams.nDisableUnicast = 0;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::ARTNET_UNICAST_DISABLED;
 		}
 		return;
 	}
+#endif
 
 	if (Sscan::Uint8(pLine, ShowFileParamsConst::DMX_MASTER, nValue8) == Sscan::OK) {
 		if (nValue8 < DMX_MAX_VALUE) {
-			m_tShowFileParams.nDmxMaster = nValue8;
-			m_tShowFileParams.nSetList |= ShowFileParamsMask::DMX_MASTER;
+			m_showFileParams.nDmxMaster = nValue8;
+			m_showFileParams.nSetList |= showfileparams::Mask::DMX_MASTER;
 		} else {
-			m_tShowFileParams.nDmxMaster = DMX_MAX_VALUE;
-			m_tShowFileParams.nSetList &= ~ShowFileParamsMask::DMX_MASTER;
+			m_showFileParams.nDmxMaster = DMX_MAX_VALUE;
+			m_showFileParams.nSetList &= ~showfileparams::Mask::DMX_MASTER;
 		}
 		return;
 	}
 
-	HandleOptions(pLine, ShowFileParamsConst::OPTION_AUTO_START, ShowFileOptions::AUTO_START);
-	HandleOptions(pLine, ShowFileParamsConst::OPTION_LOOP, ShowFileOptions::LOOP);
-	HandleOptions(pLine, ShowFileParamsConst::OPTION_DISABLE_SYNC, ShowFileOptions::DISABLE_SYNC);
+	HandleOptions(pLine, ShowFileParamsConst::OPTION_AUTO_START, showfileparams::Options::AUTO_START);
+	HandleOptions(pLine, ShowFileParamsConst::OPTION_LOOP, showfileparams::Options::LOOP);
+	HandleOptions(pLine, ShowFileParamsConst::OPTION_DISABLE_SYNC, showfileparams::Options::DISABLE_SYNC);
 }
 
 void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (ptShowFileParamss != nullptr) {
-		memcpy(&m_tShowFileParams, ptShowFileParamss, sizeof(struct TShowFileParams));
+		memcpy(&m_showFileParams, ptShowFileParamss, sizeof(struct showfileparams::Params));
 	} else {
-		m_pShowFileParamsStore->Copy(&m_tShowFileParams);
+		m_pShowFileParamsStore->Copy(&m_showFileParams);
 	}
 
 	PropertiesBuilder builder(ShowFileParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(ShowFileParamsConst::SHOW, static_cast<uint32_t>(m_tShowFileParams.nShow), isMaskSet(ShowFileParamsMask::SHOW));
+	builder.Add(ShowFileParamsConst::SHOW, static_cast<uint32_t>(m_showFileParams.nShow), isMaskSet(showfileparams::Mask::SHOW));
 
-	builder.Add(ShowFileParamsConst::FORMAT, ShowFile::GetFormat(static_cast<ShowFileFormats>(m_tShowFileParams.nFormat)), isMaskSet(ShowFileParamsMask::FORMAT));
-	builder.Add(ShowFileParamsConst::PROTOCOL, (m_tShowFileParams.nProtocol == static_cast<uint8_t>(ShowFileProtocols::SACN)) ? "sacn" : "artnet", isMaskSet(ShowFileParamsMask::PROTOCOL));
+	builder.Add(ShowFileParamsConst::FORMAT, ShowFile::GetFormat(static_cast<showfile::Formats>(m_showFileParams.nFormat)), isMaskSet(showfileparams::Mask::FORMAT));
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+	builder.Add(ShowFileParamsConst::PROTOCOL, (m_showFileParams.nProtocol == static_cast<uint8_t>(showfile::Protocols::SACN)) ? "sacn" : "artnet", isMaskSet(showfileparams::Mask::PROTOCOL));
+#endif
 
 	builder.AddComment("DMX");
-	builder.Add(ShowFileParamsConst::DMX_MASTER, static_cast<uint32_t>(m_tShowFileParams.nDmxMaster), isMaskSet(ShowFileParamsMask::DMX_MASTER));
+	builder.Add(ShowFileParamsConst::DMX_MASTER, static_cast<uint32_t>(m_showFileParams.nDmxMaster), isMaskSet(showfileparams::Mask::DMX_MASTER));
 
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
 	builder.AddComment("sACN");
-	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<uint32_t>(m_tShowFileParams.nUniverse), isMaskSet(ShowFileParamsMask::SACN_UNIVERSE));
+	builder.Add(ShowFileParamsConst::SACN_SYNC_UNIVERSE, static_cast<uint32_t>(m_showFileParams.nUniverse), isMaskSet(showfileparams::Mask::SACN_UNIVERSE));
 
 	builder.AddComment("Art-Net");
-	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<uint32_t>(m_tShowFileParams.nDisableUnicast), isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED));
+	builder.Add(ShowFileParamsConst::ARTNET_DISABLE_UNICAST, static_cast<uint32_t>(m_showFileParams.nDisableUnicast), isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED));
+#endif
 
 	builder.AddComment("Options");
-	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isOptionSet(ShowFileOptions::AUTO_START), isOptionSet(ShowFileOptions::AUTO_START));
-	builder.Add(ShowFileParamsConst::OPTION_LOOP, isOptionSet(ShowFileOptions::LOOP), isOptionSet(ShowFileOptions::LOOP));
-	builder.Add(ShowFileParamsConst::OPTION_DISABLE_SYNC, isOptionSet(ShowFileOptions::DISABLE_SYNC), isOptionSet(ShowFileOptions::DISABLE_SYNC));
+	builder.Add(ShowFileParamsConst::OPTION_AUTO_START, isOptionSet(showfileparams::Options::AUTO_START), isOptionSet(showfileparams::Options::AUTO_START));
+	builder.Add(ShowFileParamsConst::OPTION_LOOP, isOptionSet(showfileparams::Options::LOOP), isOptionSet(showfileparams::Options::LOOP));
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+	builder.Add(ShowFileParamsConst::OPTION_DISABLE_SYNC, isOptionSet(showfileparams::Options::DISABLE_SYNC), isOptionSet(showfileparams::Options::DISABLE_SYNC));
+#endif
 
 	builder.AddComment("OSC Server");
-	builder.Add(OscParamsConst::INCOMING_PORT, static_cast<uint32_t>(m_tShowFileParams.nOscPortIncoming), isMaskSet(ShowFileParamsMask::OSC_PORT_INCOMING));
-	builder.Add(OscParamsConst::OUTGOING_PORT, static_cast<uint32_t>(m_tShowFileParams.nOscPortOutgoing), isMaskSet(ShowFileParamsMask::OSC_PORT_OUTGOING));
+	builder.Add(OscParamsConst::INCOMING_PORT, static_cast<uint32_t>(m_showFileParams.nOscPortIncoming), isMaskSet(showfileparams::Mask::OSC_PORT_INCOMING));
+	builder.Add(OscParamsConst::OUTGOING_PORT, static_cast<uint32_t>(m_showFileParams.nOscPortOutgoing), isMaskSet(showfileparams::Mask::OSC_PORT_OUTGOING));
 
 	nSize = builder.GetSize();
 
@@ -300,37 +320,40 @@ void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void ShowFileParams::Set() {
 	DEBUG_ENTRY
 
-	if (isMaskSet(ShowFileParamsMask::OSC_PORT_INCOMING)) {
-		ShowFileOSC::Get()->SetPortIncoming(m_tShowFileParams.nOscPortIncoming);
+	if (isMaskSet(showfileparams::Mask::OSC_PORT_INCOMING)) {
+		ShowFileOSC::Get()->SetPortIncoming(m_showFileParams.nOscPortIncoming);
 	}
 
-	if (isMaskSet(ShowFileParamsMask::OSC_PORT_OUTGOING)) {
-		ShowFileOSC::Get()->SetPortOutgoing(m_tShowFileParams.nOscPortOutgoing);
+	if (isMaskSet(showfileparams::Mask::OSC_PORT_OUTGOING)) {
+		ShowFileOSC::Get()->SetPortOutgoing(m_showFileParams.nOscPortOutgoing);
 	}
 
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
 	// sACN E1.31
 
-	if (isMaskSet(ShowFileParamsMask::SACN_UNIVERSE)) {
+	if (isMaskSet(showfileparams::Mask::SACN_UNIVERSE)) {
 		if (E131Controller::Get() != nullptr) {
-			E131Controller::Get()->SetSynchronizationAddress(m_tShowFileParams.nUniverse);
+			E131Controller::Get()->SetSynchronizationAddress(m_showFileParams.nUniverse);
 		}
 	}
 
 	// Art-Net
 
-	if (isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED)) {
+	if (isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED)) {
 		if (ArtNetController::Get() != nullptr) {
 			ArtNetController::Get()->SetUnicast(false);
 		}
 	}
+#endif
 
 	// Options
 
-	if (isOptionSet(ShowFileOptions::LOOP)) {
+	if (isOptionSet(showfileparams::Options::LOOP)) {
 		ShowFile::Get()->DoLoop(true);
 	}
 
-	if (isOptionSet(ShowFileOptions::DISABLE_SYNC)) {
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+	if (isOptionSet(showfileparams::Options::DISABLE_SYNC)) {
 		if (E131Controller::Get() != nullptr) {
 			E131Controller::Get()->SetSynchronizationAddress(0);
 		}
@@ -339,6 +362,7 @@ void ShowFileParams::Set() {
 			ArtNetController::Get()->SetSynchronization(false);
 		}
 	}
+#endif
 
 	DEBUG_EXIT
 }
@@ -347,52 +371,57 @@ void ShowFileParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ShowFileParamsConst::FILE_NAME);
 
-	if(isMaskSet(ShowFileParamsMask::FORMAT)) {
-		printf(" %s=%d [%s]\n", ShowFileParamsConst::FORMAT, m_tShowFileParams.nFormat, ShowFile::GetFormat(static_cast<ShowFileFormats>(m_tShowFileParams.nFormat)));
+	if(isMaskSet(showfileparams::Mask::FORMAT)) {
+		printf(" %s=%d [%s]\n", ShowFileParamsConst::FORMAT, m_showFileParams.nFormat, ShowFile::GetFormat(static_cast<showfile::Formats>(m_showFileParams.nFormat)));
 	}
 
-	if (isMaskSet(ShowFileParamsMask::SHOW)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SHOW, m_tShowFileParams.nShow);
+	if (isMaskSet(showfileparams::Mask::SHOW)) {
+		printf(" %s=%u\n", ShowFileParamsConst::SHOW, m_showFileParams.nShow);
 	}
 
-	if(isMaskSet(ShowFileParamsMask::PROTOCOL)) {
-		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, m_tShowFileParams.nProtocol, PROTOCOL2STRING::Get(m_tShowFileParams.nProtocol));
+	if (isMaskSet(showfileparams::Mask::DMX_MASTER)) {
+		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, m_showFileParams.nDmxMaster);
 	}
 
-	if (isMaskSet(ShowFileParamsMask::DMX_MASTER)) {
-		printf(" %s=%u\n", ShowFileParamsConst::DMX_MASTER, m_tShowFileParams.nDmxMaster);
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+	if(isMaskSet(showfileparams::Mask::PROTOCOL)) {
+		printf(" %s=%d [%s]\n", ShowFileParamsConst::PROTOCOL, m_showFileParams.nProtocol, PROTOCOL2STRING::Get(m_showFileParams.nProtocol));
 	}
 
-	if (isMaskSet(ShowFileParamsMask::SACN_UNIVERSE)) {
-		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, m_tShowFileParams.nUniverse);
+	if (isMaskSet(showfileparams::Mask::SACN_UNIVERSE)) {
+		printf(" %s=%u\n", ShowFileParamsConst::SACN_SYNC_UNIVERSE, m_showFileParams.nUniverse);
 	}
 
-	if (isMaskSet(ShowFileParamsMask::ARTNET_UNICAST_DISABLED)) {
-		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, m_tShowFileParams.nDisableUnicast, m_tShowFileParams.nDisableUnicast == 0 ? "No" : "Yes");
+	if (isMaskSet(showfileparams::Mask::ARTNET_UNICAST_DISABLED)) {
+		printf(" %s=%u [%s]\n", ShowFileParamsConst::ARTNET_DISABLE_UNICAST, m_showFileParams.nDisableUnicast, m_showFileParams.nDisableUnicast == 0 ? "No" : "Yes");
 	}
+#endif
 
 	// Options
 
-	if (isMaskSet(ShowFileParamsMask::OPTIONS)) {
-		printf(" Options 0x%.2x\n", m_tShowFileParams.nOptions);
+	if (isMaskSet(showfileparams::Mask::OPTIONS)) {
+		printf(" Options 0x%.2x\n", m_showFileParams.nOptions);
 
-		if (isOptionSet(ShowFileOptions::AUTO_START)) {
+		if (isOptionSet(showfileparams::Options::AUTO_START)) {
 			printf("  Auto start is enabled\n");
 		}
-		if (isOptionSet(ShowFileOptions::LOOP)) {
+
+		if (isOptionSet(showfileparams::Options::LOOP)) {
 			printf("  Loop is enabled\n");
 		}
-		if (isOptionSet(ShowFileOptions::DISABLE_SYNC)) {
+#if !defined (CONFIG_SHOWFILE_LIGHTSET_ONLY)
+		if (isOptionSet(showfileparams::Options::DISABLE_SYNC)) {
 			printf("  Synchronization is disabled\n");
 		}
+#endif
 	}
 
-	if (isMaskSet(ShowFileParamsMask::OSC_PORT_INCOMING)) {
-		printf(" %s=%u\n", OscParamsConst::INCOMING_PORT, m_tShowFileParams.nOscPortIncoming);
+	if (isMaskSet(showfileparams::Mask::OSC_PORT_INCOMING)) {
+		printf(" %s=%u\n", OscParamsConst::INCOMING_PORT, m_showFileParams.nOscPortIncoming);
 	}
 
-	if (isMaskSet(ShowFileParamsMask::OSC_PORT_OUTGOING)) {
-		printf(" %s=%u\n", OscParamsConst::OUTGOING_PORT, m_tShowFileParams.nOscPortOutgoing);
+	if (isMaskSet(showfileparams::Mask::OSC_PORT_OUTGOING)) {
+		printf(" %s=%u\n", OscParamsConst::OUTGOING_PORT, m_showFileParams.nOscPortOutgoing);
 	}
 #endif
 }

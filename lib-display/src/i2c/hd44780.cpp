@@ -33,20 +33,20 @@
 
 namespace hd44780 {
 static constexpr uint8_t BIT_RS = (1U << 0);	///< Register select
-static constexpr uint8_t BIT_RW = (1U << 1);	///< Read/Write
+// static constexpr uint8_t BIT_RW = (1U << 1);	///< Read/Write
 static constexpr uint8_t BIT_EN = (1U << 2);	///< Enable
 static constexpr uint8_t BIT_BL = (1U << 3);	///< Backlight
 /// https://cdn-shop.adafruit.com/datasheets/TC1602A-01T.pdf
 namespace cmd {
 static constexpr uint8_t CLS = (1U << 0);		///< Clear all the display data by writing "20H" (space code) to all DDRAM address.
-static constexpr uint8_t RETURNHOME = (1U << 1);///< Return cursor to its original site and return display to its original status, if shifted. Contents of DDRAM do not change.
+// static constexpr uint8_t RETURNHOME = (1U << 1);///< Return cursor to its original site and return display to its original status, if shifted. Contents of DDRAM do not change.
 static constexpr uint8_t ENTRY_MODE = (1U << 2);///< Set the moving direction of cursor and display.
 static constexpr uint8_t DISPLAY = (1U << 3);	///< Set display(D), cursor(C), and blinking of cursor(B) on/off control bit
 static constexpr uint8_t FUNC = (1U << 5);		///< Set interface data length, numbers of display lines, display font type
 static constexpr uint8_t SETDDRAMADDR = 0x80;
 namespace entrymode {
-static constexpr uint8_t SH = (1U << 0);		///< Shift of entire display
-static constexpr uint8_t DEC = 0;				///< cursor/blink moves to left and DDRAM address is decreased by 1.
+// static constexpr uint8_t SH = (1U << 0);		///< Shift of entire display
+// static constexpr uint8_t DEC = 0;				///< cursor/blink moves to left and DDRAM address is decreased by 1.
 static constexpr uint8_t INC = (1U << 1);		///< cursor/blink moves to right and DDRAM address is increased by 1.
 }  // namespace entrymode
 namespace display {
@@ -54,16 +54,16 @@ static constexpr uint8_t BLINK_OFF = 0;			///< Cursor blink is off.
 static constexpr uint8_t BLINK_ON = (1U << 0);	///< Cursor blink is on, that performs alternate between all the high data and display character at the cursor position.
 static constexpr uint8_t CURSOR_OFF = 0;		///< Cursor is disappeared in current display, but I/D register remains its data.
 static constexpr uint8_t CURSOR_ON = (1U << 1);	///< Cursor is turned on.
-static constexpr uint8_t DISPLAY_OFF = 0;		///< The display is turned off, but display data is remained in DDRAM.
+// static constexpr uint8_t DISPLAY_OFF = 0;		///< The display is turned off, but display data is remained in DDRAM.
 static constexpr uint8_t ON = (1U << 2);		///< The entire display is turned on.
 }  // namespace display
 namespace func {
 static constexpr uint8_t F4BIT = 0;				///< 4-bit bus mode with MPU.
-static constexpr uint8_t F8BIT = (1U << 4);		///< 8-bit bus mode with MPU.
-static constexpr uint8_t F1LINE = 0;			///< 1-line display mode.
+// static constexpr uint8_t F8BIT = (1U << 4);		///< 8-bit bus mode with MPU.
+// static constexpr uint8_t F1LINE = 0;			///< 1-line display mode.
 static constexpr uint8_t F2LINE = (1U << 3);	///< 2-line display mode is set.
 static constexpr uint8_t F5x8DOTS = 0;			///< 5 x 8 dots format display mode.
-static constexpr uint8_t F5x11DOTS = (1U << 2);	///< 5 x11 dots format display mode.
+// static constexpr uint8_t F5x11DOTS = (1U << 2);	///< 5 x11 dots format display mode.
 }  // namespace func
 }  // namespace cmd
 namespace exectime {

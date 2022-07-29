@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplaymax7219.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,47 +28,4 @@
 
 #include "ltcdisplaymax7219.h"
 
-#include "ltcdisplaymax72197segment.h"
-#include "ltcdisplaymax7219matrix.h"
-
-LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis = nullptr;
-
-LtcDisplayMax7219::LtcDisplayMax7219(TLtcDisplayMax7219Types tType): m_tMax7219Types(tType) {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	if (tType == LTCDISPLAYMAX7219_TYPE_7SEGMENT) {
-		m_pMax7219Set = new LtcDisplayMax72197Segment;
-	} else {
-		m_pMax7219Set = new LtcDisplayMax7219Matrix;
-	}
-
-	assert(m_pMax7219Set != nullptr);
-}
-
-LtcDisplayMax7219::~LtcDisplayMax7219() {
-	delete m_pMax7219Set;
-	m_pMax7219Set = nullptr;
-}
-
-void LtcDisplayMax7219::Init(uint8_t nIntensity) {
-	m_nIntensity = nIntensity;
-	m_pMax7219Set->Init(nIntensity);
-}
-
-void LtcDisplayMax7219::Show(const char *pTimecode) {
-	m_pMax7219Set->Show(pTimecode);
-}
-
-void LtcDisplayMax7219::ShowSysTime(const char *pSystemTime) {
-	m_pMax7219Set->ShowSysTime(pSystemTime);
-}
-
-void LtcDisplayMax7219::WriteChar(uint8_t nChar, uint8_t nPos) {
-	m_pMax7219Set->WriteChar(nChar, nPos);
-}
-
-void LtcDisplayMax7219::Print() {
-	printf("MAX7219\n");
-	printf(" %s [%d]\n", m_tMax7219Types == LTCDISPLAYMAX7219_TYPE_7SEGMENT ? "7-segment" : "matrix", m_nIntensity);
-}
+LtcDisplayMax7219 *LtcDisplayMax7219::s_pThis;

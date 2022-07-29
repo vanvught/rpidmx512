@@ -2,7 +2,7 @@
  * @file dmx.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,10 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
-#ifdef NDEBUG
-# undef NDEBUG
-#endif
 
 #if defined(__clang__)
 # pragma GCC diagnostic ignored "-Wunused-private-field"
@@ -49,7 +45,7 @@
 static uint32_t micros(void) {
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
+	return static_cast<uint32_t>((tv.tv_sec * 1000000) + tv.tv_usec);
 }
 
 #include "config.h"
@@ -69,6 +65,7 @@ Dmx *Dmx::s_pThis = nullptr;
 
 Dmx::Dmx() {
 	DEBUG_ENTRY
+	printf("Dmx: MAX_PORTS=%u\n", MAX_PORTS);
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -79,6 +76,8 @@ Dmx::Dmx() {
 
 		s_nHandePortRdm[i] = Network::Get()->Begin(UDP_PORT_RDM_START + i);
 		assert(s_nHandePortRdm[i] != -1);
+
+		m_tDmxPortDirection[i] = PortDirection::DISABLED;
 	}
 
 	DEBUG_EXIT
@@ -147,6 +146,18 @@ void Dmx::SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, ui
 	Network::Get()->SendTo(s_nHandePortDmx[nPortIndex], dmxSendBuffer, nLength, Network::Get()->GetBroadcastIp(), UDP_PORT_DMX_START + nPortIndex);
 }
 
+void Dmx::Blackout() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void Dmx::FullOn() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 // DMX Receive
 
 const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex)  {
@@ -158,12 +169,12 @@ const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex)
 	uint32_t nPackets = 0;
 	uint16_t nBytesReceived;
 
-	do {
+//	do {
 		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortDmx[nPortIndex], &dmxDataRx, sizeof(buffer::SIZE), &fromIp, &fromPort);
 		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_DMX_START + nPortIndex))) {
 			nPackets++;
 		}
-	} while (nBytesReceived == 0);
+//	} while (nBytesReceived == 0);
 
 	if (nPackets == 0) {
 		return nullptr;
@@ -204,6 +215,10 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 
 	do {
 		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortRdm[nPortIndex], &rdmReceiveBuffer, sizeof(rdmReceiveBuffer), &fromIp, &fromPort);
+		if (nBytesReceived != 0) {
+			debug_dump(rdmReceiveBuffer, nBytesReceived);
+		}
+
 		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_RDM_START + nPortIndex))) {
 			nPackets++;
 		}
@@ -211,14 +226,13 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 
 	if (nPackets == 0) {
 		return nullptr;
-	} else if  (nPackets != 1)  {
-		rdmReceiveBuffer[0] = 0xFF; // Invalidate
 	}
 
 	return rdmReceiveBuffer;
 }
 
 const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
+	DEBUG_PRINTF("nTimeOut=%u", nTimeOut);
 	assert(nPortIndex < MAX_PORTS);
 
 	uint8_t *p = nullptr;
@@ -228,7 +242,7 @@ const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
-	} while (( micros() - nMicros) < nTimeOut);
+	} while (( micros() - nMicros) < (static_cast<uint32_t>(nTimeOut) + 50000U));
 
 	return p;
 }

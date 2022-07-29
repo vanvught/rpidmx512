@@ -33,20 +33,15 @@
 #include "rdmmessage.h"
 #include "rdmtod.h"
 
-class RDMDiscovery final: public RDMTod {
+class RDMDiscovery {
 public:
-	RDMDiscovery(uint32_t nPortIndex = 0) : m_nPortIndex(nPortIndex) {}
+	RDMDiscovery(const uint8_t *pUid);
 
-	void SetUid(const uint8_t *);
-	const uint8_t *GetUid() const {
-		return m_Uid;
-	}
-
-	void Full();
+	void Full(uint32_t m_nPortIndex, RDMTod *pRDMTod);
 
 private:
 	bool FindDevices(uint64_t LowerBound, uint64_t UpperBound);
-	bool QuickFind(const uint8_t *uid);
+	bool QuickFind(const uint8_t *pUid);
 
 	bool IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_t *pUid);
 
@@ -56,10 +51,11 @@ private:
 	uint64_t ConvertUid(const uint8_t *pUid);
 
 private:
-	uint32_t m_nPortIndex;
-	RDMMessage m_Message;
-	uint8_t m_Uid[RDM_UID_SIZE];
-	uint8_t m_Pdl[2][RDM_UID_SIZE];
+	RDMMessage s_Message;
+	uint32_t s_nPortIndex;
+	RDMTod *s_pRDMTod;
+	uint8_t s_Uid[RDM_UID_SIZE];
+	uint8_t s_Pdl[2][RDM_UID_SIZE];
 };
 
 #endif /* RDMDISCOVERY_H_ */

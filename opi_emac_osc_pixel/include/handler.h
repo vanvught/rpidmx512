@@ -36,15 +36,15 @@ class Handler: public OscServerHandler  {
 public:
 	Handler(WS28xxDmx *pWS28xxDmx);
 
-	void Blackout() {
+	void Blackout() override {
 		m_pWS28xxDmx->Blackout(true);
 	}
 
-	void Update() {
+	void Update() override {
 		m_pWS28xxDmx->Blackout(false);
 	}
 
-	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing);
+	void Info(int32_t nHandle, uint32_t nRemoteIp, uint16_t nPortOutgoing) override;
 
 private:
 	WS28xxDmx *m_pWS28xxDmx;

@@ -47,10 +47,10 @@
 
 #include "debug.h"
 
-L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams): m_bIsStarted(false), m_nMotorNumber(0), m_nMode(L6470DMXMODE_UNDEFINED), m_pDmxMode(nullptr), m_DmxFootPrint(0) {
+L6470DmxModes::L6470DmxModes(TL6470DmxModes tMode, uint16_t nDmxStartAddress, L6470 *pL6470, MotorParams *pMotorParams, ModeParams *pModeParams) {
 	DEBUG1_ENTRY;
 
-	assert(nDmxStartAddress <= lightset::Dmx::UNIVERSE_SIZE);
+	assert(nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE);
 	assert(pL6470 != nullptr);
 	assert(pMotorParams != nullptr);
 	assert(pModeParams != nullptr);

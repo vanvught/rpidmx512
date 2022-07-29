@@ -63,26 +63,20 @@ static constexpr auto PORT = 0x0ACA;
 }
 
 #if defined (H3)
-static volatile uint32_t sv_nUpdatesPerSecond;
-static volatile uint32_t sv_nUpdatesPrevious;
-static volatile uint32_t sv_nUpdates;
-
 static void arm_timer_handler() {
-	sv_nUpdatesPerSecond = sv_nUpdates - sv_nUpdatesPrevious;
-	sv_nUpdatesPrevious = sv_nUpdates;
+	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
+	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
 }
 #elif defined (GD32)
+	// Defined in platform_ltc.cpp
 #endif
-
-TCNetReader::TCNetReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs) : m_ptLtcDisabledOutputs(pLtcDisabledOutputs) {
-	assert(m_ptLtcDisabledOutputs != nullptr);
-}
 
 void TCNetReader::Start() {
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
 	irq_timer_init();
 #elif defined (GD32)
+	platform::ltc::timer6_config();
 #endif
 
 	LtcOutputs::Get()->Init();
@@ -101,7 +95,7 @@ void TCNetReader::Stop() {
 }
 
 void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
-	sv_nUpdates++;
+	gv_ltc_nUpdates++;
 
 	assert((reinterpret_cast<uint32_t>(pTimeCode) & 0x3) == 0); // Check if we can do 4-byte compare
 #if __GNUC__ > 8
@@ -116,25 +110,25 @@ void TCNetReader::Handler(const struct TTCNetTimeCode *pTimeCode) {
 	if (m_nTimeCodePrevious != *p) {
 		m_nTimeCodePrevious = *p;
 
-		if (!m_ptLtcDisabledOutputs->bLtc) {
-			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
+		if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+			LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
 		}
 
-		if (!m_ptLtcDisabledOutputs->bArtNet) {
+		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
 			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(pTimeCode));
 		}
 
-		if (!m_ptLtcDisabledOutputs->bRtpMidi) {
+		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
 			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(pTimeCode));
 		}
 
-		if (!m_ptLtcDisabledOutputs->bEtc) {
+		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
 			LtcEtc::Get()->Send(&m_tMidiTimeCode);
 		}
 
 		memcpy(&m_tMidiTimeCode, pTimeCode, sizeof(struct midi::Timecode));
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct TLtcTimeCode*>(pTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(pTimeCode));
 	}
 }
 
@@ -162,7 +156,7 @@ void TCNetReader::HandleUdpRequest() {
 		const auto tLayer = TCNet::GetLayer(m_Buffer[6 + length::LAYER]);
 
 		TCNet::Get()->SetLayer(tLayer);
-		TCNetDisplay::Show();
+		tcnet::display::show();
 
 		DEBUG_PRINTF("tcnet!layer#%c -> %d", m_Buffer[6 + length::LAYER + 1], tLayer);
 		return;
@@ -187,7 +181,7 @@ void TCNetReader::HandleUdpRequest() {
 				break;
 			}
 
-			TCNetDisplay::Show();
+			tcnet::display::show();
 
 			DEBUG_PRINTF("tcnet!type#%d", nValue);
 			return;
@@ -195,7 +189,7 @@ void TCNetReader::HandleUdpRequest() {
 
 		if ((m_Buffer[6 + length::TYPE] == '3') && (m_Buffer[6 + length::TYPE + 1] == '0')) {
 			TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
-			TCNetDisplay::Show();
+			tcnet::display::show();
 
 			DEBUG_PUTS("tcnet!type#30");
 			return;
@@ -210,7 +204,7 @@ void TCNetReader::HandleUdpRequest() {
 		const auto bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);
-		TCNetDisplay::Show();
+		tcnet::display::show();
 
 		DEBUG_PRINTF("tcnet!timecode#%c -> %d", nChar, static_cast<int>(bUseTimeCode));
 		return;
@@ -220,10 +214,10 @@ void TCNetReader::HandleUdpRequest() {
 }
 
 void TCNetReader::Run() {
-	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct TLtcTimeCode*>(&m_tMidiTimeCode));
+	LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
 
 	__DMB();
-	if (sv_nUpdatesPerSecond != 0) {
+	if (gv_ltc_nUpdatesPerSecond != 0) {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();

@@ -59,7 +59,7 @@ ModeParams::ModeParams(ModeParamsStore *pModeParamsStore): m_pModeParamsStore(pM
 
 	memset(&m_tModeParams, 0, sizeof(struct TModeParams));
 	m_tModeParams.nDmxMode = L6470DMXMODE_UNDEFINED;
-	m_tModeParams.nDmxStartAddress = Dmx::ADDRESS_INVALID;
+	m_tModeParams.nDmxStartAddress = dmx::ADDRESS_INVALID;
 	m_tModeParams.tSwitchAction = L6470_ABSPOS_RESET;
 	m_tModeParams.tSwitchDir = L6470_DIR_REV;
 	m_tModeParams.bSwitch = true;
@@ -148,7 +148,7 @@ void ModeParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && (nValue16 <= Dmx::UNIVERSE_SIZE)) {
+		if ((nValue16 != 0) && (nValue16 <= dmx::UNIVERSE_SIZE)) {
 			m_tModeParams.nDmxStartAddress = nValue16;
 			m_tModeParams.nSetList |= ModeParamsMask::DMX_START_ADDRESS;
 		}

@@ -2,7 +2,7 @@
  * @file rdmhandler.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -180,6 +180,9 @@ const RDMHandler::PidDefinition RDMHandler::PID_DEFINITIONS[] {
 #if defined (ENABLE_RDM_SELF_TEST)
 	{E120_PERFORM_SELFTEST,				&RDMHandler::GetPerformSelfTest,			&RDMHandler::SetPerformSelfTest,	0, true , true , false},
 	{E120_SELF_TEST_DESCRIPTION,		&RDMHandler::GetSelfTestDescription,		nullptr,							1, true , true , false},
+#endif
+#if defined (ENABLE_RDM_PRESET_PLAYBACK)
+	{E120_PRESET_PLAYBACK,				&RDMHandler::GetPresetPlayback,				&RDMHandler::SetPresetPlayback,		0, true , true , false},
 #endif
 	{E137_1_IDENTIFY_MODE,			   	&RDMHandler::GetIdentifyMode,				&RDMHandler::SetIdentifyMode,		0, true , true , false},
 #endif
@@ -805,7 +808,7 @@ void RDMHandler::SetDmxStartAddress(bool IsBroadcast, uint16_t nSubDevice) {
 
 	const auto nDmxStartAddress = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
 
-	if ((nDmxStartAddress == 0) || (nDmxStartAddress > lightset::Dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress == 0) || (nDmxStartAddress > lightset::dmx::UNIVERSE_SIZE)) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -1203,9 +1206,7 @@ void RDMHandler::SetPerformSelfTest(__attribute__((unused)) bool IsBroadcast, __
 		return;
 	}
 
-	const auto isSet = rdm::selftest::Set(pRdmDataIn->param_data[0]);
-
-	if (!isSet) {
+	if (!rdm::selftest::Set(pRdmDataIn->param_data[0])) {
 		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
 		return;
 	}
@@ -1239,6 +1240,48 @@ void RDMHandler::GetSelfTestDescription(__attribute__((unused)) uint16_t nSubDev
 	for (uint32_t i = 0; i < nLength; i++) {
 		pRdmDataOut->param_data[i + 1] = static_cast<uint8_t>(pText[i]);
 	}
+
+	RespondMessageAck();
+}
+#endif
+
+#if defined (ENABLE_RDM_PRESET_PLAYBACK)
+#include "rdm_preset_playback.h"
+
+void RDMHandler::GetPresetPlayback(__attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+
+	uint16_t nMode;
+	uint8_t nLevel;
+
+	rdm::preset_playback::Get(nMode, nLevel);
+
+	pRdmDataOut->param_data_length = 3;
+	pRdmDataOut->param_data[0] = static_cast<uint8_t>(nMode >> 8);
+	pRdmDataOut->param_data[1] = static_cast<uint8_t>(nMode);
+	pRdmDataOut->param_data[2] = nLevel;
+
+	RespondMessageAck();
+}
+
+void RDMHandler::SetPresetPlayback(__attribute__((unused)) bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+	auto *pRdmDataIn = reinterpret_cast<struct TRdmMessageNoSc*>(m_pRdmDataIn);
+
+	if (pRdmDataIn->param_data_length != 3) {
+		RespondMessageNack(E120_NR_FORMAT_ERROR);
+		return;
+	}
+
+	const auto nMode = static_cast<uint16_t>((pRdmDataIn->param_data[0] << 8) + pRdmDataIn->param_data[1]);
+	const auto nLevel = pRdmDataIn->param_data[2];
+
+	if (!rdm::preset_playback::Set(nMode, nLevel)) {
+		RespondMessageNack(E120_NR_DATA_OUT_OF_RANGE);
+		return;
+	}
+
+	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
+	pRdmDataOut->param_data_length = 0;
 
 	RespondMessageAck();
 }

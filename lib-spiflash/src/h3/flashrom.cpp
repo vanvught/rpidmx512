@@ -54,6 +54,12 @@ FlashRom::FlashRom() {
 	DEBUG_EXIT
 }
 
+FlashRom::~FlashRom() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
 const char *FlashRom::GetName() const {
 	return spi_flash_get_name();
 }

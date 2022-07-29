@@ -36,6 +36,8 @@
 RDMSubDevices *RDMSubDevices::s_pThis = nullptr;
 
 RDMSubDevices::RDMSubDevices()  {
+	DEBUG_ENTRY
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -47,9 +49,14 @@ RDMSubDevices::RDMSubDevices()  {
 	Add(new RDMSubDeviceDummy);
 # endif
 #endif
+
+	DEBUG_EXIT
 }
 
 RDMSubDevices::~RDMSubDevices() {
+	DEBUG_ENTRY
+
+
 	for (unsigned i = 0; i < m_nCount; i++) {
 		delete m_pRDMSubDevice[i];
 		m_pRDMSubDevice[i] = nullptr;
@@ -58,6 +65,8 @@ RDMSubDevices::~RDMSubDevices() {
 	delete [] m_pRDMSubDevice;
 
 	m_nCount = 0;
+
+	DEBUG_EXIT
 }
 
 struct TRDMSubDevicesInfo* RDMSubDevices::GetInfo(uint16_t nSubDevice) {

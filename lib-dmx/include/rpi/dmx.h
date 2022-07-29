@@ -69,6 +69,9 @@ public:
 	
 	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
+	void Blackout();
+	void FullOn();
+
 	void ClearData(uint32_t nPortIndex);
 	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 

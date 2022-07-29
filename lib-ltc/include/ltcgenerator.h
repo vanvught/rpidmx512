@@ -31,20 +31,20 @@
 #include "ltc.h"
 
 enum TLtcGeneratorDirection {
-	LTC_GENERATOR_FORWARD,
-	LTC_GENERATOR_BACKWARD
+	LTC_GENERATOR_FORWARD, LTC_GENERATOR_BACKWARD
 };
 
 enum TLtcGeneratorPitch {
-	LTC_GENERATOR_NORMAL,
-	LTC_GENERATOR_FASTER,
-	LTC_GENERATOR_SLOWER
+	LTC_GENERATOR_NORMAL, LTC_GENERATOR_FASTER, LTC_GENERATOR_SLOWER
 };
 
 class LtcGenerator {
 public:
-	LtcGenerator(const struct TLtcTimeCode *pStartLtcTimeCode, const struct TLtcTimeCode *pStopLtcTimeCode, struct TLtcDisabledOutputs *pLtcDisabledOutputs, bool bSkipFree = false);
-	~LtcGenerator();
+	LtcGenerator(const struct ltc::TimeCode *pStartLtcTimeCode, const struct ltc::TimeCode *pStopLtcTimeCode, bool bSkipFree = false);
+
+	~LtcGenerator() {
+		Stop();
+	}
 
 	void Start();
 	void Stop();
@@ -53,10 +53,8 @@ public:
 
 	void Print();
 
-	//
 	void HandleRequest(void *pBuffer = nullptr, uint16_t nBufferLength = 0);
 
-	// Control
 	void ActionStart(bool bDoReset = true);
 	void ActionStop();
 	void ActionResume();
@@ -84,30 +82,37 @@ private:
 	void SetPitch(const char *pTimeCodePitch, uint32_t nSize);
 	void SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDirection tDirection);
 	void SetTimeCode(int32_t nSeconds);
-	int32_t GetSeconds(const TLtcTimeCode &timecode);
+
+	int32_t GetSeconds(const struct ltc::TimeCode& timecode) {
+		int32_t nSeconds = timecode.nHours;
+		nSeconds *= 60;
+		nSeconds += timecode.nMinutes;
+		nSeconds *= 60;
+		nSeconds += timecode.nSeconds;
+
+		return nSeconds;
+	}
 
 private:
-	struct TLtcTimeCode *m_pStartLtcTimeCode;
-	int32_t m_nStartSeconds;
-	struct TLtcTimeCode *m_pStopLtcTimeCode;
-	int32_t m_nStopSeconds;
+	struct ltc::TimeCode *m_pStartLtcTimeCode;
+	struct ltc::TimeCode *m_pStopLtcTimeCode;
 	bool m_bSkipFree;
-	uint8_t m_nFps{0};
-	TLtcGeneratorDirection m_tDirection{LTC_GENERATOR_FORWARD};
-	float m_fPitchControl{0};
-	uint32_t m_nPitchTicker{1};
-	uint32_t m_nPitchPrevious{0};
-	TLtcGeneratorPitch m_tPitch{LTC_GENERATOR_FASTER};
-	uint32_t m_nTimer0Interval{0};
-	uint32_t m_nButtons{0};
-	int m_nHandle{-1};
+	int32_t m_nStartSeconds;
+	int32_t m_nStopSeconds;
+	uint8_t m_nFps { 0 };
+	TLtcGeneratorDirection m_tDirection { LTC_GENERATOR_FORWARD };
+	float m_fPitchControl { 0 };
+	uint32_t m_nPitchTicker { 1 };
+	uint32_t m_nPitchPrevious { 0 };
+	TLtcGeneratorPitch m_tPitch { LTC_GENERATOR_FASTER };
+	uint32_t m_nTimer0Interval { 0 };
+	uint32_t m_nButtons { 0 };
+	int m_nHandle { -1 };
 	char m_Buffer[64];
-	uint16_t m_nBytesReceived{0};
+	uint16_t m_nBytesReceived { 0 };
 	enum {
-		STOPPED,
-		STARTED,
-		LIMIT
-	} m_State{STOPPED};
+		STOPPED, STARTED, LIMIT
+	} m_State { STOPPED };
 
 	static LtcGenerator *s_pThis;
 };

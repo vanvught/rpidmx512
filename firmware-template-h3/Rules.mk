@@ -50,7 +50,7 @@ DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell d
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
 
 # The variable for the firmware include directories
-INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory

@@ -38,7 +38,6 @@
 
 void ShowFileProtocolArtNet::Handler(const struct TArtNetTrigger *ptArtNetTrigger) {
 	DEBUG_ENTRY
-
 	DEBUG_PRINTF("Key=%d, SubKey=%d", ptArtNetTrigger->Key, ptArtNetTrigger->SubKey);
 
 	if (ptArtNetTrigger->Key == ART_TRIGGER_KEY_SOFT) {

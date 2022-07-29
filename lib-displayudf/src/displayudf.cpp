@@ -71,6 +71,21 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	DEBUG_PUTS(m_aTitle);
 }
 
+void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
+	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
+		return;
+	}
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
+		if (m_aLabels[i] == nLine) {
+			m_aLabels[i] = m_aLabels[static_cast<uint32_t>(tLabel)];
+			break;
+		}
+	}
+
+	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
+}
+
 void DisplayUdf::Show() {
 	uint8_t nHwTextLength;
 
@@ -93,6 +108,10 @@ void DisplayUdf::Show() {
 	// RDM Responder
 	ShowDmxStartAddress();
 
+	/**
+	 * Network
+	 */
+
 #if !defined (NO_EMAC)
 	ShowIpAddress();
 	ShowGatewayIp();
@@ -100,6 +119,10 @@ void DisplayUdf::Show() {
 	ShowHostName();
 #endif
 }
+
+/**
+ * Network
+ */
 
 #if !defined (NO_EMAC)
 void DisplayUdf::ShowEmacStart() {
@@ -156,18 +179,3 @@ void DisplayUdf::ShowShutdown() {
 	TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
 }
 #endif
-
-void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
-	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
-		return;
-	}
-
-	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
-		if (m_aLabels[i] == nLine) {
-			m_aLabels[i] = m_aLabels[static_cast<uint32_t>(tLabel)];
-			break;
-		}
-	}
-
-	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
-}

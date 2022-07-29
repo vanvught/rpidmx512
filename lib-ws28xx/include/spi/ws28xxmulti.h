@@ -29,10 +29,9 @@
 #include <cstdint>
 
 #include "pixelconfiguration.h"
+#include "gamma/gamma_tables.h"
 
-#if defined (H3)
-# include "h3_spi.h"
-#endif
+#include "h3_spi.h"
 
 struct JamSTAPLDisplay;
 
@@ -40,8 +39,6 @@ class WS28xxMulti {
 public:
 	WS28xxMulti(PixelConfiguration& pixelConfiguration);
 	~WS28xxMulti();
-
-	void Print();
 
 	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
@@ -52,17 +49,18 @@ public:
 
 	void Update();
 	void Blackout();
+	void FullOn();
 
 	pixel::Type GetType() const {
-		return m_Type;
+		return m_PixelConfiguration.GetType();
 	}
 
 	uint32_t GetCount() const {
-		return m_nCount;
+		return m_PixelConfiguration.GetCount();
 	}
 
 	pixel::Map GetMap() const {
-		return m_Map;
+		return m_PixelConfiguration.GetMap();
 	}
 
 	void SetJamSTAPLDisplay(JamSTAPLDisplay *pJamSTAPLDisplay) {
@@ -82,12 +80,8 @@ private:
 	void SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
 
 private:
+	PixelConfiguration m_PixelConfiguration;
 	bool m_hasCPLD { false };
-	pixel::Type m_Type { pixel::defaults::TYPE };
-	uint32_t m_nCount { pixel::defaults::COUNT };
-	pixel::Map m_Map { pixel::Map::UNDEFINED };
-	bool m_bIsRTZProtocol { true };
-	uint8_t m_nGlobalBrightness { 0xFF };
 	uint32_t m_nBufSize { 0 };
 	uint8_t *m_pBuffer { nullptr };
 	uint8_t *m_pBlackoutBuffer { nullptr };

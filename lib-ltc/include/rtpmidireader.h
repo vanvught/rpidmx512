@@ -35,8 +35,6 @@
 
 class RtpMidiReader: public RtpMidiHandler {
 public:
-	RtpMidiReader(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-
 	void Start();
 	void Stop();
 	void Run();
@@ -49,8 +47,7 @@ private:
 	void Update();
 
 private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
-	TLtcTimeCode m_tLtcTimeCode;
+	struct ltc::TimeCode m_tLtcTimeCode;
 	uint8_t m_nPartPrevious { 0 };
 	bool m_bDirection { true };
 	uint32_t m_nMtcQfFramePrevious { 0 };

@@ -2,7 +2,7 @@
  * @file gpsprint.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,13 +32,13 @@ void GPS::Print() {
 	printf(" Module : %s [%u]\n", GetModuleName(m_tModule), m_nBaud);
 	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
 	switch (m_tStatusCurrent) {
-	case GPSStatus::WARNING:
+	case gps::Status::WARNING:
 		puts(" No Fix");
 		break;
-	case GPSStatus::VALID:
+	case gps::Status::VALID:
 		puts(" Has Fix");
 		break;
-	case GPSStatus::IDLE:
+	case gps::Status::IDLE:
 		puts(" Idle");
 		break;
 	default:

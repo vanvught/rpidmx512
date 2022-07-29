@@ -42,6 +42,7 @@ class FlashRom {
 #endif
 public:
 	FlashRom();
+	~FlashRom();
 
 	bool IsDetected() const {
 		return m_IsDetected;

@@ -44,8 +44,8 @@
 // Firmware specific BEGIN
 #if defined (LTC_READER)
 # include "ltc.h"
-# include "h3/ltcgenerator.h"
-# include "h3/systimereader.h"
+# include "ltcgenerator.h"
+# include "systimereader.h"
 #endif
 // Firmware specific BEGIN
 
@@ -234,10 +234,10 @@ void Shell::CmdSet() {
  			const auto nRequestLenght = static_cast<uint16_t>(4 + nArgv1Length);
 
 			switch (m_ltcSource) {
-			case ltc::source::INTERNAL:
+			case ltc::Source::INTERNAL:
 				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);;
 				break;	
-			case ltc::source::SYSTIME:
+			case ltc::Source::SYSTIME:
 				SystimeReader::Get()->HandleRequest(request, nRequestLenght);
 				break;
 			default:
