@@ -68,6 +68,9 @@ public:
 
 	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
+	void Blackout();
+	void FullOn();
+
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {
 		return m_nDmxTransmitBreakTime;

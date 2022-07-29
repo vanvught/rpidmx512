@@ -1,9 +1,8 @@
-#if !defined (NO_EMAC)
 /**
- * @file dmxconfigudp.cpp
+ * @file board_gd32f450vi.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,11 +23,28 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifndef GD32_BOARD_GD32F450VI_H_
+#define GD32_BOARD_GD32F450VI_H_
 
-#include  "dmxconfigudp.h"
+#include "gd32_board.h"
 
-int32_t DmxConfigUdp::s_nHandle = -1;
-uint8_t DmxConfigUdp::s_Buffer[dmxconfigudp::MAX_SIZE];
+namespace max {
+static constexpr auto OUT = 2U;
+static constexpr auto IN = 2U;
+}
 
-#endif
+#define DMX_MAX_PORTS  2
+
+#define DMX_USE_USART2
+#define DMX_USE_USART5
+
+static constexpr auto USART2_PORT = 0;
+static constexpr auto USART5_PORT = 1;
+
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOD;
+static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_0;		///< Not used
+
+static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOD;
+static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_1;		///< Not used
+
+#endif /* GD32_BOARD_GD32F450VI_H_ */

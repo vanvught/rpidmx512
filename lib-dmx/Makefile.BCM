@@ -1,4 +1,6 @@
 DEFINES=NDEBUG
-EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include  ../lib-network/include
 
+EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include
+
+include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

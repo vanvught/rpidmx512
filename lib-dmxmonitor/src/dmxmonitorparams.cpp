@@ -53,8 +53,8 @@ using namespace lightset;
 
 DMXMonitorParams::DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore): m_pDMXMonitorParamsStore(pDMXMonitorParamsStore) {
 	m_tDMXMonitorParams.nSetList = 0;
-	m_tDMXMonitorParams.nDmxStartAddress = Dmx::START_ADDRESS_DEFAULT;
-	m_tDMXMonitorParams.nDmxMaxChannels = Dmx::UNIVERSE_SIZE;
+	m_tDMXMonitorParams.nDmxStartAddress = dmx::START_ADDRESS_DEFAULT;
+	m_tDMXMonitorParams.nDmxMaxChannels = dmx::UNIVERSE_SIZE;
 	m_tDMXMonitorParams.tFormat = static_cast<uint8_t>(Format::HEX);
 }
 

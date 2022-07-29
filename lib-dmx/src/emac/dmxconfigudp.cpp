@@ -1,8 +1,8 @@
 /**
- * @file config.h
+ * @file dmxconfigudp.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,24 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#include <cstdint>
 
-namespace dmxsingle {
-static constexpr auto MAX_PORTS = 1;
-}  // namespace dmxsingle
+#include  "dmxconfigudp.h"
 
-namespace dmxmulti {
-#if !defined(LIGHTSET_PORTS)
- static constexpr auto MAX_PORTS = 4;
-#else
- static constexpr auto MAX_PORTS = LIGHTSET_PORTS;
-#endif
-}  // namespace dmxmulti
-
-namespace dmx {
-static constexpr auto UDP_PORT_DMX_START = 50000U;
-static constexpr auto UDP_PORT_RDM_START = 51000U;
-}  // namespace dmx
-
-#endif /* CONFIG_H_ */
+int32_t DmxConfigUdp::s_nHandle = -1;
+char *DmxConfigUdp::s_pUdpBuffer = nullptr;

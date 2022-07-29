@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 #include <cassert>
 
 #include "dmxmonitor.h"
+
+#include "debug.h"
 
 using namespace dmxmonitor;
 
@@ -60,17 +62,21 @@ uint16_t DMXMonitor::GetDmxFootprint() {
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	if (nDmxStartAddress  > (512 - m_nMaxChannels)) {
+	DEBUG_ENTRY
+
+	if (nDmxStartAddress > (512 - m_nMaxChannels)) {
+		DEBUG_EXIT
 		return false;
 	}
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	if(m_pDmxMonitorStore != nullptr) {
+	if (m_pDmxMonitorStore != nullptr) {
 		m_pDmxMonitorStore->SaveDmxStartAddress(nDmxStartAddress);
 	}
 
 	return true;
+	DEBUG_EXIT
 }
 
 uint16_t DMXMonitor::GetDmxStartAddress() {
@@ -82,9 +88,9 @@ void DMXMonitor::Cls() {
 }
 
 void DMXMonitor::Start(uint32_t nPortIndex) {
-	assert(nPort < output::text::MAX_PORTS);
+	assert(nPortIndex < output::text::MAX_PORTS);
 
-	if(m_bIsStarted[nPortIndex]) {
+	if (m_bIsStarted[nPortIndex]) {
 		return;
 	}
 
@@ -93,9 +99,9 @@ void DMXMonitor::Start(uint32_t nPortIndex) {
 }
 
 void DMXMonitor::Stop(uint32_t nPortIndex) {
-	assert(nPort < output::text::MAX_PORTS);
+	assert(nPortIndex < output::text::MAX_PORTS);
 
-	if(!m_bIsStarted[nPortIndex]) {
+	if (!m_bIsStarted[nPortIndex]) {
 		return;
 	}
 
@@ -104,7 +110,7 @@ void DMXMonitor::Stop(uint32_t nPortIndex) {
 }
 
 void DMXMonitor::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
-	assert(nPortId < output::text::MAX_PORTS);
+	assert(nPortIndex < output::text::MAX_PORTS);
 
 	struct timeval tv;
 	uint32_t i, j;

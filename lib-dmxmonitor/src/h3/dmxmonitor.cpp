@@ -44,7 +44,7 @@ DMXMonitor::DMXMonitor(void) {
 }
 
 bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	if (nDmxStartAddress != Dmx::START_ADDRESS_DEFAULT) {
+	if (nDmxStartAddress != dmx::START_ADDRESS_DEFAULT) {
 		return false;
 	}
 
@@ -52,11 +52,11 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 }
 
 uint16_t DMXMonitor::GetDmxStartAddress(void) {
-	return Dmx::START_ADDRESS_DEFAULT;
+	return dmx::START_ADDRESS_DEFAULT;
 }
 
 uint16_t DMXMonitor::GetDmxFootprint(void) {
-	return Dmx::UNIVERSE_SIZE;
+	return dmx::UNIVERSE_SIZE;
 }
 
 void DMXMonitor::Start(__attribute__((unused)) uint32_t nPortIndex) {
