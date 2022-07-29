@@ -99,6 +99,26 @@ MDNS::MDNS() {
 	s_nMulticastIp = group_ip.s_addr;
 }
 
+MDNS::~MDNS() {
+	if (s_pName != nullptr) {
+		delete[] s_pName;
+	}
+
+	for (uint32_t i = 0; i < SERVICE_RECORDS_MAX; i++) {
+		if (s_ServiceRecords[i].pName != nullptr) {
+			delete[] s_ServiceRecords[i].pName;
+		}
+
+		if (s_ServiceRecords[i].pServName != nullptr) {
+			delete[] s_ServiceRecords[i].pServName;
+		}
+
+		if (s_ServiceRecords[i].pTextContent != nullptr) {
+			delete[] s_ServiceRecords[i].pTextContent;
+		}
+	}
+}
+
 void MDNS::Start() {
 	assert(s_nHandle == -1);
 

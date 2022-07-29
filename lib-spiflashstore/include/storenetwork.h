@@ -2,7 +2,7 @@
  * @file storenetwork.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,33 +36,33 @@ class StoreNetwork final: public NetworkParamsStore, public NetworkStore {
 public:
 	StoreNetwork();
 
-	void Update(const struct TNetworkParams *pNetworkParams) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
+	void Update(const struct networkparams::Params *pNetworkParams) override {
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct networkparams::Params));
 	}
 
-	void Copy(struct TNetworkParams *pNetworkParams) override {
-		SpiFlashStore::Get()->Copy(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct TNetworkParams));
+	void Copy(struct networkparams::Params *pNetworkParams) override {
+		SpiFlashStore::Get()->Copy(spiflashstore::Store::NETWORK, pNetworkParams, sizeof(struct networkparams::Params));
 	}
 
 	void SaveIp(uint32_t nIp) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nLocalIp), &nIp, sizeof(uint32_t), NetworkParamsMask::IP_ADDRESS);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct networkparams::Params, nLocalIp), &nIp, sizeof(uint32_t), networkparams::Mask::IP_ADDRESS);
 	}
 
 	void SaveNetMask(uint32_t nNetMask) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nNetmask), &nNetMask, sizeof(uint32_t), NetworkParamsMask::NET_MASK);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct networkparams::Params, nNetmask), &nNetMask, sizeof(uint32_t), networkparams::Mask::NET_MASK);
 	}
 
 	void SaveGatewayIp(uint32_t nGatewayIp) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, nGatewayIp), &nGatewayIp, sizeof(uint32_t), NetworkParamsMask::DEFAULT_GATEWAY);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct networkparams::Params, nGatewayIp), &nGatewayIp, sizeof(uint32_t), networkparams::Mask::DEFAULT_GATEWAY);
 	}
 
 	void SaveHostName(const char *pHostName, uint32_t nLength) override {
 		nLength = std::min(nLength,static_cast<uint32_t>(network::HOSTNAME_SIZE));
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, aHostName), pHostName, nLength, NetworkParamsMask::HOSTNAME);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct networkparams::Params, aHostName), pHostName, nLength, networkparams::Mask::HOSTNAME);
 	}
 
 	void SaveDhcp(bool bIsDhcpUsed) override {
-		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct TNetworkParams, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), NetworkParamsMask::DHCP);
+		SpiFlashStore::Get()->Update(spiflashstore::Store::NETWORK, __builtin_offsetof(struct networkparams::Params, bIsDhcpUsed), &bIsDhcpUsed, sizeof(bool), networkparams::Mask::DHCP);
 	}
 
 	static StoreNetwork *Get() {

@@ -43,7 +43,7 @@
 
 namespace artnetparams {
 static constexpr uint16_t clear_mask(const uint32_t i) {
-	return ~(static_cast<uint16_t>(1U << (i + 8)) | static_cast<uint16_t>(1U << i));
+	return static_cast<uint16_t>(~((1U << (i + 8)) | (1U << i)));
 }
 
 static constexpr uint16_t shift_left(const uint32_t nValue, const uint32_t i) {

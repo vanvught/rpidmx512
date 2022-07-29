@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -257,6 +257,18 @@ void NtpClient::Start() {
 
 
 	DEBUG_PRINTF("nRetries=%d, m_tStatus=%d", nRetries, static_cast<int>(m_tStatus));
+
+#if !defined(DISABLE_RTC)
+	if (m_tStatus != ntpclient::Status::FAILED) {
+		printf("Set RTC from System Clock\n");
+		HwClock::Get()->SysToHc();
+#ifndef NDEBUG
+		const auto rawtime = time(nullptr);
+		printf(asctime(localtime(&rawtime)));
+#endif
+	}
+#endif
+
 	DEBUG_EXIT
 }
 
@@ -345,9 +357,10 @@ void NtpClient::Print() {
 	printf(" Server : " IPSTR ":%d\n", IP2STR(m_nServerIp), NTP_UDP_PORT);
 	printf(" Status : %d\n", static_cast<int>(m_tStatus));
 	printf(" UTC offset : %d (seconds)\n", m_nUtcOffset);
-	// Debug ONLY
+#ifndef NDEBUG
 	PrintNtpTime("Originate", &T1);
 	PrintNtpTime("Receive", &T2);
 	PrintNtpTime("Transmit", &T3);
 	PrintNtpTime("Destination", &T4);
+#endif
 }

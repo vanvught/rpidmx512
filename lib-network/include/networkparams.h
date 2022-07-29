@@ -36,9 +36,8 @@ static constexpr auto IS_DHCP_USED = true;
 static constexpr auto DHCP_RETRY_TIME = 0;
 static constexpr auto NTP_UTC_OFFSET = 0.0f;
 }  // namespace defaults
-}  // namespace networkparams
 
-struct TNetworkParams {
+struct Params {
 	uint32_t nSetList;
 	uint32_t nLocalIp;
 	uint32_t nNetmask;
@@ -56,10 +55,10 @@ struct TNetworkParams {
 }__attribute__((packed));
 
 #if !defined (ESP8266)
- static_assert(sizeof(struct TNetworkParams) <= 96, "struct TNetworkParams is too large");
+ static_assert(sizeof(struct Params) <= 96, "struct Params is too large");
 #endif
 
-struct NetworkParamsMask {
+struct Mask {
 	static constexpr auto DHCP = (1U << 0);
 	static constexpr auto IP_ADDRESS = (1U << 1);
 	static constexpr auto NET_MASK = (1U << 2);
@@ -77,12 +76,14 @@ struct NetworkParamsMask {
 #endif
 };
 
+}  // namespace networkparams
+
 class NetworkParamsStore {
 public:
 	virtual ~NetworkParamsStore() {}
 
-	virtual void Update(const struct TNetworkParams *pNetworkParams)=0;
-	virtual void Copy(struct TNetworkParams *pNetworkParams)=0;
+	virtual void Update(const struct networkparams::Params *pNetworkParams)=0;
+	virtual void Copy(struct networkparams::Params *pNetworkParams)=0;
 };
 
 class NetworkParams {
@@ -92,60 +93,60 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TNetworkParams *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 
 	bool isDhcpUsed() const {
-		return m_tNetworkParams.bIsDhcpUsed;
+		return m_Params.bIsDhcpUsed;
 	}
 
 	uint8_t GetDhcpRetryTime() const {
-		return m_tNetworkParams.nDhcpRetryTime;
+		return m_Params.nDhcpRetryTime;
 	}
 
 	uint32_t GetIpAddress() const {
-		return m_tNetworkParams.nLocalIp;
+		return m_Params.nLocalIp;
 	}
 
 	uint32_t GetNetMask() const {
-		return m_tNetworkParams.nNetmask;
+		return m_Params.nNetmask;
 	}
 
 	uint32_t GetDefaultGateway() const {
-		return m_tNetworkParams.nGatewayIp;
+		return m_Params.nGatewayIp;
 	}
 
 	const char *GetHostName() const {
-		return m_tNetworkParams.aHostName;
+		return m_Params.aHostName;
 	}
 
 	uint32_t GetNtpServer() const {
-		if (!isMaskSet(NetworkParamsMask::NTP_SERVER)) {
+		if (!isMaskSet(networkparams::Mask::NTP_SERVER)) {
 			return 0;
 		}
-		return m_tNetworkParams.nNtpServerIp;
+		return m_Params.nNtpServerIp;
 	}
 
 	float GetNtpUtcOffset() const {
-		if (!isMaskSet(NetworkParamsMask::NTP_UTC_OFFSET)) {
+		if (!isMaskSet(networkparams::Mask::NTP_UTC_OFFSET)) {
 			return 0;
 		}
-		return m_tNetworkParams.fNtpUtcOffset;
+		return m_Params.fNtpUtcOffset;
 	}
 
 #if defined (ESP8266)
 	uint32_t GetNameServer() const {
-		return m_tNetworkParams.nNameServerIp;
+		return m_Params.nNameServerIp;
 	}
 
 	const char *GetSSid() const {
-		return m_tNetworkParams.aSsid;
+		return m_Params.aSsid;
 	}
 
 	const char *GetPassword() const {
-		return m_tNetworkParams.aPassword;
+		return m_Params.aPassword;
 	}
 #endif
 
@@ -155,12 +156,12 @@ public:
 private:
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tNetworkParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
 	NetworkParamsStore *m_pNetworkParamsStore;
-	static TNetworkParams m_tNetworkParams;
+	networkparams::Params m_Params;
 };
 
 #endif /* NETWORKPARAMS_H_ */
