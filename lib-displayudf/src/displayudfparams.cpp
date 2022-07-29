@@ -56,6 +56,10 @@
 
 #include "display.h"
 
+#if defined (NODE_NODE)
+# include "node.h"
+# include "nodeparamsconst.h"
+#endif
 #if defined (NODE_ARTNET)
 # include "artnetnode.h"
 # include "artnetparamsconst.h"
@@ -66,6 +70,7 @@
 
 using namespace displayudf;
 
+#if !defined (NODE_NODE)
 static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::TITLE,
 		DisplayUdfParamsConst::BOARD_NAME,
@@ -99,6 +104,44 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		NetworkParamsConst::DEFAULT_GATEWAY,
 		DisplayUdfParamsConst::DMX_DIRECTION
 };
+#else
+# if LIGHTSET_PORTS > 8
+#  define MAX_ARRAY 4
+# else
+#  define MAX_ARRAY LIGHTSET_PORTS
+# endif
+static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
+		DisplayUdfParamsConst::TITLE,
+		DisplayUdfParamsConst::BOARD_NAME,
+		DisplayUdfParamsConst::VERSION,
+		NetworkParamsConst::HOSTNAME,
+		NetworkParamsConst::IP_ADDRESS,
+		NetworkParamsConst::NET_MASK,
+		NetworkParamsConst::DEFAULT_GATEWAY,
+		NodeParamsConst::NODE_SHORT_NAME,
+		NodeParamsConst::UNIVERSE_PORT[0],
+# if MAX_ARRAY >= 2
+		NodeParamsConst::UNIVERSE_PORT[1],
+# endif
+# if MAX_ARRAY >= 3
+		NodeParamsConst::UNIVERSE_PORT[2],
+# endif
+# if MAX_ARRAY == 4
+		NodeParamsConst::UNIVERSE_PORT[3],
+# endif
+		NodeParamsConst::DESTINATION_IP_PORT[0],
+# if MAX_ARRAY >= 2
+		NodeParamsConst::DESTINATION_IP_PORT[1],
+# endif
+# if MAX_ARRAY >= 3
+		NodeParamsConst::DESTINATION_IP_PORT[2],
+# endif
+# if MAX_ARRAY == 4
+		NodeParamsConst::DESTINATION_IP_PORT[3]
+# endif
+};
+# undef MAX_ARRAY
+#endif
 
 DisplayUdfParams::DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore): m_pDisplayUdfParamsStore(pDisplayUdfParamsStore) {
 	memset(&m_tDisplayUdfParams, 0, sizeof(struct displayudfparams::Params));

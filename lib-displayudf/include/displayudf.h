@@ -2,7 +2,7 @@
  * @file displayudf.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,12 @@
 #include <cstdint>
 #include <stdarg.h>
 
+#include "display.h"
+
+#if !defined (NO_EMAC)
+# include "network.h"
+#endif
+
 #if defined (NODE_ARTNET_MULTI)
 # define NODE_ARTNET
 #endif
@@ -37,21 +43,20 @@
 # define NODE_E131
 #endif
 
-#include "display.h"
+#if defined (NODE_NODE)
+# include "node.h"
+#endif
 
 #if defined (NODE_ARTNET)
 # include "artnetnode.h"
 #endif
+
 #if defined (NODE_E131)
 # include "e131bridge.h"
 #endif
 
 #if defined (NODE_ARTNET) || defined (NODE_E131)
 # define DISPLAYUDF_DMX_INFO
-#endif
-
-#if !defined (NO_EMAC)
-# include "network.h"
 #endif
 
 #if defined (RDM_RESPONDER)
@@ -63,7 +68,9 @@
 #endif
 
 namespace displayudf {
-static constexpr auto LABEL_MAX_ROWS = 6;
+static constexpr auto LABEL_MAX_ROWS = 6U;
+
+#if !defined(NODE_NODE)
 enum class Labels {
 	TITLE,
 	BOARDNAME,
@@ -87,6 +94,48 @@ enum class Labels {
 	DMX_DIRECTION,
 	UNKNOWN
 };
+#else
+# if LIGHTSET_PORTS > 8
+#  define MAX_ARRAY 4
+# else
+#  define MAX_ARRAY LIGHTSET_PORTS
+# endif
+enum class Labels {
+	TITLE,
+	BOARDNAME,
+	VERSION,
+	HOSTNAME,
+	IP,
+	NETMASK,
+	DEFAULT_GATEWAY,
+	NODE_NAME,
+	UNIVERSE_PORT_A,
+# if MAX_ARRAY >= 2
+	UNIVERSE_PORT_B,
+# endif
+# if MAX_ARRAY >= 3
+	UNIVERSE_PORT_C,
+# endif
+# if MAX_ARRAY == 4
+	UNIVERSE_PORT_D,
+# endif
+# if MAX_ARRAY >= 2
+	DESTINATION_IP_PORT_A,
+# endif
+# if MAX_ARRAY >= 2
+	DESTINATION_IP_PORT_B,
+# endif
+# if MAX_ARRAY >= 3
+	DESTINATION_IP_PORT_C,
+# endif
+# if MAX_ARRAY == 4
+	DESTINATION_IP_PORT_D,
+# endif
+	UNKNOWN
+};
+# undef MAX_ARRAY
+#endif
+
 namespace defaults {
 static constexpr auto INTENSITY = 0x7F;
 }  // namespace defaults
@@ -103,15 +152,66 @@ public:
 
 	void SetTitle(const char *format, ...);
 
+	void Set(uint8_t nLine, displayudf::Labels tLabel);
+
+	uint8_t GetLabel(uint32_t nIndex) const {
+		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {
+			return m_aLabels[nIndex];
+		}
+
+		return m_aLabels[0];
+	}
+
+	void Show();
+
+	/**
+	 * Network
+	 */
+
+#if !defined (NO_EMAC)
+	void ShowEmacStart();
+	void ShowIpAddress();
+	void ShowNetmask();
+	void ShowGatewayIp();
+	void ShowHostName();
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
+	void ShowShutdown();
+#endif
+
+	/**
+	 * Node
+	 */
+
+#if defined (NODE_NODE)
+	void Show(Node *pNode);
+	void ShowNodeName();
+	void ShowUniverse();
+	void ShowDestinationIp();
+#endif
+
+	/**
+	 * Art-Net
+	 */
+
 #if defined (NODE_ARTNET)
 	void Show(ArtNetNode *pArtNetNode);
 	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 #endif
+
+	/**
+	 * sACN E1.31
+	 */
+
 #if defined (NODE_E131)
 	void Show(E131Bridge *pE131Bridge);
 #endif
+
+	/**
+	 * DMX
+	 */
+
 #if defined (DISPLAYUDF_DMX_INFO)
 	void SetDmxInfo(displayudf::dmx::PortDir portDir, uint32_t nPorts) {
 		m_dmxInfo.portDir = portDir;
@@ -128,7 +228,10 @@ public:
 	}
 #endif
 
-	// RDM Responder
+	/**
+	 * RDM Responder
+	 */
+
 	void ShowDmxStartAddress() {
 #if defined (RDM_RESPONDER)
 # if defined (NODE_ARTNET)
@@ -141,28 +244,6 @@ public:
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_START_ADDRESS)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
 #endif
 	}
-
-#if !defined (NO_EMAC)
-	void ShowEmacStart();
-	void ShowIpAddress();
-	void ShowNetmask();
-	void ShowGatewayIp();
-	void ShowHostName();
-	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
-	void ShowShutdown();
-#endif
-
-	void Set(uint8_t nLine, displayudf::Labels tLabel);
-
-	uint8_t GetLabel(uint32_t nIndex) const {
-		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {
-			return m_aLabels[nIndex];
-		}
-
-		return m_aLabels[0];
-	}
-
-	void Show();
 
 	static DisplayUdf *Get() {
 		return s_pThis;

@@ -2,7 +2,7 @@
  * @file displayudfhandler.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,47 +23,58 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNET_DISPLAYUDFHANDLER_H_
-#define ARTNET_DISPLAYUDFHANDLER_H_
+#ifndef NODE_DISPLAYUDFHANDLER_H_
+#define NODE_DISPLAYUDFHANDLER_H_
 
 #include <cstdint>
 
-#include "artnetdisplay.h"
-#include "artnetnode.h"
-#include "artnet.h"
 #include "displayudf.h"
+
+#include "nodedisplay.h"
+
 #include "lightset.h"
 
-class DisplayUdfHandler final: public ArtNetDisplay {
+#include "debug.h"
+
+class DisplayUdfHandler final: public NodeDisplay {
 public:
-	DisplayUdfHandler() {}
-	~DisplayUdfHandler() {}
+	DisplayUdfHandler() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
+
+	~DisplayUdfHandler() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
 
 	void ShowShortName(__attribute__((unused)) const char *pShortName) override {
-		DisplayUdf::Get()->ShowNodeName(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowNodeName();
 	}
 
 	void ShowLongName(__attribute__((unused)) const char *pLongName) override {
 	}
 
 	void ShowUniverseSwitch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) override {
-		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowUniverse();
 	}
 
 	void ShowNetSwitch(__attribute__((unused))  uint8_t nAddress) override {
-		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowUniverse();
 	}
 
 	void ShowSubnetSwitch(__attribute__((unused))  uint8_t nAddress) override {
-		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowUniverse();
 	}
 
 	void ShowMergeMode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) override {
-		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowUniverse();
 	}
 
 	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) override {
-		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+		DisplayUdf::Get()->ShowUniverse();
 	}
 
 	void ShowRdmEnabled(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) bool isEnabled) {
@@ -75,4 +86,4 @@ public:
 	}
 };
 
-#endif /* ARTNET_DISPLAYUDFHANDLER_H_ */
+#endif /* NODE_DISPLAYUDFHANDLER_H_ */
