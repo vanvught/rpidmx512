@@ -51,11 +51,11 @@ private:
 	uint64_t ConvertUid(const uint8_t *pUid);
 
 private:
-	RDMMessage s_Message;
-	uint32_t s_nPortIndex;
-	RDMTod *s_pRDMTod;
-	uint8_t s_Uid[RDM_UID_SIZE];
-	uint8_t s_Pdl[2][RDM_UID_SIZE];
+	RDMMessage m_Message;
+	uint32_t m_nPortIndex;
+	RDMTod *m_pRDMTod;
+	uint8_t m_Uid[RDM_UID_SIZE];
+	uint8_t m_Pdl[2][RDM_UID_SIZE];
 };
 
 #endif /* RDMDISCOVERY_H_ */

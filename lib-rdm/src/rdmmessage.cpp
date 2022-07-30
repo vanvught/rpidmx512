@@ -2,7 +2,7 @@
  * @file rdmmessage.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,6 @@
 #include "debug.h"
 
 RDMMessage::RDMMessage()  {
-	DEBUG_ENTRY
-
 	m_message.start_code = E120_SC_RDM;
 	m_message.sub_start_code = E120_SC_SUB_MESSAGE;
 	m_message.message_length = RDM_MESSAGE_MINIMUM_SIZE;
@@ -48,8 +46,6 @@ RDMMessage::RDMMessage()  {
 	m_message.sub_device[0] = 0;
 	m_message.sub_device[1] = 0;
 	m_message.param_data_length = 0;
-
-	DEBUG_EXIT
 }
 
 void RDMMessage::SetSrcUid(const uint8_t *SrcUid){

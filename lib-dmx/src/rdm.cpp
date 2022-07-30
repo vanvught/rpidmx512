@@ -31,6 +31,8 @@
 
 #include "hardware.h"
 
+#include "debug.h"
+
 const uint8_t *Rdm::Receive(uint32_t nPortIndex) {
 	return Dmx::Get()->RdmReceive(nPortIndex);
 }
@@ -42,6 +44,8 @@ const uint8_t *Rdm::ReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 void Rdm::SendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
+
+	DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
 
 	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 

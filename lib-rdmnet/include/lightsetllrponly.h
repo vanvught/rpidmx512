@@ -26,8 +26,6 @@
 #ifndef LIGHTSETLLRPONLY_H_
 #define LIGHTSETLLRPONLY_H_
 
-#undef NDEBUG
-
 #include <cstdint>
 
 #include "lightset.h"

@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <climits>
 #include <cassert>
 
 #include "dmxinput.h"
@@ -42,8 +43,6 @@ static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
-
-	Stop(0);
 
 	DEBUG_EXIT
 }

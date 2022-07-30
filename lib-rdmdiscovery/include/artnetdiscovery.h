@@ -27,14 +27,14 @@
 #define ARTNETDISCOVERY_H_
 
 #include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "artnetrdm.h"
 
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
 #include "rdm.h"
-
-#include "debug.h"
 
 class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm, RDMDiscovery {
 public:
@@ -50,19 +50,26 @@ public:
 	}
 
 	void Full(uint32_t nPortIndex) override {
-		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		RDMDiscovery::Full(nPortIndex, m_pRDMTod[nPortIndex]);
 	}
 
 	uint32_t GetUidCount(uint32_t nPortIndex) override {
-		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		if (m_pRDMTod[nPortIndex] != nullptr) {
 			return m_pRDMTod[nPortIndex]->GetUidCount();
 		}
 		return 0;
 	}
+
+	void Copy(uint32_t nPortIndex, uint8_t *pTod) override {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		if (m_pRDMTod[nPortIndex] != nullptr) {
+			m_pRDMTod[nPortIndex]->Copy(pTod);
+		}
+	}
+
+	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData) override;
 
 	bool CopyTodEntry(uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
@@ -74,22 +81,11 @@ public:
 		return m_pRDMTod[nPortIndex]->CopyUidEntry(nIndex, uid);
 	}
 
-	void Copy(uint32_t nPortIndex, uint8_t *pTod) override {
-		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-		if (m_pRDMTod[nPortIndex] != nullptr) {
-			m_pRDMTod[nPortIndex]->Copy(pTod);
-		}
-	}
-
-	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData) override;
-
 	void Print() {
 		RDMDeviceController::Print();
 	}
 
 	void DumpTod(uint32_t nPortIndex) {
-		DEBUG_PRINTF("nPortIndex=%d", nPortIndex);
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		if (m_pRDMTod[nPortIndex] != nullptr) {
 			m_pRDMTod[nPortIndex]->Dump();

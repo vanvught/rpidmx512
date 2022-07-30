@@ -35,8 +35,6 @@
 
 #include "hardware.h"
 
-#include "debug.h"
-
 typedef union cast {
 	uint64_t uint;
 	uint8_t uid[RDM_UID_SIZE];
@@ -47,35 +45,37 @@ static _cast uuid_cast;
 static constexpr auto RECEIVE_TIME_OUT = 2800U;
 
 RDMDiscovery::RDMDiscovery(const uint8_t *pUid) {
-	DEBUG_ENTRY
+	memcpy(m_Uid, pUid, RDM_UID_SIZE);
+	m_Message.SetSrcUid(pUid);
 
-	memcpy(s_Uid, pUid, RDM_UID_SIZE);
-	s_Message.SetSrcUid(pUid);
-
-	DEBUG_EXIT
+#ifndef NDEBUG
+	printf("Uid : ");
+	PrintUid(s_Uid);
+	printf("\n");
+#endif
 }
 
-void RDMDiscovery::Full(uint32_t m_nPortIndex, RDMTod *pRDMTod) {
-	DEBUG_ENTRY
+void RDMDiscovery::Full(uint32_t nPortIndex, RDMTod *pRDMTod){
+	m_nPortIndex = nPortIndex;
 
-	s_pRDMTod = pRDMTod;
-	s_pRDMTod->Reset();
+	m_pRDMTod = pRDMTod;
+	m_pRDMTod->Reset();
 
 	Hardware::Get()->WatchdogFeed();
 
-	s_Message.SetDstUid(UID_ALL);
-	s_Message.SetCc(E120_DISCOVERY_COMMAND);
-	s_Message.SetPid(E120_DISC_UN_MUTE);
-	s_Message.SetPd(nullptr, 0);
-	s_Message.Send(m_nPortIndex);
-	s_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
+	m_Message.SetDstUid(UID_ALL);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_UN_MUTE);
+	m_Message.SetPd(nullptr, 0);
+	m_Message.Send(m_nPortIndex);
+	m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
 	udelay(RECEIVE_TIME_OUT);
 	Hardware::Get()->WatchdogFeed();
 
-	s_Message.Send(m_nPortIndex);
-	s_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
+	m_Message.Send(m_nPortIndex);
+	m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT);
 
 	Hardware::Get()->WatchdogFeed();
 	udelay(RECEIVE_TIME_OUT);
@@ -83,8 +83,7 @@ void RDMDiscovery::Full(uint32_t m_nPortIndex, RDMTod *pRDMTod) {
 
 	FindDevices(0x000000000000, 0xfffffffffffe);
 
-	s_pRDMTod->Dump();
-	DEBUG_EXIT
+	m_pRDMTod->Dump();
 }
 
 bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
@@ -106,32 +105,32 @@ bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
 	if (LowerBound == UpperBound) {
 		memcpy(uid, ConvertUid(LowerBound), RDM_UID_SIZE);
 
-		s_Message.SetCc(E120_DISCOVERY_COMMAND);
-		s_Message.SetPid(E120_DISC_MUTE);
-		s_Message.SetDstUid(uid);
-		s_Message.SetPd(nullptr, 0);
-		s_Message.Send(s_nPortIndex, 5800);
+		m_Message.SetCc(E120_DISCOVERY_COMMAND);
+		m_Message.SetPid(E120_DISC_MUTE);
+		m_Message.SetDstUid(uid);
+		m_Message.SetPd(nullptr, 0);
+		m_Message.Send(m_nPortIndex, 5800);
 
-		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(s_Message.ReceiveTimeOut(s_nPortIndex, RECEIVE_TIME_OUT)));
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT)));
 
 		if (pRdmMessage != nullptr) {
 			if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
-				s_pRDMTod->AddUid(uid);
+				m_pRDMTod->AddUid(uid);
 			}
 		} else {
 			return true;
 		}
 	} else {
-		memcpy(s_Pdl[0], ConvertUid(LowerBound), RDM_UID_SIZE);
-		memcpy(s_Pdl[1], ConvertUid(UpperBound), RDM_UID_SIZE);
+		memcpy(m_Pdl[0], ConvertUid(LowerBound), RDM_UID_SIZE);
+		memcpy(m_Pdl[1], ConvertUid(UpperBound), RDM_UID_SIZE);
 
-		s_Message.SetDstUid(UID_ALL);
-		s_Message.SetCc(E120_DISCOVERY_COMMAND);
-		s_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
-		s_Message.SetPd(reinterpret_cast<const uint8_t*>(s_Pdl), 2 * RDM_UID_SIZE);
-		s_Message.Send(s_nPortIndex, 5800);
+		m_Message.SetDstUid(UID_ALL);
+		m_Message.SetCc(E120_DISCOVERY_COMMAND);
+		m_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
+		m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Pdl), 2 * RDM_UID_SIZE);
+		m_Message.Send(m_nPortIndex, 5800);
 
-		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(s_Message.ReceiveTimeOut(s_nPortIndex, RECEIVE_TIME_OUT)));
+		pRdmMessage = reinterpret_cast<struct TRdmMessage*>(const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT)));
 
 		if (pRdmMessage != nullptr) {
 			bDeviceFound = true;
@@ -206,12 +205,14 @@ bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_
 		}
 
 #ifndef NDEBUG
+		DEBUG_PUTS("");
 		PrintUid(pUid);
 		printf(", checksum %.2x%.2x -> %.4x {%c}\n", checksum[1], checksum[0], nRdmChecksum, bIsValid ? 'Y' : 'N');
 #endif
 
 	} else {
 #ifndef NDEBUG
+		DEBUG_PUTS("");
 		printf("Not a valid response [%.2x]\n", pDiscResponse[0]);
 #endif
 	}
@@ -230,32 +231,33 @@ bool RDMDiscovery::QuickFind(const uint8_t *uid) {
 	printf("\n");
 #endif
 
-	s_Message.SetCc(E120_DISCOVERY_COMMAND);
-	s_Message.SetPid(E120_DISC_MUTE);
-	s_Message.SetDstUid(uid);
-	s_Message.SetPd(nullptr, 0);
-	s_Message.Send(s_nPortIndex, 5800);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_MUTE);
+	m_Message.SetDstUid(uid);
+	m_Message.SetPd(nullptr, 0);
+	m_Message.Send(m_nPortIndex, 5800);
 
-	auto *pResponse = const_cast<uint8_t*>(s_Message.ReceiveTimeOut(s_nPortIndex, RECEIVE_TIME_OUT));
+	auto *pResponse = const_cast<uint8_t*>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT));
 
 	if (pResponse != nullptr) {
 		auto *pRdmMessage = reinterpret_cast<struct TRdmMessage*>(pResponse);
+#ifndef NDEBUG
 		RDMMessage::Print(pResponse);
-
+#endif
 		if ((pRdmMessage->command_class == E120_DISCOVERY_COMMAND_RESPONSE) && (memcmp(uid, pRdmMessage->source_uid, RDM_UID_SIZE) == 0)) {
-			s_pRDMTod->AddUid(uid);
+			m_pRDMTod->AddUid(uid);
 		}
 	}
 
 	Hardware::Get()->WatchdogFeed();
 
-	s_Message.SetDstUid(UID_ALL);
-	s_Message.SetCc(E120_DISCOVERY_COMMAND);
-	s_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
-	s_Message.SetPd(reinterpret_cast<const uint8_t*>(s_Pdl), 2 * RDM_UID_SIZE);
-	s_Message.Send(s_nPortIndex, 5800);
+	m_Message.SetDstUid(UID_ALL);
+	m_Message.SetCc(E120_DISCOVERY_COMMAND);
+	m_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
+	m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Pdl), 2 * RDM_UID_SIZE);
+	m_Message.Send(m_nPortIndex, 5800);
 
-	pResponse = const_cast<uint8_t *>(s_Message.ReceiveTimeOut(s_nPortIndex, RECEIVE_TIME_OUT));
+	pResponse = const_cast<uint8_t *>(m_Message.ReceiveTimeOut(m_nPortIndex, RECEIVE_TIME_OUT));
 
 	Hardware::Get()->WatchdogFeed();
 
