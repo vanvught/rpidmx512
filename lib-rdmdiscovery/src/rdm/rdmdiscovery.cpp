@@ -2,7 +2,7 @@
  * @file rdmddiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ RDMDiscovery::RDMDiscovery(const uint8_t *pUid) {
 
 #ifndef NDEBUG
 	printf("Uid : ");
-	PrintUid(s_Uid);
+	PrintUid(m_Uid);
 	printf("\n");
 #endif
 }
@@ -205,14 +205,12 @@ bool RDMDiscovery::IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_
 		}
 
 #ifndef NDEBUG
-		DEBUG_PUTS("");
 		PrintUid(pUid);
 		printf(", checksum %.2x%.2x -> %.4x {%c}\n", checksum[1], checksum[0], nRdmChecksum, bIsValid ? 'Y' : 'N');
 #endif
 
 	} else {
 #ifndef NDEBUG
-		DEBUG_PUTS("");
 		printf("Not a valid response [%.2x]\n", pDiscResponse[0]);
 #endif
 	}
