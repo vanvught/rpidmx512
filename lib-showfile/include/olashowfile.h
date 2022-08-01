@@ -2,7 +2,7 @@
  * @file olashowfile.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,35 +26,61 @@
 #ifndef OLASHOWFILE_H_
 #define OLASHOWFILE_H_
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "showfile.h"
 
+#include "debug.h"
+
 enum class OlaParseCode {
-	FAILED,
-	TIME,
-	DMX,
-	NONE,
-	EOFILE
+	FAILED, TIME, DMX, NONE, EOFILE
 };
 
 class OlaShowFile final: public ShowFile {
 public:
-	OlaShowFile();
+	OlaShowFile() {
+		DEBUG1_ENTRY
 
-	void ShowFileStart() override;
-	void ShowFileStop() override;
-	void ShowFileResume() override;
-	void ShowFileRun() override;
+		DEBUG1_EXIT
+	}
+
+	void ShowFileStart() override {
+		DEBUG1_ENTRY
+
+		m_nDelayMillis = 0;
+		m_nLastMillis = 0;
+
+		fseek(m_pShowFile, 0L, SEEK_SET);
+
+		m_tState = OlaState::IDLE;
+
+		DEBUG1_EXIT
+	}
+
+	void ShowFileStop() override {
+		DEBUG1_ENTRY
+
+		DEBUG1_EXIT
+	}
+
+	void ShowFileResume() override {
+		DEBUG1_ENTRY
+
+		m_nDelayMillis = 0;
+		m_nLastMillis = 0;
+
+		DEBUG1_EXIT
+	}
+
 	void ShowFilePrint() override {
 		puts("OlaShowFile");
 	}
 
+	void ShowFileRun() override;
+
 private:
 	enum class OlaState {
-		IDLE,
-		PARSING_DMX,
-		TIME_WAITING
+		IDLE, PARSING_DMX, TIME_WAITING
 	};
 
 	OlaParseCode GetNextLine();

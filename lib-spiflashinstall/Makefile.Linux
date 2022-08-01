@@ -1,4 +1,5 @@
-DEFINES=#NDEBUG
+DEFINES=NDEBUG
+
 EXTRA_INCLUDES=../lib-hal/include ../lib-spiflash/include ../lib-display/include ../lib-properties/include
 
 include ../firmware-template-linux/lib/Rules.mk

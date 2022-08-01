@@ -31,7 +31,8 @@
 
 #include "debug.h"
 
-static constexpr auto MAX_LINE_LENGTH = 64;	// Including '\0'
+//TODO Check this with GD32 64->128
+static constexpr auto MAX_LINE_LENGTH = 128;	// Including '\0'
 
 ReadConfigFile::ReadConfigFile(CallbackFunctionPtr callBack, void *p) {
 	assert(callBack != nullptr);
@@ -90,15 +91,20 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 	const auto *pSrc = const_cast<char *>(pBuffer);
 	char buffer[MAX_LINE_LENGTH];
 
+	debug_dump(pBuffer, nLength);
+
 	while (nLength != 0) {
 		char *pLine = &buffer[0];
 
 		while ((nLength != 0) && (*pSrc != '\r') && (*pSrc != '\n')) {
 			*pLine++ = *pSrc++;
+
 			if ((pLine - buffer) >= MAX_LINE_LENGTH) {
+				DEBUG_PRINTF("%128s", &buffer[0]);
 				assert(0);
 				return;
 			}
+
 			nLength--;
 		}
 

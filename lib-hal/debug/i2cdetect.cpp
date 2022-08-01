@@ -71,4 +71,6 @@ I2cDetect::I2cDetect() {
 
 		puts("");
 	}
+
+	FUNC_PREFIX(i2c_begin());
 }

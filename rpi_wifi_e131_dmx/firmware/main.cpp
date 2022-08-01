@@ -48,17 +48,18 @@
  #include "dmxmonitor.h"
 #endif
 // Pixel Controller
+#include "ws28xxdmx.h"
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "lightset.h"
-#include "ws28xxdmxparams.h"
+#include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
 # include "spiflashinstall.h"
 # include "spiflashstore.h"
 # include "storee131.h"
 # include "storedmxsend.h"
-# include "storews28xxdmx.h"
+# include "storepixeldmx.h"
 #endif
 
 #include "software_version.h"
@@ -82,7 +83,7 @@ void notmain(void) {
 
 	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
-	StoreWS28xxDmx storeWS28xxDmx;
+	StorePixelDmx storePixelDmx;
 
 	E131Params e131params((E131ParamsStore *)&storeE131);
 #else
@@ -133,7 +134,7 @@ void notmain(void) {
 	display.TextStatus(BRIDGE_PARMAS);
 
 	E131Bridge bridge;
-	e131params.Set(&bridge);
+	e131params.Set();
 
 	bool IsSet;
 	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
@@ -148,14 +149,14 @@ void notmain(void) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
+		PixelDmxParams pixelDmxParams(new StorePixelDmx);
 #else
-		WS28xxDmxParams ws28xxparms;
+		PixelDmxParams pixelDmxParams;
 #endif
 
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Set(&pixelDmxConfiguration);
-			ws28xxparms.Dump();
+		if (pixelDmxParams.Load()) {
+			pixelDmxParams.Set(&pixelDmxConfiguration);
+			pixelDmxParams.Dump();
 		}
 
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);

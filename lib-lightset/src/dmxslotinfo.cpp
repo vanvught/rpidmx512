@@ -40,8 +40,8 @@ using namespace lightset;
 
 DmxSlotInfo::DmxSlotInfo(SlotInfo *ptLightSetSlotInfo, uint32_t nSize):
 	m_ptLightSetSlotInfo(ptLightSetSlotInfo),
-	m_nSize(nSize),
-	m_pToString(nullptr)
+	m_nSize(nSize)
+	
 {
 	DEBUG_ENTRY
 

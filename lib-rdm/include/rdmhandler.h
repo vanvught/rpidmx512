@@ -2,7 +2,7 @@
  * @file rdmhandler.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -85,6 +85,9 @@ private:
 	void GetPerformSelfTest(uint16_t nSubDevice);
 	void GetSelfTestDescription(uint16_t nSubDevice);
 #endif
+#if defined (ENABLE_RDM_PRESET_PLAYBACK)
+	void GetPresetPlayback(uint16_t nSubDevice);
+#endif
 	// ANSI E1.37-1
 	void GetIdentifyMode(uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015
@@ -114,9 +117,12 @@ private:
 	void SetRealTimeClock(bool IsBroadcast, uint16_t nSubDevice);
 	void SetResetDevice(bool IsBroadcast, uint16_t nSubDevice);
 	void SetPowerState(bool IsBroadcast, uint16_t nSubDevice);
-//#if defined (ENABLE_RDM_SELF_TEST)
+#if defined (ENABLE_RDM_SELF_TEST)
 	void SetPerformSelfTest(bool IsBroadcast, uint16_t nSubDevice);
-//#endif
+#endif
+#if defined (ENABLE_RDM_PRESET_PLAYBACK)
+	void SetPresetPlayback(bool IsBroadcast, uint16_t nSubDevice);
+#endif
 	// ANSI E1.37-1
 	void SetIdentifyMode(bool IsBroadcast, uint16_t nSubDevice);
 	// ANSI E1.37-2 – 2015

@@ -33,8 +33,6 @@
 
 class MidiReader {
 public:
-	MidiReader (struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-
 	void Start();
 	void Run();
 
@@ -44,7 +42,6 @@ private:
 	void Update();
 
 private:
-	struct TLtcDisabledOutputs *m_ptLtcDisabledOutputs;
 	struct midi::Timecode m_MidiTimeCode;
 	midi::TimecodeType m_nTimeCodeType { midi::TimecodeType::UNKNOWN };
 	uint8_t m_nPartPrevious { 0 };

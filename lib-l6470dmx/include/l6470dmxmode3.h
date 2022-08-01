@@ -55,8 +55,8 @@ public:
 private:
 	L6470 *m_pL6470;
 	float m_fSteps;
-	uint8_t m_nPreviousData;
-	bool m_bWasBusy;
+	uint8_t m_nPreviousData{0};
+	bool m_bWasBusy{false};
 };
 
 #endif /* L6470DMXMODE3_H_ */

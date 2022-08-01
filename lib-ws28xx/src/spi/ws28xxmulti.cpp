@@ -2,7 +2,7 @@
  * @file ws28xxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,27 +41,24 @@
 
 using namespace pixel;
 
-WS28xxMulti *WS28xxMulti::s_pThis = nullptr;
+WS28xxMulti *WS28xxMulti::s_pThis;
 
-WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
+WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration): m_PixelConfiguration(pixelConfiguration) {
 	DEBUG_ENTRY
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	uint32_t nLedsPerPixel;
-	pixelConfiguration.Validate(nLedsPerPixel);
-	pixelConfiguration.Dump();
+	m_PixelConfiguration.Validate(nLedsPerPixel);
 
-	m_Type = pixelConfiguration.GetType();
-	m_nCount = pixelConfiguration.GetCount();
-	m_Map = pixelConfiguration.GetMap();
-	m_bIsRTZProtocol = pixelConfiguration.IsRTZProtocol();
-	m_nGlobalBrightness = pixelConfiguration.GetGlobalBrightness();
-	m_nBufSize = m_nCount * nLedsPerPixel;
+	const auto nCount = m_PixelConfiguration.GetCount();
+	m_nBufSize = nCount * nLedsPerPixel;
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
-		m_nBufSize += m_nCount;
+	const auto type = m_PixelConfiguration.GetType();
+
+	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+		m_nBufSize += nCount;
 		m_nBufSize += 8;
 	}
 
@@ -69,23 +66,28 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration) {
 
 	DEBUG_PRINTF("m_nBufSize=%d", m_nBufSize);
 
-	const auto nLowCode = pixelConfiguration.GetLowCode();
-	const auto nHighCode = pixelConfiguration.GetHighCode();
+	const auto nLowCode = m_PixelConfiguration.GetLowCode();
+	const auto nHighCode = m_PixelConfiguration.GetHighCode();
 
 	m_hasCPLD = SetupCPLD();
+
 	SetupHC595(ReverseBits(nLowCode), ReverseBits(nHighCode));
-	if (pixelConfiguration.IsRTZProtocol()) {
-		SetupSPI(pixelConfiguration.GetClockSpeedHz());
+
+	if (m_PixelConfiguration.IsRTZProtocol()) {
+		SetupSPI(m_PixelConfiguration.GetClockSpeedHz());
 	} else {
 		if (m_hasCPLD) {
-			SetupSPI(pixelConfiguration.GetClockSpeedHz() * 6);
+			SetupSPI(m_PixelConfiguration.GetClockSpeedHz() * 6);
 		} else {
-			SetupSPI(pixelConfiguration.GetClockSpeedHz() * 4);
+			SetupSPI(m_PixelConfiguration.GetClockSpeedHz() * 4);
 		}
 	}
+
 	m_nBufSize++;
+
 	SetupBuffers();
 
+	printf("Board: %s\n", m_hasCPLD ? "CPLD" : "74-logic");
 }
 
 WS28xxMulti::~WS28xxMulti() {
@@ -108,20 +110,23 @@ void WS28xxMulti::SetupBuffers() {
 
 	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+	const auto type = m_PixelConfiguration.GetType();
+	const auto nCount = m_PixelConfiguration.GetCount();
+
+	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
 		DEBUG_PUTS("SPI");
 
 		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
 			SetPixel(nPortIndex, 0, 0, 0, 0, 0);
 
-			for (uint32_t nPixelIndex = 1; nPixelIndex <= m_nCount; nPixelIndex++) {
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
 				SetPixel(nPortIndex, nPixelIndex, 0, 0xE0, 0, 0);
 			}
 
-			if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
-				SetPixel(nPortIndex, 1U + m_nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			if ((type == Type::APA102) || (type == Type::SK9822)) {
+				SetPixel(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
 			} else {
-				SetPixel(nPortIndex, 1U + m_nCount, 0, 0, 0, 0);
+				SetPixel(nPortIndex, 1U + nCount, 0, 0, 0, 0);
 			}
 		}
 		memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
@@ -132,13 +137,6 @@ void WS28xxMulti::SetupBuffers() {
 
 	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer, m_pBlackoutBuffer);
 	DEBUG_EXIT
-}
-
-void WS28xxMulti::Print() {
-	printf("Pixel parameters\n");
-	printf(" Type    : %s [%d] - %s [%d]\n", PixelType::GetType(m_Type), static_cast<int>(m_Type), PixelType::GetMap(m_Map), static_cast<int>(m_Map));
-	printf(" Count   : %d\n", m_nCount);
-	printf(" Board   : %s\n", m_hasCPLD ? "CPLD" : "74-logic");
 }
 
 #define SPI_CS1		GPIO_EXT_26
@@ -242,11 +240,16 @@ void WS28xxMulti::SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t n
 }
 
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	assert(nPortIndex < 8);
-	assert(nPixelIndex < m_nBufSize / 8);
+	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
-	if ((m_bIsRTZProtocol) || (m_Type == Type::WS2801)) {
-		switch (m_Map) {
+	nRed = pGammaTable[nRed];
+	nGreen = pGammaTable[nGreen];
+	nBlue = pGammaTable[nBlue];
+
+	const auto type = m_PixelConfiguration.GetType();
+
+	if ((m_PixelConfiguration.IsRTZProtocol()) || (type == Type::WS2801)) {
+		switch (m_PixelConfiguration.GetMap()) {
 		case Map::RGB:
 			SetColour(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 			break;
@@ -273,12 +276,12 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 		return;
 	}
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)) {
-		SetPixel(nPortIndex, 1 + nPixelIndex, nBlue, m_nGlobalBrightness, nGreen, nRed);
+	if ((type == Type::APA102) || (type == Type::SK9822)) {
+		SetPixel(nPortIndex, 1 + nPixelIndex, nBlue, m_PixelConfiguration.GetGlobalBrightness(), nGreen, nRed);
 		return;
 	}
 
-	if (m_Type == Type::P9813) {
+	if (type == Type::P9813) {
 		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
 		SetPixel(nPortIndex, 1+ nPixelIndex, nRed, nFlag, nGreen, nBlue);
 		return;
@@ -289,12 +292,15 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 }
 
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
-	assert(nPortIndex < 8);
-	assert(nPixelIndex < m_nBufSize / 8);
-	assert((m_Type == Type::SK6812W) || (m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813));
+	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
-	uint32_t j = 0;
+	nRed = pGammaTable[nRed];
+	nGreen = pGammaTable[nGreen];
+	nBlue = pGammaTable[nBlue];
+	nWhite = pGammaTable[nWhite];
+
 	const auto k = nPixelIndex * pixel::single::RGBW;
+	uint32_t j = 0;
 
 	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
 		// GRBW
@@ -327,22 +333,62 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 }
 
 void WS28xxMulti::Update() {
-	assert(m_pBuffer != nullptr);
 	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
 
 	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
-
 }
 
 void WS28xxMulti::Blackout() {
 	DEBUG_ENTRY
 
-	assert(m_pBlackoutBuffer != nullptr);
-	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
+	// Can be called any time.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
 
 	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
 
 	// A blackout may not be interrupted.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	DEBUG_EXIT
+}
+
+void WS28xxMulti::FullOn() {
+	DEBUG_ENTRY
+
+	// Can be called any time.
+	do {
+		asm volatile ("isb" ::: "memory");
+	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
+
+	const auto type = m_PixelConfiguration.GetType();
+
+	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+		for (uint32_t nPortIndex = 0; nPortIndex < 8; nPortIndex++) {
+			SetPixel(nPortIndex, 0, 0, 0, 0, 0);
+
+			const auto nCount = m_PixelConfiguration.GetCount();
+
+			for (uint32_t nPixelIndex = 1; nPixelIndex <= nCount; nPixelIndex++) {
+				SetPixel(nPortIndex, nPixelIndex, 0xFF, 0xE0, 0xFF, 0xFF);
+			}
+
+			if ((type == Type::APA102) || (type == Type::SK9822)) {
+				SetPixel(nPortIndex, 1U + nCount, 0xFF, 0xFF, 0xFF, 0xFF);
+			} else {
+				SetPixel(nPortIndex, 1U + nCount, 0, 0, 0, 0);
+			}
+		}
+	} else {
+		memset(m_pBuffer, 0xFF, m_nBufSize);
+	}
+
+	Update();
+
+	// May not be interrupted.
 	do {
 		asm volatile ("isb" ::: "memory");
 	} while (FUNC_PREFIX(spi_dma_tx_is_active()));

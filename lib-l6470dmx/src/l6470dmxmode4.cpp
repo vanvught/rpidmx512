@@ -38,7 +38,7 @@
 
 #include "debug.h"
 
-L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, ModeParams *pModeParams): m_nPreviousData(0), m_bWasBusy(false) {
+L6470DmxMode4::L6470DmxMode4(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, ModeParams *pModeParams) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != nullptr);

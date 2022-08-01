@@ -38,16 +38,16 @@ class ButtonsGpio: public ButtonsSet, public OscClientLed  {
 public:
 	ButtonsGpio(OscClient *pOscClient);
 
-	bool Start();
-	void Stop();
+	bool Start() override;
+	void Stop() override;
 
-	void Run();
+	void Run() override;
 
-	void SetLed(uint8_t nLed, bool bOn);
+	void SetLed(uint8_t nLed, bool bOn) override;
 
 private:
 	OscClient *m_pOscClient;
-	uint32_t m_nButtons;
+	uint32_t m_nButtons{0};
 };
 
 #endif /* BUTTONSGPIO_H_ */

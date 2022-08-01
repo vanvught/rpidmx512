@@ -101,7 +101,7 @@ void HwClock::Run(bool bDoRun) {
 			m_nLastHcToSysMillis = Hardware::Get()->Millis();
 			Status = Status::WAITING;
 
-			DEBUG_PRINTF("%d:%d (%u %u) (%u %u) -> %u", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
+			DEBUG_PRINTF("%d:%d (%ld %u) (%ld %u) -> %u", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
 		}
 
 		return;

@@ -29,9 +29,7 @@
 #include "rdmsubdevice.h"
 
 RDMSubDevice::RDMSubDevice(const char* pLabel, uint16_t nDmxStartAddress, uint8_t nPersonalityCurrent):
-	m_pRDMPersonalities(nullptr),
-	m_IsFactoryDefaults(true),
-	m_nCheckSum(0),
+	
 	m_nDmxStartAddressFactoryDefault(nDmxStartAddress),
 	m_nCurrentPersonalityFactoryDefault(nPersonalityCurrent)
 {

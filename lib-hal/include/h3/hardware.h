@@ -88,10 +88,6 @@ public:
 
 	bool Reboot();
 
-	void SetRebootHandler(RebootHandler *pRebootHandler) {
-		m_pRebootHandler = pRebootHandler;
-	}
-
 	bool PowerOff() const {
 		return false;
 	}
@@ -146,10 +142,12 @@ public:
 	}
 
 private:
+	void RebootHandler();
+
+private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
-	RebootHandler *m_pRebootHandler { nullptr };
 	bool m_bIsWatchdog { false };
 
 	static Hardware *s_pThis;

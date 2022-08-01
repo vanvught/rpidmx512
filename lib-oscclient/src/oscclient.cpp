@@ -2,7 +2,7 @@
  * @file oscclient.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,16 +46,16 @@
 
 namespace buffer {
 namespace size {
-static constexpr auto PATH = 32 + OscClientMax::LED_PATH_LENGTH;
-static constexpr auto CMD = OscClientMax::CMD_COUNT * OscClientMax::CMD_PATH_LENGTH * sizeof(uint8_t);
-static constexpr auto LED = OscClientMax::LED_COUNT * OscClientMax::LED_PATH_LENGTH * sizeof(uint8_t);
+static constexpr auto PATH = 32 + oscclient::max::LED_PATH_LENGTH;
+static constexpr auto CMD = oscclient::max::CMD_COUNT * oscclient::max::CMD_PATH_LENGTH * sizeof(uint8_t);
+static constexpr auto LED = oscclient::max::LED_COUNT * oscclient::max::LED_PATH_LENGTH * sizeof(uint8_t);
 }  // namespace size
 }  // namespace buffer
 
 OscClient::OscClient() :
-	m_nPortOutgoing(OscClientDefault::PORT_OUTGOING),
-	m_nPortIncoming(OscClientDefault::PORT_INCOMING),
-	m_nPingDelayMillis(OscClientDefault::PING_DELAY_SECONDS * 1000)
+	m_nPortOutgoing(oscclient::defaults::PORT_OUTGOING),
+	m_nPortIncoming(oscclient::defaults::PORT_INCOMING),
+	m_nPingDelayMillis(oscclient::defaults::PING_DELAY_SECONDS * 1000)
 {
 	m_pBuffer = new char[buffer::size::PATH];
 	assert(m_pBuffer != nullptr);
@@ -153,15 +153,15 @@ void OscClient::Print() {
 		printf(" Ping delay        : %ds\n", m_nPingDelayMillis / 1000);
 	}
 
-	for (uint32_t i = 0; i < OscClientMax::CMD_COUNT; i++) {
-		const char *p = &m_pCmds[i * OscClientMax::CMD_PATH_LENGTH];
+	for (uint32_t i = 0; i < oscclient::max::CMD_COUNT; i++) {
+		const char *p = &m_pCmds[i * oscclient::max::CMD_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  cmd%c             : [%s]\n", i + '0', p);
 		}
 	}
 
-	for (uint32_t i = 0; i < OscClientMax::LED_COUNT; i++) {
-		const char *p = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
+	for (uint32_t i = 0; i < oscclient::max::LED_COUNT; i++) {
+		const char *p = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
 		if (*p != '\0') {
 			printf("  led%c             : [%s]\n", i + '0', p);
 		}
@@ -187,20 +187,20 @@ void OscClient::SetPingDelay(uint32_t nPingDelay) {
 void OscClient::CopyCmds(const char *pCmds, uint32_t nCount, uint32_t nLength) {
 	assert(pCmds != nullptr);
 
-	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::CMD_COUNT); i++) {
-		char *dst = &m_pCmds[i * OscClientMax::CMD_PATH_LENGTH];
-		strncpy(dst, &pCmds[i * nLength], OscClientMax::CMD_PATH_LENGTH - 1);
-		dst[OscClientMax::CMD_PATH_LENGTH - 1] = '\0';
+	for (uint32_t i = 0; i < std::min(nCount, oscclient::max::CMD_COUNT); i++) {
+		char *dst = &m_pCmds[i * oscclient::max::CMD_PATH_LENGTH];
+		strncpy(dst, &pCmds[i * nLength], oscclient::max::CMD_PATH_LENGTH - 1);
+		dst[oscclient::max::CMD_PATH_LENGTH - 1] = '\0';
 	}
 }
 
 void OscClient::CopyLeds(const char *pLeds, uint32_t nCount, uint32_t nLength) {
 	assert(pLeds != nullptr);
 
-	for (uint32_t i = 0; i < std::min(nCount, OscClientMax::LED_COUNT); i++) {
-		char *dst = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
-		strncpy(dst, &pLeds[i * nLength], OscClientMax::LED_PATH_LENGTH - 1);
-		dst[OscClientMax::LED_PATH_LENGTH - 1] = '\0';
+	for (uint32_t i = 0; i < std::min(nCount, oscclient::max::LED_COUNT); i++) {
+		char *dst = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
+		strncpy(dst, &pLeds[i * nLength], oscclient::max::LED_PATH_LENGTH - 1);
+		dst[oscclient::max::LED_PATH_LENGTH - 1] = '\0';
 	}
 }
 
@@ -213,17 +213,17 @@ void OscClient::SetLedHandler(OscClientLed *pOscClientLed) {
 bool OscClient::HandleLedMessage() {
 	DEBUG_ENTRY
 
-	uint8_t i;
+	uint32_t i;
 
-	for (i = 0; i < OscClientMax::LED_COUNT; i++) {
-		const char *src = &m_pLeds[i * OscClientMax::LED_PATH_LENGTH];
+	for (i = 0; i < oscclient::max::LED_COUNT; i++) {
+		const char *src = &m_pLeds[i * oscclient::max::LED_PATH_LENGTH];
 		if (osc::is_match(m_pBuffer, src)) {
 			DEBUG_PUTS("");
 			break;
 		}
 	}
 
-	if (i == OscClientMax::LED_COUNT) {
+	if (i == oscclient::max::LED_COUNT) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -238,10 +238,10 @@ bool OscClient::HandleLedMessage() {
 	}
 
 	if (Msg.GetType(0) == osc::type::INT32) {
-		m_pOscClientLed->SetLed(i, static_cast<uint8_t>(Msg.GetInt(0)) != 0);
+		m_pOscClientLed->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(Msg.GetInt(0)) != 0);
 		DEBUG_PRINTF("%d", Msg.GetInt(0));
 	} else if (Msg.GetType(0) == osc::type::FLOAT) {
-		m_pOscClientLed->SetLed(i, static_cast<uint8_t>(Msg.GetFloat(0)) != 0);
+		m_pOscClientLed->SetLed(static_cast<uint8_t>(i), static_cast<uint8_t>(Msg.GetFloat(0)) != 0);
 		DEBUG_PRINTF("%f", Msg.GetFloat(0));
 	} else {
 		return false;

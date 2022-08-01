@@ -1,7 +1,7 @@
 /**
  * @file ltcencoder.cpp
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -123,7 +123,7 @@ LtcEncoder::~LtcEncoder() {
 	m_pLtcBits = nullptr;
 }
 
-void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExternalClock) {
+void LtcEncoder::SetTimeCode(const struct ltc::TimeCode* pLtcTimeCode, bool nExternalClock) {
 	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
 	uint8_t nTens = pLtcTimeCode->nFrames / 10;
@@ -153,7 +153,7 @@ void LtcEncoder::SetTimeCode(const struct TLtcTimeCode* pLtcTimeCode, bool nExte
 	 * This converts 30 frame/second time code to the 29.97 frame/second NTSC standard.
 	 */
 
-	if (pLtcTimeCode->nType == ltc::type::DF) {
+	if (pLtcTimeCode->nType == static_cast<uint8_t>(ltc::Type::DF)) {
 		p->Format.bytes[1] |= (1 << 5);
 	}
 
@@ -179,7 +179,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 
 	auto *p = reinterpret_cast<struct TLtcFormatTemplate*>(m_pLtcBits);
 
-	if (nType == ltc::type::EBU) {
+	if (nType == static_cast<uint8_t>(ltc::Type::EBU)) {
 		auto b = p->Format.bytes[7];
 		b &= static_cast<uint8_t>(~(1U << 4));
 		p->Format.bytes[7] = b;
@@ -192,7 +192,7 @@ void LtcEncoder::SetPolarity(uint32_t nType) {
 	bool bParityOnes = GetParity(p->Format.words[0]) ^ GetParity(p->Format.words[1]);
 
 	if (!bParityOnes) {
-		if (nType == ltc::type::EBU) {
+		if (nType == static_cast<uint8_t>(ltc::Type::EBU)) {
 			auto b = p->Format.bytes[7];
 			b |= (1 << 4);
 			p->Format.bytes[7] = b;
@@ -282,7 +282,7 @@ void LtcEncoder::Dump() {
 }
 
 void LtcEncoder::DumpBuffer() {
-	debug_dump(m_pBuffer, m_nBufferSize * 2);
+	debug_dump(m_pBuffer, static_cast<uint16_t>(m_nBufferSize * 2));
 }
 
 bool LtcEncoder::GetParity(uint32_t nValue) {

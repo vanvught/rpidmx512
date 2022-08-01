@@ -58,7 +58,7 @@ void ST77XX::EnableSleep(bool bEnable) {
 
 //TODO This should be a PWM pin
 void ST77XX::SetBackLight(uint32_t nValue) {
-	FUNC_PREFIX(gpio_write(DEV_BL_PIN, nValue == 0 ? LOW : HIGH));
+	FUNC_PREFIX(gpio_write(SPI_LCD_BL_PIN, nValue == 0 ? LOW : HIGH));
 }
 
 void ST77XX::SetAddressWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {

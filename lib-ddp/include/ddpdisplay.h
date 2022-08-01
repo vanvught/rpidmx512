@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,38 +26,47 @@
 #ifndef DDPDISPLAY_H_
 #define DDPDISPLAY_H_
 
-#include "ddp.h"
-#include "ddpdisplaypixelconfiguration.h"
+#include <cstdint>
+#include <algorithm>
 
-#include "ws28xxmulti.h"
-#include "dmx.h"
+#include "ddp.h"
+
+#include "lightset.h"
+
+#include "network.h"
+
+#if !defined(LIGHTSET_PORTS)
+# error LIGHTSET_PORTS is not defined
+#endif
+
+#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
+# error CONFIG_PIXELDMX_MAX_PORTS is not defined
+#endif
 
 namespace ddpdisplay {
+namespace lightset {
+static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+}  // namespace lightset
 namespace configuration {
+namespace pixel {
+static constexpr uint32_t MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
+}  // namespace pixel
 namespace dmx {
-static constexpr auto MAX_PORTS = 2;
+#if defined OUTPUT_DMX_SEND_MULTI
+ static constexpr uint32_t MAX_PORTS = 2;
+#else
+ static constexpr uint32_t MAX_PORTS = 0;
+#endif
 }  // namespace dmx
-static constexpr auto MAX_PORTS = ddpdisplay::configuration::pixel::MAX_PORTS + configuration::dmx::MAX_PORTS;
+static constexpr uint32_t MAX_PORTS = configuration::pixel::MAX_PORTS + configuration::dmx::MAX_PORTS;
 }  // namespace configuration
-struct PixelPortData {
-	uint16_t length;
-	uint8_t data[512 * 4];
-}__attribute__((packed));
-
-struct DmxPortData {
-	uint16_t length;
-	uint8_t data[512];
-}__attribute__((packed));
-
-struct FrameBuffer {
-	struct PixelPortData pixelPortdata[ddpdisplay::configuration::pixel::MAX_PORTS];
-	struct DmxPortData dmxPortdata[configuration::dmx::MAX_PORTS];
-}__attribute__((packed));
 }  // namespace ddpdisplay
+
+static_assert(ddpdisplay::lightset::MAX_PORTS == ddpdisplay::configuration::dmx::MAX_PORTS + ddpdisplay::configuration::pixel::MAX_PORTS * 4, "Configuration errror");
 
 class DdpDisplay {
 public:
-	DdpDisplay(DdpDisplayPixelConfiguration& ddpPixelConfiguration);
+	DdpDisplay();
 	~DdpDisplay();
 
 	void Start();
@@ -67,35 +76,55 @@ public:
 
 	void Print();
 
-	uint32_t GetActivePorts() {
-		uint32_t nCount = 0;
-		for (uint32_t nPortIndex = 0; nPortIndex < ddpdisplay::configuration::pixel::MAX_PORTS; nPortIndex++) {
-			if (s_FrameBuffer.pixelPortdata[nPortIndex].length != 0) {
-				nCount++;
-			}
-		}
-		for (uint32_t nPortIndex = 0; nPortIndex < ddpdisplay::configuration::dmx::MAX_PORTS; nPortIndex++) {
-			if (s_FrameBuffer.pixelPortdata[nPortIndex].length != 0) {
-				nCount++;
-			}
-		}
-		return nCount;
+	void SetCount(uint32_t nCount, uint32_t nChannelsPerPixel, uint32_t nActivePorts) {
+		m_nCount = nCount;
+		m_nStripDataLength = nCount * nChannelsPerPixel;
+		m_nLightSetDataMaxLength = (nChannelsPerPixel == 4 ? 512U : 510U);
+		m_nActivePorts = std::min(nActivePorts, ddpdisplay::configuration::pixel::MAX_PORTS);
+	}
+
+	uint32_t GetCount() const {
+		return m_nCount;
+	}
+
+	uint32_t GetChannelsPerPixel() const {
+		return m_nStripDataLength / m_nCount;
+	}
+
+	void SetOutput(LightSet *pLightSet) {
+		m_pLightSet = pLightSet;
+	}
+
+	LightSet *GetOutput() const {
+		return m_pLightSet;
+	}
+
+	static DdpDisplay* Get() {
+		return s_pThis;
 	}
 
 private:
+	void CalculateOffsets();
 	void HandleQuery();
 	void HandleData();
 
 private:
-	uint32_t m_nLedsPerPixel;
-	WS28xxMulti *m_pWS28xxMulti { nullptr };
-	Dmx m_Dmx;
+	uint8_t m_macAddress[network::MAC_SIZE];
 	int32_t m_nHandle { -1 };
 	uint32_t m_nFromIp;
+	uint32_t m_nCount { 0 };
+	uint32_t m_nStripDataLength { 0 };
+	uint32_t m_nLightSetDataMaxLength { 0 };
+	uint32_t m_nActivePorts { 0 };
+
+	LightSet *m_pLightSet { nullptr };
+
 	ddp::Packet m_Packet;
 
-	static ddpdisplay::FrameBuffer s_FrameBuffer;
+	static uint32_t s_nLightsetPortLength[ddpdisplay::lightset::MAX_PORTS];
 	static uint32_t s_nOffsetCompare[ddpdisplay::configuration::MAX_PORTS];
+
+	static DdpDisplay *s_pThis;
 };
 
 #endif /* DDPDISPLAY_H_ */

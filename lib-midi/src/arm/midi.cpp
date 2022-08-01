@@ -60,7 +60,9 @@ static volatile uint32_t sv_nActiveSenseTimeout;
 static volatile midi::ActiveSenseState sv_ActiveSenseState = midi::ActiveSenseState::NOT_ENABLED;
 
 #if defined (H3)
-#pragma GCC target ("general-regs-only")
+#if __GNUC__ > 8
+# pragma GCC target ("general-regs-only")
+#endif
 
 static volatile midi::thunk_irq_timer1_t irq_handler_timer1_func;
 
@@ -127,7 +129,7 @@ void USART5_IRQHandler(void) {
 	if (RESET != usart_interrupt_flag_get(USART5, USART_INT_FLAG_RBNE)) {
 		sv_RxBuffer[sv_RxBufferIndexHead].nData = (uint8_t) usart_data_receive(USART5);
 //		sv_RxBuffer[sv_RxBufferIndexHead].nTimestamp =
-		sv_RxBufferIndexHead = (sv_RxBufferIndexHead + 1) & RX_BUFFER_INDEX_MASK;
+		sv_RxBufferIndexHead = (sv_RxBufferIndexHead + 1) & midi::RX_BUFFER_INDEX_MASK;
 
 	}
 }

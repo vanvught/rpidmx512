@@ -45,6 +45,8 @@ extern int get_file_content(const char *fileName, char *pDst);
 
 #include "debug.h"
 
+char HttpDaemon::m_Content[BUFSIZE];
+
 using namespace http;
 
 enum class contentTypes {
@@ -53,6 +55,7 @@ enum class contentTypes {
 
 static constexpr char contentType[static_cast<uint32_t>(contentTypes::NOT_DEFINED)][32] =
 	{ "text/html", "text/css", "text/javascript", "application/json" };
+
 
 HttpDaemon::HttpDaemon() : m_pContentType(contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)]) {
 	DEBUG_ENTRY

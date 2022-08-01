@@ -90,13 +90,13 @@ SlushMotor::SlushMotor(unsigned nMotor, bool bUseSPI): m_bIsBusy(false), m_bIsCo
 	}
 }
 
-SlushMotor::~SlushMotor(void) {
+SlushMotor::~SlushMotor() {
 	free();
 	m_bIsBusy = false;
 	m_bIsConnected = false;
 }
 
-int SlushMotor::busyCheck(void) {
+int SlushMotor::busyCheck() {
 	if (m_bUseSpiBusy) {
 		if (getParam(L6470_PARAM_STATUS) & L6470_STATUS_BUSY) {
 			return 0;
@@ -142,11 +142,11 @@ uint8_t SlushMotor::SPIXfer(uint8_t data) {
  * Roboteurs Slushengine Phyton compatible methods
  */
 
-int SlushMotor::isBusy(void) {
+int SlushMotor::isBusy() {
 	return busyCheck();
 }
 
-void SlushMotor::setAsHome(void) {
+void SlushMotor::setAsHome() {
 	resetPos();
 }
 
@@ -160,22 +160,22 @@ void SlushMotor::setOverCurrent(unsigned int nCurrentmA) {
 	setParam(L6470_PARAM_OCD_TH, OCValue);
 }
 
-void SlushMotor::softFree(void) {
+void SlushMotor::softFree() {
 	softHiZ();
 }
 
-void SlushMotor::free(void) {
+void SlushMotor::free() {
 	hardHiZ();
 }
 
 /*
  * Additional methods
  */
-bool SlushMotor::IsConnected(void) const {
+bool SlushMotor::IsConnected() const {
 	return m_bIsConnected;
 }
 
-bool SlushMotor::GetUseSpiBusy(void) const {
+bool SlushMotor::GetUseSpiBusy() const {
 	return m_bUseSpiBusy;
 }
 

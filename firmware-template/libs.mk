@@ -5,8 +5,16 @@ else
 	LIBS+=remoteconfig
 endif
 
+ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
+	LIBS+=node artnet e131
+endif
+
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	LIBS+=artnet4 artnet e131
+	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
+	else
+		DEFINES+=NODE_E131
+	endif
 endif
 
 ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
@@ -17,9 +25,6 @@ endif
 
 ifeq ($(findstring NODE_SHOWFILE,$(DEFINES)),NODE_SHOWFILE)
 	LIBS+=showfile osc
-	ifneq ($(findstring artnet,$(LIBS)),artnet)
-		LIBS+=artnet
-	endif
 endif
 
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
@@ -38,9 +43,19 @@ ifeq ($(findstring NODE_DDP_DISPLAY,$(DEFINES)),NODE_DDP_DISPLAY)
 	LIBS+=ddp
 endif
 
+ifeq ($(findstring NODE_PP,$(DEFINES)),NODE_PP)
+	LIBS+=pp
+endif
+
+ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
+	LIBS+=artnet
+endif
+
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
 	LIBS+=rdmdiscovery rdm
+	DMX=1
 endif
+
 
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
 	ifneq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
@@ -57,11 +72,13 @@ ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
 	ifneq ($(findstring rdmsubdevice,$(LIBS)),rdmsubdevice)
 		LIBS+=rdmsubdevice
 	endif
-	LIBS+=rdm dmx
+	LIBS+=rdm
+	DMX=1
 endif
 
 ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
-	LIBS+=dmxreceiver dmx
+	LIBS+=dmxreceiver
+	DMX=1
 endif
 
 ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
@@ -77,7 +94,9 @@ ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	ifneq ($(findstring rdmsubdevice,$(LIBS)),rdmsubdevice)
 		LIBS+=rdmsubdevice
 	endif
-	LIBS+=rdm
+	ifneq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
+		LIBS+=rdm
+	endif
 endif
 
 ifeq ($(findstring e131,$(LIBS)),e131)
@@ -89,7 +108,12 @@ ifeq ($(findstring OUTPUT_DMX_MONITOR,$(DEFINES)),OUTPUT_DMX_MONITOR)
 endif
 
 ifeq ($(findstring OUTPUT_DMX_SEND,$(DEFINES)),OUTPUT_DMX_SEND)
-	LIBS+=dmxsend dmx
+	LIBS+=dmxsend
+	DMX=1
+endif
+
+ifdef DMX
+	LIBS+=dmx
 endif
 
 ifeq ($(findstring OUTPUT_DDP_PIXEL_MULTI,$(DEFINES)),OUTPUT_DDP_PIXEL_MULTI)
@@ -102,10 +126,6 @@ else
 			LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
 		endif
 	endif
-endif
-
-ifeq ($(findstring OUTPUT_DDP_PIXEL,$(DEFINES)),OUTPUT_DDP_PIXEL)
-	LIBS+=ws28xx
 endif
 
 ifeq ($(findstring OUTPUT_DMX_STEPPER,$(DEFINES)),OUTPUT_DMX_STEPPER)
@@ -129,7 +149,7 @@ ifdef COND
 endif
 
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
-	DEFINES+=ENABLE_SSD1311 ENABLE_TC1602 ENABLE_CURSOR_MODE
+	DEFINES+=CONFIG_DISPLAY_ENABLE_SSD1311 CONFIG_DISPLAY_ENABLE_HD44780 CONFIG_DISPLAY_ENABLE_CURSOR_MODE
 endif
 
 ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
@@ -149,6 +169,12 @@ ifneq ($(findstring properties,$(LIBS)),properties)
 	LIBS+=properties
 endif
 
-LIBS+=lightset display device hal
+LIBS+=lightset
+
+ifneq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
+	LIBS+=display
+endif
+
+LIBS+=device hal
 
 $(info $$LIBS [${LIBS}])

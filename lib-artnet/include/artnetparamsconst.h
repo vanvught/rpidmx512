@@ -2,7 +2,7 @@
  * @file artnetparamsconst.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,24 +35,19 @@ struct ArtNetParamsConst {
 	static const char SUBNET[];
 
 	static const char ENABLE_RDM[];
-	static const char RDM_DISCOVERY[];
+
 	static const char NODE_SHORT_NAME[];
-
 	static const char NODE_LONG_NAME[];
-	static const char NODE_MANUFACTURER_ID[];
-	static const char NODE_OEM_VALUE[];
 
-	static const char NODE_NETWORK_DATA_LOSS_TIMEOUT[];
-	static const char DISABLE_MERGE_TIMEOUT[];
+	static const char DESTINATION_IP_PORT[artnet::PORTS][24];
 
-	static const char DIRECTION[];
-	static const char DESTINATION_IP_PORT[ArtNet::PORTS][24];
+	static const char RDM_ENABLE_PORT[artnet::PORTS][18];
 
 	/**
 	 * Art-Net 4
 	 */
-	static const char PROTOCOL[];
-	static const char PROTOCOL_PORT[ArtNet::PORTS][16];
+
+	static const char PROTOCOL_PORT[artnet::PORTS][16];
 
 	static const char MAP_UNIVERSE0[];
 };

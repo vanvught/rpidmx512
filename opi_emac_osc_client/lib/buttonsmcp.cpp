@@ -47,10 +47,8 @@ static constexpr auto interrupt = GPIO_EXT_12; // PA7
 
 ButtonsMcp::ButtonsMcp(OscClient *pOscClient):
 	m_I2C(mcp23017::address),
-	m_pOscClient(pOscClient),
-	m_bIsConnected(false),
-	m_nButtonsPrevious(0),
-	m_nPortB(0)
+	m_pOscClient(pOscClient)
+	
 {
 	assert(m_pOscClient != nullptr);
 }

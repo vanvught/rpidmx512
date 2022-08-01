@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,19 +32,27 @@
 #include <cstdint>
 
 #include "artnet.h"
+
 #include "lightset.h"
 
 class ArtNetStore {
 public:
 	virtual ~ArtNetStore() {}
 
+	virtual void SaveFailSafe(uint8_t nFailsafe)=0;
+
 	virtual void SaveShortName(const char *pShortName)=0;
 	virtual void SaveLongName(const char *pLongName)=0;
+
 	virtual void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress)=0;
-	virtual void SaveNetSwitch(uint8_t nAddress)=0;
-	virtual void SaveSubnetSwitch(uint8_t nAddress)=0;
-	virtual void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode tMerge)=0;
-	virtual void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol)=0;
+	virtual void SaveNetSwitch(uint32_t nPage, uint8_t nAddress)=0;
+	virtual void SaveSubnetSwitch(uint32_t nPage, uint8_t nAddress)=0;
+
+	virtual void SaveUniverse(uint32_t nPortIndex, uint16_t nUniverse)=0;
+
+	virtual void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode)=0;
+	virtual void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol)=0;
+	virtual void SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled)=0;
 };
 
 #endif /* ARTNETSTORE_H_ */

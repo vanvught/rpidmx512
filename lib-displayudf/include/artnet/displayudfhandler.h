@@ -2,7 +2,7 @@
  * @file displayudfhandler.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,6 +64,14 @@ public:
 
 	void ShowPortProtocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) override {
 		DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
+	}
+
+	void ShowRdmEnabled(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) bool isEnabled) {
+		//TODO ShowRdmEnabled
+	}
+
+	void ShowFailSafe(__attribute__((unused)) uint8_t nFailsafe) {
+		//TODO ShowFailSafe
 	}
 };
 

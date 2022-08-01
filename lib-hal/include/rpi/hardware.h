@@ -99,7 +99,7 @@ public:
 	void GetTime(struct tm *pTime);
 
 	time_t GetTime() {
-		return time(0);
+		return time(nullptr);
 	}
 
 	uint32_t GetUpTime() {

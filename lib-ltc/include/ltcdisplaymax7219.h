@@ -1,7 +1,7 @@
 /**
  * @file ltcdisplaymax7219.h
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,36 +26,69 @@
 #define LTCDISPLAYMAX7219_H_
 
 #include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "ltcdisplaymax7219set.h"
 
-enum TLtcDisplayMax7219Types {
-	LTCDISPLAYMAX7219_TYPE_MATRIX,
-	LTCDISPLAYMAX7219_TYPE_7SEGMENT
+#include "ltcdisplaymax72197segment.h"
+#include "ltcdisplaymax7219matrix.h"
+
+namespace ltc {
+namespace display {
+namespace max7219 {
+enum class Types {
+	MATRIX, SEGMENT
 };
+}  // namespace max7219
+}  // namespace display
+}  // namespace ltc
 
 class LtcDisplayMax7219 {
 public:
-	LtcDisplayMax7219(TLtcDisplayMax7219Types tType = LTCDISPLAYMAX7219_TYPE_MATRIX);
-	~LtcDisplayMax7219();
+	LtcDisplayMax7219(ltc::display::max7219::Types type): m_type(type) {
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
-	void Init(uint8_t nIntensity);
+		if (m_type == ltc::display::max7219::Types::SEGMENT) {
+			m_pMax7219Set = new LtcDisplayMax72197Segment;
+		} else {
+			m_pMax7219Set = new LtcDisplayMax7219Matrix;
+		}
 
-	void Print();
+		assert(m_pMax7219Set != nullptr);
+	}
 
-	void Show(const char *pTimecode);
-	void ShowSysTime(const char *pSystemTime);
+	void Init(uint8_t nIntensity) {
+		m_nIntensity = nIntensity;
+		m_pMax7219Set->Init(nIntensity);
+	}
 
-	void WriteChar(uint8_t nChar, uint8_t nPos = 0);
+	void Show(const char *pTimecode) {
+		m_pMax7219Set->Show(pTimecode);
+	}
 
-	static LtcDisplayMax7219 *Get() {
+	void ShowSysTime(const char *pSystemTime) {
+		m_pMax7219Set->ShowSysTime(pSystemTime);
+	}
+
+	void WriteChar(uint8_t nChar, uint8_t nPos = 0) {
+		m_pMax7219Set->WriteChar(nChar, nPos);
+	}
+
+	void Print() {
+		printf("MAX7219\n");
+		printf(" %s [%d]\n", m_type == ltc::display::max7219::Types::SEGMENT ? "7-segment" : "matrix", m_nIntensity);
+	}
+
+	static LtcDisplayMax7219* Get() {
 		return s_pThis;
 	}
 
 private:
-	TLtcDisplayMax7219Types m_tMax7219Types;
-	uint8_t m_nIntensity = 0;
-	LtcDisplayMax7219Set *m_pMax7219Set = nullptr;
+	ltc::display::max7219::Types m_type;
+	LtcDisplayMax7219Set *m_pMax7219Set;
+	uint8_t m_nIntensity { 0 };
 
 	static LtcDisplayMax7219 *s_pThis;
 };

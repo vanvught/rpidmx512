@@ -2,7 +2,7 @@
  * @file max7219matrix.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <cassert>
 #include <algorithm>
 
 #include "max7219matrix.h"
@@ -38,6 +39,7 @@ Max7219Matrix::Max7219Matrix(): m_nFontSize(cp437_font_size()) {
 	DEBUG_ENTRY
 
 	m_pFont = new uint8_t[m_nFontSize * 8];
+	assert(m_pFont != nullptr);
 
 	auto pDst= m_pFont;
 

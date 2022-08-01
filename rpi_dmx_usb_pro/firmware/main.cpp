@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,11 +51,10 @@ static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>
 extern "C" {
 
 void notmain(void) {
-	// Do not change order
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display(DisplayType::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Display display(display::Type::UNKNOWN); 	// Display is not supported. We just need a pointer to object
 
 	Widget widget;
 	widget.SetPortDirection(0, PortDirection::INP, false);

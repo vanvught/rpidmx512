@@ -26,8 +26,6 @@
 #ifndef LIGHTSETLLRPONLY_H_
 #define LIGHTSETLLRPONLY_H_
 
-#undef NDEBUG
-
 #include <cstdint>
 
 #include "lightset.h"
@@ -57,7 +55,7 @@ public:
 	}
 
 	uint16_t GetDmxStartAddress() override {
-		return lightset::Dmx::ADDRESS_INVALID;
+		return lightset::dmx::ADDRESS_INVALID;
 	}
 
 	uint16_t GetDmxFootprint() override {

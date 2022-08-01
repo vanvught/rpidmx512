@@ -39,10 +39,14 @@ bool gpio_renew();
 }  // namespace timeout
 }  // namespace display
 
-#if defined (CONFIG_DISPLAY_USE_SPI)
-# include "spi/display.h"
+#if !defined (CONFIG_DISPLAY_USE_CUSTOM)
+# if defined (CONFIG_DISPLAY_USE_SPI)
+#  include "spi/display.h"
+# else
+#  include "i2c/display.h"
+# endif
 #else
-# include "i2c/display.h"
+# include "custom/display.h"
 #endif
 
 #endif /* DISPLAY_H_ */

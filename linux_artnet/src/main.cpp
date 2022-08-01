@@ -23,59 +23,68 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
 #include <cstdint>
 #include <cstring>
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdlib>
 
 #include "hardware.h"
 #include "network.h"
-#include "storenetwork.h"
 #include "ledblink.h"
+
+#include "display.h"
+#include "displayudfparams.h"
 
 #include "mdns.h"
 #include "mdnsservices.h"
+
+#include "httpd/httpd.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
 #include "artnetmsgconst.h"
-
-#include "dmxmonitor.h"
-#include "dmxmonitorparams.h"
-#include "storemonitor.h"
-
 #include "artnetrdmresponder.h"
 
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#include "storerdmsubdevices.h"
+
+#include "dmxmonitor.h"
+#include "dmxmonitorparams.h"
+
+#include "rdmdeviceparams.h"
+//#include "rdmnetdevice.h"
+//#include "rdmnetconst.h"
+//#include "rdmpersonality.h"
+//#include "rdm_e120.h"
+//#include "factorydefaults.h"
 
 #include "spiflashinstall.h"
 #include "spiflashstore.h"
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
+
+#include "storedisplayudf.h"
+#include "storemonitor.h"
+#include "storenetwork.h"
+#include "storerdmdevice.h"
+#include "storerdmsensors.h"
+#include "storerdmsubdevices.h"
 #include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "display.h"
-#include "displayudfparams.h"
-#include "storedisplayudf.h"
-
 using namespace artnet;
+
+static constexpr uint32_t portIndexOffset = 4;
 
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
 	LedBlink lb;
-	Display display; 	// Display is not supported. We just need a pointer to object
+	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
@@ -83,6 +92,7 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	hw.Print();
 	fw.Print();
 
 	SpiFlashInstall spiFlashInstall;
@@ -95,18 +105,19 @@ int main(int argc, char **argv) {
 		return -1;
 	}
 
+	nw.Print();
+
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-	StoreArtNet storeArtNet;
-
-	ArtNetParams artnetParams(StoreArtNet::Get());
+	StoreArtNet storeArtNet(portIndexOffset);
+	ArtNetParams artnetParams(&storeArtNet);
 
 	ArtNet4Node node;
 
 	if (artnetParams.Load()) {
+		artnetParams.Set(portIndexOffset);
 		artnetParams.Dump();
-		artnetParams.Set(&node);
 	}
 
 	if(artnetParams.IsRdm()) {
@@ -115,10 +126,11 @@ int main(int argc, char **argv) {
 		printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 	}
 
-	DMXMonitorParams monitorParams(new StoreMonitor);
+	StoreMonitor storeMonitor;
+	DMXMonitorParams monitorParams(&storeMonitor);
 
 	DMXMonitor monitor;
-	monitor.SetDmxMonitorStore(StoreMonitor::Get());
+	monitor.SetDmxMonitorStore(&storeMonitor);
 
 	if (monitorParams.Load()) {
 		monitorParams.Dump();
@@ -126,14 +138,15 @@ int main(int argc, char **argv) {
 	}
 
 	node.SetOutput(&monitor);
-	node.SetArtNetStore(StoreArtNet::Get());
+	node.SetArtNetStore(&storeArtNet);
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality("Real-time DMX Monitor", &monitor)};
 	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
 
 	node.SetRdmUID(RdmResponder.GetUID());
+	RdmResponder.Init();
 
-	if(artnetParams.IsRdm()) {
+	if (artnetParams.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams(new StoreRDMDevice);
 
 		RdmResponder.SetRDMDeviceStore(StoreRDMDevice::Get());
@@ -143,7 +156,6 @@ int main(int argc, char **argv) {
 			rdmDeviceParams.Dump();
 		}
 
-		RdmResponder.Init();
 
 		bool isSet;
 		node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
@@ -152,31 +164,75 @@ int main(int argc, char **argv) {
 
 		node.SetRdmHandler(&RdmResponder, true);
 	} else {
-		for (uint32_t i = 0; i < ArtNet::PORTS; i++) {
-			bool bIsSet;
-			const auto nAddress = artnetParams.GetUniverse(i, bIsSet);
+		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+			uint32_t nOffset = nPortIndex;
+			if (nPortIndex >= portIndexOffset) {
+				nOffset = nPortIndex - portIndexOffset;
+			} else {
+				continue;
+			}
 
-			if (bIsSet) {
-				node.SetUniverseSwitch(i, lightset::PortDir::OUTPUT, nAddress);
+			printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
+
+			bool bIsSet;
+			const auto nAddress = artnetParams.GetUniverse(nOffset, bIsSet);
+			const auto portDirection =  artnetParams.GetDirection(nOffset);
+
+			if (portDirection == lightset::PortDir::OUTPUT) {
+				node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
+			} else {
+				node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
 			}
 		}
 	}
 
-	hw.Print();
-	nw.Print();
-	node.Print();
-
-	if(artnetParams.IsRdm()) {
+	if (artnetParams.IsRdm()) {
 		RdmResponder.Print();
 	}
+
+	const auto nActivePorts = node.GetActiveOutputPorts();
+
+	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net 4 %dx", nActivePorts);
+
+#if 0
+	uint8_t nLength;
+	const auto *aLabel = hw.GetBoardName(nLength);
+
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality(aDescription, nullptr) };
+	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
+
+	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
+	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
+	llrpOnlyDevice.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&llrpOnlyDevice);
+		rdmDeviceParams.Dump();
+	}
+
+	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	llrpOnlyDevice.Print();
+#endif
 
 	MDNS mDns;
 	mDns.Start();
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+//	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_RDMNET_LLRP, LLRP_PORT, mdns::Protocol::UDP, "node=RDMNet LLRP Only");
 	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4");
 	mDns.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, node.GetActiveOutputPorts());
+	node.Print();
+
+	HttpDaemon httpDaemon;
+	httpDaemon.Start();
+
+	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, nActivePorts);
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
@@ -189,12 +245,15 @@ int main(int argc, char **argv) {
 	while (spiFlashStore.Flash())
 		;
 
+//	llrpOnlyDevice.Start();
 	node.Start();
 
 	for (;;) {
 		node.Run();
 		mDns.Run();
+		httpDaemon.Run();
 		remoteConfig.Run();
+//		llrpOnlyDevice.Run();
 		spiFlashStore.Flash();
 	}
 

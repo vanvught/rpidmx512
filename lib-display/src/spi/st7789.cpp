@@ -51,7 +51,7 @@ ST7789::~ST7789() {
 void ST7789::Init(void) {
 	DEBUG_ENTRY
 
-#if defined(DEV_RST_PIN)
+#if defined(SPI_LCD_RST_PIN)
 	HW_Reset();
 #endif
 

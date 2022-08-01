@@ -35,43 +35,38 @@
 
 #include "platform_ltc.h"
 
-static struct TLtcDisabledOutputs *s_ptLtcDisabledOutputs;
-
 #if defined (H3)
 static void timer_handler() {
-	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
+	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 
-	if (!s_ptLtcDisabledOutputs->bMidi) {
+	if (!g_ltc_ptLtcDisabledOutputs.bMidi) {
 		Midi::Get()->SendRaw(midi::Types::CLOCK);
 	}
 }
 #elif defined (GD32)
 #endif
 
-LtcMidiSystemRealtime *LtcMidiSystemRealtime::s_pThis = nullptr;
+LtcMidiSystemRealtime *LtcMidiSystemRealtime::s_pThis;
 
-LtcMidiSystemRealtime::LtcMidiSystemRealtime(struct TLtcDisabledOutputs *ptLtcDisabledOutputs) {
-	assert(ptLtcDisabledOutputs != nullptr);
-	s_ptLtcDisabledOutputs = ptLtcDisabledOutputs;
-
+LtcMidiSystemRealtime::LtcMidiSystemRealtime() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 }
 
 void LtcMidiSystemRealtime::Send(midi::Types tType) {
-	if (!s_ptLtcDisabledOutputs->bRtpMidi) {
+	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
 		RtpMidi::Get()->SendRaw(tType);
 	}
 
-	if (!s_ptLtcDisabledOutputs->bMidi) {
+	if (!g_ltc_ptLtcDisabledOutputs.bMidi) {
 		Midi::Get()->SendRaw(tType);
 	}
 }
 
 void LtcMidiSystemRealtime::SetBPM(uint32_t nBPM) {
-	if ((!s_ptLtcDisabledOutputs->bRtpMidi) || (!s_ptLtcDisabledOutputs->bMidi)) {
+	if ((!g_ltc_ptLtcDisabledOutputs.bRtpMidi) || (!g_ltc_ptLtcDisabledOutputs.bMidi)) {
 		if (nBPM != m_nBPMPrevious) {
 			m_nBPMPrevious = nBPM;
 

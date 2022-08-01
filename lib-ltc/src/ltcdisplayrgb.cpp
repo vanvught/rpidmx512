@@ -97,10 +97,10 @@ LtcDisplayRgb::~LtcDisplayRgb() {
 	DEBUG_EXIT
 }
 
-void LtcDisplayRgb::Init(pixel::Type tLedType) {
+void LtcDisplayRgb::Init(pixel::Type type) {
 	DEBUG_ENTRY
 
-	m_tLedType = tLedType;
+	m_tLedType = type;
 
 	if (m_tDisplayRgbType == Type::RGBPANEL) {
 		m_pLtcDisplayRgbSet = new LtcDisplayRgbPanel;
@@ -110,9 +110,9 @@ void LtcDisplayRgb::Init(pixel::Type tLedType) {
 	} else {
 
 		if (m_tDisplayRgbWS28xxType == WS28xxType::SEGMENT) {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(tLedType, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xx7Segment(type, m_tMapping);
 		} else {
-			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(tLedType, m_tMapping);
+			m_pLtcDisplayRgbSet = new LtcDisplayWS28xxMatrix(type, m_tMapping);
 		}
 
 		assert(m_pLtcDisplayRgbSet != nullptr);
@@ -143,8 +143,8 @@ void LtcDisplayRgb::Show(const char *pTimecode) {
 	if (m_tColonBlinkMode != ColonBlinkMode::OFF) {
 		const uint32_t nMillis = Hardware::Get()->Millis();
 
-		if (m_nSecondsPrevious != pTimecode[LTC_TC_INDEX_SECONDS_UNITS]) { // seconds have changed
-			m_nSecondsPrevious = pTimecode[LTC_TC_INDEX_SECONDS_UNITS];
+		if (m_nSecondsPrevious != pTimecode[ltc::timecode::index::SECONDS_UNITS]) { // seconds have changed
+			m_nSecondsPrevious = pTimecode[ltc::timecode::index::SECONDS_UNITS];
 			m_nColonBlinkMillis = nMillis;
 
 			tColoursColons.nRed = 0;
@@ -273,7 +273,7 @@ void LtcDisplayRgb::ShowMessage() {
 	m_pLtcDisplayRgbSet->ShowMessage(m_aMessage, tColours);
 }
 
-void LtcDisplayRgb::ShowFPS(ltc::type tTimeCodeType) {
+void LtcDisplayRgb::ShowFPS(ltc::Type tTimeCodeType) {
 	if (m_pLtcDisplayRgbSet == nullptr) {
 		return;
 	}
@@ -289,7 +289,7 @@ void LtcDisplayRgb::ShowInfo(const char *pInfo) {
 	m_pLtcDisplayRgbSet->ShowInfo(pInfo, static_cast<uint16_t>(strlen(pInfo)), m_tColoursInfo);
 }
 
-void LtcDisplayRgb::ShowSource(ltc::source tSource) {
+void LtcDisplayRgb::ShowSource(ltc::Source tSource) {
 	if (m_pLtcDisplayRgbSet == nullptr) {
 		return;
 	}

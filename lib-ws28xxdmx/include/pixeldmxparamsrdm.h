@@ -26,10 +26,10 @@
 #ifndef PIXELDMXPARAMSRDM_H_
 #define PIXELDMXPARAMSRDM_H_
 
+#include <pixeldmxstore.h>
 #include <cstdint>
 
 #include "lightset.h"
-#include "ws28xxdmxstore.h"
 
 namespace pixeldmx {
 namespace paramsdmx {
@@ -42,7 +42,7 @@ static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
 
 class PixelDmxParamsRdm: public LightSet {
 public:
-	PixelDmxParamsRdm(WS28xxDmxStore *pWS28xxDmxStore);
+	PixelDmxParamsRdm(PixelDmxStore *pWS28xxDmxStore);
 
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
@@ -65,7 +65,7 @@ public:
 	void Display(const uint8_t *pData) __attribute__((weak));
 
 private:
-	static WS28xxDmxStore *s_pWS28xxDmxStore;
+	static PixelDmxStore *s_pWS28xxDmxStore;
 	static uint8_t s_Data;
 };
 

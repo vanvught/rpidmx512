@@ -34,10 +34,10 @@ const char *RDMSoftwareVersion::GetVersion(void) {
 	return SOFTWARE_VERSION;
 }
 
-uint32_t RDMSoftwareVersion::GetVersionLength(void) {
+uint32_t RDMSoftwareVersion::GetVersionLength() {
 	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
 }
 
-uint32_t RDMSoftwareVersion::GetVersionId(void) {
+uint32_t RDMSoftwareVersion::GetVersionId() {
 	return DEVICE_SOFTWARE_VERSION_ID;
 }

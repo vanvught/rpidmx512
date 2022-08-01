@@ -2,7 +2,7 @@
  * @file ltcdisplaymax72197segment.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,14 @@
  * THE SOFTWARE.
  */
 
+
 #include <cstdint>
 #include <time.h>
 #include <cassert>
 
 #include "ltcdisplaymax72197segment.h"
 
-#include "max72197segment.h"
-
-LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis = nullptr;
+LtcDisplayMax72197Segment *LtcDisplayMax72197Segment::s_pThis;
 
 LtcDisplayMax72197Segment::LtcDisplayMax72197Segment() {
 	assert(s_pThis == nullptr);

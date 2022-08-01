@@ -2,7 +2,7 @@
  * @file rdmidentify.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include "rdmidentify.h"
+#include "rdmresponder.h"
 #include "pixeltestpattern.h"
 
 #include "debug.h"
@@ -33,7 +34,7 @@ static pixelpatterns::Pattern s_Pattern;
 
 using namespace rdm::identify;
 
-void RDMIdentify::On(__attribute__((unused)) rdm::identify::Mode nMode) {
+void RDMIdentify::On(rdm::identify::Mode nMode) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
 
@@ -41,6 +42,7 @@ void RDMIdentify::On(__attribute__((unused)) rdm::identify::Mode nMode) {
 		s_isOn = true;
 		s_Pattern = PixelTestPattern::Get()->GetPattern();
 		PixelTestPattern::Get()->SetPattern(pixelpatterns::Pattern::FADE);
+		RDMResponder::Get()->DmxDisableOutput(true);
 	}
 
 	DEBUG_EXIT
@@ -53,6 +55,7 @@ void RDMIdentify::Off(__attribute__((unused)) rdm::identify::Mode nMode) {
 	if (s_isOn) {
 		s_isOn = false;
 		PixelTestPattern::Get()->SetPattern(s_Pattern);
+		RDMResponder::Get()->DmxDisableOutput(pixelpatterns::Pattern::NONE != s_Pattern);
 	}
 
 	DEBUG_EXIT

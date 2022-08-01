@@ -10,6 +10,7 @@ fi
 echo $1 $2 $3
 
 DIR=../opi_*
+#DIR=../opi_emac_artnet*
 
 for f in $DIR
 do
@@ -22,6 +23,12 @@ do
 		echo $1 $2 $3
 		
 		if [[ $f = '../opi_dmx_usb_pro' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 = *"NO_EXT_LED=1"* ]]; then
+			do_build=1
+		elif [[ $f = "../opi_emac_node_dmx_multi" ]] && [[ $1 = *"ORANGE_PI_ONE"* ]] && [[ $2 = *"CONSOLE=CONSOLE_FB"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_node_pixel_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
+			do_build=1
+		elif [[ $f = '../opi_emac_node_pixel_dmx_multi' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1
 		elif [[ $f = '../opi_emac_artnet_dmx' ]] && [[ $1 != *"ORANGE_PI_ONE"* ]] && [[ $2 != *"NO_EXT_LED=1"* ]]; then
 			do_build=1

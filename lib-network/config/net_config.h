@@ -31,10 +31,14 @@
 # if defined (H3)
 #  define HOST_NAME_PREFIX				"allwinner_"
 #  define UDP_MAX_PORTS_ALLOWED			16
+#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
 # elif defined (GD32)
 #  define HOST_NAME_PREFIX				"gigadevice_"
 #  if !defined (UDP_MAX_PORTS_ALLOWED)
 #   define UDP_MAX_PORTS_ALLOWED		8
+#  endif
+#  if !defined (IGMP_MAX_JOINS_ALLOWED)
+#   define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
 #  endif
 # else
 #  error
@@ -44,6 +48,10 @@
 #endif
 
 #if !defined (UDP_MAX_PORTS_ALLOWED)
+# error
+#endif
+
+#if !defined (IGMP_MAX_JOINS_ALLOWED)
 # error
 #endif
 

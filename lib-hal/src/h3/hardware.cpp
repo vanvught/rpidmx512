@@ -145,12 +145,9 @@ void Hardware::GetTime(struct tm *pTime) {
 }
 
 bool Hardware::Reboot() {
-	LedBlink::Get()->SetFrequency(8);
+	h3_watchdog_disable();
 
-	if (m_pRebootHandler != 0) {
-		h3_watchdog_disable();
-		m_pRebootHandler->Run();
-	}
+	RebootHandler();
 
 	h3_watchdog_enable();
 

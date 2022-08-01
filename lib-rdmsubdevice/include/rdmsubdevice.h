@@ -2,7 +2,7 @@
  * @file rdmsubdevice.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -96,9 +96,9 @@ private:
 	uint16_t CalculateChecksum();
 
 private:
-	RDMPersonality **m_pRDMPersonalities;
-	bool m_IsFactoryDefaults;
-	uint16_t m_nCheckSum;
+	RDMPersonality **m_pRDMPersonalities { nullptr };
+	bool m_IsFactoryDefaults { true };
+	uint16_t m_nCheckSum { 0 };
 	uint16_t m_nDmxStartAddressFactoryDefault;
 	uint8_t m_nCurrentPersonalityFactoryDefault;
 	TRDMSubDevicesInfo m_tSubDevicesInfo;

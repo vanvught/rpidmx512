@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,15 +27,17 @@
 #define LIGHTSET_H_
 
 #include <cstdint>
+#include <cstring>
 #include <climits>
+#include <cassert>
 
 namespace lightset {
-struct Dmx {
-	static constexpr auto ADDRESS_INVALID = 0xFFFF;
-	static constexpr auto START_ADDRESS_DEFAULT = 1U;
-	static constexpr auto UNIVERSE_SIZE = 512U;
-	static constexpr auto MAX_VALUE = 255U;
-};
+namespace dmx {
+static constexpr auto ADDRESS_INVALID = 0xFFFF;
+static constexpr auto START_ADDRESS_DEFAULT = 1U;
+static constexpr auto UNIVERSE_SIZE = 512U;
+static constexpr auto MAX_VALUE = 255U;
+}
 
 enum class MergeMode {
 	HTP, LTP
@@ -43,6 +45,10 @@ enum class MergeMode {
 
 enum class PortDir {
 	INPUT, OUTPUT, DISABLE
+};
+
+enum class FailSafe {
+	HOLD, OFF, ON, PLAYBACK
 };
 
 struct SlotInfo {
@@ -86,16 +92,73 @@ inline static PortDir get_direction(const char *pPortDir) {
 		 && ((pPortDir[4] | 0x20) == 't')) {
 			return PortDir::INPUT;
 		}
+		if (((pPortDir[0] | 0x20) == 'd')
+		 && ((pPortDir[1] | 0x20) == 'i')
+		 && ((pPortDir[2] | 0x20) == 's')
+		 && ((pPortDir[3] | 0x20) == 'a')
+		 && ((pPortDir[4] | 0x20) == 'b')
+		 && ((pPortDir[5] | 0x20) == 'l')
+		 && ((pPortDir[6] | 0x20) == 'e')) {
+			return PortDir::DISABLE;
+		}
 	}
 	return PortDir::OUTPUT;
 }
 
-inline static const char* get_direction(uint32_t nPortIndex, uint8_t nDirection) {
-	if (nPortIndex < CHAR_BIT) {
-		return ((nDirection >> nPortIndex) & 0x1) == static_cast<uint8_t>(PortDir::INPUT) ? "input" : "output";
+inline static const char* get_direction(const PortDir portDir) {
+	if (portDir == PortDir::INPUT) {
+		return "input";
+	}
+
+	if (portDir == PortDir::DISABLE) {
+		return "disable";
 	}
 
 	return "output";
+}
+
+inline static FailSafe get_failsafe(const char *p) {
+	if (memcmp(p, "hold", 4) == 0) {
+		return FailSafe::HOLD;
+	}
+
+	if (memcmp(p, "off", 3) == 0) {
+		return FailSafe::OFF;
+	}
+
+	if (memcmp(p, "on", 2) == 0) {
+		return FailSafe::ON;
+	}
+
+	if (memcmp(p, "playback", 8) == 0) {
+		return FailSafe::PLAYBACK;
+	}
+
+	return FailSafe::HOLD;
+}
+
+inline static const char* get_failsafe(const FailSafe failsafe) {
+	switch (failsafe) {
+	case FailSafe::HOLD:
+		return "hold";
+		break;
+	case FailSafe::OFF:
+		return "off";
+		break;
+	case FailSafe::ON:
+		return "on";
+		break;
+	case FailSafe::PLAYBACK:
+		return "playback";
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
+	}
+
+	__builtin_unreachable();
+	return "";
 }
 }  // namespace lightset
 
@@ -109,6 +172,7 @@ public:
 	virtual void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength)= 0;
 	// Optional
 	virtual void Blackout(__attribute__((unused)) bool bBlackout) {}
+	virtual void FullOn() {}
 	virtual void Print() {}
 	// RDM Optional
 	virtual bool SetDmxStartAddress(uint16_t nDmxStartAddress);

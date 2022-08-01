@@ -2,7 +2,7 @@
  * @file oscclient.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,9 +49,9 @@ void OscClient::SendCmd(uint32_t nCmd) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("nCmd=%d", nCmd);
 
-	assert(nCmd < OscClientMax::CMD_COUNT);
+	assert(nCmd < oscclient::max::CMD_COUNT);
 
-	Send(&m_pCmds[nCmd * OscClientMax::CMD_PATH_LENGTH]);
+	Send(&m_pCmds[nCmd * oscclient::max::CMD_PATH_LENGTH]);
 
 	DEBUG_EXIT
 }

@@ -3,3 +3,5 @@
 
 [http://www.orangepi-dmx.org](http://www.orangepi-dmx.org)
 
+[http://www.gd32-dmx.org](http://www.gd32-dmx.org)
+

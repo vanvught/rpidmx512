@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@
 
 using namespace artnet;
 
-ArtNet4Node::ArtNet4Node(uint8_t nPages) : ArtNetNode(nPages) {
+ArtNet4Node::ArtNet4Node() {
 	DEBUG_ENTRY
-	assert((ArtNet::PORTS * nPages) <= E131::PORTS);
+	assert((artnetnode::MAX_PORTS) <= e131bridge::MAX_PORTS);
 
 	ArtNetNode::SetArtNet4Handler(static_cast<ArtNet4Handler*>(this));
 
@@ -65,7 +65,7 @@ void ArtNet4Node::SetPort(uint32_t nPortIndex, lightset::PortDir dir) {
 	if (isActive) {
 		const auto tPortProtocol = GetPortProtocol(nPortIndex);
 
-		DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
+		DEBUG_PRINTF("\tProtocol %s", artnet::get_protocol_mode(tPortProtocol));
 
 		if (tPortProtocol == PortProtocol::SACN) {
 
@@ -87,9 +87,9 @@ void ArtNet4Node::SetPort(uint32_t nPortIndex, lightset::PortDir dir) {
 
 void ArtNet4Node::Start() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_nPages=%d", GetPages());
+	DEBUG_PRINTF("artnetnode::PAGES=%u", artnetnode::PAGES);
 
-	for (uint32_t nPortIndex = 0; nPortIndex < (ArtNet::PORTS * GetPages()); nPortIndex++) {
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
 		
@@ -98,7 +98,7 @@ void ArtNet4Node::Start() {
 		if (isActive) {
 			const auto tPortProtocol = GetPortProtocol(nPortIndex);
 			
-			DEBUG_PRINTF("\tProtocol %s", ArtNet::GetProtocolMode(tPortProtocol));
+			DEBUG_PRINTF("\tProtocol %s", artnet::get_protocol_mode(tPortProtocol));
 			
 			if (tPortProtocol == PortProtocol::SACN) {
 				const auto mergeMode = ArtNetNode::GetMergeMode(nPortIndex);
@@ -108,7 +108,6 @@ void ArtNet4Node::Start() {
 		}
 	}
 
-	m_Bridge.SetDisableNetworkDataLossTimeout(ArtNetNode::GetNetworkTimeout() == 0);
 	m_Bridge.SetDisableMergeTimeout(ArtNet4Node::GetDisableMergeTimeout());
 	m_Bridge.SetOutput(ArtNetNode::GetOutput());
 
@@ -137,9 +136,9 @@ void ArtNet4Node::Run() {
 
 void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("m_nPages=%d", GetPages());
+	DEBUG_PRINTF("artnetnode::PAGES=%u", artnetnode::PAGES);
 
-	for (uint32_t i = 0; i < (ArtNet::PORTS * GetPages()); i++) {
+	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
 		uint16_t nUniverse;
 		const bool isActive = GetPortAddress(i, nUniverse, lightset::PortDir::OUTPUT);
 
@@ -206,7 +205,7 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 }
 
 uint8_t ArtNet4Node::GetStatus(uint32_t nPortIndex) {
-	assert(nPortIndex < E131::PORTS);
+	assert(nPortIndex < e131bridge::MAX_PORTS);
 
 	uint16_t nUniverse;
 	const auto isActive = m_Bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT);
@@ -214,9 +213,9 @@ uint8_t ArtNet4Node::GetStatus(uint32_t nPortIndex) {
 	DEBUG_PRINTF("Port %u, Active %c, Universe %d", nPortIndex, isActive ? 'Y' : 'N', nUniverse);
 
 	if (isActive) {
-		uint8_t nStatus = GoodOutput::GO_OUTPUT_IS_SACN;
-		nStatus = nStatus | (m_Bridge.IsTransmitting(nPortIndex) ? GoodOutput::GO_DATA_IS_BEING_TRANSMITTED : GoodOutput::GO_OUTPUT_NONE);
-		nStatus = nStatus | (m_Bridge.IsMerging(nPortIndex) ? GoodOutput::GO_OUTPUT_IS_MERGING : GoodOutput::GO_OUTPUT_NONE);
+		uint8_t nStatus = GoodOutput::OUTPUT_IS_SACN;
+		nStatus = nStatus | (m_Bridge.IsTransmitting(nPortIndex) ? GoodOutput::DATA_IS_BEING_TRANSMITTED : GoodOutput::OUTPUT_NONE);
+		nStatus = nStatus | (m_Bridge.IsMerging(nPortIndex) ? GoodOutput::OUTPUT_IS_MERGING : GoodOutput::OUTPUT_NONE);
 		return nStatus;
 	}
 

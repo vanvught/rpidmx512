@@ -156,7 +156,7 @@ private:
 	void HandleControlMessage();
 	void HandleMidiMessage();
 
-	virtual void HandleRtpMidi(const uint8_t *pBuffer);
+	virtual void HandleRtpMidi(const uint8_t *pBuffer)=0;
 
 private:
 	uint32_t m_nStartTime { 0 };

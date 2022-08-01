@@ -2,7 +2,7 @@
  * @file lightsetconst.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,17 +47,35 @@ const char LightSetParamsConst::DIRECTION[4][18] = {
 		"direction_port_c",
 		"direction_port_d" };
 
-const char LightSetParamsConst::START_UNI_PORT[8][18] = {
+const char LightSetParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
+const char LightSetParamsConst::DMX_SLOT_INFO[] = "dmx_slot_info";
+
+const char LightSetParamsConst::DISABLE_MERGE_TIMEOUT[] = "disable_merge_timeout";
+
+const char LightSetParamsConst::FAILSAFE[] = "failsafe";
+
+#if defined (CONFIG_PIXELDMX_MAX_PORTS)
+const char LightSetParamsConst::START_UNI_PORT[CONFIG_PIXELDMX_MAX_PORTS][20] = {
 		"start_uni_port_1",
+#if CONFIG_PIXELDMX_MAX_PORTS > 2
 		"start_uni_port_2",
 		"start_uni_port_3",
 		"start_uni_port_4",
 		"start_uni_port_5",
 		"start_uni_port_6",
 		"start_uni_port_7",
-		"start_uni_port_8" };
+		"start_uni_port_8",
+#endif
+#if CONFIG_PIXELDMX_MAX_PORTS == 16
+		"start_uni_port_9",
+		"start_uni_port_10",
+		"start_uni_port_11",
+		"start_uni_port_12",
+		"start_uni_port_13",
+		"start_uni_port_14",
+		"start_uni_port_15",
+		"start_uni_port_16"
+#endif
+};
+#endif
 
-const char LightSetParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
-const char LightSetParamsConst::DMX_SLOT_INFO[] = "dmx_slot_info";
-
-const char LightSetParamsConst::TEST_PATTERN[] = "test_pattern";

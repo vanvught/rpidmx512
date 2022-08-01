@@ -2,7 +2,7 @@
  * @file ntpserver.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,7 +45,7 @@
 
 #include "debug.h"
 
-NtpServer *NtpServer::s_pThis = nullptr;
+NtpServer *NtpServer::s_pThis;
 TNtpPacket NtpServer::s_Request;
 TNtpPacket NtpServer::s_Reply;
 
@@ -104,17 +104,19 @@ void NtpServer::Stop() {
 	DEBUG_EXIT
 }
 
-void NtpServer::SetTimeCode(const struct TLtcTimeCode *pLtcTimeCode) {
+void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
 	m_tTimeDate = m_tDate;
 	m_tTimeDate += pLtcTimeCode->nSeconds;
 	m_tTimeDate += pLtcTimeCode->nMinutes * 60;
 	m_tTimeDate += pLtcTimeCode->nHours * 60 * 60;
 
-	if (pLtcTimeCode->nType == ltc::type::FILM) {
+	const auto type = static_cast<ltc::Type>(pLtcTimeCode->nType);
+
+	if (type == ltc::Type::FILM) {
 		m_nFraction = static_cast<uint32_t>((178956970.625 * pLtcTimeCode->nFrames));
-	} else if (pLtcTimeCode->nType == ltc::type::EBU) {
+	} else if (type == ltc::Type::EBU) {
 		m_nFraction = static_cast<uint32_t>((171798691.8 * pLtcTimeCode->nFrames));
-	} else if ((pLtcTimeCode->nType == ltc::type::DF) || (pLtcTimeCode->nType == ltc::type::SMPTE)) {
+	} else if ((type == ltc::Type::DF) || (type == ltc::Type::SMPTE)) {
 		m_nFraction = static_cast<uint32_t>((143165576.5 * pLtcTimeCode->nFrames));
 	} else {
 		assert(0);

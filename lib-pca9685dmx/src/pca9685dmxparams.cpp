@@ -96,7 +96,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint32_t nLength;
 
 	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= Dmx::UNIVERSE_SIZE)) {
+		if ((value16 != 0) && (value16 <= dmx::UNIVERSE_SIZE)) {
 			m_nDmxStartAddress = value16;
 			m_bSetList |= DMX_START_ADDRESS_MASK;
 		}

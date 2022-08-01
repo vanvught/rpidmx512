@@ -2,7 +2,7 @@
  * @file rdmmessage.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,8 @@
 
 #include "rdm.h"
 #include "rdm_e120.h"
+
+#include "debug.h"
 
 RDMMessage::RDMMessage()  {
 	m_message.start_code = E120_SC_RDM;

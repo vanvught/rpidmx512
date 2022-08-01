@@ -55,8 +55,8 @@ char OscServer::s_aPathInfo[osc::server::Max::PATH_LENGTH];
 char OscServer::s_aPathBlackOut[osc::server::Max::PATH_LENGTH];
 
 char *OscServer::s_pUdpBuffer;
-uint8_t OscServer::s_pData[lightset::Dmx::UNIVERSE_SIZE];
-uint8_t OscServer::s_pOsc[lightset::Dmx::UNIVERSE_SIZE];
+uint8_t OscServer::s_pData[lightset::dmx::UNIVERSE_SIZE];
+uint8_t OscServer::s_pOsc[lightset::dmx::UNIVERSE_SIZE];
 
 OscServer *OscServer::s_pThis;
 
@@ -92,11 +92,6 @@ OscServer::OscServer() {
 
 OscServer::~OscServer() {
 	DEBUG_ENTRY
-
-	if (m_pLightSet != nullptr) {
-		m_pLightSet->Stop(0);
-		m_pLightSet = nullptr;
-	}
 
 	DEBUG_EXIT
 }
@@ -187,7 +182,7 @@ int OscServer::GetChannel(const char* p) {
 		s++;
 	}
 
-	if (nChannel > static_cast<int32_t>(lightset::Dmx::UNIVERSE_SIZE)) {
+	if (nChannel > static_cast<int32_t>(lightset::dmx::UNIVERSE_SIZE)) {
 		return -1;
 	}
 
@@ -196,14 +191,14 @@ int OscServer::GetChannel(const char* p) {
 
 bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, uint32_t nLength) {
 	assert(pData != nullptr);
-	assert(nLength <= lightset::Dmx::UNIVERSE_SIZE);
+	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
 	auto isChanged = false;
 	const auto *src = pData;
 	auto *dst = &s_pData[--nStartChannel];
 	const auto nEnd = nStartChannel + nLength;
 
-	assert(nEnd <= lightset::Dmx::UNIVERSE_SIZE);
+	assert(nEnd <= lightset::dmx::UNIVERSE_SIZE);
 
 	for (uint16_t i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
@@ -244,14 +239,14 @@ void OscServer::Run() {
 			OSCBlob blob = Msg.GetBlob(0);
 			const auto size = static_cast<uint16_t>(blob.GetDataSize());
 
-			if (size <= lightset::Dmx::UNIVERSE_SIZE) {
+			if (size <= lightset::dmx::UNIVERSE_SIZE) {
 				const auto *ptr = blob.GetDataPtr();
 
 				bIsDmxDataChanged = IsDmxDataChanged(ptr, 1, size);
 
 				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
-					if ((!m_bPartialTransmission) || (size == lightset::Dmx::UNIVERSE_SIZE)) {
-						m_pLightSet->SetData(0, s_pData, lightset::Dmx::UNIVERSE_SIZE);
+					if ((!m_bPartialTransmission) || (size == lightset::dmx::UNIVERSE_SIZE)) {
+						m_pLightSet->SetData(0, s_pData, lightset::dmx::UNIVERSE_SIZE);
 					} else {
 						m_nLastChannel = static_cast<uint16_t>(size > m_nLastChannel ? size : m_nLastChannel);
 						m_pLightSet->SetData(0, s_pData, m_nLastChannel);
@@ -269,7 +264,7 @@ void OscServer::Run() {
 		} else if ((nArgc == 2) && (Msg.GetType(0) == osc::type::INT32)) {
 			auto nChannel = static_cast<uint16_t>(1 + Msg.GetInt(0));
 
-			if ((nChannel < 1) || (nChannel > lightset::Dmx::UNIVERSE_SIZE)) {
+			if ((nChannel < 1) || (nChannel > lightset::dmx::UNIVERSE_SIZE)) {
 				DEBUG_PRINTF("Invalid channel [%d]", nChannel);
 				return;
 			}
@@ -281,7 +276,7 @@ void OscServer::Run() {
 				nData = static_cast<uint8_t>(Msg.GetInt(1));
 			} else if (Msg.GetType(1) == osc::type::FLOAT) {
 				DEBUG_PUTS("if received");
-				nData = static_cast<uint8_t>(Msg.GetFloat(1) * lightset::Dmx::MAX_VALUE);
+				nData = static_cast<uint8_t>(Msg.GetFloat(1) * lightset::dmx::MAX_VALUE);
 			} else {
 				return;
 			}
@@ -292,7 +287,7 @@ void OscServer::Run() {
 
 			if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 				if (!m_bPartialTransmission) {
-					m_pLightSet->SetData(0, s_pData, lightset::Dmx::UNIVERSE_SIZE);
+					m_pLightSet->SetData(0, s_pData, lightset::dmx::UNIVERSE_SIZE);
 				} else {
 					m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 					m_pLightSet->SetData(0, s_pData, m_nLastChannel);
@@ -333,7 +328,7 @@ void OscServer::Run() {
 		if (nArgc == 1) { // /path/N 'i' or 'f'
 			const auto nChannel = static_cast<uint16_t>(GetChannel(s_pUdpBuffer));
 
-			if (nChannel >= 1 && nChannel <= lightset::Dmx::UNIVERSE_SIZE) {
+			if (nChannel >= 1 && nChannel <= lightset::dmx::UNIVERSE_SIZE) {
 				uint8_t nData;
 
 				if (Msg.GetType(0) == osc::type::INT32) {
@@ -341,7 +336,7 @@ void OscServer::Run() {
 					nData = static_cast<uint8_t>(Msg.GetInt(0));
 				} else if (Msg.GetType(0) == osc::type::FLOAT) {
 					DEBUG_PRINTF("f received %f", Msg.GetFloat(0));
-					nData = static_cast<uint8_t>(Msg.GetFloat(0) * lightset::Dmx::MAX_VALUE);
+					nData = static_cast<uint8_t>(Msg.GetFloat(0) * lightset::dmx::MAX_VALUE);
 				} else {
 					return;
 				}
@@ -352,7 +347,7 @@ void OscServer::Run() {
 
 				if (bIsDmxDataChanged || m_bEnableNoChangeUpdate) {
 					if (!m_bPartialTransmission) {
-						m_pLightSet->SetData(0, s_pData, lightset::Dmx::UNIVERSE_SIZE);
+						m_pLightSet->SetData(0, s_pData, lightset::dmx::UNIVERSE_SIZE);
 					} else {
 						m_nLastChannel = nChannel > m_nLastChannel ? nChannel : m_nLastChannel;
 						m_pLightSet->SetData(0, s_pData, m_nLastChannel);

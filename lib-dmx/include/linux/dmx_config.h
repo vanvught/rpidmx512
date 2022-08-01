@@ -35,8 +35,13 @@ static constexpr auto IN = 1U;
 
 namespace dmxmulti {
 namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
+#if !defined(LIGHTSET_PORTS)
+ static constexpr auto OUT = 4U;
+ static constexpr auto IN = 4U;
+#else
+ static constexpr auto OUT = LIGHTSET_PORTS;
+ static constexpr auto IN = LIGHTSET_PORTS;
+#endif
 }  // namespace max
 }  // namespace dmxmulti
 

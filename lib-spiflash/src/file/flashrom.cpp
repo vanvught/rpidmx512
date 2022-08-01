@@ -38,7 +38,7 @@ static constexpr auto FLASH_SIZE = (512 * FLASH_SECTOR_SIZE);
 static constexpr char FLASH_FILE_NAME[] = "spiflash.bin";
 static constexpr auto BLOCK_WRITE_LENGTH = 1024;
 
-static FILE *pFile = nullptr;
+static FILE *pFile;
 
 enum class State {
 	IDLE, RUNNING, ERROR
@@ -76,6 +76,17 @@ FlashRom::FlashRom() {
 	}
 
 	m_IsDetected = true;
+
+	DEBUG_EXIT
+}
+
+FlashRom::~FlashRom() {
+	DEBUG_ENTRY
+
+	if (pFile != nullptr) {
+		fclose(pFile);
+		pFile = nullptr;
+	}
 
 	DEBUG_EXIT
 }

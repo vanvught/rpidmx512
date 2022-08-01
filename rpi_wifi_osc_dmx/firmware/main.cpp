@@ -52,11 +52,11 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeltype.h"
 #include "lightset.h"
-#include "ws28xxdmxparams.h"
+#include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 
 #if defined(ORANGE_PI)
-# include "storews28xxdmx.h"
+# include "storepixeldmx.h"
 #endif
 
 #include "handler.h"
@@ -92,7 +92,7 @@ void notmain(void) {
 
 	StoreOscServer storeOscServer;
 	StoreDmxSend storeDmxSend;
-	StoreWS28xxDmx storeWS28xxDmx;
+	StorePixelDmx storePixelDmx;
 
 	OSCServerParams params((OSCServerParamsStore *)&storeOscServer);
 #else
@@ -151,14 +151,14 @@ void notmain(void) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
 #if defined (ORANGE_PI)
-		WS28xxDmxParams ws28xxparms(new StoreWS28xxDmx);
+		PixelDmxParams pixelDmxParams(new StorePixelDmx);
 #else
-		WS28xxDmxParams ws28xxparms;
+		PixelDmxParams pixelDmxParams;
 #endif
 
-		if (ws28xxparms.Load()) {
-			ws28xxparms.Set(&pixelDmxConfiguration);
-			ws28xxparms.Dump();
+		if (pixelDmxParams.Load()) {
+			pixelDmxParams.Set(&pixelDmxConfiguration);
+			pixelDmxParams.Dump();
 		}
 
 		// For the time being, just 1 Universe

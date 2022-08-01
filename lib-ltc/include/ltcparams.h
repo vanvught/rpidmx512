@@ -31,14 +31,10 @@
 
 #include "ltc.h"
 
-struct TLtcParamsRgbLedType {
-	static constexpr auto WS28XX = (1U << 0);
-	static constexpr auto RGBPANEL = (1U << 1);
-};
-
-struct TLtcParams {
+namespace ltcparams {
+struct Params {
 	uint32_t nSetList;			///< 4	4
-	uint8_t tSource;			///< 1	5
+	uint8_t nSource;			///< 1	5
 	uint8_t nAutoStart;			///< 1	6
 	uint8_t nVolume;			///< 1	7
 	uint8_t nDisabledOutputs;	///< 1	8
@@ -67,9 +63,9 @@ struct TLtcParams {
 	uint32_t nTimeCodeIp;		///< 4  35
 }__attribute__((packed));
 
-static_assert(sizeof(struct TLtcParams) <= 64, "struct TLtcParams is too large");
+static_assert(sizeof(struct ltcparams::Params) <= 64, "struct ltcparams::Params is too large");
 
-struct LtcParamsMask {
+struct Mask {
 	static constexpr auto SOURCE = (1U << 0);
 	static constexpr auto AUTO_START = (1U << 1);
 	static constexpr auto VOLUME = (1U << 2);
@@ -99,12 +95,19 @@ struct LtcParamsMask {
 	static constexpr auto TIMECODE_IP = (1U << 26);
 };
 
+struct RgbLedType {
+	static constexpr auto WS28XX = (1U << 0);
+	static constexpr auto RGBPANEL = (1U << 1);
+};
+
+}  // namespace ltcparams
+
 class LtcParamsStore {
 public:
 	virtual ~LtcParamsStore() {}
 
-	virtual void Update(const struct TLtcParams *pTLtcParams)=0;
-	virtual void Copy(struct TLtcParams *pTLtcParams)=0;
+	virtual void Update(const struct ltcparams::Params *pTLtcParams)=0;
+	virtual void Copy(struct ltcparams::Params *pTLtcParams)=0;
 
 	virtual void SaveSource(uint8_t nSource)=0;
 };
@@ -116,95 +119,92 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TLtcParams *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const ltcparams::Params *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+
+	void Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode *ptStopTimeCode);
 
 	void Dump();
 
-	ltc::source GetSource() const {
-		return static_cast<ltc::source>(m_tLtcParams.tSource);
+	ltc::Source GetSource() const {
+		return static_cast<ltc::Source>(m_Params.nSource);
 	}
 
-	const char *GetSourceType(ltc::source tSource);
-	ltc::source GetSourceType(const char *pType);
+	const char *GetSourceType(ltc::Source tSource);
+	ltc::Source GetSourceType(const char *pType);
 
 	uint8_t GetVolume() const {
-		return m_tLtcParams.nVolume;
+		return m_Params.nVolume;
 	}
 
 	bool IsAutoStart() const {
-		return ((m_tLtcParams.nAutoStart != 0) && isMaskSet(LtcParamsMask::AUTO_START));
+		return ((m_Params.nAutoStart != 0) && isMaskSet(ltcparams::Mask::AUTO_START));
 	}
 
-	void CopyDisabledOutputs(struct TLtcDisabledOutputs *pLtcDisabledOutputs);
-
 	bool IsShowSysTime() const {
-		return (m_tLtcParams.nShowSysTime != 0);
+		return (m_Params.nShowSysTime != 0);
 	}
 
 	bool IsTimeSyncDisabled() const {
-		return (m_tLtcParams.nDisableTimeSync == 1);
+		return (m_Params.nDisableTimeSync == 1);
 	}
 
 	uint8_t GetYear() const {
-		return m_tLtcParams.nYear;
+		return m_Params.nYear;
 	}
 
 	uint8_t GetMonth() const {
-		return m_tLtcParams.nMonth;
+		return m_Params.nMonth;
 	}
 
 	uint8_t GetDay() const {
-		return m_tLtcParams.nDay;
+		return m_Params.nDay;
 	}
 
 	bool IsNtpEnabled() const {
-		return (m_tLtcParams.nEnableNtp == 1);
+		return (m_Params.nEnableNtp == 1);
 	}
 
 	bool IsSetDate() const {
-		return (m_tLtcParams.nSetDate == 1);
+		return (m_Params.nSetDate == 1);
 	}
 
 	uint8_t GetFps() const {
-		return m_tLtcParams.nFps;
+		return m_Params.nFps;
 	}
 
 	bool IsOscEnabled() const {
-		return (m_tLtcParams.nEnableOsc == 1);
+		return (m_Params.nEnableOsc == 1);
 	}
 
 	uint16_t GetOscPort(bool &bIsSet) {
-		bIsSet = isMaskSet(LtcParamsMask::OSC_PORT);
-		return m_tLtcParams.nOscPort;
+		bIsSet = isMaskSet(ltcparams::Mask::OSC_PORT);
+		return m_Params.nOscPort;
 	}
 
 	bool IsWS28xxEnabled() const {
-		return (m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::WS28XX);
+		return (m_Params.nRgbLedType == ltcparams::RgbLedType::WS28XX);
 	}
 
 	bool IsRgbPanelEnabled() const {
-		return (m_tLtcParams.nRgbLedType == TLtcParamsRgbLedType::RGBPANEL);
+		return (m_Params.nRgbLedType == ltcparams::RgbLedType::RGBPANEL);
 	}
 
 	bool IsAltFunction() const {
-		return (m_tLtcParams.nAltFunction == 1);
+		return (m_Params.nAltFunction == 1);
 	}
 
 	uint8_t GetSkipSeconds() const {
-		return m_tLtcParams.nSkipSeconds;
+		return m_Params.nSkipSeconds;
 	}
 
 	uint8_t GetSkipFree() const {
-		return (m_tLtcParams.nSkipFree == 1);
+		return (m_Params.nSkipFree == 1);
 	}
 
 	uint32_t GetTimecodeIp() const {
-		return m_tLtcParams.nTimeCodeIp;
+		return m_Params.nTimeCodeIp;
 	}
-
-	void StartTimeCodeCopyTo(TLtcTimeCode *ptStartTimeCode);
-	void StopTimeCodeCopyTo(TLtcTimeCode *ptStopTimeCode);
 
     static void staticCallbackFunction(void *p, const char *s);
 
@@ -226,15 +226,15 @@ private:
 
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tLtcParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 	bool isDisabledOutputMaskSet(uint8_t nMask) const {
-		return (m_tLtcParams.nDisabledOutputs & nMask) == nMask;
+		return (m_Params.nDisabledOutputs & nMask) == nMask;
 	}
 
 private:
     LtcParamsStore 	*m_pLTcParamsStore;
-    struct TLtcParams m_tLtcParams;
+    ltcparams::Params m_Params;
 };
 
 #endif /* LTCPARAMS_H_ */

@@ -46,27 +46,7 @@
 
 #include "debug.h"
 
-using namespace lightset;
-
 static constexpr char LANGUAGE[2] = { 'e', 'n' };
-
-#if defined(H3)
-# include "h3_board.h"
-  static constexpr char DEVICE_LABEL[] = H3_BOARD_NAME " RDM Responder";
-#elif defined (GD32)
-# include "gd32_board.h"
-  static constexpr char DEVICE_LABEL[] = GD32_BOARD_NAME " RDM Responder";
-#elif defined (RASPPI)
-  static constexpr char DEVICE_LABEL[] = "Raspberry Pi RDM Responder";
-#elif defined (__CYGWIN__)
-  static constexpr char DEVICE_LABEL[] = "Cygwin RDM Responder";
-#elif defined (__linux__)
-  static constexpr char DEVICE_LABEL[] = "Linux RDM Responder";
-#elif defined (__APPLE__)
-  static constexpr char DEVICE_LABEL[] = "MacOS RDM Responder";
-#else
-  static constexpr char DEVICE_LABEL[] = "RDM Responder";
-#endif
 
 RDMDeviceResponder *RDMDeviceResponder::s_pThis = nullptr;
 
@@ -92,15 +72,8 @@ RDMDeviceResponder::RDMDeviceResponder(RDMPersonality **pRDMPersonalities, uint3
 	const auto *pLightSet = m_pRDMPersonalities[rdm::device::responder::DEFAULT_CURRENT_PERSONALITY - 1]->GetLightSet();
 
 	if (pLightSet == nullptr) {
-		m_nDmxStartAddressFactoryDefault = lightset::Dmx::ADDRESS_INVALID;
+		m_nDmxStartAddressFactoryDefault = lightset::dmx::ADDRESS_INVALID;
 	}
-
-	TRDMDeviceInfoData info;
-
-	info.data = const_cast<char*>(DEVICE_LABEL);
-	info.length = sizeof(DEVICE_LABEL) - 1;
-
-	RDMDevice::SetLabel(&info);
 
 	DEBUG_EXIT
 }

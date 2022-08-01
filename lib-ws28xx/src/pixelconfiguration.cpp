@@ -2,7 +2,7 @@
  * @file pixelconfiguration.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,7 @@
 
 #include "pixelconfiguration.h"
 #include "pixeltype.h"
+#include "gamma/gamma_tables.h"
 
 #include "debug.h"
 
@@ -40,7 +41,7 @@ using namespace pixel;
 void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 	DEBUG_ENTRY
 
-	if (m_Type == Type::SK6812W) {
+	if (m_type == Type::SK6812W) {
 		m_nCount = m_nCount <= static_cast<uint16_t>(max::ledcount::RGBW) ? m_nCount : static_cast<uint16_t>(max::ledcount::RGBW);
 		nLedsPerPixel = 4;
 	} else {
@@ -48,7 +49,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		nLedsPerPixel = 3;
 	}
 
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)){
+	if ((m_type == Type::APA102) || (m_type == Type::SK9822)){
 		if (m_nGlobalBrightness > 0x1F) {
 			m_nGlobalBrightness = 0xFF;
 		} else {
@@ -56,16 +57,14 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		}
 	}
 
-	if ((m_Type == Type::WS2801) || (m_Type == Type::APA102) || (m_Type == Type::SK9822) || (m_Type == Type::P9813)) {
+	if ((m_type == Type::WS2801) || (m_type == Type::APA102) || (m_type == Type::SK9822) || (m_type == Type::P9813)) {
 		m_bIsRTZProtocol = false;
-		m_nLowCode = 0x00;
-		m_nHighCode = 0xFF;
 
-		if (m_tRGBMapping == Map::UNDEFINED) {
-			m_tRGBMapping = Map::RGB;
+		if (m_map == Map::UNDEFINED) {
+			m_map = Map::RGB;
 		}
 
-		if (m_Type == Type::P9813) {
+		if (m_type == Type::P9813) {
 			if (m_nClockSpeedHz == 0) {
 				m_nClockSpeedHz = spi::speed::p9813::default_hz;
 			} else if (m_nClockSpeedHz > spi::speed::p9813::max_hz) {
@@ -81,8 +80,8 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 	} else {
 		m_bIsRTZProtocol = true;
 
-		if (m_tRGBMapping == Map::UNDEFINED) {
-			m_tRGBMapping = GetRgbMapping(m_Type);
+		if (m_map == Map::UNDEFINED) {
+			m_map = PixelType::GetMap(m_type);
 		}
 
 		if (m_nLowCode >= m_nHighCode) {
@@ -92,7 +91,7 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 
 		uint8_t nLowCode, nHighCode;
 
-		GetTxH(m_Type, nLowCode, nHighCode);
+		GetTxH(m_type, nLowCode, nHighCode);
 
 		if (m_nLowCode == 0) {
 			m_nLowCode = nLowCode;
@@ -105,38 +104,42 @@ void PixelConfiguration::Validate(uint32_t& nLedsPerPixel) {
 		m_nClockSpeedHz = 6400000;	// 6.4MHz / 8 bits = 800Hz
 	}
 
+	if (m_bEnableGammaCorrection) {
+		if (m_nGammaValue == 0) {
+			m_pGammaTable = gamma::get_table_default(m_type);
+		} else {
+			m_pGammaTable = gamma::get_table(m_nGammaValue);
+		}
+	} else {
+		m_pGammaTable = gamma10_0;
+	}
+
 	DEBUG_EXIT
 }
 
-Map PixelConfiguration::GetRgbMapping(Type tType) {
-	if ((tType == Type::WS2811) || (tType == Type::UCS2903)) {
-		return Map::RGB;
-	}
-
-	if (tType == Type::UCS1903) {
-		return Map::BRG;
-	}
-
-	if (tType == Type::CS8812) {
-		return Map::BGR;
-	}
-
-	return Map::GRB;
-}
-
-void PixelConfiguration::GetTxH(Type tType, uint8_t &nLowCode, uint8_t &nHighCode) {
+void PixelConfiguration::GetTxH(Type type, uint8_t &nLowCode, uint8_t &nHighCode) {
 	nLowCode = 0xC0;
-	nHighCode = (tType == Type::WS2812B ? 0xF8 :
-		(((tType == Type::UCS1903) || (tType == Type::UCS2903) || (tType == Type::CS8812)) ? 0xFC : 0xF0));
+	nHighCode = (type == Type::WS2812B ? 0xF8 :
+		(((type == Type::UCS1903) || (type == Type::UCS2903) || (type == Type::CS8812)) ? 0xFC : 0xF0));
 }
 
-void PixelConfiguration::Dump() {
-#ifndef NDEBUG
-	printf("Type=%s [%u], Count=%u\n", PixelType::GetType(m_Type), static_cast<uint32_t>(m_Type), m_nCount);
-	printf(" [%.2X,%.2X], Mapping=%s [%u]\n", m_nLowCode, m_nHighCode, PixelType::GetMap(m_tRGBMapping), static_cast<uint32_t>(m_tRGBMapping));
-	if ((m_Type == Type::APA102) || (m_Type == Type::SK9822)){
-		printf(" GlobalBrightness=%u\n", m_nGlobalBrightness);
+#include <cstdio>
+
+void PixelConfiguration::Print() {
+	printf("Pixel configuration\n");
+	printf(" Type    : %s [%d]\n", PixelType::GetType(m_type), static_cast<int>(m_type));
+	printf(" Count   : %d\n", m_nCount);
+
+	if (m_bIsRTZProtocol) {
+		printf(" Mapping : %s [%d]\n", PixelType::GetMap(m_map), static_cast<int>(m_map));
+		printf(" T0H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nLowCode), m_nLowCode);
+		printf(" T1H     : %.2f [0x%X]\n", PixelType::ConvertTxH(m_nHighCode), m_nHighCode);
+	} else {
+		if ((m_type == Type::APA102) || (m_type == Type::SK9822)){
+			printf(" GlobalBrightness: %u\n", m_nGlobalBrightness);
+		}
 	}
-	printf(" Clock=%u Hz\n", m_nClockSpeedHz);
-#endif
+
+	printf(" Gamma correction %s\n", m_bEnableGammaCorrection ? "Yes" :  "No");
+	printf(" Clock: %u Hz\n", m_nClockSpeedHz);
 }

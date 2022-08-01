@@ -2,7 +2,7 @@
  * @file dmxconst.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,12 @@
 
 namespace dmx {
 enum class PortDirection {
-	OUTP,
-	INP
+	OUTP, INP, DISABLED
 };
 static constexpr auto START_CODE = 0U;				///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
+namespace min {
+static constexpr auto CHANNELS = 2U;
+}  // namespace min
 namespace max {
 static constexpr auto CHANNELS = 512U;
 }  // namespace max

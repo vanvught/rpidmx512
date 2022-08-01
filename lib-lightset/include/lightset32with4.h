@@ -2,7 +2,7 @@
  * @file lightset32with4.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,10 +28,30 @@
 
 #include "lightset.h"
 
+#include "debug.h"
+
 class LightSet32with4 final: public LightSet {
 public:
-	LightSet32with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {}
+	LightSet32with4(LightSet *pA, LightSet *pB) : m_pA(pA), m_pB(pB) {
+		DEBUG_PRINTF("%p %p", m_pA, m_pB);
+	}
 	~LightSet32with4() override {}
+
+	void SetLightSetA(LightSet *pA) {
+		m_pA = pA;
+	}
+
+	LightSet *GetLightSetA() const {
+		return m_pA;
+	}
+
+	void SetLightSetB(LightSet *pB) {
+		m_pB = pB;
+	}
+
+	LightSet *GetLightSetB() const {
+		return m_pB;
+	}
 
 	void Start(uint32_t nPortIndex) override {
 		if ((nPortIndex < 32) && (m_pA != nullptr)) {
@@ -83,7 +103,7 @@ public:
 	}
 
 	uint16_t GetDmxStartAddress() override {
-		return lightset::Dmx::ADDRESS_INVALID;
+		return lightset::dmx::ADDRESS_INVALID;
 	}
 
 	uint16_t GetDmxFootprint() override {

@@ -44,10 +44,6 @@ static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 DmxInput::DmxInput() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < CHAR_BIT; i++) {
-		Stop(i);
-	}
-
 	DEBUG_EXIT
 }
 

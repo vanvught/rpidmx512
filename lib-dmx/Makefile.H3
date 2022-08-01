@@ -1,5 +1,6 @@
 DEFINES=NDEBUG #DO_NOT_USE_UART0 
-EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include ../lib-network/include
+
+EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq (,$(findstring OUTPUT_DMX_SEND_MULTI,$(MAKE_FLAGS)))
@@ -12,4 +13,5 @@ else
 	EXTRA_SRCDIR+=src/h3/multi
 endif
 
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
