@@ -34,8 +34,11 @@
 #include "ltcdisplayparams.h"
 #include "ltcdisplayparamsconst.h"
 
-#include "pixeltype.h"
 #include "devicesparamsconst.h"
+
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+# include "pixeltype.h"
+#endif
 
 void LtcDisplayParams::Dump() {
 #ifndef NDEBUG
@@ -45,6 +48,7 @@ void LtcDisplayParams::Dump() {
 		printf(" %s=%d [%s]\n", LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxDisplayType, m_tLtcDisplayParams.nWS28xxDisplayType == static_cast<uint8_t>(ltcdisplayrgb::WS28xxType::SEGMENT) ? "7segment" : "matrix");
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_TYPE)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)), static_cast<int>(m_tLtcDisplayParams.nWS28xxType));
 	}
@@ -52,6 +56,7 @@ void LtcDisplayParams::Dump() {
 	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_RGB_MAPPING)) {
 		printf(" %s=%s [%d]\n", DevicesParamsConst::MAP, PixelType::GetMap(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), static_cast<int>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
+#endif
 
 	if (isMaskSet(ltcdisplayparams::Mask::DISPLAYRGB_INTENSITY)) {
 		printf(" %s=%d\n", LtcDisplayParamsConst::INTENSITY, m_tLtcDisplayParams.nDisplayRgbIntensity);

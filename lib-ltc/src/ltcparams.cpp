@@ -349,8 +349,16 @@ void LtcParams::Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode 
 	g_ltc_ptLtcDisabledOutputs.bEtc = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::ETC);
 	g_ltc_ptLtcDisabledOutputs.bNtp = (m_Params.nEnableNtp == 0);
 	g_ltc_ptLtcDisabledOutputs.bRtpMidi = isDisabledOutputMaskSet(LtcParamsMaskDisabledOutputs::RTPMIDI);
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	g_ltc_ptLtcDisabledOutputs.bWS28xx = (m_Params.nRgbLedType != ltcparams::RgbLedType::WS28XX);
+#else
+	g_ltc_ptLtcDisabledOutputs.bWS28xx = false;
+#endif
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	g_ltc_ptLtcDisabledOutputs.bRgbPanel = (m_Params.nRgbLedType != ltcparams::RgbLedType::RGBPANEL);
+#else
+	g_ltc_ptLtcDisabledOutputs.bRgbPanel = false;
+#endif
 
 	assert (g_ltc_ptLtcDisabledOutputs.bWS28xx || g_ltc_ptLtcDisabledOutputs.bRgbPanel);
 

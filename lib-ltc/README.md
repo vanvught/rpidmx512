@@ -39,3 +39,84 @@ Supported output :
 Prototype open hardware is available here : [https://github.com/vanvught/h3dmx512-zip/tree/master/eagle/Orange-Pi-Zero](https://github.com/vanvught/h3dmx512-zip/tree/master/eagle/Orange-Pi-Zero)
 
 [http://www.orangepi-dmx.org/orange-pi-smpte-timecode-ltc-reader-converter](http://www.orangepi-dmx.org/orange-pi-smpte-timecode-ltc-reader-converter)
+
+## Timers
+
+<table>
+	<tr>
+		<th>Class</th>
+		<th>Timer 0</th>
+		<th>Timer 1</th>
+		<th>Timer ARM Physical</th>
+		<th>Timer ARM Virtual</th>
+	</tr>
+	<tr>
+		<td>ArtNetReader</td>
+		<td></td>
+		<td></td>
+		<td>gv_ltc_nUpdatesPerSecond</td>
+		<td></td>
+	</tr>	
+	<tr>
+		<td>LtcEtcReader</td>
+		<td></td>
+		<td></td>
+		<td>gv_ltc_nUpdatesPerSecond</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LtcGenerator</td>
+		<td>gv_ltc_bTimeCodeAvailable = true</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LtcMidiSystemRealtime</td>
+		<td></td>
+		<td></td>
+		<td></td>
+		<td>BPM</td>
+	</tr>
+	<tr>
+		<td>LtcOutputs</td>
+		<td></td>
+		<td>sv_isMidiQuarterFrameMessage = true</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>LtcReader</td>
+		<td></td>
+		<td></td>
+		<td>gv_ltc_nUpdatesPerSecond</td>
+		<td></td>
+	</tr>
+		<td>MidiReader</td>
+		<td>class Midi</td>
+		<td>gv_ltc_bTimeCodeAvailable = true</td>
+		<td></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>RtpMidiReader</td>
+		<td>gv_ltc_bTimeCodeAvailable = true</td>
+		<td></td>
+		<td>gv_ltc_nUpdatesPerSecond</td>
+		<td></td>
+	</tr>
+	<tr>
+		<td>SystimeReader</td>
+		<td>gv_ltc_bTimeCodeAvailable = true</td>
+		<td></td>
+		<td></td>
+		<td></td>
+	</tr>
+	</tr>
+		<td>TCNetReader</td>
+		<td></td>
+		<td></td>
+		<td>gv_ltc_nUpdatesPerSecond</td>
+		<td></td>
+	</tr>	
+</table>

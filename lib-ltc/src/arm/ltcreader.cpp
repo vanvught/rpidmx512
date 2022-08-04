@@ -34,18 +34,6 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
-#include "h3.h"
-#include "h3_board.h"
-#include "h3_gpio.h"
-#include "h3_timer.h"
-#include "h3_hs_timer.h"
-
-#include "irq_timer.h"
-
-#include "arm/arm.h"
-#include "arm/synchronize.h"
-#include "arm/gic.h"
-
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
@@ -53,8 +41,12 @@
 #include "ltcetc.h"
 #include "ltcoutputs.h"
 
-#if __GNUC__ > 8
-# pragma GCC target ("general-regs-only")
+#include "platform_ltc.h"
+
+#if defined (H3)
+# if __GNUC__ > 8
+#  pragma GCC target ("general-regs-only")
+# endif
 #endif
 
 #ifndef ALIGNED
@@ -69,9 +61,6 @@
 #define END_DATA_POSITION	63
 #define END_SYNC_POSITION	77
 #define END_SMPTE_POSITION	80
-
-static volatile bool IsMidiQuarterFrameMessage;
-static uint32_t nMidiQuarterFramePiece = 0;
 
 static volatile uint32_t nFiqUsPrevious = 0;
 static volatile uint32_t nFiqUsCurrent = 0;
@@ -88,16 +77,22 @@ static volatile uint8_t aTimeCodeBits[8] ALIGNED;
 static volatile bool bIsDropFrameFlagSet = false;
 
 static volatile bool bTimeCodeAvailable;
-static volatile struct midi::Timecode s_tMidiTimeCode = { 0, 0, 0, 0, static_cast<uint8_t>(midi::TimecodeType::EBU) };
+static volatile struct midi::Timecode s_midiTimeCode = { 0, 0, 0, 0, static_cast<uint8_t>(midi::TimecodeType::EBU) };
 
-// ARM Generic Timer
-static volatile uint32_t nUpdatesPerSecond = 0;
-static volatile uint32_t nUpdatesPrevious = 0;
-static volatile uint32_t nUpdates = 0;
+#if defined (H3)
+static void arm_timer_handler(void) {
+	gv_ltc_nUpdatesPerSecond = gv_ltc_nUpdates - gv_ltc_nUpdatesPrevious;
+	gv_ltc_nUpdatesPrevious = gv_ltc_nUpdates;
+}
 
 static void __attribute__((interrupt("FIQ"))) fiq_handler() {
-	dmb();
+#elif defined (GD32)
+extern "C" {
+void EXTI4_IRQHandler() {
+#endif
+	__DMB();
 
+#if defined (H3)
 	nFiqUsCurrent = h3_hs_timer_lo_us();
 
 	H3_PIO_PA_INT->STA = static_cast<uint32_t>(~0x0);
@@ -108,6 +103,8 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 	} else {
 		nBitTime = nFiqUsCurrent - nFiqUsPrevious;
 	}
+#elif defined (GD32)
+#endif
 
 	nFiqUsPrevious = nFiqUsCurrent;
 
@@ -160,50 +157,39 @@ static void __attribute__((interrupt("FIQ"))) fiq_handler() {
 		}
 
 		if (bTimeCodeValid) {
-			nUpdates++;
+			gv_ltc_nUpdates++;
 
 			bTimeCodeValid = false;
 
-			s_tMidiTimeCode.nFrames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
-			s_tMidiTimeCode.nSeconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
-			s_tMidiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
-			s_tMidiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
+			s_midiTimeCode.nFrames  = static_cast<uint8_t>((10 * (aTimeCodeBits[1] & 0x03)) + (aTimeCodeBits[0] & 0x0F));
+			s_midiTimeCode.nSeconds = static_cast<uint8_t>((10 * (aTimeCodeBits[3] & 0x07)) + (aTimeCodeBits[2] & 0x0F));
+			s_midiTimeCode.nMinutes = static_cast<uint8_t>((10 * (aTimeCodeBits[5] & 0x07)) + (aTimeCodeBits[4] & 0x0F));
+			s_midiTimeCode.nHours   = static_cast<uint8_t>((10 * (aTimeCodeBits[7] & 0x03)) + (aTimeCodeBits[6] & 0x0F));
 
 			bIsDropFrameFlagSet = (aTimeCodeBits[1] & (1 << 2));
 
 			bTimeCodeAvailable = true;
-			dmb();
 		}
 	}
 
-	dmb();
+	__DMB();
 }
-
-static void arm_timer_handler(void) {
-	nUpdatesPerSecond = nUpdates - nUpdatesPrevious;
-	nUpdatesPrevious = nUpdates;
+#if defined (GD32)
 }
-
-static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
-	IsMidiQuarterFrameMessage = true;
-}
+#endif
 
 void LtcReader::Start() {
 	bTimeCodeAvailable = false;
-	IsMidiQuarterFrameMessage = false;
 
+#if defined (H3)
 	/**
-	 * IRQ
+	 * IRQ Timer
 	 */
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
-
-	irq_timer_set(IRQ_TIMER_1, static_cast<thunk_irq_timer_t>(irq_timer1_midi_handler));
-	H3_TIMER->TMR1_CTRL &= ~TIMER_CTRL_SINGLE_MODE;
-
 	irq_timer_init();
 
 	/**
-	 * FIQ
+	 * FIQ GPIO
 	 */
 	h3_gpio_fsel(GPIO_EXT_26, GPIO_FSEL_EINT);
 
@@ -217,75 +203,74 @@ void LtcReader::Start() {
 	H3_PIO_PA_INT->DEB = 1;
 
 	__enable_fiq();
+#elif defined (GD32)
+	platform::ltc::timer6_config();
+#endif
 }
 
 void LtcReader::Run() {
 	ltc::Type TimeCodeType;
 
-	dmb();
+	__DMB();
 	if (bTimeCodeAvailable) {
-		dmb();
+		__DMB();
 		bTimeCodeAvailable = false;
 		TimeCodeType = ltc::Type::UNKNOWN;
 
-		dmb();
+		__DMB();
 		if (bIsDropFrameFlagSet) {
 			TimeCodeType = ltc::Type::DF;
 		} else {
-			if (nUpdatesPerSecond <= 24) {
+			if (gv_ltc_nUpdatesPerSecond <= 24) {
 				TimeCodeType = ltc::Type::FILM;
-			} else if (nUpdatesPerSecond <= 26) {
+			} else if (gv_ltc_nUpdatesPerSecond <= 26) {
 				TimeCodeType = ltc::Type::EBU;
-			} else if (nUpdatesPerSecond >= 28) {
+			} else if (gv_ltc_nUpdatesPerSecond >= 28) {
 				TimeCodeType = ltc::Type::SMPTE;
 			} else {
 			}
 		}
 
-		s_tMidiTimeCode.nType = static_cast<uint8_t>(TimeCodeType);
+		s_midiTimeCode.nType = static_cast<uint8_t>(TimeCodeType);
 
-		struct ltc::TimeCode tLtcTimeCode;
+		struct ltc::TimeCode ltcTimeCode;
 
-		tLtcTimeCode.nFrames = s_tMidiTimeCode.nFrames;
-		tLtcTimeCode.nSeconds = s_tMidiTimeCode.nSeconds;
-		tLtcTimeCode.nMinutes = s_tMidiTimeCode.nMinutes;
-		tLtcTimeCode.nHours = s_tMidiTimeCode.nHours;
-		tLtcTimeCode.nType = s_tMidiTimeCode.nType;
+		ltcTimeCode.nFrames = s_midiTimeCode.nFrames;
+		ltcTimeCode.nSeconds = s_midiTimeCode.nSeconds;
+		ltcTimeCode.nMinutes = s_midiTimeCode.nMinutes;
+		ltcTimeCode.nHours = s_midiTimeCode.nHours;
+		ltcTimeCode.nType = s_midiTimeCode.nType;
 
 		if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&tLtcTimeCode));
+			ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&ltcTimeCode));
 		}
 
 		if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
-			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
+			RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
 		if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
-			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
+			LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		}
 
 		if (m_nTypePrevious != TimeCodeType) {
 			m_nTypePrevious = TimeCodeType;
 
-			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)));
+			Midi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 
+#if defined (H3)
 			H3_TIMER->TMR1_INTV = TimeCodeConst::TMR_INTV[static_cast<uint32_t>(TimeCodeType)] / 4;
 			H3_TIMER->TMR1_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
-
-			nMidiQuarterFramePiece = 0;
+#elif defined (GD32)
+#endif
 		}
 
-		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&tLtcTimeCode));
+		LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&ltcTimeCode));
 	}
 
-	dmb();
-	if ((nUpdatesPerSecond >= 24) && (nUpdatesPerSecond <= 30)) {
-		dmb();
-		if (__builtin_expect((IsMidiQuarterFrameMessage), 0)) {
-			dmb();
-			IsMidiQuarterFrameMessage = false;
-			Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(const_cast<struct midi::Timecode *>(&s_tMidiTimeCode)), nMidiQuarterFramePiece);
-		}
+	__DMB();
+	if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
+		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<struct ltc::TimeCode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
 	} else {
 		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
