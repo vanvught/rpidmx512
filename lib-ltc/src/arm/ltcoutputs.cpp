@@ -42,7 +42,11 @@
 #include "ltc7segment.h"
 #include "display.h"
 #include "ltcdisplaymax7219.h"
-#include "ltcdisplayrgb.h"
+#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined (CONFIG_LTC_DISABLE_WS28XX))
+# include "ltcdisplayrgb.h"
+#else
+# define LTC_NO_DISPLAY_RGB
+#endif
 
 #include "platform_ltc.h"
 
@@ -55,25 +59,22 @@ static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
 #elif defined (GD32)
 #endif
 
-LtcOutputs *LtcOutputs::s_pThis = nullptr;
+LtcOutputs *LtcOutputs::s_pThis;
 
-using namespace ltc;
-
-LtcOutputs::LtcOutputs(Source tSource, bool bShowSysTime): m_bShowSysTime(bShowSysTime)
-{
+LtcOutputs::LtcOutputs(ltc::Source source, bool bShowSysTime): m_bShowSysTime(bShowSysTime) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
 	memset(m_cBPM, 0, sizeof(m_cBPM));
 	memcpy(m_cBPM, "BPM: ", 5);
 
-	g_ltc_ptLtcDisabledOutputs.bMidi |= (tSource == Source::MIDI);
-	g_ltc_ptLtcDisabledOutputs.bArtNet |= (tSource == Source::ARTNET);
-	g_ltc_ptLtcDisabledOutputs.bLtc |= (tSource == Source::LTC);
-	g_ltc_ptLtcDisabledOutputs.bRtpMidi |= (tSource == Source::APPLEMIDI);
-	g_ltc_ptLtcDisabledOutputs.bEtc |= (tSource == Source::ETC);
+	g_ltc_ptLtcDisabledOutputs.bMidi |= (source == ltc::Source::MIDI);
+	g_ltc_ptLtcDisabledOutputs.bArtNet |= (source == ltc::Source::ARTNET);
+	g_ltc_ptLtcDisabledOutputs.bLtc |= (source == ltc::Source::LTC);
+	g_ltc_ptLtcDisabledOutputs.bRtpMidi |= (source == ltc::Source::APPLEMIDI);
+	g_ltc_ptLtcDisabledOutputs.bEtc |= (source == ltc::Source::ETC);
 	// Display's
-	g_ltc_ptLtcDisabledOutputs.bRgbPanel |= ((tSource == Source::LTC) || (tSource == Source::MIDI));
+	g_ltc_ptLtcDisabledOutputs.bRgbPanel |= ((source == ltc::Source::LTC) || (source == ltc::Source::MIDI));
 	g_ltc_ptLtcDisabledOutputs.bMax7219 |= (!g_ltc_ptLtcDisabledOutputs.bWS28xx || !g_ltc_ptLtcDisabledOutputs.bRgbPanel);
 	g_ltc_ptLtcDisabledOutputs.bOled |= (!g_ltc_ptLtcDisabledOutputs.bRgbPanel);
 	//
@@ -123,10 +124,11 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 			Display::Get()->TextLine(2, ltc::get_type(static_cast<ltc::Type>(ptLtcTimeCode->nType)), ltc::timecode::TYPE_MAX_LENGTH);
 		}
 
+#if !defined(CONFIG_LTC_DISABLE_RGB_PANEL)
 		if (!g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
 			LtcDisplayRgb::Get()->ShowFPS(static_cast<ltc::Type>(ptLtcTimeCode->nType));
 		}
-
+#endif
 		Ltc7segment::Get()->Show(static_cast<ltc::Type>(ptLtcTimeCode->nType));
 
 		m_aTimeCode[ltc::timecode::index::COLON_3] = (ptLtcTimeCode->nType != static_cast<uint8_t>(ltc::Type::DF) ? ':' : ';');
@@ -142,17 +144,19 @@ void LtcOutputs::Update(const struct ltc::TimeCode *ptLtcTimeCode) {
 		LtcDisplayMax7219::Get()->Show(m_aTimeCode);
 	}
 
+#if !defined(LTC_NO_DISPLAY_RGB)
 	if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
 		LtcDisplayRgb::Get()->Show(m_aTimeCode);
 	}
+#endif
 }
 
-void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *ptLtcTimeCode) {
+void LtcOutputs::UpdateMidiQuarterFrameMessage(const struct ltc::TimeCode *pltcTimeCode) {
 	__DMB();
 
 	if (__builtin_expect((sv_isMidiQuarterFrameMessage), 0)) {
 		sv_isMidiQuarterFrameMessage = false;
-		Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(ptLtcTimeCode), m_nMidiQuarterFramePiece);
+		Midi::Get()->SendQf(reinterpret_cast<const struct midi::Timecode *>(pltcTimeCode), m_nMidiQuarterFramePiece);
 	}
 }
 
@@ -179,10 +183,11 @@ void LtcOutputs::ShowSysTime() {
 			LtcDisplayMax7219::Get()->ShowSysTime(m_aSystemTime);
 		}
 
+#if !defined(LTC_NO_DISPLAY_RGB)
 		if ((!g_ltc_ptLtcDisabledOutputs.bWS28xx) || (!g_ltc_ptLtcDisabledOutputs.bRgbPanel)) {
 			LtcDisplayRgb::Get()->ShowSysTime(m_aSystemTime);
 		}
-
+#endif
 		ResetTimeCodeTypePrevious();
 	}
 }
@@ -218,9 +223,11 @@ void LtcOutputs::ShowBPM(uint32_t nBPM) {
 		Display::Get()->PutString(&m_cBPM[5]);
 	}
 
+#if !defined(LTC_NO_DISPLAY_RGB)
 	if (!g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
 		LtcDisplayRgb::Get()->ShowInfo(m_cBPM);
 	}
+#endif
 }
 
 static void print_disabled(const bool IsDisabled, const char *pString) {

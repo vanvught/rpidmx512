@@ -1,5 +1,5 @@
 /**
- * @file ltcdisplayws28xx.h
+ * @file ltcdisplayrgb.h
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
@@ -31,7 +31,9 @@
 
 #include "ltcdisplayrgbset.h"
 
-#include "pixeltype.h"
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+# include "pixeltype.h"
+#endif
 
 namespace ltcdisplayrgb {
 enum class Type {
@@ -51,7 +53,9 @@ enum class ColourIndex {
 };
 
 struct Defaults {
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	static constexpr auto LED_TYPE = pixel::Type::WS2812B;
+#endif
 	static constexpr auto COLOUR_TIME = 0x00FF0000;
 	static constexpr auto COLOUR_COLON = 0x00FFFC00;
 	static constexpr auto COLOUR_MESSAGE = 0x00FFFFFF;
@@ -69,9 +73,11 @@ public:
 	LtcDisplayRgb(ltcdisplayrgb::Type type, ltcdisplayrgb::WS28xxType WS28xxType);
 	~LtcDisplayRgb();
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	void SetMapping(pixel::Map map) {
 		m_tMapping = map;
 	}
+#endif
 
 	void SetMaster(uint8_t nValue) {
 		m_nMaster = nValue;
@@ -88,7 +94,11 @@ public:
 		m_aColour[static_cast<uint32_t>(colourIndex)] = nRGB;
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	void Init(pixel::Type tLedType = pixel::Type::WS2812B);
+#else
+	void Init();
+#endif
 	void Print();
 
 	void Run();
@@ -119,8 +129,10 @@ private:
 	ltcdisplayrgb::WS28xxType m_tDisplayRgbWS28xxType;
 	uint8_t m_nIntensity { ltcdisplayrgb::Defaults::GLOBAL_BRIGHTNESS };
 	int32_t m_nHandle { -1 };
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	pixel::Map m_tMapping { pixel::Map::UNDEFINED };
 	pixel::Type m_tLedType { pixel::Type::UNDEFINED };
+#endif
 	uint32_t m_aColour[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)];
 	uint32_t m_nMaster { ltcdisplayrgb::Defaults::MASTER };
 	uint32_t m_nMsgTimer { 0 };

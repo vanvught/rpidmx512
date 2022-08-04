@@ -28,7 +28,11 @@
 #include "tcnet.h"
 #include "display.h"
 
-#include "ltcdisplayrgb.h"
+#if !(defined(CONFIG_LTC_DISABLE_RGB_PANEL) && defined (CONFIG_LTC_DISABLE_WS28XX))
+# include "ltcdisplayrgb.h"
+#else
+# define LTC_NO_DISPLAY_RGB
+#endif
 
 namespace tcnet {
 namespace display {
@@ -46,9 +50,11 @@ void show() {
 		Display::Get()->PutString(sFps[TCNet::Get()->GetTimeCodeType()]);
 	}
 
+#if !defined(LTC_NO_DISPLAY_RGB)
 	char Info[9] = "Layer  ";
 	Info[6] = TCNet::GetLayerName(TCNet::Get()->GetLayer());
 	LtcDisplayRgb::Get()->ShowInfo(Info);
+#endif
 }
 }  // namespace display
 }  // namespace tcnet

@@ -1,10 +1,16 @@
-DEFINES =LIGHTSET_PORTS=1
+DEFINES =
 DEFINES+=NDEBUG
 
-EXTRA_INCLUDES =../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include ../lib-rgbpanel/include ../lib-device/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
-EXTRA_INCLUDES+=../lib-h3/CMSIS/Include
+EXTRA_INCLUDES=../lib-h3/CMSIS/Include
 
-EXTRA_SRCDIR=src/arm
+EXTRA_SRCDIR=
 
+ifneq ($(MAKE_FLAGS),)
+else
+	EXTRA_SRCDIR+=src/displayrgb src/displayrgb/panel src/displayrgb/ws28xx
+	EXTRA_INCLUDES+=../lib-rgbpanel/include ../lib-ws28xxdisplay/include ../lib-ws28xx/include
+endif
+
+include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
 

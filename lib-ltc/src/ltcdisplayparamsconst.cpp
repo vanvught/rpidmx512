@@ -2,7 +2,7 @@
  * @file ltcdisplayparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,6 @@
 #include <cstdint>
 
 #include "ltcdisplayparamsconst.h"
-#include "ltcdisplayrgb.h"
-
-using namespace ltcdisplayrgb;
 
 const char LtcDisplayParamsConst::FILE_NAME[] = "ldisplay.txt";
 
@@ -57,7 +54,7 @@ const char LtcDisplayParamsConst::MAX7219_INTENSITY[] = "max7219_intensity";
 
 const char LtcDisplayParamsConst::INTENSITY[] = "intensity";
 const char LtcDisplayParamsConst::COLON_BLINK_MODE[] = "colon_blink_mode";
-const char LtcDisplayParamsConst::COLOUR[static_cast<uint32_t>(ColourIndex::LAST)][24] =
+const char LtcDisplayParamsConst::COLOUR[static_cast<uint32_t>(ltcdisplayrgb::ColourIndex::LAST)][24] =
 	{ "colour_time",
 	  "colour_colon",
 	  "colour_message",

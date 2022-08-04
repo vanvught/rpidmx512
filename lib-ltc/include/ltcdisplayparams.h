@@ -98,9 +98,11 @@ public:
 		return m_tLtcDisplayParams.nMax7219Intensity;
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	pixel::Type GetWS28xxLedType() const {
 		return static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType);
 	}
+#endif
 
 	ltcdisplayrgb::WS28xxType GetWS28xxDisplayType() const {
 		return static_cast<ltcdisplayrgb::WS28xxType>(m_tLtcDisplayParams.nWS28xxDisplayType);

@@ -45,6 +45,34 @@
 
 #include "debug.h"
 
+#if !defined(CONFIG_LTC_DISABLE_GPIO_BUTTONS)
+# define BUTTON(x)			((m_nButtons >> x) & 0x01)
+# define BUTTON_STATE(x)	((m_nButtons & (1 << x)) == (1 << x))
+
+# define BUTTON0_GPIO		GPIO_EXT_22		// PA2 Start
+# define BUTTON1_GPIO		GPIO_EXT_15		// PA3 Stop
+# define BUTTON2_GPIO		GPIO_EXT_7		// PA6 Resume
+
+# define BUTTONS_MASK		((1 << BUTTON0_GPIO) |  (1 << BUTTON1_GPIO) | (1 << BUTTON2_GPIO))
+
+# if defined (H3)
+# else
+#  error
+# endif
+#endif
+
+#if defined (H3)
+static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
+	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+		LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+	}
+
+	gv_ltc_bTimeCodeAvailable = true;
+}
+#elif defined (GD32)
+	// Defined in platform_ltc.cpp
+#endif
+
 namespace cmd {
 static constexpr char START[] = "start";
 static constexpr char STOP[] = "stop";
@@ -65,6 +93,10 @@ static constexpr auto DIRECTION = sizeof(cmd::DIRECTION) - 1;
 static constexpr auto PITCH = sizeof(cmd::PITCH) - 1;
 static constexpr auto FORWARD = sizeof(cmd::FORWARD) - 1;
 static constexpr auto BACKWARD = sizeof(cmd::BACKWARD) - 1;
+}
+
+namespace udp {
+static constexpr auto PORT = 0x5443;
 }
 
 static int32_t atoi(const char *pBuffer, uint32_t nSize) {
@@ -120,6 +152,84 @@ LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const 
 	if (m_pStopLtcTimeCode->nFrames >= m_nFps) {
 		m_pStopLtcTimeCode->nFrames = static_cast<uint8_t>(m_nFps - 1);
 	}
+}
+
+void LtcGenerator::Start() {
+	DEBUG_ENTRY
+
+#if !defined(CONFIG_LTC_DISABLE_GPIO_BUTTONS)
+# if defined (H3)
+	h3_gpio_fsel(BUTTON0_GPIO, GPIO_FSEL_EINT); // PA2
+	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);	// PA3
+	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);	// PA6
+
+	h3_gpio_pud(BUTTON0_GPIO, GPIO_PULL_UP);
+	h3_gpio_pud(BUTTON1_GPIO, GPIO_PULL_UP);
+	h3_gpio_pud(BUTTON2_GPIO, GPIO_PULL_UP);
+
+	h3_gpio_int_cfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE);
+	h3_gpio_int_cfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE);
+	h3_gpio_int_cfg(BUTTON2_GPIO, GPIO_INT_CFG_NEG_EDGE);
+
+	H3_PIO_PA_INT->CTL |= BUTTONS_MASK;
+	H3_PIO_PA_INT->STA = BUTTONS_MASK;
+	H3_PIO_PA_INT->DEB = (0x0 << 0) | (0x7 << 4);
+# else
+# endif
+#endif
+
+	m_nHandle = Network::Get()->Begin(udp::PORT);
+	assert(m_nHandle != -1);
+
+#if defined (H3)
+	irq_timer_init();
+	irq_timer_set(IRQ_TIMER_0, static_cast<thunk_irq_timer_t>(irq_timer0_handler));
+
+	H3_TIMER->TMR0_INTV = m_nTimer0Interval;
+	H3_TIMER->TMR0_CTRL &= ~(TIMER_CTRL_SINGLE_MODE);
+	H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD);
+#elif defined (GD32)
+	platform::ltc::timer11_config();
+	TIMER_CH0CV(TIMER11) = m_nTimer0Interval;
+#endif
+
+	LtcOutputs::Get()->Init();
+
+	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+		LtcSender::Get()->SetTimeCode(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
+	}
+
+	if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
+		ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&g_ltc_LtcTimeCode));
+	}
+
+	if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+		RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+	}
+
+	if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+		LtcEtc::Get()->Send(reinterpret_cast<const struct midi::Timecode *>(&g_ltc_LtcTimeCode));
+	}
+
+	LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
+
+	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+
+	DEBUG_EXIT
+}
+
+void LtcGenerator::Stop() {
+	DEBUG_ENTRY
+
+#if defined (H3)
+	__disable_irq();
+	irq_timer_set(IRQ_TIMER_0, nullptr);
+#elif defined (GD32)
+#endif
+
+	m_nHandle = Network::Get()->End(udp::PORT);
+
+	DEBUG_EXIT
 }
 
 void LtcGenerator::ActionStart(bool bDoReset) {
@@ -490,6 +600,31 @@ void LtcGenerator::HandleUdpRequest() {
 	}
 
 	HandleRequest();
+}
+
+void LtcGenerator::HandleButtons() {
+#if !defined(CONFIG_LTC_DISABLE_GPIO_BUTTONS)
+# if defined (H3)
+	m_nButtons = H3_PIO_PA_INT->STA & BUTTONS_MASK;
+# else
+# endif
+
+	if (__builtin_expect((m_nButtons != 0), 0)) {
+# if defined (H3)
+		H3_PIO_PA_INT->STA = BUTTONS_MASK;
+# else
+#endif
+		DEBUG_PRINTF("%d-%d-%d", BUTTON(BUTTON0_GPIO), BUTTON(BUTTON1_GPIO), BUTTON(BUTTON2_GPIO));
+
+		if (BUTTON_STATE(BUTTON0_GPIO)) {
+			ActionStart();
+		} else if (BUTTON_STATE(BUTTON1_GPIO)) {
+			ActionStop();
+		} else if (BUTTON_STATE(BUTTON2_GPIO)) {
+			ActionResume();
+		}
+	}
+#endif
 }
 
 void LtcGenerator::Print() {

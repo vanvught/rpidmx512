@@ -40,9 +40,9 @@ extern volatile uint32_t gv_ltc_nTimeCodeCounter;
 extern struct ltc::TimeCode g_ltc_LtcTimeCode;
 
 #if defined (H3)
-# include "../src/h3/platform_ltc.h"
+# include "../src/arm/h3/platform_ltc.h"
 #elif  defined (GD32)
-# include "../src/gd32/platform_ltc.h"
+# include "../src/arm/gd32/platform_ltc.h"
 #else
 # error platform ltc
 #endif

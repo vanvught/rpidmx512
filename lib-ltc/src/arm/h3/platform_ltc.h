@@ -36,9 +36,19 @@
 
 #pragma GCC diagnostic pop
 
-#include "arm/synchronize.h"
+#include "arm/arm.h"
+#include "arm/gic.h"
+
 #include "h3.h"
 #include "h3_timer.h"
+#include "irq_timer.h"
+
+#include "h3.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
+#include "h3_timer.h"
+#include "h3_hs_timer.h"
+
 #include "irq_timer.h"
 
 #endif /* H3_PLATFORM_LTC_H_ */

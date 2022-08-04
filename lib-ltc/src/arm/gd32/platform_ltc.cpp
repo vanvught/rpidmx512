@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "../arm/platform_ltc.h"
+#include "../src/arm/platform_ltc.h"
 
 extern "C" {
 void TIMER6_IRQHandler() {

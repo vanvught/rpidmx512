@@ -16,7 +16,7 @@ ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 else
 endif
 
-SRCDIR=src src/h3 $(EXTRA_SRCDIR)
+SRCDIR=src src/arm src/arm/h3 src/h3 $(EXTRA_SRCDIR)
 
 #ifeq ($(findstring NDEBUG,$(DEFINES)),NDEBUG)
 #else

@@ -40,7 +40,9 @@
 // Displays
 #include "ltcdisplaymax7219.h"
 #include "ltcdisplayrgb.h"
-#include "pixeltype.h"
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
+# include "pixeltype.h"
+#endif
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -58,11 +60,15 @@ static constexpr auto ROTARY_FULLSTEP = 0x00;
 
 LtcDisplayParams::LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore): m_pLtcDisplayParamsStore(pLtcDisplayParamsStore) {
 	m_tLtcDisplayParams.nSetList = 0;
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	m_tLtcDisplayParams.nWS28xxType = static_cast<uint8_t>(Defaults::LED_TYPE);
+#endif
 	m_tLtcDisplayParams.nGlobalBrightness = Defaults::GLOBAL_BRIGHTNESS;	// Not used
 	m_tLtcDisplayParams.nMax7219Type = static_cast<uint8_t>(ltc::display::max7219::Types::MATRIX);
 	m_tLtcDisplayParams.nMax7219Intensity = defaults::MAX7219_INTENSITY;
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(pixel::Map::RGB);
+#endif
 	m_tLtcDisplayParams.nDisplayRgbIntensity = Defaults::MASTER;
 	m_tLtcDisplayParams.nDisplayRgbColonBlinkMode = static_cast<uint8_t>(Defaults::COLON_BLINK_MODE);
 	m_tLtcDisplayParams.aDisplayRgbColour[static_cast<uint32_t>(ColourIndex::TIME)] = Defaults::COLOUR_TIME;
@@ -185,6 +191,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	nLength = pixel::TYPES_MAX_NAME_LENGTH;
 
 	if (Sscan::Char(pLine, DevicesParamsConst::TYPE, aBuffer, nLength) == Sscan::OK) {
@@ -211,6 +218,7 @@ void LtcDisplayParams::callbackFunction(const char *pLine) {
 		}
 		return;
 	}
+#endif
 
 	if (Sscan::Uint8(pLine, LtcDisplayParamsConst::INTENSITY, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
@@ -280,6 +288,7 @@ void LtcDisplayParams::Builder(const struct ltcdisplayparams::Params *ptLtcDispl
 		builder.AddHex24(LtcDisplayParamsConst::COLOUR[nIndex], m_tLtcDisplayParams.aDisplayRgbColour[nIndex],isMaskSet(ltcdisplayparams::Mask::DISLAYRGB_COLOUR_INDEX << nIndex));
 	}
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	builder.AddComment("WS28xx (specific)");
 	builder.Add(LtcDisplayParamsConst::WS28XX_TYPE, m_tLtcDisplayParams.nWS28xxDisplayType == static_cast<uint8_t>(ltcdisplayrgb::WS28xxType::SEGMENT) ? "7segment" : "matrix" , isMaskSet(ltcdisplayparams::Mask::WS28XX_DISPLAY_TYPE));
 	builder.Add(DevicesParamsConst::TYPE, PixelType::GetType(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)), isMaskSet(ltcdisplayparams::Mask::WS28XX_TYPE));
@@ -289,12 +298,15 @@ void LtcDisplayParams::Builder(const struct ltcdisplayparams::Params *ptLtcDispl
 		m_tLtcDisplayParams.nWS28xxRgbMapping = static_cast<uint8_t>(PixelType::GetMap(static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType)));
 	}
 	builder.Add(DevicesParamsConst::MAP, PixelType::GetMap(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping)), isMaskSet(ltcdisplayparams::Mask::WS28XX_RGB_MAPPING));
+#endif
 
+#if !defined (CONFIG_LTC_DISABLE_RGB_PANEL)
 	builder.AddComment("RGB panel (specific)");
 	char aTemp[sizeof(m_tLtcDisplayParams.aInfoMessage) + 1];
 	memcpy(aTemp, m_tLtcDisplayParams.aInfoMessage, sizeof(m_tLtcDisplayParams.aInfoMessage));
 	aTemp[sizeof(m_tLtcDisplayParams.aInfoMessage)] = '\0';
 	builder.Add(LtcDisplayParamsConst::INFO_MSG, aTemp, isMaskSet(ltcdisplayparams::Mask::INFO_MSG));
+#endif
 
 	nSize = builder.GetSize();
 }
@@ -311,9 +323,11 @@ void LtcDisplayParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {
 	assert(pLtcDisplayRgb != nullptr);
 
+#if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	if (isMaskSet(ltcdisplayparams::Mask::WS28XX_RGB_MAPPING)) {
 		pLtcDisplayRgb->SetMapping(static_cast<pixel::Map>(m_tLtcDisplayParams.nWS28xxRgbMapping));
 	}
+#endif
 
 	if (isMaskSet(ltcdisplayparams::Mask::DISPLAYRGB_INTENSITY)) {
 		pLtcDisplayRgb->SetMaster(m_tLtcDisplayParams.nDisplayRgbIntensity);

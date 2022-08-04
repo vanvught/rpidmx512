@@ -34,10 +34,10 @@ static constexpr char s_source[static_cast<uint32_t>(ltc::Source::UNDEFINED)][9]
 
 const char* LtcParams::GetSourceType(ltc::Source source) {
 	if (source < ltc::Source::UNDEFINED) {
-		return "Undefined";
+		return s_source[static_cast<uint32_t>(source)];
 	}
 
-	return s_source[static_cast<uint32_t>(source)];
+	return "Undefined";
 }
 
 ltc::Source LtcParams::GetSourceType(const char *pType) {

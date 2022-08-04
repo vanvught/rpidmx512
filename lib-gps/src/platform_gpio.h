@@ -2,7 +2,7 @@
  * @file platform_gpio.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 		H3_PIO_PA_INT->DEB = 1;
 	}
 
-	bool platform_is_pps() {
+	inline static bool platform_is_pps() {
 		const auto isPPS = ((H3_PIO_PA_INT->STA & (1 << GPIO_EXT_18)) == (1 << GPIO_EXT_18));
 		if (!isPPS) {
 			return false;
@@ -48,9 +48,34 @@
 # elif defined (GD32)
 #  include "gd32_gpio.h"
 #  include "gd32_board.h"
-	void platform_gpio_init(void) {}
+	/**
+	 * https://www.gd32-dmx.org/dev-board.html
+	 * GPIO_EXT_18 = PA13
+	 */
 
-	bool platform_is_pps(void) {
+	static_assert(GD32_GPIO_TO_NUMBER(GPIO_EXT_18) == 13, "GPIO PIN is not 13");
+	static_assert(GD32_GPIO_TO_PORT(GPIO_EXT_18) == GD32_GPIO_PORTA, "GPIO PORT is not A");
+
+	void platform_gpio_init() {
+		rcu_periph_clock_enable(RCU_GPIOA);
+		gpio_mode_set(GPIOA, GPIO_MODE_INPUT, GPIO_PUPD_NONE, GPIO_PIN_13);
+		/* connect key EXTI line to key GPIO pin */
+		syscfg_exti_line_config(EXTI_SOURCE_GPIOA, EXTI_SOURCE_PIN13);
+		/* configure key EXTI line */
+		exti_init(EXTI_13, EXTI_INTERRUPT, EXTI_TRIG_RISING);
+		exti_interrupt_flag_clear(EXTI_13);
+	}
+
+	inline static bool platform_is_pps() {
+		const uint32_t flag_left = EXTI_PD & (uint32_t) EXTI_13;
+		const uint32_t flag_right = EXTI_INTEN & (uint32_t) EXTI_13;
+
+		if ((RESET != flag_left) && (RESET != flag_right)) {
+			// exti_interrupt_flag_clear(EXTI_13);
+			EXTI_PD = (uint32_t) EXTI_13;
+			return true;
+		}
+
 		return false;
 	}
 # else
