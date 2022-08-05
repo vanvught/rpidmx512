@@ -1,0 +1,19 @@
+# Debug purposes ONLY
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-rdm/include ../lib-properties/include
+
+ifneq ($(MAKE_FLAGS),)
+	ifeq (,$(findstring OUTPUT_DMX_SEND_MULTI,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=src/linux/single
+	else
+		EXTRA_SRCDIR+=src/linux/multi
+	endif
+else
+	DEFINES+=OUTPUT_DMX_SEND_MULTI
+	EXTRA_SRCDIR+=src/linux/multi
+endif
+
+include Rules.mk
+include ../firmware-template-linux/lib/Rules.mk
+

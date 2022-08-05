@@ -86,7 +86,6 @@ linux_osc
 artnet.txt
 e131.txt
 osc.txt
-*.Linux
 *.MacOS
 # 
 lib-bob/examples/si5351a
