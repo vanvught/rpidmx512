@@ -1,8 +1,8 @@
 /**
- * @file board_gd32f103r.h
+ * @file board_gd32f103rc.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_BOARD_GD32F103R_H_
-#define GD32_BOARD_GD32F103R_H_
+#ifndef GD32_BOARD_GD32F103RC_H_
+#define GD32_BOARD_GD32F103RC_H_
 
 #include "gd32_board.h"
 
@@ -41,4 +41,4 @@ static constexpr auto USART2_PORT = 0;
 static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
 static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
 
-#endif /* GD32_BOARD_GD32F103R_H_ */
+#endif /* GD32_BOARD_GD32F103RC_H_ */

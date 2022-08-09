@@ -27,14 +27,13 @@
 #define GD32_LEDBLINK_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "gd32.h"
-
-#if defined (USE_LEDBLINK_BITBANGING595)
-# include "bitbanging595.h"
-#endif
-
+#include "gd32_bitbanging595.h"
 #include "panel_led.h"
+
+#include "debug.h"
 
 extern volatile uint32_t s_nSysTickMillis;
 

@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f407r.h
+ * @file board_gd32f407re.h
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F407R_H_
-#define GPIO_BOARD_GD32F407R_H_
+#ifndef GPIO_BOARD_GD32F407RE_H_
+#define GPIO_BOARD_GD32F407RE_H_
 
 #include "gd32.h"
 
@@ -43,4 +43,4 @@
 #define DEBUG_CS_GPIOx			GPIOA
 #define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
 
-#endif /* GPIO_BOARD_GD32F407R_H_ */
+#endif /* GPIO_BOARD_GD32F407RE_H_ */

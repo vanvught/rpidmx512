@@ -26,12 +26,12 @@
 #ifndef GPIO_PIXELMULTI_CONFIG_H_
 #define GPIO_PIXELMULTI_CONFIG_H_
 
-#if defined (BOARD_GD32F207R)
-# include "board_gd32f207r.h"
+#if defined (BOARD_GD32F207RG)
+# include "board_gd32f207rg.h"
 #elif defined (BOARD_GD32F207C_EVAL)
 # include "board_gd32f207c_eval.h"
-#elif defined (BOARD_GD32F407R)
-# include "board_gd32f407r.h"
+#elif defined (BOARD_GD32F407RE)
+# include "board_gd32f407re.h"
 #elif defined (BOARD_GD32F450VI)
 # include "board_gd32f450vi.h"
 #else

@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f207r.h
+ * @file board_gd32f107rc.h
  *
  */
 /* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,24 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef GPIO_BOARD_GD32F207R_H_
-#define GPIO_BOARD_GD32F207R_H_
+#ifndef GD32_BOARD_GD32F107RC_H_
+#define GD32_BOARD_GD32F107RC_H_
 
-#include "gd32.h"
+#include "gd32_board.h"
 
-#define RCU_GPIOx				RCU_GPIOC
-#define GPIOx					GPIOC
-#define GPIO_PINx				(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
-#define GPIO_PIN_OFFSET			6U
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}
 
-#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ)
+#define DMX_MAX_PORTS  1
 
-/**
- * Implementation note: CLOCK is Timer 2 Channel 0 is GPIOA6
- */
+#define DMX_USE_USART2
+static constexpr auto USART2_PORT = 0;
 
-#define DEBUG_CS_RCU_GPIOx		RCU_GPIOA
-#define DEBUG_CS_GPIOx			GPIOA
-#define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
 
-#endif /* GPIO_BOARD_GD32F207R_H_ */
+#endif /* GD32_BOARD_GD32F107RC_H_ */

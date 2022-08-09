@@ -1,8 +1,8 @@
 /**
- * @file board_gd32f207r.h
+ * @file board_gd32f207rg.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_BOARD_GD32F207R_H_
-#define GD32_BOARD_GD32F207R_H_
+#ifndef GPIO_BOARD_GD32F207RG_H_
+#define GPIO_BOARD_GD32F207RG_H_
 
-#include "gd32_board.h"
+#include "gd32.h"
 
-namespace max {
-static constexpr auto OUT = 2U;
-static constexpr auto IN = 2U;
-}
+#define RCU_GPIOx				RCU_GPIOC
+#define GPIOx					GPIOC
+#define GPIO_PINx				(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13)
+#define GPIO_PIN_OFFSET			6U
 
-#define DMX_MAX_PORTS  2
+#define MASTER_TIMER_CLOCK		(APB2_CLOCK_FREQ)
 
-#define DMX_USE_USART2
-//# define DMX_USE_UART4
-#define DMX_USE_USART5
+/**
+ * Implementation note: CLOCK is Timer 2 Channel 0 is GPIOA6
+ */
 
-static constexpr auto USART2_PORT = 0;
-//static constexpr auto UART4_PORT = 2;
-static constexpr auto USART5_PORT = 1;
+#define DEBUG_CS_RCU_GPIOx		RCU_GPIOA
+#define DEBUG_CS_GPIOx			GPIOA
+#define DEBUG_CS_GPIO_PINx		GPIO_PIN_14
 
-static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
-static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
-
-static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOA;
-static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_11;
-
-//static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
-//static constexpr auto DIR_PORT_2_GPIO_PIN = GPIO_PIN_11;
-
-#endif /* IGD32_BOARD_GD32F207R_H_ */
+#endif /* GPIO_BOARD_GD32F207RG_H_ */

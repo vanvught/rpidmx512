@@ -1,5 +1,5 @@
 /**
- * @file panel_led.h
+ * @file panel_led
  *
  */
 /* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -26,17 +26,10 @@
 #ifndef GD32_PANEL_LED_H_
 #define GD32_PANEL_LED_H_
 
-#include <cstdint>
-
-#if defined (USE_LEDBLINK_BITBANGING595)
-# include "gd32/bitbanging595.h"
-#endif
-
-#include "debug.h"
+#include "gd32_bitbanging595.h"
 
 namespace hal {
-
-#if defined (USE_LEDBLINK_BITBANGING595)
+#if defined(BOARD_GD32F207VC) || defined(BOARD_GD32F450VE)
 inline static void panel_led_on(uint32_t on) {
 	const uint32_t nDMX = on & 0xFFFF;
 
