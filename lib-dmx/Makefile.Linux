@@ -16,4 +16,3 @@ endif
 
 include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk
-

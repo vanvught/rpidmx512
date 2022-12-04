@@ -192,6 +192,10 @@ uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	return 0;
 }
 
+uint32_t GetDmxReceivedCount(__attribute__((unused)) uint32_t nPortIndex) {
+	return 0;
+}
+
 // RDM Send
 
 void Dmx::RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLength) {

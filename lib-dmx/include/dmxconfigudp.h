@@ -33,6 +33,8 @@
 #include "network.h"
 #include "dmx.h"
 
+#include "debug.h"
+
 /**
  * Example's udp message: dmx!break#100  dmx!refresh#30 dmx!mab#20 dmx!slots#128
  * min length: dmx!mab#12/n => 11 bytes
@@ -72,7 +74,8 @@ public:
 
 	~DmxConfigUdp() {
 		assert(s_nHandle != -1);
-		s_nHandle = Network::Get()->End(dmxconfigudp::UDP_PORT);
+		Network::Get()->End(dmxconfigudp::UDP_PORT);
+		s_nHandle = -1;
 	}
 
 	void Run() {

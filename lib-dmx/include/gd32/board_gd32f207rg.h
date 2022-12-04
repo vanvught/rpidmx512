@@ -36,11 +36,9 @@ static constexpr auto IN = 2U;
 #define DMX_MAX_PORTS  2
 
 #define DMX_USE_USART2
-//# define DMX_USE_UART4
 #define DMX_USE_USART5
 
 static constexpr auto USART2_PORT = 0;
-//static constexpr auto UART4_PORT = 2;
 static constexpr auto USART5_PORT = 1;
 
 static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
@@ -48,8 +46,5 @@ static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
 
 static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOA;
 static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_11;
-
-//static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
-//static constexpr auto DIR_PORT_2_GPIO_PIN = GPIO_PIN_11;
 
 #endif /* IGD32_BOARD_GD32F207RG_H_ */

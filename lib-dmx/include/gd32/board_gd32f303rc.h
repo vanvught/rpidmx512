@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f407r.h
+ * @file board_gd32f303r.h
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,28 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_BOARD_GD32F407R_H_
-#define GD32_BOARD_GD32F407R_H_
+#ifndef GD32_BOARD_GD32F303RC_H_
+#define GD32_BOARD_GD32F303RC_H_
 
 #include "gd32_board.h"
 
 namespace max {
-static constexpr auto OUT = 2U;
-static constexpr auto IN = 2U;
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
 }
 
-#define DMX_MAX_PORTS  2
+#define DMX_MAX_PORTS  1
 
 #define DMX_USE_USART2
-#define DMX_USE_USART5
-
 static constexpr auto USART2_PORT = 0;
-static constexpr auto USART5_PORT = 1;
 
 static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
 static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
 
-static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOA;
-static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_11;
-
-#endif /* GD32_BOARD_GD32F407R_H_ */
+#endif /* GD32_BOARD_GD32F303RC_H_ */

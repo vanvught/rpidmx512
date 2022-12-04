@@ -76,9 +76,7 @@ typedef enum {
 	RDMDATA,
 	CHECKSUMH,
 	CHECKSUML,
-	RDMDISCFE,
-	RDMDISCEUID,
-	RDMDISCECS,
+	RDMDISC,
 	DMXINTER
 } _dmx_state;
 
@@ -227,7 +225,7 @@ static void fiq_dmx_in_handler(void) {
 
 		switch (sv_DmxReceiveState) {
 		case IDLE:
-			sv_DmxReceiveState = RDMDISCFE;
+			sv_DmxReceiveState = RDMDISC;
 			s_RdmData[sv_nRdmDataBufferIndexHead][0] = data;
 			sv_nDmxDataIndex = 1;
 			break;
@@ -307,31 +305,14 @@ static void fiq_dmx_in_handler(void) {
 				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;
 				dmb();
 			}
+
 			sv_DmxReceiveState = IDLE;
 		}
 			break;
-		case RDMDISCFE:
+		case RDMDISC:
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
 
-			if ((data == 0xAA) || (sv_nDmxDataIndex == 9 )) {
-				sv_DmxReceiveState = RDMDISCEUID;
-				sv_RdmDiscIndex = 0;
-			}
-			break;
-		case RDMDISCEUID:
-			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
-			sv_RdmDiscIndex++;
-
-			if (sv_RdmDiscIndex == 2 * RDM_UID_SIZE) {
-				sv_DmxReceiveState = RDMDISCECS;
-				sv_RdmDiscIndex = 0;
-			}
-			break;
-		case RDMDISCECS:
-			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
-			sv_RdmDiscIndex++;
-
-			if (sv_RdmDiscIndex == 4) {
+			if (sv_nDmxDataIndex == 24) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				sv_DmxReceiveState = IDLE;
 				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;

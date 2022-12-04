@@ -50,6 +50,8 @@ namespace config {
 # include "board_gd32f207c_eval.h"
 #elif defined (BOARD_BW_OPIDMX4)
 # include "board_bw_opidmx4.h"
+#elif defined (BOARD_DMX4)
+# include "board_dmx4.h"
 #else
 # error
 #endif

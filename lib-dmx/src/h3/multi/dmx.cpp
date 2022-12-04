@@ -76,9 +76,7 @@ enum class TxRxState {
 	RDMDATA,
 	CHECKSUMH,
 	CHECKSUML,
-	RDMDISCFE,
-	RDMDISCEUID,
-	RDMDISCECS,
+	RDMDISC,
 	DMXINTER
 };
 
@@ -145,6 +143,8 @@ static volatile uint32_t s_nDmxPackets[dmxmulti::max::IN];
 static volatile uint32_t s_nDmxPacketsPrevious[dmxmulti::max::IN];
 
 // RDM
+
+static volatile uint32_t sv_RdmDataReceiveEnd;
 
 static struct TRdmMultiData s_aRdmData[dmxmulti::max::OUT][RDM_DATA_BUFFER_INDEX_ENTRIES] ALIGNED;
 static struct TRdmMultiData *s_pRdmDataCurrent[dmxmulti::max::OUT] ALIGNED;
@@ -305,7 +305,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			s_pRdmDataCurrent[nUart]->data[0] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex = 1;
 
-			s_tReceiveState[nUart] = TxRxState::RDMDISCFE;
+			s_tReceiveState[nUart] = TxRxState::RDMDISC;
 			break;
 		case TxRxState::PRE_BREAK:
 			s_tReceiveState[nUart] = TxRxState::BREAK;
@@ -378,47 +378,19 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			if ((s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]].nChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
+				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;
+				dmb();
 			}
 
 			s_tReceiveState[nUart] = TxRxState::IDLE;
 		}
 			break;
-		case TxRxState::RDMDISCFE:
+		case TxRxState::RDMDISC:
 			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
-			s_pRdmDataCurrent[nUart]->nIndex++;
 
-			if ((nData == 0xAA) || (s_pRdmDataCurrent[nUart]->nIndex == 9)) {
-				s_pRdmDataCurrent[nUart]->nDiscIndex = 0;
-
-				s_tReceiveState[nUart] = TxRxState::RDMDISCEUID;
-			}
-			break;
-		case TxRxState::RDMDISCEUID:
-			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
-			s_pRdmDataCurrent[nUart]->nIndex++;
-
-			s_pRdmDataCurrent[nUart]->nDiscIndex++;
-
-			if (s_pRdmDataCurrent[nUart]->nDiscIndex == 2 * RDM_UID_SIZE) {
-				s_pRdmDataCurrent[nUart]->nDiscIndex = 0;
-
-				s_tReceiveState[nUart] = TxRxState::RDMDISCECS;
-			}
-			break;
-		case TxRxState::RDMDISCECS:
-			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
-			s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
-			s_pRdmDataCurrent[nUart]->nIndex++;
-
-			s_pRdmDataCurrent[nUart]->nDiscIndex++;
-
-			if (s_pRdmDataCurrent[nUart]->nDiscIndex == 4) {
-				s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
-
-				s_tReceiveState[nUart] = TxRxState::IDLE;
+			if (nIndex < 24) {
+				s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
+				s_pRdmDataCurrent[nUart]->nIndex++;
 			}
 
 			break;
@@ -435,10 +407,12 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			s_nDmxDataBufferIndexHead[nUart] = (s_nDmxDataBufferIndexHead[nUart] + 1) & buffer::INDEX_MASK;
 		}
 
-		if ((s_tReceiveState[nUart] == TxRxState::RDMDISCEUID) || (s_tReceiveState[nUart] == TxRxState::RDMDISCECS)) {
+		if (s_tReceiveState[nUart] == TxRxState::RDMDISC) {
+			s_tReceiveState[nUart] = TxRxState::IDLE;
 			s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 			s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
-			s_tReceiveState[nUart] = TxRxState::IDLE;
+			sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();;
+			dmb();
 			h3_gpio_clr(10);
 		}
 	}
@@ -1028,6 +1002,12 @@ uint32_t Dmx::GetUpdatesPerSecond(uint32_t nPortIndex) {
 
 	dmb();
 	return s_nDmxUpdatesPerSecond[uart];
+}
+
+// RDM
+
+uint32_t Dmx::RdmGetDateReceivedEnd() {
+	return sv_RdmDataReceiveEnd;
 }
 
 // RDM Send

@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f303r.h
+ * @file board_dmx4.h
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,22 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_BOARD_GD32F303R_H_
-#define GD32_BOARD_GD32F303R_H_
+#ifndef GD32_BOARD_DMX4_H_
+#define GD32_BOARD_DMX4_H_
 
 #include "gd32_board.h"
 
 namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
-}
+static constexpr auto OUT = 4U;
+static constexpr auto IN = 4U;
+}  // namespace max
 
-#define DMX_MAX_PORTS  1
+#define DMX_MAX_PORTS  4
 
+#define DMX_USE_USART0
 #define DMX_USE_USART2
-static constexpr auto USART2_PORT = 0;
+#define DMX_USE_UART4
+#define DMX_USE_USART5
 
-static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOB;
-static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
+static constexpr auto USART0_PORT = 0;
+static constexpr auto USART2_PORT = 1;
+static constexpr auto UART4_PORT  = 2;
+static constexpr auto USART5_PORT = 3;
 
-#endif /* GD32_BOARD_GD32F303R_H_ */
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOA;
+static constexpr auto DIR_PORT_0_GPIO_PIN  = GPIO_PIN_4;
+
+static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_1_GPIO_PIN  = GPIO_PIN_10;
+
+static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOA;
+static constexpr auto DIR_PORT_2_GPIO_PIN  = GPIO_PIN_5;
+
+static constexpr auto DIR_PORT_3_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_3_GPIO_PIN  = GPIO_PIN_14;
+
+#endif /* GD32_BOARD_DMX4_H_ */
