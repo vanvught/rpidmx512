@@ -207,7 +207,7 @@ void ArtNetRdmController::RespondMessageAck(uint32_t nPortIndex, const uint8_t *
 	s_rdmMessage.command_class = static_cast<uint8_t>(pRdmMessage->command_class + 1);
 	s_rdmMessage.param_id[0] = pRdmMessage->param_id[0];
 	s_rdmMessage.param_id[1] = pRdmMessage->param_id[1];
-	s_rdmMessage.message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE) + s_rdmMessage.param_data_length;
+	s_rdmMessage.message_length = static_cast<uint8_t>(RDM_MESSAGE_MINIMUM_SIZE + s_rdmMessage.param_data_length);
 	s_rdmMessage.slot16.response_type = E120_RESPONSE_TYPE_ACK;
 
 	for (uint32_t i = 0; i < RDM_UID_SIZE; i++) {
