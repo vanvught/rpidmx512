@@ -35,7 +35,6 @@
 #include "rdmpersonality.h"
 #include "rdmsensors.h"
 #include "rdmsubdevices.h"
-#include "rdmfactorydefaults.h"
 
 #include "lightset.h"
 
@@ -43,7 +42,7 @@ namespace rdm {
 namespace device {
 namespace responder {
 static constexpr uint8_t DEFAULT_CURRENT_PERSONALITY = 1;
-void set_personality(LightSet *pLightSet) __attribute__((weak)) ;
+void factorydefaults();
 }  // namespace responder
 }  // namespace device
 }  // namespace rdm
@@ -121,9 +120,7 @@ public:
 		m_nCheckSum = CalculateChecksum();
 		m_IsFactoryDefaults = true;
 
-		if (m_pRDMFactoryDefaults != nullptr) {
-			m_pRDMFactoryDefaults->Set();
-		}
+		rdm::device::responder::factorydefaults();
 	}
 
 	bool GetFactoryDefaults() {
@@ -229,7 +226,7 @@ public:
 			return m_RDMSubDevices.GetPersonality(nSubDevice, nPersonality);
 		}
 
-		assert(nPersonality < m_tRDMDeviceInfo.personality_count);
+		assert(nPersonality <= m_tRDMDeviceInfo.personality_count);
 
 		return m_pRDMPersonalities[nPersonality - 1];
 	}
@@ -277,13 +274,6 @@ public:
 		return m_tRDMDeviceInfo.current_personality;
 	}
 
-	// Handler
-	void SetRDMFactoryDefaults(RDMFactoryDefaults *pRDMFactoryDefaults) {
-		DEBUG_ENTRY
-		m_pRDMFactoryDefaults = pRDMFactoryDefaults;
-		DEBUG_EXIT
-	}
-
 	static RDMDeviceResponder* Get() {
 		return s_pThis;
 	}
@@ -312,8 +302,6 @@ private:
 	bool m_IsFactoryDefaults { true };
 	uint16_t m_nCheckSum { 0 };
 	uint16_t m_nDmxStartAddressFactoryDefault { lightset::dmx::START_ADDRESS_DEFAULT };
-	// Handler
-	RDMFactoryDefaults *m_pRDMFactoryDefaults { nullptr };
 
 	static RDMDeviceResponder *s_pThis;
 };

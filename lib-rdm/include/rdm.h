@@ -110,6 +110,7 @@ struct TRdmMessage {
 	uint8_t param_id[2];					///< 22, 23
 	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
 	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
+	uint8_t checksum_filler[2];
 }PACKED;
 
 struct TRdmMessageNoSc {
@@ -128,6 +129,7 @@ struct TRdmMessageNoSc {
 	uint8_t param_id[2];					///< 22, 23
 	uint8_t param_data_length;				///< 24	PDL	Range 0 to 231
 	uint8_t param_data[231];				///< 25,,,,	PD	6.2.3 Message Length
+	uint8_t checksum_filler[2];
 }PACKED;
 
 struct TRdmDiscoveryMsg {

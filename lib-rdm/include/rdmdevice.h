@@ -58,19 +58,6 @@ struct TRDMDeviceInfo {
 
 #include "rdm.h"
 
-#define DEVICE_SN_LENGTH		4
-
-struct TRDMDevice {
-	uint8_t aDeviceUID[RDM_UID_SIZE];
-	uint8_t aDeviceSN[DEVICE_SN_LENGTH];
-	char aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t nDeviceRootLabelLength;
-	char aDeviceManufacturerName[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
-	uint8_t nDdeviceManufacturerNameLength;
-	uint16_t nProductCategory;
-	uint16_t nProductDetail;
-};
-
 class RDMDevice {
 public:
 	RDMDevice();
@@ -90,10 +77,7 @@ public:
 
 	void SetFactoryDefaults() {
 		DEBUG_ENTRY
-		TRDMDeviceInfoData info;
-
-		info.data = m_aDeviceRootLabel;
-		info.length = m_nDeviceRootLabelLength;
+		TRDMDeviceInfoData info = {m_aFactoryRootLabel, m_nFactoryRootLabelLength};
 
 		RDMDevice::SetLabel(&info);
 
@@ -105,12 +89,12 @@ public:
 		return (m_nCheckSum == RDMDevice::CalculateChecksum());
 	}
 
-	const uint8_t* GetUID() const {
-		return m_tRDMDevice.aDeviceUID;
+	const uint8_t *GetUID() const {
+		return m_aUID;
 	}
 
 	const uint8_t *GetSN() const {
-		return m_tRDMDevice.aDeviceSN;
+		return m_aSN;
 	}
 
 	void GetManufacturerId(struct TRDMDeviceInfoData *pInfo) {
@@ -119,61 +103,69 @@ public:
 	}
 
 	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo) {
-		pInfo->data = m_tRDMDevice.aDeviceManufacturerName;
-		pInfo->length = m_tRDMDevice.nDdeviceManufacturerNameLength;
+		pInfo->data = m_aManufacturerName;
+		pInfo->length = m_nManufacturerNameLength;
 	}
 
 	void SetLabel(const struct TRDMDeviceInfoData *pInfo) {
 		const auto nLength = std::min(static_cast<uint8_t>(RDM_DEVICE_LABEL_MAX_LENGTH), pInfo->length);
 
 		if (m_IsInit) {
-			memcpy(m_tRDMDevice.aDeviceRootLabel, pInfo->data, nLength);
-			m_tRDMDevice.nDeviceRootLabelLength = nLength;
+			memcpy(m_aRootLabel, pInfo->data, nLength);
+			m_nRootLabelLength = nLength;
 
 			if (m_pRDMDeviceStore != nullptr) {
-				m_pRDMDeviceStore->SaveLabel(m_tRDMDevice.aDeviceRootLabel, m_tRDMDevice.nDeviceRootLabelLength);
+				m_pRDMDeviceStore->SaveLabel(m_aRootLabel, m_nRootLabelLength);
 			}
 		} else {
-			memcpy(m_aDeviceRootLabel, pInfo->data, nLength);
-			m_nDeviceRootLabelLength = nLength;
+			memcpy(m_aFactoryRootLabel, pInfo->data, nLength);
+			m_nFactoryRootLabelLength = nLength;
 		}
 	}
 
 	void GetLabel(struct TRDMDeviceInfoData *pInfo) {
-		pInfo->data = m_tRDMDevice.aDeviceRootLabel;
-		pInfo->length = m_tRDMDevice.nDeviceRootLabelLength;
+		pInfo->data = m_aRootLabel;
+		pInfo->length = m_nRootLabelLength;
 	}
 
 	void SetProductCategory(uint16_t nProductCategory) {
-		m_tRDMDevice.nProductCategory = nProductCategory;
+		m_nProductCategory = nProductCategory;
 	}
 	uint16_t GetProductCategory() const {
-		return m_tRDMDevice.nProductCategory;
+		return m_nProductCategory;
 	}
 
 	void SetProductDetail(uint16_t nProductDetail) {
-		m_tRDMDevice.nProductDetail = nProductDetail;
+		m_nProductDetail = nProductDetail;
 	}
 	uint16_t GetProductDetail() const {
-		return m_tRDMDevice.nProductDetail;
+		return m_nProductDetail;
 	}
 
 private:
 	uint16_t CalculateChecksum() {
-		uint16_t nChecksum = m_nDeviceRootLabelLength;
+		uint16_t nChecksum = m_nFactoryRootLabelLength;
 
-		for (uint32_t i = 0; i < m_tRDMDevice.nDeviceRootLabelLength; i++) {
-			nChecksum = static_cast<uint16_t>(nChecksum + m_tRDMDevice.aDeviceRootLabel[i]);
+		for (uint32_t i = 0; i < m_nRootLabelLength; i++) {
+			nChecksum = static_cast<uint16_t>(nChecksum + m_aRootLabel[i]);
 		}
 
 		return nChecksum;
 	}
 
 private:
-	TRDMDevice m_tRDMDevice;
 	bool m_IsInit { false };
-	char m_aDeviceRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t m_nDeviceRootLabelLength { 0 };
+	uint8_t m_aUID[RDM_UID_SIZE];
+#define DEVICE_SN_LENGTH		4
+	uint8_t m_aSN[DEVICE_SN_LENGTH];
+	char m_aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t m_nRootLabelLength;
+	char m_aManufacturerName[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
+	uint8_t m_nManufacturerNameLength;
+	uint16_t m_nProductCategory;
+	uint16_t m_nProductDetail;
+	char m_aFactoryRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t m_nFactoryRootLabelLength { 0 };
 	uint16_t m_nCheckSum { 0 };
 
 	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
