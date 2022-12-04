@@ -1,5 +1,5 @@
 /**
- * @file nodedisplay.h
+ * @file networkdisplay.cpp
  *
  */
 /* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,20 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef NODEDISPLAY_H_
-#define NODEDISPLAY_H_
+#include "network.h"
 
-#include "artnetdisplay.h"
+namespace network {
+void display_emac_start() {}
 
-#include "debug.h"
+void display_ip() {}
 
-class NodeDisplay: public ArtNetDisplay {
-public:
-	~NodeDisplay() override {
-		DEBUG_ENTRY
+void display_netmask() {}
 
-		DEBUG_EXIT
-	}
-};
+void display_gateway() {}
 
-#endif /* INCLUDE_NODEDISPLAY_H_ */
+void display_hostname() {}
+
+void display_emac_shutdown() {}
+
+// DHCP Client
+void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
+}  // namespace network
+

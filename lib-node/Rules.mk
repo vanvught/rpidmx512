@@ -6,7 +6,7 @@ EXTRA_INCLUDES+=../lib-hal/include ../lib-network/include
 EXTRA_INCLUDES+=../lib-properties/include
 EXTRA_INCLUDES+=../lib-display/include
 
-EXTRA_INCLUDES+=../lib-spiflashstore/include
+EXTRA_INCLUDES+=../lib-configstore/include
 
 EXTRA_SRCDIR+=src/dmx
 

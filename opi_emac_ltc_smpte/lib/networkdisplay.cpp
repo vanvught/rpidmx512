@@ -2,7 +2,7 @@
  * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,31 +28,32 @@
 #include "display.h"
 #include "display7segment.h"
 
-void NetworkDisplay::ShowEmacStart() {
+namespace network {
+void display_emac_start() {
 	Display::Get()->ClearLine(3);
 	Display::Get()->Printf(3, "Ethernet start");
 }
 
-void NetworkDisplay::ShowIp() {
+void display_ip() {
 	Display::Get()->ClearLine(3);
 	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());
 }
 
-void NetworkDisplay::ShowNetMask() {
-	ShowIp();
+void display_netmask() {
+	display_ip();
 }
 
-void NetworkDisplay::ShowGatewayIp() {
+void display_gateway() {
 }
 
-void NetworkDisplay::ShowHostName() {
+void display_hostname() {
 }
 
-void NetworkDisplay::ShowShutdown() {
+void display_emac_shutdown() {
 }
 
 // DHCP Client
-void NetworkDisplay::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
+void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
 	switch (nStatus) {
 	case network::dhcp::ClientStatus::IDLE:
 		break;
@@ -76,3 +77,4 @@ void NetworkDisplay::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
 		break;
 	}
 }
+}  // namespace network

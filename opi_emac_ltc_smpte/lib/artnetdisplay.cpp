@@ -1,8 +1,8 @@
 /**
- * @file artnetrdmresponder.cpp
+ * @file artnetdisplay.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,64 +24,55 @@
  */
 
 #include <cstdint>
-#include <cstring>
-
-#include "artnetrdmresponder.h"
-
-#include "rdmdeviceresponder.h"
-#include "rdmhandler.h"
-#include "rdmmessage.h"
 
 #include "lightset.h"
-
-#include "rdm.h"
-#include "rdm_e120.h"
+#include "artnet.h"
 
 #include "debug.h"
 
-ArtNetRdmResponder *ArtNetRdmResponder::s_pThis;
-TRdmMessage ArtNetRdmResponder::s_RdmCommand;
-
-ArtNetRdmResponder::ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) :
-	RDMDeviceResponder(pRDMPersonalities, nPersonalityCount)
-{
+namespace artnet {
+void display_shortname(__attribute__((unused)) const char *pShortName) {
 	DEBUG_ENTRY
-
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
 	DEBUG_EXIT
 }
 
-ArtNetRdmResponder::~ArtNetRdmResponder() {
+void display_longname(__attribute__((unused)) const char *pLongName) {
 	DEBUG_ENTRY
-
 	DEBUG_EXIT
 }
 
-const uint8_t *ArtNetRdmResponder::Handler(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmDataNoSC) {
+void display_universe_switch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
 	DEBUG_ENTRY
-
-	if (pRdmDataNoSC == nullptr) {
-		DEBUG_EXIT
-		return nullptr;
-	}
-
-#ifndef NDEBUG
-	RDMMessage::PrintNoSc(pRdmDataNoSC);
-#endif
-
-	HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
-
-	if (s_RdmCommand.start_code != E120_SC_RDM) {
-		DEBUG_EXIT
-		return nullptr;
-	}
-
-#ifndef NDEBUG
-	RDMMessage::Print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
-#endif
-
 	DEBUG_EXIT
-	return reinterpret_cast<const uint8_t*>(&s_RdmCommand);
 }
+
+void display_net_switch(__attribute__((unused))  uint8_t nAddress) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_subnet_switch(__attribute__((unused))  uint8_t nAddress) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_merge_mode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_port_protocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_rdm_enabled(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) bool isEnabled) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_failsafe(__attribute__((unused)) uint8_t nFailsafe) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+}  // namespace artnet

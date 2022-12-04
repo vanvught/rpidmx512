@@ -276,28 +276,27 @@ void SystimeReader::Run() {
 		if (__builtin_expect((gv_ltc_bTimeCodeAvailable), 0)) {
 			gv_ltc_bTimeCodeAvailable = false;
 
-			if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
-				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode), false);
-			}
+			if (__builtin_expect((m_nFps != m_tMidiTimeCode.nFrames), 0)) {
 
-			if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
-				ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_tMidiTimeCode));
-			}
+				if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
+					LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode), false);
+				}
 
-			if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
-				RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_tMidiTimeCode));
-			}
+				if (!g_ltc_ptLtcDisabledOutputs.bArtNet) {
+					ArtNetNode::Get()->SendTimeCode(reinterpret_cast<const struct TArtNetTimeCode*>(&m_tMidiTimeCode));
+				}
 
-			if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
-				LtcEtc::Get()->Send(&m_tMidiTimeCode);
-			}
+				if (!g_ltc_ptLtcDisabledOutputs.bRtpMidi) {
+					RtpMidi::Get()->SendTimeCode(reinterpret_cast<const struct midi::Timecode *>(&m_tMidiTimeCode));
+				}
 
-			LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
+				if (!g_ltc_ptLtcDisabledOutputs.bEtc) {
+					LtcEtc::Get()->Send(&m_tMidiTimeCode);
+				}
 
-			m_tMidiTimeCode.nFrames++;
+				LtcOutputs::Get()->Update(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode));
 
-			if (m_nFps == m_tMidiTimeCode.nFrames) {
-				m_tMidiTimeCode.nFrames = 0;
+				m_tMidiTimeCode.nFrames++;
 			}
 		}
 	}

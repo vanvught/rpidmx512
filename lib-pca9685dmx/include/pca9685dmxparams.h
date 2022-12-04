@@ -51,7 +51,7 @@ private:
     void callbackFunction(const char *pLine);
 
 private:
-    uint32_t m_bSetList;
+    uint32_t m_bSetList{0};
     uint8_t m_nI2cAddress;
     uint16_t m_nDmxStartAddress;
     uint16_t m_nDmxFootprint;

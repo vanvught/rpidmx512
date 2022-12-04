@@ -30,7 +30,6 @@
 #include <cstring>
 
 #include "nodestore.h"
-#include "nodedisplay.h"
 
 // DMX Output
 #include "dmxconfigudp.h"
@@ -38,7 +37,7 @@
 #include "artnetnode.h"
 #include "artnet4handler.h"
 #include "artnet.h"
-#include "artnetdiscovery.h"
+#include "artnetrdmcontroller.h"
 #include "dmx/artnetdmxinput.h"
 // sACN E1.31
 #include "e131bridge.h"
@@ -167,13 +166,33 @@ public:
 	lightset::MergeMode GetMergeMode(uint32_t nPortIndex);
 
 	uint32_t GetActiveInputPorts() const {
-		const auto nActiveInputPorts = ArtNetNode::GetActiveInputPorts() + E131Bridge::GetActiveInputPorts();
-		return nActiveInputPorts;
+		switch (m_Personality) {
+			case node::Personality::ARTNET:
+				return ArtNetNode::GetActiveInputPorts();
+				break;
+			case node::Personality::E131:
+				return E131Bridge::GetActiveInputPorts();
+				break;
+			default:
+				break;
+		}
+
+		return 0;
 	}
 
 	uint32_t GetActiveOutputPorts() const {
-		const auto nActiveOutputPorts = ArtNetNode::GetActiveOutputPorts() + E131Bridge::GetActiveOutputPorts();
-		return nActiveOutputPorts;
+		switch (m_Personality) {
+			case node::Personality::ARTNET:
+				return ArtNetNode::GetActiveOutputPorts();
+				break;
+			case node::Personality::E131:
+				return E131Bridge::GetActiveOutputPorts();
+				break;
+			default:
+				break;
+		}
+
+		return 0;
 	}
 
 	uint32_t GetActivePorts() const {
@@ -229,7 +248,7 @@ public:
 	}
 
 	void SetProtocol(uint32_t nPortIndex, node::PortProtocol portProtocol) {
-		const auto ArtNetPortProtocol = portProtocol == node::PortProtocol::SACN ? artnet::PortProtocol::SACN : artnet::PortProtocol::ARTNET;
+		const auto ArtNetPortProtocol = (portProtocol == node::PortProtocol::SACN ? artnet::PortProtocol::SACN : artnet::PortProtocol::ARTNET);
 		ArtNetNode::SetPortProtocol(nPortIndex, ArtNetPortProtocol);
 	}
 	node::PortProtocol GetProtocol(uint32_t nPortIndex) const {
@@ -265,10 +284,6 @@ public:
 	}
 	bool GetRdm(uint32_t nPortIndex) const {
 		return ArtNetNode::GetRdm(nPortIndex);
-	}
-
-	void SetDisplay(NodeDisplay *pNodeDisplay) {
-		ArtNetNode::SetArtNetDisplay(pNodeDisplay);
 	}
 
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {

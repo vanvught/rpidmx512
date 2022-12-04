@@ -1,8 +1,8 @@
 /**
- * @file l6470dmxmode3.h
+ * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef L6470DMXMODE3_H_
-#define L6470DMXMODE3_H_
+#include "network.h"
 
-#include "l6470dmxmode.h"
-#include "l6470.h"
+namespace network {
+void display_emac_start() {}
 
-#include "motorparams.h"
+void display_ip() {}
 
-class L6470DmxMode3 final: public L6470DmxMode {
-public:
-	L6470DmxMode3(L6470 *pL6470, MotorParams *pMotorParams);
-	~L6470DmxMode3() override;
+void display_netmask() {}
 
-	void Start() override;
-	void Stop() override;
+void display_gateway() {}
 
-	void HandleBusy() override;
-	bool BusyCheck() override;
+void display_hostname() {}
 
-	void Data(const uint8_t*) override;
+void display_emac_shutdown() {}
 
-	static TL6470DmxModes GetMode() {
-		return L6470DMXMODE3;
-	}
+// DHCP Client
+void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
+}  // namespace network
 
-	static uint16_t GetDmxFootPrint() {
-		return 1;
-	}
-
-private:
-	L6470 *m_pL6470;
-	float m_fSteps;
-	uint8_t m_nPreviousData{0};
-	bool m_bWasBusy{false};
-};
-
-#endif /* L6470DMXMODE3_H_ */

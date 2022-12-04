@@ -43,14 +43,14 @@ LedBlink::LedBlink() {
 	PlatformInit();
 }
 
-void LedBlink::SetMode(ledblink::Mode Mode) {
-	if (m_tMode == Mode) {
+void LedBlink::SetMode(ledblink::Mode mode) {
+	if (m_Mode == mode) {
 		return;
 	}
 
-	m_tMode = Mode;
+	m_Mode = mode;
 
-	switch (m_tMode) {
+	switch (m_Mode) {
 	case ledblink::Mode::OFF_OFF:
 		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_OFF));
 		break;
@@ -72,8 +72,8 @@ void LedBlink::SetMode(ledblink::Mode Mode) {
 	}
 
 	if (m_pLedBlinkDisplay != nullptr) {
-		m_pLedBlinkDisplay->Print(static_cast<uint32_t>(m_tMode));
+		m_pLedBlinkDisplay->Print(static_cast<uint32_t>(m_Mode));
 	}
 
-	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_tMode));
+	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_Mode));
 }

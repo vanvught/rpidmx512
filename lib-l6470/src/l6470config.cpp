@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ void L6470::configSyncPin(uint8_t pinFunc, uint8_t syncSteps) {
 void L6470::configStepMode(uint8_t stepMode) {
 	uint8_t stepModeConfig = getParam(L6470_PARAM_STEP_MODE);
 
-	stepModeConfig &= ~(L6470_STEP_SEL_MASK);
+	stepModeConfig &= static_cast<uint8_t>(~(L6470_STEP_SEL_MASK));
 	stepModeConfig |= (stepMode & L6470_STEP_SEL_MASK);
 
 	setParam(L6470_PARAM_STEP_MODE, stepModeConfig);

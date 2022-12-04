@@ -56,7 +56,7 @@ constexpr char PARAMS_BOARD_INSTANCES[] = "board_instances";
 
 #define DMX_SLOT_INFO_LENGTH				128
 
-PCA9685DmxParams::PCA9685DmxParams(const char *pFileName): m_bSetList(0) {
+PCA9685DmxParams::PCA9685DmxParams(const char *pFileName) {
 	assert(pFileName != nullptr);
 
 	m_nI2cAddress = PCA9685_I2C_ADDRESS_DEFAULT;
