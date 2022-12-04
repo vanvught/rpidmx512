@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define EMAC_NETWORK_H_
 
 #if defined (NO_EMAC) || defined (ESP8266)
-# error
+# error This file should not be included
 #endif
 
 #include <cstdint>
@@ -37,6 +37,7 @@
 #include "networkparams.h"
 
 #include "../src/net/net.h"
+#include "emac/net_link_check.h"
 
 extern "C" {
 	void net_handle(void);
@@ -212,6 +213,16 @@ public:
 
 	void Run() {
 		net_handle();
+#if defined (ENET_LINK_CHECK_USE_PIN_POLL)
+		net::link_pin_poll();
+#elif defined (ENET_LINK_CHECK_REG_POLL)
+		const net::Link link_state = net::link_register_read();
+
+		if (link_state != s_lastState) {
+			s_lastState = link_state;
+			net::link_handle_change(link_state);
+		}
+#endif
 	}
 
 	static Network *Get() {
@@ -219,6 +230,7 @@ public:
 	}
 
 private:
+	net::Link s_lastState { net::Link::STATE_DOWN };
 	bool m_IsDhcpCapable { true };
 	bool m_IsDhcpUsed { false };
 	bool m_IsZeroconfCapable { true };
@@ -237,7 +249,6 @@ private:
 	char m_aIfName[IFNAMSIZ];
 
 	NetworkStore *m_pNetworkStore { nullptr };
-	NetworkDisplay m_NetworkDisplay;
 
 	void SetDefaultIp();
 
