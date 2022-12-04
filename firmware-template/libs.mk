@@ -7,10 +7,12 @@ endif
 
 ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
 	LIBS+=node artnet e131
+	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 endif
 
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	LIBS+=artnet4 artnet e131
+	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
 	else
 		DEFINES+=NODE_E131
@@ -145,7 +147,11 @@ ifeq ($(findstring OUTPUT_DMX_SERIAL,$(DEFINES)),OUTPUT_DMX_SERIAL)
 endif
 
 ifdef COND
-	LIBS+=spiflashinstall spiflashstore spiflash
+ifeq ($(detected_OS),Linux) 
+	LIBS+=configstore
+else
+	LIBS+=configstore flashcodeinstall flashcode flash
+endif	
 endif
 
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)

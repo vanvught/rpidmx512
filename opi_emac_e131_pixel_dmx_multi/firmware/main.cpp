@@ -75,8 +75,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 
 #include "storedisplayudf.h"
 #include "storee131.h"
@@ -106,8 +106,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("sACN E1.31 " "\x1b[32m" "Pixel controller {8x 4 Universes} / DMX" "\x1b[37m");
 
@@ -246,7 +246,6 @@ void notmain(void) {
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -298,7 +297,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
@@ -322,7 +321,7 @@ void notmain(void) {
 		nw.Run();
 		bridge.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}

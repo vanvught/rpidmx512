@@ -30,7 +30,7 @@
 
 #include "widget.h"
 
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 #else
 # include "../lib-hal/ff12c/ff.h"
 #endif
@@ -100,7 +100,7 @@ struct WidgetConfiguration {
 	static void SetThrottle(uint8_t nThrottle);
 
 private:
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 #else
 	static void UpdateConfigFile();
 	static void ProcessLineUpdate(const char *pLine, FIL *file_object_wr);

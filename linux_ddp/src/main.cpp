@@ -51,12 +51,10 @@
 #include "rdm_e120.h"
 #include "factorydefaults.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
-
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
+#include "configstore.h"
 #include "storedisplayudf.h"
 #include "storemonitor.h"
 #include "storenetwork.h"
@@ -81,8 +79,7 @@ int main(int argc, char **argv) {
 	hw.Print();
 	fw.Print("DDP Display Real-time Monitor");
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	ConfigStore configStore;
 
 	StoreNetwork storeNetwork;
 
@@ -126,7 +123,6 @@ int main(int argc, char **argv) {
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, nLength);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -162,7 +158,7 @@ int main(int argc, char **argv) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	llrpOnlyDevice.Start();
@@ -174,7 +170,7 @@ int main(int argc, char **argv) {
 		httpDaemon.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 	}
 
 	return 0;

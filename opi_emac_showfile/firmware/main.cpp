@@ -52,8 +52,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storedisplayudf.h"
 #include "storenetwork.h"
 #include "storeremoteconfig.h"
@@ -69,7 +69,7 @@ void Hardware::RebootHandler() {
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
-		while (SpiFlashStore::Get()->Flash())
+		while (ConfigStore::Get()->Flash())
 			;
 
 		Network::Get()->Shutdown();
@@ -90,8 +90,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("Showfile player");
 
@@ -152,7 +152,6 @@ void notmain(void) {
 
 	RDMNetLLRPOnly rdmNetLLRPOnly("Showfile player");
 
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	rdmNetLLRPOnly.Init();
@@ -167,7 +166,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.SetTitle("Showfile player");
@@ -216,7 +215,7 @@ void notmain(void) {
 		oscServer.Run();
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 		display.Run();
 	}

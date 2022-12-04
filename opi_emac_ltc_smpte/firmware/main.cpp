@@ -82,9 +82,9 @@
 #include "ltcetcreader.h"
 #include "ltcoutputs.h"
 
-#include "spiflashinstall.h"
+#include "flashcodeinstall.h"
 
-#include "spiflashstore.h"
+#include "configstore.h"
 #include "storenetwork.h"
 #include "storeltc.h"
 #include "storeltcdisplay.h"
@@ -138,7 +138,7 @@ void Hardware::RebootHandler() {
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
-		while (SpiFlashStore::Get()->Flash())
+		while (ConfigStore::Get()->Flash())
 			;
 
 		Network::Get()->Shutdown();
@@ -163,8 +163,8 @@ void notmain(void) {
 	Shell shell;
 #endif
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	Ltc7segment leds;
 
@@ -521,7 +521,6 @@ void notmain(void) {
 
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
 	rdmNetLLRPOnly.Init();
 	rdmNetLLRPOnly.Start();
 	rdmNetLLRPOnly.Print();
@@ -541,7 +540,7 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	printf("Source : %s\n", LtcSourceConst::NAME[static_cast<uint32_t>(ltcSource)]);
@@ -647,7 +646,7 @@ void notmain(void) {
 
 		rdmNetLLRPOnly.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();
 #endif

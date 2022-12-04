@@ -48,7 +48,7 @@
 # include "node.h"
 #endif
 
-#include "spiflashstore.h"
+#include "configstore.h"
 
 #if defined(ENABLE_TFTP_SERVER)
 # include "tftp/tftpfileserver.h"
@@ -435,7 +435,7 @@ private:
 		void (RemoteConfig::*SetHandler)();
 		const char *pFileName;
 		const uint8_t nFileNameLength;
-		const spiflashstore::Store nStore;
+		const configstore::Store nStore;
 	};
 
 	static const Txt s_TXT[];

@@ -26,7 +26,7 @@
 #ifndef WIDGETSTORE_H_
 #define WIDGETSTORE_H_
 
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 # include "flashrom/widgetstore.h"
 #else
 # error

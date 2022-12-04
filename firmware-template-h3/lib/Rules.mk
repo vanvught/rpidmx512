@@ -29,8 +29,16 @@ INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-debug/include -
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
-DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+
+ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
+	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+endif
+
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+
+ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
+	DEFINES+=-DCONFIG_STORE_USE_SPI
+endif
 
 ifneq ($(CONSOLE),)
 	ifeq ($(findstring $(CONSOLE),$(MAKE_FLAGS)), $(CONSOLE))
@@ -42,15 +50,6 @@ endif
 ifeq ($(NO_EXT_LED),1)
 	DEFINES+=-DDO_NOT_USE_EXTERNAL_LED
 endif
-
-ifeq ($(findstring ENABLE_SPIFLASH,$(MAKE_FLAGS)), ENABLE_SPIFLASH)
-	DEFINES+=-DREMOTE_CONFIG
-else
-	ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
-	else
-		DEFINES+=-DREMOTE_CONFIG
-	endif
-endif	
 
 $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])

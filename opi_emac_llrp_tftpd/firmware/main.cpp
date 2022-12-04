@@ -35,8 +35,8 @@
 #include "displayudfparams.h"
 #include "storedisplayudf.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
@@ -63,7 +63,7 @@ void Hardware::RebootHandler() {
 	if (!RemoteConfig::Get()->IsReboot()) {
 		Display::Get()->SetSleep(false);
 
-		while (SpiFlashStore::Get()->Flash())
+		while (ConfigStore::Get()->Flash())
 			;
 
 		Network::Get()->Shutdown();
@@ -84,8 +84,8 @@ void notmain(void) {
 	LedBlink lb;
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("RDMNet LLRP device only");
 
@@ -117,8 +117,6 @@ void notmain(void) {
 
 	RDMNetLLRPOnly device;
 
-	device.GetRDMNetDevice()->SetRDMFactoryDefaults(new FactoryDefaults);
-
 	device.Init();
 	device.Print();
 	device.Start();
@@ -131,7 +129,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.SetTitle("LLRP Only - TFTP");
@@ -160,7 +158,7 @@ void notmain(void) {
 		device.Run();
 		remoteConfig.Run();
 		ntpClient.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 #if defined (ENABLE_HTTPD)
 		httpDaemon.Run();

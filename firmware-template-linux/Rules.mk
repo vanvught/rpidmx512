@@ -42,6 +42,7 @@ endif
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
+DEFINES+=-DCONFIG_STORE_USE_FILE
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include

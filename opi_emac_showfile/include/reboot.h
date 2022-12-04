@@ -52,7 +52,7 @@ public:
 
 			Display::Get()->SetSleep(false);
 
-			while (SpiFlashStore::Get()->Flash())
+			while (ConfigStore::Get()->Flash())
 				;
 
 			Network::Get()->Shutdown();

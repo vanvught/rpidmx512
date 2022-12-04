@@ -48,8 +48,8 @@
 #include "storedmxsend.h"
 #include "dmxconfigudp.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storeoscserver.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -73,8 +73,8 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreOscServer storeOscServer;
 
@@ -163,7 +163,7 @@ void notmain(void) {
 
 	display.TextStatus(OscServerMsgConst::STARTED, Display7SegmentMessage::INFO_BRIDGE_STARTED, CONSOLE_GREEN);
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	lb.SetMode(ledblink::Mode::NORMAL);
@@ -174,7 +174,7 @@ void notmain(void) {
 		nw.Run();
 		server.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		mDns.Run();
 		lb.Run();
 		display.Run();

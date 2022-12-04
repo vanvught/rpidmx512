@@ -26,22 +26,23 @@
 #ifndef FACTORYDEFAULTS_H_
 #define FACTORYDEFAULTS_H_
 
-#include "rdmfactorydefaults.h"
-
 #include "remoteconfig.h"
-#include "spiflashstore.h"
+#include "configstore.h"
 #include "storenetwork.h"
 
-class FactoryDefaults: public RDMFactoryDefaults {
-public:
-	FactoryDefaults() {}
-	~FactoryDefaults() {}
+namespace rdm {
+namespace device {
+namespace responder {
 
-	void Set() {
-		RemoteConfig::Get()->SetDisable(false);
-		SpiFlashStore::Get()->ResetSetList(spiflashstore::Store::RDMDEVICE);
-		StoreNetwork::Get()->SaveDhcp(true);
-	}
-};
+void factorydefaults() {
+	RemoteConfig::Get()->SetDisable(false);
+	ConfigStore::Get()->ResetSetList(configstore::Store::RDMDEVICE);
+	StoreNetwork::Get()->SaveDhcp(true);
+}
+
+}  // namespace responder
+}  // namespace device
+}  // namespace rdm
+
 
 #endif /* FACTORYDEFAULTS_H_ */

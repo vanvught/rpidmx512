@@ -62,8 +62,8 @@
 #include "handler.h"
 
 #if defined(ORANGE_PI)
- #include "spiflashinstall.h"
- #include "spiflashstore.h"
+ #include "flashcodeinstall.h"
+ #include "configstore.h"
  #include "storeoscserver.h"
 #endif
 
@@ -87,8 +87,8 @@ void notmain(void) {
 #endif
 
 #if defined (ORANGE_PI)
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreOscServer storeOscServer;
 	StoreDmxSend storeDmxSend;
@@ -250,7 +250,7 @@ void notmain(void) {
 	display.TextStatus(BRIDGE_STARTED);
 
 #if defined (ORANGE_PI)
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 #endif
 

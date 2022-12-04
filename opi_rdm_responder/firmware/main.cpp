@@ -54,8 +54,8 @@
 # include "storenetwork.h"
 #endif
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storerdmdevice.h"
 #include "storepixeldmx.h"
 #include "storerdmdevice.h"
@@ -82,8 +82,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	lb.SetMode(ledblink::Mode::OFF_ON);
 
@@ -177,8 +177,6 @@ void notmain(void) {
 
 	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
-	FactoryDefaults factoryDefaults;
-	rdmResponder.SetRDMFactoryDefaults(&factoryDefaults);
 	rdmResponder.Start();
 	rdmResponder.DmxDisableOutput(!isConfigMode && (nTestPattern != pixelpatterns::Pattern::NONE));
 
@@ -205,7 +203,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 #endif
 
@@ -245,7 +243,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		rdmResponder.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 #if !defined(NO_EMAC)
 		nw.Run();
 		remoteConfig.Run();

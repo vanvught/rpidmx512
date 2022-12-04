@@ -45,7 +45,7 @@ struct WidgetParamsMask {
 	static constexpr auto THROTTLE = (1U << 4);
 };
 
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 class WidgetParamsStore {
 public:
 	virtual ~WidgetParamsStore() {}
@@ -58,7 +58,7 @@ public:
 
 class WidgetParams {
 public:
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
 #else
 	WidgetParams();
@@ -99,7 +99,7 @@ private:
     }
 
 private:
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
     WidgetParamsStore *m_pWidgetParamsStore;
 #endif
     TWidgetParams m_tWidgetParams;

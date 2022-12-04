@@ -47,7 +47,7 @@
 
 #include "remoteconfigjson.h"
 
-#include "spiflashstore.h"
+#include "configstore.h"
 
 /* rconfig.txt */
 #include "remoteconfigparams.h"

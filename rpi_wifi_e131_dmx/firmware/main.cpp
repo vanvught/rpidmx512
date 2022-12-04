@@ -55,8 +55,8 @@
 #include "pixeldmxparams.h"
 
 #if defined(ORANGE_PI)
-# include "spiflashinstall.h"
-# include "spiflashstore.h"
+# include "flashcodeinstall.h"
+# include "configstore.h"
 # include "storee131.h"
 # include "storedmxsend.h"
 # include "storepixeldmx.h"
@@ -78,8 +78,8 @@ void notmain(void) {
 	Display display;
 
 #if defined (ORANGE_PI)
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreE131 storeE131;
 	StoreDmxSend storeDmxSend;
@@ -255,7 +255,7 @@ void notmain(void) {
 	display.TextStatus(BRIDGE_STARTED);
 
 #if defined (ORANGE_PI)
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 #endif
 

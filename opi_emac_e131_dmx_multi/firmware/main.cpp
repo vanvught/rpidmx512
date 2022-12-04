@@ -64,8 +64,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storedisplayudf.h"
 #include "storedmxsend.h"
 #include "storee131.h"
@@ -92,8 +92,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("sACN E1.31 DMX");
 
@@ -185,7 +185,6 @@ void notmain(void) {
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -229,7 +228,7 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
@@ -256,7 +255,7 @@ void notmain(void) {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
 #endif
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 		display.Run();
 		if (pDmxConfigUdp != nullptr) {

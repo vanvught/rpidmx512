@@ -36,7 +36,7 @@
 #include "remoteconfig.h"
 
 #include "tftp/tftpfileserver.h"
-#include "spiflashinstall.h"
+#include "flashcodeinstall.h"
 
 #include "display.h"
 
@@ -65,7 +65,7 @@ void RemoteConfig::PlatformHandleTftpSet() {
 		bool bSucces = true;
 
 		if (m_pTFTPFileServer->isDone()) {
-			bSucces = SpiFlashInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
+			bSucces = FlashCodeInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
 
 			if (!bSucces) {
 				Display::Get()->TextStatus("Error: TFTP", Display7SegmentMessage::ERROR_TFTP);

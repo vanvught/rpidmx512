@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,7 @@
 #include "artnetmsgconst.h"
 
 #include "rdmdeviceresponder.h"
+#include "factorydefaults.h"
 #include "rdmpersonality.h"
 
 #include "rdmdeviceparams.h"
@@ -52,16 +53,14 @@
 
 #include "artnetrdmresponder.h"
 
-#include "artnet/displayudfhandler.h"
-
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
 #include "lightsetchain.h"
 
 #if defined (ORANGE_PI)
-# include "spiflashinstall.h"
-# include "spiflashstore.h"
+# include "flashcodeinstall.h"
+# include "configstore.h"
 # include "remoteconfig.h"
 # include "remoteconfigparams.h"
 # include "storeremoteconfig.h"
@@ -98,12 +97,11 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 #if defined (ORANGE_PI)
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 #endif
 
 	fw.Print();
@@ -228,7 +226,6 @@ void notmain(void) {
 		artnetparams.Set();
 	}
 
-	node.SetArtNetDisplay(&displayUdfHandler);
 #if defined (ORANGE_PI)
 	node.SetArtNetStore(StoreArtNet::Get());
 #endif
@@ -302,7 +299,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 #endif
 
@@ -321,7 +318,7 @@ void notmain(void) {
 		ntpClient.Run();
 #if defined (ORANGE_PI)
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 #endif
 		lb.Run();
 		display.Run();

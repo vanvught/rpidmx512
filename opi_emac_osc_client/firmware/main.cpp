@@ -48,8 +48,8 @@
 #include "buttonsgpio.h"
 #include "buttonsmcp.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storeoscclient.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -73,8 +73,8 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreOscClient storeOscClient;
 
@@ -146,7 +146,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	for (uint8_t i = 1; i < 7 ; i++) {
@@ -176,7 +176,7 @@ void notmain(void) {
 		client.Run();
 		pButtonsSet->Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		mDns.Run();
 		lb.Run();
 		display.Run();
