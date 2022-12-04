@@ -1,11 +1,11 @@
 /**
- * @file artnetconst.cpp
+ * @file artnetnodehandlerdmin.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,41 @@
  */
 
 #include <cstdint>
+#include <cstring>
+#include <cassert>
 
-#include "artnetconst.h"
+#include "artnetnode.h"
 #include "artnet.h"
+#include "artnetrdm.h"
 
-const uint8_t ArtNetConst::VERSION[] = { 1, 56 };
+#include "network.h"
+#include "hardware.h"
 
-const uint8_t ArtNetConst::ESTA_ID[artnet::ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
-const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.
+#include "panel_led.h"
+
+#include "debug.h"
+
+void ArtNetNode::HandleRdmIn() {
+	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
+
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		if (!m_InputPort[nPortIndex].genericPort.bIsEnabled) {
+			continue;
+		}
+
+		const auto nPage = nPortIndex / artnetnode::PAGE_SIZE;
+
+		if (m_pArtNetRdm->RdmReceive(nPortIndex, pArtRdm->RdmPacket)) {
+			memcpy(pArtRdm->Id, artnet::NODE_ID, sizeof(pArtRdm->Id));
+			pArtRdm->OpCode = OP_RDM;
+			pArtRdm->ProtVerHi = 0;
+			pArtRdm->ProtVerLo = artnet::PROTOCOL_REVISION;
+			pArtRdm->RdmVer = 0x01;
+			pArtRdm->Net = m_Node.NetSwitch[nPage];
+			pArtRdm->Command = 0;
+			pArtRdm->Address = m_InputPort[nPortIndex].genericPort.nDefaultAddress;
+
+			Network::Get()->SendTo(m_nHandle, pArtRdm, sizeof(struct TArtRdm), m_InputPort[nPortIndex].nDestinationIp, artnet::UDP_PORT);
+		}
+	}
+}

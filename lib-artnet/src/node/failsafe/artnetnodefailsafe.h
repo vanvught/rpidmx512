@@ -1,11 +1,8 @@
 /**
- * @file artnetconst.cpp
+ * @file artnetnodefailsafe.h
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +23,26 @@
  * THE SOFTWARE.
  */
 
+
+#ifndef ARTNETNODEFAILSAFE_H_
+#define ARTNETNODEFAILSAFE_H_
+
 #include <cstdint>
 
-#include "artnetconst.h"
-#include "artnet.h"
+#include "artnetnode.h"
 
-const uint8_t ArtNetConst::VERSION[] = { 1, 56 };
+namespace artnetnode {
+namespace failsafe {
+static constexpr auto BYTES_NEEDED = artnetnode::MAX_PORTS * lightset::dmx::UNIVERSE_SIZE;
+}  // namespace failsafe
 
-const uint8_t ArtNetConst::ESTA_ID[artnet::ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
-const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.
+void failsafe_write_start();
+void failsafe_write(uint32_t nPortIndex, const uint8_t *pData);
+void failsafe_write_end();
+
+void failsafe_read_start();
+void failsafe_read(uint32_t nPortIndex, uint8_t *pData);
+void failsafe_read_end();
+}  // namespace artnetnode
+
+#endif /* ARTNETNODEFAILSAFE_H_ */

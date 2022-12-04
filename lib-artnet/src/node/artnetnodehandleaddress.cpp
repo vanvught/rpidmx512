@@ -122,9 +122,8 @@ int ArtNetNode::SetUniverseSwitch(uint32_t nPortIndex, lightset::PortDir dir, ui
 		if (m_pArtNetStore != nullptr) {
 			m_pArtNetStore->SaveUniverseSwitch(nPortIndex, nAddress);
 		}
-		if (m_pArtNetDisplay != nullptr) {
-			m_pArtNetDisplay->ShowUniverseSwitch(nPortIndex, nAddress);
-		}
+
+		artnet::display_universe_switch(nPortIndex, nAddress);
 	}
 
 	return ARTNET_EOK;
@@ -209,9 +208,8 @@ void ArtNetNode::SetPortProtocol(uint32_t nPortIndex, PortProtocol portProtocol)
 			if (m_pArtNetStore != nullptr) {
 				m_pArtNetStore->SavePortProtocol(nPortIndex, portProtocol);
 			}
-			if (m_pArtNetDisplay != nullptr) {
-				m_pArtNetDisplay->ShowPortProtocol(nPortIndex, portProtocol);
-			}
+
+			artnet::display_port_protocol(nPortIndex, portProtocol);
 		}
 	}
 
@@ -236,9 +234,8 @@ void ArtNetNode::SetMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode
 		if (m_pArtNetStore != nullptr) {
 			m_pArtNetStore->SaveMergeMode(nPortIndex, mergeMode);
 		}
-		if (m_pArtNetDisplay != nullptr) {
-			m_pArtNetDisplay->ShowMergeMode(nPortIndex, mergeMode);
-		}
+
+		artnet::display_merge_mode(nPortIndex, mergeMode);
 	}
 }
 
@@ -264,6 +261,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	case FailSafe::PLAYBACK:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
 		m_Node.Status3 |= Status3::NETWORKLOSS_PLAYBACK;
+		break;
 #else
 		return;
 #endif
@@ -271,7 +269,8 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 
 	case FailSafe::RECORD:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-		//TODO case FailSafe::RECORD:
+		FailSafeRecord();
+		break;
 #else
 		return;
 #endif
@@ -283,15 +282,14 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 		break;
 	}
 
-	if (m_State.status == Status::ON) {
-		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x7);
+	if ((m_State.status == Status::ON) && (failsafe != FailSafe::RECORD)) {
+		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x3);
 
 		if (m_pArtNetStore != nullptr) {
 			m_pArtNetStore->SaveFailSafe(nFailSafe);
 		}
-		if (m_pArtNetDisplay != nullptr) {
-			m_pArtNetDisplay->ShowFailSafe(nFailSafe);
-		}
+
+		artnet::display_failsafe(nFailSafe);
 	}
 
 	DEBUG_EXIT

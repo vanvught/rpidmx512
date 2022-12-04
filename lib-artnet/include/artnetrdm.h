@@ -31,15 +31,24 @@
 
 #include <cstdint>
 
+namespace artnet {
+void rdm_send(uint32_t nPortIndex, const uint8_t *pRdmData);
+}  // namespace artnet
+
 class ArtNetRdm {
 public:
 	virtual ~ArtNetRdm() {}
 
 	virtual void Full(uint32_t nPortIndex)=0;
 	virtual uint32_t GetUidCount(uint32_t nPortIndex)=0;
-	virtual void Copy(uint32_t nPortIndex, uint8_t *)=0;
+	virtual void TodCopy(uint32_t nPortIndex, uint8_t *)=0;
+
+	virtual void TodReset(uint32_t nPortIndex)=0;
+	virtual bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid)=0;
 
 	virtual const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *)=0;
+
+	virtual bool RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData)=0;
 };
 
 #endif /* ARTNETRDM_H_ */

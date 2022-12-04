@@ -31,22 +31,17 @@
 
 #include <cstdint>
 
-#include "artnet.h"
 #include "lightset.h"
 
-class ArtNetDisplay {
-public:
-	virtual ~ArtNetDisplay() {}
-
-	virtual void ShowShortName(const char *pShortName)= 0;
-	virtual void ShowLongName(const char *pLongName)= 0;
-	virtual void ShowUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress)=0;
-	virtual void ShowNetSwitch(uint8_t nAddress)=0;
-	virtual void ShowSubnetSwitch(uint8_t nAddress)=0;
-	virtual void ShowMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode)=0;
-	virtual void ShowPortProtocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol)=0;
-	virtual void ShowRdmEnabled(uint32_t nPortIndex, bool isEnabled)=0;
-	virtual void ShowFailSafe(uint8_t nFailsafe)=0;
-};
-
+namespace artnet {
+void display_shortname(const char *pShortName);
+void display_longname(const char *pLongName);
+void display_universe_switch(uint32_t nPortIndex, uint8_t nAddress);
+void display_net_switch(uint8_t nAddress);
+void display_subnet_switch(uint8_t nAddress);
+void display_merge_mode(uint32_t nPortIndex, lightset::MergeMode mergeMode);
+void display_port_protocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol);
+void display_rdm_enabled(uint32_t nPortIndex, bool isEnabled);
+void display_failsafe(uint8_t nFailsafe);
+}  // namespace artnet
 #endif /* ARTNETDISPLAY_H_ */

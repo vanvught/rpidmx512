@@ -2,5 +2,15 @@
 
 EXTRA_INCLUDES=../lib-lightset/include ../lib-properties/include ../lib-hal/include ../lib-network/include
 
+ifneq ($(MAKE_FLAGS),)
+	ifeq ($(findstring ARTNET_HAVE_FAILSAFE_RECORD,$(MAKE_FLAGS)), ARTNET_HAVE_FAILSAFE_RECORD)
+		EXTRA_SRCDIR=src/node/failsafe/file
+		EXTRA_INCLUDES+=src/node/failsafe
+	endif
+else
+	EXTRA_SRCDIR=src/node/failsafe/file
+	EXTRA_INCLUDES+=src/node/failsafe
+endif
+
 include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk
