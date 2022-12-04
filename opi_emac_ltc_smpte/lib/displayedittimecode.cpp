@@ -53,30 +53,30 @@ void DisplayEditTimeCode::HandleKey(int nKey, struct ltc::TimeCode& timecode, ch
 	m_nFrames = TimeCodeConst::FPS[timecode.nType];
 
 	if (m_State == IDLE) {
-		if (nKey == INPUT_KEY_ENTER) {
+		if (nKey == input::KEY_ENTER) {
 			m_State = EDIT;
 			m_nCursorPositionIndex = 0;
 			m_bCursorOn = true;
 		}
 	} else {
 		switch (nKey) {
-		case INPUT_KEY_ENTER:
+		case input::KEY_ENTER:
 			break;
-		case INPUT_KEY_ESC:
+		case input::KEY_ESC:
 			m_State = IDLE;
 			m_nCursorPositionIndex = 0;
 			m_bCursorOn = false;
 			break;
-		case INPUT_KEY_UP:
+		case input::KEY_UP:
 			KeyUp(timecode);
 			break;
-		case INPUT_KEY_DOWN:
+		case input::KEY_DOWN:
 			KeyDown(timecode);
 			break;
-		case INPUT_KEY_LEFT:
+		case input::KEY_LEFT:
 			KeyLeft();
 			break;
-		case INPUT_KEY_RIGHT:
+		case input::KEY_RIGHT:
 			KeyRight();
 			break;
 		default:

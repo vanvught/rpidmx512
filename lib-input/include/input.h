@@ -2,7 +2,7 @@
  * @file input.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,26 @@
 #ifndef INPUT_H_
 #define INPUT_H_
 
-#define INPUT_KEY_NOT_DEFINED	0
-#define INPUT_KEY_ENTER			10
-#define INPUT_KEY_ESC			27
-#define INPUT_KEY_NUMERIC_0		48
-#define INPUT_KEY_NUMERIC_1		49
-#define INPUT_KEY_NUMERIC_2		50
-#define INPUT_KEY_NUMERIC_3		51
-#define INPUT_KEY_NUMERIC_4		52
-#define INPUT_KEY_NUMERIC_5		53
-#define INPUT_KEY_NUMERIC_6		54
-#define INPUT_KEY_NUMERIC_7		55
-#define INPUT_KEY_NUMERIC_8		56
-#define INPUT_KEY_NUMERIC_9		57
-#define INPUT_KEY_UP			-65
-#define INPUT_KEY_DOWN			-66
-#define INPUT_KEY_RIGHT			-67
-#define INPUT_KEY_LEFT			-68
+namespace input {
+static constexpr int KEY_NOT_DEFINED = 0;
+static constexpr int KEY_ENTER = 10;
+static constexpr int KEY_ESC = 27;
+static constexpr int KEY_DEC = '+';
+static constexpr int KEY_INC = '-';
+static constexpr int KEY_NUMERIC_0 = 48;
+static constexpr int KEY_NUMERIC_1 = 49;
+static constexpr int KEY_NUMERIC_2 = 50;
+static constexpr int KEY_NUMERIC_3 = 51;
+static constexpr int KEY_NUMERIC_4 = 52;
+static constexpr int KEY_NUMERIC_5 = 53;
+static constexpr int KEY_NUMERIC_6 = 54;
+static constexpr int KEY_NUMERIC_7 = 55;
+static constexpr int KEY_NUMERIC_8 = 56;
+static constexpr int KEY_NUMERIC_9 = 57;
+static constexpr int KEY_UP = -65;
+static constexpr int KEY_DOWN = -66;
+static constexpr int KEY_RIGHT = -67;
+static constexpr int KEY_LEFT = -68;
+}  // namespace input
 
 #endif /* INPUT_H_ */

@@ -66,7 +66,7 @@ void McpButtons::HandleInternalTimeCodeFps(struct ltc::TimeCode& StartTimeCode) 
 }
 
 void McpButtons::HandleInternalKeyEsc() {
-	if (m_nKey == INPUT_KEY_ESC) {
+	if (m_nKey == input::KEY_ESC) {
 		Display::Get()->SetCursor(display::cursor::OFF);
 		Display::Get()->SetCursorPos(0, 0);
 		Display::Get()->ClearLine(1);

@@ -95,7 +95,7 @@ private:
 	uint8_t m_tRotaryDirection { RotaryEncoder::NONE };
 	RunStatus m_tRunStatus { RunStatus::IDLE };
 	uint32_t m_nSelectMillis { 0 };
-	int m_nKey { INPUT_KEY_NOT_DEFINED };
+	int m_nKey { input::KEY_NOT_DEFINED };
 	char m_aTimeCode[ltc::timecode::CODE_MAX_LENGTH];
 	bool m_bRunGpsTimeClient { false };
 };

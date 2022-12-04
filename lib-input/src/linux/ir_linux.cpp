@@ -3,7 +3,7 @@
  * @file ir_linux.cpp
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,23 +107,23 @@ int IrLinux::GetChar() {
 	char *p = strchr(m_Code,  '_');
 
 	if (p == nullptr) {
-		return INPUT_KEY_NOT_DEFINED;
+		return input::KEY_NOT_DEFINED;
 	}
 
 	if (strcmp(p, "_OK") == 0) {
-		ch = INPUT_KEY_ENTER;
+		ch = input::KEY_ENTER;
 	} else if (strcmp(p, "_NUMERIC_POUND") == 0) {
-		ch = INPUT_KEY_ESC;
+		ch = input::KEY_ESC;
 	} else if (strcmp(p, "_DOWN") == 0) {
-		ch = INPUT_KEY_DOWN;
+		ch = input::KEY_DOWN;
 	} else if (strcmp(p, "_UP") == 0) {
-		ch = INPUT_KEY_UP;
+		ch = input::KEY_UP;
 	} else if (strcmp(p, "_LEFT") == 0) {
-		ch = INPUT_KEY_LEFT;
+		ch = input::KEY_LEFT;
 	} else if (strcmp(p, "_RIGHT") == 0) {
-		ch = INPUT_KEY_RIGHT;
+		ch = input::KEY_RIGHT;
 	} else {
-		ch = INPUT_KEY_NOT_DEFINED;
+		ch = input::KEY_NOT_DEFINED;
 	}
 
 	return ch;
