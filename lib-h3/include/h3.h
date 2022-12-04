@@ -728,8 +728,7 @@ typedef struct T_H3_HDMI_PHY {
 # define _CAST(x)	(x)
 #endif
 
-#define H3_SYSTEM		((H3_SYSTEM_TypeDef *) H3_SYSTEM_BASE)
-
+#define H3_SYSTEM		(_CAST(H3_SYSTEM_TypeDef *)(H3_SYSTEM_BASE))
 #define H3_LCD0			(_CAST(H3_TCON_TypeDef *)(H3_LCD0_BASE))
 #define H3_LCD1			(_CAST(H3_TCON_TypeDef *)(H3_LCD1_BASE))
 
@@ -757,7 +756,7 @@ typedef struct T_H3_HDMI_PHY {
 #define H3_PIO_PORTL	((H3_PIO_TypeDef *) H3_PIO_PORTL_BASE)
 #define H3_PIO_PA_INT 	(_CAST(H3_PIO_INT_TypeDef *)(H3_PIO_PA_INT_BASE))
 #define H3_PIO_PG_INT	((H3_PIO_INT_TypeDef *) H3_PIO_PG_INT_BASE)
-#define H3_EMAC			((H3_EMAC_TypeDef *) H3_EMAC_BASE)
+#define H3_EMAC			(_CAST(H3_EMAC_TypeDef *)(H3_EMAC_BASE))
 #define H3_TIMER 		(_CAST(H3_TIMER_TypeDef *)(H3_TIMER_BASE))
 #define H3_HS_TIMER		(_CAST(H3_HS_TIMER_TypeDef *)(H3_HS_TIMER_BASE))
 #define H3_AC			((H3_AC_TypeDef *) H3_AC_BASE)

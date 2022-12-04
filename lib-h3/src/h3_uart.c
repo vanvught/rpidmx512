@@ -23,10 +23,6 @@
  * THE SOFTWARE.
  */
 
-#ifdef NDEBUG
-# undef NDEBUG	//FIXME Remove # undef NDEBUG
-#endif
-
 #pragma GCC push_options
 #pragma GCC optimize ("Os")
 

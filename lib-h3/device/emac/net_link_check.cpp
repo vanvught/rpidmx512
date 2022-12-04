@@ -1,8 +1,8 @@
 /**
- * @file mac_address.c
+ * net_link_check.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <assert.h>
+#include "../lib-network/include/emac/net_link_check.h"
 
-#include "h3.h"
+#include "phy.h"
+#include "mii.h"
 
-extern int uart0_printf(const char* fmt, ...);
+#define PHY_ADDRESS	1
 
-void mac_address_get(uint8_t paddr[]) {
-	assert(mac_addr == ENET_MAC_ADDRESS0);
+namespace net {
+net::Link link_register_read() {
+	if (BMSR_LSTATUS == (phy_read(PHY_ADDRESS, MII_BMSR) & BMSR_LSTATUS)) {
+		return net::Link::STATE_UP;
+	}
 
-	const uint32_t mac_lo = H3_EMAC->ADDR[0].LOW;
-	const uint32_t mac_hi = H3_EMAC->ADDR[0].HIGH;
-
-#ifndef NDEBUG
-	uart0_printf("H3_EMAC->ADDR[0].LOW=%08x, H3_EMAC->ADDR[0].HIGH=%08x\n", mac_lo, mac_hi);
-#endif
-
-	paddr[0] = (mac_lo >> 0) & 0xff;
-	paddr[1] = (mac_lo >> 8) & 0xff;
-	paddr[2] = (mac_lo >> 16) & 0xff;
-	paddr[3] = (uint8_t) ((mac_lo >> 24) & 0xff);
-	paddr[4] = (mac_hi >> 0) & 0xff;
-	paddr[5] = (mac_hi >> 8) & 0xff;
-
-#ifndef NDEBUG
-	uart0_printf("%02x:%02x:%02x:%02x:%02x:%02x\n", paddr[0], paddr[1], paddr[2], paddr[3], paddr[4], paddr[5]);
-#endif
+	return net::Link::STATE_DOWN;
 }
+}  // namespace net
