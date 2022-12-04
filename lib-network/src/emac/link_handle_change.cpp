@@ -1,8 +1,8 @@
 /**
- * @file net_config
+ * link_handle_change.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,22 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_CONFIG_H_
-#define NET_CONFIG_H_
+#include "network.h"
 
-#if defined (BARE_METAL)
-# define TCP_MAX_CONNECTIONS_ALLOWED	1
-# if defined (H3)
-#  define HOST_NAME_PREFIX				"allwinner_"
-#  define UDP_MAX_PORTS_ALLOWED			16
-#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-# elif defined (GD32)
-#  define HOST_NAME_PREFIX				"gigadevice_"
-#  if !defined (UDP_MAX_PORTS_ALLOWED)
-#   define UDP_MAX_PORTS_ALLOWED		8
-#  endif
-#  if !defined (IGMP_MAX_JOINS_ALLOWED)
-#   define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-#  endif
-# else
-#  error
-# endif
-#else
-# error
-#endif
+#include "debug.h"
 
-#if !defined (UDP_MAX_PORTS_ALLOWED)
-# error
-#endif
+/**
+ * Default implementation
+ */
 
-#if !defined (IGMP_MAX_JOINS_ALLOWED)
-# error
-#endif
+namespace net {
+void __attribute__((weak)) link_handle_change(const net::Link state) {
+	DEBUG_PRINTF("net::Link %s", state == net::Link::STATE_UP ? "UP" : "DOWN");
 
-#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
-# error
-#endif
-
-#endif /* NET_CONFIG_H_ */
+	if (net::Link::STATE_UP == state) {
+		if (Network::Get()->IsDhcpUsed()) {
+			Network::Get()->EnableDhcp();
+		}
+	}
+}
+}  // namespace net

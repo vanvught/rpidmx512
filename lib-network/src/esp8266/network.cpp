@@ -52,9 +52,7 @@ static constexpr auto FIRMWARE_VERSION_MAX = 255;
 static char sdk_version[SDK_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 static char firmware_version[FIRMWARE_VERSION_MAX + 1] __attribute__((aligned(4))) = { 'U' , 'n', 'k' , 'n' , 'o' , 'w', 'n' , '\0'};
 
-extern "C" {
 void mac_address_get(uint8_t paddr[]);
-}
 
 Network *Network::s_pThis = nullptr;
 

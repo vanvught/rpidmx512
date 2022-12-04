@@ -1,5 +1,5 @@
 /**
- * @file net_config
+ * @file network.cpp
  *
  */
 /* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,40 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_CONFIG_H_
-#define NET_CONFIG_H_
+#include "network.h"
+#include "displayudf.h"
 
-#if defined (BARE_METAL)
-# define TCP_MAX_CONNECTIONS_ALLOWED	1
-# if defined (H3)
-#  define HOST_NAME_PREFIX				"allwinner_"
-#  define UDP_MAX_PORTS_ALLOWED			16
-#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-# elif defined (GD32)
-#  define HOST_NAME_PREFIX				"gigadevice_"
-#  if !defined (UDP_MAX_PORTS_ALLOWED)
-#   define UDP_MAX_PORTS_ALLOWED		8
-#  endif
-#  if !defined (IGMP_MAX_JOINS_ALLOWED)
-#   define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-#  endif
-# else
-#  error
-# endif
-#else
-# error
-#endif
+namespace network {
+void display_emac_start() {
+	DisplayUdf::Get()->ShowEmacStart();
+}
 
-#if !defined (UDP_MAX_PORTS_ALLOWED)
-# error
-#endif
+void display_ip() {
+	DisplayUdf::Get()->ShowIpAddress();
+}
 
-#if !defined (IGMP_MAX_JOINS_ALLOWED)
-# error
-#endif
+void display_netmask() {
+	DisplayUdf::Get()->ShowNetmask();
+}
 
-#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
-# error
-#endif
+void display_gateway() {
+	DisplayUdf::Get()->ShowGatewayIp();
+}
 
-#endif /* NET_CONFIG_H_ */
+void display_hostname() {
+	DisplayUdf::Get()->ShowHostName();
+}
+
+void display_emac_shutdown() {
+	DisplayUdf::Get()->ShowShutdown();
+}
+
+// DHCP Client
+void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
+	DisplayUdf::Get()->ShowDhcpStatus(nStatus);
+}
+}  // namespace network

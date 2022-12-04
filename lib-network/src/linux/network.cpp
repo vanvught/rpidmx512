@@ -278,10 +278,12 @@ int32_t Network::End(uint16_t nPort) {
 		if (s_ports_allowed[i] == nPort) {
 			s_ports_allowed[i] = 0;
 			printf("close");
+
 			if (close(snHandles[i]) == -1) {
 				perror("unbind");
 				exit(EXIT_FAILURE);
 			}
+
 			snHandles[i] = -1;
 			return 0;
 		}

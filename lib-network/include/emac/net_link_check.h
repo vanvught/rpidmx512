@@ -1,8 +1,8 @@
 /**
- * @file net_config
+ * net_link_check.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,40 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_CONFIG_H_
-#define NET_CONFIG_H_
+#ifndef EMAC_NET_LINK_CHECK_H_
+#define EMAC_NET_LINK_CHECK_H_
 
-#if defined (BARE_METAL)
-# define TCP_MAX_CONNECTIONS_ALLOWED	1
-# if defined (H3)
-#  define HOST_NAME_PREFIX				"allwinner_"
-#  define UDP_MAX_PORTS_ALLOWED			16
-#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-# elif defined (GD32)
-#  define HOST_NAME_PREFIX				"gigadevice_"
-#  if !defined (UDP_MAX_PORTS_ALLOWED)
-#   define UDP_MAX_PORTS_ALLOWED		8
-#  endif
-#  if !defined (IGMP_MAX_JOINS_ALLOWED)
-#   define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
-#  endif
-# else
-#  error
-# endif
-#else
-# error
+namespace net {
+enum class Link {
+	STATE_UP, STATE_DOWN
+};
+
+/**
+ * Platform defined implementations
+ */
+
+net::Link link_register_read();
+
+#if defined (ENET_LINK_CHECK_USE_INT)
+ void link_interrupt_init();
+#elif defined (ENET_LINK_CHECK_USE_PIN_POLL)
+ void link_pin_poll_init();
+ void link_pin_poll();
+#elif defined (ENET_LINK_CHECK_REG_POLL)
+ void link_register_poll();
 #endif
 
-#if !defined (UDP_MAX_PORTS_ALLOWED)
-# error
-#endif
+/**
+ * User defined implementation
+ */
 
-#if !defined (IGMP_MAX_JOINS_ALLOWED)
-# error
-#endif
+void link_handle_change(const net::Link state);
+}  // namespace net
 
-#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
-# error
-#endif
-
-#endif /* NET_CONFIG_H_ */
+#endif /* EMAC_NET_LINK_CHECK_H_ */

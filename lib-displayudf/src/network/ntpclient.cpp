@@ -1,8 +1,8 @@
 /**
- * @file networkdisplay.cpp
+ * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include "network.h"
-#include "displayudf.h"
+#include "ntpclient.h"
+#include "display.h"
 
-void NetworkDisplay::ShowEmacStart() {
-	DisplayUdf::Get()->ShowEmacStart();
-}
+namespace ntpclient {
+void display_status(ntpclient::Status nStatus) {
+	if (nStatus == ntpclient::Status::IDLE) {
+		Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
+		return;
+	}
 
-void NetworkDisplay::ShowIp() {
-	DisplayUdf::Get()->ShowIpAddress();
+	if (nStatus == ntpclient::Status::FAILED) {
+		Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
+		return;
+	}
 }
-
-void NetworkDisplay::ShowNetMask() {
-	DisplayUdf::Get()->ShowNetmask();
-}
-
-void NetworkDisplay::ShowGatewayIp() {
-	DisplayUdf::Get()->ShowGatewayIp();
-}
-
-void NetworkDisplay::ShowHostName() {
-	DisplayUdf::Get()->ShowHostName();
-}
-
-void NetworkDisplay::ShowShutdown() {
-	DisplayUdf::Get()->ShowShutdown();
-}
-
-// DHCP Client
-void NetworkDisplay::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
-	DisplayUdf::Get()->ShowDhcpStatus(nStatus);
-}
+}  // namespace ntpclient
