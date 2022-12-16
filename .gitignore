@@ -103,3 +103,4 @@ linux_artnet/linux_artnet
 linux_e131/linux_e131
 linux_osc/linux_osc
 */spiflash.bin
+*.bin
