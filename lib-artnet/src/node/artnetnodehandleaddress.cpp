@@ -243,6 +243,13 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("failsafe=%u", static_cast<uint32_t>(failsafe));
 
+#if defined(ARTNET_HAVE_FAILSAFE_RECORD)
+	if ((m_State.status == Status::ON) && (failsafe == artnetnode::FailSafe::RECORD)) {
+		FailSafeRecord();
+		return;
+	}
+#endif
+
 	m_Node.Status3 &= static_cast<uint8_t>(~Status3::NETWORKLOSS_MASK);
 
 	switch (failsafe) {
@@ -269,7 +276,8 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 
 	case FailSafe::RECORD:
 #if defined(ARTNET_HAVE_FAILSAFE_RECORD)
-		FailSafeRecord();
+		assert(0);
+		__builtin_unreachable();
 		break;
 #else
 		return;
@@ -282,7 +290,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 		break;
 	}
 
-	if ((m_State.status == Status::ON) && (failsafe != FailSafe::RECORD)) {
+	if (m_State.status == Status::ON) {
 		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x3);
 
 		if (m_pArtNetStore != nullptr) {

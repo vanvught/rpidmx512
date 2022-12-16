@@ -126,7 +126,7 @@ void ArtNetNode::Start() {
 	}
 
 #if defined	(RDM_CONTROLLER) || defined	(RDM_RESPONDER)
-	assert(m_pArtNetRdm != nullptr);
+//	assert(m_pArtNetRdm != nullptr);
 #endif
 
 	m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & ~(Status2::IP_DHCP)) | (Network::Get()->IsDhcpUsed() ? Status2::IP_DHCP : Status2::IP_MANUALY));
