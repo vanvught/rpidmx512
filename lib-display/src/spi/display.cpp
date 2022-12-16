@@ -54,9 +54,9 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()) {
 	s_pThis = this;
 
 	FUNC_PREFIX(spi_begin());
-	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));	// CS is handled in class ST7789
+	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(20000000));
-	FUNC_PREFIX(spi_setDataMode(SPI_MODE2));
+	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
 
 #if defined (SPI_LCD_RST_PIN)
 	FUNC_PREFIX(gpio_fsel(SPI_LCD_RST_PIN, GPIO_FSEL_OUTPUT));

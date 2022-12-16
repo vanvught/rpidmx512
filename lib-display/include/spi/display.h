@@ -46,6 +46,10 @@ public:
 		s_pThis = nullptr;
 	}
 
+	bool isDetected() const {
+		return true;
+	}
+
 	void Cls(void);
 	void SetCursorPos(uint32_t nCol, uint32_t nRow);
 	void PutChar(int c);
@@ -93,8 +97,6 @@ public:
 	}
 
 	void Text(const char *pData, uint32_t nLength) {
-		DEBUG_ENTRY
-
 		if (nLength > m_nCols) {
 			nLength = m_nCols;
 		}
@@ -102,8 +104,6 @@ public:
 		for (uint32_t i = 0; i < nLength; i++) {
 			PutChar(pData[i]);
 		}
-
-		DEBUG_EXIT
 	}
 
 	int Write(uint32_t nLine, const char *pText) {

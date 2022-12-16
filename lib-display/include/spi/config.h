@@ -28,11 +28,11 @@
 
 namespace config {
 #if defined (SPI_LCD_240X240)
-static constexpr auto WIDTH = 240;
-static constexpr auto HEIGHT = 240;
+static constexpr auto WIDTH = 240U;
+static constexpr auto HEIGHT = 240U;
 #elif defined (SPI_LCD_240X320)
-static constexpr auto WIDTH = 240;
-static constexpr auto HEIGHT = 320;
+static constexpr auto WIDTH = 240U;
+static constexpr auto HEIGHT = 320U;
 #else
 # error lib-display spi config
 #endif
@@ -45,30 +45,7 @@ static constexpr auto HEIGHT = 320;
 # if defined(SPI_LCD_HAVE_CS_PIN)
 #  define SPI_LCD_CS_PIN		GPIO_EXT_24			// GPIO13 / SPI CS0
 # endif
-#elif defined (GD32)		//TODO Move to board file
-# include "gd32.h"
-# if defined(BOARD_GD32F107RC) || defined(BOARD_GD32F207RG) || defined(BOARD_GD32F407RE)
-#  define SPI_LCD_RST_PIN		GPIO_EXT_7
-#  define SPI_LCD_DC_PIN 		GPIO_EXT_26
-#  define SPI_LCD_BL_PIN		GPIO_EXT_22
-#  if defined(SPI_LCD_HAVE_CS_PIN)
-#   define SPI_LCD_CS_PIN		GPIO_EXT_24
-#  endif
-# elif defined(BOARD_GD32F207VC)
-#  define SPI_LCD_DC_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
-#  define SPI_LCD_BL_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
-#  define SPI_LCD_CS_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
-# elif defined(BOARD_GD32F450VE)
-#  define SPI_LCD_DC_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
-#  define SPI_LCD_BL_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
-#  define SPI_LCD_CS_PIN        GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
-# elif defined(BOARD_GD32F207C_EVAL)
-#  define SPI_LCD_DC_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTB, 1)
-#  define SPI_LCD_BL_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTA, 3)
-#  define SPI_LCD_CS_PIN		GD32_PORT_TO_GPIO(GD32_GPIO_PORTE, 5)
-# else
-#  error
-# endif
+#elif defined (GD32)		//See board file
 #else
 # include "bcm2835.h"
 # define SPI_LCD_RST_PIN		RPI_V2_GPIO_P1_07	// GPIO4
