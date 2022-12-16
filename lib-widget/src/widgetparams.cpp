@@ -44,7 +44,7 @@
 
 using namespace widget;
 
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 WidgetParams::WidgetParams(WidgetParamsStore* pWidgetParamsStore): m_pWidgetParamsStore(pWidgetParamsStore) {
 #else
 WidgetParams::WidgetParams() {
@@ -61,7 +61,7 @@ bool WidgetParams::Load() {
 
 	ReadConfigFile configfile(WidgetParams::staticCallbackFunction, this);
 
-#if defined (HAVE_FLASHROM)
+#if defined (WIDGET_HAVE_FLASHROM)
 # if !defined(DISABLE_FS)
 	if (configfile.Read( WidgetParamsConst::FILE_NAME)) {
 		// There is a configuration file

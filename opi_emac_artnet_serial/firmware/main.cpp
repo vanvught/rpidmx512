@@ -39,7 +39,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "artnet/displayudfhandler.h"
 
 #include "artnet4node.h"
 #include "artnetparams.h"
@@ -59,8 +58,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storeartnet.h"
 #include "storedisplayudf.h"
 #include "storedmxserial.h"
@@ -82,11 +81,10 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("Art-Net 4 Node \x1b[32mSerial [UART/SPI/I2C] \x1b[37m{1 Universe}");
 
@@ -127,7 +125,6 @@ void notmain(void) {
 		artnetParams.Set();
 	}
 
-	node.SetArtNetDisplay(&displayUdfHandler);
 	node.SetArtNetStore(StoreArtNet::Get());
 
 	bool isSet;
@@ -190,7 +187,6 @@ void notmain(void) {
 	constexpr char aLabel[] = "Art-Net 4 Serial [UART/SPI/I2C]";
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
@@ -206,7 +202,7 @@ void notmain(void) {
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
@@ -225,7 +221,7 @@ void notmain(void) {
 		dmxSerial.Run();
 		llrpOnlyDevice.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 		display.Run();
 		mDns.Run();

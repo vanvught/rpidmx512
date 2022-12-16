@@ -467,7 +467,7 @@ void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 		const auto nOffset = nPortIndex + nPortIndexOffset;
 
 		if (nOffset >= artnetnode::MAX_PORTS) {
-			DEBUG_EXIT
+			DEBUG_PUTS("break");
 			break;
 		}
 
@@ -488,7 +488,7 @@ void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 		}
 	}
 
-	p->SetFailSafe(static_cast<artnetnode::FailSafe>(m_Params.nFailSafe));
+	p->SetFailSafe(artnetnode::convert_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)));
 
 	/**
 	 * Art-Net 4

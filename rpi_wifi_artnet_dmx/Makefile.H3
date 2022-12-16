@@ -9,7 +9,7 @@ DEFINES+=DO_NOT_USE_EXTERNAL_LED DISABLE_RTC NDEBUG
 
 LIBS=rdmdiscovery rdm
 
-SRCDIR=firmware
+SRCDIR=firmware lib/display
 
 include ../firmware-template-h3/Rules.mk
 

@@ -54,8 +54,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storenetwork.h"
 #include "storeoscserver.h"
 #include "storeremoteconfig.h"
@@ -77,8 +77,8 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("OSC Server " "\x1b[32m" "Pixel controller {1x Universe}" "\x1b[37m");
 	
@@ -188,7 +188,7 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
@@ -204,7 +204,7 @@ void notmain(void) {
 		nw.Run();
 		server.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}

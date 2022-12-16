@@ -29,11 +29,11 @@
 #include <cassert>
 
 #include "remoteconfig.h"
-#include "spiflashstore.h"
+#include "configstore.h"
 
 #include "debug.h"
 
-using namespace spiflashstore;
+using namespace configstore;
 using namespace remoteconfig;
 
 const RemoteConfig::Txt RemoteConfig::s_TXT[] = {

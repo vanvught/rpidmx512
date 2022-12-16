@@ -36,7 +36,6 @@
 
 #include "rdmsoftwareversion.h"
 #include "rdmpersonality.h"
-#include "rdmfactorydefaults.h"
 
 #include "lightset.h"
 

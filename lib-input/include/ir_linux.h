@@ -2,7 +2,7 @@
  * @file ir_linux.h
  *
  */
-/* Copyright (C) 2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,18 +30,17 @@
 
 #include "inputset.h"
 
-class IrLinux: public InputSet {
+class IrLinux final: public InputSet {
 public:
 	IrLinux();
-	~IrLinux();
+	~IrLinux() override;
 
-	bool Start();
-
-	bool IsAvailable();
-	int GetChar();
+	bool Start() override;
+	bool IsAvailable() override;
+	int GetChar() override;
 
 private:
-	int m_nFd{-1};
+	int m_nFd { -1 };
 	struct sockaddr_un m_Addr;
 	char m_Buffer[128];
 	char m_Code[32];

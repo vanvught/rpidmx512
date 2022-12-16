@@ -37,8 +37,8 @@
 #include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 
 #include "storewidget.h"
 #include "storerdmdevice.h"
@@ -60,8 +60,8 @@ void notmain(void) {
 	LedBlink lb;
 	Display display; 	// Display is not supported. We just need a pointer to object
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreWidget storeWidget;
 	StoreRDMDevice storeRDMDevice;
@@ -109,7 +109,7 @@ void notmain(void) {
 		hw.WatchdogFeed();
 		widget.Run();
 		lb.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 	}
 }
 

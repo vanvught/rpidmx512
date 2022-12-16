@@ -30,24 +30,28 @@
 
 namespace dmx {
 namespace config {
-#if defined (BOARD_GD32F103R)
-# include "board_gd32f103r.h"
-#elif defined (BOARD_GD32F107R)
-# include "board_gd32f107r.h"
-#elif defined (BOARD_GD32F207R)
-# include "board_gd32f207r.h"
-#elif defined (BOARD_GD32F207C_EVAL)
-# include "board_gd32f207c_eval.h"
-#elif defined (BOARD_GD32F303R)
-# include "board_gd32f303r.h"
-#elif defined (BOARD_GD32F407R)
-# include "board_gd32f407r.h"
+#if defined (BOARD_GD32F103RC)
+# include "board_gd32f103rc.h"
+#elif defined (BOARD_GD32F107RC)
+# include "board_gd32f107rc.h"
+#elif defined (BOARD_GD32F207RG)
+# include "board_gd32f207rg.h"
+#elif defined (BOARD_GD32F207VC)
+# include "board_gd32f207vc.h"
+#elif defined (BOARD_GD32F303RC)
+# include "board_gd32f303rc.h"
+#elif defined (BOARD_GD32F407RE)
+# include "board_gd32f407re.h"
 #elif defined (BOARD_GD32F450VE)
 # include "board_gd32f450ve.h"
 #elif defined (BOARD_GD32F450VI)
 # include "board_gd32f450vi.h"
+#elif defined (BOARD_GD32F207C_EVAL)
+# include "board_gd32f207c_eval.h"
 #elif defined (BOARD_BW_OPIDMX4)
 # include "board_bw_opidmx4.h"
+#elif defined (BOARD_DMX4)
+# include "board_dmx4.h"
 #else
 # error
 #endif

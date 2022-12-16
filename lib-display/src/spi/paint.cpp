@@ -34,7 +34,11 @@
 
 #include "debug.h"
 
-#define FRAME_BUFFER_ROWS	5
+#if !defined(SPI_LCD_FRAME_BUFFER_ROWS)
+ static constexpr uint32_t FRAME_BUFFER_ROWS = 5;
+#else
+ static constexpr uint32_t FRAME_BUFFER_ROWS = SPI_LCD_FRAME_BUFFER_ROWS;
+#endif
 
 static uint16_t s_FrameBuffer[config::WIDTH * FRAME_BUFFER_ROWS];
 

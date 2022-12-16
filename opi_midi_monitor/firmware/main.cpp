@@ -30,14 +30,14 @@
 #include "display.h"
 #include "console.h"
 
-#include "spiflashinstall.h"
+#include "flashcodeinstall.h"
 
 #if !defined(NO_EMAC)
 # include "networkh3emac.h"
 # include "remoteconfig.h"
 # include "remoteconfigparams.h"
 # include "storeremoteconfig.h"
-# include "spiflashstore.h"
+# include "configstore.h"
 # include "storenetwork.h"
 #endif
 
@@ -61,9 +61,9 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
+	FlashCodeInstall spiFlashInstall;
 #if !defined(NO_EMAC)
-	SpiFlashStore spiFlashStore;
+	ConfigStore configStore;
 #endif
 
 	Midi midi;
@@ -84,7 +84,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 #endif
 

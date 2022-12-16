@@ -52,7 +52,7 @@ Node::Node(node::Personality personality, NodeStore *pNodeStore) :
 
 	constexpr auto nArtNetPorts = artnetnode::MAX_PORTS;
 	constexpr auto nE131Ports __attribute__((unused)) = e131bridge::MAX_PORTS;
-	assert(nArtNetPorts == nE131Ports);
+	static_assert(nArtNetPorts == nE131Ports, "");
 
 	m_nPorts = nArtNetPorts;
 
@@ -279,14 +279,16 @@ void Node::EventSetUniverse(bool bOverwriteIsStarted) {
 			}
 		}
 
-		const auto bArtNet = ((m_Personality == node::Personality::ARTNET) && (ArtNetNode::GetActiveOutputPorts() != 0));
-		const auto bE131 = ((m_Personality == node::Personality::E131) && (E131Bridge::GetActiveOutputPorts() != 0));
+		const auto hasArtNetOutputPorts = ((m_Personality == node::Personality::ARTNET) && (ArtNetNode::GetActiveOutputPorts() != 0));
+		const auto hasE131OutputPorts = ((m_Personality == node::Personality::E131) && (E131Bridge::GetActiveOutputPorts() != 0));
 
-		if (bArtNet || bE131) {
+		if (hasArtNetOutputPorts || hasE131OutputPorts) {
 			if (m_pDmxConfigUdp == nullptr) {
 				m_pDmxConfigUdp = new DmxConfigUdp;
 				assert(m_pDmxConfigUdp != nullptr);
-			} else {
+			}
+		} else {	// There are no Output ports
+			if (m_pDmxConfigUdp != nullptr) {
 				delete m_pDmxConfigUdp;
 				m_pDmxConfigUdp = nullptr;
 			}
@@ -445,7 +447,7 @@ void Node::EventSetRdm(bool bOverwriteIsStarted) {
 				return;
 			}
 
-			m_pArtNetRdmController = new ArtNetRdmController(artnetnode::MAX_PORTS);
+			m_pArtNetRdmController = new ArtNetRdmController;
 			assert(m_pArtNetRdmController != nullptr);
 			DEBUG_EXIT
 			return;

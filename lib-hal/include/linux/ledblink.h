@@ -39,7 +39,7 @@ public:
 
 	void SetMode(ledblink::Mode Mode);
 	ledblink::Mode GetMode() {
-		return m_tMode;
+		return m_Mode;
 	}
 
 	void Run() {} // Not needed
@@ -57,7 +57,7 @@ private:
 
 private:
 	uint32_t m_nFreqHz { 0 };
-	ledblink::Mode m_tMode { ledblink::Mode::UNKNOWN };
+	ledblink::Mode m_Mode { ledblink::Mode::UNKNOWN };
 	LedBlinkDisplay *m_pLedBlinkDisplay { nullptr };
 
 	static LedBlink *s_pThis;

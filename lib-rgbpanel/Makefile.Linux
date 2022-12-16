@@ -1,0 +1,8 @@
+#
+DEFINES = #NDEBUG
+#
+EXTRA_SRCDIR = fonts
+#
+EXTRA_INCLUDES = ../lib-properties/include
+#
+include ../firmware-template-linux/lib/Rules.mk

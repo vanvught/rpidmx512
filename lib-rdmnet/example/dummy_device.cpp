@@ -68,8 +68,8 @@ int main(int argc, char **argv) {
 	RDMDeviceParams rdmDeviceParams;
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&device);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&device);
 	}
 
 	device.Init();

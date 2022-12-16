@@ -2,5 +2,7 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=../lib-lightset/include ../lib-ledblink/include ../lib-properties/include ../lib-hal/include ../lib-network/include
 
+EXTRA_SRCDIR=
+
 include Rules.mk
 include ../firmware-template-bcm/lib/Rules.mk

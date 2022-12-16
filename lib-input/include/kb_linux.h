@@ -34,14 +34,12 @@ public:
 	~KbLinux() override;
 
 	bool Start() override;
-
 	bool IsAvailable() override;
 	int GetChar() override;
 
 private:
 	int m_nBytesWaiting { 0 };
 	int m_nState { 0 };
-
 };
 
 #endif /* KB_LINUX_H_ */

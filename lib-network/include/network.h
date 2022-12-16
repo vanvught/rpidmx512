@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,12 +46,8 @@ enum class Mode: uint8_t {
 	ACTIVE = 0x01,		///< The IP address was obtained via DHCP
 	UNKNOWN = 0x02		///< The system cannot determine if the address was obtained via DHCP
 };
-enum class ClientStatus: uint8_t {
-	IDLE,
-	RENEW,
-	GOT_IP,
-	RETRYING,
-	FAILED
+enum class ClientStatus {
+	IDLE, RENEW, GOT_IP, RETRYING, FAILED
 };
 }  // namespace dhcp
 
@@ -66,7 +62,7 @@ inline static bool is_netmask_valid(uint32_t nNetMask) {
 /**
  * The private address ranges are defined in RFC1918.
  */
-inline static bool is_private_ip(uint32_t nIp) {
+inline static bool is_private_ip(const uint32_t nIp) {
 	const uint8_t n = (nIp >> 8) & 0xFF;
 
 	switch (nIp & 0xFF) {
@@ -84,7 +80,7 @@ inline static bool is_private_ip(uint32_t nIp) {
 	return false;
 }
 
-inline static bool is_multicast_ip(uint32_t nIp) {
+inline static bool is_multicast_ip(const uint32_t nIp) {
 	if ((nIp & 0xE0) != 0xE0) {
 		return false;
 	}
@@ -100,6 +96,13 @@ inline static bool is_multicast_ip(uint32_t nIp) {
 	return true;
 }
 
+void display_emac_start();
+void display_ip();
+void display_netmask();
+void display_gateway();
+void display_hostname();
+void display_dhcp_status(network::dhcp::ClientStatus nStatus);
+void display_emac_shutdown();
 }  // namespace network
 
 class NetworkStore {
@@ -111,19 +114,6 @@ public:
 	virtual void SaveGatewayIp(uint32_t nGatewayIp)=0;
 	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
 	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
-};
-
-struct NetworkDisplay {
-	NetworkDisplay() {}
-	~NetworkDisplay() {}
-
-	void ShowEmacStart();
-	void ShowIp();
-	void ShowNetMask();
-	void ShowGatewayIp();
-	void ShowHostName();
-	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
-	void ShowShutdown();
 };
 
 #if defined (BARE_METAL)

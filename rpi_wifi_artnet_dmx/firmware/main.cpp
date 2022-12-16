@@ -42,7 +42,7 @@
 #include "dmxparams.h"
 #include "dmxsend.h"
 #include "rdmdeviceparams.h"
-#include "artnetdiscovery.h"
+#include "artnetrdmcontroller.h"
 #ifndef H3
  // Monitor Output
 # include "dmxmonitor.h"
@@ -56,8 +56,8 @@
 #include "ws28xxdmx.h"
 
 #if defined(ORANGE_PI)
-# include "spiflashinstall.h"
-# include "spiflashstore.h"
+# include "flashcodeinstall.h"
+# include "configstore.h"
 # include "storeartnet.h"
 # include "storerdmdevice.h"
 # include "storedmxsend.h"
@@ -83,8 +83,8 @@ void notmain(void) {
 	Display display;
 
 #if defined (ORANGE_PI)
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	StoreDmxSend storeDmxSend;
 	StorePixelDmx storePixelDmx;
@@ -304,7 +304,7 @@ void notmain(void) {
 		node.Run();
 		lb.Run();
 #if defined (ORANGE_PI)
-		spiFlashStore.Flash();
+		configStore.Flash();
 #endif
 	}
 }

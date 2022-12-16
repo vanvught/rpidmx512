@@ -2,7 +2,7 @@
  * @file rdmmessage.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ public:
 
 	void SetPd(const uint8_t *pParamData, uint8_t nLength);
 
-	void Send(uint32_t nPortIndex = 0, uint32_t nSpacingMicros = 0);
+	void Send(uint32_t nPortIndex, uint32_t nSpacingMicros = 0);
 
 public:
 	static void Print(const uint8_t *pRdmData);

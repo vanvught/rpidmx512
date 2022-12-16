@@ -14,11 +14,12 @@ detected_OS := $(patsubst CYGWIN%,Cygwin,$(detected_OS))
 
 $(info $$detected_OS [${detected_OS}])
 
-ifeq ($(detected_OS),Darwin) 
+ifeq ($(detected_OS),Darwin)
+	LINUX=1
 endif
 
-ifeq ($(findstring ENABLE_SPIFLASH,$(DEFINES)),ENABLE_SPIFLASH)
-	COND=1
+ifeq ($(detected_OS),Linux) 
+	LINUX=1
 endif
 
 include ../firmware-template/libs.mk
@@ -28,7 +29,7 @@ TMPVAR:=$(LIBS)
 LIBS=$(filter-out $(TTT), $(TMPVAR))
 LIBS+=debug
 
-ifeq ($(detected_OS),Linux) 
+ifdef LINUX
 	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
 		BCM2835 = ./../lib-bcm2835_raspbian
 		ifneq "$(wildcard $(BCM2835) )" ""
@@ -42,6 +43,7 @@ endif
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
+DEFINES+=-DCONFIG_STORE_USE_FILE
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include

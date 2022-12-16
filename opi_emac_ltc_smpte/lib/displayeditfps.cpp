@@ -56,22 +56,22 @@ void DisplayEditFps::HandleKey(int nKey, uint8_t &nType) {
 	DEBUG_PRINTF("%d %d", m_State, nKey);
 
 	if (m_State == IDLE) {
-		if (nKey == INPUT_KEY_ENTER) {
+		if (nKey == input::KEY_ENTER) {
 			m_State = EDIT;
 			m_bCursorOn = true;
 		}
 	} else {
 		switch (nKey) {
-		case INPUT_KEY_ESC:
+		case input::KEY_ESC:
 			m_State = IDLE;
 			m_bCursorOn = false;
 			break;
-		case INPUT_KEY_DOWN:
-		case INPUT_KEY_LEFT:
+		case input::KEY_DOWN:
+		case input::KEY_LEFT:
 			key_left(nType);
 			break;
-		case INPUT_KEY_UP:
-		case INPUT_KEY_RIGHT:
+		case input::KEY_UP:
+		case input::KEY_RIGHT:
 			key_right(nType);
 			break;
 		default:

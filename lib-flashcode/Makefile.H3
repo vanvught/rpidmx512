@@ -1,0 +1,6 @@
+DEFINES =NDEBUG
+
+EXTRA_INCLUDES=../lib-flash/include
+
+include Rules.mk
+include ../firmware-template-h3/lib/Rules.mk

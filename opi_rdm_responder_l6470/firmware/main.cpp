@@ -46,8 +46,8 @@
 
 #include "lightsetchain.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storerdmdevice.h"
 #include "storetlc59711.h"
 #include "storerdmdevice.h"
@@ -59,6 +59,8 @@
 #include "sparkfundmx.h"
 #include "storesparkfundmx.h"
 #include "storemotors.h"
+
+#include "factorydefaults.h"
 
 void Hardware::RebootHandler() {
 
@@ -73,8 +75,8 @@ void notmain(void) {
 	Display display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print();
 
@@ -157,7 +159,7 @@ void notmain(void) {
 	for(;;) {
 		hw.WatchdogFeed();
 		dmxrdm.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 	}
 }

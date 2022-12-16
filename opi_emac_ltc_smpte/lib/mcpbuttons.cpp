@@ -58,7 +58,7 @@
 #include "board/h3_opi_zero.h"
 #include "h3_gpio.h"
 
-#include "spiflashstore.h"
+#include "configstore.h"
 #include "storeltc.h"
 
 #include "debug.h"
@@ -124,7 +124,7 @@ void McpButtons::HandleActionLeft(ltc::Source& ltcSource) {
 		return;
 	}
 
-	m_nKey = INPUT_KEY_LEFT;
+	m_nKey = input::KEY_LEFT;
 }
 
 void McpButtons::HandleActionRight(ltc::Source& ltcSource) {
@@ -138,7 +138,7 @@ void McpButtons::HandleActionRight(ltc::Source& ltcSource) {
 		return;
 	}
 
-	m_nKey = INPUT_KEY_RIGHT;
+	m_nKey = input::KEY_RIGHT;
 }
 
 void McpButtons::HandleActionSelect(const ltc::Source& ltcSource) {
@@ -169,9 +169,9 @@ void McpButtons::HandleRotary(uint8_t nInputAB, ltc::Source &tLtcReaderSource) {
 	}
 
 	if (m_tRotaryDirection == RotaryEncoder::CW) {
-		m_nKey = INPUT_KEY_UP;
+		m_nKey = input::KEY_UP;
 	} else if (m_tRotaryDirection == RotaryEncoder::CCW) {
-		m_nKey = INPUT_KEY_DOWN;
+		m_nKey = input::KEY_DOWN;
 	}
 }
 
@@ -256,7 +256,7 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 		 * 1 1	0 1	0
 		 */
 
-		m_nKey = INPUT_KEY_NOT_DEFINED;
+		m_nKey = input::KEY_NOT_DEFINED;
 
 		if (nButtonsChanged != 0) {
 			if (BUTTON_STATE(button::LEFT)) {					// LEFT
@@ -273,7 +273,7 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 						Display::Get()->PutString("[Start]");
 					}
 
-					m_nKey = INPUT_KEY_ENTER;
+					m_nKey = input::KEY_ENTER;
 
 					switch (m_State) {
 						case SOURCE_SELECT:
@@ -296,19 +296,19 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 						Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 7U),0);
 						Display::Get()->PutString("[Stop] ");
 					}
-					m_nKey = INPUT_KEY_ENTER;
+					m_nKey = input::KEY_ENTER;
 					m_State = EDIT_TIMECODE_STOP;
 				}
 			} else if (BUTTON_STATE(button::RESUME)) {			// RESUME
 				if (ltcSource == ltc::Source::INTERNAL) {
-					m_nKey = INPUT_KEY_ESC;
+					m_nKey = input::KEY_ESC;
 				}
 			}
 		}
 
 		HandleRotary(nPortA, ltcSource);
 
-		if (m_nKey != INPUT_KEY_NOT_DEFINED) {
+		if (m_nKey != input::KEY_NOT_DEFINED) {
 			switch (m_State) {
 			case EDIT_TIMECODE_START:
 				HandleInternalTimeCodeStart(StartTimeCode);
@@ -387,7 +387,7 @@ void McpButtons::HandleRunActionSelect() {
 	}
 
 	if (m_tRunStatus == RunStatus::REBOOT) {
-		while (SpiFlashStore::Get()->Flash())
+		while (ConfigStore::Get()->Flash())
 			;
 
 		printf("Reboot ...\n");

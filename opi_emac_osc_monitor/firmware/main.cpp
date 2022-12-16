@@ -56,8 +56,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -76,8 +76,8 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	console_clear();
 
@@ -157,7 +157,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
@@ -173,7 +173,7 @@ void notmain(void) {
 		nw.Run();
 		server.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();

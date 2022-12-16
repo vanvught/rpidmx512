@@ -72,7 +72,7 @@ do
 				board=1
 			fi
 			echo $f $1 $2 $3 > build$board.txt
-			make -f Makefile.H3 $1 $2 $3 clean 
+			make -f Makefile.H3 -j $1 $2 $3 clean 
 			make -f Makefile.H3 -j $NPROC $1 $2 $3
 			retVal=$?
 			if [ $retVal -ne 0 ]; then

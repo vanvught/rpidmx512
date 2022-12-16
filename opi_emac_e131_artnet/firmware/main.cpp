@@ -57,8 +57,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storedisplayudf.h"
 #include "storerdmdevice.h"
 #include "storee131.h"
@@ -81,8 +81,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("sACN E1.31 -> Art-Net");
 
@@ -193,7 +193,6 @@ void notmain(void) {
 	constexpr char aLabel[] = "sACN E1.31 to Art-Net";
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, (sizeof(aLabel) / sizeof(aLabel[0])) - 1);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
@@ -209,7 +208,7 @@ void notmain(void) {
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
@@ -229,7 +228,7 @@ void notmain(void) {
 		controller.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 		display.Run();
 		mDns.Run();

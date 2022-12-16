@@ -1,4 +1,5 @@
-EXTRA_INCLUDES =../lib-spiflash/include ../lib-spiflashinstall/include ../lib-spiflashstore/include
+EXTRA_INCLUDES =../lib-flash/include ../lib-flashcode/include
+EXTRA_INCLUDES+=../lib-flashcodeinstall/include ../lib-configstore/include
 EXTRA_INCLUDES+=../lib-device/include
 EXTRA_INCLUDES+=../lib-displayudf/include ../lib-display/include
 EXTRA_INCLUDES+=../lib-properties/include ../lib-hal/include ../lib-network/include

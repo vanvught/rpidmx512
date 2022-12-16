@@ -40,7 +40,9 @@
 
 #include "hardware.h"
 #include "network.h"
+
 #include "ledblink.h"
+#include "panel_led.h"
 
 #include "debug.h"
 
@@ -591,6 +593,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	}
 
 	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+	hal::panel_led_off(hal::panelled::SACN);
 
 	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
 
@@ -693,17 +696,21 @@ void E131Bridge::Run() {
 		}
 	}
 
+	bool isActive = false;
+
 	if (m_pLightSet != nullptr) {
 		const auto nRootVector = __builtin_bswap32(m_E131.E131Packet.Raw.RootLayer.Vector);
 
 		if (nRootVector == vector::root::DATA) {
 			if (IsValidDataPacket()) {
 				HandleDmx();
+				isActive = true;
 			}
 		} else if (nRootVector == vector::root::EXTENDED) {
 			const auto nFramingVector = __builtin_bswap32(m_E131.E131Packet.Raw.FrameLayer.Vector);
-				if (nFramingVector == vector::extended::SYNCHRONIZATION) {
+			if (nFramingVector == vector::extended::SYNCHRONIZATION) {
 				HandleSynchronization();
+				isActive = true;
 			}
 		} else {
 			DEBUG_PRINTF("Not supported Root Vector : 0x%x", nRootVector);
@@ -713,6 +720,7 @@ void E131Bridge::Run() {
 	if (m_pE131DmxIn != nullptr) {
 		HandleDmxIn();
 		SendDiscoveryPacket();
+		isActive = true;
 	}
 
 	// The ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
@@ -722,5 +730,11 @@ void E131Bridge::Run() {
 		} else {
 			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
 		}
+	}
+
+	if (isActive) {
+		hal::panel_led_on(hal::panelled::SACN);
+	} else {
+		hal::panel_led_off(hal::panelled::SACN);
 	}
 }

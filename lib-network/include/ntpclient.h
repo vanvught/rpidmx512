@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,14 +35,9 @@ namespace ntpclient {
 enum class Status {
 	IDLE, FAILED, STOPPED, WAITING
 };
+
+void display_status(Status status);
 }  // namespace ntpclient
-
-struct NtpClientDisplay {
-	virtual ~NtpClientDisplay() {}
-
-	virtual void ShowNtpClientStatus(ntpclient::Status nStatus)=0;
-};
-
 
 class NtpClient {
 public:
@@ -56,10 +51,6 @@ public:
 
 	ntpclient::Status GetStatus() {
 		return m_tStatus;
-	}
-
-	void SetNtpClientDisplay(NtpClientDisplay *pNtpClientDisplay) {
-		m_pNtpClientDisplay = pNtpClientDisplay;
 	}
 
 	static NtpClient *Get() {
@@ -99,8 +90,6 @@ private:
 
 	int32_t m_nOffsetSeconds { 0 };
 	uint32_t m_nOffsetMicros { 0 };
-
-	NtpClientDisplay *m_pNtpClientDisplay = nullptr;
 
 	static NtpClient *s_pThis;
 };

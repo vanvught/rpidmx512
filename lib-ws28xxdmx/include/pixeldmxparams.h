@@ -1,5 +1,5 @@
 /**
- * @file ws28xxdmxparams.h
+ * @file pixeldmxparams.h
  *
  */
 /* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,8 +23,8 @@
  * THE SOFTWARE.
  */
 
-#ifndef WS28XXDMXPARAMS_H_
-#define WS28XXDMXPARAMS_H_
+#ifndef PIXELDMXPARAMS_H_
+#define PIXELDMXPARAMS_H_
 
 #include <cstdint>
 
@@ -125,4 +125,4 @@ private:
     pixeldmxparams::Params m_pixelDmxParams;
 };
 
-#endif /* WS28XXDMXPARAMS_H_ */
+#endif /* PIXELDMXPARAMS_H_ */

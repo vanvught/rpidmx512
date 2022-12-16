@@ -61,8 +61,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storedisplayudf.h"
 #include "storee131.h"
 #include "storenetwork.h"
@@ -85,8 +85,8 @@ void notmain(void) {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	console_clear();
 
@@ -138,7 +138,6 @@ void notmain(void) {
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
@@ -205,7 +204,7 @@ void notmain(void) {
 		remoteConfigParams.Set(&remoteConfig);
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
@@ -223,7 +222,7 @@ void notmain(void) {
 		bridge.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();

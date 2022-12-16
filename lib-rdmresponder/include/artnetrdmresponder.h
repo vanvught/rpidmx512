@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define ARTNETRDMRESPONDER_H_
 
 #include <cstdint>
+#include <cstring>
 
 #include "artnetrdm.h"
 
@@ -46,9 +47,21 @@ public:
 	ArtNetRdmResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
 	~ArtNetRdmResponder() override;
 
-	void Full(uint32_t nPortIndex) override;
-	uint32_t GetUidCount(uint32_t nPortIndex) override;
-	void Copy(uint32_t nPortIndex, uint8_t *) override;
+	void Full(__attribute__((unused)) uint32_t nPortIndex) override {
+		// We are a Responder - no code needed
+	}
+
+	uint32_t GetUidCount(__attribute__((unused)) uint32_t nPortIndex) override {
+		return 1; // We are a Responder
+	}
+
+	void TodCopy(__attribute__((unused)) uint32_t nPortIndex, unsigned char *tod) override {
+		memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
+	}
+
+	void TodReset(__attribute__((unused)) uint32_t nPortIndex) override {}
+	bool TodAddUid(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) const uint8_t *pUid) override { return false;}
+
 	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *) override;
 
 	uint16_t GetDmxStartAddress(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
@@ -57,6 +70,12 @@ public:
 
 	uint16_t GetDmxFootPrint(uint16_t nSubDevice = RDM_ROOT_DEVICE) {
 		return RDMDeviceResponder::GetDmxFootPrint(nSubDevice);
+	}
+
+	//
+
+	bool RdmReceive(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) uint8_t *pRdmData) override {
+		return false;
 	}
 
 	static ArtNetRdmResponder* Get() {

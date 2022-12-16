@@ -97,7 +97,8 @@ public:
 	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
 	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
 
-	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);
+	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex);	//TODO Refactor to GetDmxUpdatesPerSecond ?
+	uint32_t GetDmxReceivedCount(uint32_t nPortIndex);
 
 	static Dmx* Get() {
 		return s_pThis;

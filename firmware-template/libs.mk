@@ -7,10 +7,13 @@ endif
 
 ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
 	LIBS+=node artnet e131
+	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
+	ARTNET=1
 endif
 
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	LIBS+=artnet4 artnet e131
+	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
 	else
 		DEFINES+=NODE_E131
@@ -48,7 +51,9 @@ ifeq ($(findstring NODE_PP,$(DEFINES)),NODE_PP)
 endif
 
 ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
-	LIBS+=artnet
+	ifneq ($(findstring artnet,$(LIBS)),artnet)
+		LIBS+=artnet
+	endif
 endif
 
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
@@ -137,44 +142,42 @@ ifeq ($(findstring OUTPUT_DMX_TLC59711,$(DEFINES)),OUTPUT_DMX_TLC59711)
 endif
 
 ifeq ($(findstring OUTPUT_DMX_ARTNET,$(DEFINES)),OUTPUT_DMX_ARTNET)
-	LIBS+=artnet
+	ifneq ($(findstring artnet,$(LIBS)),artnet)
+		LIBS+=artnet
+	endif
 endif
 
 ifeq ($(findstring OUTPUT_DMX_SERIAL,$(DEFINES)),OUTPUT_DMX_SERIAL)
 	LIBS+=dmxserial
 endif
 
-ifdef COND
-	LIBS+=spiflashinstall spiflashstore spiflash
-endif
+LIBS+=configstore
+
+ifdef LINUX 
+else
+	LIBS+=flashcodeinstall flashcode flash
+endif	
 
 ifeq ($(findstring NODE_LTC_SMPTE,$(DEFINES)),NODE_LTC_SMPTE)
 	DEFINES+=CONFIG_DISPLAY_ENABLE_SSD1311 CONFIG_DISPLAY_ENABLE_HD44780 CONFIG_DISPLAY_ENABLE_CURSOR_MODE
-endif
-
-ifeq ($(findstring NO_EMAC,$(DEFINES)),NO_EMAC)
-else
-	LIBS+=network properties
-endif
-
-ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
-	LIBS+=displayudf
 endif
 
 ifneq ($(findstring network,$(LIBS)),network)
 	LIBS+=network
 endif
 
-ifneq ($(findstring properties,$(LIBS)),properties)
-	LIBS+=properties
+ifeq ($(findstring DISPLAY_UDF,$(DEFINES)),DISPLAY_UDF)
+	LIBS+=displayudf
 endif
-
-LIBS+=lightset
 
 ifneq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
 	LIBS+=display
 endif
 
-LIBS+=device hal
+ifneq ($(findstring properties,$(LIBS)),properties)
+	LIBS+=properties
+endif
+
+LIBS+=lightset device hal
 
 $(info $$LIBS [${LIBS}])

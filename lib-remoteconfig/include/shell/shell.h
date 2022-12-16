@@ -106,7 +106,7 @@ private:
 
 // Firmware specific BEGIN
 #if defined (LTC_READER)
-	ltc::Source m_ltcSource{ltc::UNDEFINED};
+	ltc::Source m_ltcSource{ltc::Source::UNDEFINED};
 #endif
 // Firmware specific END
 };

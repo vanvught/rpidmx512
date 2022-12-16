@@ -25,15 +25,15 @@
 
 #include "remoteconfig.h"
 
-#include "spiflashstore.h"
+#include "configstore.h"
 
 #include "debug.h"
 
 void RemoteConfig::HandleFactory() {
 	DEBUG_ENTRY
 
-	for (uint32_t i = 0; i < static_cast<uint32_t>(spiflashstore::Store::LAST); i++) {
-		SpiFlashStore::Get()->ResetSetList(static_cast<spiflashstore::Store>(i));
+	for (uint32_t i = 0; i < static_cast<uint32_t>(configstore::Store::LAST); i++) {
+		ConfigStore::Get()->ResetSetList(static_cast<configstore::Store>(i));
 	}
 
 	DEBUG_EXIT

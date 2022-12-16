@@ -46,8 +46,15 @@ ifneq ($(CONSOLE),)
 	DEFINES+=-D$(CONSOLE)
 endif
 
-DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
+	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
+endif
+
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+
+ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
+	DEFINES+=-DCONFIG_STORE_USE_SPI
+endif
 
 # The variable for the firmware include directories
 INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include

@@ -45,7 +45,6 @@
 #include "artnet4node.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
-#include "artnet/displayudfhandler.h"
 #include "artnettriggerhandler.h"
 
 #include "pixeldmxconfiguration.h"
@@ -68,8 +67,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storeartnet.h"
 #include "storedisplayudf.h"
 #include "storenetwork.h"
@@ -95,8 +94,8 @@ void notmain(void) {
 	DisplayUdf display;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	fw.Print("Art-Net 4 " "\x1b[32m" "Pixel controller {8x 4 Universes}" "\x1b[37m");
 
@@ -139,9 +138,6 @@ void notmain(void) {
 	}
 
 	node.SetArtNetStore(&storeArtNet);
-
-	DisplayUdfHandler displayUdfHandler;
-	node.SetArtNetDisplay(&displayUdfHandler);
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -201,7 +197,6 @@ void notmain(void) {
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	llrpOnlyDevice.SetRDMFactoryDefaults(new FactoryDefaults);
 
 	node.SetRdmUID(llrpOnlyDevice.GetUID(), true);
 
@@ -259,7 +254,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
@@ -286,7 +281,7 @@ void notmain(void) {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
 #endif
-		spiFlashStore.Flash();
+		configStore.Flash();
 		lb.Run();
 		display.Run();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {

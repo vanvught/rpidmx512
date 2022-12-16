@@ -269,13 +269,13 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 					auto *p = reinterpret_cast<struct TRdmDiscoveryMsg*>(pRdmDataOut);
 					uint16_t rdm_checksum = 6 * 0xFF;
 
-					uint8_t i = 0;
-					for (i = 0; i < 7; i++) {
+					for (uint32_t i = 0; i < 7; i++) {
 						p->header_FE[i] = 0xFE;
 					}
+
 					p->header_AA = 0xAA;
 
-					for (i = 0; i < 6; i++) {
+					for (uint32_t i = 0; i < 6; i++) {
 						p->masked_device_id[i + i] = pUid[i] | 0xAA;
 						p->masked_device_id[i + i + 1] = pUid[i] | 0x55;
 						rdm_checksum = static_cast<uint16_t>(rdm_checksum + pUid[i]);
@@ -923,7 +923,7 @@ void RDMHandler::SetSensorValue(bool IsBroadcast, __attribute__((unused)) uint16
 
 	RDMSensors::Get()->SetValues(nSensorRequested);
 
-	if(IsBroadcast) {
+	if (IsBroadcast) {
 		return;
 	}
 
@@ -985,7 +985,7 @@ void RDMHandler::SetRecordSensors(bool IsBroadcast, __attribute__((unused)) uint
 
 	RDMSensors::Get()->SetRecord(nSensorRequested);
 
-	if(IsBroadcast) {
+	if (IsBroadcast) {
 		return;
 	}
 

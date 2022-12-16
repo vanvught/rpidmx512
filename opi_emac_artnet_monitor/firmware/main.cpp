@@ -44,7 +44,6 @@
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "artnet/displayudfhandler.h"
 #include "displayhandler.h"
 
 #include "artnet4node.h"
@@ -58,8 +57,8 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "spiflashinstall.h"
-#include "spiflashstore.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
 #include "storeartnet.h"
 #include "storedisplayudf.h"
 #include "storenetwork.h"
@@ -78,12 +77,11 @@ void notmain(void) {
 	Network nw;
 	LedBlink lb;
 	DisplayUdf display;
-	DisplayUdfHandler displayUdfHandler;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	ShowSystime showSystime;
 
-	SpiFlashInstall spiFlashInstall;
-	SpiFlashStore spiFlashStore;
+	FlashCodeInstall spiFlashInstall;
+	ConfigStore configStore;
 
 	console_clear();
 
@@ -138,7 +136,6 @@ void notmain(void) {
 	}
 
 	node.SetArtNetStore(StoreArtNet::Get());
-	node.SetArtNetDisplay(&displayUdfHandler);
 
 	bool isSet;
 	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0, isSet));
@@ -183,7 +180,7 @@ void notmain(void) {
 		remoteConfigParams.Dump();
 	}
 
-	while (spiFlashStore.Flash())
+	while (configStore.Flash())
 		;
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
@@ -199,7 +196,7 @@ void notmain(void) {
 		nw.Run();
 		node.Run();
 		remoteConfig.Run();
-		spiFlashStore.Flash();
+		configStore.Flash();
 		ntpClient.Run();
 		lb.Run();
 		showSystime.Run();

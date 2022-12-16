@@ -28,4 +28,4 @@
 #include  "dmxconfigudp.h"
 
 int32_t DmxConfigUdp::s_nHandle = -1;
-char *DmxConfigUdp::s_pUdpBuffer = nullptr;
+char *DmxConfigUdp::s_pUdpBuffer;

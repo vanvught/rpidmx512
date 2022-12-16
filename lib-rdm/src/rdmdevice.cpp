@@ -65,45 +65,53 @@ RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
 	const auto nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
-	memcpy(m_tRDMDevice.aDeviceManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(nLength);
+	memcpy(m_aManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
+	m_nManufacturerNameLength = static_cast<uint8_t>(nLength);
 
-	m_tRDMDevice.aDeviceUID[0] = RDMConst::MANUFACTURER_ID[0];
-	m_tRDMDevice.aDeviceUID[1] = RDMConst::MANUFACTURER_ID[1];
+	m_aUID[0] = RDMConst::MANUFACTURER_ID[0];
+	m_aUID[1] = RDMConst::MANUFACTURER_ID[1];
 
 	uint8_t aMacAddress[network::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
-	m_tRDMDevice.aDeviceUID[2] = aMacAddress[2];
-	m_tRDMDevice.aDeviceUID[3] = aMacAddress[3];
-	m_tRDMDevice.aDeviceUID[4] = aMacAddress[4];
-	m_tRDMDevice.aDeviceUID[5] = aMacAddress[5];
+#if defined (NO_EMAC)
+	m_aUID[2] = aMacAddress[2];
+	m_aUID[3] = aMacAddress[3];
+	m_aUID[4] = aMacAddress[4];
+	m_aUID[5] = aMacAddress[5];
+#else //FIXME remove debug code
+	const auto nIp = Network::Get()->GetIp();
+	m_aUID[5] = static_cast<uint8_t>(nIp >> 24);
+	m_aUID[4] = (nIp >> 16) & 0xFF;
+	m_aUID[3] = (nIp >> 8) & 0xFF;
+	m_aUID[2] = nIp & 0xFF;
+#endif
 
-	m_tRDMDevice.aDeviceSN[0] = m_tRDMDevice.aDeviceUID[5];
-	m_tRDMDevice.aDeviceSN[1] = m_tRDMDevice.aDeviceUID[4];
-	m_tRDMDevice.aDeviceSN[2] = m_tRDMDevice.aDeviceUID[3];
-	m_tRDMDevice.aDeviceSN[3] = m_tRDMDevice.aDeviceUID[2];
+	m_aSN[0] = m_aUID[5];
+	m_aSN[1] = m_aUID[4];
+	m_aSN[2] = m_aUID[3];
+	m_aSN[3] = m_aUID[2];
 
 	const auto* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
 	const auto length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
-	memcpy(m_tRDMDevice.aDeviceManufacturerName, WebsiteUrl, length);
-	m_tRDMDevice.nDdeviceManufacturerNameLength = static_cast<uint8_t>(length);
+	memcpy(m_aManufacturerName, WebsiteUrl, length);
+	m_nManufacturerNameLength = static_cast<uint8_t>(length);
 
-	m_tRDMDevice.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
-	m_tRDMDevice.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
+	m_nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
+	m_nProductDetail = E120_PRODUCT_DETAIL_OTHER;
 
-	m_nDeviceRootLabelLength = sizeof(DEVICE_LABEL) - 1;
-	memcpy(m_aDeviceRootLabel, DEVICE_LABEL, m_nDeviceRootLabelLength);
+	m_nFactoryRootLabelLength = sizeof(DEVICE_LABEL) - 1;
+	memcpy(m_aFactoryRootLabel, DEVICE_LABEL, m_nFactoryRootLabelLength);
 
 	DEBUG_EXIT
 }
 
 void RDMDevice::Print() {
 	printf("RDM Device configuration\n");
-	printf(" Manufacturer Name : %.*s\n", m_tRDMDevice.nDdeviceManufacturerNameLength, m_tRDMDevice.aDeviceManufacturerName);
-	printf(" Manufacturer ID   : %.2X%.2X\n", m_tRDMDevice.aDeviceUID[0], m_tRDMDevice.aDeviceUID[1]);
-	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", m_tRDMDevice.aDeviceSN[3], m_tRDMDevice.aDeviceSN[2], m_tRDMDevice.aDeviceSN[1], m_tRDMDevice.aDeviceSN[0]);
-	printf(" Root label        : %.*s\n", m_tRDMDevice.nDeviceRootLabelLength, m_tRDMDevice.aDeviceRootLabel);
-	printf(" Product Category  : %.2X%.2X\n", m_tRDMDevice.nProductCategory >> 8, m_tRDMDevice.nProductCategory & 0xFF);
-	printf(" Product Detail    : %.2X%.2X\n", m_tRDMDevice.nProductDetail >> 8, m_tRDMDevice.nProductDetail & 0xFF);
+	printf(" Manufacturer Name : %.*s\n", m_nManufacturerNameLength, m_aManufacturerName);
+	printf(" Manufacturer ID   : %.2X%.2X\n", m_aUID[0], m_aUID[1]);
+	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", m_aSN[3], m_aSN[2], m_aSN[1], m_aSN[0]);
+	printf(" Root label        : %.*s\n", m_nRootLabelLength, m_aRootLabel);
+	printf(" Product Category  : %.2X%.2X\n", m_nProductCategory >> 8, m_nProductCategory & 0xFF);
+	printf(" Product Detail    : %.2X%.2X\n", m_nProductDetail >> 8, m_nProductDetail & 0xFF);
 }

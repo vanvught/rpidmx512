@@ -213,9 +213,7 @@ void NtpClient::Start() {
 	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
 	assert(m_nHandle != -1);
 
-	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::IDLE);
-	}
+	ntpclient::display_status(ntpclient::Status::IDLE);
 
 	const uint32_t nNow = Hardware::Get()->Millis();
 	uint32_t nRetries;
@@ -249,10 +247,7 @@ void NtpClient::Start() {
 
 	if (nRetries == RETRIES) {
 		m_tStatus = ntpclient::Status::FAILED;
-
-		if (m_pNtpClientDisplay != nullptr) {
-			m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::FAILED);
-		}
+		ntpclient::display_status(ntpclient::Status::FAILED);
 	}
 
 
@@ -282,9 +277,7 @@ void NtpClient::Stop() {
 	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
 	m_tStatus = ntpclient::Status::STOPPED;
 
-	if (m_pNtpClientDisplay != nullptr) {
-		m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::STOPPED);
-	}
+	ntpclient::display_status(ntpclient::Status::STOPPED);
 
 	DEBUG_EXIT
 }
@@ -309,10 +302,7 @@ void NtpClient::Run() {
 		if (!Receive()) {
 			if (__builtin_expect(((Hardware::Get()->Millis() - m_MillisRequest) > TIMEOUT_MILLIS), 0)) {
 				m_tStatus = ntpclient::Status::FAILED;
-
-				if (m_pNtpClientDisplay != nullptr) {
-					m_pNtpClientDisplay->ShowNtpClientStatus(ntpclient::Status::FAILED);
-				}
+				ntpclient::display_status(ntpclient::Status::FAILED);
 				DEBUG_PUTS("ntpclient::Status::FAILED");
 			}
 

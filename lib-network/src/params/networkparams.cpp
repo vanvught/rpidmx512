@@ -130,9 +130,11 @@ void NetworkParams::callbackFunction(const char *pLine) {
 	uint32_t nValue32;
 
 	if (Sscan::IpAddress(pLine, NetworkParamsConst::IP_ADDRESS, nValue32) == Sscan::OK) {
-		if ((network::is_private_ip(nValue32)) || (nValue32 == 0)) {
+		if ((network::is_private_ip(nValue32)) || ((nValue32 & 0xFF) == 2U) || (nValue32 == 0)) {
 			m_Params.nLocalIp = nValue32;
 			m_Params.nSetList |= networkparams::Mask::IP_ADDRESS;
+		} else {
+			m_Params.nSetList &= ~networkparams::Mask::IP_ADDRESS;
 		}
 		return;
 	}
@@ -141,6 +143,8 @@ void NetworkParams::callbackFunction(const char *pLine) {
 		if (network::is_netmask_valid(nValue32)) {
 			m_Params.nNetmask = nValue32;
 			m_Params.nSetList |= networkparams::Mask::NET_MASK;
+		} else {
+			m_Params.nSetList &= ~networkparams::Mask::NET_MASK;
 		}
 		return;
 	}

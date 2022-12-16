@@ -11,7 +11,7 @@ ifneq ($(MAKE_FLAGS),)
 		endif
 	endif
 	ifndef COND
-		EXTRA_SRCDIR+=src/net src/apps src/emac src/params 
+		EXTRA_SRCDIR+=src/net src/apps src/emac src/params
 	endif
 else
 	EXTRA_SRCDIR+=src/net src/apps src/params src/emac

@@ -83,6 +83,14 @@ public:
 		Get().IClearLength(nPortIndex);
 	}
 
+	static const uint8_t *Backup(uint32_t nPortIndex) {
+		return Get().IBackup(nPortIndex);
+	}
+
+	static void Restore(uint32_t nPortIndex, const uint8_t *pData) {
+		Get().IRestore(nPortIndex, pData);
+	}
+
 private:
 	Data() {}
 
@@ -146,6 +154,18 @@ private:
 		assert(nPortIndex < PORTS);
 
 		m_OutputPort[nPortIndex].nLength = 0;
+	}
+
+	const uint8_t *IBackup(uint32_t nPortIndex) {
+		assert(nPortIndex < PORTS);
+		return const_cast<const uint8_t *>(m_OutputPort[nPortIndex].data);
+	}
+
+	void IRestore(uint32_t nPortIndex, const uint8_t *pData) {
+		assert(nPortIndex < PORTS);
+		assert(pData != nullptr);
+
+		memcpy(m_OutputPort[nPortIndex].data, pData, dmx::UNIVERSE_SIZE);
 	}
 
 private:

@@ -53,6 +53,7 @@ static constexpr auto USART5_PORT = 4;
 static constexpr auto UART6_PORT  = 5;
 static constexpr auto UART7_PORT  = 6;
 //
+#if 0
 static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
 static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_9;
 
@@ -76,5 +77,30 @@ static constexpr auto DIR_PORT_6_GPIO_PIN = GPIO_PIN_15;
 
 static constexpr auto DIR_PORT_7_GPIO_PORT = GPIOB;
 static constexpr auto DIR_PORT_7_GPIO_PIN = GPIO_PIN_15;
+#else
+static constexpr auto DIR_PORT_7_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_7_GPIO_PIN = GPIO_PIN_9;
+
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_0_GPIO_PIN = GPIO_PIN_10;
+
+static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_1_GPIO_PIN = GPIO_PIN_11;
+
+static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_2_GPIO_PIN = GPIO_PIN_12;
+
+static constexpr auto DIR_PORT_3_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_3_GPIO_PIN = GPIO_PIN_13;
+
+static constexpr auto DIR_PORT_4_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_4_GPIO_PIN = GPIO_PIN_14;
+
+static constexpr auto DIR_PORT_5_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_5_GPIO_PIN = GPIO_PIN_15;
+
+static constexpr auto DIR_PORT_6_GPIO_PORT = GPIOB;
+static constexpr auto DIR_PORT_6_GPIO_PIN = GPIO_PIN_15;
+#endif
 
 #endif /* GD32_BOARD_GD32F450VE_H_ */
