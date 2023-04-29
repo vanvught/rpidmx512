@@ -2,7 +2,7 @@
  * @file lightsetparamsconst.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,9 @@ struct LightSetParamsConst {
 	static const char PARAMS_OUTPUT[];
 
 	static const char UNIVERSE[];
+
 	static const char UNIVERSE_PORT[4][16];
-
-	static const char MERGE_MODE[];
 	static const char MERGE_MODE_PORT[4][18];
-
 	static const char DIRECTION[4][18];
 
 	static const char DMX_START_ADDRESS[];

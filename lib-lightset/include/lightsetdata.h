@@ -2,7 +2,7 @@
  * @file lightsetdata.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -55,46 +55,46 @@ public:
 		return instance;
 	}
 
-	static void SetSourceA(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+	static void SetSourceA(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 		Get().IMergeSourceA(nPortIndex, pData, nLength, MergeMode::LTP);
 	}
 
-	static void MergeSourceA(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, MergeMode mergeMode) {
+	static void MergeSourceA(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
 		 Get().IMergeSourceA(nPortIndex, pData, nLength, mergeMode);
 	}
 
-	static void SetSourceB(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+	static void SetSourceB(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 		Get().IMergeSourceB(nPortIndex, pData, nLength, MergeMode::LTP);
 	}
 
-	static void MergeSourceB(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, MergeMode mergeMode) {
+	static void MergeSourceB(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
 		 Get().IMergeSourceB(nPortIndex, pData, nLength, mergeMode);
 	}
 
-	static void Output(LightSet *pLightSet, uint32_t nPortIndex) {
+	static void Output(LightSet *const pLightSet, uint32_t nPortIndex) {
 		Get().IOutput(pLightSet, nPortIndex);
 	}
 
-	static void OutputClear(LightSet *pLightSet, uint32_t nPortIndex) {
+	static void OutputClear(LightSet *const pLightSet, uint32_t nPortIndex) {
 		Get().IOutputClear(pLightSet, nPortIndex);
 	}
 
-	static void ClearLength(uint32_t nPortIndex) {
+	static void ClearLength(const uint32_t nPortIndex) {
 		Get().IClearLength(nPortIndex);
 	}
 
-	static const uint8_t *Backup(uint32_t nPortIndex) {
+	static const uint8_t *Backup(const uint32_t nPortIndex) {
 		return Get().IBackup(nPortIndex);
 	}
 
-	static void Restore(uint32_t nPortIndex, const uint8_t *pData) {
+	static void Restore(const uint32_t nPortIndex, const uint8_t *pData) {
 		Get().IRestore(nPortIndex, pData);
 	}
 
 private:
 	Data() {}
 
-	void IMergeSourceA(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, MergeMode mergeMode) {
+	void IMergeSourceA(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
 		assert(nPortIndex < PORTS);
 		assert(pData != nullptr);
 
@@ -114,7 +114,7 @@ private:
 		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 	}
 
-	void IMergeSourceB(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, MergeMode mergeMode) {
+	void IMergeSourceB(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
 		assert(nPortIndex < PORTS);
 		assert(pData != nullptr);
 
@@ -134,14 +134,14 @@ private:
 		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 	}
 
-	void IOutput(LightSet *pLightSet, uint32_t nPortIndex) const {
+	void IOutput(LightSet *const pLightSet, const uint32_t nPortIndex) const {
 		assert(pLightSet != nullptr);
 		assert(nPortIndex < PORTS);
 
 		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength);
 	}
 
-	void IOutputClear(LightSet *pLightSet, uint32_t nPortIndex) {
+	void IOutputClear(LightSet *const pLightSet, const uint32_t nPortIndex) {
 		assert(pLightSet != nullptr);
 		assert(nPortIndex < PORTS);
 
@@ -150,18 +150,18 @@ private:
 		IOutput(pLightSet, nPortIndex);
 	}
 
-	void IClearLength(uint32_t nPortIndex) {
+	void IClearLength(const uint32_t nPortIndex) {
 		assert(nPortIndex < PORTS);
 
 		m_OutputPort[nPortIndex].nLength = 0;
 	}
 
-	const uint8_t *IBackup(uint32_t nPortIndex) {
+	const uint8_t *IBackup(const uint32_t nPortIndex) {
 		assert(nPortIndex < PORTS);
 		return const_cast<const uint8_t *>(m_OutputPort[nPortIndex].data);
 	}
 
-	void IRestore(uint32_t nPortIndex, const uint8_t *pData) {
+	void IRestore(const uint32_t nPortIndex, const uint8_t *pData) {
 		assert(nPortIndex < PORTS);
 		assert(pData != nullptr);
 
@@ -169,11 +169,16 @@ private:
 	}
 
 private:
-#if !defined(LIGHTSET_PORTS)
-	static constexpr auto PORTS = 4;
+#if !defined (LIGHTSET_PORTS)
+# define LIGHTSET_PORTS 0
+#endif
+
+#if (LIGHTSET_PORTS == 0)
+	static constexpr auto PORTS = 1;	// ISO C++ forbids zero-size array
 #else
 	static constexpr auto PORTS = LIGHTSET_PORTS;
 #endif
+
 	struct Source {
 		uint8_t data[dmx::UNIVERSE_SIZE];
 	};

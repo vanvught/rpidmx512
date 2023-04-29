@@ -2,7 +2,7 @@
  * @file dmxslotinfo.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,19 +38,15 @@ using namespace lightset;
 
 #define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 
-DmxSlotInfo::DmxSlotInfo(SlotInfo *ptLightSetSlotInfo, uint32_t nSize):
-	m_ptLightSetSlotInfo(ptLightSetSlotInfo),
-	m_nSize(nSize)
-	
-{
+DmxSlotInfo::DmxSlotInfo(SlotInfo *pSlotInfo, uint32_t nSize): m_pSlotInfo(pSlotInfo), m_nSize(nSize) {
 	DEBUG_ENTRY
 
-	assert(m_ptLightSetSlotInfo != nullptr);
+	assert(m_pSlotInfo != nullptr);
 	assert(m_nSize != 0);
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_ptLightSetSlotInfo[i].nType = 0x00;		// ST_PRIMARY
-		m_ptLightSetSlotInfo[i].nCategory = 0xFFFF;	// SD_UNDEFINED
+		m_pSlotInfo[i].nType = 0x00;		// ST_PRIMARY
+		m_pSlotInfo[i].nCategory = 0xFFFF;	// SD_UNDEFINED
 	}
 
 	DEBUG_EXIT
@@ -58,6 +54,11 @@ DmxSlotInfo::DmxSlotInfo(SlotInfo *ptLightSetSlotInfo, uint32_t nSize):
 
 DmxSlotInfo::~DmxSlotInfo() {
 	DEBUG_ENTRY
+
+	if (m_pSlotInfo != nullptr) {
+		delete[] m_pSlotInfo;
+		m_pSlotInfo = nullptr;
+	}
 
 	if (m_pToString != nullptr) {
 		delete[] m_pToString;
@@ -85,8 +86,8 @@ void  DmxSlotInfo::FromString(const char *pString, uint32_t &nMask) {
 		pSlotInfoRaw = Parse(pSlotInfoRaw, isSet, tLightSetSlotInfo);
 
 		if (isSet) {
-			m_ptLightSetSlotInfo[i].nType = tLightSetSlotInfo.nType;
-			m_ptLightSetSlotInfo[i].nCategory = tLightSetSlotInfo.nCategory;
+			m_pSlotInfo[i].nType = tLightSetSlotInfo.nType;
+			m_pSlotInfo[i].nCategory = tLightSetSlotInfo.nCategory;
 			nMask |= (1U << i);
 		}
 	}
@@ -113,8 +114,8 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		if ((nMask & 0x1) == 0x1) {
-			const auto nType = m_ptLightSetSlotInfo[i].nType;
-			const auto nCategory = m_ptLightSetSlotInfo[i].nCategory;
+			const auto nType = m_pSlotInfo[i].nType;
+			const auto nCategory = m_pSlotInfo[i].nCategory;
 
 			*p++ = TO_HEX((nType & 0xF0) >> 4);
 			*p++ = TO_HEX(nType & 0x0F);
@@ -139,7 +140,7 @@ const char *DmxSlotInfo::ToString(uint32_t nMask) {
 
 void DmxSlotInfo::Dump() {
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		printf("  Slot:%d %.2X:%.4X\n", i, m_ptLightSetSlotInfo[i].nType, m_ptLightSetSlotInfo[i].nCategory);
+		printf("  Slot:%d %.2X:%.4X\n", i, m_pSlotInfo[i].nType, m_pSlotInfo[i].nCategory);
 	}
 }
 

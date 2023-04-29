@@ -2,7 +2,7 @@
  * @file dmxslotinfo.h
  *
  */
-/* Copyright (C) 2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,21 +32,21 @@
 
 class DmxSlotInfo {
 public:
-	DmxSlotInfo(lightset::SlotInfo *ptLightSetSlotInfo, uint32_t nSize);
+	DmxSlotInfo(lightset::SlotInfo *pSlotInfo, uint32_t nSize);
 	~DmxSlotInfo();
 
 	void FromString(const char *pString, uint32_t &nMask);
-	const char *ToString(uint32_t nMask);
+	const char* ToString(uint32_t nMask);
 
 	void Dump();
 
 private:
-	char *Parse(char *s, bool &isValid, lightset::SlotInfo &tLightSetSlotInfo);
+	char* Parse(char *s, bool &isValid, lightset::SlotInfo &tLightSetSlotInfo);
 
 private:
-	lightset::SlotInfo *m_ptLightSetSlotInfo;
+	lightset::SlotInfo *m_pSlotInfo;
 	uint32_t m_nSize;
-	char *m_pToString{nullptr};
+	char *m_pToString { nullptr };
 };
 
 #endif /* DMXSLOTINFO_H_ */
