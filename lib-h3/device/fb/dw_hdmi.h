@@ -560,7 +560,7 @@ struct dw_hdmi {
 	struct hdmi_data_info hdmi_data;
 	struct udevice *ddc_bus;
 
-	int (*phy_set)(struct dw_hdmi *hdmi, uint mpixelclock);
+	int (*phy_set)(struct dw_hdmi *hdmi, uint32_t mpixelclock);
 	void (*write_reg)(struct dw_hdmi *hdmi, u8 val, int offset);
 	u8 (*read_reg)(struct dw_hdmi *hdmi, int offset);
 };
