@@ -59,11 +59,11 @@ static uint16_t StallThCalcValueReg(uint8_t reg) {
 		reg = 0x7F;
 	}
 
-	return (static_cast<float>(reg) * L6470_STALL_TH_STEP_MA) + L6470_STALL_TH_MIN_MA;
+	return static_cast<uint16_t>((static_cast<float>(reg) * L6470_STALL_TH_STEP_MA) + static_cast<float>(L6470_STALL_TH_MIN_MA));
 }
 
 static float SlpCalcValueReg(uint8_t reg) {
-	return (static_cast<float>(reg) * L6470_SLP_STEP) + L6470_SLP_MIN;
+	return (static_cast<float>(reg) * static_cast<float>(L6470_SLP_STEP)) + static_cast<float>(L6470_SLP_MIN);
 }
 
 static float KThermCalcValueReg(uint8_t reg) {
@@ -71,7 +71,7 @@ static float KThermCalcValueReg(uint8_t reg) {
 		reg = 0x0F;
 	}
 
-	return (static_cast<float>(reg) * L6470_K_THERM_STEP) + L6470_K_THERM_MIN;
+	return (static_cast<float>(reg) * static_cast<float>(L6470_K_THERM_STEP)) + static_cast<float>(L6470_K_THERM_MIN);
 }
 #endif
 

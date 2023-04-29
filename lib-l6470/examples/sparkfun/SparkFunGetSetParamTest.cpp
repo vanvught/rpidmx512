@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 	strcpy(name, "LoSpdOpt");
 	tempBool = board.getLoSpdOpt();
 	pv(tempBool);
-	tempBool = ~tempBool;
+	tempBool = !tempBool;
 	board.setLoSpdOpt(tempBool);
 	test(tempBool, board.getLoSpdOpt());
 

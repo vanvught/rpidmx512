@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 
 #include "l6470.h"
 
-class AutoDriver: public L6470 {
+class AutoDriver final: public L6470 {
 public:
 	AutoDriver(uint8_t, uint8_t, uint8_t, uint8_t);
 	AutoDriver(uint8_t, uint8_t, uint8_t);

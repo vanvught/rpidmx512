@@ -2,7 +2,7 @@
  * @file sparkfundmx_internal.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,7 @@
 #include "hal_spi.h"
 #include "hal_gpio.h"
 
-#if !defined (H3)
- #define GPIO_BUSY_IN		GPIO_EXT_35
- #define GPIO_RESET_OUT 	GPIO_EXT_38
-#else
- #define GPIO_BUSY_IN		GPIO_EXT_11
- #define GPIO_RESET_OUT 	GPIO_EXT_13
-#endif
+#define GPIO_BUSY_IN	GPIO_EXT_11
+#define GPIO_RESET_OUT 	GPIO_EXT_13
 
 #endif /* SPARKFUNDMX_INTERNAL_H_ */

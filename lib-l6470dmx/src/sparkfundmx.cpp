@@ -2,7 +2,7 @@
  * @file sparkfundmx.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,10 +53,7 @@
 
 using namespace lightset;
 
-SparkFunDmx::SparkFunDmx():
-	m_nDmxStartAddress(dmx::ADDRESS_INVALID)
-	
-{
+SparkFunDmx::SparkFunDmx(): m_nDmxStartAddress(dmx::ADDRESS_INVALID) {
 	DEBUG_ENTRY;
 
 	m_nGlobalSpiCs = SPI_CS0;
@@ -162,8 +159,8 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	SparkFunDmxParams sparkFunDmxParams(ptSparkFunStores == nullptr ? nullptr : static_cast<SparkFunDmxParamsStore*>(ptSparkFunStores->pSparkFunDmxParamsStore));
 
 	if (sparkFunDmxParams.Load()) {
-		sparkFunDmxParams.SetGlobal(this);
 		sparkFunDmxParams.Dump();
+		sparkFunDmxParams.SetGlobal(this);
 	}
 
 	if (m_bIsGlobalBusyPinSet) {

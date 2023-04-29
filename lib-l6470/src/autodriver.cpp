@@ -5,7 +5,7 @@
 /*
  * Based on https://github.com/sparkfun/L6470-AutoDriver/tree/master/Libraries/Arduino
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 
 #include "debug.h"
 
-#define BUSY_PIN_NOT_USED	0xFF
+static constexpr uint8_t BUSY_PIN_NOT_USED = 0xFF;
 
 uint8_t AutoDriver::m_nNumBoards[2];
 
@@ -50,7 +50,6 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_bIsBusy(false)
 {
 	DEBUG_ENTRY
-
 	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
@@ -67,7 +66,6 @@ AutoDriver::AutoDriver(uint8_t nPosition, uint8_t nSpiChipSelect, uint8_t nReset
 	m_bIsBusy(false)
 {
 	DEBUG_ENTRY
-
 	DEBUG_PRINTF("nPosition=%d, nSpiChipSelect=%d\n", static_cast<int>(nPosition), static_cast<int>(nSpiChipSelect));
 
 	m_nNumBoards[nSpiChipSelect]++;
@@ -125,7 +123,7 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	dataPacket[m_nPosition] = static_cast<char>(data);
 
 	FUNC_PREFIX(spi_chipSelect(m_nSpiChipSelect));
-	FUNC_PREFIX(spi_set_speed_hz(4000000));
+	FUNC_PREFIX(spi_set_speed_hz(2000000));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE3));
 	FUNC_PREFIX(spi_transfern(dataPacket, m_nNumBoards[m_nSpiChipSelect]));
 
