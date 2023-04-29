@@ -2,7 +2,7 @@
  * @file e131params.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,6 @@ static constexpr uint16_t portdir_clear(const uint32_t i) {
 }
 }  // namespace e131params
 
-using namespace e131;
 using namespace e131params;
 
 E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE131ParamsStore) {
@@ -70,16 +69,12 @@ E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE1
 	
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		m_Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
-		m_Params.nPriority[i] = priority::DEFAULT;
+		m_Params.nPriority[i] = e131::priority::DEFAULT;
 		constexpr auto n = static_cast<uint32_t>(lightset::PortDir::OUTPUT) & 0x3;
 		m_Params.nDirection |= static_cast<uint16_t>(n << (i * 2));
 	}
 
 	m_Params.nFailSafe = static_cast<uint8_t>(lightset::FailSafe::HOLD);
-
-	if (s_nPortsMax == 0) {
-		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS);
-	}
 
 	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
 	DEBUG_EXIT
@@ -157,7 +152,7 @@ void E131Params::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, LightSetParamsConst::UNIVERSE_PORT[i], value16) == Sscan::OK) {
-			if ((value16 == 0) || (value16 > universe::MAX)) {
+			if ((value16 == 0) || (value16 > e131::universe::MAX)) {
 				m_Params.nUniversePort[i] = static_cast<uint16_t>(i + 1);
 				m_Params.nSetList &= ~(Mask::UNIVERSE_A << i);
 			} else {
@@ -207,9 +202,12 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 
 			DEBUG_PRINTF("%u portDir=%u, m_Params.nDirection=%x", i, static_cast<uint32_t>(portDir), m_Params.nDirection);
 
+#if defined (E131_HAVE_DMXIN)
 			if (portDir == lightset::PortDir::INPUT) {
 				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::INPUT, i);
-			} else if (portDir == lightset::PortDir::DISABLE) {
+			} else
+#endif
+			if (portDir == lightset::PortDir::DISABLE) {
 				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::DISABLE, i);
 			} else {
 				m_Params.nDirection |= e131params::portdir_shift_left(lightset::PortDir::OUTPUT, i);
@@ -224,16 +222,18 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 # pragma GCC diagnostic pop
 #endif
 
+#if defined (E131_HAVE_DMXIN)
 		if (Sscan::Uint8(pLine, E131ParamsConst::PRIORITY[i], value8) == Sscan::OK) {
-			if ((value8 >= priority::LOWEST) && (value8 <= priority::HIGHEST) && (value8 != priority::DEFAULT)) {
+			if ((value8 >= e131::priority::LOWEST) && (value8 <= e131::priority::HIGHEST) && (value8 != e131::priority::DEFAULT)) {
 				m_Params.nPriority[i] = value8;
 				m_Params.nSetList |= (Mask::PRIORITY_A << i);
 			} else {
-				m_Params.nPriority[i] = priority::DEFAULT;
+				m_Params.nPriority[i] = e131::priority::DEFAULT;
 				m_Params.nSetList &= ~(Mask::PRIORITY_A << i);
 			}
 			return;
 		}
+#endif
 	}
 
 	if (Sscan::Uint8(pLine, LightSetParamsConst::DISABLE_MERGE_TIMEOUT, value8) == Sscan::OK) {
@@ -253,36 +253,40 @@ void E131Params::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<E131Params*>(p))->callbackFunction(s);
 }
 
-void E131Params::Builder(const struct Params *ptE131Params, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
-	if (ptE131Params != nullptr) {
-		memcpy(&m_Params, ptE131Params, sizeof(struct Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct Params));
 	} else {
 		m_pE131ParamsStore->Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
 
-	for (uint32_t i = 0; i < s_nPortsMax; i++) {
-		builder.Add(LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniversePort[i], isMaskSet(Mask::UNIVERSE_A << i));
-		const auto portDir = static_cast<lightset::PortDir>(e131params::portdir_shif_right(m_Params.nDirection, i));
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(LightSetParamsConst::UNIVERSE_PORT[nPortIndex], m_Params.nUniversePort[nPortIndex], isMaskSet(Mask::UNIVERSE_A << nPortIndex));
+#if defined (E131_HAVE_DMXIN)
+		const auto portDir = static_cast<lightset::PortDir>(e131params::portdir_shif_right(m_Params.nDirection, nPortIndex));
 		const auto isDefault = (portDir == lightset::PortDir::OUTPUT);
-		builder.Add(LightSetParamsConst::DIRECTION[i], lightset::get_direction(portDir), !isDefault);
+		builder.Add(LightSetParamsConst::DIRECTION[nPortIndex], lightset::get_direction(portDir), !isDefault);
+#endif
 	}
 
 	builder.Add(LightSetParamsConst::FAILSAFE, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)), isMaskSet(Mask::FAILSAFE));
 
 	builder.AddComment("DMX Output");
 
-	for (uint32_t i = 0; i < s_nPortsMax; i++) {
-		builder.Add(LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_Params.nMergeModePort[i]), isMaskSet(Mask::MERGE_MODE_A << i));
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(LightSetParamsConst::MERGE_MODE_PORT[nPortIndex], lightset::get_merge_mode(m_Params.nMergeModePort[nPortIndex]), isMaskSet(Mask::MERGE_MODE_A << nPortIndex));
 	}
 
+#if defined (E131_HAVE_DMXIN)
 	builder.AddComment("DMX Input");
-	for (uint32_t i = 0; i < s_nPortsMax; i++) {
-		builder.Add(E131ParamsConst::PRIORITY[i], m_Params.nPriority[i], isMaskSet(Mask::PRIORITY_A << i));
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(E131ParamsConst::PRIORITY[nPortIndex], m_Params.nPriority[nPortIndex], isMaskSet(Mask::PRIORITY_A << nPortIndex));
 	}
+#endif
 
 	builder.AddComment("#");
 	builder.Add(LightSetParamsConst::DISABLE_MERGE_TIMEOUT, isMaskSet(Mask::DISABLE_MERGE_TIMEOUT));
@@ -308,17 +312,11 @@ void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void E131Params::Set(uint32_t nPortIndexOffset) {
 	DEBUG_ENTRY
 
-/*
-   error: logical 'and' of mutually exclusive tests is always false [-Werror=logical-op]
-   if ((nPortIndexOffset != 0) && (nPortIndexOffset < e131bridge::MAX_PORTS)) {
- */
-#if LIGHTSET_PORTS > 1
-	if ((nPortIndexOffset != 0) && (nPortIndexOffset < e131bridge::MAX_PORTS)) {
-		s_nPortsMax = std::min(s_nPortsMax, (e131bridge::MAX_PORTS - nPortIndexOffset));
+	if (nPortIndexOffset <= e131bridge::MAX_PORTS) {
+		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS - nPortIndexOffset);
 	}
-#endif
 
-	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
+	DEBUG_PRINTF("e131bridge::MAX_PORTS=%u, nPortIndexOffset=%u, s_nPortsMax=%u", e131bridge::MAX_PORTS, nPortIndexOffset, s_nPortsMax);
 
 	if (m_Params.nSetList == 0) {
 		return;

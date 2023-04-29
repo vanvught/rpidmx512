@@ -32,7 +32,7 @@
 #include "e117.h"
 
 #if  ! defined (PACKED)
-#define PACKED __attribute__((packed))
+# define PACKED __attribute__((packed))
 #endif
 
 /**
@@ -153,14 +153,6 @@ union UE131Packet {
 	struct TE131DataPacket Data;
 	struct TE131DiscoveryPacket Discovery;
 	struct TE131SynchronizationPacket Synchronization;
-};
-
-/**
- *
- */
-struct TE131 {
-	uint32_t IPAddressFrom;
-	union UE131Packet E131Packet;
 };
 
 #define ROOT_LAYER_SIZE						sizeof(struct TRootLayer)

@@ -1,0 +1,5 @@
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-dmx/include
+
+include ../firmware-template-h3/lib/Rules.mk
