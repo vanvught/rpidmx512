@@ -2,7 +2,7 @@
  * @file sscani2c.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,7 @@
 
 #include "sscan.h"
 
-Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength, uint8_t &nAddress, uint8_t &nChannel) {
+Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength, uint8_t &nAddress, uint8_t &nReserved) {
 	assert(pBuffer != nullptr);
 	assert(pName != nullptr);
 
@@ -43,14 +43,14 @@ Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength,
 	const char *b = pBuffer;
 	char *n = pName;
 
-	while ((*b != 0) && (*b != ',') && (k < nLength)) {
+	while ((*b != 0) && (*b != '=') && (k < nLength)) {
 		*n++ = *b++;
 		k++;
 	}
 
 	nLength = static_cast<uint8_t>(k);
 
-	if ((*b != 0) && (*b != ',')) {
+	if ((*b != 0) && (*b != '=')) {
 		return Sscan::NAME_ERROR;
 	}
 
@@ -72,7 +72,7 @@ Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength,
 	}
 
 	nAddress = fromHex(tmp);
-	nChannel = 0xFF;
+	nReserved = 0xFF;
 
 	if ((*b == 0) || (*b == ' ')) {
 		return Sscan::OK;
@@ -92,7 +92,7 @@ Sscan::ReturnCode Sscan::I2c(const char *pBuffer, char *pName, uint8_t &nLength,
 		return Sscan::VALUE_ERROR;
 	}
 
-	nChannel = uint8;
+	nReserved = uint8;
 
 	return Sscan::OK;
 }

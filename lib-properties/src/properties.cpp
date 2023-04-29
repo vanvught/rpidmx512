@@ -2,7 +2,7 @@
  * @file properties.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,11 @@
 #include "debug.h"
 
 namespace properties {
-int convert_json_file(char *pBuffer, uint16_t nLength, const bool bSkipFileName = false) {
+int convert_json_file(char *pBuffer, uint32_t nLength, const bool bSkipFileName) {
 	assert(pBuffer != nullptr);
 	assert(nLength > 1);
 
-	auto *pSrc = pBuffer;
+	const auto *pSrc = pBuffer;
 	auto *pDst = pBuffer;
 
 	if (pSrc[0] != '{') {

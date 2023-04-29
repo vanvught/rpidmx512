@@ -2,7 +2,7 @@
  * @file sscan.h
  *
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,20 +36,20 @@ public:
 
 	static ReturnCode Char(const char *pBuffer, const char *pName, char *pValue, uint32_t& nLength);
 
-	static ReturnCode Uint8(const char *pBuffer, const char *pName, uint8_t &nValue);
+	static ReturnCode Uint8(const char *pBuffer, const char *pName, uint8_t& nValue);
 	static ReturnCode Uint16(const char *pBuffer, const char *pName, uint16_t& nValue);
-	static ReturnCode Uint32(const char *pBuffer, const char *pName, uint32_t &nValue);
+	static ReturnCode Uint32(const char *pBuffer, const char *pName, uint32_t& nValue);
 
-	static ReturnCode Float(const char *pBuffer, const char *pName, float &fValue);
+	static ReturnCode Float(const char *pBuffer, const char *pName, float& fValue);
 
 	static ReturnCode IpAddress(const char *pBuffer, const char *pName, uint32_t& nIpAddress);
 
 	static ReturnCode HexUint16(const char *pBuffer, const char *pName, uint16_t& nValue);
 	static ReturnCode Hex24Uint32(const char *pBuffer, const char *pName, uint32_t &nValue);
 
-	static ReturnCode I2cAddress(const char *pBuffer, const char *pName, uint8_t &nAddress);
-	static ReturnCode I2c(const char *pBuffer, char *pName, uint8_t &nLength, uint8_t &nAddress, uint8_t &nChannel);
-	static ReturnCode Spi(const char *pBuffer, char &nChipSelect, char *pName, uint8_t &nLength, uint8_t &nAddress, uint16_t &nDmxStartAddress, uint32_t &nSpeedHz);
+	static ReturnCode I2cAddress(const char *pBuffer, const char *pName, uint8_t& nAddress);
+	static ReturnCode I2c(const char *pBuffer, char *pName, uint8_t& nLength, uint8_t& nAddress, uint8_t& nReserved);
+	static ReturnCode Spi(const char *pBuffer, char& nChipSelect, char *pName, uint8_t& nLength, uint8_t& nAddress, uint16_t &nDmxStartAddress, uint32_t &nSpeedHz);
 
 private:
 	static uint8_t fromHex(const char Hex[2]);
