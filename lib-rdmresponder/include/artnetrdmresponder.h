@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cassert>
 
 #include "artnetrdm.h"
 
@@ -51,12 +52,18 @@ public:
 		// We are a Responder - no code needed
 	}
 
-	uint32_t GetUidCount(__attribute__((unused)) uint32_t nPortIndex) override {
-		return 1; // We are a Responder
+	uint32_t GetUidCount(const uint32_t nPortIndex) override {
+		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+		return nPortIndex == 0 ? 1 : 0; // We are a Responder
 	}
 
-	void TodCopy(__attribute__((unused)) uint32_t nPortIndex, unsigned char *tod) override {
-		memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
+	void TodCopy(const uint32_t nPortIndex, unsigned char *tod) override {
+		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+		if (nPortIndex == 0) {
+			memcpy(tod, RDMDeviceResponder::GetUID(), RDM_UID_SIZE);
+		} else {
+			memcpy(tod, UID_ALL, RDM_UID_SIZE);
+		}
 	}
 
 	void TodReset(__attribute__((unused)) uint32_t nPortIndex) override {}
