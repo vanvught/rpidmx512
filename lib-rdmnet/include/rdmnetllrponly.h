@@ -2,7 +2,7 @@
  * @file rdmnetllrponly.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,8 +31,6 @@
 #include "rdmnetdevice.h"
 #include "rdmidentify.h"
 
-#include "lightsetllrponly.h"
-
 namespace rdmnetllrponly {
 static constexpr char LABEL[] = "RDMNet LLRP Only";
 static constexpr auto LABEL_LENGTH = sizeof(LABEL) - 1;
@@ -58,15 +56,11 @@ public:
 		}
 		m_RDMNetDevice.Init();
 	}
-	void Start() {
-		m_RDMNetDevice.Start();
-	}
-	void Stop() {
-		m_RDMNetDevice.Stop();
-	}
+
 	void Run() {
 		m_RDMNetDevice.Run();
 	}
+
 	void Print() {
 		m_RDMNetDevice.Print();
 	}

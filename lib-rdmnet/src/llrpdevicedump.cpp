@@ -40,7 +40,7 @@
 void LLRPDevice::DumpCommon() {
 #if 0
 //#ifndef NDEBUG
-	auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(m_pLLRP);
+	auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(s_pLLRP);
 
 	printf("RootLayerPreAmble.PreAmbleSize=0x%.04x\n", __builtin_bswap16(pCommon->RootLayerPreAmble.PreAmbleSize));
 	printf("RootLayerPreAmble.PostAmbleSize=0x%.04x\n",  __builtin_bswap16(pCommon->RootLayerPreAmble.PostAmbleSize));
@@ -74,7 +74,7 @@ void LLRPDevice::DumpCommon() {
 
 	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
 	case VECTOR_LLRP_PROBE_REQUEST: {
-		auto *pRequest = reinterpret_cast<struct TProbeRequestPDUPacket *>(m_pLLRP);
+		auto *pRequest = reinterpret_cast<struct TProbeRequestPDUPacket *>(s_pLLRP);
 
 		pPdu = reinterpret_cast<uint8_t*>(pRequest->ProbeRequestPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -85,7 +85,7 @@ void LLRPDevice::DumpCommon() {
 	}
 	break;
 	case VECTOR_LLRP_PROBE_REPLY: {
-		auto *pReply = reinterpret_cast<struct TTProbeReplyPDUPacket *>(m_pLLRP);
+		auto *pReply = reinterpret_cast<struct TTProbeReplyPDUPacket *>(s_pLLRP);
 
 		pPdu = reinterpret_cast<uint8_t*>(pReply->ProbeReplyPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -108,7 +108,7 @@ void LLRPDevice::DumpCommon() {
 	}
 	break;
 	case VECTOR_LLRP_RDM_CMD: {
-		auto *pRDMCommand = reinterpret_cast<struct LTRDMCommandPDUPacket *>(m_pLLRP);
+		auto *pRDMCommand = reinterpret_cast<struct LTRDMCommandPDUPacket *>(s_pLLRP);
 
 		pPdu = reinterpret_cast<uint8_t*>(pRDMCommand->RDMCommandPDU.FlagsLength);
 		nLength = ((uint32_t) ((pPdu[0] & 0x0fu) << 16) | (uint32_t) (pPdu[1] << 8) | (uint32_t) pPdu[2]);
@@ -124,7 +124,7 @@ void LLRPDevice::DumpCommon() {
 }
 
 void LLRPDevice::DumpLLRP() {
-	const auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(m_pLLRP);
+	const auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(s_pLLRP);
 
 	printf("SenderCID: ");
 
