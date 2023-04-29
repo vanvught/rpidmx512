@@ -93,6 +93,7 @@
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="rpi"/>
 		<configuration configurationName="H3">
 			<resource resourceType="PROJECT" workspacePath="/rpi_dmx_usb_pro"/>
 		</configuration>

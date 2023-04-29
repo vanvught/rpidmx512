@@ -85,7 +85,11 @@
 		<project id="opi_rdm_responder.null.1937974262" name="opi_rdm_responder"/>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="H3">
+			<resource resourceType="PROJECT" workspacePath="/opi_rdm_responder"/>
+		</configuration>
+	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1766002374.1447165843;cdt.managedbuild.toolchain.gnu.cross.base.1766002374.1447165843.;cdt.managedbuild.tool.gnu.cross.c.compiler.479584669;cdt.managedbuild.tool.gnu.c.compiler.input.1067880993">

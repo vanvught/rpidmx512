@@ -60,6 +60,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="examples|input|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="examples"/>
 						<entry excluding="input" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 					</sourceEntries>
 				</configuration>
@@ -156,5 +157,10 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.cross.base.1040880586;cdt.managedbuild.toolchain.gnu.cross.base.1040880586.1858025220;cdt.managedbuild.tool.gnu.cross.c.compiler.2131151795;cdt.managedbuild.tool.gnu.c.compiler.input.70361626">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+			<path value=""/>
+		</doc-comment-owner>
 	</storageModule>
 </cproject>

@@ -30,8 +30,8 @@
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/lib-node/include}&quot;"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="gnu.c.compiler.option.preprocessor.def.symbols.1929452772" name="Defined symbols (-D)" superClass="gnu.c.compiler.option.preprocessor.def.symbols" valueType="definedSymbols">
-									<listOptionValue builtIn="false" value="ENABLE_TFTP_SERVER"/>
-									<listOptionValue builtIn="false" value="NODE_NODE"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_TLC59711"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDM_SUBDEVICES"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1698677010" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -99,6 +99,9 @@
 									<listOptionValue builtIn="false" value="H3"/>
 									<listOptionValue builtIn="false" value="ENABLE_TFTP_SERVER"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
+									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="OUTPUT_DMX_TLC59711"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDM_SUBDEVICES"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1071720682" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -195,6 +198,8 @@
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
 									<listOptionValue builtIn="false" value="ENABLE_TFTP_SERVER"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
+									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDM_SUBDEVICES"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1810325769" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -284,6 +289,8 @@
 									<listOptionValue builtIn="false" value="ENABLE_CONTENT"/>
 									<listOptionValue builtIn="false" value="ENABLE_TFTP_SERVER"/>
 									<listOptionValue builtIn="false" value="NODE_NODE"/>
+									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
+									<listOptionValue builtIn="false" value="ENABLE_RDM_SUBDEVICES"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1213842804" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
