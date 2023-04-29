@@ -188,7 +188,7 @@ void WS28xxDisplayMatrix::ClearLine(uint8_t nLine) {
 		// wait for completion
 	}
 
-	for (uint16_t i = 0; i < m_nMaxLeds; i++) {
+	for (uint32_t i = 0; i < m_nMaxLeds; i++) {
 		m_pWS28xx->SetPixel(i, 0, 0, 0); // FIXME Currently working for single row only
 	}
 
