@@ -2,7 +2,7 @@
 
 SECONDS=0
 
-DIR=../rpi_*
+DIR=../rpi_dmx_usb_pro
 
 for f in $DIR
 do

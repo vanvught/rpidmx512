@@ -22,6 +22,8 @@ do
 			done
 			
 			echo -e "\e[36m[$ON_LINE]\e[0m"
+ 
+			wget -q -O - http://$1/json/directory
 			
 			for i in "${array[@]}"
 			do
