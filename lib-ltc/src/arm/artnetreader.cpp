@@ -31,7 +31,7 @@
 
 #include "ltc.h"
 #include "timecodeconst.h"
-#include "ledblink.h"
+#include "hardware.h"
 
 // Input
 #include "artnettimecode.h"
@@ -61,7 +61,7 @@ void ArtNetReader::Start() {
 #endif
 
 	LtcOutputs::Get()->Init();
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
 void ArtNetReader::Stop() {
@@ -96,9 +96,9 @@ void ArtNetReader::Run() {
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }

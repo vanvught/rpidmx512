@@ -2,7 +2,7 @@
  * @file ltcdisplayrgbpanel.cpp
  */
 /*
- * Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@ void LtcDisplayRgbPanel::Show(const char *pTimecode, struct Colours &tColours, s
 	m_LineColours[0].nGreen = tColours.nGreen;
 	m_LineColours[0].nBlue = tColours.nBlue;
 
-	for (uint8_t i = 0; i < 4; i++) {
+	for (uint32_t i = 0; i < 4; i++) {
 		m_pRgbPanel->TextLine(static_cast<uint8_t>(1 + i), m_Line[i], 8, m_LineColours[i].nRed, m_LineColours[i].nGreen, m_LineColours[i].nBlue);
 	}
 
@@ -146,7 +146,7 @@ void LtcDisplayRgbPanel::ShowSource(ltc::Source source, struct Colours& tColours
 }
 
 void LtcDisplayRgbPanel::ShowInfo(const char *pInfo, uint32_t nLength, struct Colours& tColours) {
-	nLength = std::min(8U, nLength);
+	nLength = std::min(static_cast<uint32_t>(8), nLength);
 	uint32_t i;
 	for (i = 0; i < nLength; i++) {
 		m_Line[2][i] = pInfo[i];

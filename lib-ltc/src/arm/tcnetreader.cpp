@@ -31,6 +31,7 @@
 
 #include "timecodeconst.h"
 #include "network.h"
+#include "hardware.h"
 
 // Input
 #include "tcnet.h"
@@ -81,7 +82,7 @@ void TCNetReader::Start() {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	m_nHandle = Network::Get()->Begin(udp::PORT);
 	assert(m_nHandle != -1);
@@ -218,10 +219,10 @@ void TCNetReader::Run() {
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 		m_nTimeCodePrevious = static_cast<uint32_t>(~0);
 	}
 

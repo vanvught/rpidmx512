@@ -34,6 +34,8 @@
 #include "ltc.h"
 #include "timecodeconst.h"
 
+#include "hardware.h"
+
 // Output
 #include "artnetnode.h"
 #include "rtpmidi.h"
@@ -271,8 +273,8 @@ void LtcReader::Run() {
 	__DMB();
 	if ((gv_ltc_nUpdatesPerSecond >= 24) && (gv_ltc_nUpdatesPerSecond <= 30)) {
 		LtcOutputs::Get()->UpdateMidiQuarterFrameMessage(reinterpret_cast<struct ltc::TimeCode *>(const_cast<struct midi::Timecode *>(&s_midiTimeCode)));
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }

@@ -2,7 +2,7 @@
  * @file ltcetcreader.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <cassert>
 
 #include "ltcetcreader.h"
+#include "hardware.h"
 
 // Output
 #include "artnetnode.h"
@@ -55,7 +56,7 @@ void LtcEtcReader::Start() {
 #endif
 
 	LtcOutputs::Get()->Init();
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
 void LtcEtcReader::Stop() {
@@ -90,9 +91,9 @@ void LtcEtcReader::Run() {
 
 	__DMB();
 	if (gv_ltc_nUpdatesPerSecond != 0) {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
 		LtcOutputs::Get()->ShowSysTime();
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }
