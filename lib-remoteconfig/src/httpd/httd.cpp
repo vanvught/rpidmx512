@@ -2,7 +2,7 @@
  * @file httd.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@ extern int get_file_content(const char *fileName, char *pDst);
 
 #include "network.h"
 #include "hardware.h"
-#include "ledblink.h"
 #include "display.h"
 
 #include "debug.h"
@@ -60,12 +59,6 @@ static constexpr char contentType[static_cast<uint32_t>(contentTypes::NOT_DEFINE
 HttpDaemon::HttpDaemon() : m_pContentType(contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)]) {
 	DEBUG_ENTRY
 
-	DEBUG_EXIT
-}
-
-void HttpDaemon::Start() {
-	DEBUG_ENTRY
-
 	assert(m_nHandle == -1);
 	m_nHandle = Network::Get()->TcpBegin(80);
 	assert(m_nHandle != -1);
@@ -73,26 +66,10 @@ void HttpDaemon::Start() {
 	DEBUG_EXIT
 }
 
-void HttpDaemon::Stop() {
-	DEBUG_ENTRY
-
-	assert(m_nHandle != -1);
-	m_nHandle = Network::Get()->TcpEnd(80);
-	assert(m_nHandle == -1);
-
-	DEBUG_EXIT
-}
-
-void HttpDaemon::Run() {
-	m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse)));
-
-	if (__builtin_expect((m_nBytesReceived <= 0), 1)) {
-		return;
-	}
-
+void HttpDaemon::HandleRequest(const uint32_t nConnectionHandle) {
 	const char *pStatusMsg = "OK";
 
-	DEBUG_PRINTF("m_Status=%u, m_RequestMethod=%u", static_cast<uint32_t>(m_Status), static_cast<uint32_t>(m_RequestMethod));
+	DEBUG_PRINTF("%u: m_Status=%u, m_RequestMethod=%u", nConnectionHandle, static_cast<uint32_t>(m_Status), static_cast<uint32_t>(m_RequestMethod));
 
 	if (m_Status == Status::UNKNOWN_ERROR) {
 		m_Status = ParseRequest();
@@ -157,8 +134,8 @@ void HttpDaemon::Run() {
 			"Connection: close\r\n"
 			"\r\n", static_cast<uint32_t>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, m_nContentLength);
 
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength));
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength);
+	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength), nConnectionHandle);
+	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength, nConnectionHandle);
 	DEBUG_PRINTF("m_nContentLength=%u", m_nContentLength);
 
 	m_Status = Status::UNKNOWN_ERROR;
@@ -173,7 +150,7 @@ Status HttpDaemon::ParseRequest() {
 	m_nRequestContentLength = 0;
 	m_nFileDataLength = 0;
 
-	for (uint16_t i = 0; i < static_cast<uint16_t>(m_nBytesReceived); i++) {
+	for (auto i = 0; i < m_nBytesReceived; i++) {
 		if (m_RequestHeaderResponse[i] == '\n') {
 			assert(i > 1);
 			m_RequestHeaderResponse[i - 1] = '\0';
@@ -183,7 +160,7 @@ Status HttpDaemon::ParseRequest() {
 			} else {
 				if (pLine[0] == '\0') {
 					assert((i + 1) <= m_nBytesReceived);
-					m_nFileDataLength = static_cast<uint16_t>(static_cast<uint16_t>(m_nBytesReceived) - 1U - i);
+					m_nFileDataLength = static_cast<uint16_t>(m_nBytesReceived - 1 - i);
 					if (m_nFileDataLength > 0) {
 						m_pFileData = &m_RequestHeaderResponse[i + 1];
 						m_pFileData[m_nFileDataLength] = '\0';
@@ -434,9 +411,9 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 			DEBUG_PRINTF("Display::Get()->SetSleep(%d)", value8 == 0);
 		} else if (Sscan::Uint8(m_pFileData, "identify", value8) == Sscan::OK) {
 			if (value8 != 0) {
-				LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+				Hardware::Get()->SetMode(hardware::ledblink::Mode::FAST);
 			} else {
-				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
 		} else {

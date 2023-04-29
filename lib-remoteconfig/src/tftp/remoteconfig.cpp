@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#if defined(ENABLE_TFTP_SERVER)
+
 #if !defined(__clang__)	// Needed for compiling on MacOS
 # pragma GCC push_options
 # pragma GCC optimize ("Os")
@@ -42,22 +44,15 @@
 
 #include "debug.h"
 
+static uint8_t s_TFTPBuffer[FIRMWARE_MAX_SIZE];
+
 void RemoteConfig::PlatformHandleTftpSet() {
 	DEBUG_ENTRY
 
-	if (m_bEnableTFTP) {
-		Display::Get()->SetSleep(false);
-	}
-
 	if (m_bEnableTFTP && (m_pTFTPFileServer == nullptr)) {
-		puts("Create TFTP Server");
-
-		m_pTFTPBuffer = new uint8_t[FIRMWARE_MAX_SIZE];
-		assert(m_pTFTPBuffer != nullptr);
-
-		m_pTFTPFileServer = new TFTPFileServer(m_pTFTPBuffer, FIRMWARE_MAX_SIZE);
+		m_pTFTPFileServer = new TFTPFileServer(s_TFTPBuffer, FIRMWARE_MAX_SIZE);
 		assert(m_pTFTPFileServer != nullptr);
-		Display::Get()->TextStatus("TFTP On", Display7SegmentMessage::INFO_TFTP_ON);
+		Display::Get()->TextStatus("TFTP On", Display7SegmentMessage::INFO_TFTP_ON, CONSOLE_GREEN);
 	} else if (!m_bEnableTFTP && (m_pTFTPFileServer != nullptr)) {
 		const uint32_t nFileSize = m_pTFTPFileServer->GetFileSize();
 		DEBUG_PRINTF("nFileSize=%d, %d", nFileSize, m_pTFTPFileServer->isDone());
@@ -65,23 +60,18 @@ void RemoteConfig::PlatformHandleTftpSet() {
 		bool bSucces = true;
 
 		if (m_pTFTPFileServer->isDone()) {
-			bSucces = FlashCodeInstall::Get()->WriteFirmware(m_pTFTPBuffer, nFileSize);
+			bSucces = FlashCodeInstall::Get()->WriteFirmware(s_TFTPBuffer, nFileSize);
 
 			if (!bSucces) {
-				Display::Get()->TextStatus("Error: TFTP", Display7SegmentMessage::ERROR_TFTP);
+				Display::Get()->TextStatus("Error: TFTP", Display7SegmentMessage::ERROR_TFTP, CONSOLE_RED);
 			}
 		}
-
-		puts("Delete TFTP Server");
 
 		delete m_pTFTPFileServer;
 		m_pTFTPFileServer = nullptr;
 
-		delete[] m_pTFTPBuffer;
-		m_pTFTPBuffer = nullptr;
-
 		if (bSucces) { // Keep error message
-			Display::Get()->TextStatus("TFTP Off", Display7SegmentMessage::INFO_TFTP_OFF);
+			Display::Get()->TextStatus("TFTP Off", Display7SegmentMessage::INFO_TFTP_OFF, CONSOLE_GREEN);
 		}
 	}
 
@@ -93,3 +83,5 @@ void RemoteConfig::PlatformHandleTftpGet() {
 
 	DEBUG_EXIT
 }
+
+#endif
