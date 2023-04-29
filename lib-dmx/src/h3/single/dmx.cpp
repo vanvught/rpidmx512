@@ -815,7 +815,7 @@ void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t 
 	EXT_UART->LCR = UART_LCR_8_N_2;
 	udelay(RDM_TRANSMIT_MAB_TIME);
 
-	for (uint16_t i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		while (!(EXT_UART->LSR & UART_LSR_THRE))
 			;
 		EXT_UART->O00.THR = pRdmData[i];
