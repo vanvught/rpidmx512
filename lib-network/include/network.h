@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,7 @@
 #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 
 namespace network {
+static constexpr auto STORE = 96;				///< Configuration store in bytes
 static constexpr auto IP_SIZE = 4U;
 static constexpr auto MAC_SIZE = 6U;
 static constexpr auto HOSTNAME_SIZE = 64U;		///< Including a terminating null byte.
@@ -51,7 +52,14 @@ enum class ClientStatus {
 };
 }  // namespace dhcp
 
-inline static bool is_netmask_valid(uint32_t nNetMask) {
+static constexpr uint32_t convert_to_uint(const uint8_t a, const uint8_t b, const uint8_t c, const uint8_t d) {
+	return static_cast<uint32_t>(a)       |
+		   static_cast<uint32_t>(b) << 8  |
+		   static_cast<uint32_t>(c) << 16 |
+		   static_cast<uint32_t>(d) << 24;
+}
+
+inline bool is_netmask_valid(uint32_t nNetMask) {
 	if (nNetMask == 0) {
 		return false;
 	}
@@ -62,7 +70,7 @@ inline static bool is_netmask_valid(uint32_t nNetMask) {
 /**
  * The private address ranges are defined in RFC1918.
  */
-inline static bool is_private_ip(const uint32_t nIp) {
+inline bool is_private_ip(const uint32_t nIp) {
 	const uint8_t n = (nIp >> 8) & 0xFF;
 
 	switch (nIp & 0xFF) {
@@ -80,7 +88,7 @@ inline static bool is_private_ip(const uint32_t nIp) {
 	return false;
 }
 
-inline static bool is_multicast_ip(const uint32_t nIp) {
+inline bool is_multicast_ip(const uint32_t nIp) {
 	if ((nIp & 0xE0) != 0xE0) {
 		return false;
 	}
@@ -94,6 +102,15 @@ inline static bool is_multicast_ip(const uint32_t nIp) {
 	}
 
 	return true;
+}
+
+inline uint32_t cidr_to_netmask(const uint8_t nCIDR) {
+	if (nCIDR != 0) {
+		const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCIDR));
+		return nNetmask;
+	}
+
+	return 0;
 }
 
 void display_emac_start();

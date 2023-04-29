@@ -1,8 +1,8 @@
 /**
- * @file net_chksum.c
+ * @file net_timers.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,30 +23,30 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
-uint16_t net_chksum(void *data, uint32_t len) {
-	uint32_t sum;
-	uint16_t *ptr;
+#include "net_private.h"
 
-	ptr = (uint16_t *) data;
-	sum = 0;
+#include "hardware.h"
 
-	while (len > 1) {
-		sum += *ptr;
-		ptr++;
-		len -= 2;
+#include "../../config/net_config.h"
+
+#ifndef NDEBUG
+ extern void arp_cache_timer(void);
+#endif
+
+static volatile uint32_t s_ticker;
+
+#define INTERVAL_MS (100)	// 100 msec, 1/10 second
+
+void net_timers_run() {
+	const auto nMillis = Hardware::Get()->Millis();
+
+	if (__builtin_expect((nMillis >= s_ticker), 0)) {
+		s_ticker = nMillis + INTERVAL_MS;
+		igmp_timer();
+#ifndef NDEBUG
+		arp_cache_timer();
+#endif
 	}
-
-	/* Add left-over byte, if any */
-	if (len > 0) {
-		sum += __builtin_bswap16((uint16_t)(*((uint8_t *) ptr) << 8));
-	}
-
-	/* Fold 32-bit sum into 16 bits */
-	while (sum >> 16) {
-		sum = (sum >> 16) + (sum & 0xFFFF);
-	}
-
-	return (uint16_t) (~sum);
 }

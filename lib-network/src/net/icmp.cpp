@@ -1,8 +1,8 @@
 /**
- * @file icmp.c
+ * @file icmp.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,18 +23,20 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <string.h>
+#include <cstdint>
+#include <cstring>
 
 #include "net.h"
-#include "net_packets.h"
-#include "net_debug.h"
+#include "net_private.h"
 
-extern struct ip_info g_ip_info;
-extern uint8_t g_mac_address[ETH_ADDR_LEN];
+#include "../../config/net_config.h"
 
-extern uint16_t net_chksum(void*, uint32_t);
-extern void emac_eth_send(void*, int);
+namespace net {
+namespace globals {
+extern struct IpInfo ipInfo;
+extern uint8_t macAddress[ETH_ADDR_LEN];
+}  // namespace globals
+}  // namespace net
 
 typedef union pcast32 {
 	uint32_t u32;
@@ -42,31 +44,29 @@ typedef union pcast32 {
 } _pcast32;
 
 __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
-	_pcast32 src;
-	DEBUG_ENTRY
-
 	if (p_icmp->icmp.type == ICMP_TYPE_ECHO) {
 		if (p_icmp->icmp.code == ICMP_CODE_ECHO) {
 			// Ethernet
 			memcpy(p_icmp->ether.dst, p_icmp->ether.src, ETH_ADDR_LEN);
-			memcpy(p_icmp->ether.src, g_mac_address, ETH_ADDR_LEN);
+			memcpy(p_icmp->ether.src, net::globals::macAddress, ETH_ADDR_LEN);
+
 			// IPv4
-			p_icmp->ip4.id = (uint16_t)(~p_icmp->ip4.id);
+			p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 			memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
-			src.u32 = g_ip_info.ip.addr;
+			_pcast32 src;
+			src.u32 = net::globals::ipInfo.ip.addr;
 			memcpy(p_icmp->ip4.src, src.u8, IPv4_ADDR_LEN);
 			p_icmp->ip4.chksum = 0;
-			p_icmp->ip4.chksum = net_chksum((void *)&p_icmp->ip4, 20); //TODO
+#if !defined (CHECKSUM_BY_HARDWARE)
+			p_icmp->ip4.chksum = net_chksum(reinterpret_cast<void *>(&p_icmp->ip4), 20); //TODO
+#endif
 			// ICMP
 			p_icmp->icmp.type = ICMP_TYPE_ECHO_REPLY;
 			p_icmp->icmp.checksum = 0;
-			p_icmp->icmp.checksum = net_chksum((void *)&p_icmp->ip4, (uint32_t)__builtin_bswap16(p_icmp->ip4.len));
-
-			debug_dump(p_icmp, sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len));
-
-			emac_eth_send((void *)p_icmp, (int) (sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len)));
+#if !defined (CHECKSUM_BY_HARDWARE)
+			p_icmp->icmp.checksum = net_chksum(reinterpret_cast<void *>(&p_icmp->ip4), static_cast<uint32_t>(__builtin_bswap16(p_icmp->ip4.len)));
+#endif
+			emac_eth_send(reinterpret_cast<void *>(p_icmp), (sizeof(struct ether_header) + __builtin_bswap16(p_icmp->ip4.len)));
 		}
 	}
-
-	DEBUG_EXIT
 }

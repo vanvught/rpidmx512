@@ -63,7 +63,6 @@ bool NetworkParams::Load() {
 	ReadConfigFile configfile(NetworkParams::staticCallbackFunction, this);
 
 	if (configfile.Read(NetworkParamsConst::FILE_NAME)) {
-		// There is a configuration file
 		if (m_pNetworkParamsStore != nullptr) {
 			m_pNetworkParamsStore->Update(&m_Params);
 		}
@@ -179,11 +178,11 @@ void NetworkParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, NetworkParamsConst::NTP_UTC_OFFSET, fValue) == Sscan::OK) {
 		// https://en.wikipedia.org/wiki/List_of_UTC_time_offsets
-		if ((static_cast<int32_t>(fValue) >= -12) && (static_cast<int32_t>(fValue) <= 14) && (fValue != defaults::NTP_UTC_OFFSET)) {
+		if ((static_cast<int32_t>(fValue) >= -12) && (static_cast<int32_t>(fValue) <= 14) && (static_cast<int32_t>(fValue) != 0)) {
 			m_Params.fNtpUtcOffset = fValue;
 			m_Params.nSetList |= networkparams::Mask::NTP_UTC_OFFSET;
 		} else {
-			m_Params.fNtpUtcOffset = defaults::NTP_UTC_OFFSET;
+			m_Params.fNtpUtcOffset = 0;
 			m_Params.nSetList &= ~networkparams::Mask::NTP_UTC_OFFSET;
 		}
 		return;

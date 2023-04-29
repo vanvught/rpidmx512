@@ -1,8 +1,8 @@
 /**
- * networktcp.cpp
+ * @file net_chksum.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,32 +25,27 @@
 
 #include <cstdint>
 
-#include "network.h"
+#include "net_private.h"
 
-#include "./../net/net.h"
+uint16_t net_chksum(const void *data, uint32_t len) {
+	auto *ptr = reinterpret_cast<const uint16_t *>(data);
+	uint32_t sum = 0;
 
-#include "debug.h"
+	while (len > 1) {
+		sum += *ptr;
+		ptr++;
+		len -= 2;
+	}
 
-int32_t Network::TcpBegin(uint16_t nLocalPort) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
+	/* Add left-over byte, if any */
+	if (len > 0) {
+		sum += __builtin_bswap16(static_cast<uint16_t>(*(reinterpret_cast<const uint8_t *>(ptr)) << 8));
+	}
 
-	const auto nHandle = tcp_begin(nLocalPort);
+	/* Fold 32-bit sum into 16 bits */
+	while (sum >> 16) {
+		sum = (sum >> 16) + (sum & 0xFFFF);
+	}
 
-	DEBUG_PRINTF("nHandle=%d", nHandle);
-	DEBUG_EXIT
-	return nHandle;
-}
-
-uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer) {
-	return tcp_read(nHandle, ppBuffer);
-}
-
-void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength) {
-	DEBUG_ENTRY
-	DEBUG_PRINTF("nHandle=%d, pBuffer=%p, nLength=%u, doClose=%d", nHandle, pBuffer, nLength);
-
-	tcp_write(nHandle, pBuffer, nLength);
-
-	DEBUG_EXIT
+	return static_cast<uint16_t>(~sum);
 }

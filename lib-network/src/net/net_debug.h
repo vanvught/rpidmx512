@@ -28,16 +28,13 @@
 
 #include "debug.h"
 
-#ifndef NDEBUG
- #include <stdio.h>
- #ifndef IP2STR
-  #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
+#ifndef IP2STR
+ #define IP2STR(addr) (addr & 0xFF), ((addr >> 8) & 0xFF), ((addr >> 16) & 0xFF), ((addr >> 24) & 0xFF)
  #define IPSTR "%d.%d.%d.%d"
- #endif
- #ifndef MAC2STR
-  #define MAC2STR(mac) (int)(mac[0]),(int)(mac[1]),(int)(mac[2]),(int)(mac[3]), (int)(mac[4]), (int)(mac[5])
-  #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
- #endif
+#endif
+#ifndef MAC2STR
+ #define MAC2STR(mac) (mac[0]),(mac[1]),(mac[2]),(mac[3]), (mac[4]), (mac[5])
+ #define MACSTR "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
 #endif
 
 #if defined (H3)

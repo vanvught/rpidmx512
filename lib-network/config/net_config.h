@@ -27,12 +27,13 @@
 #define NET_CONFIG_H_
 
 #if defined (BARE_METAL)
-# define TCP_MAX_CONNECTIONS_ALLOWED	1
+# define TCP_MAX_PORTS_ALLOWED			1
 # if defined (H3)
 #  define HOST_NAME_PREFIX				"allwinner_"
 #  define UDP_MAX_PORTS_ALLOWED			16
 #  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
 # elif defined (GD32)
+#  define CHECKSUM_BY_HARDWARE
 #  define HOST_NAME_PREFIX				"gigadevice_"
 #  if !defined (UDP_MAX_PORTS_ALLOWED)
 #   define UDP_MAX_PORTS_ALLOWED		8
@@ -55,7 +56,7 @@
 # error
 #endif
 
-#if !defined (TCP_MAX_CONNECTIONS_ALLOWED)
+#if !defined (TCP_MAX_PORTS_ALLOWED)
 # error
 #endif
 

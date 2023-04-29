@@ -1,8 +1,8 @@
 /**
- * @file ip.c
+ * @file ip.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,80 +23,63 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
+#include <cstdint>
 
 #include "net.h"
-#include "net_packets.h"
-#include "net_debug.h"
+#include "net_private.h"
 
-#if defined(DO_NET_CHKSUM)
- extern uint16_t net_chksum(void *, uint32_t);
-#endif
+#include "../../config/net_config.h"
 
-extern void udp_init(const uint8_t *, const struct ip_info  *);
-extern void udp_set_ip(const struct ip_info  *);
-extern void udp_handle(struct t_udp *);
-extern void udp_shutdown(void);
-
-extern void igmp_init(const uint8_t *, const struct ip_info  *);
-extern void igmp_set_ip(const struct ip_info  *);
-extern void igmp_handle(struct t_igmp *);
-extern void igmp_shutdown(void);
-
-extern void tcp_handle(struct t_tcp *);
-
-extern void icmp_handle(struct t_icmp *);
-extern void icmp_shutdown(void);
-
-void ip_set_ip(const struct ip_info *p_ip_info) {
-	udp_set_ip(p_ip_info);
-	igmp_set_ip(p_ip_info);
+void ip_set_ip() {
+	udp_set_ip();
+	igmp_set_ip();
+	tcp_set_ip();
 }
 
-void __attribute__((cold)) ip_init(const uint8_t *mac_address, const struct ip_info *p_ip_info) {
-	udp_init(mac_address, p_ip_info);
-	igmp_init(mac_address, p_ip_info);
+void __attribute__((cold)) ip_init() {
+	DEBUG_ENTRY
+
+	udp_init();
+	igmp_init();
+	tcp_init();
+
+	DEBUG_EXIT
 }
 
-void __attribute__((cold)) ip_shutdown(void) {
+void __attribute__((cold)) ip_shutdown() {
+	DEBUG_ENTRY
+
+	tcp_shutdown();
 	igmp_shutdown();
 	udp_shutdown();
+
+	DEBUG_EXIT
 }
 
 __attribute__((hot)) void ip_handle(struct t_ip4 *p_ip4) {
 	if  (__builtin_expect((p_ip4->ip4.ver_ihl != 0x45), 0)) {
 		if (p_ip4->ip4.proto == IPv4_PROTO_IGMP) {
-			igmp_handle((struct t_igmp *) p_ip4);
+			igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
 		} else {
-			DEBUG_PRINTF("p_ip4->ip4.ver_ihl=0x%x\n", p_ip4->ip4.ver_ihl);
+			DEBUG_PRINTF("p_ip4->ip4.ver_ihl=0x%x", p_ip4->ip4.ver_ihl);
 		}
 		return;
 	}
 
-#if defined(DO_NET_CHKSUM)
-	uint16_t chksum;
-	// Really needed, doesn't do EMAC this job?
-	if ((chksum = net_chksum((void *) &p_ip4->ip4, sizeof(p_ip4->ip4))) != 0) {
-		printf("chksum=%d\n", chksum);
-		assert(0);
-		DEBUG1_EXIT
-		return;
-	}
-#endif
-
 	switch (p_ip4->ip4.proto) {
 	case IPv4_PROTO_UDP:
-		udp_handle((struct t_udp *) p_ip4);
+		udp_handle(reinterpret_cast<struct t_udp *>(p_ip4));
 		break;
 	case IPv4_PROTO_IGMP:
-		igmp_handle((struct t_igmp *) p_ip4);
+		igmp_handle(reinterpret_cast<struct t_igmp *>(p_ip4));
 		break;
 	case IPv4_PROTO_ICMP:
-		icmp_handle((struct t_icmp *) p_ip4);
+		icmp_handle(reinterpret_cast<struct t_icmp *>(p_ip4));
 		break;
 #if defined (ENABLE_HTTPD)
 	case IPv4_PROTO_TCP:
-		tcp_handle((struct t_tcp *) p_ip4);
+		tcp_handle(reinterpret_cast<struct t_tcp *>(p_ip4));
+		tcp_run();
 		break;
 #endif
 	default:

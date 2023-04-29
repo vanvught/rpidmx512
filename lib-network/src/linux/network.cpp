@@ -63,7 +63,12 @@ static int snHandles[max::PORTS_ALLOWED];
 
 Network *Network::s_pThis = nullptr;
 
-Network::Network() {
+Network::Network(int argc, char **argv) {
+	if (argc < 2) {
+		printf("Usage: %s ip_address|interface_name\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
@@ -71,18 +76,7 @@ Network::Network() {
 	m_aHostName[0] = '\0';
 	m_aDomainName[0] = '\0';
 	m_aIfName[0] = '\0';
-}
 
-Network::~Network() {
-	for (unsigned i = 0; i < max::PORTS_ALLOWED; i++) {
-		if (s_ports_allowed[i] != 0) {
-			Network::End(s_ports_allowed[i]);
-		}
-	}
-}
-
-int Network::Init(const char *s) {
-	int result;
 /**
  * BEGIN - needed H3 code compatibility
  */
@@ -102,20 +96,18 @@ int Network::Init(const char *s) {
  * END
  */
 
-	assert(s != nullptr);
-
-	if (IfGetByAddress(s, m_aIfName, sizeof(m_aIfName)) == 0) {
+	if (IfGetByAddress(argv[1], m_aIfName, sizeof(m_aIfName)) == 0) {
 	} else {
-		strncpy(m_aIfName, s, IFNAMSIZ - 1);
+		strncpy(m_aIfName, argv[1], IFNAMSIZ - 1);
 	}
 
 	DEBUG_PRINTF("m_aIfName=%s", m_aIfName);
 
-	result = IfDetails(m_aIfName);
+	auto result = IfDetails(m_aIfName);
 
 	if (result < 0) {
-		fprintf(stderr, "Not able to start network on : %s\n", s);
-		return result;
+		fprintf(stderr, "Not able to start network on : %s\n", argv[1]);
+		exit(EXIT_FAILURE);
 	}
 #if defined (__linux__)
 	else {
@@ -153,8 +145,14 @@ int Network::Init(const char *s) {
 	}
 
 	m_aDomainName[j]  = '\0';
+}
 
-	return result;
+Network::~Network() {
+	for (unsigned i = 0; i < max::PORTS_ALLOWED; i++) {
+		if (s_ports_allowed[i] != 0) {
+			Network::End(s_ports_allowed[i]);
+		}
+	}
 }
 
 int32_t Network::Begin(uint16_t nPort) {
@@ -277,7 +275,7 @@ int32_t Network::End(uint16_t nPort) {
 	for (i = 0; i < max::PORTS_ALLOWED; i++) {
 		if (s_ports_allowed[i] == nPort) {
 			s_ports_allowed[i] = 0;
-			printf("close");
+			puts("close");
 
 			if (close(snHandles[i]) == -1) {
 				perror("unbind");

@@ -2,7 +2,7 @@
  * @file net_packets.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,10 @@
 #ifndef NET_PACKETS_H_
 #define NET_PACKETS_H_
 
-#include <stdint.h>
+#include <cstdint>
 
 #if !defined (PACKED)
- #define PACKED __attribute__((packed))
+# define PACKED __attribute__((packed))
 #endif
 
 enum MTU {
@@ -52,7 +52,7 @@ enum IPv4_ADDR {
 enum IPv4_PROTO {
 	IPv4_PROTO_ICMP = 1,
 	IPv4_PROTO_IGMP = 2,
-	IPv4_PROTO_TCP = 6,		// Not implemented
+	IPv4_PROTO_TCP = 6,
 	IPv4_PROTO_UDP = 17
 };
 
@@ -104,19 +104,20 @@ struct ether_header {
 	uint8_t dst[ETH_ADDR_LEN];		/*  6 */
 	uint8_t src[ETH_ADDR_LEN];		/* 12 */
 	uint16_t type;					/* 14 */
-}PACKED;
+} PACKED;
 
 struct arp_packet {
-	uint16_t hardware_type;
-	uint16_t protocol_type;
-	uint8_t hardware_size;
-	uint8_t protocol_size;
-	uint16_t opcode;
-	uint8_t sender_mac[ETH_ADDR_LEN];
-	uint32_t sender_ip;
-	uint8_t target_mac[ETH_ADDR_LEN];
-	uint32_t target_ip;
-}PACKED;
+	uint16_t hardware_type;			/*  2 */
+	uint16_t protocol_type;			/*  4 */
+	uint8_t hardware_size;			/*  5 */
+	uint8_t protocol_size;			/*  6 */
+	uint16_t opcode;				/*  8 */
+	uint8_t sender_mac[ETH_ADDR_LEN];/*14 */
+	uint32_t sender_ip;				/* 18 */
+	uint8_t target_mac[ETH_ADDR_LEN];/*24 */
+	uint32_t target_ip;				/* 28 */
+	uint8_t padding[18];			/* 46 */ /* +14 = 60 */
+} PACKED;
 
 struct ip4_header {
 	uint8_t ver_ihl;				/*  1 */
@@ -129,24 +130,24 @@ struct ip4_header {
 	uint16_t chksum;				/* 12 */
 	uint8_t src[IPv4_ADDR_LEN];		/* 16 */
 	uint8_t dst[IPv4_ADDR_LEN];		/* 20 */
-}PACKED;
+} PACKED;
 
 struct t_igmp_packet {
 	uint8_t type;
 	uint8_t max_resp_time;
 	uint16_t checksum;
 	uint8_t group_address[IPv4_ADDR_LEN];
-}PACKED;
+} PACKED;
 
 struct t_icmp_packet {
 	uint8_t type;					/* 1 */
 	uint8_t code;					/* 2 */
 	uint16_t checksum;				/* 4 */
 	uint8_t parameter[4];			/* 8 */
-#define ICMP_HEADER_SIZE		8
-#define ICMP_PAYLOAD_SIZE		(MTU_SIZE - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
+#define ICMP_HEADER_SIZE	8
+#define ICMP_PAYLOAD_SIZE	(MTU_SIZE - ICMP_HEADER_SIZE - sizeof(struct ip4_header))
 	uint8_t payload[ICMP_PAYLOAD_SIZE];
-}PACKED;
+} PACKED;
 
 struct t_udp_packet {
 	uint16_t source_port;			/* 2 */
@@ -169,19 +170,19 @@ struct t_tcp_packet {
 	uint16_t checksum;				/* 18 */
 	uint16_t urgent;				/* 20 */
 #define TCP_HEADER_SIZE		20
-#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - (uint16_t) sizeof(struct ip4_header))
+#define TCP_DATA_SIZE		(MTU_SIZE - TCP_HEADER_SIZE - sizeof(struct ip4_header) - 20U)
 	uint8_t data[TCP_DATA_SIZE];
 } PACKED;
 
 struct t_arp {
 	struct ether_header ether;
 	struct arp_packet arp;
-}PACKED;
+} PACKED;
 
 struct t_ip4 {
 	struct ether_header ether;
 	struct ip4_header ip4;
-}PACKED;
+} PACKED;
 
 struct t_igmp {
 	struct ether_header ether;
@@ -193,25 +194,25 @@ struct t_igmp {
 		} report;
 		struct t_igmp_packet igmp;
 	} igmp;
-}PACKED;
+} PACKED;
 
 struct t_icmp {
 	struct ether_header ether;
 	struct ip4_header ip4;
 	struct t_icmp_packet icmp;
-}PACKED;
+} PACKED;
 
 struct t_udp {
 	struct ether_header ether;
 	struct ip4_header ip4;
 	struct t_udp_packet udp;
-}PACKED;
+} PACKED;
 
 struct t_tcp {
 	struct ether_header ether;
 	struct ip4_header ip4;
 	struct t_tcp_packet tcp;
-}PACKED;
+} PACKED;
 
 #define IPv4_UDP_HEADERS_SIZE 			(sizeof(struct ip4_header) + UDP_HEADER_SIZE)			/* IP | UDP */
 #define UDP_PACKET_HEADERS_SIZE			(sizeof(struct ether_header) + IPv4_UDP_HEADERS_SIZE)	/* ETH | IP | UDP */

@@ -148,7 +148,7 @@ void Network::SendTo(__attribute__((unused)) int32_t nHandle, const void *pBuffe
 }
 
 bool Network::Start() {
-	struct ip_info ip_config;
+	struct IpInfo ip_config;
 
 	if (!esp8266_detect()){
 		Display::Get()->TextStatus(WifiConst::MSG_ERROR_BOARD_NOT_CONNECTED);
@@ -212,7 +212,7 @@ bool Network::Start() {
 	printf(" Hostname    : %s\n", m_aHostName);
 
 	esp8266_write_4bits(CMD_WIFI_IP_INFO);
-	esp8266_read_bytes(reinterpret_cast<const uint8_t *>(&ip_config), sizeof(struct ip_info));
+	esp8266_read_bytes(reinterpret_cast<const uint8_t *>(&ip_config), sizeof(struct IpInfo));
 
 	m_nLocalIp = ip_config.ip.addr;
 	m_nNetmask = ip_config.netmask.addr;
@@ -267,7 +267,7 @@ void Network::StationCreate(const char *pSsid, const char *pPassword) {
 	m_IsDhcpUsed = true;
 }
 
-void Network::StationCreate(const char *pSsid, const char *pPassword, const struct ip_info *pInfo) {
+void Network::StationCreate(const char *pSsid, const char *pPassword, const struct IpInfo *pInfo) {
 	assert(pSsid != nullptr);
 	assert(pPassword != nullptr);
 	assert(pInfo != nullptr);
@@ -277,7 +277,7 @@ void Network::StationCreate(const char *pSsid, const char *pPassword, const stru
 	esp8266_write_str(pSsid);
 	esp8266_write_str(pPassword);
 
-	esp8266_write_bytes(reinterpret_cast<const uint8_t *>(pInfo), sizeof(struct ip_info));
+	esp8266_write_bytes(reinterpret_cast<const uint8_t *>(pInfo), sizeof(struct IpInfo));
 
 	m_IsDhcpUsed = false;
 }

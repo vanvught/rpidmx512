@@ -2,7 +2,7 @@
  * @file network.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,10 +36,8 @@
 
 class Network {
 public:
-	Network();
+	Network(int argc, char **argv);
 	~Network();
-
-	int Init(const char *s);
 
 	void Print();
 
@@ -56,15 +54,6 @@ public:
 	uint16_t RecvFrom(int32_t nHandle, void *pBuffer, uint16_t nLength, uint32_t *pFromIp, uint16_t *pFromPort);
 	uint16_t RecvFrom(int32_t nHandle, const void **ppBuffer, uint32_t *pFromIp, uint16_t *pFromPort);
 	void SendTo(int32_t nHandle, const void *pBuffer, uint16_t nLength, uint32_t nToIp, uint16_t nRemotePort);
-
-	/*
-	 * Experimental TCP
-	 */
-
-	int32_t TcpBegin(uint16_t nLocalPort);
-	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer);
-	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength);
-	int32_t TcpEnd(const int32_t nHandle);
 
 	void SetIp(uint32_t nIp);
 	void SetNetmask(uint32_t nNetmask);
@@ -196,18 +185,18 @@ public:
 		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
 	}
 
-	static uint32_t CIDRToNetmask(uint8_t nCDIR) {
-		if (nCDIR != 0) {
-			const auto nNetmask = __builtin_bswap32(static_cast<uint32_t>(~0x0) << (32 - nCDIR));
-			return nNetmask;
-		}
-
-		return 0;
-	}
-
 	static Network *Get() {
 		return s_pThis;
 	}
+
+	/*
+	 * Experimental TCP
+	 */
+
+	int32_t TcpBegin(uint16_t nLocalPort);
+	uint16_t TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnection);
+	void TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnection);
+	int32_t TcpEnd(const int32_t nHandle);
 
 private:
 	uint32_t GetDefaultGateway();

@@ -2,7 +2,7 @@
  * @file ntpclient.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,7 @@ Transmit Timestamp    T3   time reply sent by server
 Destination Timestamp T4   time reply received by client
 */
 
-NtpClient *NtpClient::s_pThis = nullptr;
+NtpClient *NtpClient::s_pThis;
 
 NtpClient::NtpClient(uint32_t nServerIp): m_nServerIp(nServerIp) {
 	DEBUG_ENTRY
@@ -117,7 +117,7 @@ bool NtpClient::Receive() {
 	uint32_t nFromIp;
 	uint16_t nFromPort;
 
-	const uint16_t nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Reply, sizeof m_Reply, &nFromIp, &nFromPort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Reply, sizeof m_Reply, &nFromIp, &nFromPort);
 
 	if (__builtin_expect((nBytesReceived != sizeof m_Reply), 1)) {
 		return false;
@@ -183,7 +183,7 @@ int NtpClient::SetTimeOfDay() {
 	struct timeval tv;
 
 	tv.tv_sec =	static_cast<time_t>(T4.nSeconds - JAN_1970)  + m_nOffsetSeconds + m_nUtcOffset;
-	tv.tv_usec = static_cast<suseconds_t>(static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
+	tv.tv_usec = (static_cast<int32_t>(USEC(T4.nFraction)) + static_cast<int32_t>(m_nOffsetMicros));
 
 	if (tv.tv_usec >= 1000000) {
 		tv.tv_sec++;
@@ -215,7 +215,7 @@ void NtpClient::Start() {
 
 	ntpclient::display_status(ntpclient::Status::IDLE);
 
-	const uint32_t nNow = Hardware::Get()->Millis();
+	const auto nNow = Hardware::Get()->Millis();
 	uint32_t nRetries;
 
 	for (nRetries = 0; nRetries < RETRIES; nRetries++) {
