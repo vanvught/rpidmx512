@@ -2,7 +2,7 @@
  * @file string.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ extern "C" {
 extern char *strerror(int errnum);
 extern char *strtok(char *str, const char *delim);
 
-inline static int memcmp(const void *s1, const void *s2, size_t n) {
+inline int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
 	unsigned char *t1, *t2;
 
@@ -54,7 +54,7 @@ inline static int memcmp(const void *s1, const void *s2, size_t n) {
 	return 0;
 }
 
-inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+inline void *memcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
 	char *dp = (char *) dest;
 	const char *sp = (const char *) src;
 
@@ -65,11 +65,11 @@ inline static void* memcpy(void *__restrict__ dest, const void *__restrict__ src
 	return dest;
 }
 
-inline static void* mempcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
+inline void *mempcpy(void *__restrict__ dest, const void *__restrict__ src, size_t n) {
 	return (char *)memcpy (dest, src, n) + n;
 }
 
-inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
+inline void *memmove(void *dst, const void *src, size_t n) {
 	char *dp = (char *) dst;
 	const char *sp = (const char *) src;
 
@@ -88,7 +88,7 @@ inline static void *memmove(/*@only@*/void *dst, const void *src, size_t n) {
 	return dst;
 }
 
-inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
+inline void *memset(void *dest, int c, size_t n) {
 	char *dp = (char *) dest;
 
 	while (n-- != (size_t) 0) {
@@ -98,7 +98,7 @@ inline static void *memset(/*@only@*/void *dest, int c, size_t n) {
 	return dest;
 }
 
-inline static size_t strlen(const char *s) {
+inline size_t strlen(const char *s) {
 	const char *p = s;
 
 	while (*s != (char) 0) {
@@ -108,7 +108,7 @@ inline static size_t strlen(const char *s) {
 	return (size_t) (s - p);
 }
 
-inline static char *strcpy(char * __restrict__ s1, const char * __restrict__ s2) {
+inline char *strcpy(char * __restrict__ s1, const char * __restrict__ s2) {
 	char *s = s1;
 
 	while ((*s++ = *s2++) != '\0')
@@ -116,7 +116,7 @@ inline static char *strcpy(char * __restrict__ s1, const char * __restrict__ s2)
 	return s1;
 }
 
-inline static char *strncpy(char * __restrict__ s1, const char * __restrict__ s2, size_t n) {
+inline char *strncpy(char * __restrict__ s1, const char * __restrict__ s2, size_t n) {
 	char *s = s1;
 
 	while (n > 0 && *s2 != '\0') {
@@ -132,7 +132,7 @@ inline static char *strncpy(char * __restrict__ s1, const char * __restrict__ s2
 	return s1;
 }
 
-inline static int strcmp(const char *s1, const char *s2) {
+inline int strcmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -145,7 +145,7 @@ inline static int strcmp(const char *s1, const char *s2) {
 	return (*p1 - *p2);
 }
 
-inline static int strncmp(const char *s1, const char *s2, size_t n) {
+inline int strncmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -160,7 +160,7 @@ inline static int strncmp(const char *s1, const char *s2, size_t n) {
 	return 0;
 }
 
-inline static int strcasecmp(const char *s1, const char *s2) {
+inline int strcasecmp(const char *s1, const char *s2) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -173,7 +173,7 @@ inline static int strcasecmp(const char *s1, const char *s2) {
 	return (tolower((int) *p1) - tolower((int) *p2));
 }
 
-inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
+inline int strncasecmp(const char *s1, const char *s2, size_t n) {
 	unsigned char *p1 = (unsigned char *) s1;
 	unsigned char *p2 = (unsigned char *) s2;
 
@@ -188,7 +188,7 @@ inline static int strncasecmp(const char *s1, const char *s2, size_t n) {
 	return 0;
 }
 
-inline static char *strcat(char *s1, const char *s2) {
+inline char *strcat(char *s1, const char *s2) {
 	strcpy(s1 + strlen(s1), s2);
 	return s1;
 }
