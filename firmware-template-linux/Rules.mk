@@ -28,31 +28,45 @@ TTT=uuid
 TMPVAR:=$(LIBS)
 LIBS=$(filter-out $(TTT), $(TMPVAR))
 LIBS+=debug
+LDLIBS=
 
 ifdef LINUX
-	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+	ifneq (, $(shell which vcgencmd))
 		BCM2835 = ./../lib-bcm2835_raspbian
 		ifneq "$(wildcard $(BCM2835) )" ""
 			LIBS+=bcm2835_raspbian
 		else
-			LIBS+=bcm2835
+			LDLIBS=-lbcm2835
 		endif
 		DEFINES+=RASPPI
 	endif
 endif
 
+$(info $$LDLIBS [${LDLIBS}])
+
 DEFINES:=$(addprefix -D,$(DEFINES))
-DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
-DEFINES+=-DCONFIG_STORE_USE_FILE
+DEFINES+=-DDISABLE_TFTP  
+DEFINES+=-DDISABLE_RTC
+DEFINES+=-DENABLE_HTTPD
+DEFINES+=-DCONFIG_STORE_USE_FILE 
+DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
+DEFINES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 # The variable for the firmware include directories
 INCDIRS=$(wildcard ./lib) $(wildcard ./include) $(wildcard ./*/include) ../firmware-template-linux/include
-INCDIRS:=$(addprefix -I,$(INCDIRS))
+INCDIRS:=$(addprefix -I,$(INCDIRS)) -I../lib-display/include
 
 # The variable for the libraries include directory
-LIBINCDIRS=$(addprefix -I../lib-,$(LIBS))
-LIBINCDIRS+=$(addprefix -I../lib-,$(DEFAULT_INCLUDES))
+LIBINCDIRS=$(addprefix -I../lib-,$(DEFAULT_INCLUDES))
+LIBINCDIRS+=$(addprefix -I../lib-,$(LIBS))
+ifeq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
+	ifneq ($(CONFIG_DISPLAY_LIB),)
+		LIBINCDIRS+=$(addprefix -I../lib-,$(CONFIG_DISPLAY_LIB))
+	endif
+endif
 LIBINCDIRS:=$(addsuffix /include, $(LIBINCDIRS))
+
+DEFINES+=$(INCDIRS) $(LIBINCDIRS)
 
 $(info $$LIBS [${LIBS}])
 
@@ -61,14 +75,16 @@ LIB=$(addprefix -L../lib-,$(LIBS))
 LIB:=$(addsuffix /lib_linux, $(LIB))
 
 # The variable for the ld -l flag 
-LDLIBS:=$(addprefix -l,$(LIBS))
+LDLIBS+=$(addprefix -l,$(LIBS))
+$(info $$LDLIBS [${LDLIBS}])
 
 # The variables for the dependency check 
 LIBDEP=$(addprefix ../lib-,$(LIBS))
 
-COPS=$(DEFINES) $(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
+COPS=$(DEFINES)
 COPS+=-g -Wall -Werror -Wextra -pedantic 
 COPS+=-Wunused #-Wsign-conversion #-Wconversion
+COPS+=-fstack-protector-all
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
 
@@ -83,6 +99,8 @@ ifeq ($(detected_OS),Cygwin)
 else
 	CCPOPS+=-std=c++11
 endif
+
+COPS+=-ffunction-sections -fdata-sections
 
 SOURCE = ./
 

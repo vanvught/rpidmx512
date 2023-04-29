@@ -13,10 +13,19 @@ LIB_NAME :=$(patsubst lib-%,%,$(CURR_DIR))
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
-DEFINES+=-DDISABLE_TFTP -DENABLE_HTTPD -DDISABLE_RTC
+DEFINES+=-DDISABLE_TFTP  
+DEFINES+=-DDISABLE_RTC
+DEFINES+=-DENABLE_HTTPD
+DEFINES+=-DCONFIG_STORE_USE_FILE 
+DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 
-INCLUDES:=-I./include -I../lib-hal/include -I../lib-debug/include
+INCLUDES:=-I./include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
+ifeq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
+	ifneq ($(CONFIG_DISPLAY_LIB),)
+		INCLUDES+=-I../lib-$(CONFIG_DISPLAY_LIB)/include
+	endif
+endif
 
 detected_OS := $(shell uname 2>/dev/null || echo Unknown)
 detected_OS := $(patsubst CYGWIN%,Cygwin,$(detected_OS))
@@ -27,7 +36,7 @@ ifeq ($(detected_OS),Darwin)
 endif
 
 ifeq ($(detected_OS),Linux) 
-	ifneq (, $(shell which /opt/vc/bin/vcgencmd))
+	ifneq (, $(shell which vcgencmd))
 	
 		BCM2835 = ./../lib-bcm2835_raspbian
 	
@@ -42,12 +51,13 @@ ifeq ($(detected_OS),Linux)
 endif
 
 $(info $$DEFINES [${DEFINES}])
+$(info $$INCLUDES [${INCLUDES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
  
 COPS=$(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
 COPS+=-g -Wall -Werror -Wextra -Wpedantic 
-COPS+=-Wunused -Wsign-conversion #-Wconversion
-#COPS+=-fstack-usage
+COPS+=-Wunused #-Wsign-conversion -Wconversion
+COPS+=-fstack-protector-all
 
 ifeq ($(shell $(CC) -v 2>&1 | grep -c "clang version"), 1)
 else
@@ -62,6 +72,8 @@ ifeq ($(detected_OS),Cygwin)
 else
 	CCPOPS+=-std=c++11
 endif	
+
+COPS+=-ffunction-sections -fdata-sections
 
 SRCDIR = src src/linux $(EXTRA_SRCDIR)
 
