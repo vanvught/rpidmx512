@@ -2,7 +2,7 @@
  * @file rdmsensors.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,8 +46,11 @@
 
 namespace rdm {
 namespace sensors {
-static constexpr uint32_t max = 16;
-static constexpr uint32_t store = 64;	// bytes
+static constexpr auto MAX = 16;
+static constexpr auto STORE = 64;	///< Configuration store in bytes
+namespace devices {
+static constexpr auto MAX = 8;
+}  // namespace devices
 }  // namespace sensors
 }  // namespace rdm
 
@@ -67,8 +70,12 @@ public:
 	void SetValues(uint8_t nSensor);
 	void SetRecord(uint8_t nSensor);
 
-	static const char *GetTypeString(rdm::sensors::type tType);
-	static rdm::sensors::type GetTypeString(const char *pValue);
+	RDMSensor *GetSensor(uint8_t nSensor) {
+		return m_pRDMSensor[nSensor];
+	}
+
+	static const char *GetTypeString(rdm::sensors::Types type);
+	static rdm::sensors::Types GetTypeString(const char *pValue);
 
 	static RDMSensors* Get() {
 		return s_pThis;

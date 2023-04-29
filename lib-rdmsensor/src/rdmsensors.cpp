@@ -2,7 +2,7 @@
  * @file rdmsensors.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <cstring>
 #include <cassert>
 
 #include "rdmsensors.h"
@@ -43,7 +44,7 @@ RDMSensors::RDMSensors() {
 	s_pThis = this;
 
 #if defined (RDM_SENSORS_ENABLE) || defined (RDMSENSOR_CPU_ENABLE)
-	m_pRDMSensor = new RDMSensor*[rdm::sensors::max];
+	m_pRDMSensor = new RDMSensor*[rdm::sensors::MAX];
 	assert(m_pRDMSensor != nullptr);
 
 # if defined (RDMSENSOR_CPU_ENABLE)
@@ -100,4 +101,49 @@ void RDMSensors::SetRecord(uint8_t nSensor) {
 	} else {
 		m_pRDMSensor[nSensor]->Record();
 	}
+}
+
+bool RDMSensors::Add(RDMSensor *pRDMSensor) {
+	DEBUG_ENTRY
+
+	assert(m_pRDMSensor != nullptr);
+
+	if (m_pRDMSensor == nullptr) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	if (m_nCount == rdm::sensors::MAX) {
+		DEBUG_EXIT
+		return false;
+	}
+
+	assert(pRDMSensor != nullptr);
+	m_pRDMSensor[m_nCount++] = pRDMSensor;
+
+	DEBUG_PRINTF("m_nCount=%u", m_nCount);
+	DEBUG_EXIT
+	return true;
+}
+
+// Static
+
+const char* RDMSensors::GetTypeString(rdm::sensors::Types type) {
+	if (type < rdm::sensors::Types::UNDEFINED) {
+		return RDMSensorsConst::TYPE[static_cast<uint32_t>(type)];
+	}
+
+	return "Unknown";
+}
+
+rdm::sensors::Types RDMSensors::GetTypeString(const char *pValue) {
+	assert(pValue != nullptr);
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED); i++) {
+		if (strcasecmp(pValue, RDMSensorsConst::TYPE[i]) == 0) {
+			return static_cast<rdm::sensors::Types>(i);
+		}
+	}
+
+	return rdm::sensors::Types::UNDEFINED;
 }

@@ -2,7 +2,7 @@
  * @file rdmsensorsconst.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,11 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
 #include "rdmsensorsconst.h"
 
 const char RDMSensorsConst::PARAMS_FILE_NAME[] = "sensors.txt";
 
-const char RDMSensorsConst::TYPE[rdm::sensors::type::UNDEFINED][8] = {
-		"bh1750", "htu21d", "ina219", "mcp9808", "si7021" };
+const char RDMSensorsConst::TYPE[static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED)][8] = {
+		"bh1750", "htu21d", "ina219", "mcp9808", "si7021", "mcp3424" };

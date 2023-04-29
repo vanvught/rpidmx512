@@ -1,8 +1,8 @@
 /**
- * @file rdmsensorsstatic.cpp
+ * @file rdmsensorstore.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <cstring>
-#include <cassert>
+#ifndef RDMSENSORSTORE_H_
+#define RDMSENSORSTORE_H_
 
-#include "rdmsensors.h"
+class RDMSensorStore {
+public:
+	virtual ~RDMSensorStore() {}
 
-#include "rdmsensorsconst.h"
+	virtual void SaveCalibration(uint32_t nSensor, int32_t nCalibration)=0;
+};
 
-using namespace rdm::sensors;
-
-const char* RDMSensors::GetTypeString(type tType) {
-	if (tType < type::UNDEFINED) {
-		return RDMSensorsConst::TYPE[tType];
-	}
-
-	return "Unknown";
-}
-
-type RDMSensors::GetTypeString(const char *pValue) {
-	assert(pValue != nullptr);
-
-	for (uint32_t i = 0; i < type::UNDEFINED; i++) {
-		if (strcasecmp(pValue, RDMSensorsConst::TYPE[i]) == 0) {
-			return static_cast<type>(i);
-		}
-	}
-
-	return type::UNDEFINED;
-}
+#endif /* RDMSENSORSTORE_H_ */
