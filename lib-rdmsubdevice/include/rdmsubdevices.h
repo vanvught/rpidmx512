@@ -2,7 +2,7 @@
  * @file rdmsubdevices.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,8 +39,8 @@
 
 namespace rdm {
 namespace subdevices {
-static constexpr uint32_t max = 8;
-static constexpr uint32_t store = 96;	// bytes
+static constexpr auto MAX = 8;
+static constexpr auto STORE = 96;	///< Configuration store in bytes
 }  // namespace subdevices
 }  // namespace rdm
 
@@ -55,7 +55,7 @@ public:
 		return m_nCount;
 	}
 
-	struct TRDMSubDevicesInfo *GetInfo(uint16_t nSubDevice);
+	TRDMSubDevicesInfo *GetInfo(uint16_t nSubDevice);
 
 	uint16_t GetDmxFootPrint(uint16_t nSubDevice);
 
@@ -65,7 +65,7 @@ public:
 	void SetPersonalityCurrent(uint16_t nSubDevice, uint8_t nPersonality);
 
 	// E120_DEVICE_LABEL			0x0082
-	void GetLabel(uint16_t nSubDevice, struct TRDMDeviceInfoData *pInfoData);
+	void GetLabel(uint16_t nSubDevice, TRDMDeviceInfoData *pInfoData);
 	void SetLabel(uint16_t nSubDevice, const char *pLabel, uint8_t nLabelLength);
 
 	// E120_FACTORY_DEFAULTS		0x0090
@@ -80,8 +80,8 @@ public:
 	void Stop();
 	void SetData(const uint8_t *pData, uint32_t nLength);
 
-	static const char *GetTypeString(rdm::subdevices::type tType);
-	static rdm::subdevices::type GetTypeString(const char *pValue);
+	static const char *GetTypeString(rdm::subdevices::Types tType);
+	static rdm::subdevices::Types GetTypeString(const char *pValue);
 
 	static RDMSubDevices* Get() {
 		return s_pThis;

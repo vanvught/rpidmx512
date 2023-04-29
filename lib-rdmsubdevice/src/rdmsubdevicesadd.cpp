@@ -38,7 +38,7 @@ bool RDMSubDevices::Add(RDMSubDevice *pRDMSubDevice) {
 		return false;
 	}
 
-	if (m_nCount == rdm::subdevices::max) {
+	if (m_nCount == rdm::subdevices::MAX) {
 		DEBUG_EXIT
 		return false;
 	}

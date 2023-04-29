@@ -2,7 +2,7 @@
  * @file rdmsubdevicesconst.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,11 +23,13 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
 #include "rdmsubdevicesconst.h"
 
 const char RDMSubDevicesConst::PARAMS_FILE_NAME[] = "subdev.txt";
 
-const char RDMSubDevicesConst::TYPE[rdm::subdevices::type::UNDEFINED][9] = {
+const char RDMSubDevicesConst::TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9] = {
 		"bw7fets", "bwdimmer", "bwdio", "bwlcd", "bwrelay",
 		"mcp23s08", "mcp23s17",
 		"mcp4822", "mcp4902" };

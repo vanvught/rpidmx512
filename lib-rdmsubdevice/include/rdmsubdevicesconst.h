@@ -2,7 +2,7 @@
  * @file rdmsubdevicesconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,11 @@
 #ifndef RDMSUBDEVICESCONST_H_
 #define RDMSUBDEVICESCONST_H_
 
+#include <cstdint>
+
 namespace rdm {
 namespace subdevices {
-enum type : unsigned {
+enum class Types {
 	BW7FETS, BWDIMMER, BWDIO, BWLCD, BWRELAY,	// BitWizard
 	MCP23S08, MCP23S17, 						// GPIO
 	MCP4822, MCP4902,							// DAC
@@ -39,8 +41,7 @@ enum type : unsigned {
 
 struct RDMSubDevicesConst {
 	static const char PARAMS_FILE_NAME[];
-
-	static const char TYPE[rdm::subdevices::type::UNDEFINED][9];
+	static const char TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9];
 };
 
 #endif /* RDMSUBDEVICESCONST_H_ */
