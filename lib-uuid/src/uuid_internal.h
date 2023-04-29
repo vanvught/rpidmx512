@@ -2,7 +2,7 @@
  * @file uuid_internal.h
  *
  */
-/* Copyright (C) 2016-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,7 @@
 #ifndef UUID_INTERNAL_H_
 #define UUID_INTERNAL_H_
 
-#include <cstdint>
+#include <stdint.h>
 
 struct uuid {
 	uint32_t time_low;
@@ -35,6 +35,5 @@ struct uuid {
 	uint16_t clock_seq;
 	uint8_t node[6];
 };
-
 
 #endif /* UUID_INTERNAL_H_ */
