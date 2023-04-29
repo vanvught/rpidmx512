@@ -2,7 +2,7 @@
  * @file tlc59711dmx.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,12 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #include <cstdint>
+#ifndef NDEBUG	// FIXME Remove debug information
+# include <cstdio>
+#endif
 #include <cassert>
 
 #include "tlc59711dmx.h"
@@ -31,25 +36,21 @@
 
 #include "lightset.h"
 
-using namespace lightset;
-
-static unsigned long ceil(float f) {
-	int i = static_cast<int>(f);
-
-	if (f == static_cast<float>(i)) {
-		return static_cast<unsigned long>(i);
-	}
-
-	return static_cast<unsigned long>(i + 1);
-}
-
-TLC59711Dmx::TLC59711Dmx() : m_nDmxFootprint(TLC59711Channels::OUT), m_nLEDCount(TLC59711Channels::RGB) {
+TLC59711Dmx::TLC59711Dmx() {
 	UpdateMembers();
 }
 
 TLC59711Dmx::~TLC59711Dmx() {
-	delete m_pTLC59711;
-	m_pTLC59711 = nullptr;
+	if (m_pTLC59711 != nullptr) {
+		delete m_pTLC59711;
+		m_pTLC59711 = nullptr;
+	}
+#if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
+	if (m_ArrayMaxValue != nullptr) {
+		delete[] m_ArrayMaxValue;
+		m_ArrayMaxValue = nullptr;
+	}
+#endif
 }
 
 void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
@@ -59,7 +60,7 @@ void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 
 	m_bIsStarted = true;
 
-	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
+	if (m_pTLC59711 == nullptr) {
 		Initialize();
 	}
 }
@@ -72,24 +73,91 @@ void TLC59711Dmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	m_bIsStarted = false;
 }
 
-void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength) {
+void TLC59711Dmx::Initialize() {
+	auto nBoardInstances = static_cast<uint8_t>((m_nDmxFootprint + (TLC59711Channels::OUT - 1)) / TLC59711Channels::OUT);
+
+	assert(m_pTLC59711 == nullptr);
+	m_pTLC59711 = new TLC59711(nBoardInstances, m_nSpiSpeedHz);
+	assert(m_pTLC59711 != nullptr);
+
+#if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
+	assert(m_ArrayMaxValue == nullptr);
+	m_ArrayMaxValue = new uint16_t[m_nDmxFootprint];
+	assert(m_ArrayMaxValue != nullptr);
+
+	for (uint32_t nIndex = 0; nIndex < m_nDmxFootprint; nIndex++) {
+		m_ArrayMaxValue[nIndex] = UINT16_MAX;
+	}
+#endif
+
+	m_pTLC59711->Dump();
+}
+
+#if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
+void TLC59711Dmx::SetMaxPct(uint32_t nIndexLed, uint32_t nPct) {
+	assert(nIndexLed < m_nCount);
+
+	if (nPct > 100) {
+		nPct = 100;
+	}
+
+	const auto nMaxValue = static_cast<uint16_t>((UINT16_MAX * nPct) / 100U);
+
+	if (m_type == tlc59711::Type::RGB) {
+		const auto nIndexArray = nIndexLed * 3U;
+		for (uint32_t i = 0; i < 3; i++) {
+			m_ArrayMaxValue[i + nIndexArray] = nMaxValue;
+		}
+	} else {
+		const auto nIndexArray = nIndexLed * 4U;
+		for (uint32_t i = 0; i < 4; i++) {
+			m_ArrayMaxValue[i + nIndexArray] = nMaxValue;
+		}
+	}
+
+# ifndef NDEBUG	// FIXME Remove debug information
+	for (uint32_t nIndexLed = 0; nIndexLed < m_nCount; nIndexLed++) {
+		if (m_type == tlc59711::Type::RGB) {
+			const auto nIndexArray = nIndexLed * 3U;
+			for (uint32_t i = 0; i < 3; i++) {
+				printf("%.4x ", m_ArrayMaxValue[i + nIndexArray]);
+			}
+			puts("");
+		} else {
+			const auto nIndexArray = nIndexLed * 4U;
+			for (uint32_t i = 0; i < 4; i++) {
+				printf("%.4x ", m_ArrayMaxValue[i + nIndexArray]);
+			}
+			puts("");
+		}
+	}
+# endif
+}
+#endif
+
+void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) {
 	assert(pDmxData != nullptr);
-	assert(nLength <= dmx::UNIVERSE_SIZE);
+	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
 	if (__builtin_expect((m_pTLC59711 == nullptr), 0)) {
 		Start();
 	}
 
-	auto *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
+	auto *p = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
 	auto nDmxAddress = m_nDmxStartAddress;
 
-	for (unsigned i = 0; i < m_nDmxFootprint; i++) {
+	for (uint32_t i = 0; i < m_nDmxFootprint; i++) {
 		if (nDmxAddress > nLength) {
 			break;
 		}
 
-		const auto nValue = static_cast<uint16_t>((*p << 8) | *p);
+		auto nValue = static_cast<uint16_t>((*p << 8) | *p);
 
+#if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
+		if (nValue > m_ArrayMaxValue[i]) {
+			nValue = m_ArrayMaxValue[i];
+		}
+#endif
 		m_pTLC59711->Set(i, nValue);
 
 		p++;
@@ -105,13 +173,13 @@ void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uin
 	}
 }
 
-void TLC59711Dmx::SetLEDType(TTLC59711Type tTLC59711Type) {
-	m_LEDType = tTLC59711Type;
+void TLC59711Dmx::SetType(tlc59711::Type type) {
+	m_type = type;
 	UpdateMembers();
 }
 
-void TLC59711Dmx::SetLEDCount(uint8_t nLEDCount) {
-	m_nLEDCount = nLEDCount;
+void TLC59711Dmx::SetCount(uint32_t nCount) {
+	m_nCount = static_cast<uint16_t>(nCount);
 	UpdateMembers();
 }
 
@@ -119,21 +187,12 @@ void TLC59711Dmx::SetSpiSpeedHz(uint32_t nSpiSpeedHz) {
 	m_nSpiSpeedHz = nSpiSpeedHz;
 }
 
-void TLC59711Dmx::Initialize() {
-	assert(m_pTLC59711 == nullptr);
-	m_pTLC59711 = new TLC59711(m_nBoardInstances, m_nSpiSpeedHz);
-	assert(m_pTLC59711 != nullptr);
-	m_pTLC59711->Dump();
-}
-
 void TLC59711Dmx::UpdateMembers() {
-	if (m_LEDType == TTLC59711_TYPE_RGB) {
-		m_nDmxFootprint = static_cast<uint16_t>(m_nLEDCount * 3);
+	if (m_type == tlc59711::Type::RGB) {
+		m_nDmxFootprint = m_nCount * 3U;
 	} else {
-		m_nDmxFootprint = static_cast<uint16_t>(m_nLEDCount * 4);
+		m_nDmxFootprint = m_nCount * 4U;
 	}
-
-	m_nBoardInstances = static_cast<uint8_t>(ceil(static_cast<float>(m_nDmxFootprint) / TLC59711Channels::OUT));
 }
 
 void TLC59711Dmx::Blackout(bool bBlackout) {
@@ -148,12 +207,10 @@ void TLC59711Dmx::Blackout(bool bBlackout) {
 
 // DMX
 
-#define BOARD_INSTANCES_MAX	32
-
 bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= (lightset::dmx::UNIVERSE_SIZE - m_nDmxFootprint)));
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (lightset::dmx::UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
 		if (m_pTLC59711DmxStore != nullptr) {
@@ -168,37 +225,36 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-#define MOD(a,b)	(static_cast<unsigned>(a - b) * (static_cast<unsigned>(a/b)))
-
-bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
-	unsigned nIndex;
-
+bool TLC59711Dmx::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& slotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
 
-	if (m_LEDType == TTLC59711_TYPE_RGB) {
-		nIndex = MOD(nSlotOffset, 3);
+	uint32_t nIndex;
+
+	if (m_type == tlc59711::Type::RGB) {
+		nIndex = nSlotOffset % 3U;
 	} else {
-		nIndex = MOD(nSlotOffset, 4);
+		nIndex = nSlotOffset % 4U;
 	}
 
-	tSlotInfo.nType = 0x00;	// ST_PRIMARY
+	slotInfo.nType = 0x00;	// ST_PRIMARY
 
 	switch (nIndex) {
 		case 0:
-			tSlotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
+			slotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
 			break;
 		case 1:
-			tSlotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
+			slotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
 			break;
 		case 2:
-			tSlotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
+			slotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
 			break;
 		case 3:
-			tSlotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
+			slotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
 			break;
 		default:
+			assert(0);
 			break;
 	}
 
