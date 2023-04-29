@@ -2,7 +2,7 @@
  * @file ssd1306.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -337,7 +337,7 @@ void Ssd1306::Cls() {
 
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', static_cast<size_t>(m_nCols * m_nRows));
+	memset(m_pShadowRam, ' ', m_nCols * m_nRows);
 #endif
 }
 
@@ -372,7 +372,7 @@ void Ssd1306::PutString(const char *pString) {
 /**
  * nLine [1..4]
  */
-void Ssd1306::ClearLine(uint8_t nLine) {
+void Ssd1306::ClearLine(uint32_t nLine) {
 	if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 		return;
 	}
@@ -382,7 +382,7 @@ void Ssd1306::ClearLine(uint8_t nLine) {
 	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
-void Ssd1306::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
+void Ssd1306::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
 	if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 		return;
 	}
@@ -404,7 +404,7 @@ void Ssd1306::Text(const char *pData, uint32_t nLength) {
 /**
  * (0,0)
  */
-void Ssd1306::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void Ssd1306::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	if  (__builtin_expect((!((nCol < oled::font8x6::COLS) && (nRow < m_nRows))), 0)) {
 		return;
 	}
@@ -483,7 +483,7 @@ void Ssd1306::InitMembers() {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 	m_pShadowRam = new char[oled::font8x6::COLS * m_nRows];
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', static_cast<size_t>(oled::font8x6::COLS * m_nRows));
+	memset(m_pShadowRam, ' ', oled::font8x6::COLS * m_nRows);
 #endif
 }
 

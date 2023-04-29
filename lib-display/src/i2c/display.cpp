@@ -2,7 +2,7 @@
  * @file display.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,11 +81,11 @@ Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(d
 	PrintInfo();
 }
 
-Display::Display(display::Type tDisplayType): m_tType(tDisplayType), m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
+Display::Display(display::Type type): m_tType(type), m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	Detect(tDisplayType);
+	Detect(type);
 
 	Detect7Segment();
 

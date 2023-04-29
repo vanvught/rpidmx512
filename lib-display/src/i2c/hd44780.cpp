@@ -2,7 +2,7 @@
  * @file hd44780.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,7 +144,7 @@ void Hd44780::Text(const char *pData, uint32_t nLength) {
 	}
 }
 
-void Hd44780::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
+void Hd44780::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -153,7 +153,7 @@ void Hd44780::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
 	Hd44780::Text(pData, nLength);
 }
 
-void Hd44780::ClearLine(uint8_t nLine) {
+void Hd44780::ClearLine(uint32_t nLine) {
 	if (nLine > m_nRows) {
 		return;
 	}
@@ -171,7 +171,7 @@ void Hd44780::PrintInfo() {
 	printf("HD44780 [PCF8574T] (%d,%d)\n", m_nRows, m_nCols);
 }
 
-void Hd44780::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void Hd44780::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	assert(nRow <= 3);
 
 	constexpr uint8_t rowOffsets[] = { 0x00, 0x40, 0x14, 0x54 };
