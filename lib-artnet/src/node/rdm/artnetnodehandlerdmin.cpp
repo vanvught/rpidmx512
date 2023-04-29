@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@
 #include "debug.h"
 
 void ArtNetNode::HandleRdmIn() {
-	auto *pArtRdm = &(m_ArtNetPacket.ArtPacket.ArtRdm);
+	auto *const pArtRdm = &m_ArtTodPacket.ArtRdm;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		if (!m_InputPort[nPortIndex].genericPort.bIsEnabled) {

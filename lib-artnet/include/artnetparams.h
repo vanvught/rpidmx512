@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -38,7 +38,7 @@
 #include "lightset.h"
 
 #if !defined(LIGHTSET_PORTS)
-#error LIGHTSET_PORTS is not defined
+# define LIGHTSET_PORTS	0
 #endif
 
 namespace artnetparams {
@@ -57,7 +57,11 @@ static constexpr uint16_t portdir_shif_right(const uint32_t nValue, const uint32
 #if LIGHTSET_PORTS > 4
  static constexpr uint32_t MAX_PORTS = artnet::PORTS;
 #else
- static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+# if (LIGHTSET_PORTS == 0)
+   static constexpr uint32_t MAX_PORTS = 1;	// ISO C++ forbids zero-size array
+# else
+   static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+# endif
 #endif
 
 struct Params {
@@ -133,8 +137,8 @@ class ArtNetParamsStore {
 public:
 	virtual ~ArtNetParamsStore() {}
 
-	virtual void Update(const struct artnetparams::Params *pArtNetParams)=0;
-	virtual void Copy(struct artnetparams::Params *pArtNetParams)=0;
+	virtual void Update(const artnetparams::Params *pArtNetParams)=0;
+	virtual void Copy(artnetparams::Params *pArtNetParams)=0;
 };
 
 class ArtNetParams {
@@ -157,14 +161,6 @@ public:
 
 	uint8_t GetSubnet() const {
 		return m_Params.nSubnet;
-	}
-
-	const uint8_t *GetShortName() const {
-		return m_Params.aShortName;
-	}
-
-	const uint8_t *GetLongName() const {
-		return m_Params.aLongName;
 	}
 
 	lightset::OutputType GetOutputType() const {

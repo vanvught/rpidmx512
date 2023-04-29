@@ -117,7 +117,7 @@ void failsafe_write(uint32_t nPortIndex, const uint8_t *pData) {
 void failsafe_write_end() {
 	DEBUG_ENTRY
 
-	// Nothing todo here
+	// No code needed here
 
 	DEBUG_EXIT
 }
@@ -168,7 +168,7 @@ void failsafe_read(uint32_t nPortIndex, uint8_t *pData) {
 void failsafe_read_end() {
 	DEBUG_ENTRY
 
-	// Nothing todo here
+	// No code needed here
 
 	DEBUG_EXIT
 }

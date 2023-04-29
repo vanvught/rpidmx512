@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,9 @@
 
 #include "e131bridge.h"
 
-#include "ledblink.h"
+#include "hardware.h"
 
-class ArtNet4Node: public ArtNetNode, public ArtNet4Handler {
+class ArtNet4Node final: public ArtNetNode, public ArtNet4Handler {
 public:
 	ArtNet4Node();
 
@@ -55,9 +55,14 @@ public:
 		return m_Bridge.IsStatusChanged();
 	}
 
-	void SetLedBlinkMode(ledblink::Mode mode) override {
-		m_Bridge.SetEnableDataIndicator(mode == ledblink::Mode::NORMAL);
-		LedBlink::Get()->SetMode(mode);
+	void SetLedBlinkMode(hardware::ledblink::Mode mode) override {
+		m_Bridge.SetEnableDataIndicator(mode == hardware::ledblink::Mode::NORMAL);
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+			if (m_Bridge.IsTransmitting(nPortIndex)) {
+				return;
+			}
+		}
+		Hardware::Get()->SetMode(mode);
 	}
 
 	void Print();

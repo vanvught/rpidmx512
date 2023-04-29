@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 
 #include "artnet.h"
 #include "lightset.h"
-#include "ledblink.h"
+#include "hardware.h"
 
 class ArtNet4Handler {
 public:
@@ -43,7 +43,7 @@ public:
 	virtual void HandleAddress(uint8_t nCommand)=0;
 	virtual uint8_t GetStatus(uint32_t nPortIndex)=0;
 	virtual bool IsStatusChanged()=0;
-	virtual void SetLedBlinkMode(ledblink::Mode mode)=0;
+	virtual void SetLedBlinkMode(hardware::ledblink::Mode mode)=0;
 };
 
 #endif /* ARTNET4HANDLER_H_ */

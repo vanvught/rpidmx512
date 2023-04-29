@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,10 +58,11 @@
 static uint32_t s_nPortsMax;
 
 namespace artnetparams {
+#if defined (RDM_CONTROLLER)
 static constexpr bool is_set(const uint16_t nValue, const uint32_t i) {
 	return (nValue & static_cast<uint16_t>(1U << (i + 8))) == static_cast<uint16_t>(1U << (i + 8));
 }
-
+#endif
 static constexpr uint16_t portdir_shift_left(const lightset::PortDir portDir, const uint32_t i) {
 	return static_cast<uint16_t>((static_cast<uint32_t>(portDir) & 0x3) << (i * 2));
 }
@@ -71,7 +72,6 @@ static constexpr uint16_t portdir_clear(const uint32_t i) {
 }
 }  // namespace artnetparams
 
-using namespace artnet;
 using namespace artnetparams;
 
 ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetParamsStore(pArtNetParamsStore) {
@@ -79,17 +79,19 @@ ArtNetParams::ArtNetParams(ArtNetParamsStore *pArtNetParamsStore): m_pArtNetPara
 
 	memset(&m_Params, 0, sizeof(struct Params));
 
-	for (uint32_t i = 0; i < artnet::PORTS; i++) {
-		m_Params.nUniversePort[i] = static_cast<uint8_t>(1 + i);
+	for (uint32_t nPortIndex = 0; nPortIndex < artnet::PORTS; nPortIndex++) {
+		m_Params.nUniversePort[nPortIndex] = static_cast<uint8_t>(1 + nPortIndex);
 		constexpr auto n = static_cast<uint32_t>(lightset::PortDir::OUTPUT) & 0x3;
-		m_Params.nDirection |= static_cast<uint16_t>(n << (i * 2));
+		m_Params.nDirection |= static_cast<uint16_t>(n << (nPortIndex * 2));
 	}
+
+	auto *const p = ArtNetNode::Get();
+	assert(p != nullptr);
+
+	p->GetShortNameDefault(reinterpret_cast<char*>(m_Params.aShortName));
+	p->GetLongNameDefault(reinterpret_cast<char*>(m_Params.aLongName));
 
 	m_Params.nFailSafe = static_cast<uint8_t>(lightset::FailSafe::HOLD);
-
-	if (s_nPortsMax == 0) {
-		s_nPortsMax = std::min(artnet::PORTS, artnetnode::MAX_PORTS);
-	}
 
 	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
 	DEBUG_EXIT
@@ -148,14 +150,15 @@ void ArtNetParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
 void ArtNetParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
-	char value[128];
+	char value[artnet::LONG_NAME_LENGTH];
 	uint8_t nValue8;
-	uint32_t nValue32;
 
+#if defined (RDM_CONTROLLER)
 	if (Sscan::Uint8(pLine, ArtNetParamsConst::ENABLE_RDM, nValue8) == Sscan::OK) {
 		SetBool(nValue8, Mask::RDM);
 		return;
 	}
+#endif
 
 	uint32_t nLength = 8;
 
@@ -176,7 +179,13 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<char*>(m_Params.aShortName), nLength) == Sscan::OK) {
 		m_Params.aShortName[nLength] = '\0';
-		m_Params.nSetList |= Mask::SHORT_NAME;
+		static_assert(sizeof(value) >= artnet::SHORT_NAME_LENGTH, "");
+		ArtNetNode::Get()->GetShortNameDefault(value);
+		if (strcmp(reinterpret_cast<char*>(m_Params.aShortName), value) == 0) {
+			m_Params.nSetList &= ~Mask::SHORT_NAME;
+		} else {
+			m_Params.nSetList |= Mask::SHORT_NAME;
+		}
 		return;
 	}
 
@@ -184,7 +193,13 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<char*>(m_Params.aLongName), nLength) == Sscan::OK) {
 		m_Params.aLongName[nLength] = '\0';
-		m_Params.nSetList |= Mask::LONG_NAME;
+		static_assert(sizeof(value) >= artnet::LONG_NAME_LENGTH, "");
+		ArtNetNode::Get()->GetLongNameDefault(value);
+		if (strcmp(reinterpret_cast<char*>(m_Params.aLongName), value) == 0) {
+			m_Params.nSetList &= ~Mask::LONG_NAME;
+		} else {
+			m_Params.nSetList |= Mask::LONG_NAME;
+		}
 		return;
 	}
 
@@ -221,6 +236,7 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		}
 
 		nLength = 3;
+
 		if (Sscan::Char(pLine, LightSetParamsConst::MERGE_MODE_PORT[i], value, nLength) == Sscan::OK) {
 			if(lightset::get_merge_mode(value) == lightset::MergeMode::LTP) {
 				m_Params.nMergeModePort[i] = static_cast<uint8_t>(lightset::MergeMode::LTP);
@@ -233,12 +249,13 @@ void ArtNetParams::callbackFunction(const char *pLine) {
 		}
 
 		nLength = 4;
+
 		if (Sscan::Char(pLine, ArtNetParamsConst::PROTOCOL_PORT[i], value, nLength) == Sscan::OK) {
 			if (memcmp(value, "sacn", 4) == 0) {
-				m_Params.nProtocolPort[i] = static_cast<uint8_t>(PortProtocol::SACN);
+				m_Params.nProtocolPort[i] = static_cast<uint8_t>(artnet::PortProtocol::SACN);
 				m_Params.nSetList |= (Mask::PROTOCOL_A << i);
 			} else {
-				m_Params.nProtocolPort[i] = static_cast<uint8_t>(PortProtocol::ARTNET);
+				m_Params.nProtocolPort[i] = static_cast<uint8_t>(artnet::PortProtocol::ARTNET);
 				m_Params.nSetList &= ~(Mask::PROTOCOL_A << i);
 			}
 			return;
@@ -270,9 +287,12 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 
 			DEBUG_PRINTF("%u portDir=%u, m_Params.nDirection=%x", i, static_cast<uint32_t>(portDir), m_Params.nDirection);
 
+#if defined (ARTNET_HAVE_DMXIN)
 			if (portDir == lightset::PortDir::INPUT) {
 				m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::INPUT, i);
-			} else if (portDir == lightset::PortDir::DISABLE) {
+			} else 
+#endif			
+			if (portDir == lightset::PortDir::DISABLE) {
 				m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::DISABLE, i);
 			} else {
 				m_Params.nDirection |= artnetparams::portdir_shift_left(lightset::PortDir::OUTPUT, i);
@@ -286,6 +306,8 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 #if __GNUC__ < 10
 # pragma GCC diagnostic pop
 #endif
+#if defined (ARTNET_HAVE_DMXIN)
+		uint32_t nValue32;
 
 		if (Sscan::IpAddress(pLine, ArtNetParamsConst::DESTINATION_IP_PORT[i], nValue32) == Sscan::OK) {
 			m_Params.nDestinationIpPort[i] = nValue32;
@@ -297,6 +319,7 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 			}
 			return;
 		}
+#endif
 
 #if __GNUC__ < 10
 /*
@@ -309,7 +332,7 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wconversion"	// FIXME ignored "-Wconversion"
 #endif
-
+#if defined (RDM_CONTROLLER)
 		if (Sscan::Uint8(pLine, ArtNetParamsConst::RDM_ENABLE_PORT[i], nValue8) == Sscan::OK) {
 			m_Params.nRdm &= artnetparams::clear_mask(i);
 
@@ -319,7 +342,7 @@ error: conversion from 'int' to 'uint16_t' {aka 'short unsigned int'} may change
 			}
 			return;
 		}
-
+#endif
 #if __GNUC__ < 10
 # pragma GCC diagnostic pop
 #endif
@@ -351,57 +374,57 @@ void ArtNetParams::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<ArtNetParams*>(p))->callbackFunction(s);
 }
 
-void ArtNetParams::Builder(const struct Params *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void ArtNetParams::Builder(const struct Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	if (pArtNetParams != nullptr) {
-		memcpy(&m_Params, pArtNetParams, sizeof(struct Params));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct Params));
 	} else {
 		m_pArtNetParamsStore->Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(ArtNetParamsConst::FILE_NAME, pBuffer, nLength);
 
-	if (!isMaskSet(Mask::LONG_NAME)) {
-		strncpy(reinterpret_cast<char *>(m_Params.aLongName), ArtNetNode::Get()->GetLongName(), sizeof(m_Params.aLongName) - 1);
-		m_Params.aLongName[sizeof(m_Params.aLongName) - 1] = '\0';
-	}
-
 	builder.Add(ArtNetParamsConst::NODE_LONG_NAME, reinterpret_cast<const char*>(m_Params.aLongName), isMaskSet(Mask::LONG_NAME));
-
-	if (!isMaskSet(Mask::SHORT_NAME)) {
-		strncpy(reinterpret_cast<char *>(m_Params.aShortName), ArtNetNode::Get()->GetShortName(), sizeof(m_Params.aShortName) - 1);
-		m_Params.aShortName[sizeof(m_Params.aShortName) - 1] = '\0';
-	}
-
 	builder.Add(ArtNetParamsConst::NODE_SHORT_NAME, reinterpret_cast<const char*>(m_Params.aShortName), isMaskSet(Mask::SHORT_NAME));
 
 	builder.Add(ArtNetParamsConst::NET, m_Params.nNet, isMaskSet(Mask::NET));
 	builder.Add(ArtNetParamsConst::SUBNET, m_Params.nSubnet, isMaskSet(Mask::SUBNET));
-
+#if defined (RDM_CONTROLLER)
 	builder.Add(ArtNetParamsConst::ENABLE_RDM, isMaskSet(Mask::RDM));
-
-	for (uint32_t i = 0; i < s_nPortsMax; i++) {
-		builder.Add(LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniversePort[i], isMaskSet(Mask::UNIVERSE_A << i));
-		const auto portDir = static_cast<lightset::PortDir>(artnetparams::portdir_shif_right(m_Params.nDirection, i));
-		const auto isDefault = (portDir == lightset::PortDir::OUTPUT);
-		builder.Add(LightSetParamsConst::DIRECTION[i], lightset::get_direction(portDir), !isDefault);
-		builder.Add(LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_Params.nMergeModePort[i]), isMaskSet(Mask::MERGE_MODE_A << i));
-		builder.Add(ArtNetParamsConst::RDM_ENABLE_PORT[i], artnetparams::is_set(m_Params.nRdm, i));
-
-		if (!isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << i))) {
-			m_Params.nDestinationIpPort[i] = ArtNetNode::Get()->GetDestinationIp(i);
-		}
-		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[i], m_Params.nDestinationIpPort[i], isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << i)));
-	}
-
+#endif
 	builder.Add(LightSetParamsConst::FAILSAFE, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)), isMaskSet(Mask::FAILSAFE));
 
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(LightSetParamsConst::UNIVERSE_PORT[nPortIndex], m_Params.nUniversePort[nPortIndex], isMaskSet(Mask::UNIVERSE_A << nPortIndex));
+		const auto portDir = static_cast<lightset::PortDir>(artnetparams::portdir_shif_right(m_Params.nDirection, nPortIndex));
+		const auto isDefault = (portDir == lightset::PortDir::OUTPUT);
+		builder.Add(LightSetParamsConst::DIRECTION[nPortIndex], lightset::get_direction(portDir), !isDefault);
+	}
+
+	builder.AddComment("DMX Output");
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(LightSetParamsConst::MERGE_MODE_PORT[nPortIndex], lightset::get_merge_mode(m_Params.nMergeModePort[nPortIndex]), isMaskSet(Mask::MERGE_MODE_A << nPortIndex));
+#if defined (RDM_CONTROLLER)
+		builder.Add(ArtNetParamsConst::RDM_ENABLE_PORT[nPortIndex], artnetparams::is_set(m_Params.nRdm, nPortIndex));
+#endif
+	}
+
+#if defined (ARTNET_HAVE_DMXIN)
+	builder.AddComment("DMX Input");
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		if (!isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << nPortIndex))) {
+			m_Params.nDestinationIpPort[nPortIndex] = ArtNetNode::Get()->GetDestinationIp(nPortIndex);
+		}
+		builder.AddIpAddress(ArtNetParamsConst::DESTINATION_IP_PORT[nPortIndex], m_Params.nDestinationIpPort[nPortIndex], isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << nPortIndex)));
+	}
+#endif
+
 	builder.AddComment("Art-Net 4");
-	for (uint32_t i = 0; i < s_nPortsMax; i++) {
-		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[i], artnet::get_protocol_mode(m_Params.nProtocolPort[i]), isMaskSet(Mask::PROTOCOL_A << i));
+	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
+		builder.Add(ArtNetParamsConst::PROTOCOL_PORT[nPortIndex], artnet::get_protocol_mode(m_Params.nProtocolPort[nPortIndex]), isMaskSet(Mask::PROTOCOL_A << nPortIndex));
 	}
 	builder.Add(ArtNetParamsConst::MAP_UNIVERSE0, isMaskSet(Mask::MAP_UNIVERSE0));
 
@@ -427,24 +450,18 @@ void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 	DEBUG_ENTRY
 
-/*
-   error: logical 'and' of mutually exclusive tests is always false [-Werror=logical-op]
-   if ((nPortIndexOffset != 0) && (nPortIndexOffset < artnetnode::MAX_PORTS)) {
- */
-#if LIGHTSET_PORTS > 1
-	if ((nPortIndexOffset != 0) && (nPortIndexOffset < artnetnode::MAX_PORTS)) {
-		s_nPortsMax = std::min(s_nPortsMax, (artnetnode::MAX_PORTS - nPortIndexOffset));
+	if (nPortIndexOffset <= artnetnode::MAX_PORTS) {
+		s_nPortsMax = std::min(artnet::PORTS, artnetnode::MAX_PORTS - nPortIndexOffset);
 	}
-#endif
 
-	DEBUG_PRINTF("s_nPortsMax=%u", s_nPortsMax);
+	DEBUG_PRINTF("artnetnode::MAX_PORTS=%u, nPortIndexOffset=%u, s_nPortsMax=%u", artnetnode::MAX_PORTS, nPortIndexOffset, s_nPortsMax);
 
 	if (m_Params.nSetList == 0) {
 		DEBUG_EXIT
 		return;
 	}
 
-	auto *p = ArtNetNode::Get();
+	auto *const p = ArtNetNode::Get();
 	assert(p != nullptr);
 
 	if (isMaskSet(Mask::SHORT_NAME)) {
@@ -472,20 +489,22 @@ void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 		}
 
 		if (isMaskSet(Mask::PROTOCOL_A << nPortIndex)) {
-			p->SetPortProtocol(nOffset, static_cast<PortProtocol>(m_Params.nProtocolPort[nPortIndex]));
+			p->SetPortProtocol(nOffset, static_cast<artnet::PortProtocol>(m_Params.nProtocolPort[nPortIndex]));
 		}
 
 		if (isMaskSet(Mask::MERGE_MODE_A << nPortIndex)) {
 			p->SetMergeMode(nOffset, static_cast<lightset::MergeMode>(m_Params.nMergeModePort[nPortIndex]));
 		}
-
+#if defined (ARTNET_HAVE_DMXIN)
 		if (isMaskMultiPortOptionsSet(static_cast<uint16_t>(MaskMultiPortOptions::DESTINATION_IP_A << nPortIndex))) {
 			p->SetDestinationIp(nOffset, m_Params.nDestinationIpPort[nPortIndex]);
 		}
-
+#endif
+#if defined (RDM_CONTROLLER)
 		if (artnetparams::is_set(m_Params.nRdm, nPortIndex)) {
 			p->SetRmd(nOffset, true);
 		}
+#endif
 	}
 
 	p->SetFailSafe(artnetnode::convert_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)));
@@ -494,7 +513,7 @@ void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 	 * Art-Net 4
 	 */
 
-	if(isMaskSet(Mask::MAP_UNIVERSE0)) {
+	if (isMaskSet(Mask::MAP_UNIVERSE0)) {
 		p->SetMapUniverse0(true);
 	}
 

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,7 @@
 #include "debug.h"
 
 void ArtNetNode::HandleTimeSync() {
-	DEBUG_ENTRY
-	const auto *pArtTimeSync = &(m_ArtNetPacket.ArtPacket.ArtTimeSync);
+	const auto *const pArtTimeSync = reinterpret_cast<TArtTimeSync *>(m_pReceiveBuffer);
 	struct tm tmTime;
 
 	tmTime.tm_sec = pArtTimeSync->tm_sec;
@@ -49,5 +48,4 @@ void ArtNetNode::HandleTimeSync() {
 	Hardware::Get()->SetTime(&tmTime);
 
 	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmTime.tm_year, 1 + tmTime.tm_mon, tmTime.tm_mday, tmTime.tm_hour, tmTime.tm_min, tmTime.tm_sec);
-	DEBUG_EXIT
 }

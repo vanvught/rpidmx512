@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -164,34 +164,34 @@ void ArtNet4Node::HandleAddress(uint8_t nCommand) {
 
 	switch (nCommand) {
 
-	case PortCommand::PC_LED_NORMAL:
+	case PortCommand::LED_NORMAL:
 		m_Bridge.SetEnableDataIndicator(true);
 		break;
-	case PortCommand::PC_LED_MUTE:
+	case PortCommand::LED_MUTE:
 		m_Bridge.SetEnableDataIndicator(false);
 		break;
-	case PortCommand::PC_LED_LOCATE:
+	case PortCommand::LED_LOCATE:
 		m_Bridge.SetEnableDataIndicator(false);
 		break;
 
-	case PortCommand::PC_MERGE_LTP_O:
-	case PortCommand::PC_MERGE_LTP_1:
-	case PortCommand::PC_MERGE_LTP_2:
-	case PortCommand::PC_MERGE_LTP_3:
+	case PortCommand::MERGE_LTP_O:
+	case PortCommand::MERGE_LTP_1:
+	case PortCommand::MERGE_LTP_2:
+	case PortCommand::MERGE_LTP_3:
 		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::LTP);
 		break;
 
-	case PortCommand::PC_MERGE_HTP_0:
-	case PortCommand::PC_MERGE_HTP_1:
-	case PortCommand::PC_MERGE_HTP_2:
-	case PortCommand::PC_MERGE_HTP_3:
+	case PortCommand::MERGE_HTP_0:
+	case PortCommand::MERGE_HTP_1:
+	case PortCommand::MERGE_HTP_2:
+	case PortCommand::MERGE_HTP_3:
 		m_Bridge.SetMergeMode(nPort, lightset::MergeMode::HTP);
 		break;
 
-	case PortCommand::PC_CLR_0:
-	case PortCommand::PC_CLR_1:
-	case PortCommand::PC_CLR_2:
-	case PortCommand::PC_CLR_3:
+	case PortCommand::CLR_0:
+	case PortCommand::CLR_1:
+	case PortCommand::CLR_2:
+	case PortCommand::CLR_3:
 		if (GetPortProtocol(nPort) == PortProtocol::SACN) {
 			m_Bridge.Clear(nPort);
 		}

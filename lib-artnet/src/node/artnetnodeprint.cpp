@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,24 +40,23 @@
 
 #include "network.h"
 
-using namespace artnet;
-
 void ArtNetNode::Print() {
-	printf("Node %d [%u]\n", artnet::VERSION, artnetnode::PAGES);
+	printf("Art-Net %d [%u]\n", artnet::VERSION, artnetnode::PAGES);
 	printf(" Firmware   : %d.%d\n", ArtNetConst::VERSION[0], ArtNetConst::VERSION[1]);
 	printf(" Short name : %s\n", m_Node.ShortName);
 	printf(" Long name  : %s\n", m_Node.LongName);
 
-	if (m_State.nActiveOutputPorts != 0) {
+	if (m_State.nEnabledOutputPorts != 0) {
 		printf(" Output\n");
 
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				printf("  Port %2d %4u [%s]", nPortIndex, nUniverse, lightset::get_merge_mode(m_OutputPort[nPortIndex].mergeMode, true));
+				const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? lightset::MergeMode::LTP : lightset::MergeMode::HTP;
+				printf("  Port %-2d %-4u %s %s", nPortIndex, nUniverse, lightset::get_merge_mode(mergeMode, true), GetRdm(0) ? "RDM" : "");
 
 				if (artnet::VERSION == 4) {
-					printf(" {%s}\n", artnet::get_protocol_mode(m_OutputPort[nPortIndex].protocol, true));
+					printf(" %s\n", artnet::get_protocol_mode(m_OutputPort[nPortIndex].protocol, true));
 				} else {
 					printf("\n");
 				}
@@ -65,15 +64,17 @@ void ArtNetNode::Print() {
 		}
 	}
 
-	if (m_State.nActiveInputPorts != 0) {
+#if defined (ARTNET_HAVE_DMXIN)
+	if (m_State.nEnabledInputPorts != 0) {
 		printf(" Input\n");
 
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 			uint16_t nUniverse;
 			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::INPUT)) {
 				const auto nDestinationIp = (m_InputPort[nPortIndex].nDestinationIp == 0 ? Network::Get()->GetBroadcastIp() : m_InputPort[nPortIndex].nDestinationIp);
-				printf("  Port %2d %4u -> " IPSTR "\n", nPortIndex, nUniverse, IP2STR(nDestinationIp));
+				printf("  Port %-2d %-4u -> " IPSTR "\n", nPortIndex, nUniverse, IP2STR(nDestinationIp));
 			}
 		}
 	}
+#endif
 }

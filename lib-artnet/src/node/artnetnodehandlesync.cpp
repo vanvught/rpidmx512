@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,25 +34,23 @@
 #include "lightsetdata.h"
 #include "hardware.h"
 
-using namespace artnet;
-
 void ArtNetNode::HandleSync() {
 	m_State.IsSynchronousMode = true;
 	m_State.nArtSyncMillis = Hardware::Get()->Millis();
 
-	for (uint32_t i = 0; i < artnetnode::MAX_PORTS; i++) {
-		if ((m_OutputPort[i].protocol == PortProtocol::ARTNET) && (m_OutputPort[i].genericPort.bIsEnabled)) {
-#if defined ( ENABLE_SENDDIAG )
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		if ((m_OutputPort[nPortIndex].protocol == artnet::PortProtocol::ARTNET) && (m_OutputPort[nPortIndex].genericPort.bIsEnabled)) {
+#if defined ( ARTNET_ENABLE_SENDDIAG )
 			SendDiag("Send pending data", ARTNET_DP_LOW);
 #endif
-			lightset::Data::Output(m_pLightSet, i);
+			lightset::Data::Output(m_pLightSet, nPortIndex);
 
-			if (!m_OutputPort[i].IsTransmitting) {
-				m_pLightSet->Start(i);
-				m_OutputPort[i].IsTransmitting = true;
+			if (!m_OutputPort[nPortIndex].IsTransmitting) {
+				m_pLightSet->Start(nPortIndex);
+				m_OutputPort[nPortIndex].IsTransmitting = true;
 			}
 
-			lightset::Data::ClearLength(i);
+			lightset::Data::ClearLength(nPortIndex);
 		}
 	}
 }
