@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,16 +63,16 @@ void RgbPanel::PutChar(char nChar, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) 
 	}
 
 	const auto nStartColumn = static_cast<uint8_t>(m_nPosition * FONT_CP437_CHAR_W);
-	auto nRow = static_cast<uint8_t>(m_nLine * m_nMaxPosition);
+	auto nRow = m_nLine * m_nMaxPosition;
 	const auto nColonIndex = m_nPosition + nRow;
 	const auto bShowColon = (m_ptColons[nColonIndex].nBits != 0);
 
 	for (uint32_t i = 0; i < FONT_CP437_CHAR_H; i++) {
 		uint32_t nWidth = 0;
 
-		for (uint8_t nColumn = nStartColumn; nColumn < static_cast<uint8_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
+		for (uint32_t nColumn = nStartColumn; nColumn < static_cast<uint32_t>(FONT_CP437_CHAR_W + nStartColumn); nColumn++) {
 
-			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1))) {
+			if ((bShowColon) && (nColumn == (nStartColumn + FONT_CP437_CHAR_W - 1U))) {
 				const auto nByte = static_cast<uint8_t>(m_ptColons[nColonIndex].nBits >> i);
 
 				if ((nByte & 0x1) != 0) {
@@ -147,10 +147,10 @@ void RgbPanel::ClearLine(uint8_t nLine) {
 		return;
 	}
 
-	const auto nStartRow = static_cast<uint8_t>((nLine - 1U) * m_nMaxPosition);
+	const auto nStartRow = (nLine - 1U) * m_nMaxPosition;
 
-	for (uint8_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
-		for (uint8_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
+	for (uint32_t nRow = nStartRow; nRow < (nStartRow + FONT_CP437_CHAR_H); nRow++) {
+		for (uint32_t nColumn = 0; nColumn < m_nColumns; nColumn++) {
 			SetPixel(nColumn, nRow, 0, 0, 0);
 		}
 	}

@@ -2,7 +2,7 @@
  * @file rgbpanel.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -188,7 +188,7 @@ void RgbPanel::Start() {
 }
 
 void RgbPanel::Dump() {
-	for (uint8_t nRow = 0; nRow < (m_nRows / 2); nRow++) {
+	for (uint32_t nRow = 0; nRow < (m_nRows / 2); nRow++) {
 		printf("[");
 		for (uint32_t i = 0; i < m_nColumns; i++) {
 			const uint32_t nIndex = (nRow * m_nColumns) + i;

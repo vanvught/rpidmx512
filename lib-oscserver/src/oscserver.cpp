@@ -2,7 +2,7 @@
  * @file oscserver.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,6 @@
 #include "network.h"
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "debug.h"
 
@@ -104,7 +103,7 @@ void OscServer::Start() {
 
 	OscSimpleSend MsgSend(m_nHandle, Network::Get()->GetIp() | ~(Network::Get()->GetNetmask()), m_nPortIncoming, "/ping", nullptr);
 
-	LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
 }
@@ -200,7 +199,7 @@ bool OscServer::IsDmxDataChanged(const uint8_t* pData, uint16_t nStartChannel, u
 
 	assert(nEnd <= lightset::dmx::UNIVERSE_SIZE);
 
-	for (uint16_t i = nStartChannel; i < nEnd; i++) {
+	for (uint32_t i = nStartChannel; i < nEnd; i++) {
 		if (*dst != *src) {
 			*dst = *src;
 			isChanged = true;
