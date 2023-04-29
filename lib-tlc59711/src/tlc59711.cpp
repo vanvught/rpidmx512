@@ -327,7 +327,7 @@ void TLC59711::Dump() {
 	uint8_t nOut = 0;
 
 	for (uint32_t i = 0; i < m_nBoards; i++) {
-		for (uint32_t j = 0; j < TLC59711_RGB_CHANNELS; j ++) {
+		for (uint32_t j = 0; j < TLC59711Channels::RGB; j ++) {
 			uint16_t nRed = 0, nGreen = 0, nBlue = 0;
 			if (GetRgb(nOut, nRed, nGreen, nBlue)) {
 				printf("\tOut:%-2d, Red=0x%.4X, Green=0x%.4X, Blue=0x%.4X\n", nOut, nRed, nGreen, nBlue);
