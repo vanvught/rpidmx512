@@ -110,7 +110,7 @@ private:
 	int16_t GetBusVoltageRaw();
 
 private:
-	bool m_bIsInitialized = false;
+	bool m_bIsInitialized { false };
 
 	struct Info {
 		float current_lsb;

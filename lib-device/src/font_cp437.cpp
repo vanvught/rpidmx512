@@ -1,5 +1,5 @@
 /**
- * @file font_cp437.c
+ * @file font_cp437.cpp
  *
  */
 /* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -23,15 +23,12 @@
  * THE SOFTWARE.
  */
 
-#ifndef FONT_CP437_C_
-#define FONT_CP437_C_
-
-#include <stdint.h>
+#include <cstdint>
 
 // bit patterns for the CP437 font
 // https://en.wikipedia.org/wiki/Code_page_437
 
-const uint8_t cp437_font [][8] = {
+uint8_t cp437_font [][8] = {
   { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, // 0x00
   { 0x7E, 0x81, 0x95, 0xB1, 0xB1, 0x95, 0x81, 0x7E }, // 0x01
   { 0x7E, 0xFF, 0xEB, 0xCF, 0xCF, 0xEB, 0xFF, 0x7E }, // 0x02
@@ -292,8 +289,6 @@ const uint8_t cp437_font [][8] = {
 #endif
 };
 
-uint32_t cp437_font_size(void) {
-	return sizeof(cp437_font)/sizeof(cp437_font[0]);
+uint32_t cp437_font_size() {
+	return sizeof(cp437_font) / sizeof(cp437_font[0]);
 }
-
-#endif /* FONT_CP437_C_ */

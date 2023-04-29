@@ -1,8 +1,8 @@
 /**
- * @file mcp9808.h
+ * @file mcp3424.h
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,34 +23,60 @@
  * THE SOFTWARE.
  */
 
-#ifndef MCP9808_H_
-#define MCP9808_H_
+#ifndef MCP3424_H_
+#define MCP3424_H_
 
 #include <cstdint>
 
 #include "hal_i2c.h"
 
-namespace sensor {
-namespace mcp9808 {
-static constexpr char DESCRIPTION[] = "Ambient Temperature";
-static constexpr auto RANGE_MIN = -20;
-static constexpr auto RANGE_MAX = 100;
-}  // namespace mcp9808
-
-class MCP9808: HAL_I2C {
-public:
-	MCP9808(uint8_t nAddress = 0);
-
-	bool Initialize() {
-		return m_bIsInitialized;
-	}
-
-	float Get();
-
-private:
-	bool m_bIsInitialized { false };
+namespace adc {
+namespace mcp3424 {
+enum class Gain {
+	PGA_X1,			///< Default
+	PGA_X2,
+	PGA_X4,
+	PGA_X8,
 };
 
-}  // namespace sensor
+enum class Resolution {
+	SAMPLE_12BITS,	///< Default
+	SAMPLE_14BITS,
+	SAMPLE_16BITS,
+	SAMPLE_18BITS
+};
 
-#endif /* MCP9808_H_ */
+enum class Conversion {
+	ONE_SHOT,
+	CONTINUOUS		///< Default
+};
+}  // namespace mcp3424
+}  // namespace adc
+
+class MCP3424: HAL_I2C {
+public:
+	MCP3424(uint8_t nAddress = 0);
+
+	bool IsConnected() {
+		return m_IsConnected;
+	}
+
+	void SetGain(const adc::mcp3424::Gain gain);
+	adc::mcp3424::Gain GetGain() const;
+
+	void SetResolution(const adc::mcp3424::Resolution resolution);
+	adc::mcp3424::Resolution GetResolution() const;
+
+	void SetConversion(const adc::mcp3424::Conversion conversion);
+	adc::mcp3424::Conversion GetConversion() const;
+
+	uint32_t GetRaw(const uint32_t nChannel);
+	double GetVoltage(const uint32_t nChannel);
+
+private:
+	bool m_IsConnected { false };
+	uint8_t m_nConfig;
+	double m_lsb;
+};
+
+#endif /* IMCP3424_H_ */

@@ -2,7 +2,7 @@
  * @file max7219matrix.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,8 +25,9 @@
 
 #include <cstdio>
 #include <unistd.h>
-#include <sys/types.h>
 #include <time.h>
+
+#include "bcm2835.h"
 
 #include "max7219matrix.h"
 

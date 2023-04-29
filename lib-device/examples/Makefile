@@ -26,7 +26,7 @@ else
 	LDLIBS += -lbcm2835
 endif
 
-all : max7219matrix 
+all : max7219matrix mcp3424
 
 clean :
 	rm -f *.o
@@ -42,3 +42,5 @@ $(ROOT)/lib-i2c/lib_linux/libi2c.a :
 max7219matrix : Makefile max7219matrix.cpp $(ROOT)/lib-device/lib_linux/libdevice.a
 	$(CPP) max7219matrix.cpp $(INCLUDES) $(COPS) -o max7219matrix $(LIB) $(LDLIBS) 
 	
+mcp3424 : Makefile mcp3424.cpp $(ROOT)/lib-device/lib_linux/libdevice.a
+	$(CPP) mcp3424.cpp $(INCLUDES) $(COPS) -o mcp3424 $(LIB) $(LDLIBS) 
