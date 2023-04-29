@@ -30,7 +30,6 @@
 #include "network.h"
 #include "networkconst.h"
 #include "storenetwork.h"
-#include "ledblink.h"
 
 #include "console.h"
 #include "h3/showsystime.h"
@@ -38,7 +37,7 @@
 #include "ntpclient.h"
 
 #include "mdns.h"
-#include "mdnsservices.h"
+
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
@@ -66,18 +65,16 @@
 void Hardware::RebootHandler() {
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-	ShowSystime showSystime;
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	Network nw(&storeNetwork);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
 
 	console_clear();
 
@@ -89,21 +86,9 @@ void notmain(void) {
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_top_row(2);
 
-	hw.SetLed(hardware::LedStatus::ON);
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
-	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
 	nw.Print();
-
-	NtpClient ntpClient;
-	ntpClient.Start();
-	ntpClient.Print();
-
-	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	
+	ShowSystime showSystime;
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
@@ -116,19 +101,24 @@ void notmain(void) {
 		params.Set(&server);
 	}
 
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
 	MDNS mDns;
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
 #if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Monitor");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=OSC Monitor");
 #endif
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, server.GetPortIncoming(), mdns::Protocol::UDP, "type=monitor");
+	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 	mDns.Print();
+
 #if defined (ENABLE_HTTPD)
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
+
+	NtpClient ntpClient;
+	ntpClient.Start();
+	ntpClient.Print();
 
 	DMXMonitor monitor;
 	// There is support for HEX output only
@@ -175,11 +165,9 @@ void notmain(void) {
 		remoteConfig.Run();
 		configStore.Flash();
 		ntpClient.Run();
-		lb.Run();
 		showSystime.Run();
-		display.Run();
 		mDns.Run();
+		display.Run();
+		hw.Run();
 	}
-}
-
 }

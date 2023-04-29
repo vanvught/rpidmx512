@@ -149,7 +149,7 @@ reset:
 	bl emac_shutdown
 #endif
 
-    bl notmain
+    bl main
 halt:
     wfe
     b halt

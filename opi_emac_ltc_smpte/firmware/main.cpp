@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,9 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
+
+#include "mdns.h"
+
 #include "display.h"
 
 #include "ltcparams.h"
@@ -53,7 +55,6 @@
 #include "rtpmidi.h"
 #include "midiparams.h"
 
-#include "mdnsservices.h"
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
@@ -96,11 +97,11 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-// LLRP Only Device
-#include "rdmnetllrponly.h"
-#include "rdm_e120.h"
-// LLRP Handler
-#include "factorydefaults.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmnetllrponly.h"
+# include "rdm_e120.h"
+# include "factorydefaults.h"
+#endif
 
 // System Time
 #include "ntpclient.h"
@@ -143,44 +144,41 @@ void Hardware::RebootHandler() {
 
 		Network::Get()->Shutdown();
 
-		printf("Rebooting ...\n");
-
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
 	}
 }
 
 extern "C" {
-void h3_cpu_off(uint8_t);
+void h3_cpu_off(uint32_t);
+}
 
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display(4);
+	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
+
+	fw.Print("LTC SMPTE");
+	nw.Print();
+
 #if defined(ENABLE_SHELL)
 	Shell shell;
 #endif
 
-	FlashCodeInstall spiFlashInstall;
-	ConfigStore configStore;
-
 	Ltc7segment leds;
-
-	fw.Print("LTC SMPTE");
-
-	hw.SetLed(hardware::LedStatus::ON);
 
 	display.ClearLine(1);
 	display.ClearLine(2);
 
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
-	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
-	nw.Print();
+	MDNS mdns;
+	mdns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mdns.AddServiceRecord(nullptr, mdns::Services::TFTP);
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -229,10 +227,8 @@ void notmain(void) {
 	if (sourceSelect.Check() && !IsAutoStart) {
 		while (sourceSelect.Wait(ltcSource, tStartTimeCode, tStopTimeCode)) {
 			nw.Run();
-			lb.Run();
 		}
 	}
-
 
 	/**
 	 * From here work with source selection
@@ -270,10 +266,19 @@ void notmain(void) {
 	}
 
 	if (g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
-		for (uint8_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
+		for (uint32_t nCpuNumber = 1; nCpuNumber < 4; nCpuNumber++) {
 			h3_cpu_off(nCpuNumber);
 		}
 	}
+
+#if defined (NODE_RDMNET_LLRP_ONLY)
+	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
+
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
+	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	rdmNetLLRPOnly.Init();
+	rdmNetLLRPOnly.Print();
+#endif
 
 	/**
 	 * Art-Net
@@ -282,7 +287,9 @@ void notmain(void) {
 	const auto bRunArtNet = ((ltcSource == ltc::Source::ARTNET) || (!g_ltc_ptLtcDisabledOutputs.bArtNet));
 
 	ArtNetNode node;
+
 	StoreArtNet storeArtnet;
+	node.SetArtNetStore(&storeArtnet);
 
 	if (bRunArtNet) {
 		ArtNetParams artnetparams(&storeArtnet);
@@ -292,15 +299,20 @@ void notmain(void) {
 			artnetparams.Set();
 		}
 
-		node.SetArtNetStore(StoreArtNet::Get());
 		node.SetShortName("LTC SMPTE Node");
+
+		if (ltcSource == ltc::Source::ARTNET) {
+			node.SetTimeCodeHandler(&artnetReader);
+		}
 
 		node.SetTimeCodeIp(ltcParams.GetTimecodeIp());
 
 		if (!ltcParams.IsTimeSyncDisabled()) {
 			//TODO Send ArtTimeSync
 		}
-
+#if defined (NODE_RDMNET_LLRP_ONLY)
+		node.SetRdmUID(rdmNetLLRPOnly.GetRDMNetDevice()->GetUID(), true);
+#endif
 		node.Start();
 		node.Print();
 	}
@@ -318,10 +330,11 @@ void notmain(void) {
 		TCNetParams tcnetparams(&storetcnet);
 
 		if (tcnetparams.Load()) {
-			tcnetparams.Set(&tcnet);
 			tcnetparams.Dump();
+			tcnetparams.Set(&tcnet);
 		}
 
+		tcnet.SetTimeCodeHandler(&tcnetReader);
 		tcnet.Start();
 		tcnet.Print();
 	}
@@ -349,8 +362,12 @@ void notmain(void) {
 	RtpMidi rtpMidi;
 
 	if (bRunRtpMidi) {
+		if (ltcSource == ltc::Source::APPLEMIDI) {
+			rtpMidi.SetHandler(&rtpMidiReader);
+		}
+
 		rtpMidi.Start();
-		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
+		rtpMidi.Print();
 	}
 
 	/**
@@ -366,8 +383,12 @@ void notmain(void) {
 		LtcEtcParams ltcEtcParams(&storeLtcEtc);
 
 		if (ltcEtcParams.Load()) {
-			ltcEtcParams.Set();
 			ltcEtcParams.Dump();
+			ltcEtcParams.Set();
+		}
+
+		if (ltcSource == ltc::Source::ETC) {
+			ltcEtc.SetHandler(&ltcEtcReader);
 		}
 
 		ltcEtc.Start();
@@ -402,9 +423,8 @@ void notmain(void) {
 
 		oscServer.Start();
 		oscServer.Print();
-		if (bRunRtpMidi) {
-			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, oscServer.GetPortIncoming(), mdns::Protocol::UDP, "type=server");
-		}
+
+		mdns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 	}
 
 	/**
@@ -446,16 +466,9 @@ void notmain(void) {
 		ntpServer.SetTimeCode(&tStartTimeCode);
 		ntpServer.Start();
 		ntpServer.Print();
-		if (bRunRtpMidi) {
-			rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_NTP, NTP_UDP_PORT, mdns::Protocol::UDP, "type=server");
-		}
-	}
 
-	if (bRunRtpMidi) {
-#if defined (ENABLE_HTTPD)
-		rtpMidi.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=LTC SMPTE");
-#endif
-		rtpMidi.Print();
+		mdns.AddServiceRecord(nullptr, mdns::Services::NTP, "type=server");
+
 	}
 
 	/**
@@ -487,14 +500,12 @@ void notmain(void) {
 
 	switch (ltcSource) {
 	case ltc::Source::ARTNET:
-		node.SetTimeCodeHandler(&artnetReader);
 		artnetReader.Start();
 		break;
 	case ltc::Source::MIDI:
 		midiReader.Start();
 		break;
 	case ltc::Source::TCNET:
-		tcnet.SetTimeCodeHandler(&tcnetReader);
 		tcnetReader.Start();
 		break;
 	case ltc::Source::INTERNAL:
@@ -502,11 +513,9 @@ void notmain(void) {
 		ltcGenerator.Print();
 		break;
 	case ltc::Source::APPLEMIDI:
-		rtpMidi.SetHandler(&rtpMidiReader);
 		rtpMidiReader.Start();
 		break;
 	case ltc::Source::ETC:
-		ltcEtc.SetHandler(&ltcEtcReader);
 		ltcEtcReader.Start();
 		break;
 	case ltc::Source::SYSTIME:
@@ -517,25 +526,18 @@ void notmain(void) {
 		break;
 	}
 
-	RDMNetLLRPOnly rdmNetLLRPOnly("LTC SMPTE");
-
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductCategory(E120_PRODUCT_CATEGORY_DATA_DISTRIBUTION);
-	rdmNetLLRPOnly.GetRDMNetDevice()->SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
-	rdmNetLLRPOnly.Init();
-	rdmNetLLRPOnly.Start();
-	rdmNetLLRPOnly.Print();
-
-	node.SetRdmUID(rdmNetLLRPOnly.GetRDMNetDevice()->GetUID(), true);
-
 #if defined (ENABLE_HTTPD)
+	mdns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=LTC SMPTE");
+
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
+
+	mdns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Dump();
 		remoteConfigParams.Set(&remoteConfig);
 	}
@@ -637,14 +639,16 @@ void notmain(void) {
 		}
 
 		if (g_ltc_ptLtcDisabledOutputs.bRgbPanel) {
-			lb.Run();
+			hw.Run();
 		}
 
 		if (sourceSelect.IsConnected()) {
 			sourceSelect.Run();
 		}
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
 		rdmNetLLRPOnly.Run();
+#endif
 		remoteConfig.Run();
 		configStore.Flash();
 #if defined(ENABLE_SHELL)
@@ -653,7 +657,6 @@ void notmain(void) {
 #if defined (ENABLE_HTTPD)
 		httpDaemon.Run();
 #endif
+		mdns.Run();
 	}
-}
-
 }

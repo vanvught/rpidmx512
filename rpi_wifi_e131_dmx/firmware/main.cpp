@@ -2,7 +2,7 @@
  * @file main.c
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-#include <netinet/in.h>
 #include <cassert>
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
 
 #include "console.h"
 #include "display.h"
@@ -69,12 +67,9 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
 	Network nw;
-	LedBlink lb;
 	Display display;
 
 #if defined (ORANGE_PI)
@@ -85,7 +80,7 @@ void notmain(void) {
 	StoreDmxSend storeDmxSend;
 	StorePixelDmx storePixelDmx;
 
-	E131Params e131params((E131ParamsStore *)&storeE131);
+	E131Params e131params(&storeE131);
 #else
 	E131Params e131params;
 #endif
@@ -122,8 +117,6 @@ void notmain(void) {
 
 	console_set_top_row(3);
 #endif
-
-	hw.SetLed(hardware::LedStatus::ON);
 
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
@@ -167,7 +160,7 @@ void notmain(void) {
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
-		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			bridge.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + nPortIndex));
 		}
 
@@ -183,7 +176,7 @@ void notmain(void) {
 #endif
 	else {
 #if defined (ORANGE_PI)
-		DmxParams dmxparams((DmxParamsStore *)&storeDmxSend);
+		DmxParams dmxparams(&storeDmxSend);
 #else
 		DmxParams dmxparams;
 #endif
@@ -206,7 +199,7 @@ void notmain(void) {
 		dmxSend.Print();
 	}
 
-	for (uint8_t i = 0; i < 7 ; i++) {
+	for (uint32_t i = 0; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
@@ -264,8 +257,6 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		bridge.Run();
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

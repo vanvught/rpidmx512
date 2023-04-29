@@ -108,7 +108,7 @@ uint32_t McpButtons::LedBlink(uint8_t nPortB) {
 
 	m_nMillisPrevious = nMillisNow;
 	m_nPortB ^= nPortB;
-	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, m_nPortB);
+	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, m_nPortB);
 
 	return ++m_nLedTicker;
 }
@@ -147,8 +147,8 @@ void McpButtons::HandleActionSelect(const ltc::Source& ltcSource) {
 		StoreLtc::Get()->SaveSource(static_cast<uint8_t>(m_tLtcReaderSource));
 	}
 
-	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(ltcSource)));
-	m_I2C.ReadRegister(mcp23x17::reg::INTCAPA);	// Clear interrupts
+	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(ltcSource)));
+	m_I2C.ReadRegister(mcp23x17::REG_INTCAPA);	// Clear interrupts
 
 	Display::Get()->SetCursor(display::cursor::OFF);
 	Display::Get()->SetCursorPos(0, 0);
@@ -207,15 +207,15 @@ bool McpButtons::Check() {
 	}
 
 	// Rotary and buttons
-	m_I2C.WriteRegister(mcp23x17::reg::IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
-	m_I2C.WriteRegister(mcp23x17::reg::GPPUA, static_cast<uint8_t>(0xFF));		// Pull-up
-	m_I2C.WriteRegister(mcp23x17::reg::IPOLA, static_cast<uint8_t>(0xFF));		// Invert read
-	m_I2C.WriteRegister(mcp23x17::reg::INTCONA, static_cast<uint8_t>(0x00));
-	m_I2C.WriteRegister(mcp23x17::reg::GPINTENA, static_cast<uint8_t>(0xFF));	// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::reg::INTCAPA);									// Clear interrupts
+	m_I2C.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF)); 	// All input
+	m_I2C.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF));		// Pull-up
+	m_I2C.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF));		// Invert read
+	m_I2C.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00));
+	m_I2C.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF));	// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::REG_INTCAPA);									// Clear interrupts
 	// Led's
-	m_I2C.WriteRegister(mcp23x17::reg::IODIRB, static_cast<uint8_t>(0x00)); 	// All output
-	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(m_tLtcReaderSource)));
+	m_I2C.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00)); 	// All output
+	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(m_tLtcReaderSource)));
 
 	UpdateDisplays(m_tLtcReaderSource);
 
@@ -230,14 +230,14 @@ bool McpButtons::Wait(ltc::Source& ltcSource, struct ltc::TimeCode& StartTimeCod
 	const auto nSource = static_cast<uint32_t>(ltcSource);
 
 	if (__builtin_expect((LedBlink(static_cast<uint8_t>(1U << nSource)) >= m_nLedTickerMax), 0)) {
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1U << nSource));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << nSource));
 		return false;
 	}
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 		m_nLedTickerMax = UINT32_MAX;
 
-		const auto nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const auto nPortA = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
 		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
 		m_nPortAPrevious = nPortA;
@@ -341,19 +341,19 @@ void McpButtons::SetRunState(RunStatus runState) {
 
 	switch (runState) {
 	case RunStatus::IDLE:
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(m_tLtcReaderSource)));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint32_t>(m_tLtcReaderSource)));
 		ltc::source::show(m_tLtcReaderSource, m_bRunGpsTimeClient);
 		break;
 	case RunStatus::CONTINUE:
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0x0F));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x0F));
 		Display::Get()->TextLine(4, ">CONTINUE?< ", 12);
  		break;
 	case RunStatus::REBOOT:
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xF0));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xF0));
 		Display::Get()->TextLine(4, ">REBOOT?  < ", 12);
 		break;
 	case RunStatus::TC_RESET:
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xAA));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xAA));
 		Display::Get()->TextLine(4, ">RESET TC?< ", 12);
 		break;
 	default:
@@ -392,7 +392,7 @@ void McpButtons::HandleRunActionSelect() {
 
 		printf("Reboot ...\n");
 
-		m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0xFF));
+		m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0xFF));
 
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Reboot ...", Display7SegmentMessage::INFO_REBOOTING);
@@ -417,7 +417,7 @@ void McpButtons::Run() {
 
 	if (__builtin_expect(h3_gpio_lev(gpio::INTA) == LOW, 0)) {
 
-		const auto nPortA = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const auto nPortA = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
 		const uint8_t nButtonsChanged = (nPortA ^ m_nPortAPrevious) & nPortA;
 
 		m_nPortAPrevious = nPortA;

@@ -1,8 +1,8 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,23 +28,31 @@
 #include <cassert>
 
 #include "hardware.h"
-#include "noemac/network.h"
-#include "ledblink.h"
-
 #include "display.h"
-
-#include "console.h"
+#include "network.h"
+#if !defined(NO_EMAC)
+# include "networkconst.h"
+#endif
 
 #include "rdmresponder.h"
 #include "rdmpersonality.h"
-
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "rdmsubdevicesparams.h"
+#endif
 
 #include "tlc59711dmxparams.h"
 #include "tlc59711dmx.h"
 
 #include "lightsetchain.h"
+
+#if !defined(NO_EMAC)
+# include "remoteconfig.h"
+# include "remoteconfigparams.h"
+# include "storeremoteconfig.h"
+# include "storenetwork.h"
+#endif
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
@@ -52,6 +60,9 @@
 #include "storetlc59711.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "storerdmsubdevices.h"
+#endif
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -66,23 +77,27 @@ void Hardware::RebootHandler() {
 
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
+#if !defined(NO_EMAC)
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+#else
+	Network nw;
+#endif
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
 
 	fw.Print();
+#if !defined(NO_EMAC)
+	nw.Print();
+#endif
 
 	LightSet *pBoard;
-
-	hw.SetLed(hardware::LedStatus::ON);
 
 	StoreSparkFunDmx storeSparkFunDmx;
 	StoreMotors storeMotors;
@@ -131,37 +146,48 @@ void notmain(void) {
 	snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun%s", isLedTypeSet ? " with TLC59711" : "");
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
-	RDMResponder dmxrdm(pRDMPersonalities, 1);
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	dmxrdm.SetRDMDeviceStore(&storeRdmDevice);
+	RDMResponder rdmResponder(pRDMPersonalities, 1);
 
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&dmxrdm);
-		rdmDeviceParams.Dump();
-	}
 
 	if (rdmSensorsParams.Load()) {
 		rdmSensorsParams.Set();
 		rdmSensorsParams.Dump();
 	}
 
-	dmxrdm.Init();
-	dmxrdm.Print();
-	dmxrdm.Start();
+#if defined (ENABLE_RDM_SUBDEVICES)
+	StoreRDMSubDevices storeRdmSubDevices;
+	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
 
+	if (rdmSubDevicesParams.Load()) {
+		rdmSubDevicesParams.Dump();
+		rdmSubDevicesParams.Set();
+	}
+#endif
+
+	rdmResponder.Init();
+
+	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Set(&rdmResponder);
+		rdmDeviceParams.Dump();
+	}
+
+	rdmResponder.Start();
+	rdmResponder.Print();
+
+	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();
 
 	for(;;) {
 		hw.WatchdogFeed();
-		dmxrdm.Run();
+		rdmResponder.Run();
 		configStore.Flash();
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

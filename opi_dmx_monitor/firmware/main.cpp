@@ -28,7 +28,6 @@
 #include <algorithm>
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "console.h"
 
@@ -42,11 +41,8 @@
 
 static constexpr auto TOP_ROW_STATS = 26;
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	LedBlink lb;
 
 	uint32_t nMicrosPrevious = 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
@@ -60,8 +56,6 @@ void notmain(void) {
 	int16_t nLength;
 
 	printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	hw.SetLed(hardware::LedStatus::ON);
 
 	DMXMonitor dmxmonitor;
 
@@ -137,8 +131,6 @@ void notmain(void) {
 			nMicrosPrevious = nMicrosNow;
 		}
 
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

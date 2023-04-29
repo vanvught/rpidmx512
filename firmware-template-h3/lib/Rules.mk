@@ -25,7 +25,7 @@ SRCDIR+=src/debug
 
 $(info [${SRCDIR}])
 
-INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-h3/include/firmware -I../lib-arm/include 
+INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
@@ -35,6 +35,7 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 endif
 
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI

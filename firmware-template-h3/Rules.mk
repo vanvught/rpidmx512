@@ -51,6 +51,7 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 endif
 
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -79,7 +80,7 @@ $(info [${LIBDEP}])
 COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
-COPS+=-nostartfiles -ffreestanding -nostdinc -nostdlib -fprefetch-loop-arrays
+COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
 COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
