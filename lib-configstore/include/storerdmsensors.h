@@ -2,7 +2,7 @@
  * @file storerdmsensors.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,21 +26,37 @@
 #ifndef STORERDMSENSORS_H_
 #define STORERDMSENSORS_H_
 
+#undef NDEBUG //FIXME Remove
+
+#include <cstdint>
+#include <cassert>
+
 #include "rdmsensorsparams.h"
+#include "rdmsensorstore.h"
+#include "rdmsensors.h"
 
 #include "configstore.h"
 
-class StoreRDMSensors final: public RDMSensorsParamsStore {
+#include "debug.h"	//FIXME Remove
+
+class StoreRDMSensors final: public RDMSensorsParamsStore, public RDMSensorStore {
 public:
 	StoreRDMSensors();
 
-	void Update(const struct TRDMSensorsParams *pRDMSensorsParams) override {
-		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
+	void Update(const rdm::sensorsparams::Params *pParams) override {
+		ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
 	}
 
-	void Copy(struct TRDMSensorsParams *pRDMSensorsParams) override {
-		ConfigStore::Get()->Copy(configstore::Store::RDMSENSORS, pRDMSensorsParams, sizeof(struct TRDMSensorsParams));
+	void Copy(rdm::sensorsparams::Params *pParams) override {
+		ConfigStore::Get()->Copy(configstore::Store::RDMSENSORS, pParams, sizeof(struct rdm::sensorsparams::Params));
 	}
+
+	 void SaveCalibration(uint32_t nSensor, int32_t nCalibration) override {
+		 assert(nSensor < rdm::sensors::MAX);
+		 DEBUG_PRINTF("nSensor=%u, nCalibration=%d", nSensor, nCalibration);
+		 auto c = static_cast<int16_t>(nCalibration);
+		 ConfigStore::Get()->Update(configstore::Store::RDMSENSORS, (nSensor * sizeof(int16_t)) + __builtin_offsetof(struct rdm::sensorsparams::Params, nCalibrate), &c, sizeof(int16_t));
+	 }
 
 	static StoreRDMSensors *Get() {
 		return s_pThis;

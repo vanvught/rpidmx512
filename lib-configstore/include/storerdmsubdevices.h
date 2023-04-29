@@ -2,7 +2,7 @@
  * @file storerdmsubdevices.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@ class StoreRDMSubDevices final: public RDMSubDevicesParamsStore {
 public:
 	StoreRDMSubDevices();
 
-	void Update(const struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
-		ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
+	void Update(const rdm::subdevicesparams::Params *pParams) override {
+		ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
 	}
 
-	void Copy(struct TRDMSubDevicesParams *pRDMSubDevicesParams) override {
-		ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pRDMSubDevicesParams, sizeof(struct TRDMSubDevicesParams));
+	void Copy(rdm::subdevicesparams::Params *pParams) override {
+		ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
 	}
 
 	static StoreRDMSubDevices *Get() {

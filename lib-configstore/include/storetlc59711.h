@@ -2,7 +2,7 @@
  * @file storetlc59711.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,16 +37,16 @@ class StoreTLC59711 final: public TLC59711DmxParamsStore, public TLC59711DmxStor
 public:
 	StoreTLC59711();
 
-	void Update(const struct TTLC59711DmxParams *pTLC59711DmxParams) override {
-		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	void Update(const struct tlc59711dmxparams::Params *pParams) override {
+		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
 	}
 
-	void Copy(struct TTLC59711DmxParams *pTLC59711DmxParams) override {
-		ConfigStore::Get()->Copy(configstore::Store::TLC5711DMX, pTLC59711DmxParams, sizeof(struct TTLC59711DmxParams));
+	void Copy(struct tlc59711dmxparams::Params *pParams) override {
+		ConfigStore::Get()->Copy(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
 	}
 
 	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
-		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, __builtin_offsetof(struct TTLC59711DmxParams, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), TLC59711DmxParamsMask::START_ADDRESS);
+		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, __builtin_offsetof(struct tlc59711dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), tlc59711dmxparams::Mask::DMX_START_ADDRESS);
 	}
 
 	static StoreTLC59711 *Get() {

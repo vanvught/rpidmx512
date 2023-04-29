@@ -2,7 +2,7 @@
  * @file platform_configstore.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +28,11 @@
 
 #if defined (GD32)
 # include "gd32.h"
-# if !defined (GD32F4XX)
-#  define SECTION_CONFIGSTORE
-# else
+# if defined (CONFIG_STORE_USE_RAM)
 #  define SECTION_CONFIGSTORE __attribute__ ((section (".configstore")))
-# endif
+# else
+#  define SECTION_CONFIGSTORE
+#endif
 #else
 # define SECTION_CONFIGSTORE
 #endif

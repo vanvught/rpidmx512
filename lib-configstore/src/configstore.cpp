@@ -2,7 +2,7 @@
  * @file configstore.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,7 @@
 using namespace configstore;
 
 static constexpr uint8_t s_aSignature[] = {'A', 'v', 'V', 0x10};
-static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for UUID
+static constexpr auto OFFSET_STORES	= ((((sizeof(s_aSignature) + 15) / 16) * 16) + 16); // +16 is reserved for future use
 static constexpr uint32_t s_aStorSize[static_cast<uint32_t>(Store::LAST)]  = {96,        144,       32,    64,      96,      64,    32,     32,        480,          64,         32,        96,           48,        32,      944,          48,        64,            32,        96,         32,      1024,     32,     32,       64,            96,               32,    32,         192};
 #ifndef NDEBUG
 static constexpr char s_aStoreName[static_cast<uint32_t>(Store::LAST)][16] = {"Network", "Art-Net", "DMX", "Pixel", "E1.31", "LTC", "MIDI", "LTC ETC", "OSC Server", "TLC59711", "USB Pro", "RDM Device", "RConfig", "TCNet", "OSC Client", "Display", "LTC Display", "Monitor", "SparkFun", "Slush", "Motors", "Show", "Serial", "RDM Sensors", "RDM SubDevices", "GPS", "RGB Panel", "Node"};
