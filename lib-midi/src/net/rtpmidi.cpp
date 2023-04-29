@@ -165,7 +165,7 @@ void RtpMidi::HandleRtpMidi(const uint8_t *pBuffer) {
 
 	DEBUG_PRINTF("nCommandLength=%d, nOffset=%d", nCommandLength, nOffset);
 
-	debug_dump(&m_pReceiveBuffer[nOffset], nCommandLength);
+	debug_dump(&m_pReceiveBuffer[nOffset], static_cast<uint16_t>(nCommandLength));
 
 	uint32_t nCommandCount = 0;
 

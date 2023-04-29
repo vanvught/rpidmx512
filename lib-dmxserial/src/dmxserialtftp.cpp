@@ -2,7 +2,7 @@
  * @file dmxserialtftp.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@ void DmxSerialTFTP::Exit() {
 	DEBUG_EXIT
 }
 
-bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
+bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	int32_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {
@@ -53,8 +53,8 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTP
 	return (m_pFile != nullptr);
 }
 
-bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
+bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	int32_t nFileNumber;
 	if (!DmxSerial::CheckFileName(pFileName, nFileNumber)) {

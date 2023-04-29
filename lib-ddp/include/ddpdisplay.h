@@ -2,7 +2,7 @@
  * @file ddpdisplay.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -111,7 +111,7 @@ private:
 private:
 	uint8_t m_macAddress[network::MAC_SIZE];
 	int32_t m_nHandle { -1 };
-	uint32_t m_nFromIp;
+	uint32_t m_nFromIp { 0 };
 	uint32_t m_nCount { 0 };
 	uint32_t m_nStripDataLength { 0 };
 	uint32_t m_nLightSetDataMaxLength { 0 };

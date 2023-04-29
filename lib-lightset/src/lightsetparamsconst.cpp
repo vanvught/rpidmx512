@@ -2,7 +2,7 @@
  * @file lightsetconst.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,14 +27,12 @@
 
 const char LightSetParamsConst::PARAMS_OUTPUT[] = "output";
 
-const char LightSetParamsConst::UNIVERSE[] = "universe";
 const char LightSetParamsConst::UNIVERSE_PORT[4][16] = {
 		"universe_port_a",
 		"universe_port_b",
 		"universe_port_c",
 		"universe_port_d" };
 
-const char LightSetParamsConst::MERGE_MODE[] = "merge_mode";
 const char LightSetParamsConst::MERGE_MODE_PORT[4][18] = {
 		"merge_mode_port_a",
 		"merge_mode_port_b",

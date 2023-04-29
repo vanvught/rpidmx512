@@ -2,7 +2,7 @@
  * @file dmxserialtftp.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,8 @@ public:
 	DmxSerialTFTP() {}
 	~DmxSerialTFTP() override {}
 
-	bool FileOpen(const char *pFileName, TFTPMode tMode) override;
-	bool FileCreate(const char *pFileName, TFTPMode tMode) override;
+	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
+	bool FileCreate(const char *pFileName, tftp::Mode mode) override;
 	bool FileClose() override;
 	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
 	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;

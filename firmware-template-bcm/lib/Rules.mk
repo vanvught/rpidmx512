@@ -25,7 +25,8 @@ $(info $$DEFINES [${DEFINES}])
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 COPS_COMMON=-DBARE_METAL -DNO_EMAC -DSD_WRITE_SUPPORT $(DEFINES) $(MAKE_FLAGS) $(INCLUDES)
-COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdinc -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
+COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -ffreestanding -nostdlib -mhard-float -mfloat-abi=hard -fno-exceptions -fno-unwind-tables -fprefetch-loop-arrays #-fstack-usage
+#COPS_COMMON+=-ffunction-sections -fdata-sections
 
 COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS+=-DRPI1
@@ -66,7 +67,7 @@ $(BUILD)$1/%.o: $1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -nostdinc++ -c $$< -o $$@
+	$(CPP) $(COPS) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $1/%.S
 	$(CC) $(COPS) -D__ASSEMBLY__ -c $$< -o $$@	
@@ -77,7 +78,7 @@ $(BUILD7)$1/%.o: $1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $1/%.cpp
-	$(CPP) $(COPS7) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -nostdinc++ -c $$< -o $$@	
+	$(CPP) $(COPS7) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -c $$< -o $$@	
 	
 $(BUILD7)$1/%.o: $1/%.S	
 	$(CC) $(COPS7) -D__ASSEMBLY__ -c $$< -o $$@		
