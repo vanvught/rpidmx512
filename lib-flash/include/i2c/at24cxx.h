@@ -2,7 +2,7 @@
  * @file  at24cxx.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +82,7 @@ public:
 			while (!m_I2C.AckRead());
 
 			const auto nOffsetPage = nAddress % m_nPageSize;
-			const auto nCount = std::min(std::min(nLength, 30U), m_nPageSize - nOffsetPage);
+			const auto nCount = std::min(std::min(nLength, static_cast<uint32_t>(30)), m_nPageSize - nOffsetPage);
 
 			buffer[0] = static_cast<char>(nAddress >> 8);
 			buffer[1] = static_cast<char>(nAddress & 0xFF);
