@@ -53,6 +53,10 @@
 using namespace pixel;
 using namespace lightset;
 
+#if defined (NODE_ARTNET_MULTI)
+# define NODE_ARTNET
+#endif
+
 #if defined (NODE_ARTNET)
 static uint16_t getStartUniverse(uint16_t universe) {
 	const auto net = universe & (0x7F << 8);

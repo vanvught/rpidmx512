@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,6 @@
 #ifndef WS28XXDMX_H_
 #define WS28XXDMX_H_
 
-#include <pixeldmxstore.h>
 #include <cstdint>
 
 #include "lightset.h"
@@ -34,7 +33,7 @@
 #include "ws28xx.h"
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
-
+#include "pixeldmxstore.h"
 #include "pixeldmxhandler.h"
 
 class WS28xxDmx final: public LightSet {
