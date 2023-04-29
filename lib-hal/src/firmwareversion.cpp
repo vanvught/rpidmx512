@@ -2,7 +2,7 @@
  * @file firmwareversion.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,11 @@
 
 #include "hardware.h"
 
-#include "debug.h"
-
-using namespace firmwareversion;
-
-struct firmwareversion::Info FirmwareVersion::s_FirmwareVersion;
+firmwareversion::Info FirmwareVersion::s_FirmwareVersion;
 char FirmwareVersion::s_Print[64];
 FirmwareVersion *FirmwareVersion::s_pThis;
 
 FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime) {
-	DEBUG_ENTRY
-
 	assert(pVersion != nullptr);
 	assert(pDate != nullptr);
 	assert(pTime != nullptr);
@@ -55,25 +49,15 @@ FirmwareVersion::FirmwareVersion(const char *pVersion, const char *pDate, const 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	memcpy(s_FirmwareVersion.SoftwareVersion, pVersion, length::SOFTWARE_VERSION);
-	memcpy(s_FirmwareVersion.BuildDate, pDate, length::GCC_DATE);
-	memcpy(s_FirmwareVersion.BuildTime, pTime, length::GCC_TIME);
+	memcpy(s_FirmwareVersion.SoftwareVersion, pVersion, firmwareversion::length::SOFTWARE_VERSION);
+	memcpy(s_FirmwareVersion.BuildDate, pDate, firmwareversion::length::GCC_DATE);
+	memcpy(s_FirmwareVersion.BuildTime, pTime, firmwareversion::length::GCC_TIME);
 
 	uint8_t nHwTextLength;
 
 	snprintf(s_Print, sizeof(s_Print) - 1, "[V%.*s] %s Compiled on %.*s at %.*s",
-			length::SOFTWARE_VERSION, s_FirmwareVersion.SoftwareVersion,
+			firmwareversion::length::SOFTWARE_VERSION, s_FirmwareVersion.SoftwareVersion,
 			Hardware::Get()->GetBoardName(nHwTextLength),
-			length::GCC_DATE, s_FirmwareVersion.BuildDate,
-			length::GCC_TIME, s_FirmwareVersion.BuildTime);
-
-	DEBUG_EXIT
-}
-
-void FirmwareVersion::Print(const char *pTitle) {
-	puts(s_Print);
-
-	if (pTitle != nullptr) {
-		puts(pTitle);
-	}
+			firmwareversion::length::GCC_DATE, s_FirmwareVersion.BuildDate,
+			firmwareversion::length::GCC_TIME, s_FirmwareVersion.BuildTime);
 }

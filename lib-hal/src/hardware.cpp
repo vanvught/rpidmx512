@@ -1,8 +1,8 @@
 /**
- * @file ledblink.cpp
+ * @file hardware.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,57 +23,59 @@
  * THE SOFTWARE.
  */
 
-#include <cassert>
+#include <cstdint>
 
-#include "ledblink.h"
 #include "hardware.h"
-
 #include "debug.h"
 
+namespace hardware {
+namespace ledblink {
+void __attribute__((weak)) display(__attribute__((unused)) const uint32_t nState) {}
+}  // namespace ledblink
+}  // namespace hardware
+
 enum class FreqMode {
-	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, OFF_ON = 255
+	OFF_OFF = 0, NORMAL = 1, DATA = 3, FAST = 5, REBOOT = 8, OFF_ON = 255
 };
 
-LedBlink *LedBlink::s_pThis = nullptr;
-
-LedBlink::LedBlink() {
-	assert(s_pThis == nullptr);
-	s_pThis = this;
-
-	PlatformInit();
+void Hardware::SetModeWithLock(hardware::ledblink::Mode mode, bool doLock) {
+	m_doLock = false;
+	SetMode(mode);
+	m_doLock = doLock;
 }
 
-void LedBlink::SetMode(ledblink::Mode mode) {
-	if (m_Mode == mode) {
+void Hardware::SetMode(hardware::ledblink::Mode mode) {
+	if (m_doLock || (m_Mode == mode)) {
 		return;
 	}
 
 	m_Mode = mode;
 
 	switch (m_Mode) {
-	case ledblink::Mode::OFF_OFF:
+	case hardware::ledblink::Mode::OFF_OFF:
 		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_OFF));
 		break;
-	case ledblink::Mode::OFF_ON:
+	case hardware::ledblink::Mode::OFF_ON:
 		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_ON));
 		break;
-	case ledblink::Mode::NORMAL:
+	case hardware::ledblink::Mode::NORMAL:
 		SetFrequency(static_cast<uint32_t>(FreqMode::NORMAL));
 		break;
-	case ledblink::Mode::DATA:
+	case hardware::ledblink::Mode::DATA:
 		SetFrequency(static_cast<uint32_t>(FreqMode::DATA));
 		break;
-	case ledblink::Mode::FAST:
+	case hardware::ledblink::Mode::FAST:
 		SetFrequency(static_cast<uint32_t>(FreqMode::FAST));
+		break;
+	case hardware::ledblink::Mode::REBOOT:
+		SetFrequency(static_cast<uint32_t>(FreqMode::REBOOT));
 		break;
 	default:
 		SetFrequency(static_cast<uint32_t>(FreqMode::OFF_OFF));
 		break;
 	}
 
-	if (m_pLedBlinkDisplay != nullptr) {
-		m_pLedBlinkDisplay->Print(static_cast<uint32_t>(m_Mode));
-	}
+	hardware::ledblink::display(static_cast<uint32_t>(m_Mode));
 
 	DEBUG_PRINTF("Mode=%d", static_cast<int>(m_Mode));
 }

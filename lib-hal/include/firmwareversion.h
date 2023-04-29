@@ -2,7 +2,7 @@
  * @file firmwareversion.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,8 @@
 #ifndef FIRMWAREVERSION_H_
 #define FIRMWAREVERSION_H_
 
+#include <cstdio>
+
 namespace firmwareversion {
 namespace length {
 static constexpr auto SOFTWARE_VERSION = 3;
@@ -43,26 +45,32 @@ class FirmwareVersion {
 public:
 	FirmwareVersion(const char *pVersion, const char *pDate, const char *pTime);
 
-	void Print(const char *pTitle = nullptr);
+	void Print(const char *pTitle = nullptr) {
+		puts(s_Print);
 
-	const struct firmwareversion::Info* GetVersion() {
+		if (pTitle != nullptr) {
+			printf("\x1b[32m%s\x1b[0m\n", pTitle);
+		}
+	}
+
+	const struct firmwareversion::Info *GetVersion() {
 		return &s_FirmwareVersion;
 	}
 
-	const char* GetPrint() {
+	const char *GetPrint() {
 		return s_Print;
 	}
 
-	const char* GetSoftwareVersion() {
+	const char *GetSoftwareVersion() {
 		return s_FirmwareVersion.SoftwareVersion;
 	}
 
-	static FirmwareVersion* Get() {
+	static FirmwareVersion *Get() {
 		return s_pThis;
 	}
 
 private:
-	static struct firmwareversion::Info s_FirmwareVersion;
+	static firmwareversion::Info s_FirmwareVersion;
 	static char s_Print[64];
 	static FirmwareVersion *s_pThis;
 };

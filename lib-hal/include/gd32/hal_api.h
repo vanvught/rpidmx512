@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,10 @@
 #ifndef GD32_HAL_API_H_
 #define GD32_HAL_API_H_
 
-#include <cstdint>
-
 #define FUNC_PREFIX(x) gd32_##x
 
 #if defined  __cplusplus
+# include <cstdint>
 # if !defined(GD32_UDELAY)
 #  define GD32_UDELAY
  void udelay(uint32_t us, uint32_t offset = 0);

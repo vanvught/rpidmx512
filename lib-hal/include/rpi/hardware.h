@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,14 +82,6 @@ public:
 		return static_cast<float>(85);
 	}
 
-	void SetLed(hardware::LedStatus tLedStatus) {
-		if (tLedStatus == hardware::LedStatus::OFF) {
-			hardware_led_set(0);
-		} else {
-			hardware_led_set(1);
-		}
-	}
-
 	bool Reboot();
 	bool PowerOff() {
 		return false;
@@ -142,9 +134,57 @@ public:
 
 	void SoftReset() {}
 
-public:
+	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
+	void SetMode(hardware::ledblink::Mode mode);
+	hardware::ledblink::Mode GetMode() const {
+		return m_Mode;
+	}
+
+	void Run() {
+		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
+			return;
+		}
+
+		const auto nMicros = BCM2835_ST->CLO;
+
+		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+			return;
+		}
+
+		m_nMicrosPrevious = nMicros;
+
+		m_nToggleLed ^= 0x1;
+		hardware_led_set(m_nToggleLed);
+	}
+
 	 static Hardware* Get() {
 		return s_pThis;
+	}
+
+private:
+	void SetFrequency(uint32_t nFreqHz) {
+		switch (nFreqHz) {
+		case 0:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(0);
+			break;
+		case 1:
+			m_nTicksPerSecond = (1000000 / 1);
+			break;
+		case 3:
+			m_nTicksPerSecond = (1000000 / 3);
+			break;
+		case 5:
+			m_nTicksPerSecond = (1000000 / 5);
+			break;
+		case 255:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(1);
+			break;
+		default:
+			m_nTicksPerSecond = (1000000 / nFreqHz);
+			break;
+		}
 	}
 
 private:
@@ -152,6 +192,13 @@ private:
 	char *m_pBoardName;
 	TSocType m_tSocType;
 	bool m_bIsWatchdog { false };
+
+	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
+	bool m_doLock { false };
+	//
+	uint32_t m_nTicksPerSecond { 1000000 / 2 };
+	int32_t m_nToggleLed { 0 };
+	uint32_t m_nMicrosPrevious { 0 };
 
 	static Hardware *s_pThis;
 };

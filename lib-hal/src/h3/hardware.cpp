@@ -30,7 +30,6 @@
 #include <cassert>
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "h3_watchdog.h"
 #include "h3_sid.h"
@@ -85,6 +84,8 @@ Hardware::Hardware() {
 	m_HwClock.Print();
 	m_HwClock.HcToSys();
 #endif
+
+	hardware_led_set(1);
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -144,7 +145,11 @@ void Hardware::GetTime(struct tm *pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
+#include <cstdio>
+
 bool Hardware::Reboot() {
+	printf("Rebooting ...\n");
+	
 	h3_watchdog_disable();
 
 	RebootHandler();
@@ -161,8 +166,10 @@ bool Hardware::Reboot() {
 	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
 	h3_gpio_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
+	SetMode(hardware::ledblink::Mode::REBOOT);
+
 	for (;;) {
-		LedBlink::Get()->Run();
+		Run();
 	}
 
 	__builtin_unreachable();

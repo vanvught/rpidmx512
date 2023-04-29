@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,22 +36,16 @@
 #include "gd32_adc.h"
 #include "gd32_micros.h"
 
+#if defined (USE_LEDBLINK_BITBANGING595)
+# include "gd32_bitbanging595.h"
+# include "panel_led.h"
+#endif
+
+extern volatile uint32_t s_nSysTickMillis;
+
 class Hardware {
 public:
 	Hardware();
-
-	void SetLed(hardware::LedStatus ledStatus) {
-		switch (ledStatus) {
-			case hardware::LedStatus::OFF:
-				GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-				break;
-			case hardware::LedStatus::ON:
-				GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
-				break;
-			default:
-				break;
-		}
-	}
 
 	uint32_t GetReleaseId() const {
 		return 0;	// FIXME GetReleaseId
@@ -138,6 +132,40 @@ public:
 		return 85.0f;
 	}
 
+	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
+	void SetMode(hardware::ledblink::Mode mode);
+	hardware::ledblink::Mode GetMode() const {
+		return m_Mode;
+	}
+
+	void Run() {
+		if (__builtin_expect (m_nTicksPerSecond != 0, 1)) {
+			if (__builtin_expect (!(s_nSysTickMillis - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
+				m_nMillisPrevious = s_nSysTickMillis;
+
+				m_nToggleLed ^= 0x1;
+
+				if (m_nToggleLed != 0) {
+#if defined (USE_LEDBLINK_BITBANGING595)
+					hal::panel_led_on(hal::panelled::ACTIVITY);
+#else
+					GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#endif
+				} else {
+#if defined (USE_LEDBLINK_BITBANGING595)
+					hal::panel_led_off(hal::panelled::ACTIVITY);
+#else
+					GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#endif
+				}
+			}
+		}
+
+#if defined (USE_LEDBLINK_BITBANGING595)
+		bitBanging595.Run();
+#endif
+	}
+
 	static Hardware *Get() {
 		return s_pThis;
 	}
@@ -145,11 +173,53 @@ public:
 private:
 	void RebootHandler();
 
+	void SetFrequency(const uint32_t nFreqHz) {
+		switch (nFreqHz) {
+		case 0:
+			m_nTicksPerSecond = 0;
+#if defined (USE_LEDBLINK_BITBANGING595)
+			hal::panel_led_off(hal::panelled::ACTIVITY);
+#else
+			GPIO_BC(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#endif
+			break;
+		case 1:
+			m_nTicksPerSecond = (1000 / 1);
+			break;
+		case 3:
+			m_nTicksPerSecond = (1000 / 3);
+			break;
+		case 5:
+			m_nTicksPerSecond = (1000 / 5);
+			break;
+		case 255:
+			m_nTicksPerSecond = 0;
+#if defined (USE_LEDBLINK_BITBANGING595)
+			hal::panel_led_on(hal::panelled::ACTIVITY);
+#else
+			GPIO_BOP(LED_BLINK_GPIO_PORT) = LED_BLINK_PIN;
+#endif
+			break;
+		default:
+			m_nTicksPerSecond = (1000 / nFreqHz);
+			break;
+		}
+	}
+
 private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
 	bool m_bIsWatchdog { false };
+
+#if defined (USE_LEDBLINK_BITBANGING595)
+	BitBanging595 bitBanging595;
+#endif
+	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
+	bool m_doLock { false };
+	uint32_t m_nTicksPerSecond { 1000 / 2 };
+	int32_t m_nToggleLed { 0 };
+	uint32_t m_nMillisPrevious { 0 };
 
 	static Hardware *s_pThis;
 };
