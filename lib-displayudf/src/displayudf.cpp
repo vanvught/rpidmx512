@@ -2,7 +2,7 @@
  * @file displayudf.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,24 +71,22 @@ void DisplayUdf::SetTitle(const char *format, ...) {
 	DEBUG_PUTS(m_aTitle);
 }
 
-void DisplayUdf::Set(uint8_t nLine, Labels tLabel) {
+void DisplayUdf::Set(uint32_t nLine, Labels label) {
 	if (!((nLine > 0) && (nLine <= LABEL_MAX_ROWS))) {
 		return;
 	}
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
-		if (m_aLabels[i] == nLine) {
-			m_aLabels[i] = m_aLabels[static_cast<uint32_t>(tLabel)];
+		if (m_aLabels[i] == static_cast<uint8_t>(nLine)) {
+			m_aLabels[i] = m_aLabels[static_cast<uint32_t>(label)];
 			break;
 		}
 	}
 
-	m_aLabels[static_cast<uint32_t>(tLabel)] = nLine;
+	m_aLabels[static_cast<uint32_t>(label)] = static_cast<uint8_t>(nLine);
 }
 
 void DisplayUdf::Show() {
-	uint8_t nHwTextLength;
-
 	for (uint32_t i = 0; i < static_cast<uint32_t>(Labels::UNKNOWN); i++) {
 		if (m_aLabels[i] > LABEL_MAX_ROWS) {
 			m_aLabels[i] = 0xFF;
@@ -97,20 +95,18 @@ void DisplayUdf::Show() {
 		DEBUG_PRINTF("m_aLabels[%d]=%d", i, m_aLabels[i]);
 	}
 
-	for (uint8_t i = 1; i < LABEL_MAX_ROWS; i++) {
+	for (uint32_t i = 1; i < LABEL_MAX_ROWS; i++) {
 		ClearLine(i);
 	}
 
 	Write(m_aLabels[static_cast<uint32_t>(Labels::TITLE)], m_aTitle);
+	uint8_t nHwTextLength;
 	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", firmwareversion::length::SOFTWARE_VERSION, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
-	// RDM Responder
+#if defined (RDM_RESPONDER)
 	ShowDmxStartAddress();
-
-	/**
-	 * Network
-	 */
+#endif
 
 #if !defined (NO_EMAC)
 	ShowIpAddress();
@@ -119,63 +115,3 @@ void DisplayUdf::Show() {
 	ShowHostName();
 #endif
 }
-
-/**
- * Network
- */
-
-#if !defined (NO_EMAC)
-void DisplayUdf::ShowEmacStart() {
-	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
-	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "Ethernet start");	
-}
-
-void DisplayUdf::ShowIpAddress() {
-	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
-	Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
-}
-
-void DisplayUdf::ShowNetmask() {
-	Printf(m_aLabels[static_cast<uint32_t>(Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
-	ShowIpAddress();
-}
-
-void DisplayUdf::ShowGatewayIp() {
-	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::DEFAULT_GATEWAY)]);
-	Printf(m_aLabels[static_cast<uint32_t>(Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
-}
-
-void DisplayUdf::ShowHostName() {
-	ClearLine(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)]);
-	Write(m_aLabels[static_cast<uint32_t>(Labels::HOSTNAME)], Network::Get()->GetHostName());
-}
-
-void DisplayUdf::ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
-	switch (nStatus) {
-	case network::dhcp::ClientStatus::IDLE:
-		break;
-	case network::dhcp::ClientStatus::RENEW:
-		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
-		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP renewing");
-		break;
-	case network::dhcp::ClientStatus::GOT_IP:
-		Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
-		break;
-	case network::dhcp::ClientStatus::RETRYING:
-		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		ClearLine(m_aLabels[static_cast<uint32_t>(Labels::IP)]);
-		Printf(m_aLabels[static_cast<uint32_t>(Labels::IP)], "DHCP retrying");
-		break;
-	case network::dhcp::ClientStatus::FAILED:
-		Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
-		break;
-	default:
-		break;
-	}
-}
-
-void DisplayUdf::ShowShutdown() {
-	TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
-}
-#endif

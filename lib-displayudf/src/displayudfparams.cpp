@@ -2,7 +2,7 @@
  * @file displayudfparams.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -76,7 +76,7 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::BOARD_NAME,
 		NetworkParamsConst::IP_ADDRESS,
 		DisplayUdfParamsConst::VERSION,
-		LightSetParamsConst::UNIVERSE,
+		"",
 		DisplayUdfParamsConst::ACTIVE_PORTS,
 #if defined (NODE_ARTNET)
 		ArtNetParamsConst::NODE_SHORT_NAME,

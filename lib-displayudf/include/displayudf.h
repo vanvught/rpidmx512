@@ -2,7 +2,7 @@
  * @file displayudf.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define DISPLAYUDF_H_
 
 #include <cstdint>
-#include <stdarg.h>
+#include <cstdarg>
 
 #include "display.h"
 
@@ -76,7 +76,7 @@ enum class Labels {
 	BOARDNAME,
 	IP,
 	VERSION,
-	UNIVERSE,
+	NOT_USED,
 	AP,
 	NODE_NAME,
 	HOSTNAME,
@@ -152,7 +152,7 @@ public:
 
 	void SetTitle(const char *format, ...);
 
-	void Set(uint8_t nLine, displayudf::Labels tLabel);
+	void Set(uint32_t nLine, displayudf::Labels tLabel);
 
 	uint8_t GetLabel(uint32_t nIndex) const {
 		if (nIndex < static_cast<uint32_t>(displayudf::Labels::UNKNOWN)) {
@@ -163,20 +163,6 @@ public:
 	}
 
 	void Show();
-
-	/**
-	 * Network
-	 */
-
-#if !defined (NO_EMAC)
-	void ShowEmacStart();
-	void ShowIpAddress();
-	void ShowNetmask();
-	void ShowGatewayIp();
-	void ShowHostName();
-	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus);
-	void ShowShutdown();
-#endif
 
 	/**
 	 * Node
@@ -194,7 +180,7 @@ public:
 	 */
 
 #if defined (NODE_ARTNET)
-	void Show(ArtNetNode *pArtNetNode);
+	void Show(ArtNetNode *pArtNetNode, uint32_t nPortIndexOffset = 0);
 	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
@@ -205,7 +191,7 @@ public:
 	 */
 
 #if defined (NODE_E131)
-	void Show(E131Bridge *pE131Bridge);
+	void Show(E131Bridge *pE131Bridge, uint32_t nPortIndexOffset = 0);
 #endif
 
 	/**
@@ -232,8 +218,8 @@ public:
 	 * RDM Responder
 	 */
 
-	void ShowDmxStartAddress() {
 #if defined (RDM_RESPONDER)
+	void ShowDmxStartAddress() {
 # if defined (NODE_ARTNET)
 		const auto nDmxStartAddress = ArtNetRdmResponder::Get()->GetDmxStartAddress();
 		const auto nDmxFootprint = ArtNetRdmResponder::Get()->GetDmxFootPrint();
@@ -242,8 +228,68 @@ public:
 		const auto nDmxFootprint = RDMResponder::Get()->GetDmxFootPrint();
 # endif
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DMX_START_ADDRESS)], "DMX S:%3u F:%3u", nDmxStartAddress, nDmxFootprint);
-#endif
 	}
+#endif
+
+	/**
+	 * Network
+	 */
+
+#if !defined (NO_EMAC)
+	void ShowEmacStart() {
+		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet start");
+	}
+
+	void ShowIpAddress() {
+		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
+	}
+
+	void ShowNetmask() {
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
+		ShowIpAddress();
+	}
+
+	void ShowGatewayIp() {
+		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)]);
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
+	}
+
+	void ShowHostName() {
+		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)]);
+		Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)], Network::Get()->GetHostName());
+	}
+
+	void ShowDhcpStatus(network::dhcp::ClientStatus nStatus) {
+		switch (nStatus) {
+		case network::dhcp::ClientStatus::IDLE:
+			break;
+		case network::dhcp::ClientStatus::RENEW:
+			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP renewing");
+			break;
+		case network::dhcp::ClientStatus::GOT_IP:
+			Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
+			break;
+		case network::dhcp::ClientStatus::RETRYING:
+			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
+			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP retrying");
+			break;
+		case network::dhcp::ClientStatus::FAILED:
+			Display::Get()->Status(Display7SegmentMessage::ERROR_DHCP);
+			break;
+		default:
+			break;
+		}
+	}
+
+	void ShowShutdown() {
+		TextStatus("Network shutdown", Display7SegmentMessage::INFO_NETWORK_SHUTDOWN);
+	}
+#endif
 
 	static DisplayUdf *Get() {
 		return s_pThis;
@@ -252,13 +298,15 @@ public:
 private:
 	char m_aTitle[32];
 	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];
-
+#if defined (NODE_ARTNET) || defined (NODE_E131)	
+	uint32_t m_nPortIndexOffset { 0 };
+#endif
 #if defined (DISPLAYUDF_DMX_INFO)
 	struct DmxInfo {
 		displayudf::dmx::PortDir portDir;
 		uint32_t nPorts;
 	};
-	struct DmxInfo m_dmxInfo {displayudf::dmx::PortDir::DISABLE, 0};
+	DmxInfo m_dmxInfo {displayudf::dmx::PortDir::DISABLE, 0};
 #endif
 
 	static DisplayUdf *s_pThis;
