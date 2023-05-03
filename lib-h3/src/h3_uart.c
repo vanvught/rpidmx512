@@ -188,7 +188,7 @@ void h3_uart_transmit_string(const uint32_t uart_base, const char *data) {
 	assert((uart_base >= H3_UART0_BASE) && (uart_base <= H3_UART3_BASE));
 	assert(data != NULL);
 
-	H3_UART_TypeDef *p_uart = (H3_UART_TypeDef*) (uart_base);
+	H3_UART_TypeDef *p_uart = (H3_UART_TypeDef *)(uart_base);
 
 	while (*data != '\0') {
 		uint32_t available = 64U - p_uart->TFL;

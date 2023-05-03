@@ -116,19 +116,24 @@ void OscServer::Stop() {
 
 void OscServer::SetPath(const char* pPath) {
 	if (*pPath == '/') {
-		auto length = sizeof(s_aPath) - 3; // We need space for '\0' and "/*"
-		strncpy(s_aPath, pPath, length);
-		length = strlen(s_aPath);
+		auto nLength = sizeof(s_aPath) - 3; // We need space for '\0' and "/*"
+		strncpy(s_aPath, pPath, nLength);
+		s_aPath[sizeof(s_aPath) - 1] = '\0';
 
-		if (s_aPath[length - 1] == '/') {
-			s_aPath[length - 1] = '\0';
+		nLength = strlen(s_aPath);
+
+		if (s_aPath[nLength - 1] == '/') {
+			s_aPath[nLength - 1] = '\0';
 		}
 
-		strcpy(s_aPathSecond, s_aPath);
-		length = strlen(s_aPathSecond);
-		s_aPathSecond[length++] = '/';
-		s_aPathSecond[length++] = '*';
-		s_aPathSecond[length] = '\0';
+		strncpy(s_aPathSecond, s_aPath, sizeof(s_aPathSecond) - 3);
+
+		nLength = strlen(s_aPathSecond);
+		assert(nLength < (sizeof(s_aPathSecond) - 3));
+
+		s_aPathSecond[nLength++] = '/';
+		s_aPathSecond[nLength++] = '*';
+		s_aPathSecond[nLength] = '\0';
 	}
 
 	DEBUG_PUTS(s_aPath);
@@ -137,12 +142,13 @@ void OscServer::SetPath(const char* pPath) {
 
 void OscServer::SetPathInfo(const char* pPathInfo) {
 	if (*pPathInfo == '/') {
-		auto length = sizeof(s_aPathInfo) - 1; // We need space for '\0'
-		strncpy(s_aPathInfo, pPathInfo, length);
-		length = strlen(s_aPathInfo);
+		strncpy(s_aPathInfo, pPathInfo, sizeof(s_aPathInfo));
+		s_aPathInfo[sizeof(s_aPathInfo) - 1] = '\0';
 
-		if (s_aPathInfo[length - 1] == '/') {
-			s_aPathInfo[length - 1] = '\0';
+		auto nLength = strlen(s_aPathInfo);
+
+		if (s_aPathInfo[nLength - 1] == '/') {
+			s_aPathInfo[nLength - 1] = '\0';
 		}
 	}
 
@@ -151,12 +157,13 @@ void OscServer::SetPathInfo(const char* pPathInfo) {
 
 void OscServer::SetPathBlackOut(const char* pPathBlackOut) {
 	if (*pPathBlackOut == '/') {
-		auto length = sizeof(s_aPathInfo) - 1; // We need space for '\0'
-		strncpy(s_aPathBlackOut, pPathBlackOut, length);
-		length = strlen(s_aPathBlackOut);
+		strncpy(s_aPathBlackOut, pPathBlackOut, sizeof(s_aPathInfo));
+		s_aPathBlackOut[sizeof(s_aPathInfo) - 1] = '\0';
 
-		if (s_aPathBlackOut[length - 1] == '/') {
-			s_aPathBlackOut[length - 1] = '\0';
+		auto nLength = strlen(s_aPathBlackOut);
+
+		if (s_aPathBlackOut[nLength - 1] == '/') {
+			s_aPathBlackOut[nLength - 1] = '\0';
 		}
 	}
 

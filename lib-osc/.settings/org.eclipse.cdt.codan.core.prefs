@@ -1,3 +1,147 @@
+com.baldapps.artemis.checkers.AbstractNoCopyProblem=-Warning
+com.baldapps.artemis.checkers.AbstractNoCopyProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Abstract classes non-copyable\\")"}
+com.baldapps.artemis.checkers.AssignOpOnlyProblem=-Warning
+com.baldapps.artemis.checkers.AssignOpOnlyProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Only assignment operator defined\\")"}
+com.baldapps.artemis.checkers.AutoPtrProblem=-Error
+com.baldapps.artemis.checkers.AutoPtrProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Usage of auto pointer\\")"}
+com.baldapps.artemis.checkers.AvoidGlobalVarsProblem=-Warning
+com.baldapps.artemis.checkers.AvoidGlobalVarsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid global variables \\")"}
+com.baldapps.artemis.checkers.AvoidMultipleInheritanceProblem=-Warning
+com.baldapps.artemis.checkers.AvoidMultipleInheritanceProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid multiple inheritance\\")"}
+com.baldapps.artemis.checkers.AvoidOverloadsProblem=-Warning
+com.baldapps.artemis.checkers.AvoidOverloadsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid overload '&&' '||' ','\\")"}
+com.baldapps.artemis.checkers.AvoidProtectedFieldsProblem=-Warning
+com.baldapps.artemis.checkers.AvoidProtectedFieldsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid protected fields\\")"}
+com.baldapps.artemis.checkers.AvoidStructsProblem=-Warning
+com.baldapps.artemis.checkers.AvoidStructsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid structures\\")"}
+com.baldapps.artemis.checkers.AvoidUnionsProblem=-Warning
+com.baldapps.artemis.checkers.AvoidUnionsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid unions\\")"}
+com.baldapps.artemis.checkers.AvoidVirtualBasesProblem=-Warning
+com.baldapps.artemis.checkers.AvoidVirtualBasesProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid virtual base classes\\")"}
+com.baldapps.artemis.checkers.BreakProblem=-Warning
+com.baldapps.artemis.checkers.BreakProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid use of 'break' in loops\\")"}
+com.baldapps.artemis.checkers.CallSuperCtorProblem=-Warning
+com.baldapps.artemis.checkers.CallSuperCtorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Call base constructors\\")"}
+com.baldapps.artemis.checkers.CatchAllOrderProblem=-Warning
+com.baldapps.artemis.checkers.CatchAllOrderProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"'catch all' position\\")"}
+com.baldapps.artemis.checkers.CatchAllProblem=-Warning
+com.baldapps.artemis.checkers.CatchAllProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid using 'catch all'\\")"}
+com.baldapps.artemis.checkers.CatchEmptyProblem=-Warning
+com.baldapps.artemis.checkers.CatchEmptyProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid empty 'catch'\\")"}
+com.baldapps.artemis.checkers.CatchNoStdProblem=-Warning
+com.baldapps.artemis.checkers.CatchNoStdProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Not catching std\:\:exception\\")"}
+com.baldapps.artemis.checkers.ClassFieldsCopiedProblem=-Warning
+com.baldapps.artemis.checkers.ClassFieldsCopiedProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Use all fields in assignment operator\\")",skip\=>true}
+com.baldapps.artemis.checkers.ClassNameProblem=-Info
+com.baldapps.artemis.checkers.ClassNameProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Naming convention for classes\\")",patternClass\=>"^[A-Z]",patternInterface\=>"^I[A-Z]",exceptions\=>()}
+com.baldapps.artemis.checkers.CompareCompositeTypesProblem=Warning
+com.baldapps.artemis.checkers.CompareCompositeTypesProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Memory compare with composite types\\")"}
+com.baldapps.artemis.checkers.ConstCastProblem=Error
+com.baldapps.artemis.checkers.ConstCastProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid const cast to remove 'const' and 'volatile' \\")"}
+com.baldapps.artemis.checkers.ContinueProblem=-Warning
+com.baldapps.artemis.checkers.ContinueProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid use of 'continue'\\")"}
+com.baldapps.artemis.checkers.CopyCtorOnlyProblem=-Warning
+com.baldapps.artemis.checkers.CopyCtorOnlyProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Only copy constructor defined\\")"}
+com.baldapps.artemis.checkers.CounterModificationProblem=Warning
+com.baldapps.artemis.checkers.CounterModificationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"For loop invariant\\")"}
+com.baldapps.artemis.checkers.CstrProblem=-Error
+com.baldapps.artemis.checkers.CstrProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Wrong use of c_str\\")"}
+com.baldapps.artemis.checkers.CtorDtorInlineProblem=-Warning
+com.baldapps.artemis.checkers.CtorDtorInlineProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Construtor/Destructor inline\\")"}
+com.baldapps.artemis.checkers.CtorTemplateProblem=-Warning
+com.baldapps.artemis.checkers.CtorTemplateProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Template constructor with universal reference\\")"}
+com.baldapps.artemis.checkers.DeleteThisProblem=-Warning
+com.baldapps.artemis.checkers.DeleteThisProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Deletion using 'this' pointer\\")"}
+com.baldapps.artemis.checkers.DeleteVoidProblem=-Warning
+com.baldapps.artemis.checkers.DeleteVoidProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Delete using void pointers\\")"}
+com.baldapps.artemis.checkers.DynamicArrayProblem=Warning
+com.baldapps.artemis.checkers.DynamicArrayProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Dynamic allocation of array\\")"}
+com.baldapps.artemis.checkers.EmptyThrowProblem=-Warning
+com.baldapps.artemis.checkers.EmptyThrowProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Empty 'throw'\\")"}
+com.baldapps.artemis.checkers.EnumInitProblem=-Warning
+com.baldapps.artemis.checkers.EnumInitProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Enum members not initialized \\")"}
+com.baldapps.artemis.checkers.ExceptionProblem=-Warning
+com.baldapps.artemis.checkers.ExceptionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid 'throw' exception specification  \\")"}
+com.baldapps.artemis.checkers.FieldsNoCtorProblem=-Warning
+com.baldapps.artemis.checkers.FieldsNoCtorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Fields without constructor\\")"}
+com.baldapps.artemis.checkers.FieldsVisibilityProblem=-Info
+com.baldapps.artemis.checkers.FieldsVisibilityProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Class fields visibility\\")",allowProtected\=>true}
+com.baldapps.artemis.checkers.FloatCounterProblem=-Error
+com.baldapps.artemis.checkers.FloatCounterProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Float counter in for loop\\")"}
+com.baldapps.artemis.checkers.GlobalsInCtorProblem=Warning
+com.baldapps.artemis.checkers.GlobalsInCtorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Global variables in constructor\\")"}
+com.baldapps.artemis.checkers.HidingFieldProblem=-Warning
+com.baldapps.artemis.checkers.HidingFieldProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid hiding fields\\")"}
+com.baldapps.artemis.checkers.IdentifierProblem=-Warning
+com.baldapps.artemis.checkers.IdentifierProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Identifiers with long names\\")"}
+com.baldapps.artemis.checkers.IfElseIfProblem=Warning
+com.baldapps.artemis.checkers.IfElseIfProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"If-else-if without final else  \\")"}
+com.baldapps.artemis.checkers.ImplicitVirtualProblem=-Warning
+com.baldapps.artemis.checkers.ImplicitVirtualProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Implicit virtual method\\")"}
+com.baldapps.artemis.checkers.IncludeBlacklistProblem=-Warning
+com.baldapps.artemis.checkers.IncludeBlacklistProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid to include specific header files  \\")",blacklistInclude\=>()}
+com.baldapps.artemis.checkers.LabelPositionProblem=-Info
+com.baldapps.artemis.checkers.LabelPositionProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Order convention for visibility labels\\")"}
+com.baldapps.artemis.checkers.LambdaCaptureProblem=-Error
+com.baldapps.artemis.checkers.LambdaCaptureProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid lambda default capture\\")"}
+com.baldapps.artemis.checkers.MemberCannotBeUsedInStatic=-Error
+com.baldapps.artemis.checkers.MemberCannotBeUsedInStatic.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Class members cannot be used in static methods\\")"}
+com.baldapps.artemis.checkers.MemberCannotBeWritten=-Error
+com.baldapps.artemis.checkers.MemberCannotBeWritten.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Class members cannot be written in constant methods\\")"}
+com.baldapps.artemis.checkers.MethodShouldBeConst=Warning
+com.baldapps.artemis.checkers.MethodShouldBeConst.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Method should be constant\\")"}
+com.baldapps.artemis.checkers.MethodShouldBeStatic=Warning
+com.baldapps.artemis.checkers.MethodShouldBeStatic.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Method should be static\\")"}
+com.baldapps.artemis.checkers.MissBraceProblem=Info
+com.baldapps.artemis.checkers.MissBraceProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Miss brace in control statements\\")"}
+com.baldapps.artemis.checkers.MissedInitializationProblem=-Warning
+com.baldapps.artemis.checkers.MissedInitializationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Variable without initialization\\")"}
+com.baldapps.artemis.checkers.MoreThanOneBreakGotoInLoopProblem=-Warning
+com.baldapps.artemis.checkers.MoreThanOneBreakGotoInLoopProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"No more than one 'break' or 'goto' statement in loops\\")"}
+com.baldapps.artemis.checkers.MoveOpNoexceptProblem=-Warning
+com.baldapps.artemis.checkers.MoveOpNoexceptProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Move operations no 'noexcept'\\")"}
+com.baldapps.artemis.checkers.NamespaceNameProblem=Info
+com.baldapps.artemis.checkers.NamespaceNameProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Naming convention for namespaces\\")",patternNamespace\=>"[a-z]",exceptions\=>()}
+com.baldapps.artemis.checkers.NoRetThisOpAssign=-Warning
+com.baldapps.artemis.checkers.NoRetThisOpAssign.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Operator assign no return this\\")"}
+com.baldapps.artemis.checkers.NullStatementsProblem=-Warning
+com.baldapps.artemis.checkers.NullStatementsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Empty statement\\")"}
+com.baldapps.artemis.checkers.ParByCopyProblem=-Warning
+com.baldapps.artemis.checkers.ParByCopyProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid to define functions with parameters passed by value\\")",whitelist\=>()}
+com.baldapps.artemis.checkers.PointerResetProblem=Warning
+com.baldapps.artemis.checkers.PointerResetProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Pointer reset after deletion\\")"}
+com.baldapps.artemis.checkers.PostOperatorProblem=-Warning
+com.baldapps.artemis.checkers.PostOperatorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Post increment/decrement operator used\\")"}
+com.baldapps.artemis.checkers.RetFieldFromConstMethod=Error
+com.baldapps.artemis.checkers.RetFieldFromConstMethod.params={launchModes\=>{RUN_ON_FULL_BUILD\=>false,RUN_ON_INC_BUILD\=>false,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Returning no const from const method\\")"}
+com.baldapps.artemis.checkers.RetPrivateField=-Warning
+com.baldapps.artemis.checkers.RetPrivateField.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Encapsulation violation\\")"}
+com.baldapps.artemis.checkers.SizeofArrayProblem=Error
+com.baldapps.artemis.checkers.SizeofArrayProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Sizeof applied to arrays\\")"}
+com.baldapps.artemis.checkers.SizeofNestedProblem=-Error
+com.baldapps.artemis.checkers.SizeofNestedProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Nested sizeof operators\\")"}
+com.baldapps.artemis.checkers.SizeofNoParenProblem=Warning
+com.baldapps.artemis.checkers.SizeofNoParenProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Sizeof without parenthesis\\")"}
+com.baldapps.artemis.checkers.SizeofVoidProblem=Error
+com.baldapps.artemis.checkers.SizeofVoidProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Sizeof applied to void type\\")"}
+com.baldapps.artemis.checkers.StaticMissedInitializationProblem=Warning
+com.baldapps.artemis.checkers.StaticMissedInitializationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Static variable without initialization \\")"}
+com.baldapps.artemis.checkers.StdNamespaceProblem=-Error
+com.baldapps.artemis.checkers.StdNamespaceProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Hook to std namespace\\")"}
+com.baldapps.artemis.checkers.ThrowInDestructorProblem=-Error
+com.baldapps.artemis.checkers.ThrowInDestructorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Throw exception in destructor\\")"}
+com.baldapps.artemis.checkers.TrigraphsProblemError=-Error
+com.baldapps.artemis.checkers.TrigraphsProblemError.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Avoid trigraphs\\")"}
+com.baldapps.artemis.checkers.UseExplicitProblem=-Warning
+com.baldapps.artemis.checkers.UseExplicitProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Use explicit where possible\\")",paramConvOp\=>false}
+com.baldapps.artemis.checkers.UserCtorProblem=-Warning
+com.baldapps.artemis.checkers.UserCtorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Always define constructors\\")"}
+com.baldapps.artemis.checkers.ValueConventionLiteralsProblem=-Warning
+com.baldapps.artemis.checkers.ValueConventionLiteralsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Use always uppercase letters for literals\\")"}
+com.baldapps.artemis.checkers.VirtualInlineProblem=Warning
+com.baldapps.artemis.checkers.VirtualInlineProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Virtual methods inline\\")"}
+com.baldapps.artemis.checkers.VirtualNoOverrideProblem=Warning
+com.baldapps.artemis.checkers.VirtualNoOverrideProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Virtual method without 'override'\\")"}
 eclipse.preferences.version=1
 org.eclipse.cdt.codan.checkers.errnoreturn=Warning
 org.eclipse.cdt.codan.checkers.errnoreturn.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"No return\\")",implicit\=>false}
@@ -67,6 +211,8 @@ org.eclipse.cdt.codan.internal.checkers.MultipleDeclarationsProblem=-Warning
 org.eclipse.cdt.codan.internal.checkers.MultipleDeclarationsProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Multiple variable declaration\\")"}
 org.eclipse.cdt.codan.internal.checkers.NamingConventionFunctionChecker=-Info
 org.eclipse.cdt.codan.internal.checkers.NamingConventionFunctionChecker.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Name convention for function\\")",pattern\=>"^[a-z]",macro\=>true,exceptions\=>()}
+org.eclipse.cdt.codan.internal.checkers.NoDiscardProblem=Warning
+org.eclipse.cdt.codan.internal.checkers.NoDiscardProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Return value not evaluated\\")",macro\=>true}
 org.eclipse.cdt.codan.internal.checkers.NonVirtualDestructorProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.NonVirtualDestructorProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Class has a virtual method and non-virtual destructor\\")"}
 org.eclipse.cdt.codan.internal.checkers.OverloadProblem=Error
@@ -85,6 +231,8 @@ org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.StatementHasNoEffectProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Statement has no effect\\")",macro\=>true,exceptions\=>()}
 org.eclipse.cdt.codan.internal.checkers.StaticVariableInHeaderProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.StaticVariableInHeaderProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Static variable in header file\\")"}
+org.eclipse.cdt.codan.internal.checkers.StructuredBindingDeclarationProblem=Error
+org.eclipse.cdt.codan.internal.checkers.StructuredBindingDeclarationProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Invalid structured binding declaration\\")"}
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem=Warning
 org.eclipse.cdt.codan.internal.checkers.SuggestedParenthesisProblem.params={launchModes\=>{RUN_ON_FULL_BUILD\=>true,RUN_ON_INC_BUILD\=>true,RUN_ON_FILE_OPEN\=>false,RUN_ON_FILE_SAVE\=>false,RUN_AS_YOU_TYPE\=>true,RUN_ON_DEMAND\=>true},suppression_comment\=>"@suppress(\\"Suggested parenthesis around expression\\")",paramNot\=>false}
 org.eclipse.cdt.codan.internal.checkers.SuspiciousSemicolonProblem=Warning
