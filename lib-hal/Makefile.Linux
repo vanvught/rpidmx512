@@ -2,11 +2,15 @@
 
 EXTRA_INCLUDES= 
 
-EXTRA_SRCDIR=debug
+EXTRA_SRCDIR=
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring LINUX_HAVE_I2C,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/linux/i2c
+		ifneq (,$(findstring DEBUG_I2C,$(MAKE_FLAGS)))
+			EXTRA_SRCDIR+=debug/i2c
+			EXTRA_INCLUDES+=debug/i2c
+		endif
 	endif
 endif
 

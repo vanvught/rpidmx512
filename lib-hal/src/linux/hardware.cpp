@@ -45,8 +45,8 @@
 
 #include "hardware.h"
 
-#ifndef NDEBUG
-# include "../debug/i2cdetect.h"
+#if defined (DEBUG_I2C)
+# include "i2cdetect.h"
 #endif
 
 #include "debug.h"
@@ -180,7 +180,7 @@ Hardware::Hardware():
 	FUNC_PREFIX(i2c_begin());
 	FUNC_PREFIX(spi_begin());
 
-#ifndef NDEBUG
+#if defined (DEBUG_I2C)
 	I2cDetect i2cdetect;
 #endif
 }

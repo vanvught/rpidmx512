@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,15 @@
 #ifndef H3_HAL_API_H_
 #define H3_HAL_API_H_
 
-#include <cstdint>
-
 #define FUNC_PREFIX(x) h3_##x
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 extern void udelay(uint32_t);
-extern uint32_t micros();
 
 #include "h3_board.h"
 

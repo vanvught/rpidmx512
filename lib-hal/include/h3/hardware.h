@@ -36,6 +36,10 @@
 #include "h3_watchdog.h"
 #include "h3_thermal.h"
 
+#if defined (DEBUG_STACK)
+ void stack_debug_run();
+#endif
+
 extern "C" {
 uint32_t hardware_uptime_seconds(void);
 void hardware_led_set(int);
@@ -150,6 +154,10 @@ public:
 
 		m_nToggleLed ^= 0x1;
 		hardware_led_set(m_nToggleLed);
+
+#if defined (DEBUG_STACK)
+		stack_debug_run();
+#endif
 	}
 
 	static Hardware *Get() {

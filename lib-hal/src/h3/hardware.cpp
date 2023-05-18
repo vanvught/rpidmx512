@@ -38,12 +38,12 @@
 
 #include "arm/synchronize.h"
 
-#ifndef NDEBUG
-# include "../debug/i2cdetect.h"
+#if defined (DEBUG_I2C)
+# include "i2cdetect.h"
 #endif
 
 namespace soc {
-#if defined(ORANGE_PI)
+#if defined (ORANGE_PI)
 	static constexpr char NAME[] = "H2+";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 #elif defined(ORANGE_PI_ONE)
@@ -75,7 +75,7 @@ Hardware::Hardware() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-#ifndef NDEBUG
+#if defined (DEBUG_I2C)
 	I2cDetect i2cdetect;
 #endif
 

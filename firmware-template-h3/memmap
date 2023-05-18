@@ -89,8 +89,10 @@ __fiq_stack_top = .;
 __irq_stack_top = .;
 
 . = ALIGN(4);
+PROVIDE( stack_low = .);
 . = . + __svc_stack_size; 
 __svc_stack_top = .;
+PROVIDE( _sp = __svc_stack_top ); 
 
 . = ALIGN(4);
 . = . + __sys_stack_size; 

@@ -57,6 +57,9 @@ ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
 endif
 
+#DEFINES+=-DDEBUG_I2C
+#DEFINES+=-DDEBUG_STACK
+
 # The variable for the firmware include directories
 INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include
 INCDIRS:=$(addprefix -I,$(INCDIRS))

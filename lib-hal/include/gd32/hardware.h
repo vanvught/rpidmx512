@@ -36,6 +36,10 @@
 #include "gd32_adc.h"
 #include "gd32_micros.h"
 
+#if defined (DEBUG_STACK)
+ void stack_debug_run();
+#endif
+
 #if defined (USE_LEDBLINK_BITBANGING595)
 # include "gd32_bitbanging595.h"
 # include "panel_led.h"
@@ -163,6 +167,10 @@ public:
 
 #if defined (USE_LEDBLINK_BITBANGING595)
 		bitBanging595.Run();
+#endif
+
+#if defined (DEBUG_STACK)
+		stack_debug_run();
 #endif
 	}
 
