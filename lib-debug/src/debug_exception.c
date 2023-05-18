@@ -29,13 +29,13 @@
 #include "console.h"
 
 #if defined (H3)
-	void h3_watchdog_disable(void);
+void h3_watchdog_disable(void);
 #else
-	void bcm2835_watchdog_stop(void);
+void bcm2835_watchdog_stop(void);
 #endif
 
 void debug_exception(unsigned int type, unsigned int address) {
-    __sync_synchronize();
+	__sync_synchronize();
 
 	console_set_fg_color(CONSOLE_RED);
 
@@ -44,7 +44,9 @@ void debug_exception(unsigned int type, unsigned int address) {
 	} else if (type == 1) {
 		printf("\nPrefetch abort at address: %p\n",address);
 	} else if (type == 2) {
-		printf("\nData abort at address: %p\n", address);
+		volatile unsigned int datafaultaddr;
+		asm volatile ("mrc p15, 0, %[dfa], c6, c0, 0\n\t" : [dfa] "=r" (datafaultaddr));
+		printf("\nData abort at address: %p -> %p\n", address, datafaultaddr);
 	} else {
 		printf("\nUnknown exception! [%d]\n", type);
 	}
@@ -60,5 +62,5 @@ void debug_exception(unsigned int type, unsigned int address) {
 	for(;;);
 }
 #else
- typedef int ISO_C_forbids_an_empty_translation_unit;
+typedef int ISO_C_forbids_an_empty_translation_unit;
 #endif
