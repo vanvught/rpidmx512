@@ -296,6 +296,7 @@ bool Network::SetZeroconf() {
 		}
 	}
 
+	network::mdns_announcement();
 	network::display_ip();
 	network::display_netmask();
 
@@ -332,6 +333,7 @@ bool Network::EnableDhcp() {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
+	network::mdns_announcement();
 	network::display_ip();
 	network::display_netmask();
 	network::display_gateway();

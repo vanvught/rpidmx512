@@ -1085,32 +1085,29 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 int tcp_begin(const uint16_t nLocalPort) {
 	DEBUG_PRINTF("nLocalPort=%u", nLocalPort);
 
-	int i;
-
-	for (i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
+	for (int i = 0; i < TCP_MAX_PORTS_ALLOWED; i++) {
 		if (s_Port[i].nLocalPort == nLocalPort) {
 			return i;
 		}
 
 		if (s_Port[i].nLocalPort == 0) {
-			break;
+			s_Port[i].nLocalPort = nLocalPort;
+
+			for (uint32_t nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
+				// create transmission control block's (TCB)
+				_init_tcb(&s_Port[i].TCB[nIndexTCB], nLocalPort);
+			}
+
+			DEBUG_PRINTF("i=%d, nLocalPort=%d[%x]", i, nLocalPort, nLocalPort);
+			return i;
 		}
 	}
 
-	if (i == TCP_MAX_PORTS_ALLOWED) {
-		console_error("tcp_begin");
-		return -1;
-	}
+#ifndef NDEBUG
+	console_error("tcp_begin\n");
+#endif
+	return -1;
 
-	s_Port[i].nLocalPort = nLocalPort;
-
-	for (uint32_t nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
-		// create transmission control block's (TCB)
-		_init_tcb(&s_Port[i].TCB[nIndexTCB], nLocalPort);
-	}
-
-	DEBUG_PRINTF("i=%d, nLocalPort=%d[%x]", i, nLocalPort, nLocalPort);
-	return i;
 }
 
 uint16_t tcp_read(const int32_t nHandleListen, const uint8_t **pData, uint32_t &nHandleConnection) {

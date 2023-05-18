@@ -46,6 +46,14 @@ struct Header {
 	uint16_t nAuthorityCount;
 	uint16_t nAdditionalCount;
 } __attribute__((__packed__));
+
+struct ServiceRecord {
+	char *pName;
+	char *pTextContent;
+	uint16_t nTextContentLength;
+	uint16_t nPort;
+	mdns::Services services;
+};
 }  // namespace mdns
 
 class MDNS {
@@ -71,7 +79,7 @@ public:
 			return;
 		}
 
-		HandleRequest(__builtin_bswap16(pHeader->nQueryCount));
+		HandleQuestions(__builtin_bswap16(pHeader->nQueryCount));
 	}
 
 	static MDNS *Get() {
@@ -80,17 +88,9 @@ public:
 
 private:
 	void Parse();
-	void HandleRequest(const uint32_t nQuestions);
-
-	uint32_t CreateAnswerLocalIpAddress(uint8_t *pDestination);
-	uint32_t CreateAnswerReverseDomain(uint8_t *pDestination);
-	uint32_t CreateAnswerServiceSrv(const uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServiceTxt(const uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServicePtr(const uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServiceDnsSd(const uint32_t nIndex, uint8_t *pDestination);
-
-	void SendAnswerLocalIpAddress();
-	void SendMessage(const uint32_t nIndex);
+	void HandleQuestions(const uint32_t nQuestions);
+	void SendAnswerLocalIpAddress(const uint16_t nTransActionID = 0);
+	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID = 0);
 	void SendTo(const uint16_t nLength);
 
 private:
@@ -98,8 +98,6 @@ private:
 	static uint32_t s_nRemoteIp;
 	static uint16_t s_nRemotePort;
 	static uint16_t s_nBytesReceived;
-	static uint32_t s_nLastAnnounceMillis;
-	static uint32_t s_nDNSServiceRecords;
 	static uint8_t *s_pReceiveBuffer;
 
 	static MDNS *s_pThis;

@@ -142,14 +142,11 @@ void __attribute__((cold)) igmp_init() {
 void __attribute__((cold)) igmp_shutdown() {
 	DEBUG_ENTRY
 
-	for (auto i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
-		if (s_groups[i].nGroupAddress != 0) {
-			igmp_leave(s_groups[i].nGroupAddress);
-			s_groups[i].nGroupAddress = 0;
-			s_groups[i].state = NON_MEMBER;
-			s_groups[i].nTimer = 0;
+	for (auto& group : s_groups) {
+		if (group.nGroupAddress != 0) {
+			igmp_leave(group.nGroupAddress);
 
-			DEBUG_PRINTF(IPSTR, IP2STR(s_groups[i].nGroupAddress));
+			DEBUG_PRINTF(IPSTR, IP2STR(group.nGroupAddress));
 		}
 	}
 
@@ -235,22 +232,22 @@ __attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
 			isGeneralRequest = true;
 		}
 
-		for (auto i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
-			if (s_groups[i].nGroupAddress == 0) {
+		for (auto& group : s_groups) {
+			if (group.nGroupAddress == 0) {
 				continue;
 			}
 
 			_pcast32 group_address;
-			group_address.u32 = s_groups[i].nGroupAddress;
+			group_address.u32 = group.nGroupAddress;
 
 			if (isGeneralRequest || ( memcmp(p_igmp->ip4.dst, group_address.u8, IPv4_ADDR_LEN) == 0)) {
-				if (s_groups[i].state == DELAYING_MEMBER) {
-					if (p_igmp->igmp.igmp.max_resp_time  < s_groups[i].nTimer) {
-						s_groups[i].nTimer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
+				if (group.state == DELAYING_MEMBER) {
+					if (p_igmp->igmp.igmp.max_resp_time  < group.nTimer) {
+						group.nTimer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
 					}
 				} else { // s_groups[s_joins_allowed_index].state == IDLE_MEMBER
-					s_groups[i].state = DELAYING_MEMBER;
-					s_groups[i].nTimer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
+					group.state = DELAYING_MEMBER;
+					group.nTimer = (1 + p_igmp->igmp.igmp.max_resp_time / 2);
 				}
 			}
 		}
@@ -260,14 +257,13 @@ __attribute__((hot)) void igmp_handle(struct t_igmp *p_igmp) {
 }
 
 void igmp_timer() {
-	for (auto i = 0; i < IGMP_MAX_JOINS_ALLOWED ; i++) {
+	for (auto& group : s_groups) {
+		if ((group.state == DELAYING_MEMBER) && (group.nTimer > 0)) {
+			group.nTimer--;
 
-		if ((s_groups[i].state == DELAYING_MEMBER) && (s_groups[i].nTimer > 0)) {
-			s_groups[i].nTimer--;
-
-			if (s_groups[i].nTimer == 0) {
-				_send_report(s_groups[i].nGroupAddress);
-				s_groups[i].state = IDLE_MEMBER;
+			if (group.nTimer == 0) {
+				_send_report(group.nGroupAddress);
+				group.state = IDLE_MEMBER;
 			}
 		}
 	}
@@ -284,62 +280,55 @@ int igmp_join(uint32_t nGroupAddress) {
 		return -1;
 	}
 
-	int i;
-
-	for (i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
+	for (int i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
 		if (s_groups[i].nGroupAddress == nGroupAddress) {
 			DEBUG_EXIT
 			return i;
 		}
 
 		if (s_groups[i].nGroupAddress == 0) {
-			break;
+			s_groups[i].nGroupAddress = nGroupAddress;
+			s_groups[i].state = DELAYING_MEMBER;
+			s_groups[i].nTimer = 2; // TODO
+
+			_send_report(nGroupAddress);
+
+			DEBUG_EXIT
+			return i;
 		}
 	}
 
-	if (i == IGMP_MAX_JOINS_ALLOWED) {
-		console_error("igmp_join\n");
-		DEBUG_ENTRY
-		return -2;
-	}
 
-	s_groups[i].nGroupAddress = nGroupAddress;
-	s_groups[i].state = DELAYING_MEMBER;
-	s_groups[i].nTimer = 2; // TODO
-
-	_send_report(nGroupAddress);
-
-	DEBUG_EXIT
-	return i;
+#ifndef NDEBUG
+	console_error("igmp_join\n");
+#endif
+	DEBUG_ENTRY
+	return -2;
 }
 
 int igmp_leave(uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
 
-	uint32_t i;
+	for (auto& group : s_groups) {
+		if (group.nGroupAddress == nGroupAddress) {
+			_send_leave(group.nGroupAddress);
 
-	for (i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
-		if (s_groups[i].nGroupAddress == nGroupAddress) {
-			break;
+			group.nGroupAddress = 0;
+			group.state = NON_MEMBER;
+			group.nTimer = 0;
+
+			DEBUG_EXIT
+			return 0;
 		}
 	}
 
-	if (i == IGMP_MAX_JOINS_ALLOWED) {
-		console_error("igmp_leave: ");
-		printf(IPSTR "\n", IP2STR(nGroupAddress));
-		DEBUG_EXIT
-		return -1;
-	}
-
-	_send_leave(s_groups[i].nGroupAddress);
-
-	s_groups[i].nGroupAddress = 0;
-	s_groups[i].state = NON_MEMBER;
-	s_groups[i].nTimer = 0;
-
+#ifndef NDEBUG
+	console_error("igmp_leave: ");
+	printf(IPSTR "\n", IP2STR(nGroupAddress));
+#endif
 	DEBUG_EXIT
-	return 0;
+	return -1;
 }
 
 // <---

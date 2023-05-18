@@ -61,9 +61,8 @@ static uint16_t s_Entries SECTION_NETWORK ALIGNED;
 void __attribute__((cold)) arp_cache_init() {
 	s_Entries = 0;
 
-	for (auto i = 0; i < MAX_RECORDS; i++) {
-		s_ArpRecords[i].nIp = 0;
-		memset(s_ArpRecords[i].mac_address, 0, ETH_ADDR_LEN);
+	for (auto& record : s_ArpRecords) {
+		memset(&record, 0, sizeof(struct ArpRecord));
 	}
 
 #ifndef NDEBUG
