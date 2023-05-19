@@ -128,7 +128,7 @@ void Hd44780::PutChar(int c) {
 void Hd44780::PutString(const char *pString) {
 	const char *p = pString;
 
-	for (uint32_t i = 0; *p != '\0'; i++) {
+	while (*p != '\0') {
 		Hd44780::PutChar(static_cast<int>(*p));
 		p++;
 	}

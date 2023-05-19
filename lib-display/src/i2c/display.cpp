@@ -41,9 +41,7 @@
 
 #include "hal_i2c.h"
 
-using namespace display;
-
-Display *Display::s_pThis = nullptr;
+Display *Display::s_pThis;
 
 Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segment7::I2C_ADDRESS) {
 	assert(s_pThis == nullptr);
@@ -60,7 +58,7 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()), m_I2C(display::segmen
 	Detect7Segment();
 
 	if (m_LcdDisplay != nullptr) {
-		timeout::gpio_init();
+		display::timeout::gpio_init();
 	}
 
 	PrintInfo();
@@ -75,7 +73,7 @@ Display::Display(uint32_t nRows) : m_nMillis(Hardware::Get()->Millis()), m_I2C(d
 	Detect7Segment();
 
 	if (m_LcdDisplay != nullptr) {
-		timeout::gpio_init();
+		display::timeout::gpio_init();
 	}
 
 	PrintInfo();
@@ -90,7 +88,7 @@ Display::Display(display::Type type): m_tType(type), m_nMillis(Hardware::Get()->
 	Detect7Segment();
 
 	if (m_LcdDisplay != nullptr) {
-		timeout::gpio_init();
+		display::timeout::gpio_init();
 	}
 
 	PrintInfo();

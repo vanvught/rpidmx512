@@ -363,7 +363,7 @@ void Ssd1306::PutChar(int c) {
 void Ssd1306::PutString(const char *pString) {
 	const char *p = pString;
 
-	for (uint32_t i = 0; *p != '\0'; i++) {
+	while (*p != '\0') {
 		Ssd1306::PutChar(static_cast<int>(*p));
 		p++;
 	}

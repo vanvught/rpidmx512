@@ -36,6 +36,7 @@
 #include <cassert>
 
 #include "displayset.h"
+#include "display7segment.h"
 
 #include "hal_i2c.h"
 #include "hardware.h"
