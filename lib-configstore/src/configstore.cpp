@@ -272,26 +272,6 @@ void ConfigStore::Copy(Store tStore, void *pData, uint32_t nDataLength, uint32_t
 	DEBUG_EXIT
 }
 
-void ConfigStore::CopyTo(Store tStore, void* pData, uint32_t& nDataLength) {
-	DEBUG_ENTRY
-
-	if (tStore >= Store::LAST) {
-		nDataLength = 0;
-		return;
-	}
-
-	nDataLength = static_cast<uint16_t>(s_aStorSize[static_cast<uint32_t>(tStore)]);
-
-	const auto *pSrc = const_cast<const uint8_t*>(&s_SpiFlashData[GetStoreOffset(tStore)]);
-	auto *pDst = static_cast<uint8_t*>(pData);
-
-	for (uint32_t i = 0; i < nDataLength; i++) {
-		*pDst++ = *pSrc++;
-	}
-
-	DEBUG_EXIT
-}
-
 bool ConfigStore::Flash() {
 	if (__builtin_expect((s_State == State::IDLE), 1)) {
 		return false;
