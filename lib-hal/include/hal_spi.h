@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 #ifndef HAL_SPI_H_
 #define HAL_SPI_H_
 
-#include <cstdint>
-
 #if defined(__linux__) || defined (__APPLE__)
 # include "linux/hal_api.h"
 # include "linux/hal_spi.h"
@@ -41,6 +39,8 @@
 # include "rpi/hal_api.h"
 # include "rpi/hal_spi.h"
 #endif
+
+#include <cstdint>
 
 class HAL_SPI {
 	void Setup() {

@@ -2,7 +2,7 @@
  * @file h3.c
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,10 @@ uint32_t h3_get_dram_size(void) {
 	return (1U << dram_size);
 }
 
-// https://github.com/linux-sunxi/sunxi-tools/blob/master/uart0-helloworld-sdboot.c#L458
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
+// https://github.com/linux-sunxi/sunxi-tools/blob/master/uart0-helloworld-sdboot.c#L598
 h3_boot_device_t h3_get_boot_device(void) {
 	uint32_t *spl_signature = (void *) 0x4;
 

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,12 @@
 #include "network.h"
 #include "networkconst.h"
 #include "storenetwork.h"
-#include "ledblink.h"
+
+#include "mdns.h"
+
+#if defined (ENABLE_HTTPD)
+# include "httpd/httpd.h"
+#endif
 
 #include "ntpclient.h"
 
@@ -47,9 +52,11 @@
 #include "rdmdeviceresponder.h"
 #include "factorydefaults.h"
 #include "rdmpersonality.h"
-
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "rdmsubdevicesparams.h"
+#endif
 
 #include "artnetrdmresponder.h"
 
@@ -67,6 +74,9 @@
 # include "storedisplayudf.h"
 # include "storerdmdevice.h"
 # include "storerdmsensors.h"
+# if defined (ENABLE_RDM_SUBDEVICES)
+#  include "storerdmsubdevices.h"
+# endif
 # include "storetlc59711.h"
 #endif
 
@@ -90,43 +100,41 @@ void Hardware::RebootHandler() {
 	ArtNet4Node::Get()->Stop();
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
 #if defined (ORANGE_PI)
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
 #endif
-
-	fw.Print();
-
-	console_puts("Ethernet Art-Net 4 Node ");
-	console_set_fg_color(CONSOLE_GREEN);
-	console_puts("Stepper L6470");
-	console_set_fg_color(CONSOLE_WHITE);
-	console_putc('\n');
-
-	hw.SetLed(hardware::LedStatus::ON);
-
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
 #if defined (ORANGE_PI)
 	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
-	nw.Print();
+	Network nw(&storeNetwork);
 #else
-	nw.Init();
+	Network nw(nullptr);
 #endif
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+#if defined (ORANGE_PI)
+	FlashCodeInstall spiFlashInstall;
+#endif
+
+	fw.Print("Art-Net 4 Stepper L6470");
 	nw.Print();
+
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
+	MDNS mDns;
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 Stepper L6470");
+#endif
+	mDns.Print();
+
+#if defined (ENABLE_HTTPD)
+	HttpDaemon httpDaemon;
+#endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -199,8 +207,6 @@ void notmain(void) {
 		}
 	}
 
-//	pBoard->SetLightSetDisplay(&displayUdfHandler);
-
 	char aDescription[64];
 	if (isLedTypeSet) {
 		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
@@ -211,10 +217,12 @@ void notmain(void) {
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNet4Node node;
+
 #if defined (ORANGE_PI)
 	StoreArtNet storeArtNet;
 
 	ArtNetParams artnetparams(&storeArtNet);
+	node.SetArtNetStore(&storeArtNet);
 #else
 	ArtNetParams artnetparams;
 #endif
@@ -226,52 +234,65 @@ void notmain(void) {
 		artnetparams.Set();
 	}
 
-#if defined (ORANGE_PI)
-	node.SetArtNetStore(StoreArtNet::Get());
-#endif
 	node.SetOutput(pBoard);
 	bool isSet;
 	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
 
-	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
+	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
 
 #if defined (ORANGE_PI)
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	RdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
+
+# if defined (ENABLE_RDM_SUBDEVICES)
+	StoreRDMSubDevices storeRdmSubDevices;
+	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
+# endif
 #else
 	RDMDeviceParams rdmDeviceParams;
 	RDMSensorsParams rdmSensorsParams;
+# if defined (ENABLE_RDM_SUBDEVICES)
+	RDMSubDevicesParams rdmSubDevicesParams;
+# endif
 #endif
 
-	if(rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&RdmResponder);
-		rdmDeviceParams.Dump();
-	}
-
 	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Set();
 		rdmSensorsParams.Dump();
+		rdmSensorsParams.Set();
 	}
 
-	RdmResponder.Init();
-	RdmResponder.Print();
+#if defined (ENABLE_RDM_SUBDEVICES)
+	if (rdmSubDevicesParams.Load()) {
+		rdmSubDevicesParams.Dump();
+		rdmSubDevicesParams.Set();
+	}
+#endif
 
-	node.SetRdmHandler(&RdmResponder, true);
+	rdmResponder.Init();
+
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&rdmResponder);
+	}
+
+	rdmResponder.Print();
+
+	node.SetRdmHandler(&rdmResponder, true);
 	node.Print();
 
 	pBoard->Print();
 
-	display.SetTitle("Eth Art-Net 4 L6470");
+	display.SetTitle("Art-Net 4 L6470");
 	display.Set(2, displayudf::Labels::NODE_NAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE);
+	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
 
 #if defined (ORANGE_PI)
@@ -320,9 +341,12 @@ void notmain(void) {
 		remoteConfig.Run();
 		configStore.Flash();
 #endif
-		lb.Run();
+		mDns.Run();
+#if defined (ENABLE_HTTPD)
+		httpDaemon.Run();
+#endif
 		display.Run();
+		hw.Run();
 	}
 }
 
-}

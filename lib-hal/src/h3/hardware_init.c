@@ -126,6 +126,7 @@ void __attribute__((cold)) hardware_init(void) {
 	h3_thermal_init();
 	emac_init();
 	h3_i2c_begin();
+	console_puts("Starting ...\n");
 
 	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
 

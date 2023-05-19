@@ -106,6 +106,10 @@ void LtcEtc::Start() {
 #define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 
 void LtcEtc::Send(const midi::Timecode *pTimeCode) {
+	if (s_Handle.Destination < 0) {
+		return;
+	}
+
 	assert(pTimeCode != nullptr);
 
 	auto *p = &s_SendBuffer[sizeof(ltc::etc::udp::PREFIX) + sizeof(ltc::etc::udp::HEADER)];

@@ -1,9 +1,15 @@
-DEFINES=NDEBUG
+DEFINES =NDEBUG
 
 EXTRA_INCLUDES=../lib-hal/include ../lib-display/include ../lib-properties/include
 
-ifeq ($(findstring ESP8266,$(MAKE_FLAGS)), ESP8266)
-	EXTRA_SRCDIR+=src/esp8266 src/esp8266/h3 src/params
+EXTRA_SRCDIR=
+
+ifneq ($(MAKE_FLAGS),)
+	ifeq ($(findstring ESP8266,$(MAKE_FLAGS)), ESP8266)
+		EXTRA_SRCDIR+=src/esp8266/h3
+	endif
+else
+
 endif
 
 include Rules.mk

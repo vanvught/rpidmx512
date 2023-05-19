@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,12 @@
 
 #include "linux/hal_api.h"
 
+namespace hardware {
+enum class LedStatus {
+	OFF, ON, HEARTBEAT, FLASH
+};
+}  // namespace hardware
+
 class Hardware {
 public:
 	Hardware();
@@ -62,10 +68,6 @@ public:
 
 	bool Reboot();
 
-	void SetRebootHandler(RebootHandler *pRebootHandler) {
-		m_pRebootHandler = pRebootHandler;
-	}
-
 	bool PowerOff();
 
 	uint32_t GetUpTime();
@@ -73,8 +75,6 @@ public:
 	time_t GetTime() {
 		return time(nullptr);
 	}
-
-	void SetSysTime(time_t nTime);
 
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
@@ -99,24 +99,44 @@ public:
 #endif
 	}
 
+	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
+
+	void SetMode(hardware::ledblink::Mode mode);
+	hardware::ledblink::Mode GetMode() {
+		return m_Mode;
+	}
+
+	void Run() {} // Not needed
+
 	 static Hardware *Get() {
 		return s_pThis;
 	}
 
 private:
 	bool ExecCmd(const char* pCmd, char *Result, int nResultSize);
+	void SetFrequency(uint32_t nFreqHz) {
+		if (nFreqHz == 0) {
+			SetLed(hardware::LedStatus::OFF);
+		} else if (nFreqHz > 20) {
+			SetLed(hardware::LedStatus::ON);
+		} else {
+			if (nFreqHz > 1) {
+				SetLed(hardware::LedStatus::HEARTBEAT);
+			} else {
+				SetLed(hardware::LedStatus::FLASH);
+			}
+		}
+	}
 
 private:
-	RebootHandler *m_pRebootHandler = nullptr;
-	enum TBoardType {
-		BOARD_TYPE_LINUX,
-		BOARD_TYPE_CYGWIN,
-		BOARD_TYPE_RASPBIAN,
-		BOARD_TYPE_OSX,
-		BOARD_TYPE_UNKNOWN
+	enum class Board {
+		TYPE_LINUX,
+		TYPE_RASPBIAN,
+		TYPE_OSX,
+		TYPE_UNKNOWN
 	};
 
-	TBoardType m_tBoardType;
+	Board m_boardType;
 
 	struct utsname m_TOsInfo;
 
@@ -125,6 +145,9 @@ private:
 	char m_aBoardName[64];
 
 	uint32_t m_nBoardId;
+
+	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
+	bool m_doLock { false };
 
 	static Hardware *s_pThis;
 };

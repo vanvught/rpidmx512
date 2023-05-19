@@ -33,6 +33,7 @@
 #include "timecodeconst.h"
 
 #include "network.h"
+#include "hardware.h"
 
 // Output
 #include "artnetnode.h"
@@ -213,7 +214,7 @@ void LtcGenerator::Start() {
 
 	LtcOutputs::Get()->Update(const_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode));
 
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
 }
@@ -798,8 +799,8 @@ void LtcGenerator::Run() {
 	HandleUdpRequest();
 
 	if (m_State == STARTED) {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }

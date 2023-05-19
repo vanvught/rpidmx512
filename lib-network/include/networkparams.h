@@ -2,7 +2,7 @@
  * @file networkparams.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@ namespace networkparams {
 namespace defaults {
 static constexpr auto IS_DHCP_USED = true;
 static constexpr auto DHCP_RETRY_TIME = 0;
-static constexpr auto NTP_UTC_OFFSET = 0.0f;
 }  // namespace defaults
 
 struct Params {
@@ -55,7 +54,7 @@ struct Params {
 }__attribute__((packed));
 
 #if !defined (ESP8266)
- static_assert(sizeof(struct Params) <= 96, "struct Params is too large");
+ static_assert(sizeof(struct Params) <= network::STORE, "struct Params is too large");
 #endif
 
 struct Mask {
@@ -82,8 +81,8 @@ class NetworkParamsStore {
 public:
 	virtual ~NetworkParamsStore() {}
 
-	virtual void Update(const struct networkparams::Params *pNetworkParams)=0;
-	virtual void Copy(struct networkparams::Params *pNetworkParams)=0;
+	virtual void Update(const networkparams::Params *pNetworkParams)=0;
+	virtual void Copy(networkparams::Params *pNetworkParams)=0;
 };
 
 class NetworkParams {
@@ -93,7 +92,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();

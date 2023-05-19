@@ -2,7 +2,7 @@
  * @file rdmhandlere137.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -382,7 +382,7 @@ void RDMHandler::SetStaticAddress(__attribute__((unused)) bool IsBroadcast, __at
 	auto *p = reinterpret_cast<uint8_t*>(&nIpAddress);
 	memcpy(p, &pRdmDataIn->param_data[4], 4);
 
-	Network::Get()->SetQueuedStaticIp(nIpAddress, Network::CIDRToNetmask(pRdmDataIn->param_data[8]));
+	Network::Get()->SetQueuedStaticIp(nIpAddress, network::cidr_to_netmask(pRdmDataIn->param_data[8]));
 
 	RespondMessageAck();
 

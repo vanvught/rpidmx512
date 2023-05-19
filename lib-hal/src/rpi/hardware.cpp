@@ -125,6 +125,8 @@ Hardware::Hardware(): m_nBoardRevision(-1), m_tSocType(SOC_TYPE_UNKNOWN) {
 			}
 		}
 	}
+
+	hardware_led_set(1);
 }
 
 const char *Hardware::GetMachine(uint8_t& nLength) {

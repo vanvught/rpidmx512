@@ -2,7 +2,7 @@
  * @file rdmdeviceparams.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,14 +52,11 @@
 
 RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(pRDMDeviceParamsStore) {
 	DEBUG_ENTRY
-
-	m_tRDMDeviceParams.nSetList = 0;
-
-	memset(m_tRDMDeviceParams.aDeviceRootLabel, 0, RDM_DEVICE_LABEL_MAX_LENGTH);
-	m_tRDMDeviceParams.nDeviceRootLabelLength = 0;
-
-	m_tRDMDeviceParams.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
-	m_tRDMDeviceParams.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
+	
+	memset(&m_Params, 0, sizeof(struct rdm::deviceparams::Params));
+	
+	m_Params.nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
+	m_Params.nProductDetail = E120_PRODUCT_DETAIL_OTHER;
 
 	DEBUG_EXIT
 }
@@ -68,19 +65,18 @@ bool RDMDeviceParams::Load() {
 	DEBUG_ENTRY
 
 #if !defined(DISABLE_FS)
-	m_tRDMDeviceParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RDMDeviceParamsConst::FILE_NAME)) {
-		// There is a configuration file
 		if (m_pRDMDeviceParamsStore != nullptr) {
-			m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
+			m_pRDMDeviceParamsStore->Update(&m_Params);
 		}
 	} else
 #endif
 	if (m_pRDMDeviceParamsStore != nullptr) {
-		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
+		m_pRDMDeviceParamsStore->Copy(&m_Params);
 	} else {
 		DEBUG_EXIT
 		return false;
@@ -102,13 +98,13 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 		return;
 	}
 
-	m_tRDMDeviceParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile config(RDMDeviceParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pRDMDeviceParamsStore->Update(&m_tRDMDeviceParams);
+	m_pRDMDeviceParamsStore->Update(&m_Params);
 
 	DEBUG_EXIT
 }
@@ -117,23 +113,38 @@ void RDMDeviceParams::callbackFunction(const char *pLine) {
 	assert(pLine != nullptr);
 
 	uint32_t nLength = RDM_DEVICE_LABEL_MAX_LENGTH;
-	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.aDeviceRootLabel, nLength) == Sscan::OK) {
-		m_tRDMDeviceParams.nDeviceRootLabelLength = static_cast<uint8_t>(nLength);
-		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::LABEL;
+	
+	if (Sscan::Char(pLine, RDMDeviceParamsConst::LABEL, m_Params.aDeviceRootLabel, nLength) == Sscan::OK) {
+		m_Params.nDeviceRootLabelLength = static_cast<uint8_t>(nLength);
+		m_Params.nSetList |= rdm::deviceparams::Mask::LABEL;
+
 		return;
 	}
 
 	uint16_t nValue16;
 
 	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_CATEGORY, nValue16) == Sscan::OK) {
-		m_tRDMDeviceParams.nProductCategory = nValue16;
-		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_CATEGORY;
+		m_Params.nProductCategory = nValue16;
+
+		if (nValue16 == E120_PRODUCT_CATEGORY_OTHER) {
+			m_Params.nSetList &= ~rdm::deviceparams::Mask::PRODUCT_CATEGORY;
+		} else {
+			m_Params.nSetList |= rdm::deviceparams::Mask::PRODUCT_CATEGORY;
+		}
+
 		return;
 	}
 
 	if (Sscan::HexUint16(pLine, RDMDeviceParamsConst::PRODUCT_DETAIL, nValue16) == Sscan::OK) {
-		m_tRDMDeviceParams.nProductDetail = nValue16;
-		m_tRDMDeviceParams.nSetList |= RDMDeviceParamsMask::PRODUCT_DETAIL;
+		m_Params.nProductDetail = nValue16;
+
+		if (nValue16 == E120_PRODUCT_DETAIL_OTHER) {
+			m_Params.nSetList &= ~rdm::deviceparams::Mask::PRODUCT_DETAIL;
+		} else {
+			m_Params.nSetList |= rdm::deviceparams::Mask::PRODUCT_DETAIL;
+		}
+
+		return;
 	}
 }
 
@@ -142,18 +153,18 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 
 	TRDMDeviceInfoData Info;
 
-	if (isMaskSet(RDMDeviceParamsMask::LABEL)) {
-		Info.data = m_tRDMDeviceParams.aDeviceRootLabel;
-		Info.length = m_tRDMDeviceParams.nDeviceRootLabelLength;
+	if (isMaskSet(rdm::deviceparams::Mask::LABEL)) {
+		Info.data = m_Params.aDeviceRootLabel;
+		Info.length = m_Params.nDeviceRootLabelLength;
 		pRDMDevice->SetLabel(&Info);
 	}
 
-	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY)) {
-		pRDMDevice->SetProductCategory(m_tRDMDeviceParams.nProductCategory);
+	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY)) {
+		pRDMDevice->SetProductCategory(m_Params.nProductCategory);
 	}
 
-	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL)) {
-		pRDMDevice->SetProductDetail(m_tRDMDeviceParams.nProductDetail);
+	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL)) {
+		pRDMDevice->SetProductDetail(m_Params.nProductDetail);
 	}
 }
 
@@ -161,16 +172,16 @@ void RDMDeviceParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMDeviceParamsConst::FILE_NAME);
 
-	if (isMaskSet(RDMDeviceParamsMask::LABEL)) {
-		printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_tRDMDeviceParams.nDeviceRootLabelLength, m_tRDMDeviceParams.aDeviceRootLabel);
+	if (isMaskSet(rdm::deviceparams::Mask::LABEL)) {
+		printf(" %s=%.*s\n", RDMDeviceParamsConst::LABEL, m_Params.nDeviceRootLabelLength, m_Params.aDeviceRootLabel);
 	}
 
-	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY)) {
-		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory);
+	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY)) {
+		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory);
 	}
 
-	if (isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL)) {
-		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail);
+	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL)) {
+		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail);
 	}
 #endif
 }
@@ -179,31 +190,24 @@ void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);
 
-	(static_cast<RDMDeviceParams*>(p))->callbackFunction(s);
+	(static_cast<RDMDeviceParams *>(p))->callbackFunction(s);
 }
 
-void RDMDeviceParams::Builder(const struct TRDMDeviceParams *ptRDMDeviceParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	assert(pBuffer != nullptr);
 
-	if (ptRDMDeviceParams != nullptr) {
-		DEBUG_PUTS("ptRDMDeviceParams != 0");
-		memcpy(&m_tRDMDeviceParams, ptRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct rdm::deviceparams::Params));
 	} else {
-		DEBUG_PUTS("ptRDMDeviceParams == 0");
-		m_pRDMDeviceParamsStore->Copy(&m_tRDMDeviceParams);
+		m_pRDMDeviceParamsStore->Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
 
-	char aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
-	memcpy(aRootLabel, m_tRDMDeviceParams.aDeviceRootLabel, RDM_DEVICE_LABEL_MAX_LENGTH);
-	aRootLabel[m_tRDMDeviceParams.nDeviceRootLabelLength] = '\0';
-	builder.Add(RDMDeviceParamsConst::LABEL, aRootLabel, isMaskSet(RDMDeviceParamsMask::LABEL));
-
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_tRDMDeviceParams.nProductCategory, isMaskSet(RDMDeviceParamsMask::PRODUCT_CATEGORY));
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_tRDMDeviceParams.nProductDetail, isMaskSet(RDMDeviceParamsMask::PRODUCT_DETAIL));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory, isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail, isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL));
 
 	nSize = builder.GetSize();
 

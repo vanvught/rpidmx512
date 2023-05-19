@@ -2,7 +2,7 @@
  * @file buttonsmcp.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,14 +45,14 @@ public:
 
 	void Run() override;
 
-	void SetLed(uint8_t nLed, bool bOn) override;
+	void SetLed(const uint32_t nLed, const bool bOn) override;
 
 private:
 	HAL_I2C m_I2C;
 	OscClient *m_pOscClient;
-	bool m_bIsConnected{false};
-	uint8_t m_nButtonsPrevious{0};
-	uint8_t m_nPortB{0};
+	bool m_bIsConnected { false };
+	uint8_t m_nButtonsPrevious { 0 };
+	uint8_t m_nPortB { 0 };
 };
 
 #endif /* BUTTONSMCP_H_ */

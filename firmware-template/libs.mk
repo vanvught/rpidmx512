@@ -12,17 +12,23 @@ ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
 endif
 
 ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
-	LIBS+=artnet4 artnet e131
-	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
+		LIBS+=artnet
 	else
+		LIBS+=artnet4 artnet e131
 		DEFINES+=NODE_E131
+		ifeq ($(findstring ARTNET_HAVE_DMXIN,$(DEFINES)),ARTNET_HAVE_DMXIN)
+			LIBS+=dmxartnet
+		endif
 	endif
 endif
 
 ifeq ($(findstring NODE_E131,$(DEFINES)),NODE_E131)
 	ifneq ($(findstring e131,$(LIBS)),e131)
 		LIBS+=e131
+	endif
+	ifeq ($(findstring E131_HAVE_DMXIN,$(DEFINES)),E131_HAVE_DMXIN)
+		LIBS+=dmxe131
 	endif
 endif
 
@@ -172,6 +178,8 @@ endif
 
 ifneq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
 	LIBS+=display
+else
+	LIBS+=$(CONFIG_DISPLAY_LIB)
 endif
 
 ifneq ($(findstring properties,$(LIBS)),properties)
@@ -181,3 +189,4 @@ endif
 LIBS+=lightset device hal
 
 $(info $$LIBS [${LIBS}])
+$(info $$DEFINES [${DEFINES}])

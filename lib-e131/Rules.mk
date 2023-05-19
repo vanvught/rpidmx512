@@ -2,6 +2,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
 		EXTRA_SRCDIR+=src/node
 	endif
+		ifeq ($(findstring E131_HAVE_DMXIN,$(MAKE_FLAGS)), E131_HAVE_DMXIN)
+		EXTRA_SRCDIR+=src/node/dmxin
+	endif
 	ifeq ($(findstring E131_CONTROLLER,$(MAKE_FLAGS)), E131_CONTROLLER)
 		EXTRA_SRCDIR+=src/controller
 	endif
@@ -9,6 +12,7 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/node
 	endif
 else
-EXTRA_SRCDIR+=src/node src/controller
+EXTRA_SRCDIR+=src/node src/node/dmxin src/controller
+DEFINES+=E131_HAVE_DMXIN
 DEFINES+=LIGHTSET_PORTS=4
 endif

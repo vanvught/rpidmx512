@@ -2,7 +2,7 @@
  * @file buttonsgpio.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,11 +43,11 @@ public:
 
 	void Run() override;
 
-	void SetLed(uint8_t nLed, bool bOn) override;
+	void SetLed(const uint32_t nLed, const bool bOn) override;
 
 private:
 	OscClient *m_pOscClient;
-	uint32_t m_nButtons{0};
+	uint32_t m_nButtons { 0 };
 };
 
 #endif /* BUTTONSGPIO_H_ */

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,11 @@
  * THE SOFTWARE.
  */
 
-#include <stdio.h>
-#include <stdint.h>
+#include <cstdio>
+#include <cstdint>
 
 #include "hardware.h"
 #include "noemac/network.h"
-#include "ledblink.h"
 
 #include "display.h"
 
@@ -48,13 +47,10 @@ using namespace dmx;
 static char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static const struct TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Raspberry Pi DMX USB Pro"), 26 };
 
-extern "C" {
-
-void notmain(void) {
+void main(void) {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display(display::Type::UNKNOWN); 	// Display is not supported. We just need a pointer to object
+	Network nw;
 
 	Widget widget;
 	widget.SetPortDirection(0, PortDirection::INP, false);
@@ -62,8 +58,8 @@ void notmain(void) {
 	WidgetParams widgetParams;
 
 	if (widgetParams.Load()) {
-		widgetParams.Set();
 		widgetParams.Dump();
+		widgetParams.Set();
 	}
 
 	RDMDeviceParams rdmDeviceParams;
@@ -71,8 +67,8 @@ void notmain(void) {
 	widget.SetLabel(&deviceLabel);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&widget);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&widget);
 	}
 
 	widget.Init();
@@ -98,8 +94,6 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		widget.Run();
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

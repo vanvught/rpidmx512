@@ -2,7 +2,7 @@
  * @file rdmsubdevicesparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,9 @@
 
 #include "rdmsubdevices.h"
 
-struct TRDMSubDevicesParams {
+namespace rdm {
+namespace subdevicesparams {
+struct Params {
 	uint32_t nCount;
 	struct {
 		uint8_t nType;
@@ -38,18 +40,20 @@ struct TRDMSubDevicesParams {
 		uint8_t nAddress;
 		uint16_t nDmxStartAddress;
 		uint32_t nSpeedHz;
-	} __attribute__((packed)) Entry[rdm::subdevices::max];
+	} __attribute__((packed)) Entry[rdm::subdevices::MAX];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TRDMSubDevicesParams) <= rdm::subdevices::store, "struct TRDMSubDevicesParams is too large");
+static_assert(sizeof(struct Params) <= rdm::subdevices::STORE, "struct Params is too large");
+
+}  // namespace subdevicesparams
+}  // namespace rdm
 
 class RDMSubDevicesParamsStore {
 public:
-	virtual ~RDMSubDevicesParamsStore() {
-	}
+	virtual ~RDMSubDevicesParamsStore() {}
 
-	virtual void Update(const struct TRDMSubDevicesParams *pTRDMSubDevicesParams)=0;
-	virtual void Copy(struct TRDMSubDevicesParams *pTRDMSubDevicesParams)=0;
+	virtual void Update(const rdm::subdevicesparams::Params *pParams)=0;
+	virtual void Copy(rdm::subdevicesparams::Params *pParams)=0;
 };
 
 class RDMSubDevicesParams {
@@ -59,7 +63,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRDMSubDevicesParams *pRDMSubDevicesParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const rdm::subdevicesparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
@@ -74,7 +78,7 @@ private:
 
 private:
     RDMSubDevicesParamsStore *m_pRDMSubDevicesParamsStore;
-	TRDMSubDevicesParams m_tRDMSubDevicesParams;
+    rdm::subdevicesparams::Params m_Params;
 };
 
 #endif /* RDMSUBDEVICESPARAMS_H_ */

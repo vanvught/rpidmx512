@@ -1,4 +1,3 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicemcp23s17.cpp
  *
@@ -52,7 +51,7 @@ void RDMSubDeviceMCP23S17::Data(const uint8_t *pData, uint32_t nLength) {
 	}
 
 	if (m_nData != nData) {
-		m_MCP23S17.WriteRegister(mcp23x17::reg::GPIOA, nData);
+		m_MCP23S17.WriteRegister(mcp23x17::REG_GPIOA, nData);
 		m_nData = nData;
 	}
 }
@@ -62,4 +61,3 @@ void RDMSubDeviceMCP23S17::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		Stop();
 	}
 }
-#endif

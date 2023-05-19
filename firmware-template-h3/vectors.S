@@ -2,7 +2,7 @@
  * @file vector.S
  *
  */
- /* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ /* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -142,6 +142,10 @@ reset:
     strlo r0, [r1], #4
     blo   4b
 
+#if defined (DEBUG_STACK)
+	bl stack_debug_init
+#endif
+
     bl vfp_init
 	bl mmu_enable
     bl hardware_init
@@ -149,7 +153,7 @@ reset:
 	bl emac_shutdown
 #endif
 
-    bl notmain
+    bl main
 halt:
     wfe
     b halt

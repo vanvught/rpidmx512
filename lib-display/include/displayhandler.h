@@ -2,7 +2,7 @@
  * @file displayhandler.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,50 +28,44 @@
 
 #include <cstdint>
 
-#include "ledblink.h"
 #include "display.h"
 
-struct DisplayHandler final: public LedBlinkDisplay {
-	DisplayHandler() : m_bHaveDisplay(Display::Get() != nullptr) {
-		if (m_bHaveDisplay) {
-			m_bHaveDisplay = Display::Get()->isDetected();
+#include "hardware.h"
+
+namespace hardware {
+namespace ledblink {
+void display(const uint32_t nMode) {
+	if (Display::Get()->isDetected() ) {
+		char c;
+		switch (static_cast<hardware::ledblink::Mode>(nMode)) {
+		case ledblink::Mode::OFF_OFF:
+			c = 'O';
+			break;
+		case ledblink::Mode::OFF_ON:
+			c = 'O';
+			break;
+		case ledblink::Mode::NORMAL:
+			c = 'N';
+			break;
+		case ledblink::Mode::DATA:
+			c = 'D';
+			break;
+		case ledblink::Mode::FAST:
+			c = 'F';
+			break;
+		case ledblink::Mode::REBOOT:
+			c = 'R';
+			break;
+		default:
+			c = 'U';
+			break;
 		}
+
+		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
+		Display::Get()->PutChar(c);
 	}
-
-	~DisplayHandler() {
-	}
-
-	void Print(uint32_t nMode) {
-		if (m_bHaveDisplay) {
-			char c;
-			switch (static_cast<ledblink::Mode>(nMode)) {
-			case ledblink::Mode::OFF_OFF:
-				c = 'O';
-				break;
-			case ledblink::Mode::OFF_ON:
-				c = 'O';
-				break;
-			case ledblink::Mode::NORMAL:
-				c = 'N';
-				break;
-			case ledblink::Mode::DATA:
-				c = 'D';
-				break;
-			case ledblink::Mode::FAST:
-				c = 'F';
-				break;
-			default:
-				c = 'U';
-				break;
-			}
-
-			Display::Get()->SetCursorPos(static_cast<uint8_t>(Display::Get()->GetColumns() - 1U), static_cast<uint8_t>(Display::Get()->GetRows() - 1U));
-			Display::Get()->PutChar(c);
-		}
-	}
-
-private:
-	bool m_bHaveDisplay;
-};
+}
+}  // namespace ledblink
+}  // namespace hardware
 
 #endif /* DISPLAYHANDLER_H_ */

@@ -2,7 +2,7 @@
  * @file si7021.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,7 +61,7 @@ float SI7021::GetHumidity() {
 
 
 uint16_t SI7021::ReadRaw(uint8_t nCmd) {
-	HAL_I2C::Write(static_cast<char>(nCmd));
+	HAL_I2C::Write(nCmd);
 
 	char buf[3] = {0};
 

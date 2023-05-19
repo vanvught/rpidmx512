@@ -95,7 +95,7 @@ void PixelPatterns::Run() {
 	auto bIsUpdated = false;
 	const auto nMillis = Hardware::Get()->Millis();
 
-	for (uint8_t i = 0; i < m_nActivePorts; i++) {
+	for (uint32_t i = 0; i < m_nActivePorts; i++) {
 		bIsUpdated |= PortUpdate(i, nMillis);
 	}
 
@@ -148,7 +148,7 @@ void PixelPatterns::RainbowCycle(uint32_t nPortIndex, uint32_t nInterval, pixelp
 void PixelPatterns::RainbowCycleUpdate(uint32_t nPortIndex) {
 	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint16_t i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		SetPixelColour(nPortIndex, i, Wheel(((i * 256U / m_nCount) + nIndex) & 0xFF));
 	}
 
@@ -172,7 +172,7 @@ void PixelPatterns::TheaterChaseUpdate(uint32_t nPortIndex) {
 	const auto Colour2 = m_PortConfig[nPortIndex].nColour2;
 	const auto Index = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint16_t i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if ((i + Index) % 3 == 0) {
 			SetPixelColour(nPortIndex, i, Colour1);
 		} else {
@@ -226,7 +226,7 @@ void PixelPatterns::ScannerUpdate(uint32_t nPortIndex) {
 	const auto nTotalSteps = m_PortConfig[nPortIndex].nTotalSteps;
 	const auto nIndex = m_PortConfig[nPortIndex].nPixelIndex;
 
-	for (uint16_t i = 0; i < m_nCount; i++) {
+	for (uint32_t i = 0; i < m_nCount; i++) {
 		if (i == nIndex) {
 			SetPixelColour(nPortIndex, i, nColour1);
 			m_pScannerColours[i] = nColour1;
@@ -270,16 +270,16 @@ void PixelPatterns::FadeUpdate(uint32_t nPortIndex) {
 }
 
 uint32_t PixelPatterns::Wheel(uint8_t nWheelPos) {
-	nWheelPos = static_cast<uint8_t>(255 - nWheelPos);
+	nWheelPos = static_cast<uint8_t>(255U - nWheelPos);
 
 	if (nWheelPos < 85) {
-		return Colour(static_cast<uint8_t>(255 - nWheelPos * 3), 0, static_cast<uint8_t>(nWheelPos * 3));
-	} else if (nWheelPos < 170) {
-		nWheelPos = static_cast<uint8_t>(nWheelPos - 85);
-		return Colour(0, static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3));
+		return Colour(static_cast<uint8_t>(255U - nWheelPos * 3), 0, static_cast<uint8_t>(nWheelPos * 3));
+	} else if (nWheelPos < 170U) {
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 85U);
+		return Colour(0, static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255U - nWheelPos * 3));
 	} else {
-		nWheelPos = static_cast<uint8_t>(nWheelPos - 170);
-		return Colour(static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255 - nWheelPos * 3), 0);
+		nWheelPos = static_cast<uint8_t>(nWheelPos - 170U);
+		return Colour(static_cast<uint8_t>(nWheelPos * 3), static_cast<uint8_t>(255U - nWheelPos * 3), 0);
 	}
 }
 

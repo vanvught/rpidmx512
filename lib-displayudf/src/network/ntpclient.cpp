@@ -27,13 +27,13 @@
 #include "display.h"
 
 namespace ntpclient {
-void display_status(ntpclient::Status nStatus) {
-	if (nStatus == ntpclient::Status::IDLE) {
+void display_status(ntpclient::Status status) {
+	if (status == ntpclient::Status::IDLE) {
 		Display::Get()->TextStatus("NTP Client", Display7SegmentMessage::INFO_NTP);
 		return;
 	}
 
-	if (nStatus == ntpclient::Status::FAILED) {
+	if (status == ntpclient::Status::FAILED) {
 		Display::Get()->TextStatus("Error: NTP", Display7SegmentMessage::ERROR_NTP);
 		return;
 	}

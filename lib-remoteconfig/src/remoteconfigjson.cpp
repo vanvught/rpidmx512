@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp;
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -107,6 +107,9 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 #if defined (OUTPUT_DMX_PIXEL)
 			"\"devices.txt\":\"DMX Pixel\","
 #endif
+#if defined (OUTPUT_DMX_TLC59711)
+			"\"devices.txt\":\"DMX TLC59711\","
+#endif
 #if defined (OUTPUT_DMX_MONITOR)
 			"\"mon.txt\":\"DMX Monitor\","
 #endif
@@ -116,9 +119,20 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 #if defined (OUTPUT_RGB_PANEL)
 			"\"rgbpanel.txt\":\"RGB panel\","
 #endif
+#if defined (OUTPUT_DMX_STEPPER)
+			"\"sparkfun.txt\":\"SparkFun\","
+			"\"motor0.txt\":\"Stepper 1\","
+			"\"motor1.txt\":\"Stepper 2\","
+			"\"motor2.txt\":\"Stepper 3\","
+			"\"motor3.txt\":\"Stepper 4\","
+			"\"motor4.txt\":\"Stepper 5\","
+			"\"motor5.txt\":\"Stepper 6\","
+			"\"motor6.txt\":\"Stepper 7\","
+			"\"motor7.txt\":\"Stepper 8\","
+#endif
 #if defined (RDM_RESPONDER)
+			"\"rdm_device.txt\":\"RDM Device\","
 			"\"sensors.txt\":\"RDM Sensors\","
-			"\"subdev.txt\":\"RDM Sub devices\","
 #endif
 #if defined(DISPLAY_UDF)
 			"\"display.txt\":\"Display UDF\","

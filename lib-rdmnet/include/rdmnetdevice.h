@@ -2,7 +2,7 @@
  * @file rdmnetdevice.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,12 +61,6 @@ public:
 		return reinterpret_cast<uint8_t*>(&s_RdmCommand);
 	}
 
-	void Start() {
-		LLRPDevice::Start();
-	}
-	void Stop() {
-		LLRPDevice::Stop();
-	}
 	void Run() {
 		LLRPDevice::Run();
 	}

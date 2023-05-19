@@ -43,6 +43,28 @@ static constexpr auto STOP_2BITS = 2;
 }  // namespace hal
 
 #if defined (RASPPI)
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <stdint.h>
+void bcm2835_uart_begin(const uint32_t uart_base, uint32_t baudrate, uint32_t bits, uint32_t parity, uint32_t stop_bits);
+void bcm2835_uart_set_baudrate(const uint32_t uart_base, uint32_t baudrate);
+void bcm2835_uart_transmit(const uint32_t uart_base, const uint8_t *data, uint32_t length);
+void bcm2835_uart_transmit_string(const uint32_t uart_base, const char *data);
+
+uint32_t bcm2835_uart_get_rx_fifo_level(const uint32_t uart_base);
+uint8_t bcm2835_uart_get_rx_data(const uint32_t uart_base);
+uint32_t bcm2835_uart_get_rx(const uint32_t uart_base, char *pData, uint32_t nLength);
+
+#define bcm2835_uart_begin 				uart_begin
+#define bcm2835_uart_set_baudrate		uart_set_baudrate
+#define bcm2835_uart_transmit			uart_transmit
+#define bcm2835_uart_transmit_string	uart_transmit_string
+
+#define bcm2835_uart_get_rx				uart_get_rx
+#ifdef __cplusplus
+}
+#endif
 #else
 # define FUNC_PREFIX(x)	x
 #endif

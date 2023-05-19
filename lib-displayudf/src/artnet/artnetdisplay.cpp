@@ -2,7 +2,7 @@
  * @file artnetdisplay.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ void display_port_protocol(__attribute__((unused))  uint32_t nPortIndex, __attri
 }
 
 void display_rdm_enabled(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) bool isEnabled) {
-	//TODO ShowRdmEnabled
+	DisplayUdf::Get()->ShowUniverse(ArtNetNode::Get());
 }
 
 void display_failsafe(__attribute__((unused)) uint8_t nFailsafe) {

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,12 +36,12 @@
 
 void ArtNetNode::HandleTrigger() {
 	DEBUG_ENTRY
-	const struct TArtTrigger *pArtTrigger = &(m_ArtNetPacket.ArtPacket.ArtTrigger);
+	const auto *const pArtTrigger = reinterpret_cast<TArtTrigger *>(m_pReceiveBuffer);
 
 	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == ArtNetConst::OEM_ID[0] && pArtTrigger->OemCodeLo == ArtNetConst::OEM_ID[1])) {
 		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);
 
-		m_pArtNetTrigger->Handler(reinterpret_cast<const struct TArtNetTrigger*>(&pArtTrigger->Key));
+		m_pArtNetTrigger->Handler(reinterpret_cast<const TArtNetTrigger *>(&pArtTrigger->Key));
 	}
 
 	DEBUG_EXIT

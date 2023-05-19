@@ -2,7 +2,7 @@
  * @file software_version.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,6 @@
 #ifndef SOFTWARE_VERSION_H_
 #define SOFTWARE_VERSION_H_
 
-constexpr char SOFTWARE_VERSION[] = "3.4";
+constexpr char SOFTWARE_VERSION[] = "3.5";
 
 #endif /* SOFTWARE_VERSION_H_ */

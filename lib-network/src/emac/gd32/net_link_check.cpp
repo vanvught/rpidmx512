@@ -2,7 +2,7 @@
  * net_link_check.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,7 @@
 
 namespace net {
 #if (PHY_TYPE == RTL8201F)
-static void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value) {
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_PAGE_SELECT, &phy_page);
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, phy_reg, &phy_value);
-	phy_page = 0;
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_PAGE_SELECT, &phy_page);
-}
+	void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0);
 #endif
 
 static void link_pin_enable() {
@@ -59,7 +54,7 @@ static void link_pin_enable() {
 	phy_value = PHY_LINK_INT_ENABLE;
 	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_MISR, &phy_value);
 #elif (PHY_TYPE == RTL8201F)
-	phy_write_paged(0x07, PHY_REG_IER, PHY_REG_IER_INT_ENABLE);
+	phy_write_paged(0x07, PHY_REG_IER, PHY_REG_IER_INT_ENABLE, PHY_REG_IER_INT_ENABLE);
 	// Clear interrupt
 	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_ISR, &phy_value);
 #endif

@@ -103,7 +103,7 @@ void SystimeReader::Start(bool bAutoStart) {
 
 	LtcOutputs::Get()->Init();
 
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	if (bAutoStart) {
 		ActionStart();
@@ -125,7 +125,7 @@ void SystimeReader::ActionStart() {
 
 	LtcOutputs::Get()->ResetTimeCodeTypePrevious();
 
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 
 	DEBUG_EXIT
 }
@@ -135,7 +135,7 @@ void SystimeReader::ActionStop() {
 
 	m_bIsStarted = false;
 
-	LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 
 	DEBUG_EXIT
 }
@@ -164,7 +164,7 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 			TIMER_CNT(TIMER11) = 0;
 			TIMER_CH0CV(TIMER11) = m_nTimer0Interval;
 #endif
-			//
+
 			if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
 				LtcSender::Get()->SetTimeCode(reinterpret_cast<const struct ltc::TimeCode*>(&m_tMidiTimeCode), false);
 			}

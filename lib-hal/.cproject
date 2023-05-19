@@ -33,6 +33,8 @@
 									<listOptionValue builtIn="false" value="ORANGE_PI"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1762764634" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -52,6 +54,8 @@
 									<listOptionValue builtIn="false" value="ORANGE_PI"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1855214365" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -85,12 +89,15 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry excluding="stack|i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="posix"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="uart0|h3/uart0|h3/fb|h3/sdcard|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="linux/i2c|uart0|h3/uart0|h3/fb|h3/sdcard|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/rpi/sdcard"/>
 					</sourceEntries>
@@ -111,7 +118,7 @@
 				</extensions>
 			</storageModule>
 			<storageModule moduleId="cdtBuildSystem" version="4.0.0">
-				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.797776597" name="Linux" parent="org.eclipse.cdt.build.core.emptycfg">
+				<configuration artifactName="${ProjName}" buildProperties="" description="" id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.797776597" name="Linux" optionalBuildProperties="" parent="org.eclipse.cdt.build.core.emptycfg">
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.cross.base.252252823.1507776794.202961412.797776597." name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.base.1548301298" name="Linux GCC" superClass="cdt.managedbuild.toolchain.gnu.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="cdt.managedbuild.target.gnu.platform.base.1508677366" name="Debug Platform" osList="linux,hpux,aix,qnx" superClass="cdt.managedbuild.target.gnu.platform.base"/>
@@ -131,6 +138,8 @@
 									<listOptionValue builtIn="false" value="ORANGE_PI"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.547402764" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -148,6 +157,8 @@
 									<listOptionValue builtIn="false" value="ORANGE_PI"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1736087489" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -172,10 +183,13 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry excluding="stack|i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
+						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -223,6 +237,8 @@
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.789944049" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -244,6 +260,8 @@
 									<listOptionValue builtIn="false" value="BARE_METAL"/>
 									<listOptionValue builtIn="false" value="_FFCONF=68300"/>
 									<listOptionValue builtIn="false" value="SD_WRITE_SUPPORT"/>
+									<listOptionValue builtIn="false" value="DEBUG_I2C"/>
+									<listOptionValue builtIn="false" value="DEBUG_STACK"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1495498778" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -269,14 +287,17 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry excluding="stack|i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="ff12c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="posix"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="uart0|rpi/sdcard|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="linux/i2c|uart0|rpi/sdcard|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry excluding="uart0|fb|sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>

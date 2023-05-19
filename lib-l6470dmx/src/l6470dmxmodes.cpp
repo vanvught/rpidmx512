@@ -218,7 +218,7 @@ bool L6470DmxModes::IsDmxDataChanged(const uint8_t *p) {
 	printf("\t\tDmxStartAddress = %d, LastDmxChannel = %d\n", m_nDmxStartAddress, lastDmxChannel);
 #endif
 
-	for (uint16_t i = m_nDmxStartAddress; (i <= lastDmxChannel) && (i <= 512) ; i++) {
+	for (uint32_t i = m_nDmxStartAddress; (i <= lastDmxChannel) && (i <= 512U) ; i++) {
 		if (*p != *q) {
 			isChanged = true;
 		}
@@ -267,7 +267,7 @@ void L6470DmxModes::DmxData(const uint8_t *pDmxData, uint32_t nLength) {
 #ifndef NDEBUG
 	printf("\tMotor : %d\n", m_nMotorNumber);
 
-	for (uint8_t i = 0; i < m_DmxFootPrint; i++) {
+	for (uint32_t i = 0; i < m_DmxFootPrint; i++) {
 		printf("\t\tDMX slot(%d) : %d\n", m_nDmxStartAddress + i, p[i]);
 	}
 #endif

@@ -2,7 +2,7 @@
  * @file buttonsmcp.cpp
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,10 +29,9 @@
 #include "buttonsmcp.h"
 #include "oscclient.h"
 
-#include "board/h3_opi_zero.h"
-#include "h3_gpio.h"		//TODO Remove H3 dependency
-
+#include "hal_gpio.h"
 #include "hal_i2c.h"
+
 #include "mcp23x17.h"
 
 #include "debug.h"
@@ -45,11 +44,7 @@ namespace gpio {
 static constexpr auto interrupt = GPIO_EXT_12; // PA7
 }
 
-ButtonsMcp::ButtonsMcp(OscClient *pOscClient):
-	m_I2C(mcp23017::address),
-	m_pOscClient(pOscClient)
-	
-{
+ButtonsMcp::ButtonsMcp(OscClient *pOscClient): m_I2C(mcp23017::address), m_pOscClient(pOscClient) {
 	assert(m_pOscClient != nullptr);
 }
 
@@ -64,18 +59,18 @@ bool ButtonsMcp::Start() {
 	}
 
 	// Switches
-	m_I2C.WriteRegister(mcp23x17::reg::IODIRA, static_cast<uint8_t>(0xFF)); // All input
-	m_I2C.WriteRegister(mcp23x17::reg::GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
-	m_I2C.WriteRegister(mcp23x17::reg::IPOLA, static_cast<uint8_t>(0xFF));	// Invert read
-	m_I2C.WriteRegister(mcp23x17::reg::INTCONA, static_cast<uint8_t>(0x00));
-	m_I2C.WriteRegister(mcp23x17::reg::GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
-	m_I2C.ReadRegister(mcp23x17::reg::INTCAPA);								// Clear interrupt
+	m_I2C.WriteRegister(mcp23x17::REG_IODIRA, static_cast<uint8_t>(0xFF));	// All input
+	m_I2C.WriteRegister(mcp23x17::REG_GPPUA, static_cast<uint8_t>(0xFF));	// Pull-up
+	m_I2C.WriteRegister(mcp23x17::REG_IPOLA, static_cast<uint8_t>(0xFF));	// Invert read
+	m_I2C.WriteRegister(mcp23x17::REG_INTCONA, static_cast<uint8_t>(0x00));
+	m_I2C.WriteRegister(mcp23x17::REG_GPINTENA, static_cast<uint8_t>(0xFF));// Interrupt on Change
+	m_I2C.ReadRegister(mcp23x17::REG_INTCAPA);								// Clear interrupt
 	// Led's
-	m_I2C.WriteRegister(mcp23x17::reg::IODIRB, static_cast<uint8_t>(0x00)); // All output
-	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, static_cast<uint8_t>(0x00));	// All led's Off
+	m_I2C.WriteRegister(mcp23x17::REG_IODIRB, static_cast<uint8_t>(0x00));	// All output
+	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00));	// All led's Off
 
-	h3_gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT); // PA7
-	h3_gpio_pud(gpio::interrupt, GPIO_PULL_UP);
+	FUNC_PREFIX(gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_pud(gpio::interrupt, GPIO_PULL_UP));
 
 	m_nButtonsCount = 8;
 
@@ -84,13 +79,15 @@ bool ButtonsMcp::Start() {
 }
 
 void ButtonsMcp::Stop() {
-	h3_gpio_fsel(gpio::interrupt, GPIO_FSEL_DISABLE);
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }
 
 void ButtonsMcp::Run() {
-	if (__builtin_expect(h3_gpio_lev(gpio::interrupt) == LOW, 0)) {
+	if (__builtin_expect(FUNC_PREFIX(gpio_lev(gpio::interrupt)) == LOW, 0)) {
 
-		const uint8_t nButtons = m_I2C.ReadRegister(mcp23x17::reg::GPIOA);
+		const auto nButtons = m_I2C.ReadRegister(mcp23x17::REG_GPIOA);
 		const uint8_t nButtonsChanged = (nButtons ^ m_nButtonsPrevious) & nButtons;
 
 		m_nButtonsPrevious = nButtons;
@@ -117,7 +114,7 @@ void ButtonsMcp::Run() {
 	}
 }
 
-void ButtonsMcp::SetLed(uint8_t nLed, bool bOn) {
+void ButtonsMcp::SetLed(const uint32_t nLed, const bool bOn) {
 	DEBUG_PRINTF("led%d %s", nLed, bOn ? "On" : "Off");
 
 	m_nPortB &= static_cast<uint8_t>(~(1U << nLed));
@@ -126,7 +123,7 @@ void ButtonsMcp::SetLed(uint8_t nLed, bool bOn) {
 		m_nPortB |= static_cast<uint8_t>(1U << nLed);
 	}
 
-	m_I2C.WriteRegister(mcp23x17::reg::GPIOB, m_nPortB);
+	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, m_nPortB);
 
 	DEBUG_PRINTF("%.2x", m_nPortB);
 }

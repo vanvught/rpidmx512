@@ -38,6 +38,7 @@
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
 									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
+									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.864894936" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -71,6 +72,7 @@
 									<listOptionValue builtIn="false" value="OUTPUT_DMX_SEND"/>
 									<listOptionValue builtIn="false" value="DISPLAY_UDF"/>
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
+									<listOptionValue builtIn="false" value="ARTNET_HAVE_DMXIN"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1034222076" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -93,7 +95,6 @@
 					<sourceEntries>
 						<entry excluding="firmware|lib" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="firmware"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="lib"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -113,7 +114,11 @@
 			<resource resourceType="PROJECT" workspacePath="/rpi_wifi_artnet_dmx"/>
 		</configuration>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings">
+		<doc-comment-owner id="org.eclipse.cdt.ui.doxygen">
+			<path value=""/>
+		</doc-comment-owner>
+	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>

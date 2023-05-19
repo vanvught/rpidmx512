@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,9 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "ledblink.h"
 
 #include "mdns.h"
-#include "mdnsservices.h"
+
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
@@ -85,43 +84,33 @@ void Hardware::RebootHandler() {
 	PixelPusher::Get()->Stop();
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	fw.Print("\x1b[32m" "PixelPusher controller 8x 4U" "\x1b[37m");
-
-	hw.SetLed(hardware::LedStatus::ON);
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
 	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
+
+	fw.Print("PixelPusher controller 8x 4U");
 	nw.Print();
 
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
 	MDNS mDns;
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_PP, pp::UDP_PORT_DATA, mdns::Protocol::UDP, "type=PixelPusher");
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
+	mDns.AddServiceRecord(nullptr, mdns::Services::PP, "type=PixelPusher");
 #if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=PixelPusher");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=PixelPusher");
 #endif
 	mDns.Print();
 
 #if defined (ENABLE_HTTPD)
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	PixelDmxConfiguration pixelDmxConfiguration;
@@ -214,26 +203,18 @@ void notmain(void) {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (configStore.Flash())
 		;
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
-
-	llrpOnlyDevice.Start();
-
-	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
-#endif
-
 	display.TextStatus("PixelPusher Start", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
 	pp.Start();
 
-	display.TextStatus("PixelPusher Started", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
+	display.TextStatus("PixelPusher Started", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_GREEN);
 
 	hw.WatchdogInit();
 
@@ -254,8 +235,6 @@ void notmain(void) {
 		httpDaemon.Run();
 #endif
 		display.Run();
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

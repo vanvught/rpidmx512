@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -402,9 +402,9 @@ void ArtNetPollTable::Dump() {
 	for (uint32_t i = 0; i < m_nPollTableEntries; i++) {
 		printf("\t" IPSTR " [" MACSTR "] |%-18s|%-64s|\n", IP2STR(m_pPollTable[i].IPAddress), MAC2STR(m_pPollTable[i].Mac), m_pPollTable[i].ShortName, m_pPollTable[i].LongName);
 
-		for (uint16_t nUniverse = 0; nUniverse < m_pPollTable[i].nUniversesCount; nUniverse++) {
+		for (uint32_t nUniverse = 0; nUniverse < m_pPollTable[i].nUniversesCount; nUniverse++) {
 			struct TArtNetNodeEntryUniverse *pArtNetNodeEntryUniverse = &m_pPollTable[i].Universe[nUniverse];
-			printf("\t %u [%u]\n", pArtNetNodeEntryUniverse->nUniverse, (Hardware::Get()->Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000);
+			printf("\t %u [%u]\n", pArtNetNodeEntryUniverse->nUniverse, (Hardware::Get()->Millis() - pArtNetNodeEntryUniverse->nLastUpdateMillis) / 1000U);
 		}
 		puts("");
 	}

@@ -32,6 +32,7 @@
 									<listOptionValue builtIn="false" value="E131_BRIDGE"/>
 									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
+									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.c.compiler.input.1467622751" superClass="cdt.managedbuild.tool.gnu.c.compiler.input"/>
 							</tool>
@@ -58,6 +59,7 @@
 									<listOptionValue builtIn="false" value="E131_BRIDGE"/>
 									<listOptionValue builtIn="false" value="NODE_RDMNET_LLRP_ONLY"/>
 									<listOptionValue builtIn="false" value="ENABLE_HTTPD"/>
+									<listOptionValue builtIn="false" value="E131_HAVE_DMXIN"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.66790533" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>

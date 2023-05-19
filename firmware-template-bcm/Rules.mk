@@ -57,7 +57,8 @@ $(info [${LIB7DEP}])
 
 COPS_COMMON=-DBARE_METAL -DNO_EMAC -DSD_WRITE_SUPPORT $(DEFINES)
 COPS_COMMON+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
-COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -nostdinc -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+COPS_COMMON+=-Wall -Werror -O2 -nostartfiles -nostdlib -ffreestanding -mhard-float -mfloat-abi=hard #-fstack-usage
+#COPS_COMMON+=-ffunction-sections -fdata-sections
 
 COPS=-mfpu=vfp -march=armv6zk -mtune=arm1176jzf-s -mcpu=arm1176jzf-s
 COPS+=-DRPI1
@@ -66,6 +67,8 @@ COPS+=$(COPS_COMMON)
 COPS7=-mfpu=neon-vfpv4 -march=armv7-a -mtune=cortex-a7
 COPS7+=-DRPI2
 COPS7+=$(COPS_COMMON)
+
+LDOPS=--gc-sections --print-gc-sections
 
 # Why does gcc not automatically select the correct path based on -m options?
 PLATFORM_LIBGCC:= -L $(shell dirname `$(CC) $(COPS) -print-libgcc-file-name`)/armv7-a/cortex-a7/hardfp/vfpv4
@@ -87,7 +90,7 @@ $(BUILD)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS) -c $$< -o $$@
 	
 $(BUILD)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 -nostdinc++ $(COPS) -c $$< -o $$@	
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -fno-threadsafe-statics -std=c++11 $(COPS) -c $$< -o $$@	
 endef
 
 define compile-objects7
@@ -95,7 +98,7 @@ $(BUILD7)$1/%.o: $(SOURCE)$1/%.c
 	$(CC) $(COPS7) -c $$< -o $$@
 	
 $(BUILD7)$1/%.o: $(SOURCE)$1/%.cpp
-	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 -nostdinc++ $(COPS7) -c $$< -o $$@		
+	$(CPP) -pedantic -fno-exceptions -fno-unwind-tables -fno-rtti -std=c++11 $(COPS7) -c $$< -o $$@		
 endef
 
 THISDIR=$(CURDIR)

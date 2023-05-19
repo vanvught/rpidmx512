@@ -90,6 +90,7 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 
 	const auto *pSrc = const_cast<char *>(pBuffer);
 	char buffer[MAX_LINE_LENGTH];
+	buffer[0] = '\n';
 
 	debug_dump(pBuffer, nLength);
 

@@ -2,7 +2,7 @@
  * @file rdmdevice.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -79,7 +79,7 @@ RDMDevice::RDMDevice() {
 	m_aUID[3] = aMacAddress[3];
 	m_aUID[4] = aMacAddress[4];
 	m_aUID[5] = aMacAddress[5];
-#else //FIXME remove debug code
+#else
 	const auto nIp = Network::Get()->GetIp();
 	m_aUID[5] = static_cast<uint8_t>(nIp >> 24);
 	m_aUID[4] = (nIp >> 16) & 0xFF;

@@ -2,7 +2,7 @@
  * @file dmxreceiver.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include "dmx.h"
 
 #include "lightset.h"
-#include "ledblink.h"
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -75,7 +75,7 @@ public:
 			if (s_IsActive) {
 				s_pLightSet->Stop(0);
 				s_IsActive = false;
-				LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 
 			nLength = -1;
@@ -94,7 +94,7 @@ public:
 				if (!s_IsActive) {
 					s_pLightSet->Start(0);
 					s_IsActive = true;
-					LedBlink::Get()->SetMode(ledblink::Mode::DATA);
+					Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 				}
 
 				return const_cast<uint8_t*>(pDmx);

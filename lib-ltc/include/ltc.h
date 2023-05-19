@@ -2,7 +2,7 @@
  * @file ltc.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -98,11 +98,6 @@ static constexpr auto FRAMES_TENS = 9;
 static constexpr auto FRAMES_UNITS = 10;
 }  // namespace index
 }  // namespace timecode
-
-namespace led_frequency {
-static constexpr uint32_t NO_DATA = 1;
-static constexpr uint32_t DATA = 3;
-}
 
 const char *get_type(ltc::Type type);
 ltc::Type get_type(uint8_t nFps);

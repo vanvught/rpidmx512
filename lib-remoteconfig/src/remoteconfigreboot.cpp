@@ -2,7 +2,7 @@
  * @file remoteconfigreboot.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,13 +53,9 @@ void RemoteConfig::HandleReboot() {
 
 	Network::Get()->Shutdown();
 
-	printf("Rebooting ...\n");
-
 	Display::Get()->Cls();
 	Display::Get()->TextStatus("Rebooting ...", Display7SegmentMessage::INFO_REBOOTING);
 
 	Hardware::Get()->Reboot();
 	__builtin_unreachable() ;
-
-	DEBUG_EXIT
 }

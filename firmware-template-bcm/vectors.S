@@ -8,7 +8,7 @@
  *	defined in arch/arm/include/asm/assembler.h
  *	Copyright (C) 1996-2000 Russell King
  */
- /* Copyright (C) 2016-2018 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+ /* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,7 +144,7 @@ reset:
 #endif
 
 	bl hardware_init
-    bl notmain
+    bl main
 halt:
 	wfe
 	b halt

@@ -29,8 +29,9 @@
 
 #include "midireader.h"
 #include "ltc.h"
-
 #include "timecodeconst.h"
+
+#include "hardware.h"
 
 // Input
 #include "midi.h"
@@ -262,8 +263,8 @@ void MidiReader::Run() {
 	}
 
 	if (Midi::Get()->GetUpdatesPerSecond() != 0)  {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 	} else {
-		LedBlink::Get()->SetFrequency(ltc::led_frequency::NO_DATA);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 	}
 }

@@ -2,7 +2,7 @@
  * @file pixeldmxparamsdmx.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,15 +23,14 @@
  * THE SOFTWARE.
  */
 
-#include <pixeldmxparams.h>
-#include <pixeldmxstore.h>
 #include <cstdint>
 #include <cassert>
 
-#include "pixeltype.h"
-#include "lightset.h"
-
 #include "pixeldmxparamsrdm.h"
+#include "pixeltype.h"
+#include "pixeldmxstore.h"
+
+#include "lightset.h"
 
 #include "debug.h"
 

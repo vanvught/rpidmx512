@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,9 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
+#if !defined(NO_EMAC)
+# include "networkconst.h"
+#endif
 
 #include "displayudf.h"
 #include "display_timeout.h"
@@ -37,7 +39,9 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 #include "rdmsensorsparams.h"
-#include "rdmsubdevicesparams.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "rdmsubdevicesparams.h"
+#endif
 
 #include "factorydefaults.h"
 
@@ -60,7 +64,9 @@
 #include "storepixeldmx.h"
 #include "storerdmdevice.h"
 #include "storerdmsensors.h"
-#include "storerdmsubdevices.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "storerdmsubdevices.h"
+#endif
 #include "storedisplayudf.h"
 
 #include "firmwareversion.h"
@@ -72,29 +78,26 @@ void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	config_mode_init();
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	lb.SetMode(ledblink::Mode::OFF_ON);
+#if !defined(NO_EMAC)
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+#else
+	Network nw;
+#endif
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
 
 	const auto isConfigMode = is_config_mode();
 
-	fw.Print();
-
+	fw.Print("RDM Responder");
 #if !defined(NO_EMAC)
-	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
 	nw.Print();
 #endif
 
@@ -139,22 +142,6 @@ void notmain(void) {
 
 	PixelDmxParamsRdm pixelDmxParamsRdm(&storePixelDmx);
 
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
-		rdmSensorsParams.Set();
-	}
-
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
-
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
-		rdmSubDevicesParams.Set();
-	}
-
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
@@ -165,17 +152,35 @@ void notmain(void) {
 	RDMPersonality *personalities[2] = { new RDMPersonality(aDescription, &pixelDmx), new RDMPersonality("Config mode", &pixelDmxParamsRdm) };
 
 	RDMResponder rdmResponder(personalities, 2);
+
+	StoreRDMSensors storeRdmSensors;
+	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
+
+	if (rdmSensorsParams.Load()) {
+		rdmSensorsParams.Dump();
+		rdmSensorsParams.Set();
+	}
+
+#if defined (ENABLE_RDM_SUBDEVICES)
+	StoreRDMSubDevices storeRdmSubDevices;
+	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
+
+	if (rdmSubDevicesParams.Load()) {
+		rdmSubDevicesParams.Dump();
+		rdmSubDevicesParams.Set();
+	}
+#endif
+
 	rdmResponder.Init();
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&rdmResponder);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&rdmResponder);
 	}
-
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
 	rdmResponder.Start();
 	rdmResponder.DmxDisableOutput(!isConfigMode && (nTestPattern != pixelpatterns::Pattern::NONE));
@@ -195,12 +200,14 @@ void notmain(void) {
 	}
 
 #if !defined(NO_EMAC)
-	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::PIXEL);
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
+	RemoteConfig remoteConfig(remoteconfig::Node::RDMRESPONDER, remoteconfig::Output::PIXEL);
 
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
+	StoreRemoteConfig storeRemoteConfig;
+	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
+
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (configStore.Flash())
@@ -236,8 +243,7 @@ void notmain(void) {
 		display.Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 	}
 
-	lb.SetMode(ledblink::Mode::NORMAL);
-
+	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();
 
 	for (;;) {
@@ -252,8 +258,6 @@ void notmain(void) {
 			pixelTestPattern.Run();
 		}
 		display.Run();
-		lb.Run();
+		hw.Run();
 	}
-}
-
 }

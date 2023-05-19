@@ -84,8 +84,8 @@ PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
 
 	AutoIncrement(true);
 
-	for (uint8_t i = 0; i < 16; i ++) {
-		Write(i, static_cast<uint16_t>(0), static_cast<uint16_t>(0x1000));
+	for (uint32_t i = 0; i < 16; i ++) {
+		Write(static_cast<uint8_t>(i), static_cast<uint16_t>(0), static_cast<uint16_t>(0x1000));
 	}
 
 	Sleep(false);
@@ -332,7 +332,7 @@ void PCA9685::Dump() {
 
 	uint16_t on, off;
 
-	for (uint8_t nLed = 0; nLed <= 15; nLed ++) {
+	for (uint32_t nLed = 0; nLed <= 15; nLed ++) {
 		Read(nLed, &on, &off);
 		printf("LED%d_ON  : %04x\n", nLed, on);
 		printf("LED%d_OFF : %04x\n", nLed, off);

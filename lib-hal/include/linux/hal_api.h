@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,9 +26,18 @@
 #ifndef LINUX_HAL_API_H_
 #define LINUX_HAL_API_H_
 
+#include <cstdint>
+
 #if defined (RASPPI)
 # define FUNC_PREFIX(x) bcm2835_##x
 # include "bcm2835.h"
+# if defined(LINUX_HAVE_I2C)
+#  undef bcm2835_i2c_begin
+#  undef bcm2835_i2c_set_baudrate
+#  undef bcm2835_i2c_setSlaveAddress
+#  undef bcm2835_i2c_read
+#  undef bcm2835_i2c_write
+# endif
 #endif
 
 #ifdef __cplusplus

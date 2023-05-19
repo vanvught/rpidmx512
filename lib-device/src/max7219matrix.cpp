@@ -2,7 +2,7 @@
  * @file max7219matrix.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -141,7 +141,7 @@ void Max7219Matrix::UpdateCharacter(uint32_t nChar, const uint8_t pBytes[8]) {
 	for (uint32_t j = 0; j < 8; j++) {
 		uint8_t b = 0;
 
-		for (uint8_t y = 0; y < 8; y++) {
+		for (uint32_t y = 0; y < 8; y++) {
 			const auto set = pBytes[y] & (1U << (7U - j));
 			b |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
 		}
@@ -166,7 +166,7 @@ void Max7219Matrix::WriteAll(uint8_t nRegister, uint8_t nData) {
 uint8_t Max7219Matrix::Rotate(uint32_t r, uint32_t x) {
 	uint8_t nByte = 0;
 
-	for (uint8_t y = 0; y < 8; y++) {
+	for (uint32_t y = 0; y < 8; y++) {
 		const auto set = cp437_font[r][y] & (1U << x);
 		nByte |= static_cast<uint8_t>((set != 0) ? (1U << y) : 0);
 	}

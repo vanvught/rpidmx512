@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
 
 #include "console.h"
 #include "display.h"
@@ -74,12 +73,9 @@ constexpr char RUN_RDM[] = "Running RDM Discovery ...";
 constexpr char START_NODE[] = "Starting the Node ...";
 constexpr char NODE_STARTED[] = "Node started";
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
 	Network nw;
-	LedBlink lb;
 	Display display;
 
 #if defined (ORANGE_PI)
@@ -90,7 +86,12 @@ void notmain(void) {
 	StorePixelDmx storePixelDmx;
 	StoreRDMDevice storeRdmDevice;
 
-	ArtNetParams artnetparams(StoreArtNet::Get());
+	ArtNetNode node;
+
+	StoreArtNet storeArtNet;
+	node.SetArtNetStore(&storeArtNet);
+
+	ArtNetParams artnetparams(&storeArtNet);
 #else
 	ArtNetParams artnetparams;
 #endif
@@ -129,14 +130,10 @@ void notmain(void) {
 	console_set_top_row(3);
 #endif
 
-	hw.SetLed(hardware::LedStatus::ON);
-
 	console_status(CONSOLE_YELLOW, NETWORK_INIT);
 	display.TextStatus(NETWORK_INIT);
 
 	nw.Init();
-
-	ArtNetNode node;
 
 #ifndef H3
 	DMXMonitor monitor;
@@ -187,7 +184,7 @@ void notmain(void) {
 
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
-		for (uint8_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
+		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
 			node.SetUniverseSwitch(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
@@ -232,7 +229,7 @@ void notmain(void) {
 			display.TextStatus(RUN_RDM);
 			discovery.Full(0);
 
-			node.SetRdmHandler((ArtNetRdm *)&discovery);
+			node.SetRdmHandler(&discovery);
 		}
 	}
 
@@ -247,7 +244,7 @@ void notmain(void) {
 		dmxSend.Print();
 	}
 
-	for (uint8_t i = 0; i < 7; i++) {
+	for (uint32_t i = 0; i < 7; i++) {
 		display.ClearLine(i);
 	}
 
@@ -302,11 +299,9 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		node.Run();
-		lb.Run();
 #if defined (ORANGE_PI)
 		configStore.Flash();
 #endif
+		hw.Run();
 	}
-}
-
 }

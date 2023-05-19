@@ -2,7 +2,7 @@
  * @file software_version.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define SOFTWARE_VERSION_H_
 
 #if defined(H3)
- constexpr char SOFTWARE_VERSION[] = "2.1";
+ constexpr char SOFTWARE_VERSION[] = "2.2";
 #else
  constexpr char SOFTWARE_VERSION[] = "1.6";
 #endif

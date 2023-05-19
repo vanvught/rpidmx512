@@ -2,7 +2,7 @@
  * @file e131controller.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <cassert>
 
 #include "e131controller.h"
@@ -79,9 +77,8 @@ E131Controller::E131Controller() {
 
 	SetSynchronizationAddress();
 
-	struct in_addr addr;
-	static_cast<void>(inet_aton("239.255.0.0", &addr));
-	m_DiscoveryIpAddress = addr.s_addr | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
+	const auto nIpMulticast = network::convert_to_uint(239, 255, 0, 0);
+	m_DiscoveryIpAddress = nIpMulticast | ((universe::DISCOVERY & static_cast<uint32_t>(0xFF)) << 24) | ((universe::DISCOVERY & 0xFF00) << 8);
 
 	// TE131DataPacket
 	m_pE131DataPacket = new struct TE131DataPacket;

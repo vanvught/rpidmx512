@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,6 +35,10 @@
 #include "h3.h"
 #include "h3_watchdog.h"
 #include "h3_thermal.h"
+
+#if defined (DEBUG_STACK)
+ void stack_debug_run();
+#endif
 
 extern "C" {
 uint32_t hardware_uptime_seconds(void);
@@ -76,14 +80,6 @@ public:
 
 	float GetCoreTemperatureMax() {
 		return static_cast<float>(h3_thermal_getalarm());
-	}
-
-	void SetLed(hardware::LedStatus tLedStatus) {
-		if (tLedStatus == hardware::LedStatus::OFF) {
-			hardware_led_set(0);
-		} else {
-			hardware_led_set(1);
-		}
 	}
 
 	bool Reboot();
@@ -137,6 +133,33 @@ public:
 		return "www.orangepi-dmx.org";
 	}
 
+	void SetModeWithLock(hardware::ledblink::Mode mode, bool doLock);
+	void SetMode(hardware::ledblink::Mode mode);
+	hardware::ledblink::Mode GetMode() const {
+		return m_Mode;
+	}
+
+	void Run() {
+		if (__builtin_expect (m_nTicksPerSecond == 0, 0)) {
+			return;
+		}
+
+		const auto nMicros = H3_TIMER->AVS_CNT1;
+
+		if (__builtin_expect ((nMicros - m_nMicrosPrevious < m_nTicksPerSecond), 0)) {
+			return;
+		}
+
+		m_nMicrosPrevious = nMicros;
+
+		m_nToggleLed ^= 0x1;
+		hardware_led_set(m_nToggleLed);
+
+#if defined (DEBUG_STACK)
+		stack_debug_run();
+#endif
+	}
+
 	static Hardware *Get() {
 		return s_pThis;
 	}
@@ -144,11 +167,42 @@ public:
 private:
 	void RebootHandler();
 
+	void SetFrequency(uint32_t nFreqHz) {
+		switch (nFreqHz) {
+		case 0:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(0);
+			break;
+		case 1:
+			m_nTicksPerSecond = (1000000 / 1);
+			break;
+		case 3:
+			m_nTicksPerSecond = (1000000 / 3);
+			break;
+		case 5:
+			m_nTicksPerSecond = (1000000 / 5);
+			break;
+		case 255:
+			m_nTicksPerSecond = 0;
+			hardware_led_set(1);
+			break;
+		default:
+			m_nTicksPerSecond = (1000000 / nFreqHz);
+			break;
+		}
+	}
+
 private:
 #if !defined(DISABLE_RTC)
 	HwClock m_HwClock;
 #endif
 	bool m_bIsWatchdog { false };
+
+	hardware::ledblink::Mode m_Mode { hardware::ledblink::Mode::UNKNOWN };
+	bool m_doLock { false };
+	uint32_t m_nTicksPerSecond { 0 };
+	int32_t m_nToggleLed { 0 };
+	uint32_t m_nMicrosPrevious { 0 };
 
 	static Hardware *s_pThis;
 };

@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,12 +23,8 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cstdio>
-#include <cstring>
-#include <cassert>
-
 #include "remoteconfig.h"
+#include "display.h"
 
 #include "gd32.h"
 
@@ -39,8 +35,10 @@ void RemoteConfig::PlatformHandleTftpSet() {
 
 	if (m_bEnableTFTP) {
 		bkp_data_write(BKP_DATA_1, 0xA5A5);
+		Display::Get()->TextStatus("TFTP On ", Display7SegmentMessage::INFO_TFTP_ON, CONSOLE_GREEN);
 	} else {
 		bkp_data_write(BKP_DATA_1, 0x0);
+		Display::Get()->TextStatus("TFTP Off", Display7SegmentMessage::INFO_TFTP_OFF, CONSOLE_GREEN);
 	}
 
 	DEBUG_EXIT

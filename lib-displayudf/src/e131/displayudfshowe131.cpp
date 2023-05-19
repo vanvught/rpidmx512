@@ -2,7 +2,7 @@
  * @file displayudfshowe131.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,27 +32,26 @@
 
 #include "debug.h"
 
-using namespace e131;
-
-void DisplayUdf::Show(E131Bridge *pE131Bridge) {
+void DisplayUdf::Show(E131Bridge *pE131Bridge, uint32_t nDmxPortIndexOffset) {
 	DEBUG_ENTRY
 
+	m_nPortIndexOffset = nDmxPortIndexOffset;
+
+	DEBUG_PRINTF("m_nDmxPortIndexOffset=%u", m_nPortIndexOffset);
+
 	Show();
-	
-#if defined (OUTPUT_DMX_ARTNET)
-	uint16_t nUniverse;
-	if (pE131Bridge->GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
-		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNIVERSE)], "U: %d", nUniverse);
-	}
-#endif
 
 	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
-	for (uint32_t i = 0; i < std::min(4U, e131bridge::MAX_PORTS); i++) {
-		uint16_t nUniverse;
+	for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
+		const auto nPortIndex = nBridgePortIndex + m_nPortIndexOffset;
+		const auto nLabelIndex = static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + nBridgePortIndex;
 
-		if (pE131Bridge->GetUniverse(i, nUniverse, lightset::PortDir::OUTPUT)) {
-			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + i], "Port %c: %d %s", ('A' + i), nUniverse, lightset::get_merge_mode(pE131Bridge->GetMergeMode(i), true));
+		if (nLabelIndex != 0xFF) {
+			uint16_t nUniverse;
+			if (pE131Bridge->GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
+				Printf(m_aLabels[nLabelIndex], "Port %c: %d %s", ('A' + nBridgePortIndex), nUniverse, lightset::get_merge_mode(pE131Bridge->GetMergeMode(nPortIndex), true));
+			}
 		}
 	}
 

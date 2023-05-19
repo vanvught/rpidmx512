@@ -61,7 +61,7 @@ float HTU21D::GetHumidity() {
 
 
 uint16_t HTU21D::ReadRaw(uint8_t nCmd) {
-	HAL_I2C::Write(static_cast<char>(nCmd));
+	HAL_I2C::Write(nCmd);
 
 	char buf[3] = {0};
 

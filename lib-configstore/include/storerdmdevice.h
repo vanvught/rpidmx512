@@ -2,7 +2,7 @@
  * @file storerdmdevice.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,17 +37,17 @@ class StoreRDMDevice final: public RDMDeviceParamsStore, public RDMDeviceStore {
 public:
 	StoreRDMDevice();
 
-	void Update(const struct TRDMDeviceParams *pRDMDeviceParams) override {
-		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+	void Update(const struct rdm::deviceparams::Params *pParams) override {
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, pParams, sizeof(struct rdm::deviceparams::Params));
 	}
 
-	void Copy(struct TRDMDeviceParams *pRDMDeviceParams) override {
-		ConfigStore::Get()->Copy(configstore::Store::RDMDEVICE, pRDMDeviceParams, sizeof(struct TRDMDeviceParams));
+	void Copy(struct rdm::deviceparams::Params *pRDMDeviceParams) override {
+		ConfigStore::Get()->Copy(configstore::Store::RDMDEVICE, pRDMDeviceParams, sizeof(struct rdm::deviceparams::Params));
 	}
 
 	void SaveLabel(const char *pLabel, uint8_t nLength) override {
-		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, aDeviceRootLabel), pLabel, nLength, RDMDeviceParamsMask::LABEL);
-		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, __builtin_offsetof(struct TRDMDeviceParams, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), RDMDeviceParamsMask::LABEL);
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, __builtin_offsetof(struct rdm::deviceparams::Params, aDeviceRootLabel), pLabel, nLength, rdm::deviceparams::Mask::LABEL);
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, __builtin_offsetof(struct rdm::deviceparams::Params, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), rdm::deviceparams::Mask::LABEL);
 	}
 
 	static StoreRDMDevice *Get() {

@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,6 @@
 
 #include "hardware.h"
 #include "noemac/network.h"
-#include "ledblink.h"
 
 #include "display.h"
 
@@ -52,17 +51,12 @@
 static constexpr char widget_mode_names[4][12] ALIGNED = {"DMX_RDM", "DMX", "RDM" , "RDM_SNIFFER" };
 static constexpr TRDMDeviceInfoData deviceLabel ALIGNED = { const_cast<char*>("Orange Pi Zero DMX USB Pro"), 26 };
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display; 	// Display is not supported. We just need a pointer to object
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
+	Network nw;
+	FlashCodeInstall spiFlashInstall;
 	StoreWidget storeWidget;
 	StoreRDMDevice storeRDMDevice;
 
@@ -108,9 +102,7 @@ void notmain(void) {
 	for (;;) {
 		hw.WatchdogFeed();
 		widget.Run();
-		lb.Run();
 		configStore.Flash();
+		hw.Run();
 	}
-}
-
 }

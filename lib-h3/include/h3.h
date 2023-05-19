@@ -2,7 +2,7 @@
  * @file h3.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,12 @@
 
 #ifndef H3_H_
 #define H3_H_
+
+#ifdef __cplusplus
+# define _CAST(x)	reinterpret_cast<x>
+#else
+# define _CAST(x)	(x)
+#endif
 
 #define MEGABYTE				0x100000
 
@@ -155,8 +161,8 @@ typedef enum T_H3_IRQn {
 
 #ifdef __ASSEMBLY__
 #else
-#include <stdint.h>
-#include <stddef.h>
+# include <stdint.h>
+# include <stddef.h>
 
 #ifdef __cplusplus
 # define	__I		volatile		///< defines 'read only' permissions
@@ -721,12 +727,6 @@ typedef struct T_H3_HDMI_PHY {
 	__IO uint32_t UNK3;			///< 0x34
 	__IO uint32_t STATUS;		///< 0x38
 } H3_HDMI_PHY_TypeDef;
-
-#ifdef __cplusplus
-# define _CAST(x)	reinterpret_cast<x>
-#else
-# define _CAST(x)	(x)
-#endif
 
 #define H3_SYSTEM		(_CAST(H3_SYSTEM_TypeDef *)(H3_SYSTEM_BASE))
 #define H3_LCD0			(_CAST(H3_TCON_TypeDef *)(H3_LCD0_BASE))

@@ -1290,17 +1290,17 @@ void RDMHandler::SetPresetPlayback(__attribute__((unused)) bool IsBroadcast, __a
 void RDMHandler::GetSlotInfo(uint16_t nSubDevice) {
     auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
 	const auto nDmxFootPrint = RDMDeviceResponder::Get()->GetDmxFootPrint(nSubDevice);
-	lightset::SlotInfo tSlotInfo;
+	lightset::SlotInfo slotInfo;
 
 	uint32_t j = 0;
 
-	for (uint16_t i = 0; i < std::min(nDmxFootPrint, static_cast<uint16_t>(46)); i++) {
-		if (RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, i, tSlotInfo)) {
+	for (uint32_t i = 0; i < std::min(static_cast<uint32_t>(nDmxFootPrint), static_cast<uint32_t>(46)); i++) {
+		if (RDMDeviceResponder::Get()->GetSlotInfo(nSubDevice, static_cast<uint16_t>(i), slotInfo)) {
 			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(i >> 8);
 			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(i);
-			pRdmDataOut->param_data[j++] = tSlotInfo.nType;
-			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(tSlotInfo.nCategory >> 8);
-			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(tSlotInfo.nCategory);
+			pRdmDataOut->param_data[j++] = slotInfo.nType;
+			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(slotInfo.nCategory >> 8);
+			pRdmDataOut->param_data[j++] = static_cast<uint8_t>(slotInfo.nCategory);
 		}
 	}
 

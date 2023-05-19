@@ -28,10 +28,9 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "ledblink.h"
 
 #include "mdns.h"
-#include "mdnsservices.h"
+
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
@@ -79,61 +78,54 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+static constexpr auto DMXPORT_OFFSET = 4U;
+
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
-//	ArtNet4Node::Get()->Stop();
+	ArtNet4Node::Get()->Stop();
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	fw.Print("Art-Net 4 " "\x1b[32m" "Pixel controller {1x 4 Universes}" "\x1b[37m");
-
-	hw.SetLed(hardware::LedStatus::ON);
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
 	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
+
+	fw.Print("Art-Net 4 Pixel controller {1x 4 Universes}");
 	nw.Print();
 
-#if defined (ENABLE_HTTPD)
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
 	MDNS mDns;
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=Art-Net 4 Pixel");
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
+#if defined (ENABLE_HTTPD)
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 Pixel");
+#endif
 	mDns.Print();
 
+#if defined (ENABLE_HTTPD)
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	StoreArtNet storeArtNet;
-	ArtNetParams artnetParams(&storeArtNet);
-
 	ArtNet4Node node;
 
-	if (artnetParams.Load()) {
-		artnetParams.Set();
-		artnetParams.Dump();
-	}
-	
+	StoreArtNet storeArtNet(DMXPORT_OFFSET);
+	ArtNetParams artnetParams(&storeArtNet);
+
 	node.SetArtNetStore(&storeArtNet);
+
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(DMXPORT_OFFSET);
+	}
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
@@ -141,8 +133,8 @@ void notmain(void) {
 	PixelDmxParams pixelDmxParams(&storePixelDmx);
 
 	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Set(&pixelDmxConfiguration);
 		pixelDmxParams.Dump();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
@@ -196,8 +188,8 @@ void notmain(void) {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
@@ -207,12 +199,12 @@ void notmain(void) {
 	node.Print();
 	pixelDmx.Print();
 
-	display.SetTitle("Art-Net 4 Pixel 1");
+	display.SetTitle("Art-Net 4 Pixel 1x4U");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::NODE_NAME);
 	display.Set(4, displayudf::Labels::VERSION);
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::BOARDNAME);
+	display.Set(6, displayudf::Labels::AP);
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
@@ -223,11 +215,11 @@ void notmain(void) {
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
 	if (displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
 	}
 
-	display.Show(&node);
+	display.Show(&node, DMXPORT_OFFSET);
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);
@@ -247,14 +239,6 @@ void notmain(void) {
 	while (configStore.Flash())
 		;
 
-#if defined (NODE_RDMNET_LLRP_ONLY)
-	display.TextStatus(RDMNetConst::MSG_START, Display7SegmentMessage::INFO_RDMNET_START, CONSOLE_YELLOW);
-
-	llrpOnlyDevice.Start();
-
-	display.TextStatus(RDMNetConst::MSG_STARTED, Display7SegmentMessage::INFO_RDMNET_STARTED, CONSOLE_GREEN);
-#endif
-
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
 	node.Start();
@@ -272,16 +256,14 @@ void notmain(void) {
 		llrpOnlyDevice.Run();
 #endif
 		configStore.Flash();
-		lb.Run();
-		display.Run();
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
-#if defined (ENABLE_HTTPD)
 		mDns.Run();
+#if defined (ENABLE_HTTPD)
 		httpDaemon.Run();
 #endif
+		display.Run();
+		hw.Run();
 	}
-}
-
 }

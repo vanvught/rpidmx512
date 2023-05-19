@@ -61,7 +61,7 @@ void RDMSubDeviceDummy::Data(const uint8_t* pData, uint32_t nLength) {
 	printf("RDMSubDeviceDummy::Data(*pData:%p, nLength:%d)\n", static_cast<const void*>(pData), nLength);
 	printf("%d:%d:%d: ", nLength, DMX_FOOTPRINT, nDmxStartAddress);
 
-	for (uint16_t i = static_cast<uint16_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
+	for (uint32_t i = static_cast<uint32_t>(nDmxStartAddress - 1), j = 0; (i < nLength) && (j < DMX_FOOTPRINT); i++, j++) {
 		switch (GetPersonalityCurrent()) {
 		case 1:
 			printf("%.2x ", pData[i]);

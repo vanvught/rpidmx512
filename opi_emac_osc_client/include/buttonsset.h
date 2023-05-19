@@ -2,7 +2,7 @@
  * @file buttonsset.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,22 +31,20 @@
 
 class ButtonsSet {
 public:
-	ButtonsSet() {
-	}
-	virtual ~ButtonsSet() {
-	}
+	ButtonsSet() { }
+	virtual ~ButtonsSet() {}
 
 	virtual bool Start()= 0;
 	virtual void Stop()= 0;
 
 	virtual void Run()= 0;
 
-	uint8_t GetButtonsCount() {
+	uint32_t GetButtonsCount() {
 		return m_nButtonsCount;
 	}
 
 protected:
-	uint8_t m_nButtonsCount = 0;
+	uint32_t m_nButtonsCount = 0;
 };
 
 #endif /* BUTTONSSET_H_ */

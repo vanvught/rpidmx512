@@ -2,7 +2,7 @@
  * @file rdmsubdevices.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,7 @@ RDMSubDevices::RDMSubDevices()  {
 	s_pThis = this;
 
 #if defined(ENABLE_RDM_SUBDEVICES)
-	m_pRDMSubDevice = new RDMSubDevice*[rdm::subdevices::max];
+	m_pRDMSubDevice = new RDMSubDevice*[rdm::subdevices::MAX];
 	assert(m_pRDMSubDevice != nullptr);
 
 # ifndef NDEBUG
@@ -194,4 +194,24 @@ void RDMSubDevices::SetFactoryDefaults() {
 			m_pRDMSubDevice[i]->SetFactoryDefaults();
 		}
 	}
+}
+
+const char* RDMSubDevices::GetTypeString(rdm::subdevices::Types type) {
+	if (type < rdm::subdevices::Types::UNDEFINED) {
+		return RDMSubDevicesConst::TYPE[static_cast<uint8_t>(type)];
+	}
+
+	return "Unknown";
+}
+
+rdm::subdevices::Types RDMSubDevices::GetTypeString(const char *pValue) {
+	assert(pValue != nullptr);
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED); i++) {
+		if (strcasecmp(pValue, RDMSubDevicesConst::TYPE[i]) == 0) {
+			return static_cast<rdm::subdevices::Types>(i);
+		}
+	}
+
+	return rdm::subdevices::Types::UNDEFINED;
 }

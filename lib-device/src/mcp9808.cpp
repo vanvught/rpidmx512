@@ -2,7 +2,7 @@
  * @file mcp9808.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,13 +57,12 @@ MCP9808::MCP9808(uint8_t nAddress) : HAL_I2C(nAddress == 0 ? I2C_ADDRESS : nAddr
 }
 
 float MCP9808::Get() {
-	const uint16_t nValue = ReadRegister16(reg::AMBIENT_TEMP);
-	auto fTemperature = static_cast<float>(nValue
-			& static_cast<uint16_t>(0x0FFF));
+	const auto nValue = ReadRegister16(reg::AMBIENT_TEMP);
+	auto fTemperature = static_cast<float>(nValue & 0x0FFF);
 
 	fTemperature /= 16.0f;
 
-	if ((nValue & static_cast<uint16_t>(0x1000)) == static_cast<uint16_t>(0x1000)) {
+	if ((nValue & 0x1000) == 0x1000) {
 		fTemperature -= 256.0f;
 	}
 

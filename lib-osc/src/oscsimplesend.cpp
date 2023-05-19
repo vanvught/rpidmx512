@@ -2,7 +2,7 @@
  * @file oscsimplesend.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,7 +60,9 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 		UpdateMessage(pPath, nPathLength, 's');
 
 		memset(s_Message + nMessageLength - 4, 0, 4);
-		strcpy(&s_Message[nPathLength + 4], pString);
+
+		assert((nPathLength + 4) < sizeof(s_Message));
+		strncpy(&s_Message[nPathLength + 4], pString, sizeof(s_Message) - (nPathLength + 4));
 
 		Send(nMessageLength, nHandle, nIpAddress, nPort);
 	}
@@ -107,7 +109,9 @@ OscSimpleSend::OscSimpleSend(int32_t nHandle, uint32_t nIpAddress , uint16_t nPo
 
 void OscSimpleSend::UpdateMessage(const char *pPath, uint32_t nPathLength, char cType) {
 	memset(s_Message + nPathLength - 4, 0, 4);
-	strcpy(s_Message, pPath);
+	strncpy(s_Message, pPath, sizeof(s_Message));
+
+	assert(nPathLength < sizeof(s_Message));
 
 	s_Message[nPathLength++] = ',';
 	s_Message[nPathLength++] = cType;

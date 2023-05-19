@@ -2,7 +2,7 @@
  * @file dislpayset.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,11 +41,11 @@ class DisplaySet {
 public:
 	virtual ~DisplaySet() {}
 
-	uint8_t GetColumns() const {
+	uint32_t GetColumns() const {
 		return m_nCols;
 	}
 
-	uint8_t GetRows() const {
+	uint32_t GetRows() const {
 		return m_nRows;
 	}
 
@@ -60,14 +60,14 @@ public:
 	virtual bool Start()= 0;
 
 	virtual void Cls()= 0;
-	virtual void ClearLine(uint8_t nLine)= 0;
+	virtual void ClearLine(uint32_t nLine)= 0;
 
 	virtual void PutChar(int)= 0;
 	virtual void PutString(const char*)= 0;
 
-	virtual void TextLine(uint8_t nLine, const char *pData, uint32_t nLength)= 0;
+	virtual void TextLine(uint32_t nLine, const char *pData, uint32_t nLength)= 0;
 
-	virtual void SetCursorPos(uint8_t nCol, uint8_t nRow)= 0;
+	virtual void SetCursorPos(uint32_t nCol, uint32_t nRow)= 0;
 	virtual void SetCursor(uint32_t)= 0;
 
 	virtual void SetSleep(__attribute__((unused)) bool bSleep) {}
@@ -77,8 +77,8 @@ public:
 	virtual void PrintInfo() {}
 
 protected:
-	uint8_t m_nCols;
-	uint8_t m_nRows;
+	uint32_t m_nCols;
+	uint32_t m_nRows;
 	uint8_t m_nContrast { 0x7F };
 	bool m_bIsFlippedVertically { false };
 };

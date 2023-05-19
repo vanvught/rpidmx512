@@ -2,7 +2,7 @@
  * @file showfiletftp.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,8 +45,8 @@ void ShowFileTFTP::Exit() {
 	DEBUG_EXIT
 }
 
-bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
+bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	uint32_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {
@@ -58,8 +58,8 @@ bool ShowFileTFTP::FileOpen(const char *pFileName, __attribute__((unused)) TFTPM
 	return (m_pFile != nullptr);
 }
 
-bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) TFTPMode tMode) {
-	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(tMode));
+bool ShowFileTFTP::FileCreate(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	uint32_t nShowFileNumber;
 	if (!ShowFile::CheckShowFileName(pFileName, nShowFileNumber)) {

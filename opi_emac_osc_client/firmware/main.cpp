@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,11 +30,10 @@
 #include "network.h"
 #include "networkconst.h"
 #include "storenetwork.h"
-#include "ledblink.h"
 #include "display.h"
 
 #include "mdns.h"
-#include "mdnsservices.h"
+
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
@@ -64,17 +63,19 @@ void Hardware::RebootHandler() {
 
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
+
+	fw.Print("OSC Client");
+	nw.Print();
 
 	StoreOscClient storeOscClient;
 
@@ -86,30 +87,18 @@ void notmain(void) {
 		params.Set(&client);
 	}
 
-	fw.Print();
-
-	hw.SetLed(hardware::LedStatus::ON);
-	lb.SetLedBlinkDisplay(new DisplayHandler);
-
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
-	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
-	nw.Print();
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 
 	MDNS mDns;
-
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_OSC, client.GetPortIncoming(), mdns::Protocol::UDP, "type=client");
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
 #if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=OSC Client");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=OSC Client");
 #endif
 	mDns.Print();
+
 #if defined (ENABLE_HTTPD)
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
@@ -141,15 +130,15 @@ void notmain(void) {
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
+	if (remoteConfigParams.Load()) {
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (configStore.Flash())
 		;
 
-	for (uint8_t i = 1; i < 7 ; i++) {
+	for (uint32_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
 	}
 
@@ -166,8 +155,7 @@ void notmain(void) {
 
 	display.TextStatus(OscClientMsgConst::STARTED, Display7SegmentMessage::INFO_OSCCLIENT_STARTED, CONSOLE_GREEN);
 
-	lb.SetMode(ledblink::Mode::NORMAL);
-
+	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 	hw.WatchdogInit();
 
 	for (;;) {
@@ -178,11 +166,10 @@ void notmain(void) {
 		remoteConfig.Run();
 		configStore.Flash();
 		mDns.Run();
-		lb.Run();
-		display.Run();
 #if defined (ENABLE_HTTPD)
 		httpDaemon.Run();
 #endif
+		display.Run();
+		hw.Run();
 	}
-}
 }

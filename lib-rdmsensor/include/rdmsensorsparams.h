@@ -2,7 +2,7 @@
  * @file rdmsensorsparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,25 +29,31 @@
 #include <cstdint>
 
 #include "rdmsensors.h"
+#include "rdmsensorstore.h"
 
-struct TRDMSensorsParams {
-	uint32_t nCount;
+namespace rdm {
+namespace sensorsparams {
+struct Params {
+	uint32_t nDevices;
 	struct {
 		uint8_t nType;
 		uint8_t nAddress;
 		uint8_t nReserved;
-	} __attribute__((packed)) Entry[rdm::sensors::max];
+	} __attribute__((packed)) Entry[rdm::sensors::devices::MAX];
+	int16_t nCalibrate[rdm::sensors::MAX];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TRDMSensorsParams) <= rdm::sensors::store, "struct TRDMSensorsParams is too large");
+static_assert(sizeof(struct Params) <= rdm::sensors::STORE, "struct Params is too large");
+
+}  // namespace sensorsparams
+}  // namespace rdm
 
 class RDMSensorsParamsStore {
 public:
-	virtual ~RDMSensorsParamsStore() {
-	}
+	virtual ~RDMSensorsParamsStore() {}
 
-	virtual void Update(const struct TRDMSensorsParams *pRDMSensorsParams)=0;
-	virtual void Copy(struct TRDMSensorsParams *pRDMSensorsParams)=0;
+	virtual void Update(const rdm::sensorsparams::Params *pParams)=0;
+	virtual void Copy(rdm::sensorsparams::Params *pParams)=0;
 };
 
 class RDMSensorsParams {
@@ -57,12 +63,12 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRDMSensorsParams *pRDMSensorsParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const rdm::sensorsparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Dump();
 
-	void Set();
+	void Set(RDMSensorStore *pRDMSensorStore = nullptr);
 
     static void staticCallbackFunction(void *p, const char *s);
 
@@ -72,7 +78,7 @@ private:
 
 private:
 	RDMSensorsParamsStore *m_pRDMSensorsParamsStore;
-	TRDMSensorsParams m_tRDMSensorsParams;
+	rdm::sensorsparams::Params m_Params;
 };
 
 #endif /* RDMSENSORSPARAMS_H_ */

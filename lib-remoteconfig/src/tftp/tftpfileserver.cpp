@@ -2,7 +2,7 @@
  * @file tftpfileserver.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,19 +56,19 @@ void TFTPFileServer::Exit() {
 }
 
 
-bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) TFTPMode tMode) {
+bool TFTPFileServer::FileOpen(__attribute__((unused)) const char* pFileName, __attribute__((unused)) tftp::Mode tMode) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
-	return (false);
+	return false;
 }
 
-bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
+bool TFTPFileServer::FileCreate(const char* pFileName, tftp::Mode mode) {
 	DEBUG_ENTRY
 
 	assert(pFileName != nullptr);
 
-	if (tMode != TFTPMode::BINARY) {
+	if (mode != tftp::Mode::BINARY) {
 		DEBUG_EXIT
 		return false;
 	}
@@ -78,8 +78,7 @@ bool TFTPFileServer::FileCreate(const char* pFileName, TFTPMode tMode) {
 		return false;
 	}
 
-	printf("TFTP started\n");
-	Display::Get()->TextStatus("TFTP Started", Display7SegmentMessage::INFO_TFTP_STARTED);
+	Display::Get()->TextStatus("TFTP Started", Display7SegmentMessage::INFO_TFTP_STARTED, CONSOLE_GREEN);
 
 	m_nFileSize = 0;
 
@@ -92,8 +91,7 @@ bool TFTPFileServer::FileClose() {
 
 	m_bDone = true;
 
-	printf("TFTP ended\n");
-	Display::Get()->TextStatus("TFTP Ended", Display7SegmentMessage::INFO_TFTP_ENDED);
+	Display::Get()->TextStatus("TFTP Ended", Display7SegmentMessage::INFO_TFTP_ENDED, CONSOLE_GREEN);
 
 	DEBUG_EXIT
 	return true;
@@ -122,13 +120,15 @@ size_t TFTPFileServer::FileWrite(const void *pBuffer, size_t nCount, unsigned nB
 		}
 	}
 
-	auto nOffset = (nBlockNumber - 1) * 512U;
+	const auto nOffset = (nBlockNumber - 1) * 512U;
 
 	assert((nOffset + nCount) <= m_nSize);
 
 	memcpy(&m_pBuffer[nOffset], pBuffer, nCount);
 
 	m_nFileSize += nCount; //FIXME BUG When in retry ?
+
+	Display::Get()->Progress();
 
 	return nCount;
 }

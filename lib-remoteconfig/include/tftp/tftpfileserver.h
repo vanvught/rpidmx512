@@ -2,7 +2,7 @@
  * @file tftpfileserver.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -60,14 +60,14 @@ namespace tftpfileserver {
 
 class TFTPFileServer final: public TFTPDaemon {
 public:
-	TFTPFileServer (uint8_t *pBuffer, uint32_t nSize);
-	~TFTPFileServer () override {}
+	TFTPFileServer(uint8_t *pBuffer, uint32_t nSize);
+	~TFTPFileServer() override {}
 
-	bool FileOpen (const char *pFileName, TFTPMode tMode) override;
-	bool FileCreate (const char *pFileName, TFTPMode tMode) override;
-	bool FileClose () override;
-	size_t FileRead (void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
-	size_t FileWrite (const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
+	bool FileCreate(const char *pFileName, tftp::Mode mode) override;
+	bool FileClose() override;
+	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
 	void Exit() override;
 
 	uint32_t GetFileSize() const {

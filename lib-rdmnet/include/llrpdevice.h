@@ -1,8 +1,8 @@
 /**
- * @file llrpdevice.cpp
+ * @file llrpdevice.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,28 +34,31 @@
 
 #include "debug.h"
 
+namespace llrp {
+namespace device {
+static constexpr auto IP_LLRP_REQUEST = network::convert_to_uint(239, 255, 250, 133);
+static constexpr auto IP_LLRP_RESPONSE  = network::convert_to_uint(239, 255, 250, 134);
+}  // namespace device
+}  // namespace llrp
+
 class LLRPDevice {
 public:
-	LLRPDevice();
-	virtual ~LLRPDevice() {}
-
-	void Start() {
+	LLRPDevice() {
 		DEBUG_ENTRY
-		m_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
-		assert(m_nHandleLLRP != -1);
-		Network::Get()->JoinGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
+		s_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
+		assert(s_nHandleLLRP != -1);
+		Network::Get()->JoinGroup(s_nHandleLLRP, llrp::device::IP_LLRP_REQUEST);
 		DEBUG_EXIT
 	}
 
-	void Stop() {
+	virtual ~LLRPDevice() {
 		DEBUG_ENTRY
-		Network::Get()->LeaveGroup(m_nHandleLLRP, m_nIpAddresLLRPRequest);
+		Network::Get()->LeaveGroup(s_nHandleLLRP, llrp::device::IP_LLRP_REQUEST);
 		Network::Get()->End(LLRP_PORT);
 		DEBUG_EXIT
 	}
 
 	void Run();
-
 	void Print();
 
 protected:
@@ -81,11 +84,9 @@ private:
 	void DumpRdmMessageInNoSc();
 
 private:
-	static int32_t m_nHandleLLRP;
-	static uint32_t m_nIpAddresLLRPRequest;
-	static uint32_t m_nIpAddressLLRPResponse;
+	static int32_t s_nHandleLLRP;
 	static uint32_t s_nIpAddressFrom;
-	static uint8_t *m_pLLRP;
+	static uint8_t *s_pLLRP;
 };
 
 #endif /* LLRPDEVICE_H_ */

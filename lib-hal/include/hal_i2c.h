@@ -2,7 +2,7 @@
  * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 #ifndef HAL_I2C_H_
 #define HAL_I2C_H_
 
-#include <cstdint>
-
 #if defined(__linux__) || defined (__APPLE__)
 # include "linux/hal_api.h"
 # include "linux/hal_i2c.h"
@@ -43,6 +41,7 @@
 #endif
 
 #ifdef __cplusplus
+#include <cstdint>
 
 namespace hal {
 namespace i2c {
@@ -72,9 +71,10 @@ public:
 		return IsConnected_(nAddress, nBaudrate);
 	}
 
-	void Write(char pData) {
+	void Write(uint8_t pData) {
 		Setup();
-		FUNC_PREFIX(i2c_write(&pData, 1));
+		const char buffer[] = { static_cast<char>(pData) };
+		FUNC_PREFIX(i2c_write(buffer, 1));
 	}
 
 	void Write(const char *pData, uint32_t nLength) {

@@ -2,7 +2,7 @@
  * @file showfile.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@
 #include "showfile.h"
 #include "showfiletftp.h"
 
-#include "ledblink.h"
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -159,16 +159,16 @@ void ShowFile::SetStatus(showfile::Status Status) {
 	switch (m_Status) {
 		case showfile::Status::IDLE:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
-			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
 		case showfile::Status::RUNNING:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(false);
-			LedBlink::Get()->SetMode(ledblink::Mode::DATA);
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
 			break;
 		case showfile::Status::STOPPED:
 		case showfile::Status::ENDED:
 			m_pShowFileProtocolHandler->DoRunCleanupProcess(true);
-			LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			break;
 		default:
 			break;

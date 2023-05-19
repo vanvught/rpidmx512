@@ -2,7 +2,7 @@
  * @file applemidi.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,9 +36,10 @@
 #include <cassert>
 
 #include "midi.h"
-#include "hardware.h"
 #include "mdns.h"
-#include "mdnsservices.h"
+
+#include "hardware.h"
+#include "network.h"
 
 #include "debug.h"
 
@@ -71,7 +72,7 @@ struct SessionStatus {
 static constexpr auto EXCHANGE_PACKET_MIN_LENGTH = sizeof(struct applemidi::ExchangePacket) - applemidi::SESSION_NAME_LENGTH_MAX - 1;
 }  // namespace applemidi
 
-class AppleMidi: public MDNS {
+class AppleMidi {
 public:
 	AppleMidi();
 
@@ -81,9 +82,8 @@ public:
 
 	void Start() {
 		DEBUG_ENTRY
-
-		MDNS::Start();
-		MDNS::AddServiceRecord(nullptr, MDNS_SERVICE_MIDI, m_nPort);
+		assert(MDNS::Get() != nullptr);
+		MDNS::Get()->AddServiceRecord(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
 		m_nHandleControl = Network::Get()->Begin(m_nPort);
 		assert(m_nHandleControl != -1);
@@ -101,7 +101,6 @@ public:
 	void Stop() {
 		DEBUG_ENTRY
 
-		MDNS::Stop();
 		Network::Get()->End(static_cast<uint16_t>(m_nPort + 1U));
 		Network::Get()->End(m_nPort);
 
@@ -127,7 +126,6 @@ public:
 	}
 
 	void Print() {
-		MDNS::Print();
 		const auto nSSRC = __builtin_bswap32(m_nSSRC);
 		printf("AppleMIDI\n");
 		printf(" SSRC    : %x (%u)\n", nSSRC, nSSRC);

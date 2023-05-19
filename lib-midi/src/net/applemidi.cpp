@@ -247,6 +247,4 @@ void AppleMidi::Run() {
 			DEBUG_PUTS("End Session {time-out}");
 		}
 	}
-
-	MDNS::Run();
 }

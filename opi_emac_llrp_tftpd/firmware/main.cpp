@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include "network.h"
 #include "networkconst.h"
 #include "storenetwork.h"
-#include "ledblink.h"
 
 #include "displayudf.h"
 #include "displayudfparams.h"
@@ -41,22 +40,21 @@
 #include "remoteconfigparams.h"
 #include "storeremoteconfig.h"
 
-#include "firmwareversion.h"
-
-#include "rdmnetllrponly.h"
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# include "rdmnetllrponly.h"
+#endif
 
 #include "mdns.h"
-#include "mdnsservices.h"
+
 #if defined (ENABLE_HTTPD)
 # include "httpd/httpd.h"
 #endif
 
-// System Time
 #include "ntpclient.h"
 
-// Handler
 #include "factorydefaults.h"
 
+#include "firmwareversion.h"
 #include "software_version.h"
 
 void Hardware::RebootHandler() {
@@ -72,54 +70,47 @@ void Hardware::RebootHandler() {
 
 		Display::Get()->Cls();
 		Display::Get()->TextStatus("Rebooting ...",
-				Display7SegmentMessage::INFO_REBOOTING);
+		Display7SegmentMessage::INFO_REBOOTING);
 	}
 }
 
-extern "C" {
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	DisplayUdf display;
+	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
-	ConfigStore configStore;
 
 	fw.Print("RDMNet LLRP device only");
-
-	hw.SetLed(hardware::LedStatus::ON);
-
-	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-
-	StoreNetwork storeNetwork;
-	nw.SetNetworkStore(&storeNetwork);
-	nw.Init(&storeNetwork);
 	nw.Print();
 
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
 	MDNS mDns;
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_TFTP, 69);
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
 #if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=RDMNet LLRP Only");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=RDMNet LLRP Only");
 #endif
 	mDns.Print();
+
 #if defined (ENABLE_HTTPD)
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 #endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
 	RDMNetLLRPOnly device;
-
 	device.Init();
 	device.Print();
-	device.Start();
+#endif
 
 	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
@@ -150,20 +141,21 @@ void notmain(void) {
 	display.Write(6, "mDNS enabled");
 	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
-	lb.SetMode(ledblink::Mode::NORMAL);
+	hw.SetMode(hardware::ledblink::Mode::NORMAL);
 
 	for (;;) {
 		nw.Run();
 		mDns.Run();
+#if defined (NODE_RDMNET_LLRP_ONLY)
 		device.Run();
+#endif
 		remoteConfig.Run();
 		ntpClient.Run();
 		configStore.Flash();
-		lb.Run();
 #if defined (ENABLE_HTTPD)
 		httpDaemon.Run();
 #endif
+		display.Run();
+		hw.Run();
 	}
-}
-
 }

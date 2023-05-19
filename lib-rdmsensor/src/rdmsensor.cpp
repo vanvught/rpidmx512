@@ -2,7 +2,7 @@
  * @file rdmsensor.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,13 @@
 
 #include "rdmsensor.h"
 
-#include <debug.h>
+#include "debug.h"
 
 static constexpr uint8_t RDM_SENSOR_RECORDED_SUPPORTED = (1U << 0);
 static constexpr uint8_t RDM_SENSOR_LOW_HIGH_DETECT = (1U << 1);
 
 RDMSensor::RDMSensor(uint8_t nSensor) : m_nSensor(nSensor) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	m_tRDMSensorDefintion.sensor = m_nSensor;
 	m_tRDMSensorDefintion.recorded_supported = RDM_SENSOR_RECORDED_SUPPORTED | RDM_SENSOR_LOW_HIGH_DETECT;
@@ -44,11 +44,11 @@ RDMSensor::RDMSensor(uint8_t nSensor) : m_nSensor(nSensor) {
 	m_tRDMSensorValues.lowest_detected = rdm::sensor::RANGE_MAX;
 	m_tRDMSensorValues.highest_detected = rdm::sensor::RANGE_MIN;
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void RDMSensor::SetDescription(const char *pDescription) {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	assert(pDescription != nullptr);
 	uint32_t i;
@@ -59,11 +59,11 @@ void RDMSensor::SetDescription(const char *pDescription) {
 
 	m_tRDMSensorDefintion.nLength = static_cast<uint8_t>(i);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 const struct rdm::sensor::Values* RDMSensor::GetValues() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	const auto nValue = this->GetValue();
 
@@ -71,13 +71,13 @@ const struct rdm::sensor::Values* RDMSensor::GetValues() {
 	m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, nValue);
 	m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, nValue);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 
 	return &m_tRDMSensorValues;
 }
 
 void RDMSensor::SetValues() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	const auto nValue = this->GetValue();
 
@@ -86,11 +86,11 @@ void RDMSensor::SetValues() {
 	m_tRDMSensorValues.highest_detected = nValue;
 	m_tRDMSensorValues.recorded = nValue;
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }
 
 void RDMSensor::Record() {
-	DEBUG1_ENTRY
+	DEBUG_ENTRY
 
 	const auto nValue = this->GetValue();
 
@@ -99,5 +99,5 @@ void RDMSensor::Record() {
 	m_tRDMSensorValues.lowest_detected = std::min(m_tRDMSensorValues.lowest_detected, nValue);
 	m_tRDMSensorValues.highest_detected = std::max(m_tRDMSensorValues.highest_detected, nValue);
 
-	DEBUG1_EXIT
+	DEBUG_EXIT
 }

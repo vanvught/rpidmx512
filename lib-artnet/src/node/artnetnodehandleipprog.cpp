@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,16 +37,14 @@
 
 #include "debug.h"
 
-#define IPPROG_COMMAND_NONE					0
-#define IPPROG_COMMAND_ENABLE_PROGRAMMING	(1 << 7)
-#define IPPROG_COMMAND_ENABLE_DHCP			((1 << 6) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_GATEWAY		((1 << 4) | IPPROG_COMMAND_ENABLE_PROGRAMMING)	///< Not documented!
-#define IPPROG_COMMAND_SET_TO_DEFAULT		((1 << 3) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_IPADDRESS	((1 << 2) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_SUBNETMASK	((1 << 1) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-#define IPPROG_COMMAND_PROGRAM_PORT			((1 << 0) | IPPROG_COMMAND_ENABLE_PROGRAMMING)
-
-using namespace artnet;
+//static constexpr uint8_t COMMAND_NONE = 0;
+static constexpr uint8_t COMMAND_ENABLE_PROGRAMMING = (1U << 7);
+static constexpr uint8_t COMMAND_ENABLE_DHCP		= ((1U << 6) | COMMAND_ENABLE_PROGRAMMING);
+static constexpr uint8_t COMMAND_PROGRAM_GATEWAY	= ((1U << 4) | COMMAND_ENABLE_PROGRAMMING); ///< Not documented!
+static constexpr uint8_t COMMAND_SET_TO_DEFAULT		= ((1U << 3) | COMMAND_ENABLE_PROGRAMMING);
+static constexpr uint8_t COMMAND_PROGRAM_IPADDRESS	= ((1U << 2) | COMMAND_ENABLE_PROGRAMMING);
+static constexpr uint8_t COMMAND_PROGRAM_SUBNETMASK	= ((1U << 1) | COMMAND_ENABLE_PROGRAMMING);
+//static constexpr uint8_t COMMAND_PROGRAM_PORT		= ((1U << 0) | COMMAND_ENABLE_PROGRAMMING);
 
 union uip {
 	uint32_t u32;
@@ -62,38 +60,38 @@ void ArtNetNode::HandleIpProg() {
 	}
 #endif
 
-	const auto *pArtIpProg = &(m_ArtNetPacket.ArtPacket.ArtIpProg);
+	const auto *const pArtIpProg = reinterpret_cast<TArtIpProg *>(m_pReceiveBuffer);
 	const auto nCommand = pArtIpProg->Command;
-	auto *pArtIpProgReply = &(m_ArtNetPacket.ArtPacket.ArtIpProgReply);
+	auto *pArtIpProgReply = reinterpret_cast<TArtIpProgReply *>(m_pReceiveBuffer);
 	const auto isDhcp = Network::Get()->IsDhcpUsed();
 
 	pArtIpProgReply->OpCode = OP_IPPROGREPLY;
 
-	if ((nCommand & IPPROG_COMMAND_ENABLE_DHCP) == IPPROG_COMMAND_ENABLE_DHCP) {
+	if ((nCommand & COMMAND_ENABLE_DHCP) == COMMAND_ENABLE_DHCP) {
 		Network::Get()->EnableDhcp();
 	}
 
-	if ((nCommand & IPPROG_COMMAND_SET_TO_DEFAULT) == IPPROG_COMMAND_SET_TO_DEFAULT) {
+	if ((nCommand & COMMAND_SET_TO_DEFAULT) == COMMAND_SET_TO_DEFAULT) {
 		Network::Get()->SetIp(0);
 	}
 
-	if ((nCommand & IPPROG_COMMAND_PROGRAM_IPADDRESS) == IPPROG_COMMAND_PROGRAM_IPADDRESS) {
+	if ((nCommand & COMMAND_PROGRAM_IPADDRESS) == COMMAND_PROGRAM_IPADDRESS) {
 		memcpy(ip.u8, &pArtIpProg->ProgIpHi, artnet::IP_SIZE);
 		Network::Get()->SetIp(ip.u32);
 	}
 
-	if ((nCommand & IPPROG_COMMAND_PROGRAM_SUBNETMASK) == IPPROG_COMMAND_PROGRAM_SUBNETMASK) {
+	if ((nCommand & COMMAND_PROGRAM_SUBNETMASK) == COMMAND_PROGRAM_SUBNETMASK) {
 		memcpy(ip.u8, &pArtIpProg->ProgSmHi, artnet::IP_SIZE);
 		Network::Get()->SetNetmask(ip.u32);
 	}
 
-	if ((nCommand & IPPROG_COMMAND_PROGRAM_GATEWAY) == IPPROG_COMMAND_PROGRAM_GATEWAY) {
+	if ((nCommand & COMMAND_PROGRAM_GATEWAY) == COMMAND_PROGRAM_GATEWAY) {
 		memcpy(ip.u8, &pArtIpProg->ProgGwHi, artnet::IP_SIZE);
 		Network::Get()->SetGatewayIp(ip.u32);
 	}
 
 	if (Network::Get()->IsDhcpUsed()) {
-		pArtIpProgReply->Status = (1 << 6);
+		pArtIpProgReply->Status = (1U << 6);
 	} else {
 		pArtIpProgReply->Status = 0;
 	}
@@ -117,13 +115,11 @@ void ArtNetNode::HandleIpProg() {
 	pArtIpProgReply->Spare7 = 0;
 	pArtIpProgReply->Spare8 = 0;
 
-	Network::Get()->SendTo(m_nHandle, &(m_ArtNetPacket.ArtPacket.ArtIpProgReply), sizeof(struct TArtIpProgReply), m_ArtNetPacket.IPAddressFrom, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, m_pReceiveBuffer, sizeof(struct TArtIpProgReply), m_nIpAddressFrom, artnet::UDP_PORT);
 
 	if (isChanged) {
 		// Update Node network details
-		m_Node.IPAddressLocal = Network::Get()->GetIp();
-		m_Node.IPAddressBroadcast = m_Node.IPAddressLocal | ~(Network::Get()->GetNetmask());
-		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(Status2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? Status2::IP_DHCP : Status2::IP_MANUALY));
+		m_Node.Status2 = static_cast<uint8_t>((m_Node.Status2 & (~(artnet::Status2::IP_DHCP))) | (Network::Get()->IsDhcpUsed() ? artnet::Status2::IP_DHCP : artnet::Status2::IP_MANUALY));
 		// Update PollReply for new IPAddress
 		memcpy(m_PollReply.IPAddress, &pArtIpProgReply->ProgIpHi, artnet::IP_SIZE);
 		if (artnet::VERSION > 3) {

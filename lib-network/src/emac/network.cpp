@@ -2,7 +2,7 @@
  * network.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,7 +25,6 @@
 
 #include <cstdint>
 #include <cstring>
-#include <netinet/in.h>
 #include <time.h>
 #include <cassert>
 
@@ -33,7 +32,6 @@
 #include "networkparams.h"
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "../net/net.h"
 #include "../../config/net_config.h"
@@ -41,56 +39,56 @@
 
 #include "debug.h"
 
+namespace net {
+void __attribute__((weak)) phy_customized_led() {}
+void __attribute__((weak)) phy_customized_timing() {}
+}  // namespace net
+
+namespace network {
+void __attribute__((weak)) mdns_announcement() {}
+}  // namespace network
+
 #define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
 
 int emac_start(uint8_t paddr[]);
 
 Network *Network::s_pThis;
 
-Network::Network() {
+Network::Network(NetworkParamsStore *pNetworkParamsStore) {
 	DEBUG_ENTRY
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-	m_aNetMacaddr[0] = '\0';
-	m_aHostName[0] = '\0';
 	m_aDomainName[0] = '\0';
 
 	strcpy(m_aIfName, "eth0");
 
-	DEBUG_EXIT
-}
+	network::display_emac_start();
 
-void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
-	DEBUG_ENTRY
+	emac_start(m_aNetMacaddr);
 
 	NetworkParams params(pNetworkParamsStore);
 
 	if (params.Load()) {
 		params.Dump();
 	}
-	
-	network::display_emac_start();
 
-	struct ip_info ipInfo;
-
-	ipInfo.ip.addr = params.GetIpAddress();
-	ipInfo.netmask.addr = params.GetNetMask();
-	ipInfo.gw.addr = params.GetDefaultGateway();
-
+	m_ipInfo.ip.addr = params.GetIpAddress();
+	m_ipInfo.netmask.addr = params.GetNetMask();
+	m_ipInfo.gw.addr = params.GetDefaultGateway();
 	m_IsDhcpUsed = params.isDhcpUsed();
-
 	m_nNtpServerIp = params.GetNtpServer();
 	m_fNtpUtcOffset = params.GetNtpUtcOffset();
 
-	emac_start(m_aNetMacaddr);
+	net::phy_customized_timing();
+	net::phy_customized_led();
 
 	const auto *p = params.GetHostName();
 
 	if (*p == '\0') {
-		unsigned k = 0;
+		uint32_t k = 0;
 
-		for (unsigned i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < network::HOSTNAME_SIZE - 7); i++) {
+		for (uint32_t i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < network::HOSTNAME_SIZE - 7); i++) {
 			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
 
@@ -121,18 +119,12 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 		if (!m_IsDhcpUsed) {
 			DEBUG_PUTS("");
-			if (ipInfo.ip.addr == 0) {
+			if (m_ipInfo.ip.addr == 0) {
 				DEBUG_PUTS("");
-
 				SetDefaultIp();
-
-				ipInfo.ip.addr = m_nLocalIp;
-				ipInfo.netmask.addr = m_nNetmask;
-				ipInfo.gw.addr = m_nLocalIp;
-			} else if (!IsValidIp(m_nGatewayIp)) {
+			} else if (!IsValidIp(m_ipInfo.gw.addr)) {
 				DEBUG_PUTS("");
-
-				ipInfo.gw.addr = m_nLocalIp;
+				m_ipInfo.gw.addr = m_ipInfo.ip.addr;
 			}
 		}
 
@@ -140,7 +132,7 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 			network::display_dhcp_status(network::dhcp::ClientStatus::RENEW);
 		}
 
-		net_init(m_aNetMacaddr, &ipInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
+		net_init(m_aNetMacaddr, &m_ipInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
 		if (m_IsZeroconfUsed) {
 			network::display_dhcp_status(network::dhcp::ClientStatus::FAILED);
@@ -150,24 +142,24 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 		const auto bUseDhcp = params.isDhcpUsed();
 
 		while (m_IsZeroconfUsed && (nRetryTime != 0) && bUseDhcp) {
-			LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::FAST);
 
 			network::display_dhcp_status(network::dhcp::ClientStatus::RETRYING);
 
 			DEBUG_PUTS("");
 			auto nTime = time(nullptr);
 			while ((time(nullptr) - nTime) < (nRetryTime * 60)) {
-				LedBlink::Get()->Run();
+				Hardware::Get()->Run();
 			}
 
 			network::display_dhcp_status(network::dhcp::ClientStatus::RENEW);
 
-			LedBlink::Get()->SetMode(ledblink::Mode::OFF_ON);
+			Hardware::Get()->SetMode(hardware::ledblink::Mode::OFF_ON);
 
 			m_IsDhcpUsed = true;
 			m_IsZeroconfUsed = false;
 
-			net_init(m_aNetMacaddr, &ipInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
+			net_init(m_aNetMacaddr, &m_ipInfo, m_aHostName, &m_IsDhcpUsed, &m_IsZeroconfUsed);
 
 			if (m_IsDhcpUsed) {
 				break;
@@ -178,94 +170,19 @@ void Network::Init(NetworkParamsStore *pNetworkParamsStore) {
 
 		if (m_IsDhcpUsed) {
 			DEBUG_PUTS("m_IsDhcpUsed=true");
-			ipInfo.ip.addr = 0;
-			m_nNetmask = 0;
-			m_nGatewayIp = 0;
+			m_ipInfo.ip.addr = 0;
+			m_ipInfo.netmask.addr = 0;
+			m_ipInfo.gw.addr = 0;
 		}
 
 		auto bFalse = false;
 
-		net_init(m_aNetMacaddr, &ipInfo, m_aHostName, &bFalse, &bFalse);
+		net_init(m_aNetMacaddr, &m_ipInfo, m_aHostName, &bFalse, &bFalse);
 	}
-
-	m_nLocalIp = ipInfo.ip.addr;
-	m_nNetmask = ipInfo.netmask.addr;
-	m_nGatewayIp = ipInfo.gw.addr;
 
 	network::display_ip();
-
-	DEBUG_EXIT
-}
-
-void Network::Shutdown() {
-	DEBUG_ENTRY
-
-	network::display_emac_shutdown();
-
-	net_shutdown();
-
-	DEBUG_EXIT
-}
-
-int32_t Network::Begin(uint16_t nPort) {
-	DEBUG_ENTRY
-
-	const auto nIdx = udp_bind(nPort);
-
-	assert(nIdx != -1);
-
-	return nIdx;
-
-	DEBUG_EXIT
-}
-
-int32_t Network::End(uint16_t nPort) {
-	DEBUG_ENTRY
-
-	const auto n = udp_unbind(nPort);
-
-	assert(n == 0);
-
-	return n;
-
-	DEBUG_EXIT
-}
-
-void Network::MacAddressCopyTo(uint8_t *pMacAddress) {
-	DEBUG_ENTRY
-
-	for (uint32_t i =  0; i < network::MAC_SIZE; i++) {
-		pMacAddress[i] = m_aNetMacaddr[i];
-	}
-
-	DEBUG_EXIT
-}
-
-void Network::JoinGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
-	DEBUG_ENTRY
-
-	igmp_join(nIp);
-
-	DEBUG_EXIT
-}
-
-void Network::LeaveGroup(__attribute__((unused)) int32_t nHandle, uint32_t nIp) {
-	DEBUG_ENTRY
-
-	igmp_leave(nIp);
-
-	DEBUG_EXIT
-}
-
-void Network::SetDefaultIp() {
-	DEBUG_ENTRY
-
-	m_nLocalIp = 2
-			+ ((static_cast<uint32_t>(m_aNetMacaddr[3])) << 8)
-			+ ((static_cast<uint32_t>(m_aNetMacaddr[4])) << 16)
-			+ ((static_cast<uint32_t>(m_aNetMacaddr[5])) << 24);
-	m_nNetmask = 255;
-	m_nGatewayIp = m_nLocalIp;
+	network::display_netmask();
+	network::display_gateway();
 
 	DEBUG_EXIT
 }
@@ -282,20 +199,21 @@ void Network::SetIp(uint32_t nIp) {
 
 	if (nIp == 0) {
 		SetDefaultIp();
-		net_set_ip(m_nLocalIp);
-		// We do not store
 	} else {
-		net_set_ip(nIp);
-
-		m_nLocalIp = nIp;
-		m_nGatewayIp = m_nLocalIp;
-
-		if (m_pNetworkStore != nullptr) {
-			m_pNetworkStore->SaveIp(nIp);
-			m_pNetworkStore->SaveDhcp(false);
-		}
+		m_ipInfo.ip.addr = nIp;
+		m_ipInfo.gw.addr = m_ipInfo.ip.addr;
 	}
 
+	net_set_ip(m_ipInfo.ip.addr);
+	net_set_gw(m_ipInfo.gw.addr);
+
+	if (m_pNetworkStore != nullptr) {
+		m_pNetworkStore->SaveIp(m_ipInfo.ip.addr);
+		m_pNetworkStore->SaveGatewayIp(m_ipInfo.gw.addr);
+		m_pNetworkStore->SaveDhcp(false);
+	}
+
+	network::mdns_announcement();
 	network::display_ip();
 	network::display_netmask();
 
@@ -305,15 +223,16 @@ void Network::SetIp(uint32_t nIp) {
 void Network::SetNetmask(uint32_t nNetmask) {
 	DEBUG_ENTRY
 
-	if (m_nNetmask == nNetmask) {
+	if (m_ipInfo.netmask.addr == nNetmask) {
 		DEBUG_EXIT
 		return;
 	}
 
-	m_nNetmask = nNetmask;
+	m_ipInfo.netmask.addr = nNetmask;
+	net_set_netmask(m_ipInfo.netmask.addr);
 
 	if (m_pNetworkStore != nullptr) {
-		m_pNetworkStore->SaveNetMask(nNetmask);
+		m_pNetworkStore->SaveNetMask(m_ipInfo.netmask.addr);
 	}
 
 	network::display_ip();
@@ -325,15 +244,16 @@ void Network::SetNetmask(uint32_t nNetmask) {
 void Network::SetGatewayIp(uint32_t nGatewayIp) {
 	DEBUG_ENTRY
 
-	if (m_nGatewayIp == nGatewayIp) {
+	if (m_ipInfo.gw.addr == nGatewayIp) {
 		DEBUG_EXIT
 		return;
 	}
 
-	net_set_gw(nGatewayIp);
+	m_ipInfo.gw.addr = nGatewayIp;
+	net_set_gw(m_ipInfo.gw.addr);
 
 	if (m_pNetworkStore != nullptr) {
-		m_pNetworkStore->SaveGatewayIp(nGatewayIp);
+		m_pNetworkStore->SaveGatewayIp(m_ipInfo.gw.addr);
 	}
 
 	network::display_gateway();
@@ -351,6 +271,7 @@ void Network::SetHostName(const char *pHostName) {
 		m_pNetworkStore->SaveHostName(m_aHostName, static_cast<uint16_t>(strlen(m_aHostName)));
 	}
 
+	network::mdns_announcement();
 	network::display_hostname();
 
 	DEBUG_EXIT
@@ -359,15 +280,15 @@ void Network::SetHostName(const char *pHostName) {
 bool Network::SetZeroconf() {
 	DEBUG_ENTRY
 
-	struct ip_info tIpInfo;
+	const auto bWatchdog = Hardware::Get()->IsWatchdog();
 
-	m_IsZeroconfUsed = net_set_zeroconf(&tIpInfo);
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogStop();
+	}
+
+	m_IsZeroconfUsed = net_set_zeroconf(&m_ipInfo);
 
 	if (m_IsZeroconfUsed) {
-		m_nLocalIp = tIpInfo.ip.addr;
-		m_nNetmask = tIpInfo.netmask.addr;
-		m_nGatewayIp = tIpInfo.gw.addr;
-
 		m_IsDhcpUsed = false;
 
 		if (m_pNetworkStore != nullptr) {
@@ -375,8 +296,13 @@ bool Network::SetZeroconf() {
 		}
 	}
 
+	network::mdns_announcement();
 	network::display_ip();
 	network::display_netmask();
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogInit();
+	}
 
 	DEBUG_EXIT
 	return m_IsZeroconfUsed;
@@ -385,9 +311,7 @@ bool Network::SetZeroconf() {
 bool Network::EnableDhcp() {
 	DEBUG_ENTRY
 
-	struct ip_info tIpInfo;
-
-	const bool bWatchdog = Hardware::Get()->IsWatchdog();
+	const auto bWatchdog = Hardware::Get()->IsWatchdog();
 
 	if (bWatchdog) {
 		Hardware::Get()->WatchdogStop();
@@ -395,31 +319,28 @@ bool Network::EnableDhcp() {
 
 	network::display_dhcp_status(network::dhcp::ClientStatus::RENEW);
 
-	m_IsDhcpUsed = net_set_dhcp(&tIpInfo, m_aHostName, &m_IsZeroconfUsed);
+	m_IsDhcpUsed = net_set_dhcp(&m_ipInfo, m_aHostName, &m_IsZeroconfUsed);
 
-		if (m_IsZeroconfUsed) {
-			network::display_dhcp_status(network::dhcp::ClientStatus::FAILED);
-		} else {
-			network::display_dhcp_status(network::dhcp::ClientStatus::GOT_IP);
-		}
-
-	DEBUG_PRINTF("m_IsDhcpUsed=%d, m_IsZeroconfUsed=%d", m_IsDhcpUsed, m_IsZeroconfUsed);
-
-	if (bWatchdog) {
-		Hardware::Get()->WatchdogInit();
+	if (m_IsZeroconfUsed) {
+		network::display_dhcp_status(network::dhcp::ClientStatus::FAILED);
+	} else {
+		network::display_dhcp_status(network::dhcp::ClientStatus::GOT_IP);
 	}
 
-	m_nLocalIp = tIpInfo.ip.addr;
-	m_nNetmask = tIpInfo.netmask.addr;
-	m_nGatewayIp = tIpInfo.gw.addr;
+	DEBUG_PRINTF("m_IsDhcpUsed=%d, m_IsZeroconfUsed=%d", m_IsDhcpUsed, m_IsZeroconfUsed);
 
 	if (m_pNetworkStore != nullptr) {
 		m_pNetworkStore->SaveDhcp(m_IsDhcpUsed);
 	}
 
+	network::mdns_announcement();
 	network::display_ip();
 	network::display_netmask();
 	network::display_gateway();
+
+	if (bWatchdog) {
+		Hardware::Get()->WatchdogInit();
+	}
 
 	DEBUG_EXIT
 	return m_IsDhcpUsed;
@@ -484,9 +405,9 @@ void Network::Print() {
 	printf("Network\n");
 	printf(" Hostname  : %s\n", m_aHostName);
 	printf(" IfName    : %d: %s\n", m_nIfIndex, m_aIfName);
-	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_nLocalIp), GetNetmaskCIDR());
-	printf(" Netmask   : " IPSTR "\n", IP2STR(m_nNetmask));
-	printf(" Gateway   : " IPSTR "\n", IP2STR(m_nGatewayIp));
+	printf(" Inet      : " IPSTR "/%d\n", IP2STR(m_ipInfo.ip.addr), GetNetmaskCIDR());
+	printf(" Netmask   : " IPSTR "\n", IP2STR(m_ipInfo.netmask.addr));
+	printf(" Gateway   : " IPSTR "\n", IP2STR(m_ipInfo.gw.addr));
 	printf(" Broadcast : " IPSTR "\n", IP2STR(GetBroadcastIp()));
 	printf(" Mac       : " MACSTR "\n", MAC2STR(m_aNetMacaddr));
 	printf(" Mode      : %c\n", GetAddressingMode());

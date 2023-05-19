@@ -2,7 +2,7 @@
  * @file ssd1311.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,15 +39,15 @@ public:
 	bool Start() override;
 
 	void Cls() override;
-	void ClearLine(uint8_t nLine) override;
+	void ClearLine(uint32_t nLine) override;
 
 	void PutChar(int) override;
 	void PutString(const char *) override;
 
 	void Text(const char *pData, uint32_t nLength);
-	void TextLine(uint8_t nLine, const char *pData, uint32_t nLength) override;
+	void TextLine(uint32_t nLine, const char *pData, uint32_t nLength) override;
 
-	void SetCursorPos(uint8_t nCol, uint8_t nRow) override;
+	void SetCursorPos(uint32_t nCol, uint32_t nRow) override;
 	void SetCursor(uint32_t) override;
 
 	void SetSleep(bool bSleep) override;

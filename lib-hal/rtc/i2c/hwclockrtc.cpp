@@ -2,7 +2,7 @@
  * @file  hwclockrtc.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -91,13 +91,15 @@ void HwClock::RtcProbe() {
 
 	FUNC_PREFIX(i2c_set_baudrate(hal::i2c::NORMAL_SPEED));
 
+	char registers[1];
+
+#if !defined (CONFIG_RTC_DISABLE_MCP7941X)
 	/**
 	 * MCP7941X
 	 */
 
 	FUNC_PREFIX(i2c_set_address(i2caddress::MCP7941X));
 
-	char registers[1];
 	registers[0] = reg::YEAR;
 
 	// The I2C bus is not stable at cold start? These dummy write/read helps.
@@ -135,7 +137,9 @@ void HwClock::RtcProbe() {
 		DEBUG_EXIT
 		return;
 	}
+#endif
 
+#if !defined (CONFIG_RTC_DISABLE_DS3231)
 	/**
 	 * DS3231
 	 */
@@ -171,7 +175,9 @@ void HwClock::RtcProbe() {
 		DEBUG_EXIT
 		return;
 	}
+#endif
 
+#if !defined (CONFIG_RTC_DISABLE_PCF8563)
 	/**
 	 * PCF8563
 	 */
@@ -226,6 +232,7 @@ void HwClock::RtcProbe() {
 		DEBUG_EXIT
 		return;
 	}
+#endif
 
 	DEBUG_EXIT
 }

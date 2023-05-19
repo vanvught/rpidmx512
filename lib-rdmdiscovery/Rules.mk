@@ -1,4 +1,4 @@
-EXTRA_INCLUDES+=../lib-rdm/include ../lib-lightset/include ../lib-hal/include
+EXTRA_INCLUDES+=../lib-rdm/include ../lib-lightset/include ../lib-hal/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)

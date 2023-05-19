@@ -30,7 +30,6 @@
 #include <cassert>
 
 #include "hardware.h"
-#include "ledblink.h"
 
 #include "h3_watchdog.h"
 #include "h3_sid.h"
@@ -39,12 +38,12 @@
 
 #include "arm/synchronize.h"
 
-#ifndef NDEBUG
-# include "../debug/i2cdetect.h"
+#if defined (DEBUG_I2C)
+# include "i2cdetect.h"
 #endif
 
 namespace soc {
-#if defined(ORANGE_PI)
+#if defined (ORANGE_PI)
 	static constexpr char NAME[] = "H2+";
 	static constexpr auto NAME_LENGTH = sizeof(NAME) - 1;
 #elif defined(ORANGE_PI_ONE)
@@ -76,7 +75,7 @@ Hardware::Hardware() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
 
-#ifndef NDEBUG
+#if defined (DEBUG_I2C)
 	I2cDetect i2cdetect;
 #endif
 
@@ -85,6 +84,8 @@ Hardware::Hardware() {
 	m_HwClock.Print();
 	m_HwClock.HcToSys();
 #endif
+
+	hardware_led_set(1);
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -144,7 +145,11 @@ void Hardware::GetTime(struct tm *pTime) {
     pTime->tm_sec = local_time->tm_sec;
 }
 
+#include <cstdio>
+
 bool Hardware::Reboot() {
+	printf("Rebooting ...\n");
+	
 	h3_watchdog_disable();
 
 	RebootHandler();
@@ -161,8 +166,10 @@ bool Hardware::Reboot() {
 	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
 	h3_gpio_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
+	SetMode(hardware::ledblink::Mode::REBOOT);
+
 	for (;;) {
-		LedBlink::Get()->Run();
+		Run();
 	}
 
 	__builtin_unreachable();

@@ -2,7 +2,7 @@
  * @file tftpdaemon.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,21 @@
 
 #include <cstdint>
 
-enum class TFTPMode {
-	BINARY,
-	ASCII
+namespace tftp {
+enum class Mode {
+	BINARY, ASCII
 };
+}  // namespace tftp
 
 class TFTPDaemon {
 public:
 	TFTPDaemon();
 	virtual ~TFTPDaemon();
 
-	bool Run();
+	void Run();
 
-	virtual bool FileOpen(const char *pFileName, TFTPMode tMode)=0;
-	virtual bool FileCreate(const char *pFileName, TFTPMode tMode)=0;
+	virtual bool FileOpen(const char *pFileName, tftp::Mode mode)=0;
+	virtual bool FileCreate(const char *pFileName, tftp::Mode mode)=0;
 	virtual bool FileClose()=0;
 	virtual size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
 	virtual size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber)=0;
@@ -52,7 +53,7 @@ private:
 	void HandleRequest();
 	void HandleRecvAck();
 	void HandleRecvData();
-	void SendError (uint16_t usErrorCode, const char *pErrorMessage);
+	void SendError (const uint16_t nsErrorCode, const char *pErrorMessage);
 	void DoRead();
 	void DoWriteAck();
 
@@ -67,7 +68,7 @@ private:
 	};
 	TFTPState m_nState { TFTPState::INIT };
 	int m_nIdx { -1 };
-	uint8_t m_Buffer[528];
+	uint8_t *m_pBuffer { nullptr };
 	uint32_t m_nFromIp { 0 };
 	uint16_t m_nFromPort { 0 };
 	size_t m_nLength { 0 };

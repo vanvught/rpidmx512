@@ -2,7 +2,7 @@
  * @file rdmsensorsconst.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,18 +26,19 @@
 #ifndef RDMSENSORSCONST_H_
 #define RDMSENSORSCONST_H_
 
+#include <cstdint>
+
 namespace rdm {
 namespace sensors {
-enum type : unsigned {
-	BH170, HTU21D, INA219, MCP9808, SI7021, UNDEFINED
+enum class Types {
+	BH170, HTU21D, INA219, MCP9808, SI7021, MCP3424, UNDEFINED
 };
 }  // namespace sensors
 }  // namespace rdmsensors
 
 struct RDMSensorsConst {
 	static const char PARAMS_FILE_NAME[];
-
-	static const char TYPE[rdm::sensors::type::UNDEFINED][8];
+	static const char TYPE[static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED)][8];
 };
 
 #endif /* RDMSENSORSCONST_H_ */

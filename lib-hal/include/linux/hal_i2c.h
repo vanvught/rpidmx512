@@ -2,7 +2,7 @@
  * @file hal_i2c.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,37 @@
 #ifndef LINUX_HAL_I2C_H_
 #define LINUX_HAL_I2C_H_
 
+#include <cstdint>
+
 #if defined (RASPPI)
-# define bcm2835_i2c_set_address bcm2835_i2c_setSlaveAddress
+# define bcm2835_i2c_set_address 		bcm2835_i2c_setSlaveAddress
+# if defined(LINUX_HAVE_I2C)
+#  define bcm2835_i2c_begin 			i2c_begin
+#  define bcm2835_i2c_set_baudrate		i2c_set_baudrate
+#  define bcm2835_i2c_setSlaveAddress	i2c_set_address
+#  define bcm2835_i2c_read				i2c_read
+#  define bcm2835_i2c_write				i2c_write
+   void i2c_begin();
+   void i2c_set_baudrate(uint32_t);
+   void i2c_set_address(uint8_t);
+   uint8_t i2c_write(const char *, uint32_t);
+   uint8_t i2c_read(char *, uint32_t);
+# endif
 #else
 # define FUNC_PREFIX(x) x
-# include <cstdint>
-# ifdef __cplusplus
-  extern "C" {
-# endif
+# if defined(LINUX_HAVE_I2C)
+  void i2c_begin();
+  void i2c_set_baudrate(uint32_t);
+  void i2c_set_address(uint8_t);
+  uint8_t i2c_write(const char *, uint32_t);
+  uint8_t i2c_read(char *, uint32_t);
+#else
   inline static void i2c_begin() {}
   inline static void i2c_set_baudrate(__attribute__((unused)) uint32_t _q) {}
   inline static void i2c_set_address(__attribute__((unused)) uint8_t _q) {}
   inline static uint8_t i2c_write(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
-  inline static uint8_t i2c_read(__attribute__((unused)) const char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
-# ifdef __cplusplus
-  }
-# endif
+  inline static uint8_t i2c_read(__attribute__((unused)) char *_p, __attribute__((unused)) uint32_t _q) { return 1;}
+#endif
 #endif
 
 #endif /* LINUX_HAL_I2C_H_ */

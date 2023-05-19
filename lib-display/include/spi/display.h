@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,10 @@
 
 #ifndef SPI_DISPLAY_H_
 #define SPI_DISPLAY_H_
+
+#if !defined (CONFIG_DISPLAY_USE_SPI)
+# error
+#endif
 
 #include <cstdarg>
 #include <cstdint>
@@ -50,7 +54,16 @@ public:
 		return true;
 	}
 
-	void Cls(void);
+	void PrintInfo() {
+#if defined (CONFIG_USE_ILI9341)
+		printf("ILI9341 ");
+#else
+		printf("ST7789 ");
+#endif
+		printf("(%d,%d)\n", m_nRows, m_nCols);
+	}
+
+	void Cls();
 	void SetCursorPos(uint32_t nCol, uint32_t nRow);
 	void PutChar(int c);
 
@@ -62,8 +75,6 @@ public:
 	}
 
 	void ClearLine(uint32_t nLine) {
-		assert(nLine > 0);
-
 		if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 			return;
 		}
@@ -78,8 +89,6 @@ public:
 	}
 
 	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength) {
-		assert(nLine > 0);
-
 		if (__builtin_expect((!(nLine <= m_nRows)), 0)) {
 			return;
 		}
@@ -88,13 +97,9 @@ public:
 		Text(pText, nLength);
 	}
 
-	void Status(Display7SegmentMessage nValue) {
-		printf("Status: %u\n", static_cast<uint32_t>(nValue));
-	}
+	void Status(__attribute__((unused)) Display7SegmentMessage nValue) { }
 
-	void Status(uint8_t nValue, bool bHex) {
-		printf("Status: %u:%d\n", nValue, bHex);
-	}
+	void Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {}
 
 	void Text(const char *pData, uint32_t nLength) {
 		if (nLength > m_nCols) {
@@ -165,6 +170,18 @@ public:
 		Status(nValue7Segment, bHex);
 	}
 
+	void Progress() {
+		static constexpr char SYMBOLS[] = { '/' , '-', '\\' , '|' };
+		static uint32_t nSymbolsIndex;
+
+		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
+		Display::Get()->PutChar(SYMBOLS[nSymbolsIndex++]);
+
+		if (nSymbolsIndex >= sizeof(SYMBOLS)) {
+			nSymbolsIndex = 0;
+		}
+	}
+
 	void SetContrast(uint8_t nContrast) {
 		SpiLcd.SetBackLight(nContrast);
 	}
@@ -184,7 +201,7 @@ public:
 	}
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
-		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
+		m_nSleepTimeout = 1000U * 60U * nSleepTimeout;
 	}
 
 	uint32_t GetSleepTimeout() const {
@@ -195,11 +212,11 @@ public:
 		SpiLcd.SetRotation(doFlipVertically ? 3 : 1);
 	}
 
-	uint8_t GetColumns() const {
+	uint32_t GetColumns() const {
 		return m_nCols;
 	}
 
-	uint8_t GetRows() const {
+	uint32_t GetRows() const {
 		return m_nRows;
 	}
 
@@ -209,15 +226,6 @@ public:
 
 	bool GetFlipVertically() const {
 		return m_bIsFlippedVertically;
-	}
-
-	void PrintInfo() {
-#if defined (CONFIG_USE_ILI9341)
-		printf("ILI9341 ");
-#else
-		printf("ST7789 ");
-#endif
-		printf("(%d,%d)\n", m_nRows, m_nCols);
 	}
 
 	void Run() {
@@ -246,12 +254,12 @@ private:
 #else
 	ST7789	SpiLcd;
 #endif
-	uint8_t m_nCols;
-	uint8_t m_nRows;
+	uint32_t m_nCols;
+	uint32_t m_nRows;
 	uint8_t m_nContrast { 0x7F };
 	bool m_bIsFlippedVertically { false };
 	bool m_bIsSleep { false };
-	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
+	uint32_t m_nSleepTimeout { 1000U * 60U * display::Defaults::SEEP_TIMEOUT };
 	uint32_t m_nMillis { 0 };
 
 	uint16_t m_nCursorX { 0 };

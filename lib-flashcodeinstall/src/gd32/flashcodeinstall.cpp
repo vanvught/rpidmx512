@@ -47,7 +47,7 @@ FlashCodeInstall::FlashCodeInstall() {
 
 	m_nFlashSize = FlashCode::GetSize();
 
-	printf("%s, sector size %d, %d bytes [%d kB]\n", FlashCode::GetName(), FlashCode::GetSectorSize(), m_nFlashSize, m_nFlashSize / 1024U);
+	printf("FlashCodeInstall: %s, sector size %d, %d bytes [%d kB]\n", FlashCode::GetName(), FlashCode::GetSectorSize(), m_nFlashSize, m_nFlashSize / 1024U);
 	Display::Get()->Write(1, FlashCode::GetName());
 
 	DEBUG_EXIT

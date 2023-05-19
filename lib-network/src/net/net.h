@@ -2,7 +2,7 @@
  * @file net.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,7 @@
 #ifndef NET_H_
 #define NET_H_
 
-#include <stdint.h>
-#include <stdbool.h>
+#include <cstdint>
 
 struct ip_addr {
     uint32_t addr;
@@ -35,45 +34,38 @@ struct ip_addr {
 
 typedef struct ip_addr ip_addr_t;
 
-struct ip_info {
+struct IpInfo {
     struct ip_addr ip;
     struct ip_addr netmask;
     struct ip_addr gw;
 };
 
-#define IP_BROADCAST	((uint32_t) 0xFFFFFFFF)
+#define IP_BROADCAST	(0xFFFFFFFF)
 #define HOST_NAME_MAX 	64	/* including a terminating null byte. */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void net_init(const uint8_t *const, struct IpInfo *, const char *, bool *, bool *);
+void net_shutdown();
+void net_handle();
 
-extern void net_init(const uint8_t *mac_address, struct ip_info *p_ip_info, const char *hostname, bool *use_dhcp, bool *is_zeroconf_used);
-extern void net_shutdown(void);
-extern void net_handle(void);
+void net_set_ip(uint32_t);
+void net_set_netmask(uint32_t);
+void net_set_gw(uint32_t);
+bool net_set_zeroconf(struct IpInfo *);
 
-extern void net_set_ip(uint32_t ip);
-extern void net_set_gw(uint32_t gw);
-extern bool net_set_zeroconf(struct ip_info *p_ip_info);
+bool net_set_dhcp(struct IpInfo *, const char *const, bool *);
+void net_dhcp_release();
 
-extern bool net_set_dhcp(struct ip_info *p_ip_info, const char *hostname, bool *is_zeroconf_used);
-extern void net_dhcp_release(void);
+int udp_begin(uint16_t);
+int udp_end(uint16_t);
+uint16_t udp_recv1(int, uint8_t *, uint16_t, uint32_t *, uint16_t *);
+uint16_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
+int udp_send(int, const uint8_t *, uint16_t, uint32_t, uint16_t);
 
-extern int udp_bind(uint16_t);
-extern int udp_unbind(uint16_t);
-extern uint16_t udp_recv(uint8_t, uint8_t *, uint16_t, uint32_t *, uint16_t *);
-extern uint16_t udp_recv2(uint8_t, const uint8_t **, uint32_t *, uint16_t *);
-extern int udp_send(uint8_t, const uint8_t *, uint16_t, uint32_t, uint16_t);
+int igmp_join(uint32_t);
+int igmp_leave(uint32_t);
 
-extern int igmp_join(uint32_t group_address);
-extern int igmp_leave(uint32_t group_address);
-
-extern int tcp_begin(uint16_t local_port);
-extern uint16_t tcp_read(int handle, const uint8_t **p);
-extern void tcp_write(int handle, const uint8_t *buffer, uint16_t length);
-
-#ifdef __cplusplus
-}
-#endif
+int tcp_begin(const uint16_t);
+uint16_t tcp_read(const int32_t, const uint8_t **, uint32_t &);
+void tcp_write(const int32_t, const uint8_t *, uint16_t, const uint32_t);
 
 #endif /* NET_H_ */

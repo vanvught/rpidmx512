@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@
 #include <time.h>
 #include <cstdint>
 
-#include "packets.h"
+#include "artnet.h"
 #include "artnettrigger.h"
 
 #include "artnetpolltable.h"
@@ -117,6 +117,14 @@ private:
 	bool m_bSynchronization { true };
 	bool m_bUnicast { true };
 	int32_t m_nHandle { -1 };
+
+	struct TArtNetPacket {
+		union UArtPacket ArtPacket;
+		uint32_t IPAddressFrom;
+		uint16_t nLength;
+		TOpCodes OpCode;
+	};
+
 	struct TArtNetPacket *m_pArtNetPacket;
 	struct TArtPoll m_ArtNetPoll;
 	struct TArtDmx *m_pArtDmx;

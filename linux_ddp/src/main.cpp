@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,12 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
+#include "networkconst.h"
 
 #include "display.h"
 #include "displayudfparams.h"
 
 #include "mdns.h"
-#include "mdnsservices.h"
 
 #include "httpd/httpd.h"
 
@@ -66,28 +65,14 @@
 
 int main(int argc, char **argv) {
 	Hardware hw;
-	Network nw;
-	LedBlink lb;
 	Display display;
+	ConfigStore configStore;
+	StoreNetwork storeNetwork;
+	Network nw(argc, argv);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	if (argc < 2) {
-		printf("Usage: %s ip_address|interface_name\n", argv[0]);
-		return -1;
-	}
-
 	hw.Print();
-	fw.Print("DDP Display Real-time Monitor");
-
-	ConfigStore configStore;
-
-	StoreNetwork storeNetwork;
-
-	if (nw.Init(argv[1]) < 0) {
-		fprintf(stderr, "Not able to start the network\n");
-		return -1;
-	}
-
+	fw.Print();
 	nw.Print();
 
 	StoreDisplayUdf storeDisplayUdf;
@@ -136,17 +121,17 @@ int main(int argc, char **argv) {
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
+	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
+
 	MDNS mDns;
-	mDns.Start();
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_CONFIG, 0x2905);
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_RDMNET_LLRP, LLRP_PORT, mdns::Protocol::UDP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, MDNS_SERVICE_HTTP, 80, mdns::Protocol::TCP, "node=DDP Display");
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=DDP Display");
 	mDns.Print();
 
 	ddpDisplay.Print();
 
 	HttpDaemon httpDaemon;
-	httpDaemon.Start();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::DDP, remoteconfig::Output::MONITOR, nActivePorts);
 
@@ -161,7 +146,6 @@ int main(int argc, char **argv) {
 	while (configStore.Flash())
 		;
 
-	llrpOnlyDevice.Start();
 	ddpDisplay.Start();
 
 	for (;;) {

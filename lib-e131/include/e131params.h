@@ -2,7 +2,7 @@
  * @file e131params.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -89,8 +89,8 @@ class E131ParamsStore {
 public:
 	virtual ~E131ParamsStore() {}
 
-	virtual void Update(const struct e131params::Params *pParams)=0;
-	virtual void Copy(struct e131params::Params *pParams)=0;
+	virtual void Update(const e131params::Params *pParams)=0;
+	virtual void Copy(e131params::Params *pParams)=0;
 };
 
 class E131Params {
@@ -100,7 +100,7 @@ public:
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct e131params::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const e131params::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(uint32_t nPortIndexOffset = 0);

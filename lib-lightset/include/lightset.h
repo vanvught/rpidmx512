@@ -2,7 +2,7 @@
  * @file lightset.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,10 @@
 
 namespace lightset {
 namespace dmx {
-static constexpr auto ADDRESS_INVALID = 0xFFFF;
-static constexpr auto START_ADDRESS_DEFAULT = 1U;
-static constexpr auto UNIVERSE_SIZE = 512U;
-static constexpr auto MAX_VALUE = 255U;
+static constexpr uint16_t ADDRESS_INVALID = 0xFFFF;
+static constexpr uint32_t START_ADDRESS_DEFAULT = 1;
+static constexpr uint32_t UNIVERSE_SIZE = 512;
+static constexpr uint32_t MAX_VALUE = 255;
 }
 
 enum class MergeMode {

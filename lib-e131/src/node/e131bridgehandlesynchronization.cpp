@@ -2,7 +2,7 @@
  * @file e131bridgehandlesynchronization.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 #include "e131bridge.h"
 
 #include "lightsetdata.h"
-#include "ledblink.h"
+#include "hardware.h"
 
 #include "debug.h"
 
@@ -40,10 +40,11 @@ void E131Bridge::HandleSynchronization() {
 	// NOTE: There is no multicast addresses (To Ip) available
 	// We just check if SynchronizationAddress is published by a Source
 
-	const auto nSynchronizationAddress = __builtin_bswap16(m_E131.E131Packet.Synchronization.FrameLayer.UniverseNumber);
+	const auto *const pSynchronizationPacket = reinterpret_cast<TE131SynchronizationPacket *>(m_pReceiveBuffer);
+	const auto nSynchronizationAddress = __builtin_bswap16(pSynchronizationPacket->FrameLayer.UniverseNumber);
 
 	if ((nSynchronizationAddress != m_State.nSynchronizationAddressSourceA) && (nSynchronizationAddress != m_State.nSynchronizationAddressSourceB)) {
-		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+		Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 		DEBUG_PUTS("");
 		return;
 	}
@@ -52,7 +53,6 @@ void E131Bridge::HandleSynchronization() {
 
 	for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
 		if (m_OutputPort[i].genericPort.bIsEnabled) {
-//			m_pLightSet->SetData(i, m_OutputPort[i].data, m_OutputPort[i].nLength);
 			lightset::Data::Output(m_pLightSet, i);
 
 			if (!m_OutputPort[i].IsTransmitting) {
@@ -60,9 +60,7 @@ void E131Bridge::HandleSynchronization() {
 				m_OutputPort[i].IsTransmitting = true;
 			}
 
-//			m_OutputPort[i].nLength = 0;
 			lightset::Data::ClearLength(i);
-
 		}
 	}
 

@@ -2,7 +2,7 @@
  * @file hardware.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,9 @@
 #ifndef HARDWARE_H_
 #define HARDWARE_H_
 
+#include <cstdint>
+
 namespace hardware {
-
-enum class LedStatus {
-	OFF, ON, HEARTBEAT, FLASH
-};
-
 enum class BootDevice {
 	UNKOWN,
 	FEL,	// H3 Only
@@ -41,14 +38,14 @@ enum class BootDevice {
 	FLASH,
 	RAM
 };
-
-}  // namespace hardware
-
-class RebootHandler {
-public:
-	virtual ~RebootHandler() {}
-	virtual void Run()=0;
+namespace ledblink {
+enum class Mode {
+	OFF_OFF, OFF_ON, NORMAL, DATA, FAST, REBOOT, UNKNOWN
 };
+
+void display(const uint32_t nState);
+}  // namespace ledblink
+}  // namespace hardware
 
 #if defined (BARE_METAL)
 # if defined (H3)

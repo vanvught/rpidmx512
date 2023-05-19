@@ -2,7 +2,7 @@
  * @file dmxconst.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,25 +26,27 @@
 #ifndef DMX_CONST_H_
 #define DMX_CONST_H_
 
+#include <cstdint>
+
 namespace dmx {
 enum class PortDirection {
 	OUTP, INP, DISABLED
 };
-static constexpr auto START_CODE = 0U;				///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
+static constexpr uint32_t START_CODE = 0;				   ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 namespace min {
-static constexpr auto CHANNELS = 2U;
+static constexpr uint32_t CHANNELS = 2;
 }  // namespace min
 namespace max {
-static constexpr auto CHANNELS = 512U;
+static constexpr uint32_t CHANNELS = 512;
 }  // namespace max
 namespace transmit {
-static constexpr auto BREAK_TIME_MIN = 92U;				///< 92 us
-static constexpr auto BREAK_TIME_TYPICAL = 176U;		///< 176 us
-static constexpr auto MAB_TIME_MIN = 12U;				///< 12 us
-static constexpr auto MAB_TIME_MAX = 1000000U;			///< 1s
-static constexpr auto REFRESH_RATE_DEFAULT = 40U;		///< 40 Hz
-static constexpr auto PERIOD_DEFAULT = (1000000U / REFRESH_RATE_DEFAULT);///< 25000 us
-static constexpr auto BREAK_TO_BREAK_TIME_MIN = 1204U;	///< us
+static constexpr uint32_t BREAK_TIME_MIN = 92;				///< 92 us
+static constexpr uint32_t BREAK_TIME_TYPICAL = 176;		    ///< 176 us
+static constexpr uint32_t MAB_TIME_MIN = 12;				///< 12 us
+static constexpr uint32_t MAB_TIME_MAX = 1000000;			///< 1s
+static constexpr uint32_t REFRESH_RATE_DEFAULT = 40;		///< 40 Hz
+static constexpr uint32_t PERIOD_DEFAULT = (1000000U / REFRESH_RATE_DEFAULT);///< 25000 us
+static constexpr uint32_t BREAK_TO_BREAK_TIME_MIN = 1204;	///< us
 }  // namespace transmit
 }  // namespace dmx
 

@@ -26,7 +26,6 @@
 #include <cstdio>
 
 #include "hardware.h"
-#include "ledblink.h"
 #include "display.h"
 #include "console.h"
 
@@ -48,32 +47,27 @@
 #include "software_version.h"
 #include "firmwareversion.h"
 
-extern "C" {
-
-using namespace midi;
-
-void notmain(void) {
+void main() {
 	Hardware hw;
-#if !defined(NO_EMAC)
-	NetworkH3emac nw;
-#endif
-	LedBlink lb;
 	Display display;
-	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-
-	FlashCodeInstall spiFlashInstall;
 #if !defined(NO_EMAC)
 	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	StoreNetwork storeNetwork;
+	Network nw(&storeNetwork);
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 #endif
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+	FlashCodeInstall spiFlashInstall;
+
+	fw.Print("MIDI Monitor");
 
 	Midi midi;
 
 	midi.SetActiveSense(true);
-	midi.Init(Direction::INPUT);
+	midi.Init(midi::Direction::INPUT);
 
 #if !defined(NO_EMAC)
-	nw.SetNetworkStore(StoreNetwork::Get());
-	nw.Init(StoreNetwork::Get());
 	nw.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::MIDI, remoteconfig::Output::MONITOR);
@@ -104,8 +98,7 @@ void notmain(void) {
 		nw.Run();
 		remoteConfig.Run();
 #endif
-		lb.Run();
+		hw.Run();
 	}
 }
 
-}

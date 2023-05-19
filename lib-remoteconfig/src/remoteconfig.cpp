@@ -2,7 +2,7 @@
  * @file remoteconfig.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -176,12 +176,17 @@
  */
 
 #if defined (RDM_RESPONDER)
+/* rdm_device.txt */
+# include "rdmdeviceparams.h"
+# include "storerdmdevice.h"
 /* sensors.txt */
 # include "rdmsensorsparams.h"
 # include "storerdmsensors.h"
 /* "subdev.txt" */
-# include "rdmsubdevicesparams.h"
-# include "storerdmdevice.h"
+# if defined (ENABLE_RDM_SUBDEVICES)
+#  include "rdmsubdevicesparams.h"
+#  include "storerdmsubdevices.h"
+# endif
 #endif
 
 #include "debug.h"
@@ -191,7 +196,17 @@ namespace udp {
 static constexpr auto PORT = 0x2905;
 namespace get {
 enum class Command {
-	REBOOT, LIST, LIST_BROADCAST, UPTIME, VERSION, DISPLAY, GET, TFTP, FACTORY
+	REBOOT,
+	LIST,
+	LIST_BROADCAST,
+	UPTIME,
+	VERSION,
+	DISPLAY,
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+	GET,
+#endif
+	TFTP,
+	FACTORY
 };
 }  // namespace get
 namespace set {
@@ -209,7 +224,9 @@ const struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleUptime,      "uptime#",   7, false },
 		{ &RemoteConfig::HandleVersion,     "version#",  8, false },
 		{ &RemoteConfig::HandleDisplayGet,  "display#",  8, false },
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 		{ &RemoteConfig::HandleGetNoParams, "get#",      4, true },
+#endif
 		{ &RemoteConfig::HandleTftpGet,     "tftp#",     5, false },
 		{ &RemoteConfig::HandleFactory,     "factory##", 9, false }
 };
@@ -219,7 +236,7 @@ const struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
 		{ &RemoteConfig::HandleDisplaySet, "display#",  8, true }
 };
 
-static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Node" };
+static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Node", "Bootloader TFTP", "RDM Responder" };
 static constexpr char s_Output[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel" };
 
 RemoteConfig *RemoteConfig::s_pThis;
@@ -298,24 +315,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 	DEBUG_EXIT
 }
 
-void RemoteConfig::Run() {
-	if (__builtin_expect((m_bDisable), 1)) {
-		return;
-	}
-
-#if defined (ENABLE_TFTP_SERVER)
-	if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
-		m_pTFTPFileServer->Run();
-	}
-#endif
-
-	uint16_t nForeignPort;
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &m_nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((m_nBytesReceived < 4), 1)) {
-		return;
-	}
-
+void RemoteConfig::HandleRequest() {
 #ifndef NDEBUG
 	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 #endif
@@ -352,7 +352,9 @@ void RemoteConfig::Run() {
 
 	if (!m_bDisableWrite) {
 		if (s_pUdpBuffer[0] == '#') {
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 			HandleSet(nullptr, 0);
+#endif
 			return;
 		} else if (s_pUdpBuffer[0] == '!') {
 			m_nBytesReceived--;
@@ -487,6 +489,7 @@ void RemoteConfig::HandleDisplayGet() {
 	DEBUG_EXIT
 }
 
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
 /**
  * GET
  */
@@ -514,7 +517,7 @@ uint32_t RemoteConfig::HandleGet(void *pBuffer, uint32_t nBufferLength) {
 		if (pBuffer == nullptr) {
 			Network::Get()->SendTo(m_nHandle, "ERROR#?get\n", 11, m_nIPAddressFrom, remoteconfig::udp::PORT);
 		} else {
-			memcpy(pBuffer, "ERROR#?get\n", std::min(11U, nBufferLength));
+			memcpy(pBuffer, "ERROR#?get\n", std::min(static_cast<uint32_t>(11), nBufferLength));
 		}
 		DEBUG_EXIT
 		return 12;
@@ -595,6 +598,37 @@ void RemoteConfig::HandleGetOscClntTxt(uint32_t& nSize) {
 
 	DEBUG_EXIT
 }
+#endif
+
+#if defined (RDM_RESPONDER)
+void RemoteConfig::HandleGetRdmDeviceTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	RDMDeviceParams rdmDeviceParams(StoreRDMDevice::Get());
+	rdmDeviceParams.Save(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleGetRdmSensorsTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	RDMSensorsParams rdmSensorsParams(StoreRDMSensors::Get());
+	rdmSensorsParams.Save(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+
+# if defined (ENABLE_RDM_SUBDEVICES)
+void RemoteConfig::HandleGetRdmSubdevTxt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	RDMSubDevicesParams rdmSubDevicesParams(StoreRDMSubDevices::Get());
+	rdmSubDevicesParams.Save(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+# endif
 #endif
 
 #if defined (OUTPUT_DMX_SEND)
@@ -802,6 +836,8 @@ void RemoteConfig::HandleGetRgbPanelTxt(uint32_t& nSize) {
 }
 #endif
 
+#endif
+
 /**
  * SET
  */
@@ -820,7 +856,7 @@ void RemoteConfig::HandleSet(void *pBuffer, uint32_t nBufferLength) {
 			DEBUG_PUTS("JSON");
 			int c;
 			assert(nBufferLength > 1);
-			if ((c = properties::convert_json_file(reinterpret_cast<char *>(pBuffer), static_cast<uint16_t>(nBufferLength - 1U))) <= 0) {
+			if ((c = properties::convert_json_file(reinterpret_cast<char *>(pBuffer), static_cast<uint16_t>(nBufferLength - 1U), false)) <= 0) {
 				DEBUG_EXIT
 				return;
 			}
@@ -958,9 +994,6 @@ void RemoteConfig::HandleSetDevicesTxt() {
 	DEBUG_ENTRY
 
 # if defined (OUTPUT_DMX_TLC59711)
-#  if defined (OUTPUT_DMX_PIXEL)
-	static_assert(sizeof(struct TTLC59711DmxParams) != sizeof(struct PixelDmxParams), "");
-#  endif
 	assert(StoreTLC59711::Get() != nullptr);
 	TLC59711DmxParams tlc59711params(StoreTLC59711::Get());
 
@@ -1178,6 +1211,52 @@ void RemoteConfig::HandleSetNodeTxt(const node::Personality personality) {
 }
 #endif
 
+#if defined (RDM_RESPONDER)
+void RemoteConfig::HandleSetRdmDeviceTxt() {
+	DEBUG_ENTRY
+
+	assert(StoreRDMDevice::Get() != nullptr);
+	RDMDeviceParams rdmDeviceParams(StoreRDMDevice::Get());
+
+	rdmDeviceParams.Load(s_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	rdmDeviceParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleSetRdmSensorsTxt() {
+	DEBUG_ENTRY
+
+	assert(StoreRDMSensors::Get() != nullptr);
+	RDMSensorsParams rdmSensorsParams(StoreRDMSensors::Get());
+
+	rdmSensorsParams.Load(s_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	rdmSensorsParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+
+# if defined (ENABLE_RDM_SUBDEVICES)
+void RemoteConfig::HandleSetRdmSubdevTxt() {
+	DEBUG_ENTRY
+
+	assert(StoreRDMSubDevices::Get() != nullptr);
+	RDMSubDevicesParams rdmSubDevicesParams(StoreRDMSubDevices::Get());
+
+	rdmSubDevicesParams.Load(s_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	rdmSubDevicesParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+# endif
+#endif
+
 #if defined (OUTPUT_DMX_SERIAL)
 void RemoteConfig::HandleSetSerialTxt() {
 	DEBUG_ENTRY
@@ -1215,7 +1294,7 @@ void RemoteConfig::TftpExit() {
 
 	const auto nCmdLength = s_SET[static_cast<uint32_t>(remoteconfig::udp::set::Command::TFTP)].nLength;
 
-	m_nBytesReceived = (nCmdLength + 1U);
+	m_nBytesReceived = nCmdLength + 1U;
 	s_pUdpBuffer[nCmdLength + 1] = '0';
 
 	HandleTftpSet();
@@ -1237,9 +1316,6 @@ void RemoteConfig::HandleTftpSet() {
 
 	if (m_bEnableTFTP) {
 		Display::Get()->SetSleep(false);
-		Display::Get()->TextStatus("TFTP On  [Reboot]", Display7SegmentMessage::INFO_TFTP_ON);
-	} else {
-		Display::Get()->TextStatus("TFTP Off [Reboot] ", Display7SegmentMessage::INFO_TFTP_OFF);
 	}
 
 	PlatformHandleTftpSet();

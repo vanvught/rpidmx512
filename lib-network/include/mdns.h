@@ -2,7 +2,7 @@
  * @file mdns.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,42 +33,27 @@
 #include "../config/apps_config.h"
 
 namespace mdns {
-struct Flags {
-	uint32_t qr;
-	uint32_t opcode;
-	uint32_t aa;
-	uint32_t tc;
-	uint32_t rd;
-	uint32_t ra;
-	uint32_t zero;
-	uint32_t ad;
-	uint32_t cd;
-	uint32_t rcode;
+enum class Services {
+	CONFIG, TFTP, HTTP, RDMNET_LLRP, NTP, MIDI, OSC, DDP, PP, LAST_NOT_USED
 };
 
-enum class Protocol : uint8_t {
-	UDP, TCP
-};
+struct Header {
+	uint16_t xid;
+	uint8_t nFlag1;
+	uint8_t nFlag2;
+	uint16_t nQueryCount;
+	uint16_t nAnswerCount;
+	uint16_t nAuthorityCount;
+	uint16_t nAdditionalCount;
+} __attribute__((__packed__));
 
 struct ServiceRecord {
 	char *pName;
-	char *pServName;
 	char *pTextContent;
+	uint16_t nTextContentLength;
 	uint16_t nPort;
-	Protocol nProtocol;
+	mdns::Services services;
 };
-
-struct RecordData {
-	uint32_t nSize;
-	uint8_t aBuffer[512];
-};
-
-static constexpr uint16_t UDP_PORT = 5353;
-#if !defined (MDNS_SERVICE_RECORDS_MAX)
-static constexpr auto SERVICE_RECORDS_MAX = 8;
-#else
-static constexpr auto SERVICE_RECORDS_MAX = MDNS_SERVICE_RECORDS_MAX;
-#endif
 }  // namespace mdns
 
 class MDNS {
@@ -76,57 +61,46 @@ public:
 	MDNS();
 	~MDNS();
 
-	void Start();
-	void Stop() {
-		Network::Get()->End(mdns::UDP_PORT);
-		s_nHandle = -1;
+	bool AddServiceRecord(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
+	void Print();
+	void SendAnnouncement();
+
+	void Run() {
+		s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
+
+		if (__builtin_expect((s_nBytesReceived < sizeof(struct mdns::Header)), 1)) {
+			return;
+		}
+
+		const auto *const pHeader = reinterpret_cast<mdns::Header *>(s_pReceiveBuffer);
+		const auto nFlag1 = pHeader->nFlag1;
+
+		if ((nFlag1 >> 3) & 0xF) {
+			return;
+		}
+
+		HandleQuestions(__builtin_bswap16(pHeader->nQueryCount));
 	}
 
-	void Run();
-
-	void Print();
-
-	void SetName(const char *pName);
-
-	bool AddServiceRecord(const char* pName, const char *pServName, uint16_t nPort, mdns::Protocol nProtocol = mdns::Protocol::UDP, const char* pTextContent = nullptr);
+	static MDNS *Get() {
+		return s_pThis;
+	}
 
 private:
 	void Parse();
-	void HandleRequest(uint16_t nQuestions);
-
-	uint32_t DecodeDNSNameNotation(const char *pDNSNameNotation, char *pString);
-
-	uint32_t WriteDnsName(const char *pSource, char *pDestination, bool bNullTerminated = true);
-	const char *FindFirstDotFromRight(const char *pString) const;
-
-	void CreateAnswerLocalIpAddress();
-
-	uint32_t CreateAnswerServiceSrv(uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServiceTxt(uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServicePtr(uint32_t nIndex, uint8_t *pDestination);
-	uint32_t CreateAnswerServiceDnsSd(uint32_t nIndex, uint8_t *pDestination);
-
-	void CreateMDNSMessage(uint32_t nIndex);
-
-#ifndef NDEBUG
-	void Dump(const struct TmDNSHeader *pmDNSHeader, uint16_t nFlags);
-#endif
+	void HandleQuestions(const uint32_t nQuestions);
+	void SendAnswerLocalIpAddress(const uint16_t nTransActionID = 0);
+	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID = 0);
+	void SendTo(const uint16_t nLength);
 
 private:
-	static uint32_t s_nMulticastIp;
 	static int32_t s_nHandle;
 	static uint32_t s_nRemoteIp;
 	static uint16_t s_nRemotePort;
 	static uint16_t s_nBytesReceived;
-	static uint32_t s_nLastAnnounceMillis;
-	static uint32_t s_nDNSServiceRecords;
+	static uint8_t *s_pReceiveBuffer;
 
-	static mdns::ServiceRecord s_ServiceRecords[mdns::SERVICE_RECORDS_MAX];
-	static mdns::RecordData s_AnswerLocalIp;
-	static mdns::RecordData s_ServiceRecordsData;
-
-	static char *s_pName;
-	static uint8_t *s_pBuffer;
+	static MDNS *s_pThis;
 };
 
 #endif /* MDNS_H_ */

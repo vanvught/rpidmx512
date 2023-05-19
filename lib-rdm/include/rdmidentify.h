@@ -2,7 +2,7 @@
  * @file rdmidentify.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "ledblink.h"
+#include "hardware.h"
 
 namespace rdm {
 namespace identify {
@@ -45,7 +45,7 @@ public:
 
 	void On() {
 		m_bIsEnabled = true;
-		LedBlink::Get()->SetMode(ledblink::Mode::FAST);
+		Hardware::Get()->SetModeWithLock(hardware::ledblink::Mode::FAST, true);
 
 		if (m_nMode != rdm::identify::Mode::QUIET) {
 			On(m_nMode);
@@ -54,7 +54,7 @@ public:
 
 	void Off() {
 		m_bIsEnabled = false;
-		LedBlink::Get()->SetMode(ledblink::Mode::NORMAL);
+		Hardware::Get()->SetModeWithLock(hardware::ledblink::Mode::NORMAL, false);
 
 		if (m_nMode != rdm::identify::Mode::QUIET) {
 			Off(m_nMode);

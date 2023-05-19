@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,14 +31,10 @@
 
 #include <cstdint>
 
-class ArtNetDmx {
-public:
-	virtual ~ArtNetDmx() {}
-
-	virtual void Start(uint32_t nPortIndex)=0;
-	virtual void Stop(uint32_t nPortIndex)=0;
-
-	virtual const uint8_t *Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond)=0;
-};
+namespace artnet {
+void dmx_start(const uint32_t nPortIndex);
+void dmx_stop(const uint32_t nPortIndex);
+const uint8_t *dmx_handler(const uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond);
+}  // namespace artnet
 
 #endif /* ARTNETDMX_H_ */

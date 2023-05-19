@@ -2,7 +2,7 @@
  * @file dummy_device.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,6 @@
 
 #include "hardware.h"
 #include "network.h"
-#include "ledblink.h"
 
 #include "firmwareversion.h"
 
@@ -40,10 +39,21 @@
 #include "rdmpersonality.h"
 #include "rdmdeviceparams.h"
 
+namespace rdm {
+namespace device {
+namespace responder {
+
+void factorydefaults() {
+
+}
+
+}  // namespace responder
+}  // namespace device
+}  // namespace rdm
+
 int main(int argc, char **argv) {
 	Hardware hw;
 	Network nw;
-	LedBlink lb;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	if (argc < 2) {
@@ -60,8 +70,6 @@ int main(int argc, char **argv) {
 
 	nw.Print();
 
-	lb.SetMode(ledblink::Mode::NORMAL);
-
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("LLRP Dummy device", nullptr) };
 	RDMNetDevice device(pPersonalities, 1);
 
@@ -74,7 +82,6 @@ int main(int argc, char **argv) {
 
 	device.Init();
 	device.Print();
-	device.Start();
 
 	for (;;) {
 		device.Run();

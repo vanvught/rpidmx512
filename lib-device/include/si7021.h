@@ -2,7 +2,7 @@
  * @file si7021.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ private:
 	uint16_t ReadRaw(uint8_t nCmd);
 
 private:
-	bool m_bIsInitialized = false;
+	bool m_bIsInitialized { false };
 };
 
 }  // namespace sensor

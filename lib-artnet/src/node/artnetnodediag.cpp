@@ -1,4 +1,4 @@
-#if defined ( ENABLE_SENDDIAG )
+#if defined ( ARTNET_ENABLE_SENDDIAG )
 /**
  * @file artnetnodediag.cpp
  *

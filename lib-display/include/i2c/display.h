@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,6 +36,7 @@
 #include <cassert>
 
 #include "displayset.h"
+#include "display7segment.h"
 
 #include "hal_i2c.h"
 #include "hardware.h"
@@ -56,11 +57,28 @@ class Display {
 public:
 	Display();
 	Display(uint32_t nRows);
-	Display(display::Type tDisplayType);
+	Display(display::Type type);
 
 	~Display() {
 		s_pThis = nullptr;
 		delete m_LcdDisplay;
+	}
+
+	bool isDetected() const {
+		return m_LcdDisplay == nullptr ? false : true;
+	}
+
+	display::Type GetDetectedType() const {
+		return m_tType;
+	}
+
+	void PrintInfo() {
+		if (m_LcdDisplay == nullptr) {
+			puts("No display found");
+			return;
+		}
+
+		m_LcdDisplay->PrintInfo();
 	}
 
 	void Cls() {
@@ -71,7 +89,7 @@ public:
 		m_LcdDisplay->Cls();
 	}
 
-	void ClearLine(uint8_t nLine) {
+	void ClearLine(uint32_t nLine) {
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
@@ -95,26 +113,26 @@ public:
 		m_LcdDisplay->PutString(pText);
 	}
 
-	int Write(uint8_t nLine, const char *pText) {
+	int Write(uint32_t nLine, const char *pText) {
 		if (m_LcdDisplay == nullptr) {
 			return 0;
 		}
 
 		const auto *p = pText;
-		int nCount = 0;
+		uint32_t nCount = 0;
 
-		const auto nColumns = static_cast<int>(m_LcdDisplay->GetColumns());
+		const auto nColumns = m_LcdDisplay->GetColumns();
 
 		while ((*p != 0) && (nCount++ < nColumns)) {
 			++p;
 		}
 
-		m_LcdDisplay->TextLine(nLine, pText, static_cast<uint8_t>(nCount));
+		m_LcdDisplay->TextLine(nLine, pText, nCount);
 
-		return nCount;
+		return static_cast<int>(nCount);
 	}
 
-	int Printf(uint8_t nLine, const char *format, ...) {
+	int Printf(uint32_t nLine, const char *format, ...) {
 		if (m_LcdDisplay == nullptr) {
 			return 0;
 		}
@@ -129,12 +147,12 @@ public:
 
 		va_end(arp);
 
-		m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint16_t>(i));
+		m_LcdDisplay->TextLine(nLine, buffer, static_cast<uint32_t>(i));
 
 		return i;
 	}
 
-	void TextLine(uint8_t nLine, const char *pText, uint8_t nLength) {
+	void TextLine(uint32_t nLine, const char *pText, uint32_t nLength) {
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
@@ -150,16 +168,16 @@ public:
 		const auto nColumns = m_LcdDisplay->GetColumns();
 		const auto nRows = m_LcdDisplay->GetRows();
 
-		assert((nColumns - 1) >= 0);
-		assert((nRows - 1) >= 0);
+		assert(nColumns >= 1);
+		assert(nRows >= 1);
 
-		SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
+		SetCursorPos(0, nRows - 1U);
 
-		for (uint32_t i = 0; i < static_cast<uint32_t>(nColumns - 1); i++) {
+		for (uint32_t i = 0; i < nColumns - 1U; i++) {
 			PutChar(' ');
 		}
 
-		SetCursorPos(0, static_cast<uint8_t>(nRows - 1));
+		SetCursorPos(0, nRows - 1U);
 
 		Write(nRows, pText);
 	}
@@ -175,17 +193,9 @@ public:
 		console_status(nConsoleColor, pText);
 	}
 
-	void TextStatus(const char *pText, uint8_t nValue7Segment, bool bHex = false) {
+	void TextStatus(const char *pText, uint32_t nValue7Segment, bool bHex = false) {
 		TextStatus(pText);
 		Status(nValue7Segment, bHex);
-	}
-
-	bool isDetected() const {
-		return m_LcdDisplay == nullptr ? false : true;
-	}
-
-	display::Type GetDetectedType() const {
-		return m_tType;
 	}
 
 	void SetCursor(uint32_t nMode) {
@@ -196,7 +206,7 @@ public:
 		m_LcdDisplay->SetCursor(nMode);
 	}
 
-	void SetCursorPos(uint8_t nCol, uint8_t nRow) {
+	void SetCursorPos(uint32_t nCol, uint32_t nRow) {
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
@@ -205,7 +215,7 @@ public:
 	}
 
 	void SetSleepTimeout(uint32_t nSleepTimeout = display::Defaults::SEEP_TIMEOUT) {
-		m_nSleepTimeout = 1000 * 60 * nSleepTimeout;
+		m_nSleepTimeout = 1000U * 60U * nSleepTimeout;
 	}
 
 	uint32_t GetSleepTimeout() const {
@@ -228,7 +238,7 @@ public:
 		m_LcdDisplay->SetFlipVertically(doFlipVertically);
 	}
 
-	uint8_t GetColumns() const {
+	uint32_t GetColumns() const {
 		if (m_LcdDisplay == nullptr) {
 			return 0;
 		}
@@ -236,7 +246,7 @@ public:
 		return m_LcdDisplay->GetColumns();
 	}
 
-	uint8_t GetRows() const {
+	uint32_t GetRows() const {
 		if (m_LcdDisplay == nullptr) {
 			return 0;
 		}
@@ -266,7 +276,7 @@ public:
 		}
 	}
 
-	void Status(uint8_t nValue, bool bHex) {
+	void Status(uint32_t nValue, bool bHex) {
 		if (m_bHave7Segment) {
 			uint16_t nData;
 
@@ -282,13 +292,16 @@ public:
 		}
 	}
 
-	void PrintInfo() {
-		if (m_LcdDisplay == nullptr) {
-			puts("No display found");
-			return;
-		}
+	void Progress() {
+		static constexpr char SYMBOLS[] = { '/' , '-', '\\' , '|' };
+		static uint32_t nSymbolsIndex;
 
-		m_LcdDisplay->PrintInfo();
+		Display::Get()->SetCursorPos(Display::Get()->GetColumns() - 1U, Display::Get()->GetRows() - 1U);
+		Display::Get()->PutChar(SYMBOLS[nSymbolsIndex++]);
+
+		if (nSymbolsIndex >= sizeof(SYMBOLS)) {
+			nSymbolsIndex = 0;
+		}
 	}
 
 	void SetSleep(bool bSleep) {
@@ -341,7 +354,7 @@ private:
 		}
 	}
 
-	uint16_t GetData(const uint8_t nHexValue) const {
+	uint16_t GetData(const uint32_t nHexValue) const {
 		switch (nHexValue) {
 		case 0:
 			return display7segment::CH_0;

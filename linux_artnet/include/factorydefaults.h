@@ -2,7 +2,7 @@
  * @file factorydefaults.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ namespace responder {
 void factorydefaults() {
 	RemoteConfig::Get()->SetDisable(false);
 	ConfigStore::Get()->ResetSetList(configstore::Store::RDMDEVICE);
+	ConfigStore::Get()->ResetSetList(configstore::Store::ARTNET);
 	StoreNetwork::Get()->SaveDhcp(true);
 }
 

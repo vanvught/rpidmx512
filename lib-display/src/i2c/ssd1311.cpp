@@ -2,7 +2,7 @@
  * @file ssd1311.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -130,7 +130,7 @@ void Ssd1311::PutString(const char *pString) {
 /**
  * nLine [1..4]
  */
-void Ssd1311::ClearLine(uint8_t nLine) {
+void Ssd1311::ClearLine(uint32_t nLine) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -140,7 +140,7 @@ void Ssd1311::ClearLine(uint8_t nLine) {
 	Ssd1311::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 }
 
-void Ssd1311::TextLine(uint8_t nLine, const char *pData, uint32_t nLength) {
+void Ssd1311::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
 	if (__builtin_expect((!((nLine > 0) && (nLine <= MAX_ROWS))), 0)) {
 		return;
 	}
@@ -167,7 +167,7 @@ void Ssd1311::Text(const char *pData, uint32_t nLength) {
 /**
  * (0,0)
  */
-void Ssd1311::SetCursorPos(uint8_t nCol, uint8_t nRow) {
+void Ssd1311::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	if  (__builtin_expect((!((nCol < MAX_COLUMNS) && (nRow < MAX_ROWS))), 0)) {
 		return;
 	}

@@ -2,7 +2,7 @@
  * @file net_memcpy.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,21 +24,22 @@
 #ifndef NET_MEMCPY_H_
 #define NET_MEMCPY_H_
 
-#include <stdint.h>
+#include <cstdint>
+#include <cstddef>
 
-void* net_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {
-	uint32_t *plDst = (uint32_t*) dest;
-	uint32_t const *plSrc = (uint32_t const*) src;
+inline void *net_memcpy(void *__restrict__ dest, void const *__restrict__ src, size_t n) {
+	auto *plDst = reinterpret_cast<uintptr_t *>(dest);
+	auto const *plSrc = reinterpret_cast<uintptr_t const *>(src);
 
-	if ((((uint32_t) src & 0x3) == 0) && (((uint32_t) dest & 0x3) == 0)) {
+	if (((reinterpret_cast<uintptr_t>(src) & 0x3) == 0) && ((reinterpret_cast<uintptr_t>(dest) & 0x3) == 0)) {
 		while (n >= 4) {
 			*plDst++ = *plSrc++;
 			n -= 4;
 		}
 	}
 
-	uint8_t *pcDst = (uint8_t*) plDst;
-	uint8_t const *pcSrc = (uint8_t const*) plSrc;
+	auto *pcDst = reinterpret_cast<uint8_t *>(plDst);
+	auto const *pcSrc = reinterpret_cast<uint8_t const *>(plSrc);
 
 	while (n--) {
 		*pcDst++ = *pcSrc++;

@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmDa
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;
 	BCM2835_PL011->LCRH = PL011_LCRH_WLEN8 | PL011_LCRH_STP2;
 
-	for (uint16_t i = 0; i < nLength; i++) {
+	for (uint32_t i = 0; i < nLength; i++) {
 		while ((BCM2835_PL011->FR & PL011_FR_TXFF) != 0)
 			;
 		BCM2835_PL011->DR = pRdmData[i];
