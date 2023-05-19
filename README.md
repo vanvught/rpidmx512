@@ -42,6 +42,11 @@
       * DMX Bridge / **Pixel Controller (WS28xx/SK6812/APA102/UCSx903/P9813)** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_dmx.zip?raw=true)}
       * **Client** with support for buttons {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_client.zip?raw=true)}
       * **Real-time Monitor** 1 Universe {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_osc_monitor.zip?raw=true)} {*Orange Pi One - HDMI output*}
+  * **PixelPusher (PP)**
+      *  Pixel Controller **WS28xx/SK6812/APA102/UCSx903/P9813** [Orange Pi Zero]
+         * 8x 680 RGB or 8x 512 RGBW {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_pp_pixel_multi.zip?raw=true)}
+
+  
   * **Showfile**
       *  **Player** {[zip](https://github.com/vanvught/h3dmx512-zip/blob/master/opi_emac_showfile.zip?raw=true)}
 * **RDM** 
@@ -77,10 +82,12 @@ U-Boot Orange Pi One: [uboot-orangpi_one.img.zip](https://github.com/vanvught/h3
 > Special thanks to [@trebisky](https://github.com/trebisky/orangepi) (Thomas J. Trebisky), who helped me in understanding the H3 SoC.
 
 #  Mac OS X / Linux [debugging purpose only]
-## Art-Net 4 / sACN E1.31 / OSC
+## Art-Net 4 / sACN E1.31 / OSC / DDP / PP
 - **Art-Net 4** Real-time DMX Monitor
+- **DDP** Real-time DMX Monitor {Distributed Display Protocol}
 - sACN **E.131** Real-time DMX Monitor
 - **OSC** Real-time DMX Monitor
+- **PP** Real-time DMX Monitor {PixelPusher}
 
 # Raspberry Pi Baremetal Open Source
 ## DMX512 / RDM / Art-Net 3 / sACN E1.31 / Pixel controller
@@ -96,8 +103,6 @@ Raspberry Pi **Open Source** solutions:
 
 
 All implementations are fully according to the standards. And successfully used in live lighting shows.
-
-Detailed information can be found here : [http://www.raspberrypi-dmx.org](http://www.raspberrypi-dmx.org)
 
 The kernel7.img is running on both Raspberry Pi 2 and Raspberry Pi 3(B+).
 
