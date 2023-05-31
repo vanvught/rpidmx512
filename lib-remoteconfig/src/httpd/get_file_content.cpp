@@ -2,7 +2,7 @@
  * @file get_file_content.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,27 +25,98 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cassert>
+
+#include "httpd/httpd.h"
+#include "../http/content/content.h"
 
 #include "debug.h"
 
-#include "../http/content/content.h"
+#if defined (CONFIG_HTTP_CONTENT_FS)
+#include <cstdio>
 
-int get_file_content(const char *fileName, char *pDst) {
-	for (uint32_t i = 0; i < sizeof(HttpContent) / sizeof(HttpContent[0]) ; i++) {
-		if (strcmp(fileName, HttpContent[i].pFileName) == 0) {
-			const auto *pSrc =  HttpContent[i].pContent;
-			auto *s = pDst;
+static constexpr char supported_extensions[static_cast<int>(http::contentTypes::NOT_DEFINED)][8] = {
+		"html",
+		"css",
+		"js",
+		"json"
+};
 
-			while ((*s++ = *pSrc++) != '\0')
-				;
+static http::contentTypes getContentType(const char *pFileName) {
+	for (int i = 0; i < static_cast<int>(http::contentTypes::NOT_DEFINED); i++) {
+		const auto l = strlen(pFileName);
+		const auto e = strlen(supported_extensions[i]);
 
-			const int nBytes = s - pDst - 1;
+		if (l > (e + 2)) {
+			if (pFileName[l - e - 1] == '.') {
+				if (strcmp(&pFileName[l - e], supported_extensions[i]) == 0) {
+					return static_cast<http::contentTypes>(i);
+				}
+			}
+		}
+	}
 
-			DEBUG_PRINTF("%s -> %d", HttpContent[i].pFileName, nBytes);
-			return nBytes;
+	return http::contentTypes::NOT_DEFINED;
+}
+
+int get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType) {
+	auto *pFile = fopen(fileName, "r");
+
+	if (pFile == nullptr) {
+		DEBUG_EXIT
+		return -1;
+	}
+
+	contentType = getContentType(fileName);
+
+	if (contentType == http::contentTypes::NOT_DEFINED) {
+		DEBUG_EXIT
+		fclose(pFile);
+		return -2;
+	}
+
+	auto doRemoveWhiteSpaces = true;
+	auto *p = pDst;
+	int c;
+
+	while ((c = fgetc(pFile)) != EOF) {
+		if (doRemoveWhiteSpaces) {
+			if (c < ' ') {
+				continue;
+			} else {
+				doRemoveWhiteSpaces = false;
+			}
+		} else {
+			if (c == '\n') {
+				doRemoveWhiteSpaces = true;
+			}
+		}
+		*p++ = c;
+		if ((p - pDst) == http::BUFSIZE) {
+			DEBUG_PUTS("File too long");
+			break;
+		}
+	}
+
+	fclose(pFile);
+
+	DEBUG_PRINTF("%s -> %d", fileName, static_cast<int>(p - pDst));
+	return static_cast<int>(p - pDst);
+}
+#else
+int get_file_content(const char *pFileName, char *pDst, http::contentTypes& contentType) {
+	for (auto& content : HttpContent) {
+		if (strcmp(pFileName, content.pFileName) == 0) {
+			assert(content.nContentLength < http::BUFSIZE);
+			memcpy(pDst, content.pContent, content.nContentLength);
+
+			DEBUG_PRINTF("%s -> %d", content.pFileName, content.nContentLength);
+			contentType = content.contentType;
+			return static_cast<int>(content.nContentLength);
 		}
 	}
 
 	DEBUG_EXIT
 	return -1;
 }
+#endif

@@ -30,9 +30,8 @@
 
 #include "network.h"
 
-#define BUFSIZE 1440
-
 namespace http {
+static constexpr uint32_t BUFSIZE = 1440;
 enum class Status {
 	OK = 200,
 	BAD_REQUEST = 400,
@@ -47,6 +46,10 @@ enum class Status {
 };
 enum class RequestMethod {
 	GET, POST, UNKNOWN
+};
+
+enum class contentTypes {
+	TEXT_HTML, TEXT_CSS, TEXT_JS, APPLICATION_JSON, NOT_DEFINED
 };
 }  // namespace http
 
@@ -88,7 +91,7 @@ private:
 	uint16_t m_nFileDataLength { 0 };
 	uint16_t m_nRequestContentLength { 0 };
 
-	static char m_Content[BUFSIZE];
+	static char m_Content[http::BUFSIZE];
 };
 
 #endif /* HTTPD_H_ */

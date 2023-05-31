@@ -77,7 +77,7 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 #if defined (NODE_ARTNET)
 			"\"artnet.txt\":\"Art-Net\","
 #endif
-#if defined (NODE_E131) && !defined (NODE_ARTNET)
+#if defined (NODE_E131)
 			"\"e131.txt\":\"sACN E1.31\","
 #endif
 #if defined (NODE_OSC_CLIENT)
