@@ -111,18 +111,13 @@ void E131Params::Load(const char* pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	assert(m_pE131ParamsStore != nullptr);
-
-	if (m_pE131ParamsStore == nullptr) {
-		return;
-	}
-
 	m_Params.nSetList = 0;
 
 	ReadConfigFile config(E131Params::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pE131ParamsStore != nullptr);
 	m_pE131ParamsStore->Update(&m_Params);
 
 	DEBUG_EXIT
@@ -259,6 +254,7 @@ void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t n
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct Params));
 	} else {
+		assert(m_pE131ParamsStore != nullptr);
 		m_pE131ParamsStore->Copy(&m_Params);
 	}
 
@@ -293,18 +289,6 @@ void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t n
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void E131Params::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pE131ParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void E131Params::Set(uint32_t nPortIndexOffset) {

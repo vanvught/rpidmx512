@@ -2,7 +2,12 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
 		EXTRA_SRCDIR+=src/node
 	endif
-		ifeq ($(findstring E131_HAVE_DMXIN,$(MAKE_FLAGS)), E131_HAVE_DMXIN)
+	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)),NODE_ARTNET)
+		ifneq ($(findstring ARTNET_VERSION=3,$(MAKE_FLAGS)),ARTNET_VERSION=3)
+			EXTRA_SRCDIR+=src/node
+		endif
+	endif
+	ifeq ($(findstring E131_HAVE_DMXIN,$(MAKE_FLAGS)), E131_HAVE_DMXIN)
 		EXTRA_SRCDIR+=src/node/dmxin
 	endif
 	ifeq ($(findstring E131_CONTROLLER,$(MAKE_FLAGS)), E131_CONTROLLER)

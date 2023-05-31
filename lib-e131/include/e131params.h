@@ -95,15 +95,17 @@ public:
 
 class E131Params {
 public:
-	E131Params(E131ParamsStore *pE131ParamsStore = nullptr);
+	E131Params(E131ParamsStore *pE131ParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const e131params::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
-	void Set(uint32_t nPortIndexOffset = 0);
+	void Set(uint32_t nPortIndexOffset);
 
 	void Dump();
 
