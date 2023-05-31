@@ -124,9 +124,9 @@ int main(int argc, char **argv) {
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 
 	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=DDP Display");
 	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=DDP Display");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
 	mDns.Print();
 
 	ddpDisplay.Print();

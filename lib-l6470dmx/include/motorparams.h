@@ -58,7 +58,7 @@ public:
 
 class MotorParams {
 public:
-	MotorParams(MotorParamsStore *pMotorParamsStore=nullptr);
+	MotorParams(MotorParamsStore *pMotorParamsStore = nullptr);
 
 	bool Load(uint32_t nMotorIndex);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);

@@ -2,7 +2,7 @@
  * @file pixeldmxparams.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -127,11 +127,6 @@ bool PixelDmxParams::Load() {
 void PixelDmxParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pPixelDmxParamsStore != nullptr);
-
-	if (m_pPixelDmxParamsStore == nullptr) {
-		return;
-	}
 
 	m_pixelDmxParams.nSetList = 0;
 
@@ -312,7 +307,7 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 	}
 
 	if (Sscan::Float(pLine, DevicesParamsConst::GAMMA_VALUE, fValue) == Sscan::OK) {
-		const uint8_t nValue = static_cast<uint8_t>(fValue * 10);
+		const auto nValue = static_cast<uint8_t>(fValue * 10);
 		if ((nValue < gamma::MIN) || (nValue > gamma::MAX)) {
 			m_pixelDmxParams.nGammaValue = 0;
 		} else {
@@ -401,15 +396,6 @@ void PixelDmxParams::Builder(const struct pixeldmxparams::Params *ptWS28xxParams
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-}
-
-void PixelDmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pPixelDmxParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void PixelDmxParams::Set(PixelDmxConfiguration *pPixelDmxConfiguration) {

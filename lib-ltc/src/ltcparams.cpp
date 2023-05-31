@@ -93,11 +93,6 @@ bool LtcParams::Load() {
 void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pLTcParamsStore != nullptr);
-
-	if (m_pLTcParamsStore == nullptr) {
-		return;
-	}
 
 	m_Params.nSetList = 0;
 
@@ -105,6 +100,7 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pLTcParamsStore != nullptr);
 	m_pLTcParamsStore->Update(&m_Params);
 }
 
@@ -436,6 +432,7 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	if (ptLtcParams != nullptr) {
 		memcpy(&m_Params, ptLtcParams, sizeof(struct ltcparams::Params));
 	} else {
+		assert(m_pLTcParamsStore != nullptr);
 		m_pLTcParamsStore->Copy(&m_Params);
 	}
 
@@ -500,18 +497,6 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void LtcParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pLTcParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 #include <cstdio>

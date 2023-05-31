@@ -78,13 +78,15 @@ public:
 
 class LtcDisplayParams {
 public:
-	LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore = nullptr);
+	LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct ltcdisplayparams::Params *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(LtcDisplayRgb *pLtcDisplayWS28xx);
 

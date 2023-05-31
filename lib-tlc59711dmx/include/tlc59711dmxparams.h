@@ -60,13 +60,15 @@ public:
 
 class TLC59711DmxParams {
 public:
-	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore = nullptr);
+	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct tlc59711dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(TLC59711Dmx *);
 

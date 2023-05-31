@@ -288,7 +288,7 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtnet;
+	StoreArtNet storeArtnet(0);
 	node.SetArtNetStore(&storeArtnet);
 
 	if (bRunArtNet) {
@@ -296,7 +296,7 @@ void main() {
 
 		if (artnetparams.Load()) {
 			artnetparams.Dump();
-			artnetparams.Set();
+			artnetparams.Set(0);
 		}
 
 		node.SetShortName("LTC SMPTE Node");

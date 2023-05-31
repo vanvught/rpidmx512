@@ -67,13 +67,15 @@ public:
 
 class OSCServerParams {
 public:
-	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore=nullptr);
+	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const osc::server::Params *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(OscServer *pOscServer);
 

@@ -79,11 +79,6 @@ bool TCNetParams::Load() {
 void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pTCNetParamsStore != nullptr);
-
-	if (m_pTCNetParamsStore == nullptr) {
-		return;
-	}
 
 	m_Params.nSetList = 0;
 
@@ -91,6 +86,7 @@ void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pTCNetParamsStore != nullptr);
 	m_pTCNetParamsStore->Update(&m_Params);
 }
 
@@ -174,6 +170,7 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	if (pTTCNetParams != nullptr) {
 		memcpy(&m_Params, pTTCNetParams, sizeof(struct Params));
 	} else {
+		assert(m_pTCNetParamsStore != nullptr);
 		m_pTCNetParamsStore->Copy(&m_Params);
 	}
 
@@ -199,18 +196,6 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	DEBUG_PRINTF("nSize=%d", nSize);
 
 	DEBUG_EXIT
-}
-
-void TCNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pTCNetParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void TCNetParams::Set(TCNet *pTCNet) {

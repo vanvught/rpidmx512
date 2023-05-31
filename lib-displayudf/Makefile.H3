@@ -1,4 +1,5 @@
 DEFINES=NDEBUG
+
 EXTRA_INCLUDES = ../lib-display/include ../lib-properties/include ../lib-network/include ../lib-hal/include ../lib-lightset/include
 
 include Rules.mk

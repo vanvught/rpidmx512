@@ -58,13 +58,20 @@ public:
 
 class RDMSensorsParams {
 public:
-	RDMSensorsParams(RDMSensorsParamsStore *pRDMSensorsParamsStore = nullptr);
+	RDMSensorsParams(RDMSensorsParamsStore *pRDMSensorsParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const rdm::sensorsparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		if (m_pRDMSensorsParamsStore == nullptr) {
+			nSize = 0;
+			return;
+		}
+
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Dump();
 

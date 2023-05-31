@@ -2,7 +2,7 @@
  * @file networkparams.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -81,14 +81,9 @@ bool NetworkParams::Load() {
 
 void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pNetworkParamsStore != nullptr);
-
-	if (m_pNetworkParamsStore == nullptr) {
-		DEBUG_EXIT
-		return;
-	}
 
 	m_Params.nSetList = 0;
 
@@ -96,6 +91,7 @@ void NetworkParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pNetworkParamsStore != nullptr);
 	m_pNetworkParamsStore->Update(&m_Params);
 
 	DEBUG_EXIT
@@ -227,6 +223,7 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 	if (ptNetworkParams != nullptr) {
 		memcpy(&m_Params, ptNetworkParams, sizeof(struct networkparams::Params));
 	} else {
+		assert(m_pNetworkParamsStore != nullptr);
 		m_pNetworkParamsStore->Copy(&m_Params);
 	}
 
@@ -271,16 +268,4 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void NetworkParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pNetworkParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }

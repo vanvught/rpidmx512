@@ -75,6 +75,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void Hardware::RebootHandler() {
 	Dmx::Get()->Blackout();
 	E131Bridge::Get()->Stop();
@@ -117,7 +119,7 @@ void main() {
 
 	if (e131params.Load()) {
 		e131params.Dump();
-		e131params.Set();
+		e131params.Set(DMXPORT_OFFSET);
 	}
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {

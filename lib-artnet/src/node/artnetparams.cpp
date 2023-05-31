@@ -121,13 +121,10 @@ bool ArtNetParams::Load() {
 }
 
 void ArtNetParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pArtNetParamsStore != nullptr);
-
-	if (m_pArtNetParamsStore == nullptr) {
-		return;
-	}
 
 	m_Params.nSetList = 0;
 	m_Params.nMultiPortOptions = 0;
@@ -136,7 +133,10 @@ void ArtNetParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pArtNetParamsStore != nullptr);
 	m_pArtNetParamsStore->Update(&m_Params);
+
+	DEBUG_EXIT
 }
 
 void ArtNetParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
@@ -382,6 +382,7 @@ void ArtNetParams::Builder(const struct Params *pParams, char *pBuffer, uint32_t
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct Params));
 	} else {
+		assert(m_pArtNetParamsStore != nullptr);
 		m_pArtNetParamsStore->Copy(&m_Params);
 	}
 
@@ -436,15 +437,6 @@ void ArtNetParams::Builder(const struct Params *pParams, char *pBuffer, uint32_t
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void ArtNetParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pArtNetParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void ArtNetParams::Set(uint32_t nPortIndexOffset) {

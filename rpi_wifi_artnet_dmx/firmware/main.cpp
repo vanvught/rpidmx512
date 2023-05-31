@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,8 @@ constexpr char RUN_RDM[] = "Running RDM Discovery ...";
 constexpr char START_NODE[] = "Starting the Node ...";
 constexpr char NODE_STARTED[] = "Node started";
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void main() {
 	Hardware hw;
 	Network nw;
@@ -88,7 +90,7 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtNet;
+	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	node.SetArtNetStore(&storeArtNet);
 
 	ArtNetParams artnetparams(&storeArtNet);
@@ -144,7 +146,7 @@ void main() {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetparams.Set();
+	artnetparams.Set(DMXPORT_OFFSET);
 
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {

@@ -15,8 +15,7 @@ ifeq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 	ifeq ($(findstring ARTNET_VERSION=3,$(DEFINES)),ARTNET_VERSION=3)
 		LIBS+=artnet
 	else
-		LIBS+=artnet4 artnet e131
-		DEFINES+=NODE_E131
+		LIBS+=artnet4 artnet e131 
 		ifeq ($(findstring ARTNET_HAVE_DMXIN,$(DEFINES)),ARTNET_HAVE_DMXIN)
 			LIBS+=dmxartnet
 		endif

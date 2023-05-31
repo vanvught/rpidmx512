@@ -68,6 +68,8 @@
 # include "e131bridge.h"
 #endif
 
+#include "debug.h"
+
 using namespace displayudf;
 
 #if !defined (NODE_NODE)
@@ -171,14 +173,10 @@ bool DisplayUdfParams::Load() {
 }
 
 void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-
-	assert(m_pDisplayUdfParamsStore != nullptr);
-
-	if (m_pDisplayUdfParamsStore == nullptr) {
-		return;
-	}
 
 	m_tDisplayUdfParams.nSetList = 0;
 
@@ -186,7 +184,10 @@ void DisplayUdfParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pDisplayUdfParamsStore != nullptr);
 	m_pDisplayUdfParamsStore->Update(&m_tDisplayUdfParams);
+
+	DEBUG_EXIT
 }
 
 void DisplayUdfParams::callbackFunction(const char *pLine) {
@@ -244,6 +245,7 @@ void DisplayUdfParams::Builder(const struct displayudfparams::Params *ptDisplayU
 	if (ptDisplayUdfParams != nullptr) {
 		memcpy(&m_tDisplayUdfParams, ptDisplayUdfParams, sizeof(struct displayudfparams::Params));
 	} else {
+		assert(m_pDisplayUdfParamsStore != nullptr);
 		m_pDisplayUdfParamsStore->Copy(&m_tDisplayUdfParams);
 	}
 
@@ -260,15 +262,6 @@ void DisplayUdfParams::Builder(const struct displayudfparams::Params *ptDisplayU
 	}
 
 	nSize = builder.GetSize();
-}
-
-void DisplayUdfParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pDisplayUdfParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void DisplayUdfParams::Set(DisplayUdf *pDisplayUdf) {

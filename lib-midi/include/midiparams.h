@@ -50,7 +50,7 @@ public:
 
 class MidiParams {
 public:
-	MidiParams(MidiParamsStore *pMidiParamsStore = nullptr);
+	MidiParams(MidiParamsStore *pMidiParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);

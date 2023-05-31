@@ -84,7 +84,7 @@ public:
 
 class PixelDmxParams {
 public:
-	PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore = nullptr);
+	PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore);
 	~PixelDmxParams() {
 	}
 
@@ -92,7 +92,9 @@ public:
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct pixeldmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(PixelDmxConfiguration *pPixelDmxConfiguration);
 

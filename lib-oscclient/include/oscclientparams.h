@@ -68,7 +68,7 @@ public:
 
 class OscClientParams {
 public:
-	OscClientParams(OscClientParamsStore *pOscClientParamsStore=nullptr);
+	OscClientParams(OscClientParamsStore *pOscClientParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);

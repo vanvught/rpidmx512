@@ -111,11 +111,6 @@ bool ShowFileParams::Load() {
 void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pShowFileParamsStore != nullptr);
-
-	if (m_pShowFileParamsStore == nullptr) {
-		return;
-	}
 
 	m_showFileParams.nSetList = 0;
 
@@ -123,6 +118,7 @@ void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pShowFileParamsStore != nullptr);
 	m_pShowFileParamsStore->Update(&m_showFileParams);
 }
 
@@ -263,6 +259,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 	if (ptShowFileParamss != nullptr) {
 		memcpy(&m_showFileParams, ptShowFileParamss, sizeof(struct showfileparams::Params));
 	} else {
+		assert(m_pShowFileParamsStore != nullptr);
 		m_pShowFileParamsStore->Copy(&m_showFileParams);
 	}
 
@@ -300,21 +297,6 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-}
-
-void ShowFileParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pShowFileParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
-	DEBUG_EXIT
-	return;
 }
 
 void ShowFileParams::Set() {

@@ -1,7 +1,7 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
 EXTRA_INCLUDES =../lib-flashcode/include ../lib-flash/include
-EXTRA_INCLUDES+=../lib-hal/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES+=../lib-hal/include ../lib-properties/include ../lib-lightset/include ../lib-network/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring CONFIG_STORE_USE_FILE,$(MAKE_FLAGS)))

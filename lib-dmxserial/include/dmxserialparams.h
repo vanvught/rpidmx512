@@ -68,13 +68,15 @@ public:
 
 class DmxSerialParams {
 public:
-	DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore = nullptr);
+	DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TDmxSerialParams *pDmxSerialParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Dump();
 

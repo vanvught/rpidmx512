@@ -182,15 +182,6 @@ void LtcEtcParams::Builder(const struct ltcetcparams::Params *ptLtcEtcParams, ch
 	nSize = builder.GetSize();
 }
 
-void LtcEtcParams::Save(char *pBuffer, uint32_t nLength, uint32_t &nSize) {
-	if (m_pLtcEtcParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-}
-
 void LtcEtcParams::Set() {
 	auto *p = LtcEtc::Get();
 

@@ -62,7 +62,7 @@ void main(void) {
 		widgetParams.Set();
 	}
 
-	RDMDeviceParams rdmDeviceParams;
+	RDMDeviceParams rdmDeviceParams(nullptr);
 
 	widget.SetLabel(&deviceLabel);
 

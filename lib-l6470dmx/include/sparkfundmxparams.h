@@ -59,7 +59,7 @@ public:
 
 class SparkFunDmxParams {
 public:
-	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore = nullptr);
+	SparkFunDmxParams(SparkFunDmxParamsStore *pSparkFunDmxParamsStore);
 
 	bool Load();
 	bool Load(uint32_t nMotorIndex);

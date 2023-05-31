@@ -129,7 +129,7 @@ void main() {
 
 	ArtNet4Node node;
 
-	StoreArtNet storeArtNet;
+	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	ArtNetParams artnetParams(&storeArtNet);
 
 	node.SetArtNetStore(&storeArtNet);

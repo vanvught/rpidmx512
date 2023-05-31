@@ -87,13 +87,15 @@ public:
 
 class NetworkParams {
 public:
-	NetworkParams(NetworkParamsStore *pNetworkParamsStore = nullptr);
+	NetworkParams(NetworkParamsStore *pNetworkParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const networkparams::Params *ptNetworkParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Dump();
 
