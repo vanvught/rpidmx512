@@ -2,7 +2,7 @@
  * @file tcnet.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -106,12 +106,12 @@ void TCNet::Stop() {
 }
 
 void TCNet::HandlePort60000Incoming() {
-	const auto packet = &(m_TTCNet.TCNetPacket);
-	const auto type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
+	const auto *pPacket = reinterpret_cast<struct TTCNetPacketManagementHeader *>(m_pReceiveBuffer);
+	const auto messageType  = static_cast<TTCNetMessageType>(pPacket->MessageType);
 
-	DEBUG_PRINTF("MessageType = %d", static_cast<int>(type));
+	DEBUG_PRINTF("MessageType = %d", static_cast<int>(messageType));
 
-	if (type == TCNET_MESSAGE_TYPE_OPTIN) {
+	if (messageType == TCNET_MESSAGE_TYPE_OPTIN) {
 #ifndef NDEBUG
 		DumpOptIn();
 #endif
@@ -121,7 +121,8 @@ void TCNet::HandlePort60000Incoming() {
 
 void TCNet::HandlePort60001Incoming() {
 	if (__builtin_expect((m_pTCNetTimeCode != nullptr), 1)) {
-		if (static_cast<TTCNetMessageType>(m_TTCNet.TCNetPacket.ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
+		const auto *pPacketTime = reinterpret_cast<struct TTCNetPacketTime *>(m_pReceiveBuffer);
+		if (static_cast<TTCNetMessageType>(pPacketTime->ManagementHeader.MessageType) == TCNET_MESSAGE_TYPE_TIME) {
 			struct TTCNetTimeCode TimeCode;
 
 			if (!m_bUseTimeCode) {
@@ -149,7 +150,7 @@ void TCNet::HandlePort60001Incoming() {
 				uint8_t nSMPTEMode = m_pLTimeCode->SMPTEMode;
 
 				if (nSMPTEMode < 24) {
-					nSMPTEMode = m_TTCNet.TCNetPacket.Time.SMPTEMode;
+					nSMPTEMode = pPacketTime->SMPTEMode;
 				}
 
 				if (nSMPTEMode == 24) {
@@ -179,11 +180,10 @@ void TCNet::HandlePort60002Incoming() {
 void TCNet::HandlePortUnicastIncoming() {
 	DEBUG_ENTRY
 #ifndef NDEBUG
-	const auto packet = &(m_TTCNet.TCNetPacket);
-	const auto type  = static_cast<TTCNetMessageType>(packet->ManagementHeader.MessageType);
+	const auto *pPacket = reinterpret_cast<struct TTCNetPacketManagementHeader *>(m_pReceiveBuffer);
+	const auto messageType  = static_cast<TTCNetMessageType>(pPacket->MessageType);
 #endif
-	DEBUG_PRINTF("MessageType = %d", static_cast<int>(type));
-
+	DEBUG_PRINTF("MessageType = %d", static_cast<int>(messageType));
 	DEBUG_EXIT
 }
 
@@ -196,33 +196,32 @@ void TCNet::HandleOptInOutgoing() {
 }
 
 void TCNet::Run() {
-	auto packet = reinterpret_cast<uint8_t*>(&m_TTCNet.TCNetPacket);
 	uint16_t nForeignPort;
 
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[1], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	auto nBytesReceived = Network::Get()->RecvFrom(m_aHandles[1], const_cast<const void**>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
 
-	if (m_TTCNet.BytesReceived != 0) {
+	if (nBytesReceived != 0) {
 		HandlePort60001Incoming();
 	}
 
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[0], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	nBytesReceived = Network::Get()->RecvFrom(m_aHandles[0], const_cast<const void**>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
 
-	if (m_TTCNet.BytesReceived != 0) {
+	if (nBytesReceived != 0) {
 		HandlePort60000Incoming();
 	}
 
 #if defined(USE_PORT_60002)
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[2], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	nBytesReceived = Network::Get()->RecvFrom(m_aHandles[2], const_cast<const void**>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
 
-	if (m_TTCNet.BytesReceived != 0) {
+	if (nBytesReceived != 0) {
 		HandlePort60002Incoming();
 	}
 #endif
 
 #if defined(USE_PORT_UNICAST)
-	m_TTCNet.BytesReceived = Network::Get()->RecvFrom(m_aHandles[3], packet, sizeof(m_TTCNet.TCNetPacket), &m_TTCNet.IPAddressFrom, &nForeignPort) ;
+	nBytesReceived = Network::Get()->RecvFrom(m_aHandles[3], const_cast<const void**>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
 
-	if (m_TTCNet.BytesReceived != 0) {
+	if (nBytesReceived != 0) {
 		HandlePortUnicastIncoming();
 	}
 #endif
@@ -241,10 +240,12 @@ void TCNet::SetLayer(TCNetLayer tLayer) {
 		m_bUseTimeCode = true;
 	}
 
+	auto *pPacketTime = reinterpret_cast<struct TTCNetPacketTime *>(m_pReceiveBuffer);
+
 	m_tLayer = tLayer;
-	m_pLTime = &m_TTCNet.TCNetPacket.Time.L1Time + static_cast<uint32_t>(tLayer);
+	m_pLTime = &pPacketTime->L1Time + static_cast<uint32_t>(tLayer);
 	m_pLTimeCode =
-			reinterpret_cast<struct TTCNetPacketTimeTimeCode*>((reinterpret_cast<uintptr_t>((&m_TTCNet.TCNetPacket.Time.L1TimeCode))
+			reinterpret_cast<struct TTCNetPacketTimeTimeCode *>((reinterpret_cast<uintptr_t>((&pPacketTime->L1TimeCode))
 					+ static_cast<uintptr_t>(tLayer) * sizeof(struct TTCNetPacketTimeTimeCode)));
 }
 

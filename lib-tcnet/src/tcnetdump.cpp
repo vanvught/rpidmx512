@@ -34,12 +34,14 @@
 static uint32_t s_nTimeStampPrevious = 0;
 
 void TCNet::DumpManagementHeader() {
-	printf("ManagementHeader\n");
-	printf(" %.3s V%d.%d %.8s\n", m_TTCNet.TCNetPacket.ManagementHeader.Header, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMajor, m_TTCNet.TCNetPacket.ManagementHeader.ProtocolVersionMinor,m_TTCNet.TCNetPacket.ManagementHeader.NodeName);
-	printf(" %s\n", m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (m_TTCNet.TCNetPacket.ManagementHeader.NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
-	printf(" %u [%u] %d\n", m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp, m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp - s_nTimeStampPrevious, m_TTCNet.TCNetPacket.ManagementHeader.SEQ);
+	const auto *pManagementHeader = reinterpret_cast<struct TTCNetPacketManagementHeader *>(m_pReceiveBuffer);
 
-	s_nTimeStampPrevious = m_TTCNet.TCNetPacket.ManagementHeader.TimeStamp;
+	printf("ManagementHeader\n");
+	printf(" %.3s V%d.%d %.8s\n", pManagementHeader->Header, pManagementHeader->ProtocolVersionMajor, pManagementHeader->ProtocolVersionMinor, pManagementHeader->NodeName);
+	printf(" %s\n", pManagementHeader->NodeType == TCNET_TYPE_SLAVE ? "SLAVE" : (pManagementHeader->NodeType == TCNET_TYPE_MASTER ? "MASTER" : "AUTO"));
+	printf(" %u [%u] %d\n", pManagementHeader->TimeStamp, pManagementHeader->TimeStamp - s_nTimeStampPrevious, pManagementHeader->SEQ);
+
+	s_nTimeStampPrevious = pManagementHeader->TimeStamp;
 }
 
 void TCNet::DumpOptIn() {
@@ -47,10 +49,12 @@ void TCNet::DumpOptIn() {
 
 	DumpManagementHeader();
 
+	const auto *pPacketOptIn = reinterpret_cast<struct TTCNetPacketOptIn *>(m_pReceiveBuffer);
+
 	printf(" OptIn\n");
-	printf("  %d %d\n", m_TTCNet.TCNetPacket.OptIn.NodeCount, m_TTCNet.TCNetPacket.OptIn.NodeListenerPort);
-	printf("  %d %d\n", m_TTCNet.TCNetPacket.OptIn.NodeCount, m_TTCNet.TCNetPacket.OptIn.Uptime);
-	printf("  %.16s %.16s %d.%d.%d [%d]\n", m_TTCNet.TCNetPacket.OptIn.VendorName, m_TTCNet.TCNetPacket.OptIn.DeviceName, m_TTCNet.TCNetPacket.OptIn.DeviceMajorVersion, m_TTCNet.TCNetPacket.OptIn.DeviceMinorVersion, m_TTCNet.TCNetPacket.OptIn.DeviceBugVersion, m_TTCNet.TCNetPacket.OptIn.NodeCount);
+	printf("  %d %d\n", pPacketOptIn->NodeCount, pPacketOptIn->NodeListenerPort);
+	printf("  %d %d\n", pPacketOptIn->NodeCount, pPacketOptIn->Uptime);
+	printf("  %.16s %.16s %d.%d.%d [%d]\n", pPacketOptIn->VendorName, pPacketOptIn->DeviceName, pPacketOptIn->DeviceMajorVersion, pPacketOptIn->DeviceMinorVersion, pPacketOptIn->DeviceBugVersion, pPacketOptIn->NodeCount);
 
 	DEBUG_EXIT
 }
