@@ -48,7 +48,7 @@ ST7789::~ST7789() {
 	DEBUG_EXIT
 }
 
-void ST7789::Init(void) {
+void ST7789::Init() {
 	DEBUG_ENTRY
 
 #if defined(SPI_LCD_RST_PIN)

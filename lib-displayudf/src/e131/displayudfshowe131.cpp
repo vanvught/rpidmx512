@@ -45,6 +45,11 @@ void DisplayUdf::Show(E131Bridge *pE131Bridge, uint32_t nDmxPortIndexOffset) {
 
 	for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
 		const auto nPortIndex = nBridgePortIndex + m_nPortIndexOffset;
+
+		if (nPortIndex >= std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS)) {
+			break;
+		}
+
 		const auto nLabelIndex = static_cast<uint32_t>(displayudf::Labels::UNIVERSE_PORT_A) + nBridgePortIndex;
 
 		if (nLabelIndex != 0xFF) {

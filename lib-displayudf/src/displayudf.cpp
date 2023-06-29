@@ -95,13 +95,12 @@ void DisplayUdf::Show() {
 		DEBUG_PRINTF("m_aLabels[%d]=%d", i, m_aLabels[i]);
 	}
 
-	for (uint32_t i = 1; i < LABEL_MAX_ROWS; i++) {
-		ClearLine(i);
-	}
-
+	ClearEndOfLine();
 	Write(m_aLabels[static_cast<uint32_t>(Labels::TITLE)], m_aTitle);
 	uint8_t nHwTextLength;
+	ClearEndOfLine();
 	Write(m_aLabels[static_cast<uint32_t>(Labels::BOARDNAME)], Hardware::Get()->GetBoardName(nHwTextLength));
+	ClearEndOfLine();
 	Printf(m_aLabels[static_cast<uint32_t>(Labels::VERSION)], "Firmware V%.*s", firmwareversion::length::SOFTWARE_VERSION, FirmwareVersion::Get()->GetVersion()->SoftwareVersion);
 
 #if defined (RDM_RESPONDER)

@@ -27,6 +27,10 @@
 #include "displayudf.h"
 
 namespace network {
+void display_emac_config() {
+	DisplayUdf::Get()->ShowEmacInit();
+}
+
 void display_emac_start() {
 	DisplayUdf::Get()->ShowEmacStart();
 }

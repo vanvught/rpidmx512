@@ -2,7 +2,7 @@
  * @file rdmmessage.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,71 @@
 #ifndef RDMMESSAGE_H_
 #define RDMMESSAGE_H_
 
+#include <cstring>
+#include <cassert>
+
 #include "rdm.h"
+#include "rdm_e120.h"
 
 class RDMMessage final: public Rdm {
 public:
-	RDMMessage();
-	~RDMMessage(){};
+	RDMMessage()  {
+		m_message.start_code = E120_SC_RDM;
+		m_message.sub_start_code = E120_SC_SUB_MESSAGE;
+		m_message.message_length = RDM_MESSAGE_MINIMUM_SIZE;
+		memcpy(m_message.source_uid, UID_ALL, RDM_UID_SIZE);
+		memcpy(m_message.destination_uid, UID_ALL, RDM_UID_SIZE);
+		m_message.slot16.port_id = 1;
+		m_message.message_count = 0;
+		m_message.sub_device[0] = 0;
+		m_message.sub_device[1] = 0;
+		m_message.param_data_length = 0;
+	}
 
-	void SetSrcUid(const uint8_t *SrcUid);
-	void SetDstUid(const uint8_t *DstUid);
+#if defined (RDM_CONTROLLER)
+	void SetPortID(const uint8_t nPortID) {
+		assert(nPortID > 0);
+		m_message.slot16.port_id = nPortID;
+	}
+#endif
 
-	void SetCc(uint8_t nCc);
-	void SetPid(uint16_t nPid);
+	void SetSrcUid(const uint8_t *SrcUid){
+		memcpy(m_message.source_uid, SrcUid, RDM_UID_SIZE);
+	}
 
-	void SetSubDevice(uint16_t nSubDevice);
+	void SetDstUid(const uint8_t *DstUid){
+		memcpy(m_message.destination_uid, DstUid, RDM_UID_SIZE);
+	}
 
-	void SetPd(const uint8_t *pParamData, uint8_t nLength);
+	void SetSubDevice(const uint16_t nSubDevice) {
+		m_message.sub_device[0] = static_cast<uint8_t>(nSubDevice >> 8);
+		m_message.sub_device[1] = static_cast<uint8_t>(nSubDevice);
+	}
 
-	void Send(uint32_t nPortIndex, uint32_t nSpacingMicros = 0);
+	void SetCc(const uint8_t nCc) {
+		m_message.command_class = nCc;
+	}
+
+	void SetPid(const uint16_t nPid) {
+		m_message.param_id[0] = static_cast<uint8_t>(nPid >> 8);
+		m_message.param_id[1] = static_cast<uint8_t>(nPid);
+	}
+
+	void SetPd(const uint8_t *pParamData, const uint8_t nLength) {
+		m_message.message_length = static_cast<uint8_t>(m_message.message_length - m_message.param_data_length);
+		m_message.param_data_length = nLength;
+		if ((pParamData != nullptr) && (nLength != 0)) {
+			memcpy(m_message.param_data, pParamData, nLength);
+		}
+		m_message.message_length = static_cast<uint8_t>(m_message.message_length + nLength);
+	}
+
+	void Send(uint32_t nPortIndex, uint32_t nSpacingMicros = 0) {
+#ifndef NDEBUG
+		RDMMessage::Print(reinterpret_cast<const uint8_t *>(&m_message));
+#endif
+		Rdm::Send(nPortIndex, &m_message, nSpacingMicros);
+	}
 
 public:
 	static void Print(const uint8_t *pRdmData);

@@ -38,6 +38,10 @@
 
 #include "debug.h"
 
+namespace configstore {
+void delay();
+}  // namespace configstore
+
 RDMResponder *RDMResponder::s_pThis;
 TRdmMessage RDMResponder::s_RdmCommand;
 bool RDMResponder::m_IsSubDeviceActive;
@@ -62,6 +66,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 	}
 #endif
 
+	configstore::delay();
 	return nLength;
 }
 

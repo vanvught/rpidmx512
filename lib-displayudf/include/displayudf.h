@@ -236,28 +236,34 @@ public:
 	 */
 
 #if !defined (NO_EMAC)
+	void ShowEmacInit() {
+		ClearEndOfLine();
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet init");
+	}
+
 	void ShowEmacStart() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet start");
 	}
 
 	void ShowIpAddress() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 	}
 
 	void ShowNetmask() {
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 		ShowIpAddress();
 	}
 
 	void ShowGatewayIp() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
 	}
 
 	void ShowHostName() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)]);
+		ClearEndOfLine();
 		Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)], Network::Get()->GetHostName());
 	}
 
@@ -267,7 +273,7 @@ public:
 			break;
 		case network::dhcp::ClientStatus::RENEW:
 			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP renewing");
 			break;
 		case network::dhcp::ClientStatus::GOT_IP:
@@ -275,7 +281,7 @@ public:
 			break;
 		case network::dhcp::ClientStatus::RETRYING:
 			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP retrying");
 			break;
 		case network::dhcp::ClientStatus::FAILED:

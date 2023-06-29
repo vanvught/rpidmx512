@@ -56,7 +56,7 @@ static constexpr auto ROTATION_3_SHIFT_Y =  0;
 class ST7789 : public ST77XX {
 public:
 	ST7789();
-	~ST7789();
+	~ST7789() override;
 
 	void Init();
 

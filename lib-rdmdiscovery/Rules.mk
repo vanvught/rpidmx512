@@ -16,5 +16,6 @@ ifneq ($(MAKE_FLAGS),)
 else
 	EXTRA_INCLUDES+=../lib-artnet/include
 	EXTRA_SRCDIR+=src/rdm src/artnet
+	DEFINES+=RDM_CONTROLLER
 	DEFINES+=LIGHTSET_PORTS=4
 endif

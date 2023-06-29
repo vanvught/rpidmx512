@@ -192,20 +192,16 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 		pSrc++;
 	}
 
-	if (bIsChanged) {
-		if ((s_State == State::IDLE) || (s_State == State::WRITING))  {
-			s_State = State::CHANGED;
-		}
-		s_nWaitMillis = Hardware::Get()->Millis();
-	}
-
 	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
 		auto *pSet = reinterpret_cast<uint32_t*>((&s_SpiFlashData[GetStoreOffset(store)] + nOffsetSetList));
 
 		*pSet |= nSetList;
 	}
 
-	DEBUG_PRINTF("s_State=%u", static_cast<uint32_t>(s_State));
+	if (bIsChanged) {
+		s_State = State::CHANGED;
+	}
+
 	DEBUG_EXIT
 }
 
@@ -239,6 +235,12 @@ void ConfigStore::Copy(Store store, void *pData, uint32_t nDataLength, uint32_t 
 	memcpy(pData, pSrc, nDataLength);
 
 	DEBUG_EXIT
+}
+
+void ConfigStore::Delay() {
+	if (s_State != State::IDLE) {
+		s_State = State::CHANGED;
+	}
 }
 
 bool ConfigStore::Flash() {

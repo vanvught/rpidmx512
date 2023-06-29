@@ -57,7 +57,7 @@ inline static void DC_Clear() {
 	FUNC_PREFIX(gpio_clr(SPI_LCD_DC_PIN));
 }
 
-inline static void HW_Reset(void) {
+inline static void HW_Reset() {
 #if defined (SPI_LCD_RST_PIN)
 	ms_delay(200);
 	FUNC_PREFIX(gpio_clr(SPI_LCD_RST_PIN));

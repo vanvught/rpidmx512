@@ -57,7 +57,7 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode, uint32_t nDmxPortIndexOffset) {
 }
 
 void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
-	ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NODE_NAME)]);
+	ClearEndOfLine();
 	Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NODE_NAME)], pArtNetNode->GetShortName());
 }
 
@@ -76,7 +76,7 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 
 		if (nLabelIndex != 0xFF) {
 			if (pArtNetNode->GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
-				ClearLine(m_aLabels[nLabelIndex]);
+				ClearEndOfLine();
 				Printf(m_aLabels[nLabelIndex],
 						"%c: %d %s %s %s",
 						'A' + nArtNetPortIndex,

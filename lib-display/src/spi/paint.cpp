@@ -2,7 +2,7 @@
  * @file paint.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,7 @@ void Paint::FillColour(uint16_t nColour) {
 
 	fill_framebuffer(nColour);
 
-	for (auto i = 0; i < config::HEIGHT / FRAME_BUFFER_ROWS; i++) {
+	for (uint32_t i = 0; i < config::HEIGHT / FRAME_BUFFER_ROWS; i++) {
 		WriteData(reinterpret_cast<uint8_t *>(s_FrameBuffer), sizeof(s_FrameBuffer));
 	}
 }

@@ -6,5 +6,6 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR += src/llrp
 	endif
 else
+	DEFINES+=ENABLE_RDM_MANUFACTURER_PIDS
 	EXTRA_SRCDIR += src/llrp
 endif

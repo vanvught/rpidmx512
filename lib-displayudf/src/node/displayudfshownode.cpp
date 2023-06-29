@@ -48,7 +48,7 @@ void DisplayUdf::Show(__attribute__((unused)) Node *pNode) {
 }
 
 void DisplayUdf::ShowNodeName() {
-	ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NODE_NAME)]);
+	ClearEndOfLine();
 	Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NODE_NAME)], Node::Get()->GetShortName());
 }
 

@@ -28,8 +28,18 @@
 
 #include <cstdint>
 
+#if defined (NODE_RDMNET_LLRP_ONLY)
+# if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+#  undef ENABLE_RDM_MANUFACTURER_PIDS
+# endif
+#endif
+
 #include "rdmmessage.h"
 #include "rdmqueuedmessage.h"
+
+#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+# include "rdm_manufacturer_pid.h"
+#endif
 
 class RDMHandler {
 public:
@@ -38,26 +48,21 @@ public:
 	void HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut);
 
 private:
+	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
+	void RespondMessageAck();
+	void RespondMessageNack(uint16_t nReason);
+	void HandleString(const char *pString, uint32_t nLength);
 	void Handlers(bool bIsBroadcast, uint8_t nCommandClass, uint16_t nParamId, uint8_t nParamDataLength, uint16_t nSubDevice);
-
-	struct PidDefinition {
-		const uint16_t nPid;
-		void (RDMHandler::*pGetHandler)(uint16_t nSubDevice);
-		void (RDMHandler::*pSetHandler)(bool IsBroadcast, uint16_t nSubDevice);
-		const uint8_t nGetArgumentSize;
-		const bool bIncludeInSupportedParams;
-		const bool bRDM;
-		const bool bRDMNet;
-	} ;
-
-	static const PidDefinition PID_DEFINITIONS[];
-	static const PidDefinition PID_DEFINITIONS_SUB_DEVICES[];
 
 	// Get
 #if defined (ENABLE_RDM_QUEUED_MSG)
 	void GetQueuedMessage(uint16_t nSubDevice);
 #endif
 	void GetSupportedParameters(uint16_t nSubDevice);
+#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+	void GetParameterDescription(uint16_t nSubDevice);
+	void GetManufacturerPid(uint16_t nSubDevice);
+#endif
 	void GetDeviceInfo(uint16_t nSubDevice);
 	void GetProductDetailIdList(uint16_t nSubDevice);
 	void GetDeviceModelDescription(uint16_t nSubDevice);
@@ -138,18 +143,36 @@ private:
 	bool CheckInterfaceID(const struct TRdmMessageNoSc *pRdmDataIn);
 
 private:
-	void CreateRespondMessage(uint8_t nResponseType, uint16_t nReason = 0);
-	void RespondMessageAck();
-	void RespondMessageNack(uint16_t nReason);
-	void HandleString(const char *pString, uint32_t nLength);
-
-private:
 	bool m_bIsRDM;
 	bool m_IsMuted { false };
 	uint8_t *m_pRdmDataIn { nullptr };
 	uint8_t *m_pRdmDataOut { nullptr };
 #if defined (ENABLE_RDM_QUEUED_MSG)
 	RDMQueuedMessage m_RDMQueuedMessage;
+#endif
+
+	struct PidDefinition {
+		const uint16_t nPid;
+		void (RDMHandler::*pGetHandler)(uint16_t nSubDevice);
+		void (RDMHandler::*pSetHandler)(bool IsBroadcast, uint16_t nSubDevice);
+		const uint8_t nGetArgumentSize;
+		const bool bIncludeInSupportedParams;
+		const bool bRDM;
+		const bool bRDMNet;
+	} ;
+
+	static const PidDefinition PID_DEFINITIONS[];
+	static const PidDefinition PID_DEFINITIONS_SUB_DEVICES[];
+#if defined (ENABLE_RDM_MANUFACTURER_PIDS)
+	static const PidDefinition PID_DEFINITION_MANUFACTURER_GENERAL;
+	static const rdm::ParameterDescription PARAMETER_DESCRIPTIONS[];
+
+	uint32_t GetParameterDescriptionCount() const;
+	void CopyParameterDescription(const uint32_t nIndex, uint8_t *pParamData) {
+		const auto nSize = sizeof(struct rdm::ParameterDescription) - sizeof(const char *) - sizeof(const uint8_t);
+		memcpy(pParamData, &PARAMETER_DESCRIPTIONS[nIndex], nSize);
+		memcpy(&pParamData[nSize], PARAMETER_DESCRIPTIONS[nIndex].description, PARAMETER_DESCRIPTIONS[nIndex].pdl - nSize);
+	}
 #endif
 };
 

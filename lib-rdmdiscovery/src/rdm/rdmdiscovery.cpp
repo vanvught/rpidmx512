@@ -2,7 +2,7 @@
  * @file rdmddiscovery.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,6 +63,7 @@ void RDMDiscovery::Full(uint32_t nPortIndex, RDMTod *pRDMTod){
 
 	Hardware::Get()->WatchdogFeed();
 
+	m_Message.SetPortID(static_cast<uint8_t>(1 + nPortIndex));
 	m_Message.SetDstUid(UID_ALL);
 	m_Message.SetCc(E120_DISCOVERY_COMMAND);
 	m_Message.SetPid(E120_DISC_UN_MUTE);

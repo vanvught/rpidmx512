@@ -93,6 +93,8 @@ public:
 
 	void Dump();
 
+	void Delay();
+
 	static ConfigStore *Get() {
 		return s_pThis;
 	}
