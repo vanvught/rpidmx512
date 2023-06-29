@@ -2,7 +2,7 @@
  * @file ltcgenerator.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -124,6 +124,7 @@ static int32_t atoi(const char *pBuffer, uint32_t nSize) {
 	return sign * res;
 }
 
+char *LtcGenerator::s_pUdpBuffer;
 LtcGenerator *LtcGenerator::s_pThis;
 
 LtcGenerator::LtcGenerator(const struct ltc::TimeCode* pStartLtcTimeCode, const struct ltc::TimeCode* pStopLtcTimeCode, bool bSkipFree):
@@ -486,44 +487,45 @@ void LtcGenerator::SetSkip(const char *pSeconds, uint32_t nSize, TLtcGeneratorDi
 	DEBUG_EXIT
 }
 
-void LtcGenerator::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
-	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
-		memcpy(m_Buffer, pBuffer, nBufferLength);
+void LtcGenerator::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
+	if (pBuffer != nullptr) {
+		assert(nBufferLength >= 8);
+		s_pUdpBuffer = pBuffer;
 		m_nBytesReceived = nBufferLength;
 	}
 
-	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
+	if (__builtin_expect((memcmp("ltc!", s_pUdpBuffer, 4) != 0), 0)) {
 		return;
 	}
 
-	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
+	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
 	}
 
-	debug_dump(m_Buffer, m_nBytesReceived);
+	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 
-	if (memcmp(&m_Buffer[4], cmd::START, length::START) == 0) {
+	if (memcmp(&s_pUdpBuffer[4], cmd::START, length::START) == 0) {
 		if (m_nBytesReceived == (4 + length::START)) {
 			ActionStart();
 			return;
 		}
 
 		if (m_nBytesReceived == (4 + length::START + 1 + ltc::timecode::CODE_MAX_LENGTH)) {
-			if (m_Buffer[4 + length::START] == '#') {
-				ActionSetStart(&m_Buffer[(4 + length::START + 1)]);
+			if (s_pUdpBuffer[4 + length::START] == '#') {
+				ActionSetStart(&s_pUdpBuffer[(4 + length::START + 1)]);
 				return;
 			}
 
-			if (m_Buffer[4 + length::START] == '!') {
-				ActionSetStart(&m_Buffer[(4 + length::START + 1)]);
+			if (s_pUdpBuffer[4 + length::START] == '!') {
+				ActionSetStart(&s_pUdpBuffer[(4 + length::START + 1)]);
 				ActionStop();
 				ActionStart();
 				return;
 			}
 
-			if (m_Buffer[4 + length::START] == '@') {
-				ActionGoto(&m_Buffer[(4 + length::START + 1)]);
+			if (s_pUdpBuffer[4 + length::START] == '@') {
+				ActionGoto(&s_pUdpBuffer[(4 + length::START + 1)]);
 				return;
 			}
 		}
@@ -532,14 +534,14 @@ void LtcGenerator::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[4], cmd::STOP, length::STOP) == 0) {
+	if (memcmp(&s_pUdpBuffer[4], cmd::STOP, length::STOP) == 0) {
 		if (m_nBytesReceived == (4 + length::STOP)) {
 			ActionStop();
 			return;
 		}
 
-		if ((m_nBytesReceived == (4 + length::STOP + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (m_Buffer[4 + length::STOP] == '#')) {
-			ActionSetStop(&m_Buffer[(4 + length::STOP + 1)]);
+		if ((m_nBytesReceived == (4 + length::STOP + 1 + ltc::timecode::CODE_MAX_LENGTH))  && (s_pUdpBuffer[4 + length::STOP] == '#')) {
+			ActionSetStop(&s_pUdpBuffer[(4 + length::STOP + 1)]);
 			return;
 		}
 
@@ -547,42 +549,42 @@ void LtcGenerator::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[4], cmd::RESUME, length::RESUME) == 0) {
+	if (memcmp(&s_pUdpBuffer[4], cmd::RESUME, length::RESUME) == 0) {
 		ActionResume();
 		return;
 	}
 
 	if (m_nBytesReceived == (4 + length::RATE + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&m_Buffer[4], cmd::RATE, length::RATE) == 0) {
-			ActionSetRate(&m_Buffer[(4 + length::RATE)]);
+		if (memcmp(&s_pUdpBuffer[4], cmd::RATE, length::RATE) == 0) {
+			ActionSetRate(&s_pUdpBuffer[(4 + length::RATE)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + length::DIRECTION + 8)) {
-		if (memcmp(&m_Buffer[4], cmd::DIRECTION, length::DIRECTION) == 0) {
-			ActionSetDirection(&m_Buffer[(4 + length::DIRECTION)]);
+		if (memcmp(&s_pUdpBuffer[4], cmd::DIRECTION, length::DIRECTION) == 0) {
+			ActionSetDirection(&s_pUdpBuffer[(4 + length::DIRECTION)]);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + length::PITCH + 4)) {
-		if (memcmp(&m_Buffer[4], cmd::PITCH, length::PITCH) == 0) {
-			SetPitch(&m_Buffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
+		if (memcmp(&s_pUdpBuffer[4], cmd::PITCH, length::PITCH) == 0) {
+			SetPitch(&s_pUdpBuffer[(4 + length::PITCH)], m_nBytesReceived - (4 + length::PITCH));
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + length::FORWARD + 2)) {
-		if (memcmp(&m_Buffer[4], cmd::FORWARD, length::FORWARD) == 0) {
-			SetSkip(&m_Buffer[(4 + length::FORWARD)], m_nBytesReceived - (4 + length::FORWARD), LTC_GENERATOR_FORWARD);
+		if (memcmp(&s_pUdpBuffer[4], cmd::FORWARD, length::FORWARD) == 0) {
+			SetSkip(&s_pUdpBuffer[(4 + length::FORWARD)], m_nBytesReceived - (4 + length::FORWARD), LTC_GENERATOR_FORWARD);
 			return;
 		}
 	}
 
 	if (m_nBytesReceived <= (4 + length::BACKWARD + 2)) {
-		if (memcmp(&m_Buffer[4], cmd::BACKWARD, length::BACKWARD) == 0) {
-			SetSkip(&m_Buffer[(4 + length::BACKWARD)], m_nBytesReceived - (4 + length::BACKWARD), LTC_GENERATOR_BACKWARD);
+		if (memcmp(&s_pUdpBuffer[4], cmd::BACKWARD, length::BACKWARD) == 0) {
+			SetSkip(&s_pUdpBuffer[(4 + length::BACKWARD)], m_nBytesReceived - (4 + length::BACKWARD), LTC_GENERATOR_BACKWARD);
 			return;
 		}
 	}
@@ -594,7 +596,7 @@ void LtcGenerator::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;

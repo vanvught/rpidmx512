@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsconst.cpp
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@ const char LtcParamsConst::FILE_NAME[] = "ltc.txt";
 const char LtcParamsConst::SOURCE[] = "source";
 // System time
 const char LtcParamsConst::AUTO_START[] = "auto_start";
+const char LtcParamsConst::GPS_START[] = "gps_start";
 // Output options
 const char LtcParamsConst::DISABLE_DISPLAY[] = "disable_display";
 const char LtcParamsConst::DISABLE_MAX7219[] = "disable_max7219";

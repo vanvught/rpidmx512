@@ -45,9 +45,8 @@
 
 #include "debug.h"
 
-NtpServer *NtpServer::s_pThis;
-TNtpPacket NtpServer::s_Request;
 TNtpPacket NtpServer::s_Reply;
+NtpServer *NtpServer::s_pThis;
 
 NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
 	DEBUG_ENTRY
@@ -135,21 +134,22 @@ void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
 void NtpServer::Run() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
+	TNtpPacket *pRequest;
 
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &s_Request, sizeof(struct TNtpPacket), &nIPAddressFrom, &nForeignPort);
+	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&pRequest)), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((nBytesReceived < sizeof(struct TNtpPacket)), 1)) {
 		DEBUG_PUTS("");
 		return;
 	}
 
-	if (__builtin_expect(((s_Request.LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
+	if (__builtin_expect(((pRequest->LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
 		DEBUG_PUTS("");
 		return;
 	}
 
-	s_Reply.OriginTimestamp_s = s_Request.TransmitTimestamp_s;
-	s_Reply.OriginTimestamp_f = s_Request.TransmitTimestamp_f;
+	s_Reply.OriginTimestamp_s = pRequest->TransmitTimestamp_s;
+	s_Reply.OriginTimestamp_f = pRequest->TransmitTimestamp_f;
 
 	Network::Get()->SendTo(m_nHandle, &s_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
 }

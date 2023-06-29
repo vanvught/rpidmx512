@@ -2,7 +2,7 @@
  * @file systimereader.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,7 @@ static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
 	// Defined in platform_ltc.cpp
 #endif
 
+char *SystimeReader::s_pUdpBuffer;
 SystimeReader *SystimeReader::s_pThis;
 
 SystimeReader::SystimeReader(uint8_t nFps) : m_nFps(nFps) {
@@ -190,25 +191,26 @@ void SystimeReader::ActionSetRate(const char *pTimeCodeRate) {
 	DEBUG_EXIT
 }
 
-void SystimeReader::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
-	if ((pBuffer != nullptr) && (nBufferLength <= sizeof(m_Buffer))) {
-		memcpy(m_Buffer, pBuffer, nBufferLength);
+void SystimeReader::HandleRequest(char *pBuffer, uint16_t nBufferLength) {
+	if (pBuffer != nullptr) {
+		assert(nBufferLength >= 8);
+		s_pUdpBuffer = pBuffer;
 		m_nBytesReceived = nBufferLength;
 	}
 
-	if (__builtin_expect((memcmp("ltc!", m_Buffer, 4) != 0), 0)) {
+	if (memcmp("ltc!", s_pUdpBuffer, 4) != 0) {
 		return;
 	}
 
-	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
+	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
 		m_nBytesReceived--;
 	}
 
-	debug_dump(m_Buffer, m_nBytesReceived);
+	debug_dump(s_pUdpBuffer, m_nBytesReceived);
 
 	if (m_nBytesReceived == (4 + length::START)) {
-		if (memcmp(&m_Buffer[4], cmd::START, length::START) == 0) {
+		if (memcmp(&s_pUdpBuffer[4], cmd::START, length::START) == 0) {
 			ActionStart();
 			return;
 		}
@@ -217,7 +219,7 @@ void SystimeReader::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
 	}
 
 	if (m_nBytesReceived == (4 + length::STOP)) {
-		if (memcmp(&m_Buffer[4], cmd::STOP, length::STOP) == 0) {
+		if (memcmp(&s_pUdpBuffer[4], cmd::STOP, length::STOP) == 0) {
 			ActionStop();
 			return;
 		}
@@ -226,8 +228,8 @@ void SystimeReader::HandleRequest(void *pBuffer, uint16_t nBufferLength) {
 	}
 
 	if (m_nBytesReceived == (4 + length::RATE  + ltc::timecode::RATE_MAX_LENGTH)) {
-		if (memcmp(&m_Buffer[4], cmd::RATE, length::RATE) == 0) {
-			ActionSetRate(&m_Buffer[(4 + length::RATE)]);
+		if (memcmp(&s_pUdpBuffer[4], cmd::RATE, length::RATE) == 0) {
+			ActionSetRate(&s_pUdpBuffer[(4 + length::RATE)]);
 			return;
 		}
 	}
@@ -239,7 +241,7 @@ void SystimeReader::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
 
 	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
 		return;

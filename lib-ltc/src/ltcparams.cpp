@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.cpp
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -75,7 +75,6 @@ bool LtcParams::Load() {
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
-		// There is a configuration file
 		if (m_pLTcParamsStore != nullptr) {
 			m_pLTcParamsStore->Update(&m_Params);
 		}
@@ -170,6 +169,14 @@ void LtcParams::callbackFunction(const char* pLine) {
 	if (Sscan::Uint8(pLine, LtcParamsConst::AUTO_START, nValue8) == Sscan::OK) {
 		SetBool(nValue8, m_Params.nAutoStart, ltcparams::Mask::AUTO_START);
 		return;
+	}
+
+	if (Sscan::Uint8(pLine, LtcParamsConst::GPS_START, nValue8) == Sscan::OK) {
+		if (nValue8 != 0) {
+			m_Params.nSetList |= ltcparams::Mask::GPS_START;
+		} else {
+			m_Params.nSetList &= ~ltcparams::Mask::GPS_START;
+		}
 	}
 
 	HandleDisabledOutput(pLine, LtcParamsConst::DISABLE_DISPLAY, LtcParamsMaskDisabledOutputs::DISPLAY);
@@ -455,6 +462,7 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 
 	builder.AddComment("source=systime");
 	builder.Add(LtcParamsConst::AUTO_START, isMaskSet(ltcparams::Mask::AUTO_START));
+	builder.Add(LtcParamsConst::GPS_START, isMaskSet(ltcparams::Mask::GPS_START));
 
 	builder.AddComment("source=internal");
 	builder.Add(LtcParamsConst::FPS, m_Params.nFps, isMaskSet(ltcparams::Mask::FPS));
@@ -515,6 +523,10 @@ void LtcParams::Dump() {
 
 	if (isMaskSet(ltcparams::Mask::AUTO_START)) {
 		printf(" %s=%d\n", LtcParamsConst::AUTO_START, m_Params.nAutoStart);
+	}
+
+	if (isMaskSet(ltcparams::Mask::GPS_START)) {
+		printf(" %s=1\n", LtcParamsConst::AUTO_START);
 	}
 
 	if (isMaskSet(ltcparams::Mask::DISABLED_OUTPUTS)) {

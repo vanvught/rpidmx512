@@ -2,7 +2,7 @@
  * @file systimereader.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,7 @@ public:
 
 	void Print();
 
-	void HandleRequest(void *pBuffer = nullptr, uint16_t nBufferLength = 0);
+	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
 
 	void ActionStart();
 	void ActionStop();
@@ -57,13 +57,13 @@ private:
 private:
 	uint8_t m_nFps;
 	uint32_t m_nTimer0Interval;
-	time_t m_nTimePrevious{0};
+	time_t m_nTimePrevious { 0 };
 	struct midi::Timecode m_tMidiTimeCode;
-	int32_t m_nHandle{-1};
-	char m_Buffer[64];
-	uint16_t m_nBytesReceived{0};
-	bool m_bIsStarted{false};
+	int32_t m_nHandle { -1 };
+	uint16_t m_nBytesReceived { 0 };
+	bool m_bIsStarted { false };
 
+	static char *s_pUdpBuffer;
 	static SystimeReader *s_pThis;
 };
 

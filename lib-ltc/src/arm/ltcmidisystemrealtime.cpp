@@ -48,6 +48,7 @@ static void timer_handler() {
 #elif defined (GD32)
 #endif
 
+char *LtcMidiSystemRealtime::s_pUdpBuffer;
 LtcMidiSystemRealtime *LtcMidiSystemRealtime::s_pThis;
 
 LtcMidiSystemRealtime::LtcMidiSystemRealtime() {
