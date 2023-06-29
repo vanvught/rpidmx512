@@ -1,8 +1,8 @@
 /**
- * @file phy.c
+ * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef PHY_H_
-#define PHY_H_
+#include "network.h"
 
-#include <stdint.h>
+namespace network {
+void display_emac_config() {}
+void display_emac_start() {}
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void display_ip() {}
 
-extern int phy_read(int addr, int reg);
-extern int phy_write(int addr, int reg, uint16_t val);
+void display_netmask() {}
 
-extern uint32_t phy_get_id(int addr);
-extern void phy_shutdown(int addr);
+void display_gateway() {}
 
-#ifdef __cplusplus
-}
-#endif
+void display_hostname() {}
 
-#endif /* PHY_H_ */
+void display_emac_shutdown() {}
+
+// DHCP Client
+void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
+}  // namespace network
+

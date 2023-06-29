@@ -1,5 +1,5 @@
 /**
- * rtl8201f.cpp
+ * phy.cpp
  *
  */
 /* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -25,37 +25,45 @@
 
 #include <cstdint>
 
-#include "gd32.h"
-#include "./../enet_config.h"
+#include "emac/phy.h"
 
 #include "debug.h"
 
+#if !defined(PHY_ADDRESS)
+# define PHY_ADDRESS 1
+#endif
+
+#define PHY_REG_RMSR				0x10
+#define PHY_REG_PAGE_SELECT			0x1f
+#define PHY_REG_IER					0x13
+	#define IER_CUSTOM_LED			(1U << 3)
+
 namespace net {
 void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0) {
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_PAGE_SELECT, &phy_page);
+	phy_write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, phy_page);
 
 	uint16_t tmp_value;
-	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, phy_reg, &tmp_value);
+	phy_read(PHY_ADDRESS, phy_reg, tmp_value);
 	DEBUG_PRINTF("tmp_value=0x%.4x, mask=0x%.4x", tmp_value, mask);
 	tmp_value &= ~mask;
 	tmp_value |= phy_value;
 	DEBUG_PRINTF("tmp_value=0x%.4x, phy_value=0x%.4x", tmp_value, phy_value);
 
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, phy_reg, &tmp_value);
+	phy_write(PHY_ADDRESS, phy_reg, tmp_value);
 
 	phy_page = 0;
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_PAGE_SELECT, &phy_page);
+	phy_write(PHY_ADDRESS, PHY_REG_PAGE_SELECT, phy_page);
 }
 
 void phy_customized_led() {
 	DEBUG_ENTRY
 
 #if defined (RTL8201F_LED1_LINK_ALL) || defined (RTL8201F_LED1_LINK_ALL_ACT)
-	phy_write_paged(0x07, PHY_REG_IER, PHY_REG_IER_CUSTOM_LED, PHY_REG_IER_CUSTOM_LED);
+	phy_write_paged(0x07, PHY_REG_IER, IER_CUSTOM_LED, IER_CUSTOM_LED);
 # if defined (RTL8201F_LED1_LINK_ALL)
-	phy_write_paged(0x07, 0x11, BIT(3) | BIT(4) | BIT(5));
+	phy_write_paged(0x07, 0x11, (1U << 3) | (1U << 4) | (1U << 5));
 # else
-	phy_write_paged(0x07, 0x11, BIT(3) | BIT(4) | BIT(5) | BIT(7));
+	phy_write_paged(0x07, 0x11, (1U << 3) | (1U << 4) | (1U << 5) | (1U << 7));
 # endif
 #endif
 	DEBUG_EXIT

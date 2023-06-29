@@ -591,7 +591,12 @@ __attribute__((hot)) void tcp_handle(struct t_tcp *pTcp) {
 	DEBUG_PRINTF(IPSTR ":%d[%d] -> %d", pTcp->ip4.src[0], pTcp->ip4.src[1], pTcp->ip4.src[2], pTcp->ip4.src[3], pTcp->tcp.dstpt, pTcp->tcp.srcpt, tcplen);
 
 	uint32_t nIndexPort;
-	uint32_t nIndexTCB;
+	/*
+	  src/net/tcp.cpp: In function 'void tcp_handle(t_tcp*)':
+src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this function [-Werror=maybe-uninitialized]
+  871 |                 switch (pTCB->state) {
+	 */
+	uint32_t nIndexTCB = 0;
 
 	// Find a TCB
 	for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {

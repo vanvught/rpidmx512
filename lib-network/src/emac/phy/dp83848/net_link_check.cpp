@@ -2,7 +2,7 @@
  * net_link_check.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,19 +23,43 @@
  * THE SOFTWARE.
  */
 
-#include "../lib-network/include/emac/net_link_check.h"
+#include <cstdint>
 
-#include "phy.h"
-#include "mii.h"
+#include "emac/net_link_check.h"
+#include "emac/phy.h"
+#include "emac/mmi.h"
 
-#define PHY_ADDRESS	1
+#include "debug.h"
+
+#define PHY_REG_MICR				0x11U
+#define PHY_REG_MISR				0x12U
+#define PHY_INT_AND_OUTPUT_ENABLE	0x03U
+#define PHY_LINK_INT_ENABLE			0x20U
+
+#if !defined (PHY_ADDRESS)
+# define PHY_ADDRESS 1
+#endif
 
 namespace net {
-net::Link link_register_read() {
-	if (BMSR_LSTATUS == (phy_read(PHY_ADDRESS, MII_BMSR) & BMSR_LSTATUS)) {
-		return net::Link::STATE_UP;
+#if defined (ENET_LINK_CHECK_USE_INT) || defined (ENET_LINK_CHECK_USE_PIN_POLL)
+void link_pin_enable() {
+	uint16_t phy_value = PHY_INT_AND_OUTPUT_ENABLE;
+	phy_write(PHY_ADDRESS, PHY_REG_MICR, phy_value);
+
+	phy_read(PHY_ADDRESS, PHY_REG_MICR, phy_value);
+
+	if (PHY_INT_AND_OUTPUT_ENABLE != phy_value) {
+		DEBUG_PUTS("PHY_INT_AND_OUTPUT_ENABLE != phy_value");
 	}
 
-	return net::Link::STATE_DOWN;
+	phy_value = PHY_LINK_INT_ENABLE;
+	phy_write(PHY_ADDRESS, PHY_REG_MISR, phy_value);
 }
+
+void link_pin_recovery() {
+	uint16_t phy_value;
+    phy_read(PHY_ADDRESS, PHY_REG_MISR, phy_value);
+    phy_read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
+}
+#endif
 }  // namespace net

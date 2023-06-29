@@ -63,7 +63,7 @@ public:
 
 	bool AddServiceRecord(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
 	void Print();
-	void SendAnnouncement();
+	void SendAnnouncement(const uint32_t nTTL);
 
 	void Run() {
 		s_nBytesReceived = Network::Get()->RecvFrom(s_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pReceiveBuffer)), &s_nRemoteIp, &s_nRemotePort);
@@ -89,8 +89,8 @@ public:
 private:
 	void Parse();
 	void HandleQuestions(const uint32_t nQuestions);
-	void SendAnswerLocalIpAddress(const uint16_t nTransActionID = 0);
-	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID = 0);
+	void SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_t nTTL);
+	void SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTTL);
 	void SendTo(const uint16_t nLength);
 
 private:

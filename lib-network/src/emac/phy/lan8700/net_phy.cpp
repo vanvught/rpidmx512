@@ -1,8 +1,8 @@
 /**
- * @file net_platform.h
+ * net_phy.cpp
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,18 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PLATFORM_H_
-#define NET_PLATFORM_H_
+#include "debug.h"
 
-#if defined (GD32)
-/**
- * https://www.gd32-dmx.org/memory.html
- */
-# include "gd32.h"
-# if defined (GD32F207RG) || defined (GD32F4XX)
-#  define SECTION_NETWORK __attribute__ ((section (".network")))
-# else
-#  define SECTION_NETWORK
-# endif
-#else
-# define SECTION_NETWORK
-#endif
+namespace net {
+void phy_customized_led() {
+	DEBUG_ENTRY
 
-#endif /* NET_PLATFORM_H_ */
+	DEBUG_EXIT
+}
+
+void phy_customized_timing() {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+}  // namespace net

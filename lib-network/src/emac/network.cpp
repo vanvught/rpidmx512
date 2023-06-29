@@ -35,22 +35,26 @@
 
 #include "../net/net.h"
 #include "../../config/net_config.h"
+
+#include "emac/emac.h"
+#include "emac/phy.h"
+#include "emac/mmi.h"
 #include "emac/net_link_check.h"
 
 #include "debug.h"
 
-namespace net {
-void __attribute__((weak)) phy_customized_led() {}
-void __attribute__((weak)) phy_customized_timing() {}
-}  // namespace net
-
 namespace network {
 void __attribute__((weak)) mdns_announcement() {}
+void __attribute__((weak)) mdns_shutdown() {}
 }  // namespace network
 
-#define TO_HEX(i)	static_cast<char>(((i) < 10) ? '0' + (i) : 'A' + ((i) - 10))
+static constexpr char TO_HEX(const char i) {
+	return static_cast<char>(((i) < 10) ? '0' + i : 'A' + (i - 10));
+}
 
-int emac_start(uint8_t paddr[]);
+#if !defined PHY_ADDRESS
+# define PHY_ADDRESS	1
+#endif
 
 Network *Network::s_pThis;
 
@@ -63,9 +67,13 @@ Network::Network(NetworkParamsStore *pNetworkParamsStore) {
 
 	strcpy(m_aIfName, "eth0");
 
+	network::display_emac_config();
+
+	emac_config();
+
 	network::display_emac_start();
 
-	emac_start(m_aNetMacaddr);
+	emac_start(m_aNetMacaddr, s_lastState);
 
 	NetworkParams params(pNetworkParamsStore);
 
@@ -109,10 +117,8 @@ Network::Network(NetworkParamsStore *pNetworkParamsStore) {
 #elif defined (ENET_LINK_CHECK_USE_PIN_POLL)
 	net::link_pin_poll_init();
 #elif defined (ENET_LINK_CHECK_REG_POLL)
-	net::link_register_read();
+	net::link_status_read();
 #endif
-
-	s_lastState = net::link_register_read();
 
 	if (net::Link::STATE_UP == s_lastState) {
 		DEBUG_PUTS("net::Link::STATE_UP");

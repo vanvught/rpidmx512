@@ -1,8 +1,8 @@
 /**
- * @file ephy.h
+ * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,14 +23,23 @@
  * THE SOFTWARE.
  */
 
-#ifndef EPHY_H_
-#define EPHY_H_
+#include "network.h"
 
-#define H3_EPHY_DEFAULT_VALUE	0x00058000
-#define H3_EPHY_DEFAULT_MASK	0xFFFF8000
-#define H3_EPHY_ADDR_SHIFT		20
-#define H3_EPHY_LED_POL			(1U << 17) 	// 1: active low, 0: active high
-#define H3_EPHY_SHUTDOWN		(1U << 16) 	// 1: shutdown, 0: power up
-#define H3_EPHY_SELECT			(1U << 15) 	// 1: internal PHY, 0: external PHY
+namespace network {
+void display_emac_config() {}
+void display_emac_start() {}
 
-#endif /* EPPHY_H_ */
+void display_ip() {}
+
+void display_netmask() {}
+
+void display_gateway() {}
+
+void display_hostname() {}
+
+void display_emac_shutdown() {}
+
+// DHCP Client
+void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
+}  // namespace network
+

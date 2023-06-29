@@ -32,6 +32,8 @@
 #include "net_platform.h"
 #include "net_debug.h"
 
+#include "emac/net_link_check.h"
+
 #include "../../config/net_config.h"
 
 #if !defined ARP_MAX_RECORDS
@@ -110,6 +112,11 @@ uint32_t arp_cache_lookup(uint32_t nIp, uint8_t *pMacAddress) {
 		if (s_ArpRecords[i].nIp == 0) {
 			break;
 		}
+	}
+
+	if (net::link_status_read() == net::Link::STATE_DOWN) {
+		DEBUG_EXIT
+		return 0;
 	}
 
 	const auto nEntries = s_Entries;

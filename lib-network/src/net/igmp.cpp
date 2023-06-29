@@ -144,9 +144,9 @@ void __attribute__((cold)) igmp_shutdown() {
 
 	for (auto& group : s_groups) {
 		if (group.nGroupAddress != 0) {
-			igmp_leave(group.nGroupAddress);
-
 			DEBUG_PRINTF(IPSTR, IP2STR(group.nGroupAddress));
+
+			igmp_leave(group.nGroupAddress);
 		}
 	}
 

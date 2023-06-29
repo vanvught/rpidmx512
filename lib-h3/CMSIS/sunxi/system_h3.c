@@ -1,8 +1,8 @@
 /**
- * @file emac_shutdown.c
+ * @file system_h3.c
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,41 +25,6 @@
 
 #include <stdint.h>
 
-#include "h3.h"
+#include "core_ca.h"
 
-#include "emac.h"
-#include "ephy.h"
 
-#include "debug.h"
-
-__attribute__((cold)) void emac_shutdown(void) {
-	uint32_t value;
-
-	value = H3_EMAC->RX_CTL0;
-	value &= ~RX_CTL0_RX_EN;
-	H3_EMAC->RX_CTL0 = value;
-
-	value = H3_EMAC->TX_CTL0;
-	value &= ~TX_CTL0_TX_EN;
-	H3_EMAC->TX_CTL0 = value;
-
-	value = H3_EMAC->TX_CTL1;
-	value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
-	H3_EMAC->TX_CTL1 = value;
-
-	value = H3_EMAC->RX_CTL1;
-	value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
-	H3_EMAC->RX_CTL1 = value;
-
-	H3_CCU->BUS_CLK_GATING4 &= (uint32_t)~BUS_CLK_GATING4_EPHY_GATING;
-
-	H3_SYSTEM->EMAC_CLK |= H3_EPHY_SHUTDOWN;
-
-#if 0
-	//-> The below gives continues leds on
-	H3_CCU->BUS_SOFT_RESET2 &= ~BUS_SOFT_RESET2_EPHY_RST;
-
-	phy_shutdown(PHY_ADDR);
-	//<-
-#endif
-}

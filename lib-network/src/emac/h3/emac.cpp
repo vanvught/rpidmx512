@@ -1,8 +1,8 @@
 /**
- * @file emac.c
+ * @file emac.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,8 @@
  * THE SOFTWARE.
  */
 
+#undef NDEBUG
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
 #pragma GCC diagnostic ignored "-Wuseless-cast"
@@ -36,32 +38,25 @@
 #include <cassert>
 
 #include "emac.h"
+#include "emac/phy.h"
+#include "emac/mmi.h"
 
 #include "h3.h"
-#include "ephy.h"
-#include "phy.h"
-#include "mii.h"
 
 #include "debug.h"
 
-coherent_region *p_coherent_region = 0;
+#define PHY_ADDRESS	1
 
-void _set_syscon_ephy(void) {
-	/* H3 based SoC's that has an Internal 100MBit PHY
-	 * needs to be configured and powered up before use
-	 */
-	uint32_t value = H3_SYSTEM->EMAC_CLK;
+#define H3_EPHY_DEFAULT_VALUE			0x00058000
+#define H3_EPHY_DEFAULT_MASK			0xFFFF8000
+#define H3_EPHY_ADDR_SHIFT				20
+#define H3_EPHY_LED_POL					(1U << 17) 	// 1: active low, 0: active high
+#define H3_EPHY_SHUTDOWN				(1U << 16) 	// 1: shutdown, 0: power up
+#define H3_EPHY_SELECT					(1U << 15) 	// 1: internal PHY, 0: external PHY
 
-	value &= ~H3_EPHY_DEFAULT_MASK;
-	value |= H3_EPHY_DEFAULT_VALUE;
-	value |= PHY_ADDR << H3_EPHY_ADDR_SHIFT;
-	value &= ~H3_EPHY_SHUTDOWN;
-	value |= H3_EPHY_SELECT;
+coherent_region *p_coherent_region = nullptr;
 
-	H3_SYSTEM->EMAC_CLK = value;
-}
-
-void _adjust_link(bool duplex, uint32_t speed) {
+static void adjust_link(bool duplex, uint32_t speed) {
 	uint32_t value = H3_EMAC->CTL0;
 
 	if (duplex) {
@@ -88,7 +83,7 @@ void _adjust_link(bool duplex, uint32_t speed) {
 	H3_EMAC->CTL0 = value;
 }
 
-static void _rx_descs_init(void) {
+static void _rx_descs_init() {
 	struct emac_dma_desc *desc_table_p = &p_coherent_region->rx_chain[0];
 	char *rxbuffs = &p_coherent_region->rxbuffer[0];
 	struct emac_dma_desc *desc_p;
@@ -109,7 +104,7 @@ static void _rx_descs_init(void) {
 	p_coherent_region->rx_currdescnum = 0;
 }
 
-static void _tx_descs_init(void) {
+static void _tx_descs_init() {
 	struct emac_dma_desc *desc_table_p = &p_coherent_region->tx_chain[0];
 	char *txbuffs = &p_coherent_region->txbuffer[0];
 	struct emac_dma_desc *desc_p;
@@ -130,45 +125,52 @@ static void _tx_descs_init(void) {
 	p_coherent_region->tx_currdescnum = 0;
 }
 
-void _autonegotiation(void) {
-	uint32_t value;
-
-	DEBUG_PRINTF( "PHY status BMCR: %04X, BMSR: %04X, ADVERTISE: %04X", phy_read(PHY_ADDR, MII_BMCR), phy_read(PHY_ADDR, MII_BMSR), phy_read(PHY_ADDR, MII_ADVERTISE));
-
-	phy_write(PHY_ADDR, MII_ADVERTISE, ADVERTISE_FULL | ADVERTISE_RFAULT);
-
-	value = (uint32_t)phy_read (PHY_ADDR, MII_BMCR);
-	value |= BMCR_ANRESTART;
-	phy_write(PHY_ADDR, MII_BMCR, (uint16_t) value);
-
-	const uint32_t micros_timeout = H3_TIMER->AVS_CNT1 + (5 * 1000 * 1000);
-
-	while (H3_TIMER->AVS_CNT1 < micros_timeout) {
-		if (phy_read (PHY_ADDR, MII_BMSR) & BMSR_ANEGCOMPLETE) {
-			break;
-		}
-	}
-
-	DEBUG_PRINTF("%d", micros_timeout - H3_TIMER->AVS_CNT1);
-	DEBUG_PRINTF( "PHY status BMCR: %04x, BMSR: %04x", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
-}
-
 extern void mac_address_get(uint8_t paddr[]);
 
-void __attribute__((cold)) emac_start(uint8_t paddr[]) {
-	mac_address_get(paddr);
-
-	uint32_t value;
+void __attribute__((cold)) emac_config() {
+	DEBUG_ENTRY
 
 	H3_CCU->BUS_SOFT_RESET2 |= BUS_SOFT_RESET2_EPHY_RST;
 	udelay(1000); // 1ms
-	H3_CCU->BUS_CLK_GATING4 &= (uint32_t)~BUS_CLK_GATING4_EPHY_GATING;
+	H3_CCU->BUS_CLK_GATING4 &= static_cast<uint32_t>(~BUS_CLK_GATING4_EPHY_GATING);
 	udelay(1000); // 1ms
 	H3_CCU->BUS_CLK_GATING4 |= BUS_CLK_GATING4_EPHY_GATING;
 
-	_set_syscon_ephy();
-	_autonegotiation();
-	_adjust_link(true, 100);
+	/* H3 based SoC's that has an Internal 100MBit PHY
+	 * needs to be configured and powered up before use
+	 */
+	auto value = H3_SYSTEM->EMAC_CLK;
+
+	value &= ~H3_EPHY_DEFAULT_MASK;
+	value |= H3_EPHY_DEFAULT_VALUE;
+	value |= PHY_ADDRESS << H3_EPHY_ADDR_SHIFT;
+	value &= ~H3_EPHY_SHUTDOWN;
+	value |= H3_EPHY_SELECT;
+
+	H3_SYSTEM->EMAC_CLK = value;
+
+	net::phy_config(PHY_ADDRESS);
+
+	DEBUG_EXIT
+}
+
+void __attribute__((cold)) emac_start(uint8_t macAddress[], net::Link& link) {
+	mac_address_get(macAddress);
+
+	net::PhyStatus phyStatus;
+	net::phy_start(PHY_ADDRESS, phyStatus);
+
+	link = phyStatus.link;
+
+	const bool fullDuplex = (phyStatus.duplex == net::Duplex::DUPLEX_FULL);
+	const uint32_t speed = (phyStatus.speed == net::Speed::SPEED10 ? 10 : 100);
+
+	DEBUG_PRINTF("%s, %d, %s",
+			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
+			speed == 10 ? 10 : 100,
+			fullDuplex ? "FULL" : "HALF" );
+
+	adjust_link(fullDuplex, speed);
 
 #ifndef NDEBUG
 	printf("sizeof(struct coherent_region)=%u\n", sizeof(struct coherent_region));
@@ -176,9 +178,6 @@ void __attribute__((cold)) emac_start(uint8_t paddr[]) {
 	debug_print_bits(H3_SYSTEM->EMAC_CLK);
 	printf("H3_EMAC->CTL0=%p ", H3_EMAC->CTL0);
 	debug_print_bits(H3_EMAC->CTL0);
-	printf( "PHY status BMCR: %04x, BMSR: %04x\n", phy_read (PHY_ADDR, MII_BMCR), phy_read (PHY_ADDR, MII_BMSR) );
-	debug_print_bits((uint32_t) phy_read (PHY_ADDR, MII_BMCR));
-	debug_print_bits((uint32_t) phy_read (PHY_ADDR, MII_BMSR));
 #endif
 
 	assert(p_coherent_region == 0);
@@ -186,7 +185,7 @@ void __attribute__((cold)) emac_start(uint8_t paddr[]) {
 
 	p_coherent_region = (struct coherent_region *)H3_MEM_COHERENT_REGION;
 
-	value = H3_EMAC->RX_CTL0;
+	auto value = H3_EMAC->RX_CTL0;
 	value &= ~RX_CTL0_RX_EN;
 	H3_EMAC->RX_CTL0 = value;
 

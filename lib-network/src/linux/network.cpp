@@ -63,7 +63,7 @@ static int snHandles[max::PORTS_ALLOWED];
 
 Network *Network::s_pThis = nullptr;
 
-Network::Network(int argc, char **argv) {
+Network::Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore) {
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -87,7 +87,7 @@ Network::Network(int argc, char **argv) {
 		snHandles[i] = -1;
 	}
 
-	NetworkParams params;
+	NetworkParams params(pNetworkParamsStore);
 	params.Load();
 	params.Dump();
 

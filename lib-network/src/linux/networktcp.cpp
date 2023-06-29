@@ -34,6 +34,8 @@
 
 #include "network.h"
 
+#include "debug.h"
+
 // https://cboard.cprogramming.com/c-programming/158125-sockets-using-poll.html
 
 #define MAX_PORTS_ALLOWED		2
@@ -65,7 +67,7 @@ int32_t Network::TcpBegin(uint16_t nLocalPort) {
 
 	s_ports_allowed[i] = nLocalPort;
 
-	memset(&poll_set[i], 0, sizeof(poll_set));
+	memset(&poll_set[i], 0, sizeof(poll_set[i]));
 
 	server_sockfd[i] = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -112,15 +114,17 @@ int32_t Network::TcpEnd(const int32_t nHandle) {
 uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32_t &HandleConnection) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
-	const int poll_result = poll(poll_set[nHandle], 2, 0);
+	const int poll_result = poll(poll_set[nHandle], 4, 0);
 
 	if (poll_result <= 0) {
 		return poll_result;
 	}
 
-	for (int fd_index = 0; fd_index < 2; fd_index++) {
+	for (int fd_index = 0; fd_index < 4; fd_index++) {
 		if (poll_set[nHandle][fd_index].revents & POLLIN) {
-			if (poll_set[nHandle][fd_index].fd == server_sockfd[nHandle]) {
+			int current_fd = poll_set[nHandle][fd_index].fd;
+
+			if (current_fd == server_sockfd[nHandle]) {
 				struct sockaddr_in client_address;
 				int client_len = sizeof(struct sockaddr_in);
 
@@ -131,26 +135,40 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32
 					return client_sockfd;
 				}
 
-				poll_set[nHandle][1].fd = client_sockfd;
-				poll_set[nHandle][1].events = POLLIN | POLLPRI;
+				// Find an empty slot in poll_set to store the client's file descriptor
+				int empty_slot = -1;
+				for (int i = 0; i < 4; i++) {
+					if (poll_set[nHandle][i].fd == 0) {
+						empty_slot = i;
+						break;
+					}
+				}
 
-				printf("Adding client on fd %d\n", client_sockfd);
+				if (empty_slot == -1) {
+					// No empty slot found, handle the error
+					return 0;
+				}
+
+				poll_set[nHandle][empty_slot].fd = client_sockfd;
+				poll_set[nHandle][empty_slot].events = POLLIN | POLLPRI;
+
+				DEBUG_PRINTF("Adding client on fd %d", client_sockfd);
 			} else {
 				int nread;
-				ioctl(poll_set[nHandle][fd_index].fd, FIONREAD, &nread);
+				ioctl(current_fd, FIONREAD, &nread);
 
 				if (nread == 0) {
-					printf("Removing client on fd %d\n", poll_set[nHandle][fd_index].fd);
-					close(poll_set[nHandle][fd_index].fd);
+					DEBUG_PRINTF("Removing client on fd %d", current_fd);
+					close(current_fd);
 					poll_set[nHandle][fd_index].fd = 0;
 					poll_set[nHandle][fd_index].events = 0;
 					poll_set[nHandle][fd_index].revents = 0;
 				} else {
-					printf("Serving client on fd %d\n", poll_set[nHandle][fd_index].fd);
-					const int bytes = read(poll_set[nHandle][fd_index].fd, s_ReadBuffer, MAX_SEGMENT_LENGTH);
+					DEBUG_PRINTF("Serving client on fd %d", current_fd);
+					const int bytes = read(current_fd, s_ReadBuffer, MAX_SEGMENT_LENGTH);
 					if (bytes <= 0) {
 						perror("read failed");
-						close(poll_set[nHandle][fd_index].fd);
+						close(current_fd);
 						poll_set[nHandle][fd_index].fd = 0;
 						poll_set[nHandle][fd_index].events = 0;
 						poll_set[nHandle][fd_index].revents = 0;
@@ -172,7 +190,7 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32
 void Network::TcpWrite( __attribute__((unused)) const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnection) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
-	printf("Write client on fd %d\n", HandleConnection);
+	DEBUG_PRINTF("Write client on fd %d", HandleConnection);
 
 	const int c = write(static_cast<int>(HandleConnection), pBuffer, nLength);
 

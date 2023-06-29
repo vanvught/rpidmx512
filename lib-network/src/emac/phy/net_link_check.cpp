@@ -23,56 +23,38 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-
 #include "emac/net_link_check.h"
+#include "emac/phy.h"
+#include "emac/mmi.h"
 
-#include "gd32.h"
-#include "enet_config.h"
-
-#include "debug.h"
+#define PHY_ADDRESS	1
 
 namespace net {
-#if defined (ENET_LINK_CHECK_USE_INT) || defined (ENET_LINK_CHECK_USE_PIN_POLL)
-void link_gpio_init() {
-	rcu_periph_clock_enable(LINK_CHECK_GPIO_CLK);
-	LINK_CHECK_GPIO_CONFIG;
-}
-#endif
-
 #if defined (ENET_LINK_CHECK_USE_INT)
-void link_exti_init() {
-    rcu_periph_clock_enable(LINK_CHECK_EXTI_CLK);
-
- 	NVIC_SetPriority(LINK_CHECK_EXTI_IRQn, 7);
-	NVIC_EnableIRQ(LINK_CHECK_EXTI_IRQn);
-
-    LINK_CHECK_EXTI_SOURCE_CONFIG(LINK_CHECK_EXTI_PORT_SOURCE, LINK_CHECK_EXTI_PIN_SOURCE);
-
-    exti_init(LINK_CHECK_EXTI_LINE, EXTI_INTERRUPT, EXTI_TRIG_FALLING);
-    exti_interrupt_flag_clear(LINK_CHECK_EXTI_LINE);
+void link_interrupt_init() {
+    link_pin_enable();
+    link_pin_recovery();
+    link_gpio_init();
+    link_exti_init();
 }
 #endif
 
 #if defined (ENET_LINK_CHECK_USE_PIN_POLL)
-void link_pin_poll() {
-	if (RESET == gpio_input_bit_get(LINK_CHECK_GPIO_PORT, LINK_CHECK_GPIO_PIN)) {
-		link_pin_recovery();
-		link_handle_change(link_status_read());
-	}
+void link_pin_poll_init() {
+    link_pin_enable();
+    link_pin_recovery();
+    link_gpio_init();
 }
 #endif
 
+net::Link link_status_read() {
+	uint16_t nValue = 0;
+	phy_read(PHY_ADDRESS, mmi::REG_BMSR, nValue);
+
+	if (mmi::BMSR_LINKED_STATUS == (nValue & mmi::BMSR_LINKED_STATUS)) {
+		return net::Link::STATE_UP;
+	}
+
+	return net::Link::STATE_DOWN;
+}
 }  // namespace net
-
-#if defined (ENET_LINK_CHECK_USE_INT)
-extern "C" {
-void LINK_CHECK_IRQ_HANDLE(void) {
-	if (RESET != exti_interrupt_flag_get(LINK_CHECK_EXTI_LINE)) {
-		exti_interrupt_flag_clear(LINK_CHECK_EXTI_LINE);
-		net::link_pin_recovery();
-		net::link_handle_change(net::link_status_read());
-	}
-}
-}
-#endif

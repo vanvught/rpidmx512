@@ -2,7 +2,7 @@
  * net_link_check.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,30 +26,33 @@
 #ifndef EMAC_NET_LINK_CHECK_H_
 #define EMAC_NET_LINK_CHECK_H_
 
+#include "phy.h"
+
 namespace net {
-enum class Link {
-	STATE_UP, STATE_DOWN
-};
+net::Link link_status_read();
 
 /**
  * Platform defined implementations
  */
 
-net::Link link_register_read();
+#if defined (ENET_LINK_CHECK_USE_INT) || defined (ENET_LINK_CHECK_USE_PIN_POLL)
+ void link_gpio_init();
+ void link_pin_enable();
+ void link_pin_recovery();
+#endif
 
 #if defined (ENET_LINK_CHECK_USE_INT)
+ void link_exti_init();
  void link_interrupt_init();
 #elif defined (ENET_LINK_CHECK_USE_PIN_POLL)
  void link_pin_poll_init();
  void link_pin_poll();
-#elif defined (ENET_LINK_CHECK_REG_POLL)
- void link_register_poll();
 #endif
 
 /**
- * User defined implementation
+ *
+ * @param state
  */
-
 void link_handle_change(const net::Link state);
 }  // namespace net
 

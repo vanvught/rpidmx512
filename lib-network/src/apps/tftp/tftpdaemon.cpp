@@ -304,7 +304,7 @@ void TFTPDaemon::HandleRecvData() {
 		m_nDataLength = m_nLength - 4;
 		m_nBlockNumber = __builtin_bswap16(pDataPacket->BlockNumber);
 
-		DEBUG_PRINTF("Incoming from " IPSTR ", m_nLength=%ld, m_nBlockNumber=%d, m_nDataLength=%ld", IP2STR(m_nFromIp), m_nLength, m_nBlockNumber,m_nDataLength);
+		DEBUG_PRINTF("Incoming from " IPSTR ", m_nLength=%u, m_nBlockNumber=%d, m_nDataLength=%u", IP2STR(m_nFromIp), static_cast<uint32_t>(m_nLength), m_nBlockNumber, static_cast<uint32_t>(m_nDataLength));
 
 		if (m_nDataLength == FileWrite(pDataPacket->Data, m_nDataLength, m_nBlockNumber)) {
 

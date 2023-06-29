@@ -1,8 +1,8 @@
 /**
- * @file net_platform.h
+ * @file emac_shutdown.c
  *
  */
-/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,21 +23,43 @@
  * THE SOFTWARE.
  */
 
-#ifndef NET_PLATFORM_H_
-#define NET_PLATFORM_H_
+#include <stdint.h>
 
-#if defined (GD32)
-/**
- * https://www.gd32-dmx.org/memory.html
- */
-# include "gd32.h"
-# if defined (GD32F207RG) || defined (GD32F4XX)
-#  define SECTION_NETWORK __attribute__ ((section (".network")))
-# else
-#  define SECTION_NETWORK
-# endif
-#else
-# define SECTION_NETWORK
+#include "h3.h"
+#include "../../emac/h3/emac.h"
+
+#include "debug.h"
+
+#define H3_EPHY_SHUTDOWN				(1U << 16) 	// 1: shutdown, 0: power up
+
+__attribute__((cold)) void emac_shutdown(void) {
+	uint32_t value;
+
+	value = H3_EMAC->RX_CTL0;
+	value &= ~RX_CTL0_RX_EN;
+	H3_EMAC->RX_CTL0 = value;
+
+	value = H3_EMAC->TX_CTL0;
+	value &= ~TX_CTL0_TX_EN;
+	H3_EMAC->TX_CTL0 = value;
+
+	value = H3_EMAC->TX_CTL1;
+	value &= (uint32_t)~TX_CTL1_TX_DMA_EN;
+	H3_EMAC->TX_CTL1 = value;
+
+	value = H3_EMAC->RX_CTL1;
+	value &= (uint32_t)~RX_CTL1_RX_DMA_EN;
+	H3_EMAC->RX_CTL1 = value;
+
+	H3_CCU->BUS_CLK_GATING4 &= (uint32_t)~BUS_CLK_GATING4_EPHY_GATING;
+
+	H3_SYSTEM->EMAC_CLK |= H3_EPHY_SHUTDOWN;
+
+#if 0
+	//-> The below gives continues leds on
+	H3_CCU->BUS_SOFT_RESET2 &= ~BUS_SOFT_RESET2_EPHY_RST;
+
+	net::phy_shutdown(PHY_ADDR);
+	//<-
 #endif
-
-#endif /* NET_PLATFORM_H_ */
+}

@@ -1,8 +1,8 @@
 /**
- * @file networkdisplay.cpp
+ * net_link_check.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,22 +23,37 @@
  * THE SOFTWARE.
  */
 
-#include "network.h"
+#include <cstdint>
 
-namespace network {
-void display_emac_start() {}
+#include "emac/net_link_check.h"
+#include "emac/phy.h"
+#include "emac/mmi.h"
 
-void display_ip() {}
+#if !defined (PHY_ADDRESS)
+# define PHY_ADDRESS 1
+#endif
 
-void display_netmask() {}
+#define PHY_REG_IER				0x13
+	#define IER_INT_ENABLE		(1U << 13)
 
-void display_gateway() {}
+#define PHY_REG_ISR				0x1e
+	#define ISR_LINK			(1U << 11)
 
-void display_hostname() {}
+namespace net {
+#if defined (ENET_LINK_CHECK_USE_INT) || defined (ENET_LINK_CHECK_USE_PIN_POLL)
+void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0);
 
-void display_emac_shutdown() {}
+void link_pin_enable() {
+	phy_write_paged(0x07, PHY_REG_IER, IER_INT_ENABLE, IER_INT_ENABLE);
+	// Clear interrupt
+	uint16_t phy_value;
+	phy_read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
+}
 
-// DHCP Client
-void display_dhcp_status(__attribute__((unused)) network::dhcp::ClientStatus nStatus) {}
-}  // namespace network
-
+void link_pin_recovery() {
+    uint16_t phy_value;
+    phy_read(PHY_ADDRESS, PHY_REG_ISR, phy_value);
+    phy_read(PHY_ADDRESS, mmi::REG_BMSR, phy_value);
+}
+#endif
+}  // namespace net

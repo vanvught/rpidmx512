@@ -48,18 +48,16 @@ public:
 	Network(NetworkParamsStore *pNetworkParamsStore);
 	~Network() {}
 
-
 	void Print();
 
 	void Shutdown() {
 		network::display_emac_shutdown();
+		network::mdns_shutdown();
 		net_shutdown();
 	}
 
 	void MacAddressCopyTo(uint8_t *pMacAddress) {
-		for (uint32_t i =  0; i < network::MAC_SIZE; i++) {
-			pMacAddress[i] = m_aNetMacaddr[i];
-		}
+		memcpy(pMacAddress, m_aNetMacaddr, network::MAC_SIZE);
 	}
 
 	void SetIp(uint32_t nIp);
@@ -243,7 +241,7 @@ public:
 #if defined (ENET_LINK_CHECK_USE_PIN_POLL)
 		net::link_pin_poll();
 #elif defined (ENET_LINK_CHECK_REG_POLL)
-		const net::Link link_state = net::link_register_read();
+		const net::Link link_state = net::link_status_read();
 
 		if (link_state != s_lastState) {
 			s_lastState = link_state;

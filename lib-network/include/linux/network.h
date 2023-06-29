@@ -34,9 +34,11 @@
 #include <cstring>
 #include <net/if.h>
 
+#include "networkparams.h"
+
 class Network {
 public:
-	Network(int argc, char **argv);
+	Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore = nullptr);
 	~Network();
 
 	void Print();
