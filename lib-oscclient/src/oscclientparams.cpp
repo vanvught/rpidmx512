@@ -2,7 +2,7 @@
  * @file oscclientparams.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,6 +45,8 @@
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
+#include "debug.h"
+
 OscClientParams::OscClientParams(OscClientParamsStore* pOscClientParamsStore): m_pOscClientParamsStore(pOscClientParamsStore) {
 	memset(&m_tOscClientParams, 0, sizeof(struct TOscClientParams));
 	m_tOscClientParams.nOutgoingPort = oscclient::defaults::PORT_OUTGOING;
@@ -80,14 +82,9 @@ bool OscClientParams::Load() {
 	return true;
 }
 
-void OscClientParams::Load(const char* pBuffer, uint32_t nLength) {
+void OscClientParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pOscClientParamsStore != nullptr);
-
-	if (m_pOscClientParamsStore == nullptr) {
-		return;
-	}
 
 	m_tOscClientParams.nSetList = 0;
 
@@ -95,6 +92,7 @@ void OscClientParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pOscClientParamsStore != nullptr);
 	m_pOscClientParamsStore->Update(&m_tOscClientParams);
 }
 
@@ -170,6 +168,43 @@ void OscClientParams::callbackFunction(const char *pLine) {
 	}
 }
 
+void OscClientParams::Builder(const struct TOscClientParams* ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != nullptr);
+
+	if (ptOscClientParams != nullptr) {
+		memcpy(&m_tOscClientParams, ptOscClientParams, sizeof(struct TOscClientParams));
+	} else {
+		assert(m_pOscClientParamsStore != nullptr);
+		m_pOscClientParamsStore->Copy(&m_tOscClientParams);
+	}
+
+	PropertiesBuilder builder(OscClientParamsConst::FILE_NAME, pBuffer, nLength);
+
+	builder.AddIpAddress(OscClientParamsConst::SERVER_IP, m_tOscClientParams.nServerIp, isMaskSet(OscClientParamsMask::SERVER_IP));
+	builder.Add(OscParamsConst::OUTGOING_PORT, m_tOscClientParams.nOutgoingPort, isMaskSet(OscClientParamsMask::OUTGOING_PORT));
+	builder.Add(OscParamsConst::INCOMING_PORT, m_tOscClientParams.nIncomingPort, isMaskSet(OscClientParamsMask::INCOMING_PORT));
+	builder.Add(OscClientParamsConst::PING_DISABLE, m_tOscClientParams.nPingDisable, isMaskSet(OscClientParamsMask::PING_DISABLE));
+	builder.Add(OscClientParamsConst::PING_DELAY, m_tOscClientParams.nPingDelay, isMaskSet(OscClientParamsMask::PING_DELAY));
+
+	for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
+		m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = static_cast<char>(i + '0');
+		const char *cmd = reinterpret_cast<const char*>(&m_tOscClientParams.aCmd[i]);
+		builder.Add(m_aCmd, cmd, *cmd == '/');
+	}
+
+	for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
+		m_aLed[strlen(OscClientParamsConst::LED) - 1] = static_cast<char>(i + '0');
+		const char *led = reinterpret_cast<const char*>(&m_tOscClientParams.aLed[i]);
+		builder.Add(m_aLed, led, *led == '/');
+	}
+
+	nSize = builder.GetSize();
+
+	DEBUG_EXIT
+}
+
 void OscClientParams::Set(OscClient* pOscClient) {
 	assert(pOscClient != nullptr);
 
@@ -228,14 +263,14 @@ void OscClientParams::Dump() {
 
 	if (isMaskSet(OscClientParamsMask::CMD)) {
 		for (uint32_t i = 0; i < OscClientParamsMax::CMD_COUNT; i++) {
-			m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = i + '0';
+			m_aCmd[strlen(OscClientParamsConst::CMD) - 1] = static_cast<char>(i + '0');
 			printf(" %s=[%s]\n", m_aCmd, reinterpret_cast<char*>(&m_tOscClientParams.aCmd[i]));
 		}
 	}
 
 	if (isMaskSet(OscClientParamsMask::LED)) {
 		for (uint32_t i = 0; i < OscClientParamsMax::LED_COUNT; i++) {
-			m_aLed[strlen(OscClientParamsConst::LED) - 1] = i + '0';
+			m_aLed[strlen(OscClientParamsConst::LED) - 1] = static_cast<char>(i + '0');
 			printf(" %s=[%s]\n", m_aLed, reinterpret_cast<char*>(&m_tOscClientParams.aLed[i]));
 		}
 	}
