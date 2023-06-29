@@ -39,6 +39,9 @@
 #if defined (DEBUG_STACK)
  void stack_debug_run();
 #endif
+#if defined (DEBUG_EMAC)
+ void emac_debug_run();
+#endif
 
 #if defined (USE_LEDBLINK_BITBANGING595)
 # include "gd32_bitbanging595.h"
@@ -171,6 +174,10 @@ public:
 
 #if defined (DEBUG_STACK)
 		stack_debug_run();
+#endif
+
+#if defined (DEBUG_EMAC)
+		emac_debug_run();
 #endif
 	}
 
