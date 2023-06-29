@@ -34,16 +34,18 @@
 #include "lightset.h"
 
 #if defined (GD32)
+/**
+ * https://www.gd32-dmx.org/memory.html
+ */
 # include "gd32.h"
-# if !defined (GD32F4XX)
-#  define SECTION_LIGHTSET
-# else
+# if defined (GD32F450VI)
 #  define SECTION_LIGHTSET __attribute__ ((section (".lightset")))
+# else
+#  define SECTION_LIGHTSET
 # endif
 #else
 # define SECTION_LIGHTSET
 #endif
-
 namespace lightset {
 
 class Data {
