@@ -37,16 +37,14 @@ endif
 
 ifeq ($(detected_OS),Linux) 
 	ifneq (, $(shell which vcgencmd))
-	
 		BCM2835 = ./../lib-bcm2835_raspbian
-	
 		ifneq "$(wildcard $(BCM2835) )" ""
 			INCLUDES+=-I../lib-bcm2835_raspbian/include
 		endif
-	
 		ifneq ($(findstring RASPPI,$(DEFINES)),RASPPI)
 			DEFINES+=-DRASPPI
 		endif
+		DEFINES+=-DBCM2835_NO_DELAY_COMPATIBILITY
 	endif
 endif
 

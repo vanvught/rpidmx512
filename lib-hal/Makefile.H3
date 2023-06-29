@@ -4,5 +4,11 @@ EXTRA_INCLUDES=
 
 EXTRA_SRCDIR=posix rtc/i2c ff12c ff12c/option src/h3/sdcard
 
+ifneq (,$(findstring DEBUG_EMAC,$(MAKE_FLAGS)))
+	EXTRA_SRCDIR+=debug/emac/h3
+else
+	EXTRA_SRCDIR+=debug/emac/h3
+endif
+
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

@@ -39,6 +39,7 @@ ifdef LINUX
 			LDLIBS=-lbcm2835
 		endif
 		DEFINES+=RASPPI
+		DEFINES+=BCM2835_NO_DELAY_COMPATIBILITY
 	endif
 endif
 
