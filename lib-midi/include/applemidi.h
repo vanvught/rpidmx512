@@ -63,7 +63,7 @@ enum class SessionState {
 };
 
 struct SessionStatus {
-	SessionState tSessionState;
+	SessionState sessionState;
 	uint32_t nRemoteIp;
 	uint16_t nRemotePortMidi;
 	uint32_t nSynchronizationTimestamp;
@@ -139,11 +139,11 @@ protected:
 	}
 
 	bool Send(const uint8_t *pBuffer, uint32_t nLength) {
-		if (m_tSessionStatus.tSessionState != applemidi::SessionState::ESTABLISHED) {
+		if (m_SessionStatus.sessionState != applemidi::SessionState::ESTABLISHED) {
 			return false;
 		}
 
-		Network::Get()->SendTo(m_nHandleMidi, pBuffer, static_cast<uint16_t>(nLength), m_tSessionStatus.nRemoteIp, m_tSessionStatus.nRemotePortMidi);
+		Network::Get()->SendTo(m_nHandleMidi, pBuffer, static_cast<uint16_t>(nLength), m_SessionStatus.nRemoteIp, m_SessionStatus.nRemotePortMidi);
 
 		debug_dump(&pBuffer, static_cast<uint16_t>(nLength));
 
@@ -167,7 +167,7 @@ private:
 	uint16_t m_nRemotePort { 0 };
 	uint16_t m_nBytesReceived { 0 };
 	applemidi::ExchangePacket m_ExchangePacketReply;
-	applemidi::SessionStatus m_tSessionStatus;
+	applemidi::SessionStatus m_SessionStatus;
 	uint8_t *m_pBuffer { nullptr };
 };
 
