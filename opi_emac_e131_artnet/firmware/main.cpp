@@ -174,8 +174,8 @@ void main() {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
@@ -192,8 +192,8 @@ void main() {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);

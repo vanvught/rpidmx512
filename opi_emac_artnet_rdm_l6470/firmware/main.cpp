@@ -165,8 +165,6 @@ void main() {
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
 
-			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
-
 			auto *pChain = new LightSetChain;
 			assert(pChain != nullptr);
 
@@ -207,6 +205,9 @@ void main() {
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
 
 	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
+
+	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
@@ -256,13 +257,15 @@ void main() {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
-
 	if(displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
 	}
 
 	display.Show(&node);
+	if (isLedTypeSet) {
+		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+	}
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::STEPPER, node.GetActiveOutputPorts());
 
@@ -270,8 +273,8 @@ void main() {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (configStore.Flash())

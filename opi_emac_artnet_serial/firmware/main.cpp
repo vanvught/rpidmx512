@@ -147,6 +147,15 @@ void main() {
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::HOSTNAME);
 
+	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
+
+	if (displayUdfParams.Load()) {
+		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
+	}
+
+	display.Show(&node);
+
 	uint32_t nFilesCount = dmxSerial.GetFilesCount();
 	if (nFilesCount == 0) {
 		display.Printf(7, "No files [SDCard?]");
@@ -154,21 +163,12 @@ void main() {
 		display.Printf(7, "Channel%s: %d", nFilesCount == 1 ?  "" : "s", nFilesCount);
 	}
 
-	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
-		displayUdfParams.Dump();
-	}
-
-	display.Show(&node);
-
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::SERIAL, node.GetActiveOutputPorts());
 	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
@@ -185,8 +185,8 @@ void main() {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
