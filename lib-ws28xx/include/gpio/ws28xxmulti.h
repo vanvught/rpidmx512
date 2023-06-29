@@ -37,8 +37,8 @@ public:
 
 	void Print();
 
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
-	void SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
+	void SetPixel(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
+	void SetPixel(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
 
 	bool IsUpdating();
 
@@ -65,9 +65,9 @@ public:
 private:
 	void Setup(uint8_t nLowCode, uint8_t nHighCode);
 	void Setup(uint32_t nFrequency);
-	void SetColourRTZ(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetColourWS2801(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
-	void SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nCtrl, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetColourRTZ(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nColour1, const uint8_t nColour2, const uint8_t nColour3);
+	void SetColourWS2801(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nColour1, const uint8_t nColour2, const uint8_t nColour3);
+	void SetPixel4Bytes(const uint32_t nPortIndex, const uint32_t nPixelIndex, const uint8_t nCtrl, const uint8_t nColour1, const uint8_t nColour2, const uint8_t nColour3);
 
 private:
 	PixelConfiguration m_PixelConfiguration;

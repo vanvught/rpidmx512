@@ -2,7 +2,7 @@
  * @file ws28xxdmx.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("-funroll-loops")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
+
 #include <cstdint>
 #include <algorithm>
 #include <cassert>
@@ -35,9 +40,6 @@
 #include "pixeldmxconfiguration.h"
 
 #include "debug.h"
-
-using namespace pixel;
-using namespace lightset;
 
 WS28xxDmx *WS28xxDmx::s_pThis;
 
@@ -136,7 +138,6 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 	if (m_nChannelsPerPixel == 3) {
 		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
@@ -146,7 +147,6 @@ void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLen
 		assert(m_nChannelsPerPixel == 4);
 		for (auto j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xx->SetPixel(nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
@@ -193,11 +193,11 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 		return true;
 	}
 
-	if ((nDmxStartAddress + m_nDmxFootprint) > dmx::UNIVERSE_SIZE) {
+	if ((nDmxStartAddress + m_nDmxFootprint) > lightset::dmx::UNIVERSE_SIZE) {
 		return false;
 	}
 
-	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE)) {
+	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
 
 		if (m_pWS28xxDmxStore != nullptr) {
@@ -212,25 +212,25 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 // RDM
 
-bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, SlotInfo& tSlotInfo) {
+bool WS28xxDmx::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& slotInfo) {
 	if (nSlotOffset >  m_nDmxFootprint) {
 		return false;
 	}
 
-	tSlotInfo.nType = 0x00;	// ST_PRIMARY
+	slotInfo.nType = 0x00;	// ST_PRIMARY
 
 	switch (nSlotOffset % m_nChannelsPerPixel) {
 		case 0:
-			tSlotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
+			slotInfo.nCategory = 0x0205; // SD_COLOR_ADD_RED
 			break;
 		case 1:
-			tSlotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
+			slotInfo.nCategory = 0x0206; // SD_COLOR_ADD_GREEN
 			break;
 		case 2:
-			tSlotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
+			slotInfo.nCategory = 0x0207; // SD_COLOR_ADD_BLUE
 			break;
 		case 3:
-			tSlotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
+			slotInfo.nCategory = 0x0212; // SD_COLOR_ADD_WHITE
 			break;
 		default:
 			__builtin_unreachable();

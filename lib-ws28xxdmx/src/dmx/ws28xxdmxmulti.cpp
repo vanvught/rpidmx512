@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,11 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("-funroll-loops")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
 
 #include <cstdint>
 #include <algorithm>
@@ -47,14 +52,10 @@ namespace ws28xxdmxmulti {
 static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
 }  // namespace ws28xxdmxmulti
 
-using namespace ws28xxdmxmulti;
-using namespace pixel;
-using namespace lightset;
-
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration) {
 	DEBUG_ENTRY
 
-	m_pixelDmxConfiguration.Validate(MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
+	m_pixelDmxConfiguration.Validate(ws28xxdmxmulti::MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
 
 	DEBUG_PRINTF("m_PortInfo.nProtocolPortIndexLast=%u", m_PortInfo.nProtocolPortIndexLast);
 
@@ -146,7 +147,6 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 	if (m_nChannelsPerPixel == 3) {
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
 			}
@@ -156,7 +156,6 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}

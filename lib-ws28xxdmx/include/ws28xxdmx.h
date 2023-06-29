@@ -70,7 +70,7 @@ public:
 	}
 
 	uint32_t GetCount() const {
-		return m_pixelDmxConfiguration.GetCount();;
+		return m_pixelDmxConfiguration.GetCount();
 	}
 
 	uint32_t GetGroups() const {

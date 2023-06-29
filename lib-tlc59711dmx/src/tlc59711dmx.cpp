@@ -36,11 +36,24 @@
 
 #include "lightset.h"
 
+#include "debug.h"
+
+TLC59711Dmx *TLC59711Dmx::s_pThis;
+
 TLC59711Dmx::TLC59711Dmx() {
+	DEBUG_ENTRY
+
+	assert(s_pThis == nullptr);
+	s_pThis = this;
+
 	UpdateMembers();
+
+	DEBUG_EXIT
 }
 
 TLC59711Dmx::~TLC59711Dmx() {
+	DEBUG_ENTRY
+
 	if (m_pTLC59711 != nullptr) {
 		delete m_pTLC59711;
 		m_pTLC59711 = nullptr;
@@ -51,6 +64,8 @@ TLC59711Dmx::~TLC59711Dmx() {
 		m_ArrayMaxValue = nullptr;
 	}
 #endif
+
+	DEBUG_EXIT
 }
 
 void TLC59711Dmx::Start(__attribute__((unused)) uint32_t nPortIndex) {

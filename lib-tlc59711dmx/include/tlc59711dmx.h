@@ -87,6 +87,10 @@ public: // RDM
 
 	bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo) override;
 
+	static TLC59711Dmx *Get() {
+		return s_pThis;
+	}
+
 private:
 	void Initialize();
 	void UpdateMembers();
@@ -105,6 +109,7 @@ private:
 	tlc59711::Type m_type { tlc59711::Type::RGB };
 
 	TLC59711DmxStore *m_pTLC59711DmxStore { nullptr };
+	static TLC59711Dmx *s_pThis;
 };
 
 #endif /* TLC59711DMX_H_ */
