@@ -450,7 +450,7 @@ void RemoteConfig::HandleList() {
 	} else if (m_nBytesReceived == nCmdLength + 1) {
 		DEBUG_PRINTF("%c", nCmdLength + 1);
 		if (s_pUdpBuffer[nCmdLength + 1] == '*') {
-			Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), network::IP4_BROADCAST, remoteconfig::udp::PORT);
+			Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), Network::Get()->GetBroadcastIp(), remoteconfig::udp::PORT);
 			DEBUG_EXIT
 			return;
 		}
