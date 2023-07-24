@@ -224,7 +224,7 @@ void NtpClient::Start() {
 	for (nRetries = 0; nRetries < RETRIES; nRetries++) {
 		Send();
 
-		uint8_t LiVnMode;
+		uint8_t LiVnMode = 0;
 
 		while (!Receive(LiVnMode)) {
 #if defined (HAVE_NET_HANDLE)

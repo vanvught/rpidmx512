@@ -45,7 +45,7 @@ void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, ui
 	uint16_t tmp_value;
 	phy_read(PHY_ADDRESS, phy_reg, tmp_value);
 	DEBUG_PRINTF("tmp_value=0x%.4x, mask=0x%.4x", tmp_value, mask);
-	tmp_value &= ~mask;
+	tmp_value &= static_cast<uint16_t>(~mask);
 	tmp_value |= phy_value;
 	DEBUG_PRINTF("tmp_value=0x%.4x, phy_value=0x%.4x", tmp_value, phy_value);
 

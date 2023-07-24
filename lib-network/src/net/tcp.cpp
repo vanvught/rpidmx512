@@ -54,7 +54,7 @@
 
 #define TCP_TX_MSS						(TCP_DATA_SIZE)
 
-#define MAX_TCBS_ALLOWED				4
+#define MAX_TCBS_ALLOWED				6
 
 namespace net {
 namespace globals {
