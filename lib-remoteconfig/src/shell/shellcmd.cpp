@@ -235,7 +235,7 @@ void Shell::CmdSet() {
 
 			switch (m_ltcSource) {
 			case ltc::Source::INTERNAL:
-				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);;
+				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);
 				break;	
 			case ltc::Source::SYSTIME:
 				SystimeReader::Get()->HandleRequest(request, nRequestLenght);

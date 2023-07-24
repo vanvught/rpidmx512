@@ -248,7 +248,7 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 		while (*pToken != '\0') {
 			auto nDigit = static_cast<uint32_t>(*pToken++ - '0');
 			if (nDigit > 9) {
-				return Status::BAD_REQUEST;;
+				return Status::BAD_REQUEST;
 			}
 
 			nTmp *= 10;
@@ -397,7 +397,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 					return Status::BAD_REQUEST;
 				}
 				DEBUG_PUTS("Reboot!");
-				Hardware::Get()->Reboot();
+				RemoteConfig::Get()->Reboot();
 				__builtin_unreachable();
 			}
 		} else if (Sscan::Uint8(m_pFileData, "display", value8) == Sscan::OK) {
