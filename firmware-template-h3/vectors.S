@@ -147,12 +147,12 @@ reset:
 #endif
 
     bl vfp_init
-	bl mmu_enable
+	  bl mmu_enable
     bl hardware_init
 #if defined ( NO_EMAC )
 	bl emac_shutdown
 #endif
-
+    bl  __libc_init_array
     bl main
 halt:
     wfe
