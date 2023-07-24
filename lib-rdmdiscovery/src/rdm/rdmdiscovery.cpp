@@ -56,6 +56,8 @@ RDMDiscovery::RDMDiscovery(const uint8_t *pUid) {
 }
 
 void RDMDiscovery::Full(uint32_t nPortIndex, RDMTod *pRDMTod){
+	DEBUG_ENTRY
+
 	m_nPortIndex = nPortIndex;
 
 	m_pRDMTod = pRDMTod;
@@ -85,6 +87,7 @@ void RDMDiscovery::Full(uint32_t nPortIndex, RDMTod *pRDMTod){
 	FindDevices(0x000000000000, 0xfffffffffffe);
 
 	m_pRDMTod->Dump();
+	DEBUG_EXIT
 }
 
 bool RDMDiscovery::FindDevices(uint64_t LowerBound, uint64_t UpperBound) {
