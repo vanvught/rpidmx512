@@ -9,6 +9,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-artnet/include
 		EXTRA_SRCDIR+=src/artnet	
+		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
+			EXTRA_INCLUDES+=../lib-e131/include
+		endif	
 	endif
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-e131/include

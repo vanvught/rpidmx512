@@ -50,6 +50,9 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/rdm
 		RDM=1
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include
+		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
+			EXTRA_INCLUDES+=../lib-e131/include
+		endif	
 	endif
 	
 	ifeq ($(findstring NODE_E131,$(MAKE_FLAGS)), NODE_E131)
