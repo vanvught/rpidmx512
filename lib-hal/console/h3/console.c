@@ -1,8 +1,8 @@
 /**
- * @file console_fb.c
+ * @file console.c
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -63,14 +63,12 @@ static uint32_t saved_back = CONSOLE_BLACK;
 #define FB_ADDRESS	fb_addr
 #endif
 
-int __attribute__((cold)) console_init(void) {
+void __attribute__((cold)) console_init(void) {
 	const int r = fb_init();
 
 	if (r == FB_OK) {
 		console_clear();
 	}
-
-	return r;
 }
 
 uint32_t console_get_line_width(void) {

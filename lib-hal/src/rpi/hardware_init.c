@@ -87,7 +87,7 @@ void hardware_init(void) {
 #endif
 #endif
 
-	(void) console_init();
+	console_init();
 	hardware_init_startup_micros = bcm2835_st_read();
 	sys_time_init();
 	bcm2835_rng_init();

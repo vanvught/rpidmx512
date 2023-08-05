@@ -2,7 +2,7 @@
  * @file console.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,8 +26,6 @@
 #ifndef CONSOLE_H_
 #define CONSOLE_H_
 
-#define CONSOLE_OK	0	///< Call console_init() OK
-
 #ifdef __cplusplus
 # include <cstdint>
 # define RGB(r, g, b) static_cast<uint16_t>(((((r) & 0xFF) << 16) | (((g) & 0xFF) << 8) | (((b) & 0xFF))))
@@ -37,7 +35,6 @@
 #endif
 
 #if defined (CONSOLE_NULL) || !defined (CONSOLE_FB)
-// ANSI colors
 typedef enum {
 	CONSOLE_BLACK = 0,
 	CONSOLE_RED = 1,
@@ -58,12 +55,12 @@ typedef enum {
 #  include "rpi/console_fb.h"
 # endif
 #elif defined (CONSOLE_NULL)
-inline static int console_init(void) {return CONSOLE_OK;}
-inline static console_putc(__attribute__((unused)) int i) {}
-inline static void console_puts(__attribute__((unused)) const char *p) {}
-inline static void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {}
-inline static void console_status(__attribute__((unused)) uint32_t i, __attribute__((unused)) const char *p) {}
-inline static void console_error(__attribute__((unused)) const char *p) {}
+inline void console_init(void) {}
+inline void console_putc(__attribute__((unused)) int i) {}
+inline void console_puts(__attribute__((unused)) const char *p) {}
+inline void console_write(__attribute__((unused)) const char *p, __attribute__((unused)) unsigned int i) {}
+inline void console_status(__attribute__((unused)) uint32_t i, __attribute__((unused)) const char *p) {}
+inline void console_error(__attribute__((unused)) const char *p) {}
 #else
 #ifdef __cplusplus
 extern "C" {
@@ -81,14 +78,14 @@ extern void console_set_bg_color(uint16_t);
 extern "C" {
 #endif
 
-extern int console_init(void);
-
+#if !defined (CONSOLE_NULL)
+extern void console_init(void);
 extern void console_putc(int);
 extern void console_puts(const char*);
 extern void console_write(const char*, unsigned int);
-
 extern void console_status(uint32_t, const char *);
 extern void console_error(const char*);
+#endif
 
 #ifdef __cplusplus
 }

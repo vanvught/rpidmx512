@@ -1,8 +1,8 @@
 /**
- * @file console_i2c.c
+ * @file console.c
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -157,13 +157,13 @@ static void set_baud(uint32_t nBaud) {
 	write_register(SC16IS7X0_LCR, nRegisterLCR);
 }
 
-int __attribute__((cold)) console_init(void) {
+void __attribute__((cold)) console_init(void) {
 	FUNC_PREFIX(i2c_begin());
 
 	s_isConnected = is_connected(CONSOLE_I2C_ADDRESS, 100000);
 
 	if (!s_isConnected) {
-		return -1;
+		return;
 	}
 
 	uint8_t LCR = LCR_BITS8;
@@ -178,7 +178,7 @@ int __attribute__((cold)) console_init(void) {
 
 	if ((read_register(SC16IS7X0_SPR) != test_character)) {
 		s_isConnected = false;
-		return -2;
+		return;
 	}
 
 	s_isConnected = true;
@@ -196,8 +196,6 @@ int __attribute__((cold)) console_init(void) {
 
 	write_register(SC16IS7X0_FCR, (uint8_t) (FCR_TX_FIFO_RST));
 	write_register(SC16IS7X0_FCR, FCR_ENABLE_FIFO);
-
-	return CONSOLE_OK;
 }
 
 void console_putc(int c) {

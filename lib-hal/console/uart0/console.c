@@ -1,8 +1,8 @@
 /**
- * @file console_uart0.c
+ * @file console.c
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,11 @@ extern void uart0_init(void);
 extern void uart0_putc(int);
 extern void uart0_puts(const char *);
 
-int __attribute__((cold)) console_init(void) {
+void __attribute__((cold)) console_init(void) {
 	uart0_init();
 
 	console_set_fg_color(CONSOLE_WHITE);
 	console_set_bg_color(CONSOLE_BLACK);
-
-	return CONSOLE_OK;
 }
 
 void console_putc(int c) {
