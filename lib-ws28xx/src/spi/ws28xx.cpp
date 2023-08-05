@@ -2,7 +2,7 @@
  * @file ws28xx.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,13 @@
  * THE SOFTWARE.
  */
 
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("-funroll-loops")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
+
 #include <cstdint>
 #include <cstring>
 #include <cassert>
@@ -33,8 +40,6 @@
 #include "hal_spi.h"
 
 #include "debug.h"
-
-using namespace pixel;
 
 WS28xx *WS28xx::s_pThis;
 
@@ -59,7 +64,7 @@ WS28xx::WS28xx(PixelConfiguration& pixelConfiguration): m_PixelConfiguration(pix
 
 	const auto type = m_PixelConfiguration.GetType();
 
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
 		m_nBufSize += nCount;
 		m_nBufSize += 8;
 	}
@@ -124,21 +129,21 @@ void WS28xx::SetupBuffers() {
 	const auto type = m_PixelConfiguration.GetType();
 	const auto nCount = m_PixelConfiguration.GetCount();
 
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
 		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
 			SetPixel(nPixelIndex, 0, 0, 0);
 		}
 
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
+		if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822)) {
 			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 		} else {
 			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
 		}
 	} else {
 		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
+		memset(&m_pBuffer[1], type == pixel::Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
 	}
 
 	memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
@@ -171,21 +176,21 @@ void WS28xx::Blackout() {
 	const auto type = m_PixelConfiguration.GetType();
 	const auto nCount = m_PixelConfiguration.GetCount();
 
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
 		memset(m_pBuffer, 0, 4);
 
 		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
 			SetPixel(nPixelIndex, 0, 0, 0);
 		}
 
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
+		if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822)) {
 			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 		} else {
 			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
 		}
 	} else {
 		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
+		memset(&m_pBuffer[1], type == pixel::Type::WS2801 ? 0 : m_PixelConfiguration.GetLowCode(), m_nBufSize);
 	}
 
 	Update();
@@ -215,21 +220,21 @@ void WS28xx::FullOn() {
 	const auto type = m_PixelConfiguration.GetType();
 	const auto nCount = m_PixelConfiguration.GetCount();
 
-	if ((type == Type::APA102) || (type == Type::SK9822) || (type == Type::P9813)) {
+	if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822) || (type == pixel::Type::P9813)) {
 		memset(m_pBuffer, 0xFF, 4);
 
 		for (uint32_t nPixelIndex = 0; nPixelIndex < nCount; nPixelIndex++) {
 			SetPixel(nPixelIndex, 0xFF, 0xFF, 0xFF);
 		}
 
-		if ((type == Type::APA102) || (type == Type::SK9822)) {
+		if ((type == pixel::Type::APA102) || (type == pixel::Type::SK9822)) {
 			memset(&m_pBuffer[m_nBufSize - 4], 0xFF, 4);
 		} else {
 			memset(&m_pBuffer[m_nBufSize - 4], 0, 4);
 		}
 	} else {
 		m_pBuffer[0] = 0x00;
-		memset(&m_pBuffer[1], type == Type::WS2801 ? 0xFF : m_PixelConfiguration.GetHighCode(), m_nBufSize);
+		memset(&m_pBuffer[1], type == pixel::Type::WS2801 ? 0xFF : m_PixelConfiguration.GetHighCode(), m_nBufSize);
 	}
 
 	Update();
