@@ -38,6 +38,8 @@ struct IpInfo {
     struct ip_addr ip;
     struct ip_addr netmask;
     struct ip_addr gw;
+    struct ip_addr broadcast_ip;
+    struct ip_addr secondary_ip;
 };
 
 #define IP_BROADCAST	(0xFFFFFFFF)
@@ -47,9 +49,9 @@ void net_init(const uint8_t *const, struct IpInfo *, const char *, bool *, bool 
 void net_shutdown();
 void net_handle();
 
-void net_set_ip(uint32_t);
-void net_set_netmask(uint32_t);
-void net_set_gw(uint32_t);
+void net_set_ip(struct IpInfo *);
+void net_set_netmask(struct IpInfo *);
+void net_set_gw(struct IpInfo *);
 bool net_set_zeroconf(struct IpInfo *);
 
 bool net_set_dhcp(struct IpInfo *, const char *const, bool *);

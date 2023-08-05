@@ -68,6 +68,10 @@ public:
 		m_aDomainName[network::DOMAINNAME_SIZE - 1] = '\0';
 	}
 
+	uint32_t GetSecondaryIp() const {
+		return m_nLocalIp;
+	}
+
 	uint32_t GetIp() const {
 		return m_nLocalIp;
 	}

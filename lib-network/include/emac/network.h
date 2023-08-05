@@ -60,19 +60,27 @@ public:
 		memcpy(pMacAddress, m_aNetMacaddr, network::MAC_SIZE);
 	}
 
+	uint32_t GetSecondaryIp() const {
+		return m_IpInfo.secondary_ip.addr;
+	}
+
 	void SetIp(uint32_t nIp);
 	uint32_t GetIp() const {
-		return m_ipInfo.ip.addr;
+		return m_IpInfo.ip.addr;
 	}
 
 	void SetNetmask(uint32_t nNetmask);
 	uint32_t GetNetmask() const {
-		return m_ipInfo.netmask.addr;
+		return m_IpInfo.netmask.addr;
 	}
 
 	void SetGatewayIp(uint32_t nGatewayIp);
 	uint32_t GetGatewayIp() const {
-		return m_ipInfo.gw.addr;
+		return m_IpInfo.gw.addr;
+	}
+
+	uint32_t GetBroadcastIp() const {
+		return m_IpInfo.broadcast_ip.addr;
 	}
 
 	/*
@@ -195,11 +203,7 @@ public:
 	bool ApplyQueuedConfig();
 
 	uint32_t GetNetmaskCIDR() const {
-		return static_cast<uint32_t>(__builtin_popcount(m_ipInfo.netmask.addr));
-	}
-
-	uint32_t GetBroadcastIp() const {
-		return m_ipInfo.ip.addr | ~m_ipInfo.netmask.addr;
+		return static_cast<uint32_t>(__builtin_popcount(m_IpInfo.netmask.addr));
 	}
 
 	char GetAddressingMode() {
@@ -233,7 +237,7 @@ public:
 	}
 
 	bool IsValidIp(uint32_t nIp) {
-		return (m_ipInfo.ip.addr & m_ipInfo.netmask.addr) == (nIp & m_ipInfo.netmask.addr);
+		return (m_IpInfo.ip.addr & m_IpInfo.netmask.addr) == (nIp & m_IpInfo.netmask.addr);
 	}
 
 	void Run() {
@@ -264,7 +268,7 @@ private:
 	uint32_t m_nNtpServerIp { 0 };
 	float m_fNtpUtcOffset { 0 };
 
-	struct IpInfo m_ipInfo;
+	struct IpInfo m_IpInfo;
 
 	char m_aHostName[network::HOSTNAME_SIZE];
 	char m_aDomainName[network::DOMAINNAME_SIZE];
@@ -272,15 +276,6 @@ private:
 	char m_aIfName[IFNAMSIZ];
 
 	NetworkStore *m_pNetworkStore { nullptr };
-
-	void SetDefaultIp() {
-		m_ipInfo.ip.addr = 2
-				+ ((static_cast<uint32_t>(m_aNetMacaddr[3])) << 8)
-				+ ((static_cast<uint32_t>(m_aNetMacaddr[4])) << 16)
-				+ ((static_cast<uint32_t>(m_aNetMacaddr[5])) << 24);
-		m_ipInfo.netmask.addr = 255;
-		m_ipInfo.gw.addr = m_ipInfo.ip.addr;
-	}
 
 	struct QueuedConfig {
 		static constexpr uint32_t NONE = 0;

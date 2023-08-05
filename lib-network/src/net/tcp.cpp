@@ -58,7 +58,6 @@
 
 namespace net {
 namespace globals {
-extern struct IpInfo ipInfo;
 extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
@@ -67,10 +66,12 @@ extern uint8_t macAddress[ETH_ADDR_LEN];
  * Transmission control block (TCB)
  */
 struct tcb {
-	uint16_t nLocalPort;
+	uint8_t localIp[IPv4_ADDR_LEN];
+	uint8_t remoteIp[IPv4_ADDR_LEN];
 
+	uint16_t nLocalPort;
 	uint16_t nRemotePort;
-	uint32_t nRemoteIp;
+
 	uint8_t remoteEthAddr[ETH_ADDR_LEN];
 
 	/* Send Sequence Variables */
@@ -320,31 +321,15 @@ static void _init_tcb(struct tcb *pTcb, const uint16_t nLocalPort) {
 __attribute__((cold)) void tcp_init() {
 	DEBUG_ENTRY
 
-	_pcast32 src;
-
 	/* Ethernet */
 	memcpy(s_tcp.ether.src, net::globals::macAddress, ETH_ADDR_LEN);
 	s_tcp.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
 	/* IPv4 */
-	src.u32 = net::globals::ipInfo.ip.addr;
-	memcpy(s_tcp.ip4.src, src.u8, IPv4_ADDR_LEN);
 	s_tcp.ip4.ver_ihl = 0x45;
 	s_tcp.ip4.tos = 0;
 	s_tcp.ip4.flags_froff = __builtin_bswap16(IPv4_FLAG_DF);
 	s_tcp.ip4.ttl = 64;
 	s_tcp.ip4.proto = IPv4_PROTO_TCP;
-
-	DEBUG_EXIT
-}
-
-void tcp_set_ip() {
-	DEBUG_ENTRY
-
-	_pcast32 src;
-
-	/* IPv4 */
-	src.u32 = net::globals::ipInfo.ip.addr;
-	memcpy(s_tcp.ip4.src, src.u8, IPv4_ADDR_LEN);
 
 	DEBUG_EXIT
 }
@@ -375,8 +360,8 @@ static uint16_t _chksum(struct t_tcp *pTcp, const struct tcb *pTcb, uint16_t nLe
 	memcpy(buf, pseu, TCP_PSEUDO_LEN);
 
 	// Generate TCP psuedo header
-	memcpy(pseu->srcIp, &net::globals::ipInfo.ip.addr, IPv4_ADDR_LEN);
-	memcpy(pseu->dstIp, &pTcb->nRemoteIp, IPv4_ADDR_LEN);
+	memcpy(pseu->srcIp, pTcb->localIp, IPv4_ADDR_LEN);
+	memcpy(pseu->dstIp, pTcb->remoteIp, IPv4_ADDR_LEN);
 	pseu->zero = 0;
 	pseu->proto = IPv4_PROTO_TCP;
 	pseu->length = __builtin_bswap16(nLength);
@@ -410,7 +395,8 @@ static void send_package(const struct tcb *pTcb, const struct SendInfo &sendInfo
 	/* IPv4 */
 	s_tcp.ip4.id = s_id++;
 	s_tcp.ip4.len = __builtin_bswap16(static_cast<uint16_t>(tcplen + sizeof(struct ip4_header)));
-	memcpy(s_tcp.ip4.dst, &pTcb->nRemoteIp, IPv4_ADDR_LEN);
+	memcpy(s_tcp.ip4.src, pTcb->localIp, IPv4_ADDR_LEN);
+	memcpy(s_tcp.ip4.dst, pTcb->remoteIp, IPv4_ADDR_LEN);
 	s_tcp.ip4.chksum = 0;
 #if !defined (CHECKSUM_BY_HARDWARE)
 	s_tcp.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_tcp.ip4), 20);
@@ -605,9 +591,7 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 			for (nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
 				auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
 				if (pTCB->state != STATE_LISTEN) {
-					_pcast32 src;
-					memcpy(src.u8, pTcp->ip4.src, IPv4_ADDR_LEN);
-					if ((pTCB->nRemotePort == pTcp->tcp.srcpt) && (pTCB->nRemoteIp == src.u32)) {
+					if ((pTCB->nRemotePort == pTcp->tcp.srcpt) && (memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0)) {
 						break;
 					}
 				}
@@ -640,15 +624,16 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 	if (nIndexPort == TCP_MAX_PORTS_ALLOWED) {
 		DEBUG_PUTS("TCP_MAX_PORTS_ALLOWED");
 		struct tcb TCB;
-		_pcast32 src;
 
 		memset(&TCB, 0, sizeof(struct tcb));
 
 		TCB.nLocalPort = pTcp->tcp.dstpt;
+		memcpy(TCB.localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
+
 		TCB.nRemotePort = pTcp->tcp.srcpt;
-		memcpy(src.u8, pTcp->ip4.src, IPv4_ADDR_LEN);
-		TCB.nRemoteIp = src.u32;
+		memcpy(TCB.remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
 		memcpy(TCB.remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
+
 		_bswap32(pTcp);
 
 		scan_options(pTcp, &TCB, nDataOffset);
@@ -678,7 +663,6 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 			nDataLength);
 
 	SendInfo sendInfo;
-	_pcast32 src;
 
 	const auto SEG_LEN = nDataLength;
 	const auto SEG_ACK = _get_acknum(pTcp);
@@ -707,9 +691,10 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 
 	// https://www.rfc-editor.org/rfc/rfc9293.html#name-listen-state
 	if (pTCB->state == STATE_LISTEN) {
+		memcpy(pTCB->localIp, pTcp->ip4.dst, IPv4_ADDR_LEN);
+
 		pTCB->nRemotePort = pTcp->tcp.srcpt;
-		memcpy(src.u8, pTcp->ip4.src, IPv4_ADDR_LEN);
-		pTCB->nRemoteIp = src.u32;
+		memcpy(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN);
 		memcpy(pTCB->remoteEthAddr, pTcp->ether.src, ETH_ADDR_LEN);
 
 		// First, check for a RST

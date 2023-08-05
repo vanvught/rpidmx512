@@ -115,6 +115,7 @@ inline uint32_t cidr_to_netmask(const uint8_t nCIDR) {
 
 void display_emac_config();
 void display_emac_start();
+void display_emac_status(const bool isLinkUp);
 void display_ip();
 void display_netmask();
 void display_gateway();

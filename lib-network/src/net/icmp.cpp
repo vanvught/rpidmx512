@@ -52,10 +52,10 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 
 			// IPv4
 			p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
+			uint8_t dst[IPv4_ADDR_LEN];
+			memcpy(dst, p_icmp->ip4.dst, IPv4_ADDR_LEN);
 			memcpy(p_icmp->ip4.dst, p_icmp->ip4.src, IPv4_ADDR_LEN);
-			_pcast32 src;
-			src.u32 = net::globals::ipInfo.ip.addr;
-			memcpy(p_icmp->ip4.src, src.u8, IPv4_ADDR_LEN);
+			memcpy(p_icmp->ip4.src, dst, IPv4_ADDR_LEN);
 			p_icmp->ip4.chksum = 0;
 #if !defined (CHECKSUM_BY_HARDWARE)
 			p_icmp->ip4.chksum = net_chksum(reinterpret_cast<void *>(&p_icmp->ip4), 20); //TODO

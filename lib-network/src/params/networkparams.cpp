@@ -228,6 +228,7 @@ void NetworkParams::Builder(const struct networkparams::Params *ptNetworkParams,
 	}
 
 	PropertiesBuilder builder(NetworkParamsConst::FILE_NAME, pBuffer, nLength);
+	builder.AddIpAddress("secondary_ip", Network::Get()->GetSecondaryIp(), false);
 
 	if (!isMaskSet(networkparams::Mask::IP_ADDRESS)) {
 		m_Params.nLocalIp = Network::Get()->GetIp();

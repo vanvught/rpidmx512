@@ -36,7 +36,6 @@
 namespace net {
 namespace globals {
 struct IpInfo ipInfo  ALIGNED;
-uint32_t nBroadcastIp;
 uint32_t nBroadcastMask;
 uint32_t nOnNetworkMask;
 uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
@@ -45,6 +44,29 @@ uint8_t macAddress[ETH_ADDR_LEN]  ALIGNED;
 
 static uint8_t *s_p;
 static bool s_isDhcp = false;
+
+static void refresh_and_init(struct IpInfo *pIpInfo, bool doInit) {
+	net::globals::ipInfo.broadcast_ip.addr = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
+
+	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
+	net::globals::nOnNetworkMask = net::globals::ipInfo.ip.addr & net::globals::ipInfo.netmask.addr;
+
+	if (doInit) {
+		arp_init();
+		ip_set_ip();
+	}
+
+	const auto *pSrc = reinterpret_cast<const uint8_t *>(&net::globals::ipInfo);
+	auto *pDst = reinterpret_cast<uint8_t *>(pIpInfo);
+
+	memcpy(pDst, pSrc, sizeof(struct IpInfo));
+}
+
+void set_secondary_ip() {
+	net::globals::ipInfo.ip.addr = net::globals::ipInfo.secondary_ip.addr;
+	net::globals::ipInfo.netmask.addr = 255;
+	net::globals::ipInfo.gw.addr = net::globals::ipInfo.ip.addr;
+}
 
 void __attribute__((cold)) net_init(const uint8_t *const pMacAddress, struct IpInfo *pIpInfo, const char *pHostname, bool *bUseDhcp, bool *isZeroconfUsed) {
 	DEBUG_ENTRY
@@ -56,6 +78,18 @@ void __attribute__((cold)) net_init(const uint8_t *const pMacAddress, struct IpI
 
 	memcpy(pDst, pSrc, sizeof(struct IpInfo));
 
+	net::globals::ipInfo.secondary_ip.addr = 2
+			+ ((static_cast<uint32_t>(net::globals::macAddress[3])) << 8)
+			+ ((static_cast<uint32_t>(net::globals::macAddress[4])) << 16)
+			+ ((static_cast<uint32_t>(net::globals::macAddress[5])) << 24);
+
+
+	if (net::globals::ipInfo.ip.addr == 0) {
+		set_secondary_ip();
+	}
+	/*
+	 * The macAddress is set
+	 */
 	ip_init();
 
 	*isZeroconfUsed = false;
@@ -68,17 +102,7 @@ void __attribute__((cold)) net_init(const uint8_t *const pMacAddress, struct IpI
 		}
 	}
 
-	net::globals::nBroadcastIp = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
-	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
-	net::globals::nOnNetworkMask = net::globals::ipInfo.ip.addr & net::globals::ipInfo.netmask.addr;
-
-	arp_init();
-	ip_set_ip();
-
-	pSrc = reinterpret_cast<const uint8_t *>(&net::globals::ipInfo);
-	pDst = reinterpret_cast<uint8_t *>(pIpInfo);
-
-	memcpy(pDst, pSrc, sizeof(struct IpInfo));
+	refresh_and_init(pIpInfo, true);
 
 	s_isDhcp = *bUseDhcp;
 
@@ -100,15 +124,14 @@ void __attribute__((cold)) net_shutdown() {
 	}
 }
 
-void net_set_ip(uint32_t nIp) {
-	net::globals::ipInfo.ip.addr = nIp;
+void net_set_ip(struct IpInfo *pIpInfo) {
+	net::globals::ipInfo.ip.addr = pIpInfo->ip.addr;
 
-	net::globals::nBroadcastIp = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
-	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
-	net::globals::nOnNetworkMask = net::globals::ipInfo.ip.addr & net::globals::ipInfo.netmask.addr;
+	if (net::globals::ipInfo.ip.addr == 0) {
+			set_secondary_ip();
+	}
 
-	arp_init();
-	ip_set_ip();
+	refresh_and_init(pIpInfo, true);
 
 	if (!arp_do_probe()) {
 		DEBUG_PRINTF(IPSTR " " MACSTR, IP2STR(net::globals::ipInfo.ip.addr), MAC2STR(net::globals::macAddress));
@@ -118,21 +141,19 @@ void net_set_ip(uint32_t nIp) {
 	}
 }
 
-void net_set_netmask(uint32_t nNetmask) {
-	net::globals::ipInfo.netmask.addr = nNetmask;
+void net_set_netmask(struct IpInfo *pIpInfo) {
+	net::globals::ipInfo.netmask.addr = pIpInfo->netmask.addr;
 
-	net::globals::nBroadcastIp = net::globals::ipInfo.ip.addr | ~net::globals::ipInfo.netmask.addr;
-	net::globals::nBroadcastMask = ~(net::globals::ipInfo.netmask.addr);
-	net::globals::nOnNetworkMask = net::globals::ipInfo.ip.addr & net::globals::ipInfo.netmask.addr;
+	refresh_and_init(pIpInfo, false);
 }
 
-void net_set_gw(uint32_t nGw) {
-	net::globals::ipInfo.gw.addr = nGw;
+void net_set_gw(struct IpInfo *pIpInfo) {
+	net::globals::ipInfo.gw.addr = pIpInfo->gw.addr;
 
 	ip_set_ip();
 }
 
-bool net_set_dhcp(struct IpInfo *p_ip_info, const char *const pHostname, bool *isZeroconfUsed) {
+bool net_set_dhcp(struct IpInfo *pIpInfo, const char *const pHostname, bool *isZeroconfUsed) {
 	bool isDhcp = false;
 	*isZeroconfUsed = false;
 
@@ -143,13 +164,7 @@ bool net_set_dhcp(struct IpInfo *p_ip_info, const char *const pHostname, bool *i
 		isDhcp = true;
 	}
 
-	arp_init();
-	ip_set_ip();
-
-	const auto *pSrc = reinterpret_cast<const uint8_t *>(&net::globals::ipInfo);
-	auto *pDst = reinterpret_cast<uint8_t *>(p_ip_info);
-
-	memcpy(pDst, pSrc, sizeof(struct IpInfo));
+	refresh_and_init(pIpInfo, true);
 
 	s_isDhcp = isDhcp;
 
@@ -168,17 +183,11 @@ void net_dhcp_release() {
 	s_isDhcp = false;
 }
 
-bool net_set_zeroconf(struct IpInfo *p_ip_info) {
+bool net_set_zeroconf(struct IpInfo *pIpInfo) {
 	const auto b = rfc3927();
 
 	if (b) {
-		arp_init();
-		ip_set_ip();
-
-		const auto *pSrc = reinterpret_cast<const uint8_t *>(&net::globals::ipInfo);
-		auto *pDst = reinterpret_cast<uint8_t *>(p_ip_info);
-
-		memcpy(pDst, pSrc, sizeof(struct IpInfo));
+		refresh_and_init(pIpInfo, true);
 
 		s_isDhcp = false;
 
