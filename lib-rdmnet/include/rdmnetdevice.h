@@ -47,6 +47,7 @@ public:
 	RDMNetDevice(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount) : RDMDeviceResponder(pRDMPersonalities, nPersonalityCount) {
 		Hardware::Get()->GetUuid(s_Cid);
 	}
+
 	~RDMNetDevice() override {};
 
 	void CopyUID(uint8_t *pUID) override {

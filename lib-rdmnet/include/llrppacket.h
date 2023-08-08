@@ -26,13 +26,15 @@
 #ifndef LLRPPACKET_H_
 #define LLRPPACKET_H_
 
-#include "llrp.h"
-
 #include <cstdint>
 
 #if  ! defined (PACKED)
 #define PACKED __attribute__((packed))
 #endif
+
+namespace e133 {
+static constexpr uint32_t LLRP_KNOWN_UID_SIZE = 200;
+}  // namespace e133
 
 /**
  * 5.4.1 General Format
@@ -59,10 +61,10 @@ struct TLlrpPDU {
 struct TProbeRequestPDU {
 	uint8_t FlagsLength[3]; 			///< Protocol flags and length. Low 20 bits = PDU length High 4 bits = 0xF
 	uint8_t Vector;						///< Identifies Identifies data as Probe Request -> VECTOR_PROBE_REQUEST_DATA
-	uint16_t Filter;					///< Bitfield
 	uint8_t LowerUUID[6];				///< UID representing the lower UID bound of the Probe Request
 	uint8_t UpperUUID[6];				///< UID representing the upper UID bound of the Probe Request
-	uint8_t KnownUUIDs[6 * LLRP_KNOWN_UID_SIZE];///< Previously discovered UIDs
+	uint16_t Filter;					///< Bitfield
+	uint8_t KnownUUIDs[6 * e133::LLRP_KNOWN_UID_SIZE];///< Previously discovered UIDs
 }PACKED;
 
 struct TProbeReplyPDU {

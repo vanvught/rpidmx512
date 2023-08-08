@@ -53,27 +53,17 @@ void factorydefaults() {
 
 int main(int argc, char **argv) {
 	Hardware hw;
-	Network nw;
+	Network nw(argc, argv);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	if (argc < 2) {
-		printf("Usage: %s ip_address|interface_name\n", argv[0]);
-		return -1;
-	}
-
+	hw.Print();
 	fw.Print();
-
-	if (nw.Init(argv[1]) < 0) {
-		fprintf(stderr, "Not able to start the network\n");
-		return -1;
-	}
-
 	nw.Print();
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("LLRP Dummy device", nullptr) };
 	RDMNetDevice device(pPersonalities, 1);
 
-	RDMDeviceParams rdmDeviceParams;
+	RDMDeviceParams rdmDeviceParams(nullptr);
 
 	if (rdmDeviceParams.Load()) {
 		rdmDeviceParams.Dump();
