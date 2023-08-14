@@ -2,7 +2,7 @@
  * @file lightsetchain.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -64,13 +64,37 @@ void LightSetChain::Stop(uint32_t nPortIndex) {
 	}
 }
 
-void LightSetChain::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void LightSetChain::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(pData != nullptr);
 
 	for (uint32_t i = 0; i < m_nSize; i++) {
-		m_pTable[i].pLightSet->SetData(nPortIndex, pData, nLength);
+		m_pTable[i].pLightSet->SetData(nPortIndex, pData, nLength, doUpdate);
 	}
 }
+
+void LightSetChain::Sync(const uint32_t nPortIndex) {
+	for (uint32_t i = 0; i < m_nSize; i++) {
+		m_pTable[i].pLightSet->Sync(nPortIndex);
+	}
+}
+
+void LightSetChain::Sync(const bool doForce) {
+	for (uint32_t i = 0; i < m_nSize; i++) {
+		m_pTable[i].pLightSet->Sync(doForce);
+	}
+}
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+void LightSetChain::SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+lightset::OutputStyle LightSetChain::GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const {
+	return lightset::OutputStyle::DELTA;
+}
+#endif
 
 void LightSetChain::Print() {
 	for (uint32_t i = 0; i < m_nSize; i++) {
@@ -96,7 +120,7 @@ bool LightSetChain::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 	m_nDmxStartAddress = nDmxStartAddress;
 
 	DEBUG_EXIT
-	return true;;
+	return true;
 }
 
 bool LightSetChain::GetSlotInfo(uint16_t nSlotOffset, SlotInfo &tSlotInfo) {

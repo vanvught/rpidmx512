@@ -83,7 +83,7 @@ void PCA9685DmxServo::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	m_bIsStarted = false;
 }
 
-void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength) {
+void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= DMX_MAX_CHANNELS);
 

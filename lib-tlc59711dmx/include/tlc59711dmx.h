@@ -47,7 +47,10 @@ public:
 	void Start(uint32_t nPortIndex = 0) override;
 	void Stop(uint32_t nPortIndex = 0) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync(const uint32_t nPortIndex) override;
+	void Sync(const bool doForce = false) override;
+
 #if defined (CONFIG_TLC59711DMX_ENABLE_PCT)
 	void SetMaxPct(uint32_t nIndexLed, uint32_t nPct);
 #endif

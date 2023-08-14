@@ -488,7 +488,7 @@ void SlushDmx::ReadConfigFiles() {
 	DEBUG_EXIT;
 }
 
-void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	DEBUG_ENTRY;
 
 	assert(pData != nullptr);
@@ -527,6 +527,14 @@ void SlushDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_
 	UpdateIOPorts(pData, nLength);
 
 	DEBUG_EXIT;
+}
+
+void SlushDmx::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+	//TODO Implement Sync
+}
+
+void SlushDmx::Sync(__attribute__((unused)) const bool doForce) {
+	//TODO Implement Sync
 }
 
 void SlushDmx::UpdateIOPorts(const uint8_t *pData, uint32_t nLength) {

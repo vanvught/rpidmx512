@@ -150,7 +150,7 @@ void TLC59711Dmx::SetMaxPct(uint32_t nIndexLed, uint32_t nPct) {
 }
 #endif
 
-void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) {
+void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
@@ -183,7 +183,17 @@ void TLC59711Dmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uin
 		return;
 	}
 
-	if (!m_bBlackout) {
+	if ((doUpdate) && (!m_bBlackout)) {
+		m_pTLC59711->Update();
+	}
+}
+
+void TLC59711Dmx::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+	// No actions here
+}
+
+void TLC59711Dmx::Sync(const bool doForce) {
+	if ((!doForce) && (!m_bBlackout)) {
 		m_pTLC59711->Update();
 	}
 }

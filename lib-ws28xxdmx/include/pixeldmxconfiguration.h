@@ -2,7 +2,7 @@
  * @file pixeldmxconfiguration.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,7 @@
 
 namespace pixeldmxconfiguration {
 struct PortInfo {
-	uint32_t nBeginIndexPortId1;
-	uint32_t nBeginIndexPortId2;
-	uint32_t nBeginIndexPortId3;
+	uint32_t nBeginIndexPort[4];
 	uint32_t nProtocolPortIndexLast;
 };
 }  // namespace pixeldmxconfiguration

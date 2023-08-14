@@ -2,7 +2,7 @@
  * @file dmxsend.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,44 @@
 #include <cstdint>
 
 #include "lightset.h"
+#include "dmx.h"
 
 class DmxSend: public LightSet  {
 public:
 	void Start(uint32_t nPortIndex) override;
 	void Stop(uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync(const uint32_t nPortIndex) override;
+	void Sync(const bool doForce = false) override;
 
-	void Blackout(bool bBlackout) override;
-	void FullOn() override;
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
+		Dmx::Get()->SetOutputStyle(nPortIndex, outputStyle == lightset::OutputStyle::CONSTANT ? dmx::OutputStyle::CONTINOUS : dmx::OutputStyle::DELTA);
+	}
+
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override {
+		return Dmx::Get()->GetOutputStyle(nPortIndex) == dmx::OutputStyle::CONTINOUS ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
+	}
+#endif
+
+	void Blackout(__attribute__((unused)) bool bBlackout) override {
+		Dmx::Get()->Blackout();
+	}
+
+	void FullOn() override {
+		Dmx::Get()->FullOn();
+	}
 
 	void Print() override;
 
 private:
 	static uint8_t s_nStarted;
+	struct TxData {
+		uint8_t data[dmx::buffer::SIZE];
+		uint32_t nLength;
+	};
+	static struct TxData s_TxData[dmx::config::max::OUT];
 };
 
 #endif /* DMXSEND_H_ */

@@ -2,7 +2,7 @@
  * @file dmxsend.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,7 @@
  */
 
 #include <cstdint>
+#include <cstring>
 #include <climits>
 #include <cassert>
 
@@ -35,6 +36,7 @@
 #include "debug.h"
 
 uint8_t DmxSend::s_nStarted;
+struct DmxSend::TxData DmxSend::s_TxData[dmx::config::max::OUT];
 
 static constexpr bool is_started(const uint8_t v, const uint32_t p) {
 	return (v & (1U << p)) == (1U << p);
@@ -80,7 +82,14 @@ void DmxSend::Stop(uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+/**
+ *
+ * @param [in] nPortIndex
+ * @param [in] pData
+ * @param [in] nLength
+ * @param [in] doUpdate
+ */
+void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(nPortIndex < CHAR_BIT);
 	assert(pData != nullptr);
 
@@ -88,23 +97,43 @@ void DmxSend::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLengt
 		return;
 	}
 
-	Dmx::Get()->SetPortSendDataWithoutSC(nPortIndex, pData, nLength);
+	if (doUpdate) {
+		Dmx::Get()->SetSendDataWithoutSC(nPortIndex, pData, nLength);
+		Dmx::Get()->StartOutput(nPortIndex);
+	} else {
+		memcpy(s_TxData[nPortIndex].data, pData, nLength);
+		s_TxData[nPortIndex].nLength = nLength;
+	}
 }
 
-void DmxSend::Blackout(__attribute__((unused)) bool bBlackout){
-	DEBUG_ENTRY
+/**
+ *
+ * @param [in] nPortIndex
+ */
+void DmxSend::Sync(uint32_t const nPortIndex) {
+	if (__builtin_expect((s_TxData[nPortIndex].nLength == 0), 0)) {
+		return;
+	}
 
-	Dmx::Get()->Blackout();
-
-	DEBUG_EXIT
+	Dmx::Get()->SetSendDataWithoutSC(nPortIndex, s_TxData[nPortIndex].data, s_TxData[nPortIndex].nLength);
 }
 
-void DmxSend::FullOn(){
-	DEBUG_ENTRY
+/**
+ *
+ * @param [in] doForce
+ */
+void DmxSend::Sync(const bool doForce) {
+	Dmx::Get()->SetOutput(doForce);
 
-	Dmx::Get()->FullOn();
-
-	DEBUG_EXIT
+	for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::OUT; nPortIndex++) {
+		if (s_TxData[nPortIndex].nLength != 0) {
+			s_TxData[nPortIndex].nLength = 0;
+			if (!is_started(s_nStarted, nPortIndex)) {
+				s_nStarted = static_cast<uint8_t>(s_nStarted | (1U << nPortIndex));
+				hal::panel_led_on(hal::panelled::PORT_A_TX << nPortIndex);
+			}
+		}
+	}
 }
 
 #include <cstdio>

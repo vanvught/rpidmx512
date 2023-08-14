@@ -73,6 +73,10 @@ public:
 		 Get().IMergeSourceB(nPortIndex, pData, nLength, mergeMode);
 	}
 
+	static void Set(LightSet *const pLightSet, uint32_t nPortIndex) {
+		Get().ISet(pLightSet, nPortIndex);
+	}
+
 	static void Output(LightSet *const pLightSet, uint32_t nPortIndex) {
 		Get().IOutput(pLightSet, nPortIndex);
 	}
@@ -136,11 +140,18 @@ private:
 		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 	}
 
+	void ISet(LightSet *const pLightSet, const uint32_t nPortIndex) const {
+		assert(pLightSet != nullptr);
+		assert(nPortIndex < PORTS);
+
+		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, false);
+	}
+
 	void IOutput(LightSet *const pLightSet, const uint32_t nPortIndex) const {
 		assert(pLightSet != nullptr);
 		assert(nPortIndex < PORTS);
 
-		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength);
+		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, true);
 	}
 
 	void IOutputClear(LightSet *const pLightSet, const uint32_t nPortIndex) {

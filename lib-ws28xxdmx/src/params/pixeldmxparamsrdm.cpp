@@ -61,7 +61,7 @@ void PixelDmxParamsRdm::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void PixelDmxParamsRdm::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void PixelDmxParamsRdm::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	assert(nPortIndex == 0);
 
 	if (nLength < DMX_FOOTPRINT) {

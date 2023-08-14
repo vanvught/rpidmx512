@@ -45,6 +45,28 @@ const char LightSetParamsConst::DIRECTION[4][18] = {
 		"direction_port_c",
 		"direction_port_d" };
 
+const char LightSetParamsConst::OUTPUT_STYLE[4][16] = {
+		"output_style_a",
+		"output_style_b",
+		"output_style_c",
+		"output_style_d" };
+
+const char LightSetParamsConst::PRIORITY[4][16] = {
+		"priority_port_a",
+		"priority_port_b",
+		"priority_port_c",
+		"priority_port_d"
+};
+
+const char LightSetParamsConst::NODE_LABEL[4][14] = {
+		"label_port_a",
+		"label_port_b",
+		"label_port_c",
+		"label_port_d"
+};
+
+const char LightSetParamsConst::NODE_LONG_NAME[] = "long_name";
+
 const char LightSetParamsConst::DMX_START_ADDRESS[] = "dmx_start_address";
 const char LightSetParamsConst::DMX_SLOT_INFO[] = "dmx_slot_info";
 

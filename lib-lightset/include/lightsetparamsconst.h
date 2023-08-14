@@ -29,11 +29,14 @@
 struct LightSetParamsConst {
 	static const char PARAMS_OUTPUT[];
 
-	static const char UNIVERSE[];
+	static const char NODE_LABEL[4][14];
+	static const char NODE_LONG_NAME[];
 
 	static const char UNIVERSE_PORT[4][16];
 	static const char MERGE_MODE_PORT[4][18];
 	static const char DIRECTION[4][18];
+	static const char OUTPUT_STYLE[4][16];
+	static const char PRIORITY[4][16];
 
 	static const char DMX_START_ADDRESS[];
 	static const char DMX_SLOT_INFO[];
