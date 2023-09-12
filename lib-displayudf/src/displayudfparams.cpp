@@ -80,11 +80,7 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		DisplayUdfParamsConst::VERSION,
 		"",
 		DisplayUdfParamsConst::ACTIVE_PORTS,
-#if defined (NODE_ARTNET)
-		ArtNetParamsConst::NODE_SHORT_NAME,
-#else
 		"",
-#endif
 		NetworkParamsConst::HOSTNAME,
 		LightSetParamsConst::UNIVERSE_PORT[0],
 		LightSetParamsConst::UNIVERSE_PORT[1],
@@ -120,7 +116,6 @@ static constexpr const char *pArray[static_cast<uint32_t>(Labels::UNKNOWN)] = {
 		NetworkParamsConst::IP_ADDRESS,
 		NetworkParamsConst::NET_MASK,
 		NetworkParamsConst::DEFAULT_GATEWAY,
-		NodeParamsConst::NODE_SHORT_NAME,
 		NodeParamsConst::UNIVERSE_PORT[0],
 # if MAX_ARRAY >= 2
 		NodeParamsConst::UNIVERSE_PORT[1],

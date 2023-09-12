@@ -35,6 +35,10 @@ void display_emac_start() {
 	DisplayUdf::Get()->ShowEmacStart();
 }
 
+void display_emac_status(const bool isLinkUp) {
+	DisplayUdf::Get()->ShowEmacStatus(isLinkUp);
+}
+
 void display_ip() {
 	DisplayUdf::Get()->ShowIpAddress();
 }

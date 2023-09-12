@@ -44,7 +44,6 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode, uint32_t nDmxPortIndexOffset) {
 
 	Show();
 
-	ShowNodeName(pArtNetNode);
 	ShowUniverse(pArtNetNode);
 #if defined (ARTNET_HAVE_DMXIN)
 	ShowDestinationIp(pArtNetNode);
@@ -54,11 +53,6 @@ void DisplayUdf::Show(ArtNetNode *pArtNetNode, uint32_t nDmxPortIndexOffset) {
 	ShowDmxInfo();
 
 	DEBUG_EXIT
-}
-
-void DisplayUdf::ShowNodeName(ArtNetNode *pArtNetNode) {
-	ClearEndOfLine();
-	Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NODE_NAME)], pArtNetNode->GetShortName());
 }
 
 void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
@@ -78,11 +72,18 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 			if (pArtNetNode->GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 				ClearEndOfLine();
 				Printf(m_aLabels[nLabelIndex],
-						"%c: %d %s %s %s",
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+						"%c %d %s %s %c %s",
+#else
+						"%c %d %s %s %s",
+#endif
 						'A' + nArtNetPortIndex,
 						nUniverse,
 						lightset::get_merge_mode(pArtNetNode->GetMergeMode(nPortIndex), true),
-						artnet::get_protocol_mode(pArtNetNode->GetPortProtocol(nPortIndex), true),
+						artnet::get_protocol_mode(pArtNetNode->GetPortProtocol4(nPortIndex), true),
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+						pArtNetNode->GetOutputStyle(nPortIndex) == lightset::OutputStyle::CONSTANT ? 'C' : 'D',
+#endif
 						pArtNetNode->GetRdm(nPortIndex) ? "RDM" : "");
 			}
 		}

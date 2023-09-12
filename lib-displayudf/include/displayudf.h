@@ -76,9 +76,9 @@ enum class Labels {
 	BOARDNAME,
 	IP,
 	VERSION,
-	NOT_USED,
+	NOT_USED1,
 	AP,
-	NODE_NAME,
+	NOT_USED2,
 	HOSTNAME,
 	UNIVERSE_PORT_A,
 	UNIVERSE_PORT_B,
@@ -108,7 +108,7 @@ enum class Labels {
 	IP,
 	NETMASK,
 	DEFAULT_GATEWAY,
-	NODE_NAME,
+	NOT_USED,
 	UNIVERSE_PORT_A,
 # if MAX_ARRAY >= 2
 	UNIVERSE_PORT_B,
@@ -181,7 +181,6 @@ public:
 
 #if defined (NODE_ARTNET)
 	void Show(ArtNetNode *pArtNetNode, uint32_t nPortIndexOffset = 0);
-	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 #endif
@@ -244,6 +243,11 @@ public:
 	void ShowEmacStart() {
 		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet start");
+	}
+
+	void ShowEmacStatus(const bool isLinkUp) {
+		ClearEndOfLine();
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
 	}
 
 	void ShowIpAddress() {
