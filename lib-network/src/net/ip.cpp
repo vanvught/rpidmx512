@@ -50,7 +50,6 @@ void __attribute__((cold)) ip_shutdown() {
 
 	tcp_shutdown();
 	igmp_shutdown();
-	udp_shutdown();
 
 	DEBUG_EXIT
 }

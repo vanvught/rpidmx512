@@ -63,8 +63,8 @@ uint16_t udp_recv1(int, uint8_t *, uint16_t, uint32_t *, uint16_t *);
 uint16_t udp_recv2(int, const uint8_t **, uint32_t *, uint16_t *);
 int udp_send(int, const uint8_t *, uint16_t, uint32_t, uint16_t);
 
-int igmp_join(uint32_t);
-int igmp_leave(uint32_t);
+void igmp_join(uint32_t);
+void igmp_leave(uint32_t);
 
 int tcp_begin(const uint16_t);
 uint16_t tcp_read(const int32_t, const uint8_t **, uint32_t &);

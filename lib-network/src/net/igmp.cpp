@@ -153,7 +153,7 @@ void __attribute__((cold)) igmp_shutdown() {
 	DEBUG_EXIT
 }
 
-static void _send_report(uint32_t nGroupAddress) {
+static void _send_report(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	_pcast32 multicast_ip;
 
@@ -167,20 +167,15 @@ static void _send_report(uint32_t nGroupAddress) {
 
 	// Ethernet
 	memcpy(s_report.ether.dst, s_multicast_mac, ETH_ADDR_LEN);
-
 	// IPv4
 	s_report.ip4.id = s_id;
 	memcpy(s_report.ip4.dst, multicast_ip.u8, IPv4_ADDR_LEN);
 	s_report.ip4.chksum = 0;
-#if !defined (CHECKSUM_BY_HARDWARE)
 	s_report.ip4.chksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), 24); //TODO
-#endif
 	// IGMP
 	memcpy(s_report.igmp.report.igmp.group_address, multicast_ip.u8, IPv4_ADDR_LEN);
 	s_report.igmp.report.igmp.checksum = 0;
-#if !defined (CHECKSUM_BY_HARDWARE)
 	s_report.igmp.report.igmp.checksum = net_chksum(reinterpret_cast<void *>(&s_report.ip4), IPv4_IGMP_REPORT_HEADERS_SIZE);
-#endif
 
 	emac_eth_send(reinterpret_cast<void *>(&s_report), IGMP_REPORT_PACKET_SIZE);
 
@@ -189,7 +184,7 @@ static void _send_report(uint32_t nGroupAddress) {
 	DEBUG_EXIT
 }
 
-static void _send_leave(uint32_t nGroupAddress) {
+static void _send_leave(const uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	_pcast32 multicast_ip;
 
@@ -271,19 +266,19 @@ void igmp_timer() {
 
 // --> Public
 
-int igmp_join(uint32_t nGroupAddress) {
+void igmp_join(uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
 
 	if ((nGroupAddress & 0xE0) != 0xE0) {
 		DEBUG_ENTRY
-		return -1;
+		return;
 	}
 
 	for (int i = 0; i < IGMP_MAX_JOINS_ALLOWED; i++) {
 		if (s_groups[i].nGroupAddress == nGroupAddress) {
 			DEBUG_EXIT
-			return i;
+			return;
 		}
 
 		if (s_groups[i].nGroupAddress == 0) {
@@ -294,7 +289,7 @@ int igmp_join(uint32_t nGroupAddress) {
 			_send_report(nGroupAddress);
 
 			DEBUG_EXIT
-			return i;
+			return;
 		}
 	}
 
@@ -303,10 +298,9 @@ int igmp_join(uint32_t nGroupAddress) {
 	console_error("igmp_join\n");
 #endif
 	DEBUG_ENTRY
-	return -2;
 }
 
-int igmp_leave(uint32_t nGroupAddress) {
+void igmp_leave(uint32_t nGroupAddress) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF(IPSTR, IP2STR(nGroupAddress));
 
@@ -319,7 +313,7 @@ int igmp_leave(uint32_t nGroupAddress) {
 			group.nTimer = 0;
 
 			DEBUG_EXIT
-			return 0;
+			return;
 		}
 	}
 
@@ -328,7 +322,6 @@ int igmp_leave(uint32_t nGroupAddress) {
 	printf(IPSTR "\n", IP2STR(nGroupAddress));
 #endif
 	DEBUG_EXIT
-	return -1;
 }
 
 // <---
