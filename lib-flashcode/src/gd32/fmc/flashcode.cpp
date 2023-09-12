@@ -52,7 +52,7 @@ enum class State {
 
 static State s_State = State::IDLE;
 static uint32_t s_nPage;
-static uint32_t s_nLength;;
+static uint32_t s_nLength;
 static uint32_t s_nAddress;
 static uint32_t *s_pData;
 static bool s_isBank0;

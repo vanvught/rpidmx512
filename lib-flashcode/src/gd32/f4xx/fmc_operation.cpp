@@ -34,9 +34,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
 OF SUCH DAMAGE.
 */
 
+#include "gd32.h"
 #include "fmc_operation.h"
-
-#include "gd32f4xx.h"
 
 /*!
     \brief      get the sector number, size and range of the given address
