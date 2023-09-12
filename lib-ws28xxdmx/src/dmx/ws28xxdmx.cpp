@@ -221,7 +221,7 @@ void WS28xxDmx::FullOn() {
 // DMX
 
 bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
-	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= dmx::UNIVERSE_SIZE));
+	assert((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE));
 
 	if (nDmxStartAddress == m_nDmxStartAddress) {
 		return true;

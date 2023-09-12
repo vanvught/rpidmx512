@@ -34,6 +34,8 @@
 # include "board_gd32f407re.h"
 #elif defined (BOARD_GD32F450VI)
 # include "board_gd32f450vi.h"
+#elif defined (BOARD_16X4U_PIXEL)
+# include "board_gd32f450vi.h"
 #else
 # error Board is not supported
 #endif

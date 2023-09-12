@@ -53,26 +53,6 @@
 using namespace pixel;
 using namespace lightset;
 
-#if defined (NODE_ARTNET_MULTI)
-# define NODE_ARTNET
-#endif
-
-#if defined (NODE_ARTNET)
-static uint16_t getStartUniverse(uint16_t universe) {
-	const auto net = universe & (0x7F << 8);
-	const auto sub = universe & (0x0F << 4);
-	const auto calculated = universe + 3;
-	const auto net2 = static_cast<uint16_t>(calculated & (0x7F << 8));
-	const auto sub2 = static_cast<uint16_t>(calculated & (0x0F << 4));
-
-	if ((net == net2) && (sub == sub2)) {
-		return universe;
-	}
-
-	return static_cast<uint16_t>(net2 + sub2);
-}
-#endif
-
 PixelDmxParams::PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore): m_pPixelDmxParamsStore(pPixelDmxParamsStore) {
 	m_pixelDmxParams.nSetList = 0;
 	m_pixelDmxParams.nType = static_cast<uint8_t>(pixel::defaults::TYPE);
@@ -86,20 +66,11 @@ PixelDmxParams::PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore): m_pPi
 	m_pixelDmxParams.nLowCode = 0;
 	m_pixelDmxParams.nHighCode = 0;
 	m_pixelDmxParams.nGammaValue = 0;
-
-	uint16_t nStartUniverse = 1;
-
-	for (uint32_t i = 0; i < pixeldmxparams::MAX_PORTS; i++) {
-		m_pixelDmxParams.nStartUniverse[i] = nStartUniverse;
-#if defined (NODE_ARTNET)
-		if (i > 0) {
-			m_pixelDmxParams.nStartUniverse[i] = getStartUniverse(static_cast<uint16_t>(4 + m_pixelDmxParams.nStartUniverse[i-1]));
-		}
-#else
-		nStartUniverse = static_cast<uint16_t>(nStartUniverse + 4);
-#endif
-	}
 	m_pixelDmxParams.nTestPattern = 0;
+
+	for (uint32_t nPortIndex = 0; nPortIndex < pixeldmxparams::MAX_PORTS; nPortIndex++) {
+		m_pixelDmxParams.nStartUniverse[nPortIndex] = static_cast<uint16_t>(1 + (nPortIndex * 4));
+	}
 }
 
 bool PixelDmxParams::Load() {
@@ -109,7 +80,6 @@ bool PixelDmxParams::Load() {
 	ReadConfigFile configfile(PixelDmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
-		// There is a configuration file
 		if (m_pPixelDmxParamsStore != nullptr) {
 			m_pPixelDmxParamsStore->Update(&m_pixelDmxParams);
 		}
@@ -259,17 +229,13 @@ void PixelDmxParams::callbackFunction(const char *pLine) {
 
 	for (uint32_t i = 0; i < pixeldmxparams::MAX_PORTS; i++) {
 		if (Sscan::Uint16(pLine, LightSetParamsConst::START_UNI_PORT[i], nValue16) == Sscan::OK) {
-#if !defined (NODE_ARTNET)
 			if (nValue16 > 0) {
-#endif
 				m_pixelDmxParams.nStartUniverse[i] = nValue16;
 				m_pixelDmxParams.nSetList |= (pixeldmxparams::Mask::START_UNI_PORT_1 << i);
-#if !defined (NODE_ARTNET)
 			} else {
 				m_pixelDmxParams.nStartUniverse[i] = static_cast<uint16_t>(1 + (i * 4));
 				m_pixelDmxParams.nSetList &= ~(pixeldmxparams::Mask::START_UNI_PORT_1 << i);
 			}
-#endif
 		}
 	}
 

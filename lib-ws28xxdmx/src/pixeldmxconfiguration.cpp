@@ -47,8 +47,6 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 
 	PixelConfiguration::Validate(nLedsPerPixel);
 
-	assert((nLedsPerPixel == 3) && (PixelConfiguration::GetMap() != pixel::Map::UNDEFINED));
-
 	if (!IsRTZProtocol()) {
 		const auto type = GetType();
 		if (!((type == Type::WS2801) || (type == Type::APA102) || (type == Type::SK9822))) {

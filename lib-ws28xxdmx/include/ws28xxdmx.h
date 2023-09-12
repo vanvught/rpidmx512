@@ -49,7 +49,7 @@ public:
 	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
 	void Sync(const bool doForce) override {
 		if (__builtin_expect((!doForce), 1)) {
-			assert(m_pWS28xxMulti != nullptr);
+			assert(m_pWS28xx != nullptr);
 			m_pWS28xx->Update();
 		}
 	}

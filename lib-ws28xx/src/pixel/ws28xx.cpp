@@ -40,7 +40,7 @@
 #include "gamma/gamma_tables.h"
 
 void WS28xx::SetColorWS28xx(uint32_t nOffset, uint8_t nValue) {
-	assert(m_PixelConfiguration.GetType() != Type::WS2801);
+	assert(m_PixelConfiguration.GetType() != pixel::Type::WS2801);
 	assert(m_pBuffer != nullptr);
 	assert(nOffset + 7 < m_nBufSize);
 
@@ -124,7 +124,7 @@ void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_
 
 void WS28xx::SetPixel(uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
 	assert(nPixelIndex < m_PixelConfiguration.GetCount());
-	assert(m_PixelConfiguration.GetType() == Type::SK6812W);
+	assert(m_PixelConfiguration.GetType() == pixel::Type::SK6812W);
 
 	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
