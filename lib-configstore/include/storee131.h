@@ -34,11 +34,11 @@ public:
 	StoreE131();
 
 	void Update(const struct e131params::Params *pParams) override {
-		ConfigStore::Get()->Update(configstore::Store::E131, pParams, sizeof(struct e131params::Params));
+		ConfigStore::Get()->Update(configstore::Store::NODE, pParams, sizeof(struct e131params::Params));
 	}
 
 	void Copy(struct e131params::Params *pParams) override {
-		ConfigStore::Get()->Copy(configstore::Store::E131, pParams, sizeof(struct e131params::Params));
+		ConfigStore::Get()->Copy(configstore::Store::NODE, pParams, sizeof(struct e131params::Params));
 	}
 
 	static StoreE131* Get() {

@@ -2,7 +2,7 @@
  * @file storenode.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,6 @@ public:
 		DEBUG_EXIT
 	}
 
-	// Art-Net Handler -> ArtNetStore
-
 	void SaveFailSafe(uint8_t nFailSafe) override {
 		DEBUG_ENTRY
 
@@ -66,10 +64,10 @@ public:
 		DEBUG_EXIT
 	}
 
-	void SaveShortName(const char *pShortName) override {
+	void SaveShortName(uint32_t nPortIndex, const char *pShortName) override {
 		DEBUG_ENTRY
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, __builtin_offsetof(struct nodeparams::Params, aShortName), pShortName, artnet::SHORT_NAME_LENGTH, nodeparams::Mask::SHORT_NAME);
+		ConfigStore::Get()->Update(configstore::Store::NODE, nPortIndex * 0 + __builtin_offsetof(struct nodeparams::Params, aShortName), pShortName, artnet::SHORT_NAME_LENGTH, nodeparams::Mask::SHORT_NAME);
 
 		DEBUG_EXIT
 	}
@@ -152,6 +150,38 @@ public:
 		DEBUG_EXIT
 	}
 
+	void SaveOutputStyle(uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("s_nPortIndexOffset=%u, nPortIndex=%u, outputStyle=%u", s_nPortIndexOffset, nPortIndex, static_cast<uint32_t>(outputStyle));
+
+		if (nPortIndex >= s_nPortIndexOffset) {
+			nPortIndex -= s_nPortIndexOffset;
+		} else {
+			DEBUG_EXIT
+			return;
+		}
+
+		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
+
+		if (nPortIndex >= artnet::PORTS) {
+			DEBUG_EXIT
+			return;
+		}
+
+		uint8_t nOutputStyle;
+		ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), __builtin_offsetof(struct nodeparams::Params, nOutputStyle), false);
+
+		if (outputStyle == lightset::OutputStyle::CONSTANT) {
+			nOutputStyle |= static_cast<uint8_t>(1U << nPortIndex);
+		} else {
+			nOutputStyle &= static_cast<uint8_t>(~(1U << nPortIndex));
+		}
+
+		ConfigStore::Get()->Update(configstore::Store::NODE, __builtin_offsetof(struct nodeparams::Params, nOutputStyle), &nOutputStyle, sizeof(uint8_t));
+
+		DEBUG_EXIT
+	}
+
 	void SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled) override {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("nPortIndex=%u, isEnabled=%d", nPortIndex, isEnabled);
@@ -185,7 +215,50 @@ public:
 		DEBUG_EXIT
 	}
 
-	void SaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) override {
+	void SaveUniverseSwitch(uint32_t nPortIndex, __attribute__((unused)) uint8_t nAddress) override {
+		DEBUG_ENTRY
+
+		uint16_t nPortAddress;
+
+		if (ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress)) {
+			SaveUniverse(nPortIndex, nPortAddress);
+		}
+
+		DEBUG_EXIT
+	}
+
+	void SaveNetSwitch(uint32_t nPortIndex, __attribute__((unused)) uint8_t nAddress) override {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nPortIndex=%u, nAddress=%u", nPortIndex, static_cast<uint32_t>(nAddress));
+
+		uint16_t nPortAddress;
+
+		if (ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress)) {
+			SaveUniverse(nPortIndex, nPortAddress);
+		}
+
+		DEBUG_EXIT
+	}
+
+	void SaveSubnetSwitch(uint32_t nPortIndex, __attribute__((unused)) uint8_t nAddress) override {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("nPortIndex=%u, nAddress=%u", nPortIndex, static_cast<uint32_t>(nAddress));
+
+		uint16_t nPortAddress;
+
+		if (ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress)) {
+			SaveUniverse(nPortIndex, nPortAddress);
+		}
+
+		DEBUG_EXIT
+	}
+
+	static StoreNode *Get() {
+		return s_pThis;
+	}
+
+private:
+	void SaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 		DEBUG_ENTRY
 		DEBUG_PRINTF("nPortIndex=%u, nUniverse=%u", nPortIndex, nUniverse);
 
@@ -206,89 +279,6 @@ public:
 		ConfigStore::Get()->Update(configstore::Store::NODE, (sizeof(uint16_t) * nPortIndex) + __builtin_offsetof(struct nodeparams::Params, nUniverse), &nUniverse, sizeof(uint16_t), nodeparams::Mask::UNIVERSE_A << nPortIndex);
 
 		DEBUG_EXIT
-	}
-
-	void SaveUniverseSwitch(uint32_t nPortIndex, __attribute__((unused)) uint8_t nAddress) override {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPortIndex=%u, nAddress=%u", nPortIndex, static_cast<uint32_t>(nAddress));
-
-		if (nPortIndex >= s_nPortIndexOffset) {
-			nPortIndex -= s_nPortIndexOffset;
-		} else {
-			DEBUG_EXIT
-			return;
-		}
-
-		DEBUG_PRINTF("nPortIndex=%u", nPortIndex);
-
-		if (nPortIndex >= nodeparams::MAX_PORTS) {
-			DEBUG_EXIT
-			return;
-		}
-
-		uint16_t nPortAddress;
-		ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress);
-		SaveUniverse(nPortIndex, nPortAddress);
-
-		DEBUG_EXIT
-	}
-
-	void SaveNetSwitch(uint32_t nPage, __attribute__((unused)) uint8_t nAddress) override {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPage=%u, nAddress=%u", nPage, static_cast<uint32_t>(nAddress));
-
-		if (nPage >= artnetnode::PAGES) {
-			DEBUG_EXIT
-			return;
-		}
-
-		if (artnetnode::PAGE_SIZE == 1) {
-			uint16_t nPortAddress;
-			ArtNetNode::Get()->GetPortAddress(nPage, nPortAddress);
-			SaveUniverse(nPage, nPortAddress);
-		}
-
-		if (artnetnode::PAGE_SIZE == 4) {
-			const auto nPortIndexStart = nPage * 4;
-			for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + 4); nPortIndex++) {
-				uint16_t nPortAddress;
-				ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress);
-				SaveUniverse(nPortIndex, nPortAddress);
-			}
-		}
-
-		DEBUG_EXIT
-	}
-
-	void SaveSubnetSwitch(uint32_t nPage, __attribute__((unused)) uint8_t nAddress) override {
-		DEBUG_ENTRY
-		DEBUG_PRINTF("nPage=%u, nAddress=%u", nPage, static_cast<uint32_t>(nAddress));
-
-		if (nPage >= artnetnode::PAGES) {
-			DEBUG_EXIT
-			return;
-		}
-
-		if (artnetnode::PAGE_SIZE == 1) {
-			uint16_t nPortAddress;
-			ArtNetNode::Get()->GetPortAddress(nPage, nPortAddress);
-			SaveUniverse(nPage, nPortAddress);
-		}
-
-		if (artnetnode::PAGE_SIZE == 4) {
-			const auto nPortIndexStart = nPage * 4;
-			for (uint32_t nPortIndex = nPortIndexStart; nPortIndex < (nPortIndexStart + 4); nPortIndex++) {
-				uint16_t nPortAddress;
-				ArtNetNode::Get()->GetPortAddress(nPortIndex, nPortAddress);
-				SaveUniverse(nPortIndex, nPortAddress);
-			}
-		}
-
-		DEBUG_EXIT
-	}
-
-	static StoreNode *Get() {
-		return s_pThis;
 	}
 
 private:

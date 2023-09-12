@@ -80,6 +80,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-oscclient/include
 	endif
 	
+	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)),OUTPUT_DMX_SEND)
+		EXTRA_SRCDIR+=src/dmx
+		EXTRA_INCLUDES+=../lib-dmx/include
+	endif
+	
 	ifeq ($(findstring OUTPUT_DMX_PIXEL,$(MAKE_FLAGS)), OUTPUT_DMX_PIXEL)
 		EXTRA_SRCDIR+=src/pixel
 		EXTRA_INCLUDES+=../lib-ws28xxdmx/include ../lib-ws28xx/include
@@ -147,6 +152,7 @@ else
 	EXTRA_SRCDIR+=src/stepper
 	EXTRA_INCLUDES+=../lib-l6470dmx/include ../lib-l6470/include
 	
+	DEFINES+=ARTNET_VERSION=4
 	DEFINES+=LIGHTSET_PORTS=4
 	DEFINES+=CONFIG_PIXELDMX_MAX_PORTS=8
 	DEFINES+=CONFIG_DDPDISPLAY_MAX_PORTS=8

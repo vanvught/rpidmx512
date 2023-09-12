@@ -315,7 +315,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 
 void RemoteConfig::HandleRequest() {
 #ifndef NDEBUG
-	debug_dump(s_pUdpBuffer, m_nBytesReceived);
+	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(m_nBytesReceived));
 #endif
 
 	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
