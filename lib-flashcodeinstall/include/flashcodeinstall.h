@@ -2,7 +2,7 @@
  * @file flashcodeinstall.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,10 +43,10 @@
 #  define OFFSET_UIMAGE		0x007000		// 28K
 #  define FIRMWARE_MAX_SIZE (234 * 1024)	// 234K
 # elif defined (BOARD_GD32F207VC)
-#  define OFFSET_UIMAGE		0x007000		// 28K
+#  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
 # elif defined (BOARD_GD32F207C_EVAL)
-#  define OFFSET_UIMAGE		0x007000		// 28K
+#  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
 # elif defined (BOARD_GD32F407RE)
 #  define OFFSET_UIMAGE		0x008000		// 32K
