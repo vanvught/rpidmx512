@@ -2,7 +2,7 @@
  * @file artnetdisplay.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,11 +31,6 @@
 #include "debug.h"
 
 namespace artnet {
-void display_shortname(__attribute__((unused)) const char *pShortName) {
-	DEBUG_ENTRY
-	DEBUG_EXIT
-}
-
 void display_longname(__attribute__((unused)) const char *pLongName) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
@@ -57,6 +52,11 @@ void display_subnet_switch(__attribute__((unused))  uint8_t nAddress) {
 }
 
 void display_merge_mode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) {
+	DEBUG_ENTRY
+	DEBUG_EXIT
+}
+
+void display_outputstyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

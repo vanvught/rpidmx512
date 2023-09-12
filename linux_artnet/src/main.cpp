@@ -38,7 +38,7 @@
 
 #include "httpd/httpd.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
 #include "artnetmsgconst.h"
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 	fw.Print();
 	nw.Print();
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	uint32_t nPortIndexOffset = 0;
 
@@ -146,12 +146,14 @@ int main(int argc, char **argv) {
 
 		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
 
-		bool bIsSet;
-		const auto nAddress = artnetParams.GetUniverse(nOffset, bIsSet);
+		const auto nAddress = artnetParams.GetUniverse(nOffset);
 		const auto portDirection = artnetParams.GetDirection(nOffset);
 
 		if (portDirection == lightset::PortDir::OUTPUT) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
+			if (nPortIndex == 0) {
+				node.SetRmd(0, true);
+			}
 		} else {
 			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
 		}
