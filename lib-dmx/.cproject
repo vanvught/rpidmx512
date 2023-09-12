@@ -82,8 +82,6 @@
 					<sourceEntries>
 						<entry excluding="src/rpi|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="artnet|e131|emac|h3/1port|linux|h3/4ports|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/artnet"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/e131"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
 					</sourceEntries>
@@ -182,8 +180,6 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="artnet|e131|emac|h3|linux" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/artnet"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/e131"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac"/>
 						<entry excluding="single|multi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/multi"/>
@@ -249,8 +245,6 @@
 					<sourceEntries>
 						<entry excluding="src/linux|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry excluding="artnet|e131|emac|h3/1port|linux|h3/4ports" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/artnet"/>
-						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/e131"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac"/>
 						<entry excluding="single|multi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
 					</sourceEntries>
