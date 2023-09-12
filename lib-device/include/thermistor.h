@@ -44,10 +44,9 @@ inline static float temperature(const uint32_t resistor) {
 	float steinhart = static_cast<float>(resistor) / THERMISTOR_NOMINAL;	// (R/Ro)
 	steinhart = logf(steinhart);											// ln(R/Ro)
 	steinhart /= BCOEFFICIENT;												// 1/B * ln(R/Ro)
-	steinhart += static_cast<float>(1.0f / (TEMPERATURE_NOMINAL + 273.15));	// + (1/To)
+	steinhart += (1.0f / (TEMPERATURE_NOMINAL + 273.15f));					// + (1/To)
 	steinhart = (1.0f / steinhart);											// Invert
 	steinhart -= 273.15f;													// convert absolute temp to C
-
 	return steinhart;
 }
 
