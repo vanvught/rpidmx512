@@ -64,17 +64,13 @@
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
-	const auto nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
-	memcpy(m_aManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
-	m_nManufacturerNameLength = static_cast<uint8_t>(nLength);
-
 	m_aUID[0] = RDMConst::MANUFACTURER_ID[0];
 	m_aUID[1] = RDMConst::MANUFACTURER_ID[1];
 
+#if defined (NO_EMAC)
 	uint8_t aMacAddress[network::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
-#if defined (NO_EMAC)
 	m_aUID[2] = aMacAddress[2];
 	m_aUID[3] = aMacAddress[3];
 	m_aUID[4] = aMacAddress[4];
@@ -92,11 +88,6 @@ RDMDevice::RDMDevice() {
 	m_aSN[2] = m_aUID[3];
 	m_aSN[3] = m_aUID[2];
 
-	const auto* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	const auto length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
-	memcpy(m_aManufacturerName, WebsiteUrl, length);
-	m_nManufacturerNameLength = static_cast<uint8_t>(length);
-
 	m_nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
 	m_nProductDetail = E120_PRODUCT_DETAIL_OTHER;
 
@@ -108,7 +99,9 @@ RDMDevice::RDMDevice() {
 
 void RDMDevice::Print() {
 	printf("RDM Device configuration\n");
-	printf(" Manufacturer Name : %.*s\n", m_nManufacturerNameLength, m_aManufacturerName);
+	TRDMDeviceInfoData info;
+	GetManufacturerName(&info);
+	printf(" Manufacturer Name : %.*s\n", info.length, info.data);
 	printf(" Manufacturer ID   : %.2X%.2X\n", m_aUID[0], m_aUID[1]);
 	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", m_aSN[3], m_aSN[2], m_aSN[1], m_aSN[0]);
 	printf(" Root label        : %.*s\n", m_nRootLabelLength, m_aRootLabel);
