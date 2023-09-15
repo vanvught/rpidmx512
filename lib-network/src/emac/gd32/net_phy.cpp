@@ -51,7 +51,52 @@ bool phy_write(uint32_t nAddress, const uint32_t nRegister, uint16_t nValue) {
 bool phy_config(const uint32_t nAddress) {
 	DEBUG_ENTRY
 
-	enet_phy_config();
+	uint32_t reg = ENET_MAC_PHY_CTL;
+	reg &= ~ENET_MAC_PHY_CTL_CLR;
+
+	const uint32_t ahbclk = rcu_clock_freq_get(CK_AHB);
+
+#if defined GD32F10X_CL
+	if (ENET_RANGE(ahbclk, 20000000U, 35000000U)) {
+		reg |= ENET_MDC_HCLK_DIV16;
+	} else if (ENET_RANGE(ahbclk, 35000000U, 60000000U)) {
+		reg |= ENET_MDC_HCLK_DIV26;
+	} else if (ENET_RANGE(ahbclk, 60000000U, 90000000U)) {
+		reg |= ENET_MDC_HCLK_DIV42;
+	} else if ((ENET_RANGE(ahbclk, 90000000U, 108000000U)) || (108000000U == ahbclk)) {
+		reg |= ENET_MDC_HCLK_DIV62;
+	} else {
+		return false;
+	}
+#elif defined GD32F20X
+	if (ENET_RANGE(ahbclk, 20000000U, 35000000U)) {
+		reg |= ENET_MDC_HCLK_DIV16;
+	} else if (ENET_RANGE(ahbclk, 35000000U, 60000000U)) {
+		reg |= ENET_MDC_HCLK_DIV26;
+	} else if (ENET_RANGE(ahbclk, 60000000U, 100000000U)) {
+		reg |= ENET_MDC_HCLK_DIV42;
+	} else if ((ENET_RANGE(ahbclk, 100000000U, 120000000U)) || (120000000U == ahbclk)) {
+		reg |= ENET_MDC_HCLK_DIV62;
+	} else {
+		return false;
+	}
+#elif defined GD32F4XX
+	if (ENET_RANGE(ahbclk, 20000000U, 35000000U)) {
+		reg |= ENET_MDC_HCLK_DIV16;
+	} else if (ENET_RANGE(ahbclk, 35000000U, 60000000U)) {
+		reg |= ENET_MDC_HCLK_DIV26;
+	} else if (ENET_RANGE(ahbclk, 60000000U, 100000000U)) {
+		reg |= ENET_MDC_HCLK_DIV42;
+	} else if (ENET_RANGE(ahbclk, 100000000U, 150000000U)) {
+		reg |= ENET_MDC_HCLK_DIV62;
+	} else if ((ENET_RANGE(ahbclk, 150000000U, 200000000U)) || (200000000U == ahbclk)) {
+		reg |= ENET_MDC_HCLK_DIV102;
+	} else {
+		return false;
+	}
+#endif
+
+	ENET_MAC_PHY_CTL = reg;
 
 	if (!phy_write(nAddress, mmi::REG_BMCR, mmi::BMCR_RESET)) {
 		DEBUG_PUTS("PHY reset failed");
@@ -85,6 +130,7 @@ bool phy_config(const uint32_t nAddress) {
 		return false;
 	}
 
+	DEBUG_PRINTF("%u", s_nSysTickMillis - nMillis);
 	DEBUG_EXIT
 	return true;
 }

@@ -29,7 +29,6 @@ ifneq ($(MAKE_FLAGS),)
 		endif
 		ifeq ($(findstring RTL8201F,$(ENET_PHY)), RTL8201F)
 			EXTRA_SRCDIR+=src/emac/phy/rtl8201f
-			DEFINES+=RTL8201F_LED1_LINK_ALL
 			PHY=1
 		endif
 		ifndef PHY

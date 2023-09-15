@@ -71,7 +71,7 @@ void phy_customized_led() {
 
 void phy_customized_timing() {
 	DEBUG_ENTRY
-#if defined (GD32F4XX)
+#if defined (GD32F407) || defined (GD32F450)
 # define RMSR_RX_TIMING_SHIFT	4
 # define RMSR_RX_TIMING_MASK	0xF0
 # define RMSR_RX_TIMING_VAL		0x4

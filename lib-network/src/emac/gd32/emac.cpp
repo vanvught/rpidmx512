@@ -204,30 +204,16 @@ void __attribute__((cold)) emac_start(uint8_t mac_address[], net::Link& link) {
 		mediamode = ENET_10M_FULLDUPLEX;
 	}
 
-	DEBUG_PRINTF("%s, %d, %s",
+	printf("Link %s, %d, %s\n",
 			phyStatus.link == net::Link::STATE_UP ? "Up" : "Down",
 			phyStatus.speed == net::Speed::SPEED10 ? 10 : 100,
 			phyStatus.duplex == net::Duplex::DUPLEX_HALF ? "HALF" : "FULL");
 
 	const auto enet_init_status = enet_init(mediamode, ENET_AUTOCHECKSUM_DROP_FAILFRAMES, ENET_CUSTOM);
-	if (enet_init_status != SUCCESS) {
 
-	}
+	if (enet_init_status != SUCCESS) {}
 
     DEBUG_PRINTF("enet_init_status=%s", enet_init_status == SUCCESS ? "SUCCES" : "ERROR" );
-
-    uint16_t phy_value = 0;
-    extern volatile uint32_t s_nSysTickMillis;
-    auto nMillis = s_nSysTickMillis;
-
-    while (PHY_LINKED_STATUS != (phy_value & PHY_LINKED_STATUS)) {
-    	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_BSR, &phy_value);
-    	if ((s_nSysTickMillis - nMillis) > 1000) {
-    		break;
-    	}
-    }
-
-    DEBUG_PRINTF("s_nSysTickMillis - nMillis=%u", s_nSysTickMillis - nMillis);
 
 #ifndef NDEBUG
 	{

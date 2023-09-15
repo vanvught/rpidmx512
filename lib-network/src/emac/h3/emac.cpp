@@ -55,6 +55,9 @@
 coherent_region *p_coherent_region = nullptr;
 
 static void adjust_link(bool duplex, uint32_t speed) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("duplex=%u, speed=%u", duplex, speed);
+
 	uint32_t value = H3_EMAC->CTL0;
 
 	if (duplex) {
@@ -79,6 +82,8 @@ static void adjust_link(bool duplex, uint32_t speed) {
 	}
 
 	H3_EMAC->CTL0 = value;
+
+	DEBUG_EXIT
 }
 
 static void _rx_descs_init() {
@@ -153,9 +158,15 @@ void __attribute__((cold)) emac_config() {
 }
 
 void __attribute__((cold)) emac_start(uint8_t macAddress[], net::Link& link) {
+	DEBUG_ENTRY
+
 	mac_address_get(macAddress);
 
 	net::PhyStatus phyStatus;
+
+	phyStatus.duplex = net::Duplex::DUPLEX_FULL;
+	phyStatus.speed = net::Speed::SPEED100;
+
 	net::phy_start(PHY_ADDRESS, phyStatus);
 
 	link = phyStatus.link;

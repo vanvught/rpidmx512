@@ -96,7 +96,7 @@ Network::Network(NetworkParamsStore *pNetworkParamsStore) {
 	if (*p == '\0') {
 		uint32_t k = 0;
 
-		for (uint32_t i = 0; (HOST_NAME_PREFIX[i] != 0) && (i < network::HOSTNAME_SIZE - 7); i++) {
+		for (uint32_t i = 0; (i < (sizeof(HOST_NAME_PREFIX) - 1)) && (i < network::HOSTNAME_SIZE - 7); i++) {
 			m_aHostName[k++] = HOST_NAME_PREFIX[i];
 		}
 

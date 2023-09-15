@@ -164,7 +164,7 @@ static bool phy_config_autonegotiation(const uint32_t nAddress, const uint16_t n
  * @return true for success, false for failure
  */
 static bool phy_update_link(const uint32_t nAddress) {
-	DEBUG_EXIT
+	DEBUG_ENTRY
 
 	uint16_t nBMSR;
 
