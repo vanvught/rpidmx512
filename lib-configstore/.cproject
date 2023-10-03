@@ -92,7 +92,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/ram/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/rom"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="device/spi"/>
-						<entry excluding="dmx|showfile|dmxserial|network|displayudf|oscclient|rdm|widget|device|ddp|pixel|e131|artnet|stepper|ltc|node" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="tlc59711|dmx|showfile|dmxserial|network|displayudf|oscclient|rdm|widget|device|ddp|pixel|e131|artnet|stepper|ltc|node" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/artnet"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/displayudf"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/dmx"/>
@@ -106,6 +106,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/rdm"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/showfile"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/stepper"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/tlc59711"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/widget"/>
 					</sourceEntries>
 				</configuration>
@@ -203,7 +204,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry excluding="scr/e131|examples|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="dmx|showfile|dmxserial|network|displayudf|oscclient|rdm|widget|device|ddp|pixel|e131|artnet|stepper|ltc|node" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
+						<entry excluding="tlc59711|dmx|showfile|dmxserial|network|displayudf|oscclient|rdm|widget|device|ddp|pixel|e131|artnet|stepper|ltc|node" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/artnet"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/displayudf"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/dmx"/>
@@ -217,6 +218,7 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/rdm"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/showfile"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/stepper"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/tlc59711"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/widget"/>
 					</sourceEntries>
 				</configuration>
