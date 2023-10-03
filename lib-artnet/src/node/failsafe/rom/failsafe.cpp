@@ -49,6 +49,7 @@ static bool is_detected() {
 		}
 
 		const auto nEraseSize = FlashCode::Get()->GetSectorSize();
+		assert(nEraseSize <= failsafe::BYTES_NEEDED);
 		const auto nPages = 1 + failsafe::BYTES_NEEDED / nEraseSize;
 
 		DEBUG_PRINTF("KB_NEEDED=%u, nEraseSize=%u, nPages=%u", failsafe::BYTES_NEEDED, nEraseSize, nPages);

@@ -1,11 +1,11 @@
 /**
- * @file artnet4node.h
+ * @file handlerdmin.cpp
  *
  */
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,53 +26,42 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNET4NODE_H_
-#define ARTNET4NODE_H_
-
 #include <cstdint>
-
-#if !defined(ARTNET_VERSION)
-# define ARTNET_VERSION	4
-#endif
+#include <cstring>
+#include <cassert>
 
 #include "artnetnode.h"
-#include "artnet4handler.h"
+#include "artnet.h"
+#include "artnetrdm.h"
 
-#include "e131bridge.h"
-
+#include "network.h"
 #include "hardware.h"
 
-class ArtNet4Node final: public ArtNetNode, public ArtNet4Handler {
-public:
-	ArtNet4Node();
+#include "panel_led.h"
 
-	void SetPort(uint32_t nPortIndex, lightset::PortDir dir) override;
+#include "debug.h"
 
-	void HandleAddress(uint8_t nCommand) override;
-	uint8_t GetStatus(uint32_t nPortIndex) override;
+void ArtNetNode::HandleRdmIn() {
+	auto *const pArtRdm = &m_ArtTodPacket.ArtRdm;
 
-	bool IsStatusChanged() override {
-		return m_Bridge.IsStatusChanged();
-	}
-
-	void SetLedBlinkMode(hardware::ledblink::Mode mode) override {
-		m_Bridge.SetEnableDataIndicator(mode == hardware::ledblink::Mode::NORMAL);
-		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-			if (m_Bridge.IsTransmitting(nPortIndex)) {
-				return;
-			}
+	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		if ((m_Node.Port[nPortIndex].direction != lightset::PortDir::INPUT)) {
+			continue;
 		}
-		Hardware::Get()->SetMode(mode);
+
+		const auto nPage = nPortIndex;
+
+		if (m_pArtNetRdm->RdmReceive(nPortIndex, pArtRdm->RdmPacket)) {
+			memcpy(pArtRdm->Id, artnet::NODE_ID, sizeof(pArtRdm->Id));
+			pArtRdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::OP_RDM);
+			pArtRdm->ProtVerHi = 0;
+			pArtRdm->ProtVerLo = artnet::PROTOCOL_REVISION;
+			pArtRdm->RdmVer = 0x01;
+			pArtRdm->Net = m_Node.Port[nPage].NetSwitch;
+			pArtRdm->Command = 0;
+			pArtRdm->Address = m_Node.Port[nPortIndex].DefaultAddress;
+
+			Network::Get()->SendTo(m_nHandle, pArtRdm, sizeof(struct artnet::ArtRdm), m_InputPort[nPortIndex].nDestinationIp, artnet::UDP_PORT);
+		}
 	}
-
-	void Print();
-
-	void Start();
-	void Stop();
-	void Run();
-
-private:
-	E131Bridge m_Bridge;
-};
-
-#endif /* ARTNET4NODE_H_ */
+}

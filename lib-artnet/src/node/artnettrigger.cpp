@@ -36,7 +36,7 @@
 
 void ArtNetNode::HandleTrigger() {
 	DEBUG_ENTRY
-	const auto *const pArtTrigger = reinterpret_cast<TArtTrigger *>(m_pReceiveBuffer);
+	const auto *const pArtTrigger = reinterpret_cast<artnet::ArtTrigger *>(m_pReceiveBuffer);
 
 	if ((pArtTrigger->OemCodeHi == 0xFF && pArtTrigger->OemCodeLo == 0xFF) || (pArtTrigger->OemCodeHi == ArtNetConst::OEM_ID[0] && pArtTrigger->OemCodeLo == ArtNetConst::OEM_ID[1])) {
 		DEBUG_PRINTF("Key=%d, SubKey=%d, Data[0]=%d", pArtTrigger->Key, pArtTrigger->SubKey, pArtTrigger->Data[0]);

@@ -119,16 +119,16 @@ private:
 	int32_t m_nHandle { -1 };
 
 	struct TArtNetPacket {
-		union UArtPacket ArtPacket;
+		union artnet::UArtPacket ArtPacket;
 		uint32_t IPAddressFrom;
 		uint16_t nLength;
-		TOpCodes OpCode;
+		artnet::OpCodes OpCode;
 	};
 
 	struct TArtNetPacket *m_pArtNetPacket;
-	struct TArtPoll m_ArtNetPoll;
-	struct TArtDmx *m_pArtDmx;
-	struct TArtSync *m_pArtSync;
+	artnet::ArtPoll m_ArtNetPoll;
+	artnet::ArtDmx *m_pArtDmx;
+	artnet::ArtSync *m_pArtSync;
 	ArtNetTrigger *m_pArtNetTrigger { nullptr }; // Trigger handler
 	uint32_t m_nLastPollMillis { 0 };
 	bool m_bDoTableCleanup { true };

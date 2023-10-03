@@ -24,30 +24,26 @@
  */
 
 #include "artnetparamsconst.h"
-
 #include "artnet.h"
 
 const char ArtNetParamsConst::FILE_NAME[] = "artnet.txt";
 
-const char ArtNetParamsConst::NET[] = "net";
-const char ArtNetParamsConst::SUBNET[] = "subnet";
-
 const char ArtNetParamsConst::ENABLE_RDM[] = "enable_rdm";
-
-const char ArtNetParamsConst::NODE_SHORT_NAME[] = "short_name";
-const char ArtNetParamsConst::NODE_LONG_NAME[] = "long_name";
 
 const char ArtNetParamsConst::DESTINATION_IP_PORT[artnet::PORTS][24] = {
 		"destination_ip_port_a",
 		"destination_ip_port_b",
 		"destination_ip_port_c",
-		"destination_ip_port_d" };
+		"destination_ip_port_d"
+};
+
 
 const char ArtNetParamsConst::RDM_ENABLE_PORT[artnet::PORTS][18] = {
 		"rdm_enable_port_a",
 		"rdm_enable_port_b",
 		"rdm_enable_port_c",
-		"rdm_enable_port_d" };
+		"rdm_enable_port_d"
+};
 
 /**
  * Art-Net 4
@@ -57,6 +53,7 @@ const char ArtNetParamsConst::PROTOCOL_PORT[artnet::PORTS][16] = {
 		"protocol_port_a",
 		"protocol_port_b",
 		"protocol_port_c",
-		"protocol_port_d" };
+		"protocol_port_d"
+};
 
 const char ArtNetParamsConst::MAP_UNIVERSE0[] = "map_universe0";

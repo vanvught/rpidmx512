@@ -38,7 +38,7 @@
 #include "debug.h"
 
 void ArtNetNode::HandleTimeCode() {
-	const auto *const pArtTimeCode = reinterpret_cast<TArtTimeCode *>(m_pReceiveBuffer);
+	const auto *const pArtTimeCode = reinterpret_cast<artnet::ArtTimeCode *>(m_pReceiveBuffer);
 
 	m_pArtNetTimeCode->Handler(reinterpret_cast<const struct TArtNetTimeCode*>(&pArtTimeCode->Frames));
 }
@@ -47,7 +47,7 @@ void ArtNetNode::SetTimeCodeIp(uint32_t nDestinationIp) {
 	if (Network::Get()->IsValidIp(nDestinationIp)) {
 		m_Node.IPAddressTimeCode = nDestinationIp;
 	} else {
-		m_Node.IPAddressTimeCode = m_Node.IPAddressBroadcast;
+		m_Node.IPAddressTimeCode = Network::Get()->GetBroadcastIp();
 	}
 
 	DEBUG_PRINTF("m_Node.IPAddressTimeCode=" IPSTR, IP2STR(m_Node.IPAddressTimeCode));
@@ -63,5 +63,5 @@ void ArtNetNode::SendTimeCode(const struct TArtNetTimeCode *pArtNetTimeCode) {
 
 	memcpy(&m_ArtTimeCode.Frames, pArtNetTimeCode, sizeof(struct TArtNetTimeCode));
 
-	Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct TArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
+	Network::Get()->SendTo(m_nHandle, &m_ArtTimeCode, sizeof(struct artnet::ArtTimeCode), m_Node.IPAddressTimeCode, artnet::UDP_PORT);
 }

@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,27 +32,26 @@
 #include <cstdint>
 
 #include "artnet.h"
-
 #include "lightset.h"
 
 class ArtNetStore {
 public:
 	virtual ~ArtNetStore() {}
 
-	virtual void SaveFailSafe(uint8_t nFailsafe)=0;
-
-	virtual void SaveShortName(const char *pShortName)=0;
 	virtual void SaveLongName(const char *pLongName)=0;
 
-	virtual void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress)=0;
-	virtual void SaveNetSwitch(uint32_t nPage, uint8_t nAddress)=0;
-	virtual void SaveSubnetSwitch(uint32_t nPage, uint8_t nAddress)=0;
+	virtual void SaveShortName(const uint32_t nPortIndex, const char *pShortName)=0;
 
-	virtual void SaveUniverse(uint32_t nPortIndex, uint16_t nUniverse)=0;
+	virtual void SaveUniverseSwitch(const uint32_t nPortIndex, const uint8_t nAddress)=0;
+	virtual void SaveNetSwitch(const uint32_t nPage, const uint8_t nAddress)=0;
+	virtual void SaveSubnetSwitch(const uint32_t nPage, const uint8_t nAddress)=0;
 
-	virtual void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode mergeMode)=0;
-	virtual void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol portProtocol)=0;
-	virtual void SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled)=0;
+	virtual void SaveMergeMode(const uint32_t nPortIndex, const lightset::MergeMode mergeMode)=0;
+	virtual void SavePortProtocol(const uint32_t nPortIndex, const artnet::PortProtocol portProtocol)=0;
+	virtual void SaveOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle)=0;
+	virtual void SaveRdmEnabled(const uint32_t nPortIndex, const bool isEnabled)=0;
+
+	virtual void SaveFailSafe(const uint8_t nFailsafe)=0;
 };
 
 #endif /* ARTNETSTORE_H_ */

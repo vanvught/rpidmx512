@@ -49,6 +49,7 @@ static bool check_have_flash() {
 		}
 
 		const auto nEraseSize = spi_flash_get_sector_size();
+		assert(nEraseSize <= failsafe::BYTES_NEEDED);
 		const auto nPages = 1 + failsafe::BYTES_NEEDED / nEraseSize;
 
 		DEBUG_PRINTF("KB_NEEDED=%u, nEraseSize=%u, nPages=%u", failsafe::BYTES_NEEDED, nEraseSize, nPages);
