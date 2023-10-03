@@ -128,7 +128,7 @@ void StoreArtNet::SaveMergeMode(uint32_t nPortIndex, const lightset::MergeMode m
 	}
 
 	uint16_t nMergeMode;
-	ConfigStore::Get()->Copy(configstore::Store::NODE, &nMergeMode, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nMergeMode), false);
+	ConfigStore::Get()->Copy(configstore::Store::NODE, &nMergeMode, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nMergeMode));
 
 	nMergeMode &= artnetparams::mergemode_clear(nPortIndex);
 	nMergeMode |= artnetparams::mergemode_set(nPortIndex, mergeMode);
@@ -157,7 +157,7 @@ void StoreArtNet::SavePortProtocol(uint32_t nPortIndex, const artnet::PortProtoc
 	}
 
 	uint16_t nPortProtocol;
-	ConfigStore::Get()->Copy(configstore::Store::NODE, &nPortProtocol, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nProtocol), false);
+	ConfigStore::Get()->Copy(configstore::Store::NODE, &nPortProtocol, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nProtocol));
 
 	nPortProtocol &= artnetparams::protocol_clear(nPortIndex);
 	nPortProtocol |= artnetparams::protocol_set(nPortIndex, portProtocol);
@@ -185,7 +185,7 @@ void  StoreArtNet::SaveOutputStyle(uint32_t nPortIndex, const lightset::OutputSt
 	}
 
 	uint8_t nOutputStyle;
-	ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), __builtin_offsetof(struct artnetparams::Params, nOutputStyle), false);
+	ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), __builtin_offsetof(struct artnetparams::Params, nOutputStyle));
 
 	if (outputStyle == lightset::OutputStyle::CONSTANT) {
 		nOutputStyle |= static_cast<uint8_t>(1U << nPortIndex);
@@ -217,7 +217,7 @@ void StoreArtNet::SaveRdmEnabled(uint32_t nPortIndex, const bool isEnabled) {
 	}
 
 	uint16_t nRdm;
-	ConfigStore::Get()->Copy(configstore::Store::NODE, &nRdm, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nRdm), false);
+	ConfigStore::Get()->Copy(configstore::Store::NODE, &nRdm, sizeof(uint16_t), __builtin_offsetof(struct artnetparams::Params, nRdm));
 
 	nRdm &= artnetparams::clear_mask(nPortIndex);
 

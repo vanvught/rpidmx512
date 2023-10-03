@@ -127,7 +127,7 @@ void Ssd1311::PutString(const char *pString) {
 	if (m_bClearEndOfLine) {
 		m_bClearEndOfLine = false;
 
-		for (uint32_t i = static_cast<uint32_t>(pSrc -  pString); i < MAX_COLUMNS; i++) {
+		for (auto i = static_cast<uint32_t>(pSrc -  pString); i < MAX_COLUMNS; i++) {
 			*s++ = ' ';
 		}
 

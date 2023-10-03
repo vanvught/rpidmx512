@@ -355,7 +355,7 @@ void Ssd1306::PutString(const char *pString) {
 
 	if (m_bClearEndOfLine) {
 		m_bClearEndOfLine = false;
-		for (uint32_t i = static_cast<uint32_t>(p -  pString); i < m_nCols; i++) {
+		for (auto i = static_cast<uint32_t>(p -  pString); i < m_nCols; i++) {
 			Ssd1306::PutChar(' ');
 		}
 	}

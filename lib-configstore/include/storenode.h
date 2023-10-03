@@ -67,7 +67,7 @@ public:
 	void SaveShortName(uint32_t nPortIndex, const char *pShortName) override {
 		DEBUG_ENTRY
 
-		ConfigStore::Get()->Update(configstore::Store::NODE, nPortIndex * 0 + __builtin_offsetof(struct nodeparams::Params, aShortName), pShortName, artnet::SHORT_NAME_LENGTH, nodeparams::Mask::SHORT_NAME);
+		ConfigStore::Get()->Update(configstore::Store::NODE, nPortIndex * 0 + __builtin_offsetof(struct nodeparams::Params, aLabel), pShortName, artnet::SHORT_NAME_LENGTH, nodeparams::Mask::SHORT_NAME);
 
 		DEBUG_EXIT
 	}
@@ -99,7 +99,7 @@ public:
 		}
 
 		uint16_t nMergeMode;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nMergeMode, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nMergeMode), false);
+		ConfigStore::Get()->Copy(configstore::Store::NODE, &nMergeMode, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nMergeMode));
 
 		nMergeMode &= nodeparams::clear_mask(nPortIndex);
 
@@ -134,7 +134,7 @@ public:
 		}
 
 		uint16_t nProtocol;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nProtocol, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nProtocol), false);
+		ConfigStore::Get()->Copy(configstore::Store::NODE, &nProtocol, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nProtocol));
 
 		nProtocol &= nodeparams::clear_mask(nPortIndex);
 
@@ -169,7 +169,7 @@ public:
 		}
 
 		uint8_t nOutputStyle;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), __builtin_offsetof(struct nodeparams::Params, nOutputStyle), false);
+		ConfigStore::Get()->Copy(configstore::Store::NODE, &nOutputStyle, sizeof(uint8_t), __builtin_offsetof(struct nodeparams::Params, nOutputStyle));
 
 		if (outputStyle == lightset::OutputStyle::CONSTANT) {
 			nOutputStyle |= static_cast<uint8_t>(1U << nPortIndex);
@@ -201,7 +201,7 @@ public:
 		}
 
 		uint16_t nRdm;
-		ConfigStore::Get()->Copy(configstore::Store::NODE, &nRdm, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nRdm), false);
+		ConfigStore::Get()->Copy(configstore::Store::NODE, &nRdm, sizeof(uint16_t), __builtin_offsetof(struct nodeparams::Params, nRdm));
 
 		nRdm &= nodeparams::clear_mask(nPortIndex);
 
