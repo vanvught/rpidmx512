@@ -17,7 +17,8 @@ async function get_txt(sel) {
 		var v = txt[sel][key]
 		h += "<tr><td>"+key+'</td><td><input type="text" value="'+v+'" id="'+key+'"></td></tr>'
 	});
-	h += '<tr><td colspan="2"><button onclick="save(\''+sel+'\')">Save</button></td></tr>'
+	h += '<tr><td colspan="2"><button onclick="save(\''+sel+'\')">Save</button>';
+  h += '<button class="btn" onclick="reset(\''+sel+'\')">Defaults</button></td></tr>';
 	document.getElementById("idTxt").innerHTML = h
 }
 
