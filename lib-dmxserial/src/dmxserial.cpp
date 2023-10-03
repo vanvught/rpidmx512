@@ -83,10 +83,31 @@ void DmxSerial::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, __attribute__((unused)) uint32_t nLength) {
+void DmxSerial::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
+	assert(nPortIndex == 0);
+	assert(pData != nullptr);
+
+	if (doUpdate) {
+		Update(pData, nLength);
+		return;
+	}
+
+	memcpy(m_SyncData.data, pData, nLength);
+	m_SyncData.nLength = nLength;
+}
+
+void DmxSerial::Update(const uint8_t *pData, const uint32_t nLength) {
+	assert(pData != nullptr);
 
 	for (uint32_t nIndex = 0; nIndex < m_nFilesCount; nIndex++) {
+		assert(m_aFileIndex[nIndex] > 1);
 		const int32_t nOffset = m_aFileIndex[nIndex] - 1;
+
+		assert(nOffset < static_cast<int32_t>(sizeof(m_DmxData)));
+
+		if (static_cast<uint32_t>(nOffset) >= nLength) {
+			continue;
+		}
 
 		if (m_DmxData[nOffset] != pData[nOffset]) {
 			m_DmxData[nOffset] = pData[nOffset];
@@ -104,6 +125,16 @@ void DmxSerial::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8
 				m_Serial.Send(pSerialData, nLength);
 			}
 		}
+	}
+}
+
+void DmxSerial::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+	// No actions here
+}
+
+void DmxSerial::Sync(const bool doForce) {
+	if (__builtin_expect((!doForce), 1)) {
+		Update(m_SyncData.data, m_SyncData.nLength);
 	}
 }
 
