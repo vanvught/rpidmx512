@@ -53,7 +53,7 @@ public:
 		return m_pB;
 	}
 
-	void Start(uint32_t nPortIndex) override {
+	void Start(const uint32_t nPortIndex) override {
 		if ((nPortIndex < 32) && (m_pA != nullptr)) {
 			return m_pA->Start(nPortIndex);
 		}
@@ -62,7 +62,7 @@ public:
 		}
 	}
 
-	void Stop(uint32_t nPortIndex) override {
+	void Stop(const uint32_t nPortIndex) override {
 		if ((nPortIndex < 32) && (m_pA != nullptr)) {
 			return m_pA->Stop(nPortIndex);
 		}

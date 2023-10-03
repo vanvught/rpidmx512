@@ -52,13 +52,13 @@ LightSetChain::~LightSetChain() {
 	m_nSize = 0;
 }
 
-void LightSetChain::Start(uint32_t nPortIndex) {
+void LightSetChain::Start(const uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		m_pTable[i].pLightSet->Start(nPortIndex);
 	}
 }
 
-void LightSetChain::Stop(uint32_t nPortIndex) {
+void LightSetChain::Stop(const uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < m_nSize; i++) {
 		m_pTable[i].pLightSet->Stop(nPortIndex);
 	}

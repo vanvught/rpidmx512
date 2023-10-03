@@ -274,10 +274,14 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 		}
 	}
 
+	DEBUG_PRINTF("bIsRdmPacketForMe=%d", bIsRdmPacketForMe);
+
 	const auto nCommandClass = pRdmRequest->command_class;
 	const auto nParamId = static_cast<uint16_t>((pRdmRequest->param_id[0] << 8) + pRdmRequest->param_id[1]);
 
-	if (nCommandClass == E120_DISCOVERY_COMMAND) {
+	if ((!bIsRdmPacketForMe) && (!bIsRdmPacketBroadcast)) {
+			// Ignore RDM packet
+	} else if (nCommandClass == E120_DISCOVERY_COMMAND) {
 		if (nParamId == E120_DISC_UNIQUE_BRANCH) {
 			if (!m_IsMuted) {
 				if ((memcmp(pRdmRequest->param_data, pUID, RDM_UID_SIZE) <= 0) && (memcmp(pUID, pRdmRequest->param_data + 6, RDM_UID_SIZE) <= 0)) {

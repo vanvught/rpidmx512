@@ -28,6 +28,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include <cstdio>
 #include <climits>
 #include <cassert>
 
@@ -38,6 +39,13 @@ static constexpr uint32_t START_ADDRESS_DEFAULT = 1;
 static constexpr uint32_t UNIVERSE_SIZE = 512;
 static constexpr uint32_t MAX_VALUE = 255;
 }
+namespace node {
+static constexpr uint32_t LABEL_NAME_LENGTH = 18;
+
+inline void get_short_name_default(const uint32_t nPortIndex, char *pShortName) {
+	snprintf(pShortName, node::LABEL_NAME_LENGTH - 1, "Port %u", 1U + nPortIndex);
+}
+}  // namespace node
 
 enum class MergeMode {
 	HTP, LTP
@@ -66,7 +74,7 @@ enum class OutputType {
 };
 #endif
 
-inline static MergeMode get_merge_mode(const char *pMergeMode) {
+inline MergeMode get_merge_mode(const char *pMergeMode) {
 	if (pMergeMode != nullptr) {
 		if (((pMergeMode[0] | 0x20) == 'l')
 		 && ((pMergeMode[1] | 0x20) == 't')
@@ -77,18 +85,18 @@ inline static MergeMode get_merge_mode(const char *pMergeMode) {
 	return MergeMode::HTP;
 }
 
-inline static const char* get_merge_mode(const MergeMode mergeMode, const bool bToUpper = false) {
+inline const char* get_merge_mode(const MergeMode mergeMode, const bool bToUpper = false) {
 	if (bToUpper) {
 		return (mergeMode == MergeMode::HTP) ? "HTP" : "LTP";
 	}
 	return (mergeMode == MergeMode::HTP) ? "htp" : "ltp";
 }
 
-inline static const char* get_merge_mode(const unsigned m, const bool bToUpper = false) {
+inline const char* get_merge_mode(const unsigned m, const bool bToUpper = false) {
 	return get_merge_mode(static_cast<MergeMode>(m), bToUpper);
 }
 
-inline static PortDir get_direction(const char *pPortDir) {
+inline PortDir get_direction(const char *pPortDir) {
 	if (pPortDir != nullptr) {
 		if (((pPortDir[0] | 0x20) == 'i')
 		 && ((pPortDir[1] | 0x20) == 'n')
@@ -110,7 +118,7 @@ inline static PortDir get_direction(const char *pPortDir) {
 	return PortDir::OUTPUT;
 }
 
-inline static const char* get_direction(const PortDir portDir) {
+inline const char* get_direction(const PortDir portDir) {
 	if (portDir == PortDir::INPUT) {
 		return "input";
 	}
@@ -122,7 +130,7 @@ inline static const char* get_direction(const PortDir portDir) {
 	return "output";
 }
 
-inline static FailSafe get_failsafe(const char *pFailSafe) {
+inline FailSafe get_failsafe(const char *pFailSafe) {
 	if (memcmp(pFailSafe, "hold", 4) == 0) {
 		return FailSafe::HOLD;
 	}
@@ -142,7 +150,7 @@ inline static FailSafe get_failsafe(const char *pFailSafe) {
 	return FailSafe::HOLD;
 }
 
-inline static const char* get_failsafe(const FailSafe failsafe) {
+inline const char* get_failsafe(const FailSafe failsafe) {
 	switch (failsafe) {
 	case FailSafe::HOLD:
 		return "hold";
@@ -166,7 +174,7 @@ inline static const char* get_failsafe(const FailSafe failsafe) {
 	return "";
 }
 
-inline static OutputStyle get_output_style(const char *pOutputStyle) {
+inline OutputStyle get_output_style(const char *pOutputStyle) {
 	if (pOutputStyle != nullptr) {
 		if (((pOutputStyle[0] | 0x20) == 'c')
 		 && ((pOutputStyle[1] | 0x20) == 'o')
@@ -179,7 +187,7 @@ inline static OutputStyle get_output_style(const char *pOutputStyle) {
 	return OutputStyle::DELTA;
 }
 
-inline static const char *get_output_style(const OutputStyle outputStyle, const bool bToUpper = false) {
+inline const char *get_output_style(const OutputStyle outputStyle, const bool bToUpper = false) {
 	if (bToUpper) {
 		return (outputStyle == OutputStyle::DELTA) ? "DELTA" : "CONST";
 	}
@@ -193,8 +201,8 @@ public:
 	LightSet() {}
 	virtual ~LightSet() {}
 
-	virtual void Start(uint32_t nPortIndex)= 0;
-	virtual void Stop(uint32_t nPortIndex)= 0;
+	virtual void Start(const uint32_t nPortIndex)= 0;
+	virtual void Stop(const uint32_t nPortIndex)= 0;
 	virtual void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true)= 0;
 	/**
 	 * This is used for preparing the lightset output for a SYNC
@@ -220,7 +228,9 @@ public:
 	virtual uint16_t GetDmxStartAddress();
 	virtual uint16_t GetDmxFootprint();
 	virtual bool GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo &tSlotInfo);
-
+#if defined (LIGHTSET_HAVE_RUN)
+	virtual void Run()= 0;
+#endif
 #if defined (ESP8266)
 	static const char *GetOutputType(lightset::OutputType type);
 	static lightset::OutputType GetOutputType(const char *sType);

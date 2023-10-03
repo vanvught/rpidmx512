@@ -68,7 +68,7 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 	m_pWS28xxMulti = nullptr;
 }
 
-void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
+void WS28xxDmxMulti::Start(const uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted == 0) {
@@ -79,7 +79,7 @@ void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
 	m_bIsStarted |= (1U << nPortIndex);
 }
 
-void WS28xxDmxMulti::Stop(uint32_t nPortIndex) {
+void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted & (1U << nPortIndex)) {

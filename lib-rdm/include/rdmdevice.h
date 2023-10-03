@@ -33,6 +33,7 @@
 
 #include "rdmdevicestore.h"
 #include "rdmconst.h"
+#include "rdm_e120.h"
 
 #include "debug.h"
 
@@ -159,8 +160,8 @@ private:
 
 	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
 
-	uint16_t m_nProductCategory;
-	uint16_t m_nProductDetail;
+	uint16_t m_nProductCategory { E120_PRODUCT_CATEGORY_OTHER };
+	uint16_t m_nProductDetail { E120_PRODUCT_DETAIL_OTHER };
 	uint16_t m_nCheckSum { 0 };
 
 	uint8_t m_aUID[RDM_UID_SIZE];

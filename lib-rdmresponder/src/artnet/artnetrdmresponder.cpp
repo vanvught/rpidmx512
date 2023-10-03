@@ -91,7 +91,6 @@ const uint8_t *ArtNetRdmResponder::Handler(uint32_t nPortIndex, const uint8_t *p
 	RDMMessage::Print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
 #endif
 
-	configstore::delay();
 	DEBUG_EXIT
 	return reinterpret_cast<const uint8_t*>(&s_RdmCommand);
 }
