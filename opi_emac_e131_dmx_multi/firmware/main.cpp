@@ -139,6 +139,17 @@ void main() {
 		dmxparams.Set(&dmx);
 	}
 
+	for (uint32_t nPortIndex = DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+		uint16_t nUniverse;
+		const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
+
+		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
+			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
+		} else {
+			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::INP, false);
+		}
+	}
+
 	DmxSend dmxSend;
 
 	dmxSend.Print();

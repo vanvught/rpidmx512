@@ -41,7 +41,7 @@
 #include "displayhandler.h"
 #include "display_timeout.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnettriggerhandler.h"
@@ -91,7 +91,7 @@ static constexpr auto DMXPORT_OFFSET = 4U;
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
 	Dmx::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -124,7 +124,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	ArtNetParams artnetParams(&storeArtNet);
@@ -159,6 +159,9 @@ void main() {
 
 		for (uint32_t nPortIndex = 0; nPortIndex < nUniverses; nPortIndex++) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartPixelUniverse + nPortIndex));
+			char label[artnet::SHORT_NAME_LENGTH];
+			snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel Port U:%u", nStartPixelUniverse + nPortIndex);
+			node.SetShortName(nPortIndex, label);
 		}
 	}
 
@@ -167,13 +170,11 @@ void main() {
 
 	// LightSet B - DMX - 1 Universe
 
-	auto isDmxUniverseSet = false;
-	const auto nDmxUniverse = artnetParams.GetUniverse(0, isDmxUniverseSet);
-	const auto portDirection = artnetParams.GetDirection(0);
+	uint32_t nDmxUniverses = 0;
 
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
-		node.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nAddress | nDmxUniverse));
+	if (artnetParams.GetDirection(0) == lightset::PortDir::OUTPUT) {
+		node.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+		nDmxUniverses = 1;
 	}
 
 	StoreDmxSend storeDmxSend;
@@ -186,22 +187,20 @@ void main() {
 		dmxparams.Set(&dmx);
 	}
 
-	DmxSend dmxSend;
-
-	dmxSend.Print();
-
-	DmxConfigUdp *pDmxConfigUdp = nullptr;
-
-	if (isDmxUniverseSet) {
-		pDmxConfigUdp = new DmxConfigUdp;
-		assert(pDmxConfigUdp != nullptr);
+	if (node.GetPortDirection(DMXPORT_OFFSET) == lightset::PortDir::OUTPUT) {
+		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
 	}
 
-	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, isDmxUniverseSet ? 1 : 0);
+	DmxSend dmxSend;
+	dmxSend.Print();
+
+	DmxConfigUdp dmxConfigUdp;
+
+	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
 	// LightSet 4with4
 
-	LightSet4with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, isDmxUniverseSet ? &dmxSend : nullptr);
+	LightSet4with4 lightSet((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) ? nullptr : &pixelDmx, (nDmxUniverses != 0) ? &dmxSend : nullptr);
 	lightSet.Print();
 
 	ArtNetTriggerHandler triggerHandler(&lightSet, &pixelDmx);
@@ -213,7 +212,7 @@ void main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d DMX %d", isPixelUniverseSet, PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount(), isDmxUniverseSet);
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel 1-%s:%d", PixelType::GetType(WS28xx::Get()->GetType()), WS28xx::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -243,10 +242,9 @@ void main() {
 
 	display.SetTitle("Art-Net 4 Pixel 1 - DMX");
 	display.Set(2, displayudf::Labels::VERSION);
-	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::IP);
-	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
-	display.Set(6, displayudf::Labels::DMX_DIRECTION);
+	display.Set(3, displayudf::Labels::IP);
+	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
+	display.Set(5, displayudf::Labels::DMX_DIRECTION);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -301,8 +299,8 @@ void main() {
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
-		if (pDmxConfigUdp != nullptr) {
-			pDmxConfigUdp->Run();
+		if (nDmxUniverses != 0) {
+			dmxConfigUdp.Run();
 		}
 		mDns.Run();
 #if defined (ENABLE_HTTPD)

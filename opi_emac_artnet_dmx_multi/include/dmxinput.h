@@ -34,8 +34,8 @@ class DmxInput: public ArtNetDmx {
 public:
 	DmxInput();
 
-	void Start(uint32_t nPortIndex) override;
-	void Stop(uint32_t nPortIndex) override;
+	void Start(const uint32_t nPortIndex) override;
+	void Stop(const uint32_t nPortIndex) override;
 
 	const uint8_t *Handler(uint32_t nPortIndex, uint32_t& nLength, uint32_t &nUpdatesPerSecond) override;
 

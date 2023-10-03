@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@
 #include "displayudfparams.h"
 #include "displayhandler.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 
@@ -72,7 +72,7 @@
 static constexpr uint32_t DMXPORT_OFFSET = 0;
 
 void Hardware::RebootHandler() {
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -105,7 +105,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	node.SetArtNetStore(&storeArtNet);
@@ -117,13 +117,10 @@ void main() {
 		artnetParams.Set(DMXPORT_OFFSET);
 	}
 
-	bool isSet;
-	const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
-	const auto nUniverse = artnetParams.GetUniverse(0, isSet);
 	const auto portDirection = artnetParams.GetDirection(0);
 
 	if (portDirection == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(0, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nAddress | nUniverse));
+		node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 	}
 
 	DmxSerial dmxSerial;
@@ -141,11 +138,10 @@ void main() {
 	dmxSerial.Print();
 
 	display.SetTitle("Art-Net 4 %s", dmxSerial.GetSerialType());
-	display.Set(2, displayudf::Labels::NODE_NAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::HOSTNAME);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::HOSTNAME);
 
 	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
 

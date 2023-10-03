@@ -39,6 +39,11 @@ void display_emac_start() {
 	Display::Get()->Printf(3, "Ethernet start");
 }
 
+void display_emac_status(const bool isLinkUp) {
+	Display::Get()->ClearEndOfLine();
+	Display::Get()->Printf(3, "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
+}
+
 void display_ip() {
 	Display::Get()->ClearEndOfLine();
 	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());

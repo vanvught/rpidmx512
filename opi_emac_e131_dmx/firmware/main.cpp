@@ -124,8 +124,7 @@ void main() {
 
 	const auto portDirection = e131params.GetDirection(0);
 	bool bIsSet;
-	const auto nUniverse = e131params.GetUniverse(0, bIsSet);
-	bridge.SetUniverse(0, portDirection, nUniverse);
+	bridge.SetUniverse(0, portDirection, e131params.GetUniverse(0, bIsSet));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -135,6 +134,14 @@ void main() {
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
 		dmxparams.Set(&dmx);
+	}
+
+	uint16_t nUniverse;
+
+	if (bridge.GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
+		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
+	} else {
+		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
 	}
 
 	DmxSend dmxSend;

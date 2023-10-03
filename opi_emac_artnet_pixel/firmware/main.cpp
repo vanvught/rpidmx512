@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,7 @@
 #include "displayhandler.h"
 #include "display_timeout.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnettriggerhandler.h"
@@ -82,7 +82,7 @@ static constexpr auto DMXPORT_OFFSET = 4U;
 
 void Hardware::RebootHandler() {
 	WS28xx::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -115,7 +115,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	ArtNetParams artnetParams(&storeArtNet);
@@ -150,6 +150,9 @@ void main() {
 	for (uint32_t u = 0; u < nUniverses; u++) {
 		if (isPixelUniverseSet) {
 			node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniverse + u));
+			char label[artnet::SHORT_NAME_LENGTH];
+			snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel Port U:%u", nStartUniverse + u);
+			node.SetShortName(nPortProtocolIndex, label);
 		}
 		nPortProtocolIndex++;
 	}
@@ -201,10 +204,9 @@ void main() {
 
 	display.SetTitle("Art-Net 4 Pixel 1x4U");
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::AP);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::AP);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

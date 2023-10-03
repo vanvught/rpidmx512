@@ -44,7 +44,7 @@
 #include "displayudfparams.h"
 #include "display7segment.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
 #include "artnetmsgconst.h"
@@ -93,7 +93,7 @@
 static constexpr uint32_t DMXPORT_OFFSET = 0;
 
 void Hardware::RebootHandler() {
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -185,22 +185,21 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 
-	ArtNetParams artnetparams(&storeArtNet);
+	ArtNetParams artnetParams(&storeArtNet);
 	node.SetArtNetStore(&storeArtNet);
 
 	node.SetLongName(aDescription);
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-		artnetparams.Set(DMXPORT_OFFSET);
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(DMXPORT_OFFSET);
 	}
 
 	node.SetOutput(pBoard);
-	bool isSet;
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
+	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
 
@@ -248,11 +247,10 @@ void main() {
 	pBoard->Print();
 
 	display.SetTitle("Art-Net 4 L6470");
-	display.Set(2, displayudf::Labels::NODE_NAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

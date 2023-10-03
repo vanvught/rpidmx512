@@ -28,6 +28,7 @@
 namespace network {
 void display_emac_config() {}
 void display_emac_start() {}
+void display_emac_status(__attribute__((unused)) const bool isLinkUp) {}
 
 void display_ip() {}
 

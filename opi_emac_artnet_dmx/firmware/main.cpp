@@ -41,7 +41,7 @@
 #include "displayhandler.h"
 #include "display_timeout.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnetrdmcontroller.h"
@@ -70,7 +70,7 @@ static constexpr uint32_t DMXPORT_OFFSET = 0;
 
 void Hardware::RebootHandler() {
 	Dmx::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -103,7 +103,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	node.SetArtNetStore(&storeArtNet);
@@ -115,9 +115,8 @@ void main() {
 		artnetParams.Set(DMXPORT_OFFSET);
 	}
 
-	bool isSet;
 	const auto direction = artnetParams.GetDirection(0);
-	node.SetUniverseSwitch(0, direction, artnetParams.GetUniverse(0, isSet));
+	node.SetUniverse(0, direction, artnetParams.GetUniverse(0));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -129,42 +128,37 @@ void main() {
 		dmxparams.Set(&dmx);
 	}
 
-	DmxSend dmxSend;
+	const auto portDirection = (node.GetPortDirection(0) == lightset::PortDir::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
+	dmx.SetPortDirection(0, portDirection , false);
 
+	DmxSend dmxSend;
 	dmxSend.Print();
 
-	DmxConfigUdp *pDmxConfigUdp = nullptr;
+	node.SetOutput(&dmxSend);
 
-	if (node.GetActiveOutputPorts() != 0) {
-		node.SetOutput(&dmxSend);
-		pDmxConfigUdp = new DmxConfigUdp;
-		assert(pDmxConfigUdp != nullptr);
-	}
+	DmxConfigUdp dmxConfigUdp;
 
 	StoreRDMDevice storeRdmDevice;
 
-	if (artnetParams.IsRdm()) {
-		auto pRdmController = new ArtNetRdmController;
-		assert(pRdmController != nullptr);
+	ArtNetRdmController artNetRdmController;
 
+	if (artnetParams.IsRdm()) {
 		RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 		if (rdmDeviceParams.Load()) {
 			rdmDeviceParams.Dump();
-			rdmDeviceParams.Set(pRdmController);
+			rdmDeviceParams.Set(&artNetRdmController);
 		}
 
-		pRdmController->Init();
-		pRdmController->Print();
+		artNetRdmController.Init();
+		artNetRdmController.Print();
 
-		uint8_t nAddress;
-
-		if (node.GetRdm(0) && (node.GetUniverseSwitch(0, nAddress, lightset::PortDir::OUTPUT))) {
+		if (node.GetRdm(0) && (node.GetPortDirection(0) == lightset::PortDir::OUTPUT)) {
 			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
-			pRdmController->Full(0);
+			artNetRdmController.Full(0);
 		}
 
-		node.SetRdmHandler(pRdmController);
+		node.SetRdmHandler(&artNetRdmController);
 	}
 
 	node.Print();
@@ -172,11 +166,10 @@ void main() {
 	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
 
 	display.SetTitle("Art-Net 4 %s", direction == lightset::PortDir::INPUT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
-	display.Set(2, displayudf::Labels::NODE_NAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::HOSTNAME);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::HOSTNAME);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -215,8 +208,8 @@ void main() {
 		node.Run();
 		remoteConfig.Run();
 		configStore.Flash();
-		if (pDmxConfigUdp != nullptr) {
-			pDmxConfigUdp->Run();
+		if (node.GetActiveOutputPorts() != 0) {
+			dmxConfigUdp.Run();
 		}
 		mDns.Run();
 #if defined (ENABLE_HTTPD)

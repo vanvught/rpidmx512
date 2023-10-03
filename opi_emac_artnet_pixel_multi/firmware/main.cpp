@@ -41,7 +41,7 @@
 #include "display_timeout.h"
 #include "handleroled.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnettriggerhandler.h"
@@ -84,7 +84,7 @@ static constexpr auto DMXPORT_OFFSET = 32U;
 
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -117,7 +117,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	ArtNetParams artnetParams(&storeArtNet);
@@ -144,27 +144,27 @@ void main() {
 	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
+	const auto nPixelActivePorts = pixelDmxMulti.GetOutputPorts();
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
 
-	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
+	for (uint32_t nOutportIndex = 0; nOutportIndex < nPixelActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = pixelDmxParams.GetStartUniversePort(nOutportIndex, isSet);
-		if (isSet) {
-			for (uint32_t u = 0; u < nUniverses; u++) {
+		for (uint32_t u = 0; u < nUniverses; u++) {
+			if (isSet) {
 				node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
-				nPortProtocolIndex++;
+				char label[artnet::SHORT_NAME_LENGTH];
+				snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel %c U:%u", 'A' + nOutportIndex, nStartUniversePort + u);
+				node.SetShortName(nPortProtocolIndex, label);
 			}
-			nPortProtocolIndex = nPortProtocolIndex + static_cast<uint8_t>(artnet::PORTS - nUniverses);
-		} else {
-			nPortProtocolIndex = nPortProtocolIndex + artnet::PORTS;
+			nPortProtocolIndex++;
 		}
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
+	PixelTestPattern pixelTestPattern(nTestPattern, nPixelActivePorts);
 	
 	if (PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE) {
 		node.SetOutput(nullptr);
@@ -177,7 +177,7 @@ void main() {
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d", nPixelActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount());
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel");
@@ -208,12 +208,11 @@ void main() {
 	node.Print();
 	pixelDmxMulti.Print();
 
-	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("ArtNet 4 Pixel %dx%d", nPixelActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::BOARDNAME);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::BOARDNAME);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);

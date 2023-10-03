@@ -53,7 +53,6 @@ void main(void) {
 	Network nw;
 
 	Widget widget;
-	widget.SetPortDirection(0, PortDirection::INP, false);
 
 	WidgetParams widgetParams;
 

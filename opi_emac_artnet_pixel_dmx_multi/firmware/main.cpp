@@ -42,7 +42,7 @@
 #include "displayhandler.h"
 #include "display_timeout.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "artnetmsgconst.h"
 #include "artnettriggerhandler.h"
@@ -94,7 +94,7 @@ static constexpr auto DMXPORT_OFFSET = 32U;
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
 	Dmx::Get()->Blackout();
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
@@ -127,7 +127,7 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
 	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	ArtNetParams artnetParams(&storeArtNet);
@@ -155,48 +155,41 @@ void main() {
 	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
 
-	const auto nActivePorts = pixelDmxMulti.GetOutputPorts();
+	const auto nPixelActivePorts = pixelDmxMulti.GetOutputPorts();
 	const auto nUniverses = pixelDmxMulti.GetUniverses();
 
 	uint32_t nPortProtocolIndex = 0;
 
-	for (uint32_t nOutportIndex = 0; nOutportIndex < nActivePorts; nOutportIndex++) {
+	for (uint32_t nOutportIndex = 0; nOutportIndex < nPixelActivePorts; nOutportIndex++) {
 		auto isSet = false;
 		const auto nStartUniversePort = pixelDmxParams.GetStartUniversePort(nOutportIndex, isSet);
-		if (isSet) {
-			for (uint32_t u = 0; u < nUniverses; u++) {
+		for (uint32_t u = 0; u < nUniverses; u++) {
+			if (isSet) {
 				node.SetUniverse(nPortProtocolIndex, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nStartUniversePort + u));
-				nPortProtocolIndex++;
+				char label[artnet::SHORT_NAME_LENGTH];
+				snprintf(label, artnet::SHORT_NAME_LENGTH - 1, "Pixel %c U:%u", 'A' + nOutportIndex, nStartUniversePort + u);
+				node.SetShortName(nPortProtocolIndex, label);
 			}
-			nPortProtocolIndex = nPortProtocolIndex + static_cast<uint8_t>(artnet::PORTS - nUniverses);
-		} else {
-			nPortProtocolIndex = nPortProtocolIndex + artnet::PORTS;
+			nPortProtocolIndex++;
 		}
 	}
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
-	PixelTestPattern pixelTestPattern(nTestPattern, nActivePorts);
+	PixelTestPattern pixelTestPattern(nTestPattern, nPixelActivePorts);
 
 	// LightSet B - DMX - 2 Universes
 
-	const auto nAddress = static_cast<uint16_t>((artnetParams.GetNet() & 0x7F) << 8) | static_cast<uint16_t>((artnetParams.GetSubnet() & 0x0F) << 4);
+	uint32_t nDmxUniverses = 0;
 
-	auto bIsSet = false;
-	auto nDmxUniverses = 0;
-	auto nUniverse = artnetParams.GetUniverse(0, bIsSet);
-	auto portDirection = artnetParams.GetDirection(0);
+	for (uint32_t nPortIndex = DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
+		const auto portDirection = artnetParams.GetDirection(nDmxPortIndex);
 
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nAddress | nUniverse));
-		nDmxUniverses++;
-	}
-
-	nUniverse = artnetParams.GetUniverse(1, bIsSet);
-	portDirection = artnetParams.GetDirection(1);
-
-	if (portDirection == lightset::PortDir::OUTPUT) {
-		node.SetUniverse(DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, static_cast<uint16_t>(nAddress | nUniverse));
-		nDmxUniverses++;
+		if (portDirection == lightset::PortDir::OUTPUT) {
+			const auto Universe = artnetParams.GetUniverse(nDmxPortIndex);
+			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, Universe);
+			nDmxUniverses++;
+		}
 	}
 
 	StoreDmxSend storeDmxSend;
@@ -209,16 +202,18 @@ void main() {
 		dmxparams.Set(&dmx);
 	}
 
-	DmxSend dmxSend;
+	for (uint32_t nPortIndex = DMXPORT_OFFSET; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+		const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
 
+		if (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT) {
+			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
+		}
+	}
+
+	DmxSend dmxSend;
 	dmxSend.Print();
 
-	DmxConfigUdp *pDmxConfigUdp = nullptr;
-
-	if (nDmxUniverses != 0) {
-		pDmxConfigUdp = new DmxConfigUdp;
-		assert(pDmxConfigUdp != nullptr);
-	}
+	DmxConfigUdp dmxConfigUdp;
 
 	display.SetDmxInfo(displayudf::dmx::PortDir::OUTPUT, nDmxUniverses);
 
@@ -236,7 +231,7 @@ void main() {
 	display.TextStatus(RDMNetConst::MSG_CONFIG, Display7SegmentMessage::INFO_RDMNET_CONFIG, CONSOLE_YELLOW);
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH + 1];
-	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d DMX %d", nActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount(), nDmxUniverses);
+	snprintf(aDescription, sizeof(aDescription) - 1, "Art-Net Pixel %d-%s:%d DMX %d", nPixelActivePorts, PixelType::GetType(WS28xxMulti::Get()->GetType()), WS28xxMulti::Get()->GetCount(), nDmxUniverses);
 
 	char aLabel[RDM_DEVICE_LABEL_MAX_LENGTH + 1];
 	const auto nLength = snprintf(aLabel, sizeof(aLabel) - 1, "Orange Pi Zero Pixel-DMX");
@@ -264,12 +259,11 @@ void main() {
 	llrpOnlyDevice.Print();
 #endif
 
-	display.SetTitle("ArtNet Pixel 8:%dx%d", nActivePorts, WS28xxMulti::Get()->GetCount());
+	display.SetTitle("ArtNet 4 Pixel %dx%d", nPixelActivePorts, WS28xxMulti::Get()->GetCount());
 	display.Set(2, displayudf::Labels::IP);
-	display.Set(3, displayudf::Labels::NODE_NAME);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::DMX_DIRECTION);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::DMX_DIRECTION);
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -324,8 +318,8 @@ void main() {
 		if (__builtin_expect((PixelTestPattern::GetPattern() != pixelpatterns::Pattern::NONE), 0)) {
 			pixelTestPattern.Run();
 		}
-		if (pDmxConfigUdp != nullptr) {
-			pDmxConfigUdp->Run();
+		if (nDmxUniverses != 0) {
+			dmxConfigUdp.Run();
 		}
 		mDns.Run();
 #if defined (ENABLE_HTTPD)

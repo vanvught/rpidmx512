@@ -174,19 +174,22 @@ void main() {
 
 	// LightSet B - DMX - 2 Universes
 
-	auto bIsSet = false;
-	auto nDmxUniverses = 0;
-	auto nUniverse = e131params.GetUniverse(0, bIsSet);
+	bool bIsSet;
+	uint32_t nDmxUniverses = 0;
 
-	if (bIsSet) {
-		bridge.SetUniverse(DMXPORT_OFFSET, e131params.GetDirection(0), nUniverse);
+	auto nUniverse = e131params.GetUniverse(0, bIsSet);
+	auto direction = e131params.GetDirection(0);
+
+	if (direction == lightset::PortDir::OUTPUT) {
+		bridge.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
 	nUniverse = e131params.GetUniverse(1, bIsSet);
+	direction = e131params.GetDirection(1);
 
-	if (bIsSet) {
-		bridge.SetUniverse(DMXPORT_OFFSET + 1U, e131params.GetDirection(1), nUniverse);
+	if (direction == lightset::PortDir::OUTPUT) {
+		bridge.SetUniverse(DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -198,6 +201,17 @@ void main() {
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
 		dmxparams.Set(&dmx);
+	}
+
+	for (uint32_t nPortIndex = DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+		uint16_t nUniverse;
+		const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
+
+		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
+			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
+		} else {
+			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::INP, false);
+		}
 	}
 
 	DmxSend dmxSend;

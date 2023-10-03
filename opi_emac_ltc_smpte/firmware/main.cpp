@@ -303,7 +303,7 @@ void main() {
 			artnetparams.Set(0);
 		}
 
-		node.SetShortName("LTC SMPTE Node");
+		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
 			node.SetTimeCodeHandler(&artnetReader);
