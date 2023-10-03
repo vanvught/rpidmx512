@@ -91,7 +91,7 @@ void DMXMonitor::Cls() {
 
 }
 
-void DMXMonitor::Start(uint32_t nPortIndex) {
+void DMXMonitor::Start(const uint32_t nPortIndex) {
 	assert(nPortIndex < output::text::MAX_PORTS);
 
 	if (m_bIsStarted[nPortIndex]) {
@@ -102,7 +102,7 @@ void DMXMonitor::Start(uint32_t nPortIndex) {
 	DisplayDateTime(nPortIndex, "Start");
 }
 
-void DMXMonitor::Stop(uint32_t nPortIndex) {
+void DMXMonitor::Stop(const uint32_t nPortIndex) {
 	assert(nPortIndex < output::text::MAX_PORTS);
 
 	if (!m_bIsStarted[nPortIndex]) {
