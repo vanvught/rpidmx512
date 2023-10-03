@@ -1,8 +1,8 @@
 /**
- * @file dmxconst.h
+ * @file board_gd32f207vc_2.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,35 +23,28 @@
  * THE SOFTWARE.
  */
 
-#ifndef DMX_CONST_H_
-#define DMX_CONST_H_
+#ifndef GD32_BOARD_GD32F207VC_2_H
+#define GD32_BOARD_GD32F207VC_2_H
 
-#include <cstdint>
+#include "gd32_board.h"
 
-namespace dmx {
-enum class PortDirection {
-	OUTP, INP
-};
-enum class OutputStyle {
-	DELTA,
-	CONTINOUS
-};
-static constexpr uint32_t START_CODE = 0;				   ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
-namespace min {
-static constexpr uint32_t CHANNELS = 2;
-}  // namespace min
 namespace max {
-static constexpr uint32_t CHANNELS = 512;
+static constexpr auto OUT = 2U;
+static constexpr auto IN = 2U;
 }  // namespace max
-namespace transmit {
-static constexpr uint32_t BREAK_TIME_MIN = 92;				///< 92 us
-static constexpr uint32_t BREAK_TIME_TYPICAL = 176;		    ///< 176 us
-static constexpr uint32_t MAB_TIME_MIN = 12;				///< 12 us
-static constexpr uint32_t MAB_TIME_MAX = 1000000;			///< 1s
-static constexpr uint32_t REFRESH_RATE_DEFAULT = 40;		///< 40 Hz
-static constexpr uint32_t PERIOD_DEFAULT = (1000000U / REFRESH_RATE_DEFAULT);///< 25000 us
-static constexpr uint32_t BREAK_TO_BREAK_TIME_MIN = 1204;	///< us
-}  // namespace transmit
-}  // namespace dmx
 
-#endif /* DMX_CONST_H_ */
+#define DMX_MAX_PORTS  2
+
+#define DMX_USE_USART0
+#define DMX_USE_USART1
+
+static constexpr auto USART0_PORT = 0;
+static constexpr auto USART1_PORT = 1;
+
+static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_0_GPIO_PIN  = GPIO_PIN_9;
+
+static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOE;
+static constexpr auto DIR_PORT_1_GPIO_PIN  = GPIO_PIN_10;
+
+#endif /* GD32_BOARD_GD32F207VC_2_H */

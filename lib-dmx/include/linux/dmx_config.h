@@ -26,24 +26,30 @@
 #ifndef LINUX_DMX_CONFIG_H_
 #define LINUX_DMX_CONFIG_H_
 
-namespace dmxsingle {
-namespace max {
-static constexpr auto OUT = 1U;
-static constexpr auto IN = 1U;
-}  // namespace max
-}  // namespace dmxsingle
-
-namespace dmxmulti {
-namespace max {
-#if !defined(LIGHTSET_PORTS)
- static constexpr auto OUT = 4U;
- static constexpr auto IN = 4U;
+#if !defined (OUTPUT_DMX_SEND_MULTI)
+ namespace dmx {
+ namespace config {
+ namespace max {
+ static constexpr auto OUT = 1U;
+ static constexpr auto IN = 1U;
+ }  // namespace max 
+ }  // namespace config
+ }  // namespace dmx
 #else
- static constexpr auto OUT = LIGHTSET_PORTS;
- static constexpr auto IN = LIGHTSET_PORTS;
+ namespace dmx {
+ namespace config {
+ namespace max {
+# if !defined(LIGHTSET_PORTS)
+  static constexpr auto OUT = 4U;
+  static constexpr auto IN = 4U;
+# else
+  static constexpr auto OUT = LIGHTSET_PORTS;
+  static constexpr auto IN = LIGHTSET_PORTS;
+# endif
+ }  // namespace max
+ }  // namespace config
+ }  // namespace dmx
 #endif
-}  // namespace max
-}  // namespace dmxmulti
 
 namespace dmx {
 namespace buffer {

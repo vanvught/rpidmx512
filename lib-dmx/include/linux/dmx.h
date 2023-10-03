@@ -67,7 +67,15 @@ public:
 
 	// DMX Send
 
-	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
+	void StartOutput(uint32_t nPortIndex);
+	void SetOutput(const bool doForce);
+
+	void SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const dmx::OutputStyle outputStyle) {}
+	dmx::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const {
+		return dmx::OutputStyle::DELTA;
+	}
 
 	void Blackout();
 	void FullOn();
@@ -98,7 +106,7 @@ public:
 	const uint8_t* GetDmxCurrentData(uint32_t nPortIndex);
 	const uint8_t* GetDmxChanged(uint32_t nPortIndex);
 
-	uint32_t GetUpdatesPerSecond(uint32_t nPortIndex); //TODO Refactor to GetDmxUpdatesPerSecond ?
+	uint32_t GetDmxUpdatesPerSecond(uint32_t nPortIndex);
 	uint32_t GetDmxReceivedCount(uint32_t nPortIndex);
 
 	static Dmx* Get() {
@@ -116,8 +124,8 @@ private:
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
 	uint16_t m_nDmxTransmitSlots { dmx::max::CHANNELS };
-	dmx::PortDirection m_tDmxPortDirection[dmxmulti::max::OUT];
-	uint32_t m_nDmxTransmissionLength[dmxmulti::max::OUT];
+	dmx::PortDirection m_tDmxPortDirection[dmx::config::max::OUT];
+	uint32_t m_nDmxTransmissionLength[dmx::config::max::OUT];
 
 	static Dmx *s_pThis;
 };

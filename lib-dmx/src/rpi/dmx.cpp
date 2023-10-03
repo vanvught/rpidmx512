@@ -490,6 +490,31 @@ void Dmx::UartDisableFifo() {	// DMX Input
 	isb();
 }
 
+void Dmx::StartOutput(__attribute__((unused)) uint32_t nPortIndex) {
+
+}
+
+void Dmx::SetOutput(__attribute__((unused)) const bool doForce) {
+	if (sv_DmxTransmitState != IDLE) {
+		return;
+	}
+
+	UartEnableFifo();
+	__enable_fiq();
+
+	irq_timer_set(IRQ_TIMER_1, irq_timer1_dmx_sender);
+
+	const uint32_t clo = BCM2835_ST->CLO;
+
+	if (clo - sv_DmxTransmitBreakMicros > s_nDmxTransmitPeriod) {
+		BCM2835_ST->C1 = clo + 4;
+	} else {
+		BCM2835_ST->C1 = s_nDmxTransmitPeriod + sv_DmxTransmitBreakMicros + 4;
+	}
+
+	isb();
+}
+
 void Dmx::StartData() {
 	switch (s_nPortDirection) {
 	case PortDirection::OUTP: {
@@ -597,7 +622,7 @@ void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDire
 	}
 }
 
-PortDirection Dmx::GetPortDirection() {
+PortDirection Dmx::GetPortDirection(__attribute__((unused)) uint32_t nPortIndex) {
 	return s_nPortDirection;
 }
 
@@ -725,7 +750,7 @@ void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t 
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetPortSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
