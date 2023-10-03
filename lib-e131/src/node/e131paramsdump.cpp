@@ -2,7 +2,7 @@
  * @file e131paramsdump.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,14 +47,12 @@ void E131Params::Dump() {
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
 		if (isMaskSet(e131params::Mask::UNIVERSE_A << i)) {
-			printf(" %s=%d\n", LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniversePort[i]);
+			printf(" %s=%d\n", LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniverse[i]);
 		}
 	}
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
-		if (isMaskSet(e131params::Mask::MERGE_MODE_A << i)) {
-			printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(m_Params.nMergeModePort[i]));
-		}
+		printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(mergemode_get(i)));
 	}
 
 	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
@@ -66,6 +64,11 @@ void E131Params::Dump() {
 		if (isMaskSet(e131params::Mask::PRIORITY_A << i)) {
 			printf(" %s=%d\n", E131ParamsConst::PRIORITY[i], m_Params.nPriority[i]);
 		}
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		const auto nOutputStyle = static_cast<uint32_t>(isOutputStyleSet(1U << i));
+		printf(" %s=%u [%s]\n", LightSetParamsConst::OUTPUT_STYLE[i], nOutputStyle, lightset::get_output_style(static_cast<lightset::OutputStyle>(nOutputStyle)));
 	}
 
 	if (isMaskSet(e131params::Mask::DISABLE_MERGE_TIMEOUT)) {

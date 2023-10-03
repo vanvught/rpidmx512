@@ -70,8 +70,8 @@ void E131Bridge::SendDiscoveryPacket() {
 					m_pE131DiscoveryPacket->UniverseDiscoveryLayer.ListOfUniverses[nListOfUniverses++] = __builtin_bswap16(nUniverse);
 				}
 			}
-		}
 
-		Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, e131::UDP_PORT);
+			Network::Get()->SendTo(m_nHandle, m_pE131DiscoveryPacket, m_State.DiscoveryPacketLength, m_DiscoveryIpAddress, e131::UDP_PORT);
+		}
 	}
 }

@@ -37,9 +37,9 @@ static constexpr auto UNIVERSE_DISCOVERY_INTERVAL_SECONDS = 10;
 static constexpr auto NETWORK_DATA_LOSS_TIMEOUT_SECONDS = 2.5f;
 
 struct OptionsMask {
-	static constexpr auto PREVIEW_DATA = (1 << 7);			///< Preview Data: Bit 7 (most significant bit)
-	static constexpr auto STREAM_TERMINATED = (1 << 6);		///< Stream Terminated: Bit 6
-	static constexpr auto FORCE_SYNCHRONIZATION = (1 << 5);	///< Force Synchronization: Bit 5
+	static constexpr auto PREVIEW_DATA = (1U << 7);			///< Preview Data: Bit 7 (most significant bit)
+	static constexpr auto STREAM_TERMINATED = (1U << 6);	///< Stream Terminated: Bit 6
+	static constexpr auto FORCE_SYNCHRONIZATION = (1U << 5);///< Force Synchronization: Bit 5
 };
 
 namespace universe {
@@ -48,9 +48,9 @@ static constexpr auto MAX = 63999;
 static constexpr auto DISCOVERY = 64214;
 }  // namespace universe
 namespace priority {
-static constexpr auto LOWEST = 1;
-static constexpr auto DEFAULT = 100;
-static constexpr auto HIGHEST = 200;
+static constexpr uint8_t LOWEST  = 1;
+static constexpr uint8_t DEFAULT = 100;
+static constexpr uint8_t HIGHEST = 200;
 }  // namespace priority
 namespace vector {
 namespace root {

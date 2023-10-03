@@ -33,6 +33,10 @@
 
 #include "e117const.h"
 
+#if defined (E131_HAVE_DMXIN)
+# include "dmx.h"
+#endif
+
 #include "lightset.h"
 #include "lightsetdata.h"
 
@@ -46,17 +50,26 @@
 E131Bridge *E131Bridge::s_pThis = nullptr;
 
 E131Bridge::E131Bridge() {
+	DEBUG_ENTRY
+
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+
+	memset(&m_Bridge, 0, sizeof(struct e131bridge::Bridge));
+
+	for (auto& port : m_Bridge.Port) {
+		port.direction = lightset::PortDir::DISABLE;
+	}
+
+	memset(&m_State, 0, sizeof(e131bridge::State));
+	m_State.nPriority = e131::priority::LOWEST;
+	m_State.failsafe = lightset::FailSafe::HOLD;
 
 	for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
 		memset(&m_OutputPort[i], 0, sizeof(e131bridge::OutputPort));
 		memset(&m_InputPort[i], 0, sizeof(e131bridge::InputPort));
 		m_InputPort[i].nPriority = 100;
 	}
-
-	memset(&m_State, 0, sizeof(e131bridge::State));
-	m_State.nPriority = e131::priority::LOWEST;
 
 #if defined (E131_HAVE_DMXIN)
 	char aSourceName[e131::SOURCE_NAME_LENGTH];
@@ -69,6 +82,8 @@ E131Bridge::E131Bridge() {
 
 	m_nHandle = Network::Get()->Begin(e131::UDP_PORT);
 	assert(m_nHandle != -1);
+
+	DEBUG_EXIT
 }
 
 E131Bridge::~E131Bridge() {
@@ -93,12 +108,28 @@ void E131Bridge::Start() {
 	}
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
-			e131::dmx_start(nPortIndex);
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
+		}
+	}
+
+	SetLocalMerging();
+#endif
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	/*
+	 * Make sure that the supported LightSet OutputSyle is correctly set
+	 */
+	if (m_pLightSet != nullptr) {
+		for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+			if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+				SetOutputStyle(nPortIndex, GetOutputStyle(nPortIndex));
+			}
 		}
 	}
 #endif
 
+	m_State.status = e131bridge::Status::ON;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 }
 
@@ -110,17 +141,17 @@ void E131Bridge::Stop() {
 			m_pLightSet->Stop(nPortIndex);
 		}
 		lightset::Data::ClearLength(nPortIndex);
-		m_OutputPort[nPortIndex].IsDataPending = false;
 	}
 
 #if defined (E131_HAVE_DMXIN)
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
-			e131::dmx_stop(nPortIndex);
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::INP, false);
 		}
 	}
 #endif
 
+	m_State.status = e131bridge::Status::OFF;
 	Hardware::Get()->SetMode(hardware::ledblink::Mode::OFF_OFF);
 }
 
@@ -165,12 +196,14 @@ void E131Bridge::LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_PRINTF("nPortIndex=%d, nUniverse=%d", nPortIndex, nUniverse);
 
 	for (uint32_t i = 0; i < e131bridge::MAX_PORTS; i++) {
-		DEBUG_PRINTF("\tnm_OutputPort[%d].nUniverse=%d", i, m_OutputPort[i].genericPort.nUniverse);
+		DEBUG_PRINTF("\tm_OutputPort[%d].nUniverse=%d", i, m_Bridge.Port[i].nUniverse);
 
 		if (i == nPortIndex) {
+			DEBUG_PUTS("continue");
 			continue;
 		}
-		if (m_OutputPort[i].genericPort.nUniverse == nUniverse) {
+
+		if (m_Bridge.Port[i].nUniverse == nUniverse) {
 			DEBUG_EXIT
 			return;
 		}
@@ -181,82 +214,119 @@ void E131Bridge::LeaveUniverse(uint32_t nPortIndex, uint16_t nUniverse) {
 	DEBUG_EXIT
 }
 
-void E131Bridge::SetUniverse(uint32_t nPortIndex, lightset::PortDir dir, uint16_t nUniverse) {
+void E131Bridge::SetLocalMerging() {
+	DEBUG_ENTRY
+
+	for (uint32_t nInputPortIndex = 0; nInputPortIndex < e131bridge::MAX_PORTS; nInputPortIndex++) {
+		if ((m_Bridge.Port[nInputPortIndex].direction == lightset::PortDir::OUTPUT) || (m_Bridge.Port[nInputPortIndex].nUniverse == 0))  {
+			continue;
+		}
+
+		m_Bridge.Port[nInputPortIndex].bLocalMerge = false;
+
+		for (uint32_t nOutputPortIndex = 0; nOutputPortIndex < e131bridge::MAX_PORTS; nOutputPortIndex++) {
+			if (m_Bridge.Port[nOutputPortIndex].direction == lightset::PortDir::INPUT) {
+				continue;
+			}
+
+			DEBUG_PRINTF("nInputPortIndex=%u %u, nOutputPortIndex=%u %u",
+					nInputPortIndex,
+					m_Bridge.Port[nInputPortIndex].nUniverse,
+					nOutputPortIndex,
+					m_Bridge.Port[nOutputPortIndex].nUniverse);
+
+			if (m_Bridge.Port[nInputPortIndex].nUniverse == m_Bridge.Port[nOutputPortIndex].nUniverse) {
+
+				if (!m_Bridge.Port[nOutputPortIndex].bLocalMerge) {
+					m_OutputPort[nOutputPortIndex].sourceA.nIp = Network::Get()->GetIp();
+					DEBUG_PUTS("Local merge Source A");
+				} else {
+					m_OutputPort[nOutputPortIndex].sourceB.nIp = Network::Get()->GetIp();
+					DEBUG_PUTS("Local merge Source B");
+				}
+
+				DEBUG_PUTS("");
+				m_Bridge.Port[nInputPortIndex].bLocalMerge = true;
+				m_Bridge.Port[nOutputPortIndex].bLocalMerge = true;
+			}
+		}
+	}
+
+	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+		DEBUG_PRINTF("nPortIndex=%u, bLocalMerge=%c", nPortIndex, m_Bridge.Port[nPortIndex].bLocalMerge ? 'Y' : 'N');
+	}
+
+	DEBUG_EXIT
+}
+
+void E131Bridge::SetUniverse(const uint32_t nPortIndex, const lightset::PortDir portDir, const uint16_t nUniverse) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("nPortIndex=%u, dir=%s, nUniverse=%u", nPortIndex, lightset::get_direction(portDir), nUniverse);
+
 	assert(nPortIndex < e131bridge::MAX_PORTS);
-	assert(dir <= lightset::PortDir::DISABLE);
+	assert(portDir <= lightset::PortDir::DISABLE);
 	assert((nUniverse >= e131::universe::DEFAULT) && (nUniverse <= e131::universe::MAX));
 
-	if ((dir == lightset::PortDir::INPUT) && (nPortIndex < e131bridge::MAX_PORTS)) {
-		if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
-			if (m_InputPort[nPortIndex].genericPort.nUniverse == nUniverse) {
+	if (portDir == lightset::PortDir::DISABLE) {
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+			assert(m_State.nEnableOutputPorts > 1);
+			m_State.nEnableOutputPorts = static_cast<uint8_t>(m_State.nEnableOutputPorts - 1);
+			LeaveUniverse(nPortIndex, nUniverse);
+		}
+
+#if defined (E131_HAVE_DMXIN)
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			assert(m_State.nEnabledInputPorts > 1);
+			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts - 1);
+		}
+#endif
+
+		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::DISABLE;
+
+		DEBUG_EXIT
+		return;
+	}
+
+#if defined (E131_HAVE_DMXIN)
+	if (portDir == lightset::PortDir::INPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
+			if (m_Bridge.Port[nPortIndex].nUniverse == nUniverse) {
+				DEBUG_EXIT
 				return;
 			}
 		} else {
 			m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts + 1);
 			assert(m_State.nEnabledInputPorts <= e131bridge::MAX_PORTS);
-			m_InputPort[nPortIndex].genericPort.bIsEnabled = true;
 		}
 
-		m_InputPort[nPortIndex].genericPort.nUniverse = nUniverse;
+		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::INPUT;
+		m_Bridge.Port[nPortIndex].nUniverse = nUniverse;
 		m_InputPort[nPortIndex].nMulticastIp = e131::universe_to_multicast_ip(nUniverse);
 
+		DEBUG_EXIT
 		return;
 	}
+#endif
 
-	if (dir == lightset::PortDir::DISABLE) {
-		if (nPortIndex < e131bridge::MAX_PORTS) {
-			if (m_OutputPort[nPortIndex].genericPort.bIsEnabled) {
-				m_OutputPort[nPortIndex].genericPort.bIsEnabled = false;
-				m_State.nEnableOutputPorts = static_cast<uint8_t>(m_State.nEnableOutputPorts - 1);
-				LeaveUniverse(nPortIndex, nUniverse);
+	if (portDir == lightset::PortDir::OUTPUT) {
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+			if (m_Bridge.Port[nPortIndex].nUniverse == nUniverse) {
+				DEBUG_EXIT
+				return;
+			} else {
+				LeaveUniverse(nPortIndex, m_Bridge.Port[nPortIndex].nUniverse);
 			}
-		}
-
-		if (nPortIndex < e131bridge::MAX_PORTS) {
-			if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
-				m_InputPort[nPortIndex].genericPort.bIsEnabled = false;
-				m_State.nEnabledInputPorts = static_cast<uint8_t>(m_State.nEnabledInputPorts - 1);
-			}
-		}
-
-		return;
-	}
-
-	// From here we handle Output ports only
-
-	if (m_OutputPort[nPortIndex].genericPort.bIsEnabled) {
-		if (m_OutputPort[nPortIndex].genericPort.nUniverse == nUniverse) {
-			return;
 		} else {
-			LeaveUniverse(nPortIndex, nUniverse);
-		}
-	} else {
-		m_State.nEnableOutputPorts = static_cast<uint8_t>(m_State.nEnableOutputPorts + 1);
-		assert(m_State.nEnableOutputPorts <= e131bridge::MAX_PORTS);
-		m_OutputPort[nPortIndex].genericPort.bIsEnabled = true;
-	}
-
-	Network::Get()->JoinGroup(m_nHandle, e131::universe_to_multicast_ip(nUniverse));
-
-	m_OutputPort[nPortIndex].genericPort.nUniverse = nUniverse;
-}
-
-bool E131Bridge::GetUniverse(uint32_t nPortIndex, uint16_t &nUniverse, lightset::PortDir portDir) const {
-	if (portDir == lightset::PortDir::INPUT) {
-		if (nPortIndex < e131bridge::MAX_PORTS) {
-			nUniverse = m_InputPort[nPortIndex].genericPort.nUniverse;
-
-			return m_InputPort[nPortIndex].genericPort.bIsEnabled;
+			m_State.nEnableOutputPorts = static_cast<uint8_t>(m_State.nEnableOutputPorts + 1);
+			assert(m_State.nEnableOutputPorts <= e131bridge::MAX_PORTS);
 		}
 
-		return false;
+		Network::Get()->JoinGroup(m_nHandle, e131::universe_to_multicast_ip(nUniverse));
+
+		m_Bridge.Port[nPortIndex].direction = lightset::PortDir::OUTPUT;
+		m_Bridge.Port[nPortIndex].nUniverse = nUniverse;
+
 	}
-
-	assert(nPortIndex < e131bridge::MAX_PORTS);
-
-	nUniverse = m_OutputPort[nPortIndex].genericPort.nUniverse;
-
-	return m_OutputPort[nPortIndex].genericPort.bIsEnabled;
 }
 
 void E131Bridge::UpdateMergeStatus(const uint32_t nPortIndex) {
@@ -344,178 +414,176 @@ void E131Bridge::HandleDmx() {
 	const auto nDmxSlots = __builtin_bswap16(pData->DMPLayer.PropertyValueCount) - 1U;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (!m_OutputPort[nPortIndex].genericPort.bIsEnabled) {
-			continue;
-		}
-
-		// Frame layer
-		// 8.2 Association of Multicast Addresses and Universe
-		// Note: The identity of the universe shall be determined by the universe number in the
-		// packet and not assumed from the multicast address.
-		if (pData->FrameLayer.Universe != __builtin_bswap16(m_OutputPort[nPortIndex].genericPort.nUniverse)) {
-			continue;
-		}
-
-		auto *pSourceA = &m_OutputPort[nPortIndex].sourceA;
-		auto *pSourceB = &m_OutputPort[nPortIndex].sourceB;
-
-		const auto ipA = pSourceA->nIp;
-		const auto ipB = pSourceB->nIp;
-
-		const auto isSourceA = isIpCidMatch(pSourceA);
-		const auto isSourceB = isIpCidMatch(pSourceB);
-
-		// 6.9.2 Sequence Numbering
-		// Having first received a packet with sequence number A, a second packet with sequence number B
-		// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
-		// the packet containing sequence number B shall be deemed out of sequence and discarded
-		if (isSourceA) {
-			const auto diff = static_cast<int8_t>(pData->FrameLayer.SequenceNumber - pSourceA->nSequenceNumberData);
-			pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			if ((diff <= 0) && (diff > -20)) {
+		if (m_Bridge.Port[nPortIndex].direction == lightset::PortDir::OUTPUT) {
+			// Frame layer
+			// 8.2 Association of Multicast Addresses and Universe
+			// Note: The identity of the universe shall be determined by the universe number in the
+			// packet and not assumed from the multicast address.
+			if (pData->FrameLayer.Universe != __builtin_bswap16(m_Bridge.Port[nPortIndex].nUniverse)) {
 				continue;
 			}
-		} else if (isSourceB) {
-			const auto diff = static_cast<int8_t>(pData->FrameLayer.SequenceNumber - pSourceB->nSequenceNumberData);
-			pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			if ((diff <= 0) && (diff > -20)) {
-				continue;
-			}
-		}
 
-		// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
-		// server preview applications and shall not be used to generate live output.
-		if ((pData->FrameLayer.Options & e131::OptionsMask::PREVIEW_DATA) != 0) {
-			continue;
-		}
+			auto *pSourceA = &m_OutputPort[nPortIndex].sourceA;
+			auto *pSourceB = &m_OutputPort[nPortIndex].sourceB;
 
-		// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
-		// Any property values in these packets shall be ignored.
-		if ((pData->FrameLayer.Options & e131::OptionsMask::STREAM_TERMINATED) != 0) {
-			if (isSourceA || isSourceB) {
-				SetNetworkDataLossCondition(isSourceA, isSourceB);
-			}
-			continue;
-		}
+			const auto ipA = pSourceA->nIp;
+			const auto ipB = pSourceB->nIp;
 
-		if (m_State.IsMergeMode) {
-			if (__builtin_expect((!m_State.bDisableMergeTimeout), 1)) {
-				CheckMergeTimeouts(nPortIndex);
-			}
-		}
+			const auto isSourceA = isIpCidMatch(pSourceA);
+			const auto isSourceB = isIpCidMatch(pSourceB);
 
-		if (pData->FrameLayer.Priority < m_State.nPriority ){
-			if (!IsPriorityTimeOut(nPortIndex)) {
-				continue;
-			}
-			m_State.nPriority = pData->FrameLayer.Priority;
-		} else if (pData->FrameLayer.Priority > m_State.nPriority) {
-			m_OutputPort[nPortIndex].sourceA.nIp = 0;
-			m_OutputPort[nPortIndex].sourceB.nIp = 0;
-			m_State.IsMergeMode = false;
-			m_State.nPriority = pData->FrameLayer.Priority;
-		}
-
-		if ((ipA == 0) && (ipB == 0)) {
-			//printf("1. First package from Source\n");
-			pSourceA->nIp = m_nIpAddressFrom;
-			pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
-			pSourceA->nMillis = m_nCurrentPacketMillis;
-			lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
-		} else if (isSourceA && (ipB == 0)) {
-			//printf("2. Continue package from SourceA\n");
-			pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			pSourceA->nMillis = m_nCurrentPacketMillis;
-			lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
-		} else if ((ipA == 0) && isSourceB) {
-			//printf("3. Continue package from SourceB\n");
-			pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			pSourceB->nMillis = m_nCurrentPacketMillis;
-			lightset::Data::SetSourceB(nPortIndex, pDmxData, nDmxSlots);
-		} else if (!isSourceA && (ipB == 0)) {
-			//printf("4. New ip, start merging\n");
-			pSourceB->nIp = m_nIpAddressFrom;
-			pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			memcpy(pSourceB->cid, pData->RootLayer.Cid, 16);
-			pSourceB->nMillis = m_nCurrentPacketMillis;
-			UpdateMergeStatus(nPortIndex);
-			lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
-		} else if ((ipA == 0) && !isSourceB) {
-			//printf("5. New ip, start merging\n");
-			pSourceA->nIp = m_nIpAddressFrom;
-			pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
-			pSourceA->nMillis = m_nCurrentPacketMillis;
-			UpdateMergeStatus(nPortIndex);
-			lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
-		} else if (isSourceA && !isSourceB) {
-			//printf("6. Continue merging\n");
-			pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			pSourceA->nMillis = m_nCurrentPacketMillis;
-			UpdateMergeStatus(nPortIndex);
-			lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
-		} else if (!isSourceA && isSourceB) {
-			//printf("7. Continue merging\n");
-			pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
-			pSourceB->nMillis = m_nCurrentPacketMillis;
-			UpdateMergeStatus(nPortIndex);
-			lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
-		}
-#ifndef NDEBUG
-		else if (isSourceA && isSourceB) {
-			printf("8. Source matches both buffers, this shouldn't be happening!\n");
-			assert(0);
-			return;
-		} else if (!isSourceA && !isSourceB) {
-			printf("9. More than two sources, discarding data\n");
-			assert(0);
-			return;
-		}
-#endif
-		else {
-			printf("0. No cases matched, this shouldn't happen!\n");
-			assert(0);
-			return;
-		}
-
-		// This bit indicates whether to lock or revert to an unsynchronized state when synchronization is lost
-		// (See Section 11 on Universe Synchronization and 11.1 for discussion on synchronization states).
-		// When set to 0, components that had been operating in a synchronized state shall not update with any
-		// new packets until synchronization resumes. When set to 1, once synchronization has been lost,
-		// components that had been operating in a synchronized state need not wait for a new
-		// E1.31 Synchronization Packet in order to update to the next E1.31 Data Packet.
-		if ((pData->FrameLayer.Options & e131::OptionsMask::FORCE_SYNCHRONIZATION) == 0) {
-			// 6.3.3.1 Synchronization Address Usage in an E1.31 Synchronization Packet
-			// An E1.31 Synchronization Packet is sent to synchronize the E1.31 data on a specific universe number.
-			// A Synchronization Address of 0 is thus meaningless, and shall not be transmitted.
-			// Receivers shall ignore E1.31 Synchronization Packets containing a Synchronization Address of 0.
-			if (pData->FrameLayer.SynchronizationAddress != 0) {
-				if (!m_State.IsForcedSynchronized) {
-					if (!(isSourceA || isSourceB)) {
-						SetSynchronizationAddress((pSourceA->nIp != 0), (pSourceB->nIp != 0), __builtin_bswap16(pData->FrameLayer.SynchronizationAddress));
-					} else {
-						SetSynchronizationAddress(isSourceA, isSourceB, __builtin_bswap16(pData->FrameLayer.SynchronizationAddress));
-					}
-					m_State.IsForcedSynchronized = true;
-					m_State.IsSynchronized = true;
+			// 6.9.2 Sequence Numbering
+			// Having first received a packet with sequence number A, a second packet with sequence number B
+			// arrives. If, using signed 8-bit binary arithmetic, B – A is less than or equal to 0, but greater than -20 then
+			// the packet containing sequence number B shall be deemed out of sequence and discarded
+			if (isSourceA) {
+				const auto diff = static_cast<int8_t>(pData->FrameLayer.SequenceNumber - pSourceA->nSequenceNumberData);
+				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				if ((diff <= 0) && (diff > -20)) {
+					continue;
+				}
+			} else if (isSourceB) {
+				const auto diff = static_cast<int8_t>(pData->FrameLayer.SequenceNumber - pSourceB->nSequenceNumberData);
+				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				if ((diff <= 0) && (diff > -20)) {
+					continue;
 				}
 			}
-		} else {
-			m_State.IsForcedSynchronized = false;
-		}
 
-		if ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize)) {
-			lightset::Data::Output(m_pLightSet, nPortIndex);
-
-			if (!m_OutputPort[nPortIndex].IsTransmitting) {
-				m_pLightSet->Start(nPortIndex);
-				m_State.IsChanged = true;
-				m_OutputPort[nPortIndex].IsTransmitting = true;
+			// This bit, when set to 1, indicates that the data in this packet is intended for use in visualization or media
+			// server preview applications and shall not be used to generate live output.
+			if ((pData->FrameLayer.Options & e131::OptionsMask::PREVIEW_DATA) != 0) {
+				continue;
 			}
-		}
 
-		m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
+			// Upon receipt of a packet containing this bit set to a value of 1, receiver shall enter network data loss condition.
+			// Any property values in these packets shall be ignored.
+			if ((pData->FrameLayer.Options & e131::OptionsMask::STREAM_TERMINATED) != 0) {
+				if (isSourceA || isSourceB) {
+					SetNetworkDataLossCondition(isSourceA, isSourceB);
+				}
+				continue;
+			}
+
+			if (m_State.IsMergeMode) {
+				if (__builtin_expect((!m_State.bDisableMergeTimeout), 1)) {
+					CheckMergeTimeouts(nPortIndex);
+				}
+			}
+
+			if (pData->FrameLayer.Priority < m_State.nPriority ){
+				if (!IsPriorityTimeOut(nPortIndex)) {
+					continue;
+				}
+				m_State.nPriority = pData->FrameLayer.Priority;
+			} else if (pData->FrameLayer.Priority > m_State.nPriority) {
+				m_OutputPort[nPortIndex].sourceA.nIp = 0;
+				m_OutputPort[nPortIndex].sourceB.nIp = 0;
+				m_State.IsMergeMode = false;
+				m_State.nPriority = pData->FrameLayer.Priority;
+			}
+
+			if ((ipA == 0) && (ipB == 0)) {
+//				printf("1. First package from Source\n");
+				pSourceA->nIp = m_nIpAddressFrom;
+				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
+				pSourceA->nMillis = m_nCurrentPacketMillis;
+				lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
+			} else if (isSourceA && (ipB == 0)) {
+//				printf("2. Continue package from SourceA\n");
+				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				pSourceA->nMillis = m_nCurrentPacketMillis;
+				lightset::Data::SetSourceA(nPortIndex, pDmxData, nDmxSlots);
+			} else if ((ipA == 0) && isSourceB) {
+//				printf("3. Continue package from SourceB\n");
+				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				pSourceB->nMillis = m_nCurrentPacketMillis;
+				lightset::Data::SetSourceB(nPortIndex, pDmxData, nDmxSlots);
+			} else if (!isSourceA && (ipB == 0)) {
+//				printf("4. New ip, start merging\n");
+				pSourceB->nIp = m_nIpAddressFrom;
+				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				memcpy(pSourceB->cid, pData->RootLayer.Cid, 16);
+				pSourceB->nMillis = m_nCurrentPacketMillis;
+				UpdateMergeStatus(nPortIndex);
+				lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+			} else if ((ipA == 0) && !isSourceB) {
+//				printf("5. New ip, start merging\n");
+				pSourceA->nIp = m_nIpAddressFrom;
+				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				memcpy(pSourceA->cid, pData->RootLayer.Cid, 16);
+				pSourceA->nMillis = m_nCurrentPacketMillis;
+				UpdateMergeStatus(nPortIndex);
+				lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+			} else if (isSourceA && !isSourceB) {
+//				printf("6. Continue merging\n");
+				pSourceA->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				pSourceA->nMillis = m_nCurrentPacketMillis;
+				UpdateMergeStatus(nPortIndex);
+				lightset::Data::MergeSourceA(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+			} else if (!isSourceA && isSourceB) {
+//				printf("7. Continue merging\n");
+				pSourceB->nSequenceNumberData = pData->FrameLayer.SequenceNumber;
+				pSourceB->nMillis = m_nCurrentPacketMillis;
+				UpdateMergeStatus(nPortIndex);
+				lightset::Data::MergeSourceB(nPortIndex, pDmxData, nDmxSlots, m_OutputPort[nPortIndex].mergeMode);
+			}
+#ifndef NDEBUG
+			else if (isSourceA && isSourceB) {
+				puts("WARN: 8. Source matches both ip, discarding data");
+				return;
+			} else if (!isSourceA && !isSourceB) {
+				puts("WARN: 9. More than two sources, discarding data");
+				return;
+			}
+			else {
+				puts("ERROR: 0. No cases matched, this shouldn't happen!");
+				return;
+			}
+#endif
+			// This bit indicates whether to lock or revert to an unsynchronized state when synchronization is lost
+			// (See Section 11 on Universe Synchronization and 11.1 for discussion on synchronization states).
+			// When set to 0, components that had been operating in a synchronized state shall not update with any
+			// new packets until synchronization resumes. When set to 1, once synchronization has been lost,
+			// components that had been operating in a synchronized state need not wait for a new
+			// E1.31 Synchronization Packet in order to update to the next E1.31 Data Packet.
+			if ((pData->FrameLayer.Options & e131::OptionsMask::FORCE_SYNCHRONIZATION) == 0) {
+				// 6.3.3.1 Synchronization Address Usage in an E1.31 Synchronization Packet
+				// An E1.31 Synchronization Packet is sent to synchronize the E1.31 data on a specific universe number.
+				// A Synchronization Address of 0 is thus meaningless, and shall not be transmitted.
+				// Receivers shall ignore E1.31 Synchronization Packets containing a Synchronization Address of 0.
+				if (pData->FrameLayer.SynchronizationAddress != 0) {
+					if (!m_State.IsForcedSynchronized) {
+						if (!(isSourceA || isSourceB)) {
+							SetSynchronizationAddress((pSourceA->nIp != 0), (pSourceB->nIp != 0), __builtin_bswap16(pData->FrameLayer.SynchronizationAddress));
+						} else {
+							SetSynchronizationAddress(isSourceA, isSourceB, __builtin_bswap16(pData->FrameLayer.SynchronizationAddress));
+						}
+						m_State.IsForcedSynchronized = true;
+						m_State.IsSynchronized = true;
+					}
+				}
+			} else {
+				m_State.IsForcedSynchronized = false;
+			}
+
+			const auto doUpdate = ((!m_State.IsSynchronized) || (m_State.bDisableSynchronize));
+
+			if (doUpdate) {
+				lightset::Data::Output(m_pLightSet, nPortIndex);
+
+				if (!m_OutputPort[nPortIndex].IsTransmitting) {
+					m_pLightSet->Start(nPortIndex);
+					m_OutputPort[nPortIndex].IsTransmitting = true;
+					m_State.IsChanged = true;
+				}
+			} else {
+				lightset::Data::Set(m_pLightSet, nPortIndex);
+			}
+
+			m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT));
+		}
 	}
 }
 
@@ -541,7 +609,6 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 				m_OutputPort[i].sourceB.nIp = 0;
 				memset(m_OutputPort[i].sourceB.cid, 0, e131::CID_LENGTH);
 				lightset::Data::ClearLength(i);
-				m_OutputPort[i].IsDataPending = false;
 				m_OutputPort[i].IsTransmitting = false;
 				m_OutputPort[i].IsMerging = false;
 			}
@@ -554,15 +621,16 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 					memset(m_OutputPort[i].sourceA.cid, 0, e131::CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
+
 				if ((bSourceB) && (m_OutputPort[i].sourceB.nIp != 0)) {
 					m_OutputPort[i].sourceB.nIp = 0;
 					memset(m_OutputPort[i].sourceB.cid, 0, e131::CID_LENGTH);
 					m_OutputPort[i].IsMerging = false;
 				}
+
 				if (!m_State.IsMergeMode) {
 					doFailsafe = true;
 					lightset::Data::ClearLength(i);
-					m_OutputPort[i].IsDataPending = false;
 					m_OutputPort[i].IsTransmitting = false;
 				}
 			}
@@ -580,6 +648,7 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 			m_pLightSet->FullOn();
 			break;
 		default:
+			DEBUG_PRINTF("m_State.failsafe=%u", static_cast<uint32_t>(m_State.failsafe));
 			assert(0);
 			__builtin_unreachable();
 			break;
@@ -590,6 +659,10 @@ void E131Bridge::SetNetworkDataLossCondition(bool bSourceA, bool bSourceB) {
 	hal::panel_led_off(hal::panelled::SACN);
 
 	m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
+
+#if defined (E131_HAVE_DMXIN)
+	SetLocalMerging();
+#endif
 
 	DEBUG_EXIT
 }
@@ -636,47 +709,7 @@ bool E131Bridge::IsValidDataPacket() {
 	return true;
 }
 
-void E131Bridge::Run() {
-	uint16_t nForeignPort;
-
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort) ;
-
-	m_nCurrentPacketMillis = Hardware::Get()->Millis();
-
-	if (__builtin_expect((nBytesReceived == 0), 1)) {
-		if (m_State.nEnableOutputPorts != 0) {
-			if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= static_cast<uint32_t>(e131::NETWORK_DATA_LOSS_TIMEOUT_SECONDS * 1000)) {
-				if ((m_pLightSet != nullptr) && (!m_State.IsNetworkDataLoss)) {
-					SetNetworkDataLossCondition();
-				}
-			}
-
-			if ((m_nCurrentPacketMillis - m_nPreviousPacketMillis) >= 1000) {
-				m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::OUTPUT)));
-			}
-		}
-
-#if defined (E131_HAVE_DMXIN)
-		HandleDmxIn();
-		SendDiscoveryPacket();
-#endif
-
-		// The hardware::ledblink::Mode::FAST is for RDM Identify (Art-Net 4)
-		if (m_bEnableDataIndicator && (Hardware::Get()->GetMode() != hardware::ledblink::Mode::FAST)) {
-			if (m_State.nReceivingDmx != 0) {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::DATA);
-			} else {
-				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
-			}
-		}
-
-		return;
-	}
-
-	if (__builtin_expect((!IsValidRoot()), 0)) {
-		return;
-	}
-
+void E131Bridge::Process() {
 	m_State.IsNetworkDataLoss = false;
 	m_nPreviousPacketMillis = m_nCurrentPacketMillis;
 

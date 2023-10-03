@@ -32,6 +32,8 @@
 
 #include "e117const.h"
 
+#include "dmx.h"
+
 #include "network.h"
 #include "hardware.h"
 
@@ -62,20 +64,20 @@ static uint32_t s_ReceivingMask = 0;
 
 void E131Bridge::HandleDmxIn() {
 	for (uint32_t nPortIndex = 0 ; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
-		if (m_InputPort[nPortIndex].genericPort.bIsEnabled) {
+		if ((m_Bridge.Port[nPortIndex].direction == lightset::PortDir::INPUT) 
+		&& (!m_InputPort[nPortIndex].IsDisabled)) {
 
-			uint32_t nLength;
-			uint32_t nUpdatesPerSecond;
-			const auto *const pDmxData = e131::dmx_handler(nPortIndex, nLength, nUpdatesPerSecond);
+			const auto *const pDmxData = reinterpret_cast<const struct Data *>(Dmx::Get()->GetDmxChanged(nPortIndex));
 
 			if (pDmxData != nullptr) {
 				// Root Layer (See Section 5)
+				auto nLength = (1U + pDmxData->Statistics.nSlotsInPacket); // Add 1 for SC
 				m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength))));
 				// E1.31 Framing Layer (See Section 6)
 				m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength))));
 				m_pE131DataPacket->FrameLayer.Priority = m_InputPort[nPortIndex].nPriority;
 				m_pE131DataPacket->FrameLayer.SequenceNumber = m_InputPort[nPortIndex].nSequenceNumber++;
-				m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(m_InputPort[nPortIndex].genericPort.nUniverse);
+				m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(m_Bridge.Port[nPortIndex].nUniverse);
 				// Data Layer
 				m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(nLength))));
 				memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
@@ -83,19 +85,65 @@ void E131Bridge::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[nPortIndex].nMulticastIp, e131::UDP_PORT);
 
+				if (m_Bridge.Port[nPortIndex].bLocalMerge) {
+					m_pReceiveBuffer = reinterpret_cast<uint8_t *>(m_pE131DataPacket);
+					m_nIpAddressFrom = Network::Get()->GetIp();
+					HandleDmx();
+				}
+
 				if ((s_ReceivingMask & (1U << nPortIndex)) != (1U << nPortIndex)) {
 					s_ReceivingMask |= (1U << nPortIndex);
 					m_State.nReceivingDmx |= (1U << static_cast<uint8_t>(lightset::PortDir::INPUT));
 					hal::panel_led_on(hal::panelled::PORT_A_RX << nPortIndex);
 				}
-			} else {
-				if (nUpdatesPerSecond == 0) {
+
+				continue;
+			} 
+				
+			if (Dmx::Get()->GetDmxUpdatesPerSecond(nPortIndex) == 0) {
+				auto sendArtDmx = false;
+
+				if ((s_ReceivingMask & (1U << nPortIndex)) == (1U << nPortIndex)) {
+					sendArtDmx = true;
+
 					s_ReceivingMask &= ~(1U << nPortIndex);
 					hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
+
 					if (s_ReceivingMask == 0) {
 						m_State.nReceivingDmx &= static_cast<uint8_t>(~(1U << static_cast<uint8_t>(lightset::PortDir::INPUT)));
 					}
+				} else if (m_InputPort[nPortIndex].nMillis != 0) {
+					const auto nMillis = Hardware::Get()->Millis();
+					if ((nMillis - m_InputPort[nPortIndex].nMillis) > 1000) {
+						m_InputPort[nPortIndex].nMillis = nMillis;
+						sendArtDmx = true;
+					}
 				}
+
+				if (sendArtDmx) {
+					const auto *const pDmxData = reinterpret_cast<const struct Data *>(Dmx::Get()->GetDmxCurrentData(nPortIndex));
+					// Root Layer (See Section 5)
+					auto nLength = (1U + pDmxData->Statistics.nSlotsInPacket); // Add 1 for SC
+					m_pE131DataPacket->RootLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_ROOT_LAYER_LENGTH(nLength))));
+					// E1.31 Framing Layer (See Section 6)
+					m_pE131DataPacket->FrameLayer.FLagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_FRAME_LAYER_LENGTH(nLength))));
+					m_pE131DataPacket->FrameLayer.Priority = m_InputPort[nPortIndex].nPriority;
+					m_pE131DataPacket->FrameLayer.SequenceNumber = m_InputPort[nPortIndex].nSequenceNumber++;
+					m_pE131DataPacket->FrameLayer.Universe = __builtin_bswap16(m_Bridge.Port[nPortIndex].nUniverse);
+					// Data Layer
+					m_pE131DataPacket->DMPLayer.FlagsLength = __builtin_bswap16(static_cast<uint16_t>((0x07 << 12) | (DATA_LAYER_LENGTH(nLength))));
+					memcpy(m_pE131DataPacket->DMPLayer.PropertyValues, pDmxData, nLength);
+					m_pE131DataPacket->DMPLayer.PropertyValueCount = __builtin_bswap16(static_cast<uint16_t>(nLength));
+
+					Network::Get()->SendTo(m_nHandle, m_pE131DataPacket, static_cast<uint16_t>(DATA_PACKET_SIZE(nLength)), m_InputPort[nPortIndex].nMulticastIp, e131::UDP_PORT);
+
+					if (m_Bridge.Port[nPortIndex].bLocalMerge) {
+						m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_pE131DataPacket);
+						m_nIpAddressFrom = Network::Get()->GetIp();
+						HandleDmx();
+					}
+				}
+
 			}
 		}
 	}
