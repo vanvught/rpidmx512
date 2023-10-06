@@ -26,44 +26,16 @@
 #include <cstdint>
 
 #include "emac/phy.h"
-#include "emac/net_link_check.h"
-#include "emac/mmi.h"
 
 #include "debug.h"
 
-#if !defined (BIT)
-# define BIT(x) static_cast<uint16_t>(1U<<(x))
-#endif
-
-#if !defined(PHY_ADDRESS)
-# define PHY_ADDRESS 1
-#endif
-
 namespace net {
-void phy_customized_led() {
-	DEBUG_ENTRY
 
-	DEBUG_EXIT
-}
-
-void phy_customized_timing() {
-	DEBUG_ENTRY
-
-	DEBUG_EXIT
-}
-
-/**
- * PHY Status Register (PHYSTS), address 10h
- * @param phyStatus
- */
 void phy_customized_status(PhyStatus& phyStatus) {
-	uint16_t nValue;
-	phy_read(PHY_ADDRESS, 0x10, nValue);
-
-	phyStatus.link = ((nValue & BIT(0)) == BIT(0)) ? Link::STATE_UP : Link::STATE_DOWN;
-	phyStatus.duplex = ((nValue & BIT(2)) == BIT(2)) ? Duplex::DUPLEX_FULL : Duplex::DUPLEX_HALF;
-	phyStatus.speed = ((nValue & BIT(1)) == BIT(1)) ? Speed::SPEED10 : Speed::SPEED100;
-	phyStatus.bAutonegotiation = ((nValue & BIT(4)) == BIT(4));
+	phyStatus.link  = Link::STATE_UP;
+	phyStatus.duplex = Duplex::DUPLEX_FULL;
+	phyStatus.speed = Speed::SPEED1000;
+	phyStatus.bAutonegotiation = true;
 
 }
 }  // namespace net

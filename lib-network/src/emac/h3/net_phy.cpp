@@ -45,7 +45,7 @@ namespace net {
 #define MDIO_CMD_MII_PHY_ADDR_SHIFT		12
 
 bool phy_read(const uint32_t nAddress, const uint32_t nRegister, uint16_t& nValue) {
-//	DEBUG_ENTRY
+	DEBUG_ENTRY
 
 	uint32_t nCmd = ((0x03 & 0x07) << 20);
 	nCmd |= ((nAddress << MDIO_CMD_MII_PHY_ADDR_SHIFT) & MDIO_CMD_MII_PHY_ADDR_MASK);
@@ -63,7 +63,7 @@ bool phy_read(const uint32_t nAddress, const uint32_t nRegister, uint16_t& nValu
 	};
 
 	if (!bResult) {
-//		DEBUG_EXIT
+		DEBUG_EXIT
 		return false;
 	}
 
@@ -80,14 +80,14 @@ bool phy_read(const uint32_t nAddress, const uint32_t nRegister, uint16_t& nValu
 	};
 
 	if (!bResult) {
-//		DEBUG_EXIT
+		DEBUG_EXIT
 		return false;
 	}
 
 	nValue = static_cast<uint16_t>(H3_EMAC->MII_DATA);
 
-//	DEBUG_PRINTF("%.2x %.2x %.4x", nAddress, nRegister, nValue);
-//	DEBUG_EXIT
+	DEBUG_PRINTF("%.2x %.2x %.4x", nAddress, nRegister, nValue);
+	DEBUG_EXIT
 	return true;
 }
 

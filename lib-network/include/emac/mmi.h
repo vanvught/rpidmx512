@@ -95,29 +95,6 @@ static constexpr uint16_t LPA_RFAULT     				= 0x2000; /* Link partner faulted  
 static constexpr uint16_t LPA_LPACK      				= 0x4000; /* Link partner acked us       */
 static constexpr uint16_t LPA_NPAGE      				= 0x8000; /* Next page bit               */
 
-/* PHY extended MII registers. */
-#if   (PHY_TYPE == LAN8700)
-static constexpr uint32_t REG_STATUS 		= 0x1f;
-static constexpr uint16_t STATUS_SPEED  = 0x0004;	/* configured information of speed: 10Mbit/s */
-static constexpr uint16_t STATUS_DUPLEX = 0x0010;	/* configured information of duplex: full-duplex */
-#elif (PHY_TYPE == DP83848)
-static constexpr uint32_t REG_STATUS 		= 0x10;
-static constexpr uint16_t STATUS_SPEED  = 0x0002;	/* configured information of speed: 10Mbit/s */
-static constexpr uint16_t STATUS_DUPLEX = 0x0004;	/* configured information of duplex: full-duplex */
-static constexpr uint32_t REG_MICR   		= 0x11;
-static constexpr uint32_t REG_MISR   		= 0x12;
-#elif (PHY_TYPE == RTL8201F)
-static constexpr uint32_t REG_STATUS 		= 0x00;
-static constexpr uint16_t STATUS_SPEED  = 0x2000;	/* configured information of speed: 100Mbit/s */
-static constexpr uint16_t STATUS_DUPLEX = 0x0100;	/* configured information of duplex: full-duplex */
-static constexpr uint32_t REG_RMSR 			= 0x10;
-static constexpr uint32_t REG_ISR			= 0x1e;
-static constexpr uint32_t REG_PAGE_SELECT	= 0x1f;
-#elif (PHY_TYPE == PHY_GENERIC)
-#elif PHY_TYPE is not defined
-# error
-#endif
-
 }  // namespace mmi
 }  // namespace net
 

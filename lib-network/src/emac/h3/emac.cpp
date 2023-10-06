@@ -164,8 +164,8 @@ void __attribute__((cold)) emac_start(uint8_t macAddress[], net::Link& link) {
 
 	net::PhyStatus phyStatus;
 
-	phyStatus.duplex = net::Duplex::DUPLEX_FULL;
-	phyStatus.speed = net::Speed::SPEED100;
+	phyStatus.duplex = net::Duplex::DUPLEX_HALF;
+	phyStatus.speed = net::Speed::SPEED10;
 
 	net::phy_start(PHY_ADDRESS, phyStatus);
 

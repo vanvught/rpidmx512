@@ -93,7 +93,8 @@
 						<entry excluding="h3|net|lwip|src|mdns.cpp" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name=""/>
 						<entry excluding="h3|noemac|emac|params|rpi|net|esp8266|apps" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/apps"/>
-						<entry excluding="phy|dp83848|lan8700|h3|phygen|rtl8201f" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac"/>
+						<entry excluding="dsa|phy|dp83848|lan8700|h3|phygen|rtl8201f" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/dsa"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/h3"/>
 						<entry excluding="phygen|rtl8201f|lan8700|dp83848" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/phy"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/phy/dp83848"/>
@@ -194,8 +195,9 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/emac/phy|src/noemac/h3|src/emac/dp83848|src/emac/lan8700|src/emac/h3|src/emac/phygen|h3|src/apps|lwip|src/linux|src/h3|src/params|src/emac/phylib|mdns.cpp|src/emac/rtl8201f" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="src/emac/dsa|src/emac/phy|src/noemac/h3|src/emac/dp83848|src/emac/lan8700|src/emac/h3|src/emac/phygen|h3|src/apps|lwip|src/linux|src/h3|src/params|src/emac/phylib|mdns.cpp|src/emac/rtl8201f" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/apps"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/dsa"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/h3"/>
 						<entry excluding="phygen|rtl8201f|lan8700|dp83848" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/phy"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/phy/dp83848"/>
@@ -286,7 +288,8 @@
 					<sourceEntries>
 						<entry excluding="h3|src/apps|lwip|src/emac|src/h3|src/net|src/params|mdns.cpp|src/noemac|src/esp8266/h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/apps"/>
-						<entry excluding="gd32|h3|phy|phy/dp83848|phy/lan8700|phy/phygen|phy/rtl8201f" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/emac"/>
+						<entry excluding="dsa|gd32|h3|phy|phy/dp83848|phy/lan8700|phy/phygen|phy/rtl8201f" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/emac"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/dsa"/>
 						<entry excluding="rtl8201f" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/emac/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/emac/h3"/>
 						<entry excluding="dp83848|lan8700|phygen|rtl8201f" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/emac/phy"/>

@@ -31,6 +31,7 @@
 #include "firmwareversion.h"
 #include "network.h"
 #include "remoteconfig.h"
+#include "emac/phy.h"
 
 namespace remoteconfig {
 
@@ -142,6 +143,19 @@ uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
 			"}}"
 			));
 	return nLength;
+}
+
+uint16_t json_get_phystatus(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	net::PhyStatus phyStatus;
+	net::phy_customized_status(phyStatus);
+
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"auto-negotiation\":\"%s\"}",
+						net::phy_string_get_link(phyStatus.link),
+						net::phy_string_get_speed(phyStatus.speed),
+						net::phy_string_get_duplex(phyStatus.duplex),
+						net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
+		return nLength;
 }
 
 }

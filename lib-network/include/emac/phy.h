@@ -38,13 +38,14 @@ enum class Duplex {
 };
 
 enum class Speed {
-	SPEED10, SPEED100
+	SPEED10, SPEED100, SPEED1000
 };
 
 struct PhyStatus {
 	Link link;
 	Duplex duplex;
 	Speed speed;
+	bool bAutonegotiation;
 };
 
 struct PhyIdentifier {
@@ -74,6 +75,13 @@ bool phy_powerdown(const uint32_t nAddress);
  * @return true for success, false for failure
  */
 bool phy_start(const uint32_t nAddress, PhyStatus& phyStatus);
+
+
+const char *phy_string_get_link(const Link link);
+const char *phy_string_get_duplex(const Duplex duplex);
+const char *phy_string_get_speed(const Speed speed);
+const char *phy_string_get_autonegotiation(const bool autonegotiation);
+
 /** @} */
 
 /** \defgroup platform Platform implementation
@@ -112,6 +120,7 @@ bool phy_config(const uint32_t nAddress);
 */
 void phy_customized_led();
 void phy_customized_timing();
+void phy_customized_status(PhyStatus& phyStatus);
 /** @} */
 }
 

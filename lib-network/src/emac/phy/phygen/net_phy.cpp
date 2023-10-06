@@ -23,7 +23,21 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
+
+#include "emac/phy.h"
+#include "emac/net_link_check.h"
+#include "emac/mmi.h"
+
 #include "debug.h"
+
+#if !defined (BIT)
+# define BIT(x) static_cast<uint16_t>(1U<<(x))
+#endif
+
+#if !defined(PHY_ADDRESS)
+# define PHY_ADDRESS 1
+#endif
 
 namespace net {
 void phy_customized_led() {
@@ -36,5 +50,19 @@ void phy_customized_timing() {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
+}
+
+void phy_customized_status(PhyStatus& phyStatus) {
+	phyStatus.link = link_status_read();
+
+	uint16_t nValue;
+	phy_read(PHY_ADDRESS, mmi::REG_BMCR, nValue);
+
+	debug_print_bits(nValue);
+
+	phyStatus.duplex = ((nValue & BIT(8)) == BIT(8)) ? Duplex::DUPLEX_FULL : Duplex::DUPLEX_HALF;
+	phyStatus.speed = ((nValue & BIT(13)) == BIT(13)) ? Speed::SPEED100 : Speed::SPEED10;
+	phyStatus.bAutonegotiation = ((nValue & mmi::BMCR_AUTONEGOTIATION) == mmi::BMCR_AUTONEGOTIATION);
+
 }
 }  // namespace net

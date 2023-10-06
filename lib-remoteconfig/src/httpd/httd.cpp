@@ -290,6 +290,8 @@ Status HttpDaemon::HandleGet() {
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
 		} else if (strcmp(pGet, "directory") == 0) {
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
+		} else if (strcmp(pGet, "phystatus") == 0) {
+			nLength = remoteconfig::json_get_phystatus(m_Content, sizeof(m_Content));
 		} else {
 			return HandleGetTxt();
 		}
