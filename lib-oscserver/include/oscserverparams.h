@@ -2,7 +2,7 @@
  * @file oscserverparams.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -67,13 +67,15 @@ public:
 
 class OSCServerParams {
 public:
-	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore=nullptr);
+	OSCServerParams(OSCServerParamsStore *m_pOSCServerParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const osc::server::Params *ptOSCServerParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(OscServer *pOscServer);
 
@@ -91,9 +93,11 @@ public:
 		return m_tOSCServerParams.bPartialTransmission;
 	}
 
+#if defined (ESP8266)
 	lightset::OutputType GetOutputType() const {
 		return static_cast<lightset::OutputType>(m_tOSCServerParams.tOutputType);
 	}
+#endif
 
     static void staticCallbackFunction(void *p, const char *s);
 

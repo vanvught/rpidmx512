@@ -170,7 +170,7 @@ bool Network::Start() {
 	printf(" SDK      : %s\n", GetSystemSdkVersion());
 	printf(" Firmware : %s\n", GetFirmwareVersion());
 
-	NetworkParams networkParams;
+	NetworkParams networkParams(nullptr);
 
 	if (networkParams.Load()) {
 		networkParams.Dump();

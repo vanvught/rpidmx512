@@ -141,8 +141,8 @@ void main() {
 	PixelDmxParams pixelDmxParams(&storePixelDmx);
 
 	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Set(&pixelDmxConfiguration);
 		pixelDmxParams.Dump();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
@@ -164,11 +164,11 @@ void main() {
 
 	// LightSet B - DMX - 1 Universe
 
-	bool isDmxUniverseSet;
-	auto const nUniverse = e131params.GetUniverse(0, isDmxUniverseSet);
+	auto isDmxUniverseSet = false;
+	const auto portDirection = e131params.GetDirection(0);
 
-	if (isDmxUniverseSet) {
-		bridge.SetUniverse(4, e131params.GetDirection(0), nUniverse);
+	if (portDirection == lightset::PortDir::OUTPUT) {
+		bridge.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, isDmxUniverseSet));
 	}
 
 	StoreDmxSend storeDmxSend;
@@ -179,6 +179,14 @@ void main() {
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
 		dmxparams.Set(&dmx);
+	}
+
+	uint16_t nUniverse;
+
+	if (bridge.GetUniverse(DMXPORT_OFFSET, nUniverse, lightset::PortDir::OUTPUT)) {
+		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
+	} else {
+		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
 	}
 
 	DmxSend dmxSend;
@@ -216,7 +224,7 @@ void main() {
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -237,11 +245,6 @@ void main() {
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
-	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
-		pixelDmxConfiguration.GetCount(),
-		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -252,6 +255,11 @@ void main() {
 	}
 
 	display.Show(&bridge, DMXPORT_OFFSET);
+	display.Printf(7, "%s:%d G%d %s",
+		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixelDmxConfiguration.GetCount(),
+		pixelDmxConfiguration.GetGroupingCount(),
+		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

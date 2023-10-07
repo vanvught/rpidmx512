@@ -30,10 +30,10 @@
 
 namespace display {
 namespace cursor {
-static constexpr auto OFF = 0;
-static constexpr auto ON = (1 << 0);
-static constexpr auto BLINK_OFF = 0;
-static constexpr auto BLINK_ON = (1 << 1);
+static constexpr uint32_t OFF = 0;
+static constexpr uint32_t ON = (1U << 0);
+static constexpr uint32_t BLINK_OFF = 0;
+static constexpr uint32_t BLINK_ON = (1U << 1);
 }  // namespace cursor_mode
 }  // namespace display
 
@@ -49,12 +49,8 @@ public:
 		return m_nRows;
 	}
 
-	uint8_t GetContrast() const {
-		return m_nContrast;
-	}
-
-	bool GetFlipVertically() const {
-		return m_bIsFlippedVertically;
+	void ClearEndOfLine() {
+		m_bClearEndOfLine = true;
 	}
 
 	virtual bool Start()= 0;
@@ -79,8 +75,7 @@ public:
 protected:
 	uint32_t m_nCols;
 	uint32_t m_nRows;
-	uint8_t m_nContrast { 0x7F };
-	bool m_bIsFlippedVertically { false };
+	bool m_bClearEndOfLine { false };
 };
 
 #endif /* DISPLAYSET_H_ */

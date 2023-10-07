@@ -2,7 +2,7 @@
  * @file widgetmonitor.cpp
  *
  */
-/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -83,7 +83,7 @@ void WidgetMonitor::Uptime(uint8_t nLine) {
 void WidgetMonitor::DmxData(const uint8_t * pDmxData, const int nLine) {
 	uint32_t slots;
 
-	if (PortDirection::INP == Dmx::Get()->GetPortDirection()) {
+	if (PortDirection::INP == Dmx::Get()->GetPortDirection(0)) {
 		const struct Data *dmx_statistics = (struct Data *)pDmxData;
 		slots = dmx_statistics->Statistics.nSlotsInPacket + 1;
 	} else {
@@ -198,7 +198,7 @@ void WidgetMonitor::Update() {
 
 		console_clear_line(MonitorLine::PORT_DIRECTION);
 
-		if (PortDirection::INP == Dmx::Get()->GetPortDirection()) {
+		if (PortDirection::INP == Dmx::Get()->GetPortDirection(0)) {
 			const auto receive_dmx_on_change =  Widget::Get()->GetReceiveDmxOnChange();
 
 			if (receive_dmx_on_change == SendState::ALWAYS) {

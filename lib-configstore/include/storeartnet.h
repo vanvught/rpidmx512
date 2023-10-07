@@ -2,7 +2,7 @@
  * @file storeartnet.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,12 +34,12 @@
 
 class StoreArtNet final: public ArtNetParamsStore, public ArtNetStore {
 public:
-	StoreArtNet(uint32_t nPortIndexOffset = 0);
+	StoreArtNet(uint32_t nPortIndexOffset);
 
 	void Update(const struct artnetparams::Params* pArtNetParams) override {
 		DEBUG_ENTRY
 
-		ConfigStore::Get()->Update(configstore::Store::ARTNET, pArtNetParams, sizeof(struct artnetparams::Params));
+		ConfigStore::Get()->Update(configstore::Store::NODE, pArtNetParams, sizeof(struct artnetparams::Params));
 
 		DEBUG_EXIT
 	}
@@ -47,23 +47,7 @@ public:
 	void Copy(struct artnetparams::Params* pArtNetParams) override {
 		DEBUG_ENTRY
 
-		ConfigStore::Get()->Copy(configstore::Store::ARTNET, pArtNetParams, sizeof(struct artnetparams::Params));
-
-		DEBUG_EXIT
-	}
-
-	void SaveFailSafe(uint8_t nFailSafe) override {
-		DEBUG_ENTRY
-
-		ConfigStore::Get()->Update(configstore::Store::ARTNET, __builtin_offsetof(struct artnetparams::Params, nFailSafe), &nFailSafe, sizeof(uint8_t), artnetparams::Mask::FAILSAFE);
-
-		DEBUG_EXIT
-	}
-
-	void SaveShortName(const char* pShortName) override {
-		DEBUG_ENTRY
-
-		ConfigStore::Get()->Update(configstore::Store::ARTNET, __builtin_offsetof(struct artnetparams::Params, aShortName), pShortName, artnet::SHORT_NAME_LENGTH, artnetparams::Mask::SHORT_NAME);
+		ConfigStore::Get()->Copy(configstore::Store::NODE, pArtNetParams, sizeof(struct artnetparams::Params));
 
 		DEBUG_EXIT
 	}
@@ -71,30 +55,55 @@ public:
 	void SaveLongName(const char* pLongName) override {
 		DEBUG_ENTRY
 
-		ConfigStore::Get()->Update(configstore::Store::ARTNET, __builtin_offsetof(struct artnetparams::Params, aLongName), pLongName, artnet::LONG_NAME_LENGTH, artnetparams::Mask::LONG_NAME);
+		ConfigStore::Get()->Update(configstore::Store::NODE, __builtin_offsetof(struct artnetparams::Params, aLongName), pLongName, artnet::LONG_NAME_LENGTH, artnetparams::Mask::LONG_NAME);
 
 		DEBUG_EXIT
 	}
 
-	void SaveUniverseSwitch(uint32_t nPortIndex, uint8_t nAddress) override;
-	void SaveNetSwitch(uint32_t nPage, uint8_t nAddress) override;
-	void SaveSubnetSwitch(uint32_t nPage, uint8_t nAddress) override;
-
-	void SaveMergeMode(uint32_t nPortIndex, lightset::MergeMode tMerge) override;
-	void SavePortProtocol(uint32_t nPortIndex, artnet::PortProtocol tPortProtocol) override;
-
-	void SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled) override;
-
-	// Not used
-	void SaveUniverse(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) uint16_t nUniverse) override {
+	void SaveFailSafe(const uint8_t nFailSafe) override {
 		DEBUG_ENTRY
-		DEBUG_PRINTF("nPortIndex=%u, nUniverse=%u", nPortIndex, nUniverse);
+
+		ConfigStore::Get()->Update(configstore::Store::NODE, __builtin_offsetof(struct artnetparams::Params, nFailSafe), &nFailSafe, sizeof(uint8_t), artnetparams::Mask::FAILSAFE);
+
 		DEBUG_EXIT
 	}
+
+	void SaveUniverseSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nAddress) override {
+		DEBUG_ENTRY
+
+		SaveUniverse(nPortIndex);
+
+		DEBUG_EXIT
+	}
+
+	void SaveNetSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nAddress) override {
+		DEBUG_ENTRY
+
+		SaveUniverse(nPortIndex);
+
+		DEBUG_EXIT
+	}
+
+	void SaveSubnetSwitch(const uint32_t nPortIndex, __attribute__((unused)) const uint8_t nAddress) override {
+		DEBUG_ENTRY
+
+		SaveUniverse(nPortIndex);
+
+		DEBUG_EXIT
+	}
+
+	void SaveShortName(uint32_t nPortIndex, const char *pShortName) override;
+	void SaveMergeMode(uint32_t nPortIndex, const lightset::MergeMode tMerge) override;
+	void SavePortProtocol(uint32_t nPortIndex, const artnet::PortProtocol tPortProtocol) override;
+	void SaveOutputStyle(uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override;
+	void SaveRdmEnabled(uint32_t nPortIndex, bool isEnabled) override;
 
 	static StoreArtNet *Get() {
 		return s_pThis;
 	}
+
+private:
+	void SaveUniverse(uint32_t nPortIndex);
 
 private:
 	static uint32_t s_nPortIndexOffset;

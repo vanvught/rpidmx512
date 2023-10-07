@@ -61,13 +61,12 @@ void main() {
 	StoreRDMDevice storeRDMDevice;
 
 	Widget widget;
-	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
 	WidgetParams widgetParams(&storeWidget);
 
 	if (widgetParams.Load()) {
-		widgetParams.Set();
 		widgetParams.Dump();
+		widgetParams.Set();
 	}
 
 	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);

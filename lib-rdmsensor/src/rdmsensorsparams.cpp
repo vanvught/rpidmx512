@@ -147,20 +147,6 @@ void RDMSensorsParams::Builder(const rdm::sensorsparams::Params *pParams, char *
 	DEBUG_EXIT
 }
 
-void RDMSensorsParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pRDMSensorsParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
-	DEBUG_EXIT
-}
-
 void RDMSensorsParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMSensorsConst::PARAMS_FILE_NAME);

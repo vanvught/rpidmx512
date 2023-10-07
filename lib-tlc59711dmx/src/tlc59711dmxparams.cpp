@@ -84,11 +84,6 @@ bool TLC59711DmxParams::Load() {
 void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pLC59711ParamsStore != nullptr);
-
-	if (m_pLC59711ParamsStore == nullptr) {
-		return;
-	}
 
 	m_Params.nSetList = 0;
 
@@ -96,6 +91,7 @@ void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pLC59711ParamsStore != nullptr);
 	m_pLC59711ParamsStore->Update(&m_Params);
 }
 
@@ -175,6 +171,7 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct tlc59711dmxparams::Params));
 	} else {
+		assert(m_pLC59711ParamsStore != nullptr);
 		m_pLC59711ParamsStore->Copy(&m_Params);
 	}
 
@@ -189,18 +186,6 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void TLC59711DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pLC59711ParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void TLC59711DmxParams::Set(TLC59711Dmx *pTLC59711Dmx) {

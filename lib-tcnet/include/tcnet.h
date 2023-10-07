@@ -2,7 +2,7 @@
  * @file tcnet.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include <cstdint>
 
 #include "tcnetpackets.h"
-
 #include "tcnettimecode.h"
 
 enum class TCNetLayer {
@@ -120,17 +119,18 @@ private:
 	TTCNetNodeIP m_tNode;
 	int32_t m_aHandles[4];
 	TTCNetPacketOptIn m_tOptIn;
-	TTCNet m_TTCNet;
-	uint32_t m_nCurrentMillis{0};
-	uint32_t m_nPreviousMillis{0};
+	uint8_t *m_pReceiveBuffer { nullptr };
+	uint32_t m_nIpAddressFrom;
+	uint32_t m_nCurrentMillis { 0 };
+	uint32_t m_nPreviousMillis { 0 };
 	TCNetLayer m_tLayer = TCNetLayer::LAYER_M;
-	uint32_t *m_pLTime{nullptr};
-	TTCNetPacketTimeTimeCode *m_pLTimeCode{nullptr};
+	uint32_t *m_pLTime { nullptr };
+	TTCNetPacketTimeTimeCode *m_pLTimeCode { nullptr };
 	bool m_bUseTimeCode = false;
-	TCNetTimeCode *m_pTCNetTimeCode{nullptr};
-	float m_fTypeDivider{1000.0F / 30};
+	TCNetTimeCode *m_pTCNetTimeCode { nullptr };
+	float m_fTypeDivider { 1000.0F / 30 };
 	TTCNetTimeCodeType m_tTimeCodeType;
-	uint8_t m_nSeqTimeMessage{0};
+	uint8_t m_nSeqTimeMessage { 0 };
 
 	static TCNet *s_pThis;
 };

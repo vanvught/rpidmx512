@@ -1,7 +1,7 @@
 /**
  * @file ltcparamsconst.h
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@ struct LtcParamsConst {
 	static const char SOURCE[];
 	// System time
 	static const char AUTO_START[];
+	static const char GPS_START[];
 	// Output options
 	static const char DISABLE_DISPLAY[];
 	static const char DISABLE_MAX7219[];

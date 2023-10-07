@@ -308,14 +308,17 @@ int dhcp_client(const char *pHostname) {
 		return -1;
 	}
 
-	int type;
+	net::globals::ipInfo.ip.addr = 0;
+	ip_set_ip();
 
 	while (!bHaveIp && (retries-- > 0)) {
 		DEBUG_PRINTF("retries=%d", retries);
 
 		send_discover(static_cast<uint8_t>(nHandle), net::globals::macAddress);
 
-		if ((type =parse_response(static_cast<uint8_t>(nHandle), net::globals::macAddress)) < 0) {
+		int type;
+
+		if ((type = parse_response(static_cast<uint8_t>(nHandle), net::globals::macAddress)) < 0) {
 			continue;
 		}
 

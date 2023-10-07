@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,6 +23,11 @@
  * THE SOFTWARE.
  */
 
+#pragma GCC push_options
+#pragma GCC optimize ("O3")
+#pragma GCC optimize ("-funroll-loops")
+#pragma GCC optimize ("-fprefetch-loop-arrays")
+
 #include <cstdint>
 #include <algorithm>
 #include <cassert>
@@ -36,10 +41,6 @@
 
 #include "debug.h"
 
-#if !defined(ARTNET_PAGE_SIZE)
-# define ARTNET_PAGE_SIZE	4
-#endif
-
 namespace ws28xxdmxmulti {
 #if !defined (CONFIG_PIXELDMX_MAX_PORTS)
 # define CONFIG_PIXELDMX_MAX_PORTS	8
@@ -47,14 +48,10 @@ namespace ws28xxdmxmulti {
 static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
 }  // namespace ws28xxdmxmulti
 
-using namespace ws28xxdmxmulti;
-using namespace pixel;
-using namespace lightset;
-
 WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration) {
 	DEBUG_ENTRY
 
-	m_pixelDmxConfiguration.Validate(MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
+	m_pixelDmxConfiguration.Validate(ws28xxdmxmulti::MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
 
 	DEBUG_PRINTF("m_PortInfo.nProtocolPortIndexLast=%u", m_PortInfo.nProtocolPortIndexLast);
 
@@ -71,7 +68,7 @@ WS28xxDmxMulti::~WS28xxDmxMulti() {
 	m_pWS28xxMulti = nullptr;
 }
 
-void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
+void WS28xxDmxMulti::Start(const uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted == 0) {
@@ -82,7 +79,7 @@ void WS28xxDmxMulti::Start(uint32_t nPortIndex) {
 	m_bIsStarted |= (1U << nPortIndex);
 }
 
-void WS28xxDmxMulti::Stop(uint32_t nPortIndex) {
+void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	DEBUG_PRINTF("%u", nPortIndex);
 
 	if (m_bIsStarted & (1U << nPortIndex)) {
@@ -96,13 +93,11 @@ void WS28xxDmxMulti::Stop(uint32_t nPortIndex) {
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
+void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength, const bool doUpdate) {
 	assert(pData != nullptr);
-	assert(nLength <= dmx::UNIVERSE_SIZE);
+	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
-	uint32_t beginIndex, endIndex;
-
-#if ((ARTNET_PAGE_SIZE==4) && defined (NODE_ARTNET_MULTI)) || defined (NODE_DDP_DISPLAY)
+#if defined (NODE_DDP_DISPLAY)
 	const auto nOutIndex = (nPortIndex / 4);
 	const auto nSwitch = nPortIndex - (nOutIndex * 4);
 #else
@@ -112,28 +107,8 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 #endif
 
 	const auto nGroups = m_pixelDmxConfiguration.GetGroups();
-
-	switch (nSwitch) {
-	case 0:
-		beginIndex = 0;
-		endIndex = std::min(nGroups, (nLength / m_nChannelsPerPixel));
-		break;
-	case 1:
-		beginIndex = m_PortInfo.nBeginIndexPortId1;
-		endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
-		break;
-	case 2:
-		beginIndex = m_PortInfo.nBeginIndexPortId2;
-		endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
-		break;
-	case 3:
-		beginIndex = m_PortInfo.nBeginIndexPortId3;
-		endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
-		break;
-	default:
-		__builtin_unreachable();
-		break;
-	}
+	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
+	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
 
 	while (m_pWS28xxMulti->IsUpdating()) {
 		// wait for completion
@@ -144,19 +119,70 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 	const auto nGroupingCount = m_pixelDmxConfiguration.GetGroupingCount();
 
 	if (m_nChannelsPerPixel == 3) {
-		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
-			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
-			for (uint32_t k = 0; k < nGroupingCount; k++) {
-				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2]);
+		switch (m_pixelDmxConfiguration.GetMap()) {
+		case pixel::Map::RGB:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 0], pData[d + 1], pData[d + 2]);
+				}
+				d = d + 3;
 			}
-			d = d + 3;
+			break;
+		case pixel::Map::RBG:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 0], pData[d + 2], pData[d + 1]);
+				}
+				d = d + 3;
+			}
+			break;
+		case pixel::Map::GRB:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 1], pData[d + 0], pData[d + 2]);
+				}
+				d = d + 3;
+			}
+			break;
+		case pixel::Map::GBR:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 2], pData[d + 0], pData[d + 1]);
+				}
+				d = d + 3;
+			}
+			break;
+		case pixel::Map::BRG:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 1], pData[d + 2], pData[d + 0]);
+				}
+				d = d + 3;
+			}
+			break;
+		case pixel::Map::BGR:
+			for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
+				auto const nPixelIndexStart = (j * nGroupingCount);
+				for (uint32_t k = 0; k < nGroupingCount; k++) {
+					m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d + 2], pData[d + 1], pData[d + 0]);
+				}
+				d = d + 3;
+			}
+			break;
+		default:
+			assert(0);
+			__builtin_unreachable();
+			break;
 		}
 	} else {
 		assert(m_nChannelsPerPixel == 4);
 		for (uint32_t j = beginIndex; (j < endIndex) && (d < nLength); j++) {
 			auto const nPixelIndexStart = (j * nGroupingCount);
-			__builtin_prefetch(&pData[d]);
 			for (uint32_t k = 0; k < nGroupingCount; k++) {
 				m_pWS28xxMulti->SetPixel(nOutIndex, nPixelIndexStart + k, pData[d], pData[d + 1], pData[d + 2], pData[d + 3]);
 			}
@@ -164,7 +190,7 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 		}
 	}
 
-	if (nPortIndex == m_PortInfo.nProtocolPortIndexLast) {
+	if ((doUpdate) && (nPortIndex == m_PortInfo.nProtocolPortIndexLast)) {
 		m_pWS28xxMulti->Update();
 	}
 }

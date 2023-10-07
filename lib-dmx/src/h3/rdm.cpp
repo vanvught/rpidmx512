@@ -2,7 +2,7 @@
  * @file rdm.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,11 +29,6 @@
 #include "rdm.h"
 #include "dmx.h"
 
-#if defined (OUTPUT_DMX_SEND_MULTI)
-using namespace dmxmulti;
-#else
-using namespace dmxsingle;
-#endif
 #include "dmxconst.h"
 #include "dmx_internal.h"
 
@@ -42,8 +37,8 @@ using namespace dmxsingle;
 #include "h3_hs_timer.h"
 #include "h3_uart.h"
 
-uint8_t s_TransactionNumber[max::OUT];
-uint32_t s_nLastSendMicros[max::OUT];
+uint8_t s_TransactionNumber[dmx::config::max::OUT];
+uint32_t s_nLastSendMicros[dmx::config::max::OUT];
 
 void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, uint32_t nSpacingMicros) {
 	assert(nPortIndex < max::OUT);

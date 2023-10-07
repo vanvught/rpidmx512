@@ -75,14 +75,10 @@ bool GPSParams::Load() {
 }
 
 void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-
-	assert(m_pGPSParamsStore != nullptr);
-
-	if (m_pGPSParamsStore == nullptr) {
-		return;
-	}
 
 	m_tTGPSParams.nSetList = 0;
 
@@ -90,7 +86,10 @@ void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pGPSParamsStore != nullptr);
 	m_pGPSParamsStore->Update(&m_tTGPSParams);
+
+	DEBUG_EXIT
 }
 
 void GPSParams::callbackFunction(const char *pLine) {
@@ -143,6 +142,7 @@ void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint
 	if (pGPSParams != nullptr) {
 		memcpy(&m_tTGPSParams, pGPSParams, sizeof(struct TGPSParams));
 	} else {
+		assert(m_pGPSParamsStore != nullptr);
 		m_pGPSParamsStore->Copy(&m_tTGPSParams);
 	}
 
@@ -153,20 +153,6 @@ void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint
 	builder.Add(GPSParamsConst::UTC_OFFSET, m_tTGPSParams.fUtcOffset, isMaskSet(GPSParamsMask::UTC_OFFSET));
 
 	nSize = builder.GetSize();
-}
-
-void GPSParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pGPSParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
-	DEBUG_EXIT
 }
 
 void GPSParams::staticCallbackFunction(void *p, const char *s) {

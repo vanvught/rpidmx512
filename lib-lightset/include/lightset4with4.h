@@ -2,7 +2,7 @@
  * @file lightset4with4.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ public:
 		return m_pB;
 	}
 
-	void Start(uint32_t nPortIndex) override {
+	void Start(const uint32_t nPortIndex) override {
 		if ((nPortIndex < 4) && (m_pA != nullptr)) {
 			return m_pA->Start(nPortIndex);
 		}
@@ -62,7 +62,7 @@ public:
 		}
 	}
 
-	void Stop(uint32_t nPortIndex) override {
+	void Stop(const uint32_t nPortIndex) override {
 		if ((nPortIndex < 4) && (m_pA != nullptr)) {
 			return m_pA->Stop(nPortIndex);
 		}
@@ -71,14 +71,54 @@ public:
 		}
 	}
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override {
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override {
 		if ((nPortIndex < 4) && (m_pA != nullptr)) {
-			return m_pA->SetData(nPortIndex, pData, nLength);
+			return m_pA->SetData(nPortIndex, pData, nLength, doUpdate);
 		}
 		if (m_pB != nullptr) {
-			return m_pB->SetData(nPortIndex & 0x3, pData, nLength);
+			return m_pB->SetData(nPortIndex & 0x3, pData, nLength, doUpdate);
 		}
 	}
+
+	void Sync(const uint32_t nPortIndex) override {
+		if (m_pA != nullptr) {
+			return m_pA->Sync(nPortIndex);
+		}
+		if (m_pB != nullptr) {
+			return m_pB->Sync(nPortIndex);
+		}
+	}
+
+	void Sync(const bool doForce) override {
+		if (m_pA != nullptr) {
+			return m_pA->Sync(doForce);
+		}
+		if (m_pB != nullptr) {
+			return m_pB->Sync(doForce);
+		}
+	}
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
+		if (m_pA != nullptr) {
+			return m_pA->SetOutputStyle(nPortIndex, outputStyle);
+		}
+		if (m_pB != nullptr) {
+			return m_pB->SetOutputStyle(nPortIndex, outputStyle);
+		}
+	}
+
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const override{
+		if (m_pA != nullptr) {
+			return m_pA->GetOutputStyle(nPortIndex);
+		}
+		if (m_pB != nullptr) {
+			return m_pB->GetOutputStyle(nPortIndex);
+		}
+
+		return lightset::OutputStyle::DELTA;
+	}
+#endif
 
 	void Blackout(bool bBlackout) override {
 		if (m_pA != nullptr) {

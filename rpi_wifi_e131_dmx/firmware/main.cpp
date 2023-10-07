@@ -1,5 +1,5 @@
 /**
- * @file main.c
+ * @file main.cpp
  *
  */
 /* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -67,6 +67,8 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void main() {
 	Hardware hw;
 	Network nw;
@@ -127,7 +129,7 @@ void main() {
 	display.TextStatus(BRIDGE_PARMAS);
 
 	E131Bridge bridge;
-	e131params.Set();
+	e131params.Set(DMXPORT_OFFSET);
 
 	bool IsSet;
 	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);

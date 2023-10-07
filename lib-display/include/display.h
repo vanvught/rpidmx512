@@ -2,7 +2,7 @@
  * @file display.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,12 @@ bool gpio_renew();
 #  include "i2c/display.h"
 # endif
 #else
-# include "custom/display.h"
+# if !defined(STR_HELPER)
+#  define STR_HELPER(x) #x
+#  define STR(x) STR_HELPER(x)
+# endif
+# define EXPAND(x) x
+# include STR(EXPAND(DISPLAY_USE_CUSTOM_INCLUDE)/custom/display.h)
 #endif
 
 #endif /* DISPLAY_H_ */

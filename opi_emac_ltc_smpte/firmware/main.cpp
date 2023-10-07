@@ -234,6 +234,10 @@ void main() {
 	 * From here work with source selection
 	 */
 
+#if defined(ENABLE_SHELL)
+	shell.SetSource(ltcSource);
+#endif
+
 	Display::Get()->Status(Display7SegmentMessage::INFO_NONE);
 
 	LtcOutputs ltcOutputs(ltcSource, ltcParams.IsShowSysTime());
@@ -288,7 +292,7 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtnet;
+	StoreArtNet storeArtnet(0);
 	node.SetArtNetStore(&storeArtnet);
 
 	if (bRunArtNet) {
@@ -296,10 +300,10 @@ void main() {
 
 		if (artnetparams.Load()) {
 			artnetparams.Dump();
-			artnetparams.Set();
+			artnetparams.Set(0);
 		}
 
-		node.SetShortName("LTC SMPTE Node");
+		node.SetShortName(0, "LTC SMPTE Node");
 
 		if (ltcSource == ltc::Source::ARTNET) {
 			node.SetTimeCodeHandler(&artnetReader);
@@ -442,6 +446,7 @@ void main() {
 	}
 
 	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && g_ltc_ptLtcDisabledOutputs.bRgbPanel);
+	const auto bGpsStart = bRunGpsTimeClient && ltcParams.IsGpsStart();
 
 	GPSTimeClient gpsTimeClient(gpsParams.GetUtcOffset(), gpsParams.GetModule());
 
@@ -519,7 +524,7 @@ void main() {
 		ltcEtcReader.Start();
 		break;
 	case ltc::Source::SYSTIME:
-		sysTimeReader.Start(ltcParams.IsAutoStart());
+		sysTimeReader.Start(ltcParams.IsAutoStart() && !bGpsStart);
 		break;
 	default:
 		ltcReader.Start();
@@ -594,6 +599,13 @@ void main() {
 				}
 			} else {
 				gpsTimeClient.Run();
+				if (bGpsStart) {
+					if (gpsTimeClient.GetStatus() == gps::Status::VALID) {
+						sysTimeReader.ActionStart();
+					} else {
+						sysTimeReader.ActionStop();
+					}
+				}
 			}
 			break;
 		default:

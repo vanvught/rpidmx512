@@ -95,7 +95,7 @@ static constexpr uint16_t GRAY = 0X8430;
 class ST77XX : public Paint {
 public:
 	ST77XX();
-	~ST77XX();
+	~ST77XX() override;
 
 	void SetBackLight(uint32_t nValue);
 

@@ -80,7 +80,7 @@ private:
 
 private:
 	HAL_I2C m_I2C;
-	uint8_t m_nDisplayControl{1U << 3}; // Section 9.1.4 Display ON/OFF Control
+	uint8_t m_nDisplayControl { 1U << 3 }; // Section 9.1.4 Display ON/OFF Control
 
 	static Ssd1311 *s_pThis;
 };

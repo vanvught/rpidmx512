@@ -90,18 +90,13 @@ void DmxSerialParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	assert(m_pDmxSerialParamsStore != nullptr);
-
-	if (m_pDmxSerialParamsStore == nullptr) {
-		return;
-	}
-
 	m_tDmxSerialParams.nSetList = 0;
 
 	ReadConfigFile config(DmxSerialParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pDmxSerialParamsStore != nullptr);
 	m_pDmxSerialParamsStore->Update(&m_tDmxSerialParams);
 }
 
@@ -238,6 +233,7 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 	if (pDmxSerialParams != nullptr) {
 		memcpy(&m_tDmxSerialParams, pDmxSerialParams, sizeof(struct TDmxSerialParams));
 	} else {
+		assert(m_pDmxSerialParamsStore != nullptr);
 		m_pDmxSerialParamsStore->Copy(&m_tDmxSerialParams);
 	}
 
@@ -260,20 +256,6 @@ void DmxSerialParams::Builder(const struct TDmxSerialParams *pDmxSerialParams, c
 	builder.Add(DmxSerialParamsConst::I2C_SPEED_MODE, Serial::GetI2cSpeedMode(static_cast<i2c::speed>(m_tDmxSerialParams.nI2cSpeedMode)), isMaskSet(DmxSerialParamsMask::I2C_SPEED_MODE));
 
 	nSize = builder.GetSize();
-}
-
-void DmxSerialParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pDmxSerialParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
-	DEBUG_EXIT
 }
 
 void DmxSerialParams::Set() {

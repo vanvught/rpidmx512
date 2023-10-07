@@ -2,7 +2,7 @@
  * @file ws28xxmulti.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,6 +22,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("O3")
+# pragma GCC optimize ("-funroll-loops")
+# pragma GCC optimize ("-fprefetch-loop-arrays")
+#endif
 
 #include <cstdint>
 #include <cstring>
@@ -239,6 +246,41 @@ void WS28xxMulti::SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t n
 	}
 }
 
+void WS28xxMulti::SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite) {
+	const auto k = nPixelIndex * pixel::single::RGBW;
+	uint32_t j = 0;
+
+	for (uint8_t mask = 0x80; mask != 0; mask = static_cast<uint8_t>(mask >> 1)) {
+		// GRBW
+		if (mask & nGreen) {
+			BIT_SET(m_pBuffer[k + j], nPortIndex);
+		} else {
+			BIT_CLEAR(m_pBuffer[k + j], nPortIndex);
+		}
+
+		if (mask & nRed) {
+			BIT_SET(m_pBuffer[8 + k + j], nPortIndex);
+		} else {
+			BIT_CLEAR(m_pBuffer[8 + k + j], nPortIndex);
+		}
+
+		if (mask & nBlue) {
+			BIT_SET(m_pBuffer[16 + k + j], nPortIndex);
+		} else {
+			BIT_CLEAR(m_pBuffer[16 + k + j], nPortIndex);
+		}
+
+		if (mask & nWhite) {
+			BIT_SET(m_pBuffer[24 + k + j], nPortIndex);
+		} else {
+			BIT_CLEAR(m_pBuffer[24 + k + j], nPortIndex);
+		}
+
+		j++;
+	}
+}
+
+
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
 	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
 
@@ -249,41 +291,18 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 	const auto type = m_PixelConfiguration.GetType();
 
 	if ((m_PixelConfiguration.IsRTZProtocol()) || (type == Type::WS2801)) {
-		switch (m_PixelConfiguration.GetMap()) {
-		case Map::RGB:
-			SetColour(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
-			break;
-		case Map::RBG:
-			SetColour(nPortIndex, nPixelIndex, nRed, nBlue, nGreen);
-			break;
-		case Map::GRB:
-			SetColour(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
-			break;
-		case Map::GBR:
-			SetColour(nPortIndex, nPixelIndex, nGreen, nBlue, nRed);
-			break;
-		case Map::BRG:
-			SetColour(nPortIndex, nPixelIndex, nBlue, nRed, nGreen);
-			break;
-		case Map::BGR:
-			SetColour(nPortIndex, nPixelIndex, nBlue, nGreen, nRed);
-			break;
-		default:
-			SetColour(nPortIndex, nPixelIndex, nGreen, nRed, nBlue);
-			break;
-		}
-
+		SetColour(nPortIndex, nPixelIndex, nRed, nGreen, nBlue);
 		return;
 	}
 
 	if ((type == Type::APA102) || (type == Type::SK9822)) {
-		SetPixel(nPortIndex, 1 + nPixelIndex, nBlue, m_PixelConfiguration.GetGlobalBrightness(), nGreen, nRed);
+		SetPixel4Bytes(nPortIndex, 1 + nPixelIndex, nBlue, m_PixelConfiguration.GetGlobalBrightness(), nGreen, nRed);
 		return;
 	}
 
 	if (type == Type::P9813) {
 		const auto nFlag = static_cast<uint8_t>(0xC0 | ((~nBlue & 0xC0) >> 2) | ((~nGreen & 0xC0) >> 4) | ((~nRed & 0xC0) >> 6));
-		SetPixel(nPortIndex, 1+ nPixelIndex, nRed, nFlag, nGreen, nBlue);
+		SetPixel4Bytes(nPortIndex, 1+ nPixelIndex, nRed, nFlag, nGreen, nBlue);
 		return;
 	}
 

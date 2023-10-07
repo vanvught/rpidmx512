@@ -144,7 +144,7 @@ bool FlashCodeInstall::Open(const char* pFileName) {
 		return false;
 	}
 
-	Display::Get()->ClearLine(2);
+	Display::Get()->ClearEndOfLine();
 	Display::Get()->Write(2, pFileName);
 	puts(pFileName);
 
@@ -294,7 +294,7 @@ void FlashCodeInstall::Write(uint32_t nOffset) {
 	}
 
 	if (bSuccess) {
-		Display::Get()->ClearLine(3);
+		Display::Get()->ClearEndOfLine();
 		Display::Get()->Printf(3, "%d", static_cast<int>(nTotalBytes));
 		printf("%d bytes written\n", static_cast<int>(nTotalBytes));
 	}

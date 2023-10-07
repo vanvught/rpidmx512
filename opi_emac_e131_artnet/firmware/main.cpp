@@ -67,6 +67,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void Hardware::RebootHandler() {
 	E131Bridge::Get()->Stop();
 }
@@ -108,7 +110,7 @@ void main() {
 
 	if (e131params.Load()) {
 		e131params.Dump();
-		e131params.Set();
+		e131params.Set(DMXPORT_OFFSET);
 	}
 
 	bridge.SetDisableSynchronize(true);
@@ -172,8 +174,8 @@ void main() {
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
@@ -190,8 +192,8 @@ void main() {
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&llrpOnlyDevice);
 	}
 
 	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);

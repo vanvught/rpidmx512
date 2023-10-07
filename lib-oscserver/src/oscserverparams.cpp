@@ -81,11 +81,6 @@ bool OSCServerParams::Load() {
 void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pOSCServerParamsStore != nullptr);
-
-	if (m_pOSCServerParamsStore == nullptr) {
-		return;
-	}
 
 	m_tOSCServerParams.nSetList = 0;
 
@@ -93,6 +88,7 @@ void OSCServerParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pOSCServerParamsStore != nullptr);
 	m_pOSCServerParamsStore->Update(&m_tOSCServerParams);
 }
 
@@ -190,6 +186,7 @@ void OSCServerParams::Builder(const osc::server::Params *ptOSCServerParams, char
 	if (ptOSCServerParams != nullptr) {
 		memcpy(&m_tOSCServerParams, ptOSCServerParams, sizeof(osc::server::Params));
 	} else {
+		assert(m_pOSCServerParamsStore != nullptr);
 		m_pOSCServerParamsStore->Copy(&m_tOSCServerParams);
 	}
 
@@ -217,18 +214,6 @@ void OSCServerParams::Builder(const osc::server::Params *ptOSCServerParams, char
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-}
-
-void OSCServerParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pOSCServerParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void OSCServerParams::Dump() {

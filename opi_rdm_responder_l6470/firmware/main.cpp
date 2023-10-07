@@ -149,12 +149,15 @@ void main() {
 
 	RDMResponder rdmResponder(pRDMPersonalities, 1);
 
+	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
 
 	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Set();
 		rdmSensorsParams.Dump();
+		rdmSensorsParams.Set();
 	}
 
 #if defined (ENABLE_RDM_SUBDEVICES)
@@ -174,8 +177,8 @@ void main() {
 	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
 	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&rdmResponder);
 		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&rdmResponder);
 	}
 
 	rdmResponder.Start();

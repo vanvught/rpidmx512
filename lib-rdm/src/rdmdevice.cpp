@@ -64,41 +64,36 @@
 RDMDevice::RDMDevice() {
 	DEBUG_ENTRY
 
-	const auto nLength = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME));
-	memcpy(m_aManufacturerName, RDMConst::MANUFACTURER_NAME, nLength);
-	m_nManufacturerNameLength = static_cast<uint8_t>(nLength);
-
-	m_aUID[0] = RDMConst::MANUFACTURER_ID[0];
-	m_aUID[1] = RDMConst::MANUFACTURER_ID[1];
-
+#if defined (NO_EMAC)
 	uint8_t aMacAddress[network::MAC_SIZE];
 	Network::Get()->MacAddressCopyTo(aMacAddress);
 
-#if defined (NO_EMAC)
 	m_aUID[2] = aMacAddress[2];
 	m_aUID[3] = aMacAddress[3];
 	m_aUID[4] = aMacAddress[4];
 	m_aUID[5] = aMacAddress[5];
 #else
 	const auto nIp = Network::Get()->GetIp();
+# if !defined(CONFIG_RDMDEVICE_REVERSE_UID)
 	m_aUID[5] = static_cast<uint8_t>(nIp >> 24);
 	m_aUID[4] = (nIp >> 16) & 0xFF;
 	m_aUID[3] = (nIp >> 8) & 0xFF;
 	m_aUID[2] = nIp & 0xFF;
+# else
+	m_aUID[2] = static_cast<uint8_t>(nIp >> 24);
+	m_aUID[3] = (nIp >> 16) & 0xFF;
+	m_aUID[4] = (nIp >> 8) & 0xFF;
+	m_aUID[5] = nIp & 0xFF;
+# endif
 #endif
+
+	m_aUID[0] = RDMConst::MANUFACTURER_ID[0];
+	m_aUID[1] = RDMConst::MANUFACTURER_ID[1];
 
 	m_aSN[0] = m_aUID[5];
 	m_aSN[1] = m_aUID[4];
 	m_aSN[2] = m_aUID[3];
 	m_aSN[3] = m_aUID[2];
-
-	const auto* WebsiteUrl = Hardware::Get()->GetWebsiteUrl();
-	const auto length = std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(WebsiteUrl));
-	memcpy(m_aManufacturerName, WebsiteUrl, length);
-	m_nManufacturerNameLength = static_cast<uint8_t>(length);
-
-	m_nProductCategory = E120_PRODUCT_CATEGORY_OTHER;
-	m_nProductDetail = E120_PRODUCT_DETAIL_OTHER;
 
 	m_nFactoryRootLabelLength = sizeof(DEVICE_LABEL) - 1;
 	memcpy(m_aFactoryRootLabel, DEVICE_LABEL, m_nFactoryRootLabelLength);
@@ -108,7 +103,8 @@ RDMDevice::RDMDevice() {
 
 void RDMDevice::Print() {
 	printf("RDM Device configuration\n");
-	printf(" Manufacturer Name : %.*s\n", m_nManufacturerNameLength, m_aManufacturerName);
+	const auto nLength = static_cast<uint8_t>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
+	printf(" Manufacturer Name : %.*s\n", nLength, const_cast<char *>(&RDMConst::MANUFACTURER_NAME[0]));
 	printf(" Manufacturer ID   : %.2X%.2X\n", m_aUID[0], m_aUID[1]);
 	printf(" Serial Number     : %.2X%.2X%.2X%.2X\n", m_aSN[3], m_aSN[2], m_aSN[1], m_aSN[0]);
 	printf(" Root label        : %.*s\n", m_nRootLabelLength, m_aRootLabel);

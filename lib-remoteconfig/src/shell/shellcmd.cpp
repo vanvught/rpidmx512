@@ -185,7 +185,7 @@ void Shell::CmdReboot() {
 }
 
 void Shell::CmdInfo() {
-	Printf("%s", FirmwareVersion::Get()->GetPrint());
+	Printf("%s\n", FirmwareVersion::Get()->GetPrint());
 	Printf("Core Temperature: %.0f <%.0f>\n",Hardware::Get()->GetCoreTemperature(), Hardware::Get()->GetCoreTemperatureMax());
 	Printf("Uptime: %d\n", Hardware::Get()->GetUpTime());
 	Printf("Hostname: %s\n", Network::Get()->GetHostName());
@@ -235,7 +235,7 @@ void Shell::CmdSet() {
 
 			switch (m_ltcSource) {
 			case ltc::Source::INTERNAL:
-				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);;
+				LtcGenerator::Get()->HandleRequest(request, nRequestLenght);
 				break;	
 			case ltc::Source::SYSTIME:
 				SystimeReader::Get()->HandleRequest(request, nRequestLenght);

@@ -35,7 +35,7 @@
 #include "debug.h"
 
 void ArtNetNode::HandleTimeSync() {
-	const auto *const pArtTimeSync = reinterpret_cast<TArtTimeSync *>(m_pReceiveBuffer);
+	const auto *const pArtTimeSync = reinterpret_cast<artnet::ArtTimeSync *>(m_pReceiveBuffer);
 	struct tm tmTime;
 
 	tmTime.tm_sec = pArtTimeSync->tm_sec;

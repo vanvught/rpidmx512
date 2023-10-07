@@ -299,14 +299,11 @@ bool Ssd1306::Start() {
 	Ssd1306::Cls();
 
 	SendCommand(cmd::DISPLAY_ON);
-
-	m_bIsFlippedVertically = true;
-
 	return true;
 }
 
 void Ssd1306::Cls() {
-	uint8_t nColumnAdd = 0;
+	uint32_t nColumnAdd = 0;
 
 	if (m_bHaveSH1106) {
 		nColumnAdd = 4;
@@ -316,28 +313,16 @@ void Ssd1306::Cls() {
 		SendCommand(cmd::SET_LOWCOLUMN | (nColumnAdd & 0XF));
 		SendCommand(static_cast<uint8_t>(cmd::SET_HIGHCOLUMN | (nColumnAdd)));
 		SendCommand(static_cast<uint8_t>(cmd::SET_STARTPAGE | nPage));
-
-		switch (m_OledPanel) {
-		case OLED_PANEL_128x64_8ROWS:
-			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), static_cast<uint32_t>(nColumnAdd + SSD1306_LCD_WIDTH + 1));
-			break;
-		case OLED_PANEL_128x64_4ROWS:
-			/* no break */
-		case OLED_PANEL_128x32_4ROWS:
-			SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), static_cast<uint32_t>(nColumnAdd + SSD1306_LCD_WIDTH + 1));
-			break;
-		default:
-			break;
-		}
+		SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), (nColumnAdd + SSD1306_LCD_WIDTH + 1));
 	}
 
 	SendCommand(cmd::SET_LOWCOLUMN | (nColumnAdd & 0XF));
 	SendCommand(static_cast<uint8_t>(cmd::SET_HIGHCOLUMN | (nColumnAdd)));
 	SendCommand(cmd::SET_STARTPAGE);
 
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)|| defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 	m_nShadowRamIndex = 0;
-	memset(m_pShadowRam, ' ', m_nCols * m_nRows);
+	memset(m_pShadowRam, ' ', oled::font8x6::COLS * m_nRows);
 #endif
 }
 
@@ -345,15 +330,15 @@ void Ssd1306::PutChar(int c) {
 	int i;
 
 	if (c < 32 || c > 127) {
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 		c = 32;
 #endif
 		i = 0;
 	} else {
-		i = (c - 32);
+		i = c - 32;
 	}
 
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 	m_pShadowRam[m_nShadowRamIndex++] = static_cast<char>(c);
 #endif
 	const uint8_t *base = _OledFont8x6 + (oled::font8x6::CHAR_W + 1) * i;
@@ -366,6 +351,13 @@ void Ssd1306::PutString(const char *pString) {
 	while (*p != '\0') {
 		Ssd1306::PutChar(static_cast<int>(*p));
 		p++;
+	}
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+		for (auto i = static_cast<uint32_t>(p -  pString); i < m_nCols; i++) {
+			Ssd1306::PutChar(' ');
+		}
 	}
 }
 
@@ -380,6 +372,10 @@ void Ssd1306::ClearLine(uint32_t nLine) {
 	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
 	SendData(reinterpret_cast<const uint8_t*>(&_ClearBuffer), SSD1306_LCD_WIDTH + 1);
 	Ssd1306::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
+
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
+	memset(&m_pShadowRam[m_nShadowRamIndex], ' ', oled::font8x6::COLS);
+#endif
 }
 
 void Ssd1306::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
@@ -396,8 +392,17 @@ void Ssd1306::Text(const char *pData, uint32_t nLength) {
 		nLength = m_nCols;
 	}
 
-	for (uint32_t i = 0; i < nLength; i++) {
+	uint32_t i;
+
+	for (i = 0; i < nLength; i++) {
 		Ssd1306::PutChar(pData[i]);
+	}
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+		for (; i < m_nCols; i++) {
+			Ssd1306::PutChar(' ');
+		}
 	}
 }
 
@@ -419,13 +424,14 @@ void Ssd1306::SetCursorPos(uint32_t nCol, uint32_t nRow) {
 	SendCommand(static_cast<uint8_t>(cmd::SET_HIGHCOLUMN | (nCol >> 4)));
 	SendCommand(static_cast<uint8_t>(cmd::SET_STARTPAGE | nRow));
 
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 	m_nShadowRamIndex = static_cast<uint16_t>((nRow * oled::font8x6::COLS) + (nCol / oled::font8x6::CHAR_W));
-
-	if (m_tCursorMode == display::cursor::ON) {
+#endif
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+	if (m_nCursorMode == display::cursor::ON) {
 		SetCursorOff();
 		SetCursorOn();
-	} else if (m_tCursorMode == static_cast<uint32_t>((display::cursor::ON | display::cursor::BLINK_ON))) {
+	} else if (m_nCursorMode == (display::cursor::ON | display::cursor::BLINK_ON)) {
 		SetCursorOff();
 		SetCursorBlinkOn();
 	}
@@ -441,48 +447,53 @@ void Ssd1306::SetSleep(bool bSleep) {
 }
 
 void Ssd1306::SetContrast(uint8_t nContrast) {
-	m_nContrast = nContrast;
-
 	SendCommand(cmd::SET_CONTRAST);
 	SendCommand(nContrast);
 }
 
-
-void Ssd1306::SetFlipVertically(bool doFlipVertically)  {
-	m_bIsFlippedVertically = doFlipVertically;
-
+void Ssd1306::SetFlipVertically(bool doFlipVertically) {
 	if (doFlipVertically) {
+		SendCommand(cmd::SEGREMAP);			///< Data already stored in GDDRAM will have no changes.
 		SendCommand(cmd::COMSCAN_INC);
-		SendCommand(cmd::SEGREMAP);
 	} else {
+		SendCommand(cmd::SEGREMAP | 0x01);	///< Data already stored in GDDRAM will have no changes.
 		SendCommand(cmd::COMSCAN_DEC);
-		SendCommand(cmd::SEGREMAP | 0x01);
 	}
+
+#if defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
+	for (uint32_t i = 0; i < m_nRows; i++) {
+		Ssd1306::SetCursorPos(0, static_cast<uint8_t>(i));
+		for (uint32_t j = 0; j < oled::font8x6::COLS; j++) {
+			const auto n = m_pShadowRam[i * oled::font8x6::COLS + j] - 32;
+			const uint8_t *base = _OledFont8x6 + (oled::font8x6::CHAR_W + 1) * n;
+			SendData(base, oled::font8x6::CHAR_W + 1);
+		}
+	}
+#endif
 }
 
 void Ssd1306::InitMembers() {
+	m_nCols = oled::font8x6::COLS;
+
 	switch (m_OledPanel) {
 	case OLED_PANEL_128x64_8ROWS:
-		m_nCols = oled::font8x6::COLS;
 		m_nRows = 64 / oled::font8x6::CHAR_H;
 		break;
 	case OLED_PANEL_128x64_4ROWS:			// Trick : 128x32
 		/* no break */
 	case OLED_PANEL_128x32_4ROWS:
-		m_nCols = oled::font8x6::COLS;
 		m_nRows = 32 / oled::font8x6::CHAR_H;
 		break;
 	default:
-		m_nCols = oled::font8x6::COLS;
 		m_nRows = 64 / oled::font8x6::CHAR_H;
 		break;
 	}
 
 	m_nPages = (m_OledPanel == OLED_PANEL_128x64_8ROWS ? 8 : 4);
 
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 	m_pShadowRam = new char[oled::font8x6::COLS * m_nRows];
-	m_nShadowRamIndex = 0;
+	assert(m_pShadowRam != nullptr);
 	memset(m_pShadowRam, ' ', oled::font8x6::COLS * m_nRows);
 #endif
 }
@@ -505,15 +516,15 @@ void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
 # define UNUSED __attribute__((unused))
 #endif
 
-void Ssd1306::SetCursor(UNUSED uint32_t tCursorMode) {
+void Ssd1306::SetCursor(UNUSED uint32_t nCursorMode) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
-	if (tCursorMode == m_tCursorMode) {
+	if (nCursorMode == m_nCursorMode) {
 		return;
 	}
 
-	m_tCursorMode = tCursorMode;
+	m_nCursorMode = nCursorMode;
 
-	switch (static_cast<int>(tCursorMode)) {
+	switch (nCursorMode) {
 	case display::cursor::OFF:
 		SetCursorOff();
 		break;
@@ -600,7 +611,7 @@ void Ssd1306::SetColumnRow(UNUSED uint8_t nColumn, UNUSED uint8_t nRow) {
 }
 
 void Ssd1306::DumpShadowRam() {
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 #ifndef NDEBUG
 	for (uint32_t i = 0; i < m_nRows; i++) {
 		printf("%d: [%.*s]\n", i, oled::font8x6::COLS, &m_pShadowRam[i * oled::font8x6::COLS]);

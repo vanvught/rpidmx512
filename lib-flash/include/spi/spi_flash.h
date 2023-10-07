@@ -31,9 +31,9 @@
 
 int spi_flash_probe(unsigned int cs, unsigned int max_hz, unsigned int spi_mode);
 
-const char *spi_flash_get_name(void);
-uint32_t spi_flash_get_size(void);
-uint32_t spi_flash_get_sector_size(void);
+const char *spi_flash_get_name();
+uint32_t spi_flash_get_size();
+uint32_t spi_flash_get_sector_size();
 
 int spi_flash_cmd_read_fast(uint32_t offset, size_t len, uint8_t *data);
 int spi_flash_cmd_write_multi(uint32_t offset, size_t len, const uint8_t *buf);

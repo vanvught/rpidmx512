@@ -153,6 +153,9 @@ void main() {
 
 	RDMResponder rdmResponder(personalities, 2);
 
+	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+
 	StoreRDMSensors storeRdmSensors;
 	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
 
@@ -217,11 +220,6 @@ void main() {
 	display.SetTitle("RDM Responder Pixel 1");
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
-	display.Printf(7, "%s:%d G%d %s",
-			PixelType::GetType(pixelDmxConfiguration.GetType()),
-			pixelDmxConfiguration.GetCount(),
-			pixelDmxConfiguration.GetGroupingCount(),
-			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -232,6 +230,11 @@ void main() {
 	}
 
 	display.Show();
+	display.Printf(7, "%s:%d G%d %s",
+			PixelType::GetType(pixelDmxConfiguration.GetType()),
+			pixelDmxConfiguration.GetCount(),
+			pixelDmxConfiguration.GetGroupingCount(),
+			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	if (isConfigMode) {
 		display.ClearLine(3);

@@ -75,6 +75,8 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void Hardware::RebootHandler() {
 	Dmx::Get()->Blackout();
 	E131Bridge::Get()->Stop();
@@ -117,13 +119,12 @@ void main() {
 
 	if (e131params.Load()) {
 		e131params.Dump();
-		e131params.Set();
+		e131params.Set(DMXPORT_OFFSET);
 	}
 
 	const auto portDirection = e131params.GetDirection(0);
 	bool bIsSet;
-	const auto nUniverse = e131params.GetUniverse(0, bIsSet);
-	bridge.SetUniverse(0, portDirection, nUniverse);
+	bridge.SetUniverse(0, portDirection, e131params.GetUniverse(0, bIsSet));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -133,6 +134,14 @@ void main() {
 	if (dmxparams.Load()) {
 		dmxparams.Dump();
 		dmxparams.Set(&dmx);
+	}
+
+	uint16_t nUniverse;
+
+	if (bridge.GetUniverse(0, nUniverse, lightset::PortDir::OUTPUT)) {
+		dmx.SetPortDirection(0, dmx::PortDirection::OUTP, false);
+	} else {
+		dmx.SetPortDirection(0, dmx::PortDirection::INP, false);
 	}
 
 	DmxSend dmxSend;

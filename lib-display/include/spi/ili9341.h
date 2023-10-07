@@ -88,7 +88,7 @@ static constexpr uint16_t GRAY = 0X8430;
 class ILI9341 : public Paint {
 public:
 	ILI9341();
-	~ILI9341();
+	~ILI9341() override;
 
 	void Init();
 

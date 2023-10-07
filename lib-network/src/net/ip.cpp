@@ -33,7 +33,6 @@
 void ip_set_ip() {
 	udp_set_ip();
 	igmp_set_ip();
-	tcp_set_ip();
 }
 
 void __attribute__((cold)) ip_init() {
@@ -51,7 +50,6 @@ void __attribute__((cold)) ip_shutdown() {
 
 	tcp_shutdown();
 	igmp_shutdown();
-	udp_shutdown();
 
 	DEBUG_EXIT
 }

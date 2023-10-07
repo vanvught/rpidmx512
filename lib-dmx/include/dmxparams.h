@@ -2,7 +2,7 @@
  * @file dmxparams.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,13 +66,15 @@ public:
 
 class DmxParams {
 public:
-	DmxParams(DmxParamsStore *pDMXParamsStore = nullptr);
+	DmxParams(DmxParamsStore *pDMXParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TDmxParams *pTDmxParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(Dmx *);
 

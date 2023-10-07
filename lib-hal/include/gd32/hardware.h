@@ -36,8 +36,18 @@
 #include "gd32_adc.h"
 #include "gd32_micros.h"
 
+#if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
+extern "C" {
+#include "usbh_core.h"
+extern usbh_host usb_host_msc;
+}
+#endif
+
 #if defined (DEBUG_STACK)
  void stack_debug_run();
+#endif
+#if defined (DEBUG_EMAC)
+ void emac_debug_run();
 #endif
 
 #if defined (USE_LEDBLINK_BITBANGING595)
@@ -143,6 +153,9 @@ public:
 	}
 
 	void Run() {
+#if defined (ENABLE_USB_HOST) && defined (CONFIG_USB_HOST_MSC)
+		usbh_core_task(&usb_host_msc);
+#endif
 		if (__builtin_expect (m_nTicksPerSecond != 0, 1)) {
 			if (__builtin_expect (!(s_nSysTickMillis - m_nMillisPrevious < m_nTicksPerSecond), 1)) {
 				m_nMillisPrevious = s_nSysTickMillis;
@@ -171,6 +184,10 @@ public:
 
 #if defined (DEBUG_STACK)
 		stack_debug_run();
+#endif
+
+#if defined (DEBUG_EMAC)
+		emac_debug_run();
 #endif
 	}
 

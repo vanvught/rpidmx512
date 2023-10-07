@@ -115,13 +115,24 @@ void Ssd1311::PutChar(int c) {
 void Ssd1311::PutString(const char *pString) {
 	assert(pString != nullptr);
 
-	uint16_t n = MAX_COLUMNS;
+	uint32_t n = MAX_COLUMNS;
 	auto *pSrc = pString;
 	auto *s = reinterpret_cast<char *>(&_TextBuffer[1]);
 
 	while (n > 0 && *pSrc != '\0') {
 		*s++ = *pSrc++;
 		--n;
+	}
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+
+		for (auto i = static_cast<uint32_t>(pSrc -  pString); i < MAX_COLUMNS; i++) {
+			*s++ = ' ';
+		}
+
+		SendData(_TextBuffer, 1U + MAX_COLUMNS);
+		return;
 	}
 
 	SendData(_TextBuffer, 1U + MAX_COLUMNS - n);
@@ -146,13 +157,7 @@ void Ssd1311::TextLine(uint32_t nLine, const char *pData, uint32_t nLength) {
 	}
 
 	Ssd1311::SetCursorPos(0, static_cast<uint8_t>(nLine - 1));
-
-	if (nLength > MAX_COLUMNS) {
-		nLength = MAX_COLUMNS;
-	}
-
-	memcpy(&_TextBuffer[1], pData, nLength);
-	SendData(_TextBuffer, 1U + nLength);
+	Text(pData, nLength);
 }
 
 void Ssd1311::Text(const char *pData, uint32_t nLength) {
@@ -161,6 +166,16 @@ void Ssd1311::Text(const char *pData, uint32_t nLength) {
 	}
 
 	memcpy(&_TextBuffer[1], pData, nLength);
+
+	if (m_bClearEndOfLine) {
+		m_bClearEndOfLine = false;
+
+		memset(&_TextBuffer[nLength + 1], ' ', MAX_COLUMNS - nLength);
+
+		SendData(_TextBuffer, 1U + MAX_COLUMNS);
+		return;
+	}
+
 	SendData(_TextBuffer, 1U + nLength);
 }
 
@@ -308,8 +323,6 @@ void Ssd1311::SetSleep(bool bSleep) {
 }
 
 void Ssd1311::SetContrast(uint8_t nContrast) {
-	m_nContrast = nContrast;
-
 	// [IS=X,RE=1,SD=1]
 	SetRE(FunctionSet::RE_ONE);
 	SetSD(CommandSet::ENABLED);

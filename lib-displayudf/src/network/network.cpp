@@ -27,8 +27,16 @@
 #include "displayudf.h"
 
 namespace network {
+void display_emac_config() {
+	DisplayUdf::Get()->ShowEmacInit();
+}
+
 void display_emac_start() {
 	DisplayUdf::Get()->ShowEmacStart();
+}
+
+void display_emac_status(const bool isLinkUp) {
+	DisplayUdf::Get()->ShowEmacStatus(isLinkUp);
 }
 
 void display_ip() {

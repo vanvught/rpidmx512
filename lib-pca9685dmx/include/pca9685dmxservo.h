@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,9 @@ public:
 	void Start(uint32_t nPortIndex = 0) override;
 	void Stop(uint32_t nPortIndex = 0) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync(const uint32_t nPortIndex) override;
+	void Sync(const bool doForce = false) override;
 
 public:
 	void SetI2cAddress(uint8_t nI2cAddress);

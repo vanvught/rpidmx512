@@ -35,6 +35,8 @@
 
 #include "rdm.h"
 
+#include "debug.h"
+
 namespace rdmtod {
 #if !defined (RDM_DISCOVERY_TOD_TABLE_SIZE)
 # define RDM_DISCOVERY_TOD_TABLE_SIZE 200U
@@ -59,7 +61,7 @@ public:
 		}
 	}
 
-	~RDMTod() {	}
+	~RDMTod() {}
 
 	void Reset() {
 		for (uint32_t i = 0; i < m_nEntries; i++) {
@@ -102,12 +104,18 @@ public:
 	}
 
 	void Copy(uint8_t *pTable) {
+		DEBUG_ENTRY
+		DEBUG_PRINTF("m_nEntries=%u", m_nEntries);
+		assert(pTable != nullptr);
+
 		const auto *pSrc = reinterpret_cast<const uint8_t*>(m_Tod);
 		auto *pDst = pTable;
 
 		for (uint32_t i = 0; i < (m_nEntries * RDM_UID_SIZE); i++) {
 			*pDst++ = *pSrc++;
 		}
+
+		DEBUG_EXIT
 	}
 
 	bool Delete(const uint8_t *pUid) {

@@ -50,7 +50,6 @@ static bool s_isProbeReplyReceived ALIGNED;
 namespace net {
 namespace globals {
 extern struct IpInfo ipInfo;
-extern uint32_t nBroadcastIp;
 extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
@@ -64,7 +63,6 @@ void __attribute__((cold)) arp_init() {
 	arp_cache_init();
 
 	s_requestType = net::arp::RequestType::REQUEST;
-	const auto nLocalIp = net::globals::ipInfo.ip.addr;
 
 	// ARP Request template
 	// Ethernet header
@@ -80,7 +78,9 @@ void __attribute__((cold)) arp_init() {
 	s_arp_request.arp.opcode = __builtin_bswap16(ARP_OPCODE_RQST);
 
 	memcpy(s_arp_request.arp.sender_mac, net::globals::macAddress, ETH_ADDR_LEN);
-	s_arp_request.arp.sender_ip = nLocalIp;
+	_pcast32 ip_addr;
+	ip_addr.u32 = net::globals::ipInfo.ip.addr;
+	memcpy(s_arp_request.arp.sender_ip, ip_addr.u8, IPv4_ADDR_LEN);
 	memset(s_arp_request.arp.target_mac, 0x00, ETH_ADDR_LEN);
 
 	// ARP Reply Template
@@ -96,7 +96,6 @@ void __attribute__((cold)) arp_init() {
 	s_arp_reply.arp.opcode = __builtin_bswap16(ARP_OPCODE_REPLY);
 
 	memcpy(s_arp_reply.arp.sender_mac, net::globals::macAddress, ETH_ADDR_LEN);
-	s_arp_reply.arp.sender_ip = nLocalIp;
 }
 
 bool arp_do_probe() {
@@ -128,7 +127,11 @@ void arp_send_request(uint32_t nIp) {
 	DEBUG_PRINTF(IPSTR, IP2STR(nIp));
 
 	s_requestType = net::arp::RequestType::REQUEST;
-	s_arp_request.arp.target_ip = nIp;
+
+	_pcast32 ip_addr;
+	ip_addr.u32 = nIp;
+
+	memcpy(s_arp_request.arp.target_ip, ip_addr.u8, IPv4_ADDR_LEN);
 
 	emac_eth_send(reinterpret_cast<void *>(&s_arp_request), sizeof(struct t_arp));
 
@@ -147,11 +150,13 @@ void arp_send_probe() {
 	s_requestType = net::arp::RequestType::PROBE;
 	s_isProbeReplyReceived = false;
 
-	s_arp_request.arp.sender_ip = 0;
+	memset(s_arp_request.arp.sender_ip, 0, IPv4_ADDR_LEN);
 
 	arp_send_request(net::globals::ipInfo.ip.addr);
 
-	s_arp_request.arp.sender_ip = net::globals::ipInfo.ip.addr;
+	_pcast32 ip_addr;
+	ip_addr.u32 = net::globals::ipInfo.ip.addr;
+	memcpy(s_arp_request.arp.sender_ip, ip_addr.u8, IPv4_ADDR_LEN);
 
 	DEBUG_EXIT
 }
@@ -177,13 +182,15 @@ void arp_handle_request(struct t_arp *p_arp) {
 
 	_pcast32 target;
 
-	const auto *p = reinterpret_cast<uint8_t *>(&p_arp->arp.target_ip);
+	memcpy(target.u8, p_arp->arp.target_ip, IPv4_ADDR_LEN);
 
-	memcpy(target.u8, p, IPv4_ADDR_LEN);
+	_pcast32 sender;
 
-	DEBUG_PRINTF("Sender " IPSTR " Target " IPSTR, IP2STR(p_arp->arp.sender_ip), IP2STR(target.u32));
+	memcpy(sender.u8, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
 
-	if (!((target.u32 == net::globals::ipInfo.ip.addr) || (target.u32 == net::globals::nBroadcastIp))) {
+	DEBUG_PRINTF("Sender " IPSTR " Target " IPSTR, IP2STR(sender.u32), IP2STR(target.u32));
+
+	if (!((target.u32 == net::globals::ipInfo.ip.addr) || (target.u32 == net::globals::ipInfo.secondary_ip.addr) || (target.u32 == net::globals::ipInfo.broadcast_ip.addr))) {
 		DEBUG_PUTS("No for me.");
 		DEBUG_EXIT
 		return;
@@ -191,10 +198,10 @@ void arp_handle_request(struct t_arp *p_arp) {
 
 	// Ethernet header
 	memcpy(s_arp_reply.ether.dst, p_arp->ether.src, ETH_ADDR_LEN);
-
 	// ARP Header
 	memcpy(s_arp_reply.arp.target_mac, p_arp->arp.sender_mac, ETH_ADDR_LEN);
-	s_arp_reply.arp.target_ip = p_arp->arp.sender_ip;
+	memcpy(s_arp_reply.arp.target_ip, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
+	memcpy(s_arp_reply.arp.sender_ip, target.u8, IPv4_ADDR_LEN);
 
 	emac_eth_send(reinterpret_cast<void *>(&s_arp_reply), sizeof(struct t_arp));
 
@@ -205,8 +212,11 @@ void arp_handle_reply(struct t_arp *p_arp) {
 	DEBUG_ENTRY
 
 	switch (s_requestType) {
-	case net::arp::RequestType::REQUEST:
-		arp_cache_update(p_arp->arp.sender_mac, p_arp->arp.sender_ip);
+	case net::arp::RequestType::REQUEST: {
+		_pcast32 sender;
+		memcpy(sender.u8, p_arp->arp.sender_ip, IPv4_ADDR_LEN);
+		arp_cache_update(p_arp->arp.sender_mac, sender.u32);
+	}
 		break;
 	case net::arp::RequestType::PROBE:
 		s_isProbeReplyReceived = true;

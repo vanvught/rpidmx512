@@ -59,13 +59,15 @@ public:
 
 class RDMDeviceParams {
 public:
-	RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore = nullptr);
+	RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct rdm::deviceparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(RDMDevice *pRDMDevice);
 

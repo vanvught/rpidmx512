@@ -27,17 +27,21 @@
 #define LLRPDEVICE_H_
 
 #include <cstdint>
+#include <cstdio>
 #include <cassert>
 
 #include "llrppacket.h"
+#include "e133.h"
+
 #include "network.h"
 
 #include "debug.h"
 
 namespace llrp {
 namespace device {
-static constexpr auto IP_LLRP_REQUEST = network::convert_to_uint(239, 255, 250, 133);
-static constexpr auto IP_LLRP_RESPONSE  = network::convert_to_uint(239, 255, 250, 134);
+static constexpr auto IPV4_LLRP_REQUEST = network::convert_to_uint(239, 255, 250, 133);
+static constexpr auto IPV4_LLRP_RESPONSE = network::convert_to_uint(239, 255, 250, 134);
+static constexpr uint16_t LLRP_PORT = 5569;
 }  // namespace device
 }  // namespace llrp
 
@@ -45,21 +49,64 @@ class LLRPDevice {
 public:
 	LLRPDevice() {
 		DEBUG_ENTRY
-		s_nHandleLLRP = Network::Get()->Begin(LLRP_PORT);
+		s_nHandleLLRP = Network::Get()->Begin(llrp::device::LLRP_PORT);
 		assert(s_nHandleLLRP != -1);
-		Network::Get()->JoinGroup(s_nHandleLLRP, llrp::device::IP_LLRP_REQUEST);
+		Network::Get()->JoinGroup(s_nHandleLLRP, llrp::device::IPV4_LLRP_REQUEST);
 		DEBUG_EXIT
 	}
 
 	virtual ~LLRPDevice() {
 		DEBUG_ENTRY
-		Network::Get()->LeaveGroup(s_nHandleLLRP, llrp::device::IP_LLRP_REQUEST);
-		Network::Get()->End(LLRP_PORT);
+		Network::Get()->LeaveGroup(s_nHandleLLRP, llrp::device::IPV4_LLRP_REQUEST);
+		Network::Get()->End(llrp::device::LLRP_PORT);
 		DEBUG_EXIT
 	}
 
-	void Run();
-	void Print();
+	void Run() {
+		uint16_t nForeignPort;
+
+		const auto nBytesReceived = Network::Get()->RecvFrom(s_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&s_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
+
+		if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
+			return;
+		}
+
+#ifndef NDEBUG
+		DumpCommon();
+#endif
+
+		const auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(s_pLLRP);
+
+		switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
+		case VECTOR_LLRP_PROBE_REQUEST:
+#ifdef SHOW_LLRP_MESSAGE
+			printf("> VECTOR_LLRP_PROBE_REQUEST\n");
+			DumpLLRP();
+#endif
+			HandleRequestMessage();
+			break;
+		case VECTOR_LLRP_PROBE_REPLY:
+			// Nothing to do here
+			DEBUG_PUTS("VECTOR_LLRP_PROBE_REPLY");
+			break;
+		case VECTOR_LLRP_RDM_CMD:
+#ifdef SHOW_LLRP_MESSAGE
+			printf("> VECTOR_LLRP_RDM_CMD\n");
+			DumpLLRP();
+#endif
+			HandleRdmCommand();
+			break;
+		default:
+			break;
+		}
+	}
+
+	void Print() {
+		printf("LLRP Device\n");
+		printf(" Port UDP           : %d\n", llrp::device::LLRP_PORT);
+		printf(" Join Request       : " IPSTR "\n", IP2STR(llrp::device::IPV4_LLRP_REQUEST));
+		printf(" Multicast Response : " IPSTR "\n", IP2STR(llrp::device::IPV4_LLRP_RESPONSE));
+	}
 
 protected:
 	virtual void CopyUID(__attribute__((unused)) uint8_t *pUID) {

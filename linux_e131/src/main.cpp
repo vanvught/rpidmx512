@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <ctype.h>
 
 #include "hardware.h"
 #include "network.h"
@@ -82,6 +83,8 @@ int main(int argc, char **argv) {
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
 
+	uint32_t nPortIndexOffset = 0;
+
 	StoreE131 storeE131;
 	E131Params e131Params(&storeE131);
 
@@ -89,7 +92,15 @@ int main(int argc, char **argv) {
 
 	if (e131Params.Load()) {
 		e131Params.Dump();
-		e131Params.Set();
+#ifndef NDEBUG
+		if (argc > 2) {
+			const int c = argv[2][0];
+			if (isdigit(c)){
+				nPortIndexOffset = c - '0';
+			}
+#endif
+		}
+		e131Params.Set(nPortIndexOffset);
 	}
 
 	StoreMonitor storeMonitor;
@@ -104,12 +115,24 @@ int main(int argc, char **argv) {
 
 	bridge.SetOutput(&monitor);
 
-	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
-		bool bIsSet;
-		const auto nUniverse = e131Params.GetUniverse(i, bIsSet);
+	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
+		uint32_t nOffset = nPortIndex;
+		if (nPortIndex >= nPortIndexOffset) {
+			nOffset = nPortIndex - nPortIndexOffset;
+		} else {
+			continue;
+		}
 
-		if (bIsSet) {
-			bridge.SetUniverse(i,lightset::PortDir::OUTPUT, nUniverse);
+		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
+
+		bool bIsSet;
+		const auto nUniverse = e131Params.GetUniverse(nOffset, bIsSet);
+		const auto portDirection = e131Params.GetDirection(nPortIndex);
+
+		if (portDirection == lightset::PortDir::OUTPUT) {
+			bridge.SetUniverse(nPortIndex,lightset::PortDir::OUTPUT, nUniverse);
+		} else {
+			bridge.SetUniverse(nPortIndex,lightset::PortDir::DISABLE	, nUniverse);
 		}
 	}
 
@@ -143,9 +166,9 @@ int main(int argc, char **argv) {
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 
 	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=sACN E1.31");
 	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=sACN E1.31");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
 	mDns.Print();
 
 	bridge.Print();

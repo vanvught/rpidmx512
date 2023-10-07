@@ -26,8 +26,6 @@
 #ifndef STORERDMSENSORS_H_
 #define STORERDMSENSORS_H_
 
-#undef NDEBUG //FIXME Remove
-
 #include <cstdint>
 #include <cassert>
 

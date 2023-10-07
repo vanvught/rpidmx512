@@ -113,9 +113,9 @@ struct arp_packet {
 	uint8_t protocol_size;			/*  6 */
 	uint16_t opcode;				/*  8 */
 	uint8_t sender_mac[ETH_ADDR_LEN];/*14 */
-	uint32_t sender_ip;				/* 18 */
+	uint8_t sender_ip[IPv4_ADDR_LEN];/* 18 */
 	uint8_t target_mac[ETH_ADDR_LEN];/*24 */
-	uint32_t target_ip;				/* 28 */
+	uint8_t target_ip[IPv4_ADDR_LEN];/* 28 */
 	uint8_t padding[18];			/* 46 */ /* +14 = 60 */
 } PACKED;
 

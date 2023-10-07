@@ -2,7 +2,7 @@
  * @file ltcmidisystemrealtime.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,10 @@ private:
 	void ShowBPM(uint32_t nBPM);
 
 private:
-	int m_nHandle{-1};
-	uint8_t m_Buffer[64];
-	uint32_t m_nBPMPrevious{999};
+	int m_nHandle { -1 };
+	uint32_t m_nBPMPrevious { 999 };
 
+	static char *s_pUdpBuffer;
 	static LtcMidiSystemRealtime *s_pThis;
 };
 

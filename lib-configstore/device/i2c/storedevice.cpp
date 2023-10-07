@@ -2,7 +2,7 @@
  * @file storedevice.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,9 @@
 
 namespace storedevice {
 #if !defined (CONFIG_FLASHROM_I2C_INDEX)
-# define CONFIG_FLASHROM_I2C_INDEX 0;
-static constexpr uint8_t I2C_INDEX = CONFIG_FLASHROM_I2C_INDEX;
+# define CONFIG_FLASHROM_I2C_INDEX	0
 #endif
+static constexpr uint8_t I2C_INDEX = CONFIG_FLASHROM_I2C_INDEX;
 /* Backwards compatibility with SPI FLASH */
 static constexpr auto FLASH_SECTOR_SIZE = 4096U;
 static constexpr auto ROM_SIZE = 4096U;

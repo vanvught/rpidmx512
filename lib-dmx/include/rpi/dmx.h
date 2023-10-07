@@ -2,7 +2,7 @@
  * @file dmx.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,7 +53,7 @@ public:
 	Dmx();
 
 	void SetPortDirection(uint32_t nPortIndex, dmx::PortDirection portDirection, bool bEnableData = false);
-	dmx::PortDirection GetPortDirection();
+	dmx::PortDirection GetPortDirection(uint32_t nPortIndex);
 
 	// RDM Send
 	
@@ -67,13 +67,21 @@ public:
 
 	// DMX Send
 	
-	void SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
+	void StartOutput(uint32_t nPortIndex);
+	void SetOutput(const bool doForce);
+
+	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle) {}
+	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
+		return dmx::OutputStyle::CONTINOUS;
+	}
 
 	void Blackout();
 	void FullOn();
 
 	void ClearData(uint32_t nPortIndex);
-	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime();

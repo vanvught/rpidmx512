@@ -2,7 +2,7 @@
  * @file tcnetreader.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -47,8 +47,8 @@ private:
 	struct midi::Timecode m_tMidiTimeCode;
 	uint32_t m_nTimeCodePrevious { 0xFF };
 	int m_nHandle { -1 };
-	uint8_t m_Buffer[64];
-	uint16_t m_nBytesReceived { 0 };
+
+	static char *s_pUdpBuffer;
 };
 
 #endif /* H3_TCNETREADER_H_ */

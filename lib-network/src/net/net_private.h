@@ -87,7 +87,6 @@ void icmp_handle(struct t_icmp *);
 void icmp_shutdown();
 
 void tcp_init();
-void tcp_set_ip();
 void tcp_run();
 void tcp_handle(struct t_tcp *);
 void tcp_shutdown();

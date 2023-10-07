@@ -2,7 +2,7 @@
  * @file ntpclient.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,7 +50,7 @@ public:
 	void Print();
 
 	ntpclient::Status GetStatus() {
-		return m_tStatus;
+		return m_Status;
 	}
 
 	static NtpClient *Get() {
@@ -61,7 +61,7 @@ private:
 	void SetUtcOffset(float fUtcOffset);
 	void GetTimeNtpFormat(uint32_t &nSeconds, uint32_t &nFraction);
 	void Send();
-	bool Receive();
+	bool Receive(uint8_t& LiVnMode);
 
 	struct TimeStamp {
 		uint32_t nSeconds;
@@ -77,9 +77,8 @@ private:
 	uint32_t m_nServerIp;
 	int32_t m_nUtcOffset;
 	int32_t m_nHandle { -1 };
-	ntpclient::Status m_tStatus { ntpclient::Status::IDLE };
+	ntpclient::Status m_Status { ntpclient::Status::IDLE };
 	struct TNtpPacket m_Request;
-	struct TNtpPacket m_Reply;
 	uint32_t m_MillisRequest { 0 };
 	uint32_t m_MillisLastPoll { 0 };
 

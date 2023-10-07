@@ -73,13 +73,15 @@ public:
 
 class ShowFileParams {
 public:
-	ShowFileParams(ShowFileParamsStore *pShowFileParamsStore = nullptr);
+	ShowFileParams(ShowFileParamsStore *pShowFileParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set();
 

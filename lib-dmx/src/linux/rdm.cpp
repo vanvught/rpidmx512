@@ -28,11 +28,6 @@
 
 #include "rdm.h"
 #include "dmx.h"
-#if defined (OUTPUT_DMX_SEND_MULTI)
-using namespace dmxmulti;
-#else
-using namespace dmxsingle;
-#endif
 #include "dmxconst.h"
 #include "config.h"
 
@@ -42,7 +37,7 @@ extern "C" {
 void udelay(uint32_t);
 }
 
-static uint8_t s_TransactionNumber[max::OUT] = {0, };
+static uint8_t s_TransactionNumber[dmx::config::max::OUT] = {0, };
 
 void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
 	assert(nPortIndex < max::OUT);

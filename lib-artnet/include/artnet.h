@@ -31,12 +31,31 @@
 
 #include <cstdint>
 
-#include "debug.h"
+#if  !defined (PACKED)
+#define PACKED __attribute__((packed))
+#endif
 
 namespace artnet {
+#if !defined(ARTNET_VERSION)
+ static constexpr uint32_t VERSION = 4;
+#else
+ static constexpr uint32_t VERSION = ARTNET_VERSION;
+#endif
+static constexpr uint8_t PROTOCOL_REVISION = 14;
+static constexpr uint32_t PORTS = 4;
+static constexpr uint16_t UDP_PORT = 0x1936;
+static constexpr uint32_t DMX_LENGTH = 512;
+static constexpr uint32_t SHORT_NAME_LENGTH = 18;
+static constexpr uint32_t LONG_NAME_LENGTH = 64;
+static constexpr uint32_t REPORT_LENGTH = 64;
+static constexpr uint32_t RDM_UID_WIDTH = 6;
+static constexpr uint32_t MAC_SIZE = 6;
+static constexpr uint32_t IP_SIZE = 4;
+static constexpr uint32_t ESTA_SIZE = 2;
+
 static constexpr char NODE_ID[] = "Art-Net";			///< Array of 8 characters, the final character is a null termination. Value = A r t - N e t 0x00
-static constexpr auto MERGE_TIMEOUT_SECONDS = 10;
-static constexpr auto NETWORK_DATA_LOSS_TIMEOUT = 10;	///< Seconds
+static constexpr uint32_t MERGE_TIMEOUT_SECONDS = 10;
+static constexpr uint32_t NETWORK_DATA_LOSS_TIMEOUT = 10;	///< Seconds
 
 enum class PortProtocol {
 	ARTNET,	///< Output both DMX512 and RDM packets from the Art-Net protocol (default).
@@ -48,14 +67,14 @@ enum class PortProtocol {
  * The Style code defines the general functionality of a Controller.
  * The Style code is returned in ArtPollReply.
  */
-struct StyleCode {
-	static constexpr uint8_t ST_NODE = 0x00;	///< A DMX to / from Art-Net device
-	static constexpr uint8_t ST_SERVER = 0x01;	///< A lighting console.
-	static constexpr uint8_t ST_MEDIA = 0x02;	///< A Media Server.
-	static constexpr uint8_t ST_ROUTE = 0x03;	///< A network routing device.
-	static constexpr uint8_t ST_BACKUP = 0x04;	///< A backup device.
-	static constexpr uint8_t ST_CONFIG = 0x05;	///< A configuration or diagnostic tool.
-	static constexpr uint8_t ST_VISUAL = 0x06;	///< A visualiser.
+enum class StyleCode: uint8_t {
+	NODE = 0x00,	///< A DMX to / from Art-Net device
+	SERVER = 0x01,	///< A lighting console.
+	MEDIA = 0x02,	///< A Media Server.
+	ROUTE = 0x03,	///< A network routing device.
+	BACKUP = 0x04,	///< A backup device.
+	CONFIG = 0x05,	///< A configuration or diagnostic tool.
+	VISUAL = 0x06,	///< A visualizer.
 };
 
 /**
@@ -63,31 +82,23 @@ struct StyleCode {
  * Diagnostics Priority codes.
  * These are used in ArtPoll and ArtDiagData.
  */
-struct PriorityCodes {
-	static constexpr uint8_t DP_LOW = 0x10;		///< Low priority message.
-	static constexpr uint8_t DP_MED = 0x40;		///< Medium priority message.
-	static constexpr uint8_t DP_HIGH = 0x80;	///< High priority message.
-	static constexpr uint8_t DP_CRITICAL = 0xE0;///< Critical priority message.
-	static constexpr uint8_t DP_VOLATILE = 0xF0;///< Volatile message. Messages of this type are displayed on a single line in the DMX-Workshop diagnostics display. All other types are displayed in a list box.
+enum class PriorityCodes: uint8_t {
+	DIAG_LOW = 0x10,
+	DIAG_MED = 0x40,
+	DIAG_HIGH = 0x80,
+	DIAG_CRITICAL = 0xE0,
+	DIAG_VOLATILE = 0xF0,	///< Volatile message. Messages of this type are displayed on a single line in the DMX-Workshop diagnostics display. All other types are displayed in a list box.
 };
 
-/**
- * An enum for setting the behavior of a port.
- * Ports can either input data (DMX -> ArtNet) or
- * output (ArtNet -> DMX) data.
- */
-struct PortSettings {
-	static constexpr uint8_t ENABLE_INPUT = 0x40;
-	static constexpr uint8_t ENABLE_OUTPUT = 0x80;
-};
-
-struct PortDataCode {
-	static constexpr uint8_t PORT_DMX = 0x00;	///< Data is DMX-512
-	static constexpr uint8_t PORT_MIDI = 0x01; 	///< Data is MIDI
-	static constexpr uint8_t PORT_AVAB = 0x02;	///< Data is Avab
-	static constexpr uint8_t PORT_CMX = 0x03;	///< Data is Colortran CMX
-	static constexpr uint8_t PORT_ADB = 0x04;	///< Data is ABD 62.5
-	static constexpr uint8_t PORT_ARTNET = 0x05;///< Data is ArtNet
+struct PortType {
+	static constexpr uint8_t PROTOCOL_DMX = 0x00;	///< DMX-512
+	static constexpr uint8_t PROTOCOL_MIDI = 0x01; 	///< MIDI
+	static constexpr uint8_t PROTOCOL_AVAB = 0x02;	///< Avab
+	static constexpr uint8_t PROTOCOL_CMX = 0x03;	///< Colortran CMX
+	static constexpr uint8_t PROTOCOL_ADB = 0x04;	///< ABD 62.5
+	static constexpr uint8_t PROTOCOL_ARTNET = 0x05;///< ArtNet
+	static constexpr uint8_t INPUT_ARTNET = 0x40;	///< Set if this channel can input onto the Art-Net network
+	static constexpr uint8_t OUTPUT_ARTNET = 0x80;	///< Set if this channel can output data from the Art-Net network
 };
 
 struct PortCommand {
@@ -212,10 +223,17 @@ struct Status3 {
 	static constexpr uint8_t OUTPUT_SWITCH = (1U << 3);  		///< bit 3 = 1 Outputs can be switched to an input
 };
 
-struct TalkToMe {
-	static constexpr auto SEND_ARTP_ON_CHANGE = (1U << 1);	///< Bit 1 set : Send ArtPollReply whenever Node conditions change.
-	static constexpr auto SEND_DIAG_MESSAGES = (1U << 2);	///< Bit 2 set : Send me diagnostics messages.
-	static constexpr auto SEND_DIAG_UNICAST = (1U << 3);	///< Bit 3 : 0 = Diagnostics messages are broadcast. (if bit 2).													///< Bit 3 : 1 = Diagnostics messages are unicast. (if bit 2).
+struct Flags {
+																///< bit 1 = 0 Node only sends ArtPollReply when polled
+	static constexpr uint8_t SEND_ARTP_ON_CHANGE = (1U << 1);	///< bit 1 = 1 Node sends ArtPollReply when it needs to
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 		///< bit 2 = 0 Do not send me diagnostic messages
+	static constexpr uint8_t SEND_DIAG_MESSAGES = (1U << 2);	///< bit 2 = 1 Send me diagnostics messages.
+																///< bit 3 = 0 Diagnostics messages are broadcast. (if bit 2).
+	static constexpr uint8_t SEND_DIAG_UNICAST = (1U << 3);		///< bit 3 = 1 Diagnostics messages are unicast. (if bit 2).
+																///< bit 5 = 0 Ignore TargetPortAddress
+	static constexpr uint8_t USE_TARGET_PORT_ADDRESS = (1U < 5);///< bit 5 = 1 Only reply if device has a Port-Address that is
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	///<		   inclusively in the range TargetPortAddressBottom to
+	 	 	 	 	 	 	 	 	 	 	 	 	 	 	 	///<		   TargetPortAddressTop.
 };
 
 struct GoodOutput {
@@ -246,55 +264,43 @@ struct GoodInput {
 	static constexpr uint8_t ERRORS = (1U << 2);				///< bit 2 is receive errors
 };
 
-inline static const char *get_protocol_mode(const artnet::PortProtocol p, const bool bToUpper = false) {
+inline const char *get_protocol_mode(const artnet::PortProtocol p, const bool bToUpper = false) {
 	if (bToUpper) {
 		return (p == artnet::PortProtocol::ARTNET) ? "Art-Net" : "sACN";
 	}
 	return (p == artnet::PortProtocol::ARTNET) ? "artnet" : "sacn";
 }
 
-inline static const char *get_protocol_mode(const unsigned p, const bool bToUpper = false) {
+inline const char *get_protocol_mode(const unsigned p, const bool bToUpper = false) {
 	return get_protocol_mode(static_cast<artnet::PortProtocol>(p), bToUpper);
 }
 
-inline static uint16_t make_port_address(const uint32_t nNetSwitch, const uint32_t nSubSwitch, const uint32_t nUniverse) {
+inline artnet::PortProtocol get_protocol_mode(const char *pProtocolMode) {
+	if (pProtocolMode != nullptr) {
+		if (((pProtocolMode[0] | 0x20) == 's')
+		 && ((pProtocolMode[1] | 0x20) == 'a')
+		 && ((pProtocolMode[2] | 0x20) == 'c')
+		 && ((pProtocolMode[3] | 0x20) == 'n')) {
+			return artnet::PortProtocol::SACN;
+		}
+	}
+	return artnet::PortProtocol::ARTNET;
+}
+
+inline uint16_t make_port_address(const uint32_t nNetSwitch, const uint32_t nSubSwitch, const uint32_t nUniverse) {
 	// PortAddress Bit 15 = 0
 	uint16_t nPortAddress = (nNetSwitch & 0x7F) << 8;					// Net : Bits 14-8
 	nPortAddress |= static_cast<uint16_t>((nSubSwitch & 0x0F) << 4);	// Sub-Net : Bits 7-4
 	nPortAddress |= static_cast<uint16_t>(nUniverse & 0x0F);			// Universe : Bits 3-0
 
-	DEBUG_PRINTF("nNetSwitch=%u,nSubSwitch=%u, nUniverse=%u ==> nPortAddress=%u", nNetSwitch, nSubSwitch, nUniverse, nPortAddress);
-
 	return nPortAddress;
 }
-
-#if !defined(ARTNET_VERSION)
- static constexpr uint8_t VERSION = 4;
-#else
- static constexpr uint8_t VERSION = ARTNET_VERSION;
-#endif
-static constexpr uint8_t PROTOCOL_REVISION = 14;
-static constexpr uint32_t PORTS = 4;
-static constexpr uint16_t UDP_PORT = 0x1936;
-static constexpr uint16_t DMX_LENGTH = 512;
-static constexpr uint32_t SHORT_NAME_LENGTH = 18;
-static constexpr uint32_t LONG_NAME_LENGTH = 64;
-static constexpr uint32_t REPORT_LENGTH = 64;
-static constexpr uint32_t RDM_UID_WIDTH = 6;
-static constexpr uint32_t MAC_SIZE = 6;
-static constexpr uint32_t IP_SIZE = 4;
-static constexpr uint32_t ESTA_SIZE = 2;
-}  // namespace artnet
-
-#if  !defined (PACKED)
-#define PACKED __attribute__((packed))
-#endif
 
 /**
  * Table 1 - OpCodes
  * The supported legal OpCode values used in Art-Net packets
  */
-enum TOpCodes {
+enum class OpCodes: uint16_t {
 	OP_POLL = 0x2000,		///< This is an ArtPoll packet, no other data is contained in this UDP packet.
 	OP_POLLREPLY = 0x2100,	///< This is an ArtPollReply Packet. It contains device status information.
 	OP_DIAGDATA = 0x2300,	///< Diagnostics and data logging packet.
@@ -315,22 +321,20 @@ enum TOpCodes {
 	OP_NOT_DEFINED = 0x0000	///< OP_NOT_DEFINED
 };
 
-/**
- * ArtPoll packet definition
- */
-struct TArtPoll {
+struct ArtPoll {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< The OpCode defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the OpCode listing.
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
 	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
-	uint8_t TalkToMe;		///< Set behavior of Node
-	uint8_t Priority;		///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
+	uint8_t Flags;			///< Set behavior of Node
+	uint8_t DiagPriority;	///< The lowest priority of diagnostics message that should be sent. See \ref TPriorityCodes
+	uint8_t TargetPortAddressTopHi;
+	uint8_t TargetPortAddressTopLo;
+	uint8_t TargetPortAddressBottomHi;
+	uint8_t TargetPortAddressBottomLo;
 }PACKED;
 
-/**
- * ArtPollReply packet definition
- */
-struct TArtPollReply {
+struct ArtPollReply {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpPollReply \ref TOpCodes
 	uint8_t IPAddress[4];	///< Array containing the Node’s IP address. First array entry is most significant byte of address.
@@ -374,23 +378,20 @@ struct TArtPollReply {
 /**
  * ArtDmx is the data packet used to transfer DMX512 data.
  */
-struct TArtDmx {
+struct ArtDmx {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpDmx \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
 	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
 	uint8_t Sequence;		///< The sequence number is used to ensure that ArtDmx packets are used in the correct order.
-	uint8_t Physical;		///< The physical input port from which DMX512 data was input. This field is for information only. Use Universe for data routing.
+	uint8_t Physical;		///< The physical input port from which DMX512 data was input.
 	uint16_t PortAddress;	///< The 15 bit Port-Address to which this packet is destined.
 	uint8_t LengthHi;		///< The length of the DMX512 data array. This value should be an even number in the range 2 – 512.
 	uint8_t Length;			///< Low Byte of above.
 	uint8_t Data[artnet::DMX_LENGTH];///< A variable length array of DMX512 lighting data.
 }PACKED;
 
-/**
- * ArtDiagData is a general purpose packet that allows a node or controller to send diagnostics data for display.
- */
-struct TArtDiagData {
+struct ArtDiagData {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpDiagData See \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -404,10 +405,7 @@ struct TArtDiagData {
 	uint8_t Data[512];		///< ASCII text array, null terminated. Max length is 512 bytes including the null terminator.
 }PACKED;
 
-/**
- * ArtSync packet definition
- */
-struct TArtSync {
+struct ArtSync {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpSync \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -421,7 +419,7 @@ struct TArtSync {
  *
  * Fields 5 to 13 contain the data that will be programmed into the node.
  */
-struct TArtAddress {
+struct ArtAddress {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -446,7 +444,7 @@ struct TArtAddress {
  * All nodes power on with all inputs enabled.
  */
 
-struct TArtInput {
+struct ArtInput {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -466,7 +464,7 @@ struct TArtInput {
  * The four key types of Film, EBU, Drop Frame and SMPTE are also encoded.
  *
  */
-struct TArtTimeCode {
+struct ArtTimeCode {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -480,11 +478,7 @@ struct TArtTimeCode {
 	uint8_t Type;			///< 0 = Film (24fps) , 1 = EBU (25fps), 2 = DF (29.97fps), 3 = SMPTE (30fps)
 }PACKED;
 
-/**
- * ArtTimeSync packet definition
- *
- */
-struct TArtTimeSync {
+struct ArtTimeSync {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -511,7 +505,7 @@ struct TArtTimeSync {
  * Full discovery is only initiated at power on or when an ArtTodControl.AtcFlush is received.
  * The response is ArtTodData.
  */
-struct TArtTodRequest {
+struct ArtTodRequest {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -532,12 +526,10 @@ struct TArtTodRequest {
 }PACKED;
 
 /**
- * ArtTodControl packet definition
- *
  * The ArtTodControl packet is used to send RDM control parameters over Art-Net.
  * The response is ArtTodData.
  */
-struct TArtTodControl {
+struct ArtTodControl {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -556,10 +548,7 @@ struct TArtTodControl {
 	uint8_t Address;		///< The low byte of the 15 bit Port-Address of the DMX Port that should action this command.
 }PACKED;
 
-/**
- * ArtTodData packet definition
- */
-struct TArtTodData {
+struct ArtTodData {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -584,11 +573,9 @@ struct TArtTodData {
 }PACKED;
 
 /**
- * 	ArtRdm packet definition
- *
  * 	The ArtRdm packet is used to transport all non-discovery RDM messages over Art-Net.
  */
-struct TArtRdm {
+struct ArtRdm {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpAddress \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -608,10 +595,7 @@ struct TArtRdm {
 	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
 }PACKED;
 
-/**
- * ArtIpProg packet definition
- */
-struct TArtIpProg {
+struct ArtIpProg {
 	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;	///< The OpCode defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the OpCode listing.
 	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
@@ -636,10 +620,7 @@ struct TArtIpProg {
 	uint8_t ProgGwtLo;
 }PACKED;
 
-/**
- * ArtIpProgReply packet definition
- */
-struct TArtIpProgReply {
+struct ArtIpProgReply {
 	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;	///< The OpCode defines the class of data following ArtPoll within this UDP packet. Transmitted low byte first. See \ref TOpCodes for the OpCode listing.
 	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
@@ -668,10 +649,7 @@ struct TArtIpProgReply {
 	uint8_t Spare8;
 }PACKED;
 
-/**
- * ArtTrigger packet definition
- */
-struct TArtTrigger {
+struct ArtTrigger {
 	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;	///< OpPollReply
 	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
@@ -685,10 +663,7 @@ struct TArtTrigger {
 	uint8_t Data[512];	///< The interpretation of the payload is defined by the Key.
 }PACKED;
 
-/**
- * TArtDirectory packet definition
- */
-struct TArtDirectory {
+struct ArtDirectory {
 	uint8_t Id[8];		///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;	///< OpPollReply \ref TOpCodes
 	uint8_t ProtVerHi;	///< High byte of the Art-Net protocol revision number.
@@ -700,10 +675,7 @@ struct TArtDirectory {
 	uint8_t FileLo;		///< The least significant byte of the file number requested
 }PACKED;
 
-/**
- * TArtDirectoryReply packet definition
- */
-struct TArtDirectoryReply {
+struct ArtDirectoryReply {
 	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
 	uint16_t OpCode;		///< OpPollReply \ref TOpCodes
 	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
@@ -719,28 +691,26 @@ struct TArtDirectoryReply {
 	uint8_t Data[64];		///< Application specific data
 }PACKED;
 
-/**
- * union of supported Art-Net packets
- */
 union UArtPacket {
-	struct TArtPoll ArtPoll;					///< ArtPoll packet
-	struct TArtPollReply ArtPollReply;			///< ArtPollReply packet
-	struct TArtDmx ArtDmx;						///< ArtDmx packet
-	struct TArtDiagData ArtDiagData;			///< ArtDiagData packet
-	struct TArtSync ArtSync;					///< ArtSync packet
-	struct TArtAddress ArtAddress;				///< ArtAddress packet
-	struct TArtInput ArtInput;					///< ArtInput packet
-	struct TArtTimeCode ArtTimeCode;			///< ArtTimeCode packet
-	struct TArtTimeSync ArtTimeSync;			///< ArtTimeSync packet
-	struct TArtTodRequest ArtTodRequest;		///< ArtTodRequest packet
-	struct TArtTodControl ArtTodControl;		///< ArtTodControl packet
-	struct TArtTodData ArtTodData;				///< ArtTodData packet
-	struct TArtRdm ArtRdm;						///< ArtRdm packet
-	struct TArtIpProg ArtIpProg;				///< ArtIpProg packet
-	struct TArtIpProgReply ArtIpProgReply;		///< ArtIpProgReply packet
-	struct TArtTrigger ArtTrigger;				///< ArtTrigger packet
-	struct TArtDirectory ArtDirectory;			///< ArtDirectory packet
-	struct TArtDirectoryReply ArtDirectoryReply;///< ArtDirectoryReply packet
+	struct ArtPoll ArtPoll;					///< ArtPoll packet
+	struct ArtPollReply ArtPollReply;			///< ArtPollReply packet
+	struct ArtDmx ArtDmx;						///< ArtDmx packet
+	struct ArtDiagData ArtDiagData;			///< ArtDiagData packet
+	struct ArtSync ArtSync;					///< ArtSync packet
+	struct ArtAddress ArtAddress;				///< ArtAddress packet
+	struct ArtInput ArtInput;					///< ArtInput packet
+	struct ArtTimeCode ArtTimeCode;			///< ArtTimeCode packet
+	struct ArtTimeSync ArtTimeSync;			///< ArtTimeSync packet
+	struct ArtTodRequest ArtTodRequest;		///< ArtTodRequest packet
+	struct ArtTodControl ArtTodControl;		///< ArtTodControl packet
+	struct ArtTodData ArtTodData;				///< ArtTodData packet
+	struct ArtRdm ArtRdm;						///< ArtRdm packet
+	struct ArtIpProg ArtIpProg;				///< ArtIpProg packet
+	struct ArtIpProgReply ArtIpProgReply;		///< ArtIpProgReply packet
+	struct ArtTrigger ArtTrigger;				///< ArtTrigger packet
+	struct ArtDirectory ArtDirectory;			///< ArtDirectory packet
+	struct ArtDirectoryReply ArtDirectoryReply;///< ArtDirectoryReply packet
 };
+}  // namespace artnet
 
 #endif /* ARTNET_H_ */

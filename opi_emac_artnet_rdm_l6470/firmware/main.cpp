@@ -44,7 +44,7 @@
 #include "displayudfparams.h"
 #include "display7segment.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
 #include "artnetmsgconst.h"
@@ -65,59 +65,47 @@
 
 #include "lightsetchain.h"
 
-#if defined (ORANGE_PI)
-# include "flashcodeinstall.h"
-# include "configstore.h"
-# include "remoteconfig.h"
-# include "remoteconfigparams.h"
-# include "storeremoteconfig.h"
-# include "storedisplayudf.h"
-# include "storerdmdevice.h"
-# include "storerdmsensors.h"
-# if defined (ENABLE_RDM_SUBDEVICES)
-#  include "storerdmsubdevices.h"
-# endif
-# include "storetlc59711.h"
+#include "flashcodeinstall.h"
+#include "configstore.h"
+#include "remoteconfig.h"
+#include "remoteconfigparams.h"
+#include "storeremoteconfig.h"
+#include "storedisplayudf.h"
+#include "storerdmdevice.h"
+#include "storerdmsensors.h"
+#if defined (ENABLE_RDM_SUBDEVICES)
+# include "storerdmsubdevices.h"
 #endif
+#include "storetlc59711.h"
+#include "storesparkfundmx.h"
+#include "storemotors.h"
 
-#if defined (ORANGE_PI_ONE)
-# include "slushdmx.h"
-# define BOARD_NAME	"Slushengine"
-#else
-# include "sparkfundmx.h"
-# include "sparkfundmxconst.h"
-# define BOARD_NAME "Sparkfun"
-# include "storesparkfundmx.h"
-# include "storemotors.h"
-#endif
+#define BOARD_NAME "Sparkfun"
+
+#include "sparkfundmx.h"
+#include "sparkfundmxconst.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void Hardware::RebootHandler() {
-	ArtNet4Node::Get()->Stop();
+	ArtNetNode::Get()->Stop();
 }
 
 void main() {
 	Hardware hw;
 	DisplayUdf display;
-#if defined (ORANGE_PI)
 	ConfigStore configStore;
-#endif
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-#if defined (ORANGE_PI)
 	StoreNetwork storeNetwork;
 	Network nw(&storeNetwork);
-#else
-	Network nw(nullptr);
-#endif
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
-#if defined (ORANGE_PI)
 	FlashCodeInstall spiFlashInstall;
-#endif
 
 	fw.Print("Art-Net 4 Stepper L6470");
 	nw.Print();
@@ -143,16 +131,6 @@ void main() {
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
 
-#if defined (ORANGE_PI_ONE)
-	SlushDmx *pSlushDmx = new SlushDmx(false);	// Do not use SPI busy check
-	assert(pSlushDmx != 0);
-
-	pSlushDmx->ReadConfigFiles();
-
-	nMotorsConnected = pSlushDmx->GetMotorsConnected();
-
-	pBoard = pSlushDmx;
-#else
 	StoreSparkFunDmx storeSparkFunDmx;
 	StoreMotors storeMotors;
 
@@ -173,14 +151,9 @@ void main() {
 	nMotorsConnected = pSparkFunDmx->GetMotorsConnected();
 
 	pBoard = pSparkFunDmx;
-#endif
 
-#if defined (ORANGE_PI)
 	StoreTLC59711 storeTLC59711;
 	TLC59711DmxParams pwmledparms(&storeTLC59711);
-#else
-	TLC59711DmxParams pwmledparms;
-#endif
 
 	bool isLedTypeSet = false;
 
@@ -188,13 +161,9 @@ void main() {
 		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
 			auto *pTLC59711Dmx = new TLC59711Dmx;
 			assert(pTLC59711Dmx != nullptr);
-#if defined (ORANGE_PI)
 			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
-#endif
 			pwmledparms.Dump();
 			pwmledparms.Set(pTLC59711Dmx);
-
-			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 
 			auto *pChain = new LightSetChain;
 			assert(pChain != nullptr);
@@ -216,33 +185,29 @@ void main() {
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
-	ArtNet4Node node;
+	ArtNetNode node;
+	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 
-#if defined (ORANGE_PI)
-	StoreArtNet storeArtNet;
-
-	ArtNetParams artnetparams(&storeArtNet);
+	ArtNetParams artnetParams(&storeArtNet);
 	node.SetArtNetStore(&storeArtNet);
-#else
-	ArtNetParams artnetparams;
-#endif
 
 	node.SetLongName(aDescription);
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
-		artnetparams.Set();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
+		artnetParams.Set(DMXPORT_OFFSET);
 	}
 
 	node.SetOutput(pBoard);
-	bool isSet;
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, artnetparams.GetUniverse(0, isSet));
+	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pBoard)};
 
 	ArtNetRdmResponder rdmResponder(pRDMPersonalities, 1);
 
-#if defined (ORANGE_PI)
+	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
+	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
+
 	StoreRDMDevice storeRdmDevice;
 	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
@@ -254,13 +219,6 @@ void main() {
 	StoreRDMSubDevices storeRdmSubDevices;
 	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
 # endif
-#else
-	RDMDeviceParams rdmDeviceParams;
-	RDMSensorsParams rdmSensorsParams;
-# if defined (ENABLE_RDM_SUBDEVICES)
-	RDMSubDevicesParams rdmSubDevicesParams;
-# endif
-#endif
 
 	if (rdmSensorsParams.Load()) {
 		rdmSensorsParams.Dump();
@@ -289,40 +247,36 @@ void main() {
 	pBoard->Print();
 
 	display.SetTitle("Art-Net 4 L6470");
-	display.Set(2, displayudf::Labels::NODE_NAME);
-	display.Set(3, displayudf::Labels::IP);
-	display.Set(4, displayudf::Labels::VERSION);
-	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
-	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
+	display.Set(2, displayudf::Labels::IP);
+	display.Set(3, displayudf::Labels::VERSION);
+	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
+	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
-#if defined (ORANGE_PI)
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-#else
-	DisplayUdfParams displayUdfParams;
-#endif
 
 	if(displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
 		displayUdfParams.Dump();
+		displayUdfParams.Set(&display);
 	}
 
 	display.Show(&node);
+	if (isLedTypeSet) {
+		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+	}
 
-#if defined (ORANGE_PI)
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::STEPPER, node.GetActiveOutputPorts());
 
 	StoreRemoteConfig storeRemoteConfig;
 	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
 
 	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
 		remoteConfigParams.Dump();
+		remoteConfigParams.Set(&remoteConfig);
 	}
 
 	while (configStore.Flash())
 		;
-#endif
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -337,10 +291,8 @@ void main() {
 		nw.Run();
 		node.Run();
 		ntpClient.Run();
-#if defined (ORANGE_PI)
 		remoteConfig.Run();
 		configStore.Flash();
-#endif
 		mDns.Run();
 #if defined (ENABLE_HTTPD)
 		httpDaemon.Run();

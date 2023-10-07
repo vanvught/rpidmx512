@@ -2,7 +2,7 @@
  * @file ltcoscserver.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "ltcdisplayrgb.h"
+#include "network.h"
 
 namespace ltcoscserver {
 static constexpr auto PATH_LENGTH_MAX =128;
@@ -37,12 +38,9 @@ static constexpr auto PATH_LENGTH_MAX =128;
 class LtcOscServer {
 public:
 	LtcOscServer();
-	~LtcOscServer();
 
 	void Start();
 	void Stop();
-	void Run();
-
 	void Print();
 
 	void SetPortIncoming(uint16_t nPortIncoming) {
@@ -53,16 +51,27 @@ public:
 		return m_nPortIncoming;
 	}
 
+	void Run() {
+		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pBuffer)), &m_nRemoteIp, &m_nRemotePort);
+
+		if (__builtin_expect((nBytesReceived <= 4), 1)) {
+			return;
+		}
+
+		HandleOscRequest(nBytesReceived);
+	}
+
 private:
+	void HandleOscRequest(const uint16_t nBytesReceived);
 	void SetWS28xxRGB(uint32_t nSize, ltcdisplayrgb::ColourIndex tIndex);
 
 private:
 	uint16_t m_nPortIncoming;
-	int32_t m_nHandle{-1};
-	uint32_t m_nRemoteIp{0};
-	uint16_t m_nRemotePort{0};
+	int32_t m_nHandle { -1 };
+	uint32_t m_nRemoteIp { 0 };
+	uint16_t m_nRemotePort { 0 };
 	char m_aPath[ltcoscserver::PATH_LENGTH_MAX];
-	uint32_t m_nPathLength{0};
+	uint32_t m_nPathLength { 0 };
 	char *m_pBuffer;
 };
 

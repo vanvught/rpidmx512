@@ -91,12 +91,6 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pRDMDeviceParamsStore != nullptr);
-
-	if (m_pRDMDeviceParamsStore == nullptr) {
-		DEBUG_EXIT
-		return;
-	}
 
 	m_Params.nSetList = 0;
 
@@ -104,6 +98,7 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pRDMDeviceParamsStore != nullptr);
 	m_pRDMDeviceParamsStore->Update(&m_Params);
 
 	DEBUG_EXIT
@@ -201,6 +196,7 @@ void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, c
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct rdm::deviceparams::Params));
 	} else {
+		assert(m_pRDMDeviceParamsStore != nullptr);
 		m_pRDMDeviceParamsStore->Copy(&m_Params);
 	}
 
@@ -212,19 +208,5 @@ void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, c
 	nSize = builder.GetSize();
 
 	DEBUG_PRINTF("nSize=%d", nSize);
-	DEBUG_EXIT
-}
-
-void RDMDeviceParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pRDMDeviceParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
 	DEBUG_EXIT
 }

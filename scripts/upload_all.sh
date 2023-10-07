@@ -4,7 +4,7 @@ echo $1
 DIR=../opi_emac*
 UIMAGE=orangepi_zero.uImage.gz
 
-array=('rconfig.txt' 'display.txt' 'network.txt' 'artnet.txt' 'e131.txt' 'devices.txt' 'params.txt')
+array=('rconfig.txt' 'display.txt' 'network.txt' 'artnet.txt' 'e131.txt' 'devices.txt' 'params.txt' 'rdm_device.txt' 'ltc.txt' 'osc.txt' 'sensors.txt' 'subdev.txt' 'serial.txt' 'show.txt' 'tcnet.txt')
 
 for f in $DIR
 do
@@ -29,7 +29,7 @@ do
 			do
 				echo $i
 				TXT_FILE=$(echo ?get#$i | nc -u -p 10501 -w 1 $1 10501)  || true
-				echo $TXT_FILE
+				echo -e "\e[32m$TXT_FILE\e[0m"
 			done
 		fi
 		cd - >/dev/null

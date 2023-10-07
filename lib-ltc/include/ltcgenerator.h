@@ -53,7 +53,7 @@ public:
 
 	void Print();
 
-	void HandleRequest(void *pBuffer = nullptr, uint16_t nBufferLength = 0);
+	void HandleRequest(char *pBuffer = nullptr, uint16_t nBufferLength = 0);
 
 	void ActionStart(bool bDoReset = true);
 	void ActionStop();
@@ -108,12 +108,12 @@ private:
 	uint32_t m_nTimer0Interval { 0 };
 	uint32_t m_nButtons { 0 };
 	int m_nHandle { -1 };
-	char m_Buffer[64];
 	uint16_t m_nBytesReceived { 0 };
 	enum {
 		STOPPED, STARTED, LIMIT
 	} m_State { STOPPED };
 
+	static char *s_pUdpBuffer;
 	static LtcGenerator *s_pThis;
 };
 

@@ -2,7 +2,7 @@
  * @file dmxmonitor.h
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,10 +61,12 @@ public:
 		DEBUG_EXIT
 	}
 
-	void Start(uint32_t nPortIndex) override;
-	void Stop(uint32_t nPortIndex) override;
+	void Start(const uint32_t nPortIndex) override;
+	void Stop(const uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync(const uint32_t nPortIndex) override;
+	void Sync(const bool doForce = false) override;
 
 	void Blackout(__attribute__((unused)) bool bBlackout) override {
 		DEBUG_ENTRY
@@ -76,13 +78,36 @@ public:
 		DEBUG_EXIT
 	}
 
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
+		DEBUG_ENTRY
+
+		assert(nPortIndex < 32);
+		m_nOutPutStyle = static_cast<uint32_t>(outputStyle) << nPortIndex;
+
+		DEBUG_EXIT
+	}
+
+	lightset::OutputStyle GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const override {
+		DEBUG_ENTRY
+
+#if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
+		assert(nPortIndex < 32);
+		return static_cast<lightset::OutputStyle>(m_nOutPutStyle >> nPortIndex);
+#else
+		return lightset::OutputStyle::DELTA;
+#endif
+		DEBUG_EXIT
+	}
+#endif
+
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 	uint16_t GetDmxStartAddress() override;
 
 	uint16_t GetDmxFootprint() override;
 
-	void SetFormat(dmxmonitor::Format tFormat) {
-		m_tFormat = tFormat;
+	void SetFormat(const dmxmonitor::Format format) {
+		m_tFormat = format;
 	}
 
 	dmxmonitor::Format GetFormat() const {
@@ -104,10 +129,12 @@ private:
 
 private:
 	void Update();
+	void Update(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 private:
 	dmxmonitor::Format m_tFormat = dmxmonitor::Format::HEX;
 	uint32_t m_nSlots { 0 };
+	uint32_t m_nOutPutStyle;
 	DmxMonitorStore *m_pDmxMonitorStore { nullptr };
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	enum {
@@ -116,6 +143,11 @@ private:
 	bool m_bIsStarted[dmxmonitor::output::text::MAX_PORTS];
 	uint16_t m_nDmxStartAddress { lightset::dmx::START_ADDRESS_DEFAULT };
 	uint16_t m_nMaxChannels { DMX_DEFAULT_MAX_CHANNELS };
+	struct Data {
+		uint8_t data[516];
+		uint32_t nLength;
+	};
+	struct Data m_Data[dmxmonitor::output::text::MAX_PORTS];
 #else
 	bool m_bIsStarted { false };
 	uint8_t m_Data[512];

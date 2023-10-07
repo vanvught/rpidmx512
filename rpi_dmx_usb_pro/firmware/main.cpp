@@ -53,7 +53,6 @@ void main(void) {
 	Network nw;
 
 	Widget widget;
-	widget.SetPortDirection(0, PortDirection::INP, false);
 
 	WidgetParams widgetParams;
 
@@ -62,7 +61,7 @@ void main(void) {
 		widgetParams.Set();
 	}
 
-	RDMDeviceParams rdmDeviceParams;
+	RDMDeviceParams rdmDeviceParams(nullptr);
 
 	widget.SetLabel(&deviceLabel);
 

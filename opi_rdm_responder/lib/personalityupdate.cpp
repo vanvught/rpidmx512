@@ -2,7 +2,7 @@
  * @file personalityupdate.cpp
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,7 @@
 void RDMResponder::PersonalityUpdate(uint32_t nPersonality)  {
 	DEBUG_PRINTF("nPersonality=%u", nPersonality);
 
-	DisplayUdf::Get()->ClearLine(7);
+	DisplayUdf::Get()->ClearEndOfLine();
 	DisplayUdf::Get()->Printf(7, "%s:%d G%d %s",
 					PixelType::GetType(WS28xxDmx::Get()->GetType()),
 					WS28xxDmx::Get()->GetCount(),
@@ -50,12 +50,12 @@ void RDMResponder::PersonalityUpdate(uint32_t nPersonality)  {
 
 		if (nTestPattern == pixelpatterns::Pattern::NONE) {
 		} else {
-			DisplayUdf::Get()->ClearLine(6);
+			DisplayUdf::Get()->ClearEndOfLine();
 			DisplayUdf::Get()->Printf(6, "%s:%u", PixelPatterns::GetName(nTestPattern), static_cast<uint32_t>(nTestPattern));
 		}
 	} else if (nPersonality == 2) {
 		DisplayUdf::Get()->ClearLine(3);
-		DisplayUdf::Get()->ClearLine(4);
+		DisplayUdf::Get()->ClearEndOfLine();
 		DisplayUdf::Get()->Write(4, "Config Mode");
 		DisplayUdf::Get()->ClearLine(5);
 	}

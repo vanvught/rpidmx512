@@ -1,7 +1,7 @@
 /**
  * @file ltcparams.h
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -93,6 +93,7 @@ struct Mask {
 	static constexpr auto SKIP_SECONDS = (1U << 24);
 	static constexpr auto SKIP_FREE = (1U << 25);
 	static constexpr auto TIMECODE_IP = (1U << 26);
+	static constexpr auto GPS_START = (1U << 27);
 };
 
 struct RgbLedType {
@@ -114,13 +115,15 @@ public:
 
 class LtcParams {
 public:
-	LtcParams(LtcParamsStore *pLtcParamsStore = nullptr);
+	LtcParams(LtcParamsStore *pLtcParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const ltcparams::Params *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode *ptStopTimeCode);
 
@@ -139,6 +142,10 @@ public:
 
 	bool IsAutoStart() const {
 		return ((m_Params.nAutoStart != 0) && isMaskSet(ltcparams::Mask::AUTO_START));
+	}
+
+	bool IsGpsStart() const {
+		return isMaskSet(ltcparams::Mask::GPS_START);
 	}
 
 	bool IsShowSysTime() const {

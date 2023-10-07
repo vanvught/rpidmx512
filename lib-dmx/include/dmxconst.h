@@ -30,7 +30,11 @@
 
 namespace dmx {
 enum class PortDirection {
-	OUTP, INP, DISABLED
+	OUTP, INP
+};
+enum class OutputStyle {
+	DELTA,
+	CONTINOUS
 };
 static constexpr uint32_t START_CODE = 0;				   ///< The start code for DMX512 data. This is often referred to as NSC for "Null Start Code".
 namespace min {

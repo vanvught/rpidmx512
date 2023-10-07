@@ -11,6 +11,8 @@ ifneq ($(MAKE_FLAGS),)
 else
 	DEFINES+=OUTPUT_DMX_SEND_MULTI
 	EXTRA_SRCDIR+=src/h3/multi
+#	DEFINES+=OUTPUT_DMX_SEND
+#	EXTRA_SRCDIR+=src/h3/single
 endif
 
 include Rules.mk

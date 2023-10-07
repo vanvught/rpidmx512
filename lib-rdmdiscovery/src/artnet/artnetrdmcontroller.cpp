@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -39,17 +39,11 @@
 
 #include "debug.h"
 
-RDMTod *ArtNetRdmController::m_pRDMTod[artnetnode::MAX_PORTS];
+RDMTod ArtNetRdmController::m_pRDMTod[artnetnode::MAX_PORTS];
 TRdmMessage ArtNetRdmController::s_rdmMessage;
 
 ArtNetRdmController::ArtNetRdmController(): RDMDiscovery(RDMDeviceController::GetUID()) {
 	DEBUG_ENTRY
-
-	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		m_pRDMTod[nPortIndex] = new RDMTod;
-		assert(m_pRDMTod[nPortIndex] != nullptr);
-	}
-
 	s_rdmMessage.start_code = E120_SC_RDM;
 	DEBUG_EXIT
 }
@@ -105,7 +99,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 	auto bIsRdmPacketForMe = false;
 
 	if (!bIsRdmPacketBroadcast) {
-		bIsRdmPacketForMe = m_pRDMTod[nPortIndex]->Exist(pUid);
+		bIsRdmPacketForMe = m_pRDMTod[nPortIndex].Exist(pUid);
 	}
 
 	if ((!bIsRdmPacketForMe) && (!bIsRdmPacketBroadcast)) {
@@ -118,14 +112,14 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 	}
 
 	if (bIsRdmPacketBroadcast) {
-		pUid = m_pRDMTod[nPortIndex]->Next();
+		pUid = m_pRDMTod[nPortIndex].Next();
 	}
 
 	if (pRdmMessage->command_class == E120_DISCOVERY_COMMAND) {
 		const auto nParamId = static_cast<uint16_t>((pRdmMessage->param_id[0] << 8) + pRdmMessage->param_id[1]);
 
 		if (nParamId == E120_DISC_UNIQUE_BRANCH) {
-			if (!m_pRDMTod[nPortIndex]->IsMuted()) {
+			if (!m_pRDMTod[nPortIndex].IsMuted()) {
 				if ((memcmp(pRdmMessage->param_data, pUid, RDM_UID_SIZE) <= 0) && (memcmp(pUid, pRdmMessage->param_data + 6, RDM_UID_SIZE) <= 0)) {
 					auto *pResponse = reinterpret_cast<struct TRdmDiscoveryMsg *>(&s_rdmMessage);
 
@@ -161,7 +155,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 			}
 
 			if (!bIsRdmPacketBroadcast && bIsRdmPacketForMe) {
-				m_pRDMTod[nPortIndex]->UnMute();
+				m_pRDMTod[nPortIndex].UnMute();
 
 				s_rdmMessage.param_data_length = 2;
 				s_rdmMessage.param_data[0] = 0x00;	// Control Field
@@ -169,7 +163,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 
 				RespondMessageAck(nPortIndex, pUid, pRdmMessage);
 			} else {
-				m_pRDMTod[nPortIndex]->UnMuteAll();
+				m_pRDMTod[nPortIndex].UnMuteAll();
 			}
 
 			return false;
@@ -182,7 +176,7 @@ bool ArtNetRdmController::RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) {
 			}
 
 			if (bIsRdmPacketForMe) {
-				m_pRDMTod[nPortIndex]->Mute();
+				m_pRDMTod[nPortIndex].Mute();
 
 				s_rdmMessage.param_data_length = 2;
 				s_rdmMessage.param_data[0] = 0x00;	// Control Field

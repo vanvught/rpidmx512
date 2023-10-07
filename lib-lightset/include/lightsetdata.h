@@ -34,16 +34,18 @@
 #include "lightset.h"
 
 #if defined (GD32)
+/**
+ * https://www.gd32-dmx.org/memory.html
+ */
 # include "gd32.h"
-# if !defined (GD32F4XX)
-#  define SECTION_LIGHTSET
-# else
+# if defined (GD32F450VI)
 #  define SECTION_LIGHTSET __attribute__ ((section (".lightset")))
+# else
+#  define SECTION_LIGHTSET
 # endif
 #else
 # define SECTION_LIGHTSET
 #endif
-
 namespace lightset {
 
 class Data {
@@ -69,6 +71,10 @@ public:
 
 	static void MergeSourceB(const uint32_t nPortIndex, const uint8_t *pData, const uint32_t nLength, const MergeMode mergeMode) {
 		 Get().IMergeSourceB(nPortIndex, pData, nLength, mergeMode);
+	}
+
+	static void Set(LightSet *const pLightSet, uint32_t nPortIndex) {
+		Get().ISet(pLightSet, nPortIndex);
 	}
 
 	static void Output(LightSet *const pLightSet, uint32_t nPortIndex) {
@@ -134,11 +140,18 @@ private:
 		memcpy(m_OutputPort[nPortIndex].data, pData, nLength);
 	}
 
+	void ISet(LightSet *const pLightSet, const uint32_t nPortIndex) const {
+		assert(pLightSet != nullptr);
+		assert(nPortIndex < PORTS);
+
+		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, false);
+	}
+
 	void IOutput(LightSet *const pLightSet, const uint32_t nPortIndex) const {
 		assert(pLightSet != nullptr);
 		assert(nPortIndex < PORTS);
 
-		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength);
+		pLightSet->SetData(nPortIndex, m_OutputPort[nPortIndex].data, m_OutputPort[nPortIndex].nLength, true);
 	}
 
 	void IOutputClear(LightSet *const pLightSet, const uint32_t nPortIndex) {

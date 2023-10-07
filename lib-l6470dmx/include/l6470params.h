@@ -66,7 +66,7 @@ public:
 
 class L6470Params {
 public:
-	L6470Params(L6470ParamsStore *pL6470ParamsStore=nullptr);
+	L6470Params(L6470ParamsStore *pL6470ParamsStore = nullptr);
 
 	bool Load(uint32_t nMotorIndex);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);

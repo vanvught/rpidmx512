@@ -77,7 +77,7 @@ Dmx::Dmx() {
 		s_nHandePortRdm[i] = Network::Get()->Begin(UDP_PORT_RDM_START + i);
 		assert(s_nHandePortRdm[i] != -1);
 
-		m_tDmxPortDirection[i] = PortDirection::DISABLED;
+		SetPortDirection(i, PortDirection::INP, false);
 	}
 
 	DEBUG_EXIT
@@ -134,7 +134,7 @@ void Dmx::SetDmxPeriodTime(__attribute__((unused)) uint32_t nPeriod) {
 void Dmx::SetDmxSlots(__attribute__((unused)) uint16_t nSlots) {
 }
 
-void Dmx::SetPortSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	assert(nPortIndex < MAX_PORTS);
 	assert(pData != 0);
 	assert(nLength != 0);
@@ -184,11 +184,17 @@ const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex)
 	return const_cast<const uint8_t *>(dmxDataRx.Data);
 }
 
+const uint8_t *Dmx::GetDmxChanged(uint32_t nPortIndex) {
+	const auto *p = GetDmxAvailable(nPortIndex);
+	// This function is not implemented
+	return p;
+}
+
 const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused)) uint32_t nPortIndex) {
 	return const_cast<const uint8_t *>(dmxDataRx.Data);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
+uint32_t Dmx::GetDmxUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
 	return 0;
 }
 
@@ -246,7 +252,19 @@ const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 		if ((p = const_cast<uint8_t*>(RdmReceive(nPortIndex))) != nullptr) {
 			return reinterpret_cast<const uint8_t*>(p);
 		}
-	} while (( micros() - nMicros) < (static_cast<uint32_t>(nTimeOut) + 50000U));
+	} while (( micros() - nMicros) < (static_cast<uint32_t>(nTimeOut) + 100000U));
 
 	return p;
+}
+
+void Dmx::StartOutput(__attribute__((unused)) uint32_t nPortIndex) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
+}
+
+void Dmx::SetOutput(__attribute__((unused)) const bool doForce) {
+	DEBUG_ENTRY
+
+	DEBUG_EXIT
 }

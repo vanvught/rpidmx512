@@ -30,7 +30,6 @@
 
 #include "llrpdevice.h"
 
-#include "llrp.h"
 #include "llrppacket.h"
 
 #include "rdmmessage.h"
@@ -45,15 +44,45 @@
 # define SHOW_RDM_MESSAGE
 #endif
 
-int32_t LLRPDevice::s_nHandleLLRP { -1 };
+int32_t LLRPDevice::s_nHandleLLRP ;
 uint32_t LLRPDevice::s_nIpAddressFrom;
 uint8_t *LLRPDevice::s_pLLRP;
 
 void LLRPDevice::HandleRequestMessage() {
+	DEBUG_ENTRY
+
+	const auto *pRequest = reinterpret_cast<struct TProbeRequestPDUPacket *>(s_pLLRP);
+	const auto *pPdu = pRequest->ProbeRequestPDU.FlagsLength;
+	const auto nLength = (static_cast<uint32_t>((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>(pPdu[1] << 8) | pPdu[2]);
+
+	uint8_t uid[RDM_UID_SIZE];
+	CopyUID(uid);
+
+	if (nLength > 18) {
+		const auto nKnownUIDs = (nLength - 18) / RDM_UID_SIZE;
+		const auto *p = pRequest->ProbeRequestPDU.KnownUUIDs;
+
+		for (uint32_t nIndex = 0; nIndex < nKnownUIDs; nIndex++) {
+			if (memcmp(p, uid, RDM_UID_SIZE) == 0) {
+				DEBUG_EXIT
+				return;
+			}
+			p += RDM_UID_SIZE;
+		}
+	}
+
+	debug_dump(pRequest->ProbeRequestPDU.LowerUUID, 2 * RDM_UID_SIZE);
+
+	if (!((memcmp(pRequest->ProbeRequestPDU.LowerUUID, uid, RDM_UID_SIZE) <= 0) && (memcmp(uid, pRequest->ProbeRequestPDU.UpperUUID, RDM_UID_SIZE) <= 0))) {
+		DEBUG_PUTS("Not for me");
+		DEBUG_EXIT
+		return;
+	}
+
 	auto *pReply = reinterpret_cast<struct TTProbeReplyPDUPacket *>(s_pLLRP);
 
 	uint8_t DestinationCid[16];
-	memcpy(DestinationCid, pReply->Common.RootLayerPDU.SenderCid, 16); // TODO Optimize / cleanup
+	memcpy(DestinationCid, pReply->Common.RootLayerPDU.SenderCid, 16);
 
 	// Root Layer PDU
 	pReply->Common.RootLayerPDU.FlagsLength[2] = 67;
@@ -73,12 +102,12 @@ void LLRPDevice::HandleRequestMessage() {
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_RPT_DEVICE;
 #endif
 
-	Network::Get()->SendTo(s_nHandleLLRP, pReply, sizeof(struct TTProbeReplyPDUPacket), llrp::device::IP_LLRP_RESPONSE, LLRP_PORT);
+	Network::Get()->SendTo(s_nHandleLLRP, pReply, sizeof(struct TTProbeReplyPDUPacket), llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
 
 #ifndef NDEBUG
-	debug_dump(pReply, sizeof(struct TTProbeReplyPDUPacket));
 	DumpCommon();
 #endif
+	DEBUG_EXIT
 }
 
 void LLRPDevice::HandleRdmCommand() {
@@ -87,11 +116,11 @@ void LLRPDevice::HandleRdmCommand() {
 	auto *pRDMCommand = reinterpret_cast<struct LTRDMCommandPDUPacket *>(s_pLLRP);
 
 #ifdef SHOW_RDM_MESSAGE
-	const uint8_t *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData)	;
-	RDMMessage::PrintNoSc(pRdmDataInNoSc);
+	const auto *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData);
+ 	RDMMessage::PrintNoSc(pRdmDataInNoSc);
 #endif
 
-	const uint8_t *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
+	const auto *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
 
 	if ((pReply == nullptr) || (*pReply != E120_SC_RDM)) {
 		DEBUG_EXIT
@@ -116,63 +145,15 @@ void LLRPDevice::HandleRdmCommand() {
 
 	const auto nLength = sizeof(struct TRootLayerPreAmble) + RDM_ROOT_LAYER_LENGTH(nMessageLength);
 
-	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, static_cast<uint16_t>(nLength) , llrp::device::IP_LLRP_RESPONSE, LLRP_PORT);
+	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, static_cast<uint16_t>(nLength) , llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
 
 #ifdef SHOW_RDM_MESSAGE
 	RDMMessage::Print(pReply);
 #endif
 
 #ifndef NDEBUG
-	debug_dump(pRDMCommand, static_cast<uint16_t>(nLength));
 	DumpCommon();
 #endif
 
 	DEBUG_EXIT
-}
-
-void LLRPDevice::Run() {
-	uint16_t nForeignPort;
-
-	const auto nBytesReceived = Network::Get()->RecvFrom(s_nHandleLLRP, const_cast<const void **>(reinterpret_cast<void **>(&s_pLLRP)), &s_nIpAddressFrom, &nForeignPort) ;
-
-	if (__builtin_expect((nBytesReceived < sizeof(struct TLLRPCommonPacket)), 1)) {
-		return;
-	}
-
-#ifndef NDEBUG
-	debug_dump(s_pLLRP, nBytesReceived);
-	DumpCommon();
-#endif
-
-	const auto *pCommon = reinterpret_cast<struct TLLRPCommonPacket *>(s_pLLRP);
-
-	switch (__builtin_bswap32(pCommon->LlrpPDU.Vector)) {
-	case VECTOR_LLRP_PROBE_REQUEST:
-#ifdef SHOW_LLRP_MESSAGE
-		printf("> VECTOR_LLRP_PROBE_REQUEST\n");
-		DumpLLRP();
-#endif
-		HandleRequestMessage();
-		break;
-	case VECTOR_LLRP_PROBE_REPLY:
-		// Nothing to do here
-		DEBUG_PUTS("VECTOR_LLRP_PROBE_REPLY");
-		break;
-	case VECTOR_LLRP_RDM_CMD:
-#ifdef SHOW_LLRP_MESSAGE
-		printf("> VECTOR_LLRP_RDM_CMD\n");
-		DumpLLRP();
-#endif
-		HandleRdmCommand();
-		break;
-	default:
-		break;
-	}
-}
-
-void LLRPDevice::Print() {
-	printf("LLRP Device configuration\n");
-	printf(" Port UDP               : %d\n", LLRP_PORT);
-	printf(" Multicast join Request : " IPSTR "\n", IP2STR(llrp::device::IP_LLRP_REQUEST));
-	printf(" Multicast Response     : " IPSTR "\n", IP2STR(llrp::device::IP_LLRP_RESPONSE));
 }

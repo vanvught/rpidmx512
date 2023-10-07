@@ -37,7 +37,7 @@ namespace responder {
 void factorydefaults() {
 	RemoteConfig::Get()->SetDisable(false);
 	ConfigStore::Get()->ResetSetList(configstore::Store::RDMDEVICE);
-	ConfigStore::Get()->ResetSetList(configstore::Store::ARTNET);
+	ConfigStore::Get()->ResetSetList(configstore::Store::NODE);
 	StoreNetwork::Get()->SaveDhcp(true);
 }
 

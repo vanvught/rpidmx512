@@ -138,20 +138,6 @@ void RDMSubDevicesParams::Builder(const rdm::subdevicesparams::Params *pParams, 
 	DEBUG_EXIT
 }
 
-void RDMSubDevicesParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pRDMSubDevicesParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
-	DEBUG_EXIT
-}
-
 void RDMSubDevicesParams::Dump() {
 #ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMSubDevicesConst::PARAMS_FILE_NAME);

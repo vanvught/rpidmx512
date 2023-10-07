@@ -76,7 +76,7 @@ struct spi_flash {
 
 extern uint32_t get_timer(uint32_t base); //TODO Remove
 
-extern int spi_init(void);
+extern int spi_init();
 extern int spi_xfer(uint32_t bitlen, const uint8_t *dout, uint8_t *din, uint32_t flags);
 
 #define CONFIG_SPI_FLASH_MACRONIX

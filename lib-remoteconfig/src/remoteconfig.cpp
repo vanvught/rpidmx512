@@ -198,7 +198,6 @@ namespace get {
 enum class Command {
 	REBOOT,
 	LIST,
-	LIST_BROADCAST,
 	UPTIME,
 	VERSION,
 	DISPLAY,
@@ -220,7 +219,6 @@ enum class Command {
 const struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleReboot,      "reboot##",  8, false },
 		{ &RemoteConfig::HandleList,        "list#",     5, false },
-		{ &RemoteConfig::HandleList,        "list#*",    6, false },
 		{ &RemoteConfig::HandleUptime,      "uptime#",   7, false },
 		{ &RemoteConfig::HandleVersion,     "version#",  8, false },
 		{ &RemoteConfig::HandleDisplayGet,  "display#",  8, false },
@@ -317,7 +315,7 @@ void RemoteConfig::SetDisplayName(const char *pDisplayName) {
 
 void RemoteConfig::HandleRequest() {
 #ifndef NDEBUG
-	debug_dump(s_pUdpBuffer, m_nBytesReceived);
+	debug_dump(s_pUdpBuffer, static_cast<uint16_t>(m_nBytesReceived));
 #endif
 
 	if (s_pUdpBuffer[m_nBytesReceived - 1] == '\n') {
@@ -407,8 +405,6 @@ void RemoteConfig::HandleVersion() {
 	DEBUG_ENTRY
 	const auto nCmdLength = s_GET[static_cast<uint32_t>(remoteconfig::udp::get::Command::VERSION)].nLength;
 
-	DEBUG_PRINTF("%u:%u", m_nBytesReceived, nCmdLength);
-
 	if (m_nBytesReceived == nCmdLength) {
 		const auto *p = FirmwareVersion::Get()->GetPrint();
 		const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "version:%s", p);
@@ -424,6 +420,12 @@ void RemoteConfig::HandleList() {
 	DEBUG_ENTRY
 
 	const auto nCmdLength = s_GET[static_cast<uint32_t>(remoteconfig::udp::get::Command::LIST)].nLength;
+
+	if (m_nBytesReceived != nCmdLength) {
+		DEBUG_EXIT
+		return;
+	}
+
 	auto *pListResponse = &s_pUdpBuffer[nCmdLength + 2U];
 	const auto nListResponseBufferLength = remoteconfig::udp::BUFFER_SIZE - (nCmdLength + 2U);
 	int32_t nListLength;
@@ -443,18 +445,7 @@ void RemoteConfig::HandleList() {
 				m_nActiveOutputs);
 	}
 
-	if (m_nBytesReceived == nCmdLength) {
-		Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
-		DEBUG_EXIT
-		return;
-	} else if (m_nBytesReceived == nCmdLength + 1) {
-		DEBUG_PRINTF("%c", nCmdLength + 1);
-		if (s_pUdpBuffer[nCmdLength + 1] == '*') {
-			Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), network::IP4_BROADCAST, remoteconfig::udp::PORT);
-			DEBUG_EXIT
-			return;
-		}
-	}
+	Network::Get()->SendTo(m_nHandle, pListResponse, static_cast<uint16_t>(nListLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
 
 	DEBUG_EXIT
 }

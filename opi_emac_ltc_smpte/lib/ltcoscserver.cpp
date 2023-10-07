@@ -148,17 +148,9 @@ static constexpr auto VALUE_LENGTH = 11;
 static constexpr auto FPS_VALUE_LENGTH = 2;
 
 LtcOscServer::LtcOscServer(): m_nPortIncoming(osc::port::DEFAULT_INCOMING) {
-	m_pBuffer = new char[udp::MAX_BUFFER];
-	assert(m_pBuffer != nullptr);
-
 	m_nPathLength = static_cast<uint32_t>(snprintf(m_aPath, sizeof(m_aPath) - 1, "/%s/tc/*", Network::Get()->GetHostName()) - 1);
 
 	DEBUG_PRINTF("%d [%s]", m_nPathLength, m_aPath);
-}
-
-LtcOscServer::~LtcOscServer() {
-	delete[] m_pBuffer;
-	m_pBuffer = nullptr;
 }
 
 void LtcOscServer::Start() {
@@ -169,13 +161,7 @@ void LtcOscServer::Start() {
 void LtcOscServer::Stop() {
 }
 
-void LtcOscServer::Run() {
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, m_pBuffer, udp::MAX_BUFFER, &m_nRemoteIp, &m_nRemotePort);
-
-	if (__builtin_expect((nBytesReceived <= 4), 1)) {
-		return;
-	}
-
+void LtcOscServer::HandleOscRequest(const uint16_t nBytesReceived) {
 	if (osc::is_match(m_pBuffer, m_aPath)) {
 		const auto nCommandLength = strlen(m_pBuffer);
 

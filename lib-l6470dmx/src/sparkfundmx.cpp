@@ -342,7 +342,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	DEBUG_ENTRY;
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
@@ -378,6 +378,14 @@ void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uin
 	}
 
 	DEBUG_EXIT;
+}
+
+void SparkFunDmx::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+	//TODO Implement Sync
+}
+
+void SparkFunDmx::Sync(__attribute__((unused)) const bool doForce) {
+	//TODO Implement Sync
 }
 
 bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {

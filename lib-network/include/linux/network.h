@@ -34,9 +34,11 @@
 #include <cstring>
 #include <net/if.h>
 
+#include "networkparams.h"
+
 class Network {
 public:
-	Network(int argc, char **argv);
+	Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore = nullptr);
 	~Network();
 
 	void Print();
@@ -64,6 +66,10 @@ public:
 	void SetDomainName(const char *pDomainName) {
 		strncpy(m_aDomainName, pDomainName, network::DOMAINNAME_SIZE - 1);
 		m_aDomainName[network::DOMAINNAME_SIZE - 1] = '\0';
+	}
+
+	uint32_t GetSecondaryIp() const {
+		return m_nLocalIp;
 	}
 
 	uint32_t GetIp() const {

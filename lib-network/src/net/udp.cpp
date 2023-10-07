@@ -35,9 +35,6 @@
 
 #include "../../config/net_config.h"
 
-#undef  SECTION_NETWORK
-#define SECTION_NETWORK
-
 struct data_entry {
 	uint32_t from_ip;
 	uint16_t from_port;
@@ -54,7 +51,7 @@ static uint16_t s_Port[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static struct data_entry s_data[UDP_MAX_PORTS_ALLOWED] SECTION_NETWORK ALIGNED;
 static struct t_udp s_send_packet SECTION_NETWORK ALIGNED;
 static uint16_t s_id SECTION_NETWORK ALIGNED;
-static uint8_t s_multicast_mac[ETH_ADDR_LEN] = {0x01, 0x00, 0x5E}; // Fixed part
+static uint8_t s_multicast_mac[ETH_ADDR_LEN] SECTION_NETWORK ALIGNED;
 
 namespace net {
 namespace globals {
@@ -73,6 +70,10 @@ void udp_set_ip() {
 }
 
 void __attribute__((cold)) udp_init() {
+	// Multicast fixed part
+	s_multicast_mac[0] = 0x01;
+	s_multicast_mac[1] = 0x00;
+	s_multicast_mac[2] = 0x5E;
 	// Ethernet
 	memcpy(s_send_packet.ether.src, net::globals::macAddress, ETH_ADDR_LEN);
 	s_send_packet.ether.type = __builtin_bswap16(ETHER_TYPE_IPv4);
@@ -241,8 +242,10 @@ int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp
 					dst.u32 = RemoteIp;
 					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 				} else {
+#ifndef NDEBUG
 					console_error("ARP lookup failed -> default gateway :");
 					printf(IPSTR " [%d]\n", IP2STR(RemoteIp), s_Port[nIndex]);
+#endif
 					return -3;
 				}
 			} else {
@@ -250,8 +253,10 @@ int udp_send(int nIndex, const uint8_t *pData, uint16_t nSize, uint32_t RemoteIp
 					dst.u32 = RemoteIp;
 					memcpy(s_send_packet.ip4.dst, dst.u8, IPv4_ADDR_LEN);
 				} else {
+#ifndef NDEBUG
 					console_error("ARP lookup failed: ");
 					printf(IPSTR "\n", IP2STR(RemoteIp));
+#endif
 					return -2;
 				}
 			}

@@ -36,9 +36,6 @@
 
 #include "debug.h"
 
-#define MDNS_RESPONSE_TTL     	(3600)    ///< (in seconds)
-#define ANNOUNCE_TIMEOUT 		((MDNS_RESPONSE_TTL / 2) + (MDNS_RESPONSE_TTL / 4))
-
 namespace mdns {
 #if !defined (MDNS_SERVICE_RECORDS_MAX)
 static constexpr auto SERVICE_RECORDS_MAX = 8;
@@ -50,12 +47,13 @@ static constexpr uint32_t MULTICAST_MESSAGE_SIZE = 512;	///< The 1987 DNS specif
 static constexpr uint32_t MULTICAST_ADDRESS = network::convert_to_uint(224, 0, 0, 251);
 static constexpr uint16_t UDP_PORT = 5353;
 
+static constexpr uint32_t MDNS_RESPONSE_TTL = 3600;		///< (in seconds)
+
 static constexpr size_t DOMAIN_MAXLEN = 256;
 static constexpr size_t LABEL_MAXLEN = 63;
 static constexpr size_t TXT_MAXLEN = 256;
 
 static constexpr char DOMAIN_LOCAL[]		= { 5 , 'l', 'o', 'c', 'a', 'l' , 0};
-//static constexpr uint8_t DOMAIN_DNSSD[]		= { 9 , '_','s','e','r','v','i','c','e','s', 7 ,'_','d','n','s','-','s','d', 4 , '_', 'u', 'd', 'p', 5 , 'l', 'o', 'c', 'a', 'l' , 0};
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
 static constexpr char DOMAIN_REVERSE[]		= { 7 , 'i','n','-','a','d','d','r', 4 , 'a','r','p','a', 0};
 #endif
@@ -247,6 +245,26 @@ MDNS *MDNS::s_pThis;
 
 using namespace mdns;
 
+namespace network {
+void mdns_announcement() {
+	DEBUG_ENTRY
+
+	assert(MDNS::Get() != nullptr);
+	MDNS::Get()->SendAnnouncement(MDNS_RESPONSE_TTL);
+
+	DEBUG_ENTRY
+}
+
+void mdns_shutdown() {
+	DEBUG_ENTRY
+
+	assert(MDNS::Get() != nullptr);
+	MDNS::Get()->SendAnnouncement(0);
+
+	DEBUG_ENTRY
+}
+}  // namespace network
+
 static void create_service_domain(Domain& domain, ServiceRecord const& serviceRecord, const bool bIncludeName) {
 	DEBUG_ENTRY
 
@@ -319,17 +337,6 @@ static void create_reverse_domain(Domain &domain) {
 	DEBUG_EXIT
 }
 #endif
-
-namespace network {
-void mdns_announcement() {
-	DEBUG_ENTRY
-
-	assert(MDNS::Get() != nullptr);
-	MDNS::Get()->SendAnnouncement();
-
-	DEBUG_ENTRY
-}
-}  // namespace network
 
 /*
  * https://opensource.apple.com/source/mDNSResponder/mDNSResponder-26.2/mDNSCore/mDNS.c.auto.html
@@ -432,19 +439,10 @@ static uint8_t *put_domain_name_as_labels(uint8_t *ptr, Domain const &domain) {
 	return ptr;
 }
 
-/*
- * Preventing Data abort on H2+/H3 -> unaligned memory access due compile optimization.
- */
-#if defined (__ARM_ARCH_7A__)
-# define VOLATILE	volatile
-#else
-# define VOLATILE
-#endif
-
 static uint8_t *add_question(uint8_t *pDestination, const Domain& domain, const Types type, const bool bFlush) {
 	auto *pDst = put_domain_name_as_labels(pDestination, domain);
 
-	*reinterpret_cast<VOLATILE uint16_t*>(pDst) = __builtin_bswap16(static_cast<uint16_t>(type));
+	*reinterpret_cast<volatile uint16_t*>(pDst) = __builtin_bswap16(static_cast<uint16_t>(type));
 	pDst += 2;
 	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16((bFlush ? Classes::Flush : static_cast<Classes>(0)) | Classes::Internet);
 	pDst += 2;
@@ -452,7 +450,7 @@ static uint8_t *add_question(uint8_t *pDestination, const Domain& domain, const 
 	return pDst;
 }
 
-static uint32_t add_answer_srv(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination) {
+static uint32_t add_answer_srv(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	Domain domain;
@@ -460,7 +458,7 @@ static uint32_t add_answer_srv(mdns::ServiceRecord const& serviceRecord, uint8_t
 
 	auto *pDst = add_question(pDestination, domain, Types::SRV, true);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 	auto *lengtPointer = pDst;
 	pDst += 2;
@@ -479,7 +477,7 @@ static uint32_t add_answer_srv(mdns::ServiceRecord const& serviceRecord, uint8_t
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-static uint32_t add_answer_txt(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination) {
+static uint32_t add_answer_txt(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	Domain domain;
@@ -487,7 +485,7 @@ static uint32_t add_answer_txt(mdns::ServiceRecord const& serviceRecord, uint8_t
 
 	auto *pDst = add_question(pDestination, domain, Types::TXT, true);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 
 	if (serviceRecord.pTextContent == nullptr) {
@@ -509,7 +507,7 @@ static uint32_t add_answer_txt(mdns::ServiceRecord const& serviceRecord, uint8_t
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination) {
+static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	Domain domain;
@@ -517,7 +515,7 @@ static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t
 
 	auto *pDst = add_question(pDestination, domain, Types::PTR, false);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 	auto *lengtPointer = pDst;
 	pDst += 2;
@@ -532,12 +530,12 @@ static uint32_t add_answer_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-static uint32_t add_answer_dnsd_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination) {
+static uint32_t add_answer_dnsd_ptr(mdns::ServiceRecord const& serviceRecord, uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	auto *pDst = add_question(pDestination, DOMAIN_DNSSD, Types::PTR, false);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 	auto *lengtPointer = pDst;
 	pDst += 2;
@@ -554,7 +552,7 @@ static uint32_t add_answer_dnsd_ptr(mdns::ServiceRecord const& serviceRecord, ui
 	return static_cast<uint32_t>(pDst - pDestination);
 }
 
-static uint32_t add_answer_a(uint8_t *pDestination) {
+static uint32_t add_answer_a(uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	Domain domain;
@@ -562,7 +560,7 @@ static uint32_t add_answer_a(uint8_t *pDestination) {
 
 	auto *pDst = add_question(pDestination, domain, Types::A, true);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 	*reinterpret_cast<uint16_t*>(pDst) = __builtin_bswap16(4);	// Data length
 	pDst += 2;
@@ -574,7 +572,7 @@ static uint32_t add_answer_a(uint8_t *pDestination) {
 }
 
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
-static uint32_t add_answer_hostv4_ptr(uint8_t *pDestination) {
+static uint32_t add_answer_hostv4_ptr(uint8_t *pDestination, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	Domain domain;
@@ -582,7 +580,7 @@ static uint32_t add_answer_hostv4_ptr(uint8_t *pDestination) {
 
 	auto *pDst = add_question(pDestination, domain, Types::PTR, true);
 
-	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(MDNS_RESPONSE_TTL);
+	*reinterpret_cast<uint32_t*>(pDst) = __builtin_bswap32(nTTL);
 	pDst += 4;
 	auto *lengtPointer = pDst;
 	pDst += 2;
@@ -673,7 +671,7 @@ const uint8_t *get_domain_name(const uint8_t *const msg, const uint8_t *ptr, con
 		return (ptr);
 }
 
-void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID) {
+void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID, const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	uint32_t nAnswers = 0;
@@ -691,12 +689,12 @@ void MDNS::SendAnswerLocalIpAddress(const uint16_t nTransActionID) {
 
 	if ((HostReply::A & s_HostReplies) == HostReply::A) {
 		nAnswers++;
-		pDst += add_answer_a(pDst);
+		pDst += add_answer_a(pDst, nTTL);
 	}
 #if defined (CONFIG_MDNS_DOMAIN_REVERSE)
 	if ((HostReply::PTR & s_HostReplies) == HostReply::PTR) {
 		nAnswers++;
-		pDst += add_answer_hostv4_ptr(pDst);
+		pDst += add_answer_hostv4_ptr(pDst, nTTL);
 	}
 #endif
 
@@ -734,10 +732,12 @@ MDNS::MDNS() {
 	Network::Get()->JoinGroup(s_nHandle, mdns::MULTICAST_ADDRESS);
 	Network::Get()->SetDomainName(&DOMAIN_LOCAL[1]);
 
-	SendAnnouncement();
+	SendAnnouncement(MDNS_RESPONSE_TTL);
 }
 
 MDNS::~MDNS() {
+	SendAnnouncement(0);
+
 	for (auto &record : s_ServiceRecords) {
 		if (record.pName != nullptr) {
 			delete[] record.pName;
@@ -753,13 +753,13 @@ MDNS::~MDNS() {
 	s_nHandle = -1;
 }
 
-void MDNS::SendAnnouncement() {
+void MDNS::SendAnnouncement(const uint32_t nTTL) {
 	DEBUG_ENTRY
 
 	s_nRemotePort = mdns::UDP_PORT; //FIXME Hack ;-)
 	s_HostReplies = HostReply::A;
 
-	SendAnswerLocalIpAddress();
+	SendAnswerLocalIpAddress(0, nTTL);
 
 	for (auto &record : s_ServiceRecords) {
 		if (record.services < Services::LAST_NOT_USED) {
@@ -767,7 +767,7 @@ void MDNS::SendAnnouncement() {
 							 | ServiceReply::NAME_PTR
 							 | ServiceReply::SRV
 							 | ServiceReply::TXT;
-			SendMessage(record);
+			SendMessage(record, 0, nTTL);
 		}
 	}
 
@@ -819,7 +819,7 @@ bool MDNS::AddServiceRecord(const char *pName, const mdns::Services services, co
 					| ServiceReply::SRV
 					| ServiceReply::TXT;
 
-			SendMessage(record);
+			SendMessage(record, 0, MDNS_RESPONSE_TTL);
 			return true;
 		}
 	}
@@ -837,7 +837,7 @@ void MDNS::SendTo(const uint16_t nLength) {
 	Network::Get()->SendTo(s_nHandle, s_RecordsData, nLength, s_nRemoteIp, s_nRemotePort);
 }
 
-void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID) {
+void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t nTransActionID, const uint32_t nTT) {
 	DEBUG_ENTRY
 
 	uint32_t nAnswers = 0;
@@ -845,25 +845,25 @@ void MDNS::SendMessage(mdns::ServiceRecord const& serviceRecord, const uint16_t 
 
 	if ((s_ServiceReplies & ServiceReply::TYPE_PTR) == ServiceReply::TYPE_PTR) {
 		nAnswers++;
-		pDst += add_answer_dnsd_ptr(serviceRecord, pDst);
+		pDst += add_answer_dnsd_ptr(serviceRecord, pDst, nTT);
 	}
 
 	if ((s_ServiceReplies & ServiceReply::NAME_PTR) == ServiceReply::NAME_PTR) {
 		nAnswers++;
-		pDst += add_answer_ptr(serviceRecord, pDst);
+		pDst += add_answer_ptr(serviceRecord, pDst, nTT);
 	}
 
 	if ((s_ServiceReplies & ServiceReply::SRV) == ServiceReply::SRV) {
 		nAnswers++;
-		pDst += add_answer_srv(serviceRecord, pDst);
+		pDst += add_answer_srv(serviceRecord, pDst, nTT);
 	}
 
 	if ((s_ServiceReplies & ServiceReply::TXT) == ServiceReply::TXT) {
 		nAnswers++;
-		pDst += add_answer_txt(serviceRecord, pDst);
+		pDst += add_answer_txt(serviceRecord, pDst, nTT);
 	}
 
-	pDst += add_answer_a(pDst);
+	pDst += add_answer_a(pDst, nTT);
 
 	auto *pHeader = reinterpret_cast<Header *>(&s_RecordsData);
 
@@ -981,7 +981,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 				}
 
 				if (s_ServiceReplies != static_cast<mdns::ServiceReply>(0)) {
-					SendMessage(record, nTransactionID);
+					SendMessage(record, nTransactionID, MDNS_RESPONSE_TTL);
 				}
 			}
 		}
@@ -989,7 +989,7 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 
 	if (s_HostReplies != static_cast<mdns::HostReply>(0)) {
 		DEBUG_PUTS("");
-		SendAnswerLocalIpAddress(nTransactionID);
+		SendAnswerLocalIpAddress(nTransactionID, MDNS_RESPONSE_TTL);
 	}
 
 	DEBUG_EXIT
@@ -997,11 +997,6 @@ void MDNS::HandleQuestions(const uint32_t nQuestions) {
 
 void MDNS::Print() {
 	printf("mDNS\n");
-
-	if (s_nHandle == -1) {
-		printf(" Not running\n");
-		return;
-	}
 
 	Domain domain;
 

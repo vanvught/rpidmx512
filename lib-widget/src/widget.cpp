@@ -6,7 +6,7 @@
  * https://wiki.openlighting.org/index.php/USB_Protocol_Extensions
  *
  */
-/* Copyright (C) 2015-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2015-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,9 @@ Widget::Widget() {
 	s_pThis = this;
 
 	usb_init();
+
+	SetOutputStyle(0, dmx::OutputStyle::CONTINOUS);
+	SetPortDirection(0, dmx::PortDirection::INP, false);
 }
 
 /*
@@ -131,7 +134,7 @@ void Widget::ReceivedDmxPacket() {
 	}
 
 	if (m_isRdmDiscoveryRunning
-			|| (PortDirection::INP != GetPortDirection())
+			|| (PortDirection::INP != GetPortDirection(0))
 			|| (SendState::ON_DATA_CHANGE_ONLY == m_tReceiveDmxOnChange)) {
 		return;
 	}
@@ -339,7 +342,7 @@ void Widget::ReceivedDmxChangeOfStatePacket() {
 	}
 
 	if (m_isRdmDiscoveryRunning
-			|| (PortDirection::INP != GetPortDirection())
+			|| (PortDirection::INP != GetPortDirection(0))
 			|| (SendState::ALWAYS == m_tReceiveDmxOnChange)) {
 		return;
 	}

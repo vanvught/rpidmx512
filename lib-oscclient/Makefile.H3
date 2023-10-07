@@ -1,6 +1,5 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-osc/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-display/include
-#
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-osc/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-display/include
+
 include ../firmware-template-h3/lib/Rules.mk

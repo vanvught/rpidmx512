@@ -2,7 +2,7 @@
  * @file networkdisplay.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,23 @@
 #include "display7segment.h"
 
 namespace network {
+void display_emac_config() {
+	Display::Get()->ClearEndOfLine();
+	Display::Get()->Printf(3, "Ethernet config");
+}
+
 void display_emac_start() {
-	Display::Get()->ClearLine(3);
+	Display::Get()->ClearEndOfLine();
 	Display::Get()->Printf(3, "Ethernet start");
 }
 
+void display_emac_status(const bool isLinkUp) {
+	Display::Get()->ClearEndOfLine();
+	Display::Get()->Printf(3, "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
+}
+
 void display_ip() {
-	Display::Get()->ClearLine(3);
+	Display::Get()->ClearEndOfLine();
 	Display::Get()->Printf(3, IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), static_cast<int>(Network::Get()->GetNetmaskCIDR()), Network::Get()->GetAddressingMode());
 }
 
@@ -59,7 +69,7 @@ void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
 		break;
 	case network::dhcp::ClientStatus::RENEW:
 		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		Display::Get()->ClearLine(3);
+		Display::Get()->ClearEndOfLine();
 		Display::Get()->Printf(3, "DHCP renewing");
 		break;
 	case network::dhcp::ClientStatus::GOT_IP:
@@ -67,7 +77,7 @@ void display_dhcp_status(network::dhcp::ClientStatus nStatus) {
 		break;
 	case network::dhcp::ClientStatus::RETRYING:
 		Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-		Display::Get()->ClearLine(3);
+		Display::Get()->ClearEndOfLine();
 		Display::Get()->Printf(3, "DHCP retrying");
 		break;
 	case network::dhcp::ClientStatus::FAILED:

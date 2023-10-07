@@ -52,7 +52,6 @@ public:
 #endif
 	}
 
-
 	bool Start() override;
 
 	void Cls() override;
@@ -100,10 +99,12 @@ private:
 	TOledPanel m_OledPanel { OLED_PANEL_128x64_8ROWS };
 	bool m_bHaveSH1106 { false };
 	uint32_t m_nPages;
-#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
-	uint32_t m_tCursorMode { display::cursor::OFF };
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE) || defined(CONFIG_DISPLAY_FIX_FLIP_VERTICALLY)
 	char *m_pShadowRam { nullptr };
-	uint16_t m_nShadowRamIndex { 0 };
+	uint32_t m_nShadowRamIndex { 0 };
+#endif
+#if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
+	uint32_t m_nCursorMode { display::cursor::OFF };
 	uint8_t m_nCursorOnChar;
 	uint8_t m_nCursorOnCol;
 	uint8_t m_nCursorOnRow;

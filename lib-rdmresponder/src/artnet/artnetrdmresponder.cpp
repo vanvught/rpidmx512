@@ -39,6 +39,10 @@
 
 #include "debug.h"
 
+namespace configstore {
+void delay();
+}  // namespace configstore
+
 ArtNetRdmResponder *ArtNetRdmResponder::s_pThis;
 TRdmMessage ArtNetRdmResponder::s_RdmCommand;
 

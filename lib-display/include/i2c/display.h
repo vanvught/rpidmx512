@@ -223,6 +223,8 @@ public:
 	}
 
 	void SetContrast(uint8_t nContrast) {
+		m_nContrast = nContrast;
+
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
@@ -230,12 +232,30 @@ public:
 		m_LcdDisplay->SetContrast(nContrast);
 	}
 
+	uint8_t GetContrast() const {
+		return m_nContrast;
+	}
+
 	void SetFlipVertically(bool doFlipVertically) {
+		m_bIsFlippedVertically = doFlipVertically;
+
 		if (m_LcdDisplay == nullptr) {
 			return;
 		}
 
 		m_LcdDisplay->SetFlipVertically(doFlipVertically);
+	}
+
+	void ClearEndOfLine() {
+		if (m_LcdDisplay == nullptr) {
+			return;
+		}
+
+		m_LcdDisplay->ClearEndOfLine();
+	}
+
+	bool GetFlipVertically() const {
+		return m_bIsFlippedVertically;
 	}
 
 	uint32_t GetColumns() const {
@@ -252,22 +272,6 @@ public:
 		}
 
 		return m_LcdDisplay->GetRows();
-	}
-
-	bool GetFlipVertically() const {
-		if (m_LcdDisplay == nullptr) {
-			return false;
-		}
-
-		return m_LcdDisplay->GetFlipVertically();
-	}
-
-	uint8_t GetContrast() const {
-		if (m_LcdDisplay == nullptr) {
-			return 0;
-		}
-
-		return m_LcdDisplay->GetContrast();
 	}
 
 	void Status(Display7SegmentMessage nData) {
@@ -418,6 +422,9 @@ private:
 	bool m_bIsSleep { false };
 	bool m_bHave7Segment { false };
 	uint32_t m_nSleepTimeout { 1000 * 60 * display::Defaults::SEEP_TIMEOUT };
+
+	uint8_t m_nContrast { 0x7F };
+	bool m_bIsFlippedVertically { false };
 
 	DisplaySet *m_LcdDisplay { nullptr };
 	static Display *s_pThis;

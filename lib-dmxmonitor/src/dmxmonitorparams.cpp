@@ -83,11 +83,6 @@ bool DMXMonitorParams::Load() {
 void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pDMXMonitorParamsStore != nullptr);
-
-	if (m_pDMXMonitorParamsStore == nullptr) {
-		return;
-	}
 
 	m_tDMXMonitorParams.nSetList = 0;
 
@@ -95,6 +90,7 @@ void DMXMonitorParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pDMXMonitorParamsStore != nullptr);
 	m_pDMXMonitorParamsStore->Update(&m_tDMXMonitorParams);
 }
 
@@ -105,6 +101,7 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 	if (ptDMXMonitorParams != nullptr) {
 		memcpy(&m_tDMXMonitorParams, ptDMXMonitorParams, sizeof(struct TDMXMonitorParams));
 	} else {
+		assert(m_pDMXMonitorParamsStore != nullptr);
 		m_pDMXMonitorParamsStore->Copy(&m_tDMXMonitorParams);
 	}
 
@@ -117,20 +114,6 @@ void DMXMonitorParams::Builder(const struct TDMXMonitorParams *ptDMXMonitorParam
 	builder.Add(DMXMonitorParamsConst::DMX_MAX_CHANNELS, m_tDMXMonitorParams.nDmxMaxChannels, isMaskSet(DMXMonitorParamsMask::MAX_CHANNELS));
 
 	nSize = builder.GetSize();
-	DEBUG_EXIT
-}
-
-void DMXMonitorParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pDMXMonitorParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
 	DEBUG_EXIT
 }
 

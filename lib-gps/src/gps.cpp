@@ -153,8 +153,9 @@ void GPS::Start() {
 		sleep(1);
 #endif
 		UartSetBaud(115200);
+		UartSend(GPSConst::BAUD_115200[static_cast<unsigned>(m_tModule)]);
 
-		const uint32_t nMillis = Hardware::Get()->Millis();
+		const auto nMillis = Hardware::Get()->Millis();
 
 		while ((Hardware::Get()->Millis() - nMillis) < 1000) {
 			m_pSentence = const_cast<char *>(UartGetSentence());
@@ -185,7 +186,7 @@ void GPS::Run() {
 		return;
 	}
 
-//	DumpSentence(m_pSentence);
+	DumpSentence(m_pSentence);
 
 	uint32_t nTag;
 

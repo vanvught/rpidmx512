@@ -77,7 +77,7 @@ public:
 
 class ModeParams {
 public:
-	ModeParams(ModeParamsStore *pModeParamsStore=nullptr);
+	ModeParams(ModeParamsStore *pModeParamsStore = nullptr);
 	~ModeParams();
 
 	bool Load(uint32_t nMotorIndex);

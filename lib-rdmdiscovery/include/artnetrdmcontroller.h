@@ -36,14 +36,15 @@
 #include "rdmdevicecontroller.h"
 #include "rdm.h"
 
+#include "debug.h"
+
 class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm, RDMDiscovery {
 public:
 	ArtNetRdmController();
 
 	~ArtNetRdmController() override {
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			delete m_pRDMTod[nPortIndex];
-		}
+		DEBUG_ENTRY
+		DEBUG_EXIT
 	}
 
 	void Print() {
@@ -55,18 +56,22 @@ public:
 	// Discovery
 
 	void Full(uint32_t nPortIndex) override {
+		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		RDMDiscovery::Full(nPortIndex, m_pRDMTod[nPortIndex]);
+		RDMDiscovery::Full(nPortIndex, &m_pRDMTod[nPortIndex]);
+		DEBUG_EXIT
 	}
 
 	uint32_t GetUidCount(uint32_t nPortIndex) override {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_pRDMTod[nPortIndex]->GetUidCount();
+		return m_pRDMTod[nPortIndex].GetUidCount();
 	}
 
 	void TodCopy(uint32_t nPortIndex, uint8_t *pTod) override {
+		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		m_pRDMTod[nPortIndex]->Copy(pTod);
+		m_pRDMTod[nPortIndex].Copy(pTod);
+		DEBUG_EXIT
 	}
 
 	// Gateway
@@ -75,32 +80,32 @@ public:
 
 	void TodReset(uint32_t nPortIndex) override {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		m_pRDMTod[nPortIndex]->Reset();
+		m_pRDMTod[nPortIndex].Reset();
 	}
 
 	bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid) override {
-		return m_pRDMTod[nPortIndex]->AddUid(pUid);
+		return m_pRDMTod[nPortIndex].AddUid(pUid);
 	}
 
 	// class Node
 
 	bool CopyTodEntry(uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		return m_pRDMTod[nPortIndex]->CopyUidEntry(nIndex, uid);
+		return m_pRDMTod[nPortIndex].CopyUidEntry(nIndex, uid);
 	}
 
 	// Generic
 
 	void TodDump(uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
-		m_pRDMTod[nPortIndex]->Dump();
+		m_pRDMTod[nPortIndex].Dump();
 	}
 
 private:
 	void RespondMessageAck(uint32_t nPortIndex, const uint8_t *pUid, const struct TRdmMessage *pRdmMessage);
 
 private:
-	static RDMTod *m_pRDMTod[artnetnode::MAX_PORTS];
+	static RDMTod m_pRDMTod[artnetnode::MAX_PORTS];
 	static TRdmMessage s_rdmMessage;
 };
 

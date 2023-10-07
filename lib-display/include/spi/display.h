@@ -97,6 +97,10 @@ public:
 		Text(pText, nLength);
 	}
 
+	void ClearEndOfLine() {
+		m_bClearEndOfLine = true;
+	}
+
 	void Status(__attribute__((unused)) Display7SegmentMessage nValue) { }
 
 	void Status(__attribute__((unused)) uint8_t nValue, __attribute__((unused)) bool bHex) {}
@@ -256,14 +260,17 @@ private:
 #endif
 	uint32_t m_nCols;
 	uint32_t m_nRows;
-	uint8_t m_nContrast { 0x7F };
-	bool m_bIsFlippedVertically { false };
-	bool m_bIsSleep { false };
 	uint32_t m_nSleepTimeout { 1000U * 60U * display::Defaults::SEEP_TIMEOUT };
 	uint32_t m_nMillis { 0 };
 
+	bool m_bIsFlippedVertically { false };
+	bool m_bIsSleep { false };
+	bool m_bClearEndOfLine { false };
+
 	uint16_t m_nCursorX { 0 };
 	uint16_t m_nCursorY { 0 };
+
+	uint8_t m_nContrast { 0x7F };
 
 	static Display *s_pThis;
 };

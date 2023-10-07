@@ -2,7 +2,7 @@
  * @file tcnetreader.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,6 +72,8 @@ static void arm_timer_handler() {
 	// Defined in platform_ltc.cpp
 #endif
 
+char *TCNetReader::s_pUdpBuffer;
+
 void TCNetReader::Start() {
 #if defined (H3)
 	irq_timer_arm_physical_set(static_cast<thunk_irq_timer_arm_t>(arm_timer_handler));
@@ -137,24 +139,24 @@ void TCNetReader::HandleUdpRequest() {
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
 
-	m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
+	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < 13), 1)) {
+	if (__builtin_expect((nBytesReceived < 13), 1)) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("tcnet!", m_Buffer, 6) != 0), 0)) {
+	if (__builtin_expect((memcmp("tcnet!", s_pUdpBuffer, 6) != 0), 0)) {
 		return;
 	}
 
-	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
-		m_nBytesReceived--;
+	if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
+		nBytesReceived--;
 	}
 
-	debug_dump(m_Buffer, m_nBytesReceived);
+	debug_dump(s_pUdpBuffer, nBytesReceived);
 
-	if ((m_nBytesReceived == (6 + length::LAYER + 1)) && (memcmp(&m_Buffer[6], cmd::LAYER, length::LAYER) == 0)) {
-		const auto tLayer = TCNet::GetLayer(m_Buffer[6 + length::LAYER]);
+	if ((nBytesReceived == (6 + length::LAYER + 1)) && (memcmp(&s_pUdpBuffer[6], cmd::LAYER, length::LAYER) == 0)) {
+		const auto tLayer = TCNet::GetLayer(s_pUdpBuffer[6 + length::LAYER]);
 
 		TCNet::Get()->SetLayer(tLayer);
 		tcnet::display::show();
@@ -163,10 +165,10 @@ void TCNetReader::HandleUdpRequest() {
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + length::TYPE + 2)) && (memcmp(&m_Buffer[6], cmd::TYPE, length::TYPE) == 0)) {
-		if (m_Buffer[6 + length::TYPE] == '2') {
+	if ((nBytesReceived == (6 + length::TYPE + 2)) && (memcmp(&s_pUdpBuffer[6], cmd::TYPE, length::TYPE) == 0)) {
+		if (s_pUdpBuffer[6 + length::TYPE] == '2') {
 
-			const auto nValue = 20U + m_Buffer[6 + length::TYPE + 1] - '0';
+			const auto nValue = 20U + s_pUdpBuffer[6 + length::TYPE + 1] - '0';
 
 			switch (nValue) {
 			case 24:
@@ -188,7 +190,7 @@ void TCNetReader::HandleUdpRequest() {
 			return;
 		}
 
-		if ((m_Buffer[6 + length::TYPE] == '3') && (m_Buffer[6 + length::TYPE + 1] == '0')) {
+		if ((s_pUdpBuffer[6 + length::TYPE] == '3') && (s_pUdpBuffer[6 + length::TYPE + 1] == '0')) {
 			TCNet::Get()->SetTimeCodeType(TCNET_TIMECODE_TYPE_SMPTE_30FPS);
 			tcnet::display::show();
 
@@ -200,8 +202,8 @@ void TCNetReader::HandleUdpRequest() {
 		return;
 	}
 
-	if ((m_nBytesReceived == (6 + length::TIMECODE + 1)) && (memcmp(&m_Buffer[6], cmd::TIMECODE, length::TIMECODE) == 0)) {
-		const auto nChar = m_Buffer[6 + length::TIMECODE];
+	if ((nBytesReceived == (6 + length::TIMECODE + 1)) && (memcmp(&s_pUdpBuffer[6], cmd::TIMECODE, length::TIMECODE) == 0)) {
+		const auto nChar = s_pUdpBuffer[6 + length::TIMECODE];
 		const auto bUseTimeCode = ((nChar == 'y') || (nChar == 'Y'));
 
 		TCNet::Get()->SetUseTimeCode(bUseTimeCode);

@@ -2,7 +2,7 @@
  * @file oscclientparams.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,6 +48,8 @@ struct TOscClientParams {
 	char aLed[OscClientParamsMax::LED_COUNT][OscClientParamsMax::LED_PATH_LENGTH];
 } __attribute__((packed));
 
+static_assert(sizeof(struct TOscClientParams) <= oscclient::STORE, "struct Params is too large");
+
 struct OscClientParamsMask {
 	static constexpr auto SERVER_IP = (1U << 0);
 	static constexpr auto OUTGOING_PORT = (1U << 1);
@@ -68,13 +70,15 @@ public:
 
 class OscClientParams {
 public:
-	OscClientParams(OscClientParamsStore *pOscClientParamsStore=nullptr);
+	OscClientParams(OscClientParamsStore *pOscClientParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TOscClientParams *ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(OscClient *pOscClient);
 

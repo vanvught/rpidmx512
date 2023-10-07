@@ -9,6 +9,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-artnet/include
 		EXTRA_SRCDIR+=src/artnet	
+		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
+			EXTRA_INCLUDES+=../lib-e131/include
+		endif	
 	endif
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-e131/include
@@ -28,6 +31,7 @@ ifneq ($(MAKE_FLAGS),)
 else
 	DEFINES+=NODE_ARTNET NODE_E131 OUTPUT_DMX_ARTNET RDM_RESPONDER
 	DEFINES+=LIGHTSET_PORTS=4
+	DEFINES+=ARTNET_VERSION=4
 	
 	EXTRA_INCLUDES+=../lib-node/include
 	EXTRA_INCLUDES+=../lib-artnet/include ../lib-e131/include ../lib-network/include

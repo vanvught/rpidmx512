@@ -31,7 +31,7 @@
 #include "artnetconst.h"
 #include "artnet.h"
 
-const uint8_t ArtNetConst::VERSION[] = { 1, 57 };
+const uint8_t ArtNetConst::VERSION[] = { 1, 58 };
 
 const uint8_t ArtNetConst::ESTA_ID[artnet::ESTA_SIZE] = { 0x50, 0x00 };	///< https://tsp.esta.org/tsp/working_groups/CP/mfctrIDs.php
 const uint8_t ArtNetConst::OEM_ID[] = { 0xff, 0xff };					///< Waiting OEM from Artistic Licence Holdings Ltd.

@@ -69,9 +69,10 @@ bool RemoteConfigParams::Load() {
 }
 
 void RemoteConfigParams::Load(const char* pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pRemoteConfigParamsStore != nullptr);
 
 	m_tRemoteConfigParams.nSetList = 0;
 
@@ -79,7 +80,10 @@ void RemoteConfigParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pRemoteConfigParamsStore != nullptr);
 	m_pRemoteConfigParamsStore->Update(&m_tRemoteConfigParams);
+
+	DEBUG_EXIT
 }
 
 void RemoteConfigParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
@@ -136,6 +140,7 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	if (pRemoteConfigParams != nullptr) {
 		memcpy(&m_tRemoteConfigParams, pRemoteConfigParams, sizeof(struct TRemoteConfigParams));
 	} else {
+		assert(m_pRemoteConfigParamsStore != nullptr);
 		m_pRemoteConfigParamsStore->Copy(&m_tRemoteConfigParams);
 	}
 
@@ -152,20 +157,6 @@ void RemoteConfigParams::Builder(const struct TRemoteConfigParams *pRemoteConfig
 	nSize = builder.GetSize();
 
 	DEBUG_EXIT
-	return;
-}
-
-void RemoteConfigParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	if (m_pRemoteConfigParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-
 	return;
 }
 

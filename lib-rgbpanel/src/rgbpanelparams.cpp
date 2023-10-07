@@ -162,15 +162,6 @@ void RgbPanelParams::Builder(const struct TRgbPanelParams *pRgbPanelParams, char
 	nSize = builder.GetSize();
 }
 
-void RgbPanelParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pRgbPanelParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
-}
-
 void RgbPanelParams::staticCallbackFunction(void *p, const char *s) {
 	assert(p != nullptr);
 	assert(s != nullptr);

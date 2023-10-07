@@ -76,9 +76,9 @@ enum class Labels {
 	BOARDNAME,
 	IP,
 	VERSION,
-	NOT_USED,
+	NOT_USED1,
 	AP,
-	NODE_NAME,
+	NOT_USED2,
 	HOSTNAME,
 	UNIVERSE_PORT_A,
 	UNIVERSE_PORT_B,
@@ -108,7 +108,7 @@ enum class Labels {
 	IP,
 	NETMASK,
 	DEFAULT_GATEWAY,
-	NODE_NAME,
+	NOT_USED,
 	UNIVERSE_PORT_A,
 # if MAX_ARRAY >= 2
 	UNIVERSE_PORT_B,
@@ -181,7 +181,6 @@ public:
 
 #if defined (NODE_ARTNET)
 	void Show(ArtNetNode *pArtNetNode, uint32_t nPortIndexOffset = 0);
-	void ShowNodeName(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 #endif
@@ -236,28 +235,39 @@ public:
 	 */
 
 #if !defined (NO_EMAC)
+	void ShowEmacInit() {
+		ClearEndOfLine();
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet init");
+	}
+
 	void ShowEmacStart() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet start");
 	}
 
+	void ShowEmacStatus(const bool isLinkUp) {
+		ClearEndOfLine();
+		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "Ethernet Link %s", isLinkUp ? "UP" : "DOWN");
+	}
+
 	void ShowIpAddress() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "" IPSTR "/%d %c", IP2STR(Network::Get()->GetIp()), Network::Get()->GetNetmaskCIDR(), Network::Get()->GetAddressingMode());
 	}
 
 	void ShowNetmask() {
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::NETMASK)], "N: " IPSTR "", IP2STR(Network::Get()->GetNetmask()));
 		ShowIpAddress();
 	}
 
 	void ShowGatewayIp() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)]);
+		ClearEndOfLine();
 		Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::DEFAULT_GATEWAY)], "G: " IPSTR "", IP2STR(Network::Get()->GetGatewayIp()));
 	}
 
 	void ShowHostName() {
-		ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)]);
+		ClearEndOfLine();
 		Write(m_aLabels[static_cast<uint32_t>(displayudf::Labels::HOSTNAME)], Network::Get()->GetHostName());
 	}
 
@@ -267,7 +277,7 @@ public:
 			break;
 		case network::dhcp::ClientStatus::RENEW:
 			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP renewing");
 			break;
 		case network::dhcp::ClientStatus::GOT_IP:
@@ -275,7 +285,7 @@ public:
 			break;
 		case network::dhcp::ClientStatus::RETRYING:
 			Display::Get()->Status(Display7SegmentMessage::INFO_DHCP);
-			ClearLine(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)]);
+			ClearEndOfLine();
 			Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::IP)], "DHCP retrying");
 			break;
 		case network::dhcp::ClientStatus::FAILED:

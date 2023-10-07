@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -73,6 +73,8 @@ constexpr char RUN_RDM[] = "Running RDM Discovery ...";
 constexpr char START_NODE[] = "Starting the Node ...";
 constexpr char NODE_STARTED[] = "Node started";
 
+static constexpr uint32_t DMXPORT_OFFSET = 0;
+
 void main() {
 	Hardware hw;
 	Network nw;
@@ -88,19 +90,19 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtNet;
+	StoreArtNet storeArtNet(DMXPORT_OFFSET);
 	node.SetArtNetStore(&storeArtNet);
 
-	ArtNetParams artnetparams(&storeArtNet);
+	ArtNetParams artnetParams(&storeArtNet);
 #else
-	ArtNetParams artnetparams;
+	ArtNetParams artnetParams;
 #endif
 
-	if (artnetparams.Load()) {
-		artnetparams.Dump();
+	if (artnetParams.Load()) {
+		artnetParams.Dump();
 	}
 
-	const auto outputType = artnetparams.GetOutputType();
+	const auto outputType = artnetParams.GetOutputType();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);
@@ -110,7 +112,7 @@ void main() {
 	console_puts("DMX Output");
 	console_set_fg_color(CONSOLE_WHITE);
 	console_puts(" / ");
-	console_set_fg_color((artnetparams.IsRdm() && (outputType == lightset::OutputType::DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
+	console_set_fg_color((artnetParams.IsRdm() && (outputType == lightset::OutputType::DMX)) ? CONSOLE_GREEN : CONSOLE_WHITE);
 	console_puts("RDM");
 	console_set_fg_color(CONSOLE_WHITE);
 #ifndef H3
@@ -144,7 +146,7 @@ void main() {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetparams.Set();
+	artnetParams.Set(DMXPORT_OFFSET);
 
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
@@ -153,10 +155,9 @@ void main() {
 	}
 #endif
 
-	bool isSet;
-	const auto nStartUniverse = artnetparams.GetUniverse(0, isSet);
+	const auto nStartUniverse = artnetParams.GetUniverse(0);
 
-	node.SetUniverseSwitch(0, lightset::PortDir::OUTPUT, nStartUniverse);
+	node.SetUniverse(0, lightset::PortDir::OUTPUT, nStartUniverse);
 
 	Dmx	dmx;
 	DmxSend dmxSend;
@@ -185,7 +186,7 @@ void main() {
 		const auto nUniverses = pWS28xxDmx->GetUniverses();
 
 		for (uint32_t nPortIndex = 1; nPortIndex < nUniverses; nPortIndex++) {
-			node.SetUniverseSwitch(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
+			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, static_cast<uint8_t>(nStartUniverse + nPortIndex));
 		}
 
 		node.SetOutput(pSpi);
@@ -211,7 +212,7 @@ void main() {
 
 		node.SetOutput(&dmxSend);
 
-		if (artnetparams.IsRdm()) {
+		if (artnetParams.IsRdm()) {
 #if defined (ORANGE_PI)
 			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 #else
@@ -258,7 +259,7 @@ void main() {
 		display.PutString("Monitor");
 		break;
 	default:
-		if (artnetparams.IsRdm()) {
+		if (artnetParams.IsRdm()) {
 			display.PutString("RDM");
 		} else {
 			display.PutString("DMX");

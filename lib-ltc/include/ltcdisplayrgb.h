@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,7 +138,6 @@ private:
 	uint32_t m_nMsgTimer { 0 };
 	uint32_t m_nColonBlinkMillis { 0 };
 	bool m_bShowMsg { false };
-	char m_Buffer[64];
 	char m_aMessage[ltcdisplayrgb::MAX_MESSAGE_SIZE];
 	char m_nSecondsPrevious { 60 };
 	ltcdisplayrgb::ColonBlinkMode m_tColonBlinkMode { ltcdisplayrgb::Defaults::COLON_BLINK_MODE };
@@ -152,6 +151,7 @@ private:
 	struct ltcdisplayrgb::Colours m_tColoursInfo;
 	struct ltcdisplayrgb::Colours m_tColoursSource;
 
+	static char *s_pUdpBuffer;
 	static LtcDisplayRgb *s_pThis;
 };
 

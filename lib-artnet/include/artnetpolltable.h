@@ -79,7 +79,7 @@ public:
 		return m_nPollTableEntries;
 	}
 
-	void Add(const struct TArtPollReply *ptArtPollReply);
+	void Add(const struct artnet::ArtPollReply *ptArtPollReply);
 	void Clean();
 
 	const struct TArtNetPollTableUniverses *GetIpAddress(uint16_t nUniverse) const;

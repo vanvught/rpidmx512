@@ -90,15 +90,15 @@ static const struct {
 };
 #define IDCODE_LEN (IDCODE_CONT_LEN + IDCODE_PART_LEN)
 
-uint32_t spi_flash_get_size(void) {
+uint32_t spi_flash_get_size() {
 	return s_flash.size;
 }
 
-uint32_t spi_flash_get_sector_size(void) {
+uint32_t spi_flash_get_sector_size() {
 	return s_flash.sector_size;
 }
 
-const char *spi_flash_get_name(void) {
+const char *spi_flash_get_name() {
 	return s_flash.name;
 }
 
@@ -138,7 +138,7 @@ static inline int spi_flash_cmd_write(const uint8_t *cmd, size_t cmd_len, const 
 	return spi_flash_read_write(cmd, cmd_len, data, nullptr, data_len);
 }
 
-static inline int spi_flash_cmd_write_enable(void) {
+static inline int spi_flash_cmd_write_enable() {
 	return spi_flash_cmd(CMD_WRITE_ENABLE, nullptr, 0);
 }
 

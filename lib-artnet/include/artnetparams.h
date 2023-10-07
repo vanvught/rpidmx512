@@ -37,98 +37,85 @@
 
 #include "lightset.h"
 
-#if !defined(LIGHTSET_PORTS)
-# define LIGHTSET_PORTS	0
-#endif
-
 namespace artnetparams {
 static constexpr uint16_t clear_mask(const uint32_t i) {
-	return static_cast<uint16_t>(~((1U << (i + 8)) | (1U << i)));
+   	return static_cast<uint16_t>(~((1U << (i + 8)) | (1U << i)));
 }
 
 static constexpr uint16_t shift_left(const uint32_t nValue, const uint32_t i) {
 	return static_cast<uint16_t>((nValue & 0x1) << i);
 }
 
-static constexpr uint16_t portdir_shif_right(const uint32_t nValue, const uint32_t i) {
-	return static_cast<uint16_t>((nValue >> (i * 2)) & 0x3);
+static constexpr uint16_t portdir_clear(const uint32_t i) {
+  	return static_cast<uint16_t>(~(0x3 << (i * 2)));
 }
 
-#if LIGHTSET_PORTS > 4
- static constexpr uint32_t MAX_PORTS = artnet::PORTS;
-#else
-# if (LIGHTSET_PORTS == 0)
-   static constexpr uint32_t MAX_PORTS = 1;	// ISO C++ forbids zero-size array
-# else
-   static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
-# endif
-#endif
+static constexpr uint16_t mergemode_clear(const uint32_t i) {
+   	return static_cast<uint16_t>(~(0x3 << (i * 2)));
+}
+
+static constexpr uint16_t mergemode_set(const uint32_t nPortIndex, const lightset::MergeMode mergeMode) {
+	return static_cast<uint16_t>((static_cast<uint32_t>(mergeMode) & 0x3) << (nPortIndex * 2));
+}
+
+static constexpr uint16_t protocol_clear(const uint32_t i) {
+   	return static_cast<uint16_t>(~(0x3 << (i * 2)));
+}
+
+static constexpr uint16_t protocol_set(const uint32_t nPortIndex, const artnet::PortProtocol protocol) {
+	return static_cast<uint16_t>((static_cast<uint32_t>(protocol) & 0x3) << (nPortIndex * 2));
+}
 
 struct Params {
-	uint32_t nSetList;									///< 4	  4
-	uint8_t  nNet;										///< 1	  5
-	uint8_t  nSubnet;									///< 1	  6
-	uint8_t  nFailSafe;									///< 1	  7
-	uint8_t  nOutputType;								///< 1	  8
-	uint16_t nRdm;										///< 2	 10
-	uint8_t  NotUsed6;									///< 1	 11
-	uint8_t  NotUsed5;									///< 1	 12
-	uint8_t  aShortName[artnet::SHORT_NAME_LENGTH];		///< 18	 30
-	uint8_t  aLongName[artnet::LONG_NAME_LENGTH];		///< 64	 94
-	uint16_t nMultiPortOptions;							///< 2	 96
-	uint8_t  NotUsed0[2];								///< 2	 98
-	uint8_t  NotUsed7;									///< 1	 99
-	uint8_t  NotUsed4;									///< 1	100
-	uint8_t  NotUsed3;									///< 1	101
-	uint8_t  NotUsed2;									///< 1	102
-	uint8_t  NotUsed1;									///< 1	103
-	uint8_t  nUniversePort[artnet::PORTS];				///< 4	107
-	uint8_t  NotUsed9;									///< 1	108
-	uint8_t  nMergeModePort[artnet::PORTS];				///< 4	112
-	uint8_t  NotUsed8;									///< 1	113
-	uint8_t  nProtocolPort[artnet::PORTS];				///< 4	117
-	uint16_t nDirection;								///< 2	119
-	uint32_t nDestinationIpPort[artnet::PORTS];			///< 16	135
-}__attribute__((packed));
+   uint32_t nSetList;
+   // Node
+   uint8_t nPersonality;
+   uint16_t nUniverse[artnet::PORTS];
+   uint16_t nDirection;
+   uint16_t nMergeMode;
+   uint8_t nOutputStyle;
+   uint8_t nFailSafe;
+   uint8_t aLongName[artnet::LONG_NAME_LENGTH];
+   uint8_t aLabel[artnet::PORTS][artnet::SHORT_NAME_LENGTH];
+   uint8_t Filler1;
+   // Art-Net 4
+   uint16_t nProtocol;
+   uint16_t nRdm;
+   uint32_t nDestinationIp[artnet::PORTS];
+   // sACN E1.31
+   uint8_t nPriority[artnet::PORTS];
+   // Reserved
+   uint8_t Filler2[40];
+} __attribute__((packed));
 
-static_assert(sizeof(struct Params) <= 144, "struct Params is too large");
-
-struct MaskMultiPortOptions {
-	static constexpr auto DESTINATION_IP_A = (1U << 0);
-	static constexpr auto DESTINATION_IP_B = (1U << 1);
-	static constexpr auto DESTINATION_IP_C = (1U << 2);
-	static constexpr auto DESTINATION_IP_D = (1U << 3);
-};
+static_assert(sizeof(struct Params) <= 320, "struct Params is too large");
 
 struct Mask {
-	static constexpr auto LONG_NAME = (1U << 0);
-	static constexpr auto SHORT_NAME = (1U << 1);
-	static constexpr auto NET = (1U << 2);
-	static constexpr auto SUBNET = (1U << 3);
-	static constexpr auto FAILSAFE = (1U << 4);
-	static constexpr auto RDM = (1U << 5);
-	//static constexpr auto  = (1U << 6);
-	//static constexpr auto  = (1U << 7);
-	static constexpr auto OUTPUT = (1U << 8);
-	//static constexpr auto  = (1U << 9);
-	//static constexpr auto  = (1U << 10);
-	//static constexpr auto  = (1U << 11);
-	static constexpr auto DISABLE_MERGE_TIMEOUT = (1U << 12);
-	static constexpr auto UNIVERSE_A = (1U << 13);
-	static constexpr auto UNIVERSE_B = (1U << 14);
-	static constexpr auto UNIVERSE_C = (1U << 15);
-	static constexpr auto UNIVERSE_D = (1U << 16);
-	static constexpr auto MERGE_MODE = (1U << 17);
-	static constexpr auto MERGE_MODE_A = (1U << 18);
-	static constexpr auto MERGE_MODE_B = (1U << 19);
-	static constexpr auto MERGE_MODE_C = (1U << 20);
-	static constexpr auto MERGE_MODE_D = (1U << 21);
-	static constexpr auto PROTOCOL = (1U << 22);
-	static constexpr auto PROTOCOL_A = (1U << 23);
-	static constexpr auto PROTOCOL_B = (1U << 24);
-	static constexpr auto PROTOCOL_C = (1U << 25);
-	static constexpr auto PROTOCOL_D = (1U << 26);
-	static constexpr auto MAP_UNIVERSE0 = (1U << 27);
+	// Node
+	//static constexpr uint32_t   					= (1U << 0);
+	static constexpr uint32_t UNIVERSE_A    		= (1U << 1);
+	static constexpr uint32_t UNIVERSE_B    		= (1U << 2);
+	static constexpr uint32_t UNIVERSE_C    		= (1U << 3);
+	static constexpr uint32_t UNIVERSE_D    		= (1U << 4);
+	static constexpr uint32_t FAILSAFE   			= (1U << 5);
+	static constexpr uint32_t LONG_NAME   			= (1U << 6);
+	static constexpr uint32_t LABEL_A   			= (1U << 7);
+	static constexpr uint32_t LABEL_B   			= (1U << 8);
+	static constexpr uint32_t LABEL_C   			= (1U << 9);
+	static constexpr uint32_t LABEL_D   			= (1U << 10);
+	static constexpr uint32_t DISABLE_MERGE_TIMEOUT	= (1U << 11);
+	// Art-Net 4
+	static constexpr uint32_t ENABLE_RDM    		= (1U << 16);
+	static constexpr uint32_t MAP_UNIVERSE0 		= (1U << 17);
+	static constexpr uint32_t DESTINATION_IP_A    	= (1U << 18);
+	static constexpr uint32_t DESTINATION_IP_B    	= (1U << 19);
+	static constexpr uint32_t DESTINATION_IP_C    	= (1U << 20);
+	static constexpr uint32_t DESTINATION_IP_D    	= (1U << 21);
+	// sACN E1.31
+	static constexpr uint32_t PRIORITY_A    		= (1U << 22);
+	static constexpr uint32_t PRIORITY_B    		= (1U << 22);
+	static constexpr uint32_t PRIORITY_C    		= (1U << 23);
+	static constexpr uint32_t PRIORITY_D    		= (1U << 24);
 };
 
 }  // namespace artnetparams
@@ -143,61 +130,70 @@ public:
 
 class ArtNetParams {
 public:
-	ArtNetParams(ArtNetParamsStore *pArtNetParamsStore = nullptr);
+	ArtNetParams(ArtNetParamsStore *pArtNetParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct artnetparams::Params *pArtNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
-	void Set(uint32_t nPortIndexOffset = 0);
+	void Set(uint32_t nPortIndexOffset);
 
 	void Dump();
 
-	uint8_t GetNet() const {
-		return m_Params.nNet;
-	}
-
-	uint8_t GetSubnet() const {
-		return m_Params.nSubnet;
-	}
-
-	lightset::OutputType GetOutputType() const {
-		return static_cast<lightset::OutputType>(m_Params.nOutputType);
-	}
-
 	bool IsRdm() const {
-		return isMaskSet(artnetparams::Mask::RDM);
+		return isMaskSet(artnetparams::Mask::ENABLE_RDM);
 	}
 
-	uint8_t GetUniverse(uint32_t nPortIndex, bool& IsSet) const {
+	uint16_t GetUniverse(uint32_t nPortIndex) const {
 		if (nPortIndex < artnet::PORTS) {
-			IsSet = isMaskSet(artnetparams::Mask::UNIVERSE_A << nPortIndex);
-			return m_Params.nUniversePort[nPortIndex];
+			return m_Params.nUniverse[nPortIndex];
 		}
-		IsSet = false;
-		return 0;
+		return UINT16_MAX;
 	}
 
 	lightset::PortDir GetDirection(uint32_t nPortIndex) const {
 		if (nPortIndex < artnet::PORTS) {
-			const auto portDir = static_cast<lightset::PortDir>(artnetparams::portdir_shif_right(m_Params.nDirection, nPortIndex));
-			return portDir;
+			return portdir_get(nPortIndex);
 		}
 		return lightset::PortDir::DISABLE;
 	}
 
+#if defined (ESP8266)
+	lightset::OutputType GetOutputType() const {
+		return static_cast<lightset::OutputType>(m_Params.Filler1);
+	}
+#endif
+
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	lightset::PortDir portdir_get(const uint32_t nPortIndex) const {
+		return static_cast<lightset::PortDir>((m_Params.nDirection >> (nPortIndex * 2)) & 0x3);
+	}
+
+	uint16_t portdir_set(const uint32_t nPortIndex, const lightset::PortDir portDir) {
+		return static_cast<uint16_t>((static_cast<uint32_t>(portDir) & 0x3) << (nPortIndex * 2));
+	}
+
+	lightset::MergeMode mergemode_get(const uint32_t nPortIndex) {
+		return static_cast<lightset::MergeMode>((m_Params.nMergeMode >> (nPortIndex * 2)) & 0x3);
+	}
+
+	artnet::PortProtocol protocol_get(const uint32_t nPortIndex) {
+		return static_cast<artnet::PortProtocol>((m_Params.nProtocol >> (nPortIndex * 2)) & 0x3);
+	}
+
 	void callbackFunction(const char *pLine);
 	void SetBool(const uint8_t nValue, const uint32_t nMask);
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_Params.nSetList & nMask) == nMask;
 	}
-	bool isMaskMultiPortOptionsSet(uint16_t nMask) const {
-		return (m_Params.nMultiPortOptions & nMask) == nMask;
+	bool isOutputStyleSet(uint8_t nMask) const {
+		return (m_Params.nOutputStyle & nMask) == nMask;
 	}
 
 private:

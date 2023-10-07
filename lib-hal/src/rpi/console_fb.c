@@ -53,8 +53,8 @@ static uint32_t top_row = 0;
 static volatile int lock = 0;
 #endif
 
-int console_init(void) {
-	return fb_init();
+void console_init(void) {
+	fb_init();
 }
 
 uint32_t console_get_line_width(void) {

@@ -52,7 +52,7 @@ enum class State {
 
 static State s_State = State::IDLE;
 static uint32_t s_nPage;
-static uint32_t s_nLength;;
+static uint32_t s_nLength;
 static uint32_t s_nAddress;
 static uint32_t *s_pData;
 static bool s_isBank0;
@@ -187,6 +187,7 @@ bool FlashCode::Erase(uint32_t nOffset, uint32_t nLength, flashcode::result& nRe
 		} else {
 			FMC_CTL1 &= ~FMC_CTL1_PG;
 		}
+		/*@fallthrough@*/
 		/* no break */
 	case State::WRITE_PROGRAM:
 		s_State = State::IDLE;
@@ -285,6 +286,7 @@ bool FlashCode::Write(uint32_t nOffset, uint32_t nLength, const uint8_t *pBuffer
 		} else {
 			FMC_CTL1 &= ~FMC_CTL1_PER;
 		}
+		/*@fallthrough@*/
 		/* no break */
 	case State::ERASE_PROGAM:
 		s_State = State::IDLE;

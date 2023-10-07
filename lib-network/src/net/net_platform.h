@@ -2,7 +2,7 @@
  * @file net_platform.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,14 @@
 #define NET_PLATFORM_H_
 
 #if defined (GD32)
+/**
+ * https://www.gd32-dmx.org/memory.html
+ */
 # include "gd32.h"
-# if !defined (GD32F4XX)
-#  define SECTION_NETWORK
-# else
+# if defined (GD32F207RG) || defined (GD32F4XX)
 #  define SECTION_NETWORK __attribute__ ((section (".network")))
+# else
+#  define SECTION_NETWORK
 # endif
 #else
 # define SECTION_NETWORK

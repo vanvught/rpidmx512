@@ -147,7 +147,9 @@ bool StoreDevice::Erase(uint32_t nOffset, uint32_t nLength, storedevice::result&
 		nResult = result::OK;
 		DEBUG_EXIT
 		return false;
-	} else if (s_State == State::RUNNING) {
+	}
+
+	if (s_State == State::RUNNING) {
 		for (uint32_t i = 0; i < nLength; i++) {
 			if (fputc(0xFF, pFile) == EOF) {
 				s_State = State::ERROR;
@@ -171,6 +173,7 @@ bool StoreDevice::Erase(uint32_t nOffset, uint32_t nLength, storedevice::result&
 	}
 
 	DEBUG_EXIT
+	assert(0);
 	return true;
 }
 

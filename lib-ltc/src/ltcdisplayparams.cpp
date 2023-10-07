@@ -108,11 +108,6 @@ bool LtcDisplayParams::Load() {
 void LtcDisplayParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pLtcDisplayParamsStore != nullptr);
-
-	if (m_pLtcDisplayParamsStore == nullptr) {
-		return;
-	}
 
 	m_tLtcDisplayParams.nSetList = 0;
 
@@ -120,6 +115,7 @@ void LtcDisplayParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pLtcDisplayParamsStore != nullptr);
 	m_pLtcDisplayParamsStore->Update(&m_tLtcDisplayParams);
 }
 
@@ -265,6 +261,7 @@ void LtcDisplayParams::Builder(const struct ltcdisplayparams::Params *ptLtcDispl
 	if (ptLtcDisplayParams != nullptr) {
 		memcpy(&m_tLtcDisplayParams, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
 	} else {
+		assert(m_pLtcDisplayParamsStore != nullptr);
 		m_pLtcDisplayParamsStore->Copy(&m_tLtcDisplayParams);
 	}
 
@@ -309,15 +306,6 @@ void LtcDisplayParams::Builder(const struct ltcdisplayparams::Params *ptLtcDispl
 #endif
 
 	nSize = builder.GetSize();
-}
-
-void LtcDisplayParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pLtcDisplayParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
-	Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void LtcDisplayParams::Set(LtcDisplayRgb *pLtcDisplayRgb) {

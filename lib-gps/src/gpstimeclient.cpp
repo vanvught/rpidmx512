@@ -31,40 +31,49 @@
 
 #include "debug.h"
 
-enum Status {
-	NOT_SET, WAITING_TIMEOUT, WAITING_PPS
-};
+GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module) :
+		GPS(fUtcOffset, module),
+		m_nWaitPPSMillis(Hardware::Get()->Millis())
+{
+	DEBUG_ENTRY
 
-static Status s_Status;
-
-GPSTimeClient::GPSTimeClient(float fUtcOffset, GPSModule module): GPS(fUtcOffset, module) {
-	m_nWaitPPSMillis = Hardware::Get()->Millis();
-	s_Status = Status::NOT_SET;
+	DEBUG_EXIT
 }
 
 void GPSTimeClient::Start() {
+	DEBUG_ENTRY
+
 	GPS::Start();
 
 	platform_gpio_init();
+
+	DEBUG_EXIT
 }
 
 void GPSTimeClient::Run() {
 	GPS::Run();
 
-	if (s_Status == Status::WAITING_TIMEOUT) {
-		const auto nMillis = Hardware::Get()->Millis();
+	if (GPS::GetStatus() == gps::Status::IDLE) {
+		return;
+	}
 
-		if (GPS::GetStatus() == gps::Status::VALID) {
-			m_nWaitPPSMillis = nMillis;
+	if (platform_is_pps()) {
+		struct timeval tv;
+		tv.tv_sec = GetLocalSeconds() + 1;
+		tv.tv_usec = 0;
+		settimeofday(&tv, nullptr);
 
-			s_Status = Status::WAITING_PPS;
+		m_nWaitPPSMillis = Hardware::Get()->Millis();
 
-			DEBUG_PUTS("(GPS::GetStatus() == gps::Status::VALID)");
-			return;
-		}
+		DEBUG_PUTS("PPS handled");
+		return;
+	}
 
-		DEBUG_PUTS("No Fix");
+	const auto nMillis = Hardware::Get()->Millis();
 
+	if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (10 * 1000)), 0)) {
+		m_nWaitPPSMillis = nMillis;
+		// There is no PPS
 		if (GPS::IsTimeUpdated()) {
 			const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
 
@@ -75,61 +84,11 @@ void GPSTimeClient::Run() {
 				settimeofday(&tv, nullptr);
 
 				DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
-				return;
 			}
 		}
 
-		s_Status = Status::NOT_SET;
-
-		DEBUG_PUTS("No time update");
 		return;
 	}
 
-	if (s_Status == Status::WAITING_PPS) {
-		if (platform_is_pps()) {
-			struct timeval tv;
-			tv.tv_sec = GetLocalSeconds() + 1;
-			tv.tv_usec = 0;
-			settimeofday(&tv, nullptr);
-
-			s_Status = Status::WAITING_TIMEOUT;
-
-			DEBUG_PUTS("PPS handled");
-			return;
-		}
-
-		const auto nMillis = Hardware::Get()->Millis();
-
-		if (__builtin_expect(((nMillis - m_nWaitPPSMillis) > (10 * 1000)), 0)) {
-			// There is no PPS
-			if (GPS::IsTimeUpdated()) {
-				const auto nElapsedMillis = nMillis - GetTimeTimestampMillis();
-
-				if (nElapsedMillis <= 1) {
-					struct timeval tv;
-					tv.tv_sec = GPS::GetLocalSeconds();
-					tv.tv_usec = 0;
-					settimeofday(&tv, nullptr);
-
-					DEBUG_PRINTF("(GPS::IsTimeUpdated()) %u", nElapsedMillis);
-				}
-			}
-
-			s_Status = Status::WAITING_TIMEOUT;
-
-			DEBUG_PUTS("((tv.tv_sec - nWaitPPS) >= 10 * 1000)");
-			return;
-		}
-
-		return;
-	}
-
-	if ((s_Status == Status::NOT_SET) && GPS::IsTimeUpdated()) {
-		m_nWaitPPSMillis = Hardware::Get()->Millis();
-
-		s_Status = Status::WAITING_PPS;
-
-		DEBUG_PUTS("((Status == Status::NOT_SET) && GPS::IsTimeUpdated())");
-		return;
-	}
+	return;
 }

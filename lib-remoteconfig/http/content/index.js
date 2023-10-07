@@ -1,45 +1,43 @@
-async function getJSON(json) {
-		let url='/json/' + json;
-		try {
-				let res=await fetch(url);
-				return await res.json();
-		} catch (error) {
-				console.log(error);
-		}
-}
-
-async function renderList() {
-		let list=await getJSON('list');
-		document.getElementById("idList").innerHTML="<li>"+list.list.name+"</li><li>"+list.list.node.type+"</li><li>"+list.list.node.port.type+"</li>";
-}
-
-async function renderDirectory() {
-			let directory=await getJSON('directory');
-			let html=""
-			let filenames=Object.keys(directory["files"]);
-			filenames.forEach(function(key) {
-					var value = directory["files"][key];
-					html+="<option value="+key+">"+value+"</option>";
-			});
-			document.getElementById("idDirectory").innerHTML=html;
-			get_txt(filenames[0]);
-}
-
-async function renderVersion() {
-		let version=await getJSON('version');
-		document.getElementById("idVersion").innerHTML="<li>V"+version.version+"</li><li>"+version.build.date+"</li><li>"+version.build.time+"</li><li>"+version.board+"</li>";
+async function directory() {
+	let d = await getJSON('directory')
+	let h = ""
+	let f = Object.keys(d["files"])
+	f.forEach(function(key) {
+		var v = d["files"][key]
+		h += "<option value="+key+">"+v+"</option>"
+	});
+	document.getElementById("idDirectory").innerHTML = h
+	get_txt(f[0])
 }
 
 async function get_txt(sel) {
-	let txt=await getJSON(sel);
-	let html="";
+	let txt = await getJSON(sel)
+	let h = ""
 	Object.keys(txt[sel]).forEach(function(key) {
-		var value = txt[sel][key];
-		 html+="<tr><td>"+key+"</td><td>"+value+"</td></tr>";
+		var v = txt[sel][key]
+		h += "<tr><td>"+key+'</td><td><input type="text" value="'+v+'" id="'+key+'"></td></tr>'
 	});
-	document.getElementById("idTxt").innerHTML=html;
+	h += '<tr><td colspan="2"><button onclick="save(\''+sel+'\')">Save</button>';
+  h += '<button class="btn" onclick="reset(\''+sel+'\')">Defaults</button></td></tr>';
+	document.getElementById("idTxt").innerHTML = h
 }
 
-renderList();
-renderDirectory();
-renderVersion();
+function save(sel) {
+	var d = {}
+	var inputs = document.getElementById("idTxt").getElementsByTagName("input")
+	for (var i = 0; i < inputs.length; i++) {
+		var k = inputs[i].id
+		var v = inputs[i].value
+		d[k] = v
+	}
+	var out = {}
+	out[sel] = d
+	var payload = JSON.stringify(out)
+	fetch('/json', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: payload
+	}) .then(response => {if (response.ok) { get_txt(sel); }});
+}

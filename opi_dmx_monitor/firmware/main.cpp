@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,7 +59,7 @@ void main() {
 
 	DMXMonitor dmxmonitor;
 
-	DMXMonitorParams monitorparams;
+	DMXMonitorParams monitorparams(nullptr);
 
 	if (monitorparams.Load()) {
 		monitorparams.Set(&dmxmonitor);

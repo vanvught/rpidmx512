@@ -2,7 +2,7 @@
  * @file rdmdevice.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 
 #include "rdmdevicestore.h"
 #include "rdmconst.h"
+#include "rdm_e120.h"
 
 #include "debug.h"
 
@@ -103,8 +104,8 @@ public:
 	}
 
 	void GetManufacturerName(struct TRDMDeviceInfoData *pInfo) {
-		pInfo->data = m_aManufacturerName;
-		pInfo->length = m_nManufacturerNameLength;
+		pInfo->data = const_cast<char *>(&RDMConst::MANUFACTURER_NAME[0]);
+		pInfo->length = static_cast<uint8_t>(std::min(static_cast<size_t>(RDM_MANUFACTURER_LABEL_MAX_LENGTH), strlen(RDMConst::MANUFACTURER_NAME)));
 	}
 
 	void SetLabel(const struct TRDMDeviceInfoData *pInfo) {
@@ -128,14 +129,14 @@ public:
 		pInfo->length = m_nRootLabelLength;
 	}
 
-	void SetProductCategory(uint16_t nProductCategory) {
+	void SetProductCategory(const uint16_t nProductCategory) {
 		m_nProductCategory = nProductCategory;
 	}
 	uint16_t GetProductCategory() const {
 		return m_nProductCategory;
 	}
 
-	void SetProductDetail(uint16_t nProductDetail) {
+	void SetProductDetail(const uint16_t nProductDetail) {
 		m_nProductDetail = nProductDetail;
 	}
 	uint16_t GetProductDetail() const {
@@ -154,21 +155,22 @@ private:
 	}
 
 private:
-	bool m_IsInit { false };
+	char m_aFactoryRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	char m_aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+
+	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
+
+	uint16_t m_nProductCategory { E120_PRODUCT_CATEGORY_OTHER };
+	uint16_t m_nProductDetail { E120_PRODUCT_DETAIL_OTHER };
+	uint16_t m_nCheckSum { 0 };
+
 	uint8_t m_aUID[RDM_UID_SIZE];
 #define DEVICE_SN_LENGTH		4
 	uint8_t m_aSN[DEVICE_SN_LENGTH];
-	char m_aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-	uint8_t m_nRootLabelLength;
-	char m_aManufacturerName[RDM_MANUFACTURER_LABEL_MAX_LENGTH];
-	uint8_t m_nManufacturerNameLength;
-	uint16_t m_nProductCategory;
-	uint16_t m_nProductDetail;
-	char m_aFactoryRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
+	uint8_t m_nRootLabelLength { 0 };
 	uint8_t m_nFactoryRootLabelLength { 0 };
-	uint16_t m_nCheckSum { 0 };
 
-	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
+	bool m_IsInit { false };
 };
 
 #endif /* RDMDEVICE_H_ */

@@ -79,13 +79,10 @@ bool DmxParams::Load() {
 }
 
 void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pDmxParamsStore != nullptr);
-
-	if (m_pDmxParamsStore == nullptr) {
-		return;
-	}
 
 	m_tDmxParams.nSetList = 0;
 
@@ -93,7 +90,10 @@ void DmxParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
+	assert(m_pDmxParamsStore != nullptr);
 	m_pDmxParamsStore->Update(&m_tDmxParams);
+
+	DEBUG_EXIT
 }
 
 void DmxParams::callbackFunction(const char *pLine) {
@@ -156,6 +156,7 @@ void DmxParams::Builder(const struct TDmxParams *ptDMXParams, char *pBuffer, uin
 	if (ptDMXParams != nullptr) {
 		memcpy(&m_tDmxParams, ptDMXParams, sizeof(struct TDmxParams));
 	} else {
+		assert(m_pDmxParamsStore != nullptr);
 		m_pDmxParamsStore->Copy(&m_tDmxParams);
 	}
 
@@ -170,20 +171,6 @@ void DmxParams::Builder(const struct TDmxParams *ptDMXParams, char *pBuffer, uin
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void DmxParams::Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	assert(pBuffer != nullptr);
-
-	if (m_pDmxParamsStore == nullptr) {
-		nSize = 0;
-		DEBUG_EXIT
-		return;
-	}
-
-	return Builder(nullptr, pBuffer, nLength, nSize);
 }
 
 void DmxParams::Set(Dmx *p) {

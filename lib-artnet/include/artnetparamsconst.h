@@ -26,21 +26,14 @@
 #ifndef ARTNETPARAMSCONST_H_
 #define ARTNETPARAMSCONST_H_
 
+#include "artnetparams.h"
 #include "artnet.h"
 
 struct ArtNetParamsConst {
 	static const char FILE_NAME[];
 
-	static const char NET[];
-	static const char SUBNET[];
-
 	static const char ENABLE_RDM[];
-
-	static const char NODE_SHORT_NAME[];
-	static const char NODE_LONG_NAME[];
-
 	static const char DESTINATION_IP_PORT[artnet::PORTS][24];
-
 	static const char RDM_ENABLE_PORT[artnet::PORTS][18];
 
 	/**
@@ -48,7 +41,6 @@ struct ArtNetParamsConst {
 	 */
 
 	static const char PROTOCOL_PORT[artnet::PORTS][16];
-
 	static const char MAP_UNIVERSE0[];
 };
 

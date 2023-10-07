@@ -2,7 +2,7 @@
  * @file displayudfparams.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -58,13 +58,15 @@ public:
 
 class DisplayUdfParams {
 public:
-	DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore = nullptr);
+	DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct displayudfparams::Params *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Set(DisplayUdf *pDisplayUdf);
 

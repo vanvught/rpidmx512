@@ -33,51 +33,15 @@
 #include "debug.h"
 
 namespace net {
-#if (PHY_TYPE == RTL8201F)
-	void phy_write_paged(uint16_t phy_page, uint16_t phy_reg, uint16_t phy_value, uint16_t mask = 0x0);
-#endif
-
-static void link_pin_enable() {
-	uint16_t phy_value;
-#if (PHY_TYPE == LAN8700)
-
-#elif (PHY_TYPE == DP83848)
-	phy_value = PHY_INT_AND_OUTPUT_ENABLE;
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_MICR, &phy_value);
-
-	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_MICR, &phy_value);
-
-	if (PHY_INT_AND_OUTPUT_ENABLE != phy_value) {
-		DEBUG_PUTS("PHY_INT_AND_OUTPUT_ENABLE != phy_value");
-	}
-
-	phy_value = PHY_LINK_INT_ENABLE;
-	enet_phy_write_read(ENET_PHY_WRITE, PHY_ADDRESS, PHY_REG_MISR, &phy_value);
-#elif (PHY_TYPE == RTL8201F)
-	phy_write_paged(0x07, PHY_REG_IER, PHY_REG_IER_INT_ENABLE, PHY_REG_IER_INT_ENABLE);
-	// Clear interrupt
-	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_ISR, &phy_value);
-#endif
-}
-
-static void link_gpio_init() {
+#if defined (ENET_LINK_CHECK_USE_INT) || defined (ENET_LINK_CHECK_USE_PIN_POLL)
+void link_gpio_init() {
 	rcu_periph_clock_enable(LINK_CHECK_GPIO_CLK);
 	LINK_CHECK_GPIO_CONFIG;
 }
-
-static void link_pin_recovery() {
-    uint16_t phy_value;
-#if (PHY_TYPE == LAN8700)
-
-#elif (PHY_TYPE == DP83848)
-    enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_MISR, &phy_value);
-#elif (PHY_TYPE == RTL8201F)
-    enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_ISR, &phy_value);
 #endif
-    enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_BSR, &phy_value);
-}
 
-static void link_exti_init() {
+#if defined (ENET_LINK_CHECK_USE_INT)
+void link_exti_init() {
     rcu_periph_clock_enable(LINK_CHECK_EXTI_CLK);
 
  	NVIC_SetPriority(LINK_CHECK_EXTI_IRQn, 7);
@@ -88,38 +52,17 @@ static void link_exti_init() {
     exti_init(LINK_CHECK_EXTI_LINE, EXTI_INTERRUPT, EXTI_TRIG_FALLING);
     exti_interrupt_flag_clear(LINK_CHECK_EXTI_LINE);
 }
+#endif
 
-void link_interrupt_init() {
-    link_pin_enable();
-    link_pin_recovery();
-    link_gpio_init();
-    link_exti_init();
-}
-
-void link_pin_poll_init() {
-    link_pin_enable();
-    link_pin_recovery();
-    link_gpio_init();
-}
-
+#if defined (ENET_LINK_CHECK_USE_PIN_POLL)
 void link_pin_poll() {
 	if (RESET == gpio_input_bit_get(LINK_CHECK_GPIO_PORT, LINK_CHECK_GPIO_PIN)) {
 		link_pin_recovery();
-		link_handle_change(link_register_read());
+		link_handle_change(link_status_read());
 	}
 }
+#endif
 
-net::Link link_register_read() {
-	uint16_t phy_value;
-
-	enet_phy_write_read(ENET_PHY_READ, PHY_ADDRESS, PHY_REG_BSR, &phy_value);
-
-	if (PHY_LINKED_STATUS == (phy_value & PHY_LINKED_STATUS)) {
-		return net::Link::STATE_UP;
-	}
-
-	return net::Link::STATE_DOWN;
-}
 }  // namespace net
 
 #if defined (ENET_LINK_CHECK_USE_INT)
@@ -128,7 +71,7 @@ void LINK_CHECK_IRQ_HANDLE(void) {
 	if (RESET != exti_interrupt_flag_get(LINK_CHECK_EXTI_LINE)) {
 		exti_interrupt_flag_clear(LINK_CHECK_EXTI_LINE);
 		net::link_pin_recovery();
-		net::link_handle_change(net::link_register_read());
+		net::link_handle_change(net::link_status_read());
 	}
 }
 }

@@ -58,13 +58,20 @@ public:
 
 class RDMSubDevicesParams {
 public:
-	RDMSubDevicesParams(RDMSubDevicesParamsStore *pRDMSubDevicesParamsStore = nullptr);
+	RDMSubDevicesParams(RDMSubDevicesParamsStore *pRDMSubDevicesParamsStore);
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const rdm::subdevicesparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
-	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		if (m_pRDMSubDevicesParamsStore == nullptr) {
+			nSize = 0;
+			return;
+		}
+
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
 
 	void Dump();
 

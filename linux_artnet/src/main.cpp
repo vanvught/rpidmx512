@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <ctype.h>
 
 #include "hardware.h"
 #include "network.h"
@@ -37,7 +38,7 @@
 
 #include "httpd/httpd.h"
 
-#include "artnet4node.h"
+#include "artnetnode.h"
 #include "artnetparams.h"
 #include "storeartnet.h"
 #include "artnetmsgconst.h"
@@ -67,10 +68,6 @@
 #include "firmwareversion.h"
 #include "software_version.h"
 
-using namespace artnet;
-
-static constexpr uint32_t portIndexOffset = 0;
-
 int main(int argc, char **argv) {
 	Hardware hw;
 	Display display;
@@ -83,16 +80,27 @@ int main(int argc, char **argv) {
 	fw.Print();
 	nw.Print();
 
-	ArtNet4Node node;
+	ArtNetNode node;
 
-	StoreArtNet storeArtNet(portIndexOffset);
+	uint32_t nPortIndexOffset = 0;
+
+#ifndef NDEBUG
+	if (argc > 2) {
+		const int c = argv[2][0];
+		if (isdigit(c)){
+			nPortIndexOffset = c - '0';
+		}
+	}
+#endif
+
+	StoreArtNet storeArtNet(nPortIndexOffset);
 	node.SetArtNetStore(&storeArtNet);
 
 	ArtNetParams artnetParams(&storeArtNet);
 
 	if (artnetParams.Load()) {
 		artnetParams.Dump();
-		artnetParams.Set(portIndexOffset);
+		artnetParams.Set(nPortIndexOffset);
 	}
 
 	printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
@@ -130,20 +138,22 @@ int main(int argc, char **argv) {
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= portIndexOffset) {
-			nOffset = nPortIndex - portIndexOffset;
+		if (nPortIndex >= nPortIndexOffset) {
+			nOffset = nPortIndex - nPortIndexOffset;
 		} else {
 			continue;
 		}
 
 		printf(">> nPortIndex=%u, nOffset=%u\n", nPortIndex, nOffset);
 
-		bool bIsSet;
-		const auto nAddress = artnetParams.GetUniverse(nOffset, bIsSet);
-		const auto portDirection =  artnetParams.GetDirection(nOffset);
+		const auto nAddress = artnetParams.GetUniverse(nOffset);
+		const auto portDirection = artnetParams.GetDirection(nOffset);
 
 		if (portDirection == lightset::PortDir::OUTPUT) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
+			if (nPortIndex == 0) {
+				node.SetRmd(0, true);
+			}
 		} else {
 			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
 		}
@@ -154,8 +164,8 @@ int main(int argc, char **argv) {
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 
 	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4");
+	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=Art-Net 4");
+	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
 	mDns.Print();
 
 	node.SetRdmUID(RdmResponder.GetUID());

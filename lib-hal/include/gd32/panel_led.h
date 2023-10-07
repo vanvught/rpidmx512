@@ -1,8 +1,8 @@
 /**
- * @file panel_led
+ * @file panel_led.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,64 +27,100 @@
 #define GD32_PANEL_LED_H_
 
 #include <cstdint>
-#include <cassert>
 
-#include "gd32_bitbanging595.h"
+#include "gd32.h"
+
+#if !defined (LEDPANEL_595_COUNT)
+# if !defined (UNUSED)
+#  define UNUSED  __attribute__((unused))
+# endif
+#else
+# if !defined (UNUSED)
+#  define UNUSED
+# endif
+#endif
 
 namespace hal {
-#if defined(BOARD_GD32F207VC) || defined(BOARD_GD32F450VE)
+namespace panelled {
+extern uint32_t g_nData;
+}  // namespace panelled
 
-static constexpr uint32_t led_map[16] = {
-		0x4000, 	// A_TX
-		0x1000, 	// B_TX
-		0x0400, 	// C_TX
-		0x0100, 	// D_TX
-		0x0080, 	// E_TX
-		0x0020, 	// F_TX
-		0x0008,		// G_TX
-		0x0002,		// H_TX
-		0x8000,		// A_RX
-		0x2000,		// B_RX
-		0x0800,		// C_RX
-		0x0200,		// D_RX
-		0x0040,		// E_RX
-		0x0010,		// F_RX
-		0x0004,		// G_RX
-		0x0001		// H_RX
-};
+inline static void panel_led_spi(const UNUSED uint32_t nData) {
+#if defined(LEDPANEL_595_COUNT)
+	GPIO_BC(LEDPANEL_595_CS_GPIOx) = LEDPANEL_595_CS_GPIO_PINx;
 
-inline static void panel_led_on(uint32_t on) {
-	const uint32_t nDMX = on & 0xFFFF;
+#if (LEDPANEL_595_COUNT >= 1)
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_TBE))
+		;
 
-	if (nDMX != 0) {
-		on &= ~(0xFFFF);
-		const auto nIndex =  31 - __CLZ(nDMX);
-		assert(nIndex < 16);
-		on |= (led_map[nIndex]);
-	}
+	SPI_DATA(SPI_PERIPH) = (nData & 0xFF);
 
-	BitBanging595::Get()->SetOn(on);
-}
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_RBNE))
+		;
 
-inline static void panel_led_off(uint32_t off) {
-	const uint32_t nDMX = off & 0xFFFF;
-
-	if (nDMX != 0) {
-		off &= ~(0xFFFF);
-		const auto nIndex = 31 - __CLZ(nDMX);
-		assert(nIndex < 16);
-		off |= (led_map[nIndex]);
-	}
-
-	BitBanging595::Get()->SetOff(off);
-}
-#else
-inline static void panel_led_on(uint32_t __attribute__((unused)) on) {
-}
-
-inline static void panel_led_off(uint32_t __attribute__((unused)) off) {
-}
+	static_cast<void>(SPI_DATA(SPI_PERIPH));
 #endif
+#if (LEDPANEL_595_COUNT >= 2)
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_TBE))
+		;
+
+	SPI_DATA(SPI_PERIPH) = ((nData >> 8) & 0xFF);
+
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_RBNE))
+		;
+
+	static_cast<void>(SPI_DATA(SPI_PERIPH));
+#endif
+#if (LEDPANEL_595_COUNT >= 3)
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_TBE))
+		;
+
+	SPI_DATA(SPI_PERIPH) = ((nData >> 16) & 0xFF);
+
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_RBNE))
+		;
+
+	static_cast<void>(SPI_DATA(SPI_PERIPH));
+#endif
+#if (LEDPANEL_595_COUNT == 4)
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_TBE))
+		;
+
+	SPI_DATA(SPI_PERIPH) = ((nData >> 24) & 0xFF);
+
+	while (RESET == (SPI_STAT(SPI_PERIPH) & SPI_FLAG_RBNE))
+		;
+
+	static_cast<void>(SPI_DATA(SPI_PERIPH));
+#endif
+
+	GPIO_BOP(LEDPANEL_595_CS_GPIOx) = LEDPANEL_595_CS_GPIO_PINx;
+#endif
+}
+
+inline static void panel_led_on(uint32_t UNUSED on) {
+#if defined(LEDPANEL_595_COUNT)
+	if (panelled::g_nData  == (panelled::g_nData | on)) {
+		return;
+	}
+
+	panelled::g_nData |= on;
+
+	panel_led_spi(panelled::g_nData);
+#endif
+}
+
+inline static void panel_led_off(uint32_t UNUSED off) {
+#if defined(LEDPANEL_595_COUNT)
+	if (panelled::g_nData  == (panelled::g_nData & ~off)) {
+		return;
+	}
+
+	panelled::g_nData &= ~off;
+
+	panel_led_spi(panelled::g_nData);
+#endif
+}
 }  // namespace hal
 
 #endif /* GD32_PANEL_LED_H_ */

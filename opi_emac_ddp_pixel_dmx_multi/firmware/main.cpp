@@ -186,7 +186,7 @@ void main() {
 
 	llrpOnlyDevice.SetLabel(RDM_ROOT_DEVICE, aLabel, static_cast<uint8_t>(nLength));
 	llrpOnlyDevice.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
-	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
+	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 	llrpOnlyDevice.Init();
 
 	StoreRDMDevice storeRdmDevice;
@@ -207,11 +207,6 @@ void main() {
 	display.Set(4, displayudf::Labels::IP);
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
-	display.Printf(7, "%s:%d G%d %s",
-		PixelType::GetType(pixelDmxConfiguration.GetType()),
-		pixelDmxConfiguration.GetCount(),
-		pixelDmxConfiguration.GetGroupingCount(),
-		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	StoreDisplayUdf storeDisplayUdf;
 	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
@@ -222,6 +217,11 @@ void main() {
 	}
 
 	display.Show();
+	display.Printf(7, "%s:%d G%d %s",
+		PixelType::GetType(pixelDmxConfiguration.GetType()),
+		pixelDmxConfiguration.GetCount(),
+		pixelDmxConfiguration.GetGroupingCount(),
+		PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
 	if (nTestPattern != pixelpatterns::Pattern::NONE) {
 		display.ClearLine(6);

@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (C) 2019-2020 by hippy mailto:dmxout@gmail.com
- * Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ * Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,7 +69,8 @@ static constexpr auto MESSAGE_TIME_MS = 3000;
 
 using namespace ltcdisplayrgb;
 
-LtcDisplayRgb *LtcDisplayRgb::s_pThis = nullptr;
+char *LtcDisplayRgb::s_pUdpBuffer;
+LtcDisplayRgb *LtcDisplayRgb::s_pThis;
 
 LtcDisplayRgb::LtcDisplayRgb(Type tRgbType, WS28xxType tWS28xxType) : m_tDisplayRgbType(tRgbType), m_tDisplayRgbWS28xxType(tWS28xxType) {
 	DEBUG_ENTRY
@@ -314,27 +315,28 @@ void LtcDisplayRgb::Run() {
 
 	uint32_t nIPAddressFrom;
 	uint16_t nForeignPort;
-	auto m_nBytesReceived = Network::Get()->RecvFrom(m_nHandle, &m_Buffer, sizeof(m_Buffer), &nIPAddressFrom, &nForeignPort);
 
-	if (__builtin_expect((m_nBytesReceived < 8), 1)) {
+	auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&s_pUdpBuffer)), &nIPAddressFrom, &nForeignPort);
+
+	if (__builtin_expect((nBytesReceived < 8), 1)) {
 		return;
 	}
 
-	if (__builtin_expect((memcmp("7seg!", m_Buffer, 5) != 0), 0)) {
+	if (__builtin_expect((memcmp("7seg!", s_pUdpBuffer, 5) != 0), 0)) {
 		return;
 	}
 
-	if (m_Buffer[m_nBytesReceived - 1] == '\n') {
+	if (s_pUdpBuffer[nBytesReceived - 1] == '\n') {
 		DEBUG_PUTS("\'\\n\'");
-		m_nBytesReceived--;
+		nBytesReceived--;
 	}
 
-	if (memcmp(&m_Buffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
-		const uint32_t nMsgLength = m_nBytesReceived - (5 + showmsg::LENGTH + 1);
-		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", m_nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + showmsg::LENGTH + 1)]);
+	if (memcmp(&s_pUdpBuffer[5], showmsg::PATH, showmsg::LENGTH) == 0) {
+		const uint32_t nMsgLength = nBytesReceived - (5 + showmsg::LENGTH + 1);
+		DEBUG_PRINTF("m_nBytesReceived=%d, nMsgLength=%d [%.*s]", nBytesReceived, nMsgLength, nMsgLength, &m_Buffer[(5 + showmsg::LENGTH + 1)]);
 
-		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (m_Buffer[5 + showmsg::LENGTH] == '#')) {
-			SetMessage(&m_Buffer[(5 + showmsg::LENGTH + 1)], nMsgLength);
+		if (((nMsgLength > 0) && (nMsgLength <= MAX_MESSAGE_SIZE)) && (s_pUdpBuffer[5 + showmsg::LENGTH] == '#')) {
+			SetMessage(&s_pUdpBuffer[(5 + showmsg::LENGTH + 1)], nMsgLength);
 			return;
 		}
 
@@ -342,9 +344,9 @@ void LtcDisplayRgb::Run() {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[5], rgb::PATH, rgb::LENGTH) == 0) {
-		if ((m_nBytesReceived == (5 + rgb::LENGTH + 1 + rgb::HEX_SIZE)) && (m_Buffer[5 + rgb::LENGTH] == '#')) {
-			SetRGB(&m_Buffer[(5 + rgb::LENGTH + 1)]);
+	if (memcmp(&s_pUdpBuffer[5], rgb::PATH, rgb::LENGTH) == 0) {
+		if ((nBytesReceived == (5 + rgb::LENGTH + 1 + rgb::HEX_SIZE)) && (s_pUdpBuffer[5 + rgb::LENGTH] == '#')) {
+			SetRGB(&s_pUdpBuffer[(5 + rgb::LENGTH + 1)]);
 			return;
 		}
 
@@ -352,9 +354,9 @@ void LtcDisplayRgb::Run() {
 		return;
 	}
 
-	if (memcmp(&m_Buffer[5], master::PATH, master::LENGTH) == 0) {
-		if ((m_nBytesReceived == (5 + master::LENGTH + 1 + master::HEX_SIZE)) && (m_Buffer[5 + master::LENGTH] == '#')) {
-			m_nMaster = hexadecimalToDecimal(&m_Buffer[(5 + master::LENGTH + 1)], master::HEX_SIZE);
+	if (memcmp(&s_pUdpBuffer[5], master::PATH, master::LENGTH) == 0) {
+		if ((nBytesReceived == (5 + master::LENGTH + 1 + master::HEX_SIZE)) && (s_pUdpBuffer[5 + master::LENGTH] == '#')) {
+			m_nMaster = hexadecimalToDecimal(&s_pUdpBuffer[(5 + master::LENGTH + 1)], master::HEX_SIZE);
 			return;
 		}
 

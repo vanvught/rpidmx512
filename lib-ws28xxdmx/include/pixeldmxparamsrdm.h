@@ -44,11 +44,13 @@ class PixelDmxParamsRdm: public LightSet {
 public:
 	PixelDmxParamsRdm(PixelDmxStore *pWS28xxDmxStore);
 
-	void Start(uint32_t nPortIndex) override;
-	void Stop(uint32_t nPortIndex) override;
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) override;
+	void Start(const uint32_t nPortIndex) override;
+	void Stop(const uint32_t nPortIndex) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
+	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
+	void Sync(__attribute__((unused)) const bool doForce) override {}
 
-	bool SetDmxStartAddress( __attribute__((unused)) uint16_t nDmxStartAddress) override {
+	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
 		return false;
 	}
 
