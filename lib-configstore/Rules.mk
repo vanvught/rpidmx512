@@ -46,7 +46,7 @@ ifneq ($(MAKE_FLAGS),)
 
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
 		EXTRA_SRCDIR+=src/artnet
-		EXTRA_INCLUDES+=../lib-artnet/include ../lib-artnet4/include
+		EXTRA_INCLUDES+=../lib-artnet/include
 		EXTRA_SRCDIR+=src/rdm
 		RDM=1
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include
@@ -142,7 +142,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 else
 	EXTRA_SRCDIR+=src/artnet
-	EXTRA_INCLUDES+=../lib-artnet/include ../lib-artnet4/include 
+	EXTRA_INCLUDES+=../lib-artnet/include
 	EXTRA_SRCDIR+=src/e131
 	EXTRA_INCLUDES+=../lib-e131/include
 	EXTRA_SRCDIR+=src/node 
