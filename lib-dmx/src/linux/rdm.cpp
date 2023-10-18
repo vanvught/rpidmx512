@@ -40,7 +40,6 @@ void udelay(uint32_t);
 static uint8_t s_TransactionNumber[dmx::config::max::OUT] = {0, };
 
 void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, __attribute__((unused)) uint32_t nSpacingMicros) {
-	assert(nPortIndex < max::OUT);
 	assert(pRdmCommand != nullptr);
 
 
@@ -64,8 +63,6 @@ void Rdm::Send(uint32_t nPortIndex, struct TRdmMessage *pRdmCommand, __attribute
 
 void Rdm::SendRawRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
-
-	assert(nPortIndex < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
@@ -77,7 +74,6 @@ void Rdm::SendRawRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, ui
 void Rdm::SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	DEBUG_ENTRY
 
-	assert(nPortIndex < max::OUT);
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
