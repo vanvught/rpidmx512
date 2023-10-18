@@ -1,5 +1,5 @@
 /**
- * net_phy_string.cpp
+ * json_get_phystatus.cpp
  *
  */
 /* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,35 +23,23 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#include <cassert>
+#include <cstdio>
 
 #include "emac/phy.h"
 
-#if !defined (ARRAY_SIZE)
-# define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-#endif
-
+namespace remoteconfig {
 namespace net {
-static constexpr char SPEED[3][10] = { "10baseT", "100baseTX", "1000baseT" };
+uint16_t json_get_phystatus(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	::net::PhyStatus phyStatus;
+	::net::phy_customized_status(phyStatus);
 
-const char *phy_string_get_link(const Link link) {
-	return link == Link::STATE_UP ? "up" : "down";
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
+						::net::phy_string_get_link(phyStatus.link),
+						::net::phy_string_get_speed(phyStatus.speed),
+						::net::phy_string_get_duplex(phyStatus.duplex),
+						::net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
+	return nLength;
 }
-
-const char *phy_string_get_duplex(const Duplex duplex) {
-	return duplex == Duplex::DUPLEX_HALF ? "half" : "full";
-}
-
-const char *phy_string_get_speed(const Speed speed) {
-	const auto nIndex = static_cast<uint32_t>(speed);
-
-	assert(nIndex < ARRAY_SIZE(SPEED));
-	return SPEED[nIndex];
-}
-
-const char *phy_string_get_autonegotiation(const bool autonegotiation) {
-	return autonegotiation ? "on" : "off";
-}
-
-}
+}  // namespace net
+}  // namespace remoteconfig

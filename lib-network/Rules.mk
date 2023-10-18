@@ -18,6 +18,9 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/apps/mdns src/apps/ntp src/apps/tftp
 		EXTRA_SRCDIR+=src/emac src/params src/net
 		EXTRA_SRCDIR+=src/emac/phy
+		ifeq ($(findstring ENABLE_PHY_SWITCH,$(MAKE_FLAGS)), ENABLE_PHY_SWITCH)
+			EXTRA_SRCDIR+=src/emac/dsa
+		endif		
 		PHY=
 		ifeq ($(findstring DP83848,$(ENET_PHY)), DP83848)
 			EXTRA_SRCDIR+=src/emac/phy/dp83848

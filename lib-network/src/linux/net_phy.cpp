@@ -135,3 +135,17 @@ void phy_customized_status(PhyStatus& phyStatus) {
 #endif
 }
 }  // namespace net
+
+namespace remoteconfig {
+namespace dsa {
+uint16_t json_get_phystatus(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"message\":\"Not implemented\"}\n"));
+	return nLength;
+}
+
+uint16_t json_get_portstatus(char *pOutBuffer, const uint16_t nOutBufferSize) {
+	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"message\":\"Not implemented\"}\n"));
+	return nLength;
+}
+}  // namespace dsa
+}  // namespace remoteconfig
