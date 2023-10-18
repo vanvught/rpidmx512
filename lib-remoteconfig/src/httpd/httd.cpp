@@ -33,6 +33,7 @@
 #include "properties.h"
 #include "sscan.h"
 #include "propertiesconfig.h"
+#include "../http/content/json_switch.h"
 
 #include "network.h"
 #include "hardware.h"
@@ -112,7 +113,7 @@ void HttpDaemon::HandleRequest(const uint32_t nConnectionHandle) {
 		}
 
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
-		m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
+		m_nContentLength = static_cast<uint32_t>(snprintf(m_Content, BUFSIZE - 1U,
 				"<!DOCTYPE html>\n"
 				"<html>\n"
 				"<head><title>%u %s</title></head>\n"
@@ -130,7 +131,7 @@ void HttpDaemon::HandleRequest(const uint32_t nConnectionHandle) {
 			"\r\n", static_cast<uint32_t>(m_Status), pStatusMsg, Hardware::Get()->GetBoardName(nLength), m_pContentType, m_nContentLength);
 
 	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_RequestHeaderResponse), static_cast<uint16_t>(nHeaderLength), nConnectionHandle);
-	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), m_nContentLength, nConnectionHandle);
+	Network::Get()->TcpWrite(m_nHandle, reinterpret_cast<uint8_t *>(m_Content), static_cast<uint16_t>(m_nContentLength), nConnectionHandle);
 	DEBUG_PRINTF("m_nContentLength=%u", m_nContentLength);
 
 	m_Status = Status::UNKNOWN_ERROR;
@@ -145,7 +146,7 @@ Status HttpDaemon::ParseRequest() {
 	m_nRequestContentLength = 0;
 	m_nFileDataLength = 0;
 
-	for (auto i = 0; i < m_nBytesReceived; i++) {
+	for (uint32_t i = 0; i < m_nBytesReceived; i++) {
 		if (m_RequestHeaderResponse[i] == '\n') {
 			assert(i > 1);
 			m_RequestHeaderResponse[i - 1] = '\0';
@@ -259,7 +260,7 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
 			}
 		}
 
-		m_nRequestContentLength = static_cast<uint16_t>(nTmp);
+		m_nRequestContentLength = nTmp;
 	}
 
 	DEBUG_EXIT
@@ -276,32 +277,65 @@ Status HttpDaemon::HandleGet() {
 	if (memcmp(m_pUri, "/json/", 6) == 0) {
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
 		const auto *pGet = &m_pUri[6];
-		if (strcmp(pGet, "list") == 0) {
+		switch (http::get_uint(pGet)) {
+		case http::json::get::LIST:
 			nLength = remoteconfig::json_get_list(m_Content, sizeof(m_Content));
-		} else if (strcmp(pGet, "version") == 0) {
+			break;
+		case http::json::get::VERSION:
 			nLength = remoteconfig::json_get_version(m_Content, sizeof(m_Content));
-		} else if (strcmp(pGet, "uptime") == 0) {
+			break;
+		case http::json::get::UPTIME:
 			if (!RemoteConfig::Get()->IsEnableUptime()) {
 				DEBUG_PUTS("Status::BAD_REQUEST");
 				return Status::BAD_REQUEST;
 			}
 			nLength = remoteconfig::json_get_uptime(m_Content, sizeof(m_Content));
-		} else if (strcmp(pGet, "display") == 0) {
+			break;
+		case http::json::get::DISPLAY:
 			nLength = remoteconfig::json_get_display(m_Content, sizeof(m_Content));
-		} else if (strcmp(pGet, "directory") == 0) {
+			break;
+		case http::json::get::DIRECTORY:
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
-		} else if (strcmp(pGet, "phystatus") == 0) {
-			nLength = remoteconfig::json_get_phystatus(m_Content, sizeof(m_Content));
-		} else {
-			return HandleGetTxt();
+			break;
+#if defined (ENABLE_NET_PHYSTATUS)
+		case http::json::get::PHYSTATUS:
+			nLength = remoteconfig::net::json_get_phystatus(m_Content, sizeof(m_Content));
+			break;
+#endif
+		default:
+#if defined (ENABLE_PHY_SWITCH)
+			if (memcmp(pGet, "dsa/", 4) == 0) {
+				const auto *pDsa = &pGet[4];
+				switch (http::get_uint(pDsa)) {
+				case http::json::get::PORTSTATUS:
+					nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
+					break;
+				default:
+					break;
+				}
+			} else {
+#endif
+				return HandleGetTxt();
+#if defined (ENABLE_PHY_SWITCH)
+			}
+#endif
+			break;
 		}
 	}
-#if defined(ENABLE_CONTENT)
+#if defined (ENABLE_CONTENT)
 	else if (strcmp(m_pUri, "/") == 0) {
 		http::contentTypes contentType;
 		nLength = get_file_content("index.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
-	} else {
+	}
+#if defined (ENABLE_PHY_SWITCH)
+	else if (strcmp(m_pUri, "/dsa") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("dsa.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
+	else {
 		http::contentTypes contentType;
 		nLength = get_file_content(&m_pUri[1], m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];

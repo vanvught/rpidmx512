@@ -60,7 +60,7 @@ public:
 		uint32_t nConnectionHandle;
 		m_nBytesReceived = Network::Get()->TcpRead(m_nHandle, const_cast<const uint8_t **>(reinterpret_cast<uint8_t **>(&m_RequestHeaderResponse)), nConnectionHandle);
 
-		if (__builtin_expect((m_nBytesReceived <= 0), 1)) {
+		if (__builtin_expect((m_nBytesReceived == 0), 1)) {
 			return;
 		}
 
@@ -81,15 +81,19 @@ private:
 	char *m_pUri { nullptr };
 	char *m_pFileData { nullptr };
 	char *m_RequestHeaderResponse { nullptr };
+
+	uint32_t m_nContentLength { 0 };
+	uint32_t m_nFileDataLength { 0 };
+	uint32_t m_nRequestContentLength { 0 };
 	int32_t m_nHandle { -1 };
-	int m_nBytesReceived { 0 };
+
+	uint32_t m_nBytesReceived { 0 };
+
 	http::Status m_Status { http::Status::UNKNOWN_ERROR };
 	http::RequestMethod m_RequestMethod { http::RequestMethod::UNKNOWN };
+
 	bool m_bContentTypeJson { false };
 	bool m_IsAction { false };
-	uint16_t m_nContentLength { 0 };
-	uint16_t m_nFileDataLength { 0 };
-	uint16_t m_nRequestContentLength { 0 };
 
 	static char m_Content[http::BUFSIZE];
 };

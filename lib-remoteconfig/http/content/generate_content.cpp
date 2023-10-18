@@ -1,3 +1,28 @@
+/**
+ * @file generate_content.cpp
+ *
+ */
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -22,6 +47,9 @@ static constexpr char content_header[] =
 		"\tconst http::contentTypes contentType;\n"
 		"};\n\n"
 		"static constexpr struct FilesContent HttpContent[] = {\n";
+
+static constexpr char HAVE_DSA_BEGIN[] = "#if defined (ENABLE_PHY_SWITCH)\n";
+static constexpr char HAVE_DSA_END[] = "#endif /* (ENABLE_PHY_SWITCH) */\n";
 
 static FILE *pFileContent;
 static FILE *pFileIncludes;
@@ -69,11 +97,22 @@ static int convert_to_h(const char *pFileName) {
 		return 0;
 	}
 
-	char buffer[32];
+	char buffer[64];
+
+	const auto bHasDSA = (strstr(pFileNameOut, "dsa") != nullptr);
+
+	if (bHasDSA)  {
+		fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileIncludes);
+	}
+
 	auto i = snprintf(buffer, sizeof(buffer) - 1, "#include \"%s\"\n", pFileNameOut);
 	assert(i < static_cast<int>(sizeof(buffer)));
 
 	fwrite(buffer, sizeof(char), i, pFileIncludes);
+
+	if (bHasDSA)  {
+		fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileIncludes);
+	}
 
 	fwrite("static constexpr char ", sizeof(char), 22, pFileOut);
 
@@ -81,6 +120,7 @@ static int convert_to_h(const char *pFileName) {
 	assert(pConstantName != nullptr);
 
 	strncpy(pConstantName, pFileName, nFileNameLength);
+	pConstantName[nFileNameLength] = '\0';
 
 	auto *p = strstr(pConstantName, ".");
 
@@ -101,7 +141,7 @@ static int convert_to_h(const char *pFileName) {
 
 	while ((c = fgetc (pFileIn)) != EOF) {
 		if (doRemoveWhiteSpaces) {
-			if (c < ' ') {
+			if (c <= ' ') {
 				continue;
 			} else {
 				doRemoveWhiteSpaces = false;
@@ -159,6 +199,12 @@ int main() {
 				auto *pFileName = new char[strlen(pDirEntry->d_name) + 9];
 				assert(pFileName != nullptr);
 
+				const auto bHasDSA = (strstr(pDirEntry->d_name, "dsa") != nullptr);
+
+				if (bHasDSA)  {
+					fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileContent);
+				}
+
 				auto i = snprintf(pFileName, strlen(pDirEntry->d_name) + 8, "\t{ \"%s\", ", pDirEntry->d_name);
 				fwrite(pFileName, sizeof(char), i, pFileContent);
 				delete[] pFileName;
@@ -171,6 +217,10 @@ int main() {
 				fwrite(buffer, sizeof(char), i, pFileContent);
 
 				fwrite(" },\n", sizeof(char), 4, pFileContent);
+
+				if (bHasDSA)  {
+					fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileContent);
+				}
 			}
 		}
 
@@ -182,10 +232,13 @@ int main() {
 	fwrite("};\n", sizeof(char), 2, pFileContent);
 	fclose(pFileContent);
 
-	system("echo \'#include <cstdint>\n\' > tmp.h");
+	system("echo \'#ifndef CONTENT_H_' > tmp.h");
+	system("echo \'#define CONTENT_H_\n' >> tmp.h");
+	system("echo \'#include <cstdint>\n\' >> tmp.h");
 	system("echo \'#include \"httpd/httpd.h\"\n\' >> tmp.h");
 	system("cat includes.h >> tmp.h");
 	system("cat content.h >> tmp.h");
+	system("echo \'\n\n#endif /* CONTENT_H_ */' >> tmp.h");
 	system("rm content.h");
 	system("mv tmp.h content.h");
 

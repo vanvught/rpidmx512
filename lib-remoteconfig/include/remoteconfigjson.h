@@ -34,7 +34,12 @@ uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize);
 uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize);
+namespace net {
 uint16_t json_get_phystatus(char *pOutBuffer, const uint16_t nOutBufferSize);
+}  // namespace net
+namespace dsa {
+uint16_t json_get_portstatus(char *pOutBuffer, const uint16_t nOutBufferSize);
+}  // namespace dsa
 }  // namespace remoteconfig
 
 #endif /* REMOTECONFIGJSON_H_ */
