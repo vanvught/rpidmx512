@@ -1,5 +1,5 @@
 DEFINES =DMX_WORKSHOP_DEFECT 
-DEFINES+=NDEBUG
+#DEFINES+=NDEBUG
 
 include Rules.mk
 include ../firmware-template-linux/lib/Rules.mk

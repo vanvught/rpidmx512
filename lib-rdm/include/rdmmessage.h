@@ -47,12 +47,10 @@ public:
 		m_message.param_data_length = 0;
 	}
 
-#if defined (RDM_CONTROLLER)
 	void SetPortID(const uint8_t nPortID) {
 		assert(nPortID > 0);
 		m_message.slot16.port_id = nPortID;
 	}
-#endif
 
 	void SetSrcUid(const uint8_t *SrcUid){
 		memcpy(m_message.source_uid, SrcUid, RDM_UID_SIZE);

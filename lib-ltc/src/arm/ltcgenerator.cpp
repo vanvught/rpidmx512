@@ -165,9 +165,9 @@ void LtcGenerator::Start() {
 	h3_gpio_fsel(BUTTON1_GPIO, GPIO_FSEL_EINT);	// PA3
 	h3_gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_EINT);	// PA6
 
-	h3_gpio_pud(BUTTON0_GPIO, GPIO_PULL_UP);
-	h3_gpio_pud(BUTTON1_GPIO, GPIO_PULL_UP);
-	h3_gpio_pud(BUTTON2_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(BUTTON0_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(BUTTON1_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(BUTTON2_GPIO, GPIO_PULL_UP);
 
 	h3_gpio_int_cfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE);
 	h3_gpio_int_cfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE);

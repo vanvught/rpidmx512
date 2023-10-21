@@ -87,7 +87,17 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 		}
 
 		const auto nSubDevice = static_cast<uint16_t>((pRdmMessage->sub_device[0] << 8) + pRdmMessage->sub_device[1]);
-		printf(", sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d\n", nSubDevice, pRdmMessage->transaction_number, pRdmMessage->param_id[0], pRdmMessage->param_id[1], pRdmMessage->param_data_length);
+		printf(", sub-dev: %d, tn: %d, PID 0x%.2x%.2x, pdl: %d", nSubDevice, pRdmMessage->transaction_number, pRdmMessage->param_id[0], pRdmMessage->param_id[1], pRdmMessage->param_data_length);
+
+		if (pRdmMessage->param_data_length != 0) {
+			printf(" -> ");
+			for (uint32_t i = 0 ; (i < 12) && (i < pRdmMessage->param_data_length) ; i++) {
+				printf("%.2x ", pRdmMessage->param_data[i]);
+			}
+		}
+
+		printf("\n");
+
 	} else if (pRdmData[0] == 0xFE) {
 		for (uint32_t i = 0 ; i < 24; i++) {
 			printf("%.2x ", pRdmData[i]);

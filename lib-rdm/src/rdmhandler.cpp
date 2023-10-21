@@ -274,7 +274,7 @@ void RDMHandler::HandleData(const uint8_t *pRdmDataIn, uint8_t *pRdmDataOut) {
 		}
 	}
 
-	DEBUG_PRINTF("bIsRdmPacketForMe=%d", bIsRdmPacketForMe);
+	DEBUG_PRINTF("ForMe=%d, Broadcast=%d, Muted=%d", bIsRdmPacketForMe, bIsRdmPacketBroadcast, m_IsMuted);
 
 	const auto nCommandClass = pRdmRequest->command_class;
 	const auto nParamId = static_cast<uint16_t>((pRdmRequest->param_id[0] << 8) + pRdmRequest->param_id[1]);

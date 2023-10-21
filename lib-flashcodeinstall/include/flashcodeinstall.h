@@ -57,6 +57,9 @@
 # elif defined (BOARD_BW_OPIDMX4)
 #  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
+# elif defined (BOARD_DMX3)
+#  define OFFSET_UIMAGE		0x008000		// 32K
+#  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
 # elif defined (BOARD_DMX4)
 #  define OFFSET_UIMAGE		0x008000		// 32K
 #  define FIRMWARE_MAX_SIZE (106 * 1024)	// 106K
