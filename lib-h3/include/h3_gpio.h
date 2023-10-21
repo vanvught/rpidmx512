@@ -153,7 +153,7 @@ extern "C" {
 #endif
 
 extern void h3_gpio_fsel(uint32_t gpio, uint32_t fsel);
-extern void h3_gpio_pud(uint32_t gpio, gpio_pull_t pull);
+extern void h3_gpio_set_pud(uint32_t gpio, gpio_pull_t pull);
 extern void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg);
 
 inline static void h3_gpio_clr(uint32_t pin) {

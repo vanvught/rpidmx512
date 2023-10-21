@@ -33,7 +33,7 @@
 
 void config_mode_init() {
 	h3_gpio_fsel(KEY1_GPIO, GPIO_FSEL_INPUT);
-	h3_gpio_pud(KEY1_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(KEY1_GPIO, GPIO_PULL_UP);
 }
 
 bool is_config_mode() {

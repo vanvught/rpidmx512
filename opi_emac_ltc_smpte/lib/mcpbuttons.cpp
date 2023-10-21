@@ -220,7 +220,7 @@ bool McpButtons::Check() {
 	UpdateDisplays(m_tLtcReaderSource);
 
 	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); // PA7
-	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
+	h3_gpio_set_pud(gpio::INTA, GPIO_PULL_UP);
 
 	DEBUG_EXIT
 	return true;

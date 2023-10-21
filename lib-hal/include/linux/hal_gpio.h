@@ -2,7 +2,7 @@
  * @file hal_gpio.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,7 +27,7 @@
 #define LINUX_HAL_GPIO_H_
 
 #if defined (RASPPI)
-
+#define GPIO_PULL_UP	BCM2835_GPIO_PUD_UP
 #else
 
 #if !defined(LOW)
@@ -36,14 +36,18 @@
 #endif
 
 enum GPIO_EXT {
+	GPIO_EXT_7,
 	GPIO_EXT_11,
 	GPIO_EXT_12,
 	GPIO_EXT_13,
+	GPIO_EXT_15,
 	GPIO_EXT_16,
 	GPIO_EXT_18,
 	GPIO_EXT_22,
+	GPIO_EXT_29,
 	GPIO_EXT_35,
 	GPIO_EXT_26,
+	GPIO_EXT_31,
 	GPIO_EXT_36,
 	GPIO_EXT_37,
 	GPIO_EXT_38
@@ -53,15 +57,20 @@ enum GPIO_FSEL {
 	GPIO_FSEL_OUTPUT, GPIO_FSEL_INPUT
 };
 
+enum GPIO_PULL {
+	GPIO_PULL_UP, GPIO_PULL_DOWN, GPIO_PULL_DISABLE
+};
+
 # define FUNC_PREFIX(x) x
 # include <cstdint>
 # ifdef __cplusplus
 extern "C" {
 # endif
-  inline static void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
-  inline static void gpio_set(__attribute__((unused)) uint8_t _p) { }
-  inline static void gpio_clr(__attribute__((unused)) uint8_t _p) { }
-  inline static uint8_t gpio_lev(__attribute__((unused)) uint8_t _p) { return 0; }
+  inline void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
+  inline void gpio_set(__attribute__((unused)) uint8_t _p) { }
+  inline void gpio_clr(__attribute__((unused)) uint8_t _p) { }
+  inline uint8_t gpio_lev(__attribute__((unused)) uint8_t _p) { return 0; }
+  inline void gpio_pud(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) {}
 # ifdef __cplusplus
 }
 # endif
