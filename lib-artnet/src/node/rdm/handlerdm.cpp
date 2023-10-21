@@ -37,7 +37,7 @@
 
 #include "debug.h"
 
-void ArtNetNode::SetRmd(const uint32_t nPortIndex, const bool bEnable) {
+void ArtNetNode::SetRdm(const uint32_t nPortIndex, const bool bEnable) {
 	DEBUG_ENTRY
 	assert(nPortIndex < artnetnode::MAX_PORTS);
 

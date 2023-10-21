@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 		if (portDirection == lightset::PortDir::OUTPUT) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
 			if (nPortIndex == 0) {
-				node.SetRmd(0, true);
+				node.SetRdm(0, true);
 			}
 		} else {
 			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);

@@ -483,14 +483,14 @@ void ArtNetNode::HandleAddress() {
 	case artnet::PortCommand::RDM_ENABLE1:
 	case artnet::PortCommand::RDM_ENABLE2:
 	case artnet::PortCommand::RDM_ENABLE3:
-		SetRmd(nPage, true);
+		SetRdm(nPage, true);
 		break;
 
 	case artnet::PortCommand::RDM_DISABLE0:
 	case artnet::PortCommand::RDM_DISABLE1:
 	case artnet::PortCommand::RDM_DISABLE2:
 	case artnet::PortCommand::RDM_DISABLE3:
-		SetRmd(nPage, false);
+		SetRdm(nPage, false);
 		break;
 #endif
 	default:

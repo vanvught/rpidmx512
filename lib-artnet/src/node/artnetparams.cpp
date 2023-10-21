@@ -476,7 +476,7 @@ void ArtNetParams::Set(uint32_t nPortIndexOffset) {
 
 #if defined (RDM_CONTROLLER)
 		if (artnetparams::is_set(m_Params.nRdm, nPortIndex)) {
-			p->SetRmd(nOffset, true);
+			p->SetRdm(nOffset, true);
 		}
 #endif
 

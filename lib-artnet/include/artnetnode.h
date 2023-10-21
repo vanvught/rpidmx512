@@ -382,7 +382,7 @@ public:
 		return lightset::MergeMode::HTP;
 	}
 
-	void SetRmd(const uint32_t nPortIndex, const bool bEnable);
+	void SetRdm(const uint32_t nPortIndex, const bool bEnable);
 	bool GetRdm(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
