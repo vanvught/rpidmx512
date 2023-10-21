@@ -127,7 +127,7 @@ else
 		LIBS+=ws28xxdmx ws28xx jamstapl
 	else
 		ifeq ($(findstring OUTPUT_DMX_PIXEL,$(DEFINES)),OUTPUT_DMX_PIXEL)
-			LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+			LIBS+=ws28xxdmx ws28xx
 		endif
 	endif
 endif

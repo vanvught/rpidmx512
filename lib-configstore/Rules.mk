@@ -80,6 +80,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-oscclient/include
 	endif
 	
+	ifeq ($(findstring NODE_OSC_SERVER,$(MAKE_FLAGS)), NODE_OSC_SERVER)
+		EXTRA_SRCDIR+=src/oscserver
+		EXTRA_INCLUDES+=../lib-oscserver/include
+	endif
+	
 	ifeq ($(findstring OUTPUT_DMX_SEND,$(MAKE_FLAGS)),OUTPUT_DMX_SEND)
 		EXTRA_SRCDIR+=src/dmx
 		EXTRA_INCLUDES+=../lib-dmx/include
@@ -108,6 +113,11 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring OUTPUT_DMX_TLC59711,$(MAKE_FLAGS)), OUTPUT_DMX_TLC59711)
 		EXTRA_SRCDIR+=src/tlc59711
 		EXTRA_INCLUDES+=../lib-tlc59711dmx/include ../lib-tlc59711/include
+	endif
+
+	ifeq ($(findstring OUTPUT_DMX_MONITOR,$(MAKE_FLAGS)), OUTPUT_DMX_MONITOR)
+		EXTRA_SRCDIR+=src/dmxmonitor
+		EXTRA_INCLUDES+=../lib-dmxmonitor/include
 	endif
 	
 	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
