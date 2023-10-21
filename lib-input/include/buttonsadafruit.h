@@ -2,7 +2,7 @@
  * @file buttonsadafruit.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,20 +28,19 @@
 
 #include <cstdint>
 
-#include "inputset.h"
 #include "input.h"
 
-class ButtonsAdafruit final: public InputSet {
+class ButtonsAdafruit {
 public:
 	ButtonsAdafruit();
-	~ButtonsAdafruit() override;
+	~ButtonsAdafruit();
 
-	bool Start() override;
-	bool IsAvailable() override;
-	int GetChar() override;
+	bool Start() const {
+		return true;
+	}
 
-private:
-	void InitGpioPin(uint8_t);
+	bool IsAvailable();
+	int GetChar();
 
 private:
 	uint32_t m_rMaskedBits { input::KEY_NOT_DEFINED };

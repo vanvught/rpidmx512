@@ -3,7 +3,7 @@
  * @file buttonsadafruit.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,52 +27,45 @@
 #include <cstdint>
 #include <cstdio>
 
-#include "bcm2835.h"
-#if defined(__linux__)
-#else
-#include "bcm2835_gpio.h"
-#endif
+#include "hal_gpio.h"
 
 #include "input.h"
 
 #include "buttonsadafruit.h"
 
-#define PIN_L RPI_V2_GPIO_P1_13	///< BCM 27
-#define PIN_R RPI_V2_GPIO_P1_16	///< BCM 23
-#define PIN_C RPI_V2_GPIO_P1_07	///< BCM 4
-#define PIN_U RPI_V2_GPIO_P1_11	///< BCM 17
-#define PIN_D RPI_V2_GPIO_P1_15	///< BCM 22
-#define PIN_A RPI_V2_GPIO_P1_29	///< BCM 5
-#define PIN_B RPI_V2_GPIO_P1_31 ///< BCM 6
+#define PIN_L GPIO_EXT_13
+#define PIN_R GPIO_EXT_16
+#define PIN_C GPIO_EXT_7
+#define PIN_U GPIO_EXT_11
+#define PIN_D GPIO_EXT_15
+#define PIN_A GPIO_EXT_29
+#define PIN_B GPIO_EXT_31
 
 #define MASK_GPLEV0  static_cast<uint32_t>((1 << PIN_L) | (1 << PIN_R)  | (1 << PIN_C) | (1 << PIN_U) | (1 << PIN_D) | (1 << PIN_A) | (1 << PIN_B))
 
+static void init_gpio_pin(const uint8_t nPin) {
+	FUNC_PREFIX(gpio_fsel(nPin, GPIO_FSEL_INPUT));
+	FUNC_PREFIX(gpio_set_pud(nPin, GPIO_PULL_UP));
+}
+
 ButtonsAdafruit::ButtonsAdafruit() {
-}
-
-ButtonsAdafruit::~ButtonsAdafruit() {
-}
-
-bool ButtonsAdafruit::Start() {
-	InitGpioPin(PIN_L);
-	InitGpioPin(PIN_R);
-	InitGpioPin(PIN_C);
-	InitGpioPin(PIN_U);
-	InitGpioPin(PIN_D);
-	InitGpioPin(PIN_A);
-	InitGpioPin(PIN_B);
-
-	return true;
+	init_gpio_pin(PIN_L);
+	init_gpio_pin(PIN_R);
+	init_gpio_pin(PIN_C);
+	init_gpio_pin(PIN_U);
+	init_gpio_pin(PIN_D);
+	init_gpio_pin(PIN_A);
+	init_gpio_pin(PIN_B);
 }
 
 bool ButtonsAdafruit::IsAvailable() {
-#if defined(__linux__)
+# if defined(__linux__)
 	volatile uint32_t* paddr = bcm2835_gpio + BCM2835_GPLEV0/4;
-	const uint32_t reg = bcm2835_peri_read(paddr);
-#else
+	const auto reg = bcm2835_peri_read(paddr);
+# else
 	__sync_synchronize();
-	const uint32_t reg = BCM2835_GPIO->GPLEV0;
-#endif
+	const auto reg = BCM2835_GPIO->GPLEV0;
+# endif
 
 	m_rMaskedBits = ~reg & MASK_GPLEV0;
 
@@ -111,10 +104,5 @@ int ButtonsAdafruit::GetChar() {
 	m_PrevChar = ch;
 
 	return ch;
-}
-
-void ButtonsAdafruit::InitGpioPin(const uint8_t nPin) {
-    bcm2835_gpio_fsel(nPin,  BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_set_pud(nPin, BCM2835_GPIO_PUD_UP);
 }
 #endif

@@ -2,7 +2,7 @@
  * @file kb_linux.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,16 @@
 #ifndef KB_LINUX_H_
 #define KB_LINUX_H_
 
-#include "inputset.h"
-
-class KbLinux : public InputSet {
+class KbLinux {
 public:
 	KbLinux();
-	~KbLinux() override;
 
-	bool Start() override;
-	bool IsAvailable() override;
-	int GetChar() override;
+	bool Start() const {
+		return true;
+	}
+
+	bool IsAvailable();
+	int GetChar();
 
 private:
 	int m_nBytesWaiting { 0 };
