@@ -58,6 +58,7 @@ enum class Store {
 	GPS,
 	RGBPANEL,
 	NODE,
+	PCA9685,
 	LAST
 };
 

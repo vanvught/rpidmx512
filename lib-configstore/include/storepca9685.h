@@ -1,8 +1,8 @@
 /**
- * @file pca9685pwmled.h
+ * @file storepca9685.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,45 +23,38 @@
  * THE SOFTWARE.
  */
 
-#ifndef PCA9685PWMLED_H_
-#define PCA9685PWMLED_H_
+#ifndef STOREPCA9685_H_
+#define STOREPCA9685_H_
 
 #include <cstdint>
 
-#include "pca9685.h"
+#include "pca9685dmxparams.h"
+#include "pca9685dmxstore.h"
 
-namespace pca9685 {
-namespace pwmled {
-static constexpr uint32_t DEFAULT_FREQUENCY = 120;
-}  // namespace pwmled
-}  // namespace pca9685
+#include "configstore.h"
 
-class PCA9685PWMLed: public PCA9685 {
+class StorePCA9685 final: public PCA9685DmxParamsStore, public PCA9685DmxStore {
 public:
-	PCA9685PWMLed(const uint8_t nAddress): PCA9685(nAddress) {
-		SetFrequency(pca9685::pwmled::DEFAULT_FREQUENCY);
+	StorePCA9685();
+
+	void Update(const struct pca9685dmxparams::Params *pParams) override {
+		ConfigStore::Get()->Update(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
 	}
 
-	void Set(const uint32_t nChannel, const uint16_t nData) {
-		if (nData >= 0xFFF) {
-			SetFullOn(nChannel, true);
-		} else if (nData == 0) {
-			SetFullOff(nChannel, true);
-		} else {
-			Write(nChannel, nData);
-		}
+	void Copy(struct pca9685dmxparams::Params *pParams) override {
+		ConfigStore::Get()->Copy(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
 	}
 
-	void Set(const uint32_t nChannel, const uint8_t nData) {
-		if (nData == 0xFF) {
-			SetFullOn(nChannel, true);
-		} else if (nData == 0) {
-			SetFullOff(nChannel, true);
-		} else {
-			const auto nValue = static_cast<uint16_t>((nData << 4) | (nData >> 4));
-			Write(nChannel, nValue);
-		}
+	void SaveDmxStartAddress(uint16_t nDmxStartAddress) override {
+		ConfigStore::Get()->Update(configstore::Store::PCA9685, __builtin_offsetof(struct pca9685dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), pca9685dmxparams::Mask::DMX_START_ADDRESS);
 	}
+
+	static StorePCA9685 *Get() {
+		return s_pThis;
+	}
+
+private:
+	static StorePCA9685 *s_pThis;
 };
 
-#endif /* PCA9685PWMLED_H_ */
+#endif /* STOREPCA9685_H_ */

@@ -2,7 +2,7 @@
  * @file generate_content.cpp
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,9 @@ static constexpr char content_header[] =
 
 static constexpr char HAVE_DSA_BEGIN[] = "#if defined (ENABLE_PHY_SWITCH)\n";
 static constexpr char HAVE_DSA_END[] = "#endif /* (ENABLE_PHY_SWITCH) */\n";
+
+static constexpr char HAVE_RDM_BEGIN[] = "#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)\n";
+static constexpr char HAVE_RDM_END[] = "#endif /* RDM_CONTROLLER || RDM_RESPONDER */\n";
 
 static FILE *pFileContent;
 static FILE *pFileIncludes;
@@ -105,13 +108,23 @@ static int convert_to_h(const char *pFileName) {
 		fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileIncludes);
 	}
 
-	auto i = snprintf(buffer, sizeof(buffer) - 1, "#include \"%s\"\n", pFileNameOut);
+	const auto bHasRDM = (strstr(pFileNameOut, "rdm") != nullptr);
+
+	if (bHasRDM)  {
+		fwrite(HAVE_RDM_BEGIN, sizeof(char),sizeof(HAVE_RDM_BEGIN) - 1, pFileIncludes);
+	}
+
+	auto i = snprintf(buffer, sizeof(buffer) - 1, "#%sinclude \"%s\"\n", (bHasDSA || bHasRDM) ? " " : "" , pFileNameOut);
 	assert(i < static_cast<int>(sizeof(buffer)));
 
 	fwrite(buffer, sizeof(char), i, pFileIncludes);
 
 	if (bHasDSA)  {
 		fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileIncludes);
+	}
+
+	if (bHasRDM)  {
+		fwrite(HAVE_RDM_END, sizeof(char),sizeof(HAVE_RDM_END) - 1, pFileIncludes);
 	}
 
 	fwrite("static constexpr char ", sizeof(char), 22, pFileOut);
@@ -200,9 +213,14 @@ int main() {
 				assert(pFileName != nullptr);
 
 				const auto bHasDSA = (strstr(pDirEntry->d_name, "dsa") != nullptr);
+				const auto bHasRDM = (strstr(pDirEntry->d_name, "rdm") != nullptr);
 
 				if (bHasDSA)  {
 					fwrite(HAVE_DSA_BEGIN, sizeof(char),sizeof(HAVE_DSA_BEGIN) - 1, pFileContent);
+				}
+
+				if (bHasRDM)  {
+					fwrite(HAVE_RDM_BEGIN, sizeof(char),sizeof(HAVE_RDM_BEGIN) - 1, pFileContent);
 				}
 
 				auto i = snprintf(pFileName, strlen(pDirEntry->d_name) + 8, "\t{ \"%s\", ", pDirEntry->d_name);
@@ -220,6 +238,10 @@ int main() {
 
 				if (bHasDSA)  {
 					fwrite(HAVE_DSA_END, sizeof(char),sizeof(HAVE_DSA_END) - 1, pFileContent);
+				}
+
+				if (bHasRDM)  {
+					fwrite(HAVE_RDM_END, sizeof(char),sizeof(HAVE_RDM_END) - 1, pFileContent);
 				}
 			}
 		}

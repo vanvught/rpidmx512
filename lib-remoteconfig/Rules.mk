@@ -34,6 +34,10 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-oscserver/include
 	endif
 	
+	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
+		EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
+	endif
+	
 	ifeq ($(findstring RDM_RESPONDER,$(MAKE_FLAGS)), RDM_RESPONDER)
 		EXTRA_INCLUDES+=../lib-rdmresponder/include ../lib-rdm/include
 		EXTRA_INCLUDES+=../lib-rdmsensor/include ../lib-rdmsubdevice/include
@@ -67,6 +71,9 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring OUTPUT_DMX_SHOWFILE,$(MAKE_FLAGS)), OUTPUT_DMX_SHOWFILE)
 		EXTRA_INCLUDES+=../lib-showfile/include
 	endif
+	ifeq ($(findstring OUTPUT_DMX_PCA9685,$(MAKE_FLAGS)), OUTPUT_DMX_PCA9685)
+		EXTRA_INCLUDES+=../lib-pca9685dmx/include ../lib-pca9685/include
+	endif
 else
 	EXTRA_SRCDIR+=src/httpd
 
@@ -82,6 +89,7 @@ else
 	EXTRA_INCLUDES+=../lib-ws28xxdmx/include ../lib-ws28xx/include
 	EXTRA_INCLUDES+=../lib-tlc59711dmx/include ../lib-tlc59711/include
 	EXTRA_INCLUDES+=../lib-dmxserial/include
+	EXTRA_INCLUDES+=../lib-pca9685dmx/include ../lib-pca9685/include
 	EXTRA_INCLUDES+=../lib-midi/include
 	EXTRA_INCLUDES+=../lib-rdmresponder/include ../lib-rdm/include
 	EXTRA_INCLUDES+=../lib-rdmsensor/include ../lib-rdmsubdevice/include

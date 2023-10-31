@@ -2,7 +2,7 @@
  * @file remoteconfigjson.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,8 @@
 
 namespace remoteconfig {
 
-uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize) {
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+uint32_t json_get_list(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 						"{\"list\":{\"ip\":\"" IPSTR "\",\"name\":\"%s\",\"node\":{\"type\":\"%s\",\"port\":{\"type\":\"%s\",\"count\":%d}}}}",
 						IP2STR(Network::Get()->GetIp()),
 						RemoteConfig::Get()->GetDisplayName(),
@@ -46,11 +46,11 @@ uint16_t json_get_list(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	return nLength;
 }
 
-uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize) {
+uint32_t json_get_version(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto *pVersion = FirmwareVersion::Get()->GetVersion();
 	uint8_t nHwTextLength;
 
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 					"{\"version\":\"%.*s\",\"board\":\"%s\",\"build\":{\"date\":\"%.*s\",\"time\":\"%.*s\"}}",
 					firmwareversion::length::SOFTWARE_VERSION, pVersion->SoftwareVersion,
 					Hardware::Get()->GetBoardName(nHwTextLength),
@@ -59,20 +59,20 @@ uint16_t json_get_version(char *pOutBuffer, const uint16_t nOutBufferSize) {
 	return nLength;
 }
 
-uint16_t json_get_uptime(char *pOutBuffer, const uint16_t nOutBufferSize) {
+uint32_t json_get_uptime(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const auto nUptime = Hardware::Get()->GetUpTime();
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uptime\":%u}\n", nUptime));
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uptime\":%u}\n", nUptime));
 	return nLength;
 }
 
-uint16_t json_get_display(char *pOutBuffer, const uint16_t nOutBufferSize) {
+uint32_t json_get_display(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	const bool isOn = !(Display::Get()->isSleep());
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"display\":%d}", isOn));
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"display\":%d}", isOn));
 	return nLength;
 }
 
-uint16_t json_get_directory(char *pOutBuffer, const uint16_t nOutBufferSize) {
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 			"{\"files\":{"
 #if defined (NODE_ARTNET)
 			"\"artnet.txt\":\"Art-Net\","

@@ -19,7 +19,7 @@ async function version() {
 }
 
 function post(s) {
-	fetch('/json/action', {
+	return fetch('/json/action', {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json'

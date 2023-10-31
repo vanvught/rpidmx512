@@ -9,7 +9,7 @@ ifneq ($(MAKE_FLAGS),)
 	endif
 else
 	DEFINES+=LTC_READER
-	EXTRA_SRCDIR+=src/shell src/uart src/httpd
+	EXTRA_SRCDIR+=src/shell src/uart
 endif
 
 EXTRA_SRCDIR+=src/tftp src/h3/tftp

@@ -114,6 +114,11 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/tlc59711
 		EXTRA_INCLUDES+=../lib-tlc59711dmx/include ../lib-tlc59711/include
 	endif
+	
+	ifeq ($(findstring OUTPUT_DMX_PCA9685,$(MAKE_FLAGS)), OUTPUT_DMX_PCA9685)
+		EXTRA_SRCDIR+=src/pca9685
+		EXTRA_INCLUDES+=../lib-pca9685dmx/include ../lib-pca9685/include
+	endif
 
 	ifeq ($(findstring OUTPUT_DMX_MONITOR,$(MAKE_FLAGS)), OUTPUT_DMX_MONITOR)
 		EXTRA_SRCDIR+=src/dmxmonitor
@@ -167,6 +172,8 @@ else
 	EXTRA_SRCDIR+=src/stepper
 	EXTRA_INCLUDES+=../lib-l6470dmx/include ../lib-l6470/include
 	EXTRA_INCLUDES+=../lib-tlc59711dmx/include ../lib-tlc59711/include
+	EXTRA_SRCDIR+=src/pca9685
+	EXTRA_INCLUDES+=../lib-pca9685dmx/include ../lib-pca9685/include
 	
 	DEFINES+=ARTNET_VERSION=4
 	DEFINES+=LIGHTSET_PORTS=4

@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,37 +26,73 @@
 
 #include <cstdint>
 
+#include "pca9685.h"
+#include "pca9685dmx.h"
+
+namespace pca9685dmxparams {
+struct Params {
+    uint32_t nSetList;			///< 4	4
+    uint8_t  nAddress;			///< 1	5
+    uint16_t nChannelCount;		///< 2	7
+	uint16_t nDmxStartAddress;	///< 2	9
+	uint16_t nLedPwmFrequency;	///< 2	12
+	uint16_t nServoLeftUs;		///< 2	14
+	uint16_t nServoRightUs;		///< 2	16
+} __attribute__((packed));
+
+static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
+
+struct Mask {
+	static constexpr uint32_t ADDRESS			= (1U << 0);
+	static constexpr uint32_t MODE 				= (1U << 1);
+	static constexpr uint32_t CHANNEL_COUNT		= (1U << 2);
+	static constexpr uint32_t DMX_START_ADDRESS = (1U << 3);
+	static constexpr uint32_t LED_PWM_FREQUENCY = (1U << 4);
+	static constexpr uint32_t LED_OUTPUT_INVERT = (1U << 5);
+	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 6);
+	static constexpr uint32_t SERVO_LEFT_US 	= (1U << 7);
+	static constexpr uint32_t SERVO_RIGHT_US 	= (1U << 8);
+};
+
+}  // namespace pca9685dmxparams
+
+class PCA9685DmxParamsStore {
+public:
+	virtual ~PCA9685DmxParamsStore() {}
+
+	virtual void Update(const struct pca9685dmxparams::Params *pPCA9685DmxParams)=0;
+	virtual void Copy(struct pca9685dmxparams::Params *pPCA9685DmxParams)=0;
+};
+
 class PCA9685DmxParams {
 public:
-	PCA9685DmxParams(const char *);
-	~PCA9685DmxParams();
+	PCA9685DmxParams(PCA9685DmxParamsStore *pPCA9685DmxParamsStore);
+	~PCA9685DmxParams() {};
+
+	bool Load();
+	void Load(const char *pBuffer, uint32_t nLength);
+
+	void Builder(const struct pca9685dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+		Builder(nullptr, pBuffer, nLength, nSize);
+	}
+
+	void Set(PCA9685Dmx *pPCA9685Dmx);
 
 	void Dump();
 
-	bool GetSetList() const;
-
-	uint8_t GetI2cAddress(bool &pIsSet) const;
-	uint16_t GetDmxStartAddress(bool &pIsSet) const;
-	uint16_t GetDmxFootprint(bool &pIsSet) const;
-	uint8_t GetBoardInstances(bool &pIsSet) const;
-	const char* GetDmxSlotInfoRaw(bool &pIsSet) const;
-
-protected:
-	bool isMaskSet(uint32_t nMask) const;
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+	static void staticCallbackFunction(void *p, const char *s);
 
 private:
     void callbackFunction(const char *pLine);
+    void SetBool(const uint8_t nValue, const uint32_t nMask);
+    bool isMaskSet(uint32_t nMask) const {
+    	return (m_Params.nSetList & nMask) == nMask;
+    }
 
 private:
-    uint32_t m_bSetList{0};
-    uint8_t m_nI2cAddress;
-    uint16_t m_nDmxStartAddress;
-    uint16_t m_nDmxFootprint;
-    uint8_t m_nBoardInstances;
-    char *m_pDmxSlotInfoRaw;
+    PCA9685DmxParamsStore *m_pPCA9685DmxParamsStore;
+    pca9685dmxparams::Params m_Params;
 };
 
 #endif /* PCA9685DMXPARAMS_H_ */

@@ -9,12 +9,18 @@
 #include "styles.css.h"
 #include "index.js.h"
 #if defined (ENABLE_PHY_SWITCH)
-#include "dsa.js.h"
+# include "dsa.js.h"
 #endif /* (ENABLE_PHY_SWITCH) */
 #include "default.js.h"
+#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+# include "rdm.js.h"
+#endif /* RDM_CONTROLLER || RDM_RESPONDER */
+#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+# include "rdm.html.h"
+#endif /* RDM_CONTROLLER || RDM_RESPONDER */
 #include "index.html.h"
 #if defined (ENABLE_PHY_SWITCH)
-#include "dsa.html.h"
+# include "dsa.html.h"
 #endif /* (ENABLE_PHY_SWITCH) */
 
 struct FilesContent {
@@ -25,13 +31,19 @@ struct FilesContent {
 };
 
 static constexpr struct FilesContent HttpContent[] = {
-	{ "static.js", static_js, 1065, static_cast<http::contentTypes>(2) },
+	{ "static.js", static_js, 1072, static_cast<http::contentTypes>(2) },
 	{ "styles.css", styles_css, 409, static_cast<http::contentTypes>(1) },
 	{ "index.js", index_js, 1140, static_cast<http::contentTypes>(2) },
 #if defined (ENABLE_PHY_SWITCH)
-	{ "dsa.js", dsa_js, 405, static_cast<http::contentTypes>(2) },
+	{ "dsa.js", dsa_js, 400, static_cast<http::contentTypes>(2) },
 #endif /* (ENABLE_PHY_SWITCH) */
 	{ "default.js", default_js, 254, static_cast<http::contentTypes>(2) },
+#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+	{ "rdm.js", rdm_js, 1025, static_cast<http::contentTypes>(2) },
+#endif /* RDM_CONTROLLER || RDM_RESPONDER */
+#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+	{ "rdm.html", rdm_html, 1142, static_cast<http::contentTypes>(0) },
+#endif /* RDM_CONTROLLER || RDM_RESPONDER */
 	{ "index.html", index_html, 669, static_cast<http::contentTypes>(0) },
 #if defined (ENABLE_PHY_SWITCH)
 	{ "dsa.html", dsa_html, 447, static_cast<http::contentTypes>(0) },

@@ -11,6 +11,9 @@ static constexpr uint16_t VERSION     = 0x6c4b;
 static constexpr uint16_t UPTIME      = 0xb7d9;
 static constexpr uint16_t DISPLAY     = 0x479b;
 static constexpr uint16_t DIRECTORY   = 0x11fa;
+static constexpr uint16_t RDM         = 0xa528;
+static constexpr uint16_t QUEUE       = 0xb68a;
+static constexpr uint16_t TOD         = 0xaf0c;
 static constexpr uint16_t PHYSTATUS   = 0xb63a;
 static constexpr uint16_t PORTSTATUS  = 0x394e;
 }

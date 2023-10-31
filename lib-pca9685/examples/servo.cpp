@@ -2,7 +2,7 @@
  * @file servo.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,8 @@
 
 #include "bcm2835.h"
 #include "pca9685servo.h"
+
+#define ANGLE(x)	(static_cast<uint8_t>(x))
 
 int main(int argc, char **argv) {
 	if (getuid() != 0) {

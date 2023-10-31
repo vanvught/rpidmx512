@@ -25,6 +25,7 @@
 
 #include <cstring>
 #include <cstdio>
+#include <ctype.h>
 #include <cassert>
 
 #include "httpd/httpd.h"
@@ -39,10 +40,14 @@
 #include "hardware.h"
 #include "display.h"
 
+#if defined(RDM_CONTROLLER)
+# include "artnetnode.h"
+#endif
+
 #include "debug.h"
 
 #if defined ENABLE_CONTENT
-extern int get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType);
+extern uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType);
 #endif
 
 char HttpDaemon::m_Content[http::BUFSIZE];
@@ -272,7 +277,9 @@ Status HttpDaemon::ParseHeaderField(char *pLine) {
  */
 
 Status HttpDaemon::HandleGet() {
-	int nLength = 0;
+	DEBUG_ENTRY
+
+	uint32_t nLength = 0;
 
 	if (memcmp(m_pUri, "/json/", 6) == 0) {
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentTypes::APPLICATION_JSON)];
@@ -297,28 +304,60 @@ Status HttpDaemon::HandleGet() {
 		case http::json::get::DIRECTORY:
 			nLength = remoteconfig::json_get_directory(m_Content, sizeof(m_Content));
 			break;
+#if defined (RDM_CONTROLLER)
+		case http::json::get::RDM:
+			nLength = remoteconfig::rdm::json_get_rdm(m_Content, sizeof(m_Content));
+			break;
+#endif
 #if defined (ENABLE_NET_PHYSTATUS)
 		case http::json::get::PHYSTATUS:
 			nLength = remoteconfig::net::json_get_phystatus(m_Content, sizeof(m_Content));
 			break;
 #endif
 		default:
-#if defined (ENABLE_PHY_SWITCH)
-			if (memcmp(pGet, "dsa/", 4) == 0) {
-				const auto *pDsa = &pGet[4];
-				switch (http::get_uint(pDsa)) {
+#if defined (RDM_CONTROLLER)
+			if (memcmp(pGet, "rdm/", 4) == 0) {
+				const auto *pRdm = &pGet[4];
+				const bool isQuestionMark = (pRdm[3] == '?'); // Handle /rdm/tod?X
+				if (isQuestionMark) {
+					auto *p = const_cast<char *>(pRdm);
+					p[3] = '\0';
+				}
+				switch (http::get_uint(pRdm)) {
+				case http::json::get::QUEUE:
+					nLength = remoteconfig::rdm::json_get_queue(m_Content, sizeof(m_Content));
+					break;
 				case http::json::get::PORTSTATUS:
-					nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
+					nLength = remoteconfig::rdm::json_get_portstatus(m_Content, sizeof(m_Content));
+					break;
+				case http::json::get::TOD: {
+					const auto *pTod = &pRdm[4];
+					if (isQuestionMark && isalpha(static_cast<int>(pTod[0])))  {
+						nLength = remoteconfig::rdm::json_get_tod(pTod[0], m_Content, sizeof(m_Content));
+					}
+				}
 					break;
 				default:
 					break;
 				}
-			} else {
+			} else
 #endif
-				return HandleGetTxt();
 #if defined (ENABLE_PHY_SWITCH)
-			}
+				if (memcmp(pGet, "dsa/", 4) == 0) {
+					const auto *pDsa = &pGet[4];
+					switch (http::get_uint(pDsa)) {
+					case http::json::get::PORTSTATUS:
+						nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
+						break;
+					default:
+						break;
+					}
+				} else
 #endif
+				{
+					return HandleGetTxt();
+
+				}
 			break;
 		}
 	}
@@ -328,6 +367,13 @@ Status HttpDaemon::HandleGet() {
 		nLength = get_file_content("index.html", m_Content, contentType);
 		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
 	}
+#if defined (RDM_CONTROLLER)
+	else if (strcmp(m_pUri, "/rdm") == 0) {
+		http::contentTypes contentType;
+		nLength = get_file_content("rdm.html", m_Content, contentType);
+		m_pContentType = s_contentType[static_cast<uint32_t>(contentType)];
+	}
+#endif
 #if defined (ENABLE_PHY_SWITCH)
 	else if (strcmp(m_pUri, "/dsa") == 0) {
 		http::contentTypes contentType;
@@ -342,12 +388,12 @@ Status HttpDaemon::HandleGet() {
 	}
 #endif
 
-	if (nLength <= 0) {
+	if (nLength == 0) {
 		DEBUG_EXIT
 		return Status::NOT_FOUND;
 	}
 
-	m_nContentLength = static_cast<uint16_t>(nLength);
+	m_nContentLength = nLength;
 
 	DEBUG_EXIT
 	return Status::OK;
@@ -446,7 +492,14 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 				Hardware::Get()->SetMode(hardware::ledblink::Mode::NORMAL);
 			}
 			DEBUG_PRINTF("identify=%d", value8 != 0);
-		} else {
+		}
+#if defined (RDM_CONTROLLER)
+		else if (Sscan::Uint8(m_pFileData, "rdm", value8) == Sscan::OK) {
+			ArtNetNode::Get()->SetRdm(!(value8 != 1));
+			DEBUG_PRINTF("rdm=%d", ArtNetNode::Get()->GetRdm());
+		}
+#endif
+		else {
 			DEBUG_PUTS("Status::BAD_REQUEST");
 			return Status::BAD_REQUEST;
 		}
@@ -460,7 +513,7 @@ Status HttpDaemon::HandlePost(bool hasDataOnly) {
 	}
 
 	m_pContentType = s_contentType[static_cast<uint32_t>(contentTypes::TEXT_HTML)];
-	m_nContentLength = static_cast<uint16_t>(snprintf(m_Content, BUFSIZE - 1U,
+	m_nContentLength = static_cast<uint32_t>(snprintf(m_Content, BUFSIZE - 1U,
 			"<!DOCTYPE html>\n"
 			"<html>\n"
 			"<head><title>Submit</title></head>\n"

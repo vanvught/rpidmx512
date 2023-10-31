@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.cpp
  *
  */
-/* Copyright (C) 2017-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,64 +21,179 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
-#ifndef NDEBUG
- #include <cstdio>
+#if !defined(__clang__)	// Needed for compiling on MacOS
+# pragma GCC push_options
+# pragma GCC optimize ("Os")
 #endif
+
+#undef NDEBUG
+
+#include <cstdint>
+#include <cstdio>
+#include <cstring>
 #include <cassert>
 
 #include "pca9685dmxparams.h"
-
+#include "pca9685dmxparamsconst.h"
+#include "pca9685pwmled.h"
+#include "pca9685servo.h"
 #include "pca9685.h"
+#include "pca9685dmx.h"
 
 #include "lightset.h"
 #include "lightsetparamsconst.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
+#include "propertiesbuilder.h"
 
-using namespace lightset;
+#include "debug.h"
 
-#define DMX_START_ADDRESS_MASK	(1 << 0)
-#define DMX_FOOTPRINT_MASK		(1 << 1)
-#define DMX_SLOT_INFO_MASK		(1 << 2)
-#define I2C_SLAVE_ADDRESS_MASK	(1 << 3)
-#define BOARD_INSTANCES_MASK	(1 << 4)
+namespace pca9685dmxparams {
+static constexpr char MODE_LED[] = "led";
+static constexpr char MODE_SERVO[] = "servo";
 
-constexpr char PARAMS_DMX_FOOTPRINT[] = "dmx_footprint";
-constexpr char PARAMS_I2C_SLAVE_ADDRESS[] = "i2c_slave_address";
-constexpr char PARAMS_BOARD_INSTANCES[] = "board_instances";
-
-#define PARAMS_DMX_START_ADDRESS_DEFAULT	1
-#define PARAMS_DMX_FOOTPRINT_DEFAULT		PCA9685_PWM_CHANNELS
-#define PARAMS_BOARD_INSTANCES_DEFAULT		1
-#define PARAMS_BOARD_INSTANCES_MAX			32
-
-#define DMX_SLOT_INFO_LENGTH				128
-
-PCA9685DmxParams::PCA9685DmxParams(const char *pFileName) {
-	assert(pFileName != nullptr);
-
-	m_nI2cAddress = PCA9685_I2C_ADDRESS_DEFAULT;
-
-	m_nDmxStartAddress = PARAMS_DMX_START_ADDRESS_DEFAULT;
-	m_nDmxFootprint = PARAMS_DMX_FOOTPRINT_DEFAULT;
-	m_nBoardInstances = PARAMS_BOARD_INSTANCES_DEFAULT;
-
-	m_pDmxSlotInfoRaw = new char[DMX_SLOT_INFO_LENGTH];
-
-	assert(m_pDmxSlotInfoRaw != nullptr);
-	for (unsigned i = 0; i < DMX_SLOT_INFO_LENGTH; i++) {
-		m_pDmxSlotInfoRaw[i] = 0;
+const char *get_mode(const uint32_t nMode) {
+	return nMode != 0 ?  MODE_SERVO : MODE_LED;
+}
+uint32_t get_mode(const char *pMode) {
+	if (strcasecmp(pMode, MODE_SERVO) == 0) {
+		return 1;
 	}
 
-	ReadConfigFile configfile(PCA9685DmxParams::staticCallbackFunction, this);
-	configfile.Read(pFileName);
+	return 0;
+}
+}  // namespace pca9685dmxparams
+
+PCA9685DmxParams::PCA9685DmxParams(PCA9685DmxParamsStore *pPCA9685DmxParamsStore): m_pPCA9685DmxParamsStore(pPCA9685DmxParamsStore) {
+	m_Params.nSetList = 0;
+	m_Params.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
+	m_Params.nChannelCount = pca9685::PWM_CHANNELS;
+	m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+	m_Params.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
+	m_Params.nServoLeftUs = pca9685::servo::LEFT_DEFAULT_US;
+	m_Params.nServoRightUs = pca9685::servo::RIGHT_DEFAULT_US;
 }
 
-PCA9685DmxParams::~PCA9685DmxParams() {
-	delete[] m_pDmxSlotInfoRaw;
-	m_pDmxSlotInfoRaw = nullptr;
+bool PCA9685DmxParams::Load() {
+	m_Params.nSetList = 0;
+
+#if !defined(DISABLE_FS)
+	ReadConfigFile configfile(PCA9685DmxParams::staticCallbackFunction, this);
+
+	if (configfile.Read(PCA9685DmxParamsConst::FILE_NAME)) {
+		if (m_pPCA9685DmxParamsStore != nullptr) {
+			m_pPCA9685DmxParamsStore->Update(&m_Params);
+		}
+	} else
+#endif
+	if (m_pPCA9685DmxParamsStore != nullptr) {
+		m_pPCA9685DmxParamsStore->Copy(&m_Params);
+	} else {
+		return false;
+	}
+
+	return true;
+}
+
+void PCA9685DmxParams::Load(const char *pBuffer, uint32_t nLength) {
+	assert(pBuffer != nullptr);
+	assert(nLength != 0);
+
+	m_Params.nSetList = 0;
+
+	ReadConfigFile config(PCA9685DmxParams::staticCallbackFunction, this);
+
+	config.Read(pBuffer, nLength);
+
+	m_pPCA9685DmxParamsStore->Update(&m_Params);
+}
+
+void PCA9685DmxParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
+	if (nValue != 0) {
+		m_Params.nSetList |= nMask;
+	} else {
+		m_Params.nSetList &= ~nMask;
+	}
+}
+
+void PCA9685DmxParams::callbackFunction(const char *pLine) {
+	assert(pLine != nullptr);
+
+	uint8_t nValue8;
+
+	if (Sscan::I2cAddress(pLine, PCA9685DmxParamsConst::I2C_ADDRESS, nValue8) == Sscan::OK) {
+		if ((nValue8 < 0x7f) || (nValue8 != pca9685::I2C_ADDRESS_DEFAULT)) {
+			m_Params.nAddress = nValue8;
+			m_Params.nSetList |= pca9685dmxparams::Mask::ADDRESS;
+		} else {
+			m_Params.nDmxStartAddress = pca9685::I2C_ADDRESS_DEFAULT;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::ADDRESS;
+		}
+		return;
+	}
+
+	char aBuffer[8];
+	uint32_t nLength = sizeof(pca9685dmxparams::MODE_SERVO) - 1;
+	assert(nLength < sizeof(aBuffer));
+
+	if (Sscan::Char(pLine, PCA9685DmxParamsConst::MODE, aBuffer, nLength) == Sscan::OK) {
+		aBuffer[nLength] = '\0';
+		SetBool(static_cast<uint8_t>(pca9685dmxparams::get_mode(aBuffer)), pca9685dmxparams::Mask::MODE);
+		return;
+	}
+
+	uint16_t nValue16;
+
+	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::CHANNEL_COUNT, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && (nValue16 != pca9685::PWM_CHANNELS)) {
+			m_Params.nChannelCount = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::CHANNEL_COUNT;
+		} else {
+			m_Params.nChannelCount = pca9685::PWM_CHANNELS;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::CHANNEL_COUNT;
+		}
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && nValue16 <= (lightset::dmx::UNIVERSE_SIZE) && (nValue16 != lightset::dmx::START_ADDRESS_DEFAULT)) {
+			m_Params.nDmxStartAddress = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::DMX_START_ADDRESS;
+		} else {
+			m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::DMX_START_ADDRESS;
+		}
+		return;
+	}
+
+	/*
+	 * LED specific
+	 */
+
+	if (Sscan::Uint8(pLine, PCA9685DmxParamsConst::LED_OUTPUT_OPENDRAIN, nValue8) == Sscan::OK) {
+		SetBool(nValue8, pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN);
+		return;
+	}
+
+	if (Sscan::Uint8(pLine, PCA9685DmxParamsConst::LED_OUTPUT_INVERT, nValue8) == Sscan::OK) {
+		SetBool(nValue8, pca9685dmxparams::Mask::LED_OUTPUT_INVERT);
+		return;
+	}
+
+	/*
+	 * Servo specific
+	 */
+
+	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::SERVO_LEFT_US, nValue16) == Sscan::OK) {
+
+		return;
+	}
+
+	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::SERVO_RIGHT_US, nValue16) == Sscan::OK) {
+
+		return;
+	}
 }
 
 void PCA9685DmxParams::staticCallbackFunction(void *p, const char *s) {
@@ -88,110 +203,90 @@ void PCA9685DmxParams::staticCallbackFunction(void *p, const char *s) {
 	(static_cast<PCA9685DmxParams*>(p))->callbackFunction(s);
 }
 
-void PCA9685DmxParams::callbackFunction(const char *pLine) {
-	assert(pLine != nullptr);
+void PCA9685DmxParams::Builder(const struct pca9685dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+	assert(pBuffer != nullptr);
 
-	uint8_t value8;
-	uint16_t value16;
-	uint32_t nLength;
-
-	if (Sscan::Uint16(pLine, LightSetParamsConst::DMX_START_ADDRESS, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= dmx::UNIVERSE_SIZE)) {
-			m_nDmxStartAddress = value16;
-			m_bSetList |= DMX_START_ADDRESS_MASK;
-		}
-		return;
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct pca9685dmxparams::Params));
+	} else {
+		m_pPCA9685DmxParamsStore->Copy(&m_Params);
 	}
 
-	if (Sscan::Uint16(pLine, PARAMS_DMX_FOOTPRINT, value16) == Sscan::OK) {
-		if ((value16 != 0) && (value16 <= (PCA9685_PWM_CHANNELS * PARAMS_BOARD_INSTANCES_MAX))) {
-			m_nDmxFootprint = value16;
-			m_bSetList |= DMX_FOOTPRINT_MASK;
-		}
-		return;
-	}
+	PropertiesBuilder builder(PCA9685DmxParamsConst::FILE_NAME, pBuffer, nLength);
 
-	if (Sscan::I2cAddress(pLine, PARAMS_I2C_SLAVE_ADDRESS, value8) == Sscan::OK) {
-		if ((value8 >= PCA9685_I2C_ADDRESS_DEFAULT) && (value8 != PCA9685_I2C_ADDRESS_FIXED)) {
-			m_nI2cAddress = value8;
-			m_bSetList |= I2C_SLAVE_ADDRESS_MASK;
-		return;
-		}
-	}
+	builder.Add(PCA9685DmxParamsConst::MODE, pca9685dmxparams::get_mode(isMaskSet(pca9685dmxparams::Mask::MODE)), isMaskSet(pca9685dmxparams::Mask::MODE));
+	builder.Add(PCA9685DmxParamsConst::CHANNEL_COUNT, m_Params.nChannelCount, isMaskSet(pca9685dmxparams::Mask::CHANNEL_COUNT));
+	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pca9685dmxparams::Mask::DMX_START_ADDRESS));
 
-	if (Sscan::Uint8(pLine, PARAMS_BOARD_INSTANCES, value8) == Sscan::OK) {
-		if ((value8 != 0) && (value8 <= PARAMS_BOARD_INSTANCES_MAX)) {
-			m_nBoardInstances = value8;
-			m_bSetList |= BOARD_INSTANCES_MASK;
-		}
-		return;
-	}
+	builder.AddComment("mode=led");
+	builder.Add(PCA9685DmxParamsConst::LED_PWM_FREQUENCY, m_Params.nLedPwmFrequency, isMaskSet(pca9685dmxparams::Mask::LED_PWM_FREQUENCY));
+	builder.Add(PCA9685DmxParamsConst::LED_OUTPUT_INVERT, isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT), isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT));
+	builder.Add(PCA9685DmxParamsConst::LED_OUTPUT_OPENDRAIN, isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN), isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN));
 
-	nLength = DMX_SLOT_INFO_LENGTH;
-	if (Sscan::Char(pLine, LightSetParamsConst::DMX_SLOT_INFO, m_pDmxSlotInfoRaw, nLength) == Sscan::OK) {
-		if (nLength >= 7) { // 00:0000 at least one value set
-			m_bSetList |= DMX_SLOT_INFO_MASK;
-		}
-	}
+	builder.AddComment("mode=servo");
+	builder.Add(PCA9685DmxParamsConst::SERVO_LEFT_US, m_Params.nServoLeftUs, isMaskSet(pca9685dmxparams::Mask::SERVO_LEFT_US));
+	builder.Add(PCA9685DmxParamsConst::SERVO_RIGHT_US, m_Params.nServoRightUs, isMaskSet(pca9685dmxparams::Mask::SERVO_RIGHT_US));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("nSize=%d", nSize);
+	DEBUG_EXIT
 }
 
-uint8_t PCA9685DmxParams::GetI2cAddress(bool &pIsSet) const {
-	pIsSet = isMaskSet(I2C_SLAVE_ADDRESS_MASK);
-	return m_nI2cAddress;
-}
+void PCA9685DmxParams::Set(PCA9685Dmx *pPCA9685Dmx) {
+	DEBUG_ENTRY
+	assert(pPCA9685Dmx != nullptr);
 
-uint16_t PCA9685DmxParams::GetDmxStartAddress(bool &pIsSet) const {
-	pIsSet = isMaskSet(DMX_START_ADDRESS_MASK);
-	return m_nDmxStartAddress;
-}
+	/*
+	 * Generic
+	 */
+	pPCA9685Dmx->SetAddress(m_Params.nAddress);
+	pPCA9685Dmx->SetMode(isMaskSet(pca9685dmxparams::Mask::MODE));
+	pPCA9685Dmx->SetChannelCount(m_Params.nChannelCount);
+	pPCA9685Dmx->SetDmxStartAddress(m_Params.nDmxStartAddress);
+	/*
+	 * LED specific
+	 */
+	pPCA9685Dmx->SetLedPwmFrequency(m_Params.nLedPwmFrequency);
+	pPCA9685Dmx->SetOutputInvert(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT) ? pca9685::Invert::OUTPUT_INVERTED : pca9685::Invert::OUTPUT_NOT_INVERTED);
+	pPCA9685Dmx->SetOutputDriver(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN) ? pca9685::Output::DRIVER_OPENDRAIN : pca9685::Output::DRIVER_TOTEMPOLE);
+	/*
+	 * Servo specific
+	 */
 
-uint16_t PCA9685DmxParams::GetDmxFootprint(bool &pIsSet) const {
-	pIsSet = isMaskSet(DMX_FOOTPRINT_MASK);
-	return m_nDmxFootprint;
-}
-
-uint8_t PCA9685DmxParams::GetBoardInstances(bool &pIsSet) const {
-	pIsSet = isMaskSet(BOARD_INSTANCES_MASK);
-	return m_nBoardInstances;
-}
-
-const char* PCA9685DmxParams::GetDmxSlotInfoRaw(bool &pIsSet) const {
-	pIsSet = isMaskSet(DMX_SLOT_INFO_MASK);
-	return m_pDmxSlotInfoRaw;
+	DEBUG_EXIT
 }
 
 void PCA9685DmxParams::Dump() {
 #ifndef NDEBUG
-	if (m_bSetList == 0) {
-		return;
-	}
+	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PCA9685DmxParamsConst::FILE_NAME);
 
-	if(isMaskSet(DMX_START_ADDRESS_MASK)) {
-		printf(" %s=%d\n", LightSetParamsConst::PARAMS_DMX_START_ADDRESS, m_nDmxStartAddress);
-	}
+	printf(" %s=0x%.2x\n", PCA9685DmxParamsConst::I2C_ADDRESS, m_Params.nAddress);
 
-	if(isMaskSet(DMX_FOOTPRINT_MASK)) {
-		printf(" %s=%d\n", PARAMS_DMX_FOOTPRINT, m_nDmxFootprint);
-	}
+	const auto IsModeSet = isMaskSet(pca9685dmxparams::Mask::MODE);
+	printf(" %s=%s [%d]\n", PCA9685DmxParamsConst::MODE, pca9685dmxparams::get_mode(IsModeSet), IsModeSet);
 
-	if(isMaskSet(I2C_SLAVE_ADDRESS_MASK)) {
-		printf(" %s=0x%2x\n", PARAMS_I2C_SLAVE_ADDRESS, m_nI2cAddress);
-	}
+	printf(" %s=%d\n", PCA9685DmxParamsConst::CHANNEL_COUNT, m_Params.nChannelCount);
+	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
 
-	if(isMaskSet(BOARD_INSTANCES_MASK)) {
-		printf(" %s=%d\n", PARAMS_BOARD_INSTANCES, m_nBoardInstances);
-	}
+	/*
+	 * LED specific
+	 */
 
-	if(isMaskSet(DMX_SLOT_INFO_MASK)) {
-		printf(" %s=%s\n", LightSetParamsConst::PARAMS_DMX_SLOT_INFO, m_pDmxSlotInfoRaw);
-	}
+	printf(" %s=%d Hz\n", PCA9685DmxParamsConst::LED_PWM_FREQUENCY, m_Params.nLedPwmFrequency);
+
+	const auto IsOutputInvertedSet = isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT);
+	printf(" %s=%d [Output logic state %sinverted]\n", PCA9685DmxParamsConst::LED_OUTPUT_INVERT, IsOutputInvertedSet, IsOutputInvertedSet ? "" : "not ");
+
+	const auto IsOutputOpendrainSet = isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN);
+	printf(" %s=%d [The 16 LEDn outputs are configured with %s structure]\n", PCA9685DmxParamsConst::LED_OUTPUT_OPENDRAIN, IsOutputOpendrainSet, IsOutputOpendrainSet ? "an open-drain" : "a totem pole");
+
+	/*
+	 * Servo specific
+	 */
+
+	printf(" %s=%d\n", PCA9685DmxParamsConst::SERVO_LEFT_US, m_Params.nServoLeftUs);
+	printf(" %s=%d\n", PCA9685DmxParamsConst::SERVO_RIGHT_US, m_Params.nServoRightUs);
 #endif
-}
-
-bool PCA9685DmxParams::isMaskSet(uint32_t mask) const {
-	return (m_bSetList & mask) == mask;
-}
-
-bool PCA9685DmxParams::GetSetList() const {
-	return m_bSetList != 0;
 }

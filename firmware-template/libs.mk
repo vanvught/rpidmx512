@@ -7,7 +7,6 @@ endif
 
 ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
 	LIBS+=node artnet e131
-	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 	ARTNET=1
 endif
 
@@ -56,19 +55,15 @@ ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
 endif
 
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
-	LIBS+=rdmdiscovery rdm
+	LIBS+=rdm
 	DMX=1
 endif
-
 
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
 	ifneq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 		ifneq ($(findstring dmxreceiver,$(LIBS)),dmxreceiver)
 			LIBS+=dmxreceiver
 		endif
-	endif
-	ifneq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
-		LIBS+=rdmresponder
 	endif
 	ifneq ($(findstring rdmsensor,$(LIBS)),rdmsensor)
 		LIBS+=rdmsensor
@@ -138,6 +133,10 @@ endif
 
 ifeq ($(findstring OUTPUT_DMX_TLC59711,$(DEFINES)),OUTPUT_DMX_TLC59711)
 	LIBS+=tlc59711dmx tlc59711
+endif
+
+ifeq ($(findstring OUTPUT_DMX_PCA9685,$(DEFINES)),OUTPUT_DMX_PCA9685)
+	LIBS+=pca9685dmx pca9685
 endif
 
 ifeq ($(findstring OUTPUT_DMX_ARTNET,$(DEFINES)),OUTPUT_DMX_ARTNET)

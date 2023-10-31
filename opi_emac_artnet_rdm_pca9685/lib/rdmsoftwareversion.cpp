@@ -1,8 +1,8 @@
 /**
- * @file pwmdmxpca9685servoparams.h
+ * @file rdmsoftwareversion.cpp
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,37 +23,21 @@
  * THE SOFTWARE.
  */
 
-#ifndef PCA9685DMXSERVOPARAMS_H_
-#define PCA9685DMXSERVOPARAMS_H_
-
 #include <cstdint>
 
-#include "pca9685dmxparams.h"
-#include "pca9685dmxservo.h"
+#include "rdmsoftwareversion.h"
 
-class PCA9685DmxServoParams: public PCA9685DmxParams  {
-public:
-	PCA9685DmxServoParams();
-	~PCA9685DmxServoParams();
+#include "software_version.h"
+#include "sofware_version_id.h"
 
-	bool Load();
-	void Set(PCA9685DmxServo *);
-	void Dump();
+const char *RDMSoftwareVersion::GetVersion() {
+	return SOFTWARE_VERSION;
+}
 
-public:
-    static void staticCallbackFunction(void *p, const char *s);
+uint32_t RDMSoftwareVersion::GetVersionLength() {
+	return sizeof(SOFTWARE_VERSION) / sizeof(SOFTWARE_VERSION[0]) - 1;
+}
 
-private:
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) const {
-    	return (m_bSetList & nMask) == nMask;
-    }
-
-private:
-    uint32_t m_bSetList{0};
-    uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
-	uint16_t m_nLeftUs{SERVO_LEFT_DEFAULT_US};
-	uint16_t m_nRightUs{SERVO_RIGHT_DEFAULT_US};
-};
-
-#endif /* PCA9685DMXSERVOPARAMS_H_ */
+uint32_t RDMSoftwareVersion::GetVersionId() {
+	return DEVICE_SOFTWARE_VERSION_ID;
+}

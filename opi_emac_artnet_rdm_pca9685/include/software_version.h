@@ -1,8 +1,8 @@
 /**
- * @file pca9685leddmxparams.h
+ * @file software_version.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,38 +23,9 @@
  * THE SOFTWARE.
  */
 
-#ifndef PCA9685DMXLEDPARAMS_H_
-#define PCA9685DMXLEDPARAMS_H_
+#ifndef SOFTWARE_VERSION_H_
+#define SOFTWARE_VERSION_H_
 
-#include <cstdint>
+constexpr char SOFTWARE_VERSION[] = "1.0";
 
-#include "pca9685dmxparams.h"
-#include "pca9685dmxled.h"
-
-class PCA9685DmxLedParams: public PCA9685DmxParams {
-public:
-	PCA9685DmxLedParams();
-	~PCA9685DmxLedParams();
-
-	bool Load();
-	void Set(PCA9685DmxLed *);
-	void Dump();
-
-public:
-    static void staticCallbackFunction(void *p, const char *s);
-
-private:
-    void callbackFunction(const char *pLine);
-    bool isMaskSet(uint32_t nMask) const {
-    	return (m_bSetList & nMask) == nMask;
-    }
-
-private:
-    uint32_t m_bSetList{0};
-    uint8_t m_nI2cAddress{PCA9685_I2C_ADDRESS_DEFAULT};
-    uint16_t m_nPwmFrequency{PWMLED_DEFAULT_FREQUENCY};
-	bool m_bOutputInvert{false};
-	bool m_bOutputDriver{true};
-};
-
-#endif /* PCA9685DMXLEDPARAMS_H_ */
+#endif /* SOFTWARE_VERSION_H_ */

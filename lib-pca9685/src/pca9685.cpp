@@ -2,7 +2,7 @@
  * @file pca9685.cpp
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,15 +24,15 @@
  */
 
 #include <cstdint>
-#if !defined(NDEBUG) || defined(__linux__)
-# include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
 #include "hal_i2c.h"
 #include "hal_gpio.h"
 
 #include "pca9685.h"
+
+#include "debug.h"
 
 #define DIV_ROUND_UP(n,d)	(((n) + static_cast<float>(d) - 1) / static_cast<float>(d))
 
@@ -79,6 +79,11 @@ enum TPCA9685Mode2 {
 	PCA9685_MODE2_INVRT = 1 << 4
 };
 
+enum TPCA9685Och {
+	PCA9685_OCH_STOP = 0,
+	PCA9685_OCH_ACK = 1 << 3
+};
+
 PCA9685::PCA9685(uint8_t nAddress) : m_nAddress(nAddress) {
 	FUNC_PREFIX(i2c_begin());
 
@@ -102,10 +107,10 @@ void PCA9685::Sleep(bool bMode) {
 
 	I2cWriteReg(PCA9685_REG_MODE1, nData);
 
-	if (nData & ~PCA9685_MODE1_RESTART) {
-		udelay(500);
-		nData |= PCA9685_MODE1_RESTART;
-	}
+//	if (nData & ~PCA9685_MODE1_RESTART) {
+//		udelay(500);
+//		nData |= PCA9685_MODE1_RESTART;
+//	}
 }
 
 void PCA9685::SetPreScaller(uint8_t nPrescale) {
@@ -128,61 +133,56 @@ uint16_t PCA9685::GetFrequency() {
 	return CalcFrequency(GetPreScaller());
 }
 
-void PCA9685::SetOCH(TPCA9685Och enumTPCA9685Och) {
+void PCA9685::SetOCH(pca9685::Och och) {
 	auto nData = I2cReadReg(PCA9685_REG_MODE2);
 
 	nData &= static_cast<uint8_t>(~PCA9685_MODE2_OCH);
 
-	if (enumTPCA9685Och == PCA9685_OCH_ACK) {
+	if (och == pca9685::Och::PCA9685_OCH_ACK) {
 		nData |= PCA9685_OCH_ACK;
 	} // else, default Outputs change on STOP command
 
 	I2cWriteReg(PCA9685_REG_MODE2, nData);
 }
 
-TPCA9685Och PCA9685::GetOCH() {
-	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH;
-
-	return static_cast<TPCA9685Och>(nData);
+pca9685::Och PCA9685::GetOCH() {
+	const auto isOchACK = (I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OCH) == PCA9685_MODE2_OCH;
+	return isOchACK ? pca9685::Och::PCA9685_OCH_ACK : pca9685::Och::PCA9685_OCH_STOP;
 }
 
-void PCA9685::SetInvert(bool bInvert) {
-	uint8_t Data = I2cReadReg(PCA9685_REG_MODE2);
-
+void PCA9685::SetInvert(const pca9685::Invert invert) {
+	auto Data = I2cReadReg(PCA9685_REG_MODE2);
 	Data &= static_cast<uint8_t>(~PCA9685_MODE2_INVRT);
 
-	if (bInvert) {
+	if (invert == pca9685::Invert::OUTPUT_INVERTED) {
 		Data |= PCA9685_MODE2_INVRT;
 	}
 
 	I2cWriteReg(PCA9685_REG_MODE2, Data);
 }
 
-bool PCA9685::GetInvert() {
+pca9685::Invert PCA9685::GetInvert() {
 	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_INVRT;
-
-	return (nData == PCA9685_MODE2_INVRT);
+	return (nData == PCA9685_MODE2_INVRT) ? pca9685::Invert::OUTPUT_INVERTED : pca9685::Invert::OUTPUT_NOT_INVERTED;
 }
 
-void PCA9685::SetOutDriver(bool bOutDriver) {
+void PCA9685::SetOutDriver(const pca9685::Output output) {
 	auto nData = I2cReadReg(PCA9685_REG_MODE2);
-
 	nData &= static_cast<uint8_t>(~PCA9685_MODE2_OUTDRV);
 
-	if (bOutDriver) {
+	if (output == pca9685::Output::DRIVER_TOTEMPOLE) {
 		nData |= PCA9685_MODE2_OUTDRV;
 	}
 
 	I2cWriteReg(PCA9685_REG_MODE2, nData);
 }
 
-bool PCA9685::GetOutDriver() {
+pca9685::Output PCA9685::GetOutDriver() {
 	const auto nData = I2cReadReg(PCA9685_REG_MODE2) & PCA9685_MODE2_OUTDRV;
-
-	return (nData == PCA9685_MODE2_OUTDRV);
+	return (nData == PCA9685_MODE2_OUTDRV) ? pca9685::Output::DRIVER_TOTEMPOLE : pca9685::Output::DRIVER_OPENDRAIN;
 }
 
-void PCA9685::Write(uint8_t nChannel, uint16_t nOn, uint16_t nOff) {
+void PCA9685::Write(const uint32_t nChannel, const uint16_t nOn, const uint16_t nOff) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
@@ -194,19 +194,19 @@ void PCA9685::Write(uint8_t nChannel, uint16_t nOn, uint16_t nOff) {
 	I2cWriteReg(reg, nOn, nOff);
 }
 
-void PCA9685::Write(uint8_t nChannel, uint16_t nValue) {
+void PCA9685::Write(const uint32_t nChannel, const uint16_t nValue) {
 	Write(nChannel, static_cast<uint16_t>(0), nValue);
 }
 
-void PCA9685::Write(uint16_t nOn, uint16_t nOff) {
-	Write(static_cast<uint8_t>(16), nOn, nOff);
+void PCA9685::Write(const uint16_t nOn, const uint16_t nOff) {
+	Write(static_cast<uint32_t>(16), nOn, nOff);
 }
 
-void PCA9685::Write(uint16_t nValue) {
-	Write(static_cast<uint8_t>(16), nValue);
+void PCA9685::Write(const uint16_t nValue) {
+	Write(static_cast<uint32_t>(16), nValue);
 }
 
-void PCA9685::Read(uint8_t nChannel, uint16_t *pOn, uint16_t *pOff) {
+void PCA9685::Read(const uint32_t nChannel, uint16_t *pOn, uint16_t *pOff) {
 	assert(pOn != nullptr);
 	assert(pOff != nullptr);
 
@@ -231,7 +231,7 @@ void PCA9685::Read(uint16_t *pOn, uint16_t *pOff) {
 	Read(static_cast<uint8_t>(16), pOn, pOff);
 }
 
-void PCA9685::SetFullOn(uint8_t nChannel, bool bMode) {
+void PCA9685::SetFullOn(const uint32_t nChannel, const bool bMode) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
@@ -252,7 +252,7 @@ void PCA9685::SetFullOn(uint8_t nChannel, bool bMode) {
 
 }
 
-void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
+void PCA9685::SetFullOff(const uint32_t nChannel, const bool bMode) {
 	uint8_t reg;
 
 	if (nChannel <= 15) {
@@ -268,36 +268,36 @@ void PCA9685::SetFullOff(uint8_t nChannel, bool bMode) {
 	I2cWriteReg(reg, Data);
 }
 
-uint8_t PCA9685::CalcPresScale(uint16_t nFreq) {
-	nFreq = (nFreq > TPCA9685FrequencyRange::MAX ? TPCA9685FrequencyRange::MAX : (nFreq < TPCA9685FrequencyRange::MIN ? TPCA9685FrequencyRange::MIN : nFreq));
+uint8_t PCA9685::CalcPresScale(uint32_t nFrequency) {
+	nFrequency = (nFrequency > pca9685::Frequency::RANGE_MAX ? pca9685::Frequency::RANGE_MAX : (nFrequency < pca9685::Frequency::RANGE_MIN ? pca9685::Frequency::RANGE_MIN : nFrequency));
 
-	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
-	const auto nData = static_cast<uint8_t>(DIV_ROUND_UP(f, nFreq) - 1);
+	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096U;
+	const auto nData = DIV_ROUND_UP(f, nFrequency) - 1U;
 
-	return nData;
+	return static_cast<uint8_t>(nData);
 }
 
-uint16_t PCA9685::CalcFrequency(uint8_t nPreScale) {
-	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096;
-	const auto Data =static_cast<uint16_t>(DIV_ROUND_UP(f, (static_cast<uint16_t>(nPreScale) + 1)));
+uint16_t PCA9685::CalcFrequency(uint32_t nPreScale) {
+	constexpr auto f = static_cast<float>(PCA9685_OSC_FREQ) / 4096U;
+	const auto Data =static_cast<uint32_t>(DIV_ROUND_UP(f, (nPreScale) + 1U));
 
-	uint16_t f_min;
+	uint32_t nFrequencyMin;
 
-	for (f_min = Data; f_min > TPCA9685FrequencyRange::MIN; f_min--) {
-		if (CalcPresScale(f_min) != nPreScale) {
+	for (nFrequencyMin = Data; nFrequencyMin > pca9685::Frequency::RANGE_MIN; nFrequencyMin--) {
+		if (CalcPresScale(nFrequencyMin) != nPreScale) {
 			break;
 		}
 	}
 
-	uint16_t f_max;
+	uint32_t nFrequencyMax;
 
-	for (f_max = Data; f_max < TPCA9685FrequencyRange::MAX; f_max++) {
-		if (CalcPresScale(f_max) != nPreScale) {
+	for (nFrequencyMax = Data; nFrequencyMax < pca9685::Frequency::RANGE_MAX; nFrequencyMax++) {
+		if (CalcPresScale(nFrequencyMax) != nPreScale) {
 			break;
 		}
 	}
 
-	return static_cast<uint16_t>(f_max + f_min) / 2;
+	return static_cast<uint16_t>(nFrequencyMax + nFrequencyMin) / 2;
 }
 
 void PCA9685::Dump() {

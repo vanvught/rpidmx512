@@ -68,6 +68,7 @@
 
 #if defined (NODE_ARTNET)
 /* artnet.txt */
+# include "artnetnode.h"
 # include "artnetparams.h"
 # include "storeartnet.h"
 #endif
@@ -171,6 +172,12 @@
 # include "storergbpanel.h"
 #endif
 
+#if defined (OUTPUT_DMX_PCA9685)
+/* pca9685.txt */
+# include "pca9685dmxparams.h"
+# include "storepca9685.h"
+#endif
+
 /**
  * RDM_
  */
@@ -202,6 +209,9 @@ enum class Command {
 	VERSION,
 	DISPLAY,
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+	RDM,
+# endif
 	GET,
 #endif
 	TFTP,
@@ -210,7 +220,13 @@ enum class Command {
 }  // namespace get
 namespace set {
 enum class Command {
-	TFTP, DISPLAY
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+	RDM,
+# endif
+#endif
+	TFTP,
+	DISPLAY
 };
 }  // namespace set
 }  // namespace udp
@@ -223,6 +239,9 @@ const struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 		{ &RemoteConfig::HandleVersion,     "version#",  8, false },
 		{ &RemoteConfig::HandleDisplayGet,  "display#",  8, false },
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+		{ &RemoteConfig::HandleRdmGet,  	"rdm#",  	 4, false },
+# endif
 		{ &RemoteConfig::HandleGetNoParams, "get#",      4, true },
 #endif
 		{ &RemoteConfig::HandleTftpGet,     "tftp#",     5, false },
@@ -230,12 +249,17 @@ const struct RemoteConfig::Commands RemoteConfig::s_GET[] = {
 };
 
 const struct RemoteConfig::Commands RemoteConfig::s_SET[] = {
+#if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+# if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+		{ &RemoteConfig::HandleRdmSet,  	"rdm#",     4, true },
+# endif
+#endif
 		{ &RemoteConfig::HandleTftpSet,    "tftp#",     5, true },
 		{ &RemoteConfig::HandleDisplaySet, "display#",  8, true }
 };
 
 static constexpr char s_Node[static_cast<uint32_t>(remoteconfig::Node::LAST)][18] = { "Art-Net", "sACN E1.31", "OSC Server", "LTC", "OSC Client", "RDMNet LLRP Only", "Showfile", "MIDI", "DDP", "PixelPusher", "Node", "Bootloader TFTP", "RDM Responder" };
-static constexpr char s_Output[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel" };
+static constexpr char s_Output[static_cast<uint32_t>(remoteconfig::Output::LAST)][12] = { "DMX", "RDM", "Monitor", "Pixel", "TimeCode", "OSC", "Config", "Stepper", "Player", "Art-Net", "Serial", "RGB Panel", "PWM" };
 
 RemoteConfig *RemoteConfig::s_pThis;
 RemoteConfig::ListBin RemoteConfig::s_RemoteConfigListBin;
@@ -481,6 +505,37 @@ void RemoteConfig::HandleDisplayGet() {
 }
 
 #if !defined (CONFIG_REMOTECONFIG_MINIMUM)
+#if (defined (NODE_ARTNET) || defined (NODE_NODE)) && (defined (RDM_CONTROLLER) || defined (RDM_RESPONDER))
+void RemoteConfig::HandleRdmSet() {
+	DEBUG_ENTRY
+
+	const auto nCmdLength = s_SET[static_cast<uint32_t>(remoteconfig::udp::set::Command::RDM)].nLength;
+
+	if (m_nBytesReceived != (nCmdLength + 1)) {
+		DEBUG_EXIT
+		return;
+	}
+
+	ArtNetNode::Get()->SetRdm(s_pUdpBuffer[nCmdLength + 1] != '0');
+
+	DEBUG_PRINTF("%c", s_pUdpBuffer[nCmdLength + 1]);
+	DEBUG_EXIT
+}
+
+void RemoteConfig::HandleRdmGet() {
+	DEBUG_ENTRY
+
+	const auto nCmdLength = s_GET[static_cast<uint32_t>(remoteconfig::udp::get::Command::RDM)].nLength;
+	const bool isOn = ArtNetNode::Get()->GetRdm();
+
+	if (m_nBytesReceived == nCmdLength) {
+		const auto nLength = snprintf(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE - 1, "rdm:%s\n", isOn ? "On" : "Off");
+		Network::Get()->SendTo(m_nHandle, s_pUdpBuffer, static_cast<uint16_t>(nLength), m_nIPAddressFrom, remoteconfig::udp::PORT);
+	}
+
+	DEBUG_EXIT
+}
+#endif
 /**
  * GET
  */
@@ -822,6 +877,17 @@ void RemoteConfig::HandleGetRgbPanelTxt(uint32_t& nSize) {
 
 	RgbPanelParams rgbPanelParams(StoreRgbPanel::Get());
 	rgbPanelParams.Save(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (OUTPUT_DMX_PCA9685)
+void RemoteConfig::HandleGetPca9685Txt(uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	PCA9685DmxParams pca9685DmxParams(StorePCA9685::Get());
+	pca9685DmxParams.Save(s_pUdpBuffer, remoteconfig::udp::BUFFER_SIZE, nSize);
 
 	DEBUG_EXIT
 }
@@ -1274,6 +1340,22 @@ void RemoteConfig::HandleSetRgbPanelTxt() {
 	rgbPanelParams.Load(s_pUdpBuffer, m_nBytesReceived);
 #ifndef NDEBUG
 	rgbPanelParams.Dump();
+#endif
+
+	DEBUG_EXIT
+}
+#endif
+
+#if defined (OUTPUT_DMX_PCA9685)
+void RemoteConfig::HandleSetPca9685Txt() {
+	DEBUG_ENTRY
+
+	assert(StorePCA9685::Get() != nullptr);
+	PCA9685DmxParams pca9685DmxParams(StorePCA9685::Get());
+
+	pca9685DmxParams.Load(s_pUdpBuffer, m_nBytesReceived);
+#ifndef NDEBUG
+	pca9685DmxParams.Dump();
 #endif
 
 	DEBUG_EXIT
