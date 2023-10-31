@@ -1,5 +1,5 @@
 /**
- * json_get_phystatus.cpp
+ * @file json_get_tod.cpp
  *
  */
 /* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,23 +23,24 @@
  * THE SOFTWARE.
  */
 
+#include <cstdint>
 #include <cstdio>
 
-#include "emac/phy.h"
+#include "artnetnode.h"
 
 namespace remoteconfig {
-namespace net {
-uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	::net::PhyStatus phyStatus;
-	::net::phy_customized_status(phyStatus);
+namespace rdm {
+uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const uint32_t nPortIndex = (cPort | 0x20) - 'a';
 
-	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
-						::net::phy_string_get_link(phyStatus.link),
-						::net::phy_string_get_speed(phyStatus.speed),
-						::net::phy_string_get_duplex(phyStatus.duplex),
-						::net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
-	return nLength;
+	if (nPortIndex < artnetnode::MAX_PORTS) {
+		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"port\":\"%c\",\"tod\":[" , (nPortIndex + 'A')));
+		nLength += ArtNetNode::Get()->RdmCopyTod(nPortIndex, &pOutBuffer[nLength], nOutBufferSize - nLength);
+		nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nOutBufferSize - nLength, "]}" ));
+		return nLength;
+	}
+
+	return 0;
 }
-}  // namespace net
+}  // namespace rdm
 }  // namespace remoteconfig

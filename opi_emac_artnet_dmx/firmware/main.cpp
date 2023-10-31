@@ -84,7 +84,7 @@ void main() {
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
-	fw.Print("Art-Net 4 Node DMX/RDM");
+	fw.Print("Art-Net " STR(LIGHTSET_PORTS) " Node DMX/RDM");
 	nw.Print();
 
 	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
@@ -115,8 +115,8 @@ void main() {
 		artnetParams.Set(DMXPORT_OFFSET);
 	}
 
-	const auto direction = artnetParams.GetDirection(0);
-	node.SetUniverse(0, direction, artnetParams.GetUniverse(0));
+	const uint32_t nPortIndex = 0;
+	node.SetUniverse(nPortIndex, artnetParams.GetDirection(nPortIndex), artnetParams.GetUniverse(nPortIndex));
 
 	StoreDmxSend storeDmxSend;
 	DmxParams dmxparams(&storeDmxSend);
@@ -128,8 +128,9 @@ void main() {
 		dmxparams.Set(&dmx);
 	}
 
-	const auto portDirection = (node.GetPortDirection(0) == lightset::PortDir::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
-	dmx.SetPortDirection(0, portDirection , false);
+	const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
+	const auto portDirection = (node.GetPortDirection(nPortIndex) == lightset::PortDir::OUTPUT ? dmx::PortDirection::OUTP : dmx::PortDirection::INP);
+	dmx.SetPortDirection(nDmxPortIndex, portDirection , false);
 
 	DmxSend dmxSend;
 	dmxSend.Print();
@@ -139,33 +140,25 @@ void main() {
 	DmxConfigUdp dmxConfigUdp;
 
 	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	ArtNetRdmController artNetRdmController;
 
-	if (artnetParams.IsRdm()) {
-		RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
-		if (rdmDeviceParams.Load()) {
-			rdmDeviceParams.Dump();
-			rdmDeviceParams.Set(&artNetRdmController);
-		}
-
-		artNetRdmController.Init();
-		artNetRdmController.Print();
-
-		if (node.GetRdm(0) && (node.GetPortDirection(0) == lightset::PortDir::OUTPUT)) {
-			display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
-			artNetRdmController.Full(0);
-		}
-
-		node.SetRdmHandler(&artNetRdmController);
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&artNetRdmController);
 	}
+
+	artNetRdmController.Init();
+	artNetRdmController.Print();
+
+	node.SetRdmController(&artNetRdmController, artnetParams.IsRdm());
 
 	node.Print();
 
 	const auto nActivePorts = node.GetActiveInputPorts() + node.GetActiveOutputPorts();
 
-	display.SetTitle("Art-Net 4 %s", direction == lightset::PortDir::INPUT ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
+	display.SetTitle("Art-Net 4 %s", portDirection == dmx::PortDirection::INP ? "DMX Input" : (artnetParams.IsRdm() ? "RDM" : "DMX Output"));
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);

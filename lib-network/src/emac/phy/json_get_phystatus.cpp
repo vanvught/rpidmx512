@@ -29,11 +29,11 @@
 
 namespace remoteconfig {
 namespace net {
-uint16_t json_get_phystatus(char *pOutBuffer, const uint16_t nOutBufferSize) {
+uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
 	::net::PhyStatus phyStatus;
 	::net::phy_customized_status(phyStatus);
 
-	const auto nLength = static_cast<uint16_t>(snprintf(pOutBuffer, nOutBufferSize,
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
 						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
 						::net::phy_string_get_link(phyStatus.link),
 						::net::phy_string_get_speed(phyStatus.speed),

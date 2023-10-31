@@ -350,7 +350,7 @@ void TLC59711::Dump() {
 }
 
 void TLC59711::Update() {
-	assert(m_pBuffer != 0);
+	assert(m_pBuffer != nullptr);
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));
@@ -359,7 +359,7 @@ void TLC59711::Update() {
 }
 
 void TLC59711::Blackout() {
-	assert(m_pBufferBlackout != 0);
+	assert(m_pBufferBlackout != nullptr);
 
 	FUNC_PREFIX(spi_chipSelect(SPI_CS_NONE));
 	FUNC_PREFIX(spi_set_speed_hz(m_nSpiSpeedHz));

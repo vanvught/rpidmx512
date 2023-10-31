@@ -1,8 +1,8 @@
 /**
- * json_get_phystatus.cpp
+ * @file artnetnode_ports.h
  *
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,19 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#ifndef ARTNETNODE_PORTS_H_
+#define ARTNETNODE_PORTS_H_
 
-#include "emac/phy.h"
+namespace artnetnode {
+#if !defined(LIGHTSET_PORTS)
+# define LIGHTSET_PORTS	0
+#endif
 
-namespace remoteconfig {
-namespace net {
-uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	::net::PhyStatus phyStatus;
-	::net::phy_customized_status(phyStatus);
+#if (LIGHTSET_PORTS == 0)
+ static constexpr uint32_t MAX_PORTS = 1;	// ISO C++ forbids zero-size array
+#else
+ static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
+#endif
+}  // namespace artnetnode
 
-	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
-						::net::phy_string_get_link(phyStatus.link),
-						::net::phy_string_get_speed(phyStatus.speed),
-						::net::phy_string_get_duplex(phyStatus.duplex),
-						::net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
-	return nLength;
-}
-}  // namespace net
-}  // namespace remoteconfig
+#endif /* IARTNETNODE_PORTS_H_ */

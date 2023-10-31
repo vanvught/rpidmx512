@@ -226,6 +226,8 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 	uint32_t nPackets = 0;
 	uint16_t nBytesReceived;
 
+	const auto nMicros = micros();
+
 	do {
 		nBytesReceived = Network::Get()->RecvFrom(s_nHandePortRdm[nPortIndex], &rdmReceiveBuffer, sizeof(rdmReceiveBuffer), &fromIp, &fromPort);
 		if (nBytesReceived != 0) {
@@ -235,10 +237,15 @@ const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 		if ((nBytesReceived != 0) && (fromIp != Network::Get()->GetIp()) && (fromPort == (UDP_PORT_RDM_START + nPortIndex))) {
 			nPackets++;
 		}
-	} while (nBytesReceived != 0);
+	} while ((micros() - nMicros) < 1000);
 
 	if (nPackets == 0) {
 		return nullptr;
+	}
+
+	if (nPackets != 1) {
+		printf("RDM => collision:%u\n", nPackets);
+		rdmReceiveBuffer[0] = 0;
 	}
 
 	return rdmReceiveBuffer;

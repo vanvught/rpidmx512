@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
 		if (portDirection == lightset::PortDir::OUTPUT) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
 			if (nPortIndex == 0) {
-				node.SetRdm(0, true);
+				node.SetRdm(static_cast<uint32_t>(0), true);
 			}
 		} else {
 			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
@@ -169,7 +169,8 @@ int main(int argc, char **argv) {
 	mDns.Print();
 
 	node.SetRdmUID(RdmResponder.GetUID());
-	node.SetRdmHandler(&RdmResponder, true);
+	node.SetRdmResponder(&RdmResponder);
+	node.SetRdm(static_cast<uint32_t>(0), true);
 	node.Print();
 
 	HttpDaemon httpDaemon;

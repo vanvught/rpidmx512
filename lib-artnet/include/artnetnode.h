@@ -30,8 +30,8 @@
 #define ARTNETNODE_H_
 
 #include <cstdint>
-#include <cstring>
 #include <cstdarg>
+#include <cstring>
 #include <cstdio>
 #include <cassert>
 
@@ -46,12 +46,17 @@
 #endif
 
 #include "artnet.h"
+#include "artnetnode_ports.h"
 #include "artnettimecode.h"
-#include "artnetrdm.h"
 #include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnettrigger.h"
-
+#if defined (RDM_CONTROLLER)
+# include "artnetrdmcontroller.h"
+#endif
+#if defined (RDM_RESPONDER)
+# include "artnetrdmresponder.h"
+#endif
 #if (ARTNET_VERSION >= 4)
 # include "e131bridge.h"
 #endif
@@ -63,16 +68,6 @@
 #include "debug.h"
 
 namespace artnetnode {
-#if !defined(LIGHTSET_PORTS)
-# define LIGHTSET_PORTS	0
-#endif
-
-#if (LIGHTSET_PORTS == 0)
- static constexpr uint32_t MAX_PORTS = 1;	// ISO C++ forbids zero-size array
-#else
- static constexpr uint32_t MAX_PORTS = LIGHTSET_PORTS;
-#endif
-
 enum class FailSafe : uint8_t {
 	LAST = 0x08, OFF= 0x09, ON = 0x0a, PLAYBACK = 0x0b, RECORD = 0x0c
 };
@@ -135,11 +130,16 @@ struct State {
 	uint8_t nEnabledOutputPorts;
 	uint8_t nEnabledInputPorts;
 	uint8_t DiagPriority;				///< ArtPoll : Field 6 : The lowest priority of diagnostics message that should be sent.
+	struct {
+		uint32_t nDiscoveryMillis;
+		uint32_t nDiscoveryPortIndex;
+		bool IsDiscoveryRunning;
+		bool IsEnabled;
+	} rdm;
 };
 
 struct Node {
 	uint32_t IPAddressTimeCode;
-	bool IsRdmResponder;
 	bool bMapUniverse0;										///< Art-Net 4
 	struct {
 		char ShortName[artnet::SHORT_NAME_LENGTH];
@@ -204,7 +204,7 @@ public:
 
 	void Run() {
 		uint16_t nForeignPort;
-		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void**>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
+		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&m_pReceiveBuffer)), &m_nIpAddressFrom, &nForeignPort);
 		m_nCurrentPacketMillis = Hardware::Get()->Millis();
 
 		Process(nBytesReceived);
@@ -214,6 +214,27 @@ public:
 #endif
 #if defined (LIGHTSET_HAVE_RUN)
 		m_pLightSet->Run();
+#endif
+#if defined (RDM_CONTROLLER)
+		if (m_State.rdm.IsEnabled) {
+			assert(m_pArtNetRdmController != nullptr);
+			m_pArtNetRdmController->Run();
+
+			if (!m_State.rdm.IsDiscoveryRunning && ((m_nCurrentPacketMillis - m_State.rdm.nDiscoveryMillis) > (1000 * 60 * 15))) {
+				DEBUG_PUTS("RDM Discovery -> START");
+				m_State.rdm.IsDiscoveryRunning = true;
+			}
+
+			if (m_State.rdm.IsDiscoveryRunning) {
+				m_State.rdm.IsDiscoveryRunning = RdmDiscoveryRun();
+
+				if (!m_State.rdm.IsDiscoveryRunning) {
+					DEBUG_PUTS("RDM Discovery -> DONE");
+					m_State.rdm.nDiscoveryPortIndex = 0;
+					m_State.rdm.nDiscoveryMillis = m_nCurrentPacketMillis;
+				}
+			}
+		}
 #endif
 	}
 
@@ -382,11 +403,50 @@ public:
 		return lightset::MergeMode::HTP;
 	}
 
+	void SetRdm(const bool doEnable);
+	bool GetRdm() const {
+		return m_State.rdm.IsEnabled;
+	}
+
 	void SetRdm(const uint32_t nPortIndex, const bool bEnable);
 	bool GetRdm(const uint32_t nPortIndex) const {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
 	}
+
+#if defined (RDM_CONTROLLER)
+	void SetRdmController(ArtNetRdmController *pArtNetRdmController, const bool doEnable = true);
+
+	uint32_t RdmCopyWorkingQueue(char *pOutBuffer, const uint32_t nOutBufferSize) {
+		if (m_pArtNetRdmController != nullptr) {
+			return m_pArtNetRdmController->CopyWorkingQueue(pOutBuffer, nOutBufferSize);
+		}
+
+		return 0;
+	}
+
+	uint32_t RdmCopyTod(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
+		if (m_pArtNetRdmController != nullptr) {
+			return m_pArtNetRdmController->CopyTod(nPortIndex, pOutBuffer, nOutBufferSize);
+		}
+
+		return 0;
+	}
+
+	bool RdmIsRunning(uint32_t nPortIndex, bool& bIsIncremental) {
+		uint32_t nRdmnPortIndex;
+		if (m_pArtNetRdmController->IsRunning(nRdmnPortIndex, bIsIncremental)) {
+			return (nRdmnPortIndex == nPortIndex);
+		}
+
+		return false;
+	}
+
+#endif
+
+#if defined (RDM_RESPONDER)
+	void SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, const bool doEnable = true);
+#endif
 
 	void SetDisableMergeTimeout(bool bDisable) {
 		m_State.bDisableMergeTimeout = bDisable;
@@ -406,8 +466,6 @@ public:
 	}
 
 	void SetTimeCodeIp(uint32_t nDestinationIp);
-
-	void SetRdmHandler(ArtNetRdm *, bool isResponder = false);
 
 	void SetArtNetStore(ArtNetStore *pArtNetStore) {
 		m_pArtNetStore = pArtNetStore;
@@ -589,6 +647,39 @@ private:
 	void FailSafePlayback();
 
 	void Process(const uint16_t);
+
+#if defined (RDM_CONTROLLER)
+	bool RdmDiscoveryRun() {
+		if ((GetPortDirection(m_State.rdm.nDiscoveryPortIndex) == lightset::PortDir::OUTPUT) && (GetRdm(m_State.rdm.nDiscoveryPortIndex))) {
+			uint32_t nPortIndex;
+			bool bIsIncremental;
+
+			if (m_pArtNetRdmController->IsFinished(nPortIndex, bIsIncremental)) {
+				assert(m_State.rdm.nDiscoveryPortIndex == nPortIndex);
+
+				SendTod(nPortIndex);
+
+				if (m_OutputPort[nPortIndex].IsTransmitting) {
+					m_pLightSet->Start(nPortIndex);
+				}
+
+				m_State.rdm.nDiscoveryPortIndex++;
+				return (m_State.rdm.nDiscoveryPortIndex != artnetnode::MAX_PORTS);
+			}
+
+			if (!m_pArtNetRdmController->IsRunning(nPortIndex, bIsIncremental)) {
+				DEBUG_PRINTF("RDM Discovery Incremental -> %u", m_State.rdm.nDiscoveryPortIndex);
+				m_pArtNetRdmController->Incremental(m_State.rdm.nDiscoveryPortIndex);
+			}
+
+			return true;
+		}
+
+		m_State.rdm.nDiscoveryPortIndex++;
+		return (m_State.rdm.nDiscoveryPortIndex != artnetnode::MAX_PORTS);
+	}
+#endif
+
 private:
 	int32_t m_nHandle { -1 };
 	uint8_t *m_pReceiveBuffer { nullptr };
@@ -599,7 +690,6 @@ private:
 	LightSet *m_pLightSet { nullptr };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
-	ArtNetRdm *m_pArtNetRdm { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
 	ArtNetStore *m_pArtNetStore { nullptr };
 
@@ -619,6 +709,12 @@ private:
 		artnet::ArtRdm ArtRdm;
 	};
 	UArtTodPacket m_ArtTodPacket;
+#endif
+#if defined (RDM_CONTROLLER)
+	ArtNetRdmController *m_pArtNetRdmController;
+#endif
+#if defined (RDM_RESPONDER)
+	ArtNetRdmResponder *m_pArtNetRdmResponder;
 #endif
 #if defined (ARTNET_HAVE_TIMECODE)
 	artnet::ArtTimeCode m_ArtTimeCode;

@@ -7,7 +7,7 @@ DEFINES+=ENABLE_MMU
 DEFINES+=DISABLE_RTC 
 DEFINES+=NDEBUG
 
-LIBS=display rdmdiscovery artnet dmxsend ws28xxdmx ws28xx dmxmonitor rdmdiscovery rdm dmx lightset
+LIBS=display artnet dmxsend ws28xxdmx ws28xx dmxmonitor rdm dmx lightset
 
 SRCDIR=firmware lib
 

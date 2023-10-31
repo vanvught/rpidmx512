@@ -71,7 +71,7 @@ struct Mask {
 	static constexpr auto HIGH_CODE = (1U << 11);
 	static constexpr auto START_UNI_PORT_1 = (1U << 12);
 };
-}  // pixeldmxparams name
+}  // pixeldmxparams
 
 class PixelDmxParamsStore {
 public:
@@ -85,8 +85,7 @@ public:
 class PixelDmxParams {
 public:
 	PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore);
-	~PixelDmxParams() {
-	}
+	~PixelDmxParams() {}
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);

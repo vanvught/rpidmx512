@@ -88,7 +88,7 @@ public:
 	void WatchdogStop() { } // Not implemented
 
 	const char *GetWebsiteUrl() {
-		return "www.orangepi-dmx.org";
+		return "www.gd32-dmx.org";
 	}
 
 	hardware::BootDevice GetBootDevice() {

@@ -241,7 +241,7 @@ void main() {
 
 	rdmResponder.Print();
 
-	node.SetRdmHandler(&rdmResponder, true);
+	node.SetRdmResponder(&rdmResponder);
 	node.Print();
 
 	pBoard->Print();

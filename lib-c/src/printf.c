@@ -2,7 +2,7 @@
  * @file printf.c
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #include <ctype.h>
 #include <string.h>
 #include <limits.h>
-#include <stdint.h>
 
 extern int console_putc(int);
 
@@ -53,7 +52,7 @@ enum {
 
 static char *outptr = NULL;
 
-inline static void _xputch(struct context *ctx, int c) {
+inline static void _xputch(struct context *ctx, const int c) {
 	ctx->total++;
 
 	if (outptr != NULL) {
@@ -78,7 +77,7 @@ static int _pow10(int n) {
 	return r;
 }
 
-static int _itostr(int x, /*@out@*/char *s, int d) {
+static int _itostr(int x, char *s, int d) {
 	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
@@ -123,7 +122,7 @@ static int _itostr(int x, /*@out@*/char *s, int d) {
 	return i + 1;
 }
 
-static void _round_float(/*@out@*/char *dest, int *size) {
+static void _round_float(char *dest, int *size) {
 	int i = *size - 1;
 	char *q = (char *) dest + i;
 	bool round_int = false;
@@ -175,7 +174,7 @@ static void _round_float(/*@out@*/char *dest, int *size) {
 #endif
 
 static void _format_hex(struct context *ctx, unsigned int arg) {
-	char buffer[64] __attribute__((aligned(4)));
+	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
 	char alpha;
@@ -227,7 +226,7 @@ static void _format_hex(struct context *ctx, unsigned int arg) {
 	}
 }
 
-static void _format_int(struct context *ctx, uint64_t arg) {
+static void _format_int(struct context *ctx, unsigned long int arg) {
 	char buffer[64];
 	char *p = buffer + (sizeof(buffer) / sizeof(buffer[0])) - 1;
 	char *o = p;
@@ -281,7 +280,7 @@ static void _format_int(struct context *ctx, uint64_t arg) {
 
 #if !defined (DISABLE_PRINTF_FLOAT)
 static void _format_float(struct context *ctx, float f) {
-	char buffer[64] __attribute__((aligned(4)));
+	char buffer[64];
 	char *dest = (char *) buffer;
 	int ipart;
 	int precision;
@@ -366,8 +365,8 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 #if !defined (DISABLE_PRINTF_FLOAT)
 	float f;
 #endif
-	int64_t l;
-	uint64_t lu;
+	long int l;
+	unsigned long int lu;
 	const char *s;
 
 	ctx.total = 0;
@@ -433,12 +432,12 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			/*@fallthrough@*/
 			/* no break */
 		case 'i':
-			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, int64_t) : (int64_t) va_arg(va, int32_t);
+			l = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, long int) : (long int) va_arg(va, int);
 			if (l < 0) {
 				ctx.flag |= FLAG_NEGATIVE;
 				l = -l;
 			}
-			_format_int(&ctx, (uint64_t) l);
+			_format_int(&ctx, (unsigned long int) l);
 			break;
 #if !defined (DISABLE_PRINTF_FLOAT)
 		case 'f':
@@ -447,14 +446,14 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			break;
 #endif
 		case 'p':
-			_format_pointer(&ctx, va_arg(va, uint32_t));
+			_format_pointer(&ctx, va_arg(va, unsigned int));
 			break;
 		case 's':
 			s = va_arg(va, const char *);
 			_format_string(&ctx, s);
 			break;
 		case 'u':
-			lu = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, uint64_t) : va_arg(va,uint32_t);
+			lu = ((ctx.flag & FLAG_LONG) != 0) ? va_arg(va, unsigned long int) : va_arg(va, unsigned int);
 			_format_int(&ctx, lu);
 			break;
 		case 'X':
@@ -462,7 +461,7 @@ static int _vprintf(const int size, const char *fmt, va_list va) {
 			/*@fallthrough@*/
 			/* no break */
 		case 'x':
-			_format_hex(&ctx, va_arg(va, uint32_t));
+			_format_hex(&ctx, va_arg(va, unsigned int));
 			break;
 		default:
 			_xputch(&ctx, (int) *fmt);

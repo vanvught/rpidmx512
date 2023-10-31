@@ -143,30 +143,19 @@ void main() {
 	DmxConfigUdp dmxConfigUdp;
 
 	StoreRDMDevice storeRdmDevice;
+	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
 	ArtNetRdmController artNetRdmController;
 
-	if (artnetParams.IsRdm()) {
-		RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-
-		if (rdmDeviceParams.Load()) {
-			rdmDeviceParams.Dump();
-			rdmDeviceParams.Set(&artNetRdmController);
-		}
-
-		artNetRdmController.Init();
-		artNetRdmController.Print();
-
-		display.TextStatus(ArtNetMsgConst::RDM_RUN, Display7SegmentMessage::INFO_RDM_RUN, CONSOLE_YELLOW);
-
-		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			if (node.GetRdm(nPortIndex) && (node.GetPortDirection(0) == lightset::PortDir::OUTPUT)) {
-				artNetRdmController.Full(nPortIndex);
-			}
-		}
-
-		node.SetRdmHandler(&artNetRdmController);
+	if (rdmDeviceParams.Load()) {
+		rdmDeviceParams.Dump();
+		rdmDeviceParams.Set(&artNetRdmController);
 	}
+
+	artNetRdmController.Init();
+	artNetRdmController.Print();
+
+	node.SetRdmController(&artNetRdmController, artnetParams.IsRdm());
 
 	node.Print();
 

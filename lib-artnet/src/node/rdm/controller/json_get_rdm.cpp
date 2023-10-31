@@ -1,11 +1,8 @@
 /**
- * @file artnetrdm.h
+ * @file json_get_rdm.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,29 +23,16 @@
  * THE SOFTWARE.
  */
 
-#ifndef ARTNETRDM_H_
-#define ARTNETRDM_H_
-
 #include <cstdint>
+#include <cstdio>
 
-namespace artnet {
-void rdm_send(uint32_t nPortIndex, const uint8_t *pRdmData);
-}  // namespace artnet
+#include "artnetnode.h"
 
-class ArtNetRdm {
-public:
-	virtual ~ArtNetRdm() {}
-
-	virtual void Full(uint32_t nPortIndex)=0;
-	virtual uint32_t GetUidCount(uint32_t nPortIndex)=0;
-	virtual void TodCopy(uint32_t nPortIndex, uint8_t *)=0;
-
-	virtual void TodReset(uint32_t nPortIndex)=0;
-	virtual bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid)=0;
-
-	virtual const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *)=0;
-
-	virtual bool RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData)=0;
-};
-
-#endif /* ARTNETRDM_H_ */
+namespace remoteconfig {
+namespace rdm {
+uint32_t json_get_rdm(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"rdm\":\"%u\"}", ArtNetNode::Get()->GetRdm()));
+	return nLength;
+}
+}  // namespace rdm
+}  // namespace remoteconfig

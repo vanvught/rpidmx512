@@ -141,7 +141,8 @@ void main() {
 	DMXMonitor monitor;
 	TimeCode timecode;
 #endif
-	ArtNetRdmController discovery;
+
+	ArtNetRdmController artNetRdmController;
 
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
@@ -218,19 +219,15 @@ void main() {
 #else
 			RDMDeviceParams rdmDeviceParams;
 #endif
-			if(rdmDeviceParams.Load()) {
-				rdmDeviceParams.Set(&discovery);
+			if (rdmDeviceParams.Load()) {
+				rdmDeviceParams.Set(&artNetRdmController);
 				rdmDeviceParams.Dump();
 			}
 
-			discovery.Init();
-			discovery.Print();
+			artNetRdmController.Init();
+			artNetRdmController.Print();
 
-			console_status(CONSOLE_YELLOW, RUN_RDM);
-			display.TextStatus(RUN_RDM);
-			discovery.Full(0);
-
-			node.SetRdmHandler(&discovery);
+			node.SetRdmController(&artNetRdmController);
 		}
 	}
 

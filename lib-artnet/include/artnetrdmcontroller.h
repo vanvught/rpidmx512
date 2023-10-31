@@ -2,7 +2,7 @@
  * @file artnetrdmcontroller.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,75 +30,122 @@
 #include <cstdio>
 #include <cassert>
 
-#include "artnetrdm.h"
-
 #include "rdmdiscovery.h"
 #include "rdmdevicecontroller.h"
 #include "rdm.h"
 
+#include "artnetnode_ports.h"
+
 #include "debug.h"
 
-class ArtNetRdmController final: public RDMDeviceController, public ArtNetRdm, RDMDiscovery {
+class ArtNetRdmController: public RDMDeviceController, RDMDiscovery {
 public:
 	ArtNetRdmController();
-
-	~ArtNetRdmController() override {
-		DEBUG_ENTRY
-		DEBUG_EXIT
-	}
 
 	void Print() {
 		RDMDeviceController::Print();
 	}
 
-	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData) override;
+	const uint8_t *Handler(uint32_t nPortIndex, const uint8_t *pRdmData);
 
 	// Discovery
 
-	void Full(uint32_t nPortIndex) override {
+	void Full(uint32_t nPortIndex) {
 		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		RDMDiscovery::Full(nPortIndex, &m_pRDMTod[nPortIndex]);
 		DEBUG_EXIT
 	}
 
-	uint32_t GetUidCount(uint32_t nPortIndex) override {
+	void Incremental(uint32_t nPortIndex) {
+		DEBUG_ENTRY
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		RDMDiscovery::Incremental(nPortIndex, &m_pRDMTod[nPortIndex]);
+		DEBUG_EXIT
+	}
+
+	uint32_t GetUidCount(uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_pRDMTod[nPortIndex].GetUidCount();
 	}
 
-	void TodCopy(uint32_t nPortIndex, uint8_t *pTod) override {
+	void TodCopy(uint32_t nPortIndex, uint8_t *pTod) {
 		DEBUG_ENTRY
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Copy(pTod);
 		DEBUG_EXIT
 	}
 
+	void Run() {
+		RDMDiscovery::Run();
+	}
+
+	bool IsRunning(uint32_t& nPortIndex, bool& bIsIncremental) {
+		return RDMDiscovery::IsRunning(nPortIndex, bIsIncremental);
+	}
+
+	bool IsFinished(uint32_t& nPortIndex, bool& bIsIncremental) {
+		return RDMDiscovery::IsFinished(nPortIndex, bIsIncremental);
+	}
+
+	uint32_t CopyWorkingQueue(char *pOutBuffer, const uint32_t nOutBufferSize) {
+		return RDMDiscovery::CopyWorkingQueue(pOutBuffer, nOutBufferSize);
+	}
+
+	uint32_t CopyTod(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+
+		const auto nSize = static_cast<int32_t>(nOutBufferSize);
+		int32_t nLength = 0;
+
+		for (uint32_t nCount = 0; nCount < m_pRDMTod[nPortIndex].GetUidCount(); nCount++) {
+			uint8_t uid[RDM_UID_SIZE];
+
+			m_pRDMTod[nPortIndex].CopyUidEntry(nCount, uid);
+
+			nLength += snprintf(&pOutBuffer[nLength], static_cast<size_t>(nSize - nLength),
+					"\"%.2x%.2x:%.2x%.2x%.2x%.2x\",",
+					uid[0], uid[1], uid[2], uid[3], uid[4], uid[5]);
+		}
+
+		if (nLength == 0) {
+			return 0;
+		}
+
+		pOutBuffer[nLength - 1] = '\0';
+
+		return static_cast<uint32_t>(nLength - 1);
+
+	}
+
 	// Gateway
 
-	bool RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData) override;
+	bool RdmReceive(uint32_t nPortIndex, uint8_t *pRdmData);
 
-	void TodReset(uint32_t nPortIndex) override {
+	void TodReset(uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Reset();
 	}
 
-	bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid) override {
+	bool TodAddUid(uint32_t nPortIndex, const uint8_t *pUid) {
 		return m_pRDMTod[nPortIndex].AddUid(pUid);
 	}
 
-	// class Node
+	// Generic
 
 	bool CopyTodEntry(uint32_t nPortIndex, uint32_t nIndex, uint8_t uid[RDM_UID_SIZE]) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		return m_pRDMTod[nPortIndex].CopyUidEntry(nIndex, uid);
 	}
 
-	// Generic
-
 	void TodDump(uint32_t nPortIndex) {
 		assert(nPortIndex < artnetnode::MAX_PORTS);
 		m_pRDMTod[nPortIndex].Dump();
+	}
+
+	RDMTod *GetTod(const uint32_t nPortIndex) {
+		assert(nPortIndex < artnetnode::MAX_PORTS);
+		return &m_pRDMTod[nPortIndex];
 	}
 
 private:

@@ -211,15 +211,11 @@ void ArtNetNode::Start() {
 	}
 #endif
 
-#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
-	if (m_pArtNetRdm != nullptr) {
+#if defined (RDM_CONTROLLER)
+	if (m_State.rdm.IsEnabled) {
+		m_State.rdm.IsDiscoveryRunning = true;
+
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			const auto isRdmDisabled = ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
-
-			if (!isRdmDisabled && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
-				SendTod(nPortIndex);
-			}
-
 			if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
 				SendTodRequest(nPortIndex);
 			}
@@ -228,7 +224,7 @@ void ArtNetNode::Start() {
 #endif
 
 #if (ARTNET_VERSION >= 4)
-		E131Bridge::Start();
+	E131Bridge::Start();
 #endif
 
 	m_State.status = artnetnode::Status::ON;
@@ -429,7 +425,7 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 #endif
 
 #if defined (RDM_CONTROLLER)
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleRdmIn();
 		}
 #endif
@@ -514,22 +510,22 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 		break;
 #if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
 	case artnet::OpCodes::OP_TODREQUEST:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodRequest();
 		}
 		break;
 	case artnet::OpCodes::OP_TODDATA:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodData();
 		}
 		break;
 	case artnet::OpCodes::OP_TODCONTROL:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodControl();
 		}
 		break;
 	case artnet::OpCodes::OP_RDM:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleRdm();
 		}
 		break;
@@ -561,7 +557,7 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 #endif
 
 #if defined (RDM_CONTROLLER)
-	if (m_pArtNetRdm != nullptr) {
+	if (m_State.rdm.IsEnabled) {
 		HandleRdmIn();
 	}
 #endif

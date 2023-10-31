@@ -1,11 +1,8 @@
 /**
- * @file handlerdmin.cpp
+ * @file json_get_portstatus.cpp
  *
  */
-/**
- * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
- */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,41 +24,46 @@
  */
 
 #include <cstdint>
-#include <cstring>
-#include <cassert>
+#include <cstdio>
 
 #include "artnetnode.h"
-#include "artnet.h"
-#include "artnetrdm.h"
+#include "lightset.h"
 
-#include "network.h"
-#include "hardware.h"
+namespace remoteconfig {
+namespace rdm {
+static uint32_t get_portstatus(const uint32_t nPortIndex, char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const char *status;
+	if (ArtNetNode::Get()->GetRdm(nPortIndex)) {
+		bool bIsIncremental;
+		if (ArtNetNode::Get()->RdmIsRunning(nPortIndex, bIsIncremental)) {
+			status = bIsIncremental ? "Incremental" : "Full";
+		} else {
+			status = "Idle";
+		}
+	} else {
+		return 0;
+	}
 
-#include "panel_led.h"
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
+			"{\"port\":\"%c\",\"direction\":\"%s\",\"status\":\"%s\"},",
+			'A' + nPortIndex,
+			lightset::get_direction(ArtNetNode::Get()->GetPortDirection(nPortIndex)),
+			status));
 
-#include "debug.h"
+	return nLength;
+}
 
-void ArtNetNode::HandleRdmIn() {
-	auto *const pArtRdm = &m_ArtTodPacket.ArtRdm;
+uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	pOutBuffer[0] = '[';
+	uint32_t nLength = 1;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-		if ((m_Node.Port[nPortIndex].direction != lightset::PortDir::INPUT)) {
-			continue;
-		}
-
-		const auto nPage = nPortIndex;
-
-		if (m_pArtNetRdm->RdmReceive(nPortIndex, pArtRdm->RdmPacket)) {
-			memcpy(pArtRdm->Id, artnet::NODE_ID, sizeof(pArtRdm->Id));
-			pArtRdm->OpCode = static_cast<uint16_t>(artnet::OpCodes::OP_RDM);
-			pArtRdm->ProtVerHi = 0;
-			pArtRdm->ProtVerLo = artnet::PROTOCOL_REVISION;
-			pArtRdm->RdmVer = 0x01;
-			pArtRdm->Net = m_Node.Port[nPage].NetSwitch;
-			pArtRdm->Command = 0;
-			pArtRdm->Address = m_Node.Port[nPortIndex].DefaultAddress;
-
-			Network::Get()->SendTo(m_nHandle, pArtRdm, sizeof(struct artnet::ArtRdm), m_InputPort[nPortIndex].nDestinationIp, artnet::UDP_PORT);
-		}
+		nLength += get_portstatus(nPortIndex, &pOutBuffer[nLength], nOutBufferSize - nLength);
 	}
+
+	pOutBuffer[nLength - 1] = ']';
+
+	return nLength;
 }
+}  // namespace rdm
+}  // namespace remoteconfig

@@ -6,6 +6,7 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmdiscovery/include
 		EXTRA_SRCDIR+=src/node	
 	endif
+	
 	ifneq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-artnet/include
 		EXTRA_SRCDIR+=src/artnet	
@@ -13,14 +14,21 @@ ifneq ($(MAKE_FLAGS),)
 			EXTRA_INCLUDES+=../lib-e131/include
 		endif	
 	endif
+	
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-e131/include
 		EXTRA_SRCDIR+=src/e131
 	endif
+	
 	ifeq (,$(findstring NO_EMAC,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-network/include
 		EXTRA_SRCDIR+=src/network
 	endif
+	
+	ifneq (,$(findstring RDM_CONTROLLER,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-rdm/include
+	endif
+	
 	ifneq (,$(findstring RDM_RESPONDER,$(MAKE_FLAGS)))
 		EXTRA_INCLUDES+=../lib-rdmresponder/include ../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include
 		ifneq (,$(findstring NODE_ARTNET,$(MAKE_FLAGS)))

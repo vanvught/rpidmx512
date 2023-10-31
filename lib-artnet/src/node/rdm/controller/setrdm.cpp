@@ -1,8 +1,8 @@
 /**
- * @file rdmddiscovery.h
+ * @file setrdm.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,39 +23,34 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMDISCOVERY_H_
-#define RDMDISCOVERY_H_
-
 #include <cstdint>
 
-#include "rdm.h"
+#include "artnetnode.h"
+#include "artnetrdmcontroller.h"
 
-#include "rdmmessage.h"
-#include "rdmtod.h"
+#include "debug.h"
 
-class RDMDiscovery {
-public:
-	RDMDiscovery(const uint8_t *pUid);
+void ArtNetNode::SetRdm(const bool doEnable) {
+	DEBUG_ENTRY
 
-	void Full(uint32_t m_nPortIndex, RDMTod *pRDMTod);
+	SetRdmController(m_pArtNetRdmController, doEnable);
 
-private:
-	bool FindDevices(uint64_t LowerBound, uint64_t UpperBound);
-	bool QuickFind(const uint8_t *pUid);
+	DEBUG_EXIT
+}
 
-	bool IsValidDiscoveryResponse(const uint8_t *pDiscResponse, uint8_t *pUid);
+void ArtNetNode::SetRdmController(ArtNetRdmController *pArtNetRdmController, const bool doEnable) {
+	DEBUG_ENTRY
 
-	void PrintUid(uint64_t nUid);
-	void PrintUid(const uint8_t *pUid);
-	const uint8_t *ConvertUid(uint64_t nUid);
-	uint64_t ConvertUid(const uint8_t *pUid);
+	m_pArtNetRdmController = pArtNetRdmController;
+	m_State.rdm.IsEnabled = ((pArtNetRdmController != nullptr) & doEnable);
 
-private:
-	RDMMessage m_Message;
-	uint32_t m_nPortIndex;
-	RDMTod *m_pRDMTod;
-	uint8_t m_Uid[RDM_UID_SIZE];
-	uint8_t m_Pdl[2][RDM_UID_SIZE];
-};
+	if (m_State.rdm.IsEnabled) {
+		m_ArtPollReply.Status1 |= artnet::Status1::RDM_CAPABLE;
+		m_State.rdm.IsDiscoveryRunning = true;
+	} else {
+		m_ArtPollReply.Status1 &= static_cast<uint8_t>(~artnet::Status1::RDM_CAPABLE);
+	}
 
-#endif /* RDMDISCOVERY_H_ */
+	DEBUG_PRINTF("m_State.rdm.IsEnabled=%c", m_State.rdm.IsEnabled ? 'Y' : 'N');
+	DEBUG_EXIT
+}

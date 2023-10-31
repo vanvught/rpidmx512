@@ -1,5 +1,5 @@
 /**
- * json_get_phystatus.cpp
+ * @file setrdm.cpp
  *
  */
 /* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,23 +23,33 @@
  * THE SOFTWARE.
  */
 
-#include <cstdio>
+#include <cstdint>
 
-#include "emac/phy.h"
+#include "artnetnode.h"
+#include "artnetrdmresponder.h"
 
-namespace remoteconfig {
-namespace net {
-uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	::net::PhyStatus phyStatus;
-	::net::phy_customized_status(phyStatus);
+#include "debug.h"
 
-	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize,
-						"{\"link\":\"%s\",\"speed\":\"%s\",\"duplex\":\"%s\",\"autonegotiation\":\"%s\"}",
-						::net::phy_string_get_link(phyStatus.link),
-						::net::phy_string_get_speed(phyStatus.speed),
-						::net::phy_string_get_duplex(phyStatus.duplex),
-						::net::phy_string_get_autonegotiation(phyStatus.bAutonegotiation)));
-	return nLength;
+void ArtNetNode::SetRdm(const bool doEnable) {
+	DEBUG_ENTRY
+
+	SetRdmResponder(m_pArtNetRdmResponder, doEnable);
+
+	DEBUG_EXIT
 }
-}  // namespace net
-}  // namespace remoteconfig
+
+void ArtNetNode::SetRdmResponder(ArtNetRdmResponder *pArtNetRdmResponder, const bool doEnable) {
+	DEBUG_ENTRY
+
+	m_pArtNetRdmResponder = pArtNetRdmResponder;
+	m_State.rdm.IsEnabled = ((pArtNetRdmResponder != nullptr) & doEnable);
+
+	if (m_State.rdm.IsEnabled) {
+		m_ArtPollReply.Status1 |= artnet::Status1::RDM_CAPABLE;
+	} else {
+		m_ArtPollReply.Status1 &= static_cast<uint8_t>(~artnet::Status1::RDM_CAPABLE);
+	}
+
+	DEBUG_PRINTF("m_State.rdm.IsEnabled=%c", m_State.rdm.IsEnabled ? 'Y' : 'N');
+	DEBUG_EXIT
+}
