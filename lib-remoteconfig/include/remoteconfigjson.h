@@ -43,6 +43,9 @@ uint32_t json_get_queue(char *pOutBuffer, const uint32_t nOutBufferSize);
 uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize);
 uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace rdm
+namespace storage {
+uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize);
+}  // namespace storage
 namespace dsa {
 uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace dsa

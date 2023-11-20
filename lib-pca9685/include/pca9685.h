@@ -55,13 +55,11 @@ struct Frequency {
 };
 }  // namespace pca9685
 
-#define CHANNEL(x)	(static_cast<uint8_t>(x))
+#define CHANNEL(x)	(static_cast<uint32_t>(x))
 #define VALUE(x)	(static_cast<uint16_t>(x))
 
 #define PCA9685_VALUE_MIN	VALUE(0)
 #define PCA9685_VALUE_MAX	VALUE(4096)
-
-
 
 class PCA9685 {
 public:

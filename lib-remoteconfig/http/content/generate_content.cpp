@@ -51,8 +51,8 @@ static constexpr char content_header[] =
 static constexpr char HAVE_DSA_BEGIN[] = "#if defined (ENABLE_PHY_SWITCH)\n";
 static constexpr char HAVE_DSA_END[] = "#endif /* (ENABLE_PHY_SWITCH) */\n";
 
-static constexpr char HAVE_RDM_BEGIN[] = "#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)\n";
-static constexpr char HAVE_RDM_END[] = "#endif /* RDM_CONTROLLER || RDM_RESPONDER */\n";
+static constexpr char HAVE_RDM_BEGIN[] = "#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)\n";
+static constexpr char HAVE_RDM_END[] = "#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */\n";
 
 static FILE *pFileContent;
 static FILE *pFileIncludes;

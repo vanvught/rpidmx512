@@ -110,6 +110,9 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize) {
 #if defined (OUTPUT_DMX_TLC59711)
 			"\"devices.txt\":\"DMX TLC59711\","
 #endif
+#if defined (OUTPUT_DMX_PCA9685)
+			"\"pca9685.txt\":\"DMX PCA9685\","
+#endif
 #if defined (OUTPUT_DMX_MONITOR)
 			"\"mon.txt\":\"DMX Monitor\","
 #endif

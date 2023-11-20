@@ -28,24 +28,32 @@
 #include <cassert>
 
 #include "pca9685dmxservo.h"
+#include "lightset.h"
 
 #include "debug.h"
 
 PCA9685DmxServo::PCA9685DmxServo(const pca9685dmx::Configuration& configuration) {
 	DEBUG_ENTRY
 
-	m_nBoardInstances = static_cast<uint8_t>((configuration.nChannelCount + (pca9685::PWM_CHANNELS - 1))  / pca9685::PWM_CHANNELS);
-	m_nDmxFootprint = configuration.nChannelCount;
-	m_nDmxStartAddress = configuration.nDmxStartAddress;
+	m_bUse8Bit = configuration.bUse8Bit;
+	m_nChannelCount = configuration.nChannelCount;
 
-	m_pDmxData = new uint8_t[m_nBoardInstances * pca9685::PWM_CHANNELS];
-	assert(m_pDmxData != nullptr);
-
-	for (uint32_t i = 0; i < m_nBoardInstances * pca9685::PWM_CHANNELS; i++) {
-		m_pDmxData[i] = 0;
+	if (m_bUse8Bit) {
+		m_nDmxFootprint = m_nChannelCount;
+	} else {
+		m_nDmxFootprint = 2 * m_nChannelCount;
 	}
 
-	assert(m_pServo == nullptr);
+	DEBUG_PRINTF("m_bUse8Bit=%c, m_nChannelCount=%u, m_nDmxFootprint=%u", m_bUse8Bit ? 'Y' : 'N', m_nChannelCount, m_nDmxFootprint);
+
+	m_nBoardInstances = static_cast<uint8_t>((m_nChannelCount + (pca9685::PWM_CHANNELS - 1))  / pca9685::PWM_CHANNELS);
+
+	DEBUG_PRINTF("m_nBoardInstances=%u", m_nBoardInstances);
+
+	m_nDmxStartAddress = configuration.nDmxStartAddress;
+
+	memset(m_DmxData, 0, sizeof(m_DmxData));
+
 	m_pServo = new PCA9685Servo*[m_nBoardInstances];
 	assert(m_pServo != nullptr);
 
@@ -66,8 +74,7 @@ PCA9685DmxServo::PCA9685DmxServo(const pca9685dmx::Configuration& configuration)
 }
 
 PCA9685DmxServo::~PCA9685DmxServo() {
-	delete[] m_pDmxData;
-	m_pDmxData = nullptr;
+	DEBUG_ENTRY
 
 	for (uint32_t i = 0; i < m_nBoardInstances; i++) {
 		delete m_pServo[i];
@@ -76,33 +83,71 @@ PCA9685DmxServo::~PCA9685DmxServo() {
 
 	delete[] m_pServo;
 	m_pServo = nullptr;
+
+	DEBUG_EXIT
 }
 
 void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
-	auto *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
-	auto *q = m_pDmxData;
-	auto nChannel = m_nDmxStartAddress;
+	auto nDmxAddress = m_nDmxStartAddress;
 
-	for (uint32_t j = 0; j < m_nBoardInstances; j++) {
-		for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
-			if ((nChannel >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nChannel > nLength)) {
-				j = m_nBoardInstances;
-				break;
-			}
-			if (*p != *q) {
-				uint8_t value = *p;
+	if (m_bUse8Bit) {
+		auto *pCurrentData = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
+		auto *pPreviousData = m_DmxData;
+
+		for (uint32_t j = 0; j < m_nBoardInstances; j++) {
+			for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
+				if ((nDmxAddress >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nDmxAddress > nLength)) {
+					j = m_nBoardInstances;
+					break;
+				}
+				if (*pCurrentData != *pPreviousData) {
+					*pPreviousData = *pCurrentData;
+					const auto value = *pCurrentData;
 #ifndef NDEBUG
-				printf("m_pServo[%u]->SetDmx(CHANNEL(%u), %u)\n", static_cast<uint32_t>(j), static_cast<uint32_t>(i), static_cast<uint32_t>(value));
+					printf("m_pServo[%u]->SetDmx(CHANNEL(%u), %u)\n", j, i, static_cast<uint32_t>(value));
 #endif
-				m_pServo[j]->Set(CHANNEL(i), value);
+					m_pServo[j]->Set(i, value);
+				}
+				pCurrentData++;
+				pPreviousData++;
+				nDmxAddress++;
 			}
-			*q = *p;
-			p++;
-			q++;
-			nChannel++;
+		}
+	} else {
+		auto *pCurrentData = reinterpret_cast<const uint16_t *>(pDmxData + m_nDmxStartAddress - 1);
+		auto *pPreviousData = reinterpret_cast<uint16_t *>(m_DmxData);
+
+		for (uint32_t j = 0; j < m_nBoardInstances; j++) {
+			for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
+				if ((nDmxAddress >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nDmxAddress > nLength)) {
+					j = m_nBoardInstances;
+					break;
+				}
+
+				if (*pCurrentData != *pPreviousData) {
+					*pPreviousData = *pCurrentData;
+					const auto *pData = reinterpret_cast<const uint8_t *>(pCurrentData);
+					const auto value = static_cast<uint16_t>((static_cast<uint32_t>(pData[0]) << 4) | static_cast<uint32_t>(pData[1]));
+#ifndef NDEBUG
+					printf("m_pServo[%u]->SetDmx(CHANNEL(%u), %u)\n", j, i, static_cast<uint32_t>(value));
+#endif
+					m_pServo[j]->Set(i, value);
+				}
+				pCurrentData++;
+				pPreviousData++;
+				nDmxAddress+=2;
+			}
 		}
 	}
+}
+
+void PCA9685DmxServo::Print() {
+	printf("PCA9685 Servo %d-bit\n", m_bUse8Bit ? 8 : 16);
+	printf(" Board instances: %u\n", m_nBoardInstances);
+	printf(" Channel count: %u\n", m_nChannelCount);
+	printf(" DMX footprint: %u\n", m_nDmxFootprint);
+	printf(" DMX start address: %u\n", m_nDmxStartAddress);
 }

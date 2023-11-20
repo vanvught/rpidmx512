@@ -27,6 +27,7 @@
 #define PCA9685DMX_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "pca9685.h"
 #include "pca9685pwmled.h"
@@ -44,6 +45,7 @@ struct Configuration {
 	uint8_t nAddress;
 	uint16_t nChannelCount;
 	uint16_t nDmxStartAddress;
+	bool bUse8Bit;
 
 	struct {
 		uint16_t nLedPwmFrequency;
@@ -73,31 +75,34 @@ public:
 
 	void SetChannelCount(const uint16_t nChannelCount) {
 		m_Configuration.nChannelCount = nChannelCount;
-//		m_Configuration.nBoardInstances = static_cast<uint8_t>((nDmxFootprint + (pca9685::PWM_CHANNELS - 1))  / pca9685::PWM_CHANNELS);
 	}
 
 	void SetDmxStartAddress(const uint16_t nDmxStartAddress) {
 		m_Configuration.nDmxStartAddress = nDmxStartAddress;
 	}
 
+	void SetUse8Bit(const bool bUse8Bit) {
+		m_Configuration.bUse8Bit = bUse8Bit;
+	}
+
 	void SetLedPwmFrequency(const uint16_t nLedPwmFrequency) {
 		m_Configuration.led.nLedPwmFrequency = nLedPwmFrequency;
 	}
 
-	void SetOutputInvert(const pca9685::Invert invert) {
+	void SetLedOutputInvert(const pca9685::Invert invert) {
 		m_Configuration.led.invert = invert;
 	}
 
-	void SetOutputDriver(const pca9685::Output output) {
+	void SetLedOutputDriver(const pca9685::Output output) {
 		m_Configuration.led.output = output;
 	}
 
-	void SetLeftUs(const uint16_t nLeftUs) {
-			m_Configuration.servo.nLeftUs = nLeftUs;
+	void SetServoLeftUs(const uint16_t nLeftUs) {
+		m_Configuration.servo.nLeftUs = nLeftUs;
 	}
 
-	void SetRightUs(const uint16_t nRightUs) {
-			m_Configuration.servo.nRightUs = nRightUs;
+	void SetServoRightUs(const uint16_t nRightUs) {
+		m_Configuration.servo.nRightUs = nRightUs;
 	}
 
 	LightSet *GetLightSet() {
@@ -105,6 +110,14 @@ public:
 			Start();
 		}
 		return m_pLightSet;
+	}
+
+	void Print() {
+		if (m_pLightSet != nullptr) {
+			m_pLightSet->Print();
+		} else {
+			assert(0);
+		}
 	}
 
 	static PCA9685Dmx *Get() {

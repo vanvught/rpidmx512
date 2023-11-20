@@ -43,6 +43,7 @@ PCA9685Dmx::PCA9685Dmx () {
 	m_Configuration.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
 	m_Configuration.nChannelCount = pca9685::PWM_CHANNELS;
 	m_Configuration.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
+	m_Configuration.bUse8Bit = false;
 
 	m_Configuration.led.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
 	m_Configuration.led.invert = pca9685::Invert::OUTPUT_NOT_INVERTED;
@@ -80,17 +81,19 @@ void PCA9685Dmx::Start () {
 
 	assert(m_pLightSet == nullptr);
 
+	if ((!m_Configuration.bUse8Bit) && (m_Configuration.nChannelCount > lightset::dmx::UNIVERSE_SIZE / 2)) {
+		m_Configuration.nChannelCount = lightset::dmx::UNIVERSE_SIZE / 2;
+	}
+
 	if (m_Configuration.nMode != 0) {	// Servo
 		auto *pServo = new PCA9685DmxServo(m_Configuration);
 		assert(pServo != nullptr);
 		m_pLightSet = pServo;
-
 		pServo->Start(0);
 	} else {							// Led
 		auto *pLed = new PCA9685DmxLed(m_Configuration);
 		assert(pLed != nullptr);
 		m_pLightSet = pLed;
-
 		pLed->Start(0);
 	}
 

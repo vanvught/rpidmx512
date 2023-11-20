@@ -5,12 +5,12 @@
 # include "dsa.js.h"
 #endif /* (ENABLE_PHY_SWITCH) */
 #include "default.js.h"
-#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 # include "rdm.js.h"
-#endif /* RDM_CONTROLLER || RDM_RESPONDER */
-#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
+#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
+#if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)
 # include "rdm.html.h"
-#endif /* RDM_CONTROLLER || RDM_RESPONDER */
+#endif /* !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER) */
 #include "index.html.h"
 #if defined (ENABLE_PHY_SWITCH)
 # include "dsa.html.h"

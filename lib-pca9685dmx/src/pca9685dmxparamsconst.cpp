@@ -31,6 +31,7 @@ const char PCA9685DmxParamsConst::I2C_ADDRESS[] = "i2c_address";
 
 const char PCA9685DmxParamsConst::MODE[] = "mode";
 const char PCA9685DmxParamsConst::CHANNEL_COUNT[] = "channel_count";
+const char PCA9685DmxParamsConst::USE_8BIT[] = "use_8bit";
 
 const char PCA9685DmxParamsConst::LED_PWM_FREQUENCY[] = "led_pwm_frequency";
 const char PCA9685DmxParamsConst::LED_OUTPUT_INVERT[] = "led_output_invert";

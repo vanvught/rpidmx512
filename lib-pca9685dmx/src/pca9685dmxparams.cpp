@@ -26,8 +26,6 @@
 # pragma GCC optimize ("Os")
 #endif
 
-#undef NDEBUG
-
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -146,7 +144,7 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	uint16_t nValue16;
 
 	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::CHANNEL_COUNT, nValue16) == Sscan::OK) {
-		if ((nValue16 != 0) && (nValue16 != pca9685::PWM_CHANNELS)) {
+		if ((nValue16 != 0) && (nValue16 != pca9685::PWM_CHANNELS) && (nValue16 <= lightset::dmx::UNIVERSE_SIZE)) {
 			m_Params.nChannelCount = nValue16;
 			m_Params.nSetList |= pca9685dmxparams::Mask::CHANNEL_COUNT;
 		} else {
@@ -167,9 +165,26 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 		return;
 	}
 
+	if (Sscan::Uint8(pLine, PCA9685DmxParamsConst::USE_8BIT, nValue8) == Sscan::OK) {
+		SetBool(nValue8, pca9685dmxparams::Mask::USE_8BIT);
+		return;
+	}
+
+
 	/*
 	 * LED specific
 	 */
+
+	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::LED_PWM_FREQUENCY, nValue16) == Sscan::OK) {
+		if ((nValue16 >= pca9685::Frequency::RANGE_MIN) && (nValue16 != pca9685::pwmled::DEFAULT_FREQUENCY)  && (nValue16 <= pca9685::Frequency::RANGE_MAX)) {
+			m_Params.nLedPwmFrequency = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::LED_PWM_FREQUENCY;
+		} else {
+			m_Params.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::LED_PWM_FREQUENCY;
+		}
+		return;
+	}
 
 	if (Sscan::Uint8(pLine, PCA9685DmxParamsConst::LED_OUTPUT_OPENDRAIN, nValue8) == Sscan::OK) {
 		SetBool(nValue8, pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN);
@@ -218,6 +233,7 @@ void PCA9685DmxParams::Builder(const struct pca9685dmxparams::Params *pParams, c
 	builder.Add(PCA9685DmxParamsConst::MODE, pca9685dmxparams::get_mode(isMaskSet(pca9685dmxparams::Mask::MODE)), isMaskSet(pca9685dmxparams::Mask::MODE));
 	builder.Add(PCA9685DmxParamsConst::CHANNEL_COUNT, m_Params.nChannelCount, isMaskSet(pca9685dmxparams::Mask::CHANNEL_COUNT));
 	builder.Add(LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress, isMaskSet(pca9685dmxparams::Mask::DMX_START_ADDRESS));
+	builder.Add(PCA9685DmxParamsConst::USE_8BIT, isMaskSet(pca9685dmxparams::Mask::USE_8BIT), isMaskSet(pca9685dmxparams::Mask::USE_8BIT));
 
 	builder.AddComment("mode=led");
 	builder.Add(PCA9685DmxParamsConst::LED_PWM_FREQUENCY, m_Params.nLedPwmFrequency, isMaskSet(pca9685dmxparams::Mask::LED_PWM_FREQUENCY));
@@ -245,12 +261,13 @@ void PCA9685DmxParams::Set(PCA9685Dmx *pPCA9685Dmx) {
 	pPCA9685Dmx->SetMode(isMaskSet(pca9685dmxparams::Mask::MODE));
 	pPCA9685Dmx->SetChannelCount(m_Params.nChannelCount);
 	pPCA9685Dmx->SetDmxStartAddress(m_Params.nDmxStartAddress);
+	pPCA9685Dmx->SetUse8Bit(isMaskSet(pca9685dmxparams::Mask::USE_8BIT));
 	/*
 	 * LED specific
 	 */
 	pPCA9685Dmx->SetLedPwmFrequency(m_Params.nLedPwmFrequency);
-	pPCA9685Dmx->SetOutputInvert(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT) ? pca9685::Invert::OUTPUT_INVERTED : pca9685::Invert::OUTPUT_NOT_INVERTED);
-	pPCA9685Dmx->SetOutputDriver(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN) ? pca9685::Output::DRIVER_OPENDRAIN : pca9685::Output::DRIVER_TOTEMPOLE);
+	pPCA9685Dmx->SetLedOutputInvert(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT) ? pca9685::Invert::OUTPUT_INVERTED : pca9685::Invert::OUTPUT_NOT_INVERTED);
+	pPCA9685Dmx->SetLedOutputDriver(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN) ? pca9685::Output::DRIVER_OPENDRAIN : pca9685::Output::DRIVER_TOTEMPOLE);
 	/*
 	 * Servo specific
 	 */
@@ -281,6 +298,9 @@ void PCA9685DmxParams::Dump() {
 
 	const auto IsOutputOpendrainSet = isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN);
 	printf(" %s=%d [The 16 LEDn outputs are configured with %s structure]\n", PCA9685DmxParamsConst::LED_OUTPUT_OPENDRAIN, IsOutputOpendrainSet, IsOutputOpendrainSet ? "an open-drain" : "a totem pole");
+
+	const auto IsUse8BitSet = isMaskSet(pca9685dmxparams::Mask::USE_8BIT);
+	printf(" %s=%d [%d-bit]\n", PCA9685DmxParamsConst::USE_8BIT, IsUse8BitSet, IsUse8BitSet ? 8 : 16);
 
 	/*
 	 * Servo specific

@@ -39,7 +39,7 @@ public:
 	~PCA9685DmxLed() override;
 
 	void Start(__attribute__((unused)) const uint32_t nPortIndex = 0) override {};
-	void Stop(__attribute__((unused)) const uint32_t nPortIndex = 0) override {};
+	void Stop(const uint32_t nPortIndex) override;
 
 	void SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, const bool doUpdate = true) override;
 	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {};
@@ -72,7 +72,9 @@ private:
 	uint16_t m_nBoardInstances;
 	uint16_t m_nDmxFootprint;
 	uint16_t m_nDmxStartAddress;
-	uint8_t *m_pDmxData;
+	uint16_t m_nChannelCount;
+	bool m_bUse8Bit;
+	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
 	PCA9685PWMLed **m_pPWMLed;
 };
 

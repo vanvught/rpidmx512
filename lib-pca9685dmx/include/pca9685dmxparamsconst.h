@@ -33,6 +33,7 @@ struct PCA9685DmxParamsConst {
 
 	static const char MODE[];
 	static const char CHANNEL_COUNT[];
+	static const char USE_8BIT[];
 
 	static const char LED_PWM_FREQUENCY[];
 	static const char LED_OUTPUT_INVERT[];

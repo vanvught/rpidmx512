@@ -64,11 +64,15 @@ public:
 		return m_nDmxFootprint;
 	}
 
+	void Print() override;
+
 private:
 	uint16_t m_nBoardInstances;
 	uint16_t m_nDmxFootprint;
 	uint16_t m_nDmxStartAddress;
-	uint8_t *m_pDmxData;
+	uint16_t m_nChannelCount;
+	bool m_bUse8Bit;
+	uint8_t m_DmxData[lightset::dmx::UNIVERSE_SIZE];
 	PCA9685Servo **m_pServo;
 };
 

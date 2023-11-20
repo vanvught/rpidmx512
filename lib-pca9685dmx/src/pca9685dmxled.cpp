@@ -28,27 +28,36 @@
 #include <cassert>
 
 #include "pca9685dmxled.h"
+#include "lightset.h"
 
 #include "debug.h"
 
 PCA9685DmxLed::PCA9685DmxLed(const pca9685dmx::Configuration& configuration) {
 	DEBUG_ENTRY
 
-	m_nBoardInstances = static_cast<uint8_t>((configuration.nChannelCount + (pca9685::PWM_CHANNELS - 1))  / pca9685::PWM_CHANNELS);
-	m_nDmxFootprint = configuration.nChannelCount;
+	m_bUse8Bit = configuration.bUse8Bit;
+	m_nChannelCount = configuration.nChannelCount;
+
+	if (m_bUse8Bit) {
+		m_nDmxFootprint = m_nChannelCount;
+	} else {
+		m_nDmxFootprint = 2 * m_nChannelCount;
+	}
+
+	DEBUG_PRINTF("m_bUse8Bit=%c, m_nChannelCount=%u, m_nDmxFootprint=%u", m_bUse8Bit ? 'Y' : 'N', m_nChannelCount, m_nDmxFootprint);
+
+	m_nBoardInstances = static_cast<uint8_t>((m_nChannelCount + (pca9685::PWM_CHANNELS - 1))  / pca9685::PWM_CHANNELS);
+
+	DEBUG_PRINTF("m_nBoardInstances=%u", m_nBoardInstances);
+
 	m_nDmxStartAddress = configuration.nDmxStartAddress;
 
-	m_pDmxData = new uint8_t[m_nDmxFootprint];
-	assert(m_pDmxData != nullptr);
-
-	for (uint32_t i = 0; i < m_nDmxFootprint; i++) {
-		m_pDmxData[i] = 0;
-	}
+	memset(m_DmxData, 0, sizeof(m_DmxData));
 
 	m_pPWMLed = new PCA9685PWMLed*[m_nBoardInstances];
 	assert(m_pPWMLed != nullptr);
 
-	for (unsigned i = 0; i < m_nBoardInstances; i++) {
+	for (uint32_t i = 0; i < m_nBoardInstances; i++) {
 		m_pPWMLed[i] = new PCA9685PWMLed(static_cast<uint8_t>(configuration.nAddress + i));
 		assert(m_pPWMLed[i] != nullptr);
 
@@ -62,13 +71,12 @@ PCA9685DmxLed::PCA9685DmxLed(const pca9685dmx::Configuration& configuration) {
 		printf("\n");
 #endif
 	}
+
+	DEBUG_EXIT
 }
 
 PCA9685DmxLed::~PCA9685DmxLed() {
 	DEBUG_ENTRY
-
-	delete[] m_pDmxData;
-	m_pDmxData = nullptr;
 
 	for (uint32_t i = 0; i < m_nBoardInstances; i++) {
 		delete m_pPWMLed[i];
@@ -81,31 +89,69 @@ PCA9685DmxLed::~PCA9685DmxLed() {
 	DEBUG_EXIT
 }
 
+void PCA9685DmxLed::Stop(__attribute__((unused)) const uint32_t nPortIndex) {
+	DEBUG_ENTRY
+
+	for (uint32_t j = 0; j < m_nBoardInstances; j++) {
+		m_pPWMLed[j]->SetFullOff(CHANNEL(16), true);
+	}
+
+	DEBUG_EXIT
+}
+
 void PCA9685DmxLed::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
-	auto *p = const_cast<uint8_t*>(pDmxData) + m_nDmxStartAddress - 1;
-	auto *q = m_pDmxData;
-	auto nChannel = m_nDmxStartAddress;
+	auto nDmxAddress = m_nDmxStartAddress;
 
-	for (uint32_t j = 0; j < m_nBoardInstances; j++) {
-		for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
-			if ((nChannel >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nChannel > nLength)) {
-				j = m_nBoardInstances;
-				break;
-			}
-			if (*p != *q) {
-				uint8_t value = *p;
+	if (m_bUse8Bit) {
+		auto *pCurrentData = const_cast<uint8_t *>(pDmxData) + m_nDmxStartAddress - 1;
+		auto *pPreviousData = m_DmxData;
+
+		for (uint32_t j = 0; j < m_nBoardInstances; j++) {
+			for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
+				if ((nDmxAddress >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nDmxAddress > nLength)) {
+					j = m_nBoardInstances;
+					break;
+				}
+				if (*pCurrentData != *pPreviousData) {
+					*pPreviousData = *pCurrentData;
+					const auto value = *pCurrentData;
 #ifndef NDEBUG
-				printf("m_pPWMLed[%u]->SetDmx(CHANNEL(%u), %u)\n", static_cast<uint32_t>(j), static_cast<uint32_t>(i), static_cast<uint32_t>(value));
+					printf("m_pPWMLed[%u]->SetDmx(CHANNEL(%u), %u)\n", j, i, static_cast<uint32_t>(value));
 #endif
-				m_pPWMLed[j]->Set(CHANNEL(i), value);
+					m_pPWMLed[j]->Set(i, value);
+				}
+				pCurrentData++;
+				pPreviousData++;
+				nDmxAddress++;
 			}
-			*q = *p;
-			p++;
-			q++;
-			nChannel++;
+		}
+	} else {
+		auto *pCurrentData = reinterpret_cast<const uint16_t *>(pDmxData + m_nDmxStartAddress - 1);
+		auto *pPreviousData = reinterpret_cast<uint16_t *>(m_DmxData);
+
+		for (uint32_t j = 0; j < m_nBoardInstances; j++) {
+			for (uint32_t i = 0; i < pca9685::PWM_CHANNELS; i++) {
+				if ((nDmxAddress >= (m_nDmxFootprint + m_nDmxStartAddress)) || (nDmxAddress > nLength)) {
+					j = m_nBoardInstances;
+					break;
+				}
+
+				if (*pCurrentData != *pPreviousData) {
+					*pPreviousData = *pCurrentData;
+					const auto *pData = reinterpret_cast<const uint8_t *>(pCurrentData);
+					const auto value = static_cast<uint16_t>((static_cast<uint32_t>(pData[0]) << 4) | static_cast<uint32_t>(pData[1]));
+#ifndef NDEBUG
+					printf("m_pPWMLed[%u]->SetDmx(CHANNEL(%u), %u)\n", j, i, static_cast<uint32_t>(value));
+#endif
+					m_pPWMLed[j]->Set(i, value);
+				}
+				pCurrentData++;
+				pPreviousData++;
+				nDmxAddress+=2;
+			}
 		}
 	}
 }
@@ -122,11 +168,9 @@ bool PCA9685DmxLed::GetSlotInfo(uint16_t nSlotOffset, lightset::SlotInfo& tSlotI
 }
 
 void PCA9685DmxLed::Print() {
-	DEBUG_ENTRY
-
-//	prinff("DMX Footprint : %u\n", m_nDmxFootprint);
-//	m_nDmxStartAddress
-//	m_nBoardInstances
-
-	DEBUG_EXIT
+	printf("PCA9685 LED %d-bit\n", m_bUse8Bit ? 8 : 16);
+	printf(" Board instances: %u\n", m_nBoardInstances);
+	printf(" Channel count: %u\n", m_nChannelCount);
+	printf(" DMX footprint: %u\n", m_nDmxFootprint);
+	printf(" DMX start address: %u\n", m_nDmxStartAddress);
 }

@@ -1,5 +1,5 @@
 /**
- * @file httd.cpp
+ * @file httpd.cpp
  *
  */
 /* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -342,22 +342,34 @@ Status HttpDaemon::HandleGet() {
 				}
 			} else
 #endif
-#if defined (ENABLE_PHY_SWITCH)
-				if (memcmp(pGet, "dsa/", 4) == 0) {
-					const auto *pDsa = &pGet[4];
-					switch (http::get_uint(pDsa)) {
-					case http::json::get::PORTSTATUS:
-						nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
-						break;
-					default:
-						break;
-					}
-				} else
-#endif
-				{
-					return HandleGetTxt();
-
+#if !defined(DISABLE_FS) || defined (CONFIG_USB_HOST_MSC)
+			if (memcmp(pGet, "storage/", 8) == 0) {
+				const auto *pStorage = &pGet[8];
+				switch (http::get_uint(pStorage)) {
+				case http::json::get::DIRECTORY:
+					nLength = remoteconfig::storage::json_get_directory(m_Content, sizeof(m_Content));
+					break;
+				default:
+					break;
 				}
+			} else
+#endif
+#if defined (ENABLE_PHY_SWITCH)
+			if (memcmp(pGet, "dsa/", 4) == 0) {
+				const auto *pDsa = &pGet[4];
+				switch (http::get_uint(pDsa)) {
+				case http::json::get::PORTSTATUS:
+					nLength = remoteconfig::dsa::json_get_portstatus(m_Content, sizeof(m_Content));
+					break;
+				default:
+					break;
+				}
+			} else
+#endif
+			{
+				return HandleGetTxt();
+
+			}
 			break;
 		}
 	}

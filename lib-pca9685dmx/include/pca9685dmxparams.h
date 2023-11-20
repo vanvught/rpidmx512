@@ -43,15 +43,16 @@ struct Params {
 static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
 
 struct Mask {
-	static constexpr uint32_t ADDRESS			= (1U << 0);
-	static constexpr uint32_t MODE 				= (1U << 1);
-	static constexpr uint32_t CHANNEL_COUNT		= (1U << 2);
-	static constexpr uint32_t DMX_START_ADDRESS = (1U << 3);
-	static constexpr uint32_t LED_PWM_FREQUENCY = (1U << 4);
-	static constexpr uint32_t LED_OUTPUT_INVERT = (1U << 5);
-	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 6);
-	static constexpr uint32_t SERVO_LEFT_US 	= (1U << 7);
-	static constexpr uint32_t SERVO_RIGHT_US 	= (1U << 8);
+	static constexpr uint32_t ADDRESS			   = (1U << 0);
+	static constexpr uint32_t MODE 				   = (1U << 1);
+	static constexpr uint32_t CHANNEL_COUNT		   = (1U << 2);
+	static constexpr uint32_t DMX_START_ADDRESS    = (1U << 3);
+	static constexpr uint32_t USE_8BIT	       	   = (1U << 4);
+	static constexpr uint32_t LED_PWM_FREQUENCY    = (1U << 5);
+	static constexpr uint32_t LED_OUTPUT_INVERT    = (1U << 6);
+	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 7);
+	static constexpr uint32_t SERVO_LEFT_US 	   = (1U << 8);
+	static constexpr uint32_t SERVO_RIGHT_US 	   = (1U << 9);
 };
 
 }  // namespace pca9685dmxparams
