@@ -131,9 +131,6 @@ void main() {
 		pca9685DmxParams.Set(&pca9685Dmx);
 	}
 
-	char aDescription[64];
-	snprintf(aDescription, sizeof(aDescription) - 1, "PCA9685");
-
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
@@ -141,8 +138,6 @@ void main() {
 
 	ArtNetParams artnetParams(&storeArtNet);
 	node.SetArtNetStore(&storeArtNet);
-
-	node.SetLongName(aDescription);
 
 	if (artnetParams.Load()) {
 		artnetParams.Dump();
@@ -152,6 +147,9 @@ void main() {
 	node.SetRdm(static_cast<uint32_t>(0), true);
 	node.SetOutput(pca9685Dmx.GetLightSet());
 	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
+
+	char aDescription[64];
+	snprintf(aDescription, sizeof(aDescription) - 1, "PCA9685");
 
 	RDMPersonality *pRDMPersonalities[1] = { new  RDMPersonality(aDescription, pca9685Dmx.GetLightSet())};
 
@@ -196,7 +194,7 @@ void main() {
 	node.SetRdmResponder(&rdmResponder);
 	node.Print();
 
-//	pca9685Dmx.Print();
+	pca9685Dmx.Print();
 
 	display.SetTitle("Art-Net 4 PCA9685");
 	display.Set(2, displayudf::Labels::IP);

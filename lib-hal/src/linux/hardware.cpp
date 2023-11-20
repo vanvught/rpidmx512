@@ -51,6 +51,14 @@
 
 #include "debug.h"
 
+#if !defined (__APPLE__)
+extern "C" {
+int __attribute__((weak)) bcm2835_init(void) {
+	return 0;
+}
+}
+#endif
+
 static char* str_find_replace(char *str, const char *find, const char *replace) {
 	assert(strlen(replace) <= strlen(find));
 
@@ -138,9 +146,22 @@ Hardware::Hardware():
 	}
 
 #ifndef NDEBUG
-	printf("m_tBoardType=%d\n", static_cast<int>(m_boardType));
+	printf("m_boardType=%d\n", static_cast<int>(m_boardType));
 #endif
 
+#if !defined (__APPLE__)
+	if (m_boardType == Board::TYPE_RASPBIAN) {
+		if (getuid() != 0) {
+			fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+			exit(-1);
+		}
+
+		if (bcm2835_init() == 0) {
+			fprintf(stderr, "Function bcm2835_init() failed\n");
+			exit(-1);
+		}
+	}
+#endif
 
 	{ // Board Name
 #if defined (__APPLE__)

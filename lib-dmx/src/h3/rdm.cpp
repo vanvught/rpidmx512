@@ -103,7 +103,7 @@ void Rdm::SendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmDa
 
 	Dmx::Get()->SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
 
-	auto *p = _get_uart(_port_to_uart(nPortIndex));
+	auto *p = _port_to_uart(nPortIndex);
 	p->LCR = UART_LCR_8_N_2;
 
 	for (uint32_t i = 0; i < nLength; i++) {

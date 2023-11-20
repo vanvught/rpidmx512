@@ -216,11 +216,11 @@ static int fatfs_to_errno(FRESULT fresult) {
 }
 
 /*
- *  The following API´s are implemented when SD_WRITE_SUPPORT is defined
+ *  The following API´s are implemented when CONFIG_FS_ENABLE_WRITE is defined
  */
 
 int fputs(__attribute__((unused)) const char *s, __attribute__((unused)) FILE *stream) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return -1;
 #else
@@ -236,7 +236,7 @@ int fputs(__attribute__((unused)) const char *s, __attribute__((unused)) FILE *s
 }
 
 size_t fwrite(__attribute__((unused)) const void *ptr, __attribute__((unused)) size_t size, __attribute__((unused)) size_t nmemb, __attribute__((unused)) FILE *stream) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return 0;
 #else
@@ -254,7 +254,7 @@ size_t fwrite(__attribute__((unused)) const void *ptr, __attribute__((unused)) s
 }
 
 int unlink(__attribute__((unused)) const char *pathname) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return -1;
 #else
@@ -269,14 +269,14 @@ int unlink(__attribute__((unused)) const char *pathname) {
 #endif
 }
 
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 #else
 static DIR s_dir;
 static dirent_t s_dirent;
 #endif
 
 DIR *opendir(__attribute__((unused)) const char *dirname) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return 0;
 #else
@@ -307,7 +307,7 @@ DIR *opendir(__attribute__((unused)) const char *dirname) {
  */
 
 struct dirent *readdir(__attribute__((unused)) DIR *dirp) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return 0;
 #else
@@ -341,7 +341,7 @@ struct dirent *readdir(__attribute__((unused)) DIR *dirp) {
 }
 
 int closedir(__attribute__((unused)) DIR *dirp) {
-#if !defined (SD_WRITE_SUPPORT)
+#if !defined (CONFIG_FS_ENABLE_WRITE)
 	errno = ENOSYS;
 	return -1;
 #else

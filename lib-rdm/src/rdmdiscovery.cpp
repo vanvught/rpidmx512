@@ -155,6 +155,7 @@ bool RDMDiscovery::Start(const uint32_t nPortIndex, RDMTod *pRDMTod, const bool 
 	m_Discovery.stack.nTop = -1;
 	m_Discovery.stack.push(0x000000000000, 0xfffffffffffe);
 //	m_Discovery.stack.push(0x5000c0a802c0, 0x5000c0a802c0);
+	m_Discovery.nCounter = rdmdiscovery::DISCOVERY_COUNTER;
 
 	m_Discovery.bCommandRunning = false;
 

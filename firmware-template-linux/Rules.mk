@@ -30,21 +30,6 @@ LIBS=$(filter-out $(TTT), $(TMPVAR))
 LIBS+=debug
 LDLIBS=
 
-ifdef LINUX
-	ifneq (, $(shell which vcgencmd))
-		BCM2835 = ./../lib-bcm2835_raspbian
-		ifneq "$(wildcard $(BCM2835) )" ""
-			LIBS+=bcm2835_raspbian
-		else
-			LDLIBS=-lbcm2835
-		endif
-		DEFINES+=RASPPI
-		DEFINES+=BCM2835_NO_DELAY_COMPATIBILITY
-	endif
-endif
-
-$(info $$LDLIBS [${LDLIBS}])
-
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-DDISABLE_TFTP  
 DEFINES+=-DDISABLE_RTC
@@ -83,6 +68,21 @@ LIB:=$(addsuffix /lib_linux, $(LIB))
 
 # The variable for the ld -l flag 
 LDLIBS+=$(addprefix -l,$(LIBS))
+
+ifdef LINUX
+	ifneq (, $(shell which vcgencmd))
+		BCM2835 = ./../lib-bcm2835_raspbian
+		ifneq "$(wildcard $(BCM2835) )" ""
+			LIB+=-L../lib-bcm2835_raspbian/lib_linux
+			LDLIBS+=-lbcm2835_raspbian
+		else
+			LDLIBS+=-lbcm2835
+		endif
+		DEFINES+=-DRASPPI
+		DEFINES+=-DBCM2835_NO_DELAY_COMPATIBILITY
+	endif
+endif
+
 $(info $$LDLIBS [${LDLIBS}])
 
 # The variables for the dependency check 
@@ -140,11 +140,11 @@ all : builddirs prerequisites $(TARGET)
 
 builddirs:
 	@mkdir -p $(BUILD_DIRS)
-	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
-
+	
 clean: $(LIBDEP)
 	rm -rf $(BUILD)
 	rm -f $(TARGET)
+	rm -f include/sofware_version_id.h
 	
 #
 # Libraries

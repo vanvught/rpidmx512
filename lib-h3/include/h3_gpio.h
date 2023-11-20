@@ -2,7 +2,7 @@
  * @file h3_gpio.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,7 +156,7 @@ extern void h3_gpio_fsel(uint32_t gpio, uint32_t fsel);
 extern void h3_gpio_set_pud(uint32_t gpio, gpio_pull_t pull);
 extern void h3_gpio_int_cfg(uint32_t gpio, gpio_int_cfg_t int_cfg);
 
-inline static void h3_gpio_clr(uint32_t pin) {
+inline void h3_gpio_clr(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT &= ~(1U << pin);
@@ -181,7 +181,7 @@ inline static void h3_gpio_clr(uint32_t pin) {
 	}
 }
 
-inline static void h3_gpio_set(uint32_t pin) {
+inline void h3_gpio_set(uint32_t pin) {
 	switch H3_GPIO_TO_PORT(pin) {
 		case H3_GPIO_PORTA:
 			H3_PIO_PORTA->DAT |= (1U << pin);
@@ -206,7 +206,7 @@ inline static void h3_gpio_set(uint32_t pin) {
 	}
 }
 
-inline static uint8_t h3_gpio_lev(uint32_t pin) {
+inline uint8_t h3_gpio_lev(uint32_t pin) {
 	uint32_t value = 0;
 
 	switch H3_GPIO_TO_PORT(pin) {
@@ -235,7 +235,7 @@ inline static uint8_t h3_gpio_lev(uint32_t pin) {
 	return (value & (1U << H3_GPIO_TO_NUMBER(pin))) ? (uint8_t) HIGH : (uint8_t) LOW;
 }
 
-inline static void h3_gpio_write(const uint32_t pin, const uint32_t value) {
+inline void h3_gpio_write(const uint32_t pin, const uint32_t value) {
 	if (value != 0) {
 		h3_gpio_set(pin);
 	} else {

@@ -42,6 +42,8 @@
 # include "i2cdetect.h"
 #endif
 
+#include "logic_analyzer.h"
+
 namespace soc {
 #if defined (ORANGE_PI)
 	static constexpr char NAME[] = "H2+";
@@ -86,6 +88,8 @@ Hardware::Hardware() {
 #endif
 
 	hardware_led_set(1);
+
+	logic_analyzer::init();
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {

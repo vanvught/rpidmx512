@@ -37,15 +37,20 @@ ifneq ($(MAKE_FLAGS),)
 		endif
 	endif
 else
-	DEFINES+=NODE_ARTNET NODE_E131 OUTPUT_DMX_ARTNET RDM_RESPONDER
-	DEFINES+=LIGHTSET_PORTS=4
-	DEFINES+=ARTNET_VERSION=4
+	ifneq (, $(shell test -d '../lib-network/src/noemac' && echo -n yes))
+		DEFINES+=NO_EMAC
+	else
+		DEFINES+=NODE_ARTNET NODE_E131 OUTPUT_DMX_ARTNET
+		DEFINES+=ARTNET_VERSION=4
+		EXTRA_SRCDIR+=src/artnet src/e131 src/network
+		EXTRA_INCLUDES+=../lib-artnet/include ../lib-e131/include ../lib-network/include
+		EXTRA_INCLUDES+=../lib-node/include
+	endif
 	
-	EXTRA_INCLUDES+=../lib-node/include
-	EXTRA_INCLUDES+=../lib-artnet/include ../lib-e131/include ../lib-network/include
+	DEFINES+=RDM_RESPONDER
+	DEFINES+=LIGHTSET_PORTS=4
+	
 	EXTRA_INCLUDES+=../lib-dmxreceiver/include ../lib-dmx/include
 	EXTRA_INCLUDES+=../lib-rdmdiscovery/include
-	EXTRA_INCLUDES+=../lib-rdmresponder/include ../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include 
-	
-	EXTRA_SRCDIR+=src/artnet src/e131 src/network
+	EXTRA_INCLUDES+=../lib-rdm/include ../lib-rdmsensor/include ../lib-rdmsubdevice/include 
 endif

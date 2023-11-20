@@ -1,5 +1,5 @@
 /**
- * @file board_gd32f207vc_4.h
+ * @file logic_analyzer.h
  *
  */
 /* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
@@ -23,38 +23,17 @@
  * THE SOFTWARE.
  */
 
-#ifndef GD32_BOARD_GD32F207VC_4_H
-#define GD32_BOARD_GD32F207VC_4_H
+#ifndef BOARD_LOGIC_ANALYZER_H_
+#define BOARD_LOGIC_ANALYZER_H_
 
-#include "gd32_board.h"
+#include "h3_board.h"
 
-namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
-}  // namespace max
+#if defined(ORANGE_PI_ONE)
+#else
+# define LOGIC_ANALYZER_CH0_GPIO_PINx	GPIO_EXT_26
+# define LOGIC_ANALYZER_CH1_GPIO_PINx	GPIO_EXT_22
+# define LOGIC_ANALYZER_CH2_GPIO_PINx	GPIO_EXT_18
+# define LOGIC_ANALYZER_CH3_GPIO_PINx	GPIO_EXT_16
+#endif
 
-#define DMX_MAX_PORTS  4
-
-#define DMX_USE_USART0
-#define DMX_USE_USART1
-#define DMX_USE_USART2
-#define DMX_USE_UART3
-
-static constexpr auto USART0_PORT = 0;
-static constexpr auto USART1_PORT = 1;
-static constexpr auto USART2_PORT = 2;
-static constexpr auto UART3_PORT  = 3;
-
-static constexpr auto DIR_PORT_0_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_0_GPIO_PIN  = GPIO_PIN_9;
-
-static constexpr auto DIR_PORT_1_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_1_GPIO_PIN  = GPIO_PIN_10;
-
-static constexpr auto DIR_PORT_2_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_2_GPIO_PIN  = GPIO_PIN_11;
-
-static constexpr auto DIR_PORT_3_GPIO_PORT = GPIOE;
-static constexpr auto DIR_PORT_3_GPIO_PIN  = GPIO_PIN_12;
-
-#endif /* GD32_BOARD_GD32F207VC_4_H */
+#endif /* BOARD_LOGIC_ANALYZER_H_ */

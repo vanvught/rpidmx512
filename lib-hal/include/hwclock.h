@@ -3,7 +3,7 @@
  * @file hwclock.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,11 +61,23 @@ public:
 		return RtcGet(pRtcTime);
 	}
 
+	bool SetAlarm(const struct rtc_time *pRtcTime) {
+		return RtcSetAlarm(pRtcTime);
+	}
+	bool GetAlarm(struct rtc_time *pRtcTime) {
+		return RtcGetAlarm(pRtcTime);
+	}
+
 	bool IsConnected() const {
 		return m_bIsConnected;
 	}
 
-	void Run(bool bDoRun);
+	void Run(const bool bDoRun) {
+		if (!bDoRun || !m_bIsConnected) {
+			return;
+		}
+		Process();
+	}
 
 	void Print();
 
@@ -74,8 +86,11 @@ public:
 	}
 
 private:
+	void Process();
 	bool RtcSet(const struct rtc_time *pRtcTime);
 	bool RtcGet(struct rtc_time *pRtcTime);
+	bool RtcSetAlarm(const struct rtc_time *pRtcTime);
+	bool RtcGetAlarm(struct rtc_time *pRtcTime);
 
 private:
 	uint32_t m_nSetDelayMicros { 0 };

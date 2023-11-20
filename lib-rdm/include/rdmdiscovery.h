@@ -34,13 +34,13 @@
 #include "debug.h"
 
 namespace rdmdiscovery {
-//#ifndef NDEBUG
- static constexpr uint32_t RECEIVE_TIME_OUT = 500000;
- static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 500000;
-//#else
-// static constexpr uint32_t RECEIVE_TIME_OUT = 2800;
-// static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 1000;
-//#endif
+#ifndef NDEBUG
+ static constexpr uint32_t RECEIVE_TIME_OUT = 28000;
+ static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 40000;
+#else
+ static constexpr uint32_t RECEIVE_TIME_OUT = 2800;
+ static constexpr uint32_t LATE_RESPONSE_TIME_OUT = 1000;
+#endif
 static constexpr uint32_t UNMUTE_COUNTER = 3;
 static constexpr uint32_t MUTE_COUNTER = 10;
 static constexpr uint32_t DISCOVERY_STACK_SIZE = rdmtod::TOD_TABLE_SIZE;

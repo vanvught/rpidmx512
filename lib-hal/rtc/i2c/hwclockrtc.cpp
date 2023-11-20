@@ -23,6 +23,10 @@
  * THE SOFTWARE.
  */
 
+#ifdef NDEBUG
+# undef NDEBUG	//TODO # undef NDEBUG
+#endif
+
 #include <cassert>
 
 #include "hwclock.h"
@@ -313,4 +317,56 @@ bool HwClock::RtcGet(struct rtc_time *pRtcTime) {
 	pRtcTime->tm_year = BCD2DEC(registers[reg::YEAR]) + 100;
 
 	return true;
+}
+
+bool HwClock::RtcSetAlarm(const struct rtc_time *pRtcTime) {
+	DEBUG_ENTRY
+	DEBUG_PRINTF("hour", pRtcTime->tm_hour);
+
+#if !defined (CONFIG_RTC_DISABLE_MCP7941X)
+	if (m_Type == Type::MCP7941X) {
+
+	}
+#endif
+
+#if !defined (CONFIG_RTC_DISABLE_DS3231)
+	if (m_Type == Type::DS3231) {
+
+	}
+#endif
+
+#if !defined (CONFIG_RTC_DISABLE_PCF8563)
+	if (m_Type == Type::PCF8563) {
+
+	}
+#endif
+
+	DEBUG_EXIT
+	return false;
+}
+bool HwClock::RtcGetAlarm(struct rtc_time *pRtcTime) {
+	DEBUG_ENTRY
+
+	pRtcTime->tm_sec = 0;
+
+#if !defined (CONFIG_RTC_DISABLE_MCP7941X)
+	if (m_Type == Type::MCP7941X) {
+
+	}
+#endif
+
+#if !defined (CONFIG_RTC_DISABLE_DS3231)
+	if (m_Type == Type::DS3231) {
+
+	}
+#endif
+
+#if !defined (CONFIG_RTC_DISABLE_PCF8563)
+	if (m_Type == Type::PCF8563) {
+
+	}
+#endif
+
+	DEBUG_EXIT
+	return false;
 }

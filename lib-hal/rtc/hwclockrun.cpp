@@ -2,7 +2,7 @@
  * @file hwclockrun.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +34,7 @@
 #include "debug.h"
 
 enum class Status {
-	WAITING,
-	SAMPLING
+	WAITING, SAMPLING
 };
 
 static Status Status = Status::WAITING;
@@ -46,11 +45,7 @@ static struct timeval tvT1;
 static struct rtc_time rtcT2;
 static struct timeval tvT2;
 
-void HwClock::Run(bool bDoRun) {
-	if (!bDoRun || !m_bIsConnected) {
-		return;
-	}
-
+void HwClock::Process() {
 	if (Status == Status::WAITING) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_nLastHcToSysMillis) > 7200 * 1000), 0)) {
 			Status = Status::SAMPLING;

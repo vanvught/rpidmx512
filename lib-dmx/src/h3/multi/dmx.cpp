@@ -79,7 +79,7 @@ enum class TxRxState {
 	DMXINTER
 };
 
-enum class UartState {
+enum class PortState {
 	IDLE = 0, TX, RX
 };
 
@@ -101,14 +101,12 @@ struct TRdmMultiData {
 	uint32_t nDiscIndex;
 };
 
-static volatile TxRxState s_tReceiveState[config::max::OUT] ALIGNED;
+static volatile TxRxState s_PortReceiveState[config::max::OUT] ALIGNED;
 
 #if defined(ORANGE_PI)
 static constexpr uint8_t s_nDmxDataDirectionGpioPin[config::max::OUT] = {
-		0,
 		GPIO_DMX_DATA_DIRECTION_OUT_C,
-		GPIO_DMX_DATA_DIRECTION_OUT_B,
-		0 };
+		GPIO_DMX_DATA_DIRECTION_OUT_B };
 #else
 static constexpr uint8_t s_nDmxDataDirectionGpioPin[config::max::OUT] = {
 		GPIO_DMX_DATA_DIRECTION_OUT_D,
@@ -152,7 +150,7 @@ static struct TRdmMultiData *s_pRdmDataCurrent[config::max::OUT] ALIGNED;
 static volatile uint32_t s_nRdmDataWriteIndex[config::max::OUT];
 static volatile uint32_t s_nRdmDataReadIndex[config::max::OUT];
 
-static volatile UartState s_UartState[config::max::OUT] ALIGNED;
+static volatile PortState sv_PortState[config::max::OUT] ALIGNED;
 
 static char CONSOLE_ERROR[] ALIGNED = "DMXDATA %\n";
 static constexpr auto CONSOLE_ERROR_LENGTH = (sizeof(CONSOLE_ERROR) / sizeof(CONSOLE_ERROR[0]));
@@ -167,23 +165,30 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		H3_TIMER->TMR0_INTV = s_nDmxTransmistBreakTimeINTV;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		if (s_UartState[1] == UartState::TX) {
+		if (sv_PortState[0] == PortState::TX) {
 			H3_UART1->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
 
-		if (s_UartState[2] == UartState::TX) {
+		if (sv_PortState[1] == PortState::TX) {
 			H3_UART2->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
 #if defined (ORANGE_PI_ONE)
-		if (s_UartState[3] == UartState::TX) {
+		if (sv_PortState[2] == PortState::TX) {
 			H3_UART3->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
 # ifndef DO_NOT_USE_UART0
-		if (s_UartState[0] == UartState::TX) {
+		if (sv_PortState[3] == PortState::TX) {
 			H3_UART0->LCR = UART_LCR_8_N_2 | UART_LCR_BC;
 		}
 # endif
 #endif
+
+		if (s_nDmxDataWriteIndex[0] != s_nDmxDataReadIndex[0]) {
+			s_nDmxDataReadIndex[0] = (s_nDmxDataReadIndex[0] + 1) & (DMX_DATA_OUT_INDEX - 1);
+
+			s_pCoherentRegion->lli[0].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[0][s_nDmxDataReadIndex[0]].data[0]);
+			s_pCoherentRegion->lli[0].len = s_pCoherentRegion->dmx_data[0][s_nDmxDataReadIndex[0]].nLength;
+		}
 
 		if (s_nDmxDataWriteIndex[1] != s_nDmxDataReadIndex[1]) {
 			s_nDmxDataReadIndex[1] = (s_nDmxDataReadIndex[1] + 1) & (DMX_DATA_OUT_INDEX - 1);
@@ -191,26 +196,19 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 			s_pCoherentRegion->lli[1].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[1][s_nDmxDataReadIndex[1]].data[0]);
 			s_pCoherentRegion->lli[1].len = s_pCoherentRegion->dmx_data[1][s_nDmxDataReadIndex[1]].nLength;
 		}
-
+#if defined (ORANGE_PI_ONE)
 		if (s_nDmxDataWriteIndex[2] != s_nDmxDataReadIndex[2]) {
 			s_nDmxDataReadIndex[2] = (s_nDmxDataReadIndex[2] + 1) & (DMX_DATA_OUT_INDEX - 1);
 
 			s_pCoherentRegion->lli[2].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].data[0]);
 			s_pCoherentRegion->lli[2].len = s_pCoherentRegion->dmx_data[2][s_nDmxDataReadIndex[2]].nLength;
 		}
-#if defined (ORANGE_PI_ONE)
+# ifndef DO_NOT_USE_UART0
 		if (s_nDmxDataWriteIndex[3] != s_nDmxDataReadIndex[3]) {
 			s_nDmxDataReadIndex[3] = (s_nDmxDataReadIndex[3] + 1) & (DMX_DATA_OUT_INDEX - 1);
 
 			s_pCoherentRegion->lli[3].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].data[0]);
 			s_pCoherentRegion->lli[3].len = s_pCoherentRegion->dmx_data[3][s_nDmxDataReadIndex[3]].nLength;
-		}
-# ifndef DO_NOT_USE_UART0
-		if (s_nDmxDataWriteIndex[0] != s_nDmxDataReadIndex[0]) {
-			s_nDmxDataReadIndex[0] = (s_nDmxDataReadIndex[0] + 1) & (DMX_DATA_OUT_INDEX - 1);
-
-			s_pCoherentRegion->lli[0].src = reinterpret_cast<uint32_t>(&s_pCoherentRegion->dmx_data[0][s_nDmxDataReadIndex[0]].data[0]);
-			s_pCoherentRegion->lli[0].len = s_pCoherentRegion->dmx_data[0][s_nDmxDataReadIndex[0]].nLength;
 		}
 # endif
 #endif
@@ -220,19 +218,19 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		H3_TIMER->TMR0_INTV = s_nDmxTransmitMabTimeINTV;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		if (s_UartState[1] == UartState::TX) {
+		if (sv_PortState[0] == PortState::TX) {
 			H3_UART1->LCR = UART_LCR_8_N_2;
 		}
 
-		if (s_UartState[2] == UartState::TX) {
+		if (sv_PortState[1] == PortState::TX) {
 			H3_UART2->LCR = UART_LCR_8_N_2;
 		}
 #if defined (ORANGE_PI_ONE)
-		if (s_UartState[3] == UartState::TX) {
+		if (sv_PortState[2] == PortState::TX) {
 			H3_UART3->LCR = UART_LCR_8_N_2;
 		}
 # ifndef DO_NOT_USE_UART0
-		if (s_UartState[0] == UartState::TX) {
+		if (sv_PortState[3] == PortState::TX) {
 			H3_UART0->LCR = UART_LCR_8_N_2;
 		}
 # endif
@@ -243,24 +241,24 @@ static void irq_timer0_dmx_multi_sender(__attribute__((unused))uint32_t clo) {
 		H3_TIMER->TMR0_INTV = s_nDmxTransmitPeriodINTV;
 		H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 
-		if (s_UartState[1] == UartState::TX) {
+		if (sv_PortState[0] == PortState::TX) {
+			H3_DMA_CHL0->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[0]);
+			H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_START;
+		}
+
+		if (sv_PortState[1] == PortState::TX) {
 			H3_DMA_CHL1->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[1]);
 			H3_DMA_CHL1->EN = DMA_CHAN_ENABLE_START;
 		}
-
-		if (s_UartState[2] == UartState::TX) {
+#if defined (ORANGE_PI_ONE)
+		if (sv_PortState[2] == PortState::TX) {
 			H3_DMA_CHL2->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[2]);
 			H3_DMA_CHL2->EN = DMA_CHAN_ENABLE_START;
 		}
-#if defined (ORANGE_PI_ONE)
-		if (s_UartState[3] == UartState::TX) {
+# ifndef DO_NOT_USE_UART0
+		if (sv_PortState[3] == PortState::TX) {
 			H3_DMA_CHL3->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[3]);
 			H3_DMA_CHL3->EN = DMA_CHAN_ENABLE_START;
-		}
-# ifndef DO_NOT_USE_UART0
-		if (s_UartState[0] == UartState::TX) {
-			H3_DMA_CHL0->DESC_ADDR = reinterpret_cast<uint32_t>(&s_pCoherentRegion->lli[0]);
-			H3_DMA_CHL0->EN = DMA_CHAN_ENABLE_START;
 		}
 # endif
 #endif
@@ -289,7 +287,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 	isb();
 
 	if (pUart->LSR & (UART_LSR_BI | UART_LSR_FE | UART_LSR_FIFOERR)) {
-		s_tReceiveState[nUart] = TxRxState::PRE_BREAK;
+		s_PortReceiveState[nUart] = TxRxState::PRE_BREAK;
 	}
 
 	auto nRFL = pUart->RFL;
@@ -300,20 +298,20 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 		const auto nData = static_cast<uint8_t>(pUart->O00.RBR);
 		dmb();
 
-		switch (s_tReceiveState[nUart]) {
+		switch (s_PortReceiveState[nUart]) {
 		case TxRxState::IDLE:
 			s_pRdmDataCurrent[nUart]->data[0] = nData;
 			s_pRdmDataCurrent[nUart]->nIndex = 1;
 
-			s_tReceiveState[nUart] = TxRxState::RDMDISC;
+			s_PortReceiveState[nUart] = TxRxState::RDMDISC;
 			break;
 		case TxRxState::PRE_BREAK:
-			s_tReceiveState[nUart] = TxRxState::BREAK;
+			s_PortReceiveState[nUart] = TxRxState::BREAK;
 			break;
 		case TxRxState::BREAK:
 			switch (nData) {
 			case START_CODE:
-				s_tReceiveState[nUart] = TxRxState::DMXDATA;
+				s_PortReceiveState[nUart] = TxRxState::DMXDATA;
 				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Data[0] = START_CODE;
 				s_nDmxDataIndex[nUart] = 1;
 				s_nDmxPackets[nUart]++;
@@ -323,10 +321,10 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 				s_pRdmDataCurrent[nUart]->nChecksum = E120_SC_RDM;
 				s_pRdmDataCurrent[nUart]->nIndex = 1;
 
-				s_tReceiveState[nUart] = TxRxState::RDMDATA;
+				s_PortReceiveState[nUart] = TxRxState::RDMDATA;
 				break;
 			default:
-				s_tReceiveState[nUart] = TxRxState::IDLE;
+				s_PortReceiveState[nUart] = TxRxState::IDLE;
 				break;
 			}
 			break;
@@ -335,7 +333,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			s_nDmxDataIndex[nUart]++;
 
 			if (s_nDmxDataIndex[nUart] > max::CHANNELS) {
-				s_tReceiveState[nUart] = TxRxState::IDLE;
+				s_PortReceiveState[nUart] = TxRxState::IDLE;
 				s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Statistics.nSlotsInPacket = max::CHANNELS;
 				s_nDmxDataBufferIndexHead[nUart] = (s_nDmxDataBufferIndexHead[nUart] + 1) & buffer::INDEX_MASK;
 				return;
@@ -343,7 +341,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			break;
 		case TxRxState::RDMDATA:
 			if (s_pRdmDataCurrent[nUart]->nIndex > RDM_DATA_BUFFER_SIZE) {
-				s_tReceiveState[nUart] = TxRxState::IDLE;
+				s_PortReceiveState[nUart] = TxRxState::IDLE;
 			} else {
 				nIndex = s_pRdmDataCurrent[nUart]->nIndex;
 				s_pRdmDataCurrent[nUart]->data[nIndex] = nData;
@@ -354,7 +352,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 				const auto *p = reinterpret_cast<struct TRdmMessage *>(&s_pRdmDataCurrent[nUart]->data[0]);
 
 				if (s_pRdmDataCurrent[nUart]->nIndex == p->message_length) {
-					s_tReceiveState[nUart] = TxRxState::CHECKSUMH;
+					s_PortReceiveState[nUart] = TxRxState::CHECKSUMH;
 				}
 			}
 			break;
@@ -364,7 +362,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 			s_pRdmDataCurrent[nUart]->nIndex++;
 			s_pRdmDataCurrent[nUart]->nChecksum = static_cast<uint16_t>(s_pRdmDataCurrent[nUart]->nChecksum - static_cast<uint16_t>(nData << 8));
 
-			s_tReceiveState[nUart] = TxRxState::CHECKSUML;
+			s_PortReceiveState[nUart] = TxRxState::CHECKSUML;
 			break;
 		case TxRxState::CHECKSUML: {
 			nIndex = s_pRdmDataCurrent[nUart]->nIndex;
@@ -382,7 +380,7 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 				dmb();
 			}
 
-			s_tReceiveState[nUart] = TxRxState::IDLE;
+			s_PortReceiveState[nUart] = TxRxState::IDLE;
 		}
 			break;
 		case TxRxState::RDMDISC:
@@ -395,20 +393,20 @@ static void fiq_in_handler(const uint32_t nUart, const H3_UART_TypeDef *pUart, c
 
 			break;
 		default:
-			s_tReceiveState[nUart] = TxRxState::IDLE;
+			s_PortReceiveState[nUart] = TxRxState::IDLE;
 			break;
 		}
 	}
 
 	if (((pUart->USR & UART_USR_BUSY) == 0) && ((nIIR & UART_IIR_IID_TIME_OUT) == UART_IIR_IID_TIME_OUT)) {
-		if (s_tReceiveState[nUart] == TxRxState::DMXDATA) {
-			s_tReceiveState[nUart] = TxRxState::IDLE;
+		if (s_PortReceiveState[nUart] == TxRxState::DMXDATA) {
+			s_PortReceiveState[nUart] = TxRxState::IDLE;
 			s_aDmxData[nUart][s_nDmxDataBufferIndexHead[nUart]].Statistics.nSlotsInPacket = s_nDmxDataIndex[nUart] - 1;
 			s_nDmxDataBufferIndexHead[nUart] = (s_nDmxDataBufferIndexHead[nUart] + 1) & buffer::INDEX_MASK;
 		}
 
-		if (s_tReceiveState[nUart] == TxRxState::RDMDISC) {
-			s_tReceiveState[nUart] = TxRxState::IDLE;
+		if (s_PortReceiveState[nUart] == TxRxState::RDMDISC) {
+			s_PortReceiveState[nUart] = TxRxState::IDLE;
 			s_nRdmDataWriteIndex[nUart] = (s_nRdmDataWriteIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 			s_pRdmDataCurrent[nUart] = &s_aRdmData[nUart][s_nRdmDataWriteIndex[nUart]];
 			sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
@@ -550,8 +548,8 @@ static void uart_config(uint32_t nUart) {
 	isb();
 }
 
-static void UartEnableFifoTx(uint32_t nUart) {	// DMX TX
-	auto *pUart = _get_uart(nUart);
+static void UartEnableFifoTx(const uint32_t nPortIndex) {	// DMX TX
+	auto *pUart = _port_to_uart(nPortIndex);
 	assert(pUart != nullptr);
 
 	if (pUart != nullptr) {
@@ -561,8 +559,8 @@ static void UartEnableFifoTx(uint32_t nUart) {	// DMX TX
 	}
 }
 
-static void UartEnableFifoRx(uint32_t nUart) {	// RDM RX
-	auto *pUart = _get_uart(nUart);
+static void UartEnableFifoRx(const uint32_t nPortIndex) {	// RDM RX
+	auto *pUart = _port_to_uart(nPortIndex);
 	assert(pUart != nullptr);
 
 	if (pUart != nullptr) {
@@ -598,7 +596,7 @@ Dmx::Dmx() {
 		m_nDmxTransmissionLength[i] = 0;
 		// DMA UART TX
 		auto *lli = &s_pCoherentRegion->lli[i];
-		H3_UART_TypeDef *p = _get_uart(i);
+		H3_UART_TypeDef *p = _port_to_uart(i);
 
 		lli->cfg = DMA_CHAN_CFG_DST_IO_MODE | DMA_CHAN_CFG_SRC_LINEAR_MODE
 				| DMA_CHAN_CFG_SRC_DRQ(DRQSRC_SDRAM)
@@ -611,12 +609,12 @@ Dmx::Dmx() {
 		//
 		m_dmxPortDirection[i] = PortDirection::INP;
 		//
-		s_UartState[i] = UartState::IDLE;
+		sv_PortState[i] = PortState::IDLE;
 		// RDM RX
 		s_nRdmDataWriteIndex[i] = 0;
 		s_nRdmDataReadIndex[i] = 0;
 		s_pRdmDataCurrent[i] = &s_aRdmData[i][0];
-		s_tReceiveState[i] = TxRxState::IDLE;
+		s_PortReceiveState[i] = TxRxState::IDLE;
 		// DMX RX
 		s_nDmxDataBufferIndexHead[i] = 0;
 		s_nDmxDataBufferIndexTail[i] = 0;
@@ -635,23 +633,17 @@ Dmx::Dmx() {
 	h3_gpio_clr(10);
 #endif
 
-		/*
-		 * OPIZERO	OPIONE	OUT	PORT
-		 * -		UART1	1	0
-		 * UART2	UART2	2	1
-		 * UART1	UART3	3	2
-		 * -		UART0	4	3
-		 */
-
-	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[1], GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(s_nDmxDataDirectionGpioPin[1]);	// 0 = input, 1 = output
-	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[2], GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(s_nDmxDataDirectionGpioPin[2]);	// 0 = input, 1 = output
-#if defined (ORANGE_PI_ONE)
-	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[3], GPIO_FSEL_OUTPUT);
-	h3_gpio_clr(s_nDmxDataDirectionGpioPin[3]);	// 0 = input, 1 = output
 	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[0], GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(s_nDmxDataDirectionGpioPin[0]);	// 0 = input, 1 = output
+	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[1], GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(s_nDmxDataDirectionGpioPin[1]);	// 0 = input, 1 = output
+#if defined (ORANGE_PI_ONE)
+	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[2], GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(s_nDmxDataDirectionGpioPin[2]);	// 0 = input, 1 = output
+# ifndef DO_NOT_USE_UART0
+	h3_gpio_fsel(s_nDmxDataDirectionGpioPin[3], GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(s_nDmxDataDirectionGpioPin[3]);	// 0 = input, 1 = output
+# endif
 #endif
 
 	uart_config(1);
@@ -676,12 +668,12 @@ Dmx::Dmx() {
 # endif
 #endif
 
-	UartEnableFifoTx(1);
-	UartEnableFifoTx(2);
-#if defined (ORANGE_PI_ONE)
-	UartEnableFifoTx(3);
-# ifndef DO_NOT_USE_UART0
 	UartEnableFifoTx(0);
+	UartEnableFifoTx(1);
+#if defined (ORANGE_PI_ONE)
+	UartEnableFifoTx(2);
+# ifndef DO_NOT_USE_UART0
+	UartEnableFifoTx(3);
 # endif
 #endif
 
@@ -715,22 +707,22 @@ Dmx::Dmx() {
 }
 
 void Dmx::SetPortDirection(const uint32_t nPortIndex, PortDirection portDirection, bool bEnableData) {
+	DEBUG_PRINTF("nPort=%d, portDirection=%d, bEnableData=%d", nPortIndex, portDirection, bEnableData);
 	assert(nPortIndex < config::max::OUT);
-
-	DEBUG_PRINTF("nPort=%d, tPortDirection=%d, bEnableData=%d", nPortIndex, portDirection, bEnableData);
 
 	const auto nUart = _port_to_uart(nPortIndex);
 
-	if (portDirection != m_dmxPortDirection[nUart]) {
+	if (m_dmxPortDirection[nPortIndex] != portDirection) {
+		m_dmxPortDirection[nPortIndex] = portDirection;
+
 		StopData(nUart, nPortIndex);
+
 		switch (portDirection) {
 		case PortDirection::OUTP:
-			h3_gpio_set(s_nDmxDataDirectionGpioPin[nUart]);	// 0 = input, 1 = output
-			m_dmxPortDirection[nUart] = PortDirection::OUTP;
+			h3_gpio_set(s_nDmxDataDirectionGpioPin[nPortIndex]);	// 0 = input, 1 = output
 			break;
 		case PortDirection::INP:
-			h3_gpio_clr(s_nDmxDataDirectionGpioPin[nUart]);	// 0 = input, 1 = output
-			m_dmxPortDirection[nUart] = PortDirection::INP;
+			h3_gpio_clr(s_nDmxDataDirectionGpioPin[nPortIndex]);	// 0 = input, 1 = output
 			break;
 		default:
 			assert(0);
@@ -746,9 +738,9 @@ void Dmx::SetPortDirection(const uint32_t nPortIndex, PortDirection portDirectio
 	}
 }
 
-void Dmx::ClearData(uint32_t nUart) {
+void Dmx::ClearData(uint32_t nPortIndex) {
 	for (uint32_t j = 0; j < DMX_DATA_OUT_INDEX; j++) {
-		auto *p = &s_pCoherentRegion->dmx_data[nUart][j];
+		auto *p = &s_pCoherentRegion->dmx_data[nPortIndex][j];
 		auto *p32 = reinterpret_cast<uint32_t *>(p->data);
 
 		for (uint32_t i = 0; i < buffer::SIZE / 4; i++) {
@@ -759,7 +751,7 @@ void Dmx::ClearData(uint32_t nUart) {
 	}
 }
 
-void Dmx::StartDmxOutput(__attribute__((unused)) const uint32_t nUart, __attribute__((unused)) const uint32_t nPortIndex) {
+void Dmx::StartDmxOutput(__attribute__((unused)) const uint32_t nPortIndex) {
 	// Nothing to do here
 }
 
@@ -771,27 +763,24 @@ void Dmx::SetOutput(__attribute__((unused)) const bool doForce) {
 	// Nothing to do here
 }
 
-void Dmx::StartData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
-	assert(s_UartState[nUart] == UartState::IDLE);
+void Dmx::StartData(H3_UART_TypeDef *pUart, const uint32_t nPortIndex) {
+	assert(sv_PortState[nPortIndex] == PortState::IDLE);
 
-	switch (m_dmxPortDirection[nUart]) {
+	switch (m_dmxPortDirection[nPortIndex]) {
 	case PortDirection::OUTP:
-		UartEnableFifoTx(nUart);
-		s_UartState[nUart] = UartState::TX;
+		UartEnableFifoTx(nPortIndex);
+		sv_PortState[nPortIndex] = PortState::TX;
 		dmb();
 		break;
 	case PortDirection::INP: {
-		auto *p = _get_uart(nUart);
-		assert(p != nullptr);
-
-		if (p != nullptr) {
-			while (!(p->USR & UART_USR_TFE))
+		if (pUart != nullptr) {
+			while (!(pUart->USR & UART_USR_TFE))
 				;
 		}
 
-		UartEnableFifoRx(nUart);
-		s_tReceiveState[nUart] = TxRxState::IDLE;
-		s_UartState[nUart] = UartState::RX;
+		UartEnableFifoRx(nPortIndex);
+		s_PortReceiveState[nPortIndex] = TxRxState::IDLE;
+		sv_PortState[nPortIndex] = PortState::RX;
 		dmb();
 		break;
 	}
@@ -802,18 +791,16 @@ void Dmx::StartData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex)
 	}
 }
 
-void Dmx::StopData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
-	assert(nUart < config::max::OUT);
+void Dmx::StopData(H3_UART_TypeDef *pUart, const uint32_t nPortIndex) {
+	assert(pUart != nullptr);
+	assert(nPortIndex < config::max::OUT);
 
 	dmb();
-	if (s_UartState[nUart] == UartState::IDLE) {
+	if (sv_PortState[nPortIndex] == PortState::IDLE) {
 		return;
 	}
 
-	auto *pUart = _get_uart(nUart);
-	assert(pUart != nullptr);
-
-	if (m_dmxPortDirection[nUart] == PortDirection::OUTP) {
+	if (m_dmxPortDirection[nPortIndex] == PortDirection::OUTP) {
 		auto IsIdle = false;
 
 		do {
@@ -824,14 +811,14 @@ void Dmx::StopData(uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) 
 				IsIdle = true;
 			}
 		} while (!IsIdle);
-	} else if (m_dmxPortDirection[nUart] == PortDirection::INP) {
+	} else if (m_dmxPortDirection[nPortIndex] == PortDirection::INP) {
 		pUart->O08.FCR = 0;
 		pUart->O04.IER = 0;
 
-		s_tReceiveState[nUart] = TxRxState::IDLE;
+		s_PortReceiveState[nPortIndex] = TxRxState::IDLE;
 	}
 
-	s_UartState[nUart] = UartState::IDLE;
+	sv_PortState[nPortIndex] = PortState::IDLE;
 	dmb();
 }
 
@@ -921,11 +908,8 @@ void Dmx::SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, 
 	assert(pData != 0);
 	assert(nLength != 0);
 
-	const auto nUart = _port_to_uart(nPortIndex);
-	assert(nUart < config::max::OUT);
-
-	const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
-	auto *p = &s_pCoherentRegion->dmx_data[nUart][nNext];
+	const auto nNext = (s_nDmxDataWriteIndex[nPortIndex] + 1) & (DMX_DATA_OUT_INDEX - 1);
+	auto *p = &s_pCoherentRegion->dmx_data[nPortIndex][nNext];
 
 	auto *pDst = p->data;
 	nLength = std::min(nLength, static_cast<uint32_t>(m_nDmxTransmitSlots));
@@ -934,28 +918,26 @@ void Dmx::SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, 
 	__builtin_prefetch(pData);
 	memcpy(&pDst[1], pData,  nLength);
 
-	if (nLength != m_nDmxTransmissionLength[nUart]) {
-		m_nDmxTransmissionLength[nUart] = nLength;
+	if (nLength != m_nDmxTransmissionLength[nPortIndex]) {
+		m_nDmxTransmissionLength[nPortIndex] = nLength;
 		SetDmxPeriodTime(m_nDmxTransmitPeriodRequested);
 	}
 
-	s_nDmxDataWriteIndex[nUart] = nNext;
+	s_nDmxDataWriteIndex[nPortIndex] = nNext;
 }
 
 void Dmx::Blackout() {
 	DEBUG_ENTRY
 
 	for (uint32_t nPortIndex = 0; nPortIndex < config::max::OUT; nPortIndex++) {
-		const auto nUart = _port_to_uart(nPortIndex);
-
-		if (s_UartState[nUart] != UartState::TX) {
+		if (sv_PortState[nPortIndex] != PortState::TX) {
 			continue;
 		}
 
 		assert(nUart < config::max::OUT);
 
-		const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
-		auto *p = &s_pCoherentRegion->dmx_data[nUart][nNext];
+		const auto nNext = (s_nDmxDataWriteIndex[nPortIndex] + 1) & (DMX_DATA_OUT_INDEX - 1);
+		auto *p = &s_pCoherentRegion->dmx_data[nPortIndex][nNext];
 
 		auto *p32 = reinterpret_cast<uint32_t *>(p->data);
 
@@ -965,7 +947,7 @@ void Dmx::Blackout() {
 
 		p->data[0] = dmx::START_CODE;
 
-		s_nDmxDataWriteIndex[nUart] = nNext;
+		s_nDmxDataWriteIndex[nPortIndex] = nNext;
 	}
 
 	DEBUG_EXIT
@@ -975,16 +957,14 @@ void Dmx::FullOn() {
 	DEBUG_ENTRY
 
 	for (uint32_t nPortIndex = 0; nPortIndex < config::max::OUT; nPortIndex++) {
-		const auto nUart = _port_to_uart(nPortIndex);
-
-		if (s_UartState[nUart] != UartState::TX) {
+		if (sv_PortState[nPortIndex] != PortState::TX) {
 			continue;
 		}
 
 		assert(nUart < config::max::OUT);
 
-		const auto nNext = (s_nDmxDataWriteIndex[nUart] + 1) & (DMX_DATA_OUT_INDEX - 1);
-		auto *p = &s_pCoherentRegion->dmx_data[nUart][nNext];
+		const auto nNext = (s_nDmxDataWriteIndex[nPortIndex] + 1) & (DMX_DATA_OUT_INDEX - 1);
+		auto *p = &s_pCoherentRegion->dmx_data[nPortIndex][nNext];
 
 		auto *p32 = reinterpret_cast<uint32_t *>(p->data);
 
@@ -994,7 +974,7 @@ void Dmx::FullOn() {
 
 		p->data[0] = dmx::START_CODE;
 
-		s_nDmxDataWriteIndex[nUart] = nNext;
+		s_nDmxDataWriteIndex[nPortIndex] = nNext;
 	}
 
 	DEBUG_EXIT
@@ -1027,27 +1007,24 @@ const uint8_t *Dmx::GetDmxChanged(uint32_t nPortIndex) {
 }
 
 const uint8_t* Dmx::GetDmxCurrentData(const uint32_t nPortIndex) {
-	const auto nUart = _port_to_uart(nPortIndex);
 	dmb();
-	return const_cast<const uint8_t *>(s_aDmxData[nUart][s_nDmxDataBufferIndexTail[nUart]].Data);
+	return const_cast<const uint8_t *>(s_aDmxData[nPortIndex][s_nDmxDataBufferIndexTail[nPortIndex]].Data);
 }
 
 const uint8_t *Dmx::GetDmxAvailable(const uint32_t nPortIndex)  {
-	const auto nUart = _port_to_uart(nPortIndex);
 	dmb();
-	if (s_nDmxDataBufferIndexHead[nUart] == s_nDmxDataBufferIndexTail[nUart]) {
+	if (s_nDmxDataBufferIndexHead[nPortIndex] == s_nDmxDataBufferIndexTail[nPortIndex]) {
 		return nullptr;
 	} else {
-		const auto *p = const_cast<const uint8_t *>(s_aDmxData[nUart][s_nDmxDataBufferIndexTail[nUart]].Data);
-		s_nDmxDataBufferIndexTail[nUart] = (s_nDmxDataBufferIndexTail[nUart] + 1) & buffer::INDEX_MASK;
+		const auto *p = const_cast<const uint8_t *>(s_aDmxData[nPortIndex][s_nDmxDataBufferIndexTail[nPortIndex]].Data);
+		s_nDmxDataBufferIndexTail[nPortIndex] = (s_nDmxDataBufferIndexTail[nPortIndex] + 1) & buffer::INDEX_MASK;
 		return p;
 	}
 }
 
 uint32_t Dmx::GetDmxUpdatesPerSecond(const uint32_t nPortIndex) {
-	const auto uart = _port_to_uart(nPortIndex);
 	dmb();
-	return s_nDmxUpdatesPerSecond[uart];
+	return s_nDmxUpdatesPerSecond[nPortIndex];
 }
 
 // RDM
@@ -1063,7 +1040,7 @@ void Dmx::RdmSendRaw(const uint32_t nPortIndex, const uint8_t* pRdmData, uint32_
 	assert(pRdmData != nullptr);
 	assert(nLength != 0);
 
-	auto *p = _get_uart(_port_to_uart(nPortIndex));
+	auto *p = _port_to_uart(nPortIndex);
 	assert(p != nullptr);
 
 	while (!(p->LSR & UART_LSR_TEMT))
@@ -1091,14 +1068,12 @@ void Dmx::RdmSendRaw(const uint32_t nPortIndex, const uint8_t* pRdmData, uint32_
 const uint8_t *Dmx::RdmReceive(uint32_t nPortIndex) {
 	assert(nPortIndex < config::max::OUT);
 
-	const auto nUart = _port_to_uart(nPortIndex);
-
 	dmb();
-	if (s_nRdmDataWriteIndex[nUart] == s_nRdmDataReadIndex[nUart]) {
+	if (s_nRdmDataWriteIndex[nPortIndex] == s_nRdmDataReadIndex[nPortIndex]) {
 		return nullptr;
 	} else {
-		const auto *p = &s_aRdmData[nUart][s_nRdmDataReadIndex[nUart]].data[0];
-		s_nRdmDataReadIndex[nUart] = (s_nRdmDataReadIndex[nUart] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+		const auto *p = &s_aRdmData[nPortIndex][s_nRdmDataReadIndex[nPortIndex]].data[0];
+		s_nRdmDataReadIndex[nPortIndex] = (s_nRdmDataReadIndex[nPortIndex] + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 		return p;
 	}
 }

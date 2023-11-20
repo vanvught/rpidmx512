@@ -114,10 +114,10 @@ public:
 	}
 
 private:
-	void StartData(const uint32_t nUart, const uint32_t nPortIndex);
-	void StopData(const uint32_t nUart, const uint32_t nPortIndex);
-	void ClearData(const uint32_t nUart);
-	void StartDmxOutput(const uint32_t nUart, const uint32_t nPortIndex);
+	void StartData(H3_UART_TypeDef *pUart, const uint32_t nPortIndex);
+	void StopData(H3_UART_TypeDef *pUart, const uint32_t nPortIndex);
+	void StartDmxOutput(const uint32_t nPortIndex);
+	void ClearData(const uint32_t nPortIndex);
 
 private:
 	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };

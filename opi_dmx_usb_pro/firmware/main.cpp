@@ -78,12 +78,15 @@ void main() {
 		rdmDeviceParams.Dump();
 	}
 
+	const auto tWidgetMode = widget::Mode::RDM_SNIFFER;
+	widget.SetMode(tWidgetMode);
+
 	widget.Init();
 
 	const auto *pRdmDeviceUid = widget.GetUID();
 	struct TRDMDeviceInfoData tRdmDeviceLabel;
 	widget.GetLabel(&tRdmDeviceLabel);
-	const auto tWidgetMode = widgetParams.GetMode();
+//	const auto tWidgetMode = widgetParams.GetMode();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);

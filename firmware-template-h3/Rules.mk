@@ -131,7 +131,6 @@ all : builddirs prerequisites $(TARGET)
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
-	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
 
 .PHONY:  clean
 
@@ -144,6 +143,7 @@ clean: $(LIBDEP)
 	rm -f $(SUFFIX).uImage
 	rm -f $(SUFFIX).uImage.gz
 	rm -f build$(BUILD_TXT).txt
+	rm -f include/sofware_version_id.h
 	
 #
 # Libraries

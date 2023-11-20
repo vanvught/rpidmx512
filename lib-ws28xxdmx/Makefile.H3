@@ -3,7 +3,7 @@ DEFINES+=NDEBUG
 
 EXTRA_INCLUDES= 
 
-EXTRA_SRCDIR=src/dmx
+EXTRA_SRCDIR=
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

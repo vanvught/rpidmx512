@@ -100,7 +100,7 @@ public:
 		const auto *pCmd = &s_pUdpBuffer[4];
 
 		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(12), static_cast<uint16_t>(13)) && (memcmp("break#", pCmd, 6) == 0)) {
-			const auto nBreakTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10);
+			const auto nBreakTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
 			if (nBreakTime >= dmx::transmit::BREAK_TIME_MIN) {
 				Dmx::Get()->SetDmxBreakTime(nBreakTime);
 			}
@@ -108,7 +108,7 @@ public:
 		}
 
 		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(10), static_cast<uint16_t>(16)) && (memcmp("mab#", pCmd, 4) == 0)) {
-			const auto nMapTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[8]), nBytesReceived - 8);
+			const auto nMapTime = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[8]), nBytesReceived - 8U);
 			if (dmxconfigudp::validate(nMapTime, dmx::transmit::MAB_TIME_MIN, dmx::transmit::MAB_TIME_MAX)) {
 				Dmx::Get()->SetDmxMabTime(nMapTime);
 			}
@@ -116,7 +116,7 @@ public:
 		}
 
 		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(13), static_cast<uint16_t>(14)) && (memcmp("refresh#", pCmd, 8) == 0)) {
-			const auto nRefreshRate = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[12]), nBytesReceived - 12);
+			const auto nRefreshRate = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[12]), nBytesReceived - 12U);
 			uint32_t nPeriodTime = 0;
 			if (nRefreshRate != 0) {
 				nPeriodTime = 1000000U / nRefreshRate;
@@ -126,7 +126,7 @@ public:
 		}
 
 		if (dmxconfigudp::validate(nBytesReceived, static_cast<uint16_t>(11), static_cast<uint16_t>(13)) && (memcmp("slots#", pCmd, 6) == 0)) {
-			const auto nSlots = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10);
+			const auto nSlots = dmxconfigudp::atoi(reinterpret_cast<const char*>(&s_pUdpBuffer[10]), nBytesReceived - 10U);
 				if (dmxconfigudp::validate(nSlots, dmx::min::CHANNELS, dmx::max::CHANNELS)) {
 				Dmx::Get()->SetDmxSlots(static_cast<uint16_t>(nSlots));
 			}

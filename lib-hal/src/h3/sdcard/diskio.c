@@ -55,7 +55,7 @@ static volatile BYTE diskio_status = (BYTE) STA_NOINIT;
 
 extern int sunxi_mmc_init(void);
 extern int mmc_read_blocks(struct mmc *mmc, void *dst, unsigned long start, unsigned blkcnt);
-#ifdef SD_WRITE_SUPPORT
+#ifdef CONFIG_FS_ENABLE_WRITE
 extern unsigned mmc_write_blocks(struct mmc *mmc, unsigned long start, unsigned blkcnt, const void *src);
 #endif
 
@@ -103,7 +103,7 @@ static inline int sdcard_read(uint8_t* buf, int sector, int count) {
 	return RES_OK;
 }
 
-#ifdef SD_WRITE_SUPPORT
+#ifdef CONFIG_FS_ENABLE_WRITE
 static inline int sdcard_write(const uint8_t* buf, int sector, int count) {
     struct mmc *mmc = find_mmc_device(0);
 
@@ -144,7 +144,7 @@ DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
 }
 
 DRESULT disk_write(__attribute__((unused)) BYTE drv, __attribute__((unused)) const BYTE *buf, __attribute__((unused)) DWORD sector, __attribute__((unused)) UINT count) {
-#ifdef SD_WRITE_SUPPORT
+#ifdef CONFIG_FS_ENABLE_WRITE
 	if (drv || !count) {
 		return RES_PARERR;
 	}

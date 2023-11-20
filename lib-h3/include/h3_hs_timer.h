@@ -2,7 +2,7 @@
  * @file h3_hs_timer.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,11 +26,9 @@
 #ifndef H3_HS_TIMER_H_
 #define H3_HS_TIMER_H_
 
-#include "h3.h"
+#include <stdint.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "h3.h"
 
 inline static uint32_t h3_hs_timer_lo_us() {
 	return ~(H3_HS_TIMER->CURNT_LO / 100);
@@ -42,6 +40,10 @@ inline static void h3_hs_timer_delay(uint32_t d) {
 	do {
 	} while (t1 - H3_HS_TIMER->CURNT_LO < d);
 }
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern void h3_hs_timer_udelay(uint32_t d);
 

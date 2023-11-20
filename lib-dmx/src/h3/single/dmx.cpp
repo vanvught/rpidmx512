@@ -51,6 +51,8 @@
 
 #include "debug.h"
 
+#define GPIO_ANALYZER_CH3 GPIO_EXT_18
+
 extern "C" {
 void console_error(const char*);
 }
@@ -124,6 +126,7 @@ static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
 static volatile uint32_t sv_nRdmDataBufferIndexHead;
 static volatile uint32_t sv_nRdmDataBufferIndexTail;
 static uint8_t s_RdmData[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
+static volatile uint32_t sv_nRdmDiscSlotToSlot[RDM_DATA_BUFFER_INDEX_ENTRIES];
 static volatile uint16_t sv_nRdmChecksum;	///< This must be uint16_t
 static volatile uint32_t sv_RdmDataReceiveEnd;
 static volatile uint32_t sv_RdmDiscIndex;
@@ -142,6 +145,17 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
 			sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 		} else {
 			H3_TIMER->TMR0_INTV = s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot * 12;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
+		}
+	} else if (sv_DmxReceiveState == RDMDISC) {
+		if (clo - sv_nFiqMicrosCurrent > sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead]) {
+			dmb();
+			sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+			sv_DmxReceiveState = IDLE;
+			sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
+			h3_gpio_clr(GPIO_ANALYZER_CH3);
+		} else {
+			H3_TIMER->TMR0_INTV = sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		}
 	}
@@ -246,6 +260,7 @@ static void fiq_dmx_in_handler(void) {
 			sv_DmxReceiveState = RDMDISC;
 			s_RdmData[sv_nRdmDataBufferIndexHead][0] = data;
 			sv_nDmxDataIndex = 1;
+			h3_gpio_set(GPIO_ANALYZER_CH3);
 			break;
 		case PRE_BREAK:
 			sv_DmxReceiveState = BREAK;
@@ -328,13 +343,18 @@ static void fiq_dmx_in_handler(void) {
 		}
 			break;
 		case RDMDISC:
+			sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] = sv_nFiqMicrosCurrent - sv_nFiqMicrosPrevious;
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+
+			H3_TIMER->TMR0_INTV = (sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] + 12) * 12;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3
 
 			if (sv_nDmxDataIndex == 24) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				sv_DmxReceiveState = IDLE;
 				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
 				dmb();
+				h3_gpio_clr(GPIO_ANALYZER_CH3);
 			}
 			break;
 		default:
@@ -464,6 +484,10 @@ Dmx::Dmx() {
 	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
 
+#if defined GPIO_ANALYZER_CH3
+	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH3);
+#endif
 #ifdef LOGIC_ANALYZER
 	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH1);
