@@ -1,5 +1,8 @@
+#pragma GCC push_options
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+//TODO remove #pragma GCC diagnostic ignored "-Wold-style-cast"
 /**
- * @file ft245rl.c
+ * @file ft245rl.cpp
  *
  * @brief Interface for FT245RL
  *

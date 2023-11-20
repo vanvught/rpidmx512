@@ -30,18 +30,18 @@
 
 #include "ft245rl.h"
 
-extern uint8_t usb_read_byte();
-extern void usb_send_byte(uint8_t);
+uint8_t usb_read_byte();
+void usb_send_byte(uint8_t);
 
-inline static bool usb_read_is_byte_available() {
+inline bool usb_read_is_byte_available() {
 	return FT245RL_data_available();
 }
 
-inline static void usb_init() {
+inline void usb_init() {
 	FT245RL_init();
 }
 
-inline static bool usb_can_write() {
+inline bool usb_can_write() {
 	return FT245RL_can_write();
 }
 
