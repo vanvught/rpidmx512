@@ -30,25 +30,8 @@
 
 #include "h3.h"
 
-inline static uint32_t h3_hs_timer_lo_us() {
+inline uint32_t h3_hs_timer_lo_us() {
 	return ~(H3_HS_TIMER->CURNT_LO / 100);
 }
-
-inline static void h3_hs_timer_delay(uint32_t d) {
-	const uint32_t t1 = H3_HS_TIMER->CURNT_LO;
-
-	do {
-	} while (t1 - H3_HS_TIMER->CURNT_LO < d);
-}
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void h3_hs_timer_udelay(uint32_t d);
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* H3_HS_TIMER_H_ */

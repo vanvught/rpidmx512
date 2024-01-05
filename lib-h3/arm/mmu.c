@@ -116,7 +116,7 @@ static volatile __attribute__ ((aligned (0x4000))) uint32_t page_table[4096];
 #define AP		(AP_SYSTEM_ACCESS << 10)
 #define S_BIT	(1 << 16)
 
-#define MACRO_SRAM	(        AP | DOMAIN          | C_BIT | B_BIT | SECTION)
+#define MACRO_SRAM	(S_BIT | AP | DOMAIN | XN_BIT |                 SECTION)
 #define MACRO_PERI	(        AP | DOMAIN | XN_BIT |                 SECTION)
 #define MACRO_DRAM	(        AP | DOMAIN          | C_BIT | B_BIT | SECTION)
 #define MACRO_COHE	(S_BIT | AP | DOMAIN | XN_BIT |                 SECTION)

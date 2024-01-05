@@ -2,7 +2,7 @@
  * @file h3_watchdog.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,16 +26,8 @@
 #ifndef H3_WATCHDOG_H_
 #define H3_WATCHDOG_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void h3_watchdog_enable(void);
-extern void h3_watchdog_restart(void);
-extern void h3_watchdog_disable(void);
-
-#ifdef __cplusplus
-}
-#endif
+void h3_watchdog_enable();
+void h3_watchdog_restart();
+void h3_watchdog_disable();
 
 #endif /* H3_WATCHDOG_H_ */

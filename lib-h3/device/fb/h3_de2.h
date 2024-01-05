@@ -165,19 +165,19 @@ typedef struct T_H3_DE2_CSC {
 	__IO uint32_t COEF34;
 } H3_DE2_CSC_TypeDef;
 
-#define H3_DE2					((H3_DE2_TypeDef *) H3_DE_BASE)
+#define H3_DE2					(_CAST(H3_DE2_TypeDef *)(H3_DE_BASE))
 
-#define H3_DE2_MUX0_GLB			((H3_DE2_GLB_TypeDef *) H3_DE2_MUX0_GLB_BASE)
-#define H3_DE2_MUX1_GLB			((H3_DE2_GLB_TypeDef *) H3_DE2_MUX1_GLB_BASE)
+#define H3_DE2_MUX0_GLB			(_CAST(H3_DE2_GLB_TypeDef *)(H3_DE2_MUX0_GLB_BASE))
+#define H3_DE2_MUX1_GLB			(_CAST(H3_DE2_GLB_TypeDef *)(H3_DE2_MUX1_GLB_BASE))
 
-#define H3_DE2_MUX0_BLD			((H3_DE2_BLD_TypeDef *) H3_DE2_MUX0_BLD_BASE)
-#define H3_DE2_MUX1_BLD			((H3_DE2_BLD_TypeDef *) H3_DE2_MUX1_BLD_BASE)
+#define H3_DE2_MUX0_BLD			(_CAST(H3_DE2_BLD_TypeDef *)(H3_DE2_MUX0_BLD_BASE))
+#define H3_DE2_MUX1_BLD			(_CAST(H3_DE2_BLD_TypeDef *)(H3_DE2_MUX1_BLD_BASE))
 
-#define H3_DE2_MUX0_UI			((H3_DE2_UI_TypeDef *) (H3_DE2_MUX0_CHAN_BASE + (1 * H3_DE2_MUX_CHAN_SZ)))
-#define H3_DE2_MUX1_UI			((H3_DE2_UI_TypeDef *) (H3_DE2_MUX1_CHAN_BASE + (1 * H3_DE2_MUX_CHAN_SZ)))
+#define H3_DE2_MUX0_UI			(_CAST(H3_DE2_UI_TypeDef *)((H3_DE2_MUX0_CHAN_BASE + (1 * H3_DE2_MUX_CHAN_SZ))))
+#define H3_DE2_MUX1_UI			(_CAST(H3_DE2_UI_TypeDef *)((H3_DE2_MUX1_CHAN_BASE + (1 * H3_DE2_MUX_CHAN_SZ))))
 
-#define H3_DE2_MUX0_CSC			((H3_DE2_CSC_TypeDef *) H3_DE2_MUX0_DCSC_BASE)
-#define H3_DE2_MUX1_CSC			((H3_DE2_CSC_TypeDef *) H3_DE2_MUX1_DCSC_BASE)
+#define H3_DE2_MUX0_CSC			(_CAST(H3_DE2_CSC_TypeDef *)(H3_DE2_MUX0_DCSC_BASE))
+#define H3_DE2_MUX1_CSC			(_CAST(H3_DE2_CSC_TypeDef *)(H3_DE2_MUX1_DCSC_BASE))
 
 #define H3_DE2_WH(w, h)				(((h - 1) << 16) | (w - 1))
 

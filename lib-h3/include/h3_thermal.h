@@ -2,7 +2,7 @@
  * @file h3_thermal.h
  *
  */
-/* Copyright (C) 2018-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,22 +26,14 @@
 #ifndef H3_THERMAL_H_
 #define H3_THERMAL_H_
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void h3_thermal_init();
 
-extern void h3_thermal_init(void);
+int h3_thermal_gettemp();
 
-extern int h3_thermal_gettemp(void);
+int h3_thermal_getshut();
+void h3_thermal_setshut(int);
 
-extern int h3_thermal_getshut(void);
-extern void h3_thermal_setshut(int);
-
-extern int h3_thermal_getalarm(void);
-extern void h3_thermal_setalarm(int);
-
-#ifdef __cplusplus
-}
-#endif
+int h3_thermal_getalarm();
+void h3_thermal_setalarm(int);
 
 #endif /* H3_THERMAL_H_ */

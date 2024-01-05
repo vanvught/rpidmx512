@@ -2,7 +2,7 @@
  * @file h3_board.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -69,12 +69,12 @@
 #define EXT_UART_RX			GPIO_EXT_10
 
 #define EXT_I2C_NUMBER		((EXT_I2C_BASE - H3_TWI_BASE) / 0x400)
-#define EXT_I2C				((H3_TWI_TypeDef *) EXT_I2C_BASE)
+#define EXT_I2C				(_CAST(H3_TWI_TypeDef *)(EXT_I2C_BASE))
 #define EXT_I2C_SDA			GPIO_EXT_3
 #define EXT_I2C_SCL			GPIO_EXT_5
 
 #define EXT_SPI_NUMBER		((EXT_SPI_BASE - H3_SPI_BASE) / 0x1000)
-#define EXT_SPI				((H3_SPI_TypeDef *) EXT_SPI_BASE)
+#define EXT_SPI				(_CAST(H3_SPI_TypeDef *)(EXT_SPI_BASE))
 #define EXT_SPI_CS			GPIO_EXT_24
 #define EXT_SPI_CLK			GPIO_EXT_23
 #define EXT_SPI_MOSI		GPIO_EXT_19

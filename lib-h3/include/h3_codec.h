@@ -2,7 +2,7 @@
  * @file h3_codec.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,24 +26,16 @@
 #ifndef H3_CODEC_H_
 #define H3_CODEC_H_
 
-#include <stdint.h>
+#include <cstdint>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void h3_codec_set_volume(uint8_t volume);
 
-extern void h3_codec_set_volume(uint8_t volume);
+void h3_codec_begin();
 
-extern void h3_codec_begin(void);
+void h3_codec_start();
+void h3_codec_stop();
 
-extern void h3_codec_start(void);
-extern void h3_codec_stop(void);
-
-extern void h3_codec_set_buffer_length(uint32_t length);
-extern void h3_codec_push_data(const int16_t *src);
-
-#ifdef __cplusplus
-}
-#endif
+void h3_codec_set_buffer_length(uint32_t length);
+void h3_codec_push_data(const int16_t *src);
 
 #endif /* H3_CODEC_H_ */
