@@ -2,7 +2,7 @@
  * @file rdmdeviceresponder.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdm.h"
+#include "rdmconst.h"
 #include "rdmdevice.h"
 #include "rdmidentify.h"
 #include "rdmpersonality.h"
@@ -50,7 +50,7 @@ void factorydefaults();
 class RDMDeviceResponder: public RDMDevice {
 public:
 	RDMDeviceResponder(RDMPersonality **pRDMPersonalities, uint32_t nPersonalityCount);
-	virtual ~RDMDeviceResponder() {}
+	virtual ~RDMDeviceResponder() = default;
 
 	void Init();
 	void Print();

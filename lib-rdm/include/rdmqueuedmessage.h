@@ -28,8 +28,6 @@
 
 #include <cstdint>
 
-#include "rdmmessage.h"
-
 struct TRdmQueuedMessage {
 	uint8_t command_class;					///< 21
 	uint8_t param_id[2];					///< 22, 23

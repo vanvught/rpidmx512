@@ -62,7 +62,7 @@ int RDMResponder::HandleResponse(uint8_t *pResponse) {
 
 #ifndef NDEBUG
 	if (nLength != INVALID_RESPONSE) {
-		RDMMessage::Print(pResponse);
+		rdm::message_print(pResponse);
 	}
 #endif
 
@@ -97,7 +97,7 @@ int RDMResponder::Run() {
 	}
 
 #ifndef NDEBUG
-	RDMMessage::Print(pRdmDataIn);
+	rdm::message_print(pRdmDataIn);
 #endif
 
 	if (pRdmDataIn[0] == E120_SC_RDM) {

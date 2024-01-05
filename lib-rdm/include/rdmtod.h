@@ -2,7 +2,7 @@
  * @file rdmtod.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 # include <cstdio>
 #endif
 
-#include "rdm.h"
+#include "rdmconst.h"
 
 #include "debug.h"
 
@@ -61,7 +61,7 @@ public:
 		}
 	}
 
-	~RDMTod() {}
+	~RDMTod() = default;
 
 	void Reset() {
 		for (uint32_t i = 0; i < m_nEntries; i++) {

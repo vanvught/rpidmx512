@@ -1,4 +1,3 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwdio.cpp
  *
@@ -27,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicebwdio.h"
+#include "spi/rdmsubdevicebwdio.h"
 
 #include "bwspidio.h"
 
@@ -62,4 +61,3 @@ void RDMSubDeviceBwDio::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		Stop();
 	}
 }
-#endif

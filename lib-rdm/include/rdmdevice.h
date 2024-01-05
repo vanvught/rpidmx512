@@ -57,8 +57,6 @@ struct TRDMDeviceInfo {
 	uint8_t sensor_count;			///< This field indicates the number of available sensors in a Root Device or Sub-Device. When this parameter is directed to a Sub-Device, the reply shall be identical for any Sub-Device owned by a specific Root Device.
 };
 
-#include "rdm.h"
-
 class RDMDevice {
 public:
 	RDMDevice();
@@ -71,10 +69,6 @@ public:
 	}
 
 	void Print();
-
-	void SetRDMDeviceStore(RDMDeviceStore *pRDMDeviceStore) {
-		m_pRDMDeviceStore = pRDMDeviceStore;
-	}
 
 	void SetFactoryDefaults() {
 		DEBUG_ENTRY
@@ -115,9 +109,7 @@ public:
 			memcpy(m_aRootLabel, pInfo->data, nLength);
 			m_nRootLabelLength = nLength;
 
-			if (m_pRDMDeviceStore != nullptr) {
-				m_pRDMDeviceStore->SaveLabel(m_aRootLabel, m_nRootLabelLength);
-			}
+			RDMDeviceStore::SaveLabel(m_aRootLabel, m_nRootLabelLength);
 		} else {
 			memcpy(m_aFactoryRootLabel, pInfo->data, nLength);
 			m_nFactoryRootLabelLength = nLength;
@@ -157,8 +149,6 @@ private:
 private:
 	char m_aFactoryRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
 	char m_aRootLabel[RDM_DEVICE_LABEL_MAX_LENGTH];
-
-	RDMDeviceStore *m_pRDMDeviceStore { nullptr };
 
 	uint16_t m_nProductCategory { E120_PRODUCT_CATEGORY_OTHER };
 	uint16_t m_nProductDetail { E120_PRODUCT_DETAIL_OTHER };

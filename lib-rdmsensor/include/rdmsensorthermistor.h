@@ -29,25 +29,24 @@
 #include <cstdint>
 
 #include "rdmsensor.h"
-#include "rdmsensorstore.h"
+#include "rdmsensorsstore.h"
+#include "rdm_e120.h"
+
 #include "mcp3424.h"
 #include "thermistor.h"
-
-#include "rdm_e120.h"
 
 #include "debug.h"
 
 class RDMSensorThermistor final: public RDMSensor, MCP3424 {
 public:
-	RDMSensorThermistor(uint8_t nSensor, uint8_t nAddress = 0, uint8_t nChannel = 0, int32_t nCalibration = 0, RDMSensorStore *pRDMSensorStore = nullptr) :
+	RDMSensorThermistor(uint8_t nSensor, uint8_t nAddress = 0, uint8_t nChannel = 0, int32_t nCalibration = 0) :
 	RDMSensor(nSensor),
 	MCP3424(nAddress),
 	m_nCalibration(nCalibration),
-	m_pRDMSensorStore(pRDMSensorStore),
 	m_nChannel(nChannel)
 	{
 		DEBUG_ENTRY
-		DEBUG_PRINTF("nSensor=%u, nAddress=0x%.2x, nChannel=%u, nCalibration=%d, pRDMSensorStore=%p", nSensor, nAddress, nChannel, nCalibration, reinterpret_cast<void *>(pRDMSensorStore));
+		DEBUG_PRINTF("nSensor=%u, nAddress=0x%.2x, nChannel=%u, nCalibration=%d", nSensor, nAddress, nChannel, nCalibration);
 
 		SetType(E120_SENS_TEMPERATURE);
 		SetUnit(E120_UNITS_CENTIGRADE);
@@ -87,9 +86,7 @@ public:
 			const auto iMeasure = static_cast<int32_t>(GetValue(nResistor) * 10);
 			DEBUG_PRINTF("iCalibrate=%d, iMeasure=%d, m_nOffset=%d, nResistor=%u", iCalibrate, iMeasure, m_nCalibration, nResistor);
 			if (iCalibrate == iMeasure) {
-				if (m_pRDMSensorStore != nullptr) {
-					m_pRDMSensorStore->SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
-				}
+				RDMSensorsStore::SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
 				return true;
 			}
 		}
@@ -99,9 +96,7 @@ public:
 
 	void ResetCalibration() {
 		m_nCalibration = 0;
-		if (m_pRDMSensorStore != nullptr) {
-			m_pRDMSensorStore->SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
-		}
+		RDMSensorsStore::SaveCalibration(RDMSensor::GetSensor(), m_nCalibration);
 	}
 
 	int32_t GetCalibration() const {
@@ -129,7 +124,6 @@ public:
 
 private:
 	int32_t m_nCalibration;
-	RDMSensorStore *m_pRDMSensorStore;
 	uint8_t m_nChannel;
 
 	/*

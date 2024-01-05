@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicebw7fets.h"
+#include "spi/rdmsubdevicebw7fets.h"
 
 #include "bwspi7fets.h"
 

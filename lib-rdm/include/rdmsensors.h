@@ -27,9 +27,11 @@
 #define RDMSENSORS_H_
 
 #include <cstdint>
+#include <cassert>
 
 #include "rdmsensor.h"
-#include "rdmsensorsconst.h"
+
+#include "debug.h"
 
 #if defined (RASPPI) || defined(BARE_METAL)
 # define RDM_SENSORS_ENABLE
@@ -44,6 +46,10 @@
 # undef RDMSENSOR_CPU_ENABLE
 #endif
 
+#if defined (RDMSENSOR_CPU_ENABLE)
+# include "sensor/cputemperature.h"
+#endif
+
 namespace rdm {
 namespace sensors {
 static constexpr auto MAX = 16;
@@ -56,26 +62,98 @@ static constexpr auto MAX = 8;
 
 class RDMSensors {
 public:
-	RDMSensors();
-	~RDMSensors();
+	RDMSensors() {
+		DEBUG_ENTRY
+		assert(s_pThis == nullptr);
+		s_pThis = this;
 
-	bool Add(RDMSensor *pRDMSensor);
+#if defined (RDM_SENSORS_ENABLE) || defined (RDMSENSOR_CPU_ENABLE)
+		m_pRDMSensor = new RDMSensor*[rdm::sensors::MAX];
+		assert(m_pRDMSensor != nullptr);
+
+# if defined (RDMSENSOR_CPU_ENABLE)
+		Add(new CpuTemperature(m_nCount));
+# endif
+#endif
+		DEBUG_EXIT
+	}
+
+	~RDMSensors() {
+		DEBUG_ENTRY
+		for (uint32_t i = 0; i < m_nCount; i++) {
+			if (m_pRDMSensor[i] != nullptr) {
+				delete m_pRDMSensor[i];
+				m_pRDMSensor[i] = nullptr;
+			}
+		}
+
+		delete [] m_pRDMSensor;
+		DEBUG_EXIT
+	}
+
+	bool Add(RDMSensor *pRDMSensor) {
+		DEBUG_ENTRY
+
+		assert(m_pRDMSensor != nullptr);
+
+		if (m_pRDMSensor == nullptr) {
+			DEBUG_EXIT
+			return false;
+		}
+
+		if (m_nCount == rdm::sensors::MAX) {
+			DEBUG_EXIT
+			return false;
+		}
+
+		assert(pRDMSensor != nullptr);
+		m_pRDMSensor[m_nCount++] = pRDMSensor;
+
+		DEBUG_PRINTF("m_nCount=%u", m_nCount);
+		DEBUG_EXIT
+		return true;
+	}
 
 	uint8_t GetCount() const {
 		return m_nCount;
 	}
 
-	const struct rdm::sensor::Defintion* GetDefintion(uint8_t nSensor);
-	const struct rdm::sensor::Values* GetValues(uint8_t nSensor);
-	void SetValues(uint8_t nSensor);
-	void SetRecord(uint8_t nSensor);
+	const struct rdm::sensor::Defintion *GetDefintion(const uint8_t nSensor) {
+		assert(nSensor < m_nCount);
+		assert(m_pRDMSensor[nSensor] != nullptr);
+		return m_pRDMSensor[nSensor]->GetDefintion();
+	}
+
+	const struct rdm::sensor::Values *GetValues(const uint8_t nSensor) {
+		assert(nSensor < m_nCount);
+
+		assert(m_pRDMSensor[nSensor] != nullptr);
+		return m_pRDMSensor[nSensor]->GetValues();
+	}
+
+	void SetValues(const uint8_t nSensor) {
+		if (nSensor == 0xFF) {
+			for (uint32_t i = 0; i < m_nCount; i++) {
+				m_pRDMSensor[i]->SetValues();
+			}
+		} else {
+			m_pRDMSensor[nSensor]->SetValues();
+		}
+	}
+
+	void SetRecord(const uint8_t nSensor) {
+		if (nSensor == 0xFF) {
+			for (uint32_t i = 0; i < m_nCount; i++) {
+				m_pRDMSensor[i]->Record();
+			}
+		} else {
+			m_pRDMSensor[nSensor]->Record();
+		}
+	}
 
 	RDMSensor *GetSensor(uint8_t nSensor) {
 		return m_pRDMSensor[nSensor];
 	}
-
-	static const char *GetTypeString(rdm::sensors::Types type);
-	static rdm::sensors::Types GetTypeString(const char *pValue);
 
 	static RDMSensors* Get() {
 		return s_pThis;

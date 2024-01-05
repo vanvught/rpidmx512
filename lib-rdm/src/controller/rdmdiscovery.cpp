@@ -154,7 +154,6 @@ bool RDMDiscovery::Start(const uint32_t nPortIndex, RDMTod *pRDMTod, const bool 
 
 	m_Discovery.stack.nTop = -1;
 	m_Discovery.stack.push(0x000000000000, 0xfffffffffffe);
-//	m_Discovery.stack.push(0x5000c0a802c0, 0x5000c0a802c0);
 	m_Discovery.nCounter = rdmdiscovery::DISCOVERY_COUNTER;
 
 	m_Discovery.bCommandRunning = false;
@@ -353,7 +352,7 @@ void RDMDiscovery::Process() {
 		if ((Hardware::Get()->Micros() - m_Mute.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_Mute.nCounter > 0);
 			m_Mute.nCounter--;
-			m_Message.Send(m_nPortIndex, 5800);
+			m_Message.Send(m_nPortIndex);
 			m_Mute.nMicros = Hardware::Get()->Micros();
 		}
 
@@ -372,7 +371,7 @@ void RDMDiscovery::Process() {
 			if ((Hardware::Get()->Micros() - m_Discovery.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 				assert(m_Discovery.nCounter > 0);
 				m_Discovery.nCounter--;
-				m_Message.Send(m_nPortIndex, 5800);
+				m_Message.Send(m_nPortIndex);
 				m_Discovery.nMicros = Hardware::Get()->Micros();
 			}
 
@@ -407,7 +406,7 @@ void RDMDiscovery::Process() {
 		m_Message.SetCc(E120_DISCOVERY_COMMAND);
 		m_Message.SetPid(E120_DISC_UNIQUE_BRANCH);
 		m_Message.SetPd(reinterpret_cast<const uint8_t*>(m_Discovery.pdl), 2 * RDM_UID_SIZE);
-		m_Message.Send(m_nPortIndex, 5800);
+		m_Message.Send(m_nPortIndex);
 
 		m_Discovery.nCounter = rdmdiscovery::DISCOVERY_COUNTER;
 		m_Discovery.nMicros = Hardware::Get()->Micros();
@@ -430,7 +429,7 @@ void RDMDiscovery::Process() {
 			m_Message.SetPid(E120_DISC_MUTE);
 			m_Message.SetDstUid(m_Discovery.uid);
 			m_Message.SetPd(nullptr, 0);
-			m_Message.Send(m_nPortIndex, 5800);
+			m_Message.Send(m_nPortIndex);
 
 			m_DiscoverySingleDevice.nMicros = Hardware::Get()->Micros();
 			m_DiscoverySingleDevice.bCommandRunning = true;
@@ -461,7 +460,7 @@ void RDMDiscovery::Process() {
 		if ((Hardware::Get()->Micros() - m_DiscoverySingleDevice.nMicros) > rdmdiscovery::RECEIVE_TIME_OUT) {
 			assert(m_Mute.nCounter > 0);
 			m_DiscoverySingleDevice.nCounter--;
-			m_Message.Send(m_nPortIndex, 5800);
+			m_Message.Send(m_nPortIndex);
 			m_DiscoverySingleDevice.nMicros = Hardware::Get()->Micros();
 		}
 
@@ -523,7 +522,8 @@ void RDMDiscovery::Process() {
 			const auto pResponse = reinterpret_cast<struct TRdmMessage*>(m_pResponse);
 
 			if ((pResponse->command_class != E120_DISCOVERY_COMMAND_RESPONSE) || ((static_cast<uint16_t>((pResponse->param_id[0] << 8) + pResponse->param_id[1])) != E120_DISC_MUTE)) {
-				assert(0);
+				puts("QUICKFIND invalid response");
+				//assert(0);
 				return;
 			}
 

@@ -1,8 +1,8 @@
 /**
- * @file rdmsubdevicesconst.h
+ * @file rdm_sensors.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,25 +23,36 @@
  * THE SOFTWARE.
  */
 
-#ifndef RDMSUBDEVICESCONST_H_
-#define RDMSUBDEVICESCONST_H_
-
 #include <cstdint>
+#include <cstring>
+#include <cassert>
+
+#include "rdm_sensors.h"
 
 namespace rdm {
-namespace subdevices {
-enum class Types {
-	BW7FETS, BWDIMMER, BWDIO, BWLCD, BWRELAY,	// BitWizard
-	MCP23S08, MCP23S17, 						// GPIO
-	MCP4822, MCP4902,							// DAC
-	UNDEFINED
-};
-}  // namespace subdevices
+namespace sensors {
+static constexpr char TYPE[static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED)][8] = {
+		"bh1750", "htu21d", "ina219", "mcp9808", "si7021", "mcp3424" };
+
+const char *get_type_string(rdm::sensors::Types type) {
+	if (type < rdm::sensors::Types::UNDEFINED) {
+		return TYPE[static_cast<uint32_t>(type)];
+	}
+
+	return "Unknown";
+}
+
+rdm::sensors::Types get_type_string(const char *pValue) {
+	assert(pValue != nullptr);
+
+	for (uint32_t i = 0; i < static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED); i++) {
+		if (strcasecmp(pValue, TYPE[i]) == 0) {
+			return static_cast<rdm::sensors::Types>(i);
+		}
+	}
+
+	return rdm::sensors::Types::UNDEFINED;
+}
+}  // namespace sensors
 }  // namespace rdm
 
-struct RDMSubDevicesConst {
-	static const char PARAMS_FILE_NAME[];
-	static const char TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9];
-};
-
-#endif /* RDMSUBDEVICESCONST_H_ */

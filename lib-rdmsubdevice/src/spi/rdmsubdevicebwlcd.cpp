@@ -1,4 +1,3 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwlcd.cpp
  *
@@ -30,7 +29,7 @@
 
 #include "cstdio"
 
-#include "rdmsubdevicebwlcd.h"
+#include "spi/rdmsubdevicebwlcd.h"
 
 #include "bwspilcd.h"
 
@@ -271,4 +270,3 @@ void RDMSubDeviceBwLcd::DisplayUpdatePersonality() {
 		break;
 	}
 }
-#endif

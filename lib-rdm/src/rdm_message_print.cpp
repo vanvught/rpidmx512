@@ -1,5 +1,5 @@
 /**
- * @file rdmmessageprint.cpp
+ * @file rdm_message_print.cpp
  *
  */
 /* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -26,28 +26,15 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdio>
+#include <cassert>
 
-#include "rdmmessage.h"
-
-#include "rdm.h"
+#include "rdmconst.h"
 #include "rdm_e120.h"
 
 #include "debug.h"
 
-void RDMMessage::PrintNoSc(const uint8_t *pRdmDataNoSc) {
-	assert(pRdmDataNoSc != nullptr);
-
-	const auto *pData = reinterpret_cast<const struct TRdmMessageNoSc *>(pRdmDataNoSc);
-
-	uint8_t message[sizeof(struct TRdmMessage)];
-	message[0] = E120_SC_RDM;
-
-	memcpy(&message[1], pData, pData->message_length - 1U);
-
-	Print(message);
-}
-
-void RDMMessage::Print(const uint8_t *pRdmData) {
+namespace rdm {
+void message_print(const uint8_t *pRdmData) {
 	if (pRdmData == nullptr) {
 		DEBUG_PUTS("No RDM data");
 		return;
@@ -107,3 +94,18 @@ void RDMMessage::Print(const uint8_t *pRdmData) {
 		printf("Corrupted? RDM data [0-3]: %.2x:%.2x:%.2x:%.2x\n", pRdmData[0], pRdmData[1], pRdmData[2], pRdmData[3]);
 	}
 }
+
+void message_print_no_sc(const uint8_t *pRdmDataNoSc) {
+	assert(pRdmDataNoSc != nullptr);
+
+	const auto *pData = reinterpret_cast<const struct TRdmMessageNoSc *>(pRdmDataNoSc);
+
+	uint8_t message[sizeof(struct TRdmMessage)];
+	message[0] = E120_SC_RDM;
+
+	memcpy(&message[1], pData, pData->message_length - 1U);
+
+	message_print(message);
+}
+}  // namespace rdm
+

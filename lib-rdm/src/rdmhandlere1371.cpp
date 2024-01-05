@@ -26,7 +26,7 @@
 #include <cstring>
 
 #include "rdmhandler.h"
-
+#include "rdmconst.h"
 #include "rdmidentify.h"
 #include "rdm_e120.h"
 

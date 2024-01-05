@@ -30,7 +30,7 @@
  * MCP4902: Dual 8-Bit Voltage Output DAC
  */
 
-#include "rdmsubdevicemcp4902.h"
+#include "spi/rdmsubdevicemcp4902.h"
 
 #include "mcp49x2.h"
 
