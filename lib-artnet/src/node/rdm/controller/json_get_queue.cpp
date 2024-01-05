@@ -25,15 +25,22 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cassert>
 
 #include "artnetnode.h"
 
 namespace remoteconfig {
 namespace rdm {
 uint32_t json_get_queue(char *pOutBuffer, const uint32_t nOutBufferSize) {
-	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"uid\":[" ));
-	nLength += ArtNetNode::Get()->RdmCopyWorkingQueue(&pOutBuffer[nLength], nOutBufferSize - nLength - 2);
-	nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nOutBufferSize - nLength, "]}" ));
+	const auto nBufferSize = nOutBufferSize - 2U;
+	auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"uid\":[" ));
+
+	nLength += ArtNetNode::Get()->RdmCopyWorkingQueue(&pOutBuffer[nLength], nBufferSize - nLength);
+
+	pOutBuffer[nLength++] = ']';
+	pOutBuffer[nLength++] = '}';
+
+	assert(nLength <= nOutBufferSize);
 	return nLength;
 }
 }  // namespace rdm

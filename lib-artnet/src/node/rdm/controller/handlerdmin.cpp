@@ -62,6 +62,12 @@ void ArtNetNode::HandleRdmIn() {
 			pArtRdm->Address = m_Node.Port[nPortIndex].DefaultAddress;
 
 			Network::Get()->SendTo(m_nHandle, pArtRdm, sizeof(struct artnet::ArtRdm), m_InputPort[nPortIndex].nDestinationIp, artnet::UDP_PORT);
+
+#if defined(CONFIG_PANELLED_RDM_PORT)
+			hal::panel_led_on(hal::panelled::PORT_A_RDM << nPortIndex);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+			hal::panel_led_on(hal::panelled::RDM << nPortIndex);
+#endif
 		}
 	}
 }

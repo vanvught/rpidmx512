@@ -33,7 +33,7 @@
 #include "rdmdeviceresponder.h"
 #include "rdmpersonality.h"
 #include "rdmhandler.h"
-#include "rdm.h"
+#include "rdmconst.h"
 
 #include "lightset.h"
 

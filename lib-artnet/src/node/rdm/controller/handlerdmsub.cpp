@@ -1,8 +1,11 @@
 /**
- * @file setrdm.cpp
+ * @file handlerdmsub.cpp
  *
  */
-/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@gd32-dmx.org
+/**
+ * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
+ */
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +26,30 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
+#ifdef NDEBUG
+# undef NDEBUG	//TODO Remove # undef NDEBUG
+#endif
+
+#include <cstring>
+#include <cstdio>
+#include <cassert>
 
 #include "artnetnode.h"
-#include "artnetstore.h"
+
+#include "network.h"
+
+#include "panel_led.h"
 
 #include "debug.h"
 
-void ArtNetNode::SetRdm(const uint32_t nPortIndex, const bool bEnable) {
+void ArtNetNode::HandleRdmSub() {
 	DEBUG_ENTRY
-	assert(nPortIndex < artnetnode::MAX_PORTS);
 
-	const auto isEnabled = !((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
+	auto *const pArtRdmSub = reinterpret_cast<artnet::ArtRdmSub *>(m_pReceiveBuffer);
 
-	if (isEnabled == bEnable) {
+	if (pArtRdmSub->RdmVer != 0x01) {
 		DEBUG_EXIT
 		return;
-	}
-
-	if (!bEnable) {
-		m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::RDM_DISABLED;
-	} else {
-		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::RDM_DISABLED);
-	}
-
-	if (m_State.status == artnetnode::Status::ON) {
-		ArtNetStore::SaveRdmEnabled(nPortIndex, bEnable);
-		artnet::display_rdm_enabled(nPortIndex, bEnable);
 	}
 
 	DEBUG_EXIT

@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cassert>
 
 #include "artnetnode.h"
 
@@ -34,9 +35,15 @@ uint32_t json_get_tod(const char cPort, char *pOutBuffer, const uint32_t nOutBuf
 	const uint32_t nPortIndex = (cPort | 0x20) - 'a';
 
 	if (nPortIndex < artnetnode::MAX_PORTS) {
-		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"port\":\"%c\",\"tod\":[" , (nPortIndex + 'A')));
-		nLength += ArtNetNode::Get()->RdmCopyTod(nPortIndex, &pOutBuffer[nLength], nOutBufferSize - nLength);
-		nLength += static_cast<uint32_t>(snprintf(&pOutBuffer[nLength], nOutBufferSize - nLength, "]}" ));
+		const auto nBufferSize = nOutBufferSize - 2U;
+		auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nBufferSize, "{\"port\":\"%c\",\"tod\":[" , (nPortIndex + 'A')));
+
+		nLength += ArtNetNode::Get()->RdmCopyTod(nPortIndex, &pOutBuffer[nLength], nBufferSize - nLength);
+
+		pOutBuffer[nLength++] = ']';
+		pOutBuffer[nLength++] = '}';
+
+		assert(nLength <= nOutBufferSize);
 		return nLength;
 	}
 

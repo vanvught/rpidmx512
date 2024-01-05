@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,6 @@
 #include "artnet.h"
 #include "artnetnode_ports.h"
 #include "artnettimecode.h"
-#include "artnetstore.h"
 #include "artnetdisplay.h"
 #include "artnettrigger.h"
 #if defined (RDM_CONTROLLER)
@@ -64,6 +63,8 @@
 #include "lightset.h"
 #include "hardware.h"
 #include "network.h"
+
+#include "panel_led.h"
 
 #include "debug.h"
 
@@ -178,15 +179,19 @@ struct InputPort {
 };
 
 inline artnetnode::FailSafe convert_failsafe(const lightset::FailSafe failsafe) {
-	const auto fs = static_cast<FailSafe>(static_cast<uint32_t>(failsafe) + static_cast<uint32_t>(FailSafe::LAST));
-	DEBUG_PRINTF("failsafe=%u, fs=%u", static_cast<uint32_t>(failsafe), static_cast<uint32_t>(fs));
-	return fs;
+	if (failsafe > lightset::FailSafe::PLAYBACK) {
+		return artnetnode::FailSafe::LAST;
+	}
+
+	return static_cast<artnetnode::FailSafe>(static_cast<uint32_t>(failsafe) + static_cast<uint32_t>(artnetnode::FailSafe::LAST));
 }
 
 inline lightset::FailSafe convert_failsafe(const artnetnode::FailSafe failsafe) {
-	const auto fs = static_cast<lightset::FailSafe>(static_cast<uint32_t>(failsafe) - static_cast<uint32_t>(FailSafe::LAST));
-	DEBUG_PRINTF("failsafe=%u, fs=%u", static_cast<uint32_t>(failsafe), static_cast<uint32_t>(fs));
-	return fs;
+	if (failsafe > artnetnode::FailSafe::RECORD) {
+		return lightset::FailSafe::HOLD;
+	}
+
+	return  static_cast<lightset::FailSafe>(static_cast<uint32_t>(failsafe) - static_cast<uint32_t>(artnetnode::FailSafe::LAST));
 }
 }  // namespace artnetnode
 
@@ -212,20 +217,17 @@ public:
 #if (ARTNET_VERSION >= 4)
 		E131Bridge::Run();
 #endif
-#if defined (LIGHTSET_HAVE_RUN)
-		m_pLightSet->Run();
-#endif
 #if defined (RDM_CONTROLLER)
-		if (m_State.rdm.IsEnabled) {
+		if (__builtin_expect((m_State.rdm.IsEnabled), 0)) {
 			assert(m_pArtNetRdmController != nullptr);
 			m_pArtNetRdmController->Run();
 
-			if (!m_State.rdm.IsDiscoveryRunning && ((m_nCurrentPacketMillis - m_State.rdm.nDiscoveryMillis) > (1000 * 60 * 15))) {
+			if (__builtin_expect((!m_State.rdm.IsDiscoveryRunning && ((m_nCurrentPacketMillis - m_State.rdm.nDiscoveryMillis) > (1000 * 60 * 15))), 0)) {
 				DEBUG_PUTS("RDM Discovery -> START");
 				m_State.rdm.IsDiscoveryRunning = true;
 			}
 
-			if (m_State.rdm.IsDiscoveryRunning) {
+			if (__builtin_expect((m_State.rdm.IsDiscoveryRunning), 0)) {
 				m_State.rdm.IsDiscoveryRunning = RdmDiscoveryRun();
 
 				if (!m_State.rdm.IsDiscoveryRunning) {
@@ -233,14 +235,45 @@ public:
 					m_State.rdm.nDiscoveryPortIndex = 0;
 					m_State.rdm.nDiscoveryMillis = m_nCurrentPacketMillis;
 				}
+			} else {
+				uint32_t nPortIndex;
+				bool bIsIncremental;
+				if (m_pArtNetRdmController->IsFinished(nPortIndex, bIsIncremental)) {
+					SendTod(nPortIndex);
+
+					DEBUG_PRINTF("TOD sent -> %u", nPortIndex);
+
+					if (m_OutputPort[nPortIndex].IsTransmitting) {
+						DEBUG_PUTS("m_pLightSet->Stop/Start");
+						m_pLightSet->Stop(nPortIndex);
+						m_pLightSet->Start(nPortIndex);
+					}
+				}
 			}
 		}
 #endif
+		if ((m_nCurrentPacketMillis - m_nPreviousLedpanelMillis) > 200) {
+			m_nPreviousLedpanelMillis = m_nCurrentPacketMillis;
+			for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
+				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
+#if defined (ARTNET_HAVE_DMXIN)
+				hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
+#endif
+#if defined(CONFIG_PANELLED_RDM_PORT)
+				hal::panel_led_off(hal::panelled::PORT_A_RDM << nPortIndex);
+#elif defined(CONFIG_PANELLED_RDM_NO_PORT)
+				hal::panel_led_off(hal::panelled::RDM << nPortIndex);
+#endif
+			}
+		}
 	}
 
 	uint8_t GetVersion() const {
 		return artnet::VERSION;
 	}
+
+	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle);
+	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
 
 	void SetFailSafe(const artnetnode::FailSafe failsafe);
 
@@ -268,58 +301,6 @@ public:
 		__builtin_unreachable();
 		return artnetnode::FailSafe::OFF;
 	}
-
-#if defined (OUTPUT_HAVE_STYLESWITCH)
-	void SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-
-		if (outputStyle == GetOutputStyle(nPortIndex)) {
-			return;
-		}
-
-		if ((m_State.status == artnetnode::Status::ON) && (m_pLightSet != nullptr)) {
-			m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
-			outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
-		}
-
-		if (outputStyle == lightset::OutputStyle::CONSTANT) {
-			m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::STYLE_CONSTANT;
-		} else {
-			m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
-		}
-
-#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
-		/**
-		 * FIXME I do not like this hack. It should be handled in dmx.cpp
-		 */
-		if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
-				&& (outputStyle == lightset::OutputStyle::CONSTANT)
-				&& (m_pLightSet != nullptr)) {
-			if (m_OutputPort[nPortIndex].IsTransmitting) {
-				m_OutputPort[nPortIndex].IsTransmitting = false;
-				m_pLightSet->Stop(nPortIndex);
-			}
-		}
-#endif
-
-		m_State.IsSynchronousMode = false;
-
-		if (m_State.status == artnetnode::Status::ON) {
-			if (m_pArtNetStore != nullptr) {
-				m_pArtNetStore->SaveOutputStyle(nPortIndex, outputStyle);
-			}
-
-			artnet::display_outputstyle(nPortIndex, outputStyle);
-		}
-	}
-
-	lightset::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const {
-		assert(nPortIndex < artnetnode::MAX_PORTS);
-
-		const auto isStyleConstant = (m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::STYLE_CONSTANT) == artnet::GoodOutputB::STYLE_CONSTANT;
-		return isStyleConstant ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
-	}
-#endif
 
 	void SetOutput(LightSet *pLightSet) {
 		m_pLightSet = pLightSet;
@@ -467,10 +448,6 @@ public:
 
 	void SetTimeCodeIp(uint32_t nDestinationIp);
 
-	void SetArtNetStore(ArtNetStore *pArtNetStore) {
-		m_pArtNetStore = pArtNetStore;
-	}
-
 	void SetArtNetTrigger(ArtNetTrigger *pArtNetTrigger) {
 		m_pArtNetTrigger = pArtNetTrigger;
 	}
@@ -574,10 +551,11 @@ private:
 	void SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitch);
 	void SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubnetSwitch);
 
+#undef UNUSED
 #if defined (ARTNET_ENABLE_SENDDIAG)
 # define UNUSED
 #else
-# define UNUSED	__attribute__((unused))
+# define UNUSED  __attribute__((unused))
 #endif
 
 	void SendDiag(UNUSED const artnet::PriorityCodes priorityCode, UNUSED const char *format, ...) {
@@ -609,10 +587,6 @@ private:
 #endif
 	}
 
-#if defined (ARTNET_ENABLE_SENDDIAG)
-# undef UNUSED
-#endif
-
 	void HandlePoll();
 	void HandleDmx();
 	void HandleSync();
@@ -623,6 +597,7 @@ private:
 	void HandleTodData();
 	void HandleTodRequest();
 	void HandleRdm();
+	void HandleRdmSub();
 	void HandleIpProg();
 	void HandleDmxIn();
 	void HandleInput();
@@ -659,7 +634,11 @@ private:
 
 				SendTod(nPortIndex);
 
+				DEBUG_PUTS("TOD sent");
+
 				if (m_OutputPort[nPortIndex].IsTransmitting) {
+					DEBUG_PUTS("m_pLightSet->Stop/Start");
+					m_pLightSet->Stop(nPortIndex);
 					m_pLightSet->Start(nPortIndex);
 				}
 
@@ -686,12 +665,12 @@ private:
 	uint32_t m_nIpAddressFrom;
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
+	uint32_t m_nPreviousLedpanelMillis { 0 };
 
 	LightSet *m_pLightSet { nullptr };
 
 	ArtNetTimeCode *m_pArtNetTimeCode { nullptr };
 	ArtNetTrigger *m_pArtNetTrigger { nullptr };
-	ArtNetStore *m_pArtNetStore { nullptr };
 
 	artnetnode::Node m_Node;
 	artnetnode::State m_State;
@@ -726,4 +705,7 @@ private:
 	static ArtNetNode *s_pThis;
 };
 
+#if defined (UNUSED)
+# undef UNUSED
+#endif
 #endif /* ARTNETNODE_H_ */

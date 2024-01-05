@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,12 +41,9 @@ struct TArtNetTimeCode {
 
 class ArtNetTimeCode {
 public:
-	virtual ~ArtNetTimeCode() {
-	}
-
+	virtual ~ArtNetTimeCode() = default;
 	virtual void Start()= 0;
 	virtual void Stop()= 0;
-
 	virtual void Handler(const struct TArtNetTimeCode*)= 0;
 };
 

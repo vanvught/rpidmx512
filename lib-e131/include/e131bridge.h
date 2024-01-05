@@ -39,6 +39,7 @@
 
 #include "network.h"
 #include "hardware.h"
+#include "panel_led.h"
 
 #include "debug.h"
 
@@ -339,11 +340,18 @@ public:
 
 		Process();
 
-#if defined (LIGHTSET_HAVE_RUN)
-# if (ARTNET_VERSION < 4)
-		m_pLightSet->Run();
-# endif
+#if !(ARTNET_VERSION >= 4)
+		if ((m_nCurrentPacketMillis - m_nPreviousLedpanelMillis) > 200) {
+			m_nPreviousLedpanelMillis = m_nCurrentPacketMillis;
+			for (uint32_t nPortIndex = 0; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
+#if defined (ARTNET_HAVE_DMXIN)
+				hal::panel_led_off(hal::panelled::PORT_A_RX << nPortIndex);
 #endif
+			}
+		}
+#endif
+
 	}
 
 	void Print();
@@ -382,6 +390,7 @@ private:
 
 	uint32_t m_nCurrentPacketMillis { 0 };
 	uint32_t m_nPreviousPacketMillis { 0 };
+	uint32_t m_nPreviousLedpanelMillis { 0 };
 
 	TE131DataPacket *m_pE131DataPacket { nullptr };
 	TE131DiscoveryPacket *m_pE131DiscoveryPacket { nullptr };

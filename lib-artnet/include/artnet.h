@@ -312,6 +312,7 @@ enum class OpCodes: uint16_t {
 	OP_TODDATA = 0x8100,	///< This is an ArtTodData packet. It is used to send a Table of Devices (ToD) for RDM discovery.
 	OP_TODCONTROL = 0x8200,	///< This is an ArtTodControl packet. It is used to send RDM discovery control messages
 	OP_RDM = 0x8300, 		///< This is an ArtRdm packet. It is used to send all non discovery RDM messages.
+	OP_RDMSUB = 0x8400, 	///< This is an ArtRdmSub packet. It is used to send compressed, RDM Sub-Device data.
 	OP_TIMECODE = 0x9700,	///< This is an ArtTimeCode packet. It is used to transport time code over the network.
 	OP_TIMESYNC = 0x9800,	///< Used to synchronize real time date and clock
 	OP_TRIGGER = 0x9900,	///< Used to send trigger macros
@@ -593,6 +594,29 @@ struct ArtRdm {
 	uint8_t Command;		///< 0x00 ArProcess Process RDM Packet0x00 AtcNone No action. 0x01 AtcFlush The node flushes its TOD and instigates full discovery.
 	uint8_t Address;		///< The low 8 bits of the Port-Address that should action this command.
 	uint8_t RdmPacket[255];	///< The RDM data packet excluding the DMX StartCode.
+}PACKED;
+
+/**
+ * The ArtRdmSub packet is used to transfer Get, Set, GetResponse and SetResponse data to and from multiple sub-devices within an RDM device.
+ */
+struct ArtRdmSub {
+	uint8_t Id[8];			///< Array of 8 characters, the final character is a null termination. Value = ‘A’ ‘r’ ‘t’ ‘-‘ ‘N’ ‘e’ ‘t’ 0x00
+	uint16_t OpCode;		///< OpAddress \ref TOpCodes
+	uint8_t ProtVerHi;		///< High byte of the Art-Net protocol revision number.
+	uint8_t ProtVerLo;		///< Low byte of the Art-Net protocol revision number. Current value 14.
+	uint8_t RdmVer;			///< Art-Net Devices that only support RDM DRAFT V1.0 set field to 0x00. Devices that support RDM STANDARD V1.0 set field to 0x01.
+	uint8_t Filler2;		///< Transmit as zero, receivers don’t test.
+	uint8_t UID[6];			///< UID of target RDM device.
+	uint8_t Spare1;			///< Transmit as zero, receivers don’t test.
+	uint8_t CommandClass;	///< As per RDM specification. This field defines whether this is a Get, Set, GetResponse, SetResponse.
+	uint8_t ParameterId[2];	///< As per RDM specification. This field defines the type of parameter contained in this packet. Big- endian.
+	uint8_t SubDevice[2];	///< Defines the first device information contained in packet. This follows the RDM convention that 0 = root device and 1 = first subdevice. Big-endian.
+	uint8_t SubCount[2];	///< The number of sub devices packed into packet. Zero is illegal. Big-endian.
+	uint8_t Spare2;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare3;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare4;			///< Transmit as zero, receivers don’t test.
+	uint8_t Spare5;			///< Transmit as zero, receivers don’t test.
+	uint8_t Data[231];
 }PACKED;
 
 struct ArtIpProg {

@@ -68,7 +68,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *
 	memcpy(&pRdmCommand[1], pRdmData, static_cast<size_t>(pRdmMessageNoSc->message_length + 2));
 
 #ifndef NDEBUG
-	RDMMessage::Print(pRdmCommand);
+	rdm::message_print(pRdmCommand);
 #endif
 
 	Rdm::SendRaw(nPortIndex, pRdmCommand, pRdmMessageNoSc->message_length + 2U);
@@ -76,7 +76,7 @@ const uint8_t *ArtNetRdmController::Handler(uint32_t nPortIndex, const uint8_t *
 	const auto *pResponse = Rdm::ReceiveTimeOut(nPortIndex, 60000);
 
 #ifndef NDEBUG
-	RDMMessage::Print(pResponse);
+	rdm::message_print(pResponse);
 #endif
 	return pResponse;
 }

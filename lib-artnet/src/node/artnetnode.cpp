@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "artnetnode.h"
 #include "artnetconst.h"
 #include "artnet.h"
+#include "artnetstore.h"
 
 #if defined (ARTNET_HAVE_DMXIN)
 # include "dmx.h"
@@ -281,9 +282,7 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 	m_Node.Port[nPortIndex].ShortName[artnet::SHORT_NAME_LENGTH - 1] = '\0';
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
-		}
+		ArtNetStore::SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
 	}
 
 	DEBUG_PUTS(m_Node.Port[nPortIndex].ShortName);
@@ -323,16 +322,62 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 	m_ArtPollReply.LongName[artnet::LONG_NAME_LENGTH - 1] = '\0';
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
-		}
-
+		ArtNetStore::SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 		artnet::display_longname(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	}
 
 	DEBUG_PUTS(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	DEBUG_EXIT
 }
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	if (outputStyle == GetOutputStyle(nPortIndex)) {
+		return;
+	}
+
+	if ((m_State.status == artnetnode::Status::ON) && (m_pLightSet != nullptr)) {
+		m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
+		outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
+	}
+
+	if (outputStyle == lightset::OutputStyle::CONSTANT) {
+		m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::STYLE_CONSTANT;
+	} else {
+		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
+	}
+
+#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
+	/**
+	 * FIXME I do not like this hack. It should be handled in dmx.cpp
+	 */
+	if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
+			&& (outputStyle == lightset::OutputStyle::CONSTANT)
+			&& (m_pLightSet != nullptr)) {
+		if (m_OutputPort[nPortIndex].IsTransmitting) {
+			m_OutputPort[nPortIndex].IsTransmitting = false;
+			m_pLightSet->Stop(nPortIndex);
+		}
+	}
+#endif
+
+	m_State.IsSynchronousMode = false;
+
+	if (m_State.status == artnetnode::Status::ON) {
+		ArtNetStore::SaveOutputStyle(nPortIndex, outputStyle);
+		artnet::display_outputstyle(nPortIndex, outputStyle);
+	}
+}
+
+lightset::OutputStyle ArtNetNode::GetOutputStyle(const uint32_t nPortIndex) const {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	const auto isStyleConstant = (m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::STYLE_CONSTANT) == artnet::GoodOutputB::STYLE_CONSTANT;
+	return isStyleConstant ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
+}
+#endif
 
 void ArtNetNode::SetNetworkDataLossCondition() {
 	m_State.IsMergeMode = false;
@@ -527,6 +572,11 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 	case artnet::OpCodes::OP_RDM:
 		if (m_State.rdm.IsEnabled) {
 			HandleRdm();
+		}
+		break;
+	case artnet::OpCodes::OP_RDMSUB:
+		if (m_State.rdm.IsEnabled) {
+			HandleRdmSub();
 		}
 		break;
 #endif

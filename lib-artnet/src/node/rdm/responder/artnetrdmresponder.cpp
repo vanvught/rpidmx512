@@ -2,7 +2,7 @@
  * @file artnetrdmresponder.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,12 +30,11 @@
 
 #include "rdmdeviceresponder.h"
 #include "rdmhandler.h"
-#include "rdmmessage.h"
+#include "rdm_message_print.h"
+#include "rdmconst.h"
+#include "rdm_e120.h"
 
 #include "lightset.h"
-
-#include "rdm.h"
-#include "rdm_e120.h"
 
 #include "debug.h"
 
@@ -77,7 +76,7 @@ const uint8_t *ArtNetRdmResponder::Handler(uint32_t nPortIndex, const uint8_t *p
 	}
 
 #ifndef NDEBUG
-	RDMMessage::PrintNoSc(pRdmDataNoSC);
+	rdm::message_print_no_sc(pRdmDataNoSC);
 #endif
 
 	HandleData(pRdmDataNoSC, reinterpret_cast<uint8_t*>(&s_RdmCommand));
@@ -88,7 +87,7 @@ const uint8_t *ArtNetRdmResponder::Handler(uint32_t nPortIndex, const uint8_t *p
 	}
 
 #ifndef NDEBUG
-	RDMMessage::Print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
+	rdm::message_print(reinterpret_cast<uint8_t*>(&s_RdmCommand));
 #endif
 
 	DEBUG_EXIT
