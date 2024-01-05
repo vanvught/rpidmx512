@@ -3,7 +3,7 @@
  * @file debug_exception.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "console.h"
 
 #if defined (H3)
-void h3_watchdog_disable(void);
+# include "h3.h"
 #else
 void bcm2835_watchdog_stop(void);
 #endif
@@ -54,7 +54,7 @@ void debug_exception(unsigned int type, unsigned int address) {
 	console_set_fg_color(CONSOLE_WHITE);
 
 #if defined (H3)
-	h3_watchdog_disable();
+	H3_TIMER->WDOG0_MODE = 0;
 #else
 	bcm2835_watchdog_stop();
 #endif

@@ -35,7 +35,7 @@ public:
 	static constexpr uint8_t CCW  = 0x20;
 
 	RotaryEncoder(bool bHalfStep = true) : m_bHalfStep(bHalfStep) {}
-	~RotaryEncoder() {}
+	~RotaryEncoder() = default;
 
 	uint8_t Process(const uint8_t nInputAB);
 

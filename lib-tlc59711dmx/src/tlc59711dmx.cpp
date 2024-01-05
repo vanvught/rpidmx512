@@ -32,6 +32,7 @@
 #include <cassert>
 
 #include "tlc59711dmx.h"
+#include "tlc59711dmxstore.h"
 #include "tlc59711.h"
 
 #include "lightset.h"
@@ -237,11 +238,7 @@ bool TLC59711Dmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= (lightset::dmx::UNIVERSE_SIZE - m_nDmxFootprint))) {
 		m_nDmxStartAddress = nDmxStartAddress;
-
-		if (m_pTLC59711DmxStore != nullptr) {
-			m_pTLC59711DmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
-		}
-
+		TLC59711DmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
 		return true;
 	}
 

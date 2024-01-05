@@ -1,5 +1,6 @@
 /**
- * @file ltcdisplayrgbset.h
+ * @file ltcstore.h
+ *
  */
 /* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
@@ -22,39 +23,19 @@
  * THE SOFTWARE.
  */
 
-#ifndef LTCDISPLAYRGBSET_H_
-#define LTCDISPLAYRGBSET_H_
+#ifndef LTCSTORE_H_
+#define LTCSTORE_H_
 
 #include <cstdint>
+#include <cstddef>
 
-#include "ltc.h"
+#include "ltcparams.h"
 
-namespace ltcdisplayrgb {
-struct Colours {
-	uint8_t nRed;
-	uint8_t nGreen;
-	uint8_t nBlue;
-};
-static constexpr auto MAX_MESSAGE_SIZE = 8;
-}  // namespace ltcdisplayrgb
-
-class LtcDisplayRgbSet {
+class LtcStore {
 public:
-	virtual ~LtcDisplayRgbSet() {}
-
-	virtual void Init();
-
-	virtual void Show(const char *pTimecode, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;
-	virtual void ShowSysTime(const char *pSystemTime, struct ltcdisplayrgb::Colours &tColours, struct ltcdisplayrgb::Colours &tColoursColons)=0;
-	virtual void ShowMessage(const char *pMessage, struct ltcdisplayrgb::Colours &tColours)=0;
-
-	virtual void WriteChar(uint8_t nChar, uint8_t nPos, struct ltcdisplayrgb::Colours &tColours)=0;
-
-	virtual void ShowFPS(ltc::Type tTimeCodeType, struct ltcdisplayrgb::Colours &tColours);
-	virtual void ShowSource(ltc::Source tSource, struct ltcdisplayrgb::Colours &tColours);
-	virtual void ShowInfo(const char *pInfo, uint32_t nLength, struct ltcdisplayrgb::Colours &tColours);
-
-	virtual void Print()=0;
+	static void SaveSource(uint8_t nSource) {
+		ConfigStore::Get()->Update(configstore::Store::LTC, offsetof(struct ltcparams::Params, nSource), &nSource, sizeof(uint8_t), ltcparams::Mask::SOURCE);
+	}
 };
 
-#endif /* LTCDISPLAYRGBSET_H_ */
+#endif /* LTCSTORE_H_ */

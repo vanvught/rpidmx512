@@ -2,7 +2,7 @@
  * @file mcp49x2.h
  *
  */
-/* Copyright (C) 2014-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2014-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

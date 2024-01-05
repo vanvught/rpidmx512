@@ -2,7 +2,7 @@
  * @file sc16is740.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,7 +49,7 @@ public:
 	};
 
 	SC16IS740(uint8_t nAddress = sc16is740::I2C_ADDRESS, uint32_t nOnBoardCrystal = sc16is740::CRISTAL_HZ);
-	~SC16IS740() {}
+	~SC16IS740() = default;
 
 	void SetOnBoardCrystal(uint32_t nOnBoardCrystalHz) {
 		m_nOnBoardCrystal = nOnBoardCrystalHz;

@@ -124,3 +124,28 @@ bool PropertiesBuilder::AddComment(const char *pComment) {
 
 	return true;
 }
+
+bool PropertiesBuilder::AddRaw(const char *pRaw) {
+	if (m_bJson) {
+		return true;
+	}
+
+	if (m_nSize >= m_nLength) {
+		return false;
+	}
+
+	auto *p = &m_pBuffer[m_nSize];
+	const auto nSize = static_cast<size_t>(m_nLength - m_nSize);
+
+	const auto i = snprintf(p, nSize, "%s\n", pRaw);
+
+	if (i > static_cast<int>(nSize)) {
+		return false;
+	}
+
+	m_nSize = static_cast<uint16_t>(m_nSize + i);
+
+	DEBUG_PRINTF("pRaw=%s, m_nLength=%d, m_nSize=%d", pRaw, m_nLength, m_nSize);
+
+	return true;
+}

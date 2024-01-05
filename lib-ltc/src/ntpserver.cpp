@@ -2,7 +2,7 @@
  * @file ntpserver.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,12 +45,12 @@
 
 #include "debug.h"
 
-TNtpPacket NtpServer::s_Reply;
+ntp::Packet NtpServer::s_Reply;
 NtpServer *NtpServer::s_pThis;
 
-NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
+NtpServer::NtpServer(const uint32_t nYear, const uint32_t nMonth, const uint32_t nDay) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("year=%d, month=%d, day=%d", nYear, nMonth, nDay);
+	DEBUG_PRINTF("year=%u, month=%u, day=%u", nYear, nMonth, nDay);
 
 	assert(s_pThis == nullptr);
 	s_pThis = this;
@@ -58,16 +58,16 @@ NtpServer::NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay) {
 	struct tm timeDate;
 
 	memset(&timeDate, 0, sizeof(struct tm));
-	timeDate.tm_year = 100 + nYear;
-	timeDate.tm_mon = nMonth - 1;
-	timeDate.tm_mday = nDay;
+	timeDate.tm_year = static_cast<int>(100 + nYear);
+	timeDate.tm_mon = static_cast<int>(nMonth - 1);
+	timeDate.tm_mday = static_cast<int>(nDay);
 
 	m_tDate = mktime(&timeDate);
 	assert(m_tDate != -1);
 
 	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 
-	m_tDate += static_cast<time_t>(NTP_TIMESTAMP_DELTA);
+	m_tDate += static_cast<time_t>(ntp::NTP_TIMESTAMP_DELTA);
 
 	DEBUG_PRINTF("m_tDate=%.8x %ld", static_cast<unsigned int>(m_tDate), m_tDate);
 	DEBUG_EXIT
@@ -80,13 +80,12 @@ NtpServer::~NtpServer() {
 void NtpServer::Start() {
 	DEBUG_ENTRY
 
-	m_nHandle = Network::Get()->Begin(NTP_UDP_PORT);
+	m_nHandle = Network::Get()->Begin(ntp::UDP_PORT);
 	assert(m_nHandle != -1);
 
-	s_Reply.LiVnMode = NTP_VERSION | NTP_MODE_SERVER;
-
-	s_Reply.Stratum = NTP_STRATUM;
-	s_Reply.Poll = NTP_MINPOLL;
+	s_Reply.LiVnMode = ntp::VERSION | ntp::MODE_SERVER;
+	s_Reply.Stratum = ntp::STRATUM;
+	s_Reply.Poll = ntp::MINPOLL;
 	s_Reply.Precision = static_cast<uint8_t>(-10);	// -9.9 = LOG2(0.0001) -> milliseconds
 	s_Reply.RootDelay = 0;
 	s_Reply.RootDispersion = 0;
@@ -98,7 +97,7 @@ void NtpServer::Start() {
 void NtpServer::Stop() {
 	DEBUG_ENTRY
 
-	m_nHandle = Network::Get()->End(NTP_UDP_PORT);
+	m_nHandle = Network::Get()->End(ntp::UDP_PORT);
 
 	DEBUG_EXIT
 }
@@ -131,35 +130,12 @@ void NtpServer::SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode) {
 	s_Reply.TransmitTimestamp_f = __builtin_bswap32(m_nFraction);
 }
 
-void NtpServer::Run() {
-	uint32_t nIPAddressFrom;
-	uint16_t nForeignPort;
-	TNtpPacket *pRequest;
-
-	const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&pRequest)), &nIPAddressFrom, &nForeignPort);
-
-	if (__builtin_expect((nBytesReceived < sizeof(struct TNtpPacket)), 1)) {
-		DEBUG_PUTS("");
-		return;
-	}
-
-	if (__builtin_expect(((pRequest->LiVnMode & NTP_MODE_CLIENT) != NTP_MODE_CLIENT), 0)) {
-		DEBUG_PUTS("");
-		return;
-	}
-
-	s_Reply.OriginTimestamp_s = pRequest->TransmitTimestamp_s;
-	s_Reply.OriginTimestamp_f = pRequest->TransmitTimestamp_f;
-
-	Network::Get()->SendTo(m_nHandle, &s_Reply, sizeof(struct TNtpPacket), nIPAddressFrom, nForeignPort);
-}
-
 void NtpServer::Print() {
-	printf("NTP v%d Server\n", NTP_VERSION >> 3);
-	printf(" Port : %d\n", NTP_UDP_PORT);
-	printf(" Stratum : %d\n", NTP_STRATUM);
+	printf("NTP v%d Server\n", ntp::VERSION >> 3);
+	printf(" Port : %d\n", ntp::UDP_PORT);
+	printf(" Stratum : %d\n", ntp::STRATUM);
 
-	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_tDate) - NTP_TIMESTAMP_DELTA);
+	const auto t = static_cast<time_t>(static_cast<uint32_t>(m_tDate) - ntp::NTP_TIMESTAMP_DELTA);
 
 	printf(" %s", asctime(localtime(&t)));
 }

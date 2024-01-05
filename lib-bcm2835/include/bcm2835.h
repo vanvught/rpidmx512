@@ -2,7 +2,7 @@
  * @file bcm2835.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@raspberrypi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -398,20 +398,6 @@ typedef struct {
 #define BCM2835_EMMC	((BCM2835_EMMC_TypeDef *) BCM2835_EMMC_BASE)		///< Base register address for EMMC
 #define BCM2835_BSC0	((BCM2835_BSC_TypeDef *)  BCM2835_BSC0_BASE)		///< Base register address for I2C (BSC0)
 #define BCM2835_BSC1	((BCM2835_BSC_TypeDef *)  BCM2835_BSC1_BASE)		///< Base register address for I2C (BSC1)
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void udelay(const uint32_t);
-
-inline static void bcm2835_delay(unsigned int millis) {
-	udelay(millis * 1000);
-}
-
-#ifdef __cplusplus
-}
-#endif
 
 #define	__enable_irq()	asm volatile ("cpsie i")
 #define	__disable_irq()	asm volatile ("cpsid i")

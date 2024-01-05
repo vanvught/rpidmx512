@@ -33,7 +33,7 @@
 class DmxSerialTFTP final: public TFTPDaemon {
 public:
 	DmxSerialTFTP() {}
-	~DmxSerialTFTP() override {}
+	~DmxSerialTFTP() override = default;
 
 	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
 	bool FileCreate(const char *pFileName, tftp::Mode mode) override;

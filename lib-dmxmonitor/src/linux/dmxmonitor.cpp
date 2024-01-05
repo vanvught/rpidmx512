@@ -2,7 +2,7 @@
  * @file dmxmonitor.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "dmxmonitor.h"
+#include "dmxmonitorstore.h"
 
 #include "debug.h"
 
@@ -75,9 +76,7 @@ bool DMXMonitor::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	m_nDmxStartAddress = nDmxStartAddress;
 
-	if (m_pDmxMonitorStore != nullptr) {
-		m_pDmxMonitorStore->SaveDmxStartAddress(nDmxStartAddress);
-	}
+	DmxMonitorStore::SaveDmxStartAddress(nDmxStartAddress);
 
 	return true;
 	DEBUG_EXIT

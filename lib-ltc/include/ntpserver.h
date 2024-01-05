@@ -30,12 +30,14 @@
 #include <time.h>
 
 #include "ltc.h"
-
 #include "ntp.h"
+#include "network.h"
+
+#include "debug.h"
 
 class NtpServer {
 public:
-	NtpServer(uint8_t nYear, uint8_t nMonth, uint8_t nDay);
+	NtpServer(const uint32_t nYear, const uint32_t nMonth, const uint32_t nDay);
 	~NtpServer();
 
 	void Start();
@@ -43,7 +45,28 @@ public:
 
 	void SetTimeCode(const struct ltc::TimeCode *pLtcTimeCode);
 
-	void Run();
+	void Run() {
+		uint32_t nIPAddressFrom;
+		uint16_t nForeignPort;
+		ntp::Packet *pRequest;
+
+		const auto nBytesReceived = Network::Get()->RecvFrom(m_nHandle, const_cast<const void **>(reinterpret_cast<void **>(&pRequest)), &nIPAddressFrom, &nForeignPort);
+
+		if (__builtin_expect((nBytesReceived < sizeof(struct ntp::Packet)), 1)) {
+			DEBUG_PUTS("");
+			return;
+		}
+
+		if (__builtin_expect(((pRequest->LiVnMode & ntp::MODE_CLIENT) != ntp::MODE_CLIENT), 0)) {
+			DEBUG_PUTS("");
+			return;
+		}
+
+		s_Reply.OriginTimestamp_s = pRequest->TransmitTimestamp_s;
+		s_Reply.OriginTimestamp_f = pRequest->TransmitTimestamp_f;
+
+		Network::Get()->SendTo(m_nHandle, &s_Reply, sizeof(struct ntp::Packet), nIPAddressFrom, nForeignPort);
+	}
 
 	void Print();
 
@@ -57,7 +80,7 @@ private:
 	uint32_t m_nFraction { 0 };
 	int32_t m_nHandle { -1 };
 
-	static TNtpPacket s_Reply;
+	static ntp::Packet s_Reply;
 	static NtpServer *s_pThis;
 };
 
