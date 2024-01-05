@@ -774,7 +774,7 @@ void MDNS::SendAnnouncement(const uint32_t nTTL) {
 	DEBUG_EXIT
 }
 
-bool MDNS::AddServiceRecord(const char *pName, const mdns::Services services, const char *pTextContent, const uint16_t nPort) {
+bool MDNS::ServiceRecordAdd(const char *pName, const mdns::Services services, const char *pTextContent, const uint16_t nPort) {
 	DEBUG_ENTRY
 	assert(services < mdns::Services::LAST_NOT_USED);
 
@@ -825,6 +825,31 @@ bool MDNS::AddServiceRecord(const char *pName, const mdns::Services services, co
 	}
 
 	assert(0);
+	return false;
+}
+
+bool MDNS::ServiceRecordDelete(const mdns::Services service) {
+	DEBUG_ENTRY
+	assert(service < mdns::Services::LAST_NOT_USED);
+
+	for (auto &record : s_ServiceRecords) {
+		if (record.services == service) {
+			SendMessage(record, 0, 0);
+
+			if (record.pName != nullptr) {
+				delete[] record.pName;
+			}
+
+			if (record.pTextContent != nullptr) {
+				delete[] record.pTextContent;
+			}
+
+			DEBUG_EXIT
+			return true;
+		}
+	}
+
+	DEBUG_EXIT
 	return false;
 }
 
