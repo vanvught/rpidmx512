@@ -41,14 +41,7 @@
 
 #include "debug.h"
 
-namespace ws28xxdmxmulti {
-#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
-# define CONFIG_PIXELDMX_MAX_PORTS	8
-#endif
-static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
-}  // namespace ws28xxdmxmulti
-
-WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration) {
+WS28xxDmxMulti::WS28xxDmxMulti(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxConfiguration(pixelDmxConfiguration){
 	DEBUG_ENTRY
 
 	m_pixelDmxConfiguration.Validate(ws28xxdmxmulti::MAX_PORTS , m_nChannelsPerPixel, m_PortInfo);
@@ -93,7 +86,7 @@ void WS28xxDmxMulti::Stop(const uint32_t nPortIndex) {
 	}
 }
 
-void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength, const bool doUpdate) {
+void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t nLength) {
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 
@@ -109,10 +102,6 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 	const auto nGroups = m_pixelDmxConfiguration.GetGroups();
 	const auto beginIndex = m_PortInfo.nBeginIndexPort[nSwitch];
 	const auto endIndex = std::min(nGroups, (beginIndex + (nLength / m_nChannelsPerPixel)));
-
-	while (m_pWS28xxMulti->IsUpdating()) {
-		// wait for completion
-	}
 
 	uint32_t d = 0;
 
@@ -188,10 +177,6 @@ void WS28xxDmxMulti::SetData(uint32_t nPortIndex, const uint8_t* pData, uint32_t
 			}
 			d = d + 4;
 		}
-	}
-
-	if ((doUpdate) && (nPortIndex == m_PortInfo.nProtocolPortIndexLast)) {
-		m_pWS28xxMulti->Update();
 	}
 }
 
