@@ -3,7 +3,7 @@ DEFINES =USE_SPI_DMA
 
 EXTRA_INCLUDES=../lib-device/include ../lib-jamstapl/include
 
-EXTRA_SRCDIR=src/patterns src/pixel src/spi jbc
+EXTRA_SRCDIR=src/patterns src/pixel src/h3 jbc
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk

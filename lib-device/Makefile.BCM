@@ -1,4 +1,5 @@
 DEFINES=NDEBUG
-EXTRA_INCLUDES=../lib-hal/include
+
+EXTRA_INCLUDES=
 
 include ../firmware-template-bcm/lib/Rules.mk

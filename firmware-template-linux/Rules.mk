@@ -32,10 +32,10 @@ LDLIBS=
 
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-DDISABLE_TFTP  
-DEFINES+=-DDISABLE_RTC
 DEFINES+=-DENABLE_HTTPD
 DEFINES+=-DCONFIG_STORE_USE_FILE 
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
+DEFINES+=-DISABLE_INTERNAL_RTC
 DEFINES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
@@ -75,6 +75,7 @@ ifdef LINUX
 		ifneq "$(wildcard $(BCM2835) )" ""
 			LIB+=-L../lib-bcm2835_raspbian/lib_linux
 			LDLIBS+=-lbcm2835_raspbian
+			DEFINES+=-I../lib-bcm2835_raspbian/include
 		else
 			LDLIBS+=-lbcm2835
 		endif

@@ -14,10 +14,10 @@ LIB_NAME :=$(patsubst lib-%,%,$(CURR_DIR))
 DEFINES:=$(addprefix -D,$(DEFINES))
 DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 DEFINES+=-DDISABLE_TFTP  
-DEFINES+=-DDISABLE_RTC
 DEFINES+=-DENABLE_HTTPD
 DEFINES+=-DCONFIG_STORE_USE_FILE 
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
+DEFINES+=-DISABLE_INTERNAL_RTC
 
 ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	ifeq ($(findstring ARTNET_HAVE_DMXIN,$(DEFINES)),ARTNET_HAVE_DMXIN)
@@ -25,7 +25,7 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	endif
 endif
 
-INCLUDES:=-I./include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
+INCLUDES:=-I./include -I../lib-configstore/include -I../lib-hal/include -I../lib-display/include -I../lib-debug/include
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 ifeq ($(findstring CONFIG_DISPLAY_USE_CUSTOM,$(DEFINES)),CONFIG_DISPLAY_USE_CUSTOM)
 	ifneq ($(CONFIG_DISPLAY_LIB),)

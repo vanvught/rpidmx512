@@ -1,6 +1,6 @@
 DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-properties/include ../lib-hal/include
+EXTRA_INCLUDES=../lib-properties/include
 
 EXTRA_SRCDIR=src/apps/mdns src/apps/tftp src/params
 

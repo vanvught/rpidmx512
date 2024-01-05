@@ -15,7 +15,7 @@ SRCDIR=src src/rpi $(EXTRA_SRCDIR)
 SRCDIR+=src/debug
 #endif
 
-INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-bcm2835/include -I../lib-arm/include -I../lib-debug/include 
+INCLUDES:=-I./include -I../include -I../lib-configstore/include -I../lib-hal/include -I../lib-bcm2835/include -I../lib-arm/include -I../lib-debug/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=$(addprefix -D,$(DEFINES))

@@ -1,7 +1,7 @@
 DEFINES=NDEBUG 
 
-EXTRA_INCLUDES=../lib-properties/include ../lib-network/include ../lib-hal/include
+EXTRA_INCLUDES=
 
-EXTRA_SRCDIR=src/net
+EXTRA_SRCDIR=
 
 include ../firmware-template-linux/lib/Rules.mk

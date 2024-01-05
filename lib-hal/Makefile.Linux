@@ -5,6 +5,9 @@ EXTRA_INCLUDES=
 EXTRA_SRCDIR=
 
 ifneq ($(MAKE_FLAGS),)
+	ifeq (,$(findstring DISABLE_RTC,$(MAKE_FLAGS)))
+		EXTRA_SRCDIR+=rtc rtc/i2c
+	endif
 	ifneq (,$(findstring LINUX_HAVE_I2C,$(MAKE_FLAGS)))
 		EXTRA_SRCDIR+=src/linux/i2c
 	endif

@@ -1,7 +1,7 @@
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
-EXTRA_INCLUDES=../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-display/include ../lib-lightset/include ../lib-configstore/include
-EXTRA_INCLUDES+=../lib-flash/include ../lib-flashcode/include ../lib-flashcodeinstall/include
+EXTRA_INCLUDES=../lib-network/include ../lib-properties/include ../lib-display/include ../lib-lightset/include
+EXTRA_INCLUDES+=../lib-flashcode/include ../lib-flashcodeinstall/include
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring ENABLE_HTTPD,$(MAKE_FLAGS)))
@@ -25,7 +25,6 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_LTC_SMPTE,$(MAKE_FLAGS)), NODE_LTC_SMPTE)
 		EXTRA_INCLUDES+=../lib-ltc/include ../lib-tcnet/include ../lib-gps/include ../lib-midi/include 
 		EXTRA_INCLUDES+=../lib-rgbpanel/include ../lib-ws28xx/include
-		EXTRA_INCLUDES+=../lib-device/include
 	endif
 	ifeq ($(findstring NODE_OSC_CLIENT,$(MAKE_FLAGS)), NODE_OSC_CLIENT)
 		EXTRA_INCLUDES+=../lib-oscclient/include
@@ -95,6 +94,5 @@ else
 	EXTRA_INCLUDES+=../lib-rdmsensor/include ../lib-rdmsubdevice/include
 	EXTRA_INCLUDES+=../lib-showfile/include
 	EXTRA_INCLUDES+=../lib-dmxmonitor/include 
-	EXTRA_INCLUDES+=../lib-device/include
 	EXTRA_INCLUDES+=../lib-oscclient/include ../lib-oscserver/include
 endif

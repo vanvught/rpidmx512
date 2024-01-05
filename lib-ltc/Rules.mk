@@ -1,4 +1,4 @@
-EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-device/include ../lib-hal/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
+EXTRA_INCLUDES+=../lib-display/include ../lib-artnet/include ../lib-tcnet/include  ../lib-midi/include ../lib-network/include ../lib-properties/include ../lib-lightset/include
 
 $(info $$MAKE_FLAGS [${MAKE_FLAGS}])
 
@@ -21,5 +21,6 @@ ifneq ($(MAKE_FLAGS),)
 		EXTRA_SRCDIR+=src/displayrgb
 	endif
 else
+	DEFINES+=ARTNET_VERSION=3
 	DEFINES+=LIGHTSET_PORTS=1
 endif

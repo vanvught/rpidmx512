@@ -2,7 +2,7 @@ DEFINES=NDEBUG
 
 EXTRA_INCLUDES=
 
-EXTRA_SRCDIR=rtc/i2c src/h3/sdcard
+EXTRA_SRCDIR=src/h3/sdcard
 
 ifneq (,$(findstring DEBUG_EMAC,$(MAKE_FLAGS)))
 	EXTRA_SRCDIR+=debug/emac/h3

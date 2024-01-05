@@ -13,6 +13,7 @@ ifneq ($(MAKE_FLAGS),)
 		ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
 			EXTRA_INCLUDES+=../lib-e131/include
 		endif	
+		EXTRA_INCLUDES+=../lib-dmx/include
 	endif
 	
 	ifneq (,$(findstring NODE_E131,$(MAKE_FLAGS)))
@@ -35,6 +36,10 @@ ifneq ($(MAKE_FLAGS),)
 		else
 			EXTRA_INCLUDES+=../lib-dmxreceiver/include ../lib-dmx/include
 		endif
+	endif
+	
+	ifneq (,$(findstring CONFIG_STORE_USE_ROM,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-flashcode/include
 	endif
 else
 	ifneq (, $(shell test -d '../lib-network/src/noemac' && echo -n yes))

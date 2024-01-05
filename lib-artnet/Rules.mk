@@ -1,3 +1,5 @@
+EXTRA_INCLUDES+=../lib-lightset/include ../lib-properties/include ../lib-network/include
+
 ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring NODE_ARTNET,$(MAKE_FLAGS)), NODE_ARTNET)
 		EXTRA_SRCDIR+=src/node
@@ -11,7 +13,7 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring RDM_CONTROLLER,$(MAKE_FLAGS)), RDM_CONTROLLER)
 		EXTRA_SRCDIR+=src/node/rdm
 		EXTRA_SRCDIR+=src/node/rdm/controller
-		EXTRA_INCLUDES+=../lib-rdm/include
+		EXTRA_INCLUDES+=../lib-rdm/include ../lib-dmx/include
 	endif
 	
 	ifeq ($(findstring RDM_RESPONDER,$(MAKE_FLAGS)), RDM_RESPONDER)
@@ -40,6 +42,10 @@ ifneq ($(MAKE_FLAGS),)
 	ifeq ($(findstring ARTNET_VERSION=4,$(MAKE_FLAGS)), ARTNET_VERSION=4)
 		EXTRA_SRCDIR+=src/node/4
 		EXTRA_INCLUDES+=../lib-e131/include
+	endif
+	
+	ifneq (,$(findstring CONFIG_STORE_USE_ROM,$(MAKE_FLAGS)))
+		EXTRA_INCLUDES+=../lib-flashcode/include
 	endif
 else
 	EXTRA_SRCDIR+=src/node src/node/failsafe src/node/dmxin src/node/rdm src/node/rdm/controller src/node/timecode

@@ -1,6 +1,6 @@
 DEFINES=NDEBUG
 
-EXTRA_INCLUDES=../lib-properties/include ../lib-lightset/include ../lib-hal/include ../lib-network/include
+EXTRA_INCLUDES=../lib-properties/include ../lib-lightset/include ../lib-network/include
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
