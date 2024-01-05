@@ -32,10 +32,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "ntpclient.h"
 
 #include "console.h"
@@ -62,16 +58,15 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storedisplayudf.h"
-#include "storee131.h"
-#include "storenetwork.h"
-#include "storerdmdevice.h"
-#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace e131bridge {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace e131bridge
 
 void Hardware::RebootHandler() {
 }
@@ -81,8 +76,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -98,20 +93,6 @@ void main() {
 	console_set_top_row(2);
 
 	nw.Print();
-
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=sACN E1.31 Real-time DMX Monitor");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -133,28 +114,19 @@ void main() {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-	}
-
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	StoreE131 storeE131;
-	E131Params e131params(&storeE131);
-
 	E131Bridge bridge;
 
-	if (e131params.Load()) {
-		e131params.Dump();
-		e131params.Set(DMXPORT_OFFSET);
-	}
+	E131Params e131params;
+	e131params.Load();
+	e131params.Set();
 
 	bool IsSet;
 	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, IsSet));
@@ -175,28 +147,22 @@ void main() {
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::AP);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if(displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show(&bridge);
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, 0);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -216,9 +182,6 @@ void main() {
 		ntpClient.Run();
 		showSystime.Run();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

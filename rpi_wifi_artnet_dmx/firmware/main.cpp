@@ -57,10 +57,6 @@
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
 # include "configstore.h"
-# include "storeartnet.h"
-# include "storerdmdevice.h"
-# include "storedmxsend.h"
-# include "storepixeldmx.h"
 #endif
 
 #include "software_version.h"
@@ -73,34 +69,25 @@ constexpr char RUN_RDM[] = "Running RDM Discovery ...";
 constexpr char START_NODE[] = "Starting the Node ...";
 constexpr char NODE_STARTED[] = "Node started";
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
 void main() {
 	Hardware hw;
 	Network nw;
 	Display display;
-
 #if defined (ORANGE_PI)
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	StoreDmxSend storeDmxSend;
-	StorePixelDmx storePixelDmx;
-	StoreRDMDevice storeRdmDevice;
-
-	ArtNetNode node;
-
-	StoreArtNet storeArtNet(DMXPORT_OFFSET);
-	node.SetArtNetStore(&storeArtNet);
-
-	ArtNetParams artnetParams(&storeArtNet);
-#else
-	ArtNetParams artnetParams;
 #endif
 
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-	}
+	ArtNetNode node;
+	
+	ArtNetParams artnetParams;
+	artnetParams.Load();
 
 	const auto outputType = artnetParams.GetOutputType();
 
@@ -147,7 +134,7 @@ void main() {
 	console_status(CONSOLE_YELLOW, NODE_PARMAS);
 	display.TextStatus(NODE_PARMAS);
 
-	artnetParams.Set(DMXPORT_OFFSET);
+	artnetParams.Set();
 
 #ifndef H3
 	if (outputType == lightset::OutputType::MONITOR) {
@@ -167,16 +154,9 @@ void main() {
 	if (outputType == lightset::OutputType::SPI) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
-#if defined (ORANGE_PI)
-		PixelDmxParams pixelDmxParams(new StorePixelDmx);
-#else
 		PixelDmxParams pixelDmxParams;
-#endif
-
-		if (pixelDmxParams.Load()) {
-			pixelDmxParams.Dump();
-			pixelDmxParams.Set(&pixelDmxConfiguration);
-		}
+		pixelDmxParams.Load();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pWS28xxDmx != nullptr);
@@ -201,28 +181,18 @@ void main() {
 	}
 #endif
 	else {
-#if defined (ORANGE_PI)
-		DmxParams dmxparams(&storeDmxSend);
-#else
+
 		DmxParams dmxparams;
-#endif
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-			dmxparams.Set(&dmx);
-		}
+
+		dmxparams.Load();
+		dmxparams.Set(&dmx);
 
 		node.SetOutput(&dmxSend);
 
 		if (artnetParams.IsRdm()) {
-#if defined (ORANGE_PI)
-			RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-#else
 			RDMDeviceParams rdmDeviceParams;
-#endif
-			if (rdmDeviceParams.Load()) {
-				rdmDeviceParams.Set(&artNetRdmController);
-				rdmDeviceParams.Dump();
-			}
+			rdmDeviceParams.Load();
+			rdmDeviceParams.Set(&artNetRdmController);
 
 			artNetRdmController.Init();
 			artNetRdmController.Print();

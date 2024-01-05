@@ -32,7 +32,7 @@
 class Reboot final : public RebootHandler {
 public:
 	Reboot() {}
-	~Reboot() override {}
+	~Reboot() override = default;
 
 	void Run() override {
 		if (WS28xxMulti::Get() != nullptr) {

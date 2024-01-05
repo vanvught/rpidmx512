@@ -30,13 +30,8 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 
 #include "mdns.h"
-
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "ntpclient.h"
 
@@ -46,7 +41,7 @@
 
 #include "artnetnode.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
+
 #include "artnetmsgconst.h"
 
 #include "rdmdeviceresponder.h"
@@ -69,21 +64,17 @@
 #include "configstore.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-#include "storedisplayudf.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
-# include "storerdmsubdevices.h"
-#endif
-#include "storepca9685.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
 void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
@@ -94,8 +85,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -103,46 +94,23 @@ void main() {
 	fw.Print("Art-Net 4 PCA9685");
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 PCA9685");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
-
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
-	StorePCA9685 storePCA9685;
-	PCA9685DmxParams pca9685DmxParams(&storePCA9685);
-
 	PCA9685Dmx pca9685Dmx;
 
-	if (pca9685DmxParams.Load()) {
-		pca9685DmxParams.Dump();
-		pca9685DmxParams.Set(&pca9685Dmx);
-	}
+	PCA9685DmxParams pca9685DmxParams;
+	pca9685DmxParams.Load();
+	pca9685DmxParams.Set(&pca9685Dmx);
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
-	StoreArtNet storeArtNet(DMXPORT_OFFSET);
-
-	ArtNetParams artnetParams(&storeArtNet);
-	node.SetArtNetStore(&storeArtNet);
-
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-		artnetParams.Set(DMXPORT_OFFSET);
-	}
+	
+	ArtNetParams artnetParams;
+	artnetParams.Load();
+	artnetParams.Set();
 
 	node.SetRdm(static_cast<uint32_t>(0), true);
 	node.SetOutput(pca9685Dmx.GetLightSet());
@@ -158,36 +126,21 @@ void main() {
 	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
-
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-# if defined (ENABLE_RDM_SUBDEVICES)
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
-# endif
-
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
-		rdmSensorsParams.Set();
-	}
+	RDMSensorsParams rdmSensorsParams;
+	rdmSensorsParams.Load();
+	rdmSensorsParams.Set();
 
 #if defined (ENABLE_RDM_SUBDEVICES)
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
-		rdmSubDevicesParams.Set();
-	}
+	RDMSubDevicesParams rdmSubDevicesParams;
+	rdmSubDevicesParams.Load();
+	rdmSubDevicesParams.Set();
 #endif
 
 	rdmResponder.Init();
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&rdmResponder);
-	}
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&rdmResponder);
 
 	rdmResponder.Print();
 
@@ -202,28 +155,22 @@ void main() {
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show(&node);
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::PWM, node.GetActiveOutputPorts());
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -241,9 +188,6 @@ void main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

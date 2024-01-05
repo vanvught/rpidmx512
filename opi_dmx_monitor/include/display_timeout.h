@@ -1,8 +1,8 @@
 /**
- * @file handleroled.h
+ * @file display_timeout.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,36 +23,25 @@
  * THE SOFTWARE.
  */
 
-#ifndef HANDLEROLED_H_
-#define HANDLEROLED_H_
+#ifndef DISPLAY_TIMEOUT_H_
+#define DISPLAY_TIMEOUT_H_
 
-#include "jamstapl.h"
+#include "h3_board.h"
+#include "h3_gpio.h"
 
-struct HandlerOled: public JamSTAPLDisplay  {
-	HandlerOled(void) {
-		s_pThis = this;
-	}
+namespace display {
+namespace timeout {
 
-	~HandlerOled() = default;
+void gpio_init() {
+	h3_gpio_fsel(KEY2_GPIO, GPIO_FSEL_INPUT);
+	h3_gpio_set_pud(KEY2_GPIO, GPIO_PULL_UP);
+}
 
-	// JamSTAPL
-	void JamShowInfo(const char *pInfo) {
-		Display::Get()->ClearLine(1);
-		Display::Get()->Write(1, pInfo);
-	}
+bool gpio_renew() {
+    return (h3_gpio_lev(KEY2_GPIO) == LOW);
+}
 
-	void JamShowStatus(const char *pStatus, int ExitCode) {
-		Display::Get()->TextStatus(pStatus, Display7SegmentMessage::INFO_CPLD, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
-	}
+}  // namespace timeout
+}  // namespace display
 
-	static HandlerOled *Get() {
-		return s_pThis;
-	}
-
-private:
-	static HandlerOled *s_pThis;
-};
-
-HandlerOled *HandlerOled::s_pThis = 0;
-
-#endif /* HANDLEROLED_H_ */
+#endif /* DISPLAY_TIMEOUT_H_ */

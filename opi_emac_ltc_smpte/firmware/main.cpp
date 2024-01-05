@@ -55,10 +55,6 @@
 #include "rtpmidi.h"
 #include "midiparams.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "tcnet.h"
 #include "tcnetparams.h"
 #include "tcnettimecode.h"
@@ -86,13 +82,8 @@
 #include "flashcodeinstall.h"
 
 #include "configstore.h"
-#include "storenetwork.h"
-#include "storeltc.h"
-#include "storeltcdisplay.h"
-#include "storeltcetc.h"
-#include "storeartnet.h"
-#include "storetcnet.h"
-#include "storeremoteconfig.h"
+
+
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -107,7 +98,6 @@
 #include "ntpclient.h"
 #include "gpstimeclient.h"
 #include "gpsparams.h"
-#include "storegps.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -116,6 +106,11 @@
 # include "shell/shell.h"
 #endif
 
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
 void Hardware::RebootHandler() {
 //	switch (m_tSource) {
@@ -158,8 +153,7 @@ void main() {
 	Display display(4);
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -177,23 +171,18 @@ void main() {
 	display.ClearLine(2);
 
 	MDNS mdns;
-	mdns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mdns.AddServiceRecord(nullptr, mdns::Services::TFTP);
 
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
 
-	StoreLtc storeLtc;
-	LtcParams ltcParams(&storeLtc);
+	LtcParams ltcParams;
 
 	struct ltc::TimeCode tStartTimeCode;
 	struct ltc::TimeCode tStopTimeCode;
 
-	if (ltcParams.Load()) {
-		ltcParams.Dump();
-		ltcParams.Set(&tStartTimeCode, &tStopTimeCode);
-	}
+	ltcParams.Load();
+	ltcParams.Set(&tStartTimeCode, &tStopTimeCode);
 
 	LtcReader ltcReader;
 	MidiReader midiReader;
@@ -205,13 +194,10 @@ void main() {
 
 	ltc::Source ltcSource = ltcParams.GetSource();
 
-	StoreLtcDisplay storeLtcDisplay;
-	LtcDisplayParams ltcDisplayParams(&storeLtcDisplay);
+	LtcDisplayParams ltcDisplayParams;
 
-	if (ltcDisplayParams.Load()) {
-		ltcDisplayParams.Dump();
-		display.SetContrast(ltcDisplayParams.GetOledIntensity());
-	}
+	ltcDisplayParams.Load();
+	display.SetContrast(ltcDisplayParams.GetOledIntensity());
 
 	LtcDisplayMax7219 ltcDdisplayMax7219(ltcDisplayParams.GetMax7219Type());
 	LtcDisplayRgb ltcDisplayRgb(ltcParams.IsRgbPanelEnabled() ? ltcdisplayrgb::Type::RGBPANEL : ltcdisplayrgb::Type::WS28XX, ltcDisplayParams.GetWS28xxDisplayType());
@@ -292,16 +278,10 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtnet(0);
-	node.SetArtNetStore(&storeArtnet);
-
 	if (bRunArtNet) {
-		ArtNetParams artnetparams(&storeArtnet);
-
-		if (artnetparams.Load()) {
-			artnetparams.Dump();
-			artnetparams.Set(0);
-		}
+		ArtNetParams artnetparams;
+		artnetparams.Load();
+		artnetparams.Set();
 
 		node.SetShortName(0, "LTC SMPTE Node");
 
@@ -328,15 +308,11 @@ void main() {
 	const auto bRunTCNet = (ltcSource == ltc::Source::TCNET);
 
 	TCNet tcnet(TCNET_TYPE_SLAVE);
-	StoreTCNet storetcnet;
 
 	if (bRunTCNet) {
-		TCNetParams tcnetparams(&storetcnet);
-
-		if (tcnetparams.Load()) {
-			tcnetparams.Dump();
-			tcnetparams.Set(&tcnet);
-		}
+		TCNetParams tcnetparams;
+		tcnetparams.Load();
+		tcnetparams.Set(&tcnet);
 
 		tcnet.SetTimeCodeHandler(&tcnetReader);
 		tcnet.Start();
@@ -381,15 +357,12 @@ void main() {
 	const auto bRunLtcEtc = (ltcSource == ltc::Source::ETC);
 
 	LtcEtc ltcEtc;
-	StoreLtcEtc storeLtcEtc;
 
 	if (bRunLtcEtc || (!g_ltc_ptLtcDisabledOutputs.bEtc)) {
-		LtcEtcParams ltcEtcParams(&storeLtcEtc);
+		LtcEtcParams ltcEtcParams;
 
-		if (ltcEtcParams.Load()) {
-			ltcEtcParams.Dump();
-			ltcEtcParams.Set();
-		}
+		ltcEtcParams.Load();
+		ltcEtcParams.Set();
 
 		if (ltcSource == ltc::Source::ETC) {
 			ltcEtc.SetHandler(&ltcEtcReader);
@@ -428,7 +401,7 @@ void main() {
 		oscServer.Start();
 		oscServer.Print();
 
-		mdns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
+		mdns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", oscServer.GetPortIncoming());
 	}
 
 	/**
@@ -436,13 +409,10 @@ void main() {
 	 * The NTP Client is stopped.
 	 */
 
-	StoreGPS storeGPS;
-	GPSParams gpsParams(&storeGPS);
+	GPSParams gpsParams;
 
 	if (ltcSource == ltc::Source::SYSTIME) {
-		if (gpsParams.Load()) {
-			gpsParams.Dump();
-		}
+		gpsParams.Load();
 	}
 
 	const auto bRunGpsTimeClient = (gpsParams.IsEnabled() && (ltcSource == ltc::Source::SYSTIME) && g_ltc_ptLtcDisabledOutputs.bRgbPanel);
@@ -472,7 +442,7 @@ void main() {
 		ntpServer.Start();
 		ntpServer.Print();
 
-		mdns.AddServiceRecord(nullptr, mdns::Services::NTP, "type=server");
+		mdns.ServiceRecordAdd(nullptr, mdns::Services::NTP, "type=server");
 
 	}
 
@@ -531,21 +501,13 @@ void main() {
 		break;
 	}
 
-#if defined (ENABLE_HTTPD)
-	mdns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=LTC SMPTE");
-
-	HttpDaemon httpDaemon;
-#endif
-
 	mdns.Print();
 
 	RemoteConfig remoteConfig(remoteconfig::Node::LTC, remoteconfig::Output::TIMECODE, 1U + static_cast<uint32_t>(ltcSource));
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
@@ -665,9 +627,6 @@ void main() {
 		configStore.Flash();
 #if defined(ENABLE_SHELL)
 		shell.Run();
-#endif
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
 #endif
 		mdns.Run();
 	}

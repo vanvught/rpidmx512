@@ -33,10 +33,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -76,20 +72,15 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storee131.h"
-#include "storedisplayudf.h"
-#include "storedmxsend.h"
-#include "storenetwork.h"
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "storerdmdevice.h"
-#endif
-#include "storeremoteconfig.h"
-#include "storepixeldmx.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static constexpr auto DMXPORT_OFFSET = 32U;
+namespace e131bridge {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 32;
+}  // namespace configstore
+}  // namespace e131bridge
 
 void Hardware::RebootHandler() {
 	WS28xxMulti::Get()->Blackout();
@@ -102,8 +93,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -111,43 +102,21 @@ void main() {
 	fw.Print("sACN E1.31 Pixel controller {8x 4 Universes} / 2x DMX");
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=sACN E1.31 Pixel DMX");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
-
 	display.TextStatus(E131MsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	E131Bridge bridge;
 
-	StoreE131 storeE131;
-	E131Params e131params(&storeE131);
-
-	if (e131params.Load()) {
-		e131params.Dump();
-		e131params.Set(DMXPORT_OFFSET);
-	}
+	E131Params e131params;
+	e131params.Load();
+	e131params.Set();
 
 	// LightSet A - Pixel - 32 Universes
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
-
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Dump();
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-	}
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
 	pixelDmxMulti.SetPixelDmxHandler(new PixelDmxStartStop);
@@ -181,7 +150,7 @@ void main() {
 	auto direction = e131params.GetDirection(0);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(e131bridge::configstore::DMXPORT_OFFSET, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
@@ -189,23 +158,19 @@ void main() {
 	direction = e131params.GetDirection(1);
 
 	if (direction == lightset::PortDir::OUTPUT) {
-		bridge.SetUniverse(DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
+		bridge.SetUniverse(e131bridge::configstore::DMXPORT_OFFSET + 1U, lightset::PortDir::OUTPUT, nUniverse);
 		nDmxUniverses++;
 	}
 
-	StoreDmxSend storeDmxSend;
-	DmxParams dmxparams(&storeDmxSend);
-
 	Dmx dmx;
 
-	if (dmxparams.Load()) {
-		dmxparams.Dump();
-		dmxparams.Set(&dmx);
-	}
+	DmxParams dmxparams;
+	dmxparams.Load();
+	dmxparams.Set(&dmx);
 
-	for (uint32_t nPortIndex = DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
+	for (uint32_t nPortIndex = e131bridge::configstore::DMXPORT_OFFSET; nPortIndex < e131bridge::MAX_PORTS; nPortIndex++) {
 		uint16_t nUniverse;
-		const auto nDmxPortIndex = nPortIndex - DMXPORT_OFFSET;
+		const auto nDmxPortIndex = nPortIndex - e131bridge::configstore::DMXPORT_OFFSET;
 
 		if (bridge.GetUniverse(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 			dmx.SetPortDirection(nDmxPortIndex, dmx::PortDirection::OUTP, false);
@@ -215,7 +180,6 @@ void main() {
 	}
 
 	DmxSend dmxSend;
-
 	dmxSend.Print();
 
 	DmxConfigUdp *pDmxConfigUdp = nullptr;
@@ -252,15 +216,10 @@ void main() {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-	}
-
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 #endif
 
@@ -271,15 +230,12 @@ void main() {
 	display.Set(5, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	display.Show(&bridge);
 
-	display.Show(&bridge, DMXPORT_OFFSET);
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
@@ -293,16 +249,14 @@ void main() {
 
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::PIXEL, bridge.GetActiveOutputPorts());
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(E131MsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -328,9 +282,6 @@ void main() {
 			pDmxConfigUdp->Run();
 		}
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

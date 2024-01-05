@@ -28,6 +28,13 @@
 #include <algorithm>
 
 #include "hardware.h"
+#include "network.h"
+#if !defined(NO_EMAC)
+# include "networkconst.h"
+#endif
+
+#include "displayudf.h"
+#include "display_timeout.h"
 
 #include "console.h"
 
@@ -37,12 +44,31 @@
 #include "dmxmonitorparams.h"
 #include "dmx.h"
 
+#if !defined(NO_EMAC)
+# include "network.h"
+# include "remoteconfig.h"
+# include "remoteconfigparams.h"
+# include "configstore.h"
+#endif
+
 #include "software_version.h"
 
 static constexpr auto TOP_ROW_STATS = 26;
 
+void Hardware::RebootHandler() {}
+
 void main() {
 	Hardware hw;
+	DisplayUdf display;
+#if !defined(NO_EMAC)
+	ConfigStore configStore;
+	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
+	Network nw;
+	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
+	nw.Print();
+#endif
+
+	console_clear();
 
 	uint32_t nMicrosPrevious = 0;
 	uint32_t nUpdatesPerSecondeMin = UINT32_MAX;
@@ -57,16 +83,24 @@ void main() {
 
 	printf("DMX Real-time Monitor [V%s] Orange Pi One Compiled on %s at %s\n", SOFTWARE_VERSION, __DATE__, __TIME__);
 
-	DMXMonitor dmxmonitor;
+	DMXMonitorParams dmxMonitorParams;
+	DMXMonitor dmxMonitor;
 
-	DMXMonitorParams monitorparams(nullptr);
+	dmxMonitorParams.Load();
+	dmxMonitorParams.Set(&dmxMonitor);
 
-	if (monitorparams.Load()) {
-		monitorparams.Set(&dmxmonitor);
-		monitorparams.Dump();
-	}
+#if !defined(NO_EMAC)
+	RemoteConfig remoteConfig(remoteconfig::Node::NODE, remoteconfig::Output::MONITOR);
 
-	dmxmonitor.Cls();
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
+
+	while (configStore.Flash())
+		;
+#endif
+
+	dmxMonitor.Cls();
 
 	console_set_cursor(0, TOP_ROW_STATS);
 	console_puts("DMX updates/sec\n");
@@ -74,7 +108,7 @@ void main() {
 	console_puts("Slot to slot\n");
 	console_puts("Break to break");
 
-	DMXReceiver dmxreceiver(&dmxmonitor);
+	DMXReceiver dmxreceiver(&dmxMonitor);
 	dmxreceiver.Start();
 
 	hw.WatchdogInit();
@@ -87,6 +121,8 @@ void main() {
 		const auto nMicrosNow = hw.Micros();
 
 		if (nMicrosNow - nMicrosPrevious > (1000000 / 2)) {
+			nMicrosPrevious = nMicrosNow;
+
 			const auto dmx_updates_per_seconde = dmxreceiver.GetUpdatesPerSecond(0);
 
 			console_save_cursor();
@@ -127,10 +163,12 @@ void main() {
 			}
 
 			console_restore_cursor();
-
-			nMicrosPrevious = nMicrosNow;
 		}
 
+#if !defined(NO_EMAC)
+		nw.Run();
+		remoteConfig.Run();
+#endif
 		hw.Run();
 	}
 }

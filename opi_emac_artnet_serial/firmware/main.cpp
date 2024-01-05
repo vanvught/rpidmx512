@@ -31,10 +31,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -59,17 +55,16 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storeartnet.h"
-#include "storedisplayudf.h"
-#include "storedmxserial.h"
-#include "storenetwork.h"
-#include "storerdmdevice.h"
-#include "storeremoteconfig.h"
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
 void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
@@ -80,8 +75,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -89,33 +84,13 @@ void main() {
 	fw.Print("Art-Net 4 Node Serial [UART/SPI/I2C] {1 Universe}");
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 [UART/SPI/I2C]");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
-
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
-
-	StoreArtNet storeArtNet(DMXPORT_OFFSET);
-	node.SetArtNetStore(&storeArtNet);
-
-	ArtNetParams artnetParams(&storeArtNet);
-
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-		artnetParams.Set(DMXPORT_OFFSET);
-	}
+	
+	ArtNetParams artnetParams;
+	artnetParams.Load();
+	artnetParams.Set();
 
 	const auto portDirection = artnetParams.GetDirection(0);
 
@@ -124,12 +99,9 @@ void main() {
 	}
 
 	DmxSerial dmxSerial;
-	DmxSerialParams dmxSerialParams(new StoreDmxSerial);
-
-	if (dmxSerialParams.Load()) {
-		dmxSerialParams.Dump();
-		dmxSerialParams.Set();
-	}
+	DmxSerialParams dmxSerialParams;
+	dmxSerialParams.Load();
+	dmxSerialParams.Set();
 
 	node.SetOutput(&dmxSerial);
 	node.Print();
@@ -143,12 +115,9 @@ void main() {
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::HOSTNAME);
 
-	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show(&node);
 
@@ -160,12 +129,10 @@ void main() {
 	}
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::SERIAL, node.GetActiveOutputPorts());
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	RDMPersonality *pPersonalities[1] = { new RDMPersonality("RDMNet LLRP device only", static_cast<uint16_t>(0)) };
 	RDMNetDevice llrpOnlyDevice(pPersonalities, 1);
@@ -177,19 +144,16 @@ void main() {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-	}
-
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -208,9 +172,6 @@ void main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

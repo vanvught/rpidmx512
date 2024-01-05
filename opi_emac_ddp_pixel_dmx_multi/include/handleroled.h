@@ -29,12 +29,11 @@
 #include "jamstapl.h"
 
 struct HandlerOled: public JamSTAPLDisplay  {
-	HandlerOled(void) {
+	HandlerOled() {
 		s_pThis = this;
 	}
 
-	~HandlerOled(void) {
-	}
+	~HandlerOled() = default;
 
 	// JamSTAPL
 	void JamShowInfo(const char *pInfo) {

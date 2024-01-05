@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
+
 
 #include "console.h"
 #include "h3/showsystime.h"
@@ -38,16 +38,11 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "display.h"
 #include "displayhandler.h"
 
 #include "oscserver.h"
 #include "oscserverparams.h"
-#include "storeoscserver.h"
 #include "oscservermsgconst.h"
 
 #include "dmxmonitor.h"
@@ -60,7 +55,7 @@
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
+
 
 void Hardware::RebootHandler() {
 }
@@ -70,9 +65,9 @@ void main() {
 	Display display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
-	Network nw(&storeNetwork);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
@@ -92,29 +87,13 @@ void main() {
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
-	StoreOscServer storeOscServer;
-	OSCServerParams params(&storeOscServer);
+	OSCServerParams params;
 	OscServer server;
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&server);
-	}
+	params.Load();
+	params.Set(&server);
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=OSC Monitor");
-#endif
-	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -139,16 +118,14 @@ void main() {
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 

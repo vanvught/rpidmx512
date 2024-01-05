@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2016-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,12 +32,11 @@
 #include "flashcodeinstall.h"
 
 #if !defined(NO_EMAC)
-# include "networkh3emac.h"
+# include "network.h"
+# include "networkconst.h"
 # include "remoteconfig.h"
 # include "remoteconfigparams.h"
-# include "storeremoteconfig.h"
 # include "configstore.h"
-# include "storenetwork.h"
 #endif
 
 #include "midi.h"
@@ -53,8 +52,7 @@ void main() {
 #if !defined(NO_EMAC)
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 #endif
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
@@ -70,13 +68,9 @@ void main() {
 #if !defined(NO_EMAC)
 	nw.Print();
 
-	RemoteConfig remoteConfig(remoteconfig::Node::MIDI, remoteconfig::Output::MONITOR);
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;

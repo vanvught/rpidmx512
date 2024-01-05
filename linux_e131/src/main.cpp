@@ -37,7 +37,6 @@
 
 #include "mdns.h"
 
-
 #include "httpd/httpd.h"
 
 #include "e131bridge.h"
@@ -58,67 +57,55 @@
 #include "remoteconfigparams.h"
 
 #include "configstore.h"
-#include "storedisplayudf.h"
-#include "storee131.h"
-#include "storemonitor.h"
-#include "storenetwork.h"
-#include "storerdmdevice.h"
-#include "storeremoteconfig.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
+namespace e131bridge {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace e131bridge
+
 int main(int argc, char **argv) {
+#ifndef NDEBUG
+	if (argc > 2) {
+		const int c = argv[2][0];
+		if (isdigit(c)){
+			e131bridge::configstore::DMXPORT_OFFSET = c - '0';
+		}
+	}
+#endif
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	StoreNetwork storeNetwork;
 	Network nw(argc, argv);
+	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
 	fw.Print();
 	nw.Print();
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	uint32_t nPortIndexOffset = 0;
-
-	StoreE131 storeE131;
-	E131Params e131Params(&storeE131);
+	DisplayUdfParams displayUdfParams;
 
 	E131Bridge bridge;
 
-	if (e131Params.Load()) {
-		e131Params.Dump();
-#ifndef NDEBUG
-		if (argc > 2) {
-			const int c = argv[2][0];
-			if (isdigit(c)){
-				nPortIndexOffset = c - '0';
-			}
-#endif
-		}
-		e131Params.Set(nPortIndexOffset);
-	}
-
-	StoreMonitor storeMonitor;
-	DMXMonitorParams monitorParams(&storeMonitor);
+	E131Params e131Params;
+	e131Params.Load();
+	e131Params.Set();
 
 	DMXMonitor monitor;
 
-	if (monitorParams.Load()) {
-		monitorParams.Dump();
-		monitorParams.Set(&monitor);
-	}
+	DMXMonitorParams monitorParams;
+	monitorParams.Load();
 
 	bridge.SetOutput(&monitor);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < e131params::MAX_PORTS; nPortIndex++) {
 		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= nPortIndexOffset) {
-			nOffset = nPortIndex - nPortIndexOffset;
+		if (nPortIndex >= e131bridge::configstore::DMXPORT_OFFSET) {
+			nOffset = nPortIndex - e131bridge::configstore::DMXPORT_OFFSET;
 		} else {
 			continue;
 		}
@@ -152,48 +139,33 @@ int main(int argc, char **argv) {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-		rdmDeviceParams.Dump();
-	}
+	RDMDeviceParams rdmDeviceParams;
 
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
+
 	llrpOnlyDevice.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=sACN E1.31");
-	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
-	mDns.Print();
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
 
 	bridge.Print();
 
-	HttpDaemon httpDaemon;
-
 	RemoteConfig remoteConfig(remoteconfig::Node::E131, remoteconfig::Output::MONITOR, bridge.GetActiveOutputPorts());
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
 
+	mDns.Print();
 	bridge.Start();
 
 	for (;;) {
 		bridge.Run();
 		mDns.Run();
-		httpDaemon.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();
