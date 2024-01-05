@@ -50,30 +50,19 @@ public:
 		return m_dmxPortDirection[nPortIndex];
 	}
 
-	void ClearData(uint32_t nPortIndex = 0);
+	void ClearData(const uint32_t nPortIndex);
 
 	// RDM Send
 
-	void RdmSendRaw(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+	void RdmSendRaw(const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
+	void RdmSendDiscoveryRespondMessage(const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength);
 
 	// RDM Receive
 
-	const uint8_t *RdmReceive(uint32_t nPortIndex);
-	const uint8_t *RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut);
+	const uint8_t *RdmReceive(const uint32_t nPortIndex);
+	const uint8_t *RdmReceiveTimeOut(const uint32_t nPortIndex, uint16_t nTimeOut);
 
 	// DMX Send
-
-	void SetSendData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-	void SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
-
-	void StartOutput(const uint32_t nPortIndex);
-	void SetOutput(const bool doForce);
-
-	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle);
-	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
-
-	void Blackout();
-	void FullOn();
 
 	void SetDmxBreakTime(uint32_t nBreakTime);
 	uint32_t GetDmxBreakTime() const {
@@ -94,6 +83,18 @@ public:
 	uint16_t GetDmxSlots() const {
 		return m_nDmxTransmitSlots;
 	}
+
+	void SetSendData(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+	void SetSendDataWithoutSC(const uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
+
+	void StartOutput(const uint32_t nPortIndex);
+	void SetOutput(const bool doForce);
+
+	void SetOutputStyle(const uint32_t nPortIndex, const dmx::OutputStyle outputStyle);
+	dmx::OutputStyle GetOutputStyle(const uint32_t nPortIndex) const;
+
+	void Blackout();
+	void FullOn();
 
 	// DMX Receive
 

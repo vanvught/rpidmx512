@@ -38,10 +38,10 @@
 inline H3_UART_TypeDef * _port_to_uart(const uint32_t nPortIndex) {
 	switch (nPortIndex) {
 	case 0:
-		return H3_UART2;
+		return H3_UART1;
 		break;
 	case 1:
-		return H3_UART1;
+		return H3_UART2;
 		break;
 	default:
 		assert(0);

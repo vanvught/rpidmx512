@@ -40,6 +40,15 @@
 # define GPIO_ANALYZER_CH7
 #endif
 
+namespace dmx {
+namespace config {
+namespace max {
+static constexpr auto OUT = 1U;
+static constexpr auto IN = 1U;
+}  // namespace max
+}  // namespace config
+}  // namespace dmx
+
 namespace dmxsingle {
 namespace max {
 static constexpr auto OUT = 1U;

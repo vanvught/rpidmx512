@@ -2,7 +2,7 @@
  * @file dmx.cpp
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include <cassert>
 
 #include "dmx.h"
+#include "rdm.h"
 
 #include "network.h"
 
@@ -59,6 +60,10 @@ static uint8_t rdmReceiveBuffer[1500];
 struct Data dmxDataRx;
 
 static uint8_t dmxSendBuffer[513];
+
+// RDM
+
+volatile uint32_t gv_RdmDataReceiveEnd;
 
 Dmx *Dmx::s_pThis = nullptr;
 
@@ -213,6 +218,24 @@ void Dmx::RdmSendRaw(uint32_t nPortIndex, const uint8_t* pRdmData, uint32_t nLen
 	assert(nLength != 0);
 
 	Network::Get()->SendTo(s_nHandePortRdm[nPortIndex], pRdmData, nLength, Network::Get()->GetBroadcastIp(), UDP_PORT_RDM_START + nPortIndex);
+}
+
+void Dmx::RdmSendDiscoveryRespondMessage(uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
+	DEBUG_ENTRY
+
+	assert(nPortIndex < dmx::config::max::OUT);
+	assert(pRdmData != nullptr);
+	assert(nLength != 0);
+
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+
+	RdmSendRaw(nPortIndex, pRdmData, nLength);
+
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
+	SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
+
+	DEBUG_EXIT
 }
 
 // RDM Receive
