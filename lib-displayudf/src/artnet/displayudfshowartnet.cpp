@@ -35,12 +35,15 @@
 
 #include "debug.h"
 
-void DisplayUdf::Show(ArtNetNode *pArtNetNode, uint32_t nDmxPortIndexOffset) {
+namespace artnetnode {
+namespace configstore {
+extern uint32_t DMXPORT_OFFSET;
+}  // namespace configstore
+}  // namespace artnetnode
+
+void DisplayUdf::Show(ArtNetNode *pArtNetNode) {
 	DEBUG_ENTRY
-
-	m_nPortIndexOffset = nDmxPortIndexOffset;
-
-	DEBUG_PRINTF("m_nPortIndexOffset=%u", m_nPortIndexOffset);
+	DEBUG_PRINTF("artnetnode::configstore::DMXPORT_OFFSET=%u", artnetnode::configstore::DMXPORT_OFFSET);
 
 	Show();
 
@@ -60,7 +63,7 @@ void DisplayUdf::ShowUniverse(ArtNetNode *pArtNetNode) {
 	uint16_t nUniverse;
 
 	for (uint32_t nArtNetPortIndex = 0; nArtNetPortIndex < std::min(artnet::PORTS, artnetnode::MAX_PORTS); nArtNetPortIndex++) {
-		const auto nPortIndex = nArtNetPortIndex + m_nPortIndexOffset;
+		const auto nPortIndex = nArtNetPortIndex + artnetnode::configstore::DMXPORT_OFFSET;
 
 		if (nPortIndex >= std::min(artnet::PORTS, artnetnode::MAX_PORTS)) {
 			break;

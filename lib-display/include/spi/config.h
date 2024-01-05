@@ -2,7 +2,7 @@
  * @file config.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,33 +26,35 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <cstdint>
+
 namespace config {
 #if defined (SPI_LCD_240X240)
-static constexpr auto WIDTH = 240U;
-static constexpr auto HEIGHT = 240U;
+static constexpr uint32_t WIDTH = 240;
+static constexpr uint32_t HEIGHT = 240;
 #elif defined (SPI_LCD_240X320)
-static constexpr auto WIDTH = 240U;
-static constexpr auto HEIGHT = 320U;
+static constexpr uint32_t WIDTH = 240;
+static constexpr uint32_t HEIGHT = 320;
 #else
 # error lib-display spi config
 #endif
 }  // namespace config
 
 #if defined (H3)
-# define SPI_LCD_RST_PIN		GPIO_EXT_7			// GPIO6
-# define SPI_LCD_DC_PIN 		GPIO_EXT_26			// GPIO10
-# define SPI_LCD_BL_PIN			GPIO_EXT_22			// GPIO2
-# if defined(SPI_LCD_HAVE_CS_PIN)
-#  define SPI_LCD_CS_PIN		GPIO_EXT_24			// GPIO13 / SPI CS0
+# define SPI_LCD_RST_GPIO		GPIO_EXT_7			// GPIO6
+# define SPI_LCD_DC_GPIO 		GPIO_EXT_26			// GPIO10
+# define SPI_LCD_BL_GPIO		GPIO_EXT_22			// GPIO2
+# if defined(SPI_LCD_HAVE_CS_GPIO)
+#  define SPI_LCD_CS_GPIO		GPIO_EXT_24			// GPIO13 / SPI CS0
 # endif
-#elif defined (GD32)		//See board file
+#elif defined (GD32)								//See board file
 #else
 # include "bcm2835.h"
-# define SPI_LCD_RST_PIN		RPI_V2_GPIO_P1_07	// GPIO4
-# define SPI_LCD_DC_PIN 		RPI_V2_GPIO_P1_31	// GPIO6
-# define SPI_LCD_BL_PIN			RPI_V2_GPIO_P1_29	// GPIO5
-# if defined(SPI_LCD_HAVE_CS_PIN)
-#  define SPI_LCD_CS_PIN		RPI_V2_GPIO_P1_24	// GPIO8 / SPI CS0
+# define SPI_LCD_RST_GPIO		RPI_V2_GPIO_P1_07	// GPIO4
+# define SPI_LCD_DC_GPIO 		RPI_V2_GPIO_P1_31	// GPIO6
+# define SPI_LCD_BL_GPIO		RPI_V2_GPIO_P1_29	// GPIO5
+# if defined(SPI_LCD_HAVE_CS_GPIO)
+#  define SPI_LCD_CS_GPIO		RPI_V2_GPIO_P1_24	// GPIO8 / SPI CS0
 # endif
 #endif
 
