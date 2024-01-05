@@ -32,6 +32,7 @@
 #include "gamma/gamma_tables.h"
 
 #include "h3_spi.h"
+#include "h3.h"
 
 struct JamSTAPLDisplay;
 
@@ -78,14 +79,17 @@ private:
 	bool SetupCPLD();
 	void SetupBuffers();
 	void SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue, uint8_t nWhite);
-	void SetColour(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nColour1, uint8_t nColour2, uint8_t nColour3);
+	void SetColour(const uint32_t nPortIndex, const uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue);
 
 private:
 	PixelConfiguration m_PixelConfiguration;
 	bool m_hasCPLD { false };
 	uint32_t m_nBufSize { 0 };
-	uint8_t *m_pBuffer { nullptr };
-	uint8_t *m_pBlackoutBuffer { nullptr };
+
+	uint8_t *const m_pBuffer { reinterpret_cast<uint8_t *>(H3_SRAM_A1_BASE + 4096) };
+	uint8_t *m_pDmaBuffer { nullptr };
+	uint8_t *m_pDmaBufferBlackout { nullptr };
+
 	JamSTAPLDisplay *m_pJamSTAPLDisplay { nullptr };
 
 	static WS28xxMulti *s_pThis;

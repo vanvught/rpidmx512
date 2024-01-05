@@ -98,8 +98,8 @@ WS28xxMulti::WS28xxMulti(PixelConfiguration& pixelConfiguration): m_PixelConfigu
 }
 
 WS28xxMulti::~WS28xxMulti() {
-	m_pBlackoutBuffer = nullptr;
-	m_pBuffer = nullptr;
+	m_pDmaBufferBlackout = nullptr;
+	m_pDmaBuffer = nullptr;
 
 	s_pThis = nullptr;
 }
@@ -109,13 +109,13 @@ void WS28xxMulti::SetupBuffers() {
 
 	uint32_t nSize;
 
-	m_pBuffer = const_cast<uint8_t*>(FUNC_PREFIX(spi_dma_tx_prepare(&nSize)));
-	assert(m_pBuffer != nullptr);
+	m_pDmaBuffer = const_cast<uint8_t*>(FUNC_PREFIX(spi_dma_tx_prepare(&nSize)));
+	assert(m_pDmaBuffer != nullptr);
 
 	const uint32_t nSizeHalf = nSize / 2;
 	assert(m_nBufSize <= nSizeHalf);
 
-	m_pBlackoutBuffer = m_pBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
+	m_pDmaBufferBlackout = m_pDmaBuffer + (nSizeHalf & static_cast<uint32_t>(~3));
 
 	const auto type = m_PixelConfiguration.GetType();
 	const auto nCount = m_PixelConfiguration.GetCount();
@@ -136,13 +136,13 @@ void WS28xxMulti::SetupBuffers() {
 				SetPixel(nPortIndex, 1U + nCount, 0, 0, 0, 0);
 			}
 		}
-		memcpy(m_pBlackoutBuffer, m_pBuffer, m_nBufSize);
+
+		memcpy(m_pDmaBufferBlackout, m_pBuffer, m_nBufSize);
 	} else {
-		memset(m_pBuffer, 0, m_nBufSize);
-		memset(m_pBlackoutBuffer, 0, m_nBufSize);
+		memset(m_pDmaBufferBlackout, 0, m_nBufSize);
 	}
 
-	DEBUG_PRINTF("nSize=%x, m_pBuffer=%p, m_pBlackoutBuffer=%p", nSize, m_pBuffer, m_pBlackoutBuffer);
+	DEBUG_PRINTF("nSize=%x, m_pDmaBuffer=%p, m_pDmaBufferBlackout=%p", nSize, m_pDmaBuffer, m_pDmaBufferBlackout);
 	DEBUG_EXIT
 }
 
@@ -280,13 +280,12 @@ void WS28xxMulti::SetPixel4Bytes(uint32_t nPortIndex, uint32_t nPixelIndex, uint
 	}
 }
 
-
 void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nRed, uint8_t nGreen, uint8_t nBlue) {
-	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
-
-	nRed = pGammaTable[nRed];
-	nGreen = pGammaTable[nGreen];
-	nBlue = pGammaTable[nBlue];
+//	const auto pGammaTable = m_PixelConfiguration.GetGammaTable();
+//
+//	nRed = pGammaTable[nRed];
+//	nGreen = pGammaTable[nGreen];
+//	nBlue = pGammaTable[nBlue];
 
 	const auto type = m_PixelConfiguration.GetType();
 
@@ -351,10 +350,29 @@ void WS28xxMulti::SetPixel(uint32_t nPortIndex, uint32_t nPixelIndex, uint8_t nR
 	}
 }
 
+inline void memcpy64(void *dest, void const *src, size_t n) {
+	auto *plDst = reinterpret_cast<uint64_t *>(dest);
+	const auto *plSrc = reinterpret_cast<const uint64_t *>(src);
+
+	while (n >= 8) {
+		*plDst++ = *plSrc++;
+		n -= 8;
+	}
+
+	auto *pcDst = reinterpret_cast<uint8_t *>(plDst);
+	const auto *pcSrc = reinterpret_cast<const uint8_t *>(plSrc);
+
+	while (n--) {
+		*pcDst++ = *pcSrc++;
+	}
+}
+
 void WS28xxMulti::Update() {
 	assert(!FUNC_PREFIX(spi_dma_tx_is_active()));
 
-	FUNC_PREFIX(spi_dma_tx_start(m_pBuffer, m_nBufSize));
+	memcpy64(m_pDmaBuffer, reinterpret_cast<void *>(H3_SRAM_A1_BASE + 4096), m_nBufSize);
+
+	FUNC_PREFIX(spi_dma_tx_start(m_pDmaBuffer, m_nBufSize));
 }
 
 void WS28xxMulti::Blackout() {
@@ -365,7 +383,7 @@ void WS28xxMulti::Blackout() {
 		asm volatile ("isb" ::: "memory");
 	} while (FUNC_PREFIX(spi_dma_tx_is_active()));
 
-	FUNC_PREFIX(spi_dma_tx_start(m_pBlackoutBuffer, m_nBufSize));
+	FUNC_PREFIX(spi_dma_tx_start(m_pDmaBufferBlackout, m_nBufSize));
 
 	// A blackout may not be interrupted.
 	do {
