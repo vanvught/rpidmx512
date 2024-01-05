@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -170,23 +170,20 @@ bool Network::Start() {
 	printf(" SDK      : %s\n", GetSystemSdkVersion());
 	printf(" Firmware : %s\n", GetFirmwareVersion());
 
-	NetworkParams networkParams(nullptr);
+	NetworkParams networkParams;
+	networkParams.Load();
 
-	if (networkParams.Load()) {
-		networkParams.Dump();
+	Display::Get()->TextStatus(WifiConst::MSG_CHANGING_TO_STATION_MODE);
 
-		Display::Get()->TextStatus(WifiConst::MSG_CHANGING_TO_STATION_MODE);
+	m_pSSID = const_cast<char *>(networkParams.GetSSid());
 
-		m_pSSID = const_cast<char *>(networkParams.GetSSid());
-
-		if (networkParams.isDhcpUsed()) {
-			StationCreate(m_pSSID, networkParams.GetPassword());
-		} else {
-			ip_config.ip.addr = networkParams.GetIpAddress();
-			ip_config.netmask.addr = networkParams.GetNetMask();
-			ip_config.gw.addr = networkParams.GetDefaultGateway();
-			StationCreate(m_pSSID, networkParams.GetPassword(), &ip_config);
-		}
+	if (networkParams.isDhcpUsed()) {
+		StationCreate(m_pSSID, networkParams.GetPassword());
+	} else {
+		ip_config.ip.addr = networkParams.GetIpAddress();
+		ip_config.netmask.addr = networkParams.GetNetMask();
+		ip_config.gw.addr = networkParams.GetDefaultGateway();
+		StationCreate(m_pSSID, networkParams.GetPassword(), &ip_config);
 	}
 
 	esp8266_write_4bits(CMD_WIFI_MODE);

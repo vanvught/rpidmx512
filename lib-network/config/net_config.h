@@ -2,7 +2,7 @@
  * @file net_config
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #  endif
 #  define UDP_MAX_PORTS_ALLOWED			16
 #  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
+#  define TCP_MAX_TCBS_ALLOWED			16
 # elif defined (GD32)
 /*
  * Supports checking IPv4 header checksum and TCP, UDP, or ICMP checksum encapsulated in IPv4 or IPv6 datagram.
@@ -48,11 +49,17 @@
 #  if !defined (IGMP_MAX_JOINS_ALLOWED)
 #   define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
 #  endif
+#  if !defined (TCP_MAX_TCBS_ALLOWED)
+#   define TCP_MAX_TCBS_ALLOWED			6
+#  endif
 # else
 #  error
 # endif
 #else
-# error
+#  define UDP_MAX_PORTS_ALLOWED			16
+#  define IGMP_MAX_JOINS_ALLOWED		(4 + (8 * 4)) /* 8 outputs x 4 Universes */
+#  define TCP_MAX_TCBS_ALLOWED			16
+# define TCP_MAX_PORTS_ALLOWED			2
 #endif
 
 #if !defined (UDP_MAX_PORTS_ALLOWED)
@@ -64,6 +71,10 @@
 #endif
 
 #if !defined (TCP_MAX_PORTS_ALLOWED)
+# error
+#endif
+
+#if !defined (TCP_MAX_TCBS_ALLOWED)
 # error
 #endif
 

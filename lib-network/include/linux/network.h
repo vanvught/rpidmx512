@@ -38,7 +38,7 @@
 
 class Network {
 public:
-	Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore = nullptr);
+	Network(int argc, char **argv);
 	~Network();
 
 	void Print();
@@ -183,10 +183,6 @@ public:
 		return m_fNtpUtcOffset;
 	}
 
-	void SetNetworkStore(NetworkStore *pNetworkStore) {
-		m_pNetworkStore = pNetworkStore;
-	}
-
 	bool IsValidIp(uint32_t nIp) {
 		return (m_nLocalIp & m_nNetmask) == (nIp & m_nNetmask);
 	}
@@ -230,8 +226,6 @@ private:
 	char m_aDomainName[network::DOMAINNAME_SIZE];
 	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
-
-	NetworkStore *m_pNetworkStore { nullptr };
 
 	struct QueuedConfig {
 		static constexpr uint32_t NONE = 0;

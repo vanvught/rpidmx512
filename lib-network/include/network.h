@@ -127,17 +127,6 @@ void mdns_announcement();
 void mdns_shutdown();
 }  // namespace network
 
-class NetworkStore {
-public:
-	virtual ~NetworkStore() {}
-
-	virtual void SaveIp(uint32_t nIp)=0;
-	virtual void SaveNetMask(uint32_t nNetMask)=0;
-	virtual void SaveGatewayIp(uint32_t nGatewayIp)=0;
-	virtual void SaveHostName(const char *pHostName, uint32_t nLength)=0;
-	virtual void SaveDhcp(bool bIsDhcpUsed)=0;
-};
-
 #if defined (BARE_METAL)
 # if defined (ESP8266)
 #  include "esp8266/network.h"

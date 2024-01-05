@@ -51,12 +51,11 @@
 #define TCP_RX_MAX_ENTRIES				(1U << 1) // Must always be a power of 2
 #define TCP_RX_MAX_ENTRIES_MASK			(TCP_RX_MAX_ENTRIES - 1)
 #define TCP_MAX_RX_WND 					(TCP_RX_MAX_ENTRIES * TCP_RX_MSS);
-
 #define TCP_TX_MSS						(TCP_DATA_SIZE)
 
-#define MAX_TCBS_ALLOWED				6
-
 namespace net {
+namespace tcp {
+}  // namespace tcp
 namespace globals {
 extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
@@ -128,7 +127,7 @@ struct ReceiveQueue {
 };
 
 struct Port {
-	tcb TCB[MAX_TCBS_ALLOWED];
+	tcb TCB[TCP_MAX_TCBS_ALLOWED];
 	ReceiveQueue receiveQueue;
 	uint16_t nLocalPort;
 };
@@ -546,7 +545,7 @@ static void scan_options(struct t_tcp *pTcp, struct tcb *pTcb, const int32_t nDa
 
 __attribute__((hot)) void tcp_run() {
 	for (auto nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
-		for (auto nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
+		for (auto nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
 			auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
 
 			if (pTCB->state == STATE_CLOSE_WAIT) {
@@ -588,7 +587,7 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 	for (nIndexPort = 0; nIndexPort < TCP_MAX_PORTS_ALLOWED; nIndexPort++) {
 		if (s_Port[nIndexPort].nLocalPort == pTcp->tcp.dstpt) {
 			// Find an active TCB
-			for (nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
+			for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
 				auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
 				if (pTCB->state != STATE_LISTEN) {
 					if ((pTCB->nRemotePort == pTcp->tcp.srcpt) && (memcmp(pTCB->remoteIp, pTcp->ip4.src, IPv4_ADDR_LEN) == 0)) {
@@ -597,16 +596,16 @@ src/net/tcp.cpp:871:31: error: 'nIndexTCB' may be used uninitialized in this fun
 				}
 			}
 
-			if (nIndexTCB == MAX_TCBS_ALLOWED) {
+			if (nIndexTCB == TCP_MAX_TCBS_ALLOWED) {
 				// Find an available TCB
-				for (nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
+				for (nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
 					auto *pTCB = &s_Port[nIndexPort].TCB[nIndexTCB];
 					if (pTCB->state == STATE_LISTEN) {
 						break;
 					}
 				}
 
-				if (nIndexTCB == MAX_TCBS_ALLOWED) {
+				if (nIndexTCB == TCP_MAX_TCBS_ALLOWED) {
 					DEBUG_PUTS("MAX_TCB_ALLOWED -> Force retransmission");
 					DEBUG_EXIT
 					return;
@@ -1083,7 +1082,7 @@ int tcp_begin(const uint16_t nLocalPort) {
 		if (s_Port[i].nLocalPort == 0) {
 			s_Port[i].nLocalPort = nLocalPort;
 
-			for (uint32_t nIndexTCB = 0; nIndexTCB < MAX_TCBS_ALLOWED; nIndexTCB++) {
+			for (uint32_t nIndexTCB = 0; nIndexTCB < TCP_MAX_TCBS_ALLOWED; nIndexTCB++) {
 				// create transmission control block's (TCB)
 				_init_tcb(&s_Port[i].TCB[nIndexTCB], nLocalPort);
 			}
@@ -1129,7 +1128,7 @@ void tcp_write(const int32_t nHandleListen, const uint8_t *pBuffer, uint16_t nLe
 	assert(nHandleListen >= 0);
 	assert(nHandleListen < TCP_MAX_PORTS_ALLOWED);
 	assert(pBuffer != nullptr);
-	assert(nHandleConnection < MAX_TCBS_ALLOWED);
+	assert(nHandleConnection < TCP_MAX_TCBS_ALLOWED);
 
 	nLength = std::min(nLength, static_cast<uint16_t>(TCP_DATA_SIZE));
 

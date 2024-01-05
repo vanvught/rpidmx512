@@ -2,7 +2,7 @@
  * @file network.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -61,9 +61,9 @@ static int snHandles[max::PORTS_ALLOWED];
  * END
  */
 
-Network *Network::s_pThis = nullptr;
+Network *Network::s_pThis;
 
-Network::Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore) {
+Network::Network(int argc, char **argv) {
 	if (argc < 2) {
 		printf("Usage: %s ip_address|interface_name\n", argv[0]);
 		exit(EXIT_FAILURE);
@@ -87,9 +87,8 @@ Network::Network(int argc, char **argv, NetworkParamsStore *pNetworkParamsStore)
 		snHandles[i] = -1;
 	}
 
-	NetworkParams params(pNetworkParamsStore);
+	NetworkParams params;
 	params.Load();
-	params.Dump();
 
 	m_nNtpServerIp = params.GetNtpServer();
 /**

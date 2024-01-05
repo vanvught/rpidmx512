@@ -2,7 +2,7 @@
  * @file esp8266.h
  *
  */
-/* Copyright (C) 2016-2017 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,31 +27,21 @@
 #define ESP8266_H_
 
 #include <cstdint>
-#include <stdbool.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+void esp8266_init();
+bool esp8266_detect();
 
-extern void esp8266_init(void);
+void esp8266_write_4bits(const uint8_t);
+void esp8266_write_byte(const uint8_t);
+void esp8266_write_halfword(const uint16_t);
+void esp8266_write_word(const uint32_t);
+void esp8266_write_bytes(const uint8_t *, const uint32_t);
+void esp8266_write_str(const char *);
 
-extern bool esp8266_detect(void);
-
-extern void esp8266_write_4bits(const uint8_t);
-extern void esp8266_write_byte(const uint8_t);
-extern void esp8266_write_halfword(const uint16_t);
-extern void esp8266_write_word(const uint32_t);
-extern void esp8266_write_bytes(const uint8_t *, const uint32_t);
-extern void esp8266_write_str(const char *);
-
-extern uint8_t esp8266_read_byte(void);
-extern void esp8266_read_bytes(const uint8_t *, const uint16_t);
-extern uint16_t esp8266_read_halfword(void);
-extern uint32_t esp8266_read_word(void);
-extern void esp8266_read_str(char *, uint32_t *);
-
-#ifdef __cplusplus
-}
-#endif
+uint8_t esp8266_read_byte();
+void esp8266_read_bytes(const uint8_t *, const uint32_t);
+uint16_t esp8266_read_halfword();
+uint32_t esp8266_read_word();
+void esp8266_read_str(char *, uint32_t *);
 
 #endif /* ESP8266_H_ */

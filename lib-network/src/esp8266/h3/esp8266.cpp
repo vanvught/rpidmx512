@@ -1,9 +1,11 @@
-#if defined(ORANGE_PI)
+#if !defined(ORANGE_PI)
+# error
+#endif
 /**
  * @file esp8266.c
  *
  */
-/* Copyright (C) 2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,8 +26,10 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdbool.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+
+#include <cstdint>
 
 #include "arm/synchronize.h"
 
@@ -325,10 +329,10 @@ uint32_t esp8266_read_word(void) {
 	return u32.u32;
 }
 
-void esp8266_read_str(char *s, uint16_t *len) {
-	const char *p = s;
+void esp8266_read_str(char *s, uint32_t *len) {
+	const auto *p = s;
 	uint8_t ch;
-	uint16_t n = *len;
+	auto n = *len;
 
 	data_gpio_fsel_input();
 
@@ -339,7 +343,7 @@ void esp8266_read_str(char *s, uint16_t *len) {
 		}
 	}
 
-	*len = (uint16_t) (s - p);
+	*len = (uint32_t) (s - p);
 
 	while (n > 0) {
 		*s++ = '\0';
@@ -380,4 +384,3 @@ bool esp8266_detect(void) {
 
 	return true;
 }
-#endif
