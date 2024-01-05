@@ -2,7 +2,7 @@
  * @file widgetstore.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,10 +26,37 @@
 #ifndef WIDGETSTORE_H_
 #define WIDGETSTORE_H_
 
+#include <cstdint>
+#include <cstddef>
+
+#include "widgetparams.h"
+
 #if defined (WIDGET_HAVE_FLASHROM)
-# include "flashrom/widgetstore.h"
-#else
-# error
+# include "configstore.h"
 #endif
+
+class WidgetStore {
+public:
+#if defined (WIDGET_HAVE_FLASHROM)
+	static void UpdateBreakTime(uint8_t nBreakTime) {
+		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nBreakTime), &nBreakTime, sizeof(uint8_t), WidgetParamsMask::BREAK_TIME);
+	}
+
+	static void UpdateMabTime(uint8_t nMabTime) {
+		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nMabTime), &nMabTime, sizeof(uint8_t), WidgetParamsMask::MAB_TIME);
+	}
+
+	static void UpdateRefreshRate(uint8_t nRefreshRate) {
+		ConfigStore::Get()->Update(configstore::Store::WIDGET, offsetof(struct TWidgetParams, nRefreshRate), &nRefreshRate, sizeof(uint8_t), WidgetParamsMask::REFRESH_RATE);
+	}
+#else
+	static void UpdateBreakTime(uint8_t nBreakTime) { }
+
+	static void UpdateMabTime(uint8_t nMabTime) { }
+
+	static void UpdateRefreshRate(uint8_t nRefreshRate) {	}
+#endif
+
+};
 
 #endif /* WIDGETSTORE_H_ */

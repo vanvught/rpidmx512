@@ -171,9 +171,8 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 		pSrc++;
 	}
 
-	if ((0 != nOffset) && (bIsChanged) && (nSetList != 0)) {
+	if (bIsChanged){
 		auto *pSet = reinterpret_cast<uint32_t*>((&s_SpiFlashData[GetStoreOffset(store)] + nOffsetSetList));
-
 		*pSet |= nSetList;
 	}
 
@@ -181,12 +180,13 @@ void ConfigStore::Update(Store store, uint32_t nOffset, const void *pData, uint3
 		s_State = State::CHANGED;
 	}
 
+	debug_dump(&s_SpiFlashData[GetStoreOffset(store)] + nOffsetSetList, 8);
 	DEBUG_EXIT
 }
 
-void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uint32_t nOffset) {
+void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uint32_t nOffset, const bool doUpdate) {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u", s_aStoreName[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset);
+	DEBUG_PRINTF("[%s]:%u pData=%p, nDataLength=%u, nOffset=%u, doUpdate=%u", s_aStoreName[static_cast<uint32_t>(store)], static_cast<uint32_t>(store), pData, nDataLength, nOffset, doUpdate);
 
 	assert(store < Store::LAST);
 	assert(pData != nullptr);
@@ -210,7 +210,9 @@ void ConfigStore::Copy(const Store store, void *pData, uint32_t nDataLength, uin
 		return;
 	}
 
-	Update(store, pData, nDataLength);
+	if (doUpdate) {
+		Update(store, pData, nDataLength);
+	}
 
 	DEBUG_EXIT
 }

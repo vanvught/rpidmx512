@@ -2,7 +2,7 @@
  * @file pixeldmxstore.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,19 +26,37 @@
 #ifndef PIXELDMXSTORE_H_
 #define PIXELDMXSTORE_H_
 
+#include <cstddef>
 #include <cstdint>
+
+#include "pixeldmxparams.h"
+#include "configstore.h"
 
 class PixelDmxStore {
 public:
-	virtual ~PixelDmxStore() {
+	static void SaveType(uint8_t nType) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nType), &nType, sizeof(uint8_t), pixeldmxparams::Mask::TYPE);
 	}
 
-	virtual void SaveType(uint8_t nType)=0;
-	virtual void SaveCount(uint16_t nCount)=0;
-	virtual void SaveGroupingCount(uint16_t nGroupingCount)=0;
-	virtual void SaveMap(uint8_t nMap)=0;
-	virtual void SaveTestPattern(uint8_t nTestPattern)=0;
-	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
+	static void SaveCount(uint16_t nCount) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nCount), &nCount, sizeof(uint16_t), pixeldmxparams::Mask::COUNT);
+	}
+
+	static void SaveGroupingCount(uint16_t nGroupingCount) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nGroupingCount), &nGroupingCount, sizeof(uint16_t), pixeldmxparams::Mask::GROUPING_COUNT);
+	}
+
+	static void SaveMap(uint8_t nMap) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nMap), &nMap, sizeof(uint8_t), pixeldmxparams::Mask::MAP);
+	}
+
+	static void SaveTestPattern(uint8_t nTestPattern) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nTestPattern), &nTestPattern, sizeof(uint8_t), pixeldmxparams::Mask::TEST_PATTERN);
+	}
+
+	static void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, offsetof(struct pixeldmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), pixeldmxparams::Mask::DMX_START_ADDRESS);
+	}
 };
 
 #endif /* PIXELDMXSTORE_H_ */

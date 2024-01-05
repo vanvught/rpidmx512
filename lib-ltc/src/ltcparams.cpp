@@ -35,6 +35,8 @@
 #include "ltcparams.h"
 #include "ltcparamsconst.h"
 
+#include "configstore.h"
+
 #include "network.h"
 
 #include "readconfigfile.h"
@@ -47,7 +49,9 @@ using namespace ltc;
 
 static constexpr auto VOLUME_0DBV = 28;
 
-LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcParamsStore) {
+LtcParams::LtcParams() {
+	DEBUG_ENTRY
+
 	memset(&m_Params, 0, sizeof(struct ltcparams::Params));
 
 	const auto ltime = time(nullptr);
@@ -66,30 +70,33 @@ LtcParams::LtcParams(LtcParamsStore *pLtcParamsStore): m_pLTcParamsStore(pLtcPar
 	m_Params.nOscPort = 8000;
 	m_Params.nSkipSeconds = 5;
 	m_Params.nTimeCodeIp = Network::Get()->GetBroadcastIp();
+
+	DEBUG_EXIT
 }
 
-bool LtcParams::Load() {
+void LtcParams::Load() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(LtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcParamsConst::FILE_NAME)) {
-		if (m_pLTcParamsStore != nullptr) {
-			m_pLTcParamsStore->Update(&m_Params);
-		}
+		LtcParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pLTcParamsStore != nullptr) {
-		m_pLTcParamsStore->Copy(&m_Params);
-	} else {
-		return false;
-	}
+		LtcParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -99,8 +106,12 @@ void LtcParams::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pLTcParamsStore != nullptr);
-	m_pLTcParamsStore->Update(&m_Params);
+	LtcParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void LtcParams::HandleDisabledOutput(const char *pLine, const char *pKeyword, uint8_t nMaskDisabledOutputs) {
@@ -439,8 +450,7 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 	if (ptLtcParams != nullptr) {
 		memcpy(&m_Params, ptLtcParams, sizeof(struct ltcparams::Params));
 	} else {
-		assert(m_pLTcParamsStore != nullptr);
-		m_pLTcParamsStore->Copy(&m_Params);
+		LtcParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(LtcParamsConst::FILE_NAME, pBuffer, nLength);
@@ -510,7 +520,6 @@ void LtcParams::Builder(const struct ltcparams::Params *ptLtcParams, char *pBuff
 #include <cstdio>
 
 void LtcParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcParamsConst::FILE_NAME);
 
 	if (isMaskSet(ltcparams::Mask::SOURCE)) {
@@ -648,5 +657,4 @@ void LtcParams::Dump() {
 			printf("nRgbLedType=%u\n", m_Params.nRgbLedType);
 		}
 	}
-#endif
 }

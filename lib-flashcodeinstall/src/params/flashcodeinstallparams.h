@@ -2,7 +2,7 @@
  * @file flashcodeinstallparams.h
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,6 @@ struct FlashCodeInstallParamsMask {
 class FlashCodeInstallParams {
 public:
 	bool Load();
-	void Dump();
 
 	 bool GetInstalluboot() const {
 		return isMaskSet(FlashCodeInstallParamsMask::INSTALL_UBOOT);
@@ -49,6 +48,7 @@ public:
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_nSetList & nMask) == nMask;

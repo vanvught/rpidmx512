@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 
 #include "pca9685.h"
 #include "pca9685dmx.h"
+#include "configstore.h"
 
 namespace pca9685dmxparams {
 struct Params {
@@ -37,7 +38,8 @@ struct Params {
 	uint16_t nDmxStartAddress;	///< 2	9
 	uint16_t nLedPwmFrequency;	///< 2	12
 	uint16_t nServoLeftUs;		///< 2	14
-	uint16_t nServoRightUs;		///< 2	16
+	uint16_t nServoCenterUs;	///< 2	16
+	uint16_t nServoRightUs;		///< 2	18
 } __attribute__((packed));
 
 static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
@@ -52,25 +54,27 @@ struct Mask {
 	static constexpr uint32_t LED_OUTPUT_INVERT    = (1U << 6);
 	static constexpr uint32_t LED_OUTPUT_OPENDRAIN = (1U << 7);
 	static constexpr uint32_t SERVO_LEFT_US 	   = (1U << 8);
-	static constexpr uint32_t SERVO_RIGHT_US 	   = (1U << 9);
+	static constexpr uint32_t SERVO_CENTER_US 	   = (1U << 9);
+	static constexpr uint32_t SERVO_RIGHT_US 	   = (1U << 10);
 };
-
 }  // namespace pca9685dmxparams
 
 class PCA9685DmxParamsStore {
 public:
-	virtual ~PCA9685DmxParamsStore() {}
+	static void Update(const struct pca9685dmxparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
+	}
 
-	virtual void Update(const struct pca9685dmxparams::Params *pPCA9685DmxParams)=0;
-	virtual void Copy(struct pca9685dmxparams::Params *pPCA9685DmxParams)=0;
+	static void Copy(struct pca9685dmxparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::PCA9685, pParams, sizeof(struct pca9685dmxparams::Params));
+	}
 };
 
 class PCA9685DmxParams {
 public:
-	PCA9685DmxParams(PCA9685DmxParamsStore *pPCA9685DmxParamsStore);
-	~PCA9685DmxParams() {};
+	PCA9685DmxParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct pca9685dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -80,11 +84,10 @@ public:
 
 	void Set(PCA9685Dmx *pPCA9685Dmx);
 
-	void Dump();
-
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     void SetBool(const uint8_t nValue, const uint32_t nMask);
     bool isMaskSet(uint32_t nMask) const {
@@ -92,7 +95,6 @@ private:
     }
 
 private:
-    PCA9685DmxParamsStore *m_pPCA9685DmxParamsStore;
     pca9685dmxparams::Params m_Params;
 };
 

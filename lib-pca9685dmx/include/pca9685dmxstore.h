@@ -27,11 +27,16 @@
 #define PCA9685DMXSTORE_H_
 
 #include <cstdint>
+#include <cstddef>
+
+#include "pca9685dmxparams.h"
+#include "configstore.h"
 
 class PCA9685DmxStore {
 public:
-	virtual ~PCA9685DmxStore() {}
-	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
+	static void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+		ConfigStore::Get()->Update(configstore::Store::PCA9685, offsetof(struct pca9685dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), pca9685dmxparams::Mask::DMX_START_ADDRESS);
+	}
 };
 
-#endif /* TLC59711DMXSTORE_H_ */
+#endif /* PCA9685DMXSTORE_H_ */

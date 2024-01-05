@@ -2,7 +2,7 @@
  * @file tcnetparams.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,7 @@
 
 #include "tcnet.h"
 #include "tcnetpackets.h"
+#include "configstore.h"
 
 namespace tcnetparams {
 
@@ -52,37 +53,39 @@ struct Mask {
 
 class TCNetParamsStore {
 public:
-	virtual ~TCNetParamsStore() {}
+	static void Update(const struct tcnetparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::TCNET, pParams, sizeof(struct tcnetparams::Params));
+	}
 
-	virtual void Update(const struct tcnetparams::Params *pTCNetParams)=0;
-	virtual void Copy(struct tcnetparams::Params *pTCNetParams)=0;
+	static void Copy(struct tcnetparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::TCNET, pParams, sizeof(struct tcnetparams::Params));
+	}
 };
 
 class TCNetParams {
 public:
-	TCNetParams(TCNetParamsStore *pTCNetParamsStore);
+	TCNetParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct tcnetparams::Params *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct tcnetparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
 	void Set(TCNet *pTCNet);
 
-	void Dump();
-
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) {
 		return (m_Params.nSetList & nMask) == nMask;
 	}
 
-	TCNetParamsStore *m_pTCNetParamsStore;
+private:
     tcnetparams::Params	m_Params;
 };
 

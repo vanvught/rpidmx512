@@ -28,8 +28,9 @@
 #include <cstdint>
 
 #include "ltcdisplaymax7219.h"
-
 #include "ltc.h"
+
+#include "configstore.h"
 
 namespace ltcparams {
 struct Params {
@@ -105,29 +106,28 @@ struct RgbLedType {
 
 class LtcParamsStore {
 public:
-	virtual ~LtcParamsStore() {}
+	static void Update(const struct ltcparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
+	}
 
-	virtual void Update(const struct ltcparams::Params *pTLtcParams)=0;
-	virtual void Copy(struct ltcparams::Params *pTLtcParams)=0;
-
-	virtual void SaveSource(uint8_t nSource)=0;
+	static void Copy(struct ltcparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::LTC, pParams, sizeof(struct ltcparams::Params));
+	}
 };
 
 class LtcParams {
 public:
-	LtcParams(LtcParamsStore *pLtcParamsStore);
+	LtcParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const ltcparams::Params *ptLtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const ltcparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
 	void Set(struct ltc::TimeCode *ptStartTimeCode, struct ltc::TimeCode *ptStopTimeCode);
-
-	void Dump();
 
 	ltc::Source GetSource() const {
 		return static_cast<ltc::Source>(m_Params.nSource);
@@ -231,6 +231,7 @@ private:
 	void SetBool(const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 	void SetValue(const bool bEvaluate, const uint8_t nValue, uint8_t& nProperty, const uint32_t nMask);
 
+	void Dump();
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
 		return (m_Params.nSetList & nMask) == nMask;
@@ -240,7 +241,6 @@ private:
 	}
 
 private:
-    LtcParamsStore 	*m_pLTcParamsStore;
     ltcparams::Params m_Params;
 };
 

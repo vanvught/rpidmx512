@@ -2,7 +2,7 @@
  * @file gpsparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,65 +27,68 @@
 #include <cstdint>
 
 #include "gpsconst.h"
+#include "configstore.h"
 
-struct TGPSParams {
+namespace gpsparams {
+struct Params {
 	uint32_t nSetList;
 	uint8_t nModule;
 	float fUtcOffset;
 } __attribute__((packed));
 
-struct GPSParamsMask {
+struct Mask {
 	static constexpr auto MODULE = (1U << 0);
 	static constexpr auto ENABLE = (1U << 1);
 	static constexpr auto UTC_OFFSET = (1U << 2);
 };
+}  // namespace gpsparams
 
-class GPSParamsStore {
+class GPSParamsStore  {
 public:
-	virtual ~GPSParamsStore() {
+	static void Update(const struct gpsparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::GPS, pParams, sizeof(struct gpsparams::Params));
 	}
 
-	virtual void Update(const struct TGPSParams *pGPSParams)=0;
-	virtual void Copy(struct TGPSParams *pGPSParams)=0;
+	static void Copy(struct gpsparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::GPS, pParams, sizeof(struct gpsparams::Params));
+	}
 };
 
 class GPSParams {
 public:
-	GPSParams(GPSParamsStore *pGPSParamsStore);
+	GPSParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct gpsparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Dump();
-
 	bool IsEnabled() const {
-		return isMaskSet(GPSParamsMask::ENABLE);
+		return isMaskSet(gpsparams::Mask::ENABLE);
 	}
 
 	GPSModule GetModule() const {
-		return static_cast<GPSModule>(m_tTGPSParams.nModule);
+		return static_cast<GPSModule>(m_Params.nModule);
 	}
 
 	float GetUtcOffset() const {
-		return m_tTGPSParams.fUtcOffset;
+		return m_Params.fUtcOffset;
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tTGPSParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 
 private:
-	GPSParamsStore *m_pGPSParamsStore;
-	struct TGPSParams m_tTGPSParams;
+	gpsparams::Params m_Params;
 };
 
 #endif /* GPSPARAMS_H_ */

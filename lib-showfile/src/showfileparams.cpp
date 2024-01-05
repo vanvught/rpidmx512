@@ -2,7 +2,7 @@
  * @file showfileparams.cpp
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -65,7 +65,7 @@ struct PROTOCOL2STRING {
 	}
 };
 
-ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pShowFileParamsStore(pShowFileParamsStore) {
+ShowFileParams::ShowFileParams() {
 	DEBUG_ENTRY
 
 	m_showFileParams.nSetList = 0;
@@ -86,29 +86,29 @@ ShowFileParams::ShowFileParams(ShowFileParamsStore *pShowFileParamsStore): m_pSh
 	DEBUG_EXIT
 }
 
-bool ShowFileParams::Load() {
+void ShowFileParams::Load() {
+	DEBUG_ENTRY
+
 	m_showFileParams.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(ShowFileParams::staticCallbackFunction, this);
 
 	if (configfile.Read(ShowFileParamsConst::FILE_NAME)) {
-		// There is a configuration file
-		if (m_pShowFileParamsStore != nullptr) {
-			m_pShowFileParamsStore->Update(&m_showFileParams);
-		}
+		ShowFileParamsStore::Update(&m_showFileParams);
 	} else
 #endif
-	if (m_pShowFileParamsStore != nullptr) {
-		m_pShowFileParamsStore->Copy(&m_showFileParams);
-	} else {
-		return false;
-	}
+		ShowFileParamsStore::Copy(&m_showFileParams);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -118,8 +118,12 @@ void ShowFileParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pShowFileParamsStore != nullptr);
-	m_pShowFileParamsStore->Update(&m_showFileParams);
+	ShowFileParamsStore::Update(&m_showFileParams);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void ShowFileParams::HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask) {
@@ -259,8 +263,7 @@ void ShowFileParams::Builder(const struct TShowFileParams *ptShowFileParamss, ch
 	if (ptShowFileParamss != nullptr) {
 		memcpy(&m_showFileParams, ptShowFileParamss, sizeof(struct showfileparams::Params));
 	} else {
-		assert(m_pShowFileParamsStore != nullptr);
-		m_pShowFileParamsStore->Copy(&m_showFileParams);
+		ShowFileParamsStore::Copy(&m_showFileParams);
 	}
 
 	PropertiesBuilder builder(ShowFileParamsConst::FILE_NAME, pBuffer, nLength);
@@ -349,8 +352,14 @@ void ShowFileParams::Set() {
 	DEBUG_EXIT
 }
 
+void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != nullptr);
+	assert(s != nullptr);
+
+	(static_cast<ShowFileParams *>(p))->callbackFunction(s);
+}
+
 void ShowFileParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, ShowFileParamsConst::FILE_NAME);
 
 	if(isMaskSet(showfileparams::Mask::FORMAT)) {
@@ -405,12 +414,4 @@ void ShowFileParams::Dump() {
 	if (isMaskSet(showfileparams::Mask::OSC_PORT_OUTGOING)) {
 		printf(" %s=%u\n", OscParamsConst::OUTGOING_PORT, m_showFileParams.nOscPortOutgoing);
 	}
-#endif
-}
-
-void ShowFileParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<ShowFileParams *>(p))->callbackFunction(s);
 }

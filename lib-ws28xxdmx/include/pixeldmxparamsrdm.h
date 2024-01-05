@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-#include "pixeldmxstore.h"
 #include "lightset.h"
 
 namespace pixeldmx {
@@ -42,7 +41,7 @@ static constexpr auto DMX_FOOTPRINT = static_cast<uint16_t>(SlotInfo::LAST);
 
 class PixelDmxParamsRdm: public LightSet {
 public:
-	PixelDmxParamsRdm(PixelDmxStore *pWS28xxDmxStore);
+	PixelDmxParamsRdm();
 
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
@@ -67,7 +66,6 @@ public:
 	void Display(const uint8_t *pData) __attribute__((weak));
 
 private:
-	static PixelDmxStore *s_pWS28xxDmxStore;
 	static uint8_t s_Data;
 };
 

@@ -45,53 +45,56 @@
 
 using namespace rgbpanel;
 
-RgbPanelParams::RgbPanelParams(RgbPanelParamsStore *pRgbPanelParamsStore): m_pRgbPanelParamsStore(pRgbPanelParamsStore) {
-	m_tRgbPanelParams.nSetList = 0;
-	m_tRgbPanelParams.nCols = defaults::COLS;
-	m_tRgbPanelParams.nRows = defaults::ROWS;
-	m_tRgbPanelParams.nChain = defaults::CHAIN;
-	m_tRgbPanelParams.nType = static_cast<uint8_t>(defaults::TYPE);
+RgbPanelParams::RgbPanelParams() {
+	DEBUG_ENTRY
+
+	m_Params.nSetList = 0;
+	m_Params.nCols = defaults::COLS;
+	m_Params.nRows = defaults::ROWS;
+	m_Params.nChain = defaults::CHAIN;
+	m_Params.nType = static_cast<uint8_t>(defaults::TYPE);
+
+	DEBUG_EXIT
 }
 
-bool RgbPanelParams::Load() {
-	m_tRgbPanelParams.nSetList = 0;
+void RgbPanelParams::Load() {
+	DEBUG_ENTRY
+
+	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(RgbPanelParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RgbPanelParamsConst::FILE_NAME)) {
-		// There is a configuration file
-		if (m_pRgbPanelParamsStore != nullptr) {
-			m_pRgbPanelParamsStore->Update(&m_tRgbPanelParams);
-		}
+		RgbPanelParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pRgbPanelParamsStore != nullptr) {
-		m_pRgbPanelParamsStore->Copy(&m_tRgbPanelParams);
-	} else {
-		return false;
-	}
+		RgbPanelParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void RgbPanelParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	assert(m_pRgbPanelParamsStore != nullptr);
-
-	if (m_pRgbPanelParamsStore == nullptr) {
-		return;
-	}
-
-	m_tRgbPanelParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile config(RgbPanelParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pRgbPanelParamsStore->Update(&m_tRgbPanelParams);
+	RgbPanelParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void RgbPanelParams::callbackFunction(const char *pLine) {
@@ -100,31 +103,31 @@ void RgbPanelParams::callbackFunction(const char *pLine) {
 	uint8_t nValue8;
 
 	if (Sscan::Uint8(pLine, RgbPanelParamsConst::COLS, nValue8) == Sscan::OK) {
-		if ((m_tRgbPanelParams.nCols = static_cast<uint8_t>(RgbPanel::ValidateColumns(nValue8))) != defaults::COLS) {
-			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::COLS;
+		if ((m_Params.nCols = static_cast<uint8_t>(RgbPanel::ValidateColumns(nValue8))) != defaults::COLS) {
+			m_Params.nSetList |= rgbpanelparams::Mask::COLS;
 		} else {
-			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::COLS;
+			m_Params.nSetList &= ~rgbpanelparams::Mask::COLS;
 		}
 		return;
 	}
 
 
 	if (Sscan::Uint8(pLine, RgbPanelParamsConst::ROWS, nValue8) == Sscan::OK) {
-		if ((m_tRgbPanelParams.nRows = static_cast<uint8_t>(RgbPanel::ValidateRows(nValue8))) != defaults::ROWS) {
-			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::ROWS;
+		if ((m_Params.nRows = static_cast<uint8_t>(RgbPanel::ValidateRows(nValue8))) != defaults::ROWS) {
+			m_Params.nSetList |= rgbpanelparams::Mask::ROWS;
 		} else {
-			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::ROWS;
+			m_Params.nSetList &= ~rgbpanelparams::Mask::ROWS;
 		}
 		return;
 	}
 
 	if (Sscan::Uint8(pLine, RgbPanelParamsConst::CHAIN, nValue8) == Sscan::OK) {
 		if ((nValue8 != 0) && (nValue8 != static_cast<uint8_t>(defaults::CHAIN))) {
-			m_tRgbPanelParams.nType = nValue8;
-			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::CHAIN;
+			m_Params.nType = nValue8;
+			m_Params.nSetList |= rgbpanelparams::Mask::CHAIN;
 		} else {
-			m_tRgbPanelParams.nType = static_cast<uint8_t>(defaults::CHAIN);
-			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::CHAIN;
+			m_Params.nType = static_cast<uint8_t>(defaults::CHAIN);
+			m_Params.nSetList &= ~rgbpanelparams::Mask::CHAIN;
 		}
 		return;
 	}
@@ -134,30 +137,30 @@ void RgbPanelParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, RgbPanelParamsConst::TYPE, cBuffer, nLength) == Sscan::OK) {
 		cBuffer[nLength] = '\0';
-		if ((m_tRgbPanelParams.nType = static_cast<uint8_t>(RgbPanel::GetType(cBuffer))) != static_cast<uint8_t>(defaults::TYPE)) {
-			m_tRgbPanelParams.nSetList |= RgbPanelParamsMask::TYPE;
+		if ((m_Params.nType = static_cast<uint8_t>(RgbPanel::GetType(cBuffer))) != static_cast<uint8_t>(defaults::TYPE)) {
+			m_Params.nSetList |= rgbpanelparams::Mask::TYPE;
 		} else {
-			m_tRgbPanelParams.nSetList &= ~RgbPanelParamsMask::TYPE;
+			m_Params.nSetList &= ~rgbpanelparams::Mask::TYPE;
 		}
 		return;
 	}
 }
 
-void RgbPanelParams::Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void RgbPanelParams::Builder(const struct rgbpanelparams::Params *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (pRgbPanelParams != nullptr) {
-		memcpy(&m_tRgbPanelParams, pRgbPanelParams, sizeof(struct TRgbPanelParams));
+		memcpy(&m_Params, pRgbPanelParams, sizeof(struct rgbpanelparams::Params));
 	} else {
-		m_pRgbPanelParamsStore->Copy(&m_tRgbPanelParams);
+		RgbPanelParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RgbPanelParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(RgbPanelParamsConst::COLS, m_tRgbPanelParams.nCols, isMaskSet(RgbPanelParamsMask::COLS));
-	builder.Add(RgbPanelParamsConst::ROWS, m_tRgbPanelParams.nRows, isMaskSet(RgbPanelParamsMask::ROWS));
-	builder.Add(RgbPanelParamsConst::CHAIN, m_tRgbPanelParams.nChain, isMaskSet(RgbPanelParamsMask::CHAIN));
-	builder.Add(RgbPanelParamsConst::TYPE, RgbPanel::GetType(static_cast<Types>(m_tRgbPanelParams.nType)), isMaskSet(RgbPanelParamsMask::TYPE));
+	builder.Add(RgbPanelParamsConst::COLS, m_Params.nCols, isMaskSet(rgbpanelparams::Mask::COLS));
+	builder.Add(RgbPanelParamsConst::ROWS, m_Params.nRows, isMaskSet(rgbpanelparams::Mask::ROWS));
+	builder.Add(RgbPanelParamsConst::CHAIN, m_Params.nChain, isMaskSet(rgbpanelparams::Mask::CHAIN));
+	builder.Add(RgbPanelParamsConst::TYPE, RgbPanel::GetType(static_cast<Types>(m_Params.nType)), isMaskSet(rgbpanelparams::Mask::TYPE));
 
 	nSize = builder.GetSize();
 }
@@ -167,4 +170,24 @@ void RgbPanelParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<RgbPanelParams *>(p))->callbackFunction(s);
+}
+
+void RgbPanelParams::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RgbPanelParamsConst::FILE_NAME);
+
+	if (isMaskSet(rgbpanelparams::Mask::COLS)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::COLS, m_Params.nCols);
+	}
+
+	if (isMaskSet(rgbpanelparams::Mask::ROWS)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::ROWS, m_Params.nRows);
+	}
+
+	if (isMaskSet(rgbpanelparams::Mask::CHAIN)) {
+		printf(" %s=%d\n", RgbPanelParamsConst::CHAIN, m_Params.nChain);
+	}
+
+	if (isMaskSet(rgbpanelparams::Mask::TYPE)) {
+		printf(" %s=%d [%s]\n", RgbPanelParamsConst::TYPE, m_Params.nType, RgbPanel::GetType(static_cast<Types>(m_Params.nType)));
+	}
 }

@@ -2,7 +2,7 @@
  * @file remoteconfigparams.h
  *
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,10 @@
 #include <cstdint>
 
 #include "remoteconfig.h"
+#include "configstore.h"
 
-struct TRemoteConfigParams {
+namespace remoteconfigparams {
+struct Params {
     uint32_t nSetList;
 	uint8_t NotUsed0;
 	uint8_t NotUsed1;
@@ -39,34 +41,37 @@ struct TRemoteConfigParams {
 	char aDisplayName[remoteconfig::DISPLAY_NAME_LENGTH];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TRemoteConfigParams) <= 48, "struct TRemoteConfigParams is too large");
+static_assert(sizeof(struct Params) <= 48, "struct Params is too large");
 
-struct RemoteConfigParamsMask {
-	static constexpr auto DISABLE = (1U << 0);
-	static constexpr auto DISABLE_WRITE = (1U << 1);
-	static constexpr auto ENABLE_REBOOT = (1U << 2);
-	static constexpr auto ENABLE_UPTIME = (1U << 3);
-	static constexpr auto DISPLAY_NAME = (1U << 4);
-	static constexpr auto ENABLE_FACTORY = (1U << 5);
+struct Mask {
+	static constexpr uint32_t DISABLE = (1U << 0);
+	static constexpr uint32_t DISABLE_WRITE = (1U << 1);
+	static constexpr uint32_t ENABLE_REBOOT = (1U << 2);
+	static constexpr uint32_t ENABLE_UPTIME = (1U << 3);
+	static constexpr uint32_t DISPLAY_NAME = (1U << 4);
+	static constexpr uint32_t ENABLE_FACTORY = (1U << 5);
 };
+}  // namespace remoteconfigparams
 
 class RemoteConfigParamsStore {
 public:
-	virtual ~RemoteConfigParamsStore() {
+	static void Update(const struct remoteconfigparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
 	}
 
-	virtual void Update(const struct TRemoteConfigParams *pRemoteConfigParams)=0;
-	virtual void Copy(struct TRemoteConfigParams *pRemoteConfigParams)=0;
+	static void Copy(struct remoteconfigparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::RCONFIG, pParams, sizeof(struct remoteconfigparams::Params));
+	}
 };
 
 class RemoteConfigParams {
 public:
-	RemoteConfigParams(RemoteConfigParamsStore *pRemoteConfigParamsStore);
+	RemoteConfigParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRemoteConfigParams *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct remoteconfigparams::Params *pRemoteConfigParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
@@ -74,23 +79,21 @@ public:
 	void Set(RemoteConfig *);
 
 	const char *GetDisplayName() const {
-		return m_tRemoteConfigParams.aDisplayName;
+		return m_Params.aDisplayName;
 	}
-
-	void Dump();
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
 	void callbackFunction(const char *pLine);
 	void SetBool(const uint8_t nValue, const uint32_t nMask);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tRemoteConfigParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 
 private:
-	RemoteConfigParamsStore *m_pRemoteConfigParamsStore;
-    TRemoteConfigParams m_tRemoteConfigParams;
+	remoteconfigparams::Params m_Params;
 };
 
 #endif /* REMOTECONFIGPARAMS_H_ */

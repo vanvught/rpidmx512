@@ -2,7 +2,7 @@
  * @file tcnetparams.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,6 +31,7 @@
 #include <cstdint>
 #include <cctype>
 #include <cstring>
+#include <cstdio>
 #include <cassert>
 
 #include "tcnetparams.h"
@@ -46,37 +47,41 @@
 
 using namespace tcnetparams;
 
-TCNetParams::TCNetParams(TCNetParamsStore* pTCNetParamsStore): m_pTCNetParamsStore(pTCNetParamsStore) {
+TCNetParams::TCNetParams() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 
 	memset(m_Params.aNodeName, '\0', TCNET_NODE_NAME_LENGTH);
 	m_Params.nLayer = static_cast<uint8_t>(TCNetLayer::LAYER_M);
 	m_Params.nTimeCodeType = TCNET_TIMECODE_TYPE_SMPTE_30FPS;
+
+	DEBUG_EXIT
 }
 
-bool TCNetParams::Load() {
+void TCNetParams::Load() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(TCNetParams::staticCallbackFunction, this);
 
 	if (configfile.Read(TCNetParamsConst::FILE_NAME)) {
-		// There is a configuration file
-		if (m_pTCNetParamsStore != nullptr) {
-			m_pTCNetParamsStore->Update(&m_Params);
-		}
+		TCNetParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pTCNetParamsStore != nullptr) {
-		m_pTCNetParamsStore->Copy(&m_Params);
-	} else {
-		return false;
-	}
+		TCNetParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -86,8 +91,12 @@ void TCNetParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pTCNetParamsStore != nullptr);
-	m_pTCNetParamsStore->Update(&m_Params);
+	TCNetParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void TCNetParams::callbackFunction(const char *pLine) {
@@ -153,14 +162,6 @@ void TCNetParams::callbackFunction(const char *pLine) {
 	}
 }
 
-
-void TCNetParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<TCNetParams *>(p))->callbackFunction(s);
-}
-
 void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
@@ -170,8 +171,7 @@ void TCNetParams::Builder(const struct Params *pTTCNetParams, char *pBuffer, uin
 	if (pTTCNetParams != nullptr) {
 		memcpy(&m_Params, pTTCNetParams, sizeof(struct Params));
 	} else {
-		assert(m_pTCNetParamsStore != nullptr);
-		m_pTCNetParamsStore->Copy(&m_Params);
+		TCNetParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(TCNetParamsConst::FILE_NAME, pBuffer, nLength);
@@ -218,4 +218,27 @@ void TCNetParams::Set(TCNet *pTCNet) {
 	}
 
 	pTCNet->SetUseTimeCode(isMaskSet(Mask::USE_TIMECODE));
+}
+
+void TCNetParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != nullptr);
+	assert(s != nullptr);
+
+	(static_cast<TCNetParams *>(p))->callbackFunction(s);
+}
+
+void TCNetParams::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, TCNetParamsConst::FILE_NAME);
+
+	if (isMaskSet(Mask::NODE_NAME)) {
+		printf(" %s=%s\n", TCNetParamsConst::NODE_NAME, m_Params.aNodeName);
+	}
+
+	if (isMaskSet(Mask::LAYER)) {
+		printf(" %s=%d [Layer%c]\n", TCNetParamsConst::LAYER, m_Params.nLayer, TCNet::GetLayerName(static_cast<TCNetLayer>(m_Params.nLayer)));
+	}
+
+	if (isMaskSet(Mask::TIMECODE_TYPE)) {
+		printf(" %s=%d\n", TCNetParamsConst::TIMECODE_TYPE, m_Params.nTimeCodeType);
+	}
 }

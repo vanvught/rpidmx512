@@ -2,7 +2,7 @@
  * @file modestore.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,30 @@
 #define MODESTORE_H_
 
 #include <cstdint>
+#include <cstddef>
+#include <cassert>
+
+#include "l6470dmxstore.h"
+
+#include "configstore.h"
+
+#include "debug.h"
 
 class ModeStore {
 public:
-	virtual ~ModeStore() {}
+	static void SaveDmxStartAddress(uint32_t nMotorIndex, uint16_t nDmxStartAddress) {
+		DEBUG_ENTRY
 
-	virtual void SaveDmxStartAddress(uint32_t nMotorIndex, uint16_t nDmxStartAddress)=0;
+		assert(nMotorIndex < motorstore::MAX_MOTORS);
+
+		const uint32_t nOffsetModeParms = motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, ModeParams);
+
+		DEBUG_PRINTF("nOffsetModeParms=%u", nOffsetModeParms);
+
+		ConfigStore::Get()->Update(configstore::Store::MOTORS, nOffsetModeParms + offsetof(struct modeparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint16_t), modeparams::Mask::DMX_START_ADDRESS, nOffsetModeParms);
+
+		DEBUG_EXIT
+	}
 };
 
 #endif /* MODESTORE_H_ */

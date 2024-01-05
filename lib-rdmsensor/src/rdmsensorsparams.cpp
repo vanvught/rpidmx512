@@ -2,7 +2,7 @@
  * @file rdmsensorsparams.cpp
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,28 +35,41 @@
 
 #include "rdmsensorsparams.h"
 #include "rdmsensors.h"
-#include "rdmsensorstore.h"
+#include "rdmsensorsconst.h"
+#include "rdm_sensors.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
 #include "propertiesbuilder.h"
 
 #if defined (RDM_SENSORS_ENABLE)
-# include "rdmsensorbh1750.h"
-# include "rdmsensormcp9808.h"
-# include "rdmsensorhtu21dhumidity.h"
-# include "rdmsensorhtu21dtemperature.h"
-# include "rdmsensorina219current.h"
-# include "rdmsensorina219power.h"
-# include "rdmsensorina219voltage.h"
-# include "rdmsensorsi7021humidity.h"
-# include "rdmsensorsi7021temperature.h"
-# include "rdmsensorthermistor.h"
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_BH170)
+#  include "rdmsensorbh1750.h"
+# endif
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_MCP9808)
+#  include "rdmsensormcp9808.h"
+# endif
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_HTU21D)
+#  include "rdmsensorhtu21dhumidity.h"
+#  include "rdmsensorhtu21dtemperature.h"
+# endif
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_INA219)
+#  include "rdmsensorina219current.h"
+#  include "rdmsensorina219power.h"
+#  include "rdmsensorina219voltage.h"
+# endif
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_SI7021)
+#  include "rdmsensorsi7021humidity.h"
+#  include "rdmsensorsi7021temperature.h"
+# endif
+# if !defined (CONFIG_RDM_SENSORS_DISABLE_THERMISTOR)
+#  include "rdmsensorthermistor.h"
+# endif
 #endif
 
 #include "debug.h"
 
-RDMSensorsParams::RDMSensorsParams(RDMSensorsParamsStore *pRDMSensorsParamsStore): m_pRDMSensorsParamsStore(pRDMSensorsParamsStore) {
+RDMSensorsParams::RDMSensorsParams() {
 	DEBUG_ENTRY
 
 	memset(&m_Params, 0, sizeof(struct rdm::sensorsparams::Params));
@@ -64,7 +77,7 @@ RDMSensorsParams::RDMSensorsParams(RDMSensorsParamsStore *pRDMSensorsParamsStore
 	DEBUG_EXIT
 }
 
-bool RDMSensorsParams::Load() {
+void RDMSensorsParams::Load() {
 	DEBUG_ENTRY
 
 	m_Params.nDevices = 0;
@@ -73,24 +86,20 @@ bool RDMSensorsParams::Load() {
 	ReadConfigFile configfile(RDMSensorsParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RDMSensorsConst::PARAMS_FILE_NAME)) {
-		if (m_pRDMSensorsParamsStore != nullptr) {
-			m_pRDMSensorsParamsStore->Update(&m_Params);
-		}
+		RDMSensorsParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pRDMSensorsParamsStore != nullptr) {
-		m_pRDMSensorsParamsStore->Copy(&m_Params);
-		// Sanity check
-		if (m_Params.nDevices >= rdm::sensors::devices::MAX) {
-			memset(&m_Params, 0, sizeof(struct rdm::sensorsparams::Params));
-		}
-	} else {
-		DEBUG_EXIT
-		return false;
+		RDMSensorsParamsStore::Copy(&m_Params);
+
+	// Sanity check
+	if (m_Params.nDevices >= rdm::sensors::devices::MAX) {
+		memset(&m_Params, 0, sizeof(struct rdm::sensorsparams::Params));
 	}
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
-	return true;
 }
 
 void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
@@ -98,12 +107,6 @@ void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pRDMSensorsParamsStore != nullptr);
-
-	if (m_pRDMSensorsParamsStore == nullptr) {
-		DEBUG_EXIT
-		return;
-	}
 
 	m_Params.nDevices = 0;
 
@@ -111,8 +114,11 @@ void RDMSensorsParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	m_pRDMSensorsParamsStore->Update(&m_Params);
+	RDMSensorsParamsStore::Update(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
 }
 
@@ -124,20 +130,19 @@ void RDMSensorsParams::Builder(const rdm::sensorsparams::Params *pParams, char *
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct rdm::sensorsparams::Params));
 	} else {
-		assert(m_pRDMSensorsParamsStore != nullptr);
-		m_pRDMSensorsParamsStore->Copy(&m_Params);
+		RDMSensorsParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(RDMSensorsConst::PARAMS_FILE_NAME, pBuffer, nLength);
 
 	for (uint32_t i = 0; i < static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED); i++) {
-		builder.AddHex8(RDMSensors::GetTypeString(static_cast<rdm::sensors::Types>(i)), 0xFF, false);		
+		builder.AddHex8(rdm::sensors::get_type_string(static_cast<rdm::sensors::Types>(i)), 0xFF, false);
 	}
 
 	for (uint32_t i = 0; i < m_Params.nDevices; i++) {
 		const auto type = static_cast<rdm::sensors::Types>(m_Params.Entry[i].nType);
 		if (type < rdm::sensors::Types::UNDEFINED) {
-			builder.AddHex8(RDMSensors::GetTypeString(type), m_Params.Entry[i].nAddress, true);	
+			builder.AddHex8(rdm::sensors::get_type_string(type), m_Params.Entry[i].nAddress, true);
 		}
 	}
 
@@ -145,20 +150,6 @@ void RDMSensorsParams::Builder(const rdm::sensorsparams::Params *pParams, char *
 
 	DEBUG_PRINTF("nSize=%d", nSize);
 	DEBUG_EXIT
-}
-
-void RDMSensorsParams::Dump() {
-#ifndef NDEBUG
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMSensorsConst::PARAMS_FILE_NAME);
-
-	for (uint32_t i = 0; i < m_Params.nDevices; i++) {
-		printf(" %s 0x%.2x\n", RDMSensors::GetTypeString(static_cast<rdm::sensors::Types>(m_Params.Entry[i].nType)), m_Params.Entry[i].nAddress);
-	}
-
-	for (uint32_t i = 0; i < rdm::sensors::MAX; i++) {
-		printf("%2d %d\n", i, m_Params.nCalibrate[i]);
-	}
-#endif
 }
 
 bool RDMSensorsParams::Add(RDMSensor *pRDMSensor) {
@@ -176,7 +167,7 @@ bool RDMSensorsParams::Add(RDMSensor *pRDMSensor) {
 	return false;
 }
 
-void RDMSensorsParams::Set(__attribute__((unused)) RDMSensorStore *pRDMSensorStore) {
+void RDMSensorsParams::Set() {
 #if defined (RDM_SENSORS_ENABLE)
 	DEBUG_ENTRY
 
@@ -185,15 +176,20 @@ void RDMSensorsParams::Set(__attribute__((unused)) RDMSensorStore *pRDMSensorSto
 		const auto nAddress = m_Params.Entry[i].nAddress;
 
 		switch (static_cast<rdm::sensors::Types>(m_Params.Entry[i].nType)) {
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_BH170)
 		case rdm::sensors::Types::BH170:
 			Add(new RDMSensorBH170(nSensorNumber, nAddress));
 			break;
+#endif
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_HTU21D)
 		case rdm::sensors::Types::HTU21D:
 			if (!Add(new RDMSensorHTU21DHumidity(nSensorNumber++, nAddress))) {
 				continue;
 			}
 			Add(new RDMSensorHTU21DTemperature(nSensorNumber, nAddress));
 			break;
+#endif
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_INA219)
 		case rdm::sensors::Types::INA219:
 			if (!Add(new RDMSensorINA219Current(nSensorNumber++, nAddress))) {
 				continue;
@@ -203,30 +199,37 @@ void RDMSensorsParams::Set(__attribute__((unused)) RDMSensorStore *pRDMSensorSto
 			}
 			Add(new RDMSensorINA219Voltage(nSensorNumber, nAddress));
 			break;
+#endif
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_MCP9808)
 		case rdm::sensors::Types::MCP9808:
 			Add(new RDMSensorMCP9808(nSensorNumber, nAddress));
 			break;
+#endif
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_SI7021)
 		case rdm::sensors::Types::SI7021:
 			if (!Add(new RDMSensorSI7021Humidity(nSensorNumber++, nAddress))) {
 				continue;
 			}
 			Add(new RDMSensorSI7021Temperature(nSensorNumber, nAddress));
 			break;
+#endif
+#if !defined (CONFIG_RDM_SENSORS_DISABLE_THERMISTOR)
 		case rdm::sensors::Types::MCP3424:
-			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 0, m_Params.nCalibrate[nSensorNumber], pRDMSensorStore))) {
+			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 0, m_Params.nCalibrate[nSensorNumber]))) {
 				continue;
 			}
 			nSensorNumber++;
-			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 1, m_Params.nCalibrate[nSensorNumber], pRDMSensorStore))) {
+			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 1, m_Params.nCalibrate[nSensorNumber]))) {
 				continue;
 			}
 			nSensorNumber++;
-			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 2, m_Params.nCalibrate[nSensorNumber], pRDMSensorStore))) {
+			if (!Add(new RDMSensorThermistor(nSensorNumber, nAddress, 2, m_Params.nCalibrate[nSensorNumber]))) {
 				continue;
 			}
 			nSensorNumber++;
-			Add(new RDMSensorThermistor(nSensorNumber, nAddress, 3, m_Params.nCalibrate[nSensorNumber], pRDMSensorStore));
+			Add(new RDMSensorThermistor(nSensorNumber, nAddress, 3, m_Params.nCalibrate[nSensorNumber]));
 			break;
+#endif
 		default:
 			break;
 		}
@@ -257,7 +260,7 @@ void RDMSensorsParams::callbackFunction(const char *pLine) {
 
 		rdm::sensors::Types sensorType;
 
-		if ((sensorType = RDMSensors::GetTypeString(aSensorName)) == rdm::sensors::Types::UNDEFINED) {
+		if ((sensorType = rdm::sensors::get_type_string(aSensorName)) == rdm::sensors::Types::UNDEFINED) {
 			return;
 		}
 
@@ -284,4 +287,16 @@ void RDMSensorsParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<RDMSensorsParams*>(p))->callbackFunction(s);
+}
+
+void RDMSensorsParams::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMSensorsConst::PARAMS_FILE_NAME);
+
+	for (uint32_t i = 0; i < m_Params.nDevices; i++) {
+		printf(" %s 0x%.2x\n", rdm::sensors::get_type_string(static_cast<rdm::sensors::Types>(m_Params.Entry[i].nType)), m_Params.Entry[i].nAddress);
+	}
+
+	for (uint32_t i = 0; i < rdm::sensors::MAX; i++) {
+		printf("%2d %d\n", i, m_Params.nCalibrate[i]);
+	}
 }

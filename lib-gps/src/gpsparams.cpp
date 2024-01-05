@@ -2,7 +2,7 @@
  * @file gpsparams.cpp
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,9 @@
 
 #include <cstdint>
 #include <cstring>
+#ifndef NDEBUG
+# include <cstdio>
+#endif
 #include <cassert>
 
 #include "gpsparams.h"
@@ -41,37 +44,34 @@
 
 #include "debug.h"
 
-GPSParams::GPSParams(GPSParamsStore *pGPSParamsStore): m_pGPSParamsStore(pGPSParamsStore) {
+GPSParams::GPSParams() {
 	DEBUG_ENTRY
-	DEBUG_PRINTF("sizeof(struct TGPSParams) = %d", static_cast<int>(sizeof(struct TGPSParams)));
 
-	memset(&m_tTGPSParams, 0, sizeof(struct TGPSParams));
+	memset(&m_Params, 0, sizeof(struct gpsparams::Params));
 
-	m_tTGPSParams.nModule = static_cast<uint8_t>(GPSModule::UNDEFINED);
+	m_Params.nModule = static_cast<uint8_t>(GPSModule::UNDEFINED);
 
 	DEBUG_EXIT
 }
 
-bool GPSParams::Load() {
-	m_tTGPSParams.nSetList = 0;
+void GPSParams::Load() {
+	DEBUG_ENTRY
+
+	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(GPSParams::staticCallbackFunction, this);
 
 	if (configfile.Read(GPSParamsConst::FILE_NAME)) {
-		// There is a configuration file
-		if (m_pGPSParamsStore != nullptr) {
-			m_pGPSParamsStore->Update(&m_tTGPSParams);
-		}
+		GPSParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pGPSParamsStore != nullptr) {
-		m_pGPSParamsStore->Copy(&m_tTGPSParams);
-	} else {
-		return false;
-	}
+		GPSParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
@@ -80,15 +80,17 @@ void GPSParams::Load(const char *pBuffer, uint32_t nLength) {
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	m_tTGPSParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile config(GPSParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pGPSParamsStore != nullptr);
-	m_pGPSParamsStore->Update(&m_tTGPSParams);
+	GPSParamsStore::Update(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
 }
 
@@ -100,12 +102,12 @@ void GPSParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Char(pLine, GPSParamsConst::MODULE, moduleName, nLength) == Sscan::OK) {
 		moduleName[nLength] = '\0';
-		m_tTGPSParams.nModule = static_cast<uint8_t>(GPS::GetModule(moduleName));
+		m_Params.nModule = static_cast<uint8_t>(GPS::GetModule(moduleName));
 
-		if (m_tTGPSParams.nModule != static_cast<uint8_t>(GPSModule::UNDEFINED)) {
-			m_tTGPSParams.nSetList |= GPSParamsMask::MODULE;
+		if (m_Params.nModule != static_cast<uint8_t>(GPSModule::UNDEFINED)) {
+			m_Params.nSetList |= gpsparams::Mask::MODULE;
 		} else {
-			m_tTGPSParams.nSetList &= ~GPSParamsMask::MODULE;
+			m_Params.nSetList &= ~gpsparams::Mask::MODULE;
 		}
 		return;
 	}
@@ -114,9 +116,9 @@ void GPSParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint8(pLine, GPSParamsConst::ENABLE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_tTGPSParams.nSetList |= GPSParamsMask::ENABLE;
+			m_Params.nSetList |= gpsparams::Mask::ENABLE;
 		} else {
-			m_tTGPSParams.nSetList &= ~GPSParamsMask::ENABLE;
+			m_Params.nSetList &= ~gpsparams::Mask::ENABLE;
 		}
 		return;
 	}
@@ -125,32 +127,31 @@ void GPSParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, GPSParamsConst::UTC_OFFSET, f) == Sscan::OK) {
 		if ((static_cast<int32_t>(f) >= -12) && (static_cast<int32_t>(f) <= 14) && (static_cast<int32_t>(f) != 0)) {
-			m_tTGPSParams.fUtcOffset = f;
-			m_tTGPSParams.nSetList |= GPSParamsMask::UTC_OFFSET;
+			m_Params.fUtcOffset = f;
+			m_Params.nSetList |= gpsparams::Mask::UTC_OFFSET;
 			return;
 		} else {
-			m_tTGPSParams.fUtcOffset = 0.0;
-			m_tTGPSParams.nSetList &= ~GPSParamsMask::UTC_OFFSET;
+			m_Params.fUtcOffset = 0.0;
+			m_Params.nSetList &= ~gpsparams::Mask::UTC_OFFSET;
 			return;
 		}
 	}
 }
 
-void GPSParams::Builder(const struct TGPSParams *pGPSParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void GPSParams::Builder(const struct gpsparams::Params *pGPSParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	if (pGPSParams != nullptr) {
-		memcpy(&m_tTGPSParams, pGPSParams, sizeof(struct TGPSParams));
+		memcpy(&m_Params, pGPSParams, sizeof(struct gpsparams::Params));
 	} else {
-		assert(m_pGPSParamsStore != nullptr);
-		m_pGPSParamsStore->Copy(&m_tTGPSParams);
+		GPSParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(GPSParamsConst::FILE_NAME, pBuffer, nLength);
 
-	builder.Add(GPSParamsConst::MODULE, GPS::GetModuleName(static_cast<GPSModule>(m_tTGPSParams.nModule)), isMaskSet(GPSParamsMask::MODULE));
-	builder.Add(GPSParamsConst::ENABLE, isMaskSet(GPSParamsMask::ENABLE));
-	builder.Add(GPSParamsConst::UTC_OFFSET, m_tTGPSParams.fUtcOffset, isMaskSet(GPSParamsMask::UTC_OFFSET));
+	builder.Add(GPSParamsConst::MODULE, GPS::GetModuleName(static_cast<GPSModule>(m_Params.nModule)), isMaskSet(gpsparams::Mask::MODULE));
+	builder.Add(GPSParamsConst::ENABLE, isMaskSet(gpsparams::Mask::ENABLE));
+	builder.Add(GPSParamsConst::UTC_OFFSET, m_Params.fUtcOffset, isMaskSet(gpsparams::Mask::UTC_OFFSET));
 
 	nSize = builder.GetSize();
 }
@@ -160,4 +161,11 @@ void GPSParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<GPSParams *>(p))->callbackFunction(s);
+}
+
+void GPSParams::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, GPSParamsConst::FILE_NAME);
+	printf(" %s=%d [%s]\n", GPSParamsConst::MODULE, static_cast<int>(m_Params.nModule), GPS::GetModuleName(static_cast<GPSModule>(m_Params.nModule)));
+	printf(" %s=%d\n", GPSParamsConst::ENABLE, isMaskSet(gpsparams::Mask::ENABLE));
+	printf(" %s=%1.1f\n", GPSParamsConst::UTC_OFFSET, m_Params.fUtcOffset);
 }

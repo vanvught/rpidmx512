@@ -2,7 +2,7 @@
  * @file pca9685dmxparams.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -51,10 +51,11 @@ namespace pca9685dmxparams {
 static constexpr char MODE_LED[] = "led";
 static constexpr char MODE_SERVO[] = "servo";
 
-const char *get_mode(const uint32_t nMode) {
+static const char *get_mode(const uint32_t nMode) {
 	return nMode != 0 ?  MODE_SERVO : MODE_LED;
 }
-uint32_t get_mode(const char *pMode) {
+
+static uint32_t get_mode(const char *pMode) {
 	if (strcasecmp(pMode, MODE_SERVO) == 0) {
 		return 1;
 	}
@@ -63,38 +64,44 @@ uint32_t get_mode(const char *pMode) {
 }
 }  // namespace pca9685dmxparams
 
-PCA9685DmxParams::PCA9685DmxParams(PCA9685DmxParamsStore *pPCA9685DmxParamsStore): m_pPCA9685DmxParamsStore(pPCA9685DmxParamsStore) {
+PCA9685DmxParams::PCA9685DmxParams() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 	m_Params.nAddress = pca9685::I2C_ADDRESS_DEFAULT;
 	m_Params.nChannelCount = pca9685::PWM_CHANNELS;
 	m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
 	m_Params.nLedPwmFrequency = pca9685::pwmled::DEFAULT_FREQUENCY;
 	m_Params.nServoLeftUs = pca9685::servo::LEFT_DEFAULT_US;
+	m_Params.nServoCenterUs = pca9685::servo::CENTER_DEFAULT_US;
 	m_Params.nServoRightUs = pca9685::servo::RIGHT_DEFAULT_US;
+
+	DEBUG_EXIT
 }
 
-bool PCA9685DmxParams::Load() {
+void PCA9685DmxParams::Load() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(PCA9685DmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(PCA9685DmxParamsConst::FILE_NAME)) {
-		if (m_pPCA9685DmxParamsStore != nullptr) {
-			m_pPCA9685DmxParamsStore->Update(&m_Params);
-		}
+		PCA9685DmxParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pPCA9685DmxParamsStore != nullptr) {
-		m_pPCA9685DmxParamsStore->Copy(&m_Params);
-	} else {
-		return false;
-	}
+		PCA9685DmxParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void PCA9685DmxParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -104,7 +111,12 @@ void PCA9685DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	m_pPCA9685DmxParamsStore->Update(&m_Params);
+	PCA9685DmxParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void PCA9685DmxParams::SetBool(const uint8_t nValue, const uint32_t nMask) {
@@ -201,12 +213,35 @@ void PCA9685DmxParams::callbackFunction(const char *pLine) {
 	 */
 
 	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::SERVO_LEFT_US, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && (nValue16 != pca9685::servo::LEFT_DEFAULT_US)) {
+			m_Params.nServoLeftUs = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::SERVO_LEFT_US;
+		} else {
+			m_Params.nServoLeftUs = pca9685::servo::LEFT_DEFAULT_US;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::SERVO_LEFT_US;
+		}
+		return;
+	}
 
+	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::SERVO_CENTER_US, nValue16) == Sscan::OK) {
+		if ((nValue16 != 0) && (nValue16 != pca9685::servo::CENTER_DEFAULT_US)) {
+			m_Params.nServoRightUs = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::SERVO_CENTER_US;
+		} else {
+			m_Params.nServoRightUs = pca9685::servo::CENTER_DEFAULT_US;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::SERVO_CENTER_US;
+		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, PCA9685DmxParamsConst::SERVO_RIGHT_US, nValue16) == Sscan::OK) {
-
+		if ((nValue16 != 0) && (nValue16 != pca9685::servo::RIGHT_DEFAULT_US)) {
+			m_Params.nServoRightUs = nValue16;
+			m_Params.nSetList |= pca9685dmxparams::Mask::SERVO_RIGHT_US;
+		} else {
+			m_Params.nServoRightUs = pca9685::servo::RIGHT_DEFAULT_US;
+			m_Params.nSetList &= ~pca9685dmxparams::Mask::SERVO_RIGHT_US;
+		}
 		return;
 	}
 }
@@ -225,7 +260,7 @@ void PCA9685DmxParams::Builder(const struct pca9685dmxparams::Params *pParams, c
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct pca9685dmxparams::Params));
 	} else {
-		m_pPCA9685DmxParamsStore->Copy(&m_Params);
+		PCA9685DmxParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(PCA9685DmxParamsConst::FILE_NAME, pBuffer, nLength);
@@ -242,6 +277,7 @@ void PCA9685DmxParams::Builder(const struct pca9685dmxparams::Params *pParams, c
 
 	builder.AddComment("mode=servo");
 	builder.Add(PCA9685DmxParamsConst::SERVO_LEFT_US, m_Params.nServoLeftUs, isMaskSet(pca9685dmxparams::Mask::SERVO_LEFT_US));
+	builder.Add(PCA9685DmxParamsConst::SERVO_CENTER_US, m_Params.nServoCenterUs, isMaskSet(pca9685dmxparams::Mask::SERVO_CENTER_US));
 	builder.Add(PCA9685DmxParamsConst::SERVO_RIGHT_US, m_Params.nServoRightUs, isMaskSet(pca9685dmxparams::Mask::SERVO_RIGHT_US));
 
 	nSize = builder.GetSize();
@@ -257,26 +293,33 @@ void PCA9685DmxParams::Set(PCA9685Dmx *pPCA9685Dmx) {
 	/*
 	 * Generic
 	 */
+
 	pPCA9685Dmx->SetAddress(m_Params.nAddress);
 	pPCA9685Dmx->SetMode(isMaskSet(pca9685dmxparams::Mask::MODE));
 	pPCA9685Dmx->SetChannelCount(m_Params.nChannelCount);
 	pPCA9685Dmx->SetDmxStartAddress(m_Params.nDmxStartAddress);
 	pPCA9685Dmx->SetUse8Bit(isMaskSet(pca9685dmxparams::Mask::USE_8BIT));
+
 	/*
 	 * LED specific
 	 */
+
 	pPCA9685Dmx->SetLedPwmFrequency(m_Params.nLedPwmFrequency);
 	pPCA9685Dmx->SetLedOutputInvert(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_INVERT) ? pca9685::Invert::OUTPUT_INVERTED : pca9685::Invert::OUTPUT_NOT_INVERTED);
 	pPCA9685Dmx->SetLedOutputDriver(isMaskSet(pca9685dmxparams::Mask::LED_OUTPUT_OPENDRAIN) ? pca9685::Output::DRIVER_OPENDRAIN : pca9685::Output::DRIVER_TOTEMPOLE);
+
 	/*
 	 * Servo specific
 	 */
+
+	pPCA9685Dmx->SetServoLeftUs(m_Params.nServoLeftUs);
+	pPCA9685Dmx->SetServoCenterUs(m_Params.nServoCenterUs);
+	pPCA9685Dmx->SetServoRightUs(m_Params.nServoRightUs);
 
 	DEBUG_EXIT
 }
 
 void PCA9685DmxParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__,__FUNCTION__, PCA9685DmxParamsConst::FILE_NAME);
 
 	printf(" %s=0x%.2x\n", PCA9685DmxParamsConst::I2C_ADDRESS, m_Params.nAddress);
@@ -307,6 +350,6 @@ void PCA9685DmxParams::Dump() {
 	 */
 
 	printf(" %s=%d\n", PCA9685DmxParamsConst::SERVO_LEFT_US, m_Params.nServoLeftUs);
+	printf(" %s=%d\n", PCA9685DmxParamsConst::SERVO_CENTER_US, m_Params.nServoCenterUs);
 	printf(" %s=%d\n", PCA9685DmxParamsConst::SERVO_RIGHT_US, m_Params.nServoRightUs);
-#endif
 }

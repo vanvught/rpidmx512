@@ -2,7 +2,7 @@
  * @file rdmdevicestore.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,12 +27,17 @@
 #define RDMDEVICESTORE_H_
 
 #include <cstdint>
+#include <cstddef>
+
+#include "rdmdeviceparams.h"
+#include "configstore.h"
 
 class RDMDeviceStore {
 public:
-	virtual ~RDMDeviceStore() {}
-
-	virtual void SaveLabel(const char *pLabel, uint8_t nLength)=0;
+	static void SaveLabel(const char *pLabel, uint8_t nLength) {
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, offsetof(struct rdm::deviceparams::Params, aDeviceRootLabel), pLabel, nLength, rdm::deviceparams::Mask::LABEL);
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, offsetof(struct rdm::deviceparams::Params, nDeviceRootLabelLength), &nLength, sizeof(uint8_t), rdm::deviceparams::Mask::LABEL);
+	}
 };
 
 #endif /* RDMDEVICESTORE_H_ */

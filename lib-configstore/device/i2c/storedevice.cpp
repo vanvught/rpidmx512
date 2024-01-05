@@ -27,8 +27,9 @@
 #include <cstdio>
 #include <cassert>
 
-#include "storedevice.h"
+#include "configstoredevice.h"
 #include "i2c/at24cxx.h"
+
 #include "debug.h"
 
 namespace storedevice {

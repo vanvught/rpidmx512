@@ -2,7 +2,7 @@
  * @file ltcetcparams.h
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,8 @@
 
 #include <cstdint>
 
+#include "configstore.h"
+
 namespace ltcetcparams {
 struct Params {
     uint32_t nSetList;				///< 4	 4
@@ -51,17 +53,20 @@ struct Mask {
 
 class LtcEtcParamsStore {
 public:
-	virtual ~LtcEtcParamsStore() {}
+	static void Update(const ltcetcparams::Params *pLtcEtcParams) {
+		ConfigStore::Get()->Update(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
+	}
 
-	virtual void Update(const struct ltcetcparams::Params *ptLtcEtcParams)=0;
-	virtual void Copy(struct ltcetcparams::Params *ptLtcEtcParams)=0;
+	static void Copy(struct ltcetcparams::Params *pLtcEtcParams) {
+		ConfigStore::Get()->Copy(configstore::Store::LTCETC, pLtcEtcParams, sizeof(struct ltcetcparams::Params));
+	}
 };
 
 class LtcEtcParams {
 public:
-	LtcEtcParams(LtcEtcParamsStore *pLtcEtcParamsStore);
+	LtcEtcParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct ltcetcparams::Params *ptLtcEtcParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -71,19 +76,17 @@ public:
 
 	void Set();
 
-	void Dump();
-
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_pLtcEtcParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    LtcEtcParamsStore *m_pLtcEtcParamsStore;
-    ltcetcparams::Params m_pLtcEtcParams;
+    ltcetcparams::Params m_Params;
 };
 
 #endif /* LTCETCPARAMS_H_ */

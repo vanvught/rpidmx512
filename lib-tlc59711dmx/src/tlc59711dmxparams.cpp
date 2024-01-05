@@ -52,36 +52,41 @@
 static constexpr auto TLC59711_TYPES_MAX_NAME_LENGTH = 10U;
 static constexpr char sLedTypes[static_cast<uint32_t>(tlc59711::Type::UNDEFINED)][TLC59711_TYPES_MAX_NAME_LENGTH] = { "TLC59711\0", "TLC59711W" };
 
-TLC59711DmxParams::TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore): m_pLC59711ParamsStore(pTLC59711ParamsStore) {
+TLC59711DmxParams::TLC59711DmxParams() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 	m_Params.nType = static_cast<uint8_t>(tlc59711::Type::RGB);
 	m_Params.nCount = 4;
 	m_Params.nDmxStartAddress = lightset::dmx::START_ADDRESS_DEFAULT;
 	m_Params.nSpiSpeedHz = 0;
+
+	DEBUG_EXIT
 }
 
-bool TLC59711DmxParams::Load() {
+void TLC59711DmxParams::Load() {
+	DEBUG_ENTRY
+
 	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(TLC59711DmxParams::staticCallbackFunction, this);
 
 	if (configfile.Read(DevicesParamsConst::FILE_NAME)) {
-		if (m_pLC59711ParamsStore != nullptr) {
-			m_pLC59711ParamsStore->Update(&m_Params);
-		}
+		TLC59711DmxParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pLC59711ParamsStore != nullptr) {
-		m_pLC59711ParamsStore->Copy(&m_Params);
-	} else {
-		return false;
-	}
+		TLC59711DmxParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -91,8 +96,12 @@ void TLC59711DmxParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pLC59711ParamsStore != nullptr);
-	m_pLC59711ParamsStore->Update(&m_Params);
+	TLC59711DmxParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void TLC59711DmxParams::callbackFunction(const char* pLine) {
@@ -171,8 +180,7 @@ void TLC59711DmxParams::Builder(const struct tlc59711dmxparams::Params *pParams,
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct tlc59711dmxparams::Params));
 	} else {
-		assert(m_pLC59711ParamsStore != nullptr);
-		m_pLC59711ParamsStore->Copy(&m_Params);
+		TLC59711DmxParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(DevicesParamsConst::FILE_NAME, pBuffer, nLength);
@@ -217,25 +225,11 @@ void TLC59711Dmx::Print() {
 }
 
 void TLC59711DmxParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, DevicesParamsConst::FILE_NAME);
-
-	if(isMaskSet(tlc59711dmxparams::Mask::TYPE)) {
-		printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, sLedTypes[m_Params.nType], static_cast<int>(m_Params.nType));
-	}
-
-	if(isMaskSet(tlc59711dmxparams::Mask::COUNT)) {
-		printf(" %s=%d\n", DevicesParamsConst::COUNT, m_Params.nCount);
-	}
-
-	if(isMaskSet(tlc59711dmxparams::Mask::DMX_START_ADDRESS)) {
-		printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
-	}
-
-	if(isMaskSet(tlc59711dmxparams::Mask::SPI_SPEED)) {
-		printf(" %s=%d Hz\n", DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
-	}
-#endif
+	printf(" %s=%s [%d]\n", DevicesParamsConst::TYPE, sLedTypes[m_Params.nType], static_cast<int>(m_Params.nType));
+	printf(" %s=%d\n", DevicesParamsConst::COUNT, m_Params.nCount);
+	printf(" %s=%d\n", LightSetParamsConst::DMX_START_ADDRESS, m_Params.nDmxStartAddress);
+	printf(" %s=%d Hz\n", DevicesParamsConst::SPI_SPEED_HZ, m_Params.nSpiSpeedHz);
 }
 
 /*

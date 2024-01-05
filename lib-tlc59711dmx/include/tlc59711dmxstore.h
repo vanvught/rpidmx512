@@ -2,7 +2,7 @@
  * @file tlc59711dmxstore.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,13 +27,16 @@
 #define TLC59711DMXSTORE_H_
 
 #include <cstdint>
+#include <cstddef>
+
+#include "tlc59711dmxparams.h"
+#include "configstore.h"
 
 class TLC59711DmxStore {
 public:
-	virtual ~TLC59711DmxStore() {
+	static void SaveDmxStartAddress(uint16_t nDmxStartAddress) {
+		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, offsetof(struct tlc59711dmxparams::Params, nDmxStartAddress), &nDmxStartAddress, sizeof(uint32_t), tlc59711dmxparams::Mask::DMX_START_ADDRESS);
 	}
-
-	virtual void SaveDmxStartAddress(uint16_t nDmxStartAddress)=0;
 };
 
 #endif /* TLC59711DMXSTORE_H_ */

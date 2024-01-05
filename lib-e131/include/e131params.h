@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "e131bridge.h"
+#include "configstore.h"
 #include "lightset.h"
 
 #if !defined(LIGHTSET_PORTS)
@@ -112,15 +113,18 @@ struct Mask {
 
 class E131ParamsStore {
 public:
-	virtual ~E131ParamsStore() {}
+	static void Update(const struct e131params::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::NODE, pParams, sizeof(struct e131params::Params));
+	}
 
-	virtual void Update(const e131params::Params *pParams)=0;
-	virtual void Copy(e131params::Params *pParams)=0;
+	static void Copy(struct e131params::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::NODE, pParams, sizeof(struct e131params::Params));
+	}
 };
 
 class E131Params {
 public:
-	E131Params(E131ParamsStore *pE131ParamsStore);
+	E131Params();
 
 	bool Load();
 	void Load(const char *pBuffer, uint32_t nLength);
@@ -130,9 +134,7 @@ public:
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Set(uint32_t nPortIndexOffset);
-
-	void Dump();
+	void Set();
 
 	uint16_t GetUniverse(uint32_t nPortIndex, bool &IsSet) const {
 		if (nPortIndex < e131params::MAX_PORTS) {
@@ -171,6 +173,7 @@ public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
@@ -184,7 +187,6 @@ private:
 	}
 
 private:
-    E131ParamsStore *m_pE131ParamsStore;
     e131params::Params m_Params;
 };
 

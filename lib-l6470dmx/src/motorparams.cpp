@@ -34,15 +34,14 @@
 
 #include <cstdint>
 #include <cstring>
-#ifndef NDEBUG
- #include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
 #include "motorparams.h"
 #include "motorparamsconst.h"
 
 #include "l6470dmxconst.h"
+#include "l6470dmxstore.h"
 
 #include "readconfigfile.h"
 #include "sscan.h"
@@ -56,72 +55,75 @@
 
 #define TICK_S	0.00000025f	///< 250ns
 
-MotorParams::MotorParams(MotorParamsStore *pMotorParamsStore): m_pMotorParamsStore(pMotorParamsStore) {
-	memset(&m_tMotorParams, 0, sizeof(struct TMotorParams));
+MotorParams::MotorParams() {
+	memset(&m_Params, 0, sizeof(struct motorparams::Params));
 
-	m_tMotorParams.fStepAngel = 1.8f;	// 200 steps per revolution.
+	m_Params.fStepAngel = 1.8f;	// 200 steps per revolution.
 
 	assert(sizeof(m_aFileName) > strlen(L6470DmxConst::FILE_NAME_MOTOR));
 	strncpy(m_aFileName, L6470DmxConst::FILE_NAME_MOTOR, sizeof(m_aFileName));
 }
 
 bool MotorParams::Load(uint32_t nMotorIndex) {
+	DEBUG_ENTRY
+
 	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
-	m_tMotorParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile configfile(MotorParams::staticCallbackFunction, this);
 
 	if (configfile.Read(m_aFileName)) {
-		// There is a configuration file
-		if (m_pMotorParamsStore != nullptr) {
-			m_pMotorParamsStore->Update(nMotorIndex, &m_tMotorParams);
-		}
-	} else if (m_pMotorParamsStore != nullptr) {
-		m_pMotorParamsStore->Copy(nMotorIndex, &m_tMotorParams);
+		MotorParamsStore::Update(nMotorIndex, &m_Params);
 	} else {
-		return false;
+		MotorParamsStore::Copy(nMotorIndex, &m_Params);
 	}
 
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 	return true;
 }
 
 void MotorParams::Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pMotorParamsStore != nullptr);
 
-	if (m_pMotorParamsStore == nullptr) {
-		return;
-	}
-
-	m_tMotorParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile config(MotorParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pMotorParamsStore->Update(nMotorIndex, &m_tMotorParams);
+	MotorParamsStore::Update(nMotorIndex, &m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
-void MotorParams::Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+void MotorParams::Builder(uint32_t nMotorIndex, const struct motorparams::Params *ptMotorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	assert(pBuffer != nullptr);
 
 	m_aFileName[5] = static_cast<char>(nMotorIndex + '0');
 
 	if (ptMotorParams != nullptr) {
-		memcpy(&m_tMotorParams, ptMotorParams, sizeof(struct TMotorParams));
+		memcpy(&m_Params, ptMotorParams, sizeof(struct motorparams::Params));
 	} else {
-		m_pMotorParamsStore->Copy(nMotorIndex, &m_tMotorParams);
+		MotorParamsStore::Copy(nMotorIndex, &m_Params);
 	}
 
 	PropertiesBuilder builder(m_aFileName, pBuffer, nLength);
 
-	builder.Add(MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel, isMaskSet(MotorParamsMask::STEP_ANGEL));
-	builder.Add(MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage, isMaskSet(MotorParamsMask::VOLTAGE));
-	builder.Add(MotorParamsConst::CURRENT, m_tMotorParams.fCurrent, isMaskSet(MotorParamsMask::CURRENT));
-	builder.Add(MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance, isMaskSet(MotorParamsMask::RESISTANCE));
-	builder.Add(MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance, isMaskSet(MotorParamsMask::INDUCTANCE));
+	builder.Add(MotorParamsConst::STEP_ANGEL, m_Params.fStepAngel, isMaskSet(motorparams::Mask::STEP_ANGEL));
+	builder.Add(MotorParamsConst::VOLTAGE, m_Params.fVoltage, isMaskSet(motorparams::Mask::VOLTAGE));
+	builder.Add(MotorParamsConst::CURRENT, m_Params.fCurrent, isMaskSet(motorparams::Mask::CURRENT));
+	builder.Add(MotorParamsConst::RESISTANCE, m_Params.fResistance, isMaskSet(motorparams::Mask::RESISTANCE));
+	builder.Add(MotorParamsConst::INDUCTANCE, m_Params.fInductance, isMaskSet(motorparams::Mask::INDUCTANCE));
 
 	nSize = builder.GetSize();
 
@@ -129,13 +131,9 @@ void MotorParams::Builder(uint32_t nMotorIndex, const struct TMotorParams *ptMot
 }
 
 void MotorParams::Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	if (m_pMotorParamsStore == nullptr) {
-		nSize = 0;
-		return;
-	}
-
+	DEBUG_ENTRY
 	Builder(nMotorIndex, nullptr, pBuffer, nLength, nSize);
-
+	DEBUG_EXIT
 	return;
 }
 
@@ -144,33 +142,33 @@ void MotorParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Float(pLine, MotorParamsConst::STEP_ANGEL, f) == Sscan::OK) {
 		if (f != 0) {
-			m_tMotorParams.fStepAngel = f;
-			m_tMotorParams.nSetList |= MotorParamsMask::STEP_ANGEL;
+			m_Params.fStepAngel = f;
+			m_Params.nSetList |= motorparams::Mask::STEP_ANGEL;
 		}
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::VOLTAGE, f) == Sscan::OK) {
-		m_tMotorParams.fVoltage = f;
-		m_tMotorParams.nSetList |= MotorParamsMask::VOLTAGE;
+		m_Params.fVoltage = f;
+		m_Params.nSetList |= motorparams::Mask::VOLTAGE;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::CURRENT, f) == Sscan::OK) {
-		m_tMotorParams.fCurrent = f;
-		m_tMotorParams.nSetList |= MotorParamsMask::CURRENT;
+		m_Params.fCurrent = f;
+		m_Params.nSetList |= motorparams::Mask::CURRENT;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::RESISTANCE, f) == Sscan::OK) {
-		m_tMotorParams.fResistance = f;
-		m_tMotorParams.nSetList |= MotorParamsMask::RESISTANCE;
+		m_Params.fResistance = f;
+		m_Params.nSetList |= motorparams::Mask::RESISTANCE;
 		return;
 	}
 
 	if (Sscan::Float(pLine, MotorParamsConst::INDUCTANCE, f) == Sscan::OK) {
-		m_tMotorParams.fInductance = f;
-		m_tMotorParams.nSetList |= MotorParamsMask::INDUCTANCE;
+		m_Params.fInductance = f;
+		m_Params.nSetList |= motorparams::Mask::INDUCTANCE;
 		return;
 	}
 }
@@ -186,42 +184,36 @@ void MotorParams::Set(L6470 *pL6470) {
 }
 
 void MotorParams::Dump() {
-#ifndef NDEBUG
+	if(isMaskSet(motorparams::Mask::STEP_ANGEL)) {
+		printf(" %s=%.1f degree\n", MotorParamsConst::STEP_ANGEL, m_Params.fStepAngel);
+	}
+
+	if(isMaskSet(motorparams::Mask::VOLTAGE)) {
+		printf(" %s=%.2f V\n", MotorParamsConst::VOLTAGE, m_Params.fVoltage);
+	}
+
+	if(isMaskSet(motorparams::Mask::CURRENT)) {
+		printf(" %s=%.1f A/phase\n", MotorParamsConst::CURRENT, m_Params.fCurrent);
+	}
+
+	if(isMaskSet(motorparams::Mask::RESISTANCE)) {
+		printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::RESISTANCE, m_Params.fResistance);
+	}
+
+	if(isMaskSet(motorparams::Mask::INDUCTANCE)) {
+		printf(" %s=%.1f mH/phase\n", MotorParamsConst::INDUCTANCE, m_Params.fInductance);
+	}
+
 	float f;
-
-	if (m_tMotorParams.nSetList == 0) {
-		return;
-	}
-
-	if(isMaskSet(MotorParamsMask::STEP_ANGEL)) {
-		printf(" %s=%.1f degree\n", MotorParamsConst::STEP_ANGEL, m_tMotorParams.fStepAngel);
-	}
-
-	if(isMaskSet(MotorParamsMask::VOLTAGE)) {
-		printf(" %s=%.2f V\n", MotorParamsConst::VOLTAGE, m_tMotorParams.fVoltage);
-	}
-
-	if(isMaskSet(MotorParamsMask::CURRENT)) {
-		printf(" %s=%.1f A/phase\n", MotorParamsConst::CURRENT, m_tMotorParams.fCurrent);
-	}
-
-	if(isMaskSet(MotorParamsMask::RESISTANCE)) {
-		printf(" %s=%.1f Ohm/phase\n", MotorParamsConst::RESISTANCE, m_tMotorParams.fResistance);
-	}
-
-	if(isMaskSet(MotorParamsMask::INDUCTANCE)) {
-		printf(" %s=%.1f mH/phase\n", MotorParamsConst::INDUCTANCE, m_tMotorParams.fInductance);
-	}
 
 	if ((f = calcIntersectSpeed()) != 0) {
 		printf(" Intersect speed = %f step/s (register:INT_SPEED=0x%.4X)\n", f, static_cast<unsigned int>(calcIntersectSpeedReg(f)));
 	}
-#endif
 }
 
 float MotorParams::calcIntersectSpeed() {
-	if (isMaskSet(MotorParamsMask::RESISTANCE) && isMaskSet(MotorParamsMask::INDUCTANCE)) {
-		return (4.0f * m_tMotorParams.fResistance) / static_cast<float>(2.0 * M_PI * m_tMotorParams.fInductance * 0.001);
+	if (isMaskSet(motorparams::Mask::RESISTANCE) && isMaskSet(motorparams::Mask::INDUCTANCE)) {
+		return (4.0f * m_Params.fResistance) / static_cast<float>(2.0 * M_PI * m_Params.fInductance * 0.001);
 	}
 
 	return 0;

@@ -2,7 +2,7 @@
  * @file showfileparams.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "showfile.h"
+#include "configstore.h"
 
 namespace showfileparams {
 struct Params {
@@ -65,17 +66,20 @@ struct Mask {
 
 class ShowFileParamsStore {
 public:
-	virtual ~ShowFileParamsStore() {}
+	static void Update(const struct showfileparams::Params *ptShowFileParams) {
+		ConfigStore::Get()->Update(configstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
+	}
 
-	virtual void Update(const struct showfileparams::Params *pShowFileParams)=0;
-	virtual void Copy(struct showfileparams::Params *pShowFileParams)=0;
+	static void Copy(struct showfileparams::Params *ptShowFileParams) {
+		ConfigStore::Get()->Copy(configstore::Store::SHOW, ptShowFileParams, sizeof(struct showfileparams::Params));
+	}
 };
 
 class ShowFileParams {
 public:
-	ShowFileParams(ShowFileParamsStore *pShowFileParamsStore);
+	ShowFileParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct TShowFileParams *ptShowFileParamss, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -84,8 +88,6 @@ public:
 	}
 
 	void Set();
-
-	void Dump();
 
 	showfile::Formats GetFormat() const {
 		return static_cast<showfile::Formats>(m_showFileParams.nFormat);
@@ -110,6 +112,7 @@ public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void HandleOptions(const char *pLine, const char *pKeyword, uint16_t nMask);
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
@@ -120,7 +123,6 @@ private:
     }
 
 private:
-    ShowFileParamsStore *m_pShowFileParamsStore;
     showfileparams::Params m_showFileParams;
 };
 

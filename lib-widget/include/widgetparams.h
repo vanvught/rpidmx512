@@ -2,7 +2,7 @@
  * @file widgetparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -45,64 +45,61 @@ struct WidgetParamsMask {
 	static constexpr auto THROTTLE = (1U << 4);
 };
 
-#if defined (WIDGET_HAVE_FLASHROM)
 class WidgetParamsStore {
 public:
-	virtual ~WidgetParamsStore() {}
+#if defined (WIDGET_HAVE_FLASHROM)
+	static void Update(const struct TWidgetParams* pParams) {
+		ConfigStore::Get()->Update(configstore::Store::WIDGET, pParams, sizeof(struct TWidgetParams));
+	}
 
-	virtual void Update(const struct TWidgetParams *pWidgetParams)=0;
-	virtual void Copy(struct TWidgetParams *pWidgetParams)=0;
-};
+	static void Copy(struct TWidgetParams* pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::WIDGET, pParams, sizeof(struct TWidgetParams));
+	}
 #else
+	static void IUpdate(const struct TWidgetParams* pParams) { }
+
+	static void ICopy(struct TWidgetParams* pParams) { }
 #endif
+};
 
 class WidgetParams {
 public:
-#if defined (WIDGET_HAVE_FLASHROM)
-	WidgetParams(WidgetParamsStore *pWidgetParamsStore = nullptr);
-#else
 	WidgetParams();
-#endif
 
-	bool Load();
+	void Load();
 	void Set();
 
-	void Dump();
-
 	uint8_t GetBreakTime() const {
-		return m_tWidgetParams.nBreakTime;
+		return m_Params.nBreakTime;
 	}
 
 	uint8_t GetMabTime() const {
-		return m_tWidgetParams.nMabTime;
+		return m_Params.nMabTime;
 	}
 
 	uint8_t GetRefreshRate() const {
-		return m_tWidgetParams.nRefreshRate;
+		return m_Params.nRefreshRate;
 	}
 
 	widget::Mode GetMode() const {
-		return static_cast<widget::Mode>(m_tWidgetParams.tMode);
+		return static_cast<widget::Mode>(m_Params.tMode);
 	}
 
 	uint8_t GetThrottle() const {
-		return m_tWidgetParams.nThrottle;
+		return m_Params.nThrottle;
 	}
 
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tWidgetParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-#if defined (WIDGET_HAVE_FLASHROM)
-    WidgetParamsStore *m_pWidgetParamsStore;
-#endif
-    TWidgetParams m_tWidgetParams;
+    TWidgetParams m_Params;
 };
 
 #endif /* WIDGETPARAMS_H_ */

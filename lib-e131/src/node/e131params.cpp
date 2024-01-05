@@ -48,6 +48,12 @@
 
 #include "debug.h"
 
+namespace e131bridge {
+namespace configstore {
+extern uint32_t DMXPORT_OFFSET;
+}  // namespace configstore
+}  // namespace e131bridge
+
 static uint32_t s_nPortsMax;
 
 namespace e131params {
@@ -62,7 +68,7 @@ static constexpr uint16_t portdir_clear(const uint32_t i) {
 
 using namespace e131params;
 
-E131Params::E131Params(E131ParamsStore *pE131ParamsStore):m_pE131ParamsStore(pE131ParamsStore) {
+E131Params::E131Params() {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("sizeof(struct Params)=%d", static_cast<int>(sizeof(struct Params)));
 
@@ -92,18 +98,14 @@ bool E131Params::Load() {
 	ReadConfigFile configfile(E131Params::staticCallbackFunction, this);
 
 	if (configfile.Read(E131ParamsConst::FILE_NAME)) {
-		if (m_pE131ParamsStore != nullptr) {
-			m_pE131ParamsStore->Update(&m_Params);
-		}
+		E131ParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pE131ParamsStore != nullptr) {
-		m_pE131ParamsStore->Copy(&m_Params);
-	} else {
-		DEBUG_EXIT
-		return false;
-	}
+		E131ParamsStore::Copy(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
 	return true;
 }
@@ -120,9 +122,11 @@ void E131Params::Load(const char* pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pE131ParamsStore != nullptr);
-	m_pE131ParamsStore->Update(&m_Params);
+	E131ParamsStore::Update(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
 }
 
@@ -247,21 +251,13 @@ void E131Params::callbackFunction(const char *pLine) {
 	}
 }
 
-void E131Params::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<E131Params*>(p))->callbackFunction(s);
-}
-
 void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 	DEBUG_ENTRY
 
 	if (pParams != nullptr) {
 		memcpy(&m_Params, pParams, sizeof(struct Params));
 	} else {
-		assert(m_pE131ParamsStore != nullptr);
-		m_pE131ParamsStore->Copy(&m_Params);
+		E131ParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(E131ParamsConst::FILE_NAME, pBuffer, nLength);
@@ -310,14 +306,14 @@ void E131Params::Builder(const struct Params *pParams, char *pBuffer, uint32_t n
 	DEBUG_EXIT
 }
 
-void E131Params::Set(uint32_t nPortIndexOffset) {
+void E131Params::Set() {
 	DEBUG_ENTRY
 
-	if (nPortIndexOffset <= e131bridge::MAX_PORTS) {
-		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS - nPortIndexOffset);
+	if (e131bridge::configstore::DMXPORT_OFFSET <= e131bridge::MAX_PORTS) {
+		s_nPortsMax = std::min(e131params::MAX_PORTS, e131bridge::MAX_PORTS - e131bridge::configstore::DMXPORT_OFFSET);
 	}
 
-	DEBUG_PRINTF("e131bridge::MAX_PORTS=%u, nPortIndexOffset=%u, s_nPortsMax=%u", e131bridge::MAX_PORTS, nPortIndexOffset, s_nPortsMax);
+	DEBUG_PRINTF("e131bridge::MAX_PORTS=%u, e131bridge::configstore::DMXPORT_OFFSET=%u, s_nPortsMax=%u", e131bridge::MAX_PORTS, e131bridge::configstore::DMXPORT_OFFSET, s_nPortsMax);
 
 	if (m_Params.nSetList == 0) {
 		return;
@@ -327,7 +323,7 @@ void E131Params::Set(uint32_t nPortIndexOffset) {
 	assert(p != nullptr);
 
 	for (uint32_t nPortIndex = 0; nPortIndex < s_nPortsMax; nPortIndex++) {
-		const auto nOffset = nPortIndex + nPortIndexOffset;
+		const auto nOffset = nPortIndex + e131bridge::configstore::DMXPORT_OFFSET;
 
 		if (nOffset >= e131bridge::MAX_PORTS) {
 			DEBUG_EXIT
@@ -351,5 +347,50 @@ void E131Params::Set(uint32_t nPortIndexOffset) {
 
 	if (isMaskSet(Mask::DISABLE_MERGE_TIMEOUT)) {
 		p->SetDisableMergeTimeout(true);
+	}
+}
+
+void E131Params::staticCallbackFunction(void *p, const char *s) {
+	assert(p != nullptr);
+	assert(s != nullptr);
+
+	(static_cast<E131Params*>(p))->callbackFunction(s);
+}
+
+void E131Params::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, E131ParamsConst::FILE_NAME);
+
+	if (isMaskSet(e131params::Mask::FAILSAFE)) {
+		printf(" %s=%d [%s]\n", LightSetParamsConst::FAILSAFE, m_Params.nFailSafe, lightset::get_failsafe(static_cast<lightset::FailSafe>(m_Params.nFailSafe)));
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		if (isMaskSet(e131params::Mask::UNIVERSE_A << i)) {
+			printf(" %s=%d\n", LightSetParamsConst::UNIVERSE_PORT[i], m_Params.nUniverse[i]);
+		}
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		printf(" %s=%s\n", LightSetParamsConst::MERGE_MODE_PORT[i], lightset::get_merge_mode(mergemode_get(i)));
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		const auto portDir = static_cast<lightset::PortDir>(e131params::portdir_shif_right(m_Params.nDirection, i));
+		printf(" %s=%d [%s]\n", LightSetParamsConst::DIRECTION[i], e131params::portdir_shif_right(m_Params.nDirection, i), lightset::get_direction(portDir));
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		if (isMaskSet(e131params::Mask::PRIORITY_A << i)) {
+			printf(" %s=%d\n", E131ParamsConst::PRIORITY[i], m_Params.nPriority[i]);
+		}
+	}
+
+	for (uint32_t i = 0; i < e131params::MAX_PORTS; i++) {
+		const auto nOutputStyle = static_cast<uint32_t>(isOutputStyleSet(1U << i));
+		printf(" %s=%u [%s]\n", LightSetParamsConst::OUTPUT_STYLE[i], nOutputStyle, lightset::get_output_style(static_cast<lightset::OutputStyle>(nOutputStyle)));
+	}
+
+	if (isMaskSet(e131params::Mask::DISABLE_MERGE_TIMEOUT)) {
+		printf(" %s=1 [Yes]\n", LightSetParamsConst::DISABLE_MERGE_TIMEOUT);
 	}
 }
