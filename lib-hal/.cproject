@@ -84,22 +84,24 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="console|rtc|debug|device|posix|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="null|i2c|h3|uart0" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
+						<entry excluding="device|posix|rtc|ff14b|debug|src|console" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3|uart0|i2c|null" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/null"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
 						<entry excluding="emac|stack|i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
-						<entry excluding="gd32|h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
+						<entry excluding="h3|gd32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
+						<entry excluding="source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b/source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="posix"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="console/null|linux/i2c|uart0|h3/uart0|h3/fb|h3/sdcard|rpi" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="console/null|ff14b/source|rpi|h3/uart0|uart0|linux/i2c|h3/fb|h3/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 						<entry excluding="sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/rpi"/>
@@ -180,18 +182,20 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="src/console/null|console|src/uart0|src/h3/uart0|src/h3/fb|rtc|debug|device|device/linux|src/linux" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="null|i2c|h3|uart0" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
+						<entry excluding="src/uart0|device|src/h3/uart0|device/linux|src/linux|rtc|ff14b|debug|console|src/console/null|src/h3/fb|src/ff14b/source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3|uart0|i2c|null" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/null"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/uart0"/>
 						<entry excluding="emac|stack|i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug"/>
-						<entry excluding="gd32|h3" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
+						<entry excluding="h3|gd32" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/gd32"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/emac/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
+						<entry excluding="source" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b/source"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/linux"/>
@@ -276,8 +280,8 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="console|rtc|debug|device|ff12c|posix|src" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
-						<entry excluding="null|i2c|h3|uart0" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console"/>
+						<entry excluding="device|posix|rtc|ff14b|debug|src|console|ff12c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="h3|uart0|i2c|null" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="console"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="console/null"/>
@@ -287,11 +291,12 @@
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/i2c"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="debug/stack"/>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="ff12c"/>
+						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="ff14b/source"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="posix"/>
 						<entry excluding="i2c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="rtc/i2c"/>
-						<entry excluding="console/null|linux/i2c|uart0|rpi/sdcard|h3" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
-						<entry excluding="uart0|fb|sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
+						<entry excluding="console/null|h3|ff14b/source|uart0|linux/i2c|rpi/sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry excluding="fb|uart0|sdcard" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src/h3"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/h3/sdcard"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="src/linux/i2c"/>
 					</sourceEntries>
