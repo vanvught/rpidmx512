@@ -1,8 +1,8 @@
 /**
- * @file hardware_init.c
+ * @file hardware_init.cpp
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,10 +21,9 @@
  * THE SOFTWARE.
  */
 
-#include <stdint.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <assert.h>
+#include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "h3_board.h"
 #include "h3_gpio.h"
@@ -41,12 +40,14 @@
 
 #include "console.h"
 #include "../ff12c/ff.h"
+//#include "../ff14b/source/ff.h"
 
 #define WIFI_EN_PIO		7	// PL7
 #define POWER_LED_PIO	10	// PL10
 #define EXTERNAL_LED 	GPIO_EXT_16
 
 #if (_FFCONF == 68300)		// R0.12c
+//#if (FF_DEFINED	== 86631)		// R0.14b
  static FATFS fat_fs;
 #else
 # error Not a recognized/tested FatFs version
@@ -91,9 +92,9 @@ void hardware_led_set(int state) {
 #else
 
 #if !defined(DO_NOT_USE_EXTERNAL_LED)
-	#define MASK_LED 		(((uint32_t)1 << H3_BOARD_STATUS_LED) | ((uint32_t)1 << EXTERNAL_LED))
+	#define MASK_LED 		static_cast<uint32_t>((1U << H3_BOARD_STATUS_LED) | (1U << EXTERNAL_LED))
 #else
-	#define MASK_LED 		((uint32_t)1 << H3_BOARD_STATUS_LED)
+	#define MASK_LED 		static_cast<uint32_t>(1U << H3_BOARD_STATUS_LED)
 #endif
 
 	uint32_t dat = H3_PIO_PORTA->DAT;
@@ -128,19 +129,18 @@ void __attribute__((cold)) hardware_init(void) {
 	h3_i2c_begin();
 	console_puts("Starting ...\n");
 
-	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000;
+	s_hardware_init_startup_seconds = H3_TIMER->AVS_CNT0 / 1000U;
 
 #ifndef ARM_ALLOW_MULTI_CORE
-	uint8_t cpu_number;
-	for (cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
-		h3_cpu_off(cpu_number);
+	for (uint32_t cpu_number = 1 ; cpu_number < H3_CPU_COUNT; cpu_number ++) {
+		h3_cpu_off(static_cast<h3_cpu_t>(cpu_number));
 	}
 #endif
 
-	const FRESULT result = f_mount(&fat_fs, (const TCHAR *) "", (BYTE) (h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) ? 1 : 0);
+	const FRESULT result = f_mount(&fat_fs, reinterpret_cast<const TCHAR *>(""), static_cast<BYTE>(h3_get_boot_device() == H3_BOOT_DEVICE_MMC0) ? 1 : 0);
 	if (result != FR_OK) {
 		char buffer[32];
-		snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", (int) result);
+		snprintf(buffer, sizeof(buffer) - 1, "f_mount failed! %d\n", static_cast<int>(result));
 		console_error(buffer);
 		assert(0);
 	}
@@ -150,7 +150,7 @@ void __attribute__((cold)) hardware_init(void) {
 #define PRCM_APB0_RESET_PIO (0x1 << 0)
 	H3_PRCM->APB0_RESET |= PRCM_APB0_RESET_PIO;
 	uint32_t value = H3_PIO_PORTL->CFG1;
-	value &= (uint32_t) ~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT);
+	value &= static_cast<uint32_t>(~(GPIO_SELECT_MASK << PL10_SELECT_CFG1_SHIFT));
 	value |= (GPIO_FSEL_OUTPUT << PL10_SELECT_CFG1_SHIFT);
 	H3_PIO_PORTL->CFG1 = value;
 	// Power led on, disable WiFi

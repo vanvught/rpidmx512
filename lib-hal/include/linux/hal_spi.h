@@ -2,7 +2,7 @@
  * @file hal_spi.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,9 +43,11 @@
 # define SPI_CS0				0
 # define SPI_CS_NONE			0
 # define FUNC_PREFIX(x) x
-# include <cstdint>
 # ifdef __cplusplus
+#  include <cstdint>
   extern "C" {
+# else
+#  include <stdint.h>
 # endif
   inline static void spi_begin() {}
   inline static void spi_chipSelect(__attribute__((unused)) uint8_t _q) {}

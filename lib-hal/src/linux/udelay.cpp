@@ -1,8 +1,8 @@
 /**
- * @file sys_time.c
+ * @file udelay.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -10,8 +10,10 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
+
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
+
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -21,28 +23,46 @@
  * THE SOFTWARE.
  */
 
-#include <stddef.h>
+#include <cstdint>
+#include <cstdio>
 #include <time.h>
 #include <sys/time.h>
 
-#include "debug.h"
+static constexpr uint32_t TICKS_PER_US = 1;
 
-void __attribute__((cold)) sys_time_init(void) {
-	struct tm tmbuf;
+static uint32_t micros() {
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (uint32_t)((tv.tv_sec * 1000000) + tv.tv_usec);
+}
 
-	tmbuf.tm_hour = 0;
-	tmbuf.tm_min = 0;
-	tmbuf.tm_sec = 0;
-	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
-	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
-	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
-	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
+void udelay(uint32_t nMicros, uint32_t nOffsetMicros) {
+	const auto nTicks = nMicros * TICKS_PER_US;
 
-	const time_t seconds = mktime(&tmbuf);
-	const struct timeval tv = { .tv_sec = seconds, .tv_usec = 0 };
+	uint32_t nTicksCount = 0;
+	uint32_t nTicksPrevious;
 
-	settimeofday(&tv, NULL);
+	if (nOffsetMicros == 0) {
+		nTicksPrevious = micros();
+	} else {
+		nTicksPrevious = nOffsetMicros;
+	}
 
-	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
-	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
+	while (1) {
+		const auto nTicksNow = micros();
+
+		if (nTicksNow != nTicksPrevious) {
+			if (nTicksNow > nTicksPrevious) {
+				nTicksCount += nTicksNow - nTicksPrevious;
+			} else {
+				nTicksCount += UINT32_MAX - nTicksPrevious + nTicksNow;
+			}
+
+			if (nTicksCount >= nTicks) {
+				break;
+			}
+
+			nTicksPrevious = nTicksNow;
+		}
+	}
 }

@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,9 +23,24 @@
  * THE SOFTWARE.
  */
 
-#ifndef RPI_HAL_API_H_
-#define RPI_HAL_API_H_
+#ifndef HAL_API_H_
+#define HAL_API_H_
 
-#define FUNC_PREFIX(x) bcm2835_##x
+#if defined(__linux__) || defined (__APPLE__)
+# include "linux/hal_api.h"
+#elif defined(H3)
+# include "h3/hal_api.h"
+#elif defined(GD32)
+# include "gd32/hal_api.h"
+#else
+# include "rpi/hal_api.h"
+#endif
 
-#endif /* RPI_HAL_API_H_ */
+#include <cstdint>
+
+#if !defined(UDELAY)
+# define UDELAY
+ void udelay(uint32_t us, uint32_t offset = 0);
+#endif
+
+#endif /* HAL_API_H_ */

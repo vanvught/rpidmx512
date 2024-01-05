@@ -70,7 +70,7 @@ void HwClock::Print() {
 
 	printf("%s\n", pType);
 
-	struct rtc_time tm;
+	struct tm tm;
 	RtcGet(&tm);
 	printf("%.4d/%.2d/%.2d %.2d:%.2d:%.2d\n", 1900 + tm.tm_year, 1 + tm.tm_mon, tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
 }
@@ -92,8 +92,8 @@ void HwClock::HcToSys() {
 		Hardware::Get()->WatchdogStop();
 	}
 
-	struct rtc_time rtcT1;
-	struct rtc_time rtcT2;
+	struct tm rtcT1;
+	struct tm rtcT2;
 
 	struct timeval tvT1;
 	struct timeval tvT2;
@@ -102,17 +102,7 @@ void HwClock::HcToSys() {
 	gettimeofday(&tvT1, nullptr);
 
 	const int32_t nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
-
-	struct tm tm;
-
-	tm.tm_sec = rtcT1.tm_sec;
-	tm.tm_min = rtcT1.tm_min;
-	tm.tm_hour = rtcT1.tm_hour;
-	tm.tm_mday = rtcT1.tm_mday;
-	tm.tm_mon = rtcT1.tm_mon;
-	tm.tm_year = rtcT1.tm_year;
-
-	const time_t nSeconds = mktime(&tm);
+	const time_t nSeconds = mktime(&rtcT1);
 
 	while(true) {
 		RtcGet(&rtcT2);
@@ -175,17 +165,7 @@ void HwClock::SysToHc() {
 
 		if (tv2.tv_sec >= (tv1.tv_sec + 1)) {
 			const struct tm *tm = localtime(&tv2.tv_sec);
-
-			struct rtc_time rtc;
-
-			rtc.tm_sec = tm->tm_sec;
-			rtc.tm_min = tm->tm_min;
-			rtc.tm_hour = tm->tm_hour;
-			rtc.tm_mday = tm->tm_mday;
-			rtc.tm_mon = tm->tm_mon;
-			rtc.tm_year = tm->tm_year;
-
-			RtcSet(&rtc);
+			RtcSet(tm);
 			break;
 		}
 	}

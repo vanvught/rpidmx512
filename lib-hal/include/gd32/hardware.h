@@ -27,6 +27,7 @@
 #define GD32_HARDWARE_H_
 
 #include <cstdint>
+#include <cstring>
 #include <time.h>
 #include <uuid/uuid.h>
 
@@ -81,8 +82,31 @@ public:
 		return Millis() / 1000U;
 	}
 
-	bool SetTime(const struct tm *pTime);
-	void GetTime(struct tm *pTime);
+	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
+	#if !defined(DISABLE_RTC)
+		m_HwClock.Set(pTime);
+		return true;
+	#else
+		return false;
+	#endif
+	}
+
+	void GetTime(struct tm *pTime) {
+		auto ltime = time(nullptr);
+		const auto *pLocalTime = localtime(&ltime);
+		memcpy(pTime, pLocalTime, sizeof(struct tm));
+	}
+
+#if !defined(DISABLE_RTC)
+	bool SetAlarm(const struct tm *pTime) {
+		const auto b = m_HwClock.AlarmSet(pTime);
+		return b;
+	}
+
+	void GetAlarm(struct tm *pTime) {
+		m_HwClock.AlarmGet(pTime);
+	}
+#endif
 
 	const char *GetBoardName(uint8_t &nLength) {
 		nLength = sizeof(GD32_BOARD_NAME) - 1U;

@@ -40,9 +40,9 @@ enum class Status {
 static Status Status = Status::WAITING;
 static time_t nSeconds;
 static int32_t nSecondsT1;
-static struct rtc_time rtcT1;
+static struct tm rtcT1;
 static struct timeval tvT1;
-static struct rtc_time rtcT2;
+static struct tm rtcT2;
 static struct timeval tvT2;
 
 void HwClock::Process() {
@@ -54,17 +54,7 @@ void HwClock::Process() {
 			gettimeofday(&tvT1, nullptr);
 
 			nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
-
-			struct tm tm;
-
-			tm.tm_sec = rtcT1.tm_sec;
-			tm.tm_min = rtcT1.tm_min;
-			tm.tm_hour = rtcT1.tm_hour;
-			tm.tm_mday = rtcT1.tm_mday;
-			tm.tm_mon = rtcT1.tm_mon;
-			tm.tm_year = rtcT1.tm_year;
-
-			nSeconds = mktime(&tm);
+			nSeconds = mktime(&rtcT1);
 		}
 
 		return;
@@ -96,7 +86,7 @@ void HwClock::Process() {
 			m_nLastHcToSysMillis = Hardware::Get()->Millis();
 			Status = Status::WAITING;
 
-			DEBUG_PRINTF("%d:%d (%ld %u) (%ld %u) -> %u", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
+			DEBUG_PRINTF("%d:%d (%ld %ld) (%ld %ld) -> %ld", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
 		}
 
 		return;

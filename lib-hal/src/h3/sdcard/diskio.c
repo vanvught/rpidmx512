@@ -31,7 +31,9 @@
 #include <stddef.h>
 #include <time.h>
 
-#include "../ff12c/diskio.h"
+//#include "../ff12c/diskio.h"
+#include "../ff14b/source/ff.h"
+#include "../ff14b/source/diskio.h"
 #include "../../lib-h3/device/mmc/mmc_internal.h"
 
 #define CACHE_ENABLED

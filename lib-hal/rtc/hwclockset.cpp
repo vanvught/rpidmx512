@@ -2,7 +2,7 @@
  * @file hwclockset.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,7 @@
 
 #include "debug.h"
 
-bool HwClock::Set(const rtc_time *pRtcTime) {
+bool HwClock::Set(const tm *pTime) {
 	if (!m_bIsConnected) {
 		return false;
 	}
@@ -39,19 +39,10 @@ bool HwClock::Set(const rtc_time *pRtcTime) {
 	struct timeval tvT1;
 	gettimeofday(&tvT1, nullptr);
 
-	RtcSet(pRtcTime);
-
-	struct tm tm;
-	tm.tm_sec = pRtcTime->tm_sec;
-	tm.tm_min = pRtcTime->tm_min;
-	tm.tm_hour = pRtcTime->tm_hour;
-	tm.tm_mday = pRtcTime->tm_mday;
-	tm.tm_mon = pRtcTime->tm_mon;
-	tm.tm_year = pRtcTime->tm_year;
-	tm.tm_isdst = 0;
+	RtcSet(pTime);
 
 	struct timeval tv;
-	tv.tv_sec = mktime(&tm);
+	tv.tv_sec = mktime(const_cast<tm *>(pTime));
 
 	struct timeval tvT2;
 	gettimeofday(&tvT2, nullptr);

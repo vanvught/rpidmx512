@@ -26,6 +26,7 @@
 #ifndef GD32_HAL_I2C_H_
 #define GD32_HAL_I2C_H_
 
+#include "gd32.h"
 #include "gd32_i2c.h"
 
 #endif /* GD32_HAL_I2C_H_ */

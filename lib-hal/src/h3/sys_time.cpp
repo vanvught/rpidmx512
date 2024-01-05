@@ -1,5 +1,5 @@
 /**
- * @file hal_api.h
+ * @file sys_time.cpp
  *
  */
 /* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -10,10 +10,8 @@
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
-
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
-
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,9 +21,27 @@
  * THE SOFTWARE.
  */
 
-#ifndef RPI_HAL_API_H_
-#define RPI_HAL_API_H_
+#include <time.h>
+#include <sys/time.h>
 
-#define FUNC_PREFIX(x) bcm2835_##x
+#include "debug.h"
 
-#endif /* RPI_HAL_API_H_ */
+void __attribute__((cold)) sys_time_init() {
+	struct tm tmbuf;
+
+	tmbuf.tm_hour = 0;
+	tmbuf.tm_min = 0;
+	tmbuf.tm_sec = 0;
+	tmbuf.tm_mday = _TIME_STAMP_DAY_;			// The day of the month, in the range 1 to 31.
+	tmbuf.tm_mon = _TIME_STAMP_MONTH_ - 1;		// The number of months since January, in the range 0 to 11.
+	tmbuf.tm_year = _TIME_STAMP_YEAR_ - 1900;	// The number of years since 1900.
+	tmbuf.tm_isdst = 0; 						// 0 (DST not in effect, just take RTC time)
+
+	const time_t seconds = mktime(&tmbuf);
+	const struct timeval tv = { seconds, 0 };
+
+	settimeofday(&tv, nullptr);
+
+	DEBUG_PRINTF("%.4d/%.2d/%.2d %.2d:%.2d:%.2d", 1900 + tmbuf.tm_year, tmbuf.tm_mon, tmbuf.tm_mday, tmbuf.tm_hour, tmbuf.tm_min, tmbuf.tm_sec);
+	DEBUG_PRINTF("%s", asctime(localtime((const time_t* ) &seconds)));
+}

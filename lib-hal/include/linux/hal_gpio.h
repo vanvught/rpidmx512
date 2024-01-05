@@ -62,9 +62,11 @@ enum GPIO_PULL {
 };
 
 # define FUNC_PREFIX(x) x
-# include <cstdint>
 # ifdef __cplusplus
+# include <cstdint>
 extern "C" {
+# else
+# include <stdint.h>
 # endif
   inline void gpio_fsel(__attribute__((unused)) uint8_t _p, __attribute__((unused)) uint8_t _q) { }
   inline void gpio_set(__attribute__((unused)) uint8_t _p) { }

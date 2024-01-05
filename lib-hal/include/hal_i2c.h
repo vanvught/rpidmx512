@@ -26,6 +26,8 @@
 #ifndef HAL_I2C_H_
 #define HAL_I2C_H_
 
+#include "hal_api.h"
+
 #if defined(__linux__) || defined (__APPLE__)
 # include "linux/hal_api.h"
 # include "linux/hal_i2c.h"
