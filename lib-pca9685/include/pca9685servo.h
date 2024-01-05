@@ -2,7 +2,7 @@
  * @file pca9685servo.h
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,11 +50,10 @@ public:
 	}
 
 	void SetLeftUs(const uint16_t nLeftUs) {
-		assert(nLeftUs < m_nRightUs);
-		assert(nLeftUs < m_nCenterUs);
-
-		m_nLeftUs = nLeftUs;
-		CalcLeftCount();
+		if ((nLeftUs < m_nRightUs) && (nLeftUs < m_nCenterUs)) {
+			m_nLeftUs = nLeftUs;
+			CalcLeftCount();
+		}
 	}
 
 	uint16_t GetLeftUs() const {
@@ -62,11 +61,10 @@ public:
 	}
 
 	void SetRightUs(const uint16_t nRightUs) {
-		assert(m_nLeftUs < nRightUs);
-		assert(m_nCenterUs < nRightUs);
-
-		m_nRightUs = nRightUs;
-		CalcRightCount();
+		if ((m_nLeftUs < nRightUs) && (m_nCenterUs < nRightUs)) {
+			m_nRightUs = nRightUs;
+			CalcRightCount();
+		}
 	}
 
 	uint16_t GetRightUs() const {
@@ -74,11 +72,10 @@ public:
 	}
 
 	void SetCenterUs(const uint16_t nCenterUs) {
-		assert(nCenterUs < m_nRightUs);
-		assert(m_nLeftUs < nCenterUs);
-
-		m_nCenterUs = nCenterUs;
-		CalcCenterCount();
+		if ((nCenterUs < m_nRightUs) && (m_nLeftUs < nCenterUs)) {
+			m_nCenterUs = nCenterUs;
+			CalcCenterCount();
+		}
 	}
 
 	uint16_t GetCenterUs() const {

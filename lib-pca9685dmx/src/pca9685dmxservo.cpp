@@ -2,7 +2,7 @@
  * @file pca9685dmxservo.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -62,6 +62,7 @@ PCA9685DmxServo::PCA9685DmxServo(const pca9685dmx::Configuration& configuration)
 		assert(m_pServo[i] != nullptr);
 
 		m_pServo[i]->SetLeftUs(configuration.servo.nLeftUs);
+		m_pServo[i]->SetCenterUs(configuration.servo.nCenterUs);
 		m_pServo[i]->SetRightUs(configuration.servo.nRightUs);
 #ifndef NDEBUG
 		printf("Instance %d [%X]\n", i, configuration.nAddress + i);
