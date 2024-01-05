@@ -35,7 +35,7 @@ static constexpr struct FilesContent HttpContent[] = {
 	{ "styles.css", styles_css, 409, static_cast<http::contentTypes>(1) },
 	{ "index.js", index_js, 1140, static_cast<http::contentTypes>(2) },
 #if defined (ENABLE_PHY_SWITCH)
-	{ "dsa.js", dsa_js, 400, static_cast<http::contentTypes>(2) },
+	{ "dsa.js", dsa_js, 613, static_cast<http::contentTypes>(2) },
 #endif /* (ENABLE_PHY_SWITCH) */
 	{ "default.js", default_js, 254, static_cast<http::contentTypes>(2) },
 #if !defined (CONFIG_HTTP_HTML_NO_RDM) && defined (RDM_CONTROLLER)

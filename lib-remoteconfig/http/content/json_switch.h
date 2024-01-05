@@ -16,6 +16,7 @@ static constexpr uint16_t QUEUE       = 0xb68a;
 static constexpr uint16_t TOD         = 0xaf0c;
 static constexpr uint16_t PHYSTATUS   = 0xb63a;
 static constexpr uint16_t PORTSTATUS  = 0x394e;
+static constexpr uint16_t VLANTABLE   = 0xe4be;
 }
 }
 }

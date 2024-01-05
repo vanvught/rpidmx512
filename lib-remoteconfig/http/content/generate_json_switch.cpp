@@ -42,7 +42,8 @@ static constexpr char JSON_ENDPOINTS[][MAX_LENGTH] = {
 		"queue",
 		"tod",
 		"phystatus",
-		"portstatus"
+		"portstatus",
+		"vlantable"
 };
 
 inline uint16_t get_uint(const char *pString) {					/* djb2 */

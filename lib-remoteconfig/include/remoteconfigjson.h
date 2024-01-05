@@ -48,6 +48,7 @@ uint32_t json_get_directory(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace storage
 namespace dsa {
 uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize);
+uint32_t json_get_vlantable(char *pOutBuffer, const uint32_t nOutBufferSize);
 }  // namespace dsa
 }  // namespace remoteconfig
 
