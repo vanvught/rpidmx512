@@ -2,7 +2,7 @@
  * @file sparkfundmx.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@
 #include "motorparams.h"
 #include "modeparams.h"
 
+#include "hal_api.h"
 #include "hal_spi.h"
 #include "hal_gpio.h"
 
@@ -145,7 +146,7 @@ void SparkFunDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
+void SparkFunDmx::ReadConfigFiles() {
 	DEBUG_ENTRY;
 #if !defined (H3)
 	m_bIsGlobalSpiCsSet = false;
@@ -156,12 +157,10 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	m_bIsGlobalResetSet = false;
 	m_bIsGlobalBusyPinSet = false;
 
-	SparkFunDmxParams sparkFunDmxParams(ptSparkFunStores == nullptr ? nullptr : static_cast<SparkFunDmxParamsStore*>(ptSparkFunStores->pSparkFunDmxParamsStore));
+	SparkFunDmxParams sparkFunDmxParams;
 
-	if (sparkFunDmxParams.Load()) {
-		sparkFunDmxParams.Dump();
-		sparkFunDmxParams.SetGlobal(this);
-	}
+	sparkFunDmxParams.Load();
+	sparkFunDmxParams.SetGlobal(this);
 
 	if (m_bIsGlobalBusyPinSet) {
 		FUNC_PREFIX(gpio_fsel(m_nGlobalBusyPin, GPIO_FSEL_INPUT));
@@ -178,59 +177,50 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 	FUNC_PREFIX(spi_begin());
 
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
-#ifndef NDEBUG
 		printf("SparkFun motor%d.txt:\n", i);
-#endif
 
 		m_bIsLocalPositionSet = false;
 		m_bIsLocalSpiCsSet = false;
 		m_bIsLocalResetSet = false;
 		m_bIsLocalBusyPinSet = false;
 
-		if (sparkFunDmxParams.Load(i)) {
-			sparkFunDmxParams.SetLocal(this);
-			sparkFunDmxParams.Dump(i);
+		sparkFunDmxParams.Load(i);
+		sparkFunDmxParams.SetLocal(this);
 
-			if ((m_bIsLocalPositionSet) && (m_nLocalPosition < SPARKFUN_DMX_MAX_MOTORS)) {
-				const uint8_t nSpiCs = m_bIsLocalSpiCsSet ? m_nLocalSpiCs : m_nGlobalSpiCs;
-				const uint8_t nResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
-				const uint8_t nBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
-#ifndef NDEBUG
-				printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n",
-						static_cast<int>(nSpiCs),
-						static_cast<int>(m_bIsLocalSpiCsSet),
-						static_cast<int>(nResetPin),
-						static_cast<int>(m_bIsLocalResetSet),
-						static_cast<int>(nBusyPin),
-						static_cast<int>(m_bIsLocalBusyPinSet),
-						static_cast<int>(m_bIsGlobalBusyPinSet));
-#endif
-				if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet) {
-					m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin, nBusyPin);
-				} else {
-					m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin);
-				}
+		if ((m_bIsLocalPositionSet) && (m_nLocalPosition < SPARKFUN_DMX_MAX_MOTORS)) {
+			const uint8_t nSpiCs = m_bIsLocalSpiCsSet ? m_nLocalSpiCs : m_nGlobalSpiCs;
+			const uint8_t nResetPin = m_bIsLocalResetSet ? m_nLocalResetPin : m_nGlobalResetPin;
+			const uint8_t nBusyPin = m_bIsLocalBusyPinSet ? m_nLocalBusyPin : m_nGlobalBusyPin;
+
+			printf("nSpiCs=%d [m_bIsLocalSpiCsSet=%d], nResetPin=%d [m_bIsLocalResetSet=%d], nBusyPin=%d [m_bIsLocalBusyPinSet=%d, m_bIsGlobalBusyPinSet=%d]\n",
+					static_cast<int>(nSpiCs),
+					static_cast<int>(m_bIsLocalSpiCsSet),
+					static_cast<int>(nResetPin),
+					static_cast<int>(m_bIsLocalResetSet),
+					static_cast<int>(nBusyPin),
+					static_cast<int>(m_bIsLocalBusyPinSet),
+					static_cast<int>(m_bIsGlobalBusyPinSet));
+
+			if (m_bIsGlobalBusyPinSet || m_bIsLocalBusyPinSet) {
+				m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin, nBusyPin);
+			} else {
+				m_pAutoDriver[i] = new AutoDriver(m_nLocalPosition, nSpiCs, nResetPin);
 			}
 		} else {
-#ifndef NDEBUG
-			printf("Configuration file : motor%c.txt not found\n", i + '0');
-#endif
+			printf("Local position is not set\n");
 		}
 	}
 
-#ifndef NDEBUG
 	printf("NumBoards : %d\n", static_cast<int>(AutoDriver::getNumBoards()));
-#endif
 
 	for (uint32_t i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
 #ifndef NDEBUG
 			printf("motor%d.txt:\n", i);
 #endif
 			if (m_pAutoDriver[i] != nullptr) {
-				m_pModeParams[i] = new ModeParams(ptSparkFunStores == nullptr ? nullptr : ptSparkFunStores->pModeParamsStore);
+				m_pModeParams[i] = new ModeParams;
 				assert(m_pModeParams[i] != nullptr);
 				m_pModeParams[i]->Load(i);
-				m_pModeParams[i]->Dump();
 
 				m_nDmxMode = m_pModeParams[i]->GetDmxMode();
 				m_nDmxStartAddressMode = m_pModeParams[i]->GetDmxStartAddress();
@@ -248,15 +238,13 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 						m_pAutoDriver[i]->setMotorNumber(i);
 						m_pAutoDriver[i]->Dump();
 
-						m_pMotorParams[i] = new MotorParams(ptSparkFunStores == nullptr ? nullptr : ptSparkFunStores->pMotorParamsStore);
+						m_pMotorParams[i] = new MotorParams;
 						assert(m_pMotorParams[i] != nullptr);
 						m_pMotorParams[i]->Load(i);
-						m_pMotorParams[i]->Dump();
 						m_pMotorParams[i]->Set(m_pAutoDriver[i]);
 
-						L6470Params l6470Params(ptSparkFunStores == nullptr ? nullptr : ptSparkFunStores->pL6470ParamsStore);
+						L6470Params l6470Params;
 						l6470Params.Load(i);
-						l6470Params.Dump();
 						l6470Params.Set(m_pAutoDriver[i]);
 
 						m_pAutoDriver[i]->Dump();
@@ -278,7 +266,7 @@ void SparkFunDmx::ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores) {
 						printf("DMX Mode: %d, DMX Start Address: %d\n", m_pL6470DmxModes[i]->GetMode(), m_pL6470DmxModes[i]->GetDmxStartAddress());
 						printf("DMX Start Address:%d, DMX Footprint:%d\n", static_cast<int>(m_nDmxStartAddress), static_cast<int>(m_nDmxFootprint));
 #endif
-						const uint32_t nMaxSlots = std::min(MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
+						const uint32_t nMaxSlots = std::min(modeparams::MODE_PARAMS_MAX_DMX_FOOTPRINT, m_pL6470DmxModes[i]->GetDmxFootPrint());
 #ifndef NDEBUG
 						printf("SlotInfo slots: %d\n", static_cast<int>(nMaxSlots));
 #endif
@@ -403,10 +391,7 @@ bool SparkFunDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 			printf("\tMotor=%d, Current DMX Start Address=%d, New DMX Start Address=%d\n", i, nCurrentDmxStartAddress, nNewDmxStartAddress);
 #endif
 			m_pL6470DmxModes[i]->SetDmxStartAddress(nNewDmxStartAddress);
-
-			if (m_pModeStore != nullptr) {
-				m_pModeStore->SaveDmxStartAddress(i, nNewDmxStartAddress);
-			}
+			ModeStore::SaveDmxStartAddress(i, nNewDmxStartAddress);
 		}
 	}
 
