@@ -1,7 +1,5 @@
 DEFINES =CONFIG_STORE_USE_SPI 
-DEFINES+=LIB_SPIFLASHSTORE
-
-#DEFINES+=NDEBUG
+DEFINES+=NDEBUG
 
 include Rules.mk
 include ../firmware-template-h3/lib/Rules.mk
