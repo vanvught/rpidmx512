@@ -259,7 +259,7 @@ void TFTPDaemon::DoRead() {
 			FileClose();
 		}
 
-		DEBUG_PRINTF("m_nDataLength=%ld, m_nPacketLength=%d, m_bIsLastBlock=%d", m_nDataLength, m_nPacketLength, m_bIsLastBlock);
+		DEBUG_PRINTF("m_nDataLength=%u, m_nPacketLength=%d, m_bIsLastBlock=%d", static_cast<unsigned>(m_nDataLength), m_nPacketLength, m_bIsLastBlock);
 	}
 
 	DEBUG_PRINTF("Sending to " IPSTR ":%d", IP2STR(m_nFromIp), m_nFromPort);

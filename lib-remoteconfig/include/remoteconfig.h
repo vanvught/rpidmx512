@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define REMOTECONFIG_H_
 
 #include <cstdint>
+#include <cassert>
 
 #if defined (NODE_ARTNET_MULTI)
 # define NODE_ARTNET
@@ -226,7 +227,6 @@ public:
 		}
 
 		HandleRequest();
-
 	}
 
 	static RemoteConfig *Get() {
