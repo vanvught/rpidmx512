@@ -83,6 +83,12 @@ ArtNetNode::ArtNetNode() {
 	m_ArtPollReply.AcnPriority = e131::priority::DEFAULT;
 #endif
 
+	memset(&m_State, 0, sizeof(struct artnetnode::State));
+	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
+	m_State.status = artnetnode::Status::STANDBY;
+	// The device should wait for a random delay of up to 1s before sending the reply.
+	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
+
 	SetLongName(nullptr);	// Set default long name
 
 	memset(&m_Node, 0, sizeof(struct artnetnode::Node));
@@ -95,12 +101,6 @@ ArtNetNode::ArtNetNode() {
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		SetShortName(nPortIndex, nullptr);	// Set default port label
 	}
-
-	memset(&m_State, 0, sizeof(struct artnetnode::State));
-	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
-	m_State.status = artnetnode::Status::STANDBY;
-	// The device should wait for a random delay of up to 1s before sending the reply.
-	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		memset(&m_OutputPort[nPortIndex], 0, sizeof(struct artnetnode::OutputPort));
