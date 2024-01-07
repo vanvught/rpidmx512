@@ -149,6 +149,5 @@ void PCA9685DmxServo::Print() {
 	printf("PCA9685 Servo %d-bit\n", m_bUse8Bit ? 8 : 16);
 	printf(" Board instances: %u\n", m_nBoardInstances);
 	printf(" Channel count: %u\n", m_nChannelCount);
-	printf(" DMX footprint: %u\n", m_nDmxFootprint);
-	printf(" DMX start address: %u\n", m_nDmxStartAddress);
+	printf(" DMX start address: %u [footprint: %u]\n", m_nDmxStartAddress, m_nDmxFootprint);
 }

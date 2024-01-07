@@ -2,7 +2,7 @@
  * @file pca9685dmxled.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,6 +41,9 @@ PCA9685DmxLed::PCA9685DmxLed(const pca9685dmx::Configuration& configuration) {
 	if (m_bUse8Bit) {
 		m_nDmxFootprint = m_nChannelCount;
 	} else {
+		if (m_nChannelCount > lightset::dmx::UNIVERSE_SIZE / 2) {
+			m_nChannelCount = lightset::dmx::UNIVERSE_SIZE / 2;
+		}
 		m_nDmxFootprint = 2 * m_nChannelCount;
 	}
 
@@ -171,6 +174,5 @@ void PCA9685DmxLed::Print() {
 	printf("PCA9685 LED %d-bit\n", m_bUse8Bit ? 8 : 16);
 	printf(" Board instances: %u\n", m_nBoardInstances);
 	printf(" Channel count: %u\n", m_nChannelCount);
-	printf(" DMX footprint: %u\n", m_nDmxFootprint);
-	printf(" DMX start address: %u\n", m_nDmxStartAddress);
+	printf(" DMX start address: %u [footprint: %u]\n", m_nDmxStartAddress, m_nDmxFootprint);
 }
