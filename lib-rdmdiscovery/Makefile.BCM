@@ -1,4 +1,0 @@
-DEFINES=NDEBUG
-
-include Rules.mk
-include ../firmware-template-bcm/lib/Rules.mk

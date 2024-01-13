@@ -58,15 +58,14 @@ void ArtNetNode::Print() {
 			uint16_t nUniverse;
 			if (GetPortAddress(nPortIndex, nUniverse, lightset::PortDir::OUTPUT)) {
 				const auto mergeMode = ((m_OutputPort[nPortIndex].GoodOutput & artnet::GoodOutput::MERGE_MODE_LTP) == artnet::GoodOutput::MERGE_MODE_LTP) ? lightset::MergeMode::LTP : lightset::MergeMode::HTP;
-				printf("  Port %-2d %-4u %s %s", nPortIndex, nUniverse, lightset::get_merge_mode(mergeMode, true), GetRdm(0) ? "RDM" : "");
+				printf("  Port %-2d %-4u %s", nPortIndex, nUniverse, lightset::get_merge_mode(mergeMode, true));
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 				printf(" %s", lightset::get_output_style(GetOutputStyle(nPortIndex), true));
 #endif
 #if (ARTNET_VERSION >= 4)
-				printf(" %s\n", artnet::get_protocol_mode(m_Node.Port[nPortIndex].protocol, true));
-#else
-				printf("\n");
+				printf(" %s", artnet::get_protocol_mode(m_Node.Port[nPortIndex].protocol, true));
 #endif
+				printf(" %s\n",  GetRdm(nPortIndex) ? "RDM" : "   ");
 			}
 		}
 	}

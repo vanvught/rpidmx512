@@ -11,7 +11,7 @@ DEFINES+=OUTPUT_DMX_SHOWFILE
 
 DEFINES+=DISPLAY_UDF 
 
-DEFINES+=SD_WRITE_SUPPORT SD_EXFAT_SUPPORT
+DEFINES+=CONFIG_FS_ENABLE_WRITE SD_EXFAT_SUPPORT
 
 DEFINES+=ENABLE_HTTPD ENABLE_CONTENT
 
@@ -26,4 +26,4 @@ LIBS=
 include ../firmware-template-h3/Rules.mk
 
 prerequisites:
-	./generate_sofware_version_id.sh
+	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/sofware_version_id.h

@@ -27,7 +27,7 @@ LIBS+=network properties device hal c++ debug c bcm2835 arm
 DEFINES:=$(addprefix -D,$(DEFINES))
 
 # The variable for the firmware include directories
-INCDIRS=../include $(wildcard ./include) $(wildcard ./*/include)
+INCDIRS=../include ../lib-configstore/include $(wildcard ./include) $(wildcard ./*/include)
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory

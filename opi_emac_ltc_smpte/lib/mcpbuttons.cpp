@@ -2,7 +2,7 @@
  * @file mcpbuttons.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,6 +50,7 @@
 
 #include "ltcsourceconst.h"
 #include "ltcsource.h"
+#include "ltcstore.h"
 
 #include "ltcgenerator.h"
 #include "systimereader.h"
@@ -59,7 +60,6 @@
 #include "h3_gpio.h"
 
 #include "configstore.h"
-#include "storeltc.h"
 
 #include "debug.h"
 
@@ -144,7 +144,7 @@ void McpButtons::HandleActionRight(ltc::Source& ltcSource) {
 void McpButtons::HandleActionSelect(const ltc::Source& ltcSource) {
 	if (m_tLtcReaderSource != ltcSource) {
 		m_tLtcReaderSource = ltcSource;
-		StoreLtc::Get()->SaveSource(static_cast<uint8_t>(m_tLtcReaderSource));
+		LtcStore::SaveSource(static_cast<uint8_t>(m_tLtcReaderSource));
 	}
 
 	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(1U << static_cast<uint8_t>(ltcSource)));
@@ -220,7 +220,7 @@ bool McpButtons::Check() {
 	UpdateDisplays(m_tLtcReaderSource);
 
 	h3_gpio_fsel(gpio::INTA, GPIO_FSEL_INPUT); // PA7
-	h3_gpio_pud(gpio::INTA, GPIO_PULL_UP);
+	h3_gpio_set_pud(gpio::INTA, GPIO_PULL_UP);
 
 	DEBUG_EXIT
 	return true;

@@ -2,7 +2,7 @@
  * @file dmxserialparams.h
  *
  */
-/* Copyright (C) 2020-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,10 @@
 #include <cstdint>
 
 #include "dmxserial.h"
+#include "configstore.h"
 
-struct TDmxSerialParams {
+namespace dmxserialparams {
+struct Params {
 	uint32_t nSetList;
 	uint8_t nType;
 	uint32_t nBaud;
@@ -43,56 +45,57 @@ struct TDmxSerialParams {
 	uint8_t nI2cSpeedMode;
 } __attribute__((packed));
 
-static_assert(sizeof(struct TDmxSerialParams) <= 32, "struct TDmxSerialParams is too large");
+static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
 
-struct DmxSerialParamsMask {
-	static constexpr auto TYPE = (1U << 0);
-	static constexpr auto BAUD = (1U << 1);
-	static constexpr auto BITS = (1U << 2);
-	static constexpr auto PARTITY = (1U << 3);
-	static constexpr auto STOPBITS = (1U << 4);
-	static constexpr auto SPI_SPEED_HZ = (1U << 5);
-	static constexpr auto SPI_MODE = (1U << 6);
-	static constexpr auto I2C_ADDRESS = (1U << 7);
-	static constexpr auto I2C_SPEED_MODE = (1U << 8);
+struct Mask {
+	static constexpr uint32_t TYPE = (1U << 0);
+	static constexpr uint32_t BAUD = (1U << 1);
+	static constexpr uint32_t BITS = (1U << 2);
+	static constexpr uint32_t PARTITY = (1U << 3);
+	static constexpr uint32_t STOPBITS = (1U << 4);
+	static constexpr uint32_t SPI_SPEED_HZ = (1U << 5);
+	static constexpr uint32_t SPI_MODE = (1U << 6);
+	static constexpr uint32_t I2C_ADDRESS = (1U << 7);
+	static constexpr uint32_t I2C_SPEED_MODE = (1U << 8);
 };
+}  // namespace dmxserialparams
 
-class DmxSerialParamsStore {
+class DmxSerialStore {
 public:
-	virtual ~DmxSerialParamsStore() {
+	static void Update(const struct dmxserialparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::SERIAL, pParams, sizeof(struct dmxserialparams::Params));
 	}
 
-	virtual void Update(const struct TDmxSerialParams *pDmxSerialParams)=0;
-	virtual void Copy(struct TDmxSerialParams *pDmxSerialParams)=0;
+	static void Copy(struct dmxserialparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::SERIAL, pParams, sizeof(struct dmxserialparams::Params));
+	}
 };
 
 class DmxSerialParams {
 public:
-	DmxSerialParams(DmxSerialParamsStore *pDmxSerialParamsStore);
+	DmxSerialParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TDmxSerialParams *pDmxSerialParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct dmxserialparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
-
-	void Dump();
 
 	void Set();
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tDmxSerialParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 
 private:
-	DmxSerialParamsStore *m_pDmxSerialParamsStore;
-	TDmxSerialParams m_tDmxSerialParams;
+	dmxserialparams::Params m_Params;
 };
 
 #endif /* INCLUDE_DMXSERIALPARAMS_H_ */

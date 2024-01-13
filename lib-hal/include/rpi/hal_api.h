@@ -2,7 +2,7 @@
  * @file hal_api.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,16 +27,5 @@
 #define RPI_HAL_API_H_
 
 #define FUNC_PREFIX(x) bcm2835_##x
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void udelay(uint32_t);
-extern uint32_t micros();
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* RPI_HAL_API_H_ */

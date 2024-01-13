@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,13 +30,8 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
 
 #include "mdns.h"
-
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "ntpclient.h"
 
@@ -46,7 +41,7 @@
 
 #include "artnetnode.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
+
 #include "artnetmsgconst.h"
 
 #include "rdmdeviceresponder.h"
@@ -69,18 +64,6 @@
 #include "configstore.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
-#include "storedisplayudf.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
-# include "storerdmsubdevices.h"
-#endif
-#include "storetlc59711.h"
-#include "storesparkfundmx.h"
-#include "storemotors.h"
-
-#define BOARD_NAME "Sparkfun"
 
 #include "sparkfundmx.h"
 #include "sparkfundmxconst.h"
@@ -90,7 +73,11 @@
 
 #include "displayhandler.h"
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
 void Hardware::RebootHandler() {
 	ArtNetNode::Get()->Stop();
@@ -101,28 +88,14 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("Art-Net 4 Stepper L6470");
 	nw.Print();
-
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 Stepper L6470");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -131,72 +104,53 @@ void main() {
 	LightSet *pBoard;
 	uint32_t nMotorsConnected = 0;
 
-	StoreSparkFunDmx storeSparkFunDmx;
-	StoreMotors storeMotors;
-
-	struct TSparkFunStores sparkFunStores;
-	sparkFunStores.pSparkFunDmxParamsStore = &storeSparkFunDmx;
-	sparkFunStores.pModeParamsStore = &storeMotors;
-	sparkFunStores.pMotorParamsStore = &storeMotors;
-	sparkFunStores.pL6470ParamsStore = &storeMotors;
-
 	display.TextStatus(SparkFunDmxConst::MSG_INIT, Display7SegmentMessage::INFO_SPARKFUN, CONSOLE_YELLOW);
 
 	auto *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != nullptr);
-
-	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
-	pSparkFunDmx->SetModeStore(&storeMotors);
+	pSparkFunDmx->ReadConfigFiles();
 
 	nMotorsConnected = pSparkFunDmx->GetMotorsConnected();
 
 	pBoard = pSparkFunDmx;
 
-	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms(&storeTLC59711);
-
 	bool isLedTypeSet = false;
 
-	if (pwmledparms.Load()) {
-		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			auto *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != nullptr);
-			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
-			pwmledparms.Dump();
-			pwmledparms.Set(pTLC59711Dmx);
+	TLC59711DmxParams pwmledparms;
+	pwmledparms.Load();
 
-			auto *pChain = new LightSetChain;
-			assert(pChain != nullptr);
+	if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
+		auto *pTLC59711Dmx = new TLC59711Dmx;
+		assert(pTLC59711Dmx != nullptr);
+		pwmledparms.Set(pTLC59711Dmx);
 
-			pChain->Add(pBoard, 0);
-			pChain->Add(pTLC59711Dmx, 1);
-			pChain->Dump();
+		auto *pChain = new LightSetChain;
+		assert(pChain != nullptr);
 
-			pBoard = pChain;
-		}
+		pChain->Add(pBoard, 0);
+		pChain->Add(pTLC59711Dmx, 1);
+		pChain->Dump();
+
+		pBoard = pChain;
 	}
 
 	char aDescription[64];
 	if (isLedTypeSet) {
-		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d] with %s [%d]", BOARD_NAME, nMotorsConnected, pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d] with %s [%d]", nMotorsConnected, pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 	} else {
-		snprintf(aDescription, sizeof(aDescription) - 1, "%s [%d]", BOARD_NAME, nMotorsConnected);
+		snprintf(aDescription, sizeof(aDescription) - 1, "Sparkfun [%d]", nMotorsConnected);
 	}
 
 	display.TextStatus(ArtNetMsgConst::PARAMS, Display7SegmentMessage::INFO_NODE_PARMAMS, CONSOLE_YELLOW);
 
 	ArtNetNode node;
-	StoreArtNet storeArtNet(DMXPORT_OFFSET);
-
-	ArtNetParams artnetParams(&storeArtNet);
-	node.SetArtNetStore(&storeArtNet);
-
+	
+	ArtNetParams artnetParams;
+	
 	node.SetLongName(aDescription);
 
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-		artnetParams.Set(DMXPORT_OFFSET);
-	}
+	artnetParams.Load();
+	artnetParams.Set();
 
 	node.SetOutput(pBoard);
 	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
@@ -208,40 +162,26 @@ void main() {
 	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
-
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-# if defined (ENABLE_RDM_SUBDEVICES)
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
-# endif
-
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
-		rdmSensorsParams.Set();
-	}
+	RDMSensorsParams rdmSensorsParams;
+	rdmSensorsParams.Load();
+	rdmSensorsParams.Set();
 
 #if defined (ENABLE_RDM_SUBDEVICES)
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
-		rdmSubDevicesParams.Set();
-	}
+	RDMSubDevicesParams rdmSubDevicesParams;
+
+	rdmSubDevicesParams.Load();
+	rdmSubDevicesParams.Set();
 #endif
 
 	rdmResponder.Init();
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&rdmResponder);
-	}
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&rdmResponder);
 
 	rdmResponder.Print();
 
-	node.SetRdmHandler(&rdmResponder, true);
+	node.SetRdmResponder(&rdmResponder);
 	node.Print();
 
 	pBoard->Print();
@@ -252,31 +192,26 @@ void main() {
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::DMX_START_ADDRESS);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if(displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show(&node);
+
 	if (isLedTypeSet) {
 		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 	}
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::STEPPER, node.GetActiveOutputPorts());
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -294,9 +229,6 @@ void main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

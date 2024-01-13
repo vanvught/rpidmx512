@@ -28,8 +28,8 @@
 
 #include <cstdint>
 
-#include "rdmdevice.h"
-#include "rdm.h"
+#include "rdmconst.h"
+#include "configstore.h"
 
 namespace rdm {
 namespace deviceparams {
@@ -49,19 +49,24 @@ struct Mask {
 }  // namespace rdmdevice
 }  // namespace rdm
 
+class RDMDevice;
+
 class RDMDeviceParamsStore {
 public:
-	virtual ~RDMDeviceParamsStore() {}
+	static void Update(const struct rdm::deviceparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::RDMDEVICE, pParams, sizeof(struct rdm::deviceparams::Params));
+	}
 
-	virtual void Update(const struct rdm::deviceparams::Params *pParams)=0;
-	virtual void Copy(struct rdm::deviceparams::Params *pParams)=0;
+	static void Copy(struct rdm::deviceparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::RDMDEVICE, pParams, sizeof(struct rdm::deviceparams::Params));
+	}
 };
 
 class RDMDeviceParams {
 public:
-	RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore);
+	RDMDeviceParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct rdm::deviceparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -71,19 +76,16 @@ public:
 
 	void Set(RDMDevice *pRDMDevice);
 
-	void Dump();
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    RDMDeviceParamsStore *m_pRDMDeviceParamsStore;
     rdm::deviceparams::Params m_Params;
 };
 

@@ -2,7 +2,7 @@
  * @file mcp23x17.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #include <cstdint>
 
 namespace mcp23x17 {
+///< IOCON.BANK = 0
 static constexpr uint8_t REG_IODIRA = 0x00;		///< I/O DIRECTION (IODIRA) REGISTER, 1 = Input (default), 0 = Output
 static constexpr uint8_t REG_IODIRB = 0x01;		///< I/O DIRECTION (IODIRB) REGISTER, 1 = Input (default), 0 = Output
 static constexpr uint8_t REG_IPOLA = 0x02;		///< INPUT POLARITY (IPOLA) REGISTER, 0 = Normal (default)(low reads as 0), 1 = Inverted (low reads as 1)
@@ -51,6 +52,7 @@ static constexpr uint8_t REG_OLATA = 0x14;		///< OUTPUT LATCH REGISTER (OLATA), 
 static constexpr uint8_t REG_OLATB = 0x15;		///< OUTPUT LATCH REGISTER (OLATB), 1 = Latch High, 0 = Latch Low (default) Reading Returns Latch State, Not Port Value
 
 static constexpr uint8_t IOCON_HAEN = (1U << 3);
+static constexpr uint8_t IOCON_BANK = (1U << 7);
 
 static constexpr uint8_t DEFAULT_I2C_ADDRESS = 0x20;
 

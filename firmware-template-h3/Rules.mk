@@ -7,6 +7,8 @@ LD	 = $(PREFIX)ld
 AR	 = $(PREFIX)ar
 GZIP = gzip
 
+$(info [${CURDIR}])
+
 PLATFORM?=ORANGE_PI
 CONSOLE?=
 
@@ -50,9 +52,11 @@ ifneq ($(findstring _TIME_STAMP_YEAR_,$(DEFINES)), _TIME_STAMP_YEAR_)
 	DEFINES+=-D_TIME_STAMP_YEAR_=$(shell date  +"%Y") -D_TIME_STAMP_MONTH_=$(shell date  +"%-m") -D_TIME_STAMP_DAY_=$(shell date  +"%-d")
 endif
 
+DEFINES+=-DBARE_METAL -DH3
 DEFINES+=-DPHY_TYPE=PHY_GENERIC
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
+DEFINES+=-DISABLE_INTERNAL_RTC
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -63,9 +67,6 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 		DEFINES+=-DE131_HAVE_DMXIN
 	endif
 endif
-
-#DEFINES+=-DDEBUG_I2C
-#DEFINES+=-DDEBUG_STACK
 
 # The variable for the firmware include directories
 INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include
@@ -87,7 +88,7 @@ LIBDEP=$(addprefix ../lib-,$(LIBS))
 
 $(info [${LIBDEP}])
 
-COPS=-DBARE_METAL -DH3 -D$(PLATFORM) $(DEFINES)
+COPS=-D$(PLATFORM) $(DEFINES)
 COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
@@ -131,7 +132,6 @@ all : builddirs prerequisites $(TARGET)
 
 builddirs:
 	mkdir -p $(BUILD_DIRS)
-	[ -f generate_sofware_version_id.sh ] && chmod u+x generate_sofware_version_id.sh || true
 
 .PHONY:  clean
 
@@ -144,6 +144,7 @@ clean: $(LIBDEP)
 	rm -f $(SUFFIX).uImage
 	rm -f $(SUFFIX).uImage.gz
 	rm -f build$(BUILD_TXT).txt
+	rm -f include/sofware_version_id.h
 	
 #
 # Libraries

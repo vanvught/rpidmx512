@@ -26,8 +26,7 @@
 #include <cstdint>
 #include <cassert>
 
-#include "storedevice.h"
-
+#include "configstoredevice.h"
 #include "flashcode.h"
 
 #include "debug.h"

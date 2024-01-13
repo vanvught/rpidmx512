@@ -32,11 +32,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -58,10 +53,8 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storedisplayudf.h"
-#include "storenetwork.h"
-#include "storeremoteconfig.h"
-#include "storeshowfile.h"
+
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -90,8 +83,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -99,26 +92,8 @@ void main() {
 	fw.Print("Showfile player");
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Showfile player");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
-
-	StoreShowFile storeShowFile;
-	ShowFileParams showFileParams(&storeShowFile);
-
-	if (showFileParams.Load()) {
-		showFileParams.Dump();
-	}
+	ShowFileParams showFileParams;
+	showFileParams.Load();
 
 	ShowFile *pShowFile = nullptr;
 
@@ -169,27 +144,24 @@ void main() {
 #endif
 
 	RemoteConfig remoteConfig(remoteconfig::Node::SHOWFILE, remoteconfig::Output::PLAYER, 0);
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.SetTitle("Showfile player");
 	display.Set(2, displayudf::Labels::HOSTNAME);
 	display.Set(3, displayudf::Labels::IP);
 	display.Set(4, displayudf::Labels::VERSION);
 
-	DisplayUdfParams displayUdfParams(new StoreDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show();
 
@@ -229,9 +201,6 @@ void main() {
 		mDns.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		rdmNetLLRPOnly.Run();
-#endif
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
 #endif
 		display.Run();
 		hw.Run();

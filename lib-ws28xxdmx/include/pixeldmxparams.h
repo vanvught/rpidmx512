@@ -2,7 +2,7 @@
  * @file pixeldmxparams.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"); to deal
@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "pixeldmxconfiguration.h"
+#include "configstore.h"
 
 #if !defined (CONFIG_PIXELDMX_MAX_PORTS)
 # error CONFIG_PIXELDMX_MAX_PORTS is not defined
@@ -71,24 +72,25 @@ struct Mask {
 	static constexpr auto HIGH_CODE = (1U << 11);
 	static constexpr auto START_UNI_PORT_1 = (1U << 12);
 };
-}  // pixeldmxparams name
+}  // pixeldmxparams
 
 class PixelDmxParamsStore {
 public:
-	virtual ~PixelDmxParamsStore() {
+	static void Update(const struct pixeldmxparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::WS28XXDMX, pParams, sizeof(struct pixeldmxparams::Params));
 	}
 
-	virtual void Update(const struct pixeldmxparams::Params *pWS28xxDmxParams)=0;
-	virtual void Copy(struct pixeldmxparams::Params *pWS28xxDmxParams)=0;
+	static void Copy(struct pixeldmxparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::WS28XXDMX, pParams, sizeof(struct pixeldmxparams::Params));
+	}
 };
 
 class PixelDmxParams {
 public:
-	PixelDmxParams(PixelDmxParamsStore *pPixelDmxParamsStore);
-	~PixelDmxParams() {
-	}
+	PixelDmxParams();
+	~PixelDmxParams() = default;
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct pixeldmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -98,12 +100,10 @@ public:
 
 	void Set(PixelDmxConfiguration *pPixelDmxConfiguration);
 
-	void Dump();
-
 	uint16_t GetStartUniversePort(uint32_t nOutputPortIndex, bool& isSet) const {
 		if (nOutputPortIndex < pixeldmxparams::MAX_PORTS) {
 			isSet = isMaskSet(pixeldmxparams::Mask::START_UNI_PORT_1 << nOutputPortIndex);
-			return m_pixelDmxParams.nStartUniverse[nOutputPortIndex];
+			return m_Params.nStartUniverse[nOutputPortIndex];
 		}
 
 		isSet = false;
@@ -111,20 +111,20 @@ public:
 	}
 
 	uint8_t GetTestPattern() const {
-		return m_pixelDmxParams.nTestPattern;
+		return m_Params.nTestPattern;
 	}
 
 	static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_pixelDmxParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    PixelDmxParamsStore *m_pPixelDmxParamsStore;
-    pixeldmxparams::Params m_pixelDmxParams;
+    pixeldmxparams::Params m_Params;
 };
 
 #endif /* PIXELDMXPARAMS_H_ */

@@ -31,10 +31,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "display.h"
 #include "displayhandler.h"
 
@@ -55,10 +51,8 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storenetwork.h"
-#include "storeoscserver.h"
-#include "storeremoteconfig.h"
-#include "storepixeldmx.h"
+
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -72,8 +66,8 @@ void main() {
 	Display display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -81,41 +75,21 @@ void main() {
 	fw.Print("OSC Server Pixel controller {1x Universe}");
 	nw.Print();
 	
-	StoreOscServer storeOscServer;
-	OSCServerParams params(&storeOscServer);
-
+	OSCServerParams params;
 	OscServer server;
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&server);
-	}
+	params.Load();
+	params.Set(&server);
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=server", server.GetPortIncoming());
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=OSC Server Pixel");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=server", server.GetPortIncoming());
 
 	display.TextStatus(OscServerMsgConst::PARAMS, Display7SegmentMessage::INFO_BRIDGE_PARMAMS, CONSOLE_YELLOW);
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
-
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-		pixelDmxParams.Dump();
-	}
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	/*
 	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
@@ -138,7 +112,6 @@ void main() {
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetWS28xxDmxStore(&storePixelDmx);
 
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
@@ -168,16 +141,14 @@ void main() {
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC,  remoteconfig::Output::PIXEL, 1);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(OscServerMsgConst::START, Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -197,9 +168,6 @@ void main() {
 			pixelTestPattern.Run();
 		}
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

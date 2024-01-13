@@ -51,6 +51,8 @@
 
 #include "debug.h"
 
+#define GPIO_ANALYZER_CH3 GPIO_EXT_18
+
 extern "C" {
 void console_error(const char*);
 }
@@ -124,8 +126,9 @@ static volatile struct TotalStatistics sv_TotalStatistics ALIGNED;
 static volatile uint32_t sv_nRdmDataBufferIndexHead;
 static volatile uint32_t sv_nRdmDataBufferIndexTail;
 static uint8_t s_RdmData[RDM_DATA_BUFFER_INDEX_ENTRIES][RDM_DATA_BUFFER_SIZE] ALIGNED;
+static volatile uint32_t sv_nRdmDiscSlotToSlot[RDM_DATA_BUFFER_INDEX_ENTRIES];
 static volatile uint16_t sv_nRdmChecksum;	///< This must be uint16_t
-static volatile uint32_t sv_RdmDataReceiveEnd;
+volatile uint32_t gv_RdmDataReceiveEnd;
 static volatile uint32_t sv_RdmDiscIndex;
 
 /**
@@ -142,6 +145,17 @@ static void irq_timer0_dmx_receive(uint32_t clo) {
 			sv_nDmxDataBufferIndexHead = (sv_nDmxDataBufferIndexHead + 1) & buffer::INDEX_MASK;
 		} else {
 			H3_TIMER->TMR0_INTV = s_DmxData[sv_nDmxDataBufferIndexHead].Statistics.nSlotToSlot * 12;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
+		}
+	} else if (sv_DmxReceiveState == RDMDISC) {
+		if (clo - sv_nFiqMicrosCurrent > sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead]) {
+			dmb();
+			sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
+			sv_DmxReceiveState = IDLE;
+			gv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
+			h3_gpio_clr(GPIO_ANALYZER_CH3);
+		} else {
+			H3_TIMER->TMR0_INTV = sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] * 12;
 			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3;
 		}
 	}
@@ -246,6 +260,7 @@ static void fiq_dmx_in_handler(void) {
 			sv_DmxReceiveState = RDMDISC;
 			s_RdmData[sv_nRdmDataBufferIndexHead][0] = data;
 			sv_nDmxDataIndex = 1;
+			h3_gpio_set(GPIO_ANALYZER_CH3);
 			break;
 		case PRE_BREAK:
 			sv_DmxReceiveState = BREAK;
@@ -320,7 +335,7 @@ static void fiq_dmx_in_handler(void) {
 
 			if ((sv_nRdmChecksum == 0) && (p->sub_start_code == E120_SC_SUB_MESSAGE)) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
-				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
+				gv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
 				dmb();
 			}
 
@@ -328,13 +343,18 @@ static void fiq_dmx_in_handler(void) {
 		}
 			break;
 		case RDMDISC:
+			sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] = sv_nFiqMicrosCurrent - sv_nFiqMicrosPrevious;
 			s_RdmData[sv_nRdmDataBufferIndexHead][sv_nDmxDataIndex++] = data;
+
+			H3_TIMER->TMR0_INTV = (sv_nRdmDiscSlotToSlot[sv_nRdmDataBufferIndexHead] + 12) * 12;
+			H3_TIMER->TMR0_CTRL |= (TIMER_CTRL_EN_START | TIMER_CTRL_RELOAD); // 0x3
 
 			if (sv_nDmxDataIndex == 24) {
 				sv_nRdmDataBufferIndexHead = (sv_nRdmDataBufferIndexHead + 1) & RDM_DATA_BUFFER_INDEX_MASK;
 				sv_DmxReceiveState = IDLE;
-				sv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
+				gv_RdmDataReceiveEnd = h3_hs_timer_lo_us();
 				dmb();
+				h3_gpio_clr(GPIO_ANALYZER_CH3);
 			}
 			break;
 		default:
@@ -464,6 +484,10 @@ Dmx::Dmx() {
 	h3_gpio_fsel(GPIO_EXT_12, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_EXT_12);	// 0 = input, 1 = output
 
+#if defined GPIO_ANALYZER_CH3
+	h3_gpio_fsel(GPIO_ANALYZER_CH3, GPIO_FSEL_OUTPUT);
+	h3_gpio_clr(GPIO_ANALYZER_CH3);
+#endif
 #ifdef LOGIC_ANALYZER
 	h3_gpio_fsel(GPIO_ANALYZER_CH1, GPIO_FSEL_OUTPUT);
 	h3_gpio_clr(GPIO_ANALYZER_CH1);
@@ -829,10 +853,6 @@ void Dmx::ClearData(__attribute__((unused)) uint32_t nPortIndex) {
 }
 
 void Dmx::StartDmxOutput(__attribute__((unused)) const uint32_t nPortIndex) {
-//	h3_gpio_set(GPIO_ANALYZER_CH6);
-
-	DEBUG_PUTS("");
-
 	assert(nPortIndex == 0);
 
 	uart_enable_fifo();
@@ -848,14 +868,6 @@ void Dmx::StartDmxOutput(__attribute__((unused)) const uint32_t nPortIndex) {
 	isb();
 
 	sv_DmxTransmitState = BREAK;
-
-//	h3_gpio_clr(GPIO_ANALYZER_CH6);
-}
-
-// RDM
-
-uint32_t Dmx::RdmGetDateReceivedEnd() {
-	return sv_RdmDataReceiveEnd;
 }
 
 const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
@@ -871,7 +883,7 @@ const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
 	}
 }
 
-const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
+const uint8_t* Dmx::RdmReceiveTimeOut(const uint32_t nPortIndex, uint16_t nTimeOut) {
 	assert(nPortIndex == 0);
 
 	uint8_t *p = nullptr;
@@ -907,4 +919,33 @@ void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t 
 	while ((EXT_UART->USR & UART_USR_BUSY) == UART_USR_BUSY) {
 		(void) EXT_UART->O00.RBR;
 	}
+}
+
+void Dmx::RdmSendDiscoveryRespondMessage(__attribute__((unused)) const uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
+	DEBUG_PRINTF("nPort=%u, pRdmData=%p, nLength=%u", nPort, pRdmData, nLength);
+	assert(nPortIndex < dmx::config::max::OUT);
+	assert(pRdmData != nullptr);
+	assert(nLength != 0);
+
+	// 3.2.2 Responder Packet spacing
+	udelay(RDM_RESPONDER_PACKET_SPACING, gv_RdmDataReceiveEnd);
+
+	SetPortDirection(nPortIndex, dmx::PortDirection::OUTP, false);
+
+	EXT_UART->LCR = UART_LCR_8_N_2;
+
+	for (uint32_t i = 0; i < nLength; i++) {
+		while (!(EXT_UART->LSR & UART_LSR_THRE))
+			;
+		EXT_UART->O00.THR = pRdmData[i];
+	}
+
+	while (!((EXT_UART->LSR & UART_LSR_TEMT) == UART_LSR_TEMT))
+		;
+
+	udelay(RDM_RESPONDER_DATA_DIRECTION_DELAY);
+
+	SetPortDirection(nPortIndex, dmx::PortDirection::INP, true);
+
+	DEBUG_EXIT
 }

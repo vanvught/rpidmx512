@@ -2,7 +2,7 @@
  * @file is_config_mode.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,7 @@
 
 void config_mode_init() {
 	h3_gpio_fsel(KEY1_GPIO, GPIO_FSEL_INPUT);
-	h3_gpio_pud(KEY1_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(KEY1_GPIO, GPIO_PULL_UP);
 }
 
 bool is_config_mode() {

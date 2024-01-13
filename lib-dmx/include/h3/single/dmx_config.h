@@ -45,6 +45,4 @@ static constexpr auto INDEX_MASK = (INDEX_ENTRIES - 1);
 }  // namespace buffer
 }  // namespace dmx
 
-
-
 #endif /* H3_SINGLE_DMX_CONFIG_H_ */

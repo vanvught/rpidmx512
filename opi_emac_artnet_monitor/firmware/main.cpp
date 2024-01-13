@@ -32,10 +32,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "ntpclient.h"
 
 #include "console.h"
@@ -58,26 +54,26 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storeartnet.h"
-#include "storedisplayudf.h"
-#include "storenetwork.h"
-#include "storeremoteconfig.h"
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
 
-void Hardware::RebootHandler() {
-}
+void Hardware::RebootHandler() { }
 
 void main() {
 	Hardware hw;
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -94,20 +90,6 @@ void main() {
 
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=Art-Net 4 Real-time DMX Monitor");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
-
 	NtpClient ntpClient;
 	ntpClient.Start();
 	ntpClient.Print();
@@ -118,15 +100,9 @@ void main() {
 
 	ArtNetNode node;
 
-	StoreArtNet storeArtNet(DMXPORT_OFFSET);
-	node.SetArtNetStore(&storeArtNet);
-
-	ArtNetParams artnetParams(&storeArtNet);
-
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-		artnetParams.Set(DMXPORT_OFFSET);
-	}
+	ArtNetParams artnetParams;
+	artnetParams.Load();
+	artnetParams.Set();
 
 	node.SetUniverse(0, lightset::PortDir::OUTPUT, artnetParams.GetUniverse(0));
 
@@ -149,28 +125,22 @@ void main() {
 	display.Set(4, displayudf::Labels::UNIVERSE_PORT_A);
 	display.Set(5, displayudf::Labels::AP);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if(displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
-		displayUdfParams.Dump();
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show(&node);
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, 1);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus(ArtNetMsgConst::START, Display7SegmentMessage::INFO_NODE_START, CONSOLE_YELLOW);
 
@@ -189,9 +159,6 @@ void main() {
 		ntpClient.Run();
 		showSystime.Run();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

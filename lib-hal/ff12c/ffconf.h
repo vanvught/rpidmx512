@@ -9,7 +9,7 @@
 /---------------------------------------------------------------------------*/
 
 #if defined(H3)
-	#if defined (SD_WRITE_SUPPORT)
+	#if defined (CONFIG_FS_ENABLE_WRITE)
 		#define _FS_READONLY	0
 	#else
 		#define _FS_READONLY	1
@@ -23,7 +23,7 @@
 /  and optional writing functions as well. */
 
 #if defined(H3)
-	#if defined (SD_WRITE_SUPPORT)
+	#if defined (CONFIG_FS_ENABLE_WRITE)
 		#define _FS_MINIMIZE	0
 	#else
 		#define _FS_MINIMIZE	2

@@ -32,19 +32,22 @@
 
 #include "debug.h"
 
-void DisplayUdf::Show(E131Bridge *pE131Bridge, uint32_t nDmxPortIndexOffset) {
+namespace e131bridge {
+namespace configstore {
+extern uint32_t DMXPORT_OFFSET;
+}  // namespace configstore
+}  // namespace e131bridge
+
+void DisplayUdf::Show(E131Bridge *pE131Bridge) {
 	DEBUG_ENTRY
-
-	m_nPortIndexOffset = nDmxPortIndexOffset;
-
-	DEBUG_PRINTF("m_nDmxPortIndexOffset=%u", m_nPortIndexOffset);
+	DEBUG_PRINTF("e131bridge::configstore::DMXPORT_OFFSET=%u", e131bridge::configstore::DMXPORT_OFFSET);
 
 	Show();
 
 	Printf(m_aLabels[static_cast<uint32_t>(displayudf::Labels::AP)], "AP: %d", pE131Bridge->GetActiveOutputPorts() + pE131Bridge->GetActiveInputPorts());
 
 	for (uint32_t nBridgePortIndex = 0; nBridgePortIndex < std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS); nBridgePortIndex++) {
-		const auto nPortIndex = nBridgePortIndex + m_nPortIndexOffset;
+		const auto nPortIndex = nBridgePortIndex + e131bridge::configstore::DMXPORT_OFFSET;
 
 		if (nPortIndex >= std::min(static_cast<uint32_t>(4), e131bridge::MAX_PORTS)) {
 			break;

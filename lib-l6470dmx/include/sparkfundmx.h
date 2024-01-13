@@ -2,7 +2,7 @@
  * @file sparkfundmx.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,6 @@
 #define SPARKFUN_DMX_MAX_MOTORS		8
 
 struct TSparkFunStores {
-	void *pSparkFunDmxParamsStore;
 	ModeParamsStore *pModeParamsStore;
 	MotorParamsStore *pMotorParamsStore;
 	L6470ParamsStore *pL6470ParamsStore;
@@ -64,10 +63,6 @@ public:
 
 	uint32_t GetMotorsConnected() {
 		return AutoDriver::getNumBoards();
-	}
-
-	void SetModeStore(ModeStore *pModeStore) {
-		m_pModeStore = pModeStore;
 	}
 
 // RDM
@@ -118,8 +113,7 @@ public:
 		m_bIsLocalBusyPinSet = true;
 	}
 
-public:
-	void ReadConfigFiles(struct TSparkFunStores *ptSparkFunStores=nullptr);
+	void ReadConfigFiles();
 
 private:
 	AutoDriver *m_pAutoDriver[SPARKFUN_DMX_MAX_MOTORS];
@@ -150,9 +144,7 @@ private:
 	uint16_t m_nDmxStartAddressMode;
 
 	uint16_t m_nDmxStartAddress;
-	uint16_t m_nDmxFootprint{0};
-
-	ModeStore *m_pModeStore{nullptr};
+	uint16_t m_nDmxFootprint { 0 };
 };
 
 #endif /* SPARKFUNDMX_H_ */

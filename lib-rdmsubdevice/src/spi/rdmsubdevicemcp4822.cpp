@@ -30,7 +30,7 @@
  * MCP4822: Dual 12-Bit Voltage Output DAC
  */
 
-#include "rdmsubdevicemcp4822.h"
+#include "spi/rdmsubdevicemcp4822.h"
 
 #include "mcp48x2.h"
 

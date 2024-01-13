@@ -27,10 +27,13 @@
 #define H3_HARDWARE_H_
 
 #include <cstdint>
+#include <cstring>
 #include <time.h>
 #include <uuid/uuid.h>
 
-#include "hwclock.h"
+#if !defined(DISABLE_RTC)
+# include "hwclock.h"
+#endif
 
 #include "h3.h"
 #include "h3_watchdog.h"
@@ -40,10 +43,8 @@
  void stack_debug_run();
 #endif
 
-extern "C" {
-uint32_t hardware_uptime_seconds(void);
+uint32_t hardware_uptime_seconds();
 void hardware_led_set(int);
-}
 
 class Hardware {
 public:
@@ -88,8 +89,31 @@ public:
 		return false;
 	}
 
-	bool SetTime(const struct tm *pTime);
-	void GetTime(struct tm *pTime);
+	bool SetTime(__attribute__((unused)) const struct tm *pTime) {
+#if !defined(DISABLE_RTC)
+		m_HwClock.Set(pTime);
+		return true;
+#else
+		return false;
+#endif
+	}
+	
+	void GetTime(struct tm *pTime) {
+		auto ltime = time(nullptr);
+		const auto *pLocalTime = localtime(&ltime);
+		memcpy(pTime, pLocalTime, sizeof(struct tm));
+	}
+
+#if !defined(DISABLE_RTC)
+	bool SetAlarm(const struct tm *pTime) {
+		const auto b = m_HwClock.AlarmSet(pTime);
+		return b;
+	}
+
+	void GetAlarm(struct tm *pTime) {
+		m_HwClock.AlarmGet(pTime);
+	}
+#endif
 
 	time_t GetTime() {
 		return time(nullptr);

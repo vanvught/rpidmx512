@@ -43,7 +43,6 @@
 
 #include "oscserver.h"
 #include "oscserverparams.h"
-#include "storeoscserver.h"
 
 #include "dmxmonitor.h"
 #include "dmxmonitorparams.h"
@@ -59,11 +58,8 @@
 #include "remoteconfigparams.h"
 
 #include "configstore.h"
-#include "storedisplayudf.h"
-#include "storemonitor.h"
-#include "storenetwork.h"
-#include "storerdmdevice.h"
-#include "storeremoteconfig.h"
+
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -72,36 +68,26 @@ int main(int argc, char **argv) {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	StoreNetwork storeNetwork;
 	Network nw(argc, argv);
+	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
 	fw.Print();
 	nw.Print();
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+	DisplayUdfParams displayUdfParams;
 
-	StoreOscServer storeOscServer;
-	OSCServerParams oscparms(&storeOscServer);
-
+	OSCServerParams oscparms;
 	OscServer server;
 
-	if (oscparms.Load()) {
-		oscparms.Dump();
-		oscparms.Set(&server);
-	}
-
-	StoreMonitor storeMonitor;
-	DMXMonitorParams monitorParams(&storeMonitor);
+	oscparms.Load();
+	oscparms.Set(&server);
 
 	DMXMonitor monitor;
 
-	if (monitorParams.Load()) {
-		monitorParams.Dump();
-		monitorParams.Set(&monitor);
-	}
+	DMXMonitorParams monitorParams;
+	monitorParams.Load();
 
 	server.SetOscServerHandler(new Handler);
 	server.SetOutput(&monitor);
@@ -120,49 +106,33 @@ int main(int argc, char **argv) {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-		rdmDeviceParams.Dump();
-	}
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=OSC Server");
-	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
-	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
-	mDns.Print();
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=monitor", server.GetPortIncoming());
 
 	server.Print();
 
-	HttpDaemon httpDaemon;
-
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC, remoteconfig::Output::MONITOR, 1);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
 
+	mDns.Print();
 	server.Start();
 
 	for (;;) {
 		server.Run();
 		mDns.Run();
-		httpDaemon.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

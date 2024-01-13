@@ -143,14 +143,13 @@ reset:
     blo   4b
 
 #if defined (DEBUG_STACK)
-	bl stack_debug_init
+	  bl stack_debug_init
 #endif
 
     bl vfp_init
 	  bl mmu_enable
-    bl hardware_init
 #if defined ( NO_EMAC )
-	bl emac_shutdown
+    bl emac_shutdown
 #endif
     bl  __libc_init_array
     bl main

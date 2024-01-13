@@ -106,15 +106,14 @@ int AutoDriver::busyCheck() {
 	}
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wvla"
+#pragma GCC diagnostic ignored "-Wstack-usage="	//FIXME Needed for compilation on GD32F (https://www.gd32-dmx.org)
+
 uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	DEBUG_ENTRY
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wvla"
-
 	char dataPacket[m_nNumBoards[m_nSpiChipSelect]];
-
-#pragma GCC diagnostic pop
 
 	for (uint32_t i = 0; i < m_nNumBoards[m_nSpiChipSelect]; i++) {
 		dataPacket[i] = 0;
@@ -131,6 +130,8 @@ uint8_t AutoDriver::SPIXfer(uint8_t data) {
 	DEBUG_EXIT
 	return static_cast<uint8_t>(dataPacket[m_nPosition]);
 }
+
+#pragma GCC diagnostic pop
 
 uint16_t AutoDriver::getNumBoards() {
 	uint16_t n = 0;

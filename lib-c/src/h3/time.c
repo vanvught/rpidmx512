@@ -34,9 +34,7 @@
 #include "debug.h"
 
 static uint32_t set_timer = 0;
-static uint64_t s_micros = 0;
-
-#define MICROS_SECONDS	1000000
+static struct timeval s_tv;
 
 /*
  * number of seconds and microseconds since the Epoch,
@@ -48,19 +46,29 @@ int gettimeofday(struct timeval *tv, __attribute__((unused))  struct timezone *t
 
 	const uint32_t timer = H3_TIMER->AVS_CNT0; // Millis timer
 
-	uint32_t timer_elapsed;
+	uint32_t millis_elapsed;
 
 	if (set_timer >= timer) {
-		timer_elapsed = set_timer - timer;
+		millis_elapsed = set_timer - timer;
 	} else {
-		timer_elapsed = timer - set_timer;
+		millis_elapsed = timer - set_timer;
 	}
 
 	set_timer = timer;
-	s_micros += (timer_elapsed * 1000);
 
-	tv->tv_sec = (time_t)(s_micros / MICROS_SECONDS);
-	tv->tv_usec = (suseconds_t) (s_micros - ((uint64_t) tv->tv_sec * MICROS_SECONDS));
+	uint32_t sec = millis_elapsed / 1000U;
+	const uint32_t usec = (millis_elapsed - (sec * 1000U)) * 1000U;
+
+	s_tv.tv_sec += (time_t)sec;
+	s_tv.tv_usec += (suseconds_t)usec;
+
+	if (s_tv.tv_usec >= 1000000) {
+		s_tv.tv_sec++;
+		s_tv.tv_usec = 1000000 - s_tv.tv_usec;
+	}
+
+	tv->tv_sec = s_tv.tv_sec;
+	tv->tv_usec = s_tv.tv_usec;
 
 	return 0;
 }
@@ -69,7 +77,9 @@ int settimeofday(const struct timeval *tv, __attribute__((unused)) const struct 
 	assert(tv != 0);
 
 	set_timer = H3_TIMER->AVS_CNT0;
-	s_micros = ((uint64_t) tv->tv_sec * MICROS_SECONDS) + (uint64_t) tv->tv_usec;
+
+	s_tv.tv_sec = tv->tv_sec;
+	s_tv.tv_usec = tv->tv_usec;
 
 	return 0;
 }

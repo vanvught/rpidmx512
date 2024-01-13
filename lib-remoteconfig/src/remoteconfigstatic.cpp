@@ -93,6 +93,9 @@ const RemoteConfig::Txt RemoteConfig::s_TXT[] = {
 #if defined (OUTPUT_RGB_PANEL)
 		{ &RemoteConfig::HandleGetRgbPanelTxt,   &RemoteConfig::HandleSetRgbPanelTxt,   "rgbpanel.txt", 12, Store::RGBPANEL },
 #endif
+#if defined (OUTPUT_DMX_PCA9685)
+		{ &RemoteConfig::HandleGetPca9685Txt,    &RemoteConfig::HandleSetPca9685Txt,    "pca9685.txt",  11, Store::PCA9685 },
+#endif
 #if defined(OUTPUT_DMX_STEPPER)
 		{ &RemoteConfig::HandleGetSparkFunTxt,   &RemoteConfig::HandleSetSparkFunTxt,   "sparkfun.txt", 12, Store::SPARKFUN },
 		{ &RemoteConfig::HandleGetMotor0Txt,     &RemoteConfig::HandleSetMotor0Txt,     "motor0.txt",   10, Store::MOTORS },

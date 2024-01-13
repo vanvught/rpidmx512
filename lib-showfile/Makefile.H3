@@ -1,6 +1,5 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES =  ../lib-artnet/include ../lib-e131/include ../lib-osc/include ../lib-properties/include ../lib-hal/include ../lib-network/include
-#
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=../lib-artnet/include ../lib-e131/include ../lib-osc/include ../lib-properties/include ../lib-network/include
+
 include ../firmware-template-h3/lib/Rules.mk

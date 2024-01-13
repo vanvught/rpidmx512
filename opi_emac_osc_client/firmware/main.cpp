@@ -29,14 +29,10 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
+
 #include "display.h"
 
 #include "mdns.h"
-
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "oscclient.h"
 #include "oscclientparams.h"
@@ -49,27 +45,24 @@
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storeoscclient.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "displayhandler.h"
 
-void Hardware::RebootHandler() {
-
-}
+void Hardware::RebootHandler() { }
 
 void main() {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -77,29 +70,13 @@ void main() {
 	fw.Print("OSC Client");
 	nw.Print();
 
-	StoreOscClient storeOscClient;
-
-	OscClientParams params(&storeOscClient);
+	OscClientParams params;
 	OscClient client;
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&client);
-	}
+	params.Load();
+	params.Set(&client);
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=OSC Client");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::OSC, "type=client", client.GetPortIncoming());
 
 	display.TextStatus(OscClientMsgConst::PARAMS, Display7SegmentMessage::INFO_OSCCLIENT_PARMAMS, CONSOLE_YELLOW);
 
@@ -127,16 +104,14 @@ void main() {
 
 	RemoteConfig remoteConfig(remoteconfig::Node::OSC_CLIENT, remoteconfig::Output::OSC, pButtonsSet->GetButtonsCount());
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	for (uint32_t i = 1; i < 7 ; i++) {
 		display.ClearLine(i);
@@ -166,9 +141,6 @@ void main() {
 		remoteConfig.Run();
 		configStore.Flash();
 		mDns.Run();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

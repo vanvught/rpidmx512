@@ -28,27 +28,20 @@
 #include "hardware.h"
 #include "network.h"
 #include "networkconst.h"
-#include "storenetwork.h"
+
 
 #include "displayudf.h"
 #include "displayudfparams.h"
-#include "storedisplayudf.h"
-
 #include "flashcodeinstall.h"
 #include "configstore.h"
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
-#include "storeremoteconfig.h"
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmnetllrponly.h"
 #endif
 
 #include "mdns.h"
-
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
 
 #include "ntpclient.h"
 
@@ -79,28 +72,14 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
 
 	fw.Print("RDMNet LLRP device only");
 	nw.Print();
-
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=RDMNet LLRP Only");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
 
 	NtpClient ntpClient;
 	ntpClient.Start();
@@ -113,15 +92,15 @@ void main() {
 #endif
 
 	RemoteConfig remoteConfig(remoteconfig::Node::RDMNET_LLRP_ONLY, remoteconfig::Output::CONFIG, 0);
-	RemoteConfigParams remoteConfigParams(new StoreRemoteConfig);
 
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.SetTitle("LLRP Only - TFTP");
 	display.Set(2, displayudf::Labels::HOSTNAME);
@@ -129,15 +108,12 @@ void main() {
 	display.Set(4, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(5, displayudf::Labels::VERSION);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Set(&display);
-		displayUdfParams.Dump();
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show();
+
 	display.Write(6, "mDNS enabled");
 	display.TextStatus("Device running", Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 
@@ -152,9 +128,6 @@ void main() {
 		remoteConfig.Run();
 		ntpClient.Run();
 		configStore.Flash();
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
-#endif
 		display.Run();
 		hw.Run();
 	}

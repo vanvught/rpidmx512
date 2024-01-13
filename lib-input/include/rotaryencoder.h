@@ -2,7 +2,7 @@
  * @file rotaryencoder.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,15 +31,13 @@
 class RotaryEncoder {
 public:
 	static constexpr uint8_t NONE = 0x00;
-	static constexpr uint8_t CW = 0x10;
-	static constexpr uint8_t CCW = 0x20;
+	static constexpr uint8_t CW   = 0x10;
+	static constexpr uint8_t CCW  = 0x20;
 
-	RotaryEncoder(bool bHalfStep = true);
-	~RotaryEncoder() {
+	RotaryEncoder(bool bHalfStep = true) : m_bHalfStep(bHalfStep) {}
+	~RotaryEncoder() = default;
 
-	}
-
-	uint8_t Process(uint8_t nInputAB);
+	uint8_t Process(const uint8_t nInputAB);
 
 private:
 	bool m_bHalfStep;

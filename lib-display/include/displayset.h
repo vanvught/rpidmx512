@@ -39,7 +39,7 @@ static constexpr uint32_t BLINK_ON = (1U << 1);
 
 class DisplaySet {
 public:
-	virtual ~DisplaySet() {}
+	virtual ~DisplaySet() = default;
 
 	uint32_t GetColumns() const {
 		return m_nCols;

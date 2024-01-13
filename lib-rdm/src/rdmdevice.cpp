@@ -31,7 +31,6 @@
 
 #include "rdmdevice.h"
 #include "rdmconst.h"
-#include "rdm.h"
 #include "rdm_e120.h"
 
 #include "network.h"

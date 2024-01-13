@@ -85,8 +85,6 @@ e131.txt
 osc.txt
 *.MacOS
 # 
-lib-bob/examples/si5351a
-linux_rpi_artipprog/linux_rpi_artipprog
 *.gz
 #
 */sofware_version_id.h
@@ -107,4 +105,5 @@ linux_osc/linux_osc
 
 lib-nextion
 lib-node
+lib-eve
 

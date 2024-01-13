@@ -35,6 +35,7 @@ extern "C" {
 
 extern char *strerror(int errnum);
 extern char *strtok(char *str, const char *delim);
+extern char *strstr(const char *string, const char *substring);
 
 inline int memcmp(const void *s1, const void *s2, size_t n) {
 	unsigned char u1, u2;
@@ -191,6 +192,20 @@ inline int strncasecmp(const char *s1, const char *s2, size_t n) {
 inline char *strcat(char *s1, const char *s2) {
 	strcpy(s1 + strlen(s1), s2);
 	return s1;
+}
+
+inline char *strchr(const char *p, int ch) {
+	char c = (char) ch;
+
+	for (;; ++p) {
+		if (*p == c) {
+			return (char *)p;
+		}
+		if (*p == '\0') {
+			return NULL;
+		}
+	}
+	/* NOTREACHED */
 }
 
 #ifdef __cplusplus

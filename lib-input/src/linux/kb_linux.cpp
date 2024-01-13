@@ -2,7 +2,7 @@
  * @file kb_linux.cpp
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,20 +36,12 @@
 #define STDIN	0
 
 KbLinux::KbLinux() {
-}
-
-KbLinux::~KbLinux() {
-}
-
-bool KbLinux::Start() {
 	struct termios term;
 
 	tcgetattr(STDIN, &term);
     term.c_lflag &= static_cast<unsigned>(~ICANON);
     tcsetattr(STDIN, TCSANOW, &term);
     setbuf(stdin, nullptr);
-
-    return true;
 }
 
 bool KbLinux::IsAvailable() {

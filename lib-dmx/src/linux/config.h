@@ -26,18 +26,6 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
-namespace dmxsingle {
-static constexpr auto MAX_PORTS = 1;
-}  // namespace dmxsingle
-
-namespace dmxmulti {
-#if !defined(LIGHTSET_PORTS)
- static constexpr auto MAX_PORTS = 4;
-#else
- static constexpr auto MAX_PORTS = LIGHTSET_PORTS;
-#endif
-}  // namespace dmxmulti
-
 namespace dmx {
 static constexpr auto UDP_PORT_DMX_START = 50000U;
 static constexpr auto UDP_PORT_RDM_START = 51000U;

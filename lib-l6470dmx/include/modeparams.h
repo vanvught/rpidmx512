@@ -2,7 +2,7 @@
  * @file modeparams.h
  *
  */
-/* Copyright (C) 2017-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,109 +27,141 @@
 #define MODEPARAMS_H_
 
 #include <cstdint>
+#include <cstddef>
 
 #include "l6470.h"
+#include "l6470dmxstore.h"
+
+#include "configstore.h"
+
 #include "lightset.h"
 #include "dmxslotinfo.h"
 
-static constexpr uint16_t MODE_PARAMS_MAX_DMX_FOOTPRINT	=	4;
+#include "debug.h"
 
-struct TModeParams {
-    uint32_t nSetList;
-    uint8_t nDmxMode;
-    uint16_t nDmxStartAddress;
-    uint32_t nMaxSteps;
-    TL6470Action tSwitchAction;
-    TL6470Direction tSwitchDir;
-    float fSwitchStepsPerSec;
-    bool bSwitch;
-    //
-    lightset::SlotInfo tLightSetSlotInfo[MODE_PARAMS_MAX_DMX_FOOTPRINT];
-} __attribute__((packed));
+namespace modeparams {
+struct Mask {
+	static constexpr uint32_t SLOT_INFO_SHIFT = 28;
+	static constexpr uint32_t SLOT_INFO_MASK  = (0xFU << SLOT_INFO_SHIFT);
 
-struct ModeParamsMask {
-	static constexpr auto SLOT_INFO_SHIFT = 28;
-	static constexpr auto SLOT_INFO_MASK = (0xF << SLOT_INFO_SHIFT);
-
-	static constexpr auto DMX_MODE = (1U << 0);
-	static constexpr auto DMX_START_ADDRESS = (1U << 1);
+	static constexpr uint32_t DMX_MODE          = (1U << 0);
+	static constexpr uint32_t DMX_START_ADDRESS = (1U << 1);
 	//
-	static constexpr auto MAX_STEPS = (1U << 2);
+	static constexpr uint32_t MAX_STEPS = (1U << 2);
 	//
-	static constexpr auto SWITCH_ACT = (1U << 3);
-	static constexpr auto SWITCH_DIR = (1U << 4);
-	static constexpr auto SWITCH_SPS = (1U << 5);
-	static constexpr auto SWITCH = (1U << 6);
+	static constexpr uint32_t SWITCH_ACT = (1U << 3);
+	static constexpr uint32_t SWITCH_DIR = (1U << 4);
+	static constexpr uint32_t SWITCH_SPS = (1U << 5);
+	static constexpr uint32_t SWITCH     = (1U << 6);
 	//
-	static constexpr auto SLOT_INFO_0 = (1U << (SLOT_INFO_SHIFT + 0));
-	static constexpr auto SLOT_INFO_1 = (1U << (SLOT_INFO_SHIFT + 1));
-	static constexpr auto SLOT_INFO_2 = (1U << (SLOT_INFO_SHIFT + 2));
-	static constexpr auto SLOT_INFO_3 = (1U << (SLOT_INFO_SHIFT + 3));
+	static constexpr uint32_t SLOT_INFO_0 = (1U << (SLOT_INFO_SHIFT + 0));
+	static constexpr uint32_t SLOT_INFO_1 = (1U << (SLOT_INFO_SHIFT + 1));
+	static constexpr uint32_t SLOT_INFO_2 = (1U << (SLOT_INFO_SHIFT + 2));
+	static constexpr uint32_t SLOT_INFO_3 = (1U << (SLOT_INFO_SHIFT + 3));
 };
+}  // namespace modeparams
 
 class ModeParamsStore {
 public:
-	virtual ~ModeParamsStore() {}
+	static ModeParamsStore& Get() {
+		static ModeParamsStore instance;
+		return instance;
+	}
 
-	virtual void Update(uint32_t nMotorIndex, const struct TModeParams *ptModeParams)=0;
-	virtual void Copy(uint32_t nMotorIndex, struct TModeParams *ptModeParams)=0;
+	static void Update(uint32_t nMotorIndex, const struct modeparams::Params *pParams)  {
+		Get().IUpdate(nMotorIndex, pParams);
+	}
+
+	static void Copy(uint32_t nMotorIndex, struct modeparams::Params *pParams)  {
+		Get().ICopy(nMotorIndex, pParams);
+	}
+
+private:
+	ModeParamsStore() {
+		assert(motorstore::STRUCT_SIZE <= motorstore::MAX_SIZE);
+
+		for (uint32_t nMotorIndex = 0; nMotorIndex < motorstore::MAX_MOTORS; nMotorIndex++) {
+			struct modeparams::Params tModeParams;
+			memset( &tModeParams, 0xFF, sizeof(struct modeparams::Params));
+			tModeParams.nSetList = 0;
+
+			ICopy(nMotorIndex, &tModeParams);
+
+			if (tModeParams.nSetList == static_cast<uint32_t>(~0)) {
+				DEBUG_PRINTF("%d: Clear nSetList -> tModeParams", nMotorIndex);
+				tModeParams.nSetList = 0;
+				IUpdate(nMotorIndex, &tModeParams);
+			}
+		}
+	}
+
+	void IUpdate(uint32_t nMotorIndex, const struct modeparams::Params *pParams)  {
+		DEBUG_ENTRY
+		assert(nMotorIndex < motorstore::MAX_MOTORS);
+		ConfigStore::Get()->Update(configstore::Store::MOTORS, motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, ModeParams), pParams, sizeof(struct modeparams::Params));
+		DEBUG_EXIT
+	}
+
+	void ICopy(uint32_t nMotorIndex, struct modeparams::Params *pParams)  {
+		DEBUG_ENTRY
+		assert(nMotorIndex < motorstore::MAX_MOTORS);
+		ConfigStore::Get()->Copy(configstore::Store::MOTORS, pParams, sizeof(struct modeparams::Params), motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, ModeParams));
+		DEBUG_EXIT
+	}
 };
 
 class ModeParams {
 public:
-	ModeParams(ModeParamsStore *pModeParamsStore = nullptr);
+	ModeParams();
 	~ModeParams();
 
 	bool Load(uint32_t nMotorIndex);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint32_t nMotorIndex, const struct TModeParams *ptModeParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint32_t nMotorIndex, const struct modeparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
-	void Dump();
-
 	uint16_t GetDmxMode() const {
-		return m_tModeParams.nDmxMode;
+		return m_Params.nDmxMode;
 	}
 
 	uint16_t GetDmxStartAddress() const {
-		return m_tModeParams.nDmxStartAddress;
+		return m_Params.nDmxStartAddress;
 	}
 
 	uint32_t GetMaxSteps() const {
-		return m_tModeParams.nMaxSteps;
+		return m_Params.nMaxSteps;
 	}
 
 	TL6470Action GetSwitchAction() const {
-		return m_tModeParams.tSwitchAction;
+		return m_Params.tSwitchAction;
 	}
 
 	TL6470Direction GetSwitchDir() const {
-		return m_tModeParams.tSwitchDir;
+		return m_Params.tSwitchDir;
 	}
 
 	float GetSwitchStepsPerSec() const {
-		return m_tModeParams.fSwitchStepsPerSec;
+		return m_Params.fSwitchStepsPerSec;
 	}
 
 	bool HasSwitch() const {
-		return m_tModeParams.bSwitch;
+		return m_Params.bSwitch;
 	}
 
 	void GetSlotInfo(uint32_t nOffset, lightset::SlotInfo &tLightSetSlotInfo);
 
-private:
-    void callbackFunction(const char *s);
-    bool isMaskSet(uint32_t nMask) const {
-    	return (m_tModeParams.nSetList & nMask) == nMask;
-    }
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
-    ModeParamsStore *m_pModeParamsStore;
-    struct TModeParams m_tModeParams;
+	void Dump();
+    void callbackFunction(const char *s);
+    bool isMaskSet(uint32_t nMask) const {
+    	return (m_Params.nSetList & nMask) == nMask;
+    }
+
+private:
+    struct modeparams::Params m_Params;
     char m_aFileName[16];
     DmxSlotInfo *m_pDmxSlotInfo;
 };

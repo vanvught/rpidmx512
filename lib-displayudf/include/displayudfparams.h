@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "displayudf.h"
+#include "configstore.h"
 
 namespace displayudfparams {
 struct Params {
@@ -50,39 +51,40 @@ struct Mask {
 
 class DisplayUdfParamsStore {
 public:
-	virtual ~DisplayUdfParamsStore() {}
+	static void Update(const struct displayudfparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::DISPLAYUDF, pParams, sizeof(struct displayudfparams::Params));
+	}
 
-	virtual void Update(const struct displayudfparams::Params *ptDisplayUdfParams)=0;
-	virtual void Copy(struct displayudfparams::Params *ptDisplayUdfParams)=0;
+	static void Copy(struct displayudfparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::DISPLAYUDF, pParams, sizeof(struct displayudfparams::Params));
+	}
 };
 
 class DisplayUdfParams {
 public:
-	DisplayUdfParams(DisplayUdfParamsStore *pDisplayUdfParamsStore);
+	DisplayUdfParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct displayudfparams::Params *ptDisplayUdfParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct displayudfparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
 	void Set(DisplayUdf *pDisplayUdf);
 
-	void Dump();
-
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tDisplayUdfParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    DisplayUdfParamsStore *m_pDisplayUdfParamsStore;
-    displayudfparams::Params m_tDisplayUdfParams;
+    displayudfparams::Params m_Params;
 };
 
 #endif /* DISPLAYUDFPARAMS_H_ */

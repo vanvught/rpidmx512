@@ -73,6 +73,8 @@ void ArtNetNode::HandleDmxIn() {
 
 				Network::Get()->SendTo(m_nHandle, &m_ArtDmx, sizeof(struct artnet::ArtDmx), m_InputPort[nPortIndex].nDestinationIp, artnet::UDP_PORT);
 
+				SendDiag(artnet::PriorityCodes::DIAG_LOW, "%u: Input DMX sent", nPortIndex);
+
 				if (m_Node.Port[nPortIndex].bLocalMerge) {
 					m_pReceiveBuffer = reinterpret_cast<uint8_t *>(&m_ArtDmx);
 					m_nIpAddressFrom = Network::Get()->GetIp();

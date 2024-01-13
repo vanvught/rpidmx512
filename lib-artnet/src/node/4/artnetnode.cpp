@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 
 #include "artnetnode.h"
 #include "artnet.h"
+#include "artnetstore.h"
 
 #include "e131bridge.h"
 
@@ -58,10 +59,7 @@ void ArtNetNode::SetPortProtocol4(const uint32_t nPortIndex, const artnet::PortP
 	}
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SavePortProtocol(nPortIndex, portProtocol);
-		}
-
+		ArtNetStore::SavePortProtocol(nPortIndex, portProtocol);
 		artnet::display_port_protocol(nPortIndex, portProtocol);
 	}
 

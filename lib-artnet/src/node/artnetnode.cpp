@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,6 +34,7 @@
 #include "artnetnode.h"
 #include "artnetconst.h"
 #include "artnet.h"
+#include "artnetstore.h"
 
 #if defined (ARTNET_HAVE_DMXIN)
 # include "dmx.h"
@@ -82,6 +83,12 @@ ArtNetNode::ArtNetNode() {
 	m_ArtPollReply.AcnPriority = e131::priority::DEFAULT;
 #endif
 
+	memset(&m_State, 0, sizeof(struct artnetnode::State));
+	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
+	m_State.status = artnetnode::Status::STANDBY;
+	// The device should wait for a random delay of up to 1s before sending the reply.
+	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
+
 	SetLongName(nullptr);	// Set default long name
 
 	memset(&m_Node, 0, sizeof(struct artnetnode::Node));
@@ -94,12 +101,6 @@ ArtNetNode::ArtNetNode() {
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		SetShortName(nPortIndex, nullptr);	// Set default port label
 	}
-
-	memset(&m_State, 0, sizeof(struct artnetnode::State));
-	m_State.reportCode = artnetnode::ReportCode::RCPOWEROK;
-	m_State.status = artnetnode::Status::STANDBY;
-	// The device should wait for a random delay of up to 1s before sending the reply.
-	m_State.ArtPollReplyDelayMillis = (m_ArtPollReply.MAC[5] | (static_cast<uint32_t>(m_ArtPollReply.MAC[4]) << 8)) % 1000;
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		memset(&m_OutputPort[nPortIndex], 0, sizeof(struct artnetnode::OutputPort));
@@ -211,15 +212,11 @@ void ArtNetNode::Start() {
 	}
 #endif
 
-#if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
-	if (m_pArtNetRdm != nullptr) {
+#if defined (RDM_CONTROLLER)
+	if (m_State.rdm.IsEnabled) {
+		m_State.rdm.IsDiscoveryRunning = true;
+
 		for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
-			const auto isRdmDisabled = ((m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::RDM_DISABLED) == artnet::GoodOutputB::RDM_DISABLED);
-
-			if (!isRdmDisabled && (m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)) {
-				SendTod(nPortIndex);
-			}
-
 			if (m_Node.Port[nPortIndex].direction == lightset::PortDir::INPUT) {
 				SendTodRequest(nPortIndex);
 			}
@@ -228,7 +225,7 @@ void ArtNetNode::Start() {
 #endif
 
 #if (ARTNET_VERSION >= 4)
-		E131Bridge::Start();
+	E131Bridge::Start();
 #endif
 
 	m_State.status = artnetnode::Status::ON;
@@ -285,9 +282,7 @@ void ArtNetNode::SetShortName(const uint32_t nPortIndex, const char *pShortName)
 	m_Node.Port[nPortIndex].ShortName[artnet::SHORT_NAME_LENGTH - 1] = '\0';
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
-		}
+		ArtNetStore::SaveShortName(nPortIndex, m_Node.Port[nPortIndex].ShortName);
 	}
 
 	DEBUG_PUTS(m_Node.Port[nPortIndex].ShortName);
@@ -327,16 +322,62 @@ void ArtNetNode::SetLongName(const char *pLongName) {
 	m_ArtPollReply.LongName[artnet::LONG_NAME_LENGTH - 1] = '\0';
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
-		}
-
+		ArtNetStore::SaveLongName(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 		artnet::display_longname(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	}
 
 	DEBUG_PUTS(reinterpret_cast<char *>(m_ArtPollReply.LongName));
 	DEBUG_EXIT
 }
+
+#if defined (OUTPUT_HAVE_STYLESWITCH)
+void ArtNetNode::SetOutputStyle(const uint32_t nPortIndex, lightset::OutputStyle outputStyle) {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	if (outputStyle == GetOutputStyle(nPortIndex)) {
+		return;
+	}
+
+	if ((m_State.status == artnetnode::Status::ON) && (m_pLightSet != nullptr)) {
+		m_pLightSet->SetOutputStyle(nPortIndex, outputStyle);
+		outputStyle = m_pLightSet->GetOutputStyle(nPortIndex);
+	}
+
+	if (outputStyle == lightset::OutputStyle::CONSTANT) {
+		m_OutputPort[nPortIndex].GoodOutputB |= artnet::GoodOutputB::STYLE_CONSTANT;
+	} else {
+		m_OutputPort[nPortIndex].GoodOutputB &= static_cast<uint8_t>(~artnet::GoodOutputB::STYLE_CONSTANT);
+	}
+
+#if defined (OUTPUT_DMX_SEND) || defined (OUTPUT_DMX_SEND_MULTI)
+	/**
+	 * FIXME I do not like this hack. It should be handled in dmx.cpp
+	 */
+	if ((m_Node.Port[nPortIndex].direction == lightset::PortDir::OUTPUT)
+			&& (outputStyle == lightset::OutputStyle::CONSTANT)
+			&& (m_pLightSet != nullptr)) {
+		if (m_OutputPort[nPortIndex].IsTransmitting) {
+			m_OutputPort[nPortIndex].IsTransmitting = false;
+			m_pLightSet->Stop(nPortIndex);
+		}
+	}
+#endif
+
+	m_State.IsSynchronousMode = false;
+
+	if (m_State.status == artnetnode::Status::ON) {
+		ArtNetStore::SaveOutputStyle(nPortIndex, outputStyle);
+		artnet::display_outputstyle(nPortIndex, outputStyle);
+	}
+}
+
+lightset::OutputStyle ArtNetNode::GetOutputStyle(const uint32_t nPortIndex) const {
+	assert(nPortIndex < artnetnode::MAX_PORTS);
+
+	const auto isStyleConstant = (m_OutputPort[nPortIndex].GoodOutputB & artnet::GoodOutputB::STYLE_CONSTANT) == artnet::GoodOutputB::STYLE_CONSTANT;
+	return isStyleConstant ? lightset::OutputStyle::CONSTANT : lightset::OutputStyle::DELTA;
+}
+#endif
 
 void ArtNetNode::SetNetworkDataLossCondition() {
 	m_State.IsMergeMode = false;
@@ -429,7 +470,7 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 #endif
 
 #if defined (RDM_CONTROLLER)
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleRdmIn();
 		}
 #endif
@@ -514,23 +555,28 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 		break;
 #if defined (RDM_CONTROLLER) || defined (RDM_RESPONDER)
 	case artnet::OpCodes::OP_TODREQUEST:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodRequest();
 		}
 		break;
 	case artnet::OpCodes::OP_TODDATA:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodData();
 		}
 		break;
 	case artnet::OpCodes::OP_TODCONTROL:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleTodControl();
 		}
 		break;
 	case artnet::OpCodes::OP_RDM:
-		if (m_pArtNetRdm != nullptr) {
+		if (m_State.rdm.IsEnabled) {
 			HandleRdm();
+		}
+		break;
+	case artnet::OpCodes::OP_RDMSUB:
+		if (m_State.rdm.IsEnabled) {
+			HandleRdmSub();
 		}
 		break;
 #endif
@@ -561,7 +607,7 @@ void ArtNetNode::Process(const uint16_t nBytesReceived) {
 #endif
 
 #if defined (RDM_CONTROLLER)
-	if (m_pArtNetRdm != nullptr) {
+	if (m_State.rdm.IsEnabled) {
 		HandleRdmIn();
 	}
 #endif

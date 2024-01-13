@@ -1,5 +1,5 @@
 /**
- * @file h3_gpio_pud.c
+ * @file h3_gpio_set_pud.c
  *
  */
 /* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
@@ -31,7 +31,7 @@
 #include "h3_gpio.h"
 #include "h3.h"
 
-void h3_gpio_pud(uint32_t gpio, gpio_pull_t pull) {
+void h3_gpio_set_pud(uint32_t gpio, gpio_pull_t pull) {
 	const uint32_t number = H3_GPIO_TO_NUMBER(gpio);
 	const uint32_t reg = number / 16;
 	const uint32_t shift = (number & 0xf) * 2;

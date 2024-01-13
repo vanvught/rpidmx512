@@ -29,28 +29,30 @@
 #include <cstdint>
 
 #include "oscclient.h"
+#include "configstore.h"
 
-struct OscClientParamsMax {
-	static constexpr auto CMD_COUNT = 8;
-	static constexpr auto CMD_PATH_LENGTH = 64;
-	static constexpr auto LED_COUNT = 8;
-	static constexpr auto LED_PATH_LENGTH = 48;
+namespace oscclientparams {
+struct ParamsMax {
+	static constexpr uint32_t CMD_COUNT = 8;
+	static constexpr uint32_t CMD_PATH_LENGTH = 64;
+	static constexpr uint32_t LED_COUNT = 8;
+	static constexpr uint32_t LED_PATH_LENGTH = 48;
 };
 
-struct TOscClientParams {
+struct Params {
     uint32_t nSetList;
     uint32_t nServerIp;
 	uint16_t nOutgoingPort;
 	uint16_t nIncomingPort;
 	uint8_t nPingDisable;
 	uint8_t nPingDelay;
-	char aCmd[OscClientParamsMax::CMD_COUNT][OscClientParamsMax::CMD_PATH_LENGTH];
-	char aLed[OscClientParamsMax::LED_COUNT][OscClientParamsMax::LED_PATH_LENGTH];
+	char aCmd[ParamsMax::CMD_COUNT][ParamsMax::CMD_PATH_LENGTH];
+	char aLed[ParamsMax::LED_COUNT][ParamsMax::LED_PATH_LENGTH];
 } __attribute__((packed));
 
-static_assert(sizeof(struct TOscClientParams) <= oscclient::STORE, "struct Params is too large");
+static_assert(sizeof(struct oscclientparams::Params) <= oscclient::STORE, "struct Params is too large");
 
-struct OscClientParamsMask {
+struct Mask {
 	static constexpr auto SERVER_IP = (1U << 0);
 	static constexpr auto OUTGOING_PORT = (1U << 1);
 	static constexpr auto INCOMING_PORT = (1U << 2);
@@ -59,55 +61,57 @@ struct OscClientParamsMask {
 	static constexpr auto CMD = (1U << 5);
 	static constexpr auto LED = (1U << 6);
 };
+}  // namespace oscclientparams
 
 class OscClientParamsStore {
 public:
-	virtual ~OscClientParamsStore() {}
+	static void Update(const struct oscclientparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::OSC_CLIENT, pParams, sizeof(struct oscclientparams::Params));
+	}
 
-	virtual void Update(const struct TOscClientParams *pOscClientParams)=0;
-	virtual void Copy(struct TOscClientParams *pOscClientParams)=0;
+	static void Copy(struct oscclientparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::OSC_CLIENT, pParams, sizeof(struct oscclientparams::Params));
+	}
 };
 
 class OscClientParams {
 public:
-	OscClientParams(OscClientParamsStore *pOscClientParamsStore);
+	OscClientParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TOscClientParams *ptOscClientParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct oscclientparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
 	void Set(OscClient *pOscClient);
 
-	void Dump();
-
 	uint32_t GetServerIP() {
-		return m_tOscClientParams.nServerIp;
+		return m_Params.nServerIp;
 	}
 
 	uint16_t GetOutgoingPort() {
-		return m_tOscClientParams.nOutgoingPort;
+		return m_Params.nOutgoingPort;
 	}
 
 	uint16_t GetIncomingPort() {
-		return m_tOscClientParams.nIncomingPort;
+		return m_Params.nIncomingPort;
 	}
 
 public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tOscClientParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-	OscClientParamsStore *m_pOscClientParamsStore;
-    struct TOscClientParams m_tOscClientParams;
+    oscclientparams::Params m_Params;
     char m_aCmd[8];
     char m_aLed[8];
 };

@@ -2,7 +2,7 @@
  * @file ir_linux.h
  *
  */
-/* Copyright (C) 2017-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,14 @@
 
 #include <sys/un.h>
 
-#include "inputset.h"
-
-class IrLinux final: public InputSet {
+class IrLinux {
 public:
 	IrLinux();
-	~IrLinux() override;
+	~IrLinux();
 
-	bool Start() override;
-	bool IsAvailable() override;
-	int GetChar() override;
+	bool Start();
+	bool IsAvailable();
+	int GetChar();
 
 private:
 	int m_nFd { -1 };

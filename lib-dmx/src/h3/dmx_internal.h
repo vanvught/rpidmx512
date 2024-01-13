@@ -2,7 +2,7 @@
  * @file dmx_internal.h
  *
  */
-/* Copyright (C) 2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,33 @@
 
 #include <cassert>
 
+#include "h3.h"
+
+#if defined(ORANGE_PI)
+/*
+ * PORT
+ * 0	UART2
+ * 1	UART1
+ */
+inline H3_UART_TypeDef * _port_to_uart(const uint32_t nPortIndex) {
+	switch (nPortIndex) {
+	case 0:
+		return H3_UART1;
+		break;
+	case 1:
+		return H3_UART2;
+		break;
+	default:
+		assert(0);
+		__builtin_unreachable();
+		break;
+	}
+
+	assert(0);
+	__builtin_unreachable();
+	return nullptr;
+}
+#else
 /*
  * PORT
  * 0	UART1
@@ -34,37 +61,30 @@
  * 2	UART3
  * 3	UART0
  */
-
-inline static uint32_t _port_to_uart(const uint32_t nPortIndex) {
-	if (nPortIndex < 3) {
-		return nPortIndex + 1;
-	}
-
-	return 0;
-}
-
-#include "h3.h"
-
-inline static H3_UART_TypeDef * _get_uart(const uint32_t nUart) {
-	switch (nUart) {
+inline H3_UART_TypeDef * _port_to_uart(const uint32_t nPortIndex) {
+	switch (nPortIndex) {
 	case 0:
-		return H3_UART0;
-		break;
-	case 1:
 		return H3_UART1;
 		break;
-	case 2:
+	case 1:
 		return H3_UART2;
 		break;
-	case 3:
+	case 2:
 		return H3_UART3;
+		break;
+	case 3:
+		return H3_UART0;
 		break;
 	default:
 		assert(0);
+		__builtin_unreachable();
 		break;
 	}
 
+	assert(0);
+	__builtin_unreachable();
 	return nullptr;
 }
+#endif
 
 #endif /* H3_DMX_INTERNAL_H_ */

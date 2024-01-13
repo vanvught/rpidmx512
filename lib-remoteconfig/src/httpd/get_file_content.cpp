@@ -2,7 +2,7 @@
  * @file get_file_content.cpp
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -59,12 +59,12 @@ static http::contentTypes getContentType(const char *pFileName) {
 	return http::contentTypes::NOT_DEFINED;
 }
 
-int get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType) {
+uint32_t get_file_content(const char *fileName, char *pDst, http::contentTypes& contentType) {
 	auto *pFile = fopen(fileName, "r");
 
 	if (pFile == nullptr) {
 		DEBUG_EXIT
-		return -1;
+		return 0;
 	}
 
 	contentType = getContentType(fileName);
@@ -72,7 +72,7 @@ int get_file_content(const char *fileName, char *pDst, http::contentTypes& conte
 	if (contentType == http::contentTypes::NOT_DEFINED) {
 		DEBUG_EXIT
 		fclose(pFile);
-		return -2;
+		return 0;
 	}
 
 	auto doRemoveWhiteSpaces = true;
@@ -81,7 +81,7 @@ int get_file_content(const char *fileName, char *pDst, http::contentTypes& conte
 
 	while ((c = fgetc(pFile)) != EOF) {
 		if (doRemoveWhiteSpaces) {
-			if (c < ' ') {
+			if (c <= ' ') {
 				continue;
 			} else {
 				doRemoveWhiteSpaces = false;
@@ -101,10 +101,13 @@ int get_file_content(const char *fileName, char *pDst, http::contentTypes& conte
 	fclose(pFile);
 
 	DEBUG_PRINTF("%s -> %d", fileName, static_cast<int>(p - pDst));
-	return static_cast<int>(p - pDst);
+	return static_cast<uint32_t>(p - pDst);
 }
 #else
-int get_file_content(const char *pFileName, char *pDst, http::contentTypes& contentType) {
+uint32_t get_file_content(const char *pFileName, char *pDst, http::contentTypes& contentType) {
+	DEBUG_ENTRY
+	DEBUG_PUTS(pFileName);
+
 	for (auto& content : HttpContent) {
 		if (strcmp(pFileName, content.pFileName) == 0) {
 			assert(content.nContentLength < http::BUFSIZE);
@@ -112,11 +115,11 @@ int get_file_content(const char *pFileName, char *pDst, http::contentTypes& cont
 
 			DEBUG_PRINTF("%s -> %d", content.pFileName, content.nContentLength);
 			contentType = content.contentType;
-			return static_cast<int>(content.nContentLength);
+			return content.nContentLength;
 		}
 	}
 
 	DEBUG_EXIT
-	return -1;
+	return 0;
 }
 #endif

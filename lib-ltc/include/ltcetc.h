@@ -46,9 +46,7 @@ const char* get_udp_terminator(const UdpTerminator updTerminator);
 
 class LtcEtcHandler {
 public:
-	virtual ~LtcEtcHandler() {
-	}
-	;
+	virtual ~LtcEtcHandler() = default;
 
 	virtual void Handler(const midi::Timecode *pTimeCode)=0;
 };

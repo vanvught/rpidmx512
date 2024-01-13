@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,26 +50,15 @@
 #if !defined(NO_EMAC)
 # include "remoteconfig.h"
 # include "remoteconfigparams.h"
-# include "storeremoteconfig.h"
-# include "storenetwork.h"
 #endif
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storerdmdevice.h"
-#include "storetlc59711.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
-# include "storerdmsubdevices.h"
-#endif
 
 #include "firmwareversion.h"
 #include "software_version.h"
 
 #include "sparkfundmx.h"
-#include "storesparkfundmx.h"
-#include "storemotors.h"
 
 #include "factorydefaults.h"
 
@@ -83,8 +72,7 @@ void main() {
 	ConfigStore configStore;
 #if !defined(NO_EMAC)
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 #else
 	Network nw;
@@ -99,47 +87,31 @@ void main() {
 
 	LightSet *pBoard;
 
-	StoreSparkFunDmx storeSparkFunDmx;
-	StoreMotors storeMotors;
-
-	struct TSparkFunStores sparkFunStores;
-	sparkFunStores.pSparkFunDmxParamsStore = &storeSparkFunDmx;
-	sparkFunStores.pModeParamsStore = &storeMotors;
-	sparkFunStores.pMotorParamsStore = &storeMotors;
-	sparkFunStores.pL6470ParamsStore = &storeMotors;
-
 	auto *pSparkFunDmx = new SparkFunDmx;
 	assert(pSparkFunDmx != nullptr);
-
-	pSparkFunDmx->ReadConfigFiles(&sparkFunStores);
-	pSparkFunDmx->SetModeStore(&storeMotors);
+	pSparkFunDmx->ReadConfigFiles();
 
 	pBoard = pSparkFunDmx;
-
-	StoreTLC59711 storeTLC59711;
-	TLC59711DmxParams pwmledparms(&storeTLC59711);
-
 	bool isLedTypeSet = false;
 
-	if (pwmledparms.Load()) {
-		if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
-			auto *pTLC59711Dmx = new TLC59711Dmx;
-			assert(pTLC59711Dmx != nullptr);
-			pTLC59711Dmx->SetTLC59711DmxStore(&storeTLC59711);
-			pwmledparms.Dump();
-			pwmledparms.Set(pTLC59711Dmx);
+	TLC59711DmxParams pwmledparms;
+	pwmledparms.Load();
 
-			display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
+	if ((isLedTypeSet = pwmledparms.IsSetLedType()) == true) {
+		auto *pTLC59711Dmx = new TLC59711Dmx;
+		assert(pTLC59711Dmx != nullptr);
+		pwmledparms.Set(pTLC59711Dmx);
 
-			auto *pChain = new LightSetChain;
-			assert(pChain != nullptr);
+		display.Printf(7, "%s:%d", pwmledparms.GetType(pwmledparms.GetLedType()), pwmledparms.GetLedCount());
 
-			pChain->Add(pBoard, 0);
-			pChain->Add(pTLC59711Dmx, 1);
-			pChain->Dump();
+		auto *pChain = new LightSetChain;
+		assert(pChain != nullptr);
 
-			pBoard = pChain;
-		}
+		pChain->Add(pBoard, 0);
+		pChain->Add(pTLC59711Dmx, 1);
+		pChain->Dump();
+
+		pBoard = pChain;
 	}
 
 	char aDescription[64];
@@ -152,34 +124,22 @@ void main() {
 	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
-
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
-		rdmSensorsParams.Set();
-	}
+	RDMSensorsParams rdmSensorsParams;
+	rdmSensorsParams.Load();
+	rdmSensorsParams.Set();
 
 #if defined (ENABLE_RDM_SUBDEVICES)
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
-
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
-		rdmSubDevicesParams.Set();
-	}
+	RDMSubDevicesParams rdmSubDevicesParams;
+	rdmSubDevicesParams.Load();
+	rdmSubDevicesParams.Set();
 #endif
 
 	rdmResponder.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&rdmResponder);
-	}
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&rdmResponder);
 
 	rdmResponder.Start();
 	rdmResponder.Print();

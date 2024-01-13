@@ -34,7 +34,6 @@
 #include "ws28xx.h"
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
-#include "pixeldmxstore.h"
 #include "pixeldmxhandler.h"
 
 class WS28xxDmx final: public LightSet {
@@ -66,10 +65,6 @@ public:
 
 	void Print() override {
 		m_pixelDmxConfiguration.Print();
-	}
-
-	void SetWS28xxDmxStore(PixelDmxStore *pWS28xxDmxStore) {
-		m_pWS28xxDmxStore = pWS28xxDmxStore;
 	}
 
 	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
@@ -126,7 +121,6 @@ private:
 	uint16_t m_nDmxFootprint;
 
 	WS28xx *m_pWS28xx { nullptr };
-	PixelDmxStore *m_pWS28xxDmxStore { nullptr };
 	PixelDmxHandler *m_pPixelDmxHandler { nullptr };
 
 	bool m_bIsStarted { false };

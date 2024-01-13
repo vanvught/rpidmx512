@@ -135,3 +135,22 @@ void phy_customized_status(PhyStatus& phyStatus) {
 #endif
 }
 }  // namespace net
+
+namespace remoteconfig {
+namespace dsa {
+uint32_t json_get_phystatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"message\":\"Not implemented\"}\n"));
+	return nLength;
+}
+
+uint32_t json_get_portstatus(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"message\":\"Not implemented\"}\n"));
+	return nLength;
+}
+
+uint32_t json_get_vlantable(char *pOutBuffer, const uint32_t nOutBufferSize) {
+	const auto nLength = static_cast<uint32_t>(snprintf(pOutBuffer, nOutBufferSize, "{\"message\":\"Not implemented\"}\n"));
+	return nLength;
+}
+}  // namespace dsa
+}  // namespace remoteconfig

@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicemcp23s17.h"
+#include "spi/rdmsubdevicemcp23s17.h"
 
 #include "mcp23s17.h"
 

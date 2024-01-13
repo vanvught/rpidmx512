@@ -2,7 +2,7 @@
  * @file servo.cpp
  *
  */
-/* Copyright (C) 2017-2018 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,6 +30,8 @@
 #include "bcm2835.h"
 #include "pca9685servo.h"
 
+#define ANGLE(x)	(static_cast<uint8_t>(x))
+
 int main(int argc, char **argv) {
 	if (getuid() != 0) {
 		fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
@@ -41,7 +43,7 @@ int main(int argc, char **argv) {
 		return -2;
 	}
 
-	PCA9685Servo servo;
+	PCA9685Servo servo(pca9685::I2C_ADDRESS_DEFAULT);
 
 	// MG90S Micro Servo
 	servo.SetLeftUs(700);

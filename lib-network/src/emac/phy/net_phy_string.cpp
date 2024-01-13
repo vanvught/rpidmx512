@@ -33,7 +33,7 @@
 #endif
 
 namespace net {
-static constexpr char SPEED[3][10] = { "10baseT", "100baseT", "1000baseT" };
+static constexpr char SPEED[3][10] = { "10baseT", "100baseTX", "1000baseT" };
 
 const char *phy_string_get_link(const Link link) {
 	return link == Link::STATE_UP ? "up" : "down";

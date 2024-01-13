@@ -1,11 +1,13 @@
 #!/bin/bash
-NPROC=1
+NPROC=2
 
 if [ "$(uname)" == "Darwin" ]; then
      NPROC=$(sysctl -a | grep machdep.cpu.core_count | cut -d ':' -f 2)     
 elif [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
      NPROC=$(nproc)
 fi
+
+let NPROC--
 
 echo $1 $2 $3
 

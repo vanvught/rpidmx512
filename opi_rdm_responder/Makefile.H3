@@ -1,7 +1,7 @@
 PLATFORM=ORANGE_PI
 
 DEFINES=RDM_RESPONDER 
-DEFINES+=ENABLE_RDM_SUBDEVICES
+#DEFINES+=ENABLE_RDM_SUBDEVICES CONFIG_RDM_SUBDEVICES_USE_I2C
 DEFINES+=ENABLE_RDM_SELF_TEST
 DEFINES+=ENABLE_RDM_MANUFACTURER_PIDS
 
@@ -22,4 +22,5 @@ SRCDIR=firmware lib
 include ../firmware-template-h3/Rules.mk
 
 prerequisites:
-	./generate_sofware_version_id.sh
+	@echo "constexpr uint32_t DEVICE_SOFTWARE_VERSION_ID="$(shell date "+%s")";" > ./include/sofware_version_id.h
+

@@ -29,6 +29,7 @@
 #include <cstring>
 #include <cassert>
 
+#include "rdm_message_print.h"
 #include "rdm.h"
 #include "rdm_e120.h"
 
@@ -47,12 +48,10 @@ public:
 		m_message.param_data_length = 0;
 	}
 
-#if defined (RDM_CONTROLLER)
 	void SetPortID(const uint8_t nPortID) {
 		assert(nPortID > 0);
 		m_message.slot16.port_id = nPortID;
 	}
-#endif
 
 	void SetSrcUid(const uint8_t *SrcUid){
 		memcpy(m_message.source_uid, SrcUid, RDM_UID_SIZE);
@@ -85,16 +84,12 @@ public:
 		m_message.message_length = static_cast<uint8_t>(m_message.message_length + nLength);
 	}
 
-	void Send(uint32_t nPortIndex, uint32_t nSpacingMicros = 0) {
+	void Send(const uint32_t nPortIndex) {
 #ifndef NDEBUG
-		RDMMessage::Print(reinterpret_cast<const uint8_t *>(&m_message));
+		rdm::message_print(reinterpret_cast<const uint8_t *>(&m_message));
 #endif
-		Rdm::Send(nPortIndex, &m_message, nSpacingMicros);
+		Rdm::Send(nPortIndex, &m_message);
 	}
-
-public:
-	static void Print(const uint8_t *pRdmData);
-	static void PrintNoSc(const uint8_t *pRdmDataNoSc);
 
 private:
 	TRdmMessage m_message;

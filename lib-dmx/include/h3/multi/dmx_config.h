@@ -31,8 +31,13 @@
 namespace dmx {
 namespace config {
 namespace max {
-static constexpr auto OUT = 4U;
-static constexpr auto IN = 4U;
+#if defined(ORANGE_PI_ONE)
+ static constexpr auto OUT = 4U;
+ static constexpr auto IN = 4U;
+#else
+ static constexpr auto OUT = 2U;
+ static constexpr auto IN = 2U;
+#endif
 }  // namespace max
 }  // namespace config
 }  // namespace dmx

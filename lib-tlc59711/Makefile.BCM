@@ -1,7 +1,6 @@
-#
-DEFINES = NDEBUG
-#
-EXTRA_INCLUDES = ../lib-hal/include
+DEFINES=NDEBUG
+
+EXTRA_INCLUDES=
 
 include ../firmware-template-bcm/lib/Rules.mk
 	

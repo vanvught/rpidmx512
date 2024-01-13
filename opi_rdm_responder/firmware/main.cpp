@@ -33,6 +33,7 @@
 #endif
 
 #include "displayudf.h"
+#include "displayudfparams.h"
 #include "display_timeout.h"
 
 #include "rdmresponder.h"
@@ -54,20 +55,10 @@
 #if !defined(NO_EMAC)
 # include "remoteconfig.h"
 # include "remoteconfigparams.h"
-# include "storeremoteconfig.h"
-# include "storenetwork.h"
 #endif
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-#include "storerdmdevice.h"
-#include "storepixeldmx.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#if defined (ENABLE_RDM_SUBDEVICES)
-# include "storerdmsubdevices.h"
-#endif
-#include "storedisplayudf.h"
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -85,8 +76,7 @@ void main() {
 	ConfigStore configStore;
 #if !defined(NO_EMAC)
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 #else
 	Network nw;
@@ -103,13 +93,9 @@ void main() {
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
-
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Dump();
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-	}
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	/*
 	 * DMX Footprint = (Channels per Pixel * Groups) <= 512 (1 Universe)
@@ -132,7 +118,6 @@ void main() {
 	}
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetWS28xxDmxStore(&storePixelDmx);
 
 	PixelDmxStartStop pixelDmxStartStop;
 	pixelDmx.SetPixelDmxHandler(&pixelDmxStartStop);
@@ -140,7 +125,7 @@ void main() {
 	const auto nTestPattern = static_cast<pixelpatterns::Pattern>(pixelDmxParams.GetTestPattern());
 	PixelTestPattern pixelTestPattern(nTestPattern, 1);
 
-	PixelDmxParamsRdm pixelDmxParamsRdm(&storePixelDmx);
+	PixelDmxParamsRdm pixelDmxParamsRdm;
 
 	char aDescription[rdm::personality::DESCRIPTION_MAX_LENGTH];
 	snprintf(aDescription, sizeof(aDescription) - 1U, "%s:%u G%u [%s]",
@@ -149,41 +134,33 @@ void main() {
 			pixelDmxConfiguration.GetGroupingCount(),
 			PixelType::GetMap(pixelDmxConfiguration.GetMap()));
 
-	RDMPersonality *personalities[2] = { new RDMPersonality(aDescription, &pixelDmx), new RDMPersonality("Config mode", &pixelDmxParamsRdm) };
+	RDMPersonality *personalities[2] = {
+			new RDMPersonality(aDescription, &pixelDmx),
+			new RDMPersonality("Config mode", &pixelDmxParamsRdm)
+	};
 
 	RDMResponder rdmResponder(personalities, 2);
 
 	rdmResponder.SetProductCategory(E120_PRODUCT_CATEGORY_FIXTURE);
 	rdmResponder.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 
-	StoreRDMSensors storeRdmSensors;
-	RDMSensorsParams rdmSensorsParams(&storeRdmSensors);
+	RDMSensorsParams rdmSensorsParams;
 
-	if (rdmSensorsParams.Load()) {
-		rdmSensorsParams.Dump();
-		rdmSensorsParams.Set();
-	}
+	rdmSensorsParams.Load();
+	rdmSensorsParams.Set();
 
 #if defined (ENABLE_RDM_SUBDEVICES)
-	StoreRDMSubDevices storeRdmSubDevices;
-	RDMSubDevicesParams rdmSubDevicesParams(&storeRdmSubDevices);
+	RDMSubDevicesParams rdmSubDevicesParams;
 
-	if (rdmSubDevicesParams.Load()) {
-		rdmSubDevicesParams.Dump();
-		rdmSubDevicesParams.Set();
-	}
+	rdmSubDevicesParams.Load();
+	rdmSubDevicesParams.Set();
 #endif
 
 	rdmResponder.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	rdmResponder.SetRDMDeviceStore(&storeRdmDevice);
-
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&rdmResponder);
-	}
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&rdmResponder);
 
 	rdmResponder.Start();
 	rdmResponder.DmxDisableOutput(!isConfigMode && (nTestPattern != pixelpatterns::Pattern::NONE));
@@ -205,13 +182,9 @@ void main() {
 #if !defined(NO_EMAC)
 	RemoteConfig remoteConfig(remoteconfig::Node::RDMRESPONDER, remoteconfig::Output::PIXEL);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
@@ -221,15 +194,13 @@ void main() {
 	display.Set(2, displayudf::Labels::VERSION);
 	display.Set(6, displayudf::Labels::DMX_START_ADDRESS);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+	DisplayUdfParams displayUdfParams;
 
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show();
+
 	display.Printf(7, "%s:%d G%d %s",
 			PixelType::GetType(pixelDmxConfiguration.GetType()),
 			pixelDmxConfiguration.GetCount(),

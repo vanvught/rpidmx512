@@ -28,18 +28,6 @@
 
 #define FUNC_PREFIX(x) h3_##x
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdint.h>
-
-extern void udelay(uint32_t);
-
 #include "h3_board.h"
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* H3_HAL_API_H_ */

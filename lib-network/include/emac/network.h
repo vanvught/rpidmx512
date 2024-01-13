@@ -45,8 +45,8 @@
 
 class Network {
 public:
-	Network(NetworkParamsStore *pNetworkParamsStore);
-	~Network() {}
+	Network();
+	~Network() = default;
 
 	void Print();
 
@@ -274,8 +274,6 @@ private:
 	char m_aDomainName[network::DOMAINNAME_SIZE];
 	uint8_t m_aNetMacaddr[network::MAC_SIZE];
 	char m_aIfName[IFNAMSIZ];
-
-	NetworkStore *m_pNetworkStore { nullptr };
 
 	struct QueuedConfig {
 		static constexpr uint32_t NONE = 0;

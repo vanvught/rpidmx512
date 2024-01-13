@@ -5,7 +5,7 @@
 /**
  * Art-Net Designed by and Copyright Artistic Licence Holdings Ltd.
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,7 @@
 #include "artnetnode.h"
 #include "artnetconst.h"
 #include "artnetnode_internal.h"
+#include "artnetstore.h"
 
 #include "lightsetdata.h"
 #include "hardware.h"
@@ -163,10 +164,7 @@ void ArtNetNode::SetUniverseSwitch(const uint32_t nPortIndex, const lightset::Po
 #endif
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveUniverseSwitch(nPortIndex, nAddress);
-		}
-
+		ArtNetStore::SaveUniverseSwitch(nPortIndex, nAddress);
 		artnet::display_universe_switch(nPortIndex, nAddress);
 
 #if defined (ARTNET_HAVE_DMXIN)
@@ -184,8 +182,8 @@ void ArtNetNode::SetSubnetSwitch(const uint32_t nPortIndex, const uint8_t nSubne
 	m_Node.Port[nPortIndex].SubSwitch = nSubnetSwitch;
 	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
 
-	if ((m_pArtNetStore != nullptr) && (m_State.status == artnetnode::Status::ON)) {
-		m_pArtNetStore->SaveSubnetSwitch(nPortIndex, nSubnetSwitch);
+	if (m_State.status == artnetnode::Status::ON) {
+		ArtNetStore::SaveSubnetSwitch(nPortIndex, nSubnetSwitch);
 	}
 
 	DEBUG_EXIT
@@ -198,8 +196,8 @@ void ArtNetNode::SetNetSwitch(const uint32_t nPortIndex, const uint8_t nNetSwitc
 	m_Node.Port[nPortIndex].NetSwitch = nNetSwitch;
 	m_Node.Port[nPortIndex].PortAddress = MakePortAddress(m_Node.Port[nPortIndex].PortAddress, nPortIndex);
 
-	if ((m_pArtNetStore != nullptr) && (m_State.status == artnetnode::Status::ON)) {
-		m_pArtNetStore->SaveNetSwitch(nPortIndex, nNetSwitch);
+	if (m_State.status == artnetnode::Status::ON) {
+		ArtNetStore::SaveNetSwitch(nPortIndex, nNetSwitch);
 	}
 
 	DEBUG_EXIT
@@ -219,10 +217,7 @@ void ArtNetNode::SetMergeMode(const uint32_t nPortIndex, const lightset::MergeMo
 #endif
 
 	if (m_State.status == artnetnode::Status::ON) {
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveMergeMode(nPortIndex, mergeMode);
-		}
-
+		ArtNetStore::SaveMergeMode(nPortIndex, mergeMode);
 		artnet::display_merge_mode(nPortIndex, mergeMode);
 	}
 }
@@ -277,11 +272,7 @@ void ArtNetNode::SetFailSafe(const artnetnode::FailSafe failsafe) {
 
 	if (m_State.status == artnetnode::Status::ON) {
 		const auto nFailSafe = static_cast<uint8_t>(static_cast<uint8_t>(failsafe) & 0x3);
-
-		if (m_pArtNetStore != nullptr) {
-			m_pArtNetStore->SaveFailSafe(nFailSafe);
-		}
-
+		ArtNetStore::SaveFailSafe(nFailSafe);
 		artnet::display_failsafe(nFailSafe);
 	}
 
@@ -483,14 +474,14 @@ void ArtNetNode::HandleAddress() {
 	case artnet::PortCommand::RDM_ENABLE1:
 	case artnet::PortCommand::RDM_ENABLE2:
 	case artnet::PortCommand::RDM_ENABLE3:
-		SetRmd(nPage, true);
+		SetRdm(nPage, true);
 		break;
 
 	case artnet::PortCommand::RDM_DISABLE0:
 	case artnet::PortCommand::RDM_DISABLE1:
 	case artnet::PortCommand::RDM_DISABLE2:
 	case artnet::PortCommand::RDM_DISABLE3:
-		SetRmd(nPage, false);
+		SetRdm(nPage, false);
 		break;
 #endif
 	default:

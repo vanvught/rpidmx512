@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "dmxmonitor.h"
+#include "configstore.h"
 
 struct TDMXMonitorParams {
 	uint32_t nSetList;
@@ -38,47 +39,47 @@ struct TDMXMonitorParams {
 } __attribute__((packed));
 
 struct DMXMonitorParamsMask {
-	static constexpr auto START_ADDRESS = (1U << 0);
-	static constexpr auto MAX_CHANNELS = (1U << 1);
-	static constexpr auto FORMAT = (1U << 2);
+	static constexpr uint32_t START_ADDRESS = (1U << 0);
+	static constexpr uint32_t MAX_CHANNELS = (1U << 1);
+	static constexpr uint32_t FORMAT = (1U << 2);
 };
 
-class DMXMonitorParamsStore {
+class DmxMonitorParamsStore {
 public:
-	virtual ~DMXMonitorParamsStore() {
+	static void Update(const struct TDMXMonitorParams *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::MONITOR, pParams, sizeof(struct TDMXMonitorParams));
 	}
 
-	virtual void Update(const struct TDMXMonitorParams *pDMXMonitorParams)=0;
-	virtual void Copy(struct TDMXMonitorParams *pDMXMonitorParams)=0;
+	static void Copy(struct TDMXMonitorParams *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::MONITOR, pParams, sizeof(struct TDMXMonitorParams));
+	}
 };
 
 class DMXMonitorParams {
 public:
-	DMXMonitorParams(DMXMonitorParamsStore *pDMXMonitorParamsStore);
+	DMXMonitorParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TDMXMonitorParams *ptDMXMonitorParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct TDMXMonitorParams *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 	
 	void Set(DMXMonitor *pDMXMonitor);
-	
-	void Dump();
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tDMXMonitorParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    DMXMonitorParamsStore *m_pDMXMonitorParamsStore;
-    struct TDMXMonitorParams m_tDMXMonitorParams;
+    struct TDMXMonitorParams m_Params;
 };
 
 #endif /* DMXMONITORPARAMS_H_ */

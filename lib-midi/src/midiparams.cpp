@@ -1,7 +1,7 @@
 /**
  * @file midiparams.cpp
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 
 #include "midiparams.h"
 #include "midiparamsconst.h"
-
 #include "midi.h"
 
 #include "readconfigfile.h"
@@ -40,49 +39,49 @@
 
 using namespace midi;
 
-MidiParams::MidiParams(MidiParamsStore* pMidiParamsStore): m_pMidiParamsStore(pMidiParamsStore) {
-	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
-	m_tMidiParams.nBaudrate = defaults::BAUDRATE;
+MidiParams::MidiParams() {
+	m_Params.nSetList = midiparams::Mask::ACTIVE_SENSE;
+	m_Params.nBaudrate = defaults::BAUDRATE;
 }
 
-bool MidiParams::Load() {
-	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
+void MidiParams::Load() {
+	DEBUG_ENTRY
+
+	m_Params.nSetList = midiparams::Mask::ACTIVE_SENSE;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(MidiParams::staticCallbackFunction, this);
 
 	if (configfile.Read(MidiParamsConst::FILE_NAME)) {
-		// There is a configuration file
-		if (m_pMidiParamsStore != nullptr) {
-			m_pMidiParamsStore->Update(&m_tMidiParams);
-		}
+		MidiParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pMidiParamsStore != nullptr) {
-		m_pMidiParamsStore->Copy(&m_tMidiParams);
-	} else {
-		return false;
-	}
+	MidiParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void MidiParams::Load(const char* pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
-	assert(m_pMidiParamsStore != nullptr);
 
-	if (m_pMidiParamsStore == nullptr) {
-		return;
-	}
-
-	m_tMidiParams.nSetList = MidiParamsMask::ACTIVE_SENSE;
+	m_Params.nSetList = midiparams::Mask::ACTIVE_SENSE;
 
 	ReadConfigFile config(MidiParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pMidiParamsStore->Update(&m_tMidiParams);
+	MidiParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void MidiParams::callbackFunction(const char* pLine) {
@@ -92,11 +91,11 @@ void MidiParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint32(pLine, MidiParamsConst::BAUDRATE, nValue32) == Sscan::OK) {
 		if ((nValue32 != defaults::BAUDRATE) && (nValue32 >= 9600) && (nValue32 <= 115200)) {
-			m_tMidiParams.nBaudrate = nValue32;
-			m_tMidiParams.nSetList |= MidiParamsMask::BAUDRATE;
+			m_Params.nBaudrate = nValue32;
+			m_Params.nSetList |= midiparams::Mask::BAUDRATE;
 		} else {
-			m_tMidiParams.nBaudrate = defaults::BAUDRATE;
-			m_tMidiParams.nSetList &= ~MidiParamsMask::BAUDRATE;
+			m_Params.nBaudrate = defaults::BAUDRATE;
+			m_Params.nSetList &= ~midiparams::Mask::BAUDRATE;
 		}
 		return;
 	}
@@ -105,37 +104,22 @@ void MidiParams::callbackFunction(const char* pLine) {
 
 	if (Sscan::Uint8(pLine, MidiParamsConst::ACTIVE_SENSE, nValue8) == Sscan::OK) {
 		if (nValue8 != 0) {
-			m_tMidiParams.nSetList |= MidiParamsMask::ACTIVE_SENSE;
+			m_Params.nSetList |= midiparams::Mask::ACTIVE_SENSE;
 		} else {
-			m_tMidiParams.nSetList &= ~MidiParamsMask::ACTIVE_SENSE;
+			m_Params.nSetList &= ~midiparams::Mask::ACTIVE_SENSE;
 		}
 		return;
 	}
 }
 
 void MidiParams::Set() {
-	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
-		Midi::Get()->SetBaudrate(m_tMidiParams.nBaudrate);
+	if (isMaskSet(midiparams::Mask::BAUDRATE)) {
+		Midi::Get()->SetBaudrate(m_Params.nBaudrate);
 	}
 
-	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
+	if (isMaskSet(midiparams::Mask::ACTIVE_SENSE)) {
 		Midi::Get()->SetActiveSense(true);
 	}
-}
-
-void MidiParams::Dump() {
-#ifndef NDEBUG
-	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, MidiParamsConst::FILE_NAME);
-
-	if (isMaskSet(MidiParamsMask::BAUDRATE)) {
-		printf(" %s=%d\n", MidiParamsConst::BAUDRATE, m_tMidiParams.nBaudrate);
-	}
-
-	if (isMaskSet(MidiParamsMask::ACTIVE_SENSE)) {
-		printf(" %s=1 [Yes]\n", MidiParamsConst::ACTIVE_SENSE);
-	}
-
-#endif
 }
 
 void MidiParams::staticCallbackFunction(void *p, const char *s) {
@@ -143,4 +127,16 @@ void MidiParams::staticCallbackFunction(void *p, const char *s) {
 	assert(s != nullptr);
 
 	(static_cast<MidiParams*>(p))->callbackFunction(s);
+}
+
+void MidiParams::Dump() {
+	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, MidiParamsConst::FILE_NAME);
+
+	if (isMaskSet(midiparams::Mask::BAUDRATE)) {
+		printf(" %s=%d\n", MidiParamsConst::BAUDRATE, m_Params.nBaudrate);
+	}
+
+	if (isMaskSet(midiparams::Mask::ACTIVE_SENSE)) {
+		printf(" %s=1 [Yes]\n", MidiParamsConst::ACTIVE_SENSE);
+	}
 }

@@ -2,7 +2,7 @@
  * @file flashcodeinstallparams.cpp
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,7 @@
 #endif
 
 #include <cstdint>
-#ifndef NDEBUG
-# include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
 #include "flashcodeinstallparams.h"
@@ -40,11 +38,21 @@
 #include "readconfigfile.h"
 #include "sscan.h"
 
+#include "debug.h"
+
 bool FlashCodeInstallParams::Load() {
+	DEBUG_ENTRY
+
 	m_nSetList = 0;
 
 	ReadConfigFile configfile(FlashCodeInstallParams::staticCallbackFunction, this);
-	return configfile.Read(FlashCodeInstallParamsConst::FILE_NAME);
+	const auto b = configfile.Read(FlashCodeInstallParamsConst::FILE_NAME);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
+	return b;
 }
 
 void FlashCodeInstallParams::callbackFunction(const char *pLine) {
@@ -79,7 +87,6 @@ void FlashCodeInstallParams::staticCallbackFunction(void *p, const char *s) {
 }
 
 void FlashCodeInstallParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, FlashCodeInstallParamsConst::FILE_NAME);
 
 	if (isMaskSet(FlashCodeInstallParamsMask::INSTALL_UBOOT)) {
@@ -89,5 +96,4 @@ void FlashCodeInstallParams::Dump() {
 	if (isMaskSet(FlashCodeInstallParamsMask::INSTALL_UIMAGE)) {
 		printf(" %s=1 [Yes]\n", FlashCodeInstallParamsConst::INSTALL_UIMAGE);
 	}
-#endif
 }

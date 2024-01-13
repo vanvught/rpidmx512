@@ -2,7 +2,7 @@
  * @file buttonsmcp.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ bool ButtonsMcp::Start() {
 	m_I2C.WriteRegister(mcp23x17::REG_GPIOB, static_cast<uint8_t>(0x00));	// All led's Off
 
 	FUNC_PREFIX(gpio_fsel(gpio::interrupt, GPIO_FSEL_INPUT));
-	FUNC_PREFIX(gpio_pud(gpio::interrupt, GPIO_PULL_UP));
+	FUNC_PREFIX(gpio_set_pud(gpio::interrupt, GPIO_PULL_UP));
 
 	m_nButtonsCount = 8;
 

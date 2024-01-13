@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "rdmsubdevices.h"
+#include "configstore.h"
 
 namespace rdm {
 namespace subdevicesparams {
@@ -50,41 +51,37 @@ static_assert(sizeof(struct Params) <= rdm::subdevices::STORE, "struct Params is
 
 class RDMSubDevicesParamsStore {
 public:
-	virtual ~RDMSubDevicesParamsStore() {}
+	static void Update(const rdm::subdevicesparams::Params *pParams)  {
+		ConfigStore::Get()->Update(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+	}
 
-	virtual void Update(const rdm::subdevicesparams::Params *pParams)=0;
-	virtual void Copy(rdm::subdevicesparams::Params *pParams)=0;
+	static void Copy(rdm::subdevicesparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::RDMSUBDEVICES, pParams, sizeof(struct rdm::subdevicesparams::Params));
+	}
 };
 
 class RDMSubDevicesParams {
 public:
-	RDMSubDevicesParams(RDMSubDevicesParamsStore *pRDMSubDevicesParamsStore);
+	RDMSubDevicesParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const rdm::subdevicesparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-		if (m_pRDMSubDevicesParamsStore == nullptr) {
-			nSize = 0;
-			return;
-		}
-
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
-
-	void Dump();
 
 	void Set();
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool Add(RDMSubDevice *pRDMSubDevice);
 
 private:
-    RDMSubDevicesParamsStore *m_pRDMSubDevicesParamsStore;
     rdm::subdevicesparams::Params m_Params;
 };
 

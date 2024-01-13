@@ -2,7 +2,7 @@
  * @file rgbpanelparams.h
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,10 @@
 #include <cstdint>
 
 #include "rgbpanelconst.h"
+#include "configstore.h"
 
-struct TRgbPanelParams {
+namespace rgbpanelparams {
+struct Params {
 	uint32_t nSetList;
 	uint8_t nCols;
 	uint8_t nRows;
@@ -38,65 +40,66 @@ struct TRgbPanelParams {
 	uint8_t nType;
 } __attribute__((packed));
 
-static_assert(sizeof(struct TRgbPanelParams) <= 32, "struct TRgbPanelParams is too large");
+static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
 
-struct RgbPanelParamsMask {
+struct Mask {
 	static constexpr auto COLS = (1U << 0);
 	static constexpr auto ROWS = (1U << 1);
 	static constexpr auto CHAIN = (1U << 2);
 	static constexpr auto TYPE = (1U << 3);
 };
+}  // namespace rgbpanelparams
 
 class RgbPanelParamsStore {
 public:
-	virtual ~RgbPanelParamsStore() {
+	static void Update(const struct rgbpanelparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::RGBPANEL, pParams, sizeof(struct rgbpanelparams::Params));
 	}
 
-	virtual void Update(const struct TRgbPanelParams *pRgbPanelParams)=0;
-	virtual void Copy(struct TRgbPanelParams *pRgbPanelParams)=0;
+	static void Copy(struct rgbpanelparams::Params *pRgbPanelParamss) {
+		ConfigStore::Get()->Copy(configstore::Store::RGBPANEL, pRgbPanelParamss, sizeof(struct rgbpanelparams::Params));
+	}
 };
 
 class RgbPanelParams {
 public:
-	RgbPanelParams(RgbPanelParamsStore *pRgbPanelParamsStore);
+	RgbPanelParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TRgbPanelParams *pRgbPanelParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const struct rgbpanelparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize) {
 		Builder(nullptr, pBuffer, nLength, nSize);
 	}
 
-	void Dump();
-
 	uint32_t GetCols() const {
-		return m_tRgbPanelParams.nCols;
+		return m_Params.nCols;
 	}
 
 	uint32_t GetRows() const {
-		return m_tRgbPanelParams.nRows;
+		return m_Params.nRows;
 	}
 
 	uint32_t GetChain() const {
-		return m_tRgbPanelParams.nChain;
+		return m_Params.nChain;
 	}
 
 	rgbpanel::Types GetType() const {
-		return static_cast<rgbpanel::Types>(m_tRgbPanelParams.nType);
+		return static_cast<rgbpanel::Types>(m_Params.nType);
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
 	void callbackFunction(const char *pLine);
 	bool isMaskSet(uint32_t nMask) const {
-		return (m_tRgbPanelParams.nSetList & nMask) == nMask;
+		return (m_Params.nSetList & nMask) == nMask;
 	}
 
 private:
-	RgbPanelParamsStore *m_pRgbPanelParamsStore;
-	struct TRgbPanelParams m_tRgbPanelParams;
+	rgbpanelparams::Params m_Params;
 };
 
 #endif /* RGBPANELPARAMS_H_ */

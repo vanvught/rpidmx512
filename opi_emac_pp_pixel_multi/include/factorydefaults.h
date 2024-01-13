@@ -28,7 +28,7 @@
 
 #include "remoteconfig.h"
 #include "configstore.h"
-#include "storenetwork.h"
+#include "networkstore.h"
 
 namespace rdm {
 namespace device {
@@ -37,7 +37,7 @@ namespace responder {
 void factorydefaults() {
 	RemoteConfig::Get()->SetDisable(false);
 	ConfigStore::Get()->ResetSetList(configstore::Store::RDMDEVICE);
-	StoreNetwork::Get()->SaveDhcp(true);
+	NetworkStore::SaveDhcp(true);
 }
 
 }  // namespace responder

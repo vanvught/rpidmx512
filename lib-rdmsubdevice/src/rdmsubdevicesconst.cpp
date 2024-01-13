@@ -29,8 +29,5 @@
 
 const char RDMSubDevicesConst::PARAMS_FILE_NAME[] = "subdev.txt";
 
-const char RDMSubDevicesConst::TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9] = {
-		"bw7fets", "bwdimmer", "bwdio", "bwlcd", "bwrelay",
-		"mcp23s08", "mcp23s17",
-		"mcp4822", "mcp4902" };
+
 

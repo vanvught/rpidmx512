@@ -1,7 +1,7 @@
 /**
  * @file midiparams.h
  */
-/* Copyright (C) 2019-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,60 +27,64 @@
 
 #include <cstdint>
 
-struct TMidiParams {
+#include "configstore.h"
+
+namespace midiparams {
+struct Params {
 	uint32_t nSetList;
 	uint32_t nBaudrate;
 } __attribute__((packed));
 
-static_assert(sizeof(struct TMidiParams) <= 32, "struct TMidiParams is too large");
+static_assert(sizeof(struct Params) <= 32, "struct Params is too large");
 
-struct MidiParamsMask {
-	static constexpr auto BAUDRATE = (1U << 0);
-	static constexpr auto ACTIVE_SENSE = (1U << 1);
+struct Mask {
+	static constexpr uint32_t BAUDRATE = (1U << 0);
+	static constexpr uint32_t ACTIVE_SENSE = (1U << 1);
 };
+}  // namespace midiparams
 
 class MidiParamsStore {
 public:
-	virtual ~MidiParamsStore() {
+	static void Update(const struct midiparams::Params *pMidiParams) {
+		ConfigStore::Get()->Update(configstore::Store::MIDI, pMidiParams, sizeof(struct midiparams::Params));
 	}
 
-	virtual void Update(const struct TMidiParams *pMidiParams)=0;
-	virtual void Copy(struct TMidiParams *pMidiParams)=0;
+	static void Copy(struct midiparams::Params *pMidiParams) {
+		ConfigStore::Get()->Copy(configstore::Store::MIDI, pMidiParams, sizeof(struct midiparams::Params));
+	}
 };
 
 class MidiParams {
 public:
-	MidiParams(MidiParamsStore *pMidiParamsStore);
+	MidiParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
-	void Builder(const struct TMidiParams *ptMidiParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(const midiparams::Params *ptMidiParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set();
 
-	void Dump();
-
 	uint32_t GetBaudrate() const {
-		return m_tMidiParams.nBaudrate;
+		return m_Params.nBaudrate;
 	}
 
 	bool GetActiveSense() const {
-		return isMaskSet(MidiParamsMask::ACTIVE_SENSE);
+		return isMaskSet(midiparams::Mask::ACTIVE_SENSE);
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tMidiParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-    MidiParamsStore *m_pMidiParamsStore;
-    struct TMidiParams m_tMidiParams;
+    midiparams::Params m_Params;
 };
 
 #endif /* MIDIPARAMS_H_ */

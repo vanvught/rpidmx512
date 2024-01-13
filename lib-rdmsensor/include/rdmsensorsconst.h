@@ -26,19 +26,8 @@
 #ifndef RDMSENSORSCONST_H_
 #define RDMSENSORSCONST_H_
 
-#include <cstdint>
-
-namespace rdm {
-namespace sensors {
-enum class Types {
-	BH170, HTU21D, INA219, MCP9808, SI7021, MCP3424, UNDEFINED
-};
-}  // namespace sensors
-}  // namespace rdmsensors
-
 struct RDMSensorsConst {
 	static const char PARAMS_FILE_NAME[];
-	static const char TYPE[static_cast<uint32_t>(rdm::sensors::Types::UNDEFINED)][8];
 };
 
 #endif /* RDMSENSORSCONST_H_ */

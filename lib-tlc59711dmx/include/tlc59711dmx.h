@@ -31,7 +31,6 @@
 #include "lightset.h"
 
 #include "tlc59711.h"
-#include "tlc59711dmxstore.h"
 
 namespace tlc59711 {
 enum class Type {
@@ -73,10 +72,6 @@ public:
 		return m_nSpiSpeedHz;
 	}
 
-	void SetTLC59711DmxStore(TLC59711DmxStore *pTLC59711Store) {
-		m_pTLC59711DmxStore = pTLC59711Store;
-	}
-
 public: // RDM
 	bool SetDmxStartAddress(uint16_t nDmxStartAddress) override;
 
@@ -111,7 +106,6 @@ private:
 #endif
 	tlc59711::Type m_type { tlc59711::Type::RGB };
 
-	TLC59711DmxStore *m_pTLC59711DmxStore { nullptr };
 	static TLC59711Dmx *s_pThis;
 };
 

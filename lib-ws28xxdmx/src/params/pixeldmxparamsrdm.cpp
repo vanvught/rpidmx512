@@ -27,8 +27,8 @@
 #include <cassert>
 
 #include "pixeldmxparamsrdm.h"
-#include "pixeltype.h"
 #include "pixeldmxstore.h"
+#include "pixeltype.h"
 
 #include "lightset.h"
 
@@ -36,13 +36,10 @@
 
 using namespace pixeldmx::paramsdmx;
 
-PixelDmxStore *PixelDmxParamsRdm::s_pWS28xxDmxStore;
 uint8_t PixelDmxParamsRdm::s_Data;
 
-PixelDmxParamsRdm::PixelDmxParamsRdm(PixelDmxStore *pWS28xxDmxStore) {
+PixelDmxParamsRdm::PixelDmxParamsRdm() {
 	DEBUG_ENTRY
-
-	s_pWS28xxDmxStore = pWS28xxDmxStore;
 
 	DEBUG_EXIT
 }
@@ -90,17 +87,17 @@ void PixelDmxParamsRdm::SetData(__attribute__((unused)) uint32_t nPortIndex, con
 
 			auto nData = pData[static_cast<uint32_t>(SlotInfo::TYPE)];
 			auto nUndefined = static_cast<uint8_t>(pixel::Type::UNDEFINED);
-			s_pWS28xxDmxStore->SaveType(nData < nUndefined ? nData : nUndefined);
+			PixelDmxStore::SaveType(nData < nUndefined ? nData : nUndefined);
 
 			// Validation takes place in class PixelDmxConfiguration
-			s_pWS28xxDmxStore->SaveCount(pData[static_cast<uint32_t>(SlotInfo::COUNT)]);
-			s_pWS28xxDmxStore->SaveGroupingCount(pData[static_cast<uint32_t>(SlotInfo::GROUPING_COUNT)]);
+			PixelDmxStore::SaveCount(pData[static_cast<uint32_t>(SlotInfo::COUNT)]);
+			PixelDmxStore::SaveGroupingCount(pData[static_cast<uint32_t>(SlotInfo::GROUPING_COUNT)]);
 
 			nData = pData[static_cast<uint32_t>(SlotInfo::MAP)];
 			nUndefined = static_cast<uint8_t>(pixel::Map::UNDEFINED);
-			s_pWS28xxDmxStore->SaveMap(nData < nUndefined ? nData : nUndefined);
+			PixelDmxStore::SaveMap(nData < nUndefined ? nData : nUndefined);
 
-			s_pWS28xxDmxStore->SaveTestPattern(pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)]);
+			PixelDmxStore::SaveTestPattern(pData[static_cast<uint32_t>(SlotInfo::TEST_PATTERN)]);
 		}
 	}
 

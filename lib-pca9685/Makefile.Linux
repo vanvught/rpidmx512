@@ -1,6 +1,5 @@
-#
-DEFINES = RASPPI NDEBUG
-#
-EXTRA_INCLUDES = ../lib-hal/include
-#
+DEFINES=
+
+EXTRA_INCLUDES=
+
 include ../firmware-template-linux/lib/Rules.mk

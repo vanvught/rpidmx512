@@ -2,7 +2,7 @@
  * @file h3_i2c.h
  *
  */
-/* Copyright (C) 2018-2019 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -41,19 +41,11 @@ typedef enum H3_I2C_RC {
 	H3_I2C_NOK_TOUT = 4
 } h3_i2c_rc_t;
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-extern void h3_i2c_begin(void);
-extern void h3_i2c_end(void);
-extern uint8_t h3_i2c_write(/*@null@*/const char *, uint32_t);
-extern uint8_t h3_i2c_read(/*@out@*/char *, uint32_t);
-extern void h3_i2c_set_baudrate(uint32_t);
-extern void h3_i2c_set_slave_address(uint8_t);
-
-#ifdef __cplusplus
-}
-#endif
+void h3_i2c_begin(void);
+void h3_i2c_end(void);
+uint8_t h3_i2c_write(const char *, uint32_t);
+uint8_t h3_i2c_read(char *, uint32_t);
+void h3_i2c_set_baudrate(uint32_t);
+void h3_i2c_set_slave_address(uint8_t);
 
 #endif /* H3_I2C_H_ */

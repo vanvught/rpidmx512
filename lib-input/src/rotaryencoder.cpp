@@ -70,10 +70,7 @@ static constexpr uint8_t s_StateTableFullStep[7][4] = {
   {fs::CCW_NEXT, fs::CCW_FINAL, fs::CCW_BEGIN, fs::START},
 };
 
-RotaryEncoder::RotaryEncoder(bool bHalfStep) : m_bHalfStep(bHalfStep) {
-}
-
-uint8_t RotaryEncoder::Process(uint8_t nInputAB) {
+uint8_t RotaryEncoder::Process(const uint8_t nInputAB) {
 	DEBUG_PRINTF("%x:%x", m_nState & 0x0F, nInputAB & 0x03);
 
 	if (m_bHalfStep) {

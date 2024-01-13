@@ -6,11 +6,11 @@ AS	= $(CC)
 LD	= $(PREFIX)ld
 AR	= $(PREFIX)ar
 
+$(info [${CURDIR}])
+
 PLATFORM?=ORANGE_PI
 CONSOLE?=
 NO_EXT_LED?=
-
-$(info [${CURDIR}])
 
 ifeq ($(findstring ORANGE_PI_ONE,$(PLATFORM)),ORANGE_PI_ONE)
 else
@@ -25,7 +25,7 @@ SRCDIR+=src/debug
 
 $(info [${SRCDIR}])
 
-INCLUDES:=-I./include -I../include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
+INCLUDES:=-I./include -I../include -I../lib-device/include -I../lib-flash/include -I../lib-configstore/include -I../lib-hal/include -I../lib-debug/include -I../lib-h3/include -I../lib-arm/include 
 INCLUDES+=$(addprefix -I,$(EXTRA_INCLUDES))
 
 DEFINES:=-D$(PLATFORM) $(addprefix -D,$(DISPLAYS)) $(addprefix -D,$(DEFINES))
@@ -37,6 +37,7 @@ endif
 DEFINES+=-DPHY_TYPE=PHY_GENERIC
 DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
+DEFINES+=-DISABLE_INTERNAL_RTC
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI

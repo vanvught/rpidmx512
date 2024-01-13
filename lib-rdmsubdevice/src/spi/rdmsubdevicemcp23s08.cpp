@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicemcp23s08.h"
+#include "spi/rdmsubdevicemcp23s08.h"
 
 #include "mcp23s08.h"
 

@@ -55,11 +55,8 @@
 #include "remoteconfigparams.h"
 
 #include "configstore.h"
-#include "storedisplayudf.h"
-#include "storemonitor.h"
-#include "storenetwork.h"
-#include "storerdmdevice.h"
-#include "storeremoteconfig.h"
+
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -68,16 +65,15 @@ int main(int argc, char **argv) {
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	StoreNetwork storeNetwork;
 	Network nw(argc, argv);
+	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
 	fw.Print();
 	nw.Print();
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
+	DisplayUdfParams displayUdfParams;
 
 	PixelPusher pp;
 
@@ -85,15 +81,10 @@ int main(int argc, char **argv) {
 
 	pp.SetCount(256, nActivePorts, true);
 
-	StoreMonitor storeMonitor;
-	DMXMonitorParams monitorParams(&storeMonitor);
-
 	DMXMonitor monitor;
 
-	if (monitorParams.Load()) {
-		monitorParams.Dump();
-		monitorParams.Set(&monitor);
-	}
+	DMXMonitorParams monitorParams;
+	monitorParams.Load();
 
 	pp.SetOutput(&monitor);
 
@@ -111,48 +102,32 @@ int main(int argc, char **argv) {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_ETHERNET_NODE);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-		rdmDeviceParams.Dump();
-	}
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=PixelPusher");
-	mDns.AddServiceRecord(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
-	mDns.Print();
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::RDMNET_LLRP, "node=RDMNet LLRP Only");
 
 	pp.Print();
 
-	HttpDaemon httpDaemon;
-
 	RemoteConfig remoteConfig(remoteconfig::Node::PP, remoteconfig::Output::MONITOR, nActivePorts);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if (remoteConfigParams.Load()) {
-		remoteConfigParams.Set(&remoteConfig);
-		remoteConfigParams.Dump();
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
 
+	mDns.Print();
 	pp.Start();
 
 	for (;;) {
 		pp.Run();
 		mDns.Run();
-		httpDaemon.Run();
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

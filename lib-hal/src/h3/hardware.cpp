@@ -42,6 +42,12 @@
 # include "i2cdetect.h"
 #endif
 
+#if !defined(DISABLE_RTC)
+# include "hwclock.h"
+#endif
+
+#include "logic_analyzer.h"
+
 namespace soc {
 #if defined (ORANGE_PI)
 	static constexpr char NAME[] = "H2+";
@@ -71,9 +77,13 @@ namespace sysname {
 
 Hardware *Hardware::s_pThis = nullptr;
 
+void hardware_init();
+
 Hardware::Hardware() {
 	assert(s_pThis == nullptr);
 	s_pThis = this;
+
+	hardware_init();
 
 #if defined (DEBUG_I2C)
 	I2cDetect i2cdetect;
@@ -86,6 +96,8 @@ Hardware::Hardware() {
 #endif
 
 	hardware_led_set(1);
+
+	logic_analyzer::init();
 }
 
 const char *Hardware::GetMachine(uint8_t &nLength) {
@@ -113,38 +125,6 @@ const char *Hardware::GetSocName(uint8_t &nLength) {
 	return soc::NAME;
 }
 
-bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
-#if !defined(DISABLE_RTC)
-	rtc_time rtc_time;
-
-	rtc_time.tm_sec = pTime->tm_sec;
-	rtc_time.tm_min = pTime->tm_min;
-	rtc_time.tm_hour = pTime->tm_hour;
-	rtc_time.tm_mday = pTime->tm_mday;
-	rtc_time.tm_mon = pTime->tm_mon;
-	rtc_time.tm_year = pTime->tm_year;
-
-	m_HwClock.Set(&rtc_time);
-
-	return true;
-#else
-	return false;
-#endif
-}
-
-void Hardware::GetTime(struct tm *pTime) {
-	time_t ltime = time(nullptr);
-	const struct tm *local_time = localtime(&ltime);
-
-    pTime->tm_year = local_time->tm_year;
-    pTime->tm_mon = local_time->tm_mon ;
-    pTime->tm_mday = local_time->tm_mday;
-    //
-    pTime->tm_hour = local_time->tm_hour;
-    pTime->tm_min = local_time->tm_min;
-    pTime->tm_sec = local_time->tm_sec;
-}
-
 #include <cstdio>
 
 bool Hardware::Reboot() {
@@ -160,11 +140,11 @@ bool Hardware::Reboot() {
 	invalidate_data_cache();
 
 	h3_gpio_fsel(EXT_SPI_MOSI, GPIO_FSEL_INPUT);
-	h3_gpio_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
+	h3_gpio_set_pud(EXT_SPI_MOSI, GPIO_PULL_DOWN);
 	h3_gpio_fsel(EXT_SPI_CLK, GPIO_FSEL_INPUT);
-	h3_gpio_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
+	h3_gpio_set_pud(EXT_SPI_CLK, GPIO_PULL_DOWN);
 	h3_gpio_fsel(EXT_SPI_CS, GPIO_FSEL_INPUT);
-	h3_gpio_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
+	h3_gpio_set_pud(EXT_SPI_CS, GPIO_PULL_DOWN);
 
 	SetMode(hardware::ledblink::Mode::REBOOT);
 

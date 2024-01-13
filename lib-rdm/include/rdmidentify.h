@@ -41,7 +41,7 @@ enum class Mode : uint8_t {
 class RDMIdentify {
 public:
 	RDMIdentify();
-	~RDMIdentify() {}
+	~RDMIdentify() = default;
 
 	void On() {
 		m_bIsEnabled = true;

@@ -33,6 +33,7 @@
 #include <cassert>
 
 #include "network.h"
+#include "../../config/net_config.h"
 
 #include "debug.h"
 
@@ -42,7 +43,7 @@
 #define MAX_SEGMENT_LENGTH		1400
 
 static uint16_t s_ports_allowed[MAX_PORTS_ALLOWED];
-static struct pollfd poll_set[MAX_PORTS_ALLOWED][4];
+static struct pollfd poll_set[MAX_PORTS_ALLOWED][TCP_MAX_TCBS_ALLOWED];
 static int server_sockfd[MAX_PORTS_ALLOWED];
 static uint8_t s_ReadBuffer[MAX_SEGMENT_LENGTH];
 
@@ -111,16 +112,16 @@ int32_t Network::TcpEnd(const int32_t nHandle) {
 	return -1;
 }
 
-uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32_t &HandleConnection) {
+uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer, uint32_t &HandleConnectionIndex) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
-	const int poll_result = poll(poll_set[nHandle], 4, 0);
+	const int poll_result = poll(poll_set[nHandle], TCP_MAX_TCBS_ALLOWED, 0);
 
 	if (poll_result <= 0) {
 		return poll_result;
 	}
 
-	for (int fd_index = 0; fd_index < 4; fd_index++) {
+	for (int fd_index = 0; fd_index < TCP_MAX_TCBS_ALLOWED; fd_index++) {
 		if (poll_set[nHandle][fd_index].revents & POLLIN) {
 			int current_fd = poll_set[nHandle][fd_index].fd;
 
@@ -173,7 +174,7 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32
 						poll_set[nHandle][fd_index].events = 0;
 						poll_set[nHandle][fd_index].revents = 0;
 					} else {
-						HandleConnection = static_cast<uint32_t>(poll_set[nHandle][fd_index].fd);
+						HandleConnectionIndex = static_cast<uint32_t>(fd_index);
 						*ppBuffer = reinterpret_cast<uint8_t*>(&s_ReadBuffer);
 						return static_cast<uint16_t>(bytes);
 					}
@@ -187,12 +188,12 @@ uint16_t Network::TcpRead(const int32_t nHandle, const uint8_t **ppBuffer,uint32
 	return 0;
 }
 
-void Network::TcpWrite( __attribute__((unused)) const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnection) {
+void Network::TcpWrite(const int32_t nHandle, const uint8_t *pBuffer, uint16_t nLength, const uint32_t HandleConnectionIndex) {
 	assert(nHandle < MAX_PORTS_ALLOWED);
 
-	DEBUG_PRINTF("Write client on fd %d", HandleConnection);
+	DEBUG_PRINTF("Write client on fd %d [%u]", poll_set[nHandle][HandleConnectionIndex].fd, HandleConnectionIndex);
 
-	const int c = write(static_cast<int>(HandleConnection), pBuffer, nLength);
+	const int c = write(poll_set[nHandle][HandleConnectionIndex].fd, pBuffer, nLength);
 
 	if (c < 0) {
 		perror("write");

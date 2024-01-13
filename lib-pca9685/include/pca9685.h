@@ -28,31 +28,42 @@
 
 #include <cstdint>
 
-#define PCA9685_I2C_ADDRESS_DEFAULT	0x40
-#define PCA9685_I2C_ADDRESS_FIXED	0x70
-#define PCA9685_I2C_ADDRESSES_MAX	62
+namespace pca9685 {
+static constexpr uint8_t I2C_ADDRESS_DEFAULT = 0x40;
+static constexpr uint8_t I2C_ADDRESS_FIXED = 0x70;
+static constexpr uint8_t I2C_ADDRESSES_MAX = 62;
+static constexpr uint32_t PWM_CHANNELS = 16;
 
-#define CHANNEL(x)	(static_cast<uint8_t>(x))
+enum class Output {
+	DRIVER_OPENDRAIN,
+	DRIVER_TOTEMPOLE
+};
+
+enum class Invert {
+	OUTPUT_NOT_INVERTED,
+	OUTPUT_INVERTED
+};
+
+enum class Och {
+	PCA9685_OCH_STOP,
+	PCA9685_OCH_ACK
+};
+
+struct Frequency {
+	static constexpr uint32_t RANGE_MIN = 24;
+	static constexpr uint32_t RANGE_MAX = 1526;
+};
+}  // namespace pca9685
+
+#define CHANNEL(x)	(static_cast<uint32_t>(x))
 #define VALUE(x)	(static_cast<uint16_t>(x))
 
 #define PCA9685_VALUE_MIN	VALUE(0)
 #define PCA9685_VALUE_MAX	VALUE(4096)
 
-#define PCA9685_PWM_CHANNELS	16
-
-struct TPCA9685FrequencyRange {
-	static constexpr uint32_t MIN = 24;
-	static constexpr uint32_t MAX = 1526;
-};
-
-enum TPCA9685Och {
-	PCA9685_OCH_STOP = 0,
-	PCA9685_OCH_ACK = 1 << 3
-};
-
 class PCA9685 {
 public:
-	PCA9685(uint8_t nAddress = PCA9685_I2C_ADDRESS_DEFAULT);
+	PCA9685(const uint8_t nAddress = pca9685::I2C_ADDRESS_DEFAULT);
 	~PCA9685() {};
 
 	void SetPreScaller(uint8_t);
@@ -61,32 +72,31 @@ public:
 	void SetFrequency(uint16_t);
 	uint16_t GetFrequency();
 
-	void SetOCH(TPCA9685Och);
-	TPCA9685Och GetOCH();
+	void SetOCH(pca9685::Och);
+	pca9685::Och GetOCH();
 
-	void SetInvert(bool);
-	bool GetInvert();
+	void SetInvert(const pca9685::Invert invert);
+	pca9685::Invert GetInvert();
 
-	void SetOutDriver(bool);
-	bool GetOutDriver();
+	void SetOutDriver(const pca9685::Output output);
+	pca9685::Output GetOutDriver();
 
-	void Write(uint8_t, uint16_t, uint16_t);
-	void Read(uint8_t, uint16_t *, uint16_t *);
+	void Read(const uint32_t nChannel, uint16_t *pOn, uint16_t *pOff);
+	void Read(uint16_t *pOn, uint16_t *pOff);
 
-	void Write(uint16_t, uint16_t);
-	void Read(uint16_t *, uint16_t *);
+	void Write(const uint32_t nChannel, const uint16_t nOn, const uint16_t nOff);
+	void Write(const uint32_t nChannel, const uint16_t nValue);
+	void Write(const uint16_t nOn, const uint16_t nOff);
+	void Write(const uint16_t nValue);
 
-	void Write(uint8_t, uint16_t);
-	void Write(uint16_t);
-
-	void SetFullOn(uint8_t, bool);
-	void SetFullOff(uint8_t, bool);
+	void SetFullOn(const uint32_t nChannel, const bool bMode);
+	void SetFullOff(const uint32_t nChannel, const bool bMode);
 
 	void Dump();
 
 private:
-	uint8_t CalcPresScale(uint16_t);
-	uint16_t CalcFrequency(uint8_t);
+	uint8_t CalcPresScale(uint32_t);
+	uint16_t CalcFrequency(uint32_t);
 
 private:
 	void Sleep(bool);

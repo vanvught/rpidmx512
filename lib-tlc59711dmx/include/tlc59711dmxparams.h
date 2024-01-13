@@ -29,6 +29,7 @@
 #include <cstdint>
 
 #include "tlc59711dmx.h"
+#include "configstore.h"
 
 namespace tlc59711dmxparams {
 struct Params {
@@ -51,18 +52,20 @@ struct Mask {
 
 class TLC59711DmxParamsStore {
 public:
-	virtual ~TLC59711DmxParamsStore() {
+	static void Update(const struct tlc59711dmxparams::Params *pParams) {
+		ConfigStore::Get()->Update(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
 	}
 
-	virtual void Update(const struct tlc59711dmxparams::Params *pParams)=0;
-	virtual void Copy(struct tlc59711dmxparams::Params *pParams)=0;
+	static void Copy(struct tlc59711dmxparams::Params *pParams) {
+		ConfigStore::Get()->Copy(configstore::Store::TLC5711DMX, pParams, sizeof(struct tlc59711dmxparams::Params));
+	}
 };
 
 class TLC59711DmxParams {
 public:
-	TLC59711DmxParams(TLC59711DmxParamsStore *pTLC59711ParamsStore);
+	TLC59711DmxParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct tlc59711dmxparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -71,8 +74,6 @@ public:
 	}
 
 	void Set(TLC59711Dmx *);
-
-	void Dump();
 
 	tlc59711::Type GetLedType() {
 		return static_cast<tlc59711::Type>(m_Params.nType);
@@ -95,13 +96,13 @@ public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) {
     	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-	TLC59711DmxParamsStore *m_pLC59711ParamsStore;
 	tlc59711dmxparams::Params m_Params;
 };
 

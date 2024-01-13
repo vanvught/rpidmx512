@@ -161,7 +161,7 @@ void TCNetReader::HandleUdpRequest() {
 		TCNet::Get()->SetLayer(tLayer);
 		tcnet::display::show();
 
-		DEBUG_PRINTF("tcnet!layer#%c -> %d", m_Buffer[6 + length::LAYER + 1], tLayer);
+		DEBUG_PRINTF("tcnet!layer#%c -> %d", s_pUdpBuffer[6 + length::LAYER + 1], tLayer);
 		return;
 	}
 

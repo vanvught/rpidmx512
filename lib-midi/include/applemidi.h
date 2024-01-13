@@ -83,7 +83,7 @@ public:
 	void Start() {
 		DEBUG_ENTRY
 		assert(MDNS::Get() != nullptr);
-		MDNS::Get()->AddServiceRecord(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
+		MDNS::Get()->ServiceRecordAdd(nullptr, mdns::Services::MIDI, nullptr, m_nPort);
 
 		m_nHandleControl = Network::Get()->Begin(m_nPort);
 		assert(m_nHandleControl != -1);

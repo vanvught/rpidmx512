@@ -2,7 +2,7 @@
  * @file l6470params.h
  *
  */
-/* Copyright (C) 2017-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,69 +27,102 @@
 #define L6470PARAMS_H_
 
 #include <cstdint>
+#include <cstddef>
 
 #include "l6470.h"
+#include "l6470dmxstore.h"
 
-struct TL6470Params {
-    uint32_t nSetList;
-    //
-    float fMinSpeed;
-    float fMaxSpeed;
-    float fAcc;
-    float fDec;
-    uint8_t nKvalHold;
-    uint8_t nKvalRun;
-    uint8_t nKvalAcc;
-    uint8_t nKvalDec;
-    uint8_t nMicroSteps;
-} __attribute__((packed));
+#include "configstore.h"
 
-struct L6470ParamsMask {
-	static constexpr auto MIN_SPEED   = (1U << 0);
-	static constexpr auto MAX_SPEED   = (1U << 1);
-	static constexpr auto ACC         = (1U << 2);
-	static constexpr auto DEC         = (1U << 3);
-	static constexpr auto KVAL_HOLD   = (1U << 4);
-	static constexpr auto KVAL_RUN    = (1U << 5);
-	static constexpr auto KVAL_ACC    = (1U << 6);
-	static constexpr auto KVAL_DEC    = (1U << 7);
-	static constexpr auto MICRO_STEPS = (1U << 8);
+#include "debug.h"
+
+namespace l6470params {
+struct Mask {
+	static constexpr uint32_t MIN_SPEED   = (1U << 0);
+	static constexpr uint32_t MAX_SPEED   = (1U << 1);
+	static constexpr uint32_t ACC         = (1U << 2);
+	static constexpr uint32_t DEC         = (1U << 3);
+	static constexpr uint32_t KVAL_HOLD   = (1U << 4);
+	static constexpr uint32_t KVAL_RUN    = (1U << 5);
+	static constexpr uint32_t KVAL_ACC    = (1U << 6);
+	static constexpr uint32_t KVAL_DEC    = (1U << 7);
+	static constexpr uint32_t MICRO_STEPS = (1U << 8);
 };
+}  // namespace l6470params
 
 class L6470ParamsStore {
 public:
-	virtual ~L6470ParamsStore() {}
+	static L6470ParamsStore& Get() {
+		static L6470ParamsStore instance;
+		return instance;
+	}
 
-	virtual void Update(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params)=0;
-	virtual void Copy(uint32_t nMotorIndex, struct TL6470Params *ptL6470Params)=0;
-};
+	static void Update(uint32_t nMotorIndex, const struct l6470params::Params *pParams) {
+		Get().IUpdate(nMotorIndex, pParams);
+	}
+
+	static void Copy(uint32_t nMotorIndex, struct l6470params::Params *pParams) {
+		Get().ICopy(nMotorIndex, pParams);
+	}
+
+private:
+	L6470ParamsStore() {
+		assert(motorstore::STRUCT_SIZE <= motorstore::MAX_SIZE);
+
+		for (uint32_t nMotorIndex = 0; nMotorIndex < motorstore::MAX_MOTORS; nMotorIndex++) {
+			// struct l6470params::Params
+			struct l6470params::Params tL6470Params;
+			memset( &tL6470Params, 0xFF, sizeof(struct l6470params::Params));
+			tL6470Params.nSetList = 0;
+
+			ICopy(nMotorIndex, &tL6470Params);
+
+			if (tL6470Params.nSetList == static_cast<uint32_t>(~0)) {
+				DEBUG_PRINTF("%d: Clear nSetList -> tL6470Params", nMotorIndex);
+				tL6470Params.nSetList = 0;
+				IUpdate(nMotorIndex, &tL6470Params);
+			}
+		}
+	}
+
+	void IUpdate(uint32_t nMotorIndex, const struct l6470params::Params *pParams) {
+		DEBUG_ENTRY
+		assert(nMotorIndex < motorstore::MAX_MOTORS);
+		ConfigStore::Get()->Update(configstore::Store::MOTORS, motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, L6470Params), pParams, sizeof(struct l6470params::Params));
+		DEBUG_EXIT
+	}
+
+	void ICopy(uint32_t nMotorIndex, struct l6470params::Params *pParams) {
+		DEBUG_ENTRY
+		assert(nMotorIndex < motorstore::MAX_MOTORS);
+		ConfigStore::Get()->Copy(configstore::Store::MOTORS, pParams, sizeof(struct l6470params::Params), motorstore::OFFSET(nMotorIndex) + offsetof(struct motorstore::MotorStore, L6470Params));
+		DEBUG_EXIT
+	}
+ };
 
 class L6470Params {
 public:
-	L6470Params(L6470ParamsStore *pL6470ParamsStore = nullptr);
+	L6470Params();
 
-	bool Load(uint32_t nMotorIndex);
+	void Load(uint32_t nMotorIndex);
 	void Load(uint32_t nMotorIndex, const char *pBuffer, uint32_t nLength);
 
-	void Builder(uint32_t nMotorIndex, const struct TL6470Params *ptL6470Params, char *pBuffer, uint32_t nLength, uint32_t& nSize);
+	void Builder(uint32_t nMotorIndex, const struct l6470params::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 	void Save(uint32_t nMotorIndex, char *pBuffer, uint32_t nLength, uint32_t& nSize);
 
 	void Set(L6470 *);
 
-	void Dump();
-
-public:
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *s);
     bool isMaskSet(uint32_t nMask) {
-    	return (m_tL6470Params.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-	L6470ParamsStore *m_pL6470ParamsStore;
-    struct TL6470Params m_tL6470Params;
+    l6470params::Params m_Params;
     char m_aFileName[16];
 };
 

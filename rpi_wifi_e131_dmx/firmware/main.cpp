@@ -55,9 +55,6 @@
 #if defined(ORANGE_PI)
 # include "flashcodeinstall.h"
 # include "configstore.h"
-# include "storee131.h"
-# include "storedmxsend.h"
-# include "storepixeldmx.h"
 #endif
 
 #include "software_version.h"
@@ -67,29 +64,25 @@ constexpr char BRIDGE_PARMAS[] = "Setting Bridge parameters ...";
 constexpr char START_BRIDGE[] = "Starting the Bridge ...";
 constexpr char BRIDGE_STARTED[] = "Bridge started";
 
-static constexpr uint32_t DMXPORT_OFFSET = 0;
+namespace e131bridge {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace e131bridge
 
 void main() {
 	Hardware hw;
 	Network nw;
 	Display display;
-
 #if defined (ORANGE_PI)
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	StoreE131 storeE131;
-	StoreDmxSend storeDmxSend;
-	StorePixelDmx storePixelDmx;
-
-	E131Params e131params(&storeE131);
-#else
-	E131Params e131params;
 #endif
 
-	if (e131params.Load()) {
-		e131params.Dump();
-	}
+	E131Bridge bridge;
+
+	E131Params e131params;
+	e131params.Load();
 
 	const auto tOutputType = e131params.GetOutputType();
 
@@ -128,8 +121,7 @@ void main() {
 	console_status(CONSOLE_YELLOW, BRIDGE_PARMAS);
 	display.TextStatus(BRIDGE_PARMAS);
 
-	E131Bridge bridge;
-	e131params.Set(DMXPORT_OFFSET);
+	e131params.Set();
 
 	bool IsSet;
 	const auto nStartUniverse = e131params.GetUniverse(0, IsSet);
@@ -143,16 +135,9 @@ void main() {
 	if (tOutputType == lightset::OutputType::SPI) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
-#if defined (ORANGE_PI)
-		PixelDmxParams pixelDmxParams(new StorePixelDmx);
-#else
 		PixelDmxParams pixelDmxParams;
-#endif
-
-		if (pixelDmxParams.Load()) {
-			pixelDmxParams.Set(&pixelDmxConfiguration);
-			pixelDmxParams.Dump();
-		}
+		pixelDmxParams.Load();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 
 		auto *pWS28xxDmx = new WS28xxDmx(pixelDmxConfiguration);
 		assert(pWS28xxDmx != nullptr);
@@ -177,15 +162,9 @@ void main() {
 	}
 #endif
 	else {
-#if defined (ORANGE_PI)
-		DmxParams dmxparams(&storeDmxSend);
-#else
 		DmxParams dmxparams;
-#endif
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-			dmxparams.Set(&dmx);
-		}
+		dmxparams.Load();
+		dmxparams.Set(&dmx);
 
 		bridge.SetOutput(&dmxSend);
 	}

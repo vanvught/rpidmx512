@@ -2,7 +2,7 @@
  * @file buttonsgpio.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -66,10 +66,10 @@ bool ButtonsGpio::Start() {
 	FUNC_PREFIX(gpio_fsel(BUTTON2_GPIO, GPIO_FSEL_EINT));
 	FUNC_PREFIX(gpio_fsel(BUTTON3_GPIO, GPIO_FSEL_EINT));
 
-	FUNC_PREFIX(gpio_pud(BUTTON0_GPIO, GPIO_PULL_UP));
-	FUNC_PREFIX(gpio_pud(BUTTON1_GPIO, GPIO_PULL_UP));
-	FUNC_PREFIX(gpio_pud(BUTTON2_GPIO, GPIO_PULL_UP));
-	FUNC_PREFIX(gpio_pud(BUTTON3_GPIO, GPIO_PULL_UP));
+	FUNC_PREFIX(gpio_set_pud(BUTTON0_GPIO, GPIO_PULL_UP));
+	FUNC_PREFIX(gpio_set_pud(BUTTON1_GPIO, GPIO_PULL_UP));
+	FUNC_PREFIX(gpio_set_pud(BUTTON2_GPIO, GPIO_PULL_UP));
+	FUNC_PREFIX(gpio_set_pud(BUTTON3_GPIO, GPIO_PULL_UP));
 
 	FUNC_PREFIX(gpio_int_cfg(BUTTON0_GPIO, GPIO_INT_CFG_NEG_EDGE));
 	FUNC_PREFIX(gpio_int_cfg(BUTTON1_GPIO, GPIO_INT_CFG_NEG_EDGE));

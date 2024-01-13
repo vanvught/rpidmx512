@@ -26,8 +26,6 @@
 #ifndef LINUX_HAL_API_H_
 #define LINUX_HAL_API_H_
 
-#include <cstdint>
-
 #if defined (RASPPI)
 # define FUNC_PREFIX(x) bcm2835_##x
 # include "bcm2835.h"
@@ -38,22 +36,6 @@
 #  undef bcm2835_i2c_read
 #  undef bcm2835_i2c_write
 # endif
-#endif
-
-#ifdef __cplusplus
- extern "C" {
-#endif
-
-extern uint32_t micros(void);
-
-#if defined (RASPPI)
- inline void udelay(uint32_t d) { bcm2835_delayMicroseconds(d); }
-#else
- inline void udelay(__attribute__((unused)) uint32_t _q) {}
-#endif
-
-#ifdef __cplusplus
- }
 #endif
 
 #endif /* LINUX_HAL_API_H_ */

@@ -38,6 +38,7 @@
 #include "lightset.h"
 
 #include "pixeldmxconfiguration.h"
+#include "pixeldmxstore.h"
 
 #include "debug.h"
 
@@ -233,11 +234,7 @@ bool WS28xxDmx::SetDmxStartAddress(uint16_t nDmxStartAddress) {
 
 	if ((nDmxStartAddress != 0) && (nDmxStartAddress <= lightset::dmx::UNIVERSE_SIZE)) {
 		m_nDmxStartAddress = nDmxStartAddress;
-
-		if (m_pWS28xxDmxStore != nullptr) {
-			m_pWS28xxDmxStore->SaveDmxStartAddress(m_nDmxStartAddress);
-		}
-
+		PixelDmxStore::SaveDmxStartAddress(m_nDmxStartAddress);
 		return true;
 	}
 

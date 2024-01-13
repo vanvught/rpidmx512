@@ -51,6 +51,14 @@
 
 #include "debug.h"
 
+#if !defined (__APPLE__)
+extern "C" {
+int __attribute__((weak)) bcm2835_init(void) {
+	return 0;
+}
+}
+#endif
+
 static char* str_find_replace(char *str, const char *find, const char *replace) {
 	assert(strlen(replace) <= strlen(find));
 
@@ -138,9 +146,22 @@ Hardware::Hardware():
 	}
 
 #ifndef NDEBUG
-	printf("m_tBoardType=%d\n", static_cast<int>(m_boardType));
+	printf("m_boardType=%d\n", static_cast<int>(m_boardType));
 #endif
 
+#if !defined (__APPLE__)
+	if (m_boardType == Board::TYPE_RASPBIAN) {
+		if (getuid() != 0) {
+			fprintf(stderr, "Program is not started as \'root\' (sudo)\n");
+			exit(-1);
+		}
+
+		if (bcm2835_init() == 0) {
+			fprintf(stderr, "Function bcm2835_init() failed\n");
+			exit(-1);
+		}
+	}
+#endif
 
 	{ // Board Name
 #if defined (__APPLE__)
@@ -182,6 +203,12 @@ Hardware::Hardware():
 
 #if defined (DEBUG_I2C)
 	I2cDetect i2cdetect;
+#endif
+
+#if !defined(DISABLE_RTC)
+	m_HwClock.RtcProbe();
+	m_HwClock.Print();
+	m_HwClock.SysToHc();
 #endif
 }
 
@@ -256,20 +283,27 @@ bool Hardware::SetTime(__attribute__((unused)) const struct tm *pTime) {
 }
 
 void Hardware::GetTime(struct tm *pTime) {
-	time_t ltime;
-	struct tm *local_time;
-
-	ltime = time(NULL);
-    local_time = localtime(&ltime);
-
-    pTime->tm_year = local_time->tm_year;
-    pTime->tm_mon = local_time->tm_mon;
-    pTime->tm_mday = local_time->tm_mday;
-    //
-    pTime->tm_hour = local_time->tm_hour;
-    pTime->tm_min = local_time->tm_min;
-    pTime->tm_sec = local_time->tm_sec;
+	auto ltime = time(nullptr);
+	const auto *pLocalTime = localtime(&ltime);
+	memcpy(pTime, pLocalTime, sizeof(struct tm));
 }
+
+#if !defined(DISABLE_RTC)
+bool Hardware::SetAlarm(const struct tm *pTime) {
+	DEBUG_ENTRY
+	const auto b = m_HwClock.AlarmSet(pTime);
+	DEBUG_EXIT
+	return b;
+}
+
+void Hardware::GetAlarm(struct tm *pTime) {
+	DEBUG_ENTRY
+
+	m_HwClock.AlarmGet(pTime);
+
+	DEBUG_EXIT
+}
+#endif
 
 bool Hardware::Reboot() {
 #if defined (__APPLE__)

@@ -38,31 +38,31 @@ inline static void ms_delay(const uint32_t ms) {
 }
 
 inline static void CS_Set() {
-#if defined(SPI_LCD_HAVE_CS_PIN)
-	FUNC_PREFIX(gpio_set(SPI_LCD_CS_PIN));
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+	FUNC_PREFIX(gpio_set(SPI_LCD_CS_GPIO));
 #endif
 }
 
 inline static void CS_Clear() {
-#if defined(SPI_LCD_HAVE_CS_PIN)
-	FUNC_PREFIX(gpio_clr(SPI_LCD_CS_PIN));
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+	FUNC_PREFIX(gpio_clr(SPI_LCD_CS_GPIO));
 #endif
 }
 
 inline static void DC_Set() {
-	FUNC_PREFIX(gpio_set(SPI_LCD_DC_PIN));
+	FUNC_PREFIX(gpio_set(SPI_LCD_DC_GPIO));
 }
 
 inline static void DC_Clear() {
-	FUNC_PREFIX(gpio_clr(SPI_LCD_DC_PIN));
+	FUNC_PREFIX(gpio_clr(SPI_LCD_DC_GPIO));
 }
 
 inline static void HW_Reset() {
-#if defined (SPI_LCD_RST_PIN)
+#if defined (SPI_LCD_RST_GPIO)
 	ms_delay(200);
-	FUNC_PREFIX(gpio_clr(SPI_LCD_RST_PIN));
+	FUNC_PREFIX(gpio_clr(SPI_LCD_RST_GPIO));
 	ms_delay(200);
-	FUNC_PREFIX(gpio_set(SPI_LCD_RST_PIN));
+	FUNC_PREFIX(gpio_set(SPI_LCD_RST_GPIO));
 	ms_delay(200);
 #endif
 }

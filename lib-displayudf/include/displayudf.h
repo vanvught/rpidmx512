@@ -180,7 +180,7 @@ public:
 	 */
 
 #if defined (NODE_ARTNET)
-	void Show(ArtNetNode *pArtNetNode, uint32_t nPortIndexOffset = 0);
+	void Show(ArtNetNode *pArtNetNode);
 	void ShowUniverse(ArtNetNode *pArtNetNode);
 	void ShowDestinationIp(ArtNetNode *pArtNetNode);
 #endif
@@ -190,7 +190,7 @@ public:
 	 */
 
 #if defined (NODE_E131)
-	void Show(E131Bridge *pE131Bridge, uint32_t nPortIndexOffset = 0);
+	void Show(E131Bridge *pE131Bridge);
 #endif
 
 	/**
@@ -308,9 +308,6 @@ public:
 private:
 	char m_aTitle[32];
 	uint8_t m_aLabels[static_cast<uint32_t>(displayudf::Labels::UNKNOWN)];
-#if defined (NODE_ARTNET) || defined (NODE_E131)	
-	uint32_t m_nPortIndexOffset { 0 };
-#endif
 #if defined (DISPLAYUDF_DMX_INFO)
 	struct DmxInfo {
 		displayudf::dmx::PortDir portDir;

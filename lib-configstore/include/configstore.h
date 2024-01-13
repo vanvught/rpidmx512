@@ -28,7 +28,7 @@
 
 #include <cstdint>
 
-#include "storedevice.h"
+#include "configstoredevice.h"
 
 namespace configstore {
 enum class Store {
@@ -58,6 +58,7 @@ enum class Store {
 	GPS,
 	RGBPANEL,
 	NODE,
+	PCA9685,
 	LAST
 };
 
@@ -84,7 +85,7 @@ public:
 		Update(store, 0, pData, nDataLength);
 	}
 
-	void Copy(const configstore::Store store, void *pData, uint32_t nDataLength, uint32_t nOffset = 0);
+	void Copy(const configstore::Store store, void *pData, uint32_t nDataLength, uint32_t nOffset = 0, const bool doUpdate = true);
 
 	void ResetSetList(configstore::Store store);
 

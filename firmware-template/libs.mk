@@ -7,7 +7,6 @@ endif
 
 ifeq ($(findstring NODE_NODE,$(DEFINES)),NODE_NODE)
 	LIBS+=node artnet e131
-	DEFINES+=ARTNET_HAVE_FAILSAFE_RECORD
 	ARTNET=1
 endif
 
@@ -56,28 +55,25 @@ ifeq ($(findstring ARTNET_CONTROLLER,$(DEFINES)),ARTNET_CONTROLLER)
 endif
 
 ifeq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
-	LIBS+=rdmdiscovery rdm
+	LIBS+=rdm
 	DMX=1
 endif
 
-
 ifeq ($(findstring RDM_RESPONDER,$(DEFINES)),RDM_RESPONDER)
+	LIBS+=rdm
 	ifneq ($(findstring NODE_ARTNET,$(DEFINES)),NODE_ARTNET)
 		ifneq ($(findstring dmxreceiver,$(LIBS)),dmxreceiver)
 			LIBS+=dmxreceiver
 		endif
 	endif
-	ifneq ($(findstring rdmresponder,$(LIBS)),rdmresponder)
-		LIBS+=rdmresponder
-	endif
 	ifneq ($(findstring rdmsensor,$(LIBS)),rdmsensor)
 		LIBS+=rdmsensor
 	endif
-	ifneq ($(findstring rdmsubdevice,$(LIBS)),rdmsubdevice)
-		LIBS+=rdmsubdevice
-	endif
-	LIBS+=rdm
 	DMX=1
+endif
+
+ifeq ($(findstring ENABLE_RDM_SUBDEVICES,$(DEFINES)),ENABLE_RDM_SUBDEVICES)
+	LIBS+=rdmsubdevice
 endif
 
 ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
@@ -86,6 +82,9 @@ ifeq ($(findstring NODE_DMX,$(DEFINES)),NODE_DMX)
 endif
 
 ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
+	ifneq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
+		LIBS+=rdm
+	endif
 	ifneq ($(findstring rdmnet,$(LIBS)),rdmnet)
 		LIBS+=rdmnet
 	endif
@@ -97,9 +96,6 @@ ifeq ($(findstring NODE_RDMNET_LLRP_ONLY,$(DEFINES)),NODE_RDMNET_LLRP_ONLY)
 	endif
 	ifneq ($(findstring rdmsubdevice,$(LIBS)),rdmsubdevice)
 		LIBS+=rdmsubdevice
-	endif
-	ifneq ($(findstring RDM_CONTROLLER,$(DEFINES)),RDM_CONTROLLER)
-		LIBS+=rdm
 	endif
 endif
 
@@ -127,7 +123,7 @@ else
 		LIBS+=ws28xxdmx ws28xx jamstapl
 	else
 		ifeq ($(findstring OUTPUT_DMX_PIXEL,$(DEFINES)),OUTPUT_DMX_PIXEL)
-			LIBS+=ws28xxdmx ws28xx tlc59711dmx tlc59711
+			LIBS+=ws28xxdmx ws28xx
 		endif
 	endif
 endif
@@ -138,6 +134,10 @@ endif
 
 ifeq ($(findstring OUTPUT_DMX_TLC59711,$(DEFINES)),OUTPUT_DMX_TLC59711)
 	LIBS+=tlc59711dmx tlc59711
+endif
+
+ifeq ($(findstring OUTPUT_DMX_PCA9685,$(DEFINES)),OUTPUT_DMX_PCA9685)
+	LIBS+=pca9685dmx pca9685
 endif
 
 ifeq ($(findstring OUTPUT_DMX_ARTNET,$(DEFINES)),OUTPUT_DMX_ARTNET)

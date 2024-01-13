@@ -40,7 +40,7 @@
 
 #include "artnetnode.h"
 #include "artnetparams.h"
-#include "storeartnet.h"
+
 #include "artnetmsgconst.h"
 #include "artnetrdmresponder.h"
 
@@ -58,22 +58,29 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
-#include "storemonitor.h"
-#include "storenetwork.h"
-#include "storeremoteconfig.h"
-#include "storerdmdevice.h"
-#include "storerdmsensors.h"
-#include "storerdmsubdevices.h"
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
+namespace artnetnode {
+namespace configstore {
+uint32_t DMXPORT_OFFSET = 0;
+}  // namespace configstore
+}  // namespace artnetnode
+
 int main(int argc, char **argv) {
+#ifndef NDEBUG
+	if (argc > 2) {
+		const int c = argv[2][0];
+		if (isdigit(c)){
+			artnetnode::configstore::DMXPORT_OFFSET = c - '0';
+		}
+	}
+#endif
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
-	StoreNetwork storeNetwork;
 	Network nw(argc, argv);
+	MDNS mDns;
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 
 	hw.Print();
@@ -82,39 +89,16 @@ int main(int argc, char **argv) {
 
 	ArtNetNode node;
 
-	uint32_t nPortIndexOffset = 0;
-
-#ifndef NDEBUG
-	if (argc > 2) {
-		const int c = argv[2][0];
-		if (isdigit(c)){
-			nPortIndexOffset = c - '0';
-		}
-	}
-#endif
-
-	StoreArtNet storeArtNet(nPortIndexOffset);
-	node.SetArtNetStore(&storeArtNet);
-
-	ArtNetParams artnetParams(&storeArtNet);
-
-	if (artnetParams.Load()) {
-		artnetParams.Dump();
-		artnetParams.Set(nPortIndexOffset);
-	}
+	ArtNetParams artnetParams;
+	artnetParams.Load();
+	artnetParams.Set();
 
 	printf("Art-Net %d Node - Real-time DMX Monitor {4 Universes}\n", node.GetVersion());
 
-	StoreMonitor storeMonitor;
-	DMXMonitorParams monitorParams(&storeMonitor);
-
 	DMXMonitor monitor;
-	monitor.SetDmxMonitorStore(&storeMonitor);
 
-	if (monitorParams.Load()) {
-		monitorParams.Dump();
-		monitorParams.Set(&monitor);
-	}
+	DMXMonitorParams monitorParams;
+	monitorParams.Load();
 
 	node.SetOutput(&monitor);
 
@@ -123,23 +107,17 @@ int main(int argc, char **argv) {
 	ArtNetRdmResponder RdmResponder(pRDMPersonalities, 1);
 	RdmResponder.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
-	RdmResponder.SetRDMDeviceStore(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&RdmResponder);
-	}
-
-	StoreRDMSensors storeRdmSensors;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&RdmResponder);
 
 	RdmResponder.Print();
 
 	for (uint32_t nPortIndex = 0; nPortIndex < artnetnode::MAX_PORTS; nPortIndex++) {
 		uint32_t nOffset = nPortIndex;
-		if (nPortIndex >= nPortIndexOffset) {
-			nOffset = nPortIndex - nPortIndexOffset;
+		if (nPortIndex >= artnetnode::configstore::DMXPORT_OFFSET) {
+			nOffset = nPortIndex - artnetnode::configstore::DMXPORT_OFFSET;
 		} else {
 			continue;
 		}
@@ -152,7 +130,7 @@ int main(int argc, char **argv) {
 		if (portDirection == lightset::PortDir::OUTPUT) {
 			node.SetUniverse(nPortIndex, lightset::PortDir::OUTPUT, nAddress);
 			if (nPortIndex == 0) {
-				node.SetRmd(0, true);
+				node.SetRdm(static_cast<uint32_t>(0), true);
 			}
 		} else {
 			node.SetUniverse(nPortIndex, lightset::PortDir::DISABLE, nAddress);
@@ -161,38 +139,26 @@ int main(int argc, char **argv) {
 
 	const auto nActivePorts = node.GetActiveOutputPorts();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
-
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG, "node=Art-Net 4");
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP);
-	mDns.Print();
-
 	node.SetRdmUID(RdmResponder.GetUID());
-	node.SetRdmHandler(&RdmResponder, true);
+	node.SetRdmResponder(&RdmResponder);
+	node.SetRdm(static_cast<uint32_t>(0), true);
 	node.Print();
-
-	HttpDaemon httpDaemon;
 
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, nActivePorts);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
 
+	mDns.Print();
 	node.Start();
 
 	for (;;) {
 		node.Run();
 		mDns.Run();
-		httpDaemon.Run();
 		remoteConfig.Run();
 		configStore.Flash();
 	}

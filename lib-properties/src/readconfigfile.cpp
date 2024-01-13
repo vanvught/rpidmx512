@@ -85,6 +85,8 @@ bool ReadConfigFile::Read(const char *pFileName) {
 #endif
 
 void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
@@ -114,9 +116,12 @@ void ReadConfigFile::Read(const char *pBuffer, unsigned nLength) {
 			nLength--;
 		}
 
-		if (buffer[0] >= 'a') {
+		if (buffer[0] >= '0') {
 			*pLine = '\0';
+			DEBUG_PUTS(&buffer[0]);
 			m_pCallBack(m_p, &buffer[0]);
 		}
 	}
+
+	DEBUG_EXIT
 }

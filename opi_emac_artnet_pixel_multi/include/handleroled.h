@@ -33,8 +33,7 @@ struct HandlerOled: public JamSTAPLDisplay  {
 		s_pThis = this;
 	}
 
-	~HandlerOled(void) {
-	}
+	~HandlerOled() = default;
 
 	// JamSTAPL
 	void JamShowInfo(const char *pInfo) {
@@ -46,7 +45,7 @@ struct HandlerOled: public JamSTAPLDisplay  {
 		Display::Get()->TextStatus(pStatus, Display7SegmentMessage::INFO_CPLD, ExitCode == 0 ? CONSOLE_GREEN : CONSOLE_RED);
 	}
 
-	static HandlerOled *Get(void) {
+	static HandlerOled *Get() {
 		return s_pThis;
 	}
 

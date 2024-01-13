@@ -3,7 +3,7 @@
  * @file hwclock.h
  *
  */
-/* Copyright (C) 2020-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #define HWCLOCK_H_
 
 #include <cstdint>
+#include <time.h>
 #include <sys/time.h>
 
 namespace rtc {
@@ -35,18 +36,6 @@ enum class Type : uint8_t {
 	MCP7941X, DS3231, PCF8563, SOC_INTERNAL, UNKNOWN
 };
 }  // namespace rtc
-
-struct rtc_time {
-    int tm_sec;
-    int tm_min;
-    int tm_hour;
-    int tm_mday;
-    int tm_mon;
-    int tm_year;
-    int tm_wday;     /* unused */
-    int tm_yday;     /* unused */
-    int tm_isdst;    /* unused */
-};
 
 class HwClock {
 public:
@@ -56,16 +45,31 @@ public:
 	void HcToSys(); // Set the System Clock from the Hardware Clock
 	void SysToHc(); // Set the Hardware Clock from the System Clock
 
-	bool Set(const struct rtc_time *pRtcTime);
-	bool Get(struct rtc_time *pRtcTime) {
-		return RtcGet(pRtcTime);
+	bool Set(const struct tm *pTime);
+	bool Get(struct tm *pTime) {
+		return RtcGet(pTime);
+	}
+
+	bool AlarmSet(const struct tm *pTime) {
+		return RtcSetAlarm(pTime);
+	}
+	bool AlarmGet(struct tm *pTime) {
+		return RtcGetAlarm(pTime);
+	}
+	void AlarmEnable(const bool bEnable) {
+		RtcAlarmEnable(bEnable);
 	}
 
 	bool IsConnected() const {
 		return m_bIsConnected;
 	}
 
-	void Run(bool bDoRun);
+	void Run(const bool bDoRun) {
+		if (!bDoRun || !m_bIsConnected) {
+			return;
+		}
+		Process();
+	}
 
 	void Print();
 
@@ -74,8 +78,17 @@ public:
 	}
 
 private:
-	bool RtcSet(const struct rtc_time *pRtcTime);
-	bool RtcGet(struct rtc_time *pRtcTime);
+	void Process();
+	bool RtcSet(const struct tm *pime);
+	bool RtcGet(struct tm *pTime);
+	bool RtcSetAlarm(const struct tm *pTime);
+	bool RtcGetAlarm(struct tm *pTime);
+	void RtcAlarmEnable(const bool bEnable) {
+		m_bRtcAlarmEnabled = bEnable;
+	}
+	int MCP794xxAlarmWeekday(struct tm *pTime);
+	void PCF8563GetAlarmMode();
+	void PCF8563SetAlarmMode();
 
 private:
 	uint32_t m_nSetDelayMicros { 0 };
@@ -83,6 +96,8 @@ private:
 	uint8_t m_nAddress { 0 };
 	rtc::Type m_Type { rtc::Type::UNKNOWN };
 	bool m_bIsConnected { false };
+	bool m_bRtcAlarmEnabled { false };
+	bool m_bRtcAlarmPending { false };
 
 	static HwClock *s_pThis;
 };

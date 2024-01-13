@@ -2,7 +2,7 @@
  * @file hwclockrun.cpp
  *
  */
-/* Copyright (C) 2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,23 +34,18 @@
 #include "debug.h"
 
 enum class Status {
-	WAITING,
-	SAMPLING
+	WAITING, SAMPLING
 };
 
 static Status Status = Status::WAITING;
 static time_t nSeconds;
 static int32_t nSecondsT1;
-static struct rtc_time rtcT1;
+static struct tm rtcT1;
 static struct timeval tvT1;
-static struct rtc_time rtcT2;
+static struct tm rtcT2;
 static struct timeval tvT2;
 
-void HwClock::Run(bool bDoRun) {
-	if (!bDoRun || !m_bIsConnected) {
-		return;
-	}
-
+void HwClock::Process() {
 	if (Status == Status::WAITING) {
 		if (__builtin_expect(((Hardware::Get()->Millis() - m_nLastHcToSysMillis) > 7200 * 1000), 0)) {
 			Status = Status::SAMPLING;
@@ -59,17 +54,7 @@ void HwClock::Run(bool bDoRun) {
 			gettimeofday(&tvT1, nullptr);
 
 			nSecondsT1 = rtcT1.tm_sec + rtcT1.tm_min * 60;
-
-			struct tm tm;
-
-			tm.tm_sec = rtcT1.tm_sec;
-			tm.tm_min = rtcT1.tm_min;
-			tm.tm_hour = rtcT1.tm_hour;
-			tm.tm_mday = rtcT1.tm_mday;
-			tm.tm_mon = rtcT1.tm_mon;
-			tm.tm_year = rtcT1.tm_year;
-
-			nSeconds = mktime(&tm);
+			nSeconds = mktime(&rtcT1);
 		}
 
 		return;
@@ -101,7 +86,7 @@ void HwClock::Run(bool bDoRun) {
 			m_nLastHcToSysMillis = Hardware::Get()->Millis();
 			Status = Status::WAITING;
 
-			DEBUG_PRINTF("%d:%d (%ld %u) (%ld %u) -> %u", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
+			DEBUG_PRINTF("%d:%d (%ld %ld) (%ld %ld) -> %ld", nSecondsT1, nSeconds2, tvT1.tv_sec, tvT1.tv_usec, tvT2.tv_sec, tvT2.tv_usec, tv.tv_usec);
 		}
 
 		return;

@@ -40,9 +40,6 @@
 #include "dmx.h"
 #include "dmxparams.h"
 #include "dmxsend.h"
-#if defined(ORANGE_PI)
-# include "storedmxsend.h"
-#endif
 #ifndef H3
 // DMX real-time monitor
 # include "dmxmonitor.h"
@@ -54,16 +51,11 @@
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
 
-#if defined(ORANGE_PI)
-# include "storepixeldmx.h"
-#endif
-
 #include "handler.h"
 
 #if defined(ORANGE_PI)
- #include "flashcodeinstall.h"
- #include "configstore.h"
- #include "storeoscserver.h"
+# include "flashcodeinstall.h"
+# include "configstore.h"
 #endif
 
 #include "software_version.h"
@@ -85,22 +77,12 @@ void main() {
 #if defined (ORANGE_PI)
 	FlashCodeInstall spiFlashInstall;
 	ConfigStore configStore;
-
-	StoreOscServer storeOscServer;
-	StoreDmxSend storeDmxSend;
-	StorePixelDmx storePixelDmx;
-
-	OSCServerParams params(&storeOscServer);
-#else
-	OSCServerParams params;
 #endif
-
+	OSCServerParams params;
 	OscServer server;
 
-	if (params.Load()) {
-		params.Dump();
-		params.Set(&server);
-	}
+	params.Load();
+	params.Set(&server);
 
 	const auto tOutputType = params.GetOutputType();
 
@@ -144,16 +126,9 @@ void main() {
 	if (tOutputType == lightset::OutputType::SPI) {
 		PixelDmxConfiguration pixelDmxConfiguration;
 
-#if defined (ORANGE_PI)
-		PixelDmxParams pixelDmxParams(new StorePixelDmx);
-#else
 		PixelDmxParams pixelDmxParams;
-#endif
-
-		if (pixelDmxParams.Load()) {
-			pixelDmxParams.Set(&pixelDmxConfiguration);
-			pixelDmxParams.Dump();
-		}
+		pixelDmxParams.Load();
+		pixelDmxParams.Set(&pixelDmxConfiguration);
 
 		// For the time being, just 1 Universe
 		if (pixelDmxConfiguration.GetType() == pixel::Type::SK6812W) {
@@ -184,15 +159,9 @@ void main() {
 	}
 #endif
 	else {
-#if defined (ORANGE_PI)
-		DmxParams dmxparams(&storeDmxSend);
-#else
 		DmxParams dmxparams;
-#endif
-		if (dmxparams.Load()) {
-			dmxparams.Dump();
-			dmxparams.Set(&dmx);
-		}
+		dmxparams.Load();
+		dmxparams.Set(&dmx);
 
 		server.SetOutput(&dmxSend);
 	}

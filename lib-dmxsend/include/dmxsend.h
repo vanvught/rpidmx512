@@ -27,19 +27,25 @@
 #define DMXSEND_H_
 
 #include <cstdint>
+#include <cstdio>
+#include <cassert>
 
 #include "lightset.h"
+#include "lightsetdata.h"
+
 #include "dmx.h"
+#include "panel_led.h"
 #include "hardware.h"
+
+#include "debug.h"
 
 class DmxSend final: public LightSet  {
 public:
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
-
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(const uint32_t nPortIndex) override;
-	void Sync(const bool doForce = false) override;
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) override;
+	void Sync(uint32_t const nPortIndex) override;
+	void Sync(const bool doForce) override;
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
 	void SetOutputStyle(const uint32_t nPortIndex, const lightset::OutputStyle outputStyle) override {
@@ -59,30 +65,10 @@ public:
 		Dmx::Get()->FullOn();
 	}
 
-#if defined(LIGHTSET_HAVE_RUN)
-	void Run() override {
-		const auto nMillis = Hardware::Get()->Millis();
-		if ((nMillis - s_nMillis) > 200) {
-			s_nMillis = nMillis;
-			for (uint32_t nPortIndex = 0; nPortIndex < dmx::config::max::OUT; nPortIndex++) {
-				hal::panel_led_off(hal::panelled::PORT_A_TX << nPortIndex);
-			}
-		}
-	}
-#endif
-
 	void Print() override;
 
 private:
-	static uint32_t s_nMillis;
-
-	struct TxData {
-		uint8_t data[dmx::buffer::SIZE];
-		uint32_t nLength;
-	};
-	static struct TxData s_TxData[dmx::config::max::OUT];
-
-	static uint8_t s_nStarted;
+	uint8_t m_nStarted { 0 };
 };
 
 #endif /* DMXSEND_H_ */

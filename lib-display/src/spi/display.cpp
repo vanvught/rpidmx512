@@ -58,13 +58,13 @@ Display::Display() : m_nMillis(Hardware::Get()->Millis()) {
 	FUNC_PREFIX(spi_set_speed_hz(20000000));
 	FUNC_PREFIX(spi_setDataMode(SPI_MODE0));
 
-#if defined (SPI_LCD_RST_PIN)
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_RST_PIN, GPIO_FSEL_OUTPUT));
+#if defined (SPI_LCD_RST_GPIO)
+	FUNC_PREFIX(gpio_fsel(SPI_LCD_RST_GPIO, GPIO_FSEL_OUTPUT));
 #endif
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_DC_PIN, GPIO_FSEL_OUTPUT));
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_BL_PIN, GPIO_FSEL_OUTPUT));
-#if defined(SPI_LCD_HAVE_CS_PIN)
-	FUNC_PREFIX(gpio_fsel(SPI_LCD_CS_PIN, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(SPI_LCD_DC_GPIO, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_fsel(SPI_LCD_BL_GPIO, GPIO_FSEL_OUTPUT));
+#if defined(SPI_LCD_HAVE_CS_GPIO)
+	FUNC_PREFIX(gpio_fsel(SPI_LCD_CS_GPIO, GPIO_FSEL_OUTPUT));
 #endif
 
 	SpiLcd.SetBackLight(1);

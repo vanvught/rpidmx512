@@ -1,4 +1,3 @@
-#if defined (BARE_METAL) || defined (RASPPI)
 /**
  * @file rdmsubdevicebwrelay.cpp
  *
@@ -27,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicebwrelay.h"
+#include "spi/rdmsubdevicebwrelay.h"
 
 #include "bwspirelay.h"
 
@@ -62,4 +61,3 @@ void RDMSubDeviceBwRelay::UpdateEvent(TRDMSubDeviceUpdateEvent tUpdateEvent) {
 		Stop();
 	}
 }
-#endif

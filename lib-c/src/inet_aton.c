@@ -25,13 +25,14 @@
 
 #include <stdint.h>
 #include <ctype.h>
+#include <netinet/in.h>
 
 typedef union pcast32 {
 	uint32_t u32;
 	uint8_t u8[4];
 } _pcast32;
 
-int inet_aton(const char *cp, uint32_t *ip_address) {
+int inet_aton(const char *cp, struct in_addr *ip_address) {
 	const char *b = cp;
 	int i, j, k;
 	_pcast32 cast32;
@@ -79,7 +80,7 @@ int inet_aton(const char *cp, uint32_t *ip_address) {
 		cast32.u8[i] = (uint8_t)k;
 
 		if (ip_address != 0) {
-			*ip_address = cast32.u32;
+			ip_address->s_addr = cast32.u32;
 		}
 
 		return 1;

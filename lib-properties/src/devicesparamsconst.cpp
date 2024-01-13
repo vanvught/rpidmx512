@@ -2,7 +2,7 @@
  * @file devicesparamsconst.cpp
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,6 @@ const char DevicesParamsConst::LED_T0H[] = "led_t0h";
 const char DevicesParamsConst::LED_T1H[] = "led_t1h";
 
 const char DevicesParamsConst::COUNT[] = "led_count";
-
-const char DevicesParamsConst::GROUPING_ENABLED[] = "led_grouping";
 const char DevicesParamsConst::GROUPING_COUNT[] = "led_group_count";
 
 const char DevicesParamsConst::SPI_SPEED_HZ[] = "clock_speed_hz";

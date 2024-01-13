@@ -26,22 +26,8 @@
 #ifndef RDMSUBDEVICESCONST_H_
 #define RDMSUBDEVICESCONST_H_
 
-#include <cstdint>
-
-namespace rdm {
-namespace subdevices {
-enum class Types {
-	BW7FETS, BWDIMMER, BWDIO, BWLCD, BWRELAY,	// BitWizard
-	MCP23S08, MCP23S17, 						// GPIO
-	MCP4822, MCP4902,							// DAC
-	UNDEFINED
-};
-}  // namespace subdevices
-}  // namespace rdm
-
 struct RDMSubDevicesConst {
 	static const char PARAMS_FILE_NAME[];
-	static const char TYPE[static_cast<uint32_t>(rdm::subdevices::Types::UNDEFINED)][9];
 };
 
 #endif /* RDMSUBDEVICESCONST_H_ */

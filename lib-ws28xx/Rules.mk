@@ -1,1 +1,1 @@
-EXTRA_INCLUDES+=../lib-hal/include
+EXTRA_INCLUDES+=

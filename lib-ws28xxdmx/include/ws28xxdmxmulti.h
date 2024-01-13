@@ -30,6 +30,7 @@
 #include <cassert>
 
 #include "lightset.h"
+#include "lightsetdata.h"
 
 #include "ws28xxmulti.h"
 
@@ -38,8 +39,13 @@
 
 #include "pixeldmxhandler.h"
 
-namespace ws28xxdmxmulti {
+#include "logic_analyzer.h"
 
+namespace ws28xxdmxmulti {
+#if !defined (CONFIG_PIXELDMX_MAX_PORTS)
+# define CONFIG_PIXELDMX_MAX_PORTS	8
+#endif
+static constexpr auto MAX_PORTS = CONFIG_PIXELDMX_MAX_PORTS;
 }  // namespace ws28xxdmxmulti
 
 class WS28xxDmxMulti final: public LightSet {
@@ -50,12 +56,64 @@ public:
 	void Start(const uint32_t nPortIndex) override;
 	void Stop(const uint32_t nPortIndex) override;
 
-	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate = true) override;
-	void Sync(__attribute__((unused)) const uint32_t nPortIndex) override {}
+	void SetData(uint32_t nPortIndex, __attribute__((unused)) const uint8_t *pData, __attribute__((unused)) uint32_t nLength, const bool doUpdate) override {
+		logic_analyzer::ch0_set();
+
+		if (!doUpdate) {
+			logic_analyzer::ch0_clear();
+			return;
+		}
+
+		if (nPortIndex == m_PortInfo.nProtocolPortIndexLast) {
+			logic_analyzer::ch1_set();
+
+			for (uint32_t nIndex = 0 ; nIndex <= m_PortInfo.nProtocolPortIndexLast;nIndex++) {
+				logic_analyzer::ch2_set();
+				SetData(nIndex, lightset::Data::Backup(nIndex), lightset::Data::GetLength(nIndex));
+				logic_analyzer::ch2_clear();
+			}
+
+#if defined (H3)
+			logic_analyzer::ch3_set();
+
+			while (m_pWS28xxMulti->IsUpdating()) {
+				// wait for completion
+			}
+
+			logic_analyzer::ch3_clear();
+#endif
+
+			m_pWS28xxMulti->Update();
+
+			logic_analyzer::ch1_clear();
+		}
+
+		logic_analyzer::ch0_clear();
+	}
+
+	void Sync(const uint32_t nPortIndex) override {
+		logic_analyzer::ch2_set();
+
+		SetData(nPortIndex, lightset::Data::Backup(nPortIndex), lightset::Data::GetLength(nPortIndex));
+
+		logic_analyzer::ch2_clear();
+	}
+
 	void Sync(const bool doForce) override {
 		if (__builtin_expect((!doForce), 1)) {
-			assert(m_pWS28xxMulti != nullptr);
+			logic_analyzer::ch1_set();
+
+			logic_analyzer::ch3_set();
+
+			while (m_pWS28xxMulti->IsUpdating()) {
+				// wait for completion
+			}
+
+			logic_analyzer::ch3_clear();
+
 			m_pWS28xxMulti->Update();
+
+			logic_analyzer::ch1_clear();
 		}
 	}
 
@@ -121,6 +179,9 @@ public:
 	uint16_t GetDmxFootprint() override {
 		return 0;
 	}
+
+private:
+	void SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength);
 
 private:
 	PixelDmxConfiguration m_pixelDmxConfiguration;

@@ -26,6 +26,7 @@
 #include <cstring>
 
 #include "rdmhandler.h"
+#include "rdmconst.h"
 #include "rdm_e120.h"
 #include "network.h"
 

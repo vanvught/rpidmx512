@@ -33,14 +33,10 @@
 
 #include "widget.h"
 #include "widgetparams.h"
-#include "widgetstore.h"
 #include "rdmdeviceparams.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
-#include "storewidget.h"
-#include "storerdmdevice.h"
 
 #include "software_version.h"
 
@@ -57,33 +53,29 @@ void main() {
 	ConfigStore configStore;
 	Network nw;
 	FlashCodeInstall spiFlashInstall;
-	StoreWidget storeWidget;
-	StoreRDMDevice storeRDMDevice;
 
 	Widget widget;
+	widget.SetPortDirection(0, dmx::PortDirection::INP, false);
 
-	WidgetParams widgetParams(&storeWidget);
-
-	if (widgetParams.Load()) {
-		widgetParams.Dump();
-		widgetParams.Set();
-	}
-
-	RDMDeviceParams rdmDeviceParams(&storeRDMDevice);
+	WidgetParams widgetParams;
+	widgetParams.Load();
+	widgetParams.Set();
 
 	widget.SetLabel(&deviceLabel);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Set(&widget);
-		rdmDeviceParams.Dump();
-	}
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&widget);
+
+	const auto tWidgetMode = widget::Mode::RDM_SNIFFER;
+	widget.SetMode(tWidgetMode);
 
 	widget.Init();
 
 	const auto *pRdmDeviceUid = widget.GetUID();
 	struct TRDMDeviceInfoData tRdmDeviceLabel;
 	widget.GetLabel(&tRdmDeviceLabel);
-	const auto tWidgetMode = widgetParams.GetMode();
+//	const auto tWidgetMode = widgetParams.GetMode();
 
 	uint8_t nHwTextLength;
 	printf("[V%s] %s Compiled on %s at %s\n", SOFTWARE_VERSION, hw.GetBoardName(nHwTextLength), __DATE__, __TIME__);

@@ -1,6 +1,4 @@
-EXTRA_INCLUDES+=../lib-tlc59711/include
-EXTRA_INCLUDES+=../lib-lightset/include
-EXTRA_INCLUDES+=../lib-properties/include 
+EXTRA_INCLUDES+=../lib-tlc59711/include ../lib-lightset/include ../lib-properties/include 
 
 ifneq ($(MAKE_FLAGS),)
 	ifneq (,$(findstring ENABLE_RDM_MANUFACTURER_PIDS,$(MAKE_FLAGS)))

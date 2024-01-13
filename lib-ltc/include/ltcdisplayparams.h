@@ -2,7 +2,7 @@
  * @file ltcdisplayparams.h
  *
  */
-/* Copyright (C) 2019-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,8 @@
 #include <cstdint>
 
 #include "ltcdisplaymax7219.h"
-
 #include "ltcdisplayrgb.h"
+#include "configstore.h"
 
 namespace ltcdisplayparams {
 struct Params {
@@ -69,18 +69,20 @@ struct Mask {
 
 class LtcDisplayParamsStore {
 public:
-	virtual ~LtcDisplayParamsStore() {
+	static void Update(const struct ltcdisplayparams::Params *ptLtcDisplayParams) {
+		ConfigStore::Get()->Update(configstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
 	}
 
-	virtual void Update(const struct ltcdisplayparams::Params *ptLtcDisplayParams)=0;
-	virtual void Copy(struct ltcdisplayparams::Params *ptLtcDisplayParams)=0;
+	static void Copy(struct ltcdisplayparams::Params *ptLtcDisplayParams) {
+		ConfigStore::Get()->Copy(configstore::Store::LTCDISPLAY, ptLtcDisplayParams, sizeof(struct ltcdisplayparams::Params));
+	}
 };
 
 class LtcDisplayParams {
 public:
-	LtcDisplayParams(LtcDisplayParamsStore *pLtcDisplayParamsStore);
+	LtcDisplayParams();
 
-	bool Load();
+	void Load();
 	void Load(const char *pBuffer, uint32_t nLength);
 
 	void Builder(const struct ltcdisplayparams::Params *ptLtcDisplayParams, char *pBuffer, uint32_t nLength, uint32_t& nSize);
@@ -90,50 +92,48 @@ public:
 
 	void Set(LtcDisplayRgb *pLtcDisplayWS28xx);
 
-	void Dump();
-
 	ltc::display::max7219::Types GetMax7219Type() const {
-		return static_cast<ltc::display::max7219::Types>(m_tLtcDisplayParams.nMax7219Type);
+		return static_cast<ltc::display::max7219::Types>(m_Params.nMax7219Type);
 	}
 
 	uint8_t GetMax7219Intensity() const {
-		return m_tLtcDisplayParams.nMax7219Intensity;
+		return m_Params.nMax7219Intensity;
 	}
 
 #if !defined (CONFIG_LTC_DISABLE_WS28XX)
 	pixel::Type GetWS28xxLedType() const {
-		return static_cast<pixel::Type>(m_tLtcDisplayParams.nWS28xxType);
+		return static_cast<pixel::Type>(m_Params.nWS28xxType);
 	}
 #endif
 
 	ltcdisplayrgb::WS28xxType GetWS28xxDisplayType() const {
-		return static_cast<ltcdisplayrgb::WS28xxType>(m_tLtcDisplayParams.nWS28xxDisplayType);
+		return static_cast<ltcdisplayrgb::WS28xxType>(m_Params.nWS28xxDisplayType);
 	}
 
 	const char *GetInfoMessage(uint32_t& nLength) const {
-		nLength = sizeof(m_tLtcDisplayParams.aInfoMessage);
-		return m_tLtcDisplayParams.aInfoMessage;
+		nLength = sizeof(m_Params.aInfoMessage);
+		return m_Params.aInfoMessage;
 	}
 
 	uint8_t GetOledIntensity() const {
-		return m_tLtcDisplayParams.nOledIntensity;
+		return m_Params.nOledIntensity;
 	}
 
 	bool IsRotaryFullStep() const {
-		return m_tLtcDisplayParams.nRotaryFullStep != 0;
+		return m_Params.nRotaryFullStep != 0;
 	}
 
     static void staticCallbackFunction(void *p, const char *s);
 
 private:
+	void Dump();
     void callbackFunction(const char *pLine);
     bool isMaskSet(uint32_t nMask) const {
-    	return (m_tLtcDisplayParams.nSetList & nMask) == nMask;
+    	return (m_Params.nSetList & nMask) == nMask;
     }
 
 private:
-	LtcDisplayParamsStore *m_pLtcDisplayParamsStore;
-	struct ltcdisplayparams::Params m_tLtcDisplayParams;
+	ltcdisplayparams::Params m_Params;
 };
 
 #endif /* LTCDISPLAYPARAMS_H_ */

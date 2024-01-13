@@ -27,27 +27,6 @@
 
 #include "h3.h"
 
-#define SCLK_GATING		(1U << 31)
-
-#define AVS_CNT0_EN		(1 << 0)
-#define AVS_CNT1_EN		(1 << 1)
-
-#define AVS_CNT0_D_SHIFT	0
-#define AVS_CNT1_D_SHIFT	16
-
-#define DIV_N_CNT0	0x2EE0	// 24MHz / 2 / 12000 = 1KHz, period 1ms
-#define DIV_N_CNT1	0xC		// 24MHz / 2 / 12 = 1MHz, period 1us
-
-void __attribute__((cold)) h3_timer_init(void) {
-	H3_CCU->AVS_CLK_CFG |= SCLK_GATING;
-
-	H3_TIMER->AVS_CTRL = AVS_CNT1_EN |AVS_CNT0_EN;
-	H3_TIMER->AVS_DIV = (DIV_N_CNT1 << AVS_CNT1_D_SHIFT) | DIV_N_CNT0;
-
-	H3_TIMER->AVS_CNT0 = 0;
-	H3_TIMER->AVS_CNT1 = 0;
-}
-
 void __msdelay(uint32_t ms) {
 	uint32_t t1, t2;
 

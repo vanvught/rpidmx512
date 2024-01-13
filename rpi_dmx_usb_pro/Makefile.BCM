@@ -1,5 +1,7 @@
 DEFINES=NO_EMAC RDM_CONTROLLER UPDATE_CONFIG_FILE CONSOLE_FB DISABLE_RTC ENABLE_MMU NDEBUG
+
 LIBS=widget dmx rdm usb network display hal
+
 SRCDIR=firmware
 
 include ../firmware-template-bcm/Rules.mk

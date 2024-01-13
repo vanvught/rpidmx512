@@ -2,7 +2,7 @@
  * @file ltcetcparams.cpp
  *
  */
-/* Copyright (C) 2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2022-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,48 +43,52 @@
 
 #include "debug.h"
 
-LtcEtcParams::LtcEtcParams(LtcEtcParamsStore *pLtcEtcParamsStore): m_pLtcEtcParamsStore(pLtcEtcParamsStore) {
-	memset(&m_pLtcEtcParams, 0, sizeof(struct ltcetcparams::Params));
+LtcEtcParams::LtcEtcParams() {
+	DEBUG_ENTRY
+
+	memset(&m_Params, 0, sizeof(struct ltcetcparams::Params));
+
+	DEBUG_EXIT
 }
 
-bool LtcEtcParams::Load() {
-	m_pLtcEtcParams.nSetList = 0;
+void LtcEtcParams::Load() {
+	DEBUG_ENTRY
+
+	m_Params.nSetList = 0;
 
 #if !defined(DISABLE_FS)
 	ReadConfigFile configfile(LtcEtcParams::staticCallbackFunction, this);
 
 	if (configfile.Read(LtcEtcParamsConst::FILE_NAME)) {
-		if (m_pLtcEtcParamsStore != nullptr) {
-			m_pLtcEtcParamsStore->Update(&m_pLtcEtcParams);
-		}
+		LtcEtcParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pLtcEtcParamsStore != nullptr) {
-		m_pLtcEtcParamsStore->Copy(&m_pLtcEtcParams);
-	} else {
-		return false;
-	}
+		LtcEtcParamsStore::Copy(&m_Params);
 
-	return true;
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void LtcEtcParams::Load(const char *pBuffer, uint32_t nLength) {
+	DEBUG_ENTRY
+
 	assert(pBuffer != nullptr);
 	assert(nLength != 0);
 
-	assert(m_pLtcEtcParamsStore != nullptr);
-
-	if (m_pLtcEtcParamsStore == nullptr) {
-		return;
-	}
-
-	m_pLtcEtcParams.nSetList = 0;
+	m_Params.nSetList = 0;
 
 	ReadConfigFile config(LtcEtcParams::staticCallbackFunction, this);
 
 	config.Read(pBuffer, nLength);
 
-	m_pLtcEtcParamsStore->Update(&m_pLtcEtcParams);
+	LtcEtcParamsStore::Update(&m_Params);
+
+#ifndef NDEBUG
+	Dump();
+#endif
+	DEBUG_EXIT
 }
 
 void LtcEtcParams::callbackFunction(const char *pLine) {
@@ -94,22 +98,22 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::IpAddress(pLine, LtcEtcParamsConst::DESTINATION_IP, nValue32) == Sscan::OK) {
 		if ((network::is_private_ip(nValue32)) || network::is_multicast_ip(nValue32)) {
-			m_pLtcEtcParams.nDestinationIp = nValue32;
-			m_pLtcEtcParams.nSetList |= ltcetcparams::Mask::DESTINATION_IP;
+			m_Params.nDestinationIp = nValue32;
+			m_Params.nSetList |= ltcetcparams::Mask::DESTINATION_IP;
 		} else {
-			m_pLtcEtcParams.nDestinationIp = 0;
-			m_pLtcEtcParams.nSetList &= ~ltcetcparams::Mask::DESTINATION_IP;
+			m_Params.nDestinationIp = 0;
+			m_Params.nSetList &= ~ltcetcparams::Mask::DESTINATION_IP;
 		}
 		return;
 	}
 
 	if (Sscan::IpAddress(pLine, LtcEtcParamsConst::SOURCE_MULTICAST_IP, nValue32) == Sscan::OK) {
 		if (network::is_multicast_ip(nValue32)) {
-			m_pLtcEtcParams.nSourceMulticastIp = nValue32;
-			m_pLtcEtcParams.nSetList |= ltcetcparams::Mask::SOURCE_MULTICAST_IP;
+			m_Params.nSourceMulticastIp = nValue32;
+			m_Params.nSetList |= ltcetcparams::Mask::SOURCE_MULTICAST_IP;
 		} else {
-			m_pLtcEtcParams.nDestinationIp = 0;
-			m_pLtcEtcParams.nSetList &= ~ltcetcparams::Mask::SOURCE_MULTICAST_IP;
+			m_Params.nDestinationIp = 0;
+			m_Params.nSetList &= ~ltcetcparams::Mask::SOURCE_MULTICAST_IP;
 		}
 		return;
 	}
@@ -118,22 +122,22 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 
 	if (Sscan::Uint16(pLine, LtcEtcParamsConst::DESTINATION_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
-			m_pLtcEtcParams.nDestinationPort = nValue16;
-			m_pLtcEtcParams.nSetList |= ltcetcparams::Mask::DESTINATION_PORT;
+			m_Params.nDestinationPort = nValue16;
+			m_Params.nSetList |= ltcetcparams::Mask::DESTINATION_PORT;
 		} else {
-			m_pLtcEtcParams.nDestinationPort = 0;
-			m_pLtcEtcParams.nSetList &= ~ltcetcparams::Mask::DESTINATION_PORT;
+			m_Params.nDestinationPort = 0;
+			m_Params.nSetList &= ~ltcetcparams::Mask::DESTINATION_PORT;
 		}
 		return;
 	}
 
 	if (Sscan::Uint16(pLine, LtcEtcParamsConst::SOURCE_PORT, nValue16) == Sscan::OK) {
 		if (nValue16 > 1023) {
-			m_pLtcEtcParams.nSourcePort = nValue16;
-			m_pLtcEtcParams.nSetList |= ltcetcparams::Mask::SOURCE_PORT;
+			m_Params.nSourcePort = nValue16;
+			m_Params.nSetList |= ltcetcparams::Mask::SOURCE_PORT;
 		} else {
-			m_pLtcEtcParams.nSourcePort = 0;
-			m_pLtcEtcParams.nSetList &= ~ltcetcparams::Mask::SOURCE_PORT;
+			m_Params.nSourcePort = 0;
+			m_Params.nSetList &= ~ltcetcparams::Mask::SOURCE_PORT;
 		}
 		return;
 	}
@@ -146,11 +150,11 @@ void LtcEtcParams::callbackFunction(const char *pLine) {
 		const auto terminator = ltc::etc::get_udp_terminator(aTerminator);
 
 		if ((terminator == ltc::etc::UdpTerminator::NONE) || (terminator == ltc::etc::UdpTerminator::UNDEFINED)) {
-			m_pLtcEtcParams.nUdpTerminator = 0;
-			m_pLtcEtcParams.nSetList &= ~ltcetcparams::Mask::UDP_TERMINATOR;
+			m_Params.nUdpTerminator = 0;
+			m_Params.nSetList &= ~ltcetcparams::Mask::UDP_TERMINATOR;
 		} else {
-			m_pLtcEtcParams.nUdpTerminator = static_cast<uint8_t>(terminator);
-			m_pLtcEtcParams.nSetList |= ltcetcparams::Mask::UDP_TERMINATOR;
+			m_Params.nUdpTerminator = static_cast<uint8_t>(terminator);
+			m_Params.nSetList |= ltcetcparams::Mask::UDP_TERMINATOR;
 		}
 		return;
 	}
@@ -161,23 +165,23 @@ void LtcEtcParams::Builder(const struct ltcetcparams::Params *ptLtcEtcParams, ch
 	assert(pBuffer != nullptr);
 
 	if (ptLtcEtcParams != nullptr) {
-		memcpy(&m_pLtcEtcParams, ptLtcEtcParams, sizeof(struct ltcetcparams::Params));
+		memcpy(&m_Params, ptLtcEtcParams, sizeof(struct ltcetcparams::Params));
 	} else {
-		m_pLtcEtcParamsStore->Copy(&m_pLtcEtcParams);
+		LtcEtcParamsStore::Copy(&m_Params);
 	}
 
 	PropertiesBuilder builder(LtcEtcParamsConst::FILE_NAME, pBuffer, nLength);
 
 	builder.AddComment("Out");
-	builder.AddIpAddress(LtcEtcParamsConst::DESTINATION_IP, m_pLtcEtcParams.nDestinationIp, isMaskSet(ltcetcparams::Mask::DESTINATION_IP));
-	builder.Add(LtcEtcParamsConst::DESTINATION_PORT, m_pLtcEtcParams.nDestinationPort, isMaskSet(ltcetcparams::Mask::DESTINATION_PORT));
+	builder.AddIpAddress(LtcEtcParamsConst::DESTINATION_IP, m_Params.nDestinationIp, isMaskSet(ltcetcparams::Mask::DESTINATION_IP));
+	builder.Add(LtcEtcParamsConst::DESTINATION_PORT, m_Params.nDestinationPort, isMaskSet(ltcetcparams::Mask::DESTINATION_PORT));
 
 	builder.AddComment("In");
-	builder.AddIpAddress(LtcEtcParamsConst::SOURCE_MULTICAST_IP, m_pLtcEtcParams.nSourceMulticastIp, isMaskSet(ltcetcparams::Mask::SOURCE_MULTICAST_IP));
-	builder.Add(LtcEtcParamsConst::SOURCE_PORT, m_pLtcEtcParams.nSourcePort, isMaskSet(ltcetcparams::Mask::SOURCE_PORT));
+	builder.AddIpAddress(LtcEtcParamsConst::SOURCE_MULTICAST_IP, m_Params.nSourceMulticastIp, isMaskSet(ltcetcparams::Mask::SOURCE_MULTICAST_IP));
+	builder.Add(LtcEtcParamsConst::SOURCE_PORT, m_Params.nSourcePort, isMaskSet(ltcetcparams::Mask::SOURCE_PORT));
 
 	builder.AddComment("UDP Terminator: None/CR/LF/CRLF");
-	builder.Add(LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_pLtcEtcParams.nUdpTerminator)), isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR));
+	builder.Add(LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator)), isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR));
 
 	nSize = builder.GetSize();
 }
@@ -186,23 +190,23 @@ void LtcEtcParams::Set() {
 	auto *p = LtcEtc::Get();
 
 	if (isMaskSet(ltcetcparams::Mask::DESTINATION_IP)) {
-		p->SetDestinationIp(m_pLtcEtcParams.nDestinationIp);
+		p->SetDestinationIp(m_Params.nDestinationIp);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::DESTINATION_PORT)) {
-		p->SetDestinationPort(m_pLtcEtcParams.nDestinationPort);
+		p->SetDestinationPort(m_Params.nDestinationPort);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::SOURCE_MULTICAST_IP)) {
-		p->SetSourceMulticastIp(m_pLtcEtcParams.nSourceMulticastIp);
+		p->SetSourceMulticastIp(m_Params.nSourceMulticastIp);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::SOURCE_PORT)) {
-		p->SetSourcePort(m_pLtcEtcParams.nSourcePort);
+		p->SetSourcePort(m_Params.nSourcePort);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR)) {
-		p->SetUdpTerminator(static_cast<ltc::etc::UdpTerminator>(m_pLtcEtcParams.nUdpTerminator));
+		p->SetUdpTerminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator));
 	}
 }
 
@@ -218,27 +222,25 @@ void LtcEtcParams::staticCallbackFunction(void *p, const char *s) {
 #include "network.h"
 
 void LtcEtcParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, LtcEtcParamsConst::FILE_NAME);
 
 	if (isMaskSet(ltcetcparams::Mask::DESTINATION_IP)) {
-		printf(" %s=" IPSTR "\n", LtcEtcParamsConst::DESTINATION_IP, IP2STR(m_pLtcEtcParams.nDestinationIp));
+		printf(" %s=" IPSTR "\n", LtcEtcParamsConst::DESTINATION_IP, IP2STR(m_Params.nDestinationIp));
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::DESTINATION_PORT)) {
-		printf(" %s=%u\n", LtcEtcParamsConst::DESTINATION_PORT, m_pLtcEtcParams.nDestinationPort);
+		printf(" %s=%u\n", LtcEtcParamsConst::DESTINATION_PORT, m_Params.nDestinationPort);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::SOURCE_MULTICAST_IP)) {
-		printf(" %s=" IPSTR "\n", LtcEtcParamsConst::SOURCE_MULTICAST_IP, IP2STR(m_pLtcEtcParams.nSourceMulticastIp));
+		printf(" %s=" IPSTR "\n", LtcEtcParamsConst::SOURCE_MULTICAST_IP, IP2STR(m_Params.nSourceMulticastIp));
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::SOURCE_PORT)) {
-		printf(" %s=%u\n", LtcEtcParamsConst::SOURCE_PORT, m_pLtcEtcParams.nSourcePort);
+		printf(" %s=%u\n", LtcEtcParamsConst::SOURCE_PORT, m_Params.nSourcePort);
 	}
 
 	if (isMaskSet(ltcetcparams::Mask::UDP_TERMINATOR)) {
-		printf(" %s=%s [%u]\n", LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_pLtcEtcParams.nUdpTerminator)) , m_pLtcEtcParams.nUdpTerminator);
+		printf(" %s=%s [%u]\n", LtcEtcParamsConst::UDP_TERMINATOR, ltc::etc::get_udp_terminator(static_cast<ltc::etc::UdpTerminator>(m_Params.nUdpTerminator)) , m_Params.nUdpTerminator);
 	}
-#endif
 }

@@ -4,5 +4,4 @@ else
 	DEFINES+=LIGHTSET_PORTS=32
 endif
 
-EXTRA_INCLUDES =../lib-properties/include ../lib-hal/include ../lib-network/include 
-EXTRA_INCLUDES+=../lib-lightset/include
+EXTRA_INCLUDES =../lib-properties/include ../lib-network/include ../lib-lightset/include

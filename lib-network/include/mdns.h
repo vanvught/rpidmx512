@@ -61,8 +61,11 @@ public:
 	MDNS();
 	~MDNS();
 
-	bool AddServiceRecord(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
+	bool ServiceRecordAdd(const char *pName, const mdns::Services service, const char *pTextContent = nullptr, const uint16_t nPort = 0);
+	bool ServiceRecordDelete(const mdns::Services service);
+
 	void Print();
+
 	void SendAnnouncement(const uint32_t nTTL);
 
 	void Run() {

@@ -34,7 +34,7 @@ namespace timeout {
 
 void gpio_init() {
 	h3_gpio_fsel(KEY2_GPIO, GPIO_FSEL_INPUT);
-	h3_gpio_pud(KEY2_GPIO, GPIO_PULL_UP);
+	h3_gpio_set_pud(KEY2_GPIO, GPIO_PULL_UP);
 }
 
 bool gpio_renew() {

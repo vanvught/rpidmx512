@@ -2,7 +2,7 @@
  * @file ntp.h
  *
  */
-/* Copyright (C) 2019-2020 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,31 +26,19 @@
 #ifndef NTP_H_
 #define NTP_H_
 
-static constexpr auto LOCAL_TIME_YEAR_OFFSET = 1900;
-static constexpr auto NTP_TIMESTAMP_DELTA = 2208988800u;
+#include <cstdint>
 
-enum TNtpUdpPort {
-	NTP_UDP_PORT = 123
-};
+namespace ntp {
+static constexpr uint32_t LOCAL_TIME_YEAR_OFFSET = 1900;
+static constexpr uint32_t NTP_TIMESTAMP_DELTA = 2208988800u;
+static constexpr uint16_t UDP_PORT = 123;
+static constexpr uint8_t  VERSION = (4U << 3);
+static constexpr uint8_t  MODE_CLIENT = (3U << 0);
+static constexpr uint8_t  MODE_SERVER = (4U << 0);
+static constexpr uint8_t  STRATUM = 2;
+static constexpr uint8_t  MINPOLL = 4;
 
-enum TNtpVersion {
-	NTP_VERSION = (4 << 3)
-};
-
-enum TNtpMode {
-	NTP_MODE_CLIENT = (3 << 0),
-	NTP_MODE_SERVER = (4 << 0)
-};
-
-enum TNtpStratum {
-	NTP_STRATUM = 2
-};
-
-enum TNtpPoll {
-	NTP_MINPOLL = 4
-};
-
-struct TNtpPacket {
+struct Packet {
 	uint8_t LiVnMode;
 	uint8_t Stratum;
 	uint8_t Poll;
@@ -67,5 +55,6 @@ struct TNtpPacket {
 	uint32_t TransmitTimestamp_s;
 	uint32_t TransmitTimestamp_f;
 }__attribute__((packed));
+}  // namespace ntp
 
 #endif /* NTP_H_ */

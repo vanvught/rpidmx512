@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cstring>
 
-#include "rdmsubdevicebwdimmer.h"
+#include "spi/rdmsubdevicebwdimmer.h"
 
 #include "bwspidimmer.h"
 

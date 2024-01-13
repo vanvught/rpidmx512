@@ -2,7 +2,7 @@
  * @file ws28xxmulti.h
  *
  */
-/* Copyright (C) 2021-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,11 +27,11 @@
 #define WS28XXMULTI_H_
 
 #if defined (H3)
-# include "spi/ws28xxmulti.h"
+# include "h3/ws28xxmulti.h"
 #elif defined (GD32)
-# include "gpio/ws28xxmulti.h"
+# include "gd32/gpio/ws28xxmulti.h"
 #else
-# error
+# error Platform is not supported
 #endif
 
 #endif /* WS28XXMULTI_H_ */

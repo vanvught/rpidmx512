@@ -2,7 +2,7 @@
  * @file h3_opi_zero.h
  *
  */
-/* Copyright (C) 2018-2022 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -57,8 +57,10 @@ typedef enum H3_BOARD_OPI_ZERO {
 	GPIO_EXT_8 = H3_PORT_TO_GPIO(H3_GPIO_PORTG, 6),		///< UART1 TX, PG6
 	GPIO_EXT_10 = H3_PORT_TO_GPIO(H3_GPIO_PORTG, 7),	///< UART1 RX, PG7
 	GPIO_EXT_12 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 7),	///< PA7
+	// 14 GND
 	GPIO_EXT_16 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 19),	///< PA19
 	GPIO_EXT_18 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 18),	///< PA18
+	// 20 GND
 	GPIO_EXT_22 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 2),	///< PA2
 	GPIO_EXT_24 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 13),	///< SPI1 SPICS0, PA13
 	GPIO_EXT_26 = H3_PORT_TO_GPIO(H3_GPIO_PORTA, 10)	///< PA10

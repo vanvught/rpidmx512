@@ -33,10 +33,6 @@
 
 #include "mdns.h"
 
-#if defined (ENABLE_HTTPD)
-# include "httpd/httpd.h"
-#endif
-
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
@@ -74,14 +70,7 @@
 #include "flashcodeinstall.h"
 #include "configstore.h"
 
-#include "storedisplayudf.h"
-#include "storedmxsend.h"
-#include "storenetwork.h"
-#if defined (NODE_RDMNET_LLRP_ONLY)
-# include "storerdmdevice.h"
-#endif
-#include "storeremoteconfig.h"
-#include "storepixeldmx.h"
+
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -96,8 +85,8 @@ void main() {
 	DisplayUdf display;
 	ConfigStore configStore;
 	display.TextStatus(NetworkConst::MSG_NETWORK_INIT, Display7SegmentMessage::INFO_NETWORK_INIT, CONSOLE_YELLOW);
-	StoreNetwork storeNetwork;
-	Network nw(&storeNetwork);
+	Network nw;
+	MDNS mDns;
 	display.TextStatus(NetworkConst::MSG_NETWORK_STARTED, Display7SegmentMessage::INFO_NONE, CONSOLE_GREEN);
 	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
 	FlashCodeInstall spiFlashInstall;
@@ -105,32 +94,16 @@ void main() {
 	fw.Print("DDP Pixel controller 8x 4U with 2x DMX");
 	nw.Print();
 
-	display.TextStatus(NetworkConst::MSG_MDNS_CONFIG, Display7SegmentMessage::INFO_MDNS_CONFIG, CONSOLE_YELLOW);
 
-	MDNS mDns;
-	mDns.AddServiceRecord(nullptr, mdns::Services::CONFIG);
-	mDns.AddServiceRecord(nullptr, mdns::Services::TFTP);
-	mDns.AddServiceRecord(nullptr, mdns::Services::DDP, "type=display");
-#if defined (ENABLE_HTTPD)
-	mDns.AddServiceRecord(nullptr, mdns::Services::HTTP, "node=DDP Pixel DMX");
-#endif
-	mDns.Print();
-
-#if defined (ENABLE_HTTPD)
-	HttpDaemon httpDaemon;
-#endif
+	mDns.ServiceRecordAdd(nullptr, mdns::Services::DDP, "type=display");
 
 	// LightSet A - Pixel - 32 Universes
 
 	PixelDmxConfiguration pixelDmxConfiguration;
 
-	StorePixelDmx storePixelDmx;
-	PixelDmxParams pixelDmxParams(&storePixelDmx);
-
-	if (pixelDmxParams.Load()) {
-		pixelDmxParams.Dump();
-		pixelDmxParams.Set(&pixelDmxConfiguration);
-	}
+	PixelDmxParams pixelDmxParams;
+	pixelDmxParams.Load();
+	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	WS28xxDmxMulti pixelDmxMulti(pixelDmxConfiguration);
 	WS28xxMulti::Get()->SetJamSTAPLDisplay(new HandlerOled);
@@ -147,18 +120,13 @@ void main() {
 
 	// LightSet B - DMX - 2 Universes
 
-	StoreDmxSend storeDmxSend;
-	DmxParams dmxparams(&storeDmxSend);
-
 	Dmx dmx;
 
-	if (dmxparams.Load()) {
-		dmxparams.Dump();
-		dmxparams.Set(&dmx);
-	}
+	DmxParams dmxparams;
+	dmxparams.Load();
+	dmxparams.Set(&dmx);
 
 	DmxSend dmxSend;
-
 	dmxSend.Print();
 
 	auto *pDmxConfigUdp = new DmxConfigUdp;
@@ -189,15 +157,10 @@ void main() {
 	llrpOnlyDevice.SetProductDetail(E120_PRODUCT_DETAIL_LED);
 	llrpOnlyDevice.Init();
 
-	StoreRDMDevice storeRdmDevice;
-	RDMDeviceParams rdmDeviceParams(&storeRdmDevice);
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&llrpOnlyDevice);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&llrpOnlyDevice);
-	}
-
-	llrpOnlyDevice.SetRDMDeviceStore(&storeRdmDevice);
 	llrpOnlyDevice.Print();
 #endif
 
@@ -208,15 +171,12 @@ void main() {
 	display.Set(5, displayudf::Labels::DEFAULT_GATEWAY);
 	display.Set(6, displayudf::Labels::DMX_DIRECTION);
 
-	StoreDisplayUdf storeDisplayUdf;
-	DisplayUdfParams displayUdfParams(&storeDisplayUdf);
-
-	if (displayUdfParams.Load()) {
-		displayUdfParams.Dump();
-		displayUdfParams.Set(&display);
-	}
+	DisplayUdfParams displayUdfParams;
+	displayUdfParams.Load();
+	displayUdfParams.Set(&display);
 
 	display.Show();
+
 	display.Printf(7, "%s:%d G%d %s",
 		PixelType::GetType(pixelDmxConfiguration.GetType()),
 		pixelDmxConfiguration.GetCount(),
@@ -230,16 +190,14 @@ void main() {
 
 	RemoteConfig remoteConfig(remoteconfig::Node::DDP, remoteconfig::Output::PIXEL, nActivePorts);
 
-	StoreRemoteConfig storeRemoteConfig;
-	RemoteConfigParams remoteConfigParams(&storeRemoteConfig);
-
-	if(remoteConfigParams.Load()) {
-		remoteConfigParams.Dump();
-		remoteConfigParams.Set(&remoteConfig);
-	}
+	RemoteConfigParams remoteConfigParams;
+	remoteConfigParams.Load();
+	remoteConfigParams.Set(&remoteConfig);
 
 	while (configStore.Flash())
 		;
+
+	mDns.Print();
 
 	display.TextStatus("DDP Display Start", Display7SegmentMessage::INFO_BRIDGE_START, CONSOLE_YELLOW);
 
@@ -262,9 +220,6 @@ void main() {
 		mDns.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
-#endif
-#if defined (ENABLE_HTTPD)
-		httpDaemon.Run();
 #endif
 		display.Run();
 		hw.Run();

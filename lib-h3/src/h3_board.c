@@ -2,7 +2,7 @@
  * @file h3_board.c
  *
  */
-/* Copyright (C) 2018-2021 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,4 +50,3 @@ void __attribute__((cold)) h3_board_dump(void) {
 	uart0_printf("                  GND  24 : 26 P%c%-2d GPIO%-3d\n",  OUT_R(GPIO_EXT_26));
 	uart0_printf("\nStatus led: P%c%-2d GPIO%-3d\n", PORT_LETTER(H3_BOARD_STATUS_LED), H3_BOARD_STATUS_LED, H3_GPIO_TO_NUMBER(H3_BOARD_STATUS_LED));
 }
-

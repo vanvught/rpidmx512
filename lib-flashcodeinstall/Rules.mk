@@ -1,3 +1,3 @@
 EXTRA_SRCDIR+=
 
-EXTRA_INCLUDES+=../lib-flashcode/include ../lib-hal/include ../lib-display/include
+EXTRA_INCLUDES+=../lib-flashcode/include ../lib-display/include

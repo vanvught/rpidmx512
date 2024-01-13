@@ -33,7 +33,6 @@
 
 namespace net {
 namespace globals {
-extern struct IpInfo ipInfo;
 extern uint8_t macAddress[ETH_ADDR_LEN];
 }  // namespace globals
 }  // namespace net
@@ -49,7 +48,6 @@ __attribute__((hot)) void icmp_handle(struct t_icmp *p_icmp) {
 			// Ethernet
 			memcpy(p_icmp->ether.dst, p_icmp->ether.src, ETH_ADDR_LEN);
 			memcpy(p_icmp->ether.src, net::globals::macAddress, ETH_ADDR_LEN);
-
 			// IPv4
 			p_icmp->ip4.id = static_cast<uint16_t>(~p_icmp->ip4.id);
 			uint8_t dst[IPv4_ADDR_LEN];

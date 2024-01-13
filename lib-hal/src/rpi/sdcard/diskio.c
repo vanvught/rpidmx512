@@ -109,7 +109,7 @@ static inline int sdcard_read(uint8_t * buf, int sector, int count) {
 	return RES_OK;
 }
 
-#ifdef SD_WRITE_SUPPORT
+#ifdef CONFIG_FS_ENABLE_WRITE
 /**
  *
  * @param buf
@@ -179,7 +179,7 @@ DRESULT disk_read(BYTE drv, BYTE *buf, DWORD sector, UINT count) {
  * @return
  */
 DRESULT disk_write(BYTE drv, const BYTE *buf, DWORD sector, UINT count) {
-#ifdef SD_WRITE_SUPPORT
+#ifdef CONFIG_FS_ENABLE_WRITE
 	if (drv || !count) {
 		return RES_PARERR;
 	}

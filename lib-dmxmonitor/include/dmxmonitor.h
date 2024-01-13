@@ -28,7 +28,6 @@
 
 #include <cstdint>
 
-#include "dmxmonitorstore.h"
 #include "lightset.h"
 
 #include "debug.h"
@@ -54,7 +53,7 @@ namespace text {
 class DMXMonitor: public LightSet {
 public:
 	DMXMonitor();
-	~DMXMonitor() override {}
+	~DMXMonitor() override = default;
 
 	void Print() override {
 		DEBUG_ENTRY
@@ -116,10 +115,6 @@ public:
 
 	void Cls();
 
-	void SetDmxMonitorStore(DmxMonitorStore *pDmxMonitorStore) {
-		m_pDmxMonitorStore = pDmxMonitorStore;
-	}
-
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	void SetMaxDmxChannels(uint16_t nMaxChannels);
 
@@ -135,7 +130,6 @@ private:
 	dmxmonitor::Format m_tFormat = dmxmonitor::Format::HEX;
 	uint32_t m_nSlots { 0 };
 	uint32_t m_nOutPutStyle;
-	DmxMonitorStore *m_pDmxMonitorStore { nullptr };
 #if defined (__linux__) || defined (__CYGWIN__) || defined(__APPLE__)
 	enum {
 		DMX_DEFAULT_MAX_CHANNELS = 32,

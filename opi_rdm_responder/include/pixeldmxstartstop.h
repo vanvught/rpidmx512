@@ -33,17 +33,11 @@
 
 class PixelDmxStartStop final: public PixelDmxHandler {
 public:
-	PixelDmxStartStop() {
-	}
+	PixelDmxStartStop() = default;
+	~PixelDmxStartStop() override = default;
 
-	~PixelDmxStartStop() override {
-	}
-
-	void Start() override {
-	}
-
-	void Stop() override {
-	}
+	void Start() override {}
+	void Stop() override {}
 };
 
 #endif /* PIXELDMXSTARTSTOP_H_ */

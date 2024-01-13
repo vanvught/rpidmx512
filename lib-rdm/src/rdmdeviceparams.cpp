@@ -30,13 +30,12 @@
 
 #include <cstdint>
 #include <cstring>
-#ifndef NDEBUG
-# include <cstdio>
-#endif
+#include <cstdio>
 #include <cassert>
 
 #include "rdmdeviceparams.h"
 #include "rdmdeviceparamsconst.h"
+#include "rdmdevice.h"
 
 #include "rdm_e120.h"
 
@@ -45,12 +44,11 @@
 
 #include "readconfigfile.h"
 #include "sscan.h"
-
 #include "propertiesbuilder.h"
 
 #include "debug.h"
 
-RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m_pRDMDeviceParamsStore(pRDMDeviceParamsStore) {
+RDMDeviceParams::RDMDeviceParams() {
 	DEBUG_ENTRY
 	
 	memset(&m_Params, 0, sizeof(struct rdm::deviceparams::Params));
@@ -61,7 +59,7 @@ RDMDeviceParams::RDMDeviceParams(RDMDeviceParamsStore *pRDMDeviceParamsStore): m
 	DEBUG_EXIT
 }
 
-bool RDMDeviceParams::Load() {
+void RDMDeviceParams::Load() {
 	DEBUG_ENTRY
 
 #if !defined(DISABLE_FS)
@@ -70,20 +68,15 @@ bool RDMDeviceParams::Load() {
 	ReadConfigFile configfile(RDMDeviceParams::staticCallbackFunction, this);
 
 	if (configfile.Read(RDMDeviceParamsConst::FILE_NAME)) {
-		if (m_pRDMDeviceParamsStore != nullptr) {
-			m_pRDMDeviceParamsStore->Update(&m_Params);
-		}
+		RDMDeviceParamsStore::Update(&m_Params);
 	} else
 #endif
-	if (m_pRDMDeviceParamsStore != nullptr) {
-		m_pRDMDeviceParamsStore->Copy(&m_Params);
-	} else {
-		DEBUG_EXIT
-		return false;
-	}
+	RDMDeviceParamsStore::Copy(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
-	return true;
 }
 
 void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
@@ -98,9 +91,11 @@ void RDMDeviceParams::Load(const char *pBuffer, uint32_t nLength) {
 
 	config.Read(pBuffer, nLength);
 
-	assert(m_pRDMDeviceParamsStore != nullptr);
-	m_pRDMDeviceParamsStore->Update(&m_Params);
+	RDMDeviceParamsStore::Update(&m_Params);
 
+#ifndef NDEBUG
+	Dump();
+#endif
 	DEBUG_EXIT
 }
 
@@ -163,8 +158,36 @@ void RDMDeviceParams::Set(RDMDevice *pRDMDevice) {
 	}
 }
 
+void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
+	DEBUG_ENTRY
+
+	assert(pBuffer != nullptr);
+
+	if (pParams != nullptr) {
+		memcpy(&m_Params, pParams, sizeof(struct rdm::deviceparams::Params));
+	} else {
+		RDMDeviceParamsStore::Copy(&m_Params);
+	}
+
+	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
+
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory, isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY));
+	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail, isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL));
+
+	nSize = builder.GetSize();
+
+	DEBUG_PRINTF("nSize=%d", nSize);
+	DEBUG_EXIT
+}
+
+void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
+	assert(p != nullptr);
+	assert(s != nullptr);
+
+	(static_cast<RDMDeviceParams *>(p))->callbackFunction(s);
+}
+
 void RDMDeviceParams::Dump() {
-#ifndef NDEBUG
 	printf("%s::%s \'%s\':\n", __FILE__, __FUNCTION__, RDMDeviceParamsConst::FILE_NAME);
 
 	if (isMaskSet(rdm::deviceparams::Mask::LABEL)) {
@@ -178,35 +201,4 @@ void RDMDeviceParams::Dump() {
 	if (isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL)) {
 		printf(" %s=%.4x\n", RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail);
 	}
-#endif
-}
-
-void RDMDeviceParams::staticCallbackFunction(void *p, const char *s) {
-	assert(p != nullptr);
-	assert(s != nullptr);
-
-	(static_cast<RDMDeviceParams *>(p))->callbackFunction(s);
-}
-
-void RDMDeviceParams::Builder(const struct rdm::deviceparams::Params *pParams, char *pBuffer, uint32_t nLength, uint32_t& nSize) {
-	DEBUG_ENTRY
-
-	assert(pBuffer != nullptr);
-
-	if (pParams != nullptr) {
-		memcpy(&m_Params, pParams, sizeof(struct rdm::deviceparams::Params));
-	} else {
-		assert(m_pRDMDeviceParamsStore != nullptr);
-		m_pRDMDeviceParamsStore->Copy(&m_Params);
-	}
-
-	PropertiesBuilder builder(RDMDeviceParamsConst::FILE_NAME, pBuffer, nLength);
-
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_CATEGORY, m_Params.nProductCategory, isMaskSet(rdm::deviceparams::Mask::PRODUCT_CATEGORY));
-	builder.AddHex16(RDMDeviceParamsConst::PRODUCT_DETAIL, m_Params.nProductDetail, isMaskSet(rdm::deviceparams::Mask::PRODUCT_DETAIL));
-
-	nSize = builder.GetSize();
-
-	DEBUG_PRINTF("nSize=%d", nSize);
-	DEBUG_EXIT
 }

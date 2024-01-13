@@ -31,6 +31,10 @@
 #include <uuid/uuid.h>
 #include <sys/utsname.h>
 
+#if !defined(DISABLE_RTC)
+# include "hwclock.h"
+#endif
+
 #include "linux/hal_api.h"
 
 namespace hardware {
@@ -79,6 +83,9 @@ public:
 	bool SetTime(const struct tm *pTime);
 	void GetTime(struct tm *pTime);
 
+	bool SetAlarm(const struct tm *pTime);
+	void GetAlarm(struct tm *pTime);
+
 	uint32_t Micros();
 	uint32_t Millis();
 
@@ -88,7 +95,7 @@ public:
 	void WatchdogStop() { } // Not implemented
 
 	const char *GetWebsiteUrl() {
-		return "www.orangepi-dmx.org";
+		return "www.gd32-dmx.org";
 	}
 
 	hardware::BootDevice GetBootDevice() {
@@ -129,6 +136,10 @@ private:
 	}
 
 private:
+#if !defined(DISABLE_RTC)
+	HwClock m_HwClock;
+#endif
+
 	enum class Board {
 		TYPE_LINUX,
 		TYPE_RASPBIAN,

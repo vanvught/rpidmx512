@@ -55,20 +55,15 @@ void main(void) {
 	Widget widget;
 
 	WidgetParams widgetParams;
+	widgetParams.Load();
+	widgetParams.Set();
 
-	if (widgetParams.Load()) {
-		widgetParams.Dump();
-		widgetParams.Set();
-	}
-
-	RDMDeviceParams rdmDeviceParams(nullptr);
+	RDMDeviceParams rdmDeviceParams;
 
 	widget.SetLabel(&deviceLabel);
 
-	if (rdmDeviceParams.Load()) {
-		rdmDeviceParams.Dump();
-		rdmDeviceParams.Set(&widget);
-	}
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&widget);
 
 	widget.Init();
 

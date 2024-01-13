@@ -2,7 +2,7 @@
  * @file llrpdevice.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,10 +32,10 @@
 
 #include "llrppacket.h"
 
-#include "rdmmessage.h"
-
 #include "e133.h"
+#include "rdmconst.h"
 #include "rdm_e120.h"
+#include "rdm_message_print.h"
 
 #include "debug.h"
 
@@ -117,7 +117,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 #ifdef SHOW_RDM_MESSAGE
 	const auto *pRdmDataInNoSc = const_cast<uint8_t *>(pRDMCommand->RDMCommandPDU.RDMData);
- 	RDMMessage::PrintNoSc(pRdmDataInNoSc);
+ 	rdm::message_print_no_sc(pRdmDataInNoSc);
 #endif
 
 	const auto *pReply = LLRPHandleRdmCommand(pRDMCommand->RDMCommandPDU.RDMData);
@@ -148,7 +148,7 @@ void LLRPDevice::HandleRdmCommand() {
 	Network::Get()->SendTo(s_nHandleLLRP, pRDMCommand, static_cast<uint16_t>(nLength) , llrp::device::IPV4_LLRP_RESPONSE, llrp::device::LLRP_PORT);
 
 #ifdef SHOW_RDM_MESSAGE
-	RDMMessage::Print(pReply);
+	rdm::message_print(pReply);
 #endif
 
 #ifndef NDEBUG

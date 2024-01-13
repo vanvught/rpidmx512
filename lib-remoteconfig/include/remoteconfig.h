@@ -2,7 +2,7 @@
  * @file remoteconfig.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,6 +27,7 @@
 #define REMOTECONFIG_H_
 
 #include <cstdint>
+#include <cassert>
 
 #if defined (NODE_ARTNET_MULTI)
 # define NODE_ARTNET
@@ -48,12 +49,15 @@
 # include "node.h"
 #endif
 
-#include "configstore.h"
-
 #if defined(ENABLE_TFTP_SERVER)
 # include "tftp/tftpfileserver.h"
 #endif
 
+#if defined (ENABLE_HTTPD)
+# include "httpd/httpd.h"
+#endif
+
+#include "configstore.h"
 #include "network.h"
 
 namespace remoteconfig {
@@ -77,6 +81,7 @@ enum class Node {
 	RDMRESPONDER,
 	LAST
 };
+
 enum class Output {
 	DMX,
 	RDM,
@@ -90,12 +95,8 @@ enum class Output {
 	ARTNET,
 	SERIAL,
 	RGBPANEL,
+	PWM,
 	LAST
-};
-
-enum {
-	DISPLAY_NAME_LENGTH = 24,
-	ID_LENGTH = (32 + remoteconfig::DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
 };
 
 enum class TxtFile {
@@ -129,11 +130,16 @@ enum class TxtFile {
 	NODE,
 	LAST
 };
+
+enum {
+	DISPLAY_NAME_LENGTH = 24,
+	ID_LENGTH = (32 + remoteconfig::DISPLAY_NAME_LENGTH + 2) // +2, comma and \n
+};
 }  // namespace remoteconfig
 
 class RemoteConfig {
 public:
-	RemoteConfig(remoteconfig::Node tType, remoteconfig::Output tMode, uint32_t nOutputs = 0);
+	RemoteConfig(const remoteconfig::Node node, const remoteconfig::Output output, const uint32_t nActiveOutputs = 0);
 	~RemoteConfig();
 
 	const char *GetStringNode() const;
@@ -207,6 +213,10 @@ public:
 		if (__builtin_expect((m_pTFTPFileServer != nullptr), 0)) {
 			m_pTFTPFileServer->Run();
 		}
+#endif
+
+#if defined (ENABLE_HTTPD)
+		m_pHttpDaemon->Run();
 #endif
 
 		uint16_t nForeignPort;
@@ -340,6 +350,10 @@ private:
 	void HandleGetRgbPanelTxt(uint32_t& nSize);
 #endif
 
+#if defined (OUTPUT_DMX_PCA9685)
+	void HandleGetPca9685Txt(uint32_t& nSize);
+#endif
+
 	void HandleSetRconfig();
 	void HandleSetNetworkTxt();
 
@@ -416,6 +430,10 @@ private:
 	void HandleSetRgbPanelTxt();
 #endif
 
+#if defined (OUTPUT_DMX_PCA9685)
+	void HandleSetPca9685Txt();
+#endif
+
 #if defined (OUTPUT_DMX_STEPPER)
 	void HandleSetSparkFunTxt();
 	void HandleSetMotorTxt(uint32_t nMotorIndex);
@@ -449,6 +467,8 @@ private:
 	void HandleDisplayGet();
 	void HandleTftpSet();
 	void HandleTftpGet();
+	void HandleRdmSet();
+	void HandleRdmGet();
 
 	void PlatformHandleTftpSet();
 	void PlatformHandleTftpGet();
@@ -504,6 +524,10 @@ private:
 	TFTPFileServer *m_pTFTPFileServer { nullptr };
 #endif
 	bool m_bEnableTFTP { false };
+
+#if defined (ENABLE_HTTPD)
+	HttpDaemon *m_pHttpDaemon { nullptr };
+#endif
 
 	static char *s_pUdpBuffer;
 
