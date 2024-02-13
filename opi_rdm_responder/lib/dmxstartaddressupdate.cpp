@@ -31,6 +31,6 @@
 
 #include "debug.h"
 
-void RDMResponder::DmxStartAddressUpdate(__attribute__((unused)) uint16_t nDmxStartAddress) {
+void RDMResponder::DmxStartAddressUpdate([[maybe_unused]] uint16_t nDmxStartAddress) {
 	DisplayUdf::Get()->Show();
 }

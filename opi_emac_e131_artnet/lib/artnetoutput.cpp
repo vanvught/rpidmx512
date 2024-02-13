@@ -81,7 +81,7 @@ void ArtNetOutput::Stop(const uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
+void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(nPortIndex < e131bridge::MAX_PORTS);
 
 	if (m_nUniverse[nPortIndex] != 0) {
@@ -89,11 +89,11 @@ void ArtNetOutput::SetData(uint32_t nPortIndex, const uint8_t *pDmxData, uint32_
 	}
 }
 
-void ArtNetOutput::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+void ArtNetOutput::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	//TODO Implement Sync
 }
 
-void ArtNetOutput::Sync(__attribute__((unused)) const bool doForce) {
+void ArtNetOutput::Sync([[maybe_unused]] const bool doForce) {
 	DEBUG_ENTRY
 
 	//TODO Implement Sync

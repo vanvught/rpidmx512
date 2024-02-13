@@ -48,7 +48,7 @@ void RDMIdentify::On(rdm::identify::Mode nMode) {
 	DEBUG_EXIT
 }
 
-void RDMIdentify::Off(__attribute__((unused)) rdm::identify::Mode nMode) {
+void RDMIdentify::Off([[maybe_unused]] rdm::identify::Mode nMode) {
 	DEBUG_ENTRY
 	DEBUG_PRINTF("Mode=%u, s_isOn=%d", static_cast<uint32_t>(nMode), s_isOn);
 
