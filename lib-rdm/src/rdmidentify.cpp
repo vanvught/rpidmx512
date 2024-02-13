@@ -38,8 +38,8 @@ RDMIdentify::RDMIdentify() {
 	s_pThis = this;
 }
 
-void __attribute__((weak)) RDMIdentify::On(__attribute__((unused)) rdm::identify::Mode nMode) {
+void __attribute__((weak)) RDMIdentify::On([[maybe_unused]] rdm::identify::Mode nMode) {
 }
 
-void __attribute__((weak)) RDMIdentify::Off(__attribute__((unused)) rdm::identify::Mode nMode) {
+void __attribute__((weak)) RDMIdentify::Off([[maybe_unused]] rdm::identify::Mode nMode) {
 }

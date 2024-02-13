@@ -1,7 +1,0 @@
-DEFINES=
-#DEFINES+=NDEBUG
-
-EXTRA_INCLUDES=
-
-include Rules.mk
-include ../firmware-template-linux/lib/Rules.mk

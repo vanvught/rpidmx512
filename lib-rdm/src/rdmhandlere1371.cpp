@@ -36,7 +36,7 @@
  * ANSI E1.37-1
  */
 
-void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
+void RDMHandler::GetIdentifyMode([[maybe_unused]] uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	auto *pRdmDataOut = reinterpret_cast<struct TRdmMessage*>(m_pRdmDataOut);
@@ -49,7 +49,7 @@ void RDMHandler::GetIdentifyMode(__attribute__((unused)) uint16_t nSubDevice) {
 	DEBUG_EXIT
 }
 
-void RDMHandler::SetIdentifyMode(bool IsBroadcast, __attribute__((unused)) uint16_t nSubDevice) {
+void RDMHandler::SetIdentifyMode(bool IsBroadcast, [[maybe_unused]] uint16_t nSubDevice) {
 	DEBUG_ENTRY
 
 	const auto *pRdmDataIn = reinterpret_cast<const struct TRdmMessageNoSc*>(m_pRdmDataIn);

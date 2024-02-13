@@ -33,7 +33,7 @@
 static constexpr uint32_t DMX_FOOTPRINT = 4;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Dummy-H", DMX_FOOTPRINT), new RDMPersonality("Dummy-D", DMX_FOOTPRINT)};
 
-RDMSubDeviceDummy::RDMSubDeviceDummy(__attribute__((unused)) uint16_t nDmxStartAddress, __attribute__((unused)) char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+RDMSubDeviceDummy::RDMSubDeviceDummy([[maybe_unused]] uint16_t nDmxStartAddress, [[maybe_unused]] char nChipSselect, [[maybe_unused]] uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("SubDevice Dummy", nDmxStartAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);

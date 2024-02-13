@@ -1,8 +1,8 @@
 /**
- * @file rdmnetdevice.cpp
+ * @file dummy_device.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,31 +23,56 @@
  * THE SOFTWARE.
  */
 
-#include <cstdint>
 #include <cstdio>
-#include <uuid/uuid.h>
+#include <cstdint>
+#include <cstring>
+#include <cstdlib>
+
+#include "hardware.h"
+#include "network.h"
+
+#include "firmwareversion.h"
+
+#include "software_version.h"
 
 #include "rdmnetdevice.h"
-
-#include "llrpdevice.h"
 #include "rdmpersonality.h"
-#include "lightset.h"
-#include "rdmdeviceresponder.h"
-#include "rdmhandler.h"
+#include "rdmdeviceparams.h"
 
-static constexpr auto UUID_STRING_LENGTH = 36;
+namespace rdm {
+namespace device {
+namespace responder {
 
-TRdmMessage RDMNetDevice::s_RdmCommand;
-uint8_t RDMNetDevice::s_Cid[e131::CID_LENGTH];
+void factorydefaults() {
 
-void RDMNetDevice::Print() {
-	char uuid_str[UUID_STRING_LENGTH + 1];
-	uuid_str[UUID_STRING_LENGTH] = '\0';
-	uuid_unparse(s_Cid, uuid_str);
+}
 
-	printf("RDMNet\n");
-	printf(" CID : %s\n", uuid_str);
+}  // namespace responder
+}  // namespace device
+}  // namespace rdm
 
-	LLRPDevice::Print();
-	RDMDeviceResponder::Print();
+int main(int argc, char **argv) {
+	Hardware hw;
+	Network nw(argc, argv);
+	FirmwareVersion fw(SOFTWARE_VERSION, __DATE__, __TIME__);
+
+	hw.Print();
+	fw.Print();
+	nw.Print();
+
+	RDMPersonality *pPersonalities[1] = { new RDMPersonality("LLRP Dummy device", nullptr) };
+	RDMNetDevice device(pPersonalities, 1);
+
+	RDMDeviceParams rdmDeviceParams;
+	rdmDeviceParams.Load();
+	rdmDeviceParams.Set(&device);
+
+	device.Init();
+	device.Print();
+
+	for (;;) {
+		device.Run();
+	}
+
+	return 0;
 }

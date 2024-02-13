@@ -2,7 +2,7 @@
  * @file llrpdevice.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@gd32-dmx.org
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@gd32-dmx.org
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,15 @@
 #include <cstdio>
 #include <cassert>
 
-#include "llrpdevice.h"
+#include "hardware.h"
 
-#include "llrppacket.h"
+#include "llrp/llrpdevice.h"
+#include "llrp/llrppacket.h"
 
 #include "e133.h"
 #include "rdmconst.h"
 #include "rdm_e120.h"
+#include "rdmdeviceresponder.h"
 #include "rdm_message_print.h"
 
 #include "debug.h"
@@ -47,6 +49,7 @@
 int32_t LLRPDevice::s_nHandleLLRP ;
 uint32_t LLRPDevice::s_nIpAddressFrom;
 uint8_t *LLRPDevice::s_pLLRP;
+TRdmMessage LLRPDevice::s_RdmCommand;
 
 void LLRPDevice::HandleRequestMessage() {
 	DEBUG_ENTRY
@@ -56,7 +59,7 @@ void LLRPDevice::HandleRequestMessage() {
 	const auto nLength = (static_cast<uint32_t>((pPdu[0] & 0x0fu) << 16) | static_cast<uint32_t>(pPdu[1] << 8) | pPdu[2]);
 
 	uint8_t uid[RDM_UID_SIZE];
-	CopyUID(uid);
+	memcpy(uid, RDMDeviceResponder::Get()->GetUID(), RDM_UID_SIZE);
 
 	if (nLength > 18) {
 		const auto nKnownUIDs = (nLength - 18) / RDM_UID_SIZE;
@@ -86,7 +89,7 @@ void LLRPDevice::HandleRequestMessage() {
 
 	// Root Layer PDU
 	pReply->Common.RootLayerPDU.FlagsLength[2] = 67;
-	CopyCID(pReply->Common.RootLayerPDU.SenderCid);
+	Hardware::Get()->GetUuid(pReply->Common.RootLayerPDU.SenderCid);
 	// LLRP PDU
 	pReply->Common.LlrpPDU.FlagsLength[2] = 44;
 	pReply->Common.LlrpPDU.Vector = __builtin_bswap32(VECTOR_LLRP_PROBE_REPLY);
@@ -94,7 +97,7 @@ void LLRPDevice::HandleRequestMessage() {
 	// Probe Reply PDU
 	pReply->ProbeReplyPDU.FlagsLength[2] = 17;
 	pReply->ProbeReplyPDU.Vector = VECTOR_PROBE_REPLY_DATA;
-	CopyUID(pReply->ProbeReplyPDU.UID);
+	memcpy(pReply->ProbeReplyPDU.UID, RDMDeviceResponder::Get()->GetUID(), RDM_UID_SIZE);
 	Network::Get()->MacAddressCopyTo(pReply->ProbeReplyPDU.HardwareAddress);
 #if defined (NODE_RDMNET_LLRP_ONLY)
 	pReply->ProbeReplyPDU.ComponentType = LLRP_COMPONENT_TYPE_NON_RDMNET;
@@ -134,7 +137,7 @@ void LLRPDevice::HandleRdmCommand() {
 
 	// Root Layer PDU
 	pRDMCommand->Common.RootLayerPDU.FlagsLength[2] = RDM_ROOT_LAYER_LENGTH(nMessageLength);
-	CopyCID(pRDMCommand->Common.RootLayerPDU.SenderCid);
+	Hardware::Get()->GetUuid(pRDMCommand->Common.RootLayerPDU.SenderCid);
 	// LLRP PDU
 	pRDMCommand->Common.LlrpPDU.FlagsLength[2] = RDM_LLRP_PDU_LENGHT(nMessageLength);
 	memcpy(pRDMCommand->Common.LlrpPDU.DestinationCid, DestinationCid, 16);

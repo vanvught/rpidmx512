@@ -28,7 +28,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "llrpdevice.h"
+#include "llrp/llrpdevice.h"
 
 #include "e133.h"
 
