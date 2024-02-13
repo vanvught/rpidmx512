@@ -35,7 +35,7 @@
 
 static constexpr auto MAX_PORTS = LIGHTSET_PORTS > 4U ? 4U : LIGHTSET_PORTS;
 
-void DisplayUdf::Show(__attribute__((unused)) Node *pNode) {
+void DisplayUdf::Show([[maybe_unused]] Node *pNode) {
 	DEBUG_ENTRY
 
 	Show();

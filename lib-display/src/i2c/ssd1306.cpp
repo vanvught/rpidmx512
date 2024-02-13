@@ -513,7 +513,7 @@ void Ssd1306::SendData(const uint8_t *pData, uint32_t nLength) {
 #if defined(CONFIG_DISPLAY_ENABLE_CURSOR_MODE)
 # define UNUSED
 #else
-# define UNUSED __attribute__((unused))
+# define UNUSED [[maybe_unused]]
 #endif
 
 void Ssd1306::SetCursor(UNUSED uint32_t nCursorMode) {
