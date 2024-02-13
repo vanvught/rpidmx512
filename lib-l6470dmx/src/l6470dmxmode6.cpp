@@ -34,7 +34,7 @@
 
 #include "debug.h"
 
-L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, __attribute__((unused)) MotorParams *pMotorParams, __attribute__((unused)) ModeParams *pModeParams) {
+L6470DmxMode6::L6470DmxMode6(L6470 *pL6470, [[maybe_unused]] MotorParams *pMotorParams, [[maybe_unused]] ModeParams *pModeParams) {
 	DEBUG2_ENTRY;
 
 	assert(pL6470 != nullptr);
@@ -64,7 +64,7 @@ void L6470DmxMode6::Stop() {
 	DEBUG2_EXIT;
 }
 
-void L6470DmxMode6::Data(__attribute__((unused)) const uint8_t *pDmxData) {
+void L6470DmxMode6::Data([[maybe_unused]] const uint8_t *pDmxData) {
 	DEBUG2_ENTRY;
 
 	DEBUG2_EXIT;

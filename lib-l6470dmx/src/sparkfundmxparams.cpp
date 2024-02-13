@@ -264,7 +264,7 @@ void SparkFunDmxParams::SetLocal(SparkFunDmx *pSparkFunDmx) {
 	}
 }
 
-void SparkFunDmxParams::Dump(__attribute__((unused)) uint32_t nMotorIndex) {
+void SparkFunDmxParams::Dump([[maybe_unused]] uint32_t nMotorIndex) {
 	assert(SPARKFUN_DMX_MAX_MOTORS <= 9);
 
 	if (nMotorIndex >= SPARKFUN_DMX_MAX_MOTORS) {

@@ -53,7 +53,7 @@
 static volatile bool sv_isMidiQuarterFrameMessage;
 
 #if defined (H3)
-static void irq_timer1_midi_handler(__attribute__((unused)) uint32_t clo) {
+static void irq_timer1_midi_handler([[maybe_unused]] uint32_t clo) {
 	sv_isMidiQuarterFrameMessage = true;
 }
 #elif defined (GD32)

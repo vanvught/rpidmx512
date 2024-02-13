@@ -85,13 +85,13 @@ void LightSetChain::Sync(const bool doForce) {
 }
 
 #if defined (OUTPUT_HAVE_STYLESWITCH)
-void LightSetChain::SetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) {
+void LightSetChain::SetOutputStyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-lightset::OutputStyle LightSetChain::GetOutputStyle(__attribute__((unused)) const uint32_t nPortIndex) const {
+lightset::OutputStyle LightSetChain::GetOutputStyle([[maybe_unused]] const uint32_t nPortIndex) const {
 	return lightset::OutputStyle::DELTA;
 }
 #endif
@@ -262,7 +262,7 @@ bool LightSetChain::Exist(LightSet *pLightSet , int nType, bool DoIgnoreType) {
 	return false;
 }
 
-void LightSetChain::Dump(__attribute__((unused)) uint8_t nEntries) {
+void LightSetChain::Dump([[maybe_unused]] uint8_t nEntries) {
 #ifndef NDEBUG
 	if (nEntries > LIGHTSET_CHAIN_MAX_ENTRIES) {
 		nEntries = LIGHTSET_CHAIN_MAX_ENTRIES;

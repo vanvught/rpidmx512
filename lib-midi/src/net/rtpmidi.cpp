@@ -49,7 +49,7 @@
 
 RtpMidi *RtpMidi::s_pThis = nullptr;
 
-int32_t RtpMidi::DecodeTime(__attribute__((unused)) uint32_t nCommandLength, uint32_t nOffset) {
+int32_t RtpMidi::DecodeTime([[maybe_unused]] uint32_t nCommandLength, uint32_t nOffset) {
 	DEBUG_ENTRY
 
 	int32_t nSize = 0;

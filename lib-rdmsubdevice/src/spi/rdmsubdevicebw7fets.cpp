@@ -33,7 +33,7 @@
 static constexpr uint32_t DMX_FOOTPRINT = 7;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Digital output 7-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, __attribute__((unused)) uint32_t nSpiSpeed) :
+RDMSubDeviceBw7fets::RDMSubDeviceBw7fets(uint16_t nDmxStartAddress, char nChipSselect, uint8_t nSlaveAddress, [[maybe_unused]] uint32_t nSpiSpeed) :
 	RDMSubDevice("bw_spi_7fets", nDmxStartAddress), m_BwSpi7fets(nChipSselect, nSlaveAddress)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);

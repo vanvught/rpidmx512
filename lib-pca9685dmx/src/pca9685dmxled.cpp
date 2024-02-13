@@ -92,7 +92,7 @@ PCA9685DmxLed::~PCA9685DmxLed() {
 	DEBUG_EXIT
 }
 
-void PCA9685DmxLed::Stop(__attribute__((unused)) const uint32_t nPortIndex) {
+void PCA9685DmxLed::Stop([[maybe_unused]] const uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	for (uint32_t j = 0; j < m_nBoardInstances; j++) {
@@ -102,7 +102,7 @@ void PCA9685DmxLed::Stop(__attribute__((unused)) const uint32_t nPortIndex) {
 	DEBUG_EXIT
 }
 
-void PCA9685DmxLed::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
+void PCA9685DmxLed::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 

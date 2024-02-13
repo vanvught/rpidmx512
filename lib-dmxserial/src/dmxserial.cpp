@@ -75,15 +75,15 @@ void DmxSerial::Init() {
 	m_Serial.Init();
 }
 
-void DmxSerial::Start(__attribute__((unused)) uint32_t nPortIndex) {
+void DmxSerial::Start([[maybe_unused]] uint32_t nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void DmxSerial::Stop([[maybe_unused]] uint32_t nPortIndex) {
 	// No actions here
 }
 
-void DmxSerial::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
+void DmxSerial::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {
 	assert(nPortIndex == 0);
 	assert(pData != nullptr);
 
@@ -128,7 +128,7 @@ void DmxSerial::Update(const uint8_t *pData, const uint32_t nLength) {
 	}
 }
 
-void DmxSerial::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+void DmxSerial::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	// No actions here
 }
 
@@ -142,7 +142,7 @@ void DmxSerial::Print() {
 	m_Serial.Print();
 
 	printf("Files : %d\n", m_nFilesCount);
-	printf("DMX\n");
+	puts("DMX");
 	printf(" First channel : %d\n", m_aFileIndex[0]);
 	printf(" Last channel  : %u\n", m_nDmxLastSlot);
 }

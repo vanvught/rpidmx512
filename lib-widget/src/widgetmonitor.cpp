@@ -33,7 +33,7 @@
 # include "console.h"
 #endif
 
-void WidgetMonitor::Line(__attribute__((unused)) int line, __attribute__((unused)) const char *fmt, ...) {
+void WidgetMonitor::Line([[maybe_unused]] int line, [[maybe_unused]] const char *fmt, ...) {
 	// For H3, only enabled when NDEBUG is not defined
 #if !(defined(NDEBUG) && defined(NO_HDMI_OUTPUT))
 	va_list va;

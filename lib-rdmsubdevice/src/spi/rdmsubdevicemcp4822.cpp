@@ -37,7 +37,7 @@
 static constexpr uint32_t DMX_FOOTPRINT = 2;
 static RDMPersonality *s_RDMPersonalities[] = {new RDMPersonality("Analog output 2-lines", DMX_FOOTPRINT)};
 
-RDMSubDeviceMCP4822::RDMSubDeviceMCP4822(uint16_t nDmxStartAddress, char nChipSselect, __attribute__((unused)) uint8_t nSlaveAddress, uint32_t nSpiSpeed):
+RDMSubDeviceMCP4822::RDMSubDeviceMCP4822(uint16_t nDmxStartAddress, char nChipSselect, [[maybe_unused]] uint8_t nSlaveAddress, uint32_t nSpiSpeed):
 	RDMSubDevice("mcp4822", nDmxStartAddress), m_MCP4822(nChipSselect, nSpiSpeed)
 {
 	SetDmxFootprint(DMX_FOOTPRINT);

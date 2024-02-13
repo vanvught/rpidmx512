@@ -63,7 +63,7 @@
 #endif
 
 #if defined (H3)
-static void irq_timer0_handler(__attribute__((unused)) uint32_t clo) {
+static void irq_timer0_handler([[maybe_unused]] uint32_t clo) {
 	if (!g_ltc_ptLtcDisabledOutputs.bLtc) {
 		LtcSender::Get()->SetTimeCode(static_cast<const struct ltc::TimeCode*>(&g_ltc_LtcTimeCode), false);
 	}

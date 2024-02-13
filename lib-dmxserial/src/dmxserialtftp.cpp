@@ -40,7 +40,7 @@ void DmxSerialTFTP::Exit() {
 	DEBUG_EXIT
 }
 
-bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+bool DmxSerialTFTP::FileOpen(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	int32_t nFileNumber;
@@ -53,7 +53,7 @@ bool DmxSerialTFTP::FileOpen(const char *pFileName, __attribute__((unused)) tftp
 	return (m_pFile != nullptr);
 }
 
-bool DmxSerialTFTP::FileCreate(const char *pFileName, __attribute__((unused)) tftp::Mode mode) {
+bool DmxSerialTFTP::FileCreate(const char *pFileName, [[maybe_unused]] tftp::Mode mode) {
 	DEBUG_PRINTF("pFileName=%s, tMode=%d", pFileName, static_cast<int>(mode));
 
 	int32_t nFileNumber;
@@ -78,10 +78,10 @@ bool DmxSerialTFTP::FileClose() {
 	return true;
 }
 
-size_t DmxSerialTFTP::FileRead(void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
+size_t DmxSerialTFTP::FileRead(void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
 	return fread(pBuffer, 1, nCount, m_pFile);
 }
 
-size_t DmxSerialTFTP::FileWrite(const void *pBuffer, size_t nCount, __attribute__((unused)) unsigned nBlockNumber) {
+size_t DmxSerialTFTP::FileWrite(const void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) {
 	return fwrite(pBuffer, 1, nCount, m_pFile);
 }

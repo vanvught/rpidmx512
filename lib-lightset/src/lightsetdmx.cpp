@@ -37,6 +37,6 @@ uint16_t LightSet::GetDmxFootprint() {
 	return dmx::UNIVERSE_SIZE;
 }
 
-bool LightSet::SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) {
+bool LightSet::SetDmxStartAddress([[maybe_unused]] uint16_t nDmxStartAddress) {
 	return false;
 }

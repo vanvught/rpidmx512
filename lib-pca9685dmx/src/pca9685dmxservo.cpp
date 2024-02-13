@@ -88,7 +88,7 @@ PCA9685DmxServo::~PCA9685DmxServo() {
 	DEBUG_EXIT
 }
 
-void PCA9685DmxServo::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
+void PCA9685DmxServo::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t* pDmxData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	assert(pDmxData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
 

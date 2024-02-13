@@ -122,7 +122,7 @@ SparkFunDmx::~SparkFunDmx() {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
+void SparkFunDmx::Start([[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -134,7 +134,7 @@ void SparkFunDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void SparkFunDmx::Stop([[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY;
 
 	for (int i = 0; i < SPARKFUN_DMX_MAX_MOTORS; i++) {
@@ -330,7 +330,7 @@ void SparkFunDmx::ReadConfigFiles() {
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, __attribute__((unused)) const bool doUpdate) {
+void SparkFunDmx::SetData([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, [[maybe_unused]] const bool doUpdate) {
 	DEBUG_ENTRY;
 	assert(pData != nullptr);
 	assert(nLength <= lightset::dmx::UNIVERSE_SIZE);
@@ -368,11 +368,11 @@ void SparkFunDmx::SetData(__attribute__((unused)) uint32_t nPortIndex, const uin
 	DEBUG_EXIT;
 }
 
-void SparkFunDmx::Sync(__attribute__((unused)) uint32_t const nPortIndex) {
+void SparkFunDmx::Sync([[maybe_unused]] uint32_t const nPortIndex) {
 	//TODO Implement Sync
 }
 
-void SparkFunDmx::Sync(__attribute__((unused)) const bool doForce) {
+void SparkFunDmx::Sync([[maybe_unused]] const bool doForce) {
 	//TODO Implement Sync
 }
 

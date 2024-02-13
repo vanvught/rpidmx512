@@ -1,8 +1,27 @@
-/*
- * rdm_manufacturer_pid.cpp
+/**
+ * @file rdm_manufacturer_pid.cpp
+ *
  */
+/* Copyright (C) 2023-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
 
-#undef NDEBUG
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include <cstdint>
 #include <cstddef>
@@ -74,7 +93,7 @@ uint32_t RDMHandler::GetParameterDescriptionCount() const {
 #include "tlc59711dmxparams.h"
 
 namespace rdm {
-bool handle_manufactureer_pid_get(const uint16_t nPid, __attribute__((unused)) const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
+bool handle_manufactureer_pid_get(const uint16_t nPid, [[maybe_unused]] const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
 	switch (nPid) {
 	case rdm::E120_MANUFACTURER_PIXEL_TYPE::code: {
 		const auto *pString = TLC59711DmxParams::GetType(TLC59711Dmx::Get()->GetType());

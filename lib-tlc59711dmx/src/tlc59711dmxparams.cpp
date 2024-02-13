@@ -217,7 +217,7 @@ void TLC59711DmxParams::Set(TLC59711Dmx *pTLC59711Dmx) {
 }
 
 void TLC59711Dmx::Print() {
-	printf("PWM parameters\n");
+	puts("PWM parameters");
 	printf(" Type  : %s [%d]\n", TLC59711DmxParams::GetType(m_type), static_cast<uint32_t>(m_type)); //TODO Move TLC59711DmxParams to TLC59711
 	printf(" Count : %d %s\n", m_nCount, m_type == tlc59711::Type::RGB ? "RGB" : "RGBW");
 	printf(" Clock : %d Hz %s {Default: %d Hz, Maximum %d Hz}\n", m_nSpiSpeedHz, (m_nSpiSpeedHz == 0 ? "Default" : ""), TLC59711SpiSpeed::DEFAULT, TLC59711SpiSpeed::MAX);

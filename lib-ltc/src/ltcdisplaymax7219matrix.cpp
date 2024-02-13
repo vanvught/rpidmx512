@@ -152,6 +152,6 @@ void LtcDisplayMax7219Matrix::ShowSysTime(const char *pSystemTime) {
 	Max7219Matrix::Write(m_aBuffer, ltc::display::max7219::maxtrix::SEGMENTS);
 }
 
-void LtcDisplayMax7219Matrix::WriteChar(__attribute__((unused)) uint8_t nChar, __attribute__((unused)) uint8_t nPos) {
+void LtcDisplayMax7219Matrix::WriteChar([[maybe_unused]] uint8_t nChar, [[maybe_unused]] uint8_t nPos) {
 	// TODO Implement WriteChar
 }

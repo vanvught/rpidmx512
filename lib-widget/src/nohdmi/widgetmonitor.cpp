@@ -30,6 +30,6 @@
 
 #include <widgetmonitor.h>
 
-void WidgetMonitor::RdmData(__attribute__((unused)) int line, __attribute__((unused)) uint16_t data_length, __attribute__((unused)) const uint8_t *data, __attribute__((unused)) bool is_sent) {
+void WidgetMonitor::RdmData([[maybe_unused]] int line, [[maybe_unused]] uint16_t data_length, [[maybe_unused]] const uint8_t *data, [[maybe_unused]] bool is_sent) {
 
 }
