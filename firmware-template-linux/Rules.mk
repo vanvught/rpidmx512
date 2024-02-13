@@ -101,12 +101,7 @@ else
 	COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
 #	CCPOPS+=-Wuseless-cast -Wold-style-cast
 endif
-
-ifeq ($(detected_OS),Cygwin)
-	CCPOPS+=-std=gnu++11
-else
-	CCPOPS+=-std=c++11
-endif
+CCPOPS+=-std=c++20
 
 COPS+=-ffunction-sections -fdata-sections
 

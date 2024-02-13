@@ -54,9 +54,10 @@ endif
 
 DEFINES+=-DBARE_METAL -DH3
 DEFINES+=-DPHY_TYPE=PHY_GENERIC
-DEFINES+=-DENABLE_TFTP_SERVER -D__FPU_PRESENT=1
+DEFINES+=-DENABLE_TFTP_SERVER
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
 DEFINES+=-DISABLE_INTERNAL_RTC
+DEFINES+=-D__FPU_PRESENT=1 -D__GIC_PRESENT=1
 
 ifneq ($(findstring CONFIG_STORE_USE_SPI,$(DEFINES)), CONFIG_STORE_USE_SPI)
 	DEFINES+=-DCONFIG_STORE_USE_SPI
@@ -69,7 +70,7 @@ ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 endif
 
 # The variable for the firmware include directories
-INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include
+INCDIRS+=../include $(wildcard ./include) $(wildcard ./*/include)  ../firmware-template-h3/include ../lib-h3/CMSIS/Core_A/Include
 INCDIRS:=$(addprefix -I,$(INCDIRS))
 
 # The variable for the libraries include directory
@@ -93,10 +94,10 @@ COPS+=$(INCDIRS) $(LIBINCDIRS) $(addprefix -I,$(EXTRA_INCLUDES))
 COPS+=-mfpu=neon-vfpv4 -mcpu=cortex-a7 -mfloat-abi=hard -mhard-float
 COPS+=-nostartfiles -ffreestanding -nostdlib -fprefetch-loop-arrays
 COPS+=-O2 -Wall -Werror -Wpedantic -Wextra -Wunused -Wsign-conversion  -Wconversion
-COPS+=-Wduplicated-cond -Wlogical-op #-Wduplicated-branches
+COPS+=-Wduplicated-cond -Wlogical-op -Wduplicated-branches
 COPS+=-ffunction-sections -fdata-sections
 
-CPPOPS=-std=c++11 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
+CPPOPS=-std=c++20 -Wuseless-cast -Wold-style-cast -Wnon-virtual-dtor -Woverloaded-virtual -Wnull-dereference -fno-rtti -fno-exceptions -fno-unwind-tables
 CPPOPS+=-fno-threadsafe-statics
 
 LDOPS=--gc-sections --print-gc-sections

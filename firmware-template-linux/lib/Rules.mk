@@ -17,7 +17,7 @@ DEFINES+=-DDISABLE_TFTP
 DEFINES+=-DENABLE_HTTPD
 DEFINES+=-DCONFIG_STORE_USE_FILE 
 DEFINES+=-DCONFIG_MDNS_DOMAIN_REVERSE
-DEFINES+=-DISABLE_INTERNAL_RTC
+DEFINES+=-DDISABLE_INTERNAL_RTC
 
 ifeq ($(findstring ARTNET_VERSION=4,$(DEFINES)),ARTNET_VERSION=4)
 	ifeq ($(findstring ARTNET_HAVE_DMXIN,$(DEFINES)),ARTNET_HAVE_DMXIN)
@@ -70,12 +70,7 @@ else
 endif
 
 CCPOPS=-fno-rtti -fno-exceptions -fno-unwind-tables -Wnon-virtual-dtor
-
-ifeq ($(detected_OS),Cygwin)
-	CCPOPS+=-std=gnu++11
-else
-	CCPOPS+=-std=c++11
-endif	
+CCPOPS+=-std=c++20
 
 COPS+=-ffunction-sections -fdata-sections
 
