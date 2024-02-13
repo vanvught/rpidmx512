@@ -2,7 +2,7 @@
  * @file dmxconfigudp.h
  *
  */
-/* Copyright (C) 2021-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2021-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -135,8 +135,8 @@ public:
 	}
 
 private:
-	static int32_t s_nHandle;
-	static char *s_pUdpBuffer;
+	int32_t s_nHandle { -1 };
+	char *s_pUdpBuffer { nullptr };
 };
 
 #endif /* DMXCONFIGUDP_H_ */

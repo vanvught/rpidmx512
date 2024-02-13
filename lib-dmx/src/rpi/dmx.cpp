@@ -490,11 +490,11 @@ void Dmx::UartDisableFifo() {	// DMX Input
 	isb();
 }
 
-void Dmx::StartOutput(__attribute__((unused)) uint32_t nPortIndex) {
+void Dmx::StartOutput([[maybe_unused]] uint32_t nPortIndex) {
 
 }
 
-void Dmx::SetOutput(__attribute__((unused)) const bool doForce) {
+void Dmx::SetOutput([[maybe_unused]] const bool doForce) {
 	if (sv_DmxTransmitState != IDLE) {
 		return;
 	}
@@ -596,7 +596,7 @@ void Dmx::StopData() {
 	s_IsStopped = true;
 }
 
-void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
+void Dmx::SetPortDirection([[maybe_unused]] uint32_t nPortIndex, PortDirection tPortDirection, bool bEnableData) {
 	assert(nPort == 0);
 
 	if (tPortDirection != s_nPortDirection) {
@@ -622,7 +622,7 @@ void Dmx::SetPortDirection(__attribute__((unused)) uint32_t nPortIndex, PortDire
 	}
 }
 
-PortDirection Dmx::GetPortDirection(__attribute__((unused)) uint32_t nPortIndex) {
+PortDirection Dmx::GetPortDirection([[maybe_unused]] uint32_t nPortIndex) {
 	return s_nPortDirection;
 }
 
@@ -676,11 +676,11 @@ const volatile struct TotalStatistics *Dmx::GetTotalStatistics() {
 	return &sv_TotalStatistics;
 }
 
-const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused))uint32_t nPortIndex) {
+const uint8_t* Dmx::GetDmxCurrentData([[maybe_unused]]uint32_t nPortIndex) {
 	return s_DmxData[sv_nDmxDataBufferIndexTail].Data;
 }
 
-const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused))uint32_t nPortIndex) {
+const uint8_t* Dmx::GetDmxAvailable([[maybe_unused]]uint32_t nPortIndex) {
 	dmb();
 	if (sv_nDmxDataBufferIndexHead == sv_nDmxDataBufferIndexTail) {
 		return nullptr;
@@ -691,7 +691,7 @@ const uint8_t* Dmx::GetDmxAvailable(__attribute__((unused))uint32_t nPortIndex) 
 	}
 }
 
-const uint8_t* Dmx::GetDmxChanged(__attribute__((unused))uint32_t nPortIndex) {
+const uint8_t* Dmx::GetDmxChanged([[maybe_unused]]uint32_t nPortIndex) {
 	const auto *p = GetDmxAvailable(0);
 	auto *src = reinterpret_cast<const uint32_t *>(p);
 
@@ -739,7 +739,7 @@ uint16_t Dmx::GetDmxSlots() {
 	return s_nDmxSendDataLength - 1U;
 }
 
-void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendData([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -750,7 +750,7 @@ void Dmx::SetSendData(__attribute__((unused))uint32_t nPortIndex, const uint8_t 
 	SetSendDataLength(nLength);
 }
 
-void Dmx::SetSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
+void Dmx::SetSendDataWithoutSC([[maybe_unused]]uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
 	do {
 		dmb();
 	} while (sv_DmxTransmitState != IDLE && sv_DmxTransmitState != DMXINTER);
@@ -763,12 +763,12 @@ void Dmx::SetSendDataWithoutSC(__attribute__((unused))uint32_t nPortIndex, const
 	SetSendDataLength(nLength + 1);
 }
 
-uint32_t Dmx::GetUpdatesPerSecond(__attribute__((unused))uint32_t nPortIndex) {
+uint32_t Dmx::GetUpdatesPerSecond([[maybe_unused]]uint32_t nPortIndex) {
 	dmb();
 	return sv_nDmxUpdatesPerSecond;
 }
 
-void Dmx::ClearData(__attribute__((unused))uint32_t nPortIndex) {
+void Dmx::ClearData([[maybe_unused]]uint32_t nPortIndex) {
 	for (uint32_t i = 0; i < buffer::INDEX_ENTRIES; i++) {
 		memset(s_DmxData[i].Data, 0, dmx::buffer::SIZE);
 		memset(&s_DmxData[i].Statistics, 0, sizeof(struct Statistics));
@@ -777,7 +777,7 @@ void Dmx::ClearData(__attribute__((unused))uint32_t nPortIndex) {
 
 // RDM
 
-const uint8_t *Dmx::RdmReceive(__attribute__((unused)) uint32_t nPortIndex) {
+const uint8_t *Dmx::RdmReceive([[maybe_unused]] uint32_t nPortIndex) {
 	assert(nPort == 0);
 
 	dmb();
@@ -805,7 +805,7 @@ const uint8_t* Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint32_t nTimeOut) {
 	return p;
 }
 
-void Dmx::RdmSendRaw(__attribute__((unused)) uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
+void Dmx::RdmSendRaw([[maybe_unused]] uint32_t nPortIndex, const uint8_t *pRdmData, uint32_t nLength) {
 	assert(nPort == 0);
 
 	BCM2835_PL011->LCRH &= ~PL011_LCRH_FEN;

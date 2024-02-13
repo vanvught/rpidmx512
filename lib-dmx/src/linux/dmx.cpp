@@ -115,31 +115,31 @@ void Dmx::SetPortDirection(uint32_t nPortIndex, PortDirection tPortDirection, bo
 	DEBUG_EXIT
 }
 
-void Dmx::ClearData(__attribute__((unused)) uint32_t nUart) {
+void Dmx::ClearData([[maybe_unused]] uint32_t nUart) {
 }
 
-void Dmx::StartData(__attribute__((unused)) uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
+void Dmx::StartData([[maybe_unused]] uint32_t nUart, [[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void Dmx::StopData(__attribute__((unused)) uint32_t nUart, __attribute__((unused)) uint32_t nPortIndex) {
+void Dmx::StopData([[maybe_unused]] uint32_t nUart, [[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
 // DMX Send
 
-void Dmx::SetDmxBreakTime(__attribute__((unused)) uint32_t nBreakTime) {
+void Dmx::SetDmxBreakTime([[maybe_unused]] uint32_t nBreakTime) {
 }
 
-void Dmx::SetDmxMabTime(__attribute__((unused)) uint32_t nMabTime) {
+void Dmx::SetDmxMabTime([[maybe_unused]] uint32_t nMabTime) {
 }
 
-void Dmx::SetDmxPeriodTime(__attribute__((unused)) uint32_t nPeriod) {
+void Dmx::SetDmxPeriodTime([[maybe_unused]] uint32_t nPeriod) {
 }
 
-void Dmx::SetDmxSlots(__attribute__((unused)) uint16_t nSlots) {
+void Dmx::SetDmxSlots([[maybe_unused]] uint16_t nSlots) {
 }
 
 void Dmx::SetSendDataWithoutSC(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength) {
@@ -168,7 +168,7 @@ void Dmx::FullOn() {
 
 // DMX Receive
 
-const uint8_t *Dmx::GetDmxAvailable(__attribute__((unused)) uint32_t nPortIndex)  {
+const uint8_t *Dmx::GetDmxAvailable([[maybe_unused]] uint32_t nPortIndex)  {
 	assert(nPortIndex < dmx::config::max::OUT);
 
 	uint32_t fromIp;
@@ -198,15 +198,15 @@ const uint8_t *Dmx::GetDmxChanged(uint32_t nPortIndex) {
 	return p;
 }
 
-const uint8_t* Dmx::GetDmxCurrentData(__attribute__((unused)) uint32_t nPortIndex) {
+const uint8_t* Dmx::GetDmxCurrentData([[maybe_unused]] uint32_t nPortIndex) {
 	return const_cast<const uint8_t *>(dmxDataRx.Data);
 }
 
-uint32_t Dmx::GetDmxUpdatesPerSecond(__attribute__((unused)) uint32_t nPortIndex) {
+uint32_t Dmx::GetDmxUpdatesPerSecond([[maybe_unused]] uint32_t nPortIndex) {
 	return 0;
 }
 
-uint32_t GetDmxReceivedCount(__attribute__((unused)) uint32_t nPortIndex) {
+uint32_t GetDmxReceivedCount([[maybe_unused]] uint32_t nPortIndex) {
 	return 0;
 }
 
@@ -290,13 +290,13 @@ const uint8_t *Dmx::RdmReceiveTimeOut(uint32_t nPortIndex, uint16_t nTimeOut) {
 	return p;
 }
 
-void Dmx::StartOutput(__attribute__((unused)) uint32_t nPortIndex) {
+void Dmx::StartOutput([[maybe_unused]] uint32_t nPortIndex) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
 }
 
-void Dmx::SetOutput(__attribute__((unused)) const bool doForce) {
+void Dmx::SetOutput([[maybe_unused]] const bool doForce) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT

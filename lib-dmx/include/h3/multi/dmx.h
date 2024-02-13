@@ -122,7 +122,7 @@ private:
 	void StartDmxOutput(const uint32_t nPortIndex);
 
 private:
-	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_MIN };
+	uint32_t m_nDmxTransmitBreakTime { dmx::transmit::BREAK_TIME_TYPICAL};
 	uint32_t m_nDmxTransmitMabTime { dmx::transmit::MAB_TIME_MIN };
 	uint32_t m_nDmxTransmitPeriod { dmx::transmit::PERIOD_DEFAULT };
 	uint32_t m_nDmxTransmitPeriodRequested { dmx::transmit::PERIOD_DEFAULT };
