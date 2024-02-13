@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
 
 #include "e131.h"
 #include "e131bridge.h"
@@ -52,6 +51,11 @@
 # include "rdmpersonality.h"
 # include "rdm_e120.h"
 # include "factorydefaults.h"
+#endif
+
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
 #endif
 
 #include "remoteconfig.h"
@@ -117,13 +121,7 @@ void main() {
 	DmxSend dmxSend;
 	dmxSend.Print();
 
-	DmxConfigUdp *pDmxConfigUdp = nullptr;
-
-	if (bridge.GetActiveOutputPorts() != 0) {
-		bridge.SetOutput(&dmxSend);
-		pDmxConfigUdp = new DmxConfigUdp;
-		assert(pDmxConfigUdp != nullptr);
-	}
+	bridge.SetOutput(&dmxSend);
 
 	const auto nActivePorts = bridge.GetActiveInputPorts() + bridge.GetActiveOutputPorts();
 
@@ -151,6 +149,20 @@ void main() {
 #endif
 
 	bridge.Print();
+
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
 
 	display.SetTitle("sACN E1.31 DMX %s", portDirection == lightset::PortDir::INPUT ? "Input" : "Output");
 	display.Set(2, displayudf::Labels::IP);
@@ -188,14 +200,14 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
 #endif
 		configStore.Flash();
-		if (pDmxConfigUdp != nullptr) {
-			pDmxConfigUdp->Run();
-		}
 		mDns.Run();
 		display.Run();
 		hw.Run();

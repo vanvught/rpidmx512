@@ -2,7 +2,7 @@
  * @file showfiledisplay.h
  *
  */
-/* Copyright (C) 2020-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2020-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,9 @@
 
 #include <cstdint>
 
-class ShowFileDisplay {
-public:
-	virtual ~ShowFileDisplay() {
-	}
-
-	virtual void ShowFileName(const char *pFileName, uint32_t nShow)=0;
-	virtual void ShowShowFileStatus()=0;
-};
+namespace showfile {
+void display_filename(const char *pFileName, const uint32_t nShow);
+void display_status();
+}  // namespace showfile
 
 #endif /* SHOWFILEDISPLAY_H_ */

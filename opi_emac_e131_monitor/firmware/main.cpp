@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -52,6 +52,11 @@
 #include "rdmpersonality.h"
 #include "rdm_e120.h"
 #include "factorydefaults.h"
+
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
 
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
@@ -131,6 +136,20 @@ void main() {
 	bool IsSet;
 	bridge.SetUniverse(0, lightset::PortDir::OUTPUT, e131params.GetUniverse(0, IsSet));
 
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
+
 	DMXMonitor monitor;
 	// There is support for HEX output only
 	bridge.SetOutput(&monitor);
@@ -176,6 +195,9 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		bridge.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 		llrpOnlyDevice.Run();
 		configStore.Flash();

@@ -26,19 +26,42 @@
 #ifndef SHOWFILETFTP_H_
 #define SHOWFILETFTP_H_
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "tftpdaemon.h"
 
+#include "debug.h"
+
 class ShowFileTFTP final: public TFTPDaemon {
 public:
-	ShowFileTFTP();
+	ShowFileTFTP() {
+		DEBUG_ENTRY
+
+		DEBUG_EXIT
+	}
 
 	bool FileOpen(const char *pFileName, tftp::Mode mode) override;
 	bool FileCreate(const char *pFileName, tftp::Mode mode) override;
-	bool FileClose() override;
-	size_t FileRead(void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
-	size_t FileWrite(const void *pBuffer, size_t nCount, unsigned nBlockNumber) override;
+
+	bool FileClose() override {
+		DEBUG_ENTRY
+
+		if (m_pFile != nullptr) {
+			fclose(m_pFile);
+			m_pFile = nullptr;
+		}
+
+		DEBUG_EXIT
+		return true;
+	}
+
+	size_t FileRead(void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) override {
+		return fread(pBuffer, 1, nCount, m_pFile);
+	}
+
+	size_t FileWrite(const void *pBuffer, size_t nCount, [[maybe_unused]] unsigned nBlockNumber) override {
+		return fwrite(pBuffer, 1, nCount, m_pFile);
+	}
 
 	void Exit() override;
 

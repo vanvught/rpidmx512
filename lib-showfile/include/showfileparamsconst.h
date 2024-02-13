@@ -29,7 +29,6 @@
 struct ShowFileParamsConst {
 	static  const char FILE_NAME[];
 
-	static  const char FORMAT[];
 	static  const char SHOW[];
 
 	static  const char DMX_MASTER[];
@@ -38,7 +37,6 @@ struct ShowFileParamsConst {
 	static  const char OPTION_LOOP[];
 	static  const char OPTION_DISABLE_SYNC[];
 
-	static  const char PROTOCOL[];
 	static  const char SACN_SYNC_UNIVERSE[];
 	static  const char ARTNET_DISABLE_UNICAST[];
 };

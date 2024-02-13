@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2018-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2018-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,7 +34,6 @@
 #include "displayudf.h"
 #include "displayudfparams.h"
 #include "displayhandler.h"
-#include "display_timeout.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -46,7 +45,7 @@
 #include "pixeltestpattern.h"
 #include "pixeldmxparams.h"
 #include "ws28xxdmx.h"
-#include "ws28xxdmxstartstop.h"
+
 
 #if defined (NODE_RDMNET_LLRP_ONLY)
 # include "rdmdeviceparams.h"
@@ -57,12 +56,16 @@
 # include "factorydefaults.h"
 #endif
 
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
+
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
 #include "flashcodeinstall.h"
 #include "configstore.h"
-
 
 #include "firmwareversion.h"
 #include "software_version.h"
@@ -107,7 +110,6 @@ void main() {
 	pixelDmxParams.Set(&pixelDmxConfiguration);
 
 	WS28xxDmx pixelDmx(pixelDmxConfiguration);
-	pixelDmx.SetPixelDmxHandler(new PixelDmxStartStop);
 
 	const auto nUniverses = pixelDmx.GetUniverses();
 
@@ -166,6 +168,20 @@ void main() {
 	node.Print();
 	pixelDmx.Print();
 
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
+
 	display.SetTitle("Art-Net 4 Pixel 1x4U");
 	display.Set(2, displayudf::Labels::IP);
 	display.Set(3, displayudf::Labels::VERSION);
@@ -211,6 +227,9 @@ void main() {
 		hw.WatchdogFeed();
 		nw.Run();
 		node.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		remoteConfig.Run();
 #if defined (NODE_RDMNET_LLRP_ONLY)
 		llrpOnlyDevice.Run();
