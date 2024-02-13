@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,7 +26,8 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
-#include <ctype.h>
+#include <cctype>
+#include <signal.h>
 
 #include "hardware.h"
 #include "network.h"
@@ -35,8 +36,6 @@
 #include "display.h"
 
 #include "mdns.h"
-
-#include "httpd/httpd.h"
 
 #include "artnetnode.h"
 #include "artnetparams.h"
@@ -58,8 +57,19 @@
 #include "remoteconfig.h"
 #include "remoteconfigparams.h"
 
+#if defined (NODE_SHOWFILE)
+# include "showfile.h"
+# include "showfileparams.h"
+#endif
+
 #include "firmwareversion.h"
 #include "software_version.h"
+
+static bool keepRunning = true;
+
+void intHandler(int) {
+    keepRunning = false;
+}
 
 namespace artnetnode {
 namespace configstore {
@@ -68,6 +78,9 @@ uint32_t DMXPORT_OFFSET = 0;
 }  // namespace artnetnode
 
 int main(int argc, char **argv) {
+    struct sigaction act;
+    act.sa_handler = intHandler;
+    sigaction(SIGINT, &act, NULL);
 #ifndef NDEBUG
 	if (argc > 2) {
 		const int c = argv[2][0];
@@ -144,6 +157,20 @@ int main(int argc, char **argv) {
 	node.SetRdm(static_cast<uint32_t>(0), true);
 	node.Print();
 
+#if defined (NODE_SHOWFILE)
+	ShowFile showFile;
+
+	ShowFileParams showFileParams;
+	showFileParams.Load();
+	showFileParams.Set();
+
+	if (showFile.IsAutoStart()) {
+		showFile.Start();
+	}
+
+	showFile.Print();
+#endif
+
 	RemoteConfig remoteConfig(remoteconfig::Node::ARTNET, remoteconfig::Output::MONITOR, nActivePorts);
 
 	RemoteConfigParams remoteConfigParams;
@@ -156,8 +183,11 @@ int main(int argc, char **argv) {
 	mDns.Print();
 	node.Start();
 
-	for (;;) {
+	while (keepRunning) {
 		node.Run();
+#if defined (NODE_SHOWFILE)
+		showFile.Run();
+#endif
 		mDns.Run();
 		remoteConfig.Run();
 		configStore.Flash();

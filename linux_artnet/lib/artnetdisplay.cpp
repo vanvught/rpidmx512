@@ -31,47 +31,47 @@
 #include "debug.h"
 
 namespace artnet {
-void display_longname(__attribute__((unused)) const char *pLongName) {
+void display_longname([[maybe_unused]] const char *pLongName) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_universe_switch(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  uint8_t nAddress) {
+void display_universe_switch([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  uint8_t nAddress) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_net_switch(__attribute__((unused))  uint8_t nAddress) {
+void display_net_switch([[maybe_unused]]  uint8_t nAddress) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_subnet_switch(__attribute__((unused))  uint8_t nAddress) {
+void display_subnet_switch([[maybe_unused]]  uint8_t nAddress) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_merge_mode(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  lightset::MergeMode mergeMode) {
+void display_merge_mode([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  lightset::MergeMode mergeMode) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_outputstyle(__attribute__((unused)) const uint32_t nPortIndex, __attribute__((unused)) const lightset::OutputStyle outputStyle) {
+void display_outputstyle([[maybe_unused]] const uint32_t nPortIndex, [[maybe_unused]] const lightset::OutputStyle outputStyle) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_port_protocol(__attribute__((unused))  uint32_t nPortIndex, __attribute__((unused))  artnet::PortProtocol tPortProtocol) {
+void display_port_protocol([[maybe_unused]]  uint32_t nPortIndex, [[maybe_unused]]  artnet::PortProtocol tPortProtocol) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_rdm_enabled(__attribute__((unused)) uint32_t nPortIndex, __attribute__((unused)) bool isEnabled) {
+void display_rdm_enabled([[maybe_unused]] uint32_t nPortIndex, [[maybe_unused]] bool isEnabled) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }
 
-void display_failsafe(__attribute__((unused)) uint8_t nFailsafe) {
+void display_failsafe([[maybe_unused]] uint8_t nFailsafe) {
 	DEBUG_ENTRY
 	DEBUG_EXIT
 }

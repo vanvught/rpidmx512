@@ -2,7 +2,7 @@
  * @file main.cpp
  *
  */
-/* Copyright (C) 2017-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2017-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cstdlib>
+#include <signal.h>
 
 #include "hardware.h"
 #include "network.h"
@@ -35,9 +36,6 @@
 #include "displayudfparams.h"
 
 #include "mdns.h"
-
-
-#include "httpd/httpd.h"
 
 #include "handler.h"
 
@@ -59,12 +57,19 @@
 
 #include "configstore.h"
 
-
-
 #include "firmwareversion.h"
 #include "software_version.h"
 
+static bool keepRunning = true;
+
+void intHandler(int) {
+    keepRunning = false;
+}
+
 int main(int argc, char **argv) {
+    struct sigaction act;
+    act.sa_handler = intHandler;
+    sigaction(SIGINT, &act, NULL);
 	Hardware hw;
 	Display display;
 	ConfigStore configStore;
@@ -130,7 +135,7 @@ int main(int argc, char **argv) {
 	mDns.Print();
 	server.Start();
 
-	for (;;) {
+	while (keepRunning) {
 		server.Run();
 		mDns.Run();
 		remoteConfig.Run();

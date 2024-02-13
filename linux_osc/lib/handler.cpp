@@ -58,7 +58,7 @@ void Handler::Update() {
 	DEBUG_EXIT
 }
 
-void Handler::Info(__attribute__((unused)) int32_t nHandle, __attribute__((unused)) uint32_t nRemoteIp, __attribute__((unused)) uint16_t nPortOutgoing) {
+void Handler::Info([[maybe_unused]] int32_t nHandle, [[maybe_unused]] uint32_t nRemoteIp, [[maybe_unused]] uint16_t nPortOutgoing) {
 	DEBUG_ENTRY
 
 	DEBUG_EXIT
