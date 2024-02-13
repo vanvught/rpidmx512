@@ -96,7 +96,7 @@ void PixelDmxConfiguration::Validate(uint32_t nPortsMax, uint32_t& nLedsPerPixel
 void PixelDmxConfiguration::Print() {
 	PixelConfiguration::Print();
 
-	printf("Pixel DMX configuration\n");
+	puts("Pixel DMX configuration");
 	printf(" Outputs : %d\n", m_nOutputPorts);
 	printf(" Grouping count : %d [Groups : %d]\n", m_nGroupingCount, m_nGroups);
 }

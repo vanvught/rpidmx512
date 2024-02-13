@@ -2,7 +2,7 @@
  * @file ws28xxdmx.cpp
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -40,6 +40,10 @@
 #include "pixeldmxconfiguration.h"
 #include "pixeldmxstore.h"
 
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+# include "hal_gpio.h"
+#endif
+
 #include "debug.h"
 
 WS28xxDmx *WS28xxDmx::s_pThis;
@@ -55,10 +59,15 @@ WS28xxDmx::WS28xxDmx(PixelDmxConfiguration& pixelDmxConfiguration): m_pixelDmxCo
 	m_pWS28xx = new WS28xx(m_pixelDmxConfiguration);
 	assert(m_pWS28xx != nullptr);
 
-	m_pWS28xx->Blackout();
-
 	m_nDmxStartAddress = m_pixelDmxConfiguration.GetDmxStartAddress();
 	m_nDmxFootprint = static_cast<uint16_t>(m_nChannelsPerPixel * m_pixelDmxConfiguration.GetGroups());
+
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+	FUNC_PREFIX(gpio_fsel(PIXELDMXSTARTSTOP_GPIO, GPIO_FSEL_OUTPUT));
+	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
+#endif
+
+	m_pWS28xx->Blackout();
 
 	DEBUG_EXIT
 }
@@ -72,28 +81,28 @@ WS28xxDmx::~WS28xxDmx() {
 	DEBUG_EXIT
 }
 
-void WS28xxDmx::Start(__attribute__((unused)) uint32_t nPortIndex) {
+void WS28xxDmx::Start([[maybe_unused]] uint32_t nPortIndex) {
 	if (m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = true;
 
-	if (m_pPixelDmxHandler != nullptr) {
-		m_pPixelDmxHandler->Start();
-	}
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+	FUNC_PREFIX(gpio_set(PIXELDMXSTARTSTOP_GPIO));
+#endif
 }
 
-void WS28xxDmx::Stop(__attribute__((unused)) uint32_t nPortIndex) {
+void WS28xxDmx::Stop([[maybe_unused]] uint32_t nPortIndex) {
 	if (!m_bIsStarted) {
 		return;
 	}
 
 	m_bIsStarted = false;
 
-	if (m_pPixelDmxHandler != nullptr) {
-		m_pPixelDmxHandler->Stop();
-	}
+#if defined (PIXELDMXSTARTSTOP_GPIO)
+	FUNC_PREFIX(gpio_clr(PIXELDMXSTARTSTOP_GPIO));
+#endif
 }
 
 void WS28xxDmx::SetData(uint32_t nPortIndex, const uint8_t *pData, uint32_t nLength, const bool doUpdate) {

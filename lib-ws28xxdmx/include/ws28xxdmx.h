@@ -2,7 +2,7 @@
  * @file ws28xxdmx.h
  *
  */
-/* Copyright (C) 2016-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2016-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -32,9 +32,9 @@
 #include "lightset.h"
 
 #include "ws28xx.h"
+
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
-#include "pixeldmxhandler.h"
 
 class WS28xxDmx final: public LightSet {
 public:
@@ -65,10 +65,6 @@ public:
 
 	void Print() override {
 		m_pixelDmxConfiguration.Print();
-	}
-
-	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
-		m_pPixelDmxHandler = pPixelDmxHandler;
 	}
 
 	pixel::Type GetType() const {
@@ -121,7 +117,6 @@ private:
 	uint16_t m_nDmxFootprint;
 
 	WS28xx *m_pWS28xx { nullptr };
-	PixelDmxHandler *m_pPixelDmxHandler { nullptr };
 
 	bool m_bIsStarted { false };
 	bool m_bBlackout { false };

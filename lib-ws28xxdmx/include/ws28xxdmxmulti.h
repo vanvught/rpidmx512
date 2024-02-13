@@ -2,7 +2,7 @@
  * @file ws28xxdmxmulti.h
  *
  */
-/* Copyright (C) 2019-2023 by Arjan van Vught mailto:info@orangepi-dmx.nl
+/* Copyright (C) 2019-2024 by Arjan van Vught mailto:info@orangepi-dmx.nl
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -36,8 +36,6 @@
 
 #include "pixeldmxconfiguration.h"
 #include "pixelpatterns.h"
-
-#include "pixeldmxhandler.h"
 
 #include "logic_analyzer.h"
 
@@ -163,10 +161,6 @@ public:
 		return m_nChannelsPerPixel;
 	}
 
-	void SetPixelDmxHandler(PixelDmxHandler *pPixelDmxHandler) {
-		m_pPixelDmxHandler = pPixelDmxHandler;
-	}
-
 	// RDMNet LLRP Device Only
 	bool SetDmxStartAddress(__attribute__((unused)) uint16_t nDmxStartAddress) override {
 		return false;
@@ -189,7 +183,6 @@ private:
 	uint32_t m_nChannelsPerPixel;
 
 	WS28xxMulti *m_pWS28xxMulti { nullptr };
-	PixelDmxHandler *m_pPixelDmxHandler { nullptr };
 
 	uint32_t m_bIsStarted { 0 };
 	bool m_bBlackout { false };

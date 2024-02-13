@@ -147,7 +147,7 @@ uint32_t RDMHandler::GetParameterDescriptionCount() const {
 #include "ws28xxdmx.h"
 
 namespace rdm {
-bool handle_manufactureer_pid_get(const uint16_t nPid, __attribute__((unused)) const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
+bool handle_manufactureer_pid_get(const uint16_t nPid, [[maybe_unused]] const ManufacturerParamData *pIn, ManufacturerParamData *pOut, uint16_t& nReason) {
 	switch (nPid) {
 	case rdm::E120_MANUFACTURER_PIXEL_TYPE::code: {
 		const auto *pString = ::PixelType::GetType(WS28xxDmx::Get()->GetType());
@@ -184,7 +184,7 @@ bool handle_manufactureer_pid_get(const uint16_t nPid, __attribute__((unused)) c
 }
 #if defined (CONFIG_RDM_MANUFACTURER_PIDS_SET)
 // C++ attribute: maybe_unused (since C++17)
-bool handle_manufactureer_pid_set(const bool isBroadcast, const uint16_t nPid, const rdm::ParameterDescription &parameterDescription, const ManufacturerParamData *pIn, __attribute__((unused)) ManufacturerParamData *pOut, uint16_t& nReason) {
+bool handle_manufactureer_pid_set(const bool isBroadcast, const uint16_t nPid, const rdm::ParameterDescription &parameterDescription, const ManufacturerParamData *pIn, [[maybe_unused]] ManufacturerParamData *pOut, uint16_t& nReason) {
 	if (isBroadcast) {
 		return false;
 	}
