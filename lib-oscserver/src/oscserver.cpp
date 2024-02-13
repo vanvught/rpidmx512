@@ -391,7 +391,7 @@ void OscServer::Run() {
 }
 
 void OscServer::Print() {
-	printf("OSC Server\n");
+	puts("OSC Server");
 	printf(" Incoming Port        : %d\n", m_nPortIncoming);
 	printf(" Outgoing Port        : %d\n", m_nPortOutgoing);
 	printf(" DMX Path             : [%s][%s]\n", s_aPath, s_aPathSecond);

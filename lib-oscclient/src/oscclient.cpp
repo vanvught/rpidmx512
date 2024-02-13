@@ -187,7 +187,7 @@ bool OscClient::HandleLedMessage(const uint16_t nBytesReceived) {
 }
 
 void OscClient::Print() {
-	printf("OSC Client\n");
+	puts("OSC Client");
 	printf(" Server ip-address :" IPSTR "\n", IP2STR(m_nServerIP));
 	printf(" Outgoing Port     : %d\n", m_nPortOutgoing);
 	printf(" Incoming Port     : %d\n", m_nPortIncoming);
